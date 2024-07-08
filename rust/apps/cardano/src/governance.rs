@@ -7,10 +7,12 @@ use alloc::{format, vec};
 use third_party::cryptoxide::hashing::blake2b_256;
 use third_party::ed25519_bip32_core::XPub;
 use third_party::hex;
+use third_party::ur_registry::cardano::cardano_delegation::CardanoDelegation;
 use third_party::ur_registry::cardano::governance::CardanoVotingRegistration;
+use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
 
 pub fn build_metadata_cbor(
-    delegations: BTreeMap<u32, u8>,
+    delegations: Vec<CardanoDelegation>,
     stake_pub: &[u8],
     payment_address: &[u8],
     nonce: u64,
@@ -38,21 +40,20 @@ pub fn build_metadata_cbor(
 }
 
 pub fn build_delegations(
-    delegations: BTreeMap<u32, u8>,
+    delegations: Vec<CardanoDelegation>,
     entropy: &[u8],
     passphrase: &[u8],
 ) -> R<Vec<(String, u8)>> {
     let mut delegations_vec = Vec::new();
-    for (account_index, width) in delegations.iter() {
-        let vote_key = generate_vote_key(*account_index, entropy, passphrase).unwrap();
+    for delegation in delegations {
+        let vote_key = generate_vote_key(delegation.get_path(), entropy, passphrase).unwrap();
         let vote_key_bytes = vote_key.public_key();
-        delegations_vec.push((hex::encode(vote_key_bytes), *width));
+        delegations_vec.push((hex::encode(vote_key_bytes), delegation.get_weidth()));
     }
-    return Ok(delegations_vec);
+    Ok(delegations_vec)
 }
 
-pub fn generate_vote_key(account_index: u32, entropy: &[u8], passphrase: &[u8]) -> R<XPub> {
-    let vote_key_path = CIP36VoteKeyDerivationPath::new(account_index);
+pub fn generate_vote_key(path: CryptoKeyPath, entropy: &[u8], passphrase: &[u8]) -> R<XPub> {
     let icarus_master_key =
         keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
             entropy, passphrase,
@@ -61,7 +62,7 @@ pub fn generate_vote_key(account_index: u32, entropy: &[u8], passphrase: &[u8]) 
     let bip32_signing_key =
         keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv(
             &icarus_master_key,
-            &vote_key_path.to_string(),
+            &path.get_path().unwrap(),
         )
         .unwrap();
     Ok(bip32_signing_key.public())
@@ -69,7 +70,7 @@ pub fn generate_vote_key(account_index: u32, entropy: &[u8], passphrase: &[u8]) 
 
 pub fn sign(
     path: &String,
-    delegations: BTreeMap<u32, u8>,
+    delegations: Vec<CardanoDelegation>,
     stake_pub: &[u8],
     payment_address: &[u8],
     nonce: u64,
@@ -135,10 +136,21 @@ mod tests {
 
     #[test]
     fn test_generate_vote_key() {
+        let path1 = PathComponent::new(Some(1694), true).unwrap();
+        let path2 = PathComponent::new(Some(1815), true).unwrap();
+        let path3 = PathComponent::new(Some(0), true).unwrap();
+        let path4 = PathComponent::new(Some(0), true).unwrap();
+        let path5 = PathComponent::new(Some(0), true).unwrap();
+
+        let source_fingerprint: [u8; 4] = [52, 74, 47, 03];
+        let components = vec![path1, path2, path3, path4, path5];
+        let crypto_key_path1: CryptoKeyPath =
+            CryptoKeyPath::new(components, Some(source_fingerprint), None);
+
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
         let passphrase = b"";
         let account_index = 0;
-        let xpub = generate_vote_key(account_index, &entropy, passphrase).unwrap();
+        let xpub = generate_vote_key(crypto_key_path1, &entropy, passphrase).unwrap();
 
         assert_eq!(
             hex::encode(xpub.public_key()),
@@ -148,9 +160,25 @@ mod tests {
 
     #[test]
     fn test_build_delegations() {
-        let mut delegations = BTreeMap::new();
-        delegations.insert(0, 1);
-        delegations.insert(1, 2);
+        let path1 = PathComponent::new(Some(1694), true).unwrap();
+        let path2 = PathComponent::new(Some(1815), true).unwrap();
+        let path3 = PathComponent::new(Some(0), true).unwrap();
+        let item2_path3 = PathComponent::new(Some(1), true).unwrap();
+        let path4 = PathComponent::new(Some(0), true).unwrap();
+        let path5 = PathComponent::new(Some(0), true).unwrap();
+
+        let source_fingerprint: [u8; 4] = [52, 74, 47, 03];
+        let components = vec![path1, path2, path3, path4, path5];
+        let components2 = vec![path1, path2, item2_path3, path4, path5];
+        let crypto_key_path1: CryptoKeyPath =
+            CryptoKeyPath::new(components, Some(source_fingerprint), None);
+        let crypto_key_path2: CryptoKeyPath =
+            CryptoKeyPath::new(components2, Some(source_fingerprint), None);
+
+        let delegations = vec![
+            CardanoDelegation::new(crypto_key_path1, 1),
+            CardanoDelegation::new(crypto_key_path2, 2),
+        ];
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
         let passphrase = b"";
         let delegations_vec = build_delegations(delegations, &entropy, passphrase).unwrap();
@@ -170,8 +198,19 @@ mod tests {
 
     #[test]
     fn test_build_metadata_cbor_and_sign() {
-        let mut delegations = BTreeMap::new();
-        delegations.insert(1, 1);
+        let path1 = PathComponent::new(Some(1694), true).unwrap();
+        let path2 = PathComponent::new(Some(1815), true).unwrap();
+        let path3 = PathComponent::new(Some(1), true).unwrap();
+        let path4 = PathComponent::new(Some(0), true).unwrap();
+        let path5 = PathComponent::new(Some(0), true).unwrap();
+
+        let source_fingerprint: [u8; 4] = [52, 74, 47, 03];
+        let components = vec![path1, path2, path3, path4, path5];
+        let crypto_key_path1: CryptoKeyPath =
+            CryptoKeyPath::new(components, Some(source_fingerprint), None);
+
+        let delegations = vec![CardanoDelegation::new(crypto_key_path1, 1)];
+
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
         let passphrase = b"";
         let stake_pub =
@@ -208,8 +247,19 @@ mod tests {
         let path = "m/1852'/1815'/0'/2/0".to_string();
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
         let passphrase = b"";
-        let mut delegations = BTreeMap::new();
-        delegations.insert(1, 1);
+
+        let path1 = PathComponent::new(Some(1694), true).unwrap();
+        let path2 = PathComponent::new(Some(1815), true).unwrap();
+        let path3 = PathComponent::new(Some(1), true).unwrap();
+        let path4 = PathComponent::new(Some(0), true).unwrap();
+        let path5 = PathComponent::new(Some(0), true).unwrap();
+
+        let source_fingerprint: [u8; 4] = [52, 74, 47, 03];
+        let components = vec![path1, path2, path3, path4, path5];
+        let crypto_key_path1: CryptoKeyPath =
+            CryptoKeyPath::new(components, Some(source_fingerprint), None);
+
+        let delegations: Vec<CardanoDelegation> = vec![CardanoDelegation::new(crypto_key_path1, 1)];
         let stake_pub =
             hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c")
                 .unwrap();

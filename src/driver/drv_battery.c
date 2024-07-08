@@ -14,7 +14,6 @@
 #include "user_utils.h"
 #include "user_msg.h"
 
-#define BATTERY_AVERAGE
 #define BATTERY_DEBUG           0
 #define BATTERY_ARRAY_LEN       10
 
@@ -247,19 +246,7 @@ bool BatteryIntervalHandler(void)
     static uint8_t delayIncreate = 0;
 
     usbPowerState = GetUsbPowerState();
-#ifndef BATTERY_AVERAGE
     milliVolt = GetBatteryMilliVolt();
-#else
-    if (first) {
-        for (int i = 0; i < NUMBER_OF_ARRAYS(milliVoltCache) - 1; i++) {
-            milliVoltCache[i] = GetBatteryMilliVolt();
-        }
-        first = false;
-        change = true;
-    }
-    UpdateVoltageCache(milliVoltCache, &writeIndex, GetBatteryMilliVolt());
-    milliVolt = CalculateWeightedAverage(milliVoltCache, writeIndex);
-#endif
     percent = GetBatteryPercentByMilliVolt(milliVolt, usbPowerState == USB_POWER_STATE_DISCONNECT);
 
     printf("handler,milliVolt=%d,percent=%d,showPercent=%d,usbPowerState=%d\n", milliVolt, percent, GetBatterPercent(), usbPowerState);
@@ -268,12 +255,10 @@ bool BatteryIntervalHandler(void)
         Aw32001PowerOff();
     }
 
-#ifndef BATTERY_AVERAGE
     if (first) {
         first = false;
         change = true;
     }
-#endif
 
     if (g_batterPercent == BATTERY_INVALID_PERCENT_VALUE) {
         //todo: get the stored battery data.

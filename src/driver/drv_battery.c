@@ -284,6 +284,9 @@ bool BatteryIntervalHandler(void)
     if (percent < g_batterPercent && usbPowerState == USB_POWER_STATE_DISCONNECT) {
         //The battery percentage only decreases when discharging.
         //The battery percentage decrease by 1% each time.
+        if (percent + 10 < g_batterPercent) {
+            g_batterPercent -= 2;
+        }
         g_batterPercent--;
         change = true;
     } else if (usbPowerState == USB_POWER_STATE_CONNECT) {
@@ -296,6 +299,9 @@ bool BatteryIntervalHandler(void)
 
         // delayIncreate == 4 * 80 320s
         if (percent > g_batterPercent || delayIncreate == 1) {
+            if (percent > g_batterPercent + 10) {
+                g_batterPercent += 2;
+            }
             g_batterPercent++;
             if (g_batterPercent >= 100) {
                 g_batterPercent = 100;

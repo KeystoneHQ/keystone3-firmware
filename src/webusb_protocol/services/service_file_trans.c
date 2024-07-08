@@ -20,6 +20,7 @@
 #include "account_manager.h"
 #include "user_memory.h"
 #include "drv_gd25qxx.h"
+#include "data_parser_task.h"
 
 #define TYPE_FILE_INFO_FILE_NAME    1
 #define TYPE_FILE_INFO_FILE_SIZE    2
@@ -35,7 +36,7 @@
 #define TYPE_FILE_FINO_PUBKEY_SIGN  2
 
 #define MAX_FILE_NAME_LENGTH 32
-#define FILE_TRANS_TIME_OUT 2000
+#define FILE_TRANS_TIME_OUT 10000
 #define DEFAULT_FILE_NAME           "keystone3.bin"
 
 #define CHECK_POINTER(ptr) do { \
@@ -109,11 +110,8 @@ static const uint8_t g_webUsbPubKey[] = {
 };
 
 static const uint8_t g_webUsbUpdatePubKey[] = {
-    0x04, 0x3f, 0xe7, 0x7f, 0xd7, 0xa1, 0x92, 0x27, 0xb2, 0x63, 0x48, 0x05, 0xeb, 0xed, 0x40, 0xca,
-    0x22, 0x6a, 0xa4, 0x05, 0xb9, 0x7f, 0x8d, 0x61, 0xd4, 0xea, 0x26, 0x65, 0x9d, 0x9e, 0xb1, 0x1f,
-    0xaf, 0xa7, 0xfb, 0x35, 0xe9, 0x33, 0x41, 0x46, 0x10, 0x27, 0xff, 0x44, 0x17, 0x86, 0xa1, 0x64,
-    0x17, 0x5d, 0x3c, 0xe3, 0x1c, 0x82, 0x2f, 0xa3, 0x91, 0xff, 0x27, 0x5d, 0x57, 0x37, 0x13, 0xef, 
-    0x99
+    4, 63, 231, 127, 215, 161, 146, 39, 178, 99, 72, 5, 235, 237, 64, 202, 34, 106, 164, 5, 185, 127, 141, 97, 212, 234, 38, 101, 157, 218, 241, 31, 235, 233, 251,
+    53, 233, 51, 65, 68, 24, 39, 255, 68, 23, 134, 161, 100, 23, 215, 79, 56, 199, 34, 47, 163, 145, 255, 39, 93, 87, 55, 19, 239, 153
 };
 
 const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
@@ -201,6 +199,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     printf("file size=%d\n", g_fileTransInfo.fileSize);
     PrintArray("md5", g_fileTransInfo.md5, 16);
     PrintArray("signature", g_fileTransInfo.signature, 64);
+    PrintArray("iv", g_fileTransInfo.iv, 16);
     SetDeviceParserIv(g_fileTransInfo.iv);
 
     do {
@@ -436,6 +435,7 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
         printf("%02x", hash[i]);
     }
     printf("\n");
+    #if 1
     if (k1_verify_signature(pubKeySign, hash, (uint8_t *)g_webUsbUpdatePubKey) == false) {
         printf("verify signature fail\n");
         tlvArray[0].length = 4;
@@ -445,6 +445,10 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
         tlvArray[0].length = 33;
         tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey) - 1);
     }
+    #else
+    tlvArray[0].length = 33;
+    tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey) - 1);
+    #endif
 
     *outLen = GetFrameTotalLength(tlvArray, 1);
     return BuildFrame(&sendHead, tlvArray, 1);

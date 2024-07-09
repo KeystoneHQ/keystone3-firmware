@@ -428,7 +428,7 @@ void SolanaAddressLearnMore(lv_event_t *e)
     if (data != NULL) {
         char url[512];
         snprintf(url, sizeof(url), "https://solscan.io/account/%s#tableEntries", data->address);
-        GuiQRCodeHintBoxOpenBig(url, "Address Lookup Table Program Url", "The Address Lookup Table URL provides a reference to view detailed account information related to this transaction. Please note that the URL may expire or change over time.\n", url);
+        GuiQRCodeHintBoxOpenBig(url, "Address Lookup Table Program Url", _("solana_alt_notice"), url);
     }
 }
 
@@ -464,7 +464,7 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
     lv_obj_set_style_text_font(noticeContent, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(noticeContent, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     // multi language support
-    lv_label_set_text(noticeContent, "The accounts in Instructions will be affected by this transaction. Please review carefully.");
+    lv_label_set_text(noticeContent,_("solana_parse_tx_notice"));
     lv_obj_set_style_text_opa(noticeContent, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align_to(noticeContent, iconNoticeContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 10);
 

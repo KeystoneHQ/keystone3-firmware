@@ -2,7 +2,9 @@
 #include "mhscpu.h"
 #include "user_fatfs.h"
 #include "user_memory.h"
+#include "draw_on_lcd.h"
 
+LV_FONT_DECLARE(openSans_24);
 
 #define FILE_UNIT_SIZE                      0x4000
 #define BOOT_ADDR                           (0x01001000)
@@ -20,6 +22,7 @@ static void UpdateBootFromOtaFile(const char *filePath)
     static uint32_t lastPercent = 101;
     char percentStr[16];
     char bootHeadBuf[0x134] = {0};
+    DrawStringOnLcd(120, 412, "Bootloader Updating...", 0xFFFF, &openSans_24);
 
     ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
     if (ret) {
@@ -48,6 +51,8 @@ static void UpdateBootFromOtaFile(const char *filePath)
         QspiFlashEraseAndWrite(writeAddr, g_readBuf, 4096);
         writeAddr += 4096;
         crcCalc = crc32_ieee(crcCalc, g_readBuf, readSize);
+        // sprintf(percentStr, "%d%%", (g_fileSize - g_lastSize) * 100 / g_fileSize);
+        // DrawStringOnLcd(210, 466, (char *)percentStr, 0xFFFF, &openSans_24);
     }
     uint32_t readCrc = 0;
     ret = f_read(&fp, &readCrc, 4, (UINT *)&readSize);
@@ -56,9 +61,6 @@ static void UpdateBootFromOtaFile(const char *filePath)
 
 void BootUpdate(char *filePath)
 {
-    int32_t ret = SUCCESS_CODE;
-    const char *file = "1:mh1903_boot.sig";
-    UpdateBootFromOtaFile(file);
+    UpdateBootFromOtaFile(filePath);
     f_unlink(filePath);
-    NVIC_SystemReset();
 }

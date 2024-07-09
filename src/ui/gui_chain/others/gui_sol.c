@@ -426,9 +426,9 @@ void SolanaAddressLearnMore(lv_event_t *e)
     lv_obj_t* obj = lv_event_get_target(e);
     SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)lv_obj_get_user_data(obj);
     if (data != NULL) {
-        char url[256];
+        char url[512];
         snprintf(url, sizeof(url), "https://solscan.io/account/%s#tableEntries", data->address);
-        GuiQRCodeHintBoxOpen(url, "Address Lookup Table Program Url", url);
+        GuiQRCodeHintBoxOpenBig(url, "Address Lookup Table Program Url", "The Address Lookup Table URL provides a reference to view detailed account information related to this transaction. Please note that the URL may expire or change over time.\n", url);
     }
 }
 
@@ -463,6 +463,7 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
     lv_label_set_long_mode(noticeContent, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_text_font(noticeContent, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(noticeContent, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    // multi language support
     lv_label_set_text(noticeContent, "The accounts in Instructions will be affected by this transaction. Please review carefully.");
     lv_obj_set_style_text_opa(noticeContent, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align_to(noticeContent, iconNoticeContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 10);
@@ -487,8 +488,8 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
         lv_obj_t *accounts_label = lv_label_create(container);
         if (accounts->size != 0) {
             lv_label_set_text(accounts_label, "accounts");
-            lv_obj_set_style_text_font(accounts_label, g_defIllustrateFont, LV_PART_MAIN);
-            lv_obj_set_style_text_color(accounts_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+            lv_obj_set_style_text_color(accounts_label, WHITE_COLOR, LV_PART_MAIN);
+            lv_obj_set_style_text_opa(accounts_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_align(accounts_label, LV_ALIGN_TOP_LEFT, 24, 44);
         } else {
             lv_label_set_text(accounts_label, "");
@@ -541,25 +542,24 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
             // if account is start with "Table", then it is a AddressLookupTable account
             if (strncmp(accounts->data[j], "Table", 5) == 0) {
                 lv_label_set_text(account_label, accounts->data[j] + 6);
-                lv_obj_t *warning_icon = GuiCreateImg(account_cont, &imgWarning);
-                lv_obj_set_style_pad_right(warning_icon, 0, LV_PART_MAIN);
+                lv_obj_t *info_icon = GuiCreateImg(account_cont, &imgInfoSmall);
+                lv_obj_set_style_pad_right(info_icon, 0, LV_PART_MAIN);
                 // add account click event
-                lv_obj_add_flag(warning_icon, LV_OBJ_FLAG_CLICKABLE);
+                lv_obj_add_flag(info_icon, LV_OBJ_FLAG_CLICKABLE);
                 SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)malloc(sizeof(SolanaAddressLearnMoreData));
                 if (data != NULL) {
                     const char* address = accounts->data[j] + 6; // remove "Table:" prefix
                     size_t address_len = strlen(address);
                     data->address = (char*)malloc(address_len + 1);
                     strcpy(data->address, address);
-                    lv_obj_set_user_data(warning_icon, data);
-                    SolanaAddressLearnMoreData* retrieved_data = (SolanaAddressLearnMoreData*)lv_obj_get_user_data(warning_icon);
+                    lv_obj_set_user_data(info_icon, data);
+                    SolanaAddressLearnMoreData* retrieved_data = (SolanaAddressLearnMoreData*)lv_obj_get_user_data(info_icon);
                 }
-                lv_obj_add_event_cb(warning_icon, SolanaAddressLearnMore, LV_EVENT_CLICKED, NULL);
+                lv_obj_add_event_cb(info_icon, SolanaAddressLearnMore, LV_EVENT_CLICKED, NULL);
             } else {
                 lv_label_set_text(account_label, accounts->data[j]);
             }
             lv_obj_set_style_text_color(account_label, WHITE_COLOR, LV_PART_MAIN);
-            lv_obj_set_style_text_opa(account_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_long_mode(account_label, LV_LABEL_LONG_WRAP);
 
             lv_obj_set_style_border_width(account_label, 0, LV_PART_MAIN);
@@ -567,24 +567,26 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
         // data label
         lv_obj_t *data_label = lv_label_create(container);
         lv_label_set_text(data_label, "data");
-        lv_obj_set_style_text_font(data_label, g_defIllustrateFont, LV_PART_MAIN);
-        lv_obj_set_style_text_color(data_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+        lv_obj_set_style_text_color(data_label, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(data_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+
         lv_obj_align_to(data_label, accounts_cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
         // data value
         lv_obj_t *data_value = lv_label_create(container);
         lv_label_set_text(data_value, overview_instructions->data[i].data);
         lv_obj_set_style_text_font(data_value, g_defIllustrateFont, LV_PART_MAIN);
         lv_obj_set_style_text_color(data_value, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-        lv_obj_align_to(data_value, data_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
-        lv_obj_set_style_text_opa(data_value, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_align_to(data_value, data_label, LV_ALIGN_LEFT_MID, 50, 0);
         lv_obj_set_width(data_value, lv_pct(90));
         lv_label_set_long_mode(data_value, LV_LABEL_LONG_WRAP);
         // program address label
         lv_obj_t *programAddress_label = lv_label_create(container);
         lv_label_set_text(programAddress_label, "programAddress");
-        lv_obj_set_style_text_font(programAddress_label, g_defIllustrateFont, LV_PART_MAIN);
-        lv_obj_set_style_text_color(programAddress_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-        lv_obj_align_to(programAddress_label, data_value, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+        lv_obj_set_style_text_color(programAddress_label, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(programAddress_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+
+        lv_obj_align_to(programAddress_label, data_value, LV_ALIGN_OUT_BOTTOM_LEFT, -50, 10);
         // program address value
         PtrString program_address = overview_instructions->data[i].program_address;
         lv_obj_t *program_content_label = lv_label_create(container);
@@ -592,7 +594,6 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
         lv_obj_set_style_text_font(program_content_label, g_defIllustrateFont, LV_PART_MAIN);
         lv_obj_set_style_text_color(program_content_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
         lv_obj_align_to(program_content_label, programAddress_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
-        lv_obj_set_style_text_opa(program_content_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_width(program_content_label, lv_pct(90));
         lv_label_set_long_mode(program_content_label, LV_LABEL_LONG_WRAP);
         // calculate the height of the container

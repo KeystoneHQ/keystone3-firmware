@@ -23,8 +23,8 @@ static void *g_parseResult = NULL;
 
 #define MAX_ACCOUNTS 252
 
-static SolanaAddressLearnMoreData* g_account_data[MAX_ACCOUNTS];
-int g_account_count = 0;
+static SolanaAddressLearnMoreData* g_accountData[MAX_ACCOUNTS];
+static int g_accountCount = 0;
 static ViewType g_viewType = ViewTypeUnKnown;
 #define CHECK_FREE_PARSE_SOL_RESULT(result)                                                                                       \
     if (result != NULL)                                                                                                           \
@@ -111,14 +111,13 @@ void FreeSolMemory(void)
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
     // free account data
-    for (int i = 0; i < g_account_count; i++) {
-        if (g_account_data[i] != NULL) {
-            free(g_account_data[i]->address);
-            free(g_account_data[i]);
+    for (int i = 0; i < g_accountCount; i++) {
+        if (g_accountData[i] != NULL) {
+            free(g_accountData[i]->address);
+            free(g_accountData[i]);
         }
     }
-    *g_account_data = NULL;
-    g_account_count = 0;
+    g_accountCount = 0;
 }
 
 void GetSolMessageType(void *indata, void *param, uint32_t maxLen)
@@ -572,9 +571,9 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
                     lv_obj_set_user_data(info_icon, data);
                     SolanaAddressLearnMoreData* retrieved_data = (SolanaAddressLearnMoreData*)lv_obj_get_user_data(info_icon);
 
-                    if (g_account_count < MAX_ACCOUNTS) {
-                        g_account_data[g_account_count] = data;
-                        g_account_count++;
+                    if (g_accountCount < MAX_ACCOUNTS) {
+                        g_accountData[g_accountCount] = data;
+                        g_accountCount++;
                     }
                 }
                 lv_obj_add_event_cb(info_icon, SolanaAddressLearnMore, LV_EVENT_CLICKED, NULL);

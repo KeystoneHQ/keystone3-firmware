@@ -327,7 +327,7 @@ static bool IsSOL(int walletIndex)
 static void GuiARAddressCheckConfirmHandler(lv_event_t *event)
 {
     GUI_DEL_OBJ(g_noticeWindow);
-    GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
+    GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM);
 }
 
 static void GuiOpenARAddressNoticeWindow()

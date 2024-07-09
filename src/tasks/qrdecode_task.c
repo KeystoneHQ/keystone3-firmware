@@ -138,8 +138,7 @@ void ProcessQr(uint32_t count)
         if (firstQrFlag == true) {
             assert(strnlen_s(qrString, QR_DECODE_STRING_LEN) < QR_DECODE_STRING_LEN);
             QRProtocol t = infer_qrcode_type(qrString);
-            switch (t)
-            {
+            switch (t) {
             case QRCodeTypeText:
                 urResult = parse_qrcode_text(qrString);
                 break;

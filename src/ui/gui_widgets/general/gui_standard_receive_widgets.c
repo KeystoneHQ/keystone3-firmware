@@ -457,9 +457,9 @@ void GuiStandardReceiveRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
         if (IsCosmosChain(g_chainCard)) {
-           // only cosmos chain show the jump to account button
-           SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SKIP, JumpToAccountHandler, NULL);
-        }else {
+            // only cosmos chain show the jump to account button
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SKIP, JumpToAccountHandler, NULL);
+        } else {
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         }
         g_tmpIndex = GetCurrentSelectIndex();
@@ -658,7 +658,8 @@ static void UpdateConfirmBtn(void)
     }
 }
 
-static bool ShouldRenderSwitchBtn() {
+static bool ShouldRenderSwitchBtn()
+{
     return GetMaxAddressIndex() > 5;
 }
 

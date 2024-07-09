@@ -66,6 +66,7 @@ int main(void)
     LcdInit();
     DrawBootLogoOnLcd();
     Gd25FlashInit();
+    BootUpdate("1:boot.sig");
     NvicInit();
     PsramInit();
     LogInit();
@@ -83,7 +84,6 @@ int main(void)
     ButtonInit();
     ExtInterruptInit();
     MountSdFatfs();
-    BootUpdate("1:mh1903_boot.sig");
     UserSqlite3Init();
     ScreenManagerInit();
     AccountManagerInit();

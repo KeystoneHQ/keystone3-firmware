@@ -529,7 +529,7 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
             lv_obj_set_style_pad_ver(account_cont, 2, LV_PART_MAIN); // vertical padding
 
             char order[BUFFER_SIZE_16] = {0};
-            snprintf_s(order, BUFFER_SIZE_16, "%d.", j + 1);
+            snprintf_s(order, BUFFER_SIZE_16, "%d ", j + 1);
             lv_obj_t *orderLabel = lv_label_create(account_cont);
             lv_label_set_text(orderLabel, order);
             lv_obj_set_style_text_font(orderLabel, g_defIllustrateFont, LV_PART_MAIN);

@@ -65,20 +65,25 @@ void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *
         lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
         lv_qrcode_update(qrCode, qrdata, (uint32_t)strlen(qrdata));
         g_qrHintBoxQR = qrCode;
-        // title
-        label = GuiCreateTextLabel(parent, title);
+
+        // create a scrollable container
+        lv_obj_t *scrollable = lv_obj_create(parent);
+        lv_obj_set_size(scrollable, 408, 220);
+        lv_obj_set_style_bg_color(scrollable, DARK_BG_COLOR,
+                              LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_scrollbar_mode(scrollable, LV_SCROLLBAR_MODE_OFF);
+        lv_obj_align_to(scrollable, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+        lv_obj_set_style_border_width(scrollable, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+        label = GuiCreateTextLabel(scrollable, title);
         lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
-        // align to qr code container
-        lv_obj_align_to(label, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+        lv_obj_align_to(label, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 15);
         g_qrHintBoxTitle = label;
-        // text content
-        label = GuiCreateIllustrateLabel(parent, content);
+        label = GuiCreateIllustrateLabel(scrollable, content);
         lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
         g_qrHintBoxSubTitle = label;
         lv_obj_align_to(label, g_qrHintBoxTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
 
-        // url content
-        label = GuiCreateIllustrateLabel(parent, url);
+        label = GuiCreateIllustrateLabel(scrollable, url);
         lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
         lv_obj_align_to(label, g_qrHintBoxSubTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
         g_qrHintBoxSubTitle = label;

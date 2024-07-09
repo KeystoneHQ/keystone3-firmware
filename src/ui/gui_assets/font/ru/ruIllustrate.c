@@ -1,7 +1,8 @@
 /*******************************************************************************
  * Size: 20 px
  * Bpp: 2
- * Opts: --bpp 2 --size 20 --no-compress --font NotoSans-Regular.ttf --symbols "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~£¥«·»АБВГДЕЗИЙКЛМНОПРСТУФХЧШЬЭЯабвгдежзийклмнопрстуфхцчшщыьэюяё–€  --format lvgl -o ../gui_assets/font/ru/ruIllustrate.c
+ * Opts: --bpp 2 --size 20 --no-compress --font NotoSans-Regular.ttf --symbols "
+!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~£¥«·»АБВГДЕЗИЙКЛМНОПРСТУФХЧШЬЭЯабвгдежзийклмнопрстуфхцчшщыьэюяё–€  --format lvgl -o ../gui_assets/font/ru/ruIllustrate.c
  ******************************************************************************/
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE

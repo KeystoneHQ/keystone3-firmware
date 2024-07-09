@@ -9,13 +9,35 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
-static inline uint32_t op_i(uint32_t val) { return val; }
+static inline uint32_t op_n(int32_t val)
+{
+    return (uint32_t)(val < 0 ? -val : val);
+}
+static inline uint32_t op_i(uint32_t val)
+{
+    return val;
+}
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
-static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_v(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_w(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_f(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_t(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
 
 const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
@@ -626,6 +648,8 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"single_phrase_reset", "Reset"},
     {"single_phrase_title", "Backup Your Seed"},
     {"single_phrase_word_amount_select", "Seed Phrase Count"},
+    {"solana_alt_notice", "The Address Lookup Table URL provides a reference to view detailed account information related to this transaction. Please note that the URL may expire or change over time"},
+    {"solana_parse_tx_notice", "The accounts in Instructions will be affected by this transaction. Please review carefully."},
     {"support_link", "support@keyst.one"},
     {"switch_account", "Switch Account"},
     {"switch_address", "Switch Address"},
@@ -779,9 +803,12 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t i = op_i(n); UNUSED(i);
-    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t i = op_i(n);
+    UNUSED(i);
+    uint32_t v = op_v(n);
+    UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1403,6 +1430,8 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"single_phrase_reset", "Zurücksetzen"},
     {"single_phrase_title", "Sichern Sie Ihren Seed"},
     {"single_phrase_word_amount_select", "Saatsatzanzahl"},
+    {"solana_alt_notice", "Die URL der Adresstabelle bietet eine Referenz, um detaillierte Kontoinformationen zu dieser Transaktion einzusehen. Bitte beachten Sie, dass die URL ablaufen oder sich ändern kann."},
+    {"solana_parse_tx_notice", "Laut Anweisung betroffene Konten werden von dieser Transaktion beeinflusst. Bitte sorgfältig prüfen."},
     {"support_link", "support@keyst.one"},
     {"switch_account", "Konto wechseln"},
     {"switch_address", "Adresse wechseln"},
@@ -1556,9 +1585,12 @@ const static lv_i18n_phrase_t de_singulars[] = {
 
 static uint8_t de_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t i = op_i(n); UNUSED(i);
-    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t i = op_i(n);
+    UNUSED(i);
+    uint32_t v = op_v(n);
+    UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -2180,6 +2212,8 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"single_phrase_reset", "Restablecer"},
     {"single_phrase_title", "Guarda tu semilla"},
     {"single_phrase_word_amount_select", "Conteo de frase semilla"},
+    {"solana_alt_notice", "La URL de la Tabla de Consulta de Direcciones proporciona una referencia para ver la información detallada de las cuentas relacionadas con esta transacción. Tenga en cuenta que la URL puede expirar o cambiar con el tiempo."},
+    {"solana_parse_tx_notice", "Las cuentas indicadas en las Instrucciones se verán afectadas por esta transacción. Por favor, revíselas detenidamente."},
     {"support_link", "support@keyst.one"},
     {"switch_account", "Cambiar cuenta"},
     {"switch_address", "Cambiar dirección"},
@@ -2333,7 +2367,8 @@ const static lv_i18n_phrase_t es_singulars[] = {
 
 static uint8_t es_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t n = op_n(num);
+    UNUSED(n);
 
 
     if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2956,6 +2991,8 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"single_phrase_reset", "リセット"},
     {"single_phrase_title", "シードバックアップ"},
     {"single_phrase_word_amount_select", "シードフレーズのカウント"},
+    {"solana_alt_notice", "アドレス参照表のURLでは、この取引に関連する詳細な口座情報を確認できます。URLは期限切れや変更の可能性があることにご留意ください。"},
+    {"solana_parse_tx_notice", "指示書の口座がこの取引の影響を受けます。慎重に確認してください。"},
     {"support_link", "support@keyst.one"},
     {"switch_account", "スイッチアカウント"},
     {"switch_address", "スイッチアドレス"},
@@ -3731,6 +3768,8 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"single_phrase_reset", "재설정"},
     {"single_phrase_title", "시드 구문 백업"},
     {"single_phrase_word_amount_select", "시드 구문 수"},
+    {"solana_alt_notice", "주소록 테이블 URL은 이 거래와 관련된 계좌 정보를 제공합니다. 단, URL이 만료되거나 변경될 수 있음을 유의하시기 바랍니다."},
+    {"solana_parse_tx_notice", "지침서에 명시된 계좌들은 이 거래의 영향을 받게 됩니다. 주의 깊게 검토해 주시기 바랍니다."},
     {"support_link", "support@keyst.one"},
     {"switch_account", "계정 전환"},
     {"switch_address", "주소 전환"},
@@ -4506,6 +4545,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"single_phrase_reset", "Сброс"},
     {"single_phrase_title", "Запишите сид фразу"},
     {"single_phrase_word_amount_select", "Количество слов"},
+    {"solana_alt_notice", "Ссылка на таблицу адресов предоставляет информацию по счетам, связанным с этой операцией. Имейте в виду, что ссылка может измениться или устареть со временем."},
+    {"solana_parse_tx_notice", "Счета, указанные в Инструкциях, будут затронуты этой операцией. Пожалуйста, внимательно проверьте."},
     {"support_link", "support@keyst.one"},
     {"switch_account", "Сменить счет"},
     {"switch_address", "Сменить адрес"},
@@ -4659,9 +4700,12 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t v = op_v(n); UNUSED(v);
-    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t v = op_v(n);
+    UNUSED(v);
+    uint32_t i = op_i(n);
+    UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -4942,7 +4986,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"error_unknown_error", "未知错误"},
     {"error_unknown_error_desc", "该设备遇到了一个未知的问题,目前不可用.要解决此问题,请擦除并重新启动设备.如果问题仍然存在,请联系我们的支持团队."},
     {"fingerprint_add", "添加指纹"},
-    {"fingerprint_add_btn", "+添加指纹"},
+    {"fingerprint_add_btn", "#NAME?"},
     {"fingerprint_add_desc", "将手指放在传感器上,感觉到振动后抬起手指."},
     {"fingerprint_add_failed", "添加失败"},
     {"fingerprint_add_failed_duplicate", "重复指纹,请尝试使用其他手指"},
@@ -5286,6 +5330,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"single_phrase_reset", "重置"},
     {"single_phrase_title", "备份您的助记词"},
     {"single_phrase_word_amount_select", "助记词位数"},
+    {"solana_alt_notice", "地址查找表的网址提供了与此交易相关账户信息的参考。请注意该网址可能会过期。"},
+    {"solana_parse_tx_notice", "说明中的账户将受到此交易的影响。请仔细检查。"},
     {"support_link", "support@keyst.one"},
     {"switch_account", "更换账户"},
     {"switch_address", "更换地址"},
@@ -5411,7 +5457,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"wallet_profile_no_multi_wallet_notice", "尚无多重签名钱包"},
     {"wallet_profile_single_sign_title", "单签钱包"},
     {"wallet_profile_single_wallet_title", "单重签名钱包"},
-    {"wallet_setting_add_wallet", "+添加钱包"},
+    {"wallet_setting_add_wallet", "#NAME?"},
     {"wallet_setting_add_wallet_confirm", "我明白"},
     {"wallet_setting_add_wallet_limit", "添加限制"},
     {"wallet_setting_add_wallet_limit_desc", "您只能添加最多 3 个钱包.请在添加新钱包之前删除其他钱包."},
@@ -5486,8 +5532,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if(langs == NULL) return -1;
-    if(langs[0] == NULL) return -1;
+    if (langs == NULL) return -1;
+    if (langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -5500,13 +5546,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if(current_lang_pack == NULL) return -1;
+    if (current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for(i = 0; current_lang_pack[i] != NULL; i++) {
+    for (i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -5519,10 +5565,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for(i = 0; trans[i].msg_id != NULL; i++) {
-        if(strcmp(trans[i].msg_id, msg_id) == 0) {
+    for (i = 0; trans[i].msg_id != NULL; i++) {
+        if (strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if(trans[i].translation) return trans[i].translation;
+            if (trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -5537,23 +5583,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -5569,31 +5615,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -5608,6 +5654,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if(!current_lang) return NULL;
+    if (!current_lang) return NULL;
     return current_lang->locale_name;
 }

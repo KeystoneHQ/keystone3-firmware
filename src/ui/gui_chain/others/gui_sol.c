@@ -427,8 +427,8 @@ void SolanaAddressLearnMore(lv_event_t *e)
     SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)lv_obj_get_user_data(obj);
     if (data != NULL) {
         char url[512];
-        snprintf(url, sizeof(url), "https://solscan.io/account/%s#tableEntries", data->address);
-        GuiQRCodeHintBoxOpenBig(url, "Address Lookup Table Program Url", _("solana_alt_notice"), url);
+        snprintf(url, sizeof(url), "https://solscan.io/account/ %s#tableEntries", data->address);
+        GuiQRCodeHintBoxOpenBig(url, "Address Lookup Table URL", _("solana_alt_notice"), url);
     }
 }
 
@@ -464,11 +464,13 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
     lv_obj_set_style_text_font(noticeContent, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(noticeContent, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     // multi language support
-    lv_label_set_text(noticeContent,_("solana_parse_tx_notice"));
+    lv_label_set_text(noticeContent, _("solana_parse_tx_notice"));
     lv_obj_set_style_text_opa(noticeContent, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align_to(noticeContent, iconNoticeContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 10);
 
-    int containerYOffset = 166 ;
+    // get the height of the notice container
+    lv_obj_update_layout(noticeContainer);
+    int containerYOffset = lv_obj_get_height(noticeContainer) + 16; // set padding between containers
     for (int i = 0; i < overview_instructions->size; i++) {
         // container will auto adjust height
         lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
@@ -577,7 +579,7 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
         lv_obj_set_style_text_font(data_value, g_defIllustrateFont, LV_PART_MAIN);
         lv_obj_set_style_text_color(data_value, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
         lv_obj_align_to(data_value, data_label, LV_ALIGN_LEFT_MID, 50, 0);
-        lv_obj_set_width(data_value, lv_pct(90));
+        lv_obj_set_width(data_value, lv_pct(70));
         lv_label_set_long_mode(data_value, LV_LABEL_LONG_WRAP);
         // program address label
         lv_obj_t *programAddress_label = lv_label_create(container);

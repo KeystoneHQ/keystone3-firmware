@@ -47,11 +47,11 @@ void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *
 {
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
     if (g_qrHintBox == NULL) {
-        g_qrHintBox = GuiCreateHintBox(756);
+        g_qrHintBox = GuiCreateHintBox(746);
         parent = g_qrHintBox;
         qrCodeCont = lv_obj_create(parent);
         lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_AUTO);
-        lv_obj_set_size(qrCodeCont, 308, 308);
+        lv_obj_set_size(qrCodeCont, 408, 408);
         lv_obj_set_style_border_width(qrCodeCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_clip_corner(qrCodeCont, 0, 0);
         lv_obj_set_style_pad_all(qrCodeCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -59,26 +59,30 @@ void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *
         lv_obj_clear_flag(qrCodeCont, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_clear_flag(qrCodeCont, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_bg_color(qrCodeCont, WHITE_COLOR, LV_PART_MAIN);
-        lv_obj_align(qrCodeCont, LV_ALIGN_BOTTOM_MID, 0, -420);
-        qrCode = lv_qrcode_create(qrCodeCont, 260, BLACK_COLOR, WHITE_COLOR);
+        // top mid to hint box
+        lv_obj_align_to(qrCodeCont, parent, LV_ALIGN_TOP_MID, 0, 66);
+        qrCode = lv_qrcode_create(qrCodeCont, 360, BLACK_COLOR, WHITE_COLOR);
         lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
         lv_qrcode_update(qrCode, qrdata, (uint32_t)strlen(qrdata));
         g_qrHintBoxQR = qrCode;
         // title
         label = GuiCreateTextLabel(parent, title);
         lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
-        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -366);
+        // align to qr code container
+        lv_obj_align_to(label, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
         g_qrHintBoxTitle = label;
         // text content
         label = GuiCreateIllustrateLabel(parent, content);
         lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
-        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -186);
         g_qrHintBoxSubTitle = label;
+        lv_obj_align_to(label, g_qrHintBoxTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+
         // url content
         label = GuiCreateIllustrateLabel(parent, url);
         lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
-        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -120);
+        lv_obj_align_to(label, g_qrHintBoxSubTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
         g_qrHintBoxSubTitle = label;
+
         button = GuiCreateTextBtn(parent, _("OK"));
         lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);

@@ -143,6 +143,7 @@ LV_IMG_DECLARE(imgWarningRed);
 LV_IMG_DECLARE(imgWarning);
 LV_IMG_DECLARE(imgTonPhrase);
 LV_IMG_DECLARE(imgBlueInformation);
+LV_IMG_DECLARE(imgInfoSmall);
 
 // emoji
 LV_IMG_DECLARE(emojiAlien);

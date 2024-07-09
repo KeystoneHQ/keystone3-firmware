@@ -8,6 +8,7 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_cardano::errors::CardanoError;
 use app_cardano::structs::{CardanoCertKey, CardanoUtxo, ParseContext};
+use app_cardano::governance;
 use core::str::FromStr;
 use cty::c_char;
 use third_party::hex;
@@ -17,19 +18,42 @@ use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 use third_party::ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 use third_party::ur_registry::cardano::cardano_signature::CardanoSignature;
 use third_party::ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
+use third_party::ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
+use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
 
-use crate::structs::{DisplayCardanoTx, DisplayCardanoSignData};
+use crate::structs::{DisplayCardanoTx, DisplayCardanoSignData, DisplayCardanoCatalyst};
 use common_rust_c::errors::{RustCError, R};
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
-use third_party::ur_registry::registry_types::{CARDANO_SIGNATURE, CARDANO_SIGN_DATA_SIGNATURE};
+use third_party::ur_registry::registry_types::{CARDANO_SIGNATURE, CARDANO_SIGN_DATA_SIGNATURE, CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE};
 
 pub mod address;
 pub mod structs;
+
+#[no_mangle]
+pub extern "C" fn cardano_check_catalyst(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+) -> PtrT<TransactionCheckResult> {
+    let cardano_catalyst_request = extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
+    let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
+    let ur_mfp = cardano_catalyst_request
+        .get_derivation_path()
+        .get_source_fingerprint()
+        .ok_or(RustCError::InvalidMasterFingerprint);
+
+    if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
+        if hex::encode(mfp) != hex::encode(ur_mfp.unwrap()) {
+            return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+        }
+    }
+
+    TransactionCheckResult::new().c_ptr()
+}
 
 #[no_mangle]
 pub extern "C" fn cardano_check_sign_data(
@@ -130,6 +154,20 @@ pub extern "C" fn cardano_parse_sign_data(ptr: PtrUR) -> PtrT<TransactionParseRe
 }
 
 #[no_mangle]
+pub extern "C" fn cardano_parse_catalyst(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+) -> PtrT<TransactionParseResult<DisplayCardanoCatalyst>> {
+    let cardano_catalyst_request = extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
+    let res = DisplayCardanoCatalyst {
+        data: convert_c_char(cardano_catalyst_request.get_origin().unwrap()),
+    }
+    .c_ptr();
+
+    TransactionParseResult::success(res).c_ptr()
+}
+
+#[no_mangle]
 pub extern "C" fn cardano_parse_tx(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
@@ -146,6 +184,47 @@ pub extern "C" fn cardano_parse_tx(
         },
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_sign_catalyst(
+    ptr: PtrUR,
+    entropy: PtrBytes,
+    entropy_len: u32,
+    passphrase: PtrString,
+) -> PtrT<UREncodeResult> {
+    let cardano_catalyst_request = extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
+    let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
+    let passphrase = recover_c_char(passphrase);
+    let result = governance::sign(
+        &cardano_catalyst_request.get_derivation_path().get_path().unwrap(),
+        cardano_catalyst_request.get_delegations(),
+        &cardano_catalyst_request.get_stake_pub(),
+        &cardano_catalyst_request.get_payment_address(),
+        cardano_catalyst_request.get_nonce(),
+        cardano_catalyst_request.get_voting_purpose(),
+        entropy,
+        passphrase.as_bytes(),
+    )
+    .map(|v| CardanoCatalystSignature::new(cardano_catalyst_request.get_request_id(), v.get_signature()).try_into())
+    .map_or_else(
+        |e| UREncodeResult::from(e).c_ptr(),
+        |v| {
+            v.map_or_else(
+                |e| UREncodeResult::from(e).c_ptr(),
+                |data| {
+                    UREncodeResult::encode(
+                        data,
+                        CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE.get_type(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    )
+                    .c_ptr()
+                },
+            )
+        },
+    );
+
+    return result;
 }
 
 #[no_mangle]

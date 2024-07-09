@@ -48,6 +48,13 @@ void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResul
         result = NULL;                                                                                          \
     }
 
+#define CHECK_FREE_PARSE_CATALYST_RESULT(result)                                                               \
+    if (result != NULL)                                                                                         \
+    {                                                                                                           \
+        free_TransactionParseResult_DisplayCardanoCatalyst((PtrT_TransactionParseResult_DisplayCardanoCatalyst)result);     \
+        result = NULL;                                                                                          \
+    }
+
 void *GuiGetAdaData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
@@ -67,6 +74,27 @@ void *GuiGetAdaData(void)
     } while (0);
     free_simple_response_c_char(path);
     return g_parseResult;
+}
+
+void *GuiGetAdaCatalyst(void)
+{
+    CHECK_FREE_PARSE_CATALYST_RESULT(g_parseResult);
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    do {
+        TransactionParseResult_DisplayCardanoCatalyst *parseResult = cardano_parse_catalyst(data, mfp);
+        CHECK_CHAIN_BREAK(parseResult);
+        g_parseResult = (void *)parseResult;
+    } while (0);
+    return g_parseResult;
+}
+
+void FreeAdaCatalystMemory(void)
+{
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
+    CHECK_FREE_PARSE_CATALYST_RESULT(g_parseResult);
 }
 
 void *GuiGetAdaSignDataData(void)
@@ -122,6 +150,15 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     xpub = GetCurrentAccountPublicKey(xpubIndex);
     PtrT_TransactionCheckResult result = cardano_check_tx(data, mfp, xpub);
     free_simple_response_c_char(path);
+    return result;
+}
+
+PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
+{
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    PtrT_TransactionCheckResult result = cardano_check_catalyst(data, mfp);
     return result;
 }
 
@@ -343,6 +380,27 @@ void *GetAdaWithdrawalsData(uint8_t *row, uint8_t *col, void *param)
         }
     }
     return (void *)indata;
+}
+
+UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t entropy[64];
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        encodeResult = cardano_sign_catalyst(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
 }
 
 UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void)

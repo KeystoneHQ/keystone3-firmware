@@ -23,6 +23,11 @@ pub struct DisplayCardanoSignData {
 }
 
 #[repr(C)]
+pub struct DisplayCardanoCatalyst {
+    pub data: PtrString,
+}
+
+#[repr(C)]
 pub struct DisplayCardanoTx {
     pub from: PtrT<VecFFI<DisplayCardanoFrom>>,
     pub to: PtrT<VecFFI<DisplayCardanoTo>>,
@@ -68,12 +73,20 @@ pub struct DisplayCardanoWithdrawal {
 
 impl_c_ptrs!(DisplayCardanoTx);
 
+impl_c_ptrs!(DisplayCardanoCatalyst);
+
 impl_c_ptrs!(DisplayCardanoSignData);
 
 impl Free for DisplayCardanoSignData {
     fn free(&self) {
         free_str_ptr!(self.payload);
         free_str_ptr!(self.derivation_path);
+    }
+}
+
+impl Free for DisplayCardanoCatalyst {
+    fn free(&self) {
+        free_str_ptr!(self.data);
     }
 }
 
@@ -243,4 +256,5 @@ impl Free for DisplayCardanoWithdrawal {
 }
 
 make_free_method!(TransactionParseResult<DisplayCardanoTx>);
+make_free_method!(TransactionParseResult<DisplayCardanoCatalyst>);
 make_free_method!(TransactionParseResult<DisplayCardanoSignData>);

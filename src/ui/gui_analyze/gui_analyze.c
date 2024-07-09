@@ -189,6 +189,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         FreeAdaSignDataMemory,
     },
     {
+        REMAPVIEW_ADA_CATALYST,
+#ifndef COMPILE_SIMULATOR
+        "{}",
+#else
+        PC_SIMULATOR_PATH "/page_ada_catalyst.json",
+#endif
+        GuiGetAdaCatalyst,
+        NULL,
+        FreeAdaCatalystMemory,
+    },
+    {
         REMAPVIEW_XRP,
 #ifndef COMPILE_SIMULATOR
         "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Transaction Raw Data\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetXrpDetail\",\"text_len_func\":\"GetXrpDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
@@ -331,6 +342,7 @@ GetContSizeFunc GuiTemplateSizeFuncGet(char *type)
         return GetCosmosContainerSize(type);
     case REMAPVIEW_ADA:
     case REMAPVIEW_ADA_SIGN_DATA:
+    case REMAPVIEW_ADA_CATALYST:
         return GetAdaContainerSize(type);
 #endif
     default:
@@ -789,6 +801,7 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
         return GuiAptosTextLenFuncGet(type);
     case REMAPVIEW_ADA:
     case REMAPVIEW_ADA_SIGN_DATA:
+    case REMAPVIEW_ADA_CATALYST:
         return GuiAdaTextLenFuncGet(type);
     case REMAPVIEW_XRP:
         return GuiXrpTextLenFuncGet(type);
@@ -828,6 +841,7 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
         return GuiAptosTextFuncGet(type);
     case REMAPVIEW_ADA:
     case REMAPVIEW_ADA_SIGN_DATA:
+    case REMAPVIEW_ADA_CATALYST:
         return GuiAdaTextFuncGet(type);
     case REMAPVIEW_XRP:
         return GuiXrpTextFuncGet(type);
@@ -852,6 +866,7 @@ GetTableDataFunc GuiTemplateTableFuncGet(char *type)
         return GuiEthTableFuncGet(type);
     case REMAPVIEW_ADA:
     case REMAPVIEW_ADA_SIGN_DATA:
+    case REMAPVIEW_ADA_CATALYST:
         return GuiAdaTabelFuncGet(type);
 #endif
     default:
@@ -1574,6 +1589,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_ADA;
     case CardanoSignData:
         return REMAPVIEW_ADA_SIGN_DATA;
+    case CardanoCatalystVotingRegistration:
+        return REMAPVIEW_ADA_CATALYST;
     case XRPTx:
         return REMAPVIEW_XRP;
     case ArweaveTx:

@@ -8,12 +8,12 @@ use app_solana::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
 use app_solana::structs::SolanaMessage;
 use third_party::itertools::Itertools;
 
-use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, impl_c_ptrs, make_free_method};
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
 use common_rust_c::structs::TransactionParseResult;
 use common_rust_c::types::{PtrString, PtrT};
 use common_rust_c::utils::convert_c_char;
+use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, impl_c_ptrs, make_free_method};
 
 #[repr(C)]
 pub struct DisplaySolanaTx {

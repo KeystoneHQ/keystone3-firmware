@@ -13,11 +13,18 @@
 #include "user_memory.h"
 #include "gui_qr_hintbox.h"
 static uint8_t GetSolPublickeyIndex(char* rootPath);
-
+typedef struct {
+    const char* address;
+} SolanaAddressLearnMoreData;
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
+
+#define MAX_ACCOUNTS 252
+
+static SolanaAddressLearnMoreData* g_account_data[MAX_ACCOUNTS];
+int g_account_count = 0;
 static ViewType g_viewType = ViewTypeUnKnown;
 #define CHECK_FREE_PARSE_SOL_RESULT(result)                                                                                       \
     if (result != NULL)                                                                                                           \
@@ -32,7 +39,7 @@ static ViewType g_viewType = ViewTypeUnKnown;
             break;                                                                                                                \
         default:                                                                                                                  \
             break;                                                                                                                \
-        }                                                                                                                         \
+        }                                                                                                                       \
         result = NULL;                                                                                                            \
     }
 
@@ -103,6 +110,15 @@ void FreeSolMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
+    // free account data
+    for (int i = 0; i < g_account_count; i++) {
+        if (g_account_data[i] != NULL) {
+            free(g_account_data[i]->address);
+            free(g_account_data[i]);
+        }
+    }
+    *g_account_data = NULL;
+    g_account_count = 0;
 }
 
 void GetSolMessageType(void *indata, void *param, uint32_t maxLen)
@@ -417,9 +433,7 @@ static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
     lv_obj_set_height(container, height);
 }
 
-typedef struct {
-    const char* address;
-} SolanaAddressLearnMoreData;
+
 
 void SolanaAddressLearnMore(lv_event_t *e)
 {
@@ -548,6 +562,7 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
                 lv_obj_set_style_pad_right(info_icon, 0, LV_PART_MAIN);
                 // add account click event
                 lv_obj_add_flag(info_icon, LV_OBJ_FLAG_CLICKABLE);
+                // remember free the data
                 SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)malloc(sizeof(SolanaAddressLearnMoreData));
                 if (data != NULL) {
                     const char* address = accounts->data[j] + 6; // remove "Table:" prefix
@@ -556,6 +571,11 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
                     strcpy(data->address, address);
                     lv_obj_set_user_data(info_icon, data);
                     SolanaAddressLearnMoreData* retrieved_data = (SolanaAddressLearnMoreData*)lv_obj_get_user_data(info_icon);
+
+                    if (g_account_count < MAX_ACCOUNTS) {
+                        g_account_data[g_account_count] = data;
+                        g_account_count++;
+                    }
                 }
                 lv_obj_add_event_cb(info_icon, SolanaAddressLearnMore, LV_EVENT_CLICKED, NULL);
             } else {
@@ -610,7 +630,6 @@ void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
-
     DisplaySolanaTx *txData = (DisplaySolanaTx*)totalData;
     PtrT_DisplaySolanaTxOverview overviewData = txData->overview;
     if (0 == strcmp(overviewData->display_type, "Transfer")) {

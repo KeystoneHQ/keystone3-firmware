@@ -9,7 +9,7 @@ lv_obj_t *CreateTransactionContentContainer(lv_obj_t *parent, uint16_t w, uint16
     return container;
 }
 
-lv_obj_t *CreateTransactionItemView(lv_obj_t *parent, char* title, char* value, lv_obj_t *lastView)
+lv_obj_t *CreateTransactionItemViewWithHint(lv_obj_t *parent, char* title, char* value, lv_obj_t *lastView, char* hint)
 {
     //basic style:
     // ______________________________
@@ -28,7 +28,8 @@ lv_obj_t *CreateTransactionItemView(lv_obj_t *parent, char* title, char* value, 
     // ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
 
     //62 is the basic height = 16 + 30 + 16
-    lv_obj_t *container = CreateTransactionContentContainer(parent, 408, 62);
+    uint16_t height = 62;
+    lv_obj_t *container = CreateTransactionContentContainer(parent, 408, height);
     if (lastView != NULL) {
         lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
@@ -47,9 +48,6 @@ lv_obj_t *CreateTransactionItemView(lv_obj_t *parent, char* title, char* value, 
     uint16_t valueHeight = lv_obj_get_height(valueLabel);
 
     uint16_t totalWidth = 24+titleWidth+16+valueWidth+24;
-    printf("valueWidth: %d\n", valueWidth);
-    printf("valueHeight: %d\n", valueHeight);
-    printf("totalWidth: %d\n", totalWidth);
     bool overflow = totalWidth > 408 || valueHeight > 30;
     if(!overflow) {
         lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
@@ -60,11 +58,29 @@ lv_obj_t *CreateTransactionItemView(lv_obj_t *parent, char* title, char* value, 
         lv_label_set_long_mode(valueLabel, LV_LABEL_LONG_WRAP);
         lv_obj_update_layout(valueLabel);
 
-        uint16_t height = lv_obj_get_height(valueLabel);
+        height += lv_obj_get_height(valueLabel);
 
-        lv_obj_set_height(container, height + 62);
-        lv_obj_update_layout(container);
+        lv_obj_set_height(container, height);
     }
 
+    if (hint != NULL) {
+        lv_obj_t *hintLabel = GuiCreateIllustrateLabel(container, hint);
+        lv_obj_align_to(hintLabel, valueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        height += 4;
+        lv_obj_set_width(hintLabel, 360);
+        lv_obj_set_style_text_color(hintLabel, ORANGE_COLOR, LV_PART_MAIN);
+        lv_label_set_long_mode(hintLabel, LV_LABEL_LONG_WRAP);
+        lv_obj_update_layout(hintLabel);
+
+        height += lv_obj_get_height(hintLabel);
+
+        lv_obj_set_height(container, height);
+    }
+    lv_obj_update_layout(container);
     return container;
+}
+
+lv_obj_t *CreateTransactionItemView(lv_obj_t *parent, char* title, char* value, lv_obj_t *lastView)
+{
+    return CreateTransactionItemViewWithHint(parent, title, value, lastView, NULL);
 }

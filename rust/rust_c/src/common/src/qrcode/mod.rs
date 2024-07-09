@@ -32,15 +32,15 @@ pub extern "C" fn infer_qrcode_type(qrcode: PtrString) -> QRProtocol {
 pub extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
     let value = recover_c_char(qr).to_lowercase();
     if value.starts_with("signmessage") {
-        let mut pieces = value.split_ascii_whitespace();
-        let _ = pieces.next(); //drop "signmessage"
-        let path = pieces.next();
-        let encode_and_message = pieces.next();
-        if let (Some(path), Some(encode_and_message)) = (path, encode_and_message) {
-            let mut pieces = encode_and_message.split(":");
+        let mut headers_and_message = value.split(":");
+        let headers = headers_and_message.next();
+        let message = headers_and_message.next();
+        if let (Some(headers), Some(message)) = (headers, message) {
+            let mut pieces = headers.split_ascii_whitespace();
+            let _ = pieces.next(); //drop "signmessage"
+            let path = pieces.next();
             let encode = pieces.next();
-            let message = pieces.next();
-            if let (Some(encode), Some(message)) = (encode, message) {
+            if let (Some(encode), Some(path)) = (encode, path) {
                 match encode {
                     "ascii" => {
                         let data = SeedSignerMessage::new(

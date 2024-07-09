@@ -213,13 +213,11 @@ void *GuiGetArData(void)
         } else if (g_requestType == ArweaveRequestTypeDataItem) {
             bool isAoTransfer = ar_is_ao_transfer(data);
             g_isAoTransfer = isAoTransfer;
-            if (g_isAoTransfer)
-            {
+            if (g_isAoTransfer) {
                 PtrT_TransactionParseResult_DisplayArweaveAOTransfer parseResult = ar_parse_ao_transfer(data);
                 CHECK_CHAIN_BREAK(parseResult);
                 g_parseResult = (void *)parseResult;
-            }
-            else {
+            } else {
                 PtrT_TransactionParseResult_DisplayArweaveDataItem parseResult = ar_parse_data_item(data);
                 CHECK_CHAIN_BREAK(parseResult);
                 g_parseResult = (void *)parseResult;
@@ -299,34 +297,35 @@ static void GuiArRenderAOTransferDetail(lv_obj_t *parent, DisplayArweaveAOTransf
 static void GuiArRenderDataItemOverview(lv_obj_t *parent, DisplayArweaveDataItem *txData);
 static void GuiArRenderDataItemDetail(lv_obj_t *parent, DisplayArweaveDataItem *txData);
 
-void GuiArDataItemOverview(lv_obj_t *parent, void *totalData) {
+void GuiArDataItemOverview(lv_obj_t *parent, void *totalData)
+{
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
-    if(g_isAoTransfer) {
+    if (g_isAoTransfer) {
         DisplayArweaveAOTransfer *txData = (DisplayArweaveAOTransfer *)totalData;
         GuiArRenderAOTransferOverview(parent, txData);
-    }
-    else {
+    } else {
         DisplayArweaveDataItem *txData = (DisplayArweaveDataItem *)totalData;
         GuiArRenderDataItemOverview(parent, txData);
     }
 }
-void GuiArDataItemDetail(lv_obj_t *parent, void *totalData) {
+void GuiArDataItemDetail(lv_obj_t *parent, void *totalData)
+{
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
-    if(g_isAoTransfer) {
+    if (g_isAoTransfer) {
         DisplayArweaveAOTransfer *txData = (DisplayArweaveAOTransfer *)totalData;
         GuiArRenderAOTransferDetail(parent, txData);
-    }
-    else {
+    } else {
         DisplayArweaveDataItem *txData = (DisplayArweaveDataItem *)totalData;
         GuiArRenderDataItemDetail(parent, txData);
     }
 }
 
-static void GuiArRenderAOTransferOverview(lv_obj_t *parent, DisplayArweaveAOTransfer *txData) {
+static void GuiArRenderAOTransferOverview(lv_obj_t *parent, DisplayArweaveAOTransfer *txData)
+{
     lv_obj_t *lastView = NULL;
     lastView = CreateTransactionItemView(parent, _("Action"), _("AO Transfer"), lastView);
     lastView = CreateTransactionItemView(parent, _("From"), txData->from, lastView);
@@ -335,30 +334,31 @@ static void GuiArRenderAOTransferOverview(lv_obj_t *parent, DisplayArweaveAOTran
     lastView = CreateTransactionItemView(parent, _("Token ID"), txData->token_id, lastView);
 }
 
-static void GuiArRenderAOTransferDetail(lv_obj_t *parent, DisplayArweaveAOTransfer *txData) {
+static void GuiArRenderAOTransferDetail(lv_obj_t *parent, DisplayArweaveAOTransfer *txData)
+{
     lv_obj_t *lastView = NULL;
-    for (size_t i = 0; i < txData->other_info->size; i++)
-    {
+    for (size_t i = 0; i < txData->other_info->size; i++) {
         lastView = CreateTransactionItemView(parent, txData->other_info->data[i].name, txData->other_info->data[i].value, lastView);
     }
 }
 
-static void GuiArRenderDataItemOverview(lv_obj_t *parent, DisplayArweaveDataItem *txData) {
+static void GuiArRenderDataItemOverview(lv_obj_t *parent, DisplayArweaveDataItem *txData)
+{
     lv_obj_t *lastView = NULL;
     lastView = CreateTransactionItemView(parent, _("Action"), _("Sign DataItem"), lastView);
     lastView = CreateTransactionItemView(parent, _("Owner"), txData->owner, lastView);
-    if(txData->target != NULL) {
+    if (txData->target != NULL) {
         lastView = CreateTransactionItemView(parent, _("Target"), txData->target, lastView);
     }
-    if(txData->anchor != NULL) {
+    if (txData->anchor != NULL) {
         lastView = CreateTransactionItemView(parent, _("Anchor"), txData->anchor, lastView);
     }
     lastView = CreateTransactionItemView(parent, _("Data"), txData->data, lastView);
 }
-static void GuiArRenderDataItemDetail(lv_obj_t *parent, DisplayArweaveDataItem *txData) {
+static void GuiArRenderDataItemDetail(lv_obj_t *parent, DisplayArweaveDataItem *txData)
+{
     lv_obj_t *lastView = NULL;
-    for (size_t i = 0; i < txData->tags->size; i++)
-    {
+    for (size_t i = 0; i < txData->tags->size; i++) {
         lastView = CreateTransactionItemView(parent, txData->tags->data[i].name, txData->tags->data[i].value, lastView);
     }
 }

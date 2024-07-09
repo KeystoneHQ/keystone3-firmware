@@ -70,7 +70,7 @@ void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *
         lv_obj_t *scrollable = lv_obj_create(parent);
         lv_obj_set_size(scrollable, 408, 220);
         lv_obj_set_style_bg_color(scrollable, DARK_BG_COLOR,
-                              LV_PART_MAIN | LV_STATE_DEFAULT);
+                                  LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_scrollbar_mode(scrollable, LV_SCROLLBAR_MODE_OFF);
         lv_obj_align_to(scrollable, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
         lv_obj_set_style_border_width(scrollable, 0, LV_PART_MAIN | LV_STATE_DEFAULT);

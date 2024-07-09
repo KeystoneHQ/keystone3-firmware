@@ -210,8 +210,7 @@ UREncodeResult *GuiGetSignQrCodeData(void)
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = btc_sign_msg(data, seed, len, mfp, sizeof(mfp));
-    }
-    else if (urType == SeedSignerMessage) {
+    } else if (urType == SeedSignerMessage) {
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
@@ -399,8 +398,7 @@ void *GuiGetParsedQrData(void)
             g_parseMsgResult = btc_parse_msg(crypto, public_keys, mfp, sizeof(mfp));
             CHECK_CHAIN_RETURN(g_parseMsgResult);
             return g_parseMsgResult;
-        }
-        else if (urType == SeedSignerMessage) {
+        } else if (urType == SeedSignerMessage) {
             g_parseMsgResult = parse_seed_signer_message(crypto, public_keys);
             CHECK_CHAIN_RETURN(g_parseMsgResult);
             return g_parseMsgResult;
@@ -1299,14 +1297,15 @@ void GuiBtcTxDetail(lv_obj_t *parent, void *totalData)
     CreateDetailToView(parent, detailData, lastView);
 }
 
-void GuiBtcMsg(lv_obj_t *parent, void *totalData) {
+void GuiBtcMsg(lv_obj_t *parent, void *totalData)
+{
     DisplayBtcMsg *msgData = (DisplayBtcMsg *)totalData;
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t *lastView = NULL;
-    if(msgData->address != NULL) {
+    if (msgData->address != NULL) {
         lastView = CreateTransactionItemViewWithHint(parent, _("Address"), msgData->address, lastView, _("sign_message_check_address"));
     }
     lastView = CreateTransactionItemView(parent, _("Message"), msgData->detail, lastView);

@@ -47,12 +47,11 @@ lv_obj_t *CreateTransactionItemViewWithHint(lv_obj_t *parent, char* title, char*
     uint16_t valueWidth = lv_obj_get_width(valueLabel);
     uint16_t valueHeight = lv_obj_get_height(valueLabel);
 
-    uint16_t totalWidth = 24+titleWidth+16+valueWidth+24;
+    uint16_t totalWidth = 24 + titleWidth + 16 + valueWidth + 24;
     bool overflow = totalWidth > 408 || valueHeight > 30;
-    if(!overflow) {
+    if (!overflow) {
         lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
-    }
-    else {
+    } else {
         lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
         lv_obj_set_width(valueLabel, 360);
         lv_label_set_long_mode(valueLabel, LV_LABEL_LONG_WRAP);

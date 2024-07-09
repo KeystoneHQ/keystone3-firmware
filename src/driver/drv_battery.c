@@ -209,7 +209,7 @@ uint32_t GetRtcBatteryMilliVolt(void)
 }
 
 
-static int CalculateWeightedAverage(const int *array, int startIndex) 
+static int CalculateWeightedAverage(const int *array, int startIndex)
 {
     int sum = 0;
     int weightSum = 0;
@@ -226,7 +226,7 @@ static int CalculateWeightedAverage(const int *array, int startIndex)
     return sum / weightSum;
 }
 
-static void UpdateVoltageCache(int *array, int *writeIndex, int newVoltage) 
+static void UpdateVoltageCache(int *array, int *writeIndex, int newVoltage)
 {
     array[*writeIndex] = newVoltage;
     *writeIndex = (*writeIndex - 1 + BATTERY_ARRAY_LEN) % BATTERY_ARRAY_LEN;

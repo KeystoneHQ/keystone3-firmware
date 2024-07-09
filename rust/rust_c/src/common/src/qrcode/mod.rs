@@ -30,8 +30,8 @@ pub extern "C" fn infer_qrcode_type(qrcode: PtrString) -> QRProtocol {
 
 #[no_mangle]
 pub extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
-    let value = recover_c_char(qr).to_lowercase();
-    if value.starts_with("signmessage") {
+    let value = recover_c_char(qr);
+    if value.to_lowercase().starts_with("signmessage") {
         let mut headers_and_message = value.split(":");
         let headers = headers_and_message.next();
         let message = headers_and_message.next();

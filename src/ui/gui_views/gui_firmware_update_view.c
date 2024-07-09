@@ -49,6 +49,7 @@ int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *pa
                 return SUCCESS_CODE;
             }
         }
+        printf("%s %d.\n", __func__, __LINE__);
         GuiFirmwareSdCardCopy();
         break;
     case SIG_FIRMWARE_VERIFY_PASSWORD_FAIL:

@@ -272,7 +272,7 @@ void GuiStatusBarSetSdCard(bool connected, bool onlyImg)
                 if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
                     GuiCreateSdCardUpdateHintbox(false);
                 } else if (FatfsFileExist(SD_CARD_BOOT_SIG_PATH)) {
-                    
+                    GuiCreateBootUpdateHintbox();
                 }
             }
         }

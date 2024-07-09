@@ -1198,6 +1198,11 @@ static void ModelVerifyPassSuccess(uint16_t *param)
         GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY, param, sizeof(*param));
         ModelCopySdCardOta(NULL, 0);
         break;
+    case SIG_INIT_SD_CARD_BOOT_COPY:
+        GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
+        GuiApiEmitSignal(SIG_INIT_SD_CARD_BOOT_COPY, param, sizeof(*param));
+        ModelCopySdCardBoot(NULL, 0);
+        break;
     case SIG_SETTING_WRITE_PASSPHRASE:
         GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_VERIFY_PASS, param, sizeof(*param));
         SetPageLockScreen(false);

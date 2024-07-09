@@ -1,8 +1,8 @@
 use alloc::boxed::Box;
 use alloc::vec::Vec;
 use app_cardano::structs::{
-    CardanoCertificate, CardanoFrom, CardanoTo,
-    CardanoWithdrawal, ParsedCardanoTx, ParsedCardanoSignData,
+    CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignData,
+    ParsedCardanoTx,
 };
 use core::ptr::null_mut;
 use third_party::itertools::Itertools;
@@ -62,7 +62,7 @@ pub struct DisplayCardanoCertificate {
     variant1: PtrString,
     variant2: PtrString,
     variant1_label: PtrString,
-    variant2_label: PtrString
+    variant2_label: PtrString,
 }
 
 #[repr(C)]

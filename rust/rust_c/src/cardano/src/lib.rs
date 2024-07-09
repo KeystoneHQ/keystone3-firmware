@@ -2,34 +2,36 @@
 
 extern crate alloc;
 
-use alloc::{format, slice};
 use alloc::string::{String, ToString};
+use alloc::{format, slice};
 
 use alloc::vec::Vec;
 use app_cardano::errors::CardanoError;
-use app_cardano::structs::{CardanoCertKey, CardanoUtxo, ParseContext};
 use app_cardano::governance;
+use app_cardano::structs::{CardanoCertKey, CardanoUtxo, ParseContext};
 use core::str::FromStr;
 use cty::c_char;
-use third_party::hex;
 use third_party::bitcoin::bip32::DerivationPath;
+use third_party::hex;
 
-use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
-use third_party::ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
-use third_party::ur_registry::cardano::cardano_signature::CardanoSignature;
-use third_party::ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
 use third_party::ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
 use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
+use third_party::ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
+use third_party::ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
+use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+use third_party::ur_registry::cardano::cardano_signature::CardanoSignature;
 use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
 
-use crate::structs::{DisplayCardanoTx, DisplayCardanoSignData, DisplayCardanoCatalyst};
+use crate::structs::{DisplayCardanoCatalyst, DisplayCardanoSignData, DisplayCardanoTx};
 use common_rust_c::errors::{RustCError, R};
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
-use third_party::ur_registry::registry_types::{CARDANO_SIGNATURE, CARDANO_SIGN_DATA_SIGNATURE, CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE};
+use third_party::ur_registry::registry_types::{
+    CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE, CARDANO_SIGNATURE, CARDANO_SIGN_DATA_SIGNATURE,
+};
 
 pub mod address;
 pub mod structs;
@@ -39,7 +41,8 @@ pub extern "C" fn cardano_check_catalyst(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
 ) -> PtrT<TransactionCheckResult> {
-    let cardano_catalyst_request = extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
+    let cardano_catalyst_request =
+        extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
     let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
     let ur_mfp = cardano_catalyst_request
         .get_derivation_path()
@@ -142,10 +145,15 @@ fn parse_cardano_root_path(path: String) -> Option<String> {
 }
 
 #[no_mangle]
-pub extern "C" fn cardano_parse_sign_data(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayCardanoSignData>> {
+pub extern "C" fn cardano_parse_sign_data(
+    ptr: PtrUR,
+) -> PtrT<TransactionParseResult<DisplayCardanoSignData>> {
     let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
     let sign_data = cardano_sign_data_reqeust.get_sign_data();
-    let derviation_path = cardano_sign_data_reqeust.get_derivation_path().get_path().unwrap();
+    let derviation_path = cardano_sign_data_reqeust
+        .get_derivation_path()
+        .get_path()
+        .unwrap();
     let parsed_data = app_cardano::transaction::parse_sign_data(sign_data, derviation_path);
     match parsed_data {
         Ok(v) => TransactionParseResult::success(DisplayCardanoSignData::from(v).c_ptr()).c_ptr(),
@@ -158,7 +166,8 @@ pub extern "C" fn cardano_parse_catalyst(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
 ) -> PtrT<TransactionParseResult<DisplayCardanoCatalyst>> {
-    let cardano_catalyst_request = extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
+    let cardano_catalyst_request =
+        extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
     let res = DisplayCardanoCatalyst {
         data: convert_c_char(cardano_catalyst_request.get_origin().unwrap()),
     }
@@ -193,11 +202,15 @@ pub extern "C" fn cardano_sign_catalyst(
     entropy_len: u32,
     passphrase: PtrString,
 ) -> PtrT<UREncodeResult> {
-    let cardano_catalyst_request = extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
+    let cardano_catalyst_request =
+        extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
     let result = governance::sign(
-        &cardano_catalyst_request.get_derivation_path().get_path().unwrap(),
+        &cardano_catalyst_request
+            .get_derivation_path()
+            .get_path()
+            .unwrap(),
         cardano_catalyst_request.get_delegations(),
         &cardano_catalyst_request.get_stake_pub(),
         &cardano_catalyst_request.get_payment_address(),
@@ -206,7 +219,10 @@ pub extern "C" fn cardano_sign_catalyst(
         entropy,
         passphrase.as_bytes(),
     )
-    .map(|v| CardanoCatalystSignature::new(cardano_catalyst_request.get_request_id(), v.get_signature()).try_into())
+    .map(|v| {
+        CardanoCatalystSignature::new(cardano_catalyst_request.get_request_id(), v.get_signature())
+            .try_into()
+    })
     .map_or_else(
         |e| UREncodeResult::from(e).c_ptr(),
         |v| {
@@ -240,17 +256,22 @@ pub extern "C" fn cardano_sign_sign_data(
     let sign_data = cardano_sign_data_reqeust.get_sign_data();
 
     let result = app_cardano::transaction::sign_data(
-        &cardano_sign_data_reqeust.get_derivation_path().get_path().unwrap(),
+        &cardano_sign_data_reqeust
+            .get_derivation_path()
+            .get_path()
+            .unwrap(),
         hex::encode(sign_data).as_str(),
         entropy,
         passphrase.as_bytes(),
     )
-    .map(|v| CardanoSignDataSignature::new(
-        cardano_sign_data_reqeust.get_request_id(),
-        v.get_signature(),
-        v.get_pub_key(),
-    )
-    .try_into())
+    .map(|v| {
+        CardanoSignDataSignature::new(
+            cardano_sign_data_reqeust.get_request_id(),
+            v.get_signature(),
+            v.get_pub_key(),
+        )
+        .try_into()
+    })
     .map_or_else(
         |e| UREncodeResult::from(e).c_ptr(),
         |v| {

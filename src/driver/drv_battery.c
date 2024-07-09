@@ -270,7 +270,7 @@ bool BatteryIntervalHandler(void)
         //The battery percentage only decreases when discharging.
         //The battery percentage decrease by 1% each time.
         if (percent + 10 < g_batterPercent) {
-            g_batterPercent -= 2;
+            g_batterPercent--;
         }
         g_batterPercent--;
         change = true;
@@ -285,7 +285,7 @@ bool BatteryIntervalHandler(void)
         // delayIncreate == 4 * 80 320s
         if (percent > g_batterPercent || delayIncreate == 1) {
             if (percent > g_batterPercent + 10) {
-                g_batterPercent += 2;
+                g_batterPercent++;
             }
             g_batterPercent++;
             if (g_batterPercent >= 100) {

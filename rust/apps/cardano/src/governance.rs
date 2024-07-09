@@ -1,9 +1,7 @@
 use crate::errors::{CardanoError, R};
-use crate::structs::{CIP36VoteKeyDerivationPath, SignVotingRegistrationResult};
-use alloc::collections::BTreeMap;
+use crate::structs::SignVotingRegistrationResult;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use alloc::{format, vec};
 use third_party::cryptoxide::hashing::blake2b_256;
 use third_party::ed25519_bip32_core::XPub;
 use third_party::hex;
@@ -116,6 +114,7 @@ pub fn sign_voting_registration(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use third_party::ur_registry::crypto_key_path::PathComponent;
 
     #[test]
     fn test_sign_voting_registration() {

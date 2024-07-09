@@ -14,6 +14,8 @@ use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 #[cfg(feature = "multi-coins")]
+use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
+#[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cosmos::evm_sign_request::EvmSignRequest;
@@ -241,6 +243,13 @@ impl InferViewType for CardanoSignRequest {
 impl InferViewType for CardanoSignDataRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoSignData)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for CardanoCatalystVotingRegistrationRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::CardanoCatalystVotingRegistration)
     }
 }
 

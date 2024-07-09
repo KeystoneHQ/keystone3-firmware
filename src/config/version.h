@@ -3,6 +3,7 @@
 #define _VERSION_H
 
 #define SD_CARD_OTA_BIN_PATH                "0:/keystone3.bin"
+#define SD_CARD_BOOT_SIG_PATH               "0:/boot.sig"
 
 #define SOFTWARE_VERSION_MAX_LEN            (32)
 #define SOFTWARE_VERSION_MAJOR              1

@@ -89,6 +89,7 @@ void GuiModelStopCalculateCheckSum(void);
 void GuiModelSettingWritePassphrase(void);
 void GuiModelCalculateBinSha256(void);
 void GuiModelFormatMicroSd(void);
+void GuiModelCopySdCardBootSig(void);
 
 #ifndef BTC_ONLY
 void GuiModelTonWriteSe(void);

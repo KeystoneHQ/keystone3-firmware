@@ -71,23 +71,7 @@ uint8_t *GetDeviceParserPubKey(uint8_t *webPub, uint16_t len)
     memcpy_s(g_dataParserPubKey, sizeof(g_dataParserPubKey) + 1, webPubKey, PUB_KEY_SIZE);
     memcpy_s(g_dataSharedKey, sizeof(g_dataSharedKey), aboutShareKey, 32);
     #endif
-    printf("share key:\n");
-    for (int i = 0; i < 32; i++) {
-        printf("%d ", g_dataSharedKey[i]);
-    }
-    printf("\n");
-    printf("g_dataParserPubKey:\n");
-    for (int i = 0; i < sizeof(g_dataParserPubKey); i++) {
-        printf("%d ", g_dataParserPubKey[i]);
-    }
-    printf("\n");
     memset_s(privKey, sizeof(privKey), 0, sizeof(privKey));
-    // for (int i = 0; i < sizeof(g_dataSharedKey); i++) {
-    //     g_dataSharedKey[i] = i + 1;
-    // }
-    // for (int i = 0; i < sizeof(g_dataParserIv); i++) {
-    //     g_dataParserIv[i] = 2 * i;
-    // }
     return g_dataParserPubKey;
 }
 

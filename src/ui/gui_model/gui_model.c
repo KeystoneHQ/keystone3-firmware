@@ -1286,9 +1286,12 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
     ReturnVoidPointerFunc func = (ReturnVoidPointerFunc)parseTransactionFunc;
     // There is no need to release here, the parsing results will be released when exiting the details page.
     TransactionParseResult_DisplayTx *parsedResult = (TransactionParseResult_DisplayTx *)func();
+    printf("%s %d...\n", __func__, __LINE__);
     if (parsedResult != NULL && parsedResult->error_code == 0 && parsedResult->data != NULL) {
+    printf("%s %d...\n", __func__, __LINE__);
         GuiApiEmitSignal(SIG_TRANSACTION_PARSE_SUCCESS, parsedResult, sizeof(parsedResult));
     } else {
+    printf("%s %d...\n", __func__, __LINE__);
         GuiApiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
     }
     GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);

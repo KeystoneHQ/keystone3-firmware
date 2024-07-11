@@ -532,7 +532,7 @@ void GetCatalystRewardsNotice(lv_obj_t *parent, void *totalData)
     lv_obj_t *notice = lv_label_create(parent);
     lv_obj_set_width(notice, 360);
     lv_label_set_long_mode(notice, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(notice, "Ensure the address matches. Please verify carefully.");
+    lv_label_set_text(notice, _("catalyst_transactions_notice"));
     lv_obj_set_style_text_font(notice, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(notice, ORANGE_COLOR, LV_PART_MAIN);
 }

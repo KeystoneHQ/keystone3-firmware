@@ -91,7 +91,6 @@ set(EXTERNAL_INCLUDE_PATH
     external/cjson
     external/quicklz
     external/sqlite3
-    external/ecdh
     external/circular_buffer
     external/cryptoauthlib/lib
     external/FreeRTOS
@@ -239,7 +238,6 @@ if(COMPILE_KEYSTONE)
         "external/cjson/*.c"
         "external/quicklz/*.c"
         "external/sqlite3/*.c"
-        "external/ecdh/*.c"
         "external/circular_buffer/*.c"
         ${ccan}
         ${cryptoauthlib}

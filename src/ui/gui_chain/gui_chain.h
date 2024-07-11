@@ -13,6 +13,8 @@
 #include "gui_ada.h"
 #include "gui_xrp.h"
 #include "gui_ar.h"
+#include "gui_stellar.h"
+#include "gui_ton.h"
 #endif
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
@@ -34,6 +36,7 @@ typedef enum {
     CHAIN_SUI,
     CHAIN_DASH,
     CHAIN_ARWEAVE,
+    CHAIN_STELLAR,
     CHAIN_COSMOS,
     CHAIN_TIA,
     CHAIN_DYM,
@@ -67,6 +70,7 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
+    CHAIN_TON,
 #endif
     CHAIN_BUTT,
 } GuiChainCoinType;
@@ -91,6 +95,11 @@ typedef enum {
     REMAPVIEW_XRP,
     REMAPVIEW_AR,
     REMAPVIEW_AR_MESSAGE,
+    REMAPVIEW_AR_DATAITEM,
+    REMAPVIEW_STELLAR,
+    REMAPVIEW_STELLAR_HASH,
+    REMAPVIEW_TON,
+    REMAPVIEW_TON_SIGNPROOF,
     REMAPVIEW_WEB_AUTH,
 #endif
     REMAPVIEW_BUTT,
@@ -138,5 +147,6 @@ GenerateUR GetUrGenerator(ViewType viewType);
 GenerateUR GetSingleUrGenerator(ViewType viewType);
 #ifndef BTC_ONLY
 bool IsMessageType(uint8_t type);
+bool isTonSignProof(uint8_t type);
 #endif
 #endif

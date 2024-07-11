@@ -84,7 +84,7 @@ pub fn sign_msg(msg: &str, seed: &[u8], path: &String) -> Result<Vec<u8>> {
     RecoverableSignature::from_compact(&rs, rec_id)
         .map_err(|_| BitcoinError::SignFailure("failed to encode signature".to_string()))
         .map(|signature| {
-            sign_message::MessageSignature::new(signature, false)
+            sign_message::MessageSignature::new(signature, true)
                 .serialize()
                 .to_vec()
         })
@@ -560,6 +560,6 @@ mod test {
         let msg = "123";
 
         let sig = sign_msg(msg, &seed, &path).unwrap();
-        assert_eq!(third_party::base64::encode(&sig), "G8CDgK7sBj7o+OFZ+IVZyrKmcZuJn2/KFNHHv+kAxi+FWCUEYpZCyAGz0fj1OYwFM0E+q/TyQ2uZziqWI8k0eYE=");
+        assert_eq!(third_party::base64::encode(&sig), "H8CDgK7sBj7o+OFZ+IVZyrKmcZuJn2/KFNHHv+kAxi+FWCUEYpZCyAGz0fj1OYwFM0E+q/TyQ2uZziqWI8k0eYE=");
     }
 }

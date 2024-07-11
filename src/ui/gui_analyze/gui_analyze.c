@@ -56,7 +56,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_BTC_MESSAGE,
 #ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetBtcMsgDetail\",\"text_len_func\":\"GetBtcMsgDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
+        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiBtcMsg\"}]}",
 #else
         PC_SIMULATOR_PATH "/page_btc_msg.json",
 #endif
@@ -138,7 +138,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
 #ifndef COMPILE_SIMULATOR
         "{\"name\":\"sol_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxDetail\"}]}]}",
 #else
-        PC_SIMULATOR_PATH "/page_eth.json",
+        PC_SIMULATOR_PATH "/page_sol.json",
 #endif
         GuiGetSolData,
         NULL,
@@ -229,6 +229,61 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         PC_SIMULATOR_PATH "/page_ar_message.json",
 #endif
         GuiGetArData,
+        NULL,
+        FreeArMemory,
+    },
+    {
+        REMAPVIEW_STELLAR,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"custom_container\",\"size\":[408,212],\"pos\":[0,0],\"radius\":24,\"custom_show_func\":\"GuiStellarTxNotice\"},{\"type\":\"container\",\"size\":[408,310],\"pos\":[0,236],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"XDR\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetStellarRawMessage\",\"text_len_func\":\"GetStellarRawMessageLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_stellar.json",
+#endif
+        GuiGetStellarData,
+        NULL,
+        FreeStellarMemory,
+    },
+    {
+        REMAPVIEW_STELLAR_HASH,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"custom_container\",\"size\":[408,260],\"pos\":[0,0],\"radius\":24,\"custom_show_func\":\"GuiStellarHashNotice\"},{\"type\":\"container\",\"size\":[408,130],\"pos\":[0,284],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Hash\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetStellarRawMessage\",\"text_len_func\":\"GetStellarRawMessageLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_stellar_hash.json",
+#endif
+        GuiGetStellarData,
+        NULL,
+        FreeStellarMemory,
+    },
+    {
+        REMAPVIEW_AR_DATAITEM,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ar_data_item_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiArDataItemOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Additions\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiArDataItemDetail\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_ar_data_item.json",
+#endif
+        GuiGetArData,
+        NULL,
+        FreeArMemory,
+    },
+    {
+        REMAPVIEW_TON,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ton_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Raw Data\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxRawData\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_ton.json",
+#endif
+        GuiGetTonGUIData,
+        NULL,
+        FreeArMemory,
+    },
+    {
+        REMAPVIEW_TON_SIGNPROOF,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"btc_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonProofOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Raw Data\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonProofRawData\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_ton_proof.json",
+#endif
+        GuiGetTonProofGUIData,
         NULL,
         FreeArMemory,
     },
@@ -461,8 +516,6 @@ GetLabelDataFunc GuiBtcTextFuncGet(char *type)
         return GetPsbtDetailInputValue;
     } else if (!strcmp(type, "GetPsbtDetailFee")) {
         return GetPsbtDetailFee;
-    } else if (!strcmp(type, "GetBtcMsgDetail")) {
-        return GetBtcMsgDetail;
     }
     return NULL;
 }
@@ -571,10 +624,10 @@ GetTableDataFunc GuiBtcTableFuncGet(char *type)
     return NULL;
 }
 
-GetLabelDataLenFunc GuiBtcTextLenFuncGet(char *type)
+GetLabelDataLenFunc GuiStellarTextLenFuncGet(char *type)
 {
-    if (!strcmp(type, "GetBtcMsgDetailLen")) {
-        return GetBtcMsgDetailLen;
+    if (!strcmp(type, "GetStellarRawMessageLength")) {
+        return GetStellarRawMessageLength;
     }
     return NULL;
 }
@@ -737,6 +790,14 @@ GetLabelDataFunc GuiArTextFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiStellarTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetStellarRawMessage")) {
+        return GetStellarRawMessage;
+    }
+    return NULL;
+}
+
 GetLabelDataLenFunc GuiXrpTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetXrpDetailLen")) {
@@ -803,8 +864,6 @@ GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
 GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
 {
     switch (g_reMapIndex) {
-    case REMAPVIEW_BTC_MESSAGE:
-        return GuiBtcTextLenFuncGet(type);
 #ifndef BTC_ONLY
     case REMAPVIEW_SUI:
         return GuiSuiTextLenFuncGet(type);
@@ -821,6 +880,8 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
     case REMAPVIEW_AR:
     case REMAPVIEW_AR_MESSAGE:
         return GuiArTextLenFuncGet(type);
+    case REMAPVIEW_STELLAR:
+        return GuiStellarTextLenFuncGet(type);
 #endif
     default:
         return NULL;
@@ -859,6 +920,9 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
     case REMAPVIEW_AR:
     case REMAPVIEW_AR_MESSAGE:
         return GuiArTextFuncGet(type);
+    case REMAPVIEW_STELLAR:
+    case REMAPVIEW_STELLAR_HASH:
+        return GuiStellarTextFuncGet(type);
 #endif
     default:
         return NULL;
@@ -1215,7 +1279,25 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowArweaveTxDetail;
     } else if (!strcmp(funcName, "GetCatalystRewardsNotice")) {
         return GetCatalystRewardsNotice;
-    } 
+    } else if (!strcmp(funcName, "GuiStellarTxNotice")) {
+        return GuiStellarTxNotice;
+    } else if (!strcmp(funcName, "GuiStellarHashNotice")) {
+        return GuiStellarHashNotice;
+    } else if (!strcmp(funcName, "GuiTonTxOverview")) {
+        return GuiTonTxOverview;
+    } else if (!strcmp(funcName, "GuiTonTxRawData")) {
+        return GuiTonTxRawData;
+    } else if (!strcmp(funcName, "GuiTonProofOverview")) {
+        return GuiTonProofOverview;
+    } else if (!strcmp(funcName, "GuiTonProofRawData")) {
+        return GuiTonProofRawData;
+    } else if (!strcmp(funcName, "GuiArDataItemOverview")) {
+        return GuiArDataItemOverview;
+    } else if (!strcmp(funcName, "GuiArDataItemDetail")) {
+        return GuiArDataItemDetail;
+    } else if (!strcmp(funcName, "GuiBtcMsg")) {
+        return GuiBtcMsg;
+    }
 #endif
     return NULL;
 }
@@ -1610,6 +1692,16 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_AR;
     case ArweaveMessage:
         return REMAPVIEW_AR_MESSAGE;
+    case StellarTx:
+        return REMAPVIEW_STELLAR;
+    case StellarHash:
+        return REMAPVIEW_STELLAR_HASH;
+    case ArweaveDataItem:
+        return REMAPVIEW_AR_DATAITEM;
+    case TonTx:
+        return REMAPVIEW_TON;
+    case TonSignProof:
+        return REMAPVIEW_TON_SIGNPROOF;
 #endif
     default:
         return REMAPVIEW_BUTT;
@@ -1666,7 +1758,6 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
         lv_obj_set_style_text_opa(tab_btns, 255, LV_PART_MAIN | LV_STATE_CHECKED);
         lv_obj_set_style_text_opa(tab_btns, 150, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_width(tab_btns, width);
-
         int childCnt = lv_obj_get_child_cnt(g_analyzeTabview.obj[i]);
         int yOffset = 12;
         for (int j = 0; j < childCnt; j++) {

@@ -13,6 +13,7 @@
 #include "usb_task.h"
 #include "user_memory.h"
 #include "version.h"
+#include "gui_firmware_update_widgets.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "drv_usb.h"
@@ -67,7 +68,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_TRX, "", &coinTrx},       {CHAIN_LTC, "", &coinLtc},
     {CHAIN_BCH, "", &coinBch},       {CHAIN_APT, "", &coinApt},
     {CHAIN_SUI, "", &coinSui},       {CHAIN_DASH, "", &coinDash},
-    {CHAIN_ARWEAVE, "", &coinAr},
+    {CHAIN_ARWEAVE, "", &coinAr},    {CHAIN_STELLAR, "", &coinXlm},
     {CHAIN_COSMOS, "", &coinCosmos}, {CHAIN_TIA, "", &coinTia},
     {CHAIN_DYM, "", &coinDym},       {CHAIN_OSMO, "", &coinOsmo},
     {CHAIN_INJ, "", &coinInj},       {CHAIN_ATOM, "", &coinAtom},
@@ -84,7 +85,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_GRAV, "", &coinGrav},     {CHAIN_IXO, "", &coinIxo},
     {CHAIN_NGM, "", &coinNgm},       {CHAIN_IOV, "", &coinIov},
     {CHAIN_UMEE, "", &coinUmee},     {CHAIN_QCK, "", &coinQck},
-    {CHAIN_TGD, "", &coinTgd},
+    {CHAIN_TGD, "", &coinTgd},       {CHAIN_TON, "", &coinTon},
 #endif
 };
 
@@ -98,6 +99,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
+    {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
     {WALLET_LIST_RABBY, "Rabby", &walletRabby},
     {WALLET_LIST_SAFE, "Safe", &walletSafe},
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
@@ -109,9 +111,11 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
     {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
     {WALLET_LIST_ARCONNECT, "ArConnect", &walletArConnect},
+    {WALLET_LIST_XBULL, "xBull", &walletXBull},
     {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
     {WALLET_LIST_PETRA, "Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
+    {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},

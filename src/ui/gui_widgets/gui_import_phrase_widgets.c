@@ -36,6 +36,7 @@ static lv_obj_t *g_importPhraseKbCont = NULL;
 static uint8_t g_inputWordsCnt = 0;
 static lv_obj_t *g_buttonCont = NULL;
 static PageWidget_t *g_pageWidget;
+static lv_obj_t *g_noticeWindow = NULL;
 
 void GuiImportPhraseWriteSe(bool en, int32_t errCode)
 {
@@ -57,6 +58,32 @@ static void ResetClearImportHandler(lv_event_t * e)
 static void ImportPhraseWordsHandler(lv_event_t* e)
 {
     ImportSinglePhraseWords(g_importMkb, g_importPhraseKb);
+}
+
+static void GuiImportTonMnemonicHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_noticeWindow)
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+    TonData_t ton = {
+        .forget = false
+    };
+
+    GuiUpdateTonWriteSeWidget(g_importSinglePhraseTileView.writeSe);
+    GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+    GuiModelTonCalWriteSe(ton);
+}
+
+void GuiShowTonMnemonicHint()
+{
+    GUI_DEL_OBJ(g_noticeWindow)
+
+    g_noticeWindow = GuiCreateGeneralHintBox(&coinTon, _("import_ton_mnemonic_title"), _("import_ton_mnemonic_desc"), NULL, _("Cancel"), WHITE_COLOR_OPA20, _("Import"), ORANGE_COLOR);
+
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(btn, GuiImportTonMnemonicHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
 
 static void GuiInputPhraseWidget(lv_obj_t *parent)
@@ -174,6 +201,7 @@ void GuiImportPhraseDeInit(void)
     GuiMnemonicHintboxClear();
     GuiClearKeyBoard(g_importPhraseKb);
     GuiClearMnemonicKeyBoard(g_importMkb);
+    GUI_DEL_OBJ(g_noticeWindow)
     lv_obj_del(g_importPhraseKbCont);
     lv_obj_del(g_buttonCont);
     lv_obj_del(g_importSinglePhraseTileView.cont);

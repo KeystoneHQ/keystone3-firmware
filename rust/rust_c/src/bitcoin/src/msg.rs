@@ -1,4 +1,6 @@
-use crate::structs::DisplayBtcMsg;
+use core::ptr::null_mut;
+
+use crate::{address::utxo_get_address, structs::DisplayBtcMsg};
 use alloc::{
     slice,
     string::{String, ToString},
@@ -7,15 +9,20 @@ use alloc::{
 use common_rust_c::{
     errors::RustCError,
     extract_ptr_with_type,
-    structs::{TransactionCheckResult, TransactionParseResult},
-    types::{PtrBytes, PtrT, PtrUR},
+    ffi::CSliceFFI,
+    qrcode::seed_signer_message::SeedSignerMessage,
+    structs::{ExtendedPublicKey, Response, TransactionCheckResult, TransactionParseResult},
+    types::{Ptr, PtrBytes, PtrT, PtrUR},
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
-    utils::convert_c_char,
+    utils::{convert_c_char, recover_c_array, recover_c_char},
 };
 use keystore::algorithms::secp256k1;
-use third_party::ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType};
-use third_party::ur_registry::bitcoin::btc_signature::BtcSignature;
 use third_party::ur_registry::traits::RegistryItem;
+use third_party::{base64, ur_registry::bitcoin::btc_signature::BtcSignature};
+use third_party::{
+    hex,
+    ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType},
+};
 
 #[no_mangle]
 pub extern "C" fn btc_check_msg(
@@ -47,6 +54,7 @@ pub extern "C" fn btc_check_msg(
 #[no_mangle]
 pub extern "C" fn btc_parse_msg(
     ptr: PtrUR,
+    xpubs: Ptr<CSliceFFI<ExtendedPublicKey>>,
     master_fingerprint: PtrBytes,
     length: u32,
 ) -> *mut TransactionParseResult<DisplayBtcMsg> {
@@ -55,17 +63,33 @@ pub extern "C" fn btc_parse_msg(
     }
     let req = extract_ptr_with_type!(ptr, BtcSignRequest);
     unsafe {
+        let public_keys = recover_c_array(xpubs);
         let mfp = alloc::slice::from_raw_parts(master_fingerprint, 4);
-        if let Some(q_mfp) = req.get_derivation_paths()[0].get_source_fingerprint() {
+        let derivation_path = req.get_derivation_paths()[0].clone();
+        if let Some(q_mfp) = derivation_path.get_source_fingerprint() {
             if q_mfp.eq(mfp) {
                 match req.get_data_type() {
                     DataType::Message => {
-                        let msg = req.get_sign_data();
-                        if let Ok(msg_uft8) = String::from_utf8(msg.to_vec()) {
-                            let display_msg = DisplayBtcMsg {
-                                detail: convert_c_char(msg_uft8),
-                            };
-                            return TransactionParseResult::success(display_msg.c_ptr()).c_ptr();
+                        let path = derivation_path.get_path();
+                        if let Some(path) = path {
+                            let address = public_keys
+                                .iter()
+                                .find(|key| {
+                                    let xpub_path = recover_c_char(key.path);
+                                    return path.clone().starts_with(&xpub_path);
+                                })
+                                .map(|v| recover_c_char(v.xpub))
+                                .map(|xpub| app_bitcoin::get_address(path, &xpub).ok())
+                                .flatten();
+                            let msg = req.get_sign_data();
+                            if let Ok(msg_uft8) = String::from_utf8(msg.to_vec()) {
+                                let display_msg = DisplayBtcMsg {
+                                    detail: convert_c_char(msg_uft8),
+                                    address: address.map(convert_c_char).unwrap_or(null_mut()),
+                                };
+                                return TransactionParseResult::success(display_msg.c_ptr())
+                                    .c_ptr();
+                            }
                         }
                     }
                 }
@@ -129,4 +153,63 @@ pub extern "C" fn btc_sign_msg(
         }
     }
     UREncodeResult::from(RustCError::MasterFingerprintMismatch).c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn parse_seed_signer_message(
+    ptr: PtrUR,
+    xpubs: Ptr<CSliceFFI<ExtendedPublicKey>>,
+) -> Ptr<TransactionParseResult<DisplayBtcMsg>> {
+    let req = extract_ptr_with_type!(ptr, SeedSignerMessage);
+    let path = req.get_path();
+    let message = req.get_message();
+    let public_keys = unsafe { recover_c_array(xpubs) };
+    let address = public_keys
+        .iter()
+        .find(|key| {
+            let xpub_path = recover_c_char(key.path);
+            return path.clone().starts_with(&xpub_path);
+        })
+        .map(|v| recover_c_char(v.xpub))
+        .map(|xpub| app_bitcoin::get_address(path, &xpub));
+    match address {
+        Some(Ok(address)) => TransactionParseResult::success(
+            DisplayBtcMsg {
+                address: convert_c_char(address),
+                detail: convert_c_char(message),
+            }
+            .c_ptr(),
+        )
+        .c_ptr(),
+        // let user do the choice;
+        _ => TransactionParseResult::success(
+            DisplayBtcMsg {
+                address: null_mut(),
+                detail: convert_c_char(message),
+            }
+            .c_ptr(),
+        )
+        .c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn sign_seed_signer_message(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> *mut UREncodeResult {
+    let req = extract_ptr_with_type!(ptr, SeedSignerMessage);
+    let path = req.get_path();
+    let message = req.get_message();
+    unsafe {
+        let seed = alloc::slice::from_raw_parts(seed, seed_len as usize);
+        let sig = app_bitcoin::sign_msg(&message, seed, &path);
+        match sig {
+            Ok(sig) => {
+                return UREncodeResult::text(base64::encode_config(&sig, base64::STANDARD)).c_ptr()
+            }
+            Err(e) => return UREncodeResult::from(e).c_ptr(),
+        }
+    }
 }

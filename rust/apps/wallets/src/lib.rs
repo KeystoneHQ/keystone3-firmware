@@ -15,6 +15,7 @@ extern crate core;
 extern crate std;
 
 pub mod aptos;
+pub mod backpack;
 pub mod blue_wallet;
 mod common;
 pub mod companion_app;
@@ -23,7 +24,9 @@ pub mod metamask;
 pub mod okx;
 pub mod solana;
 pub mod sui;
+pub mod tonkeeper;
 mod utils;
+pub mod xbull;
 pub mod xrp_toolkit;
 
 //TODO: get these value from device

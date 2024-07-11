@@ -1,8 +1,8 @@
+#include <stdlib.h>
 #include "define.h"
 #include "gui_multisig_read_sdcard_widgets.h"
 #include "gui.h"
 #include "gui_page.h"
-#include "stdlib.h"
 #include "gui_button.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_btc.h"
@@ -12,7 +12,6 @@
 #include "drv_sdcard.h"
 #include "user_fatfs.h"
 #else
-#include "simulator_mock_define.h"
 #include "simulator_model.h"
 #endif
 

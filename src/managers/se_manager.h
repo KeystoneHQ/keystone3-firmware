@@ -4,30 +4,30 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-#define KEY_PIECE_LEN                           32
+#define KEY_PIECE_LEN                               32
 
 //DS28S60 page map
-#define PAGE_NUM_PER_ACCOUNT                    12
-#define PAGE_INDEX_IV                           0
-#define PAGE_INDEX_ENTROPY                      1
-#define PAGE_INDEX_SEED_H32                     2
-#define PAGE_INDEX_SEED_L32                     3
+#define PAGE_NUM_PER_ACCOUNT                        12
+#define PAGE_INDEX_IV                               0
+#define PAGE_INDEX_ENTROPY_OR_TON_ENTROPY_H32       1
+#define PAGE_INDEX_SEED_H32                         2
+#define PAGE_INDEX_SEED_L32                         3
 //page 4/5 reserved
-#define PAGE_INDEX_SLIP39_EMS                   4
-#define PAGE_INDEX_RESERVED                     5
-#define PAGE_INDEX_HMAC                         6
-#define PAGE_INDEX_KEY_PIECE                    7
-#define PAGE_INDEX_PASSWORD_HASH                8
-#define PAGE_INDEX_PARAM                        9
-#define PAGE_INDEX_MULTISIG_CONFIG_HASH         10
+#define PAGE_INDEX_SLIP39_EMS_OR_TON_ENTROPY_L32    4
+#define PAGE_INDEX_RESERVED                         5
+#define PAGE_INDEX_HMAC                             6
+#define PAGE_INDEX_KEY_PIECE                        7
+#define PAGE_INDEX_PASSWORD_HASH                    8
+#define PAGE_INDEX_PARAM                            9
+#define PAGE_INDEX_MULTISIG_CONFIG_HASH             10
 //page 76~85 encrypted password
-#define PAGE_PF_ENCRYPTED_PASSWORD              72
-#define PAGE_PF_AES_KEY                         82
-#define PAGE_PF_RESET_KEY                       83
-#define PAGE_PF_INFO                            84
-#define PAGE_WALLET1_PUB_KEY_HASH               85
-#define PAGE_WALLET2_PUB_KEY_HASH               86
-#define PAGE_WALLET3_PUB_KEY_HASH               87
+#define PAGE_PF_ENCRYPTED_PASSWORD                  72
+#define PAGE_PF_AES_KEY                             82
+#define PAGE_PF_RESET_KEY                           83
+#define PAGE_PF_INFO                                84
+#define PAGE_WALLET1_PUB_KEY_HASH                   85
+#define PAGE_WALLET2_PUB_KEY_HASH                   86
+#define PAGE_WALLET3_PUB_KEY_HASH                   87
 
 #define PAGE_PUBLIC_INFO                        88
 

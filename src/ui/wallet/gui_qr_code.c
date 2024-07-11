@@ -1,11 +1,5 @@
 #include "gui_qr_code.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#else
-#include "safe_str_lib.h"
-#endif
-
 static lv_timer_t *g_timer;
 static UREncodeResult *g_result;
 static lv_obj_t *g_qr;

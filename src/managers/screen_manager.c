@@ -56,6 +56,7 @@ void SetLockScreen(bool enable)
 {
     g_lockScreenEnable = enable;
     if (enable) {
+        LcdBacklightOn();
         GuiApiEmitSignal(SIG_STATUS_BAR_REFRESH, NULL, 0);
 #ifdef BTC_ONLY
         GuiApiEmitSignal(SIG_STATUS_BAR_TEST_NET, NULL, 0);
@@ -101,15 +102,6 @@ static void ReleaseHandler(void)
 
 static void LockScreen(void)
 {
-    if (GetLowPowerState() == LOW_POWER_STATE_DEEP_SLEEP) {
-        RecoverFromLowPower();
-        printf("g_lockScreenTick = %d..\n", g_lockScreenTick);
-        ClearLockScreenTime();
-        ClearShutdownTime();
-        printf("recovery from low power\n");
-        return;
-    }
-
     if (!g_pageLockScreenEnable) {
         printf("current page lock screen is disabled\n");
         return;

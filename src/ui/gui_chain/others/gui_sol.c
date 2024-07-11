@@ -11,15 +11,21 @@
 #include "assert.h"
 #include "cjson/cJSON.h"
 #include "user_memory.h"
-
+#include "gui_qr_hintbox.h"
 static uint8_t GetSolPublickeyIndex(char* rootPath);
-
+typedef struct {
+    const char* address;
+} SolanaAddressLearnMoreData;
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
-static ViewType g_viewType = ViewTypeUnKnown;
 
+#define MAX_ACCOUNTS 252
+
+static SolanaAddressLearnMoreData* g_accountData[MAX_ACCOUNTS];
+static int g_accountCount = 0;
+static ViewType g_viewType = ViewTypeUnKnown;
 #define CHECK_FREE_PARSE_SOL_RESULT(result)                                                                                       \
     if (result != NULL)                                                                                                           \
     {                                                                                                                             \
@@ -33,25 +39,22 @@ static ViewType g_viewType = ViewTypeUnKnown;
             break;                                                                                                                \
         default:                                                                                                                  \
             break;                                                                                                                \
-        }                                                                                                                         \
+        }                                                                                                                       \
         result = NULL;                                                                                                            \
     }
 
 void GuiSetSolUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
     g_viewType = g_isMulti ? urMultiResult->t : g_urResult->t;
-#endif
 }
 
 UREncodeResult *GuiGetSolSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -64,20 +67,10 @@ UREncodeResult *GuiGetSolSignQrCodeData(void)
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
-#else
-    UREncodeResult *encodeResult = NULL;
-    encodeResult->is_multi_part = 0;
-    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    encodeResult->encoder = NULL;
-    encodeResult->error_code = 0;
-    encodeResult->error_message = NULL;
-    return encodeResult;
-#endif
 }
 
 void *GuiGetSolData(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -86,26 +79,18 @@ void *GuiGetSolData(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
-#else
-    return NULL;
-#endif
 }
 
 PtrT_TransactionCheckResult GuiGetSolCheckResult(void)
 {
-#ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     return solana_check(data,  mfp, sizeof(mfp));
-#else
-    return NULL;
-#endif
 }
 
 void *GuiGetSolMessageData(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -118,18 +103,21 @@ void *GuiGetSolMessageData(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
-#else
-    return NULL;
-#endif
 }
 
 void FreeSolMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
-#endif
+    // free account data
+    for (int i = 0; i < g_accountCount; i++) {
+        if (g_accountData[i] != NULL) {
+            free(g_accountData[i]->address);
+            free(g_accountData[i]);
+        }
+    }
+    g_accountCount = 0;
 }
 
 void GetSolMessageType(void *indata, void *param, uint32_t maxLen)
@@ -419,10 +407,9 @@ static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
         SetContentLableStyle(label);
     }
 }
-
 static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
 {
-    uint16_t height = 212;
+    uint16_t height = 177;
     lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, 302);
     lv_obj_align(container, LV_ALIGN_DEFAULT, 0, 0);
     SetContainerDefaultStyle(container);
@@ -432,9 +419,12 @@ static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
 
     lv_obj_t *label = GuiCreateTextLabel(container, _("unknown_transaction_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 144);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_refr_size(label);
+    height += lv_obj_get_self_height(label);
 
     label = GuiCreateNoticeLabel(container, _("unknown_transaction_desc"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 188);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -36);
     lv_obj_set_width(label, 360);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_refr_size(label);
@@ -442,12 +432,203 @@ static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
     lv_obj_set_height(container, height);
 }
 
+
+
+void SolanaAddressLearnMore(lv_event_t *e)
+{
+    lv_obj_t* obj = lv_event_get_target(e);
+    SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)lv_obj_get_user_data(obj);
+    if (data != NULL) {
+        char url[512];
+        snprintf(url, sizeof(url), "https://solscan.io/account/ %s#tableEntries", data->address);
+        GuiQRCodeHintBoxOpenBig(url, "Address Lookup Table URL", _("solana_alt_notice"), url);
+    }
+}
+
+static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
+{
+    PtrT_DisplaySolanaTxOverviewUnknownInstructions unknown_instructions = overviewData->unknown_instructions;
+    PtrT_VecFFI_Instruction overview_instructions = unknown_instructions->overview_instructions;
+    // notice container
+    lv_obj_t *noticeContainer = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    lv_obj_align(noticeContainer, LV_ALIGN_DEFAULT, 0, 0);
+    SetContainerDefaultStyle(noticeContainer);
+    // Create a flex container for icon and notice label
+    lv_obj_t *iconNoticeContainer = lv_obj_create(noticeContainer);
+    lv_obj_set_size(iconNoticeContainer, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_style_pad_all(iconNoticeContainer, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(iconNoticeContainer, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(iconNoticeContainer, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(iconNoticeContainer, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_top(iconNoticeContainer, 10, LV_PART_MAIN);
+    lv_obj_set_style_pad_left(iconNoticeContainer, 24, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(iconNoticeContainer, LV_OPA_TRANSP, LV_PART_MAIN); // Set transparent background
+    // Create image inside the flex container
+    lv_obj_t *img = GuiCreateImg(iconNoticeContainer, &imgInfoOrange);
+    lv_obj_set_style_pad_right(img, 2, LV_PART_MAIN); // Add right padding to the image
+    lv_obj_t *noticeLabel = lv_label_create(iconNoticeContainer);
+    lv_obj_set_style_text_font(noticeLabel, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(noticeLabel, lv_color_hex(0xF5870A), LV_PART_MAIN);
+    lv_label_set_text(noticeLabel, "Notice");
+
+    lv_obj_t *noticeContent = lv_label_create(noticeContainer);
+    lv_obj_set_width(noticeContent, lv_pct(90));
+    lv_label_set_long_mode(noticeContent, LV_LABEL_LONG_WRAP);
+    lv_obj_set_style_text_font(noticeContent, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(noticeContent, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    // multi language support
+    lv_label_set_text(noticeContent, _("solana_parse_tx_notice"));
+    lv_obj_set_style_text_opa(noticeContent, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_align_to(noticeContent, iconNoticeContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 10);
+
+    // get the height of the notice container
+    lv_obj_update_layout(noticeContainer);
+    int containerYOffset = lv_obj_get_height(noticeContainer) + 16; // set padding between containers
+    for (int i = 0; i < overview_instructions->size; i++) {
+        // container will auto adjust height
+        lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+        lv_obj_align(container, LV_ALIGN_DEFAULT, 0, containerYOffset);
+        SetContainerDefaultStyle(container);
+
+        lv_obj_t *orderLabel = lv_label_create(container);
+        char order[BUFFER_SIZE_16] = {0};
+        snprintf_s(order, BUFFER_SIZE_16, "Instruction#%d", i + 1);
+        lv_label_set_text(orderLabel, order);
+        lv_obj_set_style_text_font(orderLabel, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_set_style_text_color(orderLabel, lv_color_hex(0xF5870A), LV_PART_MAIN);
+        lv_obj_align(orderLabel, LV_ALIGN_TOP_LEFT, 24, 16);
+
+        PtrT_VecFFI_PtrString accounts = overview_instructions->data[i].accounts;
+        // accounts label
+        lv_obj_t *accounts_label = lv_label_create(container);
+        if (accounts->size != 0) {
+            lv_label_set_text(accounts_label, "accounts");
+            lv_obj_set_style_text_color(accounts_label, WHITE_COLOR, LV_PART_MAIN);
+            lv_obj_set_style_text_opa(accounts_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_align(accounts_label, LV_ALIGN_TOP_LEFT, 24, 44);
+        } else {
+            lv_label_set_text(accounts_label, "");
+            lv_obj_align(accounts_label, LV_ALIGN_TOP_LEFT, 24, 10);
+        }
+        // Create a flex container for accounts with scrolling
+        lv_obj_t *accounts_cont = lv_obj_create(container);
+        lv_obj_set_width(accounts_cont, lv_pct(88));
+        if (accounts->size == 0) {
+            lv_obj_set_height(accounts_cont, 0);
+        } else if (accounts->size == 2) {
+            lv_obj_set_height(accounts_cont, 150);
+        } else {
+            lv_obj_set_height(accounts_cont, 200);
+        }
+        lv_obj_set_flex_flow(accounts_cont, LV_FLEX_FLOW_COLUMN);
+        lv_obj_set_flex_align(accounts_cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+        lv_obj_align_to(accounts_cont, accounts_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+        lv_obj_set_style_bg_opa(accounts_cont, LV_OPA_TRANSP, LV_PART_MAIN);
+        lv_obj_set_style_pad_left(accounts_cont, 0, LV_PART_MAIN);  // remove left padding
+        lv_obj_set_style_pad_right(accounts_cont, 0, LV_PART_MAIN);  // remove right padding
+        lv_obj_add_flag(accounts_cont, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_set_style_border_width(accounts_cont, 0, LV_PART_MAIN);
+
+        for (int j = 0; j < accounts->size; j++) {
+            lv_obj_t *account_cont = lv_obj_create(accounts_cont);
+            lv_obj_set_style_pad_left(account_cont, 0, LV_PART_MAIN);  // remove left padding
+            lv_obj_set_style_pad_right(account_cont, 0, LV_PART_MAIN);  // remove right padding
+            lv_obj_set_style_border_width(account_cont, 0, LV_PART_MAIN);
+            lv_obj_set_width(account_cont, lv_pct(100));
+            lv_obj_set_height(account_cont, LV_SIZE_CONTENT);
+            lv_obj_set_flex_flow(account_cont, LV_FLEX_FLOW_ROW);
+            lv_obj_set_flex_align(account_cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
+            lv_obj_set_style_bg_opa(account_cont, LV_OPA_TRANSP, LV_PART_MAIN);
+            lv_obj_set_style_pad_ver(account_cont, 2, LV_PART_MAIN); // vertical padding
+
+            char order[BUFFER_SIZE_16] = {0};
+            snprintf_s(order, BUFFER_SIZE_16, "%d ", j + 1);
+            lv_obj_t *orderLabel = lv_label_create(account_cont);
+            lv_label_set_text(orderLabel, order);
+            lv_obj_set_style_text_font(orderLabel, g_defIllustrateFont, LV_PART_MAIN);
+            lv_obj_set_style_text_color(orderLabel, WHITE_COLOR, LV_PART_MAIN);
+            lv_obj_set_style_text_opa(orderLabel, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_t *account_label = lv_label_create(account_cont);
+            lv_obj_set_style_pad_right(account_cont, 0, LV_PART_MAIN);
+            lv_obj_set_width(account_label, lv_pct(80));
+            lv_obj_set_flex_grow(account_label, 1);
+            lv_obj_set_flex_align(orderLabel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
+            // check whether the account is a AddressLookupTable account
+            // if account is start with "Table", then it is a AddressLookupTable account
+            if (strncmp(accounts->data[j], "Table", 5) == 0) {
+                lv_label_set_text(account_label, accounts->data[j] + 6);
+                lv_obj_t *info_icon = GuiCreateImg(account_cont, &imgInfoSmall);
+                lv_obj_set_style_pad_right(info_icon, 0, LV_PART_MAIN);
+                // add account click event
+                lv_obj_add_flag(info_icon, LV_OBJ_FLAG_CLICKABLE);
+                // remember free the data
+                SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)malloc(sizeof(SolanaAddressLearnMoreData));
+                if (data != NULL) {
+                    const char* address = accounts->data[j] + 6; // remove "Table:" prefix
+                    size_t address_len = strlen(address);
+                    data->address = (char*)malloc(address_len + 1);
+                    strcpy(data->address, address);
+                    lv_obj_set_user_data(info_icon, data);
+                    SolanaAddressLearnMoreData* retrieved_data = (SolanaAddressLearnMoreData*)lv_obj_get_user_data(info_icon);
+
+                    if (g_accountCount < MAX_ACCOUNTS) {
+                        g_accountData[g_accountCount] = data;
+                        g_accountCount++;
+                    }
+                }
+                lv_obj_add_event_cb(info_icon, SolanaAddressLearnMore, LV_EVENT_CLICKED, NULL);
+            } else {
+                lv_label_set_text(account_label, accounts->data[j]);
+            }
+            lv_obj_set_style_text_color(account_label, WHITE_COLOR, LV_PART_MAIN);
+            lv_label_set_long_mode(account_label, LV_LABEL_LONG_WRAP);
+
+            lv_obj_set_style_border_width(account_label, 0, LV_PART_MAIN);
+        }
+        // data label
+        lv_obj_t *data_label = lv_label_create(container);
+        lv_label_set_text(data_label, "data");
+        lv_obj_set_style_text_color(data_label, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(data_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+        lv_obj_align_to(data_label, accounts_cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+        // data value
+        lv_obj_t *data_value = lv_label_create(container);
+        lv_label_set_text(data_value, overview_instructions->data[i].data);
+        lv_obj_set_style_text_font(data_value, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_set_style_text_color(data_value, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+        lv_obj_align_to(data_value, data_label, LV_ALIGN_LEFT_MID, 50, 0);
+        lv_obj_set_width(data_value, lv_pct(70));
+        lv_label_set_long_mode(data_value, LV_LABEL_LONG_WRAP);
+        // program address label
+        lv_obj_t *programAddress_label = lv_label_create(container);
+        lv_label_set_text(programAddress_label, "programAddress");
+        lv_obj_set_style_text_color(programAddress_label, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(programAddress_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+
+        lv_obj_align_to(programAddress_label, data_value, LV_ALIGN_OUT_BOTTOM_LEFT, -50, 10);
+        // program address value
+        PtrString program_address = overview_instructions->data[i].program_address;
+        lv_obj_t *program_content_label = lv_label_create(container);
+        lv_label_set_text(program_content_label, program_address);
+        lv_obj_set_style_text_font(program_content_label, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_set_style_text_color(program_content_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+        lv_obj_align_to(program_content_label, programAddress_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+        lv_obj_set_width(program_content_label, lv_pct(90));
+        lv_label_set_long_mode(program_content_label, LV_LABEL_LONG_WRAP);
+        // calculate the height of the container
+        lv_obj_update_layout(container);
+        containerYOffset += lv_obj_get_height(container) + 16; // set padding between containers
+    }
+}
+
+
 void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)
 {
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
-
     DisplaySolanaTx *txData = (DisplaySolanaTx*)totalData;
     PtrT_DisplaySolanaTxOverview overviewData = txData->overview;
     if (0 == strcmp(overviewData->display_type, "Transfer")) {
@@ -457,7 +638,7 @@ void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)
     } else if (0 == strcmp(overviewData->display_type, "General")) {
         GuiShowSolTxGeneralOverview(parent, overviewData);
     } else {
-        GuiShowSolTxUnknownOverview(parent);
+        GuiShowSolTxInstructionsOverview(parent, overviewData);
     }
 }
 

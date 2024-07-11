@@ -10,10 +10,6 @@
 #include "btc_only/gui_btc_home_widgets.h"
 #include "sdcard_manager.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 #ifdef BTC_ONLY
 #include "gui_animating_qrcode.h"
 #include "keystore.h"

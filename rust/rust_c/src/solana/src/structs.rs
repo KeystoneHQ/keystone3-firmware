@@ -1,17 +1,19 @@
 use alloc::boxed::Box;
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use core::ptr::null_mut;
+
 use app_solana::parser::overview::{ProgramOverviewGeneral, SolanaOverview};
 use app_solana::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
 use app_solana::structs::SolanaMessage;
+use third_party::itertools::Itertools;
+
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
 use common_rust_c::structs::TransactionParseResult;
 use common_rust_c::types::{PtrString, PtrT};
 use common_rust_c::utils::convert_c_char;
 use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, impl_c_ptrs, make_free_method};
-use core::ptr::null_mut;
-use third_party::itertools::Itertools;
 
 #[repr(C)]
 pub struct DisplaySolanaTx {
@@ -41,6 +43,47 @@ impl From<&ProgramOverviewGeneral> for DisplaySolanaTxOverviewGeneral {
         }
     }
 }
+#[repr(C)]
+pub struct DisplaySolanaTxOverviewUnknownInstructions {
+    pub overview_accounts: PtrT<VecFFI<PtrString>>,
+    pub overview_instructions: PtrT<VecFFI<Instruction>>,
+}
+
+impl_c_ptrs!(DisplaySolanaTxOverviewUnknownInstructions);
+
+#[repr(C)]
+pub struct Instruction {
+    pub accounts: PtrT<VecFFI<PtrString>>,
+    pub data: PtrString,
+    pub program_address: PtrString,
+}
+
+impl Free for DisplaySolanaTxOverviewUnknownInstructions {
+    fn free(&self) {
+        unsafe {
+            if !self.overview_accounts.is_null() {
+                let x = Box::from_raw(self.overview_accounts);
+                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+                ve.iter().for_each(|v| {
+                    v.free();
+                });
+            }
+            if !self.overview_instructions.is_null() {
+                let x = Box::from_raw(self.overview_instructions);
+                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+                ve.iter().for_each(|v| {
+                    let accounts = Box::from_raw(v.accounts);
+                    let accounts = Vec::from_raw_parts(accounts.data, accounts.size, accounts.cap);
+                    accounts.iter().for_each(|a| {
+                        free_str_ptr!(*a);
+                    });
+                    free_str_ptr!(v.data);
+                    free_str_ptr!(v.program_address);
+                });
+            }
+        }
+    }
+}
 
 #[repr(C)]
 pub struct DisplaySolanaTxOverview {
@@ -57,6 +100,8 @@ pub struct DisplaySolanaTxOverview {
     pub vote_account: PtrString,
     // general
     pub general: PtrT<VecFFI<DisplaySolanaTxOverviewGeneral>>,
+    // instructions
+    pub unknown_instructions: PtrT<DisplaySolanaTxOverviewUnknownInstructions>,
 }
 
 #[repr(C)]
@@ -83,6 +128,7 @@ impl Default for DisplaySolanaTxOverview {
             votes_on: null_mut(),
             vote_account: null_mut(),
             general: null_mut(),
+            unknown_instructions: null_mut(),
         }
     }
 }
@@ -117,6 +163,11 @@ impl Free for DisplaySolanaTxOverview {
                 ve.iter().for_each(|v| {
                     v.free();
                 });
+            }
+            // free unknown_instructions
+            if !self.unknown_instructions.is_null() {
+                let x = Box::from_raw(self.unknown_instructions);
+                x.free();
             }
         }
     }
@@ -187,9 +238,45 @@ impl From<&ParsedSolanaTx> for DisplaySolanaTxOverview {
                 }
             }
             SolanaTxDisplayType::Unknown => {
-                return Self {
-                    display_type,
-                    ..DisplaySolanaTxOverview::default()
+                if let SolanaOverview::Instructions(overview) = &value.overview {
+                    let display_overview_instructions =
+                        DisplaySolanaTxOverviewUnknownInstructions {
+                            overview_accounts: VecFFI::from(
+                                overview
+                                    .overview_accounts
+                                    .iter()
+                                    .map(|v| convert_c_char(v.to_string()))
+                                    .collect_vec(),
+                            )
+                            .c_ptr(),
+                            overview_instructions: VecFFI::from(
+                                overview
+                                    .overview_instructions
+                                    .iter()
+                                    .map(|v| {
+                                        let accounts = VecFFI::from(
+                                            v.accounts
+                                                .iter()
+                                                .map(|v| convert_c_char(v.to_string()))
+                                                .collect_vec(),
+                                        );
+                                        Instruction {
+                                            accounts: accounts.c_ptr(),
+                                            data: convert_c_char(v.data.to_string()),
+                                            program_address: convert_c_char(
+                                                v.program_address.to_string(),
+                                            ),
+                                        }
+                                    })
+                                    .collect_vec(),
+                            )
+                            .c_ptr(),
+                        };
+                    return Self {
+                        display_type,
+                        unknown_instructions: display_overview_instructions.c_ptr(),
+                        ..DisplaySolanaTxOverview::default()
+                    };
                 }
             }
         }

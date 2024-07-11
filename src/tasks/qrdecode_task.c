@@ -133,11 +133,19 @@ void ProcessQr(uint32_t count)
 
     uint32_t retFromRust = 0;
     int32_t ret = QrDecodeProcess(qrString, QR_DECODE_STRING_LEN, testProgress);
-
+    printf("%s\n", qrString);
     if (ret > 0) {
         if (firstQrFlag == true) {
             assert(strnlen_s(qrString, QR_DECODE_STRING_LEN) < QR_DECODE_STRING_LEN);
-            urResult = parse_ur(qrString);
+            QRProtocol t = infer_qrcode_type(qrString);
+            switch (t) {
+            case QRCodeTypeText:
+                urResult = parse_qrcode_text(qrString);
+                break;
+            default:
+                urResult = parse_ur(qrString);
+                break;
+            }
             if (urResult->error_code == 0) {
                 if (urResult->is_multi_part == 0) {
                     // single qr code
@@ -155,6 +163,7 @@ void ProcessQr(uint32_t count)
             } else {
                 retFromRust = urResult->error_code;
             }
+
         } else {
             // follow qrcode
             struct URParseMultiResult *MultiurResult = receive(qrString, decoder);

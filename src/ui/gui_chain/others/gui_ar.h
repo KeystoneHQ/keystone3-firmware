@@ -11,10 +11,6 @@
 #include "screen_manager.h"
 #include "account_public_info.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 PtrT_TransactionCheckResult GuiGetArCheckResult(void);
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetArData(void);
@@ -31,5 +27,7 @@ void GetArweaveRawMessage(void *indata, void *param, uint32_t maxLen);
 void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen);
 bool IsArweaveSetupComplete(void);
 UREncodeResult *GuiGetArweaveSignQrCodeData(void);
+void GuiArDataItemOverview(lv_obj_t *parent, void *totalData);
+void GuiArDataItemDetail(lv_obj_t *parent, void *totalData);
 
 #endif

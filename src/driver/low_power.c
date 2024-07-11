@@ -30,8 +30,8 @@
 #include "gui_setup_widgets.h"
 #include "device_setting.h"
 
-#define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                //80 seconds
-#define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 8)            //8 minutes
+#define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                // 80 seconds
+#define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 30)           // 30 minutes
 static void SetRtcWakeUp(uint32_t second);
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 int32_t GetWalletAmountAfterWakeup(const void *inData, uint32_t inDataLen);

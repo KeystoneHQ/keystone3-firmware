@@ -19,9 +19,8 @@
 #include "gui_mnemonic_input.h"
 #include "gui_page.h"
 #include "gui_keyboard_hintbox.h"
-#ifndef COMPILE_MAC_SIMULATOR
-#include "sha256.h"
-#else
+#include "gui_lock_device_widgets.h"
+#ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #endif
 
@@ -59,6 +58,8 @@ static ForgetPassWidget_t g_forgetPassTileView;
 static lv_obj_t *g_waitAnimCont;
 static GUI_VIEW *g_prevView;
 static bool g_isForgetPass = false;
+
+static void CloseCurrentParentAndCloseViewHandler(lv_event_t *e);
 
 bool GuiIsForgetPass(void)
 {
@@ -166,11 +167,20 @@ void GuiForgetPassRepeatPinPass(const char* buf)
             };
             GuiModelSlip39CalWriteSe(slip39);
         } else {
-            Bip39Data_t bip39 = {
-                .wordCnt = g_forgetMkb->wordCnt,
-                .forget = true,
-            };
-            GuiModelBip39CalWriteSe(bip39);
+            char *mnemonic = SecretCacheGetMnemonic();
+            bool isTon = ton_verify_mnemonic(mnemonic);
+            if (isTon) {
+                TonData_t ton = {
+                    .forget = true,
+                };
+                GuiModelTonCalWriteSe(ton);
+            } else {
+                Bip39Data_t bip39 = {
+                    .wordCnt = g_forgetMkb->wordCnt,
+                    .forget = true,
+                };
+                GuiModelBip39CalWriteSe(bip39);
+            }
         }
     } else {
         GuiEnterPassCodeStatus(g_repeatPassCode, false);
@@ -494,4 +504,14 @@ void GuiForgetPassRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, StopCreateViewHandler, NULL);
     }
     GUI_DEL_OBJ(g_noticeWindow)
+}
+
+static void CloseCurrentParentAndCloseViewHandler(lv_event_t *e)
+{
+    static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
+    GuiCLoseCurrentWorkingView();
+    GuiLockScreenFpRecognize();
+    GuiLockScreenTurnOn(&single);
+    ResetSuccess();
+    GuiModelWriteLastLockDeviceTime(0);
 }

@@ -20,10 +20,6 @@
 #include "gui_home_widgets.h"
 #include "gui_global_resources.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 #define GENERAL_ADDRESS_INDEX_MAX                       (999999999)
 #define ETH_LEDGER_LIVE_ADDRESS_INDEX_MAX               (9)
 #define SOL_BIP44_ADDRESS_INDEX_MAX                     (9)

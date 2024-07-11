@@ -603,7 +603,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 /*File system interfaces for common APIs */
 
 /*API for fopen, fread, etc*/
-#ifdef COMPILE_MAC_SIMULATOR
+#if defined(COMPILE_SIMULATOR) && !defined(COMPILE_WIN_SIMULATOR)
 #define LV_USE_FS_STDIO 1
 #endif
 #if LV_USE_FS_STDIO
@@ -622,7 +622,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 
 /*API for CreateFile, ReadFile, etc*/
 #ifdef COMPILE_SIMULATOR
-#ifndef COMPILE_MAC_SIMULATOR
+#ifdef COMPILE_WIN_SIMULATOR
 #define LV_USE_FS_WIN32 1
 #endif
 #if LV_USE_FS_WIN32

@@ -1,3 +1,34 @@
+
+## 1.5.4（2024-07-04）
+
+### What's new
+
+1. Added support for managing SOL assets using Backpack
+2. Cosmos added support for multiple accounts
+
+
+
+
+## 1.5.2(2024-06-25)
+
+### Improvements
+
+1. Improved compatibility with new transaction formats on the SOL chain
+2. Refined Spanish text details
+
+### Bug Fixes
+
+1. Fixed occasional black screen issue
+
+
+
+## 1.5.0(2024-06-18)
+
+### What's new
+
+1. Added support for TON through integration with Tonkeeper
+
+
 ## 1.4.8(2024-06-03)
 
 ### What's new

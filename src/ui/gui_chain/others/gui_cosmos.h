@@ -1,6 +1,5 @@
 #include "rust.h"
 #include "account_public_info.h"
-
 #define COSMOS_CHAINS_LEN 32
 
 typedef struct {
@@ -71,3 +70,5 @@ bool GetCosmosAddrExist(void *indata, void *param);
 void GetCosmosTextOfKind(void *indata, void *param, uint32_t maxLen);
 void GetCosmosDetailItemValue(void *indata, void *param, uint32_t maxLen);
 bool IsCosmosMsg(ViewType viewType);
+char *GetKeplrConnectionDisplayAddressByIndex(uint32_t index);
+char *GetCosmosChainAddressByCoinTypeAndIndex(uint8_t chainType, uint32_t address_index);

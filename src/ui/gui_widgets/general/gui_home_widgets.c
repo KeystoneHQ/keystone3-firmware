@@ -36,6 +36,7 @@ static lv_obj_t *g_walletButton[HOME_WALLET_CARD_BUTT];
 static lv_obj_t *g_cosmosPulldownImg = NULL;
 static lv_obj_t *g_endCosmosLine = NULL;
 static lv_obj_t *g_lastCosmosLine = NULL;
+static lv_obj_t *g_noticeWindow = NULL;
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC", true},
@@ -52,6 +53,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_SUI, false, "SUI", true},
     {HOME_WALLET_CARD_DASH, false, "DASH", true},
     {HOME_WALLET_CARD_ARWEAVE, false, "AR", true},
+    {HOME_WALLET_CARD_XLM, false, "XLM", true},
     {HOME_WALLET_CARD_COSMOS, false, "Cosmos Eco", true},
     {HOME_WALLET_CARD_TIA, false, "TIA", true},
     {HOME_WALLET_CARD_DYM, false, "DYM", true},
@@ -85,16 +87,41 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_UMEE, false, "UMEE", true},
     {HOME_WALLET_CARD_QCK, false, "QCK", true},
     {HOME_WALLET_CARD_TGD, false, "TGD", true},
+    {HOME_WALLET_CARD_TON, false, "TON", false},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 
 static void GuiInitWalletState()
 {
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+    for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+        g_walletState[i].enable = false;
+        g_walletState[i].state = false;
+    }
+    MnemonicType mnemonicType = GetMnemonicType();
+    switch (mnemonicType) {
+    case MNEMONIC_TYPE_SLIP39:
+        for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+            g_walletState[i].enable = true;
+        }
+        g_walletState[HOME_WALLET_CARD_BNB].enable = false;
+        g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
-    } else {
+        g_walletState[HOME_WALLET_CARD_TON].enable = false;
+        break;
+    case MNEMONIC_TYPE_BIP39:
+        for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+            g_walletState[i].enable = true;
+        }
+        g_walletState[HOME_WALLET_CARD_BNB].enable = false;
+        g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
+        g_walletState[HOME_WALLET_CARD_TON].enable = false;
+        break;
+    default:
+        g_walletState[HOME_WALLET_CARD_TON].enable = true;
+        g_walletState[HOME_WALLET_CARD_TON].state = true;
+        break;
     }
 }
 
@@ -182,6 +209,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "AR",
         .chain = "Arweave",
         .icon = &coinAr,
+    },
+    {
+        .index = HOME_WALLET_CARD_XLM,
+        .coin = "XLM",
+        .chain = "Stellar",
+        .icon = &coinXlm,
     },
     {
         .index = HOME_WALLET_CARD_COSMOS,
@@ -381,6 +414,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .chain = "Tgrade",
         .icon = &coinTgd,
     },
+    {
+        .index = HOME_WALLET_CARD_TON,
+        .coin = "TON",
+        .chain = "The Open Network",
+        .icon = &coinTon,
+    },
 };
 
 static void CoinDealHandler(lv_event_t *e);
@@ -500,6 +539,33 @@ void GuiShowRsaSetupasswordHintbox(void)
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
+static void GuiARAddressCheckConfirmHandler(lv_event_t *event)
+{
+    GUI_DEL_OBJ(g_noticeWindow);
+    GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
+}
+
+static void GuiOpenARAddressNoticeWindow()
+{
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("Not Now"), WHITE_COLOR_OPA20, _("Understand"), ORANGE_COLOR);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_set_width(btn, 192);
+    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
+    lv_obj_add_event_cb(btn, GuiARAddressCheckConfirmHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_set_width(btn, 192);
+    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
+}
+
 static void CoinDealHandler(lv_event_t *e)
 {
     HOME_WALLET_CARD_ENUM coin;
@@ -520,13 +586,9 @@ static void CoinDealHandler(lv_event_t *e)
         GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ARWEAVE: {
-#ifdef COMPILE_SIMULATOR
-        GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
-        break;
-#endif
         bool shouldGenerateArweaveXPub = IsArweaveSetupComplete();
         if (!shouldGenerateArweaveXPub) {
-            GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
+            GuiOpenARAddressNoticeWindow();
             break;
         }
         GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
@@ -719,6 +781,13 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         heightIndex++;
     }
 
+    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
+        lv_obj_t *label = GuiCreateIllustrateLabel(checkBoxCont, _("import_ton_mnemonic_desc"));
+        lv_obj_set_width(label, 416);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 32, 144);
+    }
+
     lv_obj_t *btn = GuiCreateBtn(g_manageCont, USR_SYMBOL_CHECK);
     lv_obj_add_event_cb(btn, ConfirmManageAssetsHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
@@ -785,6 +854,7 @@ static void AddFlagCountDownTimerHandler(lv_timer_t *timer)
 void GuiHomeRestart(void)
 {
     GUI_DEL_OBJ(g_manageCont)
+    GUI_DEL_OBJ(g_noticeWindow)
     GuiHomeRefresh();
 }
 
@@ -839,5 +909,6 @@ void GuiHomeDeInit(void)
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+    GUI_DEL_OBJ(g_noticeWindow);
 }
 #endif

@@ -39,7 +39,12 @@ use third_party::ur_registry::pb::protoc::Base;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
+use third_party::ur_registry::stellar::stellar_sign_request::{
+    SignType as StellarSignType, StellarSignRequest,
+};
+#[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
+use third_party::ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 
 pub trait InferViewType {
     fn infer(&self) -> Result<ViewType, URError> {
@@ -108,12 +113,33 @@ impl InferViewType for SuiSignRequest {
 }
 
 #[cfg(feature = "multi-coins")]
+impl InferViewType for StellarSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        match self.get_sign_type() {
+            StellarSignType::Transaction => Ok(ViewType::StellarTx),
+            StellarSignType::TransactionHash => Ok(ViewType::StellarHash),
+            _ => Ok(ViewType::StellarTx),
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
 impl InferViewType for ArweaveSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         match self.get_sign_type() {
             SignType::Transaction => Ok(ViewType::ArweaveTx),
             SignType::Message => Ok(ViewType::ArweaveMessage),
-            SignType::DataItem => Ok(ViewType::ViewTypeUnKnown),
+            SignType::DataItem => Ok(ViewType::ArweaveDataItem),
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for TonSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        match self.get_data_type() {
+            DataType::Transaction => Ok(ViewType::TonTx),
+            DataType::SignProof => Ok(ViewType::TonSignProof),
         }
     }
 }

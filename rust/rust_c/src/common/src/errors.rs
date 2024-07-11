@@ -16,7 +16,11 @@ use app_near::errors::NearError;
 #[cfg(feature = "multi-coins")]
 use app_solana::errors::SolanaError;
 #[cfg(feature = "multi-coins")]
+use app_stellar::errors::StellarError;
+#[cfg(feature = "multi-coins")]
 use app_sui::errors::SuiError;
+#[cfg(feature = "multi-coins")]
+use app_ton::errors::TonError;
 #[cfg(feature = "multi-coins")]
 use app_tron::errors::TronError;
 #[cfg(feature = "multi-coins")]
@@ -177,6 +181,21 @@ pub enum ErrorCodes {
     ArweaveKeystoreError,
     ArweaveInvalidData,
     ArweaveParseTxError,
+    ArweaveParseAOTxError,
+
+    //Ton
+    TonUnknownError = 1300,
+    TonMnemonicError,
+    TonTransactionError,
+    InvalidProof,
+    TonTransactionJsonError,
+    AddressError,
+
+    // Stellar
+    StellarAddressError = 1400,
+    StellarInvalidData,
+    StellarParseTxError,
+    StellarKeystoreError,
 }
 
 impl ErrorCodes {
@@ -350,6 +369,21 @@ impl From<&ArweaveError> for ErrorCodes {
             ArweaveError::KeystoreError(_) => Self::ArweaveKeystoreError,
             ArweaveError::SignFailure(_) => Self::ArweaveSignFailure,
             ArweaveError::ParseTxError(_) => Self::ArweaveParseTxError,
+            ArweaveError::AvroError(_) => Self::ArweaveParseTxError,
+            ArweaveError::NotSupportedError => Self::UnsupportedTransaction,
+            ArweaveError::NotAOTransaction => Self::ArweaveParseAOTxError,
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl From<&StellarError> for ErrorCodes {
+    fn from(value: &StellarError) -> Self {
+        match value {
+            StellarError::AddressError(_) => Self::StellarAddressError,
+            StellarError::InvalidData(_) => Self::StellarInvalidData,
+            StellarError::ParseTxError(_) => Self::StellarParseTxError,
+            StellarError::KeystoreError(_) => Self::StellarKeystoreError,
         }
     }
 }
@@ -418,6 +452,21 @@ impl From<&SuiError> for ErrorCodes {
             SuiError::InvalidData(_) => Self::SuiInvalidData,
             SuiError::ParseTxError(_) => Self::SuiParseTxError,
             SuiError::InvalidXPub(_) => Self::InvalidXPub,
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl From<&TonError> for ErrorCodes {
+    fn from(value: &TonError) -> Self {
+        match value {
+            TonError::UnknownError => Self::TonUnknownError,
+            TonError::MnemonicError(_) => Self::TonMnemonicError,
+            TonError::TransactionError(_) => Self::TonTransactionError,
+            TonError::TransactionJsonError(_) => Self::TonTransactionJsonError,
+            TonError::AddressError(_) => Self::AddressError,
+            TonError::InvalidTransaction(_) => Self::TonTransactionError,
+            TonError::InvalidProof(_) => Self::InvalidProof,
         }
     }
 }

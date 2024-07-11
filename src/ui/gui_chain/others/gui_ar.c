@@ -1,11 +1,13 @@
 #ifndef BTC_ONLY
 #include "gui_ar.h"
+#include "gui_chain_components.h"
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static ArweaveRequestType g_requestType = ArweaveRequestTypeTransaction;
 static void *g_parseResult = NULL;
+static bool g_isAoTransfer = false;
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                           \
     if (result != NULL)                                                                                                           \
@@ -82,24 +84,16 @@ static void TagsRender(cJSON *root, int size, lv_obj_t *parent)
 
 bool IsArweaveSetupComplete(void)
 {
-#ifndef COMPILE_SIMULATOR
     char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
     return xPub != NULL && strlen(xPub) == 1024;
-#else
-    return true;
-#endif
 }
 
 PtrT_TransactionCheckResult GuiGetArCheckResult(void)
 {
-#ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     return ar_check_tx(data, mfp, sizeof(mfp));
-#else
-    return NULL;
-#endif
 }
 
 void GetArweaveMessageText(void *indata, void *param, uint32_t maxLen)
@@ -216,6 +210,18 @@ void *GuiGetArData(void)
             PtrT_TransactionParseResult_DisplayArweaveMessage parseResult = ar_message_parse(data);
             CHECK_CHAIN_BREAK(parseResult);
             g_parseResult = (void *)parseResult;
+        } else if (g_requestType == ArweaveRequestTypeDataItem) {
+            bool isAoTransfer = ar_is_ao_transfer(data);
+            g_isAoTransfer = isAoTransfer;
+            if (g_isAoTransfer) {
+                PtrT_TransactionParseResult_DisplayArweaveAOTransfer parseResult = ar_parse_ao_transfer(data);
+                CHECK_CHAIN_BREAK(parseResult);
+                g_parseResult = (void *)parseResult;
+            } else {
+                PtrT_TransactionParseResult_DisplayArweaveDataItem parseResult = ar_parse_data_item(data);
+                CHECK_CHAIN_BREAK(parseResult);
+                g_parseResult = (void *)parseResult;
+            }
         }
     } while (0);
     return g_parseResult;
@@ -270,7 +276,6 @@ UREncodeResult *GuiGetArweaveSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -285,15 +290,77 @@ UREncodeResult *GuiGetArweaveSignQrCodeData(void)
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
-#else
-    UREncodeResult *encodeResult = NULL;
-    encodeResult->is_multi_part = 0;
-    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    encodeResult->encoder = NULL;
-    encodeResult->error_code = 0;
-    encodeResult->error_message = NULL;
-    return encodeResult;
-#endif
+}
+
+static void GuiArRenderAOTransferOverview(lv_obj_t *parent, DisplayArweaveAOTransfer *txData);
+static void GuiArRenderAOTransferDetail(lv_obj_t *parent, DisplayArweaveAOTransfer *txData);
+static void GuiArRenderDataItemOverview(lv_obj_t *parent, DisplayArweaveDataItem *txData);
+static void GuiArRenderDataItemDetail(lv_obj_t *parent, DisplayArweaveDataItem *txData);
+
+void GuiArDataItemOverview(lv_obj_t *parent, void *totalData)
+{
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    if (g_isAoTransfer) {
+        DisplayArweaveAOTransfer *txData = (DisplayArweaveAOTransfer *)totalData;
+        GuiArRenderAOTransferOverview(parent, txData);
+    } else {
+        DisplayArweaveDataItem *txData = (DisplayArweaveDataItem *)totalData;
+        GuiArRenderDataItemOverview(parent, txData);
+    }
+}
+void GuiArDataItemDetail(lv_obj_t *parent, void *totalData)
+{
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    if (g_isAoTransfer) {
+        DisplayArweaveAOTransfer *txData = (DisplayArweaveAOTransfer *)totalData;
+        GuiArRenderAOTransferDetail(parent, txData);
+    } else {
+        DisplayArweaveDataItem *txData = (DisplayArweaveDataItem *)totalData;
+        GuiArRenderDataItemDetail(parent, txData);
+    }
+}
+
+static void GuiArRenderAOTransferOverview(lv_obj_t *parent, DisplayArweaveAOTransfer *txData)
+{
+    lv_obj_t *lastView = NULL;
+    lastView = CreateTransactionItemView(parent, _("Action"), _("AO Transfer"), lastView);
+    lastView = CreateTransactionItemView(parent, _("From"), txData->from, lastView);
+    lastView = CreateTransactionItemView(parent, _("Desination"), txData->to, lastView);
+    lastView = CreateTransactionItemView(parent, _("Quantity"), txData->quantity, lastView);
+    lastView = CreateTransactionItemView(parent, _("Token ID"), txData->token_id, lastView);
+}
+
+static void GuiArRenderAOTransferDetail(lv_obj_t *parent, DisplayArweaveAOTransfer *txData)
+{
+    lv_obj_t *lastView = NULL;
+    for (size_t i = 0; i < txData->other_info->size; i++) {
+        lastView = CreateTransactionItemView(parent, txData->other_info->data[i].name, txData->other_info->data[i].value, lastView);
+    }
+}
+
+static void GuiArRenderDataItemOverview(lv_obj_t *parent, DisplayArweaveDataItem *txData)
+{
+    lv_obj_t *lastView = NULL;
+    lastView = CreateTransactionItemView(parent, _("Action"), _("Sign DataItem"), lastView);
+    lastView = CreateTransactionItemView(parent, _("Owner"), txData->owner, lastView);
+    if (txData->target != NULL) {
+        lastView = CreateTransactionItemView(parent, _("Target"), txData->target, lastView);
+    }
+    if (txData->anchor != NULL) {
+        lastView = CreateTransactionItemView(parent, _("Anchor"), txData->anchor, lastView);
+    }
+    lastView = CreateTransactionItemView(parent, _("Data"), txData->data, lastView);
+}
+static void GuiArRenderDataItemDetail(lv_obj_t *parent, DisplayArweaveDataItem *txData)
+{
+    lv_obj_t *lastView = NULL;
+    for (size_t i = 0; i < txData->tags->size; i++) {
+        lastView = CreateTransactionItemView(parent, txData->tags->data[i].name, txData->tags->data[i].value, lastView);
+    }
 }
 
 #endif

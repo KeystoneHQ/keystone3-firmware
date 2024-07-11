@@ -21,10 +21,6 @@
 #include "gui_global_resources.h"
 #include "user_memory.h"
 
-#ifdef COMPILE_SIMULATOR
-#include "simulator_mock_define.h"
-#endif
-
 #ifdef BTC_ONLY
 #include "gui_btc_home_widgets.h"
 #include "multi_sig_wallet_manager.h"

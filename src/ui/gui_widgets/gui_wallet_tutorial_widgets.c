@@ -259,6 +259,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_KEYSTONE].items[0].url = _("connect_keystone_link");
     g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrTitle = _("connect_keystone_title");
     g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrUrl = _("connect_keystone_link");
+
+    // WALLET_LIST_LEAP_WALLET
+    g_tutorials[WALLET_LIST_LEAP].len = 1;
+    g_tutorials[WALLET_LIST_LEAP].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_LEAP].items[0].walletName = "Leap";
+    g_tutorials[WALLET_LIST_LEAP].items[0].url = _("connect_tonkeeper_link");
+    g_tutorials[WALLET_LIST_LEAP].items[0].qrTitle = "Leap";
+    g_tutorials[WALLET_LIST_LEAP].items[0].qrUrl = _("connect_tonkeeper_link");
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;
     g_tutorials[WALLET_LIST_BLUE].desc = _("connect_wallet_desc");

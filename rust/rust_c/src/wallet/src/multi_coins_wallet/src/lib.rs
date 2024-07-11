@@ -19,32 +19,48 @@ use alloc::format;
 use alloc::string::String;
 use alloc::string::ToString;
 use alloc::vec::Vec;
+
+use app_wallets::metamask::ETHAccountTypeApp;
 use app_wallets::DEVICE_TYPE;
 use app_wallets::DEVICE_VERSION;
-use core::slice;
+use cty::uint32_t;
+use keystore::algorithms::secp256k1::derive_extend_public_key;
+use keystore::errors::KeystoreError;
+use third_party::bitcoin::hex::{Case, DisplayHex};
+use third_party::core2::io::Read;
 use third_party::ed25519_bip32_core::XPub;
 use third_party::hex;
-use third_party::ur_registry::bytes::Bytes;
+use third_party::ur_registry::crypto_account::CryptoAccount;
+use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
 use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
+use third_party::ur_registry::error::URError;
 use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
+use third_party::ur_registry::traits::RegistryItem;
 
-use crate::structs::QRHardwareCallData;
-use app_wallets::metamask::ETHAccountTypeApp;
 use common_rust_c::errors::RustCError;
 use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::{ExtendedPublicKey, Response};
-use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
+use common_rust_c::types::{Ptr, PtrBytes, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
 use common_rust_c::{extract_array, extract_ptr_with_type};
-use cty::{int32_t, uint32_t};
-use keystore::algorithms::secp256k1::derive_extend_public_key;
-use keystore::errors::KeystoreError;
-use third_party::ur_registry::crypto_account::CryptoAccount;
-use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::traits::RegistryItem;
+
+use crate::structs::QRHardwareCallData;
+
+pub mod aptos;
+pub mod arconnect;
+pub mod backpack;
+mod imtoken;
+pub mod keplr;
+pub mod okx;
+pub mod solana;
+pub mod structs;
+pub mod sui;
+pub mod tonkeeper;
+mod utils;
+pub mod xbull;
+pub mod xrp_toolkit;
 
 #[repr(C)]
 pub enum ETHAccountType {
@@ -213,22 +229,68 @@ pub extern "C" fn generate_key_derivation_ur(
                 Ok(path) => path,
                 Err(e) => return Err(URError::UrEncodeError(e)),
             };
-            match hex::decode(xpub) {
-                Ok(v) => match XPub::from_slice(&v) {
-                    Ok(xpub) => Ok(CryptoHDKey::new_extended_key(
-                        None,
-                        xpub.public_key().to_vec(),
-                        Some(xpub.chain_code().to_vec()),
-                        None,
-                        Some(path),
-                        None,
-                        None,
-                        None,
-                        None,
-                    )),
-                    Err(e) => Err(URError::UrEncodeError(e.to_string())),
-                },
-                Err(e) => Err(URError::UrEncodeError(e.to_string())),
+            let xpub_decode = hex::decode(xpub);
+
+            match xpub_decode {
+                Ok(v) => {
+                    if v.len() >= 78 {
+                        // sec256k1 xpub
+                        let xpub = third_party::bitcoin::bip32::Xpub::decode(&v);
+                        match xpub {
+                            Ok(xpub) => {
+                                let chain_code = xpub.chain_code.as_bytes().to_vec();
+                                Ok(CryptoHDKey::new_extended_key(
+                                    None,
+                                    xpub.public_key.serialize().to_vec(),
+                                    Some(chain_code),
+                                    None,
+                                    Some(path),
+                                    None,
+                                    Some(xpub.parent_fingerprint.to_bytes()),
+                                    None,
+                                    None,
+                                ))
+                            }
+                            Err(e) => Err(URError::UrEncodeError(e.to_string())),
+                        }
+                    } else if (v.len() == 32) {
+                        //  ed25519 xpub
+                        Ok(CryptoHDKey::new_extended_key(
+                            None,
+                            v,
+                            None,
+                            None,
+                            Some(path),
+                            None,
+                            None,
+                            None,
+                            None,
+                        ))
+                    } else {
+                        let xpub = XPub::from_slice(&v);
+                        match xpub {
+                            Ok(xpub) => {
+                                let chain_code = xpub.chain_code().to_vec();
+                                Ok(CryptoHDKey::new_extended_key(
+                                    None,
+                                    xpub.public_key().to_vec(),
+                                    Some(chain_code),
+                                    None,
+                                    Some(path),
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                ))
+                            }
+                            Err(e) => Err(URError::UrEncodeError(e.to_string())),
+                        }
+                    }
+                }
+                Err(e) => {
+                    rust_tools::debug!(format!("cant decode xpub error: {:?}", e));
+                    Err(URError::UrEncodeError(e.to_string()))
+                }
             }
         })
         .collect::<Result<Vec<CryptoHDKey>, URError>>();

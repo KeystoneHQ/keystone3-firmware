@@ -17,6 +17,7 @@ static uint16_t g_confirmSign = SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM;
 
 static AttentionHintboxContext *BuildConfirmationHintboxContext();
 static AttentionHintboxContext *BuildLowPowerHintboxContext();
+static AttentionHintboxContext *HardWareCallInvaildPathHintboxContext();
 static void CloseAttentionHandler(lv_event_t *e);
 static void ConfirmAttentionHandler(lv_event_t *e);
 static uint16_t RecalculateButtonWidth(lv_obj_t *button, uint16_t minButtonWidth);
@@ -30,6 +31,16 @@ static AttentionHintboxContext *BuildConfirmationHintboxContext()
     context->hintboxHeight = 476;
     context->okBtnText = _("rsa_confirm_hintbox_ok");
     context->cancelBtnText = _("rsa_confirm_hintbox_cancel");
+    return context;
+}
+static AttentionHintboxContext *HardWareCallInvaildPathHintboxContext()
+{
+    AttentionHintboxContext *context = SRAM_MALLOC(sizeof(AttentionHintboxContext));
+    context->icon = &imgUnknown;
+    context->title = _("invaild_account_path");
+    context->context = _("invaild_account_path_notice");
+    context->hintboxHeight = 416;
+    context->cancelBtnText = _("power_requirements_hintbox_cancel");
     return context;
 }
 
@@ -88,6 +99,27 @@ void GuiCloseAttentionHintbox()
     }
 }
 
+void GuiCreateHardwareCallInvaildPathHintbox()
+{
+    AttentionHintboxContext *context = HardWareCallInvaildPathHintboxContext();
+    g_attentionCont = GuiCreateHintBox(context->hintboxHeight);
+    lv_obj_t *tempObj = GuiCreateImg(g_attentionCont, context->icon);
+    lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
+
+    tempObj = GuiCreateLittleTitleLabel(g_attentionCont, context->title);
+    lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
+
+    tempObj = GuiCreateIllustrateLabel(g_attentionCont, context->context);
+    lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
+
+    tempObj = GuiCreateTextBtn(g_attentionCont, context->cancelBtnText);
+    lv_obj_set_size(tempObj, RecalculateButtonWidth(tempObj, 94), 66);
+    lv_obj_set_style_radius(tempObj, 24, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(tempObj, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_add_event_cb(tempObj, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+    SRAM_FREE(context);
+}
 void GuiCreateAttentionHintbox(uint16_t confirmSign)
 {
     if (!CheckPowerRequirements()) {

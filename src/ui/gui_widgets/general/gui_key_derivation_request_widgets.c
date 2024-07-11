@@ -10,6 +10,7 @@
 #include "gui_global_resources.h"
 #include "gui_obj.h"
 
+#include "secret_cache.h"
 typedef struct KeyDerivationWidget {
     uint8_t currentTile;
     PageWidget_t *pageWidget;
@@ -47,7 +48,9 @@ static char g_derivationPathAddr[2][2][BUFFER_SIZE_128];
 static void RecalcCurrentWalletIndex(char *origin);
 
 static void GuiCreateApproveWidget(lv_obj_t *parent);
+static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent);
 static void GuiCreateQRCodeWidget(lv_obj_t *parent);
+static void GuiCreateCommonHardWareCallQRCodeWidget(lv_obj_t *parent);
 static void OnApproveHandler(lv_event_t *e);
 static void OnReturnHandler(lv_event_t *e);
 static void ModelParseQRHardwareCall();
@@ -74,6 +77,8 @@ static bool IsSelectChanged(void);
 static void SetAccountType(uint8_t index);
 static bool IsCardano();
 
+static KeyboardWidget_t *g_keyboardWidget = NULL;
+static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 void GuiSetKeyDerivationRequestData(void *urResult, void *multiResult, bool is_multi)
 {
     g_urResult = urResult;
@@ -92,12 +97,15 @@ void FreeKeyDerivationRequestMemory(void)
     }
 }
 
+
 static void RecalcCurrentWalletIndex(char *origin)
 {
     if (strcmp("eternl", origin) == 0) {
         g_walletIndex = WALLET_LIST_ETERNL;
     } else if (strcmp("Typhon Extension", origin) == 0) {
         g_walletIndex = WALLET_LIST_TYPHON;
+    } else if (strcmp("Leap Wallet", origin) == 0) {
+        g_walletIndex = WALLET_LIST_LEAP;
     } else {
         g_walletIndex = WALLET_LIST_ETERNL;
     }
@@ -119,14 +127,23 @@ void GuiKeyDerivationRequestInit()
     lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, TILE_APPROVE, 0, LV_DIR_HOR);
-    GuiCreateApproveWidget(tile);
+    ModelParseQRHardwareCall();
+    // choose different animate qr widget by hardware call  version
+    if (strcmp("1", g_callData->version) == 0) {
+        GuiCreateHardwareCallApproveWidget(tile);
+    } else {
+        GuiCreateApproveWidget(tile);
+    }
     RecalcCurrentWalletIndex(g_response->data->origin);
     SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex, NULL);
     SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
-
     tile = lv_tileview_add_tile(tileView, TILE_QRCODE, 0, LV_DIR_HOR);
-    GuiCreateQRCodeWidget(tile);
-
+    // choose different animate qr widget by hardware call  version
+    if (strcmp("1", g_callData->version) == 0) {
+        GuiCreateCommonHardWareCallQRCodeWidget(tile);
+    } else {
+        GuiCreateQRCodeWidget(tile);
+    }
     g_keyDerivationTileView.currentTile = TILE_APPROVE;
     g_keyDerivationTileView.tileView = tileView;
 
@@ -278,10 +295,90 @@ static void ModelParseQRHardwareCall()
     g_callData = data->data;
     g_response = data;
 }
+#else
+static void ModelParseQRHardwareCall()
+{
+    g_response = SRAM_MALLOC(sizeof(Response_QRHardwareCallData));
+    g_response->error_code = 0;
+    g_response->error_message = "";
+    g_response->data = SRAM_MALLOC(sizeof(QRHardwareCallData));
+    g_response->data->call_type = "key_derivation";
+    g_response->data->origin = "Leap Wallet";
+    g_response->data->key_derivation = SRAM_MALLOC(sizeof(KeyDerivationRequestData));
+    g_response->data->key_derivation->schemas = SRAM_MALLOC(sizeof(VecFFI_KeyDerivationSchema));
+    g_response->data->key_derivation->schemas->cap = 3;
+    g_response->data->key_derivation->schemas->size = 3;
+    g_response->data->key_derivation->schemas->data = SRAM_MALLOC(3 * sizeof(KeyDerivationSchema));
+    g_response->data->key_derivation->schemas->data[0].algo = "BIP32";
+    // secp256k1
+    g_response->data->key_derivation->schemas->data[0].curve = "0";
+    g_response->data->key_derivation->schemas->data[0].key_path = "44'/60'/0'";
+
+
+    // sol
+    g_response->data->key_derivation->schemas->data[1].algo = "ED25519";
+    // ed25519
+    g_response->data->key_derivation->schemas->data[1].curve = "1";
+    g_response->data->key_derivation->schemas->data[1].key_path = "44'/501'/0'";
+
+    // cosmos
+    g_response->data->key_derivation->schemas->data[2].algo = "BIP32";
+    // secp256k1
+    g_response->data->key_derivation->schemas->data[2].curve = "0";
+    g_response->data->key_derivation->schemas->data[2].key_path = "44'/118'/0'";
+    g_response->data->version = "1";
+
+    g_callData = g_response->data;
+}
+#endif
+
+typedef enum {
+    SECP256K1,
+    ED25519,
+} PublicInfoType_t;
+
+
+static uint8_t GetPublicKeyTypeByCurveString(char *curve)
+{
+    if (strcmp(curve, "0") == 0) return SECP256K1;
+    if (strcmp(curve, "1") == 0) return ED25519;
+}
 
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
     CSliceFFI_ExtendedPublicKey keys;
+    if (strcmp("1", g_callData->version) == 0) {
+        // hardware call version 1
+        ExtendedPublicKey xpubs[24];
+        for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
+            uint8_t seed[64];
+            char *password = SecretCacheGetPassword();
+            int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, password);
+            if (ret != 0) {
+                printf("Failed to get account seed\n");
+                return NULL;
+            }
+            uint8_t algo = GetPublicKeyTypeByCurveString(g_callData->key_derivation->schemas->data[i].curve);
+            char *path = g_callData->key_derivation->schemas->data[i].key_path;
+            SimpleResponse_c_char *pubkey;
+            if (algo == SECP256K1) {
+                pubkey = get_extended_pubkey_bytes_by_seed(seed, sizeof(seed), path);
+                xpubs[i].path = path;
+                xpubs[i].xpub = pubkey->data;
+            } else if (algo == ED25519) {
+                pubkey = get_ed25519_pubkey_by_seed(seed, sizeof(seed), path);
+                xpubs[i].path = path;
+                xpubs[i].xpub = pubkey->data;
+            }
+        }
+        keys.data = xpubs;
+        keys.size = g_callData->key_derivation->schemas->size;
+        uint8_t mfp[4] = {0};
+        GetMasterFingerPrint(mfp);
+        // clean the cache after use
+        ClearSecretCache();
+        return generate_key_derivation_ur(mfp, 4, &keys);
+    }
     ExtendedPublicKey xpubs[24];
     for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
         KeyDerivationSchema schema = g_callData->key_derivation->schemas->data[i];
@@ -327,6 +424,71 @@ static uint8_t GetXPubIndexByPath(char *path)
     if (strcmp("M/44'/148'/3'", path) == 0) return XPUB_TYPE_STELLAR_3;
     if (strcmp("M/44'/148'/4'", path) == 0) return XPUB_TYPE_STELLAR_4;
     return GetAdaXPubTypeByIndex(0);
+}
+
+static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent)
+{
+
+    lv_obj_t *label, *cont, *btn, *pathCont,*noticeCont;
+
+    cont = GuiCreateContainerWithParent(parent, 408, 534);
+    lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 8);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    // set cont scrollable
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+
+    label = GuiCreateIllustrateLabel(cont, _("connect_wallet_key_request_fmt"));
+    lv_label_set_text_fmt(label, _("connect_wallet_key_request_fmt"), g_response->data->origin);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
+
+    // pathContainer height should be 102 * size
+    pathCont = GuiCreateContainerWithParent(cont, 408, 102 * g_response->data->key_derivation->schemas->size);
+    lv_obj_align(pathCont, LV_ALIGN_TOP_LEFT, 0, 92);
+    lv_obj_set_style_radius(pathCont, 24, 0);
+    lv_obj_set_style_bg_color(pathCont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(pathCont, LV_OPA_12, LV_PART_MAIN);
+    lv_obj_add_flag(pathCont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(pathCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_t *line;
+    static lv_point_t points[24] = {{0, 0}, {360, 0}};
+
+    for (size_t i = 0; i < g_response->data->key_derivation->schemas->size; i++) {
+        cont = GuiCreateContainerWithParent(pathCont, 408, 102);
+        lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 102 * i);
+        lv_obj_set_style_bg_opa(cont, LV_OPA_0, LV_PART_MAIN);
+        char title[BUFFER_SIZE_32] = {0};
+        sprintf(title, "%s-%d", _("account_head"), i);
+        label = GuiCreateIllustrateLabel(cont, title);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+        char path[BUFFER_SIZE_64] = {0};
+        snprintf_s(path, BUFFER_SIZE_64, "M/%s", g_response->data->key_derivation->schemas->data[i].key_path);
+        label = GuiCreateIllustrateLabel(cont, path);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56);
+        line = GuiCreateLine(cont, points, 2);
+        lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 101);
+    }
+
+    // create notice container
+    noticeCont = GuiCreateContainerWithParent(parent, 408, 202);
+    lv_obj_align(noticeCont, LV_ALIGN_TOP_LEFT, 36, 92 + 102 * g_response->data->key_derivation->schemas->size + 30);
+    label = GuiCreateIllustrateLabel(noticeCont, _("hardware_call_approve_notice"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
+
+    // bottom container
+    cont = GuiCreateContainerWithParent(parent, 480, 114);
+    lv_obj_align(cont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+
+    btn = GuiCreateTextBtn(cont, _("Cancel"));
+    lv_obj_set_size(btn, 192, 66);
+    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
+    lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 36, 24);
+    lv_obj_add_event_cb(btn, CloseCurrentViewHandler, LV_EVENT_CLICKED, NULL);
+
+    btn = GuiCreateTextBtn(cont, _("Approve"));
+    lv_obj_set_size(btn, 192, 66);
+    lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 252, 24);
+    lv_obj_add_event_cb(btn, OnApproveHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void GuiCreateApproveWidget(lv_obj_t *parent)
@@ -388,6 +550,34 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, OnApproveHandler, LV_EVENT_CLICKED, NULL);
 }
 
+static void GuiCreateCommonHardWareCallQRCodeWidget(lv_obj_t *parent)
+{
+    lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_scan"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 152 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
+
+    lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 408);
+    lv_obj_add_flag(qrCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 80);
+    lv_obj_set_style_bg_color(qrCont, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_radius(qrCont, 24, LV_PART_MAIN);
+
+    lv_obj_t *qrBgCont = GuiCreateContainerWithParent(qrCont, 336, 336);
+    lv_obj_align(qrBgCont, LV_ALIGN_TOP_MID, 0, 36);
+    lv_obj_set_style_bg_color(qrBgCont, WHITE_COLOR, LV_PART_MAIN);
+
+    lv_obj_t *qrcode = GuiCreateContainerWithParent(qrBgCont, 294, 294);
+    lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
+
+    lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
+    g_keyDerivationTileView.qrCode = qrcode;
+
+    lv_obj_t *bottomCont = GuiCreateContainerWithParent(qrCont, 408, 104);
+    lv_obj_align(bottomCont, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_set_style_bg_color(bottomCont, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(bottomCont, LV_OPA_0, LV_STATE_DEFAULT | LV_PART_MAIN);
+}
+
 static void GuiCreateQRCodeWidget(lv_obj_t *parent)
 {
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_scan"));
@@ -428,9 +618,52 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
 }
 
+static void GuiShowKeyBoardDialog(lv_obj_t *parent)
+{
+    g_keyboardWidget = GuiCreateKeyboardWidget(parent);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    // set sig for global cache logic
+    static uint16_t sig = SIG_HARDWARE_CALL_DERIVE_PUBKEY;
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
+}
+
+static bool CheckHardWareCallParaIsValied()
+{
+    if (strcmp("1", g_callData->version) == 0) {
+        // only hard ware call version 1 need check
+        for (size_t i = 0; i < g_response->data->key_derivation->schemas->size; i++) {
+            if (strlen(g_response->data->key_derivation->schemas->data[i].key_path) == 0) {
+                // todo add more check logic
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 static void OnApproveHandler(lv_event_t *e)
 {
+    if (!CheckHardWareCallParaIsValied()) {
+        GuiCreateHardwareCallInvaildPathHintbox();
+        return;
+    }
+    if (strcmp("1", g_callData->version) == 0) {
+        // pop up password keyboard dialog when hardware call version is 1
+        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
+        GuiShowKeyBoardDialog(parent);
+    } else {
+        GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
+        GuiKeyDerivationRequestNextTile();
+    }
+}
+
+void HiddenKeyboardAndShowAnimateQR()
+{
+    // close password keyboard
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
+    // show dynamic qr code
     GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
+    // jump to next page to show qr code
     GuiKeyDerivationRequestNextTile();
 }
 

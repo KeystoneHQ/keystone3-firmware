@@ -321,12 +321,12 @@ impl QRCodeType {
             #[cfg(feature = "multi-coins")]
             InnerURType::AptosSignRequest(_) => Ok(QRCodeType::AptosSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::CardanoSignRequest(_) => Ok(URType::CardanoSignRequest),
+            InnerURType::CardanoSignRequest(_) => Ok(QRCodeType::CardanoSignRequest),
             #[cfg(feature = "multi-coins")]
-            InnerURType::CardanoSignDataRequest(_) => Ok(URType::CardanoSignDataRequest),
+            InnerURType::CardanoSignDataRequest(_) => Ok(QRCodeType::CardanoSignDataRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::CardanoCatalystVotingRegistrationRequest(_) => {
-                Ok(URType::CardanoCatalystVotingRegistrationRequest)
+                Ok(QRCodeType::CardanoCatalystVotingRegistrationRequest)
             }
             #[cfg(feature = "multi-coins")]
             InnerURType::TonSignRequest(_) => Ok(QRCodeType::TonSignRequest),

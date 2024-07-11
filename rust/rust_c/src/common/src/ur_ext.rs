@@ -10,11 +10,11 @@ use third_party::ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest
 use third_party::ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use third_party::ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
+use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 #[cfg(feature = "multi-coins")]

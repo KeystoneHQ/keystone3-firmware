@@ -25,9 +25,8 @@ use third_party::ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use third_party::ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cardano::{
-    cardano_sign_request::CardanoSignRequest,
-    cardano_sign_data_request::CardanoSignDataRequest,
     cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest,
+    cardano_sign_data_request::CardanoSignDataRequest, cardano_sign_request::CardanoSignRequest,
 };
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
@@ -689,7 +688,9 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         #[cfg(feature = "multi-coins")]
         QRCodeType::CardanoSignRequest => _receive_ur::<CardanoSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
-        QRCodeType::CardanoSignDataRequest => _receive_ur::<CardanoSignDataRequest>(ur, ur_type, decoder),
+        QRCodeType::CardanoSignDataRequest => {
+            _receive_ur::<CardanoSignDataRequest>(ur, ur_type, decoder)
+        }
         #[cfg(feature = "multi-coins")]
         QRCodeType::CardanoCatalystVotingRegistrationRequest => {
             _receive_ur::<CardanoCatalystVotingRegistrationRequest>(ur, ur_type, decoder)

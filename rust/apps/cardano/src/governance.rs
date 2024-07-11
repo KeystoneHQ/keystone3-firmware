@@ -3,7 +3,7 @@ use crate::structs::SignVotingRegistrationResult;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use third_party::cryptoxide::hashing::blake2b_256;
-use third_party::ed25519_bip32_core::XPub;
+use third_party::ed25519_bip32_core::{XPrv, XPub};
 use third_party::hex;
 use third_party::ur_registry::cardano::cardano_delegation::CardanoDelegation;
 use third_party::ur_registry::cardano::governance::CardanoVotingRegistration;
@@ -45,13 +45,13 @@ pub fn build_delegations(
     let mut delegations_vec = Vec::new();
     for delegation in delegations {
         let vote_key = generate_vote_key(delegation.get_path(), entropy, passphrase).unwrap();
-        let vote_key_bytes = vote_key.public_key();
+        let vote_key_bytes = vote_key.public().public_key();
         delegations_vec.push((hex::encode(vote_key_bytes), delegation.get_weidth()));
     }
     Ok(delegations_vec)
 }
 
-pub fn generate_vote_key(path: CryptoKeyPath, entropy: &[u8], passphrase: &[u8]) -> R<XPub> {
+pub fn generate_vote_key(path: CryptoKeyPath, entropy: &[u8], passphrase: &[u8]) -> R<XPrv> {
     let icarus_master_key =
         keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
             entropy, passphrase,
@@ -63,7 +63,20 @@ pub fn generate_vote_key(path: CryptoKeyPath, entropy: &[u8], passphrase: &[u8])
             &path.get_path().unwrap(),
         )
         .unwrap();
-    Ok(bip32_signing_key.public())
+    Ok(bip32_signing_key)
+}
+
+pub fn derive_vote_key(
+    delegations: Vec<CardanoDelegation>,
+    entropy: &[u8],
+    passphrase: &[u8],
+) -> R<Vec<Vec<u8>>> {
+    let mut vote_keys = Vec::new();
+    for delegation in delegations {
+        let vote_key = generate_vote_key(delegation.get_path(), entropy, passphrase).unwrap();
+        vote_keys.push(vote_key.extended_secret_key().to_vec());
+    }
+    Ok(vote_keys)
 }
 
 pub fn sign(
@@ -152,7 +165,7 @@ mod tests {
         let xpub = generate_vote_key(crypto_key_path1, &entropy, passphrase).unwrap();
 
         assert_eq!(
-            hex::encode(xpub.public_key()),
+            hex::encode(xpub.public().public_key()),
             "248aba8dce1e4b0a5e53509d07c42ac34f970ec452293a84763bb77359b5263f",
         );
     }

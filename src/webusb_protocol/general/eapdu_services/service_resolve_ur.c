@@ -108,6 +108,8 @@ void ProcessURService(EAPDURequestPayload_t *payload)
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
     printf("urResult->t=%d, urResult->ur_type=%d\n", urResult->t, urResult->ur_type);
+    
+    // just btc/eth/sol
     if (!CheckViewTypeIsAllow(urViewType.viewType)) {
         const char *data = "this view type is not supported";
         HandleURResultViaUSBFunc(data, strlen(data), g_requestID, RSP_FAILURE_CODE);

@@ -1,11 +1,14 @@
 use alloc::boxed::Box;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_cardano::structs::{
     CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignData,
     ParsedCardanoTx,
 };
 use core::ptr::null_mut;
+use third_party::hex;
 use third_party::itertools::Itertools;
+use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::{free_ptr_string, Free};
@@ -24,7 +27,28 @@ pub struct DisplayCardanoSignData {
 
 #[repr(C)]
 pub struct DisplayCardanoCatalyst {
-    pub data: PtrString,
+    pub nonce: PtrString,
+    pub vote_public_key: PtrString,
+    pub rewards: PtrString,
+    pub stake_keys: Ptr<VecFFI<PtrString>>,
+}
+
+impl From<CardanoCatalystVotingRegistrationRequest> for DisplayCardanoCatalyst {
+    fn from(value: CardanoCatalystVotingRegistrationRequest) -> Self {
+        Self {
+            nonce: convert_c_char(value.get_nonce().to_string()),
+            vote_public_key: convert_c_char(hex::encode(value.get_stake_pub())),
+            rewards: convert_c_char(hex::encode(value.get_payment_address())),
+            stake_keys: VecFFI::from(
+                value
+                    .get_delegations()
+                    .iter()
+                    .map(|v| convert_c_char(v.get_path().get_path().unwrap()))
+                    .collect_vec(),
+            )
+            .c_ptr(),
+        }
+    }
 }
 
 #[repr(C)]
@@ -86,7 +110,10 @@ impl Free for DisplayCardanoSignData {
 
 impl Free for DisplayCardanoCatalyst {
     fn free(&self) {
-        free_str_ptr!(self.data);
+        free_str_ptr!(self.nonce);
+        free_str_ptr!(self.vote_public_key);
+        free_str_ptr!(self.rewards);
+        free_vec!(self.stake_keys);
     }
 }
 

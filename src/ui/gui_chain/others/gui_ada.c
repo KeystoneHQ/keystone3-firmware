@@ -80,10 +80,8 @@ void *GuiGetAdaCatalyst(void)
 {
     CHECK_FREE_PARSE_CATALYST_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    uint8_t mfp[4];
-    GetMasterFingerPrint(mfp);
     do {
-        TransactionParseResult_DisplayCardanoCatalyst *parseResult = cardano_parse_catalyst(data, mfp);
+        TransactionParseResult_DisplayCardanoCatalyst *parseResult = cardano_parse_catalyst(data);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
@@ -508,6 +506,69 @@ static uint8_t GetXPubIndexByPath(char *path)
     if (strcmp("1852'/1815'/23'", path) == 0)
         return XPUB_TYPE_ADA_23;
     return XPUB_TYPE_ADA_0;
+}
+
+void GetCatalystNonce(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
+    if (data->nonce == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->nonce);
+}
+
+void GetCatalystVotePublicKey(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
+    if (data->vote_public_key == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->vote_public_key);
+}
+
+void GetCatalystRewardsNotice(lv_obj_t *parent, void *totalData)
+{
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_size(parent, 360, 60);
+    lv_obj_set_width(parent, 360);
+    lv_obj_set_style_bg_opa(parent, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_t *notice = lv_label_create(parent);
+    lv_obj_set_width(notice, 360);
+    lv_label_set_long_mode(notice, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(notice, "Ensure the address matches. Please verify carefully.");
+    lv_obj_set_style_text_font(notice, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(notice, ORANGE_COLOR, LV_PART_MAIN);
+}
+
+void GetCatalystRewards(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
+    if (data->rewards == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->rewards);
+}
+
+void GetCatalystStakeKeysPath(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
+    if (data->stake_keys->size == 0) {
+        return;
+    }
+    for (uint32_t i = 0; i < data->stake_keys->size; i++) {
+        strcat_s((char *)indata, maxLen, data->stake_keys->data[i]);
+        if (i != data->stake_keys->size - 1) {
+            strcat_s((char *)indata, maxLen, "\n");
+        }
+    }
+}
+
+void GetCatalystStakeKeysPathSize(uint16_t *width, uint16_t *height, void *param)
+{
+    DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
+    *width = 408;
+    *height = 62 + 36 * data->stake_keys->size;
 }
 
 #endif

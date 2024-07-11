@@ -191,7 +191,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_ADA_CATALYST,
 #ifndef COMPILE_SIMULATOR
-        "{}",
+        "{\"name\":\"ada_catalyst_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"pos\":[0,0],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text\":\"VoteKeyRegistration\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,78],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Nonce\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystNonce\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,156],\"size\":[408,160],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"StakeKey\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystVotePublicKey\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,332],\"size\":[408,258],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"RewardsGoTo\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystRewards\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"custom_container\",\"pos\":[24,182],\"custom_show_func\":\"GetCatalystRewardsNotice\"}]},{\"type\":\"container\",\"pos\":[0,606],\"size_func\":\"GetCatalystStakeKeysPathSize\",\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"VoteKeyPath\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystStakeKeysPath\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
 #else
         PC_SIMULATOR_PATH "/page_ada_catalyst.json",
 #endif
@@ -325,6 +325,9 @@ GetContSizeFunc GetAdaContainerSize(char *type)
     }
     if (!strcmp(type, "GetAdaWithdrawalsSize")) {
         return GetAdaWithdrawalsSize;
+    }
+    if (!strcmp(type, "GetCatalystStakeKeysPathSize")) {
+        return GetCatalystStakeKeysPathSize;
     }
     return NULL;
 }
@@ -774,6 +777,14 @@ GetLabelDataFunc GuiAdaTextFuncGet(char *type)
         return GetAdaSignDataPayloadText;
     } else if (!strcmp(type, "GetAdaSignDataDerviationPathText")) {
         return GetAdaSignDataDerviationPathText;
+    } else if (!strcmp(type, "GetCatalystNonce")) {
+        return GetCatalystNonce;
+    } else if (!strcmp(type, "GetCatalystVotePublicKey")) {
+        return GetCatalystVotePublicKey;
+    } else if (!strcmp(type, "GetCatalystRewards")) {
+        return GetCatalystRewards;
+    } else if (!strcmp(type, "GetCatalystStakeKeysPath")) {
+        return GetCatalystStakeKeysPath;
     }
     return NULL;
 }
@@ -1202,7 +1213,9 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSolTxDetail;
     } else if (!strcmp(funcName, "GuiShowArweaveTxDetail")) {
         return GuiShowArweaveTxDetail;
-    }
+    } else if (!strcmp(funcName, "GetCatalystRewardsNotice")) {
+        return GetCatalystRewardsNotice;
+    } 
 #endif
     return NULL;
 }

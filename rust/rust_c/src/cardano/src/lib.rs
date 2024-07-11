@@ -164,14 +164,10 @@ pub extern "C" fn cardano_parse_sign_data(
 #[no_mangle]
 pub extern "C" fn cardano_parse_catalyst(
     ptr: PtrUR,
-    master_fingerprint: PtrBytes,
 ) -> PtrT<TransactionParseResult<DisplayCardanoCatalyst>> {
     let cardano_catalyst_request =
         extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
-    let res = DisplayCardanoCatalyst {
-        data: convert_c_char(cardano_catalyst_request.get_origin().unwrap()),
-    }
-    .c_ptr();
+    let res = DisplayCardanoCatalyst::from(cardano_catalyst_request.clone()).c_ptr();
 
     TransactionParseResult::success(res).c_ptr()
 }

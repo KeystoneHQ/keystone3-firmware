@@ -9,9 +9,9 @@ use core::str::FromStr;
 use app_ethereum::address::derive_address;
 use app_ethereum::erc20::parse_erc20;
 use app_ethereum::errors::EthereumError;
-use app_ethereum::legacy_transaction_v2::{LegacyTransactionV2, TransactionSignature};
 use app_ethereum::{
     parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
+    LegacyTransaction, TransactionSignature,
 };
 use keystore::algorithms::secp256k1::derive_public_key;
 use third_party::core2::io::Read;
@@ -446,7 +446,7 @@ pub extern "C" fn eth_sign_tx_bytes(
         }
     };
 
-    let legacy_transaction = LegacyTransactionV2::try_from(eth_tx).unwrap();
+    let legacy_transaction = LegacyTransaction::try_from(eth_tx).unwrap();
 
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
     let mfp = unsafe { slice::from_raw_parts(mfp, mfp_len as usize) };

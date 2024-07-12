@@ -79,6 +79,19 @@ pub fn derive_vote_key(
     Ok(vote_keys)
 }
 
+pub fn check_delegate_path(delegations: Vec<CardanoDelegation>) -> bool {
+    for delegation in delegations {
+        let components = delegation.get_path().get_components();
+        if components.len() != 5
+            || (components[0].get_index().unwrap() != 1694 && components[0].is_hardened())
+            || (components[1].get_index().unwrap() != 1815 && components[1].is_hardened())
+        {
+            return false;
+        }
+    }
+    true
+}
+
 pub fn sign(
     path: &String,
     delegations: Vec<CardanoDelegation>,

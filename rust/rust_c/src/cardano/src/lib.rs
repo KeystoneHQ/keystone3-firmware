@@ -16,6 +16,7 @@ use third_party::hex;
 
 use third_party::ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
 use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
+use third_party::ur_registry::cardano::cardano_delegation::CardanoDelegation;
 use third_party::ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 use third_party::ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
 use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
@@ -48,6 +49,10 @@ pub extern "C" fn cardano_check_catalyst(
         .get_derivation_path()
         .get_source_fingerprint()
         .ok_or(RustCError::InvalidMasterFingerprint);
+
+    if !governance::check_delegate_path(cardano_catalyst_request.get_delegations()) {
+        return TransactionCheckResult::from(RustCError::InvalidHDPath).c_ptr();
+    }
 
     if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
         if hex::encode(mfp) != hex::encode(ur_mfp.unwrap()) {

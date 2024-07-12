@@ -171,8 +171,10 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_STELLAR_2,             ED25519,       "stellar_2",                "M/44'/148'/2'"    },
     {XPUB_TYPE_STELLAR_3,             ED25519,       "stellar_3",                "M/44'/148'/3'"    },
     {XPUB_TYPE_STELLAR_4,             ED25519,       "stellar_4",                "M/44'/148'/4'"    },
+    {XPUB_TYPE_TON_BIP39,             ED25519,       "ton_bip39",                "M/44'/607'/0'"    },
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
+    
 #else
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },

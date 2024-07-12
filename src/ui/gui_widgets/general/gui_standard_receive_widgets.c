@@ -24,7 +24,6 @@
 #include "simulator_mock_define.h"
 #endif
 
-
 #define GENERAL_ADDRESS_INDEX_MAX                           999999999
 #define LEDGER_LIVE_ADDRESS_INDEX_MAX                       9
 #define ADDRESS_LONE_MODE_LEN                               (24)
@@ -125,7 +124,6 @@ static void RefreshSwitchAddress(void);
 static bool IsIndexSelectChanged();
 static uint32_t* GetCosmosChainCurrentSelectIndex();
 
-
 static StandardReceiveWidgets_t g_standardReceiveWidgets;
 static StandardReceiveTile g_StandardReceiveTileNow;
 static HOME_WALLET_CARD_ENUM g_chainCard;
@@ -170,12 +168,9 @@ static uint32_t g_umeeChainSelectIndex[3] = {0};
 static uint32_t g_qckChainSelectIndex[3] = {0};
 static uint32_t g_tgdChainSelectIndex[3] = {0};
 
-
 static PageWidget_t *g_pageWidget;
 static uint32_t g_selectedIndex[3] = {0};
 static bool g_inputAccountValid = true;
-
-
 
 static void JumpToAccountHandler(lv_event_t *e)
 {
@@ -255,8 +250,6 @@ static void RefreshSwitchAddress(void)
         index++;
     }
 }
-
-
 
 static void InputAddressIndexKeyboardHandler(lv_event_t *e)
 {
@@ -360,8 +353,6 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
     }
 
 }
-
-
 
 static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
 {
@@ -928,11 +919,10 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         bool isTonNative = GetMnemonicType() == MNEMONIC_TYPE_TON;
         if (isTonNative) {
             xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
-            result = ton_get_address(xPub);
         } else {
-            ASSERT(false);
-            //remains for bip39 ton
+            xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
         }
+        result = ton_get_address(xPub);
         break;
     }
     default:
@@ -994,9 +984,6 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
     g_qckChainSelectIndex[index] = 0;
     g_tgdChainSelectIndex[index] = 0;
 }
-
-
-
 
 void GuiResetAllStandardAddressIndex(void)
 {

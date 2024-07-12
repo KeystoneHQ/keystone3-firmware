@@ -45,6 +45,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BNB, false, "BNB", false},
     {HOME_WALLET_CARD_XRP, false, "XRP", true},
     {HOME_WALLET_CARD_ADA, false, "ADA", true},
+    {HOME_WALLET_CARD_TON, false, "TON", false},
     {HOME_WALLET_CARD_DOT, false, "DOT", false},
     {HOME_WALLET_CARD_TRX, false, "TRX", true},
     {HOME_WALLET_CARD_LTC, false, "LTC", true},
@@ -87,7 +88,6 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_UMEE, false, "UMEE", true},
     {HOME_WALLET_CARD_QCK, false, "QCK", true},
     {HOME_WALLET_CARD_TGD, false, "TGD", true},
-    {HOME_WALLET_CARD_TON, false, "TON", false},
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 static KeyboardWidget_t *g_keyboardWidget = NULL;
@@ -107,7 +107,7 @@ static void GuiInitWalletState()
         g_walletState[HOME_WALLET_CARD_BNB].enable = false;
         g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
-        g_walletState[HOME_WALLET_CARD_TON].enable = false;
+        g_walletState[HOME_WALLET_CARD_TON].enable = true;
         break;
     case MNEMONIC_TYPE_BIP39:
         for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
@@ -116,7 +116,7 @@ static void GuiInitWalletState()
         g_walletState[HOME_WALLET_CARD_BNB].enable = false;
         g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
-        g_walletState[HOME_WALLET_CARD_TON].enable = false;
+        g_walletState[HOME_WALLET_CARD_TON].enable = true;
         break;
     default:
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
@@ -161,6 +161,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "ADA",
         .chain = "Cardano",
         .icon = &coinAda,
+    },
+    {
+        .index = HOME_WALLET_CARD_TON,
+        .coin = "TON",
+        .chain = "The Open Network",
+        .icon = &coinTon,
     },
     {
         .index = HOME_WALLET_CARD_DOT,
@@ -413,12 +419,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "TGD",
         .chain = "Tgrade",
         .icon = &coinTgd,
-    },
-    {
-        .index = HOME_WALLET_CARD_TON,
-        .coin = "TON",
-        .chain = "The Open Network",
-        .icon = &coinTon,
     },
 };
 

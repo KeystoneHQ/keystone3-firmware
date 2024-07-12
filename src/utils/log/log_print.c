@@ -105,7 +105,9 @@ void PrintRustMemoryStatus(
 
 void PrintString(char *str)
 {
+#ifndef BUILD_PRODUCTION
     printf("message from rust: %s\r\n", str);
+#endif
 #ifndef COMPILE_SIMULATOR
     free_rust_value(str);
 #endif

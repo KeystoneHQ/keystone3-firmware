@@ -64,7 +64,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 #ifndef BTC_ONLY
     {CHAIN_ETH, "", &coinEth},       {CHAIN_SOL, "", &coinSol},
     {CHAIN_BNB, "", &coinBnb},       {CHAIN_XRP, "", &coinXrp},
-    {CHAIN_ADA, "", &coinAda},       {CHAIN_DOT, "", &coinDot},
+    {CHAIN_ADA, "", &coinAda},       {CHAIN_TON, "", &coinTon},
     {CHAIN_TRX, "", &coinTrx},       {CHAIN_LTC, "", &coinLtc},
     {CHAIN_BCH, "", &coinBch},       {CHAIN_APT, "", &coinApt},
     {CHAIN_SUI, "", &coinSui},       {CHAIN_DASH, "", &coinDash},
@@ -85,7 +85,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_GRAV, "", &coinGrav},     {CHAIN_IXO, "", &coinIxo},
     {CHAIN_NGM, "", &coinNgm},       {CHAIN_IOV, "", &coinIov},
     {CHAIN_UMEE, "", &coinUmee},     {CHAIN_QCK, "", &coinQck},
-    {CHAIN_TGD, "", &coinTgd},       {CHAIN_TON, "", &coinTon},
+    {CHAIN_TGD, "", &coinTgd},       {CHAIN_DOT, "", &coinDot},
 #endif
 };
 

@@ -20,9 +20,9 @@ use alloc::string::String;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 
+use app_wallets::metamask::ETHAccountTypeApp;
 use app_wallets::DEVICE_TYPE;
 use app_wallets::DEVICE_VERSION;
-use app_wallets::metamask::ETHAccountTypeApp;
 use cty::uint32_t;
 use keystore::algorithms::secp256k1::derive_extend_public_key;
 use keystore::errors::KeystoreError;
@@ -38,13 +38,13 @@ use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts
 use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
 use third_party::ur_registry::traits::RegistryItem;
 
-use common_rust_c::{extract_array, extract_ptr_with_type};
 use common_rust_c::errors::RustCError;
 use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::{ExtendedPublicKey, Response};
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH, UREncodeResult};
+use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
+use common_rust_c::{extract_array, extract_ptr_with_type};
 
 use crate::structs::QRHardwareCallData;
 
@@ -264,7 +264,7 @@ pub extern "C" fn check_hardware_call_path(
     };
     let mut path = recover_c_char(path).to_lowercase();
     if !path.starts_with("m") {
-        path = format!("m/{}", path); 
+        path = format!("m/{}", path);
     }
     let result = path.starts_with(prefix);
     Response::success(result).c_ptr()

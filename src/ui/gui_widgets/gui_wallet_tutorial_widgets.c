@@ -285,6 +285,15 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_NIGHTLY].items[0].url = _("tutorial_nightly_link");
     g_tutorials[WALLET_LIST_NIGHTLY].items[0].qrTitle = _("tutorial_nightly_title");
     g_tutorials[WALLET_LIST_NIGHTLY].items[0].qrUrl = _("tutorial_nightly_link");
+
+
+    // todo add multi language support
+    g_tutorials[WALLET_LIST_BEGIN].len = 1;
+    g_tutorials[WALLET_LIST_BEGIN].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_BEGIN].items[0].walletName = "Begin";
+    g_tutorials[WALLET_LIST_BEGIN].items[0].url = "https://keyst.one/t/3rd/begin";
+    g_tutorials[WALLET_LIST_BEGIN].items[0].qrTitle = "Begin";
+    g_tutorials[WALLET_LIST_BEGIN].items[0].qrUrl = "https://keyst.one/t/3rd/begin";
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;
     g_tutorials[WALLET_LIST_BLUE].desc = _("connect_wallet_desc");

@@ -119,6 +119,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
     {WALLET_LIST_THORWALLET, "THORWallet", &walletThorWallet},
     {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
+    {WALLET_LIST_BEGIN, "Begin", &walletBegin},
     {WALLET_LIST_LEAP, "Leap", &walletLeap}
     {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly}
 #else
@@ -311,6 +312,8 @@ char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
         return "Eternl";
     } else if (index == WALLET_LIST_TYPHON) {
         return "Typhon";
+    } else if (index == WALLET_LIST_BEGIN) {
+        return "Begin";
     }
     return g_walletBtn[index].name;
 }

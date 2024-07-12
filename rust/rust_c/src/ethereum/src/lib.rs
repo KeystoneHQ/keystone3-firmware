@@ -1,23 +1,18 @@
 #![no_std]
 extern crate alloc;
 
-use alloc::string::{String, ToString};
 use alloc::{format, slice};
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::str::FromStr;
 
-use crate::structs::{DisplayETH, DisplayETHPersonalMessage, DisplayETHTypedData, EthParsedErc20Transaction, TransactionType};
-use app_ethereum::erc20::{parse_erc20};
-use app_ethereum::errors::EthereumError;
-use app_ethereum::{parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message};
+use app_ethereum::{
+    parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
+};
 use app_ethereum::address::derive_address;
+use app_ethereum::erc20::parse_erc20;
+use app_ethereum::errors::EthereumError;
 use app_ethereum::legacy_transaction_v2::{LegacyTransactionV2, TransactionSignature};
-use common_rust_c::errors::{KeystoneError, RustCError};
-use common_rust_c::structs::{TransactionCheckResult, TransactionParseResult};
-use common_rust_c::types::{ PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH, URType};
-use common_rust_c::utils::{convert_c_char, recover_c_char};
-use common_rust_c::{extract_ptr_with_type, KEYSTONE};
 use keystore::algorithms::secp256k1::derive_public_key;
 use third_party::core2::io::Read;
 use third_party::cryptoxide::hashing::keccak256;
@@ -29,41 +24,53 @@ use third_party::ur_registry::pb::protoc::base::Content::ColdVersion;
 use third_party::ur_registry::pb::protoc::payload::Content;
 use third_party::ur_registry::pb::protoc::sign_transaction::Transaction::EthTx;
 use third_party::ur_registry::traits::{RegistryItem, To};
-use common_rust_c::keystone::{ build_payload};
+
+use common_rust_c::{extract_ptr_with_type, KEYSTONE};
+use common_rust_c::errors::{KeystoneError, RustCError};
+use common_rust_c::keystone::build_payload;
+use common_rust_c::structs::{TransactionCheckResult, TransactionParseResult};
+use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
+use common_rust_c::ur::{
+    FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH, QRCodeType, UREncodeResult,
+};
+use common_rust_c::utils::{convert_c_char, recover_c_char};
+
+use crate::structs::{
+    DisplayETH, DisplayETHPersonalMessage, DisplayETHTypedData, EthParsedErc20Transaction,
+    TransactionType,
+};
+
 mod abi;
 pub mod address;
 pub mod structs;
 mod util;
-
 
 #[no_mangle]
 pub extern "C" fn eth_check_ur_bytes(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     length: u32,
-    ur_type:URType,
+    ur_type: QRCodeType,
 ) -> PtrT<TransactionCheckResult> {
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    let payload = build_payload(ptr,ur_type);
+    let payload = build_payload(ptr, ur_type);
     match payload {
         Ok(payload) => {
             let mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-            let mfp:[u8;4] = mfp.to_vec().try_into().unwrap();
+            let mfp: [u8; 4] = mfp.to_vec().try_into().unwrap();
 
             let xfp = payload.xfp;
-            let xfp_vec:[u8;4] = hex::decode(xfp).unwrap().try_into().unwrap();
+            let xfp_vec: [u8; 4] = hex::decode(xfp).unwrap().try_into().unwrap();
             if mfp == xfp_vec {
-                rust_tools::debug!(format!("{:?},{:?}",mfp,xfp_vec));
+                rust_tools::debug!(format!("{:?},{:?}", mfp, xfp_vec));
                 return TransactionCheckResult::new().c_ptr();
-            }else {
+            } else {
                 return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
             }
         }
-        Err(e) => {
-           TransactionCheckResult::from(KeystoneError::ProtobufError(e.to_string())).c_ptr()
-        }
+        Err(e) => TransactionCheckResult::from(KeystoneError::ProtobufError(e.to_string())).c_ptr(),
     }
 }
 
@@ -104,7 +111,7 @@ pub extern "C" fn eth_check(
 
 #[no_mangle]
 pub extern "C" fn eth_get_root_path_bytes(ptr: PtrUR) -> PtrString {
-    let payload = build_payload(ptr,URType::Bytes).unwrap();
+    let payload = build_payload(ptr, QRCodeType::Bytes).unwrap();
     let content = payload.content.unwrap();
     let sign_tx = match content {
         Content::SignTx(sign_tx) => sign_tx,
@@ -113,11 +120,15 @@ pub extern "C" fn eth_get_root_path_bytes(ptr: PtrUR) -> PtrString {
         }
     };
     // convert "M/44'/60'/0'/0/0" to "/44'/60'/0'"
-    let root_path = sign_tx.hd_path.split('/').skip(1).take(3).collect::<Vec<&str>>().join("/");
+    let root_path = sign_tx
+        .hd_path
+        .split('/')
+        .skip(1)
+        .take(3)
+        .collect::<Vec<&str>>()
+        .join("/");
     return convert_c_char(root_path);
 }
-
-
 
 #[no_mangle]
 pub extern "C" fn eth_get_root_path(ptr: PtrUR) -> PtrString {
@@ -180,33 +191,49 @@ fn try_get_eth_public_key(
 }
 
 #[no_mangle]
-pub extern  "C" fn eth_parse_bytes_data(
-    ptr:PtrUR,
-    xpub:PtrString
+pub extern "C" fn eth_parse_bytes_data(
+    ptr: PtrUR,
+    xpub: PtrString,
 ) -> PtrT<TransactionParseResult<DisplayETH>> {
-    let payload = build_payload(ptr,URType::Bytes).unwrap();
+    let payload = build_payload(ptr, QRCodeType::Bytes).unwrap();
     let content = payload.content.unwrap();
     let sign_tx = match content {
         Content::SignTx(sign_tx) => sign_tx,
         _ => {
-            return TransactionParseResult::from(RustCError::InvalidData("Cant get sign tx struct data".to_string())).c_ptr();
+            return TransactionParseResult::from(RustCError::InvalidData(
+                "Cant get sign tx struct data".to_string(),
+            ))
+            .c_ptr();
         }
     };
     let xpub = recover_c_char(xpub);
-    let root_path = &sign_tx.hd_path.split('/').skip(1).take(3).collect::<Vec<&str>>().join("/");
-    let address = derive_address(&sign_tx.hd_path.to_uppercase().trim_start_matches("M/"), &xpub, root_path).unwrap();
+    let root_path = &sign_tx
+        .hd_path
+        .split('/')
+        .skip(1)
+        .take(3)
+        .collect::<Vec<&str>>()
+        .join("/");
+    let address = derive_address(
+        &sign_tx.hd_path.to_uppercase().trim_start_matches("M/"),
+        &xpub,
+        root_path,
+    )
+    .unwrap();
     let tx = sign_tx.transaction.unwrap();
     let eth_tx = match tx {
         EthTx(tx) => tx,
         _ => {
-            return TransactionParseResult::from(RustCError::InvalidData("Cant get eth tx struct data".to_string())).c_ptr();
+            return TransactionParseResult::from(RustCError::InvalidData(
+                "Cant get eth tx struct data".to_string(),
+            ))
+            .c_ptr();
         }
     };
     let mut display_eth = DisplayETH::try_from(eth_tx).unwrap();
     display_eth = display_eth.set_from_address(address);
     TransactionParseResult::success(display_eth.c_ptr()).c_ptr()
 }
-
 
 #[no_mangle]
 pub extern "C" fn eth_parse(
@@ -390,26 +417,32 @@ pub extern "C" fn eth_sign_tx_dynamic(
 }
 
 #[no_mangle]
-pub extern  "C" fn eth_sign_tx_bytes(
-    ptr:PtrUR,
-    seed:PtrBytes,
-    seed_len:u32,
-    mfp:PtrBytes,
-    mfp_len:u32,
-) ->  PtrT<UREncodeResult> {
-    let payload = build_payload(ptr,URType::Bytes).unwrap();
+pub extern "C" fn eth_sign_tx_bytes(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    mfp: PtrBytes,
+    mfp_len: u32,
+) -> PtrT<UREncodeResult> {
+    let payload = build_payload(ptr, QRCodeType::Bytes).unwrap();
     let content = payload.content.unwrap();
     let sign_tx = match content {
         Content::SignTx(sign_tx) => sign_tx,
         _ => {
-            return UREncodeResult::from(RustCError::InvalidData("Cant get sign tx struct data".to_string())).c_ptr();
+            return UREncodeResult::from(RustCError::InvalidData(
+                "Cant get sign tx struct data".to_string(),
+            ))
+            .c_ptr();
         }
     };
     let tx = sign_tx.transaction.unwrap();
     let eth_tx = match tx {
         EthTx(tx) => tx,
         _ => {
-            return UREncodeResult::from(RustCError::InvalidData("Cant get eth tx struct data".to_string())).c_ptr();
+            return UREncodeResult::from(RustCError::InvalidData(
+                "Cant get eth tx struct data".to_string(),
+            ))
+            .c_ptr();
         }
     };
 
@@ -418,7 +451,12 @@ pub extern  "C" fn eth_sign_tx_bytes(
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
     let mfp = unsafe { slice::from_raw_parts(mfp, mfp_len as usize) };
 
-    let signature = app_ethereum::sign_legacy_tx_v2(legacy_transaction.encode_raw().to_vec(), seed, &sign_tx.hd_path).unwrap();
+    let signature = app_ethereum::sign_legacy_tx_v2(
+        legacy_transaction.encode_raw().to_vec(),
+        seed,
+        &sign_tx.hd_path,
+    )
+    .unwrap();
     let transaction_signature = TransactionSignature::try_from(signature).unwrap();
 
     let legacy_tx_with_signature = legacy_transaction.set_signature(transaction_signature);
@@ -433,14 +471,13 @@ pub extern  "C" fn eth_sign_tx_bytes(
         raw_tx: format!("0x{}", hex::encode(raw_tx)),
     };
 
-    let content = third_party::ur_registry::pb::protoc::payload::Content::SignTxResult(
-        sign_tx_result
-    );
+    let content =
+        third_party::ur_registry::pb::protoc::payload::Content::SignTxResult(sign_tx_result);
     let payload = third_party::ur_registry::pb::protoc::Payload {
         ///  type is third_party::ur_registry::pb::protoc::payload::Type::SignTxResult
         r#type: 9,
         xfp: hex::encode(mfp).to_uppercase(),
-        content:Some(content),
+        content: Some(content),
     };
     let base = third_party::ur_registry::pb::protoc::Base {
         version: 1,
@@ -454,7 +491,9 @@ pub extern  "C" fn eth_sign_tx_bytes(
     let zip_data = pb::protobuf_parser::zip(&base_vec).unwrap();
     // data --> protobuf --> zip protobuf data --> cbor bytes data
     UREncodeResult::encode(
-        third_party::ur_registry::bytes::Bytes::new(zip_data).try_into().unwrap(),
+        third_party::ur_registry::bytes::Bytes::new(zip_data)
+            .try_into()
+            .unwrap(),
         third_party::ur_registry::bytes::Bytes::get_registry_type().get_type(),
         FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
     )

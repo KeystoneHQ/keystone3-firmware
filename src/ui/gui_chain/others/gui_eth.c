@@ -648,7 +648,7 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     // get the urType
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
     if (g_isMulti) {
         urType = g_urMultiResult->ur_type;
     } else {
@@ -899,7 +899,7 @@ void *GuiGetEthData(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
 
     enum ViewType viewType = ViewTypeUnKnown;
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
     void *crypto = NULL;
     if (g_isMulti) {
         crypto = g_urMultiResult->data;
@@ -939,7 +939,7 @@ PtrT_TransactionCheckResult GuiGetEthCheckResult(void)
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     enum ViewType viewType = ViewTypeUnKnown;
-    enum URType urType = URTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
     void *crypto = NULL;
     if (g_isMulti) {
         crypto = g_urMultiResult->data;

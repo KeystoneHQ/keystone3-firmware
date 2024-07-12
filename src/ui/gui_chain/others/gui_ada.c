@@ -37,6 +37,20 @@ void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResul
         result = NULL;                                                                                          \
     }
 
+#define CHECK_FREE_PARSE_SIGN_DATA_RESULT(result)                                                               \
+    if (result != NULL)                                                                                         \
+    {                                                                                                           \
+        free_TransactionParseResult_DisplayCardanoSignData((PtrT_TransactionParseResult_DisplayCardanoSignData)result);     \
+        result = NULL;                                                                                          \
+    }
+
+#define CHECK_FREE_PARSE_CATALYST_RESULT(result)                                                               \
+    if (result != NULL)                                                                                         \
+    {                                                                                                           \
+        free_TransactionParseResult_DisplayCardanoCatalyst((PtrT_TransactionParseResult_DisplayCardanoCatalyst)result);     \
+        result = NULL;                                                                                          \
+    }
+
 void *GuiGetAdaData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
@@ -58,6 +72,64 @@ void *GuiGetAdaData(void)
     return g_parseResult;
 }
 
+void *GuiGetAdaCatalyst(void)
+{
+    CHECK_FREE_PARSE_CATALYST_RESULT(g_parseResult);
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        TransactionParseResult_DisplayCardanoCatalyst *parseResult = cardano_parse_catalyst(data);
+        CHECK_CHAIN_BREAK(parseResult);
+        g_parseResult = (void *)parseResult;
+    } while (0);
+    return g_parseResult;
+}
+
+void FreeAdaCatalystMemory(void)
+{
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
+    CHECK_FREE_PARSE_CATALYST_RESULT(g_parseResult);
+}
+
+void *GuiGetAdaSignDataData(void)
+{
+    CHECK_FREE_PARSE_SIGN_DATA_RESULT(g_parseResult);
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        TransactionParseResult_DisplayCardanoSignData *parseResult = cardano_parse_sign_data(data);
+        CHECK_CHAIN_BREAK(parseResult);
+        g_parseResult = (void *)parseResult;
+    } while (0);
+    return g_parseResult;
+}
+
+void GetAdaSignDataPayloadText(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
+    if (data->payload == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->payload);
+}
+
+void GetAdaSignDataDerviationPathText(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
+    if (data->derivation_path == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->derivation_path);
+}
+
+int GetAdaSignDataPayloadLength(void *param)
+{
+    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
+    if (data->payload == NULL) {
+        return 0;
+    }
+    return strlen(data->payload) + 1;
+}
+
 PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
@@ -75,11 +147,36 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     return result;
 }
 
+PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
+{
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    PtrT_TransactionCheckResult result = cardano_check_catalyst(data, mfp);
+    return result;
+}
+
+PtrT_TransactionCheckResult GuiGetAdaSignDataCheckResult(void)
+{
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    PtrT_TransactionCheckResult result = cardano_check_sign_data(data, mfp);
+    return result;
+}
+
 void FreeAdaMemory(void)
 {
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
+}
+
+void FreeAdaSignDataMemory(void)
+{
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
+    CHECK_FREE_PARSE_SIGN_DATA_RESULT(g_parseResult);
 }
 
 bool GetAdaExtraDataExist(void *indata, void *param)
@@ -233,10 +330,10 @@ void *GetAdaCertificatesData(uint8_t *row, uint8_t *col, void *param)
             if (j % 3 == 0) {
                 snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%d #F5870A %s#", index + 1, tx->certificates->data[index].cert_type);
             } else if (j % 3 == 1) {
-                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Address: %s", tx->certificates->data[index].address);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant1_label, tx->certificates->data[index].variant1);
             } else {
-                if (tx->certificates->data[index].pool != NULL) {
-                    snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Pool: %s", tx->certificates->data[index].pool);
+                if (tx->certificates->data[index].variant2 != NULL) {
+                    snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant2_label, tx->certificates->data[index].variant2);
                 }
             }
         }
@@ -278,6 +375,49 @@ void *GetAdaWithdrawalsData(uint8_t *row, uint8_t *col, void *param)
     }
     return (void *)indata;
 }
+
+UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t entropy[64];
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        encodeResult = cardano_sign_catalyst(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+}
+
+UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t entropy[64];
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        encodeResult = cardano_sign_sign_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+}
+
 
 UREncodeResult *GuiGetAdaSignQrCodeData(void)
 {
@@ -362,6 +502,70 @@ static uint8_t GetXPubIndexByPath(char *path)
     if (strcmp("1852'/1815'/23'", path) == 0)
         return XPUB_TYPE_ADA_23;
     return XPUB_TYPE_ADA_0;
+}
+
+void GetCatalystNonce(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
+    if (data->nonce == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->nonce);
+}
+
+void GetCatalystVotePublicKey(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
+    if (data->vote_public_key == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->vote_public_key);
+}
+
+void GetCatalystRewardsNotice(lv_obj_t *parent, void *totalData)
+{
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_size(parent, 360, 60);
+    lv_obj_set_width(parent, 360);
+    lv_obj_set_style_bg_opa(parent, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_t *notice = lv_label_create(parent);
+    lv_obj_set_width(notice, 360);
+    lv_label_set_long_mode(notice, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(notice, _("catalyst_transactions_notice"));
+    lv_obj_set_style_text_font(notice, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(notice, ORANGE_COLOR, LV_PART_MAIN);
+}
+
+void GetCatalystRewards(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
+    if (data->rewards == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->rewards);
+}
+
+void GetCatalystStakeKeysPath(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
+    if (data->stake_keys->size == 0) {
+        return;
+    }
+    memset_s(indata, maxLen, 0, maxLen);
+    for (uint32_t i = 0; i < data->stake_keys->size; i++) {
+        strcat_s((char *)indata, maxLen, data->stake_keys->data[i]);
+        if (i != data->stake_keys->size - 1) {
+            strcat_s((char *)indata, maxLen, "\n");
+        }
+    }
+}
+
+void GetCatalystStakeKeysPathSize(uint16_t *width, uint16_t *height, void *param)
+{
+    DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
+    *width = 408;
+    *height = 62 + 36 * data->stake_keys->size;
 }
 
 #endif

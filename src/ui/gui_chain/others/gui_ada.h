@@ -7,7 +7,10 @@
 
 void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetAdaData(void);
+void *GuiGetAdaSignDataData(void);
 PtrT_TransactionCheckResult GuiGetAdaCheckResult(void);
+PtrT_TransactionCheckResult GuiGetAdaSignDataCheckResult(void);
+PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void);
 void GetAdaNetwork(void *indata, void *param, uint32_t maxLen);
 void GetAdaTotalInput(void *indata, void *param, uint32_t maxLen);
 void GetAdaTotalOutput(void *indata, void *param, uint32_t maxLen);
@@ -33,8 +36,25 @@ bool GetAdaExtraDataExist(void *indata, void *param);
 void GetAdaExtraData(void *indata, void *param, uint32_t maxLen);
 int GetAdaExtraDataLen(void *param);
 
+void GetAdaSignDataPayloadText(void *indata, void *param, uint32_t maxLen);
+int GetAdaSignDataPayloadLength(void *param);
+void GetAdaSignDataDerviationPathText(void *indata, void *param, uint32_t maxLen);
+void *GuiGetAdaCatalyst(void);
+
 void FreeAdaMemory(void);
+void FreeAdaSignDataMemory(void);
+void FreeAdaCatalystMemory(void);
+
 char *GuiGetADABaseAddressByIndex(uint16_t index);
 UREncodeResult *GuiGetAdaSignQrCodeData(void);
+UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void);
+UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeData(void);
+
+void GetCatalystNonce(void *indata, void *param, uint32_t maxLen);
+void GetCatalystVotePublicKey(void *indata, void *param, uint32_t maxLen);
+void GetCatalystRewards(void *indata, void *param, uint32_t maxLen);
+void GetCatalystStakeKeysPath(void *indata, void *param, uint32_t maxLen);
+void GetCatalystStakeKeysPathSize(uint16_t *width, uint16_t *height, void *param);
+void GetCatalystRewardsNotice(lv_obj_t *parent, void *totalData);
 
 #endif

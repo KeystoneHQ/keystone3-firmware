@@ -10,6 +10,10 @@ use third_party::ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest
 use third_party::ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use third_party::ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
+use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
+#[cfg(feature = "multi-coins")]
+use third_party::ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
+#[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
@@ -258,6 +262,20 @@ impl InferViewType for NearSignRequest {
 impl InferViewType for CardanoSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoTx)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for CardanoSignDataRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::CardanoSignData)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for CardanoCatalystVotingRegistrationRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::CardanoCatalystVotingRegistration)
     }
 }
 

@@ -1,10 +1,14 @@
 use alloc::boxed::Box;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_cardano::structs::{
-    CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoTx,
+    CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignData,
+    ParsedCardanoTx,
 };
 use core::ptr::null_mut;
+use third_party::hex;
 use third_party::itertools::Itertools;
+use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::{free_ptr_string, Free};
@@ -14,6 +18,38 @@ use common_rust_c::utils::convert_c_char;
 use common_rust_c::{
     check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method,
 };
+
+#[repr(C)]
+pub struct DisplayCardanoSignData {
+    pub payload: PtrString,
+    pub derivation_path: PtrString,
+}
+
+#[repr(C)]
+pub struct DisplayCardanoCatalyst {
+    pub nonce: PtrString,
+    pub vote_public_key: PtrString,
+    pub rewards: PtrString,
+    pub stake_keys: Ptr<VecFFI<PtrString>>,
+}
+
+impl From<CardanoCatalystVotingRegistrationRequest> for DisplayCardanoCatalyst {
+    fn from(value: CardanoCatalystVotingRegistrationRequest) -> Self {
+        Self {
+            nonce: convert_c_char(value.get_nonce().to_string()),
+            vote_public_key: convert_c_char(hex::encode(value.get_stake_pub())),
+            rewards: convert_c_char(hex::encode(value.get_payment_address())),
+            stake_keys: VecFFI::from(
+                value
+                    .get_delegations()
+                    .iter()
+                    .map(|v| convert_c_char(v.get_path().get_path().unwrap()))
+                    .collect_vec(),
+            )
+            .c_ptr(),
+        }
+    }
+}
 
 #[repr(C)]
 pub struct DisplayCardanoTx {
@@ -47,8 +83,10 @@ pub struct DisplayCardanoTo {
 #[repr(C)]
 pub struct DisplayCardanoCertificate {
     cert_type: PtrString,
-    address: PtrString,
-    pool: PtrString,
+    variant1: PtrString,
+    variant2: PtrString,
+    variant1_label: PtrString,
+    variant2_label: PtrString,
 }
 
 #[repr(C)]
@@ -58,6 +96,26 @@ pub struct DisplayCardanoWithdrawal {
 }
 
 impl_c_ptrs!(DisplayCardanoTx);
+
+impl_c_ptrs!(DisplayCardanoCatalyst);
+
+impl_c_ptrs!(DisplayCardanoSignData);
+
+impl Free for DisplayCardanoSignData {
+    fn free(&self) {
+        free_str_ptr!(self.payload);
+        free_str_ptr!(self.derivation_path);
+    }
+}
+
+impl Free for DisplayCardanoCatalyst {
+    fn free(&self) {
+        free_str_ptr!(self.nonce);
+        free_str_ptr!(self.vote_public_key);
+        free_str_ptr!(self.rewards);
+        free_vec!(self.stake_keys);
+    }
+}
 
 impl Free for DisplayCardanoTx {
     fn free(&self) {
@@ -79,6 +137,15 @@ impl Free for DisplayCardanoTx {
             free_ptr_string(self.total_output);
             free_ptr_string(self.fee);
             free_ptr_string(self.network);
+        }
+    }
+}
+
+impl From<ParsedCardanoSignData> for DisplayCardanoSignData {
+    fn from(value: ParsedCardanoSignData) -> Self {
+        Self {
+            payload: convert_c_char(value.get_payload()),
+            derivation_path: convert_c_char(value.get_derivation_path()),
         }
     }
 }
@@ -175,9 +242,14 @@ impl From<&CardanoCertificate> for DisplayCardanoCertificate {
     fn from(value: &CardanoCertificate) -> Self {
         Self {
             cert_type: convert_c_char(value.get_cert_type()),
-            address: convert_c_char(value.get_address()),
-            pool: value
-                .get_pool()
+            variant1: convert_c_char(value.get_variant1()),
+            variant2: value
+                .get_variant2()
+                .map(|v| convert_c_char(v))
+                .unwrap_or(null_mut()),
+            variant1_label: convert_c_char(value.get_variant1_label()),
+            variant2_label: value
+                .get_variant2_label()
                 .map(|v| convert_c_char(v))
                 .unwrap_or(null_mut()),
         }
@@ -187,8 +259,10 @@ impl From<&CardanoCertificate> for DisplayCardanoCertificate {
 impl Free for DisplayCardanoCertificate {
     fn free(&self) {
         free_str_ptr!(self.cert_type);
-        free_str_ptr!(self.address);
-        free_str_ptr!(self.pool);
+        free_str_ptr!(self.variant1);
+        free_str_ptr!(self.variant2);
+        free_str_ptr!(self.variant1_label);
+        free_str_ptr!(self.variant2_label);
     }
 }
 
@@ -209,3 +283,5 @@ impl Free for DisplayCardanoWithdrawal {
 }
 
 make_free_method!(TransactionParseResult<DisplayCardanoTx>);
+make_free_method!(TransactionParseResult<DisplayCardanoCatalyst>);
+make_free_method!(TransactionParseResult<DisplayCardanoSignData>);

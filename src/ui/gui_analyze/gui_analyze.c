@@ -178,6 +178,28 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         FreeAdaMemory,
     },
     {
+        REMAPVIEW_ADA_SIGN_DATA,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ada_sign_data_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,100],\"pos\":[0,0],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Path\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataDerviationPathText\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"size\":[408,418],\"pos\":[0,124],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Payload\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataPayloadText\",\"text_len_func\":\"GetAdaSignDataPayloadLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_ada_sign_data.json",
+#endif
+        GuiGetAdaSignDataData,
+        NULL,
+        FreeAdaSignDataMemory,
+    },
+    {
+        REMAPVIEW_ADA_CATALYST,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ada_catalyst_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"pos\":[0,0],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text\":\"VoteKeyRegistration\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,78],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Nonce\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystNonce\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,156],\"size\":[408,160],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"StakeKey\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystVotePublicKey\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,332],\"size\":[408,258],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"RewardsGoTo\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystRewards\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"custom_container\",\"pos\":[24,182],\"custom_show_func\":\"GetCatalystRewardsNotice\"}]},{\"type\":\"container\",\"pos\":[0,606],\"size_func\":\"GetCatalystStakeKeysPathSize\",\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"VoteKeyPath\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystStakeKeysPath\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_ada_catalyst.json",
+#endif
+        GuiGetAdaCatalyst,
+        NULL,
+        FreeAdaCatalystMemory,
+    },
+    {
         REMAPVIEW_XRP,
 #ifndef COMPILE_SIMULATOR
         "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Transaction Raw Data\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetXrpDetail\",\"text_len_func\":\"GetXrpDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
@@ -359,6 +381,9 @@ GetContSizeFunc GetAdaContainerSize(char *type)
     if (!strcmp(type, "GetAdaWithdrawalsSize")) {
         return GetAdaWithdrawalsSize;
     }
+    if (!strcmp(type, "GetCatalystStakeKeysPathSize")) {
+        return GetCatalystStakeKeysPathSize;
+    }
     return NULL;
 }
 #endif
@@ -374,6 +399,8 @@ GetContSizeFunc GuiTemplateSizeFuncGet(char *type)
     case REMAPVIEW_COSMOS:
         return GetCosmosContainerSize(type);
     case REMAPVIEW_ADA:
+    case REMAPVIEW_ADA_SIGN_DATA:
+    case REMAPVIEW_ADA_CATALYST:
         return GetAdaContainerSize(type);
 #endif
     default:
@@ -807,6 +834,18 @@ GetLabelDataFunc GuiAdaTextFuncGet(char *type)
         return GetAdaWithdrawalsLabel;
     } else if (!strcmp(type, "GetAdaCertificatesLabel")) {
         return GetAdaCertificatesLabel;
+    } else if (!strcmp(type, "GetAdaSignDataPayloadText")) {
+        return GetAdaSignDataPayloadText;
+    } else if (!strcmp(type, "GetAdaSignDataDerviationPathText")) {
+        return GetAdaSignDataDerviationPathText;
+    } else if (!strcmp(type, "GetCatalystNonce")) {
+        return GetCatalystNonce;
+    } else if (!strcmp(type, "GetCatalystVotePublicKey")) {
+        return GetCatalystVotePublicKey;
+    } else if (!strcmp(type, "GetCatalystRewards")) {
+        return GetCatalystRewards;
+    } else if (!strcmp(type, "GetCatalystStakeKeysPath")) {
+        return GetCatalystStakeKeysPath;
     }
     return NULL;
 }
@@ -815,6 +854,8 @@ GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetAdaExtraDataLen")) {
         return GetAdaExtraDataLen;
+    } else if (!strcmp(type, "GetAdaSignDataPayloadLength")) {
+        return GetAdaSignDataPayloadLength;
     }
     return NULL;
 }
@@ -829,6 +870,8 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
     case REMAPVIEW_APT:
         return GuiAptosTextLenFuncGet(type);
     case REMAPVIEW_ADA:
+    case REMAPVIEW_ADA_SIGN_DATA:
+    case REMAPVIEW_ADA_CATALYST:
         return GuiAdaTextLenFuncGet(type);
     case REMAPVIEW_XRP:
         return GuiXrpTextLenFuncGet(type);
@@ -869,6 +912,8 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
     case REMAPVIEW_APT:
         return GuiAptosTextFuncGet(type);
     case REMAPVIEW_ADA:
+    case REMAPVIEW_ADA_SIGN_DATA:
+    case REMAPVIEW_ADA_CATALYST:
         return GuiAdaTextFuncGet(type);
     case REMAPVIEW_XRP:
         return GuiXrpTextFuncGet(type);
@@ -895,6 +940,8 @@ GetTableDataFunc GuiTemplateTableFuncGet(char *type)
     case REMAPVIEW_ETH:
         return GuiEthTableFuncGet(type);
     case REMAPVIEW_ADA:
+    case REMAPVIEW_ADA_SIGN_DATA:
+    case REMAPVIEW_ADA_CATALYST:
         return GuiAdaTabelFuncGet(type);
 #endif
     default:
@@ -1230,6 +1277,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSolTxDetail;
     } else if (!strcmp(funcName, "GuiShowArweaveTxDetail")) {
         return GuiShowArweaveTxDetail;
+    } else if (!strcmp(funcName, "GetCatalystRewardsNotice")) {
+        return GetCatalystRewardsNotice;
     } else if (!strcmp(funcName, "GuiStellarTxNotice")) {
         return GuiStellarTxNotice;
     } else if (!strcmp(funcName, "GuiStellarHashNotice")) {
@@ -1633,6 +1682,10 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_APT;
     case CardanoTx:
         return REMAPVIEW_ADA;
+    case CardanoSignData:
+        return REMAPVIEW_ADA_SIGN_DATA;
+    case CardanoCatalystVotingRegistration:
+        return REMAPVIEW_ADA_CATALYST;
     case XRPTx:
         return REMAPVIEW_XRP;
     case ArweaveTx:

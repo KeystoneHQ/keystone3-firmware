@@ -106,6 +106,8 @@ static void RecalcCurrentWalletIndex(char *origin)
         g_walletIndex = WALLET_LIST_TYPHON;
     } else if (strcmp("Leap Wallet", origin) == 0) {
         g_walletIndex = WALLET_LIST_LEAP;
+    } else if (strcmp("Begin", origin) == 0) {
+        g_walletIndex = WALLET_LIST_BEGIN;
     } else {
         g_walletIndex = WALLET_LIST_ETERNL;
     }

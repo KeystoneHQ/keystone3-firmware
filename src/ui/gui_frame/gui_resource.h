@@ -263,6 +263,7 @@ LV_IMG_DECLARE(walletKeystone);
 LV_IMG_DECLARE(walletLeap);
 LV_IMG_DECLARE(walletThorWallet);
 LV_IMG_DECLARE(walletNightly);
+LV_IMG_DECLARE(walletBegin);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
@@ -294,11 +295,14 @@ LV_IMG_DECLARE(walletListTonkeeper);
 LV_IMG_DECLARE(walletListKeystone);
 LV_IMG_DECLARE(walletListThorWallet);
 LV_IMG_DECLARE(walletListNightly);
+LV_IMG_DECLARE(walletListBegin);
+
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);
 LV_IMG_DECLARE(walletListBtcSparrow);
 LV_IMG_DECLARE(walletListBtcNunchuk);
+
 
 // font
 LV_FONT_DECLARE(openSans_20);

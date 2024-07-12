@@ -1,3 +1,21 @@
+## 1.5.6（2024-07-12）
+
+### What's new
+
+1. Supported parsing unknown transaction types of SOL transaction data
+2. Supported managing AO assets using ArConnect Wallet
+3. Supported managing XLM assets using xBull Wallet
+4. Supported message signing through Sparrow Wallet
+
+### Improvements
+
+1. Optimized the battery percentage display issue
+2. Optimized the text on some Russian pages
+
+
+
+
+
 
 ## 1.5.4（2024-07-04）
 

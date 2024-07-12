@@ -1578,13 +1578,13 @@ static const uint8_t kern_pair_glyph_ids[] = {
  * 4.4 format which needs to scaled with `kern_scale`*/
 static const int8_t kern_pair_values[] = {
     -75, -36, -8, -21, -21, -21, -62, -14,
-    -9, -9, -9, -28, -22, -22, 15, -22,
-    -36, -5, -12, -10, -13, -8, -48, -47,
-    -26, -14, -10, -10, -14, -10, -14, -74,
-    -52, -34, -8, -17, -17, -17, -10, -12,
-    -22, -12, -8, -16, -16, -16, -21, -8,
-    -37, -24, -10, -8, -8, -8
-};
+        -9, -9, -9, -28, -22, -22, 15, -22,
+        -36, -5, -12, -10, -13, -8, -48, -47,
+        -26, -14, -10, -10, -14, -10, -14, -74,
+        -52, -34, -8, -17, -17, -17, -10, -12,
+        -22, -12, -8, -16, -16, -16, -21, -8,
+        -37, -24, -10, -8, -8, -8
+    };
 
 /*Collect the kern pair's data in one place*/
 static const lv_font_fmt_txt_kern_pair_t kern_pairs = {
@@ -1598,12 +1598,9 @@ static const lv_font_fmt_txt_kern_pair_t kern_pairs = {
  *  ALL CUSTOM DATA
  *--------------------*/
 
-#if LVGL_VERSION_MAJOR == 8
+#if LV_VERSION_CHECK(8, 0, 0)
 /*Store all the custom data of the font*/
 static  lv_font_fmt_txt_glyph_cache_t cache;
-#endif
-
-#if LVGL_VERSION_MAJOR >= 8
 static const lv_font_fmt_txt_dsc_t font_dsc = {
 #else
 static lv_font_fmt_txt_dsc_t font_dsc = {
@@ -1617,11 +1614,10 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
     .bpp = 1,
     .kern_classes = 0,
     .bitmap_format = 0,
-#if LVGL_VERSION_MAJOR == 8
+#if LV_VERSION_CHECK(8, 0, 0)
     .cache = &cache
 #endif
 };
-
 
 
 /*-----------------
@@ -1629,7 +1625,7 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
  *----------------*/
 
 /*Initialize a public general font descriptor*/
-#if LVGL_VERSION_MAJOR >= 8
+#if LV_VERSION_CHECK(8, 0, 0)
 const lv_font_t koTitle = {
 #else
 lv_font_t koTitle = {
@@ -1645,11 +1641,7 @@ lv_font_t koTitle = {
     .underline_position = -4,
     .underline_thickness = 2,
 #endif
-    .dsc = &font_dsc,          /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
-#if LV_VERSION_CHECK(8, 2, 0) || LVGL_VERSION_MAJOR >= 9
-    .fallback = NULL,
-#endif
-    .user_data = NULL,
+    .dsc = &font_dsc           /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
 };
 
 

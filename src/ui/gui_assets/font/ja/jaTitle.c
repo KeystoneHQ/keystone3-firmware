@@ -1767,20 +1767,20 @@ static const uint8_t kern_pair_glyph_ids[] = {
  * 4.4 format which needs to scaled with `kern_scale`*/
 static const int8_t kern_pair_values[] = {
     -75, -36, -8, -21, -62, -14, -9, -28,
-    -22, -36, -5, -12, -10, -13, -8, -48,
-    -47, -26, -14, -10, -74, -52, -34, -8,
-    -17, -10, -12, -22, -12, -8, -17, -17,
-    -12, -12, -17, -12, 6, -17, -17, -17,
-    -12, -12, -12, -17, -23, -29, -29, -23,
-    -12, -23, -12, -40, -23, -35, -12, -17,
-    -12, -12, -12, -12, -17, -17, -17, -6,
-    -23, -17, -29, -29, -46, -23, -12, -23,
-    -23, -12, -17, -17, -17, -12, -12, -12,
-    17, 17, 29, 17, 17, 29, -17, 12,
-    -35, -35, -12, -12, -12, -12, -17, -17,
-    -12, -35, -23, -12, -12, -29, -6, -6,
-    -35, -35, -17, -29
-};
+        -22, -36, -5, -12, -10, -13, -8, -48,
+        -47, -26, -14, -10, -74, -52, -34, -8,
+        -17, -10, -12, -22, -12, -8, -17, -17,
+        -12, -12, -17, -12, 6, -17, -17, -17,
+        -12, -12, -12, -17, -23, -29, -29, -23,
+        -12, -23, -12, -40, -23, -35, -12, -17,
+        -12, -12, -12, -12, -17, -17, -17, -6,
+        -23, -17, -29, -29, -46, -23, -12, -23,
+        -23, -12, -17, -17, -17, -12, -12, -12,
+        17, 17, 29, 17, 17, 29, -17, 12,
+        -35, -35, -12, -12, -12, -12, -17, -17,
+        -12, -35, -23, -12, -12, -29, -6, -6,
+        -35, -35, -17, -29
+    };
 
 /*Collect the kern pair's data in one place*/
 static const lv_font_fmt_txt_kern_pair_t kern_pairs = {
@@ -1794,12 +1794,9 @@ static const lv_font_fmt_txt_kern_pair_t kern_pairs = {
  *  ALL CUSTOM DATA
  *--------------------*/
 
-#if LVGL_VERSION_MAJOR == 8
+#if LV_VERSION_CHECK(8, 0, 0)
 /*Store all the custom data of the font*/
 static  lv_font_fmt_txt_glyph_cache_t cache;
-#endif
-
-#if LVGL_VERSION_MAJOR >= 8
 static const lv_font_fmt_txt_dsc_t font_dsc = {
 #else
 static lv_font_fmt_txt_dsc_t font_dsc = {
@@ -1813,11 +1810,10 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
     .bpp = 1,
     .kern_classes = 0,
     .bitmap_format = 0,
-#if LVGL_VERSION_MAJOR == 8
+#if LV_VERSION_CHECK(8, 0, 0)
     .cache = &cache
 #endif
 };
-
 
 
 /*-----------------
@@ -1825,7 +1821,7 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
  *----------------*/
 
 /*Initialize a public general font descriptor*/
-#if LVGL_VERSION_MAJOR >= 8
+#if LV_VERSION_CHECK(8, 0, 0)
 const lv_font_t jaTitle = {
 #else
 lv_font_t jaTitle = {
@@ -1841,11 +1837,7 @@ lv_font_t jaTitle = {
     .underline_position = -4,
     .underline_thickness = 2,
 #endif
-    .dsc = &font_dsc,          /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
-#if LV_VERSION_CHECK(8, 2, 0) || LVGL_VERSION_MAJOR >= 9
-    .fallback = NULL,
-#endif
-    .user_data = NULL,
+    .dsc = &font_dsc           /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
 };
 
 

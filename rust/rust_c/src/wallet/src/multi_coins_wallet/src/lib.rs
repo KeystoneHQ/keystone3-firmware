@@ -20,13 +20,13 @@ use alloc::string::String;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 
-use app_wallets::metamask::ETHAccountTypeApp;
 use app_wallets::DEVICE_TYPE;
 use app_wallets::DEVICE_VERSION;
+use app_wallets::metamask::ETHAccountTypeApp;
 use cty::uint32_t;
 use keystore::algorithms::secp256k1::derive_extend_public_key;
 use keystore::errors::KeystoreError;
-use third_party::bitcoin::hex::{Case, DisplayHex};
+use third_party::bitcoin::hex::DisplayHex;
 use third_party::core2::io::Read;
 use third_party::ed25519_bip32_core::XPub;
 use third_party::hex;
@@ -38,13 +38,13 @@ use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts
 use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
 use third_party::ur_registry::traits::RegistryItem;
 
+use common_rust_c::{extract_array, extract_ptr_with_type};
 use common_rust_c::errors::RustCError;
 use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::{ExtendedPublicKey, Response};
-use common_rust_c::types::{Ptr, PtrBytes, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
+use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
+use common_rust_c::ur::{FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH, UREncodeResult};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
-use common_rust_c::{extract_array, extract_ptr_with_type};
 
 use crate::structs::QRHardwareCallData;
 
@@ -209,6 +209,68 @@ pub extern "C" fn parse_qr_hardware_call(ur: PtrUR) -> Ptr<Response<QRHardwareCa
 }
 
 #[no_mangle]
+pub extern "C" fn check_hardware_call_path(
+    path: PtrString,
+    chain_type: PtrString,
+) -> *mut Response<bool> {
+    let chain_type_str = recover_c_char(chain_type);
+    let prefix = match chain_type_str.as_str() {
+        "BTC" => "m/44'/0'",
+        "ETH" => "m/44'/60'",
+        "SOL" => "m/44'/501'",
+        "XRP" => "m/44'/144'",
+        "ADA" => "m/44'/1815'",
+        "TRX" => "m/44'/195'",
+        "LTC" => "m/44'/2'",
+        "BCH" => "m/44'/145'",
+        "APT" => "m/44'/719'",
+        "SUI" => "m/44'/784'",
+        "DASH" => "m/44'/5'",
+        "AR" => "m/44'/472'",
+        "XLM" => "m/44'/148'",
+        "TIA" => "m/44'/718'",
+        "ATOM" => "m/44'/118'",
+        "DYM" => "m/44'/6943'",
+        "OSMO" => "m/44'/10000'",
+        "INJ" => "m/44'/10000'",
+        "CRO" => "m/44'/394'",
+        "KAVA" => "m/44'/459'",
+        "LUNC" => "m/44'/10041'",
+        "AXL" => "m/44'/6956'",
+        "LUNA" => "m/44'/10077'",
+        "AKT" => "m/44'/10032'",
+        "STRD" => "m/44'/8082'",
+        "SCRT" => "m/44'/529'",
+        "BLD" => "m/44'/6102'",
+        "CTK" => "m/44'/9082'",
+        "EVMOS" => "m/44'/10042'",
+        "STARS" => "m/44'/9000'",
+        "XPRT" => "m/44'/10037'",
+        "SOMM" => "m/44'/10052'",
+        "JUNO" => "m/44'/10074'",
+        "IRIS" => "m/44'/118'",
+        "DVPN" => "m/44'/10055'",
+        "ROWAN" => "m/44'/9000'",
+        "REGEN" => "m/44'/8072'",
+        "BOOT" => "m/44'/9000'",
+        "GRAV" => "m/44'/10062'",
+        "IXO" => "m/44'/10065'",
+        "NGM" => "m/44'/9000'",
+        "IOV" => "m/44'/234'",
+        "UMEE" => "m/44'/15023'",
+        "QCK" => "m/44'/9000'",
+        "TGD" => "m/44'/9000'",
+        _ => return Response::success(false).c_ptr(),
+    };
+    let mut path = recover_c_char(path).to_lowercase();
+    if !path.starts_with("m") {
+        path = format!("m/{}", path); 
+    }
+    let result = path.starts_with(prefix);
+    Response::success(result).c_ptr()
+}
+
+#[no_mangle]
 pub extern "C" fn generate_key_derivation_ur(
     master_fingerprint: PtrBytes,
     master_fingerprint_length: uint32_t,
@@ -254,7 +316,7 @@ pub extern "C" fn generate_key_derivation_ur(
                             Err(e) => Err(URError::UrEncodeError(e.to_string())),
                         }
                     } else if (v.len() == 32) {
-                        //  ed25519 xpub
+                        //  ed25519
                         Ok(CryptoHDKey::new_extended_key(
                             None,
                             v,

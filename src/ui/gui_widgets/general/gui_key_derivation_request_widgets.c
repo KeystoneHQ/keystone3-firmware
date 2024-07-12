@@ -306,27 +306,38 @@ static void ModelParseQRHardwareCall()
     g_response->data->origin = "Leap Wallet";
     g_response->data->key_derivation = SRAM_MALLOC(sizeof(KeyDerivationRequestData));
     g_response->data->key_derivation->schemas = SRAM_MALLOC(sizeof(VecFFI_KeyDerivationSchema));
-    g_response->data->key_derivation->schemas->cap = 3;
-    g_response->data->key_derivation->schemas->size = 3;
-    g_response->data->key_derivation->schemas->data = SRAM_MALLOC(3 * sizeof(KeyDerivationSchema));
-    g_response->data->key_derivation->schemas->data[0].algo = "BIP32";
-    // secp256k1
-    g_response->data->key_derivation->schemas->data[0].curve = "0";
-    g_response->data->key_derivation->schemas->data[0].key_path = "44'/60'/0'";
-
-
+    g_response->data->key_derivation->schemas->cap = 4;
+    g_response->data->key_derivation->schemas->size = 4;
+    g_response->data->key_derivation->schemas->data = SRAM_MALLOC(4 * sizeof(KeyDerivationSchema));
     // sol
-    g_response->data->key_derivation->schemas->data[1].algo = "ED25519";
+    g_response->data->key_derivation->schemas->data[0].algo = "ED25519";
     // ed25519
-    g_response->data->key_derivation->schemas->data[1].curve = "1";
-    g_response->data->key_derivation->schemas->data[1].key_path = "44'/501'/0'";
+    g_response->data->key_derivation->schemas->data[0].curve = "1";
+    g_response->data->key_derivation->schemas->data[0].key_path = "44'/501'/0'";
+    g_response->data->key_derivation->schemas->data[0].chain_type = "SOL";
+    // cosmos
+    g_response->data->key_derivation->schemas->data[1].algo = "BIP32";
+    // secp256k1
+    g_response->data->key_derivation->schemas->data[1].curve = "0";
+    g_response->data->key_derivation->schemas->data[1].key_path = "44'/118'/0'";
+    g_response->data->key_derivation->schemas->data[1].chain_type = "ATOM";
 
     // cosmos
     g_response->data->key_derivation->schemas->data[2].algo = "BIP32";
+    // ed25519
+    g_response->data->key_derivation->schemas->data[2].curve = "1";
+    g_response->data->key_derivation->schemas->data[2].key_path = "44'/501'/0'/0/0";
+    g_response->data->key_derivation->schemas->data[2].chain_type = "SOL";
+
+    // cosmos
+    g_response->data->key_derivation->schemas->data[3].algo = "BIP32";
     // secp256k1
-    g_response->data->key_derivation->schemas->data[2].curve = "0";
-    g_response->data->key_derivation->schemas->data[2].key_path = "44'/118'/0'";
+    g_response->data->key_derivation->schemas->data[3].curve = "0";
+    g_response->data->key_derivation->schemas->data[3].key_path = "44'/118'/0'/0/0";
+    g_response->data->key_derivation->schemas->data[3].chain_type = "ATOM";
+
     g_response->data->version = "1";
+
 
     g_callData = g_response->data;
 }
@@ -434,8 +445,6 @@ static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent)
     cont = GuiCreateContainerWithParent(parent, 408, 534);
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 8);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-    // set cont scrollable
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
 
     label = GuiCreateIllustrateLabel(cont, _("connect_wallet_key_request_fmt"));
     lv_label_set_text_fmt(label, _("connect_wallet_key_request_fmt"), g_response->data->origin);
@@ -443,6 +452,14 @@ static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent)
 
     // pathContainer height should be 102 * size
     pathCont = GuiCreateContainerWithParent(cont, 408, 102 * g_response->data->key_derivation->schemas->size);
+    if (g_response->data->key_derivation->schemas->size > 3) {
+        // for better view, set the height to 3 rows height
+        lv_obj_set_height(pathCont, 102 * 3);
+        // show the scroll bar
+        lv_obj_set_style_bg_color(pathCont, WHITE_COLOR, LV_PART_SCROLLBAR);
+        lv_obj_set_style_bg_opa(pathCont, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
+        lv_obj_set_style_bg_opa(pathCont, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
+    }
     lv_obj_align(pathCont, LV_ALIGN_TOP_LEFT, 0, 92);
     lv_obj_set_style_radius(pathCont, 24, 0);
     lv_obj_set_style_bg_color(pathCont, WHITE_COLOR, LV_PART_MAIN);
@@ -470,7 +487,12 @@ static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent)
 
     // create notice container
     noticeCont = GuiCreateContainerWithParent(parent, 408, 202);
-    lv_obj_align(noticeCont, LV_ALIGN_TOP_LEFT, 36, 92 + 102 * g_response->data->key_derivation->schemas->size + 30);
+    if (g_response->data->key_derivation->schemas->size > 3) {
+        // for better view, set the height to 3 rows height
+        lv_obj_align(noticeCont, LV_ALIGN_TOP_LEFT, 36, 92 + 102 * 3 + 30);
+    } else {
+        lv_obj_align(noticeCont, LV_ALIGN_TOP_LEFT, 36, 92 + 102 * g_response->data->key_derivation->schemas->size + 30);
+    }
     label = GuiCreateIllustrateLabel(noticeCont, _("hardware_call_approve_notice"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
 
@@ -627,13 +649,17 @@ static void GuiShowKeyBoardDialog(lv_obj_t *parent)
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
+
+
+
 static bool CheckHardWareCallParaIsValied()
 {
     if (strcmp("1", g_callData->version) == 0) {
         // only hard ware call version 1 need check
         for (size_t i = 0; i < g_response->data->key_derivation->schemas->size; i++) {
-            if (strlen(g_response->data->key_derivation->schemas->data[i].key_path) == 0) {
-                // todo add more check logic
+            Response_bool *response = check_hardware_call_path(g_response->data->key_derivation->schemas->data[i].key_path, g_response->data->key_derivation->schemas->data[i].chain_type);
+            if (*response->data == false) {
+                printf("path is invalid\n");
                 return false;
             }
         }

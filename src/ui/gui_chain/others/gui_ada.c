@@ -552,6 +552,7 @@ void GetCatalystStakeKeysPath(void *indata, void *param, uint32_t maxLen)
     if (data->stake_keys->size == 0) {
         return;
     }
+    memset_s(indata, maxLen, 0, maxLen);
     for (uint32_t i = 0; i < data->stake_keys->size; i++) {
         strcat_s((char *)indata, maxLen, data->stake_keys->data[i]);
         if (i != data->stake_keys->size - 1) {

@@ -87,10 +87,10 @@ const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
 
 
 const ProtocolServiceCallbackFunc_t g_nftFileTransInfoServiceFunc[] = {
-    NULL,                                       //2.0
-    ServiceNftFileTransInfo,                    //2.1
-    ServiceNftFileTransContent,                 //2.2
-    ServiceNftFileTransComplete,                //2.3
+    NULL,                                       //3.0
+    ServiceNftFileTransInfo,                    //3.1
+    ServiceNftFileTransContent,                 //3.2
+    ServiceNftFileTransComplete,                //3.3
 };
 
 static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInfo)
@@ -201,7 +201,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             sendTlvArray[0].value = 5;
             break;
         }
-        GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 1);
+        GuiApiEmitSignalWithValue(g_isNftFile ? SIG_INIT_NFT_BIN : SIG_INIT_FIRMWARE_PROCESS, 1);
         if (g_fileTransTimeOutTimer == NULL) {
             g_fileTransTimeOutTimer = osTimerNew(FileTransTimeOutTimerFunc, osTimerOnce, NULL, NULL);
         }
@@ -327,7 +327,6 @@ static void FileTransTimeOutTimerFunc(void *argument)
 
 static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
-    printf("%s %d.\n", __func__, __LINE__);
     g_isNftFile = true;
     return ServiceFileTransInfo(head, tlvData, outLen);
 }
@@ -393,10 +392,8 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     osTimerStop(g_fileTransTimeOutTimer);
     g_fileTransCtrl.endTick = osKernelGetTickCount();
     PrintArray("tlvData", tlvData, head->length);
-    // MD5_Final(md5Result, &g_md5Ctx);
     PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
     PrintArray("md5Result", md5Result, 16);
-    // ASSERT(memcmp(md5Result, g_fileTransInfo.md5, 16) == 0);
     printf("total tick=%d\n", g_fileTransCtrl.endTick - g_fileTransCtrl.startTick);
 
     sendHead.packetIndex = head->packetIndex;
@@ -405,6 +402,7 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     sendHead.flag.b.ack = 0;
     sendHead.flag.b.isHost = 0;
 
+    GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN, 0);
     *outLen = sizeof(FrameHead_t) + 4;
     WriteNftToFlash();
     GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);

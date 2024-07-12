@@ -123,6 +123,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         }
         break;
     case SIG_INIT_FIRMWARE_PROCESS:
+    case SIG_INIT_NFT_BIN:
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0) {
             OpenMsgBox(&g_guiMsgBoxFirmwareProcess);

@@ -1,18 +1,18 @@
 #![no_std]
 extern crate alloc;
 
-use alloc::{format, slice};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use alloc::{format, slice};
 use core::str::FromStr;
 
-use app_ethereum::{
-    parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
-};
 use app_ethereum::address::derive_address;
 use app_ethereum::erc20::parse_erc20;
 use app_ethereum::errors::EthereumError;
 use app_ethereum::legacy_transaction_v2::{LegacyTransactionV2, TransactionSignature};
+use app_ethereum::{
+    parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
+};
 use keystore::algorithms::secp256k1::derive_public_key;
 use third_party::core2::io::Read;
 use third_party::cryptoxide::hashing::keccak256;
@@ -25,15 +25,15 @@ use third_party::ur_registry::pb::protoc::payload::Content;
 use third_party::ur_registry::pb::protoc::sign_transaction::Transaction::EthTx;
 use third_party::ur_registry::traits::{RegistryItem, To};
 
-use common_rust_c::{extract_ptr_with_type, KEYSTONE};
 use common_rust_c::errors::{KeystoneError, RustCError};
 use common_rust_c::keystone::build_payload;
 use common_rust_c::structs::{TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{
-    FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH, QRCodeType, UREncodeResult,
+    QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH,
 };
 use common_rust_c::utils::{convert_c_char, recover_c_char};
+use common_rust_c::{extract_ptr_with_type, KEYSTONE};
 
 use crate::structs::{
     DisplayETH, DisplayETHPersonalMessage, DisplayETHTypedData, EthParsedErc20Transaction,

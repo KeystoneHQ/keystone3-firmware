@@ -2,8 +2,9 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
+use third_party::ur_registry::bytes::Bytes;
 use third_party::{
-    bitcoin::bip32::{ChildNumber},
+    bitcoin::bip32::ChildNumber,
     ur_registry::{
         crypto_hd_key::CryptoHDKey,
         crypto_key_path::{CryptoKeyPath, PathComponent},
@@ -11,11 +12,9 @@ use third_party::{
         extend::crypto_multi_accounts::CryptoMultiAccounts,
     },
 };
-use third_party::ur_registry::bytes::Bytes;
 
-
+use crate::companion_app::{generate_companion_app_sync_ur, AccountConfig, CoinConfig};
 use crate::{common::get_path_component, ExtendedPublicKey, DEVICE_TYPE, DEVICE_VERSION};
-use crate::companion_app::{AccountConfig, CoinConfig, generate_companion_app_sync_ur};
 
 fn get_device_id(serial_number: &str) -> String {
     use third_party::cryptoxide::hashing::sha256;
@@ -32,11 +31,14 @@ const LTC_PREFIX: &str = "m/49'/2'/0'";
 const TRX_PREFIX: &str = "m/44'/195'/0'";
 const XRP_PREFIX: &str = "m/44'/144'/0'";
 
-
-const COLD_WALLET_VERSION :i32 = 31206;
+const COLD_WALLET_VERSION: i32 = 31206;
 fn path_to_coin_code(path: &str) -> String {
-
-    let path = path.split('/').take(4).collect::<Vec<&str>>().join("/").to_lowercase();
+    let path = path
+        .split('/')
+        .take(4)
+        .collect::<Vec<&str>>()
+        .join("/")
+        .to_lowercase();
     rust_tools::debug!(format!("path: {}", path));
     match path.as_str() {
         BTC_LEGACY_PREFIX => "BTC_LEGACY".to_string(),
@@ -105,18 +107,20 @@ pub fn generate_crypto_multi_accounts(
         Some(device_version.to_string()),
     );
 
-
     // convert crypto_multi_accounts to keystone sync ur
-    let mut coin_configs : Vec<CoinConfig> = vec![];
+    let mut coin_configs: Vec<CoinConfig> = vec![];
     for key in data.get_keys() {
         let mut accounts: Vec<AccountConfig> = vec![];
         let hd_path = "M/".to_string() + &*key.get_origin().unwrap().get_path().unwrap();
 
-        let x_pub =  key.get_bip32_key();
+        let x_pub = key.get_bip32_key();
 
         let coin_code = path_to_coin_code(&hd_path);
-        rust_tools::debug!(format!("coin_code: {}, hd_path: {}, x_pub: {}", coin_code, hd_path, x_pub));
-        if coin_code == "Unknown"{
+        rust_tools::debug!(format!(
+            "coin_code: {}, hd_path: {}, x_pub: {}",
+            coin_code, hd_path, x_pub
+        ));
+        if coin_code == "Unknown" {
             continue;
         }
 
@@ -159,7 +163,7 @@ pub fn generate_crypto_multi_accounts(
     // Coin { coin_code: "XRP", active: true, accounts: [Account { hd_path: "M/44'/144'/0'", x_pub: "xpub6BmXbwNG7wfcEs5VUsBKK5CwJk3Vf8QFKF3wTeutW1zWwStQ7qGZJr9W6KxdBF5pyzju17Hrsus4kjdjvYfu3PB46BsUQY61WQ2d9rP5v7i", address_length: 1, is_multi_sign: false }] },
     // Coin { coin_code: "DOT", active: true, accounts: [Account { hd_path: "//polkadot", x_pub: "xpub68wKPdEKjbZ4o1mSG7eN6b7b6vHXpShMTxJE4emZ98Fbs93cPxrkKxRmLkq7pi937qPyjxvXk4Zn2nUCvuQg6zbRvqQpVzXQyaM8miwcs7E", address_length: 1, is_multi_sign: false }] }] })) }),
     // device_type: "keystone Pro", content: Some(ColdVersion(31206)) }
-   Ok(keystone_sync_ur)
+    Ok(keystone_sync_ur)
 }
 
 fn generate_k1_normal_key(
@@ -192,4 +196,3 @@ fn generate_k1_normal_key(
         note,
     ))
 }
-

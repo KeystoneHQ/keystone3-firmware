@@ -8,7 +8,6 @@ pub fn convert_wei_to_eth(wei: &str) -> String {
     format!("{:.6}", eth)
 }
 
-
 /// calculate the max_txn_fee = gas_price * gas_limit
 pub fn calculate_max_txn_fee(gase_price: &str, gas_limit: &str) -> String {
     let gas_price = gase_price.parse::<f64>().unwrap();
@@ -16,4 +15,3 @@ pub fn calculate_max_txn_fee(gase_price: &str, gas_limit: &str) -> String {
     let max_txn_fee = gas_price * gas_limit;
     format!("{:.6}", max_txn_fee)
 }
-

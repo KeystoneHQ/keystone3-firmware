@@ -29,7 +29,6 @@ impl Decodable for TransactionAction {
     }
 }
 
-
 impl Encodable for TransactionAction {
     fn rlp_append(&self, s: &mut rlp::RlpStream) {
         match self {
@@ -42,7 +41,6 @@ impl Encodable for TransactionAction {
         }
         ()
     }
-
 }
 
 #[derive(Clone, Debug)]

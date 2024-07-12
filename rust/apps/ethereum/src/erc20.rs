@@ -11,7 +11,7 @@ pub struct ParsedErc20Transaction {
     pub value: String,
 }
 
-pub fn encode_erc20_transfer_calldata(to:H160,amount:U256) -> String {
+pub fn encode_erc20_transfer_calldata(to: H160, amount: U256) -> String {
     // transfer(address recipient, uint256 amount) function signature is 0xa9059cbb
     let mut calldata = "a9059cbb".to_string();
     calldata.push_str(&format!("{:0>64}", hex::encode(to)));
@@ -57,8 +57,8 @@ pub fn parse_erc20(input: &str, decimal: u32) -> Result<ParsedErc20Transaction, 
 
 #[cfg(test)]
 mod tests {
-    use core::str::FromStr;
     use super::*;
+    use core::str::FromStr;
 
     #[test]
     fn test_parse_erc20() {

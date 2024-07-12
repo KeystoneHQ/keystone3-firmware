@@ -11,10 +11,10 @@ pub mod eip712;
 pub mod erc20;
 pub mod errors;
 mod legacy_transaction;
+pub mod legacy_transaction_v2;
 mod normalizer;
 pub mod structs;
 mod traits;
-pub mod legacy_transaction_v2;
 pub use ethereum_types::{H160, U256};
 pub type Bytes = Vec<u8>;
 
@@ -26,12 +26,12 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-pub use legacy_transaction::*;
 use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
+use crate::legacy_transaction_v2::LegacyTransactionV2;
+pub use legacy_transaction::*;
 use third_party::hex;
 use third_party::secp256k1::{Message, PublicKey};
 use third_party::serde_json;
-use crate::legacy_transaction_v2::LegacyTransactionV2;
 
 pub fn parse_legacy_tx(tx_hex: Vec<u8>, from_key: PublicKey) -> Result<ParsedEthereumTransaction> {
     ParsedEthereumTransaction::from_legacy(
@@ -90,7 +90,11 @@ pub fn sign_legacy_tx(sign_data: Vec<u8>, seed: &[u8], path: &String) -> Result<
 }
 
 /// Only used by hot wallet version2
-pub fn sign_legacy_tx_v2(sign_data: Vec<u8>, seed: &[u8], path: &String) -> Result<EthereumSignature> {
+pub fn sign_legacy_tx_v2(
+    sign_data: Vec<u8>,
+    seed: &[u8],
+    path: &String,
+) -> Result<EthereumSignature> {
     let tx = LegacyTransactionV2::decode_raw(sign_data.as_slice())?;
     let hash = keccak256(sign_data.as_slice());
     let message = Message::from_digest_slice(&hash).unwrap();
@@ -175,13 +179,13 @@ mod tests {
 
     extern crate std;
 
-    use core::str::FromStr;
     use crate::alloc::string::ToString;
     use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
     use crate::{
         parse_fee_market_tx, parse_personal_message, parse_typed_data_message,
         sign_personal_message, sign_typed_data_message,
     };
+    use core::str::FromStr;
     use keystore::algorithms::secp256k1::get_public_key_by_seed;
     use third_party::hex;
     use third_party::serde_json;

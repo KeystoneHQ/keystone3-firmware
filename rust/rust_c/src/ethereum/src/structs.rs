@@ -1,9 +1,11 @@
 #![allow(dead_code)]
 use alloc::boxed::Box;
 
+use crate::util::{calculate_max_txn_fee, convert_wei_to_eth};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_ethereum::abi::{ContractData, ContractMethodParam};
+use app_ethereum::erc20::encode_erc20_transfer_calldata;
 use app_ethereum::structs::{ParsedEthereumTransaction, PersonalMessage, TypedData};
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
@@ -13,11 +15,9 @@ use common_rust_c::utils::convert_c_char;
 use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
 use core::ptr::null_mut;
 use core::str::FromStr;
-use app_ethereum::erc20::encode_erc20_transfer_calldata;
 use third_party::itertools::Itertools;
 use third_party::ur_registry::ethereum::eth_sign_request::DataType;
 use third_party::ur_registry::pb::protoc::EthTx;
-use crate::util::{calculate_max_txn_fee, convert_wei_to_eth};
 
 #[repr(C)]
 pub struct DisplayETH {
@@ -30,7 +30,7 @@ pub struct DisplayETH {
 impl_c_ptr!(DisplayETH);
 
 impl DisplayETH {
-    pub fn  set_from_address(mut self,from_address:String) -> DisplayETH {
+    pub fn set_from_address(mut self, from_address: String) -> DisplayETH {
         unsafe {
             let overview = &mut *self.overview;
             overview.from = convert_c_char(from_address.clone());
@@ -51,30 +51,36 @@ impl TryFrom<EthTx> for DisplayETH {
             let contract_address = erc20_override.contract_address;
             let display_tx_overview = DisplayETHOverview {
                 value: convert_c_char(convert_wei_to_eth("0")),
-                max_txn_fee: convert_c_char(convert_wei_to_eth(&calculate_max_txn_fee(&eth_tx.gas_price, &eth_tx.gas_limit))),
+                max_txn_fee: convert_c_char(convert_wei_to_eth(&calculate_max_txn_fee(
+                    &eth_tx.gas_price,
+                    &eth_tx.gas_limit,
+                ))),
                 gas_price: convert_c_char(eth_tx.gas_price.clone()),
-                gas_limit:convert_c_char(eth_tx.gas_limit.clone()),
-                from:convert_c_char(temp_from_address.clone()),
-                to:convert_c_char(contract_address.clone()),
+                gas_limit: convert_c_char(eth_tx.gas_limit.clone()),
+                from: convert_c_char(temp_from_address.clone()),
+                to: convert_c_char(contract_address.clone()),
             };
 
             // calculate erc20 transfer inputdata
             let to = app_ethereum::H160::from_str(&eth_tx.to).unwrap();
             let amount = app_ethereum::U256::from(eth_tx.value.parse::<u64>().unwrap());
-            let input_data = encode_erc20_transfer_calldata(to,amount);
+            let input_data = encode_erc20_transfer_calldata(to, amount);
 
             let display_tx_detail = DisplayETHDetail {
                 value: convert_c_char(convert_wei_to_eth("0")),
-                max_txn_fee: convert_c_char(convert_wei_to_eth(&calculate_max_txn_fee(&eth_tx.gas_price, &eth_tx.gas_limit))),
+                max_txn_fee: convert_c_char(convert_wei_to_eth(&calculate_max_txn_fee(
+                    &eth_tx.gas_price,
+                    &eth_tx.gas_limit,
+                ))),
                 max_fee: convert_c_char(eth_tx.gas_price.clone()),
                 max_priority: convert_c_char(eth_tx.gas_price.clone()),
                 max_fee_price: convert_c_char(eth_tx.gas_price.clone()),
                 max_priority_price: convert_c_char(eth_tx.gas_price.clone()),
                 gas_price: convert_c_char(eth_tx.gas_price),
-                gas_limit:convert_c_char(eth_tx.gas_limit),
-                from:convert_c_char(temp_from_address.clone()),
-                to:convert_c_char(contract_address),
-                input: convert_c_char(input_data)
+                gas_limit: convert_c_char(eth_tx.gas_limit),
+                from: convert_c_char(temp_from_address.clone()),
+                to: convert_c_char(contract_address),
+                input: convert_c_char(input_data),
             };
             let display_eth = DisplayETH {
                 tx_type: convert_c_char("Legacy".to_string()),
@@ -86,7 +92,10 @@ impl TryFrom<EthTx> for DisplayETH {
         } else {
             let display_tx_overview = DisplayETHOverview {
                 value: convert_c_char(convert_wei_to_eth(&eth_tx.value)),
-                max_txn_fee: convert_c_char(convert_wei_to_eth(&calculate_max_txn_fee(&eth_tx.gas_price, &eth_tx.gas_limit))),
+                max_txn_fee: convert_c_char(convert_wei_to_eth(&calculate_max_txn_fee(
+                    &eth_tx.gas_price,
+                    &eth_tx.gas_limit,
+                ))),
                 gas_price: convert_c_char(eth_tx.gas_price.clone()),
                 gas_limit: convert_c_char(eth_tx.gas_limit.clone()),
                 from: convert_c_char(temp_from_address.clone()),
@@ -95,7 +104,10 @@ impl TryFrom<EthTx> for DisplayETH {
 
             let display_tx_detail = DisplayETHDetail {
                 value: convert_c_char(convert_wei_to_eth(&eth_tx.value)),
-                max_txn_fee: convert_c_char(convert_wei_to_eth(&calculate_max_txn_fee(&eth_tx.gas_price, &eth_tx.gas_limit))),
+                max_txn_fee: convert_c_char(convert_wei_to_eth(&calculate_max_txn_fee(
+                    &eth_tx.gas_price,
+                    &eth_tx.gas_limit,
+                ))),
                 max_fee: convert_c_char(eth_tx.gas_price.clone()),
                 max_priority: convert_c_char(eth_tx.gas_price.clone()),
                 max_fee_price: convert_c_char(eth_tx.gas_price.clone()),
@@ -104,7 +116,7 @@ impl TryFrom<EthTx> for DisplayETH {
                 gas_limit: convert_c_char(eth_tx.gas_limit),
                 from: convert_c_char(temp_from_address.clone()),
                 to: convert_c_char(eth_tx.to),
-                input: convert_c_char(eth_tx.memo)
+                input: convert_c_char(eth_tx.memo),
             };
             let display_eth = DisplayETH {
                 tx_type: convert_c_char("Legacy".to_string()),
@@ -116,9 +128,6 @@ impl TryFrom<EthTx> for DisplayETH {
         }
     }
 }
-
-
-
 
 #[repr(C)]
 pub struct DisplayETHOverview {

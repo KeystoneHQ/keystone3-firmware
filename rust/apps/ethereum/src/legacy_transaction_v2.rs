@@ -9,15 +9,13 @@ use rlp::{Decodable, DecoderError, Encodable, Rlp};
 use third_party::hex;
 
 type Bytes = vec::Vec<u8>;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use third_party::ur_registry::pb::protoc::EthTx;
 use crate::erc20::encode_erc20_transfer_calldata;
 use crate::structs::EthereumSignature;
-
-
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use third_party::ur_registry::pb::protoc::EthTx;
 
 const CHAIN_ID: u64 = 1u64;
-const LEGACY_TRANSACTION_TYPE : u64 = 0u64;
+const LEGACY_TRANSACTION_TYPE: u64 = 0u64;
 #[derive(Clone)]
 pub struct TransactionRecoveryId(pub u64);
 
@@ -53,7 +51,6 @@ pub struct TransactionSignature {
     s: H256,
 }
 
-
 impl TryFrom<EthereumSignature> for TransactionSignature {
     type Error = ();
 
@@ -80,7 +77,6 @@ impl TransactionSignature {
             s,
         }
     }
-
 
     pub fn v(&self) -> u64 {
         self.v.0
@@ -119,11 +115,11 @@ pub struct LegacyTransactionV2 {
     nonce: U256,
     gas_price: U256,
     gas_limit: U256,
-    chain_id:u64,
+    chain_id: u64,
     to: Bytes,
     value: U256,
     data: Bytes,
-    r#type:U256,
+    r#type: U256,
     access_list: Bytes,
     signature: Option<TransactionSignature>,
 }
@@ -136,33 +132,32 @@ fn add_hex_prefix(hex: &str) -> String {
     }
 }
 
-
 impl LegacyTransactionV2 {
     pub fn new(
         nonce: u32,
         gas_price: u64,
         gas_limit: u64,
-        chain_id:u64,
+        chain_id: u64,
         to: String,
         value: u64,
         data: String,
     ) -> Self {
-        let to : H160 = to.parse().unwrap();
+        let to: H160 = to.parse().unwrap();
         Self {
             nonce: U256::from(nonce),
             gas_price: U256::from(gas_price),
             gas_limit: U256::from(gas_limit),
             chain_id,
-            to:Bytes::from(to.as_bytes()),
+            to: Bytes::from(to.as_bytes()),
             value: U256::from(value),
             data: Bytes::from(hex::decode(data).unwrap()),
             signature: None,
-            r#type:U256::from(0),
-            access_list:Bytes::from(vec![]),
+            r#type: U256::from(0),
+            access_list: Bytes::from(vec![]),
         }
     }
 
-    pub fn set_signature(mut self,signature:TransactionSignature) -> Self {
+    pub fn set_signature(mut self, signature: TransactionSignature) -> Self {
         self.signature = Some(signature);
         self
     }
@@ -235,7 +230,7 @@ impl TryFrom<EthTx> for LegacyTransactionV2 {
             // generate  erc20 transfer inputdata
             let to = crate::H160::from_str(&eth_tx.to).unwrap();
             let amount = crate::U256::from(eth_tx.value.parse::<u64>().unwrap());
-            let input_data = encode_erc20_transfer_calldata(to,amount);
+            let input_data = encode_erc20_transfer_calldata(to, amount);
             let legacy_transaction = LegacyTransactionV2::new(
                 eth_tx.nonce as u32,
                 eth_tx.gas_price.parse::<u64>().unwrap(),
@@ -305,7 +300,6 @@ impl Encodable for LegacyTransactionV2 {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -317,7 +311,6 @@ mod tests {
         let hex_nonce = add_hex_prefix(&format!("{:x}", nonce));
         assert_eq!(hex_nonce, "0x21");
     }
-
 
     #[test]
     fn test_transfer_erc20_legacy_transaction() {
@@ -350,7 +343,7 @@ mod tests {
         // raw tx
         let signed_tx = tx.encode_raw();
         let signed_tx_hex = hex::encode(&signed_tx);
-          // tx id === tx hash
+        // tx id === tx hash
         let signed_tx_hash = keccak256(&signed_tx);
         let signed_tx_hash_hex = hex::encode(&signed_tx_hash);
 
@@ -358,7 +351,6 @@ mod tests {
             "fec8bfea5ec13ad726de928654cd1733b1d81d2d2916ac638e6b9a245f034ace".to_string(),
             signed_tx_hash_hex
         );
-
 
         assert_eq!(
             "f8af21850389dffde682b3b094fe2c232addf66539bfd5d1bd4b2cc91d358022a286b5e620f48000b844a9059cbb00000000000000000000000049ab56b91fc982fd6ec1ec7bb87d74efa6da30ab00000000000000000000000000000000000000000000000001480ff69d129e2d26a035df2b615912b8be79a13c9b0a1540ade55434ab68778a49943442a9e6d3141aa00a6e33134ba47c1f1cda59ec3ef62a59d4da6a9d111eb4e447828574c1c94f66",
@@ -368,13 +360,12 @@ mod tests {
         let decoded_tx = LegacyTransactionV2::decode_raw(&signed_tx).unwrap();
         assert_eq!(decoded_tx.nonce, U256::from(33));
         let hex_data = hex::encode(decoded_tx.data);
-            assert_eq!(decoded_tx.gas_price, U256::from(15198060006u64));
+        assert_eq!(decoded_tx.gas_price, U256::from(15198060006u64));
         assert_eq!(decoded_tx.gas_limit, U256::from(46000));
         assert_eq!(decoded_tx.chain_id, 1);
-        assert_eq!(200000000000000,decoded_tx.value.as_u64());
+        assert_eq!(200000000000000, decoded_tx.value.as_u64());
         assert_eq!(hex_data, "a9059cbb00000000000000000000000049ab56b91fc982fd6ec1ec7bb87d74efa6da30ab00000000000000000000000000000000000000000000000001480ff69d129e2d");
         assert_eq!(decoded_tx.r#type, U256::from(0));
-
     }
 
     #[test]
@@ -384,11 +375,11 @@ mod tests {
             15198060006,
             46000,
             1,
-                "0xfe2c232adDF66539BFd5d1Bd4B2cc91D358022a2".to_string(),
+            "0xfe2c232adDF66539BFd5d1Bd4B2cc91D358022a2".to_string(),
             200000000000000,
             "".to_string(),
         );
-        assert_eq!(0,tx.data.len());
+        assert_eq!(0, tx.data.len());
         let unsigned_tx = tx.encode_raw();
         let unsigned_tx_hex = hex::encode(&unsigned_tx);
         assert_eq!(
@@ -430,12 +421,10 @@ mod tests {
         assert_eq!(decoded_tx.gas_price, U256::from(15198060006u64));
         assert_eq!(decoded_tx.gas_limit, U256::from(46000));
         assert_eq!(decoded_tx.chain_id, 1);
-        assert_eq!(200000000000000,decoded_tx.value.as_u64());
+        assert_eq!(200000000000000, decoded_tx.value.as_u64());
         assert_eq!(decoded_tx.data, Bytes::from("".as_bytes()));
         assert_eq!(decoded_tx.r#type, U256::from(0));
-
     }
-
 
     #[test]
     fn test_legacy_transaction2() {

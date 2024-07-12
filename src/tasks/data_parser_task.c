@@ -49,17 +49,13 @@ void SetDeviceParserIv(uint8_t *iv)
 uint8_t *GetDeviceParserPubKey(uint8_t *webPub, uint16_t len)
 {
     assert(len == 33);
-    uint8_t privKey[32] = {36, 152, 38, 220, 181, 219, 183, 145, 246, 234, 111, 76, 161, 118, 67, 239, 70, 95, 241, 130, 17, 82, 24, 232, 53, 216, 250, 63, 93, 81, 164, 129};
-    uint8_t shareKey[PUB_KEY_SIZE] = {3, 161, 210, 17, 253, 221, 40, 129, 137, 80, 105, 46, 126, 230, 80, 221, 82, 51, 206, 214, 24, 144, 201, 11, 99, 132, 251, 21, 68, 169, 44, 42, 251};
-    uint8_t shareKey2[PUB_KEY_SIZE] = {0};
-    uint8_t webPubKey[] = {3, 161, 210, 17, 253, 221, 40, 129, 137, 80, 105, 46, 126, 230, 80, 221, 82, 51, 206, 214, 24, 144, 201, 11, 99, 132, 251, 21, 68, 169, 44, 42, 251};
-    uint8_t aboutShareKey[] = {164, 17, 34, 134, 65, 88, 48, 2, 139, 207, 159, 246, 129, 149, 245, 135, 244, 19, 144, 189, 18, 200, 154, 196, 247, 24, 60, 22, 61, 161, 130, 105};
-    #if 1
+    uint8_t privKey[32] = {};
+    uint8_t shareKey[PUB_KEY_SIZE] = {0};
     TrngGet(privKey, sizeof(privKey));
     SimpleResponse_u8 *simpleResponse = k1_generate_pubkey_by_privkey(privKey, sizeof(privKey));
-    memcpy_s(shareKey2, sizeof(shareKey2) + 1, simpleResponse->data, PUB_KEY_SIZE);
+    memcpy_s(shareKey, sizeof(shareKey) + 1, simpleResponse->data, PUB_KEY_SIZE);
     free_simple_response_u8(simpleResponse);
-    memcpy_s(g_dataParserPubKey, sizeof(g_dataParserPubKey) + 1, shareKey2, PUB_KEY_SIZE);
+    memcpy_s(g_dataParserPubKey, sizeof(g_dataParserPubKey) + 1, shareKey, PUB_KEY_SIZE);
     simpleResponse = k1_generate_ecdh_sharekey(privKey, sizeof(privKey), webPub, PUB_KEY_SIZE);
     if (simpleResponse == NULL) {
         printf("get_master_fingerprint return NULL\r\n");
@@ -67,10 +63,6 @@ uint8_t *GetDeviceParserPubKey(uint8_t *webPub, uint16_t len)
     }
     memcpy_s(g_dataSharedKey, sizeof(g_dataSharedKey), simpleResponse->data, 32);
     free_simple_response_u8(simpleResponse);
-    #else
-    memcpy_s(g_dataParserPubKey, sizeof(g_dataParserPubKey) + 1, webPubKey, PUB_KEY_SIZE);
-    memcpy_s(g_dataSharedKey, sizeof(g_dataSharedKey), aboutShareKey, 32);
-    #endif
     memset_s(privKey, sizeof(privKey), 0, sizeof(privKey));
     return g_dataParserPubKey;
 }

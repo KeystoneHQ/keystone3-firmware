@@ -22,6 +22,7 @@ UREncodeResult *GuiGetMetamaskData(void);
 UREncodeResult *GuiGetOkxWalletData(void);
 #ifndef BTC_ONLY
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
+UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetPetraData(void);
 UREncodeResult *GuiGetSolflareData(void);
 UREncodeResult *GuiGetXBullData(void);

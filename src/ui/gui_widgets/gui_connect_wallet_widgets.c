@@ -61,6 +61,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
+    {WALLET_LIST_NIGHTLY, &walletListNightly, true},
 #else
     {WALLET_LIST_BLUE, &walletListBtcBlue, true, false},
     {WALLET_LIST_SPARROW, &walletListBtcSparrow, true, false},
@@ -153,6 +154,10 @@ static const lv_img_dsc_t *g_petraCoinArray[1] = {
     &coinApt,
 };
 
+static const lv_img_dsc_t *g_nightlyCoinArray[1] = {
+    &coinSui,
+};
+
 static const lv_img_dsc_t *g_solfareCoinArray[1] = {
     &coinSol,
 };
@@ -225,6 +230,7 @@ static void AddBlueWalletCoins(void);
 static void AddFewchaCoins(void);
 static void AddKeplrCoins(void);
 static void AddSolflareCoins(void);
+static void AddNightlyCoins(void);
 static void AddThorWalletCoins(void);
 static void ShowEgAddressCont(lv_obj_t *egCont);
 static uint32_t GetCurrentSelectedIndex();
@@ -933,6 +939,22 @@ static void AddThorWalletCoins(void)
 }
 
 
+static void AddNightlyCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 1; i++) {
+        // todo add more coins
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_nightlyCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
+
+
 static void AddChainAddress(void)
 {
     if (lv_obj_get_child_cnt(g_bottomCont) > 0) {
@@ -1057,6 +1079,14 @@ UREncodeResult *GuiGetFewchaData(void)
     }
     return GuiGetFewchaDataByCoin(coin);
 }
+
+UREncodeResult *GuiGetNightlyData(void)
+{
+    GuiChainCoinType coin = CHAIN_SUI;
+    // get pub by coin
+    return GuiGetNightlyDataByCoin(coin);
+}
+
 UREncodeResult *GuiGetXrpToolkitData(void)
 {
     return GuiGetXrpToolkitDataByIndex(
@@ -1177,6 +1207,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_TYPHON:
         func = GuiGetADAData;
         AddChainAddress();
+        break;
+    case WALLET_LIST_NIGHTLY:
+        func = GuiGetNightlyData;
+        AddNightlyCoins();
         break;
     case WALLET_LIST_FEWCHA:
         if (!g_isCoinReselected) {

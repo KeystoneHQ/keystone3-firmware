@@ -37,12 +37,13 @@ impl From<CardanoCatalystVotingRegistrationRequest> for DisplayCardanoCatalyst {
     fn from(value: CardanoCatalystVotingRegistrationRequest) -> Self {
         Self {
             nonce: convert_c_char(value.get_nonce().to_string()),
-            stake_key: convert_c_char(app_cardano::governance::parse_stake_address(
-                value.get_stake_pub(),
-            ).unwrap()),
-            rewards: convert_c_char(app_cardano::governance::parse_payment_address(
-                value.get_payment_address(),
-            ).unwrap()),
+            stake_key: convert_c_char(
+                app_cardano::governance::parse_stake_address(value.get_stake_pub()).unwrap(),
+            ),
+            rewards: convert_c_char(
+                app_cardano::governance::parse_payment_address(value.get_payment_address())
+                    .unwrap(),
+            ),
             vote_keys: VecFFI::from(
                 value
                     .get_delegations()

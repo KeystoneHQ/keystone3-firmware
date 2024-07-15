@@ -1,7 +1,9 @@
+use crate::address;
 use crate::errors::{CardanoError, R};
 use crate::structs::SignVotingRegistrationResult;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use cardano_serialization_lib::address::{Address, BaseAddress};
 use third_party::cryptoxide::hashing::blake2b_256;
 use third_party::ed25519_bip32_core::{XPrv, XPub};
 use third_party::hex;
@@ -135,6 +137,18 @@ pub fn sign_voting_registration(
     Ok(SignVotingRegistrationResult::new(
         signed_data.to_bytes().to_vec(),
     ))
+}
+
+pub fn parse_stake_address(stake_pub: Vec<u8>) -> R<String> {
+    let stake_address =
+        address::calc_stake_address_from_xpub(stake_pub.try_into().unwrap()).unwrap();
+    Ok(stake_address)
+}
+
+pub fn parse_payment_address(payment_address: Vec<u8>) -> R<String> {
+    let payment_address = Address::from_bytes(payment_address).unwrap();
+    let addr = payment_address.to_bech32(None).unwrap();
+    Ok(addr)
 }
 
 #[cfg(test)]
@@ -305,5 +319,21 @@ mod tests {
         .unwrap();
 
         assert_eq!(hex::encode(sign_data_result.get_signature()), "4ec0df6a2bbcd79ff8632b228808391a7ba2078a24578698ac36a26bba23a9b0e3838ccdaa1d7be26a65d3cd20c7001df92aeb67dc9e7c4eada45fa17605b009");
+    }
+
+    #[test]
+    fn test_address_calc() {
+        let stake_pub =
+            hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c")
+                .unwrap();
+        let stake_address = parse_stake_address(stake_pub).unwrap();
+        assert_eq!(
+            stake_address,
+            "stake1uye6fu05dpz5w39jlumyfv4t082gua4rrpleqtlg5x704tg82ull2"
+        );
+
+        let payment_address_bytes = hex::decode("0069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad").unwrap();
+        let payment_address = parse_payment_address(payment_address_bytes).unwrap();
+        assert_eq!(payment_address, "addr_test1qp5l5x7exwzhgupzs0v0ku0censcx8p75jz52cl4uszr463n5nclg6z9gazt9lekgje2k7w53em2xxrljqh73gdul2ksx5mjej".to_string());
     }
 }

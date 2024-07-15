@@ -16,6 +16,18 @@ pub enum AddressType {
     Enterprise,
 }
 
+pub fn calc_stake_address_from_xpub(stake_key: [u8; 32]) -> R<String> {
+    let stake_key_hash = blake2b_224(&stake_key);
+    let address = RewardAddress::new(
+        1,
+        &StakeCredential::from_keyhash(&Ed25519KeyHash::from(stake_key_hash)),
+    );
+    address
+        .to_address()
+        .to_bech32(None)
+        .map_err(|e| CardanoError::AddressEncodingError(e.to_string()))
+}
+
 pub fn derive_address(
     xpub: String,
     change: u32,

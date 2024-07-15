@@ -250,6 +250,15 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_TONKEEPER].items[0].url = _("connect_tonkeeper_link");
     g_tutorials[WALLET_LIST_TONKEEPER].items[0].qrTitle = _("connect_tonkeeper_title");
     g_tutorials[WALLET_LIST_TONKEEPER].items[0].qrUrl = _("connect_tonkeeper_link");
+
+
+    //WALLET_LIST_KEYSTONE
+    g_tutorials[WALLET_LIST_KEYSTONE].len = 1;
+    g_tutorials[WALLET_LIST_KEYSTONE].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_KEYSTONE].items[0].walletName = _("connect_keystone_title");
+    g_tutorials[WALLET_LIST_KEYSTONE].items[0].url = _("connect_keystone_link");
+    g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrTitle = _("connect_keystone_title");
+    g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrUrl = _("connect_keystone_link");
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;
     g_tutorials[WALLET_LIST_BLUE].desc = _("connect_wallet_desc");

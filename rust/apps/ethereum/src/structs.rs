@@ -6,7 +6,7 @@ use alloc::string::String;
 
 use alloc::vec::Vec;
 use ethereum_types::H160;
-use rlp::{Decodable, DecoderError, Rlp};
+use rlp::{Decodable, DecoderError, Encodable, Rlp};
 use third_party::secp256k1::PublicKey;
 
 #[derive(Clone)]
@@ -26,6 +26,20 @@ impl Decodable for TransactionAction {
         } else {
             Ok(TransactionAction::Call(rlp.as_val()?))
         }
+    }
+}
+
+impl Encodable for TransactionAction {
+    fn rlp_append(&self, s: &mut rlp::RlpStream) {
+        match self {
+            TransactionAction::Call(address) => {
+                s.append(address);
+            }
+            TransactionAction::Create => {
+                s.append_empty_data();
+            }
+        }
+        ()
     }
 }
 

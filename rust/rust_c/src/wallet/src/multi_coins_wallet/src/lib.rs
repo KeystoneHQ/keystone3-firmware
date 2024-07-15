@@ -6,6 +6,7 @@ pub mod arconnect;
 pub mod backpack;
 mod imtoken;
 pub mod keplr;
+pub mod keystone;
 pub mod okx;
 pub mod solana;
 pub mod structs;
@@ -14,7 +15,6 @@ pub mod tonkeeper;
 mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
-
 use alloc::format;
 use alloc::string::String;
 use alloc::string::ToString;

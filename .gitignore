@@ -10,3 +10,5 @@
 **/__pycache__
 **/build_simulator
 pyenv
+!/rust/apps/target/
+!/rust/apps/Cargo.lock

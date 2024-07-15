@@ -59,6 +59,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
     {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false},
+    {WALLET_LIST_KEYSTONE, &walletListKeystone, true},
 #else
     {WALLET_LIST_BLUE, &walletListBtcBlue, true, false},
     {WALLET_LIST_SPARROW, &walletListBtcSparrow, true, false},
@@ -114,6 +115,11 @@ static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
 
 static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {
     &coinSol, &coinEth
+};
+
+static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
+    &coinBtc, &coinEth, &coinBnb, &coinBch,
+    &coinDash, &coinDot,  &coinLtc, &coinTrx, &coinXrp,
 };
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
@@ -277,6 +283,24 @@ static void GuiInitWalletListArray()
             } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
                 g_walletListArray[i].enable = !GetIsTempAccount();
             }
+        if (g_walletListArray[i].index == WALLET_LIST_ETERNL ||
+                g_walletListArray[i].index == WALLET_LIST_TYPHON) {
+            if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+                g_walletListArray[i].enable = false;
+            } else {
+                g_walletListArray[i].enable = true;
+            }
+        } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
+            g_walletListArray[i].enable = !GetIsTempAccount();
+        }
+
+        // Only show keystone wallet when the language is Russian
+        if (LanguageGetIndex() == LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
+            g_walletListArray[i].enable = true;
+        } else if (LanguageGetIndex() != LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
+            g_walletListArray[i].enable = false;
+        }
+
 #else
             if (GetCurrentWalletIndex() != SINGLE_WALLET) {
                 if (g_walletListArray[i].index == WALLET_LIST_SPECTER ||
@@ -748,6 +772,27 @@ static void AddOkxWalletCoins(void)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 132, 2);
 }
 
+static void AddKeystoneWalletCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0;
+            i < sizeof(g_keystoneWalletCoinArray) / sizeof(g_keystoneWalletCoinArray[0]);
+            i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_keystoneWalletCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
+    lv_img_set_zoom(img, 150);
+    lv_img_set_pivot(img, 0, 0);
+    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 132, 2);
+}
+
+
 static void AddBlueWalletCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -1132,6 +1177,11 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_TONKEEPER:
         func = GuiGetTonData;
         AddTonCoins();
+        break;
+    case WALLET_LIST_KEYSTONE:
+        // todo  add keystone ur logic
+        func = GuiGetKeystoneWalletData;
+        AddKeystoneWalletCoins();
         break;
 #else
     case WALLET_LIST_BLUE:

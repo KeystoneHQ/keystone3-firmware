@@ -3,6 +3,22 @@
 #![feature(error_in_core)]
 extern crate alloc;
 
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+
+pub use ethereum_types::{H160, U256};
+pub use legacy_transaction::*;
+use third_party::hex;
+use third_party::secp256k1::{Message, PublicKey};
+use third_party::serde_json;
+
+use crate::crypto::keccak256;
+use crate::eip1559_transaction::{EIP1559Transaction, ParsedEIP1559Transaction};
+use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
+use crate::errors::{EthereumError, Result};
+use crate::structs::{EthereumSignature, ParsedEthereumTransaction, PersonalMessage, TypedData};
+
 pub mod abi;
 pub mod address;
 mod crypto;
@@ -14,23 +30,7 @@ mod legacy_transaction;
 mod normalizer;
 pub mod structs;
 mod traits;
-
 pub type Bytes = Vec<u8>;
-
-use crate::crypto::keccak256;
-use crate::eip1559_transaction::{EIP1559Transaction, ParsedEIP1559Transaction};
-use crate::errors::{EthereumError, Result};
-use crate::structs::{EthereumSignature, ParsedEthereumTransaction, PersonalMessage, TypedData};
-use alloc::format;
-use alloc::string::{String, ToString};
-use alloc::vec::Vec;
-
-pub use legacy_transaction::*;
-
-use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
-use third_party::hex;
-use third_party::secp256k1::{Message, PublicKey};
-use third_party::serde_json;
 
 pub fn parse_legacy_tx(tx_hex: Vec<u8>, from_key: PublicKey) -> Result<ParsedEthereumTransaction> {
     ParsedEthereumTransaction::from_legacy(
@@ -73,6 +73,27 @@ pub fn parse_typed_data_message(tx_hex: Vec<u8>, from_key: PublicKey) -> Result<
 }
 
 pub fn sign_legacy_tx(sign_data: Vec<u8>, seed: &[u8], path: &String) -> Result<EthereumSignature> {
+    let tx = LegacyTransaction::decode_raw(sign_data.as_slice())?;
+    let hash = keccak256(sign_data.as_slice());
+    let message = Message::from_digest_slice(&hash).unwrap();
+    keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
+        .map_err(|e| EthereumError::SignFailure(e.to_string()))
+        .map(|(rec_id, rs)| {
+            let v = rec_id as u64 + 27;
+            if tx.is_eip155_compatible() {
+                EthereumSignature(v + tx.chain_id() * 2 + 8, rs)
+            } else {
+                EthereumSignature(v, rs)
+            }
+        })
+}
+
+/// Only used by hot wallet version2
+pub fn sign_legacy_tx_v2(
+    sign_data: Vec<u8>,
+    seed: &[u8],
+    path: &String,
+) -> Result<EthereumSignature> {
     let tx = LegacyTransaction::decode_raw(sign_data.as_slice())?;
     let hash = keccak256(sign_data.as_slice());
     let message = Message::from_digest_slice(&hash).unwrap();
@@ -157,15 +178,18 @@ mod tests {
 
     extern crate std;
 
+    use core::str::FromStr;
+
+    use keystore::algorithms::secp256k1::get_public_key_by_seed;
+    use third_party::hex;
+    use third_party::serde_json;
+
     use crate::alloc::string::ToString;
     use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
     use crate::{
         parse_fee_market_tx, parse_personal_message, parse_typed_data_message,
         sign_personal_message, sign_typed_data_message,
     };
-    use keystore::algorithms::secp256k1::get_public_key_by_seed;
-    use third_party::hex;
-    use third_party::serde_json;
 
     #[test]
     fn test_parse_personal_message() {

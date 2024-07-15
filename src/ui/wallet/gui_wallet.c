@@ -408,6 +408,68 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
 
 #endif
 
+UREncodeResult *GuiGetKeystoneWalletData(void)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    //   btc 3
+    // + eth 1
+    // + bch 1
+    // + dash 1
+    // + dot 1
+    // + ltc 1
+    // + trx 1
+    // + xrp 1
+
+    // total xpub = 9
+    uint8_t XPUB_AMMOUNT = 9;
+    ExtendedPublicKey keys[XPUB_AMMOUNT];
+    public_keys->data = keys;
+    public_keys->size = XPUB_AMMOUNT;
+
+    keys[0].path = "m/44'/0'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+
+    keys[1].path = "m/49'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+
+    keys[2].path = "m/84'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+
+    keys[3].path = GetXPubPath(XPUB_TYPE_BCH);
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
+
+    keys[4].path = GetXPubPath(XPUB_TYPE_DASH);
+    keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
+
+
+    keys[5].path = GetXPubPath(XPUB_TYPE_LTC);
+    keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_LTC);
+
+    keys[6].path = GetXPubPath(XPUB_TYPE_TRX);
+    keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
+
+    keys[7].path = GetXPubPath(XPUB_TYPE_XRP);
+    keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
+
+    keys[8].path = GetXPubPath(XPUB_TYPE_ETH_BIP44_STANDARD);
+    keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+
+
+
+    char serialNumber[256];
+    GetSerialNumber(serialNumber);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+    g_urEncode = get_keystone_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
+
+    CHECK_CHAIN_PRINT(g_urEncode);
+    SRAM_FREE(public_keys);
+    return g_urEncode;
+}
+
+
 UREncodeResult *GuiGetOkxWalletData(void)
 {
     uint8_t mfp[4] = {0};

@@ -20,6 +20,7 @@ pub mod blue_wallet;
 mod common;
 pub mod companion_app;
 pub mod keplr;
+pub mod keystone;
 pub mod metamask;
 pub mod okx;
 pub mod solana;
@@ -28,7 +29,6 @@ pub mod tonkeeper;
 mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
-
 //TODO: get these value from device
 pub const DEVICE_TYPE: &str = "Keystone 3 Pro";
 pub const DEVICE_VERSION: &str = "1.1.0";

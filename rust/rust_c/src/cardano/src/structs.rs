@@ -28,18 +28,23 @@ pub struct DisplayCardanoSignData {
 #[repr(C)]
 pub struct DisplayCardanoCatalyst {
     pub nonce: PtrString,
-    pub vote_public_key: PtrString,
+    pub stake_key: PtrString,
     pub rewards: PtrString,
-    pub stake_keys: Ptr<VecFFI<PtrString>>,
+    pub vote_keys: Ptr<VecFFI<PtrString>>,
 }
 
 impl From<CardanoCatalystVotingRegistrationRequest> for DisplayCardanoCatalyst {
     fn from(value: CardanoCatalystVotingRegistrationRequest) -> Self {
         Self {
             nonce: convert_c_char(value.get_nonce().to_string()),
-            vote_public_key: convert_c_char(hex::encode(value.get_stake_pub())),
-            rewards: convert_c_char(hex::encode(value.get_payment_address())),
-            stake_keys: VecFFI::from(
+            stake_key: convert_c_char(
+                app_cardano::governance::parse_stake_address(value.get_stake_pub()).unwrap(),
+            ),
+            rewards: convert_c_char(
+                app_cardano::governance::parse_payment_address(value.get_payment_address())
+                    .unwrap(),
+            ),
+            vote_keys: VecFFI::from(
                 value
                     .get_delegations()
                     .iter()
@@ -111,9 +116,9 @@ impl Free for DisplayCardanoSignData {
 impl Free for DisplayCardanoCatalyst {
     fn free(&self) {
         free_str_ptr!(self.nonce);
-        free_str_ptr!(self.vote_public_key);
+        free_str_ptr!(self.stake_key);
         free_str_ptr!(self.rewards);
-        free_vec!(self.stake_keys);
+        free_vec!(self.vote_keys);
     }
 }
 

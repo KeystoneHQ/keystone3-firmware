@@ -16,6 +16,18 @@ pub enum AddressType {
     Enterprise,
 }
 
+pub fn calc_stake_address_from_xpub(stake_key: [u8; 32]) -> R<String> {
+    let stake_key_hash = blake2b_224(&stake_key);
+    let address = RewardAddress::new(
+        1,
+        &StakeCredential::from_keyhash(&Ed25519KeyHash::from(stake_key_hash)),
+    );
+    address
+        .to_address()
+        .to_bech32(None)
+        .map_err(|e| CardanoError::AddressEncodingError(e.to_string()))
+}
+
 pub fn derive_address(
     xpub: String,
     change: u32,
@@ -96,6 +108,7 @@ pub fn derive_pubkey_hash(xpub: String, change: u32, index: u32) -> R<[u8; 28]> 
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use alloc::string::ToString;
     use alloc::vec;
     use cardano_serialization_lib::address::{Address, BaseAddress};
@@ -176,5 +189,43 @@ mod tests {
                 reward_address
             )
         }
+        {
+            let enterprise_address =
+                derive_address(xpub.to_string(), 0, 0, 0, AddressType::Enterprise, 1).unwrap();
+            assert_eq!(
+                "addr1vy8ac7qqy0vtulyl7wntmsxc6wex80gvcyjy33qffrhm7ss7lxrqp",
+                enterprise_address
+            )
+        }
+    }
+
+    #[test]
+    fn test_calc_stake_address_from_xpub() {
+        let stake_pub =
+            hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c")
+                .unwrap();
+        let address = calc_stake_address_from_xpub(stake_pub.try_into().unwrap()).unwrap();
+        assert_eq!(
+            "stake1uye6fu05dpz5w39jlumyfv4t082gua4rrpleqtlg5x704tg82ull2".to_string(),
+            address
+        );
+    }
+
+    #[test]
+    fn test_derive_pubkey_hash() {
+        let path = "m/1852'/1815'/0'";
+        let entropy = hex::decode("00000000000000000000000000000000").unwrap();
+        let xpub =
+            keystore::algorithms::ed25519::bip32_ed25519::get_extended_public_key_by_entropy(
+                entropy.as_slice(),
+                b"",
+                &path.to_string(),
+            )
+            .unwrap();
+        let pubkey_hash = derive_pubkey_hash(xpub.to_string(), 0, 0).unwrap();
+        assert_eq!(
+            hex::encode(pubkey_hash),
+            "0fdc780023d8be7c9ff3a6bdc0d8d3b263bd0cc12448c40948efbf42",
+        );
     }
 }

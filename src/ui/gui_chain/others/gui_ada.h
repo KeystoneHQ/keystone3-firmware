@@ -53,8 +53,8 @@ UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeData(void);
 void GetCatalystNonce(void *indata, void *param, uint32_t maxLen);
 void GetCatalystVotePublicKey(void *indata, void *param, uint32_t maxLen);
 void GetCatalystRewards(void *indata, void *param, uint32_t maxLen);
-void GetCatalystStakeKeysPath(void *indata, void *param, uint32_t maxLen);
-void GetCatalystStakeKeysPathSize(uint16_t *width, uint16_t *height, void *param);
+void GetCatalystVoteKeysPath(void *indata, void *param, uint32_t maxLen);
+void GetCatalystVoteKeysPathSize(uint16_t *width, uint16_t *height, void *param);
 void GetCatalystRewardsNotice(lv_obj_t *parent, void *totalData);
 
 #endif

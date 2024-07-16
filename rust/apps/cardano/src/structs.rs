@@ -887,3 +887,71 @@ fn normalize_coin(value: u64) -> String {
 fn normalize_value(value: u64) -> String {
     format!("{}", (value as f64).div(DIVIDER))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+
+    #[test]
+    fn test_normalize_coin() {
+        let value = 1_000_000u64;
+        let result = normalize_coin(value);
+        assert_eq!(result, "1 ADA");
+    }
+
+    #[test]
+    fn test_normalize_value() {
+        let value = 1_000_000u64;
+        let result = normalize_value(value);
+        assert_eq!(result, "1");
+    }
+
+    #[test]
+    fn test_parse_sign_data() {
+        let payload = "846a5369676e6174757265315882a301270458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad676164647265737358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad4043abc123";
+        let data = ParsedCardanoSignData::build(
+            hex::decode(payload).unwrap(),
+            "m/1852'/1815'/0'/0/0".to_string(),
+        )
+        .unwrap();
+        assert_eq!(data.get_derivation_path(), "m/1852'/1815'/0'/0/0");
+        assert_eq!(hex::encode(data.get_payload()), "616263313233");
+    }
+
+    #[test]
+    fn test_parse_sign() {
+        let sign_data = hex::decode("84a400828258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99038258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99040182a200581d6179df4c75f7616d7d1fd39cbc1a6ea6b40a0d7b89fea62fc0909b6c370119c350a200581d61c9b0c9761fd1dc0404abd55efc895026628b5035ac623c614fbad0310119c35002198ecb0300a0f5f6").unwrap();
+        let request = CardanoSignRequest::new(
+            Some(
+                hex::decode("9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d")
+                    .unwrap()
+                    .try_into()
+                    .unwrap(),
+            ),
+            sign_data.clone().try_into().unwrap(),
+            vec![],
+            vec![],
+            Some("".to_string()),
+        );
+        let xpub = hex::encode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c");
+        let master_fingerprint = hex::decode("52744703").unwrap();
+        let context = ParseContext::new(vec![], vec![], xpub, master_fingerprint);
+        let tx = Transaction::from_hex(&hex::encode(sign_data)).unwrap();
+
+        let network_id = ParsedCardanoTx::judge_network_id(&tx);
+        assert_eq!(network_id, 1);
+
+        let auxiliary_data = ParsedCardanoTx::parse_auxiliary_data(&tx);
+        assert_eq!(auxiliary_data.unwrap(), None);
+
+        let certificates = ParsedCardanoTx::parse_certificates(&tx, network_id);
+        assert_eq!(certificates.unwrap().len(), 0);
+
+        let withdrawals = ParsedCardanoTx::parse_withdrawals(&tx);
+        assert_eq!(withdrawals.unwrap().len(), 0);
+
+        let cardano_tx = ParsedCardanoTx::from_cardano_tx(tx, context);
+        assert_eq!(cardano_tx.is_ok(), true);
+    }
+}

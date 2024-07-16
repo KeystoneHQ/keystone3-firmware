@@ -516,10 +516,10 @@ void GetCatalystNonce(void *indata, void *param, uint32_t maxLen)
 void GetCatalystVotePublicKey(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
-    if (data->vote_public_key == NULL) {
+    if (data->stake_key == NULL) {
         return;
     }
-    strcpy_s((char *)indata, maxLen, data->vote_public_key);
+    strcpy_s((char *)indata, maxLen, data->stake_key);
 }
 
 void GetCatalystRewardsNotice(lv_obj_t *parent, void *totalData)
@@ -546,26 +546,26 @@ void GetCatalystRewards(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, data->rewards);
 }
 
-void GetCatalystStakeKeysPath(void *indata, void *param, uint32_t maxLen)
+void GetCatalystVoteKeysPath(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
-    if (data->stake_keys->size == 0) {
+    if (data->vote_keys->size == 0) {
         return;
     }
     memset_s(indata, maxLen, 0, maxLen);
-    for (uint32_t i = 0; i < data->stake_keys->size; i++) {
-        strcat_s((char *)indata, maxLen, data->stake_keys->data[i]);
-        if (i != data->stake_keys->size - 1) {
+    for (uint32_t i = 0; i < data->vote_keys->size; i++) {
+        strcat_s((char *)indata, maxLen, data->vote_keys->data[i]);
+        if (i != data->vote_keys->size - 1) {
             strcat_s((char *)indata, maxLen, "\n");
         }
     }
 }
 
-void GetCatalystStakeKeysPathSize(uint16_t *width, uint16_t *height, void *param)
+void GetCatalystVoteKeysPathSize(uint16_t *width, uint16_t *height, void *param)
 {
     DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
     *width = 408;
-    *height = 62 + 36 * data->stake_keys->size;
+    *height = 62 + 36 * data->vote_keys->size;
 }
 
 #endif

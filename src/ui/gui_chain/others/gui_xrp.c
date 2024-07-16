@@ -7,7 +7,7 @@
 #include "keystore.h"
 #include "secret_cache.h"
 #include "screen_manager.h"
-
+#include "librust_c.h"
 #define XRP_ROOT_PATH               ("m/44'/144'/0'")
 #define XRP_ADD_MAX_LEN             (40)
 #define HD_PATH_MAX_LEN             (26)
@@ -28,13 +28,6 @@ char *GuiGetXrpPath(uint16_t index)
     return g_hdPath;
 }
 
-#ifdef COMPILE_SIMULATOR
-char *GuiGetXrpAddressByIndex(uint16_t index)
-{
-    snprintf_s(g_xrpAddr, XRP_ADD_MAX_LEN, "rHsMGQEkVNJmpGWs8XUBoTBiAAbwxZ%d", index);
-    return g_xrpAddr;
-}
-#else
 char *GuiGetXrpAddressByIndex(uint16_t index)
 {
     char *xPub;
@@ -51,15 +44,12 @@ char *GuiGetXrpAddressByIndex(uint16_t index)
     free_simple_response_c_char(result);
     return g_xrpAddr;
 }
-#endif
 
 void GuiSetXrpUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
-#endif
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                             \
@@ -71,35 +61,64 @@ void GuiSetXrpUrData(URParseResult *urResult, URParseMultiResult *urMultiResult,
 
 void *GuiGetXrpData(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+
+    enum ViewType viewType = ViewTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
+    void *crypto = NULL;
+    if (g_isMulti) {
+        crypto = g_urMultiResult->data;
+        urType = g_urMultiResult->ur_type;
+        viewType = g_urMultiResult->t;
+    } else {
+        crypto = g_urResult->data;
+        urType = g_urResult->ur_type;
+    }
+    char *rootPath = NULL;
+    PtrT_TransactionParseResult_DisplayXrpTx parseResult = NULL;
     do {
-        PtrT_TransactionParseResult_DisplayXrpTx parseResult = xrp_parse_tx(data);
+
+        if (urType == Bytes) {
+            parseResult = xrp_parse_bytes_tx(data);
+        } else {
+            parseResult = xrp_parse_tx(data);
+        }
         CHECK_CHAIN_BREAK(parseResult);
+
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
-#else
-    TransactionParseResult_DisplayXrpTx *g_parseResult = SRAM_MALLOC(sizeof(TransactionParseResult_DisplayXrpTx));
-    DisplayXrpTx *data = SRAM_MALLOC(sizeof(DisplayXrpTx));
-    data->detail = "detail";
-    g_parseResult->data = data;
-    g_parseResult->error_code = 0;
-    return g_parseResult;
-#endif
 }
 
 PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
 {
-#ifndef COMPILE_SIMULATOR
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     TransactionCheckResult *result = NULL;
     char pubkey[XPUB_KEY_LEN] = {0};
     if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
         strcpy_s(pubkey, XPUB_KEY_LEN, g_cachedPubkey[GetCurrentAccountIndex()]);
     }
-    result = xrp_check_tx(data, GetCurrentAccountPublicKey(XPUB_TYPE_XRP), pubkey);
+    enum ViewType viewType = ViewTypeUnKnown;
+    enum QRCodeType urType = URTypeUnKnown;
+    void *crypto = NULL;
+    if (g_isMulti) {
+        crypto = g_urMultiResult->data;
+        urType = g_urMultiResult->ur_type;
+        viewType = g_urMultiResult->t;
+    } else {
+        crypto = g_urResult->data;
+        urType = g_urResult->ur_type;
+    }
+    // keystone hot wallet use urType Bytes
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    if (urType == Bytes) {
+        result =  xrp_check_tx_bytes(data, mfp, sizeof(mfp), urType);
+        return result;
+    } else {
+        result = xrp_check_tx(data, GetCurrentAccountPublicKey(XPUB_TYPE_XRP), pubkey);
+    }
     if (result != NULL && result->error_code == 0 && strlen(result->error_message) > 0) {
         if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
             SRAM_FREE(g_cachedPubkey[GetCurrentAccountIndex()]);
@@ -128,11 +147,7 @@ PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
     } else {
         strcpy_s(g_hdPath, HD_PATH_MAX_LEN, g_cachedPath[GetCurrentAccountIndex()]);
     }
-
     return result;
-#else
-    return NULL;
-#endif
 }
 
 void FreeXrpMemory(void)
@@ -160,27 +175,35 @@ UREncodeResult *GuiGetXrpSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    enum QRCodeType urType = URTypeUnKnown;
+    if (g_isMulti) {
+        urType = g_urMultiResult->ur_type;
+    } else {
+        urType = g_urResult->ur_type;
+    }
     do {
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = xrp_sign_tx(data, g_hdPath, seed, len);
+        if (urType == Bytes) {
+            uint8_t mfp[4] = {0};
+            GetMasterFingerPrint(mfp);
+            // sign the bytes from keystone hot wallet
+            char pubkey[XPUB_KEY_LEN] = {0};
+            if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
+                strcpy_s(pubkey, XPUB_KEY_LEN, g_cachedPubkey[GetCurrentAccountIndex()]);
+            }
+            encodeResult = xrp_sign_tx_bytes(data, seed, len, mfp, sizeof(mfp), GetCurrentAccountPublicKey(XPUB_TYPE_XRP));
+        } else {
+            encodeResult = xrp_sign_tx(data, g_hdPath, seed, len);
+        }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
-#else
-    UREncodeResult *encodeResult = NULL;
-    encodeResult->is_multi_part = 0;
-    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    encodeResult->encoder = NULL;
-    encodeResult->error_code = 0;
-    encodeResult->error_message = NULL;
-    return encodeResult;
-#endif
 }
+
 #endif

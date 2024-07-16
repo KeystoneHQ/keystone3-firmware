@@ -1,14 +1,16 @@
-pub mod overview;
-pub mod structs;
+use alloc::format;
+use alloc::string::{String, ToString};
+use core::ops::Div;
+
+use third_party::serde_json;
+use third_party::serde_json::Value;
 
 use crate::errors::{XRPError, R};
 use crate::parser::overview::{XrpTxOverview, XrpTxOverviewGeneral, XrpTxOverviewPayment};
 use crate::parser::structs::{ParsedXrpTx, XrpTxDisplayType};
-use alloc::format;
-use alloc::string::{String, ToString};
-use core::ops::Div;
-use third_party::serde_json;
-use third_party::serde_json::Value;
+
+pub mod overview;
+pub mod structs;
 
 pub const DIVIDER: f64 = 1_000_000f64;
 
@@ -109,10 +111,11 @@ impl ParsedXrpTx {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use third_party::serde_json::from_str;
+
     use crate::transaction::WrappedTxData;
 
-    use third_party::serde_json::from_str;
+    use super::*;
 
     #[test]
     fn test_parse_tx_1() {

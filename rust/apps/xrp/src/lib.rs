@@ -2,27 +2,33 @@
 #![feature(error_in_core)]
 extern crate alloc;
 extern crate core;
-
 #[cfg(test)]
 #[macro_use]
 extern crate std;
+
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use core::str::FromStr;
+
+use third_party::bitcoin::bip32::{DerivationPath, Xpub};
+use third_party::secp256k1::Message;
+use third_party::serde_json::{from_slice, Value};
+use third_party::{hex, secp256k1};
+
+use crate::errors::{XRPError, R};
+use crate::transaction::WrappedTxData;
 
 pub mod address;
 pub mod errors;
 pub mod parser;
 mod transaction;
 
-use core::str::FromStr;
-
-use crate::errors::{XRPError, R};
-use crate::transaction::WrappedTxData;
-use alloc::format;
-use alloc::string::{String, ToString};
-use alloc::vec::Vec;
-use third_party::bitcoin::bip32::{DerivationPath, Xpub};
-use third_party::secp256k1::Message;
-use third_party::serde_json::{from_slice, Value};
-use third_party::{hex, secp256k1};
+pub fn get_tx_hash(raw_hex: &[u8]) -> R<String> {
+    let v: Value = from_slice(raw_hex)?;
+    let wrapped_tx = WrappedTxData::from_raw(v.to_string().into_bytes().as_slice())?;
+    Ok(hex::encode(wrapped_tx.tx_hex))
+}
 
 pub fn sign_tx(raw_hex: &[u8], hd_path: &String, seed: &[u8]) -> R<Vec<u8>> {
     let v: Value = from_slice(raw_hex)?;

@@ -1,7 +1,7 @@
-use crate::ur::ViewType;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+
 use third_party::serde_json::{from_slice, from_value, Value};
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
@@ -45,6 +45,8 @@ use third_party::ur_registry::stellar::stellar_sign_request::{
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
 use third_party::ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
+
+use crate::ur::ViewType;
 
 pub trait InferViewType {
     fn infer(&self) -> Result<ViewType, URError> {
@@ -176,6 +178,8 @@ fn get_view_type_from_keystone(bytes: Vec<u8>) -> Result<ViewType, URError> {
                 "ETH" => ViewType::EthTx,
                 #[cfg(feature = "multi-coins")]
                 "TRON" => ViewType::TronTx,
+                #[cfg(feature = "multi-coins")]
+                "XRP" => ViewType::XRPTx,
                 _ => {
                     return Err(URError::ProtobufDecodeError(format!(
                         "invalid coin_code {:?}",
@@ -292,10 +296,11 @@ impl InferViewType for QRHardwareCall {
 mod tests {
     use alloc::vec::Vec;
 
-    use crate::ur::ViewType;
-    use crate::ur_ext::InferViewType;
     use third_party::hex::FromHex;
     use third_party::ur_registry::bytes::Bytes;
+
+    use crate::ur::ViewType;
+    use crate::ur_ext::InferViewType;
 
     #[test]
     fn test_parse_ur_type() {

@@ -1,7 +1,10 @@
 use alloc::string::ToString;
+use core::ptr::null_mut;
+
 use app_xrp::parser::overview::XrpTxOverview;
 use app_xrp::parser::structs::{ParsedXrpTx, XrpTxDisplayType};
-use core::ptr::null_mut;
+use third_party::serde_json;
+use third_party::ur_registry::pb::protoc::XrpTx;
 
 use common_rust_c::free::{free_ptr_string, Free};
 use common_rust_c::structs::TransactionParseResult;
@@ -39,6 +42,29 @@ pub struct DisplayXrpTx {
     pub overview: PtrT<DisplayXrpTxOverview>,
     pub detail: PtrString,
     pub signing_pubkey: PtrString,
+}
+
+impl TryFrom<XrpTx> for DisplayXrpTx {
+    type Error = ();
+    fn try_from(xrp_tx: XrpTx) -> Result<Self, Self::Error> {
+        let display_overview = DisplayXrpTxOverview {
+            display_type: convert_c_char("XRP mainnet".to_string()),
+            transaction_type: convert_c_char("Payment".to_string()),
+            from: convert_c_char(xrp_tx.change_address.to_string()),
+            fee: convert_c_char(xrp_tx.fee.to_string()),
+            sequence: convert_c_char(xrp_tx.sequence.to_string()),
+            value: convert_c_char(xrp_tx.amount.to_string()),
+            to: convert_c_char(xrp_tx.to.to_string()),
+        };
+        let detail = serde_json::to_string_pretty(&xrp_tx).unwrap();
+        let display_xrp_tx = DisplayXrpTx {
+            network: convert_c_char("XRP Mainnet".to_string()),
+            overview: display_overview.c_ptr(),
+            detail: convert_c_char(detail),
+            signing_pubkey: convert_c_char("signing_pubkey".to_string()),
+        };
+        Ok(display_xrp_tx)
+    }
 }
 
 impl Default for DisplayXrpTxOverview {

@@ -31,3 +31,20 @@ impl From<DerivationError> for CardanoError {
         Self::DerivationError(value.to_string())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cardano_error() {
+        let error = CardanoError::AddressEncodingError("test".to_string());
+        assert_eq!(error.to_string(), "meet error when encoding address: test");
+    }
+
+    #[test]
+    fn test_cardano_error2() {
+        let error = CardanoError::InvalidTransaction("test".to_string());
+        assert_eq!(error.to_string(), "invalid transaction: test");
+    }
+}

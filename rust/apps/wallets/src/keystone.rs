@@ -3,7 +3,6 @@ use alloc::{
     vec::Vec,
 };
 
-use third_party::ur_registry::bytes::Bytes;
 use third_party::{
     bitcoin::bip32::ChildNumber,
     ur_registry::{
@@ -13,9 +12,10 @@ use third_party::{
         extend::crypto_multi_accounts::CryptoMultiAccounts,
     },
 };
+use third_party::ur_registry::bytes::Bytes;
 
-use crate::companion_app::{AccountConfig, CoinConfig};
 use crate::{common::get_path_component, ExtendedPublicKey};
+use crate::companion_app::{AccountConfig, CoinConfig};
 
 fn get_device_id(serial_number: &str) -> String {
     use third_party::cryptoxide::hashing::sha256;
@@ -32,7 +32,6 @@ const LTC_PREFIX: &str = "m/49'/2'/0'";
 const TRX_PREFIX: &str = "m/44'/195'/0'";
 const XRP_PREFIX: &str = "m/44'/144'/0'";
 
-const COLD_WALLET_VERSION: i32 = 31206;
 fn path_to_coin_code(path: &str) -> String {
     let path = path
         .split('/')

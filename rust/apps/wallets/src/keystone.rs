@@ -2,6 +2,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
+
 use third_party::ur_registry::bytes::Bytes;
 use third_party::{
     bitcoin::bip32::ChildNumber,
@@ -13,8 +14,8 @@ use third_party::{
     },
 };
 
-use crate::companion_app::{generate_companion_app_sync_ur, AccountConfig, CoinConfig};
-use crate::{common::get_path_component, ExtendedPublicKey, DEVICE_TYPE, DEVICE_VERSION};
+use crate::companion_app::{AccountConfig, CoinConfig};
+use crate::{common::get_path_component, ExtendedPublicKey};
 
 fn get_device_id(serial_number: &str) -> String {
     use third_party::cryptoxide::hashing::sha256;
@@ -138,9 +139,13 @@ pub fn generate_crypto_multi_accounts(
         };
         coin_configs.push(coin_config);
     }
+    // device version: 1.5.6 == 100000156
+    let cold_wallet_device_version_str = device_version.split('.').collect::<Vec<&str>>().join("");
+    let cold_wallet_device_version =
+        100_000 + cold_wallet_device_version_str.parse::<i32>().unwrap();
     let keystone_sync_ur = crate::companion_app::generate_companion_app_sync_ur(
         &master_fingerprint,
-        COLD_WALLET_VERSION,
+        cold_wallet_device_version,
         coin_configs,
     )?;
 

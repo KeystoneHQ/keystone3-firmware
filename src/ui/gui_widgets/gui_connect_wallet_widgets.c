@@ -119,7 +119,7 @@ static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
     &coinBtc, &coinEth, &coinBnb, &coinBch,
-    &coinDash,&coinLtc, &coinTrx, &coinXrp,
+    &coinDash, &coinLtc, &coinTrx, &coinXrp,
 };
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
@@ -283,23 +283,23 @@ static void GuiInitWalletListArray()
             } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
                 g_walletListArray[i].enable = !GetIsTempAccount();
             }
-        if (g_walletListArray[i].index == WALLET_LIST_ETERNL ||
-                g_walletListArray[i].index == WALLET_LIST_TYPHON) {
-            if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-                g_walletListArray[i].enable = false;
-            } else {
-                g_walletListArray[i].enable = true;
+            if (g_walletListArray[i].index == WALLET_LIST_ETERNL ||
+                    g_walletListArray[i].index == WALLET_LIST_TYPHON) {
+                if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+                    g_walletListArray[i].enable = false;
+                } else {
+                    g_walletListArray[i].enable = true;
+                }
+            } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
+                g_walletListArray[i].enable = !GetIsTempAccount();
             }
-        } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
-            g_walletListArray[i].enable = !GetIsTempAccount();
-        }
 
-        // Only show keystone wallet when the language is Russian
-        if (LanguageGetIndex() == LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
-            g_walletListArray[i].enable = true;
-        } else if (LanguageGetIndex() != LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
-            g_walletListArray[i].enable = false;
-        }
+            // Only show keystone wallet when the language is Russian
+            if (LanguageGetIndex() == LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
+                g_walletListArray[i].enable = true;
+            } else if (LanguageGetIndex() != LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
+                g_walletListArray[i].enable = false;
+            }
 
 #else
             if (GetCurrentWalletIndex() != SINGLE_WALLET) {
@@ -1071,7 +1071,7 @@ UREncodeResult *GuiGetTonData(void)
     if (walletName == NULL) {
         walletName = "Keystone";
     }
-    return get_tonkeeper_wallet_ur(xpub, walletName, mfp, mfp == NULL? 0: 4, path);
+    return get_tonkeeper_wallet_ur(xpub, walletName, mfp, mfp == NULL ? 0 : 4, path);
 }
 
 void GuiPrepareArConnectWalletView(void)

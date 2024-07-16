@@ -138,7 +138,7 @@ pub fn generate_crypto_multi_accounts(
         };
         coin_configs.push(coin_config);
     }
-    // device version: 1.5.6 == 100000156
+    // device version: 1.5.6 == 100156
     let cold_wallet_device_version_str = device_version.split('.').collect::<Vec<&str>>().join("");
     let cold_wallet_device_version =
         100_000 + cold_wallet_device_version_str.parse::<i32>().unwrap();

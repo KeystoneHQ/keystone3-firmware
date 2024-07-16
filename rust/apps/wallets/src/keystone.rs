@@ -138,10 +138,13 @@ pub fn generate_crypto_multi_accounts(
         };
         coin_configs.push(coin_config);
     }
-    // device version: 1.5.6 == 100156
-    let cold_wallet_device_version_str = device_version.split('.').collect::<Vec<&str>>().join("");
-    let cold_wallet_device_version =
-        100_000 + cold_wallet_device_version_str.parse::<i32>().unwrap();
+    // device version: 1.5.6 == 110506
+    let cold_wallet_device_version_str = device_version.split('.').collect::<Vec<&str>>();
+    // 100000 + 1* 10000 + 5 * 100 + 6 = 110506
+    let first = cold_wallet_device_version_str[0].parse::<i32>().unwrap() * 10000;
+    let second = cold_wallet_device_version_str[1].parse::<i32>().unwrap() * 100;
+    let third = cold_wallet_device_version_str[2].parse::<i32>().unwrap();
+    let cold_wallet_device_version = 100_000 + first + second + third;
     let keystone_sync_ur = crate::companion_app::generate_companion_app_sync_ur(
         &master_fingerprint,
         cold_wallet_device_version,

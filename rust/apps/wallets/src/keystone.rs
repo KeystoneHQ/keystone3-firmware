@@ -3,6 +3,7 @@ use alloc::{
     vec::Vec,
 };
 
+use third_party::ur_registry::bytes::Bytes;
 use third_party::{
     bitcoin::bip32::ChildNumber,
     ur_registry::{
@@ -12,10 +13,9 @@ use third_party::{
         extend::crypto_multi_accounts::CryptoMultiAccounts,
     },
 };
-use third_party::ur_registry::bytes::Bytes;
 
-use crate::{common::get_path_component, ExtendedPublicKey};
 use crate::companion_app::{AccountConfig, CoinConfig};
+use crate::{common::get_path_component, ExtendedPublicKey};
 
 fn get_device_id(serial_number: &str) -> String {
     use third_party::cryptoxide::hashing::sha256;

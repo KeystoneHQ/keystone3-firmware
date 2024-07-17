@@ -105,7 +105,7 @@ Before submitting, ensure your code follows our formatting standards:
 
 ```bash
 brew install astyle
-cd tools && astyle -A3nrUpHcQ --exclude=../src/cm_backtrace/Languages "../src/*.c" "../src/*.h" && cd ..
+cd tools && astyle -A3nrUpHcQ --exclude=../src/cm_backtrace/Languages --exclude=../src/ui/gui_assets "../src/*.c" "../src/*.h" && cd ..
 ```
 
 ## FAQ

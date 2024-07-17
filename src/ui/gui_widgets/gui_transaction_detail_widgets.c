@@ -287,8 +287,6 @@ static void GuiTransactionDetailNavBarInit()
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
     } else if (isTonSignProof(g_viewType)) {
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("ton_sign_proof_title"));
-    } else if (isCatalystVotingRegistration(g_viewType)) {
-        SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("catalyst_voting_registration"));
     } else {
 #endif
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);

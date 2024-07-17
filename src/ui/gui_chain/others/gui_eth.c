@@ -663,7 +663,7 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
                 uint8_t mfp[4] = {0};
                 GetMasterFingerPrint(mfp);
                 // sign the bytes from keystone hot wallet
-                encodeResult = eth_sign_tx_bytes(data, seed, len, mfp, sizeof(mfp));
+                encodeResult = eth_sign_tx_bytes(data, seed, len,mfp, sizeof(mfp));
             } else {
                 encodeResult = eth_sign_tx_unlimited(data, seed, len);
             }
@@ -671,7 +671,7 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
             if (urType == Bytes) {
                 uint8_t mfp[4] = {0};
                 GetMasterFingerPrint(mfp);
-                encodeResult = eth_sign_tx_bytes(data, seed, len, mfp, sizeof(mfp));
+                encodeResult = eth_sign_tx_bytes(data, seed, len,mfp, sizeof(mfp));
             } else {
                 encodeResult = eth_sign_tx(data, seed, len);
             }

@@ -46,52 +46,10 @@ pub fn build_delegations(
 ) -> R<Vec<(String, u8)>> {
     let mut delegations_vec = Vec::new();
     for delegation in delegations {
-        let vote_key = generate_vote_key(delegation.get_path(), entropy, passphrase).unwrap();
-        let vote_key_bytes = vote_key.public().public_key();
-        delegations_vec.push((hex::encode(vote_key_bytes), delegation.get_weidth()));
+        let vote_key = hex::encode(delegation.get_pub_key());
+        delegations_vec.push((vote_key, delegation.get_weidth()));
     }
     Ok(delegations_vec)
-}
-
-pub fn generate_vote_key(path: CryptoKeyPath, entropy: &[u8], passphrase: &[u8]) -> R<XPrv> {
-    let icarus_master_key =
-        keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
-            entropy, passphrase,
-        )
-        .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
-    let bip32_signing_key =
-        keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv(
-            &icarus_master_key,
-            &path.get_path().unwrap(),
-        )
-        .unwrap();
-    Ok(bip32_signing_key)
-}
-
-pub fn derive_vote_key(
-    delegations: Vec<CardanoDelegation>,
-    entropy: &[u8],
-    passphrase: &[u8],
-) -> R<Vec<Vec<u8>>> {
-    let mut vote_keys = Vec::new();
-    for delegation in delegations {
-        let vote_key = generate_vote_key(delegation.get_path(), entropy, passphrase).unwrap();
-        vote_keys.push(vote_key.extended_secret_key().to_vec());
-    }
-    Ok(vote_keys)
-}
-
-pub fn check_delegate_path(delegations: Vec<CardanoDelegation>) -> bool {
-    for delegation in delegations {
-        let components = delegation.get_path().get_components();
-        if components.len() != 5
-            || (components[0].get_index().unwrap() != 1694 && components[0].is_hardened())
-            || (components[1].get_index().unwrap() != 1815 && components[1].is_hardened())
-        {
-            return false;
-        }
-    }
-    true
 }
 
 pub fn sign(
@@ -171,30 +129,6 @@ mod tests {
             "d2c40028745e3aee415523cc492986147d39530a9bfdf60a15f54f1c023ce266".to_string()
         );
         assert_eq!(hex::encode(sign_data_result.get_signature()), "6adc7ca65cab8d2a7e4a918a95cde7bfe0a0f07c5a738de7476defe0389778a8708cb31c3f39db80c486532cc7437a4c5f299e9af2ce2f468723f793c5012609");
-    }
-
-    #[test]
-    fn test_generate_vote_key() {
-        let path1 = PathComponent::new(Some(1694), true).unwrap();
-        let path2 = PathComponent::new(Some(1815), true).unwrap();
-        let path3 = PathComponent::new(Some(0), true).unwrap();
-        let path4 = PathComponent::new(Some(0), true).unwrap();
-        let path5 = PathComponent::new(Some(0), true).unwrap();
-
-        let source_fingerprint: [u8; 4] = [52, 74, 47, 03];
-        let components = vec![path1, path2, path3, path4, path5];
-        let crypto_key_path1: CryptoKeyPath =
-            CryptoKeyPath::new(components, Some(source_fingerprint), None);
-
-        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
-        let passphrase = b"";
-        let account_index = 0;
-        let xpub = generate_vote_key(crypto_key_path1, &entropy, passphrase).unwrap();
-
-        assert_eq!(
-            hex::encode(xpub.public().public_key()),
-            "248aba8dce1e4b0a5e53509d07c42ac34f970ec452293a84763bb77359b5263f",
-        );
     }
 
     #[test]

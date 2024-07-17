@@ -104,12 +104,17 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
 #ifndef BTC_ONLY
 bool IsMessageType(uint8_t type)
 {
-    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage;
+    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage || type == CardanoSignData;
 }
 
 bool isTonSignProof(uint8_t type)
 {
     return type == TonSignProof;
+}
+
+bool isCatalystVotingRegistration(uint8_t type)
+{
+    return type == CardanoCatalystVotingRegistration;
 }
 #endif
 

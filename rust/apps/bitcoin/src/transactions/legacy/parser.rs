@@ -1,3 +1,7 @@
+use alloc::string::ToString;
+use alloc::vec::Vec;
+use core::str::FromStr;
+
 use crate::addresses::cashaddr::{Base58Codec, CashAddrCodec};
 use crate::addresses::get_address;
 use crate::errors::Result;
@@ -6,9 +10,6 @@ use crate::transactions::legacy::input::TxIn;
 use crate::transactions::legacy::output::TxOut;
 use crate::transactions::legacy::tx_data::TxData;
 use crate::transactions::parsed_tx::{ParseContext, ParsedInput, ParsedOutput, ParsedTx, TxParser};
-use alloc::string::ToString;
-use alloc::vec::Vec;
-use core::str::FromStr;
 
 impl TxParser for TxData {
     fn parse(&self, _context: Option<&ParseContext>) -> Result<ParsedTx> {
@@ -57,12 +58,13 @@ impl TxData {
             let decoded = Base58Codec::decode(address.as_str())?;
             address = CashAddrCodec::encode(decoded)?;
         }
+        let is_external = output.is_change;
         Ok(ParsedOutput {
             address,
             amount: Self::format_amount(output.value, &Network::from_str(&self.network)?),
             value: output.value,
             path: Some(output.change_address_path.to_string()),
-            is_external: false,
+            is_external,
         })
     }
 }

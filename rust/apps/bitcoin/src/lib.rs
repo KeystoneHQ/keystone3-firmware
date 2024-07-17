@@ -5,10 +5,33 @@
 #[macro_use]
 extern crate alloc;
 extern crate core;
-
 #[cfg(test)]
 #[macro_use]
 extern crate std;
+
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+
+pub use addresses::get_address;
+use app_utils::keystone;
+use third_party::bitcoin::bip32::Fingerprint;
+use third_party::bitcoin::psbt::Psbt;
+use third_party::bitcoin::sign_message;
+use third_party::bitcoin_hashes::Hash;
+use third_party::either::{Left, Right};
+use third_party::hex;
+use third_party::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
+use third_party::secp256k1::Message;
+use third_party::ur_registry::pb::protoc;
+pub use transactions::legacy::sign_legacy_tx;
+pub use transactions::parsed_tx;
+pub use transactions::psbt::parsed_psbt;
+
+use crate::errors::{BitcoinError, Result};
+use crate::parsed_tx::{ParseContext, ParsedTx, TxParser};
+use crate::transactions::legacy::TxData;
+use crate::transactions::psbt::wrapped_psbt::WrappedPsbt;
+use crate::transactions::tx_checker::TxChecker;
 
 pub mod addresses;
 pub mod errors;
@@ -16,31 +39,6 @@ mod macros;
 pub mod multi_sig;
 pub mod network;
 mod transactions;
-pub use addresses::get_address;
-use third_party::bitcoin::sign_message;
-use third_party::bitcoin_hashes::Hash;
-use third_party::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
-use third_party::secp256k1::Message;
-pub use transactions::legacy::sign_legacy_tx;
-pub use transactions::parsed_tx;
-pub use transactions::psbt::parsed_psbt;
-
-use alloc::vec::Vec;
-
-use third_party::bitcoin::psbt::Psbt;
-
-use crate::errors::{BitcoinError, Result};
-use crate::parsed_tx::{ParseContext, ParsedTx, TxParser};
-use crate::transactions::legacy::TxData;
-use crate::transactions::psbt::wrapped_psbt::WrappedPsbt;
-use crate::transactions::tx_checker::TxChecker;
-use alloc::string::{String, ToString};
-use app_utils::keystone;
-use third_party::bitcoin::bip32::Fingerprint;
-use third_party::either::{Left, Right};
-use third_party::hex;
-use third_party::ur_registry::pb::protoc;
-
 pub struct PsbtSignStatus {
     pub sign_status: Option<String>,
     pub is_completed: bool,
@@ -131,18 +129,20 @@ fn deserialize_psbt(psbt_hex: Vec<u8>) -> Result<Psbt> {
 
 #[cfg(test)]
 mod test {
+    use alloc::vec::Vec;
+    use core::str::FromStr;
+
+    use app_utils::keystone;
+    use third_party::hex::FromHex;
+    use third_party::ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
+    use third_party::ur_registry::pb::protoc::{Base, Payload};
+
     use crate::addresses::xyzpub::{convert_version, Version};
     use crate::alloc::string::ToString;
     use crate::transactions::parsed_tx::{
         DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx,
     };
     use crate::{parse_raw_tx, sign_msg};
-    use alloc::vec::Vec;
-    use app_utils::keystone;
-    use core::str::FromStr;
-    use third_party::hex::FromHex;
-    use third_party::ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
-    use third_party::ur_registry::pb::protoc::{Base, Payload};
 
     macro_rules! build_overview_tx {
         ($total_output_amount:expr, $fee_amount:expr, $total_output_sat:expr, $fee_sat:expr,$from:expr, $to: expr, $network: expr, $fee_larger_than_amount:expr) => {

@@ -546,7 +546,7 @@ void GetCatalystRewards(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, data->rewards);
 }
 
-void GetCatalystVoteKeysPath(void *indata, void *param, uint32_t maxLen)
+void GetCatalystVoteKeys(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
     if (data->vote_keys->size == 0) {
@@ -561,11 +561,11 @@ void GetCatalystVoteKeysPath(void *indata, void *param, uint32_t maxLen)
     }
 }
 
-void GetCatalystVoteKeysPathSize(uint16_t *width, uint16_t *height, void *param)
+void GetCatalystVoteKeysSize(uint16_t *width, uint16_t *height, void *param)
 {
     DisplayCardanoCatalyst *data = (DisplayCardanoCatalyst *)param;
     *width = 408;
-    *height = 62 + 36 * data->vote_keys->size;
+    *height = 62 + 60 * data->vote_keys->size;
 }
 
 #endif

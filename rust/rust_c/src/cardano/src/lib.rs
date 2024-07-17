@@ -217,11 +217,8 @@ pub extern "C" fn cardano_sign_catalyst(
         passphrase.as_bytes(),
     )
     .map(|v| {
-        CardanoCatalystSignature::new(
-            cardano_catalyst_request.get_request_id(),
-            v.get_signature(),
-        )
-        .try_into()
+        CardanoCatalystSignature::new(cardano_catalyst_request.get_request_id(), v.get_signature())
+            .try_into()
     })
     .map_or_else(
         |e| UREncodeResult::from(e).c_ptr(),

@@ -48,7 +48,7 @@ impl From<CardanoCatalystVotingRegistrationRequest> for DisplayCardanoCatalyst {
                 value
                     .get_delegations()
                     .iter()
-                    .map(|v| convert_c_char(v.get_path().get_path().unwrap()))
+                    .map(|v| convert_c_char(hex::encode(v.get_pub_key())))
                     .collect_vec(),
             )
             .c_ptr(),

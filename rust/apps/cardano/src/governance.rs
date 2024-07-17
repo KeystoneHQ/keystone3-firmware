@@ -46,52 +46,10 @@ pub fn build_delegations(
 ) -> R<Vec<(String, u8)>> {
     let mut delegations_vec = Vec::new();
     for delegation in delegations {
-        let vote_key = generate_vote_key(delegation.get_path(), entropy, passphrase).unwrap();
-        let vote_key_bytes = vote_key.public().public_key();
-        delegations_vec.push((hex::encode(vote_key_bytes), delegation.get_weidth()));
+        let vote_key = hex::encode(delegation.get_pub_key());
+        delegations_vec.push((vote_key, delegation.get_weidth()));
     }
     Ok(delegations_vec)
-}
-
-pub fn generate_vote_key(path: CryptoKeyPath, entropy: &[u8], passphrase: &[u8]) -> R<XPrv> {
-    let icarus_master_key =
-        keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
-            entropy, passphrase,
-        )
-        .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
-    let bip32_signing_key =
-        keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv(
-            &icarus_master_key,
-            &path.get_path().unwrap(),
-        )
-        .unwrap();
-    Ok(bip32_signing_key)
-}
-
-pub fn derive_vote_key(
-    delegations: Vec<CardanoDelegation>,
-    entropy: &[u8],
-    passphrase: &[u8],
-) -> R<Vec<Vec<u8>>> {
-    let mut vote_keys = Vec::new();
-    for delegation in delegations {
-        let vote_key = generate_vote_key(delegation.get_path(), entropy, passphrase).unwrap();
-        vote_keys.push(vote_key.extended_secret_key().to_vec());
-    }
-    Ok(vote_keys)
-}
-
-pub fn check_delegate_path(delegations: Vec<CardanoDelegation>) -> bool {
-    for delegation in delegations {
-        let components = delegation.get_path().get_components();
-        if components.len() != 5
-            || (components[0].get_index().unwrap() != 1694 && components[0].is_hardened())
-            || (components[1].get_index().unwrap() != 1815 && components[1].is_hardened())
-        {
-            return false;
-        }
-    }
-    true
 }
 
 pub fn sign(
@@ -174,49 +132,17 @@ mod tests {
     }
 
     #[test]
-    fn test_generate_vote_key() {
-        let path1 = PathComponent::new(Some(1694), true).unwrap();
-        let path2 = PathComponent::new(Some(1815), true).unwrap();
-        let path3 = PathComponent::new(Some(0), true).unwrap();
-        let path4 = PathComponent::new(Some(0), true).unwrap();
-        let path5 = PathComponent::new(Some(0), true).unwrap();
-
-        let source_fingerprint: [u8; 4] = [52, 74, 47, 03];
-        let components = vec![path1, path2, path3, path4, path5];
-        let crypto_key_path1: CryptoKeyPath =
-            CryptoKeyPath::new(components, Some(source_fingerprint), None);
-
-        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
-        let passphrase = b"";
-        let account_index = 0;
-        let xpub = generate_vote_key(crypto_key_path1, &entropy, passphrase).unwrap();
-
-        assert_eq!(
-            hex::encode(xpub.public().public_key()),
-            "248aba8dce1e4b0a5e53509d07c42ac34f970ec452293a84763bb77359b5263f",
-        );
-    }
-
-    #[test]
     fn test_build_delegations() {
-        let path1 = PathComponent::new(Some(1694), true).unwrap();
-        let path2 = PathComponent::new(Some(1815), true).unwrap();
-        let path3 = PathComponent::new(Some(0), true).unwrap();
-        let item2_path3 = PathComponent::new(Some(1), true).unwrap();
-        let path4 = PathComponent::new(Some(0), true).unwrap();
-        let path5 = PathComponent::new(Some(0), true).unwrap();
-
-        let source_fingerprint: [u8; 4] = [52, 74, 47, 03];
-        let components = vec![path1, path2, path3, path4, path5];
-        let components2 = vec![path1, path2, item2_path3, path4, path5];
-        let crypto_key_path1: CryptoKeyPath =
-            CryptoKeyPath::new(components, Some(source_fingerprint), None);
-        let crypto_key_path2: CryptoKeyPath =
-            CryptoKeyPath::new(components2, Some(source_fingerprint), None);
+        let vote_pub_key1 =
+            hex::decode("a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663")
+                .unwrap();
+        let vote_pub_key2 =
+            hex::decode("00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee")
+                .unwrap();
 
         let delegations = vec![
-            CardanoDelegation::new(crypto_key_path1, 1),
-            CardanoDelegation::new(crypto_key_path2, 2),
+            CardanoDelegation::new(vote_pub_key1, 1),
+            CardanoDelegation::new(vote_pub_key2, 2),
         ];
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
         let passphrase = b"";
@@ -225,30 +151,23 @@ mod tests {
         assert_eq!(delegations_vec.len(), 2);
         assert_eq!(
             delegations_vec[0].0,
-            "248aba8dce1e4b0a5e53509d07c42ac34f970ec452293a84763bb77359b5263f",
+            "a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663",
         );
         assert_eq!(delegations_vec[0].1, 1);
         assert_eq!(
             delegations_vec[1].0,
-            "a89819a70d4e621bc5e0b7555abd787e5c71ef46bdb19c4f817af23c0f57dc10",
+            "00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee",
         );
         assert_eq!(delegations_vec[1].1, 2);
     }
 
     #[test]
     fn test_build_metadata_cbor_and_sign() {
-        let path1 = PathComponent::new(Some(1694), true).unwrap();
-        let path2 = PathComponent::new(Some(1815), true).unwrap();
-        let path3 = PathComponent::new(Some(1), true).unwrap();
-        let path4 = PathComponent::new(Some(0), true).unwrap();
-        let path5 = PathComponent::new(Some(0), true).unwrap();
+        let vote_pub_key =
+            hex::decode("a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663")
+                .unwrap();
 
-        let source_fingerprint: [u8; 4] = [52, 74, 47, 03];
-        let components = vec![path1, path2, path3, path4, path5];
-        let crypto_key_path1: CryptoKeyPath =
-            CryptoKeyPath::new(components, Some(source_fingerprint), None);
-
-        let delegations = vec![CardanoDelegation::new(crypto_key_path1, 1)];
+        let delegations = vec![CardanoDelegation::new(vote_pub_key, 1)];
 
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
         let passphrase = b"";
@@ -271,14 +190,14 @@ mod tests {
 
         assert_eq!(
             hex::encode(cbor.clone()),
-            "a119ef64a50181825820a89819a70d4e621bc5e0b7555abd787e5c71ef46bdb19c4f817af23c0f57dc1001025820ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c0358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad0418640500",
+            "a119ef64a50181825820a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d166301025820ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c0358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad0418640500",
         );
 
         let path = "m/1852'/1815'/0'/2/0".to_string();
         let sign_data_result =
             sign_voting_registration(&path, &cbor, &entropy, passphrase).unwrap();
 
-        assert_eq!(hex::encode(sign_data_result.get_signature()), "4ec0df6a2bbcd79ff8632b228808391a7ba2078a24578698ac36a26bba23a9b0e3838ccdaa1d7be26a65d3cd20c7001df92aeb67dc9e7c4eada45fa17605b009");
+        assert_eq!(hex::encode(sign_data_result.get_signature()), "38fcb4a85cfa2d8ae9b3ef842250ff6546083a74b3146198f87bc003ecd856ed066742a4bd9b44c6655661b153195ac8cf5c64eed440c91b33147057e376ba0b");
     }
 
     #[test]
@@ -286,19 +205,11 @@ mod tests {
         let path = "m/1852'/1815'/0'/2/0".to_string();
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
         let passphrase = b"";
+        let vote_pub_key =
+            hex::decode("a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663")
+                .unwrap();
 
-        let path1 = PathComponent::new(Some(1694), true).unwrap();
-        let path2 = PathComponent::new(Some(1815), true).unwrap();
-        let path3 = PathComponent::new(Some(1), true).unwrap();
-        let path4 = PathComponent::new(Some(0), true).unwrap();
-        let path5 = PathComponent::new(Some(0), true).unwrap();
-
-        let source_fingerprint: [u8; 4] = [52, 74, 47, 03];
-        let components = vec![path1, path2, path3, path4, path5];
-        let crypto_key_path1: CryptoKeyPath =
-            CryptoKeyPath::new(components, Some(source_fingerprint), None);
-
-        let delegations: Vec<CardanoDelegation> = vec![CardanoDelegation::new(crypto_key_path1, 1)];
+        let delegations: Vec<CardanoDelegation> = vec![CardanoDelegation::new(vote_pub_key, 1)];
         let stake_pub =
             hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c")
                 .unwrap();
@@ -318,7 +229,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(hex::encode(sign_data_result.get_signature()), "4ec0df6a2bbcd79ff8632b228808391a7ba2078a24578698ac36a26bba23a9b0e3838ccdaa1d7be26a65d3cd20c7001df92aeb67dc9e7c4eada45fa17605b009");
+        assert_eq!(hex::encode(sign_data_result.get_signature()), "38fcb4a85cfa2d8ae9b3ef842250ff6546083a74b3146198f87bc003ecd856ed066742a4bd9b44c6655661b153195ac8cf5c64eed440c91b33147057e376ba0b");
     }
 
     #[test]

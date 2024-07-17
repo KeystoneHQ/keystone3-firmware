@@ -50,10 +50,6 @@ pub extern "C" fn cardano_check_catalyst(
         .get_source_fingerprint()
         .ok_or(RustCError::InvalidMasterFingerprint);
 
-    if !governance::check_delegate_path(cardano_catalyst_request.get_delegations()) {
-        return TransactionCheckResult::from(RustCError::InvalidHDPath).c_ptr();
-    }
-
     if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
         if hex::encode(mfp) != hex::encode(ur_mfp.unwrap()) {
             return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
@@ -221,18 +217,8 @@ pub extern "C" fn cardano_sign_catalyst(
         passphrase.as_bytes(),
     )
     .map(|v| {
-        let vote_keys = governance::derive_vote_key(
-            cardano_catalyst_request.get_delegations(),
-            entropy,
-            passphrase.as_bytes(),
-        )
-        .unwrap();
-        CardanoCatalystSignature::new(
-            cardano_catalyst_request.get_request_id(),
-            v.get_signature(),
-            vote_keys,
-        )
-        .try_into()
+        CardanoCatalystSignature::new(cardano_catalyst_request.get_request_id(), v.get_signature())
+            .try_into()
     })
     .map_or_else(
         |e| UREncodeResult::from(e).c_ptr(),

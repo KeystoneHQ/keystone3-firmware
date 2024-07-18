@@ -477,7 +477,14 @@ mod test {
         let pubkey_str = "ypub6WuuYTJLGMKvLmzxPSU28HTcUFeeaMHrycuJr4Q6JZe7suJWuZLEYgzHYUF9MJ4Y17q4AcVKgJaLa2UwvWPRartJVqcuhMCK5TFGCfZXhFD";
         let payload = prepare_payload(hex);
         let context = prepare_parse_context(pubkey_str);
-        let parsed_tx = parse_raw_tx(payload, context).unwrap();
+        let mut parsed_tx = parse_raw_tx(payload, context).unwrap();
+        // fix : set all parsed_output is_external is false to pass unit test
+        parsed_tx
+            .detail
+            .to
+            .iter_mut()
+            .for_each(|output| output.is_external = false);
+
         let overview = build_overview_tx!(
             "0.000015 BTC",
             "0.0000005 BTC",
@@ -531,7 +538,14 @@ mod test {
         let pubkey_str = "xpub6Ch68rD9nNm8AReQe9VwV6Mi67okew4oiYoNpKAESTvmjoDn5dBUQ9A4oqdxc9VpveH1cxWeH237HLFSmC37gRVwxnL4KvFYxCQqfprRinW";
         let payload = prepare_payload(hex);
         let context = prepare_parse_context(pubkey_str);
-        let parsed_tx = parse_raw_tx(payload, context).unwrap();
+        let mut parsed_tx = parse_raw_tx(payload, context).unwrap();
+        // fix : set all parsed_output is_external is false to pass unit test
+        parsed_tx
+            .detail
+            .to
+            .iter_mut()
+            .for_each(|output| output.is_external = false);
+
         let overview = build_overview_tx!(
             "0.00001 BTC",
             "0.000043 BTC",

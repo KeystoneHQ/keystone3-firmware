@@ -60,32 +60,32 @@ bool GetLvglHandlerStatus(void);
 static void RefreshStatusBar(void);
 
 const static CoinWalletInfo_t g_coinWalletBtn[] = {
-    {CHAIN_BTC, "", &coinBtc},
+    {HOME_WALLET_CARD_BTC, "", &coinBtc},
 #ifndef BTC_ONLY
-    {CHAIN_ETH, "", &coinEth},       {CHAIN_SOL, "", &coinSol},
-    {CHAIN_BNB, "", &coinBnb},       {CHAIN_XRP, "", &coinXrp},
-    {CHAIN_ADA, "", &coinAda},       {CHAIN_TON, "", &coinTon},
-    {CHAIN_TRX, "", &coinTrx},       {CHAIN_LTC, "", &coinLtc},
-    {CHAIN_BCH, "", &coinBch},       {CHAIN_APT, "", &coinApt},
-    {CHAIN_SUI, "", &coinSui},       {CHAIN_DASH, "", &coinDash},
-    {CHAIN_ARWEAVE, "", &coinAr},    {CHAIN_STELLAR, "", &coinXlm},
-    {CHAIN_COSMOS, "", &coinCosmos}, {CHAIN_TIA, "", &coinTia},
-    {CHAIN_DYM, "", &coinDym},       {CHAIN_OSMO, "", &coinOsmo},
-    {CHAIN_INJ, "", &coinInj},       {CHAIN_ATOM, "", &coinAtom},
-    {CHAIN_CRO, "", &coinCro},       {CHAIN_KAVA, "", &coinKava},
-    {CHAIN_LUNC, "", &coinLunc},     {CHAIN_AXL, "", &coinAxl},
-    {CHAIN_LUNA, "", &coinLuna},     {CHAIN_AKT, "", &coinAkt},
-    {CHAIN_STRD, "", &coinStrd},     {CHAIN_SCRT, "", &coinScrt},
-    {CHAIN_BLD, "", &coinBld},       {CHAIN_CTK, "", &coinCtk},
-    {CHAIN_EVMOS, "", &coinEvmos},   {CHAIN_STARS, "", &coinStars},
-    {CHAIN_XPRT, "", &coinXprt},     {CHAIN_SOMM, "", &coinSomm},
-    {CHAIN_JUNO, "", &coinJuno},     {CHAIN_IRIS, "", &coinIris},
-    {CHAIN_DVPN, "", &coinDvpn},     {CHAIN_ROWAN, "", &coinRowan},
-    {CHAIN_REGEN, "", &coinRegen},   {CHAIN_BOOT, "", &coinBoot},
-    {CHAIN_GRAV, "", &coinGrav},     {CHAIN_IXO, "", &coinIxo},
-    {CHAIN_NGM, "", &coinNgm},       {CHAIN_IOV, "", &coinIov},
-    {CHAIN_UMEE, "", &coinUmee},     {CHAIN_QCK, "", &coinQck},
-    {CHAIN_TGD, "", &coinTgd},       {CHAIN_DOT, "", &coinDot},
+    {HOME_WALLET_CARD_ETH, "", &coinEth},       {HOME_WALLET_CARD_SOL, "", &coinSol},
+    {HOME_WALLET_CARD_BNB, "", &coinBnb},       {HOME_WALLET_CARD_XRP, "", &coinXrp},
+    {HOME_WALLET_CARD_ADA, "", &coinAda},       {HOME_WALLET_CARD_TON, "", &coinTon},
+    {HOME_WALLET_CARD_TRX, "", &coinTrx},       {HOME_WALLET_CARD_LTC, "", &coinLtc},
+    {HOME_WALLET_CARD_BCH, "", &coinBch},       {HOME_WALLET_CARD_APT, "", &coinApt},
+    {HOME_WALLET_CARD_SUI, "", &coinSui},       {HOME_WALLET_CARD_DASH, "", &coinDash},
+    {HOME_WALLET_CARD_ARWEAVE, "", &coinAr},    {HOME_WALLET_CARD_XLM, "", &coinXlm},
+    {HOME_WALLET_CARD_COSMOS, "", &coinCosmos}, {HOME_WALLET_CARD_TIA, "", &coinTia},
+    {HOME_WALLET_CARD_DYM, "", &coinDym},       {HOME_WALLET_CARD_OSMO, "", &coinOsmo},
+    {HOME_WALLET_CARD_INJ, "", &coinInj},       {HOME_WALLET_CARD_ATOM, "", &coinAtom},
+    {HOME_WALLET_CARD_CRO, "", &coinCro},       {HOME_WALLET_CARD_KAVA, "", &coinKava},
+    {HOME_WALLET_CARD_LUNC, "", &coinLunc},     {HOME_WALLET_CARD_AXL, "", &coinAxl},
+    {HOME_WALLET_CARD_LUNA, "", &coinLuna},     {HOME_WALLET_CARD_AKT, "", &coinAkt},
+    {HOME_WALLET_CARD_STRD, "", &coinStrd},     {HOME_WALLET_CARD_SCRT, "", &coinScrt},
+    {HOME_WALLET_CARD_BLD, "", &coinBld},       {HOME_WALLET_CARD_CTK, "", &coinCtk},
+    {HOME_WALLET_CARD_EVMOS, "", &coinEvmos},   {HOME_WALLET_CARD_STARS, "", &coinStars},
+    {HOME_WALLET_CARD_XPRT, "", &coinXprt},     {HOME_WALLET_CARD_SOMM, "", &coinSomm},
+    {HOME_WALLET_CARD_JUNO, "", &coinJuno},     {HOME_WALLET_CARD_IRIS, "", &coinIris},
+    {HOME_WALLET_CARD_DVPN, "", &coinDvpn},     {HOME_WALLET_CARD_ROWAN, "", &coinRowan},
+    {HOME_WALLET_CARD_REGEN, "", &coinRegen},   {HOME_WALLET_CARD_BOOT, "", &coinBoot},
+    {HOME_WALLET_CARD_GRAV, "", &coinGrav},     {HOME_WALLET_CARD_IXO, "", &coinIxo},
+    {HOME_WALLET_CARD_NGM, "", &coinNgm},       {HOME_WALLET_CARD_IOV, "", &coinIov},
+    {HOME_WALLET_CARD_UMEE, "", &coinUmee},     {HOME_WALLET_CARD_QCK, "", &coinQck},
+    {HOME_WALLET_CARD_TGD, "", &coinTgd},       {HOME_WALLET_CARD_DOT, "", &coinDot},
 #endif
 };
 
@@ -609,13 +609,22 @@ void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
     }
 }
 
-void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
+void SetCoinWallet(NavBarWidget_t *navBarWidget, HOME_WALLET_CARD_ENUM index,
                    const char *name)
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
+    CoinWalletInfo_t *coin = &g_coinWalletBtn[0];
+    for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++)
+    {
+        if(g_coinWalletBtn[i].index == index) {
+            coin = &g_coinWalletBtn[i];
+            break;
+        }
+    }
+
     navBarWidget->midBtn = GuiUpdateStatusCoinButton(
                                navBarWidget->midBtn, (name != NULL) ? name : _("confirm_transaction"),
-                               g_coinWalletBtn[index].icon);
+                               coin->icon);
 }
 
 void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index,

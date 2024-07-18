@@ -874,16 +874,20 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
     } else {
         urType = g_urResult->ur_type;
     }
-    lv_obj_t *switchIcon = GuiCreateImg(amountContainer, &imgConversion);
-    lv_obj_align(switchIcon, LV_ALIGN_RIGHT_MID, -24, 0);
-    lv_obj_add_flag(switchIcon, LV_OBJ_FLAG_CLICKABLE);
+    // only show switch icon when the network contains "Bitcoin Mainnet"
+    if (strstr(overviewData->network, "Bitcoin Mainnet") != NULL) {
+        lv_obj_t *switchIcon = GuiCreateImg(amountContainer, &imgConversion);
+        lv_obj_align(switchIcon, LV_ALIGN_RIGHT_MID, -24, 0);
+        lv_obj_add_flag(switchIcon, LV_OBJ_FLAG_CLICKABLE);
 
-    clickParam.amountValue = amountValue;
-    clickParam.feeValue = feeValue;
-    clickParam.overviewData = overviewData;
-    clickParam.isSat = &isSat;
-    isSat = false;
-    lv_obj_add_event_cb(switchIcon, SwitchValueUnit, LV_EVENT_CLICKED, &clickParam);
+        clickParam.amountValue = amountValue;
+        clickParam.feeValue = feeValue;
+        clickParam.overviewData = overviewData;
+        clickParam.isSat = &isSat;
+        isSat = false;
+        lv_obj_add_event_cb(switchIcon, SwitchValueUnit, LV_EVENT_CLICKED, &clickParam);
+    }
+
 
     return amountContainer;
 }

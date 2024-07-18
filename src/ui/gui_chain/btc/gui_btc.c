@@ -1214,29 +1214,17 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
         lv_obj_align_to(valueLabel, orderLabel, LV_ALIGN_OUT_RIGHT_TOP, 16, 0);
         // only show switch icon when the network contains "Bitcoin Mainnet" or "Bitcoin Testnet"
         bool showLabelIcon = (strstr(clickParam.overviewData->network, "Bitcoin Mainnet") != NULL || strstr(clickParam.overviewData->network, "Bitcoin Testnet") != NULL);
-        // check ur data is whether belong to keystone hot app version2
-        bool isNotKeystoneV2 = (urType != KeystoneSignRequest && urType != Bytes);
         if (to->data[i].is_mine && showLabelIcon) {
             lv_obj_t *changeContainer = GuiCreateContainerWithParent(toInnerContainer, 87, 30);
             lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_opa(changeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_t *changeLabel = lv_label_create(changeContainer);
-            // todo need refactor this
-            if (isNotKeystoneV2) {
-                if (to->data[i].is_external) {
-                    lv_label_set_text(changeLabel, "Receive");
-                } else {
-                    lv_label_set_text(changeLabel, "Change");
-                }
+            if (to->data[i].is_external) {
+                lv_label_set_text(changeLabel, "Receive");
             } else {
-                if (to->data[i].is_external) {
-                    lv_label_set_text(changeLabel, "Change");
-                } else {
-                    lv_label_set_text(changeLabel, "Receive");
-                }
+                lv_label_set_text(changeLabel, "Change");
             }
-
             lv_obj_set_style_text_font(changeLabel, g_defIllustrateFont, LV_PART_MAIN);
             lv_obj_set_style_text_color(changeLabel, WHITE_COLOR, LV_PART_MAIN);
             lv_obj_set_style_text_opa(changeLabel, 163, LV_PART_MAIN);

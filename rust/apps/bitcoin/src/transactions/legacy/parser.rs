@@ -58,7 +58,8 @@ impl TxData {
             let decoded = Base58Codec::decode(address.as_str())?;
             address = CashAddrCodec::encode(decoded)?;
         }
-        let is_external = output.is_change;
+        // external == receive address
+        let is_external = !output.is_change;
         Ok(ParsedOutput {
             address,
             amount: Self::format_amount(output.value, &Network::from_str(&self.network)?),

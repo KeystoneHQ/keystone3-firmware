@@ -91,6 +91,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 
 const static CoinWalletInfo_t g_walletBtn[] = {
 #ifndef BTC_ONLY
+    {WALLET_LIST_KEYSTONE, "Keystone", &walletKeystone},
     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
     {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
@@ -116,7 +117,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_PETRA, "Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
     {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
-    {WALLET_LIST_KEYSTONE, "Keystone", &walletKeystone},
+
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},

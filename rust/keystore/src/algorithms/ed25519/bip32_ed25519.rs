@@ -1,12 +1,13 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::str::FromStr;
+use third_party::cryptoxide::mac::Mac;
 
 use crate::algorithms::utils::normalize_path;
 use third_party::bitcoin::bip32::{ChildNumber, DerivationPath};
 use third_party::cryptoxide::hmac;
 use third_party::cryptoxide::pbkdf2;
-use third_party::cryptoxide::sha2::Sha512;
+use third_party::cryptoxide::sha2::{Sha256, Sha512};
 use third_party::ed25519_bip32_core::{DerivationScheme, XPrv, XPub};
 
 use crate::errors::{KeystoreError, Result};
@@ -62,6 +63,49 @@ pub fn get_icarus_master_key_by_entropy(entropy: &[u8], passphrase: &[u8]) -> Re
         &mut hash,
     );
     Ok(XPrv::normalize_bytes_force3rd(hash))
+}
+
+fn split_in_half(data: Vec<u8>) -> (Vec<u8>, Vec<u8>) {
+    let mid = data.len() / 2;
+    (data[0..mid].to_vec(), data[mid..].to_vec())
+}
+
+// https://github.com/cardano-foundation/CIPs/blob/49c64d4a7ce9f200e6fab7bd3fa855a5f1cd880a/CIP-0003/Ledger_BitBox02.md
+pub fn get_ledger_icarus_master_key_by_mnemonic(
+    passphrase: &[u8],
+    mnemonic_words: String,
+) -> Result<XPrv> {
+    let salt = ["mnemonic".as_bytes(), passphrase].concat();
+    let mut key = vec![0u8; 64];
+    let digest = Sha512::new();
+    let hmac = &mut hmac::Hmac::new(digest, mnemonic_words.as_bytes());
+    pbkdf2::pbkdf2(hmac, &salt, 2048, &mut key);
+
+    let digest = Sha512::new();
+    let hmac = &mut hmac::Hmac::new(digest, "ed25519 seed".as_bytes());
+    hmac.input(&key);
+    let (mut i_l, mut i_r) = split_in_half(hmac.result().code().to_vec());
+    loop {
+        if i_l[31] & 0b0010_0000 == 0 {
+            break;
+        }
+        let digest = Sha512::new();
+        let hmac = &mut hmac::Hmac::new(digest, "ed25519 seed".as_bytes());
+        hmac.input(&[i_l, i_r].concat());
+        let ret = hmac.result();
+        let result: &[u8] = ret.code();
+        i_l = result[0..32].to_vec();
+        i_r = result[32..64].to_vec();
+    }
+
+    let digest = Sha256::new();
+    let hmac = &mut hmac::Hmac::new(digest, "ed25519 seed".as_bytes());
+    hmac.input(&[vec![1], key].concat());
+    let cc = hmac.result().code().to_vec();
+
+    let ret = [i_l, i_r, cc].concat();
+
+    Ok(XPrv::normalize_bytes_force3rd(ret.try_into().unwrap()))
 }
 
 pub fn sign_message_by_icarus_master_key(
@@ -167,7 +211,37 @@ mod tests {
             )
             .unwrap();
             assert_eq!("beb7e770b3d0f1932b0a2f3a63285bf9ef7d3e461d55446d6a3911d8f0ee55c0b0e2df16538508046649d0e6d5b32969555a23f2f1ebf2db2819359b0d88bd16",
-                       key.to_string())
+                    key.to_string())
+        }
+    }
+
+    #[test]
+    fn test_get_ledger_icarus_master_key_by_entropy() {
+        {
+            let mnemonic_words = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art";
+            let master_key = get_ledger_icarus_master_key_by_entropy(
+                "foo".as_bytes(),
+                mnemonic_words.to_string(),
+            )
+            .unwrap();
+            assert_eq!("f053a1e752de5c26197b60f032a4809f08bb3e5d90484fe42024be31efcba7578d914d3ff992e21652fee6a4d99f6091006938fac2c0c0f9d2de0ba64b754e92a4f3723f23472077aa4cd4dd8a8a175dba07ea1852dad1cf268c61a2679c3890",
+                master_key.to_string());
+        }
+        {
+            let mnemonic_words = "correct cherry mammal bubble want mandate polar hazard crater better craft exotic choice fun tourist census gap lottery neglect address glow carry old business";
+            let master_key =
+                get_ledger_icarus_master_key_by_entropy("".as_bytes(), mnemonic_words.to_string())
+                    .unwrap();
+            assert_eq!("587c6774357ecbf840d4db6404ff7af016dace0400769751ad2abfc77b9a3844cc71702520ef1a4d1b68b91187787a9b8faab0a9bb6b160de541b6ee62469901fc0beda0975fe4763beabd83b7051a5fd5cbce5b88e82c4bbaca265014e524bd",
+                master_key.to_string());
+        }
+        {
+            let mnemonic_words = "recall grace sport punch exhibit mad harbor stand obey short width stem awkward used stairs wool ugly trap season stove worth toward congress jaguar";
+            let master_key =
+                get_ledger_icarus_master_key_by_entropy("".as_bytes(), mnemonic_words.to_string())
+                    .unwrap();
+            assert_eq!("a08cf85b564ecf3b947d8d4321fb96d70ee7bb760877e371899b14e2ccf88658104b884682b57efd97decbb318a45c05a527b9cc5c2f64f7352935a049ceea60680d52308194ccef2a18e6812b452a5815fbd7f5babc083856919aaf668fe7e4",
+                master_key.to_string());
         }
     }
 }

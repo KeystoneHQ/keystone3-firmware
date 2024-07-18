@@ -35,7 +35,7 @@ typedef enum {
 
 WalletListItem_t g_walletListArray[] = {
 #ifndef BTC_ONLY
-    {WALLET_LIST_KEYSTONE, &walletListKeystone, true},
+    {WALLET_LIST_KEYSTONE, &walletListKeystone, false},
     {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true},
@@ -294,7 +294,6 @@ static void GuiInitWalletListArray()
                 g_walletListArray[i].enable = !GetIsTempAccount();
             }
 
-            // Only show keystone wallet when the language is Russian
             if (LanguageGetIndex() == LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
                 g_walletListArray[i].enable = true;
             } else if (LanguageGetIndex() != LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
@@ -594,21 +593,18 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
                             t);
     } else {
-        lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[0].img);
-        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
-        lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
-                            &g_walletListArray[0]);
-        for (int i = 1, j = 1; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+        int offsetY = 0;
+        for (int i = 0, j = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
             if (!g_walletListArray[i].enable) {
                 continue;
             }
             lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[i].img);
-            lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 136 + (j - 1) * 107);
+            lv_obj_align(img, LV_ALIGN_TOP_MID, 0, offsetY);
             lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
             lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
                                 &g_walletListArray[i]);
             j++;
+            offsetY = j  * 107;
         }
     }
 #else

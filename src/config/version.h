@@ -7,7 +7,7 @@
 #define SOFTWARE_VERSION_MAX_LEN            (32)
 #define SOFTWARE_VERSION_MAJOR              1
 #define SOFTWARE_VERSION_MINOR              5
-#define SOFTWARE_VERSION_BUILD              6
+#define SOFTWARE_VERSION_BUILD              7
 #define SOFTWARE_VERSION_BETA               0
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
 

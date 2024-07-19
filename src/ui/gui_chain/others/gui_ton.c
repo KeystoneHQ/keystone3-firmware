@@ -84,9 +84,27 @@ UREncodeResult *GuiGetTonProofSignQrCodeData(void)
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
+        MnemonicType type = GetMnemonicType();
         uint8_t seed[64];
+        int len = 64;
+        switch (type)
+        {
+        case MNEMONIC_TYPE_BIP39:
+        {
+            len = sizeof(seed);
+            break;
+
+        }
+        case MNEMONIC_TYPE_SLIP39:
+        {
+            len = GetCurrentAccountEntropyLen();
+            break;
+        }
+        default:
+            break;
+        }
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = ton_sign_proof(data, seed, 64);
+        encodeResult = ton_sign_proof(data, seed, len);
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);

@@ -609,12 +609,12 @@ void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
     }
 }
 
-void SetCoinWallet(NavBarWidget_t *navBarWidget, HOME_WALLET_CARD_ENUM index,
+void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
                    const char *name)
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
     CoinWalletInfo_t *coin = &g_coinWalletBtn[0];
-    for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++)
+    for (size_t i = 0; i < CHAIN_BUTT; i++)
     {
         if(g_coinWalletBtn[i].index == index) {
             coin = &g_coinWalletBtn[i];

@@ -71,7 +71,7 @@ fn split_in_half(data: Vec<u8>) -> (Vec<u8>, Vec<u8>) {
 }
 
 // https://github.com/cardano-foundation/CIPs/blob/49c64d4a7ce9f200e6fab7bd3fa855a5f1cd880a/CIP-0003/Ledger_BitBox02.md
-pub fn get_ledger_icarus_master_key_by_mnemonic(
+pub fn get_ledger_bitbox02_master_key_by_mnemonic(
     passphrase: &[u8],
     mnemonic_words: String,
 ) -> Result<XPrv> {
@@ -219,7 +219,7 @@ mod tests {
     fn test_get_ledger_icarus_master_key_by_entropy() {
         {
             let mnemonic_words = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art";
-            let master_key = get_ledger_icarus_master_key_by_entropy(
+            let master_key = get_ledger_bitbox02_master_key_by_mnemonic(
                 "foo".as_bytes(),
                 mnemonic_words.to_string(),
             )
@@ -230,7 +230,7 @@ mod tests {
         {
             let mnemonic_words = "correct cherry mammal bubble want mandate polar hazard crater better craft exotic choice fun tourist census gap lottery neglect address glow carry old business";
             let master_key =
-                get_ledger_icarus_master_key_by_entropy("".as_bytes(), mnemonic_words.to_string())
+                get_ledger_bitbox02_master_key_by_mnemonic("".as_bytes(), mnemonic_words.to_string())
                     .unwrap();
             assert_eq!("587c6774357ecbf840d4db6404ff7af016dace0400769751ad2abfc77b9a3844cc71702520ef1a4d1b68b91187787a9b8faab0a9bb6b160de541b6ee62469901fc0beda0975fe4763beabd83b7051a5fd5cbce5b88e82c4bbaca265014e524bd",
                 master_key.to_string());
@@ -238,7 +238,7 @@ mod tests {
         {
             let mnemonic_words = "recall grace sport punch exhibit mad harbor stand obey short width stem awkward used stairs wool ugly trap season stove worth toward congress jaguar";
             let master_key =
-                get_ledger_icarus_master_key_by_entropy("".as_bytes(), mnemonic_words.to_string())
+                get_ledger_bitbox02_master_key_by_mnemonic("".as_bytes(), mnemonic_words.to_string())
                     .unwrap();
             assert_eq!("a08cf85b564ecf3b947d8d4321fb96d70ee7bb760877e371899b14e2ccf88658104b884682b57efd97decbb318a45c05a527b9cc5c2f64f7352935a049ceea60680d52308194ccef2a18e6812b452a5815fbd7f5babc083856919aaf668fe7e4",
                 master_key.to_string());

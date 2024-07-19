@@ -6,6 +6,7 @@ use alloc::vec::Vec;
 use cardano_serialization_lib;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey, Vkey, Vkeywitness};
 use third_party::cryptoxide::hashing::blake2b_256;
+use third_party::ed25519_bip32_core::{XPrv, XPub};
 use third_party::hex;
 
 pub fn parse_tx(tx: Vec<u8>, context: ParseContext) -> R<ParsedCardanoTx> {
@@ -24,17 +25,19 @@ pub fn check_tx(tx: Vec<u8>, context: ParseContext) -> R<()> {
     ParsedCardanoTx::verify(cardano_tx, context)
 }
 
+pub fn calc_icarus_master_key(entropy: &[u8], passphrase: &[u8]) -> XPrv {
+    keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
+        entropy, passphrase,
+    )
+    .map_err(|e| CardanoError::SigningFailed(e.to_string()))
+    .unwrap()
+}
+
 pub fn sign_data(
     path: &String,
     payload: &str,
-    entropy: &[u8],
-    passphrase: &[u8],
+    icarus_master_key: XPrv,
 ) -> R<SignDataResult> {
-    let icarus_master_key =
-        keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
-            entropy, passphrase,
-        )
-        .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
     let bip32_signing_key =
         keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv(
             &icarus_master_key,
@@ -49,22 +52,12 @@ pub fn sign_data(
     ))
 }
 
-pub fn sign_tx(
-    tx: Vec<u8>,
-    context: ParseContext,
-    entropy: &[u8],
-    passphrase: &[u8],
-) -> R<Vec<u8>> {
+pub fn sign_tx(tx: Vec<u8>, context: ParseContext, icarus_master_key: XPrv) -> R<Vec<u8>> {
     let cardano_tx =
         cardano_serialization_lib::protocol_types::fixed_tx::FixedTransaction::from_bytes(tx)?;
     let hash = blake2b_256(cardano_tx.raw_body().as_ref());
     let mut witness_set = cardano_serialization_lib::TransactionWitnessSet::new();
     let mut vkeys = cardano_serialization_lib::crypto::Vkeywitnesses::new();
-    let icarus_master_key =
-        keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
-            entropy, passphrase,
-        )
-        .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
 
     let mut signatures = BTreeMap::new();
 

@@ -9,9 +9,11 @@ use alloc::vec::Vec;
 use app_cardano::errors::CardanoError;
 use app_cardano::governance;
 use app_cardano::structs::{CardanoCertKey, CardanoUtxo, ParseContext};
+use app_cardano::transaction::calc_icarus_master_key;
 use core::str::FromStr;
 use cty::c_char;
 use third_party::bitcoin::bip32::DerivationPath;
+use third_party::ed25519_bip32_core::XPrv;
 use third_party::hex;
 
 use third_party::ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
@@ -199,10 +201,15 @@ pub extern "C" fn cardano_sign_catalyst(
     entropy_len: u32,
     passphrase: PtrString,
 ) -> PtrT<UREncodeResult> {
-    let cardano_catalyst_request =
-        extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
+    let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
+    cardano_sign_catalyst_by_icarus(ptr, icarus_master_key)
+}
+
+fn cardano_sign_catalyst_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<UREncodeResult> {
+    let cardano_catalyst_request =
+        extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
     let result = governance::sign(
         &cardano_catalyst_request
             .get_derivation_path()
@@ -213,8 +220,7 @@ pub extern "C" fn cardano_sign_catalyst(
         &cardano_catalyst_request.get_payment_address(),
         cardano_catalyst_request.get_nonce(),
         cardano_catalyst_request.get_voting_purpose(),
-        entropy,
-        passphrase.as_bytes(),
+        icarus_master_key,
     )
     .map(|v| {
         CardanoCatalystSignature::new(cardano_catalyst_request.get_request_id(), v.get_signature())
@@ -247,9 +253,14 @@ pub extern "C" fn cardano_sign_sign_data(
     entropy_len: u32,
     passphrase: PtrString,
 ) -> PtrT<UREncodeResult> {
-    let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
+    let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
+    cardano_sign_sign_data_by_icarus(ptr, icarus_master_key)
+}
+
+fn cardano_sign_sign_data_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<UREncodeResult> {
+    let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
     let sign_data = cardano_sign_data_reqeust.get_sign_data();
 
     let result = app_cardano::transaction::sign_data(
@@ -258,8 +269,7 @@ pub extern "C" fn cardano_sign_sign_data(
             .get_path()
             .unwrap(),
         hex::encode(sign_data).as_str(),
-        entropy,
-        passphrase.as_bytes(),
+        icarus_master_key,
     )
     .map(|v| {
         CardanoSignDataSignature::new(
@@ -298,21 +308,29 @@ pub extern "C" fn cardano_sign_tx(
     entropy_len: u32,
     passphrase: PtrString,
 ) -> PtrT<UREncodeResult> {
+    let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
+    let passphrase = recover_c_char(passphrase);
+    let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
+    cardano_sign_tx_by_icarus(ptr, master_fingerprint, cardano_xpub, icarus_master_key)
+}
+
+fn cardano_sign_tx_by_icarus(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+    cardano_xpub: PtrString,
+    icarus_master_key: XPrv,
+) -> PtrT<UREncodeResult> {
     let cardano_sign_reqeust = extract_ptr_with_type!(ptr, CardanoSignRequest);
     let tx_hex = cardano_sign_reqeust.get_sign_data();
     let parse_context =
         prepare_parse_context(&cardano_sign_reqeust, master_fingerprint, cardano_xpub);
-    let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
-    let passphrase = recover_c_char(passphrase);
+
     match parse_context {
         Ok(parse_context) => {
-            let sign_result = app_cardano::transaction::sign_tx(
-                tx_hex,
-                parse_context,
-                entropy,
-                passphrase.as_bytes(),
-            )
-            .map(|v| CardanoSignature::new(cardano_sign_reqeust.get_request_id(), v).try_into());
+            let sign_result =
+                app_cardano::transaction::sign_tx(tx_hex, parse_context, icarus_master_key).map(
+                    |v| CardanoSignature::new(cardano_sign_reqeust.get_request_id(), v).try_into(),
+                );
             match sign_result {
                 Ok(d) => match d {
                     Ok(data) => UREncodeResult::encode(

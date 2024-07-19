@@ -6,6 +6,7 @@
 #include "gui_home_widgets.h"
 #include "multi_sig_wallet_manager.h"
 #include "rsa.h"
+#include "bip39.h"
 
 typedef struct {
     int32_t addressType;

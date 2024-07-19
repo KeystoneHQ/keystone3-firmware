@@ -46,6 +46,7 @@ typedef enum {
     RSA_KEY,
     TON_NATIVE,
     TON_CHECKSUM,
+    LEDGER_BITBOX02,
 } PublicInfoType_t;
 
 typedef struct {
@@ -195,7 +196,7 @@ static const ChainItem_t g_chainTable[] = {
 #endif
 };
 
-static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoKey, const char *path, void *icarusMasterKey)
+static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoKey, const char *path, void *icarusMasterKey, void *ledgerBitbox02MasterKey)
 {
     switch (cryptoKey) {
     case SECP256K1:
@@ -205,6 +206,9 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case BIP32_ED25519:
         ASSERT(icarusMasterKey);
         return derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+    case LEDGER_BITBOX02:
+        ASSERT(ledgerBitbox02MasterKey);
+        return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, path);
     case RSA_KEY: {
         Rsa_primes_t *primes = FlashReadRsaPrimes();
         if (primes == NULL)
@@ -445,23 +449,30 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
     do {
         GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
         char* icarusMasterKey = NULL;
+        char* ledgerBitbox02Key = NULL;
         printf("regenerate pub key!\r\n");
         FreePublicKeyRam();
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_BREAK("get seed", ret);
         ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
         CHECK_ERRCODE_BREAK("get entropy", ret);
-        SimpleResponse_c_char* response = NULL;
+        SimpleResponse_c_char* cip3_response = NULL;
+        SimpleResponse_c_char *ledger_bitbox02_response = NULL;
         // should setup ADA for bip39 wallet;
         if (isBip39) {
-            response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
-            CHECK_AND_FREE_XPUB(response)
-            icarusMasterKey = response -> data;
+            char *mnemonic = NULL;
+            bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
+            cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
+            ledger_bitbox02_response = get_ledger_bitbox02_master_key(mnemonic, GetPassphrase(accountIndex));
+            CHECK_AND_FREE_XPUB(cip3_response);
+            CHECK_AND_FREE_XPUB(ledger_bitbox02_response);
+            icarusMasterKey = cip3_response->data;
+            ledgerBitbox02Key = ledger_bitbox02_response->data;
         }
 
         if (isTon) {
             //store public key for ton wallet;
-            xPubResult = ProcessKeyType(seed, len, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL);
+            xPubResult = ProcessKeyType(seed, len, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL, NULL);
             CHECK_AND_FREE_XPUB(xPubResult)
             ASSERT(xPubResult->data);
             g_accountPublicInfo[XPUB_TYPE_TON_NATIVE].value = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
@@ -488,7 +499,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     continue;
                 }
 
-                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
+                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                     continue;
                 }
@@ -518,6 +529,10 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
         ASSERT(len == size);
         printf("regenerate jsonString=%s\r\n", jsonString);
+        if (!isSlip39) {
+            free_simple_response_c_char(cip3_response);
+            free_simple_response_c_char(ledger_bitbox02_response);
+        }
         GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
         EXT_FREE(jsonString);
     } while (0);
@@ -604,28 +619,26 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     } else {
         GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
         char* icarusMasterKey = NULL;
+        char* ledgerBitbox02Key = NULL;
         FreePublicKeyRam();
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_RETURN_INT(ret);
         ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
         CHECK_ERRCODE_RETURN_INT(ret);
-        SimpleResponse_c_char *response = NULL;
+        SimpleResponse_c_char *cip3_response = NULL;
+        SimpleResponse_c_char *ledger_bitbox02_response = NULL;
 
-        // should setup ADA;
         if (!isSlip39) {
-            response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
-            ASSERT(response);
-            if (response->error_code != 0) {
-                printf("get_extended_pubkey error\r\n");
-                if (response->error_message != NULL) {
-                    printf("error code = %d\r\nerror msg is: %s\r\n", response->error_code, response->error_message);
-                }
-                free_simple_response_c_char(response);
-                ret = response->error_code;
-                CLEAR_ARRAY(seed);
-                return ret;
-            }
-            icarusMasterKey = response->data;
+            do {
+                char *mnemonic = NULL;
+                bip39_mnemonic_from_bytes(NULL, seed, len, &mnemonic);
+                cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
+                ledger_bitbox02_response = get_ledger_bitbox02_master_key(mnemonic, GetPassphrase(accountIndex));
+                CHECK_AND_FREE_XPUB(cip3_response);
+                CHECK_AND_FREE_XPUB(ledger_bitbox02_response);
+                icarusMasterKey = cip3_response->data;
+                ledgerBitbox02Key = ledger_bitbox02_response->data;
+            } while (0);
         }
 
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
@@ -637,7 +650,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
                 continue;
             }
 
-            xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
+            xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
             if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                 continue;
             }
@@ -658,7 +671,8 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             free_simple_response_c_char(xPubResult);
         }
         if (!isSlip39) {
-            free_simple_response_c_char(response);
+            free_simple_response_c_char(cip3_response);
+            free_simple_response_c_char(ledger_bitbox02_response);
         }
         g_tempPublicKeyAccountIndex = accountIndex;
         GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);

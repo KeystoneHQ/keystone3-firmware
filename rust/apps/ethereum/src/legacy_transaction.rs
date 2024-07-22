@@ -318,7 +318,7 @@ impl TryFrom<EthTx> for LegacyTransaction {
                 eth_tx.gas_limit.parse::<u64>().unwrap(),
                 TransactionAction::Call(H160::from_str(eth_tx.to.as_str()).unwrap()),
                 eth_tx.value.parse::<u64>().unwrap(),
-                eth_tx.memo,
+                hex::encode(eth_tx.memo.as_bytes()),
             );
             Ok(legacy_transaction)
         }

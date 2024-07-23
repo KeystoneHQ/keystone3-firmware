@@ -79,7 +79,7 @@ void *GuiGetXrpData(void)
     PtrT_TransactionParseResult_DisplayXrpTx parseResult = NULL;
     do {
 
-        if (urType == Bytes) {
+        if (is_keystone_xrp_tx(data)) {
             parseResult = xrp_parse_bytes_tx(data);
         } else {
             parseResult = xrp_parse_tx(data);
@@ -113,7 +113,7 @@ PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
     // keystone hot wallet use urType Bytes
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    if (urType == Bytes) {
+    if (is_keystone_xrp_tx(data)) {
         result =  xrp_check_tx_bytes(data, mfp, sizeof(mfp), urType);
         return result;
     } else {
@@ -187,7 +187,7 @@ UREncodeResult *GuiGetXrpSignQrCodeData(void)
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        if (urType == Bytes) {
+        if (is_keystone_xrp_tx(data)) {
             uint8_t mfp[4] = {0};
             GetMasterFingerPrint(mfp);
             // sign the bytes from keystone hot wallet

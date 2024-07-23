@@ -58,6 +58,7 @@ typedef struct {
     lv_obj_t *qrCodeCont;
     lv_obj_t *qrCode;
     lv_obj_t *addressLabel;
+    lv_obj_t *questionImg;
     lv_obj_t *addressCountLabel;
     lv_obj_t *moreCont;
     lv_obj_t *addressButton;
@@ -67,6 +68,7 @@ typedef struct {
     lv_obj_t *confirmAddrIndexBtn;
     lv_obj_t *inputAddressLabel;
     lv_obj_t *overflowLabel;
+    lv_obj_t *addressDetailCont;
     PathWidgetsItem_t changePathWidgets[3];
     SwitchAddressWidgetsItem_t switchAddressWidgets[5];
 } MultiPathCoinReceiveWidgets_t;
@@ -123,6 +125,7 @@ static void SetPathIndex(uint32_t index);
 
 static int GetSOLMaxAddressIndex(void);
 static int GetEthMaxAddressIndex(void);
+static int GetADAMaxAddressIndex(void);
 
 static const char* GetChangePathItemTitle(uint32_t i);
 static void GetChangePathLabelHint(char* hint);
@@ -131,12 +134,16 @@ static void SetCurrentSelectIndex(uint32_t selectIndex);
 static uint32_t GetCurrentSelectIndex();
 static void GetHint(char *hint);
 static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item);
+static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 static void GetSolPathItemSubTitle(char* subTitle, int index, uint32_t maxLen);
 static void UpdateConfirmAddrIndexBtn(void);
 static void UpdateConfirmAddrTypeBtn(void);
 static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked);
 static bool IsOnlyOneAddress(uint8_t addrType);
+static uint32_t GetDerivedPathTypeCount();
+static void ShowAddressDetailHandler(lv_event_t *e);
+static void GuiCreateAddressDetailWidgets(lv_obj_t *parent);
 
 static MultiPathCoinReceiveWidgets_t g_multiPathCoinReceiveWidgets;
 static EthereumReceiveTile g_multiPathCoinReceiveTileNow;
@@ -160,8 +167,10 @@ static uint32_t g_selectType = 0;
 static uint8_t g_currentAccountIndex = 0;
 static uint32_t g_ethSelectIndex[3] = {0};
 static uint32_t g_solSelectIndex[3] = {0};
+static uint32_t g_adaSelectIndex[2] = {0};
 static uint32_t g_ethPathIndex[3] = {0};
 static uint32_t g_solPathIndex[3] = {0};
+static uint32_t g_adaPathIndex[2] = {0};
 static PageWidget_t *g_pageWidget;
 static HOME_WALLET_CARD_ENUM g_chainCard;
 static lv_obj_t *g_derivationPathDescLabel = NULL;
@@ -176,6 +185,9 @@ static void InitDerivationPathDesc(uint8_t chain)
         break;
     case HOME_WALLET_CARD_SOL:
         g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
+        break;
+    case HOME_WALLET_CARD_ADA:
+        g_derivationPathDescs = GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC);
         break;
     default:
         break;
@@ -236,6 +248,10 @@ void GuiMultiPathCoinReceiveRefresh(void)
             snprintf_s(walletTitle, BUFFER_SIZE_32, _("receive_coin_fmt"), "SOL");
             SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_SOL, walletTitle);
             break;
+        case HOME_WALLET_CARD_ADA:
+            snprintf_s(walletTitle, BUFFER_SIZE_32, _("receive_coin_fmt"), "ADA");
+            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ADA, walletTitle);
+            break;
         default:
             break;
         }
@@ -270,7 +286,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectType = GetPathIndex();
-        for (uint32_t i = 0; i < 3; i++) {
+        for (uint32_t i = 0; i < GetDerivedPathTypeCount(); i++) {
             UpdateAddrTypeCheckbox(i, g_selectType == i);
         }
         UpdateConfirmAddrTypeBtn();
@@ -335,6 +351,60 @@ lv_obj_t* CreateEthereumReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
     return qrcode;
 }
 
+static void ShowAddressDetailHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_multiPathCoinReceiveWidgets.moreCont);
+    GuiCreateAddressDetailWidgets(g_multiPathCoinReceiveWidgets.tileQrCode);
+}
+
+static void GuiCreateAddressDetailWidgets(lv_obj_t *parent)
+{
+    lv_obj_t *cont, *label, *last;
+
+    if (g_multiPathCoinReceiveWidgets.addressDetailCont == NULL) {
+        g_multiPathCoinReceiveWidgets.addressDetailCont = GuiCreateHintBox(530);
+        lv_obj_add_event_cb(lv_obj_get_child(g_multiPathCoinReceiveWidgets.addressDetailCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_multiPathCoinReceiveWidgets.addressDetailCont);
+        cont = g_multiPathCoinReceiveWidgets.addressDetailCont;
+
+        label = GuiCreateTextLabel(cont, _("Path"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 24 + 270);
+        last = label;
+
+        AddressDataItem_t addressDataItem;
+        ModelGetADAAddress(GetCurrentSelectIndex(), &addressDataItem, 0);
+
+        label = GuiCreateIllustrateLabel(cont, addressDataItem.path);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        label = GuiCreateTextLabel(cont, _("Address"));
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        label = GuiCreateIllustrateLabel(cont, addressDataItem.address);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        label = GuiCreateTextLabel(cont, _("receive_ada_enterprise_address"));
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        ModelGetADAAddress(GetCurrentSelectIndex(), &addressDataItem, 1);
+        label = GuiCreateIllustrateLabel(cont, addressDataItem.address);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        label = GuiCreateTextLabel(cont, _("receive_ada_stake_address"));
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        last = label;
+
+        // we only show stake key at m/1852'/1815'/X'/0/0
+        ModelGetADAAddress(GetCurrentSelectIndex(), &addressDataItem, 2);
+        label = GuiCreateIllustrateLabel(cont, addressDataItem.address);
+        lv_obj_align_to(label, last, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    }
+}
+
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 {
     lv_obj_t *tempObj;
@@ -356,6 +426,14 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     g_multiPathCoinReceiveWidgets.addressLabel = GuiCreateNoticeLabel(g_multiPathCoinReceiveWidgets.qrCodeCont, "");
     lv_obj_set_width(g_multiPathCoinReceiveWidgets.addressLabel, 336);
     lv_obj_align(g_multiPathCoinReceiveWidgets.addressLabel, LV_ALIGN_TOP_MID, 0, yOffset);
+    if (g_chainCard == HOME_WALLET_CARD_ADA) {
+        lv_obj_add_event_cb(g_multiPathCoinReceiveWidgets.addressLabel, ShowAddressDetailHandler, LV_EVENT_CLICKED, NULL);
+        g_multiPathCoinReceiveWidgets.questionImg = GuiCreateImg(g_multiPathCoinReceiveWidgets.qrCodeCont, &imgInfo);
+        lv_obj_align(g_multiPathCoinReceiveWidgets.questionImg, LV_ALIGN_TOP_LEFT, 348, yOffset + 4);
+        lv_obj_add_event_cb(g_multiPathCoinReceiveWidgets.questionImg, ShowAddressDetailHandler, LV_EVENT_CLICKED, NULL);
+        lv_obj_add_flag(g_multiPathCoinReceiveWidgets.questionImg, LV_OBJ_FLAG_CLICKABLE);
+    }
+
     yOffset += 60;
 
     yOffset += 16;
@@ -393,6 +471,9 @@ static void GetHint(char *hint)
         break;
     case HOME_WALLET_CARD_SOL:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "SOL");
+        break;
+    case HOME_WALLET_CARD_ADA:
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "ADA");
         break;
     default:
         break;
@@ -542,6 +623,9 @@ static void GetChangePathLabelHint(char* hint)
     case HOME_WALLET_CARD_SOL:
         snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_sol"));
         return;
+    case HOME_WALLET_CARD_ADA:
+        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_ada"));
+        return;
     default:
         break;
     }
@@ -559,6 +643,12 @@ static const char* GetChangePathItemTitle(uint32_t i)
             return _("receive_sol_more_t_single_path");
         } else if (i == 2) {
             return _("receive_sol_more_t_sub_path");
+        }
+    case HOME_WALLET_CARD_ADA:
+        if (i == 0) {
+            return _("receive_ada_more_t_standard");
+        } else if (i == 1) {
+            return _("receive_ada_more_t_ledger");
         }
     default:
         break;
@@ -632,6 +722,20 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     RefreshDefaultAddress();
 }
 
+static uint32_t GetDerivedPathTypeCount()
+{
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_ETH:
+        return 3;
+    case HOME_WALLET_CARD_SOL:
+        return 3;
+    case HOME_WALLET_CARD_ADA:
+        return 2;
+    default:
+        return 3;
+    }
+}
+
 static void GuiCreateChangePathWidget(lv_obj_t *parent)
 {
     lv_obj_t *cont, *line, *label;
@@ -648,20 +752,20 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(labelHint, LV_OPA_80, LV_PART_MAIN);
     lv_obj_align(labelHint, LV_ALIGN_TOP_LEFT, 0, 0);
 
-    cont = GuiCreateContainerWithParent(scrollCont, 408, 308);
+    cont = GuiCreateContainerWithParent(scrollCont, 408, 103 * GetDerivedPathTypeCount() - 1);
     lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
 
-    for (uint32_t i = 0; i < 3; i++) {
+    for (uint32_t i = 0; i < GetDerivedPathTypeCount(); i++) {
         label = GuiCreateTextLabel(cont, GetChangePathItemTitle(i));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 26 + 103 * i);
         GetPathItemSubTitle(string, i, sizeof(string));
         label = GuiCreateLabelWithFontAndTextColor(cont, string, g_defIllustrateFont, 0x919191);
         lv_label_set_recolor(label, true);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
-        if (i < 2) {
+        if (i < GetDerivedPathTypeCount() - 1) {
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
         }
@@ -713,7 +817,13 @@ static void RefreshQrCode(void)
     if (fullscreen_qrcode) {
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
-    lv_label_set_text(g_multiPathCoinReceiveWidgets.addressLabel, addressDataItem.address);
+    if (g_chainCard == HOME_WALLET_CARD_ADA) {
+        char string[128] = {0};
+        CutAndFormatString(string, sizeof(string), addressDataItem.address, 20);
+        lv_label_set_text(g_multiPathCoinReceiveWidgets.addressLabel, string);
+    } else {
+        lv_label_set_text(g_multiPathCoinReceiveWidgets.addressLabel, addressDataItem.address);
+    }
     lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
 }
 
@@ -810,6 +920,11 @@ static int GetSOLMaxAddressIndex(void)
     return GENERAL_ADDRESS_INDEX_MAX;
 }
 
+static int GetADAMaxAddressIndex(void)
+{
+    return 20;
+}
+
 static int GetMaxAddressIndex(void)
 {
     switch (g_chainCard) {
@@ -817,6 +932,8 @@ static int GetMaxAddressIndex(void)
         return GetEthMaxAddressIndex();
     case HOME_WALLET_CARD_SOL:
         return GetSOLMaxAddressIndex();
+    case HOME_WALLET_CARD_ADA:
+        return GetADAMaxAddressIndex();
     default:
         break;
     }
@@ -855,6 +972,8 @@ static TUTORIAL_LIST_INDEX_ENUM GetTutorialIndex()
         return TUTORIAL_ETH_RECEIVE;
     case HOME_WALLET_CARD_SOL:
         return TUTORIAL_SOL_RECEIVE;
+    case HOME_WALLET_CARD_ADA:
+        return TUTORIAL_ADA_RECEIVE;
     default:
         break;
     }
@@ -903,6 +1022,9 @@ static uint32_t GetPathIndex(void)
     case HOME_WALLET_CARD_SOL:
         return g_solPathIndex[g_currentAccountIndex];
         break;
+    case HOME_WALLET_CARD_ADA:
+        return g_adaPathIndex[g_currentAccountIndex];
+        break;
     default:
         break;
     }
@@ -918,6 +1040,9 @@ static void SetPathIndex(uint32_t index)
         break;
     case HOME_WALLET_CARD_SOL:
         g_solPathIndex[g_currentAccountIndex] = index;
+        break;
+    case HOME_WALLET_CARD_ADA:
+        g_adaPathIndex[g_currentAccountIndex] = index;
         break;
     default:
         break;
@@ -937,13 +1062,18 @@ static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked)
         lv_obj_add_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     }
+    if (g_chainCard == HOME_WALLET_CARD_ADA && isChecked) {
+        SetAdaXPubType(g_selectType);
+        RefreshDefaultAddress();
+    }
 }
 
 static void ChangePathCheckHandler(lv_event_t *e)
 {
     lv_obj_t *checkBox = lv_event_get_target(e);
-    for (uint32_t i = 0; i < 3; i++) {
-        UpdateAddrTypeCheckbox(i, checkBox == g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox);
+    for (uint32_t i = 0; i < GetDerivedPathTypeCount(); i++) {
+        bool isChecked = checkBox == g_multiPathCoinReceiveWidgets.changePathWidgets[i].checkBox;
+        UpdateAddrTypeCheckbox(i, isChecked);
     }
     UpdateConfirmAddrTypeBtn();
 }
@@ -1009,6 +1139,11 @@ static void GetSolPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
     }
 }
 
+static void GetADAPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
+{
+    snprintf_s(subTitle, maxLen, "m/1852'/1815'/#F5870A X#'");
+}
+
 static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
 {
     switch (g_chainCard) {
@@ -1017,6 +1152,9 @@ static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
         break;
     case HOME_WALLET_CARD_SOL:
         GetSolPathItemSubTitle(subTitle, index, maxLen);
+        break;
+    case HOME_WALLET_CARD_ADA:
+        GetADAPathItemSubTitle(subTitle, index, maxLen);
         break;
     default:
         break;
@@ -1138,10 +1276,36 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     case HOME_WALLET_CARD_SOL:
         ModelGetSolAddress(index, item);
         break;
+    case HOME_WALLET_CARD_ADA:
+        ModelGetADAAddress(index, item, 0);
+        break;
     default:
         break;
     }
 
+}
+
+static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
+{
+    char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
+    SimpleResponse_c_char *result = NULL;
+    xPub = GetCurrentAccountPublicKey(GetAdaXPubType(index));
+    snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", index);
+    switch (type) {
+    case 1:
+        result = cardano_get_enterprise_address(xPub, index, 1);
+        break;
+    case 2:
+        result = cardano_get_stake_address(xPub, index, 1);
+        break;
+    default:
+        result = cardano_get_base_address(xPub, index, 1);
+        break;
+    }
+    item->index = index;
+    strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+    strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
+    free_simple_response_c_char(result);
 }
 
 static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
@@ -1207,6 +1371,9 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     case HOME_WALLET_CARD_SOL:
         g_solSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
+    case HOME_WALLET_CARD_ADA:
+        g_adaSelectIndex[g_currentAccountIndex] = selectIndex;
+        break;
     default:
         break;
     }
@@ -1219,6 +1386,8 @@ static uint32_t GetCurrentSelectIndex()
         return g_ethSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_SOL:
         return g_solSelectIndex[g_currentAccountIndex];
+    case HOME_WALLET_CARD_ADA:
+        return g_adaSelectIndex[g_currentAccountIndex];
     default:
         break;
     }

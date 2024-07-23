@@ -6,6 +6,7 @@
 
 static char **g_ethDerivationPathDesc = NULL;
 static char **g_solDerivationPathDesc = NULL;
+static char **g_adaDerivationPathDesc = NULL;
 static char **g_btcDerivationPathDesc = NULL;
 #ifdef BTC_ONLY
 static char **g_btcTestNetDerivationPathDesc = NULL;
@@ -26,6 +27,12 @@ void DerivationPathDescsInit(void)
     g_solDerivationPathDesc[SOL_SOLFLARE] = "";
     g_solDerivationPathDesc[SOL_SOLLET] = "";
     g_solDerivationPathDesc[SOL_PHANTOM] = "";
+
+    if (g_adaDerivationPathDesc == NULL) {
+        g_adaDerivationPathDesc = SRAM_MALLOC(2 * ETH_DERIVATION_PATH_MAX_LEN);
+    }
+    g_adaDerivationPathDesc[ADA_STANDARD] = (char *)_("derivation_path_ada_standard_desc");
+    g_adaDerivationPathDesc[ADA_LEDGER] = (char *)_("derivation_path_ada_ledger_desc");
 
     if (g_btcDerivationPathDesc == NULL) {
         g_btcDerivationPathDesc = SRAM_MALLOC(4 * ETH_DERIVATION_PATH_MAX_LEN);
@@ -56,6 +63,9 @@ char **GetDerivationPathDescs(uint8_t index)
     }
     if (index == BTC_DERIVATION_PATH_DESC) {
         return (char **)g_btcDerivationPathDesc;
+    }
+    if (index == ADA_DERIVATION_PATH_DESC) {
+        return (char **)g_adaDerivationPathDesc;
     }
 #ifdef BTC_ONLY
     if (index == BTC_TEST_NET_DERIVATION_PATH_DESC) {

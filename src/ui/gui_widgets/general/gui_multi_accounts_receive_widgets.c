@@ -30,6 +30,7 @@
 typedef enum {
     RECEIVE_TILE_QRCODE = 0,
     RECEIVE_TILE_SWITCH_ACCOUNT,
+    RECEIVE_TILE_CHANGE_PATH,
 
     RECEIVE_TILE_BUTT,
 } MultiAccountsReceiveTile;
@@ -110,6 +111,7 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e);
 static void LeftBtnHandler(lv_event_t *e);
 static void RightBtnHandler(lv_event_t *e);
 static bool IsAddressSwitchable();
+static bool IsDerivationPathSwitchable();
 static bool HasMoreBtn();
 static void SwitchAddressHandler(lv_event_t *e);
 static void SwitchAccountHandler(lv_event_t *e);
@@ -207,6 +209,11 @@ void GuiMultiAccountsReceiveRefresh(void)
         }
         UpdateConfirmIndexBtn();
         break;
+    case RECEIVE_TILE_CHANGE_PATH:
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        break;
     default:
         break;
     }
@@ -245,11 +252,16 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, OpenSwitchAccountHandler, LV_EVENT_CLICKED, NULL);
 
-    img = GuiCreateImg(btn, &imgAddressType);
+    if (IsDerivationPathSwitchable()) {
+        img = GuiCreateImg(btn, &imgPath);
+        label = GuiCreateTextLabel(btn, _("derivation_path_change"));
+    } else {
+        img = GuiCreateImg(btn, &imgAddressType);
+        label = GuiCreateTextLabel(btn, _("switch_account"));
+        lv_obj_add_event_cb(btn, OpenSwitchAccountHandler, LV_EVENT_CLICKED, NULL);
+    }
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateTextLabel(btn, _("switch_account"));
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -814,6 +826,16 @@ static void RightBtnHandler(lv_event_t *e)
     }
 }
 
+static bool IsDerivationPathSwitchable()
+{
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_ADA:
+        return true;
+    default:
+        return false;
+    }
+}
+
 static bool IsAddressSwitchable()
 {
     switch (g_chainCard) {
@@ -998,7 +1020,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
 
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
-        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0 + currentAccount);
+        xPub = GetCurrentAccountPublicKey(GetAdaXPubType(index));
         snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         // cardano mainnet;
         switch (type) {

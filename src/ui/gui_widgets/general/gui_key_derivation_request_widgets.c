@@ -214,35 +214,35 @@ static UREncodeResult *ModelGenerateSyncUR(void)
 
 static uint8_t GetXPubIndexByPath(char *path)
 {
-    if (strcmp("1852'/1815'/1'", path) == 0) return XPUB_TYPE_ADA_1;
-    if (strcmp("1852'/1815'/2'", path) == 0) return XPUB_TYPE_ADA_2;
-    if (strcmp("1852'/1815'/3'", path) == 0) return XPUB_TYPE_ADA_3;
-    if (strcmp("1852'/1815'/4'", path) == 0) return XPUB_TYPE_ADA_4;
-    if (strcmp("1852'/1815'/5'", path) == 0) return XPUB_TYPE_ADA_5;
-    if (strcmp("1852'/1815'/6'", path) == 0) return XPUB_TYPE_ADA_6;
-    if (strcmp("1852'/1815'/7'", path) == 0) return XPUB_TYPE_ADA_7;
-    if (strcmp("1852'/1815'/8'", path) == 0) return XPUB_TYPE_ADA_8;
-    if (strcmp("1852'/1815'/9'", path) == 0) return XPUB_TYPE_ADA_9;
-    if (strcmp("1852'/1815'/10'", path) == 0) return XPUB_TYPE_ADA_10;
-    if (strcmp("1852'/1815'/11'", path) == 0) return XPUB_TYPE_ADA_11;
-    if (strcmp("1852'/1815'/12'", path) == 0) return XPUB_TYPE_ADA_12;
-    if (strcmp("1852'/1815'/13'", path) == 0) return XPUB_TYPE_ADA_13;
-    if (strcmp("1852'/1815'/14'", path) == 0) return XPUB_TYPE_ADA_14;
-    if (strcmp("1852'/1815'/15'", path) == 0) return XPUB_TYPE_ADA_15;
-    if (strcmp("1852'/1815'/16'", path) == 0) return XPUB_TYPE_ADA_16;
-    if (strcmp("1852'/1815'/17'", path) == 0) return XPUB_TYPE_ADA_17;
-    if (strcmp("1852'/1815'/18'", path) == 0) return XPUB_TYPE_ADA_18;
-    if (strcmp("1852'/1815'/19'", path) == 0) return XPUB_TYPE_ADA_19;
-    if (strcmp("1852'/1815'/20'", path) == 0) return XPUB_TYPE_ADA_20;
-    if (strcmp("1852'/1815'/21'", path) == 0) return XPUB_TYPE_ADA_21;
-    if (strcmp("1852'/1815'/22'", path) == 0) return XPUB_TYPE_ADA_22;
-    if (strcmp("1852'/1815'/23'", path) == 0) return XPUB_TYPE_ADA_23;
+    if (strcmp("1852'/1815'/1'", path) == 0) return GetAdaXPubType(1);
+    if (strcmp("1852'/1815'/2'", path) == 0) return GetAdaXPubType(2);
+    if (strcmp("1852'/1815'/3'", path) == 0) return GetAdaXPubType(3);
+    if (strcmp("1852'/1815'/4'", path) == 0) return GetAdaXPubType(4);
+    if (strcmp("1852'/1815'/5'", path) == 0) return GetAdaXPubType(5);
+    if (strcmp("1852'/1815'/6'", path) == 0) return GetAdaXPubType(6);
+    if (strcmp("1852'/1815'/7'", path) == 0) return GetAdaXPubType(7);
+    if (strcmp("1852'/1815'/8'", path) == 0) return GetAdaXPubType(8);
+    if (strcmp("1852'/1815'/9'", path) == 0) return GetAdaXPubType(9);
+    if (strcmp("1852'/1815'/10'", path) == 0) return GetAdaXPubType(10);
+    if (strcmp("1852'/1815'/11'", path) == 0) return GetAdaXPubType(11);
+    if (strcmp("1852'/1815'/12'", path) == 0) return GetAdaXPubType(12);
+    if (strcmp("1852'/1815'/13'", path) == 0) return GetAdaXPubType(13);
+    if (strcmp("1852'/1815'/14'", path) == 0) return GetAdaXPubType(14);
+    if (strcmp("1852'/1815'/15'", path) == 0) return GetAdaXPubType(15);
+    if (strcmp("1852'/1815'/16'", path) == 0) return GetAdaXPubType(16);
+    if (strcmp("1852'/1815'/17'", path) == 0) return GetAdaXPubType(17);
+    if (strcmp("1852'/1815'/18'", path) == 0) return GetAdaXPubType(18);
+    if (strcmp("1852'/1815'/19'", path) == 0) return GetAdaXPubType(19);
+    if (strcmp("1852'/1815'/20'", path) == 0) return GetAdaXPubType(20);
+    if (strcmp("1852'/1815'/21'", path) == 0) return GetAdaXPubType(21);
+    if (strcmp("1852'/1815'/22'", path) == 0) return GetAdaXPubType(22);
+    if (strcmp("1852'/1815'/23'", path) == 0) return GetAdaXPubType(23);
     if (strcmp("M/44'/148'/0'", path) == 0) return XPUB_TYPE_STELLAR_0;
     if (strcmp("M/44'/148'/1'", path) == 0) return XPUB_TYPE_STELLAR_1;
     if (strcmp("M/44'/148'/2'", path) == 0) return XPUB_TYPE_STELLAR_2;
     if (strcmp("M/44'/148'/3'", path) == 0) return XPUB_TYPE_STELLAR_3;
     if (strcmp("M/44'/148'/4'", path) == 0) return XPUB_TYPE_STELLAR_4;
-    return XPUB_TYPE_ADA_0;
+    return GetAdaXPubType(0);
 }
 
 static void GuiCreateApproveWidget(lv_obj_t *parent)

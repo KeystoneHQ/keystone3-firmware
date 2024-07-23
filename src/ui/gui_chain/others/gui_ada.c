@@ -20,6 +20,12 @@ static struct URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static char g_adaBaseAddr[ADA_ADD_MAX_LEN];
 static char *xpub = NULL;
+static AdaXPubType g_adaXpubType = STANDARD_ADA;
+
+void SetAdaXPubType(AdaXPubType type)
+{
+    g_adaXpubType = type;
+}
 
 static uint8_t GetXPubIndexByPath(char *path);
 
@@ -440,11 +446,67 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     return encodeResult;
 }
 
+ChainType GetAdaXPubType(uint16_t index)
+{
+    switch (index) {
+    case 0:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_0 : XPUB_TYPE_LEDGER_ADA_0;
+    case 1:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_1 : XPUB_TYPE_LEDGER_ADA_1;
+    case 2:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_2 : XPUB_TYPE_LEDGER_ADA_2;
+    case 3:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_3 : XPUB_TYPE_LEDGER_ADA_3;
+    case 4:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_4 : XPUB_TYPE_LEDGER_ADA_4;
+    case 5:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_5 : XPUB_TYPE_LEDGER_ADA_5;
+    case 6:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_6 : XPUB_TYPE_LEDGER_ADA_6;
+    case 7:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_7 : XPUB_TYPE_LEDGER_ADA_7;
+    case 8:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_8 : XPUB_TYPE_LEDGER_ADA_8;
+    case 9:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_9 : XPUB_TYPE_LEDGER_ADA_9;
+    case 10:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_10 : XPUB_TYPE_LEDGER_ADA_10;
+    case 11:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_11 : XPUB_TYPE_LEDGER_ADA_11;
+    case 12:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_12 : XPUB_TYPE_LEDGER_ADA_12;
+    case 13:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_13 : XPUB_TYPE_LEDGER_ADA_13;
+    case 14:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_14 : XPUB_TYPE_LEDGER_ADA_14;
+    case 15:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_15 : XPUB_TYPE_LEDGER_ADA_15;
+    case 16:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_16 : XPUB_TYPE_LEDGER_ADA_16;
+    case 17:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_17 : XPUB_TYPE_LEDGER_ADA_17;
+    case 18:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_18 : XPUB_TYPE_LEDGER_ADA_18;
+    case 19:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_19 : XPUB_TYPE_LEDGER_ADA_19;
+    case 20:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_20 : XPUB_TYPE_LEDGER_ADA_20;
+    case 21:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_21 : XPUB_TYPE_LEDGER_ADA_21;
+    case 22:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_22 : XPUB_TYPE_LEDGER_ADA_22;
+    case 23:
+        return g_adaXpubType == STANDARD_ADA ? XPUB_TYPE_ADA_23 : XPUB_TYPE_LEDGER_ADA_23;
+    default:
+        return XPUB_TYPE_ADA_0;
+    }
+}
+
 char *GuiGetADABaseAddressByIndex(uint16_t index)
 {
     char *xPub = NULL;
     SimpleResponse_c_char *result = NULL;
-    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0 + index);
+    xPub = GetCurrentAccountPublicKey(GetAdaXPubType(index));
     result = cardano_get_base_address(xPub, 0, 1);
     if (result->error_code == 0) {
         strcpy(g_adaBaseAddr, result->data);
@@ -456,52 +518,52 @@ char *GuiGetADABaseAddressByIndex(uint16_t index)
 static uint8_t GetXPubIndexByPath(char *path)
 {
     if (strcmp("1852'/1815'/1'", path) == 0)
-        return XPUB_TYPE_ADA_1;
+        return GetAdaXPubType(1);
     if (strcmp("1852'/1815'/2'", path) == 0)
-        return XPUB_TYPE_ADA_2;
+        return GetAdaXPubType(2);
     if (strcmp("1852'/1815'/3'", path) == 0)
-        return XPUB_TYPE_ADA_3;
+        return GetAdaXPubType(3);
     if (strcmp("1852'/1815'/4'", path) == 0)
-        return XPUB_TYPE_ADA_4;
+        return GetAdaXPubType(4);
     if (strcmp("1852'/1815'/5'", path) == 0)
-        return XPUB_TYPE_ADA_5;
+        return GetAdaXPubType(5);
     if (strcmp("1852'/1815'/6'", path) == 0)
-        return XPUB_TYPE_ADA_6;
+        return GetAdaXPubType(6);
     if (strcmp("1852'/1815'/7'", path) == 0)
-        return XPUB_TYPE_ADA_7;
+        return GetAdaXPubType(7);
     if (strcmp("1852'/1815'/8'", path) == 0)
-        return XPUB_TYPE_ADA_8;
+        return GetAdaXPubType(8);
     if (strcmp("1852'/1815'/9'", path) == 0)
-        return XPUB_TYPE_ADA_9;
+        return GetAdaXPubType(9);
     if (strcmp("1852'/1815'/10'", path) == 0)
-        return XPUB_TYPE_ADA_10;
+        return GetAdaXPubType(10);
     if (strcmp("1852'/1815'/11'", path) == 0)
-        return XPUB_TYPE_ADA_11;
+        return GetAdaXPubType(11);
     if (strcmp("1852'/1815'/12'", path) == 0)
-        return XPUB_TYPE_ADA_12;
+        return GetAdaXPubType(12);
     if (strcmp("1852'/1815'/13'", path) == 0)
-        return XPUB_TYPE_ADA_13;
+        return GetAdaXPubType(13);
     if (strcmp("1852'/1815'/14'", path) == 0)
-        return XPUB_TYPE_ADA_14;
+        return GetAdaXPubType(14);
     if (strcmp("1852'/1815'/15'", path) == 0)
-        return XPUB_TYPE_ADA_15;
+        return GetAdaXPubType(15);
     if (strcmp("1852'/1815'/16'", path) == 0)
-        return XPUB_TYPE_ADA_16;
+        return GetAdaXPubType(16);
     if (strcmp("1852'/1815'/17'", path) == 0)
-        return XPUB_TYPE_ADA_17;
+        return GetAdaXPubType(17);
     if (strcmp("1852'/1815'/18'", path) == 0)
-        return XPUB_TYPE_ADA_18;
+        return GetAdaXPubType(18);
     if (strcmp("1852'/1815'/19'", path) == 0)
-        return XPUB_TYPE_ADA_19;
+        return GetAdaXPubType(19);
     if (strcmp("1852'/1815'/20'", path) == 0)
-        return XPUB_TYPE_ADA_20;
+        return GetAdaXPubType(20);
     if (strcmp("1852'/1815'/21'", path) == 0)
-        return XPUB_TYPE_ADA_21;
+        return GetAdaXPubType(21);
     if (strcmp("1852'/1815'/22'", path) == 0)
-        return XPUB_TYPE_ADA_22;
+        return GetAdaXPubType(22);
     if (strcmp("1852'/1815'/23'", path) == 0)
-        return XPUB_TYPE_ADA_23;
-    return XPUB_TYPE_ADA_0;
+        return GetAdaXPubType(23);
+    return GetAdaXPubType(0);
 }
 
 void GetCatalystNonce(void *indata, void *param, uint32_t maxLen)

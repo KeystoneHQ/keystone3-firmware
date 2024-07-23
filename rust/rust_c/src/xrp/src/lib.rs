@@ -108,11 +108,11 @@ pub extern "C" fn xrp_sign_tx_bytes(
     let k1 = secp256k1::Secp256k1::new();
     // M/44'/144'/0'/0/0 -> 0/0
     let split_hd_path: Vec<&str> = hd_path.split("/").collect();
-    let hd_path = format!("{}/{}", split_hd_path[4], split_hd_path[5]);
+    let derive_hd_path = format!("{}/{}", split_hd_path[4], split_hd_path[5]);
     let five_level_xpub = xpub
         .derive_pub(
             &k1,
-            &DerivationPath::from_str(format!("m/{}", hd_path).as_str()).unwrap(),
+            &DerivationPath::from_str(format!("m/{}", derive_hd_path).as_str()).unwrap(),
         )
         .unwrap();
     let key = five_level_xpub.public_key.serialize();
@@ -218,6 +218,16 @@ pub extern "C" fn xrp_check_tx(
     ) {
         Ok(p) => TransactionCheckResult::error(ErrorCodes::Success, p).c_ptr(),
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn is_keystone_xrp_tx(ur_data_ptr: PtrUR) -> bool {
+    // if data can be parsed by protobuf, it is a keyston hot app version2 tx or it is a xrp tx
+    let payload = build_payload(ur_data_ptr, QRCodeType::Bytes);
+    match payload {
+        Ok(_) => true,
+        Err(_) => false,
     }
 }
 

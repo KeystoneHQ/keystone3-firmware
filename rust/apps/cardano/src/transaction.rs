@@ -33,11 +33,7 @@ pub fn calc_icarus_master_key(entropy: &[u8], passphrase: &[u8]) -> XPrv {
     .unwrap()
 }
 
-pub fn sign_data(
-    path: &String,
-    payload: &str,
-    icarus_master_key: XPrv,
-) -> R<SignDataResult> {
+pub fn sign_data(path: &String, payload: &str, icarus_master_key: XPrv) -> R<SignDataResult> {
     let bip32_signing_key =
         keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv(
             &icarus_master_key,

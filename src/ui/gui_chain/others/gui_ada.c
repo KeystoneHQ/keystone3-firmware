@@ -136,6 +136,15 @@ int GetAdaSignDataPayloadLength(void *param)
     return strlen(data->payload) + 1;
 }
 
+static void TryToFixAdaXPubType()
+{
+    if (g_adaXpubType == STANDARD_ADA) {
+        SetAdaXPubType(LEDGER_ADA);
+    } else {
+        SetAdaXPubType(STANDARD_ADA);
+    }
+}
+
 PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
@@ -149,6 +158,18 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     uint8_t xpubIndex = GetXPubIndexByPath(adaPath);
     xpub = GetCurrentAccountPublicKey(xpubIndex);
     PtrT_TransactionCheckResult result = cardano_check_tx(data, mfp, xpub);
+    // XXX: Check for mismatched derived address types
+    if (result->error_code == 500) {
+        free_TransactionCheckResult(result);
+        AdaXPubType tempXpubType = g_adaXpubType;
+        TryToFixAdaXPubType();
+        xpubIndex = GetXPubIndexByPath(adaPath);
+        xpub = GetCurrentAccountPublicKey(xpubIndex);
+        result = cardano_check_tx(data, mfp, xpub);
+        if (result->error_code == 500) {
+            g_adaXpubType = tempXpubType;
+        }
+    }
     free_simple_response_c_char(path);
     return result;
 }

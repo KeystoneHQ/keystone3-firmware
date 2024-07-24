@@ -9,6 +9,7 @@ use cardano_serialization_lib::address::{
     self, Address, BaseAddress, EnterpriseAddress, RewardAddress,
 };
 
+use cardano_serialization_lib::crypto::{Ed25519KeyHash, ScriptHash};
 use cardano_serialization_lib::protocol_types::governance::{Anchor, DRepKind};
 use cardano_serialization_lib::utils::{from_bignum, BigNum};
 use cardano_serialization_lib::{
@@ -419,27 +420,61 @@ impl ParsedCardanoTx {
                 }
                 if let Some(_cert) = cert.as_drep_deregistration() {
                     let deposit = normalize_coin(from_bignum(&_cert.coin()));
+                    let (variant1, variant1_label) = match _cert.voting_credential().kind() {
+                        Ed25519KeyHash => (
+                            _cert
+                                .voting_credential()
+                                .to_keyhash()
+                                .unwrap()
+                                .to_bech32("drep")
+                                .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                            LABEL_DREP.to_string(),
+                        ),
+                        ScriptHash => (
+                            _cert
+                                .voting_credential()
+                                .to_scripthash()
+                                .unwrap()
+                                .to_bech32("")
+                                .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                            LABEL_DREP.to_string(),
+                        ),
+                    };
                     certs.push(CardanoCertificate::new(
                         "DrepDeregistration".to_string(),
-                        RewardAddress::new(network_id, &_cert.voting_credential())
-                            .to_address()
-                            .to_bech32(None)
-                            .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                        variant1,
                         Some(deposit),
-                        LABEL_ADDRESS.to_string(),
+                        variant1_label,
                         Some(LABEL_DEPOSIT.to_string()),
                     ));
                 }
                 if let Some(_cert) = cert.as_drep_registration() {
                     let deposit = normalize_coin(from_bignum(&_cert.coin()));
+                    let (variant1, variant1_label) = match _cert.voting_credential().kind() {
+                        Ed25519KeyHash => (
+                            _cert
+                                .voting_credential()
+                                .to_keyhash()
+                                .unwrap()
+                                .to_bech32("drep")
+                                .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                            LABEL_DREP.to_string(),
+                        ),
+                        ScriptHash => (
+                            _cert
+                                .voting_credential()
+                                .to_scripthash()
+                                .unwrap()
+                                .to_bech32("")
+                                .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                            LABEL_DREP.to_string(),
+                        ),
+                    };
                     certs.push(CardanoCertificate::new(
                         "DrepRegistration".to_string(),
-                        RewardAddress::new(network_id, &_cert.voting_credential())
-                            .to_address()
-                            .to_bech32(None)
-                            .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                        variant1,
                         Some(deposit),
-                        LABEL_ADDRESS.to_string(),
+                        variant1_label,
                         Some(LABEL_DEPOSIT.to_string()),
                     ));
                 }

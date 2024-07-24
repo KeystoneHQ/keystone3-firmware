@@ -103,6 +103,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
     {WALLET_LIST_RABBY, "Rabby", &walletRabby},
     {WALLET_LIST_SAFE, "Safe", &walletSafe},
+    {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
     {WALLET_LIST_IMTOKEN, "imToken", &walletImToken},
@@ -614,9 +615,8 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
     CoinWalletInfo_t *coin = &g_coinWalletBtn[0];
-    for (size_t i = 0; i < CHAIN_BUTT; i++)
-    {
-        if(g_coinWalletBtn[i].index == index) {
+    for (size_t i = 0; i < CHAIN_BUTT; i++) {
+        if (g_coinWalletBtn[i].index == index) {
             coin = &g_coinWalletBtn[i];
             break;
         }

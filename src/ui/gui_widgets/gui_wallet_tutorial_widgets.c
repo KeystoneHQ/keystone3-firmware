@@ -259,6 +259,15 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_KEYSTONE].items[0].url = _("connect_keystone_link");
     g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrTitle = _("connect_keystone_title");
     g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrUrl = _("connect_keystone_link");
+
+
+    //WALLET_LIST_SUIET
+    g_tutorials[WALLET_LIST_SUIET].len = 1;
+    g_tutorials[WALLET_LIST_SUIET].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_SUIET].items[0].walletName = _("connect_suiet_title");
+    g_tutorials[WALLET_LIST_SUIET].items[0].url = _("connect_suiet_link");
+    g_tutorials[WALLET_LIST_SUIET].items[0].qrTitle = _("connect_suiet_title");
+    g_tutorials[WALLET_LIST_SUIET].items[0].qrUrl = _("connect_suiet_link");
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;
     g_tutorials[WALLET_LIST_BLUE].desc = _("connect_wallet_desc");

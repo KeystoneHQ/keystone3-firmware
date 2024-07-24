@@ -49,6 +49,7 @@ WalletListItem_t g_walletListArray[] = {
     // {WALLET_LIST_YOROI, &walletListYoroi, true},
     {WALLET_LIST_TYPHON, &walletListTyphon, true},
     {WALLET_LIST_SAFE, &walletListSafe, true},
+    {WALLET_LIST_SUIET, &walletListSuiet, true},
     {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet, true},
     {WALLET_LIST_XRP_TOOLKIT, &walletListXRPToolkit, true},
     {WALLET_LIST_PETRA, &walletListPetra, true},
@@ -147,6 +148,12 @@ static const lv_img_dsc_t *g_fewchaCoinArray[FEWCHA_COINS_BUTT] = {
     &coinApt,
     &coinSui,
 };
+
+static const lv_img_dsc_t *g_suietCoinArray[1] = {
+    &coinSui,
+};
+
+
 
 static const lv_img_dsc_t *g_petraCoinArray[1] = {
     &coinApt,
@@ -863,6 +870,19 @@ static void AddXBullCoins(void)
     lv_img_set_pivot(img, 0, 0);
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
 }
+static void AddSuietCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 1; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_suietCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 
 static void AddFewchaCoins()
 {
@@ -1034,6 +1054,14 @@ UREncodeResult *GuiGetFewchaData(void)
     }
     return GuiGetFewchaDataByCoin(coin);
 }
+
+UREncodeResult *GuiGetSuietData(void)
+{
+
+    GuiChainCoinType coin = CHAIN_SUI;
+    return GuiGetFewchaDataByCoin(coin);
+}
+
 UREncodeResult *GuiGetXrpToolkitData(void)
 {
     return GuiGetXrpToolkitDataByIndex(
@@ -1154,6 +1182,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_TYPHON:
         func = GuiGetADAData;
         AddChainAddress();
+        break;
+    case WALLET_LIST_SUIET:
+        func = GuiGetSuietData;
+        AddSuietCoins();
         break;
     case WALLET_LIST_FEWCHA:
         if (!g_isCoinReselected) {

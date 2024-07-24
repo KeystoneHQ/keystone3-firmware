@@ -452,13 +452,13 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
+    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     if (bip39Data->forget) {
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
         LogoutCurrentAccount();
         CloseUsb();
     }
-    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     GetExistAccountNum(&accountCnt);
     printf("after accountCnt = %d\n", accountCnt);
 }
@@ -609,13 +609,13 @@ static int32_t ModelTonCalWriteEntropyAndSeed(const void *inData, uint32_t inDat
     ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
+    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     if (tonData->forget) {
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
         LogoutCurrentAccount();
         CloseUsb();
     }
-    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     GetExistAccountNum(&accountCnt);
     printf("after accountCnt = %d\n", accountCnt);
 }
@@ -938,13 +938,13 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
+    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     if (slip39->forget) {
         SetWalletName(accountInfo.walletName);
         SetWalletIconIndex(accountInfo.iconIndex);
         LogoutCurrentAccount();
         CloseUsb();
     }
-    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     CLEAR_ARRAY(ems);
     CLEAR_ARRAY(emsBak);
     GetExistAccountNum(&accountCnt);

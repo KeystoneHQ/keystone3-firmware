@@ -1,3 +1,11 @@
+## 1.5.8（2024-07-24）
+
+### What's new
+
+1. Multi-Coin wallet supported for TON through integration with Tonkeeper
+
+
+
 ## 1.5.6（2024-07-12）
 
 ### What's new

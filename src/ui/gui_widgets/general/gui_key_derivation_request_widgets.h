@@ -5,6 +5,11 @@
 #include "stdint.h"
 #include "stdbool.h"
 
+typedef enum CardanoAccountType {
+    Standard,
+    Ledger,
+} CardanoAccountType;
+
 void GuiKeyDerivationRequestInit();
 void GuiKeyDerivationRequestDeInit();
 void GuiKeyDerivationRequestRefresh();

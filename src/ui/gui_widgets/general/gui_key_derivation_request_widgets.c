@@ -389,12 +389,12 @@ static void UpdateConfirmBtn(void)
         lv_obj_set_style_bg_opa(g_derivationPathConfirmBtn, LV_OPA_COVER,
                                 LV_PART_MAIN);
         lv_obj_set_style_text_opa(lv_obj_get_child(g_derivationPathConfirmBtn, 0),
-                                LV_OPA_COVER, LV_PART_MAIN);
+                                  LV_OPA_COVER, LV_PART_MAIN);
     } else {
         lv_obj_set_style_bg_opa(g_derivationPathConfirmBtn, LV_OPA_30,
                                 LV_PART_MAIN);
         lv_obj_set_style_text_opa(lv_obj_get_child(g_derivationPathConfirmBtn, 0),
-                                LV_OPA_30, LV_PART_MAIN);
+                                  LV_OPA_30, LV_PART_MAIN);
     }
 }
 
@@ -419,9 +419,9 @@ static void CloseDerivationHandler(lv_event_t *e)
     GUI_DEL_OBJ(g_derivationPathCont);
     SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
     SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex,
-            NULL);
+              NULL);
     SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
-                    OpenMoreHandler, &g_walletIndex);
+                      OpenMoreHandler, &g_walletIndex);
 }
 
 static bool IsCardano()
@@ -442,11 +442,11 @@ static void ConfirmDerivationHandler(lv_event_t *e)
         GuiKeyDerivationRequestNextTile();
         GUI_DEL_OBJ(g_derivationPathCont);
         SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler,
-                        NULL);
+                         NULL);
         SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex,
-                NULL);
+                  NULL);
         SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
-                        OpenMoreHandler, &g_walletIndex);
+                          OpenMoreHandler, &g_walletIndex);
     }
 }
 
@@ -461,25 +461,25 @@ static void GetCardanoEgAddress(void)
     xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0);
     SimpleResponse_c_char *result = cardano_get_base_address(xPub, 0, 1);
     CutAndFormatString(g_derivationPathAddr[Standard][0], BUFFER_SIZE_128,
-                    result->data, 24);
+                       result->data, 24);
     free_simple_response_c_char(result);
 
     xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_1);
     result = cardano_get_base_address(xPub, 1, 1);
     CutAndFormatString(g_derivationPathAddr[Standard][1], BUFFER_SIZE_128,
-                    result->data, 24);
+                       result->data, 24);
     free_simple_response_c_char(result);
 
     xPub = GetCurrentAccountPublicKey(XPUB_TYPE_LEDGER_ADA_0);
     result = cardano_get_base_address(xPub, 0, 1);
     CutAndFormatString(g_derivationPathAddr[Ledger][0], BUFFER_SIZE_128,
-                    result->data, 24);
+                       result->data, 24);
     free_simple_response_c_char(result);
 
     xPub = GetCurrentAccountPublicKey(XPUB_TYPE_LEDGER_ADA_1);
     result = cardano_get_base_address(xPub, 1, 1);
     CutAndFormatString(g_derivationPathAddr[Ledger][1], BUFFER_SIZE_128,
-                    result->data, 24);
+                       result->data, 24);
     free_simple_response_c_char(result);
 }
 
@@ -558,14 +558,14 @@ static void OpenDerivationPath()
     SetCurrentSelectedIndex(g_currentCardanoPathIndex[GetCurrentAccountIndex()]);
 
     lv_obj_t *bgCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()),
-                                        lv_obj_get_height(lv_scr_act()) -
-                                        GUI_MAIN_AREA_OFFSET);
+                                          lv_obj_get_height(lv_scr_act()) -
+                                          GUI_MAIN_AREA_OFFSET);
 
     lv_obj_align(bgCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *scrollCont = GuiCreateContainerWithParent(
-                            bgCont, lv_obj_get_width(lv_scr_act()),
-                            lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET - 114);
+                               bgCont, lv_obj_get_width(lv_scr_act()),
+                               lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET - 114);
     lv_obj_align(scrollCont, LV_ALIGN_DEFAULT, 0, 0);
     lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_SCROLLABLE);
@@ -626,11 +626,11 @@ static void OpenDerivationPath()
     g_egCont = egCont;
     ShowEgAddressCont(g_egCont);
     SetMidBtnLabel(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MID_LABEL,
-                _("derivation_path_change"));
+                   _("derivation_path_change"));
     SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN,
-                    CloseDerivationHandler, NULL);
+                     CloseDerivationHandler, NULL);
     SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL,
-                    NULL);
+                      NULL);
     GUI_DEL_OBJ(g_openMoreHintBox);
 
     lv_obj_t *tmCont = GuiCreateContainerWithParent(bgCont, 480, 114);
@@ -676,8 +676,8 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
     lv_obj_t *derivationBtn = GuiCreateSelectButton(g_openMoreHintBox, _("derivation_path_change"),
-                                    &imgPath, ChangeDerivationPathHandler, wallet,
-                                    true);
+                              &imgPath, ChangeDerivationPathHandler, wallet,
+                              true);
     lv_obj_align(derivationBtn, LV_ALIGN_BOTTOM_MID, 0, -120);
 }
 

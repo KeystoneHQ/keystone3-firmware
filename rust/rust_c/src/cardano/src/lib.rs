@@ -40,6 +40,14 @@ pub mod address;
 pub mod structs;
 
 #[no_mangle]
+pub extern "C" fn cardano_catalyst_xpub(ptr: PtrUR) -> Ptr<SimpleResponse<c_char>> {
+    let cardano_catalyst_request =
+        extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
+    let xpub = cardano_catalyst_request.get_stake_pub();
+    SimpleResponse::success(convert_c_char(hex::encode(xpub))).simple_c_ptr()
+}
+
+#[no_mangle]
 pub extern "C" fn cardano_check_catalyst(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,

@@ -179,12 +179,33 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     return result;
 }
 
+static AdaXPubType GetXPubTypeByXPub(char *xpub)
+{
+    AdaXPubType type = STANDARD_ADA;
+    for (int i = XPUB_TYPE_ADA_0; i <= XPUB_TYPE_LEDGER_ADA_23; i++) {
+        char *tempXpub = GetCurrentAccountPublicKey(i);
+        if (strcmp(xpub, tempXpub) == 0) {
+            type = i <= XPUB_TYPE_ADA_23 ? STANDARD_ADA : LEDGER_ADA;
+            break;
+        }
+    }
+    return type;
+}
+
 PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     PtrT_TransactionCheckResult result = cardano_check_catalyst(data, mfp);
+    if (result->error_code == 0) {
+        SimpleResponse_c_char *xpub = cardano_catalyst_xpub(data);
+        AdaXPubType type = GetXPubTypeByXPub(xpub->data);
+        if (type != g_adaXpubType) {
+            TryToFixAdaXPubType();
+        }
+        free_simple_response_c_char(xpub);
+    }
     return result;
 }
 

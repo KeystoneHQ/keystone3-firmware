@@ -290,7 +290,7 @@ UREncodeResult *GuiGetADADataByIndex(uint16_t index)
 {
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
-    char* xpub = GetCurrentAccountPublicKey(GetAdaXPubType(index));
+    char* xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
     char path[BUFFER_SIZE_32] = {0};
     sprintf(path, "1852'/1815'/%u'", index);
     ExtendedPublicKey xpubs[1];

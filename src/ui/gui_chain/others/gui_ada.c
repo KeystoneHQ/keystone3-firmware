@@ -27,6 +27,11 @@ void SetAdaXPubType(AdaXPubType type)
     g_adaXpubType = type;
 }
 
+AdaXPubType GetAdaXPubType(void)
+{
+    return g_adaXpubType;
+}
+
 static uint8_t GetXPubIndexByPath(char *path);
 
 void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
@@ -467,7 +472,7 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     return encodeResult;
 }
 
-ChainType GetAdaXPubType(uint16_t index)
+ChainType GetAdaXPubTypeByIndex(uint16_t index)
 {
     switch (index) {
     case 0:
@@ -527,7 +532,7 @@ char *GuiGetADABaseAddressByIndex(uint16_t index)
 {
     char *xPub = NULL;
     SimpleResponse_c_char *result = NULL;
-    xPub = GetCurrentAccountPublicKey(GetAdaXPubType(index));
+    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
     result = cardano_get_base_address(xPub, 0, 1);
     if (result->error_code == 0) {
         strcpy(g_adaBaseAddr, result->data);
@@ -539,52 +544,52 @@ char *GuiGetADABaseAddressByIndex(uint16_t index)
 static uint8_t GetXPubIndexByPath(char *path)
 {
     if (strcmp("1852'/1815'/1'", path) == 0)
-        return GetAdaXPubType(1);
+        return GetAdaXPubTypeByIndex(1);
     if (strcmp("1852'/1815'/2'", path) == 0)
-        return GetAdaXPubType(2);
+        return GetAdaXPubTypeByIndex(2);
     if (strcmp("1852'/1815'/3'", path) == 0)
-        return GetAdaXPubType(3);
+        return GetAdaXPubTypeByIndex(3);
     if (strcmp("1852'/1815'/4'", path) == 0)
-        return GetAdaXPubType(4);
+        return GetAdaXPubTypeByIndex(4);
     if (strcmp("1852'/1815'/5'", path) == 0)
-        return GetAdaXPubType(5);
+        return GetAdaXPubTypeByIndex(5);
     if (strcmp("1852'/1815'/6'", path) == 0)
-        return GetAdaXPubType(6);
+        return GetAdaXPubTypeByIndex(6);
     if (strcmp("1852'/1815'/7'", path) == 0)
-        return GetAdaXPubType(7);
+        return GetAdaXPubTypeByIndex(7);
     if (strcmp("1852'/1815'/8'", path) == 0)
-        return GetAdaXPubType(8);
+        return GetAdaXPubTypeByIndex(8);
     if (strcmp("1852'/1815'/9'", path) == 0)
-        return GetAdaXPubType(9);
+        return GetAdaXPubTypeByIndex(9);
     if (strcmp("1852'/1815'/10'", path) == 0)
-        return GetAdaXPubType(10);
+        return GetAdaXPubTypeByIndex(10);
     if (strcmp("1852'/1815'/11'", path) == 0)
-        return GetAdaXPubType(11);
+        return GetAdaXPubTypeByIndex(11);
     if (strcmp("1852'/1815'/12'", path) == 0)
-        return GetAdaXPubType(12);
+        return GetAdaXPubTypeByIndex(12);
     if (strcmp("1852'/1815'/13'", path) == 0)
-        return GetAdaXPubType(13);
+        return GetAdaXPubTypeByIndex(13);
     if (strcmp("1852'/1815'/14'", path) == 0)
-        return GetAdaXPubType(14);
+        return GetAdaXPubTypeByIndex(14);
     if (strcmp("1852'/1815'/15'", path) == 0)
-        return GetAdaXPubType(15);
+        return GetAdaXPubTypeByIndex(15);
     if (strcmp("1852'/1815'/16'", path) == 0)
-        return GetAdaXPubType(16);
+        return GetAdaXPubTypeByIndex(16);
     if (strcmp("1852'/1815'/17'", path) == 0)
-        return GetAdaXPubType(17);
+        return GetAdaXPubTypeByIndex(17);
     if (strcmp("1852'/1815'/18'", path) == 0)
-        return GetAdaXPubType(18);
+        return GetAdaXPubTypeByIndex(18);
     if (strcmp("1852'/1815'/19'", path) == 0)
-        return GetAdaXPubType(19);
+        return GetAdaXPubTypeByIndex(19);
     if (strcmp("1852'/1815'/20'", path) == 0)
-        return GetAdaXPubType(20);
+        return GetAdaXPubTypeByIndex(20);
     if (strcmp("1852'/1815'/21'", path) == 0)
-        return GetAdaXPubType(21);
+        return GetAdaXPubTypeByIndex(21);
     if (strcmp("1852'/1815'/22'", path) == 0)
-        return GetAdaXPubType(22);
+        return GetAdaXPubTypeByIndex(22);
     if (strcmp("1852'/1815'/23'", path) == 0)
-        return GetAdaXPubType(23);
-    return GetAdaXPubType(0);
+        return GetAdaXPubTypeByIndex(23);
+    return GetAdaXPubTypeByIndex(0);
 }
 
 void GetCatalystNonce(void *indata, void *param, uint32_t maxLen)

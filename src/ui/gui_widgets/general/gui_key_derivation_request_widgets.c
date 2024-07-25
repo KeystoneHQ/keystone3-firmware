@@ -8,6 +8,7 @@
 #include "gui_button.h"
 #include "gui_hintbox.h"
 #include "gui_global_resources.h"
+#include "gui_obj.h"
 
 typedef struct KeyDerivationWidget {
     uint8_t currentTile;
@@ -35,9 +36,9 @@ static WALLET_LIST_INDEX_ENUM g_walletIndex;
 static lv_obj_t *g_openMoreHintBox;
 static lv_obj_t *g_derivationPathCont = NULL;
 static lv_obj_t *g_derivationPathConfirmBtn = NULL;
-static lv_obj_t *g_derivationCheck[2];
-static CardanoAccountType g_currentCardanoPathIndex[2] = {Standard, Ledger};
-static uint32_t g_currentSelectedPathIndex[2] = {0};
+static lv_obj_t *g_derivationTypeCheck[2] = {0, 0};
+static AdaXPubType g_currentCardanoPathIndex[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
+static uint32_t g_currentSelectedPathIndex[3] = {0};
 static lv_obj_t *g_egCont = NULL;
 static lv_obj_t *g_egAddressIndex[2];
 static lv_obj_t *g_egAddress[2];
@@ -138,13 +139,120 @@ void GuiKeyDerivationRequestDeInit()
     GuiAnimatingQRCodeDestroyTimer();
     FreeKeyDerivationRequestMemory();
 }
+
+static void SelectDerivationHandler(lv_event_t *e)
+{
+    lv_obj_t *newCheckBox = lv_event_get_user_data(e);
+    for (int i = 0; i < 2; i++) {
+        if (newCheckBox == g_derivationTypeCheck[i]) {
+            lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
+            SetCurrentSelectedIndex(i);
+            ShowEgAddressCont(g_egCont);
+            UpdateConfirmBtn();
+        } else {
+            lv_obj_clear_state(g_derivationTypeCheck[i], LV_STATE_CHECKED);
+        }
+    }
+}
+
+static void OpenDerivationPath()
+{
+    if (IsCardano()) {
+        SetAccountType(GetAdaXPubType());
+        SetCurrentSelectedIndex(GetAdaXPubType());
+    }
+
+    lv_obj_t *bgCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()),
+                                          lv_obj_get_height(lv_scr_act()) -
+                                          GUI_MAIN_AREA_OFFSET);
+
+    lv_obj_align(bgCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
+
+    lv_obj_t *scrollCont = GuiCreateContainerWithParent(
+                               bgCont, lv_obj_get_width(lv_scr_act()),
+                               lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET - 114);
+    lv_obj_align(scrollCont, LV_ALIGN_DEFAULT, 0, 0);
+    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_t *label =
+        GuiCreateNoticeLabel(scrollCont, _("derivation_path_select_ada"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
+
+    lv_obj_t *cont = GuiCreateContainerWithParent(scrollCont, 408, 205);
+    lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
+    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
+    for (int i = 0; i < 2; i++) {
+        lv_obj_t *accountType =
+            GuiCreateTextLabel(cont, GetChangeDerivationAccountType(i));
+        lv_obj_t *path = GuiCreateIllustrateLabel(cont, "m/1852'/1815'/#F5870A X#'");
+        lv_label_set_recolor(path, true);
+        lv_obj_t *checkBox = GuiCreateSingleCheckBox(cont, _(""));
+        g_derivationTypeCheck[i] = checkBox;
+        lv_obj_set_size(g_derivationTypeCheck[i], 45, 45);
+        if (i == GetCurrentSelectedIndex()) {
+            lv_obj_add_state(g_derivationTypeCheck[i], LV_STATE_CHECKED);
+        }
+        GuiButton_t table[] = {
+            {
+                .obj = accountType,
+                .align = LV_ALIGN_DEFAULT,
+                .position = {24, 16},
+            },
+            {
+                .obj = path,
+                .align = LV_ALIGN_DEFAULT,
+                .position = {24, 56},
+            },
+            {
+                .obj = g_derivationTypeCheck[i],
+                .align = LV_ALIGN_RIGHT_MID,
+                .position = {-24, 0},
+            },
+        };
+        lv_obj_t *button =
+            GuiCreateButton(cont, 408, 102, table, NUMBER_OF_ARRAYS(table),
+                            SelectDerivationHandler, g_derivationTypeCheck[i]);
+        lv_obj_align(button, LV_ALIGN_TOP_MID, 0, i * 102);
+        if (i != 0) {
+            static lv_point_t points[2] = {{0, 0}, {360, 0}};
+            lv_obj_t *line = (lv_obj_t *)GuiCreateLine(cont, points, 2);
+            lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, i * 102);
+        }
+    }
+
+    lv_obj_t *egCont = GuiCreateContainerWithParent(scrollCont, 408, 186);
+    lv_obj_align_to(egCont, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
+    lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(egCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
+    lv_obj_set_style_radius(egCont, 24, LV_PART_MAIN);
+    g_egCont = egCont;
+    ShowEgAddressCont(g_egCont);
+    SetMidBtnLabel(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MID_LABEL,
+                   _("derivation_path_change"));
+    SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN,
+                     CloseDerivationHandler, NULL);
+    SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL,
+                      NULL);
+    GUI_DEL_OBJ(g_openMoreHintBox);
+
+    lv_obj_t *tmCont = GuiCreateContainerWithParent(bgCont, 480, 114);
+    lv_obj_align(tmCont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_set_style_bg_color(tmCont, BLACK_COLOR, LV_PART_MAIN);
+    lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
+    lv_obj_add_event_cb(btn, ConfirmDerivationHandler, LV_EVENT_CLICKED, NULL);
+    g_derivationPathConfirmBtn = btn;
+    UpdateConfirmBtn();
+
+    g_derivationPathCont = bgCont;
+}
+
 void GuiKeyDerivationRequestRefresh()
 {
     GuiAnimatingQRCodeControl(false);
-    if (g_derivationPathCont != NULL) {
-        GUI_DEL_OBJ(g_derivationPathCont);
-        OpenDerivationPath();
-    }
 }
 void GuiKeyDerivationRequestNextTile()
 {
@@ -198,35 +306,35 @@ static UREncodeResult *ModelGenerateSyncUR(void)
 
 static uint8_t GetXPubIndexByPath(char *path)
 {
-    if (strcmp("1852'/1815'/1'", path) == 0) return GetAdaXPubType(1);
-    if (strcmp("1852'/1815'/2'", path) == 0) return GetAdaXPubType(2);
-    if (strcmp("1852'/1815'/3'", path) == 0) return GetAdaXPubType(3);
-    if (strcmp("1852'/1815'/4'", path) == 0) return GetAdaXPubType(4);
-    if (strcmp("1852'/1815'/5'", path) == 0) return GetAdaXPubType(5);
-    if (strcmp("1852'/1815'/6'", path) == 0) return GetAdaXPubType(6);
-    if (strcmp("1852'/1815'/7'", path) == 0) return GetAdaXPubType(7);
-    if (strcmp("1852'/1815'/8'", path) == 0) return GetAdaXPubType(8);
-    if (strcmp("1852'/1815'/9'", path) == 0) return GetAdaXPubType(9);
-    if (strcmp("1852'/1815'/10'", path) == 0) return GetAdaXPubType(10);
-    if (strcmp("1852'/1815'/11'", path) == 0) return GetAdaXPubType(11);
-    if (strcmp("1852'/1815'/12'", path) == 0) return GetAdaXPubType(12);
-    if (strcmp("1852'/1815'/13'", path) == 0) return GetAdaXPubType(13);
-    if (strcmp("1852'/1815'/14'", path) == 0) return GetAdaXPubType(14);
-    if (strcmp("1852'/1815'/15'", path) == 0) return GetAdaXPubType(15);
-    if (strcmp("1852'/1815'/16'", path) == 0) return GetAdaXPubType(16);
-    if (strcmp("1852'/1815'/17'", path) == 0) return GetAdaXPubType(17);
-    if (strcmp("1852'/1815'/18'", path) == 0) return GetAdaXPubType(18);
-    if (strcmp("1852'/1815'/19'", path) == 0) return GetAdaXPubType(19);
-    if (strcmp("1852'/1815'/20'", path) == 0) return GetAdaXPubType(20);
-    if (strcmp("1852'/1815'/21'", path) == 0) return GetAdaXPubType(21);
-    if (strcmp("1852'/1815'/22'", path) == 0) return GetAdaXPubType(22);
-    if (strcmp("1852'/1815'/23'", path) == 0) return GetAdaXPubType(23);
+    if (strcmp("1852'/1815'/1'", path) == 0) return GetAdaXPubTypeByIndex(1);
+    if (strcmp("1852'/1815'/2'", path) == 0) return GetAdaXPubTypeByIndex(2);
+    if (strcmp("1852'/1815'/3'", path) == 0) return GetAdaXPubTypeByIndex(3);
+    if (strcmp("1852'/1815'/4'", path) == 0) return GetAdaXPubTypeByIndex(4);
+    if (strcmp("1852'/1815'/5'", path) == 0) return GetAdaXPubTypeByIndex(5);
+    if (strcmp("1852'/1815'/6'", path) == 0) return GetAdaXPubTypeByIndex(6);
+    if (strcmp("1852'/1815'/7'", path) == 0) return GetAdaXPubTypeByIndex(7);
+    if (strcmp("1852'/1815'/8'", path) == 0) return GetAdaXPubTypeByIndex(8);
+    if (strcmp("1852'/1815'/9'", path) == 0) return GetAdaXPubTypeByIndex(9);
+    if (strcmp("1852'/1815'/10'", path) == 0) return GetAdaXPubTypeByIndex(10);
+    if (strcmp("1852'/1815'/11'", path) == 0) return GetAdaXPubTypeByIndex(11);
+    if (strcmp("1852'/1815'/12'", path) == 0) return GetAdaXPubTypeByIndex(12);
+    if (strcmp("1852'/1815'/13'", path) == 0) return GetAdaXPubTypeByIndex(13);
+    if (strcmp("1852'/1815'/14'", path) == 0) return GetAdaXPubTypeByIndex(14);
+    if (strcmp("1852'/1815'/15'", path) == 0) return GetAdaXPubTypeByIndex(15);
+    if (strcmp("1852'/1815'/16'", path) == 0) return GetAdaXPubTypeByIndex(16);
+    if (strcmp("1852'/1815'/17'", path) == 0) return GetAdaXPubTypeByIndex(17);
+    if (strcmp("1852'/1815'/18'", path) == 0) return GetAdaXPubTypeByIndex(18);
+    if (strcmp("1852'/1815'/19'", path) == 0) return GetAdaXPubTypeByIndex(19);
+    if (strcmp("1852'/1815'/20'", path) == 0) return GetAdaXPubTypeByIndex(20);
+    if (strcmp("1852'/1815'/21'", path) == 0) return GetAdaXPubTypeByIndex(21);
+    if (strcmp("1852'/1815'/22'", path) == 0) return GetAdaXPubTypeByIndex(22);
+    if (strcmp("1852'/1815'/23'", path) == 0) return GetAdaXPubTypeByIndex(23);
     if (strcmp("M/44'/148'/0'", path) == 0) return XPUB_TYPE_STELLAR_0;
     if (strcmp("M/44'/148'/1'", path) == 0) return XPUB_TYPE_STELLAR_1;
     if (strcmp("M/44'/148'/2'", path) == 0) return XPUB_TYPE_STELLAR_2;
     if (strcmp("M/44'/148'/3'", path) == 0) return XPUB_TYPE_STELLAR_3;
     if (strcmp("M/44'/148'/4'", path) == 0) return XPUB_TYPE_STELLAR_4;
-    return GetAdaXPubType(0);
+    return GetAdaXPubTypeByIndex(0);
 }
 
 static void GuiCreateApproveWidget(lv_obj_t *parent)
@@ -378,9 +486,14 @@ static void SetAccountType(uint8_t index)
     g_currentCardanoPathIndex[GetCurrentAccountIndex()] = index;
 }
 
+static AdaXPubType GetAccountType()
+{
+    return g_currentCardanoPathIndex[GetCurrentAccountIndex()];
+}
+
 static bool IsSelectChanged(void)
 {
-    return GetCurrentSelectedIndex() != g_currentCardanoPathIndex[GetCurrentAccountIndex()];
+    return GetCurrentSelectedIndex() != GetAccountType();
 }
 
 static void UpdateConfirmBtn(void)
@@ -395,21 +508,6 @@ static void UpdateConfirmBtn(void)
                                 LV_PART_MAIN);
         lv_obj_set_style_text_opa(lv_obj_get_child(g_derivationPathConfirmBtn, 0),
                                   LV_OPA_30, LV_PART_MAIN);
-    }
-}
-
-static void SelectDerivationHandler(lv_event_t *e)
-{
-    lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-    for (int i = 0; i < 2; i++) {
-        if (newCheckBox == g_derivationCheck[i]) {
-            lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
-            SetCurrentSelectedIndex(i);
-            ShowEgAddressCont(g_egCont);
-            UpdateConfirmBtn();
-        } else {
-            lv_obj_clear_state(g_derivationCheck[i], LV_STATE_CHECKED);
-        }
     }
 }
 
@@ -435,8 +533,8 @@ static void ConfirmDerivationHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED && IsSelectChanged()) {
         if (IsCardano()) {
             SetAdaXPubType(GetCurrentSelectedIndex());
+            SetAccountType(GetAdaXPubType());
         }
-        SetAccountType(GetCurrentSelectedIndex());
         GuiAnimatingQRCodeDestroyTimer();
         GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
         GuiKeyDerivationRequestNextTile();
@@ -452,7 +550,7 @@ static void ConfirmDerivationHandler(lv_event_t *e)
 
 static char *GetChangeDerivationPathDesc(void)
 {
-    return GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC)[GetCurrentAccountIndex()];
+    return GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC)[GetCurrentSelectedIndex()];
 }
 
 static void GetCardanoEgAddress(void)
@@ -460,25 +558,25 @@ static void GetCardanoEgAddress(void)
     char *xPub = NULL, hdPath[BUFFER_SIZE_128];
     xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0);
     SimpleResponse_c_char *result = cardano_get_base_address(xPub, 0, 1);
-    CutAndFormatString(g_derivationPathAddr[Standard][0], BUFFER_SIZE_128,
+    CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][0], BUFFER_SIZE_128,
                        result->data, 24);
     free_simple_response_c_char(result);
 
     xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_1);
     result = cardano_get_base_address(xPub, 1, 1);
-    CutAndFormatString(g_derivationPathAddr[Standard][1], BUFFER_SIZE_128,
+    CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][1], BUFFER_SIZE_128,
                        result->data, 24);
     free_simple_response_c_char(result);
 
     xPub = GetCurrentAccountPublicKey(XPUB_TYPE_LEDGER_ADA_0);
     result = cardano_get_base_address(xPub, 0, 1);
-    CutAndFormatString(g_derivationPathAddr[Ledger][0], BUFFER_SIZE_128,
+    CutAndFormatString(g_derivationPathAddr[LEDGER_ADA][0], BUFFER_SIZE_128,
                        result->data, 24);
     free_simple_response_c_char(result);
 
     xPub = GetCurrentAccountPublicKey(XPUB_TYPE_LEDGER_ADA_1);
     result = cardano_get_base_address(xPub, 1, 1);
-    CutAndFormatString(g_derivationPathAddr[Ledger][1], BUFFER_SIZE_128,
+    CutAndFormatString(g_derivationPathAddr[LEDGER_ADA][1], BUFFER_SIZE_128,
                        result->data, 24);
     free_simple_response_c_char(result);
 }
@@ -511,7 +609,6 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
         egContHeight += lv_obj_get_height(label);
         prevLabel = label;
     }
-
     label = GuiCreateNoticeLabel(egCont, _("derivation_path_address_eg"));
     if (prevLabel != NULL) {
         lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
@@ -522,7 +619,6 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_update_layout(label);
     egContHeight = egContHeight + 4 + lv_obj_get_height(label);
     prevLabel = label;
-
     lv_obj_t *index = GuiCreateNoticeLabel(egCont, _("0"));
     lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
@@ -530,11 +626,9 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     egContHeight = egContHeight + 4 + lv_obj_get_height(index);
     g_egAddressIndex[0] = index;
     prevLabel = index;
-
     label = GuiCreateIllustrateLabel(egCont, "");
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     g_egAddress[0] = label;
-
     index = GuiCreateNoticeLabel(egCont, _("1"));
     lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
     lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
@@ -542,111 +636,20 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     egContHeight = egContHeight + 4 + lv_obj_get_height(index);
     g_egAddressIndex[1] = index;
     prevLabel = index;
-
     label = GuiCreateIllustrateLabel(egCont, "");
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     g_egAddress[1] = label;
-
     egContHeight += 12;
     lv_obj_set_height(egCont, egContHeight);
     GetCardanoEgAddress();
     UpdateCardanoEgAddress(GetCurrentSelectedIndex());
 }
 
-static void OpenDerivationPath()
-{
-    SetCurrentSelectedIndex(g_currentCardanoPathIndex[GetCurrentAccountIndex()]);
-
-    lv_obj_t *bgCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()),
-                                          lv_obj_get_height(lv_scr_act()) -
-                                          GUI_MAIN_AREA_OFFSET);
-
-    lv_obj_align(bgCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-
-    lv_obj_t *scrollCont = GuiCreateContainerWithParent(
-                               bgCont, lv_obj_get_width(lv_scr_act()),
-                               lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET - 114);
-    lv_obj_align(scrollCont, LV_ALIGN_DEFAULT, 0, 0);
-    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_SCROLLABLE);
-
-    lv_obj_t *label =
-        GuiCreateNoticeLabel(scrollCont, _("derivation_path_select_ada"));
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
-
-    lv_obj_t *cont = GuiCreateContainerWithParent(scrollCont, 408, 205);
-    lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
-    lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
-    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
-    for (int i = 0; i < 2; i++) {
-        lv_obj_t *accountType =
-            GuiCreateTextLabel(cont, GetChangeDerivationAccountType(i));
-        lv_obj_t *path = GuiCreateIllustrateLabel(cont, "m/1852'/1815'/#F5870A X#'");
-        lv_label_set_recolor(path, true);
-        lv_obj_t *checkBox = GuiCreateSingleCheckBox(cont, _(""));
-        lv_obj_set_size(checkBox, 45, 45);
-        g_derivationCheck[i] = checkBox;
-        if (i == GetCurrentSelectedIndex()) {
-            lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-        }
-        GuiButton_t table[] = {
-            {
-                .obj = accountType,
-                .align = LV_ALIGN_DEFAULT,
-                .position = {24, 16},
-            },
-            {
-                .obj = path,
-                .align = LV_ALIGN_DEFAULT,
-                .position = {24, 56},
-            },
-            {
-                .obj = checkBox,
-                .align = LV_ALIGN_RIGHT_MID,
-                .position = {-24, 0},
-            },
-        };
-        lv_obj_t *button =
-            GuiCreateButton(cont, 408, 102, table, NUMBER_OF_ARRAYS(table),
-                            SelectDerivationHandler, g_derivationCheck[i]);
-        lv_obj_align(button, LV_ALIGN_TOP_MID, 0, i * 102);
-        if (i != 0) {
-            static lv_point_t points[2] = {{0, 0}, {360, 0}};
-            lv_obj_t *line = (lv_obj_t *)GuiCreateLine(cont, points, 2);
-            lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, i * 102);
-        }
-    }
-
-    lv_obj_t *egCont = GuiCreateContainerWithParent(scrollCont, 408, 186);
-    lv_obj_align_to(egCont, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
-    lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(egCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
-    lv_obj_set_style_radius(egCont, 24, LV_PART_MAIN);
-    g_egCont = egCont;
-    ShowEgAddressCont(g_egCont);
-    SetMidBtnLabel(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MID_LABEL,
-                   _("derivation_path_change"));
-    SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN,
-                     CloseDerivationHandler, NULL);
-    SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL,
-                      NULL);
-    GUI_DEL_OBJ(g_openMoreHintBox);
-
-    lv_obj_t *tmCont = GuiCreateContainerWithParent(bgCont, 480, 114);
-    lv_obj_align(tmCont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
-    lv_obj_set_style_bg_color(tmCont, BLACK_COLOR, LV_PART_MAIN);
-    lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
-    lv_obj_add_event_cb(btn, ConfirmDerivationHandler, LV_EVENT_CLICKED, NULL);
-    g_derivationPathConfirmBtn = btn;
-    UpdateConfirmBtn();
-
-    g_derivationPathCont = bgCont;
-}
-
 static void ChangeDerivationPathHandler(lv_event_t *e)
 {
+    if (g_derivationPathCont != NULL) {
+        GUI_DEL_OBJ(g_derivationPathCont);
+    }
     OpenDerivationPath();
     QRCodePause(true);
 }

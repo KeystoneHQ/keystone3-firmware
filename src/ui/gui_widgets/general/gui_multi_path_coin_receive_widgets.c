@@ -167,10 +167,10 @@ static uint32_t g_selectType = 0;
 static uint8_t g_currentAccountIndex = 0;
 static uint32_t g_ethSelectIndex[3] = {0};
 static uint32_t g_solSelectIndex[3] = {0};
-static uint32_t g_adaSelectIndex[2] = {0};
+static uint32_t g_adaSelectIndex[3] = {0};
 static uint32_t g_ethPathIndex[3] = {0};
 static uint32_t g_solPathIndex[3] = {0};
-static uint32_t g_adaPathIndex[2] = {0};
+static uint32_t g_adaPathIndex[3] = {0};
 static PageWidget_t *g_pageWidget;
 static HOME_WALLET_CARD_ENUM g_chainCard;
 static lv_obj_t *g_derivationPathDescLabel = NULL;
@@ -1289,7 +1289,7 @@ static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t 
 {
     char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
     SimpleResponse_c_char *result = NULL;
-    xPub = GetCurrentAccountPublicKey(GetAdaXPubType(index));
+    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
     snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", index);
     switch (type) {
     case 1:

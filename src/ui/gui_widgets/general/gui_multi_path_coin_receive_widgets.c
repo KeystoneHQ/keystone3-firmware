@@ -197,6 +197,9 @@ static void InitDerivationPathDesc(uint8_t chain)
 void GuiMultiPathCoinReceiveInit(uint8_t chain)
 {
     InitDerivationPathDesc(chain);
+    if (chain == HOME_WALLET_CARD_ADA) {
+        SetPathIndex(GetAdaXPubType());
+    }
     g_chainCard = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
     g_selectIndex = GetCurrentSelectIndex();

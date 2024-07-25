@@ -7,6 +7,8 @@
 #include "user_memory.h"
 #include "gui_button.h"
 #include "gui_hintbox.h"
+#include "gui_global_resources.h"
+#include "gui_obj.h"
 
 typedef struct KeyDerivationWidget {
     uint8_t currentTile;
@@ -32,6 +34,16 @@ static QRHardwareCallData *g_callData;
 static Response_QRHardwareCallData *g_response;
 static WALLET_LIST_INDEX_ENUM g_walletIndex;
 static lv_obj_t *g_openMoreHintBox;
+static lv_obj_t *g_derivationPathCont = NULL;
+static lv_obj_t *g_derivationPathConfirmBtn = NULL;
+static lv_obj_t *g_derivationTypeCheck[2] = {0, 0};
+static AdaXPubType g_currentCardanoPathIndex[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
+static uint32_t g_currentSelectedPathIndex[3] = {0};
+static lv_obj_t *g_egCont = NULL;
+static lv_obj_t *g_egAddressIndex[2];
+static lv_obj_t *g_egAddress[2];
+static char g_derivationPathAddr[2][2][BUFFER_SIZE_128];
+
 static void RecalcCurrentWalletIndex(char *origin);
 
 static void GuiCreateApproveWidget(lv_obj_t *parent);
@@ -39,38 +51,49 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent);
 static void OnApproveHandler(lv_event_t *e);
 static void OnReturnHandler(lv_event_t *e);
 static void ModelParseQRHardwareCall();
-#ifndef COMPILE_SIMULATOR
 static UREncodeResult *ModelGenerateSyncUR(void);
-#endif
 static uint8_t GetXPubIndexByPath(char *path);
 static void OpenTutorialHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
 
+static void QRCodePause(bool pause);
+static const char *GetChangeDerivationAccountType(int i);
+static void SetCurrentSelectedIndex(uint8_t index);
+static uint32_t GetCurrentSelectedIndex();
+static void SelectDerivationHandler(lv_event_t *e);
+static void CloseDerivationHandler(lv_event_t *e);
+static void ConfirmDerivationHandler(lv_event_t *e);
+static char *GetChangeDerivationPathDesc(void);
+static void GetCardanoEgAddress(void);
+static void UpdateCardanoEgAddress(uint8_t index);
+static void ShowEgAddressCont(lv_obj_t *egCont);
+static void OpenDerivationPath();
+static void ChangeDerivationPathHandler(lv_event_t *e);
+static void UpdateConfirmBtn(void);
+static bool IsSelectChanged(void);
+static void SetAccountType(uint8_t index);
+static bool IsCardano();
+
 void GuiSetKeyDerivationRequestData(void *urResult, void *multiResult, bool is_multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = multiResult;
     g_isMulti = is_multi;
     g_data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-#endif
 }
 
 void FreeKeyDerivationRequestMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     if (g_response != NULL) {
         free_Response_QRHardwareCallData(g_response);
         g_response = NULL;
     }
-#endif
 }
 
 static void RecalcCurrentWalletIndex(char *origin)
 {
-#ifndef COMPILE_SIMULATOR
     if (strcmp("eternl", origin) == 0) {
         g_walletIndex = WALLET_LIST_ETERNL;
     } else if (strcmp("Typhon Extension", origin) == 0) {
@@ -78,7 +101,6 @@ static void RecalcCurrentWalletIndex(char *origin)
     } else {
         g_walletIndex = WALLET_LIST_ETERNL;
     }
-#endif
 }
 
 void GuiKeyDerivationRequestInit()
@@ -113,9 +135,120 @@ void GuiKeyDerivationRequestInit()
 void GuiKeyDerivationRequestDeInit()
 {
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
+    GUI_DEL_OBJ(g_derivationPathCont);
     GuiAnimatingQRCodeDestroyTimer();
     FreeKeyDerivationRequestMemory();
 }
+
+static void SelectDerivationHandler(lv_event_t *e)
+{
+    lv_obj_t *newCheckBox = lv_event_get_user_data(e);
+    uint8_t index = 0;
+    if (newCheckBox == g_derivationTypeCheck[1]) {
+        index = 1;
+    }
+    lv_obj_add_state(g_derivationTypeCheck[index], LV_STATE_CHECKED);
+    lv_obj_clear_state(g_derivationTypeCheck[!index], LV_STATE_CHECKED);
+    SetCurrentSelectedIndex(index);
+    ShowEgAddressCont(g_egCont);
+    UpdateConfirmBtn();
+}
+
+static void OpenDerivationPath()
+{
+    if (IsCardano()) {
+        SetAccountType(GetAdaXPubType());
+        SetCurrentSelectedIndex(GetAdaXPubType());
+    }
+
+    lv_obj_t *bgCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()),
+                                          lv_obj_get_height(lv_scr_act()) -
+                                          GUI_MAIN_AREA_OFFSET);
+
+    lv_obj_align(bgCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
+
+    lv_obj_t *scrollCont = GuiCreateContainerWithParent(
+                               bgCont, lv_obj_get_width(lv_scr_act()),
+                               lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET - 114);
+    lv_obj_align(scrollCont, LV_ALIGN_DEFAULT, 0, 0);
+    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_t *label =
+        GuiCreateNoticeLabel(scrollCont, _("derivation_path_select_ada"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
+
+    lv_obj_t *cont = GuiCreateContainerWithParent(scrollCont, 408, 205);
+    lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 84);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
+    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
+    for (int i = 0; i < 2; i++) {
+        lv_obj_t *accountType =
+            GuiCreateTextLabel(cont, GetChangeDerivationAccountType(i));
+        lv_obj_t *path = GuiCreateIllustrateLabel(cont, "m/1852'/1815'/#F5870A X#'");
+        lv_label_set_recolor(path, true);
+        lv_obj_t *checkBox = GuiCreateSingleCheckBox(cont, _(""));
+        g_derivationTypeCheck[i] = checkBox;
+        lv_obj_set_size(g_derivationTypeCheck[i], 45, 45);
+        if (i == GetCurrentSelectedIndex()) {
+            lv_obj_add_state(g_derivationTypeCheck[i], LV_STATE_CHECKED);
+        }
+        GuiButton_t table[] = {
+            {
+                .obj = accountType,
+                .align = LV_ALIGN_DEFAULT,
+                .position = {24, 16},
+            },
+            {
+                .obj = path,
+                .align = LV_ALIGN_DEFAULT,
+                .position = {24, 56},
+            },
+            {
+                .obj = g_derivationTypeCheck[i],
+                .align = LV_ALIGN_RIGHT_MID,
+                .position = {-24, 0},
+            },
+        };
+        lv_obj_t *button =
+            GuiCreateButton(cont, 408, 102, table, NUMBER_OF_ARRAYS(table),
+                            SelectDerivationHandler, g_derivationTypeCheck[i]);
+        lv_obj_align(button, LV_ALIGN_TOP_MID, 0, i * 102);
+        if (i != 0) {
+            static lv_point_t points[2] = {{0, 0}, {360, 0}};
+            lv_obj_t *line = (lv_obj_t *)GuiCreateLine(cont, points, 2);
+            lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, i * 102);
+        }
+    }
+
+    lv_obj_t *egCont = GuiCreateContainerWithParent(scrollCont, 408, 186);
+    lv_obj_align_to(egCont, cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
+    lv_obj_set_style_bg_color(egCont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(egCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
+    lv_obj_set_style_radius(egCont, 24, LV_PART_MAIN);
+    g_egCont = egCont;
+    ShowEgAddressCont(g_egCont);
+    SetMidBtnLabel(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MID_LABEL,
+                   _("derivation_path_change"));
+    SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN,
+                     CloseDerivationHandler, NULL);
+    SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL,
+                      NULL);
+    GUI_DEL_OBJ(g_openMoreHintBox);
+
+    lv_obj_t *tmCont = GuiCreateContainerWithParent(bgCont, 480, 114);
+    lv_obj_align(tmCont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_set_style_bg_color(tmCont, BLACK_COLOR, LV_PART_MAIN);
+    lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
+    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
+    lv_obj_add_event_cb(btn, ConfirmDerivationHandler, LV_EVENT_CLICKED, NULL);
+    g_derivationPathConfirmBtn = btn;
+    UpdateConfirmBtn();
+
+    g_derivationPathCont = bgCont;
+}
+
 void GuiKeyDerivationRequestRefresh()
 {
     GuiAnimatingQRCodeControl(false);
@@ -146,52 +279,12 @@ void GuiKeyDerivationRequestPrevTile()
     lv_obj_set_tile_id(g_keyDerivationTileView.tileView, g_keyDerivationTileView.currentTile, 0, LV_ANIM_OFF);
 }
 
-#ifndef COMPILE_SIMULATOR
 static void ModelParseQRHardwareCall()
 {
     Response_QRHardwareCallData *data = parse_qr_hardware_call(g_data);
     g_callData = data->data;
     g_response = data;
 }
-#else
-static void ModelParseQRHardwareCall()
-{
-    g_response = SRAM_MALLOC(sizeof(Response_QRHardwareCallData));
-    g_response->error_code = 0;
-    g_response->error_message = "";
-    g_response->data = SRAM_MALLOC(sizeof(QRHardwareCallData));
-    g_response->data->call_type = "key_derivation";
-    g_response->data->origin = "Eternl";
-    g_response->data->key_derivation = SRAM_MALLOC(sizeof(KeyDerivationRequestData));
-    g_response->data->key_derivation->schemas = SRAM_MALLOC(sizeof(VecFFI_KeyDerivationSchema));
-    g_response->data->key_derivation->schemas->cap = 5;
-    g_response->data->key_derivation->schemas->size = 5;
-    g_response->data->key_derivation->schemas->data = SRAM_MALLOC(5 * sizeof(KeyDerivationSchema));
-    g_response->data->key_derivation->schemas->data[0].algo = "BIP32-ED25519";
-    g_response->data->key_derivation->schemas->data[0].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[0].key_path = "1852'/1815'/0'";
-
-    g_response->data->key_derivation->schemas->data[1].algo = "BIP32-ED25519";
-    g_response->data->key_derivation->schemas->data[1].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[1].key_path = "1852'/1815'/1'";
-
-    g_response->data->key_derivation->schemas->data[2].algo = "BIP32-ED25519";
-    g_response->data->key_derivation->schemas->data[2].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[2].key_path = "1852'/1815'/2'";
-
-    g_response->data->key_derivation->schemas->data[3].algo = "BIP32-ED25519";
-    g_response->data->key_derivation->schemas->data[3].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[3].key_path = "1852'/1815'/3'";
-
-    g_response->data->key_derivation->schemas->data[4].algo = "BIP32-ED25519";
-    g_response->data->key_derivation->schemas->data[4].curve = "ED25519";
-    g_response->data->key_derivation->schemas->data[4].key_path = "1852'/1815'/4'";
-
-    g_callData = g_response->data;
-}
-#endif
-
-#ifndef COMPILE_SIMULATOR
 
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
@@ -210,39 +303,37 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     return generate_key_derivation_ur(mfp, 4, &keys);
 }
 
-#endif
-
 static uint8_t GetXPubIndexByPath(char *path)
 {
-    if (strcmp("1852'/1815'/1'", path) == 0) return XPUB_TYPE_ADA_1;
-    if (strcmp("1852'/1815'/2'", path) == 0) return XPUB_TYPE_ADA_2;
-    if (strcmp("1852'/1815'/3'", path) == 0) return XPUB_TYPE_ADA_3;
-    if (strcmp("1852'/1815'/4'", path) == 0) return XPUB_TYPE_ADA_4;
-    if (strcmp("1852'/1815'/5'", path) == 0) return XPUB_TYPE_ADA_5;
-    if (strcmp("1852'/1815'/6'", path) == 0) return XPUB_TYPE_ADA_6;
-    if (strcmp("1852'/1815'/7'", path) == 0) return XPUB_TYPE_ADA_7;
-    if (strcmp("1852'/1815'/8'", path) == 0) return XPUB_TYPE_ADA_8;
-    if (strcmp("1852'/1815'/9'", path) == 0) return XPUB_TYPE_ADA_9;
-    if (strcmp("1852'/1815'/10'", path) == 0) return XPUB_TYPE_ADA_10;
-    if (strcmp("1852'/1815'/11'", path) == 0) return XPUB_TYPE_ADA_11;
-    if (strcmp("1852'/1815'/12'", path) == 0) return XPUB_TYPE_ADA_12;
-    if (strcmp("1852'/1815'/13'", path) == 0) return XPUB_TYPE_ADA_13;
-    if (strcmp("1852'/1815'/14'", path) == 0) return XPUB_TYPE_ADA_14;
-    if (strcmp("1852'/1815'/15'", path) == 0) return XPUB_TYPE_ADA_15;
-    if (strcmp("1852'/1815'/16'", path) == 0) return XPUB_TYPE_ADA_16;
-    if (strcmp("1852'/1815'/17'", path) == 0) return XPUB_TYPE_ADA_17;
-    if (strcmp("1852'/1815'/18'", path) == 0) return XPUB_TYPE_ADA_18;
-    if (strcmp("1852'/1815'/19'", path) == 0) return XPUB_TYPE_ADA_19;
-    if (strcmp("1852'/1815'/20'", path) == 0) return XPUB_TYPE_ADA_20;
-    if (strcmp("1852'/1815'/21'", path) == 0) return XPUB_TYPE_ADA_21;
-    if (strcmp("1852'/1815'/22'", path) == 0) return XPUB_TYPE_ADA_22;
-    if (strcmp("1852'/1815'/23'", path) == 0) return XPUB_TYPE_ADA_23;
+    if (strcmp("1852'/1815'/1'", path) == 0) return GetAdaXPubTypeByIndex(1);
+    if (strcmp("1852'/1815'/2'", path) == 0) return GetAdaXPubTypeByIndex(2);
+    if (strcmp("1852'/1815'/3'", path) == 0) return GetAdaXPubTypeByIndex(3);
+    if (strcmp("1852'/1815'/4'", path) == 0) return GetAdaXPubTypeByIndex(4);
+    if (strcmp("1852'/1815'/5'", path) == 0) return GetAdaXPubTypeByIndex(5);
+    if (strcmp("1852'/1815'/6'", path) == 0) return GetAdaXPubTypeByIndex(6);
+    if (strcmp("1852'/1815'/7'", path) == 0) return GetAdaXPubTypeByIndex(7);
+    if (strcmp("1852'/1815'/8'", path) == 0) return GetAdaXPubTypeByIndex(8);
+    if (strcmp("1852'/1815'/9'", path) == 0) return GetAdaXPubTypeByIndex(9);
+    if (strcmp("1852'/1815'/10'", path) == 0) return GetAdaXPubTypeByIndex(10);
+    if (strcmp("1852'/1815'/11'", path) == 0) return GetAdaXPubTypeByIndex(11);
+    if (strcmp("1852'/1815'/12'", path) == 0) return GetAdaXPubTypeByIndex(12);
+    if (strcmp("1852'/1815'/13'", path) == 0) return GetAdaXPubTypeByIndex(13);
+    if (strcmp("1852'/1815'/14'", path) == 0) return GetAdaXPubTypeByIndex(14);
+    if (strcmp("1852'/1815'/15'", path) == 0) return GetAdaXPubTypeByIndex(15);
+    if (strcmp("1852'/1815'/16'", path) == 0) return GetAdaXPubTypeByIndex(16);
+    if (strcmp("1852'/1815'/17'", path) == 0) return GetAdaXPubTypeByIndex(17);
+    if (strcmp("1852'/1815'/18'", path) == 0) return GetAdaXPubTypeByIndex(18);
+    if (strcmp("1852'/1815'/19'", path) == 0) return GetAdaXPubTypeByIndex(19);
+    if (strcmp("1852'/1815'/20'", path) == 0) return GetAdaXPubTypeByIndex(20);
+    if (strcmp("1852'/1815'/21'", path) == 0) return GetAdaXPubTypeByIndex(21);
+    if (strcmp("1852'/1815'/22'", path) == 0) return GetAdaXPubTypeByIndex(22);
+    if (strcmp("1852'/1815'/23'", path) == 0) return GetAdaXPubTypeByIndex(23);
     if (strcmp("M/44'/148'/0'", path) == 0) return XPUB_TYPE_STELLAR_0;
     if (strcmp("M/44'/148'/1'", path) == 0) return XPUB_TYPE_STELLAR_1;
     if (strcmp("M/44'/148'/2'", path) == 0) return XPUB_TYPE_STELLAR_2;
     if (strcmp("M/44'/148'/3'", path) == 0) return XPUB_TYPE_STELLAR_3;
     if (strcmp("M/44'/148'/4'", path) == 0) return XPUB_TYPE_STELLAR_4;
-    return XPUB_TYPE_ADA_0;
+    return GetAdaXPubTypeByIndex(0);
 }
 
 static void GuiCreateApproveWidget(lv_obj_t *parent)
@@ -346,9 +437,7 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent)
 
 static void OnApproveHandler(lv_event_t *e)
 {
-#ifndef COMPILE_SIMULATOR
     GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
-#endif
     GuiKeyDerivationRequestNextTile();
 }
 
@@ -367,9 +456,206 @@ void GuiKeyDerivationWidgetHandleURUpdate(char *data, uint16_t len)
     GuiAnimatingQRCodeUpdate(data, len);
 }
 
+static void QRCodePause(bool pause)
+{
+    GuiAnimatingQRCodeControl(pause);
+}
+
+static const char *GetChangeDerivationAccountType(int i)
+{
+    if (i == 0) {
+        return _("receive_ada_more_t_standard");
+    } else if (i == 1) {
+        return _("receive_ada_more_t_ledger");
+    }
+}
+
+static void SetCurrentSelectedIndex(uint8_t index)
+{
+    g_currentSelectedPathIndex[GetCurrentAccountIndex()] = index;
+}
+
+static uint32_t GetCurrentSelectedIndex()
+{
+    return g_currentSelectedPathIndex[GetCurrentAccountIndex()];
+}
+
+static void SetAccountType(uint8_t index)
+{
+    g_currentCardanoPathIndex[GetCurrentAccountIndex()] = index;
+}
+
+static AdaXPubType GetAccountType()
+{
+    return g_currentCardanoPathIndex[GetCurrentAccountIndex()];
+}
+
+static bool IsSelectChanged(void)
+{
+    return GetCurrentSelectedIndex() != GetAccountType();
+}
+
+static void UpdateConfirmBtn(void)
+{
+    if (IsSelectChanged()) {
+        lv_obj_set_style_bg_opa(g_derivationPathConfirmBtn, LV_OPA_COVER,
+                                LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_derivationPathConfirmBtn, 0),
+                                  LV_OPA_COVER, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_bg_opa(g_derivationPathConfirmBtn, LV_OPA_30,
+                                LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(g_derivationPathConfirmBtn, 0),
+                                  LV_OPA_30, LV_PART_MAIN);
+    }
+}
+
+static void CloseDerivationHandler(lv_event_t *e)
+{
+    QRCodePause(false);
+    GUI_DEL_OBJ(g_derivationPathCont);
+    SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex,
+              NULL);
+    SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
+                      OpenMoreHandler, &g_walletIndex);
+}
+
+static bool IsCardano()
+{
+    return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON;
+}
+
+static void ConfirmDerivationHandler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED && IsSelectChanged()) {
+        if (IsCardano()) {
+            SetAdaXPubType(GetCurrentSelectedIndex());
+            SetAccountType(GetAdaXPubType());
+        }
+        GuiAnimatingQRCodeDestroyTimer();
+        GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
+        GuiKeyDerivationRequestNextTile();
+        GUI_DEL_OBJ(g_derivationPathCont);
+        SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler,
+                         NULL);
+        SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex,
+                  NULL);
+        SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
+                          OpenMoreHandler, &g_walletIndex);
+    }
+}
+
+static char *GetChangeDerivationPathDesc(void)
+{
+    return GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC)[GetCurrentSelectedIndex()];
+}
+
+static void GetCardanoEgAddress(void)
+{
+    char *xPub = NULL;
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0);
+    SimpleResponse_c_char *result = cardano_get_base_address(xPub, 0, 1);
+    CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][0], BUFFER_SIZE_128,
+                       result->data, 24);
+    free_simple_response_c_char(result);
+
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_1);
+    result = cardano_get_base_address(xPub, 1, 1);
+    CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][1], BUFFER_SIZE_128,
+                       result->data, 24);
+    free_simple_response_c_char(result);
+
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_LEDGER_ADA_0);
+    result = cardano_get_base_address(xPub, 0, 1);
+    CutAndFormatString(g_derivationPathAddr[LEDGER_ADA][0], BUFFER_SIZE_128,
+                       result->data, 24);
+    free_simple_response_c_char(result);
+
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_LEDGER_ADA_1);
+    result = cardano_get_base_address(xPub, 1, 1);
+    CutAndFormatString(g_derivationPathAddr[LEDGER_ADA][1], BUFFER_SIZE_128,
+                       result->data, 24);
+    free_simple_response_c_char(result);
+}
+
+static void UpdateCardanoEgAddress(uint8_t index)
+{
+    lv_label_set_text(g_egAddress[0],
+                      (const char *)g_derivationPathAddr[index][0]);
+    lv_label_set_text(g_egAddress[1],
+                      (const char *)g_derivationPathAddr[index][1]);
+}
+
+static void ShowEgAddressCont(lv_obj_t *egCont)
+{
+    if (egCont == NULL) {
+        printf("egCont is NULL, cannot show eg address\n");
+        return;
+    }
+    lv_obj_clean(egCont);
+
+    lv_obj_t *prevLabel = NULL, *label;
+    int egContHeight = 12;
+    char *desc = GetChangeDerivationPathDesc();
+    if (desc != NULL && strnlen_s(desc, BUFFER_SIZE_128) > 0) {
+        label = GuiCreateNoticeLabel(egCont, desc);
+        lv_obj_set_width(label, 360);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
+        lv_obj_update_layout(label);
+        egContHeight += lv_obj_get_height(label);
+        prevLabel = label;
+    }
+    label = GuiCreateNoticeLabel(egCont, _("derivation_path_address_eg"));
+    if (prevLabel != NULL) {
+        lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    } else {
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 12);
+    }
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_update_layout(label);
+    egContHeight = egContHeight + 4 + lv_obj_get_height(label);
+    prevLabel = label;
+    lv_obj_t *index = GuiCreateNoticeLabel(egCont, _("0"));
+    lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
+    lv_obj_update_layout(index);
+    egContHeight = egContHeight + 4 + lv_obj_get_height(index);
+    g_egAddressIndex[0] = index;
+    prevLabel = index;
+    label = GuiCreateIllustrateLabel(egCont, "");
+    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    g_egAddress[0] = label;
+    index = GuiCreateNoticeLabel(egCont, _("1"));
+    lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
+    lv_obj_update_layout(index);
+    egContHeight = egContHeight + 4 + lv_obj_get_height(index);
+    g_egAddressIndex[1] = index;
+    prevLabel = index;
+    label = GuiCreateIllustrateLabel(egCont, "");
+    lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    g_egAddress[1] = label;
+    egContHeight += 12;
+    lv_obj_set_height(egCont, egContHeight);
+    GetCardanoEgAddress();
+    UpdateCardanoEgAddress(GetCurrentSelectedIndex());
+}
+
+static void ChangeDerivationPathHandler(lv_event_t *e)
+{
+    if (g_derivationPathCont != NULL) {
+        GUI_DEL_OBJ(g_derivationPathCont);
+    }
+    OpenDerivationPath();
+    QRCodePause(true);
+}
+
 static void OpenMoreHandler(lv_event_t *e)
 {
-    int hintboxHeight = 132;
+    int hintboxHeight = 228;
     g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
     lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
     lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
@@ -385,11 +671,16 @@ static void OpenMoreHandler(lv_event_t *e)
             .obj = label,
             .align = LV_ALIGN_LEFT_MID,
             .position = {76, 0},
-        },
+        }
     };
     lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
                                     OpenTutorialHandler, &g_walletIndex);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
+    lv_obj_t *derivationBtn = GuiCreateSelectButton(g_openMoreHintBox, _("derivation_path_change"),
+                              &imgPath, ChangeDerivationPathHandler, wallet,
+                              true);
+    lv_obj_align(derivationBtn, LV_ALIGN_BOTTOM_MID, 0, -120);
 }
 
 static void OpenTutorialHandler(lv_event_t *e)

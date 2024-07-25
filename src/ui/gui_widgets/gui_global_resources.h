@@ -17,6 +17,11 @@ typedef enum {
 } SOL_PATH_TYPE;
 
 typedef enum {
+    ADA_STANDARD,
+    ADA_LEDGER,
+} ADA_PATH_TYPE;
+
+typedef enum {
     BTC_NATIVE_SEGWIT,
     BTC_TAPROOT,
     BTC_NESTED_SEGWIT,
@@ -27,6 +32,7 @@ typedef enum {
     ETH_DERIVATION_PATH_DESC,
     SOL_DERIVATION_PATH_DESC,
     BTC_DERIVATION_PATH_DESC,
+    ADA_DERIVATION_PATH_DESC,
 #ifdef BTC_ONLY
     BTC_TEST_NET_DERIVATION_PATH_DESC,
 #endif

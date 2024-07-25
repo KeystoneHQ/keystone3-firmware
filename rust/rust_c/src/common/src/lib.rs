@@ -117,6 +117,24 @@ pub extern "C" fn get_bip32_ed25519_extended_pubkey(
 }
 
 #[no_mangle]
+pub extern "C" fn get_ledger_bitbox02_master_key(
+    mnemonic: PtrString,
+    passphrase: PtrString,
+) -> *mut SimpleResponse<c_char> {
+    let mnemonic = recover_c_char(mnemonic);
+    let passphrase = recover_c_char(passphrase);
+    let master_key =
+        keystore::algorithms::ed25519::bip32_ed25519::get_ledger_bitbox02_master_key_by_mnemonic(
+            passphrase.as_bytes(),
+            mnemonic,
+        );
+    match master_key {
+        Ok(result) => SimpleResponse::success(convert_c_char(result.encode_hex())).simple_c_ptr(),
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn get_icarus_master_key(
     entropy: PtrBytes,
     entropy_len: u32,

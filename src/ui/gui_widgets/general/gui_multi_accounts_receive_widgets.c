@@ -998,7 +998,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
 
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
-        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0 + currentAccount);
+        xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
         snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         // cardano mainnet;
         switch (type) {

@@ -5,6 +5,11 @@
 #include "stdint.h"
 #include "librust_c.h"
 
+typedef enum {
+    STANDARD_ADA = 0,
+    LEDGER_ADA,
+} AdaXPubType;
+
 void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetAdaData(void);
 void *GuiGetAdaSignDataData(void);
@@ -56,5 +61,9 @@ void GetCatalystRewards(void *indata, void *param, uint32_t maxLen);
 void GetCatalystVoteKeys(void *indata, void *param, uint32_t maxLen);
 void GetCatalystVoteKeysSize(uint16_t *width, uint16_t *height, void *param);
 void GetCatalystRewardsNotice(lv_obj_t *parent, void *totalData);
+
+ChainType GetAdaXPubTypeByIndex(uint16_t index);
+void SetAdaXPubType(AdaXPubType type);
+AdaXPubType GetAdaXPubType(void);
 
 #endif

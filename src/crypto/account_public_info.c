@@ -46,6 +46,7 @@ typedef enum {
     RSA_KEY,
     TON_NATIVE,
     TON_CHECKSUM,
+    LEDGER_BITBOX02,
 } PublicInfoType_t;
 
 typedef struct {
@@ -165,6 +166,30 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_ADA_21,                BIP32_ED25519, "ada_21",                   "M/1852'/1815'/21'"},
     {XPUB_TYPE_ADA_22,                BIP32_ED25519, "ada_22",                   "M/1852'/1815'/22'"},
     {XPUB_TYPE_ADA_23,                BIP32_ED25519, "ada_23",                   "M/1852'/1815'/23'"},
+    {XPUB_TYPE_LEDGER_ADA_0,          LEDGER_BITBOX02, "ada_ledger_0",           "M/1852'/1815'/0'"},
+    {XPUB_TYPE_LEDGER_ADA_1,          LEDGER_BITBOX02, "ada_ledger_1",           "M/1852'/1815'/1'"},
+    {XPUB_TYPE_LEDGER_ADA_2,          LEDGER_BITBOX02, "ada_ledger_2",           "M/1852'/1815'/2'"},
+    {XPUB_TYPE_LEDGER_ADA_3,          LEDGER_BITBOX02, "ada_ledger_3",           "M/1852'/1815'/3'"},
+    {XPUB_TYPE_LEDGER_ADA_4,          LEDGER_BITBOX02, "ada_ledger_4",           "M/1852'/1815'/4'"},
+    {XPUB_TYPE_LEDGER_ADA_5,          LEDGER_BITBOX02, "ada_ledger_5",           "M/1852'/1815'/5'"},
+    {XPUB_TYPE_LEDGER_ADA_6,          LEDGER_BITBOX02, "ada_ledger_6",           "M/1852'/1815'/6'"},
+    {XPUB_TYPE_LEDGER_ADA_7,          LEDGER_BITBOX02, "ada_ledger_7",           "M/1852'/1815'/7'"},
+    {XPUB_TYPE_LEDGER_ADA_8,          LEDGER_BITBOX02, "ada_ledger_8",           "M/1852'/1815'/8'"},
+    {XPUB_TYPE_LEDGER_ADA_9,          LEDGER_BITBOX02, "ada_ledger_9",           "M/1852'/1815'/9'"},
+    {XPUB_TYPE_LEDGER_ADA_10,         LEDGER_BITBOX02, "ada_ledger_10",          "M/1852'/1815'/10'"},
+    {XPUB_TYPE_LEDGER_ADA_11,         LEDGER_BITBOX02, "ada_ledger_11",          "M/1852'/1815'/11'"},
+    {XPUB_TYPE_LEDGER_ADA_12,         LEDGER_BITBOX02, "ada_ledger_12",          "M/1852'/1815'/12'"},
+    {XPUB_TYPE_LEDGER_ADA_13,         LEDGER_BITBOX02, "ada_ledger_13",          "M/1852'/1815'/13'"},
+    {XPUB_TYPE_LEDGER_ADA_14,         LEDGER_BITBOX02, "ada_ledger_14",          "M/1852'/1815'/14'"},
+    {XPUB_TYPE_LEDGER_ADA_15,         LEDGER_BITBOX02, "ada_ledger_15",          "M/1852'/1815'/15'"},
+    {XPUB_TYPE_LEDGER_ADA_16,         LEDGER_BITBOX02, "ada_ledger_16",          "M/1852'/1815'/16'"},
+    {XPUB_TYPE_LEDGER_ADA_17,         LEDGER_BITBOX02, "ada_ledger_17",          "M/1852'/1815'/17'"},
+    {XPUB_TYPE_LEDGER_ADA_18,         LEDGER_BITBOX02, "ada_ledger_18",          "M/1852'/1815'/18'"},
+    {XPUB_TYPE_LEDGER_ADA_19,         LEDGER_BITBOX02, "ada_ledger_19",          "M/1852'/1815'/19'"},
+    {XPUB_TYPE_LEDGER_ADA_20,         LEDGER_BITBOX02, "ada_ledger_20",          "M/1852'/1815'/20'"},
+    {XPUB_TYPE_LEDGER_ADA_21,         LEDGER_BITBOX02, "ada_ledger_21",          "M/1852'/1815'/21'"},
+    {XPUB_TYPE_LEDGER_ADA_22,         LEDGER_BITBOX02, "ada_ledger_22",          "M/1852'/1815'/22'"},
+    {XPUB_TYPE_LEDGER_ADA_23,         LEDGER_BITBOX02, "ada_ledger_23",          "M/1852'/1815'/23'"},
     {XPUB_TYPE_ARWEAVE,               RSA_KEY,       "ar",                       ""                 },
     {XPUB_TYPE_STELLAR_0,             ED25519,       "stellar_0",                "M/44'/148'/0'"    },
     {XPUB_TYPE_STELLAR_1,             ED25519,       "stellar_1",                "M/44'/148'/1'"    },
@@ -174,7 +199,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_TON_BIP39,             ED25519,       "ton_bip39",                "M/44'/607'/0'"    },
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
-    
+
 #else
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },
@@ -195,7 +220,7 @@ static const ChainItem_t g_chainTable[] = {
 #endif
 };
 
-static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoKey, const char *path, void *icarusMasterKey)
+static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoKey, const char *path, void *icarusMasterKey, void *ledgerBitbox02MasterKey)
 {
     switch (cryptoKey) {
     case SECP256K1:
@@ -205,6 +230,9 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case BIP32_ED25519:
         ASSERT(icarusMasterKey);
         return derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+    case LEDGER_BITBOX02:
+        ASSERT(ledgerBitbox02MasterKey);
+        return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, path);
     case RSA_KEY: {
         Rsa_primes_t *primes = FlashReadRsaPrimes();
         if (primes == NULL)
@@ -445,23 +473,30 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
     do {
         GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
         char* icarusMasterKey = NULL;
+        char* ledgerBitbox02Key = NULL;
         printf("regenerate pub key!\r\n");
         FreePublicKeyRam();
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_BREAK("get seed", ret);
         ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
         CHECK_ERRCODE_BREAK("get entropy", ret);
-        SimpleResponse_c_char* response = NULL;
+        SimpleResponse_c_char* cip3_response = NULL;
+        SimpleResponse_c_char *ledger_bitbox02_response = NULL;
         // should setup ADA for bip39 wallet;
         if (isBip39) {
-            response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
-            CHECK_AND_FREE_XPUB(response)
-            icarusMasterKey = response -> data;
+            char *mnemonic = NULL;
+            bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
+            cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
+            ledger_bitbox02_response = get_ledger_bitbox02_master_key(mnemonic, GetPassphrase(accountIndex));
+            CHECK_AND_FREE_XPUB(cip3_response);
+            CHECK_AND_FREE_XPUB(ledger_bitbox02_response);
+            icarusMasterKey = cip3_response->data;
+            ledgerBitbox02Key = ledger_bitbox02_response->data;
         }
 
         if (isTon) {
             //store public key for ton wallet;
-            xPubResult = ProcessKeyType(seed, len, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL);
+            xPubResult = ProcessKeyType(seed, len, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL, NULL);
             CHECK_AND_FREE_XPUB(xPubResult)
             ASSERT(xPubResult->data);
             g_accountPublicInfo[XPUB_TYPE_TON_NATIVE].value = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
@@ -488,7 +523,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     continue;
                 }
 
-                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
+                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                     continue;
                 }
@@ -518,6 +553,10 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
         ASSERT(len == size);
         printf("regenerate jsonString=%s\r\n", jsonString);
+        if (!isSlip39) {
+            free_simple_response_c_char(cip3_response);
+            free_simple_response_c_char(ledger_bitbox02_response);
+        }
         GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
         EXT_FREE(jsonString);
     } while (0);
@@ -604,28 +643,26 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     } else {
         GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
         char* icarusMasterKey = NULL;
+        char* ledgerBitbox02Key = NULL;
         FreePublicKeyRam();
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_RETURN_INT(ret);
         ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
         CHECK_ERRCODE_RETURN_INT(ret);
-        SimpleResponse_c_char *response = NULL;
+        SimpleResponse_c_char *cip3_response = NULL;
+        SimpleResponse_c_char *ledger_bitbox02_response = NULL;
 
-        // should setup ADA;
         if (!isSlip39) {
-            response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
-            ASSERT(response);
-            if (response->error_code != 0) {
-                printf("get_extended_pubkey error\r\n");
-                if (response->error_message != NULL) {
-                    printf("error code = %d\r\nerror msg is: %s\r\n", response->error_code, response->error_message);
-                }
-                free_simple_response_c_char(response);
-                ret = response->error_code;
-                CLEAR_ARRAY(seed);
-                return ret;
-            }
-            icarusMasterKey = response->data;
+            do {
+                char *mnemonic = NULL;
+                bip39_mnemonic_from_bytes(NULL, seed, len, &mnemonic);
+                cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
+                ledger_bitbox02_response = get_ledger_bitbox02_master_key(mnemonic, GetPassphrase(accountIndex));
+                CHECK_AND_FREE_XPUB(cip3_response);
+                CHECK_AND_FREE_XPUB(ledger_bitbox02_response);
+                icarusMasterKey = cip3_response->data;
+                ledgerBitbox02Key = ledger_bitbox02_response->data;
+            } while (0);
         }
 
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
@@ -637,7 +674,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
                 continue;
             }
 
-            xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey);
+            xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
             if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                 continue;
             }
@@ -658,7 +695,8 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             free_simple_response_c_char(xPubResult);
         }
         if (!isSlip39) {
-            free_simple_response_c_char(response);
+            free_simple_response_c_char(cip3_response);
+            free_simple_response_c_char(ledger_bitbox02_response);
         }
         g_tempPublicKeyAccountIndex = accountIndex;
         GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);

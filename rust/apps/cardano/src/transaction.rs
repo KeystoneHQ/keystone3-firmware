@@ -6,6 +6,7 @@ use alloc::vec::Vec;
 use cardano_serialization_lib;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey, Vkey, Vkeywitness};
 use third_party::cryptoxide::hashing::blake2b_256;
+use third_party::ed25519_bip32_core::{XPrv, XPub};
 use third_party::hex;
 
 pub fn parse_tx(tx: Vec<u8>, context: ParseContext) -> R<ParsedCardanoTx> {
@@ -24,17 +25,15 @@ pub fn check_tx(tx: Vec<u8>, context: ParseContext) -> R<()> {
     ParsedCardanoTx::verify(cardano_tx, context)
 }
 
-pub fn sign_data(
-    path: &String,
-    payload: &str,
-    entropy: &[u8],
-    passphrase: &[u8],
-) -> R<SignDataResult> {
-    let icarus_master_key =
-        keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
-            entropy, passphrase,
-        )
-        .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
+pub fn calc_icarus_master_key(entropy: &[u8], passphrase: &[u8]) -> XPrv {
+    keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
+        entropy, passphrase,
+    )
+    .map_err(|e| CardanoError::SigningFailed(e.to_string()))
+    .unwrap()
+}
+
+pub fn sign_data(path: &String, payload: &str, icarus_master_key: XPrv) -> R<SignDataResult> {
     let bip32_signing_key =
         keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv(
             &icarus_master_key,
@@ -49,22 +48,12 @@ pub fn sign_data(
     ))
 }
 
-pub fn sign_tx(
-    tx: Vec<u8>,
-    context: ParseContext,
-    entropy: &[u8],
-    passphrase: &[u8],
-) -> R<Vec<u8>> {
+pub fn sign_tx(tx: Vec<u8>, context: ParseContext, icarus_master_key: XPrv) -> R<Vec<u8>> {
     let cardano_tx =
         cardano_serialization_lib::protocol_types::fixed_tx::FixedTransaction::from_bytes(tx)?;
     let hash = blake2b_256(cardano_tx.raw_body().as_ref());
     let mut witness_set = cardano_serialization_lib::TransactionWitnessSet::new();
     let mut vkeys = cardano_serialization_lib::crypto::Vkeywitnesses::new();
-    let icarus_master_key =
-        keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
-            entropy, passphrase,
-        )
-        .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
 
     let mut signatures = BTreeMap::new();
 
@@ -195,9 +184,10 @@ mod test {
     fn test_sign_data() {
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
         let passphrase = b"";
+        let icarus_master_key = calc_icarus_master_key(&entropy, passphrase);
         let path = "m/1852'/1815'/0'/0/0".to_string();
         let payload = "846a5369676e6174757265315882a301270458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad676164647265737358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad4043abc123";
-        let sign_data_result = sign_data(&path, payload, &entropy, passphrase).unwrap();
+        let sign_data_result = sign_data(&path, payload, icarus_master_key).unwrap();
         assert_eq!(hex::encode(sign_data_result.get_signature()), "451d320df8d5a944c469932943332e02ed6721fe9e1f93dde08bb45e48e48ed7f6d0463ff8c2f65ab626bdefcf1b0825bde2ef64b5ccd271554bf98e03d6ea07");
         // 2ae9d64b6a954febcc848afaa6ca1e9c49559e23fe68d085631ea2a020b695ff
         // 2ae9d64b6a954febcc848afaa6ca1e9c49559e23fe68d085631ea2a020b695ffed535d78ef7d225ba596dbbf3c2aea38b6807f793d8edd9671a4c2de5cdb5ba8

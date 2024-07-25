@@ -580,10 +580,8 @@ static void CoinDealHandler(lv_event_t *e)
         break;
     case HOME_WALLET_CARD_ETH:
     case HOME_WALLET_CARD_SOL:
-        GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
-        break;
     case HOME_WALLET_CARD_ADA:
-        GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
+        GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ARWEAVE: {
         bool shouldGenerateArweaveXPub = IsArweaveSetupComplete();

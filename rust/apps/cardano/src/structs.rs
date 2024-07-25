@@ -310,7 +310,7 @@ impl ParsedCardanoTx {
                     let deposit =
                         normalize_coin(from_bignum(&_cert.coin().unwrap_or(BigNum::zero())));
                     certs.push(CardanoCertificate::new(
-                        "Stake Registration".to_string(),
+                        "Account Registration".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
                             .to_address()
                             .to_bech32(None)
@@ -393,7 +393,7 @@ impl ParsedCardanoTx {
                 }
                 if let Some(_cert) = cert.as_move_instantaneous_rewards_cert() {
                     certs.push(CardanoCertificate::new(
-                        "MoveInstantaneousRewardsCert".to_string(),
+                        "Move Instantaneous Rewards Cert".to_string(),
                         "None".to_string(),
                         None,
                         LABEL_ADDRESS.to_string(),
@@ -402,7 +402,7 @@ impl ParsedCardanoTx {
                 }
                 if let Some(_cert) = cert.as_committee_hot_auth() {
                     certs.push(CardanoCertificate::new(
-                        "CommitteeHotAuth".to_string(),
+                        "Committee Hot Auth".to_string(),
                         "None".to_string(),
                         None,
                         LABEL_ADDRESS.to_string(),
@@ -411,7 +411,7 @@ impl ParsedCardanoTx {
                 }
                 if let Some(_cert) = cert.as_committee_cold_resign() {
                     certs.push(CardanoCertificate::new(
-                        "CommitteeColdResign".to_string(),
+                        "Committee Cold Resign".to_string(),
                         "None".to_string(),
                         None,
                         LABEL_ADDRESS.to_string(),
@@ -441,7 +441,7 @@ impl ParsedCardanoTx {
                         ),
                     };
                     certs.push(CardanoCertificate::new(
-                        "DrepDeregistration".to_string(),
+                        "Drep Deregistration".to_string(),
                         variant1,
                         Some(deposit),
                         variant1_label,
@@ -471,7 +471,7 @@ impl ParsedCardanoTx {
                         ),
                     };
                     certs.push(CardanoCertificate::new(
-                        "DrepRegistration".to_string(),
+                        "Drep Registration".to_string(),
                         variant1,
                         Some(deposit),
                         variant1_label,
@@ -483,14 +483,31 @@ impl ParsedCardanoTx {
                         Some(anchor) => Some(anchor.anchor_data_hash().to_string()),
                         None => None,
                     };
+                    let (variant1, variant1_label) = match _cert.voting_credential().kind() {
+                        Ed25519KeyHash => (
+                            _cert
+                                .voting_credential()
+                                .to_keyhash()
+                                .unwrap()
+                                .to_bech32("drep")
+                                .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                            LABEL_DREP.to_string(),
+                        ),
+                        ScriptHash => (
+                            _cert
+                                .voting_credential()
+                                .to_scripthash()
+                                .unwrap()
+                                .to_bech32("")
+                                .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                            LABEL_DREP.to_string(),
+                        ),
+                    };
                     certs.push(CardanoCertificate::new(
-                        "DrepUpdate".to_string(),
-                        RewardAddress::new(network_id, &_cert.voting_credential())
-                            .to_address()
-                            .to_bech32(None)
-                            .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                        "Drep Update".to_string(),
+                        variant1,
                         anchor_data_hash,
-                        LABEL_ADDRESS.to_string(),
+                        variant1_label,
                         Some(LABEL_ANCHOR_DATA_HASH.to_string()),
                     ));
                 }
@@ -520,7 +537,7 @@ impl ParsedCardanoTx {
                         ),
                     };
                     certs.push(CardanoCertificate::new(
-                        "StakeAndVoteDelegation".to_string(),
+                        "Stake And Vote Delegation".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
                             .to_address()
                             .to_bech32(None)
@@ -532,7 +549,7 @@ impl ParsedCardanoTx {
                 }
                 if let Some(_cert) = cert.as_stake_registration_and_delegation() {
                     certs.push(CardanoCertificate::new(
-                        "StakeRegistrationAndDelegation".to_string(),
+                        "Stake Registration And Delegation".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
                             .to_address()
                             .to_bech32(None)
@@ -549,7 +566,7 @@ impl ParsedCardanoTx {
                 }
                 if let Some(_cert) = cert.as_stake_vote_registration_and_delegation() {
                     certs.push(CardanoCertificate::new(
-                        "StakeVoteRegistrationAndDelegation".to_string(),
+                        "Stake Vote Registration And Delegation".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
                             .to_address()
                             .to_bech32(None)
@@ -590,7 +607,7 @@ impl ParsedCardanoTx {
                         ),
                     };
                     certs.push(CardanoCertificate::new(
-                        "VoteRegistrationAndDelegation".to_string(),
+                        "Vote Registration And Delegation".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
                             .to_address()
                             .to_bech32(None)

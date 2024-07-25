@@ -340,32 +340,60 @@ bool GetAdaCertificatesExist(void *indata, void *param)
     return tx->certificates->size > 0;
 }
 
+static uint8_t calculateCertificateRow(DisplayCardanoTx *tx)
+{
+    uint8_t row = 0;
+    for (uint32_t i = 0; i < tx->certificates->size; i++) {
+        if (tx->certificates->data[i].variant1 != NULL) {
+            row += 1;
+        }
+        if (tx->certificates->data[i].variant2 != NULL) {
+            row += 1;
+        }
+        if (tx->certificates->data[i].variant3 != NULL) {
+            row += 1;
+        }
+        if (tx->certificates->data[i].variant4 != NULL) {
+            row += 1;
+        }
+    }
+    return row;
+}
+
 void GetAdaCertificatesSize(uint16_t *width, uint16_t *height, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
     *width = 408;
-    *height = 16 + 128 * tx->certificates->size + 16;
+    *height = 16 + 90 + 60 * calculateCertificateRow(tx) + 16;
 }
+
 void *GetAdaCertificatesData(uint8_t *row, uint8_t *col, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
     *col = 1;
-    *row = 3 * tx->certificates->size;
+    *row = calculateCertificateRow(tx) + tx->certificates->size;
     int i = 0, j = 0;
     char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++) {
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
-            uint32_t index = j / 3;
+            uint32_t index = j / 5;
             indata[i][j] = SRAM_MALLOC(BUFFER_SIZE_128);
-            memset_s(indata[i][j], BUFFER_SIZE_128, 0, BUFFER_SIZE_128);
-            if (j % 3 == 0) {
+            if (j % 5 == 0) {
                 snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%d #F5870A %s#", index + 1, tx->certificates->data[index].cert_type);
-            } else if (j % 3 == 1) {
+            } else if (j % 5 == 1) {
                 snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant1_label, tx->certificates->data[index].variant1);
-            } else {
+            } else if (j % 5 == 2) {
                 if (tx->certificates->data[index].variant2 != NULL) {
                     snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant2_label, tx->certificates->data[index].variant2);
+                }
+            } else if (j % 5 == 3) {
+                if (tx->certificates->data[index].variant3 != NULL) {
+                    snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant3_label, tx->certificates->data[index].variant3);
+                }
+            } else {
+                if (tx->certificates->data[index].variant4 != NULL) {
+                    snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant4_label, tx->certificates->data[index].variant4);
                 }
             }
         }

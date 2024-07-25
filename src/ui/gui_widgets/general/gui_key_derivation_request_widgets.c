@@ -42,7 +42,7 @@ static uint32_t g_currentSelectedPathIndex[3] = {0};
 static lv_obj_t *g_egCont = NULL;
 static lv_obj_t *g_egAddressIndex[2];
 static lv_obj_t *g_egAddress[2];
-static char g_derivationPathAddr[2][2][64];
+static char g_derivationPathAddr[2][2][BUFFER_SIZE_128];
 
 static void RecalcCurrentWalletIndex(char *origin);
 
@@ -143,16 +143,15 @@ void GuiKeyDerivationRequestDeInit()
 static void SelectDerivationHandler(lv_event_t *e)
 {
     lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-    for (int i = 0; i < 2; i++) {
-        if (newCheckBox == g_derivationTypeCheck[i]) {
-            lv_obj_add_state(newCheckBox, LV_STATE_CHECKED);
-            SetCurrentSelectedIndex(i);
-            ShowEgAddressCont(g_egCont);
-            UpdateConfirmBtn();
-        } else {
-            lv_obj_clear_state(g_derivationTypeCheck[i], LV_STATE_CHECKED);
-        }
+    uint8_t index = 0;
+    if (newCheckBox == g_derivationTypeCheck[1]) {
+        index = 1;
     }
+    lv_obj_add_state(g_derivationTypeCheck[index], LV_STATE_CHECKED);
+    lv_obj_clear_state(g_derivationTypeCheck[!index], LV_STATE_CHECKED);
+    SetCurrentSelectedIndex(index);
+    ShowEgAddressCont(g_egCont);
+    UpdateConfirmBtn();
 }
 
 static void OpenDerivationPath()
@@ -555,7 +554,7 @@ static char *GetChangeDerivationPathDesc(void)
 
 static void GetCardanoEgAddress(void)
 {
-    char *xPub = NULL, hdPath[BUFFER_SIZE_128];
+    char *xPub = NULL;
     xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0);
     SimpleResponse_c_char *result = cardano_get_base_address(xPub, 0, 1);
     CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][0], BUFFER_SIZE_128,

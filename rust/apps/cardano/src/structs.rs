@@ -78,8 +78,12 @@ impl_public_struct!(CardanoCertificate {
     cert_type: String,
     variant1: String,
     variant2: Option<String>,
+    variant3: Option<String>,
+    variant4: Option<String>,
     variant1_label: String,
-    variant2_label: Option<String>
+    variant2_label: Option<String>,
+    variant3_label: Option<String>,
+    variant4_label: Option<String>
 });
 
 const LABEL_ADDRESS: &str = "Address";
@@ -290,8 +294,12 @@ impl ParsedCardanoTx {
                                 .to_bech32("pool")
                                 .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                         ),
+                        None,
+                        None,
                         LABEL_ADDRESS.to_string(),
                         Some(LABEL_POOL.to_string()),
+                        None,
+                        None,
                     ));
                 }
                 if let Some(_cert) = cert.as_stake_deregistration() {
@@ -302,7 +310,11 @@ impl ParsedCardanoTx {
                             .to_bech32(None)
                             .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                         None,
+                        None,
+                        None,
                         LABEL_ADDRESS.to_string(),
+                        None,
+                        None,
                         None,
                     ));
                 }
@@ -316,8 +328,12 @@ impl ParsedCardanoTx {
                             .to_bech32(None)
                             .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                         Some(deposit),
+                        None,
+                        None,
                         LABEL_ADDRESS.to_string(),
                         Some(LABEL_DEPOSIT.to_string()),
+                        None,
+                        None,
                     ));
                 }
                 if let Some(_cert) = cert.as_vote_delegation() {
@@ -352,8 +368,12 @@ impl ParsedCardanoTx {
                             .to_bech32(None)
                             .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                         Some(variant2),
+                        None,
+                        None,
                         LABEL_ADDRESS.to_string(),
                         Some(variant2_label),
+                        None,
+                        None,
                     ));
                 }
                 if let Some(_cert) = cert.as_pool_registration() {
@@ -366,7 +386,11 @@ impl ParsedCardanoTx {
                             .to_bech32(None)
                             .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                         None,
+                        None,
+                        None,
                         LABEL_ADDRESS.to_string(),
+                        None,
+                        None,
                         None,
                     ));
                 }
@@ -378,7 +402,11 @@ impl ParsedCardanoTx {
                             .to_bech32("pool")
                             .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                         None,
+                        None,
+                        None,
                         LABEL_POOL.to_string(),
+                        None,
+                        None,
                         None,
                     ));
                 }
@@ -387,7 +415,11 @@ impl ParsedCardanoTx {
                         "Genesis Key Delegation".to_string(),
                         "None".to_string(),
                         None,
+                        None,
+                        None,
                         LABEL_ADDRESS.to_string(),
+                        None,
+                        None,
                         None,
                     ));
                 }
@@ -396,7 +428,11 @@ impl ParsedCardanoTx {
                         "Move Instantaneous Rewards Cert".to_string(),
                         "None".to_string(),
                         None,
+                        None,
+                        None,
                         LABEL_ADDRESS.to_string(),
+                        None,
+                        None,
                         None,
                     ));
                 }
@@ -405,7 +441,11 @@ impl ParsedCardanoTx {
                         "Committee Hot Auth".to_string(),
                         "None".to_string(),
                         None,
+                        None,
+                        None,
                         LABEL_ADDRESS.to_string(),
+                        None,
+                        None,
                         None,
                     ));
                 }
@@ -414,7 +454,11 @@ impl ParsedCardanoTx {
                         "Committee Cold Resign".to_string(),
                         "None".to_string(),
                         None,
+                        None,
+                        None,
                         LABEL_ADDRESS.to_string(),
+                        None,
+                        None,
                         None,
                     ));
                 }
@@ -444,8 +488,12 @@ impl ParsedCardanoTx {
                         "Drep Deregistration".to_string(),
                         variant1,
                         Some(deposit),
+                        None,
+                        None,
                         variant1_label,
                         Some(LABEL_DEPOSIT.to_string()),
+                        None,
+                        None,
                     ));
                 }
                 if let Some(_cert) = cert.as_drep_registration() {
@@ -474,8 +522,12 @@ impl ParsedCardanoTx {
                         "Drep Registration".to_string(),
                         variant1,
                         Some(deposit),
+                        None,
+                        None,
                         variant1_label,
                         Some(LABEL_DEPOSIT.to_string()),
+                        None,
+                        None,
                     ));
                 }
                 if let Some(_cert) = cert.as_drep_update() {
@@ -507,8 +559,12 @@ impl ParsedCardanoTx {
                         "Drep Update".to_string(),
                         variant1,
                         anchor_data_hash,
+                        None,
+                        None,
                         variant1_label,
                         Some(LABEL_ANCHOR_DATA_HASH.to_string()),
+                        None,
+                        None,
                     ));
                 }
                 if let Some(_cert) = cert.as_stake_and_vote_delegation() {
@@ -542,12 +598,23 @@ impl ParsedCardanoTx {
                             .to_address()
                             .to_bech32(None)
                             .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                        Some(
+                            _cert
+                                .pool_keyhash()
+                                .to_bech32("pool")
+                                .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                        ),
                         Some(variant2),
+                        None,
                         LABEL_ADDRESS.to_string(),
+                        Some(LABEL_POOL.to_string()),
                         Some(variant2_label),
+                        None,
                     ));
                 }
                 if let Some(_cert) = cert.as_stake_registration_and_delegation() {
+                    let deposit =
+                        normalize_coin(from_bignum(&_cert.coin()));
                     certs.push(CardanoCertificate::new(
                         "Stake Registration And Delegation".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
@@ -560,11 +627,41 @@ impl ParsedCardanoTx {
                                 .to_bech32("pool")
                                 .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                         ),
+                        Some(deposit),
+                        None,
                         LABEL_ADDRESS.to_string(),
                         Some(LABEL_POOL.to_string()),
+                        Some(LABEL_DEPOSIT.to_string()),
+                        None,
                     ));
                 }
                 if let Some(_cert) = cert.as_stake_vote_registration_and_delegation() {
+                    let (variant3, variant3_label) = match _cert.drep().kind() {
+                        DRepKind::AlwaysAbstain => ("Abstain".to_string(), LABEL_VOTE.to_string()),
+                        DRepKind::AlwaysNoConfidence => {
+                            ("No Confidence".to_string(), LABEL_VOTE.to_string())
+                        }
+                        DRepKind::KeyHash => (
+                            _cert
+                                .drep()
+                                .to_key_hash()
+                                .unwrap()
+                                .to_bech32("drep")
+                                .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                            LABEL_DREP.to_string(),
+                        ),
+                        DRepKind::ScriptHash => (
+                            _cert
+                                .drep()
+                                .to_script_hash()
+                                .unwrap()
+                                .to_bech32("")
+                                .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                            LABEL_DREP.to_string(),
+                        ),
+                    };
+                    let deposit =
+                        normalize_coin(from_bignum(&_cert.coin()));
                     certs.push(CardanoCertificate::new(
                         "Stake Vote Registration And Delegation".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
@@ -577,8 +674,12 @@ impl ParsedCardanoTx {
                                 .to_bech32("pool")
                                 .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                         ),
+                        Some(variant3),
+                        Some(deposit),
                         LABEL_ADDRESS.to_string(),
                         Some(LABEL_POOL.to_string()),
+                        Some(variant3_label),
+                        Some(LABEL_DEPOSIT.to_string()),
                     ));
                 }
                 if let Some(_cert) = cert.as_vote_registration_and_delegation() {
@@ -613,8 +714,12 @@ impl ParsedCardanoTx {
                             .to_bech32(None)
                             .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                         Some(variant2),
+                        None,
+                        None,
                         LABEL_ADDRESS.to_string(),
                         Some(variant2_label),
+                        None,
+                        None,
                     ));
                 }
             }

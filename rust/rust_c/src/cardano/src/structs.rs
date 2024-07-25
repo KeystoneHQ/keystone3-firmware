@@ -90,8 +90,12 @@ pub struct DisplayCardanoCertificate {
     cert_type: PtrString,
     variant1: PtrString,
     variant2: PtrString,
+    variant3: PtrString,
+    variant4: PtrString,
     variant1_label: PtrString,
     variant2_label: PtrString,
+    variant3_label: PtrString,
+    variant4_label: PtrString,
 }
 
 #[repr(C)]
@@ -252,9 +256,25 @@ impl From<&CardanoCertificate> for DisplayCardanoCertificate {
                 .get_variant2()
                 .map(|v| convert_c_char(v))
                 .unwrap_or(null_mut()),
+            variant3: value
+                .get_variant3()
+                .map(|v| convert_c_char(v))
+                .unwrap_or(null_mut()),
+            variant4: value
+                .get_variant4()
+                .map(|v| convert_c_char(v))
+                .unwrap_or(null_mut()),
             variant1_label: convert_c_char(value.get_variant1_label()),
             variant2_label: value
                 .get_variant2_label()
+                .map(|v| convert_c_char(v))
+                .unwrap_or(null_mut()),
+            variant3_label: value
+                .get_variant3_label()
+                .map(|v| convert_c_char(v))
+                .unwrap_or(null_mut()),
+            variant4_label: value
+                .get_variant4_label()
                 .map(|v| convert_c_char(v))
                 .unwrap_or(null_mut()),
         }
@@ -266,8 +286,12 @@ impl Free for DisplayCardanoCertificate {
         free_str_ptr!(self.cert_type);
         free_str_ptr!(self.variant1);
         free_str_ptr!(self.variant2);
+        free_str_ptr!(self.variant3);
+        free_str_ptr!(self.variant4);
         free_str_ptr!(self.variant1_label);
         free_str_ptr!(self.variant2_label);
+        free_str_ptr!(self.variant3_label);
+        free_str_ptr!(self.variant4_label);
     }
 }
 

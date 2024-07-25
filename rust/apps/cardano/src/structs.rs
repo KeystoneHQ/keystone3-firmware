@@ -613,8 +613,7 @@ impl ParsedCardanoTx {
                     ));
                 }
                 if let Some(_cert) = cert.as_stake_registration_and_delegation() {
-                    let deposit =
-                        normalize_coin(from_bignum(&_cert.coin()));
+                    let deposit = normalize_coin(from_bignum(&_cert.coin()));
                     certs.push(CardanoCertificate::new(
                         "Stake Registration And Delegation".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())
@@ -660,8 +659,7 @@ impl ParsedCardanoTx {
                             LABEL_DREP.to_string(),
                         ),
                     };
-                    let deposit =
-                        normalize_coin(from_bignum(&_cert.coin()));
+                    let deposit = normalize_coin(from_bignum(&_cert.coin()));
                     certs.push(CardanoCertificate::new(
                         "Stake Vote Registration And Delegation".to_string(),
                         RewardAddress::new(network_id, &_cert.stake_credential())

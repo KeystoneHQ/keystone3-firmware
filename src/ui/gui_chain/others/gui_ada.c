@@ -179,12 +179,33 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     return result;
 }
 
+static AdaXPubType GetXPubTypeByXPub(char *xpub)
+{
+    AdaXPubType type = STANDARD_ADA;
+    for (int i = XPUB_TYPE_ADA_0; i <= XPUB_TYPE_LEDGER_ADA_23; i++) {
+        char *tempXpub = GetCurrentAccountPublicKey(i);
+        if (strcmp(xpub, tempXpub) == 0) {
+            type = i <= XPUB_TYPE_ADA_23 ? STANDARD_ADA : LEDGER_ADA;
+            break;
+        }
+    }
+    return type;
+}
+
 PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     PtrT_TransactionCheckResult result = cardano_check_catalyst(data, mfp);
+    if (result->error_code == 0) {
+        SimpleResponse_c_char *xpub = cardano_catalyst_xpub(data);
+        AdaXPubType type = GetXPubTypeByXPub(xpub->data);
+        if (type != g_adaXpubType) {
+            TryToFixAdaXPubType();
+        }
+        free_simple_response_c_char(xpub);
+    }
     return result;
 }
 
@@ -340,22 +361,16 @@ bool GetAdaCertificatesExist(void *indata, void *param)
     return tx->certificates->size > 0;
 }
 
+static uint8_t calculateCertificateField(DisplayCardanoCertificate *cert)
+{
+    return cert->fields->size;
+}
+
 static uint8_t calculateCertificateRow(DisplayCardanoTx *tx)
 {
-    uint8_t row = 0;
-    for (uint32_t i = 0; i < tx->certificates->size; i++) {
-        if (tx->certificates->data[i].variant1 != NULL) {
-            row += 1;
-        }
-        if (tx->certificates->data[i].variant2 != NULL) {
-            row += 1;
-        }
-        if (tx->certificates->data[i].variant3 != NULL) {
-            row += 1;
-        }
-        if (tx->certificates->data[i].variant4 != NULL) {
-            row += 1;
-        }
+    uint8_t row = tx->certificates->size;
+    for (int i = 0; i < tx->certificates->size; i++) {
+        row += calculateCertificateField(&tx->certificates->data[i]);
     }
     return row;
 }
@@ -364,38 +379,29 @@ void GetAdaCertificatesSize(uint16_t *width, uint16_t *height, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
     *width = 408;
-    *height = 16 + 90 + 60 * calculateCertificateRow(tx) + 16;
+    *height = 16 + 30 + 60 * calculateCertificateRow(tx) + 16;
 }
 
 void *GetAdaCertificatesData(uint8_t *row, uint8_t *col, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
     *col = 1;
-    *row = calculateCertificateRow(tx) + tx->certificates->size;
+    *row = calculateCertificateRow(tx);
     int i = 0, j = 0;
     char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++) {
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
-        for (j = 0; j < *row; j++) {
-            uint32_t index = j / 5;
-            indata[i][j] = SRAM_MALLOC(BUFFER_SIZE_128);
-            if (j % 5 == 0) {
-                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%d #F5870A %s#", index + 1, tx->certificates->data[index].cert_type);
-            } else if (j % 5 == 1) {
-                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant1_label, tx->certificates->data[index].variant1);
-            } else if (j % 5 == 2) {
-                if (tx->certificates->data[index].variant2 != NULL) {
-                    snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant2_label, tx->certificates->data[index].variant2);
-                }
-            } else if (j % 5 == 3) {
-                if (tx->certificates->data[index].variant3 != NULL) {
-                    snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant3_label, tx->certificates->data[index].variant3);
-                }
-            } else {
-                if (tx->certificates->data[index].variant4 != NULL) {
-                    snprintf_s(indata[i][j], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[index].variant4_label, tx->certificates->data[index].variant4);
+        uint32_t fieldCount = 0;
+        for (j = 0; j < tx->certificates->size; j++) {
+            for (int k = fieldCount; k < fieldCount + calculateCertificateField(&tx->certificates->data[j]) + 1; k++) {
+                indata[i][k] = SRAM_MALLOC(BUFFER_SIZE_128);
+                if (k == fieldCount) {
+                    snprintf_s(indata[i][k], BUFFER_SIZE_128,  "%d #F5870A %s#", j + 1, tx->certificates->data[j].cert_type);
+                } else {
+                    snprintf_s(indata[i][k], BUFFER_SIZE_128,  "%s: %s", tx->certificates->data[j].fields->data[k - fieldCount - 1].label, tx->certificates->data[j].fields->data[k - fieldCount - 1].value);
                 }
             }
+            fieldCount += calculateCertificateField(&tx->certificates->data[j]) + 1;
         }
     }
     return (void *)indata;

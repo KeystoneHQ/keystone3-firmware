@@ -166,11 +166,8 @@ pub extern "C" fn cardano_parse_sign_data(
         .get_path()
         .unwrap();
     let xpub = cardano_sign_data_reqeust.get_xpub();
-    let parsed_data = app_cardano::transaction::parse_sign_data(
-        sign_data,
-        derviation_path,
-        hex::encode(xpub),
-    );
+    let parsed_data =
+        app_cardano::transaction::parse_sign_data(sign_data, derviation_path, hex::encode(xpub));
     match parsed_data {
         Ok(v) => TransactionParseResult::success(DisplayCardanoSignData::from(v).c_ptr()).c_ptr(),
         Err(e) => TransactionParseResult::from(e).c_ptr(),

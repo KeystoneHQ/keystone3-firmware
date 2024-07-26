@@ -325,23 +325,19 @@ impl ParsedCardanoTx {
                     ));
                 }
                 if let Some(_cert) = cert.as_stake_registration() {
-                    let fields = vec![
-                        CertField {
-                            label: LABEL_ADDRESS.to_string(),
-                            value: RewardAddress::new(network_id, &_cert.stake_credential())
-                                .to_address()
-                                .to_bech32(None)
-                                .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
-                        },
-                    ];
+                    let mut fields = vec![CertField {
+                        label: LABEL_ADDRESS.to_string(),
+                        value: RewardAddress::new(network_id, &_cert.stake_credential())
+                            .to_address()
+                            .to_bech32(None)
+                            .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+                    }];
                     match _cert.coin() {
                         Some(v) => {
-                            let deposit = normalize_coin(from_bignum(&v));
-                            let deposit_field = CertField {
+                            fields.push(CertField {
                                 label: LABEL_DEPOSIT.to_string(),
-                                value: deposit,
-                            };
-                            fields.push(deposit_field);
+                                value: normalize_coin(from_bignum(&v)),
+                            });
                         }
                         None => {}
                     }

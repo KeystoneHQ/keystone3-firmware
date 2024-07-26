@@ -43,6 +43,11 @@ int GetAdaExtraDataLen(void *param);
 
 void GetAdaSignDataPayloadText(void *indata, void *param, uint32_t maxLen);
 int GetAdaSignDataPayloadLength(void *param);
+void GetAdaSignDataMessageHashText(void *indata, void *param, uint32_t maxLen);
+int GetAdaSignDataMessageHashLength(void *param);
+void GetAdaSignDataXPubText(void *indata, void *param, uint32_t maxLen);
+int GetAdaSignDataXPubLength(void *param);
+
 void GetAdaSignDataDerviationPathText(void *indata, void *param, uint32_t maxLen);
 void *GuiGetAdaCatalyst(void);
 

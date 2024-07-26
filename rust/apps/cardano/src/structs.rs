@@ -50,7 +50,9 @@ impl_public_struct!(CardanoCertKey {
 
 impl_public_struct!(ParsedCardanoSignData {
     payload: String,
-    derivation_path: String
+    derivation_path: String,
+    message_hash: String,
+    xpub: String
 });
 
 impl_public_struct!(ParsedCardanoTx {
@@ -161,21 +163,25 @@ struct Delegation {
 }
 
 impl ParsedCardanoSignData {
-    pub fn build(sign_data: Vec<u8>, derivation_path: String) -> R<Self> {
+    pub fn build(sign_data: Vec<u8>, derivation_path: String, xpub: String) -> R<Self> {
         let sign_structure = CardanoSignStructure::from_cbor(sign_data.clone());
         match sign_structure {
             Ok(sign_structure) => {
                 let raw_payload = sign_structure.get_payload();
                 let payload = String::from_utf8(hex::decode(raw_payload.clone()).unwrap())
-                    .unwrap_or_else(|_| raw_payload);
+                    .unwrap_or_else(|_| raw_payload.clone());
                 Ok(Self {
                     payload,
                     derivation_path,
+                    message_hash: hex::encode(raw_payload),
+                    xpub,
                 })
             }
             Err(e) => Ok(Self {
-                payload: hex::encode(sign_data),
+                payload: hex::encode(sign_data.clone()),
                 derivation_path,
+                message_hash: hex::encode(sign_data),
+                xpub,
             }),
         }
     }
@@ -1079,9 +1085,11 @@ mod tests {
     #[test]
     fn test_parse_sign_data() {
         let payload = "846a5369676e6174757265315882a301270458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad676164647265737358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad4043abc123";
+        let xpub = "ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c";
         let data = ParsedCardanoSignData::build(
             hex::decode(payload).unwrap(),
             "m/1852'/1815'/0'/0/0".to_string(),
+            xpub.to_string(),
         )
         .unwrap();
         assert_eq!(data.get_derivation_path(), "m/1852'/1815'/0'/0/0");

@@ -114,15 +114,6 @@ void *GuiGetAdaSignDataData(void)
     return g_parseResult;
 }
 
-void GetAdaSignDataPayloadText(void *indata, void *param, uint32_t maxLen)
-{
-    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
-    if (data->payload == NULL) {
-        return;
-    }
-    strcpy_s((char *)indata, maxLen, data->payload);
-}
-
 void GetAdaSignDataDerviationPathText(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
@@ -130,6 +121,15 @@ void GetAdaSignDataDerviationPathText(void *indata, void *param, uint32_t maxLen
         return;
     }
     strcpy_s((char *)indata, maxLen, data->derivation_path);
+}
+
+void GetAdaSignDataPayloadText(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
+    if (data->payload == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->payload);
 }
 
 int GetAdaSignDataPayloadLength(void *param)
@@ -141,13 +141,40 @@ int GetAdaSignDataPayloadLength(void *param)
     return strlen(data->payload) + 1;
 }
 
-static void TryToFixAdaXPubType()
+void GetAdaSignDataMessageHashText(void *indata, void *param, uint32_t maxLen)
 {
-    if (g_adaXpubType == STANDARD_ADA) {
-        SetAdaXPubType(LEDGER_ADA);
-    } else {
-        SetAdaXPubType(STANDARD_ADA);
+    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
+    if (data->message_hash == NULL) {
+        return;
     }
+    strcpy_s((char *)indata, maxLen, data->message_hash);
+}
+
+int GetAdaSignDataMessageHashLength(void *param)
+{
+    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
+    if (data->message_hash == NULL) {
+        return 0;
+    }
+    return strlen(data->message_hash) + 1;
+}
+
+void GetAdaSignDataXPubText(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
+    if (data->xpub == NULL) {
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, data->xpub);
+}
+
+int GetAdaSignDataXPubLength(void *param)
+{
+    DisplayCardanoSignData *data = (DisplayCardanoSignData *)param;
+    if (data->xpub == NULL) {
+        return 0;
+    }
+    return strlen(data->xpub) + 1;
 }
 
 PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
@@ -163,23 +190,11 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     uint8_t xpubIndex = GetXPubIndexByPath(adaPath);
     xpub = GetCurrentAccountPublicKey(xpubIndex);
     PtrT_TransactionCheckResult result = cardano_check_tx(data, mfp, xpub);
-    // XXX: Check for mismatched derived address types
-    if (result->error_code == 500) {
-        free_TransactionCheckResult(result);
-        AdaXPubType tempXpubType = g_adaXpubType;
-        TryToFixAdaXPubType();
-        xpubIndex = GetXPubIndexByPath(adaPath);
-        xpub = GetCurrentAccountPublicKey(xpubIndex);
-        result = cardano_check_tx(data, mfp, xpub);
-        if (result->error_code == 500) {
-            g_adaXpubType = tempXpubType;
-        }
-    }
     free_simple_response_c_char(path);
     return result;
 }
 
-static AdaXPubType GetXPubTypeByXPub(char *xpub)
+static AdaXPubType GetXPubTypeByPathAndXPub(char *xpub, char *path)
 {
     AdaXPubType type = STANDARD_ADA;
     for (int i = XPUB_TYPE_ADA_0; i <= XPUB_TYPE_LEDGER_ADA_23; i++) {
@@ -198,14 +213,6 @@ PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     PtrT_TransactionCheckResult result = cardano_check_catalyst(data, mfp);
-    if (result->error_code == 0) {
-        SimpleResponse_c_char *xpub = cardano_catalyst_xpub(data);
-        AdaXPubType type = GetXPubTypeByXPub(xpub->data);
-        if (type != g_adaXpubType) {
-            TryToFixAdaXPubType();
-        }
-        free_simple_response_c_char(xpub);
-    }
     return result;
 }
 

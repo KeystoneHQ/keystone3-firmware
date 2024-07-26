@@ -174,14 +174,16 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             sendTlvArray[0].value = 4;
             break;
         }
-        sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
-        PrintArray("hash", hash, 32);
-        if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
-            printf("verify signature fail\n");
-            sendTlvArray[0].value = 3;
-            break;
+        if (!g_isNftFile) {
+            sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
+            PrintArray("hash", hash, 32);
+            if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
+                printf("verify signature fail\n");
+                sendTlvArray[0].value = 3;
+                break;
+            }
+            printf("verify signature ok\n");
         }
-        printf("verify signature ok\n");
         uint8_t walletAmount;
         GetExistAccountNum(&walletAmount);
         if (GetCurrentAccountIndex() == ACCOUNT_INDEX_LOGOUT && walletAmount != 0) {
@@ -349,7 +351,6 @@ static void WriteNftToFlash(void)
     int len, changePercent = 0, percent;
     int i = 0;
     const char *filePath = "1:nft.bin";
-    printf("%s %d..\n", __func__, __LINE__);
     ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
     if (ret) {
         printf("open file err %d\n", ret);
@@ -393,6 +394,7 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     g_fileTransCtrl.endTick = osKernelGetTickCount();
     PrintArray("tlvData", tlvData, head->length);
     PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
+    MD5_Final(md5Result, &ctx);
     PrintArray("md5Result", md5Result, 16);
     printf("total tick=%d\n", g_fileTransCtrl.endTick - g_fileTransCtrl.startTick);
 
@@ -402,9 +404,9 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     sendHead.flag.b.ack = 0;
     sendHead.flag.b.isHost = 0;
 
-    GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN, 0);
     *outLen = sizeof(FrameHead_t) + 4;
     WriteNftToFlash();
+    GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN, 0);
     GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);
     return BuildFrame(&sendHead, NULL, 0);
 }

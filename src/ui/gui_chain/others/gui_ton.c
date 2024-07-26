@@ -52,16 +52,13 @@ UREncodeResult *GuiGetTonSignQrCodeData(void)
         MnemonicType type = GetMnemonicType();
         uint8_t seed[64];
         int len = 64;
-        switch (type)
-        {
-        case MNEMONIC_TYPE_BIP39:
-        {
+        switch (type) {
+        case MNEMONIC_TYPE_BIP39: {
             len = sizeof(seed);
             break;
 
         }
-        case MNEMONIC_TYPE_SLIP39:
-        {
+        case MNEMONIC_TYPE_SLIP39: {
             len = GetCurrentAccountEntropyLen();
             break;
         }
@@ -87,16 +84,13 @@ UREncodeResult *GuiGetTonProofSignQrCodeData(void)
         MnemonicType type = GetMnemonicType();
         uint8_t seed[64];
         int len = 64;
-        switch (type)
-        {
-        case MNEMONIC_TYPE_BIP39:
-        {
+        switch (type) {
+        case MNEMONIC_TYPE_BIP39: {
             len = sizeof(seed);
             break;
 
         }
-        case MNEMONIC_TYPE_SLIP39:
-        {
+        case MNEMONIC_TYPE_SLIP39: {
             len = GetCurrentAccountEntropyLen();
             break;
         }

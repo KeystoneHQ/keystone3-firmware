@@ -180,7 +180,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_ADA_SIGN_DATA,
 #ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ada_sign_data_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,100],\"pos\":[0,0],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Path\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataDerviationPathText\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"size\":[408,418],\"pos\":[0,124],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Payload\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataPayloadText\",\"text_len_func\":\"GetAdaSignDataPayloadLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
+        "{\"name\":\"ada_sign_data_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,100],\"pos\":[0,0],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Path\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataDerviationPathText\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"size\":[408,138],\"pos\":[0,124],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"PublicKey\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataXPubText\",\"text_len_func\":\"GetAdaSignDataXPubLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"size\":[408,138],\"pos\":[0,278],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"MessageHash\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataMessageHashText\",\"text_len_func\":\"GetAdaSignDataMessageHashLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"size\":[408,228],\"pos\":[0,432],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Payload\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataPayloadText\",\"text_len_func\":\"GetAdaSignDataPayloadLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
 #else
         PC_SIMULATOR_PATH "/page_ada_sign_data.json",
 #endif
@@ -846,6 +846,10 @@ GetLabelDataFunc GuiAdaTextFuncGet(char *type)
         return GetCatalystRewards;
     } else if (!strcmp(type, "GetCatalystVoteKeys")) {
         return GetCatalystVoteKeys;
+    } else if (!strcmp(type, "GetAdaSignDataMessageHashText")) {
+        return GetAdaSignDataMessageHashText;
+    } else if (!strcmp(type, "GetAdaSignDataXPubText")) {
+        return GetAdaSignDataXPubText;
     }
     return NULL;
 }
@@ -856,6 +860,10 @@ GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
         return GetAdaExtraDataLen;
     } else if (!strcmp(type, "GetAdaSignDataPayloadLength")) {
         return GetAdaSignDataPayloadLength;
+    } else if (!strcmp(type, "GetAdaSignDataMessageHashLength")) {
+        return GetAdaSignDataMessageHashLength;
+    } else if (!strcmp(type, "GetAdaSignDataXPubLength")) {
+        return GetAdaSignDataXPubLength;
     }
     return NULL;
 }

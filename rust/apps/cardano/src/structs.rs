@@ -91,6 +91,8 @@ const LABEL_POOL: &str = "Pool";
 const LABEL_DEPOSIT: &str = "Deposit";
 const LABEL_DREP: &str = "DRep";
 const LABEL_VOTE: &str = "Vote";
+const LABEL_ABCHOR: &str = "Anchor";
+const LABEL_ANCHOR_URL: &str = "Anchor URL";
 const LABEL_ANCHOR_DATA_HASH: &str = "Anchor Data Hash";
 const LABEL_COLD_KEY: &str = "Cold Key";
 const LABEL_HOT_KEY: &str = "Hot Key";
@@ -323,8 +325,6 @@ impl ParsedCardanoTx {
                     ));
                 }
                 if let Some(_cert) = cert.as_stake_registration() {
-                    let deposit =
-                        normalize_coin(from_bignum(&_cert.coin().unwrap_or(BigNum::zero())));
                     let fields = vec![
                         CertField {
                             label: LABEL_ADDRESS.to_string(),
@@ -333,11 +333,18 @@ impl ParsedCardanoTx {
                                 .to_bech32(None)
                                 .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                         },
-                        CertField {
-                            label: LABEL_DEPOSIT.to_string(),
-                            value: deposit,
-                        },
                     ];
+                    match _cert.coin() {
+                        Some(v) => {
+                            let deposit = normalize_coin(from_bignum(&v));
+                            let deposit_field = CertField {
+                                label: LABEL_DEPOSIT.to_string(),
+                                value: deposit,
+                            };
+                            fields.push(deposit_field);
+                        }
+                        None => {}
+                    }
                     certs.push(CardanoCertificate::new(
                         "Account Registration".to_string(),
                         fields,
@@ -522,6 +529,20 @@ impl ParsedCardanoTx {
                             label: LABEL_DEPOSIT.to_string(),
                             value: deposit,
                         },
+                        CertField {
+                            label: LABEL_ANCHOR_URL.to_string(),
+                            value: _cert
+                                .anchor()
+                                .map(|v| v.url().url())
+                                .unwrap_or("None".to_string()),
+                        },
+                        CertField {
+                            label: LABEL_ANCHOR_DATA_HASH.to_string(),
+                            value: _cert
+                                .anchor()
+                                .map(|v| v.anchor_data_hash().to_string())
+                                .unwrap_or("None".to_string()),
+                        },
                     ];
                     certs.push(CardanoCertificate::new(
                         "Drep Registration".to_string(),
@@ -557,6 +578,13 @@ impl ParsedCardanoTx {
                         CertField {
                             label: variant1_label,
                             value: variant1,
+                        },
+                        CertField {
+                            label: LABEL_ANCHOR_URL.to_string(),
+                            value: _cert
+                                .anchor()
+                                .map(|v| v.url().url())
+                                .unwrap_or("None".to_string()),
                         },
                         CertField {
                             label: LABEL_ANCHOR_DATA_HASH.to_string(),

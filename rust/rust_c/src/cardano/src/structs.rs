@@ -105,7 +105,7 @@ pub struct DisplayVotingProcedure {
     voter: PtrString,
     transaction_id: PtrString,
     index: PtrString,
-    vote: PtrString
+    vote: PtrString,
 }
 
 #[repr(C)]
@@ -276,7 +276,7 @@ impl From<&VotingProcedure> for DisplayVotingProcedure {
             voter: convert_c_char(value.get_voter()),
             transaction_id: convert_c_char(value.get_transaction_id()),
             index: convert_c_char(value.get_index()),
-            vote: convert_c_char(value.get_vote())
+            vote: convert_c_char(value.get_vote()),
         }
     }
 }

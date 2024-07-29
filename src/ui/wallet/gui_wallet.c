@@ -476,9 +476,9 @@ UREncodeResult *GuiGetBitgetWalletData(void)
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
     //   btc 4
     // + eth 10
-    ExtendedPublicKey keys[14];
+    ExtendedPublicKey keys[13];
     public_keys->data = keys;
-    public_keys->size = 14;
+    public_keys->size = 13;
     for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
         keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(BUFFER_SIZE_64);
         snprintf_s(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, BUFFER_SIZE_64, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
@@ -494,8 +494,6 @@ UREncodeResult *GuiGetBitgetWalletData(void)
     keys[12].path = "m/84'/0'/0'";
     keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
 
-    keys[13].path = "m/86'/0'/0'";
-    keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
 
     char serialNumber[256];
     GetSerialNumber(serialNumber);

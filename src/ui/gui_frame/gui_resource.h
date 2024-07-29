@@ -255,6 +255,7 @@ LV_IMG_DECLARE(walletUniSat);
 LV_IMG_DECLARE(walletXBull);
 LV_IMG_DECLARE(walletTonkeeper);
 LV_IMG_DECLARE(walletKeystone);
+LV_IMG_DECLARE(walletBitget);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
@@ -284,7 +285,7 @@ LV_IMG_DECLARE(walletListImToken);
 LV_IMG_DECLARE(walletListUniSat);
 LV_IMG_DECLARE(walletListTonkeeper);
 LV_IMG_DECLARE(walletListKeystone);
-
+LV_IMG_DECLARE(walletListBitget);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

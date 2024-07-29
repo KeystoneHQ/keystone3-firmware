@@ -259,6 +259,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_KEYSTONE].items[0].url = _("connect_keystone_link");
     g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrTitle = _("connect_keystone_title");
     g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrUrl = _("connect_keystone_link");
+
+    //WALLET_LIST_BITGET
+    g_tutorials[WALLET_LIST_BITGET].len = 1;
+    g_tutorials[WALLET_LIST_BITGET].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_BITGET].items[0].walletName = _("connect_bitget_title");
+    g_tutorials[WALLET_LIST_BITGET].items[0].url = _("connect_bitget_link");
+    g_tutorials[WALLET_LIST_BITGET].items[0].qrTitle = _("connect_bitget_title");
+    g_tutorials[WALLET_LIST_BITGET].items[0].qrUrl = _("connect_bitget_link");
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;
     g_tutorials[WALLET_LIST_BLUE].desc = _("connect_wallet_desc");

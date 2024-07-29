@@ -3,7 +3,7 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_cardano::structs::{
     CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignData,
-    ParsedCardanoTx,
+    ParsedCardanoTx, VotingProcedure,
 };
 use core::ptr::null_mut;
 use third_party::hex;
@@ -69,6 +69,7 @@ pub struct DisplayCardanoTx {
     pub certificates: Ptr<VecFFI<DisplayCardanoCertificate>>,
     pub withdrawals: Ptr<VecFFI<DisplayCardanoWithdrawal>>,
     pub auxiliary_data: PtrString,
+    pub voting_procedures: Ptr<VecFFI<DisplayVotingProcedure>>,
 }
 
 #[repr(C)]
@@ -97,6 +98,14 @@ pub struct DisplayCertField {
 pub struct DisplayCardanoCertificate {
     cert_type: PtrString,
     fields: Ptr<VecFFI<DisplayCertField>>,
+}
+
+#[repr(C)]
+pub struct DisplayVotingProcedure {
+    voter: PtrString,
+    transaction_id: PtrString,
+    index: PtrString,
+    vote: PtrString,
 }
 
 #[repr(C)]
@@ -144,6 +153,7 @@ impl Free for DisplayCardanoTx {
             });
             free_vec!(self.withdrawals);
             free_vec!(self.certificates);
+            free_vec!(self.voting_procedures);
 
             free_ptr_string(self.total_input);
             free_ptr_string(self.total_output);
@@ -207,6 +217,14 @@ impl From<ParsedCardanoTx> for DisplayCardanoTx {
                 .get_auxiliary_data()
                 .map(|v| convert_c_char(v))
                 .unwrap_or(null_mut()),
+            voting_procedures: VecFFI::from(
+                value
+                    .get_voting_procedures()
+                    .iter()
+                    .map(DisplayVotingProcedure::from)
+                    .collect_vec(),
+            )
+            .c_ptr(),
         }
     }
 }
@@ -252,6 +270,17 @@ impl From<&CardanoTo> for DisplayCardanoTo {
     }
 }
 
+impl From<&VotingProcedure> for DisplayVotingProcedure {
+    fn from(value: &VotingProcedure) -> Self {
+        Self {
+            voter: convert_c_char(value.get_voter()),
+            transaction_id: convert_c_char(value.get_transaction_id()),
+            index: convert_c_char(value.get_index()),
+            vote: convert_c_char(value.get_vote()),
+        }
+    }
+}
+
 impl From<&CardanoCertificate> for DisplayCardanoCertificate {
     fn from(value: &CardanoCertificate) -> Self {
         Self {
@@ -275,6 +304,15 @@ impl Free for DisplayCardanoCertificate {
     fn free(&self) {
         free_str_ptr!(self.cert_type);
         free_vec!(self.fields);
+    }
+}
+
+impl Free for DisplayVotingProcedure {
+    fn free(&self) {
+        free_str_ptr!(self.voter);
+        free_str_ptr!(self.transaction_id);
+        free_str_ptr!(self.index);
+        free_str_ptr!(self.vote);
     }
 }
 

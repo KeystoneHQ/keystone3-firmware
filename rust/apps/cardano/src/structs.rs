@@ -13,8 +13,8 @@ use cardano_serialization_lib::crypto::{Ed25519KeyHash, ScriptHash};
 use cardano_serialization_lib::protocol_types::governance::{Anchor, DRepKind};
 use cardano_serialization_lib::utils::{from_bignum, BigNum};
 use cardano_serialization_lib::{
-    protocol_types::fixed_tx::FixedTransaction as Transaction, Certificate, CertificateKind,
-    NetworkId, NetworkIdKind,
+    protocol_types::fixed_tx::FixedTransaction as Transaction,
+    protocol_types::governance::VoteKind, Certificate, CertificateKind, NetworkId, NetworkIdKind,
 };
 
 use alloc::format;
@@ -55,6 +55,13 @@ impl_public_struct!(ParsedCardanoSignData {
     xpub: String
 });
 
+impl_public_struct!(VotingProcedure {
+    voter: String,
+    transaction_id: String,
+    index: String,
+    vote: String
+});
+
 impl_public_struct!(ParsedCardanoTx {
     fee: String,
     total_input: String,
@@ -64,7 +71,8 @@ impl_public_struct!(ParsedCardanoTx {
     network: String,
     certificates: Vec<CardanoCertificate>,
     withdrawals: Vec<CardanoWithdrawal>,
-    auxiliary_data: Option<String>
+    auxiliary_data: Option<String>,
+    voting_procedures: Vec<VotingProcedure>
 });
 
 impl_public_struct!(SignDataResult {
@@ -248,6 +256,34 @@ impl ParsedCardanoTx {
             normalize_coin(_v)
         };
 
+        let voting_procedures = match tx.body().voting_procedures() {
+            Some(v) => {
+                let voters = v.get_voters();
+                let mut voting_procedures = vec![];
+                for voter_index in 0..voters.len() {
+                    let voter = voters.get(voter_index).unwrap();
+                    let actions = v.get_governance_action_ids_by_voter(&voter);
+                    for i in 0..actions.len() {
+                        let action = actions.get(i).unwrap();
+                        let procedure = v.get(&voter, &action);
+                        let vote = match procedure.unwrap().vote_kind() {
+                            VoteKind::No => "No".to_string(),
+                            VoteKind::Yes => "Yes".to_string(),
+                            VoteKind::Abstain => "Abstain".to_string(),
+                        };
+                        voting_procedures.push(VotingProcedure {
+                            voter: voter.to_key_hash().unwrap().to_string(),
+                            transaction_id: action.transaction_id().to_string(),
+                            index: action.index().to_string(),
+                            vote,
+                        })
+                    }
+                }
+                voting_procedures
+            }
+            None => vec![],
+        };
+
         Ok(Self {
             total_input: total_input_amount,
             total_output: total_output_amount,
@@ -258,6 +294,7 @@ impl ParsedCardanoTx {
             certificates: Self::parse_certificates(&tx, network_id)?,
             withdrawals: Self::parse_withdrawals(&tx)?,
             auxiliary_data: Self::parse_auxiliary_data(&tx)?,
+            voting_procedures,
         })
     }
 
@@ -447,20 +484,65 @@ impl ParsedCardanoTx {
                     ));
                 }
                 if let Some(_cert) = cert.as_committee_hot_auth() {
-                    let fields = vec![CertField {
-                        label: LABEL_ADDRESS.to_string(),
-                        value: "None".to_string(),
-                    }];
+                    let fields = vec![
+                        CertField {
+                            label: LABEL_HOT_KEY.to_string(),
+                            value: match _cert.committee_hot_key().kind() {
+                                Ed25519KeyHash => {
+                                    _cert.committee_hot_key().to_keyhash().unwrap().to_string()
+                                }
+                                ScriptHash => _cert
+                                    .committee_hot_key()
+                                    .to_scripthash()
+                                    .unwrap()
+                                    .to_string(),
+                            },
+                        },
+                        CertField {
+                            label: LABEL_COLD_KEY.to_string(),
+                            value: match _cert.committee_cold_key().kind() {
+                                Ed25519KeyHash => {
+                                    _cert.committee_cold_key().to_keyhash().unwrap().to_string()
+                                }
+                                ScriptHash => _cert
+                                    .committee_cold_key()
+                                    .to_scripthash()
+                                    .unwrap()
+                                    .to_string(),
+                            },
+                        },
+                    ];
                     certs.push(CardanoCertificate::new(
                         "Committee Hot Auth".to_string(),
                         fields,
                     ));
                 }
                 if let Some(_cert) = cert.as_committee_cold_resign() {
-                    let fields = vec![CertField {
-                        label: LABEL_ADDRESS.to_string(),
-                        value: "None".to_string(),
+                    let mut fields = vec![CertField {
+                        label: LABEL_COLD_KEY.to_string(),
+                        value: match _cert.committee_cold_key().kind() {
+                            Ed25519KeyHash => {
+                                _cert.committee_cold_key().to_keyhash().unwrap().to_string()
+                            }
+                            ScriptHash => _cert
+                                .committee_cold_key()
+                                .to_scripthash()
+                                .unwrap()
+                                .to_string(),
+                        },
                     }];
+                    if let Some(anchor) = _cert.anchor() {
+                        let fields = vec![
+                            CertField {
+                                label: LABEL_ANCHOR_URL.to_string(),
+                                value: anchor.url().url(),
+                            },
+                            CertField {
+                                label: LABEL_ANCHOR_DATA_HASH.to_string(),
+                                value: anchor.anchor_data_hash().to_string(),
+                            },
+                        ];
+                    }
                     certs.push(CardanoCertificate::new(
                         "Committee Cold Resign".to_string(),
                         fields,
@@ -671,7 +753,7 @@ impl ParsedCardanoTx {
                         },
                     ];
                     certs.push(CardanoCertificate::new(
-                        "Stake Registration And Delegation".to_string(),
+                        "Stake Registration & Delegation".to_string(),
                         fields,
                     ));
                 }
@@ -726,7 +808,7 @@ impl ParsedCardanoTx {
                         },
                     ];
                     certs.push(CardanoCertificate::new(
-                        "Stake Vote Registration And Delegation".to_string(),
+                        "Stake Vote Registration & Delegation".to_string(),
                         fields,
                     ));
                 }
@@ -755,6 +837,7 @@ impl ParsedCardanoTx {
                             LABEL_DREP.to_string(),
                         ),
                     };
+                    let deposit = normalize_coin(from_bignum(&_cert.coin()));
                     let fields = vec![
                         CertField {
                             label: LABEL_ADDRESS.to_string(),
@@ -766,6 +849,10 @@ impl ParsedCardanoTx {
                         CertField {
                             label: variant2_label,
                             value: variant2,
+                        },
+                        CertField {
+                            label: LABEL_DEPOSIT.to_string(),
+                            value: deposit,
                         },
                     ];
                     certs.push(CardanoCertificate::new(

@@ -71,4 +71,9 @@ ChainType GetAdaXPubTypeByIndex(uint16_t index);
 void SetAdaXPubType(AdaXPubType type);
 AdaXPubType GetAdaXPubType(void);
 
+bool GetAdaVotingProceduresExist(void *indata, void *param);
+void GetAdaVotingProceduresSize(uint16_t *width, uint16_t *height, void *param);
+void *GetAdaVotingProceduresData(uint8_t *row, uint8_t *col, void *param);
+void GetAdaVotingProceduresLabel(void *indata, void *param, uint32_t maxLen);
+
 #endif

@@ -19,6 +19,7 @@ UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountTyp
 #endif
 UREncodeResult *GuiGetMetamaskData(void);
 #endif
+UREncodeResult *GuiGetBitgetWalletData(void);
 UREncodeResult *GuiGetOkxWalletData(void);
 #ifndef BTC_ONLY
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);

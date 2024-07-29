@@ -1,18 +1,17 @@
 #![no_std]
 #![feature(error_in_core)]
 
-use alloc::vec::Vec;
-use app_utils::impl_public_struct;
-use third_party::bitcoin::bip32::DerivationPath;
-
 #[allow(unused_imports)] // stupid compiler
 #[macro_use]
 extern crate alloc;
 extern crate core;
-
 #[cfg(test)]
 #[macro_use]
 extern crate std;
+use alloc::vec::Vec;
+
+use app_utils::impl_public_struct;
+use third_party::bitcoin::bip32::DerivationPath;
 
 pub mod aptos;
 pub mod backpack;
@@ -29,6 +28,8 @@ pub mod tonkeeper;
 mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
+
+pub mod bitget;
 //TODO: get these value from device
 pub const DEVICE_TYPE: &str = "Keystone 3 Pro";
 pub const DEVICE_VERSION: &str = "1.1.0";

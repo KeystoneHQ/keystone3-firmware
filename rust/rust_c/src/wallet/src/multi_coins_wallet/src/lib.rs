@@ -4,6 +4,7 @@ extern crate alloc;
 pub mod aptos;
 pub mod arconnect;
 pub mod backpack;
+pub mod bitget;
 mod imtoken;
 pub mod keplr;
 pub mod keystone;
@@ -17,6 +18,7 @@ pub mod xbull;
 pub mod xrp_toolkit;
 
 pub mod thor_wallet;
+
 
 use alloc::format;
 use alloc::string::String;

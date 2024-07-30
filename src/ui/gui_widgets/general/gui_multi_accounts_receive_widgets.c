@@ -30,6 +30,7 @@
 typedef enum {
     RECEIVE_TILE_QRCODE = 0,
     RECEIVE_TILE_SWITCH_ACCOUNT,
+    RECEIVE_TILE_SWITCH_PATH_TYPE,
 
     RECEIVE_TILE_BUTT,
 } MultiAccountsReceiveTile;
@@ -53,6 +54,7 @@ typedef struct {
     lv_obj_t *tileView;
     lv_obj_t *tileQrCode;
     lv_obj_t *tileSwitchAddress;
+    lv_obj_t *tileSwitchPathType;
     lv_obj_t *attentionCont;
     lv_obj_t *qrCodeCont;
     lv_obj_t *qrCode;
@@ -60,6 +62,7 @@ typedef struct {
     lv_obj_t *addressCountLabel;
     lv_obj_t *moreCont;
     lv_obj_t *addressButton;
+    lv_obj_t *pathTypeButton;
     lv_obj_t *leftBtnImg;
     lv_obj_t *rightBtnImg;
     lv_obj_t *confirmAccountBtn;
@@ -110,6 +113,7 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e);
 static void LeftBtnHandler(lv_event_t *e);
 static void RightBtnHandler(lv_event_t *e);
 static bool IsAddressSwitchable();
+static bool IsPathTypeSwitchable();
 static bool HasMoreBtn();
 static void SwitchAddressHandler(lv_event_t *e);
 static void SwitchAccountHandler(lv_event_t *e);
@@ -121,9 +125,12 @@ static void RefreshSwitchAccount(void);
 static void OpenSwitchAddressHandler(lv_event_t *e);
 static void CloseSwitchAddressHandler(lv_event_t *e);
 
+static void OpenChangePathTypeHandler(lv_event_t *e);
+
 static void ShowAddressDetailHandler(lv_event_t *e);
 static void UpdateConfirmIndexBtn(void);
 static void UpdateConfirmAccountBtn(void);
+static void ChangePathTypeReturnHandler(lv_event_t *e);
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
 
@@ -154,6 +161,9 @@ void GuiMultiAccountsReceiveInit(uint8_t chain)
         g_multiAccountsReceiveWidgets.tileSwitchAddress = lv_tileview_add_tile(g_multiAccountsReceiveWidgets.tileView, RECEIVE_TILE_SWITCH_ACCOUNT, 0, LV_DIR_HOR);
         GuiCreateSwitchAddressWidget(g_multiAccountsReceiveWidgets.tileSwitchAddress);
         GuiCreateSwitchAddressButtons(g_multiAccountsReceiveWidgets.tileSwitchAddress);
+    }
+    if (IsPathTypeSwitchable()) {
+        g_multiAccountsReceiveWidgets.tileSwitchPathType = lv_tileview_add_tile(g_multiAccountsReceiveWidgets.tileView, RECEIVE_TILE_SWITCH_PATH_TYPE, 0, LV_DIR_HOR);
     }
     lv_obj_clear_flag(g_multiAccountsReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
 
@@ -207,9 +217,21 @@ void GuiMultiAccountsReceiveRefresh(void)
         }
         UpdateConfirmIndexBtn();
         break;
+    case RECEIVE_TILE_SWITCH_PATH_TYPE:
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ChangePathTypeReturnHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
+        GuiCreateSwitchPathTypeWidget(g_multiAccountsReceiveWidgets.tileSwitchPathType, g_chainCard);
+        break;
     default:
         break;
     }
+}
+
+static void ChangePathTypeReturnHandler(lv_event_t *e)
+{
+    GuiDestroySwitchPathTypeWidget();
+    ReturnHandler(NULL);
 }
 
 void GuiMultiAccountsReceivePrevTile(void)
@@ -221,7 +243,11 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
 {
     lv_obj_t *cont, *btn, *img, *label;
 
-    g_multiAccountsReceiveWidgets.moreCont = GuiCreateHintBox(228);
+    uint16_t height = 228;
+    if (IsPathTypeSwitchable()) {
+        height = 324;
+    }
+    g_multiAccountsReceiveWidgets.moreCont = GuiCreateHintBox(height);
     lv_obj_add_event_cb(lv_obj_get_child(g_multiAccountsReceiveWidgets.moreCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_multiAccountsReceiveWidgets.moreCont);
     cont = g_multiAccountsReceiveWidgets.moreCont;
 
@@ -250,6 +276,19 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     img = GuiCreateImg(btn, &imgAddressType);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
     label = GuiCreateTextLabel(btn, _("switch_account"));
+    lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
+
+    btn = lv_btn_create(cont);
+    lv_obj_set_size(btn, 456, 84);
+    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 24 + 476);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
+    lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
+    lv_obj_add_event_cb(btn, OpenChangePathTypeHandler, LV_EVENT_CLICKED, NULL);
+    img = GuiCreateImg(btn, &imgPath);
+    lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
+    label = GuiCreateTextLabel(btn, _("derivation_path_change"));
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
@@ -326,6 +365,17 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         tempObj = GuiCreateImg(g_multiAccountsReceiveWidgets.addressButton, &imgArrowRight);
         lv_obj_set_style_img_opa(tempObj, LV_OPA_80, LV_PART_MAIN);
         lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
+    }
+
+    g_multiAccountsReceiveWidgets.pathTypeButton = lv_btn_create(g_multiAccountsReceiveWidgets.qrCodeCont);
+    lv_obj_set_size(g_multiAccountsReceiveWidgets.pathTypeButton, 336, 36);
+    lv_obj_align(g_multiAccountsReceiveWidgets.pathTypeButton, LV_ALIGN_TOP_MID, 0, 380 + addrYExtend);
+    lv_obj_set_style_bg_opa(g_multiAccountsReceiveWidgets.pathTypeButton, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_border_width(g_multiAccountsReceiveWidgets.pathTypeButton, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(g_multiAccountsReceiveWidgets.pathTypeButton, 0, LV_PART_MAIN);
+    lv_obj_set_style_shadow_width(g_multiAccountsReceiveWidgets.pathTypeButton, 0, LV_PART_MAIN);
+    if (IsPathTypeSwitchable()) {
+        lv_obj_add_event_cb(g_multiAccountsReceiveWidgets.pathTypeButton, OpenChangePathTypeHandler, LV_EVENT_CLICKED, NULL);
     }
 
     const char *coin = GetCoinCardByIndex(g_chainCard)->coin;
@@ -824,6 +874,16 @@ static bool IsAddressSwitchable()
     }
 }
 
+static bool IsPathTypeSwitchable()
+{
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_ADA:
+        return true;
+    default:
+        return false;
+    }
+}
+
 static bool HasMoreBtn()
 {
     switch (g_chainCard) {
@@ -875,6 +935,12 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
 {
     GuiMultiAccountsReceiveGotoTile(RECEIVE_TILE_SWITCH_ACCOUNT);
     RefreshSwitchAddress();
+}
+
+static void OpenChangePathTypeHandler(lv_event_t *e)
+{
+    GuiMultiAccountsReceiveGotoTile(RECEIVE_TILE_SWITCH_PATH_TYPE);
+    GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
 }
 
 static void OpenSwitchAccountHandler(lv_event_t *e)
@@ -998,7 +1064,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
 
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
-        xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
+        xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(currentAccount));
         snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         // cardano mainnet;
         switch (type) {

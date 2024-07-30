@@ -3,6 +3,7 @@
 
 #include "stdint.h"
 #include "stdbool.h"
+#include "gui_change_path_type_widgets.h"
 
 void GuiMultiAccountsReceiveInit(uint8_t chain);
 void GuiMultiAccountsReceiveDeInit(void);

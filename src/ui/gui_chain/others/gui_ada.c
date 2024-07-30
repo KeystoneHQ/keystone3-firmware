@@ -380,6 +380,18 @@ bool GetAdaVotingProceduresExist(void *indata, void *param)
     return tx->voting_procedures->size > 0;
 }
 
+bool GetAdaVotingProposalsExist(void *indata, void *param)
+{
+    DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
+    return tx->voting_proposals->size > 0;
+}
+
+void GetAdaVotingProposalsLabel(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
+    snprintf_s((char *)indata,  maxLen, _("ada_proposals_tx_notice"));
+}
+
 void GetAdaVotingProceduresSize(uint16_t *width, uint16_t *height, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
@@ -404,7 +416,7 @@ void *GetAdaVotingProceduresData(uint8_t *row, uint8_t *col, void *param)
             } else if (j % 5 == 1) {
                 snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Voter: %s", tx->voting_procedures->data[index].voter);
             } else if (j % 5 == 2) {
-                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Transactiom Id: %s", tx->voting_procedures->data[index].transaction_id);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Transaction Id: %s", tx->voting_procedures->data[index].transaction_id);
             } else if (j % 5 == 3) {
                 snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Index: %s", tx->voting_procedures->data[index].index);
             } else {

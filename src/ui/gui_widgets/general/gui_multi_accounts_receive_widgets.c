@@ -164,7 +164,6 @@ void GuiMultiAccountsReceiveInit(uint8_t chain)
     }
     if (IsPathTypeSwitchable()) {
         g_multiAccountsReceiveWidgets.tileSwitchPathType = lv_tileview_add_tile(g_multiAccountsReceiveWidgets.tileView, RECEIVE_TILE_SWITCH_PATH_TYPE, 0, LV_DIR_HOR);
-        GuiCreateSwitchPathTypeWidget(g_multiAccountsReceiveWidgets.tileSwitchPathType, g_chainCard);
     }
     lv_obj_clear_flag(g_multiAccountsReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
 
@@ -1065,7 +1064,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
 
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
-        xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
+        xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(currentAccount));
         snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         // cardano mainnet;
         switch (type) {

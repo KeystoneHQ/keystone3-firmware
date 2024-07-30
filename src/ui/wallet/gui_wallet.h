@@ -16,6 +16,7 @@ UREncodeResult *GuiGetCompanionAppData(void);
 #ifndef COMPILE_SIMULATOR
 UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType);
 UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType);
+UREncodeResult *GetBitgetDataForAccountType(ETHAccountType accountType);
 #endif
 UREncodeResult *GuiGetMetamaskData(void);
 #endif

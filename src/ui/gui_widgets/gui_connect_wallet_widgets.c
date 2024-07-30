@@ -331,6 +331,7 @@ static bool IsEVMChain(int walletIndex)
     case WALLET_LIST_ZAPPER:
     case WALLET_LIST_YEARN_FINANCE:
     case WALLET_LIST_SUSHISWAP:
+    case WALLET_LIST_BITGET: // bitget wallet need change eth derivation path
         return true;
     default:
         return false;

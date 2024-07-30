@@ -11,6 +11,8 @@ use common_rust_c::types::{Ptr, PtrBytes, PtrString};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
 
+use crate::ETHAccountType;
+
 use super::utils::normalize_xpub;
 
 #[no_mangle]
@@ -18,6 +20,7 @@ pub extern "C" fn get_bitget_wallet_ur(
     master_fingerprint: PtrBytes,
     master_fingerprint_length: u32,
     serial_number: PtrString,
+    eth_account_type: ETHAccountType,
     public_keys: Ptr<CSliceFFI<ExtendedPublicKey>>,
     device_type: PtrString,
     device_version: PtrString,
@@ -47,6 +50,7 @@ pub extern "C" fn get_bitget_wallet_ur(
                     _keys,
                     &device_type,
                     &device_version,
+                    eth_account_type.into(),
                 ) {
                     Ok(data) => match data.try_into() {
                         Ok(_v) => UREncodeResult::encode(

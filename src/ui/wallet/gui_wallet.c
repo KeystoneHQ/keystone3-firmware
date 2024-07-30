@@ -145,6 +145,65 @@ static UREncodeResult *get_unlimited_connect_metamask_ur(PtrBytes master_fingerp
     return get_connect_metamask_ur_unlimited(master_fingerprint, master_fingerprint_length, account_type, public_keys);
 }
 
+
+
+static UREncodeResult *BasicGetBitgetDataForAccountType(ETHAccountType accountType)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[13];
+    public_keys->data = keys;
+
+    if (accountType == Bip44Standard) {
+        public_keys->size = 4;
+        keys[0].path = "m/44'/60'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+    } else if (accountType == LedgerLive) {
+        public_keys->size = 13;
+        for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
+            keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(BUFFER_SIZE_64);
+            snprintf_s(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, BUFFER_SIZE_64, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
+            keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
+        }
+    } else if (accountType == LedgerLegacy) {
+        public_keys->size = 4;
+        keys[0].path = "m/44'/60'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY);
+    }
+    if (public_keys->size == 4) {
+
+        keys[1].path = "m/44'/0'/0'";
+        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+
+        keys[2].path = "m/49'/0'/0'";
+        keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+
+        keys[3].path = "m/84'/0'/0'";
+        keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+    } else {
+        keys[10].path = "m/44'/0'/0'";
+        keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+
+        keys[11].path = "m/49'/0'/0'";
+        keys[11].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+
+        keys[12].path = "m/84'/0'/0'";
+        keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+    }
+
+
+    char serialNumber[256];
+    GetSerialNumber(serialNumber);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+    g_urEncode = get_bitget_wallet_ur(mfp, sizeof(mfp), serialNumber, accountType, public_keys, "Keystone 3 Pro", firmwareVersion);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    SRAM_FREE(public_keys);
+    return g_urEncode;
+}
+
+
 static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType accountType, MetamaskUrGetter func)
 {
     uint8_t mfp[4] = {0};
@@ -181,11 +240,15 @@ UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
     return BasicGetMetamaskDataForAccountType(accountType, get_connect_metamask_ur);
 }
 
+UREncodeResult *GetBitgetDataForAccountType(ETHAccountType accountType)
+{
+    return BasicGetBitgetDataForAccountType(accountType);
+}
+
 UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType)
 {
     return BasicGetMetamaskDataForAccountType(accountType, get_unlimited_connect_metamask_ur);
 }
-
 UREncodeResult *GuiGetMetamaskData(void)
 {
     ETHAccountType accountType = GetMetamaskAccountType();
@@ -468,43 +531,11 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
     SRAM_FREE(public_keys);
     return g_urEncode;
 }
-
 UREncodeResult *GuiGetBitgetWalletData(void)
 {
-    uint8_t mfp[4] = {0};
-    GetMasterFingerPrint(mfp);
-    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    //   btc 4
-    // + eth 10
-    ExtendedPublicKey keys[13];
-    public_keys->data = keys;
-    public_keys->size = 13;
-    for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
-        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(BUFFER_SIZE_64);
-        snprintf_s(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, BUFFER_SIZE_64, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
-        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
-    }
-
-    keys[10].path = "m/44'/0'/0'";
-    keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
-
-    keys[11].path = "m/49'/0'/0'";
-    keys[11].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
-
-    keys[12].path = "m/84'/0'/0'";
-    keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
-
-
-    char serialNumber[256];
-    GetSerialNumber(serialNumber);
-    char firmwareVersion[12];
-    GetSoftWareVersionNumber(firmwareVersion);
-    g_urEncode = get_bitget_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
-    CHECK_CHAIN_PRINT(g_urEncode);
-    SRAM_FREE(public_keys);
-    return g_urEncode;
+    ETHAccountType accountType = GetMetamaskAccountType();
+    return GetBitgetDataForAccountType(accountType);
 }
-
 UREncodeResult *GuiGetOkxWalletData(void)
 {
     uint8_t mfp[4] = {0};

@@ -4,6 +4,7 @@ use alloc::{
 };
 use core::str::FromStr;
 
+use third_party::bitcoin::bip32::Xpub;
 use third_party::{
     bitcoin::bip32::{ChildNumber, DerivationPath},
     secp256k1::Secp256k1,
@@ -15,6 +16,7 @@ use third_party::{
     },
 };
 
+use crate::metamask::{generate_standard_legacy_hd_key, ETHAccountTypeApp};
 use crate::{common::get_path_component, ExtendedPublicKey};
 
 fn get_device_id(serial_number: &str) -> String {
@@ -34,53 +36,48 @@ pub fn generate_crypto_multi_accounts(
     extended_public_keys: Vec<ExtendedPublicKey>,
     device_type: &str,
     device_version: &str,
+    eth_account_type: ETHAccountTypeApp,
 ) -> URResult<CryptoMultiAccounts> {
     let device_id = get_device_id(serial_number);
     let mut keys = vec![];
-    let k1_keys = vec![
+    let btc_k1_keys = vec![
         BTC_LEGACY_PREFIX.to_string(),
         BTC_SEGWIT_PREFIX.to_string(),
         BTC_NATIVE_SEGWIT_PREFIX.to_string(),
     ];
-    for ele in extended_public_keys {
-        match ele.get_path() {
-            _path if k1_keys.contains(&_path.to_string().to_lowercase()) => {
-                keys.push(generate_k1_normal_key(
-                    master_fingerprint,
-                    ele.clone(),
-                    None,
-                )?);
-            }
-            _path if _path.to_string().to_lowercase().eq(ETH_STANDARD_PREFIX) => {
-                keys.push(generate_k1_normal_key(
-                    master_fingerprint,
-                    ele.clone(),
-                    Some("account.standard".to_string()),
-                )?);
-                keys.push(generate_eth_ledger_live_key(
-                    master_fingerprint,
-                    ele,
-                    Some("account.ledger_live".to_string()),
-                )?);
-            }
-            _path
-                if _path
-                    .to_string()
-                    .to_lowercase()
-                    .starts_with(ETH_LEDGER_LIVE_PREFIX) =>
-            {
-                keys.push(generate_eth_ledger_live_key(
-                    master_fingerprint,
-                    ele,
-                    Some("account.ledger_live".to_string()),
-                )?);
-            }
-            _ => {
-                return Err(URError::UrEncodeError(format!(
-                    "Unknown key path: {}",
-                    ele.path.to_string()
-                )))
-            }
+    for ext_public_key in extended_public_keys {
+        let path = ext_public_key.get_path();
+        // btc xpub logic
+        if btc_k1_keys.contains(&path.to_string().to_lowercase()) {
+            keys.push(generate_k1_normal_key(
+                master_fingerprint,
+                ext_public_key.clone(),
+                None,
+            )?);
+            continue;
+        }
+        let key_str = Xpub::decode(&ext_public_key.get_key())
+            .map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
+        // eth xpub logic
+        match eth_account_type {
+            ETHAccountTypeApp::Bip44Standard => keys.push(generate_standard_legacy_hd_key(
+                &master_fingerprint,
+                key_str.to_string().as_str(),
+                ETHAccountTypeApp::Bip44Standard,
+                None,
+            )?),
+            ETHAccountTypeApp::LedgerLegacy => keys.push(generate_standard_legacy_hd_key(
+                &master_fingerprint,
+                key_str.to_string().as_str(),
+                ETHAccountTypeApp::LedgerLegacy,
+                None,
+            )?),
+
+            ETHAccountTypeApp::LedgerLive => keys.push(generate_eth_ledger_live_key(
+                master_fingerprint,
+                ext_public_key.clone(),
+                None,
+            )?),
         }
     }
 

@@ -404,7 +404,7 @@ void *GetAdaVotingProceduresData(uint8_t *row, uint8_t *col, void *param)
             } else if (j % 5 == 1) {
                 snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Voter: %s", tx->voting_procedures->data[index].voter);
             } else if (j % 5 == 2) {
-                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Transactiom Id: %s", tx->voting_procedures->data[index].transaction_id);
+                snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Transaction Id: %s", tx->voting_procedures->data[index].transaction_id);
             } else if (j % 5 == 3) {
                 snprintf_s(indata[i][j], BUFFER_SIZE_128,  "Index: %s", tx->voting_procedures->data[index].index);
             } else {

@@ -62,6 +62,8 @@ impl_public_struct!(VotingProcedure {
     vote: String
 });
 
+impl_public_struct!(VotingProposal { anchor: String });
+
 impl_public_struct!(ParsedCardanoTx {
     fee: String,
     total_input: String,
@@ -72,7 +74,8 @@ impl_public_struct!(ParsedCardanoTx {
     certificates: Vec<CardanoCertificate>,
     withdrawals: Vec<CardanoWithdrawal>,
     auxiliary_data: Option<String>,
-    voting_procedures: Vec<VotingProcedure>
+    voting_procedures: Vec<VotingProcedure>,
+    voting_proposals: Vec<VotingProposal>
 });
 
 impl_public_struct!(SignDataResult {
@@ -284,6 +287,19 @@ impl ParsedCardanoTx {
             None => vec![],
         };
 
+        let voting_proposals = match tx.body().voting_proposals() {
+            Some(v) => {
+                let mut voting_proposals = vec![];
+                for i in 0..v.len() {
+                    let proposal = v.get(i);
+                    let anchor = proposal.anchor().anchor_data_hash().to_string();
+                    voting_proposals.push(VotingProposal { anchor })
+                }
+                voting_proposals
+            }
+            None => vec![],
+        };
+
         Ok(Self {
             total_input: total_input_amount,
             total_output: total_output_amount,
@@ -295,6 +311,7 @@ impl ParsedCardanoTx {
             withdrawals: Self::parse_withdrawals(&tx)?,
             auxiliary_data: Self::parse_auxiliary_data(&tx)?,
             voting_procedures,
+            voting_proposals,
         })
     }
 

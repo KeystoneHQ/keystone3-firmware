@@ -380,6 +380,18 @@ bool GetAdaVotingProceduresExist(void *indata, void *param)
     return tx->voting_procedures->size > 0;
 }
 
+bool GetAdaVotingProposalsExist(void *indata, void *param)
+{
+    DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
+    return tx->voting_proposals->size > 0;
+}
+
+void GetAdaVotingProposalsLabel(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
+    snprintf_s((char *)indata,  maxLen, _("ada_proposals_tx_notice"));
+}
+
 void GetAdaVotingProceduresSize(uint16_t *width, uint16_t *height, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;

@@ -3,7 +3,7 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_cardano::structs::{
     CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignData,
-    ParsedCardanoTx, VotingProcedure,
+    ParsedCardanoTx, VotingProcedure, VotingProposal,
 };
 use core::ptr::null_mut;
 use third_party::hex;
@@ -70,6 +70,7 @@ pub struct DisplayCardanoTx {
     pub withdrawals: Ptr<VecFFI<DisplayCardanoWithdrawal>>,
     pub auxiliary_data: PtrString,
     pub voting_procedures: Ptr<VecFFI<DisplayVotingProcedure>>,
+    pub voting_proposals: Ptr<VecFFI<DisplayVotingProposal>>,
 }
 
 #[repr(C)]
@@ -106,6 +107,11 @@ pub struct DisplayVotingProcedure {
     transaction_id: PtrString,
     index: PtrString,
     vote: PtrString,
+}
+
+#[repr(C)]
+pub struct DisplayVotingProposal {
+    anchor: PtrString,
 }
 
 #[repr(C)]
@@ -154,6 +160,7 @@ impl Free for DisplayCardanoTx {
             free_vec!(self.withdrawals);
             free_vec!(self.certificates);
             free_vec!(self.voting_procedures);
+            free_vec!(self.voting_proposals);
 
             free_ptr_string(self.total_input);
             free_ptr_string(self.total_output);
@@ -225,6 +232,14 @@ impl From<ParsedCardanoTx> for DisplayCardanoTx {
                     .collect_vec(),
             )
             .c_ptr(),
+            voting_proposals: VecFFI::from(
+                value
+                    .get_voting_proposals()
+                    .iter()
+                    .map(DisplayVotingProposal::from)
+                    .collect_vec(),
+            )
+            .c_ptr(),
         }
     }
 }
@@ -281,6 +296,14 @@ impl From<&VotingProcedure> for DisplayVotingProcedure {
     }
 }
 
+impl From<&VotingProposal> for DisplayVotingProposal {
+    fn from(value: &VotingProposal) -> Self {
+        Self {
+            anchor: convert_c_char(value.get_anchor()),
+        }
+    }
+}
+
 impl From<&CardanoCertificate> for DisplayCardanoCertificate {
     fn from(value: &CardanoCertificate) -> Self {
         Self {
@@ -313,6 +336,12 @@ impl Free for DisplayVotingProcedure {
         free_str_ptr!(self.transaction_id);
         free_str_ptr!(self.index);
         free_str_ptr!(self.vote);
+    }
+}
+
+impl Free for DisplayVotingProposal {
+    fn free(&self) {
+        free_str_ptr!(self.anchor);
     }
 }
 

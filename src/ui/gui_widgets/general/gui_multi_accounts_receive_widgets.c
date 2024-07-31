@@ -367,17 +367,6 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
         lv_obj_align(tempObj, LV_ALIGN_CENTER, 150, 0);
     }
 
-    g_multiAccountsReceiveWidgets.pathTypeButton = lv_btn_create(g_multiAccountsReceiveWidgets.qrCodeCont);
-    lv_obj_set_size(g_multiAccountsReceiveWidgets.pathTypeButton, 336, 36);
-    lv_obj_align(g_multiAccountsReceiveWidgets.pathTypeButton, LV_ALIGN_TOP_MID, 0, 380 + addrYExtend);
-    lv_obj_set_style_bg_opa(g_multiAccountsReceiveWidgets.pathTypeButton, LV_OPA_TRANSP, LV_PART_MAIN);
-    lv_obj_set_style_border_width(g_multiAccountsReceiveWidgets.pathTypeButton, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_outline_width(g_multiAccountsReceiveWidgets.pathTypeButton, 0, LV_PART_MAIN);
-    lv_obj_set_style_shadow_width(g_multiAccountsReceiveWidgets.pathTypeButton, 0, LV_PART_MAIN);
-    if (IsPathTypeSwitchable()) {
-        lv_obj_add_event_cb(g_multiAccountsReceiveWidgets.pathTypeButton, OpenChangePathTypeHandler, LV_EVENT_CLICKED, NULL);
-    }
-
     const char *coin = GetCoinCardByIndex(g_chainCard)->coin;
     if (!GetFirstReceive(coin)) {
         char attentionText[BUFFER_SIZE_256];

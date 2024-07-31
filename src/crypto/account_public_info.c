@@ -515,7 +515,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         } else {
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
                 // slip39 wallet does not support ADA
-                if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
+                if (isSlip39 && (g_chainTable[i].cryptoKey == BIP32_ED25519 || g_chainTable[i].cryptoKey == LEDGER_BITBOX02)) {
                     continue;
                 }
                 // do not generate public keys for ton wallet;
@@ -655,7 +655,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         if (!isSlip39) {
             do {
                 char *mnemonic = NULL;
-                bip39_mnemonic_from_bytes(NULL, seed, len, &mnemonic);
+                bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
                 cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
                 ledger_bitbox02_response = get_ledger_bitbox02_master_key(mnemonic, GetPassphrase(accountIndex));
                 CHECK_AND_FREE_XPUB(cip3_response);
@@ -667,7 +667,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
 
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
             // SLIP32 wallet does not support ADA
-            if (isSlip39 && g_chainTable[i].cryptoKey == BIP32_ED25519) {
+            if (isSlip39 && (g_chainTable[i].cryptoKey == BIP32_ED25519 || g_chainTable[i].cryptoKey == LEDGER_BITBOX02)) {
                 continue;
             }
             if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {

@@ -621,7 +621,7 @@ dependencies = [
 [[package]]
 name = "cardano-serialization-lib"
 version = "11.5.0"
-source = "git+https://git@github.com/KeystoneHQ/cardano-serialization-lib.git?tag=keystone-0.1.2#f3f44db8f70a20d557fd3981183888dcec5fe1e4"
+source = "git+https://git@github.com/KeystoneHQ/cardano-serialization-lib.git?tag=keystone-0.1.3#370350ec319bee8abdcc35be9e13e66a43ce8829"
 dependencies = [
  "bech32 0.9.1",
  "cbor_event",
@@ -2944,7 +2944,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.29#39de1eba1f8156d2daf99097bdb134f0e0f57e5c"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.31#3fe111d23e7d61d717853487aa2f0acc0ac319d6"
 dependencies = [
  "hex",
  "ur",
@@ -2954,7 +2954,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.29#39de1eba1f8156d2daf99097bdb134f0e0f57e5c"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.31#3fe111d23e7d61d717853487aa2f0acc0ac319d6"
 dependencies = [
  "bs58",
  "core2",

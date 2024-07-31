@@ -1,7 +1,7 @@
 use crate::errors::Result;
 use crate::structs::{TonProof, TonTransaction};
 use crate::utils::sha256;
-use crate::vendor::cell::BagOfCells;
+use crate::vendor::cell::{BagOfCells, ArcCell};
 use alloc::{format, vec};
 use alloc::vec::Vec;
 use third_party::cryptoxide::ed25519;
@@ -14,8 +14,9 @@ pub fn parse_transaction(serial: &[u8]) -> Result<TonTransaction> {
 pub fn buffer_to_sign(serial: &[u8]) -> Result<Vec<u8>> {
     let boc = BagOfCells::parse(serial)?;
     let root = boc.single_root()?;
-    let buffer_to_sign = root.cell_hash()?;
-    Ok(buffer_to_sign)
+
+    let buffer_to_sign = root.cell_hash();
+    Ok(buffer_to_sign.to_vec())
 }
 
 pub fn sign_transaction(serial: &[u8], sk: [u8; 32]) -> Result<[u8; 64]> {

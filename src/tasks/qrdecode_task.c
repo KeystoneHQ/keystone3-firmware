@@ -133,7 +133,6 @@ void ProcessQr(uint32_t count)
 
     uint32_t retFromRust = 0;
     int32_t ret = QrDecodeProcess(qrString, QR_DECODE_STRING_LEN, testProgress);
-    printf("%s\n", qrString);
     if (ret > 0) {
         if (firstQrFlag == true) {
             assert(strnlen_s(qrString, QR_DECODE_STRING_LEN) < QR_DECODE_STRING_LEN);

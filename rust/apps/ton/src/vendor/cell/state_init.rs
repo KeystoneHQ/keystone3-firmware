@@ -1,7 +1,5 @@
-use alloc::vec::Vec;
-
-use super::ArcCell;
-use crate::vendor::cell::{Cell, CellBuilder, TonCellError};
+use super::{ArcCell, CellHash};
+use super::{Cell, CellBuilder, TonCellError};
 
 pub struct StateInitBuilder {
     code: Option<ArcCell>,
@@ -60,19 +58,17 @@ impl StateInitBuilder {
 }
 
 impl StateInit {
-    pub fn create_account_id(code: &ArcCell, data: &ArcCell) -> Result<Vec<u8>, TonCellError> {
-        StateInitBuilder::new(code, data).build()?.cell_hash()
+    pub fn create_account_id(code: &ArcCell, data: &ArcCell) -> Result<CellHash, TonCellError> {
+        Ok(StateInitBuilder::new(code, data).build()?.cell_hash())
     }
 }
 
 #[cfg(test)]
 mod tests {
-    extern crate std;
-    use std::println;
     use std::sync::Arc;
 
     use super::StateInitBuilder;
-    use crate::vendor::cell::CellBuilder;
+    use crate::cell::CellBuilder;
 
     #[test]
     fn test_state_init() -> anyhow::Result<()> {

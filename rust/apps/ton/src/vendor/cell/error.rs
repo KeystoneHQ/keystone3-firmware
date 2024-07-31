@@ -1,6 +1,10 @@
-use alloc::{format, string::{String, ToString}};
-use third_party::{hex, thiserror::Error};
+use alloc::{
+    format,
+    string::{String, ToString},
+};
 use third_party::thiserror;
+use third_party::{hex};
+use third_party::thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum TonCellError {
@@ -25,13 +29,19 @@ pub enum TonCellError {
     #[error("Invalid address type (Type: {0})")]
     InvalidAddressType(u8),
 
+    #[error("Invalid cell type for exotic cell (Type: {0:?})")]
+    InvalidExoticCellType(Option<u8>),
+
+    #[error("Bad data ({0})")]
+    InvalidExoticCellData(String),
+
     #[error("Non-empty reader (Remaining bits: {0})")]
     NonEmptyReader(usize),
 }
 
 pub trait MapTonCellError<R, E>
 where
-    E: third_party::core2::error::Error,
+    E: third_party::core2::error::Error
 {
     fn map_boc_deserialization_error(self) -> Result<R, TonCellError>;
 
@@ -44,7 +54,7 @@ where
 
 impl<R, E> MapTonCellError<R, E> for Result<R, E>
 where
-    E: third_party::core2::error::Error,
+    E: third_party::core2::error::Error
 {
     fn map_boc_serialization_error(self) -> Result<R, TonCellError> {
         self.map_err(|e| TonCellError::boc_serialization_error(e))

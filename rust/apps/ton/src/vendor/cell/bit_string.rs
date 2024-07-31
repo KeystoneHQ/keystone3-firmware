@@ -62,10 +62,8 @@ fn create_biguint_with_ones(n: usize) -> BigUint {
 mod tests {
     use num_bigint::BigUint;
     use num_traits::ToPrimitive;
-    extern crate std;
-    use std::println;
 
-    use crate::vendor::cell::bit_string::create_biguint_with_ones;
+    use crate::cell::bit_string::create_biguint_with_ones;
 
     #[test]
     fn test_create_biguint_with_ones() -> anyhow::Result<()> {

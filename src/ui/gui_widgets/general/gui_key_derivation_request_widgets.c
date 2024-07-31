@@ -561,7 +561,8 @@ static void GetCardanoEgAddress(void)
                        result->data, 24);
     free_simple_response_c_char(result);
 
-    result = cardano_get_base_address(xPub, 1, 1);
+    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(1));
+    result = cardano_get_base_address(xPub, 0, 1);
     CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][1], BUFFER_SIZE_128,
                        result->data, 24);
     free_simple_response_c_char(result);

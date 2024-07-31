@@ -333,17 +333,17 @@ static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t 
 {
     char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
     SimpleResponse_c_char *result = NULL;
-    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(0));
+    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
     snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", index);
     switch (type) {
     case 1:
-        result = cardano_get_enterprise_address(xPub, index, 1);
+        result = cardano_get_enterprise_address(xPub, 0, 1);
         break;
     case 2:
-        result = cardano_get_stake_address(xPub, index, 1);
+        result = cardano_get_stake_address(xPub, 0, 1);
         break;
     default:
-        result = cardano_get_base_address(xPub, index, 1);
+        result = cardano_get_base_address(xPub, 0, 1);
         break;
     }
     item->index = index;

@@ -183,7 +183,7 @@ device setting,24,device_setting_mid_btn,Device Settings,Настройки ус
 ,20,wallet_setting_add_wallet_limit_desc,You can only add up to a maximum of 3 wallets. Please delete other wallets before adding a new wallet.,Вы можете добавить максимум 3 кошелька. Пожалуйста,지갑은 최대 3개까지만 추가할 수 있습니다.새 지갑을 추가하기 전에 다른 지갑을 삭제해 주세요.,您只能添加最多 3 个钱包.请在添加新钱包之前删除其他钱包.,Solo puedes agregar un máximo de 3 billeteras. Elimina las otras billeteras antes de agregar una nueva,"Sie können nur maximal 3 Brieftaschen hinzufügen. Bitte löschen Sie andere Brieftaschen, bevor Sie eine neue Brieftasche hinzufügen.",最大3つのウォレットしか追加できません.新しいウォレットを追加する前に、他のウォレットを削除してください.
 ,20,wallet_setting_add_wallet_notice,Hardware wallet is for personal use only. Do not share to avoid asset risks.,"Аппаратный кошелек предназначен только для личного пользования. Не делитесь им, чтобы избежать рисков для активов.",하드웨어 지갑은 개인용으로만 제공됩니다.자산 위험을 피하기 위해 공유하지 마십시오.,"硬件钱包仅供个人使用.请勿分享,以避免资产风险.",La billetera de hardware es solo para uso personal. No la compartas para evitar riesgos en tus activos,"Die Hardware Wallet ist nur für den persönlichen Gebrauch bestimmt. Teilen Sie sie nicht, um Vermögensrisiken zu vermeiden.",ハードウェアウォレットは個人専用です.資産リスクを避けるため、共有しないでください.
 ,24,wallet_setting_add_wallet_confirm,I Understand,Понял,알겠습니다,我明白,Entiendo,Ich verstehe,私は理解しています
-,24,wallet_setting_add_wallet,+ Add Wallet,Добавить,지갑 추가,#NAME?,+ Añadir Billetera,+ Brieftasche hinzufügen,「+ウォレットを追加」
+,24,wallet_setting_add_wallet,+ Add Wallet,Добавить,지갑 추가,+添加钱包,+ Añadir Billetera,+ Brieftasche hinzufügen,「+ウォレットを追加」
 ,20,fingerprint_passcode_fingerprint_setting,Fingerprint Settings,Настройки отпечатков,지문 설정,指纹设置,Ajustes de huella dactilar,Fingerabdruck-Einstellungen,指紋設定
 ,24,fingerprint_passcode_reset_passcode,Reset Passcode,Сброс код-пароля,암호 재설정,重置密码,Restablecer contraseña,Passwort zurücksetzen,パスコードをリセット
 ,36,fingerprint_add,Add Fingerprint,Добавить отпечаток,지문 추가,添加指纹,Agregar huella dactilar,Fingerabdruck hinzufügen,指紋を追加する
@@ -199,7 +199,7 @@ device setting,24,device_setting_mid_btn,Device Settings,Настройки ус
 ,24,fingerprint_sign_tx,Sign Transactions,Подпись транзакций,서명 트랜잭션,交易签名,Firmar transacciones,Signatur von Transaktionen,取引をサインする
 ,24,fingerprint_nth,Finger %d,Палец %d,손가락 %d,指纹 %d,Dedo %d,Finger %d,指%d
 ,28,fingerprint_nth_subtitle,Finger %d,Палец %d,손가락 %d,指纹 %d,Dedo %d,Finger %d,指%d
-,24,fingerprint_add_btn,+ Add Fingerprint,+ Добавить отпечаток,지문을 덧붙이다,#NAME?,Añadir huella dactilar,+ Fingerabdruck hinzufügen,「+ 指紋を追加」
+,24,fingerprint_add_btn,+ Add Fingerprint,+ Добавить отпечаток,지문을 덧붙이다,+添加指纹,Añadir huella dactilar,+ Fingerabdruck hinzufügen,「+ 指紋を追加」
 ,20,fingerprint_up_to_3,You can add up to 3 fingerprints,Можно добавить 3 отпечатка,지문을 3개까지 추가할 수 있습니다,您最多可以添加 3 个指纹,Puedes agregar hasta 3 huellas dactilares,Sie können bis zu 3 Fingerabdrücke hinzufügen.,最大で3つの指紋を追加することができます.
 ,24,fingerprint_remove_confirm,Remove,Удалить,지문,删除,Quitar,Entfernen,削除
 ,24,fingerprint_remove,Remove Fingerprint,Удалить отпечаток,지문 제거,删除指纹,Quitar huella dactilar,Fingerabdruck entfernen,指紋を削除する

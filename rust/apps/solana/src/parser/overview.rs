@@ -49,10 +49,26 @@ impl Default for ProgramOverviewUnknown {
 }
 
 #[derive(Debug, Clone)]
+pub struct ProgramOverviewMultisigCreate {
+    pub wallet_name: String,
+    pub wallet_desc: String,
+    pub threshold: u16,
+    pub member_count: usize,
+    pub members: Vec<String>,
+    pub total_value: String,
+    // transfer vec 
+    pub transfers: Vec<ProgramOverviewTransfer>,
+    
+}
+
+
+#[derive(Debug, Clone)]
 pub enum SolanaOverview {
     Transfer(ProgramOverviewTransfer),
     Vote(ProgramOverviewVote),
     General(Vec<ProgramOverviewGeneral>),
     Unknown(ProgramOverviewUnknown),
     Instructions(ProgramOverviewInstructions),
+    SquadsV4MultisigCreate(ProgramOverviewMultisigCreate),
+    SquadsV4MultisigCreateV2(ProgramOverviewMultisigCreate),
 }

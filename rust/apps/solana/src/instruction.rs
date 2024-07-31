@@ -1,15 +1,16 @@
-use crate::compact::Compact;
-use crate::errors::SolanaError::ProgramError;
-use crate::errors::{Result, SolanaError};
-use crate::resolvers;
-use crate::Read;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
+use crate::compact::Compact;
+use crate::errors::SolanaError::ProgramError;
+use crate::errors::{Result, SolanaError};
 use crate::parser::detail::SolanaDetail;
+use crate::resolvers;
 use crate::solana_lib::solana_program::stake::instruction::StakeInstruction;
 use crate::solana_lib::solana_program::system_instruction::SystemInstruction;
 use crate::solana_lib::solana_program::vote::instruction::VoteInstruction;
+use crate::solana_lib::squads_v4::instructions::Dispatch;
+use crate::Read;
 
 pub struct Instruction {
     pub(crate) program_index: u8,
@@ -41,6 +42,7 @@ enum SupportedProgram {
     TokenProgram,
     TokenSwapProgramV3,
     TokenLendingProgram,
+    SquadsProgramV4,
 }
 
 impl SupportedProgram {
@@ -53,9 +55,11 @@ impl SupportedProgram {
             "SwapsVeCiPHMUAtzQWZw7RjsKjgCjhwU55QGu4U1Szw" => {
                 Ok(SupportedProgram::TokenSwapProgramV3)
             }
+
             "LendZqTs7gn5CTSJU1jWKhKuVpjJGom45nnwPb2AMTi" => {
                 Ok(SupportedProgram::TokenLendingProgram)
             }
+            "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf" => Ok(SupportedProgram::SquadsProgramV4),
             x => Err(SolanaError::UnsupportedProgram(x.to_string())),
         }
     }
@@ -103,6 +107,16 @@ impl Instruction {
                     )
                     .map_err(|e| ProgramError(e.to_string()))?;
                 resolvers::token_lending::resolve(instruction, accounts)
+            }
+            SupportedProgram::SquadsProgramV4 => {
+                // todo implement squads program parser
+                let instruction =
+                    crate::solana_lib::squads_v4::instructions::SquadsInstructions::dispatch(
+                        self.data.as_slice(),
+                    )
+                    .map_err(|e| ProgramError(e.to_string()))?;
+
+                resolvers::squads_v4::resolve(instruction, accounts) 
             }
         }
     }

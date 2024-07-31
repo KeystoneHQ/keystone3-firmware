@@ -19,6 +19,11 @@ uint = { version = "0.9.3", default-features = false }
 arrayref = "0.3.6"
 app_utils = { path = "../utils" }
 rust_tools = { path = "../../tools" }
+sha2 = "0.9.9"
+bs58 = "0.5.1"
+borsh = {version = "1.5.1",features = ["derive","borsh-derive","unstable__schema"]}
+
+
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

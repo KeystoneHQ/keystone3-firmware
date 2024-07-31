@@ -3,7 +3,6 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
 use serde_json::json;
-
 use third_party::bitcoin::hex::FromHex;
 
 use crate::errors::{Result, SolanaError};
@@ -13,7 +12,8 @@ use crate::parser::detail::{
 };
 use crate::parser::overview::{
     ProgramOverviewGeneral, ProgramOverviewInstruction, ProgramOverviewInstructions,
-    ProgramOverviewTransfer, ProgramOverviewUnknown, ProgramOverviewVote, SolanaOverview,
+    ProgramOverviewMultisigCreate, ProgramOverviewTransfer, ProgramOverviewUnknown,
+    ProgramOverviewVote, SolanaOverview,
 };
 use crate::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
 use crate::read::Read;
@@ -36,8 +36,16 @@ impl ParsedSolanaTx {
             network: "Solana Mainnet".to_string(),
         })
     }
-
+    // detect the display type by the details vec contains number of details
     fn detect_display_type(details: &[SolanaDetail]) -> SolanaTxDisplayType {
+        let squads = details
+            .iter()
+            .filter(|d| Self::is_sqauds_v4_detail(&d.common))
+            .collect::<Vec<&SolanaDetail>>();
+        if squads.len() == 1 {
+            return SolanaTxDisplayType::SquadsV4;
+        }
+
         let transfer: Vec<&SolanaDetail> = details
             .iter()
             .filter(|d| Self::is_system_transfer_detail(&d.common))
@@ -52,6 +60,7 @@ impl ParsedSolanaTx {
         if vote.len() == 1 {
             return SolanaTxDisplayType::Vote;
         }
+
         let instructions: Vec<&SolanaDetail> = details
             .iter()
             .filter(|d| Self::is_unknown_detail(&d.common))
@@ -76,6 +85,10 @@ impl ParsedSolanaTx {
 
     fn is_instructions_detail(common: &CommonDetail) -> bool {
         common.program.eq("Instructions") && common.method.eq("")
+    }
+
+    fn is_sqauds_v4_detail(common: &CommonDetail) -> bool {
+        common.program.eq("SquadsV4")
     }
 
     fn build_genera_detail(details: &[SolanaDetail]) -> Result<String> {
@@ -123,6 +136,7 @@ impl ParsedSolanaTx {
             SolanaTxDisplayType::Transfer | SolanaTxDisplayType::Vote => {
                 Ok(serde_json::to_string(&details)?)
             }
+            SolanaTxDisplayType::SquadsV4 => Ok(serde_json::to_string(&details)?),
         }
     }
 
@@ -178,6 +192,61 @@ impl ParsedSolanaTx {
         });
         Ok(SolanaOverview::General(overview))
     }
+    // todo convert instruction detail vec to squads_v4 overview
+    fn build_squads_v4_multisig_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
+        let mut transfer_overview_vec: Vec<ProgramOverviewTransfer> = Vec::new();
+        details.iter().for_each(|d| {
+            if let ProgramDetail::SystemTransfer(v) = &d.kind {
+                transfer_overview_vec.push(ProgramOverviewTransfer {
+                    value: v.value.to_string(),
+                    main_action: "SOL Transfer".to_string(),
+                    from: v.from.to_string(),
+                    to: v.to.to_string(),
+                });
+            }
+        });
+        for d in details {
+            if let ProgramDetail::SquadsV4MultisigCreate(v) = &d.kind {
+                let memo = v.memo.clone().unwrap();
+                // "{\"n\":\"TESTMULTISIG\",\"d\":\"TEST MULTI SIG\",\"i\":\"\"}".to_string()
+                let memo = serde_json::from_str::<serde_json::Value>(&memo).unwrap();
+                let wallet_name = memo["n"]
+                    .as_str()
+                    .unwrap_or("SquadsV4 Multisig Wallet")
+                    .to_string();
+                let wallet_desc = memo["d"].as_str().unwrap_or("").to_string();
+                let threshold = v.threshold;
+                let member_count = v.members.len();
+                let members = v
+                    .members
+                    .iter()
+                    .map(|m| m.key.to_string())
+                    .collect::<Vec<String>>();
+                let total_value = "~0.051 SOL".to_string();
+                return Ok(SolanaOverview::SquadsV4MultisigCreate(
+                    ProgramOverviewMultisigCreate {
+                        wallet_name,
+                        wallet_desc,
+                        threshold,
+                        member_count,
+                        members,
+                        total_value,
+                        transfers: transfer_overview_vec,
+                    },
+                ));
+            }
+        }
+        return Ok(SolanaOverview::Unknown(ProgramOverviewUnknown::default()));
+    }
+    fn build_squads_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
+        if details
+            .iter()
+            .any(|d| matches!(d.kind, ProgramDetail::SquadsV4MultisigCreate(_)))
+        {
+            return Self::build_squads_v4_multisig_overview(details);
+        }
+        Ok(SolanaOverview::Unknown(ProgramOverviewUnknown::default()))
+    }
 
     fn build_instructions_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
         let mut overview_instructions = Vec::new();
@@ -216,10 +285,8 @@ impl ParsedSolanaTx {
             SolanaTxDisplayType::Transfer => Self::build_transfer_overview(details),
             SolanaTxDisplayType::Vote => Self::build_vote_overview(details),
             SolanaTxDisplayType::General => Self::build_general_overview(details),
-            SolanaTxDisplayType::Unknown => {
-                // all instructions can not be parsed.
-                Self::build_instructions_overview(details)
-            }
+            SolanaTxDisplayType::Unknown => Self::build_instructions_overview(details),
+            SolanaTxDisplayType::SquadsV4 => Self::build_squads_overview(details),
         }
     }
 }
@@ -227,7 +294,6 @@ impl ParsedSolanaTx {
 #[cfg(test)]
 mod tests {
     use serde_json::{json, Value};
-
     use third_party::hex::FromHex;
 
     use super::*;

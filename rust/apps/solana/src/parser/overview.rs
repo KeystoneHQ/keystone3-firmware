@@ -56,11 +56,17 @@ pub struct ProgramOverviewMultisigCreate {
     pub member_count: usize,
     pub members: Vec<String>,
     pub total_value: String,
-    // transfer vec 
+    // transfer vec
     pub transfers: Vec<ProgramOverviewTransfer>,
-    
 }
 
+#[derive(Debug, Clone)]
+pub struct ProgramOverviewProposal {
+    pub program: String,
+    pub method: String,
+    pub memo: Option<String>,
+    pub data: Option<String>,
+}
 
 #[derive(Debug, Clone)]
 pub enum SolanaOverview {
@@ -71,4 +77,5 @@ pub enum SolanaOverview {
     Instructions(ProgramOverviewInstructions),
     SquadsV4MultisigCreate(ProgramOverviewMultisigCreate),
     SquadsV4MultisigCreateV2(ProgramOverviewMultisigCreate),
+    SquadsV4Proposal(Vec<ProgramOverviewProposal>),
 }

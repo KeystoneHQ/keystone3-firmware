@@ -1,12 +1,17 @@
-use crate::errors::Result;
-use crate::parser::detail::{CommonDetail, ProgramDetail, SolanaDetail};
-use crate::solana_lib::squads_v4::instructions::{MultisigCreateArgs, MultisigCreateArgsV2, ProposalCreateArgs, ProposalVoteArgs, SquadsInstructions, VaultTransactionCreateArgs};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+
+use crate::errors::Result;
+use crate::parser::detail::{CommonDetail, ProgramDetail, SolanaDetail};
+use crate::solana_lib::squads_v4::instructions::{
+    MultisigCreateArgs, MultisigCreateArgsV2, ProposalCreateArgs, ProposalVoteArgs,
+    SquadsInstructions, VaultTransactionCreateArgs,
+};
+
 static PROGRAM_NAME: &str = "SquadsV4";
 pub fn resolve(instruction: SquadsInstructions, accounts: Vec<String>) -> Result<SolanaDetail> {
     match instruction {
-        SquadsInstructions::MultisigCreate(arg) => resolve_multisig_create(arg, accounts),
+        SquadsInstructions::MultisigCreate(arg) => resolve_multisig_create(arg),
         SquadsInstructions::MultisigCreateV2(arg) => resolve_multisig_create_v2(arg, accounts),
         SquadsInstructions::ProposalCreate(arg) => resolve_proposal_create(arg, accounts),
         SquadsInstructions::ProposalActivate => resolve_proposal_activate(accounts),
@@ -20,10 +25,7 @@ pub fn resolve(instruction: SquadsInstructions, accounts: Vec<String>) -> Result
     }
 }
 
-fn resolve_multisig_create(
-    args: MultisigCreateArgs,
-    accounts: Vec<String>,
-) -> Result<SolanaDetail> {
+fn resolve_multisig_create(args: MultisigCreateArgs) -> Result<SolanaDetail> {
     let common_detail = CommonDetail {
         program: PROGRAM_NAME.to_string(),
         method: "MultisigCreate".to_string(),
@@ -49,7 +51,6 @@ fn resolve_multisig_create_v2(
     };
     Ok(detail)
 }
-
 
 fn resolve_proposal_create(
     args: ProposalCreateArgs,
@@ -78,10 +79,7 @@ fn resolve_proposal_activate(accounts: Vec<String>) -> Result<SolanaDetail> {
     Ok(detail)
 }
 
-fn resolve_proposal_cancel(
-    args: ProposalVoteArgs,
-    accounts: Vec<String>,
-) -> Result<SolanaDetail> {
+fn resolve_proposal_cancel(args: ProposalVoteArgs, accounts: Vec<String>) -> Result<SolanaDetail> {
     let common_detail = CommonDetail {
         program: PROGRAM_NAME.to_string(),
         method: "ProposalCancel".to_string(),
@@ -93,10 +91,7 @@ fn resolve_proposal_cancel(
     Ok(detail)
 }
 
-fn resolve_proposal_reject(
-    args: ProposalVoteArgs,
-    accounts: Vec<String>,
-) -> Result<SolanaDetail> {
+fn resolve_proposal_reject(args: ProposalVoteArgs, accounts: Vec<String>) -> Result<SolanaDetail> {
     let common_detail = CommonDetail {
         program: PROGRAM_NAME.to_string(),
         method: "ProposalReject".to_string(),
@@ -108,10 +103,7 @@ fn resolve_proposal_reject(
     Ok(detail)
 }
 
-fn resolve_proposal_approve(
-    args: ProposalVoteArgs,
-    accounts: Vec<String>,
-) -> Result<SolanaDetail> {
+fn resolve_proposal_approve(args: ProposalVoteArgs, accounts: Vec<String>) -> Result<SolanaDetail> {
     let common_detail = CommonDetail {
         program: PROGRAM_NAME.to_string(),
         method: "ProposalApprove".to_string(),
@@ -149,4 +141,3 @@ fn resolve_vault_transaction_execute(accounts: Vec<String>) -> Result<SolanaDeta
     };
     Ok(detail)
 }
-

@@ -33,7 +33,6 @@ static void GuiLowBatteryInit(void)
 
         button = GuiCreateTextBtn(g_lowBatteryHintBox, _("OK"));
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-        lv_obj_set_size(button, 94, 66);
         lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);
         lv_obj_add_event_cb(button, ButtonHandler, LV_EVENT_CLICKED, NULL);
     }

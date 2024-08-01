@@ -6,6 +6,7 @@ use alloc::string::{String, ToString};
 use alloc::{format, slice};
 
 use alloc::vec::Vec;
+use app_cardano::address::derive_xpub_from_xpub;
 use app_cardano::errors::CardanoError;
 use app_cardano::governance;
 use app_cardano::structs::{CardanoCertKey, CardanoUtxo, ParseContext};
@@ -67,6 +68,93 @@ pub extern "C" fn cardano_check_catalyst(
     }
 
     TransactionCheckResult::new().c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_check_catalyst_path_type(
+    ptr: PtrUR,
+    cardano_xpub: PtrString,
+) -> PtrT<TransactionCheckResult> {
+    let cardano_catalyst_request =
+        extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
+    let cardano_xpub = recover_c_char(cardano_xpub);
+    let xpub = hex::encode(cardano_catalyst_request.get_stake_pub());
+    let derivation_path =
+        get_cardano_derivation_path(cardano_catalyst_request.get_derivation_path());
+    match derivation_path {
+        Ok(derivation_path) => match derive_xpub_from_xpub(cardano_xpub, derivation_path) {
+            Ok(_xpub) => {
+                if _xpub == xpub {
+                    TransactionCheckResult::new().c_ptr()
+                } else {
+                    TransactionCheckResult::from(RustCError::InvalidData(
+                        "invalid xpub".to_string(),
+                    ))
+                    .c_ptr()
+                }
+            }
+            Err(e) => TransactionCheckResult::from(e).c_ptr(),
+        },
+        Err(e) => TransactionCheckResult::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_get_catalyst_root_index(ptr: PtrUR) -> Ptr<SimpleResponse<c_char>> {
+    let cardano_catalyst_request =
+        extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
+    let derviation_path: CryptoKeyPath = cardano_catalyst_request.get_derivation_path();
+    match derviation_path.get_components().get(2) {
+        Some(_data) => {
+            let index = _data.get_index().unwrap();
+            SimpleResponse::success(convert_c_char(index.to_string())).simple_c_ptr()
+        }
+        None => SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid path")))
+            .simple_c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_get_sign_data_root_index(ptr: PtrUR) -> Ptr<SimpleResponse<c_char>> {
+    let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
+    let derviation_path: CryptoKeyPath = cardano_sign_data_reqeust.get_derivation_path();
+    match derviation_path.get_components().get(2) {
+        Some(_data) => {
+            let index = _data.get_index().unwrap();
+            SimpleResponse::success(convert_c_char(index.to_string())).simple_c_ptr()
+        }
+        None => SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid path")))
+            .simple_c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_check_sign_data_path_type(
+    ptr: PtrUR,
+    cardano_xpub: PtrString,
+) -> PtrT<TransactionCheckResult> {
+    let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
+    let cardano_xpub = recover_c_char(cardano_xpub);
+    let xpub = cardano_sign_data_reqeust.get_xpub();
+    let xpub = hex::encode(xpub);
+    let derivation_path =
+        get_cardano_derivation_path(cardano_sign_data_reqeust.get_derivation_path());
+    match derivation_path {
+        Ok(derivation_path) => match derive_xpub_from_xpub(cardano_xpub, derivation_path) {
+            Ok(_xpub) => {
+                if _xpub == xpub {
+                    TransactionCheckResult::new().c_ptr()
+                } else {
+                    TransactionCheckResult::from(RustCError::InvalidData(
+                        "invalid xpub".to_string(),
+                    ))
+                    .c_ptr()
+                }
+            }
+            Err(e) => TransactionCheckResult::from(e).c_ptr(),
+        },
+        Err(e) => TransactionCheckResult::from(e).c_ptr(),
+    }
 }
 
 #[no_mangle]
@@ -475,5 +563,44 @@ fn convert_key_path(key_path: CryptoKeyPath) -> R<DerivationPath> {
             DerivationPath::from_str(path.as_str()).map_err(|_e| RustCError::InvalidHDPath)
         }
         None => Err(RustCError::InvalidHDPath),
+    }
+}
+
+fn get_cardano_derivation_path(path: CryptoKeyPath) -> R<CryptoKeyPath> {
+    let components = path.get_components();
+    let mut new_components = Vec::new();
+    for i in 3..components.len() {
+        new_components.push(components[i].clone());
+    }
+    Ok(CryptoKeyPath::new(
+        new_components,
+        path.get_source_fingerprint(),
+        path.get_depth(),
+    ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloc::vec;
+    use third_party::ur_registry::crypto_key_path::PathComponent;
+
+    #[test]
+    fn test_get_cardano_derivation_path() {
+        let path = CryptoKeyPath::new(
+            vec![
+                PathComponent::new(Some(1852), false).unwrap(),
+                PathComponent::new(Some(1815), false).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+                PathComponent::new(Some(2), false).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+            ],
+            Some([0, 0, 0, 0]),
+            None,
+        );
+        let result = get_cardano_derivation_path(path);
+        assert_eq!(result.is_ok(), true);
+
+        assert_eq!(result.unwrap().get_path().unwrap(), "2/0");
     }
 }

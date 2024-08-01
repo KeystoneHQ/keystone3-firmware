@@ -9,6 +9,7 @@ use cardano_serialization_lib::crypto::Ed25519KeyHash;
 use third_party::cryptoxide::hashing::blake2b_224;
 use third_party::ed25519_bip32_core::{DerivationScheme, XPub};
 use third_party::hex;
+use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
 
 pub enum AddressType {
     Base,
@@ -26,6 +27,17 @@ pub fn calc_stake_address_from_xpub(stake_key: [u8; 32]) -> R<String> {
         .to_address()
         .to_bech32(None)
         .map_err(|e| CardanoError::AddressEncodingError(e.to_string()))
+}
+
+pub fn derive_xpub_from_xpub(xpub: String, path: CryptoKeyPath) -> R<String> {
+    let xpub_bytes = hex::decode(xpub).map_err(|e| CardanoError::DerivationError(e.to_string()))?;
+    let xpub =
+        XPub::from_slice(&xpub_bytes).map_err(|e| CardanoError::DerivationError(e.to_string()))?;
+    let mut xpub = xpub;
+    for component in path.get_components() {
+        xpub = xpub.derive(DerivationScheme::V2, component.get_index().unwrap())?;
+    }
+    Ok(hex::encode(xpub.public_key()))
 }
 
 pub fn derive_address(
@@ -122,6 +134,7 @@ mod tests {
     use std::println;
     use third_party::bech32::Bech32;
     use third_party::hex;
+    use third_party::ur_registry::crypto_key_path::PathComponent;
 
     #[test]
     fn spike() {
@@ -226,6 +239,24 @@ mod tests {
         assert_eq!(
             hex::encode(pubkey_hash),
             "0fdc780023d8be7c9ff3a6bdc0d8d3b263bd0cc12448c40948efbf42",
+        );
+    }
+
+    #[test]
+    fn test_derive_xpub_from_xpub() {
+        let path1 = PathComponent::new(Some(2), false).unwrap();
+        let path2 = PathComponent::new(Some(0), false).unwrap();
+
+        let source_fingerprint: [u8; 4] = [18, 52, 86, 120];
+        let components = vec![path1, path2];
+        let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
+
+        let xpub = "cc077f786b2f9d5e8fcdef0c7aad56efc4a70abb7bf5947148d5921d23bfe22abe95c9196a0ece66f56065665aeb8d081ba1e19bbf4fe5d27f07d4c362bb39a5".to_string();
+        let derived_xpub = derive_xpub_from_xpub(xpub, crypto_key_path).unwrap();
+
+        assert_eq!(
+            derived_xpub,
+            "ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c"
         );
     }
 }

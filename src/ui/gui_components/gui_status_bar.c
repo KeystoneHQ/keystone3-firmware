@@ -117,7 +117,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_PETRA, "Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
     {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
-
+    {WALLET_LIST_LEAP, "Leap", &walletLeap}
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},

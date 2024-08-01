@@ -156,6 +156,8 @@ typedef enum {
 
     SIG_MULTISIG_WALLET_CREATE,
 
+    SIG_HARDWARE_CALL_DERIVE_PUBKEY,
+
 } GUI_VIEW_SIG_ENUM;
 
 extern GUI_VIEW g_initView;

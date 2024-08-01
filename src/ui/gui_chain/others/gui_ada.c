@@ -22,6 +22,8 @@ static char g_adaBaseAddr[ADA_ADD_MAX_LEN];
 static char *xpub = NULL;
 static AdaXPubType g_adaXpubTypes[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
 
+static void Try2FixAdaPathType();
+
 void SetAdaXPubType(AdaXPubType type)
 {
     g_adaXpubTypes[GetCurrentAccountIndex()] = type;
@@ -187,9 +189,14 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
         return NULL;
     }
     char *adaPath = path->data;
-    uint8_t xpubIndex = GetXPubIndexByPath(adaPath);
-    xpub = GetCurrentAccountPublicKey(xpubIndex);
+    xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
     PtrT_TransactionCheckResult result = cardano_check_tx(data, mfp, xpub);
+    if (result->error_code != 0) {
+        free_TransactionCheckResult(result);
+        Try2FixAdaPathType();
+        xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
+        result = cardano_check_tx(data, mfp, xpub);
+    }
     free_simple_response_c_char(path);
     return result;
 }
@@ -212,8 +219,35 @@ PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
+    Ptr_SimpleResponse_c_char master_key_index = cardano_get_catalyst_root_index(data);
+    if (master_key_index->error_code != 0) {
+        return NULL;
+    }
+    uint16_t index = atoi(master_key_index->data);
+    char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
+    PtrT_TransactionCheckResult precheckResult;
+    precheckResult= cardano_check_catalyst_path_type(data, xpub);
+    if (precheckResult->error_code != 0) {
+        Try2FixAdaPathType();
+        xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
+        precheckResult = cardano_check_catalyst_path_type(data, xpub);
+        if (precheckResult->error_code != 0) {
+            return precheckResult;
+        }
+    }
+    free_TransactionCheckResult(precheckResult);
+
     PtrT_TransactionCheckResult result = cardano_check_catalyst(data, mfp);
     return result;
+}
+
+static void Try2FixAdaPathType()
+{
+    if (GetAdaXPubType() == LEDGER_ADA) {
+        SetAdaXPubType(STANDARD_ADA);
+    } else {
+        SetAdaXPubType(LEDGER_ADA);
+    }
 }
 
 PtrT_TransactionCheckResult GuiGetAdaSignDataCheckResult(void)
@@ -221,6 +255,24 @@ PtrT_TransactionCheckResult GuiGetAdaSignDataCheckResult(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
+    Ptr_SimpleResponse_c_char master_key_index = cardano_get_sign_data_root_index(data);
+    if (master_key_index->error_code != 0) {
+        return NULL;
+    }
+    uint16_t index = atoi(master_key_index->data);
+    char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
+    PtrT_TransactionCheckResult precheckResult;
+    precheckResult= cardano_check_sign_data_path_type(data, xpub);
+    if (precheckResult->error_code != 0) {
+        Try2FixAdaPathType();
+        xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
+        precheckResult = cardano_check_sign_data_path_type(data, xpub);
+        if (precheckResult->error_code != 0) {
+            return precheckResult;
+        }
+    }
+    free_TransactionCheckResult(precheckResult);
+    
     PtrT_TransactionCheckResult result = cardano_check_sign_data(data, mfp);
     return result;
 }

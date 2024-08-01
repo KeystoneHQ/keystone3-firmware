@@ -20,7 +20,6 @@
 #include "drv_mpu.h"
 #include "circular_buffer.h"
 #include "protocol_parse.h"
-#include "ecdh.h"
 #include "ctaes.h"
 #include "drv_otp.h"
 #include "librust_c.h"

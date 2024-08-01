@@ -12,6 +12,9 @@
 #include "log_print.h"
 #include "hash_and_salt.h"
 #include "secret_cache.h"
+#ifndef COMPILE_SIMULATOR
+#include "drv_mpu.h"
+#endif
 
 #define SHA256_COUNT                            3
 

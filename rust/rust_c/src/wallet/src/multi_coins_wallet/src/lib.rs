@@ -48,20 +48,6 @@ use common_rust_c::{extract_array, extract_ptr_with_type};
 
 use crate::structs::QRHardwareCallData;
 
-pub mod aptos;
-pub mod arconnect;
-pub mod backpack;
-mod imtoken;
-pub mod keplr;
-pub mod okx;
-pub mod solana;
-pub mod structs;
-pub mod sui;
-pub mod tonkeeper;
-mod utils;
-pub mod xbull;
-pub mod xrp_toolkit;
-
 #[repr(C)]
 pub enum ETHAccountType {
     Bip44Standard,

@@ -549,16 +549,14 @@ impl ParsedCardanoTx {
                         },
                     }];
                     if let Some(anchor) = _cert.anchor() {
-                        let fields = vec![
-                            CertField {
-                                label: LABEL_ANCHOR_URL.to_string(),
-                                value: anchor.url().url(),
-                            },
-                            CertField {
-                                label: LABEL_ANCHOR_DATA_HASH.to_string(),
-                                value: anchor.anchor_data_hash().to_string(),
-                            },
-                        ];
+                        fields.push(CertField {
+                            label: LABEL_ANCHOR_URL.to_string(),
+                            value: anchor.url().url(),
+                        });
+                        fields.push(CertField {
+                            label: LABEL_ANCHOR_DATA_HASH.to_string(),
+                            value: anchor.anchor_data_hash().to_string(),
+                        });
                     }
                     certs.push(CardanoCertificate::new(
                         "Committee Cold Resign".to_string(),

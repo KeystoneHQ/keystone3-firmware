@@ -32,9 +32,6 @@ typedef struct {
 
 static uint32_t g_selectType = 0;
 static uint8_t g_currentAccountIndex = 0;
-static uint32_t g_ethSelectIndex[3] = {0};
-static uint32_t g_solSelectIndex[3] = {0};
-static uint32_t g_adaSelectIndex[3] = {0};
 static uint32_t g_ethPathIndex[3] = {0};
 static uint32_t g_solPathIndex[3] = {0};
 static uint32_t g_adaPathIndex[3] = {0};
@@ -44,6 +41,8 @@ static PathWidgetsItem_t g_changePathWidgets[3];
 static lv_obj_t *g_confirmAddrTypeBtn;
 static HOME_WALLET_CARD_ENUM g_currentChain = HOME_WALLET_CARD_BUTT;
 static lv_obj_t *g_derivationPathDescLabel = NULL;
+
+static lv_event_cb_t g_changed_cb = NULL;
 
 static void GetChangePathLabelHint(char* hint);
 static uint32_t GetDerivedPathTypeCount();
@@ -66,8 +65,9 @@ static void RefreshDefaultAddress(void);
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
 static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
 
-void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent, HOME_WALLET_CARD_ENUM chain)
+void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent, HOME_WALLET_CARD_ENUM chain, lv_event_cb_t changed_cb)
 {
+    g_changed_cb = changed_cb;
     g_currentChain = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
     if (chain == HOME_WALLET_CARD_ADA) {
@@ -98,11 +98,7 @@ void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent, HOME_WALLET_CARD_ENUM chain
 
     for (uint32_t i = 0; i < GetDerivedPathTypeCount(); i++) {
         label = GuiCreateTextLabel(cont, GetChangePathItemTitle(i));
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 26 + 103 * i);
-        GetPathItemSubTitle(string, i, sizeof(string));
-        label = GuiCreateLabelWithFontAndTextColor(cont, string, g_defIllustrateFont, 0x919191);
-        lv_label_set_recolor(label, true);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 56 + 103 * i);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 32 + 103 * i);
         if (i < GetDerivedPathTypeCount() - 1) {
             line = GuiCreateLine(cont, points, 2);
             lv_obj_align(line, LV_ALIGN_TOP_LEFT, 24, 102 * (i + 1));
@@ -172,6 +168,9 @@ static void ConfirmAddrTypeHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED && IsAddrTypeSelectChanged()) {
         SetPathIndex(g_selectType);
+        if (g_changed_cb != NULL) {
+            g_changed_cb(e);
+        }
         ReturnHandler(e);
     }
 }

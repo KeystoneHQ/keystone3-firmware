@@ -205,6 +205,26 @@ pub extern "C" fn cardano_parse_tx(
 }
 
 #[no_mangle]
+pub extern "C" fn cardano_sign_catalyst_with_ledger_bitbox02(
+    ptr: PtrUR,
+    mnemonic: PtrString,
+    passphrase: PtrString,
+) -> PtrT<UREncodeResult> {
+    let mnemonic = recover_c_char(mnemonic);
+    let passphrase = recover_c_char(passphrase);
+    let master_key =
+        keystore::algorithms::ed25519::bip32_ed25519::get_ledger_bitbox02_master_key_by_mnemonic(
+            passphrase.as_bytes(),
+            mnemonic,
+        );
+
+    match master_key {
+        Ok(master_key) => cardano_sign_catalyst_by_icarus(ptr, master_key),
+        Err(e) => UREncodeResult::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn cardano_sign_catalyst(
     ptr: PtrUR,
     entropy: PtrBytes,
@@ -254,6 +274,26 @@ fn cardano_sign_catalyst_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<
     );
 
     return result;
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_sign_sign_data_with_ledger_bitbox02(
+    ptr: PtrUR,
+    mnemonic: PtrString,
+    passphrase: PtrString,
+) -> PtrT<UREncodeResult> {
+    let mnemonic = recover_c_char(mnemonic);
+    let passphrase = recover_c_char(passphrase);
+    let master_key =
+        keystore::algorithms::ed25519::bip32_ed25519::get_ledger_bitbox02_master_key_by_mnemonic(
+            passphrase.as_bytes(),
+            mnemonic,
+        );
+
+    match master_key {
+        Ok(master_key) => cardano_sign_sign_data_by_icarus(ptr, master_key),
+        Err(e) => UREncodeResult::from(e).c_ptr(),
+    }
 }
 
 #[no_mangle]
@@ -307,6 +347,30 @@ fn cardano_sign_sign_data_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT
     );
 
     return result;
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_sign_tx_with_ledger_bitbox02(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+    cardano_xpub: PtrString,
+    mnemonic: PtrString,
+    passphrase: PtrString,
+) -> PtrT<UREncodeResult> {
+    let mnemonic = recover_c_char(mnemonic);
+    let passphrase = recover_c_char(passphrase);
+    let master_key =
+        keystore::algorithms::ed25519::bip32_ed25519::get_ledger_bitbox02_master_key_by_mnemonic(
+            passphrase.as_bytes(),
+            mnemonic,
+        );
+
+    match master_key {
+        Ok(master_key) => {
+            cardano_sign_tx_by_icarus(ptr, master_fingerprint, cardano_xpub, master_key)
+        }
+        Err(e) => UREncodeResult::from(e).c_ptr(),
+    }
 }
 
 #[no_mangle]

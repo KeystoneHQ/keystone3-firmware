@@ -7,7 +7,7 @@
 #include "assert.h"
 #include "gui_global_resources.h"
 
-void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent, HOME_WALLET_CARD_ENUM chain);
+void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent, HOME_WALLET_CARD_ENUM chain, lv_event_cb_t changed_cb);
 void GuiDestroySwitchPathTypeWidget(void);
 
 #endif

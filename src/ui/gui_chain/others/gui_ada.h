@@ -67,10 +67,6 @@ void GetCatalystVoteKeys(void *indata, void *param, uint32_t maxLen);
 void GetCatalystVoteKeysSize(uint16_t *width, uint16_t *height, void *param);
 void GetCatalystRewardsNotice(lv_obj_t *parent, void *totalData);
 
-ChainType GetAdaXPubTypeByIndex(uint16_t index);
-void SetAdaXPubType(AdaXPubType type);
-AdaXPubType GetAdaXPubType(void);
-
 bool GetAdaVotingProceduresExist(void *indata, void *param);
 void GetAdaVotingProceduresSize(uint16_t *width, uint16_t *height, void *param);
 void *GetAdaVotingProceduresData(uint8_t *row, uint8_t *col, void *param);
@@ -78,5 +74,17 @@ void GetAdaVotingProceduresLabel(void *indata, void *param, uint32_t maxLen);
 
 bool GetAdaVotingProposalsExist(void *indata, void *param);
 void GetAdaVotingProposalsLabel(void *indata, void *param, uint32_t maxLen);
+
+void SetAdaXPubType(AdaXPubType type);
+AdaXPubType GetAdaXPubType(void);
+ChainType GetAdaXPubTypeByIndex(uint16_t index);
+
+void SetReceivePageAdaXPubType(AdaXPubType type);
+AdaXPubType GetReceivePageAdaXPubType(void);
+ChainType GetReceivePageAdaXPubTypeByIndex(uint16_t index);
+
+void SetKeyDerivationAdaXPubType(AdaXPubType type);
+AdaXPubType GetKeyDerivationAdaXPubType(void);
+ChainType GetKeyDerivationAdaXPubTypeByIndex(uint16_t index);
 
 #endif

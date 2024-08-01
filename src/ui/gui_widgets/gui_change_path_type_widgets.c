@@ -71,7 +71,7 @@ void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent, HOME_WALLET_CARD_ENUM chain
     g_currentChain = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
     if (chain == HOME_WALLET_CARD_ADA) {
-        SetPathIndex(GetAdaXPubType());
+        SetPathIndex(GetReceivePageAdaXPubType());
     }
     g_selectType = GetPathIndex();
     InitDerivationPathDesc(chain);
@@ -332,7 +332,7 @@ static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t 
 {
     char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
     SimpleResponse_c_char *result = NULL;
-    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
+    xPub = GetCurrentAccountPublicKey(GetReceivePageAdaXPubTypeByIndex(index));
     snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", index);
     switch (type) {
     case 1:
@@ -394,7 +394,7 @@ static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked)
         lv_obj_clear_flag(g_changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     }
     if (g_currentChain == HOME_WALLET_CARD_ADA && isChecked) {
-        SetAdaXPubType(g_selectType);
+        SetReceivePageAdaXPubType(g_selectType);
         RefreshDefaultAddress();
     }
 }

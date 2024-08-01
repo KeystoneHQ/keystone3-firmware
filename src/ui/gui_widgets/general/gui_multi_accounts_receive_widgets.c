@@ -1060,7 +1060,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
 
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
-        xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(currentAccount));
+        xPub = GetCurrentAccountPublicKey(GetReceivePageAdaXPubTypeByIndex(currentAccount));
         snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         // cardano mainnet;
         switch (type) {
@@ -1095,6 +1095,7 @@ void GuiResetCurrentMultiAccountsCache(uint8_t index)
     }
     g_selectedIndex[index] = 0;
     g_selectedAccount[index] = 0;
-    SetAdaXPubType(STANDARD_ADA);
+    SetReceivePageAdaXPubType(STANDARD_ADA);
+    SetKeyDerivationAdaXPubType(STANDARD_ADA);
 }
 #endif

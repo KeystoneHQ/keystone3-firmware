@@ -131,6 +131,8 @@ static void ShowAddressDetailHandler(lv_event_t *e);
 static void UpdateConfirmIndexBtn(void);
 static void UpdateConfirmAccountBtn(void);
 static void ChangePathTypeReturnHandler(lv_event_t *e);
+static void PathTypeChangedCb(lv_event_t *e);
+static void SetCurrentSelectIndex(uint32_t index);
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
 
@@ -221,11 +223,16 @@ void GuiMultiAccountsReceiveRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ChangePathTypeReturnHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
-        GuiCreateSwitchPathTypeWidget(g_multiAccountsReceiveWidgets.tileSwitchPathType, g_chainCard);
+        GuiCreateSwitchPathTypeWidget(g_multiAccountsReceiveWidgets.tileSwitchPathType, g_chainCard, PathTypeChangedCb);
         break;
     default:
         break;
     }
+}
+
+static void PathTypeChangedCb(lv_event_t *e)
+{
+    SetCurrentSelectIndex(0);
 }
 
 static void ChangePathTypeReturnHandler(lv_event_t *e)
@@ -1088,5 +1095,6 @@ void GuiResetCurrentMultiAccountsCache(uint8_t index)
     }
     g_selectedIndex[index] = 0;
     g_selectedAccount[index] = 0;
+    SetAdaXPubType(STANDARD_ADA);
 }
 #endif

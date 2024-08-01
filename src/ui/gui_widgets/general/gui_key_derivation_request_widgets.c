@@ -186,8 +186,6 @@ static void OpenDerivationPath()
     for (int i = 0; i < 2; i++) {
         lv_obj_t *accountType =
             GuiCreateTextLabel(cont, GetChangeDerivationAccountType(i));
-        lv_obj_t *path = GuiCreateIllustrateLabel(cont, "m/1852'/1815'/#F5870A X#'");
-        lv_label_set_recolor(path, true);
         lv_obj_t *checkBox = GuiCreateSingleCheckBox(cont, _(""));
         g_derivationTypeCheck[i] = checkBox;
         lv_obj_set_size(g_derivationTypeCheck[i], 45, 45);
@@ -198,12 +196,7 @@ static void OpenDerivationPath()
             {
                 .obj = accountType,
                 .align = LV_ALIGN_DEFAULT,
-                .position = {24, 16},
-            },
-            {
-                .obj = path,
-                .align = LV_ALIGN_DEFAULT,
-                .position = {24, 56},
+                .position = {24, 32},
             },
             {
                 .obj = g_derivationTypeCheck[i],
@@ -561,7 +554,8 @@ static void GetCardanoEgAddress(void)
                        result->data, 24);
     free_simple_response_c_char(result);
 
-    result = cardano_get_base_address(xPub, 1, 1);
+    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(1));
+    result = cardano_get_base_address(xPub, 0, 1);
     CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][1], BUFFER_SIZE_128,
                        result->data, 24);
     free_simple_response_c_char(result);

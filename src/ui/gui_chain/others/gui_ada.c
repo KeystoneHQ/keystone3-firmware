@@ -41,6 +41,12 @@ void SetReceivePageAdaXPubType(AdaXPubType type)
     g_receivePageAdaXpubTypes[GetCurrentAccountIndex()] = type;
 }
 
+void SetReceivePageAdaXPubTypeByAccountIndex(AdaXPubType type, uint8_t accountIndex)
+{
+    g_receivePageAdaXpubTypes[accountIndex] = type;
+}
+
+
 AdaXPubType GetReceivePageAdaXPubType(void)
 {
     return g_receivePageAdaXpubTypes[GetCurrentAccountIndex()];
@@ -49,6 +55,11 @@ AdaXPubType GetReceivePageAdaXPubType(void)
 void SetKeyDerivationAdaXPubType(AdaXPubType type)
 {
     g_keyDerivationAdaXpubTypes[GetCurrentAccountIndex()] = type;
+}
+
+void SetKeyDerivationAdaXpubTypesByAccountIndex(AdaXPubType type, uint8_t accountIndex)
+{
+    g_keyDerivationAdaXpubTypes[accountIndex] = type;
 }
 
 AdaXPubType GetKeyDerivationAdaXPubType(void)

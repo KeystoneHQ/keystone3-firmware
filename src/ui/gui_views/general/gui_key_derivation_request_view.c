@@ -3,7 +3,7 @@
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_key_derivation_request_widgets.h"
-
+#include "gui_keyboard_hintbox.h"
 static int32_t GuiKeyDerivationRequestViewInit()
 {
     GuiKeyDerivationRequestInit();
@@ -31,6 +31,9 @@ int32_t GuiKeyDerivationRequestViewEventProcess(void *self, uint16_t usEvent, vo
         break;
     case SIG_BACKGROUND_UR_UPDATE:
         GuiKeyDerivationWidgetHandleURUpdate((char*)param, usLen);
+        break;
+    case SIG_VERIFY_PASSWORD_PASS:
+        HiddenKeyboardAndShowAnimateQR();
         break;
     default:
         return ERR_GUI_UNHANDLED;

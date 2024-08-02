@@ -255,6 +255,7 @@ LV_IMG_DECLARE(walletUniSat);
 LV_IMG_DECLARE(walletXBull);
 LV_IMG_DECLARE(walletTonkeeper);
 LV_IMG_DECLARE(walletKeystone);
+LV_IMG_DECLARE(walletLeap);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);

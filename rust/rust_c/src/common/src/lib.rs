@@ -4,19 +4,24 @@
 #![allow(unused_unsafe)]
 extern crate alloc;
 
+use alloc::boxed::Box;
+use alloc::string::ToString;
+use core::slice;
+
+use cty::c_char;
+use third_party::bitcoin::hex::Case;
+use third_party::bitcoin_hashes::hex::DisplayHex;
+use third_party::hex;
+use third_party::hex::ToHex;
+
+use errors::ErrorCodes;
+use structs::TransactionCheckResult;
+use types::Ptr;
+
 use crate::errors::RustCError;
 use crate::structs::SimpleResponse;
 use crate::types::{PtrBytes, PtrString};
 use crate::utils::{convert_c_char, recover_c_char};
-use alloc::boxed::Box;
-use alloc::string::ToString;
-use core::slice;
-use cty::c_char;
-use errors::ErrorCodes;
-use structs::TransactionCheckResult;
-use third_party::hex;
-use third_party::hex::ToHex;
-use types::Ptr;
 
 pub mod errors;
 pub mod ffi;
@@ -62,6 +67,25 @@ pub extern "C" fn get_extended_pubkey_by_seed(
         keystore::algorithms::secp256k1::get_extended_public_key_by_seed(seed, &path);
     match extended_key {
         Ok(result) => SimpleResponse::success(convert_c_char(result.to_string())).simple_c_ptr(),
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn get_extended_pubkey_bytes_by_seed(
+    seed: PtrBytes,
+    seed_len: u32,
+    path: PtrString,
+) -> *mut SimpleResponse<c_char> {
+    let path = recover_c_char(path);
+    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let extended_key =
+        keystore::algorithms::secp256k1::get_extended_public_key_by_seed(seed, &path);
+    match extended_key {
+        Ok(result) => {
+            SimpleResponse::success(convert_c_char(result.encode().to_hex_string(Case::Lower)))
+                .simple_c_ptr()
+        }
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }
 }

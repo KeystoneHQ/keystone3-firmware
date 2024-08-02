@@ -1,7 +1,8 @@
-use alloc::{format, vec};
-use alloc::vec::Vec;
 use third_party::core2::io::Cursor;
 use alloc::sync::Arc;
+use alloc::vec::Vec;
+use alloc::format;
+use alloc::vec;
 
 use bitstream_io::{BigEndian, BitRead, BitReader};
 
@@ -112,6 +113,7 @@ impl CellSlice {
         let slice = reader.load_bits(significant_bits);
         CellBuilder::new()
             .store_bits(significant_bits, slice?.as_slice())?
+            .store_references(&self.cell.references)?
             .build()
     }
 
@@ -143,11 +145,12 @@ impl CellSlice {
             .skip(self.start_bit as u32)
             .map_cell_parser_error()?;
         bit_reader.read_bits(bit_len, data.as_mut_slice())?;
-        let cell = Cell {
+
+        Cell::new(
             data,
             bit_len,
-            references: self.cell.references[self.start_ref..self.end_ref].to_vec(),
-        };
-        Ok(cell)
+            self.cell.references[self.start_ref..self.end_ref].to_vec(),
+            false,
+        )
     }
 }

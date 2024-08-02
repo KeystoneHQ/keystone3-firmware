@@ -1,7 +1,11 @@
 use alloc::boxed::Box;
 use alloc::string::ToString;
 use alloc::vec::Vec;
+
 use app_wallets::keplr::sync_info::SyncInfo;
+use third_party::ur_registry::extend::key_derivation_schema::{Curve, DerivationAlgo};
+use third_party::ur_registry::extend::qr_hardware_call::{CallParams, CallType, QRHardwareCall};
+
 use common_rust_c::errors::RustCError;
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
@@ -9,8 +13,6 @@ use common_rust_c::structs::Response;
 use common_rust_c::types::{Ptr, PtrString, PtrT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
-use third_party::ur_registry::extend::key_derivation_schema::{Curve, DerivationAlgo};
-use third_party::ur_registry::extend::qr_hardware_call::{CallParams, CallType, QRHardwareCall};
 
 #[repr(C)]
 pub struct KeplrAccount {
@@ -42,6 +44,7 @@ pub struct QRHardwareCallData {
     pub call_type: PtrString,
     pub origin: PtrString,
     pub key_derivation: Ptr<KeyDerivationRequestData>,
+    pub version: PtrString,
 }
 
 #[repr(C)]
@@ -56,6 +59,7 @@ pub struct KeyDerivationSchema {
     key_path: PtrString,
     curve: PtrString,
     algo: PtrString,
+    chain_type: PtrString,
 }
 
 impl TryFrom<&mut QRHardwareCall> for QRHardwareCallData {
@@ -68,6 +72,8 @@ impl TryFrom<&mut QRHardwareCall> for QRHardwareCallData {
                     .iter()
                     .map(|v| KeyDerivationSchema::try_from(v))
                     .collect::<Result<Vec<KeyDerivationSchema>, RustCError>>()?;
+
+                // todo check path is valid
                 Ok(Self {
                     call_type: convert_c_char(match value.get_call_type() {
                         CallType::KeyDerivation => "key_derivation".to_string(),
@@ -77,6 +83,8 @@ impl TryFrom<&mut QRHardwareCall> for QRHardwareCallData {
                         schemas: VecFFI::from(schemas).c_ptr(),
                     }
                     .c_ptr(),
+                    // todo version1
+                    version: convert_c_char(value.get_version().to_string()),
                 })
             }
         }
@@ -93,6 +101,7 @@ impl Free for QRHardwareCallData {
             let v = Vec::from_raw_parts(vec.data, vec.size, vec.cap);
             v.iter().for_each(|v| v.free());
         }
+        free_str_ptr!(self.version);
     }
 }
 
@@ -119,6 +128,7 @@ impl TryFrom<&third_party::ur_registry::extend::key_derivation_schema::KeyDeriva
                 Curve::Ed25519 => "ED25519".to_string(),
                 Curve::Secp256k1 => "Secp256k1".to_string(),
             }),
+            chain_type: convert_c_char(value.get_chain_type_or_default().to_string()),
         })
     }
 }
@@ -128,6 +138,7 @@ impl Free for KeyDerivationSchema {
         free_str_ptr!(self.algo);
         free_str_ptr!(self.curve);
         free_str_ptr!(self.key_path);
+        free_str_ptr!(self.chain_type);
     }
 }
 

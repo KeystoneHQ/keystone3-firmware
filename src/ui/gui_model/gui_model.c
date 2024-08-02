@@ -1045,12 +1045,14 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
             void GuiResetCurrentEthAddressIndex(uint8_t index);
             void GuiResetCurrentStandardAddressIndex(uint8_t index);
             void GuiResetCurrentMultiAccountsCache(uint8_t index);
+            void GuiResetCurrentKeyDerivationCache(uint8_t index);
 #endif
             GuiResetCurrentUtxoAddressIndex(accountIndex);
 #ifndef BTC_ONLY
             GuiResetCurrentEthAddressIndex(accountIndex);
             GuiResetCurrentStandardAddressIndex(accountIndex);
             GuiResetCurrentMultiAccountsCache(accountIndex);
+            GuiResetCurrentKeyDerivationCache(accountIndex);
 #endif
         }
 

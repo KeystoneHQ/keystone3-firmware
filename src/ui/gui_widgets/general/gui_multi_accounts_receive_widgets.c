@@ -1095,7 +1095,6 @@ void GuiResetCurrentMultiAccountsCache(uint8_t index)
     }
     g_selectedIndex[index] = 0;
     g_selectedAccount[index] = 0;
-    SetReceivePageAdaXPubType(STANDARD_ADA);
-    SetKeyDerivationAdaXPubType(STANDARD_ADA);
+    SetReceivePageAdaXPubTypeByAccountIndex(STANDARD_ADA, index);
 }
 #endif

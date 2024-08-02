@@ -177,7 +177,6 @@ static void ConfirmAddrTypeHandler(lv_event_t *e)
 
 static bool IsAddrTypeSelectChanged()
 {
-    printf("g_selectType: %d, GetPathIndex: %d\n", g_selectType, GetPathIndex());
     return g_selectType != GetPathIndex();
 }
 

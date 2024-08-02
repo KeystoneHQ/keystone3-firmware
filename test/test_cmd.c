@@ -2818,11 +2818,11 @@ static void Slip39SliceWordTestFunc(int argc, char *argv[])
 {
     uint8_t threshold = 0;
     int ret = Slip39OneSliceCheck("river flea academic academic civil duke kidney cinema insect engage explain unknown welfare rhythm branch elite vampire cover airline boring", 20,
-                                  20, 20, &threshold);
+                                  20, false, 20, &threshold);
     printf("ret = 0 threshold = %d\n", ret, threshold);
 
     ret = Slip39OneSliceCheck("river flea academic academic civil duke kidney cinema insect engage explain unknown welfare rhythm branch elite vampire cover airline boring", 20,
-                              24459, 0, &threshold);
+                              24459, false, 20, &threshold);
     printf("ret = 0 threshold = %d\n", ret, threshold);
 }
 

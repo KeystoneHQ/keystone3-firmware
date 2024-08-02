@@ -18,6 +18,7 @@ static uint8_t g_walletIconIndex = 0;
 static char *g_walletName = NULL;
 static uint8_t g_diceRollHashCache[32] = {0};
 static uint16_t g_identifier;
+static bool g_extendable;
 static uint16_t g_iteration;
 
 void SecretCacheSetChecksum(uint8_t *checksum)
@@ -106,6 +107,16 @@ uint8_t SecretCacheGetIteration(void)
     return g_iteration;
 }
 
+void SecretCacheSetExtendable(bool flag)
+{
+    g_extendable = flag;
+}
+
+bool SecretCacheGetExtendable(void)
+{
+    return g_extendable;
+}
+
 void SecretCacheSetIdentifier(uint16_t id)
 {
     g_identifier = id;
@@ -190,6 +201,7 @@ void ClearSecretCache(void)
 {
     uint32_t len;
     g_identifier = 0;
+    g_extendable = false;
     g_iteration = 0;
 
     if (g_passwordCache != NULL) {

@@ -66,17 +66,17 @@ pub fn generate_crypto_multi_accounts(
                 )?);
             }
             _path
-            if _path
-                .to_string()
-                .to_lowercase()
-                .starts_with(ETH_LEDGER_LIVE_PREFIX) =>
-                {
-                    keys.push(generate_eth_ledger_live_key(
-                        master_fingerprint,
-                        ele,
-                        Some("account.ledger_live".to_string()),
-                    )?);
-                }
+                if _path
+                    .to_string()
+                    .to_lowercase()
+                    .starts_with(ETH_LEDGER_LIVE_PREFIX) =>
+            {
+                keys.push(generate_eth_ledger_live_key(
+                    master_fingerprint,
+                    ele,
+                    Some("account.ledger_live".to_string()),
+                )?);
+            }
             _ => {
                 return Err(URError::UrEncodeError(format!(
                     "Unknown key path: {}",

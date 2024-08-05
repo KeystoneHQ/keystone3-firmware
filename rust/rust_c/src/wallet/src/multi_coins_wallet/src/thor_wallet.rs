@@ -2,15 +2,18 @@
 extern crate alloc;
 use alloc::format;
 use alloc::string::ToString;
-use common_rust_c::ffi::CSliceFFI;
-use common_rust_c::structs::ExtendedPublicKey;
-use common_rust_c::types::{PtrString, PtrT};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use common_rust_c::utils::{recover_c_array, recover_c_char};
 use core::slice;
+
+use app_wallets::thor_wallet::generate_crypto_multi_accounts;
 use third_party::ur_registry::error::URError;
 use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use third_party::ur_registry::traits::RegistryItem;
+
+use common_rust_c::ffi::CSliceFFI;
+use common_rust_c::structs::ExtendedPublicKey;
+use common_rust_c::types::{PtrString, PtrT};
+use common_rust_c::ur::{FRAGMENT_MAX_LENGTH_DEFAULT, UREncodeResult};
+use common_rust_c::utils::{recover_c_array, recover_c_char};
 
 use crate::utils::normalize_xpub;
 
@@ -28,7 +31,7 @@ pub extern "C" fn get_connect_thor_wallet_ur(
             "master fingerprint length must be 4, current is {}",
             length
         )))
-            .c_ptr();
+        .c_ptr();
     }
     unsafe {
         let mfp = slice::from_raw_parts(master_fingerprint, length as usize);
@@ -52,7 +55,7 @@ pub extern "C" fn get_connect_thor_wallet_ur(
             };
 
             let keys = normalize_xpub(keys).unwrap();
-            let result = app_wallets::thor_wallet::generate_crypto_multi_accounts(
+            let result = generate_crypto_multi_accounts(
                 *mfp,
                 &serial_number,
                 keys,
@@ -66,7 +69,7 @@ pub extern "C" fn get_connect_thor_wallet_ur(
                         CryptoMultiAccounts::get_registry_type().get_type(),
                         FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
                     )
-                        .c_ptr(),
+                    .c_ptr(),
                     Err(e) => UREncodeResult::from(e).c_ptr(),
                 },
                 Err(e) => UREncodeResult::from(e).c_ptr(),

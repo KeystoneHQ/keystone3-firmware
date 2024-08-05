@@ -1,24 +1,25 @@
 #![no_std]
 #![feature(error_in_core)]
+#![feature(prelude_2024)]
 #![allow(dead_code)] // add for solana use a lot of external code
 
 extern crate alloc;
 extern crate core;
-
 #[cfg(test)]
 #[macro_use]
 extern crate std;
 
-use crate::read::Read;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-mod address;
-use crate::parser::structs::ParsedSolanaTx;
-use crate::structs::SolanaMessage;
 pub use address::get_address;
 
+use crate::parser::structs::ParsedSolanaTx;
+use crate::read::Read;
+use crate::structs::SolanaMessage;
+
+mod address;
 mod compact;
 pub mod errors;
 mod instruction;
@@ -54,9 +55,12 @@ pub fn sign(message: Vec<u8>, hd_path: &String, seed: &[u8]) -> errors::Result<[
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use third_party::hex::{FromHex, ToHex};
     use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
+
+    use crate::solana_lib::solana_program::pubkey::Pubkey;
+
+    use super::*;
 
     #[test]
     fn test_solana_sign() {

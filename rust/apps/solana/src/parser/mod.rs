@@ -1,9 +1,9 @@
 use alloc::borrow::ToOwned;
+use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
 use serde_json::json;
-
 use third_party::bitcoin::hex::FromHex;
 
 use crate::errors::{Result, SolanaError};
@@ -13,6 +13,7 @@ use crate::parser::detail::{
 };
 use crate::parser::overview::{
     ProgramOverviewGeneral, ProgramOverviewInstruction, ProgramOverviewInstructions,
+    ProgramOverviewMultisigCreate, ProgramOverviewProposal, ProgramOverviewSplTokenTransfer,
     ProgramOverviewTransfer, ProgramOverviewUnknown, ProgramOverviewVote, SolanaOverview,
 };
 use crate::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
@@ -36,8 +37,16 @@ impl ParsedSolanaTx {
             network: "Solana Mainnet".to_string(),
         })
     }
-
+    // detect the display type by the details vec contains number of details
     fn detect_display_type(details: &[SolanaDetail]) -> SolanaTxDisplayType {
+        let squads = details
+            .iter()
+            .filter(|d| Self::is_sqauds_v4_detail(&d.common))
+            .collect::<Vec<&SolanaDetail>>();
+        if squads.len() >= 1 {
+            return SolanaTxDisplayType::SquadsV4;
+        }
+
         let transfer: Vec<&SolanaDetail> = details
             .iter()
             .filter(|d| Self::is_system_transfer_detail(&d.common))
@@ -45,6 +54,15 @@ impl ParsedSolanaTx {
         if transfer.len() == 1 {
             return SolanaTxDisplayType::Transfer;
         }
+        // if contains token transfer check
+        let token_transfer: Vec<&SolanaDetail> = details
+            .iter()
+            .filter(|d| Self::is_token_transfer_checked_detail(&d.common))
+            .collect::<Vec<&SolanaDetail>>();
+        if token_transfer.len() == 1 {
+            return SolanaTxDisplayType::TokenTransfer;
+        }
+
         let vote: Vec<&SolanaDetail> = details
             .iter()
             .filter(|d| Self::is_vote_detail(&d.common))
@@ -52,6 +70,7 @@ impl ParsedSolanaTx {
         if vote.len() == 1 {
             return SolanaTxDisplayType::Vote;
         }
+
         let instructions: Vec<&SolanaDetail> = details
             .iter()
             .filter(|d| Self::is_unknown_detail(&d.common))
@@ -66,6 +85,10 @@ impl ParsedSolanaTx {
         common.program.eq("System") && common.method.eq("Transfer")
     }
 
+    fn is_token_transfer_checked_detail(common: &CommonDetail) -> bool {
+        common.program.eq("Token") && common.method.eq("TransferChecked")
+    }
+
     fn is_vote_detail(common: &CommonDetail) -> bool {
         common.program.eq("Vote") && common.method.eq("Vote")
     }
@@ -76,6 +99,10 @@ impl ParsedSolanaTx {
 
     fn is_instructions_detail(common: &CommonDetail) -> bool {
         common.program.eq("Instructions") && common.method.eq("")
+    }
+
+    fn is_sqauds_v4_detail(common: &CommonDetail) -> bool {
+        common.program.eq("SquadsV4")
     }
 
     fn build_genera_detail(details: &[SolanaDetail]) -> Result<String> {
@@ -123,6 +150,8 @@ impl ParsedSolanaTx {
             SolanaTxDisplayType::Transfer | SolanaTxDisplayType::Vote => {
                 Ok(serde_json::to_string(&details)?)
             }
+            SolanaTxDisplayType::SquadsV4 => Ok(serde_json::to_string(&details)?),
+            SolanaTxDisplayType::TokenTransfer => Ok(serde_json::to_string(&details)?),
         }
     }
 
@@ -144,6 +173,77 @@ impl ParsedSolanaTx {
             });
         overview.ok_or(SolanaError::ParseTxError(
             "parse system transfer failed, empty transfer program".to_string(),
+        ))
+    }
+
+    fn find_token_name(token_mint_address: &str) -> String {
+        match token_mint_address {
+            "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" => "JUP".to_string(),
+            "MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey" => "MNDE".to_string(),
+            "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3" => "PYTH".to_string(),
+            "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" => "USDC".to_string(),
+            "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL" => "JTO".to_string(),
+            "85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ" => "W".to_string(),
+            "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" => "USDT".to_string(),
+            "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" => "Bonk".to_string(),
+            "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn" => "JitoSOL".to_string(),
+            "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" => "WIF".to_string(),
+            "BZLbGTNCSFfoth2GYDtwr7e4imWzpR5jqcUuGEwr646K" => "IO".to_string(),
+            "rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof" => "RENDER".to_string(),
+            "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" => "RAY".to_string(),
+            "7atgF8KQo4wJrD5ATGX7t1V2zVvykPJbFfNeVf1icFv1" => "CWIF".to_string(),
+            "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So" => "mSol".to_string(),
+            "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux" => "HNT".to_string(),
+            "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4" => "JLP".to_string(),
+            "8BMzMi2XxZn9afRaMx5Z6fauk9foHXqV5cLTCYWRcVje" => "STIK".to_string(),
+            "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82" => "BOME".to_string(),
+            "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr" => "POPCAT".to_string(),
+            "4vMsoUT2BWatFweudnQM1xedRLfJgJ7hswhcpz4xgBTy" => "HONEY".to_string(),
+            "NeonTjSjsuo3rexg9o6vHuMXw62f9V7zvmu8M8Zut44" => "NEON".to_string(),
+            "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5" => "MEW".to_string(),
+            "TNSRxcUxoT9xBG3de7PiJyTDYu7kskLqcpddxnEJAS6" => "TNSR".to_string(),
+            "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v" => "JupSOL".to_string(),
+            "bSo13r4TkiE4KumL71LsHTPpL2euBYLFx6h9HP3piy1" => "bSOL".to_string(),
+            "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" => "SRM".to_string(),
+            "5z3EqYQo9HiCEs3R84RCDMu2n7anpDMxRhdK8PSWmrRC" => "PONKE".to_string(),
+            "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo" => "PYUSD".to_string(),
+            "z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M" => "OXY".to_string(),
+            "METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m" => "MPLX".to_string(),
+            "KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS" => "KMNO".to_string(),
+            "DriFtupJYLTosbwoN8koMbEYSx54aFAVLddWsbksjwg7" => "DRIFT".to_string(),
+            "FoXyMu5xwXre7zEoSvzViRk3nGawHUp9kUh97y2NDhcq" => "FOXY".to_string(),
+            "7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx" => "GMT".to_string(),
+            "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm" => "INF".to_string(),
+            "EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp" => "FIDA".to_string(),
+            "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE" => "ORCA".to_string(),
+            "EzgfrTjgFyHGaU5BEBRETyfawt66bAYqJvcryWuJtQ5w" => "Borzoi".to_string(),
+            "ZEUS1aR7aX8DFFJf5QjWj2ftDDdNTroMNGo8YoQm3Gq" => "ZEUS".to_string(),
+            _ => "Token".to_string(),
+        }
+    }
+    fn build_token_transfer_checked_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
+        let overview: Option<SolanaOverview> = details
+            .iter()
+            .find(|d| Self::is_token_transfer_checked_detail(&d.common))
+            .and_then(|detail| {
+                if let ProgramDetail::TokenTransferChecked(v) = &detail.kind {
+                    let amount_f64 = v.amount.parse::<f64>().unwrap();
+                    let amount = amount_f64 / 10u64.pow(v.decimals as u32) as f64;
+                    Some(SolanaOverview::SplTokenTransfer(
+                        ProgramOverviewSplTokenTransfer {
+                            source: v.account.to_string(),
+                            destination: v.recipient.to_string(),
+                            authority: v.owner.to_string(),
+                            decimals: v.decimals,
+                            amount: format!("{} {}", amount, Self::find_token_name(&v.mint)),
+                        },
+                    ))
+                } else {
+                    None
+                }
+            });
+        overview.ok_or(SolanaError::ParseTxError(
+            "parse spl token transfer failed, empty transfer program".to_string(),
         ))
     }
     fn build_vote_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
@@ -177,6 +277,148 @@ impl ParsedSolanaTx {
             }
         });
         Ok(SolanaOverview::General(overview))
+    }
+    fn build_squads_v4_proposal_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
+        let mut proposal_overview_vec: Vec<ProgramOverviewProposal> = Vec::new();
+        for d in details {
+            let kind = &d.kind;
+            match kind {
+                ProgramDetail::SquadsV4ProposalActivate => {
+                    proposal_overview_vec.push(ProgramOverviewProposal {
+                        program: "Squads".to_string(),
+                        method: "ProposalActivate".to_string(),
+                        memo: None,
+                        data: None,
+                    });
+                }
+                ProgramDetail::SquadsV4ProposalCreate(v) => {
+                    proposal_overview_vec.push(ProgramOverviewProposal {
+                        program: "Squads".to_string(),
+                        method: "ProposalCreate".to_string(),
+                        memo: None,
+                        data: serde_json::to_string(v).ok(),
+                    });
+                }
+                ProgramDetail::SquadsV4ProposalApprove(v) => {
+                    proposal_overview_vec.push(ProgramOverviewProposal {
+                        program: "Squads".to_string(),
+                        method: "ProposalApprove".to_string(),
+                        memo: v.memo.clone(),
+                        data: None,
+                    });
+                }
+                ProgramDetail::SquadsV4ProposalCancel(v) => {
+                    proposal_overview_vec.push(ProgramOverviewProposal {
+                        program: "Squads".to_string(),
+                        method: "ProposalCancel".to_string(),
+                        memo: v.memo.clone(),
+                        data: None,
+                    });
+                }
+                ProgramDetail::SquadsV4ProposalReject(v) => {
+                    proposal_overview_vec.push(ProgramOverviewProposal {
+                        program: "Squads".to_string(),
+                        method: "ProposalReject".to_string(),
+                        memo: v.memo.clone(),
+                        data: None,
+                    });
+                }
+                ProgramDetail::SquadsV4VaultTransactionCreate(v) => {
+                    proposal_overview_vec.push(ProgramOverviewProposal {
+                        program: "Squads".to_string(),
+                        method: "VaultTransactionCreate".to_string(),
+                        memo: v.memo.clone(),
+                        data: None,
+                    });
+                }
+
+                ProgramDetail::SquadsV4VaultTransactionExecute => {
+                    proposal_overview_vec.push(ProgramOverviewProposal {
+                        program: "Squads".to_string(),
+                        method: "VaultTransactionExecute".to_string(),
+                        memo: None,
+                        data: None,
+                    });
+                }
+                _ => {}
+            }
+        }
+        return Ok(SolanaOverview::SquadsV4Proposal(proposal_overview_vec));
+    }
+    fn build_squads_v4_multisig_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
+        let mut transfer_overview_vec: Vec<ProgramOverviewTransfer> = Vec::new();
+        let mut total_value = 0f64;
+        details.iter().for_each(|d| {
+            if let ProgramDetail::SystemTransfer(v) = &d.kind {
+                total_value += v
+                    .value
+                    .to_uppercase()
+                    .replace("SOL", "")
+                    .trim()
+                    .parse::<f64>()
+                    .unwrap();
+                transfer_overview_vec.push(ProgramOverviewTransfer {
+                    value: v.value.to_string(),
+                    main_action: "SOL Transfer".to_string(),
+                    from: v.from.to_string(),
+                    to: v.to.to_string(),
+                });
+            }
+        });
+        for d in details {
+            if let ProgramDetail::SquadsV4MultisigCreate(v) = &d.kind {
+                let memo = v.memo.clone().unwrap();
+                let memo = serde_json::from_str::<serde_json::Value>(&memo).unwrap();
+                let wallet_name = memo["n"]
+                    .as_str()
+                    .unwrap_or("SquadsV4 Multisig Wallet")
+                    .to_string();
+                let wallet_desc = memo["d"].as_str().unwrap_or("").to_string();
+                let threshold = v.threshold;
+                let member_count = v.members.len();
+                let members = v
+                    .members
+                    .iter()
+                    .map(|m| m.key.to_string())
+                    .collect::<Vec<String>>();
+                let total_value = format!("~{:.3} SOL", total_value);
+                return Ok(SolanaOverview::SquadsV4MultisigCreate(
+                    ProgramOverviewMultisigCreate {
+                        wallet_name,
+                        wallet_desc,
+                        threshold,
+                        member_count,
+                        members,
+                        total_value,
+                        transfers: transfer_overview_vec,
+                    },
+                ));
+            }
+        }
+        return Self::build_instructions_overview(details);
+    }
+    fn build_squads_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
+        if details
+            .iter()
+            .any(|d| matches!(d.kind, ProgramDetail::SquadsV4MultisigCreate(_)))
+        {
+            return Self::build_squads_v4_multisig_overview(details);
+        }
+        if details.iter().any(|d| {
+            matches!(
+                d.kind,
+                ProgramDetail::SquadsV4ProposalCreate(_)
+                    | ProgramDetail::SquadsV4ProposalActivate
+                    | ProgramDetail::SquadsV4ProposalApprove(_)
+                    | ProgramDetail::SquadsV4ProposalCancel(_)
+                    | ProgramDetail::SquadsV4ProposalReject(_)
+                    | ProgramDetail::SquadsV4VaultTransactionCreate(_)
+                    | ProgramDetail::SquadsV4VaultTransactionExecute
+            )
+        }) {
+            return Self::build_squads_v4_proposal_overview(details);
+        }
+        return Self::build_instructions_overview(details);
     }
 
     fn build_instructions_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
@@ -216,9 +458,10 @@ impl ParsedSolanaTx {
             SolanaTxDisplayType::Transfer => Self::build_transfer_overview(details),
             SolanaTxDisplayType::Vote => Self::build_vote_overview(details),
             SolanaTxDisplayType::General => Self::build_general_overview(details),
-            SolanaTxDisplayType::Unknown => {
-                // all instructions can not be parsed.
-                Self::build_instructions_overview(details)
+            SolanaTxDisplayType::Unknown => Self::build_instructions_overview(details),
+            SolanaTxDisplayType::SquadsV4 => Self::build_squads_overview(details),
+            SolanaTxDisplayType::TokenTransfer => {
+                Self::build_token_transfer_checked_overview(details)
             }
         }
     }
@@ -227,7 +470,6 @@ impl ParsedSolanaTx {
 #[cfg(test)]
 mod tests {
     use serde_json::{json, Value};
-
     use third_party::hex::FromHex;
 
     use super::*;

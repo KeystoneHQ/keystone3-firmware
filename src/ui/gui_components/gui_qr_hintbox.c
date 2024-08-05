@@ -101,6 +101,42 @@ void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *
     }
 }
 
+void GuiNormalHitBoxOpen(const char *title, const char *content)
+{
+    lv_obj_t *label;
+    if (g_qrHintBox == NULL) {
+        g_qrHintBox = GuiCreateHintBox(480);
+        label = GuiCreateTextLabel(g_qrHintBox, title);
+        lv_obj_set_style_text_font(label, &openSansEnLittleTitle, LV_PART_MAIN);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_align_to(label, g_qrHintBox, LV_ALIGN_TOP_LEFT, 25, 380);
+        g_qrHintBoxTitle = label;
+        lv_obj_t *scrollable = lv_obj_create(g_qrHintBox);
+        lv_obj_set_size(scrollable, 420, 202);
+        lv_obj_set_style_bg_color(scrollable, DARK_BG_COLOR,
+                                  LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_scrollbar_mode(scrollable, LV_SCROLLBAR_MODE_OFF);
+        lv_obj_set_style_border_width(scrollable, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_pad_all(scrollable, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_align_to(scrollable, g_qrHintBoxTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
+
+        label = GuiCreateIllustrateLabel(scrollable, content);
+        lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
+        g_qrHintBoxSubTitle = label;
+        lv_obj_align_to(label, scrollable, LV_ALIGN_TOP_LEFT, 0, 0);
+
+        lv_obj_t *button = GuiCreateTextBtn(g_qrHintBox, _("OK"));
+        lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
+        lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -24, -24);
+        lv_obj_add_event_cb(button, GuiQRHintBoxCloseHandler, LV_EVENT_CLICKED, NULL);
+    } else {
+        //enhancement
+        CheckAndClearFlag(g_qrHintBox, LV_OBJ_FLAG_HIDDEN);
+        lv_label_set_text(g_qrHintBoxTitle, title);
+        lv_label_set_text(g_qrHintBoxSubTitle, content);
+    }
+}
+
 void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *subtitle)
 {
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;

@@ -86,6 +86,39 @@ impl Free for DisplaySolanaTxOverviewUnknownInstructions {
 }
 
 #[repr(C)]
+pub struct DisplaySolanaTxProposalOverview {
+    pub program: PtrString,
+    pub method: PtrString,
+    pub memo: PtrString,
+    pub data: PtrString,
+}
+impl_c_ptrs!(DisplaySolanaTxProposalOverview);
+impl Free for DisplaySolanaTxProposalOverview {
+    fn free(&self) {
+        free_str_ptr!(self.program);
+        free_str_ptr!(self.method);
+        free_str_ptr!(self.memo);
+        free_str_ptr!(self.data);
+    }
+}
+#[repr(C)]
+pub struct DisplaySolanaTxSplTokenTransferOverview {
+    pub source: PtrString,
+    pub destination: PtrString,
+    pub authority: PtrString,
+    pub decimals: u8,
+    pub amount: PtrString,
+}
+impl_c_ptrs!(DisplaySolanaTxSplTokenTransferOverview);
+impl Free for DisplaySolanaTxSplTokenTransferOverview {
+    fn free(&self) {
+        free_str_ptr!(self.source);
+        free_str_ptr!(self.destination);
+        free_str_ptr!(self.authority);
+        free_str_ptr!(self.amount);
+    }
+}
+#[repr(C)]
 pub struct DisplaySolanaTxOverview {
     // `Transfer`, `Vote`, `General`, `Unknown`
     pub display_type: PtrString,
@@ -102,6 +135,70 @@ pub struct DisplaySolanaTxOverview {
     pub general: PtrT<VecFFI<DisplaySolanaTxOverviewGeneral>>,
     // instructions
     pub unknown_instructions: PtrT<DisplaySolanaTxOverviewUnknownInstructions>,
+
+    // squads_v4
+    pub squads_multisig_create: PtrT<DisplaySolanaTxOverviewSquadsV4MultisigCreate>,
+    pub squads_proposal: PtrT<VecFFI<DisplaySolanaTxProposalOverview>>,
+    // spl token transfer
+    pub spl_token_transfer: PtrT<DisplaySolanaTxSplTokenTransferOverview>,
+}
+
+#[repr(C)]
+pub struct DisplaySolanaTxOverviewSquadsV4MultisigCreate {
+    pub wallet_name: PtrString,
+    pub wallet_desc: PtrString,
+    pub threshold: u16,
+    pub member_count: usize,
+    pub members: PtrT<VecFFI<PtrString>>,
+    pub total_value: PtrString,
+    // transfer vec
+    pub transfers: PtrT<VecFFI<ProgramOverviewTransfer>>,
+}
+
+#[repr(C)]
+pub struct ProgramOverviewTransfer {
+    pub value: PtrString,
+    pub main_action: PtrString,
+    pub from: PtrString,
+    pub to: PtrString,
+}
+
+impl_c_ptrs!(
+    DisplaySolanaTxOverviewSquadsV4MultisigCreate,
+    ProgramOverviewTransfer
+);
+
+impl Free for DisplaySolanaTxOverviewSquadsV4MultisigCreate {
+    fn free(&self) {
+        free_str_ptr!(self.wallet_name);
+        free_str_ptr!(self.wallet_desc);
+        free_str_ptr!(self.total_value);
+        unsafe {
+            if !self.members.is_null() {
+                let x = Box::from_raw(self.members);
+                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+                ve.iter().for_each(|v| {
+                    free_str_ptr!(*v);
+                });
+            }
+            if !self.transfers.is_null() {
+                let x = Box::from_raw(self.transfers);
+                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+                ve.iter().for_each(|v| {
+                    v.free();
+                });
+            }
+        }
+    }
+}
+
+impl Free for ProgramOverviewTransfer {
+    fn free(&self) {
+        free_str_ptr!(self.value);
+        free_str_ptr!(self.main_action);
+        free_str_ptr!(self.from);
+        free_str_ptr!(self.to);
+    }
 }
 
 #[repr(C)]
@@ -129,6 +226,9 @@ impl Default for DisplaySolanaTxOverview {
             vote_account: null_mut(),
             general: null_mut(),
             unknown_instructions: null_mut(),
+            squads_multisig_create: null_mut(),
+            squads_proposal: null_mut(),
+            spl_token_transfer: null_mut(),
         }
     }
 }
@@ -169,6 +269,22 @@ impl Free for DisplaySolanaTxOverview {
                 let x = Box::from_raw(self.unknown_instructions);
                 x.free();
             }
+            if !self.squads_multisig_create.is_null() {
+                let x = Box::from_raw(self.squads_multisig_create);
+                x.free();
+            }
+
+            if !self.squads_proposal.is_null() {
+                let x = Box::from_raw(self.squads_proposal);
+                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+                ve.iter().for_each(|v| {
+                    v.free();
+                });
+            }
+            if !self.spl_token_transfer.is_null() {
+                let x = Box::from_raw(self.spl_token_transfer);
+                x.free();
+            }
         }
     }
 }
@@ -196,6 +312,22 @@ impl From<&ParsedSolanaTx> for DisplaySolanaTxOverview {
                         main_action: convert_c_char(overview.main_action.to_string()),
                         transfer_from: convert_c_char(overview.from.to_string()),
                         transfer_to: convert_c_char(overview.to.to_string()),
+                        ..DisplaySolanaTxOverview::default()
+                    };
+                }
+            }
+            SolanaTxDisplayType::TokenTransfer => {
+                if let SolanaOverview::SplTokenTransfer(overview) = &value.overview {
+                    return Self {
+                        display_type,
+                        spl_token_transfer: DisplaySolanaTxSplTokenTransferOverview {
+                            source: convert_c_char(overview.source.to_string()),
+                            destination: convert_c_char(overview.destination.to_string()),
+                            authority: convert_c_char(overview.authority.to_string()),
+                            decimals: overview.decimals,
+                            amount: convert_c_char(overview.amount.to_string()),
+                        }
+                        .c_ptr(),
                         ..DisplaySolanaTxOverview::default()
                     };
                 }
@@ -237,6 +369,65 @@ impl From<&ParsedSolanaTx> for DisplaySolanaTxOverview {
                     };
                 }
             }
+            SolanaTxDisplayType::SquadsV4 => {
+                if let SolanaOverview::SquadsV4Proposal(overview) = &value.overview {
+                    let display_type = convert_c_char("squads_proposal".to_string());
+                    let mut squads_proposal = VecFFI::from(
+                        overview
+                            .iter()
+                            .map(|v| DisplaySolanaTxProposalOverview {
+                                program: convert_c_char(v.program.to_string()),
+                                method: convert_c_char(v.method.to_string()),
+                                memo: convert_c_char(v.memo.clone().unwrap_or_default()),
+                                data: convert_c_char(v.data.clone().unwrap_or_default()),
+                            })
+                            .collect_vec(),
+                    );
+                    return Self {
+                        display_type,
+                        squads_proposal: squads_proposal.c_ptr(),
+                        ..DisplaySolanaTxOverview::default()
+                    };
+                }
+
+                if let SolanaOverview::SquadsV4MultisigCreate(overview) = &value.overview {
+                    let squads_overview = DisplaySolanaTxOverviewSquadsV4MultisigCreate {
+                        wallet_name: convert_c_char(overview.wallet_name.to_string()),
+                        wallet_desc: convert_c_char(overview.wallet_desc.to_string()),
+                        threshold: overview.threshold,
+                        member_count: overview.member_count,
+                        members: VecFFI::from(
+                            overview
+                                .members
+                                .iter()
+                                .map(|v| convert_c_char(v.to_string()))
+                                .collect_vec(),
+                        )
+                        .c_ptr(),
+                        total_value: convert_c_char(overview.total_value.to_string()),
+                        transfers: VecFFI::from(
+                            overview
+                                .transfers
+                                .iter()
+                                .map(|v| ProgramOverviewTransfer {
+                                    value: convert_c_char(v.value.to_string()),
+                                    main_action: convert_c_char(v.main_action.to_string()),
+                                    from: convert_c_char(v.from.to_string()),
+                                    to: convert_c_char(v.to.to_string()),
+                                })
+                                .collect_vec(),
+                        )
+                        .c_ptr(),
+                    };
+                    let display_type = convert_c_char("squads_multisig_create".to_string());
+                    return Self {
+                        display_type,
+                        squads_multisig_create: squads_overview.c_ptr(),
+                        ..DisplaySolanaTxOverview::default()
+                    };
+                }
+            }
+
             SolanaTxDisplayType::Unknown => {
                 if let SolanaOverview::Instructions(overview) = &value.overview {
                     let display_overview_instructions =

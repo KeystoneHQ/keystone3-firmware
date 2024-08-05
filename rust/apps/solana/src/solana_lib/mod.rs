@@ -5,3 +5,4 @@
 
 pub mod solana_program;
 pub mod spl;
+pub mod squads_v4;

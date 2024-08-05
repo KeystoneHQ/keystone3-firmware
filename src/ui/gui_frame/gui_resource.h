@@ -122,6 +122,7 @@ LV_IMG_DECLARE(imgAlpha);
 LV_IMG_DECLARE(imgMultiCoin);
 LV_IMG_DECLARE(imgBtcOnly);
 LV_IMG_DECLARE(imgSdFormat);
+LV_IMG_DECLARE(imgSquads);
 LV_IMG_DECLARE(imgTwoKey);
 LV_IMG_DECLARE(imgLockMulti);
 LV_IMG_DECLARE(imgSdcardImport);
@@ -144,6 +145,7 @@ LV_IMG_DECLARE(imgWarning);
 LV_IMG_DECLARE(imgTonPhrase);
 LV_IMG_DECLARE(imgBlueInformation);
 LV_IMG_DECLARE(imgInfoSmall);
+
 
 // emoji
 LV_IMG_DECLARE(emojiAlien);

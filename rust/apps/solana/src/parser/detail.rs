@@ -13,6 +13,10 @@ use crate::solana_lib::spl::token_swap::instruction::{
     DepositAllTokenTypes, DepositSingleTokenTypeExactAmountIn, Initialize, Swap,
     WithdrawAllTokenTypes, WithdrawSingleTokenTypeExactAmountOut,
 };
+use crate::solana_lib::squads_v4::instructions::{
+    MultisigCreateArgs, MultisigCreateArgsV2, ProposalCreateArgs, ProposalVoteArgs,
+    VaultTransactionCreateArgs,
+};
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct ProgramDetailSystemTransfer {
@@ -1166,6 +1170,17 @@ pub enum ProgramDetail {
     StakeSetLockupChecked(ProgramDetailStakeSetLockupChecked),
     StakeGetMinimumDelegation(ProgramDetailStakeGetMinimumDelegation),
     StakeDeactivateDelinquent(ProgramDetailStakeDeactivateDelinquent),
+
+    // squads v4
+    SquadsV4MultisigCreate(MultisigCreateArgs),
+    SquadsV4MultisigCreateV2(MultisigCreateArgsV2),
+    SquadsV4ProposalActivate,
+    SquadsV4ProposalCreate(ProposalCreateArgs),
+    SquadsV4ProposalApprove(ProposalVoteArgs),
+    SquadsV4ProposalCancel(ProposalVoteArgs),
+    SquadsV4ProposalReject(ProposalVoteArgs),
+    SquadsV4VaultTransactionCreate(VaultTransactionCreateArgs),
+    SquadsV4VaultTransactionExecute,
 
     // raw
     Unknown(ProgramDetailUnknown),

@@ -125,6 +125,7 @@ impl Message {
                     .collect::<Vec<String>>();
                 let program_account =
                     base58::encode(&self.accounts[usize::from(instruction.program_index)].value);
+                // parse instruction data
                 match instruction.parse(&program_account, accounts.clone()) {
                     Ok(value) => Ok(value),
                     Err(_) => Ok(SolanaDetail {

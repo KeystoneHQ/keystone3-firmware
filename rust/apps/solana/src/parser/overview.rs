@@ -10,6 +10,15 @@ pub struct ProgramOverviewTransfer {
 }
 
 #[derive(Debug, Clone)]
+pub struct ProgramOverviewSplTokenTransfer {
+    pub source: String,
+    pub destination: String,
+    pub authority: String,
+    pub decimals: u8,
+    pub amount: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct ProgramOverviewVote {
     pub votes_on: Vec<String>,
     pub main_action: String,
@@ -49,10 +58,34 @@ impl Default for ProgramOverviewUnknown {
 }
 
 #[derive(Debug, Clone)]
+pub struct ProgramOverviewMultisigCreate {
+    pub wallet_name: String,
+    pub wallet_desc: String,
+    pub threshold: u16,
+    pub member_count: usize,
+    pub members: Vec<String>,
+    pub total_value: String,
+    // transfer vec
+    pub transfers: Vec<ProgramOverviewTransfer>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ProgramOverviewProposal {
+    pub program: String,
+    pub method: String,
+    pub memo: Option<String>,
+    pub data: Option<String>,
+}
+
+#[derive(Debug, Clone)]
 pub enum SolanaOverview {
     Transfer(ProgramOverviewTransfer),
     Vote(ProgramOverviewVote),
     General(Vec<ProgramOverviewGeneral>),
     Unknown(ProgramOverviewUnknown),
     Instructions(ProgramOverviewInstructions),
+    SquadsV4MultisigCreate(ProgramOverviewMultisigCreate),
+    SquadsV4MultisigCreateV2(ProgramOverviewMultisigCreate),
+    SquadsV4Proposal(Vec<ProgramOverviewProposal>),
+    SplTokenTransfer(ProgramOverviewSplTokenTransfer),
 }

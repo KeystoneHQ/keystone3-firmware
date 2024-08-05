@@ -9,7 +9,9 @@
 #include "gui_hintbox.h"
 #include "gui_global_resources.h"
 #include "gui_obj.h"
-
+#ifndef BTC_ONLY
+#include "general/eapdu_services/service_resolve_ur.h"
+#endif
 #include "secret_cache.h"
 typedef struct KeyDerivationWidget {
     uint8_t currentTile;
@@ -18,6 +20,11 @@ typedef struct KeyDerivationWidget {
     lv_obj_t *cont;
     lv_obj_t *qrCode;
 } KeyDerivationWidget_t;
+
+typedef enum {
+    TRANSACTION_MODE_QR_CODE = 0,
+    TRANSACTION_MODE_USB,
+} TransactionMode;
 
 typedef enum {
     TILE_APPROVE,
@@ -97,6 +104,16 @@ void FreeKeyDerivationRequestMemory(void)
     }
 }
 
+#ifndef BTC_ONLY
+static TransactionMode GetCurrentTransactionMode(void)
+{
+    uint16_t requestID = GetCurrentUSParsingRequestID();
+    if (requestID != 0) {
+        return TRANSACTION_MODE_USB;
+    }
+    return TRANSACTION_MODE_QR_CODE;
+}
+#endif
 
 static void RecalcCurrentWalletIndex(char *origin)
 {
@@ -703,6 +720,9 @@ static void OnReturnHandler(lv_event_t *e)
 void GuiKeyDerivationWidgetHandleURGenerate(char *data, uint16_t len)
 {
     GuiAnimantingQRCodeFirstUpdate(data, len);
+    if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
+        HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), RSP_SUCCESS_CODE);
+    }
 }
 
 void GuiKeyDerivationWidgetHandleURUpdate(char *data, uint16_t len)

@@ -1,5 +1,5 @@
-mod hash;
+pub mod hash;
 pub mod instructions;
-mod util;
+pub mod util;
 
-mod errors;
+pub mod errors;

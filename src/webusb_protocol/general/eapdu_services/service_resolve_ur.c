@@ -4,6 +4,7 @@
 #include "user_msg.h"
 #include "qrdecode_task.h"
 #include "gui_lock_widgets.h"
+#include "gui_resolve_ur.h"
 
 /* DEFINES */
 #define REQUEST_ID_IDLE 0
@@ -107,8 +108,9 @@ void ProcessURService(EAPDURequestPayload_t *payload)
     UrViewType_t urViewType;
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
-    printf("urResult->t=%d, urResult->ur_type=%d\n", urResult->t, urResult->ur_type);
-    
+    handleURResult(urResult, NULL, urViewType, false);
+    return;
+
     // just btc/eth/sol
     if (!CheckViewTypeIsAllow(urViewType.viewType)) {
         const char *data = "this view type is not supported";

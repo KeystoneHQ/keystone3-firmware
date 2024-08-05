@@ -25,7 +25,7 @@ static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
-static SolanaLearnMoreData_t solanaLearnMoredata;
+
 
 #define MAX_ACCOUNTS 252
 
@@ -131,6 +131,7 @@ void FreeSolMemory(void)
 static void learn_more_click_event_handler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
+    static SolanaLearnMoreData_t solanaLearnMoredata;
     SolanaLearnMoreData_t *item = (SolanaLearnMoreData_t *)lv_event_get_user_data(e);
     if (code == LV_EVENT_CLICKED) {
         GuiNormalHitBoxOpen(item->title, item->content);
@@ -776,6 +777,7 @@ static void GuiShowSolTxMultiSigCreateDetail(lv_obj_t *parent, PtrT_DisplaySolan
     lv_obj_add_flag(learnMoreLabel, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_text_color(learnMoreLabel, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
     lv_obj_align_to(learnMoreLabel, descriptionLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    static SolanaLearnMoreData_t solanaLearnMoredata;
     solanaLearnMoredata.title = "Amount Details";
     solanaLearnMoredata.content =  _("solana_squads_amount_desc");
 

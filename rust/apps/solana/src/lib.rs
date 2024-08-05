@@ -58,6 +58,8 @@ mod tests {
     use third_party::hex::{FromHex, ToHex};
     use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 
+    use crate::solana_lib::solana_program::pubkey::Pubkey;
+
     use super::*;
 
     #[test]

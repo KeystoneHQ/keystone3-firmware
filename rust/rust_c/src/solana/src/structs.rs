@@ -8,12 +8,12 @@ use app_solana::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
 use app_solana::structs::SolanaMessage;
 use third_party::itertools::Itertools;
 
-use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, impl_c_ptrs, make_free_method};
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
 use common_rust_c::structs::TransactionParseResult;
 use common_rust_c::types::{PtrString, PtrT};
 use common_rust_c::utils::convert_c_char;
+use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, impl_c_ptrs, make_free_method};
 
 #[repr(C)]
 pub struct DisplaySolanaTx {
@@ -92,9 +92,7 @@ pub struct DisplaySolanaTxProposalOverview {
     pub memo: PtrString,
     pub data: PtrString,
 }
-
 impl_c_ptrs!(DisplaySolanaTxProposalOverview);
-
 impl Free for DisplaySolanaTxProposalOverview {
     fn free(&self) {
         free_str_ptr!(self.program);
@@ -103,7 +101,23 @@ impl Free for DisplaySolanaTxProposalOverview {
         free_str_ptr!(self.data);
     }
 }
-
+#[repr(C)]
+pub struct DisplaySolanaTxSplTokenTransferOverview {
+    pub source: PtrString,
+    pub destination: PtrString,
+    pub authority: PtrString,
+    pub decimals: u8,
+    pub amount: PtrString,
+}
+impl_c_ptrs!(DisplaySolanaTxSplTokenTransferOverview);
+impl Free for DisplaySolanaTxSplTokenTransferOverview {
+    fn free(&self) {
+        free_str_ptr!(self.source);
+        free_str_ptr!(self.destination);
+        free_str_ptr!(self.authority);
+        free_str_ptr!(self.amount);
+    }
+}
 #[repr(C)]
 pub struct DisplaySolanaTxOverview {
     // `Transfer`, `Vote`, `General`, `Unknown`
@@ -125,6 +139,8 @@ pub struct DisplaySolanaTxOverview {
     // squads_v4
     pub squads_multisig_create: PtrT<DisplaySolanaTxOverviewSquadsV4MultisigCreate>,
     pub squads_proposal: PtrT<VecFFI<DisplaySolanaTxProposalOverview>>,
+    // spl token transfer
+    pub spl_token_transfer: PtrT<DisplaySolanaTxSplTokenTransferOverview>,
 }
 
 #[repr(C)]
@@ -212,6 +228,7 @@ impl Default for DisplaySolanaTxOverview {
             unknown_instructions: null_mut(),
             squads_multisig_create: null_mut(),
             squads_proposal: null_mut(),
+            spl_token_transfer: null_mut(),
         }
     }
 }
@@ -264,6 +281,10 @@ impl Free for DisplaySolanaTxOverview {
                     v.free();
                 });
             }
+            if !self.spl_token_transfer.is_null() {
+                let x = Box::from_raw(self.spl_token_transfer);
+                x.free();
+            }
         }
     }
 }
@@ -282,7 +303,7 @@ impl From<&ParsedSolanaTx> for DisplaySolanaTxOverview {
     fn from(value: &ParsedSolanaTx) -> Self {
         let display_type = convert_c_char(value.display_type.to_string());
         match value.display_type {
-            SolanaTxDisplayType::Transfer | SolanaTxDisplayType::TokenTransfer => {
+            SolanaTxDisplayType::Transfer => {
                 if let SolanaOverview::Transfer(overview) = &value.overview {
                     return Self {
                         display_type,
@@ -291,6 +312,22 @@ impl From<&ParsedSolanaTx> for DisplaySolanaTxOverview {
                         main_action: convert_c_char(overview.main_action.to_string()),
                         transfer_from: convert_c_char(overview.from.to_string()),
                         transfer_to: convert_c_char(overview.to.to_string()),
+                        ..DisplaySolanaTxOverview::default()
+                    };
+                }
+            }
+            SolanaTxDisplayType::TokenTransfer => {
+                if let SolanaOverview::SplTokenTransfer(overview) = &value.overview {
+                    return Self {
+                        display_type,
+                        spl_token_transfer: DisplaySolanaTxSplTokenTransferOverview {
+                            source: convert_c_char(overview.source.to_string()),
+                            destination: convert_c_char(overview.destination.to_string()),
+                            authority: convert_c_char(overview.authority.to_string()),
+                            decimals: overview.decimals,
+                            amount: convert_c_char(overview.amount.to_string()),
+                        }
+                        .c_ptr(),
                         ..DisplaySolanaTxOverview::default()
                     };
                 }

@@ -116,7 +116,7 @@ impl Instruction {
                     )
                     .map_err(|e| ProgramError(e.to_string()))?;
 
-                resolvers::squads_v4::resolve(instruction, accounts) 
+                resolvers::squads_v4::resolve(instruction, accounts)
             }
         }
     }

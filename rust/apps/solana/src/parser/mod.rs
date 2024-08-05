@@ -13,8 +13,8 @@ use crate::parser::detail::{
 };
 use crate::parser::overview::{
     ProgramOverviewGeneral, ProgramOverviewInstruction, ProgramOverviewInstructions,
-    ProgramOverviewMultisigCreate, ProgramOverviewProposal, ProgramOverviewTransfer,
-    ProgramOverviewUnknown, ProgramOverviewVote, SolanaOverview,
+    ProgramOverviewMultisigCreate, ProgramOverviewProposal, ProgramOverviewSplTokenTransfer,
+    ProgramOverviewTransfer, ProgramOverviewUnknown, ProgramOverviewVote, SolanaOverview,
 };
 use crate::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
 use crate::read::Read;
@@ -176,6 +176,51 @@ impl ParsedSolanaTx {
         ))
     }
 
+    fn find_token_name(token_mint_address: &str) -> String {
+        match token_mint_address {
+            "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" => "JUP".to_string(),
+            "MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey" => "MNDE".to_string(),
+            "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3" => "PYTH".to_string(),
+            "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" => "USDC".to_string(),
+            "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL" => "JTO".to_string(),
+            "85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ" => "W".to_string(),
+            "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" => "USDT".to_string(),
+            "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" => "Bonk".to_string(),
+            "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn" => "JitoSOL".to_string(),
+            "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" => "WIF".to_string(),
+            "BZLbGTNCSFfoth2GYDtwr7e4imWzpR5jqcUuGEwr646K" => "IO".to_string(),
+            "rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof" => "RENDER".to_string(),
+            "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" => "RAY".to_string(),
+            "7atgF8KQo4wJrD5ATGX7t1V2zVvykPJbFfNeVf1icFv1" => "CWIF".to_string(),
+            "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So" => "mSol".to_string(),
+            "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux" => "HNT".to_string(),
+            "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4" => "JLP".to_string(),
+            "8BMzMi2XxZn9afRaMx5Z6fauk9foHXqV5cLTCYWRcVje" => "STIK".to_string(),
+            "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82" => "BOME".to_string(),
+            "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr" => "POPCAT".to_string(),
+            "4vMsoUT2BWatFweudnQM1xedRLfJgJ7hswhcpz4xgBTy" => "HONEY".to_string(),
+            "NeonTjSjsuo3rexg9o6vHuMXw62f9V7zvmu8M8Zut44" => "NEON".to_string(),
+            "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5" => "MEW".to_string(),
+            "TNSRxcUxoT9xBG3de7PiJyTDYu7kskLqcpddxnEJAS6" => "TNSR".to_string(),
+            "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v" => "JupSOL".to_string(),
+            "bSo13r4TkiE4KumL71LsHTPpL2euBYLFx6h9HP3piy1" => "bSOL".to_string(),
+            "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" => "SRM".to_string(),
+            "5z3EqYQo9HiCEs3R84RCDMu2n7anpDMxRhdK8PSWmrRC" => "PONKE".to_string(),
+            "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo" => "PYUSD".to_string(),
+            "z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M" => "OXY".to_string(),
+            "METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m" => "MPLX".to_string(),
+            "KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS" => "KMNO".to_string(),
+            "DriFtupJYLTosbwoN8koMbEYSx54aFAVLddWsbksjwg7" => "DRIFT".to_string(),
+            "FoXyMu5xwXre7zEoSvzViRk3nGawHUp9kUh97y2NDhcq" => "FOXY".to_string(),
+            "7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx" => "GMT".to_string(),
+            "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm" => "INF".to_string(),
+            "EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp" => "FIDA".to_string(),
+            "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE" => "ORCA".to_string(),
+            "EzgfrTjgFyHGaU5BEBRETyfawt66bAYqJvcryWuJtQ5w" => "Borzoi".to_string(),
+            "ZEUS1aR7aX8DFFJf5QjWj2ftDDdNTroMNGo8YoQm3Gq" => "ZEUS".to_string(),
+            _ => "Token".to_string(),
+        }
+    }
     fn build_token_transfer_checked_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
         let overview: Option<SolanaOverview> = details
             .iter()
@@ -184,12 +229,15 @@ impl ParsedSolanaTx {
                 if let ProgramDetail::TokenTransferChecked(v) = &detail.kind {
                     let amount_f64 = v.amount.parse::<f64>().unwrap();
                     let amount = amount_f64 / 10u64.pow(v.decimals as u32) as f64;
-                    Some(SolanaOverview::Transfer(ProgramOverviewTransfer {
-                        value: format!("{} {}", amount, "Unit"),
-                        main_action: "SPL Token Transfer".to_string(),
-                        from: v.owner.to_string(),
-                        to: v.recipient.to_string(),
-                    }))
+                    Some(SolanaOverview::SplTokenTransfer(
+                        ProgramOverviewSplTokenTransfer {
+                            source: v.account.to_string(),
+                            destination: v.recipient.to_string(),
+                            authority: v.owner.to_string(),
+                            decimals: v.decimals,
+                            amount: format!("{} {}", amount, Self::find_token_name(&v.mint)),
+                        },
+                    ))
                 } else {
                     None
                 }
@@ -230,7 +278,6 @@ impl ParsedSolanaTx {
         });
         Ok(SolanaOverview::General(overview))
     }
-    // todo convert instruction detail vec to squads_v4 overview
     fn build_squads_v4_proposal_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
         let mut proposal_overview_vec: Vec<ProgramOverviewProposal> = Vec::new();
         for d in details {
@@ -300,8 +347,16 @@ impl ParsedSolanaTx {
     }
     fn build_squads_v4_multisig_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
         let mut transfer_overview_vec: Vec<ProgramOverviewTransfer> = Vec::new();
+        let mut total_value = 0f64;
         details.iter().for_each(|d| {
             if let ProgramDetail::SystemTransfer(v) = &d.kind {
+                total_value += v
+                    .value
+                    .to_uppercase()
+                    .replace("SOL", "")
+                    .trim()
+                    .parse::<f64>()
+                    .unwrap();
                 transfer_overview_vec.push(ProgramOverviewTransfer {
                     value: v.value.to_string(),
                     main_action: "SOL Transfer".to_string(),
@@ -313,7 +368,6 @@ impl ParsedSolanaTx {
         for d in details {
             if let ProgramDetail::SquadsV4MultisigCreate(v) = &d.kind {
                 let memo = v.memo.clone().unwrap();
-                // "{\"n\":\"TESTMULTISIG\",\"d\":\"TEST MULTI SIG\",\"i\":\"\"}".to_string()
                 let memo = serde_json::from_str::<serde_json::Value>(&memo).unwrap();
                 let wallet_name = memo["n"]
                     .as_str()
@@ -327,7 +381,7 @@ impl ParsedSolanaTx {
                     .iter()
                     .map(|m| m.key.to_string())
                     .collect::<Vec<String>>();
-                let total_value = "~0.051 SOL".to_string();
+                let total_value = format!("~{:.3} SOL", total_value);
                 return Ok(SolanaOverview::SquadsV4MultisigCreate(
                     ProgramOverviewMultisigCreate {
                         wallet_name,
@@ -341,7 +395,7 @@ impl ParsedSolanaTx {
                 ));
             }
         }
-        return Ok(SolanaOverview::Unknown(ProgramOverviewUnknown::default()));
+        return Self::build_instructions_overview(details);
     }
     fn build_squads_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
         if details
@@ -364,8 +418,7 @@ impl ParsedSolanaTx {
         }) {
             return Self::build_squads_v4_proposal_overview(details);
         }
-        // todo support more squads instruction
-        Ok(SolanaOverview::Unknown(ProgramOverviewUnknown::default()))
+        return Self::build_instructions_overview(details);
     }
 
     fn build_instructions_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {

@@ -10,6 +10,15 @@ pub struct ProgramOverviewTransfer {
 }
 
 #[derive(Debug, Clone)]
+pub struct ProgramOverviewSplTokenTransfer {
+    pub source: String,
+    pub destination: String,
+    pub authority: String,
+    pub decimals: u8,
+    pub amount: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct ProgramOverviewVote {
     pub votes_on: Vec<String>,
     pub main_action: String,
@@ -78,4 +87,5 @@ pub enum SolanaOverview {
     SquadsV4MultisigCreate(ProgramOverviewMultisigCreate),
     SquadsV4MultisigCreateV2(ProgramOverviewMultisigCreate),
     SquadsV4Proposal(Vec<ProgramOverviewProposal>),
+    SplTokenTransfer(ProgramOverviewSplTokenTransfer),
 }

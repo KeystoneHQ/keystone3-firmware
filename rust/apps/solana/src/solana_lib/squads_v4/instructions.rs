@@ -1,11 +1,13 @@
+use alloc::string::String;
+use alloc::vec::Vec;
+
+use borsh::{from_slice, BorshDeserialize};
+use serde_derive::Serialize;
+
 use crate::solana_lib::solana_program::errors::ProgramError;
 use crate::solana_lib::solana_program::pubkey::Pubkey;
 use crate::solana_lib::squads_v4::errors::SquadsV4Error;
 use crate::solana_lib::squads_v4::util::{sighash, SIGHASH_GLOBAL_NAMESPACE};
-use alloc::string::String;
-use alloc::vec::Vec;
-use borsh::{from_slice, BorshDeserialize};
-use serde_derive::Serialize;
 
 #[derive(BorshDeserialize, Serialize, Debug, Default, Clone)]
 #[borsh(crate = "borsh")]
@@ -102,54 +104,54 @@ impl Dispatch for SquadsInstructions {
         let ix_data = &data[8..];
         match hex::encode(ix_type).as_str() {
             "7a4d509f54585ac5" => {
-                /// sighash(SIGHASH_GLOBAL_NAMESPACE, "multisig_create")
+                // sighash(SIGHASH_GLOBAL_NAMESPACE, "multisig_create")
                 Ok(SquadsInstructions::MultisigCreate(
                     from_slice::<MultisigCreateArgs>(ix_data).unwrap(),
                 ))
             }
             "32ddc75d28f58be9" => {
-                /// sighash(SIGHASH_GLOBAL_NAMESPACE, "multisig_create_v2")
+                // sighash(SIGHASH_GLOBAL_NAMESPACE, "multisig_create_v2")
                 Ok(SquadsInstructions::MultisigCreateV2(
                     from_slice::<MultisigCreateArgsV2>(ix_data).unwrap(),
                 ))
             }
             "dc3c49e01e6c4f9f" => {
-                /// sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_create")
+                // sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_create")
                 Ok(SquadsInstructions::ProposalCreate(
                     from_slice::<ProposalCreateArgs>(ix_data).unwrap(),
                 ))
             }
             "0b225cf89a1b336a" => {
-                /// sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_activate")
+                // sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_activate")
                 Ok(SquadsInstructions::ProposalActivate)
             }
             "9025a488bcd82af8" => {
-                /// sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_approve")
+                // sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_approve")
                 Ok(SquadsInstructions::ProposalApprove(
                     from_slice::<ProposalVoteArgs>(ix_data).unwrap(),
                 ))
             }
             "1b2a7fed26a354cb" => {
-                /// sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_cancel")
+                // sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_cancel")
                 Ok(SquadsInstructions::ProposalCancel(
                     from_slice::<ProposalVoteArgs>(ix_data).unwrap(),
                 ))
             }
 
             "f33e869ce66af687" => {
-                /// sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_reject")
+                // sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_reject")
                 Ok(SquadsInstructions::ProposalReject(
                     from_slice::<ProposalVoteArgs>(ix_data).unwrap(),
                 ))
             }
             "30fa4ea8d0e2dad3" => {
-                /// sighash(SIGHASH_GLOBAL_NAMESPACE,vault_transaction_create
+                // sighash(SIGHASH_GLOBAL_NAMESPACE,vault_transaction_create
                 Ok(SquadsInstructions::VaultTransactionCreate(
                     from_slice::<VaultTransactionCreateArgs>(ix_data).unwrap(),
                 ))
             }
             "c208a15799a419ab" => {
-                /// sighash(SIGHASH_GLOBAL_NAMESPACE,VaultTransactionExecute)
+                // sighash(SIGHASH_GLOBAL_NAMESPACE,VaultTransactionExecute)
                 Ok(SquadsInstructions::VaultTransactionExecute)
             }
             _ => Err(SquadsV4Error::UnknownSquadV4Instruction.into()),
@@ -158,8 +160,10 @@ impl Dispatch for SquadsInstructions {
 }
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::prelude::rust_2024::ToString;
+
+    use super::*;
+
     #[test]
     fn test_parse_instruction_data() {
         let data = "7a4d509f54585ac5000200050000002b8d8b3addd92759f55b840c2852f5bd50aee3552fe987ee0d4fe24b9043df8e07f219076b2850cbb770c807661d874e09a7224de024d6579e43cc1df392a12244073b08df2ea93b9fc9ecb8a965773e18c6c8c4f66696dda8eb6ea61ca420700c5607f8b770467b0eaae4e081f7e4b66db848c91d63a4f3de46092fe5ccff4427dec50793479bb7ee58060b82e4bdba7ec1a026bacabbb96a8d1c72f21f2a1dd98ad8de070000000001300000007b226e223a22544553544d554c5449534947222c2264223a2254455354204d554c544920534947222c2269223a22227d";

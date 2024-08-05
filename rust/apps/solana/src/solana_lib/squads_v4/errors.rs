@@ -2,7 +2,7 @@ use thiserror::Error;
 
 use crate::solana_lib::solana_program::errors::ProgramError;
 
-/// Errors that may be returned by the Token program.
+// Errors that may be returned by the Token program.
 #[derive(Clone, Debug, Eq, Error, PartialEq)]
 pub enum SquadsV4Error {
     #[error("Invalid instruction")]

@@ -351,8 +351,8 @@ typedef enum {
 
 static uint8_t GetPublicKeyTypeByCurveString(char *curve)
 {
-    if (strcmp(curve, "0") == 0) return SECP256K1;
-    if (strcmp(curve, "1") == 0) return ED25519;
+    if (strcmp(curve, "SECP256K1") == 0) return SECP256K1;
+    if (strcmp(curve, "ED25519") == 0) return ED25519;
 }
 
 static UREncodeResult *ModelGenerateSyncUR(void)
@@ -372,6 +372,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
             uint8_t algo = GetPublicKeyTypeByCurveString(g_callData->key_derivation->schemas->data[i].curve);
             char *path = g_callData->key_derivation->schemas->data[i].key_path;
             SimpleResponse_c_char *pubkey;
+            // todo need add bip32-ed25519
             if (algo == SECP256K1) {
                 pubkey = get_extended_pubkey_bytes_by_seed(seed, sizeof(seed), path);
                 xpubs[i].path = path;

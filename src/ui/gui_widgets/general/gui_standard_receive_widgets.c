@@ -584,6 +584,9 @@ void GetAttentionText(char* text)
     case HOME_WALLET_CARD_TRX:
         strcpy_s(text, 1024, _("receive_trx_hint"));
         break;
+    case HOME_WALLET_CARD_TON:
+        strcpy_s(text, 1024, _("receive_ton_hint"));
+        break;
     default:
         snprintf_s(text, 1024, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
     }

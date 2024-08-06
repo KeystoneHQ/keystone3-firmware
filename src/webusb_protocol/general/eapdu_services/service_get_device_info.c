@@ -1,15 +1,23 @@
+#include <string.h>
+#include "keystore.h"
 #include "define.h"
 #include "service_check_lock.h"
 #include "user_memory.h"
+#include "version.h"
 
 void GetDeviceInfoService(EAPDURequestPayload_t *payload)
 {
-    char version[BUFFER_SIZE_32] = {0};
-    GetUpdateVersionNumber(version);
+    char buffer[BUFFER_SIZE_32] = {0};
+    uint8_t mfp[4] = {0};
+    GetUpdateVersionNumber(buffer);
+    GetMasterFingerPrint(mfp);
     EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
 
     cJSON *root = cJSON_CreateObject();
-    cJSON_AddStringToObject(root, "payload", version);
+
+    cJSON_AddStringToObject(root, "firmwareVersion", buffer);
+    snprintf_s(buffer, sizeof(buffer), "%02x%02x%02x%02x", mfp[0], mfp[1], mfp[2], mfp[3]);
+    cJSON_AddStringToObject(root, "walletMFP", buffer);
     char *json_str = cJSON_Print(root);
     printf("json_str = %s\n", json_str);
     cJSON_Delete(root);

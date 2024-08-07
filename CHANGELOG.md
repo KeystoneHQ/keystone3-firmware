@@ -1,3 +1,23 @@
+## 1.6.0(2024-08-07)
+
+### What's new
+
+1. Added Conway support for Cardano through Eternl Wallet
+2. Added signData support for Cardano through Eternl Wallet
+3. Added Catalyst support for Cardano through Eternl Wallet
+4. Added support for switching Ledger/BitBox02 addresses for Cardano
+
+### Improvements
+
+1. Optimized UI display on some pages in the Russian language interface
+
+### Bug Fixes
+
+1. Fixed issue where some transactions on dedust.io could not be broadcast
+
+
+
+
 ## 1.5.8（2024-07-24）
 
 ### What's new

@@ -1,3 +1,24 @@
+## 1.6.0（2024-08-07）
+
+### 新增
+
+1. 通过 Eternl Wallet 实现对 Cardano 的 Conway 支持
+2. 通过 Eternl Wallet 实现对 Cardano 的 signData 支持
+3. 通过 Eternl Wallet 实现对 Cardano 的 Catalyst 支持
+4. 新增对 Cardano 下切换 Ledger/BitBox02 地址
+
+### 优化
+
+1. 优化俄语界面下部分页面的 UI 显示问题
+
+### Bug 修复
+
+1. 修复 dedust.io 部分交易无法广播的问题
+
+
+
+
+
 
 ## 1.5.8（2024-07-24）
 ### 新增

@@ -35,6 +35,15 @@ typedef enum {
     TILE_BUTT,
 } PAGE_TILE;
 
+
+typedef enum HardwareCallV1AdaDerivationAlgo {
+    HD_STANDARD_ADA = 0,
+    HD_LEDGER_BITBOX_ADA,
+} ADA_DERIVATION_ALGO;
+
+// global variable to save the selected derivation path
+static ADA_DERIVATION_ALGO selected_ada_derivation_algo = HD_STANDARD_ADA;
+
 static void *g_data;
 static URParseResult *g_urResult;
 static URParseMultiResult *g_urMultiResult;
@@ -91,7 +100,7 @@ static void RejectButtonHandler(lv_event_t *e);
 static void ApproveButtonHandler(lv_event_t *e);
 static void GuiConnectUsbPasswordPass(void);
 static AdaXPubType GetAccountType(void);
-
+static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e);
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 void GuiSetKeyDerivationRequestData(void *urResult, void *multiResult, bool is_multi)
@@ -273,7 +282,8 @@ static void OpenDerivationPath()
     lv_obj_set_style_bg_color(tmCont, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
-    lv_obj_add_event_cb(btn, ConfirmDerivationHandler, LV_EVENT_CLICKED, NULL);
+    // todo comfirm handler has 2 implementation
+    lv_obj_add_event_cb(btn, SaveHardwareCallVersion1AdaDerivationAlgo, LV_EVENT_CLICKED, NULL);
     g_derivationPathConfirmBtn = btn;
     UpdateConfirmBtn(false);
 
@@ -337,46 +347,194 @@ static void ModelParseQRHardwareCall()
 
 typedef enum {
     SECP256K1,
-    ED25519,
-} PublicInfoType_t;
+    SLIP10_ED25519,
+    BIP32_ED25519,
+    Unsupport_DerivationType,
+} DerivationType_t;
 
-
-static uint8_t GetPublicKeyTypeByCurveString(char *curve)
+static uint8_t GetDerivationTypeByCurveAndDeriveAlgo(char *curve, char *algo)
 {
-    if (strcmp(curve, "SECP256K1") == 0) return SECP256K1;
-    if (strcmp(curve, "ED25519") == 0) return ED25519;
+    if (strcmp("Secp256k1", curve) == 0) {
+        return SECP256K1;
+    }
+    if (strcmp("ED25519", curve) == 0) {
+        if (strcmp("BIP32-ED25519", algo) == 0) {
+            return BIP32_ED25519;
+        }
+        if (strcmp("SLIP10", algo) == 0) {
+            return SLIP10_ED25519;
+        }
+    }
+    printf("unsupport derivation type\n");
+    // other case
+    return Unsupport_DerivationType;
 }
+
+typedef struct HardwareCallResult {
+    bool isLegal;
+    char *title;
+    char *message;
+} HardwareCallResult_t;
+
+static HardwareCallResult_t g_hardwareCallParamsCheckResult = {
+    .isLegal = false,
+    .title = "Invaild Params",
+    .message = "hardware call params check failed"
+};
+
+static void SetHardwareCallParamsCheckResult(HardwareCallResult_t result)
+{
+    g_hardwareCallParamsCheckResult = result;
+}
+
+static HardwareCallResult_t CheckHardWareCallV0AdaPathIsLegal(char *path)
+{
+    char *token;
+    char *last_token = NULL;
+    int result;
+    token = strtok(path, "/");
+    while (token != NULL) {
+        last_token = token;
+        token = strtok(NULL, "/");
+    }
+    if (last_token != NULL) {
+        char *end = strchr(last_token, '\'');
+        if (end != NULL) {
+            *end = '\0';
+        }
+        result = atoi(last_token);
+    } else {
+        SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+            false, "Invaild Path Index", "ada derivation path is illegal"
+        });
+        return g_hardwareCallParamsCheckResult;
+    }
+    // hardware call version 0, the derivation path index must be less than 24
+    if (result > 23) {
+        SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+            false, "Invaild Path Index", "ada derivation path index is too large"
+        });
+        return g_hardwareCallParamsCheckResult;
+    } else {
+        SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+            true, "Check Pass", "hardware call params check pass"
+        });
+        return g_hardwareCallParamsCheckResult;
+
+    }
+}
+
+static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
+{
+    // error tests case
+    // case 1 size > 24
+    // g_callData->key_derivation->schemas->size = 25;
+
+    // case 2 ivalid path
+    // g_callData->key_derivation->schemas->data[0].key_path = "1852'/1815'/0'/0/0";
+
+    // case 3 unsupport derivation type
+    // g_callData->key_derivation->schemas->data[0].curve = "Secp256k2";
+
+    // case 4 v0 only support ada path failed
+    // g_callData->version = "0";
+    // g_callData->key_derivation->schemas->data[0].key_path = "1852'/1815'/100'";
+
+    // case 5 v1 solana
+    // print all the path
+    if (g_callData->key_derivation->schemas->size > 24) {
+        SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+            false, "Invaild Schemas Size", "schemas size is too large"
+        });
+        return g_hardwareCallParamsCheckResult;
+    }
+    if (strcmp("0", g_callData->version) == 0) {
+        for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
+            // does not contain the ada prefix
+            if (strstr(g_callData->key_derivation->schemas->data[i].key_path, "1852'/1815'") == NULL) {
+                SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+                    false, "Invaild Ada Path", "path is not ada prefix"
+                });
+                return g_hardwareCallParamsCheckResult;
+
+            }
+            return CheckHardWareCallV0AdaPathIsLegal(g_callData->key_derivation->schemas->data[i].key_path);
+        }
+    }
+    if (strcmp("1", g_callData->version) == 0) {
+        for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
+            uint8_t derivationType = GetDerivationTypeByCurveAndDeriveAlgo(g_callData->key_derivation->schemas->data[i].curve, g_callData->key_derivation->schemas->data[i].algo);
+            if (derivationType == Unsupport_DerivationType) {
+                SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+                    false, "Invaild Derive Type", "unsupport derivation type"
+                });
+                return g_hardwareCallParamsCheckResult;
+            }
+            // check path match the chainType
+            Response_bool *response = check_hardware_call_path(g_response->data->key_derivation->schemas->data[i].key_path, g_response->data->key_derivation->schemas->data[i].chain_type);
+            if (*response->data == false) {
+                SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+                    false, _("invaild_account_path"),  _("invaild_account_path_notice")
+                });
+                return g_hardwareCallParamsCheckResult;
+            }
+        }
+    }
+    SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+        true, "Check Pass", "hardware call params check pass"
+    });
+    return g_hardwareCallParamsCheckResult;
+}
+
+
 
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
     CSliceFFI_ExtendedPublicKey keys;
     if (strcmp("1", g_callData->version) == 0) {
-        // hardware call version 1
+        uint8_t seed[64];
+        char *password = SecretCacheGetPassword();
+        bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
+        int seedLen = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
+
+        GetAccountSeed(GetCurrentAccountIndex(), seed, password);
         ExtendedPublicKey xpubs[24];
         for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
-            uint8_t seed[64];
-            MnemonicType mnemonicType = GetMnemonicType();
-            bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
-            int seedLen = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
-            char *password = SecretCacheGetPassword();
-            int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, password);
-            if (ret != 0) {
-                printf("Failed to get account seed\n");
-                return NULL;
-            }
-            uint8_t algo = GetPublicKeyTypeByCurveString(g_callData->key_derivation->schemas->data[i].curve);
+            uint8_t derivationType = GetDerivationTypeByCurveAndDeriveAlgo(g_callData->key_derivation->schemas->data[i].curve, g_callData->key_derivation->schemas->data[i].algo);
             char *path = g_callData->key_derivation->schemas->data[i].key_path;
             SimpleResponse_c_char *pubkey;
-            // todo need add bip32-ed25519
-            if (algo == SECP256K1) {
+            switch (derivationType) {
+            case SECP256K1:
                 pubkey = get_extended_pubkey_bytes_by_seed(seed, seedLen, path);
-                xpubs[i].path = path;
-                xpubs[i].xpub = pubkey->data;
-            } else if (algo == ED25519) {
+                break;
+            case SLIP10_ED25519:
                 pubkey = get_ed25519_pubkey_by_seed(seed, seedLen, path);
-                xpubs[i].path = path;
-                xpubs[i].xpub = pubkey->data;
+                break;
+            case BIP32_ED25519:
+                if (selected_ada_derivation_algo == HD_STANDARD_ADA) {
+                    uint8_t entropyLen = 0;
+                    uint8_t entropy[64];
+                    GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
+                    SimpleResponse_c_char* cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
+                    char* icarusMasterKey = cip3_response->data;
+                    pubkey = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+                } else if (selected_ada_derivation_algo == HD_LEDGER_BITBOX_ADA) {
+                    // seed -> mnemonic --> master key(m) -> derive key
+                    uint8_t entropyLen = 0;
+                    uint8_t entropy[64];
+                    GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
+                    char *mnemonic = NULL;
+                    bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
+                    SimpleResponse_c_char *ledger_bitbox02_response  = get_ledger_bitbox02_master_key(mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+                    char* ledgerBitbox02Key = ledger_bitbox02_response->data;
+                    pubkey = derive_bip32_ed25519_extended_pubkey(ledgerBitbox02Key, path);
+                }
+                break;
+            default:
+                break;
             }
+            xpubs[i].path = path;
+            xpubs[i].xpub = pubkey->data;
         }
         keys.data = xpubs;
         keys.size = g_callData->key_derivation->schemas->size;
@@ -392,6 +550,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
         KeyDerivationSchema schema = g_callData->key_derivation->schemas->data[i];
         char* xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(schema.key_path));
+        // todo check path is ada prefix or not
         xpubs[i].path = schema.key_path;
         xpubs[i].xpub = xpub;
     }
@@ -399,6 +558,10 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     keys.size = g_callData->key_derivation->schemas->size;
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
+    // print keys
+    for (size_t i = 0; i < keys.size; i++) {
+        printf("v0 path: %s, xpub: %s\n", keys.data[i].path, keys.data[i].xpub);
+    }
     return generate_key_derivation_ur(mfp, 4, &keys);
 }
 
@@ -439,8 +602,7 @@ static uint8_t GetXPubIndexByPath(char *path)
 static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent)
 {
 
-    lv_obj_t *label, *cont, *btn, *pathCont, *noticeCont;
-
+    lv_obj_t *label, *cont, *btn, *pathCont,*noticeCont;
     cont = GuiCreateContainerWithParent(parent, 408, 534);
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 8);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
@@ -668,6 +830,10 @@ static void OnApproveHandler(lv_event_t *e)
     printf("OnApproveHandler\n");
     if (!CheckHardWareCallParaIsValied()) {
         GuiCreateHardwareCallInvaildPathHintbox();
+    // todo click approve button and check the hardware call params
+    HardwareCallResult_t res =  CheckHardwareCallRequestIsLegal();
+    if (!res.isLegal) {
+        GuiCreateHardwareCallInvaildParamHintbox(res.title, res.message);
         return;
     }
     if (strcmp("1", g_callData->version) == 0) {
@@ -808,6 +974,15 @@ static void CloseDerivationHandler(lv_event_t *e)
 static bool IsCardano()
 {
     return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON || g_walletIndex == WALLET_LIST_BEGIN;
+}
+
+
+
+// hardware call version 1 need another CompareDerivationHandler
+static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e)
+{
+    selected_ada_derivation_algo = GetCurrentSelectedIndex();
+    CloseDerivationHandler(e);
 }
 
 static void ConfirmDerivationHandler(lv_event_t *e)

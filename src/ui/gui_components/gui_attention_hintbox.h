@@ -15,7 +15,7 @@ typedef enum {
 } ATTENTION_HINTBOX_TYPE;
 
 void GuiCreateAttentionHintbox(uint16_t confirmSign);
-void GuiCreateHardwareCallInvaildPathHintbox();
+void GuiCreateHardwareCallInvaildParamHintbox(char *title, char *context);
 
 void GuiCloseAttentionHintbox();
 void GuiCreateInitializatioCompleteHintbox();

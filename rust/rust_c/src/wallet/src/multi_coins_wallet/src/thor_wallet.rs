@@ -12,7 +12,7 @@ use third_party::ur_registry::traits::RegistryItem;
 use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::ExtendedPublicKey;
 use common_rust_c::types::{PtrString, PtrT};
-use common_rust_c::ur::{FRAGMENT_MAX_LENGTH_DEFAULT, UREncodeResult};
+use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
 
 use crate::utils::normalize_xpub;

@@ -45,6 +45,7 @@ typedef enum {
     CHAIN_INJ,
     CHAIN_ATOM,
     CHAIN_CRO,
+    CHAIN_RUNE,
     CHAIN_KAVA,
     CHAIN_LUNC,
     CHAIN_AXL,
@@ -71,7 +72,7 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
-    CHAIN_RUNE,
+
 #endif
     CHAIN_BUTT,
 } GuiChainCoinType;

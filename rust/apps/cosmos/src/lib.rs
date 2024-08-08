@@ -5,19 +5,20 @@
 #[macro_use]
 extern crate alloc;
 extern crate core;
-
 #[cfg(test)]
 #[macro_use]
 extern crate std;
 
-use crate::errors::{CosmosError, Result};
-use crate::transaction::structs::{ParsedCosmosTx, SignMode};
-use crate::utils::{hash160, keccak256, sha256_digest};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+
 use keystore::algorithms::secp256k1::derive_public_key;
 use third_party::bech32::{self, Bech32, Hrp};
 use third_party::secp256k1::{Message, PublicKey};
+
+use crate::errors::{CosmosError, Result};
+use crate::transaction::structs::{ParsedCosmosTx, SignMode};
+use crate::utils::{hash160, keccak256, sha256_digest};
 
 mod cosmos_sdk_proto;
 pub mod errors;
@@ -104,7 +105,21 @@ pub fn derive_address(
 
 #[cfg(test)]
 mod tests {
+    use third_party::hex;
+
     use super::*;
+
+    #[test]
+    fn test_parse_tx() {
+        // transfer rune
+        let raw_tx = "0a570a500a0e2f74797065732e4d736753656e64123e0a14d2a392d2d0e98f64dd0f9aa422da9b37b21944501214ead5b280c71c6ae156ee581cff8c9147a64cca1f1a100a0472756e65120831303030303030301203626d79125a0a500a460a1f2f636f736d6f732e63727970746f2e736563703235366b312e5075624b657912230a2103b1f26f209231b1ee90a8c52a981038794195fd7e08c47df02ff8bb7c1ce2a43512040a020801180012061080cab5ee011a1474686f72636861696e2d6d61696e6e65742d763120bdb106";
+        let data_type = transaction::structs::DataType::Direct;
+        let parsed_tx = parse(&hex::decode(raw_tx).unwrap(), data_type).unwrap();
+
+        let overview = parsed_tx.overview;
+        let network = overview.common.network;
+        assert_eq!("THORChain", network.as_str(),)
+    }
 
     #[test]
     fn test_derive_thorchain_address_by_seed() {

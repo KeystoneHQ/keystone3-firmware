@@ -62,6 +62,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_INJ, false, "INJ", true},
     {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
     {HOME_WALLET_CARD_CRO, false, "CRO", true},
+    {HOME_WALLET_CARD_RUNE, false, "RUNE", true},
     {HOME_WALLET_CARD_KAVA, false, "KAVA", true},
     {HOME_WALLET_CARD_LUNC, false, "LUNC", true},
     {HOME_WALLET_CARD_AXL, false, "AXL", true},
@@ -88,7 +89,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_UMEE, false, "UMEE", true},
     {HOME_WALLET_CARD_QCK, false, "QCK", true},
     {HOME_WALLET_CARD_TGD, false, "TGD", true},
-    {HOME_WALLET_CARD_RUNE, false, "RUNE", true},
+
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 static KeyboardWidget_t *g_keyboardWidget = NULL;
@@ -266,6 +267,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .icon = &coinCro,
     },
     {
+        .index = HOME_WALLET_CARD_RUNE,
+        .coin = "RUNE",
+        .chain = "THORChain",
+        .icon = &coinRune,
+    },
+    {
         .index = HOME_WALLET_CARD_KAVA,
         .coin = "KAVA",
         .chain = "Kava",
@@ -421,12 +428,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .chain = "Tgrade",
         .icon = &coinTgd,
     },
-    {
-        .index = HOME_WALLET_CARD_RUNE,
-        .coin = "RUNE",
-        .chain = "THORChain",
-        .icon = &coinRune,
-    }
+
 };
 
 static void CoinDealHandler(lv_event_t *e);

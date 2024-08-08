@@ -1,7 +1,7 @@
-pub mod detail;
-pub mod overview;
-pub mod structs;
-mod utils;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+
+use serde_json::{from_slice, from_str, Value};
 
 use crate::errors::Result;
 use crate::proto_wrapper::fee::format_fee_from_value;
@@ -10,11 +10,13 @@ use crate::transaction::detail::{CommonDetail, CosmosTxDetail, DetailMessage, De
 use crate::transaction::overview::{CommonOverview, CosmosTxOverview, MsgOverview};
 use crate::transaction::structs::{CosmosTxDisplayType, DataType, ParsedCosmosTx};
 use crate::transaction::utils::get_network_by_chain_id;
-use alloc::string::{String, ToString};
-use alloc::vec::Vec;
-use serde_json::{from_slice, from_str, Value};
 
 use self::detail::MsgDetail;
+
+pub mod detail;
+pub mod overview;
+pub mod structs;
+mod utils;
 
 impl ParsedCosmosTx {
     pub fn build(data: &Vec<u8>, data_type: DataType) -> Result<Self> {
@@ -99,10 +101,12 @@ impl ParsedCosmosTx {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::transaction::structs::DataType;
     use serde_json::{json, Value};
     use third_party::hex;
+
+    use crate::transaction::structs::DataType;
+
+    use super::*;
 
     #[test]
     fn test_parse_cosmos_send_amino_json() {

@@ -1,7 +1,8 @@
-use crate::errors::Result;
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+
+use crate::errors::Result;
 
 pub fn detect_msg_type(msg_type: Option<&str>) -> &str {
     let msg_type_parts: Vec<&str> = msg_type
@@ -48,6 +49,7 @@ pub fn get_network_by_chain_id(chain_id: &str) -> Result<String> {
     map.insert("quicksilver", "Quicksilver");
     map.insert("phoenix", "Terra");
     map.insert("columbus", "Terra Classic");
+    map.insert("thorchain-mainnet", "THORChain");
     let chain_id_parts: Vec<&str> = chain_id.split("-").collect();
     let chain_id_prefix = if chain_id_parts.len() > 1 {
         chain_id_parts[..chain_id_parts.len() - 1].join("-")
@@ -93,6 +95,7 @@ pub fn get_chain_id_by_address(address: &str) -> String {
     map.insert("kava", "kava_2222-10");
     map.insert("quick", "quicksilver-1");
     map.insert("terra", "phoenix-1");
+    map.insert("thor", "thorchain-mainnet");
     for (k, v) in map {
         if address.starts_with(k) {
             return v.to_string();

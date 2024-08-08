@@ -10,6 +10,7 @@
 #include "gui_display_widgets.h"
 #include "device_setting.h"
 #include "gui_page.h"
+#include "gui_api.h"
 
 typedef enum {
     FIFTEEN_SECONDS = 0,
@@ -66,6 +67,7 @@ static uint32_t GetAutoShutdownTimeByEnum(AUTO_SHUTDOWN_ENUM shutdownTime);
 static const char *GetAutoShutdownTimeDescByLockTime(void);
 static void NftScreenSaverSwitchHandler(lv_event_t * e);
 static void OpenNftTutorialHandler(lv_event_t *e);
+static void SwitchNftScreenSaverHandler(lv_event_t *e);
 
 void GuiDisplayWidgetsInit()
 {
@@ -199,7 +201,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
     nftTable[1].position.x = -24;
     lv_obj_add_event_cb(nftSwitch, NftScreenSaverSwitchHandler, LV_EVENT_VALUE_CHANGED, NULL);
     button = GuiCreateButton(parent, 456, 84, nftTable, NUMBER_OF_ARRAYS(nftTable),
-                             ChooseAutoLockTimeHandler, NULL);
+                             SwitchNftScreenSaverHandler, NULL);
     GuiAlignToPrevObj(button, LV_ALIGN_OUT_BOTTOM_MID, 0, 25);
 
     label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_auto_lock"));
@@ -269,12 +271,14 @@ static void SaveSystemSetting(lv_timer_t *timer)
     UNUSED(g_delayTaskTimer);
 }
 
+static void SwitchNftScreenSaverHandler(lv_event_t *e)
+{
+    printf("SwitchNftScreenSaverHandler\n");
+    GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);
+}
+
 static void ChooseAutoLockTimeHandler(lv_event_t *e)
 {
-    printf("%s %d..\n", __func__, __LINE__);
-    GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);
-    return;
-
     g_noticeWindow = GuiCreateHintBox(570);
 
     lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
@@ -590,5 +594,31 @@ static void NftScreenSaverSwitchHandler(lv_event_t * e)
 
 static void OpenNftTutorialHandler(lv_event_t *e)
 {
-    printf("%s %d..\n", __func__, __LINE__);
+    g_noticeWindow = GuiCreateHintBox(704);
+
+    lv_obj_t *qrCodeCont = lv_obj_create(g_noticeWindow);
+    lv_obj_set_size(qrCodeCont, 408, 408);
+    lv_obj_set_style_border_width(qrCodeCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_clip_corner(qrCodeCont, 0, 0);
+    lv_obj_set_style_pad_all(qrCodeCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(qrCodeCont, 16, LV_PART_MAIN);
+    lv_obj_clear_flag(qrCodeCont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_clear_flag(qrCodeCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_bg_color(qrCodeCont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_align(qrCodeCont, LV_ALIGN_BOTTOM_MID, 0, -260);
+
+    lv_obj_t *qrCode = lv_qrcode_create(qrCodeCont, 360, BLACK_COLOR, WHITE_COLOR);
+    lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
+    lv_qrcode_update(qrCode, _("nft_screen_set_url"), (uint32_t)strnlen_s(_("nft_screen_set_url"), BUFFER_SIZE_128));
+
+    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("nft_screen_set_title"));
+    lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -156);
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("nft_screen_set_url"));
+    lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -114);
+
+    lv_obj_t *button = GuiCreateTextBtn(g_noticeWindow, _("OK"));
+    lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_add_event_cb(button, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }

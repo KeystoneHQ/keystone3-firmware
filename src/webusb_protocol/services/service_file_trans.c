@@ -335,7 +335,6 @@ static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvDat
 
 static uint8_t *ServiceNftFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
-    printf("%s %d.\n", __func__, __LINE__);
     return ServiceFileTransContent(head, tlvData, outLen);
 }
 
@@ -385,7 +384,6 @@ static void WriteNftToFlash(void)
 
 static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
-    printf("%s %d..\n", __func__, __LINE__);
     FrameHead_t sendHead = {0};
     uint8_t md5Result[16];
 

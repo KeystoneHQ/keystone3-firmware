@@ -89,6 +89,7 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiScanResult(false, param);
         break;
     case SIG_QRCODE_VIEW_SCAN_PASS:
+        printf("%s line = %d.......\n", __func__, __LINE__);
         GuiScanResult(true, param);
         break;
     default:

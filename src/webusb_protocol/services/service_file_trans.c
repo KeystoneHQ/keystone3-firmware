@@ -19,6 +19,7 @@
 #include "device_setting.h"
 #include "account_manager.h"
 #include "user_memory.h"
+#include "drv_gd25qxx.h"
 
 #define TYPE_FILE_INFO_FILE_NAME                        1
 #define TYPE_FILE_INFO_FILE_SIZE                        2
@@ -335,7 +336,6 @@ static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvDat
 
 static uint8_t *ServiceNftFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
-    printf("%s %d.\n", __func__, __LINE__);
     return ServiceFileTransContent(head, tlvData, outLen);
 }
 
@@ -346,9 +346,8 @@ static void WriteNftToFlash(void)
     int32_t ret;
     uint8_t *fileBuf;
     uint32_t fileSize = 0;
-    uint32_t readSize = 0;
     uint32_t readBytes = 0;
-    int len, changePercent = 0, percent;
+    int len;
     int i = 0;
     const char *filePath = "1:nft.bin";
     ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
@@ -385,7 +384,6 @@ static void WriteNftToFlash(void)
 
 static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
-    printf("%s %d..\n", __func__, __LINE__);
     FrameHead_t sendHead = {0};
     uint8_t md5Result[16];
 

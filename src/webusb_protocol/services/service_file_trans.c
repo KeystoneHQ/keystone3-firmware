@@ -52,8 +52,12 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
 static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *GetFileContent(const FrameHead_t *head, uint32_t offset, uint32_t *outLen);
 static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
+static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
+static uint8_t *ServiceNftFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
+static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 
 static bool g_isReceivingFile = false;
+static bool g_isNftFile = false;
 
 bool GetIsReceivingFile()
 {
@@ -79,6 +83,14 @@ const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
     ServiceFileTransInfo,                       //2.1
     ServiceFileTransContent,                    //2.2
     ServiceFileTransComplete,                   //2.3
+};
+
+
+const ProtocolServiceCallbackFunc_t g_nftFileTransInfoServiceFunc[] = {
+    NULL,                                       //3.0
+    ServiceNftFileTransInfo,                    //3.1
+    ServiceNftFileTransContent,                 //3.2
+    ServiceNftFileTransComplete,                //3.3
 };
 
 static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInfo)
@@ -162,14 +174,16 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             sendTlvArray[0].value = 4;
             break;
         }
-        sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
-        PrintArray("hash", hash, 32);
-        if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
-            printf("verify signature fail\n");
-            sendTlvArray[0].value = 3;
-            break;
+        if (!g_isNftFile) {
+            sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
+            PrintArray("hash", hash, 32);
+            if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
+                printf("verify signature fail\n");
+                sendTlvArray[0].value = 3;
+                break;
+            }
+            printf("verify signature ok\n");
         }
-        printf("verify signature ok\n");
         uint8_t walletAmount;
         GetExistAccountNum(&walletAmount);
         if (GetCurrentAccountIndex() == ACCOUNT_INDEX_LOGOUT && walletAmount != 0) {
@@ -189,7 +203,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             sendTlvArray[0].value = 5;
             break;
         }
-        GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 1);
+        GuiApiEmitSignalWithValue(g_isNftFile ? SIG_INIT_NFT_BIN : SIG_INIT_FIRMWARE_PROCESS, 1);
         if (g_fileTransTimeOutTimer == NULL) {
             g_fileTransTimeOutTimer = osTimerNew(FileTransTimeOutTimerFunc, osTimerOnce, NULL, NULL);
         }
@@ -264,7 +278,8 @@ static uint8_t *GetFileContent(const FrameHead_t *head, uint32_t offset, uint32_
     FrameHead_t sendHead = {0};
 
     sendHead.packetIndex = head->packetIndex;
-    sendHead.serviceId = SERVICE_ID_FILE_TRANS;
+    // sendHead.serviceId = SERVICE_ID_FILE_TRANS;
+    sendHead.serviceId = g_isNftFile ? SERVICE_ID_NFT_FILE_TRANS : SERVICE_ID_FILE_TRANS;
     sendHead.commandId = COMMAND_ID_FILE_TRANS_CONTENT;
     sendHead.flag.b.ack = 0;
     sendHead.flag.b.isHost = 0;
@@ -310,4 +325,88 @@ static void FileTransTimeOutTimerFunc(void *argument)
 {
     g_isReceivingFile = false;
     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
+}
+
+static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
+{
+    g_isNftFile = true;
+    return ServiceFileTransInfo(head, tlvData, outLen);
+}
+
+static uint8_t *ServiceNftFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
+{
+    printf("%s %d.\n", __func__, __LINE__);
+    return ServiceFileTransContent(head, tlvData, outLen);
+}
+
+#define START_ADDR 0x00EB2000
+static void WriteNftToFlash(void)
+{
+    FIL fp;
+    int32_t ret;
+    uint8_t *fileBuf;
+    uint32_t fileSize = 0;
+    uint32_t readSize = 0;
+    uint32_t readBytes = 0;
+    int len, changePercent = 0, percent;
+    int i = 0;
+    const char *filePath = "1:nft.bin";
+    ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
+    if (ret) {
+        printf("open file err %d\n", ret);
+        return;
+    }
+
+    fileSize = f_size(&fp);
+    printf("fileSize = %d\n", fileSize);
+    uint32_t lastLen = fileSize;
+    fileBuf = SRAM_MALLOC(4096);
+    fileBuf = pvPortMalloc(4096);
+
+    while (lastLen) {
+        len = lastLen > 4096 ? 4096 : lastLen;
+        memset(fileBuf, 0, 4096);
+        ret = f_read(&fp, (void*)fileBuf, len, &readBytes);
+        if (ret) {
+            FatfsError(ret);
+            f_close(&fp);
+            vPortFree(fileBuf);
+            return;
+        }
+        Gd25FlashSectorErase(START_ADDR + i * 4096);
+        Gd25FlashWriteBuffer(START_ADDR + i * 4096, fileBuf, len);
+        i++;
+        lastLen -= len;
+    }
+    f_close(&fp);
+    f_unlink(filePath);
+    SRAM_FREE(fileBuf);
+}
+
+static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
+{
+    printf("%s %d..\n", __func__, __LINE__);
+    FrameHead_t sendHead = {0};
+    uint8_t md5Result[16];
+
+    ASSERT(g_fileTransTimeOutTimer);
+    osTimerStop(g_fileTransTimeOutTimer);
+    g_fileTransCtrl.endTick = osKernelGetTickCount();
+    PrintArray("tlvData", tlvData, head->length);
+    PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
+    MD5_Final(md5Result, &ctx);
+    PrintArray("md5Result", md5Result, 16);
+    printf("total tick=%d\n", g_fileTransCtrl.endTick - g_fileTransCtrl.startTick);
+
+    sendHead.packetIndex = head->packetIndex;
+    sendHead.serviceId = head->serviceId;
+    sendHead.commandId = head->commandId;
+    sendHead.flag.b.ack = 0;
+    sendHead.flag.b.isHost = 0;
+
+    *outLen = sizeof(FrameHead_t) + 4;
+    WriteNftToFlash();
+    GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN, 0);
+    GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);
+    return BuildFrame(&sendHead, NULL, 0);
 }

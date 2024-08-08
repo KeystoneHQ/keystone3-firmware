@@ -72,8 +72,8 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_COSMOS, "", &coinCosmos}, {HOME_WALLET_CARD_TIA, "", &coinTia},
     {HOME_WALLET_CARD_DYM, "", &coinDym},       {HOME_WALLET_CARD_OSMO, "", &coinOsmo},
     {HOME_WALLET_CARD_INJ, "", &coinInj},       {HOME_WALLET_CARD_ATOM, "", &coinAtom},
-    {HOME_WALLET_CARD_CRO, "", &coinCro},       {HOME_WALLET_CARD_KAVA, "", &coinKava},
-    {HOME_WALLET_CARD_LUNC, "", &coinLunc},     {HOME_WALLET_CARD_AXL, "", &coinAxl},
+    {HOME_WALLET_CARD_CRO, "", &coinCro},       {HOME_WALLET_CARD_RUNE, "", &coinRune},
+    {HOME_WALLET_CARD_KAVA, "", &coinKava},     {HOME_WALLET_CARD_LUNC, "", &coinLunc},     {HOME_WALLET_CARD_AXL, "", &coinAxl},
     {HOME_WALLET_CARD_LUNA, "", &coinLuna},     {HOME_WALLET_CARD_AKT, "", &coinAkt},
     {HOME_WALLET_CARD_STRD, "", &coinStrd},     {HOME_WALLET_CARD_SCRT, "", &coinScrt},
     {HOME_WALLET_CARD_BLD, "", &coinBld},       {HOME_WALLET_CARD_CTK, "", &coinCtk},
@@ -86,7 +86,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_NGM, "", &coinNgm},       {HOME_WALLET_CARD_IOV, "", &coinIov},
     {HOME_WALLET_CARD_UMEE, "", &coinUmee},     {HOME_WALLET_CARD_QCK, "", &coinQck},
     {HOME_WALLET_CARD_TGD, "", &coinTgd},       {HOME_WALLET_CARD_DOT, "", &coinDot},
-    {HOME_WALLET_CARD_RUNE, "", &coinRune},
+
 #endif
 };
 
@@ -622,7 +622,7 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
             break;
         }
     }
-
+    // tx parse page: Confrim Transaction
     navBarWidget->midBtn = GuiUpdateStatusCoinButton(
                                navBarWidget->midBtn, (name != NULL) ? name : _("confirm_transaction"),
                                coin->icon);

@@ -26,6 +26,7 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_SCRT, "secret", 529, XPUB_TYPE_SCRT, "secret-4"},
     {CHAIN_AKT, "akash", 118, XPUB_TYPE_COSMOS, "akashnet-2"},
     {CHAIN_CRO, "cro", 394, XPUB_TYPE_CRO, "crypto-org-chain-mainnet-1"},
+    {CHAIN_RUNE, "thor", 931, XPUB_TYPE_THOR, "thorchain-mainnet-v1"},
     {CHAIN_IOV, "star", 234, XPUB_TYPE_IOV, "iov-mainnet-ibc"},
     {CHAIN_ROWAN, "sif", 118, XPUB_TYPE_COSMOS, "sifchain-1"},
     {CHAIN_CTK, "shentu", 118, XPUB_TYPE_COSMOS, "shentu-2.2"},
@@ -51,7 +52,7 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_QCK, "quick", 118, XPUB_TYPE_COSMOS, "quicksilver-1"},
     {CHAIN_LUNA, "terra", 330, XPUB_TYPE_TERRA, "phoenix-1"},
     {CHAIN_LUNC, "terra", 330, XPUB_TYPE_TERRA, "columbus-5"},
-    {CHAIN_RUNE, "thor", 931, XPUB_TYPE_THOR, "thorchain-3"},
+
 };
 
 char *GetCosmosChainAddressByCoinTypeAndIndex(uint8_t chainType,  uint32_t address_index)
@@ -120,11 +121,9 @@ const char* GuiGetCosmosTxTypeName(CosmosMsgType type)
 
 void GuiSetCosmosUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
-#endif
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                   \
@@ -136,7 +135,6 @@ void GuiSetCosmosUrData(URParseResult *urResult, URParseMultiResult *urMultiResu
 
 void *GuiGetCosmosData(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
@@ -148,22 +146,15 @@ void *GuiGetCosmosData(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
-#else
-    return NULL;
-#endif
 }
 
 PtrT_TransactionCheckResult GuiGetCosmosCheckResult(void)
 {
-#ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     return cosmos_check_tx(data, urType, mfp, sizeof(mfp));
-#else
-    return NULL;
-#endif
 }
 
 void FreeCosmosMemory(void)
@@ -582,6 +573,7 @@ uint8_t GuiGetCosmosTxChain(void)
     } else {
         GetCosmosDetailCommon(chain_id, parseResult->data, "Chain ID", BUFFER_SIZE_64);
     }
+    printf("chain_id: %s\n", chain_id);
     if (chain_id != NULL) {
         for (uint8_t i = 0; i < COSMOS_CHAINS_LEN; i++) {
             if (strcmp(chain_id, g_cosmosChains[i].chainId) == 0) {
@@ -600,7 +592,6 @@ UREncodeResult *GuiGetCosmosSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
@@ -614,14 +605,5 @@ UREncodeResult *GuiGetCosmosSignQrCodeData(void)
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
-#else
-    UREncodeResult *encodeResult = NULL;
-    encodeResult->is_multi_part = 0;
-    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    encodeResult->encoder = NULL;
-    encodeResult->error_code = 0;
-    encodeResult->error_message = NULL;
-    return encodeResult;
-#endif
 }
 #endif

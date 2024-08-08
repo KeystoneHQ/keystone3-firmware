@@ -282,8 +282,12 @@ static void OpenDerivationPath()
     lv_obj_set_style_bg_color(tmCont, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
-    // todo comfirm handler has 2 implementation
-    lv_obj_add_event_cb(btn, SaveHardwareCallVersion1AdaDerivationAlgo, LV_EVENT_CLICKED, NULL);
+    if (strcmp("1", g_callData->version) == 0) {
+        lv_obj_add_event_cb(btn, SaveHardwareCallVersion1AdaDerivationAlgo, LV_EVENT_CLICKED, NULL);
+    } else {
+        lv_obj_add_event_cb(btn, ConfirmDerivationHandler, LV_EVENT_CLICKED, NULL);
+    }
+
     g_derivationPathConfirmBtn = btn;
     UpdateConfirmBtn(false);
 

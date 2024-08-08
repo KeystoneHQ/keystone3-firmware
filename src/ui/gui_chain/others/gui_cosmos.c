@@ -9,7 +9,7 @@
 #include "user_memory.h"
 #include "account_manager.h"
 #include "gui_chain.h"
-#define MAX_COSMOS_ADDR_LEN 60
+#define MAX_COSMOS_ADDR_LEN 61
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
@@ -51,6 +51,7 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_QCK, "quick", 118, XPUB_TYPE_COSMOS, "quicksilver-1"},
     {CHAIN_LUNA, "terra", 330, XPUB_TYPE_TERRA, "phoenix-1"},
     {CHAIN_LUNC, "terra", 330, XPUB_TYPE_TERRA, "columbus-5"},
+    {CHAIN_RUNE, "thor", 931, XPUB_TYPE_THOR, "thorchain-3"},
 };
 
 char *GetCosmosChainAddressByCoinTypeAndIndex(uint8_t chainType,  uint32_t address_index)

@@ -259,7 +259,7 @@ PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
     uint16_t index = atoi(master_key_index->data);
     char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
     PtrT_TransactionCheckResult precheckResult;
-    precheckResult= cardano_check_catalyst_path_type(data, xpub);
+    precheckResult = cardano_check_catalyst_path_type(data, xpub);
     if (precheckResult->error_code != 0) {
         Try2FixAdaPathType();
         xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
@@ -295,7 +295,7 @@ PtrT_TransactionCheckResult GuiGetAdaSignDataCheckResult(void)
     uint16_t index = atoi(master_key_index->data);
     char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
     PtrT_TransactionCheckResult precheckResult;
-    precheckResult= cardano_check_sign_data_path_type(data, xpub);
+    precheckResult = cardano_check_sign_data_path_type(data, xpub);
     if (precheckResult->error_code != 0) {
         Try2FixAdaPathType();
         xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
@@ -305,7 +305,7 @@ PtrT_TransactionCheckResult GuiGetAdaSignDataCheckResult(void)
         }
     }
     free_TransactionCheckResult(precheckResult);
-    
+
     PtrT_TransactionCheckResult result = cardano_check_sign_data(data, mfp);
     return result;
 }

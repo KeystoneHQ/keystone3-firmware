@@ -107,6 +107,33 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_derive_thorchain_address_by_seed() {
+        let seed = [
+            150, 6, 60, 69, 19, 44, 132, 15, 126, 22, 101, 163, 185, 120, 20, 216, 235, 37, 134,
+            243, 75, 217, 69, 240, 111, 161, 91, 147, 39, 238, 190, 53, 95, 101, 78, 129, 198, 35,
+            58, 82, 20, 157, 122, 149, 234, 116, 134, 235, 141, 105, 145, 102, 245, 103, 126, 80,
+            117, 41, 72, 37, 153, 98, 76, 220,
+        ];
+        let path = "M/44'/931'/0'/0/0";
+        let pub_key =
+            keystore::algorithms::secp256k1::get_public_key_by_seed(&seed, &path.to_string())
+                .unwrap();
+        let address = generate_address(pub_key, "thor").unwrap();
+        assert_eq!("thor14vc9484wvt66f7upncl7hq8kcvdd7qm80ld002", address);
+    }
+
+    #[test]
+    fn test_derive_thorchain_address_by_xpub() {
+        {
+            let root_path = "44'/931'/0'";
+            let root_xpub = "xpub6CexGUAW8CXpTAZ19JxEGRxt2g4W7YNc3XSopBxw27jjBWDF67KShM7JqUibfQpHTsjzBdEwAw9X7QsBTVxjRpgK3bUbhS4e3y6kVhUfkek";
+            let hd_path = "44'/931'/0'/0/0";
+            let address = derive_address(hd_path, root_xpub, root_path, "thor").unwrap();
+            assert_eq!("thor14vc9484wvt66f7upncl7hq8kcvdd7qm80ld002", address);
+        }
+    }
+
+    #[test]
     fn test_derive_address() {
         {
             //general address ATOM-0

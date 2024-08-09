@@ -462,7 +462,10 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
                 return g_hardwareCallParamsCheckResult;
 
             }
-            return CheckHardWareCallV0AdaPathIsLegal(g_callData->key_derivation->schemas->data[i].key_path);
+            char path_copy[256];
+            strncpy(path_copy, g_callData->key_derivation->schemas->data[i].key_path, sizeof(path_copy) - 1);
+            path_copy[sizeof(path_copy) - 1] = '\0';
+            return CheckHardWareCallV0AdaPathIsLegal(path_copy);
         }
     }
     if (strcmp("1", g_callData->version) == 0) {
@@ -554,7 +557,6 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
         KeyDerivationSchema schema = g_callData->key_derivation->schemas->data[i];
         char* xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(schema.key_path));
-        // todo check path is ada prefix or not
         xpubs[i].path = schema.key_path;
         xpubs[i].xpub = xpub;
     }

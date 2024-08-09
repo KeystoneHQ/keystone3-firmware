@@ -108,8 +108,10 @@ void ProcessURService(EAPDURequestPayload_t *payload)
     UrViewType_t urViewType;
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
-    handleURResult(urResult, NULL, urViewType, false);
-    return;
+    if (urResult->ur_type == QRHardwareCall) {
+        handleURResult(urResult, NULL, urViewType, false);
+        return;
+    }
 
     // just btc/eth/sol
     if (!CheckViewTypeIsAllow(urViewType.viewType)) {

@@ -430,22 +430,6 @@ static HardwareCallResult_t CheckHardWareCallV0AdaPathIsLegal(char *path)
 
 static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
 {
-    // error tests case
-    // case 1 size > 24
-    // g_callData->key_derivation->schemas->size = 25;
-
-    // case 2 ivalid path
-    // g_callData->key_derivation->schemas->data[0].key_path = "1852'/1815'/0'/0/0";
-
-    // case 3 unsupport derivation type
-    // g_callData->key_derivation->schemas->data[0].curve = "Secp256k2";
-
-    // case 4 v0 only support ada path failed
-    // g_callData->version = "0";
-    // g_callData->key_derivation->schemas->data[0].key_path = "1852'/1815'/100'";
-
-    // case 5 v1 solana
-    // print all the path
     if (g_callData->key_derivation->schemas->size > 24) {
         SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
             false, "Invaild Schemas Size", "schemas size is too large"
@@ -460,12 +444,15 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
                     false, "Invaild Ada Path", "path is not ada prefix"
                 });
                 return g_hardwareCallParamsCheckResult;
-
             }
             char path_copy[256];
             strncpy(path_copy, g_callData->key_derivation->schemas->data[i].key_path, sizeof(path_copy) - 1);
             path_copy[sizeof(path_copy) - 1] = '\0';
-            return CheckHardWareCallV0AdaPathIsLegal(path_copy);
+            HardwareCallResult_t result = CheckHardWareCallV0AdaPathIsLegal(path_copy);
+            if (!result.isLegal) {
+                SetHardwareCallParamsCheckResult(result);
+                return g_hardwareCallParamsCheckResult;
+            }
         }
     }
     if (strcmp("1", g_callData->version) == 0) {
@@ -988,6 +975,8 @@ static bool IsCardano()
 static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e)
 {
     selected_ada_derivation_algo = GetCurrentSelectedIndex();
+    SetKeyDerivationAdaXPubType(GetCurrentSelectedIndex());
+    SetAccountType(GetKeyDerivationAdaXPubType());
     CloseDerivationHandler(e);
 }
 

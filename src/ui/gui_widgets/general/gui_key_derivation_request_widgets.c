@@ -409,14 +409,14 @@ static HardwareCallResult_t CheckHardWareCallV0AdaPathIsLegal(char *path)
         result = atoi(last_token);
     } else {
         SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
-            false, "Invaild Path Index", "ada derivation path is illegal"
+            false, _("invaild_path_index_title"), _("invaild_path_index_con")
         });
         return g_hardwareCallParamsCheckResult;
     }
     // hardware call version 0, the derivation path index must be less than 24
     if (result > 23) {
         SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
-            false, "Invaild Path Index", "ada derivation path index is too large"
+            false, _("invaild_path_index_title"), _("invaild_path_index_con")
         });
         return g_hardwareCallParamsCheckResult;
     } else {
@@ -432,7 +432,7 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
 {
     if (g_callData->key_derivation->schemas->size > 24) {
         SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
-            false, "Invaild Schemas Size", "schemas size is too large"
+            false, _("invaild_schemas_size"), _("invaild_schemas_size_big")
         });
         return g_hardwareCallParamsCheckResult;
     }
@@ -441,7 +441,7 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
             // does not contain the ada prefix
             if (strstr(g_callData->key_derivation->schemas->data[i].key_path, "1852'/1815'") == NULL) {
                 SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
-                    false, "Invaild Ada Path", "path is not ada prefix"
+                    false, _("invaild_ada_path"), _("invaild_ada_path_con")
                 });
                 return g_hardwareCallParamsCheckResult;
             }
@@ -460,7 +460,7 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
             uint8_t derivationType = GetDerivationTypeByCurveAndDeriveAlgo(g_callData->key_derivation->schemas->data[i].curve, g_callData->key_derivation->schemas->data[i].algo);
             if (derivationType == Unsupport_DerivationType) {
                 SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
-                    false, "Invaild Derive Type", "unsupport derivation type"
+                    false, _("invaild_derive_type"), _("invaild_derive_type_con")
                 });
                 return g_hardwareCallParamsCheckResult;
             }

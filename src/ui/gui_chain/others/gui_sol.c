@@ -498,12 +498,28 @@ static lv_obj_t * GuiShowSplTokenInfoOverviewCard(lv_obj_t *parent, PtrT_Display
     SetContainerDefaultStyle(container);
     PtrT_DisplaySolanaTxSplTokenTransferOverview splTokenInfo = overviewData->spl_token_transfer;
 
+
+
     lv_obj_t *tokenNameLabel = lv_label_create(container);
     lv_label_set_text(tokenNameLabel, "Token Name");
     lv_obj_align(tokenNameLabel, LV_ALIGN_TOP_LEFT, 24, 0);
     SetTitleLabelStyle(tokenNameLabel);
 
-    lv_obj_t *tokenNameValueLabel = lv_label_create(container);
+    lv_obj_t *tokenNameContainer = lv_obj_create(container);
+    lv_obj_set_size(tokenNameContainer, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_style_pad_all(tokenNameContainer, 0, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(tokenNameContainer, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_border_width(tokenNameContainer, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(tokenNameContainer, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(tokenNameContainer, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    // Easter egg for dogwifcat EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm
+    if (strcmp(splTokenInfo->token_mint_account, "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm") == 0) {
+        lv_obj_t *dogwifcatIcon = GuiCreateImg(tokenNameContainer, &imgWIF);
+        lv_obj_set_style_pad_right(dogwifcatIcon, 8, LV_PART_MAIN);
+    }
+
+    lv_obj_t *tokenNameValueLabel = lv_label_create(tokenNameContainer);
     lv_label_set_text(tokenNameValueLabel, splTokenInfo->token_name);
 
     if (strcmp(splTokenInfo->token_name, "Unknown") == 0) {
@@ -511,14 +527,14 @@ static lv_obj_t * GuiShowSplTokenInfoOverviewCard(lv_obj_t *parent, PtrT_Display
     } else {
         lv_obj_set_style_text_color(tokenNameValueLabel, lv_color_hex(0xA485FF), LV_PART_MAIN);
     }
-    lv_obj_set_style_text_font(tokenNameValueLabel, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_align_to(tokenNameValueLabel, tokenNameLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
+    lv_obj_set_style_text_font(tokenNameValueLabel, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_align_to(tokenNameContainer, tokenNameLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     lv_obj_t *tokenMintLabel = lv_label_create(container);
     lv_label_set_text(tokenMintLabel, "Token Account");
     SetTitleLabelStyle(tokenMintLabel);
 
-    lv_obj_align_to(tokenMintLabel, tokenNameValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_obj_align_to(tokenMintLabel, tokenNameContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
     lv_obj_t *tokenMintValueLabel = lv_label_create(container);
     lv_obj_set_width(tokenMintValueLabel, 360);

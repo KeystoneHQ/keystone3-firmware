@@ -45,7 +45,7 @@ bool GuiQRHintBoxIsActive()
 
 void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *content, const char *url)
 {
-    lv_obj_t *button, *qrCodeCont, *qrCode, *label;
+    lv_obj_t *button, *qrCodeCont, *qrCode;
     if (g_qrHintBox == NULL) {
         g_qrHintBox = GuiCreateHintBox(746);
         // qr code container
@@ -72,24 +72,23 @@ void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *
         // content align to qr code container
         lv_obj_align_to(scrollable, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
         lv_obj_set_style_border_width(scrollable, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-
+        lv_obj_set_style_pad_all(scrollable, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         // title
-        label = GuiCreateTextLabel(scrollable, title);
-        lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
-        lv_obj_align_to(label, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
-        lv_obj_set_style_text_font(label, &openSansEnTitle, LV_PART_MAIN);
-        g_qrHintBoxTitle = label;
-        label = GuiCreateIllustrateLabel(scrollable, content);
-        lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
-        g_qrHintBoxSubTitle = label;
+        lv_obj_t * g_qrHintBoxTitle = GuiCreateTextLabel(scrollable, title);
+        lv_label_set_long_mode(g_qrHintBoxTitle, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_align_to(g_qrHintBoxTitle, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        lv_obj_set_style_text_font(g_qrHintBoxTitle, &openSansEnTitle, LV_PART_MAIN);
+        // content
+        lv_obj_t * g_qrHintBoxSubTitle = GuiCreateIllustrateLabel(scrollable, content);
+        lv_obj_set_style_text_color(g_qrHintBoxSubTitle, WHITE_COLOR, LV_PART_MAIN);
         if (strcmp(content, "") != 0) {
-            lv_obj_align_to(label, g_qrHintBoxTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+            lv_obj_align_to(g_qrHintBoxSubTitle, g_qrHintBoxTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
         }
-
-        label = GuiCreateIllustrateLabel(scrollable, url);
-        lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
-        lv_obj_align_to(label, g_qrHintBoxSubTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
-        g_qrHintBoxSubTitle = label;
+        // url
+        lv_obj_t * urlLabel = GuiCreateIllustrateLabel(scrollable, url);
+        lv_obj_set_style_text_color(urlLabel, BLUE_GREEN_COLOR, LV_PART_MAIN);
+        lv_obj_align_to(urlLabel, g_qrHintBoxSubTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+        g_qrHintBoxSubTitle = urlLabel;
 
         button = GuiCreateTextBtn(g_qrHintBox, _("OK"));
         lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);

@@ -175,16 +175,14 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             sendTlvArray[0].value = 4;
             break;
         }
-        if (!g_isNftFile) {
-            sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
-            PrintArray("hash", hash, 32);
-            if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
-                printf("verify signature fail\n");
-                sendTlvArray[0].value = 3;
-                break;
-            }
-            printf("verify signature ok\n");
+        sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
+        PrintArray("hash", hash, 32);
+        if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
+            printf("verify signature fail\n");
+            sendTlvArray[0].value = 3;
+            break;
         }
+        printf("verify signature ok\n");
         uint8_t walletAmount;
         GetExistAccountNum(&walletAmount);
         if (GetCurrentAccountIndex() == ACCOUNT_INDEX_LOGOUT && walletAmount != 0) {

@@ -81,7 +81,9 @@ void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *
         label = GuiCreateIllustrateLabel(scrollable, content);
         lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
         g_qrHintBoxSubTitle = label;
-        lv_obj_align_to(label, g_qrHintBoxTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+        if (strcmp(content, "") != 0) {
+            lv_obj_align_to(label, g_qrHintBoxTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+        }
 
         label = GuiCreateIllustrateLabel(scrollable, url);
         lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);

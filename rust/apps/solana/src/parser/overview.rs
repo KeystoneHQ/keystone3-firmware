@@ -16,6 +16,9 @@ pub struct ProgramOverviewSplTokenTransfer {
     pub authority: String,
     pub decimals: u8,
     pub amount: String,
+    pub token_mint_account: String,
+    pub token_symbol: String,
+    pub token_name: String,
 }
 
 #[derive(Debug, Clone)]

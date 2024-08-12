@@ -175,50 +175,134 @@ impl ParsedSolanaTx {
             "parse system transfer failed, empty transfer program".to_string(),
         ))
     }
-
-    fn find_token_name(token_mint_address: &str) -> String {
+    fn find_token_name(token_mint_address: &str) -> (String, String) {
+        // token mint address | symbol | token name
         match token_mint_address {
-            "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" => "JUP".to_string(),
-            "MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey" => "MNDE".to_string(),
-            "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3" => "PYTH".to_string(),
-            "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" => "USDC".to_string(),
-            "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL" => "JTO".to_string(),
-            "85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ" => "W".to_string(),
-            "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" => "USDT".to_string(),
-            "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" => "Bonk".to_string(),
-            "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn" => "JitoSOL".to_string(),
-            "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" => "WIF".to_string(),
-            "BZLbGTNCSFfoth2GYDtwr7e4imWzpR5jqcUuGEwr646K" => "IO".to_string(),
-            "rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof" => "RENDER".to_string(),
-            "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" => "RAY".to_string(),
-            "7atgF8KQo4wJrD5ATGX7t1V2zVvykPJbFfNeVf1icFv1" => "CWIF".to_string(),
-            "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So" => "mSol".to_string(),
-            "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux" => "HNT".to_string(),
-            "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4" => "JLP".to_string(),
-            "8BMzMi2XxZn9afRaMx5Z6fauk9foHXqV5cLTCYWRcVje" => "STIK".to_string(),
-            "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82" => "BOME".to_string(),
-            "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr" => "POPCAT".to_string(),
-            "4vMsoUT2BWatFweudnQM1xedRLfJgJ7hswhcpz4xgBTy" => "HONEY".to_string(),
-            "NeonTjSjsuo3rexg9o6vHuMXw62f9V7zvmu8M8Zut44" => "NEON".to_string(),
-            "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5" => "MEW".to_string(),
-            "TNSRxcUxoT9xBG3de7PiJyTDYu7kskLqcpddxnEJAS6" => "TNSR".to_string(),
-            "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v" => "JupSOL".to_string(),
-            "bSo13r4TkiE4KumL71LsHTPpL2euBYLFx6h9HP3piy1" => "bSOL".to_string(),
-            "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" => "SRM".to_string(),
-            "5z3EqYQo9HiCEs3R84RCDMu2n7anpDMxRhdK8PSWmrRC" => "PONKE".to_string(),
-            "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo" => "PYUSD".to_string(),
-            "z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M" => "OXY".to_string(),
-            "METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m" => "MPLX".to_string(),
-            "KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS" => "KMNO".to_string(),
-            "DriFtupJYLTosbwoN8koMbEYSx54aFAVLddWsbksjwg7" => "DRIFT".to_string(),
-            "FoXyMu5xwXre7zEoSvzViRk3nGawHUp9kUh97y2NDhcq" => "FOXY".to_string(),
-            "7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx" => "GMT".to_string(),
-            "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm" => "INF".to_string(),
-            "EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp" => "FIDA".to_string(),
-            "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE" => "ORCA".to_string(),
-            "EzgfrTjgFyHGaU5BEBRETyfawt66bAYqJvcryWuJtQ5w" => "Borzoi".to_string(),
-            "ZEUS1aR7aX8DFFJf5QjWj2ftDDdNTroMNGo8YoQm3Gq" => "ZEUS".to_string(),
-            _ => "Token".to_string(),
+            "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" => {
+                ("JUP".to_string(), "Jupiter".to_string())
+            }
+            "MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey" => {
+                ("MNDE".to_string(), "Marinade".to_string())
+            }
+            "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3" => {
+                ("PYTH".to_string(), "Pyth Network".to_string())
+            }
+            "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" => {
+                ("USDC".to_string(), "USD Coin".to_string())
+            }
+            "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL" => {
+                ("JTO".to_string(), "JITO".to_string())
+            }
+            "85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ" => {
+                ("W".to_string(), "Wormhole Token".to_string())
+            }
+            "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" => {
+                ("USDT".to_string(), "USDT".to_string())
+            }
+            "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" => {
+                ("Bonk".to_string(), "Bonk".to_string())
+            }
+            "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn" => {
+                ("JitoSOL".to_string(), "Jito Staked SOL".to_string())
+            }
+            "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" => {
+                ("WIF".to_string(), "dogwifhat".to_string())
+            }
+            "BZLbGTNCSFfoth2GYDtwr7e4imWzpR5jqcUuGEwr646K" => ("IO".to_string(), "IO".to_string()),
+            "rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof" => {
+                ("RENDER".to_string(), "Render Token".to_string())
+            }
+            "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" => {
+                ("RAY".to_string(), "Raydium".to_string())
+            }
+            "7atgF8KQo4wJrD5ATGX7t1V2zVvykPJbFfNeVf1icFv1" => {
+                ("CWIF".to_string(), "catwifhat".to_string())
+            }
+            "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So" => {
+                ("mSol".to_string(), "Marinade staked SOL".to_string())
+            }
+            "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux" => {
+                ("HNT".to_string(), "Helium Network Token".to_string())
+            }
+            "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4" => {
+                ("JLP".to_string(), "Jupiter Perps LP".to_string())
+            }
+            "8BMzMi2XxZn9afRaMx5Z6fauk9foHXqV5cLTCYWRcVje" => {
+                ("STIK".to_string(), "Staika".to_string())
+            }
+            "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82" => {
+                ("BOME".to_string(), "BOOK OF MEME".to_string())
+            }
+            "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr" => {
+                ("POPCAT".to_string(), "POPCAT".to_string())
+            }
+            "4vMsoUT2BWatFweudnQM1xedRLfJgJ7hswhcpz4xgBTy" => {
+                ("HONEY".to_string(), "HONEY".to_string())
+            }
+            "NeonTjSjsuo3rexg9o6vHuMXw62f9V7zvmu8M8Zut44" => {
+                ("NEON".to_string(), "Neon EVM Token".to_string())
+            }
+            "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5" => {
+                ("MEW".to_string(), "cat in a dogs world".to_string())
+            }
+            "TNSRxcUxoT9xBG3de7PiJyTDYu7kskLqcpddxnEJAS6" => {
+                ("TNSR".to_string(), "Tensor".to_string())
+            }
+            "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v" => {
+                ("JupSOL".to_string(), "Jupiter Staked SOL".to_string())
+            }
+            "bSo13r4TkiE4KumL71LsHTPpL2euBYLFx6h9HP3piy1" => {
+                ("bSOL".to_string(), "BlazeStake Staked SOL".to_string())
+            }
+            "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" => {
+                ("SRM".to_string(), "Serum".to_string())
+            }
+            "5z3EqYQo9HiCEs3R84RCDMu2n7anpDMxRhdK8PSWmrRC" => {
+                ("PONKE".to_string(), "PONKE".to_string())
+            }
+            "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo" => {
+                ("PYUSD".to_string(), "PYUSD".to_string())
+            }
+            "z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M" => {
+                ("OXY".to_string(), "Oxygen Protocol".to_string())
+            }
+            "METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m" => {
+                ("MPLX".to_string(), "Metaplex Token".to_string())
+            }
+            "KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS" => {
+                ("KMNO".to_string(), "Kamino".to_string())
+            }
+            "DriFtupJYLTosbwoN8koMbEYSx54aFAVLddWsbksjwg7" => {
+                ("DRIFT".to_string(), "DRIFT".to_string())
+            }
+            "FoXyMu5xwXre7zEoSvzViRk3nGawHUp9kUh97y2NDhcq" => {
+                ("FOXY".to_string(), "Famous Fox Federation".to_string())
+            }
+            "7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx" => {
+                ("GMT".to_string(), "GMT".to_string())
+            }
+            "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm" => {
+                ("INF".to_string(), "Infinity".to_string())
+            }
+            "EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp" => {
+                ("FIDA".to_string(), "Bonfida".to_string())
+            }
+            "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE" => {
+                ("ORCA".to_string(), "Orca".to_string())
+            }
+            "EzgfrTjgFyHGaU5BEBRETyfawt66bAYqJvcryWuJtQ5w" => {
+                ("Borzoi".to_string(), "Borzoi".to_string())
+            }
+            "ZEUS1aR7aX8DFFJf5QjWj2ftDDdNTroMNGo8YoQm3Gq" => {
+                ("ZEUS".to_string(), "ZEUS".to_string())
+            }
+            "mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6" => {
+                ("MOBILE".to_string(), "Helium Mobile".to_string())
+            }
+            "iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns" => {
+                ("IOT".to_string(), "Helium IOT".to_string())
+            }
+            _ => ("Token".to_string(), "Unkonwn".to_string()),
         }
     }
     fn build_token_transfer_checked_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
@@ -235,7 +319,10 @@ impl ParsedSolanaTx {
                             destination: v.recipient.to_string(),
                             authority: v.owner.to_string(),
                             decimals: v.decimals,
-                            amount: format!("{} {}", amount, Self::find_token_name(&v.mint)),
+                            amount: format!("{} {}", amount, Self::find_token_name(&v.mint).0),
+                            token_mint_account: v.mint.clone(),
+                            token_symbol: Self::find_token_name(&v.mint).0,
+                            token_name: Self::find_token_name(&v.mint).1,
                         },
                     ))
                 } else {

@@ -45,38 +45,39 @@ bool GuiQRHintBoxIsActive()
 
 void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *content, const char *url)
 {
-    lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
+    lv_obj_t *button, *qrCodeCont, *qrCode, *label;
     if (g_qrHintBox == NULL) {
         g_qrHintBox = GuiCreateHintBox(746);
-        parent = g_qrHintBox;
-        qrCodeCont = lv_obj_create(parent);
-        lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_AUTO);
+        // qr code container
+        qrCodeCont = lv_obj_create(g_qrHintBox);
         lv_obj_set_size(qrCodeCont, 408, 408);
         lv_obj_set_style_border_width(qrCodeCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_clip_corner(qrCodeCont, 0, 0);
         lv_obj_set_style_pad_all(qrCodeCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_radius(qrCodeCont, 16, LV_PART_MAIN);
-        lv_obj_clear_flag(qrCodeCont, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_clear_flag(qrCodeCont, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_bg_color(qrCodeCont, WHITE_COLOR, LV_PART_MAIN);
         // top mid to hint box
-        lv_obj_align_to(qrCodeCont, parent, LV_ALIGN_TOP_MID, 0, 66);
+        lv_obj_align_to(qrCodeCont, g_qrHintBox, LV_ALIGN_TOP_MID, 0, 90);
         qrCode = lv_qrcode_create(qrCodeCont, 360, BLACK_COLOR, WHITE_COLOR);
         lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
         lv_qrcode_update(qrCode, qrdata, (uint32_t)strlen(qrdata));
         g_qrHintBoxQR = qrCode;
-
         // create a scrollable container
-        lv_obj_t *scrollable = lv_obj_create(parent);
+        lv_obj_t *scrollable = lv_obj_create(g_qrHintBox);
         lv_obj_set_size(scrollable, 408, 220);
         lv_obj_set_style_bg_color(scrollable, DARK_BG_COLOR,
                                   LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_scrollbar_mode(scrollable, LV_SCROLLBAR_MODE_OFF);
-        lv_obj_align_to(scrollable, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+        // content align to qr code container
+        lv_obj_align_to(scrollable, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
         lv_obj_set_style_border_width(scrollable, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+        // title
         label = GuiCreateTextLabel(scrollable, title);
         lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
-        lv_obj_align_to(label, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 15);
+        lv_obj_align_to(label, qrCodeCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+        lv_obj_set_style_text_font(label, &openSansEnTitle, LV_PART_MAIN);
         g_qrHintBoxTitle = label;
         label = GuiCreateIllustrateLabel(scrollable, content);
         lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
@@ -90,7 +91,7 @@ void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *
         lv_obj_align_to(label, g_qrHintBoxSubTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
         g_qrHintBoxSubTitle = label;
 
-        button = GuiCreateTextBtn(parent, _("OK"));
+        button = GuiCreateTextBtn(g_qrHintBox, _("OK"));
         lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
         lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(button, GuiQRHintBoxCloseHandler, LV_EVENT_CLICKED, NULL);
@@ -105,14 +106,27 @@ void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *
 
 void GuiNormalHitBoxOpen(const char *title, const char *content)
 {
-    lv_obj_t *label;
     if (g_qrHintBox == NULL) {
-        g_qrHintBox = GuiCreateHintBox(480);
-        label = GuiCreateTextLabel(g_qrHintBox, title);
-        lv_obj_set_style_text_font(label, &openSansEnLittleTitle, LV_PART_MAIN);
-        lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
-        lv_obj_align_to(label, g_qrHintBox, LV_ALIGN_TOP_LEFT, 25, 380);
-        g_qrHintBoxTitle = label;
+        // calculate the content height and create hintbox
+        int lineCount = 1;
+        int wordCount = 0;
+        for (const char *p = content; *p; p++) {
+            if (*p == ' ') wordCount++;
+            if (*p == '\n') lineCount++;
+        }
+        if (wordCount >= 5) lineCount = (wordCount + 4) / 5;
+
+        int hintBoxHeight = lineCount * 40 + 232;
+        g_qrHintBox = GuiCreateHintBox(hintBoxHeight);
+
+        // create title
+        lv_obj_t * titleLabel = GuiCreateTextLabel(g_qrHintBox, title);
+        lv_obj_set_style_text_font(titleLabel, &openSansEnLittleTitle, LV_PART_MAIN);
+        lv_label_set_long_mode(titleLabel, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_align_to(titleLabel, g_qrHintBox, LV_ALIGN_TOP_LEFT, 25, 800 - hintBoxHeight + 36);
+        g_qrHintBoxTitle = titleLabel;
+
+        // create scrollable container
         lv_obj_t *scrollable = lv_obj_create(g_qrHintBox);
         lv_obj_set_size(scrollable, 420, 202);
         lv_obj_set_style_bg_color(scrollable, DARK_BG_COLOR,
@@ -122,7 +136,7 @@ void GuiNormalHitBoxOpen(const char *title, const char *content)
         lv_obj_set_style_pad_all(scrollable, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_align_to(scrollable, g_qrHintBoxTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
 
-        label = GuiCreateIllustrateLabel(scrollable, content);
+        lv_obj_t *label = GuiCreateIllustrateLabel(scrollable, content);
         lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
         g_qrHintBoxSubTitle = label;
         lv_obj_align_to(label, scrollable, LV_ALIGN_TOP_LEFT, 0, 0);

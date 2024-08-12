@@ -302,7 +302,7 @@ impl ParsedSolanaTx {
             "iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns" => {
                 ("IOT".to_string(), "Helium IOT".to_string())
             }
-            _ => ("Token".to_string(), "Unkonwn".to_string()),
+            _ => ("Token".to_string(), "Unknown".to_string()),
         }
     }
     fn build_token_transfer_checked_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {

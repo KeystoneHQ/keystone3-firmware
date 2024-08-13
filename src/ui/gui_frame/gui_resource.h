@@ -264,6 +264,8 @@ LV_IMG_DECLARE(walletNightly);
 LV_IMG_DECLARE(walletBegin);
 LV_IMG_DECLARE(walletBitget);
 LV_IMG_DECLARE(walletMintScan);
+LV_IMG_DECLARE(walletHelium);
+
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
 LV_IMG_DECLARE(walletListMetaMask);

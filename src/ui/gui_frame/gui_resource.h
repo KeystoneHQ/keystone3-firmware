@@ -298,6 +298,7 @@ LV_IMG_DECLARE(walletListNightly);
 LV_IMG_DECLARE(walletListBegin);
 LV_IMG_DECLARE(walletListBitget);
 LV_IMG_DECLARE(walletListMintScan);
+LV_IMG_DECLARE(walletListHelium);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

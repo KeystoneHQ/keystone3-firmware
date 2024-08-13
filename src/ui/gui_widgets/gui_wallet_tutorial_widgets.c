@@ -319,6 +319,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_BITGET].items[0].url = _("connect_bitget_link");
     g_tutorials[WALLET_LIST_BITGET].items[0].qrTitle = _("connect_bitget_title");
     g_tutorials[WALLET_LIST_BITGET].items[0].qrUrl = _("connect_bitget_link");
+
+    // WALLET_LIST_HELIUM
+    g_tutorials[WALLET_LIST_HELIUM].len = 1;
+    g_tutorials[WALLET_LIST_HELIUM].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_HELIUM].items[0].walletName = _("connect_helium_title");
+    g_tutorials[WALLET_LIST_HELIUM].items[0].url = _("connect_helium_link");
+    g_tutorials[WALLET_LIST_HELIUM].items[0].qrTitle = _("connect_helium_title");
+    g_tutorials[WALLET_LIST_HELIUM].items[0].qrUrl = _("connect_helium_link");
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;
     g_tutorials[WALLET_LIST_BLUE].desc = _("connect_wallet_desc");

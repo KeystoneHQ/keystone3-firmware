@@ -107,15 +107,15 @@ void GuiNormalHitBoxOpen(const char *title, const char *content)
 {
     if (g_qrHintBox == NULL) {
         // calculate the content height and create hintbox
-        int lineCount = 1;
-        int wordCount = 0;
-        for (const char *p = content; *p; p++) {
-            if (*p == ' ') wordCount++;
-            if (*p == '\n') lineCount++;
-        }
-        if (wordCount >= 5) lineCount = (wordCount + 4) / 5;
+        lv_coord_t max_width = 420;
+        lv_point_t size;
+        lv_txt_get_size(&size, content, &openSansEnIllustrate, 0, 0, max_width, LV_TEXT_FLAG_NONE);
 
-        int hintBoxHeight = lineCount * 40 + 232;
+        int lineCount = size.y / lv_font_get_line_height(&openSansEnIllustrate);
+
+        // line height 30
+        int lineHeight = 30;
+        int hintBoxHeight = lineCount * lineHeight + 230;
         g_qrHintBox = GuiCreateHintBox(hintBoxHeight);
 
         // create title

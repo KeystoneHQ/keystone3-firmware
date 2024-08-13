@@ -172,6 +172,11 @@ static const lv_img_dsc_t *g_solfareCoinArray[1] = {
     &coinSol,
 };
 
+static const lv_img_dsc_t *g_heliumCoinArray[2] = {
+    &coinSol,
+    &coinHelium,
+};
+
 static const lv_img_dsc_t *g_tonKeeperCoinArray[1] = {
     &coinTon,
 };
@@ -1084,10 +1089,13 @@ static void AddHeliumWalletCoins(void)
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    lv_obj_t * img = GuiCreateImg(g_coinCont, &coinSol);
-    lv_img_set_zoom(img, 110);
-    lv_img_set_pivot(img, 0, 0);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
+
+    for (int i = 0; i < 2; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_heliumCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
 }
 
 static void AddBackpackWalletCoins(void)

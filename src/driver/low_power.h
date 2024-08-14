@@ -10,6 +10,11 @@ typedef enum {
     LOW_POWER_STATE_DEEP_SLEEP,
 } LowPowerState;
 
+typedef enum {
+    WAKE_UP_BY_BUTTON,
+    WAKE_UP_BY_FINGER,
+} WakeUpMethod;
+
 void LowPowerTest(int argc, char *argv[]);
 uint32_t EnterLowPower(void);
 void RecoverFromLowPower(void);

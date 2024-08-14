@@ -246,10 +246,23 @@ void DrawNftImage(void)
 #define START_ADDR 0x00EB2000
 #define LCD_WIDTH 480
 #define LCD_HEIGHT 800
+    g_lockNft = true;
     uint16_t *fileBuf = EXT_MALLOC(LCD_WIDTH * LCD_HEIGHT * 2);
     Gd25FlashReadBuffer(START_ADDR, (uint8_t *)fileBuf, LCD_WIDTH * LCD_HEIGHT * 2);
     LcdDraw(0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, (uint16_t *)fileBuf);
     EXT_FREE(fileBuf);
+}
+
+void NftLockQuit(void)
+{
+    if (g_lockNft == false) {
+        return;
+    }
+    osKernelLock();
+    ClearTouchBuffer();
+    PubValueMsg(UI_MSG_CLOSE_NFT_LOCK, 0);
+    g_lockNft = false;
+    osKernelUnlock();
 }
 
 void NftLockDecodeTouchQuit(void)
@@ -295,8 +308,8 @@ static void __SetLvglHandlerAndSnapShot(uint32_t value)
         while (LcdBusy()) {
             osDelay(1);
         }
-        g_lockNft = true;
-        if (GetNftScreenSaver()) {
+
+        if (GetNftScreenSaver() && !IsQrDecodeRunning() && !IsWakeupByFinger()) {
             DrawNftImage();
         } else {
             LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)snapShotAddr);

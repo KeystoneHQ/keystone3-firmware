@@ -21,7 +21,7 @@ const GuiMsgBox_t g_guiMsgBoxNftScreen = {
 
 static void GuiTransNftScreenInit(void)
 {
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("nft_screen_saver_title"), _("nft_screen_saver_desc"), NULL,
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgNft, _("nft_screen_saver_title"), _("nft_screen_saver_desc"), NULL,
                      _("not_now"), WHITE_COLOR_OPA20, _("Confirm"), DEEP_ORANGE_COLOR);
     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
     lv_obj_add_event_cb(leftBtn, NotSetNftNowHandler, LV_EVENT_CLICKED, NULL);
@@ -32,6 +32,11 @@ static void GuiTransNftScreenInit(void)
 static void GuiTransNftScreenDeinit(void)
 {
     GUI_DEL_OBJ(g_noticeWindow)
+    if (GetNftScreenSaver()) {
+        g_noticeWindow = GuiCreateConfirmHintBox(&imgSuccess, _("nft_screen_set_success_title"), _("nft_screen_set_success_desc"), NULL, _("Done"), ORANGE_COLOR);
+        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+        lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, g_noticeWindow);
+    }
 }
 
 static void NotSetNftNowHandler(lv_event_t *e)
@@ -46,4 +51,13 @@ static void ConfirmNftScreenSaverHandler(lv_event_t *e)
     SetNftScreenSaver(true);
     SaveDeviceSettings();
     GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 0);
+}
+
+void GuiNftTransferFailed(void)
+{
+    g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("nft_transfer_failed_title"), _("nft_transfer_failed_desc"), NULL,
+                     _("Ok"), WHITE_COLOR_OPA20);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, g_noticeWindow);
 }

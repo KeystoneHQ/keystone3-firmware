@@ -324,11 +324,18 @@ static void FileTransTimeOutTimerFunc(void *argument)
 {
     g_isReceivingFile = false;
     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
+    if (g_isNftFile) {
+        GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN, 0);
+        GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN_TRANS_FAIL, 0);
+    }
+    g_isNftFile = false;
 }
 
 static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     g_isNftFile = true;
+    SetNftBinValid(false);
+    SaveDeviceSettings();
     return ServiceFileTransInfo(head, tlvData, outLen);
 }
 
@@ -392,6 +399,7 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
     MD5_Final(md5Result, &ctx);
     PrintArray("md5Result", md5Result, 16);
+    ASSERT(memcmp(md5Result, g_fileTransInfo.md5, 16) == 0);
     printf("total tick=%d\n", g_fileTransCtrl.endTick - g_fileTransCtrl.startTick);
 
     sendHead.packetIndex = head->packetIndex;
@@ -401,6 +409,8 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     sendHead.flag.b.isHost = 0;
 
     *outLen = sizeof(FrameHead_t) + 4;
+    SetNftBinValid(true);
+    SaveDeviceSettings();
     WriteNftToFlash();
     GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN, 0);
     GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);

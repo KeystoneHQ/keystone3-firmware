@@ -26,6 +26,7 @@ typedef enum {
     CHAIN_ETH,
     CHAIN_SOL,
     CHAIN_BNB,
+    CHAIN_HNT,
     CHAIN_XRP,
     CHAIN_ADA,
     CHAIN_TON,

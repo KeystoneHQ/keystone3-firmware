@@ -39,6 +39,8 @@ void SetLanguage(uint32_t language);
 
 bool GetNftScreenSaver(void);
 void SetNftScreenSaver(bool enable);
+bool IsNftScreenValid(void);
+void SetNftBinValid(bool en);
 
 bool IsUpdateSuccess(void);
 void WipeDevice(void);

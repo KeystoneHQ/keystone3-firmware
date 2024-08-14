@@ -234,7 +234,6 @@ void SetNftScreenSaver(bool enable)
 
 uint32_t GetLanguage(void)
 {
-    return 2;
     return g_deviceSettings.language;
 }
 

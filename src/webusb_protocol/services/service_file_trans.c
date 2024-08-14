@@ -395,10 +395,7 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     ASSERT(g_fileTransTimeOutTimer);
     osTimerStop(g_fileTransTimeOutTimer);
     g_fileTransCtrl.endTick = osKernelGetTickCount();
-    PrintArray("tlvData", tlvData, head->length);
-    PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
     MD5_Final(md5Result, &ctx);
-    PrintArray("md5Result", md5Result, 16);
     ASSERT(memcmp(md5Result, g_fileTransInfo.md5, 16) == 0);
     printf("total tick=%d\n", g_fileTransCtrl.endTick - g_fileTransCtrl.startTick);
 

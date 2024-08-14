@@ -188,10 +188,14 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
                                     OpenNftTutorialHandler, NULL);
     lv_obj_set_style_radius(btn, 12, LV_PART_MAIN);
     lv_obj_t *nftSwitch = GuiCreateSwitch(parent);
-    if (GetNftScreenSaver()) {
-        lv_obj_add_state(nftSwitch, LV_STATE_CHECKED);
+    if (!IsNftScreenValid()) {
+        lv_obj_set_style_bg_opa(nftSwitch, LV_OPA_30, LV_PART_KNOB);
     } else {
-        lv_obj_clear_state(nftSwitch, LV_STATE_CHECKED);
+        if (GetNftScreenSaver()) {
+            lv_obj_add_state(nftSwitch, LV_STATE_CHECKED);
+        } else {
+            lv_obj_clear_state(nftSwitch, LV_STATE_CHECKED);
+        }
     }
     nftTable[0].obj = btn;
     nftTable[0].position.x = 24;
@@ -578,10 +582,10 @@ static void NftScreenSaverSwitchHandler(lv_event_t * e)
 
     if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
         lv_obj_clear_state(obj, LV_STATE_CHECKED);
-        SetNftScreenSaver(true);
+        SetNftScreenSaver(false);
     } else {
         lv_obj_add_state(obj, LV_STATE_CHECKED);
-        SetNftScreenSaver(false);
+        SetNftScreenSaver(true);
     }
     SaveDeviceSettings();
 }

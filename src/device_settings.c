@@ -217,11 +217,14 @@ bool IsNftScreenValid(void)
 void SetNftBinValid(bool en)
 {
     g_deviceSettings.nftValid = en;
+    if (en == false) {
+        g_deviceSettings.nftEnable = false;
+    }
 }
 
 bool GetNftScreenSaver(void)
 {
-    return (g_deviceSettings.nftEnable && g_deviceSettings.nftValid);
+    return g_deviceSettings.nftEnable;
 }
 
 void SetNftScreenSaver(bool enable)

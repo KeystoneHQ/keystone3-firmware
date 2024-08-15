@@ -197,6 +197,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
             lv_obj_clear_state(nftSwitch, LV_STATE_CHECKED);
         }
     }
+    lv_obj_clear_flag(nftSwitch, LV_OBJ_FLAG_CLICKABLE);
     nftTable[0].obj = btn;
     nftTable[0].position.x = 24;
     nftTable[1].obj = nftSwitch;

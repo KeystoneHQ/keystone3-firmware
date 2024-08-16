@@ -21,8 +21,8 @@ static struct ProtocolParser *global_parser = NULL;
 #define MAX_PACKETS 200
 #define MAX_PACKETS_LENGTH 64
 #define MAX_EAPDU_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA)
-// #define MAX_EAPDU_RESPONSE_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA - EAPDU_RESPONSE_STATUS_LENGTH)
-#define MAX_EAPDU_RESPONSE_DATA_SIZE 48
+#define MAX_EAPDU_RESPONSE_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA - EAPDU_RESPONSE_STATUS_LENGTH)
+// #define MAX_EAPDU_RESPONSE_DATA_SIZE 48
 
 static uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH];
 static uint8_t g_packetLengths[MAX_PACKETS];
@@ -57,7 +57,6 @@ void SendEApduResponse(EAPDUResponsePayload_t *payload)
     uint32_t offset = 0;
 
     while (payload->dataLen > 0) {
-        uint8_t buffer[MAX_EAPDU_RESPONSE_DATA_SIZE] = {0};
         uint16_t packetDataSize = payload->dataLen > MAX_EAPDU_RESPONSE_DATA_SIZE ? MAX_EAPDU_RESPONSE_DATA_SIZE : payload->dataLen;
 
         packet[OFFSET_CLA] = payload->cla;
@@ -65,15 +64,13 @@ void SendEApduResponse(EAPDUResponsePayload_t *payload)
         insert_16bit_value(packet, OFFSET_P1, totalPackets);
         insert_16bit_value(packet, OFFSET_P2, packetIndex);
         insert_16bit_value(packet, OFFSET_LC, payload->requestID);
-        memcpy_s(buffer, MAX_EAPDU_RESPONSE_DATA_SIZE, payload->data + offset, packetDataSize);
-        // int encryptLen = PadBuffer(tempBuffer, packetDataSize);
-        // DataEncrypt(tempBuffer, encryptLen);
         memcpy_s(packet + OFFSET_CDATA, MAX_PACKETS_LENGTH - OFFSET_CDATA, payload->data + offset, packetDataSize);
         insert_16bit_value(packet, OFFSET_CDATA + packetDataSize, payload->status);
         g_sendFunc(packet, OFFSET_CDATA + packetDataSize + EAPDU_RESPONSE_STATUS_LENGTH);
         offset += packetDataSize;
         payload->dataLen -= packetDataSize;
         packetIndex++;
+        UserDelay(2);
     }
 }
 

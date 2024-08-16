@@ -20,6 +20,7 @@ void ActivateUiTaskLoop(void);
 void LvglImportMicroCardSigView(void);
 void NftLockDecodeTouchQuit(void);
 void SetNftLockState(void);
+void NftLockQuit(void);
 
 extern bool g_reboot;
 #endif

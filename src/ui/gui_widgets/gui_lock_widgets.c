@@ -94,6 +94,7 @@ void GuiFpRecognizeResult(bool en)
             SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, title);
         }
     }
+    NftLockQuit();
     GuiEnterPassCodeStatus(g_verifyLock, true);
     printf("GuiFpRecognizeResult g_fpErrorCount is %d....\n", g_fpErrorCount);
     GuiFingerPrintStatus(g_verifyLock, en, g_fpErrorCount);

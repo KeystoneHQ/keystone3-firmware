@@ -99,7 +99,7 @@ The Keystone3 firmware is built with Rust and C and uses FreeRTOS as the underly
 - rust: This directory contains the Rust code for blockchain support. Most of the blockchain-related functionality is implemented in Rust, including transaction signing, address generation, and cryptographic operations.
 - src: This directory contains the main C source code for the firmware, including the FreeRTOS implementation, device drivers, and the core application logic.
 - test: This directory contains test scripts and commands for local development and testing.
-- tools: This directory contains various tools used in the development process, including the astyle tool for code formatting.
+- tools: This directory contains various tools used in the development process, including the astyle tool for code formatting, tools related to check the integrity of the firmware.
 - ui_simulator: This directory contains the UI simulator for the firmware. For more details about the UI simulator, please check the [Simulator Documentation](docs/SIMULATOR.md).
 
 ## Simulator

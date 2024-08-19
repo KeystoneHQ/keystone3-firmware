@@ -46,6 +46,7 @@ typedef enum {
     CHAIN_ATOM,
     CHAIN_CRO,
     CHAIN_RUNE,
+    CHAIN_CACAO,
     CHAIN_KAVA,
     CHAIN_LUNC,
     CHAIN_AXL,

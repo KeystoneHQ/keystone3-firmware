@@ -9,7 +9,7 @@
 #include "user_memory.h"
 #include "account_manager.h"
 #include "gui_chain.h"
-#define MAX_COSMOS_ADDR_LEN 61
+#define MAX_COSMOS_ADDR_LEN 62
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;

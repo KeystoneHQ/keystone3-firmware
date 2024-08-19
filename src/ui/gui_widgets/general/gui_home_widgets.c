@@ -63,6 +63,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_ATOM, false, "ATOM", true},
     {HOME_WALLET_CARD_CRO, false, "CRO", true},
     {HOME_WALLET_CARD_RUNE, false, "RUNE", true},
+    {HOME_WALLET_CARD_CACAO, false, "CACAO", true},
     {HOME_WALLET_CARD_KAVA, false, "KAVA", true},
     {HOME_WALLET_CARD_LUNC, false, "LUNC", true},
     {HOME_WALLET_CARD_AXL, false, "AXL", true},
@@ -271,6 +272,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "RUNE",
         .chain = "THORChain",
         .icon = &coinRune,
+    },
+    {
+        .index = HOME_WALLET_CARD_CACAO,
+        .coin = "CACAO",
+        .chain = "MAYAChain",
+        .icon = &coinCacao,
     },
     {
         .index = HOME_WALLET_CARD_KAVA,

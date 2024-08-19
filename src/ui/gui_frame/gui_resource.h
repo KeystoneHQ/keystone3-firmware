@@ -146,6 +146,7 @@ LV_IMG_DECLARE(imgTonPhrase);
 LV_IMG_DECLARE(imgBlueInformation);
 LV_IMG_DECLARE(imgInfoSmall);
 LV_IMG_DECLARE(imgNft);
+LV_IMG_DECLARE(imgWIF);
 
 
 // emoji

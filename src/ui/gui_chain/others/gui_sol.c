@@ -342,13 +342,19 @@ lv_obj_t * CreateSolanaSquadsProposalOverviewCard(lv_obj_t *parent, PtrString pr
     return container;
 }
 
-lv_obj_t *  CreateSolanaTransferOverviewCard(lv_obj_t *parent, PtrString from, PtrString to, PtrString amount, PtrString note)
+lv_obj_t *  CreateSquadsSolanaTransferOverviewCard(lv_obj_t *parent, PtrString from, PtrString to, PtrString amount, PtrString note)
 {
     lv_obj_t *container = GuiCreateAutoHeightContainer(parent, 408, 0);
     lv_obj_set_style_bg_opa(container, LV_OPA_TRANSP, LV_PART_MAIN);
 
     lv_obj_t *label = lv_label_create(container);
-    lv_label_set_text(label, "Amount");
+    if (strcmp(amount, "0.05 SOL") == 0) {
+        lv_label_set_text(label, "Platform Fee");
+    } else if (strcmp(amount, "0.001 SOL") == 0) {
+        lv_label_set_text(label, "Account Deposit");
+    } else {
+        lv_label_set_text(label, "Ammount");
+    }
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);
     SetTitleLabelStyle(label);
 
@@ -382,6 +388,33 @@ lv_obj_t *  CreateSolanaTransferOverviewCard(lv_obj_t *parent, PtrString from, P
     lv_obj_set_width(toValuelabel, 306);
     lv_obj_align_to(toValuelabel, tolabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     SetContentLableStyle(toValuelabel);
+
+    // add label fot to label
+    if (strcmp(to, "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b") == 0 && strcmp(amount, "0.05 SOL") != 0) {
+        lv_obj_t *squadsIcon = GuiCreateImg(container, &imgSquads);
+        lv_obj_align_to(squadsIcon, toValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+        lv_obj_t *squadsLabel = lv_label_create(container);
+        lv_label_set_text(squadsLabel, "Squads");
+        lv_obj_set_style_text_font(squadsLabel, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_set_style_text_color(squadsLabel, lv_color_hex(0xA485FF), LV_PART_MAIN);
+        lv_obj_align_to(squadsLabel, squadsIcon, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+
+    } else if (strcmp(to, "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b") == 0 && strcmp(amount, "0.05 SOL") == 0) {
+        lv_obj_t * unkonwnAddressLabel = lv_label_create(container);
+        lv_label_set_text(unkonwnAddressLabel, "Unknown Address");
+        lv_obj_set_style_text_color(unkonwnAddressLabel, lv_color_hex(0xF55831), LV_PART_MAIN);
+        lv_obj_set_style_bg_color(unkonwnAddressLabel, lv_color_hex(0xF5583133), LV_PART_MAIN);
+        lv_obj_set_style_radius(unkonwnAddressLabel, 12, LV_PART_MAIN);
+        lv_obj_set_style_bg_opa(unkonwnAddressLabel, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_pad_left(unkonwnAddressLabel, 12, LV_PART_MAIN);
+        lv_obj_set_style_pad_top(unkonwnAddressLabel, 8, LV_PART_MAIN);
+        lv_obj_set_style_pad_bottom(unkonwnAddressLabel, 8, LV_PART_MAIN);
+        lv_obj_set_size(unkonwnAddressLabel, lv_pct(90), LV_SIZE_CONTENT);
+        lv_obj_align_to(unkonwnAddressLabel, toValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    }
+
+
+
     if (strlen(note) > 0) {
         lv_obj_t * notelabel = lv_label_create(container);
         lv_label_set_text(notelabel, "Note");
@@ -455,11 +488,138 @@ static void GuiShowSolTxTransferOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
     SetContentLableStyle(label);
 }
 
-static void GuiShowSplTokenTransferOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
+
+lv_obj_t* GuiCreateNoticeCard(lv_obj_t* parent)
+{
+    lv_obj_t* card = GuiCreateAutoHeightContainer(parent, 408, 24);
+    SetContainerDefaultStyle(card);
+    lv_obj_set_style_radius(card, 24, LV_PART_MAIN);
+
+    lv_obj_t* noticeIcon = GuiCreateImg(card, &imgNotice);
+    lv_obj_align(noticeIcon, LV_ALIGN_TOP_LEFT, 24, 0);
+
+    lv_obj_t* title_label = lv_label_create(card);
+    lv_label_set_text(title_label, "Notice");
+    lv_obj_set_style_text_color(title_label, lv_color_hex(0xF5870A), LV_PART_MAIN);
+    lv_obj_set_style_text_font(title_label, &openSansEnLittleTitle, LV_PART_MAIN);
+    lv_obj_align_to(title_label, noticeIcon, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+
+    lv_obj_t* content_label = lv_label_create(card);
+    lv_label_set_text(content_label, _("spl_notice"));
+    lv_obj_set_style_text_color(content_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_set_style_text_font(content_label, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_width(content_label, lv_pct(90));
+    lv_obj_align_to(content_label, noticeIcon, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+
+    return card;
+}
+
+
+void SolanaSplTokenAddressLearnMore(lv_event_t *e)
+{
+    SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)lv_event_get_user_data(e);
+    if (data != NULL) {
+        char url[512];
+        snprintf(url, sizeof(url), "https://solscan.io/token/%s", data->address);
+        GuiQRCodeHintBoxOpenBig(url, "Scan to double-check the Token account", "", url);
+    }
+}
+
+static lv_obj_t * GuiShowSplTokenInfoOverviewCard(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
 {
     lv_obj_t *container = GuiCreateAutoHeightContainer(parent, 408, 16);
     SetContainerDefaultStyle(container);
+    PtrT_DisplaySolanaTxSplTokenTransferOverview splTokenInfo = overviewData->spl_token_transfer;
+
+
+
+    lv_obj_t *tokenNameLabel = lv_label_create(container);
+    lv_label_set_text(tokenNameLabel, "Token Name");
+    lv_obj_align(tokenNameLabel, LV_ALIGN_TOP_LEFT, 24, 0);
+    SetTitleLabelStyle(tokenNameLabel);
+
+    lv_obj_t *tokenNameContainer = lv_obj_create(container);
+    lv_obj_set_size(tokenNameContainer, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_style_pad_all(tokenNameContainer, 0, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(tokenNameContainer, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_border_width(tokenNameContainer, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(tokenNameContainer, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(tokenNameContainer, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    // Easter egg for dogwifcat EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm
+    if (strcmp(splTokenInfo->token_mint_account, "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm") == 0) {
+        lv_obj_t *dogwifcatIcon = GuiCreateImg(tokenNameContainer, &imgWIF);
+        lv_obj_set_style_pad_right(dogwifcatIcon, 8, LV_PART_MAIN);
+    }
+
+    lv_obj_t *tokenNameValueLabel = lv_label_create(tokenNameContainer);
+    lv_label_set_text(tokenNameValueLabel, splTokenInfo->token_name);
+
+    if (strcmp(splTokenInfo->token_name, "Unknown") == 0) {
+        SetContentLableStyle(tokenNameValueLabel);
+    } else {
+        lv_obj_set_style_text_color(tokenNameValueLabel, lv_color_hex(0xA485FF), LV_PART_MAIN);
+    }
+
+    lv_obj_set_style_text_font(tokenNameValueLabel, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_align_to(tokenNameContainer, tokenNameLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_obj_t *tokenMintLabel = lv_label_create(container);
+    lv_label_set_text(tokenMintLabel, "Token Account");
+    SetTitleLabelStyle(tokenMintLabel);
+
+    lv_obj_align_to(tokenMintLabel, tokenNameContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+
+    lv_obj_t *tokenMintValueLabel = lv_label_create(container);
+    lv_obj_set_width(tokenMintValueLabel, 360);
+    lv_label_set_text(tokenMintValueLabel, splTokenInfo->token_mint_account);
+    SetContentLableStyle(tokenMintValueLabel);
+    lv_label_set_long_mode(tokenMintValueLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_align_to(tokenMintValueLabel, tokenMintLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+
+
+    lv_obj_t * checkTokenAccountLabel = lv_label_create(container);
+    lv_label_set_text(checkTokenAccountLabel, "Check Token Account");
+    lv_obj_set_style_text_color(checkTokenAccountLabel, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
+    lv_obj_t * checkTokenAccountIcon = GuiCreateImg(checkTokenAccountLabel, &imgQrcodeTurquoise);
+    lv_obj_align_to(checkTokenAccountIcon, checkTokenAccountLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    lv_obj_add_flag(checkTokenAccountIcon, LV_OBJ_FLAG_CLICKABLE);
+
+    static SolanaAddressLearnMoreData learnMoreData;
+    learnMoreData.address = splTokenInfo->token_mint_account;
+    lv_obj_add_event_cb(checkTokenAccountIcon, SolanaSplTokenAddressLearnMore, LV_EVENT_CLICKED, &learnMoreData);
+
+    if (strcmp(splTokenInfo->token_name, "Unknown") == 0) {
+        lv_obj_t * noticeBar = GuiCreateAutoHeightContainer(container, 408, 8);
+        lv_obj_set_width(noticeBar, 360);
+        lv_obj_set_style_bg_color(noticeBar, lv_color_hex(0xF5583133), LV_PART_MAIN);
+        lv_obj_set_style_radius(noticeBar, 12, LV_PART_MAIN);
+
+        lv_obj_t * noticeLabel = lv_label_create(noticeBar);
+        lv_label_set_text(noticeLabel, "Unknown Token Account");
+        lv_obj_set_style_text_color(noticeLabel, lv_color_hex(0xF55831), LV_PART_MAIN);
+        lv_obj_align(noticeLabel, LV_ALIGN_TOP_LEFT, 12, 8);
+
+        lv_obj_align_to(noticeBar, tokenMintValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+
+        lv_obj_align_to(checkTokenAccountLabel, noticeBar, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    } else {
+        lv_obj_align_to(checkTokenAccountLabel, tokenMintValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    }
+    return container;
+}
+
+static void GuiShowSplTokenTransferOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
+{
+    lv_obj_t *tokenInfoCard = GuiShowSplTokenInfoOverviewCard(parent, overviewData);
+    lv_obj_t *container = GuiCreateAutoHeightContainer(parent, 408, 16);
+    SetContainerDefaultStyle(container);
     PtrT_DisplaySolanaTxSplTokenTransferOverview splTokenTransfer = overviewData->spl_token_transfer;
+    if (strcmp(splTokenTransfer->token_name, "Unknown") == 0) {
+        lv_obj_t *noticeCard = GuiCreateNoticeCard(parent);
+        lv_obj_align_to(tokenInfoCard, noticeCard, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
+    lv_obj_align_to(container, tokenInfoCard, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+
 
     lv_obj_t *label = lv_label_create(container);
     lv_label_set_text(label, "Amount");
@@ -829,10 +989,10 @@ static void GuiShowSolTxMultiSigCreateDetail(lv_obj_t *parent, PtrT_DisplaySolan
     lv_obj_set_style_text_color(thresholdLabelValue, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_align_to(thresholdLabelValue, thresholdLabel, LV_ALIGN_OUT_RIGHT_MID, 15, 0);
     lv_obj_t *firstTransferCardContainer = GuiCreateAutoHeightContainer(parent, 408, 16);
-    CreateSolanaTransferOverviewCard(firstTransferCardContainer,  transfers->data[0].from, transfers->data[0].to, transfers->data[0].value, "");
+    CreateSquadsSolanaTransferOverviewCard(firstTransferCardContainer,  transfers->data[0].from, transfers->data[0].to, transfers->data[0].value, "");
 
     lv_obj_t *secondTransferCardContainer = GuiCreateAutoHeightContainer(parent, 408, 16);
-    CreateSolanaTransferOverviewCard(secondTransferCardContainer,  transfers->data[1].from, transfers->data[1].to, transfers->data[1].value, "");
+    CreateSquadsSolanaTransferOverviewCard(secondTransferCardContainer,  transfers->data[1].from, transfers->data[1].to, transfers->data[1].value, "");
     lv_obj_align(walletNameContainer, LV_ALIGN_TOP_LEFT, 0, 0);
     lv_obj_align_to(walletDescContainer, walletNameContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
     lv_obj_align_to(memberContainer, walletDescContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
@@ -917,7 +1077,9 @@ static void GuiShowSolTxMultiSigCreateOverview(lv_obj_t *parent, PtrT_DisplaySol
         lv_obj_set_style_bg_color(unkonwnAddressLabel, lv_color_hex(0xF5583133), LV_PART_MAIN);
         lv_obj_set_style_radius(unkonwnAddressLabel, 12, LV_PART_MAIN);
         lv_obj_set_style_bg_opa(unkonwnAddressLabel, LV_OPA_COVER, LV_PART_MAIN);
-        lv_obj_set_style_pad_left(unkonwnAddressLabel, 8, LV_PART_MAIN);
+        lv_obj_set_style_pad_left(unkonwnAddressLabel, 12, LV_PART_MAIN);
+        lv_obj_set_style_pad_top(unkonwnAddressLabel, 8, LV_PART_MAIN);
+        lv_obj_set_style_pad_bottom(unkonwnAddressLabel, 8, LV_PART_MAIN);
         lv_obj_set_size(unkonwnAddressLabel, lv_pct(90), LV_SIZE_CONTENT);
         lv_obj_align_to(unkonwnAddressLabel, toValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     }

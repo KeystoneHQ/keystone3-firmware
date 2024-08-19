@@ -149,6 +149,45 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_tx() {
+        // transfer cacao
+        let raw_tx = "0a570a500a0e2f74797065732e4d736753656e64123e0a14d2a392d2d0e98f64dd0f9aa422da9b37b21944501214ead5b280c71c6ae156ee581cff8c9147a64cca1f1a100a0472756e65120831303030303030301203626d79125a0a500a460a1f2f636f736d6f732e63727970746f2e736563703235366b312e5075624b657912230a2103b1f26f209231b1ee90a8c52a981038794195fd7e08c47df02ff8bb7c1ce2a43512040a020801180012061080cab5ee011a1474686f72636861696e2d6d61696e6e65742d763120bdb106";
+        let data_type = transaction::structs::DataType::Direct;
+        let parsed_tx = parse(&hex::decode(raw_tx).unwrap(), data_type).unwrap();
+
+        let overview = parsed_tx.overview;
+        let network = overview.common.network;
+        assert_eq!("MAYAChain", network.as_str(),)
+    }
+
+    #[test]
+    fn test_derive_mayachain_address_by_seed() {
+        let seed = [
+            150, 6, 60, 69, 19, 44, 132, 15, 126, 22, 101, 163, 185, 120, 20, 216, 235, 37, 134,
+            243, 75, 217, 69, 240, 111, 161, 91, 147, 39, 238, 190, 53, 95, 101, 78, 129, 198, 35,
+            58, 82, 20, 157, 122, 149, 234, 116, 134, 235, 141, 105, 145, 102, 245, 103, 126, 80,
+            117, 41, 72, 37, 153, 98, 76, 220,
+        ];
+        let path = "M/44'/931'/0'/0/0";
+        let pub_key =
+            keystore::algorithms::secp256k1::get_public_key_by_seed(&seed, &path.to_string())
+                .unwrap();
+        let address = generate_address(pub_key, "maya").unwrap();
+        assert_eq!("maya14vc9484wvt66f7upncl7hq8kcvdd7qm80gnre6", address);
+    }
+
+    #[test]
+    fn test_derive_mayachain_address_by_xpub() {
+        {
+            let root_path = "44'/931'/0'";
+            let root_xpub = "xpub6CexGUAW8CXpTAZ19JxEGRxt2g4W7YNc3XSopBxw27jjBWDF67KShM7JqUibfQpHTsjzBdEwAw9X7QsBTVxjRpgK3bUbhS4e3y6kVhUfkek";
+            let hd_path = "44'/931'/0'/0/0";
+            let address = derive_address(hd_path, root_xpub, root_path, "maya").unwrap();
+            assert_eq!("maya14vc9484wvt66f7upncl7hq8kcvdd7qm80gnre6", address);
+        }
+    }
+
+    #[test]
     fn test_derive_address() {
         {
             //general address ATOM-0

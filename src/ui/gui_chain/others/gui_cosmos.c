@@ -27,6 +27,7 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_AKT, "akash", 118, XPUB_TYPE_COSMOS, "akashnet-2"},
     {CHAIN_CRO, "cro", 394, XPUB_TYPE_CRO, "crypto-org-chain-mainnet-1"},
     {CHAIN_RUNE, "thor", 931, XPUB_TYPE_THOR, "thorchain-mainnet-v1"},
+    {CHAIN_CACAO, "maya", 931, XPUB_TYPE_MAYA, "mayachain-mainnet-v1"},
     {CHAIN_IOV, "star", 234, XPUB_TYPE_IOV, "iov-mainnet-ibc"},
     {CHAIN_ROWAN, "sif", 118, XPUB_TYPE_COSMOS, "sifchain-1"},
     {CHAIN_CTK, "shentu", 118, XPUB_TYPE_COSMOS, "shentu-2.2"},

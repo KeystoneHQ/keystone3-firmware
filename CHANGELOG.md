@@ -1,3 +1,13 @@
+## 1.6.2(2024-08-20)
+
+### What's new
+
+1. Supported setting an NFT on SOL and ETH chains as a lock screen wallpaper
+2. Supported managing RUNE assets using THORWallet
+
+
+
+
 ## 1.6.0(2024-08-07)
 
 ### What's new

@@ -1,7 +1,8 @@
-#include "drv_battery.h"
-#include "mhscpu.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "define.h"
+#include "drv_battery.h"
+#include "mhscpu.h"
 #include "user_delay.h"
 #include "drv_aw32001.h"
 #include "cmsis_os.h"
@@ -13,7 +14,8 @@
 #include "user_utils.h"
 #include "user_msg.h"
 
-#define BATTERY_DEBUG          0
+#define BATTERY_DEBUG           0
+#define BATTERY_ARRAY_LEN       10
 
 #if BATTERY_DEBUG == 1
 #define BATTERY_PRINTF(fmt, args...)                printf(fmt, ##args)
@@ -21,6 +23,7 @@
 #define BATTERY_PRINTF(fmt, args...)
 #endif
 
+#define BATTERY_DELAY_TO_DECREASE_PERCENT               2
 #define BATTERY_DIFF_THRESHOLD                          40
 #define BATTERY_CHARGING_BY_TIME                        75
 #define BATTERY_LOG_PERCENT_INTERVAL                    10
@@ -206,16 +209,42 @@ uint32_t GetRtcBatteryMilliVolt(void)
     return vol;
 }
 
+
+static int CalculateWeightedAverage(const int *array, int startIndex)
+{
+    int sum = 0;
+    int weightSum = 0;
+    int index = startIndex;
+    int weight = 10;
+
+    for (int i = 0; i < BATTERY_ARRAY_LEN; i++) {
+        sum += array[index] * weight;
+        weightSum += weight;
+        weight--;
+        index = (index - 1 + BATTERY_ARRAY_LEN) % BATTERY_ARRAY_LEN;
+    }
+
+    return sum / weightSum;
+}
+
+static void UpdateVoltageCache(int *array, int *writeIndex, int newVoltage)
+{
+    array[*writeIndex] = newVoltage;
+    *writeIndex = (*writeIndex - 1 + BATTERY_ARRAY_LEN) % BATTERY_ARRAY_LEN;
+}
+
 /// @brief Execute once every minimum percent change time interval.
 /// @param
 bool BatteryIntervalHandler(void)
 {
     UsbPowerState usbPowerState;
     uint8_t percent;
-    uint32_t milliVolt;
+    uint32_t milliVolt = 0;
+    static uint32_t milliVoltCache[BATTERY_ARRAY_LEN] = {0};
+    static int writeIndex = BATTERY_ARRAY_LEN - 1;
     bool change = false;
     static bool first = true;
-    static uint8_t delayIncreate = 0;
+    static uint8_t delayIncrease = 0, delayDecrease = 0;
 
     usbPowerState = GetUsbPowerState();
     milliVolt = GetBatteryMilliVolt();
@@ -226,10 +255,12 @@ bool BatteryIntervalHandler(void)
         printf("low volt,power off\n");
         Aw32001PowerOff();
     }
+
     if (first) {
         first = false;
         change = true;
     }
+
     if (g_batterPercent == BATTERY_INVALID_PERCENT_VALUE) {
         //todo: get the stored battery data.
         BATTERY_PRINTF("init battery percent\r\n");
@@ -239,24 +270,33 @@ bool BatteryIntervalHandler(void)
     if (percent < g_batterPercent && usbPowerState == USB_POWER_STATE_DISCONNECT) {
         //The battery percentage only decreases when discharging.
         //The battery percentage decrease by 1% each time.
-        g_batterPercent--;
-        change = true;
+        // g_batterPercent--;
+        if (percent > 85) {
+            delayDecrease++;
+        } else {
+            delayDecrease = BATTERY_DELAY_TO_DECREASE_PERCENT;
+        }
+        if (percent < g_batterPercent && delayDecrease >= BATTERY_DELAY_TO_DECREASE_PERCENT) {
+            g_batterPercent--;
+            change = true;
+            delayDecrease = 0;
+        }
     } else if (usbPowerState == USB_POWER_STATE_CONNECT) {
         //The battery percentage only increase when charging.
         //The battery percentage increase by 1% each time.
         if (percent < g_batterPercent && percent >= BATTERY_CHARGING_BY_TIME) {
-            //printf("delay increate battery percentage delayIncreate = %d\n", delayIncreate);
-            delayIncreate++;
+            //printf("delay increate battery percentage delayIncrease = %d\n", delayIncrease);
+            delayIncrease++;
         }
 
-        // delayIncreate == 4 * 80 320s
-        if (percent > g_batterPercent || delayIncreate == 1) {
+        // delayIncrease == 4 * 80 320s
+        if (percent > g_batterPercent || delayIncrease == 2) {
             g_batterPercent++;
             if (g_batterPercent >= 100) {
                 g_batterPercent = 100;
             }
             change = true;
-            delayIncreate = 0;
+            delayIncrease = 0;
         }
     }
     BATTERY_PRINTF("g_batterPercent=%d\r\n", g_batterPercent);

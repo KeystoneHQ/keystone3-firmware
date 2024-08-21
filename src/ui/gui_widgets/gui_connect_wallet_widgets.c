@@ -45,7 +45,9 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false},
     {WALLET_LIST_RABBY, &walletListRabby, true},
     {WALLET_LIST_ETERNL, &walletListEternl, true},
+    {WALLET_LIST_BEGIN, &walletListBegin, true},
     {WALLET_LIST_UNISAT, &walletListUniSat, true},
+    {WALLET_LIST_NIGHTLY, &walletListNightly, true},
     // {WALLET_LIST_YOROI, &walletListYoroi, true},
     {WALLET_LIST_TYPHON, &walletListTyphon, true},
     {WALLET_LIST_SAFE, &walletListSafe, true},
@@ -61,7 +63,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
-    {WALLET_LIST_NIGHTLY, &walletListNightly, true},
 #else
     {WALLET_LIST_BLUE, &walletListBtcBlue, true, false},
     {WALLET_LIST_SPARROW, &walletListBtcSparrow, true, false},
@@ -289,7 +290,9 @@ static void GuiInitWalletListArray()
         for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
 #ifndef BTC_ONLY
             if (g_walletListArray[i].index == WALLET_LIST_ETERNL ||
-                    g_walletListArray[i].index == WALLET_LIST_TYPHON) {
+                    g_walletListArray[i].index == WALLET_LIST_TYPHON ||
+                    g_walletListArray[i].index == WALLET_LIST_BEGIN
+               ) {
                 if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
                     g_walletListArray[i].enable = false;
                 } else {
@@ -399,7 +402,9 @@ static void OpenQRCodeHandler(lv_event_t *e)
         g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
     }
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL ||
-            g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON) {
+            g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON ||
+            g_connectWalletTileView.walletIndex == WALLET_LIST_BEGIN
+       ) {
         GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
         return;
     }

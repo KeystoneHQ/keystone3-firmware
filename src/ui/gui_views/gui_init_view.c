@@ -23,6 +23,7 @@
 #include "device_setting.h"
 #include "drv_aw32001.h"
 #include "usb_task.h"
+#include "ui_display_task.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #else

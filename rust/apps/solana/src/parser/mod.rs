@@ -55,13 +55,13 @@ impl ParsedSolanaTx {
             return SolanaTxDisplayType::Transfer;
         }
         // if contains token transfer check
-        // let token_transfer: Vec<&SolanaDetail> = details
-        //     .iter()
-        //     .filter(|d| Self::is_token_transfer_checked_detail(&d.common))
-        //     .collect::<Vec<&SolanaDetail>>();
-        // if token_transfer.len() == 1 {
-        //     return SolanaTxDisplayType::TokenTransfer;
-        // }
+        let token_transfer: Vec<&SolanaDetail> = details
+            .iter()
+            .filter(|d| Self::is_token_transfer_checked_detail(&d.common))
+            .collect::<Vec<&SolanaDetail>>();
+        if token_transfer.len() == 1 {
+            return SolanaTxDisplayType::TokenTransfer;
+        }
 
         let vote: Vec<&SolanaDetail> = details
             .iter()

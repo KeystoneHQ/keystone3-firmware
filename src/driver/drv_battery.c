@@ -23,6 +23,7 @@
 #define BATTERY_PRINTF(fmt, args...)
 #endif
 
+#define BATTERY_DELAY_TO_DECREASE_PERCENT               2
 #define BATTERY_DIFF_THRESHOLD                          40
 #define BATTERY_CHARGING_BY_TIME                        75
 #define BATTERY_LOG_PERCENT_INTERVAL                    10
@@ -272,13 +273,14 @@ bool BatteryIntervalHandler(void)
         // g_batterPercent--;
         if (percent > 85) {
             delayDecrease++;
+        } else {
+            delayDecrease = BATTERY_DELAY_TO_DECREASE_PERCENT;
         }
-        if (percent < g_batterPercent && delayDecrease == 2) {
+        if (percent < g_batterPercent && delayDecrease >= BATTERY_DELAY_TO_DECREASE_PERCENT) {
             g_batterPercent--;
             change = true;
             delayDecrease = 0;
         }
-        change = true;
     } else if (usbPowerState == USB_POWER_STATE_CONNECT) {
         //The battery percentage only increase when charging.
         //The battery percentage increase by 1% each time.

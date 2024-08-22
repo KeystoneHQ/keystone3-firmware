@@ -325,7 +325,12 @@ impl URParseResult {
         }
     }
 
-    pub fn multi(progress: u32, t: ViewType, ur_type: QRCodeType, decoder: KeystoneURDecoder) -> Self {
+    pub fn multi(
+        progress: u32,
+        t: ViewType,
+        ur_type: QRCodeType,
+        decoder: KeystoneURDecoder,
+    ) -> Self {
         let _self = Self::new();
         let decoder = Box::into_raw(Box::new(decoder)) as PtrUR;
         Self {
@@ -546,9 +551,9 @@ pub fn decode_ur(ur: String) -> URParseResult {
         URType::AptosSignRequest => _decode_ur::<AptosSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
         URType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
-        QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseResult::from(URError::NotSupportURTypeError(
-            "UnKnown ur type".to_string(),
-        )),
+        QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseResult::from(
+            URError::NotSupportURTypeError("UnKnown ur type".to_string()),
+        ),
     }
 }
 
@@ -615,9 +620,9 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         URType::AptosSignRequest => _receive_ur::<AptosSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         URType::QRHardwareCall => _receive_ur::<QRHardwareCall>(ur, ur_type, decoder),
-        QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseMultiResult::from(URError::NotSupportURTypeError(
-            "UnKnown ur type".to_string(),
-        )),
+        QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseMultiResult::from(
+            URError::NotSupportURTypeError("UnKnown ur type".to_string()),
+        ),
     }
 }
 

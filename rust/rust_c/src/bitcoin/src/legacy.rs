@@ -6,7 +6,7 @@ use common_rust_c::keystone;
 use common_rust_c::keystone::{build_parse_context, build_payload};
 use common_rust_c::structs::{TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, QRCodeType};
+use common_rust_c::ur::{QRCodeType, UREncodeResult};
 
 #[no_mangle]
 pub extern "C" fn utxo_parse_keystone(

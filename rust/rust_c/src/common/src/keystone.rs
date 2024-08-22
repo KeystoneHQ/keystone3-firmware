@@ -2,7 +2,7 @@ use crate::errors::{KeystoneError, RustCError};
 use crate::extract_ptr_with_type;
 use crate::structs::TransactionCheckResult;
 use crate::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use crate::ur::{UREncodeResult, QRCodeType, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::ur::{QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::utils::recover_c_char;
 use alloc::borrow::ToOwned;
 use alloc::format;

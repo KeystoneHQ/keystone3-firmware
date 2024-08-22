@@ -10,26 +10,26 @@ use crate::types::{PtrBytes, PtrString};
 use crate::utils::{convert_c_char, recover_c_char};
 use alloc::boxed::Box;
 use alloc::string::ToString;
-use structs::TransactionCheckResult;
-use types::Ptr;
 use core::slice;
 use cty::c_char;
 use errors::ErrorCodes;
+use structs::TransactionCheckResult;
 use third_party::hex;
 use third_party::hex::ToHex;
+use types::Ptr;
 
 pub mod errors;
 pub mod ffi;
 pub mod free;
 pub mod keystone;
 pub mod macros;
+pub mod qrcode;
 pub mod structs;
 pub mod types;
 pub mod ur;
 mod ur_ext;
 pub mod utils;
 pub mod web_auth;
-pub mod qrcode;
 
 pub static KEYSTONE: &str = "keystone";
 
@@ -191,4 +191,9 @@ pub extern "C" fn pbkdf2_rust(
     let salt_bytes = unsafe { slice::from_raw_parts(salt, 32) };
     let mut output = keystore::algorithms::crypto::hkdf(&password_bytes, &salt_bytes, iterations);
     SimpleResponse::success(Box::into_raw(Box::new(output)) as *mut u8).simple_c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn tx_check_pass() -> Ptr<TransactionCheckResult> {
+    TransactionCheckResult::new().c_ptr()
 }

@@ -11,7 +11,7 @@ use common_rust_c::errors::RustCError;
 use common_rust_c::keystone;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, QRCodeType};
+use common_rust_c::ur::{QRCodeType, UREncodeResult};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use cty::c_char;
 

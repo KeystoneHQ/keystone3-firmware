@@ -17,8 +17,8 @@ use common_rust_c::{
     utils::{convert_c_char, recover_c_array, recover_c_char},
 };
 use keystore::algorithms::secp256k1;
-use third_party::{base64, ur_registry::bitcoin::btc_signature::BtcSignature};
 use third_party::ur_registry::traits::RegistryItem;
+use third_party::{base64, ur_registry::bitcoin::btc_signature::BtcSignature};
 use third_party::{
     hex,
     ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType},
@@ -206,7 +206,9 @@ pub extern "C" fn sign_seed_signer_message(
         let seed = alloc::slice::from_raw_parts(seed, seed_len as usize);
         let sig = app_bitcoin::sign_msg(&message, seed, &path);
         match sig {
-            Ok(sig) => return UREncodeResult::text(base64::encode_config(&sig, base64::STANDARD)).c_ptr(),
+            Ok(sig) => {
+                return UREncodeResult::text(base64::encode_config(&sig, base64::STANDARD)).c_ptr()
+            }
             Err(e) => return UREncodeResult::from(e).c_ptr(),
         }
     }

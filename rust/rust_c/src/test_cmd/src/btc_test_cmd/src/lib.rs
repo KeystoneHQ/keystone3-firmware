@@ -19,7 +19,7 @@ use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::ExtendedPublicKey;
 use common_rust_c::types::PtrDecoder;
 use common_rust_c::ur::{
-    decode_ur, receive, UREncodeResult, URParseMultiResult, URParseResult, URType, ViewType,
+    decode_ur, receive, UREncodeResult, URParseMultiResult, URParseResult, QRCodeType, ViewType,
     FRAGMENT_MAX_LENGTH_DEFAULT,
 };
 use common_rust_c::utils::{convert_c_char, recover_c_char};
@@ -29,13 +29,13 @@ use wallet_rust_c::get_connect_blue_wallet_ur;
 #[no_mangle]
 pub extern "C" fn test_get_crypto_psbt() -> *mut URParseResult {
     let psbt = CryptoPSBT::new(hex::decode("70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000").unwrap());
-    URParseResult::single(ViewType::BtcTx, URType::CryptoPSBT, psbt).c_ptr()
+    URParseResult::single(ViewType::BtcTx, QRCodeType::CryptoPSBT, psbt).c_ptr()
 }
 
 #[no_mangle]
 pub extern "C" fn test_get_btc_keystone_bytes() -> *mut URParseResult {
     let bytes = Bytes::new(hex::decode("1f8b0800000000000003ad8e3f6b935114c689510959123b854ce545500a21f79e7bcefdb36943a91d14c5a063b9e7dc7b108c491b0df912ee2e05c12fe0ee8710fc061d9dc4b1ddfa429742d7c2333c3cc3eff9f5eeed0cdeac67ab52775faf575f56b25a8ccfbbedda0b4ea864939b3fddfea3fdf9ecf8d5f3f9d1bb83e3b70787ef8fe63b8f45127aae3089156582c075921dd809f94c2e4751b27ef7e7bff35f97e6690fbe767bbf47c31ff79bb34eff998fc8ce8126a7925204086c5995c187546c4a89c0327bb462a2538b1923615b8ca9c4e8717cd8df37ce9942a8c5948260b2afa4b1380fa8a40e2348ae8e8cb6445213c8b112d7aa49a0249bd5c9e82236834fd3884fa6e63a53d37c6ff5587d0a106d604915b268ca56347b66eb2d5355eba2a10c364bb0220801ab27058e4cdc3e0e3be3177722f8edef835b867bb3fe1e8b3d8de2f5f3872d94c576b30cf5e3329d6ed505d9c07a1988362772e2eb62f8ffece1a8d30c5ede80d8a9b90290f88bd8f6010000").unwrap());
-    URParseResult::single(ViewType::BtcNativeSegwitTx, URType::Bytes, bytes).c_ptr()
+    URParseResult::single(ViewType::BtcNativeSegwitTx, QRCodeType::Bytes, bytes).c_ptr()
 }
 
 fn get_ur_encode_result_for_test(data: Vec<u8>, length: usize, tag: String) -> *mut UREncodeResult {

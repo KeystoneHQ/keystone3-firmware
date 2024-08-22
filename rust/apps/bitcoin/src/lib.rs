@@ -84,7 +84,7 @@ pub fn sign_msg(msg: &str, seed: &[u8], path: &String) -> Result<Vec<u8>> {
     RecoverableSignature::from_compact(&rs, rec_id)
         .map_err(|_| BitcoinError::SignFailure("failed to encode signature".to_string()))
         .map(|signature| {
-            sign_message::MessageSignature::new(signature, false)
+            sign_message::MessageSignature::new(signature, true)
                 .serialize()
                 .to_vec()
         })

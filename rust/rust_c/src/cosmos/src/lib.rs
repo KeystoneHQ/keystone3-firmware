@@ -15,7 +15,7 @@ use common_rust_c::errors::RustCError;
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, URType, FRAGMENT_MAX_LENGTH_DEFAULT};
+use common_rust_c::ur::{UREncodeResult, QRCodeType, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use core::slice;
 use cty::c_char;
@@ -44,11 +44,11 @@ fn get_public_key(seed: &[u8], path: &String) -> Result<Vec<u8>, CosmosError> {
 
 fn build_sign_result(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     seed: &[u8],
 ) -> Result<Either<CosmosSignature, EvmSignature>, CosmosError> {
     match ur_type {
-        URType::CosmosSignRequest => {
+        QRCodeType::CosmosSignRequest => {
             let sign_request = extract_ptr_with_type!(ptr, CosmosSignRequest);
             let path = sign_request.get_derivation_paths()[0].get_path().ok_or(
                 CosmosError::SignFailure("invalid derivation path".to_string()),
@@ -65,7 +65,7 @@ fn build_sign_result(
                 get_public_key(seed, &path)?,
             )))
         }
-        URType::EvmSignRequest => {
+        QRCodeType::EvmSignRequest => {
             let sign_request = extract_ptr_with_type!(ptr, EvmSignRequest);
             let path =
                 sign_request
@@ -92,7 +92,7 @@ fn build_sign_result(
 #[no_mangle]
 pub extern "C" fn cosmos_check_tx(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
     length: u32,
 ) -> PtrT<TransactionCheckResult> {
@@ -101,11 +101,11 @@ pub extern "C" fn cosmos_check_tx(
     }
     let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
     let ur_mfp = match ur_type {
-        URType::CosmosSignRequest => {
+        QRCodeType::CosmosSignRequest => {
             let sign_request = extract_ptr_with_type!(ptr, CosmosSignRequest);
             sign_request.get_derivation_paths()[0].get_source_fingerprint()
         }
-        URType::EvmSignRequest => {
+        QRCodeType::EvmSignRequest => {
             let sign_request = extract_ptr_with_type!(ptr, EvmSignRequest);
             sign_request.get_derivation_path().get_source_fingerprint()
         }
@@ -159,14 +159,14 @@ pub extern "C" fn cosmos_get_address(
 #[no_mangle]
 pub extern "C" fn cosmos_sign_tx(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
     let ur_tag = match ur_type {
-        URType::CosmosSignRequest => CosmosSignature::get_registry_type().get_type(),
-        URType::EvmSignRequest => EvmSignature::get_registry_type().get_type(),
+        QRCodeType::CosmosSignRequest => CosmosSignature::get_registry_type().get_type(),
+        QRCodeType::EvmSignRequest => EvmSignature::get_registry_type().get_type(),
         _ => {
             return UREncodeResult::from(CosmosError::SignFailure(
                 "unsupported ur type".to_string(),
@@ -196,10 +196,10 @@ pub extern "C" fn cosmos_sign_tx(
 #[no_mangle]
 pub extern "C" fn cosmos_parse_tx(
     ptr: PtrUR,
-    ur_type: URType,
+    ur_type: QRCodeType,
 ) -> PtrT<TransactionParseResult<DisplayCosmosTx>> {
     let (sign_data, data_type) = match ur_type {
-        URType::CosmosSignRequest => {
+        QRCodeType::CosmosSignRequest => {
             let sign_request = extract_ptr_with_type!(ptr, CosmosSignRequest);
             let sign_data = sign_request.get_sign_data();
             let data_type = match sign_request.get_data_type() {
@@ -215,7 +215,7 @@ pub extern "C" fn cosmos_parse_tx(
             };
             (sign_data, data_type)
         }
-        URType::EvmSignRequest => {
+        QRCodeType::EvmSignRequest => {
             let sign_request = extract_ptr_with_type!(ptr, EvmSignRequest);
             let sign_data = sign_request.get_sign_data();
             let data_type = match sign_request.get_data_type() {

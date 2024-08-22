@@ -36,7 +36,7 @@ void *GuiGetTrxData(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
+    QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
     GetMasterFingerPrint(mfp);
     do {
@@ -55,7 +55,7 @@ PtrT_TransactionCheckResult GuiGetTrxCheckResult(void)
 #ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
+    QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
     GetMasterFingerPrint(mfp);
     return tron_check_keystone(data, urType, mfp, sizeof(mfp), trxXpub);
@@ -127,7 +127,7 @@ UREncodeResult *GuiGetTrxSignQrCodeData(void)
 #ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    URType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
+    QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     do {
         uint8_t mfp[4];
         GetMasterFingerPrint(mfp);

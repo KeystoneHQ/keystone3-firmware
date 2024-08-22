@@ -24,7 +24,7 @@ static struct ProtocolParser *global_parser = NULL;
 #define MAX_EAPDU_RESPONSE_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA - EAPDU_RESPONSE_STATUS_LENGTH)
 // #define MAX_EAPDU_RESPONSE_DATA_SIZE 48
 
-static uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH];
+static uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH] __attribute__((section(".data_parser_section")));
 static uint8_t g_packetLengths[MAX_PACKETS];
 static uint8_t g_receivedPackets[MAX_PACKETS];
 static uint8_t g_totalPackets = 0;

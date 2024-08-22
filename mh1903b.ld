@@ -58,12 +58,14 @@ SECTIONS
 		_ebss = .;
 	} > SRAM
 
-    .data_parser_section 0x200FC000 (NOLOAD) :
-    {
-        . = ALIGN(4);
-        *(.data_parser_section)
-        . = ALIGN(4);
-    } > SRAM
+.data_parser_section 0x200A0000 :
+{
+    . = ALIGN(4);
+    __data_parser_start = .;
+    *(.data_parser_section)
+    . = ALIGN(4);
+    __data_parser_end = .;
+} > SRAM
 	
 	/DISCARD/ :
 	{

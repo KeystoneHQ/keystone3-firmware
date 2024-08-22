@@ -27,7 +27,7 @@ use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::ExtendedPublicKey;
 use common_rust_c::types::PtrDecoder;
 use common_rust_c::ur::{
-    decode_ur, receive, UREncodeResult, URParseMultiResult, URParseResult, QRCodeType, ViewType,
+    decode_ur, receive, QRCodeType, UREncodeResult, URParseMultiResult, URParseResult, ViewType,
     FRAGMENT_MAX_LENGTH_DEFAULT,
 };
 use common_rust_c::utils::{convert_c_char, recover_c_char};
@@ -101,7 +101,12 @@ pub extern "C" fn test_get_eth_sign_request() -> *mut URParseResult {
         None,
         Some("metamask".to_string()),
     );
-    URParseResult::single(ViewType::EthTx, QRCodeType::EthSignRequest, eth_sign_request).c_ptr()
+    URParseResult::single(
+        ViewType::EthTx,
+        QRCodeType::EthSignRequest,
+        eth_sign_request,
+    )
+    .c_ptr()
 }
 
 #[no_mangle]
@@ -147,7 +152,12 @@ pub extern "C" fn test_get_sol_sign_request(cbor: *mut c_char) -> *mut URParseRe
     let cbor_str = recover_c_char(cbor);
     // sol_sign_request Ok(SolSignRequest { request_id: Some([69, 26, 182, 220, 14, 76, 71, 148, 179, 192, 54, 82, 2, 177, 148, 7]), sign_data: [1, 0, 2, 4, 26, 147, 255, 251, 38, 206, 100, 90, 222, 174, 88, 240, 244, 20, 195, 32, 188, 236, 48, 206, 18, 166, 107, 210, 99, 169, 30, 201, 179, 149, 143, 244, 111, 52, 81, 68, 211, 82, 228, 25, 12, 45, 236, 67, 225, 211, 224, 41, 106, 73, 189, 252, 37, 148, 238, 217, 216, 165, 144, 46, 34, 208, 175, 139, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 6, 70, 111, 229, 33, 23, 50, 255, 236, 173, 186, 114, 195, 155, 231, 188, 140, 229, 187, 197, 247, 18, 107, 44, 67, 155, 58, 64, 0, 0, 0, 247, 10, 157, 68, 72, 239, 67, 92, 91, 234, 182, 203, 196, 33, 30, 0, 221, 180, 185, 173, 132, 136, 99, 133, 248, 183, 204, 251, 157, 158, 124, 164, 3, 3, 0, 9, 3, 216, 214, 0, 0, 0, 0, 0, 0, 3, 0, 5, 2, 64, 13, 3, 0, 2, 2, 0, 1, 12, 2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0], derivation_path: CryptoKeyPath { components: [PathComponent { index: Some(44), wildcard: false, hardened: true }, PathComponent { index: Some(501), wildcard: false, hardened: true }, PathComponent { index: Some(0), wildcard: false, hardened: true }], source_fingerprint: Some([112, 126, 237, 108]), depth: None }, address: None, origin: None, sign_type: Transaction })
     let sol_sign_request = SolSignRequest::try_from(hex::decode(cbor_str).unwrap()).unwrap();
-    URParseResult::single(ViewType::SolanaTx, QRCodeType::SolSignRequest, sol_sign_request).c_ptr()
+    URParseResult::single(
+        ViewType::SolanaTx,
+        QRCodeType::SolSignRequest,
+        sol_sign_request,
+    )
+    .c_ptr()
 }
 
 #[no_mangle]
@@ -173,20 +183,35 @@ pub extern "C" fn test_get_sui_sign_request(cbor: *mut c_char) -> *mut URParseRe
 pub extern "C" fn test_get_aptos_sign_request(cbor: *mut c_char) -> *mut URParseResult {
     let cbor_str = recover_c_char(cbor);
     let sign_request = AptosSignRequest::try_from(hex::decode(cbor_str).unwrap()).unwrap();
-    URParseResult::single(ViewType::AptosTx, QRCodeType::AptosSignRequest, sign_request).c_ptr()
+    URParseResult::single(
+        ViewType::AptosTx,
+        QRCodeType::AptosSignRequest,
+        sign_request,
+    )
+    .c_ptr()
 }
 
 #[no_mangle]
 pub extern "C" fn test_get_near_sign_request(cbor: *mut c_char) -> *mut URParseResult {
     let cbor_str = recover_c_char(cbor);
     let near_sign_request = NearSignRequest::try_from(hex::decode(cbor_str).unwrap()).unwrap();
-    URParseResult::single(ViewType::NearTx, QRCodeType::NearSignRequest, near_sign_request).c_ptr()
+    URParseResult::single(
+        ViewType::NearTx,
+        QRCodeType::NearSignRequest,
+        near_sign_request,
+    )
+    .c_ptr()
 }
 
 #[no_mangle]
 pub extern "C" fn test_get_eth_eip1559_sign_request() -> *mut URParseResult {
     let eth_sign_request = EthSignRequest::try_from(hex::decode("a601d825504f755f57cd6942f2bf7d8f90d2ddb2e702583102ef053f8459682f0085037ca764c782520894d6cbd2038a6653993009c56912cb45117ab930d88761069ce3a68a9e80c00304040505d90130a2018a182cf5183cf500f500f400f4021a707eed6c0654fe040716ac4afbba08ee723f3f47d5d814fc48c1").unwrap());
-    URParseResult::single(ViewType::EthTx, QRCodeType::EthSignRequest, eth_sign_request).c_ptr()
+    URParseResult::single(
+        ViewType::EthTx,
+        QRCodeType::EthSignRequest,
+        eth_sign_request,
+    )
+    .c_ptr()
 }
 
 #[no_mangle]

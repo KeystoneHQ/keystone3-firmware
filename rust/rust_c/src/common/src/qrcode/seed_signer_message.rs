@@ -4,7 +4,7 @@ use app_utils::impl_public_struct;
 #[derive(Debug, Clone, Default)]
 pub enum MessageEncoding {
     #[default]
-    ASCII
+    ASCII,
 }
 
 impl_public_struct!(SeedSignerMessage {

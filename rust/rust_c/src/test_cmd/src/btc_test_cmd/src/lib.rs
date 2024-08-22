@@ -19,7 +19,7 @@ use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::ExtendedPublicKey;
 use common_rust_c::types::PtrDecoder;
 use common_rust_c::ur::{
-    decode_ur, receive, UREncodeResult, URParseMultiResult, URParseResult, QRCodeType, ViewType,
+    decode_ur, receive, QRCodeType, UREncodeResult, URParseMultiResult, URParseResult, ViewType,
     FRAGMENT_MAX_LENGTH_DEFAULT,
 };
 use common_rust_c::utils::{convert_c_char, recover_c_char};

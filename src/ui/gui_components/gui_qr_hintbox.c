@@ -120,7 +120,6 @@ void GuiNormalHitBoxOpen(const char *title, const char *content)
 
         // create title
         lv_obj_t * titleLabel = GuiCreateTextLabel(g_qrHintBox, title);
-        lv_obj_set_style_text_font(titleLabel, &openSansEnLittleTitle, LV_PART_MAIN);
         lv_label_set_long_mode(titleLabel, LV_LABEL_LONG_SCROLL_CIRCULAR);
         lv_obj_align_to(titleLabel, g_qrHintBox, LV_ALIGN_TOP_LEFT, 25, 800 - hintBoxHeight + 36);
         g_qrHintBoxTitle = titleLabel;

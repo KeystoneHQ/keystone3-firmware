@@ -64,13 +64,13 @@ char *GetCosmosChainAddressByCoinTypeAndIndex(uint8_t chainType,  uint32_t addre
     snprintf_s(rootPath, BUFFER_SIZE_32, "M/44'/%u'/0'", chain->coinType);
     snprintf_s(hdPath, BUFFER_SIZE_32, "%s/0/%u", rootPath, address_index);
     xPub = GetCurrentAccountPublicKey(chain->xpubType);
-    return cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
+    return (char *) cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
 }
 
 char *GetKeplrConnectionDisplayAddressByIndex(uint32_t index)
 {
     SimpleResponse_c_char *result;
-    result = GetCosmosChainAddressByCoinTypeAndIndex(CHAIN_ATOM, index);
+    result = (SimpleResponse_c_char *) GetCosmosChainAddressByCoinTypeAndIndex(CHAIN_ATOM, index);
     if (result->error_code == 0) {
         snprintf_s(g_cosmosAddr, MAX_COSMOS_ADDR_LEN, "%s", result->data);
     }

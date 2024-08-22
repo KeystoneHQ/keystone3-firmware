@@ -931,7 +931,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     }
     default:
         if (IsCosmosChain(g_chainCard)) {
-            result = GetCosmosChainAddressByCoinTypeAndIndex(g_chainCard, index);
+            result = (SimpleResponse_c_char *) GetCosmosChainAddressByCoinTypeAndIndex(g_chainCard, index);
         } else {
             printf("Standard Receive ModelGetAddress cannot match %d\r\n", index);
             return;

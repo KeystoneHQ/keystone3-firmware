@@ -2,9 +2,8 @@ extern crate alloc;
 
 use alloc::string::{String, ToString};
 
-use bitcoin::secp256k1::{ecdsa, SecretKey};
+use bitcoin::secp256k1::{ecdsa, SecretKey, PublicKey, ecdh::SharedSecret, Secp256k1};
 use core::str::FromStr;
-use secp256k1::{ecdh::SharedSecret, PublicKey, Secp256k1};
 
 use bitcoin;
 use bitcoin::bip32::{DerivationPath, Fingerprint, Xpriv, Xpub};

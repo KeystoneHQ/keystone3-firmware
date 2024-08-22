@@ -7,6 +7,7 @@
 #include "stdio.h"
 
 #define WALLET_NAME_MAX_LEN                 16
+#define ZCASH_UFVK_MAX_LEN                  384
 
 typedef enum {
     PASSCODE_TYPE_PIN,
@@ -44,6 +45,12 @@ typedef struct {
     uint8_t iconIndex;
     char walletName[WALLET_NAME_MAX_LEN + 1];
 } AccountInfo_t;
+
+typedef struct {
+    uint8_t accountIndex;
+    char ufvkCache[ZCASH_UFVK_MAX_LEN + 1];
+    uint8_t seedFingerprint[32];
+} ZcashUFVKCache_t;
 
 int32_t AccountManagerInit(void);
 bool AccountManagerIsNeedReset(void);
@@ -91,5 +98,7 @@ uint16_t GetSlip39Id(void);
 uint8_t GetSlip39Ie(void);
 
 void AccountsDataCheck(void);
+int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP);
+int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password);
 
 #endif

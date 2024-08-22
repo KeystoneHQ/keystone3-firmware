@@ -1,9 +1,10 @@
 #![no_std]
 
 extern crate alloc;
-
-use alloc::string::ToString;
-use alloc::vec;
+use alloc::boxed::Box;
+use alloc::string::{String, ToString};
+use alloc::{format, slice, vec};
+use alloc::vec::Vec;
 
 use cty::c_char;
 use hex;
@@ -20,8 +21,15 @@ use ur_registry::near::near_sign_request::NearSignRequest;
 use ur_registry::solana::sol_sign_request::SolSignRequest;
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 
-use common_rust_c::ur::{QRCodeType, URParseResult, ViewType};
-use common_rust_c::utils::recover_c_char;
+use common_rust_c::errors::ErrorCodes;
+use common_rust_c::ffi::CSliceFFI;
+use common_rust_c::structs::ExtendedPublicKey;
+use common_rust_c::types::{PtrBytes, PtrDecoder, PtrString};
+use common_rust_c::ur::{
+    decode_ur, receive, QRCodeType, UREncodeResult, URParseMultiResult, URParseResult, ViewType,
+    FRAGMENT_MAX_LENGTH_DEFAULT,
+};
+use common_rust_c::utils::{convert_c_char, recover_c_char};
 
 #[no_mangle]
 pub extern "C" fn test_get_bch_keystone_succeed_bytes() -> *mut URParseResult {
@@ -251,4 +259,16 @@ pub extern "C" fn test_get_cosmos_evm_sign_request(cbor: *mut c_char) -> *mut UR
         evm_sign_request,
     )
     .c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn try_sign_zec_orchard(seed: PtrBytes, alpha: PtrString, msg: PtrString) {
+    let alpha = recover_c_char(alpha);
+    let msg = recover_c_char(msg);
+    let seed = unsafe { slice::from_raw_parts(seed, 64) };
+
+    let alpha: [u8; 32] = hex::decode(alpha.trim()).unwrap().try_into().unwrap();
+    let msg = hex::decode(msg.trim()).unwrap();
+
+    zcash::test_sign_zec(seed, alpha, &msg);
 }

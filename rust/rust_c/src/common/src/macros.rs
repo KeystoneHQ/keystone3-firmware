@@ -397,6 +397,13 @@ macro_rules! impl_simple_new_error {
             }
         }
 
+        #[cfg(feature = "multi-coins")]
+        impl<$t> From<app_zcash::errors::ZcashError> for $name<$t> {
+            fn from(value: app_zcash::errors::ZcashError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+
         impl<$t> From<RustCError> for $name<$t> {
             fn from(value: RustCError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())

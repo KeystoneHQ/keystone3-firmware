@@ -25,6 +25,7 @@ use app_ton::errors::TonError;
 use app_tron::errors::TronError;
 #[cfg(feature = "multi-coins")]
 use app_xrp::errors::XRPError;
+use app_zcash::errors::ZcashError;
 use keystore::errors::KeystoreError;
 use thiserror;
 use thiserror::Error;
@@ -196,6 +197,9 @@ pub enum ErrorCodes {
     StellarInvalidData,
     StellarParseTxError,
     StellarKeystoreError,
+
+    // Zcash
+    ZcashGenerateAddressError = 1500,
 }
 
 impl ErrorCodes {
@@ -467,6 +471,16 @@ impl From<&TonError> for ErrorCodes {
             TonError::AddressError(_) => Self::AddressError,
             TonError::InvalidTransaction(_) => Self::TonTransactionError,
             TonError::InvalidProof(_) => Self::InvalidProof,
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl From<&ZcashError> for ErrorCodes {
+    fn from(value: &ZcashError) -> Self {
+        match value {
+            ZcashError::GenerateAddressError(_) => Self::ZcashGenerateAddressError,
+            ZcashError::InvalidDataError(_) => Self::InvalidData
         }
     }
 }

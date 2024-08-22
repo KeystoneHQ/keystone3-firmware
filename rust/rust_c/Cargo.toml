@@ -59,6 +59,7 @@ debug-memory = [
     "tron_rust_c/debug-memory",
     "xrp_rust_c/debug-memory",
     "ton_rust_c/debug-memory",
+    "zcash_rust_c/debug-memory",
 ]
 
 multi-coins = [
@@ -78,6 +79,7 @@ multi-coins = [
     "arweave_rust_c",
     "stellar_rust_c",
     "ton_rust_c",
+    "zcash_rust_c"
 ]
 btc-only = [
     "common_rust_c/btc-only",

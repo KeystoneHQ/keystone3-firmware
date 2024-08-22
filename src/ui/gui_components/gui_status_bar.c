@@ -105,6 +105,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
     {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
+    {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
     {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
     {WALLET_LIST_RABBY, "Rabby", &walletRabby},

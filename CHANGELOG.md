@@ -1,3 +1,12 @@
+## 1.6.4(2024-08-22)
+
+
+### What's new
+
+1. Supported managing SUI assets using Nightly Wallet
+
+
+
 ## 1.6.2(2024-08-20)
 
 ### What's new

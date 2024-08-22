@@ -55,6 +55,10 @@ use tron_rust_c;
 #[cfg(feature = "multi-coins")]
 #[allow(unused)]
 use xrp_rust_c;
+#[cfg(feature = "multi-coins")]
+#[allow(unused)]
+use zcash_rust_c;
+
 
 #[cfg(any(feature = "simulator", feature = "simulator_btc_only"))]
 #[allow(unused)]

@@ -1,0 +1,22 @@
+#![no_std]
+#![feature(error_in_core)]
+extern crate alloc;
+
+pub mod errors;
+
+use errors::{Result, ZcashError};
+
+use alloc::string::{String, ToString};
+use keystore::algorithms::zcash::vendor::{
+    zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
+    zcash_protocol::consensus::MainNetwork,
+};
+
+pub fn get_address(ufvk_text: &str) -> Result<String> {
+    let ufvk = UnifiedFullViewingKey::decode(&MainNetwork, ufvk_text)
+        .map_err(|e| ZcashError::GenerateAddressError(e.to_string()))?;
+    let (address, _) = ufvk
+        .default_address(UnifiedAddressRequest::all().unwrap())
+        .map_err(|e| ZcashError::GenerateAddressError(e.to_string()))?;
+    Ok(address.encode(&MainNetwork))
+}

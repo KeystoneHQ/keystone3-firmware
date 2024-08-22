@@ -27,6 +27,7 @@ pub mod solana;
 pub mod sui;
 pub mod thor_wallet;
 pub mod tonkeeper;
+pub mod zcash;
 mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;

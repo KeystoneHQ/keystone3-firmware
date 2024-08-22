@@ -52,6 +52,7 @@ static bool g_isScrolling = false;
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC", true},
     {HOME_WALLET_CARD_ETH, false, "ETH", true},
+    {HOME_WALLET_CARD_ZEC, false, "ZEC", true},
     {HOME_WALLET_CARD_SOL, false, "SOL", true},
     {HOME_WALLET_CARD_BNB, false, "BNB", false},
     {HOME_WALLET_CARD_HNT, false, "HNT", true},
@@ -150,6 +151,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "ETH",
         .chain = "Ethereum",
         .icon = &coinEth,
+    },
+    {
+        .index = HOME_WALLET_CARD_ZEC,
+        .coin = "ZEC",
+        .chain = "Zcash",
+        .icon = &coinZec,
     },
     {
         .index = HOME_WALLET_CARD_SOL,

@@ -691,6 +691,8 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         ret = AccountPublicSavePublicInfo(accountIndex, password, addr);
     }
 
+    CalculateZcashUFVK(accountIndex, password);
+
 #ifdef BTC_ONLY
     initMultiSigWalletManager();
     ret = LoadCurrentAccountMultisigWallet(password);

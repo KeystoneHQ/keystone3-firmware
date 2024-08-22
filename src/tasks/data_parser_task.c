@@ -26,7 +26,7 @@
 
 #define ECC_PRV_KEY_SIZE                                24
 #define ECC_PUB_KEY_SIZE                                (2 * ECC_PRV_KEY_SIZE)
-#define PARSER_CACHE_LEN                                1024
+#define PARSER_CACHE_LEN                                2048
 #define PRIV_KEY_SIZE                                   32
 #define PUB_KEY_SIZE                                    33
 
@@ -39,6 +39,13 @@ static uint8_t g_dataParserPubKey[PUB_KEY_SIZE] = {0};
 static uint8_t g_dataSharedKey[PRIV_KEY_SIZE] = {0};
 static uint8_t g_dataParserIv[16] = {0};
 static osThreadId_t g_dataParserHandle;
+extern uint32_t __data_parser_start;
+extern uint32_t __data_parser_end;
+
+uint8_t *GetDataParserCache(void)
+{
+    return g_dataParserCache;
+}
 
 void SetDeviceParserIv(uint8_t *iv)
 {
@@ -104,11 +111,12 @@ static uint8_t IsPrivileged(void)
     printf("control = %d\n", control);
     return (control & 1) == 0;
 }
-
 static void DataParserCacheMpuInit(void)
 {
+    uint32_t region_size = (uint32_t)&__data_parser_end - (uint32_t)&__data_parser_start;
+    uint32_t region_size_pow2 = 1 << (32 - __builtin_clz(region_size - 1));
     MpuSetProtection(g_dataParserCache,
-                     MPU_REGION_SIZE_1KB,
+                     region_size_pow2,
                      MPU_REGION_NUMBER0,
                      MPU_INSTRUCTION_ACCESS_DISABLE,
                      MPU_REGION_PRIV_RW,

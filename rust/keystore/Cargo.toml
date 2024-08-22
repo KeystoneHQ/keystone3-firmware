@@ -10,12 +10,26 @@ cty = "0.2.2"
 cstr_core = "0.2.6"
 third_party = { path = "../third_party" }
 rust_tools = { path = "../tools" }
-rand_chacha = { version="0.3.1", default-features=false }
+rand_chacha = { version = "0.3.1", default-features = false }
 arrayref = "0.3.6"
 sha2 = { version = "0.10.6", default-features = false, features = ["oid"] }
-num-bigint-dig = { version = "0.8.2", default-features=false }
+num-bigint-dig = { version = "0.8.2", default-features = false }
+reddsa = { version = "0.5.1", default-features = false, features = ["alloc"] }
+blake2b_simd = { version = "1.0.2", default-features = false }
+ff = { version = "0.13.0", default-features = false, features = ["alloc"] }
+pasta_curves = { version = "0.5.1", default-features = false, features = [
+    "alloc",
+] }
+subtle = { version = "2.6", default-features = false }
 
 [features]
 default = ["std"]
 std = []
 rsa = []
+
+[dev-dependencies]
+zcash_address = "0.4.0"
+zcash_keys = { version = "0.3.0", features = ['orchard', 'transparent-inputs'] }
+
+zcash_protocol = "0.2.0"
+redjubjub = "0.7.0"

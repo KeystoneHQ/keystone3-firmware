@@ -3,10 +3,11 @@
 extern crate alloc;
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
-use alloc::vec;
+use alloc::{format, slice, vec};
 use alloc::vec::Vec;
 
 use cty::c_char;
+use keystore::algorithms::zcash;
 use third_party::hex;
 
 use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
@@ -25,7 +26,7 @@ use third_party::ur_registry::traits::RegistryItem;
 use common_rust_c::errors::ErrorCodes;
 use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::ExtendedPublicKey;
-use common_rust_c::types::PtrDecoder;
+use common_rust_c::types::{PtrBytes, PtrDecoder, PtrString};
 use common_rust_c::ur::{
     decode_ur, receive, QRCodeType, UREncodeResult, URParseMultiResult, URParseResult, ViewType,
     FRAGMENT_MAX_LENGTH_DEFAULT,
@@ -260,4 +261,16 @@ pub extern "C" fn test_get_cosmos_evm_sign_request(cbor: *mut c_char) -> *mut UR
         evm_sign_request,
     )
     .c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn try_sign_zec_orchard(seed: PtrBytes, alpha: PtrString, msg: PtrString) {
+    let alpha = recover_c_char(alpha);
+    let msg = recover_c_char(msg);
+    let seed = unsafe { slice::from_raw_parts(seed, 64) };
+
+    let alpha: [u8; 32] = hex::decode(alpha.trim()).unwrap().try_into().unwrap();
+    let msg = hex::decode(msg.trim()).unwrap();
+
+    zcash::test_sign_zec(seed, alpha, &msg);
 }

@@ -1,8 +1,9 @@
 ## 1.6.4(2024-08-22)
 
-### 新增
 
-1. 支持通过 Nightly 钱包管理 SUI 资产
+### What's new
+
+1. Supported managing SUI assets using Nightly Wallet
 
 
 

@@ -26,7 +26,7 @@
 #include "gui_usb_connection_widgets.h"
 #include "gui_pop_message_box.h"
 #include "usb_task.h"
-
+#include "ui_display_task.h"
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)

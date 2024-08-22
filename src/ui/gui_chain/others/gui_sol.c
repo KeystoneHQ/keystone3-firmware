@@ -318,6 +318,9 @@ lv_obj_t * CreateSolanaSquadsProposalOverviewCard(lv_obj_t *parent, PtrString pr
         lv_obj_align_to(memoLabel, methodValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
         lv_obj_t *memoValueLabel = lv_label_create(container);
+        // long text unwrap
+        lv_label_set_long_mode(memoValueLabel, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(memoValueLabel, lv_pct(90));
         lv_label_set_text(memoValueLabel, memo);
         lv_obj_set_style_text_color(memoValueLabel, WHITE_COLOR, LV_PART_MAIN);
         lv_obj_set_style_text_font(memoValueLabel, g_defIllustrateFont, LV_PART_MAIN);
@@ -390,7 +393,7 @@ lv_obj_t *  CreateSquadsSolanaTransferOverviewCard(lv_obj_t *parent, PtrString f
     SetContentLableStyle(toValuelabel);
 
     // add label fot to label
-    if (strcmp(to, "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b") == 0 && strcmp(amount, "0.05 SOL") != 0) {
+    if (strcmp(to, "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b") == 0 && strcmp(amount, "0.05 SOL") == 0) {
         lv_obj_t *squadsIcon = GuiCreateImg(container, &imgSquads);
         lv_obj_align_to(squadsIcon, toValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
         lv_obj_t *squadsLabel = lv_label_create(container);
@@ -399,7 +402,7 @@ lv_obj_t *  CreateSquadsSolanaTransferOverviewCard(lv_obj_t *parent, PtrString f
         lv_obj_set_style_text_color(squadsLabel, lv_color_hex(0xA485FF), LV_PART_MAIN);
         lv_obj_align_to(squadsLabel, squadsIcon, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
-    } else if (strcmp(to, "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b") == 0 && strcmp(amount, "0.05 SOL") == 0) {
+    } else if (strcmp(to, "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b") == 0 && strcmp(amount, "0.05 SOL") != 0) {
         lv_obj_t * unkonwnAddressLabel = lv_label_create(container);
         lv_label_set_text(unkonwnAddressLabel, "Unknown Address");
         lv_obj_set_style_text_color(unkonwnAddressLabel, lv_color_hex(0xF55831), LV_PART_MAIN);
@@ -700,7 +703,9 @@ static void GuiShowSolTxSquadsProposalOverview(lv_obj_t *parent, PtrT_DisplaySol
         char *memo = squadsProposal->data[i].memo;
         lv_obj_t * proposalCard = CreateSolanaSquadsProposalOverviewCard(parent, program, method, memo, "");
         lv_obj_align(proposalCard, LV_ALIGN_TOP_LEFT, 0, containerYOffset);
-        int height = lv_obj_get_height(proposalCard) + 46;
+        // force update layout to calculate the card height
+        lv_obj_update_layout(proposalCard);
+        int height = lv_obj_get_height(proposalCard) + 16;
         containerYOffset += height;
     }
 }
@@ -900,19 +905,7 @@ static void GuiShowSolTxMultiSigCreateDetail(lv_obj_t *parent, PtrT_DisplaySolan
     lv_obj_set_style_text_font(walletNameValue, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(walletNameValue, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     lv_obj_align_to(walletNameValue, walletNameLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    lv_obj_t *walletDescContainer =  GuiCreateAutoHeightContainer(parent, 408, 16);
-    lv_obj_t *walletDescLabel = lv_label_create(walletDescContainer);
-    lv_label_set_text(walletDescLabel, "Description");
-    lv_obj_align(walletDescLabel, LV_ALIGN_TOP_LEFT, 24, 0);
-    SetTitleLabelStyle(walletDescLabel);
 
-    lv_obj_t *walletDescValue = lv_label_create(walletDescContainer);
-    lv_label_set_text(walletDescValue, wallet_desc);
-    lv_obj_set_style_text_font(walletDescValue, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_style_text_color(walletDescValue, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_set_width(walletDescValue, lv_pct(100));
-    lv_label_set_long_mode(walletDescValue, LV_LABEL_LONG_WRAP);
-    lv_obj_align_to(walletDescValue, walletDescLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     lv_obj_t *totalValueContainer =  GuiCreateAutoHeightContainer(parent, 408, 16);
     lv_obj_t *totalValueLabel = lv_label_create(totalValueContainer);
     lv_label_set_text(totalValueLabel, "Value");
@@ -994,8 +987,27 @@ static void GuiShowSolTxMultiSigCreateDetail(lv_obj_t *parent, PtrT_DisplaySolan
     lv_obj_t *secondTransferCardContainer = GuiCreateAutoHeightContainer(parent, 408, 16);
     CreateSquadsSolanaTransferOverviewCard(secondTransferCardContainer,  transfers->data[1].from, transfers->data[1].to, transfers->data[1].value, "");
     lv_obj_align(walletNameContainer, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_obj_align_to(walletDescContainer, walletNameContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
-    lv_obj_align_to(memberContainer, walletDescContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+    if (strcmp(wallet_desc, "") != 0) {
+        lv_obj_t *walletDescContainer =  GuiCreateAutoHeightContainer(parent, 408, 16);
+        lv_obj_t *walletDescLabel = lv_label_create(walletDescContainer);
+        lv_label_set_text(walletDescLabel, "Description");
+        lv_obj_align(walletDescLabel, LV_ALIGN_TOP_LEFT, 24, 0);
+        SetTitleLabelStyle(walletDescLabel);
+
+        lv_obj_t *walletDescValue = lv_label_create(walletDescContainer);
+        lv_label_set_text(walletDescValue, wallet_desc);
+        lv_obj_set_style_text_font(walletDescValue, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_set_style_text_color(walletDescValue, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+        lv_obj_set_width(walletDescValue, lv_pct(100));
+        lv_label_set_long_mode(walletDescValue, LV_LABEL_LONG_WRAP);
+        lv_obj_align_to(walletDescValue, walletDescLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+
+        lv_obj_align_to(walletDescContainer, walletNameContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+        lv_obj_align_to(memberContainer, walletDescContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+    } else {
+        lv_obj_align_to(memberContainer, walletNameContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+    }
+
     lv_obj_align_to(thresholdContainer, memberContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
     lv_obj_align_to(totalValueContainer, thresholdContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
     lv_obj_align_to(firstTransferCardContainer, totalValueContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
@@ -1056,7 +1068,7 @@ static void GuiShowSolTxMultiSigCreateOverview(lv_obj_t *parent, PtrT_DisplaySol
     lv_obj_align_to(toValuelabel, tolabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     SetContentLableStyle(toValuelabel);
 
-    if (strcmp(transfers->data[1].to, "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b") != 0) {
+    if (strcmp(transfers->data[1].to, "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b") == 0) {
         lv_obj_t *squadsIcon = GuiCreateImg(firstTransferCardContainer, &imgSquads);
         lv_obj_align_to(squadsIcon, toValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
         lv_obj_t *squadsLabel = lv_label_create(firstTransferCardContainer);

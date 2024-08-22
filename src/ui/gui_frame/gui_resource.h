@@ -229,6 +229,7 @@ LV_IMG_DECLARE(coinSats);
 LV_IMG_DECLARE(coinXlm);
 LV_IMG_DECLARE(coinRune);
 LV_IMG_DECLARE(coinHelium);
+LV_IMG_DECLARE(coinZec);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);
@@ -269,6 +270,7 @@ LV_IMG_DECLARE(walletBitget);
 LV_IMG_DECLARE(walletMintScan);
 LV_IMG_DECLARE(walletHelium);
 LV_IMG_DECLARE(walletSuiet);
+LV_IMG_DECLARE(walletZashi);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
@@ -306,6 +308,8 @@ LV_IMG_DECLARE(walletListBitget);
 LV_IMG_DECLARE(walletListMintScan);
 LV_IMG_DECLARE(walletListHelium);
 LV_IMG_DECLARE(walletListSuiet);
+LV_IMG_DECLARE(walletListZashi);
+
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

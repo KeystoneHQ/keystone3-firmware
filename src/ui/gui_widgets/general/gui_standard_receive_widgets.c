@@ -77,7 +77,7 @@ typedef struct {
 
 typedef struct {
     uint32_t index;
-    char address[128];
+    char address[ADDRESS_MAX_LEN];
     char path[32];
 } AddressDataItem_t;
 
@@ -204,7 +204,6 @@ static void UpdateConfirmIndexBtn(void)
     RefreshQrCode();
     UpdateConfirmBtn();
 }
-
 
 static void RefreshSwitchAddress(void)
 {
@@ -715,7 +714,12 @@ static void RefreshQrCode(void)
         char address[128];
         snprintf_s(address, 128, "%.22s\n%s", addressDataItem.address, &addressDataItem.address[22]);
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, address);
-    } else {
+    } else if (g_chainCard == HOME_WALLET_CARD_ZEC) {
+        char addressString[128];
+        CutAndFormatString(addressString, ADDRESS_MAX_LEN, addressDataItem.address, 40);
+        lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressString);
+    }
+    else {
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     }
     lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), addressDataItem.index);
@@ -922,6 +926,13 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
             xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
         }
         result = ton_get_address(xPub);
+        break;
+    }
+    case HOME_WALLET_CARD_ZEC: {
+        char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
+        uint8_t sfp[32];
+        GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+        result = generate_zcash_default_address(ufvk);
         break;
     }
     default:

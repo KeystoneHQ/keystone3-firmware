@@ -16,6 +16,7 @@ pub mod tonkeeper;
 mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
+pub mod zcash;
 
 pub mod thor_wallet;
 

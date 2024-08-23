@@ -171,6 +171,14 @@ void SetFirstReceive(const char* chainName, bool isFirst);
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count);
 char *GetXPubPath(uint8_t index);
 void CalculateTonChecksum(uint8_t *entropy, char* output);
+uint32_t GetAccountReceiveIndex(const char* chainName);
+void SetAccountReceiveIndex(const char* chainName, uint32_t index);
+uint32_t GetAccountReceivePath(const char* chainName);
+void SetAccountReceivePath(const char* chainName, uint32_t index);
+uint32_t GetAccountIndex(const char* chainName);
+void SetAccountIndex(const char* chainName, uint32_t index);
+void SetConnectWalletPathIndex(const char* walletName, uint32_t index);
+uint32_t GetConnectWalletPathIndex(const char* walletName);
 
 void ExportMultiSigXpub(ChainType chainType);
 void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager);

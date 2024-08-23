@@ -229,7 +229,6 @@ static void AddMetaMaskCoins(void);
 static void AddOkxWalletCoins(void);
 static void AddBlueWalletCoins(void);
 static void AddFewchaCoins(void);
-static void AddKeplrCoins(void);
 static void AddSolflareCoins(void);
 static void AddNightlyCoins(void);
 static void AddThorWalletCoins(void);
@@ -841,25 +840,6 @@ static void AddUniSatWalletCoins(void)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * 5, 2);
 }
 
-static void AddKeplrCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-    for (int i = 0; i < 8; i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_keplrCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
-    }
-
-    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
-    lv_img_set_zoom(img, 150);
-    lv_img_set_pivot(img, 0, 0);
-    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 256, 2);
-}
-
 static void AddArConnectCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -1318,24 +1298,26 @@ SOLAccountType GetSolflareAccountType(void)
 
 static int GetAccountType(void)
 {
-    switch (g_connectWalletTileView.walletIndex) {
-    case WALLET_LIST_SOLFARE:
-        return GetSolflareAccountType();
-    default:
-        return GetMetamaskAccountType();
-    }
+    return GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex));
+    // switch (g_connectWalletTileView.walletIndex) {
+    // case WALLET_LIST_SOLFARE:
+    //     // return GetSolflareAccountType();
+    // default:
+    //     // return GetMetamaskAccountType();
+    // }
 }
 
 static void SetAccountType(uint8_t index)
 {
-    switch (g_connectWalletTileView.walletIndex) {
-    case WALLET_LIST_SOLFARE:
-        g_currentSOLPathIndex[GetCurrentAccountIndex()] = index;
-        break;
-    default:
-        g_currentEthPathIndex[GetCurrentAccountIndex()] = index;
-        break;
-    }
+    return SetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex), index);
+    // switch (g_connectWalletTileView.walletIndex) {
+    // case WALLET_LIST_SOLFARE:
+    //     g_currentSOLPathIndex[GetCurrentAccountIndex()] = index;
+    //     break;
+    // default:
+    //     g_currentEthPathIndex[GetCurrentAccountIndex()] = index;
+    //     break;
+    // }
 }
 
 static bool IsSelectChanged(void)
@@ -1757,7 +1739,6 @@ static void OpenDerivationPath()
 
 static void ChangeDerivationPathHandler(lv_event_t *e)
 {
-
     OpenDerivationPath();
     QRCodePause(true);
 }
@@ -1776,9 +1757,8 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0),
                         CloseHintBoxHandler, LV_EVENT_CLICKED,
                         &g_openMoreHintBox);
-    lv_obj_t *btn =
-        GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
-                              OpenTutorialHandler, wallet, true);
+    lv_obj_t *btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
+                                          OpenTutorialHandler, wallet, true);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 #ifndef BTC_ONLY
     if (IsEVMChain(*wallet) || IsSOL(*wallet)) {

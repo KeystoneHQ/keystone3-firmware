@@ -58,7 +58,8 @@ typedef struct {
 
 static bool GetPublicKeyFromJsonString(const char *string);
 static char *GetJsonStringFromPublicKey(void);
-
+static cJSON* ReadAndParseAccountJson(uint32_t *outAddr, uint32_t *outSize);
+static void WriteJsonToFlash(uint32_t addr, cJSON *rootJson);
 static void FreePublicKeyRam(void);
 static void PrintInfo(void);
 static void SetIsTempAccount(bool isTemp);
@@ -293,6 +294,8 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
         rootJson = cJSON_CreateObject();
         for (int i = 0; i < count; i++) {
             jsonItem = cJSON_CreateObject();
+            cJSON_AddItemToObject(jsonItem, "recvIndex", cJSON_CreateNumber(0));
+            cJSON_AddItemToObject(jsonItem, "recvPath", cJSON_CreateNumber(0));
             cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(false));
             if (!strcmp(walletList[i].name, "TON") && isTon) {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
@@ -360,6 +363,8 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
         cJSON *item = cJSON_GetObjectItem(rootJson, walletList[i].name);
         if (item == NULL) {
             item = cJSON_CreateObject();
+            cJSON_AddItemToObject(item, "recvIndex", cJSON_CreateNumber(0));
+            cJSON_AddItemToObject(item, "recvPath", cJSON_CreateNumber(0));
             cJSON_AddItemToObject(item, "firstRecv", cJSON_CreateBool(false));
             cJSON_AddItemToObject(item, "manage", cJSON_CreateBool(walletList[i].state));
 #ifdef BTC_ONLY
@@ -627,7 +632,6 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     MnemonicType mnemonicType = GetMnemonicType();
     bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
     bool isTon = mnemonicType == MNEMONIC_TYPE_TON;
-    bool isBip39 = mnemonicType == MNEMONIC_TYPE_BIP39;
 
     //TON Wallet doesn't support passphrase so we dont need to consider it.
     if (isTon) {
@@ -1304,4 +1308,204 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
     }
     cJSON_Delete(rootJson);
     return ret;
+}
+
+uint32_t GetAccountReceiveIndex(const char* chainName)
+{
+    uint32_t index = 0;
+    cJSON *rootJson = ReadAndParseAccountJson(NULL, NULL);
+
+    cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
+    if (item == NULL) {
+        printf("receive index cannot get %s\r\n", chainName);
+    } else {
+        cJSON *recvIndex = cJSON_GetObjectItem(item, "recvIndex");
+        index = recvIndex ? recvIndex->valueint : 0;
+    }
+    cJSON_Delete(rootJson);
+    return index;
+}
+
+void SetAccountReceiveIndex(const char* chainName, uint32_t index)
+{
+    uint32_t addr;
+    cJSON *rootJson = ReadAndParseAccountJson(&addr, NULL);
+
+    cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
+    if (item == NULL) {
+        printf("SetAccountReceiveIndex cannot get %s\r\n", chainName);
+        cJSON_Delete(rootJson);
+
+    }
+
+    cJSON *recvIndex = cJSON_GetObjectItem(item, "recvIndex");
+    if (recvIndex != NULL) {
+        cJSON_ReplaceItemInObject(item, "recvIndex", cJSON_CreateNumber(index));
+    } else {
+        cJSON_AddItemToObject(item, "recvIndex", cJSON_CreateNumber(index));
+    }
+    char *jsonString = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4, false);
+    printf("jsonString = %s\n", jsonString);
+
+    WriteJsonToFlash(addr, rootJson);
+    cJSON_Delete(rootJson);
+}
+
+uint32_t GetAccountReceivePath(const char* chainName)
+{
+    uint32_t index = 0;
+    cJSON *rootJson = ReadAndParseAccountJson(NULL, NULL);
+
+    cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
+    if (item == NULL) {
+        printf("recvPath index cannot get %s\r\n", chainName);
+    } else {
+        cJSON *recvPath = cJSON_GetObjectItem(item, "recvPath");
+        index = recvPath ? recvPath->valueint : 0;
+    }
+    printf("%s %d..\n", __func__, __LINE__);
+    cJSON_Delete(rootJson);
+    return index;
+}
+
+void SetAccountReceivePath(const char* chainName, uint32_t index)
+{
+    uint32_t addr;
+    cJSON *rootJson = ReadAndParseAccountJson(&addr, NULL);
+
+    cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
+    if (item == NULL) {
+        printf("SetAccountReceivePath cannot get %s\r\n", chainName);
+        cJSON_Delete(rootJson);
+        return;
+    }
+    cJSON *recvPath = cJSON_GetObjectItem(item, "recvPath");
+    if (recvPath != NULL) {
+        cJSON_ReplaceItemInObject(item, "recvPath", cJSON_CreateNumber(index));
+    } else {
+        cJSON_AddItemToObject(item, "recvPath", cJSON_CreateNumber(index));
+    }
+
+    WriteJsonToFlash(addr, rootJson);
+    cJSON_Delete(rootJson);
+}
+
+uint32_t GetAccountIndex(const char* chainName)
+{
+    uint32_t index = 0;
+    cJSON *rootJson = ReadAndParseAccountJson(NULL, NULL);
+
+    cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
+    if (item == NULL) {
+        printf("account index cannot get %s\r\n", chainName);
+    } else {
+        cJSON *recvAccount = cJSON_GetObjectItem(item, "recvAccount");
+        index = recvAccount ? recvAccount->valueint : 0;
+    }
+    cJSON_Delete(rootJson);
+    return index;
+}
+
+void SetAccountIndex(const char* chainName, uint32_t index)
+{
+    uint32_t addr;
+    cJSON *rootJson = ReadAndParseAccountJson(&addr, NULL);
+
+    cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
+    if (item == NULL) {
+        printf("SetAccountIndex cannot get %s\r\n", chainName);
+        cJSON_Delete(rootJson);
+        return;
+    }
+    cJSON *recvAccount = cJSON_GetObjectItem(item, "recvAccount");
+    if (recvAccount != NULL) {
+        cJSON_ReplaceItemInObject(item, "recvAccount", cJSON_CreateNumber(index));
+    } else {
+        cJSON_AddItemToObject(item, "recvAccount", cJSON_CreateNumber(index));
+    }
+
+    WriteJsonToFlash(addr, rootJson);
+    cJSON_Delete(rootJson);
+}
+
+uint32_t GetConnectWalletPathIndex(const char* walletName)
+{
+    uint32_t index = 0;
+    cJSON *rootJson = ReadAndParseAccountJson(NULL, NULL);
+
+    cJSON *item = cJSON_GetObjectItem(rootJson, walletName);
+    if (item == NULL) {
+        printf("GetConnectWalletPathIndex get %s\r\n", walletName);
+    } else {
+        cJSON *derivePath = cJSON_GetObjectItem(item, "derivePath");
+        index = derivePath ? derivePath->valueint : 0;
+    }
+    cJSON_Delete(rootJson);
+    return index;
+}
+
+void SetConnectWalletPathIndex(const char* walletName, uint32_t index)
+{
+    uint32_t addr;
+    cJSON *rootJson = ReadAndParseAccountJson(&addr, NULL);
+
+    cJSON *item = cJSON_GetObjectItem(rootJson, walletName);
+    if (item == NULL) {
+        cJSON *jsonItem = cJSON_CreateObject();
+        cJSON_AddItemToObject(jsonItem, "derivePath", cJSON_CreateNumber(index));
+        cJSON_AddItemToObject(rootJson, walletName, jsonItem);
+    } else {
+        cJSON *derivePath = cJSON_GetObjectItem(item, "derivePath");
+        if (derivePath != NULL) {
+            cJSON_ReplaceItemInObject(item, "derivePath", cJSON_CreateNumber(index));
+        } else {
+            cJSON_AddItemToObject(item, "derivePath", cJSON_CreateNumber(index));
+        }
+    }
+
+    WriteJsonToFlash(addr, rootJson);
+    cJSON_Delete(rootJson);
+}
+
+static cJSON* ReadAndParseAccountJson(uint32_t *outAddr, uint32_t *outSize)
+{
+    int32_t ret = SUCCESS_CODE;
+    uint32_t addr, size;
+    char *jsonString = NULL;
+    cJSON *rootJson = NULL;
+
+    uint8_t account = GetCurrentAccountIndex();
+    ASSERT(account < 3);
+    addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + account * SPI_FLASH_ADDR_EACH_SIZE;
+    ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
+    ASSERT(ret == 4);
+
+    jsonString = SRAM_MALLOC(size + 1);
+    ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
+    ASSERT(ret == size);
+    jsonString[size] = 0;
+
+    rootJson = cJSON_Parse(jsonString);
+    SRAM_FREE(jsonString);
+
+    if (outAddr) *outAddr = addr;
+    if (outSize) *outSize = size;
+
+    return rootJson;
+}
+
+static void WriteJsonToFlash(uint32_t addr, cJSON *rootJson)
+{
+    uint32_t eraseAddr, size;
+    char *jsonString = NULL;
+
+    for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MUTABLE_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
+        Gd25FlashSectorErase(eraseAddr);
+    }
+    jsonString = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4, false);
+    RemoveFormatChar(jsonString);
+    size = strlen(jsonString);
+    Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
+    Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
+    EXT_FREE(jsonString);
 }

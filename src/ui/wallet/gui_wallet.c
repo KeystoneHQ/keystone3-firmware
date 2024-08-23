@@ -615,12 +615,12 @@ UREncodeResult *GuiGetBackpackData(void)
 UREncodeResult *GuiGetThorWalletBtcData(void)
 {
 
-    uint8_t mfp[4] = {0};
+    uint8_t mfp[5] = {0};
     GetMasterFingerPrint(mfp);
 
     PtrT_CSliceFFI_ExtendedPublicKey public_keys =
         SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    ExtendedPublicKey keys[5];
+    ExtendedPublicKey keys[6];
     public_keys->data = keys;
     public_keys->size = 5;
     keys[0].path = "m/84'/0'/0'";
@@ -633,6 +633,8 @@ UREncodeResult *GuiGetThorWalletBtcData(void)
     keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_THOR);
     keys[4].path = "m/44'/60'/0'";
     keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+    keys[5].path = "m/44'/931'/0'";
+    keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_MAYA);
 
     char serialNumber[256];
     GetSerialNumber(serialNumber);

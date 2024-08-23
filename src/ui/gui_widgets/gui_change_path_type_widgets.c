@@ -168,6 +168,7 @@ static void ConfirmAddrTypeHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED && IsAddrTypeSelectChanged()) {
         SetPathIndex(g_selectType);
+        SetAccountReceivePath(GetCoinCardByIndex(g_currentChain)->coin, g_selectType);
         if (g_changed_cb != NULL) {
             g_changed_cb(e);
         }
@@ -182,6 +183,7 @@ static bool IsAddrTypeSelectChanged()
 
 static uint32_t GetPathIndex(void)
 {
+    return GetAccountReceivePath(GetCoinCardByIndex(g_currentChain)->coin);
     switch (g_currentChain) {
     case HOME_WALLET_CARD_ETH:
         return g_ethPathIndex[g_currentAccountIndex];

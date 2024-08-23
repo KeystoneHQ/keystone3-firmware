@@ -575,6 +575,7 @@ static void ConfirmAddrTypeHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED && IsAddrTypeSelectChanged()) {
         SetPathIndex(g_selectType);
+        SetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin, g_selectType);
         g_selectIndex = 0;
         SetCurrentSelectIndex(g_selectIndex);
         ReturnHandler(e);
@@ -1018,6 +1019,7 @@ static void RightBtnHandler(lv_event_t *e)
 
 static uint32_t GetPathIndex(void)
 {
+    return GetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin);
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
         return g_ethPathIndex[g_currentAccountIndex];
@@ -1380,10 +1382,12 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     default:
         break;
     }
+    SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
 }
 
 static uint32_t GetCurrentSelectIndex()
 {
+    return GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
         return g_ethSelectIndex[g_currentAccountIndex];

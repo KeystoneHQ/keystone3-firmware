@@ -1165,6 +1165,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
             break;
         }
     }
+    SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
 }
 
 static uint32_t GetCurrentSelectIndex()
@@ -1172,6 +1173,7 @@ static uint32_t GetCurrentSelectIndex()
     if (!IsAccountSwitchable()) {
         return 0;
     }
+    return GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
     switch (g_chainCard) {
     case HOME_WALLET_CARD_SUI:
         return g_suiSelectIndex[GetCurrentAccountIndex()];

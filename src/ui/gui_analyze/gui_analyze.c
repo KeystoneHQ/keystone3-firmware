@@ -1109,6 +1109,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiBtcTxOverview;
     } else if (!strcmp(funcName, "GuiBtcTxDetail")) {
         return GuiBtcTxDetail;
+    } else if (!strcmp(funcName, "GuiBtcMsg")) {
+        return GuiBtcMsg;
     }
 #ifndef BTC_ONLY
     if (!strcmp(funcName, "GuiShowSolTxOverview")) {
@@ -1133,8 +1135,6 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiArDataItemOverview;
     } else if (!strcmp(funcName, "GuiArDataItemDetail")) {
         return GuiArDataItemDetail;
-    } else if (!strcmp(funcName, "GuiBtcMsg")) {
-        return GuiBtcMsg;
     }
 #endif
     return NULL;

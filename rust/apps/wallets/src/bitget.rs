@@ -51,6 +51,7 @@ pub fn generate_crypto_multi_accounts(
                     master_fingerprint,
                     ele.clone(),
                     None,
+                    false,
                 )?);
             }
             _path if _path.to_string().to_lowercase().eq(ETH_STANDARD_PREFIX) => {
@@ -58,6 +59,13 @@ pub fn generate_crypto_multi_accounts(
                     master_fingerprint,
                     ele.clone(),
                     Some("account.standard".to_string()),
+                    true,
+                )?);
+                keys.push(generate_k1_normal_key(
+                    master_fingerprint,
+                    ele.clone(),
+                    Some("account.ledger_legacy".to_string()),
+                    false,
                 )?);
                 keys.push(generate_eth_ledger_live_key(
                     master_fingerprint,
@@ -99,6 +107,7 @@ fn generate_k1_normal_key(
     mfp: [u8; 4],
     key: ExtendedPublicKey,
     note: Option<String>,
+    is_standard: bool,
 ) -> URResult<CryptoHDKey> {
     let xpub = third_party::bitcoin::bip32::Xpub::decode(&key.get_key())
         .map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
@@ -113,13 +122,27 @@ fn generate_k1_normal_key(
         Some(mfp),
         Some(xpub.depth as u32),
     );
+
+    let children = CryptoKeyPath::new(
+        match is_standard {
+            true => {
+                vec![
+                    get_path_component(Some(0), false)?,
+                    get_path_component(None, false)?,
+                ]
+            }
+            false => vec![get_path_component(None, false)?],
+        },
+        None,
+        Some(0),
+    );
     Ok(CryptoHDKey::new_extended_key(
         Some(false),
         xpub.public_key.serialize().to_vec(),
         Some(xpub.chain_code.to_bytes().to_vec()),
         None,
         Some(key_path),
-        None,
+        Some(children),
         Some(xpub.parent_fingerprint.to_bytes()),
         Some("Keystone".to_string()),
         note,

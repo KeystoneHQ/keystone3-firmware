@@ -1,3 +1,16 @@
+## 1.1.2-BTC(2024-08-26)
+
+### v1.1.2 Bitcoin-Only Firmware
+
+### What's New
+1. Added support for message signing.
+
+### Improvements
+1. Optimized battery display logic.
+
+
+
+
 ## 1.1.0-BTC (2024-04-19)
 
 ### v1.1.0 Bitcoin-Only Firmware

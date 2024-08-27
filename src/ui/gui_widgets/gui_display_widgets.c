@@ -67,7 +67,6 @@ static uint32_t GetAutoShutdownTimeByEnum(AUTO_SHUTDOWN_ENUM shutdownTime);
 static const char *GetAutoShutdownTimeDescByLockTime(void);
 static void NftScreenSaverSwitchHandler(lv_event_t * e);
 static void OpenNftTutorialHandler(lv_event_t *e);
-static void SwitchNftScreenSaverHandler(lv_event_t *e);
 
 void GuiDisplayWidgetsInit()
 {
@@ -189,19 +188,23 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
                                     OpenNftTutorialHandler, NULL);
     lv_obj_set_style_radius(btn, 12, LV_PART_MAIN);
     lv_obj_t *nftSwitch = GuiCreateSwitch(parent);
-    if (GetNftScreenSaver()) {
-        lv_obj_add_state(nftSwitch, LV_STATE_CHECKED);
+    if (!IsNftScreenValid()) {
+        lv_obj_set_style_bg_opa(nftSwitch, LV_OPA_30, LV_PART_KNOB);
     } else {
-        lv_obj_clear_state(nftSwitch, LV_STATE_CHECKED);
+        if (GetNftScreenSaver()) {
+            lv_obj_add_state(nftSwitch, LV_STATE_CHECKED);
+        } else {
+            lv_obj_clear_state(nftSwitch, LV_STATE_CHECKED);
+        }
     }
+    lv_obj_clear_flag(nftSwitch, LV_OBJ_FLAG_CLICKABLE);
     nftTable[0].obj = btn;
     nftTable[0].position.x = 24;
     nftTable[1].obj = nftSwitch;
     nftTable[1].align = LV_ALIGN_RIGHT_MID;
     nftTable[1].position.x = -24;
-    lv_obj_add_event_cb(nftSwitch, NftScreenSaverSwitchHandler, LV_EVENT_VALUE_CHANGED, NULL);
     button = GuiCreateButton(parent, 456, 84, nftTable, NUMBER_OF_ARRAYS(nftTable),
-                             SwitchNftScreenSaverHandler, NULL);
+                             NftScreenSaverSwitchHandler, nftSwitch);
     GuiAlignToPrevObj(button, LV_ALIGN_OUT_BOTTOM_MID, 0, 25);
 
     label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_auto_lock"));
@@ -269,12 +272,6 @@ static void SaveSystemSetting(lv_timer_t *timer)
     lv_timer_del(timer);
     g_delayTaskTimer = NULL;
     UNUSED(g_delayTaskTimer);
-}
-
-static void SwitchNftScreenSaverHandler(lv_event_t *e)
-{
-    printf("SwitchNftScreenSaverHandler\n");
-    GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);
 }
 
 static void ChooseAutoLockTimeHandler(lv_event_t *e)
@@ -579,17 +576,19 @@ static const char *GetAutoShutdownTimeDescByLockTime(void)
 
 static void NftScreenSaverSwitchHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_target(e);
-
-    if (code == LV_EVENT_VALUE_CHANGED) {
-        if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
-            SetNftScreenSaver(true);
-        } else {
-            SetNftScreenSaver(false);
-        }
-        SaveDeviceSettings();
+    lv_obj_t * obj = lv_event_get_user_data(e);
+    if (!IsNftScreenValid()) {
+        return;
     }
+
+    if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
+        lv_obj_clear_state(obj, LV_STATE_CHECKED);
+        SetNftScreenSaver(false);
+    } else {
+        lv_obj_add_state(obj, LV_STATE_CHECKED);
+        SetNftScreenSaver(true);
+    }
+    SaveDeviceSettings();
 }
 
 static void OpenNftTutorialHandler(lv_event_t *e)

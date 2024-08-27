@@ -108,6 +108,9 @@ pub struct DisplaySolanaTxSplTokenTransferOverview {
     pub authority: PtrString,
     pub decimals: u8,
     pub amount: PtrString,
+    pub token_mint_account: PtrString,
+    pub token_symbol: PtrString,
+    pub token_name: PtrString,
 }
 impl_c_ptrs!(DisplaySolanaTxSplTokenTransferOverview);
 impl Free for DisplaySolanaTxSplTokenTransferOverview {
@@ -116,6 +119,9 @@ impl Free for DisplaySolanaTxSplTokenTransferOverview {
         free_str_ptr!(self.destination);
         free_str_ptr!(self.authority);
         free_str_ptr!(self.amount);
+        free_str_ptr!(self.token_mint_account);
+        free_str_ptr!(self.token_symbol);
+        free_str_ptr!(self.token_name);
     }
 }
 #[repr(C)]
@@ -326,6 +332,11 @@ impl From<&ParsedSolanaTx> for DisplaySolanaTxOverview {
                             authority: convert_c_char(overview.authority.to_string()),
                             decimals: overview.decimals,
                             amount: convert_c_char(overview.amount.to_string()),
+                            token_mint_account: convert_c_char(
+                                overview.token_mint_account.to_string(),
+                            ),
+                            token_symbol: convert_c_char(overview.token_symbol.to_string()),
+                            token_name: convert_c_char(overview.token_name.to_string()),
                         }
                         .c_ptr(),
                         ..DisplaySolanaTxOverview::default()

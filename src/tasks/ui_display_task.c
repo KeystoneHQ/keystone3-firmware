@@ -22,6 +22,7 @@
 #define LVGL_IDLE_TICK_MS                   100
 #define LVGL_GRAM_PIXEL         LCD_DISPLAY_WIDTH * 450
 
+bool IsWakeupByFinger(void);
 bool GuiLetterKbStatusError(void);
 static void UiDisplayTask(void *argument);
 static void RefreshLvglTickMode(void);
@@ -58,7 +59,7 @@ void CreateUiDisplayTask(void)
 #define LCD_DISPLAY_WIDTH  480
 #define LCD_DISPLAY_HEIGHT 800
 #define ROWS_PER_STEP      40
-void refreshDisplay(uint16_t *snapShotAddr)
+void RefreshDisplay(uint16_t *snapShotAddr)
 {
     for (int y = LCD_DISPLAY_HEIGHT - 1; y >= 0; y -= ROWS_PER_STEP) {
         int startY = y - ROWS_PER_STEP + 1;
@@ -163,7 +164,7 @@ static void UiDisplayTask(void *argument)
                 while (LcdBusy()) {
                     osDelay(1);
                 }
-                refreshDisplay(snapShotAddr);
+                RefreshDisplay(snapShotAddr);
                 if (snapShotAddr != NULL) {
                     EXT_FREE(snapShotAddr);
                 }
@@ -252,6 +253,22 @@ void DrawNftImage(void)
     EXT_FREE(fileBuf);
 }
 
+void SetNftLockState(void)
+{
+    g_lockNft = true;
+}
+
+void NftLockQuit(void)
+{
+    if (g_lockNft == false) {
+        return;
+    }
+    osKernelLock();
+    PubValueMsg(UI_MSG_CLOSE_NFT_LOCK, 0);
+    g_lockNft = false;
+    osKernelUnlock();
+}
+
 void NftLockDecodeTouchQuit(void)
 {
     static bool quitArea = false;
@@ -295,8 +312,8 @@ static void __SetLvglHandlerAndSnapShot(uint32_t value)
         while (LcdBusy()) {
             osDelay(1);
         }
-        g_lockNft = true;
-        if (GetNftScreenSaver()) {
+
+        if (g_lockNft && GetNftScreenSaver() && IsNftScreenValid() && !IsWakeupByFinger()) {
             DrawNftImage();
         } else {
             LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)snapShotAddr);

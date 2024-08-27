@@ -18,6 +18,16 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+void NftLockQuit()
+{
+    
+}
+
+void NftLockDecodeTouchQuit()
+{
+    
+}
+
 int32_t GetUpdatePubKey(uint8_t *pubKey)
 {
     sprintf(pubKey, "%02x", 0x4);

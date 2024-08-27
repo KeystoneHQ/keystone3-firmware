@@ -175,16 +175,14 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             sendTlvArray[0].value = 4;
             break;
         }
-        if (!g_isNftFile) {
-            sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
-            PrintArray("hash", hash, 32);
-            if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
-                printf("verify signature fail\n");
-                sendTlvArray[0].value = 3;
-                break;
-            }
-            printf("verify signature ok\n");
+        sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
+        PrintArray("hash", hash, 32);
+        if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
+            printf("verify signature fail\n");
+            sendTlvArray[0].value = 3;
+            break;
         }
+        printf("verify signature ok\n");
         uint8_t walletAmount;
         GetExistAccountNum(&walletAmount);
         if (GetCurrentAccountIndex() == ACCOUNT_INDEX_LOGOUT && walletAmount != 0) {
@@ -326,11 +324,18 @@ static void FileTransTimeOutTimerFunc(void *argument)
 {
     g_isReceivingFile = false;
     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
+    if (g_isNftFile) {
+        GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN, 0);
+        GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN_TRANS_FAIL, 0);
+    }
+    g_isNftFile = false;
 }
 
 static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     g_isNftFile = true;
+    SetNftBinValid(false);
+    SaveDeviceSettings();
     return ServiceFileTransInfo(head, tlvData, outLen);
 }
 
@@ -390,10 +395,8 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     ASSERT(g_fileTransTimeOutTimer);
     osTimerStop(g_fileTransTimeOutTimer);
     g_fileTransCtrl.endTick = osKernelGetTickCount();
-    PrintArray("tlvData", tlvData, head->length);
-    PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
     MD5_Final(md5Result, &ctx);
-    PrintArray("md5Result", md5Result, 16);
+    ASSERT(memcmp(md5Result, g_fileTransInfo.md5, 16) == 0);
     printf("total tick=%d\n", g_fileTransCtrl.endTick - g_fileTransCtrl.startTick);
 
     sendHead.packetIndex = head->packetIndex;
@@ -403,6 +406,8 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     sendHead.flag.b.isHost = 0;
 
     *outLen = sizeof(FrameHead_t) + 4;
+    SetNftBinValid(true);
+    SaveDeviceSettings();
     WriteNftToFlash();
     GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN, 0);
     GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);

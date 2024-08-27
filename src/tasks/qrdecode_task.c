@@ -216,6 +216,11 @@ static void QrDecodeMinuteTimerFunc(void *argument)
     PubValueMsg(QRDECODE_MSG_MINUTE, 0);
 }
 
+bool IsQrDecodeRunning(void)
+{
+    return (g_qrDecodeState == QR_DECODE_STATE_ON);
+}
+
 void QrDecodeTouchQuit(void)
 {
     static bool quitArea = false;

@@ -37,6 +37,7 @@ int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
 int32_t GetWalletAmountAfterWakeup(const void *inData, uint32_t inDataLen);
 
 volatile LowPowerState g_lowPowerState = LOW_POWER_STATE_WORKING;
+volatile WakeUpMethod g_wakeUpMethod = WAKE_UP_BY_BUTTON;
 
 void LowPowerTest(int argc, char *argv[])
 {
@@ -84,6 +85,7 @@ uint32_t EnterLowPower(void)
     printf("sleepSecond=%d\n", sleepSecond);
     TouchClose();
     UserDelay(10);
+    SetNftLockState();
     SetLvglHandlerAndSnapShot(false);
     CloseUsb();
     while (GetUsbState()) {
@@ -111,7 +113,17 @@ uint32_t EnterLowPower(void)
         ExtInterruptInit();
         EnterDeepSleep();
     }
+    if (ButtonPress() == true) {
+        g_wakeUpMethod = WAKE_UP_BY_BUTTON;
+    } else {
+        g_wakeUpMethod = WAKE_UP_BY_FINGER;
+    }
     return wakeUpCount;
+}
+
+bool IsWakeupByFinger(void)
+{
+    return (g_wakeUpMethod == WAKE_UP_BY_FINGER);
 }
 
 void RecoverFromLowPower(void)

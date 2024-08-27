@@ -11,6 +11,7 @@
 #include "gui_low_battery_widgets.h"
 #include "gui_nft_screen_widgets.h"
 #include "gui_firmware_update_deny_widgets.h"
+#include "gui_trans_nft_process_widgets.h"
 #include "gui_firmware_update_widgets.h"
 #include "gui_lock_widgets.h"
 #include "presetting.h"
@@ -22,6 +23,7 @@
 #include "device_setting.h"
 #include "drv_aw32001.h"
 #include "usb_task.h"
+#include "ui_display_task.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #else
@@ -117,19 +119,30 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_POWER_OPTION:
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0) {
+            NftLockQuit();
             OpenMsgBox(&g_guiMsgBoxPowerOption);
         } else {
             CloseMsgBox(&g_guiMsgBoxPowerOption);
         }
         break;
     case SIG_INIT_FIRMWARE_PROCESS:
-    case SIG_INIT_NFT_BIN:
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0) {
             OpenMsgBox(&g_guiMsgBoxFirmwareProcess);
         } else {
             CloseMsgBox(&g_guiMsgBoxFirmwareProcess);
         }
+        break;
+    case SIG_INIT_NFT_BIN:
+        rcvValue = *(uint32_t *)param;
+        if (rcvValue != 0) {
+            OpenMsgBox(&g_guiMsgBoxTransNftProcess);
+        } else {
+            CloseMsgBox(&g_guiMsgBoxTransNftProcess);
+        }
+        break;
+    case SIG_INIT_NFT_BIN_TRANS_FAIL:
+        GuiNftTransferFailed();
         break;
     case SIG_INIT_CLOSE_CURRENT_MSG_BOX:
         CloseCurrentMsgBox();

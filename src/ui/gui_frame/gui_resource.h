@@ -18,6 +18,7 @@ LV_IMG_DECLARE(imgWallet);
 LV_IMG_DECLARE(imgWallet2);
 LV_IMG_DECLARE(imgImport);
 LV_IMG_DECLARE(imgFailed);
+LV_IMG_DECLARE(imgLogoGraph);
 LV_IMG_DECLARE(imgLogoGraphL);
 LV_IMG_DECLARE(imgRedEye);
 LV_IMG_DECLARE(imgChange);
@@ -144,6 +145,8 @@ LV_IMG_DECLARE(imgBlueInformation);
 LV_IMG_DECLARE(imgInfoSmall);
 LV_IMG_DECLARE(imgNft);
 LV_IMG_DECLARE(imgWIF);
+LV_IMG_DECLARE(imgSoftwareWallet);
+
 
 
 // emoji

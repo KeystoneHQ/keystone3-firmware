@@ -1145,6 +1145,7 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
             *param != SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD &&
             *param != SIG_MULTISIG_WALLET_DELETE_VERIFY_PASSWORD &&
             *param != SIG_HARDWARE_CALL_DERIVE_PUBKEY &&
+            *param != SIG_INIT_CONNECT_USB &&
             !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
             !GuiCheckIfViewOpened(&g_createWalletView) &&
             !ModelGetPassphraseQuickAccess()) {

@@ -41,6 +41,7 @@ typedef enum {
     PRS_EXPORT_ADDRESS_DISALLOWED,
     PRS_EXPORT_ADDRESS_REJECTED,
     PRS_EXPORT_ADDRESS_BUSY,
+    PRS_EXPORT_HARDWARE_CALL_SUCCESS,
     // 0xA0000001 and beyond are client error codes
     RSP_MAX_VALUE = 0xFFFFFFFF,
 } StatusEnum;

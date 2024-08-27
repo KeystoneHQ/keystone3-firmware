@@ -95,9 +95,7 @@ static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, siz
 
 void GuiScanResult(bool result, void *param)
 {
-    printf("%s line = %d.......\n", __func__, __LINE__);
     if (result) {
-        printf("%s line = %d.......\n", __func__, __LINE__);
         UrViewType_t urViewType = *(UrViewType_t *)param;
         g_qrcodeViewType = urViewType.viewType;
 #ifdef BTC_ONLY
@@ -109,8 +107,6 @@ void GuiScanResult(bool result, void *param)
         }
 #endif
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
-        printf("g_qrcodeViewType = %d\n", g_qrcodeViewType);
-        printf("%s line = %d.......\n", __func__, __LINE__);
         // Not a chain based transaction, e.g. WebAuth
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
 #ifndef BTC_ONLY
@@ -128,11 +124,10 @@ void GuiScanResult(bool result, void *param)
             }
 #ifndef BTC_ONLY
             if (g_qrcodeViewType == KeyDerivationRequest) {
-                printf("%s line = %d.......\n", __func__, __LINE__);
                 if (!GuiCheckIfTopView(&g_homeView)) {
                     GuiCLoseCurrentWorkingView();
                 }
-                GuiFrameOpenView(&g_keyDerivationRequestView);
+                GuiFrameOpenViewWithParam(&g_keyDerivationRequestView, NULL, 0);
             }
 #else
             if (g_qrcodeViewType == MultisigWalletImport) {

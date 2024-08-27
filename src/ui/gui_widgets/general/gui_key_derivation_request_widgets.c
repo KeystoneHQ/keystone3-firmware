@@ -19,6 +19,7 @@ typedef struct KeyDerivationWidget {
     lv_obj_t *tileView;
     lv_obj_t *cont;
     lv_obj_t *qrCode;
+    lv_obj_t *usbCont;
 } KeyDerivationWidget_t;
 
 typedef enum {
@@ -29,6 +30,7 @@ typedef enum {
 typedef enum {
     TILE_APPROVE,
     TILE_QRCODE,
+    TILE_USB_CONNECT,
 
     TILE_BUTT,
 } PAGE_TILE;
@@ -50,6 +52,7 @@ static lv_obj_t *g_egCont = NULL;
 static lv_obj_t *g_egAddressIndex[2];
 static lv_obj_t *g_egAddress[2];
 static char g_derivationPathAddr[2][2][BUFFER_SIZE_128];
+static bool g_isUsb = false;
 
 static void RecalcCurrentWalletIndex(char *origin);
 
@@ -82,6 +85,12 @@ static void UpdateConfirmBtn(bool update);
 static bool IsSelectChanged(void);
 static void SetAccountType(uint8_t index);
 static bool IsCardano();
+static void GuiConnectUsbNVSBarInit(void);
+static void GuiConnectUsbEntranceWidget(lv_obj_t *parent);
+static void GuiConnectUsbCreateImg(lv_obj_t *parent);
+static void RejectButtonHandler(lv_event_t *e);
+static void ApproveButtonHandler(lv_event_t *e);
+static void GuiConnectUsbPasswordPass(void);
 static AdaXPubType GetAccountType(void);
 
 static KeyboardWidget_t *g_keyboardWidget = NULL;
@@ -108,7 +117,7 @@ void FreeKeyDerivationRequestMemory(void)
 static TransactionMode GetCurrentTransactionMode(void)
 {
     uint16_t requestID = GetCurrentUSParsingRequestID();
-    if (requestID != 0) {
+    if (requestID != 0xFFFF) {
         return TRANSACTION_MODE_USB;
     }
     return TRANSACTION_MODE_QR_CODE;
@@ -130,21 +139,14 @@ static void RecalcCurrentWalletIndex(char *origin)
     }
 }
 
-void GuiKeyDerivationRequestInit()
+void GuiKeyDerivationRequestInit(bool isUsb)
 {
+    g_isUsb = isUsb;
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
     g_keyDerivationTileView.pageWidget = CreatePageWidget();
     g_keyDerivationTileView.cont = g_keyDerivationTileView.pageWidget->contentZone;
     SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    lv_obj_t *tileView = lv_tileview_create(g_keyDerivationTileView.cont);
-    lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
-    if (GuiDarkMode()) {
-        lv_obj_set_style_bg_color(tileView, BLACK_COLOR, LV_PART_MAIN);
-    } else {
-        lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
-    }
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
+    lv_obj_t *tileView = GuiCreateTileView(g_keyDerivationTileView.cont);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, TILE_APPROVE, 0, LV_DIR_HOR);
     ModelParseQRHardwareCall();
     // choose different animate qr widget by hardware call  version
@@ -163,13 +165,23 @@ void GuiKeyDerivationRequestInit()
     } else {
         GuiCreateQRCodeWidget(tile);
     }
-    g_keyDerivationTileView.currentTile = TILE_APPROVE;
+
+    tile = lv_tileview_add_tile(tileView, TILE_USB_CONNECT, 0, LV_DIR_HOR);
+    GuiConnectUsbEntranceWidget(tile);
+    g_keyDerivationTileView.usbCont = tile;
+
+    if (isUsb) {
+        g_keyDerivationTileView.currentTile = TILE_USB_CONNECT;
+    } else {
+        g_keyDerivationTileView.currentTile = TILE_APPROVE;
+    }
     g_keyDerivationTileView.tileView = tileView;
 
     lv_obj_set_tile_id(g_keyDerivationTileView.tileView, g_keyDerivationTileView.currentTile, 0, LV_ANIM_OFF);
 }
 void GuiKeyDerivationRequestDeInit()
 {
+    g_isUsb = false;
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
     GUI_DEL_OBJ(g_derivationPathCont);
     GuiAnimatingQRCodeDestroyTimer();
@@ -278,8 +290,15 @@ static void OpenDerivationPath()
 
 void GuiKeyDerivationRequestRefresh()
 {
-    GuiAnimatingQRCodeControl(false);
+    if (g_isUsb) {
+        SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarMidBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+    } else {
+        GuiAnimatingQRCodeControl(false);    
+    }
 }
+
 void GuiKeyDerivationRequestNextTile()
 {
     g_keyDerivationTileView.currentTile++;
@@ -358,7 +377,9 @@ static UREncodeResult *ModelGenerateSyncUR(void)
         uint8_t mfp[4] = {0};
         GetMasterFingerPrint(mfp);
         // clean the cache after use
-        ClearSecretCache();
+        if (!g_isUsb) {
+            ClearSecretCache();
+        }
         return generate_key_derivation_ur(mfp, 4, &keys);
     }
     ExtendedPublicKey xpubs[24];
@@ -653,14 +674,35 @@ static void OnApproveHandler(lv_event_t *e)
     }
 }
 
+void GuiKeyDerivePasswordErrorCount(void *param)
+{
+    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
+        // if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
+        //     const char *data = "Please try again after unlocking";
+        //     HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_VERIFY_PASSWORD_ERROR);
+        // }
+    }
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+}
+
 void HiddenKeyboardAndShowAnimateQR()
 {
     // close password keyboard
-    GuiDeleteKeyboardWidget(g_keyboardWidget);
-    // show dynamic qr code
-    GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
-    // jump to next page to show qr code
-    GuiKeyDerivationRequestNextTile();
+    if (g_isUsb) {
+        if (g_keyboardWidget != NULL) {
+            GuiConnectUsbPasswordPass();
+        }
+        UREncodeResult *urResult = ModelGenerateSyncUR();
+        HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), RSP_SUCCESS_CODE);
+        free_ur_encode_result(urResult);
+    } else {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        // show dynamic qr code
+        GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
+        // jump to next page to show qr code
+        GuiKeyDerivationRequestNextTile();
+    }
 }
 
 static void OnReturnHandler(lv_event_t *e)
@@ -671,9 +713,6 @@ static void OnReturnHandler(lv_event_t *e)
 void GuiKeyDerivationWidgetHandleURGenerate(char *data, uint16_t len)
 {
     GuiAnimantingQRCodeFirstUpdate(data, len);
-    if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
-        HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), RSP_SUCCESS_CODE);
-    }
 }
 
 void GuiKeyDerivationWidgetHandleURUpdate(char *data, uint16_t len)
@@ -909,4 +948,77 @@ static void OpenTutorialHandler(lv_event_t *e)
     GUI_DEL_OBJ(g_openMoreHintBox);
 }
 
+void GuiResetCurrentKeyDerivationCache(uint8_t index)
+{
+    SetKeyDerivationAdaXpubTypesByAccountIndex(STANDARD_ADA, index);
+}
+
+static void GuiConnectUsbPasswordPass(void)
+{
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
+    g_keyboardWidget = NULL;
+    lv_obj_clean(g_keyDerivationTileView.usbCont);
+    lv_obj_t *parent = g_keyDerivationTileView.usbCont;
+    GuiConnectUsbCreateImg(parent);
+
+    lv_obj_t *titlelabel = GuiCreateLittleTitleLabel(parent, _("Connectioning Wallet"));
+    lv_obj_align(titlelabel, LV_ALIGN_TOP_MID, 0, 184);
+    lv_obj_t *contentLabel = GuiCreateNoticeLabel(parent, _("Please wait until the software wallet has completed the connection, then click to close."));
+    lv_obj_set_style_text_align(contentLabel, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(contentLabel, LV_ALIGN_TOP_MID, 0, 234);
+
+    lv_obj_t *button = GuiCreateTextBtn(parent, _("Close"));
+    lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_set_size(button, 408, 66);
+    lv_obj_add_event_cb(button, CloseCurrentViewHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiConnectUsbEntranceWidget(lv_obj_t *parent)
+{
+    GuiConnectUsbCreateImg(parent);
+    lv_obj_t *titlelabel = GuiCreateLittleTitleLabel(parent, _("usb_transport_connection_request"));
+    lv_obj_align(titlelabel, LV_ALIGN_TOP_MID, 0, 184);
+    lv_obj_t *contentLabel = GuiCreateNoticeLabel(parent, _("The software wallet is requesting to connect to your Keystone via USB.Enter your password to approve."));
+    lv_obj_set_style_text_align(contentLabel, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(contentLabel, LV_ALIGN_TOP_MID, 0, 234);
+
+    lv_obj_t *button = GuiCreateTextBtn(parent, _("Reject"));
+    lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 36, -24);
+    lv_obj_set_size(button, 192, 66);
+    lv_obj_add_event_cb(button, RejectButtonHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_set_style_bg_color(button, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(button, LV_OPA_20, LV_PART_MAIN);
+    
+    button = GuiCreateTextBtn(parent, _("Approve"));
+    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_set_size(button, 192, 66);
+    lv_obj_add_event_cb(button, ApproveButtonHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiConnectUsbCreateImg(lv_obj_t *parent)
+{
+    lv_obj_t *img = GuiCreateImg(parent, &imgSoftwareWallet);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 110, 40);
+
+    img = GuiCreateImg(parent, &imgLogoGraph);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 298, 40);
+}
+
+static void ApproveButtonHandler(lv_event_t *e)
+{
+    printf("approve ...\n");
+    static uint16_t sig = SIG_INIT_CONNECT_USB;
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_keyDerivationTileView.usbCont);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
+}
+
+static void RejectButtonHandler(lv_event_t *e)
+{
+    printf("recject ...\n");
+    const char *data = "UR parsing rejected";
+    HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
+    GuiCLoseCurrentWorkingView();
+    printf("recject ...\n");
+}
 #endif

@@ -45,6 +45,7 @@ void UserMsgInit(void)
     SubMessageID(UI_MSG_SCREEN_SHOT, g_uiQueue);
     SubMessageID(UI_MSG_PREPARE_RECEIVE_UR_USB, g_uiQueue);
     SubMessageID(UI_MSG_USB_TRANSPORT_VIEW, g_uiQueue);
+    SubMessageID(UI_MSG_USB_HARDWARE_VIEW, g_uiQueue);
     SubMessageID(UI_MSG_CLOSE_NFT_LOCK, g_uiQueue);
     SubMessageID(UI_MSG_OPEN_VIEW, g_uiQueue);
     SubMessageID(UI_MSG_CLOSE_VIEW, g_uiQueue);

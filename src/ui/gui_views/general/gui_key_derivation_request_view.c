@@ -4,25 +4,20 @@
 #include "gui_views.h"
 #include "gui_key_derivation_request_widgets.h"
 #include "gui_keyboard_hintbox.h"
-static int32_t GuiKeyDerivationRequestViewInit()
-{
-    GuiKeyDerivationRequestInit();
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiKeyDerivationRequestViewDeInit(void)
-{
-    GuiKeyDerivationRequestDeInit();
-    return SUCCESS_CODE;
-}
 
 int32_t GuiKeyDerivationRequestViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
+    bool isUsb = false;
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiKeyDerivationRequestViewInit();
+        if (param != NULL) {
+            isUsb = true;
+        }
+        GuiKeyDerivationRequestInit(isUsb);
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiKeyDerivationRequestViewDeInit();
+        GuiKeyDerivationRequestDeInit();
+        break; 
     case GUI_EVENT_REFRESH:
         GuiKeyDerivationRequestRefresh();
         break;
@@ -33,7 +28,11 @@ int32_t GuiKeyDerivationRequestViewEventProcess(void *self, uint16_t usEvent, vo
         GuiKeyDerivationWidgetHandleURUpdate((char*)param, usLen);
         break;
     case SIG_VERIFY_PASSWORD_PASS:
+    case SIG_USB_HARDWARE_CALL_PARSE_UR:
         HiddenKeyboardAndShowAnimateQR();
+        break;
+    case SIG_VERIFY_PASSWORD_FAIL:
+        GuiKeyDerivePasswordErrorCount(param);
         break;
     default:
         return ERR_GUI_UNHANDLED;

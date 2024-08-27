@@ -5,9 +5,12 @@
 #include "qrdecode_task.h"
 #include "gui_lock_widgets.h"
 #include "gui_resolve_ur.h"
+#include "gui_views.h"
+#include "general_msg.h"
+#include "gui_key_derivation_request_widgets.h"
 
 /* DEFINES */
-#define REQUEST_ID_IDLE 0
+#define REQUEST_ID_IDLE 0xFFFF
 
 /* TYPEDEFS */
 
@@ -49,11 +52,11 @@ static bool CheckURAcceptable(void)
         return false;
     }
     // Only allow URL parsing on specific pages
-    if (!GuiHomePageIsTop()) {
-        const char *data = "Export address is just allowed on specific pages";
-        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
-        return false;
-    }
+    // if (!GuiHomePageIsTop()) {
+    //     const char *data = "Export address is just allowed on specific pages";
+    //     HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
+    //     return false;
+    // }
     return true;
 }
 
@@ -75,7 +78,7 @@ void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requ
     resultPage->command = CMD_RESOLVE_UR;
     resultPage->error_code = status;
     resultPage->error_message = (char *)data;
-    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR) {
+    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR || status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
         return;
     }
     GotoResultPage(resultPage);
@@ -109,7 +112,8 @@ void ProcessURService(EAPDURequestPayload_t *payload)
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
     if (urResult->ur_type == QRHardwareCall) {
-        handleURResult(urResult, NULL, urViewType, false);
+        GuiSetKeyDerivationRequestData(urResult, NULL, false);
+        PubValueMsg(UI_MSG_USB_HARDWARE_VIEW, 0);
         return;
     }
 

@@ -108,16 +108,6 @@ int main(int argc, char **argv)
     DeviceSettingsInit();
 
     GuiStyleInit();
-#include "librust_c.h"
-    uint8_t privKey[] = {36, 152, 38, 220, 181, 219, 183, 145, 246, 234, 111, 76, 161, 118, 67, 239, 70, 95, 241, 130, 17, 82, 24, 232, 53, 216, 250, 63, 93, 81, 164, 129};
-    char *pubkeystr = "02f4599fff0b104401aefb131f29254f54c33e56186d4cabdc194706f031c9af2a";
-    uint8_t pubkey[] = {3, 161, 210, 17, 253, 221, 40, 129, 137, 80, 105, 46, 126, 230, 80, 221, 82, 51, 206, 214, 24, 144, 201, 11, 99, 132, 251, 21, 68, 169, 44, 42, 251};
-    SimpleResponse_u8 *simpleResponse = k1_generate_ecdh_sharekey(privKey, sizeof(privKey), pubkey, sizeof(pubkey));
-    // SimpleResponse_u8 *simpleResponse = k1_generate_pubkey_by_privkey(privKey, 32);
-    for (int i = 0; i < 32; i++)
-    {
-        printf("%d ", simpleResponse->data[i]);
-    }
     LanguageInit();
 
     uint8_t pubKey1[33] = {

@@ -87,7 +87,7 @@ static void ThrowError(int32_t errorCode);
 static TransactionMode GetCurrentTransactionMode(void)
 {
     uint16_t requestID = GetCurrentUSParsingRequestID();
-    if (requestID != 0) {
+    if (requestID != 0xFFFF) {
         return TRANSACTION_MODE_USB;
     }
     return TRANSACTION_MODE_QR_CODE;

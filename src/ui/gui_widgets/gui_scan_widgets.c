@@ -121,15 +121,12 @@ void GuiScanResult(bool result, void *param)
             }
 #endif
         }
-        printf("%s line = %d.......\n", __func__, __LINE__);
         if (g_chainType == CHAIN_BUTT) {
-        printf("%s line = %d.......\n", __func__, __LINE__);
             if (g_qrcodeViewType == WebAuthResult) {
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_webAuthResultView);
             }
 #ifndef BTC_ONLY
-        printf("%s line = %d.......\n", __func__, __LINE__);
             if (g_qrcodeViewType == KeyDerivationRequest) {
                 printf("%s line = %d.......\n", __func__, __LINE__);
                 if (!GuiCheckIfTopView(&g_homeView)) {

@@ -677,6 +677,9 @@ static void GuiShowSolTxSquadsProposalOverview(lv_obj_t *parent, PtrT_DisplaySol
         char *program = squadsProposal->data[i].program;
         char *method = squadsProposal->data[i].method;
         char *memo = squadsProposal->data[i].memo;
+        if (strcmp(method, "Transfer") == 0) {
+            continue;
+        }
         lv_obj_t * proposalCard = CreateSolanaSquadsProposalOverviewCard(parent, program, method, memo, "");
         lv_obj_align(proposalCard, LV_ALIGN_TOP_LEFT, 0, containerYOffset);
         // force update layout to calculate the card height
@@ -684,6 +687,26 @@ static void GuiShowSolTxSquadsProposalOverview(lv_obj_t *parent, PtrT_DisplaySol
         int height = lv_obj_get_height(proposalCard) + 16;
         containerYOffset += height;
     }
+    for (int i = 0; i < squadsProposal->size; i++) {
+        char *method = squadsProposal->data[i].method;
+        char *data = squadsProposal->data[i].data;
+        if (strcmp(method, "Transfer") != 0) {
+            continue;
+        }
+        lv_obj_t *feeContainer =  GuiCreateAutoHeightContainer(parent, 408, 16);
+        lv_obj_t *feeLabel = lv_label_create(feeContainer);
+        lv_label_set_text(feeLabel, "Fee");
+        lv_obj_set_style_text_color(feeLabel, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_align(feeLabel, LV_ALIGN_TOP_LEFT, 24, 0);
+        SetTitleLabelStyle(feeLabel);
+
+        lv_obj_t *feeValue = lv_label_create(feeContainer);
+        lv_label_set_text(feeValue, data);
+        lv_obj_set_style_text_color(feeValue, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_align_to(feeValue, feeLabel, LV_ALIGN_OUT_RIGHT_MID, 15, 0);
+        lv_obj_align(feeContainer, LV_ALIGN_TOP_LEFT, 0, containerYOffset);
+    }
+
 }
 
 static void GuiShowSolTxVoteOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)

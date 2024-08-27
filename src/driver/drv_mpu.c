@@ -68,24 +68,24 @@ void MpuSetProtection(uint32_t baseAddress, uint32_t regionSize, uint32_t region
 
 void ConfigureMPUForBSS(void)
 {
-    uint32_t bss_start = (uint32_t)&_sbss;
-    uint32_t bss_size = (uint32_t)&_ebss - (uint32_t)&_sbss;
+    // uint32_t bss_start = (uint32_t)&_sbss;
+    // uint32_t bss_size = (uint32_t)&_ebss - (uint32_t)&_sbss;
     
-    uint32_t region_size = 32;
-    while (region_size < bss_size && region_size < 0x00100000) {
-        region_size *= 2;
-    }
+    // uint32_t region_size = 32;
+    // while (region_size < bss_size && region_size < 0x00100000) {
+    //     region_size *= 2;
+    // }
     
-    MpuSetProtection(
-        bss_start,
-        region_size,
-        MPU_REGION_NUMBER2,
-        MPU_INSTRUCTION_ACCESS_DISABLE,
-        MPU_REGION_PRIV_RW,
-        MPU_ACCESS_NOT_SHAREABLE,
-        MPU_ACCESS_CACHEABLE,
-        MPU_ACCESS_BUFFERABLE
-    );
+    // MpuSetProtection(
+    //     bss_start,
+    //     region_size,
+    //     MPU_REGION_NUMBER2,
+    //     MPU_INSTRUCTION_ACCESS_DISABLE,
+    //     MPU_REGION_PRIV_RW,
+    //     MPU_ACCESS_NOT_SHAREABLE,
+    //     MPU_ACCESS_CACHEABLE,
+    //     MPU_ACCESS_BUFFERABLE
+    // );
 }
 
 void MpuInit(void)

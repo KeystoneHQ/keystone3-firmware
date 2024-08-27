@@ -113,16 +113,16 @@ static uint8_t IsPrivileged(void)
 }
 static void DataParserCacheMpuInit(void)
 {
-    uint32_t region_size = (uint32_t)&__data_parser_end - (uint32_t)&__data_parser_start;
-    uint32_t region_size_pow2 = 1 << (32 - __builtin_clz(region_size - 1));
-    MpuSetProtection(g_dataParserCache,
-                     region_size_pow2,
-                     MPU_REGION_NUMBER0,
-                     MPU_INSTRUCTION_ACCESS_DISABLE,
-                     MPU_REGION_PRIV_RW,
-                     MPU_ACCESS_SHAREABLE,
-                     MPU_ACCESS_CACHEABLE,
-                     MPU_ACCESS_BUFFERABLE);
+    // uint32_t region_size = (uint32_t)&__data_parser_end - (uint32_t)&__data_parser_start;
+    // uint32_t region_size_pow2 = 1 << (32 - __builtin_clz(region_size - 1));
+    // MpuSetProtection(g_dataParserCache,
+    //                  region_size_pow2,
+    //                  MPU_REGION_NUMBER0,
+    //                  MPU_INSTRUCTION_ACCESS_DISABLE,
+    //                  MPU_REGION_PRIV_RW,
+    //                  MPU_ACCESS_SHAREABLE,
+    //                  MPU_ACCESS_CACHEABLE,
+    //                  MPU_ACCESS_BUFFERABLE);
 }
 
 static void DataParserTask(void *argument)

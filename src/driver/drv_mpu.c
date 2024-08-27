@@ -90,7 +90,7 @@ void ConfigureMPUForBSS(void)
 
 void MpuInit(void)
 {
-    ConfigureMPUForBSS();
+    // ConfigureMPUForBSS();
     MpuSetOtpProtection(true);
 }
 

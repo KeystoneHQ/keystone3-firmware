@@ -683,8 +683,9 @@ void ScanQrCodeHandler(lv_event_t *e)
         lv_timer_del(g_countDownTimer);
         g_countDownTimer = NULL;
     }
+    GuiFrameOpenView(&g_connectUsbView);
 
-    GuiFrameOpenView(lv_event_get_user_data(e));
+    // GuiFrameOpenView(lv_event_get_user_data(e));
 }
 
 void ConfirmManageAssetsHandler(lv_event_t *e)

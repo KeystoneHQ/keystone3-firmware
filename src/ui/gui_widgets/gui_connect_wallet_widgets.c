@@ -1299,25 +1299,19 @@ SOLAccountType GetSolflareAccountType(void)
 static int GetAccountType(void)
 {
     return GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex));
-    // switch (g_connectWalletTileView.walletIndex) {
-    // case WALLET_LIST_SOLFARE:
-    //     // return GetSolflareAccountType();
-    // default:
-    //     // return GetMetamaskAccountType();
-    // }
 }
 
 static void SetAccountType(uint8_t index)
 {
-    return SetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex), index);
-    // switch (g_connectWalletTileView.walletIndex) {
-    // case WALLET_LIST_SOLFARE:
-    //     g_currentSOLPathIndex[GetCurrentAccountIndex()] = index;
-    //     break;
-    // default:
-    //     g_currentEthPathIndex[GetCurrentAccountIndex()] = index;
-    //     break;
-    // }
+    switch (g_connectWalletTileView.walletIndex) {
+    case WALLET_LIST_SOLFARE:
+        g_currentSOLPathIndex[GetCurrentAccountIndex()] = index;
+        break;
+    default:
+        g_currentEthPathIndex[GetCurrentAccountIndex()] = index;
+        break;
+    }
+    SetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex), index);
 }
 
 static bool IsSelectChanged(void)

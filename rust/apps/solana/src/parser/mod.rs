@@ -427,6 +427,14 @@ impl ParsedSolanaTx {
                         data: None,
                     });
                 }
+                ProgramDetail::SystemTransfer(v) => {
+                    proposal_overview_vec.push(ProgramOverviewProposal {
+                        program: "System".to_string(),
+                        method: "Transfer".to_string(),
+                        memo: None,
+                        data: Some(v.value.clone()),
+                    });
+                }
                 _ => {}
             }
         }

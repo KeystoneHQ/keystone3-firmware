@@ -179,6 +179,10 @@ uint32_t GetAccountIndex(const char* chainName);
 void SetAccountIndex(const char* chainName, uint32_t index);
 void SetConnectWalletPathIndex(const char* walletName, uint32_t index);
 uint32_t GetConnectWalletPathIndex(const char* walletName);
+uint32_t GetConnectWalletAccountIndex(const char* walletName);
+void SetConnectWalletAccountIndex(const char* walletName, uint32_t index);
+uint32_t GetConnectWalletNetwork(const char* walletName);
+void SetConnectWalletNetwork(const char* walletName, uint32_t index);
 
 void ExportMultiSigXpub(ChainType chainType);
 void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager);

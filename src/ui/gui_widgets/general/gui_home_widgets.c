@@ -89,7 +89,6 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_UMEE, false, "UMEE", true},
     {HOME_WALLET_CARD_QCK, false, "QCK", true},
     {HOME_WALLET_CARD_TGD, false, "TGD", true},
-
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 static KeyboardWidget_t *g_keyboardWidget = NULL;

@@ -73,7 +73,12 @@ static void GotoFailPage(StatusEnum error_code, const char *error_message)
 
 void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
 {
-    BasicHandlerFunc(data, data_len, requestID, status);
+    StatusEnum sendStatus = status;
+    if (status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
+        sendStatus = RSP_SUCCESS_CODE;
+    }
+    
+    BasicHandlerFunc(data, data_len, requestID, sendStatus);    
     EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
     resultPage->command = CMD_RESOLVE_UR;
     resultPage->error_code = status;

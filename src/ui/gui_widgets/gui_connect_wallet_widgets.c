@@ -23,6 +23,7 @@
 #include "gui_connect_ada_widgets.h"
 #endif
 #include "gui_select_address_widgets.h"
+#include "account_public_info.h"
 
 #define DERIVATION_PATH_EG_LEN 2
 

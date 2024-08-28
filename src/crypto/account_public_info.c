@@ -1453,11 +1453,14 @@ void SetAccountIndex(const char* chainName, uint32_t index)
 uint32_t GetConnectWalletPathIndex(const char* walletName)
 {
     uint32_t index = 0;
+    char name[BUFFER_SIZE_32];
+    strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
+    RemoveFormatChar(name);
     cJSON *rootJson = ReadAndParseAccountJson(NULL, NULL);
 
-    cJSON *item = cJSON_GetObjectItem(rootJson, walletName);
+    cJSON *item = cJSON_GetObjectItem(rootJson, name);
     if (item == NULL) {
-        printf("GetConnectWalletPathIndex get %s\r\n", walletName);
+        printf("GetConnectWalletPathIndex get %s\r\n", name);
     } else {
         cJSON *derivePath = cJSON_GetObjectItem(item, "derivePath");
         index = derivePath ? derivePath->valueint : 0;
@@ -1471,13 +1474,16 @@ uint32_t GetConnectWalletPathIndex(const char* walletName)
 void SetConnectWalletPathIndex(const char* walletName, uint32_t index)
 {
     uint32_t addr;
+    char name[BUFFER_SIZE_32];
+    strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
+    RemoveFormatChar(name);
     cJSON *rootJson = ReadAndParseAccountJson(&addr, NULL);
 
-    cJSON *item = cJSON_GetObjectItem(rootJson, walletName);
+    cJSON *item = cJSON_GetObjectItem(rootJson, name);
     if (item == NULL) {
         cJSON *jsonItem = cJSON_CreateObject();
         cJSON_AddItemToObject(jsonItem, "derivePath", cJSON_CreateNumber(index));
-        cJSON_AddItemToObject(rootJson, walletName, jsonItem);
+        cJSON_AddItemToObject(rootJson, name, jsonItem);
     } else {
         cJSON *derivePath = cJSON_GetObjectItem(item, "derivePath");
         if (derivePath != NULL) {
@@ -1496,11 +1502,14 @@ void SetConnectWalletPathIndex(const char* walletName, uint32_t index)
 uint32_t GetConnectWalletAccountIndex(const char* walletName)
 {
     uint32_t index = 0;
+    char name[BUFFER_SIZE_32];
+    strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
+    RemoveFormatChar(name);
     cJSON *rootJson = ReadAndParseAccountJson(NULL, NULL);
 
-    cJSON *item = cJSON_GetObjectItem(rootJson, walletName);
+    cJSON *item = cJSON_GetObjectItem(rootJson, name);
     if (item == NULL) {
-        printf("GetConnectWalletAccountIndex get %s\r\n", walletName);
+        printf("GetConnectWalletAccountIndex get %s not exist\r\n", name);
     } else {
         cJSON *walletAccount = cJSON_GetObjectItem(item, "walletAccount");
         index = walletAccount ? walletAccount->valueint : 0;
@@ -1514,13 +1523,16 @@ uint32_t GetConnectWalletAccountIndex(const char* walletName)
 void SetConnectWalletAccountIndex(const char* walletName, uint32_t index)
 {
     uint32_t addr;
+    char name[BUFFER_SIZE_32];
+    strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
+    RemoveFormatChar(name);
     cJSON *rootJson = ReadAndParseAccountJson(&addr, NULL);
 
-    cJSON *item = cJSON_GetObjectItem(rootJson, walletName);
+    cJSON *item = cJSON_GetObjectItem(rootJson, name);
     if (item == NULL) {
         cJSON *jsonItem = cJSON_CreateObject();
         cJSON_AddItemToObject(jsonItem, "walletAccount", cJSON_CreateNumber(index));
-        cJSON_AddItemToObject(rootJson, walletName, jsonItem);
+        cJSON_AddItemToObject(rootJson, name, jsonItem);
     } else {
         cJSON *walletAccount = cJSON_GetObjectItem(item, "walletAccount");
         if (walletAccount != NULL) {

@@ -170,6 +170,7 @@ static void ConfirmAddrTypeHandler(lv_event_t *e)
         SetPathIndex(g_selectType);
         SetAccountReceivePath(GetCoinCardByIndex(g_currentChain)->coin, g_selectType);
         if (g_changed_cb != NULL) {
+            SetReceivePageAdaXPubType(g_selectType);
             g_changed_cb(e);
         }
         ReturnHandler(e);
@@ -333,7 +334,7 @@ static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t 
 {
     char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
     SimpleResponse_c_char *result = NULL;
-    xPub = GetCurrentAccountPublicKey(GetReceivePageAdaXPubTypeByIndex(index));
+    xPub = GetCurrentAccountPublicKey(GetReceivePageAdaXPubTypeByIndexAndType(g_selectType, index));
     snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", index);
     switch (type) {
     case 1:
@@ -395,7 +396,6 @@ static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked)
         lv_obj_clear_flag(g_changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     }
     if (g_currentChain == HOME_WALLET_CARD_ADA && isChecked) {
-        SetReceivePageAdaXPubType(g_selectType);
         RefreshDefaultAddress();
     }
 }

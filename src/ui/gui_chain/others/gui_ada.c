@@ -54,7 +54,7 @@ AdaXPubType GetReceivePageAdaXPubType(void)
 
 void SetKeyDerivationAdaXPubType(AdaXPubType type)
 {
-    SetConnectWalletAccountIndex("adaXpub", type);
+    // SetConnectWalletAccountIndex("adaXpub", type);
     g_keyDerivationAdaXpubTypes[GetCurrentAccountIndex()] = type;
 }
 
@@ -65,7 +65,7 @@ void SetKeyDerivationAdaXpubTypesByAccountIndex(AdaXPubType type, uint8_t accoun
 
 AdaXPubType GetKeyDerivationAdaXPubType(void)
 {
-    return GetConnectWalletAccountIndex("adaXpub");
+    // return GetConnectWalletAccountIndex("adaXpub");
     return g_keyDerivationAdaXpubTypes[GetCurrentAccountIndex()];
 }
 

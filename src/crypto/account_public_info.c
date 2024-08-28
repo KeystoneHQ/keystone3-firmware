@@ -707,13 +707,13 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         }
         g_tempPublicKeyAccountIndex = accountIndex;
         GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
+        if (g_tempParsePhraseJson != NULL) {
+            cJSON_Delete(g_tempParsePhraseJson);
+            g_tempParsePhraseJson = NULL;
+        }
     }
     CLEAR_ARRAY(seed);
 
-    if (g_tempParsePhraseJson != NULL) {
-        cJSON_Delete(g_tempParsePhraseJson);
-        g_tempParsePhraseJson = NULL;
-    }
     return ret;
 }
 

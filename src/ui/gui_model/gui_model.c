@@ -559,6 +559,7 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
     int ret = 0;
     uint8_t existIndex = 0;
     if (ton) {
+#ifndef BTC_ONLY
         VecFFI_u8 *entropyResult = ton_mnemonic_to_entropy(SecretCacheGetMnemonic());
         uint8_t checksum[32] = {0};
         CalculateTonChecksum(entropyResult->data, checksum);
@@ -576,6 +577,7 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
         } else {
             ret = SUCCESS_CODE;
         }
+#endif
     } else {
         do {
             SimpleResponse_c_char *xPubResult;

@@ -10,10 +10,11 @@
 #include "screen_manager.h"
 #include "account_manager.h"
 #include "gui_transaction_detail_widgets.h"
-#include "gui_chain_components.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_transaction_signature_widgets.h"
 #include "gui_btc_home_widgets.h"
+#else
+#include "gui_chain_components.h"
 #endif
 
 #define CHECK_FREE_PARSE_RESULT(result)                       \
@@ -1293,7 +1294,7 @@ void GuiBtcMsg(lv_obj_t *parent, void *totalData)
 
     lv_obj_t *lastView = NULL;
     if (msgData->address != NULL) {
-        lastView = CreateTransactionItemViewWithHint(parent, _("Address"), msgData->address, lastView, _("sign_message_check_address"));
+        // lastView = CreateTransactionItemViewWithHint(parent, _("Address"), msgData->address, lastView, _("sign_message_check_address"));
     }
-    lastView = CreateTransactionItemView(parent, _("Message"), msgData->detail, lastView);
+    // lastView = CreateTransactionItemView(parent, _("Message"), msgData->detail, lastView);
 }

@@ -627,6 +627,7 @@ GetTableDataFunc GuiBtcTableFuncGet(char *type)
     return NULL;
 }
 
+#ifndef BTC_ONLY
 GetLabelDataLenFunc GuiStellarTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetStellarRawMessageLength")) {
@@ -635,7 +636,6 @@ GetLabelDataLenFunc GuiStellarTextLenFuncGet(char *type)
     return NULL;
 }
 
-#ifndef BTC_ONLY
 GetLabelDataLenFunc GuiArTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetArweaveRawMessageLength")) {

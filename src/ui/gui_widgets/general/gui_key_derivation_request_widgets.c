@@ -295,53 +295,6 @@ static void ModelParseQRHardwareCall()
     g_callData = data->data;
     g_response = data;
 }
-#else
-static void ModelParseQRHardwareCall()
-{
-    g_response = SRAM_MALLOC(sizeof(Response_QRHardwareCallData));
-    g_response->error_code = 0;
-    g_response->error_message = "";
-    g_response->data = SRAM_MALLOC(sizeof(QRHardwareCallData));
-    g_response->data->call_type = "key_derivation";
-    g_response->data->origin = "Leap Wallet";
-    g_response->data->key_derivation = SRAM_MALLOC(sizeof(KeyDerivationRequestData));
-    g_response->data->key_derivation->schemas = SRAM_MALLOC(sizeof(VecFFI_KeyDerivationSchema));
-    g_response->data->key_derivation->schemas->cap = 4;
-    g_response->data->key_derivation->schemas->size = 4;
-    g_response->data->key_derivation->schemas->data = SRAM_MALLOC(4 * sizeof(KeyDerivationSchema));
-    // sol
-    g_response->data->key_derivation->schemas->data[0].algo = "ED25519";
-    // ed25519
-    g_response->data->key_derivation->schemas->data[0].curve = "1";
-    g_response->data->key_derivation->schemas->data[0].key_path = "44'/501'/0'";
-    g_response->data->key_derivation->schemas->data[0].chain_type = "SOL";
-    // cosmos
-    g_response->data->key_derivation->schemas->data[1].algo = "BIP32";
-    // secp256k1
-    g_response->data->key_derivation->schemas->data[1].curve = "0";
-    g_response->data->key_derivation->schemas->data[1].key_path = "44'/118'/0'";
-    g_response->data->key_derivation->schemas->data[1].chain_type = "ATOM";
-
-    // cosmos
-    g_response->data->key_derivation->schemas->data[2].algo = "BIP32";
-    // ed25519
-    g_response->data->key_derivation->schemas->data[2].curve = "1";
-    g_response->data->key_derivation->schemas->data[2].key_path = "44'/501'/0'/0/0";
-    g_response->data->key_derivation->schemas->data[2].chain_type = "SOL";
-
-    // cosmos
-    g_response->data->key_derivation->schemas->data[3].algo = "BIP32";
-    // secp256k1
-    g_response->data->key_derivation->schemas->data[3].curve = "0";
-    g_response->data->key_derivation->schemas->data[3].key_path = "44'/118'/0'/0/0";
-    g_response->data->key_derivation->schemas->data[3].chain_type = "ATOM";
-
-    g_response->data->version = "1";
-
-
-    g_callData = g_response->data;
-}
-#endif
 
 typedef enum {
     SECP256K1,
@@ -650,9 +603,6 @@ static void GuiShowKeyBoardDialog(lv_obj_t *parent)
     static uint16_t sig = SIG_HARDWARE_CALL_DERIVE_PUBKEY;
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
-
-
-
 
 static bool CheckHardWareCallParaIsValied()
 {

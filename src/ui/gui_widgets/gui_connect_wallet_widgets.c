@@ -180,8 +180,6 @@ static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
     {SUI, false},
 };
 
-static lv_obj_t *g_noticeWindow = NULL;
-
 typedef struct {
     const char *accountType;
     const char *path;
@@ -205,6 +203,7 @@ static lv_obj_t *g_coinListCont = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 #endif
 
+static lv_obj_t *g_noticeWindow = NULL;
 static ConnectWalletWidget_t g_connectWalletTileView;
 static PageWidget_t *g_pageWidget;
 
@@ -272,75 +271,64 @@ static void QRCodePause(bool);
 
 static void GuiInitWalletListArray()
 {
-    //open all
-    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
-        g_walletListArray[i].enable = true;
-    }
-    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
-        for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
-            if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
-                g_walletListArray[i].enable = true;
-            } else {
-                g_walletListArray[i].enable = false;
-            }
+    bool isTON = false;
+    bool isSLIP39 = false;
+    bool isTempAccount = false;
+    bool isRussian = false;
+    int currentWalletIndex = SINGLE_WALLET;
 
-        }
-    } else {
-        for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
 #ifndef BTC_ONLY
-            if (g_walletListArray[i].index == WALLET_LIST_ETERNL ||
-                    g_walletListArray[i].index == WALLET_LIST_TYPHON ||
-                    g_walletListArray[i].index == WALLET_LIST_BEGIN
-               ) {
-                if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-                    g_walletListArray[i].enable = false;
-                } else {
-                    g_walletListArray[i].enable = true;
-                }
-            } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
-                g_walletListArray[i].enable = !GetIsTempAccount();
-            }
-            if (g_walletListArray[i].index == WALLET_LIST_ETERNL ||
-                    g_walletListArray[i].index == WALLET_LIST_TYPHON) {
-                if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-                    g_walletListArray[i].enable = false;
-                } else {
-                    g_walletListArray[i].enable = true;
-                }
-            } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
-                g_walletListArray[i].enable = !GetIsTempAccount();
-            }
-
-            if (LanguageGetIndex() == LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
-                g_walletListArray[i].enable = true;
-            } else if (LanguageGetIndex() != LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
-                g_walletListArray[i].enable = false;
-            }
-
+    isTON = (GetMnemonicType() == MNEMONIC_TYPE_TON);
+    isSLIP39 = (GetMnemonicType() == MNEMONIC_TYPE_SLIP39);
+    isTempAccount = GetIsTempAccount();
+    isRussian = (LanguageGetIndex() == LANG_RU);
 #else
-            if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-                if (g_walletListArray[i].index == WALLET_LIST_SPECTER ||
-                        g_walletListArray[i].index == WALLET_LIST_UNISAT) {
-                    g_walletListArray[i].enable = false;
-                } else {
-                    g_walletListArray[i].enable = true;
-                }
-
-            } else {
-                g_walletListArray[i].enable = true;
-            }
+    currentWalletIndex = GetCurrentWalletIndex();
 #endif
+
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+        bool enable = true;
+        int index = g_walletListArray[i].index;
+
+#ifndef BTC_ONLY
+        if (isTON) {
+            enable = (index == WALLET_LIST_TONKEEPER);
+        } else {
+            switch (index) {
+                case WALLET_LIST_ETERNL:
+                case WALLET_LIST_TYPHON:
+                case WALLET_LIST_BEGIN:
+                    enable = !isSLIP39;
+                    break;
+                case WALLET_LIST_ARCONNECT:
+                    enable = !isTempAccount;
+                    break;
+                case WALLET_LIST_KEYSTONE:
+                    enable = isRussian;
+                    break;
+                default:
+                    break;
+            }
         }
+#else
+        if (currentWalletIndex != SINGLE_WALLET) {
+            if (index == WALLET_LIST_SPECTER || index == WALLET_LIST_UNISAT) {
+                enable = false;
+            }
+        }
+#endif
+
+        g_walletListArray[i].enable = enable;
     }
 }
 
 
-static void GuiInitWalletListArray() 
-{
-    SetWalletListEnable(true);
+// static void GuiInitWalletListArray() 
+// {
+//     SetWalletListEnable(true);
 
-    ConfigureWalletEnabling();
-}
+//     ConfigureWalletEnabling();
+// }
 
 #ifndef BTC_ONLY
 static bool IsEVMChain(int walletIndex)
@@ -1778,7 +1766,7 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0),
                         CloseHintBoxHandler, LV_EVENT_CLICKED,
                         &g_openMoreHintBox);
-    lv_obj_t *btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
+    btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
                                           OpenTutorialHandler, wallet, true);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 #ifndef BTC_ONLY

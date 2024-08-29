@@ -348,6 +348,7 @@ lv_obj_t *  CreateSquadsSolanaTransferOverviewCard(lv_obj_t *parent, PtrString f
 
     lv_obj_t * amountlabel = lv_label_create(container);
     lv_label_set_text(amountlabel, amount);
+    lv_obj_set_style_text_font(amountlabel, &openSansEnLittleTitle, LV_PART_MAIN);
     lv_obj_set_style_text_color(amountlabel, lv_color_hex(0xF5870A), LV_PART_MAIN);
     lv_obj_align_to(amountlabel, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
@@ -904,7 +905,7 @@ static void GuiShowSolTxMultiSigCreateDetail(lv_obj_t *parent, PtrT_DisplaySolan
 
     lv_obj_t *totalValueContainer =  GuiCreateAutoHeightContainer(parent, 408, 16);
     lv_obj_t *totalValueLabel = lv_label_create(totalValueContainer);
-    lv_label_set_text(totalValueLabel, "Value");
+    lv_label_set_text(totalValueLabel, "Transaction Total");
     lv_obj_align(totalValueLabel, LV_ALIGN_TOP_LEFT, 24, 0);
     SetTitleLabelStyle(totalValueLabel);
 
@@ -976,10 +977,10 @@ static void GuiShowSolTxMultiSigCreateDetail(lv_obj_t *parent, PtrT_DisplaySolan
     lv_obj_set_style_text_color(thresholdLabelValue, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_align_to(thresholdLabelValue, thresholdLabel, LV_ALIGN_OUT_RIGHT_MID, 15, 0);
     lv_obj_t *firstTransferCardContainer = GuiCreateAutoHeightContainer(parent, 408, 16);
-    CreateSquadsSolanaTransferOverviewCard(firstTransferCardContainer,  transfers->data[0].from, transfers->data[0].to, transfers->data[0].value, "");
+    CreateSquadsSolanaTransferOverviewCard(firstTransferCardContainer,  transfers->data[1].from, transfers->data[1].to, transfers->data[1].value, "");
 
     lv_obj_t *secondTransferCardContainer = GuiCreateAutoHeightContainer(parent, 408, 16);
-    CreateSquadsSolanaTransferOverviewCard(secondTransferCardContainer,  transfers->data[1].from, transfers->data[1].to, transfers->data[1].value, "");
+    CreateSquadsSolanaTransferOverviewCard(secondTransferCardContainer,  transfers->data[0].from, transfers->data[0].to, transfers->data[0].value, "");
     lv_obj_align(walletNameContainer, LV_ALIGN_TOP_LEFT, 0, 0);
     if (strcmp(wallet_desc, "") != 0) {
         lv_obj_t *walletDescContainer =  GuiCreateAutoHeightContainer(parent, 408, 16);

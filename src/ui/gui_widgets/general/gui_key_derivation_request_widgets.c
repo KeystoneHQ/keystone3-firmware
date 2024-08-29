@@ -694,7 +694,7 @@ void HiddenKeyboardAndShowAnimateQR()
             GuiConnectUsbPasswordPass();
         }
         UREncodeResult *urResult = ModelGenerateSyncUR();
-        HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), RSP_SUCCESS_CODE);
+        HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), PRS_EXPORT_HARDWARE_CALL_SUCCESS);
         free_ur_encode_result(urResult);
     } else {
         GuiDeleteKeyboardWidget(g_keyboardWidget);

@@ -27,8 +27,10 @@ int32_t GuiKeyDerivationRequestViewEventProcess(void *self, uint16_t usEvent, vo
     case SIG_BACKGROUND_UR_UPDATE:
         GuiKeyDerivationWidgetHandleURUpdate((char*)param, usLen);
         break;
-    case SIG_VERIFY_PASSWORD_PASS:
     case SIG_USB_HARDWARE_CALL_PARSE_UR:
+        UpdateAndParseHardwareCall();
+        break;
+    case SIG_VERIFY_PASSWORD_PASS:
         HiddenKeyboardAndShowAnimateQR();
         break;
     case SIG_VERIFY_PASSWORD_FAIL:

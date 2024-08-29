@@ -325,6 +325,12 @@ void GuiKeyDerivationRequestPrevTile()
     lv_obj_set_tile_id(g_keyDerivationTileView.tileView, g_keyDerivationTileView.currentTile, 0, LV_ANIM_OFF);
 }
 
+void UpdateAndParseHardwareCall(void)
+{
+    ModelParseQRHardwareCall();
+    HiddenKeyboardAndShowAnimateQR();
+}
+
 static void ModelParseQRHardwareCall()
 {
     Response_QRHardwareCallData *data = parse_qr_hardware_call(g_data);

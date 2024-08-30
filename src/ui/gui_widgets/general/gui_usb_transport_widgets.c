@@ -10,6 +10,7 @@ static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;
 static EAPDUResultPage_t *g_param;
 static bool g_original_lock_screen = false;
+static lv_timer_t *g_countDownTimer = NULL;
 
 typedef struct {
     const lv_img_dsc_t *img;
@@ -27,6 +28,7 @@ static void RejectButtonHandler(lv_event_t *e);
 static WalletInfo_t GetConnectWalletInfo();
 static void GuiExportXPubViewInit();
 static void GuiResolveUrResultViewInit();
+static void UsbGoToHomeViewHandler(lv_event_t *e);
 
 static void ApproveButtonHandler(lv_event_t *e)
 {
@@ -38,6 +40,24 @@ static void RejectButtonHandler(lv_event_t *e)
 {
     ExportAddressReject();
     GuiCLoseCurrentWorkingView();
+}
+static void CountDownTimerHandler(lv_timer_t *timer)
+{
+    lv_obj_t *obj = (lv_obj_t *)timer->user_data;
+    static int8_t countDown = 10;
+    char buf[32] = {0};
+    --countDown;
+    if (countDown > 0) {
+        snprintf_s(buf, sizeof(buf), "%s(%d)", _("Done"), countDown);
+    } else {
+        strcpy_s(buf, sizeof(buf), _("Done"));
+    }
+    lv_label_set_text(lv_obj_get_child(obj, 0), buf);
+    if (countDown <= 0) {
+        UsbGoToHomeViewHandler(NULL);
+        countDown = 10;
+        UNUSED(g_countDownTimer);
+    }
 }
 
 static WalletInfo_t GetConnectWalletInfo()
@@ -115,6 +135,13 @@ static ResolveUrInfo_t CalcResolveUrPageInfo()
     return info;
 }
 
+static void UsbGoToHomeViewHandler(lv_event_t *e)
+{
+    lv_timer_del(g_countDownTimer);
+    g_countDownTimer = NULL;
+    GuiCloseToTargetView(&g_homeView);
+}
+
 static void GuiResolveUrResultViewInit()
 {
     g_pageWidget = CreatePageWidget();
@@ -147,14 +174,15 @@ static void GuiResolveUrResultViewInit()
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 192);
 
-    lv_obj_t *button = GuiCreateTextBtn(cont, buttonText);
+    lv_obj_t *button = GuiCreateTextBtn(cont, "");
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(button, 408, 66);
     lv_obj_set_style_bg_color(button, buttonColor, LV_PART_MAIN);
     if (g_param->error_code != 0) {
         lv_obj_set_style_bg_opa(button, LV_OPA_12, LV_PART_MAIN);
     }
-    lv_obj_add_event_cb(button, GoToHomeViewHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(button, UsbGoToHomeViewHandler, LV_EVENT_CLICKED, NULL);
+    g_countDownTimer = lv_timer_create(CountDownTimerHandler, 1000, button);
 }
 
 void GuiUSBTransportWidgetsInit(EAPDUResultPage_t *param)

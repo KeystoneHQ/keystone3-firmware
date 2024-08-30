@@ -23,6 +23,7 @@
 #include "gui_connect_ada_widgets.h"
 #endif
 #include "gui_select_address_widgets.h"
+#include "account_public_info.h"
 
 #define DERIVATION_PATH_EG_LEN 2
 
@@ -445,6 +446,7 @@ static void UpdateFewchaCoinStateHandler(lv_event_t *e)
         g_tempFewchaCoinState[i].state =
             checkBox == g_defaultFewchaState[i].checkBox;
         if (g_tempFewchaCoinState[i].state) {
+            SetConnectWalletNetwork(GetWalletNameByIndex(g_connectWalletTileView.walletIndex), i);
             lv_obj_add_flag(g_defaultFewchaState[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(g_defaultFewchaState[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
         } else {
@@ -472,8 +474,8 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
 
 static void RefreshAddressIndex(uint32_t index)
 {
-    if (g_chainAddressIndex[GetCurrentAccountIndex()] != index) {
-        g_chainAddressIndex[GetCurrentAccountIndex()] = index;
+    if (GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)) != index) {
+        SetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex), index);
         GuiAnimatingQRCodeDestroyTimer();
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
     } else {
@@ -495,13 +497,13 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
     } else if (HasSelectAddressWidget()) {
         if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
             g_coinListCont = GuiCreateSelectAddressWidget(
-                                 CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()],
+                                 CHAIN_XRP, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
                                  RefreshAddressIndex);
         }
     }
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
         g_coinListCont = GuiCreateSelectAddressWidget(
-                             CHAIN_ATOM, g_chainAddressIndex[GetCurrentAccountIndex()],
+                             CHAIN_ATOM, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
                              RefreshAddressIndex);
     }
 }
@@ -951,14 +953,14 @@ static void AddChainAddress(void)
 
     char name[BUFFER_SIZE_32] = {0};
     snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
-               g_chainAddressIndex[GetCurrentAccountIndex()] + 1);
+               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)) + 1);
     lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
     char addr[BUFFER_SIZE_256] = {0};
     CutAndFormatString(
         addr, sizeof(addr),
-        GuiGetXrpAddressByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]),
+        GuiGetXrpAddressByIndex(GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex))),
         20);
     label = GuiCreateNoticeLabel(g_bottomCont, addr);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 58);
@@ -996,7 +998,7 @@ static void AddKeplrCoinsAndAddressUI(void)
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     char name[BUFFER_SIZE_32] = {0};
     snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
-               g_chainAddressIndex[GetCurrentAccountIndex()]);
+               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
     lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 70);
 
@@ -1075,16 +1077,16 @@ UREncodeResult *GuiGetNightlyData(void)
 UREncodeResult *GuiGetXrpToolkitData(void)
 {
     return GuiGetXrpToolkitDataByIndex(
-               g_chainAddressIndex[GetCurrentAccountIndex()]);
+               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
 }
 UREncodeResult *GuiGetKeplrData(void)
 {
-    return GuiGetKeplrDataByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]);
+    return GuiGetKeplrDataByIndex(GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
 }
 
 UREncodeResult *GuiGetADAData(void)
 {
-    return GuiGetADADataByIndex(g_chainAddressIndex[GetCurrentAccountIndex()]);
+    return GuiGetADADataByIndex(GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
 }
 
 UREncodeResult *GuiGetTonData(void)
@@ -1281,6 +1283,14 @@ void ConnectWalletReturnHandler(lv_event_t *e)
 #ifndef BTC_ONLY
 static void initFewchaCoinsConfig(void)
 {
+    uint8_t index = GetConnectWalletNetwork(GetWalletNameByIndex(g_connectWalletTileView.walletIndex));
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_defaultFewchaState); i++) {
+        if (i == index) {
+            g_defaultFewchaState[index].state = true;
+        } else {
+            g_defaultFewchaState[i].state = false;
+        }
+    }
     memcpy(g_tempFewchaCoinState, g_defaultFewchaState,
            sizeof(g_defaultFewchaState));
     memcpy(g_fewchaCoinState, g_defaultFewchaState, sizeof(g_defaultFewchaState));
@@ -1288,12 +1298,12 @@ static void initFewchaCoinsConfig(void)
 
 ETHAccountType GetMetamaskAccountType(void)
 {
-    return g_currentEthPathIndex[GetCurrentAccountIndex()];
+    return GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex));
 }
 
 SOLAccountType GetSolflareAccountType(void)
 {
-    return g_currentSOLPathIndex[GetCurrentAccountIndex()];
+    return GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex));
 }
 
 static int GetAccountType(void)
@@ -1841,13 +1851,13 @@ void GuiConnectWalletRefresh(void)
                 GuiDestroySelectAddressWidget();
                 if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
                     g_coinListCont = GuiCreateSelectAddressWidget(
-                                         CHAIN_XRP, g_chainAddressIndex[GetCurrentAccountIndex()],
+                                         CHAIN_XRP, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
                                          RefreshAddressIndex);
                 }
 
                 if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
                     g_coinListCont = GuiCreateSelectAddressWidget(
-                                         CHAIN_ATOM, g_chainAddressIndex[GetCurrentAccountIndex()],
+                                         CHAIN_ATOM, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
                                          RefreshAddressIndex);
                 }
             }

@@ -868,12 +868,6 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
         lv_obj_set_style_text_color(feeValue, WHITE_COLOR, LV_PART_MAIN);
     }
 
-    enum QRCodeType urType = URTypeUnKnown;
-    if (g_isMulti) {
-        urType = g_urMultiResult->ur_type;
-    } else {
-        urType = g_urResult->ur_type;
-    }
     // only show switch icon when the network contains "Bitcoin Mainnet" or "Bitcoin Testnet"
     bool showSwitchIcon = (strstr(overviewData->network, "Bitcoin Mainnet") != NULL || strstr(overviewData->network, "Bitcoin Testnet") != NULL);
     if (showSwitchIcon) {
@@ -888,7 +882,6 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
         isSat = false;
         lv_obj_add_event_cb(switchIcon, SwitchValueUnit, LV_EVENT_CLICKED, &clickParam);
     }
-
 
     return amountContainer;
 }
@@ -1079,6 +1072,7 @@ static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detai
 
 static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
+#ifndef BTC_ONLY
     enum QRCodeType urType = URTypeUnKnown;
     if (g_isMulti) {
         urType = g_urMultiResult->ur_type;
@@ -1087,6 +1081,9 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
     }
 
     bool showChange = (urType != Bytes && urType != KeystoneSignRequest);
+#else
+    bool showChange = true;
+#endif
 
     lv_obj_t *formContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(formContainer);
@@ -1173,13 +1170,6 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
 
 static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
-    enum QRCodeType urType = URTypeUnKnown;
-    if (g_isMulti) {
-        urType = g_urMultiResult->ur_type;
-    } else {
-        urType = g_urResult->ur_type;
-    }
-
     lv_obj_t *toContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(toContainer);
     lv_obj_align_to(toContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);

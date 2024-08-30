@@ -58,6 +58,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_THORWALLET, &walletListThorWallet, true},
     {WALLET_LIST_PETRA, &walletListPetra, true},
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
+    {WALLET_LIST_MINT_SCAN, &walletListMintScan, true},
     {WALLET_LIST_ARCONNECT, &walletListArConnect, true},
     {WALLET_LIST_VESPR, &walletListVespr, true},
     {WALLET_LIST_XBULL, &walletListXBull, true},
@@ -377,7 +378,7 @@ static bool IsAda(int walletIndex)
     case WALLET_LIST_VESPR:
     case WALLET_LIST_ETERNL:
     case WALLET_LIST_TYPHON:
-    case WALLET_LIST_BEGIN: 
+    case WALLET_LIST_BEGIN:
         return true;
     default:
         return false;
@@ -536,7 +537,7 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
                                  RefreshAddressIndex);
         }
     }
-    if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR || g_connectWalletTileView.walletIndex == WALLET_LIST_MINT_SCAN) {
         g_coinListCont = GuiCreateSelectAddressWidget(
                              CHAIN_ATOM, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
                              RefreshAddressIndex);
@@ -1144,6 +1145,7 @@ UREncodeResult *GuiGetKeplrData(void)
     return GuiGetKeplrDataByIndex(GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
 }
 
+
 UREncodeResult *GuiGetADAData(void)
 {
     return GuiGetADADataByIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex));
@@ -1243,6 +1245,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetBackpackData;
         AddBackpackWalletCoins();
         break;
+    case WALLET_LIST_MINT_SCAN:
     case WALLET_LIST_KEPLR:
         func = GuiGetKeplrData;
         AddKeplrCoinsAndAddressUI();
@@ -1408,6 +1411,7 @@ static bool HasSelectAddressWidget()
     case WALLET_LIST_XRP_TOOLKIT:
     case WALLET_LIST_KEPLR:
     case WALLET_LIST_VESPR:
+    case WALLET_LIST_MINT_SCAN:
         return true;
         break;
     default:
@@ -1976,7 +1980,7 @@ void GuiConnectWalletRefresh(void)
                                          RefreshAddressIndex);
                 }
 
-                if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
+                if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR || g_connectWalletTileView.walletIndex == WALLET_LIST_MINT_SCAN) {
                     g_coinListCont = GuiCreateSelectAddressWidget(
                                          CHAIN_ATOM, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
                                          RefreshAddressIndex);

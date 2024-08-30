@@ -263,7 +263,7 @@ LV_IMG_DECLARE(walletThorWallet);
 LV_IMG_DECLARE(walletNightly);
 LV_IMG_DECLARE(walletBegin);
 LV_IMG_DECLARE(walletBitget);
-
+LV_IMG_DECLARE(walletMintScan);
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
 LV_IMG_DECLARE(walletListMetaMask);
@@ -297,6 +297,7 @@ LV_IMG_DECLARE(walletListThorWallet);
 LV_IMG_DECLARE(walletListNightly);
 LV_IMG_DECLARE(walletListBegin);
 LV_IMG_DECLARE(walletListBitget);
+LV_IMG_DECLARE(walletListMintScan);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

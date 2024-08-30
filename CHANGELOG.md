@@ -1,3 +1,16 @@
+## 1.6.6(2024-08-30)
+
+### What's new
+
+1. Supported SPL Token transaction parsing
+2. Supported Receive address status storage
+
+### Improvements
+
+1. Optimized transaction parsing for multi-signature asset management on Squads
+
+
+
 ## 1.6.4(2024-08-22)
 
 

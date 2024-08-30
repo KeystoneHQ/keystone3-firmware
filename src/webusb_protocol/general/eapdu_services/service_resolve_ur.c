@@ -52,11 +52,11 @@ static bool CheckURAcceptable(void)
         return false;
     }
     // Only allow URL parsing on specific pages
-    // if (!GuiHomePageIsTop()) {
-    //     const char *data = "Export address is just allowed on specific pages";
-    //     HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
-    //     return false;
-    // }
+    if (!GuiHomePageIsTop()) {
+        const char *data = "Export address is just allowed on specific pages";
+        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
+        return false;
+    }
     return true;
 }
 

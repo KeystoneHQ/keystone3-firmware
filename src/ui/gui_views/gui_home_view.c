@@ -30,6 +30,7 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiHomeDisActive();
         break;
     case GUI_EVENT_RESTART:
+    case GUI_EVENT_CHANGE_LANGUAGE:
         GuiHomeRestart();
         break;
     case GUI_EVENT_REFRESH:

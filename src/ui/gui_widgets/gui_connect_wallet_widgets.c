@@ -295,19 +295,19 @@ static void GuiInitWalletListArray()
             enable = (index == WALLET_LIST_TONKEEPER);
         } else {
             switch (index) {
-                case WALLET_LIST_ETERNL:
-                case WALLET_LIST_TYPHON:
-                case WALLET_LIST_BEGIN:
-                    enable = !isSLIP39;
-                    break;
-                case WALLET_LIST_ARCONNECT:
-                    enable = !isTempAccount;
-                    break;
-                case WALLET_LIST_KEYSTONE:
-                    enable = isRussian;
-                    break;
-                default:
-                    break;
+            case WALLET_LIST_ETERNL:
+            case WALLET_LIST_TYPHON:
+            case WALLET_LIST_BEGIN:
+                enable = !isSLIP39;
+                break;
+            case WALLET_LIST_ARCONNECT:
+                enable = !isTempAccount;
+                break;
+            case WALLET_LIST_KEYSTONE:
+                enable = isRussian;
+                break;
+            default:
+                break;
             }
         }
 #else
@@ -323,7 +323,7 @@ static void GuiInitWalletListArray()
 }
 
 
-// static void GuiInitWalletListArray() 
+// static void GuiInitWalletListArray()
 // {
 //     SetWalletListEnable(true);
 
@@ -1767,7 +1767,7 @@ static void OpenMoreHandler(lv_event_t *e)
                         CloseHintBoxHandler, LV_EVENT_CLICKED,
                         &g_openMoreHintBox);
     btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
-                                          OpenTutorialHandler, wallet, true);
+                                OpenTutorialHandler, wallet, true);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 #ifndef BTC_ONLY
     if (isSpeciaWallet) {

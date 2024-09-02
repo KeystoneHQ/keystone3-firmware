@@ -304,6 +304,9 @@ static void AddFlagCountDownTimerHandler(lv_timer_t *timer)
 void GuiHomeRestart(void)
 {
     GUI_DEL_OBJ(g_manageCont)
+    lv_obj_clean(g_homeWalletCardCont);
+    CreateHomePageButtons();
+    ShowWallPaper(true);
     GuiHomeRefresh();
 }
 

@@ -888,3 +888,5 @@ static void OpenTutorialHandler(lv_event_t *e)
     GuiFrameOpenViewWithParam(&g_walletTutorialView, wallet, sizeof(WALLET_LIST_INDEX_ENUM));
     GUI_DEL_OBJ(g_openMoreHintBox);
 }
+
+#endif

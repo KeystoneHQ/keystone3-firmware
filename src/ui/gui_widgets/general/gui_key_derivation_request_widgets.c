@@ -38,8 +38,7 @@ static lv_obj_t *g_openMoreHintBox;
 static lv_obj_t *g_derivationPathCont = NULL;
 static lv_obj_t *g_derivationPathConfirmBtn = NULL;
 static lv_obj_t *g_derivationTypeCheck[2] = {0, 0};
-static AdaXPubType g_currentCardanoPathIndex[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
-static uint32_t g_currentSelectedPathIndex[3] = {0};
+static uint32_t g_currentSelectedPathIndex = 0;;
 static lv_obj_t *g_egCont = NULL;
 static lv_obj_t *g_egAddressIndex[2];
 static lv_obj_t *g_egAddress[2];
@@ -72,10 +71,11 @@ static void UpdateCardanoEgAddress(uint8_t index);
 static void ShowEgAddressCont(lv_obj_t *egCont);
 static void OpenDerivationPath();
 static void ChangeDerivationPathHandler(lv_event_t *e);
-static void UpdateConfirmBtn(void);
+static void UpdateConfirmBtn(bool update);
 static bool IsSelectChanged(void);
 static void SetAccountType(uint8_t index);
 static bool IsCardano();
+static AdaXPubType GetAccountType(void);
 
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
@@ -170,14 +170,13 @@ static void SelectDerivationHandler(lv_event_t *e)
     lv_obj_clear_state(g_derivationTypeCheck[!index], LV_STATE_CHECKED);
     SetCurrentSelectedIndex(index);
     ShowEgAddressCont(g_egCont);
-    UpdateConfirmBtn();
+    UpdateConfirmBtn(index != GetAccountType());
 }
 
 static void OpenDerivationPath()
 {
     if (IsCardano()) {
-        SetAccountType(GetKeyDerivationAdaXPubType());
-        SetCurrentSelectedIndex(GetKeyDerivationAdaXPubType());
+        SetCurrentSelectedIndex(GetAccountType());
     }
 
     lv_obj_t *bgCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()),
@@ -193,8 +192,7 @@ static void OpenDerivationPath()
     lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_SCROLLABLE);
 
-    lv_obj_t *label =
-        GuiCreateNoticeLabel(scrollCont, _("derivation_path_select_ada"));
+    lv_obj_t *label = GuiCreateNoticeLabel(scrollCont, _("derivation_path_select_ada"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
 
     lv_obj_t *cont = GuiCreateContainerWithParent(scrollCont, 408, 205);
@@ -256,7 +254,7 @@ static void OpenDerivationPath()
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
     lv_obj_add_event_cb(btn, ConfirmDerivationHandler, LV_EVENT_CLICKED, NULL);
     g_derivationPathConfirmBtn = btn;
-    UpdateConfirmBtn();
+    UpdateConfirmBtn(false);
 
     g_derivationPathCont = bgCont;
 }
@@ -673,6 +671,7 @@ static bool CheckHardWareCallParaIsValied()
 
 static void OnApproveHandler(lv_event_t *e)
 {
+    printf("OnApproveHandler\n");
     if (!CheckHardWareCallParaIsValied()) {
         GuiCreateHardwareCallInvaildPathHintbox();
         return;
@@ -728,41 +727,38 @@ static const char *GetChangeDerivationAccountType(int i)
 
 static void SetCurrentSelectedIndex(uint8_t index)
 {
-    g_currentSelectedPathIndex[GetCurrentAccountIndex()] = index;
+    g_currentSelectedPathIndex = index;
 }
 
 static uint32_t GetCurrentSelectedIndex()
 {
-    return g_currentSelectedPathIndex[GetCurrentAccountIndex()];
+    return g_currentSelectedPathIndex;
 }
 
 static void SetAccountType(uint8_t index)
 {
-    g_currentCardanoPathIndex[GetCurrentAccountIndex()] = index;
+    SetConnectWalletAccountIndex(g_response->data->origin, index);
 }
 
-static AdaXPubType GetAccountType()
+static AdaXPubType GetAccountType(void)
 {
-    return g_currentCardanoPathIndex[GetCurrentAccountIndex()];
+    return GetConnectWalletAccountIndex(g_response->data->origin);
 }
 
-static bool IsSelectChanged(void)
+static void UpdateConfirmBtn(bool update)
 {
-    return GetCurrentSelectedIndex() != GetAccountType();
-}
-
-static void UpdateConfirmBtn(void)
-{
-    if (IsSelectChanged()) {
+    if (update) {
         lv_obj_set_style_bg_opa(g_derivationPathConfirmBtn, LV_OPA_COVER,
                                 LV_PART_MAIN);
         lv_obj_set_style_text_opa(lv_obj_get_child(g_derivationPathConfirmBtn, 0),
                                   LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_add_flag(g_derivationPathConfirmBtn, LV_OBJ_FLAG_CLICKABLE);
     } else {
         lv_obj_set_style_bg_opa(g_derivationPathConfirmBtn, LV_OPA_30,
                                 LV_PART_MAIN);
         lv_obj_set_style_text_opa(lv_obj_get_child(g_derivationPathConfirmBtn, 0),
                                   LV_OPA_30, LV_PART_MAIN);
+        lv_obj_clear_flag(g_derivationPathConfirmBtn, LV_OBJ_FLAG_CLICKABLE);
     }
 }
 
@@ -784,28 +780,25 @@ static bool IsCardano()
 
 static void ConfirmDerivationHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED && IsSelectChanged()) {
-        if (IsCardano()) {
-            SetKeyDerivationAdaXPubType(GetCurrentSelectedIndex());
-            SetAccountType(GetKeyDerivationAdaXPubType());
-        }
-        GuiAnimatingQRCodeDestroyTimer();
-        GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
-        GuiKeyDerivationRequestNextTile();
-        GUI_DEL_OBJ(g_derivationPathCont);
-        SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler,
-                         NULL);
-        SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex,
-                  NULL);
-        SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
-                          OpenMoreHandler, &g_walletIndex);
+    if (IsCardano()) {
+        SetKeyDerivationAdaXPubType(GetAccountType());
+        SetAccountType(GetCurrentSelectedIndex());
     }
+    GuiAnimatingQRCodeDestroyTimer();
+    GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
+    GuiKeyDerivationRequestNextTile();
+    GUI_DEL_OBJ(g_derivationPathCont);
+    SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler,
+                     NULL);
+    SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex,
+              NULL);
+    SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
+                      OpenMoreHandler, &g_walletIndex);
 }
 
 static char *GetChangeDerivationPathDesc(void)
 {
-    return GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC)[GetCurrentSelectedIndex()];
+    return GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC)[GetAccountType()];
 }
 
 static void GetCardanoEgAddress(void)
@@ -897,7 +890,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     egContHeight += 12;
     lv_obj_set_height(egCont, egContHeight);
     GetCardanoEgAddress();
-    UpdateCardanoEgAddress(GetCurrentSelectedIndex());
+    UpdateCardanoEgAddress(GetAccountType());
 }
 
 static void ChangeDerivationPathHandler(lv_event_t *e)
@@ -944,9 +937,4 @@ static void OpenTutorialHandler(lv_event_t *e)
     WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
     GuiFrameOpenViewWithParam(&g_walletTutorialView, wallet, sizeof(WALLET_LIST_INDEX_ENUM));
     GUI_DEL_OBJ(g_openMoreHintBox);
-}
-
-void GuiResetCurrentKeyDerivationCache(uint8_t index)
-{
-    SetKeyDerivationAdaXpubTypesByAccountIndex(STANDARD_ADA, index);
 }

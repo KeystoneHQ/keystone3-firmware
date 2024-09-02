@@ -87,7 +87,5 @@ ChainType GetReceivePageAdaXPubTypeByIndexAndType(AdaXPubType type, uint16_t ind
 void SetKeyDerivationAdaXPubType(AdaXPubType type);
 AdaXPubType GetKeyDerivationAdaXPubType(void);
 ChainType GetKeyDerivationAdaXPubTypeByIndex(uint16_t index);
-void SetReceivePageAdaXPubTypeByAccountIndex(AdaXPubType type, uint8_t accountIndex);
-void SetKeyDerivationAdaXpubTypesByAccountIndex(AdaXPubType type, uint8_t accountIndex);
 
 #endif

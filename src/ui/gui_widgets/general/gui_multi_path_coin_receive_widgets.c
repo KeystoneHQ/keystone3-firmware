@@ -1068,7 +1068,7 @@ static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked)
         lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     }
     if (g_chainCard == HOME_WALLET_CARD_ADA && isChecked) {
-        SetAdaXPubType(g_selectType);
+        SetReceivePageAdaXPubType(g_selectType);
         RefreshDefaultAddress();
     }
 }

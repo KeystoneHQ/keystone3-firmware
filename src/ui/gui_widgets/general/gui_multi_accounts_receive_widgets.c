@@ -227,6 +227,7 @@ void GuiMultiAccountsReceiveRefresh(void)
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
         GuiCreateSwitchPathTypeWidget(g_multiAccountsReceiveWidgets.tileSwitchPathType, g_chainCard, PathTypeChangedCb);
+        printf("%s %d\n", __func__, __LINE__);
         break;
     default:
         break;
@@ -1102,6 +1103,5 @@ void GuiResetCurrentMultiAccountsCache(uint8_t index)
     }
     g_selectedIndex[index] = 0;
     g_selectedAccount[index] = 0;
-    SetReceivePageAdaXPubTypeByAccountIndex(STANDARD_ADA, index);
 }
 #endif

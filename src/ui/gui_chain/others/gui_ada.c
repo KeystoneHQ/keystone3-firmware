@@ -20,53 +20,40 @@ static struct URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static char g_adaBaseAddr[ADA_ADD_MAX_LEN];
 static char *xpub = NULL;
-static AdaXPubType g_adaXpubTypes[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
-static AdaXPubType g_receivePageAdaXpubTypes[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
-static AdaXPubType g_keyDerivationAdaXpubTypes[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
-
 static void Try2FixAdaPathType();
 
 void SetAdaXPubType(AdaXPubType type)
 {
-    g_adaXpubTypes[GetCurrentAccountIndex()] = type;
+    // g_adaXpubTypes[GetCurrentAccountIndex()] = type;
+    SetAccountReceivePath("ADA", type);
 }
 
 AdaXPubType GetAdaXPubType(void)
 {
-    return g_adaXpubTypes[GetCurrentAccountIndex()];
+    return GetAccountReceivePath("ADA");
+    // return g_adaXpubTypes[GetCurrentAccountIndex()];
 }
 
 void SetReceivePageAdaXPubType(AdaXPubType type)
 {
-    g_receivePageAdaXpubTypes[GetCurrentAccountIndex()] = type;
-}
-
-void SetReceivePageAdaXPubTypeByAccountIndex(AdaXPubType type, uint8_t accountIndex)
-{
-    g_receivePageAdaXpubTypes[accountIndex] = type;
+    SetAccountReceivePath("ADA", type);
 }
 
 
 AdaXPubType GetReceivePageAdaXPubType(void)
 {
-    return g_receivePageAdaXpubTypes[GetCurrentAccountIndex()];
+    return GetAccountReceivePath("ADA");
 }
 
 void SetKeyDerivationAdaXPubType(AdaXPubType type)
 {
-    // SetConnectWalletAccountIndex("adaXpub", type);
-    g_keyDerivationAdaXpubTypes[GetCurrentAccountIndex()] = type;
+    SetConnectWalletAccountIndex("adaXpub", type);
 }
 
-void SetKeyDerivationAdaXpubTypesByAccountIndex(AdaXPubType type, uint8_t accountIndex)
-{
-    g_keyDerivationAdaXpubTypes[accountIndex] = type;
-}
 
 AdaXPubType GetKeyDerivationAdaXPubType(void)
 {
-    // return GetConnectWalletAccountIndex("adaXpub");
-    return g_keyDerivationAdaXpubTypes[GetCurrentAccountIndex()];
+    return GetConnectWalletAccountIndex("adaXpub");
 }
 
 static uint8_t GetXPubIndexByPath(char *path);
@@ -279,9 +266,9 @@ PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
 static void Try2FixAdaPathType()
 {
     if (GetAdaXPubType() == LEDGER_ADA) {
-        SetAdaXPubType(STANDARD_ADA);
+        SetReceivePageAdaXPubType(STANDARD_ADA);
     } else {
-        SetAdaXPubType(LEDGER_ADA);
+        SetReceivePageAdaXPubType(LEDGER_ADA);
     }
 }
 

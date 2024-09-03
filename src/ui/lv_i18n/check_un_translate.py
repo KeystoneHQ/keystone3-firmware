@@ -7,7 +7,7 @@ import pandas as pd
 df = pd.read_csv('data.csv')
 
 start_column = 'ru'
-end_column = 'ja'
+end_column = 'fr'
 
 try:
     start_idx = df.columns.get_loc(start_column)

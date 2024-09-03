@@ -854,7 +854,11 @@ void AccountPublicInfoTest(int argc, char *argv[])
 
 static int GetChainTableSizeFromJson(cJSON *keyJson)
 {
+#ifndef BTC_ONLY
     return cJSON_GetObjectItem(keyJson, "ar") != NULL ? NUMBER_OF_ARRAYS(g_chainTable) : NUMBER_OF_ARRAYS(g_chainTable) - 1;
+#else
+    return NUMBER_OF_ARRAYS(g_chainTable);
+#endif
 }
 
 static bool GetPublicKeyFromJsonString(const char *string)

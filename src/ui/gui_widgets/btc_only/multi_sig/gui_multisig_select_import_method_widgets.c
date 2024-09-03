@@ -72,7 +72,7 @@ static void GuiContent(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 180);
 
     table[0].obj = GuiCreateImg(parent, &imgSdcardImport);
-    table[1].obj = GuiCreateLittleTitleLabel(parent, _("import_multi_wallet_via_micro_card"));
+    table[1].obj = GuiCreateLittleTitleLabel(parent, _("firmware_update_via_sd"));
     table[2].obj = GuiCreateImg(parent, &imgArrowRight);
     button = GuiCreateButton(parent, 432, 120, table, NUMBER_OF_ARRAYS(table), SelectMicroCardFileHandler, NULL);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 300);

@@ -60,6 +60,9 @@ static bool GetPublicKeyFromJsonString(const char *string);
 static char *GetJsonStringFromPublicKey(void);
 static cJSON* ReadAndParseAccountJson(uint32_t *outAddr, uint32_t *outSize);
 static void WriteJsonToFlash(uint32_t addr, cJSON *rootJson);
+static uint32_t GetTemplateWalletValue(const char* walletName, const char* key);
+static void SetTemplateWalletValue(const char* walletName, const char* key, uint32_t value);
+static void CleanupJson(cJSON* json);
 static void FreePublicKeyRam(void);
 static void PrintInfo(void);
 static void SetIsTempAccount(bool isTemp);
@@ -582,7 +585,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey)
 {
     SetIsTempAccount(false);
-    printf("accountIndex = %d %s %d..\n", accountIndex, __func__, __LINE__);
     uint32_t addr;
     int32_t ret = SUCCESS_CODE;
     bool regeneratePubKey = newKey;
@@ -1140,9 +1142,7 @@ static void ConvertXPub(char *dest, ChainType chainType)
     sprintf(dest, "%s", result->data);
     free_simple_response_c_char(result);
 }
-#endif
 
-#ifdef BTC_ONLY
 void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
 {
     ASSERT(accountIndex >= 0);
@@ -1168,6 +1168,16 @@ void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
     } else {
         printf("multi sig write to sdcard fail\r\n");
     }
+}
+
+uint32_t GetAccountMultiReceiveIndex(const char* chainName)
+{
+    return GetTemplateWalletValue(chainName, "multiRecvIndex");
+}
+
+void SetAccountMultiReceiveIndex(const char* chainName, uint32_t index)
+{
+    SetTemplateWalletValue(chainName, "multiRecvIndex", index);
 }
 #endif
 
@@ -1603,6 +1613,51 @@ void SetConnectWalletNetwork(const char* walletName, uint32_t index)
     WriteJsonToFlash(addr, rootJson);
     if (!PassphraseExist(GetCurrentAccountIndex())) {
         cJSON_Delete(rootJson);
+    }
+}
+
+static uint32_t GetTemplateWalletValue(const char* walletName, const char* key)
+{
+    uint32_t value = 0;
+    cJSON* rootJson = ReadAndParseAccountJson(NULL, NULL);
+
+    cJSON* item = cJSON_GetObjectItem(rootJson, walletName);
+    if (item == NULL) {
+        printf("GetConnectWalletValue get %s not exist\r\n", walletName);
+    } else {
+        cJSON* valueItem = cJSON_GetObjectItem(item, key);
+        value = valueItem ? valueItem->valueint : 0;
+    }
+    CleanupJson(rootJson);
+    return value;
+}
+
+static void SetTemplateWalletValue(const char* walletName, const char* key, uint32_t value)
+{
+    uint32_t addr;
+    cJSON* rootJson = ReadAndParseAccountJson(&addr, NULL);
+
+    cJSON* item = cJSON_GetObjectItem(rootJson, walletName);
+    if (item == NULL) {
+        item = cJSON_CreateObject();
+        cJSON_AddItemToObject(rootJson, walletName, item);
+    }
+
+    cJSON* valueItem = cJSON_GetObjectItem(item, key);
+    if (valueItem != NULL) {
+        cJSON_SetNumberValue(valueItem, value);
+    } else {
+        cJSON_AddNumberToObject(item, key, value);
+    }
+
+    WriteJsonToFlash(addr, rootJson);
+    CleanupJson(rootJson);
+}
+
+static void CleanupJson(cJSON* json)
+{
+    if (!PassphraseExist(GetCurrentAccountIndex())) {
+        cJSON_Delete(json);
     }
 }
 

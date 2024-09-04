@@ -555,6 +555,11 @@ static void GetHint(char *hint)
 
 static uint32_t GetCurrentSelectIndex()
 {
+#ifdef BTC_ONLY
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+        return GetAccountMultiReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
+    }
+#endif
     return GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
@@ -593,7 +598,15 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     default:
         break;
     }
+#ifdef BTC_ONLY
+    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
+        SetAccountMultiReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
+    } else {
+        SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
+    }
+#else
     SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
+#endif
 }
 
 static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)

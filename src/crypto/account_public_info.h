@@ -184,8 +184,13 @@ void SetConnectWalletAccountIndex(const char* walletName, uint32_t index);
 uint32_t GetConnectWalletNetwork(const char* walletName);
 void SetConnectWalletNetwork(const char* walletName, uint32_t index);
 
+#ifdef BTC_ONLY
 void ExportMultiSigXpub(ChainType chainType);
 void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager);
 int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWalletManager_t *manager);
+
+uint32_t GetAccountMultiReceiveIndex(const char* chainName);
+void SetAccountMultiReceiveIndex(const char* chainName, uint32_t index);
+#endif
 #endif
 

@@ -157,7 +157,6 @@ static void CreateHomePageButtons(void)
 static void RcvHandler(lv_event_t *e)
 {
     static HOME_WALLET_CARD_ENUM coin;
-    printf("rcv handler\n");
     coin = HOME_WALLET_CARD_BTC;
     ShowWallPaper(false);
     GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));

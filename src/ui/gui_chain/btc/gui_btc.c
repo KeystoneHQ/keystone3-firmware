@@ -446,6 +446,7 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
 
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
+    printf("%s %d..\n", __func__, __LINE__);
 
     char *verify_code = NULL;
     char *wallet_config = NULL;
@@ -460,6 +461,7 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
             strncpy_s(wallet_config, MAX_WALLET_CONFIG_LEN, item->walletConfig, strnlen_s(item->walletConfig, MAX_WALLET_CONFIG_LEN));
         }
     }
+    printf("wallet_config = %s\n", wallet_config);
 
     result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, verify_code, wallet_config);
     SRAM_FREE(public_keys);

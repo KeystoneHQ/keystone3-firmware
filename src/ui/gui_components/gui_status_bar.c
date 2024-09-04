@@ -348,22 +348,43 @@ static int GetDisplayPercent(int actual_percent, bool charging)
     static const int thresholds[] = {20, 40, 60, 80, 95, 100};
     static const int display_values_discharge[] = {20, 40, 60, 80, 100, 100};
     static const int display_values_charge[] = {0, 20, 40, 60, 80, 99};
+    static int last_display_percent = -1;
+
     int size = sizeof(thresholds) / sizeof(thresholds[0]);
+    int current_display_percent = -1;
 
     for (int i = 0; i < size; i++) {
         if (actual_percent <= thresholds[i]) {
             if (charging) {
-                return display_values_charge[i];
+                current_display_percent = display_values_charge[i];
             } else {
                 if (i == size - 1 && actual_percent > 95) {
-                    return 100;
+                    current_display_percent = 100;
+                } else {
+                    current_display_percent = display_values_discharge[i];
                 }
-                return display_values_discharge[i];
             }
+            break;
         }
     }
 
-    return charging ? 99 : 100;
+    if (current_display_percent == -1) {
+        current_display_percent = charging ? 99 : 100;
+    }
+
+    if (last_display_percent != -1) {
+        if (charging) {
+            current_display_percent = (current_display_percent > last_display_percent) ?
+                                      current_display_percent : last_display_percent;
+        } else {
+            current_display_percent = (current_display_percent < last_display_percent) ?
+                                      current_display_percent : last_display_percent;
+        }
+    }
+
+    last_display_percent = current_display_percent;
+
+    return current_display_percent;
 }
 
 void GuiStatusBarSetBattery(uint8_t percent, bool charging)

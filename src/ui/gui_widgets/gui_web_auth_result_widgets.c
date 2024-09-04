@@ -64,6 +64,7 @@ void GuiSetWebAuthResultData(URParseResult *urResult, URParseMultiResult *multiR
 
 void GuiWebAuthResultSuccessHandler(lv_event_t *e)
 {
+    GuiDeleteAnimHintBox();
     if (g_webAuthSuccessCb != NULL) {
         g_webAuthSuccessCb();
     }

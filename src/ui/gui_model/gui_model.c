@@ -291,7 +291,6 @@ void GuiModelCheckTransaction(ViewType viewType)
     AsyncExecute(ModelCheckTransaction, &viewType, sizeof(viewType));
 }
 
-
 void GuiModelTransactionCheckResultClear(void)
 {
     AsyncExecute(ModelTransactionCheckResultClear, NULL, 0);

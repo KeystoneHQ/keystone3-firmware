@@ -1294,7 +1294,7 @@ void GuiBtcMsg(lv_obj_t *parent, void *totalData)
 
     lv_obj_t *lastView = NULL;
     if (msgData->address != NULL) {
-        // lastView = CreateTransactionItemViewWithHint(parent, _("Address"), msgData->address, lastView, _("sign_message_check_address"));
+        lastView = CreateTransactionItemViewWithHint(parent, _("Address"), msgData->address, lastView, _("sign_message_check_address"));
     }
-    // lastView = CreateTransactionItemView(parent, _("Message"), msgData->detail, lastView);
+    lastView = CreateTransactionItemView(parent, _("Message"), msgData->detail, lastView);
 }

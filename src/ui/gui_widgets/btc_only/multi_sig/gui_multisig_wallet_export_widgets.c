@@ -87,7 +87,7 @@ static void GuiShowSDCardNotDetected()
     lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("firmware_update_sd_failed_access_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
-    label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_sdcard_not_detected_desc"));
+    label = GuiCreateIllustrateLabel(g_noticeWindow, _("firmware_update_sd_failed_access_desc"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("OK"));

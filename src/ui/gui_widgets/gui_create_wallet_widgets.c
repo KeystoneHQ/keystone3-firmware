@@ -475,45 +475,14 @@ void GuiCreateWalletRefresh(void)
 
 static void OpenMoreHandler(lv_event_t *e)
 {
-    int hintboxHeight = 312;
-    g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
-    lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
-    lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
-    lv_obj_t *img = GuiCreateImg(g_openMoreHintBox, &imgTutorial);
-
-    GuiButton_t table[] = {
-        {
-            .obj = img,
-            .align = LV_ALIGN_LEFT_MID,
-            .position = {24, 0},
-        },
-        {
-            .obj = label,
-            .align = LV_ALIGN_LEFT_MID,
-            .position = {76, 0},
-        },
-    };
-    lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                                    QuestionMarkEventCb, NULL);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-
+    MoreInfoTable_t moreInfoTable[] = {
+        {.name = _("change_entropy"), .src = &imgConnect, .callBack = OpenChangeEntropyHandler, NULL},
 #ifndef BTC_ONLY
-    label = GuiCreateTextLabel(g_openMoreHintBox, _("generate_ton_mnenonic"));
-    img = GuiCreateImg(g_openMoreHintBox, &imgTonPhrase);
-    table[0].obj = img;
-    table[1].obj = label;
-    btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                          TonPhraseButtonHandler, NULL);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
+        {.name = _("generate_ton_mnenonic"), .src = &imgTonPhrase, .callBack = TonPhraseButtonHandler, NULL},
 #endif
-
-    label = GuiCreateTextLabel(g_openMoreHintBox, _("change_entropy"));
-    img = GuiCreateImg(g_openMoreHintBox, &imgDice);
-    table[0].obj = img;
-    table[1].obj = label;
-    btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                          OpenChangeEntropyHandler, NULL);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -216);
+        {.name = _("Tutorial"), .src = &imgTutorial, .callBack = QuestionMarkEventCb, NULL},
+    };
+    g_openMoreHintBox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true, &g_openMoreHintBox);
 }
 
 // Change Entropy

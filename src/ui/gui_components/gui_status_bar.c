@@ -253,8 +253,8 @@ void GuiStatusBarInit(void)
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, 0);
     lv_obj_add_event_cb(btn, SwitchWalletHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 0);
-void tCountDownTimerHandler(lv_timer_t *timer);
-    lv_timer_t *g_countDownTimer = lv_timer_create(tCountDownTimerHandler, 100, NULL);
+// void tCountDownTimerHandler(lv_timer_t *timer);
+    // lv_timer_t *g_countDownTimer = lv_timer_create(tCountDownTimerHandler, 100, NULL);
 #endif
 }
 

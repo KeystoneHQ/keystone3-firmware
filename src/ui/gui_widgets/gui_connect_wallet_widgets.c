@@ -722,12 +722,9 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     // GuiCreateSupportedNetworks(g_connectWalletTileView.walletIndex);
 #else
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-        lv_obj_t *button = GuiCreateImgLabelAdaptButton(
-                               parent, _("multisig_connect_wallet_notice"), &imgTwoSmallKey, UnHandler,
-                               NULL);
+        lv_obj_t *button = GuiCreateImgLabelAdaptButton(parent, _("multisig_connect_wallet_notice"), &imgTwoSmallKey, UnHandler, NULL);
         lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
-        lv_obj_set_style_text_opa(lv_obj_get_child(button, 1), LV_OPA_80,
-                                  LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(button, 1), LV_OPA_80, LV_PART_MAIN);
     }
 #endif
 }

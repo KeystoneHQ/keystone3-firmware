@@ -53,12 +53,21 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
 static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *GetFileContent(const FrameHead_t *head, uint32_t offset, uint32_t *outLen);
 static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
+#ifdef BTC_ONLY
 static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ServiceNftFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
+static bool g_isNftFile = false;
+
+const ProtocolServiceCallbackFunc_t g_nftFileTransInfoServiceFunc[] = {
+    NULL,                                       //3.0
+    ServiceNftFileTransInfo,                    //3.1
+    ServiceNftFileTransContent,                 //3.2
+    ServiceNftFileTransComplete,                //3.3
+};
+#endif
 
 static bool g_isReceivingFile = false;
-static bool g_isNftFile = false;
 
 bool GetIsReceivingFile()
 {
@@ -84,14 +93,6 @@ const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
     ServiceFileTransInfo,                       //2.1
     ServiceFileTransContent,                    //2.2
     ServiceFileTransComplete,                   //2.3
-};
-
-
-const ProtocolServiceCallbackFunc_t g_nftFileTransInfoServiceFunc[] = {
-    NULL,                                       //3.0
-    ServiceNftFileTransInfo,                    //3.1
-    ServiceNftFileTransContent,                 //3.2
-    ServiceNftFileTransComplete,                //3.3
 };
 
 static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInfo)
@@ -202,7 +203,11 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             sendTlvArray[0].value = 5;
             break;
         }
+#ifdef BTC_ONLY
         GuiApiEmitSignalWithValue(g_isNftFile ? SIG_INIT_NFT_BIN : SIG_INIT_FIRMWARE_PROCESS, 1);
+#else
+        GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 1);
+#endif
         if (g_fileTransTimeOutTimer == NULL) {
             g_fileTransTimeOutTimer = osTimerNew(FileTransTimeOutTimerFunc, osTimerOnce, NULL, NULL);
         }
@@ -278,7 +283,11 @@ static uint8_t *GetFileContent(const FrameHead_t *head, uint32_t offset, uint32_
 
     sendHead.packetIndex = head->packetIndex;
     // sendHead.serviceId = SERVICE_ID_FILE_TRANS;
+#ifdef BTC_ONLY
     sendHead.serviceId = g_isNftFile ? SERVICE_ID_NFT_FILE_TRANS : SERVICE_ID_FILE_TRANS;
+#else
+    sendHead.serviceId = SERVICE_ID_FILE_TRANS;
+#endif
     sendHead.commandId = COMMAND_ID_FILE_TRANS_CONTENT;
     sendHead.flag.b.ack = 0;
     sendHead.flag.b.isHost = 0;
@@ -324,13 +333,16 @@ static void FileTransTimeOutTimerFunc(void *argument)
 {
     g_isReceivingFile = false;
     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
+#ifdef BTC_ONLY
     if (g_isNftFile) {
         GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN, 0);
         GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN_TRANS_FAIL, 0);
     }
     g_isNftFile = false;
+#endif
 }
 
+#ifdef BTC_ONLY
 static uint8_t *ServiceNftFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     g_isNftFile = true;
@@ -413,3 +425,5 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);
     return BuildFrame(&sendHead, NULL, 0);
 }
+
+#endif

@@ -19,7 +19,7 @@
 #endif
 
 #define MAX_WALLET_NAME_LEN 48
-#define MAX_WALLET_CONTENT_LEN 1024
+#define MAX_WALLET_CONTENT_LEN 4096
 
 #define MAX_ADDRESS_LEN 256
 #define MAX_LABEL_LENGTH 64
@@ -69,7 +69,7 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
     GUI_DEL_OBJ(g_noticeWindow);
 
     char *filename = lv_event_get_user_data(e);
-    int ret = FileWrite(filename, g_multisigWalletItem->walletConfig, strnlen(g_multisigWalletItem->walletConfig, MAX_WALLET_CONTENT_LEN));
+    int ret = FileWrite(filename, g_multisigWalletItem->walletConfig, strnlen(g_multisigWalletItem->walletConfig, MAX_WALLET_CONTENT_LEN - 1));
     if (ret == 0) {
         GuiShowSDCardExportSuccess();
     } else {
@@ -91,7 +91,6 @@ static void GuiShowSDCardNotDetected()
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("OK"));
-    lv_obj_set_size(btn, 94, 66);
     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
@@ -104,7 +103,7 @@ static void GuiShowSDCardExport()
     lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgSdCardL);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
 
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("multisig_export_to_sdcard"));
+    lv_obj_t *label = GuiCreateScrollLittleTitleLabel(g_noticeWindow, _("multisig_export_to_sdcard"), 408);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
 
     label = GuiCreateIllustrateLabel(g_noticeWindow, _("about_info_export_file_name"));
@@ -140,7 +139,6 @@ static void GuiShowSDCardExportSuccess()
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("Done"));
-    lv_obj_set_size(btn, 122, 66);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
     lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
@@ -159,7 +157,6 @@ static void GuiShowSDCardExportFailed()
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("OK"));
-    lv_obj_set_size(btn, 94, 66);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
     lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
@@ -210,7 +207,8 @@ static void GuiContent(lv_obj_t *parent)
     lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
 
     text = GuiCreateNoticeLabel(cont, _("multisig_import_success_hint"));
-    lv_obj_align(text, LV_ALIGN_TOP_LEFT, 36, 8);
+    lv_obj_align(text, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_set_width(text, 450);
     lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
     cont = GuiCreateContainerWithParent(cont, 408, 134 + 384);

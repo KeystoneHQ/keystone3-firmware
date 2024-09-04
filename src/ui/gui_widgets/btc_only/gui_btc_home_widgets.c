@@ -335,6 +335,7 @@ void GuiHomeRefresh(void)
     } else {
         lv_img_set_src(g_twoKeyImg, &imgArrowRight);
     }
+    GuiStatusBarSetTestNet();
 }
 
 bool GetIsTestNet(void)
@@ -344,7 +345,6 @@ bool GetIsTestNet(void)
 
 void SetIsTestNet(bool testNet)
 {
-    printf("testNet=%d\n", testNet);
     g_walletState[HOME_WALLET_CARD_BTC].testNet = testNet;
     AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
 }

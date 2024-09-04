@@ -9,13 +9,35 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
-static inline uint32_t op_i(uint32_t val) { return val; }
+static inline uint32_t op_n(int32_t val)
+{
+    return (uint32_t)(val < 0 ? -val : val);
+}
+static inline uint32_t op_i(uint32_t val)
+{
+    return val;
+}
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
-static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
-static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_v(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_w(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_f(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
+static inline uint32_t op_t(uint32_t val)
+{
+    UNUSED(val);
+    return 0;
+}
 
 const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
@@ -435,6 +457,10 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"manage_wallet_confirm_address_desc", "verify that the 'Receive' address matches across all parties' devices or software wallets."},
     {"manage_wallet_confirm_address_title", "Verify Address"},
     {"manage_wallet_passphrase_error_limit", "Passphrase wallet can't add multisig"},
+    {"multi_signature_broadcast", "Broadcast Transaction"},
+    {"multi_signature_completed", "Completed"},
+    {"multi_signature_status", "Signature Status"},
+    {"multi_signature_title", "Multi-Signature"},
     {"multi_wallet_no_file_notice", "Please make sure the file is named with English letters and located in the root path"},
     {"multi_wallet_no_psbt_file", "No PSBT Files"},
     {"multisig_connect_wallet_notice", "You are using multisig wallet"},
@@ -828,9 +854,12 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t i = op_i(n); UNUSED(i);
-    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t i = op_i(n);
+    UNUSED(i);
+    uint32_t v = op_v(n);
+    UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1261,6 +1290,10 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"manage_wallet_confirm_address_desc", "Stellen Sie sicher, dass die \"Empfangs\" -Adresse auf allen Geräten oder Software-Wallets aller Parteien übereinstimmt."},
     {"manage_wallet_confirm_address_title", "Adresse überprüfen"},
     {"manage_wallet_passphrase_error_limit", "Passphrase Wallet kann kein Multisig hinzufügen."},
+    {"multi_signature_broadcast", "Transaktion senden"},
+    {"multi_signature_completed", "Abgeschlossen"},
+    {"multi_signature_status", "Signaturstatus"},
+    {"multi_signature_title", "Multisignatur"},
     {"multi_wallet_no_file_notice", "Bitte stellen Sie sicher, dass die Datei mit englischen Buchstaben benannt ist und sich im Stammverzeichnis befindet."},
     {"multi_wallet_no_psbt_file", "Keine PSBT-Dateien"},
     {"multisig_connect_wallet_notice", "Du benutzt eine Multisig-Wallet."},
@@ -1654,9 +1687,12 @@ const static lv_i18n_phrase_t de_singulars[] = {
 
 static uint8_t de_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t i = op_i(n); UNUSED(i);
-    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t i = op_i(n);
+    UNUSED(i);
+    uint32_t v = op_v(n);
+    UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -2087,6 +2123,10 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"manage_wallet_confirm_address_desc", "Verifica que la dirección de Recibir coincida en todos los dispositivos o billeteras de software de todas las partes"},
     {"manage_wallet_confirm_address_title", "Verificar dirección"},
     {"manage_wallet_passphrase_error_limit", "Billetera de frase de paso no puede agregar multisig"},
+    {"multi_signature_broadcast", "Transacción en broadcast"},
+    {"multi_signature_completed", "Completado"},
+    {"multi_signature_status", "Estado de la firma"},
+    {"multi_signature_title", "Multi-firma"},
     {"multi_wallet_no_file_notice", "Por favor, asegúrate de que el archivo esté nombrado con letras en inglés y ubicado en la ruta principal."},
     {"multi_wallet_no_psbt_file", "Sin archivos PSBT"},
     {"multisig_connect_wallet_notice", "Estás usando una billetera Multisig"},
@@ -2480,7 +2520,8 @@ const static lv_i18n_phrase_t es_singulars[] = {
 
 static uint8_t es_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t n = op_n(num);
+    UNUSED(n);
 
 
     if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2912,6 +2953,10 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"manage_wallet_confirm_address_desc", "すべての関係者のデバイスやソフトウェアウォレットで、「受信」アドレスが一致していることを確認してください."},
     {"manage_wallet_confirm_address_title", "住所を確認する"},
     {"manage_wallet_passphrase_error_limit", "パスフレーズウォレットではマルチシグを追加することはできません."},
+    {"multi_signature_broadcast", "トランザクションをブロードキャスト"},
+    {"multi_signature_completed", "完了"},
+    {"multi_signature_status", "署名の状態"},
+    {"multi_signature_title", "マルチシグネチャ"},
     {"multi_wallet_no_file_notice", "「ファイルが英字で命名され、ルートパスに保存されていることを確認してください.」"},
     {"multi_wallet_no_psbt_file", "PSBTファイルはありません"},
     {"multisig_connect_wallet_notice", "あなたはマルチシグウォレットを使用しています."},
@@ -3736,6 +3781,10 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"manage_wallet_confirm_address_desc", "수신' 주소가 모든 참가자의 장치 또는 소프트웨어 지갑에서 일치하는지 확인합니다"},
     {"manage_wallet_confirm_address_title", "주소 확인"},
     {"manage_wallet_passphrase_error_limit", "암호 지갑에 다중 서명을 추가할 수 없습니다"},
+    {"multi_signature_broadcast", "거래 방송"},
+    {"multi_signature_completed", "완료"},
+    {"multi_signature_status", "서명 상태"},
+    {"multi_signature_title", "다중 서명"},
     {"multi_wallet_no_file_notice", "파일 이름이 영문자이고 루트 경로 아래에 있는지 확인하십시오"},
     {"multi_wallet_no_psbt_file", "PSBT 파일이 없습니다"},
     {"multisig_connect_wallet_notice", "다중 서명 지갑 사용 중"},
@@ -4295,7 +4344,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"connect_mm_title", "MetaMask (Расширение)"},
     {"connect_mm_title2", "MetaMask (Мобильный)"},
     {"connect_nunchuk_link", "https://keyst.one/t/3rd/nunchuk"},
-    {"connect_nunchuk_multisig_link", "https://keyst.one/t/3rd/Multisig/\\nnunchuk"},
+    {"connect_nunchuk_multisig_link", "https://keyst.one/t/3rd/Multisig/nunchuk"},
     {"connect_nunchuk_title", "Nunchuk (Mobile)"},
     {"connect_okx_link", "https://keyst.one/t/3rd/okx"},
     {"connect_okx_link2", "https://keyst.one/t/3rd/okxm"},
@@ -4540,8 +4589,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"language_option", "Русский язык"},
     {"language_title", "Язык"},
     {"learn_more", "Узнать больше"},
-    {"manage_import_wallet_notice_desc1", "."},
-    {"manage_import_wallet_notice_desc2", "Очень важно надежно сохранить резервную копию конфигурации вашего кошелька; невыполнение этого требования может привести к необратимой потере активов. Если информация была изменена или является противоречивой, это также может привести к потере активов. Всегда проверяйте и сохраняйте данные вашего кошелька, чтобы предотвратить любые расхождения."},
+    {"manage_import_wallet_notice_desc1", "Пожалуйста, сравните информацию о кошельке с вашими со-подписантами или другими кошельками, чтобы убедиться, что вся информация согласована."},
+    {"manage_import_wallet_notice_desc2", "Крайне важно надежно сохранить резервную копию конфигурации вашего кошелька; в противном случае вы можете навсегда потерять свои активы. Если информация была изменена или не соответствует, это также может привести к потере активов. Всегда проверяйте и защищайте данные вашего кошелька, чтобы избежать каких-либо несоответствий."},
     {"manage_import_wallet_notice_title", "Проверьте информацию о кошельке"},
     {"manage_import_wallet_passphrase_error_desc", "Не удается импортировать кошелек с мультиподписью в кошелек с парольной фразой. Пожалуйста, выйдите из режима использования парольной фразы и повторите попытку."},
     {"manage_import_wallet_passphrase_error_title", "Ошибка импорта"},
@@ -4560,23 +4609,27 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"manage_wallet_confirm_address_desc", "Подтвердите, что адрес \"Получения\" совпадает на устройствах или программных кошельках всех сторон."},
     {"manage_wallet_confirm_address_title", "Подтвердить адрес"},
     {"manage_wallet_passphrase_error_limit", "Кошелек с парольной фразой не может добавить мультиподпись"},
+    {"multi_signature_broadcast", "Транзакция в эфире"},
+    {"multi_signature_completed", "Завершено"},
+    {"multi_signature_status", "Статус подписи"},
+    {"multi_signature_title", "Мультиподпись"},
     {"multi_wallet_no_file_notice", "Пожалуйста, убедитесь, что файл назван английскими буквами и находится в корневом каталоге"},
     {"multi_wallet_no_psbt_file", "Нет PST-файлов"},
-    {"multisig_connect_wallet_notice", "Вы используете мультиподписной кошелек"},
+    {"multisig_connect_wallet_notice", "мультиподписной кошелек"},
     {"multisig_decoding_qr_link", "https://keyst.one/t/3rd/Multisig/import"},
     {"multisig_decoding_qr_title", "Как импортировать мультиподписной кошелек"},
-    {"multisig_export_to_sdcard", "Экспорт кошелька на карту microSD"},
+    {"multisig_export_to_sdcard", "Экспорт кошелька на microSD"},
     {"multisig_export_to_sdcard_failed", "Экспорт Не удался"},
     {"multisig_export_to_sdcard_failed_desc", "Что-то пошло не так. Пожалуйста, попробуйте снова."},
     {"multisig_export_to_sdcard_success", "Успешно экспортирован"},
     {"multisig_export_to_sdcard_success_desc", "Ваш мультиподписной кошелек был успешно экспортирован на карту Microsd."},
-    {"multisig_import_success_hint", "Предложите со-подписантов отсканировать QR-код для импорта кошелька с мультиподписью, или отсканировать этот QR-код с помощью программного wallet для завершения подключения"},
+    {"multisig_import_success_hint", "Предложите со-подписантам отсканировать QR-код для импорта мультиподписного кошелька или завершить подключение в программном кошельке."},
     {"multisig_import_wallet_exist", "Кошелек уже существует"},
     {"multisig_import_wallet_exist_desc", "Выбранный вами мультиподписной кошелек уже существует на текущем устройстве, пожалуйста, импортируйте другой кошелек."},
     {"multisig_import_wallet_invalid", "Hевалидная конфигурация кошелька"},
     {"multisig_import_wallet_invalid_desc", "Текущая конфигурация кошелька неверна. Пожалуйста, внимательно проверьте, является ли информация о MFP, Path и xPub точной."},
     {"multisig_import_xpub_error_title", "Невалидный файл"},
-    {"multisig_scan_multisig_notice", "Сканируйте QR-код мультисигнального кошелька для импорта"},
+    {"multisig_scan_multisig_notice", "Сканируйте QR мультисиг-кошелька для импорта"},
     {"multisig_signature_export_to_sdcard", "Экспорт транзакции на карту microSD"},
     {"multisig_signature_export_to_sdcard_success_desc", "Ваша подписанная транзакция была успешно экспортирована на карту Microsd."},
     {"multisig_signature_hint_1", "Пожалуйста, попросите со-подписантов отсканировать QR-код и расписаться."},
@@ -4928,7 +4981,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"wallet_setting_add_wallet", "Добавить"},
     {"wallet_setting_add_wallet_confirm", "Понял"},
     {"wallet_setting_add_wallet_limit", "Добавить лимит"},
-    {"wallet_setting_add_wallet_limit_desc", "Вы можете добавить максимум 3 кошелька. Пожалуйста"},
+    {"wallet_setting_add_wallet_limit_desc", "Вы можете добавить не более 3 кошельков. Пожалуйста, удалите другие кошельки перед добавлением нового."},
     {"wallet_setting_add_wallet_notice", "Аппаратный кошелек предназначен только для личного пользования. Не делитесь им, чтобы избежать рисков для активов."},
     {"wallet_setting_passcode", "Биометрия и код-пароль"},
     {"wallet_setting_seed_phrase", "Проверка сид фразы"},
@@ -4953,9 +5006,12 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num); UNUSED(n);
-    uint32_t v = op_v(n); UNUSED(v);
-    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t n = op_n(num);
+    UNUSED(n);
+    uint32_t v = op_v(n);
+    UNUSED(v);
+    uint32_t i = op_i(n);
+    UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -5389,6 +5445,10 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"manage_wallet_confirm_address_desc", "验证\"接收\"地址是否在所有参与方的设备或软件钱包中一致."},
     {"manage_wallet_confirm_address_title", "验证地址"},
     {"manage_wallet_passphrase_error_limit", "密语钱包无法添加多重签名"},
+    {"multi_signature_broadcast", "广播交易"},
+    {"multi_signature_completed", "完成"},
+    {"multi_signature_status", "签名状态"},
+    {"multi_signature_title", "多重签名"},
     {"multi_wallet_no_file_notice", "请确保文件以英文字母命名,并位于根路径下"},
     {"multi_wallet_no_psbt_file", "没有 PSBT 文件"},
     {"multisig_connect_wallet_notice", "您正在使用多重签名钱包"},
@@ -5829,8 +5889,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if(langs == NULL) return -1;
-    if(langs[0] == NULL) return -1;
+    if (langs == NULL) return -1;
+    if (langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -5843,13 +5903,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if(current_lang_pack == NULL) return -1;
+    if (current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for(i = 0; current_lang_pack[i] != NULL; i++) {
+    for (i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -5862,10 +5922,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for(i = 0; trans[i].msg_id != NULL; i++) {
-        if(strcmp(trans[i].msg_id, msg_id) == 0) {
+    for (i = 0; trans[i].msg_id != NULL; i++) {
+        if (strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if(trans[i].translation) return trans[i].translation;
+            if (trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -5880,23 +5940,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->singulars != NULL) {
+    if (lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -5912,31 +5972,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if(current_lang == NULL) return msg_id;
+    if (current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if(lang == current_lang_pack[0]) return msg_id;
+    if (lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if(lang->locale_plural_fn != NULL) {
+    if (lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if(lang->plurals[ptype] != NULL) {
+        if (lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -5951,6 +6011,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if(!current_lang) return NULL;
+    if (!current_lang) return NULL;
     return current_lang->locale_name;
 }

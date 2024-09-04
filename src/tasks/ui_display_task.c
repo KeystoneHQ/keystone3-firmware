@@ -317,7 +317,9 @@ static void __SetLvglHandlerAndSnapShot(uint32_t value)
 
         if (g_lockNft && !IsWakeupByFinger()) {
             DrawNftImage();
-        } else {
+        } else
+#endif
+        {
             LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)snapShotAddr);
             if (snapShotAddr != NULL) {
                 EXT_FREE(snapShotAddr);

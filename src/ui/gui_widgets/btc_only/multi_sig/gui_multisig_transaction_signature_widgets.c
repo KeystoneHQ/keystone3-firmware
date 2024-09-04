@@ -133,7 +133,6 @@ static void GuiShowSDCardExportSuccess()
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("Done"));
-    lv_obj_set_size(btn, 122, 66);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
     lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
@@ -152,7 +151,6 @@ static void GuiShowSDCardExportFailed()
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
 
     lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("OK"));
-    lv_obj_set_size(btn, 94, 66);
     lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
     lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
@@ -209,7 +207,7 @@ static void GuiMultisigTransactionSignatureSetupUR(lv_obj_t *parent)
 #endif
     GuiAnimatingQRCodeInitWithCustomSize(qrcode, GuiGetSignQrCodeData, showPending, 336, 336, NULL);
 
-    g_signStatusLabel = GuiCreateIllustrateLabel(g_qrCont, "Signature Status:");
+    g_signStatusLabel = GuiCreateIllustrateLabel(g_qrCont, _("multi_signature_status"));
     lv_obj_align_to(g_signStatusLabel, qrcode, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 }
 
@@ -218,7 +216,11 @@ static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
 
     if (g_signStatus != NULL) {
         char signStatus[64] = {0};
-        sprintf(signStatus, "#F5870A %s#", g_signStatus);
+        if (strncmp(g_signStatus, "Completed", 9) == 0) {
+            sprintf(signStatus, "#00FF00 %s#", _("multi_signature_completed"));
+        } else {
+            sprintf(signStatus, "#F5870A %s#", g_signStatus);
+        }
         if (g_signStatusView != NULL) {
             lv_obj_del(g_signStatusView);
             g_signStatusView = NULL;
@@ -230,7 +232,7 @@ static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
 
     char *hint = (char *)_("multisig_signature_hint_1");
     if (g_signCompleted) {
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Broadcast Transaction"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("multi_signature_broadcast"));
         hint = (char *)_("connect_wallet_desc");
     }
 
@@ -252,7 +254,7 @@ static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
 void GuiMultisigTransactionSignatureNVSBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, GoToHomeViewHandler, NULL);
-    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Multi-Signature"));
+    SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("multi_signature_title"));
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SDCARD, GuiSDCardHandler, NULL);
 }
 

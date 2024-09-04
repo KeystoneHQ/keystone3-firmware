@@ -42,7 +42,7 @@ void GuiMultisigSelectImportMethodWidgetsDeInit()
 static void GuiContent(lv_obj_t *parent)
 {
     lv_obj_t *label, *img, *button, *imgArrow, *line;
-    label = GuiCreateTitleLabel(parent, _("wallet_profile_import_multi_wallet"));
+    label = GuiCreateScrollTitleLabel(parent, _("wallet_profile_import_multi_wallet"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
     label = GuiCreateNoticeLabel(parent, _("wallet_profile_import_multi_wallet_desc"));
     lv_obj_set_width(label, 400);

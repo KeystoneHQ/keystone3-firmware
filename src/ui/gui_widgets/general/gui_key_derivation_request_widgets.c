@@ -821,9 +821,7 @@ static bool CheckHardWareCallParaIsValied()
 static void OnApproveHandler(lv_event_t *e)
 {
     printf("OnApproveHandler\n");
-    if (!CheckHardWareCallParaIsValied()) {
-        GuiCreateHardwareCallInvaildPathHintbox();
-    // todo click approve button and check the hardware call params
+    // click approve button and check the hardware call params
     HardwareCallResult_t res =  CheckHardwareCallRequestIsLegal();
     if (!res.isLegal) {
         GuiCreateHardwareCallInvaildParamHintbox(res.title, res.message);

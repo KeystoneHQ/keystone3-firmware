@@ -1170,14 +1170,38 @@ void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
     }
 }
 
-uint32_t GetAccountMultiReceiveIndex(const char* chainName)
+uint32_t GetAccountMultiReceiveIndex(const char* chainName, uint8_t accountIndex)
 {
-    return GetTemplateWalletValue(chainName, "multiRecvIndex");
+    char key[BUFFER_SIZE_32] = {0};
+    sprintf(key, "multiRecvIndex_%d", accountIndex);
+    return GetTemplateWalletValue(chainName, key);
 }
 
-void SetAccountMultiReceiveIndex(const char* chainName, uint32_t index)
+void SetAccountMultiReceiveIndex(const char* chainName, uint32_t index, uint8_t accountIndex)
 {
-    SetTemplateWalletValue(chainName, "multiRecvIndex", index);
+    char key[BUFFER_SIZE_32] = {0};
+    sprintf(key, "multiRecvIndex_%d", accountIndex);
+    SetTemplateWalletValue(chainName, key, index);
+}
+
+uint32_t GetAccountTestReceiveIndex(const char* chainName)
+{
+    return GetTemplateWalletValue(chainName, "testRecvIndex");
+}
+
+void SetAccountTestReceiveIndex(const char* chainName, uint32_t index)
+{
+    SetTemplateWalletValue(chainName, "testRecvIndex", index);
+}
+
+uint32_t GetAccountTestReceivePath(const char* chainName)
+{
+    return GetTemplateWalletValue(chainName, "testRecvPath");
+}
+
+void SetAccountTestReceivePath(const char* chainName, uint32_t index)
+{
+    SetTemplateWalletValue(chainName, "testRecvPath", index);
 }
 #endif
 

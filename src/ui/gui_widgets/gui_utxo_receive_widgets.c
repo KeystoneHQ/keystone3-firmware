@@ -239,7 +239,15 @@ void GuiReceiveInit(uint8_t chain)
     g_chainCard = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
     g_selectIndex = GetCurrentSelectIndex();
+#ifdef BTC_ONLY
+    if (GetIsTestNet()) {
+        g_selectType = GetAccountTestReceivePath(GetCoinCardByIndex(g_chainCard)->coin);
+    } else {
+        g_selectType = GetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin);
+    }
+#else
     g_selectType = GetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin);
+#endif
     g_addressType[g_currentAccountIndex] = g_selectType;
     g_pageWidget = CreatePageWidget();
     g_utxoReceiveWidgets.cont = g_pageWidget->contentZone;
@@ -556,11 +564,19 @@ static void GetHint(char *hint)
 static uint32_t GetCurrentSelectIndex()
 {
 #ifdef BTC_ONLY
-    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-        return GetAccountMultiReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
+    CURRENT_WALLET_INDEX_ENUM currentWallet = GetCurrentWalletIndex();
+    if (currentWallet != SINGLE_WALLET) {
+        return GetAccountMultiReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, currentWallet);
+    } else {
+        if (GetIsTestNet()) {
+            return GetAccountTestReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
+        } else {
+            return GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
+        }
     }
-#endif
+#else
     return GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
+#endif
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
         return g_btcSelectIndex[g_currentAccountIndex];
@@ -599,10 +615,15 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
         break;
     }
 #ifdef BTC_ONLY
-    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-        SetAccountMultiReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
+    CURRENT_WALLET_INDEX_ENUM currentWallet = GetCurrentWalletIndex();
+    if (currentWallet != SINGLE_WALLET) {
+        SetAccountMultiReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex, currentWallet);
     } else {
-        SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
+        if (GetIsTestNet()) {
+            SetAccountTestReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
+        } else {
+            SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
+        }
     }
 #else
     SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
@@ -703,7 +724,15 @@ static void ConfirmAddrTypeHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED && IsAddrTypeSelectChanged()) {
         g_addressType[g_currentAccountIndex] = g_selectType;
+#ifdef BTC_ONLY
+        if (GetIsTestNet()) {
+            SetAccountTestReceivePath(GetCoinCardByIndex(g_chainCard)->coin, g_selectType);
+        } else {
+            SetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin, g_selectType);
+        }
+#else
         SetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin, g_selectType);
+#endif
         g_selectIndex = 0;
         SetCurrentSelectIndex(g_selectIndex);
         ReturnHandler(e);

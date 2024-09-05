@@ -290,6 +290,7 @@ void DeleteMultisigWallet(void)
     CorrectDefalutWalletIndex(index);
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     ClearSecretCache();
+    SetAccountMultiReceiveIndex("BTC", 0, index);
     GuiManageMultiWalletPrevTile();
 }
 

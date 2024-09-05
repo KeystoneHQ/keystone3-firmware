@@ -255,7 +255,9 @@ void DrawNftImage(void)
 
 void SetNftLockState(void)
 {
-    g_lockNft = true;
+    if (GetNftScreenSaver() && IsNftScreenValid()) {
+        g_lockNft = true;
+    }
 }
 
 void NftLockQuit(void)
@@ -271,12 +273,12 @@ void NftLockQuit(void)
 
 void NftLockDecodeTouchQuit(void)
 {
-    static bool quitArea = false;
-    TouchStatus_t *pStatus;
-    pStatus = GetLatestTouchStatus();
     if (g_lockNft == false) {
         return;
     }
+    static bool quitArea = false;
+    TouchStatus_t *pStatus;
+    pStatus = GetLatestTouchStatus();
     if (pStatus->touch) {
         quitArea = true;
     } else {
@@ -313,7 +315,7 @@ static void __SetLvglHandlerAndSnapShot(uint32_t value)
             osDelay(1);
         }
 
-        if (g_lockNft && GetNftScreenSaver() && IsNftScreenValid() && !IsWakeupByFinger()) {
+        if (g_lockNft && !IsWakeupByFinger()) {
             DrawNftImage();
         } else {
             LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)snapShotAddr);

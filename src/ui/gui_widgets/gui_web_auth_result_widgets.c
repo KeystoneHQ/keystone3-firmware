@@ -64,7 +64,6 @@ void GuiSetWebAuthResultData(URParseResult *urResult, URParseMultiResult *multiR
 
 void GuiWebAuthResultSuccessHandler(lv_event_t *e)
 {
-    GuiDeleteAnimHintBox();
     if (g_webAuthSuccessCb != NULL) {
         g_webAuthSuccessCb();
     }
@@ -314,10 +313,8 @@ void GuiWebAuthResultShowPending()
 
 void GuiWebAuthResultHidePending()
 {
-    if (g_WebAuthResultPendingCont != NULL) {
-        lv_obj_del(g_WebAuthResultPendingCont);
-        g_WebAuthResultPendingCont = NULL;
-    }
+    GuiDeleteAnimHintBox();
+    g_WebAuthResultPendingCont = NULL;
 }
 
 void GuiWebAuthCalculateAuthCode()

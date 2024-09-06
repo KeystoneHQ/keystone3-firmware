@@ -189,8 +189,8 @@ void ExportMultiSigXpub(ChainType chainType);
 void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager);
 int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWalletManager_t *manager);
 
-void SetAccountMultiReceiveIndex(const char* chainName, uint32_t index, char *verifyCode);
-uint32_t GetAccountMultiReceiveIndex(const char* chainName, char *verifyCode);
+void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode);
+uint32_t GetAccountMultiReceiveIndex(char *verifyCode);
 uint32_t GetAccountTestReceiveIndex(const char* chainName);
 void SetAccountTestReceiveIndex(const char* chainName, uint32_t index);
 uint32_t GetAccountTestReceivePath(const char* chainName);

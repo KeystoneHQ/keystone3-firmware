@@ -28,6 +28,7 @@
 
 #ifdef BTC_ONLY
 #include "gui_btc_home_widgets.h"
+static void LoadCurrentAccountMultiReceiveIndex(void);
 #endif
 
 #define PUB_KEY_MAX_LENGTH                  1024 + 1
@@ -611,6 +612,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     initMultiSigWalletManager();
     ret = LoadCurrentAccountMultisigWallet(password);
     CHECK_ERRCODE_RETURN_INT(ret);
+    LoadCurrentAccountMultiReceiveIndex();
 #endif
     printf("acount public key info sitch over\r\n");
     //PrintInfo();
@@ -1033,7 +1035,24 @@ void SetFirstReceive(const char* chainName, bool isFirst)
 }
 
 #ifdef BTC_ONLY
+typedef struct {
+    char verifyCode[BUFFER_SIZE_16];
+    uint32_t index;
+} MultiSigReceiveIndex_t;
+
+static MultiSigReceiveIndex_t g_multiSigReceiveIndex[4];
+
 static void ConvertXPub(char *dest, ChainType chainType);
+uint32_t GetAccountMultiReceiveIndexFromFlash(char *verifyCode);
+
+static void LoadCurrentAccountMultiReceiveIndex(void)
+{
+    for (int i = 0; i < 4; i++) {
+        memset_s(&g_multiSigReceiveIndex[i], sizeof(MultiSigReceiveIndex_t), 0, sizeof(MultiSigReceiveIndex_t));
+        g_multiSigReceiveIndex[i].index = GetAccountMultiReceiveIndexFromFlash(GetCurrenMultisigWalletByIndex(i)->verifyCode);
+        strcpy(g_multiSigReceiveIndex[i].verifyCode, GetCurrenMultisigWalletByIndex(i)->verifyCode);
+    }
+}
 
 static void replace(char *str, const char *old_str, const char *new_str)
 {
@@ -1170,23 +1189,39 @@ void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
     }
 }
 
-uint32_t GetAccountMultiReceiveIndex(const char* chainName, char *verifyCode)
+uint32_t GetAccountMultiReceiveIndex(char *verifyCode)
+{
+    for (int i = 0; i < 4; i++) {
+        if (strcmp(g_multiSigReceiveIndex[i].verifyCode, verifyCode) == 0) {
+            return g_multiSigReceiveIndex[i].index;
+        }
+    }
+}
+
+uint32_t GetAccountMultiReceiveIndexFromFlash(char *verifyCode)
 {
     char key[BUFFER_SIZE_32] = {0};
     sprintf(key, "multiRecvIndex_%s", verifyCode);
-    return GetTemplateWalletValue(chainName, key);
+    return GetTemplateWalletValue("BTC", key);
 }
 
-void SetAccountMultiReceiveIndex(const char* chainName, uint32_t index, char *verifyCode)
+void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
 {
     char key[BUFFER_SIZE_32] = {0};
     sprintf(key, "multiRecvIndex_%s", verifyCode);
-    SetTemplateWalletValue(chainName, key, index);
+    for (int i = 0; i < 4; i++) {
+        if (strcmp(g_multiSigReceiveIndex[i].verifyCode, verifyCode) == 0) {
+            g_multiSigReceiveIndex[i].index = index;
+            break;
+        }
+    }
+    SetTemplateWalletValue("BTC", key, index);
 }
 
-void DeleteAccountMultiReceiveIndex(const char* chainName, uint32_t index, char *verifyCode)
+void DeleteAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
 {
     uint32_t addr;
+    const char *chainName = "BTC";
     char key[BUFFER_SIZE_32] = {0};
     sprintf(key, "multiRecvIndex_%s", verifyCode);
     cJSON* rootJson = ReadAndParseAccountJson(&addr, NULL);
@@ -1204,6 +1239,7 @@ void DeleteAccountMultiReceiveIndex(const char* chainName, uint32_t index, char 
 
     WriteJsonToFlash(addr, rootJson);
     CleanupJson(rootJson);
+    LoadCurrentAccountMultiReceiveIndex();
 }
 
 uint32_t GetAccountTestReceiveIndex(const char* chainName)

@@ -144,7 +144,7 @@ void GuiManageMultisigWalletRefresh(void)
     if (g_manageMultisig.currentTile == MULTI_MULTI_SIG_DETAIL) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("manage_multi_wallet_detail_title"));
     } else if (g_manageMultisig.currentTile == MULTI_MULTI_SIG_CO_SIGNERS_DETAIL) {
-        snprintf_s(tempBuff, sizeof(tempBuff), "%s %s", g_multiSigWallet->policy, _("create_multi_wallet_co_sign"));
+        snprintf_s(tempBuff, sizeof(tempBuff), "%s %s", g_multiSigWallet->policy, _("create_multi_wallet_co_sign_text"));
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, tempBuff);
     }
 }

@@ -78,7 +78,7 @@ void GuiBtcWalletProfileRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
         CreateBtcWalletProfileEntranceRefresh(g_walletProfile.profileView);
     } else {
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_single_sign_title"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_single_sign_title_text"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         lv_obj_t *label = lv_obj_get_child(g_setDefaultBtn, 0);
         if (GetCurrentWalletIndex() == SINGLE_WALLET) {

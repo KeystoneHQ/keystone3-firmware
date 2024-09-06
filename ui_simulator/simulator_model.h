@@ -50,7 +50,7 @@ uint32_t GetCurrentStampTime(void);
 bool FatfsFileExist(const char *path);
 bool GetEnsName(const char *addr, char *name);
 
-#define LOW_BATTERY_LIMIT               20
+#define LOW_BATTERY_LIMIT               0
 #define CHECK_BATTERY_LOW_POWER()       ((GetCurrentDisplayPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)
 #define SIMULATOR_WALLET_AMOUNT         1
 

@@ -1049,6 +1049,9 @@ static void LoadCurrentAccountMultiReceiveIndex(void)
 {
     for (int i = 0; i < 4; i++) {
         memset_s(&g_multiSigReceiveIndex[i], sizeof(MultiSigReceiveIndex_t), 0, sizeof(MultiSigReceiveIndex_t));
+        if (GetCurrenMultisigWalletByIndex(i) == NULL) {
+            continue; 
+        }
         g_multiSigReceiveIndex[i].index = GetAccountMultiReceiveIndexFromFlash(GetCurrenMultisigWalletByIndex(i)->verifyCode);
         strcpy(g_multiSigReceiveIndex[i].verifyCode, GetCurrenMultisigWalletByIndex(i)->verifyCode);
     }

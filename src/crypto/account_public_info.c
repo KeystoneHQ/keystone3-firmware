@@ -1170,18 +1170,40 @@ void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
     }
 }
 
-uint32_t GetAccountMultiReceiveIndex(const char* chainName, uint8_t accountIndex)
+uint32_t GetAccountMultiReceiveIndex(const char* chainName, char *verifyCode)
 {
     char key[BUFFER_SIZE_32] = {0};
-    sprintf(key, "multiRecvIndex_%d", accountIndex);
+    sprintf(key, "multiRecvIndex_%s", verifyCode);
     return GetTemplateWalletValue(chainName, key);
 }
 
-void SetAccountMultiReceiveIndex(const char* chainName, uint32_t index, uint8_t accountIndex)
+void SetAccountMultiReceiveIndex(const char* chainName, uint32_t index, char *verifyCode)
 {
     char key[BUFFER_SIZE_32] = {0};
-    sprintf(key, "multiRecvIndex_%d", accountIndex);
+    sprintf(key, "multiRecvIndex_%s", verifyCode);
     SetTemplateWalletValue(chainName, key, index);
+}
+
+void DeleteAccountMultiReceiveIndex(const char* chainName, uint32_t index, char *verifyCode)
+{
+    uint32_t addr;
+    char key[BUFFER_SIZE_32] = {0};
+    sprintf(key, "multiRecvIndex_%s", verifyCode);
+    cJSON* rootJson = ReadAndParseAccountJson(&addr, NULL);
+
+    cJSON* item = cJSON_GetObjectItem(rootJson, chainName);
+    if (item == NULL) {
+        item = cJSON_CreateObject();
+        cJSON_AddItemToObject(rootJson, chainName, item);
+    }
+
+    cJSON* valueItem = cJSON_GetObjectItem(item, key);
+    if (valueItem != NULL) {
+        cJSON_DeleteItemFromObject(item, key);
+    }
+
+    WriteJsonToFlash(addr, rootJson);
+    CleanupJson(rootJson);
 }
 
 uint32_t GetAccountTestReceiveIndex(const char* chainName)

@@ -23,6 +23,7 @@
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_multisig_wallet_export_widgets.h"
 #include "gui_api.h"
+#include "account_public_info.h"
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
 #endif
@@ -286,11 +287,11 @@ static void CorrectDefalutWalletIndex(int deleteIndex)
 
 void DeleteMultisigWallet(void)
 {
+    DeleteAccountMultiReceiveIndex("BTC", 0, g_walletItem->verifyCode);
     int index = DeleteMultisigWalletByVerifyCode(g_walletItem->verifyCode, SecretCacheGetPassword());
     CorrectDefalutWalletIndex(index);
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     ClearSecretCache();
-    SetAccountMultiReceiveIndex("BTC", 0, index);
     GuiManageMultiWalletPrevTile();
 }
 

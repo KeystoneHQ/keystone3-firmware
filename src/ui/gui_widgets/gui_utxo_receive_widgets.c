@@ -196,7 +196,9 @@ static uint32_t g_btcSelectIndex[3] = {0};
 static uint32_t g_ltcSelectIndex[3] = {0};
 static uint32_t g_dashSelectIndex[3] = {0};
 static uint32_t g_bchSelectIndex[3] = {0};
+static uint8_t g_oldWalletIndex = 0xFF;
 static uint8_t g_currentAccountIndex = 0;
+static uint8_t g_multiSigAccountIndex[4] = {0xFF};
 
 static HOME_WALLET_CARD_ENUM g_chainCard;
 static PageWidget_t *g_pageWidget;
@@ -238,6 +240,14 @@ void GuiReceiveInit(uint8_t chain)
     InitMultisigWalletConfig();
     g_chainCard = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
+    if (g_oldWalletIndex == 0xFF) {
+        g_oldWalletIndex = GetCurrentAccountIndex();
+    }
+    if (g_oldWalletIndex != g_currentAccountIndex) {
+        for (int i = 0; i < 4; i++) {
+            g_multiSigAccountIndex[i] = 0xFF;
+        }
+    }
     g_selectIndex = GetCurrentSelectIndex();
 #ifdef BTC_ONLY
     if (GetIsTestNet()) {
@@ -566,7 +576,13 @@ static uint32_t GetCurrentSelectIndex()
 #ifdef BTC_ONLY
     CURRENT_WALLET_INDEX_ENUM currentWallet = GetCurrentWalletIndex();
     if (currentWallet != SINGLE_WALLET) {
-        return GetAccountMultiReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, currentWallet);
+        // if (g_multiSigAccountIndex[0] == 0xff) {
+        //     for (int i = 0; i < MAX_MULTI_SIG_ACCOUNT; i++) {
+        //         // g_multiSigAccountIndex[i] = 
+        //         return GetAccountMultiReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, GetCurrenMultisigWalletByIndex(i)->verifyCode);
+        //     }
+        // }
+        return GetAccountMultiReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, GetCurrenMultisigWalletByIndex(currentWallet)->verifyCode);
     } else {
         if (GetIsTestNet()) {
             return GetAccountTestReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
@@ -617,7 +633,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
 #ifdef BTC_ONLY
     CURRENT_WALLET_INDEX_ENUM currentWallet = GetCurrentWalletIndex();
     if (currentWallet != SINGLE_WALLET) {
-        SetAccountMultiReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex, currentWallet);
+        SetAccountMultiReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex, GetCurrenMultisigWalletByIndex(currentWallet)->verifyCode);
     } else {
         if (GetIsTestNet()) {
             SetAccountTestReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);

@@ -1050,7 +1050,7 @@ static void LoadCurrentAccountMultiReceiveIndex(void)
     for (int i = 0; i < 4; i++) {
         memset_s(&g_multiSigReceiveIndex[i], sizeof(MultiSigReceiveIndex_t), 0, sizeof(MultiSigReceiveIndex_t));
         if (GetCurrenMultisigWalletByIndex(i) == NULL) {
-            continue; 
+            continue;
         }
         g_multiSigReceiveIndex[i].index = GetAccountMultiReceiveIndexFromFlash(GetCurrenMultisigWalletByIndex(i)->verifyCode);
         strcpy(g_multiSigReceiveIndex[i].verifyCode, GetCurrenMultisigWalletByIndex(i)->verifyCode);
@@ -1199,22 +1199,26 @@ uint32_t GetAccountMultiReceiveIndex(char *verifyCode)
             return g_multiSigReceiveIndex[i].index;
         }
     }
+    return 0;
 }
 
 uint32_t GetAccountMultiReceiveIndexFromFlash(char *verifyCode)
 {
-    char key[BUFFER_SIZE_32] = {0};
+    char key[BUFFER_SIZE_64] = {0};
     sprintf(key, "multiRecvIndex_%s", verifyCode);
+    printf("key = %s.\n", key);
     return GetTemplateWalletValue("BTC", key);
 }
 
 void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
 {
-    char key[BUFFER_SIZE_32] = {0};
+    char key[BUFFER_SIZE_64] = {0};
     sprintf(key, "multiRecvIndex_%s", verifyCode);
+    printf("key = %s.\n", key);
     for (int i = 0; i < 4; i++) {
-        if (strcmp(g_multiSigReceiveIndex[i].verifyCode, verifyCode) == 0) {
+        if (strlen(g_multiSigReceiveIndex[i].verifyCode) == 0) {
             g_multiSigReceiveIndex[i].index = index;
+            strcpy(g_multiSigReceiveIndex[i].verifyCode, verifyCode);
             break;
         }
     }
@@ -1225,8 +1229,9 @@ void DeleteAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
 {
     uint32_t addr;
     const char *chainName = "BTC";
-    char key[BUFFER_SIZE_32] = {0};
+    char key[BUFFER_SIZE_64] = {0};
     sprintf(key, "multiRecvIndex_%s", verifyCode);
+    printf("key = %s.\n", key);
     cJSON* rootJson = ReadAndParseAccountJson(&addr, NULL);
 
     cJSON* item = cJSON_GetObjectItem(rootJson, chainName);
@@ -1799,6 +1804,7 @@ static void WriteJsonToFlash(uint32_t addr, cJSON *rootJson)
         Gd25FlashSectorErase(eraseAddr);
     }
     jsonString = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4, false);
+    printf("save jsonString=%s\r\n", jsonString);
     RemoveFormatChar(jsonString);
     size = strlen(jsonString);
     Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);

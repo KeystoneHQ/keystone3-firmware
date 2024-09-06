@@ -287,7 +287,7 @@ static void CorrectDefalutWalletIndex(int deleteIndex)
 
 void DeleteMultisigWallet(void)
 {
-    DeleteAccountMultiReceiveIndex("BTC", 0, g_walletItem->verifyCode);
+    DeleteAccountMultiReceiveIndex("BTC", g_walletItem->verifyCode);
     int index = DeleteMultisigWalletByVerifyCode(g_walletItem->verifyCode, SecretCacheGetPassword());
     CorrectDefalutWalletIndex(index);
     GuiDeleteKeyboardWidget(g_keyboardWidget);

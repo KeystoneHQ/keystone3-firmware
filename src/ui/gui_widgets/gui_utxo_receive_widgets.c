@@ -566,7 +566,7 @@ static uint32_t GetCurrentSelectIndex()
 #ifdef BTC_ONLY
     CURRENT_WALLET_INDEX_ENUM currentWallet = GetCurrentWalletIndex();
     if (currentWallet != SINGLE_WALLET) {
-        return GetAccountMultiReceiveIndex(GetCurrenMultisigWalletByIndex(currentWallet)->verifyCode);
+        return GetAccountMultiReceiveIndex(GetDefaultMultisigWallet()->verifyCode);
     } else {
         if (GetIsTestNet()) {
             return GetAccountTestReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
@@ -617,7 +617,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
 #ifdef BTC_ONLY
     CURRENT_WALLET_INDEX_ENUM currentWallet = GetCurrentWalletIndex();
     if (currentWallet != SINGLE_WALLET) {
-        SetAccountMultiReceiveIndex(selectIndex, GetCurrenMultisigWalletByIndex(currentWallet)->verifyCode);
+        SetAccountMultiReceiveIndex(selectIndex, GetDefaultMultisigWallet()->verifyCode);
     } else {
         if (GetIsTestNet()) {
             SetAccountTestReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);

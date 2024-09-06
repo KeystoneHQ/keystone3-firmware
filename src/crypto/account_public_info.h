@@ -195,6 +195,7 @@ uint32_t GetAccountTestReceiveIndex(const char* chainName);
 void SetAccountTestReceiveIndex(const char* chainName, uint32_t index);
 uint32_t GetAccountTestReceivePath(const char* chainName);
 void SetAccountTestReceivePath(const char* chainName, uint32_t index);
+void DeleteAccountMultiReceiveIndex(uint32_t index, char *verifyCode);
 #endif
 #endif
 

@@ -147,7 +147,7 @@ void GuiSystemSettingAreaRestart()
 
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)
 {
-    if (GetBatterPercent() < LOW_BATTERY_PERCENT) {
+    if (GetCurrentDisplayPercent() < LOW_BATTERY_PERCENT) {
         GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 1);
     } else {
         GuiShowKeyBoardDialog(container);

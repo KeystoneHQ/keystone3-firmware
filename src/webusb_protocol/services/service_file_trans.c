@@ -194,7 +194,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             sendTlvArray[0].value = 2;
             break;
         }
-        if (GetBatterPercent() < LOW_BATTERY_PERCENT) {
+        if (GetCurrentDisplayPercent() < LOW_BATTERY_PERCENT) {
             GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 1);
             sendTlvArray[0].value = 1;
             break;

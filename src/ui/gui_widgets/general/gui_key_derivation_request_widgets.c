@@ -737,12 +737,12 @@ static uint32_t GetCurrentSelectedIndex()
 
 static void SetAccountType(uint8_t index)
 {
-    SetConnectWalletAccountIndex(g_response->data->origin, index);
+    SetConnectWalletPathIndex(g_response->data->origin, index);
 }
 
 static AdaXPubType GetAccountType(void)
 {
-    return GetConnectWalletAccountIndex(g_response->data->origin);
+    return GetConnectWalletPathIndex(g_response->data->origin);
 }
 
 static void UpdateConfirmBtn(bool update)
@@ -781,7 +781,7 @@ static bool IsCardano()
 static void ConfirmDerivationHandler(lv_event_t *e)
 {
     if (IsCardano()) {
-        SetConnectWalletAccountIndex(g_response->data->origin, GetAccountType());
+        SetConnectWalletPathIndex(g_response->data->origin, GetAccountType());
         SetAccountType(GetCurrentSelectedIndex());
     }
     GuiAnimatingQRCodeDestroyTimer();
@@ -798,7 +798,7 @@ static void ConfirmDerivationHandler(lv_event_t *e)
 
 static char *GetChangeDerivationPathDesc(void)
 {
-    return GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC)[GetAccountType()];
+    return GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC)[GetCurrentSelectedIndex()];
 }
 
 static void GetCardanoEgAddress(void)
@@ -890,7 +890,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     egContHeight += 12;
     lv_obj_set_height(egCont, egContHeight);
     GetCardanoEgAddress();
-    UpdateCardanoEgAddress(GetAccountType());
+    UpdateCardanoEgAddress(GetCurrentSelectedIndex());
 }
 
 static void ChangeDerivationPathHandler(lv_event_t *e)

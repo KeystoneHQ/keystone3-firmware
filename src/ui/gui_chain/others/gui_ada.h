@@ -4,6 +4,7 @@
 #include "stdlib.h"
 #include "stdint.h"
 #include "librust_c.h"
+#include "account_public_info.h"
 
 typedef enum {
     STANDARD_ADA = 0,
@@ -55,7 +56,7 @@ void FreeAdaMemory(void);
 void FreeAdaSignDataMemory(void);
 void FreeAdaCatalystMemory(void);
 
-char *GuiGetADABaseAddressByIndex(uint16_t index);
+char *GuiGetADABaseAddressByXPub(char *xPub);
 UREncodeResult *GuiGetAdaSignQrCodeData(void);
 UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void);
 UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeData(void);
@@ -75,17 +76,14 @@ void GetAdaVotingProceduresLabel(void *indata, void *param, uint32_t maxLen);
 bool GetAdaVotingProposalsExist(void *indata, void *param);
 void GetAdaVotingProposalsLabel(void *indata, void *param, uint32_t maxLen);
 
-void SetAdaXPubType(AdaXPubType type);
 AdaXPubType GetAdaXPubType(void);
 ChainType GetAdaXPubTypeByIndex(uint16_t index);
+ChainType GetAdaXPubTypeByIndexAndDerivationType(AdaXPubType type, uint16_t index);
 
 void SetReceivePageAdaXPubType(AdaXPubType type);
 AdaXPubType GetReceivePageAdaXPubType(void);
 ChainType GetReceivePageAdaXPubTypeByIndex(uint16_t index);
-ChainType GetReceivePageAdaXPubTypeByIndexAndType(AdaXPubType type, uint16_t index);
 
-void SetKeyDerivationAdaXPubType(AdaXPubType type);
 AdaXPubType GetKeyDerivationAdaXPubType(void);
-ChainType GetKeyDerivationAdaXPubTypeByIndex(uint16_t index);
 
 #endif

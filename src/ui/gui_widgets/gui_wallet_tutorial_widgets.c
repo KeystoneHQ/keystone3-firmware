@@ -211,6 +211,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_ARCONNECT].items[0].qrTitle = _("connect_arconnect_title");
     g_tutorials[WALLET_LIST_ARCONNECT].items[0].qrUrl = _("connect_arconnect_link");
 
+    // WALLET_LIST_VESPR
+    g_tutorials[WALLET_LIST_VESPR].len = 1;
+    g_tutorials[WALLET_LIST_VESPR].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_VESPR].items[0].walletName = _("connect_vespr_title");
+    g_tutorials[WALLET_LIST_VESPR].items[0].url = _("connect_vespr_link");
+    g_tutorials[WALLET_LIST_VESPR].items[0].qrTitle = _("connect_vespr_title");
+    g_tutorials[WALLET_LIST_VESPR].items[0].qrUrl = _("connect_vespr_link");
+
     // WALLET_LIST_XBULL
     g_tutorials[WALLET_LIST_XBULL].len = 1;
     g_tutorials[WALLET_LIST_XBULL].desc = _("connect_wallet_desc");

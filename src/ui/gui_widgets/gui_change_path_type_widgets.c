@@ -334,7 +334,7 @@ static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t 
 {
     char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
     SimpleResponse_c_char *result = NULL;
-    xPub = GetCurrentAccountPublicKey(GetReceivePageAdaXPubTypeByIndexAndType(g_selectType, index));
+    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(g_selectType, index));
     snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", index);
     switch (type) {
     case 1:

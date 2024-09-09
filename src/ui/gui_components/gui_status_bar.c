@@ -376,8 +376,12 @@ static int GetDisplayPercent(int actual_percent, bool charging)
         }
     }
 
-    if ((charging && actual_percent == 100) || (g_currentDisplayPercent == -1)) {
+    if ((charging && actual_percent == 100)) {
         currentPercent = 100;
+        g_currentDisplayPercent = currentPercent;
+    }
+
+    if (g_currentDisplayPercent == -1) {
         g_currentDisplayPercent = currentPercent;
     }
 

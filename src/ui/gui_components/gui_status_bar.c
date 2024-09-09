@@ -346,6 +346,9 @@ char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
 uint8_t GetCurrentDisplayPercent(void)
 {
     printf("g_currentDisplayPercent %d\n", g_currentDisplayPercent);
+#ifdef COMPILE_SIMULATOR
+    return 100;
+#endif
     return g_currentDisplayPercent;
 }
 
@@ -355,45 +358,39 @@ static int GetDisplayPercent(int actual_percent, bool charging)
     static const int display_values_discharge[] = {20, 40, 60, 80, 100};
     static const int display_values_charge[] = {0, 20, 40, 60, 80};
     static int last_display_percent = -1;
-    static bool last_charging_state = false;
+    static int g_highestPercent = 100;
+    static int g_lowestPercent = 0;
+    uint8_t currentPercent = 0;
 
     int size = sizeof(thresholds) / sizeof(thresholds[0]);
 
     for (int i = 0; i < size; i++) {
         if (actual_percent <= thresholds[i]) {
             if (charging) {
-                g_currentDisplayPercent = display_values_charge[i];
+                currentPercent = display_values_charge[i];
             } else {
-                g_currentDisplayPercent = display_values_discharge[i];
+                currentPercent = display_values_discharge[i];
+                printf("currentPercent %d\n", currentPercent);
             }
             break;
         }
     }
 
-    if (g_currentDisplayPercent == -1) {
-        g_currentDisplayPercent = charging ? 80 : 100;
+    if ((charging && actual_percent == 100) || (g_currentDisplayPercent == -1)) {
+        currentPercent = 100;
+        g_currentDisplayPercent = currentPercent;
     }
 
-    if (charging && actual_percent == 100) {
-        g_currentDisplayPercent = 100;
-    }
-
-    if (last_display_percent != -1) {
-        if (charging != last_charging_state) {
-            g_currentDisplayPercent = last_display_percent;
-        } else {
-            if (charging) {
-                g_currentDisplayPercent = (g_currentDisplayPercent > last_display_percent) ?
-                                          g_currentDisplayPercent : last_display_percent;
-            } else {
-                g_currentDisplayPercent = (g_currentDisplayPercent < last_display_percent) ?
-                                          g_currentDisplayPercent : last_display_percent;
-            }
+    if (charging) {
+        if (currentPercent >= g_currentDisplayPercent) {
+            g_currentDisplayPercent = currentPercent;
+        }
+    } else {
+        if (currentPercent <= g_currentDisplayPercent) {
+            g_currentDisplayPercent = currentPercent;
         }
     }
-
-    last_display_percent = g_currentDisplayPercent;
-    last_charging_state = charging;
+    // last_charging_state = charging;
 
     return g_currentDisplayPercent;
 }

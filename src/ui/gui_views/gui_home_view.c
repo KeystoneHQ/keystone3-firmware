@@ -85,6 +85,7 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS:
         GuiShowRsaInitializatioCompleteHintbox();
         break;
+#endif
     case SIG_QRCODE_VIEW_SCAN_FAIL:
         GuiScanResult(false, param);
         break;

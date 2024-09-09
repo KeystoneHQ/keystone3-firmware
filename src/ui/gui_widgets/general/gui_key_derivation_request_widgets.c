@@ -954,11 +954,6 @@ static void OpenTutorialHandler(lv_event_t *e)
     GUI_DEL_OBJ(g_openMoreHintBox);
 }
 
-void GuiResetCurrentKeyDerivationCache(uint8_t index)
-{
-    SetKeyDerivationAdaXpubTypesByAccountIndex(STANDARD_ADA, index);
-}
-
 static void GuiConnectUsbPasswordPass(void)
 {
     GuiDeleteKeyboardWidget(g_keyboardWidget);

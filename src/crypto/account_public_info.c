@@ -28,6 +28,7 @@
 
 #ifdef BTC_ONLY
 #include "gui_btc_home_widgets.h"
+static void LoadCurrentAccountMultiReceiveIndex(void);
 #endif
 
 #define PUB_KEY_MAX_LENGTH                  1024 + 1
@@ -60,6 +61,9 @@ static bool GetPublicKeyFromJsonString(const char *string);
 static char *GetJsonStringFromPublicKey(void);
 static cJSON* ReadAndParseAccountJson(uint32_t *outAddr, uint32_t *outSize);
 static void WriteJsonToFlash(uint32_t addr, cJSON *rootJson);
+static uint32_t GetTemplateWalletValue(const char* walletName, const char* key);
+static void SetTemplateWalletValue(const char* walletName, const char* key, uint32_t value);
+static void CleanupJson(cJSON* json);
 static void FreePublicKeyRam(void);
 static void PrintInfo(void);
 static void SetIsTempAccount(bool isTemp);
@@ -237,6 +241,7 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case LEDGER_BITBOX02:
         ASSERT(ledgerBitbox02MasterKey);
         return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, path);
+#ifndef BTC_ONLY
     case RSA_KEY: {
         Rsa_primes_t *primes = FlashReadRsaPrimes();
         if (primes == NULL)
@@ -250,6 +255,7 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case TON_CHECKSUM:
         // should not be here.
         ASSERT(0);
+#endif
     default:
         return NULL;
     }
@@ -502,6 +508,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             ledgerBitbox02Key = ledger_bitbox02_response->data;
         }
 
+#ifndef BTC_ONLY
         if (isTon) {
             //store public key for ton wallet;
             xPubResult = ProcessKeyType(seed, len, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL, NULL);
@@ -521,6 +528,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 snprintf_s(ptr, 65, "%s%02x", ptr, checksum[i]);
             }
         } else {
+#endif
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
                 // slip39 wallet does not support ADA
                 if (isSlip39 && (g_chainTable[i].cryptoKey == BIP32_ED25519 || g_chainTable[i].cryptoKey == LEDGER_BITBOX02)) {
@@ -543,7 +551,9 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 // printf("xPubResult=%s\r\n", xPubResult->data);
                 free_simple_response_c_char(xPubResult);
             }
+#ifndef BTC_ONLY
         }
+#endif
         printf("erase user data:0x%X\n", addr);
         for (uint32_t eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
             Gd25FlashSectorErase(eraseAddr);
@@ -576,7 +586,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey)
 {
     SetIsTempAccount(false);
-    printf("accountIndex = %d %s %d..\n", accountIndex, __func__, __LINE__);
     uint32_t addr;
     int32_t ret = SUCCESS_CODE;
     bool regeneratePubKey = newKey;
@@ -603,6 +612,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     initMultiSigWalletManager();
     ret = LoadCurrentAccountMultisigWallet(password);
     CHECK_ERRCODE_RETURN_INT(ret);
+    LoadCurrentAccountMultiReceiveIndex();
 #endif
     printf("acount public key info sitch over\r\n");
     //PrintInfo();
@@ -783,11 +793,11 @@ uint8_t SpecifiedXPubExist(const char *value, bool isTon)
             if (keyJson == NULL) {
                 break;
             }
-            if (!isTon) {
-                chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[0].name);
-            } else {
-                chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[PUBLIC_INFO_TON_CHECKSUM].name);
-            }
+#ifndef BTC_ONLY
+            chainJson = cJSON_GetObjectItem(keyJson, isTon ? g_chainTable[PUBLIC_INFO_TON_CHECKSUM].name : g_chainTable[0].name);
+#else
+            chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[0].name);
+#endif
             if (chainJson == NULL) {
                 break;
             }
@@ -848,7 +858,11 @@ void AccountPublicInfoTest(int argc, char *argv[])
 
 static int GetChainTableSizeFromJson(cJSON *keyJson)
 {
+#ifndef BTC_ONLY
     return cJSON_GetObjectItem(keyJson, "ar") != NULL ? NUMBER_OF_ARRAYS(g_chainTable) : NUMBER_OF_ARRAYS(g_chainTable) - 1;
+#else
+    return NUMBER_OF_ARRAYS(g_chainTable);
+#endif
 }
 
 static bool GetPublicKeyFromJsonString(const char *string)
@@ -1021,7 +1035,27 @@ void SetFirstReceive(const char* chainName, bool isFirst)
 }
 
 #ifdef BTC_ONLY
+typedef struct {
+    char verifyCode[BUFFER_SIZE_16];
+    uint32_t index;
+} MultiSigReceiveIndex_t;
+
+static MultiSigReceiveIndex_t g_multiSigReceiveIndex[4];
+
 static void ConvertXPub(char *dest, ChainType chainType);
+uint32_t GetAccountMultiReceiveIndexFromFlash(char *verifyCode);
+
+static void LoadCurrentAccountMultiReceiveIndex(void)
+{
+    for (int i = 0; i < 4; i++) {
+        memset_s(&g_multiSigReceiveIndex[i], sizeof(MultiSigReceiveIndex_t), 0, sizeof(MultiSigReceiveIndex_t));
+        if (GetCurrenMultisigWalletByIndex(i) == NULL) {
+            continue;
+        }
+        g_multiSigReceiveIndex[i].index = GetAccountMultiReceiveIndexFromFlash(GetCurrenMultisigWalletByIndex(i)->verifyCode);
+        strcpy(g_multiSigReceiveIndex[i].verifyCode, GetCurrenMultisigWalletByIndex(i)->verifyCode);
+    }
+}
 
 static void replace(char *str, const char *old_str, const char *new_str)
 {
@@ -1130,9 +1164,7 @@ static void ConvertXPub(char *dest, ChainType chainType)
     sprintf(dest, "%s", result->data);
     free_simple_response_c_char(result);
 }
-#endif
 
-#ifdef BTC_ONLY
 void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
 {
     ASSERT(accountIndex >= 0);
@@ -1158,6 +1190,87 @@ void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
     } else {
         printf("multi sig write to sdcard fail\r\n");
     }
+}
+
+uint32_t GetAccountMultiReceiveIndex(char *verifyCode)
+{
+    for (int i = 0; i < 4; i++) {
+        if (strcmp(g_multiSigReceiveIndex[i].verifyCode, verifyCode) == 0) {
+            return g_multiSigReceiveIndex[i].index;
+        }
+    }
+    return 0;
+}
+
+uint32_t GetAccountMultiReceiveIndexFromFlash(char *verifyCode)
+{
+    char key[BUFFER_SIZE_64] = {0};
+    sprintf(key, "multiRecvIndex_%s", verifyCode);
+    printf("key = %s.\n", key);
+    return GetTemplateWalletValue("BTC", key);
+}
+
+void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
+{
+    char key[BUFFER_SIZE_64] = {0};
+    sprintf(key, "multiRecvIndex_%s", verifyCode);
+    printf("key = %s.\n", key);
+    for (int i = 0; i < 4; i++) {
+        if (strlen(g_multiSigReceiveIndex[i].verifyCode) == 0) {
+            g_multiSigReceiveIndex[i].index = index;
+            strcpy(g_multiSigReceiveIndex[i].verifyCode, verifyCode);
+            break;
+        } else if (strcmp(g_multiSigReceiveIndex[i].verifyCode, verifyCode) == 0) {
+            g_multiSigReceiveIndex[i].index = index;
+            break;
+        }
+    }
+    SetTemplateWalletValue("BTC", key, index);
+}
+
+void DeleteAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
+{
+    uint32_t addr;
+    const char *chainName = "BTC";
+    char key[BUFFER_SIZE_64] = {0};
+    sprintf(key, "multiRecvIndex_%s", verifyCode);
+    printf("key = %s.\n", key);
+    cJSON* rootJson = ReadAndParseAccountJson(&addr, NULL);
+
+    cJSON* item = cJSON_GetObjectItem(rootJson, chainName);
+    if (item == NULL) {
+        item = cJSON_CreateObject();
+        cJSON_AddItemToObject(rootJson, chainName, item);
+    }
+
+    cJSON* valueItem = cJSON_GetObjectItem(item, key);
+    if (valueItem != NULL) {
+        cJSON_DeleteItemFromObject(item, key);
+    }
+
+    WriteJsonToFlash(addr, rootJson);
+    CleanupJson(rootJson);
+    LoadCurrentAccountMultiReceiveIndex();
+}
+
+uint32_t GetAccountTestReceiveIndex(const char* chainName)
+{
+    return GetTemplateWalletValue(chainName, "testRecvIndex");
+}
+
+void SetAccountTestReceiveIndex(const char* chainName, uint32_t index)
+{
+    SetTemplateWalletValue(chainName, "testRecvIndex", index);
+}
+
+uint32_t GetAccountTestReceivePath(const char* chainName)
+{
+    return GetTemplateWalletValue(chainName, "testRecvPath");
+}
+
+void SetAccountTestReceivePath(const char* chainName, uint32_t index)
+{
+    SetTemplateWalletValue(chainName, "testRecvPath", index);
 }
 #endif
 
@@ -1596,6 +1709,51 @@ void SetConnectWalletNetwork(const char* walletName, uint32_t index)
     }
 }
 
+static uint32_t GetTemplateWalletValue(const char* walletName, const char* key)
+{
+    uint32_t value = 0;
+    cJSON* rootJson = ReadAndParseAccountJson(NULL, NULL);
+
+    cJSON* item = cJSON_GetObjectItem(rootJson, walletName);
+    if (item == NULL) {
+        printf("GetConnectWalletValue get %s not exist\r\n", walletName);
+    } else {
+        cJSON* valueItem = cJSON_GetObjectItem(item, key);
+        value = valueItem ? valueItem->valueint : 0;
+    }
+    CleanupJson(rootJson);
+    return value;
+}
+
+static void SetTemplateWalletValue(const char* walletName, const char* key, uint32_t value)
+{
+    uint32_t addr;
+    cJSON* rootJson = ReadAndParseAccountJson(&addr, NULL);
+
+    cJSON* item = cJSON_GetObjectItem(rootJson, walletName);
+    if (item == NULL) {
+        item = cJSON_CreateObject();
+        cJSON_AddItemToObject(rootJson, walletName, item);
+    }
+
+    cJSON* valueItem = cJSON_GetObjectItem(item, key);
+    if (valueItem != NULL) {
+        cJSON_SetNumberValue(valueItem, value);
+    } else {
+        cJSON_AddNumberToObject(item, key, value);
+    }
+
+    WriteJsonToFlash(addr, rootJson);
+    CleanupJson(rootJson);
+}
+
+static void CleanupJson(cJSON* json)
+{
+    if (!PassphraseExist(GetCurrentAccountIndex())) {
+        cJSON_Delete(json);
+    }
+}
+
 static cJSON* ReadAndParseAccountJson(uint32_t *outAddr, uint32_t *outSize)
 {
     int32_t ret = SUCCESS_CODE;
@@ -1649,6 +1807,7 @@ static void WriteJsonToFlash(uint32_t addr, cJSON *rootJson)
         Gd25FlashSectorErase(eraseAddr);
     }
     jsonString = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4, false);
+    printf("save jsonString=%s\r\n", jsonString);
     RemoveFormatChar(jsonString);
     size = strlen(jsonString);
     Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);

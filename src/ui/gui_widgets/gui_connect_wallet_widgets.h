@@ -4,7 +4,9 @@
 #include "gui_views.h"
 #include "librust_c.h"
 #include "gui_attention_hintbox.h"
+#ifndef BTC_ONLY
 #include "gui_ar.h"
+#endif
 
 typedef enum {
 #ifndef BTC_ONLY

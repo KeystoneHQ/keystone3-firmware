@@ -313,10 +313,8 @@ void GuiWebAuthResultShowPending()
 
 void GuiWebAuthResultHidePending()
 {
-    if (g_WebAuthResultPendingCont != NULL) {
-        lv_obj_del(g_WebAuthResultPendingCont);
-        g_WebAuthResultPendingCont = NULL;
-    }
+    GuiDeleteAnimHintBox();
+    g_WebAuthResultPendingCont = NULL;
 }
 
 void GuiWebAuthCalculateAuthCode()

@@ -42,7 +42,7 @@ void GuiMultisigSelectImportMethodWidgetsDeInit()
 static void GuiContent(lv_obj_t *parent)
 {
     lv_obj_t *label, *img, *button, *imgArrow, *line;
-    label = GuiCreateTitleLabel(parent, _("wallet_profile_import_multi_wallet"));
+    label = GuiCreateScrollTitleLabel(parent, _("wallet_profile_import_multi_wallet"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
     label = GuiCreateNoticeLabel(parent, _("wallet_profile_import_multi_wallet_desc"));
     lv_obj_set_width(label, 400);
@@ -72,7 +72,7 @@ static void GuiContent(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 180);
 
     table[0].obj = GuiCreateImg(parent, &imgSdcardImport);
-    table[1].obj = GuiCreateLittleTitleLabel(parent, _("import_multi_wallet_via_micro_card"));
+    table[1].obj = GuiCreateLittleTitleLabel(parent, _("firmware_update_via_sd"));
     table[2].obj = GuiCreateImg(parent, &imgArrowRight);
     button = GuiCreateButton(parent, 432, 120, table, NUMBER_OF_ARRAYS(table), SelectMicroCardFileHandler, NULL);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 300);

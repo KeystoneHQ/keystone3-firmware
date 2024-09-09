@@ -35,7 +35,7 @@ void GuiTonMnemonicHintWidgetsInit()
     btn = GuiCreateBtn(container, _("Next"));
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -36);
-    if (GetBatterPercent() < 60) {
+    if (GetCurrentDisplayPercent() < 80) {
         lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_bg_opa(btn, LV_OPA_30, LV_PART_MAIN);
     }

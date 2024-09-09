@@ -314,7 +314,7 @@ static void __SetLvglHandlerAndSnapShot(uint32_t value)
         while (LcdBusy()) {
             osDelay(1);
         }
-
+#ifndef BTC_ONLY
         if (g_lockNft && !IsWakeupByFinger()) {
             DrawNftImage();
         } else

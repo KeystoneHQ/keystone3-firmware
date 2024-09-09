@@ -32,6 +32,8 @@ static char g_sliceHeadWords[GUI_KEYBOARD_CANDIDATE_WORDS_LEN];                 
 static uint8_t g_sliceSha256[15][GUI_KEYBOARD_CANDIDATE_WORDS_LEN];                                       // slip39 words hash
 static lv_obj_t *g_noticeHintBox = NULL;
 
+static void HandleInputType(MnemonicKeyBoard_t *mkb);
+
 char *GuiMnemonicGetTrueWord(const char *word, char *trueWord)
 {
     char *temp = trueWord;
@@ -223,7 +225,7 @@ static void HandleTonCondition(bool isTon, MnemonicKeyBoard_t *mkb)
             break;
         }
     } else {
-        handleInputType(mkb);
+        HandleInputType(mkb);
     }
 }
 #endif

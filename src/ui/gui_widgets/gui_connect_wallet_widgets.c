@@ -275,7 +275,6 @@ static void GuiInitWalletListArray()
     bool isSLIP39 = false;
     bool isTempAccount = false;
     bool isRussian = false;
-    int currentWalletIndex = SINGLE_WALLET;
 
 #ifndef BTC_ONLY
     isTON = (GetMnemonicType() == MNEMONIC_TYPE_TON);
@@ -283,7 +282,7 @@ static void GuiInitWalletListArray()
     isTempAccount = GetIsTempAccount();
     isRussian = (LanguageGetIndex() == LANG_RU);
 #else
-    currentWalletIndex = GetCurrentWalletIndex();
+    int currentWalletIndex = GetCurrentWalletIndex();
 #endif
 
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {

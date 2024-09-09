@@ -57,6 +57,7 @@ static bool g_isDiceRolls = false;
 
 static void ResetConfirmInput(void);
 static void SelectPhraseCntHandler(lv_event_t *e);
+static void TonRegenrateConfirm();
 
 static void UpdatePhraseHandler(lv_event_t *e)
 {
@@ -463,6 +464,7 @@ void GuiSinglePhraseRefresh(void)
 }
 
 #ifndef BTC_ONLY
+static void TonUpdateMnemonicHandler(lv_event_t *e);
 static void TonRegenrateConfirm()
 {
     GUI_DEL_OBJ(g_noticeWindow);

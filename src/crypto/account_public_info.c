@@ -1220,6 +1220,9 @@ void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
             g_multiSigReceiveIndex[i].index = index;
             strcpy(g_multiSigReceiveIndex[i].verifyCode, verifyCode);
             break;
+        } else if (strcmp(g_multiSigReceiveIndex[i].verifyCode, verifyCode) == 0) {
+            g_multiSigReceiveIndex[i].index = index;
+            break;
         }
     }
     SetTemplateWalletValue("BTC", key, index);

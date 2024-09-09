@@ -330,7 +330,7 @@ static int GetDisplayPercent(int actual_percent, bool charging)
             return charging ? display_values_charge[i] : display_values_discharge[i];
         }
     }
-    
+
     return charging ? 80 : 100;
 }
 

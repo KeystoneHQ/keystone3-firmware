@@ -45,6 +45,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false},
     {WALLET_LIST_RABBY, &walletListRabby, true},
+    {WALLET_LIST_BITGET, &walletListBitget, true},
     {WALLET_LIST_ETERNL, &walletListEternl, true},
     {WALLET_LIST_BEGIN, &walletListBegin, true},
     {WALLET_LIST_UNISAT, &walletListUniSat, true},
@@ -116,6 +117,10 @@ static const lv_img_dsc_t *g_ethWalletCoinArray[4] = {
 static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
     &coinBtc, &coinEth, &coinBnb, &coinMatic, &coinOkb,
     &coinTrx, &coinLtc, &coinBch, &coinDash,
+};
+
+static const lv_img_dsc_t *g_bitgetWalletCoinArray[] = {
+    &coinBtc, &coinEth
 };
 
 static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {
@@ -816,6 +821,21 @@ static void AddOkxWalletCoins(void)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 132, 2);
 }
 
+static void AddBitgetWalletCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0;
+            i < sizeof(g_bitgetWalletCoinArray) / sizeof(g_bitgetWalletCoinArray[0]);
+            i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_bitgetWalletCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 static void AddKeystoneWalletCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -1191,6 +1211,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_IMTOKEN:
         func = GuiGetImTokenData;
         AddEthWalletCoins();
+        break;
+    case WALLET_LIST_BITGET:
+        func = GuiGetBitgetWalletData;
+        AddBitgetWalletCoins();
         break;
     case WALLET_LIST_OKX:
         func = GuiGetOkxWalletData;

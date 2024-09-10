@@ -1005,8 +1005,7 @@ static void AddChainAddress(void)
     lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
-    if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT)
-    {
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
         char addr[BUFFER_SIZE_256] = {0};
         CutAndFormatString(
             addr, sizeof(addr),
@@ -1014,13 +1013,11 @@ static void AddChainAddress(void)
             20);
         label = GuiCreateNoticeLabel(g_bottomCont, addr);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 58);
-    }
-    else if (IsAda(g_connectWalletTileView.walletIndex))
-    {
+    } else if (IsAda(g_connectWalletTileView.walletIndex)) {
         char addr[BUFFER_SIZE_256] = {0};
         char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(
-            GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
-            GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex))));
+                GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
+                GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex))));
         CutAndFormatString(addr, sizeof(addr), GuiGetADABaseAddressByXPub(xpub), 20);
         label = GuiCreateNoticeLabel(g_bottomCont, addr);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 58);

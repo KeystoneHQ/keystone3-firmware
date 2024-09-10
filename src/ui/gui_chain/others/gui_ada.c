@@ -654,8 +654,7 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
 
 ChainType GetAdaXPubTypeByIndexAndDerivationType(AdaXPubType type, uint16_t index)
 {
-    switch (index)
-    {
+    switch (index) {
     case 0:
         return type == STANDARD_ADA ? XPUB_TYPE_ADA_0 : XPUB_TYPE_LEDGER_ADA_0;
     case 1:

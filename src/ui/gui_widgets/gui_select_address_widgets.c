@@ -253,8 +253,8 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     case CHAIN_ADA:
         item->index = index;
         char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(
-            GetConnectWalletPathIndex(GetWalletNameByIndex(GuiConnectWalletGetWalletIndex())),
-            index));
+                GetConnectWalletPathIndex(GetWalletNameByIndex(GuiConnectWalletGetWalletIndex())),
+                index));
         strcpy(item->address, GuiGetADABaseAddressByXPub(xpub));
         break;
     case CHAIN_ATOM:

@@ -1,6 +1,6 @@
 #include "gui_attention_hintbox.h"
 
-#define MIN_OPERATE_POWER 60
+#define MIN_OPERATE_POWER 80
 
 static lv_obj_t *g_attentionCont;
 
@@ -88,7 +88,7 @@ static bool CheckPowerRequirements()
 #ifdef COMPILE_SIMULATOR
     return true;
 #endif
-    return GetBatterPercent() >= MIN_OPERATE_POWER && GetUsbPowerState() == USB_POWER_STATE_CONNECT;
+    return GetCurrentDisplayPercent() >= MIN_OPERATE_POWER && GetUsbPowerState() == USB_POWER_STATE_CONNECT;
 }
 
 void GuiCloseAttentionHintbox()

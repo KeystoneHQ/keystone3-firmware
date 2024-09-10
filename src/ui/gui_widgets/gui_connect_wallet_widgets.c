@@ -181,8 +181,6 @@ static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
     {SUI, false},
 };
 
-static lv_obj_t *g_noticeWindow = NULL;
-
 typedef struct {
     const char *accountType;
     const char *path;
@@ -209,9 +207,9 @@ static uint32_t g_chainAddressIndex[3] = {0};
 static uint32_t g_currentSelectedPathIndex[3] = {0};
 static lv_obj_t *g_coinListCont = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
-
 #endif
 
+static lv_obj_t *g_noticeWindow = NULL;
 static ConnectWalletWidget_t g_connectWalletTileView;
 static PageWidget_t *g_pageWidget;
 
@@ -283,67 +281,63 @@ static void QRCodePause(bool);
 
 static void GuiInitWalletListArray()
 {
-    //open all
-    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
-        g_walletListArray[i].enable = true;
-    }
-    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
-        for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
-            if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
-                g_walletListArray[i].enable = true;
-            } else {
-                g_walletListArray[i].enable = false;
-            }
+    bool isTON = false;
+    bool isSLIP39 = false;
+    bool isTempAccount = false;
+    bool isRussian = false;
 
-        }
-    } else {
-        for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
 #ifndef BTC_ONLY
-            if (g_walletListArray[i].index == WALLET_LIST_ETERNL ||
-                    g_walletListArray[i].index == WALLET_LIST_TYPHON ||
-                    g_walletListArray[i].index == WALLET_LIST_BEGIN
-               ) {
-                if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-                    g_walletListArray[i].enable = false;
-                } else {
-                    g_walletListArray[i].enable = true;
-                }
-            } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
-                g_walletListArray[i].enable = !GetIsTempAccount();
-            }
-            if (g_walletListArray[i].index == WALLET_LIST_ETERNL ||
-                    g_walletListArray[i].index == WALLET_LIST_TYPHON) {
-                if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-                    g_walletListArray[i].enable = false;
-                } else {
-                    g_walletListArray[i].enable = true;
-                }
-            } else if (g_walletListArray[i].index == WALLET_LIST_ARCONNECT) {
-                g_walletListArray[i].enable = !GetIsTempAccount();
-            }
-
-            if (LanguageGetIndex() == LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
-                g_walletListArray[i].enable = true;
-            } else if (LanguageGetIndex() != LANG_RU && g_walletListArray[i].index == WALLET_LIST_KEYSTONE) {
-                g_walletListArray[i].enable = false;
-            }
-
+    isTON = (GetMnemonicType() == MNEMONIC_TYPE_TON);
+    isSLIP39 = (GetMnemonicType() == MNEMONIC_TYPE_SLIP39);
+    isTempAccount = GetIsTempAccount();
+    isRussian = (LanguageGetIndex() == LANG_RU);
 #else
-            if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-                if (g_walletListArray[i].index == WALLET_LIST_SPECTER ||
-                        g_walletListArray[i].index == WALLET_LIST_UNISAT) {
-                    g_walletListArray[i].enable = false;
-                } else {
-                    g_walletListArray[i].enable = true;
-                }
-
-            } else {
-                g_walletListArray[i].enable = true;
-            }
+    int currentWalletIndex = GetCurrentWalletIndex();
 #endif
+
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+        bool enable = true;
+        int index = g_walletListArray[i].index;
+
+#ifndef BTC_ONLY
+        if (isTON) {
+            enable = (index == WALLET_LIST_TONKEEPER);
+        } else {
+            switch (index) {
+            case WALLET_LIST_ETERNL:
+            case WALLET_LIST_TYPHON:
+            case WALLET_LIST_BEGIN:
+                enable = !isSLIP39;
+                break;
+            case WALLET_LIST_ARCONNECT:
+                enable = !isTempAccount;
+                break;
+            case WALLET_LIST_KEYSTONE:
+                enable = isRussian;
+                break;
+            default:
+                break;
+            }
         }
+#else
+        if (currentWalletIndex != SINGLE_WALLET) {
+            if (index == WALLET_LIST_SPECTER || index == WALLET_LIST_UNISAT) {
+                enable = false;
+            }
+        }
+#endif
+
+        g_walletListArray[i].enable = enable;
     }
 }
+
+
+// static void GuiInitWalletListArray()
+// {
+//     SetWalletListEnable(true);
+
+//     ConfigureWalletEnabling();
+// }
 
 #ifndef BTC_ONLY
 static bool IsEVMChain(int walletIndex)
@@ -444,6 +438,14 @@ static void OpenQRCodeHandler(lv_event_t *e)
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
 }
 
+
+#ifndef BTC_ONLY
+void GuiConnectWalletPasswordErrorCount(void *param)
+{
+    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+}
+
 void GuiConnectShowRsaSetupasswordHintbox(void)
 {
     g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
@@ -451,8 +453,6 @@ void GuiConnectShowRsaSetupasswordHintbox(void)
     static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
-
-#ifndef BTC_ONLY
 
 static void ReturnShowQRHandler(lv_event_t *e)
 {
@@ -751,12 +751,9 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     // GuiCreateSupportedNetworks(g_connectWalletTileView.walletIndex);
 #else
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-        lv_obj_t *button = GuiCreateImgLabelAdaptButton(
-                               parent, _("multisig_connect_wallet_notice"), &imgTwoSmallKey, UnHandler,
-                               NULL);
+        lv_obj_t *button = GuiCreateImgLabelAdaptButton(parent, _("multisig_connect_wallet_notice"), &imgTwoSmallKey, UnHandler, NULL);
         lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
-        lv_obj_set_style_text_opa(lv_obj_get_child(button, 1), LV_OPA_80,
-                                  LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(button, 1), LV_OPA_80, LV_PART_MAIN);
     }
 #endif
 }
@@ -1297,12 +1294,14 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         return;
     }
     if (func) {
+#ifndef BTC_ONLY
         bool skipGenerateArweaveKey = IsArweaveSetupComplete();
         if (index == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
             GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true, _("InitializingRsaTitle"), _("FindingRsaPrimes"));
-        } else {
-            GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
+            return;
         }
+#endif
+        GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
     }
 }
 
@@ -1853,9 +1852,11 @@ static void ChangeDerivationPathHandler(lv_event_t *e)
 static void OpenMoreHandler(lv_event_t *e)
 {
     int hintboxHeight = 132;
+    lv_obj_t *btn = NULL;
     WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
 #ifndef BTC_ONLY
-    if (IsEVMChain(*wallet) || IsSOL(*wallet) || IsAda(*wallet)) {
+    bool isSpeciaWallet = IsEVMChain(*wallet) || IsSOL(*wallet) || IsAda(*wallet);
+    if (isSpeciaWallet) {
         hintboxHeight = 228;
     }
 #endif
@@ -1863,14 +1864,13 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0),
                         CloseHintBoxHandler, LV_EVENT_CLICKED,
                         &g_openMoreHintBox);
-    lv_obj_t *btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
-                                          OpenTutorialHandler, wallet, true);
+    btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
+                                OpenTutorialHandler, wallet, true);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 #ifndef BTC_ONLY
-    if (IsEVMChain(*wallet) || IsSOL(*wallet) || IsAda(*wallet)) {
-        btn = GuiCreateSelectButton(g_openMoreHintBox, _("derivation_path_change"),
-                                    &imgPath, ChangeDerivationPathHandler, wallet,
-                                    true);
+    if (isSpeciaWallet) {
+        hintboxHeight = 228;
+        btn = GuiCreateSelectButton(g_openMoreHintBox, _("derivation_path_change"), &imgPath, ChangeDerivationPathHandler, wallet, true);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
     }
 #endif
@@ -1896,11 +1896,6 @@ int8_t GuiConnectWalletNextTile(void)
     return SUCCESS_CODE;
 }
 
-void GuiConnectWalletPasswordErrorCount(void *param)
-{
-    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
-}
 
 int8_t GuiConnectWalletPrevTile(void)
 {

@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_select_address_widgets.h"
 #include "gui_home_widgets.h"
 #include "account_public_info.h"
@@ -491,3 +492,4 @@ lv_obj_t *GuiCreateSelectAddressWidget(GuiChainCoinType chainCoinType, uint32_t 
     return cont;
 }
 
+#endif

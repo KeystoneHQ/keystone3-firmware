@@ -10,14 +10,12 @@
 #include "screen_manager.h"
 #include "account_manager.h"
 #include "gui_transaction_detail_widgets.h"
-#include "gui_chain_components.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_transaction_signature_widgets.h"
 #include "gui_btc_home_widgets.h"
+#else
+#include "gui_chain_components.h"
 #endif
-
-#define MAX_WALLET_CONFIG_LEN 3000
-#define MAX_VERIFY_CODE_LEN 12
 
 #define CHECK_FREE_PARSE_RESULT(result)                       \
     if (result != NULL)                                       \
@@ -33,18 +31,8 @@
         g_parseMsgResult = NULL;                                     \
     }
 
-static bool g_isMulti = false;
-static URParseResult *g_urResult = NULL;
-static URParseMultiResult *g_urMultiResult = NULL;
-
-static uint8_t *g_psbtBytes = NULL;
-static uint32_t g_psbtBytesLen = 0;
-
-static TransactionParseResult_DisplayTx *g_parseResult = NULL;
-static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
-
-static bool IsMultiSigTx(DisplayTx *data);
-
+#define MAX_WALLET_CONFIG_LEN           3000
+#define MAX_VERIFY_CODE_LEN             12
 #ifndef BTC_ONLY
 typedef struct UtxoViewToChain {
     ViewType viewType;
@@ -60,7 +48,18 @@ static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {DashTx, XPUB_TYPE_DASH, "m/44'/5'/0'"},
     {BchTx, XPUB_TYPE_BCH, "m/44'/145'/0'"},
 };
+#define CHECK_UR_TYPE()               (urType != Bytes && urType != KeystoneSignRequest)
+#else
+#define CHECK_UR_TYPE()               (urType != Bytes)
 #endif
+static bool g_isMulti = false;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
+static uint8_t *g_psbtBytes = NULL;
+static uint32_t g_psbtBytesLen = 0;
+static TransactionParseResult_DisplayTx *g_parseResult = NULL;
+static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
+static bool IsMultiSigTx(DisplayTx *data);
 
 void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
@@ -447,6 +446,7 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
 
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
+    printf("%s %d..\n", __func__, __LINE__);
 
     char *verify_code = NULL;
     char *wallet_config = NULL;
@@ -461,6 +461,7 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
             strncpy_s(wallet_config, MAX_WALLET_CONFIG_LEN, item->walletConfig, strnlen_s(item->walletConfig, MAX_WALLET_CONFIG_LEN));
         }
     }
+    printf("wallet_config = %s\n", wallet_config);
 
     result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, verify_code, wallet_config);
     SRAM_FREE(public_keys);

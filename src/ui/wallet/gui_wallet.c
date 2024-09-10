@@ -388,7 +388,6 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
     return g_urEncode;
 }
 
-#endif
 
 UREncodeResult *GuiGetKeystoneWalletData(void)
 {
@@ -438,8 +437,6 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
     keys[8].path = GetXPubPath(XPUB_TYPE_ETH_BIP44_STANDARD);
     keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
 
-
-
     char serialNumber[256];
     GetSerialNumber(serialNumber);
     char firmwareVersion[12];
@@ -450,6 +447,7 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
     SRAM_FREE(public_keys);
     return g_urEncode;
 }
+#endif
 
 
 UREncodeResult *GuiGetOkxWalletData(void)
@@ -647,12 +645,9 @@ UREncodeResult *GuiGetBackpackData(void)
     SRAM_FREE(public_keys);
     return g_urEncode;
 }
-#endif
-
 
 UREncodeResult *GuiGetThorWalletBtcData(void)
 {
-
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
 
@@ -682,3 +677,4 @@ UREncodeResult *GuiGetThorWalletBtcData(void)
     CHECK_CHAIN_PRINT(urencode);
     return urencode;
 }
+#endif

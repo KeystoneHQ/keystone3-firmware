@@ -239,7 +239,8 @@ static void GuiSetScanCorner(void)
 #ifdef BTC_ONLY
     if (IsViewTypeSupported(MultisigWalletImport, g_viewTypeFilter, NUMBER_OF_ARRAYS(g_viewTypeFilter))) {
         lv_obj_t *label = GuiCreateNoticeLabel(cont, _("multisig_scan_multisig_notice"));
-        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 466);
+        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 526);
     }
 #endif
 }

@@ -60,18 +60,6 @@ static void ImportPhraseWordsHandler(lv_event_t* e)
     ImportSinglePhraseWords(g_importMkb, g_importPhraseKb);
 }
 
-static void GuiImportTonMnemonicHandler(lv_event_t *e)
-{
-    GUI_DEL_OBJ(g_noticeWindow)
-    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-    TonData_t ton = {
-        .forget = false
-    };
-
-    GuiUpdateTonWriteSeWidget(g_importSinglePhraseTileView.writeSe);
-    GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
-    GuiModelTonCalWriteSe(ton);
-}
 
 static void GuiImportMultiCoinMnemonicHandler(lv_event_t *e)
 {
@@ -83,24 +71,6 @@ static void GuiImportMultiCoinMnemonicHandler(lv_event_t *e)
     };
     GuiModelBip39CalWriteSe(bip39);
     GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
-}
-
-void GuiShowTonMnemonicHint()
-{
-    GUI_DEL_OBJ(g_noticeWindow)
-
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgInformation, _("import_ton_mnemonic_title"), _("import_ton_mnemonic_desc"), NULL, _("Multi-Coin"), WHITE_COLOR_OPA20, _("TON-Only"), ORANGE_COLOR);
-
-    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
-    lv_obj_add_event_cb(btn, GuiImportTonMnemonicHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_add_event_cb(btn, GuiImportMultiCoinMnemonicHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
 }
 
 static void GuiInputPhraseWidget(lv_obj_t *parent)
@@ -228,3 +198,31 @@ void GuiImportPhraseDeInit(void)
         g_pageWidget = NULL;
     }
 }
+
+#ifndef BTC_ONLY
+static void GuiImportTonMnemonicHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_noticeWindow)
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+    TonData_t ton = {
+        .forget = false
+    };
+
+    GuiUpdateTonWriteSeWidget(g_importSinglePhraseTileView.writeSe);
+    GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+    GuiModelTonCalWriteSe(ton);
+}
+
+void GuiShowTonMnemonicHint()
+{
+    GUI_DEL_OBJ(g_noticeWindow)
+
+    g_noticeWindow = GuiCreateGeneralHintBox(&coinTon, _("import_ton_mnemonic_title"), _("import_ton_mnemonic_desc"), NULL, _("Cancel"), WHITE_COLOR_OPA20, _("Import"), ORANGE_COLOR);
+
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(btn, GuiImportTonMnemonicHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+}
+#endif

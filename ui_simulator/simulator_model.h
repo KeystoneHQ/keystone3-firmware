@@ -32,6 +32,7 @@ size_t xPortGetFreeHeapSize(void);
 int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex);
 uint8_t GetCurrentAccountIndex(void);
 uint8_t GetBatterPercent(void);
+uint8_t GetCurrentDisplayPercent(void);
 int Slip39CheckFirstWordList(char *wordsList, uint8_t wordCnt, uint8_t *threshold);
 bool GetPassphraseQuickAccess(void);
 bool SdCardInsert(void);
@@ -49,8 +50,8 @@ uint32_t GetCurrentStampTime(void);
 bool FatfsFileExist(const char *path);
 bool GetEnsName(const char *addr, char *name);
 
-#define LOW_BATTERY_LIMIT               20
-#define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)
+#define LOW_BATTERY_LIMIT               0
+#define CHECK_BATTERY_LOW_POWER()       ((GetCurrentDisplayPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)
 #define SIMULATOR_WALLET_AMOUNT         1
 
 extern bool g_reboot;

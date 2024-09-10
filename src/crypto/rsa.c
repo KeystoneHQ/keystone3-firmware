@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "rsa.h"
 
 static uint32_t GetRsaAddress();
@@ -130,3 +131,4 @@ int FlashWriteRsaPrimes(const uint8_t *data)
 
     return 0;
 }
+#endif

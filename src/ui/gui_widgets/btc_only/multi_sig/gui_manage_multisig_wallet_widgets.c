@@ -23,6 +23,7 @@
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_multisig_wallet_export_widgets.h"
 #include "gui_api.h"
+#include "account_public_info.h"
 #ifndef COMPILE_SIMULATOR
 #include "user_fatfs.h"
 #endif
@@ -143,7 +144,7 @@ void GuiManageMultisigWalletRefresh(void)
     if (g_manageMultisig.currentTile == MULTI_MULTI_SIG_DETAIL) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("manage_multi_wallet_detail_title"));
     } else if (g_manageMultisig.currentTile == MULTI_MULTI_SIG_CO_SIGNERS_DETAIL) {
-        snprintf_s(tempBuff, sizeof(tempBuff), "%s %s", g_multiSigWallet->policy, _("create_multi_wallet_co_sign"));
+        snprintf_s(tempBuff, sizeof(tempBuff), "%s %s", g_multiSigWallet->policy, _("create_multi_wallet_co_sign_text"));
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, tempBuff);
     }
 }
@@ -286,6 +287,7 @@ static void CorrectDefalutWalletIndex(int deleteIndex)
 
 void DeleteMultisigWallet(void)
 {
+    DeleteAccountMultiReceiveIndex("BTC", g_walletItem->verifyCode);
     int index = DeleteMultisigWalletByVerifyCode(g_walletItem->verifyCode, SecretCacheGetPassword());
     CorrectDefalutWalletIndex(index);
     GuiDeleteKeyboardWidget(g_keyboardWidget);

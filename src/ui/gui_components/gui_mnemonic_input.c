@@ -32,6 +32,8 @@ static char g_sliceHeadWords[GUI_KEYBOARD_CANDIDATE_WORDS_LEN];                 
 static uint8_t g_sliceSha256[15][GUI_KEYBOARD_CANDIDATE_WORDS_LEN];                                       // slip39 words hash
 static lv_obj_t *g_noticeHintBox = NULL;
 
+static void HandleInputType(MnemonicKeyBoard_t *mkb);
+
 char *GuiMnemonicGetTrueWord(const char *word, char *trueWord)
 {
     char *temp = trueWord;
@@ -177,6 +179,57 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     SRAM_FREE(mnemonic);
 }
 
+static void ProceedWithBip39(MnemonicKeyBoard_t *mkb)
+{
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+    Bip39Data_t bip39 = {
+        .wordCnt = mkb->wordCnt,
+        .forget = false,
+    };
+    GuiModelBip39CalWriteSe(bip39);
+    GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+}
+
+static void HandleInputType(MnemonicKeyBoard_t *mkb)
+{
+    switch (mkb->intputType) {
+    case MNEMONIC_INPUT_IMPORT_VIEW:
+        ProceedWithBip39(mkb);
+        break;
+    case MNEMONIC_INPUT_SETTING_VIEW:
+        GuiModelBip39RecoveryCheck(mkb->wordCnt);
+        GuiSettingRecoveryCheck();
+        break;
+    case MNEMONIC_INPUT_FORGET_VIEW:
+        GuiForgetAnimContDel(1);
+        GuiModelBip39ForgetPassword(mkb->wordCnt);
+        break;
+    }
+}
+
+#ifndef BTC_ONLY
+static void HandleTonCondition(bool isTon, MnemonicKeyBoard_t *mkb)
+{
+    if (isTon) {
+        switch (mkb->intputType) {
+        case MNEMONIC_INPUT_IMPORT_VIEW:
+            GuiEmitSignal(SIG_SETUP_SHOW_TON_MNEMONIC_HINT, NULL, 0);
+            break;
+        case MNEMONIC_INPUT_SETTING_VIEW:
+            GuiModelTonRecoveryCheck();
+            GuiSettingRecoveryCheck();
+            break;
+        case MNEMONIC_INPUT_FORGET_VIEW:
+            GuiForgetAnimContDel(1);
+            GuiModelTonForgetPassword();
+            break;
+        }
+    } else {
+        HandleInputType(mkb);
+    }
+}
+#endif
+
 void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 {
     char *mnemonic = SRAM_MALLOC(BIP39_MAX_WORD_LEN * mkb->wordCnt + 1);
@@ -194,36 +247,12 @@ void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 
     SecretCacheSetMnemonic(mnemonic);
 
+#ifndef BTC_ONLY
     bool isTon = ton_verify_mnemonic(mnemonic);
-    if (mkb->intputType == MNEMONIC_INPUT_IMPORT_VIEW) {
-        if (isTon) {
-            GuiEmitSignal(SIG_SETUP_SHOW_TON_MNEMONIC_HINT, NULL, 0);
-
-        } else {
-            GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-            Bip39Data_t bip39 = {
-                .wordCnt = mkb->wordCnt,
-                .forget = false,
-            };
-            GuiModelBip39CalWriteSe(bip39);
-            GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
-        }
-        // GuiSetLetterBoardConfirm(letterKb, 0);
-    } else if (mkb->intputType == MNEMONIC_INPUT_SETTING_VIEW) {
-        if (isTon) {
-            GuiModelTonRecoveryCheck();
-        } else {
-            GuiModelBip39RecoveryCheck(mkb->wordCnt);
-        }
-        GuiSettingRecoveryCheck();
-    } else if (mkb->intputType == MNEMONIC_INPUT_FORGET_VIEW) {
-        GuiForgetAnimContDel(1);
-        if (isTon) {
-            GuiModelTonForgetPassword();
-        } else {
-            GuiModelBip39ForgetPassword(mkb->wordCnt);
-        }
-    }
+    HandleTonCondition(isTon, mkb);
+#else
+    HandleInputType(mkb);
+#endif
     lv_obj_add_flag(letterKb->cont, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_height(mkb->cont, 400);
 

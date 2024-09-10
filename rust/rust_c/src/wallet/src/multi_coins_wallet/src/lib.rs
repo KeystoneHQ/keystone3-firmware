@@ -19,7 +19,6 @@ pub mod xrp_toolkit;
 
 pub mod thor_wallet;
 
-
 use alloc::format;
 use alloc::string::String;
 use alloc::string::ToString;

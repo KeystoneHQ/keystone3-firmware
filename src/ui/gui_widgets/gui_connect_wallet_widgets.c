@@ -58,6 +58,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_THORWALLET, &walletListThorWallet, true},
     {WALLET_LIST_PETRA, &walletListPetra, true},
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
+    {WALLET_LIST_MINT_SCAN, &walletListMintScan, true},
     {WALLET_LIST_ARCONNECT, &walletListArConnect, true},
     {WALLET_LIST_VESPR, &walletListVespr, true},
     {WALLET_LIST_XBULL, &walletListXBull, true},
@@ -377,7 +378,7 @@ static bool IsAda(int walletIndex)
     case WALLET_LIST_VESPR:
     case WALLET_LIST_ETERNL:
     case WALLET_LIST_TYPHON:
-    case WALLET_LIST_BEGIN: 
+    case WALLET_LIST_BEGIN:
         return true;
     default:
         return false;
@@ -536,7 +537,7 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
                                  RefreshAddressIndex);
         }
     }
-    if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR || g_connectWalletTileView.walletIndex == WALLET_LIST_MINT_SCAN) {
         g_coinListCont = GuiCreateSelectAddressWidget(
                              CHAIN_ATOM, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
                              RefreshAddressIndex);
@@ -1004,8 +1005,7 @@ static void AddChainAddress(void)
     lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
-    if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT)
-    {
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
         char addr[BUFFER_SIZE_256] = {0};
         CutAndFormatString(
             addr, sizeof(addr),
@@ -1013,13 +1013,11 @@ static void AddChainAddress(void)
             20);
         label = GuiCreateNoticeLabel(g_bottomCont, addr);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 58);
-    }
-    else if (IsAda(g_connectWalletTileView.walletIndex))
-    {
+    } else if (IsAda(g_connectWalletTileView.walletIndex)) {
         char addr[BUFFER_SIZE_256] = {0};
         char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(
-            GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
-            GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex))));
+                GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
+                GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex))));
         CutAndFormatString(addr, sizeof(addr), GuiGetADABaseAddressByXPub(xpub), 20);
         label = GuiCreateNoticeLabel(g_bottomCont, addr);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 58);
@@ -1144,6 +1142,7 @@ UREncodeResult *GuiGetKeplrData(void)
     return GuiGetKeplrDataByIndex(GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
 }
 
+
 UREncodeResult *GuiGetADAData(void)
 {
     return GuiGetADADataByIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex));
@@ -1243,6 +1242,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetBackpackData;
         AddBackpackWalletCoins();
         break;
+    case WALLET_LIST_MINT_SCAN:
     case WALLET_LIST_KEPLR:
         func = GuiGetKeplrData;
         AddKeplrCoinsAndAddressUI();
@@ -1408,6 +1408,7 @@ static bool HasSelectAddressWidget()
     case WALLET_LIST_XRP_TOOLKIT:
     case WALLET_LIST_KEPLR:
     case WALLET_LIST_VESPR:
+    case WALLET_LIST_MINT_SCAN:
         return true;
         break;
     default:
@@ -1976,7 +1977,7 @@ void GuiConnectWalletRefresh(void)
                                          RefreshAddressIndex);
                 }
 
-                if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR) {
+                if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR || g_connectWalletTileView.walletIndex == WALLET_LIST_MINT_SCAN) {
                     g_coinListCont = GuiCreateSelectAddressWidget(
                                          CHAIN_ATOM, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
                                          RefreshAddressIndex);

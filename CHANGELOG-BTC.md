@@ -1,3 +1,14 @@
+## 1.1.4(2024-09-10)
+
+### v1.1.4 Bitcoin-Only Firmware
+
+### What's new
+
+1. Added support for Chinese, Russian, and Korean languages
+2. Retains receiving address after reboot, no longer reverting to default
+
+
+
 ## 1.1.0-BTC (2024-04-19)
 
 ### v1.1.0 Bitcoin-Only Firmware

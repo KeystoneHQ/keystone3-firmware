@@ -320,11 +320,15 @@ UREncodeResult *GuiGetPetraData(void)
     return g_urEncode;
 }
 
-UREncodeResult *GuiGetADADataByIndex(uint16_t index)
+UREncodeResult *GuiGetADADataByIndex(char *walletName)
 {
+    uint32_t index = GetConnectWalletAccountIndex(walletName);
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
-    char* xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
+    char* xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(
+        GetConnectWalletPathIndex(walletName),
+        index
+    ));
     char path[BUFFER_SIZE_32] = {0};
     sprintf(path, "1852'/1815'/%u'", index);
     ExtendedPublicKey xpubs[1];

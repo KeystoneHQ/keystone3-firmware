@@ -725,7 +725,7 @@ static void CloseDerivationHandler(lv_event_t *e)
 
 static bool IsCardano()
 {
-    return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON;
+    return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON || g_walletIndex == WALLET_LIST_BEGIN;
 }
 
 static void ConfirmDerivationHandler(lv_event_t *e)

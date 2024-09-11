@@ -172,6 +172,7 @@ void GuiKeyDerivationRequestInit(bool isUsb)
 
     if (isUsb) {
         g_keyDerivationTileView.currentTile = TILE_USB_CONNECT;
+        SetPageLockScreen(false);
     } else {
         g_keyDerivationTileView.currentTile = TILE_APPROVE;
     }
@@ -186,6 +187,7 @@ void GuiKeyDerivationRequestDeInit()
     GUI_DEL_OBJ(g_derivationPathCont);
     GuiAnimatingQRCodeDestroyTimer();
     FreeKeyDerivationRequestMemory();
+    SetPageLockScreen(true);
 }
 
 static void SelectDerivationHandler(lv_event_t *e)
@@ -1016,10 +1018,8 @@ static void ApproveButtonHandler(lv_event_t *e)
 
 static void RejectButtonHandler(lv_event_t *e)
 {
-    printf("recject ...\n");
     const char *data = "UR parsing rejected";
     HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
     GuiCLoseCurrentWorkingView();
-    printf("recject ...\n");
 }
 #endif

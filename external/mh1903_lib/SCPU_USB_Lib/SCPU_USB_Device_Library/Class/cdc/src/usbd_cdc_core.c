@@ -451,6 +451,9 @@ static void USBD_cdc_SendBuffer(const uint8_t *data, uint32_t len)
     g_cdcSendIndex = 0;
 
     ASSERT(len <= CDC_TX_MAX_LENGTH);
+    if (!UsbInitState()) {
+        return;
+    }
     memcpy(g_cdcSendBuffer, data, len);
 
     while (g_cdcSendIndex < len) {
@@ -458,9 +461,9 @@ static void USBD_cdc_SendBuffer(const uint8_t *data, uint32_t len)
         sendLen = remaining > CDC_PACKET_SIZE ? CDC_PACKET_SIZE : remaining;
 
         PrintArray("sendBuf USBD_cdc_SendBuffer", g_cdcSendBuffer + g_cdcSendIndex, sendLen);
-        while (DCD_GetEPStatus(&g_usbDev, CDC_IN_EP) != USB_OTG_EP_TX_NAK) {
-            ;
-        }
+        // while (DCD_GetEPStatus(&g_usbDev, CDC_IN_EP) != USB_OTG_EP_TX_NAK) {
+        //     ;
+        // }
         DCD_EP_Tx(&g_usbDev, CDC_IN_EP, g_cdcSendBuffer + g_cdcSendIndex, sendLen);
 
         g_cdcSendIndex += sendLen;

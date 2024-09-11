@@ -28,17 +28,15 @@ mod tests {
     use crate::algorithms::zcash::vendor::zip32::AccountId;
 
     use super::vendor::orchard::{
-        keys::{SpendAuthorizingKey, SpendingKey},
+        keys::{FullViewingKey, SpendAuthorizingKey, SpendingKey},
         redpallas::{Signature, SpendAuth},
     };
     use pasta_curves::group::ff::{FromUniformBytes, PrimeField};
-    // use zcash_address::unified::Encoding;
-    // use zcash_address::{self};
-    // use zcash_keys::address::Address;
-    // use zcash_keys::keys::{UnifiedAddressRequest, UnifiedSpendingKey};
-    // use zcash_keys::{self, keys::sapling};
-    // use zcash_protocol::consensus::{MainNetwork, MAIN_NETWORK};
-    // use zip32::AccountId;
+    use zcash_keys::address::Address;
+    use zcash_keys::keys::{UnifiedAddressRequest, UnifiedSpendingKey};
+    use zcash_keys;
+    use zcash_protocol::consensus::{MainNetwork, MAIN_NETWORK};
+    use zip32::AccountId;
 
     use pasta_curves::{self, Fq};
     use rand_chacha::rand_core::SeedableRng;
@@ -47,46 +45,33 @@ mod tests {
 
     extern crate std;
     use std::println;
-    // #[test]
-    // fn spike() {
-    //     let seed = hex::decode("a2093a34d4aa4c3ba89aa087a0992cd76e03a303b98f890a7a818d0e1e414db7a3a832791834a6fd9639d9c59430a8855f7f9dd6bed765b6783058ed7bd0ecbd").unwrap();
-    //     let usk = UnifiedSpendingKey::from_seed(&MAIN_NETWORK, &seed, AccountId::ZERO).unwrap();
+    #[test]
+    fn spike() {
+        let seed = hex::decode("a2093a34d4aa4c3ba89aa087a0992cd76e03a303b98f890a7a818d0e1e414db7a3a832791834a6fd9639d9c59430a8855f7f9dd6bed765b6783058ed7bd0ecbd").unwrap();
+        let usk = UnifiedSpendingKey::from_seed(&MAIN_NETWORK, &seed, AccountId::ZERO).unwrap();
 
-    //     let ufvk = usk.to_unified_full_viewing_key();
-    //     //uview1nkce3lf47a8r0yu8zkzh4ggccsey769fwj794jdwql2ga8v09f8xasfxhp9kme6uxungsz2y0m5rh4xntxsd2xy93exf88denusfc7qaevrecslahahkwdlwlkzygunut3cnen4dsjqv9lrh6dr0gg4succ07xcwaeylpy2vd7vlawugwxf3w4ssjfwnl8thmdetxfemuprfmqx2565m58tynphhu8ndwskkhgwd72kt0chzl3azhtqkhxysqvdtkf5ft5g95kysxcspafhex4chlmck9wpspcavmhzccxslmexw67ur7p6swq5kv7t652qpcd6x769cy6cr43chngcugf928nk8jn3warfkye4zwelzpaac3hgupsqyevz8a8khpf0xs32z2m7sjml728rucv7ztf7mm3jx8vlhgv97xt47k4hsjvvclyzfswwy3ks5khmadkgh8h0ep3aafzld9m4sjelezpzsyvmq6mfff0u0lceht242
+        let ufvk = usk.to_unified_full_viewing_key();
+        //uview1nkce3lf47a8r0yu8zkzh4ggccsey769fwj794jdwql2ga8v09f8xasfxhp9kme6uxungsz2y0m5rh4xntxsd2xy93exf88denusfc7qaevrecslahahkwdlwlkzygunut3cnen4dsjqv9lrh6dr0gg4succ07xcwaeylpy2vd7vlawugwxf3w4ssjfwnl8thmdetxfemuprfmqx2565m58tynphhu8ndwskkhgwd72kt0chzl3azhtqkhxysqvdtkf5ft5g95kysxcspafhex4chlmck9wpspcavmhzccxslmexw67ur7p6swq5kv7t652qpcd6x769cy6cr43chngcugf928nk8jn3warfkye4zwelzpaac3hgupsqyevz8a8khpf0xs32z2m7sjml728rucv7ztf7mm3jx8vlhgv97xt47k4hsjvvclyzfswwy3ks5khmadkgh8h0ep3aafzld9m4sjelezpzsyvmq6mfff0u0lceht242
 
-    //     println!(
-    //         "{}",
-    //         ufvk.to_unified_incoming_viewing_key().encode(&MainNetwork)
-    //     );
-    //     println!("{}", hex::encode(ufvk.transparent().unwrap().serialize()));
-    //     println!("{}", ufvk.encode(&MainNetwork));
-    //     let address = ufvk
-    //         .default_address(UnifiedAddressRequest::all().unwrap())
-    //         .unwrap();
-    //     println!("{:?}", address.0.encode(&MAIN_NETWORK));
-    // }
+        println!(
+            "{}",
+            ufvk.to_unified_incoming_viewing_key().encode(&MAIN_NETWORK)
+        );
+        println!("{}", hex::encode(ufvk.transparent().unwrap().serialize()));
+        println!("{}", ufvk.encode(&MAIN_NETWORK));
+        let address = ufvk
+            .default_address(UnifiedAddressRequest::all().unwrap())
+            .unwrap();
+        println!("{:?}", address.0.encode(&MAIN_NETWORK));
+    }
 
-    // #[test]
-    // fn spike_address() {
-    //     //u1yh8duph0zatkv337u9e5j99uummmejerd0jllt0h6j8hx9c4fp6dh20wn9kx8jpmpaemgtm9s6sgej9pryks5q2s22v4uz8rzrgqfq09ud2lmm49edey9jat5ul7r6nzp8ph65cfrwk3slqpyfjmg8y8p8fk3hkkf8xmty7fl63aeu7cyl5qzx46dds78tc7hp6zk4gm8je6cfk4umn
-    //     //u1yh8duph0zatkv337u9e5j99uummmejerd0jllt0h6j8hx9c4fp6dh20wn9kx8jpmpaemgtm9s6sgej9pryks5q2s22v4uz8rzrgqfq09ud2lmm49edey9jat5ul7r6nzp8ph65cfrwk3slqpyfjmg8y8p8fk3hkkf8xmty7fl63aeu7cyl5qzx46dds78tc7hp6zk4gm8je6cfk4umn
-    //     let address = "u1yh8duph0zatkv337u9e5j99uummmejerd0jllt0h6j8hx9c4fp6dh20wn9kx8jpmpaemgtm9s6sgej9pryks5q2s22v4uz8rzrgqfq09ud2lmm49edey9jat5ul7r6nzp8ph65cfrwk3slqpyfjmg8y8p8fk3hkkf8xmty7fl63aeu7cyl5qzx46dds78tc7hp6zk4gm8je6cfk4umn";
-    //     let zadd = zcash_address::ZcashAddress::try_from_encoded(&address).unwrap();
-    //     // println!("{:?}", zadd);
-    //     let add = Address::decode(&MAIN_NETWORK, &address).unwrap();
-    //     match add {
-    //         Address::Unified(_ua) => {
-    //             println!(
-    //                 "{}",
-    //                 hex::encode(_ua.orchard().unwrap().to_raw_address_bytes())
-    //             );
-    //             println!("{}", hex::encode(_ua.sapling().unwrap().to_bytes()));
-    //             println!("{:?}", _ua.transparent().unwrap());
-    //         }
-    //         _ => {}
-    //     }
-    // }
+    #[test]
+    fn spike_address() {
+        let seed = hex::decode("a2093a34d4aa4c3ba89aa087a0992cd76e03a303b98f890a7a818d0e1e414db7a3a832791834a6fd9639d9c59430a8855f7f9dd6bed765b6783058ed7bd0ecbd").unwrap();
+        let osk = SpendingKey::from_zip32_seed(&seed, 133, AccountId::ZERO);
+        let ofvk: FullViewingKey = FullViewingKey::from(&osk);
+        
+    }
 
     #[test]
     fn spike_sign_transaction() {

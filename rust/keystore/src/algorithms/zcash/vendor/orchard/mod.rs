@@ -3,3 +3,4 @@ mod prf_expand;
 pub mod redpallas;
 mod spec;
 mod zip32;
+mod constants;

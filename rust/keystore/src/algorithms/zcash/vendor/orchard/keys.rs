@@ -2,7 +2,7 @@ use crate::algorithms::zcash::vendor::zip32::{AccountId, DiversifierIndex, Scope
 
 use super::prf_expand::PrfExpand;
 use super::redpallas::SpendAuth;
-use super::spec::{extract_p, to_base, NonZeroPallasBase};
+use super::spec::{commit_ivk, extract_p, to_base, NonZeroPallasBase, NonZeroPallasScalar};
 use super::zip32::ExtendedSpendingKey;
 use super::{redpallas, zip32::ChildIndex};
 use pasta_curves::{
@@ -251,4 +251,121 @@ impl Diversifier {
     pub fn as_array(&self) -> &[u8; 11] {
         &self.0
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct IncomingViewingKey {
+    dk: DiversifierKey,
+    ivk: KeyAgreementPrivateKey,
+}
+
+impl IncomingViewingKey {
+    /// Helper method.
+    fn from_fvk(fvk: &FullViewingKey) -> Self {
+        IncomingViewingKey {
+            dk: fvk.derive_dk_ovk().0,
+            ivk: KeyAgreementPrivateKey::from_fvk(fvk),
+        }
+    }
+}
+
+impl IncomingViewingKey {
+    /// Serializes an Orchard incoming viewing key to its raw encoding as specified in [Zcash Protocol Spec § 5.6.4.3: Orchard Raw Incoming Viewing Keys][orchardrawinviewingkeys]
+    ///
+    /// [orchardrawinviewingkeys]: https://zips.z.cash/protocol/protocol.pdf#orchardinviewingkeyencoding
+    pub fn to_bytes(&self) -> [u8; 64] {
+        let mut result = [0u8; 64];
+        result[..32].copy_from_slice(self.dk.to_bytes());
+        result[32..].copy_from_slice(&self.ivk.0.to_repr());
+        result
+    }
+
+    /// Parses an Orchard incoming viewing key from its raw encoding.
+    pub fn from_bytes(bytes: &[u8; 64]) -> CtOption<Self> {
+        NonZeroPallasBase::from_bytes(bytes[32..].try_into().unwrap()).map(|ivk| {
+            IncomingViewingKey {
+                dk: DiversifierKey(bytes[..32].try_into().unwrap()),
+                ivk: KeyAgreementPrivateKey(ivk.into()),
+            }
+        })
+    }
+
+    /// Checks whether the given address was derived from this incoming viewing
+    /// key, and returns the diversifier index used to derive the address if
+    /// so. Returns `None` if the address was not derived from this key.
+    pub fn diversifier_index(&self, addr: &Address) -> Option<DiversifierIndex> {
+        let j = self.dk.diversifier_index(&addr.diversifier());
+        if &self.address_at(j) == addr {
+            Some(j)
+        } else {
+            None
+        }
+    }
+
+    // /// Returns the payment address for this key at the given index.
+    // pub fn address_at(&self, j: impl Into<DiversifierIndex>) -> Address {
+    //     self.address(self.dk.get(j))
+    // }
+
+    // /// Returns the payment address for this key corresponding to the given diversifier.
+    // pub fn address(&self, d: Diversifier) -> Address {
+    //     self.ivk.address(d)
+    // }
+
+    // /// Returns the [`PreparedIncomingViewingKey`] for this [`IncomingViewingKey`].
+    // pub fn prepare(&self) -> PreparedIncomingViewingKey {
+    //     PreparedIncomingViewingKey::new(self)
+    // }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct KeyAgreementPrivateKey(NonZeroPallasScalar);
+
+impl KeyAgreementPrivateKey {
+    /// Derives `KeyAgreementPrivateKey` from fvk.
+    ///
+    /// Defined in [Zcash Protocol Spec § 4.2.3: Orchard Key Components][orchardkeycomponents].
+    ///
+    /// [orchardkeycomponents]: https://zips.z.cash/protocol/protocol.pdf#orchardkeycomponents
+    fn from_fvk(fvk: &FullViewingKey) -> Self {
+        // FullViewingKey cannot be constructed such that this unwrap would fail.
+        let ivk = KeyAgreementPrivateKey::derive_inner(fvk).unwrap();
+        KeyAgreementPrivateKey(ivk.into())
+    }
+}
+
+impl KeyAgreementPrivateKey {
+    /// Derives ivk from fvk. Internal use only, does not enforce all constraints.
+    ///
+    /// Defined in [Zcash Protocol Spec § 4.2.3: Orchard Key Components][orchardkeycomponents].
+    ///
+    /// [orchardkeycomponents]: https://zips.z.cash/protocol/protocol.pdf#orchardkeycomponents
+    fn derive_inner(fvk: &FullViewingKey) -> CtOption<NonZeroPallasBase> {
+        let ak = extract_p(&pallas::Point::from_bytes(&(&fvk.ak.0).into()).unwrap());
+        commit_ivk(&ak, &fvk.nk.0, &fvk.rivk.0)
+            // sinsemilla::CommitDomain::short_commit returns a value in range
+            // [0..q_P] ∪ {⊥}:
+            // - sinsemilla::HashDomain::hash_to_point uses incomplete addition and
+            //   returns a point in P* ∪ {⊥}.
+            // - sinsemilla::CommitDomain::commit applies a final complete addition step
+            //   and returns a point in P ∪ {⊥}.
+            // - 0 is not a valid x-coordinate for any Pallas point.
+            // - sinsemilla::CommitDomain::short_commit calls extract_p_bottom, which
+            //   replaces the identity (which has no affine coordinates) with 0.
+            //
+            // Commit^ivk.Output is specified as [1..q_P] ∪ {⊥}, so we explicitly check
+            // for 0 and map it to None. Note that we are collapsing this case (which is
+            // rejected by the circuit) with ⊥ (which the circuit explicitly allows for
+            // efficiency); this is fine because we don't want users of the `orchard`
+            // crate to encounter either case (and it matches the behaviour described in
+            // Section 4.2.3 of the protocol spec when generating spending keys).
+            .and_then(NonZeroPallasBase::from_base)
+    }
+
+    // /// Returns the payment address for this key corresponding to the given diversifier.
+    // fn address(&self, d: Diversifier) -> Address {
+    //     let prepared_ivk = PreparedIncomingViewingKey::new_inner(self);
+    //     let pk_d = DiversifiedTransmissionKey::derive(&prepared_ivk, &d);
+    //     Address::from_parts(d, pk_d)
+    // }
 }

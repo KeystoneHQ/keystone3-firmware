@@ -157,6 +157,7 @@ void GuiKeyDerivationRequestDeInit()
     GUI_DEL_OBJ(g_derivationPathCont);
     GuiAnimatingQRCodeDestroyTimer();
     FreeKeyDerivationRequestMemory();
+    SetPageLockScreen(true);
 }
 
 static void SelectDerivationHandler(lv_event_t *e)

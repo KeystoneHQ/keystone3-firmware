@@ -52,11 +52,11 @@ static bool CheckURAcceptable(void)
         return false;
     }
     // Only allow URL parsing on specific pages
-    if (!GuiHomePageIsTop()) {
-        const char *data = "Export address is just allowed on specific pages";
-        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
-        return false;
-    }
+    // if (!GuiHomePageIsTop()) {
+    //     const char *data = "Export address is just allowed on specific pages";
+    //     HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
+    //     return false;
+    // }
     return true;
 }
 
@@ -120,6 +120,13 @@ void ProcessURService(EAPDURequestPayload_t *payload)
         GuiSetKeyDerivationRequestData(urResult, NULL, false);
         PubValueMsg(UI_MSG_USB_HARDWARE_VIEW, 0);
         return;
+    } else {
+        if (!GuiHomePageIsTop()) {
+            const char *data = "Export address is just allowed on specific pages";
+            HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
+            g_requestID = REQUEST_ID_IDLE;
+            return;
+        }
     }
 
     // just btc/eth/sol

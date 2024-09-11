@@ -1570,51 +1570,12 @@ void SetAccountIndex(const char* chainName, uint32_t index)
 
 uint32_t GetConnectWalletPathIndex(const char* walletName)
 {
-    uint32_t index = 0;
-    char name[BUFFER_SIZE_32];
-    strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
-    RemoveFormatChar(name);
-    cJSON *rootJson = ReadAndParseAccountJson(NULL, NULL);
-
-    cJSON *item = cJSON_GetObjectItem(rootJson, name);
-    if (item == NULL) {
-        printf("GetConnectWalletPathIndex get %s\r\n", name);
-    } else {
-        cJSON *derivePath = cJSON_GetObjectItem(item, "derivePath");
-        index = derivePath ? derivePath->valueint : 0;
-    }
-    if (!PassphraseExist(GetCurrentAccountIndex())) {
-        cJSON_Delete(rootJson);
-    }
-    return index;
+    return GetTemplateWalletValue(walletName, "derivePath");
 }
 
 void SetConnectWalletPathIndex(const char* walletName, uint32_t index)
 {
-    uint32_t addr;
-    char name[BUFFER_SIZE_32];
-    strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
-    RemoveFormatChar(name);
-    cJSON *rootJson = ReadAndParseAccountJson(&addr, NULL);
-
-    cJSON *item = cJSON_GetObjectItem(rootJson, name);
-    if (item == NULL) {
-        cJSON *jsonItem = cJSON_CreateObject();
-        cJSON_AddItemToObject(jsonItem, "derivePath", cJSON_CreateNumber(index));
-        cJSON_AddItemToObject(rootJson, name, jsonItem);
-    } else {
-        cJSON *derivePath = cJSON_GetObjectItem(item, "derivePath");
-        if (derivePath != NULL) {
-            cJSON_ReplaceItemInObject(item, "derivePath", cJSON_CreateNumber(index));
-        } else {
-            cJSON_AddItemToObject(item, "derivePath", cJSON_CreateNumber(index));
-        }
-    }
-
-    WriteJsonToFlash(addr, rootJson);
-    if (!PassphraseExist(GetCurrentAccountIndex())) {
-        cJSON_Delete(rootJson);
-    }
+    SetTemplateWalletValue(walletName, "derivePath", index);
 }
 
 uint32_t GetConnectWalletAccountIndex(const char* walletName)
@@ -1716,7 +1677,7 @@ static uint32_t GetTemplateWalletValue(const char* walletName, const char* key)
 
     cJSON* item = cJSON_GetObjectItem(rootJson, walletName);
     if (item == NULL) {
-        printf("GetConnectWalletValue get %s not exist\r\n", walletName);
+        printf("GetTemplateWalletValue get %s not exist\r\n", walletName);
     } else {
         cJSON* valueItem = cJSON_GetObjectItem(item, key);
         value = valueItem ? valueItem->valueint : 0;

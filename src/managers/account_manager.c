@@ -130,10 +130,12 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
 
     int32_t ret = SaveNewBip39Entropy(accountIndex, entropy, entropyLen, password);
     CHECK_ERRCODE_RETURN_INT(ret);
+    printf("%s %d..\n", __func__, __LINE__);
 
     ret = SaveCurrentAccountInfo();
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
+    printf("%s %d..\n", __func__, __LINE__);
     CHECK_ERRCODE_RETURN_INT(ret);
     return ret;
 }
@@ -277,7 +279,6 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
     return SUCCESS_CODE;
 #endif
 
-    MpuSetOtpProtection(false);
     for (uint8_t i = 0; i < 3; i++) {
         ret = SE_HmacEncryptRead(data, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
@@ -285,7 +286,6 @@ int32_t GetExistAccountNum(uint8_t *accountNum)
             count++;
         }
     }
-    MpuSetOtpProtection(true);
     CLEAR_ARRAY(data);
     if (ret == SUCCESS_CODE) {
         *accountNum = count;

@@ -209,10 +209,8 @@ int32_t SetFpStateInfo(uint8_t *info)
     uint8_t data[32] = {0};
     int32_t ret;
 
-    MpuSetOtpProtection(false);
     memcpy(data, info, 32);
     ret = SE_HmacEncryptWrite(data, PAGE_PF_INFO);
-    MpuSetOtpProtection(true);
     return ret;
 }
 
@@ -223,12 +221,10 @@ int32_t GetFpStateInfo(uint8_t *info)
 {
     uint8_t data[32];
     int32_t ret;
-    MpuSetOtpProtection(false);
 
     ret = SE_HmacEncryptRead(data, PAGE_PF_INFO);
     CHECK_ERRCODE_RETURN_INT(ret);
     memcpy(info, data, 32);
-    MpuSetOtpProtection(true);
     return ret;
 }
 
@@ -244,9 +240,7 @@ int32_t SetWalletDataHash(uint8_t index, uint8_t *info)
     ASSERT(index <= 2);
 
     memcpy(data, info, 32);
-    MpuSetOtpProtection(false);
     ret = SE_HmacEncryptWrite(data, PAGE_WALLET1_PUB_KEY_HASH + index);
-    MpuSetOtpProtection(true);
     return ret;
 }
 
@@ -261,7 +255,6 @@ bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
 
     ASSERT(index <= 2);
 
-    MpuSetOtpProtection(false);
     ret = SE_HmacEncryptRead(data, PAGE_WALLET1_PUB_KEY_HASH + index);
     if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
         return true;
@@ -273,7 +266,6 @@ bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
             return false;
         }
     }
-    MpuSetOtpProtection(true);
 }
 
 int32_t SetMultisigDataHash(uint8_t index, uint8_t *info)
@@ -331,9 +323,7 @@ int32_t SetFpCommAesKey(const uint8_t *aesKey)
 /// @return err code.
 int32_t GetFpCommAesKey(uint8_t *aesKey)
 {
-    MpuSetOtpProtection(false);
     int32_t ret = SE_HmacEncryptRead(aesKey, PAGE_PF_AES_KEY);
-    MpuSetOtpProtection(true);
     return ret;
 }
 
@@ -360,11 +350,9 @@ bool FpAesKeyExist()
     uint8_t key[32];
     bool ret;
 
-    MpuSetOtpProtection(false);
     if (SE_HmacEncryptRead(key, PAGE_PF_AES_KEY) != SUCCESS_CODE) {
         return false;
     }
-    MpuSetOtpProtection(true);
     ret = CheckEntropy(key, 32);
     CLEAR_ARRAY(key);
     return ret;

@@ -650,9 +650,7 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     do {
         uint8_t entropy[64];
         uint8_t len = 0;
-        MpuSetOtpProtection(false);
         GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
-        MpuSetOtpProtection(true);
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);

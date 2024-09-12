@@ -6,6 +6,7 @@
 #include "user_memory.h"
 #include "err_code.h"
 #include "assert.h"
+#include "drv_mpu.h"
 
 #define FACTORY_RESULT_CHECK_ENABLE         1
 
@@ -48,6 +49,7 @@ int32_t SetSerialNumber(const char *serialNumber)
 int32_t GetWebAuthRsaKey(uint8_t *key)
 {
     uint8_t *data;
+    MpuSetOtpProtection(false);
 
     OTP_PowerOn();
     data = SRAM_MALLOC(WEB_AUTH_RSA_KEY_LEN);
@@ -58,6 +60,7 @@ int32_t GetWebAuthRsaKey(uint8_t *key)
     }
     SRAM_FREE(data);
     memcpy(key, data, WEB_AUTH_RSA_KEY_LEN);
+    MpuSetOtpProtection(true);
     return SUCCESS_CODE;
 }
 

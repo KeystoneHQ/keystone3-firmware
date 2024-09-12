@@ -274,6 +274,18 @@ void GuiSignDealFingerRecognize(void *param)
     }
 }
 
+void GuiTransactionUsbPullout(void)
+{
+    if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        ClearUSBRequestId();
+        static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
+        GuiCloseToTargetView(&g_homeView);
+        GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_VERIFY);
+        GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &signal, sizeof(signal));
+    }
+}
+
 void GuiClearQrcodeSignCnt(void)
 {
     g_fingerSignErrCount = 0;

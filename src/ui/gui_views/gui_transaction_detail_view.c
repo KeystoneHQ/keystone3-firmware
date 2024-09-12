@@ -60,6 +60,9 @@ int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void 
     case SIG_HIDE_TRANSACTION_LOADING:
         GuiPendingHintBoxRemove();
         break;
+    case SIG_INIT_PULLOUT_USB:
+        GuiTransactionUsbPullout();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

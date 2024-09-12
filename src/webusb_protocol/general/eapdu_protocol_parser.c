@@ -206,7 +206,7 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
     for (uint16_t i = 0; i < g_totalPackets; i++) {
         fullDataLen += g_packetLengths[i];
     }
-    
+
     fullData = (uint8_t *)SRAM_MALLOC(fullDataLen + 1);
     for (uint32_t i = 0; i < g_totalPackets; i++) {
         memcpy_s(fullData + offset, fullDataLen - offset, g_protocolRcvBuffer[i], g_packetLengths[i]);

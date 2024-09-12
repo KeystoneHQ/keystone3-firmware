@@ -9,9 +9,9 @@ enum Chain {
     ETH,
 };
 
-enum { 
-    OFFSET_CHAIN = 0, 
-    OFFSET_WALLET = 2, 
+enum {
+    OFFSET_CHAIN = 0,
+    OFFSET_WALLET = 2,
     OFFSET_TYPE = 4
 };
 
@@ -54,7 +54,7 @@ static bool IsValidParams(struct EthParams *params)
 }
 
 static struct EthParams *ParseParams(char *data)
-{    
+{
     struct EthParams *params = NewParams();
     params->n = 0;
     params->chain = (uint8_t)extract_16bit_value(data, OFFSET_CHAIN);

@@ -17,7 +17,7 @@ int32_t GuiKeyDerivationRequestViewEventProcess(void *self, uint16_t usEvent, vo
         break;
     case GUI_EVENT_OBJ_DEINIT:
         GuiKeyDerivationRequestDeInit();
-        break; 
+        break;
     case GUI_EVENT_REFRESH:
         GuiKeyDerivationRequestRefresh();
         break;
@@ -35,6 +35,9 @@ int32_t GuiKeyDerivationRequestViewEventProcess(void *self, uint16_t usEvent, vo
         break;
     case SIG_VERIFY_PASSWORD_FAIL:
         GuiKeyDerivePasswordErrorCount(param);
+        break;
+    case SIG_INIT_PULLOUT_USB:
+        GuiKeyDeriveUsbPullout();
         break;
     default:
         return ERR_GUI_UNHANDLED;

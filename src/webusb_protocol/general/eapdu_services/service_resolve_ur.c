@@ -77,8 +77,8 @@ void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requ
     if (status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
         sendStatus = RSP_SUCCESS_CODE;
     }
-    
-    BasicHandlerFunc(data, data_len, requestID, sendStatus);    
+
+    BasicHandlerFunc(data, data_len, requestID, sendStatus);
     EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
     resultPage->command = CMD_RESOLVE_UR;
     resultPage->error_code = status;
@@ -93,6 +93,11 @@ uint16_t GetCurrentUSParsingRequestID()
 {
     return g_requestID;
 };
+
+void ClearUSBRequestId(void)
+{
+    g_requestID = REQUEST_ID_IDLE;
+}
 
 void ProcessURService(EAPDURequestPayload_t *payload)
 {

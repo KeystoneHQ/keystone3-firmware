@@ -297,7 +297,7 @@ void GuiKeyDerivationRequestRefresh()
         SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         SetNavBarMidBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
     } else {
-        GuiAnimatingQRCodeControl(false);    
+        GuiAnimatingQRCodeControl(false);
     }
 }
 
@@ -694,6 +694,19 @@ void GuiKeyDerivePasswordErrorCount(void *param)
     GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }
 
+void GuiKeyDeriveUsbPullout(void)
+{
+    if (g_isUsb) {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        g_keyboardWidget = NULL;
+        ClearUSBRequestId();
+        static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
+        GuiCloseToTargetView(&g_homeView);
+        GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_VERIFY);
+        GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &signal, sizeof(signal));
+    }
+}
+
 void HiddenKeyboardAndShowAnimateQR()
 {
     // close password keyboard
@@ -991,7 +1004,7 @@ static void GuiConnectUsbEntranceWidget(lv_obj_t *parent)
     lv_obj_add_event_cb(button, RejectButtonHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_set_style_bg_color(button, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(button, LV_OPA_20, LV_PART_MAIN);
-    
+
     button = GuiCreateTextBtn(parent, _("Approve"));
     lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_set_size(button, 192, 66);

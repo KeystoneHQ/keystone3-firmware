@@ -90,6 +90,7 @@ static void BackgroundTask(void *argument)
             if (GetUsbDetectState() == false) {
                 CloseUsb();
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 0);
+                GuiApiEmitSignalWithValue(SIG_INIT_PULLOUT_USB, 0);
             } else if (GetUSBSwitch()) {
 #if (USB_POP_WINDOW_ENABLE == 1)
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);

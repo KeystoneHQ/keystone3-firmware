@@ -104,13 +104,13 @@ static void UiDisplayTask(void *argument)
     printf("start ui display loop\r\n");
     printf("LV_HOR_RES=%d,LV_VER_RES=%d\r\n", LV_HOR_RES, LV_VER_RES);
     g_reboot = true;
-    // bool isTampered = Tampered();
+    bool isTampered = Tampered();
     LanguageInit();
-    // if (isTampered) {
-    //     GuiFrameOpenViewWithParam(&g_initView, &isTampered, sizeof(isTampered));
-    // } else {
-    //     GuiFrameOpenView(&g_initView);
-    // }
+    if (isTampered) {
+        GuiFrameOpenViewWithParam(&g_initView, &isTampered, sizeof(isTampered));
+    } else {
+        GuiFrameOpenView(&g_initView);
+    }
     GuiFrameOpenView(&g_initView);
     SetLcdBright(GetBright());
     MpuInit();

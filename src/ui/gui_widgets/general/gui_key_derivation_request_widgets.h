@@ -13,6 +13,7 @@ void GuiKeyDerivationWidgetHandleURUpdate(char *data, uint16_t len);
 void GuiSetKeyDerivationRequestData(void *data, void *multiResult, bool is_multi);
 void GuiKeyDerivePasswordErrorCount(void *param);
 void UpdateAndParseHardwareCall(void);
+void GuiKeyDeriveUsbPullout(void);
 
 void HiddenKeyboardAndShowAnimateQR();
 #endif

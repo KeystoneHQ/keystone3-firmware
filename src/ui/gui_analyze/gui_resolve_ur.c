@@ -47,7 +47,7 @@ static SetChainData_t g_chainViewArray[] = {
 void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
 {
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    if (viewType != REMAPVIEW_BUTT) { 
+    if (viewType != REMAPVIEW_BUTT) {
         g_chainViewArray[viewType].func(urResult, urMultiResult, is_multi);
     }
 }

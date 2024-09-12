@@ -660,7 +660,7 @@ static UREncodeResult *GetEthSignDataDynamic(bool isUnlimited)
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         MpuSetOtpProtection(false);
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        MpuSetOtpProtection(true);        
+        MpuSetOtpProtection(true);
         if (isUnlimited) {
             if (urType == Bytes) {
                 uint8_t mfp[4] = {0};

@@ -208,6 +208,7 @@ int32_t GetAccountSeed(uint8_t accountIndex, uint8_t *seed, const char *password
     uint8_t tempSeed[SEED_LEN];
     uint32_t seedLen;
 
+    MpuSetOtpProtection(false);
     ASSERT(accountIndex <= 2);
     do {
         ret = LoadAccountSecret(accountIndex, &accountSecret, password);
@@ -223,6 +224,7 @@ int32_t GetAccountSeed(uint8_t accountIndex, uint8_t *seed, const char *password
             memcpy_s(seed, SEED_LEN, tempSeed, SEED_LEN);
         }
     } while (0);
+    MpuSetOtpProtection(true);
 
     CLEAR_OBJECT(accountSecret);
     CLEAR_ARRAY(tempSeed);
@@ -621,7 +623,7 @@ static void CombineInnerAesKey(uint8_t *aesKey)
 {
     uint8_t aesPiece[AES_KEY_LEN];
 #ifndef COMPILE_SIMULATOR
-    
+
     OTP_PowerOn();
     memcpy_s(aesPiece, sizeof(aesPiece), (uint8_t *)OTP_ADDR_AES_KEY, AES_KEY_LEN);
     if (CheckEntropy(aesPiece, AES_KEY_LEN) == false) {

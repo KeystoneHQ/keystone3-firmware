@@ -164,7 +164,7 @@ void MemManage_Handler(void)
 
     if (cfsr & (1 << 0)) {
         uint32_t fault_address = mmfar;
-        
+
         printf("Memory management fault at address: 0x%08X\n", fault_address);
     }
 

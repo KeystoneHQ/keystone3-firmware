@@ -434,7 +434,7 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
         printf("%02x", hash[i]);
     }
     printf("\n");
-    #if 1
+#if 1
     if (k1_verify_signature(pubKeySign, hash, (uint8_t *)g_webUsbUpdatePubKey) == false) {
         printf("verify signature fail\n");
         tlvArray[0].length = 4;
@@ -444,10 +444,10 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
         tlvArray[0].length = 33;
         tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey) - 1);
     }
-    #else
+#else
     tlvArray[0].length = 33;
     tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey) - 1);
-    #endif
+#endif
 
     *outLen = GetFrameTotalLength(tlvArray, 1);
     return BuildFrame(&sendHead, tlvArray, 1);

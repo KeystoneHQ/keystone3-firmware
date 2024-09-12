@@ -70,12 +70,12 @@ void ConfigureMPUForBSS(void)
 {
     // uint32_t bss_start = (uint32_t)&_sbss;
     // uint32_t bss_size = (uint32_t)&_ebss - (uint32_t)&_sbss;
-    
+
     // uint32_t region_size = 32;
     // while (region_size < bss_size && region_size < 0x00100000) {
     //     region_size *= 2;
     // }
-    
+
     // MpuSetProtection(
     //     bss_start,
     //     region_size,

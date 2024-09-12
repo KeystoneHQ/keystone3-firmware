@@ -14,7 +14,7 @@ pub fn test_sign_zec(seed: &[u8], alpha: [u8; 32], msg: &[u8]) -> [u8; 64] {
     alpha.reverse();
     let rng_seed = [0u8; 32];
     let rng = ChaCha8Rng::from_seed(rng_seed);
-    let osk = SpendingKey::from_zip32_seed(seed, 133, AccountId::ZERO);
+    let osk = SpendingKey::from_zip32_seed(seed, 133, AccountId::ZERO).unwrap();
     let osak = SpendAuthorizingKey::from(&osk);
     let randm = Fq::from_repr(alpha).unwrap();
     let sig = osak.randomize(&randm).sign(rng, &msg);
@@ -25,18 +25,17 @@ pub fn test_sign_zec(seed: &[u8], alpha: [u8; 32], msg: &[u8]) -> [u8; 64] {
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithms::zcash::vendor::zip32::AccountId;
+    use crate::algorithms::zcash::vendor::{
+        zcash_keys::keys::{UnifiedAddressRequest, UnifiedSpendingKey},
+        zcash_protocol::consensus::MAIN_NETWORK,
+        zip32::AccountId,
+    };
 
     use super::vendor::orchard::{
         keys::{FullViewingKey, SpendAuthorizingKey, SpendingKey},
         redpallas::{Signature, SpendAuth},
     };
     use pasta_curves::group::ff::{FromUniformBytes, PrimeField};
-    use zcash_keys::address::Address;
-    use zcash_keys::keys::{UnifiedAddressRequest, UnifiedSpendingKey};
-    use zcash_keys;
-    use zcash_protocol::consensus::{MainNetwork, MAIN_NETWORK};
-    use zip32::AccountId;
 
     use pasta_curves::{self, Fq};
     use rand_chacha::rand_core::SeedableRng;
@@ -51,12 +50,12 @@ mod tests {
         let usk = UnifiedSpendingKey::from_seed(&MAIN_NETWORK, &seed, AccountId::ZERO).unwrap();
 
         let ufvk = usk.to_unified_full_viewing_key();
-        //uview1nkce3lf47a8r0yu8zkzh4ggccsey769fwj794jdwql2ga8v09f8xasfxhp9kme6uxungsz2y0m5rh4xntxsd2xy93exf88denusfc7qaevrecslahahkwdlwlkzygunut3cnen4dsjqv9lrh6dr0gg4succ07xcwaeylpy2vd7vlawugwxf3w4ssjfwnl8thmdetxfemuprfmqx2565m58tynphhu8ndwskkhgwd72kt0chzl3azhtqkhxysqvdtkf5ft5g95kysxcspafhex4chlmck9wpspcavmhzccxslmexw67ur7p6swq5kv7t652qpcd6x769cy6cr43chngcugf928nk8jn3warfkye4zwelzpaac3hgupsqyevz8a8khpf0xs32z2m7sjml728rucv7ztf7mm3jx8vlhgv97xt47k4hsjvvclyzfswwy3ks5khmadkgh8h0ep3aafzld9m4sjelezpzsyvmq6mfff0u0lceht242
 
         println!(
             "{}",
             ufvk.to_unified_incoming_viewing_key().encode(&MAIN_NETWORK)
         );
+        //uivk1xhvuufquepxdr5zyacha4kde0479wr25hk26w07jmtn0ec08t4fh0yqudc7v8ddya5rrx4q34yuuxy524p59radjndx5u3rqgvs6w5q8s9246q4h8ykuqtfmn7tyzdlvnen2x6p0cjlqvr48hqrgf72tr7l9z0vdnh8xwu42ausdrvuvd3w9h50ql64g0plucqfyx9ewjqjr5k7lhv9qrl7whu93jp6t38rpcyl060pz5sqnancrh
         println!("{}", hex::encode(ufvk.transparent().unwrap().serialize()));
         println!("{}", ufvk.encode(&MAIN_NETWORK));
         let address = ufvk
@@ -68,9 +67,8 @@ mod tests {
     #[test]
     fn spike_address() {
         let seed = hex::decode("a2093a34d4aa4c3ba89aa087a0992cd76e03a303b98f890a7a818d0e1e414db7a3a832791834a6fd9639d9c59430a8855f7f9dd6bed765b6783058ed7bd0ecbd").unwrap();
-        let osk = SpendingKey::from_zip32_seed(&seed, 133, AccountId::ZERO);
+        let osk = SpendingKey::from_zip32_seed(&seed, 133, AccountId::ZERO).unwrap();
         let ofvk: FullViewingKey = FullViewingKey::from(&osk);
-        
     }
 
     #[test]
@@ -82,7 +80,7 @@ mod tests {
         // let ssk = usk.sapling();
         // let osk = usk.orchard();
 
-        let osk = SpendingKey::from_zip32_seed(&seed, 133, AccountId::ZERO);
+        let osk = SpendingKey::from_zip32_seed(&seed, 133, AccountId::ZERO).unwrap();
 
         let osak = SpendAuthorizingKey::from(&osk);
         //SpendAuthorizingKey(SigningKey(SigningKey { sk: 0x3df9e7346783cfadf079fc8fafbc79ede96f13e2c12a6723e4ea1bc16539949a, pk: VerificationKey { point: Ep { x: 0x1fdab0b7f334c8e163218f17c70b26d33b80143ebc7ab629ff5a28006ce4e219, y: 0x29d265bacc851808114cf6d3585a17ab2a3eeadcd336ee3434da4039366183b3, z: 0x2424bad05cb436309bb30378afd371287c9e96814a9453deaa4d193294013e83 }, bytes: VerificationKeyBytes { bytes: "ac82d5f4bf06f0b51a2fcdcfdb7f0542bf49aa1f6d709ba82dbbdcf5112f0c3f" } } }))

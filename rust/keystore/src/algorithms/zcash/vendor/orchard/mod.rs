@@ -1,6 +1,9 @@
+pub mod address;
+pub mod constants;
 pub mod keys;
-mod prf_expand;
+pub mod prf_expand;
 pub mod redpallas;
-mod spec;
-mod zip32;
-mod constants;
+pub mod spec;
+pub(crate) mod zip32;
+
+pub use address::Address;

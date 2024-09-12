@@ -158,6 +158,11 @@ impl ExtendedSpendingKey {
         };
         // I_L is used as the master spending key sk_m.
         let sk_m = SpendingKey::from_bytes(I[..32].try_into().unwrap());
+
+        if sk_m.is_none().into() {
+            return Err(Error::InvalidSpendingKey);
+        }
+        let sk_m = sk_m.unwrap();
         
         // I_R is used as the master chain code c_m.
         let c_m = ChainCode::new(I[32..].try_into().unwrap());
@@ -189,6 +194,11 @@ impl ExtendedSpendingKey {
 
         // I_L is used as the child spending key sk_i.
         let sk_i = SpendingKey::from_bytes(I[..32].try_into().unwrap());
+
+        if sk_i.is_none().into() {
+            return Err(Error::InvalidSpendingKey);
+        }
+        let sk_i = sk_i.unwrap();
         
         // I_R is used as the child chain code c_i.
         let c_i = ChainCode::new(I[32..].try_into().unwrap());

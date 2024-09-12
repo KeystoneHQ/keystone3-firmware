@@ -23,9 +23,11 @@ int32_t GuiAboutInfoViewEventProcess(void *self, uint16_t usEvent, void *param, 
 
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiAboutInfoViewInit();
+        GuiAboutInfoWidgetsInit();
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiAboutInfoViewDeInit();
+        GuiAboutInfoWidgetsDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiAboutInfoWidgetsRefresh();
         break;

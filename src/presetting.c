@@ -12,6 +12,7 @@
 
 int32_t GetSerialNumber(char *serialNumber)
 {
+    MpuSetOtpProtection(false);
     char temp[256];
     OTP_PowerOn();
     memcpy(temp, (uint8_t *)OTP_ADDR_SN, 256);
@@ -24,6 +25,7 @@ int32_t GetSerialNumber(char *serialNumber)
         return ERR_SERIAL_NUMBER_INVALID;
     }
     strcpy_s(serialNumber, SERIAL_NUMBER_MAX_LEN, temp);
+    MpuSetOtpProtection(true);
     return SUCCESS_CODE;
 }
 
@@ -87,10 +89,12 @@ int32_t SetWebAuthRsaKey(const uint8_t *key)
 
 bool GetFactoryResult(void)
 {
+    MpuSetOtpProtection(false);
 #if (FACTORY_RESULT_CHECK_ENABLE == 1)
     uint32_t data;
     OTP_PowerOn();
     memcpy(&data, (uint32_t *)OTA_ADDR_FACTORY_BASE, 4);
+    MpuSetOtpProtection(true);
     if (data != 0xFFFFFFFF) {
         printf("data=%#x........\n", data);
         printf("factory pass\n");

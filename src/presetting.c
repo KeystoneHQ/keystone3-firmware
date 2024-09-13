@@ -16,6 +16,7 @@ int32_t GetSerialNumber(char *serialNumber)
     char temp[256];
     OTP_PowerOn();
     memcpy(temp, (uint8_t *)OTP_ADDR_SN, 256);
+    MpuSetOtpProtection(true);
     if (CheckEntropy((uint8_t *)temp, 256) == false) {
         serialNumber[0] = '\0';
         return ERR_SERIAL_NUMBER_NOT_EXIST;
@@ -25,7 +26,6 @@ int32_t GetSerialNumber(char *serialNumber)
         return ERR_SERIAL_NUMBER_INVALID;
     }
     strcpy_s(serialNumber, SERIAL_NUMBER_MAX_LEN, temp);
-    MpuSetOtpProtection(true);
     return SUCCESS_CODE;
 }
 

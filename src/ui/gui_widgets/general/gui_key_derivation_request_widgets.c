@@ -702,8 +702,11 @@ void GuiKeyDeriveUsbPullout(void)
         ClearUSBRequestId();
         static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
         GuiCloseToTargetView(&g_homeView);
-        GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_VERIFY);
+        GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &signal, sizeof(signal));
+        if (GuiNeedFpRecognize()) {
+            FpRecognize(RECOGNIZE_UNLOCK);
+        }
     }
 }
 

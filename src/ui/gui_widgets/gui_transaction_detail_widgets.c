@@ -92,6 +92,21 @@ static TransactionMode GetCurrentTransactionMode(void)
     }
     return TRANSACTION_MODE_QR_CODE;
 }
+
+void GuiTransactionUsbPullout(void)
+{
+    if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        ClearUSBRequestId();
+        static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
+        GuiCloseToTargetView(&g_homeView);
+        GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
+        GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &signal, sizeof(signal));
+        if (GuiNeedFpRecognize()) {
+            FpRecognize(RECOGNIZE_UNLOCK);
+        }
+    }
+}
 #endif
 
 static void TransactionGoToHomeViewHandler(lv_event_t *e)
@@ -270,21 +285,6 @@ void GuiSignDealFingerRecognize(void *param)
             for (int i = 0; i < 3; i++) {
                 UpdateFingerSignFlag(i, false);
             }
-        }
-    }
-}
-
-void GuiTransactionUsbPullout(void)
-{
-    if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
-        GuiDeleteKeyboardWidget(g_keyboardWidget);
-        ClearUSBRequestId();
-        static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
-        GuiCloseToTargetView(&g_homeView);
-        GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
-        GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &signal, sizeof(signal));
-        if (GuiNeedFpRecognize()) {
-            FpRecognize(RECOGNIZE_UNLOCK);
         }
     }
 }

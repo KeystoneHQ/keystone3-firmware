@@ -1,5 +1,6 @@
 #include "gui_chain.h"
 
+#ifndef BTC_ONLY
 bool CheckViewTypeIsAllow(uint8_t viewType)
 {
     switch (ViewTypeReMap(viewType)) {
@@ -17,6 +18,7 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
         return false;
     }
 }
+#endif
 
 PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
 {

@@ -183,6 +183,7 @@ void GuiKeyDerivationRequestInit(bool isUsb)
 void GuiKeyDerivationRequestDeInit()
 {
     g_isUsb = false;
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
     GUI_DEL_OBJ(g_derivationPathCont);
     GuiAnimatingQRCodeDestroyTimer();

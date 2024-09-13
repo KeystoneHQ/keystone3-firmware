@@ -138,7 +138,7 @@ static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInf
         return -1;
     }
 
-    if (strcmp("keystone3.bin", tlvArray->pValue) != 0) {
+    if ((strcmp("keystone3.bin", tlvArray->pValue) != 0) && (strcmp("nft.bin", tlvArray->pValue) != 0)) {
         return -1;
     }
     int written = snprintf(fileTransInfo->fileName, MAX_FILE_NAME_LENGTH + 3, "1:%s", tlvArray->pValue);

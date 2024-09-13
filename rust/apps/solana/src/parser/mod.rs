@@ -1036,9 +1036,7 @@ mod tests {
         let parsed = ParsedSolanaTx::build(&transaction).unwrap();
         let detail_tx = parsed.detail;
         let parsed_detail: Value = serde_json::from_str(detail_tx.as_str()).unwrap();
-
-        let expect_data = json!(
-                    {
+        let expect_data = json!({
           "accounts": [
             "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
             "ComputeBudget111111111111111111111111111111",
@@ -1065,54 +1063,52 @@ mod tests {
             },
             {
               "accounts": [
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#9",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#134",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#135",
+                "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#3",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#139",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#138",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#17",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#140",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#141",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#1",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#7",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#1",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#141",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#15",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#145",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#146",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#147",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#148",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#12",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#149",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#150",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#151",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#152",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#154",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#154",
                 "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#155",
-                "Table:J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#153",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#17",
+                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#143",
+                "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#13",
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#14",
                 "Table:J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#150",
                 "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#7",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#9",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#14",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#13",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#15",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#12",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#150",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#154",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#150",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#145",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#152",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#141",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#141",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#134",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#139",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#151",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#17",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#3",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#138",
                 "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#143",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#140",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#140",
+                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#3",
+                "Table:J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#153",
                 "Table:J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#154",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#13",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#135",
-                "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#149",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#1",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#146",
-                "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#135",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#7",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#148",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#147",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#150"
+                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#1"
               ],
               "data": "M84QqhYtFGnDAYhY7ZbnQwWuMazpdnwXBg3rkTDwgDVibjPaTVH5Hbsd",
               "program": "Unknown",
               "program_account": "YmirFH6wUrtUMUmfRPZE7TcnszDw689YNWYrMgyB55N"
             }
           ]
-        }
-                );
-
+        });
         assert_eq!(expect_data, parsed_detail);
     }
 

@@ -66,7 +66,8 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_BTC, "", &coinBtc},
 #ifndef BTC_ONLY
     {HOME_WALLET_CARD_ETH, "", &coinEth},       {HOME_WALLET_CARD_SOL, "", &coinSol},
-    {HOME_WALLET_CARD_BNB, "", &coinBnb},       {HOME_WALLET_CARD_XRP, "", &coinXrp},
+    {HOME_WALLET_CARD_BNB, "", &coinBnb},       {HOME_WALLET_CARD_HNT, "", &coinHelium},
+    {HOME_WALLET_CARD_XRP, "", &coinXrp},
     {HOME_WALLET_CARD_ADA, "", &coinAda},       {HOME_WALLET_CARD_TON, "", &coinTon},
     {HOME_WALLET_CARD_TRX, "", &coinTrx},       {HOME_WALLET_CARD_LTC, "", &coinLtc},
     {HOME_WALLET_CARD_BCH, "", &coinBch},       {HOME_WALLET_CARD_APT, "", &coinApt},
@@ -113,6 +114,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_IMTOKEN, "imToken", &walletImToken},
     {WALLET_LIST_BLOCK_WALLET, "Block Wallet", &walletBlockWallet},
     {WALLET_LIST_ZAPPER, "Zapper", &walletZapper},
+    {WALLET_LIST_HELIUM, "Helium Wallet", &walletHelium},
     {WALLET_LIST_YEARN_FINANCE, "Yearn Finance", &walletYearn},
     {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
     {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
@@ -127,7 +129,8 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
     {WALLET_LIST_BEGIN, "Begin", &walletBegin},
     {WALLET_LIST_LEAP, "Leap", &walletLeap},
-    {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly}
+    {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
+    {WALLET_LIST_LEAP, "Leap", &walletLeap},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},

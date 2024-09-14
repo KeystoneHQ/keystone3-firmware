@@ -961,7 +961,7 @@ static void color_changer_create(lv_obj_t * parent)
     if (disp_size == DISP_SMALL) lv_obj_set_size(color_cont, LV_DPX(52), LV_DPX(52));
     else lv_obj_set_size(color_cont, LV_DPX(60), LV_DPX(60));
 
-    lv_obj_align(color_cont, LV_ALIGN_BOTTOM_RIGHT, - LV_DPX(10),  - LV_DPX(10));
+    lv_obj_align(color_cont, LV_ALIGN_BOTTOM_RIGHT, - LV_DPX(10), - LV_DPX(10));
 
     uint32_t i;
     for (i = 0; palette[i] != _LV_PALETTE_LAST; i++) {
@@ -1001,11 +1001,11 @@ static void color_changer_anim_cb(void * var, int32_t v)
     if (disp_size == DISP_SMALL) {
         w = lv_map(v, 0, 256, LV_DPX(52), max_w);
         lv_obj_set_width(obj, w);
-        lv_obj_align(obj, LV_ALIGN_BOTTOM_RIGHT, - LV_DPX(10),  - LV_DPX(10));
+        lv_obj_align(obj, LV_ALIGN_BOTTOM_RIGHT, - LV_DPX(10), - LV_DPX(10));
     } else {
         w = lv_map(v, 0, 256, LV_DPX(60), max_w);
         lv_obj_set_width(obj, w);
-        lv_obj_align(obj, LV_ALIGN_BOTTOM_RIGHT, - LV_DPX(10),  - LV_DPX(10));
+        lv_obj_align(obj, LV_ALIGN_BOTTOM_RIGHT, - LV_DPX(10), - LV_DPX(10));
     }
 
     if (v > LV_OPA_COVER) v = LV_OPA_COVER;

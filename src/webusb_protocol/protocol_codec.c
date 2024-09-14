@@ -48,7 +48,7 @@ uint8_t *BuildFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
     }
     crc32Calc = crc32_ieee(0, sendData, totalLen - 4);
     printf("crc32Calc=0x%X\n", crc32Calc);
-    memcpy_s(&sendData[index], 4,   &crc32Calc, 4);
+    memcpy_s(&sendData[index], 4, &crc32Calc, 4);
     //PrintArray("sendData", sendData, totalLen);
     return sendData;
 }

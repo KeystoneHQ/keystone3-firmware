@@ -297,10 +297,14 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
         return NULL;
     }
 
-    DataDecrypt(fileData, fileData, fileDataSize);
-    if (fileDataSize < 4096) {
-        fileDataSize = g_fileTransInfo.fileSize - g_fileTransCtrl.offset;
-        g_fileTransCtrl.offset = g_fileTransInfo.fileSize;
+    if (!g_isNftFile) {
+        DataDecrypt(fileData, fileData, fileDataSize);
+        if (fileDataSize < 4096) {
+            fileDataSize = g_fileTransInfo.fileSize - g_fileTransCtrl.offset;
+            g_fileTransCtrl.offset = g_fileTransInfo.fileSize;
+        } else {
+            g_fileTransCtrl.offset += fileDataSize;
+        }
     } else {
         g_fileTransCtrl.offset += fileDataSize;
     }

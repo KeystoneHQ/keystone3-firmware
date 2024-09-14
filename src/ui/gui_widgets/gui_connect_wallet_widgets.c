@@ -143,8 +143,8 @@ static const lv_img_dsc_t *g_UniSatCoinArray[5] = {
 };
 
 static const lv_img_dsc_t *g_keplrCoinArray[8] = {
-    &coinAtom, &coinOsmo, &coinBld,  &coinAkt,
-    &coinXprt, &coinAxl,  &coinBoot, &coinCro,
+    &coinAtom, &coinOsmo, &coinBld, &coinAkt,
+    &coinXprt, &coinAxl, &coinBoot, &coinCro,
 };
 
 static const lv_img_dsc_t *g_arconnectCoinArray[1] = {

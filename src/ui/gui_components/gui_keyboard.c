@@ -185,17 +185,17 @@ typedef struct {
 
 #ifndef BTC_ONLY
 static const lv_img_dsc_t *g_emojiMatrix[16] = {
-    &emojiBitcoin, &emojiEth,       &emojiLogo,     &emojiAt,
-    &emojiSafe,    &emojiFlash,     &emojiAlien,    &emojiHappy,
-    &emojiRocket,  &emojiCrown,     &emojiCopper,   &emojiStar,
-    &emojiMusic,   &emojiHeart,     &emojiCompass,  &emojiGame,
+    &emojiBitcoin, &emojiEth, &emojiLogo, &emojiAt,
+    &emojiSafe, &emojiFlash, &emojiAlien, &emojiHappy,
+    &emojiRocket, &emojiCrown, &emojiCopper, &emojiStar,
+    &emojiMusic, &emojiHeart, &emojiCompass, &emojiGame,
 };
 #else
 static const lv_img_dsc_t *g_emojiMatrix[16] = {
-    &emojiBitcoin, &emojiCam,       &emojiLogo,     &emojiAt,
-    &emojiSafe,    &emojiFlash,     &emojiAlien,    &emojiHappy,
-    &emojiRocket,  &emojiCrown,     &emojiCopper,   &emojiStar,
-    &emojiMusic,   &emojiHeart,     &emojiCompass,  &emojiGame,
+    &emojiBitcoin, &emojiCam, &emojiLogo, &emojiAt,
+    &emojiSafe, &emojiFlash, &emojiAlien, &emojiHappy,
+    &emojiRocket, &emojiCrown, &emojiCopper, &emojiStar,
+    &emojiMusic, &emojiHeart, &emojiCompass, &emojiGame,
 };
 #endif
 

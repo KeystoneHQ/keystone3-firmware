@@ -520,6 +520,7 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     uint8_t md5Result[16];
 
     ASSERT(g_fileTransTimeOutTimer);
+    g_isNftFile = false;
     osTimerStop(g_fileTransTimeOutTimer);
     g_fileTransCtrl.endTick = osKernelGetTickCount();
     PrintArray("tlvData", tlvData, head->length);

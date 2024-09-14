@@ -6,7 +6,6 @@
 #include "eapdu_services/service_export_address.h"
 #include "screen_manager.h"
 
-static lv_obj_t *g_cont;
 static PageWidget_t *g_pageWidget;
 static EAPDUResultPage_t *g_param;
 static bool g_original_lock_screen = false;
@@ -83,7 +82,6 @@ static void GuiExportXPubViewInit()
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
-    g_cont = cont;
     WalletInfo_t walletInfo = GetConnectWalletInfo();
     lv_obj_t *img = GuiCreateImg(cont, walletInfo.img);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 16);
@@ -137,8 +135,15 @@ static ResolveUrInfo_t CalcResolveUrPageInfo()
 
 static void UsbGoToHomeViewHandler(lv_event_t *e)
 {
-    lv_timer_del(g_countDownTimer);
-    g_countDownTimer = NULL;
+    UsbGoToHomeView();
+}
+
+void UsbGoToHomeView(void)
+{
+    if (g_countDownTimer != NULL) {
+        lv_timer_del(g_countDownTimer);
+        g_countDownTimer = NULL;
+    }
     GuiCloseToTargetView(&g_homeView);
 }
 
@@ -146,7 +151,6 @@ static void GuiResolveUrResultViewInit()
 {
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
-    g_cont = cont;
     g_countDown = 10;
 
     ResolveUrInfo_t info = CalcResolveUrPageInfo();
@@ -175,7 +179,9 @@ static void GuiResolveUrResultViewInit()
     lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 192);
 
-    lv_obj_t *button = GuiCreateTextBtn(cont, "");
+    char buf[32] = {0};
+    snprintf_s(buf, sizeof(buf), "%s(%d)", _("Done"), g_countDown);
+    lv_obj_t *button = GuiCreateTextBtn(cont, buf);
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_size(button, 408, 66);
     lv_obj_set_style_bg_color(button, buttonColor, LV_PART_MAIN);
@@ -207,9 +213,13 @@ void GuiUSBTransportWidgetsInit(EAPDUResultPage_t *param)
 
 void GuiUSBTransportWidgetsDeInit()
 {
+    if (g_countDownTimer != NULL) {
+        lv_timer_del(g_countDownTimer);
+        g_countDownTimer = NULL;
+    }
+
     SetLockScreen(g_original_lock_screen);
     g_param = NULL;
-    GUI_DEL_OBJ(g_cont)
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;

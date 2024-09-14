@@ -151,6 +151,12 @@ static void UiDisplayTask(void *argument)
                 GuiFrameOpenViewWithParam(&g_USBTransportView, rcvMsg.buffer, rcvMsg.length);
             }
             break;
+            case UI_MSG_USB_TRANSPORT_NEXT_VIEW: {
+                if (GuiCheckIfTopView(&g_USBTransportView)) {
+                    GuiEmitSignal(SIG_CLOSE_USB_TRANSPORT, NULL, 0);
+                }
+            }
+            break;
             case UI_MSG_USB_HARDWARE_VIEW: {
                 bool usb = true;
                 if (GuiCheckIfTopView(&g_keyDerivationRequestView)) {

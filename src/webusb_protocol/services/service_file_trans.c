@@ -346,15 +346,34 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
 {
     FrameHead_t sendHead = {0};
     uint8_t md5Result[16];
+    uint8_t hash[32];
+    int ret = 0;
 
     ASSERT(g_fileTransTimeOutTimer);
     osTimerStop(g_fileTransTimeOutTimer);
     g_fileTransCtrl.endTick = osKernelGetTickCount();
     PrintArray("tlvData", tlvData, head->length);
     MD5_Final(md5Result, &g_md5Ctx);
-    PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
-    PrintArray("md5Result", md5Result, 16);
-    ASSERT(memcmp(md5Result, g_fileTransInfo.md5, 16) == 0);
+    do {
+        PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
+        PrintArray("md5Result", md5Result, 16);
+        sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
+        if (memcmp(md5Result, g_fileTransInfo.md5, 16) != 0) {
+            ret = ERR_INVALID_FILE;
+            break;
+        }
+        if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
+            printf("verify signature fail\n");
+            ret = ERR_INVALID_FILE;
+            break;
+        }
+    } while (0);
+    if (ret != 0) {
+        if (FatfsFileDelete(g_fileTransInfo.fileName) != RES_OK) {
+            printf("delete file %s err\n", g_fileTransInfo.fileName);
+        }
+        ASSERT(false);
+    }
     printf("total tick=%d\n", g_fileTransCtrl.endTick - g_fileTransCtrl.startTick);
 
     sendHead.packetIndex = head->packetIndex;

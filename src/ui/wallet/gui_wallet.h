@@ -26,6 +26,7 @@ UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetPetraData(void);
 UREncodeResult *GuiGetSolflareData(void);
+UREncodeResult *GuiGetHeliumData(void);
 UREncodeResult *GuiGetXBullData(void);
 UREncodeResult *GuiGetBackpackData(void);
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index);

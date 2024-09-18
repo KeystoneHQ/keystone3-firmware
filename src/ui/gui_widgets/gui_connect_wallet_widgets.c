@@ -269,6 +269,7 @@ static ETHAccountType g_currentEthPathIndex[3] = {Bip44Standard, Bip44Standard,
                                                   Bip44Standard
                                                  };
 static SOLAccountType g_currentSOLPathIndex[3] = {SOLBip44, SOLBip44, SOLBip44};
+static SOLAccountType g_currentHeliumPathIndex[3] = {SOLBip44, SOLBip44, SOLBip44};
 static AdaXPubType g_currentAdaPathIndex[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
 
 static lv_obj_t *g_egAddress[DERIVATION_PATH_EG_LEN];
@@ -1260,8 +1261,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         AddSolflareCoins();
         break;
     case WALLET_LIST_HELIUM:
-        // todo helium qrcode is same as solflare
-        func = GuiGetSolflareData;
+        func = GuiGetHeliumData;
         AddHeliumWalletCoins();
         break;
     case WALLET_LIST_BACKPACK:
@@ -1402,9 +1402,13 @@ SOLAccountType GetSolflareAccountType(void)
     return GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex));
 }
 
+SOLAccountType GetHeliumAccountType(void)
+{
+    return GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex));
+}
+
 static int GetAccountType(void)
 {
-    // todo helium is same as solflare
     return GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex));
 }
 
@@ -1412,9 +1416,10 @@ static void SetAccountType(uint8_t index)
 {
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
-    // notice helium is same as solflare
-    case WALLET_LIST_HELIUM:
         g_currentSOLPathIndex[GetCurrentAccountIndex()] = index;
+        break;
+    case WALLET_LIST_HELIUM:
+        g_currentHeliumPathIndex[GetCurrentAccountIndex()] = index;
         break;
     case WALLET_LIST_VESPR:
         g_currentAdaPathIndex[GetCurrentAccountIndex()] = index;
@@ -1423,6 +1428,7 @@ static void SetAccountType(uint8_t index)
         g_currentEthPathIndex[GetCurrentAccountIndex()] = index;
         break;
     }
+
     SetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex), index);
 }
 

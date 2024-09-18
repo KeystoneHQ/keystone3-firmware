@@ -4,7 +4,7 @@ use alloc::string::{String, ToString};
 
 use bitcoin::secp256k1::{ecdsa, SecretKey};
 use core::str::FromStr;
-use secp256k1::{Secp256k1, PublicKey, ecdh::SharedSecret};
+use secp256k1::{ecdh::SharedSecret, PublicKey, Secp256k1};
 
 use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpriv, Xpub};
 use third_party::bitcoin::Network;
@@ -222,9 +222,17 @@ mod tests {
 
     #[test]
     fn test_public_key() {
-        let test_key_bytes = [36, 152, 38, 220, 181, 219, 183, 145, 246, 234, 111, 76, 161, 118, 67, 239, 70, 95, 241, 130, 17, 82, 24, 232, 53, 216, 250, 63, 93, 81, 164, 129];
+        let test_key_bytes = [
+            36, 152, 38, 220, 181, 219, 183, 145, 246, 234, 111, 76, 161, 118, 67, 239, 70, 95,
+            241, 130, 17, 82, 24, 232, 53, 216, 250, 63, 93, 81, 164, 129,
+        ];
         let pubkey = get_public_key(&test_key_bytes);
-        println!("public key: {}", pubkey);
-        assert!(false);
+        assert_eq!(
+            [
+                164, 17, 34, 134, 65, 88, 48, 2, 139, 207, 159, 246, 129, 149, 245, 135, 244, 19,
+                144, 189, 18, 200, 154, 196, 247, 24, 60, 22, 61, 161, 130, 105, 2
+            ],
+            pubkey.unwrap()
+        );
     }
 }

@@ -99,7 +99,7 @@ static void UiDisplayTask(void *argument)
     g_dynamicTick = LVGL_FAST_TICK_MS;
     g_fastModeCount = 0;
     osTimerStart(g_lvglTickTimer, g_dynamicTick);
-    osDelay(100);
+    osDelay(1000);
 
     printf("start ui display loop\r\n");
     printf("LV_HOR_RES=%d,LV_VER_RES=%d\r\n", LV_HOR_RES, LV_VER_RES);

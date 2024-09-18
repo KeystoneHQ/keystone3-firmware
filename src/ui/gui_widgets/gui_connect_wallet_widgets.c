@@ -41,6 +41,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true},
+    {WALLET_LIST_HELIUM, &walletListHelium, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false},
@@ -65,7 +66,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_IMTOKEN, &walletListImToken, true},
     {WALLET_LIST_FEWCHA, &walletListFewcha, true},
     {WALLET_LIST_ZAPPER, &walletListZapper, true},
-    {WALLET_LIST_HELIUM, &walletListHelium, true},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true},
 #else

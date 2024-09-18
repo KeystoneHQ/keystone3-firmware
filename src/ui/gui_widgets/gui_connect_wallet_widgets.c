@@ -1008,7 +1008,7 @@ static void AddChainAddress(void)
 
     char name[BUFFER_SIZE_32] = {0};
     snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
-               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)) + 1);
+               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
     lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 

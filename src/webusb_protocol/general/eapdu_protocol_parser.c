@@ -7,6 +7,7 @@
 #include "user_msg.h"
 #include "user_memory.h"
 #include "gui_views.h"
+#include "user_delay.h"
 #include "eapdu_services/service_resolve_ur.h"
 #include "eapdu_services/service_check_lock.h"
 #include "eapdu_services/service_echo_test.h"
@@ -39,16 +40,6 @@ typedef enum {
     FRAME_CHECKSUM_OK,
 } ParserStatusEnum;
 
-static uint16_t PadBuffer(unsigned char *buffer, uint16_t length)
-{
-    uint16_t padding_length = 16 - (length % 16);
-    if (padding_length != 16) {
-        memset(buffer + length, 0, padding_length);
-        length += padding_length;
-    }
-    return length;
-}
-
 void SendEApduResponse(EAPDUResponsePayload_t *payload)
 {
     assert(payload != NULL);
@@ -71,7 +62,7 @@ void SendEApduResponse(EAPDUResponsePayload_t *payload)
         offset += packetDataSize;
         payload->dataLen -= packetDataSize;
         packetIndex++;
-        UserDelay(2);
+        UserDelay(10);
     }
 }
 

@@ -981,9 +981,9 @@ static void GuiConnectUsbPasswordPass(void)
     lv_obj_t *parent = g_keyDerivationTileView.usbCont;
     GuiConnectUsbCreateImg(parent);
 
-    lv_obj_t *titlelabel = GuiCreateLittleTitleLabel(parent, _("Connectioning Wallet"));
+    lv_obj_t *titlelabel = GuiCreateLittleTitleLabel(parent, _("usb_connectioning_wallet_title"));
     lv_obj_align(titlelabel, LV_ALIGN_TOP_MID, 0, 184);
-    lv_obj_t *contentLabel = GuiCreateNoticeLabel(parent, _("Please wait until the software wallet has completed the connection, then click to close."));
+    lv_obj_t *contentLabel = GuiCreateNoticeLabel(parent, _("usb_connectioning_wallet_desc"));
     lv_obj_set_style_text_align(contentLabel, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(contentLabel, LV_ALIGN_TOP_MID, 0, 234);
 
@@ -998,7 +998,7 @@ static void GuiConnectUsbEntranceWidget(lv_obj_t *parent)
     GuiConnectUsbCreateImg(parent);
     lv_obj_t *titlelabel = GuiCreateLittleTitleLabel(parent, _("usb_transport_connection_request"));
     lv_obj_align(titlelabel, LV_ALIGN_TOP_MID, 0, 184);
-    lv_obj_t *contentLabel = GuiCreateNoticeLabel(parent, _("The software wallet is requesting to connect to your Keystone via USB.Enter your password to approve."));
+    lv_obj_t *contentLabel = GuiCreateNoticeLabel(parent, _("usb_transport_connect_desc"));
     lv_obj_set_style_text_align(contentLabel, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(contentLabel, LV_ALIGN_TOP_MID, 0, 234);
 
@@ -1020,13 +1020,23 @@ static void GuiConnectUsbCreateImg(lv_obj_t *parent)
     lv_obj_t *img = GuiCreateImg(parent, &imgSoftwareWallet);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 110, 40);
 
+    for (int i = 0; i < 3; i++) {
+        lv_obj_t *led = lv_led_create(parent);
+        lv_obj_align(led, LV_ALIGN_DEFAULT, 236 + i * 12, 70);
+        lv_led_set_brightness(led, 150);
+        lv_obj_set_style_shadow_width(led, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
+        lv_obj_set_style_radius(led, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
+        lv_led_set_color(led, ORANGE_COLOR);
+        lv_led_on(led);
+        lv_obj_set_size(led, 4, 4);
+    }
+
     img = GuiCreateImg(parent, &imgLogoGraph);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 298, 40);
 }
 
 static void ApproveButtonHandler(lv_event_t *e)
 {
-    printf("approve ...\n");
     static uint16_t sig = SIG_INIT_CONNECT_USB;
     g_keyboardWidget = GuiCreateKeyboardWidget(g_keyDerivationTileView.usbCont);
     SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);

@@ -407,36 +407,36 @@ static UREncodeResult *ModelGenerateSyncUR(void)
 
 static uint8_t GetXPubIndexByPath(char *path)
 {
-    if (strcmp("1852'/1815'/0'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(0);
-    if (strcmp("1852'/1815'/1'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(1);
-    if (strcmp("1852'/1815'/2'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(2);
-    if (strcmp("1852'/1815'/3'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(3);
-    if (strcmp("1852'/1815'/4'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(4);
-    if (strcmp("1852'/1815'/5'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(5);
-    if (strcmp("1852'/1815'/6'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(6);
-    if (strcmp("1852'/1815'/7'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(7);
-    if (strcmp("1852'/1815'/8'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(8);
-    if (strcmp("1852'/1815'/9'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(9);
-    if (strcmp("1852'/1815'/10'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(10);
-    if (strcmp("1852'/1815'/11'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(11);
-    if (strcmp("1852'/1815'/12'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(12);
-    if (strcmp("1852'/1815'/13'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(13);
-    if (strcmp("1852'/1815'/14'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(14);
-    if (strcmp("1852'/1815'/15'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(15);
-    if (strcmp("1852'/1815'/16'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(16);
-    if (strcmp("1852'/1815'/17'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(17);
-    if (strcmp("1852'/1815'/18'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(18);
-    if (strcmp("1852'/1815'/19'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(19);
-    if (strcmp("1852'/1815'/20'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(20);
-    if (strcmp("1852'/1815'/21'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(21);
-    if (strcmp("1852'/1815'/22'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(22);
-    if (strcmp("1852'/1815'/23'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(23);
+    if (strcmp("1852'/1815'/0'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 0);
+    if (strcmp("1852'/1815'/1'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 1);
+    if (strcmp("1852'/1815'/2'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 2);
+    if (strcmp("1852'/1815'/3'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 3);
+    if (strcmp("1852'/1815'/4'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 4);
+    if (strcmp("1852'/1815'/5'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 5);
+    if (strcmp("1852'/1815'/6'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 6);
+    if (strcmp("1852'/1815'/7'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 7);
+    if (strcmp("1852'/1815'/8'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 8);
+    if (strcmp("1852'/1815'/9'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 9);
+    if (strcmp("1852'/1815'/10'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 10);
+    if (strcmp("1852'/1815'/11'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 11);
+    if (strcmp("1852'/1815'/12'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 12);
+    if (strcmp("1852'/1815'/13'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 13);
+    if (strcmp("1852'/1815'/14'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 14);
+    if (strcmp("1852'/1815'/15'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 15);
+    if (strcmp("1852'/1815'/16'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 16);
+    if (strcmp("1852'/1815'/17'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 17);
+    if (strcmp("1852'/1815'/18'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 18);
+    if (strcmp("1852'/1815'/19'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 19);
+    if (strcmp("1852'/1815'/20'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 20);
+    if (strcmp("1852'/1815'/21'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 21);
+    if (strcmp("1852'/1815'/22'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 22);
+    if (strcmp("1852'/1815'/23'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 23);
     if (strcmp("M/44'/148'/0'", path) == 0) return XPUB_TYPE_STELLAR_0;
     if (strcmp("M/44'/148'/1'", path) == 0) return XPUB_TYPE_STELLAR_1;
     if (strcmp("M/44'/148'/2'", path) == 0) return XPUB_TYPE_STELLAR_2;
     if (strcmp("M/44'/148'/3'", path) == 0) return XPUB_TYPE_STELLAR_3;
     if (strcmp("M/44'/148'/4'", path) == 0) return XPUB_TYPE_STELLAR_4;
-    return GetKeyDerivationAdaXPubTypeByIndex(0);
+    return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 0);
 }
 
 static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent)
@@ -771,12 +771,12 @@ static uint32_t GetCurrentSelectedIndex()
 
 static void SetAccountType(uint8_t index)
 {
-    SetConnectWalletAccountIndex(g_response->data->origin, index);
+    SetConnectWalletPathIndex(g_response->data->origin, index);
 }
 
 static AdaXPubType GetAccountType(void)
 {
-    return GetConnectWalletAccountIndex(g_response->data->origin);
+    return GetConnectWalletPathIndex(g_response->data->origin);
 }
 
 static void UpdateConfirmBtn(bool update)
@@ -809,13 +809,13 @@ static void CloseDerivationHandler(lv_event_t *e)
 
 static bool IsCardano()
 {
-    return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON;
+    return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON || g_walletIndex == WALLET_LIST_BEGIN;
 }
 
 static void ConfirmDerivationHandler(lv_event_t *e)
 {
     if (IsCardano()) {
-        SetKeyDerivationAdaXPubType(GetAccountType());
+        SetConnectWalletPathIndex(g_response->data->origin, GetAccountType());
         SetAccountType(GetCurrentSelectedIndex());
     }
     GuiAnimatingQRCodeDestroyTimer();
@@ -832,19 +832,19 @@ static void ConfirmDerivationHandler(lv_event_t *e)
 
 static char *GetChangeDerivationPathDesc(void)
 {
-    return GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC)[GetAccountType()];
+    return GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC)[GetCurrentSelectedIndex()];
 }
 
 static void GetCardanoEgAddress(void)
 {
     char *xPub = NULL;
-    xPub = GetCurrentAccountPublicKey(GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_0 : XPUB_TYPE_LEDGER_ADA_0);
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0);
     SimpleResponse_c_char *result = cardano_get_base_address(xPub, 0, 1);
     CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][0], BUFFER_SIZE_128,
                        result->data, 24);
     free_simple_response_c_char(result);
 
-    xPub = GetCurrentAccountPublicKey(GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_1 : XPUB_TYPE_LEDGER_ADA_1);
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_1);
     result = cardano_get_base_address(xPub, 0, 1);
     CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][1], BUFFER_SIZE_128,
                        result->data, 24);
@@ -924,7 +924,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     egContHeight += 12;
     lv_obj_set_height(egCont, egContHeight);
     GetCardanoEgAddress();
-    UpdateCardanoEgAddress(GetAccountType());
+    UpdateCardanoEgAddress(GetCurrentSelectedIndex());
 }
 
 static void ChangeDerivationPathHandler(lv_event_t *e)

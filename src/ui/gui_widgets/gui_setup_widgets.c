@@ -22,7 +22,7 @@ typedef enum {
     SETUP_LANGUAGE_BUTT,
 } SETUP_LANGUAGE_ENUM;
 
-#define SUPPORT_WALLET_INDEX SETUP_KOREAN
+#define SUPPORT_WALLET_INDEX SETUP_JAPANESE
 
 static const char *g_languageList[] = {
     "English",

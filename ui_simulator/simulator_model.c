@@ -17,6 +17,16 @@ bool fingerRegisterState[3] = {true, false, false};
 #define ACCOUNT_PUBLIC_HOME_COIN_PATH "C:/assets/coin.json"
 
 bool g_reboot = false;
+bool g_otpProtect = false;
+
+void ClearUSBRequestId(void)
+{
+}
+
+void MpuSetProtection(bool en)
+{
+
+}
 
 void MpuSetOtpProtection(bool en)
 {

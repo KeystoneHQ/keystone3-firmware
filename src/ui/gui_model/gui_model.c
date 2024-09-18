@@ -377,7 +377,6 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     MODEL_WRITE_SE_HEAD
     ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, 0, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
-    printf("%s %d..\n", __func__, __LINE__);
     ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
     ClearAccountPassphrase(newAccount);
     CHECK_ERRCODE_BREAK("save entropy error", ret);

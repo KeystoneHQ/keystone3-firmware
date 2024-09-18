@@ -130,12 +130,10 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
 
     int32_t ret = SaveNewBip39Entropy(accountIndex, entropy, entropyLen, password);
     CHECK_ERRCODE_RETURN_INT(ret);
-    printf("%s %d..\n", __func__, __LINE__);
 
     ret = SaveCurrentAccountInfo();
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
-    printf("%s %d..\n", __func__, __LINE__);
     CHECK_ERRCODE_RETURN_INT(ret);
     return ret;
 }

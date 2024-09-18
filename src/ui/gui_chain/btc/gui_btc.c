@@ -446,7 +446,6 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
 
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
-    printf("%s %d..\n", __func__, __LINE__);
 
     char *verify_code = NULL;
     char *wallet_config = NULL;

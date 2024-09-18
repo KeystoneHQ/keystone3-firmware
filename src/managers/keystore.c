@@ -102,30 +102,24 @@ int32_t SaveNewBip39Entropy(uint8_t accountIndex, const uint8_t *entropy, uint8_
     AccountSecret_t accountSecret = {0};
     char *mnemonic = NULL;
     uint8_t passwordHash[32];
-    printf("%s %d..\n", __func__, __LINE__);
 
     ASSERT(accountIndex <= 2);
     do {
         ret = CheckPasswordExisted(password, 255);
-        printf("%s %d..\n", __func__, __LINE__);
         CHECK_ERRCODE_BREAK("check repeat password", ret);
         memcpy_s(accountSecret.entropy, sizeof(accountSecret.entropy), entropy, entropyLen);
         accountSecret.entropyLen = entropyLen;
         // bip39 entropy->mnemonic->seed
-        printf("%s %d..\n", __func__, __LINE__);
         ret = bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
         CHECK_ERRCODE_BREAK("bip39_mnemonic_from_bytes", ret);
         ret = bip39_mnemonic_to_seed(mnemonic, NULL, accountSecret.seed, SEED_LEN, NULL);
         CHECK_ERRCODE_BREAK("bip39_mnemonic_to_seed", ret);
         SRAM_FREE(mnemonic);
-        printf("%s %d..\n", __func__, __LINE__);
 
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
-        printf("%s %d..\n", __func__, __LINE__);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
         HashWithSalt(passwordHash, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
         ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        printf("%s %d..\n", __func__, __LINE__);
         CHECK_ERRCODE_BREAK("write password hash", ret);
 
     } while (0);
@@ -459,17 +453,13 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
         ret = SimulatorSaveAccountSecret(accountIndex, accountSecret, password);
 #else
         ret = SetNewKeyPieceToSE(accountIndex, pieces, password);
-        printf("%s %d..\n", __func__, __LINE__);
         CHECK_ERRCODE_BREAK("set key to se", ret);
         HashWithSalt(hash, pieces, sizeof(pieces), "combine two pieces");
-        printf("%s %d..\n", __func__, __LINE__);
         KEYSTORE_PRINT_ARRAY("pieces hash", hash, sizeof(hash));
         sha512((struct sha512 *)sha512Hash, hash, sizeof(hash));
         KEYSTORE_PRINT_ARRAY("sha512Hash", sha512Hash, 64);
         TrngGet(iv, AES_IV_LEN);
-        printf("%s %d..\n", __func__, __LINE__);
         CombineInnerAesKey(enKey);
-        printf("%s %d..\n", __func__, __LINE__);
         AES256_CBC_init(&ctx, enKey, iv);
         AES256_CBC_encrypt(&ctx, ENTROPY_MAX_LEN / AES_BLOCK_SIZE, encryptEntropy, accountSecret->entropy);
         AES256_CBC_encrypt(&ctx, SEED_LEN / AES_BLOCK_SIZE, encryptSeed, accountSecret->seed);

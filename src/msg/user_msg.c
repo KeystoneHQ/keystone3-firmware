@@ -7,9 +7,11 @@ osMessageQueueId_t g_testQueue = NULL;
 osMessageQueueId_t g_qrDecodeQueue = NULL;
 osMessageQueueId_t g_uiQueue = NULL;
 osMessageQueueId_t g_backgroundQueue = NULL;
+osMessageQueueId_t g_sensitiveQueue = NULL;
 osMessageQueueId_t g_logQueue = NULL;
 osMessageQueueId_t g_usbQueue = NULL;
 osMessageQueueId_t g_lowPowerQueue = NULL;
+osMessageQueueId_t g_springQueue = NULL;
 
 void UserMsgInit(void)
 {
@@ -22,6 +24,8 @@ void UserMsgInit(void)
     g_logQueue = osMessageQueueNew(16, sizeof(Message_t), NULL);
     g_usbQueue = osMessageQueueNew(32, sizeof(Message_t), NULL);
     g_lowPowerQueue = osMessageQueueNew(5, sizeof(Message_t), NULL);
+    g_springQueue = osMessageQueueNew(32, sizeof(Message_t), NULL);
+    g_sensitiveQueue = osMessageQueueNew(5, sizeof(Message_t), NULL);
 
     //All messages are registered here
     SubMessageID(MSG_TEST_CMD_FRAME, g_cmdQueue);
@@ -41,12 +45,12 @@ void UserMsgInit(void)
     SubMessageID(UI_MSG_SCREEN_SHOT, g_uiQueue);
     SubMessageID(UI_MSG_PREPARE_RECEIVE_UR_USB, g_uiQueue);
     SubMessageID(UI_MSG_USB_TRANSPORT_VIEW, g_uiQueue);
+    SubMessageID(UI_MSG_USB_TRANSPORT_NEXT_VIEW, g_uiQueue);
+    SubMessageID(UI_MSG_USB_HARDWARE_VIEW, g_uiQueue);
     SubMessageID(UI_MSG_CLOSE_NFT_LOCK, g_uiQueue);
     SubMessageID(UI_MSG_OPEN_VIEW, g_uiQueue);
     SubMessageID(UI_MSG_CLOSE_VIEW, g_uiQueue);
 
-    SubMessageID(BACKGROUND_MSG_EXECUTE, g_backgroundQueue);
-    SubMessageID(BACKGROUND_MSG_EXECUTE_RUNNABLE, g_backgroundQueue);
     SubMessageID(BACKGROUND_MSG_MINUTE, g_backgroundQueue);
     SubMessageID(BACKGROUND_MSG_CHANGER_INSERT, g_backgroundQueue);
     SubMessageID(BACKGROUND_MSG_RESET, g_backgroundQueue);
@@ -66,4 +70,9 @@ void UserMsgInit(void)
 
     SubMessageID(LOW_POWER_ENTER, g_lowPowerQueue);
     SubMessageID(LOW_POWER_QUIT, g_lowPowerQueue);
+
+    SubMessageID(SPRING_MSG_GET, g_springQueue);
+
+    SubMessageID(SENSITIVE_MSG_EXECUTE, g_sensitiveQueue);
+    SubMessageID(SENSITIVE_MSG_EXECUTE_RUNNABLE, g_sensitiveQueue);
 }

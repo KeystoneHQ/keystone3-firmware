@@ -7,6 +7,7 @@
 #include "user_utils.h"
 #include "drv_trng.h"
 #include "log_print.h"
+#include "drv_mpu.h"
 
 #define SALT_DATA_LEN                                   32
 
@@ -25,6 +26,7 @@ static const uint8_t g_saltData[] = {
 
 void HashWithSalt(uint8_t *outData, const uint8_t *inData, uint32_t inLen, const char *saltString)
 {
+    MpuSetOtpProtection(false);
     uint8_t saltData[SALT_DATA_LEN];
     uint8_t tempData[32];
 #ifdef HASH_AND_SALT_TEST_MODE
@@ -44,10 +46,12 @@ void HashWithSalt(uint8_t *outData, const uint8_t *inData, uint32_t inLen, const
     hmac_sha256(saltData, SALT_DATA_LEN, (uint8_t *)inData, inLen, tempData);
     hmac_sha256((uint8_t *)saltString, strlen(saltString), tempData, 32, outData);
     memset(saltData, 0, sizeof(saltData));
+    MpuSetOtpProtection(true);
 }
 
 void HashWithSalt512(uint8_t *outData, const uint8_t *inData, uint32_t inLen, const char *saltString)
 {
+    MpuSetOtpProtection(false);
     uint8_t saltData[SALT_DATA_LEN];
     uint8_t tempData[64];
 #ifdef HASH_AND_SALT_TEST_MODE
@@ -67,4 +71,5 @@ void HashWithSalt512(uint8_t *outData, const uint8_t *inData, uint32_t inLen, co
     hmac_sha512(saltData, SALT_DATA_LEN, (uint8_t *)inData, inLen, tempData);
     hmac_sha512((uint8_t *)saltString, strlen(saltString), tempData, 64, outData);
     memset(saltData, 0, sizeof(saltData));
+    MpuSetOtpProtection(true);
 }

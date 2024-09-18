@@ -273,3 +273,14 @@ void CutAndFormatString(char *out, uint32_t maxLen, const char *string, uint32_t
         strncat_s(out, maxLen, string + len - halfLen, halfLen);
     }
 }
+
+uint16_t extract_16bit_value(const uint8_t *frame, int offset)
+{
+    return ((uint16_t)frame[offset] << 8) | frame[offset + 1];
+}
+
+void insert_16bit_value(uint8_t *frame, int offset, uint16_t value)
+{
+    frame[offset] = (uint8_t)(value >> 8);
+    frame[offset + 1] = (uint8_t)(value & 0xFF);
+}

@@ -61,7 +61,8 @@ typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param,
     add(SCREEN_MULTISIG_SELECT_IMPORT_METHOD)   \
     add(SCREEN_MULTISIG_READ_SDCARD)            \
     add(SCREEN_TON_MNEMONIC_HINT)               \
-    add(SCREEN_MULTISIG_TRANSACTION_SIGNATURE)
+    add(SCREEN_MULTISIG_TRANSACTION_SIGNATURE)  \
+    add(SCREEN_CONNECT_USB)                     \
 
 typedef enum {
     SCREEN_INVALID = -1,

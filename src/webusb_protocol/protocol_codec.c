@@ -1,152 +1,13 @@
+#include <stdio.h>
+#include <string.h>
+#include "assert.h"
+#include <stdint.h>
 #include "protocol_codec.h"
-#include "stdio.h"
-#include "string.h"
 #include "log_print.h"
 #include "user_memory.h"
 #include "user_utils.h"
-#include "assert.h"
 #include "crc.h"
 #include "protocol_parse.h"
-
-/// @brief Build frame.
-/// @param pHead
-/// @param tlvArray
-/// @param tlvLen
-/// @return full frame data which needs be freed manually.
-uint8_t *BuildFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
-{
-    uint32_t totalLen, i, index, crc32Calc;
-    uint8_t *sendData;
-
-    pHead->head = PROTOCOL_HEADER;
-    pHead->protocolVersion = PROTOCOL_VERSION;
-    totalLen = GetFrameTotalLength(tlvArray, tlvLen);
-    pHead->length = totalLen - sizeof(FrameHead_t) - 4;
-    printf("totalLen=%d\n", totalLen);
-    sendData = SRAM_MALLOC(totalLen);
-    memcpy_s(sendData, totalLen, pHead, sizeof(FrameHead_t));
-    index = sizeof(FrameHead_t);
-    for (i = 0; i < tlvLen; i++) {
-        //t
-        sendData[index++] = tlvArray[i].type;
-        //l
-        ASSERT(tlvArray[i].length <= 0x7FFF);
-        if (tlvArray[i].length > 127) {
-            sendData[index++] = 0x80 | (tlvArray[i].length >> 8);
-            sendData[index++] = tlvArray[i].length & 0xFF;
-        } else {
-            sendData[index++] = tlvArray[i].length;
-        }
-        //v
-        if (tlvArray[i].pValue == NULL) {
-            ASSERT(tlvArray[i].length <= 4);
-            memcpy_s(&sendData[index], totalLen - index, &tlvArray[i].value, tlvArray[i].length);
-        } else {
-            memcpy_s(&sendData[index], totalLen - index, tlvArray[i].pValue, tlvArray[i].length);
-        }
-        index += tlvArray[i].length;
-    }
-    crc32Calc = crc32_ieee(0, sendData, totalLen - 4);
-    printf("crc32Calc=0x%X\n", crc32Calc);
-    memcpy_s(&sendData[index], 4, &crc32Calc, 4);
-    //PrintArray("sendData", sendData, totalLen);
-    return sendData;
-}
-
-/// @brief Get the frame total length by tlv array.
-/// @param tlvArray
-/// @return The frame total length.
-uint32_t GetFrameTotalLength(const Tlv_t tlvArray[], uint32_t tlvLen)
-{
-    uint32_t totalLen, i;
-
-    totalLen = sizeof(FrameHead_t);                         //HEAD
-    for (i = 0; i < tlvLen; i++) {
-        totalLen++;                                         //t
-        totalLen += tlvArray[i].length > 127 ? 2 : 1;       //l
-        totalLen += tlvArray[i].length;                     //v
-    }
-    totalLen += 4;                                           //CRC32
-
-    return totalLen;
-}
-
-/// @brief Get TLV array from data.
-/// @param[out] tlvArray
-/// @param[in] maxTlvLen
-/// @param[in] data
-/// @param[in] dataLen
-/// @return TLV array number.
-uint32_t GetTlvFromData(Tlv_t tlvArray[], uint32_t maxTlvLen, const uint8_t *data, uint32_t dataLen)
-{
-    uint32_t count, index = 0;
-
-    for (count = 0; count < maxTlvLen; count++) {
-        tlvArray[count].type = data[index++];
-        if (data[index] > 127) {
-            tlvArray[count].length = ((uint16_t)(data[index] & 0x7F) << 8) + data[index + 1];
-            index += 2;
-        } else {
-            tlvArray[count].length = data[index];
-            index++;
-        }
-        tlvArray[count].pValue = (uint8_t *)&data[index];
-        index += tlvArray[count].length;
-        ASSERT(index <= dataLen);
-        //printf("type=%d\n", tlvArray[count].type);
-        //PrintArray("v", tlvArray[count].pValue, tlvArray[count].length);
-        if (index == dataLen) {
-            //printf("TLV complete\n");
-            count++;
-            break;
-        }
-    }
-    return count;
-}
-
-void PrintProtocolFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
-{
-    uint32_t totalLen, i, index, crc32Calc;
-    uint8_t *sendData;
-
-    totalLen = sizeof(FrameHead_t);                         //HEAD
-    for (i = 0; i < tlvLen; i++) {
-        totalLen++;                                         //t
-        totalLen += tlvArray[i].length > 127 ? 2 : 1;       //l
-        totalLen += tlvArray[i].length;                     //v
-    }
-    totalLen += 4;                                           //CRC32
-    pHead->length = totalLen - sizeof(FrameHead_t) - 4;
-    printf("totalLen=%d\n", totalLen);
-    sendData = SRAM_MALLOC(totalLen);
-    memcpy_s(sendData, totalLen, pHead, sizeof(FrameHead_t));
-    index = sizeof(FrameHead_t);
-    for (i = 0; i < tlvLen; i++) {
-        //t
-        sendData[index++] = tlvArray[i].type;
-        //l
-        ASSERT(tlvArray[i].length <= 0x7FFF);
-        if (tlvArray[i].length > 127) {
-            sendData[index++] = 0x80 | (tlvArray[i].length >> 8);
-            sendData[index++] = tlvArray[i].length & 0xFF;
-        } else {
-            sendData[index++] = tlvArray[i].length;
-        }
-        //v
-        if (tlvArray[i].pValue == NULL) {
-            ASSERT(tlvArray[i].length <= 4);
-            memcpy_s(&sendData[index], totalLen - index, &tlvArray[i].value, tlvArray[i].length);
-        } else {
-            memcpy_s(&sendData[index], totalLen - index, tlvArray[i].pValue, tlvArray[i].length);
-        }
-        index += tlvArray[i].length;
-    }
-    crc32Calc = crc32_ieee(0, sendData, totalLen - 4);
-    printf("crc32Calc=0x%X\n", crc32Calc);
-    memcpy_s(&sendData[index], 4, &crc32Calc, 4);
-    PrintArray("sendData", sendData, totalLen);
-    SRAM_FREE(sendData);
-}
 
 void PrintFrameHead(const FrameHead_t *pHead)
 {
@@ -158,6 +19,94 @@ void PrintFrameHead(const FrameHead_t *pHead)
     printf("flag.ack=%d\n", pHead->flag.b.ack);
     printf("flag.isHost=%d\n", pHead->flag.b.isHost);
     printf("length=%d\n", pHead->length);
+}
+
+/// Calculate the total length of the frame based on the TLV array.
+uint32_t GetFrameTotalLength(const Tlv_t tlvArray[], uint32_t tlvLen)
+{
+    uint32_t totalLen = sizeof(FrameHead_t) + 4; // Adding size for HEAD and CRC32
+
+    for (uint32_t i = 0; i < tlvLen; i++) {
+        totalLen++; // t
+        totalLen += (tlvArray[i].length > 127) ? 2 : 1; // l
+        totalLen += tlvArray[i].length; // v
+    }
+
+    return totalLen;
+}
+
+/// Encode a single TLV into the provided buffer.
+static void EncodeTlv(uint8_t *buffer, uint32_t *index, const Tlv_t tlv, uint32_t totalLen)
+{
+    buffer[(*index)++] = tlv.type; // t
+
+    if (tlv.length > 127) {
+        buffer[(*index)++] = 0x80 | (tlv.length >> 8); // l high
+        buffer[(*index)++] = tlv.length & 0xFF;        // l low
+    } else {
+        buffer[(*index)++] = tlv.length; // l
+    }
+
+    assert(tlv.length <= 0x7FFF);
+    if (tlv.pValue == NULL) {
+        assert(tlv.length <= 4);
+        memcpy_s(&buffer[*index], totalLen - *index, &tlv.value, tlv.length);
+    } else {
+        memcpy_s(&buffer[*index], totalLen - *index, tlv.pValue, tlv.length);
+    }
+    *index += tlv.length; // v
+}
+
+/// Build frame from header and TLV array.
+uint8_t *BuildFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
+{
+    uint32_t totalLen = GetFrameTotalLength(tlvArray, tlvLen);
+    uint8_t *sendData = SRAM_MALLOC(totalLen);
+
+    pHead->head = PROTOCOL_HEADER;
+    pHead->protocolVersion = PROTOCOL_VERSION;
+    pHead->length = totalLen - sizeof(FrameHead_t) - 4;
+    printf("Total frame length: %u\n", totalLen);
+
+    memcpy_s(sendData, totalLen, pHead, sizeof(FrameHead_t));
+    uint32_t index = sizeof(FrameHead_t);
+
+    for (uint32_t i = 0; i < tlvLen; i++) {
+        EncodeTlv(sendData, &index, tlvArray[i], totalLen);
+    }
+
+    uint32_t crc32Calc = crc32_ieee(0, sendData, totalLen - 4);
+    printf("CRC32 Calculated: 0x%X\n", crc32Calc);
+    memcpy_s(&sendData[index], 4, &crc32Calc, 4);
+
+    return sendData;
+}
+
+/// Extract TLV array from provided data.
+uint32_t GetTlvFromData(Tlv_t tlvArray[], uint32_t maxTlvLen, const uint8_t *data, uint32_t dataLen)
+{
+    uint32_t count = 0, index = 0;
+
+    while (count < maxTlvLen && index < dataLen) {
+        tlvArray[count].type = data[index++]; // t
+        if (data[index] > 127) {
+            tlvArray[count].length = ((uint16_t)(data[index] & 0x7F) << 8) + data[index + 1];
+            index += 2; // l
+        } else {
+            tlvArray[count].length = data[index++]; // l
+        }
+
+        tlvArray[count].pValue = (uint8_t *)&data[index];
+        index += tlvArray[count].length; // v
+        assert(index <= dataLen);
+
+        count++;
+        if (index == dataLen) {
+            break;
+        }
+    }
+
+    return count;
 }
 
 static void ProtocolTestSend(const uint8_t *data, uint32_t len)
@@ -200,7 +149,7 @@ void ProtocolCodecTest(int argc, char *argv[])
         tlvArray[4].type = 5;
         tlvArray[4].length = 4;
         tlvArray[4].value = 888;
-        PrintProtocolFrame(&head, tlvArray, 5);
+        // PrintProtocolFrame(&head, tlvArray, 5);
     } else if (strcmp(argv[0], "parse") == 0) {
         VALUE_CHECK(argc, 2);
         inData = SRAM_MALLOC(strlen(argv[1]) / 2);

@@ -236,6 +236,39 @@ pub extern "C" fn k1_verify_signature(
 }
 
 #[no_mangle]
+pub extern "C" fn k1_generate_ecdh_sharekey(
+    privkey: PtrBytes,
+    privkey_len: u32,
+    pubkey: PtrBytes,
+    pubkey_len: u32,
+) -> *mut SimpleResponse<u8> {
+    let private_key = unsafe { slice::from_raw_parts(privkey, privkey_len as usize) };
+    let public_key = unsafe { slice::from_raw_parts(pubkey, pubkey_len as usize) };
+    let result = keystore::algorithms::secp256k1::get_share_key(private_key, public_key);
+    match result {
+        Ok(share_key) => {
+            SimpleResponse::success(Box::into_raw(Box::new(share_key)) as *mut u8).simple_c_ptr()
+        }
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn k1_generate_pubkey_by_privkey(
+    privkey: PtrBytes,
+    privkey_len: u32,
+) -> *mut SimpleResponse<u8> {
+    let private_key = unsafe { slice::from_raw_parts(privkey, privkey_len as usize) };
+    let result = keystore::algorithms::secp256k1::get_public_key(private_key);
+    match result {
+        Ok(pubkey) => {
+            SimpleResponse::success(Box::into_raw(Box::new(pubkey)) as *mut u8).simple_c_ptr()
+        }
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn pbkdf2_rust(
     password: PtrBytes,
     salt: PtrBytes,

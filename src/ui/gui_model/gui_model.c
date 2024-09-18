@@ -9,6 +9,7 @@
 #include "log_print.h"
 #include "secret_cache.h"
 #include "background_task.h"
+#include "fetch_sensitive_data_task.h"
 #include "bip39.h"
 #include "slip39.h"
 #include "gui_setting_widgets.h"
@@ -40,6 +41,7 @@
 #include "mhscpu_qspi.h"
 #include "safe_mem_lib.h"
 #include "usb_task.h"
+#include "drv_mpu.h"
 #else
 #include "simulator_model.h"
 #endif
@@ -1117,6 +1119,7 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
             *param != SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD &&
             *param != SIG_MULTISIG_WALLET_DELETE_VERIFY_PASSWORD &&
             *param != SIG_HARDWARE_CALL_DERIVE_PUBKEY &&
+            *param != SIG_INIT_CONNECT_USB &&
             !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
             !GuiCheckIfViewOpened(&g_createWalletView) &&
             !ModelGetPassphraseQuickAccess()) {
@@ -1190,7 +1193,7 @@ static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataL
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
 
-    uint32_t time = *(uint32_t *)inData;
+    uint32_t time = *(uint32_t*)inData;
     SetLastLockDeviceTime(time);
 
     SetLockScreen(enable);

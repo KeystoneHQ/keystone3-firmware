@@ -10,6 +10,7 @@
 #include "sha256.h"
 #include "drv_otp.h"
 #include "assert.h"
+#include "drv_mpu.h"
 
 //#define ATECC608B_TEST_MODE
 
@@ -120,6 +121,7 @@ int32_t Atecc608bEncryptRead(uint8_t slot, uint8_t block, uint8_t *data)
     uint8_t encryptKey[32];
     uint8_t authKey[32];
 
+    MpuSetOtpProtection(false);
     do {
         GetEncryptKey(encryptKey);
         GetAuthKey(authKey);
@@ -129,6 +131,7 @@ int32_t Atecc608bEncryptRead(uint8_t slot, uint8_t block, uint8_t *data)
         ret = atcab_read_enc(slot, block, data, encryptKey, SLOT_ENCRYPT_KEY, nonce);
         CHECK_ATECC608B_RET("read_encrypt", ret);
     } while (0);
+    MpuSetOtpProtection(true);
     CLEAR_ARRAY(nonce);
     CLEAR_ARRAY(encryptKey);
     CLEAR_ARRAY(authKey);

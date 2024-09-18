@@ -23,5 +23,6 @@ void GuiSetCurrentTransactionType(TransactionType);
 TransactionType GuiGetCurrentTransactionType();
 void GuiSetCurrentTransactionNeedSign(bool);
 bool GuiGetCurrentTransactionNeedSign();
+void GuiTransactionUsbPullout(void);
 
 #endif /* _GUI_TRANSACTION_DETAIL_WIDGETS_H */

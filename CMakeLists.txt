@@ -91,6 +91,7 @@ set(EXTERNAL_INCLUDE_PATH
     external/cjson
     external/quicklz
     external/sqlite3
+    external/circular_buffer
     external/cryptoauthlib/lib
     external/FreeRTOS
     external/FreeRTOS/Source/include
@@ -237,6 +238,7 @@ if(COMPILE_KEYSTONE)
         "external/cjson/*.c"
         "external/quicklz/*.c"
         "external/sqlite3/*.c"
+        "external/circular_buffer/*.c"
         ${ccan}
         ${cryptoauthlib}
         ${ctaes}

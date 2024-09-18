@@ -5,12 +5,15 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-void GuiKeyDerivationRequestInit();
+void GuiKeyDerivationRequestInit(bool isUsb);
 void GuiKeyDerivationRequestDeInit();
 void GuiKeyDerivationRequestRefresh();
 void GuiKeyDerivationWidgetHandleURGenerate(char *data, uint16_t len);
 void GuiKeyDerivationWidgetHandleURUpdate(char *data, uint16_t len);
 void GuiSetKeyDerivationRequestData(void *data, void *multiResult, bool is_multi);
+void GuiKeyDerivePasswordErrorCount(void *param);
+void UpdateAndParseHardwareCall(void);
+void GuiKeyDeriveUsbPullout(void);
 
 void HiddenKeyboardAndShowAnimateQR();
 #endif

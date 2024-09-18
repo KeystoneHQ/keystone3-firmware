@@ -1,5 +1,25 @@
 #include "gui_chain.h"
 
+#ifndef BTC_ONLY
+bool CheckViewTypeIsAllow(uint8_t viewType)
+{
+    switch (ViewTypeReMap(viewType)) {
+    case REMAPVIEW_ETH:
+    case REMAPVIEW_ETH_PERSONAL_MESSAGE:
+    case REMAPVIEW_ETH_TYPEDDATA:
+        return true;
+    case REMAPVIEW_SOL:
+    case REMAPVIEW_SOL_MESSAGE:
+        return true;
+    case REMAPVIEW_BTC:
+    case REMAPVIEW_BTC_MESSAGE:
+        return true;
+    default:
+        return false;
+    }
+}
+#endif
+
 PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
 {
     switch (ViewTypeReMap(viewType)) {

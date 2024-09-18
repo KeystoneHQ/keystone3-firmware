@@ -5,5 +5,6 @@
 void GuiUSBTransportWidgetsInit(EAPDUResultPage_t *param);
 void GuiUSBTransportWidgetsDeInit();
 void GuiUSBTransportWidgetsRefresh();
+void UsbGoToHomeView(void);
 
 #endif

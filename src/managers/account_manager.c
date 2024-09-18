@@ -12,6 +12,11 @@
 #include "user_memory.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_storage.h"
+#include "simulator_storage.h"
+#else
+#include "drv_otp.h"
+#include "drv_mpu.h"
+#include "safe_str_lib.h"
 #endif
 
 typedef struct {

@@ -18,6 +18,12 @@ bool fingerRegisterState[3] = {true, false, false};
 
 bool g_reboot = false;
 
+void MpuSetOtpProtection(bool en)
+{
+    
+}
+
+
 void NftLockQuit()
 {
     
@@ -353,7 +359,7 @@ int32_t FpCancelCurOperate(void)
 
 uint8_t GetFingerSignFlag(void)
 {
-    return 1;
+    return 0;
 }
 
 void UpdateFingerUnlockFlag(uint8_t unlockFlag)
@@ -514,13 +520,13 @@ int32_t prepare_qrcode()
             qrcode[lastQRIndex] = malloc(1024);
             memset(qrcode[lastQRIndex], '\0', 1024);
             memcpy(qrcode[lastQRIndex], buffer + lastIndex, i - lastIndex);
-            printf("qrcode: %s\r\n", qrcode[lastQRIndex]);
+            // printf("qrcode: %s\r\n", qrcode[lastQRIndex]);
             lastIndex = i + 1;
             lastQRIndex++;
         }
         if (i == readBytes - 1)
         {
-            printf("last char: %c\r\n", buffer[i]);
+            // printf("last char: %c\r\n", buffer[i]);
             if (qrcode[lastQRIndex] != NULL)
             {
                 free(qrcode[lastQRIndex]);
@@ -528,11 +534,11 @@ int32_t prepare_qrcode()
             qrcode[lastQRIndex] = malloc(1024);
             memset(qrcode[lastQRIndex], '\0', 1024);
             memcpy(qrcode[lastQRIndex], buffer + lastIndex, i - lastIndex + 1);
-            printf("qrcode: %s\r\n", qrcode[lastQRIndex]);
+            // printf("qrcode: %s\r\n", qrcode[lastQRIndex]);
             qrcode_size = lastQRIndex + 1;
         }
     }
-    printf("read: %d\r\n", readBytes);
+    // printf("read: %d\r\n", readBytes);
 
     return readBytes;
 }

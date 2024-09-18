@@ -12,6 +12,7 @@
 #include "user_memory.h"
 #include "gui_chain.h"
 #include "drv_lcd_bright.h"
+#include "drv_mpu.h"
 #include "device_setting.h"
 #include "anti_tamper.h"
 #include "screenshot.h"
@@ -102,11 +103,17 @@ static void UiDisplayTask(void *argument)
 
     printf("start ui display loop\r\n");
     printf("LV_HOR_RES=%d,LV_VER_RES=%d\r\n", LV_HOR_RES, LV_VER_RES);
-    printf("Tampered()=%d\n", Tampered());
     g_reboot = true;
+    bool isTampered = Tampered();
     LanguageInit();
+    if (isTampered) {
+        GuiFrameOpenViewWithParam(&g_initView, &isTampered, sizeof(isTampered));
+    } else {
+        GuiFrameOpenView(&g_initView);
+    }
     GuiFrameOpenView(&g_initView);
     SetLcdBright(GetBright());
+    MpuInit();
 
     while (1) {
         RefreshLvglTickMode();
@@ -142,6 +149,21 @@ static void UiDisplayTask(void *argument)
 #ifndef BTC_ONLY
             case UI_MSG_USB_TRANSPORT_VIEW: {
                 GuiFrameOpenViewWithParam(&g_USBTransportView, rcvMsg.buffer, rcvMsg.length);
+            }
+            break;
+            case UI_MSG_USB_TRANSPORT_NEXT_VIEW: {
+                if (GuiCheckIfTopView(&g_USBTransportView)) {
+                    GuiEmitSignal(SIG_CLOSE_USB_TRANSPORT, NULL, 0);
+                }
+            }
+            break;
+            case UI_MSG_USB_HARDWARE_VIEW: {
+                bool usb = true;
+                if (GuiCheckIfTopView(&g_keyDerivationRequestView)) {
+                    GuiEmitSignal(SIG_USB_HARDWARE_CALL_PARSE_UR, NULL, 0);
+                } else {
+                    GuiFrameOpenViewWithParam(&g_keyDerivationRequestView, &usb, sizeof(usb));
+                }
             }
             break;
 #endif

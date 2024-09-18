@@ -4,6 +4,7 @@
 #include "librust_c.h"
 #include "keystore.h"
 
-void ProcessURService(EAPDURequestPayload_t payload);
+void ProcessURService(EAPDURequestPayload_t *payload);
 void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
 uint16_t GetCurrentUSParsingRequestID();
+void ClearUSBRequestId(void);

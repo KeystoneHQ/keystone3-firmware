@@ -24,6 +24,8 @@
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
+#else
+#include "drv_mpu.h"
 #endif
 
 #ifdef BTC_ONLY
@@ -507,6 +509,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             icarusMasterKey = cip3_response->data;
             ledgerBitbox02Key = ledger_bitbox02_response->data;
         }
+
 
 #ifndef BTC_ONLY
         if (isTon) {

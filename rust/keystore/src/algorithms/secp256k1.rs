@@ -4,7 +4,7 @@ use alloc::string::{String, ToString};
 
 use bitcoin::secp256k1::{ecdsa, SecretKey};
 use core::str::FromStr;
-use secp256k1::PublicKey;
+use secp256k1::{ecdh::SharedSecret, PublicKey, Secp256k1};
 
 use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpriv, Xpub};
 use third_party::bitcoin::Network;
@@ -104,6 +104,27 @@ pub fn verify_signature(
     Ok(result)
 }
 
+pub fn get_share_key(private_key: &[u8], pubkey: &[u8]) -> Result<[u8; 32]> {
+    let mut share_key = [0u8; 32];
+    let sk = SecretKey::from_slice(private_key)
+        .map_err(|e| KeystoreError::InvalidDataError(e.to_string()))?;
+    let pk = PublicKey::from_slice(pubkey)
+        .map_err(|e| KeystoreError::InvalidDataError(e.to_string()))?;
+    let shared_secret1 = SharedSecret::new(&pk, &sk);
+    share_key.copy_from_slice(&shared_secret1.as_ref());
+    Ok(share_key)
+}
+
+pub fn get_public_key(private_key: &[u8]) -> Result<[u8; 33]> {
+    let mut public_key = [0u8; 33];
+    let secp = Secp256k1::new();
+    let sk: SecretKey = SecretKey::from_slice(private_key)
+        .map_err(|e| KeystoreError::InvalidDataError(e.to_string()))?;
+    let pubkey = PublicKey::from_secret_key(&secp, &sk);
+    public_key.copy_from_slice(&pubkey.serialize());
+    Ok(public_key)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::algorithms::crypto::hmac_sha512;
@@ -197,5 +218,21 @@ mod tests {
         let signature = sign_message_hash_by_private_key(&message_hash, &test_key_bytes).unwrap();
         let result = verify_signature(&signature, &message_hash, &test_pubkey).unwrap();
         assert_eq!(result, true);
+    }
+
+    #[test]
+    fn test_public_key() {
+        let test_key_bytes = [
+            36, 152, 38, 220, 181, 219, 183, 145, 246, 234, 111, 76, 161, 118, 67, 239, 70, 95,
+            241, 130, 17, 82, 24, 232, 53, 216, 250, 63, 93, 81, 164, 129,
+        ];
+        let pubkey = get_public_key(&test_key_bytes);
+        assert_eq!(
+            [
+                2, 213, 138, 151, 18, 125, 214, 4, 96, 54, 71, 211, 23, 78, 101, 209, 5, 246, 183,
+                95, 155, 198, 44, 245, 207, 151, 251, 70, 109, 109, 101, 122, 248
+            ],
+            pubkey.unwrap()
+        );
     }
 }

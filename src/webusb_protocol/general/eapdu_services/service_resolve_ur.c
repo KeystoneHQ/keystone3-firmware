@@ -4,17 +4,21 @@
 #include "user_msg.h"
 #include "qrdecode_task.h"
 #include "gui_lock_widgets.h"
+#include "gui_resolve_ur.h"
+#include "gui_views.h"
+#include "general_msg.h"
+#include "gui_key_derivation_request_widgets.h"
 
 /* DEFINES */
-#define REQUEST_ID_IDLE 0
+#define REQUEST_ID_IDLE 0xFFFF
 
 /* TYPEDEFS */
 
 /* FUNC DECLARATION*/
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
-static uint8_t *DataParser(EAPDURequestPayload_t *payload);
-static bool CheckURAcceptable(EAPDURequestPayload_t payload);
+static bool CheckURAcceptable(void);
 static void GotoFailPage(StatusEnum error_code, const char *error_message);
+bool GuiIsSetup(void);
 
 /* STATIC VARIABLES */
 static uint16_t g_requestID = REQUEST_ID_IDLE;
@@ -41,20 +45,20 @@ static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t reque
     SRAM_FREE(payload);
 };
 
-static uint8_t *DataParser(EAPDURequestPayload_t *payload)
-{
-    return payload->data;
-}
-
-static bool CheckURAcceptable(EAPDURequestPayload_t payload)
+static bool CheckURAcceptable(void)
 {
     if (GuiLockScreenIsTop()) {
         const char *data = "Device is locked";
         HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
         return false;
     }
+    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
+        const char *data = "Ton wallet is not supported";
+        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
+        return false;
+    }
     // Only allow URL parsing on specific pages
-    if (!GuiHomePageIsTop()) {
+    if (GuiIsSetup()) {
         const char *data = "Export address is just allowed on specific pages";
         HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
         return false;
@@ -75,12 +79,17 @@ static void GotoFailPage(StatusEnum error_code, const char *error_message)
 
 void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
 {
-    BasicHandlerFunc(data, data_len, requestID, status);
+    StatusEnum sendStatus = status;
+    if (status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
+        sendStatus = RSP_SUCCESS_CODE;
+    }
+
+    BasicHandlerFunc(data, data_len, requestID, sendStatus);
     EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
     resultPage->command = CMD_RESOLVE_UR;
     resultPage->error_code = status;
     resultPage->error_message = (char *)data;
-    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR) {
+    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR || status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
         return;
     }
     GotoResultPage(resultPage);
@@ -91,28 +100,58 @@ uint16_t GetCurrentUSParsingRequestID()
     return g_requestID;
 };
 
-void ProcessURService(EAPDURequestPayload_t payload)
+void ClearUSBRequestId(void)
+{
+    g_requestID = REQUEST_ID_IDLE;
+}
+
+void ProcessURService(EAPDURequestPayload_t *payload)
 {
 #ifndef COMPILE_SIMULATOR
     if (g_requestID != REQUEST_ID_IDLE) {
         const char *data = "Previous request is not finished";
-        HandleURResultViaUSBFunc(data, strlen(data), payload.requestID, PRS_PARSING_DISALLOWED);
+        HandleURResultViaUSBFunc(data, strlen(data), payload->requestID, PRS_PARSING_DISALLOWED);
         return;
     } else {
-        g_requestID = payload.requestID;
+        g_requestID = payload->requestID;
     }
 
-    if (!CheckURAcceptable(payload)) {
+    if (!CheckURAcceptable()) {
         return;
     }
-    struct URParseResult *urResult = parse_ur((char *)DataParser(&payload));
+    struct URParseResult *urResult = parse_ur((char *)payload->data);
     if (urResult->error_code != 0) {
         HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), g_requestID, PRS_PARSING_ERROR);
         return;
     }
-    UrViewType_t urViewType = {0, 0};
+    UrViewType_t urViewType;
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
+    if (urResult->ur_type == QRHardwareCall) {
+        GuiSetKeyDerivationRequestData(urResult, NULL, false);
+        PubValueMsg(UI_MSG_USB_HARDWARE_VIEW, 0);
+        return;
+    } else {
+        if (!GuiHomePageIsTop()) {
+            if (GuiCheckIfTopView(&g_USBTransportView)) {
+                PubValueMsg(UI_MSG_USB_TRANSPORT_NEXT_VIEW, 0);
+                UserDelay(200);
+            } else {
+                const char *data = "Export address is just allowed on specific pages";
+                HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
+                g_requestID = REQUEST_ID_IDLE;
+                return;
+            }
+        }
+
+    }
+
+    // just btc/eth/sol
+    if (!CheckViewTypeIsAllow(urViewType.viewType)) {
+        const char *data = "this view type is not supported";
+        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, RSP_FAILURE_CODE);
+        return;
+    }
     HandleDefaultViewType(urResult, NULL, urViewType, false);
     PtrT_TransactionCheckResult checkResult = CheckUrResult(urViewType.viewType);
     if (checkResult != NULL && checkResult->error_code == 0) {

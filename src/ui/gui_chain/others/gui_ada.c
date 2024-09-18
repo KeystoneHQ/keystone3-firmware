@@ -11,6 +11,7 @@
 #include "gui_hintbox.h"
 #include "gui.h"
 #include "user_memory.h"
+#include "drv_mpu.h"
 
 #define ADA_ADD_MAX_LEN             (150)
 

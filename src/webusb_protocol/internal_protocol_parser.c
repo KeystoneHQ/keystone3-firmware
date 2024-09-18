@@ -17,7 +17,6 @@ static uint8_t *ProtocolParse(const uint8_t *inData, uint32_t inLen, uint32_t *o
 typedef struct {
     uint8_t serviceId;
     uint8_t commandIdNum;
-    // uint8_t funcNum;
     const ProtocolServiceCallbackFunc_t *func;
 } ProtocolService_t;
 
@@ -31,7 +30,6 @@ static const ProtocolService_t g_ProtocolServiceList[] = {
 
 void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
 {
-    printf("InternalProtocol_Parse start\n");
     if (g_sendFunc == NULL) {
         printf("err, g_sendFunc == NULL\n");
         return;
@@ -44,25 +42,25 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
 
     for (i = 0; i < len; i++) {
         if (global_parser->rcvCount == 0) {
-            printf("loop head\n");
+            // printf("loop head\n");
             if (data[i] == PROTOCOL_HEADER) {
                 g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
                 global_parser->rcvCount++;
-                printf("head\n");
+                // printf("head\n");
             }
         } else if (global_parser->rcvCount == 9) {
-            printf("loop length\n");
+            // printf("loop length\n");
             // length
             g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
             global_parser->rcvCount++;
             rcvLen = ((uint32_t)g_protocolRcvBuffer[9] << 8) + g_protocolRcvBuffer[8];
             assert(rcvLen <= (PROTOCOL_MAX_LENGTH - 14));
-            printf("rcvLen=%d\n", rcvLen);
+            // printf("rcvLen=%d\n", rcvLen);
         } else if (global_parser->rcvCount == rcvLen + 13) {
-            printf("loop crc\n");
+            // printf("loop crc\n");
             g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
             global_parser->rcvCount = 0;
-            printf("full frame,len=%d\n", rcvLen + 14);
+            // printf("full frame,len=%d\n", rcvLen + 14);
             sendBuf = ProtocolParse(g_protocolRcvBuffer, rcvLen + 14, &outLen);
             if (sendBuf) {
                 g_sendFunc(sendBuf, outLen);
@@ -73,7 +71,6 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
             global_parser->rcvCount++;
         }
     }
-    printf("InternalProtocol_Parse end\n");
 }
 
 static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)

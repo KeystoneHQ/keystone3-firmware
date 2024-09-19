@@ -1,13 +1,13 @@
 use alloc::string::String;
 use alloc::vec::Vec;
 
-use borsh::{from_slice, BorshDeserialize};
+use borsh::{BorshDeserialize, from_slice};
 use serde_derive::Serialize;
 
 use crate::solana_lib::solana_program::errors::ProgramError;
 use crate::solana_lib::solana_program::pubkey::Pubkey;
 use crate::solana_lib::squads_v4::errors::SquadsV4Error;
-use crate::solana_lib::squads_v4::util::{sighash, SIGHASH_GLOBAL_NAMESPACE};
+use crate::solana_lib::traits::Dispatch;
 
 #[derive(BorshDeserialize, Serialize, Debug, Default, Clone)]
 #[borsh(crate = "borsh")]
@@ -92,11 +92,7 @@ pub enum SquadsInstructions {
     VaultTransactionCreate(VaultTransactionCreateArgs),
     VaultTransactionExecute,
 }
-pub trait Dispatch {
-    fn dispatch(data: &[u8]) -> Result<Self, ProgramError>
-    where
-        Self: Sized;
-}
+
 impl Dispatch for SquadsInstructions {
     fn dispatch(instrucion_data: &[u8]) -> Result<Self, ProgramError> {
         let data = instrucion_data;
@@ -161,6 +157,8 @@ impl Dispatch for SquadsInstructions {
 #[cfg(test)]
 mod tests {
     use std::prelude::rust_2024::ToString;
+
+    use crate::solana_lib::utils::{sighash, SIGHASH_GLOBAL_NAMESPACE};
 
     use super::*;
 

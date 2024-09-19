@@ -42,6 +42,7 @@ impl Read<Account> for Account {
     }
 }
 
+#[derive(Clone)]
 pub struct BlockHash {
     pub value: Vec<u8>,
 }
@@ -57,6 +58,8 @@ impl Read<BlockHash> for BlockHash {
     }
 }
 
+
+#[derive(Clone)]
 pub struct Message {
     pub is_versioned: bool,
     pub header: MessageHeader,
@@ -183,6 +186,7 @@ impl Message {
     }
 }
 
+#[derive(Clone)]
 pub struct MessageHeader {
     pub num_required_signatures: u8,
     pub num_readonly_signed_accounts: u8,
@@ -213,7 +217,7 @@ impl Read<u8> for u8 {
         Ok(raw.remove(0))
     }
 }
-
+#[derive(Clone)]
 pub struct MessageAddressTableLookup {
     pub account_key: Account,
     pub writable_indexes: Vec<u8>,

@@ -146,8 +146,7 @@ LV_IMG_DECLARE(imgInfoSmall);
 LV_IMG_DECLARE(imgNft);
 LV_IMG_DECLARE(imgWIF);
 LV_IMG_DECLARE(imgSoftwareWallet);
-
-
+LV_IMG_DECLARE(imgJupiter);
 
 // emoji
 LV_IMG_DECLARE(emojiAlien);
@@ -310,7 +309,6 @@ LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);
 LV_IMG_DECLARE(walletListBtcSparrow);
 LV_IMG_DECLARE(walletListBtcNunchuk);
-
 
 // font
 LV_FONT_DECLARE(openSans_20);

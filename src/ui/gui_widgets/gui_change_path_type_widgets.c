@@ -12,11 +12,7 @@ static const PathItem_t g_ethPaths[] = {
     {"Ledger Live",             "",     "m/44'/60'"     },
     {"Ledger Legacy",           "",     "m/44'/60'/0'"  },
 };
-static const PathItem_t g_solPaths[] = {
-    {"Account-based Path",      "",     "m/44'/501'"  },
-    {"Single Account Path",     "",     "m/44'/501'"  },
-    {"Sub-account Path",        "",     "m/44'/501'"  },
-};
+
 typedef struct {
     uint32_t index;
     char address[ADDRESS_MAX_LEN];
@@ -79,7 +75,6 @@ void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent, HOME_WALLET_CARD_ENUM chain
 
     lv_obj_t *cont, *line, *label;
     static lv_point_t points[2] =  {{0, 0}, {360, 0}};
-    char string[BUFFER_SIZE_64];
     char lableText[BUFFER_SIZE_128] = {0};
     GetChangePathLabelHint(lableText);
     lv_obj_t *scrollCont = GuiCreateContainerWithParent(parent, 408, 542);

@@ -21,6 +21,7 @@
 #include "account_manager.h"
 #include "log_print.h"
 #include "version.h"
+#include "gui_pending_hintbox.h"
 
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;

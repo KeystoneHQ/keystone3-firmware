@@ -18,7 +18,6 @@ static int32_t GuiTonMnemonicHintViewDeInit(void)
 
 int32_t GuiTonMnemonicHintViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
-    uint8_t viewType = 0;
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
         return GuiTonMnemonicHintViewInit();

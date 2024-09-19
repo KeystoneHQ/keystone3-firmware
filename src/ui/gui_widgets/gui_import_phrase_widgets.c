@@ -61,18 +61,6 @@ static void ImportPhraseWordsHandler(lv_event_t* e)
 }
 
 
-static void GuiImportMultiCoinMnemonicHandler(lv_event_t *e)
-{
-    GUI_DEL_OBJ(g_noticeWindow)
-    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-    Bip39Data_t bip39 = {
-        .wordCnt = 24,
-        .forget = false,
-    };
-    GuiModelBip39CalWriteSe(bip39);
-    GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
-}
-
 static void GuiInputPhraseWidget(lv_obj_t *parent)
 {
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);

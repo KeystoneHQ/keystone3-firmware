@@ -156,7 +156,6 @@ static void GuiResolveUrResultViewInit()
     ResolveUrInfo_t info = CalcResolveUrPageInfo();
     const char *title = info.title;
     const char *subTitle = info.subTitle;
-    const char *buttonText = info.buttonText;
     lv_color_t buttonColor = ORANGE_COLOR;
     lv_obj_t *img = NULL;
     if (g_param->error_code != 0) {

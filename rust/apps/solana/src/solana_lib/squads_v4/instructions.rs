@@ -1,7 +1,7 @@
 use alloc::string::String;
 use alloc::vec::Vec;
 
-use borsh::{BorshDeserialize, from_slice};
+use borsh::{from_slice, BorshDeserialize};
 use serde_derive::Serialize;
 
 use crate::solana_lib::solana_program::errors::ProgramError;

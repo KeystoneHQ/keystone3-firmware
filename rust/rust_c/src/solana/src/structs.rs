@@ -144,7 +144,10 @@ pub struct DisplaySolanaTxOverviewJupiterV6Swap {
     pub slippage_bps: PtrString,
     pub platform_fee_bps: PtrString,
 }
-impl_c_ptrs!(DisplaySolanaTxOverviewJupiterV6Swap, JupiterV6SwapTokenInfoOverview);
+impl_c_ptrs!(
+    DisplaySolanaTxOverviewJupiterV6Swap,
+    JupiterV6SwapTokenInfoOverview
+);
 
 impl Free for JupiterV6SwapTokenInfoOverview {
     fn free(&self) {
@@ -172,8 +175,6 @@ impl Free for DisplaySolanaTxOverviewJupiterV6Swap {
     }
 }
 
-
-
 #[repr(C)]
 pub struct DisplaySolanaTxOverview {
     // `Transfer`, `Vote`, `General`, `Unknown`
@@ -197,8 +198,8 @@ pub struct DisplaySolanaTxOverview {
     pub squads_proposal: PtrT<VecFFI<DisplaySolanaTxProposalOverview>>,
     // spl token transfer
     pub spl_token_transfer: PtrT<DisplaySolanaTxSplTokenTransferOverview>,
-    
-    // jupiter_v6 swap 
+
+    // jupiter_v6 swap
     pub jupiter_v6_swap: PtrT<DisplaySolanaTxOverviewJupiterV6Swap>,
 }
 
@@ -503,19 +504,39 @@ impl From<&ParsedSolanaTx> for DisplaySolanaTxOverview {
                             program_address: convert_c_char(overview.program_address.to_string()),
                             instruction_name: convert_c_char(overview.instruction_name.to_string()),
                             token_a_overview: JupiterV6SwapTokenInfoOverview {
-                                token_name: convert_c_char(overview.token_a_overview.token_name.to_string()),
-                                token_symbol: convert_c_char(overview.token_a_overview.token_symbol.to_string()),
-                                token_address: convert_c_char(overview.token_a_overview.token_address.to_string()),
-                                token_amount: convert_c_char(overview.token_a_overview.token_amount.to_string()),
-                                exist_in_address_lookup_table: overview.token_a_overview.exist_in_address_lookup_table,
+                                token_name: convert_c_char(
+                                    overview.token_a_overview.token_name.to_string(),
+                                ),
+                                token_symbol: convert_c_char(
+                                    overview.token_a_overview.token_symbol.to_string(),
+                                ),
+                                token_address: convert_c_char(
+                                    overview.token_a_overview.token_address.to_string(),
+                                ),
+                                token_amount: convert_c_char(
+                                    overview.token_a_overview.token_amount.to_string(),
+                                ),
+                                exist_in_address_lookup_table: overview
+                                    .token_a_overview
+                                    .exist_in_address_lookup_table,
                             }
                             .c_ptr(),
                             token_b_overview: JupiterV6SwapTokenInfoOverview {
-                                token_name: convert_c_char(overview.token_b_overview.token_name.to_string()),
-                                token_symbol: convert_c_char(overview.token_b_overview.token_symbol.to_string()),
-                                token_address: convert_c_char(overview.token_b_overview.token_address.to_string()),
-                                token_amount: convert_c_char(overview.token_b_overview.token_amount.to_string()),
-                                exist_in_address_lookup_table: overview.token_b_overview.exist_in_address_lookup_table,
+                                token_name: convert_c_char(
+                                    overview.token_b_overview.token_name.to_string(),
+                                ),
+                                token_symbol: convert_c_char(
+                                    overview.token_b_overview.token_symbol.to_string(),
+                                ),
+                                token_address: convert_c_char(
+                                    overview.token_b_overview.token_address.to_string(),
+                                ),
+                                token_amount: convert_c_char(
+                                    overview.token_b_overview.token_amount.to_string(),
+                                ),
+                                exist_in_address_lookup_table: overview
+                                    .token_b_overview
+                                    .exist_in_address_lookup_table,
                             }
                             .c_ptr(),
                             slippage_bps: convert_c_char(overview.slippage_bps.to_string()),
@@ -526,7 +547,6 @@ impl From<&ParsedSolanaTx> for DisplaySolanaTxOverview {
                     };
                 }
             }
-            
 
             SolanaTxDisplayType::Unknown => {
                 if let SolanaOverview::Instructions(overview) = &value.overview {

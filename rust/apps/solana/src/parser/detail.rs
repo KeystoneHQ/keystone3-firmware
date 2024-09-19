@@ -1,8 +1,8 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
+use serde::{Serialize, Serializer};
 
 use crate::solana_lib::jupiter_v6::instructions::{
     ExactOutRouteArgs, RouteArgs, SharedAccountsExactOutRouteArgs, SharedAccountsRouteArgs,

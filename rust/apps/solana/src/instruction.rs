@@ -2,15 +2,15 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
 use crate::compact::Compact;
-use crate::errors::{Result, SolanaError};
 use crate::errors::SolanaError::ProgramError;
+use crate::errors::{Result, SolanaError};
 use crate::parser::detail::SolanaDetail;
-use crate::Read;
 use crate::resolvers;
 use crate::solana_lib::solana_program::stake::instruction::StakeInstruction;
 use crate::solana_lib::solana_program::system_instruction::SystemInstruction;
 use crate::solana_lib::solana_program::vote::instruction::VoteInstruction;
 use crate::solana_lib::traits::Dispatch;
+use crate::Read;
 #[derive(Debug, Clone)]
 pub struct Instruction {
     pub(crate) program_index: u8,
@@ -61,9 +61,7 @@ impl SupportedProgram {
                 Ok(SupportedProgram::TokenLendingProgram)
             }
             "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf" => Ok(SupportedProgram::SquadsProgramV4),
-            "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4" => {
-                Ok(SupportedProgram::JupiterProgramV6)
-            }
+            "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4" => Ok(SupportedProgram::JupiterProgramV6),
             x => Err(SolanaError::UnsupportedProgram(x.to_string())),
         }
     }

@@ -155,7 +155,7 @@ mod tests {
 
         let sig_hash = sighash(SIGHASH_GLOBAL_NAMESPACE, "exact_out_route");
         assert_eq!("d033ef977b2bed5c", hex::encode(sig_hash));
-        
+
         let sig_hash = sighash(SIGHASH_GLOBAL_NAMESPACE, "shared_accounts_exact_out_route");
         assert_eq!("b0d169a89a7d453e", hex::encode(sig_hash));
     }

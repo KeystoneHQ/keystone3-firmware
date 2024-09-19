@@ -58,7 +58,6 @@ impl Read<BlockHash> for BlockHash {
     }
 }
 
-
 #[derive(Clone)]
 pub struct Message {
     pub is_versioned: bool,

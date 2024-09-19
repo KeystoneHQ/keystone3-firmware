@@ -1,7 +1,7 @@
 use alloc::string::String;
 use alloc::vec::Vec;
 
-use borsh::{BorshDeserialize, from_slice};
+use borsh::{from_slice, BorshDeserialize};
 use serde_derive::Serialize;
 
 use crate::solana_lib::solana_program::errors::ProgramError;
@@ -232,7 +232,9 @@ impl Dispatch for JupiterInstructions {
             }
             "e517cb977ae3ad2a" => {
                 // route methodId = sighash(SIGHASH_GLOBAL_NAMESPACE, "route")
-                Ok(JupiterInstructions::Route(from_slice::<RouteArgs>(ix_data).unwrap()))
+                Ok(JupiterInstructions::Route(
+                    from_slice::<RouteArgs>(ix_data).unwrap(),
+                ))
             }
             "d033ef977b2bed5c" => {
                 // exactOutRoute methodId = sighash(SIGHASH_GLOBAL_NAMESPACE, "exact_out_route")
@@ -374,7 +376,10 @@ mod tests {
             }
           }
         });
-        println!("66 {}", serde_json::to_string_pretty(&msg_detail[5].clone()).unwrap());
+        println!(
+            "66 {}",
+            serde_json::to_string_pretty(&msg_detail[5].clone()).unwrap()
+        );
         assert_eq!(
             expect_msg_detail,
             serde_json::to_value(msg_detail[5].clone()).unwrap()
@@ -769,7 +774,7 @@ mod tests {
         for account in message_normal_accounts {
             all_accounts.push(bitcoin::base58::encode(account.value.as_slice()));
         }
-        for account in message_alt.clone(){
+        for account in message_alt.clone() {
             all_accounts.push(bitcoin::base58::encode(
                 account.account_key.value.as_slice(),
             ));

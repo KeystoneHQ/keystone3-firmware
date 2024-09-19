@@ -121,7 +121,6 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e);
 static void SetKeyboardValid(bool validation);
 static void UpdateConfirmIndexBtn(void);
 static void RefreshSwitchAddress(void);
-static bool IsIndexSelectChanged();
 static uint32_t* GetCosmosChainCurrentSelectIndex();
 
 static StandardReceiveWidgets_t g_standardReceiveWidgets;
@@ -207,10 +206,7 @@ static void UpdateConfirmIndexBtn(void)
     UpdateConfirmBtn();
 }
 
-static bool IsIndexSelectChanged()
-{
-    return g_tmpIndex != g_selectedIndex[GetCurrentAccountIndex()];
-}
+
 static void RefreshSwitchAddress(void)
 {
     AddressDataItem_t addressDataItem;

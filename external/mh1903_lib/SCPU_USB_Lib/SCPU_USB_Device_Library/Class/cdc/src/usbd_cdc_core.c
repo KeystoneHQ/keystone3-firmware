@@ -14,6 +14,7 @@
 #include "protocol_parse.h"
 #include "assert.h"
 #include "user_msg.h"
+#include "drv_usb.h"
 
 /** @defgroup usbd_cdc
  * @brief usbd core module

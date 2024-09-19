@@ -1,5 +1,9 @@
 #include "service_export_address.h"
 #include "user_msg.h"
+#include "user_utils.h"
+#include "gui.h"
+#include "gui_lock_widgets.h"
+#include "gui_home_widgets.h"
 // #include "gui_lock_widgets.h"
 
 /* DEFINES */

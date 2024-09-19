@@ -14,10 +14,6 @@
 
 #define PROTOCOL_PARSE_OVERTIME 500
 
-// Function declarations for better organization
-static struct ProtocolParser *SelectParser(const uint8_t *data);
-static void InitializeParser(struct ProtocolParser **parser, const uint8_t *data, ProtocolSendCallbackFunc_t sendFunc);
-
 void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbackFunc_t sendFunc)
 {
     static uint32_t lastTick = 0;

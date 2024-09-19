@@ -82,10 +82,8 @@ static void ShowEgAddressCont(lv_obj_t *egCont);
 static void OpenDerivationPath();
 static void ChangeDerivationPathHandler(lv_event_t *e);
 static void UpdateConfirmBtn(bool update);
-static bool IsSelectChanged(void);
 static void SetAccountType(uint8_t index);
 static bool IsCardano();
-static void GuiConnectUsbNVSBarInit(void);
 static void GuiConnectUsbEntranceWidget(lv_obj_t *parent);
 static void GuiConnectUsbCreateImg(lv_obj_t *parent);
 static void RejectButtonHandler(lv_event_t *e);
@@ -112,17 +110,6 @@ void FreeKeyDerivationRequestMemory(void)
         g_response = NULL;
     }
 }
-
-#ifndef BTC_ONLY
-static TransactionMode GetCurrentTransactionMode(void)
-{
-    uint16_t requestID = GetCurrentUSParsingRequestID();
-    if (requestID != 0xFFFF) {
-        return TRANSACTION_MODE_USB;
-    }
-    return TRANSACTION_MODE_QR_CODE;
-}
-#endif
 
 static void RecalcCurrentWalletIndex(char *origin)
 {

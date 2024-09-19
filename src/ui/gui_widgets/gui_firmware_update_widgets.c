@@ -603,20 +603,6 @@ static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent)
     g_knownWarningBtn = btn;
 }
 
-static void StartKnownWarningCountDownTimer(void)
-{
-    char text[32];
-    g_knownWarningCountDown = 5;
-    if (g_knownWarningCountDownTimer != NULL) {
-        lv_timer_del(g_knownWarningCountDownTimer);
-    }
-    lv_obj_clear_flag(g_knownWarningBtn, LV_OBJ_FLAG_CLICKABLE);
-    snprintf_s(text, sizeof(text), "%s(5)", _("firmware_update_btc_only_button_i_know"));
-    lv_label_set_text(lv_obj_get_child(g_knownWarningBtn, 0), text);
-    lv_obj_set_style_bg_opa(g_knownWarningBtn, LV_OPA_60, LV_PART_MAIN);
-    g_knownWarningCountDownTimer = lv_timer_create(KnownWarningCountDownTimerHandler, 1000, NULL);
-}
-
 static void KnownWarningCountDownTimerHandler(lv_timer_t *timer)
 {
     lv_obj_t *btn = g_knownWarningBtn;

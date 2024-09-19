@@ -291,7 +291,7 @@ static int GetMaxAddressIndex(void)
     case CHAIN_XRP:
         return 200;
     case CHAIN_ADA:
-        return 20;
+        return 23;
 #endif
     default:
         return 999999999;

@@ -48,6 +48,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_RABBY, &walletListRabby, true},
     {WALLET_LIST_BITGET, &walletListBitget, true},
     {WALLET_LIST_ETERNL, &walletListEternl, true},
+    {WALLET_LIST_VESPR, &walletListVespr, true},
     {WALLET_LIST_BEGIN, &walletListBegin, true},
     {WALLET_LIST_UNISAT, &walletListUniSat, true},
     {WALLET_LIST_NIGHTLY, &walletListNightly, true},
@@ -61,7 +62,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
     {WALLET_LIST_MINT_SCAN, &walletListMintScan, true},
     {WALLET_LIST_ARCONNECT, &walletListArConnect, true},
-    {WALLET_LIST_VESPR, &walletListVespr, true},
     {WALLET_LIST_XBULL, &walletListXBull, true},
     {WALLET_LIST_IMTOKEN, &walletListImToken, true},
     {WALLET_LIST_FEWCHA, &walletListFewcha, true},
@@ -1008,7 +1008,7 @@ static void AddChainAddress(void)
 
     char name[BUFFER_SIZE_32] = {0};
     snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
-               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)) + 1);
+               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
     lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 

@@ -1597,6 +1597,8 @@ static void GetEgAddress(void)
 {
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_SOLFARE:
+        GetSolEgAddress();
+        break;
     case WALLET_LIST_HELIUM:
         GetSolEgAddress();
         break;
@@ -1785,9 +1787,9 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     label = GuiCreateIllustrateLabel(egCont, "");
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     g_egAddress[0] = label;
-
-    if (!(g_connectWalletTileView.walletIndex == WALLET_LIST_SOLFARE || g_connectWalletTileView.walletIndex == WALLET_LIST_HELIUM &&
-            GetCurrentSelectedIndex() == SOLBip44ROOT)) {
+    // if current wallet is solana wallet and the current selected index is not root path, then show the second example address
+    if ((g_connectWalletTileView.walletIndex == WALLET_LIST_SOLFARE || g_connectWalletTileView.walletIndex == WALLET_LIST_HELIUM) &&
+            GetCurrentSelectedIndex() != SOLBip44ROOT) {
         index = GuiCreateNoticeLabel(egCont, _("1"));
         lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);

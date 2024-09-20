@@ -30,6 +30,8 @@
 #include "qrdecode_task.h"
 #include "touchpad_task.h"
 #include "background_task.h"
+#include "fetch_sensitive_data_task.h"
+#include "data_parser_task.h"
 #include "log_task.h"
 #include "usb_task.h"
 #include "user_fatfs.h"
@@ -114,7 +116,6 @@ int _write(int fd, char *pBuffer, int size)
     for (int i = 0; i < size; i++) {
         while (!UART_IsTXEmpty(UART0));
 #ifdef BUILD_PRODUCTION
-        // disable any log info on the production mode
         UART_SendData(UART0, '-');
 #else
         UART_SendData(UART0, (uint8_t) pBuffer[i]);

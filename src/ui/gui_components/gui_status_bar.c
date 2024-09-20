@@ -357,12 +357,12 @@ uint8_t GetCurrentDisplayPercent(void)
     return g_currentDisplayPercent;
 }
 
-static int GetDisplayPercent(int actual_percent, bool charging)
+static int GetDisplayPercent(int actualPercent, bool charging)
 {
     static const int thresholds[] = {20, 40, 60, 80, 100};
-    static const int display_values_discharge[] = {20, 40, 60, 80, 100};
-    static const int display_values_charge[] = {0, 20, 40, 60, 80};
-    static int last_display_percent = -1;
+    static const int displayValuesDischarge[] = {20, 40, 60, 80, 100};
+    static const int displayValuesCharge[] = {0, 20, 40, 60, 80};
+    static int lastDisplayPercent = -1;
     static int g_highestPercent = 100;
     static int g_lowestPercent = 0;
     uint8_t currentPercent = 0;
@@ -370,24 +370,27 @@ static int GetDisplayPercent(int actual_percent, bool charging)
     int size = sizeof(thresholds) / sizeof(thresholds[0]);
 
     for (int i = 0; i < size; i++) {
-        if (actual_percent <= thresholds[i]) {
+        if (actualPercent <= thresholds[i]) {
             if (charging) {
-                currentPercent = display_values_charge[i];
+                currentPercent = displayValuesCharge[i];
             } else {
-                currentPercent = display_values_discharge[i];
-                printf("currentPercent %d\n", currentPercent);
+                currentPercent = displayValuesDischarge[i];
             }
             break;
         }
     }
 
-    if ((charging && actual_percent == 100)) {
+    if ((charging && actualPercent == 100)) {
         currentPercent = 100;
         g_currentDisplayPercent = currentPercent;
     }
 
     if (g_currentDisplayPercent == -1) {
-        g_currentDisplayPercent = currentPercent;
+        if (currentPercent <= 20) {
+            g_currentDisplayPercent = 20;
+        } else {
+            g_currentDisplayPercent = currentPercent;
+        }
     }
 
     if (charging) {

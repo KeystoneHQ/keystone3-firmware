@@ -5,7 +5,6 @@
 #include "stdbool.h"
 
 void CreateDataParserTask(void);
-void TestMpu(void);
 uint8_t *GetDataParserPubKey(void);
 uint8_t *GetDeviceParserPubKey(uint8_t *webPub, uint16_t len);
 void DataEncrypt(uint8_t *data, uint16_t len);

@@ -1,9 +1,9 @@
 #include "drv_mpu.h"
 #include "drv_otp.h"
 
-bool g_otpProtect = false;
-extern uint32_t _sbss;    // .bss段的起始地址
-extern uint32_t _ebss;      // .bss段的结束地址
+static bool g_otpProtect = false;
+extern uint32_t _sbss;
+extern uint32_t _ebss;
 
 void MpuDisable(void)
 {
@@ -99,16 +99,16 @@ bool GetOtpProtection(void)
     return g_otpProtect;
 }
 
-// void MpuSetOtpProtection(bool noAccess)
-// {
-//     uint8_t accessPermission = noAccess ? MPU_REGION_NO_ACCESS : MPU_REGION_FULL_ACCESS;
-//     MpuSetProtection(OTP_ADDR_BASE,
-//                      MPU_REGION_SIZE_1KB,
-//                      MPU_REGION_NUMBER1,
-//                      MPU_INSTRUCTION_ACCESS_DISABLE,
-//                      accessPermission,
-//                      MPU_ACCESS_SHAREABLE,
-//                      MPU_ACCESS_CACHEABLE,
-//                      MPU_ACCESS_BUFFERABLE);
-// }
+void MpuSetOtpProtection(bool noAccess)
+{
+    uint8_t accessPermission = noAccess ? MPU_REGION_NO_ACCESS : MPU_REGION_FULL_ACCESS;
+    MpuSetProtection(OTP_ADDR_BASE,
+                     MPU_REGION_SIZE_1KB,
+                     MPU_REGION_NUMBER1,
+                     MPU_INSTRUCTION_ACCESS_DISABLE,
+                     accessPermission,
+                     MPU_ACCESS_SHAREABLE,
+                     MPU_ACCESS_CACHEABLE,
+                     MPU_ACCESS_BUFFERABLE);
+}
 

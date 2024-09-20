@@ -53,6 +53,7 @@ static lv_obj_t *g_egAddressIndex[2];
 static lv_obj_t *g_egAddress[2];
 static char g_derivationPathAddr[2][2][BUFFER_SIZE_128];
 static bool g_isUsb = false;
+static bool g_isUsbPassWordCheck = false;
 
 static void RecalcCurrentWalletIndex(char *origin);
 
@@ -129,6 +130,7 @@ static void RecalcCurrentWalletIndex(char *origin)
 void GuiKeyDerivationRequestInit(bool isUsb)
 {
     g_isUsb = isUsb;
+    g_isUsbPassWordCheck = false;
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
     g_keyDerivationTileView.pageWidget = CreatePageWidget();
     g_keyDerivationTileView.cont = g_keyDerivationTileView.pageWidget->contentZone;
@@ -317,8 +319,10 @@ void GuiKeyDerivationRequestPrevTile()
 
 void UpdateAndParseHardwareCall(void)
 {
-    ModelParseQRHardwareCall();
-    HiddenKeyboardAndShowAnimateQR();
+    if (strnlen_s(SecretCacheGetPassword(), PASSWORD_MAX_LEN) != 0 && g_isUsbPassWordCheck) {
+        ModelParseQRHardwareCall();
+        HiddenKeyboardAndShowAnimateQR();
+    }
 }
 
 static void ModelParseQRHardwareCall()
@@ -705,6 +709,7 @@ void HiddenKeyboardAndShowAnimateQR()
         if (g_keyboardWidget != NULL) {
             GuiConnectUsbPasswordPass();
         }
+        g_isUsbPassWordCheck = true;
         UREncodeResult *urResult = ModelGenerateSyncUR();
         HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), PRS_EXPORT_HARDWARE_CALL_SUCCESS);
         free_ur_encode_result(urResult);

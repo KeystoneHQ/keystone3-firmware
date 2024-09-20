@@ -114,6 +114,10 @@ pub extern "C" fn aes256_decrypt_primes(
     let (key, iv) = generate_aes_key_iv(seed);
     match aes256_decrypt(&key, &iv, data) {
         Ok(decrypted_data) => {
+            if decrypted_data.len() != 512 {
+                return SimpleResponse::from(RustCError::InvalidData("invalid primes".to_string()))
+                    .simple_c_ptr();
+            }
             let mut result_bytes: [u8; 512] = [0; 512];
             result_bytes.copy_from_slice(&decrypted_data);
             SimpleResponse::success(Box::into_raw(Box::new(result_bytes)) as *mut u8).simple_c_ptr()

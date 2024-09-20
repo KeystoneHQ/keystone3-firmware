@@ -607,35 +607,15 @@ static void GuiShowJupiterV6SwapOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
         lv_obj_align_to(info_icon, amountValueLabel, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
         static SolanaLearnMoreData_t tokenAmountLearnMoredata;
         tokenAmountLearnMoredata.title = "Token Amount";
-        // if current instruction name is "Route" we show a different desc
-        if (strcmp(jupiterV6SwapOverview->instruction_name, "Route") == 0) {
+        // if current instruction name is "JupiterV6Route" we show a different desc
+        if (strcmp(jupiterV6SwapOverview->instruction_name, "JupiterV6Route") == 0) {
             tokenAmountLearnMoredata.content = _("instruction_does_not_contain_token_info");
         } else {
             tokenAmountLearnMoredata.content = _("token_in_alt_desc");
         }
         lv_obj_add_event_cb(info_icon, learn_more_click_event_handler, LV_EVENT_CLICKED, &tokenAmountLearnMoredata);
     }
-    // mint account label
-    lv_obj_t * mintAccountLabel = lv_label_create(swapOverviewContainer);
-    lv_label_set_text(mintAccountLabel, "Mint Account");
-    SetTitleLabelStyle(mintAccountLabel);
-    // mint account value
-    lv_obj_t * mintAccountValueLabel = lv_label_create(swapOverviewContainer);
-    lv_label_set_text(mintAccountValueLabel, jupiterV6SwapOverview->token_a_overview->token_address);
-    lv_label_set_long_mode(mintAccountValueLabel, LV_LABEL_LONG_WRAP);
-    lv_obj_set_width(mintAccountValueLabel, lv_pct(90));
-    SetContentLableStyle(mintAccountValueLabel);
 
-    lv_obj_t * checkTokenAMintAccountLabel = lv_label_create(swapOverviewContainer);
-    lv_label_set_text(checkTokenAMintAccountLabel, "Check Token Account");
-    lv_obj_set_style_text_color(checkTokenAMintAccountLabel, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
-
-    lv_obj_t * checkTokenAMintAccountIcon = GuiCreateImg(swapOverviewContainer, &imgQrcodeTurquoise);
-
-    lv_obj_add_flag(checkTokenAMintAccountIcon, LV_OBJ_FLAG_CLICKABLE);
-    static SolanaAddressLearnMoreData learnMoreData;
-    learnMoreData.address = jupiterV6SwapOverview->token_a_overview->token_address;
-    lv_obj_add_event_cb(checkTokenAMintAccountIcon, SolanaSplTokenAddressLearnMore, LV_EVENT_CLICKED, &learnMoreData);
     // TokenB
     lv_obj_t * toLabel = lv_label_create(swapOverviewContainer);
     lv_label_set_text(toLabel, "To");
@@ -644,6 +624,27 @@ static void GuiShowJupiterV6SwapOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
     if (strcmp(jupiterV6SwapOverview->instruction_name, "JupiterV6Route") == 0) {
         lv_obj_align_to(toLabel, amountValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     } else {
+        // mint account label
+        lv_obj_t * mintAccountLabel = lv_label_create(swapOverviewContainer);
+        lv_label_set_text(mintAccountLabel, "Mint Account");
+        SetTitleLabelStyle(mintAccountLabel);
+        // mint account value
+        lv_obj_t * mintAccountValueLabel = lv_label_create(swapOverviewContainer);
+        lv_label_set_text(mintAccountValueLabel, jupiterV6SwapOverview->token_a_overview->token_address);
+        lv_label_set_long_mode(mintAccountValueLabel, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(mintAccountValueLabel, lv_pct(90));
+        SetContentLableStyle(mintAccountValueLabel);
+
+        lv_obj_t * checkTokenAMintAccountLabel = lv_label_create(swapOverviewContainer);
+        lv_label_set_text(checkTokenAMintAccountLabel, "Check Token Account");
+        lv_obj_set_style_text_color(checkTokenAMintAccountLabel, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
+
+        lv_obj_t * checkTokenAMintAccountIcon = GuiCreateImg(swapOverviewContainer, &imgQrcodeTurquoise);
+
+        lv_obj_add_flag(checkTokenAMintAccountIcon, LV_OBJ_FLAG_CLICKABLE);
+        static SolanaAddressLearnMoreData learnMoreData;
+        learnMoreData.address = jupiterV6SwapOverview->token_a_overview->token_address;
+        lv_obj_add_event_cb(checkTokenAMintAccountIcon, SolanaSplTokenAddressLearnMore, LV_EVENT_CLICKED, &learnMoreData);
         lv_obj_align_to(mintAccountLabel, amountValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
         lv_obj_align_to(mintAccountValueLabel, mintAccountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_obj_align_to(checkTokenAMintAccountLabel, mintAccountValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);

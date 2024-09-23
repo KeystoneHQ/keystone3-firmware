@@ -29,9 +29,6 @@ typedef struct {
 
 static uint32_t g_selectType = 0;
 static uint8_t g_currentAccountIndex = 0;
-static uint32_t g_ethPathIndex[3] = {0};
-static uint32_t g_solPathIndex[3] = {0};
-static uint32_t g_adaPathIndex[3] = {0};
 static lv_obj_t *g_addressLabel[2];
 
 static PathWidgetsItem_t g_changePathWidgets[3];
@@ -181,40 +178,11 @@ static bool IsAddrTypeSelectChanged()
 static uint32_t GetPathIndex(void)
 {
     return GetAccountReceivePath(GetCoinCardByIndex(g_currentChain)->coin);
-    switch (g_currentChain) {
-    case HOME_WALLET_CARD_ETH:
-        return g_ethPathIndex[g_currentAccountIndex];
-        break;
-    case HOME_WALLET_CARD_SOL:
-    case HOME_WALLET_CARD_HNT:
-        return g_solPathIndex[g_currentAccountIndex];
-        break;
-    case HOME_WALLET_CARD_ADA:
-        return g_adaPathIndex[g_currentAccountIndex];
-        break;
-    default:
-        break;
-    }
-
-    return -1;
 }
 
 static void SetPathIndex(uint32_t index)
 {
-    switch (g_currentChain) {
-    case HOME_WALLET_CARD_ETH:
-        g_ethPathIndex[g_currentAccountIndex] = index;
-        break;
-    case HOME_WALLET_CARD_SOL:
-    case HOME_WALLET_CARD_HNT:
-        g_solPathIndex[g_currentAccountIndex] = index;
-        break;
-    case HOME_WALLET_CARD_ADA:
-        g_adaPathIndex[g_currentAccountIndex] = index;
-        break;
-    default:
-        break;
-    }
+    SetAccountReceivePath(GetCoinCardByIndex(g_currentChain)->coin, index);
 }
 
 static void InitDerivationPathDesc(uint8_t chain)
@@ -283,6 +251,7 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     g_addressLabel[0] = label;
 
+    // g_selectType means the derivation path type
     if (!IsOnlyOneAddress(g_selectType)) {
         index = GuiCreateNoticeLabel(egCont, _("1"));
         lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);

@@ -1064,8 +1064,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
     char *xPub = NULL, hdPath[BUFFER_SIZE_128];
     SimpleResponse_c_char *result = NULL;
     uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);;
-    // uint32_t currentAccount = g_selectedAccount[GetCurrentAccountIndex()];
-
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
         xPub = GetCurrentAccountPublicKey(GetReceivePageAdaXPubTypeByIndex(currentAccount));

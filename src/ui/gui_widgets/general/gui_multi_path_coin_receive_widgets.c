@@ -1341,7 +1341,6 @@ void GuiResetAllEthAddressIndex(void)
 static void SetCurrentSelectIndex(uint32_t selectIndex)
 {
     SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
-    SetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin, g_selectType);
 }
 
 static uint32_t GetCurrentSelectIndex()

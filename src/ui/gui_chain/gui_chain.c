@@ -7,9 +7,11 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_ETH:
     case REMAPVIEW_ETH_PERSONAL_MESSAGE:
     case REMAPVIEW_ETH_TYPEDDATA:
-        return true;
     case REMAPVIEW_SOL:
     case REMAPVIEW_SOL_MESSAGE:
+    case REMAPVIEW_BTC:
+    case REMAPVIEW_BTC_MESSAGE:
+    case REMAPVIEW_COSMOS:
         return true;
     default:
         return false;

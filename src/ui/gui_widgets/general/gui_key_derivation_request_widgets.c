@@ -9,10 +9,10 @@
 #include "gui_hintbox.h"
 #include "gui_global_resources.h"
 #include "gui_obj.h"
-#ifndef BTC_ONLY
 #include "general/eapdu_services/service_resolve_ur.h"
-#endif
 #include "secret_cache.h"
+#include "fingerprint_process.h"
+
 typedef struct KeyDerivationWidget {
     uint8_t currentTile;
     PageWidget_t *pageWidget;

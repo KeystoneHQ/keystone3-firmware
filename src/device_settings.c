@@ -18,6 +18,7 @@
 #include "account_manager.h"
 #include "version.h"
 #include "lv_i18n_api.h"
+#include "fetch_sensitive_data_task.h"
 
 #define VERSION_MAX_LENGTH      32
 

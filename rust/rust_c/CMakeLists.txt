@@ -1,7 +1,7 @@
 set(LIB_NAME librust_c.a)
 set(RUST_C_DIR ${RUST_DIR}/rust_c)
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Simulator")
+if(NOT BUILD_TYPE STREQUAL "Simulator")
     if(BTC_ONLY)
         set(CBINDGEN_CONFIG_PATH ${RUST_C_DIR}/cbindgen_btc_only.toml)
     else()

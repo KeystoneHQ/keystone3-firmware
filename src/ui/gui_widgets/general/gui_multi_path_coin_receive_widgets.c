@@ -201,12 +201,13 @@ void GuiMultiPathCoinReceiveInit(uint8_t chain)
     if (chain == HOME_WALLET_CARD_ADA) {
         SetPathIndex(GetAccountReceivePath("ADA"));
     }
+    printf("============");
     g_chainCard = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
     g_selectIndex = GetCurrentSelectIndex();
     g_selectType = GetPathIndex();
-
     g_pageWidget = CreatePageWidget();
+    printf("===== set 当前链: %s 当前 derive path type: %d\n", GetCoinCardByIndex(g_chainCard)->coin, GetPathIndex());
     g_multiPathCoinReceiveWidgets.cont = g_pageWidget->contentZone;
     g_multiPathCoinReceiveWidgets.tileView = lv_tileview_create(g_multiPathCoinReceiveWidgets.cont);
     lv_obj_set_style_bg_opa(g_multiPathCoinReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
@@ -219,7 +220,6 @@ void GuiMultiPathCoinReceiveInit(uint8_t chain)
     g_multiPathCoinReceiveWidgets.tileChangePath = lv_tileview_add_tile(g_multiPathCoinReceiveWidgets.tileView, RECEIVE_TILE_CHANGE_PATH, 0, LV_DIR_HOR);
     GuiCreateChangePathWidget(g_multiPathCoinReceiveWidgets.tileChangePath);
     lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
-
     GuiMultiPathCoinReceiveRefresh();
 }
 
@@ -582,9 +582,12 @@ static void ConfirmAddrTypeHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED && IsAddrTypeSelectChanged()) {
+        printf("===== set 当前链: %s 当前 derive path type: %d 当前account index: %d\n", GetCoinCardByIndex(g_chainCard)->coin, g_selectType, g_selectIndex);
+        // save path type index to store
         SetPathIndex(g_selectType);
-        SetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin, g_selectType);
+        // SetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin, g_selectType);
         g_selectIndex = 0;
+        // save account index to store
         SetCurrentSelectIndex(g_selectIndex);
         ReturnHandler(e);
     }
@@ -826,6 +829,7 @@ static void GuiCreateChangePathWidget(lv_obj_t *parent)
 static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
+    // current select index means the address index
     ModelGetAddress(GetCurrentSelectIndex(), &addressDataItem);
     lv_qrcode_update(g_multiPathCoinReceiveWidgets.qrCode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
@@ -902,7 +906,6 @@ static void RefreshDefaultAddress(void)
     ModelGetAddress(0, &addressDataItem);
     CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
     lv_label_set_text(g_addressLabel[0], string);
-
     if (!IsOnlyOneAddress(g_selectType)) {
         ModelGetAddress(1, &addressDataItem);
         CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
@@ -1036,40 +1039,45 @@ static void RightBtnHandler(lv_event_t *e)
 static uint32_t GetPathIndex(void)
 {
     return GetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin);
-    switch (g_chainCard) {
-    case HOME_WALLET_CARD_ETH:
-        return g_ethPathIndex[g_currentAccountIndex];
-        break;
-    case HOME_WALLET_CARD_SOL:
-    case HOME_WALLET_CARD_HNT:
-        return g_solPathIndex[g_currentAccountIndex];
-        break;
-    case HOME_WALLET_CARD_ADA:
-        return g_adaPathIndex[g_currentAccountIndex];
-        break;
-    default:
-        break;
-    }
+    // switch (g_chainCard) {
+    // case HOME_WALLET_CARD_ETH:
+    //     return g_ethPathIndex[g_currentAccountIndex];
+    //     break;
+    // case HOME_WALLET_CARD_SOL:
+    //     return g_solPathIndex[g_currentAccountIndex];
+    //     break;
+    // case HOME_WALLET_CARD_HNT:
+    //     return g_hntPathIndex[g_currentAccountIndex];
+    //     break;
+    // case HOME_WALLET_CARD_ADA:
+    //     return g_adaPathIndex[g_currentAccountIndex];
+    //     break;
+    // default:
+    //     break;
+    // }
 
-    return -1;
+    // return -1;
 }
 
 static void SetPathIndex(uint32_t index)
 {
-    switch (g_chainCard) {
-    case HOME_WALLET_CARD_ETH:
-        g_ethPathIndex[g_currentAccountIndex] = index;
-        break;
-    case HOME_WALLET_CARD_SOL:
-    case HOME_WALLET_CARD_HNT:
-        g_solPathIndex[g_currentAccountIndex] = index;
-        break;
-    case HOME_WALLET_CARD_ADA:
-        g_adaPathIndex[g_currentAccountIndex] = index;
-        break;
-    default:
-        break;
-    }
+    SetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin, index);
+    // switch (g_chainCard) {
+    // case HOME_WALLET_CARD_ETH:
+    //     g_ethPathIndex[g_currentAccountIndex] = index;
+    //     break;
+    // case HOME_WALLET_CARD_SOL:
+    //     g_solPathIndex[g_currentAccountIndex] = index;
+    //     break;
+    // case HOME_WALLET_CARD_HNT:
+    //     g_hntPathIndex[g_currentAccountIndex] = index;
+    //     break;
+    // case HOME_WALLET_CARD_ADA:
+    //     g_adaPathIndex[g_currentAccountIndex] = index;
+    //     break;
+    // default:
+    //     break;
+    // }
 }
 
 static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked)
@@ -1187,10 +1195,21 @@ static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
 
 static void GetSolHdPath(char *hdPath, int index, uint32_t maxLen)
 {
-    uint8_t i = g_solPathIndex[g_currentAccountIndex];
-    if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
-        i = g_selectType;
-    }
+    // get current chain
+    // uint8_t i = 0;
+    // if (g_chainCard == HOME_WALLET_CARD_HNT) {
+    //     printf("current chain is hnt\n");
+    //     i = g_hntPathIndex[g_currentAccountIndex];
+    // } else {
+    //     printf("current chain is sol\n");
+    //     i = g_solPathIndex[g_currentAccountIndex];
+    // }
+    // get derive path type index
+    uint32_t i = GetPathIndex();
+    // if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
+    //     i = g_selectType;
+    // }
+    printf("current derive path type is %d\n", i);
     switch (i) {
     case 0:
         snprintf_s(hdPath, maxLen, "%s/%u'", g_solPaths[i].path, index);
@@ -1307,7 +1326,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     default:
         break;
     }
-
 }
 
 static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
@@ -1384,42 +1402,48 @@ void GuiResetAllEthAddressIndex(void)
     memset_s(g_solSelectIndex, sizeof(g_solSelectIndex), 0, sizeof(g_solSelectIndex));
     memset_s(g_ethPathIndex, sizeof(g_ethPathIndex), 0, sizeof(g_ethPathIndex));
     memset_s(g_solPathIndex, sizeof(g_solPathIndex), 0, sizeof(g_solPathIndex));
-
 }
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
 {
-    switch (g_chainCard) {
-    case HOME_WALLET_CARD_ETH:
-        g_ethSelectIndex[g_currentAccountIndex] = selectIndex;
-        break;
-    case HOME_WALLET_CARD_SOL:
-    case HOME_WALLET_CARD_HNT:
-        g_solSelectIndex[g_currentAccountIndex] = selectIndex;
-        break;
-    case HOME_WALLET_CARD_ADA:
-        g_adaSelectIndex[g_currentAccountIndex] = selectIndex;
-        break;
-    default:
-        break;
-    }
+    // switch (g_chainCard) {
+    // case HOME_WALLET_CARD_ETH:
+    //     g_ethSelectIndex[g_currentAccountIndex] = selectIndex;
+    //     break;
+    // case HOME_WALLET_CARD_SOL:
+    //     g_solSelectIndex[g_currentAccountIndex] = selectIndex;
+    //     break;
+    // case HOME_WALLET_CARD_HNT:
+    //     g_hntPathIndex[g_currentAccountIndex] = selectIndex;
+    //     break;
+    // case HOME_WALLET_CARD_ADA:
+    //     g_adaSelectIndex[g_currentAccountIndex] = selectIndex;
+    //     break;
+    // default:
+    //     break;
+    // }
+    // 现象 无论sol 的path如何切换 selectIndex 都是0 selectIndex means account index
     SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
+    SetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin, g_selectType);
 }
 
 static uint32_t GetCurrentSelectIndex()
 {
+    printf(" get current select index:  current chain is %s\n", GetCoinCardByIndex(g_chainCard)->coin) ;
     return GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
-    switch (g_chainCard) {
-    case HOME_WALLET_CARD_ETH:
-        return g_ethSelectIndex[g_currentAccountIndex];
-    case HOME_WALLET_CARD_SOL:
-    case HOME_WALLET_CARD_HNT:
-        return g_solSelectIndex[g_currentAccountIndex];
-    case HOME_WALLET_CARD_ADA:
-        return g_adaSelectIndex[g_currentAccountIndex];
-    default:
-        break;
-    }
-    return g_ethSelectIndex[g_currentAccountIndex];
+    // switch (g_chainCard) {
+    // case HOME_WALLET_CARD_ETH:
+    //     return g_ethSelectIndex[g_currentAccountIndex];
+    // case HOME_WALLET_CARD_SOL:
+    //     return g_solSelectIndex[g_currentAccountIndex];
+    // case HOME_WALLET_CARD_HNT:
+    //     printf("======g_hntPathIndex[g_currentAccountIndex]=%d\n", g_hntPathIndex[g_currentAccountIndex]);
+    //     return g_hntPathIndex[g_currentAccountIndex];
+    // case HOME_WALLET_CARD_ADA:
+    //     return g_adaSelectIndex[g_currentAccountIndex];
+    // default:
+    //     break;
+    // }
+    // return g_ethSelectIndex[g_currentAccountIndex];
 }
 #endif

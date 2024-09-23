@@ -1442,9 +1442,9 @@ uint32_t GetAccountReceiveIndex(const char* chainName)
     if (item == NULL) {
         printf("receive index cannot get %s\r\n", chainName);
         cJSON *jsonItem = cJSON_CreateObject();
-        cJSON_AddItemToObject(jsonItem, "recvIndex", cJSON_CreateNumber(0));
-        cJSON_AddItemToObject(jsonItem, "recvPath", cJSON_CreateNumber(0));
-        cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(true));
+        cJSON_AddItemToObject(jsonItem, "recvIndex", cJSON_CreateNumber(0)); // recvIndex is the address index
+        cJSON_AddItemToObject(jsonItem, "recvPath", cJSON_CreateNumber(0)); // recvPath is the derivation path type
+        cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(true)); // firstRecv is the first receive address
         if (!strcmp(chainName, "TON")) {
             cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
         } else if ((!strcmp(chainName, "BTC") || !strcmp(chainName, "ETH"))) {

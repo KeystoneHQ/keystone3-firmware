@@ -298,6 +298,9 @@ void GuiKeyDerivationRequestNextTile()
     case TILE_QRCODE:
         SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, OnReturnHandler, NULL);
         break;
+    case TILE_USB_CONNECT:
+        g_keyDerivationTileView.currentTile--;
+        break;
     default:
         break;
     }

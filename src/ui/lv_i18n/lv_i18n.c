@@ -3777,7 +3777,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"got_it_start", "알겠어요 (5)"},
     {"hardware_call_approve_notice", "주의사항: 경로가 기기에 저장되어 있지 않으면 비밀번호를 다시 계산해야 합니다."},
     {"home_button_receive", "수신 주소"},
-    {"home_button_scan", "스켄"},
+    {"home_button_scan", "스캔"},
     {"home_manage_assets", "자산관리"},
     {"home_more_connect_wallet", "소프트웨어 지갑 연결"},
     {"home_more_sign_by_sdcard", "마이크로 SD 카드 서명"},

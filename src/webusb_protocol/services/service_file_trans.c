@@ -209,7 +209,6 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             break;
         }
         sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
-        PrintArray("hash", hash, 32);
         if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
             printf("verify signature fail\n");
             sendTlvArray[0].value = 3;
@@ -438,25 +437,9 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
     sendHead.flag.b.ack = 0;
     sendHead.flag.b.isHost = 0;
 
-    printf("pub key sign: \n");
-    for (int i = 0; i < sizeof(pubKeySign) - 1; i++) {
-        printf("%02x", pubKeySign[i]);
-    }
-    printf("\n");
-    printf("pub key: \n");
-    for (int i = 0; i < 33; i++) {
-        printf("%02x", pubKey[i]);
-    }
-    printf("\n");
-
     tlvArray[0].type = TYPE_FILE_FINO_PUBKEY;
     uint8_t hash[32] = {0};
     sha256((struct sha256 *)hash, pubKey, 33);
-    printf("hash:\n");
-    for (int i = 0; i < 32; i++) {
-        printf("%02x", hash[i]);
-    }
-    printf("\n");
 #if 1
     if (k1_verify_signature(pubKeySign, hash, (uint8_t *)g_webUsbUpdatePubKey) == false) {
         printf("verify signature fail\n");
@@ -537,6 +520,8 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
 {
     FrameHead_t sendHead = {0};
     uint8_t md5Result[16];
+    uint8_t hash[32];
+    int ret = 0;
 
     ASSERT(g_fileTransTimeOutTimer);
     g_isNftFile = false;
@@ -547,6 +532,25 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     MD5_Final(md5Result, &g_md5Ctx);
     PrintArray("md5Result", md5Result, 16);
     printf("total tick=%d\n", g_fileTransCtrl.endTick - g_fileTransCtrl.startTick);
+
+    do {
+        sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
+        if (memcmp(md5Result, g_fileTransInfo.md5, 16) != 0) {
+            ret = ERR_INVALID_FILE;
+            break;
+        }
+        if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
+            printf("verify signature fail\n");
+            ret = ERR_INVALID_FILE;
+            break;
+        }
+    } while (0);
+    if (ret != 0) {
+        if (FatfsFileDelete(g_fileTransInfo.fileName) != RES_OK) {
+            printf("delete file %s err\n", g_fileTransInfo.fileName);
+        }
+        ASSERT(false);
+    }
 
     sendHead.packetIndex = head->packetIndex;
     sendHead.serviceId = head->serviceId;

@@ -318,6 +318,7 @@ static void GuiInitWalletListArray()
         } else {
             switch (index) {
             case WALLET_LIST_ETERNL:
+            case WALLET_LIST_VESPR:
             case WALLET_LIST_TYPHON:
             case WALLET_LIST_BEGIN:
                 enable = !isSLIP39;

@@ -488,6 +488,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     if (strcmp("1", g_callData->version) == 0) {
         uint8_t seed[64];
         char *password = SecretCacheGetPassword();
+        MnemonicType mnemonicType = GetMnemonicType();
         bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
         int seedLen = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
 

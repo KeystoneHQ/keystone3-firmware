@@ -15,6 +15,7 @@
 #include "assert.h"
 #include "user_msg.h"
 #include "drv_usb.h"
+#include "user_delay.h"
 
 /** @defgroup usbd_cdc
  * @brief usbd core module
@@ -450,7 +451,6 @@ static void USBD_cdc_SendBuffer(const uint8_t *data, uint32_t len)
     uint32_t sendLen;
     uint32_t remaining;
     g_cdcSendIndex = 0;
-    uint32_t retryTimes = 0xFF;
 
     ASSERT(len <= CDC_TX_MAX_LENGTH);
     if (!UsbInitState()) {
@@ -463,8 +463,8 @@ static void USBD_cdc_SendBuffer(const uint8_t *data, uint32_t len)
         sendLen = remaining > CDC_PACKET_SIZE ? CDC_PACKET_SIZE : remaining;
 
         printf("sendLen=%d\r\n", sendLen);
-        while ((DCD_GetEPStatus(&g_usbDev, CDC_IN_EP) != USB_OTG_EP_TX_NAK) && retryTimes) {
-            retryTimes--;
+        while ((DCD_GetEPStatus(&g_usbDev, CDC_IN_EP) != USB_OTG_EP_TX_NAK)) {
+            UserDelay(1);
         }
         PrintArray("sendBuf USBD_cdc_SendBuffer", g_cdcSendBuffer + g_cdcSendIndex, sendLen);
         DCD_EP_Tx(&g_usbDev, CDC_IN_EP, g_cdcSendBuffer + g_cdcSendIndex, sendLen);

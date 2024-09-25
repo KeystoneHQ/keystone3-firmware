@@ -128,7 +128,7 @@ impl TryFrom<&third_party::ur_registry::extend::key_derivation_schema::KeyDeriva
                 Curve::Ed25519 => "ED25519".to_string(),
                 Curve::Secp256k1 => "Secp256k1".to_string(),
             }),
-            chain_type: convert_c_char(value.get_chain_type_or_default().to_string()),
+            chain_type: convert_c_char(value.get_chain_type().unwrap_or("UNKNOWN".to_string())),
         })
     }
 }

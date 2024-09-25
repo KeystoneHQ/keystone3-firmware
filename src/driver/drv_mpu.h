@@ -87,6 +87,7 @@ typedef struct {
     uint8_t IsBufferable;
 } MPU_Region_InitTypeDef;
 
+void MpuSetOtpProtection(bool noAccess);
 
 void MpuConfiguration(MPU_Region_InitTypeDef* MPU_Init);
 

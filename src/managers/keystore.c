@@ -26,11 +26,11 @@
 #include "librust_c.h"
 #include "assert.h"
 #include "secret_cache.h"
+#include "drv_mpu.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_storage.h"
 #else
-#include "drv_mpu.h"
 #endif
 #define KEYSTORE_DEBUG          0
 

@@ -4,6 +4,7 @@
 #include "gui_views.h"
 #include "gui_key_derivation_request_widgets.h"
 #include "gui_keyboard_hintbox.h"
+#include "gui_lock_widgets.h"
 
 int32_t GuiKeyDerivationRequestViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {

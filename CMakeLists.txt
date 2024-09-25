@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 
 option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Simulator")
+if(BUILD_TYPE STREQUAL "Simulator")
     set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
 endif()
 

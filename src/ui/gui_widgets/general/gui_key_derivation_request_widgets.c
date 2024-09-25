@@ -351,7 +351,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
         // hardware call version 1
         ExtendedPublicKey xpubs[24];
         for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
-            uint8_t seed[64];
+            uint8_t *seed;
             char *password = SecretCacheGetPassword();
             int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, password);
             if (ret != 0) {

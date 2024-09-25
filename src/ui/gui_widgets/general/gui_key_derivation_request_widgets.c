@@ -353,7 +353,7 @@ typedef enum {
     SECP256K1,
     SLIP10_ED25519,
     BIP32_ED25519,
-    Unsupport_DerivationType,
+    UNSUPPORT_DERIVATION_TYPE,
 } DerivationType_t;
 
 static uint8_t GetDerivationTypeByCurveAndDeriveAlgo(char *curve, char *algo)
@@ -371,7 +371,7 @@ static uint8_t GetDerivationTypeByCurveAndDeriveAlgo(char *curve, char *algo)
     }
     printf("unsupport derivation type\n");
     // other case
-    return Unsupport_DerivationType;
+    return UNSUPPORT_DERIVATION_TYPE;
 }
 
 typedef struct HardwareCallResult {
@@ -458,7 +458,7 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
     if (strcmp("1", g_callData->version) == 0) {
         for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
             uint8_t derivationType = GetDerivationTypeByCurveAndDeriveAlgo(g_callData->key_derivation->schemas->data[i].curve, g_callData->key_derivation->schemas->data[i].algo);
-            if (derivationType == Unsupport_DerivationType) {
+            if (derivationType == UNSUPPORT_DERIVATION_TYPE) {
                 SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
                     false, _("invaild_derive_type"), _("invaild_derive_type_con")
                 });

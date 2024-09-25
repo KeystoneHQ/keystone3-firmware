@@ -973,7 +973,8 @@ static bool IsCardano()
 static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e)
 {
     selected_ada_derivation_algo = GetCurrentSelectedIndex();
-    SetKeyDerivationAdaXPubType(GetCurrentSelectedIndex());
+    // save the derivation path type to the json file that be saved in flash
+    SetConnectWalletPathIndex(g_response->data->origin, GetAccountType()); 
     SetAccountType(GetKeyDerivationAdaXPubType());
     CloseDerivationHandler(e);
 }

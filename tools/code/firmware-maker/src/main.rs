@@ -7,9 +7,11 @@ use crc32fast::Hasher;
 use quicklz::{compress, CompressionLevel};
 use serde::Serialize;
 use serde_json::to_vec;
+use sha2::{Sha256, Digest};
 use std::fmt;
 use std::fs::File;
 use std::io::{Read, Write};
+use hex;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about=None)]
@@ -41,8 +43,8 @@ struct Header {
     mark: String,
     fileSize: u32,
     originalFileSize: u32,
-    crc32: u32,
-    originalCrc32: u32,
+    compressedHash: [u8; 32],
+    originalHash: [u8; 32],
     encode: u32,
     encodeUnit: u32,
     encrypt: u32,
@@ -53,12 +55,12 @@ impl fmt::Display for Header {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Header {{ mark: \"{}\", file_size: {:08X}, original_file_size: {:08X}, crc32: {:08X}, original_crc32: {:08X}, encode: {:X}, encode_unit: {}, encrypt: {}, signature: {:?} }}",
+            "Header {{ mark: \"{}\", file_size: {:08X}, original_file_size: {:08X}, compressedHash: {:?}, originalHash: {:?}, encode: {:X}, encode_unit: {}, encrypt: {}, signature: {:?} }}",
             self.mark,
             self.fileSize,
             self.originalFileSize,
-            self.crc32,
-            self.originalCrc32,
+            hex::encode(self.compressedHash),
+            hex::encode(self.originalHash),
             self.encode,
             self.encodeUnit,
             self.encrypt,
@@ -74,8 +76,8 @@ impl Header {
         bytes.extend(self.mark.as_bytes());
         bytes.extend(&self.fileSize.to_be_bytes());
         bytes.extend(&self.originalFileSize.to_be_bytes());
-        bytes.extend(&self.crc32.to_be_bytes());
-        bytes.extend(&self.originalCrc32.to_be_bytes());
+        bytes.extend(&self.compressedHash);
+        bytes.extend(&self.originalHash);
         bytes.extend(&self.encode.to_be_bytes());
         bytes.extend(&self.encodeUnit.to_be_bytes());
         bytes.extend(&self.encrypt.to_be_bytes());
@@ -83,10 +85,10 @@ impl Header {
         match &self.signature {
             Some(sig) => {
                 bytes.extend(sig.as_bytes());
-            },
+            }
             None => {
                 bytes.extend(vec![0x0; 128]);
-            },
+            }
         }
 
         bytes
@@ -103,9 +105,10 @@ fn reader_file(file_path: &String) -> Result<Vec<u8>, OTAError> {
             let content = content_string;
             let original_bytes = Bytes::copy_from_slice(&content);
 
-            let mut hasher = Hasher::new();
+            let mut hasher = Sha256::new();
             hasher.update(&original_bytes);
-            let original_crc32 = hasher.finalize();
+            let original_sha256: [u8; 32] = hasher.finalize().into();
+            println!("original_sha256: {:?}", hex::encode(&original_sha256));
 
             let mut compressed_bytes = BytesMut::with_capacity(0);
 
@@ -126,26 +129,24 @@ fn reader_file(file_path: &String) -> Result<Vec<u8>, OTAError> {
 
             let compressed_length = compressed_bytes.len().try_into().unwrap();
 
-            let mut hasher = Hasher::new();
+            let mut hasher = Sha256::new();
             hasher.update(&compressed_bytes);
-            let compressed_crc32 = hasher.finalize();
+            let compressed_hash: [u8; 32] = hasher.finalize().into();
 
             let header = Header {
                 mark: "~update!".to_string(),
                 fileSize: compressed_length,
                 originalFileSize: original_length,
-                crc32: compressed_crc32,
-                originalCrc32: original_crc32,
+                compressedHash: compressed_hash,
+                originalHash: original_sha256,
                 encode: 1,
                 encodeUnit: 16384,
                 encrypt: 0,
                 signature: Some(String::from("f8415dc9c54f0e3e1536cddc82182afc223691866715d61f46ba3749005601f0cdfff3db28ab3aed43178f33c5143fd2f6b68962b0b3e2f047cc0eca05711a29")),
             };
             println!("{}", header);
-            println!("{:?}", header);
 
             let header_string = header.to_bytes();
-            // println!("header: {:?}", header_string);
             let hex_string: String = header_string
                 .iter()
                 .map(|byte| format!("{:02X}, ", byte))
@@ -153,14 +154,13 @@ fn reader_file(file_path: &String) -> Result<Vec<u8>, OTAError> {
                 .join("");
 
             println!("{}", hex_string);
-            let json_vec = to_vec(&header).map_err(|_| OTAError::HeaderError)?;
 
-            let json_length: u32 = header_string.len().try_into().unwrap();
+            let head_length: u32 = header_string.len().try_into().unwrap();
             let mut result = BytesMut::new();
-            let mut json_bytes = json_length.to_be_bytes();
-            json_bytes.reverse();
+            let mut head_bytes = head_length.to_be_bytes();
+            head_bytes.reverse();
 
-            result.extend_from_slice(&json_bytes);
+            result.extend_from_slice(&head_bytes);
             result.extend_from_slice(&header_string);
             result.put_u8(0);
             result.extend_from_slice(&compressed_bytes);

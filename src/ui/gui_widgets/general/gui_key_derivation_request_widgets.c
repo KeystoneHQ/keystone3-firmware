@@ -351,7 +351,9 @@ static UREncodeResult *ModelGenerateSyncUR(void)
         // hardware call version 1
         ExtendedPublicKey xpubs[24];
         for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
-            uint8_t *seed;
+            uint8_t seed[64];
+            bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
+            int seedLen = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
             char *password = SecretCacheGetPassword();
             int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, password);
             if (ret != 0) {
@@ -363,11 +365,11 @@ static UREncodeResult *ModelGenerateSyncUR(void)
             SimpleResponse_c_char *pubkey;
             // todo need add bip32-ed25519
             if (algo == SECP256K1) {
-                pubkey = get_extended_pubkey_bytes_by_seed(seed, sizeof(seed), path);
+                pubkey = get_extended_pubkey_bytes_by_seed(seed, seedLen, path);
                 xpubs[i].path = path;
                 xpubs[i].xpub = pubkey->data;
             } else if (algo == ED25519) {
-                pubkey = get_ed25519_pubkey_by_seed(seed, sizeof(seed), path);
+                pubkey = get_ed25519_pubkey_by_seed(seed, seedLen, path);
                 xpubs[i].path = path;
                 xpubs[i].xpub = pubkey->data;
             }

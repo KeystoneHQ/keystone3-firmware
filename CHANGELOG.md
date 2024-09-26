@@ -1,3 +1,21 @@
+## 1.7.0(2024-09-26)
+### What's new
+
+1. Supported Backpack Wallet to manage SOL and ETH assets via USB connection
+
+### Improvements
+
+1. Optimized USB user experience for Rabby Wallet
+2. Improved experience for importing TON native seed phrase
+3. Optimized battery display, battery levels now shown as bars
+
+### Bug Fixes
+
+1. Fixed bug causing delays when unlocking the device via PIN code
+2. Fixed occasional bug when generating AR addresses
+3. Fixed bug where the device occasionally failed to unlock after firmware updates
+
+
 ## 1.6.6(2024-08-30)
 
 ### What's new

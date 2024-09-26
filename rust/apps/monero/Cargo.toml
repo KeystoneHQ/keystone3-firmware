@@ -1,0 +1,14 @@
+[package]
+name = "monero"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+curve25519-dalek = { version = "4"}
+base58-monero = { version = "2", default-features = false }
+keystore = { path = "../../keystore", default-features = false }
+third_party = { path = "../../third_party" }
+app_utils = { path = "../utils" }
+rust_tools = { path = "../../tools" }

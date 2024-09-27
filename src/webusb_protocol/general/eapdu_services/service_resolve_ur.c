@@ -128,8 +128,14 @@ void ProcessURService(EAPDURequestPayload_t *payload)
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
     if (urResult->ur_type == QRHardwareCall) {
-        GuiSetKeyDerivationRequestData(urResult, NULL, false);
-        PubValueMsg(UI_MSG_USB_HARDWARE_VIEW, 0);
+        if (GuiCheckIfTopView(&g_keyDerivationRequestView) || GuiHomePageIsTop()) {
+            GuiSetKeyDerivationRequestData(urResult, NULL, false);
+            PubValueMsg(UI_MSG_USB_HARDWARE_VIEW, 0);
+        } else {
+            const char *data = "Export address is just allowed on specific pages";
+            HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
+            g_requestID = REQUEST_ID_IDLE;
+        }
         return;
     } else {
         if (!GuiHomePageIsTop()) {

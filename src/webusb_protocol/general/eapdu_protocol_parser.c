@@ -86,7 +86,7 @@ static void free_parser()
 {
     g_totalPackets = 0;
     memset_s(g_receivedPackets, sizeof(g_receivedPackets), 0, sizeof(g_receivedPackets));
-    memset_s(g_packetLengths, sizeof(g_receivedPackets), 0, sizeof(g_packetLengths));
+    memset_s(g_packetLengths, sizeof(g_packetLengths), 0, sizeof(g_packetLengths));
     for (int i = 0; i < MAX_PACKETS; i++) {
         memset_s(g_protocolRcvBuffer, sizeof(g_protocolRcvBuffer[i]), 0, sizeof(g_protocolRcvBuffer[i]));
     }
@@ -231,7 +231,7 @@ struct ProtocolParser *NewEApduProtocolParser()
         global_parser->registerSendFunc = RegisterSendFunc;
         global_parser->rcvCount = 0;
     }
-    printf("global_parser = %p\n", global_parser);
+    printf("%s global_parser = %p\n", __func__, global_parser);
     return global_parser;
 }
 

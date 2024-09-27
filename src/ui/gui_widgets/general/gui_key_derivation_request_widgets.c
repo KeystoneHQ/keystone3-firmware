@@ -298,6 +298,9 @@ void GuiKeyDerivationRequestNextTile()
     case TILE_QRCODE:
         SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, OnReturnHandler, NULL);
         break;
+    case TILE_USB_CONNECT:
+        g_keyDerivationTileView.currentTile--;
+        break;
     default:
         break;
     }
@@ -352,6 +355,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
         ExtendedPublicKey xpubs[24];
         for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
             uint8_t seed[64];
+            MnemonicType mnemonicType = GetMnemonicType();
             bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
             int seedLen = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
             char *password = SecretCacheGetPassword();

@@ -12,6 +12,8 @@ pub mod token_lending;
 pub mod token_swap_v3;
 pub mod vote;
 
+pub mod jupiter_v6;
+
 pub const DIVIDER: f64 = 1_000_000_000_f64;
 
 pub fn format_amount(value: String) -> Result<String> {

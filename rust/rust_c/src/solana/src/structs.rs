@@ -124,6 +124,57 @@ impl Free for DisplaySolanaTxSplTokenTransferOverview {
         free_str_ptr!(self.token_name);
     }
 }
+
+#[repr(C)]
+pub struct JupiterV6SwapTokenInfoOverview {
+    pub token_name: PtrString,
+    pub token_symbol: PtrString,
+    pub token_address: PtrString,
+    pub token_amount: PtrString,
+    pub exist_in_address_lookup_table: bool,
+}
+
+#[repr(C)]
+pub struct DisplaySolanaTxOverviewJupiterV6Swap {
+    pub program_name: PtrString,
+    pub program_address: PtrString,
+    pub instruction_name: PtrString,
+    pub token_a_overview: PtrT<JupiterV6SwapTokenInfoOverview>,
+    pub token_b_overview: PtrT<JupiterV6SwapTokenInfoOverview>,
+    pub slippage_bps: PtrString,
+    pub platform_fee_bps: PtrString,
+}
+impl_c_ptrs!(
+    DisplaySolanaTxOverviewJupiterV6Swap,
+    JupiterV6SwapTokenInfoOverview
+);
+
+impl Free for JupiterV6SwapTokenInfoOverview {
+    fn free(&self) {
+        free_str_ptr!(self.token_name);
+        free_str_ptr!(self.token_symbol);
+        free_str_ptr!(self.token_address);
+        free_str_ptr!(self.token_amount);
+    }
+}
+impl Free for DisplaySolanaTxOverviewJupiterV6Swap {
+    fn free(&self) {
+        free_str_ptr!(self.program_name);
+        free_str_ptr!(self.program_address);
+        free_str_ptr!(self.instruction_name);
+        free_str_ptr!(self.slippage_bps);
+        free_str_ptr!(self.platform_fee_bps);
+        if !self.token_a_overview.is_null() {
+            let x = unsafe { Box::from_raw(self.token_a_overview) };
+            x.free();
+        }
+        if !self.token_b_overview.is_null() {
+            let x = unsafe { Box::from_raw(self.token_b_overview) };
+            x.free();
+        }
+    }
+}
+
 #[repr(C)]
 pub struct DisplaySolanaTxOverview {
     // `Transfer`, `Vote`, `General`, `Unknown`
@@ -147,6 +198,9 @@ pub struct DisplaySolanaTxOverview {
     pub squads_proposal: PtrT<VecFFI<DisplaySolanaTxProposalOverview>>,
     // spl token transfer
     pub spl_token_transfer: PtrT<DisplaySolanaTxSplTokenTransferOverview>,
+
+    // jupiter_v6 swap
+    pub jupiter_v6_swap: PtrT<DisplaySolanaTxOverviewJupiterV6Swap>,
 }
 
 #[repr(C)]
@@ -235,6 +289,7 @@ impl Default for DisplaySolanaTxOverview {
             squads_multisig_create: null_mut(),
             squads_proposal: null_mut(),
             spl_token_transfer: null_mut(),
+            jupiter_v6_swap: null_mut(),
         }
     }
 }
@@ -434,6 +489,60 @@ impl From<&ParsedSolanaTx> for DisplaySolanaTxOverview {
                     return Self {
                         display_type,
                         squads_multisig_create: squads_overview.c_ptr(),
+                        ..DisplaySolanaTxOverview::default()
+                    };
+                }
+            }
+
+            SolanaTxDisplayType::JupiterV6 => {
+                if let SolanaOverview::JupiterV6SwapOverview(overview) = &value.overview {
+                    let display_type = convert_c_char("jupiterv6_swap".to_string());
+                    return Self {
+                        display_type,
+                        jupiter_v6_swap: DisplaySolanaTxOverviewJupiterV6Swap {
+                            program_name: convert_c_char(overview.program_name.to_string()),
+                            program_address: convert_c_char(overview.program_address.to_string()),
+                            instruction_name: convert_c_char(overview.instruction_name.to_string()),
+                            token_a_overview: JupiterV6SwapTokenInfoOverview {
+                                token_name: convert_c_char(
+                                    overview.token_a_overview.token_name.to_string(),
+                                ),
+                                token_symbol: convert_c_char(
+                                    overview.token_a_overview.token_symbol.to_string(),
+                                ),
+                                token_address: convert_c_char(
+                                    overview.token_a_overview.token_address.to_string(),
+                                ),
+                                token_amount: convert_c_char(
+                                    overview.token_a_overview.token_amount.to_string(),
+                                ),
+                                exist_in_address_lookup_table: overview
+                                    .token_a_overview
+                                    .exist_in_address_lookup_table,
+                            }
+                            .c_ptr(),
+                            token_b_overview: JupiterV6SwapTokenInfoOverview {
+                                token_name: convert_c_char(
+                                    overview.token_b_overview.token_name.to_string(),
+                                ),
+                                token_symbol: convert_c_char(
+                                    overview.token_b_overview.token_symbol.to_string(),
+                                ),
+                                token_address: convert_c_char(
+                                    overview.token_b_overview.token_address.to_string(),
+                                ),
+                                token_amount: convert_c_char(
+                                    overview.token_b_overview.token_amount.to_string(),
+                                ),
+                                exist_in_address_lookup_table: overview
+                                    .token_b_overview
+                                    .exist_in_address_lookup_table,
+                            }
+                            .c_ptr(),
+                            slippage_bps: convert_c_char(overview.slippage_bps.to_string()),
+                            platform_fee_bps: convert_c_char(overview.platform_fee_bps.to_string()),
+                        }
+                        .c_ptr(),
                         ..DisplaySolanaTxOverview::default()
                     };
                 }

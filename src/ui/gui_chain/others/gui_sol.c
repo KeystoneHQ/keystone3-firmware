@@ -511,8 +511,6 @@ static lv_obj_t * GuiShowSplTokenInfoOverviewCard(lv_obj_t *parent, PtrT_Display
     SetContainerDefaultStyle(container);
     PtrT_DisplaySolanaTxSplTokenTransferOverview splTokenInfo = overviewData->spl_token_transfer;
 
-
-
     lv_obj_t *tokenNameLabel = lv_label_create(container);
     lv_label_set_text(tokenNameLabel, "Token Name");
     lv_obj_align(tokenNameLabel, LV_ALIGN_TOP_LEFT, 24, 0);
@@ -587,7 +585,160 @@ static lv_obj_t * GuiShowSplTokenInfoOverviewCard(lv_obj_t *parent, PtrT_Display
     }
     return container;
 }
+static void GuiShowJupiterV6SwapOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
+{
+    lv_obj_t *swapOverviewContainer = GuiCreateAutoHeightContainer(parent, 408, 16);
+    SetContainerDefaultStyle(swapOverviewContainer);
+    PtrT_DisplaySolanaTxOverviewJupiterV6Swap jupiterV6SwapOverview = overviewData->jupiter_v6_swap;
+    lv_obj_t * swapLabel = lv_label_create(swapOverviewContainer);
+    lv_label_set_text(swapLabel, "Swap");
+    lv_obj_align(swapLabel, LV_ALIGN_TOP_LEFT, 24, 0);
+    SetTitleLabelStyle(swapLabel);
+    lv_obj_t * amountValueLabel = lv_label_create(swapOverviewContainer);
+    lv_label_set_text(amountValueLabel, jupiterV6SwapOverview->token_a_overview->token_amount);
+    lv_obj_set_style_text_color(amountValueLabel, lv_color_hex(0xF5870A), LV_PART_MAIN);
+    lv_obj_set_style_text_font(amountValueLabel, &openSansEnLittleTitle, LV_PART_MAIN);
+    lv_obj_align_to(amountValueLabel, swapLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    // if tokenA exist in address lookup table, then show info icon
+    if (jupiterV6SwapOverview->token_a_overview->exist_in_address_lookup_table) {
+        lv_obj_t *info_icon = GuiCreateImg(swapOverviewContainer, &imgInfoSmall);
+        lv_obj_set_style_pad_right(info_icon, 0, LV_PART_MAIN);
+        lv_obj_add_flag(info_icon, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_align_to(info_icon, amountValueLabel, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
+        static SolanaLearnMoreData_t tokenAmountLearnMoredata;
+        tokenAmountLearnMoredata.title = "Token Amount";
+        // if current instruction name is "JupiterV6Route" we show a different desc
+        if (strcmp(jupiterV6SwapOverview->instruction_name, "JupiterV6Route") == 0) {
+            tokenAmountLearnMoredata.content = _("instruction_does_not_contain_token_info");
+        } else {
+            tokenAmountLearnMoredata.content = _("token_in_alt_desc");
+        }
+        lv_obj_add_event_cb(info_icon, learn_more_click_event_handler, LV_EVENT_CLICKED, &tokenAmountLearnMoredata);
+    }
 
+    // TokenB
+    lv_obj_t * toLabel = lv_label_create(swapOverviewContainer);
+    lv_label_set_text(toLabel, "To");
+    SetTitleLabelStyle(toLabel);
+    // if current instruction name is "JupiterV6Route" we dont need to show the mint account info
+    if (strcmp(jupiterV6SwapOverview->instruction_name, "JupiterV6Route") == 0) {
+        lv_obj_align_to(toLabel, amountValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    } else {
+        // mint account label
+        lv_obj_t * mintAccountLabel = lv_label_create(swapOverviewContainer);
+        lv_label_set_text(mintAccountLabel, "Mint Account");
+        SetTitleLabelStyle(mintAccountLabel);
+        // mint account value
+        lv_obj_t * mintAccountValueLabel = lv_label_create(swapOverviewContainer);
+        lv_label_set_text(mintAccountValueLabel, jupiterV6SwapOverview->token_a_overview->token_address);
+        lv_label_set_long_mode(mintAccountValueLabel, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(mintAccountValueLabel, lv_pct(90));
+        SetContentLableStyle(mintAccountValueLabel);
+
+        lv_obj_t * checkTokenAMintAccountLabel = lv_label_create(swapOverviewContainer);
+        lv_label_set_text(checkTokenAMintAccountLabel, "Check Token Account");
+        lv_obj_set_style_text_color(checkTokenAMintAccountLabel, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
+
+        lv_obj_t * checkTokenAMintAccountIcon = GuiCreateImg(swapOverviewContainer, &imgQrcodeTurquoise);
+
+        lv_obj_add_flag(checkTokenAMintAccountIcon, LV_OBJ_FLAG_CLICKABLE);
+        static SolanaAddressLearnMoreData learnMoreData;
+        learnMoreData.address = jupiterV6SwapOverview->token_a_overview->token_address;
+        lv_obj_add_event_cb(checkTokenAMintAccountIcon, SolanaSplTokenAddressLearnMore, LV_EVENT_CLICKED, &learnMoreData);
+        lv_obj_align_to(mintAccountLabel, amountValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+        lv_obj_align_to(mintAccountValueLabel, mintAccountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        lv_obj_align_to(checkTokenAMintAccountLabel, mintAccountValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+        lv_obj_align_to(checkTokenAMintAccountIcon, checkTokenAMintAccountLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+        lv_obj_align_to(toLabel, checkTokenAMintAccountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    }
+    // amount label value
+    lv_obj_t * tokenBAmountValueLabel = lv_label_create(swapOverviewContainer);
+    lv_label_set_text(tokenBAmountValueLabel, jupiterV6SwapOverview->token_b_overview->token_amount);
+    lv_obj_align_to(tokenBAmountValueLabel, toLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    lv_obj_set_style_text_color(tokenBAmountValueLabel, lv_color_hex(0xF5870A), LV_PART_MAIN);
+    lv_obj_set_style_text_font(tokenBAmountValueLabel, &openSansEnLittleTitle, LV_PART_MAIN);
+    // if tokenB exist in address lookup table, then show info icon
+    if (jupiterV6SwapOverview->token_b_overview->exist_in_address_lookup_table) {
+        lv_obj_t *info_icon = GuiCreateImg(swapOverviewContainer, &imgInfoSmall);
+        lv_obj_set_style_pad_right(info_icon, 0, LV_PART_MAIN);
+        lv_obj_add_flag(info_icon, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_align_to(info_icon, tokenBAmountValueLabel, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
+        static SolanaLearnMoreData_t tokenAmountLearnMoredata;
+        tokenAmountLearnMoredata.title = "Token Details";
+        tokenAmountLearnMoredata.content = _("token_in_alt_desc");
+        lv_obj_add_event_cb(info_icon, learn_more_click_event_handler, LV_EVENT_CLICKED, &tokenAmountLearnMoredata);
+    }
+    // mint account label
+    lv_obj_t * tokenBmintAccountLabel = lv_label_create(swapOverviewContainer);
+    lv_label_set_text(tokenBmintAccountLabel, "Mint Account");
+    lv_obj_align_to(tokenBmintAccountLabel, tokenBAmountValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    SetTitleLabelStyle(tokenBmintAccountLabel);
+
+    lv_obj_t * tokenBmintAccountValueLabel = lv_label_create(swapOverviewContainer);
+    lv_label_set_text(tokenBmintAccountValueLabel, jupiterV6SwapOverview->token_b_overview->token_address);
+    lv_obj_align_to(tokenBmintAccountValueLabel, tokenBmintAccountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_label_set_long_mode(tokenBmintAccountValueLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(tokenBmintAccountValueLabel, lv_pct(90));
+    SetContentLableStyle(tokenBmintAccountValueLabel);
+
+    lv_obj_t * checkTokenBMintAccountLabel = lv_label_create(swapOverviewContainer);
+    lv_label_set_text(checkTokenBMintAccountLabel, "Check Token Account");
+    lv_obj_set_style_text_color(checkTokenBMintAccountLabel, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
+    lv_obj_align_to(checkTokenBMintAccountLabel, tokenBmintAccountValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+
+    lv_obj_t * checkTokenBMintAccountIcon = GuiCreateImg(swapOverviewContainer, &imgQrcodeTurquoise);
+    lv_obj_align_to(checkTokenBMintAccountIcon, checkTokenBMintAccountLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    lv_obj_add_flag(checkTokenBMintAccountIcon, LV_OBJ_FLAG_CLICKABLE);
+    static SolanaAddressLearnMoreData tokenBLearnMoreData;
+    tokenBLearnMoreData.address = jupiterV6SwapOverview->token_b_overview->token_address;
+    lv_obj_add_event_cb(checkTokenBMintAccountIcon, SolanaSplTokenAddressLearnMore, LV_EVENT_CLICKED, &tokenBLearnMoreData);
+    // jupiterv6 platform overview container
+    lv_obj_t * platformOverviewContainer = GuiCreateAutoHeightContainer(parent, 408, 16);
+    SetContainerDefaultStyle(platformOverviewContainer);
+    // swap platform label
+    lv_obj_t * swapPlatformLabel = lv_label_create(platformOverviewContainer);
+    lv_label_set_text(swapPlatformLabel, "Swap Platform");
+    lv_obj_align(swapPlatformLabel, LV_ALIGN_TOP_LEFT, 24, 0);
+    SetTitleLabelStyle(swapPlatformLabel);
+    // platform icon label
+    lv_obj_t * jupiterIcon = GuiCreateImg(platformOverviewContainer, &imgJupiter);
+    lv_obj_align_to(jupiterIcon, swapPlatformLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_obj_t *jupiterLabel = lv_label_create(platformOverviewContainer);
+    lv_label_set_text(jupiterLabel, "Jupiter Aggregator v6");
+    lv_obj_set_style_text_font(jupiterLabel, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(jupiterLabel, lv_color_hex(0xA485FF), LV_PART_MAIN);
+    lv_obj_align_to(jupiterLabel, jupiterIcon, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+    // platform address label
+    lv_obj_t * platformAddressLabel = lv_label_create(platformOverviewContainer);
+    lv_label_set_text(platformAddressLabel, jupiterV6SwapOverview->program_address);
+    lv_obj_align_to(platformAddressLabel, jupiterIcon, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_label_set_long_mode(platformAddressLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(platformAddressLabel, lv_pct(90));
+    SetContentLableStyle(platformAddressLabel);
+
+    // Slippage Tolerance label
+    lv_obj_t * slippageToleranceLabel = lv_label_create(platformOverviewContainer);
+    lv_label_set_text(slippageToleranceLabel, "Slippage Tolerance");
+    lv_obj_align_to(slippageToleranceLabel, platformAddressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    SetTitleLabelStyle(slippageToleranceLabel);
+    // slippage value
+    lv_obj_t * slippageValueLabel = lv_label_create(platformOverviewContainer);
+    lv_label_set_text(slippageValueLabel, jupiterV6SwapOverview->slippage_bps);
+    lv_obj_align_to(slippageValueLabel, slippageToleranceLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    SetContentLableStyle(slippageValueLabel);
+    // Partner Referral Fee
+    lv_obj_t * partnerReferralFeeLabel = lv_label_create(platformOverviewContainer);
+    lv_label_set_text(partnerReferralFeeLabel, "Partner Referral Fee");
+    lv_obj_align_to(partnerReferralFeeLabel, slippageValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    SetTitleLabelStyle(partnerReferralFeeLabel);
+    // partner referral fee value
+    lv_obj_t * partnerReferralFeeValueLabel = lv_label_create(platformOverviewContainer);
+    lv_label_set_text(partnerReferralFeeValueLabel, jupiterV6SwapOverview->platform_fee_bps);
+    lv_obj_align_to(partnerReferralFeeValueLabel, partnerReferralFeeLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    SetContentLableStyle(partnerReferralFeeValueLabel);
+    // platform container align to swap container
+    lv_obj_align_to(platformOverviewContainer, swapOverviewContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+}
 static void GuiShowSplTokenTransferOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
 {
     lv_obj_t *tokenInfoCard = GuiShowSplTokenInfoOverviewCard(parent, overviewData);
@@ -882,6 +1033,7 @@ lv_obj_t* GuiCreateSolanaTextLabel(lv_obj_t *parent, PtrString content)
 }
 
 
+
 static void GuiShowSolTxMultiSigCreateDetail(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
 {
     PtrT_DisplaySolanaTxOverviewSquadsV4MultisigCreate squadsMultisigCreate = overviewData->squads_multisig_create;
@@ -1093,6 +1245,10 @@ static void GuiShowSolTxMultiSigCreateOverview(lv_obj_t *parent, PtrT_DisplaySol
     lv_obj_align_to(firstTransferCardContainer, totalValueContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 }
 
+static bool CheckIsAddressLookupTableAccount(const char* account) {
+    // if address is containe "#" then it is a AddressLookupTable account
+    return strchr(account, '#') != NULL;
+}
 
 static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
 {
@@ -1203,8 +1359,7 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
             lv_obj_set_flex_grow(account_label, 1);
             lv_obj_set_flex_align(orderLabel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
             // check whether the account is a AddressLookupTable account
-            // if account is start with "Table", then it is a AddressLookupTable account
-            if (strncmp(accounts->data[j], "Table", 5) == 0) {
+            if (CheckIsAddressLookupTableAccount(accounts->data[j])) {
                 lv_label_set_text(account_label, accounts->data[j] + 6);
                 lv_obj_t *info_icon = GuiCreateImg(account_cont, &imgInfoSmall);
                 lv_obj_set_style_pad_right(info_icon, 0, LV_PART_MAIN);
@@ -1213,7 +1368,7 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
                 // remember free the data
                 SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)malloc(sizeof(SolanaAddressLearnMoreData));
                 if (data != NULL) {
-                    const char* address = accounts->data[j] + 6; // remove "Table:" prefix
+                    const char* address = accounts->data[j]; 
                     size_t address_len = strlen(address);
                     data->address = (char*)malloc(address_len + 1);
                     strcpy(data->address, address);
@@ -1292,6 +1447,9 @@ void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)
         GuiShowSplTokenTransferOverview(parent, overviewData);
     } else if (0 == strcmp(overviewData->display_type, "squads_proposal")) {
         GuiShowSolTxSquadsProposalOverview(parent, overviewData);
+    } else if (0 == strcmp(overviewData->display_type, "jupiterv6_swap")) {
+        // todo add jupiterv6 swap overview
+        GuiShowJupiterV6SwapOverview(parent, overviewData);
     } else {
         GuiShowSolTxInstructionsOverview(parent, overviewData);
     }

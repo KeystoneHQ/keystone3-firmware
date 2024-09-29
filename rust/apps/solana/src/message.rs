@@ -114,17 +114,6 @@ impl Message {
                             .unwrap_or("Unknown Account".to_string())
                     })
                     .collect::<Vec<String>>();
-                // if account contains #, it means it's a table account we add "Table" to the head
-                let pretty_accounts = accounts
-                    .iter()
-                    .map(|v| {
-                        if v.contains("#") {
-                            format!("Table:{}", v)
-                        } else {
-                            v.to_string()
-                        }
-                    })
-                    .collect::<Vec<String>>();
                 let program_account =
                     base58::encode(&self.accounts[usize::from(instruction.program_index)].value);
                 // parse instruction data
@@ -137,7 +126,7 @@ impl Message {
                         },
                         kind: ProgramDetail::Instruction(ProgramDetailInstruction {
                             data: base58::encode(&instruction.data),
-                            accounts: pretty_accounts,
+                            accounts,
                             program_account,
                         }),
                     }),

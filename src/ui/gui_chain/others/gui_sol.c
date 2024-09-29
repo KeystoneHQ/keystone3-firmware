@@ -1245,6 +1245,10 @@ static void GuiShowSolTxMultiSigCreateOverview(lv_obj_t *parent, PtrT_DisplaySol
     lv_obj_align_to(firstTransferCardContainer, totalValueContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 }
 
+static bool CheckIsAddressLookupTableAccount(const char* account) {
+    // if address is containe "#" then it is a AddressLookupTable account
+    return strchr(account, '#') != NULL;
+}
 
 static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
 {
@@ -1355,8 +1359,7 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
             lv_obj_set_flex_grow(account_label, 1);
             lv_obj_set_flex_align(orderLabel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
             // check whether the account is a AddressLookupTable account
-            // if account is start with "Table", then it is a AddressLookupTable account
-            if (strncmp(accounts->data[j], "Table", 5) == 0) {
+            if (CheckIsAddressLookupTableAccount(accounts->data[j])) {
                 lv_label_set_text(account_label, accounts->data[j] + 6);
                 lv_obj_t *info_icon = GuiCreateImg(account_cont, &imgInfoSmall);
                 lv_obj_set_style_pad_right(info_icon, 0, LV_PART_MAIN);
@@ -1365,7 +1368,7 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
                 // remember free the data
                 SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)malloc(sizeof(SolanaAddressLearnMoreData));
                 if (data != NULL) {
-                    const char* address = accounts->data[j] + 6; // remove "Table:" prefix
+                    const char* address = accounts->data[j]; 
                     size_t address_len = strlen(address);
                     data->address = (char*)malloc(address_len + 1);
                     strcpy(data->address, address);

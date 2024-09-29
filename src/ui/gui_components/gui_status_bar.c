@@ -362,9 +362,6 @@ static int GetDisplayPercent(int actualPercent, bool charging)
     static const int thresholds[] = {20, 40, 60, 80, 100};
     static const int displayValuesDischarge[] = {20, 40, 60, 80, 100};
     static const int displayValuesCharge[] = {0, 20, 40, 60, 80};
-    static int lastDisplayPercent = -1;
-    static int g_highestPercent = 100;
-    static int g_lowestPercent = 0;
     uint8_t currentPercent = 0;
 
     int size = sizeof(thresholds) / sizeof(thresholds[0]);
@@ -385,14 +382,6 @@ static int GetDisplayPercent(int actualPercent, bool charging)
         g_currentDisplayPercent = currentPercent;
     }
 
-    if (g_currentDisplayPercent == -1) {
-        if (currentPercent <= 20) {
-            g_currentDisplayPercent = 20;
-        } else {
-            g_currentDisplayPercent = currentPercent;
-        }
-    }
-
     if (charging) {
         if (currentPercent >= g_currentDisplayPercent) {
             g_currentDisplayPercent = currentPercent;
@@ -402,7 +391,14 @@ static int GetDisplayPercent(int actualPercent, bool charging)
             g_currentDisplayPercent = currentPercent;
         }
     }
-    // last_charging_state = charging;
+
+    if (g_currentDisplayPercent == -1) {
+        if (currentPercent <= 20) {
+            g_currentDisplayPercent = 20;
+        } else {
+            g_currentDisplayPercent = currentPercent;
+        }
+    }
 
     return g_currentDisplayPercent;
 }
@@ -432,7 +428,7 @@ void GuiStatusBarSetBattery(uint8_t percent, bool charging)
     }
 
     int displayPercent = GetDisplayPercent(percent, charging);
-    if (displayPercent == 20) {
+    if (displayPercent <= 20) {
         lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
         lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower20);
         lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);

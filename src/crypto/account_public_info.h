@@ -172,9 +172,31 @@ void SetFirstReceive(const char* chainName, bool isFirst);
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count);
 char *GetXPubPath(uint8_t index);
 void CalculateTonChecksum(uint8_t *entropy, char* output);
+uint32_t GetAccountReceiveIndex(const char* chainName);
+void SetAccountReceiveIndex(const char* chainName, uint32_t index);
+uint32_t GetAccountReceivePath(const char* chainName);
+void SetAccountReceivePath(const char* chainName, uint32_t index);
+uint32_t GetAccountIndex(const char* chainName);
+void SetAccountIndex(const char* chainName, uint32_t index);
+void SetConnectWalletPathIndex(const char* walletName, uint32_t index);
+uint32_t GetConnectWalletPathIndex(const char* walletName);
+uint32_t GetConnectWalletAccountIndex(const char* walletName);
+void SetConnectWalletAccountIndex(const char* walletName, uint32_t index);
+uint32_t GetConnectWalletNetwork(const char* walletName);
+void SetConnectWalletNetwork(const char* walletName, uint32_t index);
 
+#ifdef BTC_ONLY
 void ExportMultiSigXpub(ChainType chainType);
 void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager);
 int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWalletManager_t *manager);
+
+void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode);
+uint32_t GetAccountMultiReceiveIndex(char *verifyCode);
+uint32_t GetAccountTestReceiveIndex(const char* chainName);
+void SetAccountTestReceiveIndex(const char* chainName, uint32_t index);
+uint32_t GetAccountTestReceivePath(const char* chainName);
+void SetAccountTestReceivePath(const char* chainName, uint32_t index);
+void DeleteAccountMultiReceiveIndex(uint32_t index, char *verifyCode);
+#endif
 #endif
 

@@ -47,7 +47,8 @@ def build_firmware(environment, options, bin_type):
         if option == "debugmemory":
             cmd += ' -DDEBUG_MEMORY=true'
         if option == "simulator":
-            cmd += ' -DCMAKE_BUILD_TYPE=Simulator'
+            cmd += ' -DBUILD_TYPE=Simulator'
+            cmd += ' -DCMAKE_BUILD_TYPE=Debug'
         # add more option here.
 
     cmd += " -DRU_SUPPORT=true"

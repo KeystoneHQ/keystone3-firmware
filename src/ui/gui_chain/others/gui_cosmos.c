@@ -26,8 +26,8 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_SCRT, "secret", 529, XPUB_TYPE_SCRT, "secret-4"},
     {CHAIN_AKT, "akash", 118, XPUB_TYPE_COSMOS, "akashnet-2"},
     {CHAIN_CRO, "cro", 394, XPUB_TYPE_CRO, "crypto-org-chain-mainnet-1"},
-    {CHAIN_RUNE, "thor", 931, XPUB_TYPE_THOR, "thorchain-mainnet-v1"},
     {CHAIN_CACAO, "maya", 931, XPUB_TYPE_MAYA, "mayachain-mainnet-v1"},
+    {CHAIN_RUNE, "thor", 931, XPUB_TYPE_THOR, "thorchain-1"},
     {CHAIN_IOV, "star", 234, XPUB_TYPE_IOV, "iov-mainnet-ibc"},
     {CHAIN_ROWAN, "sif", 118, XPUB_TYPE_COSMOS, "sifchain-1"},
     {CHAIN_CTK, "shentu", 118, XPUB_TYPE_COSMOS, "shentu-2.2"},
@@ -65,13 +65,13 @@ char *GetCosmosChainAddressByCoinTypeAndIndex(uint8_t chainType,  uint32_t addre
     snprintf_s(rootPath, BUFFER_SIZE_32, "M/44'/%u'/0'", chain->coinType);
     snprintf_s(hdPath, BUFFER_SIZE_32, "%s/0/%u", rootPath, address_index);
     xPub = GetCurrentAccountPublicKey(chain->xpubType);
-    return cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
+    return (char *) cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
 }
 
 char *GetKeplrConnectionDisplayAddressByIndex(uint32_t index)
 {
     SimpleResponse_c_char *result;
-    result = GetCosmosChainAddressByCoinTypeAndIndex(CHAIN_ATOM, index);
+    result = (SimpleResponse_c_char *) GetCosmosChainAddressByCoinTypeAndIndex(CHAIN_ATOM, index);
     if (result->error_code == 0) {
         snprintf_s(g_cosmosAddr, MAX_COSMOS_ADDR_LEN, "%s", result->data);
     }

@@ -4,6 +4,7 @@
 #include "gui_home_widgets.h"
 #include "gui_pending_hintbox.h"
 #include "gui_lock_widgets.h"
+#include "gui_scan_widgets.h"
 
 static int32_t GuiHomeViewInit(void)
 {
@@ -32,6 +33,9 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case GUI_EVENT_RESTART:
         GuiHomeRestart();
         break;
+    case GUI_EVENT_CHANGE_LANGUAGE:
+        GuiHomeRestart();
+        return ERR_GUI_UNHANDLED;
     case GUI_EVENT_REFRESH:
         GuiHomeRefresh();
         if (param != NULL) {
@@ -44,6 +48,7 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_INIT_GET_CURRENT_WALLET_DESC:
         GuiHomeSetWalletDesc((WalletDesc_t *)param);
         break;
+#ifndef BTC_ONLY
     case SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM:
     case SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM:
         GuiShowRsaSetupasswordHintbox();
@@ -79,6 +84,14 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         break;
     case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS:
         GuiShowRsaInitializatioCompleteHintbox();
+        break;
+#endif
+    case SIG_QRCODE_VIEW_SCAN_FAIL:
+        GuiScanResult(false, param);
+        break;
+    case SIG_QRCODE_VIEW_SCAN_PASS:
+        printf("%s line = %d.......\n", __func__, __LINE__);
+        GuiScanResult(true, param);
         break;
     default:
         return ERR_GUI_UNHANDLED;

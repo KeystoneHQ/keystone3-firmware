@@ -78,7 +78,7 @@ void GuiBtcWalletProfileRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
         CreateBtcWalletProfileEntranceRefresh(g_walletProfile.profileView);
     } else {
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_single_sign_title"));
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_single_sign_title_text"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         lv_obj_t *label = lv_obj_get_child(g_setDefaultBtn, 0);
         if (GetCurrentWalletIndex() == SINGLE_WALLET) {
@@ -162,7 +162,7 @@ static void CreateBtcWalletProfileEntranceRefresh(lv_obj_t *parent)
         lv_obj_align(button, LV_ALIGN_TOP_LEFT, 0, 294);
     } else {
         for (int i = 0; i < MAX_MULTI_SIG_WALLET_NUMBER;) {
-            char desc[BUFFER_SIZE_16] = {0};
+            char desc[BUFFER_SIZE_32] = {0};
             uint16_t height = 84;
             uint16_t offSet = 0;
             MultiSigWalletItem_t *item = GetCurrenMultisigWalletByIndex(i);
@@ -276,7 +276,7 @@ static void OpenExportShowXpubHandler(lv_event_t *e)
     g_noticeWindow = GuiCreateHintBox(408 - offset);
     lv_obj_t *title = GuiCreateIllustrateLabel(g_noticeWindow, _("wallet_profile_multi_wallet_show_xpub"));
     lv_obj_align(title, LV_ALIGN_DEFAULT, 36, 422 + offset);
-    lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow,  &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);
+    lv_obj_t *closeBtn = GuiCreateImgButton(g_noticeWindow, &imgClose, 64, CloseHintBoxHandler, &g_noticeWindow);
     lv_obj_align(closeBtn, LV_ALIGN_DEFAULT, 394, 405 + offset);
 
     lv_obj_t *button = GuiCreateSelectButton(g_noticeWindow, _("wallet_profile_single_wallet_title"), &imgArrowRight, OpenBtcExportViewHandler, &testStatus[0], false);

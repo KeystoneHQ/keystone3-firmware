@@ -65,8 +65,10 @@ static void CloseChooseAutoShutdownHandler(lv_event_t* e);
 static void SelectAutoShutdownHandler(lv_event_t *e);
 static uint32_t GetAutoShutdownTimeByEnum(AUTO_SHUTDOWN_ENUM shutdownTime);
 static const char *GetAutoShutdownTimeDescByLockTime(void);
+#ifndef BTC_ONLY
 static void NftScreenSaverSwitchHandler(lv_event_t * e);
 static void OpenNftTutorialHandler(lv_event_t *e);
+#endif
 
 void GuiDisplayWidgetsInit()
 {
@@ -178,6 +180,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
     lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 84);
 
+#ifndef BTC_ONLY
     label = GuiCreateTextLabel(parent, _("nft_screen_saver"));
     lv_obj_t *img = GuiCreateImg(parent, &imgInfo);
     GuiButton_t nftTable[] = {
@@ -187,6 +190,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
     lv_obj_t *btn = GuiCreateButton(parent, lv_obj_get_self_width(label) + lv_obj_get_self_width(img) + 16, 48, nftTable, NUMBER_OF_ARRAYS(nftTable),
                                     OpenNftTutorialHandler, NULL);
     lv_obj_set_style_radius(btn, 12, LV_PART_MAIN);
+
     lv_obj_t *nftSwitch = GuiCreateSwitch(parent);
     if (!IsNftScreenValid()) {
         lv_obj_set_style_bg_opa(nftSwitch, LV_OPA_30, LV_PART_KNOB);
@@ -206,7 +210,7 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
     button = GuiCreateButton(parent, 456, 84, nftTable, NUMBER_OF_ARRAYS(nftTable),
                              NftScreenSaverSwitchHandler, nftSwitch);
     GuiAlignToPrevObj(button, LV_ALIGN_OUT_BOTTOM_MID, 0, 25);
-
+#endif
     label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_auto_lock"));
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRight);
     const char *currentLockTime = GetAutoLockTimeDescByLockTime();
@@ -574,6 +578,7 @@ static const char *GetAutoShutdownTimeDescByLockTime(void)
     return _("system_settings_screen_lock_auto_power_off_never");
 }
 
+#ifndef BTC_ONLY
 static void NftScreenSaverSwitchHandler(lv_event_t * e)
 {
     lv_obj_t * obj = lv_event_get_user_data(e);
@@ -621,3 +626,4 @@ static void OpenNftTutorialHandler(lv_event_t *e)
     lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(button, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
+#endif

@@ -1,12 +1,22 @@
 #include "service_export_address.h"
 #include "user_msg.h"
+#include "user_utils.h"
+#include "gui.h"
 #include "gui_lock_widgets.h"
+#include "gui_home_widgets.h"
+// #include "gui_lock_widgets.h"
 
 /* DEFINES */
 
 /* TYPEDEFS */
 enum Chain {
     ETH,
+};
+
+enum {
+    OFFSET_CHAIN = 0,
+    OFFSET_WALLET = 2,
+    OFFSET_TYPE = 4
 };
 
 struct EthParams {
@@ -49,27 +59,12 @@ static bool IsValidParams(struct EthParams *params)
 
 static struct EthParams *ParseParams(char *data)
 {
-    cJSON *json = cJSON_Parse(data);
     struct EthParams *params = NewParams();
+    params->n = 0;
+    params->chain = (uint8_t)extract_16bit_value(data, OFFSET_CHAIN);
+    params->wallet = (uint8_t)extract_16bit_value(data, OFFSET_WALLET);
+    params->type = (uint8_t)extract_16bit_value(data, OFFSET_TYPE);
 
-    cJSON *n = cJSON_GetObjectItem(json, "n");
-    cJSON *type = cJSON_GetObjectItem(json, "type");
-    cJSON *chain = cJSON_GetObjectItem(json, "chain");
-    cJSON *wallet = cJSON_GetObjectItem(json, "wallet");
-
-    if (n != NULL && n->type == cJSON_Number) {
-        params->n = n->valueint;
-    }
-    if (type != NULL && type->type == cJSON_Number) {
-        params->type = type->valueint;
-    }
-    if (chain != NULL && chain->type == cJSON_Number) {
-        params->chain = chain->valueint;
-    }
-    if (wallet != NULL && wallet->type == cJSON_Number) {
-        params->wallet = wallet->valueint;
-    }
-    cJSON_Delete(json);
     return params;
 }
 
@@ -124,43 +119,42 @@ static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
 #endif
 }
 
-static bool CheckExportAcceptable(EAPDURequestPayload_t payload)
+static bool CheckExportAcceptable(EAPDURequestPayload_t *payload)
 {
     if (GuiLockScreenIsTop()) {
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_DISALLOWED, "Export address is not allowed when the device is locked");
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload->requestID, PRS_EXPORT_ADDRESS_DISALLOWED, "Export address is not allowed when the device is locked");
         return false;
     }
     // Only allow on specific pages
     if (!GuiHomePageIsTop()) {
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_DISALLOWED, "Export address is just allowed on specific pages");
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload->requestID, PRS_EXPORT_ADDRESS_DISALLOWED, "Export address is just allowed on specific pages");
         return false;
     }
     return true;
 }
 
-void ExportAddressService(EAPDURequestPayload_t payload)
+void ExportAddressService(EAPDURequestPayload_t *payload)
 {
     if (!CheckExportAcceptable(payload)) {
         return;
     }
 
     if (g_exportAddressParams != NULL) {
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_BUSY, "Export address is busy, please try again later");
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload->requestID, PRS_EXPORT_ADDRESS_BUSY, "Export address is busy, please try again later");
         SRAM_FREE(g_exportAddressParams);
         g_exportAddressParams = NULL;
         return;
     }
 
-    struct EthParams *params = ParseParams((char *)payload.data);
-
+    struct EthParams *params = ParseParams((char *)payload->data);
     if (!IsValidParams(params)) {
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_INVALID_PARAMS, "Invalid params");
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload->requestID, PRS_EXPORT_ADDRESS_INVALID_PARAMS, "Invalid params");
         return;
     }
 
     if (params->chain == ETH) {
         g_exportAddressParams = (ExportAddressParams_t *)SRAM_MALLOC(sizeof(ExportAddressParams_t));
-        g_exportAddressParams->requestID = payload.requestID;
+        g_exportAddressParams->requestID = payload->requestID;
         g_exportAddressParams->n = params->n;
         g_exportAddressParams->type = params->type;
         g_exportAddressParams->wallet = params->wallet;
@@ -172,7 +166,7 @@ void ExportAddressService(EAPDURequestPayload_t payload)
         GotoResultPage(resultPage);
         SRAM_FREE(resultPage);
     } else {
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload.requestID, PRS_EXPORT_ADDRESS_UNSUPPORTED_CHAIN, "Unsupported chain");
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload->requestID, PRS_EXPORT_ADDRESS_UNSUPPORTED_CHAIN, "Unsupported chain");
     }
 
     SRAM_FREE(params);

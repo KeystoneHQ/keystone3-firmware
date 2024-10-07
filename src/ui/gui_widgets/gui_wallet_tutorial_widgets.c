@@ -203,6 +203,15 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_KEPLR].items[0].qrTitle = _("connect_keplr_title");
     g_tutorials[WALLET_LIST_KEPLR].items[0].qrUrl = _("connect_keplr_link");
 
+
+    // WALLET_LIST_MINT_SCAN
+    g_tutorials[WALLET_LIST_MINT_SCAN].len = 1;
+    g_tutorials[WALLET_LIST_MINT_SCAN].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_MINT_SCAN].items[0].walletName = _("connect_mintscan_title");
+    g_tutorials[WALLET_LIST_MINT_SCAN].items[0].url = _("connect_mintscan_link");
+    g_tutorials[WALLET_LIST_MINT_SCAN].items[0].qrTitle = _("connect_mintscan_title");
+    g_tutorials[WALLET_LIST_MINT_SCAN].items[0].qrUrl = _("connect_mintscan_link");
+
     //WALLET_LIST_ARCONNECT
     g_tutorials[WALLET_LIST_ARCONNECT].len = 1;
     g_tutorials[WALLET_LIST_ARCONNECT].desc = _("connect_wallet_desc");
@@ -210,6 +219,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_ARCONNECT].items[0].url = _("connect_arconnect_link");
     g_tutorials[WALLET_LIST_ARCONNECT].items[0].qrTitle = _("connect_arconnect_title");
     g_tutorials[WALLET_LIST_ARCONNECT].items[0].qrUrl = _("connect_arconnect_link");
+
+    // WALLET_LIST_VESPR
+    g_tutorials[WALLET_LIST_VESPR].len = 1;
+    g_tutorials[WALLET_LIST_VESPR].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_VESPR].items[0].walletName = _("connect_vespr_title");
+    g_tutorials[WALLET_LIST_VESPR].items[0].url = _("connect_vespr_link");
+    g_tutorials[WALLET_LIST_VESPR].items[0].qrTitle = _("connect_vespr_title");
+    g_tutorials[WALLET_LIST_VESPR].items[0].qrUrl = _("connect_vespr_link");
 
     // WALLET_LIST_XBULL
     g_tutorials[WALLET_LIST_XBULL].len = 1;
@@ -277,6 +294,39 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_LEAP].items[0].url = _("connect_leap_link");
     g_tutorials[WALLET_LIST_LEAP].items[0].qrTitle = _("connect_leap_title");
     g_tutorials[WALLET_LIST_LEAP].items[0].qrUrl =  _("connect_leap_link");
+
+    // WALLET_LIST_NIGHTLY
+    g_tutorials[WALLET_LIST_NIGHTLY].len = 1;
+    g_tutorials[WALLET_LIST_NIGHTLY].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_NIGHTLY].items[0].walletName = _("tutorial_nightly_title");
+    g_tutorials[WALLET_LIST_NIGHTLY].items[0].url = _("tutorial_nightly_link");
+    g_tutorials[WALLET_LIST_NIGHTLY].items[0].qrTitle = _("tutorial_nightly_title");
+    g_tutorials[WALLET_LIST_NIGHTLY].items[0].qrUrl = _("tutorial_nightly_link");
+
+
+    // WALLET_LIST_BEGIN
+    g_tutorials[WALLET_LIST_BEGIN].len = 1;
+    g_tutorials[WALLET_LIST_BEGIN].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_BEGIN].items[0].walletName = _("toturial_begin_title");
+    g_tutorials[WALLET_LIST_BEGIN].items[0].url = _("toturial_begin_link");
+    g_tutorials[WALLET_LIST_BEGIN].items[0].qrTitle = _("toturial_begin_title");
+    g_tutorials[WALLET_LIST_BEGIN].items[0].qrUrl = _("toturial_begin_link");
+
+    //WALLET_LIST_BITGET
+    g_tutorials[WALLET_LIST_BITGET].len = 1;
+    g_tutorials[WALLET_LIST_BITGET].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_BITGET].items[0].walletName = _("connect_bitget_title");
+    g_tutorials[WALLET_LIST_BITGET].items[0].url = _("connect_bitget_link");
+    g_tutorials[WALLET_LIST_BITGET].items[0].qrTitle = _("connect_bitget_title");
+    g_tutorials[WALLET_LIST_BITGET].items[0].qrUrl = _("connect_bitget_link");
+
+    // WALLET_LIST_HELIUM
+    g_tutorials[WALLET_LIST_HELIUM].len = 1;
+    g_tutorials[WALLET_LIST_HELIUM].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_HELIUM].items[0].walletName = _("connect_helium_title");
+    g_tutorials[WALLET_LIST_HELIUM].items[0].url = _("connect_helium_link");
+    g_tutorials[WALLET_LIST_HELIUM].items[0].qrTitle = _("connect_helium_title");
+    g_tutorials[WALLET_LIST_HELIUM].items[0].qrUrl = _("connect_helium_link");
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;
     g_tutorials[WALLET_LIST_BLUE].desc = _("connect_wallet_desc");

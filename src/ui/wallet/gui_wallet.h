@@ -20,14 +20,17 @@ UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountTyp
 UREncodeResult *GuiGetMetamaskData(void);
 #endif
 UREncodeResult *GuiGetOkxWalletData(void);
+UREncodeResult *GuiGetBitgetWalletData(void);
 #ifndef BTC_ONLY
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
+UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetPetraData(void);
 UREncodeResult *GuiGetSolflareData(void);
+UREncodeResult *GuiGetHeliumData(void);
 UREncodeResult *GuiGetXBullData(void);
 UREncodeResult *GuiGetBackpackData(void);
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index);
-UREncodeResult *GuiGetADADataByIndex(uint16_t index);
+UREncodeResult *GuiGetADADataByIndex(char *walletName);
 UREncodeResult *GuiGetImTokenData(void);
 UREncodeResult *GuiGetKeystoneWalletData(void);
 UREncodeResult *GuiGetThorWalletBtcData(void);

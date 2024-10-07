@@ -13,6 +13,9 @@
 #include "log_print.h"
 #include "protocol_parse.h"
 #include "assert.h"
+#include "user_msg.h"
+#include "drv_usb.h"
+#include "user_delay.h"
 
 /** @defgroup usbd_cdc
  * @brief usbd core module
@@ -390,10 +393,12 @@ static uint8_t usbd_cdc_DataIn(void* pdev, uint8_t epnum)
  */
 static uint8_t usbd_cdc_DataOut(void* pdev, uint8_t epnum)
 {
+void PushDataToField(uint8_t *data, uint16_t len);
     USB_OTG_EP* ep = &((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum];
     uint16_t rxCount  = ep->xfer_count;
-    //PrintArray("WEBUSB rx", USB_Rx_Buffer, rxCount);
-    ProtocolReceivedData(USB_Rx_Buffer, rxCount, USBD_cdc_SendBuffer);
+    PrintArray("WEBUSB rx", USB_Rx_Buffer, rxCount);
+    PushDataToField(USB_Rx_Buffer, rxCount);
+    PubValueMsg(SPRING_MSG_GET, rxCount);
     DCD_EP_PrepareRx(pdev, CDC_OUT_EP, (uint8_t*)(USB_Rx_Buffer), CDC_DATA_OUT_PACKET_SIZE);
     return USBD_OK;
 }
@@ -436,6 +441,11 @@ static uint8_t* USBD_cdc_GetCfgDesc(uint8_t speed, uint16_t* length)
 #endif
 }
 
+void USBD_cdc_SendBuffer_Cb(const uint8_t *data, uint32_t len)
+{
+    USBD_cdc_SendBuffer(data, len);
+}
+
 static void USBD_cdc_SendBuffer(const uint8_t *data, uint32_t len)
 {
     uint32_t sendLen;
@@ -443,12 +453,17 @@ static void USBD_cdc_SendBuffer(const uint8_t *data, uint32_t len)
     g_cdcSendIndex = 0;
 
     ASSERT(len <= CDC_TX_MAX_LENGTH);
+    if (!UsbInitState()) {
+        return;
+    }
     memcpy(g_cdcSendBuffer, data, len);
 
     while (g_cdcSendIndex < len) {
         remaining = len - g_cdcSendIndex;
         sendLen = remaining > CDC_PACKET_SIZE ? CDC_PACKET_SIZE : remaining;
 
+        while ((DCD_GetEPStatus(&g_usbDev, CDC_IN_EP) != USB_OTG_EP_TX_NAK)) {
+        }
         PrintArray("sendBuf USBD_cdc_SendBuffer", g_cdcSendBuffer + g_cdcSendIndex, sendLen);
         DCD_EP_Tx(&g_usbDev, CDC_IN_EP, g_cdcSendBuffer + g_cdcSendIndex, sendLen);
 

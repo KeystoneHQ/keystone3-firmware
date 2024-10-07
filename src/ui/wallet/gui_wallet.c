@@ -223,6 +223,40 @@ UREncodeResult *GuiGetArConnectData(void)
     return g_urEncode;
 }
 
+UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[10];
+    publicKeys->data = keys;
+    publicKeys->size = 10;
+    int16_t coinType = 0;
+    int16_t xpubBaseIndex = 0;
+    switch (coin) {
+    case CHAIN_SUI:
+        coinType = 784;
+        xpubBaseIndex = XPUB_TYPE_SUI_0;
+        break;
+    default:
+        printf("invalid coin type\r\n");
+        return NULL;
+    }
+    for (uint8_t i = 0; i < 10; i++) {
+        keys[i].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[i].path, BUFFER_SIZE_32, "m/44'/%u'/%u'/0'/0'", coinType, i);
+        keys[i].xpub = GetCurrentAccountPublicKey(xpubBaseIndex + i);
+    }
+    g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    for (uint8_t i = 0; i < 10; i++) {
+        SRAM_FREE(keys[i].path);
+    }
+    SRAM_FREE(publicKeys);
+    return g_urEncode;
+}
+
+
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin)
 {
     uint8_t mfp[4] = {0};
@@ -286,11 +320,15 @@ UREncodeResult *GuiGetPetraData(void)
     return g_urEncode;
 }
 
-UREncodeResult *GuiGetADADataByIndex(uint16_t index)
+UREncodeResult *GuiGetADADataByIndex(char *walletName)
 {
+    uint32_t index = GetConnectWalletAccountIndex(walletName);
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
-    char* xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
+    char* xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(
+            GetConnectWalletPathIndex(walletName),
+            index
+                                            ));
     char path[BUFFER_SIZE_32] = {0};
     sprintf(path, "1852'/1815'/%u'", index);
     ExtendedPublicKey xpubs[1];
@@ -350,7 +388,6 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
     return g_urEncode;
 }
 
-#endif
 
 UREncodeResult *GuiGetKeystoneWalletData(void)
 {
@@ -400,8 +437,6 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
     keys[8].path = GetXPubPath(XPUB_TYPE_ETH_BIP44_STANDARD);
     keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
 
-
-
     char serialNumber[256];
     GetSerialNumber(serialNumber);
     char firmwareVersion[12];
@@ -412,6 +447,46 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
     SRAM_FREE(public_keys);
     return g_urEncode;
 }
+#endif
+
+UREncodeResult *GuiGetBitgetWalletData(void)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    //   btc 4
+    // + eth 10
+    ExtendedPublicKey keys[14];
+    public_keys->data = keys;
+    public_keys->size = 14;
+    for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
+        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(BUFFER_SIZE_64);
+        snprintf_s(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, BUFFER_SIZE_64, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
+        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
+    }
+
+    keys[10].path = "m/44'/0'/0'";
+    keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+
+    keys[11].path = "m/49'/0'/0'";
+    keys[11].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+
+    keys[12].path = "m/84'/0'/0'";
+    keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+
+    keys[13].path = "m/86'/0'/0'";
+    keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+
+    char serialNumber[256];
+    GetSerialNumber(serialNumber);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+    g_urEncode = get_bitget_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    SRAM_FREE(public_keys);
+    return g_urEncode;
+}
+
 
 
 UREncodeResult *GuiGetOkxWalletData(void)
@@ -536,6 +611,50 @@ UREncodeResult *GuiGetSolflareData(void)
 #endif
 
 #ifndef BTC_ONLY
+UREncodeResult *GuiGetHeliumData(void)
+{
+    SOLAccountType accountType = GetHeliumAccountType();
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[10];
+    public_keys->data = keys;
+
+    if (accountType == SOLBip44) {
+        public_keys->size = 10;
+        for (int i = XPUB_TYPE_SOL_BIP44_0; i <= XPUB_TYPE_SOL_BIP44_9; i++) {
+            char *path = SRAM_MALLOC(BUFFER_SIZE_32);
+            snprintf_s(path, BUFFER_SIZE_32, "m/44'/501'/%d'", i - XPUB_TYPE_SOL_BIP44_0);
+            keys[i - XPUB_TYPE_SOL_BIP44_0].path = path;
+            keys[i - XPUB_TYPE_SOL_BIP44_0].xpub = GetCurrentAccountPublicKey(i);
+        }
+    } else if (accountType == SOLBip44ROOT) {
+        public_keys->size = 1;
+        char *path = SRAM_MALLOC(sizeof(char) * 32);
+        snprintf_s(path, BUFFER_SIZE_32, "m/44'/501'");
+        keys[0].path = path;
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_ROOT);
+    } else if (accountType == SOLBip44Change) {
+        public_keys->size = 10;
+        for (int i = XPUB_TYPE_SOL_BIP44_CHANGE_0; i <= XPUB_TYPE_SOL_BIP44_CHANGE_9; i++) {
+            char *path = SRAM_MALLOC(sizeof(char) * 32);
+            snprintf_s(path, BUFFER_SIZE_32, "m/44'/501'/%d'/0'", i - XPUB_TYPE_SOL_BIP44_CHANGE_0);
+            keys[i - XPUB_TYPE_SOL_BIP44_CHANGE_0].path = path;
+            keys[i - XPUB_TYPE_SOL_BIP44_CHANGE_0].xpub = GetCurrentAccountPublicKey(i);
+        }
+    }
+    g_urEncode = get_connect_solana_wallet_ur(mfp, sizeof(mfp), public_keys);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    for (int i = 0; i < public_keys->size; i++) {
+        SRAM_FREE(public_keys->data[i].path);
+    }
+    SRAM_FREE(public_keys);
+    return g_urEncode;
+}
+#endif
+
+#ifndef BTC_ONLY
 UREncodeResult *GuiGetXBullData(void)
 {
     uint8_t mfp[4] = {0};
@@ -609,13 +728,11 @@ UREncodeResult *GuiGetBackpackData(void)
     SRAM_FREE(public_keys);
     return g_urEncode;
 }
-#endif
-
 
 UREncodeResult *GuiGetThorWalletBtcData(void)
 {
 
-    uint8_t mfp[5] = {0};
+    uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
 
     PtrT_CSliceFFI_ExtendedPublicKey public_keys =
@@ -646,3 +763,4 @@ UREncodeResult *GuiGetThorWalletBtcData(void)
     CHECK_CHAIN_PRINT(urencode);
     return urencode;
 }
+#endif

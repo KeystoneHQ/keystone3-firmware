@@ -45,7 +45,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _sstack = .;
-        . = . + 0x4000;
+        . = . + 0x2000;
         . = ALIGN(4);
         _estack = .;
     } > SRAM
@@ -58,6 +58,15 @@ SECTIONS
 		_ebss = .;
 	} > SRAM
 
+	.data_parser_section 0x200FC000 (NOLOAD) :
+	{
+		__data_parser_start = .;
+		*(.data_parser_section)
+		. = ALIGN(4);
+		__data_parser_end = .;
+	} > SRAM
+	
+	
 	/DISCARD/ :
 	{
 		libc.a (*)

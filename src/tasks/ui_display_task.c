@@ -12,6 +12,7 @@
 #include "user_memory.h"
 #include "gui_chain.h"
 #include "drv_lcd_bright.h"
+#include "drv_mpu.h"
 #include "device_setting.h"
 #include "anti_tamper.h"
 #include "screenshot.h"
@@ -98,15 +99,21 @@ static void UiDisplayTask(void *argument)
     g_dynamicTick = LVGL_FAST_TICK_MS;
     g_fastModeCount = 0;
     osTimerStart(g_lvglTickTimer, g_dynamicTick);
-    osDelay(100);
+    osDelay(1000);
 
     printf("start ui display loop\r\n");
     printf("LV_HOR_RES=%d,LV_VER_RES=%d\r\n", LV_HOR_RES, LV_VER_RES);
-    printf("Tampered()=%d\n", Tampered());
     g_reboot = true;
+    bool isTampered = Tampered();
     LanguageInit();
+    if (isTampered) {
+        GuiFrameOpenViewWithParam(&g_initView, &isTampered, sizeof(isTampered));
+    } else {
+        GuiFrameOpenView(&g_initView);
+    }
     GuiFrameOpenView(&g_initView);
     SetLcdBright(GetBright());
+    MpuInit();
 
     while (1) {
         RefreshLvglTickMode();
@@ -142,6 +149,21 @@ static void UiDisplayTask(void *argument)
 #ifndef BTC_ONLY
             case UI_MSG_USB_TRANSPORT_VIEW: {
                 GuiFrameOpenViewWithParam(&g_USBTransportView, rcvMsg.buffer, rcvMsg.length);
+            }
+            break;
+            case UI_MSG_USB_TRANSPORT_NEXT_VIEW: {
+                if (GuiCheckIfTopView(&g_USBTransportView)) {
+                    GuiEmitSignal(SIG_CLOSE_USB_TRANSPORT, NULL, 0);
+                }
+            }
+            break;
+            case UI_MSG_USB_HARDWARE_VIEW: {
+                bool usb = true;
+                if (GuiCheckIfTopView(&g_keyDerivationRequestView)) {
+                    GuiEmitSignal(SIG_USB_HARDWARE_CALL_PARSE_UR, NULL, 0);
+                } else {
+                    GuiFrameOpenViewWithParam(&g_keyDerivationRequestView, &usb, sizeof(usb));
+                }
             }
             break;
 #endif
@@ -255,7 +277,9 @@ void DrawNftImage(void)
 
 void SetNftLockState(void)
 {
-    g_lockNft = true;
+    if (GetNftScreenSaver() && IsNftScreenValid()) {
+        g_lockNft = true;
+    }
 }
 
 void NftLockQuit(void)
@@ -271,12 +295,12 @@ void NftLockQuit(void)
 
 void NftLockDecodeTouchQuit(void)
 {
-    static bool quitArea = false;
-    TouchStatus_t *pStatus;
-    pStatus = GetLatestTouchStatus();
     if (g_lockNft == false) {
         return;
     }
+    static bool quitArea = false;
+    TouchStatus_t *pStatus;
+    pStatus = GetLatestTouchStatus();
     if (pStatus->touch) {
         quitArea = true;
     } else {
@@ -312,10 +336,12 @@ static void __SetLvglHandlerAndSnapShot(uint32_t value)
         while (LcdBusy()) {
             osDelay(1);
         }
-
-        if (g_lockNft && GetNftScreenSaver() && IsNftScreenValid() && !IsWakeupByFinger()) {
+#ifndef BTC_ONLY
+        if (g_lockNft && !IsWakeupByFinger()) {
             DrawNftImage();
-        } else {
+        } else
+#endif
+        {
             LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)snapShotAddr);
             if (snapShotAddr != NULL) {
                 EXT_FREE(snapShotAddr);

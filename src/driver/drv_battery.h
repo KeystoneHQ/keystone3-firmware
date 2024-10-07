@@ -17,12 +17,13 @@ uint32_t GetBatteryMilliVolt(void);
 
 bool BatteryIntervalHandler(void);
 uint8_t GetBatterPercent(void);
+uint8_t GetCurrentDisplayPercent(void);
 uint32_t GetBatteryInterval(void);
 uint8_t GetBatteryPercentByMilliVolt(uint32_t milliVolt, bool discharge);
 
 void BatteryTest(int argc, char *argv[]);
 
 #define LOW_BATTERY_LIMIT               20
-#define CHECK_BATTERY_LOW_POWER()       ((GetBatterPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)
+#define CHECK_BATTERY_LOW_POWER()       ((GetCurrentDisplayPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)
 
 #endif

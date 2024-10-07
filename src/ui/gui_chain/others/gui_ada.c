@@ -11,6 +11,7 @@
 #include "gui_hintbox.h"
 #include "gui.h"
 #include "user_memory.h"
+#include "drv_mpu.h"
 
 #define ADA_ADD_MAX_LEN             (150)
 
@@ -20,51 +21,28 @@ static struct URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static char g_adaBaseAddr[ADA_ADD_MAX_LEN];
 static char *xpub = NULL;
-static AdaXPubType g_adaXpubTypes[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
-static AdaXPubType g_receivePageAdaXpubTypes[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
-static AdaXPubType g_keyDerivationAdaXpubTypes[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
-
 static void Try2FixAdaPathType();
-
-void SetAdaXPubType(AdaXPubType type)
-{
-    g_adaXpubTypes[GetCurrentAccountIndex()] = type;
-}
 
 AdaXPubType GetAdaXPubType(void)
 {
-    return g_adaXpubTypes[GetCurrentAccountIndex()];
+    return GetAccountReceivePath("ADA");
+    // return g_adaXpubTypes[GetCurrentAccountIndex()];
 }
 
 void SetReceivePageAdaXPubType(AdaXPubType type)
 {
-    g_receivePageAdaXpubTypes[GetCurrentAccountIndex()] = type;
-}
-
-void SetReceivePageAdaXPubTypeByAccountIndex(AdaXPubType type, uint8_t accountIndex)
-{
-    g_receivePageAdaXpubTypes[accountIndex] = type;
+    SetAccountReceivePath("ADA", type);
 }
 
 
 AdaXPubType GetReceivePageAdaXPubType(void)
 {
-    return g_receivePageAdaXpubTypes[GetCurrentAccountIndex()];
-}
-
-void SetKeyDerivationAdaXPubType(AdaXPubType type)
-{
-    g_keyDerivationAdaXpubTypes[GetCurrentAccountIndex()] = type;
-}
-
-void SetKeyDerivationAdaXpubTypesByAccountIndex(AdaXPubType type, uint8_t accountIndex)
-{
-    g_keyDerivationAdaXpubTypes[accountIndex] = type;
+    return GetAccountReceivePath("ADA");
 }
 
 AdaXPubType GetKeyDerivationAdaXPubType(void)
 {
-    return g_keyDerivationAdaXpubTypes[GetCurrentAccountIndex()];
+    return GetConnectWalletAccountIndex("adaXpub");
 }
 
 static uint8_t GetXPubIndexByPath(char *path);
@@ -277,9 +255,9 @@ PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
 static void Try2FixAdaPathType()
 {
     if (GetAdaXPubType() == LEDGER_ADA) {
-        SetAdaXPubType(STANDARD_ADA);
+        SetReceivePageAdaXPubType(STANDARD_ADA);
     } else {
-        SetAdaXPubType(LEDGER_ADA);
+        SetReceivePageAdaXPubType(LEDGER_ADA);
     }
 }
 
@@ -675,179 +653,75 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     return encodeResult;
 }
 
-ChainType GetAdaXPubTypeByIndex(uint16_t index)
+ChainType GetAdaXPubTypeByIndexAndDerivationType(AdaXPubType type, uint16_t index)
 {
     switch (index) {
     case 0:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_0 : XPUB_TYPE_LEDGER_ADA_0;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_0 : XPUB_TYPE_LEDGER_ADA_0;
     case 1:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_1 : XPUB_TYPE_LEDGER_ADA_1;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_1 : XPUB_TYPE_LEDGER_ADA_1;
     case 2:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_2 : XPUB_TYPE_LEDGER_ADA_2;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_2 : XPUB_TYPE_LEDGER_ADA_2;
     case 3:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_3 : XPUB_TYPE_LEDGER_ADA_3;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_3 : XPUB_TYPE_LEDGER_ADA_3;
     case 4:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_4 : XPUB_TYPE_LEDGER_ADA_4;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_4 : XPUB_TYPE_LEDGER_ADA_4;
     case 5:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_5 : XPUB_TYPE_LEDGER_ADA_5;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_5 : XPUB_TYPE_LEDGER_ADA_5;
     case 6:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_6 : XPUB_TYPE_LEDGER_ADA_6;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_6 : XPUB_TYPE_LEDGER_ADA_6;
     case 7:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_7 : XPUB_TYPE_LEDGER_ADA_7;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_7 : XPUB_TYPE_LEDGER_ADA_7;
     case 8:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_8 : XPUB_TYPE_LEDGER_ADA_8;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_8 : XPUB_TYPE_LEDGER_ADA_8;
     case 9:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_9 : XPUB_TYPE_LEDGER_ADA_9;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_9 : XPUB_TYPE_LEDGER_ADA_9;
     case 10:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_10 : XPUB_TYPE_LEDGER_ADA_10;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_10 : XPUB_TYPE_LEDGER_ADA_10;
     case 11:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_11 : XPUB_TYPE_LEDGER_ADA_11;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_11 : XPUB_TYPE_LEDGER_ADA_11;
     case 12:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_12 : XPUB_TYPE_LEDGER_ADA_12;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_12 : XPUB_TYPE_LEDGER_ADA_12;
     case 13:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_13 : XPUB_TYPE_LEDGER_ADA_13;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_13 : XPUB_TYPE_LEDGER_ADA_13;
     case 14:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_14 : XPUB_TYPE_LEDGER_ADA_14;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_14 : XPUB_TYPE_LEDGER_ADA_14;
     case 15:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_15 : XPUB_TYPE_LEDGER_ADA_15;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_15 : XPUB_TYPE_LEDGER_ADA_15;
     case 16:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_16 : XPUB_TYPE_LEDGER_ADA_16;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_16 : XPUB_TYPE_LEDGER_ADA_16;
     case 17:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_17 : XPUB_TYPE_LEDGER_ADA_17;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_17 : XPUB_TYPE_LEDGER_ADA_17;
     case 18:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_18 : XPUB_TYPE_LEDGER_ADA_18;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_18 : XPUB_TYPE_LEDGER_ADA_18;
     case 19:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_19 : XPUB_TYPE_LEDGER_ADA_19;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_19 : XPUB_TYPE_LEDGER_ADA_19;
     case 20:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_20 : XPUB_TYPE_LEDGER_ADA_20;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_20 : XPUB_TYPE_LEDGER_ADA_20;
     case 21:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_21 : XPUB_TYPE_LEDGER_ADA_21;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_21 : XPUB_TYPE_LEDGER_ADA_21;
     case 22:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_22 : XPUB_TYPE_LEDGER_ADA_22;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_22 : XPUB_TYPE_LEDGER_ADA_22;
     case 23:
-        return GetAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_23 : XPUB_TYPE_LEDGER_ADA_23;
+        return type == STANDARD_ADA ? XPUB_TYPE_ADA_23 : XPUB_TYPE_LEDGER_ADA_23;
     default:
         return XPUB_TYPE_ADA_0;
     }
 }
 
-ChainType GetKeyDerivationAdaXPubTypeByIndex(uint16_t index)
+ChainType GetAdaXPubTypeByIndex(uint16_t index)
 {
-    switch (index) {
-    case 0:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_0 : XPUB_TYPE_LEDGER_ADA_0;
-    case 1:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_1 : XPUB_TYPE_LEDGER_ADA_1;
-    case 2:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_2 : XPUB_TYPE_LEDGER_ADA_2;
-    case 3:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_3 : XPUB_TYPE_LEDGER_ADA_3;
-    case 4:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_4 : XPUB_TYPE_LEDGER_ADA_4;
-    case 5:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_5 : XPUB_TYPE_LEDGER_ADA_5;
-    case 6:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_6 : XPUB_TYPE_LEDGER_ADA_6;
-    case 7:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_7 : XPUB_TYPE_LEDGER_ADA_7;
-    case 8:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_8 : XPUB_TYPE_LEDGER_ADA_8;
-    case 9:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_9 : XPUB_TYPE_LEDGER_ADA_9;
-    case 10:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_10 : XPUB_TYPE_LEDGER_ADA_10;
-    case 11:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_11 : XPUB_TYPE_LEDGER_ADA_11;
-    case 12:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_12 : XPUB_TYPE_LEDGER_ADA_12;
-    case 13:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_13 : XPUB_TYPE_LEDGER_ADA_13;
-    case 14:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_14 : XPUB_TYPE_LEDGER_ADA_14;
-    case 15:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_15 : XPUB_TYPE_LEDGER_ADA_15;
-    case 16:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_16 : XPUB_TYPE_LEDGER_ADA_16;
-    case 17:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_17 : XPUB_TYPE_LEDGER_ADA_17;
-    case 18:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_18 : XPUB_TYPE_LEDGER_ADA_18;
-    case 19:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_19 : XPUB_TYPE_LEDGER_ADA_19;
-    case 20:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_20 : XPUB_TYPE_LEDGER_ADA_20;
-    case 21:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_21 : XPUB_TYPE_LEDGER_ADA_21;
-    case 22:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_22 : XPUB_TYPE_LEDGER_ADA_22;
-    case 23:
-        return GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_23 : XPUB_TYPE_LEDGER_ADA_23;
-    default:
-        return XPUB_TYPE_ADA_0;
-    }
+    return GetAdaXPubTypeByIndexAndDerivationType(GetAdaXPubType(), index);
 }
 
 ChainType GetReceivePageAdaXPubTypeByIndex(uint16_t index)
 {
-    switch (index) {
-    case 0:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_0 : XPUB_TYPE_LEDGER_ADA_0;
-    case 1:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_1 : XPUB_TYPE_LEDGER_ADA_1;
-    case 2:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_2 : XPUB_TYPE_LEDGER_ADA_2;
-    case 3:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_3 : XPUB_TYPE_LEDGER_ADA_3;
-    case 4:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_4 : XPUB_TYPE_LEDGER_ADA_4;
-    case 5:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_5 : XPUB_TYPE_LEDGER_ADA_5;
-    case 6:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_6 : XPUB_TYPE_LEDGER_ADA_6;
-    case 7:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_7 : XPUB_TYPE_LEDGER_ADA_7;
-    case 8:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_8 : XPUB_TYPE_LEDGER_ADA_8;
-    case 9:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_9 : XPUB_TYPE_LEDGER_ADA_9;
-    case 10:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_10 : XPUB_TYPE_LEDGER_ADA_10;
-    case 11:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_11 : XPUB_TYPE_LEDGER_ADA_11;
-    case 12:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_12 : XPUB_TYPE_LEDGER_ADA_12;
-    case 13:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_13 : XPUB_TYPE_LEDGER_ADA_13;
-    case 14:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_14 : XPUB_TYPE_LEDGER_ADA_14;
-    case 15:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_15 : XPUB_TYPE_LEDGER_ADA_15;
-    case 16:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_16 : XPUB_TYPE_LEDGER_ADA_16;
-    case 17:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_17 : XPUB_TYPE_LEDGER_ADA_17;
-    case 18:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_18 : XPUB_TYPE_LEDGER_ADA_18;
-    case 19:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_19 : XPUB_TYPE_LEDGER_ADA_19;
-    case 20:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_20 : XPUB_TYPE_LEDGER_ADA_20;
-    case 21:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_21 : XPUB_TYPE_LEDGER_ADA_21;
-    case 22:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_22 : XPUB_TYPE_LEDGER_ADA_22;
-    case 23:
-        return GetReceivePageAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_23 : XPUB_TYPE_LEDGER_ADA_23;
-    default:
-        return XPUB_TYPE_ADA_0;
-    }
+    return GetAdaXPubTypeByIndexAndDerivationType(GetReceivePageAdaXPubType(), index);
 }
 
-char *GuiGetADABaseAddressByIndex(uint16_t index)
+char *GuiGetADABaseAddressByXPub(char *xPub)
 {
-    char *xPub = NULL;
     SimpleResponse_c_char *result = NULL;
-    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
     result = cardano_get_base_address(xPub, 0, 1);
     if (result->error_code == 0) {
         strcpy(g_adaBaseAddr, result->data);

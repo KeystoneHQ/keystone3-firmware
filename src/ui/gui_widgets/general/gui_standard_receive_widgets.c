@@ -121,7 +121,6 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e);
 static void SetKeyboardValid(bool validation);
 static void UpdateConfirmIndexBtn(void);
 static void RefreshSwitchAddress(void);
-static bool IsIndexSelectChanged();
 static uint32_t* GetCosmosChainCurrentSelectIndex();
 
 static StandardReceiveWidgets_t g_standardReceiveWidgets;
@@ -208,10 +207,7 @@ static void UpdateConfirmIndexBtn(void)
     UpdateConfirmBtn();
 }
 
-static bool IsIndexSelectChanged()
-{
-    return g_tmpIndex != g_selectedIndex[GetCurrentAccountIndex()];
-}
+
 static void RefreshSwitchAddress(void)
 {
     AddressDataItem_t addressDataItem;
@@ -932,7 +928,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     }
     default:
         if (IsCosmosChain(g_chainCard)) {
-            result = GetCosmosChainAddressByCoinTypeAndIndex(g_chainCard, index);
+            result = (SimpleResponse_c_char *) GetCosmosChainAddressByCoinTypeAndIndex(g_chainCard, index);
         } else {
             printf("Standard Receive ModelGetAddress cannot match %d\r\n", index);
             return;
@@ -1171,6 +1167,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
             break;
         }
     }
+    SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
 }
 
 static uint32_t GetCurrentSelectIndex()
@@ -1178,6 +1175,7 @@ static uint32_t GetCurrentSelectIndex()
     if (!IsAccountSwitchable()) {
         return 0;
     }
+    return GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
     switch (g_chainCard) {
     case HOME_WALLET_CARD_SUI:
         return g_suiSelectIndex[GetCurrentAccountIndex()];

@@ -27,6 +27,10 @@ static void SwitchWalletHandler(lv_event_t *e)
 }
 #endif
 
+#define BATTERY_WIDTH                           (20)
+#define BATTERY_HEIGHT                          (10)
+static int g_currentDisplayPercent = -1;
+
 typedef struct StatusBar {
     lv_obj_t *background;
 #if (WALLPAPER_ENABLE == 1)
@@ -41,7 +45,6 @@ typedef struct StatusBar {
     lv_obj_t *batteryPad;
     lv_obj_t *batteryCharging;
     lv_obj_t *batteryPadImg;
-    lv_obj_t *batteryLabel;
     lv_obj_t *betaImg;
 #ifdef BTC_ONLY
     lv_obj_t *testNetImg;
@@ -63,7 +66,8 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_BTC, "", &coinBtc},
 #ifndef BTC_ONLY
     {HOME_WALLET_CARD_ETH, "", &coinEth},       {HOME_WALLET_CARD_SOL, "", &coinSol},
-    {HOME_WALLET_CARD_BNB, "", &coinBnb},       {HOME_WALLET_CARD_XRP, "", &coinXrp},
+    {HOME_WALLET_CARD_BNB, "", &coinBnb},       {HOME_WALLET_CARD_HNT, "", &coinHelium},
+    {HOME_WALLET_CARD_XRP, "", &coinXrp},
     {HOME_WALLET_CARD_ADA, "", &coinAda},       {HOME_WALLET_CARD_TON, "", &coinTon},
     {HOME_WALLET_CARD_TRX, "", &coinTrx},       {HOME_WALLET_CARD_LTC, "", &coinLtc},
     {HOME_WALLET_CARD_BCH, "", &coinBch},       {HOME_WALLET_CARD_APT, "", &coinApt},
@@ -103,23 +107,30 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
     {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
     {WALLET_LIST_RABBY, "Rabby", &walletRabby},
+    {WALLET_LIST_BITGET, "Bitget Wallet", &walletBitget},
     {WALLET_LIST_SAFE, "Safe", &walletSafe},
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
     {WALLET_LIST_IMTOKEN, "imToken", &walletImToken},
     {WALLET_LIST_BLOCK_WALLET, "Block Wallet", &walletBlockWallet},
     {WALLET_LIST_ZAPPER, "Zapper", &walletZapper},
+    {WALLET_LIST_HELIUM, "Helium Wallet", &walletHelium},
     {WALLET_LIST_YEARN_FINANCE, "Yearn Finance", &walletYearn},
     {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
     {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
+    {WALLET_LIST_MINT_SCAN, "Mintscan", &walletMintScan},
     {WALLET_LIST_ARCONNECT, "ArConnect", &walletArConnect},
+    {WALLET_LIST_VESPR, "Vespr", &walletVespr},
     {WALLET_LIST_XBULL, "xBull", &walletXBull},
     {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
     {WALLET_LIST_PETRA, "Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
     {WALLET_LIST_THORWALLET, "THORWallet", &walletThorWallet},
     {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
-    {WALLET_LIST_LEAP, "Leap", &walletLeap}
+    {WALLET_LIST_BEGIN, "Begin", &walletBegin},
+    {WALLET_LIST_LEAP, "Leap", &walletLeap},
+    {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
+    {WALLET_LIST_LEAP, "Leap", &walletLeap},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
@@ -198,11 +209,11 @@ void GuiStatusBarInit(void)
     g_guiStatusBar.walletNameLabel = label;
 
     img = GuiCreateImg(cont, &imgBattery);
-    lv_obj_align(img, LV_ALIGN_RIGHT_MID, -70, 0);
+    lv_obj_align(img, LV_ALIGN_RIGHT_MID, 0, 0);
     g_guiStatusBar.batteryImg = img;
 
     g_guiStatusBar.batteryCharging = GuiCreateImg(cont, &imgCharging);
-    lv_obj_align(g_guiStatusBar.batteryCharging, LV_ALIGN_RIGHT_MID, -70, 0);
+    lv_obj_align(g_guiStatusBar.batteryCharging, LV_ALIGN_RIGHT_MID, -10, 0);
     lv_obj_add_flag(g_guiStatusBar.batteryCharging, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_style_img_opa(g_guiStatusBar.batteryCharging, LV_OPA_COVER,
                              LV_PART_MAIN);
@@ -222,11 +233,6 @@ void GuiStatusBarInit(void)
                               lv_color_make(0xFF, 0xFF, 0xFF), 0);
     g_guiStatusBar.batteryPadImg = lv_img_create(g_guiStatusBar.batteryImg);
     lv_obj_set_pos(g_guiStatusBar.batteryPadImg, 6, 7);
-
-    label = GuiCreateIllustrateLabel(cont, " ");
-    lv_obj_set_style_text_opa(label, LV_OPA_100, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_LEFT_MID, 414, 0);
-    g_guiStatusBar.batteryLabel = label;
 
     img = GuiCreateImg(cont, &imgSdCard);
     g_guiStatusBar.sdCardImg = img;
@@ -249,13 +255,39 @@ void GuiStatusBarInit(void)
 #endif
     RefreshStatusBar();
 #ifdef COMPILE_SIMULATOR
-    GuiStatusBarSetBattery(88, true);
+    GuiStatusBarSetBattery(20, true);
     lv_obj_t *btn = GuiCreateTextBtn(cont, "switch");
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, 0);
     lv_obj_add_event_cb(btn, SwitchWalletHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 0);
+// void tCountDownTimerHandler(lv_timer_t *timer);
+    // lv_timer_t *g_countDownTimer = lv_timer_create(tCountDownTimerHandler, 100, NULL);
 #endif
 }
+
+// void tCountDownTimerHandler(lv_timer_t *timer)
+// {
+//     static int percent = 0;
+//     static bool charging = false;
+//     if (charging == true) {
+//         if (percent < 100) {
+//             percent += 1;
+//             if (percent == 95) {
+//                 charging = false;
+//             }
+//         } else {
+//             charging = false;
+//         }
+//     } else {
+//         if (percent > 0) {
+//             percent -= 1;
+//         } else {
+//             charging = true;
+//         }
+//     }
+//     GuiStatusBarSetBattery(percent, charging);
+//     printf("device is %s percent %d\n", charging ? "charging" : "discharging", percent);
+// }
 
 void GuiStatusBarSetSdCard(bool connected, bool onlyImg)
 {
@@ -310,48 +342,100 @@ char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
         return "Eternl";
     } else if (index == WALLET_LIST_TYPHON) {
         return "Typhon";
+    } else if (index == WALLET_LIST_BEGIN) {
+        return "Begin";
     }
     return g_walletBtn[index].name;
 }
 #endif
 
-void GuiStatusBarSetBattery(uint8_t percent, bool charging)
+uint8_t GetCurrentDisplayPercent(void)
 {
-    char percentStr[BUFFER_SIZE_16];
+#ifdef COMPILE_SIMULATOR
+    return 100;
+#endif
+    return g_currentDisplayPercent;
+}
 
-    snprintf_s(percentStr, BUFFER_SIZE_16, "%d%%", percent);
-    lv_label_set_text(g_guiStatusBar.batteryLabel, percentStr);
+static int GetDisplayPercent(int actualPercent, bool charging)
+{
+    static const int thresholds[] = {20, 40, 60, 80, 100};
+    static const int displayValuesDischarge[] = {20, 40, 60, 80, 100};
+    static const int displayValuesCharge[] = {0, 20, 40, 60, 80};
+    uint8_t currentPercent = 0;
+
+    int size = sizeof(thresholds) / sizeof(thresholds[0]);
+
+    for (int i = 0; i < size; i++) {
+        if (actualPercent <= thresholds[i]) {
+            if (charging) {
+                currentPercent = displayValuesCharge[i];
+            } else {
+                currentPercent = displayValuesDischarge[i];
+            }
+            break;
+        }
+    }
+
+    if ((charging && actualPercent == 100)) {
+        currentPercent = 100;
+        g_currentDisplayPercent = currentPercent;
+    }
 
     if (charging) {
-        lv_obj_align(g_guiStatusBar.batteryImg, LV_ALIGN_RIGHT_MID, -89, 0);
+        if (currentPercent >= g_currentDisplayPercent) {
+            g_currentDisplayPercent = currentPercent;
+        }
+    } else {
+        if (currentPercent <= g_currentDisplayPercent) {
+            g_currentDisplayPercent = currentPercent;
+        }
+    }
+
+    if (g_currentDisplayPercent == -1) {
+        if (currentPercent <= 20) {
+            g_currentDisplayPercent = 20;
+        } else {
+            g_currentDisplayPercent = currentPercent;
+        }
+    }
+
+    return g_currentDisplayPercent;
+}
+
+void GuiStatusBarSetBattery(uint8_t percent, bool charging)
+{
+    if (charging) {
+        lv_obj_align_to(g_guiStatusBar.batteryImg, g_guiStatusBar.batteryCharging, LV_ALIGN_OUT_LEFT_MID, -5, 0);
         lv_obj_clear_flag(g_guiStatusBar.batteryCharging, LV_OBJ_FLAG_HIDDEN);
     } else {
-        lv_obj_align(g_guiStatusBar.batteryImg, LV_ALIGN_RIGHT_MID, -70, 0);
+        lv_obj_align(g_guiStatusBar.batteryImg, LV_ALIGN_RIGHT_MID, -10, 0);
         lv_obj_add_flag(g_guiStatusBar.batteryCharging, LV_OBJ_FLAG_HIDDEN);
     }
+
+    if (percent == 0 && !charging) {
+        lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
+        return;
+    }
+
     if (percent == 100 && charging) {
         lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
         lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPowerFull);
         lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
-    } else if (percent == 0) {
-        lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
-    } else if (percent < 10) {
-        lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
-        lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower10);
-        lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
-    } else if (percent < 20) {
+        RefreshStatusBar();
+        return;
+    }
+
+    int displayPercent = GetDisplayPercent(percent, charging);
+    if (displayPercent <= 20) {
         lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
         lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower20);
-        lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
-    } else if (percent < 30) {
-        lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
-        lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower30);
         lv_obj_clear_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_add_flag(g_guiStatusBar.batteryPadImg, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_set_size(g_guiStatusBar.batteryPad, percent / 10 * 2, 10);
+        lv_obj_set_size(g_guiStatusBar.batteryPad, displayPercent * BATTERY_WIDTH / 100, BATTERY_HEIGHT);
     }
     RefreshStatusBar();
 }
@@ -360,8 +444,7 @@ static void RefreshStatusBar(void)
 {
     lv_obj_t *next;
     next = g_guiStatusBar.batteryImg;
-    lv_obj_align_to(g_guiStatusBar.sdCardImg, next, LV_ALIGN_OUT_LEFT_MID, -10,
-                    0);
+    lv_obj_align_to(g_guiStatusBar.sdCardImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
     if (!lv_obj_has_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN)) {
         next = g_guiStatusBar.sdCardImg;
     }
@@ -370,13 +453,11 @@ static void RefreshStatusBar(void)
         next = g_guiStatusBar.usbImg;
     }
 #ifdef BTC_ONLY
-    lv_obj_align_to(g_guiStatusBar.testNetImg, next, LV_ALIGN_OUT_LEFT_MID, -10,
-                    0);
+    lv_obj_align_to(g_guiStatusBar.testNetImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
     next = g_guiStatusBar.testNetImg;
 #endif
     if (SOFTWARE_VERSION_BUILD % 2) {
-        lv_obj_align_to(g_guiStatusBar.betaImg, next, LV_ALIGN_OUT_LEFT_MID, -10,
-                        0);
+        lv_obj_align_to(g_guiStatusBar.betaImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
     }
 }
 

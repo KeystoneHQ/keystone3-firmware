@@ -7,7 +7,7 @@ find_program(RUST_CARGO_EXECUTABLE cargo)
 find_program(BINDGEN_EXE bindgen)
 find_program(CBINDGEN_EXE cbindgen)
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Simulator")
+if(NOT BUILD_TYPE STREQUAL "Simulator")
     set(TARGET_PATH	${CMAKE_BINARY_DIR}/rust-builds)
 else()
     set(TARGET_PATH	${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds)

@@ -155,6 +155,9 @@ void GuiMultiAccountsReceiveInit(uint8_t chain)
     g_pageWidget = CreatePageWidget();
     g_multiAccountsReceiveWidgets.cont = g_pageWidget->contentZone;
     g_multiAccountsReceiveWidgets.tileView = lv_tileview_create(g_multiAccountsReceiveWidgets.cont);
+    g_selectedAccount[GetCurrentAccountIndex()] = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);
+    g_showIndex = GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
+    g_selectedIndex[GetCurrentAccountIndex()] = g_showIndex;
     lv_obj_set_style_bg_opa(g_multiAccountsReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(g_multiAccountsReceiveWidgets.tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     g_multiAccountsReceiveWidgets.tileQrCode = lv_tileview_add_tile(g_multiAccountsReceiveWidgets.tileView, RECEIVE_TILE_QRCODE, 0, LV_DIR_HOR);
@@ -224,6 +227,7 @@ void GuiMultiAccountsReceiveRefresh(void)
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
         GuiCreateSwitchPathTypeWidget(g_multiAccountsReceiveWidgets.tileSwitchPathType, g_chainCard, PathTypeChangedCb);
+        printf("%s %d\n", __func__, __LINE__);
         break;
     default:
         break;
@@ -439,6 +443,7 @@ static void GuiCreateSwitchAddressWidget(lv_obj_t *parent)
 static void SetCurrentSelectIndex(uint32_t index)
 {
     g_selectedIndex[GetCurrentAccountIndex()] = index;
+    SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, index);
 }
 
 static bool IsIndexSelectChanged()
@@ -485,6 +490,7 @@ static void ConfirmAccountHandler(lv_event_t *e)
 {
     if (IsAccountSelectChanged()) {
         g_selectedAccount[GetCurrentAccountIndex()] = g_tmpAccount;
+        SetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin, g_tmpAccount);
         g_tmpIndex = 0;
         SetCurrentSelectIndex(g_tmpIndex);
         CloseSwitchAccountHandler(e);
@@ -526,7 +532,7 @@ static void RefreshQrCode(void)
 {
     AddressDataItem_t addressDataItem;
 
-    ModelGetAddress(g_selectedIndex[GetCurrentAccountIndex()], &addressDataItem, 0);
+    ModelGetAddress(GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin), &addressDataItem, 0);
     lv_qrcode_update(g_multiAccountsReceiveWidgets.qrCode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();
     if (fullscreen_qrcode) {
@@ -941,7 +947,8 @@ static void OpenChangePathTypeHandler(lv_event_t *e)
 
 static void OpenSwitchAccountHandler(lv_event_t *e)
 {
-    g_tmpAccount = g_selectedAccount[GetCurrentAccountIndex()];
+    // g_tmpAccount = g_selectedAccount[GetCurrentAccountIndex()];
+    g_tmpAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);
     GuiCreateSwitchAccountWidget();
     GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
 }
@@ -1056,8 +1063,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
 {
     char *xPub = NULL, hdPath[BUFFER_SIZE_128];
     SimpleResponse_c_char *result = NULL;
-    uint32_t currentAccount = g_selectedAccount[GetCurrentAccountIndex()];
-
+    uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);;
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
         xPub = GetCurrentAccountPublicKey(GetReceivePageAdaXPubTypeByIndex(currentAccount));
@@ -1095,6 +1101,5 @@ void GuiResetCurrentMultiAccountsCache(uint8_t index)
     }
     g_selectedIndex[index] = 0;
     g_selectedAccount[index] = 0;
-    SetReceivePageAdaXPubTypeByAccountIndex(STANDARD_ADA, index);
 }
 #endif

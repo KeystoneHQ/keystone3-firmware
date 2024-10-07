@@ -6,18 +6,6 @@
 #include "gui_model.h"
 #include "gui_lock_widgets.h"
 
-static int32_t GuiFirmwareUpdateViewInit(void *param)
-{
-    GuiFirmwareUpdateInit(param);
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiFirmwareUpdateViewDeInit(void)
-{
-    GuiFirmwareUpdateDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint32_t rcvValue;

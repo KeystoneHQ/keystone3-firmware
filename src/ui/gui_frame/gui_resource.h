@@ -10,10 +10,7 @@ LV_IMG_DECLARE(imgArrowNextRed);
 LV_IMG_DECLARE(imgArrowRight);
 LV_IMG_DECLARE(imgArrowRightO);
 LV_IMG_DECLARE(imgBattery);
-LV_IMG_DECLARE(imgBatteryPower10);
 LV_IMG_DECLARE(imgBatteryPower20);
-LV_IMG_DECLARE(imgBatteryPower30);
-LV_IMG_DECLARE(imgBatteryPowerFull);
 LV_IMG_DECLARE(imgBatteryPowerFull);
 LV_IMG_DECLARE(imgCharging);
 LV_IMG_DECLARE(imgSingleBackup);
@@ -21,6 +18,7 @@ LV_IMG_DECLARE(imgWallet);
 LV_IMG_DECLARE(imgWallet2);
 LV_IMG_DECLARE(imgImport);
 LV_IMG_DECLARE(imgFailed);
+LV_IMG_DECLARE(imgLogoGraph);
 LV_IMG_DECLARE(imgLogoGraphL);
 LV_IMG_DECLARE(imgRedEye);
 LV_IMG_DECLARE(imgChange);
@@ -147,7 +145,8 @@ LV_IMG_DECLARE(imgBlueInformation);
 LV_IMG_DECLARE(imgInfoSmall);
 LV_IMG_DECLARE(imgNft);
 LV_IMG_DECLARE(imgWIF);
-
+LV_IMG_DECLARE(imgSoftwareWallet);
+LV_IMG_DECLARE(imgJupiter);
 
 // emoji
 LV_IMG_DECLARE(emojiAlien);
@@ -230,6 +229,7 @@ LV_IMG_DECLARE(coinSats);
 LV_IMG_DECLARE(coinXlm);
 LV_IMG_DECLARE(coinRune);
 LV_IMG_DECLARE(coinCacao);
+LV_IMG_DECLARE(coinHelium);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);
@@ -250,6 +250,7 @@ LV_IMG_DECLARE(walletYearn);
 LV_IMG_DECLARE(walletSushi);
 LV_IMG_DECLARE(walletKeplr);
 LV_IMG_DECLARE(walletArConnect);
+LV_IMG_DECLARE(walletVespr);
 LV_IMG_DECLARE(walletFewcha);
 LV_IMG_DECLARE(walletPetra);
 LV_IMG_DECLARE(walletXRPToolkit);
@@ -263,6 +264,11 @@ LV_IMG_DECLARE(walletTonkeeper);
 LV_IMG_DECLARE(walletKeystone);
 LV_IMG_DECLARE(walletLeap);
 LV_IMG_DECLARE(walletThorWallet);
+LV_IMG_DECLARE(walletNightly);
+LV_IMG_DECLARE(walletBegin);
+LV_IMG_DECLARE(walletBitget);
+LV_IMG_DECLARE(walletMintScan);
+LV_IMG_DECLARE(walletHelium);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
@@ -283,6 +289,7 @@ LV_IMG_DECLARE(walletListYearn);
 LV_IMG_DECLARE(walletListSushi);
 LV_IMG_DECLARE(walletListKeplr);
 LV_IMG_DECLARE(walletListArConnect);
+LV_IMG_DECLARE(walletListVespr);
 LV_IMG_DECLARE(walletListXBull);
 LV_IMG_DECLARE(walletListFewcha);
 LV_IMG_DECLARE(walletListPetra);
@@ -293,6 +300,11 @@ LV_IMG_DECLARE(walletListUniSat);
 LV_IMG_DECLARE(walletListTonkeeper);
 LV_IMG_DECLARE(walletListKeystone);
 LV_IMG_DECLARE(walletListThorWallet);
+LV_IMG_DECLARE(walletListNightly);
+LV_IMG_DECLARE(walletListBegin);
+LV_IMG_DECLARE(walletListBitget);
+LV_IMG_DECLARE(walletListMintScan);
+LV_IMG_DECLARE(walletListHelium);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

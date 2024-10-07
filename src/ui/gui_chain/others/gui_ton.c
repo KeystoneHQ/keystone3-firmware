@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_ton.h"
 #include "rust.h"
 #include "account_manager.h"
@@ -433,3 +434,4 @@ void GuiTonProofRawData(lv_obj_t *parent, void *totalData)
     lv_obj_set_width(label, 360);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 }
+#endif

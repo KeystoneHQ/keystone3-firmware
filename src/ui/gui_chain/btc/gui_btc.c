@@ -10,14 +10,12 @@
 #include "screen_manager.h"
 #include "account_manager.h"
 #include "gui_transaction_detail_widgets.h"
-#include "gui_chain_components.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_transaction_signature_widgets.h"
 #include "gui_btc_home_widgets.h"
+#else
+#include "gui_chain_components.h"
 #endif
-
-#define MAX_WALLET_CONFIG_LEN 3000
-#define MAX_VERIFY_CODE_LEN 12
 
 #define CHECK_FREE_PARSE_RESULT(result)                       \
     if (result != NULL)                                       \
@@ -33,18 +31,8 @@
         g_parseMsgResult = NULL;                                     \
     }
 
-static bool g_isMulti = false;
-static URParseResult *g_urResult = NULL;
-static URParseMultiResult *g_urMultiResult = NULL;
-
-static uint8_t *g_psbtBytes = NULL;
-static uint32_t g_psbtBytesLen = 0;
-
-static TransactionParseResult_DisplayTx *g_parseResult = NULL;
-static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
-
-static bool IsMultiSigTx(DisplayTx *data);
-
+#define MAX_WALLET_CONFIG_LEN           3000
+#define MAX_VERIFY_CODE_LEN             12
 #ifndef BTC_ONLY
 typedef struct UtxoViewToChain {
     ViewType viewType;
@@ -60,7 +48,18 @@ static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {DashTx, XPUB_TYPE_DASH, "m/44'/5'/0'"},
     {BchTx, XPUB_TYPE_BCH, "m/44'/145'/0'"},
 };
+#define CHECK_UR_TYPE()               (urType != Bytes && urType != KeystoneSignRequest)
+#else
+#define CHECK_UR_TYPE()               (urType != Bytes)
 #endif
+static bool g_isMulti = false;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
+static uint8_t *g_psbtBytes = NULL;
+static uint32_t g_psbtBytesLen = 0;
+static TransactionParseResult_DisplayTx *g_parseResult = NULL;
+static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
+static bool IsMultiSigTx(DisplayTx *data);
 
 void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
@@ -461,6 +460,7 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
             strncpy_s(wallet_config, MAX_WALLET_CONFIG_LEN, item->walletConfig, strnlen_s(item->walletConfig, MAX_WALLET_CONFIG_LEN));
         }
     }
+    printf("wallet_config = %s\n", wallet_config);
 
     result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, verify_code, wallet_config);
     SRAM_FREE(public_keys);
@@ -868,12 +868,6 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
         lv_obj_set_style_text_color(feeValue, WHITE_COLOR, LV_PART_MAIN);
     }
 
-    enum QRCodeType urType = URTypeUnKnown;
-    if (g_isMulti) {
-        urType = g_urMultiResult->ur_type;
-    } else {
-        urType = g_urResult->ur_type;
-    }
     // only show switch icon when the network contains "Bitcoin Mainnet" or "Bitcoin Testnet"
     bool showSwitchIcon = (strstr(overviewData->network, "Bitcoin Mainnet") != NULL || strstr(overviewData->network, "Bitcoin Testnet") != NULL);
     if (showSwitchIcon) {
@@ -888,7 +882,6 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
         isSat = false;
         lv_obj_add_event_cb(switchIcon, SwitchValueUnit, LV_EVENT_CLICKED, &clickParam);
     }
-
 
     return amountContainer;
 }
@@ -1079,6 +1072,7 @@ static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detai
 
 static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
+#ifndef BTC_ONLY
     enum QRCodeType urType = URTypeUnKnown;
     if (g_isMulti) {
         urType = g_urMultiResult->ur_type;
@@ -1087,6 +1081,9 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
     }
 
     bool showChange = (urType != Bytes && urType != KeystoneSignRequest);
+#else
+    bool showChange = true;
+#endif
 
     lv_obj_t *formContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(formContainer);
@@ -1173,13 +1170,6 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
 
 static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
-    enum QRCodeType urType = URTypeUnKnown;
-    if (g_isMulti) {
-        urType = g_urMultiResult->ur_type;
-    } else {
-        urType = g_urResult->ur_type;
-    }
-
     lv_obj_t *toContainer = GuiCreateContainerWithParent(parent, 408, 0);
     SetContainerDefaultStyle(toContainer);
     lv_obj_align_to(toContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);

@@ -1,3 +1,4 @@
+#ifndef BTC_ONLY
 #include "gui_select_address_widgets.h"
 #include "gui_home_widgets.h"
 #include "account_public_info.h"
@@ -251,7 +252,10 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         break;
     case CHAIN_ADA:
         item->index = index;
-        strcpy(item->address, GuiGetADABaseAddressByIndex(index));
+        char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(
+                GetConnectWalletPathIndex(GetWalletNameByIndex(GuiConnectWalletGetWalletIndex())),
+                index));
+        strcpy(item->address, GuiGetADABaseAddressByXPub(xpub));
         break;
     case CHAIN_ATOM:
         item->index = index;
@@ -287,7 +291,7 @@ static int GetMaxAddressIndex(void)
     case CHAIN_XRP:
         return 200;
     case CHAIN_ADA:
-        return 20;
+        return 23;
 #endif
     default:
         return 999999999;
@@ -488,3 +492,4 @@ lv_obj_t *GuiCreateSelectAddressWidget(GuiChainCoinType chainCoinType, uint32_t 
     return cont;
 }
 
+#endif

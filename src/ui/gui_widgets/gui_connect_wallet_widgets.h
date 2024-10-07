@@ -4,7 +4,9 @@
 #include "gui_views.h"
 #include "librust_c.h"
 #include "gui_attention_hintbox.h"
+#ifndef BTC_ONLY
 #include "gui_ar.h"
+#endif
 
 typedef enum {
 #ifndef BTC_ONLY
@@ -19,24 +21,29 @@ typedef enum {
     WALLET_LIST_SOLFARE,
     WALLET_LIST_BACKPACK,
     WALLET_LIST_RABBY,
+    WALLET_LIST_BITGET,
     WALLET_LIST_SAFE,
     WALLET_LIST_SPARROW,
     WALLET_LIST_UNISAT,
     WALLET_LIST_IMTOKEN,
     WALLET_LIST_BLOCK_WALLET,
     WALLET_LIST_ZAPPER,
+    WALLET_LIST_HELIUM,
     WALLET_LIST_YEARN_FINANCE,
     WALLET_LIST_SUSHISWAP,
     WALLET_LIST_KEPLR,
+    WALLET_LIST_MINT_SCAN,
     WALLET_LIST_ARCONNECT,
+    WALLET_LIST_VESPR,
     WALLET_LIST_XBULL,
     WALLET_LIST_FEWCHA,
     WALLET_LIST_PETRA,
     WALLET_LIST_XRP_TOOLKIT,
     WALLET_LIST_THORWALLET,
     WALLET_LIST_TONKEEPER,
+    WALLET_LIST_BEGIN,
     WALLET_LIST_LEAP,
-
+    WALLET_LIST_NIGHTLY,
 #else
     WALLET_LIST_BLUE,
     WALLET_LIST_SPECTER,
@@ -105,6 +112,7 @@ void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
 uint8_t GuiConnectWalletGetWalletIndex(void);
 #ifndef BTC_ONLY
 SOLAccountType GetSolflareAccountType(void);
+SOLAccountType GetHeliumAccountType(void);
 void GuiPrepareArConnectWalletView(void);
 void GuiSetupArConnectWallet(void);
 void GuiConnectWalletPasswordErrorCount(void *param);

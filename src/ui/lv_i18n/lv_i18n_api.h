@@ -8,10 +8,11 @@ typedef enum {
     LANG_RU,
     LANG_ZH_CN,
     LANG_KO,
+#ifndef BTC_ONLY
     LANG_ES,
     LANG_DE,
     LANG_JA,
-
+#endif
     LANG_TYPE_BUTT,
 } LANG_TYPE_ENUM;
 

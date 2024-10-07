@@ -627,6 +627,7 @@ GetTableDataFunc GuiBtcTableFuncGet(char *type)
     return NULL;
 }
 
+#ifndef BTC_ONLY
 GetLabelDataLenFunc GuiStellarTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetStellarRawMessageLength")) {
@@ -645,7 +646,6 @@ GetLabelDataLenFunc GuiArTextLenFuncGet(char *type)
     return NULL;
 }
 
-#ifndef BTC_ONLY
 GetTableDataFunc GuiEthTableFuncGet(char *type)
 {
     if (!strcmp(type, "GetEthContractData")) {
@@ -1291,6 +1291,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiBtcTxOverview;
     } else if (!strcmp(funcName, "GuiBtcTxDetail")) {
         return GuiBtcTxDetail;
+    } else if (!strcmp(funcName, "GuiBtcMsg")) {
+        return GuiBtcMsg;
     }
 #ifndef BTC_ONLY
     if (!strcmp(funcName, "GuiShowSolTxOverview")) {
@@ -1317,8 +1319,6 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiArDataItemOverview;
     } else if (!strcmp(funcName, "GuiArDataItemDetail")) {
         return GuiArDataItemDetail;
-    } else if (!strcmp(funcName, "GuiBtcMsg")) {
-        return GuiBtcMsg;
     }
 #endif
     return NULL;

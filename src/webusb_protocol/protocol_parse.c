@@ -21,13 +21,10 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
     static struct ProtocolParser *currentParser = NULL;
 
     tick = osKernelGetTickCount();
+    currentParser = NewInternalProtocolParser();
 #ifndef BTC_ONLY
     if (data[0] == EAPDU_PROTOCOL_HEADER && !GetIsReceivingFile()) {
         currentParser = NewEApduProtocolParser();
-    } else {
-#endif
-        currentParser = NewInternalProtocolParser();
-#ifndef BTC_ONLY
     }
 #endif
 
@@ -38,6 +35,5 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
     }
     lastTick = tick;
     currentParser->registerSendFunc(sendFunc);
-
     currentParser->parse(data, len);
 }

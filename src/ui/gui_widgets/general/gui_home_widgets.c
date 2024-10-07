@@ -21,6 +21,7 @@
 #include "account_manager.h"
 #include "log_print.h"
 #include "version.h"
+#include "gui_pending_hintbox.h"
 
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;
@@ -43,6 +44,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_ETH, false, "ETH", true},
     {HOME_WALLET_CARD_SOL, false, "SOL", true},
     {HOME_WALLET_CARD_BNB, false, "BNB", false},
+    {HOME_WALLET_CARD_HNT, false, "HNT", true},
     {HOME_WALLET_CARD_XRP, false, "XRP", true},
     {HOME_WALLET_CARD_ADA, false, "ADA", true},
     {HOME_WALLET_CARD_TON, false, "TON", false},
@@ -90,7 +92,6 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_UMEE, false, "UMEE", true},
     {HOME_WALLET_CARD_QCK, false, "QCK", true},
     {HOME_WALLET_CARD_TGD, false, "TGD", true},
-
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 static KeyboardWidget_t *g_keyboardWidget = NULL;
@@ -152,6 +153,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "BNB",
         .chain = "Binance",
         .icon = &coinBnb,
+    },
+    {
+        .index = HOME_WALLET_CARD_HNT,
+        .coin = "HNT",
+        .chain = "Helium",
+        .icon = &coinHelium,
     },
     {
         .index = HOME_WALLET_CARD_XRP,
@@ -596,6 +603,7 @@ static void CoinDealHandler(lv_event_t *e)
         break;
     case HOME_WALLET_CARD_ETH:
     case HOME_WALLET_CARD_SOL:
+    case HOME_WALLET_CARD_HNT:
         GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ADA:

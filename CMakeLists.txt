@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 
 option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Simulator")
+if(BUILD_TYPE STREQUAL "Simulator")
     set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
 endif()
 
@@ -91,6 +91,7 @@ set(EXTERNAL_INCLUDE_PATH
     external/cjson
     external/quicklz
     external/sqlite3
+    external/circular_buffer
     external/cryptoauthlib/lib
     external/FreeRTOS
     external/FreeRTOS/Source/include
@@ -237,6 +238,7 @@ if(COMPILE_KEYSTONE)
         "external/cjson/*.c"
         "external/quicklz/*.c"
         "external/sqlite3/*.c"
+        "external/circular_buffer/*.c"
         ${ccan}
         ${cryptoauthlib}
         ${ctaes}

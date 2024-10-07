@@ -12,6 +12,7 @@
 #include "math.h"
 #include "stdio.h"
 #include "string.h"
+#include "drv_mpu.h"
 
 static void decodeEthContractData(void *parseResult);
 static bool GetEthErc20ContractData(void *parseResult);

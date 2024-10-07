@@ -18,6 +18,9 @@ int32_t GuiUSBTransportViewEventProcess(void *self, uint16_t usEvent, void *para
     case GUI_EVENT_REFRESH:
         GuiUSBTransportWidgetsRefresh();
         break;
+    case SIG_CLOSE_USB_TRANSPORT:
+        UsbGoToHomeView();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

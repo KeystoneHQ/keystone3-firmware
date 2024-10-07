@@ -12,6 +12,7 @@
 #include "motor_manager.h"
 #include "account_manager.h"
 #include "gui_keyboard_hintbox.h"
+#include "drv_mpu.h"
 
 typedef enum {
     PASSWORD_STRENGTH_LEN,

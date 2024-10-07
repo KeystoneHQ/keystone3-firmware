@@ -12,6 +12,9 @@
 #include "log_print.h"
 #include "hash_and_salt.h"
 #include "secret_cache.h"
+#ifndef COMPILE_SIMULATOR
+#include "drv_mpu.h"
+#endif
 
 #define SHA256_COUNT                            3
 
@@ -320,7 +323,8 @@ int32_t SetFpCommAesKey(const uint8_t *aesKey)
 /// @return err code.
 int32_t GetFpCommAesKey(uint8_t *aesKey)
 {
-    return SE_HmacEncryptRead(aesKey, PAGE_PF_AES_KEY);
+    int32_t ret = SE_HmacEncryptRead(aesKey, PAGE_PF_AES_KEY);
+    return ret;
 }
 
 /// @brief Set the fingerprint reset AES key.
@@ -347,21 +351,6 @@ bool FpAesKeyExist()
     bool ret;
 
     if (SE_HmacEncryptRead(key, PAGE_PF_AES_KEY) != SUCCESS_CODE) {
-        return false;
-    }
-    ret = CheckEntropy(key, 32);
-    CLEAR_ARRAY(key);
-    return ret;
-}
-
-/// @brief Get whether the fingerprint reset key exists.
-/// @return true - exists.
-bool FpResetKeyExist()
-{
-    uint8_t key[32];
-    bool ret;
-
-    if (SE_HmacEncryptRead(key, PAGE_PF_RESET_KEY) != SUCCESS_CODE) {
         return false;
     }
     ret = CheckEntropy(key, 32);

@@ -89,11 +89,8 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
 #ifndef COMPILE_SIMULATOR
         StopQrDecode();
         UserDelay(500);
-        GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
-#else
-        printf("urViewType: %d\n", urViewType.viewType);
-        GuiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
 #endif
+        GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
     } else {
         printf("unhandled viewType=%d\r\n", urViewType.viewType);
     }

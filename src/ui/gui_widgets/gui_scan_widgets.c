@@ -98,12 +98,14 @@ void GuiScanResult(bool result, void *param)
     if (result) {
         UrViewType_t urViewType = *(UrViewType_t *)param;
         g_qrcodeViewType = urViewType.viewType;
+#ifdef BTC_ONLY
         if (g_viewTypeFilter[0] != 0xFF) {
             if (!IsViewTypeSupported(g_qrcodeViewType, g_viewTypeFilter, NUMBER_OF_ARRAYS(g_viewTypeFilter))) {
                 g_scanErrorHintBox = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_scanErrorHintBox, GuiScanStart);
                 return;
             }
         }
+#endif
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
         // Not a chain based transaction, e.g. WebAuth
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
@@ -122,8 +124,10 @@ void GuiScanResult(bool result, void *param)
             }
 #ifndef BTC_ONLY
             if (g_qrcodeViewType == KeyDerivationRequest) {
-                GuiCLoseCurrentWorkingView();
-                GuiFrameOpenView(&g_keyDerivationRequestView);
+                if (!GuiCheckIfTopView(&g_homeView)) {
+                    GuiCLoseCurrentWorkingView();
+                }
+                GuiFrameOpenViewWithParam(&g_keyDerivationRequestView, NULL, 0);
             }
 #else
             if (g_qrcodeViewType == MultisigWalletImport) {
@@ -239,7 +243,8 @@ static void GuiSetScanCorner(void)
 #ifdef BTC_ONLY
     if (IsViewTypeSupported(MultisigWalletImport, g_viewTypeFilter, NUMBER_OF_ARRAYS(g_viewTypeFilter))) {
         lv_obj_t *label = GuiCreateNoticeLabel(cont, _("multisig_scan_multisig_notice"));
-        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 466);
+        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 526);
     }
 #endif
 }

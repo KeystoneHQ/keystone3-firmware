@@ -57,7 +57,6 @@ void GuiNftTransferFailed(void)
 {
     g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("nft_transfer_failed_title"), _("nft_transfer_failed_desc"), NULL,
                      _("Ok"), WHITE_COLOR_OPA20);
-    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, g_noticeWindow);
 }

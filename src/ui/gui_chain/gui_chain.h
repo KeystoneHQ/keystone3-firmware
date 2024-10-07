@@ -26,6 +26,7 @@ typedef enum {
     CHAIN_ETH,
     CHAIN_SOL,
     CHAIN_BNB,
+    CHAIN_HNT,
     CHAIN_XRP,
     CHAIN_ADA,
     CHAIN_TON,
@@ -148,6 +149,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t viewType);
 PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType);
 GenerateUR GetUrGenerator(ViewType viewType);
 GenerateUR GetSingleUrGenerator(ViewType viewType);
+bool CheckViewTypeIsAllow(uint8_t viewType);
 #ifndef BTC_ONLY
 bool IsMessageType(uint8_t type);
 bool isTonSignProof(uint8_t type);

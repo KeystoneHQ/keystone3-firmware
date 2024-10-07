@@ -1,3 +1,53 @@
+## 1.7.0(2024-09-26)
+### What's new
+
+1. Supported Backpack Wallet to manage SOL and ETH assets via USB connection
+
+### Improvements
+
+1. Optimized USB user experience for Rabby Wallet
+2. Improved experience for importing TON native seed phrase
+3. Optimized battery display, battery levels now shown as bars
+
+### Bug Fixes
+
+1. Fixed bug causing delays when unlocking the device via PIN code
+2. Fixed occasional bug when generating AR addresses
+3. Fixed bug where the device occasionally failed to unlock after firmware updates
+
+
+## 1.6.6(2024-08-30)
+
+### What's new
+
+1. Supported SPL Token transaction parsing
+2. Supported Receive address status storage
+
+### Improvements
+
+1. Optimized transaction parsing for multi-signature asset management on Squads
+
+
+
+## 1.6.4(2024-08-22)
+
+
+### What's new
+
+1. Supported managing SUI assets using Nightly Wallet
+
+
+
+## 1.6.2(2024-08-20)
+
+### What's new
+
+1. Supported setting an NFT on SOL and ETH chains as a lock screen wallpaper
+2. Supported managing RUNE assets using THORWallet
+
+
+
+
 ## 1.6.0(2024-08-07)
 
 ### What's new

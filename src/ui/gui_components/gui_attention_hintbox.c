@@ -1,6 +1,6 @@
 #include "gui_attention_hintbox.h"
 
-#define MIN_OPERATE_POWER 60
+#define MIN_OPERATE_POWER 80
 
 static lv_obj_t *g_attentionCont;
 
@@ -31,16 +31,6 @@ static AttentionHintboxContext *BuildConfirmationHintboxContext()
     context->hintboxHeight = 476;
     context->okBtnText = _("rsa_confirm_hintbox_ok");
     context->cancelBtnText = _("rsa_confirm_hintbox_cancel");
-    return context;
-}
-static AttentionHintboxContext *HardWareCallInvaildPathHintboxContext()
-{
-    AttentionHintboxContext *context = SRAM_MALLOC(sizeof(AttentionHintboxContext));
-    context->icon = &imgUnknown;
-    context->title = _("invaild_account_path");
-    context->context = _("invaild_account_path_notice");
-    context->hintboxHeight = 416;
-    context->cancelBtnText = _("power_requirements_hintbox_cancel");
     return context;
 }
 
@@ -88,7 +78,7 @@ static bool CheckPowerRequirements()
 #ifdef COMPILE_SIMULATOR
     return true;
 #endif
-    return GetBatterPercent() >= MIN_OPERATE_POWER && GetUsbPowerState() == USB_POWER_STATE_CONNECT;
+    return GetCurrentDisplayPercent() >= MIN_OPERATE_POWER && GetUsbPowerState() == USB_POWER_STATE_CONNECT;
 }
 
 void GuiCloseAttentionHintbox()
@@ -99,17 +89,20 @@ void GuiCloseAttentionHintbox()
     }
 }
 
-void GuiCreateHardwareCallInvaildPathHintbox()
+void GuiCreateHardwareCallInvaildParamHintbox(char *title, char *content)
 {
-    AttentionHintboxContext *context = HardWareCallInvaildPathHintboxContext();
+    AttentionHintboxContext *context = SRAM_MALLOC(sizeof(AttentionHintboxContext));
+    context->icon = &imgUnknown;
+    context->hintboxHeight = 416;
+    context->cancelBtnText = _("power_requirements_hintbox_cancel");
     g_attentionCont = GuiCreateHintBox(context->hintboxHeight);
     lv_obj_t *tempObj = GuiCreateImg(g_attentionCont, context->icon);
     lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 462);
 
-    tempObj = GuiCreateLittleTitleLabel(g_attentionCont, context->title);
+    tempObj = GuiCreateLittleTitleLabel(g_attentionCont, title);
     lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 558);
 
-    tempObj = GuiCreateIllustrateLabel(g_attentionCont, context->context);
+    tempObj = GuiCreateIllustrateLabel(g_attentionCont, content);
     lv_obj_align(tempObj, LV_ALIGN_TOP_LEFT, 36, 610);
 
     tempObj = GuiCreateTextBtn(g_attentionCont, context->cancelBtnText);

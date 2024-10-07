@@ -18,6 +18,8 @@
 #define LOG_MSG_BASE                    0x00060000
 #define USB_MSG_BASE                    0x00070000
 #define LOW_POWER_MSG_BASE              0x00080000
+#define SPRING_MSG_BASE                 0x00090000
+#define SENSITIVE_MSG_BASE              0x000A0000
 
 enum {
     MSG_TEST_CMD_FRAME = CMD_MSG_BASE,
@@ -45,13 +47,13 @@ enum {
     UI_MSG_OPEN_VIEW,
     UI_MSG_CLOSE_VIEW,
     UI_MSG_USB_TRANSPORT_VIEW,
+    UI_MSG_USB_HARDWARE_VIEW,
+    UI_MSG_USB_TRANSPORT_NEXT_VIEW,
     UI_MSG_CLOSE_NFT_LOCK,
 };
 
 enum {
-    BACKGROUND_MSG_EXECUTE = BACKGROUND_MSG_BASE,
-    BACKGROUND_MSG_EXECUTE_RUNNABLE,
-    BACKGROUND_MSG_MINUTE,
+    BACKGROUND_MSG_MINUTE = BACKGROUND_MSG_BASE,
     BACKGROUND_MSG_CHANGER_INSERT,
     BACKGROUND_MSG_RESET,
     BACKGROUND_MSG_BATTERY_INTERVAL,
@@ -78,6 +80,16 @@ enum {
     LOW_POWER_QUIT,
 };
 
+enum {
+    SPRING_MSG_GET = SPRING_MSG_BASE,
+};
+
+enum {
+    SENSITIVE_MSG_EXECUTE = SENSITIVE_MSG_BASE,
+    SENSITIVE_MSG_EXECUTE_RUNNABLE,
+};
+
+
 #ifndef COMPILE_SIMULATOR
 extern osMessageQueueId_t g_cmdQueue;
 extern osMessageQueueId_t g_testQueue;
@@ -87,6 +99,8 @@ extern osMessageQueueId_t g_backgroundQueue;
 extern osMessageQueueId_t g_logQueue;
 extern osMessageQueueId_t g_usbQueue;
 extern osMessageQueueId_t g_lowPowerQueue;
+extern osMessageQueueId_t g_springQueue;
+extern osMessageQueueId_t g_sensitiveQueue;
 #endif
 
 void UserMsgInit(void);

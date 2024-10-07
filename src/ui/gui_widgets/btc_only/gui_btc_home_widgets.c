@@ -157,7 +157,6 @@ static void CreateHomePageButtons(void)
 static void RcvHandler(lv_event_t *e)
 {
     static HOME_WALLET_CARD_ENUM coin;
-    printf("rcv handler\n");
     coin = HOME_WALLET_CARD_BTC;
     ShowWallPaper(false);
     GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
@@ -304,6 +303,9 @@ static void AddFlagCountDownTimerHandler(lv_timer_t *timer)
 void GuiHomeRestart(void)
 {
     GUI_DEL_OBJ(g_manageCont)
+    lv_obj_clean(g_homeWalletCardCont);
+    CreateHomePageButtons();
+    ShowWallPaper(true);
     GuiHomeRefresh();
 }
 
@@ -332,6 +334,7 @@ void GuiHomeRefresh(void)
     } else {
         lv_img_set_src(g_twoKeyImg, &imgArrowRight);
     }
+    GuiStatusBarSetTestNet();
 }
 
 bool GetIsTestNet(void)
@@ -341,7 +344,6 @@ bool GetIsTestNet(void)
 
 void SetIsTestNet(bool testNet)
 {
-    printf("testNet=%d\n", testNet);
     g_walletState[HOME_WALLET_CARD_BTC].testNet = testNet;
     AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
 }

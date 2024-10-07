@@ -9,22 +9,40 @@
 #include "gui_hintbox.h"
 #include "gui_global_resources.h"
 #include "gui_obj.h"
-
+#include "general/eapdu_services/service_resolve_ur.h"
 #include "secret_cache.h"
+#include "fingerprint_process.h"
+
 typedef struct KeyDerivationWidget {
     uint8_t currentTile;
     PageWidget_t *pageWidget;
     lv_obj_t *tileView;
     lv_obj_t *cont;
     lv_obj_t *qrCode;
+    lv_obj_t *usbCont;
 } KeyDerivationWidget_t;
+
+typedef enum {
+    TRANSACTION_MODE_QR_CODE = 0,
+    TRANSACTION_MODE_USB,
+} TransactionMode;
 
 typedef enum {
     TILE_APPROVE,
     TILE_QRCODE,
+    TILE_USB_CONNECT,
 
     TILE_BUTT,
 } PAGE_TILE;
+
+
+typedef enum HardwareCallV1AdaDerivationAlgo {
+    HD_STANDARD_ADA = 0,
+    HD_LEDGER_BITBOX_ADA,
+} ADA_DERIVATION_ALGO;
+
+// global variable to save the selected derivation path
+static ADA_DERIVATION_ALGO selected_ada_derivation_algo = HD_STANDARD_ADA;
 
 static void *g_data;
 static URParseResult *g_urResult;
@@ -38,12 +56,13 @@ static lv_obj_t *g_openMoreHintBox;
 static lv_obj_t *g_derivationPathCont = NULL;
 static lv_obj_t *g_derivationPathConfirmBtn = NULL;
 static lv_obj_t *g_derivationTypeCheck[2] = {0, 0};
-static AdaXPubType g_currentCardanoPathIndex[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
-static uint32_t g_currentSelectedPathIndex[3] = {0};
+static uint32_t g_currentSelectedPathIndex = 0;;
 static lv_obj_t *g_egCont = NULL;
 static lv_obj_t *g_egAddressIndex[2];
 static lv_obj_t *g_egAddress[2];
 static char g_derivationPathAddr[2][2][BUFFER_SIZE_128];
+static bool g_isUsb = false;
+static bool g_isUsbPassWordCheck = false;
 
 static void RecalcCurrentWalletIndex(char *origin);
 
@@ -72,11 +91,16 @@ static void UpdateCardanoEgAddress(uint8_t index);
 static void ShowEgAddressCont(lv_obj_t *egCont);
 static void OpenDerivationPath();
 static void ChangeDerivationPathHandler(lv_event_t *e);
-static void UpdateConfirmBtn(void);
-static bool IsSelectChanged(void);
+static void UpdateConfirmBtn(bool update);
 static void SetAccountType(uint8_t index);
 static bool IsCardano();
-
+static void GuiConnectUsbEntranceWidget(lv_obj_t *parent);
+static void GuiConnectUsbCreateImg(lv_obj_t *parent);
+static void RejectButtonHandler(lv_event_t *e);
+static void ApproveButtonHandler(lv_event_t *e);
+static void GuiConnectUsbPasswordPass(void);
+static AdaXPubType GetAccountType(void);
+static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e);
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 void GuiSetKeyDerivationRequestData(void *urResult, void *multiResult, bool is_multi)
@@ -97,7 +121,6 @@ void FreeKeyDerivationRequestMemory(void)
     }
 }
 
-
 static void RecalcCurrentWalletIndex(char *origin)
 {
     if (strcmp("eternl", origin) == 0) {
@@ -106,26 +129,22 @@ static void RecalcCurrentWalletIndex(char *origin)
         g_walletIndex = WALLET_LIST_TYPHON;
     } else if (strcmp("Leap Wallet", origin) == 0) {
         g_walletIndex = WALLET_LIST_LEAP;
+    } else if (strcmp("Begin", origin) == 0) {
+        g_walletIndex = WALLET_LIST_BEGIN;
     } else {
         g_walletIndex = WALLET_LIST_ETERNL;
     }
 }
 
-void GuiKeyDerivationRequestInit()
+void GuiKeyDerivationRequestInit(bool isUsb)
 {
+    g_isUsb = isUsb;
+    g_isUsbPassWordCheck = false;
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
     g_keyDerivationTileView.pageWidget = CreatePageWidget();
     g_keyDerivationTileView.cont = g_keyDerivationTileView.pageWidget->contentZone;
     SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    lv_obj_t *tileView = lv_tileview_create(g_keyDerivationTileView.cont);
-    lv_obj_clear_flag(tileView, LV_OBJ_FLAG_SCROLLABLE);
-    if (GuiDarkMode()) {
-        lv_obj_set_style_bg_color(tileView, BLACK_COLOR, LV_PART_MAIN);
-    } else {
-        lv_obj_set_style_bg_color(tileView, WHITE_COLOR, LV_PART_MAIN);
-    }
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR & LV_STATE_SCROLLED);
-    lv_obj_set_style_bg_opa(tileView, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
+    lv_obj_t *tileView = GuiCreateTileView(g_keyDerivationTileView.cont);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, TILE_APPROVE, 0, LV_DIR_HOR);
     ModelParseQRHardwareCall();
     // choose different animate qr widget by hardware call  version
@@ -144,17 +163,30 @@ void GuiKeyDerivationRequestInit()
     } else {
         GuiCreateQRCodeWidget(tile);
     }
-    g_keyDerivationTileView.currentTile = TILE_APPROVE;
+
+    tile = lv_tileview_add_tile(tileView, TILE_USB_CONNECT, 0, LV_DIR_HOR);
+    GuiConnectUsbEntranceWidget(tile);
+    g_keyDerivationTileView.usbCont = tile;
+
+    if (isUsb) {
+        g_keyDerivationTileView.currentTile = TILE_USB_CONNECT;
+        SetPageLockScreen(false);
+    } else {
+        g_keyDerivationTileView.currentTile = TILE_APPROVE;
+    }
     g_keyDerivationTileView.tileView = tileView;
 
     lv_obj_set_tile_id(g_keyDerivationTileView.tileView, g_keyDerivationTileView.currentTile, 0, LV_ANIM_OFF);
 }
 void GuiKeyDerivationRequestDeInit()
 {
+    g_isUsb = false;
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
     GUI_DEL_OBJ(g_derivationPathCont);
     GuiAnimatingQRCodeDestroyTimer();
     FreeKeyDerivationRequestMemory();
+    SetPageLockScreen(true);
 }
 
 static void SelectDerivationHandler(lv_event_t *e)
@@ -168,14 +200,13 @@ static void SelectDerivationHandler(lv_event_t *e)
     lv_obj_clear_state(g_derivationTypeCheck[!index], LV_STATE_CHECKED);
     SetCurrentSelectedIndex(index);
     ShowEgAddressCont(g_egCont);
-    UpdateConfirmBtn();
+    UpdateConfirmBtn(index != GetAccountType());
 }
 
 static void OpenDerivationPath()
 {
     if (IsCardano()) {
-        SetAccountType(GetKeyDerivationAdaXPubType());
-        SetCurrentSelectedIndex(GetKeyDerivationAdaXPubType());
+        SetCurrentSelectedIndex(GetAccountType());
     }
 
     lv_obj_t *bgCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()),
@@ -191,8 +222,7 @@ static void OpenDerivationPath()
     lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_SCROLLABLE);
 
-    lv_obj_t *label =
-        GuiCreateNoticeLabel(scrollCont, _("derivation_path_select_ada"));
+    lv_obj_t *label = GuiCreateNoticeLabel(scrollCont, _("derivation_path_select_ada"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
 
     lv_obj_t *cont = GuiCreateContainerWithParent(scrollCont, 408, 205);
@@ -252,23 +282,38 @@ static void OpenDerivationPath()
     lv_obj_set_style_bg_color(tmCont, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
-    lv_obj_add_event_cb(btn, ConfirmDerivationHandler, LV_EVENT_CLICKED, NULL);
+    if (strcmp("1", g_callData->version) == 0) {
+        lv_obj_add_event_cb(btn, SaveHardwareCallVersion1AdaDerivationAlgo, LV_EVENT_CLICKED, NULL);
+    } else {
+        lv_obj_add_event_cb(btn, ConfirmDerivationHandler, LV_EVENT_CLICKED, NULL);
+    }
+
     g_derivationPathConfirmBtn = btn;
-    UpdateConfirmBtn();
+    UpdateConfirmBtn(false);
 
     g_derivationPathCont = bgCont;
 }
 
 void GuiKeyDerivationRequestRefresh()
 {
-    GuiAnimatingQRCodeControl(false);
+    if (g_isUsb) {
+        SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarMidBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+    } else {
+        GuiAnimatingQRCodeControl(false);
+    }
 }
+
 void GuiKeyDerivationRequestNextTile()
 {
     g_keyDerivationTileView.currentTile++;
     switch (g_keyDerivationTileView.currentTile) {
     case TILE_QRCODE:
         SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, OnReturnHandler, NULL);
+        break;
+    case TILE_USB_CONNECT:
+        g_keyDerivationTileView.currentTile--;
         break;
     default:
         break;
@@ -289,106 +334,211 @@ void GuiKeyDerivationRequestPrevTile()
     lv_obj_set_tile_id(g_keyDerivationTileView.tileView, g_keyDerivationTileView.currentTile, 0, LV_ANIM_OFF);
 }
 
+void UpdateAndParseHardwareCall(void)
+{
+    if (strnlen_s(SecretCacheGetPassword(), PASSWORD_MAX_LEN) != 0 && g_isUsbPassWordCheck) {
+        ModelParseQRHardwareCall();
+        HiddenKeyboardAndShowAnimateQR();
+    }
+}
+
 static void ModelParseQRHardwareCall()
 {
     Response_QRHardwareCallData *data = parse_qr_hardware_call(g_data);
     g_callData = data->data;
     g_response = data;
 }
-#else
-static void ModelParseQRHardwareCall()
-{
-    g_response = SRAM_MALLOC(sizeof(Response_QRHardwareCallData));
-    g_response->error_code = 0;
-    g_response->error_message = "";
-    g_response->data = SRAM_MALLOC(sizeof(QRHardwareCallData));
-    g_response->data->call_type = "key_derivation";
-    g_response->data->origin = "Leap Wallet";
-    g_response->data->key_derivation = SRAM_MALLOC(sizeof(KeyDerivationRequestData));
-    g_response->data->key_derivation->schemas = SRAM_MALLOC(sizeof(VecFFI_KeyDerivationSchema));
-    g_response->data->key_derivation->schemas->cap = 4;
-    g_response->data->key_derivation->schemas->size = 4;
-    g_response->data->key_derivation->schemas->data = SRAM_MALLOC(4 * sizeof(KeyDerivationSchema));
-    // sol
-    g_response->data->key_derivation->schemas->data[0].algo = "ED25519";
-    // ed25519
-    g_response->data->key_derivation->schemas->data[0].curve = "1";
-    g_response->data->key_derivation->schemas->data[0].key_path = "44'/501'/0'";
-    g_response->data->key_derivation->schemas->data[0].chain_type = "SOL";
-    // cosmos
-    g_response->data->key_derivation->schemas->data[1].algo = "BIP32";
-    // secp256k1
-    g_response->data->key_derivation->schemas->data[1].curve = "0";
-    g_response->data->key_derivation->schemas->data[1].key_path = "44'/118'/0'";
-    g_response->data->key_derivation->schemas->data[1].chain_type = "ATOM";
-
-    // cosmos
-    g_response->data->key_derivation->schemas->data[2].algo = "BIP32";
-    // ed25519
-    g_response->data->key_derivation->schemas->data[2].curve = "1";
-    g_response->data->key_derivation->schemas->data[2].key_path = "44'/501'/0'/0/0";
-    g_response->data->key_derivation->schemas->data[2].chain_type = "SOL";
-
-    // cosmos
-    g_response->data->key_derivation->schemas->data[3].algo = "BIP32";
-    // secp256k1
-    g_response->data->key_derivation->schemas->data[3].curve = "0";
-    g_response->data->key_derivation->schemas->data[3].key_path = "44'/118'/0'/0/0";
-    g_response->data->key_derivation->schemas->data[3].chain_type = "ATOM";
-
-    g_response->data->version = "1";
-
-
-    g_callData = g_response->data;
-}
-#endif
 
 typedef enum {
     SECP256K1,
-    ED25519,
-} PublicInfoType_t;
+    SLIP10_ED25519,
+    BIP32_ED25519,
+    UNSUPPORT_DERIVATION_TYPE,
+} DerivationType_t;
 
-
-static uint8_t GetPublicKeyTypeByCurveString(char *curve)
+static uint8_t GetDerivationTypeByCurveAndDeriveAlgo(char *curve, char *algo)
 {
-    if (strcmp(curve, "SECP256K1") == 0) return SECP256K1;
-    if (strcmp(curve, "ED25519") == 0) return ED25519;
+    if (strcmp("Secp256k1", curve) == 0) {
+        return SECP256K1;
+    }
+    if (strcmp("ED25519", curve) == 0) {
+        if (strcmp("BIP32-ED25519", algo) == 0) {
+            return BIP32_ED25519;
+        }
+        if (strcmp("SLIP10", algo) == 0) {
+            return SLIP10_ED25519;
+        }
+    }
+    printf("unsupport derivation type\n");
+    // other case
+    return UNSUPPORT_DERIVATION_TYPE;
 }
+
+typedef struct HardwareCallResult {
+    bool isLegal;
+    char *title;
+    char *message;
+} HardwareCallResult_t;
+
+static HardwareCallResult_t g_hardwareCallParamsCheckResult = {
+    .isLegal = false,
+    .title = "Invaild Params",
+    .message = "hardware call params check failed"
+};
+
+static void SetHardwareCallParamsCheckResult(HardwareCallResult_t result)
+{
+    g_hardwareCallParamsCheckResult = result;
+}
+
+static HardwareCallResult_t CheckHardWareCallV0AdaPathIsLegal(char *path)
+{
+    char *token;
+    char *last_token = NULL;
+    int result;
+    token = strtok(path, "/");
+    while (token != NULL) {
+        last_token = token;
+        token = strtok(NULL, "/");
+    }
+    if (last_token != NULL) {
+        char *end = strchr(last_token, '\'');
+        if (end != NULL) {
+            *end = '\0';
+        }
+        result = atoi(last_token);
+    } else {
+        SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+            false, _("invaild_path_index_title"), _("invaild_path_index_con")
+        });
+        return g_hardwareCallParamsCheckResult;
+    }
+    // hardware call version 0, the derivation path index must be less than 24
+    if (result > 23) {
+        SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+            false, _("invaild_path_index_title"), _("invaild_path_index_con")
+        });
+        return g_hardwareCallParamsCheckResult;
+    } else {
+        SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+            true, "Check Pass", "hardware call params check pass"
+        });
+        return g_hardwareCallParamsCheckResult;
+
+    }
+}
+
+static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
+{
+    if (g_callData->key_derivation->schemas->size > 24) {
+        SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+            false, _("invaild_schemas_size"), _("invaild_schemas_size_big")
+        });
+        return g_hardwareCallParamsCheckResult;
+    }
+    if (strcmp("0", g_callData->version) == 0) {
+        for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
+            // does not contain the ada prefix
+            if (strstr(g_callData->key_derivation->schemas->data[i].key_path, "1852'/1815'") == NULL) {
+                SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+                    false, _("invaild_ada_path"), _("invaild_ada_path_con")
+                });
+                return g_hardwareCallParamsCheckResult;
+            }
+            char path_copy[256];
+            strncpy(path_copy, g_callData->key_derivation->schemas->data[i].key_path, sizeof(path_copy) - 1);
+            path_copy[sizeof(path_copy) - 1] = '\0';
+            HardwareCallResult_t result = CheckHardWareCallV0AdaPathIsLegal(path_copy);
+            if (!result.isLegal) {
+                SetHardwareCallParamsCheckResult(result);
+                return g_hardwareCallParamsCheckResult;
+            }
+        }
+    }
+    if (strcmp("1", g_callData->version) == 0) {
+        for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
+            uint8_t derivationType = GetDerivationTypeByCurveAndDeriveAlgo(g_callData->key_derivation->schemas->data[i].curve, g_callData->key_derivation->schemas->data[i].algo);
+            if (derivationType == UNSUPPORT_DERIVATION_TYPE) {
+                SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+                    false, _("invaild_derive_type"), _("invaild_derive_type_con")
+                });
+                return g_hardwareCallParamsCheckResult;
+            }
+            // check path match the chainType
+            Response_bool *response = check_hardware_call_path(g_response->data->key_derivation->schemas->data[i].key_path, g_response->data->key_derivation->schemas->data[i].chain_type);
+            if (*response->data == false) {
+                SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+                    false, _("invaild_account_path"),  _("invaild_account_path_notice")
+                });
+                return g_hardwareCallParamsCheckResult;
+            }
+        }
+    }
+    SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+        true, "Check Pass", "hardware call params check pass"
+    });
+    return g_hardwareCallParamsCheckResult;
+}
+
+
 
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
     CSliceFFI_ExtendedPublicKey keys;
     if (strcmp("1", g_callData->version) == 0) {
-        // hardware call version 1
+        uint8_t seed[64];
+        char *password = SecretCacheGetPassword();
+        MnemonicType mnemonicType = GetMnemonicType();
+        bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
+        int seedLen = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
+
+        GetAccountSeed(GetCurrentAccountIndex(), seed, password);
         ExtendedPublicKey xpubs[24];
         for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
-            uint8_t seed[64];
-            char *password = SecretCacheGetPassword();
-            int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, password);
-            if (ret != 0) {
-                printf("Failed to get account seed\n");
-                return NULL;
-            }
-            uint8_t algo = GetPublicKeyTypeByCurveString(g_callData->key_derivation->schemas->data[i].curve);
+            uint8_t derivationType = GetDerivationTypeByCurveAndDeriveAlgo(g_callData->key_derivation->schemas->data[i].curve, g_callData->key_derivation->schemas->data[i].algo);
             char *path = g_callData->key_derivation->schemas->data[i].key_path;
             SimpleResponse_c_char *pubkey;
-            // todo need add bip32-ed25519
-            if (algo == SECP256K1) {
-                pubkey = get_extended_pubkey_bytes_by_seed(seed, sizeof(seed), path);
-                xpubs[i].path = path;
-                xpubs[i].xpub = pubkey->data;
-            } else if (algo == ED25519) {
-                pubkey = get_ed25519_pubkey_by_seed(seed, sizeof(seed), path);
-                xpubs[i].path = path;
-                xpubs[i].xpub = pubkey->data;
+            switch (derivationType) {
+            case SECP256K1:
+                pubkey = get_extended_pubkey_bytes_by_seed(seed, seedLen, path);
+                break;
+            case SLIP10_ED25519:
+                pubkey = get_ed25519_pubkey_by_seed(seed, seedLen, path);
+                break;
+            case BIP32_ED25519:
+                if (selected_ada_derivation_algo == HD_STANDARD_ADA) {
+                    uint8_t entropyLen = 0;
+                    uint8_t entropy[64];
+                    GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
+                    SimpleResponse_c_char* cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
+                    char* icarusMasterKey = cip3_response->data;
+                    pubkey = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+                } else if (selected_ada_derivation_algo == HD_LEDGER_BITBOX_ADA) {
+                    // seed -> mnemonic --> master key(m) -> derive key
+                    uint8_t entropyLen = 0;
+                    uint8_t entropy[64];
+                    GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
+                    char *mnemonic = NULL;
+                    bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
+                    SimpleResponse_c_char *ledger_bitbox02_response  = get_ledger_bitbox02_master_key(mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+                    char* ledgerBitbox02Key = ledger_bitbox02_response->data;
+                    pubkey = derive_bip32_ed25519_extended_pubkey(ledgerBitbox02Key, path);
+                }
+                break;
+            default:
+                break;
             }
+            xpubs[i].path = path;
+            xpubs[i].xpub = pubkey->data;
         }
         keys.data = xpubs;
         keys.size = g_callData->key_derivation->schemas->size;
         uint8_t mfp[4] = {0};
         GetMasterFingerPrint(mfp);
         // clean the cache after use
-        ClearSecretCache();
+        if (!g_isUsb) {
+            ClearSecretCache();
+        }
         return generate_key_derivation_ur(mfp, 4, &keys);
     }
     ExtendedPublicKey xpubs[24];
@@ -402,48 +552,51 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     keys.size = g_callData->key_derivation->schemas->size;
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
+    // print keys
+    for (size_t i = 0; i < keys.size; i++) {
+        printf("v0 path: %s, xpub: %s\n", keys.data[i].path, keys.data[i].xpub);
+    }
     return generate_key_derivation_ur(mfp, 4, &keys);
 }
 
 static uint8_t GetXPubIndexByPath(char *path)
 {
-    if (strcmp("1852'/1815'/0'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(0);
-    if (strcmp("1852'/1815'/1'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(1);
-    if (strcmp("1852'/1815'/2'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(2);
-    if (strcmp("1852'/1815'/3'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(3);
-    if (strcmp("1852'/1815'/4'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(4);
-    if (strcmp("1852'/1815'/5'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(5);
-    if (strcmp("1852'/1815'/6'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(6);
-    if (strcmp("1852'/1815'/7'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(7);
-    if (strcmp("1852'/1815'/8'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(8);
-    if (strcmp("1852'/1815'/9'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(9);
-    if (strcmp("1852'/1815'/10'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(10);
-    if (strcmp("1852'/1815'/11'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(11);
-    if (strcmp("1852'/1815'/12'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(12);
-    if (strcmp("1852'/1815'/13'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(13);
-    if (strcmp("1852'/1815'/14'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(14);
-    if (strcmp("1852'/1815'/15'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(15);
-    if (strcmp("1852'/1815'/16'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(16);
-    if (strcmp("1852'/1815'/17'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(17);
-    if (strcmp("1852'/1815'/18'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(18);
-    if (strcmp("1852'/1815'/19'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(19);
-    if (strcmp("1852'/1815'/20'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(20);
-    if (strcmp("1852'/1815'/21'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(21);
-    if (strcmp("1852'/1815'/22'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(22);
-    if (strcmp("1852'/1815'/23'", path) == 0) return GetKeyDerivationAdaXPubTypeByIndex(23);
+    if (strcmp("1852'/1815'/0'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 0);
+    if (strcmp("1852'/1815'/1'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 1);
+    if (strcmp("1852'/1815'/2'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 2);
+    if (strcmp("1852'/1815'/3'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 3);
+    if (strcmp("1852'/1815'/4'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 4);
+    if (strcmp("1852'/1815'/5'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 5);
+    if (strcmp("1852'/1815'/6'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 6);
+    if (strcmp("1852'/1815'/7'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 7);
+    if (strcmp("1852'/1815'/8'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 8);
+    if (strcmp("1852'/1815'/9'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 9);
+    if (strcmp("1852'/1815'/10'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 10);
+    if (strcmp("1852'/1815'/11'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 11);
+    if (strcmp("1852'/1815'/12'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 12);
+    if (strcmp("1852'/1815'/13'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 13);
+    if (strcmp("1852'/1815'/14'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 14);
+    if (strcmp("1852'/1815'/15'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 15);
+    if (strcmp("1852'/1815'/16'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 16);
+    if (strcmp("1852'/1815'/17'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 17);
+    if (strcmp("1852'/1815'/18'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 18);
+    if (strcmp("1852'/1815'/19'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 19);
+    if (strcmp("1852'/1815'/20'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 20);
+    if (strcmp("1852'/1815'/21'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 21);
+    if (strcmp("1852'/1815'/22'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 22);
+    if (strcmp("1852'/1815'/23'", path) == 0) return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 23);
     if (strcmp("M/44'/148'/0'", path) == 0) return XPUB_TYPE_STELLAR_0;
     if (strcmp("M/44'/148'/1'", path) == 0) return XPUB_TYPE_STELLAR_1;
     if (strcmp("M/44'/148'/2'", path) == 0) return XPUB_TYPE_STELLAR_2;
     if (strcmp("M/44'/148'/3'", path) == 0) return XPUB_TYPE_STELLAR_3;
     if (strcmp("M/44'/148'/4'", path) == 0) return XPUB_TYPE_STELLAR_4;
-    return GetKeyDerivationAdaXPubTypeByIndex(0);
+    return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 0);
 }
 
 static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent)
 {
 
-    lv_obj_t *label, *cont, *btn, *pathCont, *noticeCont;
-
+    lv_obj_t *label, *cont, *btn, *pathCont,*noticeCont;
     cont = GuiCreateContainerWithParent(parent, 408, 534);
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 8);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
@@ -651,9 +804,6 @@ static void GuiShowKeyBoardDialog(lv_obj_t *parent)
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
-
-
-
 static bool CheckHardWareCallParaIsValied()
 {
     if (strcmp("1", g_callData->version) == 0) {
@@ -671,8 +821,11 @@ static bool CheckHardWareCallParaIsValied()
 
 static void OnApproveHandler(lv_event_t *e)
 {
-    if (!CheckHardWareCallParaIsValied()) {
-        GuiCreateHardwareCallInvaildPathHintbox();
+    printf("OnApproveHandler\n");
+    // click approve button and check the hardware call params
+    HardwareCallResult_t res =  CheckHardwareCallRequestIsLegal();
+    if (!res.isLegal) {
+        GuiCreateHardwareCallInvaildParamHintbox(res.title, res.message);
         return;
     }
     if (strcmp("1", g_callData->version) == 0) {
@@ -685,14 +838,52 @@ static void OnApproveHandler(lv_event_t *e)
     }
 }
 
+void GuiKeyDerivePasswordErrorCount(void *param)
+{
+    PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
+        // if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
+        //     const char *data = "Please try again after unlocking";
+        //     HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_VERIFY_PASSWORD_ERROR);
+        // }
+    }
+    GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+}
+
+void GuiKeyDeriveUsbPullout(void)
+{
+    if (g_isUsb) {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        g_keyboardWidget = NULL;
+        ClearUSBRequestId();
+        static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
+        GuiCloseToTargetView(&g_homeView);
+        GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
+        GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &signal, sizeof(signal));
+        if (GuiNeedFpRecognize()) {
+            FpRecognize(RECOGNIZE_UNLOCK);
+        }
+    }
+}
+
 void HiddenKeyboardAndShowAnimateQR()
 {
     // close password keyboard
-    GuiDeleteKeyboardWidget(g_keyboardWidget);
-    // show dynamic qr code
-    GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
-    // jump to next page to show qr code
-    GuiKeyDerivationRequestNextTile();
+    if (g_isUsb) {
+        if (g_keyboardWidget != NULL) {
+            GuiConnectUsbPasswordPass();
+        }
+        g_isUsbPassWordCheck = true;
+        UREncodeResult *urResult = ModelGenerateSyncUR();
+        HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), PRS_EXPORT_HARDWARE_CALL_SUCCESS);
+        free_ur_encode_result(urResult);
+    } else {
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        // show dynamic qr code
+        GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
+        // jump to next page to show qr code
+        GuiKeyDerivationRequestNextTile();
+    }
 }
 
 static void OnReturnHandler(lv_event_t *e)
@@ -726,41 +917,38 @@ static const char *GetChangeDerivationAccountType(int i)
 
 static void SetCurrentSelectedIndex(uint8_t index)
 {
-    g_currentSelectedPathIndex[GetCurrentAccountIndex()] = index;
+    g_currentSelectedPathIndex = index;
 }
 
 static uint32_t GetCurrentSelectedIndex()
 {
-    return g_currentSelectedPathIndex[GetCurrentAccountIndex()];
+    return g_currentSelectedPathIndex;
 }
 
 static void SetAccountType(uint8_t index)
 {
-    g_currentCardanoPathIndex[GetCurrentAccountIndex()] = index;
+    SetConnectWalletPathIndex(g_response->data->origin, index);
 }
 
-static AdaXPubType GetAccountType()
+static AdaXPubType GetAccountType(void)
 {
-    return g_currentCardanoPathIndex[GetCurrentAccountIndex()];
+    return GetConnectWalletPathIndex(g_response->data->origin);
 }
 
-static bool IsSelectChanged(void)
+static void UpdateConfirmBtn(bool update)
 {
-    return GetCurrentSelectedIndex() != GetAccountType();
-}
-
-static void UpdateConfirmBtn(void)
-{
-    if (IsSelectChanged()) {
+    if (update) {
         lv_obj_set_style_bg_opa(g_derivationPathConfirmBtn, LV_OPA_COVER,
                                 LV_PART_MAIN);
         lv_obj_set_style_text_opa(lv_obj_get_child(g_derivationPathConfirmBtn, 0),
                                   LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_add_flag(g_derivationPathConfirmBtn, LV_OBJ_FLAG_CLICKABLE);
     } else {
         lv_obj_set_style_bg_opa(g_derivationPathConfirmBtn, LV_OPA_30,
                                 LV_PART_MAIN);
         lv_obj_set_style_text_opa(lv_obj_get_child(g_derivationPathConfirmBtn, 0),
                                   LV_OPA_30, LV_PART_MAIN);
+        lv_obj_clear_flag(g_derivationPathConfirmBtn, LV_OBJ_FLAG_CLICKABLE);
     }
 }
 
@@ -777,28 +965,37 @@ static void CloseDerivationHandler(lv_event_t *e)
 
 static bool IsCardano()
 {
-    return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON;
+    return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON || g_walletIndex == WALLET_LIST_BEGIN;
+}
+
+
+
+// hardware call version 1 need another CompareDerivationHandler
+static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e)
+{
+    selected_ada_derivation_algo = GetCurrentSelectedIndex();
+    // save the derivation path type to the json file that be saved in flash
+    SetConnectWalletPathIndex(g_response->data->origin, GetAccountType()); 
+    SetAccountType(GetKeyDerivationAdaXPubType());
+    CloseDerivationHandler(e);
 }
 
 static void ConfirmDerivationHandler(lv_event_t *e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED && IsSelectChanged()) {
-        if (IsCardano()) {
-            SetKeyDerivationAdaXPubType(GetCurrentSelectedIndex());
-            SetAccountType(GetKeyDerivationAdaXPubType());
-        }
-        GuiAnimatingQRCodeDestroyTimer();
-        GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
-        GuiKeyDerivationRequestNextTile();
-        GUI_DEL_OBJ(g_derivationPathCont);
-        SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler,
-                         NULL);
-        SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex,
-                  NULL);
-        SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
-                          OpenMoreHandler, &g_walletIndex);
+    if (IsCardano()) {
+        SetConnectWalletPathIndex(g_response->data->origin, GetAccountType());
+        SetAccountType(GetCurrentSelectedIndex());
     }
+    GuiAnimatingQRCodeDestroyTimer();
+    GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
+    GuiKeyDerivationRequestNextTile();
+    GUI_DEL_OBJ(g_derivationPathCont);
+    SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler,
+                     NULL);
+    SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex,
+              NULL);
+    SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
+                      OpenMoreHandler, &g_walletIndex);
 }
 
 static char *GetChangeDerivationPathDesc(void)
@@ -809,13 +1006,13 @@ static char *GetChangeDerivationPathDesc(void)
 static void GetCardanoEgAddress(void)
 {
     char *xPub = NULL;
-    xPub = GetCurrentAccountPublicKey(GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_0 : XPUB_TYPE_LEDGER_ADA_0);
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0);
     SimpleResponse_c_char *result = cardano_get_base_address(xPub, 0, 1);
     CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][0], BUFFER_SIZE_128,
                        result->data, 24);
     free_simple_response_c_char(result);
 
-    xPub = GetCurrentAccountPublicKey(GetKeyDerivationAdaXPubType() == STANDARD_ADA ? XPUB_TYPE_ADA_1 : XPUB_TYPE_LEDGER_ADA_1);
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_1);
     result = cardano_get_base_address(xPub, 0, 1);
     CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][1], BUFFER_SIZE_128,
                        result->data, 24);
@@ -944,7 +1141,80 @@ static void OpenTutorialHandler(lv_event_t *e)
     GUI_DEL_OBJ(g_openMoreHintBox);
 }
 
-void GuiResetCurrentKeyDerivationCache(uint8_t index)
+static void GuiConnectUsbPasswordPass(void)
 {
-    SetKeyDerivationAdaXpubTypesByAccountIndex(STANDARD_ADA, index);
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
+    g_keyboardWidget = NULL;
+    lv_obj_clean(g_keyDerivationTileView.usbCont);
+    lv_obj_t *parent = g_keyDerivationTileView.usbCont;
+    GuiConnectUsbCreateImg(parent);
+
+    lv_obj_t *titlelabel = GuiCreateLittleTitleLabel(parent, _("usb_connectioning_wallet_title"));
+    lv_obj_align(titlelabel, LV_ALIGN_TOP_MID, 0, 184);
+    lv_obj_t *contentLabel = GuiCreateNoticeLabel(parent, _("usb_connectioning_wallet_desc"));
+    lv_obj_set_style_text_align(contentLabel, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(contentLabel, LV_ALIGN_TOP_MID, 0, 234);
+
+    lv_obj_t *button = GuiCreateTextBtn(parent, _("Close"));
+    lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_set_size(button, 408, 66);
+    lv_obj_add_event_cb(button, CloseCurrentViewHandler, LV_EVENT_CLICKED, NULL);
 }
+
+static void GuiConnectUsbEntranceWidget(lv_obj_t *parent)
+{
+    GuiConnectUsbCreateImg(parent);
+    lv_obj_t *titlelabel = GuiCreateLittleTitleLabel(parent, _("usb_transport_connection_request"));
+    lv_obj_align(titlelabel, LV_ALIGN_TOP_MID, 0, 184);
+    lv_obj_t *contentLabel = GuiCreateNoticeLabel(parent, _("usb_transport_connect_desc"));
+    lv_obj_set_style_text_align(contentLabel, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(contentLabel, LV_ALIGN_TOP_MID, 0, 234);
+
+    lv_obj_t *button = GuiCreateTextBtn(parent, _("Reject"));
+    lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 36, -24);
+    lv_obj_set_size(button, 192, 66);
+    lv_obj_add_event_cb(button, RejectButtonHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_set_style_bg_color(button, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(button, LV_OPA_20, LV_PART_MAIN);
+
+    button = GuiCreateTextBtn(parent, _("Approve"));
+    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_set_size(button, 192, 66);
+    lv_obj_add_event_cb(button, ApproveButtonHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiConnectUsbCreateImg(lv_obj_t *parent)
+{
+    lv_obj_t *img = GuiCreateImg(parent, &imgSoftwareWallet);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 110, 40);
+
+    for (int i = 0; i < 3; i++) {
+        lv_obj_t *led = lv_led_create(parent);
+        lv_obj_align(led, LV_ALIGN_DEFAULT, 236 + i * 12, 70);
+        lv_led_set_brightness(led, 150);
+        lv_obj_set_style_shadow_width(led, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
+        lv_obj_set_style_radius(led, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
+        lv_led_set_color(led, ORANGE_COLOR);
+        lv_led_on(led);
+        lv_obj_set_size(led, 4, 4);
+    }
+
+    img = GuiCreateImg(parent, &imgLogoGraph);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 298, 40);
+}
+
+static void ApproveButtonHandler(lv_event_t *e)
+{
+    static uint16_t sig = SIG_INIT_CONNECT_USB;
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_keyDerivationTileView.usbCont);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
+}
+
+static void RejectButtonHandler(lv_event_t *e)
+{
+    const char *data = "UR parsing rejected";
+    HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
+    GuiCLoseCurrentWorkingView();
+}
+#endif

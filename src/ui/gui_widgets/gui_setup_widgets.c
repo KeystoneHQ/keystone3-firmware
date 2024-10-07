@@ -22,6 +22,8 @@ typedef enum {
     SETUP_LANGUAGE_BUTT,
 } SETUP_LANGUAGE_ENUM;
 
+#define SUPPORT_WALLET_INDEX SETUP_JAPANESE
+
 static const char *g_languageList[] = {
     "English",
     "Русский язык",
@@ -57,11 +59,7 @@ static void DestroyTimer(void);
 
 SETUP_PHASE_ENUM lastShutDownPage;
 static PageWidget_t *g_pageWidget;
-#ifdef BTC_ONLY
-#define SUPPORT_WALLET_INDEX SETUP_ENGLISH
-#else
-#define SUPPORT_WALLET_INDEX SETUP_JAPANESE
-#endif
+
 
 static void GuiWelcomeWidget(lv_obj_t *parent)
 {

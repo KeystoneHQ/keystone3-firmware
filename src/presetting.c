@@ -6,14 +6,17 @@
 #include "user_memory.h"
 #include "err_code.h"
 #include "assert.h"
+#include "drv_mpu.h"
 
 #define FACTORY_RESULT_CHECK_ENABLE         1
 
 int32_t GetSerialNumber(char *serialNumber)
 {
+    MpuSetOtpProtection(false);
     char temp[256];
     OTP_PowerOn();
     memcpy(temp, (uint8_t *)OTP_ADDR_SN, 256);
+    MpuSetOtpProtection(true);
     if (CheckEntropy((uint8_t *)temp, 256) == false) {
         serialNumber[0] = '\0';
         return ERR_SERIAL_NUMBER_NOT_EXIST;
@@ -48,6 +51,7 @@ int32_t SetSerialNumber(const char *serialNumber)
 int32_t GetWebAuthRsaKey(uint8_t *key)
 {
     uint8_t *data;
+    MpuSetOtpProtection(false);
 
     OTP_PowerOn();
     data = SRAM_MALLOC(WEB_AUTH_RSA_KEY_LEN);
@@ -58,6 +62,7 @@ int32_t GetWebAuthRsaKey(uint8_t *key)
     }
     SRAM_FREE(data);
     memcpy(key, data, WEB_AUTH_RSA_KEY_LEN);
+    MpuSetOtpProtection(true);
     return SUCCESS_CODE;
 }
 
@@ -84,10 +89,12 @@ int32_t SetWebAuthRsaKey(const uint8_t *key)
 
 bool GetFactoryResult(void)
 {
+    MpuSetOtpProtection(false);
 #if (FACTORY_RESULT_CHECK_ENABLE == 1)
     uint32_t data;
     OTP_PowerOn();
     memcpy(&data, (uint32_t *)OTA_ADDR_FACTORY_BASE, 4);
+    MpuSetOtpProtection(true);
     if (data != 0xFFFFFFFF) {
         printf("data=%#x........\n", data);
         printf("factory pass\n");

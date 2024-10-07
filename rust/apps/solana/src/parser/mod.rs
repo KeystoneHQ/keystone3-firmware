@@ -2,6 +2,7 @@ use alloc::borrow::ToOwned;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use core::fmt::DebugList;
 
 use serde_json::json;
 use third_party::bitcoin::hex::FromHex;
@@ -12,12 +13,14 @@ use crate::parser::detail::{
     CommonDetail, ProgramDetail, ProgramDetailGeneralUnknown, SolanaDetail,
 };
 use crate::parser::overview::{
-    ProgramOverviewGeneral, ProgramOverviewInstruction, ProgramOverviewInstructions,
-    ProgramOverviewMultisigCreate, ProgramOverviewProposal, ProgramOverviewSplTokenTransfer,
-    ProgramOverviewTransfer, ProgramOverviewUnknown, ProgramOverviewVote, SolanaOverview,
+    JupiterV6SwapOverview, JupiterV6SwapTokenInfoOverview, ProgramOverviewGeneral,
+    ProgramOverviewInstruction, ProgramOverviewInstructions, ProgramOverviewMultisigCreate,
+    ProgramOverviewProposal, ProgramOverviewSplTokenTransfer, ProgramOverviewTransfer,
+    ProgramOverviewUnknown, ProgramOverviewVote, SolanaOverview,
 };
 use crate::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
 use crate::read::Read;
+use crate::utils;
 
 pub mod detail;
 pub mod overview;
@@ -45,6 +48,14 @@ impl ParsedSolanaTx {
             .collect::<Vec<&SolanaDetail>>();
         if squads.len() >= 1 {
             return SolanaTxDisplayType::SquadsV4;
+        }
+
+        let jupiter = details
+            .iter()
+            .filter(|d| Self::is_jupiter_v6_detail(&d.common))
+            .collect::<Vec<&SolanaDetail>>();
+        if jupiter.len() >= 1 {
+            return SolanaTxDisplayType::JupiterV6;
         }
 
         let transfer: Vec<&SolanaDetail> = details
@@ -104,7 +115,9 @@ impl ParsedSolanaTx {
     fn is_sqauds_v4_detail(common: &CommonDetail) -> bool {
         common.program.eq("SquadsV4")
     }
-
+    fn is_jupiter_v6_detail(common: &CommonDetail) -> bool {
+        common.program.eq("JupiterV6")
+    }
     fn build_genera_detail(details: &[SolanaDetail]) -> Result<String> {
         let parsed_detail = details
             .iter()
@@ -152,6 +165,7 @@ impl ParsedSolanaTx {
             }
             SolanaTxDisplayType::SquadsV4 => Ok(serde_json::to_string(&details)?),
             SolanaTxDisplayType::TokenTransfer => Ok(serde_json::to_string(&details)?),
+            SolanaTxDisplayType::JupiterV6 => Ok(serde_json::to_string(&details)?),
         }
     }
 
@@ -175,134 +189,139 @@ impl ParsedSolanaTx {
             "parse system transfer failed, empty transfer program".to_string(),
         ))
     }
-    fn find_token_name(token_mint_address: &str) -> (String, String) {
-        // token mint address | symbol | token name
+    fn find_token_info(token_mint_address: &str) -> (String, String, u8) {
+        // token mint address ==>  symbol | token name | decimals
         match token_mint_address {
             "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" => {
-                ("JUP".to_string(), "Jupiter".to_string())
+                ("JUP".to_string(), "Jupiter".to_string(), 6)
             }
             "MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey" => {
-                ("MNDE".to_string(), "Marinade".to_string())
+                ("MNDE".to_string(), "Marinade".to_string(), 9)
             }
             "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3" => {
-                ("PYTH".to_string(), "Pyth Network".to_string())
+                ("PYTH".to_string(), "Pyth Network".to_string(), 6)
             }
             "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" => {
-                ("USDC".to_string(), "USD Coin".to_string())
+                ("USDC".to_string(), "USD Coin".to_string(), 6)
             }
             "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL" => {
-                ("JTO".to_string(), "JITO".to_string())
+                ("JTO".to_string(), "JITO".to_string(), 9)
             }
             "85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ" => {
-                ("W".to_string(), "Wormhole Token".to_string())
+                ("W".to_string(), "Wormhole Token".to_string(), 6)
             }
             "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" => {
-                ("USDT".to_string(), "USDT".to_string())
+                ("USDT".to_string(), "USDT".to_string(), 6)
             }
             "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" => {
-                ("Bonk".to_string(), "Bonk".to_string())
+                ("Bonk".to_string(), "Bonk".to_string(), 5)
             }
             "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn" => {
-                ("JitoSOL".to_string(), "Jito Staked SOL".to_string())
+                ("JitoSOL".to_string(), "Jito Staked SOL".to_string(), 9)
             }
             "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" => {
-                ("WIF".to_string(), "dogwifhat".to_string())
+                ("WIF".to_string(), "dogwifhat".to_string(), 6)
             }
-            "BZLbGTNCSFfoth2GYDtwr7e4imWzpR5jqcUuGEwr646K" => ("IO".to_string(), "IO".to_string()),
+            "BZLbGTNCSFfoth2GYDtwr7e4imWzpR5jqcUuGEwr646K" => {
+                ("IO".to_string(), "IO".to_string(), 8)
+            }
             "rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof" => {
-                ("RENDER".to_string(), "Render Token".to_string())
+                ("RENDER".to_string(), "Render Token".to_string(), 8)
             }
             "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" => {
-                ("RAY".to_string(), "Raydium".to_string())
+                ("RAY".to_string(), "Raydium".to_string(), 6)
             }
             "7atgF8KQo4wJrD5ATGX7t1V2zVvykPJbFfNeVf1icFv1" => {
-                ("CWIF".to_string(), "catwifhat".to_string())
+                ("CWIF".to_string(), "catwifhat".to_string(), 2)
             }
             "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So" => {
-                ("mSol".to_string(), "Marinade staked SOL".to_string())
+                ("mSol".to_string(), "Marinade staked SOL".to_string(), 9)
             }
             "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux" => {
-                ("HNT".to_string(), "Helium Network Token".to_string())
+                ("HNT".to_string(), "Helium Network Token".to_string(), 8)
             }
             "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4" => {
-                ("JLP".to_string(), "Jupiter Perps LP".to_string())
+                ("JLP".to_string(), "Jupiter Perps LP".to_string(), 6)
             }
             "8BMzMi2XxZn9afRaMx5Z6fauk9foHXqV5cLTCYWRcVje" => {
-                ("STIK".to_string(), "Staika".to_string())
+                ("STIK".to_string(), "Staika".to_string(), 9)
             }
             "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82" => {
-                ("BOME".to_string(), "BOOK OF MEME".to_string())
+                ("BOME".to_string(), "BOOK OF MEME".to_string(), 6)
             }
             "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr" => {
-                ("POPCAT".to_string(), "POPCAT".to_string())
+                ("POPCAT".to_string(), "POPCAT".to_string(), 9)
             }
             "4vMsoUT2BWatFweudnQM1xedRLfJgJ7hswhcpz4xgBTy" => {
-                ("HONEY".to_string(), "HONEY".to_string())
+                ("HONEY".to_string(), "HONEY".to_string(), 9)
             }
             "NeonTjSjsuo3rexg9o6vHuMXw62f9V7zvmu8M8Zut44" => {
-                ("NEON".to_string(), "Neon EVM Token".to_string())
+                ("NEON".to_string(), "Neon EVM Token".to_string(), 9)
             }
             "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5" => {
-                ("MEW".to_string(), "cat in a dogs world".to_string())
+                ("MEW".to_string(), "cat in a dogs world".to_string(), 5)
             }
             "TNSRxcUxoT9xBG3de7PiJyTDYu7kskLqcpddxnEJAS6" => {
-                ("TNSR".to_string(), "Tensor".to_string())
+                ("TNSR".to_string(), "Tensor".to_string(), 9)
             }
             "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v" => {
-                ("JupSOL".to_string(), "Jupiter Staked SOL".to_string())
+                ("JupSOL".to_string(), "Jupiter Staked SOL".to_string(), 9)
             }
             "bSo13r4TkiE4KumL71LsHTPpL2euBYLFx6h9HP3piy1" => {
-                ("bSOL".to_string(), "BlazeStake Staked SOL".to_string())
+                ("bSOL".to_string(), "BlazeStake Staked SOL".to_string(), 9)
             }
             "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" => {
-                ("SRM".to_string(), "Serum".to_string())
+                ("SRM".to_string(), "Serum".to_string(), 6)
             }
             "5z3EqYQo9HiCEs3R84RCDMu2n7anpDMxRhdK8PSWmrRC" => {
-                ("PONKE".to_string(), "PONKE".to_string())
+                ("PONKE".to_string(), "PONKE".to_string(), 9)
             }
             "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo" => {
-                ("PYUSD".to_string(), "PYUSD".to_string())
+                ("PYUSD".to_string(), "PYUSD".to_string(), 6)
             }
             "z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M" => {
-                ("OXY".to_string(), "Oxygen Protocol".to_string())
+                ("OXY".to_string(), "Oxygen Protocol".to_string(), 6)
             }
             "METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m" => {
-                ("MPLX".to_string(), "Metaplex Token".to_string())
+                ("MPLX".to_string(), "Metaplex Token".to_string(), 6)
             }
             "KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS" => {
-                ("KMNO".to_string(), "Kamino".to_string())
+                ("KMNO".to_string(), "Kamino".to_string(), 6)
             }
             "DriFtupJYLTosbwoN8koMbEYSx54aFAVLddWsbksjwg7" => {
-                ("DRIFT".to_string(), "DRIFT".to_string())
+                ("DRIFT".to_string(), "DRIFT".to_string(), 6)
             }
             "FoXyMu5xwXre7zEoSvzViRk3nGawHUp9kUh97y2NDhcq" => {
-                ("FOXY".to_string(), "Famous Fox Federation".to_string())
+                ("FOXY".to_string(), "Famous Fox Federation".to_string(), 1)
             }
             "7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx" => {
-                ("GMT".to_string(), "GMT".to_string())
+                ("GMT".to_string(), "GMT".to_string(), 9)
             }
             "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm" => {
-                ("INF".to_string(), "Infinity".to_string())
+                ("INF".to_string(), "Infinity".to_string(), 9)
             }
             "EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp" => {
-                ("FIDA".to_string(), "Bonfida".to_string())
+                ("FIDA".to_string(), "Bonfida".to_string(), 6)
             }
             "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE" => {
-                ("ORCA".to_string(), "Orca".to_string())
+                ("ORCA".to_string(), "Orca".to_string(), 6)
             }
             "EzgfrTjgFyHGaU5BEBRETyfawt66bAYqJvcryWuJtQ5w" => {
-                ("Borzoi".to_string(), "Borzoi".to_string())
+                ("Borzoi".to_string(), "Borzoi".to_string(), 9)
             }
             "ZEUS1aR7aX8DFFJf5QjWj2ftDDdNTroMNGo8YoQm3Gq" => {
-                ("ZEUS".to_string(), "ZEUS".to_string())
+                ("ZEUS".to_string(), "ZEUS".to_string(), 6)
             }
             "mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6" => {
-                ("MOBILE".to_string(), "Helium Mobile".to_string())
+                ("MOBILE".to_string(), "Helium Mobile".to_string(), 6)
             }
             "iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns" => {
-                ("IOT".to_string(), "Helium IOT".to_string())
+                ("IOT".to_string(), "Helium IOT".to_string(), 6)
             }
-            _ => ("Token".to_string(), "Unknown".to_string()),
+            "So11111111111111111111111111111111111111112" => {
+                ("SOL".to_string(), "Wrapped SOL".to_string(), 9)
+            }
+            _ => ("SPLToken".to_string(), "Unknown".to_string(), 0),
         }
     }
     fn build_token_transfer_checked_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
@@ -319,10 +338,10 @@ impl ParsedSolanaTx {
                             destination: v.recipient.to_string(),
                             authority: v.owner.to_string(),
                             decimals: v.decimals,
-                            amount: format!("{} {}", amount, Self::find_token_name(&v.mint).0),
+                            amount: format!("{} {}", amount, Self::find_token_info(&v.mint).0),
                             token_mint_account: v.mint.clone(),
-                            token_symbol: Self::find_token_name(&v.mint).0,
-                            token_name: Self::find_token_name(&v.mint).1,
+                            token_symbol: Self::find_token_info(&v.mint).0,
+                            token_name: Self::find_token_info(&v.mint).1,
                         },
                     ))
                 } else {
@@ -427,6 +446,14 @@ impl ParsedSolanaTx {
                         data: None,
                     });
                 }
+                ProgramDetail::SystemTransfer(v) => {
+                    proposal_overview_vec.push(ProgramOverviewProposal {
+                        program: "System".to_string(),
+                        method: "Transfer".to_string(),
+                        memo: None,
+                        data: Some(v.value.clone()),
+                    });
+                }
                 _ => {}
             }
         }
@@ -508,6 +535,154 @@ impl ParsedSolanaTx {
         return Self::build_instructions_overview(details);
     }
 
+    // util function to check the account is exist in the address lookup table
+    fn is_account_exist_in_lookup_table(account: &str) -> bool {
+        // if account contains #, it means it's a table account we add "Table" to the head
+        account.contains("#")
+    }
+
+    fn genreate_jupiter_swap_overview(
+        instruction_name: &str,
+        token_a_mint: &str,
+        token_b_mint: &str,
+        slippage_bps: u16,
+        platform_fee_bps: u16,
+        in_amount: u64,
+        out_amount: u64,
+    ) -> SolanaOverview {
+        let program_name = "Jupiter Aggregator v6";
+        let program_address = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4";
+        let base_percent = 10000;
+        let slippage_bps = format!("{}%", (slippage_bps as f64 / base_percent as f64) * 100.0);
+        let platform_fee_bps = format!(
+            "{}%",
+            (platform_fee_bps as f64 / base_percent as f64) * 100.0
+        );
+        let token_a_mint = token_a_mint.to_string();
+        let token_b_mint = token_b_mint.to_string();
+        let token_a_overview = JupiterV6SwapTokenInfoOverview {
+            token_name: Self::find_token_info(&token_a_mint).1,
+            token_symbol: Self::find_token_info(&token_a_mint).0,
+            token_address: token_a_mint.clone(),
+            token_amount: format!(
+                "{} {}",
+                utils::token_amount_to_human_readable(
+                    in_amount,
+                    Self::find_token_info(&token_a_mint).2.into()
+                ),
+                Self::find_token_info(&token_a_mint).0
+            ),
+            exist_in_address_lookup_table: Self::is_account_exist_in_lookup_table(&token_a_mint),
+        };
+        let token_b_overview = JupiterV6SwapTokenInfoOverview {
+            token_name: Self::find_token_info(&token_b_mint).1,
+            token_symbol: Self::find_token_info(&token_b_mint).0,
+            token_address: token_b_mint.clone(),
+            token_amount: format!(
+                "{} {}",
+                utils::token_amount_to_human_readable(
+                    out_amount,
+                    Self::find_token_info(&token_b_mint).2.into()
+                ),
+                Self::find_token_info(&token_b_mint).0
+            ),
+            exist_in_address_lookup_table: Self::is_account_exist_in_lookup_table(&token_b_mint),
+        };
+        SolanaOverview::JupiterV6SwapOverview(JupiterV6SwapOverview {
+            program_name: program_name.to_string(),
+            program_address: program_address.to_string(),
+            instruction_name: instruction_name.to_string(),
+            token_a_overview,
+            token_b_overview,
+            slippage_bps,
+            platform_fee_bps,
+        })
+    }
+    fn build_jupiter_v6_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
+        //  we only parse jupiter v6 swap on stage 1
+        let jupiter_instruction = details.iter().find(|d| {
+            matches!(
+                d.kind,
+                ProgramDetail::JupiterV6SharedAccountsRoute(_)
+                    | ProgramDetail::JupiterV6Route(_)
+                    | ProgramDetail::JupiterV6ExactOutRoute(_)
+                    | ProgramDetail::JupiterV6SharedAccountsExactOutRoute(_)
+            )
+        });
+        if let Some(jupiter_swap_instruction) = jupiter_instruction {
+            match &jupiter_swap_instruction.kind {
+                ProgramDetail::JupiterV6SharedAccountsRoute(v) => {
+                    // https://solscan.io/tx/4DHUYxDxy3rykXfTq9EmN6GEYgWQ8W1hCu4cT4B3gpgwrNpFdK1vwGccCNWGnKa8avZArH1tRFferf5ezJyDrivP
+                    // https://solscan.io/tx/2mCi5xkVaPxgphtu7z6R1qUt7dmXkFUCHBrepCjSGbT8LjqYnoq9hB7NFtjLvSZ5WGu7cMtsYNbFVpRxEnTb3dRN
+                    // index 7 : source token mint
+                    let token_a_mint = v.accounts[7].clone();
+                    // index 8 : destination token mint
+                    let token_b_mint = v.accounts[8].clone();
+                    return Ok(Self::genreate_jupiter_swap_overview(
+                        "JupiterV6SharedAccountsRoute",
+                        &token_a_mint,
+                        &token_b_mint,
+                        v.args.slippage_bps,
+                        v.args.platform_fee_bps as u16,
+                        v.args.in_amount,
+                        v.args.quoted_out_amount,
+                    ));
+                }
+                ProgramDetail::JupiterV6SharedAccountsExactOutRoute(v) => {
+                    // https://solscan.io/tx/4DHUYxDxy3rykXfTq9EmN6GEYgWQ8W1hCu4cT4B3gpgwrNpFdK1vwGccCNWGnKa8avZArH1tRFferf5ezJyDrivP
+                    // https://solscan.io/tx/2mCi5xkVaPxgphtu7z6R1qUt7dmXkFUCHBrepCjSGbT8LjqYnoq9hB7NFtjLvSZ5WGu7cMtsYNbFVpRxEnTb3dRN
+                    // index 7 : source token mint
+                    let token_a_mint = v.accounts[7].clone();
+                    // index 8 : destination token mint
+                    let token_b_mint = v.accounts[8].clone();
+                    return Ok(Self::genreate_jupiter_swap_overview(
+                        "JupiterV6SharedAccountsExactOutRoute",
+                        &token_a_mint,
+                        &token_b_mint,
+                        v.args.slippage_bps,
+                        v.args.platform_fee_bps as u16,
+                        v.args.quoted_in_amount,
+                        v.args.out_amount,
+                    ));
+                }
+                ProgramDetail::JupiterV6ExactOutRoute(v) => {
+                    // https://solscan.io/tx/XnRGNPgKgtD6Qk8p6Pxg9Z9PRyf5cfUJbjU9grhiDkicbSYUo3h1geaVj87JvZaoeY1VRe2Gcr9aYXH83Vrgki7
+                    // index 5 : source token mint
+                    let token_a_mint = v.accounts[5].clone();
+                    // index 6 : destination token mint
+                    let token_b_mint = v.accounts[6].clone();
+                    return Ok(Self::genreate_jupiter_swap_overview(
+                        "JupiterV6ExactOutRoute",
+                        &token_a_mint,
+                        &token_b_mint,
+                        v.args.slippage_bps,
+                        v.args.platform_fee_bps as u16,
+                        v.args.quoted_in_amount,
+                        v.args.out_amount,
+                    ));
+                }
+                ProgramDetail::JupiterV6Route(v) => {
+                    // https://solscan.io/tx/5gJqzAWhpvMpiv8TxGqXXvjZ4N8PfeWu2Rnt8ynA1BD47Jb58RJih5Bjr2GxLRMBJ3y1FuxXDXhsgamsk3uQ7BDB
+                    // index 4 : source token mint is Unknown
+                    let token_a_mint = "Unknown";
+                    // index 5 destination token mint
+                    let token_b_mint = v.accounts[5].clone();
+                    return Ok(Self::genreate_jupiter_swap_overview(
+                        "JupiterV6Route",
+                        &token_a_mint,
+                        &token_b_mint,
+                        v.args.slippage_bps,
+                        v.args.platform_fee_bps as u16,
+                        v.args.in_amount,
+                        v.args.quoted_out_amount,
+                    ));
+                }
+                _ => {}
+            }
+        }
+        return Self::build_instructions_overview(details);
+    }
+
     fn build_instructions_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
         let mut overview_instructions = Vec::new();
         let mut overview_accounts: Vec<String> = Vec::new();
@@ -550,6 +725,7 @@ impl ParsedSolanaTx {
             SolanaTxDisplayType::TokenTransfer => {
                 Self::build_token_transfer_checked_overview(details)
             }
+            SolanaTxDisplayType::JupiterV6 => Self::build_jupiter_v6_overview(details),
         }
     }
 }
@@ -1028,9 +1204,7 @@ mod tests {
         let parsed = ParsedSolanaTx::build(&transaction).unwrap();
         let detail_tx = parsed.detail;
         let parsed_detail: Value = serde_json::from_str(detail_tx.as_str()).unwrap();
-
-        let expect_data = json!(
-                    {
+        let expect_data = json!({
           "accounts": [
             "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
             "ComputeBudget111111111111111111111111111111",
@@ -1057,54 +1231,52 @@ mod tests {
             },
             {
               "accounts": [
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#155",
-                "Table:J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#153",
-                "Table:J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#150",
+                "J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#9",
+                "3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#134",
+                "3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#135",
                 "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#7",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#9",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#14",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#13",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#15",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#12",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#150",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#154",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#150",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#145",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#152",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#141",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#141",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#134",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#139",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#151",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#17",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#3",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#138",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#143",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#140",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#140",
-                "Table:J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#154",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#13",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#135",
+                "3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#3",
+                "3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#139",
+                "3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#138",
+                "3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#17",
+                "3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#140",
+                "3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#141",
+                "J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#1",
+                "J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#7",
+                "J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#1",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#141",
+                "J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#15",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#145",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#146",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#147",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#148",
+                "J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#12",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#149",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#150",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#151",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#152",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#154",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#154",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#155",
+                "3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#17",
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#143",
                 "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#149",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#1",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#146",
+                "J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#13",
+                "J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#14",
+                "J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#150",
                 "NjordRPSzFs8XQUKMjGrhPcmGo9yfC9HP3VHmh8xZpZ",
-                "Table:3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#135",
-                "Table:J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#7",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#148",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#147",
-                "Table:AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#150"
+                "AUJexzjDyphJf8wZvKo83oRSANxmUcvgdfZF3s6Bb37g#143",
+                "3CHw45wdjHwfcnKdZk65dCHnf9tZePfhTDhqkC5NoKzU#3",
+                "J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#153",
+                "J61ZcWYAsQbdJBs99iuubCDLpAkPh2LGTPzMpRFJLjAv#154",
+                "J5taGmJ5wt1pgfbwTjt9g9yifbDfNbdnsPctQtzSH7hm#1"
               ],
               "data": "M84QqhYtFGnDAYhY7ZbnQwWuMazpdnwXBg3rkTDwgDVibjPaTVH5Hbsd",
               "program": "Unknown",
               "program_account": "YmirFH6wUrtUMUmfRPZE7TcnszDw689YNWYrMgyB55N"
             }
           ]
-        }
-                );
-
+        });
         assert_eq!(expect_data, parsed_detail);
     }
 

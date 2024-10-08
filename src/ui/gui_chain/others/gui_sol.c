@@ -1245,7 +1245,8 @@ static void GuiShowSolTxMultiSigCreateOverview(lv_obj_t *parent, PtrT_DisplaySol
     lv_obj_align_to(firstTransferCardContainer, totalValueContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 }
 
-static bool CheckIsAddressLookupTableAccount(const char* account) {
+static bool CheckIsAddressLookupTableAccount(const char* account)
+{
     // if address is containe "#" then it is a AddressLookupTable account
     return strchr(account, '#') != NULL;
 }
@@ -1368,7 +1369,7 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
                 // remember free the data
                 SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)malloc(sizeof(SolanaAddressLearnMoreData));
                 if (data != NULL) {
-                    const char* address = accounts->data[j]; 
+                    const char* address = accounts->data[j];
                     size_t address_len = strlen(address);
                     data->address = (char*)malloc(address_len + 1);
                     strcpy(data->address, address);

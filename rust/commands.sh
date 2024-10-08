@@ -20,6 +20,8 @@ DIRS=(
     "apps/utils"
     "apps/ton"
     "apps/stellar"
+    "apps/monero"
+    
     "keystore"
     "rust_c"
     "rust_c/src/aptos"

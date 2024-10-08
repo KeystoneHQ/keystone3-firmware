@@ -151,7 +151,7 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
     case DashTx:
     case BchTx:
 #endif
-        func = GuiGetSignQrCodeData;
+        func = isMulti ? GuiGetBtcSignQrCodeData : GuiGetBtcSignUrDataUnlimited;
         break;
 #ifndef BTC_ONLY
     case EthTx:

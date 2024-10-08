@@ -11,10 +11,12 @@ use app_bitcoin::parsed_tx::ParseContext;
 use app_bitcoin::{self, parse_psbt_hex_sign_status, parse_psbt_sign_status};
 use common_rust_c::errors::RustCError;
 use common_rust_c::extract_ptr_with_type;
-use common_rust_c::ffi::CSliceFFI;
-use common_rust_c::structs::{ExtendedPublicKey, TransactionCheckResult, TransactionParseResult};
-use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use common_rust_c::ffi::{CSliceFFI, VecFFI};
+use common_rust_c::structs::{
+    ExtendedPublicKey, Response, TransactionCheckResult, TransactionParseResult,
+};
+use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
+use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use common_rust_c::utils::{convert_c_char, recover_c_array, recover_c_char};
 use third_party::bitcoin::bip32::{DerivationPath, Xpub};
 use third_party::hex;
@@ -51,12 +53,13 @@ pub extern "C" fn btc_parse_psbt(
 }
 
 #[no_mangle]
-pub extern "C" fn btc_sign_psbt(
+fn btc_sign_psbt_dynamic(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
     master_fingerprint: PtrBytes,
     master_fingerprint_len: u32,
+    fragment_length: usize,
 ) -> *mut UREncodeResult {
     if master_fingerprint_len != 4 {
         return UREncodeResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
@@ -84,13 +87,35 @@ pub extern "C" fn btc_sign_psbt(
             Ok(data) => UREncodeResult::encode(
                 data,
                 CryptoPSBT::get_registry_type().get_type(),
-                FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                fragment_length.clone(),
             )
             .c_ptr(),
             Err(e) => UREncodeResult::from(e).c_ptr(),
         },
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
+}
+
+#[no_mangle]
+pub extern "C" fn btc_sign_psbt(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    master_fingerprint: PtrBytes,
+    master_fingerprint_len: u32,
+) -> *mut UREncodeResult {
+    btc_sign_psbt_dynamic(ptr, seed, seed_len, master_fingerprint, master_fingerprint_len, FRAGMENT_MAX_LENGTH_DEFAULT.clone())
+}
+
+#[no_mangle]
+pub extern "C" fn btc_sign_psbt_unlimited(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    master_fingerprint: PtrBytes,
+    master_fingerprint_len: u32,
+) -> *mut UREncodeResult {
+    btc_sign_psbt_dynamic(ptr, seed, seed_len, master_fingerprint, master_fingerprint_len, FRAGMENT_UNLIMITED_LENGTH.clone())
 }
 
 #[no_mangle]

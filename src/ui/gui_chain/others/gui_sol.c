@@ -664,7 +664,7 @@ static void GuiShowJupiterV6SwapOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
         lv_obj_add_flag(info_icon, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_align_to(info_icon, tokenBAmountValueLabel, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
         static SolanaLearnMoreData_t tokenAmountLearnMoredata;
-        tokenAmountLearnMoredata.title = "Token Details";
+        tokenAmountLearnMoredata.title = _("token_details");
         tokenAmountLearnMoredata.content = _("token_in_alt_desc");
         lv_obj_add_event_cb(info_icon, learn_more_click_event_handler, LV_EVENT_CLICKED, &tokenAmountLearnMoredata);
     }

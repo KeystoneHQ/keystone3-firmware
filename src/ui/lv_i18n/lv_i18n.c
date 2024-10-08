@@ -9,35 +9,13 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
@@ -744,6 +722,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "Wipe(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "Wipe(5)"},
     {"system_settings_wipe_device_wipe_title", "Wipe Device"},
+    {"token_details", "Token Details"},
     {"token_in_alt_desc", "In this SOL transaction raw data does not specify the exact token type. Please confirm the specific token type in the software wallet."},
     {"ton_comment_hint", "Comment is not transaction data. Please verify carefully."},
     {"ton_mnemonic_generating_desc", "maybe 10 mins"},
@@ -878,12 +857,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1601,6 +1577,7 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "Wischen (%d)"},
     {"system_settings_wipe_device_wipe_start_text", "Löschen (5)"},
     {"system_settings_wipe_device_wipe_title", "Gerät löschen"},
+    {"token_details", "Token-Details"},
     {"token_in_alt_desc", "In den Rohdaten dieser SOL-Transaktion wird der genaue Token-Typ nicht angegeben. Bitte bestätigen Sie den spezifischen Token-Typ in der Software-Wallet."},
     {"ton_comment_hint", "Der Kommentar ist keine Transaktionsdaten. Bitte überprüfen Sie sorgfältig."},
     {"ton_mnemonic_generating_desc", "vielleicht 10 Minuten"},
@@ -1735,12 +1712,9 @@ const static lv_i18n_phrase_t de_singulars[] = {
 
 static uint8_t de_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -2458,6 +2432,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "Borrar(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "Borrar (5)"},
     {"system_settings_wipe_device_wipe_title", "Borrar dispositivo"},
+    {"token_details", "Detalles del token"},
     {"token_in_alt_desc", "En los datos sin procesar de esta transacción SOL no se especifica el tipo exacto de token. Por favor, confirme el tipo específico de token en la billetera de software."},
     {"ton_comment_hint", "El comentario no es un dato de transacción. Por favor, verifíquelo con cuidado."},
     {"ton_mnemonic_generating_desc", "tal vez 10 minutos"},
@@ -2592,8 +2567,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
 
 static uint8_t es_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
+    uint32_t n = op_n(num); UNUSED(n);
 
 
     if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -3312,6 +3286,7 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "ワイプ(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "ワイプ(5)"},
     {"system_settings_wipe_device_wipe_title", "デバイスをWIPEする"},
+    {"token_details", "トークンの詳細"},
     {"token_in_alt_desc", "この SOL トランザクションの生データには正確なトークンタイプが指定されていません。ソフトウェアウォレットで具体的なトークンタイプを確認してください。"},
     {"ton_comment_hint", "コメントはトランザクションデータではありません。注意して確認してください。"},
     {"ton_mnemonic_generating_desc", "多分10分間"},
@@ -4164,6 +4139,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "삭제(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "삭제(5)"},
     {"system_settings_wipe_device_wipe_title", "장치 초기화"},
+    {"token_details", "토큰 세부 정보"},
     {"token_in_alt_desc", "이 SOL 트랜잭션의 원시 데이터에는 정확한 토큰 유형이 지정되어 있지 않습니다. 소프트웨어 지갑에서 특정 토큰 유형을 확인하십시오."},
     {"ton_comment_hint", "코멘트는 거래 데이터가 아닙니다. 신중하게 확인해주세요."},
     {"ton_mnemonic_generating_desc", "10분 정도일지도 모릅니다"},
@@ -5016,6 +4992,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "Сброс(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "Сброс(5)"},
     {"system_settings_wipe_device_wipe_title", "Сброс устройства"},
+    {"token_details", "Детали токена"},
     {"token_in_alt_desc", "В необработанных данных этой транзакции SOL не указан точный тип токена. Пожалуйста, подтвердите конкретный тип токена в программном кошельке."},
     {"ton_comment_hint", "Комментарий не является транзакционными данными. Пожалуйста, внимательно проверьте."},
     {"ton_mnemonic_generating_desc", "возможно, 10 мин"},
@@ -5150,12 +5127,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -5876,6 +5850,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"system_settings_wipe_device_wipe_fmt", "擦除(%d)"},
     {"system_settings_wipe_device_wipe_start_text", "擦除(5)"},
     {"system_settings_wipe_device_wipe_title", "擦除设备"},
+    {"token_details", "代币详情"},
     {"token_in_alt_desc", "此 SOL 交易的原始数据未指定确切的代币类型。请在软件钱包中确认具体的代币类型。"},
     {"ton_comment_hint", "注释不是交易数据，请仔细验证。"},
     {"ton_mnemonic_generating_desc", "可能10分钟"},
@@ -6057,8 +6032,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -6071,13 +6046,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -6090,10 +6065,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -6108,23 +6083,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -6140,31 +6115,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -6179,6 +6154,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

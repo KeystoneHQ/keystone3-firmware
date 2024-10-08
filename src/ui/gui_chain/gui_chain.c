@@ -15,6 +15,10 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_SUI_SIGN_MESSAGE_HASH:
     case REMAPVIEW_ADA_SIGN_TX_HASH:
         return true;
+    case REMAPVIEW_ADA:
+    case REMAPVIEW_ADA_SIGN_DATA:
+    case REMAPVIEW_ADA_CATALYST:
+        return true;
     default:
         return false;
     }
@@ -129,7 +133,6 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     }
     return CHAIN_BUTT;
 }
-
 #ifndef BTC_ONLY
 bool IsMessageType(uint8_t type)
 {

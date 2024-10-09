@@ -88,22 +88,29 @@ uint32_t GetTlvFromData(Tlv_t tlvArray[], uint32_t maxTlvLen, const uint8_t *dat
     uint32_t count = 0, index = 0;
 
     while (count < maxTlvLen && index < dataLen) {
-        tlvArray[count].type = data[index++]; // t
-        if (data[index] > 127) {
-            tlvArray[count].length = ((uint16_t)(data[index] & 0x7F) << 8) + data[index + 1];
-            index += 2; // l
-        } else {
-            tlvArray[count].length = data[index++]; // l
-        }
-
-        tlvArray[count].pValue = (uint8_t *)&data[index];
-        index += tlvArray[count].length; // v
-        assert(index <= dataLen);
-
-        count++;
-        if (index == dataLen) {
+        if (index + 1 > dataLen) {
             break;
         }
+        tlvArray[count].type = data[index++];
+
+        if (index + 1 > dataLen) {
+            break;
+        }
+        if (data[index] > 127) {
+            if (index + 2 > dataLen) break;
+            tlvArray[count].length = ((uint16_t)(data[index] & 0x7F) << 8) + data[index + 1];
+            index += 2;
+        } else {
+            tlvArray[count].length = data[index++];
+        }
+
+        if (index + tlvArray[count].length > dataLen) {
+            break;
+        }
+        tlvArray[count].pValue = (uint8_t *)&data[index];
+        index += tlvArray[count].length;
+
+        count++;
     }
 
     return count;

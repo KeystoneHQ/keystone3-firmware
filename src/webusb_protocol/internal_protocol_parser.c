@@ -41,34 +41,31 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
     uint8_t *sendBuf;
 
     for (i = 0; i < len; i++) {
+        if (global_parser->rcvCount >= PROTOCOL_MAX_LENGTH) {
+            global_parser->rcvCount = 0;
+            rcvLen = 0;
+            continue;
+        }
+
         if (global_parser->rcvCount == 0) {
-            // printf("loop head\n");
             if (data[i] == PROTOCOL_HEADER) {
-                g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
-                global_parser->rcvCount++;
-                // printf("head\n");
+                g_protocolRcvBuffer[global_parser->rcvCount++] = data[i];
             }
         } else if (global_parser->rcvCount == 9) {
-            // printf("loop length\n");
-            // length
-            g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
-            global_parser->rcvCount++;
+            g_protocolRcvBuffer[global_parser->rcvCount++] = data[i];
             rcvLen = ((uint32_t)g_protocolRcvBuffer[9] << 8) + g_protocolRcvBuffer[8];
             assert(rcvLen <= (PROTOCOL_MAX_LENGTH - 14));
-            // printf("rcvLen=%d\n", rcvLen);
         } else if (global_parser->rcvCount == rcvLen + 13) {
-            // printf("loop crc\n");
             g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
-            global_parser->rcvCount = 0;
-            // printf("full frame,len=%d\n", rcvLen + 14);
             sendBuf = ProtocolParse(g_protocolRcvBuffer, rcvLen + 14, &outLen);
             if (sendBuf) {
                 g_sendFunc(sendBuf, outLen);
                 SRAM_FREE(sendBuf);
             }
+            global_parser->rcvCount = 0;
+            rcvLen = 0;
         } else {
-            g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
-            global_parser->rcvCount++;
+            g_protocolRcvBuffer[global_parser->rcvCount++] = data[i];
         }
     }
 }
@@ -136,20 +133,28 @@ static uint8_t *ProtocolParse(const uint8_t *inData, uint32_t inLen, uint32_t *o
 
 static uint8_t *ExecuteService(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
-    uint32_t i;
+    if (head == NULL || tlvData == NULL || outLen == NULL) {
+        printf("err, invalid input parameters\n");
+        return NULL;
+    }
 
+    uint32_t i;
     for (i = 0; i < sizeof(g_ProtocolServiceList) / sizeof(g_ProtocolServiceList[0]); i++) {
         if (g_ProtocolServiceList[i].serviceId == head->serviceId) {
-            if (g_ProtocolServiceList[i].func[head->commandId] == NULL) {
-                printf("err, no func\n");
-                return NULL;
-            }
             if (head->commandId >= g_ProtocolServiceList[i].commandIdNum) {
-                printf("err,head->commandId=%d,commandIdNum=%d\n", head->commandId, g_ProtocolServiceList[i].commandIdNum);
+                printf("err, head->commandId=%d, commandIdNum=%d\n", head->commandId, g_ProtocolServiceList[i].commandIdNum);
                 return NULL;
             }
+
+            if (g_ProtocolServiceList[i].func[head->commandId] == NULL) {
+                printf("err, no func for commandId=%d\n", head->commandId);
+                return NULL;
+            }
+
             return g_ProtocolServiceList[i].func[head->commandId](head, tlvData, outLen);
         }
     }
+
+    printf("err, serviceId=%d not found\n", head->serviceId);
     return NULL;
 }

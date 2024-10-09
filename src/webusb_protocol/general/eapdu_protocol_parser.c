@@ -98,7 +98,6 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
         printf("Invalid request: NULL pointer\n");
         return;
     }
-    printf("request: %u\n", request->commandType);
     switch (request->commandType) {
     case CMD_ECHO_TEST:
         EchoService(request);

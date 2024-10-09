@@ -596,7 +596,7 @@ static uint8_t GetXPubIndexByPath(char *path)
 static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent)
 {
 
-    lv_obj_t *label, *cont, *btn, *pathCont,*noticeCont;
+    lv_obj_t *label, *cont, *btn, *pathCont, *noticeCont;
     cont = GuiCreateContainerWithParent(parent, 408, 534);
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 8);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
@@ -975,7 +975,7 @@ static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e)
 {
     selected_ada_derivation_algo = GetCurrentSelectedIndex();
     // save the derivation path type to the json file that be saved in flash
-    SetConnectWalletPathIndex(g_response->data->origin, GetAccountType()); 
+    SetConnectWalletPathIndex(g_response->data->origin, GetAccountType());
     SetAccountType(GetKeyDerivationAdaXPubType());
     CloseDerivationHandler(e);
 }

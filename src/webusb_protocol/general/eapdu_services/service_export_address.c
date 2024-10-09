@@ -4,6 +4,7 @@
 #include "gui.h"
 #include "gui_lock_widgets.h"
 #include "gui_home_widgets.h"
+#include "gui_wallet.h"
 // #include "gui_lock_widgets.h"
 
 /* DEFINES */
@@ -57,13 +58,21 @@ static bool IsValidParams(struct EthParams *params)
     return true;
 }
 
-static struct EthParams *ParseParams(char *data)
+static struct EthParams *ParseParams(const char *data, size_t dataLength)
 {
+    if (data == NULL || dataLength < (OFFSET_TYPE + 2)) {
+        return NULL;
+    }
+
     struct EthParams *params = NewParams();
+    if (params == NULL) {
+        return NULL;
+    }
+
     params->n = 0;
-    params->chain = (uint8_t)extract_16bit_value(data, OFFSET_CHAIN);
-    params->wallet = (uint8_t)extract_16bit_value(data, OFFSET_WALLET);
-    params->type = (uint8_t)extract_16bit_value(data, OFFSET_TYPE);
+    params->chain = extract_16bit_value((const uint8_t *)data, OFFSET_CHAIN);
+    params->wallet = extract_16bit_value((const uint8_t *)data, OFFSET_WALLET);
+    params->type = extract_16bit_value((const uint8_t *)data, OFFSET_TYPE);
 
     return params;
 }
@@ -146,7 +155,7 @@ void ExportAddressService(EAPDURequestPayload_t *payload)
         return;
     }
 
-    struct EthParams *params = ParseParams((char *)payload->data);
+    struct EthParams *params = ParseParams((char *)payload->data, payload->dataLen);
     if (!IsValidParams(params)) {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload->requestID, PRS_EXPORT_ADDRESS_INVALID_PARAMS, "Invalid params");
         return;

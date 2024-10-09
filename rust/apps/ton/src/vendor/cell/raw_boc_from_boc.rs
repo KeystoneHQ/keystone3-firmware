@@ -1,11 +1,13 @@
 use alloc::collections::BTreeMap;
-use alloc::sync::Arc;
-use core::cell::RefCell;
-use alloc::vec;
 use alloc::format;
+use alloc::sync::Arc;
+use alloc::vec;
+use core::cell::RefCell;
 
+use crate::vendor::cell::{
+    ArcCell, BagOfCells, Cell, CellHash, RawBagOfCells, RawCell, TonCellError,
+};
 use alloc::vec::Vec;
-use crate::vendor::cell::{ArcCell, BagOfCells, Cell, CellHash, RawBagOfCells, RawCell, TonCellError};
 
 #[derive(Debug, Clone)]
 struct IndexedCell {

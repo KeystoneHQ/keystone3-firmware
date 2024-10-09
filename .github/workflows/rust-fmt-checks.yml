@@ -15,42 +15,42 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2023-06-26
+          toolchain: nightly-2023-12-01
           override: true
           target: x86_64-apple-darwin
           components: rustfmt
 
       - name: Run rust/apps/bitcoin
-        run: cd rust/apps/bitcoin && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/bitcoin && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/ethereum
-        run: cd rust/apps/ethereum && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/ethereum && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/solana
-        run: cd rust/apps/solana && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/solana && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/cardano
-        run: cd rust/apps/cardano && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/cardano && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/tron
-        run: cd rust/apps/tron && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/tron && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/near
-        run: cd rust/apps/near && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/near && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/xrp
-        run: cd rust/apps/xrp && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/xrp && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/cosmos
-        run: cd rust/apps/cosmos && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/cosmos && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/aptos
-        run: cd rust/apps/aptos && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/aptos && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/sui
-        run: cd rust/apps/sui && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/sui && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/arweave
-        run: cd rust/apps/arweave && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/arweave && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/stellar
-        run: cd rust/apps/stellar && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/stellar && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/monero
-        run: cd rust/apps/monero && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/monero && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/utils
-        run: cd rust/apps/utils && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/utils && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/apps/wallets
-        run: cd rust/apps/wallets && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/apps/wallets && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/keystore
-        run: cd rust/keystore && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/keystore && cargo +nightly-2023-12-01 fmt --check
       - name: Run rust/rust_c
-        run: cd rust/rust_c && cargo +nightly-2023-06-26 fmt --check
+        run: cd rust/rust_c && cargo +nightly-2023-12-01 fmt --check

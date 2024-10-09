@@ -1,6 +1,6 @@
 use alloc::string::{String, ToString};
-use third_party::thiserror::Error;
 use third_party::thiserror;
+use third_party::thiserror::Error;
 
 #[derive(Error, Debug)]
 #[error("Invalid address (Address: {address}, message: {message})")]

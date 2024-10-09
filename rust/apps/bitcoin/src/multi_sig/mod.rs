@@ -496,6 +496,7 @@ fn get_path_component(index: Option<u32>, hardened: bool) -> URResult<PathCompon
     PathComponent::new(index, hardened).map_err(|e| URError::CborEncodeError(e))
 }
 
+#[allow(unused)]
 fn is_valid_multi_path(path: &str) -> bool {
     const VALID_PATHS: [&str; 5] = [
         MULTI_P2SH_PATH,

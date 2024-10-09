@@ -1,6 +1,6 @@
 use crate::errors::{BitcoinError, Result};
 use alloc::format;
-use third_party::bitcoin::opcodes::all::OP_PUSHNUM_1;
+
 use third_party::bitcoin::script::Instruction;
 use third_party::itertools::Itertools;
 
@@ -18,12 +18,12 @@ use crate::multi_sig::address::calculate_multi_address;
 use crate::multi_sig::wallet::calculate_multi_sig_verify_code;
 use crate::multi_sig::MultiSigFormat;
 use third_party::bitcoin::bip32::{
-    self, ChildNumber, DerivationPath, Fingerprint, KeySource, Xpub,
+    ChildNumber, DerivationPath, Fingerprint, KeySource, Xpub,
 };
 use third_party::bitcoin::psbt::{GetKey, KeyRequest, Psbt};
 use third_party::bitcoin::psbt::{Input, Output};
 use third_party::bitcoin::taproot::TapLeafHash;
-use third_party::bitcoin::{script, Network, PrivateKey, Script};
+use third_party::bitcoin::{Network, PrivateKey};
 use third_party::bitcoin::{PublicKey, ScriptBuf, TxOut};
 use third_party::secp256k1::{Secp256k1, Signing, XOnlyPublicKey};
 use third_party::{bitcoin, secp256k1};
@@ -33,6 +33,7 @@ pub struct WrappedPsbt {
 }
 
 //TODO: use it later
+#[allow(unused)]
 pub enum SignStatus {
     Completed,
     PartlySigned,
@@ -227,11 +228,11 @@ impl WrappedPsbt {
         )));
     }
 
-    pub fn check_my_input_script(&self, input: &Input, index: usize) -> Result<()> {
+    pub fn check_my_input_script(&self, _input: &Input, _index: usize) -> Result<()> {
         Ok(())
     }
 
-    pub fn check_my_input_derivation(&self, input: &Input, index: usize) -> Result<()> {
+    pub fn check_my_input_derivation(&self, _input: &Input, _index: usize) -> Result<()> {
         Ok(())
     }
 
@@ -413,7 +414,7 @@ impl WrappedPsbt {
         if input.bip32_derivation.len() > 1 {
             let (cur, req) = self.get_input_sign_status(input);
             //already collected needed signatures
-            if (cur >= req) {
+            if cur >= req {
                 return Ok(false);
             }
             // or I have signed this input
@@ -761,7 +762,7 @@ impl WrappedPsbt {
     }
 
     fn judge_external_key(child: String, parent: String) -> bool {
-        let mut sub_path = &child[parent.len()..];
+        let sub_path = &child[parent.len()..];
         fn judge(v: &mut Chars) -> bool {
             match v.next() {
                 Some('/') => judge(v),

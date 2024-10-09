@@ -7,7 +7,7 @@ use alloc::vec::Vec;
 use core::ops::Div;
 use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
 
-use super::legacy::input;
+
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct ParsedTx {
@@ -136,7 +136,7 @@ pub trait TxParser {
     }
 
     fn is_need_sign(parsed_inputs: &[ParsedInput]) -> bool {
-        for (index, input) in parsed_inputs.iter().enumerate() {
+        for (_index, input) in parsed_inputs.iter().enumerate() {
             if input.need_sign {
                 return true;
             }

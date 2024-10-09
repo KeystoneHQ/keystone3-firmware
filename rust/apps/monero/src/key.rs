@@ -39,6 +39,18 @@ impl PublicKey {
     pub fn new(point: CompressedEdwardsY) -> PublicKey {
         PublicKey { point }
     }
+
+    pub fn from_bytes(bytes: &[u8]) -> Result<PublicKey, String> {
+        let point =
+            CompressedEdwardsY::from_slice(bytes).map_err(|e| format!("decode error: {:?}", e))?;
+        Ok(PublicKey { point })
+    }
+}
+
+impl ToString for PublicKey {
+    fn to_string(&self) -> String {
+        hex::encode(&self.point.to_bytes())
+    }
 }
 
 impl From<PrivateKey> for PublicKey {

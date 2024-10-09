@@ -1,9 +1,9 @@
 use alloc::borrow::ToOwned;
+use alloc::format;
 use alloc::vec::Vec;
 use core::cmp::PartialEq;
 use third_party::core2::io;
 use third_party::core2::io::Cursor;
-use alloc::format;
 
 use bitstream_io::{BigEndian, ByteRead, ByteReader};
 

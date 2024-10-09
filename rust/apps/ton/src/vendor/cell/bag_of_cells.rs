@@ -1,9 +1,9 @@
 use alloc::sync::Arc;
 
-use base64::engine::general_purpose::STANDARD;
-use third_party::hex;
 use alloc::vec;
 use alloc::vec::Vec;
+use base64::engine::general_purpose::STANDARD;
+use third_party::hex;
 
 use crate::vendor::cell::raw_boc_from_boc::convert_to_raw_boc;
 use crate::vendor::cell::*;
@@ -94,12 +94,15 @@ impl BagOfCells {
 
     pub fn parse_hex(hex: &str) -> Result<BagOfCells, TonCellError> {
         let str: String = hex.chars().filter(|c| !c.is_whitespace()).collect();
-        let bin = third_party::hex::decode(str.as_str()).map_err(|e| TonCellError::boc_serialization_error(e.to_string()))?;
+        let bin = third_party::hex::decode(str.as_str())
+            .map_err(|e| TonCellError::boc_serialization_error(e.to_string()))?;
         Self::parse(&bin)
     }
 
     pub fn parse_base64(base64: &str) -> Result<BagOfCells, TonCellError> {
-        let bin = STANDARD.decode(base64).map_err(|e| TonCellError::boc_deserialization_error(e.to_string()))?;
+        let bin = STANDARD
+            .decode(base64)
+            .map_err(|e| TonCellError::boc_deserialization_error(e.to_string()))?;
         Self::parse(&bin)
     }
 

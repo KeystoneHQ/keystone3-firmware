@@ -2,7 +2,6 @@ use crate::errors::{Result, StellarError};
 use crate::strkeys::{calculate_crc16_checksum, encode_base32, StrKeyType};
 use alloc::string::String;
 use alloc::vec::Vec;
-use core::str::FromStr;
 use keystore::algorithms::ed25519::slip10_ed25519::get_public_key_by_seed;
 use third_party::hex;
 

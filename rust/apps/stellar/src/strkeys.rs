@@ -1,6 +1,5 @@
 use alloc::string::String;
 use alloc::vec::Vec;
-use core::str::FromStr;
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use keystore::errors::Result;
 use third_party::cryptoxide::hashing;

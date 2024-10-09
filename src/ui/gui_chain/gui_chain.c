@@ -202,7 +202,7 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
         func = GuiGetAdaSignCatalystVotingRegistrationQrCodeData;
         break;
     case CardanoTx:
-        func = GuiGetAdaSignQrCodeData;
+        func = isMulti ? GuiGetAdaSignQrCodeData : GuiGetAdaSignUrDataUnlimited;
         break;
     case XRPTx:
         func = GuiGetXrpSignQrCodeData;

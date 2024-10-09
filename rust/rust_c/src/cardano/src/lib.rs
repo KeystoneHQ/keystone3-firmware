@@ -35,7 +35,7 @@ use common_rust_c::errors::{RustCError, R};
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use ur_registry::registry_types::{
     CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE, CARDANO_SIGNATURE, CARDANO_SIGN_DATA_SIGNATURE,
@@ -505,7 +505,29 @@ pub extern "C" fn cardano_sign_tx_with_ledger_bitbox02(
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }
+#[no_mangle]
+pub extern "C" fn cardano_sign_tx_with_ledger_bitbox02_unlimited(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+    cardano_xpub: PtrString,
+    mnemonic: PtrString,
+    passphrase: PtrString,
+) -> PtrT<UREncodeResult> {
+    let mnemonic = recover_c_char(mnemonic);
+    let passphrase = recover_c_char(passphrase);
+    let master_key =
+        keystore::algorithms::ed25519::bip32_ed25519::get_ledger_bitbox02_master_key_by_mnemonic(
+            passphrase.as_bytes(),
+            mnemonic,
+        );
 
+    match master_key {
+        Ok(master_key) => {
+            cardano_sign_tx_by_icarus_unlimited(ptr, master_fingerprint, cardano_xpub, master_key)
+        }
+        Err(e) => UREncodeResult::from(e).c_ptr(),
+    }
+}
 #[no_mangle]
 pub extern "C" fn cardano_sign_tx(
     ptr: PtrUR,
@@ -542,11 +564,57 @@ fn cardano_sign_tx_hash_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<U
     }
 }
 
+#[no_mangle]
+pub extern "C" fn cardano_sign_tx_unlimited(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+    cardano_xpub: PtrString,
+    entropy: PtrBytes,
+    entropy_len: u32,
+    passphrase: PtrString,
+) -> PtrT<UREncodeResult> {
+    let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
+    let passphrase = recover_c_char(passphrase);
+    let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
+    cardano_sign_tx_by_icarus_unlimited(ptr, master_fingerprint, cardano_xpub, icarus_master_key)
+}
+
 fn cardano_sign_tx_by_icarus(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     cardano_xpub: PtrString,
     icarus_master_key: XPrv,
+) -> PtrT<UREncodeResult> {
+    cardano_sign_tx_by_icarus_dynamic(
+        ptr,
+        master_fingerprint,
+        cardano_xpub,
+        icarus_master_key,
+        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+    )
+}
+
+fn cardano_sign_tx_by_icarus_unlimited(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+    cardano_xpub: PtrString,
+    icarus_master_key: XPrv,
+) -> PtrT<UREncodeResult> {
+    cardano_sign_tx_by_icarus_dynamic(
+        ptr,
+        master_fingerprint,
+        cardano_xpub,
+        icarus_master_key,
+        FRAGMENT_UNLIMITED_LENGTH.clone(),
+    )
+}
+
+fn cardano_sign_tx_by_icarus_dynamic(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+    cardano_xpub: PtrString,
+    icarus_master_key: XPrv,
+    fragment_length: usize,
 ) -> PtrT<UREncodeResult> {
     let cardano_sign_reqeust = extract_ptr_with_type!(ptr, CardanoSignRequest);
     let tx_hex = cardano_sign_reqeust.get_sign_data();
@@ -561,12 +629,10 @@ fn cardano_sign_tx_by_icarus(
                 );
             match sign_result {
                 Ok(d) => match d {
-                    Ok(data) => UREncodeResult::encode(
-                        data,
-                        CARDANO_SIGNATURE.get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
-                    )
-                    .c_ptr(),
+                    Ok(data) => {
+                        UREncodeResult::encode(data, CARDANO_SIGNATURE.get_type(), fragment_length)
+                            .c_ptr()
+                    }
                     Err(e) => UREncodeResult::from(e).c_ptr(),
                 },
                 Err(e) => UREncodeResult::from(e).c_ptr(),

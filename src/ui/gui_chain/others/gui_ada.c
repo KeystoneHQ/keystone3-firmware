@@ -903,6 +903,37 @@ void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData)
 }
 
 
+
+UREncodeResult *GuiGetAdaSignUrDataUnlimited(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t entropy[64];
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        if (GetAdaXPubType() == LEDGER_ADA) {
+            char *mnemonic = NULL;
+            bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
+            encodeResult = cardano_sign_tx_with_ledger_bitbox02_unlimited(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+        } else {
+            encodeResult = cardano_sign_tx_unlimited(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+        }
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+}
+
+
+
+
 ChainType GetAdaXPubTypeByIndexAndDerivationType(AdaXPubType type, uint16_t index)
 {
     switch (index) {

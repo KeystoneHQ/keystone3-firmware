@@ -1,9 +1,7 @@
-use crate::utils::{calc_subaddress_m, hash_to_scalar, keccak256};
+use crate::utils::{calc_subaddress_m, hash_to_scalar};
 
 use alloc::format;
 use alloc::string::{String, ToString};
-use alloc::vec::Vec;
-use base58_monero::{decode, encode};
 use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
 use curve25519_dalek::scalar::Scalar;
 

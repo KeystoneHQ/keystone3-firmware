@@ -1,11 +1,9 @@
 use crate::key::*;
 use crate::structs::{AddressType, Network};
-use crate::utils::{calc_subaddress_m, keccak256};
+use crate::utils::keccak256;
 use alloc::format;
 use alloc::string::{String, ToString};
-use alloc::vec::Vec;
 use base58_monero::{decode, encode};
-use curve25519_dalek::scalar::Scalar;
 
 use third_party::hex;
 

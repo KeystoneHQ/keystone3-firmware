@@ -52,6 +52,9 @@ use sui_rust_c;
 use ton_rust_c;
 #[cfg(feature = "multi-coins")]
 #[allow(unused)]
+use monero_rust_c;
+#[cfg(feature = "multi-coins")]
+#[allow(unused)]
 use tron_rust_c;
 #[cfg(feature = "multi-coins")]
 #[allow(unused)]

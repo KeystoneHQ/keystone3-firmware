@@ -27,7 +27,7 @@ if(NOT BUILD_TYPE STREQUAL "Simulator")
     set(COPY_COMMAND  cp ${RUST_C_DIR}/target/${CARGO_ARM_TARGET}/release/${LIB_NAME} ${TARGET_PATH})
 
     add_custom_target(rust_c ALL
-        COMMAND rustup run nightly-2023-06-26 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
+        COMMAND rustup run nightly-2023-12-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
         COMMAND ${CBINDGEN_EXE} ${CBINDGEN_FLAG}
         COMMAND ${COPY_COMMAND}
     )
@@ -56,7 +56,7 @@ else()
     set(COPY_COMMAND  cp ${RUST_C_DIR}/target/release/${LIB_NAME} ${TARGET_PATH})
 
     add_custom_target(rust_c ALL
-        COMMAND rustup run nightly-2023-06-26 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
+        COMMAND rustup run nightly-2023-12-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
         COMMAND ${CBINDGEN_EXE} ${CBINDGEN_FLAG}
         COMMAND ${COPY_COMMAND}
     )

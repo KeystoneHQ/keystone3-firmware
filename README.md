@@ -26,7 +26,7 @@ brew install armmbed/formulae/arm-none-eabi-gcc
 
 # Install Rust
 # For instructions, visit https://www.rust-lang.org/tools/install
-rustup install nightly-2023-06-26
+rustup install nightly-2023-12-01
 rustup target add thumbv7em-none-eabihf
 cargo install bindgen-cli
 cargo install cbindgen

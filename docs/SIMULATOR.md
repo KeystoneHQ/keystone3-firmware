@@ -13,7 +13,7 @@ We recommend creating a virtual env for this project: https://docs.python.org/3/
 Please follow Rust official site: https://www.rust-lang.org/tools/install
 
 We have fixed the rust version in most of our rust libs so please run this command when you finish rust setup: 
-> rustup install nightly-2023-06-26
+> rustup install nightly-2023-12-01
 
 `cbindgen` is also required to build essential C header files for Rust libs, so run the following after rust setup: 
 > cargo install cbindgen

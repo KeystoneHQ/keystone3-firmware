@@ -28,6 +28,7 @@ static lv_obj_t *vibrationSw;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PageWidget_t *g_pageWidget;
 static PageWidget_t *g_selectLanguagePage;
+static lv_obj_t *g_noticeWindow = NULL;
 
 void GuiSystemSettingNVSBarInit();
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent);
@@ -39,6 +40,7 @@ static void VibrationSwitchHandler(lv_event_t * e);
 void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
 void OpenForgetPasswordHandler(lv_event_t *e);
 static void OpenLanguageSelectHandler(lv_event_t *e);
+static void GuiSystemSettingLanguageHandler(void);
 
 void GuiSystemSettingAreaInit(void)
 {
@@ -118,6 +120,7 @@ void GuiSystemSettingNVSBarInit(void)
 
 void GuiSystemSettingAreaDeInit(void)
 {
+    GUI_DEL_OBJ(g_noticeWindow)
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     if (container != NULL) {
         lv_obj_del(container);
@@ -135,14 +138,28 @@ void GuiSystemSettingAreaRefresh(void)
     PassWordPinHintRefresh(g_keyboardWidget);
 }
 
-void GuiSystemSettingAreaRestart()
+static void GuiSystemSettingAreaRestartHandler(lv_event_t *e)
 {
+    GUI_DEL_OBJ(g_noticeWindow)
+    int index = *(int *)lv_event_get_user_data(e);
+    LanguageSwitch(index);
     if (g_selectLanguagePage != NULL) {
         DestroyPageWidget(g_selectLanguagePage);
         g_selectLanguagePage = NULL;
     }
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+    GuiEnterPassLabelRefresh();
+}
+
+void GuiSystemSettingLanguage(void *param)
+{
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("Confirm Language Change"), _("Are you sure you want to change language? This will apply immediately"), NULL,
+                     _("not_now"), WHITE_COLOR_OPA20, _("Confirm"), ORANGE_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(rightBtn, GuiSystemSettingAreaRestartHandler, LV_EVENT_CLICKED, param);
 }
 
 static void GuiSystemSettingWipeDeivceHandler(lv_event_t *e)

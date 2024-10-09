@@ -83,7 +83,7 @@ static void GuiWelcomeWidget(lv_obj_t *parent)
 
 static void SelectLanguageHandler(lv_event_t *e)
 {
-    int newCheckIndex = 0;
+    static int newCheckIndex = 0;
     lv_obj_t *newCheckBox = lv_event_get_user_data(e);
     for (int i = SETUP_ENGLISH; i <= SUPPORT_WALLET_INDEX; i++) {
         if (newCheckBox == g_languageCheck[i]) {
@@ -94,8 +94,12 @@ static void SelectLanguageHandler(lv_event_t *e)
         }
     }
 
-    LanguageSwitch(newCheckIndex);
-    GuiEmitSignal(GUI_EVENT_CHANGE_LANGUAGE, NULL, 0);
+    if (g_pageWidget != NULL) {
+        LanguageSwitch(newCheckIndex);
+        GuiEmitSignal(GUI_EVENT_CHANGE_LANGUAGE, NULL, 0);
+    } else {
+        GuiEmitSignal(GUI_EVENT_UPDATE_LANGUAGE, &newCheckIndex, sizeof(newCheckIndex));
+    }
 }
 
 void GuiOpenWebAuthHandler(lv_event_t *e)

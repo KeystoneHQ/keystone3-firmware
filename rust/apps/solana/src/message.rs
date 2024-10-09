@@ -3,7 +3,7 @@ use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 
-use third_party::base58;
+use third_party::{base58, bitcoin};
 
 use crate::compact::Compact;
 use crate::errors::{Result, SolanaError};
@@ -42,6 +42,7 @@ impl Read<Account> for Account {
     }
 }
 
+#[derive(Clone)]
 pub struct BlockHash {
     pub value: Vec<u8>,
 }
@@ -57,6 +58,7 @@ impl Read<BlockHash> for BlockHash {
     }
 }
 
+#[derive(Clone)]
 pub struct Message {
     pub is_versioned: bool,
     pub header: MessageHeader,
@@ -112,17 +114,6 @@ impl Message {
                             .unwrap_or("Unknown Account".to_string())
                     })
                     .collect::<Vec<String>>();
-                // if account contains #, it means it's a table account we add "Table" to the head
-                let pretty_accounts = accounts
-                    .iter()
-                    .map(|v| {
-                        if v.contains("#") {
-                            format!("Table:{}", v)
-                        } else {
-                            v.to_string()
-                        }
-                    })
-                    .collect::<Vec<String>>();
                 let program_account =
                     base58::encode(&self.accounts[usize::from(instruction.program_index)].value);
                 // parse instruction data
@@ -135,7 +126,7 @@ impl Message {
                         },
                         kind: ProgramDetail::Instruction(ProgramDetailInstruction {
                             data: base58::encode(&instruction.data),
-                            accounts: pretty_accounts,
+                            accounts,
                             program_account,
                         }),
                     }),
@@ -149,33 +140,41 @@ impl Message {
     }
 
     fn prepare_accounts(&self) -> Vec<String> {
+        // encode convert accounts bytes to base58
         let mut accounts: Vec<String> = self
             .accounts
             .clone()
             .iter()
-            .map(|v| base58::encode(&v.value))
+            .map(|v| bitcoin::base58::encode(&v.value))
             .collect();
+        // construct address table lookup account
+        let mut writable_lookup_accounts: Vec<String> = vec![];
+        let mut readonly_lookup_accounts: Vec<String> = vec![];
         if let Some(table) = &self.address_table_lookups {
-            let mut child_accounts =
-                table
+            table.iter().for_each(|cur: &MessageAddressTableLookup| {
+                // global account vec = account_keys + writable_indexes + readonly_indexes
+                let parent_address = bitcoin::base58::encode(&cur.account_key.value);
+                let mut writable_child_accounts: Vec<String> = cur
+                    .writable_indexes
                     .iter()
-                    .fold(vec![], |acc, cur: &MessageAddressTableLookup| {
-                        let mut indexes = cur.readonly_indexes.clone();
-                        indexes.append(&mut cur.writable_indexes.clone());
-                        indexes.sort();
-                        let parent_address = base58::encode(&cur.account_key.value);
-                        let child_accounts: Vec<String> = indexes
-                            .iter()
-                            .map(|v| format!("{}#{}", &parent_address, v))
-                            .collect();
-                        vec![acc, child_accounts].concat()
-                    });
-            accounts.append(&mut child_accounts);
+                    .map(|v| format!("{}#{}", &parent_address, v))
+                    .collect();
+                writable_lookup_accounts.append(&mut writable_child_accounts);
+                let mut readonly_child_accounts: Vec<String> = cur
+                    .readonly_indexes
+                    .iter()
+                    .map(|v| format!("{}#{}", &parent_address, v))
+                    .collect();
+                readonly_lookup_accounts.append(&mut readonly_child_accounts);
+            });
         }
+        accounts.append(&mut writable_lookup_accounts);
+        accounts.append(&mut readonly_lookup_accounts);
         accounts
     }
 }
 
+#[derive(Clone)]
 pub struct MessageHeader {
     pub num_required_signatures: u8,
     pub num_readonly_signed_accounts: u8,
@@ -206,7 +205,7 @@ impl Read<u8> for u8 {
         Ok(raw.remove(0))
     }
 }
-
+#[derive(Clone)]
 pub struct MessageAddressTableLookup {
     pub account_key: Account,
     pub writable_indexes: Vec<u8>,

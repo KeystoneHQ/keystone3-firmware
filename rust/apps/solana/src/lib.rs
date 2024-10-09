@@ -29,7 +29,7 @@ pub mod read;
 mod resolvers;
 mod solana_lib;
 pub mod structs;
-
+pub mod utils;
 pub fn parse_message(tx_hex: Vec<u8>, from_key: &String) -> errors::Result<SolanaMessage> {
     let raw_message = hex::encode(tx_hex.clone());
     let mut utf8_message =

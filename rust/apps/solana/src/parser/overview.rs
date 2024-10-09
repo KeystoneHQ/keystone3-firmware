@@ -71,6 +71,25 @@ pub struct ProgramOverviewMultisigCreate {
     // transfer vec
     pub transfers: Vec<ProgramOverviewTransfer>,
 }
+#[derive(Debug, Clone)]
+pub struct JupiterV6SwapTokenInfoOverview {
+    pub token_name: String,
+    pub token_symbol: String,
+    pub token_address: String,
+    pub token_amount: String,
+    pub exist_in_address_lookup_table: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct JupiterV6SwapOverview {
+    pub program_name: String,
+    pub program_address: String,
+    pub instruction_name: String,
+    pub token_a_overview: JupiterV6SwapTokenInfoOverview,
+    pub token_b_overview: JupiterV6SwapTokenInfoOverview,
+    pub slippage_bps: String,
+    pub platform_fee_bps: String,
+}
 
 #[derive(Debug, Clone)]
 pub struct ProgramOverviewProposal {
@@ -91,4 +110,5 @@ pub enum SolanaOverview {
     SquadsV4MultisigCreateV2(ProgramOverviewMultisigCreate),
     SquadsV4Proposal(Vec<ProgramOverviewProposal>),
     SplTokenTransfer(ProgramOverviewSplTokenTransfer),
+    JupiterV6SwapOverview(JupiterV6SwapOverview),
 }

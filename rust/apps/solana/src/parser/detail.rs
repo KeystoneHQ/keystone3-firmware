@@ -4,6 +4,9 @@ use alloc::vec::Vec;
 use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
 
+use crate::solana_lib::jupiter_v6::instructions::{
+    ExactOutRouteArgs, RouteArgs, SharedAccountsExactOutRouteArgs, SharedAccountsRouteArgs,
+};
 use crate::solana_lib::solana_program::clock::{Epoch, UnixTimestamp};
 use crate::solana_lib::solana_program::vote::state::Lockout;
 use crate::solana_lib::spl::token_lending::state::{ReserveConfig, ReserveFees};
@@ -1071,6 +1074,29 @@ impl ProgramDetailRawUnknown {
         }
     }
 }
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct JupiterV6SharedAccountsRouteDetail {
+    pub accounts: Vec<String>,
+    pub args: SharedAccountsRouteArgs,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct JupiterV6RouteDetail {
+    pub accounts: Vec<String>,
+    pub args: RouteArgs,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct JupiterV6ExactOutRouteDetail {
+    pub accounts: Vec<String>,
+    pub args: ExactOutRouteArgs,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct JupiterV6SharedAccountsExactOutRouteDetail {
+    pub accounts: Vec<String>,
+    pub args: SharedAccountsExactOutRouteArgs,
+}
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
@@ -1181,6 +1207,12 @@ pub enum ProgramDetail {
     SquadsV4ProposalReject(ProposalVoteArgs),
     SquadsV4VaultTransactionCreate(VaultTransactionCreateArgs),
     SquadsV4VaultTransactionExecute,
+
+    // jupiter v6
+    JupiterV6SharedAccountsRoute(JupiterV6SharedAccountsRouteDetail),
+    JupiterV6Route(JupiterV6RouteDetail),
+    JupiterV6ExactOutRoute(JupiterV6ExactOutRouteDetail),
+    JupiterV6SharedAccountsExactOutRoute(JupiterV6SharedAccountsExactOutRouteDetail),
 
     // raw
     Unknown(ProgramDetailUnknown),

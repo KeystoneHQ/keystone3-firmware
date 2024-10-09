@@ -11,9 +11,6 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_SOL:
     case REMAPVIEW_SOL_MESSAGE:
         return true;
-    case REMAPVIEW_BTC:
-    case REMAPVIEW_BTC_MESSAGE:
-        return true;
     default:
         return false;
     }

@@ -1,11 +1,11 @@
 use crate::errors::Result;
 use crate::structs::{TonProof, TonTransaction};
 use crate::utils::sha256;
-use crate::vendor::cell::{ArcCell, BagOfCells};
+use crate::vendor::cell::{BagOfCells};
 use alloc::vec::Vec;
-use alloc::{format, vec};
+use alloc::{vec};
 use third_party::cryptoxide::ed25519;
-use third_party::hex;
+
 
 pub fn parse_transaction(serial: &[u8]) -> Result<TonTransaction> {
     TonTransaction::parse_hex(serial)

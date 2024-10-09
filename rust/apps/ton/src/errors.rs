@@ -1,10 +1,10 @@
 use alloc::string::{String, ToString};
 use third_party::thiserror::Error;
-use third_party::{serde_json, thiserror};
+use third_party::{thiserror};
 
 use crate::vendor::cell::TonCellError;
 
-pub type Result<T: Sized> = core::result::Result<T, TonError>;
+pub type Result<T> = core::result::Result<T, TonError>;
 
 #[derive(Error, Debug)]
 pub enum TonError {

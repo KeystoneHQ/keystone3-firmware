@@ -9,7 +9,7 @@ pub use types::*;
 
 use crate::vendor::address::TonAddress;
 use crate::vendor::cell::{
-    ArcCell, BagOfCells, Cell, CellBuilder, StateInit, StateInitBuilder, TonCellError,
+    ArcCell, BagOfCells, Cell, StateInit, TonCellError,
 };
 
 pub const DEFAULT_WALLET_ID: i32 = 0x29a9a317;

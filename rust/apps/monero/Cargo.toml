@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-curve25519-dalek = { version = "4"}
+curve25519-dalek = { version = "4", default-features = false}
 base58-monero = { version = "2", default-features = false }
 keystore = { path = "../../keystore", default-features = false }
 third_party = { path = "../../third_party" }

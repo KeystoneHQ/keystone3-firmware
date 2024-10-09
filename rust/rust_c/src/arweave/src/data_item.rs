@@ -1,4 +1,4 @@
-use alloc::format;
+
 use app_arweave::{ao_transaction::AOTransferTransaction, parse_data_item};
 use common_rust_c::{
     extract_ptr_with_type,
@@ -19,7 +19,7 @@ pub extern "C" fn ar_is_ao_transfer(ptr: PtrUR) -> bool {
             Ok(_ao_transfer) => true,
             Err(_e) => false,
         },
-        Err(e) => false,
+        Err(_e) => false,
     }
 }
 

@@ -4,16 +4,16 @@ extern crate alloc;
 
 use crate::structs::{ArweaveRequestType, DisplayArweaveMessage, DisplayArweaveTx};
 use alloc::boxed::Box;
-use alloc::fmt::format;
+
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use alloc::{format, slice};
+use alloc::{slice};
 use app_arweave::parse_data_item;
 use app_arweave::{
     aes256_decrypt, aes256_encrypt, errors::ArweaveError, fix_address,
     generate_public_key_from_primes, generate_secret, parse,
 };
-use common_rust_c::errors::{ErrorCodes, RustCError};
+use common_rust_c::errors::{RustCError};
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
@@ -24,12 +24,12 @@ use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use keystore::algorithms::rsa::{sign_message, SigningOption};
 use third_party::hex;
 use third_party::serde_json;
-use third_party::serde_json::{json, Value};
+use third_party::serde_json::{Value};
 use third_party::ur_registry::arweave::arweave_sign_request::{
     ArweaveSignRequest, SaltLen, SignType,
 };
 use third_party::ur_registry::arweave::arweave_signature::ArweaveSignature;
-use third_party::ur_registry::traits::{RegistryItem, To};
+use third_party::ur_registry::traits::{RegistryItem};
 
 pub mod data_item;
 pub mod structs;

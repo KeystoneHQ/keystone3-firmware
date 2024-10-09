@@ -11,11 +11,11 @@ use app_bitcoin::parsed_tx::ParseContext;
 use app_bitcoin::{self, parse_psbt_hex_sign_status, parse_psbt_sign_status};
 use common_rust_c::errors::RustCError;
 use common_rust_c::extract_ptr_with_type;
-use common_rust_c::ffi::{CSliceFFI, VecFFI};
+use common_rust_c::ffi::{CSliceFFI};
 use common_rust_c::structs::{
-    ExtendedPublicKey, Response, TransactionCheckResult, TransactionParseResult,
+    ExtendedPublicKey, TransactionCheckResult, TransactionParseResult,
 };
-use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
+use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_array, recover_c_char};
 use third_party::bitcoin::bip32::{DerivationPath, Xpub};
@@ -24,7 +24,7 @@ use third_party::ur_registry::crypto_psbt::CryptoPSBT;
 use third_party::ur_registry::traits::RegistryItem;
 
 use crate::multi_sig::structs::MultisigSignResult;
-use crate::structs::{DisplayTx, PsbtSignResult};
+use crate::structs::{DisplayTx};
 
 #[no_mangle]
 pub extern "C" fn btc_parse_psbt(

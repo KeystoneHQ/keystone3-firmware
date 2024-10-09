@@ -30,7 +30,7 @@ pub struct DisplayETH {
 impl_c_ptr!(DisplayETH);
 
 impl DisplayETH {
-    pub fn set_from_address(mut self, from_address: String) -> DisplayETH {
+    pub fn set_from_address(self, from_address: String) -> DisplayETH {
         unsafe {
             let overview = &mut *self.overview;
             overview.from = convert_c_char(from_address.clone());

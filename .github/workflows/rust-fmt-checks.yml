@@ -44,6 +44,8 @@ jobs:
         run: cd rust/apps/arweave && cargo +nightly-2023-06-26 fmt --check
       - name: Run rust/apps/stellar
         run: cd rust/apps/stellar && cargo +nightly-2023-06-26 fmt --check
+      - name: Run rust/apps/monero
+        run: cd rust/apps/monero && cargo +nightly-2023-06-26 fmt --check
       - name: Run rust/apps/utils
         run: cd rust/apps/utils && cargo +nightly-2023-06-26 fmt --check
       - name: Run rust/apps/wallets

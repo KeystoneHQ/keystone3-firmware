@@ -86,12 +86,10 @@ impl_c_ptr!(DisplayXrpTxOverview);
 
 impl Free for DisplayXrpTx {
     fn free(&self) {
-        unsafe {
-            check_and_free_ptr!(self.overview);
-            free_ptr_string(self.network);
-            free_ptr_string(self.detail);
-            free_ptr_string(self.signing_pubkey);
-        }
+        check_and_free_ptr!(self.overview);
+        free_ptr_string(self.network);
+        free_ptr_string(self.detail);
+        free_ptr_string(self.signing_pubkey);
     }
 }
 

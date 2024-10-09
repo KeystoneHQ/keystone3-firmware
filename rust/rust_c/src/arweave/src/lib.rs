@@ -171,7 +171,6 @@ pub extern "C" fn ar_request_type(ptr: PtrUR) -> *mut SimpleResponse<ArweaveRequ
         SignType::Transaction => ArweaveRequestType::ArweaveRequestTypeTransaction,
         SignType::Message => ArweaveRequestType::ArweaveRequestTypeMessage,
         SignType::DataItem => ArweaveRequestType::ArweaveRequestTypeDataItem,
-        _ => ArweaveRequestType::ArweaveRequestTypeUnknown,
     };
     SimpleResponse::success(Box::into_raw(Box::new(sign_type_str)) as *mut ArweaveRequestType)
         .simple_c_ptr()

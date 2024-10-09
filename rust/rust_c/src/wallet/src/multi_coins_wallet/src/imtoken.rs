@@ -31,22 +31,20 @@ pub extern "C" fn get_connect_imtoken_ur(
         Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
     };
     let wallet_name = recover_c_char(wallet_name);
-    unsafe {
-        let result = app_wallets::metamask::generate_standard_legacy_hd_key(
-            mfp,
-            &recover_c_char(xpub),
-            Bip44Standard,
-            Some(wallet_name),
-        );
-        match result.map(|v| v.try_into()) {
-            Ok(v) => match v {
-                Ok(data) => {
-                    UREncodeResult::encode(data, CryptoHDKey::get_registry_type().get_type(), 240)
-                        .c_ptr()
-                }
-                Err(e) => UREncodeResult::from(e).c_ptr(),
-            },
+    let result = app_wallets::metamask::generate_standard_legacy_hd_key(
+        mfp,
+        &recover_c_char(xpub),
+        Bip44Standard,
+        Some(wallet_name),
+    );
+    match result.map(|v| v.try_into()) {
+        Ok(v) => match v {
+            Ok(data) => {
+                UREncodeResult::encode(data, CryptoHDKey::get_registry_type().get_type(), 240)
+                    .c_ptr()
+            }
             Err(e) => UREncodeResult::from(e).c_ptr(),
-        }
+        },
+        Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }

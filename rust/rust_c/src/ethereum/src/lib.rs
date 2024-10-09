@@ -474,7 +474,7 @@ pub extern "C" fn eth_sign_tx_bytes(
     let content =
         third_party::ur_registry::pb::protoc::payload::Content::SignTxResult(sign_tx_result);
     let payload = third_party::ur_registry::pb::protoc::Payload {
-        ///  type is third_party::ur_registry::pb::protoc::payload::Type::SignTxResult
+        //  type is third_party::ur_registry::pb::protoc::payload::Type::SignTxResult
         r#type: 9,
         xfp: hex::encode(mfp).to_uppercase(),
         content: Some(content),

@@ -438,7 +438,7 @@ impl From<&ParsedSolanaTx> for DisplaySolanaTxOverview {
             SolanaTxDisplayType::SquadsV4 => {
                 if let SolanaOverview::SquadsV4Proposal(overview) = &value.overview {
                     let display_type = convert_c_char("squads_proposal".to_string());
-                    let mut squads_proposal = VecFFI::from(
+                    let squads_proposal = VecFFI::from(
                         overview
                             .iter()
                             .map(|v| DisplaySolanaTxProposalOverview {

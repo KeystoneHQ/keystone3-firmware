@@ -24,6 +24,8 @@ use cosmos_rust_c;
 #[cfg(feature = "multi-coins")]
 use ethereum_rust_c;
 #[cfg(feature = "multi-coins")]
+use monero_rust_c;
+#[cfg(feature = "multi-coins")]
 use near_rust_c;
 #[cfg(feature = "multi-coins")]
 use solana_rust_c;
@@ -33,8 +35,6 @@ use stellar_rust_c;
 use sui_rust_c;
 #[cfg(feature = "multi-coins")]
 use ton_rust_c;
-#[cfg(feature = "multi-coins")]
-use monero_rust_c;
 #[cfg(feature = "multi-coins")]
 use tron_rust_c;
 #[cfg(feature = "multi-coins")]

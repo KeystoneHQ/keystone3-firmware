@@ -30,8 +30,8 @@ pub(crate) fn shorten_string(text: String) -> String {
 
 #[cfg(test)]
 mod tests {
-    use alloc::string::ToString;
     use super::shorten_string;
+    use alloc::string::ToString;
     extern crate std;
 
     #[test]

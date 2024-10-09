@@ -1,6 +1,6 @@
 use alloc::string::{String, ToString};
-use third_party::{serde_json, thiserror};
 use third_party::thiserror::Error;
+use third_party::{serde_json, thiserror};
 
 use crate::vendor::cell::TonCellError;
 

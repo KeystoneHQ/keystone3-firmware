@@ -536,10 +536,9 @@ fn convert_xpub(path: &str, xpub: &str, network: &Network) -> Result<String, Bit
             } else {
                 convert_version(xpub, &Version::Tpub)
             }
-        }
-        // _ => Err(BitcoinError::MultiSigWalletImportXpubError(
-        //     "have no xpub version matching path".to_string(),
-        // )),
+        } // _ => Err(BitcoinError::MultiSigWalletImportXpubError(
+          //     "have no xpub version matching path".to_string(),
+          // )),
     }
 }
 

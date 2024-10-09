@@ -1,9 +1,9 @@
 use crate::errors::Result;
 use crate::structs::{TonProof, TonTransaction};
 use crate::utils::sha256;
-use crate::vendor::cell::{BagOfCells, ArcCell};
-use alloc::{format, vec};
+use crate::vendor::cell::{ArcCell, BagOfCells};
 use alloc::vec::Vec;
+use alloc::{format, vec};
 use third_party::cryptoxide::ed25519;
 use third_party::hex;
 
@@ -31,7 +31,12 @@ pub fn parse_proof(serial: &[u8]) -> Result<TonProof> {
 }
 
 pub fn sign_proof(serial: &[u8], sk: [u8; 32]) -> Result<[u8; 64]> {
-    let message = [vec![0xff, 0xff], "ton-connect".as_bytes().to_vec(), sha256(serial)].concat();
+    let message = [
+        vec![0xff, 0xff],
+        "ton-connect".as_bytes().to_vec(),
+        sha256(serial),
+    ]
+    .concat();
     let hash = sha256(&message);
     let (keypair, _) = ed25519::keypair(&sk);
     let signature = ed25519::signature(&hash, &keypair);

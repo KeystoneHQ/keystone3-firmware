@@ -1,9 +1,15 @@
-use alloc::{format, string::{String, ToString}};
+use alloc::{
+    format,
+    string::{String, ToString},
+};
 use num_bigint::BigUint;
 use serde::Serialize;
 use third_party::hex;
 
-use crate::vendor::{address::TonAddress, cell::{ArcCell, Cell, TonCellError}};
+use crate::vendor::{
+    address::TonAddress,
+    cell::{ArcCell, Cell, TonCellError},
+};
 
 use super::{traits::ParseCell, Comment, InternalMessage};
 
@@ -69,7 +75,7 @@ impl ParseCell for JettonTransferMessage {
             };
             let mut ref_index = 0;
             let custom_payload = if parser.load_bit()? {
-                let payload = Some( hex::encode(cell.reference(ref_index)?.data.clone()));
+                let payload = Some(hex::encode(cell.reference(ref_index)?.data.clone()));
                 ref_index = ref_index + 1;
                 payload
             } else {
@@ -79,7 +85,7 @@ impl ParseCell for JettonTransferMessage {
             let (forward_payload, comment) = if parser.load_bit()? {
                 let child = cell.reference(ref_index)?;
                 let comment = Comment::parse(child);
-                
+
                 let payload = Some(hex::encode(child.data.clone()));
                 ref_index = ref_index + 1;
                 (payload, comment.ok())

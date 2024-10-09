@@ -97,7 +97,6 @@ impl ParseCell for TransferMessage {
             };
             let data = if parser.load_bit()? {
                 Some(InternalMessage::parse(cell.reference(ref_index)?))
-                
             } else {
                 if parser.remaining_bits() > 0 {
                     let mut builder = CellBuilder::new();

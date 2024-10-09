@@ -1,8 +1,8 @@
 mod error;
 
-use core::fmt::{Debug, Display, Formatter};
 use alloc::format;
 use alloc::str::FromStr;
+use core::fmt::{Debug, Display, Formatter};
 
 use alloc::string::String;
 use alloc::vec::Vec;
@@ -325,19 +325,20 @@ impl<'de> Deserialize<'de> for TonAddress {
 #[cfg(test)]
 mod tests {
     extern crate std;
-    use std::println;
     use alloc::format;
     use alloc::string::{String, ToString};
+    use std::println;
     use third_party::hex;
-    use third_party::serde_json::Value;
     use third_party::serde_json;
+    use third_party::serde_json::Value;
 
     use crate::vendor::address::TonAddress;
 
     #[test]
     fn format_works() -> anyhow::Result<()> {
         let bytes: [u8; 32] =
-            hex::decode("e4d954ef9f4e1250a26b5bbad76a1cdd17cfd08babad6f4c23e372270aef6f76").unwrap()
+            hex::decode("e4d954ef9f4e1250a26b5bbad76a1cdd17cfd08babad6f4c23e372270aef6f76")
+                .unwrap()
                 .as_slice()
                 .try_into()?;
         let addr = TonAddress::new(0, &bytes);
@@ -359,7 +360,8 @@ mod tests {
     #[test]
     fn parse_format_works() -> anyhow::Result<()> {
         let bytes: [u8; 32] =
-            hex::decode("e4d954ef9f4e1250a26b5bbad76a1cdd17cfd08babad6f4c23e372270aef6f76").unwrap()
+            hex::decode("e4d954ef9f4e1250a26b5bbad76a1cdd17cfd08babad6f4c23e372270aef6f76")
+                .unwrap()
                 .as_slice()
                 .try_into()?;
         let addr = TonAddress::new(0, &bytes);
@@ -383,7 +385,8 @@ mod tests {
     #[test]
     fn parse_works() -> anyhow::Result<()> {
         let bytes: [u8; 32] =
-            hex::decode("e4d954ef9f4e1250a26b5bbad76a1cdd17cfd08babad6f4c23e372270aef6f76").unwrap()
+            hex::decode("e4d954ef9f4e1250a26b5bbad76a1cdd17cfd08babad6f4c23e372270aef6f76")
+                .unwrap()
                 .as_slice()
                 .try_into()?;
         let addr = TonAddress::new(0, &bytes);
@@ -406,7 +409,8 @@ mod tests {
     #[test]
     fn try_from_works() -> anyhow::Result<()> {
         let bytes: [u8; 32] =
-            hex::decode("e4d954ef9f4e1250a26b5bbad76a1cdd17cfd08babad6f4c23e372270aef6f76").unwrap()
+            hex::decode("e4d954ef9f4e1250a26b5bbad76a1cdd17cfd08babad6f4c23e372270aef6f76")
+                .unwrap()
                 .as_slice()
                 .try_into()?;
         let addr = TonAddress::new(0, &bytes);

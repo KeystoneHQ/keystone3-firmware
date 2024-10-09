@@ -29,8 +29,8 @@ use base64::Engine;
 use bitstream_io::{BigEndian, BitReader, BitWrite, BitWriter};
 use num_bigint::BigUint;
 use num_traits::{One, ToPrimitive};
-use sha2::Sha256;
 use sha2::Digest;
+use sha2::Sha256;
 
 use crate::vendor::cell::cell_type::CellType;
 use crate::vendor::cell::level_mask::LevelMask;

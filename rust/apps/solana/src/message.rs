@@ -76,7 +76,7 @@ impl Read<Message> for Message {
             Some(_) => false,
             None => return Err(SolanaError::InvalidData("empty message".to_string())),
         };
-        if (is_versioned) {
+        if is_versioned {
             raw.remove(0);
         }
         let header = MessageHeader::read(raw)?;

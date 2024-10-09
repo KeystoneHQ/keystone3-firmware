@@ -2,10 +2,10 @@ use alloc::borrow::ToOwned;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use core::fmt::DebugList;
+
 
 use serde_json::json;
-use third_party::bitcoin::hex::FromHex;
+
 
 use crate::errors::{Result, SolanaError};
 use crate::message::Message;
@@ -15,8 +15,7 @@ use crate::parser::detail::{
 use crate::parser::overview::{
     JupiterV6SwapOverview, JupiterV6SwapTokenInfoOverview, ProgramOverviewGeneral,
     ProgramOverviewInstruction, ProgramOverviewInstructions, ProgramOverviewMultisigCreate,
-    ProgramOverviewProposal, ProgramOverviewSplTokenTransfer, ProgramOverviewTransfer,
-    ProgramOverviewUnknown, ProgramOverviewVote, SolanaOverview,
+    ProgramOverviewProposal, ProgramOverviewSplTokenTransfer, ProgramOverviewTransfer, ProgramOverviewVote, SolanaOverview,
 };
 use crate::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
 use crate::read::Read;

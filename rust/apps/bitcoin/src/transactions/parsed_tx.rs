@@ -7,8 +7,6 @@ use alloc::vec::Vec;
 use core::ops::Div;
 use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
 
-
-
 #[derive(Debug, Eq, PartialEq)]
 pub struct ParsedTx {
     pub overview: OverviewTx,

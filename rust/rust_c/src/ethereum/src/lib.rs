@@ -5,7 +5,6 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use alloc::{format, slice};
 
-
 use app_ethereum::address::derive_address;
 use app_ethereum::erc20::parse_erc20;
 use app_ethereum::errors::EthereumError;
@@ -23,7 +22,7 @@ use third_party::ur_registry::pb;
 use third_party::ur_registry::pb::protoc::base::Content::ColdVersion;
 use third_party::ur_registry::pb::protoc::payload::Content;
 use third_party::ur_registry::pb::protoc::sign_transaction::Transaction::EthTx;
-use third_party::ur_registry::traits::{RegistryItem};
+use third_party::ur_registry::traits::RegistryItem;
 
 use common_rust_c::errors::{KeystoneError, RustCError};
 use common_rust_c::keystone::build_payload;

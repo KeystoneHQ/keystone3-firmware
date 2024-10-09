@@ -3,9 +3,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-
 use serde_json::json;
-
 
 use crate::errors::{Result, SolanaError};
 use crate::message::Message;
@@ -15,7 +13,8 @@ use crate::parser::detail::{
 use crate::parser::overview::{
     JupiterV6SwapOverview, JupiterV6SwapTokenInfoOverview, ProgramOverviewGeneral,
     ProgramOverviewInstruction, ProgramOverviewInstructions, ProgramOverviewMultisigCreate,
-    ProgramOverviewProposal, ProgramOverviewSplTokenTransfer, ProgramOverviewTransfer, ProgramOverviewVote, SolanaOverview,
+    ProgramOverviewProposal, ProgramOverviewSplTokenTransfer, ProgramOverviewTransfer,
+    ProgramOverviewVote, SolanaOverview,
 };
 use crate::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
 use crate::read::Read;

@@ -197,7 +197,6 @@ mod tests {
     use super::*;
     use alloc::vec::Vec;
 
-    
     use third_party::hex;
     use third_party::hex::FromHex;
     #[test]

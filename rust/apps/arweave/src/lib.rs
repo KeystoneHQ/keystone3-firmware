@@ -22,7 +22,7 @@ use aes::cipher::{generic_array::GenericArray, BlockDecryptMut, BlockEncryptMut,
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use data_item::DataItem;
-use keystore::algorithms::rsa::{get_rsa_secret_from_seed};
+use keystore::algorithms::rsa::get_rsa_secret_from_seed;
 use sha2;
 use sha2::Digest;
 use third_party::base64;

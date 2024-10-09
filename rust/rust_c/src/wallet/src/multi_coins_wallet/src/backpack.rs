@@ -4,7 +4,7 @@ use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::ExtendedPublicKey;
 use common_rust_c::types::{Ptr, PtrBytes};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use common_rust_c::utils::{recover_c_array};
+use common_rust_c::utils::recover_c_array;
 use third_party::ur_registry::{
     error::URError, extend::crypto_multi_accounts::CryptoMultiAccounts, traits::RegistryItem,
 };

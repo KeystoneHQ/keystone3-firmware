@@ -5,7 +5,7 @@ use alloc::string::ToString;
 use alloc::vec::Vec;
 use app_bitcoin::multi_sig::wallet::{BsmsWallet, MultiSigWalletConfig};
 use app_bitcoin::multi_sig::{MultiSigFormat, MultiSigType, MultiSigXPubInfo, Network};
-use common_rust_c::ffi::{VecFFI};
+use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT};
 use common_rust_c::ur::UREncodeResult;

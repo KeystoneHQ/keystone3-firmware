@@ -31,7 +31,6 @@ use cty::uint32_t;
 use keystore::algorithms::secp256k1::derive_extend_public_key;
 use keystore::errors::KeystoreError;
 
-
 use third_party::ed25519_bip32_core::XPub;
 use third_party::hex;
 use third_party::ur_registry::crypto_account::CryptoAccount;

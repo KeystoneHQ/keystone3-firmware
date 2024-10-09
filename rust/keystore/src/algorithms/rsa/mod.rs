@@ -71,8 +71,7 @@ pub fn sign_message(
             let hash = digest.finalize().to_vec();
             let result = signing_key.sign_with_rng(&mut rng, &hash);
             Ok(Vec::from(result.to_bytes()))
-        }
-        // _ => Err(KeystoreError::RSASignError),
+        } // _ => Err(KeystoreError::RSASignError),
     }
 }
 

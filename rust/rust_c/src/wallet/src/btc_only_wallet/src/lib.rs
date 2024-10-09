@@ -2,12 +2,10 @@
 
 extern crate alloc;
 
-
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use alloc::{format, vec};
 use app_utils::normalize_path;
-
 
 use common_rust_c::errors::RustCError;
 use common_rust_c::extract_array;

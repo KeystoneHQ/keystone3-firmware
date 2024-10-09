@@ -2,9 +2,8 @@
 
 extern crate alloc;
 
-use alloc::string::{ToString};
+use alloc::string::ToString;
 use alloc::vec;
-
 
 use cty::c_char;
 use third_party::hex;
@@ -21,15 +20,8 @@ use third_party::ur_registry::near::near_sign_request::NearSignRequest;
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
 
-
-
-
-
-
-use common_rust_c::ur::{
-    QRCodeType, URParseResult, ViewType,
-};
-use common_rust_c::utils::{recover_c_char};
+use common_rust_c::ur::{QRCodeType, URParseResult, ViewType};
+use common_rust_c::utils::recover_c_char;
 
 #[no_mangle]
 pub extern "C" fn test_get_bch_keystone_succeed_bytes() -> *mut URParseResult {

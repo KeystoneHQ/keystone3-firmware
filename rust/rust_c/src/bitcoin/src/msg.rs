@@ -1,6 +1,6 @@
 use core::ptr::null_mut;
 
-use crate::{structs::DisplayBtcMsg};
+use crate::structs::DisplayBtcMsg;
 use alloc::{
     slice,
     string::{String, ToString},
@@ -17,11 +17,9 @@ use common_rust_c::{
     utils::{convert_c_char, recover_c_array, recover_c_char},
 };
 use keystore::algorithms::secp256k1;
+use third_party::ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType};
 use third_party::ur_registry::traits::RegistryItem;
 use third_party::{base64, ur_registry::bitcoin::btc_signature::BtcSignature};
-use third_party::{
-    ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType},
-};
 
 #[no_mangle]
 pub extern "C" fn btc_check_msg(

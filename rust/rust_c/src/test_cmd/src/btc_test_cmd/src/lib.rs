@@ -6,7 +6,6 @@ use alloc::string::{String, ToString};
 
 use alloc::vec::Vec;
 
-
 use third_party::hex;
 
 use third_party::ur_registry::bytes::Bytes;
@@ -22,7 +21,7 @@ use common_rust_c::ur::{
     decode_ur, receive, QRCodeType, UREncodeResult, URParseMultiResult, URParseResult, ViewType,
     FRAGMENT_MAX_LENGTH_DEFAULT,
 };
-use common_rust_c::utils::{convert_c_char};
+use common_rust_c::utils::convert_c_char;
 
 use wallet_rust_c::get_connect_blue_wallet_ur;
 

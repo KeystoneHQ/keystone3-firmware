@@ -8,9 +8,7 @@ use lazy_static::lazy_static;
 pub use types::*;
 
 use crate::vendor::address::TonAddress;
-use crate::vendor::cell::{
-    ArcCell, BagOfCells, Cell, StateInit, TonCellError,
-};
+use crate::vendor::cell::{ArcCell, BagOfCells, Cell, StateInit, TonCellError};
 
 pub const DEFAULT_WALLET_ID: i32 = 0x29a9a317;
 

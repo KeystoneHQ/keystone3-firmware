@@ -1,17 +1,13 @@
 pub mod structs;
 
-
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use alloc::{format, slice, vec};
 
 use app_bitcoin::multi_sig::address::create_multi_sig_address_for_wallet;
+use app_bitcoin::multi_sig::export_xpub_by_crypto_account;
 use app_bitcoin::multi_sig::wallet::{
-    export_wallet_by_ur, parse_wallet_config,
-    strict_verify_wallet_config,
-};
-use app_bitcoin::multi_sig::{
-    export_xpub_by_crypto_account,
+    export_wallet_by_ur, parse_wallet_config, strict_verify_wallet_config,
 };
 use core::str::FromStr;
 use cty::c_char;
@@ -19,19 +15,17 @@ use cty::c_char;
 use third_party::cryptoxide::hashing::sha256;
 use third_party::hex;
 
-use third_party::ur_registry::bytes::{Bytes};
+use third_party::ur_registry::bytes::Bytes;
 
 use common_rust_c::errors::RustCError;
-use common_rust_c::ffi::{CSliceFFI};
+use common_rust_c::ffi::CSliceFFI;
 
 use common_rust_c::structs::{ExtendedPublicKey, Response, SimpleResponse};
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_array, recover_c_char};
 
-use crate::multi_sig::structs::{
-    MultiSigWallet, NetworkType,
-};
+use crate::multi_sig::structs::{MultiSigWallet, NetworkType};
 
 use common_rust_c::extract_ptr_with_type;
 use third_party::ur_registry::crypto_account::CryptoAccount;

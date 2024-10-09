@@ -11,8 +11,6 @@ use alloc::{
 };
 use app_utils::impl_public_struct;
 
-
-
 impl_public_struct!(Tags {
     len: i64,
     data: Vec<Tag>
@@ -184,10 +182,9 @@ impl DataItem {
 
 #[cfg(test)]
 mod tests {
-    
 
     use super::DataItem;
-    
+
     use third_party::hex;
 
     #[test]

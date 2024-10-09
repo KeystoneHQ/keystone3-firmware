@@ -17,9 +17,7 @@ use keystore::algorithms::secp256k1::derive_public_key;
 use crate::multi_sig::address::calculate_multi_address;
 use crate::multi_sig::wallet::calculate_multi_sig_verify_code;
 use crate::multi_sig::MultiSigFormat;
-use third_party::bitcoin::bip32::{
-    ChildNumber, DerivationPath, Fingerprint, KeySource, Xpub,
-};
+use third_party::bitcoin::bip32::{ChildNumber, DerivationPath, Fingerprint, KeySource, Xpub};
 use third_party::bitcoin::psbt::{GetKey, KeyRequest, Psbt};
 use third_party::bitcoin::psbt::{Input, Output};
 use third_party::bitcoin::taproot::TapLeafHash;

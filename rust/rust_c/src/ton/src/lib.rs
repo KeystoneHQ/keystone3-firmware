@@ -8,9 +8,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use app_ton::{
-    mnemonic::ton_mnemonic_validate, ton_compare_address_and_public_key,
-};
+use app_ton::{mnemonic::ton_mnemonic_validate, ton_compare_address_and_public_key};
 use common_rust_c::{
     errors::RustCError,
     extract_ptr_with_type,

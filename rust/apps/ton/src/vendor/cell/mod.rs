@@ -28,7 +28,6 @@ use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
 use bitstream_io::{BigEndian, BitReader, BitWrite, BitWriter};
 
-
 use sha2::Digest;
 use sha2::Sha256;
 

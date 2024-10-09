@@ -1,7 +1,4 @@
-use alloc::{
-    string::String,
-    vec::{Vec},
-};
+use alloc::{string::String, vec::Vec};
 use app_utils::impl_public_struct;
 
 use crate::{

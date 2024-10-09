@@ -103,7 +103,10 @@ fn resolve_proposal_reject(args: ProposalVoteArgs, _accounts: Vec<String>) -> Re
     Ok(detail)
 }
 
-fn resolve_proposal_approve(args: ProposalVoteArgs, _accounts: Vec<String>) -> Result<SolanaDetail> {
+fn resolve_proposal_approve(
+    args: ProposalVoteArgs,
+    _accounts: Vec<String>,
+) -> Result<SolanaDetail> {
     let common_detail = CommonDetail {
         program: PROGRAM_NAME.to_string(),
         method: "ProposalApprove".to_string(),

@@ -17,7 +17,6 @@ pub fn generate_sync_ur(
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     #[test]
     fn test_generate_sync_ur() {

@@ -1,7 +1,6 @@
 use alloc::{format, string::ToString};
 use seed_signer_message::{MessageEncoding, SeedSignerMessage};
 
-
 pub mod seed_signer_message;
 
 use crate::{

@@ -1,6 +1,6 @@
 use alloc::{
     string::String,
-    vec::{self, Vec},
+    vec::{Vec},
 };
 use app_utils::impl_public_struct;
 

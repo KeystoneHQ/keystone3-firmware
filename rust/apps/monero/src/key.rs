@@ -43,6 +43,11 @@ impl PublicKey {
             CompressedEdwardsY::from_slice(bytes).map_err(|e| format!("decode error: {:?}", e))?;
         Ok(PublicKey { point })
     }
+
+    pub fn from_str(s: &str) -> Result<PublicKey, String> {
+        let bytes = hex::decode(s).map_err(|e| format!("decode error: {:?}", e))?;
+        PublicKey::from_bytes(&bytes)
+    }
 }
 
 impl ToString for PublicKey {
@@ -100,8 +105,8 @@ impl KeyPair {
     }
 
     pub fn get_public_sub_spend(&self, major: u32, minor: u32) -> PublicKey {
-        let m = calc_subaddress_m(&self.view.to_bytes(), major, minor);
-        let subaddress_spend_key = self.spend.scalar + Scalar::from_bytes_mod_order(m);
+        let subaddress_spend_key =
+            self.spend.scalar + Scalar::from_bytes_mod_order(self.get_m(major, minor));
 
         PrivateKey::new(subaddress_spend_key).get_public_key()
     }

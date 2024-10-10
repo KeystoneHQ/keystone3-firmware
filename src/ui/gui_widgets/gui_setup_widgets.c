@@ -87,14 +87,15 @@ static void SelectLanguageHandler(lv_event_t *e)
     lv_obj_t *newCheckBox = lv_event_get_user_data(e);
     for (uint8_t i = SETUP_ENGLISH; i <= SUPPORT_WALLET_INDEX; i++) {
         if (newCheckBox == g_languageCheck[i]) {
-            if (LanguageGetIndex() == i) {
-                break;
-            }
             newCheckIndex = i;
             lv_obj_add_state(g_languageCheck[i], LV_STATE_CHECKED);
         } else {
             lv_obj_clear_state(g_languageCheck[i], LV_STATE_CHECKED);
         }
+    }
+
+    if (LanguageGetIndex() == newCheckIndex) {
+        return;
     }
 
     if (g_pageWidget != NULL) {

@@ -130,6 +130,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_BEGIN, "Begin", &walletBegin},
     {WALLET_LIST_LEAP, "Leap", &walletLeap},
     {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
+    {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
     {WALLET_LIST_LEAP, "Leap", &walletLeap},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},

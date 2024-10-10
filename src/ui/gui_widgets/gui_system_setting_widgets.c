@@ -121,6 +121,11 @@ void GuiSystemSettingNVSBarInit(void)
 void GuiSystemSettingAreaDeInit(void)
 {
     GUI_DEL_OBJ(g_noticeWindow)
+    if (g_selectLanguagePage != NULL) {
+        DestroyPageWidget(g_selectLanguagePage);
+        g_selectLanguagePage = NULL;
+    }
+
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     if (container != NULL) {
         lv_obj_del(container);
@@ -156,7 +161,7 @@ static void GuiSystemSettingAreaRestartHandler(lv_event_t *e)
 static void CloseChangeLanguageHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_noticeWindow)
-    LanguageSwitch(LanguageGetIndex());
+    LanguageSwitchTemp(LanguageGetIndex());
 }
 
 void GuiSystemSettingLanguage(void *param)

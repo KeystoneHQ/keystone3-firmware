@@ -28,6 +28,7 @@ const BTC_NATIVE_SEGWIT_PREFIX: &str = "m/84'/0'/0'";
 const BTC_TAPROOT_PREFIX: &str = "m/86'/0'/0'";
 const ETH_STANDARD_PREFIX: &str = "m/44'/60'/0'";
 const ETH_LEDGER_LIVE_PREFIX: &str = "m/44'/60'"; //overlap with ETH_STANDARD at 0
+const TON_PREFIX: &str = "m/44'/607'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
@@ -84,6 +85,9 @@ pub fn generate_crypto_multi_accounts(
                     ele,
                     Some("account.ledger_live".to_string()),
                 )?);
+            }
+            _path if _path.to_string().to_lowercase().starts_with(TON_PREFIX) => {
+                keys.push(generate_ton_key(master_fingerprint, ele)?);
             }
             _ => {
                 return Err(URError::UrEncodeError(format!(
@@ -186,6 +190,31 @@ fn generate_eth_ledger_live_key(
         Some(_target_key.parent_fingerprint.to_bytes()),
         Some("Keystone".to_string()),
         note,
+    ))
+}
+
+fn generate_ton_key(mfp: [u8; 4], key: ExtendedPublicKey) -> URResult<CryptoHDKey> {
+    let key_path = CryptoKeyPath::new(
+        key.path
+            .into_iter()
+            .map(|v| match v {
+                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+            })
+            .collect::<URResult<Vec<PathComponent>>>()?,
+        Some(mfp),
+        None,
+    );
+    Ok(CryptoHDKey::new_extended_key(
+        None,
+        key.key,
+        None,
+        None,
+        Some(key_path),
+        None,
+        None,
+        None,
+        None,
     ))
 }
 

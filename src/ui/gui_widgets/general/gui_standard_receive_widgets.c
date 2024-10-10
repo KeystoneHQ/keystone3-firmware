@@ -169,7 +169,6 @@ static uint32_t g_tgdChainSelectIndex[3] = {0};
 static uint32_t g_thorChainSelectIndex[3] = {0};
 
 static PageWidget_t *g_pageWidget;
-static uint32_t g_selectedIndex[3] = {0};
 static bool g_inputAccountValid = true;
 
 static void JumpToAccountHandler(lv_event_t *e)

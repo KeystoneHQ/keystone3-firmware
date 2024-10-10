@@ -234,15 +234,15 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
 {
     switch (cryptoKey) {
     case SECP256K1:
-        return get_extended_pubkey_by_seed(seed, len, path);
+        return get_extended_pubkey_by_seed(seed, len, (char *)path);
     case ED25519:
-        return get_ed25519_pubkey_by_seed(seed, len, path);
+        return get_ed25519_pubkey_by_seed(seed, len, (char *)path);
     case BIP32_ED25519:
         ASSERT(icarusMasterKey);
-        return derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+        return derive_bip32_ed25519_extended_pubkey(icarusMasterKey, (char *)path);
     case LEDGER_BITBOX02:
         ASSERT(ledgerBitbox02MasterKey);
-        return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, path);
+        return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, (char *)path);
 #ifndef BTC_ONLY
     case RSA_KEY: {
         Rsa_primes_t *primes = FlashReadRsaPrimes();
@@ -522,7 +522,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             free_simple_response_c_char(xPubResult);
             //store a checksum of entropy for quick compare;
             uint8_t checksum[32] = {'\0'};
-            CalculateTonChecksum(entropy, checksum);
+            CalculateTonChecksum(entropy, (char *)checksum);
             printf("ton checksum: %s\r\n", checksum);
             g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value = SRAM_MALLOC(65);
             char* ptr = g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value;

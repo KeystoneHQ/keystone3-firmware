@@ -4,18 +4,6 @@
 #include "gui_status_bar.h"
 #include "gui_about_info_widgets.h"
 
-static int32_t GuiAboutInfoViewInit(void)
-{
-    GuiAboutInfoWidgetsInit();
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiAboutInfoViewDeInit(void)
-{
-    GuiAboutInfoWidgetsDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiAboutInfoViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     int32_t ret = SUCCESS_CODE;

@@ -18,6 +18,7 @@ typedef enum {
 
 void LanguageInit(void);
 void LanguageSwitch(uint8_t langIndex);
+void LanguageSwitchTemp(uint8_t langIndex);
 uint8_t LanguageGetIndex(void);
 
 #endif

@@ -209,30 +209,6 @@ uint32_t GetRtcBatteryMilliVolt(void)
     return vol;
 }
 
-
-static int CalculateWeightedAverage(const int *array, int startIndex)
-{
-    int sum = 0;
-    int weightSum = 0;
-    int index = startIndex;
-    int weight = 10;
-
-    for (int i = 0; i < BATTERY_ARRAY_LEN; i++) {
-        sum += array[index] * weight;
-        weightSum += weight;
-        weight--;
-        index = (index - 1 + BATTERY_ARRAY_LEN) % BATTERY_ARRAY_LEN;
-    }
-
-    return sum / weightSum;
-}
-
-static void UpdateVoltageCache(int *array, int *writeIndex, int newVoltage)
-{
-    array[*writeIndex] = newVoltage;
-    *writeIndex = (*writeIndex - 1 + BATTERY_ARRAY_LEN) % BATTERY_ARRAY_LEN;
-}
-
 /// @brief Execute once every minimum percent change time interval.
 /// @param
 bool BatteryIntervalHandler(void)
@@ -240,8 +216,6 @@ bool BatteryIntervalHandler(void)
     UsbPowerState usbPowerState;
     uint8_t percent;
     uint32_t milliVolt = 0;
-    static uint32_t milliVoltCache[BATTERY_ARRAY_LEN] = {0};
-    static int writeIndex = BATTERY_ARRAY_LEN - 1;
     bool change = false;
     static bool first = true;
     static uint8_t delayIncrease = 0, delayDecrease = 0;

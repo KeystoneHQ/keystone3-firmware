@@ -18,6 +18,7 @@
 #include "screenshot.h"
 #include "lv_i18n_api.h"
 #include "gui_api.h"
+#include "drv_mpu.h"
 
 #define LVGL_FAST_TICK_MS                   5
 #define LVGL_IDLE_TICK_MS                   100
@@ -186,7 +187,7 @@ static void UiDisplayTask(void *argument)
                 while (LcdBusy()) {
                     osDelay(1);
                 }
-                RefreshDisplay(snapShotAddr);
+                RefreshDisplay((uint16_t *)snapShotAddr);
                 if (snapShotAddr != NULL) {
                     EXT_FREE(snapShotAddr);
                 }

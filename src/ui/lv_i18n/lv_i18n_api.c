@@ -36,12 +36,17 @@ void LanguageInit(void)
 
 void LanguageSwitch(uint8_t langIndex)
 {
-    lv_i18n_init(lv_i18n_language_pack);
-    lv_i18n_set_locale(g_languageList[langIndex].langCode);
-    GuiSetLanguageFont(langIndex);
+    LanguageSwitchTemp(langIndex);
     SetLanguage(langIndex);
     SaveDeviceSettings();
     g_curLangIndex = langIndex;
+}
+
+void LanguageSwitchTemp(uint8_t langIndex)
+{
+    lv_i18n_init(lv_i18n_language_pack);
+    lv_i18n_set_locale(g_languageList[langIndex].langCode);
+    GuiSetLanguageFont(langIndex);
 }
 
 uint8_t LanguageGetIndex(void)

@@ -141,7 +141,7 @@ void GuiSystemSettingAreaRefresh(void)
 static void GuiSystemSettingAreaRestartHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_noticeWindow)
-    int index = *(int *)lv_event_get_user_data(e);
+    uint8_t index = *(uint8_t *)lv_event_get_user_data(e);
     LanguageSwitch(index);
     if (g_selectLanguagePage != NULL) {
         DestroyPageWidget(g_selectLanguagePage);
@@ -150,14 +150,22 @@ static void GuiSystemSettingAreaRestartHandler(lv_event_t *e)
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
     GuiEnterPassLabelRefresh();
+    GuiEmitSignal(GUI_EVENT_CHANGE_LANGUAGE, NULL, 0);
+}
+
+static void CloseChangeLanguageHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_noticeWindow)
+    LanguageSwitch(LanguageGetIndex());
 }
 
 void GuiSystemSettingLanguage(void *param)
 {
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("Confirm Language Change"), _("Are you sure you want to change language? This will apply immediately"), NULL,
+    LanguageSwitchTemp(*(uint8_t *)param);
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("confirm_language_title"), _("confirm_language_desc"), NULL,
                      _("not_now"), WHITE_COLOR_OPA20, _("Confirm"), ORANGE_COLOR);
     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_add_event_cb(leftBtn, CloseChangeLanguageHandler, LV_EVENT_CLICKED, &g_noticeWindow);
     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_add_event_cb(rightBtn, GuiSystemSettingAreaRestartHandler, LV_EVENT_CLICKED, param);
 }

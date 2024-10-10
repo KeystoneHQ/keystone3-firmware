@@ -56,8 +56,6 @@ static int GetEntryEnum(void);
 static void GuiCreateSdCardnstructionTile(lv_obj_t *parent);
 #ifndef BTC_ONLY
 static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent);
-static void StartKnownWarningCountDownTimer(void);
-static void KnownWarningCountDownTimerHandler(lv_timer_t *timer);
 static void KnownWarningHandler(lv_event_t *e);
 static void KnownWarningCancelHandler(lv_event_t *e);
 #endif
@@ -79,7 +77,6 @@ static PageWidget_t *g_pageWidget;
 
 #ifndef BTC_ONLY
 static lv_timer_t *g_knownWarningCountDownTimer = NULL;
-static uint32_t g_knownWarningCountDown = 0;
 static lv_obj_t *g_knownWarningBtn;
 #endif
 
@@ -601,32 +598,6 @@ static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent)
     lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(btn, KnownWarningHandler, LV_EVENT_CLICKED, NULL);
     g_knownWarningBtn = btn;
-}
-
-static void KnownWarningCountDownTimerHandler(lv_timer_t *timer)
-{
-    lv_obj_t *btn = g_knownWarningBtn;
-    char text[32];
-    const char *preText = _("firmware_update_btc_only_button_i_know");
-    if (btn == NULL) {
-        g_knownWarningCountDown = 0;
-        lv_timer_del(timer);
-        g_knownWarningCountDownTimer = NULL;
-        return;
-    }
-    g_knownWarningCountDown--;
-    if (g_knownWarningCountDown > 0) {
-        snprintf_s(text, sizeof(text), "%s(%d)", preText, g_knownWarningCountDown);
-    } else {
-        strcpy_s(text, sizeof(text), preText);
-    }
-    lv_label_set_text(lv_obj_get_child(btn, 0), text);
-    if (g_knownWarningCountDown <= 0) {
-        lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
-        lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
-        lv_timer_del(timer);
-        g_knownWarningCountDownTimer = NULL;
-    }
 }
 
 static void KnownWarningHandler(lv_event_t *e)

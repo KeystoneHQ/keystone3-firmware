@@ -64,21 +64,8 @@ void *GuiGetXrpData(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
 
-    enum ViewType viewType = ViewTypeUnKnown;
-    enum QRCodeType urType = URTypeUnKnown;
-    void *crypto = NULL;
-    if (g_isMulti) {
-        crypto = g_urMultiResult->data;
-        urType = g_urMultiResult->ur_type;
-        viewType = g_urMultiResult->t;
-    } else {
-        crypto = g_urResult->data;
-        urType = g_urResult->ur_type;
-    }
-    char *rootPath = NULL;
     PtrT_TransactionParseResult_DisplayXrpTx parseResult = NULL;
     do {
-
         if (is_keystone_xrp_tx(data)) {
             parseResult = xrp_parse_bytes_tx(data);
         } else {
@@ -99,15 +86,10 @@ PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
     if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
         strcpy_s(pubkey, XPUB_KEY_LEN, g_cachedPubkey[GetCurrentAccountIndex()]);
     }
-    enum ViewType viewType = ViewTypeUnKnown;
     enum QRCodeType urType = URTypeUnKnown;
-    void *crypto = NULL;
     if (g_isMulti) {
-        crypto = g_urMultiResult->data;
         urType = g_urMultiResult->ur_type;
-        viewType = g_urMultiResult->t;
     } else {
-        crypto = g_urResult->data;
         urType = g_urResult->ur_type;
     }
     // keystone hot wallet use urType Bytes
@@ -177,12 +159,6 @@ UREncodeResult *GuiGetXrpSignQrCodeData(void)
     SetLockScreen(false);
     UREncodeResult *encodeResult = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    enum QRCodeType urType = URTypeUnKnown;
-    if (g_isMulti) {
-        urType = g_urMultiResult->ur_type;
-    } else {
-        urType = g_urResult->ur_type;
-    }
     do {
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());

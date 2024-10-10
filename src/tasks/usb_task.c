@@ -18,6 +18,7 @@
 #include "account_manager.h"
 
 static void UsbTask(void *argument);
+void ClearUSBRequestId(void);
 
 static osThreadId_t g_usbTaskHandle;
 static volatile bool g_usbState = false;

@@ -24,6 +24,8 @@ use cosmos_rust_c;
 #[cfg(feature = "multi-coins")]
 use ethereum_rust_c;
 #[cfg(feature = "multi-coins")]
+use monero_rust_c;
+#[cfg(feature = "multi-coins")]
 use near_rust_c;
 #[cfg(feature = "multi-coins")]
 use solana_rust_c;

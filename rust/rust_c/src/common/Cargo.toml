@@ -28,10 +28,11 @@ app_sui = {path = "../../../apps/sui", optional = true}
 app_arweave = {path = "../../../apps/arweave", optional = true}
 app_stellar = {path = "../../../apps/stellar", optional = true}
 app_ton = {path = "../../../apps/ton", optional = true}
+app_monero = {path = "../../../apps/monero", optional = true}
 
 [features]
 debug-memory = ["default"]
 default = ["multi-coins"]
-multi-coins = ["app_ethereum", "app_cardano", "app_tron", "app_solana", "app_near", "app_xrp", "app_cosmos", "app_aptos", "app_sui", "app_arweave", "app_ton", "app_stellar"]
+multi-coins = ["app_ethereum", "app_cardano", "app_tron", "app_solana", "app_near", "app_xrp", "app_cosmos", "app_aptos", "app_sui", "app_arweave", "app_ton", "app_stellar", "app_monero"]
 #
 btc-only = []

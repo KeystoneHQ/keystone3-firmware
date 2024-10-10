@@ -7,6 +7,7 @@
 #include "user_memory.h"
 #include "gui_chain.h"
 #include "presetting.h"
+#include "version.h"
 
 static UREncodeResult *g_urEncode = NULL;
 
@@ -337,7 +338,9 @@ UREncodeResult *GuiGetADADataByIndex(char *walletName)
     CSliceFFI_ExtendedPublicKey keys;
     keys.data = xpubs;
     keys.size = 1;
-    return generate_key_derivation_ur(mfp, 4, &keys);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+    return generate_key_derivation_ur(mfp, 4, &keys, firmwareVersion);
 }
 UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index)
 {

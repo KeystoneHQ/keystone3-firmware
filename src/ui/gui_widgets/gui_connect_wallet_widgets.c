@@ -52,6 +52,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_BEGIN, &walletListBegin, true},
     {WALLET_LIST_UNISAT, &walletListUniSat, true},
     {WALLET_LIST_NIGHTLY, &walletListNightly, true},
+    {WALLET_LIST_SUIET, &walletListSuiet, true},
     // {WALLET_LIST_YOROI, &walletListYoroi, true},
     {WALLET_LIST_TYPHON, &walletListTyphon, true},
     {WALLET_LIST_SAFE, &walletListSafe, true},
@@ -1290,6 +1291,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         AddChainAddress();
         break;
     case WALLET_LIST_NIGHTLY:
+        func = GuiGetNightlyData;
+        AddNightlyCoins();
+        break;
+    case WALLET_LIST_SUIET:
         func = GuiGetNightlyData;
         AddNightlyCoins();
         break;

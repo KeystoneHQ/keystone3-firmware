@@ -303,6 +303,13 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_NIGHTLY].items[0].qrTitle = _("tutorial_nightly_title");
     g_tutorials[WALLET_LIST_NIGHTLY].items[0].qrUrl = _("tutorial_nightly_link");
 
+    // WALLET_LIST_SUIET
+    g_tutorials[WALLET_LIST_SUIET].len = 1;
+    g_tutorials[WALLET_LIST_SUIET].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_SUIET].items[0].walletName = _("tutorial_suiet_title");
+    g_tutorials[WALLET_LIST_SUIET].items[0].url = _("tutorial_suiet_link");
+    g_tutorials[WALLET_LIST_SUIET].items[0].qrTitle = _("tutorial_suiet_title");
+    g_tutorials[WALLET_LIST_SUIET].items[0].qrUrl = _("tutorial_suiet_link");
 
     // WALLET_LIST_BEGIN
     g_tutorials[WALLET_LIST_BEGIN].len = 1;

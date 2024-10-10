@@ -12,6 +12,7 @@
 #include "general/eapdu_services/service_resolve_ur.h"
 #include "secret_cache.h"
 #include "fingerprint_process.h"
+#include "version.h"
 
 typedef struct KeyDerivationWidget {
     uint8_t currentTile;
@@ -485,6 +486,8 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
     CSliceFFI_ExtendedPublicKey keys;
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
     if (strcmp("1", g_callData->version) == 0) {
         uint8_t seed[64];
         char *password = SecretCacheGetPassword();
@@ -539,7 +542,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
         if (!g_isUsb) {
             ClearSecretCache();
         }
-        return generate_key_derivation_ur(mfp, 4, &keys);
+        return generate_key_derivation_ur(mfp, 4, &keys, firmwareVersion);
     }
     ExtendedPublicKey xpubs[24];
     for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
@@ -556,7 +559,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     for (size_t i = 0; i < keys.size; i++) {
         printf("v0 path: %s, xpub: %s\n", keys.data[i].path, keys.data[i].xpub);
     }
-    return generate_key_derivation_ur(mfp, 4, &keys);
+    return generate_key_derivation_ur(mfp, 4, &keys, firmwareVersion);
 }
 
 static uint8_t GetXPubIndexByPath(char *path)

@@ -26,7 +26,6 @@ use alloc::vec::Vec;
 
 use app_wallets::metamask::ETHAccountTypeApp;
 use app_wallets::DEVICE_TYPE;
-use app_wallets::DEVICE_VERSION;
 use cty::uint32_t;
 use keystore::algorithms::secp256k1::derive_extend_public_key;
 use keystore::errors::KeystoreError;
@@ -267,6 +266,7 @@ pub extern "C" fn generate_key_derivation_ur(
     master_fingerprint: PtrBytes,
     master_fingerprint_length: uint32_t,
     xpubs: Ptr<CSliceFFI<ExtendedPublicKey>>,
+    device_version: PtrString,
 ) -> Ptr<UREncodeResult> {
     let mfp = extract_array!(master_fingerprint, u8, master_fingerprint_length);
     let mfp = match <&[u8; 4]>::try_from(mfp) {
@@ -274,6 +274,7 @@ pub extern "C" fn generate_key_derivation_ur(
         Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
     };
     let public_keys = unsafe { recover_c_array(xpubs) };
+    let device_version = unsafe { recover_c_char(device_version) };
     let keys = public_keys
         .iter()
         .map(|v| {
@@ -357,7 +358,7 @@ pub extern "C" fn generate_key_derivation_ur(
         keys,
         Some(DEVICE_TYPE.to_string()),
         None,
-        Some(DEVICE_VERSION.to_string()),
+        Some(device_version),
     );
     match accounts.try_into() {
         Ok(v) => {

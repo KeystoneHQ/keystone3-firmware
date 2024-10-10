@@ -123,7 +123,7 @@ static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
 };
 
 static const lv_img_dsc_t *g_bitgetWalletCoinArray[] = {
-    &coinBtc, &coinEth
+    &coinBtc, &coinEth, &coinTon
 };
 
 static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {

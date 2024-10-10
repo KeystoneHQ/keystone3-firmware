@@ -3,7 +3,7 @@ use alloc::vec::Vec;
 use cty::size_t;
 
 use crate::types::PtrT;
-use crate::{impl_c_ptr, impl_simple_free, make_free_method};
+use crate::{impl_c_ptr, impl_simple_free};
 
 #[repr(C)]
 pub struct VecFFI<T> {

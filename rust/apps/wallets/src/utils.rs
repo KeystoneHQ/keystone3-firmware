@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn test_generate_crypto_multi_accounts_sync_ur() {
-        let mut master_fingerprint = [0u8; 4];
+        let master_fingerprint = [0u8; 4];
         let public_keys = BTreeMap::new();
         let result =
             generate_crypto_multi_accounts_sync_ur(&master_fingerprint, public_keys, "SUI");

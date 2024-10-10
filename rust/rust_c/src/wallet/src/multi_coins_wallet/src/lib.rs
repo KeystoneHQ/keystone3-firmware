@@ -30,8 +30,7 @@ use app_wallets::DEVICE_VERSION;
 use cty::uint32_t;
 use keystore::algorithms::secp256k1::derive_extend_public_key;
 use keystore::errors::KeystoreError;
-use third_party::bitcoin::hex::DisplayHex;
-use third_party::core2::io::Read;
+
 use third_party::ed25519_bip32_core::XPub;
 use third_party::hex;
 use third_party::ur_registry::crypto_account::CryptoAccount;
@@ -308,7 +307,7 @@ pub extern "C" fn generate_key_derivation_ur(
                             }
                             Err(e) => Err(URError::UrEncodeError(e.to_string())),
                         }
-                    } else if (v.len() == 32) {
+                    } else if v.len() == 32 {
                         //  ed25519
                         Ok(CryptoHDKey::new_extended_key(
                             None,

@@ -2,7 +2,7 @@ use alloc::{
     format,
     string::{String, ToString},
 };
-use third_party::hex;
+
 use third_party::thiserror;
 use third_party::thiserror::Error;
 

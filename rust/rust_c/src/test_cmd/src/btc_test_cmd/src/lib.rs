@@ -3,14 +3,13 @@
 extern crate alloc;
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
-use alloc::vec;
+
 use alloc::vec::Vec;
 
-use cty::c_char;
 use third_party::hex;
 
 use third_party::ur_registry::bytes::Bytes;
-use third_party::ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
+
 use third_party::ur_registry::crypto_psbt::CryptoPSBT;
 use third_party::ur_registry::traits::RegistryItem;
 
@@ -22,7 +21,7 @@ use common_rust_c::ur::{
     decode_ur, receive, QRCodeType, UREncodeResult, URParseMultiResult, URParseResult, ViewType,
     FRAGMENT_MAX_LENGTH_DEFAULT,
 };
-use common_rust_c::utils::{convert_c_char, recover_c_char};
+use common_rust_c::utils::convert_c_char;
 
 use wallet_rust_c::get_connect_blue_wallet_ur;
 

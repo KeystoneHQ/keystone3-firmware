@@ -1,14 +1,8 @@
-use alloc::boxed::Box;
-use alloc::string::ToString;
-use alloc::vec::Vec;
-use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
 use common_rust_c::structs::TransactionParseResult;
 use common_rust_c::types::{PtrString, PtrT};
-use common_rust_c::utils::convert_c_char;
-use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, impl_c_ptrs, make_free_method};
-use core::ptr::null_mut;
-use third_party::itertools::Itertools;
+
+use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
 
 #[repr(C)]
 pub struct DisplayStellarTx {

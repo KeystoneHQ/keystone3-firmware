@@ -19,7 +19,7 @@ use third_party::hex;
 
 use third_party::ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
 use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
-use third_party::ur_registry::cardano::cardano_delegation::CardanoDelegation;
+
 use third_party::ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 use third_party::ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
 use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;

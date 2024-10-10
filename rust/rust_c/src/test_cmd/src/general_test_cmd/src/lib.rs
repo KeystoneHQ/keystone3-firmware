@@ -1,10 +1,9 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::boxed::Box;
-use alloc::string::{String, ToString};
+
+use alloc::string::ToString;
 use alloc::vec;
-use alloc::vec::Vec;
 
 use cty::c_char;
 use third_party::hex;
@@ -15,22 +14,14 @@ use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 use third_party::ur_registry::cosmos::evm_sign_request::EvmSignRequest;
 use third_party::ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
-use third_party::ur_registry::crypto_psbt::CryptoPSBT;
+
 use third_party::ur_registry::ethereum::eth_sign_request::{DataType, EthSignRequest};
 use third_party::ur_registry::near::near_sign_request::NearSignRequest;
 use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
-use third_party::ur_registry::traits::RegistryItem;
 
-use common_rust_c::errors::ErrorCodes;
-use common_rust_c::ffi::CSliceFFI;
-use common_rust_c::structs::ExtendedPublicKey;
-use common_rust_c::types::PtrDecoder;
-use common_rust_c::ur::{
-    decode_ur, receive, QRCodeType, UREncodeResult, URParseMultiResult, URParseResult, ViewType,
-    FRAGMENT_MAX_LENGTH_DEFAULT,
-};
-use common_rust_c::utils::{convert_c_char, recover_c_char};
+use common_rust_c::ur::{QRCodeType, URParseResult, ViewType};
+use common_rust_c::utils::recover_c_char;
 
 #[no_mangle]
 pub extern "C" fn test_get_bch_keystone_succeed_bytes() -> *mut URParseResult {

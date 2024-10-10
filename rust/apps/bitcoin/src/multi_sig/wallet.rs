@@ -1,4 +1,3 @@
-use alloc::fmt::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::str::FromStr;
@@ -115,12 +114,12 @@ impl Default for BsmsWallet {
 }
 
 fn _parse_plain_xpub_config(content: &str) -> Result<BsmsWallet, BitcoinError> {
-    let mut bsmsWallet = BsmsWallet::default();
+    let mut bsms_wallet = BsmsWallet::default();
 
     for line in content.lines() {
         if line.trim().starts_with("BSMS") {
             if line.contains("BSMS 1.0") {
-                bsmsWallet.bsms_version = String::from("BSMS 1.0");
+                bsms_wallet.bsms_version = String::from("BSMS 1.0");
             }
         } else if line.starts_with("[") {
             if let Some(end_bracket_pos) = line.find(']') {
@@ -128,10 +127,10 @@ fn _parse_plain_xpub_config(content: &str) -> Result<BsmsWallet, BitcoinError> {
                     let xfp = &line[1..=8].trim();
                     let derivation_path = &line[9..=end_bracket_pos - 1].trim();
                     let extended_pubkey = &line[end_bracket_pos + 1..].trim();
-                    bsmsWallet.xfp = xfp.to_string();
-                    bsmsWallet.derivation_path = format!("m{}", derivation_path);
-                    bsmsWallet.extended_pubkey = extended_pubkey.to_string();
-                    return Ok(bsmsWallet);
+                    bsms_wallet.xfp = xfp.to_string();
+                    bsms_wallet.derivation_path = format!("m{}", derivation_path);
+                    bsms_wallet.extended_pubkey = extended_pubkey.to_string();
+                    return Ok(bsms_wallet);
                 }
             }
         }
@@ -144,7 +143,7 @@ fn _parse_plain_xpub_config(content: &str) -> Result<BsmsWallet, BitcoinError> {
 pub fn parse_bsms_wallet_config(bytes: Bytes) -> Result<BsmsWallet, BitcoinError> {
     let content = String::from_utf8(bytes.get_bytes())
         .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))?;
-    let mut wallet = _parse_plain_xpub_config(&content)?;
+    let wallet = _parse_plain_xpub_config(&content)?;
     Ok(wallet)
 }
 
@@ -238,7 +237,7 @@ fn _parse_plain_wallet_config(content: &str) -> Result<MultiSigWalletConfig, Bit
             wallet.network = this_network;
             is_first = false;
         } else {
-            if (wallet.network != this_network) {
+            if wallet.network != this_network {
                 return Err(BitcoinError::MultiSigWalletParseError(format!(
                     "xpub networks inconsistent"
                 )));
@@ -426,7 +425,7 @@ fn is_valid_xyzpub(xpub: &str) -> bool {
 
     match result {
         Ok(xpub) => Xpub::from_str(&xpub).is_ok(),
-        Err(e) => false,
+        Err(_e) => false,
     }
 }
 

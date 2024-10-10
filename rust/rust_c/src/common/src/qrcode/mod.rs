@@ -1,12 +1,10 @@
 use alloc::{format, string::ToString};
 use seed_signer_message::{MessageEncoding, SeedSignerMessage};
-use third_party::bech32::primitives::encode;
 
 pub mod seed_signer_message;
 
 use crate::{
     errors::RustCError,
-    structs::Response,
     types::{Ptr, PtrString},
     ur::URParseResult,
     utils::recover_c_char,

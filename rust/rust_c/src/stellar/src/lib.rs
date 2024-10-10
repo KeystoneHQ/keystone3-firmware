@@ -3,14 +3,14 @@
 extern crate alloc;
 use alloc::borrow::ToOwned;
 use alloc::boxed::Box;
-use alloc::string::{String, ToString};
-use alloc::{format, slice};
+use alloc::slice;
+use alloc::string::ToString;
 use cty::c_char;
 
 use crate::structs::DisplayStellarTx;
 use app_stellar::strkeys::{sign_hash, sign_signature_base};
 use app_stellar::{address::get_address, base_to_xdr};
-use common_rust_c::errors::{ErrorCodes, RustCError};
+use common_rust_c::errors::RustCError;
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};

@@ -17,11 +17,10 @@ pub fn generate_sync_ur(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::string::ToString;
 
     #[test]
     fn test_generate_sync_ur() {
-        let mut master_fingerprint = [0u8; 4];
+        let master_fingerprint = [0u8; 4];
         let public_keys = BTreeMap::new();
         let result = generate_sync_ur(&master_fingerprint, public_keys);
         assert!(result.is_ok());

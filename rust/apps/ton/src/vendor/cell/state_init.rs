@@ -62,4 +62,3 @@ impl StateInit {
         Ok(StateInitBuilder::new(code, data).build()?.cell_hash())
     }
 }
-

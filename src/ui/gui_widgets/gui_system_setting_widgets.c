@@ -167,10 +167,10 @@ static void CloseChangeLanguageHandler(lv_event_t *e)
 void GuiSystemSettingLanguage(void *param)
 {
     LanguageSwitchTemp(*(uint8_t *)param);
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("confirm_language_title"), _("confirm_language_desc"), NULL,
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("confirm_language_title"), _("confirm_language_desc"), NULL,
                      _("not_now"), WHITE_COLOR_OPA20, _("Confirm"), ORANGE_COLOR);
     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_add_event_cb(leftBtn, CloseChangeLanguageHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_add_event_cb(leftBtn, CloseChangeLanguageHandler, LV_EVENT_CLICKED, NULL);
     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_add_event_cb(rightBtn, GuiSystemSettingAreaRestartHandler, LV_EVENT_CLICKED, param);
 }
@@ -236,11 +236,17 @@ static void VibrationSwitchHandler(lv_event_t * e)
     }
 }
 
+static void DestroyLanguagePageWidgetHandler(lv_event_t *e)
+{
+    DestroyPageWidget(g_selectLanguagePage);
+    g_selectLanguagePage = NULL;
+}
+
 static void OpenLanguageSelectHandler(lv_event_t *e)
 {
     g_selectLanguagePage = CreatePageWidget();
     lv_obj_clear_flag(g_selectLanguagePage->contentZone, LV_OBJ_FLAG_SCROLLABLE);
     GuiCreateLanguageWidget(g_selectLanguagePage->contentZone, 12);
-    SetNavBarLeftBtn(g_selectLanguagePage->navBarWidget, NVS_BAR_RETURN, DestroyPageWidgetHandler, g_selectLanguagePage);
+    SetNavBarLeftBtn(g_selectLanguagePage->navBarWidget, NVS_BAR_RETURN, DestroyLanguagePageWidgetHandler, g_selectLanguagePage);
     SetMidBtnLabel(g_selectLanguagePage->navBarWidget, NVS_BAR_MID_LABEL, _("language_title"));
 }

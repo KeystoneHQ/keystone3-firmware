@@ -101,6 +101,24 @@ pub fn get_address_from_seed(
     // pub_keys_to_address(net, is_subaddress, &public_spend_key, &public_view_key)
 }
 
+pub fn pub_keyring_to_address(
+    net: Network,
+    is_subaddress: bool,
+    pub_keyring: String,
+) -> Option<String> {
+    if pub_keyring.len() != 128 {
+        return None;
+    }
+    let pub_spend_key = PublicKey::from_bytes(&hex::decode(&pub_keyring[0..64]).unwrap()).unwrap();
+    let pub_view_key = PublicKey::from_bytes(&hex::decode(&pub_keyring[64..128]).unwrap()).unwrap();
+    Some(pub_keys_to_address(
+        net,
+        is_subaddress,
+        &pub_spend_key,
+        &pub_view_key,
+    ))
+}
+
 fn pub_keys_to_address(
     net: Network,
     is_subaddress: bool,
@@ -185,6 +203,16 @@ mod tests {
         assert_eq!(
             address3.public_view.to_string(),
             address4.public_view.to_string()
+        );
+    }
+
+    #[test]
+    fn test_pub_keyring_to_address() {
+        let keyring = "fe8d737f9c1cd5fcbf575f96a67894d98d22f482a802e56c62a0c7cb7155226bb44bcea47bab442a7119eb8481752fcccc58601a72818fa9bbf965fb38c16ba4";
+        let address = pub_keyring_to_address(Network::Mainnet, false, keyring.to_string()).unwrap();
+        assert_eq!(
+            address,
+            "4BGbk2sxPjajGy4oCbfybHdPXBBUEZFD6K8URfBe1utuK1sFjXCeQi786jqnt6NJYEbFoMsi5D77UVPdqQNhGQBtKXXhe2g"
         );
     }
 }

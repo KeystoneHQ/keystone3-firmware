@@ -326,4 +326,3 @@ fn read_var_size(
     }
     Ok(result)
 }
-

@@ -57,4 +57,3 @@ fn create_biguint_with_ones(n: usize) -> BigUint {
     msb.extend(lsb);
     BigUint::from_bytes_be(&msb)
 }
-

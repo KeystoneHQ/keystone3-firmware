@@ -14,6 +14,7 @@
 #include "usb_task.h"
 #include "device_setting.h"
 #include "drv_aw32001.h"
+#include "lv_i18n_api.h"
 
 int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -23,6 +24,7 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
             GuiFrameCLoseView(&g_forgetPassView);
             // close passphraseView if present, ignore general error;
             GuiFrameCLoseView(&g_passphraseView);
+            LanguageSwitchTemp(LanguageGetIndex());
             GuiLockScreenTurnOn(param);
             QRCodeControl(true);
             GuiAnimatingQRCodeControl(true);

@@ -52,7 +52,7 @@ static struct EthParams *NewParams()
 
 static bool IsValidParams(struct EthParams *params)
 {
-    if (params->n == -1 || params->type == -1 || params->chain == -1 || params->wallet == -1) {
+    if (params == NULL || params->n == -1 || params->type == -1 || params->chain == -1 || params->wallet == -1) {
         return false;
     }
     return true;

@@ -35,8 +35,9 @@
 #define TYPE_FILE_FINO_PUBKEY       1
 #define TYPE_FILE_FINO_PUBKEY_SIGN  2
 
-#define MAX_FILE_NAME_LENGTH 32
-#define FILE_TRANS_TIME_OUT 10000
+#define MAX_FILE_SIZE               (8 * 1024 * 1024)       // update max file size
+#define MAX_FILE_NAME_LENGTH        32
+#define FILE_TRANS_TIME_OUT         10000
 #define DEFAULT_FILE_NAME           "keystone3.bin"
 
 #define CHECK_POINTER(ptr) do { \
@@ -203,7 +204,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     SetDeviceParserIv(g_fileTransInfo.iv);
 
     do {
-        if (strnlen_s(g_fileTransInfo.fileName, MAX_FILE_NAME_LENGTH) == 0 || g_fileTransInfo.fileSize == 0) {
+        if (strnlen_s(g_fileTransInfo.fileName, MAX_FILE_NAME_LENGTH) == 0 || g_fileTransInfo.fileSize == 0 || g_fileTransInfo.fileSize >= MAX_FILE_SIZE) {
             sendTlvArray[0].value = 4;
             break;
         }
@@ -291,10 +292,10 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
         return NULL;
     }
 
-    if (offset + fileDataSize > g_fileTransInfo.fileSize) {
-        printf("offset + fileDataSize = %d\n", offset + fileDataSize);
-        printf("g_fileTransInfo.fileSize = %d\n", g_fileTransInfo.fileSize);
-        printf("File size exceeds expected size\n");
+    if (fileDataSize > g_fileTransInfo.fileSize ||
+            offset > g_fileTransInfo.fileSize ||
+            offset + fileDataSize > g_fileTransInfo.fileSize) {
+        printf("Invalid offset or file data size\n");
         return NULL;
     }
 
@@ -305,11 +306,7 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
 
     if (!g_isNftFile) {
         DataDecrypt(fileData, fileData, fileDataSize);
-        if (fileDataSize > g_fileTransInfo.fileSize - g_fileTransCtrl.offset) {
-            fileDataSize = g_fileTransInfo.fileSize - g_fileTransCtrl.offset;
-        }
     }
-
     g_fileTransCtrl.offset += fileDataSize;
 
     if (FatfsFileAppend(g_fileTransInfo.fileName, fileData, fileDataSize) != RES_OK) {
@@ -420,7 +417,6 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
 
     uint32_t tlvNumber = 0;
     tlvNumber = GetTlvFromData(tlvArray, 2, tlvData, head->length);
-    printf("tlvNumber = %d\n", tlvNumber);
     for (uint32_t i = 0; i < tlvNumber; i++) {
         switch (tlvArray[i].type) {
         case TYPE_FILE_FINO_PUBKEY:

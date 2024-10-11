@@ -104,7 +104,7 @@ uint32_t GetTlvFromData(Tlv_t tlvArray[], uint32_t maxTlvLen, const uint8_t *dat
             tlvArray[count].length = data[index++];
         }
 
-        if (index + tlvArray[count].length > dataLen) {
+        if (index + tlvArray[count].length > dataLen || tlvArray[count].length == 0) {
             break;
         }
         tlvArray[count].pValue = (uint8_t *)&data[index];

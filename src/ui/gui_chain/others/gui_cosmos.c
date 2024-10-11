@@ -9,7 +9,7 @@
 #include "user_memory.h"
 #include "account_manager.h"
 #include "gui_chain.h"
-#define MAX_COSMOS_ADDR_LEN 61
+#define MAX_COSMOS_ADDR_LEN 62
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
@@ -26,6 +26,7 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_SCRT, "secret", 529, XPUB_TYPE_SCRT, "secret-4"},
     {CHAIN_AKT, "akash", 118, XPUB_TYPE_COSMOS, "akashnet-2"},
     {CHAIN_CRO, "cro", 394, XPUB_TYPE_CRO, "crypto-org-chain-mainnet-1"},
+    {CHAIN_CACAO, "maya", 931, XPUB_TYPE_MAYA, "mayachain-mainnet-v1"},
     {CHAIN_RUNE, "thor", 931, XPUB_TYPE_THOR, "thorchain-1"},
     {CHAIN_IOV, "star", 234, XPUB_TYPE_IOV, "iov-mainnet-ibc"},
     {CHAIN_ROWAN, "sif", 118, XPUB_TYPE_COSMOS, "sifchain-1"},

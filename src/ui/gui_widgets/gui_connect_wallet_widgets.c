@@ -182,11 +182,12 @@ static const lv_img_dsc_t *g_tonKeeperCoinArray[1] = {
     &coinTon,
 };
 
-static const lv_img_dsc_t *g_ThorWalletCoinArray[3] = {
+static const lv_img_dsc_t *g_ThorWalletCoinArray[4] = {
     // todo thorchain will support bitcoin later
     // &coinBtc,
     &coinEth,
     &coinRune,
+    &coinCacao,
 };
 
 static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {

@@ -27,6 +27,7 @@ const BTC_SEGWIT_PREFIX: &str = "m/49'/0'/0'";
 const BTC_NATIVE_SEGWIT_PREFIX: &str = "m/84'/0'/0'";
 const ETH_STANDARD_PREFIX: &str = "m/44'/60'/0'";
 const ETH_LEDGER_LIVE_PREFIX: &str = "m/44'/60'"; //overlap with ETH_STANDARD at 0
+const MAYACHAIN_PREFIX: &str = "m/44'/931'/0'";
 const THORCHAIN_PREFIX: &str = "m/44'/931'/0'";
 
 pub fn generate_crypto_multi_accounts(
@@ -42,6 +43,7 @@ pub fn generate_crypto_multi_accounts(
         BTC_LEGACY_PREFIX.to_string(),
         BTC_SEGWIT_PREFIX.to_string(),
         BTC_NATIVE_SEGWIT_PREFIX.to_string(),
+        MAYACHAIN_PREFIX.to_string(),
         THORCHAIN_PREFIX.to_string(),
     ];
     for ele in extended_public_keys {

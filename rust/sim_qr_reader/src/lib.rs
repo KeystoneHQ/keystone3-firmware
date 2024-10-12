@@ -110,7 +110,6 @@ fn get_qr_area(code: &Code, image: &DynamicImage) -> (i32, i32, u32, u32) {
     let width = (max_x - min_x) as u32;
     let height = (max_y - min_y) as u32;
 
-    // 添加一些边距
     let margin = 10;
     let x = (min_x - margin).max(0);
     let y = (min_y - margin).max(0);

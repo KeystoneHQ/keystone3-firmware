@@ -148,34 +148,52 @@ static UREncodeResult *get_unlimited_connect_metamask_ur(PtrBytes master_fingerp
 
 static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType accountType, MetamaskUrGetter func)
 {
+    if (func == NULL) {
+        return NULL;
+    }
+
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    ExtendedPublicKey keys[10];
+    if (public_keys == NULL) {
+        return NULL;
+    }
+
+    ExtendedPublicKey keys[10] = {0};
     public_keys->data = keys;
 
-    if (accountType == Bip44Standard) {
+    switch (accountType) {
+    case Bip44Standard:
         public_keys->size = 1;
         keys[0].path = "";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
-    } else if (accountType == LedgerLive) {
+        break;
+    case LedgerLive:
         public_keys->size = 10;
         for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
             keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = "";
             keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
         }
-    } else if (accountType == LedgerLegacy) {
+        break;
+    case LedgerLegacy:
         public_keys->size = 1;
         keys[0].path = "";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY);
+        break;
+    default:
+        SRAM_FREE(public_keys);
+        return NULL;
     }
 
     g_urEncode = func(mfp, sizeof(mfp), accountType, public_keys);
-    CHECK_CHAIN_PRINT(g_urEncode);
+    if (g_urEncode == NULL) {
+        SRAM_FREE(public_keys);
+        return NULL;
+    }
+
     SRAM_FREE(public_keys);
     return g_urEncode;
 }
-
 // copy from gui_btc, need to use real data
 UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
 {

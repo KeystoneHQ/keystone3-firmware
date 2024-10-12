@@ -24,7 +24,7 @@ fn get_screen_scaling_factor() -> f64 {
     1.0 // Default value for non-macOS systems
 }
 
-pub fn continuously_read_qr_code_from_screen<G>(on_qr_code_detected: G) -> Result<()>
+pub fn continuously_read_qr_code_from_screen<G>(on_qr_code_detected: G, max_loop_count: u32) -> Result<()>
 where
     G: Fn(&str) -> bool,
 {
@@ -74,8 +74,8 @@ where
 
     let mut loop_count = 0;
 
-    while loop_count < 128 {
-        println!("Loop count: {}, max: 128", loop_count);
+    while loop_count < max_loop_count {
+        println!("Loop count: {}, max: {}", loop_count, max_loop_count);
         match capture_and_decode(qr_area) {
             Ok((content, new_area)) => {
                 if on_qr_code_detected(&content) {

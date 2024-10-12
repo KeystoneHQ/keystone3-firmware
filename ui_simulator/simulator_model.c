@@ -629,7 +629,7 @@ static bool on_qr_detected(const char *qrString)
 
 int32_t read_qrcode()
 {
-    read_qr_code_from_screen(on_qr_detected);
+    read_qr_code_from_screen(on_qr_detected, 64);
     return 0;
 }
 #else

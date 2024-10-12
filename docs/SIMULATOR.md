@@ -62,6 +62,29 @@ You will find that the file is not exists, so you need to parse this JSON text b
 > cd ui_simulator & node tools/read_then_write_json.mjs
 
 ### Reading QR code
+
+#### MacOS
+Currently MacOS simulator supports reading QR code from the screen. 
+
+But needs to generate a certificate for the simulator app first.
+
+1. Open your Keychain Access.
+2. Click `Keychain Access` in the menu bar.
+3. Select `Certificate Assistant` -> `Create a Certificate`.
+4. Set the fileds as following:
+    - `Name`: keystone simulator
+    - `Certificate Type`: Code Signing
+    - `Identity Type`: Self Signed Root
+5. Click `Create`.
+
+Then build and run the simulator app, it will ask for the certificate you just created. Click "Always allow" or it will be annoying. :D
+
+How to use: 
+1. Open the simulator app.
+2. Click the `Scan` button on the home page.
+3. Place your QR code to the top layer of the screen.
+
+#### Windows / Linux
 Simulating the camera is difficult, but we have a workaround.
 
 A file `ui_simulator/assets/qrcode_data.txt` is created when you run the simulator build.

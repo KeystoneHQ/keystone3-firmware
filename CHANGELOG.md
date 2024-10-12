@@ -1,3 +1,17 @@
+## 1.7.2(2024-10-12)
+
+### What's new
+
+1. Supported managing SUI assets using Suiet Wallet
+2. Added confirmation prompt when switching languages
+
+### Improvements
+
+1. Optimized transaction parsing when swapping tokens on Jupiter
+
+
+
+
 ## 1.7.0(2024-09-26)
 ### What's new
 

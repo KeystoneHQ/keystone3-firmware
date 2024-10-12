@@ -552,7 +552,7 @@ int32_t prepare_qrcode()
     return readBytes;
 }
 
-#ifndef COMPILE_WIN_SIMULATOR
+#ifdef COMPILE_MACOS_SIMULATOR
 static struct URParseResult *urResult;
 static UrViewType_t viewType;
 static bool firstQrFlag = true;

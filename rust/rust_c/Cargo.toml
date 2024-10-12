@@ -27,6 +27,8 @@ members = [
     "src/wallet/src/btc_only_wallet",
     "src/wallet/src/multi_coins_wallet",
 
+    "src/simulator",
+
     "src/test_cmd",
     "src/test_cmd/src/btc_test_cmd",
     "src/test_cmd/src/general_test_cmd",
@@ -52,7 +54,10 @@ xrp_rust_c = { path = "./src/xrp", optional = true }
 arweave_rust_c = { path = "./src/arweave", optional = true }
 stellar_rust_c = { path = "./src/stellar", optional = true }
 ton_rust_c = { path = "./src/ton", optional = true }
+simulator_rust_c = { path = "./src/simulator", optional = true }
 
+[workspace.dependencies]
+sim_qr_reader = { path = "../sim_qr_reader"}
 
 [lib]
 crate-type = ["staticlib"]
@@ -75,8 +80,8 @@ debug-memory = [
     "xrp_rust_c/debug-memory",
     "ton_rust_c/debug-memory",
 ]
-simulator = ["multi-coins", "no-allocator", "sui_rust_c/simulator"]
-simulator_btc_only = ["btc-only", "no-allocator"]
+simulator = ["multi-coins", "no-allocator", "sui_rust_c/simulator", "simulator_rust_c"]
+simulator_btc_only = ["btc-only", "no-allocator", "simulator_rust_c"]
 no-allocator = []
 default = ["multi-coins"]
 multi-coins = [

@@ -30,18 +30,17 @@ void MpuSetProtection(bool en)
 
 void MpuSetOtpProtection(bool en)
 {
-    
-}
 
+}
 
 void NftLockQuit()
 {
-    
+
 }
 
 void NftLockDecodeTouchQuit()
 {
-    
+
 }
 
 int32_t GetUpdatePubKey(uint8_t *pubKey)
@@ -553,6 +552,87 @@ int32_t prepare_qrcode()
     return readBytes;
 }
 
+#ifndef COMPILE_WIN_SIMULATOR
+static struct URParseResult *urResult;
+static UrViewType_t viewType;
+static bool firstQrFlag = true;
+static PtrDecoder decoder = NULL;
+
+static void reset_qr_state()
+{
+    firstQrFlag = true;
+    decoder = NULL;
+}
+
+static bool on_qr_detected(const char *qrString)
+{
+    printf("qrString: %s\r\n", qrString);
+    if (firstQrFlag)
+    {
+        QRProtocol t = infer_qrcode_type(qrString);
+        switch (t)
+        {
+        case QRCodeTypeText:
+            urResult = parse_qrcode_text(qrString);
+            break;
+        default:
+            urResult = parse_ur(qrString);
+            break;
+        }
+        if (urResult->error_code == 0)
+        {
+            if (urResult->is_multi_part == 0)
+            {
+                // single qr code
+                firstQrFlag = true;
+                viewType.viewType = urResult->t;
+                viewType.urType = urResult->ur_type;
+                handleURResult(urResult, NULL, viewType, false);
+                return true;
+            }
+            else
+            {
+                // first qr code
+                firstQrFlag = false;
+                decoder = urResult->decoder;
+            }
+        }
+    }
+    else
+    {
+        struct URParseMultiResult *MultiurResult = receive(qrString, decoder);
+        if (MultiurResult->error_code == 0)
+        {
+            if (MultiurResult->is_complete)
+            {
+                firstQrFlag = true;
+                viewType.viewType = MultiurResult->t;
+                viewType.urType = MultiurResult->ur_type;
+                handleURResult(NULL, MultiurResult, viewType, true);
+                return true;
+            }
+        }
+        else
+        {
+            printf("error code: %d\r\n", MultiurResult->error_code);
+            printf("error message: %s\r\n", MultiurResult->error_message);
+            return true;
+        }
+        if (!(MultiurResult->is_complete))
+        {
+            free_ur_parse_multi_result(MultiurResult);
+        }
+    }
+
+    return false;
+}
+
+int32_t read_qrcode()
+{
+    read_qr_code_from_screen(on_qr_detected);
+    return 0;
+}
+#else
 int32_t read_qrcode()
 {
     UrViewType_t viewType;
@@ -640,6 +720,7 @@ int32_t read_qrcode()
         i++;
     }
 }
+#endif
 
 bool GetEnsName(const char *addr, char *name) {
     return false;

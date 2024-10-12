@@ -1,0 +1,12 @@
+[package]
+name = "simulator_rust_c"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+sim_qr_reader = { workspace = true }
+cty = "0.2.2"
+cstr_core = "0.2.6"
+common_rust_c = { path = "../common" }

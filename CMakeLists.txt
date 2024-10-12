@@ -351,4 +351,20 @@ else()
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
         target_link_libraries(${PROJECT_NAME} PRIVATE windows ntdll)
     endif()
+
+    if(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+        set(COMPILE_MAC_SIMULATOR ON)
+        # add framework for MacOS simulator to scan QR code
+        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework CoreFoundation")
+        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework CoreGraphics")
+        
+        set(CODESIGN_IDENTITY "keystone simulator")
+        set(ENTITLEMENTS_FILE "${CMAKE_SOURCE_DIR}/entitlements.plist")
+        set(CODESIGN_COMMAND codesign --force --options runtime --entitlements ${ENTITLEMENTS_FILE} --sign "${CODESIGN_IDENTITY}")
+        add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CODESIGN_COMMAND} ${PROJECT_NAME}
+            COMMENT "Signing the executable"
+        )
+    endif()
 endif()

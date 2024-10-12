@@ -127,7 +127,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
 #ifndef COMPILE_SIMULATOR
         "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Transaction Raw Data\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSuiDetail\",\"text_len_func\":\"GetSuiDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
 #else
-        PC_SIMULATOR_PATH "/page_eth.json",
+        PC_SIMULATOR_PATH "/page_sui.json",
 #endif
         GuiGetSuiData,
         NULL,

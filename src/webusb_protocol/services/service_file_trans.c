@@ -267,6 +267,10 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
     uint32_t tlvNumber, offset = UINT32_MAX, fileDataSize = UINT32_MAX;
     uint8_t *fileData = NULL;
 
+    if (!g_isReceivingFile) {
+        return NULL;
+    }
+
     CHECK_POINTER(g_fileTransTimeOutTimer);
     osTimerStart(g_fileTransTimeOutTimer, FILE_TRANS_TIME_OUT);
 

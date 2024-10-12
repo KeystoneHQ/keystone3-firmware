@@ -352,6 +352,7 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
     uint8_t md5Result[16];
     uint8_t hash[32];
     int ret = 0;
+
     if (!g_isReceivingFile) {
         return NULL;
     }
@@ -491,7 +492,6 @@ static void WriteNftToFlash(void)
     uint32_t readBytes = 0;
     int len;
     int i = 0;
-    
     const char *filePath = "1:nft.bin";
     ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
     if (ret) {

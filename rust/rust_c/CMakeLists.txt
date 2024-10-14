@@ -1,20 +1,12 @@
-set(LIB_NAME librust_c.a)
-set(RUST_C_DIR ${RUST_DIR}/rust_c)
+include(rust_c.cmake)
 
 if(NOT BUILD_TYPE STREQUAL "Simulator")
-    if(BTC_ONLY)
-        set(CBINDGEN_CONFIG_PATH ${RUST_C_DIR}/cbindgen_btc_only.toml)
-    else()
-        set(CBINDGEN_CONFIG_PATH ${RUST_C_DIR}/cbindgen.toml)
-    endif()
-
-    set(CARGO_TOML_PATH ${RUST_C_DIR}/Cargo.toml)
     if(BTC_ONLY)
         set(CARGO_FLAG --manifest-path ${CARGO_TOML_PATH} --release --target ${CARGO_ARM_TARGET} --no-default-features --features btc-only)
     else()
         set(CARGO_FLAG --manifest-path ${CARGO_TOML_PATH} --release --target ${CARGO_ARM_TARGET})
     endif()
-    set(CBINDGEN_FLAG ${RUST_C_DIR} --config ${CBINDGEN_CONFIG_PATH} --output ${TARGET_PATH}/librust_c.h --lang c)
+
 
     if(DEFINED DEBUG_MEMORY)
         message(STATUS "build with DEBUG_MEMORY")
@@ -27,24 +19,16 @@ if(NOT BUILD_TYPE STREQUAL "Simulator")
     set(COPY_COMMAND  cp ${RUST_C_DIR}/target/${CARGO_ARM_TARGET}/release/${LIB_NAME} ${TARGET_PATH})
 
     add_custom_target(rust_c ALL
-        COMMAND rustup run nightly-2023-12-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
         COMMAND ${CBINDGEN_EXE} ${CBINDGEN_FLAG}
+        COMMAND rustup run nightly-2023-12-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
         COMMAND ${COPY_COMMAND}
     )
 else()
-    if(BTC_ONLY)
-        set(CBINDGEN_CONFIG_PATH ${RUST_C_DIR}/cbindgen_btc_only.toml)
-    else()
-        set(CBINDGEN_CONFIG_PATH ${RUST_C_DIR}/cbindgen.toml)
-    endif()
-
-    set(CARGO_TOML_PATH ${RUST_C_DIR}/Cargo.toml)
     if(BTC_ONLY)
         set(CARGO_FLAG --manifest-path ${CARGO_TOML_PATH} --release --no-default-features --features simulator_btc_only)
     else()
         set(CARGO_FLAG --manifest-path ${CARGO_TOML_PATH} --release --no-default-features --features simulator)
     endif()
-    set(CBINDGEN_FLAG ${RUST_C_DIR} --config ${CBINDGEN_CONFIG_PATH} --output ${TARGET_PATH}/librust_c.h --lang c)
 
     if(DEFINED DEBUG_MEMORY)
         message(STATUS "build with DEBUG_MEMORY")
@@ -56,8 +40,8 @@ else()
     set(COPY_COMMAND  cp ${RUST_C_DIR}/target/release/${LIB_NAME} ${TARGET_PATH})
 
     add_custom_target(rust_c ALL
-        COMMAND rustup run nightly-2023-12-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
         COMMAND ${CBINDGEN_EXE} ${CBINDGEN_FLAG}
+        COMMAND rustup run nightly-2023-12-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
         COMMAND ${COPY_COMMAND}
     )
 endif()

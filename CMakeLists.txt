@@ -353,7 +353,6 @@ else()
     endif()
 
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
-        set(COMPILE_MAC_SIMULATOR ON)
         # add framework for MacOS simulator to scan QR code
         target_link_libraries(${PROJECT_NAME} PRIVATE "-framework CoreFoundation")
         target_link_libraries(${PROJECT_NAME} PRIVATE "-framework CoreGraphics")

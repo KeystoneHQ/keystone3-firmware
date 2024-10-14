@@ -124,8 +124,6 @@ void ProcessURService(EAPDURequestPayload_t *payload)
         HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), g_requestID, PRS_PARSING_ERROR);
         return;
     }
-    printf("urResult->viewtype = %d\n", urResult->t);
-    printf("urResult->ur_type = %d\n", urResult->ur_type);
     UrViewType_t urViewType;
     urViewType.viewType = urResult->t;
     urViewType.urType = urResult->ur_type;
@@ -168,7 +166,6 @@ void ProcessURService(EAPDURequestPayload_t *payload)
         const char *data = _("usb_transport_mismatched_wallet_desc");
         GotoFailPage(PRS_PARSING_MISMATCHED_WALLET, data);
     } else {
-        printf("urResult->error_code = %d\n", checkResult->error_code);
         GotoFailPage(PRS_PARSING_ERROR, checkResult->error_message);
     }
 #endif

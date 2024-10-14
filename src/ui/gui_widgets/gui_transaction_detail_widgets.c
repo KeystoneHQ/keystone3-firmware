@@ -229,7 +229,6 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
         }
         UREncodeResult *urResult = func();
         if (urResult->error_code == 0) {
-            printf("data = %s\n", urResult->data);
             HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), RSP_SUCCESS_CODE);
         } else {
             HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), GetCurrentUSParsingRequestID(), PRS_PARSING_ERROR);

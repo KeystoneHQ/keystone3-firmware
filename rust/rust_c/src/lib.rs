@@ -54,3 +54,8 @@ use tron_rust_c;
 #[cfg(feature = "multi-coins")]
 #[allow(unused)]
 use xrp_rust_c;
+
+#[cfg(feature = "simulator")]
+#[cfg(target_os = "macos")]
+#[allow(unused)]
+use simulator_rust_c;

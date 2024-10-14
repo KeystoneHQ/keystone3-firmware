@@ -5,7 +5,6 @@ after_includes = "#define BUILD_MULTI_COINS\n#define SIMPLERESPONSE_C_CHAR_MAX_L
 [defines]
 "feature = multi-coins" = "BUILD_MULTI_COINS"
 
-
 [parse]
 parse_deps = true
 include = [
@@ -29,7 +28,8 @@ include = [
     "multi_coins_wallet_rust_c",
     "test_cmd",
     "btc_test_cmd",
-    "general_test_cmd"
+    "general_test_cmd",
+    "simulator_rust_c",
 ]
 extra_bindings = [
     "common_rust_c",
@@ -51,7 +51,8 @@ extra_bindings = [
     "multi_coins_wallet_rust_c",
     "test_cmd",
     "btc_test_cmd",
-    "general_test_cmd"
+    "general_test_cmd",
+    "simulator_rust_c",
 ]
 
 [parse.expand]
@@ -76,6 +77,7 @@ crates = [
     "multi_coins_wallet_rust_c",
     "test_cmd",
     "btc_test_cmd",
-    "general_test_cmd"
+    "general_test_cmd",
+    "simulator_rust_c",
 ]
 default_features = true

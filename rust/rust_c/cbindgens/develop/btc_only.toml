@@ -14,7 +14,8 @@ include = [
     "wallet_rust_c",
     "btc_only_wallet_rust_c",
     "test_cmd",
-    "btc_test_cmd"
+    "btc_test_cmd",
+    "simulator_rust_c"
 ]
 extra_bindings = [
     "common_rust_c",
@@ -22,7 +23,8 @@ extra_bindings = [
     "wallet_rust_c",
     "btc_only_wallet_rust_c",
     "test_cmd",
-    "btc_test_cmd"
+    "btc_test_cmd",
+    "simulator_rust_c"
 ]
 
 [parse.expand]
@@ -33,7 +35,8 @@ crates = [
     "wallet_rust_c",
     "btc_only_wallet_rust_c",
     "test_cmd",
-    "btc_test_cmd"
+    "btc_test_cmd",
+    "simulator_rust_c"
 ]
 default_features = false
 features = ["btc-only"]

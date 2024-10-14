@@ -54,7 +54,7 @@ xrp_rust_c = { path = "./src/xrp", optional = true }
 arweave_rust_c = { path = "./src/arweave", optional = true }
 stellar_rust_c = { path = "./src/stellar", optional = true }
 ton_rust_c = { path = "./src/ton", optional = true }
-simulator_rust_c = { path = "./src/simulator", optional = true }
+simulator_rust_c = { path = "./src/simulator", optional = true, default-features = false }
 
 [workspace.dependencies]
 sim_qr_reader = { path = "../sim_qr_reader"}
@@ -80,8 +80,8 @@ debug-memory = [
     "xrp_rust_c/debug-memory",
     "ton_rust_c/debug-memory",
 ]
-simulator = ["multi-coins", "no-allocator", "sui_rust_c/simulator", "simulator_rust_c"]
-simulator_btc_only = ["btc-only", "no-allocator", "simulator_rust_c"]
+simulator = ["multi-coins", "no-allocator", "sui_rust_c/simulator", "simulator_rust_c/multi-coins"]
+simulator_btc_only = ["btc-only", "no-allocator", "simulator_rust_c/btc-only"]
 no-allocator = []
 default = ["multi-coins"]
 multi-coins = [

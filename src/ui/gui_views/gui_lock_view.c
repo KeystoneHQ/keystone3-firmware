@@ -15,6 +15,7 @@
 #include "device_setting.h"
 #include "drv_aw32001.h"
 #include "lv_i18n_api.h"
+#include "gui_model.h"
 
 int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {

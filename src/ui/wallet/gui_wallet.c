@@ -468,7 +468,6 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
     SRAM_FREE(public_keys);
     return g_urEncode;
 }
-#endif
 
 UREncodeResult *GuiGetBitgetWalletData(void)
 {
@@ -511,7 +510,7 @@ UREncodeResult *GuiGetBitgetWalletData(void)
     return g_urEncode;
 }
 
-
+#endif
 
 UREncodeResult *GuiGetOkxWalletData(void)
 {

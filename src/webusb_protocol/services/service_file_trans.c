@@ -308,9 +308,11 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
         return NULL;
     }
 
+    #ifndef BTC_ONLY
     if (!g_isNftFile) {
         DataDecrypt(fileData, fileData, fileDataSize);
     }
+    #endif
     g_fileTransCtrl.offset += fileDataSize;
 
     if (FatfsFileAppend(g_fileTransInfo.fileName, fileData, fileDataSize) != RES_OK) {

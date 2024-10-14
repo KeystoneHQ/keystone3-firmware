@@ -13,14 +13,14 @@ UREncodeResult *GuiGetSpecterWalletBtcData(void);
 UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index);
 UREncodeResult *GuiGetArConnectData(void);
 UREncodeResult *GuiGetCompanionAppData(void);
+UREncodeResult *GuiGetOkxWalletData(void);
+UREncodeResult *GuiGetBitgetWalletData(void);
 #ifndef COMPILE_SIMULATOR
 UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType);
 UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType);
 #endif
 UREncodeResult *GuiGetMetamaskData(void);
 #endif
-UREncodeResult *GuiGetOkxWalletData(void);
-UREncodeResult *GuiGetBitgetWalletData(void);
 #ifndef BTC_ONLY
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin);

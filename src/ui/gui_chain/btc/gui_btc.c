@@ -13,9 +13,9 @@
 #ifdef BTC_ONLY
 #include "gui_multisig_transaction_signature_widgets.h"
 #include "gui_btc_home_widgets.h"
-#else
-#include "gui_chain_components.h"
 #endif
+#include "gui_chain_components.h"
+
 
 #define CHECK_FREE_PARSE_RESULT(result)                       \
     if (result != NULL)                                       \

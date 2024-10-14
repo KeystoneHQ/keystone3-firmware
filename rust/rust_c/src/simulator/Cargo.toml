@@ -9,4 +9,9 @@ edition = "2021"
 sim_qr_reader = { workspace = true }
 cty = "0.2.2"
 cstr_core = "0.2.6"
-common_rust_c = { path = "../common" }
+common_rust_c = { path = "../common", default-features = false }
+
+[features]
+multi-coins = ["common_rust_c/multi-coins"]
+btc-only = ["common_rust_c/btc-only"]
+default = ["multi-coins"]

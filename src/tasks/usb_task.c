@@ -47,9 +47,9 @@ void CloseUsb()
 void OpenUsb()
 {
     PubValueMsg(USB_MSG_INIT, 0);
-    #ifndef BTC_ONLY    
+#ifndef BTC_ONLY
     ClearUSBRequestId();
-    #endif
+#endif
 }
 
 bool GetUsbState(void)

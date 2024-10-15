@@ -714,7 +714,12 @@ fn get_cardano_derivation_path(path: CryptoKeyPath) -> R<CryptoKeyPath> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use address::cardano_get_base_address;
     use alloc::vec;
+    use app_cardano::address::AddressType;
+    use keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv;
+    use bitcoin::bip32::Xpriv ;
+    use ur_registry::crypto_key_path::PathComponent;
     use ur_registry::crypto_key_path::PathComponent;
 
     #[test]
@@ -734,5 +739,59 @@ mod tests {
         assert_eq!(result.is_ok(), true);
 
         assert_eq!(result.unwrap().get_path().unwrap(), "2/0");
+    }
+
+    #[test]
+    fn test_sign_data() {
+        let payload = hex::encode("hello world");
+        let expected_message_hash = "42d1854b7d69e3b57c64fcc7b4f64171b47dff43fba6ac0499ff437f";
+        let message_hash = hex::encode(cryptoxide::hashing::blake2b_224(
+            hex::decode(&payload).unwrap().as_slice(),
+        ));
+        assert_eq!(expected_message_hash, message_hash);
+        let master_key_expected = "402b03cd9c8bed9ba9f9bd6cd9c315ce9fcc59c7c25d37c85a36096617e69d418e35cb4a3b737afd007f0688618f21a8831643c0e6c77fc33c06026d2a0fc93832596435e70647d7d98ef102a32ea40319ca8fb6c851d7346d3bd8f9d1492658";
+        let mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+        let passphrase = "";
+        let master_key =
+        keystore::algorithms::ed25519::bip32_ed25519::get_ledger_bitbox02_master_key_by_mnemonic(
+            passphrase.as_bytes(),
+            mnemonic.to_string(),
+        ).unwrap();
+        assert_eq!(master_key_expected, hex::encode(master_key.as_ref()));
+        let bip32_signing_key =
+            keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_icarus_master_key(
+                &master_key.as_ref(),
+                &"m/1852'/1815'/0'".to_string(),
+            )
+            .unwrap();
+        // assert_eq!(
+        //     hex::encode(bip32_signing_key.public().public_key().to_vec()),
+        //     "cd2b047d1a803eee059769cffb3dfd0a4b9327e55bc78aa962d9bd4f720db0b2"
+        // );
+        // assert_eq!(
+        //     hex::encode(bip32_signing_key.chain_code()),
+        //     "914ba07fb381f23c5c09bce26587bdf359aab7ea8f4192adbf93a38fd893ccea"
+        // );
+        // 5840cd2b047d1a803eee059769cffb3dfd0a4b9327e55bc78aa962d9bd4f720db0b2914ba07fb381f23c5c09bce26587bdf359aab7ea8f4192adbf93a38fd893ccea
+        //    cd2b047d1a803eee059769cffb3dfd0a4b9327e55bc78aa962d9bd4f720db0b2914ba07fb381f23c5c09bce26587bdf359aab7ea8f4192adbf93a38fd893ccea
+        let xpub = bip32_signing_key.public();
+        let real_testnet_xpub = "0d94fa4489745249e9cd999c907f2692e0e5c7ac868a960312ed5d480c59f2dc231adc1ee85703f714abe70c6d95f027e76ee947f361cbb72a155ac8cad6d23f".to_string();
+        assert_eq!(real_testnet_xpub, hex::encode(xpub.as_ref()));
+        let address =
+            app_cardano::address::derive_address(real_testnet_xpub, 0, 0, 0, AddressType::Base, 0)
+                .unwrap();
+        assert_eq!("addr_test1qq2vzmtlgvjrhkq50rngh8d482zj3l20kyrc6kx4ffl3zfqayfawlf9hwv2fzuygt2km5v92kvf8e3s3mk7ynxw77cwq2glhm4", address);
+
+        let private_key =
+            derive_extended_privkey_by_xprv(&bip32_signing_key, &"0/0".to_string()).unwrap();
+        assert_eq!("00e931ab7c17c922c5e905d46991cb590818f49eb39922a15018fc2124e69d41b3c7dfec8d2c21667419404ce6fe0fe6bc9e8e2b361487a59313bb9a0b2322cd", hex::encode(private_key.extended_secret_key_bytes()));
+        let result = app_cardano::transaction::sign_data(
+            &"m/1852'/1815'/0'/0/0".to_string(),
+            &message_hash,
+            master_key,
+        )
+        .unwrap();
+        let signature = hex::encode(result.get_signature());
+        assert_eq!(signature,"56ebf5bbea63aafbf1440cd63c5fbcbe3de799de401d48165a366e10f36c17b490c261ea8a00cf464cf7140732369cc4e333eb6714cabe625abddac1cd9dd20b");
     }
 }

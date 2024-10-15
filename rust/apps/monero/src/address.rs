@@ -1,9 +1,11 @@
 use crate::key::*;
 use crate::structs::{AddressType, Network};
-use crate::utils::keccak256;
+use crate::utils::{calc_subaddress_m, keccak256};
 use alloc::format;
 use alloc::string::{String, ToString};
 use base58_monero::{decode, encode};
+use curve25519_dalek::edwards::EdwardsPoint;
+use curve25519_dalek::scalar::Scalar;
 
 use third_party::hex;
 
@@ -159,6 +161,28 @@ fn pub_keys_to_address(
     encode(&hex::decode(res_hex).unwrap()).unwrap()
 }
 
+pub fn generate_subaddress(
+    public_spend_key: &PublicKey,
+    private_view_key: &PrivateKey,
+    major: u32,
+    minor: u32,
+) -> String {
+    let point = public_spend_key.point.decompress().unwrap();
+    let m = Scalar::from_bytes_mod_order(calc_subaddress_m(
+        &private_view_key.to_bytes(),
+        major,
+        minor,
+    ));
+    let pub_spend_key = PublicKey {
+        point: (point + EdwardsPoint::mul_base(&m)).compress(),
+    };
+    let pub_view_point = PublicKey {
+        point: (pub_spend_key.point.decompress().unwrap() * private_view_key.scalar).compress(),
+    };
+
+    pub_keys_to_address(Network::Mainnet, true, &pub_spend_key, &pub_view_point)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -208,11 +232,31 @@ mod tests {
 
     #[test]
     fn test_pub_keyring_to_address() {
-        let keyring = "fe8d737f9c1cd5fcbf575f96a67894d98d22f482a802e56c62a0c7cb7155226bb44bcea47bab442a7119eb8481752fcccc58601a72818fa9bbf965fb38c16ba4";
+        // kid m/44'/128'/1'
+        let keyring = "ca977af9ef22115fede5e19c03aea87a4b50b276e0198901424831c49b61c3b4b686d1921ac09d53369a00dea6b92d803f11a32df99d97b0aacb2059d2c5bba6";
         let address = pub_keyring_to_address(Network::Mainnet, false, keyring.to_string()).unwrap();
         assert_eq!(
             address,
-            "4BGbk2sxPjajGy4oCbfybHdPXBBUEZFD6K8URfBe1utuK1sFjXCeQi786jqnt6NJYEbFoMsi5D77UVPdqQNhGQBtKXXhe2g"
+            "49JPkSbqqnYH3dngTbHfUKMTQbvUbBpr41DDMgPf7wiJXE9G6aMDoxpEvGqnyKZxPNNT9iqZnJWj8WYtnHne9vAEKpYpbc9"
+        );
+    }
+
+    #[test]
+    fn test_generate_subaddress() {
+        // BIP39 Mnemonic: key stone key stone key stone key stone key stone key stone key stone success
+        let seed = hex::decode("45a5056acbe881d7a5f2996558b303e08b4ad1daffacf6ffb757ff2a9705e6b9f806cffe3bd90ff8e3f8e8b629d9af78bcd2ed23e8c711f238308e65b62aa5f0").unwrap();
+        let major = 0;
+        let minor = 1;
+        let keypair = generate_keypair(&seed, major);
+
+        let public_spend_key = keypair.spend.get_public_key();
+        let private_view_key = keypair.view;
+
+        let address = generate_subaddress(&public_spend_key, &private_view_key, major, minor);
+
+        assert_eq!(
+            address,
+            "84o4iSLUprPWWPeu4ZZPFm7wHMDkwCm9b8CVQ4YUko9PRd453PvhZ8YPjrDRJ4VPrGj2Wxx7KJgFT6JnnbEfapZGUvPSFuM"
         );
     }
 }

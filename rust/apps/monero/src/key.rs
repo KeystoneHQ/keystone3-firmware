@@ -105,10 +105,12 @@ impl KeyPair {
     }
 
     pub fn get_public_sub_spend(&self, major: u32, minor: u32) -> PublicKey {
-        let subaddress_spend_key =
-            self.spend.scalar + Scalar::from_bytes_mod_order(self.get_m(major, minor));
+        let point = self.get_public_spend().point.decompress().unwrap();
+        let m = Scalar::from_bytes_mod_order(self.get_m(major, minor));
 
-        PrivateKey::new(subaddress_spend_key).get_public_key()
+        PublicKey {
+            point: (point + EdwardsPoint::mul_base(&m)).compress(),
+        }
     }
 
     pub fn get_public_sub_view(&self, major: u32, minor: u32) -> PublicKey {
@@ -129,6 +131,10 @@ pub fn generate_keypair(seed: &[u8], major: u32) -> KeyPair {
     KeyPair::from_raw_private_keys(raw_private_key)
 }
 
+pub fn generate_private_view_key(seed: &[u8], major: u32) -> PrivateKey {
+    generate_keypair(seed, major).view
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -140,6 +146,8 @@ mod tests {
         let keypair = generate_keypair(&seed, 0);
         let public_spend_key = keypair.spend.get_public_key();
         let public_view_key = keypair.view.get_public_key();
+
+        let private_view_key = generate_private_view_key(&seed, 0);
 
         assert_eq!(
             hex::encode(keypair.spend.to_bytes()),
@@ -157,6 +165,10 @@ mod tests {
             hex::encode(public_view_key.as_bytes()),
             "e18a5360ae4b2ff71bf91c5a626e14fc2395608375b750526bc0962ed27237a1"
         );
+        assert_eq!(
+            hex::encode(private_view_key.to_bytes()),
+            hex::encode(keypair.view.to_bytes())
+        )
     }
 
     #[test]

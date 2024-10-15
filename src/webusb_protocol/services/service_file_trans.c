@@ -266,6 +266,7 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
     Tlv_t tlvArray[2] = {0};
     uint32_t tlvNumber, offset = UINT32_MAX, fileDataSize = UINT32_MAX;
     uint8_t *fileData = NULL;
+    bool isTail = false;
 
     if (!g_isReceivingFile) {
         return NULL;
@@ -296,11 +297,22 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
         return NULL;
     }
 
-    if (fileDataSize > g_fileTransInfo.fileSize ||
-            offset > g_fileTransInfo.fileSize ||
-            offset + fileDataSize > g_fileTransInfo.fileSize) {
-        printf("Invalid offset or file data size\n");
+    if (offset > g_fileTransInfo.fileSize || fileDataSize > g_fileTransInfo.fileSize) {
+        printf("file trans data overflow\n");
         return NULL;
+    }
+
+    if (offset + fileDataSize > g_fileTransInfo.fileSize) {
+        // data will encrypt frame to expand 16 bytes
+        if (offset + fileDataSize - g_fileTransInfo.fileSize < 16) {
+            isTail = true;
+        } else {
+            printf("offset = %d, file size = %d\n", offset, g_fileTransInfo.fileSize);
+            printf("file data = %d\n", fileDataSize);
+            printf("offset + filedata = %d\n", offset + fileDataSize);
+            printf("file trans data overflow\n");
+            return NULL;
+        }
     }
 
     if (g_fileTransCtrl.offset != offset) {
@@ -308,11 +320,14 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
         return NULL;
     }
 
-    #ifndef BTC_ONLY
+#ifndef BTC_ONLY
     if (!g_isNftFile) {
         DataDecrypt(fileData, fileData, fileDataSize);
+        if (isTail) {
+            fileDataSize = g_fileTransInfo.fileSize - offset;
+        }
     }
-    #endif
+#endif
     g_fileTransCtrl.offset += fileDataSize;
 
     if (FatfsFileAppend(g_fileTransInfo.fileName, fileData, fileDataSize) != RES_OK) {

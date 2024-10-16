@@ -104,7 +104,14 @@ pub extern "C" fn btc_sign_psbt(
     master_fingerprint: PtrBytes,
     master_fingerprint_len: u32,
 ) -> *mut UREncodeResult {
-    btc_sign_psbt_dynamic(ptr, seed, seed_len, master_fingerprint, master_fingerprint_len, FRAGMENT_MAX_LENGTH_DEFAULT.clone())
+    btc_sign_psbt_dynamic(
+        ptr,
+        seed,
+        seed_len,
+        master_fingerprint,
+        master_fingerprint_len,
+        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+    )
 }
 
 #[no_mangle]
@@ -115,7 +122,14 @@ pub extern "C" fn btc_sign_psbt_unlimited(
     master_fingerprint: PtrBytes,
     master_fingerprint_len: u32,
 ) -> *mut UREncodeResult {
-    btc_sign_psbt_dynamic(ptr, seed, seed_len, master_fingerprint, master_fingerprint_len, FRAGMENT_UNLIMITED_LENGTH.clone())
+    btc_sign_psbt_dynamic(
+        ptr,
+        seed,
+        seed_len,
+        master_fingerprint,
+        master_fingerprint_len,
+        FRAGMENT_UNLIMITED_LENGTH.clone(),
+    )
 }
 
 #[no_mangle]

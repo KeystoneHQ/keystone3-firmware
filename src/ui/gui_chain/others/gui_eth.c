@@ -715,7 +715,7 @@ static char *CalcSymbol(void *param)
     }
 
     if (isErc20Transfer(eth)) {
-        return "Unit";
+        return "ERC-20 Token";
     }
 
     EvmNetwork_t network = _FindNetwork(eth->chain_id);
@@ -1263,29 +1263,6 @@ static bool GetEthErc20ContractData(void *parseResult)
     }
     g_erc20Name = "Erc20";
     FixRecipientAndValueWhenErc20Contract(result->data->detail->input, 0);
-    return true;
-}
-
-bool GetErc20WarningExist(void *indata, void *param)
-{
-    TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
-    //make sure is erc20 transfer
-    if (!isErc20Transfer(result->data)) {
-        return false;
-    }
-    //make sure contract data exist
-    if (g_erc20ContractData == NULL) {
-        return false;
-    }
-    //check known erc20 contract list
-    TransactionParseResult_EthParsedErc20Transaction *data = (TransactionParseResult_EthParsedErc20Transaction *)g_erc20ContractData;
-    char *to = result->data->detail->to;
-    for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++) {
-        Erc20Contract_t contract = ERC20_CONTRACTS[i];
-        if (strcasecmp(contract.contract_address, to) == 0) {
-            return false;
-        }
-    }
     return true;
 }
 

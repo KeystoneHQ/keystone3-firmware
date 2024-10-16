@@ -715,7 +715,7 @@ static char *CalcSymbol(void *param)
     }
 
     if (isErc20Transfer(eth)) {
-        return "ERC-20 Token";
+        return "Unit";
     }
 
     EvmNetwork_t network = _FindNetwork(eth->chain_id);
@@ -890,7 +890,6 @@ static uint8_t GetEthPublickeyIndex(char* rootPath)
 // pase result
 void *GuiGetEthData(void)
 {
-    printf("==========here =====");
     memset_s(g_fromEthEnsName, sizeof(g_fromEthEnsName), 0, sizeof(g_fromEthEnsName));
     memset_s(g_toEthEnsName, sizeof(g_toEthEnsName), 0, sizeof(g_toEthEnsName));
     g_contractDataExist = false;

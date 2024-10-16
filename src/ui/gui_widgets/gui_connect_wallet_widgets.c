@@ -41,6 +41,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true},
+    {WALLET_LIST_LEAP, &walletListKeplr, true},
     {WALLET_LIST_HELIUM, &walletListHelium, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
     {WALLET_LIST_ZEUS, &walletListZeus, true},
@@ -147,6 +148,10 @@ static const lv_img_dsc_t *g_UniSatCoinArray[5] = {
 static const lv_img_dsc_t *g_keplrCoinArray[8] = {
     &coinAtom, &coinOsmo, &coinBld, &coinAkt,
     &coinXprt, &coinAxl, &coinBoot, &coinCro,
+};
+
+static const lv_img_dsc_t *g_leapCoinArray[1] = {
+    &coinAtom,
 };
 
 static const lv_img_dsc_t *g_arconnectCoinArray[1] = {
@@ -1074,6 +1079,19 @@ static void AddKeplrCoinsAndAddressUI(void)
     lv_obj_align(label, LV_ALIGN_CENTER, 150, 30);
 }
 
+static void AddLeapCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 1; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_leapCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 static void AddSolflareCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -1165,7 +1183,6 @@ UREncodeResult *GuiGetKeplrData(void)
 {
     return GuiGetKeplrDataByIndex(GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
 }
-
 
 UREncodeResult *GuiGetADAData(void)
 {
@@ -1277,6 +1294,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_KEPLR:
         func = GuiGetKeplrData;
         AddKeplrCoinsAndAddressUI();
+        break;
+    case WALLET_LIST_LEAP:
+        func = GuiGetLeapData;
+        AddLeapCoins();
         break;
     case WALLET_LIST_ARCONNECT:
         func = GuiGetArConnectData;

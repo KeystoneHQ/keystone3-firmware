@@ -275,7 +275,6 @@ UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
     return g_urEncode;
 }
 
-
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin)
 {
     uint8_t mfp[4] = {0};
@@ -396,6 +395,36 @@ UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index)
     return g_urEncode;
 }
 
+UREncodeResult *GuiGetLeapData()
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_KeplrAccount publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_KeplrAccount));
+    GuiChainCoinType chains[2] = {
+        CHAIN_ATOM,
+        CHAIN_EVMOS,
+    };
+    KeplrAccount keys[2];
+    publicKeys->data = keys;
+    publicKeys->size = 2;
+
+    for (uint8_t i = 0; i < 2; i++) {
+        const CosmosChain_t *chain = GuiGetCosmosChain(chains[i]);
+        keys[i].xpub = GetCurrentAccountPublicKey(chain->xpubType);
+        keys[i].name = "Account-1";
+        keys[i].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[i].path, BUFFER_SIZE_32, "M/44'/%u'/0'/0/0", chain->coinType);
+    }
+
+    g_urEncode = get_connect_keplr_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    for (uint8_t i = 0; i < 2; i++) {
+        SRAM_FREE(keys[i].path);
+    }
+    SRAM_FREE(publicKeys);
+    return g_urEncode;
+}
+
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
 {
     uint8_t mfp[4] = {0};
@@ -408,7 +437,6 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
     CHECK_CHAIN_PRINT(g_urEncode);
     return g_urEncode;
 }
-
 
 UREncodeResult *GuiGetKeystoneWalletData(void)
 {
@@ -444,7 +472,6 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
 
     keys[4].path = GetXPubPath(XPUB_TYPE_DASH);
     keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
-
 
     keys[5].path = GetXPubPath(XPUB_TYPE_LTC);
     keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_LTC);

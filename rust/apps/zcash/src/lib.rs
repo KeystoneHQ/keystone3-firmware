@@ -1,0 +1,32 @@
+#![no_std]
+#![feature(error_in_core)]
+extern crate alloc;
+
+pub mod errors;
+
+mod structs;
+
+use errors::{Result, ZcashError};
+
+use alloc::string::{String, ToString};
+use keystore::algorithms::zcash::vendor::{
+    zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
+    zcash_protocol::consensus::MainNetwork,
+};
+use pczt::protos::{prost::Message, PartiallyCreatedTransaction};
+
+pub fn get_address(ufvk_text: &str) -> Result<String> {
+    let ufvk = UnifiedFullViewingKey::decode(&MainNetwork, ufvk_text)
+        .map_err(|e| ZcashError::GenerateAddressError(e.to_string()))?;
+    let (address, _) = ufvk
+        .default_address(UnifiedAddressRequest::all().unwrap())
+        .map_err(|e| ZcashError::GenerateAddressError(e.to_string()))?;
+    Ok(address.encode(&MainNetwork))
+}
+
+pub fn sign_transaction(tx: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
+    let mut transaction = tx.clone();
+    let pczt = PartiallyCreatedTransaction::decode(transaction)?;
+    
+}
+

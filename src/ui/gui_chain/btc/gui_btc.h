@@ -3,7 +3,8 @@
 
 #include "rust.h"
 
-UREncodeResult *GuiGetSignQrCodeData(void);
+UREncodeResult *GuiGetBtcSignUrDataUnlimited(void);
+UREncodeResult *GuiGetBtcSignQrCodeData(void);
 void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void FreePsbtUxtoMemory(void);
 void FreeBtcMsgMemory(void);

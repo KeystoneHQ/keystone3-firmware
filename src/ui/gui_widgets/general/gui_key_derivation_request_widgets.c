@@ -36,7 +36,6 @@ typedef enum {
     TILE_BUTT,
 } PAGE_TILE;
 
-
 typedef enum HardwareCallV1AdaDerivationAlgo {
     HD_STANDARD_ADA = 0,
     HD_LEDGER_BITBOX_ADA,
@@ -128,7 +127,7 @@ static void RecalcCurrentWalletIndex(char *origin)
         g_walletIndex = WALLET_LIST_ETERNL;
     } else if (strcmp("Typhon Extension", origin) == 0) {
         g_walletIndex = WALLET_LIST_TYPHON;
-    } else if (strcmp("Leap Wallet", origin) == 0) {
+    } else if (strcmp("Leap Wallet Extension", origin) == 0) {
         g_walletIndex = WALLET_LIST_LEAP;
     } else if (strcmp("Begin", origin) == 0) {
         g_walletIndex = WALLET_LIST_BEGIN;
@@ -480,8 +479,6 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
     });
     return g_hardwareCallParamsCheckResult;
 }
-
-
 
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
@@ -970,8 +967,6 @@ static bool IsCardano()
 {
     return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON || g_walletIndex == WALLET_LIST_BEGIN;
 }
-
-
 
 // hardware call version 1 need another CompareDerivationHandler
 static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e)

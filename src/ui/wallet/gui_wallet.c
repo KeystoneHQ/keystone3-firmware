@@ -400,15 +400,16 @@ UREncodeResult *GuiGetLeapData()
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_KeplrAccount publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_KeplrAccount));
-    GuiChainCoinType chains[2] = {
+    GuiChainCoinType chains[3] = {
         CHAIN_ATOM,
         CHAIN_EVMOS,
+        CHAIN_RUNE,
     };
-    KeplrAccount keys[2];
+    KeplrAccount keys[3];
     publicKeys->data = keys;
-    publicKeys->size = 2;
+    publicKeys->size = 3;
 
-    for (uint8_t i = 0; i < 2; i++) {
+    for (uint8_t i = 0; i < 3; i++) {
         const CosmosChain_t *chain = GuiGetCosmosChain(chains[i]);
         keys[i].xpub = GetCurrentAccountPublicKey(chain->xpubType);
         keys[i].name = "Account-1";
@@ -418,7 +419,7 @@ UREncodeResult *GuiGetLeapData()
 
     g_urEncode = get_connect_keplr_wallet_ur(mfp, sizeof(mfp), publicKeys);
     CHECK_CHAIN_PRINT(g_urEncode);
-    for (uint8_t i = 0; i < 2; i++) {
+    for (uint8_t i = 0; i < 3; i++) {
         SRAM_FREE(keys[i].path);
     }
     SRAM_FREE(publicKeys);

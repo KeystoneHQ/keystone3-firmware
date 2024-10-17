@@ -50,7 +50,7 @@ typedef enum {
     TON_NATIVE,
     TON_CHECKSUM,
     LEDGER_BITBOX02,
-    MONERO_SECP256K1,
+    EDWARDS_25519,
 } PublicInfoType_t;
 
 typedef struct {
@@ -210,17 +210,17 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_TON_BIP39,             ED25519,       "ton_bip39",                "M/44'/607'/0'"    },
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
-    // MONERO_SECP256K1
-    {XPUB_TYPE_MONERO_0,              MONERO_SECP256K1, "monero_0",              "M/44'/128'/0'"    },
-    {XPUB_TYPE_MONERO_1,              MONERO_SECP256K1, "monero_1",              "M/44'/128'/1'"    },
-    {XPUB_TYPE_MONERO_2,              MONERO_SECP256K1, "monero_2",              "M/44'/128'/2'"    },
-    {XPUB_TYPE_MONERO_3,              MONERO_SECP256K1, "monero_3",              "M/44'/128'/3'"    },
-    {XPUB_TYPE_MONERO_4,              MONERO_SECP256K1, "monero_4",              "M/44'/128'/4'"    },
-    {XPUB_TYPE_MONERO_5,              MONERO_SECP256K1, "monero_5",              "M/44'/128'/5'"    },
-    {XPUB_TYPE_MONERO_6,              MONERO_SECP256K1, "monero_6",              "M/44'/128'/6'"    },
-    {XPUB_TYPE_MONERO_7,              MONERO_SECP256K1, "monero_7",              "M/44'/128'/7'"    },
-    {XPUB_TYPE_MONERO_8,              MONERO_SECP256K1, "monero_8",              "M/44'/128'/8'"    },
-    {XPUB_TYPE_MONERO_9,              MONERO_SECP256K1, "monero_9",              "M/44'/128'/9'"    },
+    // EDWARDS_25519
+    {XPUB_TYPE_MONERO_0,              EDWARDS_25519,    "monero_0",              "M/44'/128'/0'"    },
+    {XPUB_TYPE_MONERO_1,              EDWARDS_25519,    "monero_1",              "M/44'/128'/1'"    },
+    {XPUB_TYPE_MONERO_2,              EDWARDS_25519,    "monero_2",              "M/44'/128'/2'"    },
+    {XPUB_TYPE_MONERO_3,              EDWARDS_25519,    "monero_3",              "M/44'/128'/3'"    },
+    {XPUB_TYPE_MONERO_4,              EDWARDS_25519,    "monero_4",              "M/44'/128'/4'"    },
+    {XPUB_TYPE_MONERO_5,              EDWARDS_25519,    "monero_5",              "M/44'/128'/5'"    },
+    {XPUB_TYPE_MONERO_6,              EDWARDS_25519,    "monero_6",              "M/44'/128'/6'"    },
+    {XPUB_TYPE_MONERO_7,              EDWARDS_25519,    "monero_7",              "M/44'/128'/7'"    },
+    {XPUB_TYPE_MONERO_8,              EDWARDS_25519,    "monero_8",              "M/44'/128'/8'"    },
+    {XPUB_TYPE_MONERO_9,              EDWARDS_25519,    "monero_9",              "M/44'/128'/9'"    },
 #else
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },
@@ -254,7 +254,7 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case LEDGER_BITBOX02:
         ASSERT(ledgerBitbox02MasterKey);
         return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, path);
-    case MONERO_SECP256K1:
+    case EDWARDS_25519:
         return get_extended_monero_pubkeys_by_seed(seed, len, path);
 #ifndef BTC_ONLY
     case RSA_KEY: {

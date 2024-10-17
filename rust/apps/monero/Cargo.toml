@@ -9,6 +9,11 @@ edition = "2021"
 curve25519-dalek = { version = "4", default-features = false }
 base58-monero = { version = "2", default-features = false }
 keystore = { path = "../../keystore", default-features = false }
+zeroize = { version = "^1.5", default-features = false, features = ["zeroize_derive"] }
+rand_core = { version = "0.6", default-features = false, features = ["getrandom"] }
 third_party = { path = "../../third_party" }
 app_utils = { path = "../utils" }
 rust_tools = { path = "../../tools" }
+monero-clsag-mirror = { version = "0.1.0", default-features = false }
+monero-primitives-mirror = { version = "0.1.0", default-features = false }
+monero-generators-mirror = { version ="0.4.0", default-features = false }

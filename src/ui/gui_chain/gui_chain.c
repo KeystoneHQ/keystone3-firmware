@@ -104,6 +104,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case CardanoTx:
     case CardanoSignData:
     case CardanoCatalystVotingRegistration:
+    case CardanoSignCip8Data:
         return CHAIN_ADA;
     case XRPTx:
         return CHAIN_XRP;
@@ -126,7 +127,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
 #ifndef BTC_ONLY
 bool IsMessageType(uint8_t type)
 {
-    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage || type == CardanoSignData;
+    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage || type == CardanoSignData || type == CardanoSignCip8Data;
 }
 
 bool isTonSignProof(uint8_t type)
@@ -181,6 +182,9 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
         break;
     case CardanoSignData:
         func = GuiGetAdaSignSignDataQrCodeData;
+        break;
+    case CardanoSignCip8Data:
+        func = GuiGetAdaSignSignCip8DataQrCodeData;
         break;
     case CardanoCatalystVotingRegistration:
         func = GuiGetAdaSignCatalystVotingRegistrationQrCodeData;

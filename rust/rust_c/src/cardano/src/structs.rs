@@ -2,8 +2,8 @@ use alloc::boxed::Box;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use app_cardano::structs::{
-    CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignData,
-    ParsedCardanoTx, VotingProcedure, VotingProposal,
+    CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignCip8Data,
+    ParsedCardanoSignData, ParsedCardanoTx, VotingProcedure, VotingProposal,
 };
 use core::ptr::null_mut;
 use third_party::hex;
@@ -172,6 +172,17 @@ impl Free for DisplayCardanoTx {
 
 impl From<ParsedCardanoSignData> for DisplayCardanoSignData {
     fn from(value: ParsedCardanoSignData) -> Self {
+        Self {
+            payload: convert_c_char(value.get_payload()),
+            derivation_path: convert_c_char(value.get_derivation_path()),
+            message_hash: convert_c_char(value.get_message_hash()),
+            xpub: convert_c_char(value.get_xpub()),
+        }
+    }
+}
+
+impl From<ParsedCardanoSignCip8Data> for DisplayCardanoSignData {
+    fn from(value: ParsedCardanoSignCip8Data) -> Self {
         Self {
             payload: convert_c_char(value.get_payload()),
             derivation_path: convert_c_char(value.get_derivation_path()),

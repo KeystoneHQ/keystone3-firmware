@@ -5,6 +5,7 @@ option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 
 if(BUILD_TYPE STREQUAL "Simulator")
     set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
+    set(COMPILE_SIMULATOR ON CACHE BOOL "compile on Simulator target" FORCE)
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")

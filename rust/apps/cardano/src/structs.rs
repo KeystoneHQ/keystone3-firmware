@@ -317,10 +317,16 @@ impl ParsedCardanoTx {
 
     fn judge_network_id(tx: &Transaction) -> u8 {
         match tx.body().network_id() {
-            None => match tx.body().outputs().get(0).address().network_id() {
-                Ok(id) => id,
-                Err(_) => 1,
-            },
+            None => {
+                let outputs = tx.body().outputs();
+                if (outputs.len() == 0) {
+                    return 1;
+                }
+                match outputs.get(0).address().network_id() {
+                    Ok(id) => id,
+                    Err(_) => 1,
+                }
+            }
             Some(id) => match id.kind() {
                 NetworkIdKind::Mainnet => 1,
                 NetworkIdKind::Testnet => 0,

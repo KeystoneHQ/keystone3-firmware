@@ -671,6 +671,35 @@ UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void)
     return encodeResult;
 }
 
+UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t entropy[64];
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        if (GetAdaXPubType() == LEDGER_ADA) {
+            char *mnemonic = NULL;
+            bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
+            encodeResult = cardano_sign_sign_cip8_data_with_ledger_bitbox02(data, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+        } else {
+            encodeResult = cardano_sign_sign_cip8_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+        }
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+}
+
+
+
 
 UREncodeResult *GuiGetAdaSignQrCodeData(void)
 {

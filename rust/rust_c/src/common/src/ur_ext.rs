@@ -4,6 +4,8 @@ use alloc::vec::Vec;
 
 use serde_json::{from_slice, from_value, Value};
 #[cfg(feature = "multi-coins")]
+ur_registry::cardano::cardano_sign_cip8_data_request::CardanoSignCip8DataRequest;
+#[cfg(feature = "multi-coins")]
 use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SignType};
@@ -289,6 +291,13 @@ impl InferViewType for CardanoSignTxHashRequest {
 impl InferViewType for CardanoSignDataRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoSignData)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for CardanoSignCip8DataRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::CardanoSignCip8Data)
     }
 }
 

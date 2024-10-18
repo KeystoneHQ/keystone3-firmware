@@ -1,9 +1,12 @@
 use crate::address::{derive_address, derive_pubkey_hash, AddressType};
 use crate::errors::{CardanoError, R};
 use alloc::collections::BTreeMap;
+use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
+use core::ops::Div;
+
 use app_utils::{impl_internal_struct, impl_public_struct};
 use cardano_serialization_lib::protocol_types::{
     self, Address, BaseAddress, EnterpriseAddress, RewardAddress,
@@ -53,6 +56,14 @@ impl_public_struct!(ParsedCardanoSignData {
     derivation_path: String,
     message_hash: String,
     xpub: String
+});
+
+impl_public_struct!(ParsedCardanoSignCip8Data {
+    payload: String,
+    derivation_path: String,
+    message_hash: String,
+    xpub: String,
+    hash_payload: bool
 });
 
 impl_public_struct!(VotingProcedure {
@@ -195,6 +206,43 @@ impl ParsedCardanoSignData {
                 derivation_path,
                 message_hash: hex::encode(sign_data),
                 xpub,
+            }),
+        }
+    }
+}
+
+impl ParsedCardanoSignCip8Data {
+    pub fn build(
+        sign_data: Vec<u8>,
+        derivation_path: String,
+        xpub: String,
+        hash_payload: bool,
+    ) -> R<Self> {
+        let sign_structure = CardanoSignStructure::from_cbor(sign_data.clone());
+        match sign_structure {
+            Ok(sign_structure) => {
+                let raw_payload = sign_structure.get_payload();
+                let mut payload = String::from_utf8(hex::decode(raw_payload.clone()).unwrap())
+                    .unwrap_or_else(|_| raw_payload.clone());
+                let mut message_hash = hex::encode(raw_payload);
+                if hash_payload {
+                    let hash = blake2b_224(payload.as_bytes());
+                    message_hash = hex::encode(hash);
+                }
+                Ok(Self {
+                    payload,
+                    derivation_path,
+                    message_hash,
+                    xpub,
+                    hash_payload,
+                })
+            }
+            Err(e) => Ok(Self {
+                payload: hex::encode(sign_data.clone()),
+                derivation_path,
+                message_hash: hex::encode(sign_data),
+                xpub,
+                hash_payload,
             }),
         }
     }

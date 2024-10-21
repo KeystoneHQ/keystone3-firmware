@@ -15,11 +15,13 @@ RUN apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly -y
 ENV PATH=/root/.cargo/bin:$PATH
-RUN cargo install cbindgen bindgen-cli
-RUN rustup install nightly-2023-12-01
+
 RUN rustup default nightly-2023-12-01
 RUN rustup target add thumbv7em-none-eabihf --toolchain nightly-2023-12-01
+RUN cargo install cbindgen bindgen-cli
+
 RUN pip3 install PyYaml
+RUN pip3 install pillow
 
 FROM base as pillar
 RUN wget -q https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2 -O  gcc-arm-none-eabi.tar.bz2

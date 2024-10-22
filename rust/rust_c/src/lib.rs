@@ -56,6 +56,5 @@ use tron_rust_c;
 use xrp_rust_c;
 
 #[cfg(any(feature = "simulator", feature = "simulator_btc_only"))]
-#[cfg(target_os = "macos")]
 #[allow(unused)]
 use simulator_rust_c;

@@ -12,9 +12,6 @@ endif()
 if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
     add_compile_definitions(COMPILE_LINUX_SIMULATOR)
 endif()
-if(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
-    add_compile_definitions(COMPILE_MACOS_SIMULATOR)
-endif()
 
 add_compile_definitions(HASH_AND_SALT_TEST_MODE)
 

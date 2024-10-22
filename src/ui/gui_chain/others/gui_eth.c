@@ -1267,8 +1267,30 @@ static bool GetEthErc20ContractData(void *parseResult)
     return true;
 }
 
+static bool GetSafeContractData(char* inputData)
+{
+    char selectorId[9] = {0};
+    strncpy(selectorId, inputData, 8);
+    if (strcasecmp(selectorId, "6a761202") == 0) {
+        Response_DisplayContractData *contractData = eth_parse_contract_data(inputData, (char *)safe_json);
+        if (contractData->error_code == 0) {
+            g_contractDataExist = true;
+            g_contractData = contractData;
+        } else {
+            printf("safe contract error: %s\n", contractData->error_message);
+            free_Response_DisplayContractData(contractData);
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
 bool GetEthContractFromInternal(char *address, char *inputData)
 {
+    if (GetSafeContractData(inputData)) {
+        return true;
+    }
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(ethereum_abi_map); i++) {
         struct ABIItem item = ethereum_abi_map[i];
         if (strcasecmp(item.address, address) == 0) {

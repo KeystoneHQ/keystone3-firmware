@@ -306,6 +306,9 @@ uint8_t g_tableDataAmount = 0;
 
 void GuiAnalyzeFreeTable(uint8_t row, uint8_t col, void *param)
 {
+    if (param == NULL) {
+        return;
+    }
     int i = 0, j = 0;
     char ***indata = (char ***)param;
     for (i = 0; i < col; i++) {

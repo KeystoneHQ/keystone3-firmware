@@ -1115,11 +1115,11 @@ impl ParsedCardanoTx {
                         }
                     }
 
-                    if !pubkey_hash_paired {
-                        return Err(CardanoError::InvalidTransaction(
-                            "invalid address".to_string(),
-                        ));
-                    }
+                    // if !pubkey_hash_paired {
+                    //     return Err(CardanoError::InvalidTransaction(
+                    //         "invalid address".to_string(),
+                    //     ));
+                    // }
                     parsed_inputs.push(ParsedCardanoInput {
                         transaction_hash: utxo.transaction_hash.clone(),
                         index: utxo.index,

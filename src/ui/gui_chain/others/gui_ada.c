@@ -395,6 +395,10 @@ void *GetAdaOutputDetail(uint8_t *row, uint8_t *col, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
     *col = 1;
+    if (tx->to->size == 0) {
+        *row = 0;
+        return NULL;
+    }
     *row = 2 * tx->to->size;
     int i = 0, j = 0;
     char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
@@ -422,7 +426,11 @@ void GetAdaOutputDetailSize(uint16_t *width, uint16_t *height, void *param)
 {
     DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
     *width = 408;
-    *height = 16 + 30 + 154 * tx->to->size + 16;
+    if (tx->to->size == 0) {
+        *height = 0;
+    } else {
+        *height = 16 + 30 + 154 * tx->to->size + 16;
+    }
 }
 
 bool GetAdaCertificatesExist(void *indata, void *param)

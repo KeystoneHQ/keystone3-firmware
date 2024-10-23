@@ -1,3 +1,16 @@
+## 1.7.4(2024-10-23)
+
+### What's New
+
+1. Supported Keplr wallet to manage COSMOS assets via USB connection
+2. Supported UniSat wallet to manage BTC assets via USB connection
+
+### Improvements
+
+1. Optimized the text on the ERC20 token signing interface
+2. Added support for TGT token transaction parsing in ERC20
+
+
 ## 1.7.2(2024-10-12)
 
 ### What's new

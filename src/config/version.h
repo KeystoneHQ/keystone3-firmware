@@ -5,9 +5,9 @@
 #define SD_CARD_OTA_BIN_PATH                "0:/keystone3.bin"
 
 #define SOFTWARE_VERSION_MAX_LEN            (32)
-#define SOFTWARE_VERSION_MAJOR              1
-#define SOFTWARE_VERSION_MINOR              7
-#define SOFTWARE_VERSION_BUILD              4
+#define SOFTWARE_VERSION_MAJOR              9
+#define SOFTWARE_VERSION_MINOR              9
+#define SOFTWARE_VERSION_BUILD              9
 #define SOFTWARE_VERSION_BETA               0
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
 

@@ -41,7 +41,6 @@ impl NetworkT for Network {
 }
 
 impl Network {
-    
     pub fn bip44_coin_type(&self) -> String {
         match self {
             Network::Bitcoin => 0,
@@ -74,7 +73,7 @@ impl FromStr for Network {
 #[derive(Debug, Clone, PartialEq)]
 pub enum CustomNewNetwork {
     FractalBitcoin,
-    FractalBitcoinTest
+    FractalBitcoinTest,
 }
 
 impl NetworkT for CustomNewNetwork {

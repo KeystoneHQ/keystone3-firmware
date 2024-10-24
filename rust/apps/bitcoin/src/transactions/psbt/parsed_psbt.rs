@@ -28,7 +28,7 @@ impl TxParser for WrappedPsbt {
         match self.identify_fractal_bitcoin_tx() {
             Some(custom_net) => self.normalize(inputs, outputs, &custom_net),
             None => self.normalize(inputs, outputs, &network),
-        }        
+        }
     }
 
     fn determine_network(&self) -> Result<Network> {

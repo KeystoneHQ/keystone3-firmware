@@ -824,7 +824,7 @@ impl WrappedPsbt {
 
     // use global unknown for some custom usage
     // current use it for identify whether it is the fractal bitcoin tx
-   pub fn identify_fractal_bitcoin_tx(&self) -> Option<CustomNewNetwork> {
+    pub fn identify_fractal_bitcoin_tx(&self) -> Option<CustomNewNetwork> {
         self.psbt.unknown.iter().find_map(|(item_key, item_value)| {
             (String::from_utf8(item_key.key.clone()).ok()? == "chain")
                 .then(|| String::from_utf8(item_value.clone()).ok())

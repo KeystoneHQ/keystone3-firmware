@@ -438,8 +438,8 @@ static void OpenQRCodeHandler(lv_event_t *e)
         g_derivationPathDescs = GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC);
     }
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL ||
-            g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON ||
-            g_connectWalletTileView.walletIndex == WALLET_LIST_BEGIN
+    g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON ||
+    g_connectWalletTileView.walletIndex == WALLET_LIST_BEGIN
        ) {
         GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
         return;
@@ -485,7 +485,7 @@ static void UpdateFewchaCoinStateHandler(lv_event_t *e)
     lv_obj_t *checkBox = lv_event_get_target(e);
     for (int i = 0; i < FEWCHA_COINS_BUTT; i++) {
         g_tempFewchaCoinState[i].state =
-            checkBox == g_defaultFewchaState[i].checkBox;
+        checkBox == g_defaultFewchaState[i].checkBox;
         if (g_tempFewchaCoinState[i].state) {
             SetConnectWalletNetwork(GetWalletNameByIndex(g_connectWalletTileView.walletIndex), i);
             lv_obj_add_flag(g_defaultFewchaState[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
@@ -686,7 +686,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
         // temporary fix, when the multi-signature testnet is opened, the logic here
         // needs to be rewritten
         if (GetCurrentWalletIndex() == SINGLE_WALLET && GetIsTestNet() &&
-                g_walletListArray[i].index == WALLET_LIST_BLUE) {
+        g_walletListArray[i].index == WALLET_LIST_BLUE) {
             continue;
         }
         img = GuiCreateImg(parent, g_walletListArray[i].img);

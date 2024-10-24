@@ -47,6 +47,7 @@ static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {LtcTx, XPUB_TYPE_LTC, "m/49'/2'/0'"},
     {DashTx, XPUB_TYPE_DASH, "m/44'/5'/0'"},
     {BchTx, XPUB_TYPE_BCH, "m/44'/145'/0'"},
+    {ErgTx, XPUB_TYPE_ERG, "m/44'/429'/0'"},
 };
 #define CHECK_UR_TYPE()               (urType != Bytes && urType != KeystoneSignRequest)
 #else

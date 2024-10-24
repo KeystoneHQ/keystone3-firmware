@@ -217,6 +217,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     XRPTx,
     #[cfg(feature = "multi-coins")]
+    ErgTx,
+    #[cfg(feature = "multi-coins")]
     CosmosTx,
     #[cfg(feature = "multi-coins")]
     CosmosEvmTx,

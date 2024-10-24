@@ -32,6 +32,9 @@ use cardano_rust_c;
 use cosmos_rust_c;
 #[cfg(feature = "multi-coins")]
 #[allow(unused)]
+use ergo_rust_c;
+#[cfg(feature = "multi-coins")]
+#[allow(unused)]
 use ethereum_rust_c;
 #[cfg(feature = "multi-coins")]
 #[allow(unused)]

@@ -99,11 +99,11 @@ static void SetPinEventHandler(lv_event_t *e)
                 GuiSetLedStatus(item->numLed[item->currentNum], PASSCODE_LED_ON);
                 item->currentNum++;
                 if (item->mode == ENTER_PASSCODE_SET_PIN &&
-                        !lv_obj_has_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN)) {
+                                  !lv_obj_has_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN)) {
                     lv_obj_add_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
                 }
                 if (item->mode == ENTER_PASSCODE_VERIFY_PIN &&
-                        !lv_obj_has_flag(item->fpErrLabel, LV_OBJ_FLAG_HIDDEN)) {
+                                  !lv_obj_has_flag(item->fpErrLabel, LV_OBJ_FLAG_HIDDEN)) {
                     lv_obj_add_flag(item->fpErrLabel, LV_OBJ_FLAG_HIDDEN);
                 }
                 if (!lv_obj_has_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN)) {

@@ -136,7 +136,7 @@ void GuiScanResult(bool result, void *param)
             }
 
             if (g_qrcodeViewType == MultisigCryptoImportXpub ||
-                    g_qrcodeViewType ==  MultisigBytesImportXpub) {
+            g_qrcodeViewType ==  MultisigBytesImportXpub) {
                 GuiCLoseCurrentWorkingView();
             }
 #endif

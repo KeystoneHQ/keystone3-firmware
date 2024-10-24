@@ -81,6 +81,8 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
         return CHAIN_DASH;
     case BchTx:
         return CHAIN_BCH;
+    case ErgTx:
+        return CHAIN_ERG;
     case EthPersonalMessage:
     case EthTx:
     case EthTypedData:
@@ -150,6 +152,7 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
     case LtcTx:
     case DashTx:
     case BchTx:
+    case ErgTx:
 #endif
         func = isMulti ? GuiGetBtcSignQrCodeData : GuiGetBtcSignUrDataUnlimited;
         break;

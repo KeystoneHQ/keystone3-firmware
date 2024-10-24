@@ -22,6 +22,7 @@ members = [
     "src/xrp",
     "src/arweave",
     "src/ton",
+    "src/ergo",
 
     "src/wallet",
     "src/wallet/src/btc_only_wallet",
@@ -48,6 +49,7 @@ aptos_rust_c = { path = "./src/aptos", optional = true }
 near_rust_c = { path = "./src/near", optional = true }
 cosmos_rust_c = { path = "./src/cosmos", optional = true }
 cardano_rust_c = { path = "./src/cardano", optional = true }
+ergo_rust_c = { path = "./src/ergo", optional = true}
 sui_rust_c = { path = "./src/sui", optional = true }
 tron_rust_c = { path = "./src/tron", optional = true }
 xrp_rust_c = { path = "./src/xrp", optional = true }
@@ -79,6 +81,7 @@ debug-memory = [
     "tron_rust_c/debug-memory",
     "xrp_rust_c/debug-memory",
     "ton_rust_c/debug-memory",
+    "ergo_rust_c/debug-memory",
 ]
 simulator = ["multi-coins", "no-allocator", "sui_rust_c/simulator", "simulator_rust_c/multi-coins"]
 simulator_btc_only = ["btc-only", "no-allocator", "simulator_rust_c/btc-only"]
@@ -95,6 +98,7 @@ multi-coins = [
     "near_rust_c",
     "cosmos_rust_c",
     "cardano_rust_c",
+    "ergo_rust_c",
     "sui_rust_c",
     "tron_rust_c",
     "xrp_rust_c",

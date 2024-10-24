@@ -10,6 +10,8 @@ use app_cardano::errors::CardanoError;
 #[cfg(feature = "multi-coins")]
 use app_cosmos::errors::CosmosError;
 #[cfg(feature = "multi-coins")]
+use app_ergo::errors::ErgoError;
+#[cfg(feature = "multi-coins")]
 use app_ethereum::errors::EthereumError;
 #[cfg(feature = "multi-coins")]
 use app_near::errors::NearError;
@@ -196,6 +198,11 @@ pub enum ErrorCodes {
     StellarInvalidData,
     StellarParseTxError,
     StellarKeystoreError,
+
+    // Ergo
+    ErgoUnknownError = 1500,
+    ErgoMnemonicError,
+    ErgoDerivationError,
 }
 
 impl ErrorCodes {
@@ -467,6 +474,17 @@ impl From<&TonError> for ErrorCodes {
             TonError::AddressError(_) => Self::AddressError,
             TonError::InvalidTransaction(_) => Self::TonTransactionError,
             TonError::InvalidProof(_) => Self::InvalidProof,
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl From<&ErgoError> for ErrorCodes {
+    fn from(value: &ErgoError) -> Self {
+        match value {
+            ErgoError::UnknownError => Self::ErgoUnknownError,
+            ErgoError::MnemonicError(_) => Self::ErgoMnemonicError,
+            ErgoError::DerivationError(_) => Self::ErgoDerivationError,
         }
     }
 }

@@ -49,6 +49,7 @@ use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 use ur_registry::{
     bitcoin::btc_sign_request::BtcSignRequest, sui::sui_sign_hash_request::SuiSignHashRequest,
 };
+use ur_registry::cardano::cardano_sign_cip8_data_request::CardanoSignCip8DataRequest;
 
 use crate::ur::ViewType;
 

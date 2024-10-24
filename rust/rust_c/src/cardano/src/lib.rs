@@ -2,6 +2,7 @@
 
 extern crate alloc;
 
+use alloc::vec::Vec;
 use alloc::{format, slice};
 use alloc::{
     string::{String, ToString},
@@ -25,22 +26,24 @@ use structs::DisplayCardanoSignTxHash;
 
 use ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
 use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
+use ur_registry::cardano::cardano_sign_cip8_data_request::CardanoSignCip8DataRequest;
+
 use ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 use ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
 use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 use ur_registry::cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest;
 use ur_registry::cardano::cardano_signature::CardanoSignature;
 use ur_registry::crypto_key_path::CryptoKeyPath;
-
+use ur_registry::cardano::cardano_sign_cip8_data_signature::CardanoSignCip8DataSignature;
 use cip8_cbor_data_ledger::CardanoCip8SigStructureLedgerType;
-use common_rust_c::errors::{R, RustCError};
+use common_rust_c::errors::{RustCError, R};
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH, UREncodeResult};
+use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use ur_registry::registry_types::{
-    CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE, CARDANO_SIGNATURE, CARDANO_SIGN_DATA_SIGNATURE,
+    CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE, CARDANO_SIGNATURE,CARDANO_SIGN_CIP8_DATA_SIGNATURE, CARDANO_SIGN_DATA_SIGNATURE,
 };
 
 pub mod address;
@@ -922,6 +925,7 @@ mod tests {
     use bitcoin::bip32::Xpriv ;
     use ur_registry::crypto_key_path::PathComponent;
     use ur_registry::crypto_key_path::PathComponent;
+    use bench32::decode;
 
     #[test]
     fn test_get_cardano_derivation_path() {

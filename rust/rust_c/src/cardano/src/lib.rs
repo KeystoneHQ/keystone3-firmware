@@ -648,13 +648,6 @@ fn cardano_sign_sign_cip8_data_by_icarus(
         icarus_master_key,
     )
     .map(|v| {
-        rust_tools::debug!(format!("sign data success"));
-        rust_tools::debug!(format!("signature: {}", hex::encode(v.get_signature())));
-        rust_tools::debug!(format!("pub key: {}", hex::encode(v.get_pub_key())));
-        rust_tools::debug!(format!(
-            "address field: {}",
-            hex::encode(address_field.clone())
-        ));
         CardanoSignCip8DataSignature::new(
             cardano_sign_data_reqeust.get_request_id(),
             v.get_signature(),

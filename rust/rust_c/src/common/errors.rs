@@ -36,6 +36,8 @@ use app_tron::errors::TronError;
 use app_xrp::errors::XRPError;
 #[cfg(feature = "zcash")]
 use app_zcash::errors::ZcashError;
+#[cfg(feature = "ergo")]
+use app_ergo::errors::ErgoError;
 
 #[derive(Debug, Clone)]
 #[repr(C)]
@@ -230,6 +232,11 @@ pub enum ErrorCodes {
     AvaxUnknownTypeId,
     AvaxInvalidHDPath,
     AvaxBech32Error,
+
+    // Ergo
+    ErgoUnknownError = 1800,
+    ErgoMnemonicError,
+    ErgoDerivationError,
 }
 
 impl ErrorCodes {
@@ -549,6 +556,17 @@ impl From<&MoneroError> for ErrorCodes {
     fn from(value: &MoneroError) -> Self {
         match value {
             _ => Self::MoneroUnknownError,
+        }
+    }
+}
+
+#[cfg(feature = "ergo")]
+impl From<&ErgoError> for ErrorCodes {
+    fn from(value: &ErgoError) -> Self {
+        match value {
+            ErgoError::UnknownError => Self::ErgoUnknownError,
+            ErgoError::MnemonicError(_) => Self::ErgoMnemonicError,
+            ErgoError::DerivationError(_) => Self::ErgoDerivationError,
         }
     }
 }

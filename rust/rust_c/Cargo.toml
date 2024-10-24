@@ -54,6 +54,7 @@ app_ton = { workspace = true, optional = true }
 app_zcash = { workspace = true, optional = true }
 app_monero = { workspace = true, optional = true }
 app_avalanche = { workspace = true, optional = true }
+app_ergo = { workspace = true, optional = true }
 
 [lib]
 crate-type = ["staticlib"]
@@ -105,6 +106,7 @@ multi-coins = [
     "tron",
     "xrp",
     "avalanche",
+    "ergo"
 ]
 
 btc-only = ["bitcoin"]

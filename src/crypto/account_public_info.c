@@ -43,6 +43,7 @@ typedef enum {
     ZCASH_UFVK_ENCRYPTED,
     EDWARDS_25519,
     MONERO_PVK,
+    ERGO_NATIVE,
 } PublicInfoType_t;
 
 typedef struct {
@@ -342,6 +343,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_THOR,                  SECP256K1,    "thor",                     "M/44'/931'/0'"     },
     {XPUB_TYPE_AVAX_BIP44_STANDARD,   SECP256K1,    "avax_c",                   "M/44'/60'/0'"      },
     {XPUB_TYPE_AVAX_X_P,              SECP256K1,    "avax_x_p",                 "M/44'/9000'/0'"    },
+    {XPUB_TYPE_ERG,                   ERGO_NATIVE,     "erg",                     "M/44'/429'/0'"     },
     {XPUB_TYPE_SOL_BIP44_0,           ED25519,      "sol_bip44_0",              "M/44'/501'/0'"     },
     {XPUB_TYPE_SOL_BIP44_1,           ED25519,      "sol_bip44_1",              "M/44'/501'/1'"     },
     {XPUB_TYPE_SOL_BIP44_2,           ED25519,      "sol_bip44_2",              "M/44'/501'/2'"     },
@@ -612,6 +614,8 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case TON_CHECKSUM:
         // should not be here.
         ASSERT(0);
+    case ERGO_NATIVE:
+        return ergo_extended_pubkey_by_seed(seed, len, (char *)path);
 #endif
     default:
         return NULL;

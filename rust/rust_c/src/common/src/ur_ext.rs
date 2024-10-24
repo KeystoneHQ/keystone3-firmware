@@ -2,10 +2,6 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-use third_party::{
-    serde_json::{from_slice, from_value, Value},
-    ur_registry::cardano::cardano_sign_cip8_data_request::CardanoSignCip8DataRequest,
-};
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 #[cfg(feature = "multi-coins")]
@@ -48,6 +44,10 @@ use third_party::ur_registry::stellar::stellar_sign_request::{
 #[cfg(feature = "multi-coins")]
 use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
 use third_party::ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
+use third_party::{
+    serde_json::{from_slice, from_value, Value},
+    ur_registry::cardano::cardano_sign_cip8_data_request::CardanoSignCip8DataRequest,
+};
 
 use crate::ur::ViewType;
 

@@ -6,23 +6,21 @@ use alloc::vec::Vec;
 use core::ops::Div;
 
 use app_utils::{impl_internal_struct, impl_public_struct};
-use cardano_serialization_lib::{
-    NetworkIdKind,
-    protocol_types::fixed_tx::FixedTransaction as Transaction, protocol_types::governance::VoteKind,
-};
-use cardano_serialization_lib::address::{
-    Address, BaseAddress, EnterpriseAddress, RewardAddress,
-};
+use cardano_serialization_lib::address::{Address, BaseAddress, EnterpriseAddress, RewardAddress};
 use cardano_serialization_lib::protocol_types::governance::DRepKind;
 use cardano_serialization_lib::utils::from_bignum;
-use third_party::{
-    bitcoin::bip32::ChildNumber::{Hardened, Normal},
-    cryptoxide::hashing::blake2b_224,
+use cardano_serialization_lib::{
+    protocol_types::fixed_tx::FixedTransaction as Transaction,
+    protocol_types::governance::VoteKind, NetworkIdKind,
 };
 use third_party::bitcoin::bip32::DerivationPath;
 use third_party::hex;
 use third_party::ur_registry::cardano::cardano_sign_structure::CardanoSignStructure;
 use third_party::ur_registry::traits::From;
+use third_party::{
+    bitcoin::bip32::ChildNumber::{Hardened, Normal},
+    cryptoxide::hashing::blake2b_224,
+};
 
 use crate::address::derive_pubkey_hash;
 use crate::errors::{CardanoError, R};

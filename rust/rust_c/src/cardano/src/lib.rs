@@ -2,12 +2,12 @@
 
 extern crate alloc;
 
+use alloc::vec::Vec;
 use alloc::{format, slice};
 use alloc::{
     string::{String, ToString},
     vec,
 };
-use alloc::vec::Vec;
 use core::str::FromStr;
 
 use app_cardano::address::derive_xpub_from_xpub;
@@ -16,11 +16,6 @@ use app_cardano::governance;
 use app_cardano::structs::{CardanoCertKey, CardanoUtxo, ParseContext};
 use app_cardano::transaction::calc_icarus_master_key;
 use cty::c_char;
-use third_party::{bech32::decode, ed25519_bip32_core::XPrv};
-use third_party::{bitcoin::bip32::DerivationPath, cryptoxide::hashing::blake2b_224};
-use third_party::{
-    hex, ur_registry::cardano::cardano_sign_cip8_data_signature::CardanoSignCip8DataSignature,
-};
 use third_party::ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
 use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 use third_party::ur_registry::cardano::cardano_sign_cip8_data_request::CardanoSignCip8DataRequest;
@@ -30,16 +25,21 @@ use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 use third_party::ur_registry::cardano::cardano_signature::CardanoSignature;
 use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
 use third_party::ur_registry::registry_types::{
-    CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE, CARDANO_SIGN_CIP8_DATA_SIGNATURE,
-    CARDANO_SIGN_DATA_SIGNATURE, CARDANO_SIGNATURE,
+    CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE, CARDANO_SIGNATURE,
+    CARDANO_SIGN_CIP8_DATA_SIGNATURE, CARDANO_SIGN_DATA_SIGNATURE,
+};
+use third_party::{bech32::decode, ed25519_bip32_core::XPrv};
+use third_party::{bitcoin::bip32::DerivationPath, cryptoxide::hashing::blake2b_224};
+use third_party::{
+    hex, ur_registry::cardano::cardano_sign_cip8_data_signature::CardanoSignCip8DataSignature,
 };
 
 use cip8_cbor_data_ledger::CardanoCip8SigStructureLedgerType;
-use common_rust_c::errors::{R, RustCError};
+use common_rust_c::errors::{RustCError, R};
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH, UREncodeResult};
+use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 
 use crate::structs::{DisplayCardanoCatalyst, DisplayCardanoSignData, DisplayCardanoTx};
@@ -858,11 +858,7 @@ mod tests {
 
     use app_cardano::address::AddressType;
     use keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv;
-    use third_party::{
-        bech32::decode
-        ,
-        ur_registry::crypto_key_path::PathComponent,
-    };
+    use third_party::{bech32::decode, ur_registry::crypto_key_path::PathComponent};
 
     use super::*;
 

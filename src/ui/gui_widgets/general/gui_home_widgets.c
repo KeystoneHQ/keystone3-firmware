@@ -512,7 +512,6 @@ void ReturnManageWalletHandler(lv_event_t *e)
 static bool UpdateStartIndex(int8_t gesture, uint8_t totalCount)
 {
     int8_t newPage = g_currentPage + gesture;
-    printf("newpage = %d\n", newPage);
 
     if (newPage < 0 || newPage * CARDS_PER_PAGE >= totalCount) {
         return false;
@@ -566,7 +565,9 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
             {.obj = chainLabel, .align = LV_ALIGN_TOP_MID, .position = {0, 130},},
         };
         lv_obj_t *button = GuiCreateButton(walletCardCont, 208, 176, table, NUMBER_OF_ARRAYS(table),
-                                           CoinDealHandler, (void *) & (g_coinCardArray[i].index));
+                                           NULL, (void *) & (g_coinCardArray[i].index));
+        lv_obj_add_event_cb(button, CoinDealHandler, LV_EVENT_ALL, (void *) & (g_coinCardArray[i].index));
+        lv_obj_clear_flag(button, LV_OBJ_FLAG_GESTURE_BUBBLE);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 24 + ((i - j) % 2) * 224,
                      144 - GUI_MAIN_AREA_OFFSET + (((i - j) % 6) / 2) * 192);
         lv_obj_set_style_bg_color(button, WHITE_COLOR, LV_PART_MAIN);
@@ -615,8 +616,14 @@ static void GuiOpenARAddressNoticeWindow()
 
 static void CoinDealHandler(lv_event_t *e)
 {
-    printf("g_isScrolling = %d\n", g_isScrolling);
-    if (g_isScrolling == false) {
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_GESTURE) {
+        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
+        if (parent) {
+            lv_event_send(parent, LV_EVENT_GESTURE, NULL);
+            lv_event_send(parent, LV_EVENT_RELEASED, NULL);
+        }
+    } else if (code == LV_EVENT_CLICKED && g_isScrolling == false) {
         HOME_WALLET_CARD_ENUM coin;
         coin = *(HOME_WALLET_CARD_ENUM *)lv_event_get_user_data(e);
 
@@ -647,11 +654,6 @@ static void CoinDealHandler(lv_event_t *e)
         default:
             GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
             break;
-        }
-    } else {
-        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-        if(parent) {
-            lv_event_send(parent, LV_EVENT_RELEASED, NULL);
         }
     }
 }
@@ -890,7 +892,7 @@ static void HomeScrollHandler(lv_event_t * e)
             break;
         }
     } else if (code == LV_EVENT_RELEASED) {
-        lv_timer_t *timer = lv_timer_create(ResetScrollState, 100, NULL);
+        lv_timer_t *timer = lv_timer_create(ResetScrollState, 200, NULL);
         lv_timer_set_repeat_count(timer, 1);
     }
 }
@@ -921,7 +923,7 @@ void GuiHomeAreaInit(void)
     lv_obj_add_event_cb(img, ScanQrCodeHandler, LV_EVENT_CLICKED, &g_scanView);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     g_scanImg = img;
-}   
+}
 
 void GuiHomeDisActive(void)
 {

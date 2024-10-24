@@ -307,6 +307,8 @@ impl FromStr for Address {
 
 #[cfg(test)]
 mod tests {
+    use crate::network::NetworkT;
+
     use super::*;
 
     #[test]

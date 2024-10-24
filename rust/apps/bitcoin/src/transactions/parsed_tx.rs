@@ -1,6 +1,6 @@
 use crate::errors::{BitcoinError, Result};
 use crate::multi_sig::wallet::MultiSigWalletConfig;
-use crate::network::Network;
+use crate::network::{Network, NetworkT};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -90,7 +90,7 @@ impl ParseContext {
 pub const DIVIDER: f64 = 100_000_000 as f64;
 
 pub trait TxParser {
-    fn format_amount(value: u64, network: &Network) -> String {
+    fn format_amount(value: u64, network: &dyn NetworkT) -> String {
         format!("{} {}", (value as f64).div(DIVIDER), network.get_unit())
     }
 
@@ -146,7 +146,7 @@ pub trait TxParser {
         &self,
         inputs: Vec<ParsedInput>,
         outputs: Vec<ParsedOutput>,
-        network: &Network,
+        network: &dyn NetworkT,
     ) -> Result<ParsedTx> {
         let total_input_value = inputs.iter().fold(0, |acc, cur| acc + cur.value);
         let total_output_value = outputs.iter().fold(0, |acc, cur| acc + cur.value);

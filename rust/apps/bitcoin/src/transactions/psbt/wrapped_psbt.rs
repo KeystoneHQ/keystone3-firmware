@@ -1,11 +1,13 @@
 use crate::errors::{BitcoinError, Result};
 use alloc::format;
 
+use third_party::bitcoin::hex::DisplayHex;
 use third_party::bitcoin::script::Instruction;
+use third_party::hex::ToHex;
 use third_party::itertools::Itertools;
 
 use crate::addresses::address::Address;
-use crate::network;
+use crate::network::{self, CustomNewNetwork};
 use crate::transactions::parsed_tx::{ParseContext, ParsedInput, ParsedOutput, TxParser};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
@@ -819,6 +821,21 @@ impl WrappedPsbt {
         }
         return false;
     }
+
+    // use global unknown for some custom usage
+    // current use it for identify whether it is the fractal bitcoin tx
+   pub fn identify_fractal_bitcoin_tx(&self) -> Option<CustomNewNetwork> {
+        self.psbt.unknown.iter().find_map(|(item_key, item_value)| {
+            (String::from_utf8(item_key.key.clone()).ok()? == "chain")
+                .then(|| String::from_utf8(item_value.clone()).ok())
+                .flatten()
+                .and_then(|value| match value.as_str() {
+                    "fb" => Some(CustomNewNetwork::FractalBitcoin),
+                    "tfb" => Some(CustomNewNetwork::FractalBitcoinTest),
+                    _ => None,
+                })
+        })
+    }
 }
 
 fn derive_public_key_by_path(
@@ -868,6 +885,32 @@ mod tests {
             let result = wrapper.sign(&seed, master_fingerprint).unwrap();
             let psbt_result = result.serialize().encode_hex::<String>();
             assert_eq!("70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220202e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c319483045022100e2b9a7963bed429203bbd73e5ea000bfe58e3fc46ef8c1939e8cf8d1cf8460810220587ba791fc2a42445db70e2b3373493a19e6d5c47a2af0447d811ff479721b0001220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000", psbt_result);
+        }
+    }
+
+    #[test]
+    fn test_identify_fractal_bitcoin_tx() {
+        {
+            // no value in global
+            let psbt_hex = "70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let wrapper = WrappedPsbt { psbt };
+            let result = wrapper.identify_fractal_bitcoin_tx();
+            assert_eq!(result.is_none(), true);
+
+            // globalkey: ff chain fb (utf-8)
+            let psbt_hex = "70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed00000000006ff636861696e0266620001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let wrapper = WrappedPsbt { psbt };
+            let result = wrapper.identify_fractal_bitcoin_tx().unwrap();
+            assert_eq!(result, CustomNewNetwork::FractalBitcoin);
+
+            // globalkey: ff chain tfb (utf-8)
+            let psbt_hex = "70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed00000000006ff636861696e037466620001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let wrapper = WrappedPsbt { psbt };
+            let result = wrapper.identify_fractal_bitcoin_tx().unwrap();
+            assert_eq!(result, CustomNewNetwork::FractalBitcoinTest)
         }
     }
 

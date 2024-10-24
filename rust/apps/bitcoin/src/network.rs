@@ -2,6 +2,11 @@ use crate::errors::BitcoinError;
 use alloc::string::{String, ToString};
 use core::str::FromStr;
 
+pub trait NetworkT {
+    fn get_unit(&self) -> String;
+    fn normalize(&self) -> String;
+}
+
 #[derive(Debug, Clone)]
 pub enum Network {
     Bitcoin,
@@ -11,8 +16,8 @@ pub enum Network {
     BitcoinCash,
 }
 
-impl Network {
-    pub fn get_unit(&self) -> String {
+impl NetworkT for Network {
+    fn get_unit(&self) -> String {
         match self {
             Network::Bitcoin => "BTC",
             Network::BitcoinTestnet => "tBTC",
@@ -22,6 +27,21 @@ impl Network {
         }
         .to_string()
     }
+
+    fn normalize(&self) -> String {
+        match self {
+            Network::Bitcoin => "Bitcoin Mainnet",
+            Network::BitcoinTestnet => "Bitcoin Testnet",
+            Network::Litecoin => "Litecoin",
+            Network::Dash => "Dash",
+            Network::BitcoinCash => "Bitcoin Cash",
+        }
+        .to_string()
+    }
+}
+
+impl Network {
+    
     pub fn bip44_coin_type(&self) -> String {
         match self {
             Network::Bitcoin => 0,
@@ -51,14 +71,25 @@ impl FromStr for Network {
     }
 }
 
-impl Network {
-    pub fn normalize(&self) -> String {
+#[derive(Debug, Clone, PartialEq)]
+pub enum CustomNewNetwork {
+    FractalBitcoin,
+    FractalBitcoinTest
+}
+
+impl NetworkT for CustomNewNetwork {
+    fn get_unit(&self) -> String {
         match self {
-            Network::Bitcoin => "Bitcoin Mainnet",
-            Network::BitcoinTestnet => "Bitcoin Testnet",
-            Network::Litecoin => "Litecoin",
-            Network::Dash => "Dash",
-            Network::BitcoinCash => "Bitcoin Cash",
+            CustomNewNetwork::FractalBitcoin => "FB",
+            CustomNewNetwork::FractalBitcoinTest => "tFB",
+        }
+        .to_string()
+    }
+
+    fn normalize(&self) -> String {
+        match self {
+            CustomNewNetwork::FractalBitcoin => "Fractal Bitcoin",
+            CustomNewNetwork::FractalBitcoinTest => "Fractal Bitcoin Testnet",
         }
         .to_string()
     }

@@ -18,7 +18,7 @@ use third_party::bitcoin_hashes::{sha256, sha256d, Hash};
 
 use crate::addresses::cashaddr::{Base58Codec, CashAddrCodec};
 use crate::addresses::get_address;
-use crate::network::Network;
+use crate::network::{Network, NetworkT};
 use crate::transactions::legacy::constants::{SIGHASH_ALL, SIGHASH_FORKID};
 use crate::transactions::legacy::input::{InputConverter, TxIn};
 use crate::transactions::legacy::output::{OutputConverter, TxOut};

@@ -67,6 +67,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_DASH, false, "DASH", true},
     {HOME_WALLET_CARD_ARWEAVE, false, "AR", true},
     {HOME_WALLET_CARD_XLM, false, "XLM", true},
+    {HOME_WALLET_CARD_ERG, false, "ERG", true},
     {HOME_WALLET_CARD_COSMOS, false, "Cosmos Eco", true},
     {HOME_WALLET_CARD_TIA, false, "TIA", true},
     {HOME_WALLET_CARD_DYM, false, "DYM", true},
@@ -240,6 +241,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "XLM",
         .chain = "Stellar",
         .icon = &coinXlm,
+    },
+    {
+        .index = HOME_WALLET_CARD_ERG,
+        .coin = "ERG",
+        .chain = "Ergo",
+        .icon = &coinErg,
     },
     {
         .index = HOME_WALLET_CARD_COSMOS,
@@ -528,9 +535,9 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
     uint8_t totalCoinAmount = 0xFF;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
         if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS ||
-                (g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) ||
-                g_walletState[i].state == false ||
-                g_walletState[i].enable == false) {
+        (g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) ||
+        g_walletState[i].state == false ||
+        g_walletState[i].enable == false) {
             continue;
         }
         totalCoinAmount++;
@@ -545,9 +552,9 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {
         if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS ||
-                (g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) ||
-                g_walletState[i].state == false ||
-                g_walletState[i].enable == false) {
+        (g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) ||
+        g_walletState[i].state == false ||
+        g_walletState[i].enable == false) {
             j++;
             continue;
         }
@@ -632,6 +639,7 @@ static void CoinDealHandler(lv_event_t *e)
         case HOME_WALLET_CARD_LTC:
         case HOME_WALLET_CARD_DASH:
         case HOME_WALLET_CARD_BCH:
+        case HOME_WALLET_CARD_ERG:
             GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
             break;
         case HOME_WALLET_CARD_ETH:

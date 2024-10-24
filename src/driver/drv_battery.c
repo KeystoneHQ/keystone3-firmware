@@ -344,8 +344,8 @@ static uint8_t LoadBatteryPercent(void)
                     g_batteryFlashAddress = SPI_FLASH_ADDR_BATTERY_INFO + i - 1;
                     printf("the latest battery history percent=%d,addr=0x%08X\r\n", percent, g_batteryFlashAddress);
                     if (usbPowerState == USB_POWER_STATE_DISCONNECT && \
-                            percent > measurePercent && \
-                            (percent - measurePercent > BATTERY_DIFF_THRESHOLD || measurePercent <= 20)) {
+                                         percent > measurePercent && \
+                                         (percent - measurePercent > BATTERY_DIFF_THRESHOLD || measurePercent <= 20)) {
                         printf("set battery percent to measurement value.\n");
                         percent = measurePercent;
                     }

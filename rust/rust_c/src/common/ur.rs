@@ -264,6 +264,8 @@ pub enum ViewType {
     #[cfg(feature = "avalanche")]
     AvaxTx,
     WebAuthResult,
+    #[cfg(feature = "ergo")]
+    ErgTx,
     #[cfg(not(feature = "btc-only"))]
     KeyDerivationRequest,
     #[cfg(feature = "btc-only")]

@@ -54,6 +54,7 @@ app_ton = { workspace = true, optional = true }
 app_zcash = { workspace = true, optional = true }
 app_monero = { workspace = true, optional = true }
 app_avalanche = { workspace = true, optional = true }
+app_ergo = { workspace = true, optional = true }
 
 [lib]
 crate-type = ["staticlib"]
@@ -89,7 +90,7 @@ multi-coins = [
     "aptos",
     "arweave",
     "bch",
-    "bitcoin", 
+    "bitcoin",
     "cardano",
     "cosmos",
     "dash",
@@ -103,6 +104,7 @@ multi-coins = [
     "tron",
     "xrp",
     "avalanche",
+    "ergo"
 ]
 
 btc-only = ["bitcoin"]
@@ -116,7 +118,7 @@ production-btc-only = ["use-allocator", "btc-only"]
 production-cypherpunk = ["use-allocator", "cypherpunk"]
 # debug
 debug-multi-coins = ["test_cmd", "use-allocator", "multi-coins"]
-debug-btc-only = ["test_cmd", "use-allocator", "btc-only"]  
+debug-btc-only = ["test_cmd", "use-allocator", "btc-only"]
 debug-cypherpunk = ["test_cmd", "use-allocator", "cypherpunk"]
 # simulator
 simulator-multi-coins = ["simulator", "multi-coins"]

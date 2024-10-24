@@ -253,9 +253,9 @@ void GetCosmosAddress1Label(void *indata, void *param, uint32_t maxLen)
     } else if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_VOTE)) == 0) {
         strcpy_s((char *)indata, maxLen, "Voter");
     } else if (
-        strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_REDELEGATE)) == 0 ||
-        strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_WITHDRAW_REWARD)) == 0 ||
-        strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_VOTE)) == 0
+    strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_REDELEGATE)) == 0 ||
+    strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_WITHDRAW_REWARD)) == 0 ||
+    strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_VOTE)) == 0
     ) {
         strcpy_s((char *)indata, maxLen, "To");
     } else {
@@ -289,8 +289,8 @@ void GetCosmosAddress2Label(void *indata, void *param, uint32_t maxLen)
     if (strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_REDELEGATE)) == 0) {
         snprintf_s((char *)indata,  maxLen, "New Validator");
     } else if (
-        strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_WITHDRAW_REWARD)) == 0 ||
-        strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_VOTE)) == 0
+    strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_WITHDRAW_REWARD)) == 0 ||
+    strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_VOTE)) == 0
     ) {
         strcpy_s((char *)indata, maxLen, "Validator");
     } else {
@@ -422,7 +422,7 @@ bool GetCosmosValueExist(void *indata, void *param)
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
     return strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_WITHDRAW_REWARD)) != 0 &&
            strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_VOTE)) != 0 &&
-           strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_MULTIPLE)) != 0;
+               strcmp(tx->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_MULTIPLE)) != 0;
 }
 
 bool GetCosmosVoteExist(void *indata, void *param)

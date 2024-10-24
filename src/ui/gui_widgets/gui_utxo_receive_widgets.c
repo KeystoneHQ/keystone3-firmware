@@ -182,7 +182,8 @@ static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_BTC, ""},
     {HOME_WALLET_CARD_LTC, "m/49'/2'/0'"},
     {HOME_WALLET_CARD_DASH, "m/44'/5'/0'"},
-    {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"}
+    {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"},
+    {HOME_WALLET_CARD_ERG, "m/44'/429'/0'"}
 };
 #endif
 
@@ -196,6 +197,7 @@ static uint32_t g_btcSelectIndex[3] = {0};
 static uint32_t g_ltcSelectIndex[3] = {0};
 static uint32_t g_dashSelectIndex[3] = {0};
 static uint32_t g_bchSelectIndex[3] = {0};
+static uint32_t g_ergSelectIndex[3] = {0};
 static uint8_t g_currentAccountIndex = 0;
 
 static HOME_WALLET_CARD_ENUM g_chainCard;
@@ -306,6 +308,7 @@ static bool HasMoreBtn()
     case HOME_WALLET_CARD_LTC:
     case HOME_WALLET_CARD_BCH:
     case HOME_WALLET_CARD_DASH:
+    case HOME_WALLET_CARD_ERG:
         return false;
 #endif
     default:
@@ -388,6 +391,10 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
     case HOME_WALLET_CARD_BCH:
         titleItem->type = CHAIN_BCH;
         snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "BCH");
+        break;
+    case HOME_WALLET_CARD_ERG:
+        titleItem->type = CHAIN_ERG;
+        snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "ERG");
         break;
 #endif
     default:
@@ -555,6 +562,9 @@ static void GetHint(char *hint)
     case HOME_WALLET_CARD_BCH:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "BCH");
         break;
+    case HOME_WALLET_CARD_ERG:
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "ERG");
+        break;
 #endif
     default:
         break;
@@ -587,6 +597,8 @@ static uint32_t GetCurrentSelectIndex()
         return g_dashSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_BCH:
         return g_bchSelectIndex[g_currentAccountIndex];
+    case HOME_WALLET_CARD_ERG:
+        return g_ergSelectIndex[g_currentAccountIndex];
 #endif
     default:
         break;
@@ -609,6 +621,9 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
         break;
     case HOME_WALLET_CARD_BCH:
         g_bchSelectIndex[g_currentAccountIndex] = selectIndex;
+        break;
+    case HOME_WALLET_CARD_ERG:
+        g_ergSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
 #endif
     default:
@@ -1387,6 +1402,8 @@ static ChainType GetChainTypeByIndex(uint32_t index)
         return XPUB_TYPE_DASH;
     case HOME_WALLET_CARD_BCH:
         return XPUB_TYPE_BCH;
+    case HOME_WALLET_CARD_ERG:
+        return XPUB_TYPE_ERG;
 #endif
     default:
         break;
@@ -1433,6 +1450,9 @@ static void GetRootHdPath(char *hdPath, uint32_t maxLen)
     case HOME_WALLET_CARD_BCH:
         strcpy_s(hdPath, maxLen, g_chainPathItems[3].path);
         break;
+    case HOME_WALLET_CARD_ERG:
+        strcpy_s(hdPath, maxLen, g_chainPathItems[4].path);
+        break;
 #endif
     default:
         break;
@@ -1464,8 +1484,14 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
     ASSERT(xPub);
     SimpleResponse_c_char *result;
     do {
-        result = utxo_get_address(hdPath, xPub);
-        CHECK_CHAIN_BREAK(result);
+        if (chainType == XPUB_TYPE_ERG) {
+            result = ergo_get_address(hdPath, xPub);
+            CHECK_CHAIN_BREAK(result);
+
+        } else {
+            result = utxo_get_address(hdPath, xPub);
+            CHECK_CHAIN_BREAK(result);
+        }
     } while (0);
     strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
     free_simple_response_c_char(result);
@@ -1481,6 +1507,7 @@ void GuiResetCurrentUtxoAddressIndex(uint8_t index)
     g_ltcSelectIndex[index] = 0;
     g_dashSelectIndex[index] = 0;
     g_bchSelectIndex[index] = 0;
+    g_ergSelectIndex[index] = 0;
     g_addressType[index] = 0;
 }
 
@@ -1490,5 +1517,6 @@ void GuiResetAllUtxoAddressIndex(void)
     memset_s(g_ltcSelectIndex, sizeof(g_ltcSelectIndex), 0, sizeof(g_ltcSelectIndex));
     memset_s(g_dashSelectIndex, sizeof(g_dashSelectIndex), 0, sizeof(g_dashSelectIndex));
     memset_s(g_bchSelectIndex, sizeof(g_bchSelectIndex), 0, sizeof(g_bchSelectIndex));
+    memset_s(g_ergSelectIndex, sizeof(g_ergSelectIndex), 0, sizeof(g_ergSelectIndex));
     memset_s(g_addressType, sizeof(g_addressType), 0, sizeof(g_addressType));
 }

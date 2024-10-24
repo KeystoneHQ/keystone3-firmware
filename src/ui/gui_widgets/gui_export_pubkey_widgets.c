@@ -660,8 +660,14 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
     SimpleResponse_c_char *result;
     snprintf_s(hdPath, sizeof(hdPath), "%s/0/%u", rootPath, index);
     do {
-        result = utxo_get_address(hdPath, xPub);
-        CHECK_CHAIN_BREAK(result);
+        if (chainType == XPUB_TYPE_ERG) {
+            result = ergo_get_address(hdPath, xPub);
+            CHECK_CHAIN_BREAK(result);
+
+        } else {
+            result = utxo_get_address(hdPath, xPub);
+            CHECK_CHAIN_BREAK(result);
+        }
     } while (0);
     snprintf_s(dest, maxLen, "%s", result->data);
     free_simple_response_c_char(result);

@@ -5,23 +5,37 @@ use screenshots::Screen;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use cocoa::appkit::NSScreen;
-use cocoa::base::nil;
-use cocoa::foundation::NSArray;
-
 #[cfg(target_os = "macos")]
+use cocoa::{appkit::NSScreen, base::nil, foundation::NSArray};
+
+#[cfg(target_os = "windows")]
+use windows::{
+    Win32::Foundation::HWND,
+    Win32::Graphics::Gdi::{GetDC, GetDeviceCaps, LOGPIXELSX},
+    Win32::UI::HiDpi::{SetProcessDpiAwareness, PROCESS_SYSTEM_DPI_AWARE},
+};
+
 fn get_screen_scaling_factor() -> f64 {
+    #[cfg(target_os = "macos")]
     unsafe {
         let screens = NSScreen::screens(nil);
         let screen = NSArray::objectAtIndex(screens, 0);
         let scale_factor = NSScreen::backingScaleFactor(screen);
         scale_factor as f64
     }
-}
 
-#[cfg(not(target_os = "macos"))]
-fn get_screen_scaling_factor() -> f64 {
-    1.0 // Default value for non-macOS systems
+    #[cfg(target_os = "windows")]
+    unsafe {
+        let hdc = GetDC(HWND::default());
+        let dpi = GetDeviceCaps(hdc, LOGPIXELSX) as f64;
+        // 96.0 default dpi
+        dpi / 96.0 as f64
+    }
+
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    {
+        1.0
+    }
 }
 
 pub fn continuously_read_qr_code_from_screen<G>(on_qr_code_detected: G, max_loop_count: u32) -> Result<()>

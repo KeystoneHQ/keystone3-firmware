@@ -345,6 +345,8 @@ char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
         return "Typhon";
     } else if (index == WALLET_LIST_BEGIN) {
         return "Begin";
+    } else if (index == WALLET_LIST_HELIUM) {
+        return "Helium";
     }
     return g_walletBtn[index].name;
 }

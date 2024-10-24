@@ -552,7 +552,10 @@ int32_t prepare_qrcode()
     return readBytes;
 }
 
-#ifdef COMPILE_MACOS_SIMULATOR
+// Comment out this macro if you need to retrieve data from the file
+#define GET_QR_DATA_FROM_SCREEN
+
+#ifdef GET_QR_DATA_FROM_SCREEN
 static struct URParseResult *urResult;
 static UrViewType_t viewType;
 static bool firstQrFlag = true;

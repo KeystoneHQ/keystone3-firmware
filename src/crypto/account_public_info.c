@@ -1573,12 +1573,18 @@ void SetAccountIndex(const char* chainName, uint32_t index)
 
 uint32_t GetConnectWalletPathIndex(const char* walletName)
 {
-    return GetTemplateWalletValue(walletName, "derivePath");
+    char name[BUFFER_SIZE_32];
+    strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
+    RemoveFormatChar(name);
+    return GetTemplateWalletValue(name, "derivePath");
 }
 
 void SetConnectWalletPathIndex(const char* walletName, uint32_t index)
 {
-    SetTemplateWalletValue(walletName, "derivePath", index);
+    char name[BUFFER_SIZE_32];
+    strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
+    RemoveFormatChar(name);
+    SetTemplateWalletValue(name, "derivePath", index);
 }
 
 uint32_t GetConnectWalletAccountIndex(const char* walletName)
@@ -1588,7 +1594,6 @@ uint32_t GetConnectWalletAccountIndex(const char* walletName)
     strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
     RemoveFormatChar(name);
     cJSON *rootJson = ReadAndParseAccountJson(NULL, NULL);
-
     cJSON *item = cJSON_GetObjectItem(rootJson, name);
     if (item == NULL) {
         printf("GetConnectWalletAccountIndex get %s not exist\r\n", name);
@@ -1677,7 +1682,6 @@ static uint32_t GetTemplateWalletValue(const char* walletName, const char* key)
 {
     uint32_t value = 0;
     cJSON* rootJson = ReadAndParseAccountJson(NULL, NULL);
-
     cJSON* item = cJSON_GetObjectItem(rootJson, walletName);
     if (item == NULL) {
         printf("GetTemplateWalletValue get %s not exist\r\n", walletName);

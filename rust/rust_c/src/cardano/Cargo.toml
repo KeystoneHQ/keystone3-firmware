@@ -7,14 +7,15 @@ edition = "2021"
 
 [dependencies]
 keystore = { path = "../../../keystore", default-features = false }
-app_cardano = {path = "../../../apps/cardano"}
+app_cardano = { path = "../../../apps/cardano" }
 third_party = { path = "../../../third_party" }
 app_utils = { path = "../../../apps/utils" }
-rust_tools = {path="../../../tools"}
+rust_tools = { path = "../../../tools" }
 cty = "0.2.2"
 cstr_core = "0.2.6"
+minicbor = { version = "0.19", features = ["alloc"] }
 
-common_rust_c = {path = "../common"}
+common_rust_c = { path = "../common" }
 
 [features]
 debug-memory = []

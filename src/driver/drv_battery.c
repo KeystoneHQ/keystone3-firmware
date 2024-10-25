@@ -264,7 +264,7 @@ bool BatteryIntervalHandler(void)
         }
 
         // delayIncrease == 4 * 80 320s
-        if (percent > g_batterPercent || delayIncrease == 2) {
+        if (percent > g_batterPercent || delayIncrease == 4) {
             g_batterPercent++;
             if (g_batterPercent >= 100) {
                 g_batterPercent = 100;

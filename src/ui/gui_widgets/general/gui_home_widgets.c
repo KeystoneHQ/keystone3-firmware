@@ -448,11 +448,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
 
 };
 
-static void CoinDealHandler(lv_event_t *e);
+static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin);
 static void AddFlagCountDownTimerHandler(lv_timer_t *timer);
 void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count);
 static void CloseArHintbox(void);
 static void ResetScrollState(lv_timer_t * timer);
+static void HomeScrollHandler(lv_event_t * e);
 
 static void CloseArHintbox(void)
 {
@@ -460,6 +461,24 @@ static void CloseArHintbox(void)
     if (g_keyboardWidget != NULL) {
         GuiDeleteKeyboardWidget(g_keyboardWidget);
     }
+}
+
+static uint8_t GetSelectedWalletCount(void)
+{
+    uint8_t selectCnt = 0;
+    for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS) {
+            continue;
+        }
+        if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
+            continue;
+        }
+
+        if (g_walletState[i].state == true) {
+            selectCnt++;
+        }
+    }
+    return selectCnt;
 }
 
 static void UpdateManageWalletState(bool needUpdate)
@@ -526,15 +545,7 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
     lv_obj_t *walletCardCont = g_homeWalletCardCont;
     uint8_t currentCoinAmount = 0;
     uint8_t totalCoinAmount = 0xFF;
-    for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS ||
-                (g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) ||
-                g_walletState[i].state == false ||
-                g_walletState[i].enable == false) {
-            continue;
-        }
-        totalCoinAmount++;
-    }
+    totalCoinAmount = GetSelectedWalletCount();
     if (!UpdateStartIndex(gesture, totalCoinAmount)) {
         return;
     }
@@ -566,7 +577,7 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
         };
         lv_obj_t *button = GuiCreateButton(walletCardCont, 208, 176, table, NUMBER_OF_ARRAYS(table),
                                            NULL, (void *) & (g_coinCardArray[i].index));
-        lv_obj_add_event_cb(button, CoinDealHandler, LV_EVENT_ALL, (void *) & (g_coinCardArray[i].index));
+        lv_obj_add_event_cb(button, HomeScrollHandler, LV_EVENT_ALL, (void *) & (g_coinCardArray[i].index));
         lv_obj_clear_flag(button, LV_OBJ_FLAG_GESTURE_BUBBLE);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 24 + ((i - j) % 2) * 224,
                      144 - GUI_MAIN_AREA_OFFSET + (((i - j) % 6) / 2) * 192);
@@ -614,47 +625,35 @@ static void GuiOpenARAddressNoticeWindow()
     lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
 }
 
-static void CoinDealHandler(lv_event_t *e)
+static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_GESTURE) {
-        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-        if (parent) {
-            lv_event_send(parent, LV_EVENT_GESTURE, NULL);
-            lv_event_send(parent, LV_EVENT_RELEASED, NULL);
-        }
-    } else if (code == LV_EVENT_CLICKED && g_isScrolling == false) {
-        HOME_WALLET_CARD_ENUM coin;
-        coin = *(HOME_WALLET_CARD_ENUM *)lv_event_get_user_data(e);
-
-        switch (coin) {
-        case HOME_WALLET_CARD_BTC:
-        case HOME_WALLET_CARD_LTC:
-        case HOME_WALLET_CARD_DASH:
-        case HOME_WALLET_CARD_BCH:
-            GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
-            break;
-        case HOME_WALLET_CARD_ETH:
-        case HOME_WALLET_CARD_SOL:
-        case HOME_WALLET_CARD_HNT:
-            GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
-            break;
-        case HOME_WALLET_CARD_ADA:
-            GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
-            break;
-        case HOME_WALLET_CARD_ARWEAVE: {
-            bool shouldGenerateArweaveXPub = IsArweaveSetupComplete();
-            if (!shouldGenerateArweaveXPub) {
-                GuiOpenARAddressNoticeWindow();
-                break;
-            }
-            GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
+    switch (coin) {
+    case HOME_WALLET_CARD_BTC:
+    case HOME_WALLET_CARD_LTC:
+    case HOME_WALLET_CARD_DASH:
+    case HOME_WALLET_CARD_BCH:
+        GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
+        break;
+    case HOME_WALLET_CARD_ETH:
+    case HOME_WALLET_CARD_SOL:
+    case HOME_WALLET_CARD_HNT:
+        GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
+        break;
+    case HOME_WALLET_CARD_ADA:
+        GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
+        break;
+    case HOME_WALLET_CARD_ARWEAVE: {
+        bool shouldGenerateArweaveXPub = IsArweaveSetupComplete();
+        if (!shouldGenerateArweaveXPub) {
+            GuiOpenARAddressNoticeWindow();
             break;
         }
-        default:
-            GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
-            break;
-        }
+        GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
+        break;
+    }
+    default:
+        GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
+        break;
     }
 }
 
@@ -740,6 +739,7 @@ void ScanQrCodeHandler(lv_event_t *e)
 
 void ConfirmManageAssetsHandler(lv_event_t *e)
 {
+    g_currentPage = 0;
     UpdateManageWalletState(true);
     UpdateHomeConnectWalletCard(GestureNone);
     GUI_DEL_OBJ(g_lastCosmosLine)
@@ -875,25 +875,48 @@ void GuiHomeSetWalletDesc(WalletDesc_t *wallet)
 
 static void HomeScrollHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
+    static lv_point_t touchStart;
+    static lv_point_t touchEnd;
 
-    if (code == LV_EVENT_GESTURE) {
-        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-        switch (dir) {
-        case LV_DIR_TOP:
-            UpdateHomeConnectWalletCard(GestureTop);
-            g_isScrolling = true;
-            break;
-        case LV_DIR_BOTTOM:
-            UpdateHomeConnectWalletCard(GestureBottom);
-            g_isScrolling = true;
-            break;
-        default:
-            break;
+#define SWIPE_THRESHOLD 50
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+
+    static bool isDragging = false;
+
+    if (code == LV_EVENT_PRESSED) {
+        lv_indev_t * indev = lv_indev_get_act();
+        lv_indev_get_point(indev, &touchStart);
+        isDragging = true;
+    } else if (code == LV_EVENT_PRESSING) {
+        if (isDragging) {
+            lv_indev_t * indev = lv_indev_get_act();
+            lv_indev_get_point(indev, &touchEnd);
         }
     } else if (code == LV_EVENT_RELEASED) {
-        lv_timer_t *timer = lv_timer_create(ResetScrollState, 200, NULL);
-        lv_timer_set_repeat_count(timer, 1);
+        if (isDragging) {
+            lv_indev_t * indev = lv_indev_get_act();
+            lv_indev_get_point(indev, &touchEnd);
+
+            int16_t diff_y = touchEnd.y - touchStart.y;
+            if (abs(diff_y) > SWIPE_THRESHOLD) {
+                if (diff_y < 0) {
+                    UpdateHomeConnectWalletCard(GestureTop);
+                    g_isScrolling = true;
+                } else {
+                    UpdateHomeConnectWalletCard(GestureBottom);
+                    g_isScrolling = true;
+                }
+            } else {
+                HOME_WALLET_CARD_ENUM coin;
+                coin = *(HOME_WALLET_CARD_ENUM *)lv_event_get_user_data(e);
+                CoinDealHandler(coin);
+            }
+
+            lv_timer_t *timer = lv_timer_create(ResetScrollState, 200, NULL);
+            lv_timer_set_repeat_count(timer, 1);
+            isDragging = false;
+        }
     }
 }
 
@@ -939,6 +962,11 @@ static void AddFlagCountDownTimerHandler(lv_timer_t *timer)
     lv_timer_del(timer);
     g_countDownTimer = NULL;
     UNUSED(g_countDownTimer);
+}
+
+void ClearHomePageCurrentIndex(void)
+{
+    g_currentPage = 0;
 }
 
 void GuiHomeRestart(void)

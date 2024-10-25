@@ -93,6 +93,7 @@ const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);
 void GuiHomeDeInit(void);
 void GuiShowRsaSetupasswordHintbox(void);
 void GuiShowRsaInitializatioCompleteHintbox(void);
+void ClearHomePageCurrentIndex(void);
 
 #endif /* _GUI_HOME_WIDGETS_H */
 #else

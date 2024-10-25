@@ -514,6 +514,7 @@ static void CloseCurrentParentAndCloseViewHandler(lv_event_t *e)
     GuiCLoseCurrentWorkingView();
     GuiLockScreenFpRecognize();
     GuiLockScreenTurnOn(&single);
+    GuiEmitSignal(SIG_CLEAR_HOME_PAGE_INDEX, NULL, 0);
     ResetSuccess();
     GuiModelWriteLastLockDeviceTime(0);
 }

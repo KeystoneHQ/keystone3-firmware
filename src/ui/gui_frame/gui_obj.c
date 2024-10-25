@@ -259,7 +259,7 @@ void GuiStopCircleAroundAnimation(void)
     }
 }
 
-void *GuiCreateConfirmSlider(lv_obj_t *parent, lv_event_cb_t cb)
+void *GuiCreateConfirmSlider(lv_obj_t *parent, lv_event_cb_t cb, bool canSign)
 {
     lv_obj_t *cont = GuiCreateContainerWithParent(parent, 480, 114);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
@@ -276,7 +276,11 @@ void *GuiCreateConfirmSlider(lv_obj_t *parent, lv_event_cb_t cb)
     lv_obj_set_align(label, LV_ALIGN_CENTER);
 
     lv_obj_t *slider = lv_slider_create(bgCont);
-    lv_obj_add_event_cb(slider, cb, LV_EVENT_RELEASED, NULL);
+    if (canSign) {
+        lv_obj_add_event_cb(slider, cb, LV_EVENT_RELEASED, NULL);
+    } else {
+        lv_obj_add_state(slider, LV_STATE_DISABLED);
+    }
     lv_obj_remove_style_all(slider);
     lv_obj_set_size(slider, 305, 74);
     lv_obj_set_align(slider, LV_ALIGN_CENTER);
@@ -284,7 +288,11 @@ void *GuiCreateConfirmSlider(lv_obj_t *parent, lv_event_cb_t cb)
     lv_obj_set_style_radius(slider, 24, LV_PART_MAIN);
     lv_obj_set_style_pad_ver(slider, 0, LV_PART_MAIN);
 
-    lv_obj_set_style_bg_img_src(slider, &imgConfirmSlider, LV_PART_KNOB);
+    if (canSign) {
+        lv_obj_set_style_bg_img_src(slider, &imgConfirmSlider, LV_PART_KNOB);
+    } else {
+        lv_obj_set_style_bg_img_src(slider, &imgDenySign, LV_PART_KNOB);
+    }
     lv_obj_set_style_border_width(slider, 0, LV_PART_KNOB);
     lv_obj_set_style_pad_all(slider, 20, LV_PART_KNOB);
     return slider;

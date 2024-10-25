@@ -92,9 +92,9 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_ETH_TYPEDDATA,
 #ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[0,0],\"size\":[480,542],\"align\":0,\"bg_opa\":0,\"aflag\":16,\"children\":[{\"type\":\"container\",\"pos\":[36,24],\"size\":[408,298],\"align\":0,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Domain Name\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataDomianName\",\"pos\":[24,54],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Verifying Contract\",\"pos\":[24,100],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataDomianVerifyContract\",\"pos\":[24,138],\"text_color\":16777215,\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Primary Type\",\"pos\":[24,214],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataPrimayType\",\"pos\":[24,252],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"label\",\"text\":\"Message\",\"pos\":[36,354],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataMessage\",\"text_len_func\":\"GetEthTypedDataMessageLen\",\"pos\":[36,396],\"width\":408,\"bg_color\":16777215,\"bg_opa\":31,\"pad_vertical\":16,\"pad_horizontal\":24,\"radius\":24,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"}]}",
+        "{\"type\":\"container\",\"pos\":[0,0],\"size\":[480,542],\"align\":0,\"bg_opa\":0,\"aflag\":16,\"children\":[{\"exist_func\":\"GetEthPermitWarningExist\",\"type\":\"container\",\"pos\":[36,24],\"size\":[408,152],\"align\":0,\"bg_color\":16078897,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"img\",\"pos\":[24,24],\"img_src\":\"imgWarningRed\"},{\"type\":\"label\",\"text\":\"WARNING\",\"pos\":[68,24],\"font\":\"openSansEnText\",\"text_color\":16078897},{\"type\":\"label\",\"text\":\"sign_eth_permit_warn\",\"pos\":[24,68],\"text_color\":16777215,\"font\":\"illustrate\",\"text_width\":360}]},{\"type\":\"container\",\"size\":[408,298],\"pos_func\":\"GetEthTypeDomainPos\",\"align\":0,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Domain Name\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataDomianName\",\"pos\":[24,54],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Verifying Contract\",\"pos\":[24,100],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataDomianVerifyContract\",\"pos\":[24,138],\"text_color\":16777215,\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Primary Type\",\"pos\":[24,214],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataPrimayType\",\"pos\":[24,252],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"label\",\"text\":\"Message\",\"pos\":[0,16],\"align_to\":-2,\"align\":13,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataMessage\",\"text_len_func\":\"GetEthTypedDataMessageLen\",\"pos\":[0,16],\"align_to\":-2,\"align\":13,\"width\":408,\"bg_color\":16777215,\"bg_opa\":31,\"pad_vertical\":16,\"pad_horizontal\":24,\"radius\":24,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"},{\"exist_func\":\"GetEthPermitCantSign\",\"type\":\"container\",\"pos\":[0,16],\"align_to\":-2,\"align\":13,\"size\":[408,182],\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"img\",\"pos\":[24,24],\"img_src\":\"imgWarningRed\"},{\"type\":\"label\",\"text\":\"Cant't Sign it Now\",\"pos\":[68,24],\"font\":\"openSansEnText\",\"text_color\":16078897},{\"type\":\"label\",\"text\":\"sign_eth_permit_deny_sing\",\"pos\":[24,68],\"text_color\":16777215,\"font\":\"illustrate\",\"text_width\":360}]}]}",
 #else
-        PC_SIMULATOR_PATH "/page_eth.json",
+        PC_SIMULATOR_PATH "/page_eth_type.json",
 #endif
         GuiGetEthTypeData,
         NULL,
@@ -465,6 +465,8 @@ GetContSizeFunc GetEthObjPos(char *type)
 {
     if (!strcmp(type, "GetEthToLabelPos")) {
         return GetEthToLabelPos;
+    } else if (!strcmp(type, "GetEthTypeDomainPos")) {
+        return GetEthTypeDomainPos;
     }
     return NULL;
 }
@@ -493,6 +495,7 @@ GetContSizeFunc GuiTemplatePosFuncGet(char *type)
     switch (g_reMapIndex) {
 #ifndef BTC_ONLY
     case REMAPVIEW_ETH:
+    case REMAPVIEW_ETH_TYPEDDATA:
         return GetEthObjPos(type);
     case REMAPVIEW_COSMOS:
         return GetCosmosObjPos(type);
@@ -1035,6 +1038,10 @@ GetObjStateFunc GuiTemplateStateFuncGet(char *type)
         return GetAdaVotingProceduresExist;
     } else if (!strcmp(type, "GetAdaVotingProposalsExist")) {
         return GetAdaVotingProposalsExist;
+    } else if (!strcmp(type, "GetEthPermitWarningExist")) {
+        return GetEthPermitWarningExist;
+    } else if (!strcmp(type, "GetEthPermitCantSign")) {
+        return GetEthPermitCantSign;
     }
 #endif
     return NULL;
@@ -1750,6 +1757,7 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
     lv_obj_set_style_border_width(tabView, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(tabView, lv_color_hex(0xffffff), LV_PART_ITEMS);
     lv_obj_clear_flag(tabView, LV_OBJ_FLAG_SCROLL_ELASTIC);
+    lv_obj_set_scrollbar_mode(tabView, LV_SCROLLBAR_MODE_OFF);
 
     lv_obj_set_style_bg_color(tabView, lv_color_hex(0), LV_PART_ITEMS);
     lv_obj_set_style_text_color(tabView, lv_color_hex(0xffffff), LV_PART_ITEMS);
@@ -1769,6 +1777,8 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
         } else if (i == 1) {
             tabChild = lv_tabview_add_tab(tabView, _("Details"));
         }
+        lv_obj_set_scrollbar_mode(tabChild, LV_SCROLLBAR_MODE_OFF);
+        lv_obj_clear_flag(tabChild, LV_OBJ_FLAG_SCROLL_ELASTIC);
         lv_obj_set_style_pad_all(tabChild, 0, LV_PART_MAIN);
         lv_obj_set_style_border_width(tabChild, 0, LV_PART_MAIN);
         lv_obj_set_style_shadow_width(tabChild, 0, LV_PART_MAIN);

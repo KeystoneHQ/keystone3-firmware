@@ -26,6 +26,7 @@
 #include "account_manager.h"
 #include "gui_pending_hintbox.h"
 #ifndef BTC_ONLY
+#include "gui_eth.h"
 #include "general/eapdu_services/service_resolve_ur.h"
 #endif
 #ifndef COMPILE_SIMULATOR
@@ -80,6 +81,7 @@ static void RecognizeFailHandler(lv_timer_t *timer);
 #ifndef BTC_ONLY
 static TransactionMode GetCurrentTransactionMode(void);
 #endif
+static bool GuiCheckIsTransactionSign(void);
 static void TransactionGoToHomeViewHandler(lv_event_t *e);
 static void ThrowError(int32_t errorCode);
 
@@ -166,7 +168,8 @@ void GuiTransactionDetailInit(uint8_t viewType)
     g_needSign = true;
     GuiTransactionDetailNavBarInit();
     ParseTransaction(g_viewType);
-    GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
+    bool isCanSign = GuiCheckIsTransactionSign();
+    GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler, isCanSign);
     g_fingerSignCount = 0;
     GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
 }
@@ -389,4 +392,12 @@ static void RecognizeFailHandler(lv_timer_t *timer)
     }
     lv_timer_del(timer);
     g_fpRecognizeTimer = NULL;
+}
+
+static bool GuiCheckIsTransactionSign(void)
+{
+#ifndef BTC_ONLY
+    return !GetEthPermitCantSign(NULL, NULL);
+#endif
+    return true;
 }

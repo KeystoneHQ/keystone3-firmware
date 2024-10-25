@@ -170,6 +170,7 @@ void ProcessURService(EAPDURequestPayload_t *payload)
     } else {
         GotoFailPage(PRS_PARSING_ERROR, checkResult->error_message);
     }
+    free_TransactionCheckResult(checkResult);
 #endif
 }
 

@@ -9,35 +9,13 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
@@ -541,6 +519,8 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"password_score_good", "Good"},
     {"password_score_normal", "Normal"},
     {"password_score_weak", "Weak"},
+    {"permit_switch_desc", "The device will enable or disable Permit signing based on the current setting."},
+    {"permit_switch_title", "Permit Signing Update"},
     {"pin_code", "PIN CODE"},
     {"pin_label", "PIN"},
     {"please_enter_passcode", "Please Enter Passcode"},
@@ -671,6 +651,8 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"shamir_phrase_verify_success_desc2", "Tap the button below and hand the Keystone over to the custodian of Share 2."},
     {"shamir_phrase_verify_success_title", "Verified"},
     {"show_checksum", "Show checksum"},
+    {"sign_eth_permit_deny_sing", "Permit signing is currently disabled. Please enable it in Settings before signing it."},
+    {"sign_eth_permit_warn", "Signing Permit grants others access to your tokens, ensure safety."},
     {"sign_message_check_address", "Please carefully verify and compare the address."},
     {"sign_transaction", "Transaction Signing"},
     {"sign_transaction_desc", "Please Wait..."},
@@ -721,6 +703,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"support_link", "support@keyst.one"},
     {"switch_account", "Switch Account"},
     {"switch_address", "Switch Address"},
+    {"system_settings_permit_switch", "Permit Signing"},
     {"system_settings_screen_lock_auto_lock", "Auto Lock"},
     {"system_settings_screen_lock_auto_lock_10mins", "10 minutes"},
     {"system_settings_screen_lock_auto_lock_15secs", "15 seconds"},
@@ -883,12 +866,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1403,6 +1383,8 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"password_score_good", "Gut"},
     {"password_score_normal", "Normal"},
     {"password_score_weak", "Schwach"},
+    {"permit_switch_desc", "Das Gerät aktiviert oder deaktiviert die Permit-Signierung basierend auf der aktuellen Einstellung."},
+    {"permit_switch_title", "Permit-Signierung Aktualisierung"},
     {"pin_code", "PIN-Code"},
     {"pin_label", "PIN"},
     {"please_enter_passcode", "Bitte Passcode eingeben"},
@@ -1533,6 +1515,8 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"shamir_phrase_verify_success_desc2", "Drücken Sie die Taste unten und übergeben Sie den Schlüsselstein dem Verwalter von Share 2."},
     {"shamir_phrase_verify_success_title", "Verifiziert"},
     {"show_checksum", "Zeige Prüfsumme"},
+    {"sign_eth_permit_deny_sing", "Die Permit-Signierung ist derzeit deaktiviert. Bitte aktivieren Sie sie in den Einstellungen, bevor Sie unterschreiben."},
+    {"sign_eth_permit_warn", "Die Unterzeichnung der Permit gewährt anderen Zugriff auf Ihre Token, stellen Sie die Sicherheit sicher."},
     {"sign_message_check_address", "Bitte überprüfen und vergleichen Sie die Adresse sorgfältig."},
     {"sign_transaction", "Transaktionsunterzeichnung"},
     {"sign_transaction_desc", "Bitte warten..."},
@@ -1583,6 +1567,7 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"support_link", "support@keyst.one"},
     {"switch_account", "Konto wechseln"},
     {"switch_address", "Adresse wechseln"},
+    {"system_settings_permit_switch", "Permit-Signierung"},
     {"system_settings_screen_lock_auto_lock", "Automatische Verriegelung"},
     {"system_settings_screen_lock_auto_lock_10mins", "10 Minuten"},
     {"system_settings_screen_lock_auto_lock_15secs", "15 Sekunden"},
@@ -1745,12 +1730,9 @@ const static lv_i18n_phrase_t de_singulars[] = {
 
 static uint8_t de_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -2265,6 +2247,8 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"password_score_good", "Bueno"},
     {"password_score_normal", "Normal"},
     {"password_score_weak", "Débil"},
+    {"permit_switch_desc", "El dispositivo habilitará o deshabilitará la firma Permit según la configuración actual."},
+    {"permit_switch_title", "Actualización de firma Permit"},
     {"pin_code", "Código PIN"},
     {"pin_label", "PIN"},
     {"please_enter_passcode", "Por favor ingresa el código de acceso"},
@@ -2395,6 +2379,8 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"shamir_phrase_verify_success_desc2", "Toca el botón de abajo y entrega la Keystone al encargado del fragmento 2"},
     {"shamir_phrase_verify_success_title", "Verificado"},
     {"show_checksum", "Mostrar suma de comprobación"},
+    {"sign_eth_permit_deny_sing", "La firma de Permit está actualmente deshabilitada. Por favor, habilítela en Configuración antes de firmar."},
+    {"sign_eth_permit_warn", "La firma del Permit otorga a otros acceso a sus tokens, asegure la seguridad."},
     {"sign_message_check_address", "Por favor, verifique cuidadosamente y compare la dirección."},
     {"sign_transaction", "Firma de transacción"},
     {"sign_transaction_desc", "Favor de esperar..."},
@@ -2445,6 +2431,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"support_link", "support@keyst.one"},
     {"switch_account", "Cambiar cuenta"},
     {"switch_address", "Cambiar dirección"},
+    {"system_settings_permit_switch", "Firma de Permit"},
     {"system_settings_screen_lock_auto_lock", "Bloqueo automático"},
     {"system_settings_screen_lock_auto_lock_10mins", "10 minutos"},
     {"system_settings_screen_lock_auto_lock_15secs", "15 segundos"},
@@ -2607,8 +2594,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
 
 static uint8_t es_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
+    uint32_t n = op_n(num); UNUSED(n);
 
 
     if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -3124,6 +3110,8 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"password_score_good", "良い"},
     {"password_score_normal", "通常"},
     {"password_score_weak", "弱い"},
+    {"permit_switch_desc", "デバイスは現在の設定に基づいてPermit署名を有効または無効にします."},
+    {"permit_switch_title", "Permit署名の更新"},
     {"pin_code", "ピンコード"},
     {"pin_label", "ピン"},
     {"please_enter_passcode", "パスコードを入力してください."},
@@ -3254,6 +3242,8 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"shamir_phrase_verify_success_desc2", "ボタンをタップして、下にありますキーストーンをシェア2の管理人に渡してください."},
     {"shamir_phrase_verify_success_title", "検証済み"},
     {"show_checksum", "チェックサムを表示"},
+    {"sign_eth_permit_deny_sing", "Permit署名は現在無効になっています。署名する前に設定で有効にしてください."},
+    {"sign_eth_permit_warn", "Permitの署名により他者があなたのトークンにアクセスできるようになります。安全性を確認してください."},
     {"sign_message_check_address", "住所を注意深く確認して比較してください"},
     {"sign_transaction", "取引の署名"},
     {"sign_transaction_desc", "お待ちください..."},
@@ -3304,6 +3294,7 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"support_link", "support@keyst.one"},
     {"switch_account", "スイッチアカウント"},
     {"switch_address", "スイッチアドレス"},
+    {"system_settings_permit_switch", "Permit署名"},
     {"system_settings_screen_lock_auto_lock", "自動ロック"},
     {"system_settings_screen_lock_auto_lock_10mins", "10分"},
     {"system_settings_screen_lock_auto_lock_15secs", "15秒"},
@@ -3981,6 +3972,8 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"password_score_good", "암호에 강함"},
     {"password_score_normal", "비밀번호 중"},
     {"password_score_weak", "비밀번호가 약함"},
+    {"permit_switch_desc", "현재 설정에 따라 기기에서 Permit 서명을 활성화 또는 비활성화합니다."},
+    {"permit_switch_title", "Permit 서명 업데이트"},
     {"pin_code", "PIN 코드"},
     {"pin_label", "PIN 코드"},
     {"please_enter_passcode", "비밀번호를 입력해주세요"},
@@ -4111,6 +4104,8 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"shamir_phrase_verify_success_desc2", "아래 버튼을 누르고 Keystone을 공유2의 관리자에게 넘겨줍니다."},
     {"shamir_phrase_verify_success_title", "인증 설공 "},
     {"show_checksum", "체크섬 표시"},
+    {"sign_eth_permit_deny_sing", "Permit 서명이 현재 비활성화되어 있습니다. 서명하기 전에 설정에서 활성화해 주세요."},
+    {"sign_eth_permit_warn", "Permit 서명은 다른 사람에게 토큰에 대한 접근 권한을 부여합니다. 안전을 확인하세요."},
     {"sign_message_check_address", "주소를 신중하게 확인하고 비교해주세요."},
     {"sign_transaction", "트랜잭션 서명"},
     {"sign_transaction_desc", "기다려주세요..."},
@@ -4161,6 +4156,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"support_link", "support@keyst.one"},
     {"switch_account", "계정 전환"},
     {"switch_address", "주소 전환"},
+    {"system_settings_permit_switch", "Permit 서명"},
     {"system_settings_screen_lock_auto_lock", "자동 잠금 시간"},
     {"system_settings_screen_lock_auto_lock_10mins", "10분"},
     {"system_settings_screen_lock_auto_lock_15secs", "15초"},
@@ -4838,6 +4834,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"password_score_good", "Хороший"},
     {"password_score_normal", "Нормальный"},
     {"password_score_weak", "Слабый"},
+    {"permit_switch_desc", "Устройство включит или отключит подписание Permit в соответствии с текущей настройкой."},
+    {"permit_switch_title", "Обновление подписания Permit"},
     {"pin_code", "PIN-КОД"},
     {"pin_label", "PIN"},
     {"please_enter_passcode", "Введите код-пароль"},
@@ -4968,6 +4966,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"shamir_phrase_verify_success_desc2", "Нажмите на кнопку ниже и передайте устройство держателю Части 2."},
     {"shamir_phrase_verify_success_title", "Проверено"},
     {"show_checksum", "Показать контрольную сумму"},
+    {"sign_eth_permit_deny_sing", "Подписание Permit в настоящее время отключено. Пожалуйста, включите его в Настройках перед подписанием."},
+    {"sign_eth_permit_warn", "Подписание Permit предоставляет другим доступ к вашим токенам, обеспечьте безопасность."},
     {"sign_message_check_address", "Пожалуйста, тщательно проверьте и сравните адрес"},
     {"sign_transaction", "Подписание транзакции"},
     {"sign_transaction_desc", "Подождите..."},
@@ -5018,6 +5018,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"support_link", "support@keyst.one"},
     {"switch_account", "Сменить счет"},
     {"switch_address", "Сменить адрес"},
+    {"system_settings_permit_switch", "Подписание Permit"},
     {"system_settings_screen_lock_auto_lock", "Блокировка"},
     {"system_settings_screen_lock_auto_lock_10mins", "10 минут"},
     {"system_settings_screen_lock_auto_lock_15secs", "15 секунд"},
@@ -5180,12 +5181,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -5703,6 +5701,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"password_score_good", "密码强"},
     {"password_score_normal", "密码中"},
     {"password_score_weak", "密码弱"},
+    {"permit_switch_desc", "设备将根据当前设置启用或禁用 Permit 签名."},
+    {"permit_switch_title", "Permit 签名更新"},
     {"pin_code", "PIN码"},
     {"pin_label", "PIN码"},
     {"please_enter_passcode", "请输入密码"},
@@ -5833,6 +5833,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"shamir_phrase_verify_success_desc2", "点击下面的按钮,然后将 Keystone 交给分片助记词 2 的托管人."},
     {"shamir_phrase_verify_success_title", "验证成功"},
     {"show_checksum", "显示校验和"},
+    {"sign_eth_permit_deny_sing", "Permit 签名当前已禁用，请在签名前在设置中启用."},
+    {"sign_eth_permit_warn", "签署 Permit 将授予他人访问您代币的权限，请确保安全."},
     {"sign_message_check_address", "请仔细核对和比较地址"},
     {"sign_transaction", "签名"},
     {"sign_transaction_desc", "请稍等..."},
@@ -5883,6 +5885,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"support_link", "support@keyst.one"},
     {"switch_account", "更换账户"},
     {"switch_address", "更换地址"},
+    {"system_settings_permit_switch", "Permit 签名"},
     {"system_settings_screen_lock_auto_lock", "自动锁屏"},
     {"system_settings_screen_lock_auto_lock_10mins", "10分钟"},
     {"system_settings_screen_lock_auto_lock_15secs", "15秒"},
@@ -6092,8 +6095,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -6106,13 +6109,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -6125,10 +6128,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -6143,23 +6146,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -6175,31 +6178,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -6214,6 +6217,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

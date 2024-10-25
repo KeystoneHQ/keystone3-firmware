@@ -29,6 +29,8 @@ static char g_fromEthEnsName[64];
 static char g_toEthEnsName[64];
 static bool g_fromEnsExist = false;
 static bool g_toEnsExist = false;
+static bool g_isPermit = false;
+static bool g_isPermitSingle = false;
 static ViewType g_viewType = ViewTypeUnKnown;
 
 const static EvmNetwork_t NETWORKS[] = {
@@ -734,6 +736,22 @@ UREncodeResult *GuiGetEthSignUrDataUnlimited(void)
     return GetEthSignDataDynamic(true);
 }
 
+static void UpdatePermitFlag(const char *primaryType)
+{
+    printf("primaryType: %s\n", primaryType);
+    if (!strncmp("Permit", primaryType, 6) || !strncmp("PermitSingle", primaryType, 12) || !strncmp("PermitBatch", primaryType, 11)) {
+        g_isPermit = true;
+        if (!strncmp("Permit", primaryType, 6)) {
+            g_isPermitSingle = true;
+        } else {
+            g_isPermitSingle = false;
+        }
+    } else {
+        g_isPermit = false;
+        g_isPermitSingle = false;
+    }
+}
+
 void *GuiGetEthTypeData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
@@ -749,6 +767,7 @@ void *GuiGetEthTypeData(void)
         PtrT_TransactionParseResult_DisplayETHTypedData parseResult = eth_parse_typed_data(data, ethXpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
+        UpdatePermitFlag(parseResult->data->primary_type);
     } while (0);
     free_TransactionCheckResult(result);
     free_ptr_string(rootPath);
@@ -1113,6 +1132,12 @@ void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param)
     *y = 130 + g_fromEnsExist * 38;
 }
 
+void GetEthTypeDomainPos(uint16_t *x, uint16_t *y, void *param)
+{
+    *x = 36;
+    *y = (152 + 16) * g_isPermit + 26;
+}
+
 bool GetEthContractDataExist(void *indata, void *param)
 {
     return g_contractDataExist;
@@ -1286,6 +1311,17 @@ static bool GetSafeContractData(char* inputData)
     return false;
 }
 
+bool GetEthPermitWarningExist(void *indata, void *param)
+{
+    return g_isPermit;
+}
+
+bool GetEthPermitCantSign(void *indata, void *param)
+{
+    printf("g_isPermitSingle = %d\n", g_isPermitSingle);
+    return g_isPermitSingle;
+}
+
 bool GetEthContractFromInternal(char *address, char *inputData)
 {
     if (GetSafeContractData(inputData)) {
@@ -1349,6 +1385,8 @@ void FreeContractData(void)
 
 void FreeEthMemory(void)
 {
+    g_isPermitSingle = false;
+    g_isPermit = false;
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);

@@ -183,7 +183,7 @@ void FpSaveKeyInfo(bool add)
 
 uint16_t GetCurrentUSParsingRequestID()
 {
-    return 0;
+    return 0xFFFF;
 }
 
 #ifndef BTC_ONLY

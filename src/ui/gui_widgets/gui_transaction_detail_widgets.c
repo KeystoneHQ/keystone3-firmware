@@ -398,7 +398,9 @@ static void RecognizeFailHandler(lv_timer_t *timer)
 static bool GuiCheckIsTransactionSign(void)
 {
 #ifndef BTC_ONLY
-    return (!GetEthPermitCantSign(NULL, NULL) && GetPermitSign());
+    if (GetEthPermitCantSign(NULL, NULL) && !GetPermitSign()) {
+        return false;
+    }
 #endif
     return true;
 }

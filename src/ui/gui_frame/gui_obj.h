@@ -93,7 +93,7 @@ void *GuiCreateDividerLine(lv_obj_t *parent);
 void *GuiCreateCircleAroundAnimation(lv_obj_t *parent, int w);
 void GuiStopCircleAroundAnimation(void);
 void GuiSetAngle(void* img, int32_t v);
-void *GuiCreateConfirmSlider(lv_obj_t *parent, lv_event_cb_t cb, bool canSign);
+void *GuiCreateConfirmSlider(lv_obj_t *parent, lv_event_cb_t cb);
 void *GuiCreateStatusCoinButton(lv_obj_t *parent, const char *text, const void *src);
 void *GuiCreateTileView(lv_obj_t *parent);
 void *GuiCreateAnimView(lv_obj_t *parent, uint16_t animHeight);

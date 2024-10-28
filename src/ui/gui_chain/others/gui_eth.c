@@ -13,6 +13,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "drv_mpu.h"
+#include "device_setting.h"
 
 static void decodeEthContractData(void *parseResult);
 static bool GetEthErc20ContractData(void *parseResult);
@@ -623,6 +624,8 @@ void GuiSetEthUrData(URParseResult *urResult, URParseMultiResult *urMultiResult,
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
     g_viewType = g_isMulti ? g_urMultiResult->t : g_urResult->t;
+    g_isPermitSingle = false;
+    g_isPermit = false;
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                           \
@@ -913,8 +916,6 @@ void *GuiGetEthData(void)
 {
     memset_s(g_fromEthEnsName, sizeof(g_fromEthEnsName), 0, sizeof(g_fromEthEnsName));
     memset_s(g_toEthEnsName, sizeof(g_toEthEnsName), 0, sizeof(g_toEthEnsName));
-    g_isPermitSingle = false;
-    g_isPermit = false;
     g_contractDataExist = false;
     g_erc20Name = NULL;
     CHECK_FREE_PARSE_RESULT(g_parseResult);
@@ -1321,7 +1322,8 @@ bool GetEthPermitWarningExist(void *indata, void *param)
 bool GetEthPermitCantSign(void *indata, void *param)
 {
     printf("get eth g_isPermitSingle = %d\n", g_isPermitSingle);
-    return g_isPermitSingle;
+    printf("GetPermitSign = %d\n", GetPermitSign());
+    return (g_isPermitSingle && !GetPermitSign());
 }
 
 bool GetEthContractFromInternal(char *address, char *inputData)

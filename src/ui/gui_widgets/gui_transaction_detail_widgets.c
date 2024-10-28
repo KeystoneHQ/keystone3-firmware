@@ -25,7 +25,6 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_pending_hintbox.h"
-#include "device_setting.h"
 #ifndef BTC_ONLY
 #include "gui_eth.h"
 #include "general/eapdu_services/service_resolve_ur.h"
@@ -65,6 +64,7 @@ static uint32_t g_fingerSignErrCount = 0;
 static lv_timer_t *g_fpRecognizeTimer;
 static lv_obj_t *g_parseErrorHintBox = NULL;
 static bool g_needSign = true;
+static lv_obj_t *g_signSlider = NULL;
 
 typedef enum {
     TRANSACTION_MODE_QR_CODE = 0,
@@ -169,8 +169,7 @@ void GuiTransactionDetailInit(uint8_t viewType)
     g_needSign = true;
     GuiTransactionDetailNavBarInit();
     ParseTransaction(g_viewType);
-    bool isCanSign = GuiCheckIsTransactionSign();
-    GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler, isCanSign);
+    g_signSlider = GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
     g_fingerSignCount = 0;
     GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
 }
@@ -213,6 +212,11 @@ void GuiTransactionDetailParseSuccess(void *param)
     GuiTemplateReload(g_pageWidget->contentZone, g_viewType);
     if (!g_needSign) {
         GuiCreateErrorCodeWindow(ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, NULL, (ErrorWindowCallback)GuiCLoseCurrentWorkingView);
+    }
+    bool isCanSign = GuiCheckIsTransactionSign();
+    if (!isCanSign) {
+        lv_obj_add_state(g_signSlider, LV_STATE_DISABLED);
+        lv_obj_set_style_bg_img_src(g_signSlider, &imgDenySign, LV_PART_KNOB);
     }
 }
 
@@ -398,7 +402,8 @@ static void RecognizeFailHandler(lv_timer_t *timer)
 static bool GuiCheckIsTransactionSign(void)
 {
 #ifndef BTC_ONLY
-    if (GetEthPermitCantSign(NULL, NULL) && !GetPermitSign()) {
+    printf("GetEthPermitCantSign(NULL, NULL) = %d\n", GetEthPermitCantSign(NULL, NULL));
+    if (GetEthPermitCantSign(NULL, NULL)) {
         return false;
     }
 #endif

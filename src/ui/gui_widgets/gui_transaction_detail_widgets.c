@@ -25,6 +25,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_pending_hintbox.h"
+#include "device_setting.h"
 #ifndef BTC_ONLY
 #include "gui_eth.h"
 #include "general/eapdu_services/service_resolve_ur.h"
@@ -397,7 +398,7 @@ static void RecognizeFailHandler(lv_timer_t *timer)
 static bool GuiCheckIsTransactionSign(void)
 {
 #ifndef BTC_ONLY
-    return !GetEthPermitCantSign(NULL, NULL);
+    return (!GetEthPermitCantSign(NULL, NULL) && GetPermitSign());
 #endif
     return true;
 }

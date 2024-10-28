@@ -913,6 +913,8 @@ void *GuiGetEthData(void)
 {
     memset_s(g_fromEthEnsName, sizeof(g_fromEthEnsName), 0, sizeof(g_fromEthEnsName));
     memset_s(g_toEthEnsName, sizeof(g_toEthEnsName), 0, sizeof(g_toEthEnsName));
+    g_isPermitSingle = false;
+    g_isPermit = false;
     g_contractDataExist = false;
     g_erc20Name = NULL;
     CHECK_FREE_PARSE_RESULT(g_parseResult);
@@ -1318,7 +1320,7 @@ bool GetEthPermitWarningExist(void *indata, void *param)
 
 bool GetEthPermitCantSign(void *indata, void *param)
 {
-    printf("g_isPermitSingle = %d\n", g_isPermitSingle);
+    printf("get eth g_isPermitSingle = %d\n", g_isPermitSingle);
     return g_isPermitSingle;
 }
 
@@ -1385,8 +1387,6 @@ void FreeContractData(void)
 
 void FreeEthMemory(void)
 {
-    g_isPermitSingle = false;
-    g_isPermit = false;
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);

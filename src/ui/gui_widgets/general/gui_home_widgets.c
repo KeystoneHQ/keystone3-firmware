@@ -543,15 +543,14 @@ static bool UpdateStartIndex(int8_t gesture, uint8_t totalCount)
 static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
 {
     lv_obj_t *walletCardCont = g_homeWalletCardCont;
+    if (lv_obj_get_child_cnt(walletCardCont) > 0) {
+        lv_obj_clean(walletCardCont);
+    }
     uint8_t currentCoinAmount = 0;
     uint8_t totalCoinAmount = 0xFF;
     totalCoinAmount = GetSelectedWalletCount();
     if (!UpdateStartIndex(gesture, totalCoinAmount)) {
         return;
-    }
-
-    if (lv_obj_get_child_cnt(walletCardCont) > 0) {
-        lv_obj_clean(walletCardCont);
     }
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {

@@ -54,6 +54,7 @@ LV_IMG_DECLARE(imgWarn);
 LV_IMG_DECLARE(imgSuccess);
 LV_IMG_DECLARE(imgUnitConversion);
 LV_IMG_DECLARE(imgConfirmSlider);
+LV_IMG_DECLARE(imgDenySign);
 LV_IMG_DECLARE(imgScan);
 LV_IMG_DECLARE(imgScan48);
 LV_IMG_DECLARE(imgLTCorner);

@@ -742,9 +742,9 @@ UREncodeResult *GuiGetEthSignUrDataUnlimited(void)
 static void UpdatePermitFlag(const char *primaryType)
 {
     printf("primaryType: %s\n", primaryType);
-    if (!strncmp("Permit", primaryType, 6) || !strncmp("PermitSingle", primaryType, 12) || !strncmp("PermitBatch", primaryType, 11)) {
+    if (!strcmp("Permit", primaryType) || !strcmp("PermitSingle", primaryType) || !strcmp("PermitBatch", primaryType)) {
         g_isPermit = true;
-        if (!strncmp("Permit", primaryType, 6)) {
+        if (!strcmp("Permit", primaryType)) {
             g_isPermitSingle = true;
         } else {
             g_isPermitSingle = false;
@@ -1321,8 +1321,6 @@ bool GetEthPermitWarningExist(void *indata, void *param)
 
 bool GetEthPermitCantSign(void *indata, void *param)
 {
-    printf("get eth g_isPermitSingle = %d\n", g_isPermitSingle);
-    printf("GetPermitSign = %d\n", GetPermitSign());
     return (g_isPermitSingle && !GetPermitSign());
 }
 

@@ -549,9 +549,7 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
     uint8_t currentCoinAmount = 0;
     uint8_t totalCoinAmount = 0xFF;
     totalCoinAmount = GetSelectedWalletCount();
-    if (!UpdateStartIndex(gesture, totalCoinAmount)) {
-        return;
-    }
+    UpdateStartIndex(gesture, totalCoinAmount);
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {
         if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS ||

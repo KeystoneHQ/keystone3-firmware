@@ -546,9 +546,7 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
     uint8_t currentCoinAmount = 0;
     uint8_t totalCoinAmount = 0xFF;
     totalCoinAmount = GetSelectedWalletCount();
-    if (!UpdateStartIndex(gesture, totalCoinAmount)) {
-        return;
-    }
+    UpdateStartIndex(gesture, totalCoinAmount);
 
     if (lv_obj_get_child_cnt(walletCardCont) > 0) {
         lv_obj_clean(walletCardCont);

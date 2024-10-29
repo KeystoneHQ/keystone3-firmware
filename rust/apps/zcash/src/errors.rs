@@ -1,4 +1,4 @@
-use alloc::string::String;
+use alloc::string::{String, ToString};
 use third_party::thiserror;
 use thiserror::Error;
 

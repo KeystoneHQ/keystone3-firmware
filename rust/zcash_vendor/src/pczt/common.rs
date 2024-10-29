@@ -1,4 +1,4 @@
-use alloc::collections::BTreeMap;
+use alloc::{collections::BTreeMap, string::String, vec::Vec};
 
 /// Global fields that are relevant to the transaction as a whole.
 #[derive(Clone)]

@@ -160,10 +160,12 @@ impl fmt::Display for ParseError {
 impl Error for ParseError {}
 
 pub(crate) mod private {
-    use crate::algorithms::zcash::vendor::zcash_encoding;
+    use crate::zcash_encoding;
+    use alloc::vec;
 
     use super::super::super::zcash_protocol::consensus::NetworkType as Network;
     use super::{ParseError, Typecode, PADDING_LEN};
+    use alloc::format;
     use alloc::{borrow::ToOwned, vec::Vec};
     use core::{
         cmp,

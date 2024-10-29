@@ -1,8 +1,16 @@
 //! Structs for handling supported address types.
 
-use crate::algorithms::zcash::vendor::{orchard, zcash_address::{self, ToAddress}, zcash_primitives, zcash_protocol};
+use crate::{
+    orchard,
+    zcash_address::{self, ToAddress},
+    zcash_primitives, zcash_protocol,
+};
 
-use alloc::{string::{String, ToString}, vec::Vec};
+use alloc::{
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+};
 use zcash_address::{
     unified::{self, Container, Encoding, Typecode},
     ConversionError, TryFromRawAddress, ZcashAddress,

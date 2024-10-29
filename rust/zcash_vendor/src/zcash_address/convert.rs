@@ -1,6 +1,6 @@
 use core::{error::Error, fmt};
 
-use crate::algorithms::zcash::vendor::zcash_protocol::consensus::NetworkType as Network;
+use crate::zcash_protocol::consensus::NetworkType as Network;
 
 use super::{unified, AddressKind, ZcashAddress};
 

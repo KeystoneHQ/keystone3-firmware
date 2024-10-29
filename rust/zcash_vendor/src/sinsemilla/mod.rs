@@ -1,6 +1,6 @@
 //! Implementation of Sinsemilla outside the circuit.
 
-use alloc::vec::Vec;
+use alloc::{format, vec::Vec};
 use group::{Curve, Wnaf};
 use pasta_curves::{arithmetic::{CurveAffine, CurveExt}, pallas};
 use subtle::CtOption;

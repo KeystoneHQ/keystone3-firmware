@@ -1,11 +1,10 @@
 use core::{convert::TryInto, error::Error, fmt, str::FromStr};
 
-use crate::algorithms::zcash::vendor::zcash_address::AddressKind;
-use crate::algorithms::zcash::vendor::zcash_protocol::consensus::{NetworkConstants, NetworkType};
-use crate::algorithms::zcash::vendor::zcash_protocol::constants::{mainnet, regtest, testnet};
+use crate::zcash_address::AddressKind;
+use crate::zcash_protocol::consensus::{NetworkConstants, NetworkType};
+use crate::zcash_protocol::constants::{mainnet, regtest, testnet};
 use alloc::string::String;
 use alloc::vec::Vec;
-use reddsa::sapling;
 use third_party::bech32::{self, Bech32, Bech32m, Checksum, Hrp};
 
 use super::unified::{self, Encoding};

@@ -1,6 +1,9 @@
+use alloc::vec::Vec;
 use curve25519_dalek::scalar::Scalar;
 use third_party::cryptoxide::digest::Digest;
 use third_party::cryptoxide::sha3::Keccak256;
+use third_party::cryptoxide::hashing;
+use third_party::cryptoxide::ripemd160::Ripemd160;
 
 pub fn keccak256(data: &[u8]) -> [u8; 32] {
     let mut hasher = Keccak256::new();
@@ -22,4 +25,20 @@ pub fn calc_subaddress_m(secret_view_key: &[u8], major: u32, minor: u32) -> [u8;
 
 pub fn hash_to_scalar(data: &[u8]) -> Scalar {
     Scalar::from_bytes_mod_order(keccak256(data))
+}
+
+pub fn hash160(data: &[u8]) -> [u8; 20] {
+    ripemd160_digest(&sha256_digest(data))
+}
+
+pub(crate) fn sha256_digest(data: &[u8]) -> Vec<u8> {
+    hashing::sha256(&data).to_vec()
+}
+
+fn ripemd160_digest(data: &[u8]) -> [u8; 20] {
+    let mut hasher = Ripemd160::new();
+    hasher.input(data);
+    let mut output = [0u8; 20];
+    hasher.result(&mut output);
+    output
 }

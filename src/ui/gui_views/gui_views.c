@@ -120,7 +120,6 @@ void CloseParentAndNextHandler(lv_event_t *e)
 
 void CloseCurrentUserDataHandler(lv_event_t *e)
 {
-
     GuiViewHintBoxClear();
     GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
 }
@@ -212,6 +211,8 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         GuiLockScreenHidden();
         GuiFrameOpenView(&g_homeView);
         GuiUpdateOldAccountIndex();
+        GuiEmitSignal(SIG_CLEAR_HOME_PAGE_INDEX, NULL, 0);
+        GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
     } else {
         lv_event_cb_t cb = CloseCurrentUserDataHandler;
         const char *titleText = _("error_box_invalid_seed_phrase");

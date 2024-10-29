@@ -1,4 +1,3 @@
-#[cfg(not(test))]
 pub struct KTAllocator;
 
 #[allow(dead_code)]
@@ -7,7 +6,6 @@ extern "C" {
     pub fn RustFree(p: *mut cty::c_void);
 }
 
-#[cfg(not(test))]
 unsafe impl core::alloc::GlobalAlloc for KTAllocator {
     unsafe fn alloc(&self, layout: core::alloc::Layout) -> *mut u8 {
         let ptr = RustMalloc(layout.size() as i32);

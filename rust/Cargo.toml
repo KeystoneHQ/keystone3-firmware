@@ -1,0 +1,92 @@
+[workspace]
+members = [
+    # apps
+    "apps/aptos",
+    "apps/arweave",
+    "apps/bitcoin",
+    "apps/cardano",
+    "apps/cosmos",
+    "apps/ethereum",
+    "apps/near",
+    "apps/solana",
+    "apps/stellar",
+    "apps/sui",
+    "apps/ton",
+    "apps/tron",
+    "apps/utils",
+    "apps/wallets",
+    "apps/xrp",
+
+    # C interface entry
+    "rust_c",
+    # rust_c libs
+    "rust_c/src/aptos",
+    "rust_c/src/arweave",
+    "rust_c/src/bitcoin",
+    "rust_c/src/cardano",
+    "rust_c/src/common",
+    "rust_c/src/cosmos",
+    "rust_c/src/ethereum",
+    # "rust_c/src/kt_allocator",
+    "rust_c/src/near",
+    "rust_c/src/simulator",
+    "rust_c/src/solana",
+    "rust_c/src/stellar",
+    "rust_c/src/sui",
+    "rust_c/src/ton",
+    "rust_c/src/tron",
+    "rust_c/src/wallet",
+    "rust_c/src/xrp",
+
+    "rust_c/src/test_cmd",
+    "rust_c/src/test_cmd/src/btc_test_cmd",
+    "rust_c/src/test_cmd/src/general_test_cmd",
+
+    # other
+    "keystore",
+    "sim_qr_reader",
+    "third_party",
+    "tools",
+]
+
+[workspace.dependencies]
+app_aptos = { path = "apps/aptos" }
+app_arweave = { path = "apps/arweave" }
+app_bitcoin = { path = "apps/bitcoin" }
+app_cardano = { path = "apps/cardano" }
+app_cosmos = { path = "apps/cosmos" }
+app_ethereum = { path = "apps/ethereum" }
+app_near = { path = "apps/near" }
+app_solana = { path = "apps/solana" }
+app_stellar = { path = "apps/stellar" }
+app_sui = { path = "apps/sui" }
+app_ton = { path = "apps/ton" }
+app_tron = { path = "apps/tron" }
+app_utils = { path = "apps/utils" }
+app_wallets = { path = "apps/wallets" }
+app_xrp = { path = "apps/xrp" }
+
+aptos_rust_c = { path = "rust_c/src/aptos" }
+arweave_rust_c = { path = "rust_c/src/arweave" }
+bitcoin_rust_c = { path = "rust_c/src/bitcoin" }
+cardano_rust_c = { path = "rust_c/src/cardano" }
+common_rust_c = { path = "rust_c/src/common" }
+cosmos_rust_c = { path = "rust_c/src/cosmos" }
+ethereum_rust_c = { path = "rust_c/src/ethereum" }
+near_rust_c = { path = "rust_c/src/near" }
+solana_rust_c = { path = "rust_c/src/solana" }
+stellar_rust_c = { path = "rust_c/src/stellar" }
+sui_rust_c = { path = "rust_c/src/sui" }
+ton_rust_c = { path = "rust_c/src/ton" }
+tron_rust_c = { path = "rust_c/src/tron" }
+xrp_rust_c = { path = "rust_c/src/xrp" }
+wallet_rust_c = { path = "rust_c/src/wallet" }
+simulator_rust_c = { path = "rust_c/src/simulator" }
+
+keystore = { path = "keystore" }
+third_party = { path = "third_party" }
+tools = { path = "tools" }
+sim_qr_reader = { path = "sim_qr_reader" }
+
+cty = "0.2.0"
+cstr_core = "0.2.6"

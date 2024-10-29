@@ -6,28 +6,38 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keystore = { path = "../../../keystore", default-features = false }
-third_party = { path = "../../../third_party" }
-cty = "0.2.2"
-cstr_core = "0.2.6"
-app_utils = { path = "../../../apps/utils" }
-rust_tools = {path="../../../tools"}
+keystore = { workspace = true }
+cty = { workspace = true }
+cstr_core = { workspace = true }
+app_utils = { workspace = true }
+rust_tools = { workspace = true }
+base64 = { workspace = true }
+thiserror = { workspace = true }
+hex = { workspace = true }
+ur-registry = { workspace = true }
+serde_json = { workspace = true }   
+bitcoin = { workspace = true }
+bitcoin_hashes = { workspace = true }
+rsa = { workspace = true }
+cryptoxide = { workspace = true }
+ur-parse-lib = { workspace = true }
+sha1 = { workspace = true }
 
-app_bitcoin = { path = "../../../apps/bitcoin" }
-app_wallets = { path = "../../../apps/wallets" }
+app_bitcoin = { workspace = true }
+app_wallets = { workspace = true }
 
-app_ethereum = { path = "../../../apps/ethereum", optional = true }
-app_cardano = {path = "../../../apps/cardano", optional = true}
-app_tron = { path = "../../../apps/tron", optional = true }
-app_solana = { path = "../../../apps/solana", optional = true }
-app_near = { path = "../../../apps/near", optional = true }
-app_xrp = {path = "../../../apps/xrp", optional = true }
-app_cosmos = {path = "../../../apps/cosmos", default-features = false, optional = true}
-app_aptos = {path = "../../../apps/aptos", default-features = false, optional = true}
-app_sui = {path = "../../../apps/sui", optional = true}
-app_arweave = {path = "../../../apps/arweave", optional = true}
-app_stellar = {path = "../../../apps/stellar", optional = true}
-app_ton = {path = "../../../apps/ton", optional = true}
+app_ethereum = { workspace = true, optional = true }
+app_cardano = { workspace = true, optional = true }
+app_tron = { workspace = true, optional = true }
+app_solana = { workspace = true, optional = true }
+app_near = { workspace = true, optional = true }
+app_xrp = { workspace = true, optional = true }
+app_cosmos = { workspace = true, optional = true }
+app_aptos = { workspace = true, optional = true }
+app_sui = { workspace = true, optional = true }
+app_arweave = { workspace = true, optional = true }
+app_stellar = { workspace = true, optional = true }
+app_ton = { workspace = true, optional = true }
 
 [features]
 debug-memory = ["default"]

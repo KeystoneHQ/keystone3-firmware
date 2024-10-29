@@ -1,9 +1,9 @@
 use crate::crypto::keccak256;
 use alloc::format;
 use alloc::string::{String, ToString};
+use bitcoin::secp256k1::PublicKey;
+use hex;
 use keystore::algorithms::secp256k1::derive_public_key;
-use third_party::hex;
-use third_party::secp256k1::PublicKey;
 
 use crate::{EthereumError, Result};
 

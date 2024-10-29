@@ -19,12 +19,12 @@ use common_rust_c::ur::{QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT}
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use core::slice;
 use cty::c_char;
-use third_party::either::Either;
-use third_party::ur_registry::cosmos::cosmos_sign_request::{CosmosSignRequest, DataType};
-use third_party::ur_registry::cosmos::cosmos_signature::CosmosSignature;
-use third_party::ur_registry::cosmos::evm_sign_request::{EvmSignRequest, SignDataType};
-use third_party::ur_registry::cosmos::evm_signature::EvmSignature;
-use third_party::ur_registry::traits::RegistryItem;
+use either::Either;
+use ur_registry::cosmos::cosmos_sign_request::{CosmosSignRequest, DataType};
+use ur_registry::cosmos::cosmos_signature::CosmosSignature;
+use ur_registry::cosmos::evm_sign_request::{EvmSignRequest, SignDataType};
+use ur_registry::cosmos::evm_signature::EvmSignature;
+use ur_registry::traits::RegistryItem;
 
 fn get_public_key(seed: &[u8], path: &String) -> Result<Vec<u8>, CosmosError> {
     let path = normalize_path(path);

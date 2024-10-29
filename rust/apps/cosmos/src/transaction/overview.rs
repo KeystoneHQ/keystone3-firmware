@@ -6,9 +6,9 @@ use crate::proto_wrapper::msg::msg::{
 use crate::transaction::structs::CosmosTxDisplayType;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use base64;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_value, Value};
-use third_party::base64;
 
 use super::utils::{get_chain_id_by_address, get_network_by_chain_id};
 

@@ -23,7 +23,7 @@ use cty::c_char;
 use keystore::algorithms::ed25519;
 use rust_tools::convert_c_char;
 use structs::{DisplayTonProof, DisplayTonTransaction};
-use third_party::{
+use {
     hex,
     ur_registry::{
         ton::{ton_sign_request::TonSignRequest, ton_signature::TonSignature},

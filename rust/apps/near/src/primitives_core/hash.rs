@@ -6,9 +6,9 @@ use alloc::vec::Vec;
 
 use crate::primitives_core::serialize::{from_base, to_base};
 use borsh::maybestd::io;
+use cryptoxide::digest::Digest;
+use cryptoxide::sha2;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use third_party::cryptoxide::digest::Digest;
-use third_party::cryptoxide::sha2;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CryptoHash(pub [u8; 32]);
@@ -122,7 +122,7 @@ pub fn hash(data: &[u8]) -> CryptoHash {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use third_party::serde_json;
+    use serde_json;
 
     #[derive(Deserialize, Serialize)]
     struct Struct {

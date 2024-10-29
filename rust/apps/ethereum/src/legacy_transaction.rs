@@ -5,9 +5,9 @@ use core::str::FromStr;
 
 use bytes::BytesMut;
 use ethereum_types::{H256, U256};
+use hex;
 use rlp::{Decodable, DecoderError, Encodable, Rlp};
-use third_party::hex;
-use third_party::ur_registry::pb::protoc::EthTx;
+use ur_registry::pb::protoc::EthTx;
 
 use crate::erc20::encode_erc20_transfer_calldata;
 use crate::normalizer::{normalize_price, normalize_value};

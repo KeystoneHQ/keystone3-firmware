@@ -6,16 +6,19 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keystore = { path = "../../../../../keystore", default-features = false }
-app_wallets = { path = "../../../../../apps/wallets" }
-third_party = { path = "../../../../../third_party" }
-app_utils = { path = "../../../../../apps/utils" }
-rust_tools = {path="../../../../../tools"}
-app_arweave = {path = "../../../../../apps/arweave"}
-cty = "0.2.2"
-cstr_core = "0.2.6"
-
-common_rust_c = {path = "../../../common"}
+keystore = { workspace = true }
+app_wallets = { workspace = true }
+third_party = { workspace = true }
+app_utils = { workspace = true }
+rust_tools = { workspace = true }
+app_arweave = { workspace = true }
+cty = { workspace = true }
+cstr_core = { workspace = true }
+ur-registry = { workspace = true }
+hex = { workspace = true }
+bitcoin = { workspace = true }
+common_rust_c = { workspace = true }
+ed25519-bip32-core = { workspace = true }
 
 [features]
 default = ["multi-coins"]

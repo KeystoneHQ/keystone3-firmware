@@ -2,8 +2,8 @@ use alloc::string::{String, ToString};
 use keystore::errors::KeystoreError;
 use rlp::DecoderError;
 
-use third_party::thiserror;
-use third_party::thiserror::Error;
+use thiserror;
+use thiserror::Error;
 
 pub type Result<T> = core::result::Result<T, EthereumError>;
 

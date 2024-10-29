@@ -3,8 +3,8 @@ use alloc::string::ToString;
 use alloc::vec::Vec;
 
 use app_wallets::keplr::sync_info::SyncInfo;
-use third_party::ur_registry::extend::key_derivation_schema::{Curve, DerivationAlgo};
-use third_party::ur_registry::extend::qr_hardware_call::{CallParams, CallType, QRHardwareCall};
+use ur_registry::extend::key_derivation_schema::{Curve, DerivationAlgo};
+use ur_registry::extend::qr_hardware_call::{CallParams, CallType, QRHardwareCall};
 
 use common_rust_c::errors::RustCError;
 use common_rust_c::ffi::VecFFI;
@@ -105,12 +105,12 @@ impl Free for QRHardwareCallData {
     }
 }
 
-impl TryFrom<&third_party::ur_registry::extend::key_derivation_schema::KeyDerivationSchema>
+impl TryFrom<&ur_registry::extend::key_derivation_schema::KeyDerivationSchema>
     for KeyDerivationSchema
 {
     type Error = RustCError;
     fn try_from(
-        value: &third_party::ur_registry::extend::key_derivation_schema::KeyDerivationSchema,
+        value: &ur_registry::extend::key_derivation_schema::KeyDerivationSchema,
     ) -> Result<Self, Self::Error> {
         let path = value
             .get_key_path()

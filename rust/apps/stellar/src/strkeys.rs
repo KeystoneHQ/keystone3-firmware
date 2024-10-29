@@ -1,8 +1,8 @@
 use alloc::string::String;
 use alloc::vec::Vec;
+use cryptoxide::hashing;
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use keystore::errors::Result;
-use third_party::cryptoxide::hashing;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum StrKeyType {
@@ -106,7 +106,7 @@ pub fn sign_signature_base(signature_base: &[u8], seed: &[u8], path: &String) ->
 mod tests {
     use super::*;
     use alloc::string::{String, ToString};
-    use third_party::hex;
+    use hex;
 
     #[test]
     fn test_stellar_private_key() {
@@ -120,7 +120,7 @@ mod tests {
         );
 
         let private_key = get_private_key_by_seed(&seed, &path).unwrap();
-        let (keypair, _) = third_party::cryptoxide::ed25519::keypair(&private_key);
+        let (keypair, _) = cryptoxide::ed25519::keypair(&private_key);
         assert_eq!(
             "900ff8fe4a728e3bb36e27f01dad78304efdacf7839a83952d1a85af6cc1a39bd4b8322ed2ca75a7a8f7eb57057471b17bd7d5fea4f9a8a293636b4d653fcf3d",
             hex::encode(keypair)

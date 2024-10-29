@@ -14,9 +14,9 @@ use crate::parser::Parser;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use cryptoxide::hashing::sha3::Sha3_256;
+use hex;
 use parser::AptosTx;
-use third_party::cryptoxide::hashing::sha3::Sha3_256;
-use third_party::hex;
 
 use crate::errors::Result;
 
@@ -50,8 +50,8 @@ mod tests {
 
     use super::*;
 
-    use third_party::hex::FromHex;
-    use third_party::hex::ToHex;
+    use hex::FromHex;
+    use hex::ToHex;
 
     #[test]
     fn test() {

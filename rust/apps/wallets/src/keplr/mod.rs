@@ -4,13 +4,13 @@ use crate::keplr::sync_info::SyncInfo;
 use crate::DEVICE_TYPE;
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use bitcoin::bip32;
+use bitcoin::bip32::{ChildNumber, DerivationPath};
 use core::str::FromStr;
-use third_party::bitcoin::bip32;
-use third_party::bitcoin::bip32::{ChildNumber, DerivationPath};
-use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
-use third_party::ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
-use third_party::ur_registry::error::URResult;
-use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::crypto_hd_key::CryptoHDKey;
+use ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
+use ur_registry::error::URResult;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 
 fn get_origin(
     sync_info: &SyncInfo,
@@ -71,7 +71,7 @@ pub fn generate_sync_ur(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use third_party::hex;
+    use hex;
 
     #[test]
     fn test_generate_keplr_sync_ur() {

@@ -13,7 +13,7 @@ use core::alloc::Layout;
 use alloc_cortex_m::CortexMHeap;
 use app_solana::message::Message;
 use app_solana::read::Read;
-use third_party::hex::FromHex;
+use hex::FromHex;
 
 use cortex_m::asm;
 use cortex_m_rt::entry;

@@ -1,5 +1,5 @@
 use alloc::string::String;
-use third_party::hex;
+use hex;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Network {
@@ -22,7 +22,7 @@ impl Network {
     }
 
     pub fn hash(&self) -> String {
-        let hash_bytes = third_party::cryptoxide::hashing::sha256(self.get().as_bytes());
+        let hash_bytes = cryptoxide::hashing::sha256(self.get().as_bytes());
         hex::encode(hash_bytes)
     }
 

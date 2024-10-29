@@ -5,7 +5,7 @@ use common_rust_c::structs::ExtendedPublicKey;
 use common_rust_c::types::{Ptr, PtrBytes, PtrString};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
-use third_party::ur_registry::{
+use ur_registry::{
     error::URError, extend::crypto_multi_accounts::CryptoMultiAccounts, traits::RegistryItem,
 };
 

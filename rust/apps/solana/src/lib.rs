@@ -55,8 +55,8 @@ pub fn sign(message: Vec<u8>, hd_path: &String, seed: &[u8]) -> errors::Result<[
 
 #[cfg(test)]
 mod tests {
-    use third_party::hex::{FromHex, ToHex};
-    use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
+    use hex::{FromHex, ToHex};
+    use ur_registry::solana::sol_sign_request::SolSignRequest;
 
     use crate::solana_lib::solana_program::pubkey::Pubkey;
 

@@ -2,11 +2,11 @@
 
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use base64;
+use bitcoin::base58 as bs58;
 use core::convert::AsRef;
 use serde::de;
 use serde::{Deserialize, Deserializer, Serializer};
-use third_party::base58 as bs58;
-use third_party::base64;
 
 pub fn to_base(input: &Vec<u8>) -> String {
     bs58::encode(input.as_slice())
@@ -118,8 +118,8 @@ pub mod base_bytes_format {
 pub mod dec_format {
     use super::*;
     use core::fmt::Debug;
-    use third_party::thiserror;
-    use third_party::thiserror::Error;
+    use thiserror;
+    use thiserror::Error;
     #[derive(Error, Debug)]
     #[error("cannot parse from unit")]
     pub struct ParseUnitError;
@@ -222,7 +222,7 @@ pub mod dec_format {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use third_party::serde_json;
+    use serde_json;
 
     #[test]
     fn test_u64_dec_format() {

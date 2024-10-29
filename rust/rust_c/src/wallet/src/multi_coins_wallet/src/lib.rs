@@ -30,15 +30,15 @@ use cty::uint32_t;
 use keystore::algorithms::secp256k1::derive_extend_public_key;
 use keystore::errors::KeystoreError;
 
-use third_party::ed25519_bip32_core::XPub;
-use third_party::hex;
-use third_party::ur_registry::crypto_account::CryptoAccount;
-use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
-use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
-use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
-use third_party::ur_registry::traits::RegistryItem;
+use ed25519_bip32_core::XPub;
+use hex;
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::crypto_hd_key::CryptoHDKey;
+use ur_registry::crypto_key_path::CryptoKeyPath;
+use ur_registry::error::URError;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::extend::qr_hardware_call::QRHardwareCall;
+use ur_registry::traits::RegistryItem;
 
 use common_rust_c::errors::RustCError;
 use common_rust_c::ffi::CSliceFFI;
@@ -292,7 +292,7 @@ pub extern "C" fn generate_key_derivation_ur(
                 Ok(v) => {
                     if v.len() >= 78 {
                         // sec256k1 xpub
-                        let xpub = third_party::bitcoin::bip32::Xpub::decode(&v);
+                        let xpub = bitcoin::bip32::Xpub::decode(&v);
                         match xpub {
                             Ok(xpub) => {
                                 let chain_code = xpub.chain_code.as_bytes().to_vec();

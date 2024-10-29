@@ -17,13 +17,13 @@ use common_rust_c::utils::{recover_c_array, recover_c_char};
 use core::slice;
 use core::str::FromStr;
 use cty::{int32_t, uint32_t};
-use third_party::bitcoin::bip32::{DerivationPath, Xpub};
-use third_party::hex;
-use third_party::ur_registry::bytes::Bytes;
-use third_party::ur_registry::crypto_account::CryptoAccount;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
-use third_party::ur_registry::traits::RegistryItem;
+use bitcoin::bip32::{DerivationPath, Xpub};
+use hex;
+use ur_registry::bytes::Bytes;
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::error::URError;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::traits::RegistryItem;
 
 #[no_mangle]
 pub extern "C" fn get_connect_blue_wallet_ur(

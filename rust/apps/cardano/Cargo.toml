@@ -6,13 +6,19 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keystore = { path = "../../keystore", default-features = false }
-third_party = { path = "../../third_party" }
-app_utils = { path = "../utils" }
-rust_tools = { path = "../../tools" }
+keystore = { workspace = true, default-features = false }
+hex = { workspace = true }
+ed25519-bip32-core = { workspace = true }
+cryptoxide = { workspace = true }
+ur-registry = { workspace = true }
+app_utils = { workspace = true }
+rust_tools = { workspace = true }
+thiserror = { workspace = true }
+bitcoin = { workspace = true }
 
 [dev-dependencies]
-keystore = { path = "../../keystore" }
+keystore = { workspace = true }
+bech32 = { workspace = true }
 
 [dependencies.cardano-serialization-lib]
 git = "https://git@github.com/KeystoneHQ/cardano-serialization-lib.git"

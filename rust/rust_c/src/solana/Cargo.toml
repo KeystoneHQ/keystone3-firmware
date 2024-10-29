@@ -6,15 +6,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keystore = { path = "../../../keystore", default-features = false }
-app_solana = { path = "../../../apps/solana" }
-third_party = { path = "../../../third_party" }
-app_utils = { path = "../../../apps/utils" }
-rust_tools = {path="../../../tools"}
-cty = "0.2.2"
-cstr_core = "0.2.6"
-
-common_rust_c = {path = "../common"}
+keystore = { workspace = true, default-features = false }
+app_solana = { workspace = true }
+rust_tools = { workspace = true }
+cty = { workspace = true }
+cstr_core = { workspace = true }
+itertools = { workspace = true }
+common_rust_c = { workspace = true }
+ur-registry = { workspace = true }
+app_utils = { workspace = true }
 
 [features]
 debug-memory = []

@@ -8,7 +8,7 @@ pub use paste;
 
 use alloc::format;
 use alloc::string::String;
-use third_party::unicode_blocks;
+use unicode_blocks;
 
 pub fn normalize_path(path: &String) -> String {
     let mut p = path.to_lowercase();

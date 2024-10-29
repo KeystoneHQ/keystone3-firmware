@@ -6,6 +6,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
+use base64;
 use common_rust_c::{
     errors::RustCError,
     extract_ptr_with_type,
@@ -17,9 +18,9 @@ use common_rust_c::{
     utils::{convert_c_char, recover_c_array, recover_c_char},
 };
 use keystore::algorithms::secp256k1;
-use third_party::ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType};
-use third_party::ur_registry::traits::RegistryItem;
-use third_party::{base64, ur_registry::bitcoin::btc_signature::BtcSignature};
+use ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType};
+use ur_registry::traits::RegistryItem;
+use ur_registry::bitcoin::btc_signature::BtcSignature;
 
 #[no_mangle]
 pub extern "C" fn btc_check_msg(

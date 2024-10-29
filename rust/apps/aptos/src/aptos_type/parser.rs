@@ -15,7 +15,7 @@ use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 use core::iter::Peekable;
-use third_party::hex;
+use hex;
 
 #[derive(Eq, PartialEq, Debug)]
 enum Token {

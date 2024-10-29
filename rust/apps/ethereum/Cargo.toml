@@ -8,16 +8,21 @@ edition = "2021"
 [dependencies]
 bytes = {version = "1.4.0", default-features = false}
 ethereum-types = {version = "0.14.1", default-features = false, features = ["rlp", "codec"]}
-hex-literal = "0.4.1"
 rlp = {version = "0.5.2", default-features = false}
-sha3 = {version = "0.10.7", default-features = false}
-keystore = { path = "../../keystore", default-features = false }
-third_party = { path = "../../third_party" }
+keystore = { workspace = true, default-features = false }
 ethabi = {version = "18.0.0", default-features= false, features=["serde"]}
-app_utils = {path = "../utils"}
-serde = { version = "1.0.139", default-features = false }
-rust_tools = {path = "../../tools"}
+app_utils = {workspace = true}
+serde = { workspace = true }
+rust_tools = {workspace = true}
 unicode-xid = {version = "0.2", default-features = false, features = ["no_std"]}
+
+thiserror = { workspace = true }
+hex = { workspace = true }
+serde_json = { workspace = true }
+bitcoin = { workspace = true }
+cryptoxide = { workspace = true }
+rsa = { workspace = true }
+ur-registry = { workspace = true }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

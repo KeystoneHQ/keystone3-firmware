@@ -10,7 +10,7 @@ use common_rust_c::types::{PtrString, PtrT};
 use common_rust_c::utils::convert_c_char;
 use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, impl_c_ptrs, make_free_method};
 use core::ptr::null_mut;
-use third_party::itertools::Itertools;
+use itertools::Itertools;
 
 #[repr(C)]
 pub struct DisplayNearTx {

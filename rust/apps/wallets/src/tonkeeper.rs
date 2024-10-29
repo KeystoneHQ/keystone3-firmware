@@ -1,8 +1,8 @@
 use alloc::string::String;
 use alloc::vec::Vec;
-use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
-use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
-use third_party::ur_registry::error::{URError, URResult};
+use ur_registry::crypto_hd_key::CryptoHDKey;
+use ur_registry::crypto_key_path::CryptoKeyPath;
+use ur_registry::error::{URError, URResult};
 
 pub struct PathInfo {
     pub path: String,
@@ -48,7 +48,7 @@ pub fn generate_sync_ur(
 #[cfg(test)]
 mod tests {
     use alloc::string::ToString;
-    use third_party::hex;
+    use hex;
 
     use super::*;
 

@@ -13,7 +13,7 @@ use crate::errors::{NearError, Result};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-use third_party::cryptoxide::hashing::sha256;
+use cryptoxide::hashing::sha256;
 
 mod account_id;
 mod crypto;
@@ -34,9 +34,9 @@ pub fn parse(data: &Vec<u8>) -> Result<parser::structs::ParsedNearTx> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use third_party::hex;
-    use third_party::hex::ToHex;
-    use third_party::ur_registry::near::near_sign_request::NearSignRequest;
+    use hex;
+    use hex::ToHex;
+    use ur_registry::near::near_sign_request::NearSignRequest;
     #[test]
     fn test_near_sign() {
         let hd_path = "m/44'/397'/0'".to_string();

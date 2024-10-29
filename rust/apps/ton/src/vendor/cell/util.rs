@@ -1,5 +1,5 @@
 use alloc::format;
-use third_party::core2::io;
+use core2::io;
 
 use bitstream_io::{BitRead, BitReader, Endianness};
 

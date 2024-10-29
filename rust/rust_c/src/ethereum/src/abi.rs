@@ -3,7 +3,7 @@ use common_rust_c::errors::RustCError;
 use common_rust_c::structs::Response;
 use common_rust_c::types::{Ptr, PtrString};
 use common_rust_c::utils::recover_c_char;
-use third_party::hex;
+use hex;
 
 #[no_mangle]
 pub extern "C" fn eth_parse_contract_data(

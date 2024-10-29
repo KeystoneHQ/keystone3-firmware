@@ -18,13 +18,13 @@ use cardano_serialization_lib::{
 };
 
 use alloc::format;
+use bitcoin::bip32::ChildNumber::{Hardened, Normal};
+use bitcoin::bip32::DerivationPath;
 use core::ops::Div;
-use third_party::bitcoin::bip32::ChildNumber::{Hardened, Normal};
-use third_party::bitcoin::bip32::DerivationPath;
-use third_party::ur_registry::cardano::cardano_sign_structure::CardanoSignStructure;
-use third_party::ur_registry::traits::From;
+use ur_registry::cardano::cardano_sign_structure::CardanoSignStructure;
+use ur_registry::traits::From;
 
-use third_party::hex;
+use hex;
 
 impl_public_struct!(ParseContext {
     utxos: Vec<CardanoUtxo>,
@@ -1207,7 +1207,7 @@ fn normalize_value(value: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+    use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 
     #[test]
     fn test_normalize_coin() {

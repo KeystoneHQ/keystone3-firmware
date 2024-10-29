@@ -6,19 +6,19 @@ use alloc::string::ToString;
 use alloc::vec;
 
 use cty::c_char;
-use third_party::hex;
+use hex;
 
-use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
-use third_party::ur_registry::bytes::Bytes;
-use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
-use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
-use third_party::ur_registry::cosmos::evm_sign_request::EvmSignRequest;
-use third_party::ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
+use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
+use ur_registry::bytes::Bytes;
+use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+use ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
+use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
+use ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
 
-use third_party::ur_registry::ethereum::eth_sign_request::{DataType, EthSignRequest};
-use third_party::ur_registry::near::near_sign_request::NearSignRequest;
-use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
-use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
+use ur_registry::ethereum::eth_sign_request::{DataType, EthSignRequest};
+use ur_registry::near::near_sign_request::NearSignRequest;
+use ur_registry::solana::sol_sign_request::SolSignRequest;
+use ur_registry::sui::sui_sign_request::SuiSignRequest;
 
 use common_rust_c::ur::{QRCodeType, URParseResult, ViewType};
 use common_rust_c::utils::recover_c_char;

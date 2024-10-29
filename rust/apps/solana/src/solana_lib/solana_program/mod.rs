@@ -53,8 +53,8 @@ pub mod program_utils {
 pub mod pubkey {
     use core::fmt;
 
+    use bitcoin::base58;
     use serde_derive::{Deserialize, Serialize};
-    use third_party::base58;
 
     use borsh::BorshDeserialize;
 
@@ -100,8 +100,8 @@ pub mod pubkey {
 pub mod hash {
     use core::fmt;
 
+    use bitcoin::base58;
     use serde_derive::{Deserialize, Serialize};
-    use third_party::base58;
 
     pub const HASH_BYTES: usize = 32;
 

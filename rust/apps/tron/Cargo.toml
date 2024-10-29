@@ -6,19 +6,24 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keystore = { path = "../../keystore", default-features = false }
-third_party = { path = "../../third_party" }
-app_utils = {path="../utils"}
-prost = { version = "0.11.8", default-features = false }
-prost-types = { version = "0.11.8", default-features = false }
+keystore = { workspace = true, default-features = false }
+
+app_utils = { workspace = true }
+prost = { workspace = true }
+prost-types = { workspace = true }
 ethabi = { version = "15.0.0", default-features = false }
 ascii = { version = "1.1.0", default-features = false, features = ["alloc"] }
+hex = { workspace = true }
+bitcoin = { workspace = true }
+cryptoxide = { workspace = true }
+ur-registry = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
-keystore = { path = "../../keystore"}
+keystore = { workspace = true }
 
 [build-dependencies]
 prost-build = { version = "0.11.8" }
 
 [features]
-generate_pb=[]
+generate_pb = []

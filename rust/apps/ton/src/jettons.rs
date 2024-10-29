@@ -7,7 +7,7 @@ use alloc::{
 
 use lazy_static::lazy_static;
 
-use third_party::itertools::Itertools;
+use itertools::Itertools;
 
 pub struct JettonData {
     pub contract_address: String,

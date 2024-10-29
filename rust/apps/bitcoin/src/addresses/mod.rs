@@ -13,8 +13,8 @@ use crate::addresses::xyzpub::{convert_version, Version};
 use crate::network::Network;
 use crate::{derivation_account_path, derivation_address_path};
 use alloc::vec::Vec;
+use bitcoin::PublicKey;
 use keystore::algorithms::secp256k1;
-use third_party::bitcoin::PublicKey;
 
 use crate::errors::{BitcoinError, Result};
 

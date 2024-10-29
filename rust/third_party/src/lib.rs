@@ -13,7 +13,6 @@ pub use cryptoxide;
 pub use cstr_core;
 pub use cty;
 pub use ed25519_bip32_core;
-pub use either;
 pub use hex;
 pub use itertools;
 pub use rsa;

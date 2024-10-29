@@ -1,13 +1,13 @@
 use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
-use third_party::hex;
-use third_party::ur_registry::bytes::Bytes;
-use third_party::ur_registry::error::URResult;
-use third_party::ur_registry::pb;
-use third_party::ur_registry::pb::protoc;
-use third_party::ur_registry::pb::protoc::base::Content;
-use third_party::ur_registry::pb::protoc::{payload, Account, Base, Coin, Payload};
+use hex;
+use ur_registry::bytes::Bytes;
+use ur_registry::error::URResult;
+use ur_registry::pb;
+use ur_registry::pb::protoc;
+use ur_registry::pb::protoc::base::Content;
+use ur_registry::pb::protoc::{payload, Account, Base, Coin, Payload};
 
 use crate::DEVICE_TYPE;
 
@@ -77,8 +77,8 @@ mod tests {
     use super::CoinConfig;
     use alloc::string::ToString;
     use alloc::vec::Vec;
-    use third_party::hex;
-    use third_party::hex::FromHex;
+    use hex;
+    use hex::FromHex;
 
     use super::*;
 

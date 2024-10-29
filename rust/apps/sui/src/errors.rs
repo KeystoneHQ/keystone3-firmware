@@ -1,5 +1,9 @@
 use alloc::string::{String, ToString};
-use third_party::{base58, bcs, hex, serde_json, thiserror};
+use bcs;
+use bitcoin::base58;
+use hex;
+use serde_json;
+use thiserror;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

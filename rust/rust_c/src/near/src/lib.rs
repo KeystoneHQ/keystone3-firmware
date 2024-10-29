@@ -11,9 +11,9 @@ use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use third_party::ur_registry::near::near_sign_request::NearSignRequest;
-use third_party::ur_registry::near::near_signature::NearSignature;
-use third_party::ur_registry::traits::RegistryItem;
+use ur_registry::near::near_sign_request::NearSignRequest;
+use ur_registry::near::near_signature::NearSignature;
+use ur_registry::traits::RegistryItem;
 
 pub mod structs;
 
@@ -54,7 +54,7 @@ pub extern "C" fn near_check(
     let near_sign_request = extract_ptr_with_type!(ptr, NearSignRequest);
     let mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
     if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
-        let derivation_path: third_party::ur_registry::crypto_key_path::CryptoKeyPath =
+        let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
             near_sign_request.get_derivation_path();
         if let Some(ur_mfp) = derivation_path.get_source_fingerprint() {
             return if mfp == ur_mfp {

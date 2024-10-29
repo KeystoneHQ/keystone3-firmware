@@ -1,6 +1,6 @@
 use alloc::string::{String, ToString};
-use third_party::thiserror;
-use third_party::thiserror::Error;
+use thiserror;
+use thiserror::Error;
 
 use crate::vendor::cell::TonCellError;
 

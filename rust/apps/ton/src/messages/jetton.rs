@@ -3,8 +3,8 @@ use alloc::{
     string::{String, ToString},
 };
 
+use hex;
 use serde::Serialize;
-use third_party::hex;
 
 use crate::vendor::{
     address::TonAddress,

@@ -5,9 +5,9 @@ use common_rust_c::types::{Ptr, PtrBytes, PtrString};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::recover_c_char;
 use cty::uint32_t;
-use third_party::hex;
-use third_party::ur_registry::arweave::arweave_crypto_account::ArweaveCryptoAccount;
-use third_party::ur_registry::traits::{RegistryItem, To};
+use hex;
+use ur_registry::arweave::arweave_crypto_account::ArweaveCryptoAccount;
+use ur_registry::traits::{RegistryItem, To};
 
 fn vec_to_array(vec: Vec<u8>) -> Result<[u8; 4], &'static str> {
     if vec.len() == 4 {

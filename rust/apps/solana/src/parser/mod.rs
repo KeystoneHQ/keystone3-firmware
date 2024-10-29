@@ -2,6 +2,7 @@ use alloc::borrow::ToOwned;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use bitcoin::base58;
 
 use serde_json::json;
 
@@ -143,8 +144,8 @@ impl ParsedSolanaTx {
                         "num_readonly_signed_accounts": message.header.num_readonly_signed_accounts,
                         "num_readonly_unsigned_accounts": message.header.num_readonly_unsigned_accounts,
                     },
-                    "accounts": message.accounts.iter().map(|account| {third_party::base58::encode(&account.value)}).collect::<Vec<String>>(),
-                    "block_hash": third_party::base58::encode(&message.block_hash.value),
+                    "accounts": message.accounts.iter().map(|account| {base58::encode(&account.value)}).collect::<Vec<String>>(),
+                    "block_hash": base58::encode(&message.block_hash.value),
                     "instructions": details,
                 }).to_string();
         Ok(value)
@@ -730,8 +731,8 @@ impl ParsedSolanaTx {
 
 #[cfg(test)]
 mod tests {
+    use hex::FromHex;
     use serde_json::{json, Value};
-    use third_party::hex::FromHex;
 
     use super::*;
 

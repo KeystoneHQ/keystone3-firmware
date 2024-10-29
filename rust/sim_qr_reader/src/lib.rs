@@ -38,7 +38,10 @@ fn get_screen_scaling_factor() -> f64 {
     }
 }
 
-pub fn continuously_read_qr_code_from_screen<G>(on_qr_code_detected: G, max_loop_count: u32) -> Result<()>
+pub fn continuously_read_qr_code_from_screen<G>(
+    on_qr_code_detected: G,
+    max_loop_count: u32,
+) -> Result<()>
 where
     G: Fn(&str) -> bool,
 {

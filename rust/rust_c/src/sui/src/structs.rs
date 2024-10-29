@@ -1,6 +1,6 @@
 use alloc::string::String;
 use app_sui::Intent;
-use third_party::serde_json;
+use serde_json;
 
 use common_rust_c::free::Free;
 use common_rust_c::structs::TransactionParseResult;

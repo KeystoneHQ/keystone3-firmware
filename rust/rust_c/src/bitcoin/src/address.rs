@@ -4,7 +4,7 @@ use common_rust_c::structs::SimpleResponse;
 use common_rust_c::types::PtrString;
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use core::str::FromStr;
-use third_party::secp256k1::ffi::types::c_char;
+use bitcoin::secp256k1::ffi::types::c_char;
 
 #[no_mangle]
 pub extern "C" fn utxo_get_address(

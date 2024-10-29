@@ -16,10 +16,10 @@ use core::str::FromStr;
 use cty::c_char;
 use structs::{MultiSigFormatType, MultiSigXPubInfoItem};
 
-use third_party::cryptoxide::hashing::sha256;
-use third_party::hex;
+use cryptoxide::hashing::sha256;
+use hex;
 
-use third_party::ur_registry::bytes::Bytes;
+use ur_registry::bytes::Bytes;
 
 use common_rust_c::errors::RustCError;
 use common_rust_c::ffi::CSliceFFI;
@@ -32,9 +32,9 @@ use common_rust_c::utils::{convert_c_char, recover_c_array, recover_c_char};
 use crate::multi_sig::structs::{MultiSigWallet, NetworkType};
 
 use common_rust_c::extract_ptr_with_type;
-use third_party::ur_registry::crypto_account::CryptoAccount;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::traits::RegistryItem;
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::error::URError;
+use ur_registry::traits::RegistryItem;
 
 #[no_mangle]
 pub extern "C" fn export_multi_sig_xpub_by_ur(
@@ -115,7 +115,7 @@ pub extern "C" fn export_multi_sig_wallet_by_ur_test(
     }
     unsafe {
         let master_fingerprint = slice::from_raw_parts(master_fingerprint, length as usize);
-        let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+        let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
             hex::encode(master_fingerprint.to_vec()).as_str(),
         )
         .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -197,7 +197,7 @@ pub extern "C" fn export_multi_sig_wallet_by_ur(
     }
     unsafe {
         let master_fingerprint = slice::from_raw_parts(master_fingerprint, length as usize);
-        let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+        let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
             hex::encode(master_fingerprint.to_vec()).as_str(),
         )
         .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -246,7 +246,7 @@ pub extern "C" fn import_multi_sig_wallet_by_ur(
         return Response::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
         hex::encode(master_fingerprint.to_vec()).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -278,7 +278,7 @@ pub extern "C" fn import_multi_sig_wallet_by_file(
         return Response::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
         hex::encode(master_fingerprint.to_vec()).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -311,7 +311,7 @@ pub extern "C" fn generate_address_for_multisig_wallet_config(
         return SimpleResponse::from(RustCError::InvalidMasterFingerprint).simple_c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
         hex::encode(master_fingerprint.to_vec()).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -371,7 +371,7 @@ pub extern "C" fn parse_and_verify_multisig_config(
     }
     let seed = unsafe { core::slice::from_raw_parts(seed, seed_len as usize) };
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
         hex::encode(master_fingerprint.to_vec()).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)

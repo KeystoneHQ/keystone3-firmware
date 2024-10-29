@@ -9,9 +9,9 @@ use alloc::vec::Vec;
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-use third_party::hex;
-use third_party::thiserror;
-use third_party::thiserror::Error;
+use hex;
+use thiserror;
+use thiserror::Error;
 
 /// Wrapper type around Bytes to deserialize/serialize "0x" prefixed ethereum hex strings
 #[derive(Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize, Ord, PartialOrd)]

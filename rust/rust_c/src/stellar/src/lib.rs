@@ -16,10 +16,10 @@ use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
-use third_party::hex;
-use third_party::ur_registry::stellar::stellar_sign_request::{SignType, StellarSignRequest};
-use third_party::ur_registry::stellar::stellar_signature::StellarSignature;
-use third_party::ur_registry::traits::{RegistryItem, To};
+use hex;
+use ur_registry::stellar::stellar_sign_request::{SignType, StellarSignRequest};
+use ur_registry::stellar::stellar_signature::StellarSignature;
+use ur_registry::traits::{RegistryItem, To};
 
 pub mod structs;
 
@@ -65,7 +65,7 @@ pub extern "C" fn stellar_check_tx(
     let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
     let sign_request = extract_ptr_with_type!(ptr, StellarSignRequest);
     if let Some(mfp) = (mfp.try_into() as Result<[u8; 4], _>).ok() {
-        let derivation_path: third_party::ur_registry::crypto_key_path::CryptoKeyPath =
+        let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
             sign_request.get_derivation_path();
         if let Some(ur_mfp) = derivation_path.get_source_fingerprint() {
             return if mfp == ur_mfp {

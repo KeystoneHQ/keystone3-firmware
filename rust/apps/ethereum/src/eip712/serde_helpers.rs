@@ -10,7 +10,7 @@ use serde::{Deserialize, Deserializer};
 
 use alloc::string::ToString;
 use alloc::{borrow::ToOwned, string::String};
-use third_party::serde_json;
+use serde_json;
 
 use crate::crypto::keccak256;
 

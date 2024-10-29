@@ -11,7 +11,7 @@ extern crate std;
 use alloc::vec::Vec;
 
 use app_utils::impl_public_struct;
-use third_party::bitcoin::bip32::DerivationPath;
+use bitcoin::bip32::DerivationPath;
 
 pub mod aptos;
 pub mod backpack;

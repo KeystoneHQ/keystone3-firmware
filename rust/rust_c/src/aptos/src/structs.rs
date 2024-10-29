@@ -5,7 +5,7 @@ use common_rust_c::structs::TransactionParseResult;
 use common_rust_c::types::{PtrString, PtrT};
 use common_rust_c::utils::convert_c_char;
 use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
-use third_party::serde_json::Value;
+use serde_json::Value;
 
 #[repr(C)]
 pub struct DisplayAptosTx {

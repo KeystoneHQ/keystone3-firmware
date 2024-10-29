@@ -5,8 +5,8 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
 use bcs;
+use hex;
 use serde_json::{json, Value};
-use third_party::hex;
 
 pub struct Parser;
 

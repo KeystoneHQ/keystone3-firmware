@@ -23,8 +23,8 @@ pub struct PsbtSignResult {
 impl PsbtSignResult {
     pub fn new(psbt_bytes: &Vec<u8>, ur_result: PtrT<UREncodeResult>) -> Self {
         PsbtSignResult {
-            base_str: convert_c_char(third_party::base64::encode(psbt_bytes)),
-            hex_str: convert_c_char(third_party::hex::encode(psbt_bytes)),
+            base_str: convert_c_char(base64::encode(psbt_bytes)),
+            hex_str: convert_c_char(hex::encode(psbt_bytes)),
             ur_result,
         }
     }

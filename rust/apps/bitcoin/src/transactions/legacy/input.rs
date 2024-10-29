@@ -3,19 +3,17 @@ use crate::errors::{BitcoinError, Result};
 use crate::transactions::script_type::ScriptType;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use bitcoin;
+use bitcoin::script::{Builder, PushBytesBuf};
+use bitcoin::secp256k1::ecdsa::Signature;
+use bitcoin::WPubkeyHash;
+use bitcoin::{PublicKey, ScriptBuf, Sequence};
+use bitcoin_hashes::Hash;
 use core::iter;
 use core::str::FromStr;
-use third_party::bitcoin;
-use third_party::bitcoin::script::{Builder, PushBytesBuf};
-use third_party::bitcoin::WPubkeyHash;
-use third_party::bitcoin::{PublicKey, ScriptBuf, Sequence};
-use third_party::bitcoin_hashes::Hash;
-use third_party::secp256k1::ecdsa::Signature;
-use third_party::ur_registry::pb::protoc;
-use third_party::ur_registry::pb::protoc::sign_transaction::Transaction::{
-    BchTx, BtcTx, DashTx, LtcTx,
-};
-use third_party::ur_registry::pb::protoc::{bch_tx, dash_tx, Input};
+use ur_registry::pb::protoc;
+use ur_registry::pb::protoc::sign_transaction::Transaction::{BchTx, BtcTx, DashTx, LtcTx};
+use ur_registry::pb::protoc::{bch_tx, dash_tx, Input};
 
 macro_rules! negative_check {
     ($t: expr, $v: expr) => {{

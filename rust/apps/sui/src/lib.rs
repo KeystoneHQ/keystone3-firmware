@@ -20,15 +20,15 @@ use alloc::{
 use errors::SuiError;
 use serde_derive::{Deserialize, Serialize};
 use sui_types::{message::PersonalMessage, transaction::TransactionData};
-use third_party::{bcs, hex};
-use third_party::{
+use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
+use {bcs, hex};
+use {
     blake2::{
         digest::{Update, VariableOutput},
         Blake2bVar,
     },
     serde_json,
 };
-use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
 
 pub mod errors;
 pub mod types;
@@ -116,7 +116,7 @@ pub fn sign_intent(seed: &[u8], path: &String, intent: &[u8]) -> Result<[u8; 64]
 mod tests {
     use super::*;
     use alloc::string::ToString;
-    use third_party::serde_json::json;
+    use serde_json::json;
 
     #[test]
     fn test_generate_address() {

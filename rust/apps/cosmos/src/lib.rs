@@ -12,13 +12,13 @@ extern crate std;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-use keystore::algorithms::secp256k1::derive_public_key;
-use third_party::bech32::{self, Bech32, Hrp};
-use third_party::secp256k1::{Message, PublicKey};
-
 use crate::errors::{CosmosError, Result};
 use crate::transaction::structs::{ParsedCosmosTx, SignMode};
 use crate::utils::{hash160, keccak256, sha256_digest};
+use bech32::{Bech32, Hrp};
+use bitcoin::secp256k1::{Message, PublicKey};
+use hex;
+use keystore::algorithms::secp256k1::derive_public_key;
 
 mod cosmos_sdk_proto;
 pub mod errors;
@@ -105,7 +105,7 @@ pub fn derive_address(
 
 #[cfg(test)]
 mod tests {
-    use third_party::hex;
+    use hex;
 
     use super::*;
 

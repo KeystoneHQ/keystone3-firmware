@@ -1,8 +1,8 @@
 use alloc::format;
 use alloc::string::{String, ToString};
 use keystore::errors::KeystoreError;
-use third_party::thiserror::Error;
-use third_party::{serde_json, thiserror};
+use thiserror::Error;
+use {serde_json, thiserror};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum ArweaveError {

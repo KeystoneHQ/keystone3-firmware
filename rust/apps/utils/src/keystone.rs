@@ -1,4 +1,4 @@
-use third_party::bitcoin::bip32::{Fingerprint, Xpub};
+use bitcoin::bip32::{Fingerprint, Xpub};
 
 #[derive(Debug, Clone)]
 pub struct ParseContext {

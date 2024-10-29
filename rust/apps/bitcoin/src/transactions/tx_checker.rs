@@ -3,8 +3,8 @@ pub use crate::errors::Result;
 pub use crate::transactions::parsed_tx::ParseContext;
 use alloc::string::ToString;
 use app_utils::keystone;
-use third_party::either::Either;
-use third_party::either::{Left, Right};
+use either::Either;
+use either::{Left, Right};
 
 pub trait TxChecker {
     fn check(&self, context: Either<&ParseContext, &keystone::ParseContext>) -> Result<()>;

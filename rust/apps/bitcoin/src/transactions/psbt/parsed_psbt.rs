@@ -3,8 +3,8 @@ use crate::network::Network;
 use crate::transactions::parsed_tx::{ParseContext, ParsedInput, ParsedOutput, ParsedTx, TxParser};
 use crate::transactions::psbt::wrapped_psbt::WrappedPsbt;
 use alloc::vec::Vec;
+use bitcoin::bip32::ChildNumber;
 use core::ops::Index;
-use third_party::bitcoin::bip32::ChildNumber;
 
 impl TxParser for WrappedPsbt {
     fn parse(&self, context: Option<&ParseContext>) -> Result<ParsedTx> {
@@ -33,7 +33,7 @@ impl TxParser for WrappedPsbt {
 
     fn determine_network(&self) -> Result<Network> {
         if let Some((xpub, _)) = self.psbt.xpub.first_key_value() {
-            return if xpub.network == third_party::bitcoin::network::Network::Bitcoin {
+            return if xpub.network == bitcoin::network::Network::Bitcoin {
                 Ok(Network::Bitcoin)
             } else {
                 Ok(Network::BitcoinTestnet)
@@ -82,17 +82,14 @@ mod tests {
 
     use alloc::vec::Vec;
 
-    use alloc::string::ToString;
+    use bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
     use core::str::FromStr;
     use std::collections::BTreeMap;
-    use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
 
     use super::*;
     use crate::parsed_tx::TxParser;
-    use crate::TxChecker;
-    use third_party::bitcoin::psbt::Psbt;
-    use third_party::bitcoin_hashes::hex::FromHex;
-    use third_party::either::Left;
+    use bitcoin::psbt::Psbt;
+    use bitcoin_hashes::hex::FromHex;
 
     #[test]
     fn test_parse_psbt() {

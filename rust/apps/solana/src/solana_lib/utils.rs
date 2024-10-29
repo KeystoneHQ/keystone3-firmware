@@ -7,8 +7,8 @@ use core::mem;
 // Utility hashing module copied from `solana_program::program::hash`, since we
 // can't import solana_program for compile time hashing for some reason.
 // https://github.com/coral-xyz/anchor/blob/2a07d841c65d6f303aa9c2b0c68a6e69c4739aab/lang/syn/src/hash.rs
+use bitcoin;
 use sha2::{Digest, Sha256};
-use third_party::bitcoin;
 use thiserror::Error;
 
 pub const HASH_BYTES: usize = 32;

@@ -1,5 +1,5 @@
 use alloc::string::String;
-use third_party::thiserror;
+use thiserror;
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum ParseKeyTypeError {

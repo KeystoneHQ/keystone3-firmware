@@ -81,12 +81,14 @@ version = "0.1.0"
 dependencies = [
  "app_utils",
  "bcs",
+ "cryptoxide",
+ "hex",
  "keystore",
  "ref-cast",
  "serde",
  "serde_bytes",
  "serde_json",
- "third_party",
+ "thiserror-core",
 ]
 
 [[package]]
@@ -95,15 +97,20 @@ version = "0.1.0"
 dependencies = [
  "aes",
  "app_utils",
+ "base64 0.11.0",
  "cbc",
  "cipher",
+ "cryptoxide",
+ "hex",
  "keystore",
  "lazy_static",
  "rand_chacha",
+ "rsa",
  "rust_tools",
  "serde",
+ "serde_json",
  "sha2 0.10.8",
- "third_party",
+ "thiserror-core",
 ]
 
 [[package]]
@@ -111,9 +118,21 @@ name = "app_bitcoin"
 version = "0.1.0"
 dependencies = [
  "app_utils",
+ "base64 0.11.0",
+ "bech32 0.10.0-beta",
+ "bitcoin",
+ "bitcoin_hashes 0.13.0",
+ "core2",
+ "cryptoxide",
+ "either",
+ "hex",
+ "itertools",
  "keystore",
  "rust_tools",
- "third_party",
+ "serde",
+ "serde_json",
+ "thiserror-core",
+ "ur-registry",
 ]
 
 [[package]]
@@ -121,10 +140,16 @@ name = "app_cardano"
 version = "0.1.0"
 dependencies = [
  "app_utils",
+ "bech32 0.10.0-beta",
+ "bitcoin",
  "cardano-serialization-lib",
+ "cryptoxide",
+ "ed25519-bip32-core",
+ "hex",
  "keystore",
  "rust_tools",
- "third_party",
+ "thiserror-core",
+ "ur-registry",
 ]
 
 [[package]]
@@ -132,6 +157,11 @@ name = "app_cosmos"
 version = "0.1.0"
 dependencies = [
  "app_utils",
+ "base64 0.11.0",
+ "bech32 0.10.0-beta",
+ "bitcoin",
+ "cryptoxide",
+ "hex",
  "keystore",
  "prost",
  "prost-types",
@@ -139,7 +169,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "tendermint-proto",
- "third_party",
+ "thiserror-core",
 ]
 
 [[package]]
@@ -147,17 +177,21 @@ name = "app_ethereum"
 version = "0.1.0"
 dependencies = [
  "app_utils",
+ "bitcoin",
  "bytes",
+ "cryptoxide",
  "ethabi 18.0.0",
  "ethereum-types 0.14.1",
- "hex-literal",
+ "hex",
  "keystore",
  "rlp",
+ "rsa",
  "rust_tools",
  "serde",
- "sha3 0.10.8",
- "third_party",
+ "serde_json",
+ "thiserror-core",
  "unicode-xid",
+ "ur-registry",
 ]
 
 [[package]]
@@ -165,11 +199,17 @@ name = "app_near"
 version = "0.1.0"
 dependencies = [
  "app_utils",
+ "base64 0.11.0",
+ "bitcoin",
  "borsh 0.9.3",
+ "cryptoxide",
+ "hex",
  "keystore",
  "primitive-types 0.10.1",
  "serde",
- "third_party",
+ "serde_json",
+ "thiserror-core",
+ "ur-registry",
 ]
 
 [[package]]
@@ -179,6 +219,7 @@ dependencies = [
  "app_utils",
  "arrayref",
  "bincode",
+ "bitcoin",
  "borsh 1.5.1",
  "bs58 0.5.1",
  "hex",
@@ -189,17 +230,21 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2 0.9.9",
- "third_party",
  "thiserror-core",
  "uint",
+ "ur-registry",
 ]
 
 [[package]]
 name = "app_stellar"
 version = "0.1.0"
 dependencies = [
+ "base64 0.11.0",
+ "cryptoxide",
+ "hex",
  "keystore",
- "third_party",
+ "serde_json",
+ "thiserror-core",
 ]
 
 [[package]]
@@ -207,11 +252,16 @@ name = "app_sui"
 version = "0.1.0"
 dependencies = [
  "app_utils",
+ "bcs",
+ "bitcoin",
+ "blake2",
+ "hex",
  "keystore",
  "serde",
  "serde_derive",
+ "serde_json",
  "sui-types",
- "third_party",
+ "thiserror-core",
 ]
 
 [[package]]
@@ -221,7 +271,11 @@ dependencies = [
  "anyhow",
  "base64 0.22.1",
  "bitstream-io",
+ "core2",
  "crc",
+ "cryptoxide",
+ "hex",
+ "itertools",
  "keystore",
  "lazy_static",
  "num-bigint",
@@ -229,8 +283,9 @@ dependencies = [
  "num-traits",
  "rust_tools",
  "serde",
+ "serde_json",
  "sha2 0.10.8",
- "third_party",
+ "thiserror-core",
  "urlencoding",
 ]
 
@@ -240,20 +295,25 @@ version = "0.1.0"
 dependencies = [
  "app_utils",
  "ascii",
+ "bitcoin",
+ "cryptoxide",
  "ethabi 15.0.0",
+ "hex",
  "keystore",
  "prost",
  "prost-build",
  "prost-types",
- "third_party",
+ "thiserror-core",
+ "ur-registry",
 ]
 
 [[package]]
 name = "app_utils"
 version = "0.1.0"
 dependencies = [
+ "bitcoin",
  "paste",
- "third_party",
+ "unicode-blocks",
 ]
 
 [[package]]
@@ -262,9 +322,13 @@ version = "0.1.0"
 dependencies = [
  "app_utils",
  "app_xrp",
+ "bitcoin",
+ "cryptoxide",
+ "hex",
  "keystore",
  "rust_tools",
- "third_party",
+ "serde_json",
+ "ur-registry",
 ]
 
 [[package]]
@@ -273,12 +337,16 @@ version = "0.1.0"
 dependencies = [
  "app_utils",
  "base-x",
+ "bitcoin",
  "bytes",
+ "cryptoxide",
+ "hex",
  "keystore",
  "rippled_binary_codec",
  "serde",
  "serde_derive",
- "third_party",
+ "serde_json",
+ "thiserror-core",
 ]
 
 [[package]]
@@ -287,12 +355,15 @@ version = "0.1.0"
 dependencies = [
  "app_aptos",
  "app_utils",
+ "bitcoin",
  "common_rust_c",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
  "rust_tools",
- "third_party",
+ "serde_json",
+ "ur-registry",
 ]
 
 [[package]]
@@ -313,12 +384,17 @@ version = "0.1.0"
 dependencies = [
  "app_arweave",
  "app_utils",
+ "bitcoin",
  "common_rust_c",
+ "cryptoxide",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
  "rust_tools",
+ "serde_json",
  "third_party",
+ "ur-registry",
 ]
 
 [[package]]
@@ -402,9 +478,8 @@ checksum = "dc827186963e592360843fb5ba4b973e145841266c1357f7180c43526f2e5b61"
 
 [[package]]
 name = "bitcoin"
-version = "0.31.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c85783c2fe40083ea54a33aa2f0ba58831d90fcd190f5bdc47e74e84d2a96ae"
+version = "0.31.1"
+source = "git+https://github.com/KeystoneHQ/rust-bitcoin.git?tag=v0.31.2#f4fc5bef20b4ffe1f25cb45dee0f345e4f66ab54"
 dependencies = [
  "bech32 0.10.0-beta",
  "bitcoin-internals",
@@ -453,12 +528,17 @@ version = "0.1.0"
 dependencies = [
  "app_bitcoin",
  "app_utils",
+ "base64 0.11.0",
+ "bitcoin",
  "common_rust_c",
+ "cryptoxide",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
  "rust_tools",
  "third_party",
+ "ur-registry",
 ]
 
 [[package]]
@@ -623,12 +703,14 @@ version = "0.1.0"
 dependencies = [
  "app_utils",
  "app_wallets",
+ "bitcoin",
  "common_rust_c",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
  "rust_tools",
- "third_party",
+ "ur-registry",
 ]
 
 [[package]]
@@ -639,9 +721,12 @@ dependencies = [
  "common_rust_c",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
  "rust_tools",
  "third_party",
+ "ur-parse-lib",
+ "ur-registry",
  "wallet_rust_c",
 ]
 
@@ -712,12 +797,17 @@ version = "0.1.0"
 dependencies = [
  "app_cardano",
  "app_utils",
+ "bitcoin",
  "common_rust_c",
  "cstr_core",
  "cty",
+ "ed25519-bip32-core",
+ "hex",
+ "itertools",
  "keystore",
  "rust_tools",
  "third_party",
+ "ur-registry",
 ]
 
 [[package]]
@@ -851,11 +941,21 @@ dependencies = [
  "app_utils",
  "app_wallets",
  "app_xrp",
+ "base64 0.11.0",
+ "bitcoin",
+ "bitcoin_hashes 0.13.0",
+ "cryptoxide",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
+ "rsa",
  "rust_tools",
- "third_party",
+ "serde_json",
+ "sha1",
+ "thiserror-core",
+ "ur-parse-lib",
+ "ur-registry",
 ]
 
 [[package]]
@@ -935,9 +1035,11 @@ dependencies = [
  "common_rust_c",
  "cstr_core",
  "cty",
+ "either",
  "keystore",
  "rust_tools",
- "third_party",
+ "serde_json",
+ "ur-registry",
 ]
 
 [[package]]
@@ -1328,12 +1430,18 @@ version = "0.1.0"
 dependencies = [
  "app_ethereum",
  "app_utils",
+ "bitcoin",
  "common_rust_c",
+ "core2",
+ "cryptoxide",
  "cstr_core",
  "cty",
+ "hex",
+ "itertools",
  "keystore",
  "rust_tools",
- "third_party",
+ "serde_json",
+ "ur-registry",
 ]
 
 [[package]]
@@ -1561,9 +1669,11 @@ dependencies = [
  "common_rust_c",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
  "rust_tools",
  "third_party",
+ "ur-registry",
  "wallet_rust_c",
 ]
 
@@ -1684,12 +1794,6 @@ checksum = "212ab92002354b4819390025006c897e8140934349e8635c9b077f47b4dcbd20"
 dependencies = [
  "core2",
 ]
-
-[[package]]
-name = "hex-literal"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
 
 [[package]]
 name = "hex_lit"
@@ -1856,13 +1960,18 @@ name = "keystore"
 version = "0.1.0"
 dependencies = [
  "arrayref",
+ "bitcoin",
+ "cryptoxide",
  "cstr_core",
  "cty",
+ "ed25519-bip32-core",
+ "hex",
  "num-bigint-dig",
  "rand_chacha",
+ "rsa",
  "rust_tools",
  "sha2 0.10.8",
- "third_party",
+ "thiserror-core",
 ]
 
 [[package]]
@@ -2080,12 +2189,16 @@ dependencies = [
  "app_arweave",
  "app_utils",
  "app_wallets",
+ "bitcoin",
  "common_rust_c",
  "cstr_core",
  "cty",
+ "ed25519-bip32-core",
+ "hex",
  "keystore",
  "rust_tools",
  "third_party",
+ "ur-registry",
 ]
 
 [[package]]
@@ -2103,9 +2216,10 @@ dependencies = [
  "common_rust_c",
  "cstr_core",
  "cty",
+ "itertools",
  "keystore",
  "rust_tools",
- "third_party",
+ "ur-registry",
 ]
 
 [[package]]
@@ -2906,7 +3020,8 @@ dependencies = [
 name = "rust_tools"
 version = "0.1.0"
 dependencies = [
- "third_party",
+ "cstr_core",
+ "cty",
 ]
 
 [[package]]
@@ -3213,9 +3328,10 @@ dependencies = [
  "common_rust_c",
  "cstr_core",
  "cty",
+ "itertools",
  "keystore",
  "rust_tools",
- "third_party",
+ "ur-registry",
 ]
 
 [[package]]
@@ -3252,8 +3368,9 @@ dependencies = [
  "common_rust_c",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
- "third_party",
+ "ur-registry",
 ]
 
 [[package]]
@@ -3358,7 +3475,8 @@ dependencies = [
  "cty",
  "keystore",
  "rust_tools",
- "third_party",
+ "serde_json",
+ "ur-registry",
 ]
 
 [[package]]
@@ -3449,7 +3567,6 @@ dependencies = [
  "cstr_core",
  "cty",
  "ed25519-bip32-core",
- "either",
  "hex",
  "itertools",
  "rsa",
@@ -3602,9 +3719,10 @@ dependencies = [
  "common_rust_c",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
  "rust_tools",
- "third_party",
+ "ur-registry",
 ]
 
 [[package]]
@@ -4190,12 +4308,16 @@ version = "0.1.0"
 dependencies = [
  "app_utils",
  "app_xrp",
+ "bitcoin",
  "common_rust_c",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
  "rust_tools",
+ "serde_json",
  "third_party",
+ "ur-registry",
 ]
 
 [[package]]

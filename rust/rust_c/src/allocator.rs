@@ -3,7 +3,6 @@ use crate::my_alloc::KTAllocator;
 #[global_allocator]
 static KT_ALLOCATOR: KTAllocator = KTAllocator;
 
-
 use core::panic::PanicInfo;
 use cstr_core::CString;
 

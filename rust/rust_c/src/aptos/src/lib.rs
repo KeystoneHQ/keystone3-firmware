@@ -17,11 +17,11 @@ use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use cty::c_char;
-use third_party::hex;
-use third_party::hex::FromHex;
-use third_party::ur_registry::aptos::aptos_sign_request::{AptosSignRequest, SignType};
-use third_party::ur_registry::aptos::aptos_signature::AptosSignature;
-use third_party::ur_registry::traits::RegistryItem;
+use hex;
+use hex::FromHex;
+use ur_registry::aptos::aptos_sign_request::{AptosSignRequest, SignType};
+use ur_registry::aptos::aptos_signature::AptosSignature;
+use ur_registry::traits::RegistryItem;
 
 pub mod structs;
 

@@ -14,9 +14,9 @@ use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use cty::c_char;
-use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
-use third_party::ur_registry::solana::sol_signature::SolSignature;
-use third_party::ur_registry::traits::RegistryItem;
+use ur_registry::solana::sol_sign_request::SolSignRequest;
+use ur_registry::solana::sol_signature::SolSignature;
+use ur_registry::traits::RegistryItem;
 
 pub mod structs;
 
@@ -61,7 +61,7 @@ pub extern "C" fn solana_check(
     let sol_sign_request = extract_ptr_with_type!(ptr, SolSignRequest);
     let mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
     if let Some(mfp) = (mfp.try_into() as Result<[u8; 4], _>).ok() {
-        let derivation_path: third_party::ur_registry::crypto_key_path::CryptoKeyPath =
+        let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
             sol_sign_request.get_derivation_path();
         if let Some(ur_mfp) = derivation_path.get_source_fingerprint() {
             return if mfp == ur_mfp {

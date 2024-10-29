@@ -185,7 +185,7 @@ mod tests {
 
     use super::DataItem;
 
-    use third_party::hex;
+    use hex;
 
     #[test]
     fn test_parse_data_item() {

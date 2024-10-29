@@ -93,7 +93,7 @@ impl BagOfCells {
 
     pub fn parse_hex(hex: &str) -> Result<BagOfCells, TonCellError> {
         let str: String = hex.chars().filter(|c| !c.is_whitespace()).collect();
-        let bin = third_party::hex::decode(str.as_str())
+        let bin = hex::decode(str.as_str())
             .map_err(|e| TonCellError::boc_serialization_error(e.to_string()))?;
         Self::parse(&bin)
     }

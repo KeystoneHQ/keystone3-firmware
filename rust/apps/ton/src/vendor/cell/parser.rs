@@ -1,6 +1,6 @@
 use alloc::string::{String, ToString};
 use alloc::{vec, vec::Vec};
-use third_party::core2::io::Cursor;
+use core2::io::Cursor;
 
 use bitstream_io::{BigEndian, BitRead, BitReader};
 use num_bigint::{BigInt, BigUint, Sign};

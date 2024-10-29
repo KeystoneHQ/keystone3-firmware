@@ -4,8 +4,8 @@ use crate::network::{Network, NetworkT};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
 use core::ops::Div;
-use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct ParsedTx {

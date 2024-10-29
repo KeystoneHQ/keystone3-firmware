@@ -1,8 +1,8 @@
+use bech32::Hrp;
+use bitcoin::address::Payload;
+use bitcoin::base58;
+use bitcoin::bech32;
 use core::fmt;
-use third_party::bech32::Hrp;
-use third_party::bitcoin::address::Payload;
-use third_party::bitcoin::base58;
-use third_party::bitcoin::bech32;
 
 use crate::addresses::cashaddr::{Base58Codec, CashAddrCodec};
 

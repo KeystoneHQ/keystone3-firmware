@@ -6,7 +6,7 @@ use common_rust_c::{
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
     utils::recover_c_char,
 };
-use third_party::{
+use {
     hex,
     ur_registry::{crypto_hd_key::CryptoHDKey, error::URError, traits::RegistryItem},
 };

@@ -6,15 +6,19 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keystore = { path = "../../../keystore", default-features = false }
-app_xrp = {path = "../../../apps/xrp"}
-third_party = { path = "../../../third_party" }
-app_utils = { path = "../../../apps/utils" }
-rust_tools = {path="../../../tools"}
-cty = "0.2.2"
-cstr_core = "0.2.6"
+keystore = { workspace = true }
+app_xrp = { workspace = true }
+third_party = { workspace = true }
+app_utils = { workspace = true }
+rust_tools = { workspace = true }
+cty = { workspace = true }
+cstr_core = { workspace = true }
+bitcoin = { workspace = true }
+hex = { workspace = true }
+ur-registry = { workspace = true }
+serde_json = { workspace = true }
 
-common_rust_c = {path = "../common"}
+common_rust_c = { workspace = true }
 
 [features]
 debug-memory = []

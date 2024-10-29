@@ -10,7 +10,7 @@ use app_ethereum::errors::EthereumError;
 use core::ptr::null_mut;
 use cstr_core::CString;
 use keystore::errors::KeystoreError;
-use third_party::ur_registry::error::URError;
+use ur_registry::error::URError;
 
 use crate::free::Free;
 use crate::types::{PtrString, PtrT};

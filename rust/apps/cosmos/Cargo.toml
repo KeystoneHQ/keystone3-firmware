@@ -6,18 +6,23 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keystore = { path = "../../keystore", default-features = false }
-third_party = { path = "../../third_party", default-features = false }
-serde_json = { version = "1.0.95", default-features = false, features = ['alloc'] }
-serde = { version = "1.0.139", default-features = false }
-serde_derive = { version = "1.0.159"}
-prost = { version = "0.11", default-features = false }
-prost-types = { version = "0.11", default-features = false }
-tendermint-proto = "0.32"
-app_utils = {path = "../utils"}
+keystore = { workspace = true, default-features = false }
+serde_json = { workspace = true, features = ['alloc'] }
+serde = { workspace = true }
+serde_derive = { workspace = true }
+prost = { workspace = true }
+prost-types = { workspace = true }
+tendermint-proto = { workspace = true }
+app_utils = { workspace = true }
+bech32 = { workspace = true }
+bitcoin = { workspace = true }
+hex = { workspace = true }
+base64 = { workspace = true }
+thiserror = { workspace = true }
+cryptoxide = { workspace = true }
 
 [dev-dependencies]
-keystore = { path = "../../keystore" }
+keystore = { workspace = true }
 
 [features]
 default = ["std"]

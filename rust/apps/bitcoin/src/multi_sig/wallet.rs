@@ -1,12 +1,12 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use bitcoin::bip32::Xpub;
 use core::str::FromStr;
+use cryptoxide::hashing::sha256;
+use hex;
+use itertools::Itertools;
 use keystore::algorithms::secp256k1::get_extended_public_key_by_seed;
-use third_party::bitcoin::bip32::Xpub;
-use third_party::cryptoxide::hashing::sha256;
-use third_party::hex;
-use third_party::itertools::Itertools;
-use third_party::ur_registry::bytes::Bytes;
+use ur_registry::bytes::Bytes;
 
 use crate::addresses::xyzpub;
 use crate::addresses::xyzpub::Version;
@@ -560,8 +560,8 @@ mod tests {
     };
     use crate::multi_sig::{MultiSigXPubInfo, Network};
     use alloc::vec::Vec;
-    use third_party::hex;
-    use third_party::ur_registry::bytes::Bytes;
+    use hex;
+    use ur_registry::bytes::Bytes;
 
     #[test]
     fn test_parse_wallet_config() {

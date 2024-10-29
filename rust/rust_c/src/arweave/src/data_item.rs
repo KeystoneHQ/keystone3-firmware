@@ -4,7 +4,7 @@ use common_rust_c::{
     structs::TransactionParseResult,
     types::{PtrT, PtrUR},
 };
-use third_party::ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
+use ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
 
 use crate::structs::{DisplayArweaveAOTransfer, DisplayArweaveDataItem};
 

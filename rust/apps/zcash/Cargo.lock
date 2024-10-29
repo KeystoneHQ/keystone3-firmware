@@ -47,9 +47,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f538837af36e6f6a9be0faa67f9a314f8119e4e4b5867c6ab40ed60360142519"
 
 [[package]]
+name = "app_utils"
+version = "0.1.0"
+dependencies = [
+ "paste",
+ "third_party",
+]
+
+[[package]]
 name = "app_zcash"
 version = "0.1.0"
 dependencies = [
+ "app_utils",
  "keystore",
  "rust_tools",
  "third_party",
@@ -1421,7 +1430,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.32#8a21ca56a1beb2cb665c9549bfcc014849b457df"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=zcash-alpha.0#2996f57ad2fce0132cfc0258a3981749d1bf9969"
 dependencies = [
  "hex",
  "ur",
@@ -1431,7 +1440,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.32#8a21ca56a1beb2cb665c9549bfcc014849b457df"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=zcash-alpha.0#2996f57ad2fce0132cfc0258a3981749d1bf9969"
 dependencies = [
  "bs58 0.4.0",
  "core2",

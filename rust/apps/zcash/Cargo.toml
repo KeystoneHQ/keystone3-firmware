@@ -9,6 +9,7 @@ edition = "2021"
 third_party = { path = "../../third_party" }
 keystore = { path = "../../keystore", default-features = false }
 rust_tools = {path = "../../tools"}
+app_utils = { path = "../../apps/utils" }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

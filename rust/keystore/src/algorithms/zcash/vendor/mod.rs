@@ -6,3 +6,4 @@ pub mod zcash_keys;
 pub mod zcash_primitives;
 pub mod zcash_protocol;
 pub mod zip32;
+pub mod pczt;

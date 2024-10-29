@@ -20,3 +20,10 @@ pub fn get_address(ufvk_text: &str) -> Result<String> {
         .map_err(|e| ZcashError::GenerateAddressError(e.to_string()))?;
     Ok(address.encode(&MainNetwork))
 }
+
+// pub fn sign_transaction(tx: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
+//     let mut transaction = tx.clone();
+//     let pczt = PartiallyCreatedTransaction::decode(transaction)?;
+    
+// }
+

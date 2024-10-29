@@ -1,16 +1,17 @@
-use alloc::{string::{String, ToString}, vec::Vec};
-use ff::PrimeField;
-use pasta_curves::Fq;
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 use rand_chacha::rand_core::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use third_party::hex;
-use vendor::{
+use zcash_vendor::{
     orchard::keys::{SpendAuthorizingKey, SpendingKey},
-    zcash_keys::keys::{UnifiedAddressRequest, UnifiedSpendingKey},
-    zcash_protocol::consensus::{MainNetwork, MAIN_NETWORK},
+    pasta_curves::{group::ff::PrimeField, Fq},
+    zcash_keys::keys::UnifiedSpendingKey,
+    zcash_protocol::consensus::MAIN_NETWORK,
     zip32::{fingerprint::SeedFingerprint, AccountId},
 };
-pub mod vendor;
 
 use crate::errors::{KeystoreError, Result};
 
@@ -18,7 +19,7 @@ pub fn derive_ufvk(seed: &[u8]) -> Result<String> {
     let usk = UnifiedSpendingKey::from_seed(&MAIN_NETWORK, &seed, AccountId::ZERO)
         .map_err(|e| KeystoreError::DerivationError(e.to_string()))?;
     let ufvk = usk.to_unified_full_viewing_key();
-    Ok(ufvk.encode(&MainNetwork))
+    Ok(ufvk.encode(&MAIN_NETWORK))
 }
 
 pub fn calculate_seed_fingerprint(seed: &[u8]) -> Result<[u8; 32]> {
@@ -61,19 +62,19 @@ pub fn test_sign_zec(seed: &[u8], alpha: [u8; 32], msg: &[u8]) -> [u8; 64] {
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithms::zcash::vendor::{
+    use zcash_vendor::{
+        pasta_curves::Fq,
         zcash_keys::keys::{UnifiedAddressRequest, UnifiedSpendingKey},
         zcash_protocol::consensus::{MainNetwork, MAIN_NETWORK},
         zip32::AccountId,
     };
 
-    use super::vendor::orchard::{
+    use zcash_vendor::orchard::{
         keys::{FullViewingKey, SpendAuthorizingKey, SpendingKey},
         redpallas::{Signature, SpendAuth},
     };
-    use pasta_curves::group::ff::{FromUniformBytes, PrimeField};
+    use zcash_vendor::pasta_curves::group::ff::{FromUniformBytes, PrimeField};
 
-    use pasta_curves::{self, Fq};
     use rand_chacha::rand_core::SeedableRng;
     use rand_chacha::ChaCha8Rng;
     use third_party::hex;

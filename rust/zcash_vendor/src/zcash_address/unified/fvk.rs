@@ -1,6 +1,6 @@
 use core::convert::{TryFrom, TryInto};
 
-use alloc::vec::Vec;
+use alloc::{format, vec::Vec};
 
 use super::{
     private::{SealedContainer, SealedItem},

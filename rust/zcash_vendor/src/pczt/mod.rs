@@ -100,10 +100,10 @@ const V5_VERSION_GROUP_ID: u32 = 0x26A7270A;
 #[derive(Clone)]
 pub struct Pczt {
     /// The version of this PCZT format, for storage.
-    version: Version,
+    pub version: Version,
 
     /// Global fields that are relevant to the transaction as a whole.
-    global: common::Global,
+    pub global: common::Global,
 
     //
     // Protocol-specific fields.
@@ -113,10 +113,12 @@ pub struct Pczt {
     // and there may be phases where we need to store protocol-specific metadata before
     // it has been determined whether there are protocol-specific inputs or outputs.
     //
-    transparent: transparent::Bundle,
-    sapling: sapling::Bundle,
-    orchard: orchard::Bundle,
+    pub transparent: transparent::Bundle,
+    pub sapling: sapling::Bundle,
+    pub orchard: orchard::Bundle,
 }
+
+
 
 /// The defined versions of PCZT.
 ///

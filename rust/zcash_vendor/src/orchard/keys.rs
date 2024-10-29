@@ -1,19 +1,18 @@
 //! Key structures for Orchard.
 
 use aes::Aes256;
+use alloc::vec;
 use alloc::vec::Vec;
 use blake2b_simd::{Hash as Blake2bHash, Params};
+use ff::PrimeField;
 use fpe::ff1::{BinaryNumeralString, FF1};
-use group::{
-    ff::{Field, PrimeField},
-    prime::PrimeCurveAffine,
-    Curve, GroupEncoding,
-};
+use group::{ff::Field, prime::PrimeCurveAffine, Curve, GroupEncoding};
 use pasta_curves::pallas;
 use rand_chacha::rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
-pub use crate::algorithms::zcash::vendor::zip32::{AccountId, DiversifierIndex, Scope};
+use crate::zip32::ChildIndex;
+pub use crate::zip32::{AccountId, DiversifierIndex, Scope};
 
 use super::{
     address::Address,
@@ -24,7 +23,7 @@ use super::{
         NonIdentityPallasPoint, NonZeroPallasBase, NonZeroPallasScalar, PreparedNonIdentityBase,
         PreparedNonZeroScalar,
     },
-    zip32::{self, ChildIndex, ExtendedSpendingKey},
+    zip32::{self, ExtendedSpendingKey},
 };
 
 const KDF_ORCHARD_PERSONALIZATION: &[u8; 16] = b"Zcash_OrchardKDF";

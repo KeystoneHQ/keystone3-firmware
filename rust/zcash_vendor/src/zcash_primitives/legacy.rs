@@ -1,6 +1,6 @@
 //! Support for legacy transparent addresses and scripts.
 
-use alloc::{string::String, vec::Vec};
+use alloc::{format, string::String, vec::Vec};
 use core::fmt;
 use core::ops::Shl;
 use third_party::{
@@ -8,7 +8,8 @@ use third_party::{
     hex,
 };
 
-use crate::algorithms::zcash::vendor::{zcash_address, zcash_encoding};
+use crate::zcash_address;
+use crate::zcash_encoding;
 
 use zcash_encoding::Vector;
 

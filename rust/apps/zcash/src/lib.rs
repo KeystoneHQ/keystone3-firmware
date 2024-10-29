@@ -3,6 +3,7 @@
 extern crate alloc;
 
 pub mod errors;
+pub mod pczt;
 
 use errors::{Result, ZcashError};
 

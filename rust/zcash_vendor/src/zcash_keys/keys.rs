@@ -1,5 +1,4 @@
-//! Helper functions for managing light client key material.
-use crate::algorithms::zcash::vendor::zcash_protocol::consensus::NetworkConstants;
+use crate::zcash_protocol::consensus::NetworkConstants;
 use core::{
     error,
     fmt::{self, Display},
@@ -9,27 +8,27 @@ use super::{
     super::zcash_address::unified::{self, Typecode, Ufvk, Uivk},
     address::UnifiedAddress,
 };
-use crate::algorithms::zcash::vendor::{
-    zcash_address::unified::{Container, Encoding},
-    zcash_primitives::{self, legacy::keys::IncomingViewingKey},
-    zcash_protocol,
-    zip32::{AccountId, DiversifierIndex},
-};
+use crate::zcash_address::unified::{Container, Encoding};
+use crate::zcash_primitives::{self, legacy::keys::IncomingViewingKey};
+use crate::zcash_protocol;
+use crate::zip32::{AccountId, DiversifierIndex};
 use alloc::{
+    format,
     string::{String, ToString},
+    vec,
     vec::Vec,
 };
 use bip32;
 use zcash_protocol::consensus;
 
-use crate::algorithms::zcash::vendor::orchard;
+use crate::orchard;
 
 use {
     super::super::zcash_primitives::legacy::keys::{self as legacy, NonHardenedChildIndex},
     core::convert::TryInto,
 };
 
-use orchard::keys::Scope;
+use crate::orchard::keys::Scope;
 
 fn to_transparent_child_index(j: DiversifierIndex) -> Option<NonHardenedChildIndex> {
     let (low_4_bytes, rest) = j.as_bytes().split_at(4);

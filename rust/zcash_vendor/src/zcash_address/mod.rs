@@ -1,13 +1,13 @@
-pub mod unified;
 pub mod convert;
 pub mod encoding;
+pub mod unified;
 
-use alloc::string::String;
+use alloc::{format, string::String};
 pub use convert::{
     ConversionError, ToAddress, TryFromAddress, TryFromRawAddress, UnsupportedAddress,
 };
 use encoding::ParseError;
-use unified::{Receiver};
+use unified::Receiver;
 
 use super::zcash_protocol::{consensus::NetworkType as Network, PoolType};
 

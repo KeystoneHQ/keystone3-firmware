@@ -9,8 +9,8 @@ edition = "2021"
 keystore = { workspace = true }
 app_utils = { workspace = true }
 app_stellar = { workspace = true }
-common_rust_c = { workspace = true }
-cty = "0.2.2"
-cstr_core = "0.2.6"
+common_rust_c = { path = "../common" }
+cty = { workspace = true }
+cstr_core = { workspace = true }
 hex = { workspace = true }
 ur-registry = { workspace = true }

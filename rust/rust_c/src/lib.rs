@@ -1,6 +1,6 @@
 #![cfg_attr(feature = "use-allocator", no_std)]
 #![cfg_attr(feature = "use-allocator", feature(alloc_error_handler))]
-#![cfg(feature = "use-allocator")]
+#[cfg(feature = "use-allocator")]
 extern crate alloc;
 
 #[cfg(feature = "use-allocator")]

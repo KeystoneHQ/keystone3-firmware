@@ -12,7 +12,7 @@ rust_tools = { workspace = true }
 cty = { workspace = true }
 cstr_core = { workspace = true }
 itertools = { workspace = true }
-common_rust_c = { workspace = true }
+common_rust_c = { path = "../common" }
 ur-registry = { workspace = true }
 app_utils = { workspace = true }
 

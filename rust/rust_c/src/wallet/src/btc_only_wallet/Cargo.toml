@@ -14,7 +14,7 @@ cstr_core = { workspace = true }
 bitcoin = { workspace = true }
 ur-registry = { workspace = true }
 hex = { workspace = true }
-common_rust_c = { workspace = true }
+common_rust_c = { path = "../../../common" }
 app_utils = { workspace = true }
 
 [features]

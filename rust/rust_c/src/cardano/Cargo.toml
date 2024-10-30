@@ -18,7 +18,7 @@ ur-registry = { workspace = true }
 bitcoin = { workspace = true }
 ed25519-bip32-core = { workspace = true }
 
-common_rust_c = { workspace = true }
+common_rust_c = { path = "../common" }
 
 [features]
 debug-memory = []

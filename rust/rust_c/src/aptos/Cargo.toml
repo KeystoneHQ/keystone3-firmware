@@ -12,7 +12,7 @@ app_utils = { workspace = true }
 rust_tools = { workspace = true }
 cty = { workspace = true }
 cstr_core = { workspace = true }
-common_rust_c = { workspace = true }
+common_rust_c = { path = "../common" }
 serde_json = { workspace = true }
 hex = { workspace = true }
 bitcoin = { workspace = true }

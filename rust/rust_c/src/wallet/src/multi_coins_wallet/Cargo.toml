@@ -16,7 +16,7 @@ cstr_core = { workspace = true }
 ur-registry = { workspace = true }
 hex = { workspace = true }
 bitcoin = { workspace = true }
-common_rust_c = { workspace = true }
+common_rust_c = { path = "../../../common" }
 ed25519-bip32-core = { workspace = true }
 
 [features]

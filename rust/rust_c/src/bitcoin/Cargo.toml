@@ -18,7 +18,7 @@ bitcoin = { workspace = true }
 cryptoxide = { workspace = true }
 hex = { workspace = true }
 
-common_rust_c = { workspace = true }
+common_rust_c = { path = "../common" }
 
 [features]
 debug-memory = ["default"]

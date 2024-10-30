@@ -15,7 +15,7 @@ cstr_core = { workspace = true }
 itertools = { workspace = true }
 ur-registry = { workspace = true }
 
-common_rust_c = { workspace = true }
+common_rust_c = { path = "../common" }
 
 [features]
 debug-memory = []

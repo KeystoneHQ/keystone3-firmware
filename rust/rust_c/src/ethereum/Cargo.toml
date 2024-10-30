@@ -19,7 +19,7 @@ ur-registry = { workspace = true }
 core2 = { workspace = true }
 cryptoxide = { workspace = true }
 bitcoin = { workspace = true }
-common_rust_c = { workspace = true }
+common_rust_c = { path = "../common" }
 
 [features]
 debug-memory = []

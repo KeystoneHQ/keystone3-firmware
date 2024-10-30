@@ -14,7 +14,7 @@ cty = { workspace = true }
 cstr_core = { workspace = true }
 serde_json = { workspace = true }
 ur-registry = { workspace = true }
-common_rust_c = { workspace = true }
+common_rust_c = { path = "../common" }
 
 [features]
 debug-memory = []

@@ -13,8 +13,8 @@ cty = { workspace = true }
 cstr_core = { workspace = true }
 hex = { workspace = true }
 ur-registry = { workspace = true }
-common_rust_c = { workspace = true }
-wallet_rust_c = { workspace = true }
+common_rust_c = { path = "../../../common" }
+wallet_rust_c = { path = "../../../wallet" }
 
 [features]
 default = ["multi-coins"]

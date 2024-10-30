@@ -66,23 +66,6 @@ app_utils = { path = "apps/utils" }
 app_wallets = { path = "apps/wallets" }
 app_xrp = { path = "apps/xrp" }
 
-aptos_rust_c = { path = "rust_c/src/aptos" }
-arweave_rust_c = { path = "rust_c/src/arweave" }
-bitcoin_rust_c = { path = "rust_c/src/bitcoin", default-features = false }
-cardano_rust_c = { path = "rust_c/src/cardano" }
-common_rust_c = { path = "rust_c/src/common", default-features = false }
-cosmos_rust_c = { path = "rust_c/src/cosmos" }
-ethereum_rust_c = { path = "rust_c/src/ethereum" }
-near_rust_c = { path = "rust_c/src/near" }
-solana_rust_c = { path = "rust_c/src/solana" }
-stellar_rust_c = { path = "rust_c/src/stellar" }
-sui_rust_c = { path = "rust_c/src/sui" }
-ton_rust_c = { path = "rust_c/src/ton" }
-tron_rust_c = { path = "rust_c/src/tron" }
-xrp_rust_c = { path = "rust_c/src/xrp" }
-wallet_rust_c = { path = "rust_c/src/wallet", default-features = false }
-simulator_rust_c = { path = "rust_c/src/simulator", default-features = false }
-
 keystore = { path = "keystore", default-features = false }
 tools = { path = "tools" }
 sim_qr_reader = { path = "sim_qr_reader" }
@@ -112,7 +95,7 @@ ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git"
 ed25519-bip32-core = { version = "0.1.1", default-features = false }
 cryptoxide = "0.4"
 arrayref = "0.3.6"
-num-bigint-dig = { version = "0.8.2", default-features=false }
+num-bigint-dig = { version = "0.8.2", default-features = false }
 base64 = { version = "0.11.0", default-features = false, features = ["alloc"] }
 unicode-blocks = "0.1.6"
 bcs = { git = "https://github.com/KeystoneHQ/bcs.git", tag = "0.1.1" }

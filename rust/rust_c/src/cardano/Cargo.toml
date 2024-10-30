@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 keystore = { workspace = true}
 app_cardano = { workspace = true }
-third_party = { workspace = true }
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
 cty = { workspace = true }

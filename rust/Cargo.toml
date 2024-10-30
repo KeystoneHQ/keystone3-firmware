@@ -46,7 +46,6 @@ members = [
     # other
     "keystore",
     "sim_qr_reader",
-    "third_party",
     "tools",
 ]
 
@@ -85,7 +84,6 @@ wallet_rust_c = { path = "rust_c/src/wallet", default-features = false }
 simulator_rust_c = { path = "rust_c/src/simulator", default-features = false }
 
 keystore = { path = "keystore", default-features = false }
-third_party = { path = "third_party" }
 tools = { path = "tools" }
 sim_qr_reader = { path = "sim_qr_reader" }
 rust_tools = { path = "tools" }

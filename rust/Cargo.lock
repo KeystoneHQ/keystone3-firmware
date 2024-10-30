@@ -393,7 +393,6 @@ dependencies = [
  "keystore",
  "rust_tools",
  "serde_json",
- "third_party",
  "ur-registry",
 ]
 
@@ -537,7 +536,6 @@ dependencies = [
  "hex",
  "keystore",
  "rust_tools",
- "third_party",
  "ur-registry",
 ]
 
@@ -724,7 +722,6 @@ dependencies = [
  "hex",
  "keystore",
  "rust_tools",
- "third_party",
  "ur-parse-lib",
  "ur-registry",
  "wallet_rust_c",
@@ -806,7 +803,6 @@ dependencies = [
  "itertools",
  "keystore",
  "rust_tools",
- "third_party",
  "ur-registry",
 ]
 
@@ -1672,7 +1668,6 @@ dependencies = [
  "hex",
  "keystore",
  "rust_tools",
- "third_party",
  "ur-registry",
  "wallet_rust_c",
 ]
@@ -2197,7 +2192,6 @@ dependencies = [
  "hex",
  "keystore",
  "rust_tools",
- "third_party",
  "ur-registry",
 ]
 
@@ -3553,33 +3547,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "third_party"
-version = "0.1.0"
-dependencies = [
- "base64 0.11.0",
- "bcs",
- "bech32 0.10.0-beta",
- "bitcoin",
- "bitcoin_hashes 0.13.0",
- "blake2",
- "core2",
- "cryptoxide",
- "cstr_core",
- "cty",
- "ed25519-bip32-core",
- "hex",
- "itertools",
- "rsa",
- "serde",
- "serde_json",
- "sha1",
- "thiserror-core",
- "unicode-blocks",
- "ur-parse-lib",
- "ur-registry",
-]
-
-[[package]]
 name = "thiserror"
 version = "1.0.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3752,7 +3719,6 @@ dependencies = [
  "cty",
  "keystore",
  "rust_tools",
- "third_party",
 ]
 
 [[package]]
@@ -4316,7 +4282,6 @@ dependencies = [
  "keystore",
  "rust_tools",
  "serde_json",
- "third_party",
  "ur-registry",
 ]
 

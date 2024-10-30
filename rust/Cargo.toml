@@ -17,6 +17,7 @@ members = [
     "apps/utils",
     "apps/wallets",
     "apps/xrp",
+    "apps/zcash",
 
     # C interface entry
     "rust_c",
@@ -38,6 +39,7 @@ members = [
     "rust_c/src/tron",
     "rust_c/src/wallet",
     "rust_c/src/xrp",
+    "rust_c/src/zcash",
 
     "rust_c/src/test_cmd",
     "rust_c/src/test_cmd/src/btc_test_cmd",
@@ -47,6 +49,7 @@ members = [
     "keystore",
     "sim_qr_reader",
     "tools",
+    "zcash_vendor",
 ]
 
 [workspace.dependencies]
@@ -65,11 +68,12 @@ app_tron = { path = "apps/tron" }
 app_utils = { path = "apps/utils" }
 app_wallets = { path = "apps/wallets" }
 app_xrp = { path = "apps/xrp" }
-
+app_zcash = { path = "apps/zcash" }
 keystore = { path = "keystore", default-features = false }
 tools = { path = "tools" }
 sim_qr_reader = { path = "sim_qr_reader" }
 rust_tools = { path = "tools" }
+zcash_vendor = { path = "zcash_vendor" }
 
 # third party dependencies
 cty = "0.2.0"

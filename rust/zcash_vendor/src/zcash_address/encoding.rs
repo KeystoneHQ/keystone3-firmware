@@ -5,7 +5,7 @@ use crate::zcash_protocol::consensus::{NetworkConstants, NetworkType};
 use crate::zcash_protocol::constants::{mainnet, regtest, testnet};
 use alloc::string::String;
 use alloc::vec::Vec;
-use third_party::bech32::{self, Bech32, Bech32m, Checksum, Hrp};
+use bech32::{self, Bech32, Bech32m, Checksum, Hrp};
 
 use super::unified::{self, Encoding};
 use super::ZcashAddress;

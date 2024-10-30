@@ -24,6 +24,7 @@ xrp_rust_c = { path = "./src/xrp", optional = true }
 arweave_rust_c = { path = "./src/arweave", optional = true }
 stellar_rust_c = { path = "./src/stellar", optional = true }
 ton_rust_c = { path = "./src/ton", optional = true }
+zcash_rust_c = { path = "./src/zcash", optional = true }
 
 cty = { workspace = true }
 cstr_core = { workspace = true }

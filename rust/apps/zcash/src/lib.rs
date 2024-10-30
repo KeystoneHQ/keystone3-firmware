@@ -8,7 +8,7 @@ pub mod pczt;
 use errors::{Result, ZcashError};
 
 use alloc::string::{String, ToString};
-use keystore::algorithms::zcash::vendor::{
+use zcash_vendor::{
     zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
     zcash_protocol::consensus::MainNetwork,
 };
@@ -25,6 +25,5 @@ pub fn get_address(ufvk_text: &str) -> Result<String> {
 // pub fn sign_transaction(tx: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
 //     let mut transaction = tx.clone();
 //     let pczt = PartiallyCreatedTransaction::decode(transaction)?;
-    
-// }
 
+// }

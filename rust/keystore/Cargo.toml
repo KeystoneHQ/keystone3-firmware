@@ -19,6 +19,7 @@ cryptoxide = { workspace = true }
 bitcoin = { workspace = true }
 hex = { workspace = true }
 rsa = { workspace = true }
+zcash_vendor = { workspace = true }
 
 [features]
 default = ["std"]

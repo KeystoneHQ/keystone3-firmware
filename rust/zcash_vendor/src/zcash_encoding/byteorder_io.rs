@@ -1,5 +1,5 @@
 use alloc::slice;
-use third_party::core2::io::{self, Result};
+use core2::io::{self, Result};
 
 use byteorder::ByteOrder;
 

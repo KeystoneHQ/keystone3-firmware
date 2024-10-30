@@ -1,5 +1,5 @@
 use alloc::string::{String, ToString};
-use third_party::thiserror;
+use thiserror;
 use thiserror::Error;
 
 pub type Result<T> = core::result::Result<T, ZcashError>;

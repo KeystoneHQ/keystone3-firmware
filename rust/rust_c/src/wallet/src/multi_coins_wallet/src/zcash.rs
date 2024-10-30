@@ -8,10 +8,10 @@ use common_rust_c::structs::ZcashKey;
 use common_rust_c::types::{Ptr, PtrBytes, PtrString};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
-use third_party::ur_registry::bytes::Bytes;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::traits::RegistryItem;
-use third_party::ur_registry::zcash::zcash_accounts::ZcashAccounts;
+use ur_registry::bytes::Bytes;
+use ur_registry::error::URError;
+use ur_registry::traits::RegistryItem;
+use ur_registry::zcash::zcash_accounts::ZcashAccounts;
 
 #[no_mangle]
 pub extern "C" fn get_connect_zcash_wallet_ur(

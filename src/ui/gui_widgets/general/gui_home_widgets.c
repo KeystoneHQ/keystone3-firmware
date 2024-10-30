@@ -894,7 +894,6 @@ static void HomeScrollHandler(lv_event_t * e)
         if (isDragging) {
             lv_indev_t * indev = lv_indev_get_act();
             lv_indev_get_point(indev, &touchEnd);
-
             int16_t diff_y = touchEnd.y - touchStart.y;
             if (abs(diff_y) > SWIPE_THRESHOLD) {
                 if (diff_y < 0) {

@@ -905,9 +905,12 @@ static void HomeScrollHandler(lv_event_t * e)
                     g_isScrolling = true;
                 }
             } else {
-                HOME_WALLET_CARD_ENUM coin;
-                coin = *(HOME_WALLET_CARD_ENUM *)lv_event_get_user_data(e);
-                CoinDealHandler(coin);
+                lv_obj_t *obj = lv_event_get_target(e);
+                if (obj != g_homeWalletCardCont) {
+                    HOME_WALLET_CARD_ENUM coin;
+                    coin = *(HOME_WALLET_CARD_ENUM *)lv_event_get_user_data(e);
+                    CoinDealHandler(coin);
+                }
             }
 
             lv_timer_t *timer = lv_timer_create(ResetScrollState, 200, NULL);

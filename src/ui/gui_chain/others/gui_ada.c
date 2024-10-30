@@ -297,6 +297,21 @@ PtrT_TransactionCheckResult GuiGetAdaSignDataCheckResult(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
+    // first check is sign opcert and then check sign cip8 or cip36 data
+    PtrT_TransactionCheckResult checkCardanoCip1853SignOpcertResult = cardano_check_sign_data_is_sign_opcert(data);
+    if (checkCardanoCip1853SignOpcertResult->error_code != 0) {
+        Try2FixAdaPathType();
+        checkCardanoCip1853SignOpcertResult = cardano_check_sign_data_is_sign_opcert(data);
+        if (checkCardanoCip1853SignOpcertResult->error_code == 0) {
+            free_TransactionCheckResult(checkCardanoCip1853SignOpcertResult);
+            PtrT_TransactionCheckResult result = cardano_check_sign_data(data, mfp);
+            return result;
+        }
+    } else {
+        free_TransactionCheckResult(checkCardanoCip1853SignOpcertResult);
+        PtrT_TransactionCheckResult result = cardano_check_sign_data(data, mfp);
+        return result;
+    }
     Ptr_SimpleResponse_c_char master_key_index = cardano_get_sign_data_root_index(data);
     if (master_key_index->error_code != 0) {
         return NULL;

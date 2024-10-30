@@ -9,10 +9,10 @@ use alloc::string::ToString;
 use core::slice;
 
 use cty::c_char;
-use third_party::bitcoin::hex::Case;
-use third_party::bitcoin_hashes::hex::DisplayHex;
-use third_party::hex;
-use third_party::hex::ToHex;
+use bitcoin::hex::Case;
+use bitcoin_hashes::hex::DisplayHex;
+use hex;
+use hex::ToHex;
 
 use errors::ErrorCodes;
 use structs::TransactionCheckResult;

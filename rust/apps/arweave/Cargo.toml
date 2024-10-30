@@ -6,17 +6,22 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keystore = { path = "../../keystore", default-features = false }
-third_party = { path = "../../third_party" }
-app_utils = {path="../utils"}
-rand_chacha = { version="0.3.1", default-features=false }
-sha2 = { version = "0.10.6", default-features = false, features = ["oid"] }
-aes = { version = "0.8.4", default-features = false }
-cbc = { version = "0.1.2", default-features = false }
-cipher = { version = "0.4.4", default-features = false, features = ["block-padding", "alloc"] }
-serde = { version = "1.0.139", default-features = false }
-rust_tools = {path = "../../tools"}
-lazy_static = "1.4.0"
+keystore = { workspace = true, default-features = false }
+app_utils = { workspace = true }
+rand_chacha = { workspace = true }
+sha2 = { workspace = true }
+aes = { workspace = true }
+cbc = { workspace = true }
+cipher = { workspace = true }
+serde = { workspace = true }
+rust_tools = { workspace = true }
+lazy_static = { workspace = true }
+base64 = { version = "0.11.0", default-features = false, features = ["alloc"] }
+cryptoxide = { workspace = true }
+serde_json = { workspace = true }
+hex = { workspace = true }
+rsa = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
-keystore = { path = "../../keystore"}
+keystore = { workspace = true }

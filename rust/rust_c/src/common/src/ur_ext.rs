@@ -2,49 +2,49 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-use third_party::serde_json::{from_slice, from_value, Value};
+use serde_json::{from_slice, from_value, Value};
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
+use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SignType};
-use third_party::ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
-use third_party::ur_registry::bytes::Bytes;
+use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SignType};
+use ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
+use ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
+use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
+use ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
+use ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::cosmos::evm_sign_request::EvmSignRequest;
-use third_party::ur_registry::crypto_account::CryptoAccount;
-use third_party::ur_registry::crypto_psbt::CryptoPSBT;
-use third_party::ur_registry::error::URError;
+use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::crypto_psbt::CryptoPSBT;
+use ur_registry::error::URError;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::ethereum::eth_sign_request;
+use ur_registry::ethereum::eth_sign_request;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::ethereum::eth_sign_request::EthSignRequest;
-use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::ethereum::eth_sign_request::EthSignRequest;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};
+use ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
+use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::near::near_sign_request::NearSignRequest;
-use third_party::ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
-use third_party::ur_registry::pb::protoc;
-use third_party::ur_registry::pb::protoc::Base;
+use ur_registry::near::near_sign_request::NearSignRequest;
+use ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
+use ur_registry::pb::protoc;
+use ur_registry::pb::protoc::Base;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
+use ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::stellar::stellar_sign_request::{
+use ur_registry::stellar::stellar_sign_request::{
     SignType as StellarSignType, StellarSignRequest,
 };
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
-use third_party::ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
+use ur_registry::sui::sui_sign_request::SuiSignRequest;
+use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 
 use crate::ur::ViewType;
 
@@ -296,8 +296,8 @@ impl InferViewType for QRHardwareCall {
 mod tests {
     use alloc::vec::Vec;
 
-    use third_party::hex::FromHex;
-    use third_party::ur_registry::bytes::Bytes;
+    use hex::FromHex;
+    use ur_registry::bytes::Bytes;
 
     use crate::ur::ViewType;
     use crate::ur_ext::InferViewType;

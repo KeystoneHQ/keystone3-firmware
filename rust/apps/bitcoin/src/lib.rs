@@ -14,18 +14,18 @@ use alloc::vec::Vec;
 
 pub use addresses::get_address;
 use app_utils::keystone;
-use third_party::bitcoin::bip32::Fingerprint;
-use third_party::bitcoin::psbt::Psbt;
-use third_party::bitcoin::sign_message;
-use third_party::bitcoin_hashes::Hash;
-use third_party::either::{Left, Right};
-use third_party::hex;
-use third_party::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
-use third_party::secp256k1::Message;
-use third_party::ur_registry::pb::protoc;
+use bitcoin::bip32::Fingerprint;
+use bitcoin::psbt::Psbt;
+use bitcoin::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
+use bitcoin::secp256k1::Message;
+use bitcoin::sign_message;
+use bitcoin_hashes::Hash;
+use either::{Left, Right};
+use hex;
 pub use transactions::legacy::sign_legacy_tx;
 pub use transactions::parsed_tx;
 pub use transactions::psbt::parsed_psbt;
+use ur_registry::pb::protoc;
 
 use crate::errors::{BitcoinError, Result};
 use crate::parsed_tx::{ParseContext, ParsedTx, TxParser};
@@ -133,9 +133,9 @@ mod test {
     use core::str::FromStr;
 
     use app_utils::keystone;
-    use third_party::hex::FromHex;
-    use third_party::ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
-    use third_party::ur_registry::pb::protoc::{Base, Payload};
+    use hex::FromHex;
+    use ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
+    use ur_registry::pb::protoc::{Base, Payload};
 
     use crate::addresses::xyzpub::{convert_version, Version};
     use crate::alloc::string::ToString;
@@ -214,11 +214,9 @@ mod test {
     }
 
     pub fn prepare_parse_context(pubkey_str: &str) -> keystone::ParseContext {
-        let master_fingerprint =
-            third_party::bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
+        let master_fingerprint = bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
         let extended_pubkey_str = convert_version(pubkey_str, &Version::Xpub).unwrap();
-        let extended_pubkey =
-            third_party::bitcoin::bip32::Xpub::from_str(extended_pubkey_str.as_str()).unwrap();
+        let extended_pubkey = bitcoin::bip32::Xpub::from_str(extended_pubkey_str.as_str()).unwrap();
         keystone::ParseContext::new(master_fingerprint, extended_pubkey)
     }
 
@@ -594,11 +592,11 @@ mod test {
 
     #[test]
     fn test_sign_msg() {
-        let seed = third_party::hex::decode("7bf300876c3927d133c7535cbcb19d22e4ac1aff29998355d2fa7ed749212c7106620e74daf0f3d5e13a48dfb8b17641c711b513d92c7a5023ca5b1ad7b202e5").unwrap();
+        let seed = hex::decode("7bf300876c3927d133c7535cbcb19d22e4ac1aff29998355d2fa7ed749212c7106620e74daf0f3d5e13a48dfb8b17641c711b513d92c7a5023ca5b1ad7b202e5").unwrap();
         let path = "M/44'/0'/0'/0/0".to_string();
         let msg = "123";
 
         let sig = sign_msg(msg, &seed, &path).unwrap();
-        assert_eq!(third_party::base64::encode(&sig), "H8CDgK7sBj7o+OFZ+IVZyrKmcZuJn2/KFNHHv+kAxi+FWCUEYpZCyAGz0fj1OYwFM0E+q/TyQ2uZziqWI8k0eYE=");
+        assert_eq!(base64::encode(&sig), "H8CDgK7sBj7o+OFZ+IVZyrKmcZuJn2/KFNHHv+kAxi+FWCUEYpZCyAGz0fj1OYwFM0E+q/TyQ2uZziqWI8k0eYE=");
     }
 }

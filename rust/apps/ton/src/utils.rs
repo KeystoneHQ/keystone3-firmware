@@ -1,5 +1,5 @@
 use alloc::{string::String, vec::Vec};
-use third_party::cryptoxide::{
+use cryptoxide::{
     digest::Digest,
     hmac::Hmac,
     pbkdf2,

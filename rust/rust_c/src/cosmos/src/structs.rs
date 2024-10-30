@@ -2,7 +2,7 @@ use alloc::string::ToString;
 use app_cosmos::transaction::overview::MsgOverview;
 use app_cosmos::transaction::structs::{CosmosTxDisplayType, ParsedCosmosTx};
 use core::ptr::null_mut;
-use third_party::serde_json;
+use serde_json;
 
 use common_rust_c::free::{free_ptr_string, Free};
 use common_rust_c::structs::TransactionParseResult;

@@ -1,13 +1,14 @@
-#![cfg_attr(not(feature = "no-allocator"), no_std)]
+#![cfg_attr(feature = "use-allocator", no_std)]
+#![cfg_attr(feature = "use-allocator", feature(alloc_error_handler))]
+#[cfg(feature = "use-allocator")]
+extern crate alloc;
 
-#[cfg(not(feature = "no-allocator"))]
-#[allow(unused)]
-use kt_allocator::my_alloc::KTAllocator;
-
-#[cfg(not(feature = "no-allocator"))]
-#[cfg(not(test))]
-#[global_allocator]
-static KT_ALLOCATOR: KTAllocator = KTAllocator;
+#[cfg(feature = "use-allocator")]
+mod allocator;
+#[cfg(feature = "use-allocator")]
+mod bindings;
+#[cfg(feature = "use-allocator")]
+mod my_alloc;
 
 #[allow(unused)]
 use bitcoin_rust_c;

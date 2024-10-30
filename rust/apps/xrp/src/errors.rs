@@ -2,9 +2,9 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use core::str::Utf8Error;
 use keystore::errors::KeystoreError;
-use third_party::serde_json::Error;
-use third_party::thiserror::Error;
-use third_party::{hex, serde_json, thiserror};
+use serde_json::Error;
+use thiserror::Error;
+use {hex, serde_json, thiserror};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum XRPError {
@@ -46,8 +46,8 @@ impl From<serde_json::Error> for XRPError {
     }
 }
 
-impl From<third_party::bitcoin::bip32::Error> for XRPError {
-    fn from(value: third_party::bitcoin::bip32::Error) -> Self {
+impl From<bitcoin::bip32::Error> for XRPError {
+    fn from(value: bitcoin::bip32::Error) -> Self {
         Self::InvalidData(format!("bip32 operation failed {}", value))
     }
 }

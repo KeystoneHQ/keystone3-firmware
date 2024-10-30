@@ -1,9 +1,9 @@
 use alloc::format;
 use alloc::string::{String, ToString};
+use bitcoin::base58::Error as Base58Error;
 use keystore::errors::KeystoreError;
 use serde_json::Error;
-use third_party::base58::Error as Base58Error;
-use third_party::thiserror;
+use thiserror;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

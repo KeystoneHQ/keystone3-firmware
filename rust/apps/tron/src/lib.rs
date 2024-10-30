@@ -10,7 +10,7 @@ extern crate std;
 use crate::errors::Result;
 use alloc::string::String;
 
-use third_party::ur_registry::pb::protoc;
+use ur_registry::pb::protoc;
 
 mod address;
 pub mod errors;
@@ -49,13 +49,12 @@ mod test {
     use super::*;
     use alloc::vec::Vec;
     use core::str::FromStr;
-    use third_party::hex::FromHex;
-    use third_party::ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
-    use third_party::ur_registry::pb::protoc::{Base, Payload};
+    use hex::FromHex;
+    use ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
+    use ur_registry::pb::protoc::{Base, Payload};
     pub fn prepare_parse_context(pubkey_str: &str) -> keystone::ParseContext {
-        let master_fingerprint =
-            third_party::bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
-        let extended_pubkey = third_party::bitcoin::bip32::Xpub::from_str(pubkey_str).unwrap();
+        let master_fingerprint = bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
+        let extended_pubkey = bitcoin::bip32::Xpub::from_str(pubkey_str).unwrap();
         keystone::ParseContext::new(master_fingerprint, extended_pubkey)
     }
 

@@ -1,4 +1,4 @@
-use third_party::core2::io::Cursor;
+use core2::io::Cursor;
 
 use alloc::format;
 use alloc::vec;

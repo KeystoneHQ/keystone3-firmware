@@ -23,10 +23,10 @@ use core::iter::FromIterator;
 use core::str::FromStr;
 use serde::{Deserialize, Deserializer, Serialize};
 
-use third_party::hex;
-use third_party::serde_json;
-use third_party::thiserror;
-use third_party::thiserror::Error;
+use hex;
+use serde_json;
+use thiserror;
+use thiserror::Error;
 
 use crate::crypto::keccak256;
 

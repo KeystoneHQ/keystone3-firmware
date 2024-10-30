@@ -3,8 +3,8 @@ use alloc::{
     vec::Vec,
 };
 
-use third_party::ur_registry::bytes::Bytes;
-use third_party::{
+use ur_registry::bytes::Bytes;
+use {
     bitcoin::bip32::ChildNumber,
     ur_registry::{
         crypto_hd_key::CryptoHDKey,
@@ -18,8 +18,8 @@ use crate::companion_app::{AccountConfig, CoinConfig};
 use crate::{common::get_path_component, ExtendedPublicKey};
 
 fn get_device_id(serial_number: &str) -> String {
-    use third_party::cryptoxide::hashing::sha256;
-    third_party::hex::encode(&sha256(&sha256(serial_number.as_bytes()))[0..20])
+    use cryptoxide::hashing::sha256;
+    hex::encode(&sha256(&sha256(serial_number.as_bytes()))[0..20])
 }
 
 const BTC_LEGACY_PREFIX: &str = "m/44'/0'/0'";
@@ -178,7 +178,7 @@ fn generate_k1_normal_key(
     key: ExtendedPublicKey,
     note: Option<String>,
 ) -> URResult<CryptoHDKey> {
-    let xpub = third_party::bitcoin::bip32::Xpub::decode(&key.get_key())
+    let xpub = bitcoin::bip32::Xpub::decode(&key.get_key())
         .map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
     let path = key.get_path();
     let key_path = CryptoKeyPath::new(

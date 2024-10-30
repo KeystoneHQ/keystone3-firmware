@@ -28,8 +28,8 @@ impl<'de> de::Deserialize<'de> for AccountId {
 mod tests {
     use super::*;
     use crate::account_id::tests::{BAD_ACCOUNT_IDS, OK_ACCOUNT_IDS};
-    use third_party::serde_json;
-    use third_party::serde_json::json;
+    use serde_json;
+    use serde_json::json;
 
     #[test]
     fn test_is_valid_account_id() {

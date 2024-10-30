@@ -9,11 +9,11 @@ use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
 use core::slice;
 use core::str::FromStr;
-use third_party::bitcoin::bip32::DerivationPath;
-use third_party::hex;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
-use third_party::ur_registry::traits::RegistryItem;
+use bitcoin::bip32::DerivationPath;
+use hex;
+use ur_registry::error::URError;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::traits::RegistryItem;
 
 #[no_mangle]
 pub extern "C" fn get_connect_sui_wallet_ur(
@@ -32,7 +32,7 @@ pub extern "C" fn get_connect_sui_wallet_ur(
         let mfp = slice::from_raw_parts(master_fingerprint, length as usize);
         let public_keys = recover_c_array(public_keys);
         let master_fingerprint =
-            third_party::bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
+            bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
                 .map_err(|_e| RustCError::InvalidMasterFingerprint);
         match master_fingerprint {
             Ok(fp) => {

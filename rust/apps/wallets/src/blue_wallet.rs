@@ -3,14 +3,14 @@ use core::str::FromStr;
 use alloc::string::ToString;
 use alloc::vec;
 use alloc::vec::Vec;
-use third_party::bitcoin::bip32;
-use third_party::ur_registry::crypto_account::CryptoAccount;
-use third_party::ur_registry::crypto_coin_info::{CoinType, CryptoCoinInfo, Network};
-use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
-use third_party::ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
-use third_party::ur_registry::crypto_output::CryptoOutput;
-use third_party::ur_registry::error::{URError, URResult};
-use third_party::ur_registry::script_expression::ScriptExpression;
+use bitcoin::bip32;
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::crypto_coin_info::{CoinType, CryptoCoinInfo, Network};
+use ur_registry::crypto_hd_key::CryptoHDKey;
+use ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
+use ur_registry::crypto_output::CryptoOutput;
+use ur_registry::error::{URError, URResult};
+use ur_registry::script_expression::ScriptExpression;
 
 const PURPOSE_LEGACY: u32 = 44;
 const PURPOSE_NESTED_SEGWIT: u32 = 49;
@@ -143,8 +143,8 @@ mod tests {
     use crate::blue_wallet::generate_crypto_account;
     use alloc::vec::Vec;
 
-    use third_party::hex;
-    use third_party::hex::FromHex;
+    use hex;
+    use hex::FromHex;
 
     #[test]
     fn test_generate_crypto_account() {

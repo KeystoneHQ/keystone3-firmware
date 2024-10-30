@@ -9,9 +9,9 @@ use crate::vendor::address::TonAddress;
 use crate::vendor::cell::BagOfCells;
 use alloc::string::{String, ToString};
 use alloc::vec;
+use hex;
 use serde::Serialize;
-use third_party::hex;
-use third_party::serde_json::{self, json, Value};
+use serde_json::{self, json, Value};
 
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct TonTransaction {

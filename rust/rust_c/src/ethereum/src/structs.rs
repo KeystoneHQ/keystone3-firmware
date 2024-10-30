@@ -15,9 +15,9 @@ use common_rust_c::utils::convert_c_char;
 use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
 use core::ptr::null_mut;
 use core::str::FromStr;
-use third_party::itertools::Itertools;
-use third_party::ur_registry::ethereum::eth_sign_request::DataType;
-use third_party::ur_registry::pb::protoc::EthTx;
+use itertools::Itertools;
+use ur_registry::ethereum::eth_sign_request::DataType;
+use ur_registry::pb::protoc::EthTx;
 
 #[repr(C)]
 pub struct DisplayETH {

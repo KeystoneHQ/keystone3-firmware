@@ -1,14 +1,14 @@
 use alloc::string::String;
 use alloc::vec;
 use alloc::vec::Vec;
+use bitcoin::bip32;
 use core::str::FromStr;
-use third_party::bitcoin::bip32;
-use third_party::ur_registry::crypto_account::CryptoAccount;
-use third_party::ur_registry::crypto_coin_info::{CoinType, CryptoCoinInfo, Network};
-use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
-use third_party::ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
-use third_party::ur_registry::crypto_output::CryptoOutput;
-use third_party::ur_registry::error::{URError, URResult};
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::crypto_coin_info::{CoinType, CryptoCoinInfo, Network};
+use ur_registry::crypto_hd_key::CryptoHDKey;
+use ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
+use ur_registry::crypto_output::CryptoOutput;
+use ur_registry::error::{URError, URResult};
 
 const ETH_PURPOSE: u32 = 44;
 const ETH_COIN_TYPE: u32 = 60;
@@ -159,8 +159,8 @@ mod tests {
     use alloc::string::ToString;
     use alloc::vec;
     use alloc::vec::Vec;
-    use third_party::hex;
-    use third_party::hex::FromHex;
+    use hex;
+    use hex::FromHex;
 
     #[test]
     fn test_ledger_live() {

@@ -3,7 +3,8 @@ use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 
-use third_party::{base58, bitcoin};
+use bitcoin;
+use bitcoin::base58;
 
 use crate::compact::Compact;
 use crate::errors::{Result, SolanaError};

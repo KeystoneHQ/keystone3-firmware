@@ -2,8 +2,8 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use core::ops::Div;
 
-use third_party::serde_json;
-use third_party::serde_json::Value;
+use serde_json;
+use serde_json::Value;
 
 use crate::errors::{XRPError, R};
 use crate::parser::overview::{XrpTxOverview, XrpTxOverviewGeneral, XrpTxOverviewPayment};
@@ -111,7 +111,7 @@ impl ParsedXrpTx {
 
 #[cfg(test)]
 mod tests {
-    use third_party::serde_json::from_str;
+    use serde_json::from_str;
 
     use crate::transaction::WrappedTxData;
 

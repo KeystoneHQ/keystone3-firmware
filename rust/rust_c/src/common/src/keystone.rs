@@ -12,19 +12,19 @@ use app_bitcoin::addresses::xyzpub::{convert_version, Version};
 use app_utils;
 use app_wallets::{companion_app::DESCRIPTION, DEVICE_TYPE};
 use core::str::FromStr;
-use third_party::hex;
-use third_party::ur_registry::bytes::Bytes;
+use hex;
+use ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
+use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::keystone::keystone_sign_result::KeystoneSignResult;
-use third_party::ur_registry::pb::protobuf_parser::{
+use ur_registry::keystone::keystone_sign_result::KeystoneSignResult;
+use ur_registry::pb::protobuf_parser::{
     parse_protobuf, serialize_protobuf, unzip, zip,
 };
-use third_party::ur_registry::pb::protoc::base::Content as VersionContent;
-use third_party::ur_registry::pb::protoc::payload::Type as PbType;
-use third_party::ur_registry::pb::protoc::{payload, Base, Payload, SignTransactionResult};
-use third_party::ur_registry::traits::RegistryItem;
+use ur_registry::pb::protoc::base::Content as VersionContent;
+use ur_registry::pb::protoc::payload::Type as PbType;
+use ur_registry::pb::protoc::{payload, Base, Payload, SignTransactionResult};
+use ur_registry::traits::RegistryItem;
 
 pub fn build_payload(ptr: PtrUR, ur_type: QRCodeType) -> Result<Payload, KeystoneError> {
     let bytes = match ur_type {
@@ -55,9 +55,9 @@ pub fn build_parse_context(
     let xpub_str = convert_version(x_pub.as_str(), &Version::Xpub)
         .map_err(|e| KeystoneError::InvalidParseContext(e.to_string()))?;
     let master_fingerprint =
-        third_party::bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
+        bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
             .map_err(|_| KeystoneError::InvalidParseContext(format!("invalid mfp")))?;
-    let extended_pubkey = third_party::bitcoin::bip32::Xpub::from_str(&xpub_str).map_err(|_| {
+    let extended_pubkey = bitcoin::bip32::Xpub::from_str(&xpub_str).map_err(|_| {
         KeystoneError::InvalidParseContext(format!("invalid extended pub key {}", x_pub))
     })?;
     Ok(app_utils::keystone::ParseContext::new(

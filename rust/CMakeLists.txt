@@ -1,24 +1,51 @@
 message(STATUS "compile rust")
 
-set(CARGO_ARM_TARGET thumbv7em-none-eabihf)
-set(RUST_DIR ${CMAKE_SOURCE_DIR}/rust)
-
-find_program(RUST_CARGO_EXECUTABLE cargo)
-find_program(BINDGEN_EXE bindgen)
-find_program(CBINDGEN_EXE cbindgen)
+include(rust_c.cmake)
 
 if(NOT BUILD_TYPE STREQUAL "Simulator")
-    set(TARGET_PATH	${CMAKE_BINARY_DIR}/rust-builds)
+    if(BTC_ONLY)
+        set(CARGO_FLAG --release --target ${CARGO_ARM_TARGET} -p rust_c --no-default-features --features firmware-btc-only)
+    else()
+        set(CARGO_FLAG --release --target ${CARGO_ARM_TARGET} -p rust_c --no-default-features --features firmware)
+    endif()
+
+
+    if(DEFINED DEBUG_MEMORY)
+        message(STATUS "build with DEBUG_MEMORY")
+        set(CARGO_FLAG ${CARGO_FLAG} --features debug-memory)
+    endif()
+
+    message(STATUS "cargo build command: " ${CARGO_FLAG})
+    message(STATUS ${TARGET_PATH})
+
+    set(COPY_COMMAND  cp ${RUST_DIR}/target/${CARGO_ARM_TARGET}/release/${LIB_NAME} ${TARGET_PATH})
+
+    add_custom_target(rust_c ALL
+        COMMAND ${CBINDGEN_EXE} ${CBINDGEN_FLAG}
+        COMMAND rustup run nightly-2023-12-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
+        COMMAND ${COPY_COMMAND}
+        WORKING_DIRECTORY ${RUST_DIR}
+    )
 else()
-    set(TARGET_PATH	${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds)
+    if(BTC_ONLY)
+        set(CARGO_FLAG --release -p rust_c --no-default-features --features simulator_btc_only)
+    else()
+        set(CARGO_FLAG --release -p rust_c --no-default-features --features simulator)
+    endif()
+
+    if(DEFINED DEBUG_MEMORY)
+        message(STATUS "build with DEBUG_MEMORY")
+        set(CARGO_FLAG ${CARGO_FLAG} --features debug-memory)
+    endif()
+
+    message(STATUS "Cargo Flags: ${CARGO_FLAG}")
+
+    set(COPY_COMMAND cp ${RUST_DIR}/target/release/${LIB_NAME} ${TARGET_PATH})
+
+    add_custom_target(rust_c ALL
+        COMMAND ${CBINDGEN_EXE} ${CBINDGEN_FLAG}
+        COMMAND rustup run nightly-2023-12-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
+        COMMAND ${COPY_COMMAND}
+        WORKING_DIRECTORY ${RUST_DIR}
+    )
 endif()
-
-message(STATUS "build target path: " ${TARGET_PATH})
-
-option(LIB_RUST_C "Set to switch to Compile the RUST_C library" OFF)
-
-if(NOT EXISTS ${TARGET_PATH})
-    file(MAKE_DIRECTORY ${TARGET_PATH})
-endif()
-
-add_subdirectory(rust_c)

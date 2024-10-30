@@ -5,9 +5,9 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use cardano_serialization_lib;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey, Vkey, Vkeywitness};
-use third_party::cryptoxide::hashing::blake2b_256;
-use third_party::ed25519_bip32_core::{XPrv, XPub};
-use third_party::hex;
+use cryptoxide::hashing::blake2b_256;
+use ed25519_bip32_core::{XPrv, XPub};
+use hex;
 
 pub fn parse_tx(tx: Vec<u8>, context: ParseContext) -> R<ParsedCardanoTx> {
     let cardano_tx =
@@ -155,8 +155,8 @@ mod test {
 
     use crate::transaction::parse_tx;
     use std::println;
-    use third_party::ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
-    use third_party::{cryptoxide::hashing::blake2b_256, hex};
+    use ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
+    use {cryptoxide::hashing::blake2b_256, hex};
 
     #[test]
     fn spike_transaction() {

@@ -6,7 +6,7 @@ use core::ptr::null_mut;
 use app_solana::parser::overview::{ProgramOverviewGeneral, SolanaOverview};
 use app_solana::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
 use app_solana::structs::SolanaMessage;
-use third_party::itertools::Itertools;
+use itertools::Itertools;
 
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;

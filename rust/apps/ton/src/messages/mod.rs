@@ -2,8 +2,8 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
+use hex;
 use serde::Serialize;
-use third_party::hex;
 
 use self::jetton::JettonMessage;
 use self::nft::{NFTMessage, NFT_TRANSFER};

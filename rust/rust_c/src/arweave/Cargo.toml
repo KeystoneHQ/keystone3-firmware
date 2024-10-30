@@ -6,11 +6,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keystore = { path = "../../../keystore", default-features = false }
-app_utils = { path = "../../../apps/utils" }
-app_arweave = {path = "../../../apps/arweave"}
-rust_tools = {path="../../../tools"}
-common_rust_c = {path = "../common"}
-third_party = { path = "../../../third_party" }
-cty = "0.2.2"
-cstr_core = "0.2.6"
+keystore = { workspace = true }
+app_utils = { workspace = true }
+app_arweave = { workspace = true }
+rust_tools = { workspace = true }
+common_rust_c = { path = "../common" }
+cty = { workspace = true }
+cstr_core = { workspace = true }
+serde_json = { workspace = true }
+hex = { workspace = true }
+bitcoin = { workspace = true }
+ur-registry = { workspace = true }
+cryptoxide = { workspace = true }

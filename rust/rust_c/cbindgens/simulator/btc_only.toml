@@ -9,13 +9,6 @@ after_includes = "#define SIMPLERESPONSE_C_CHAR_MAX_LEN 2048\n#define ADDRESS_MA
 parse_deps = true
 include = [
     "rust_c",
-    "common_rust_c",
-    "bitcoin_rust_c",
-    "wallet_rust_c",
-    "btc_only_wallet_rust_c",
-    "test_cmd",
-    "btc_test_cmd",
-    "simulator_rust_c"
 ]
 extra_bindings = [
     "common_rust_c",

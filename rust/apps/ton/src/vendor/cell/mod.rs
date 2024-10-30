@@ -12,8 +12,8 @@ use core::fmt::Debug;
 use core::fmt::Formatter;
 use core::hash::Hash;
 
-use third_party::core2::io;
-use third_party::core2::io::Cursor;
+use core2::io;
+use core2::io::Cursor;
 
 pub use crate::vendor::cell::bag_of_cells::*;
 

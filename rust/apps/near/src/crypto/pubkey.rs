@@ -1,5 +1,6 @@
 use alloc::str::FromStr;
 use alloc::string::{String, ToString};
+use bitcoin::base58 as bs58;
 use borsh::maybestd::io::{Error, ErrorKind, Write};
 use borsh::{BorshDeserialize, BorshSerialize};
 use core::cmp::Ordering;
@@ -7,7 +8,6 @@ use core::cmp::PartialOrd;
 use core::convert::AsRef;
 use core::fmt::{Debug, Display, Formatter};
 use serde::{Deserialize, Serialize};
-use third_party::base58 as bs58;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum KeyType {

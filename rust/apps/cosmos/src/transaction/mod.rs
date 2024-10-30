@@ -101,8 +101,8 @@ impl ParsedCosmosTx {
 
 #[cfg(test)]
 mod tests {
+    use hex;
     use serde_json::{json, Value};
-    use third_party::hex;
 
     use crate::transaction::structs::DataType;
 

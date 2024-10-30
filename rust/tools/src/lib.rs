@@ -3,8 +3,8 @@
 extern crate alloc;
 
 use alloc::string::String;
-use third_party::cstr_core::CString;
-use third_party::cty::c_char;
+use cstr_core::CString;
+use cty::c_char;
 
 pub mod binding;
 pub mod macros;

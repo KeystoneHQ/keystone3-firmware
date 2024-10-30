@@ -1,8 +1,8 @@
 use alloc::vec::Vec;
 
 use crate::transaction::DeepHashItem;
-use third_party::cryptoxide::digest::Digest;
-use third_party::cryptoxide::sha2::Sha384;
+use cryptoxide::digest::Digest;
+use cryptoxide::sha2::Sha384;
 
 use crate::errors::ArweaveError;
 

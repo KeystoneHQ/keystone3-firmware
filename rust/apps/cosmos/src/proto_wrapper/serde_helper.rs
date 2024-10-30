@@ -1,6 +1,6 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use third_party::base64;
+use base64;
 pub fn from_base64(s: &str) -> Result<Vec<u8>, base64::DecodeError> {
     base64::decode(s)
 }

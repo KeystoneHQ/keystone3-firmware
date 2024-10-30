@@ -3,8 +3,8 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use ethereum_types::{H160, U256};
-use third_party::hex;
-use third_party::rsa::BigUint;
+use hex;
+use rsa::BigUint;
 
 pub struct ParsedErc20Transaction {
     pub to: String,

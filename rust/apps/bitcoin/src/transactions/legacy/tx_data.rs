@@ -2,19 +2,17 @@ use crate::addresses::xyzpub::{convert_version, Version};
 use crate::errors::BitcoinError;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use bitcoin::absolute::LockTime;
 use keystore::algorithms::secp256k1::derive_public_key;
-use third_party::bitcoin::absolute::LockTime;
-use third_party::{bitcoin, hex};
+use {bitcoin, hex};
 
 use crate::errors::Result;
+use bitcoin::consensus::Encodable;
+use bitcoin::sighash::{EcdsaSighashType, LegacySighash, SegwitV0Sighash, SighashCache};
+use bitcoin::{Amount, Script};
+use bitcoin::{PubkeyHash, ScriptBuf, Transaction};
+use bitcoin_hashes::{sha256, sha256d, Hash};
 use core::str::FromStr;
-use third_party::bitcoin::consensus::Encodable;
-use third_party::bitcoin::sighash::{
-    EcdsaSighashType, LegacySighash, SegwitV0Sighash, SighashCache,
-};
-use third_party::bitcoin::{Amount, Script};
-use third_party::bitcoin::{PubkeyHash, ScriptBuf, Transaction};
-use third_party::bitcoin_hashes::{sha256, sha256d, Hash};
 
 use crate::addresses::cashaddr::{Base58Codec, CashAddrCodec};
 use crate::addresses::get_address;
@@ -25,12 +23,12 @@ use crate::transactions::legacy::output::{OutputConverter, TxOut};
 use crate::transactions::script_type::ScriptType;
 use crate::{collect, derivation_address_path};
 use app_utils::keystone;
-use third_party::bitcoin::ecdsa::Signature as EcdsaSignature;
-use third_party::either::{Either, Left, Right};
-use third_party::hex::ToHex;
-use third_party::secp256k1::ecdsa::Signature;
-use third_party::ur_registry::pb::protoc;
-use third_party::ur_registry::pb::protoc::SignTransaction;
+use bitcoin::ecdsa::Signature as EcdsaSignature;
+use bitcoin::secp256k1::ecdsa::Signature;
+use either::{Either, Left, Right};
+use hex::ToHex;
+use ur_registry::pb::protoc;
+use ur_registry::pb::protoc::SignTransaction;
 
 #[derive(Clone, Debug)]
 pub struct TxData {
@@ -94,7 +92,7 @@ impl TxData {
             extended_pubkey,
             xfp: payload.xfp,
             transaction: Transaction {
-                version: third_party::bitcoin::transaction::Version(2),
+                version: bitcoin::transaction::Version(2),
                 lock_time: LockTime::from_consensus(0),
                 input: transaction_mapped_input?,
                 output: transaction_mapped_output?,

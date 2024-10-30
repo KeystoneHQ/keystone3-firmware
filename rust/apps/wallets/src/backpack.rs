@@ -4,9 +4,9 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use third_party::{
+use {
     bitcoin::bip32::{ChildNumber, DerivationPath},
-    secp256k1::Secp256k1,
+    bitcoin::secp256k1::Secp256k1,
     ur_registry::{
         crypto_hd_key::CryptoHDKey,
         crypto_key_path::{CryptoKeyPath, PathComponent},
@@ -108,7 +108,7 @@ fn generate_k1_normal_key(
     key: ExtendedPublicKey,
     note: Option<String>,
 ) -> URResult<CryptoHDKey> {
-    let xpub = third_party::bitcoin::bip32::Xpub::decode(&key.get_key())
+    let xpub = bitcoin::bip32::Xpub::decode(&key.get_key())
         .map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
     let path = key.get_path();
     let key_path = CryptoKeyPath::new(
@@ -139,7 +139,7 @@ fn generate_eth_ledger_live_key(
     key: ExtendedPublicKey,
     note: Option<String>,
 ) -> URResult<CryptoHDKey> {
-    let xpub = third_party::bitcoin::bip32::Xpub::decode(&key.get_key())
+    let xpub = bitcoin::bip32::Xpub::decode(&key.get_key())
         .map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
     let path = key.get_path();
     let sub_path =
@@ -183,9 +183,9 @@ mod tests {
     use core::str::FromStr;
 
     use crate::ExtendedPublicKey;
-    use third_party::bitcoin::bip32::{DerivationPath, Xpub};
-    use third_party::hex;
-    use third_party::hex::FromHex;
+    use bitcoin::bip32::{DerivationPath, Xpub};
+    use hex;
+    use hex::FromHex;
 
     #[test]
     fn test_generate_crypto_multi_accounts() {

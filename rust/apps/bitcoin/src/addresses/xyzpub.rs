@@ -3,7 +3,7 @@ use alloc::vec::Vec;
 use core::str::FromStr;
 
 use crate::errors::BitcoinError;
-use third_party::bitcoin::base58;
+use bitcoin::base58;
 
 /// Version bytes xpub: bitcoin mainnet public key P2PKH or P2SH
 pub const VERSION_XPUB: [u8; 4] = [0x04, 0x88, 0xB2, 0x1E];

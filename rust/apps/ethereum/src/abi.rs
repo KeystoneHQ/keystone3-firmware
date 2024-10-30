@@ -4,8 +4,8 @@ use alloc::vec::Vec;
 use alloc::{format, vec};
 use app_utils::impl_public_struct;
 use ethabi::{Contract, Function, Token};
-use third_party::serde_json::Value;
-use third_party::{hex, serde_json};
+use serde_json::Value;
+use {hex, serde_json};
 
 impl_public_struct!(ContractData {
     contract_name: String,
@@ -129,7 +129,7 @@ fn _parse_by_function(
 #[cfg(test)]
 mod tests {
     use alloc::string::ToString;
-    use third_party::hex;
+    use hex;
 
     extern crate std;
 

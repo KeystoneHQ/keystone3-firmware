@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 keystore = { path = "../../../keystore", default-features = false }
 app_tron = { path = "../../../apps/tron" }
-third_party = { path = "../../../third_party" }
 app_utils = { path = "../../../apps/utils" }
 rust_tools = {path="../../../tools"}
 cty = "0.2.2"

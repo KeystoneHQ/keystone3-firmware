@@ -2,7 +2,7 @@ use alloc::format;
 use alloc::sync::Arc;
 use alloc::vec;
 use alloc::vec::Vec;
-use third_party::core2::io::Cursor;
+use core2::io::Cursor;
 
 use bitstream_io::{BigEndian, BitRead, BitReader};
 

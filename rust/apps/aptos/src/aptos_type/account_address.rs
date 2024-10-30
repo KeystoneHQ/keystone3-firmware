@@ -2,9 +2,9 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::{convert::TryFrom, fmt, str::FromStr};
+use hex;
 use hex::FromHex;
 use serde::{de::Error as _, Deserialize, Deserializer, Serialize, Serializer};
-use third_party::hex;
 
 /// A struct that represents an account address.
 #[derive(Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Copy)]
@@ -196,7 +196,7 @@ impl From<&AccountAddress> for [u8; AccountAddress::LENGTH] {
 
 impl From<&AccountAddress> for String {
     fn from(addr: &AccountAddress) -> String {
-        third_party::hex::encode(addr.as_ref())
+        hex::encode(addr.as_ref())
     }
 }
 

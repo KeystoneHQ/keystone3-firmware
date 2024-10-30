@@ -1,19 +1,11 @@
-#![no_std]
-#![feature(alloc_error_handler)]
-#![feature(vec_into_raw_parts)]
-#![feature(error_in_core)]
-#![allow(unused_unsafe)]
-extern crate alloc;
+use crate::my_alloc::KTAllocator;
 
-pub mod bindings;
-pub mod my_alloc;
+#[global_allocator]
+static KT_ALLOCATOR: KTAllocator = KTAllocator;
 
-#[cfg(not(test))]
 use core::panic::PanicInfo;
-#[cfg(not(test))]
 use cstr_core::CString;
 
-#[cfg(not(test))]
 #[alloc_error_handler]
 fn oom(layout: core::alloc::Layout) -> ! {
     unsafe {
@@ -26,7 +18,6 @@ fn oom(layout: core::alloc::Layout) -> ! {
     loop {}
 }
 
-#[cfg(not(test))]
 #[panic_handler]
 fn panic(e: &PanicInfo) -> ! {
     unsafe {

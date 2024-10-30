@@ -22,14 +22,14 @@ use common_rust_c::utils::{convert_c_char, recover_c_char};
 use cty::c_char;
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use keystore::algorithms::rsa::{sign_message, SigningOption};
-use third_party::hex;
-use third_party::serde_json;
-use third_party::serde_json::Value;
-use third_party::ur_registry::arweave::arweave_sign_request::{
+use hex;
+use serde_json;
+use serde_json::Value;
+use ur_registry::arweave::arweave_sign_request::{
     ArweaveSignRequest, SaltLen, SignType,
 };
-use third_party::ur_registry::arweave::arweave_signature::ArweaveSignature;
-use third_party::ur_registry::traits::RegistryItem;
+use ur_registry::arweave::arweave_signature::ArweaveSignature;
+use ur_registry::traits::RegistryItem;
 
 pub mod data_item;
 pub mod structs;
@@ -39,9 +39,9 @@ fn generate_aes_key_iv(seed: &[u8]) -> ([u8; 32], [u8; 16]) {
     let key_path = "m/44'/1557192335'/0'/0'/0'".to_string();
     let iv_path = "m/44'/1557192335'/0'/1'/0'".to_string();
     let key = get_private_key_by_seed(seed, &key_path).unwrap();
-    let (_, key_bytes) = third_party::cryptoxide::ed25519::keypair(&key);
+    let (_, key_bytes) = cryptoxide::ed25519::keypair(&key);
     let iv = get_private_key_by_seed(seed, &iv_path).unwrap();
-    let (_, iv) = third_party::cryptoxide::ed25519::keypair(&iv);
+    let (_, iv) = cryptoxide::ed25519::keypair(&iv);
     let mut iv_bytes: [u8; 16] = [0; 16];
     iv_bytes.copy_from_slice(&iv[..16]);
     (key_bytes, iv_bytes)

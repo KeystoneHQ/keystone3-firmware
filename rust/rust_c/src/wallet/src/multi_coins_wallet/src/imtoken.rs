@@ -6,9 +6,9 @@ use common_rust_c::types::{Ptr, PtrBytes, PtrString};
 use common_rust_c::ur::UREncodeResult;
 use common_rust_c::utils::recover_c_char;
 use cty::uint32_t;
-use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::traits::RegistryItem;
+use ur_registry::crypto_hd_key::CryptoHDKey;
+use ur_registry::error::URError;
+use ur_registry::traits::RegistryItem;
 
 //only support export bip44standard eth account to imToken, rewrite this func if imToken supports other chains
 #[no_mangle]

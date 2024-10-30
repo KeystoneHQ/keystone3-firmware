@@ -1,11 +1,11 @@
 use alloc::string::{String, ToString};
+use bitcoin::base58::Error as Base58Error;
+use bitcoin::script::PushBytesError;
+use bitcoin_hashes::hex::HexToArrayError;
+use core2::io;
 use keystore::errors::KeystoreError;
-use third_party::bitcoin::base58::Error as Base58Error;
-use third_party::bitcoin::script::PushBytesError;
-use third_party::bitcoin_hashes::hex::HexToArrayError;
-use third_party::core2::io;
-use third_party::thiserror;
-use third_party::thiserror::Error;
+use thiserror;
+use thiserror::Error;
 
 pub type Result<T> = core::result::Result<T, BitcoinError>;
 
@@ -101,14 +101,14 @@ impl From<HexToArrayError> for BitcoinError {
     }
 }
 
-impl From<third_party::bech32::segwit::DecodeError> for BitcoinError {
-    fn from(value: third_party::bech32::segwit::DecodeError) -> Self {
+impl From<bech32::segwit::DecodeError> for BitcoinError {
+    fn from(value: bech32::segwit::DecodeError) -> Self {
         Self::Bech32DecodeError(format!("{}", value))
     }
 }
 
-impl From<third_party::bitcoin::witness_program::Error> for BitcoinError {
-    fn from(value: third_party::bitcoin::witness_program::Error) -> Self {
+impl From<bitcoin::witness_program::Error> for BitcoinError {
+    fn from(value: bitcoin::witness_program::Error) -> Self {
         Self::WitnessProgramError(format!("{}", value))
     }
 }

@@ -2,11 +2,11 @@ use alloc::collections::BTreeMap;
 use alloc::format;
 use core::slice;
 use core::str::FromStr;
-use third_party::bitcoin::bip32::DerivationPath;
-use third_party::hex;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
-use third_party::ur_registry::traits::RegistryItem;
+use bitcoin::bip32::DerivationPath;
+use hex;
+use ur_registry::error::URError;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::traits::RegistryItem;
 
 use app_wallets::aptos::generate_sync_ur;
 use common_rust_c::errors::RustCError;
@@ -33,7 +33,7 @@ pub extern "C" fn get_connect_aptos_wallet_ur(
         let mfp = slice::from_raw_parts(master_fingerprint, length as usize);
         let public_keys = recover_c_array(public_keys);
         let master_fingerprint =
-            third_party::bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
+            bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
                 .map_err(|_e| RustCError::InvalidMasterFingerprint);
         match master_fingerprint {
             Ok(fp) => {

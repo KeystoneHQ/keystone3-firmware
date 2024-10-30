@@ -6,12 +6,10 @@ use alloc::string::{String, ToString};
 
 use alloc::vec::Vec;
 
-use third_party::hex;
-
-use third_party::ur_registry::bytes::Bytes;
-
-use third_party::ur_registry::crypto_psbt::CryptoPSBT;
-use third_party::ur_registry::traits::RegistryItem;
+use hex;
+use ur_registry::bytes::Bytes;
+use ur_registry::crypto_psbt::CryptoPSBT;
+use ur_registry::traits::RegistryItem;
 
 use common_rust_c::errors::ErrorCodes;
 use common_rust_c::ffi::CSliceFFI;
@@ -38,7 +36,7 @@ pub extern "C" fn test_get_btc_keystone_bytes() -> *mut URParseResult {
 }
 
 fn get_ur_encode_result_for_test(data: Vec<u8>, length: usize, tag: String) -> *mut UREncodeResult {
-    let result = third_party::ur_parse_lib::keystone_ur_encoder::probe_encode(&data, length, tag);
+    let result = ur_parse_lib::keystone_ur_encoder::probe_encode(&data, length, tag);
     match result {
         Ok(result) => {
             if result.is_multi_part {

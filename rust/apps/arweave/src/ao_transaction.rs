@@ -77,7 +77,7 @@ impl TryFrom<DataItem> for AOTransferTransaction {
 
 #[cfg(test)]
 mod tests {
-    use third_party::hex;
+    use hex;
 
     use crate::data_item::DataItem;
 

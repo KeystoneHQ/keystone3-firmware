@@ -7,10 +7,10 @@ use crate::errors::Result;
 use crate::network::Network;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use bitcoin::address::Payload;
+use bitcoin::PubkeyHash;
+use bitcoin_hashes::Hash;
 use core::{fmt, str};
-use third_party::bitcoin::address::Payload;
-use third_party::bitcoin::PubkeyHash;
-use third_party::bitcoin_hashes::Hash;
 
 // Prefixes
 const DASH_PREFIX: &str = "bitcoincash";
@@ -200,7 +200,7 @@ impl Base58Codec {
         // Verify checksum
         let payload = &raw[0..raw.len() - 4];
         let checksum_actual = &raw[raw.len() - 4..];
-        let checksum_expected = &third_party::bitcoin_hashes::sha256d::Hash::hash(payload)[0..4];
+        let checksum_expected = &bitcoin_hashes::sha256d::Hash::hash(payload)[0..4];
         if checksum_expected != checksum_actual {
             return Err(BitcoinError::AddressError(format!("checksum failed")));
         }
@@ -347,7 +347,7 @@ impl CashAddrCodec {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use third_party::hex::ToHex;
+    use hex::ToHex;
 
     #[test]
     fn test_decode_cash_addr() {

@@ -5,9 +5,9 @@ use alloc::string::ToString;
 use core::slice;
 
 use app_wallets::thor_wallet::generate_crypto_multi_accounts;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
-use third_party::ur_registry::traits::RegistryItem;
+use ur_registry::error::URError;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::traits::RegistryItem;
 
 use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::ExtendedPublicKey;

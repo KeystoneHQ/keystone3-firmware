@@ -269,8 +269,8 @@ impl Dispatch for JupiterInstructions {
 mod tests {
     use std::prelude::rust_2024::ToString;
 
+    use bitcoin;
     use serde_json::json;
-    use third_party::bitcoin;
 
     use crate::message::Message;
     use crate::read::Read;

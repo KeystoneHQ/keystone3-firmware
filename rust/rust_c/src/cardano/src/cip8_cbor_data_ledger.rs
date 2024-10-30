@@ -49,7 +49,7 @@ impl<C> minicbor::Encode<C> for CardanoCip8SigStructureLedgerType {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use third_party::hex;
+    use hex;
     #[test]
     fn test1() {
         // Signature1

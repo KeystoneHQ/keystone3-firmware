@@ -19,11 +19,7 @@ use cardano_serialization_lib::{
     protocol_types::FixedTransaction as Transaction, protocol_types::VoteKind, Certificate,
     CertificateKind, NetworkId, NetworkIdKind,
 };
-
-use alloc::format;
-use bitcoin::bip32::ChildNumber::{Hardened, Normal};
-use bitcoin::bip32::DerivationPath;
-use core::ops::Div;
+use cryptoxide::hashing::blake2b_224;
 use ur_registry::cardano::cardano_sign_structure::CardanoSignStructure;
 use ur_registry::traits::From;
 
@@ -1166,12 +1162,6 @@ impl ParsedCardanoTx {
                             }
                             None => {}
                         }
-                    }
-
-                    if !pubkey_hash_paired {
-                        return Err(CardanoError::InvalidTransaction(
-                            "invalid address".to_string(),
-                        ));
                     }
                     parsed_inputs.push(ParsedCardanoInput {
                         transaction_hash: utxo.transaction_hash.clone(),

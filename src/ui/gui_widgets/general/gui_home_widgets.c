@@ -894,7 +894,6 @@ static void HomeScrollHandler(lv_event_t * e)
         if (isDragging) {
             lv_indev_t * indev = lv_indev_get_act();
             lv_indev_get_point(indev, &touchEnd);
-
             int16_t diff_y = touchEnd.y - touchStart.y;
             if (abs(diff_y) > SWIPE_THRESHOLD) {
                 if (diff_y < 0) {
@@ -905,9 +904,12 @@ static void HomeScrollHandler(lv_event_t * e)
                     g_isScrolling = true;
                 }
             } else {
-                HOME_WALLET_CARD_ENUM coin;
-                coin = *(HOME_WALLET_CARD_ENUM *)lv_event_get_user_data(e);
-                CoinDealHandler(coin);
+                lv_obj_t *obj = lv_event_get_target(e);
+                if (obj != g_homeWalletCardCont) {
+                    HOME_WALLET_CARD_ENUM coin;
+                    coin = *(HOME_WALLET_CARD_ENUM *)lv_event_get_user_data(e);
+                    CoinDealHandler(coin);
+                }
             }
 
             lv_timer_t *timer = lv_timer_create(ResetScrollState, 200, NULL);

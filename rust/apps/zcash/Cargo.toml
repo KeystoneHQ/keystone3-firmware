@@ -6,10 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-third_party = { path = "../../third_party" }
-keystore = { path = "../../keystore", default-features = false }
-rust_tools = {path = "../../tools"}
-app_utils = { path = "../../apps/utils" }
+keystore = { workspace = true }
+rust_tools = { workspace = true }
+app_utils = { workspace = true }
+bitcoin = { workspace = true }
+thiserror = { workspace = true }
+zcash_vendor = { workspace = true }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

@@ -4,7 +4,7 @@ use alloc::{
 };
 use rand_chacha::rand_core::SeedableRng;
 use rand_chacha::ChaCha8Rng;
-use third_party::hex;
+use hex;
 use zcash_vendor::{
     orchard::keys::{SpendAuthorizingKey, SpendingKey},
     pasta_curves::{group::ff::PrimeField, Fq},
@@ -77,7 +77,7 @@ mod tests {
 
     use rand_chacha::rand_core::SeedableRng;
     use rand_chacha::ChaCha8Rng;
-    use third_party::hex;
+    use hex;
 
     extern crate std;
     use std::println;

@@ -330,6 +330,7 @@ dependencies = [
  "rust_tools",
  "serde_json",
  "ur-registry",
+ "zcash_vendor",
 ]
 
 [[package]]
@@ -355,10 +356,11 @@ name = "app_zcash"
 version = "0.1.0"
 dependencies = [
  "app_utils",
+ "bitcoin",
  "keystore",
- "pczt",
  "rust_tools",
- "third_party",
+ "thiserror-core",
+ "zcash_vendor",
 ]
 
 [[package]]
@@ -998,6 +1000,7 @@ dependencies = [
  "app_utils",
  "app_wallets",
  "app_xrp",
+ "app_zcash",
  "base64 0.11.0",
  "bitcoin",
  "bitcoin_hashes 0.13.0",
@@ -2095,7 +2098,6 @@ dependencies = [
 name = "keystore"
 version = "0.1.0"
 dependencies = [
- "aes",
  "arrayref",
  "bitcoin",
  "cryptoxide",
@@ -2104,13 +2106,12 @@ dependencies = [
  "ed25519-bip32-core",
  "hex",
  "num-bigint-dig",
- "pasta_curves",
  "rand_chacha",
  "rsa",
  "rust_tools",
- "secp256k1 0.29.1",
  "sha2 0.10.8",
  "thiserror-core",
+ "zcash_vendor",
 ]
 
 [[package]]
@@ -2577,16 +2578,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
-name = "pczt"
-version = "0.1.0"
-dependencies = [
- "hex",
- "prost 0.13.3",
- "prost-build 0.13.3",
- "prost-types 0.13.3",
-]
-
-[[package]]
 name = "percent-encoding"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2729,16 +2720,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "prettyplease"
-version = "0.2.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f12335488a2f3b0a83b14edad48dca9879ce89b2edd10e80237e4e852dd645e"
-dependencies = [
- "proc-macro2",
- "syn 2.0.63",
-]
-
-[[package]]
 name = "primitive-types"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2832,17 +2813,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b82eaa1d779e9a4bc1c3217db8ffbeabaae1dca241bf70183242128d48681cd"
 dependencies = [
  "bytes",
- "prost-derive 0.11.9",
-]
-
-[[package]]
-name = "prost"
-version = "0.13.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b0487d90e047de87f984913713b85c601c05609aad5b0df4b4573fbf69aa13f"
-dependencies = [
- "bytes",
- "prost-derive 0.13.3",
+ "prost-derive",
 ]
 
 [[package]]
@@ -2858,34 +2829,13 @@ dependencies = [
  "log",
  "multimap",
  "petgraph",
- "prettyplease 0.1.25",
- "prost 0.11.9",
- "prost-types 0.11.9",
+ "prettyplease",
+ "prost",
+ "prost-types",
  "regex",
  "syn 1.0.109",
  "tempfile",
  "which",
-]
-
-[[package]]
-name = "prost-build"
-version = "0.13.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c1318b19085f08681016926435853bbf7858f9c082d0999b80550ff5d9abe15"
-dependencies = [
- "bytes",
- "heck",
- "itertools",
- "log",
- "multimap",
- "once_cell",
- "petgraph",
- "prettyplease 0.2.20",
- "prost 0.13.3",
- "prost-types 0.13.3",
- "regex",
- "syn 2.0.63",
- "tempfile",
 ]
 
 [[package]]
@@ -2902,34 +2852,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "prost-derive"
-version = "0.13.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9552f850d5f0964a4e4d0bf306459ac29323ddfbae05e35a7c0d35cb0803cc5"
-dependencies = [
- "anyhow",
- "itertools",
- "proc-macro2",
- "quote",
- "syn 2.0.63",
-]
-
-[[package]]
 name = "prost-types"
 version = "0.11.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "213622a1460818959ac1181aaeb2dc9c7f63df720db7d788b3e24eacd1983e13"
 dependencies = [
- "prost 0.11.9",
-]
-
-[[package]]
-name = "prost-types"
-version = "0.13.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4759aa0d3a6232fb8dbdb97b61de2c20047c68aca932c7ed76da9d788508d670"
-dependencies = [
- "prost 0.13.3",
+ "prost",
 ]
 
 [[package]]
@@ -3092,15 +3020,6 @@ dependencies = [
  "jubjub",
  "pasta_curves",
  "rand_core 0.6.4",
-]
-
-[[package]]
-name = "redox_syscall"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4722d768eff46b75989dd134e5c353f0d6296e5aaa3132e776cbdb56be7731aa"
-dependencies = [
- "bitflags 1.3.2",
 ]
 
 [[package]]
@@ -3826,8 +3745,8 @@ dependencies = [
  "flex-error",
  "num-derive 0.3.3",
  "num-traits",
- "prost 0.11.9",
- "prost-types 0.11.9",
+ "prost",
+ "prost-types",
  "serde",
  "serde_bytes",
  "subtle-encoding",
@@ -4086,9 +4005,9 @@ dependencies = [
  "libflate",
  "minicbor",
  "paste",
- "prost 0.11.9",
- "prost-build 0.11.9",
- "prost-types 0.11.9",
+ "prost",
+ "prost-build",
+ "prost-types",
  "serde",
  "thiserror-core",
  "ur",
@@ -4597,9 +4516,34 @@ dependencies = [
  "app_utils",
  "app_zcash",
  "common_rust_c",
+ "cty",
  "keystore",
  "rust_tools",
- "third_party",
+]
+
+[[package]]
+name = "zcash_vendor"
+version = "0.1.0"
+dependencies = [
+ "aes",
+ "bech32 0.10.0-beta",
+ "bip32",
+ "blake2b_simd",
+ "bs58 0.5.1",
+ "byteorder",
+ "core2",
+ "f4jumble",
+ "ff",
+ "fpe",
+ "group",
+ "hex",
+ "pasta_curves",
+ "rand_chacha",
+ "reddsa",
+ "ripemd",
+ "secp256k1 0.29.1",
+ "sha2 0.10.8",
+ "subtle",
 ]
 
 [[package]]

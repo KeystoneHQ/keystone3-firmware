@@ -7,7 +7,7 @@ use core::convert::{TryFrom, TryInto};
 use core::error::Error;
 use core::fmt;
 use core::num::TryFromIntError;
-use third_party::bech32::{self, Bech32m};
+use bech32::{self, Bech32m};
 
 use super::super::zcash_protocol::consensus::NetworkType as Network;
 
@@ -171,7 +171,7 @@ pub(crate) mod private {
         cmp,
         convert::{TryFrom, TryInto},
     };
-    use third_party::core2::io::Write;
+    use core2::io::Write;
     use zcash_encoding::CompactSize;
 
     /// A raw address or viewing key.
@@ -259,7 +259,7 @@ pub(crate) mod private {
         /// Parse the items of the unified container.
         fn parse_items<T: Into<Vec<u8>>>(hrp: &str, buf: T) -> Result<Vec<Self::Item>, ParseError> {
             fn read_receiver<R: SealedItem>(
-                mut cursor: &mut third_party::core2::io::Cursor<&[u8]>,
+                mut cursor: &mut core2::io::Cursor<&[u8]>,
             ) -> Result<R, ParseError> {
                 let typecode = CompactSize::read(&mut cursor)
                     .map(|v| u32::try_from(v).expect("CompactSize::read enforces MAX_SIZE limit"))
@@ -317,7 +317,7 @@ pub(crate) mod private {
                 )),
             }?;
 
-            let mut cursor = third_party::core2::io::Cursor::new(encoded);
+            let mut cursor = core2::io::Cursor::new(encoded);
             let mut result = vec![];
             while cursor.position() < encoded.len().try_into().unwrap() {
                 result.push(read_receiver(&mut cursor)?);

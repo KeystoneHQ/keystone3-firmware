@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 use byteorder::LittleEndian;
 use core::iter::FromIterator;
-use third_party::core2::io::{self, Read, Write};
+use core2::io::{self, Read, Write};
 
 mod byteorder_io;
 

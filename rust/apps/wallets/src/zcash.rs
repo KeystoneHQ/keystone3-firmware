@@ -3,10 +3,10 @@ use alloc::vec;
 use alloc::vec::Vec;
 
 use app_utils::impl_public_struct;
-use keystore::algorithms::zcash::vendor::{
+use zcash_vendor::{
     zcash_keys::keys::UnifiedFullViewingKey, zcash_protocol::consensus::MainNetwork,
 };
-use third_party::ur_registry::{
+use ur_registry::{
     crypto_hd_key::CryptoHDKey,
     crypto_key_path::CryptoKeyPath,
     error::{URError, URResult},

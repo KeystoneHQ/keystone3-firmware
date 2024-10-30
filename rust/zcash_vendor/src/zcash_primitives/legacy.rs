@@ -3,7 +3,7 @@
 use alloc::{format, string::String, vec::Vec};
 use core::fmt;
 use core::ops::Shl;
-use third_party::{
+use {
     core2::io::{self, Read, Write},
     hex,
 };

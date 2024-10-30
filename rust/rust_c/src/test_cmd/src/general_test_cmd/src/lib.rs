@@ -3,12 +3,13 @@
 extern crate alloc;
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
-use alloc::{format, slice, vec};
 use alloc::vec::Vec;
+use alloc::{format, slice, vec};
 
 use cty::c_char;
 use hex;
 
+use keystore::algorithms::zcash;
 use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 use ur_registry::bytes::Bytes;
 use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;

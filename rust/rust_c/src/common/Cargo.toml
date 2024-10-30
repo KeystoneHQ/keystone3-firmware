@@ -38,6 +38,7 @@ app_sui = { workspace = true, optional = true }
 app_arweave = { workspace = true, optional = true }
 app_stellar = { workspace = true, optional = true }
 app_ton = { workspace = true, optional = true }
+app_zcash = { workspace = true, optional = true }
 
 [features]
 debug-memory = ["default"]

@@ -11,7 +11,7 @@ use common_rust_c::{
     utils::{convert_c_char, recover_c_char},
 };
 use keystore::algorithms::zcash::{self, calculate_seed_fingerprint, derive_ufvk};
-use third_party::cty::c_char;
+use cty::c_char;
 
 #[no_mangle]
 pub extern "C" fn derive_zcash_ufvk(seed: PtrBytes, seed_len: u32) -> *mut SimpleResponse<c_char> {

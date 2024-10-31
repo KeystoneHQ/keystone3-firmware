@@ -1,7 +1,7 @@
 use crate::pczt::Pczt;
 use crate::zcash_encoding::WriteBytesExt;
-use alloc::vec;
-use alloc::vec::Vec;
+use alloc::string::String;
+use alloc::string::ToString;
 use blake2b_simd::{Hash, Params, State};
 use byteorder::LittleEndian;
 
@@ -68,6 +68,14 @@ struct TransparentDigests {
     prevouts_digest: Hash,
     sequence_digest: Hash,
     outputs_digest: Hash,
+}
+
+pub type ZcashSignature = [u8; 64];
+
+pub trait PcztSeedSigner {
+    fn sign_transparent(&self, hash: Hash, path: String) -> Option<ZcashSignature>;
+    fn sign_sapling(&self, hash: Hash, path: String) -> Option<ZcashSignature>;
+    fn sign_orchard(&self, hash: Hash, path: String) -> Option<ZcashSignature>;
 }
 
 impl Pczt {
@@ -323,5 +331,37 @@ impl Pczt {
                 h.finalize()
             }
         }
+    }
+
+    pub fn sign<T: PcztSeedSigner>(&self, signer: &T) -> Self {
+        let mut pczt = self.clone();
+        pczt.transparent
+            .inputs
+            .iter_mut()
+            .enumerate()
+            .for_each(|(i, input)| {
+                let signature = signer.sign_transparent(
+                    self.transparent_sig_digest(Some((input, i as u32))),
+                    "".to_string(),
+                );
+                if let Some(signature) = signature {
+                    input
+                        .signatures
+                        .insert(input.script_pubkey.clone(), signature.to_vec());
+                }
+            });
+        pczt.sapling.spends.iter_mut().for_each(|spend| {
+            let signature = signer.sign_sapling(self.sheilded_sig_commitment(), "".to_string());
+            if let Some(signature) = signature {
+                spend.spend_auth_sig = Some(signature);
+            }
+        });
+        pczt.orchard.actions.iter_mut().for_each(|action| {
+            let signature = signer.sign_orchard(self.sheilded_sig_commitment(), "".to_string());
+            if let Some(signature) = signature {
+                action.spend.spend_auth_sig = Some(signature);
+            }
+        });
+        pczt
     }
 }

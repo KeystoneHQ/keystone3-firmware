@@ -113,11 +113,11 @@ static bool IsRequestAllowed(uint32_t requestID)
         HandleURResultViaUSBFunc(data, strlen(data), requestID, PRS_PARSING_DISALLOWED);
         return false;
     }
-    
+
     if (!CheckURAcceptable()) {
         return false;
     }
-    
+
     return true;
 }
 
@@ -127,7 +127,7 @@ static void HandleHardwareCall(struct URParseResult *urResult)
         GuiSetKeyDerivationRequestData(urResult, NULL, false);
         PubValueMsg(UI_MSG_USB_HARDWARE_VIEW, 0);
     }
-    
+
     const char *data = "Export address is just allowed on specific pages";
     HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
     g_requestID = REQUEST_ID_IDLE;
@@ -138,13 +138,13 @@ static bool HandleNormalCall(void)
     if (GuiHomePageIsTop()) {
         return true;
     }
-    
+
     if (GuiCheckIfTopView(&g_USBTransportView)) {
         PubValueMsg(UI_MSG_USB_TRANSPORT_NEXT_VIEW, 0);
         UserDelay(200);
         return true;
     }
-    
+
     const char *data = "Export address is just allowed on specific pages";
     HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
     g_requestID = REQUEST_ID_IDLE;
@@ -156,8 +156,8 @@ static void HandleCheckResult(PtrT_TransactionCheckResult checkResult, UrViewTyp
     if (checkResult != NULL && checkResult->error_code == 0) {
         PubValueMsg(UI_MSG_PREPARE_RECEIVE_UR_USB, urViewType.viewType);
     } else if (checkResult != NULL &&
-              (checkResult->error_code == MasterFingerprintMismatch ||
-               checkResult->error_code == BitcoinNoMyInputs)) {
+               (checkResult->error_code == MasterFingerprintMismatch ||
+                checkResult->error_code == BitcoinNoMyInputs)) {
         const char *data = _("usb_transport_mismatched_wallet_desc");
         GotoFailPage(PRS_PARSING_MISMATCHED_WALLET, data);
     } else {
@@ -175,31 +175,31 @@ void ProcessURService(EAPDURequestPayload_t *payload)
             break;
         }
         g_requestID = payload->requestID;
-        
+
         urResult = parse_ur((char *)payload->data);
         if (urResult->error_code != 0) {
             HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), g_requestID, PRS_PARSING_ERROR);
             break;
         }
-        
+
         UrViewType_t urViewType = {
             .viewType = urResult->t,
             .urType = urResult->ur_type
         };
-        
+
         if (urResult->ur_type == QRHardwareCall) {
             HandleHardwareCall(urResult);
             break;
         } else if (!HandleNormalCall()) {
             break;
         }
-        
+
         if (!CheckViewTypeIsAllow(urViewType.viewType)) {
             const char *data = "this view type is not supported";
             HandleURResultViaUSBFunc(data, strlen(data), g_requestID, RSP_FAILURE_CODE);
             break;
         }
-        
+
         HandleDefaultViewType(urResult, NULL, urViewType, false);
         checkResult = CheckUrResult(urViewType.viewType);
         HandleCheckResult(checkResult, urViewType);

@@ -41,7 +41,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true},
-    {WALLET_LIST_LEAP, &walletListKeplr, true},
+    {WALLET_LIST_LEAP, &walletListLeap, true},
     {WALLET_LIST_HELIUM, &walletListHelium, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
     {WALLET_LIST_ZEUS, &walletListZeus, true},

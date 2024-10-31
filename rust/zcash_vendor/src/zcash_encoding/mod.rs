@@ -5,7 +5,7 @@ use core2::io::{self, Read, Write};
 
 mod byteorder_io;
 
-use self::byteorder_io::{ReadBytesExt, WriteBytesExt};
+pub use self::byteorder_io::{ReadBytesExt, WriteBytesExt};
 
 /// The maximum allowed value representable as a `[CompactSize]`
 pub const MAX_COMPACT_SIZE: u32 = 0x02000000;

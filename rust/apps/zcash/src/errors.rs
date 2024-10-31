@@ -10,4 +10,6 @@ pub enum ZcashError {
     GenerateAddressError(String),
     #[error("invalid zcash data: {0}")]
     InvalidDataError(String),
+    #[error("failed to sign zcash data, {0}")]
+    SigningError(String),
 }

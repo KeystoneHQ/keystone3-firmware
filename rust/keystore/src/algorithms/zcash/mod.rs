@@ -1,10 +1,13 @@
+use core::str::FromStr;
+
 use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
+use bitcoin::bip32::{ChildNumber, DerivationPath};
+use hex;
 use rand_chacha::rand_core::SeedableRng;
 use rand_chacha::ChaCha8Rng;
-use hex;
 use zcash_vendor::{
     orchard::keys::{SpendAuthorizingKey, SpendingKey},
     pasta_curves::{group::ff::PrimeField, Fq},
@@ -14,6 +17,8 @@ use zcash_vendor::{
 };
 
 use crate::errors::{KeystoreError, Result};
+
+use super::utils::normalize_path;
 
 pub fn derive_ufvk(seed: &[u8]) -> Result<String> {
     let usk = UnifiedSpendingKey::from_seed(&MAIN_NETWORK, &seed, AccountId::ZERO)
@@ -29,12 +34,29 @@ pub fn calculate_seed_fingerprint(seed: &[u8]) -> Result<[u8; 32]> {
     Ok(sfp.to_bytes())
 }
 
-pub fn sign_message_orchard(seed: &[u8], alpha: [u8; 32], msg: &[u8]) -> Result<[u8; 64]> {
+pub fn sign_message_orchard(
+    seed: &[u8],
+    alpha: [u8; 32],
+    msg: &[u8],
+    path: &str,
+) -> Result<[u8; 64]> {
+    let p = normalize_path(path);
+    let derivation_path = DerivationPath::from_str(p.as_str())
+        .map_err(|e| KeystoreError::InvalidDerivationPath(e.to_string()))?;
+
+    let coin_type = 133;
+    let account = derivation_path[2];
+    let account_id = match account {
+        ChildNumber::Normal { index } => index,
+        ChildNumber::Hardened { index } => index,
+    };
+    let account_id = AccountId::try_from(account_id).unwrap();
+
     let mut alpha = alpha;
     alpha.reverse();
     let rng_seed = alpha.clone();
     let rng = ChaCha8Rng::from_seed(rng_seed);
-    let osk = SpendingKey::from_zip32_seed(seed, 133, AccountId::ZERO).unwrap();
+    let osk = SpendingKey::from_zip32_seed(seed, coin_type, account_id).unwrap();
     let osak = SpendAuthorizingKey::from(&osk);
     let randm = Fq::from_repr(alpha)
         .into_option()
@@ -75,9 +97,9 @@ mod tests {
     };
     use zcash_vendor::pasta_curves::group::ff::{FromUniformBytes, PrimeField};
 
+    use hex;
     use rand_chacha::rand_core::SeedableRng;
     use rand_chacha::ChaCha8Rng;
-    use hex;
 
     extern crate std;
     use std::println;

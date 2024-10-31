@@ -18,6 +18,7 @@ members = [
     "apps/wallets",
     "apps/xrp",
     "apps/zcash",
+    "apps/monero",
 
     # C interface entry
     "rust_c",
@@ -69,6 +70,8 @@ app_utils = { path = "apps/utils" }
 app_wallets = { path = "apps/wallets" }
 app_xrp = { path = "apps/xrp" }
 app_zcash = { path = "apps/zcash" }
+app_monero = { path = "apps/monero" }
+
 keystore = { path = "keystore", default-features = false }
 tools = { path = "tools" }
 sim_qr_reader = { path = "sim_qr_reader" }

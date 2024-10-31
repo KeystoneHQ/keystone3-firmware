@@ -219,12 +219,11 @@ dependencies = [
  "monero-clsag-mirror",
  "monero-generators-mirror",
  "monero-primitives-mirror",
- "monero-serai-mirror",
  "rand_core 0.6.4",
  "rust_tools",
- "serde",
  "sha3 0.10.8",
  "third_party",
+ "varinteger",
  "zeroize",
 ]
 
@@ -962,12 +961,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.1.31"
+version = "1.0.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2e7962b54006dcfcc61cb72735f4d89bb97061dd6a7ed882ec6b8ee53714c6f"
-dependencies = [
- "shlex",
-]
+checksum = "8dae9c4b8fedcae85592ba623c4fd08cfdab3e3b72d6df780c6ead964a69bfff"
 
 [[package]]
 name = "cfg-if"
@@ -1379,7 +1375,7 @@ checksum = "f46882e17999c6cc590af592290432be3bce0428cb0d5f8b6715e4dc7b383eb3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.63",
+ "syn 2.0.85",
 ]
 
 [[package]]
@@ -1443,7 +1439,7 @@ dependencies = [
  "ident_case",
  "proc-macro2",
  "quote",
- "strsim 0.11.1",
+ "strsim",
  "syn 2.0.85",
 ]
 
@@ -1467,17 +1463,6 @@ dependencies = [
  "darling_core 0.20.10",
  "quote",
  "syn 2.0.85",
-]
-
-[[package]]
-name = "dbus"
-version = "0.9.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1bb21987b9fb1613058ba3843121dd18b163b254d8a6e797e144cbac14d96d1b"
-dependencies = [
- "libc",
- "libdbus-sys",
- "winapi",
 ]
 
 [[package]]
@@ -1835,20 +1820,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c606d892c9de11507fa0dcffc116434f94e105d0bbdc4e405b61519464c49d7b"
 dependencies = [
  "paste",
-]
-
-[[package]]
-name = "flexible-transcript-mirror"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12238f2dc4d5f1259bba2a47f38e8b2013cda99cae4c6541b2a6fdaa9b1340c5"
-dependencies = [
- "blake2",
- "digest 0.10.7",
- "merlin",
- "rustversion",
- "subtle",
- "zeroize",
 ]
 
 [[package]]
@@ -2568,18 +2539,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d97bbf43eb4f088f8ca469930cde17fa036207c9a5e02ccc5107c4e8b17c964"
 
 [[package]]
-name = "merlin"
-version = "3.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58c38e2799fc0978b65dfff8023ec7843e2330bb462f19198840b34b6582397d"
-dependencies = [
- "byteorder",
- "keccak",
- "rand_core 0.6.4",
- "zeroize",
-]
-
-[[package]]
 name = "minicbor"
 version = "0.19.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2600,53 +2559,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "monero-borromean-mirror"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94245bb25439202f8c4344a316ef11594d723bb424b2a87e59afc610a2024b85"
-dependencies = [
- "curve25519-dalek",
- "monero-generators-mirror",
- "monero-io-mirror",
- "monero-primitives-mirror",
- "std-shims-mirror",
- "zeroize",
-]
-
-[[package]]
-name = "monero-bulletproofs-mirror"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12680d39b77206a64d9bfe08c7c88c7b38546befead75c69d30d23ae95420fb2"
-dependencies = [
- "curve25519-dalek",
- "monero-generators-mirror",
- "monero-io-mirror",
- "monero-primitives-mirror",
- "rand_core 0.6.4",
- "std-shims-mirror",
- "thiserror",
- "zeroize",
-]
-
-[[package]]
 name = "monero-clsag-mirror"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "876a1cf86915b36460813c87dd4121b80ba14f777c57637ff625ee9e45ed54b0"
 dependencies = [
  "curve25519-dalek",
- "dalek-ff-group-mirror",
- "flexible-transcript-mirror",
- "group",
  "monero-generators-mirror",
  "monero-io-mirror",
  "monero-primitives-mirror",
- "rand_chacha",
  "rand_core 0.6.4",
  "std-shims-mirror",
  "subtle",
- "thiserror",
  "zeroize",
 ]
 
@@ -2676,21 +2600,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "monero-mlsag-mirror"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14df375dbeb6838572368b34c400098c38763bef1e7d42b2c3220110a5ff130f"
-dependencies = [
- "curve25519-dalek",
- "monero-generators-mirror",
- "monero-io-mirror",
- "monero-primitives-mirror",
- "std-shims-mirror",
- "thiserror",
- "zeroize",
-]
-
-[[package]]
 name = "monero-primitives-mirror"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2700,25 +2609,6 @@ dependencies = [
  "monero-generators-mirror",
  "monero-io-mirror",
  "sha3 0.10.8",
- "std-shims-mirror",
- "zeroize",
-]
-
-[[package]]
-name = "monero-serai-mirror"
-version = "0.1.5-alpha"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a61de52af086a0d2e7b2a3f486429c16fd05ed8e15cb2f2060a1a8b132053d5a"
-dependencies = [
- "curve25519-dalek",
- "hex-literal",
- "monero-borromean-mirror",
- "monero-bulletproofs-mirror",
- "monero-clsag-mirror",
- "monero-generators-mirror",
- "monero-io-mirror",
- "monero-mlsag-mirror",
- "monero-primitives-mirror",
  "std-shims-mirror",
  "zeroize",
 ]
@@ -3926,21 +3816,6 @@ checksum = "a3f0bf26fd526d2a95683cd0f87bf103b8539e2ca1ef48ce002d67aad59aa0b4"
 
 [[package]]
 name = "serde"
-version = "1.0.202"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bd1c54ea06cfd2f6b63219704de0b9b4f72dcc2b8fdef820be6cd799780e91e"
-dependencies = [
- "zeroize",
-]
-
-[[package]]
-name = "semver"
-version = "1.0.24"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3cb6eb87a131f756572d7fb904f6e7b68633f09cca868c5df1c4b8d1a694bbba"
-
-[[package]]
-name = "serde"
 version = "1.0.214"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f55c3193aca71c12ad7890f1785d2b73e1b9f63a0bbc353c08ef26fe03fc56b5"
@@ -3982,17 +3857,6 @@ name = "serde_derive"
 version = "1.0.214"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "de523f781f095e28fa605cdce0f8307e451cc0fd14e2eb4cd2e98a355b147766"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.85",
-]
-
-[[package]]
-name = "serde_derive_internals"
-version = "0.29.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18d26a20a969b9e3fdf2fc2d9f21eda6c40e2de84c9408bb5d3b05d499aae711"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4047,18 +3911,6 @@ name = "serde_with_macros"
 version = "2.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "881b6f881b17d13214e5d494c939ebab463d01264ce1811e9d4ac3a882e7695f"
-dependencies = [
- "darling 0.20.10",
- "proc-macro2",
- "quote",
- "syn 2.0.85",
-]
-
-[[package]]
-name = "serde_with_macros"
-version = "3.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d846214a9854ef724f3da161b426242d8de7c1fc7de2f89bb1efcb154dca79d"
 dependencies = [
  "darling 0.20.10",
  "proc-macro2",
@@ -4509,17 +4361,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tiff"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba1310fcea54c6a9a4fd1aad794ecc02c31682f6bfbecdf460bf19533eed1e3e"
-dependencies = [
- "flate2",
- "jpeg-decoder",
- "weezl",
-]
-
-[[package]]
 name = "threefish"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4737,8 +4578,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "urlencoding"
-version = "2.1.3"
+name = "varinteger"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ea29db9f94ff08bb619656b8120878f280526f71dc88b5262c958a510181812"
+
+[[package]]
+name = "version_check"
+version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
@@ -5425,5 +5272,5 @@ checksum = "ce36e65b0d2999d2aafac989fb249189a141aee1f53c612c1f37d72631959f69"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.63",
+ "syn 2.0.85",
 ]

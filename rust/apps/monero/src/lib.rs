@@ -8,3 +8,4 @@ pub mod structs;
 pub mod utils;
 pub mod transfer;
 pub mod outputs;
+pub mod key_images;

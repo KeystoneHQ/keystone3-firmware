@@ -29,6 +29,7 @@ impl PcztTrait for Pczt {
     }
 
     fn hash(&self) -> Result<Vec<u8>> {
+        let version = self.global.tx_version;
         Ok(vec![])
     }
 }

@@ -88,10 +88,13 @@
 //! - Transaction Extractor
 //!   - Creates bindingSig and extracts the final transaction.
 
+
 mod common;
 mod orchard;
 mod sapling;
 mod transparent;
+
+pub mod pczt_ext;
 
 const V5_TX_VERSION: u32 = 5;
 const V5_VERSION_GROUP_ID: u32 = 0x26A7270A;

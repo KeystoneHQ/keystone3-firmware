@@ -1,5 +1,6 @@
 use alloc::vec::Vec;
 use crate::key::KeyPair;
+use crate::utils::PUBKEY_LEH;
 use third_party::hex;
 
 #[cfg(test)]
@@ -21,7 +22,7 @@ mod tests {
         const AMOUNT: u64 = 1337;
 
         for real in 0 .. RING_LEN {
-            let msg = [1; 32];
+            let msg = [1; PUBKEY_LEH];
 
             let mut secrets = (Zeroizing::new(Scalar::ZERO), Scalar::ZERO);
             let mut ring = vec![];

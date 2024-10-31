@@ -1,4 +1,4 @@
-use crate::utils::{calc_subaddress_m, hash_to_scalar};
+use crate::utils::{calc_subaddress_m, hash_to_scalar, PUBKEY_LEH};
 
 use alloc::format;
 use alloc::string::{String, ToString};
@@ -19,7 +19,13 @@ impl PrivateKey {
         PrivateKey { scalar }
     }
 
-    pub fn to_bytes(&self) -> [u8; 32] {
+    pub fn from_bytes(bytes: &[u8]) -> PrivateKey {
+        PrivateKey {
+            scalar: Scalar::from_bytes_mod_order(bytes.try_into().unwrap()),
+        }
+    }
+
+    pub fn to_bytes(&self) -> [u8; PUBKEY_LEH] {
         self.scalar.to_bytes()
     }
 
@@ -66,7 +72,7 @@ impl From<PrivateKey> for PublicKey {
 }
 
 impl PublicKey {
-    pub fn as_bytes(&self) -> [u8; 32] {
+    pub fn as_bytes(&self) -> [u8; PUBKEY_LEH] {
         self.point.to_bytes()
     }
 }
@@ -100,7 +106,7 @@ impl KeyPair {
         self.view.get_public_key()
     }
 
-    pub fn get_m(&self, major: u32, minor: u32) -> [u8; 32] {
+    pub fn get_m(&self, major: u32, minor: u32) -> [u8; PUBKEY_LEH] {
         calc_subaddress_m(&self.view.to_bytes(), major, minor)
     }
 
@@ -190,6 +196,17 @@ mod tests {
         assert_eq!(
             hex::encode(keypair.get_public_sub_view(major, minor).as_bytes()),
             "33f3f7b3628e0587f23abec549a071fb420783de74858a1fba0d9e49f3c193f7"
+        );
+    }
+
+    #[test]
+    fn test_generate_publickey() {
+        let pvk = PrivateKey::from_bytes(hex::decode("7bb35441e077be8bb8d77d849c926bf1dd0e696c1c83017e648c20513d2d6907").unwrap().as_slice());
+        let public_key = pvk.get_public_key();
+
+        assert_eq!(
+            hex::encode(public_key.as_bytes()),
+            "b8970905fbeaa1d0fd89659bab506c2f503e60670b7afd1cb56a4dfe8383f38f"
         );
     }
 }

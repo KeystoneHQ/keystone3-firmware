@@ -259,4 +259,50 @@ mod tests {
             "84o4iSLUprPWWPeu4ZZPFm7wHMDkwCm9b8CVQ4YUko9PRd453PvhZ8YPjrDRJ4VPrGj2Wxx7KJgFT6JnnbEfapZGUvPSFuM"
         );
     }
+
+    #[test]
+    fn test_calc_subaddress_m() {
+        let seed = hex::decode("45a5056acbe881d7a5f2996558b303e08b4ad1daffacf6ffb757ff2a9705e6b9f806cffe3bd90ff8e3f8e8b629d9af78bcd2ed23e8c711f238308e65b62aa5f0").unwrap();
+        let major = 0;
+        let keypair = generate_keypair(&seed, major);
+
+        let point = keypair.get_public_spend().point.decompress().unwrap();
+
+        let m = Scalar::from_bytes_mod_order(calc_subaddress_m(
+            &keypair.view.to_bytes(),
+            1,
+            0,
+        ));
+        let pub_spend_key = PublicKey {
+            point: (point + EdwardsPoint::mul_base(&m)).compress(),
+        };
+        let pub_view_point = PublicKey {
+            point: (pub_spend_key.point.decompress().unwrap() * keypair.view.scalar).compress(),
+        };
+
+        assert_eq!(
+            pub_spend_key.to_string(),
+            "da84d414ef5cdeed0ae9a19259e9b18482650efcadd371ba3ef51819f391260f"
+        );
+
+        assert_eq!(
+            pub_view_point.to_string(),
+            "5a69bc37d807013f80e10959bc7855419f1b0b47258a64a6a8c440ffd223070f"
+        );
+
+        let sun_account = generate_subaddress(&keypair.get_public_spend(), &keypair.view, 1, 0);
+
+        assert_eq!(
+            sun_account,
+            "8AjYV2hmNQugecQSpckuiGPAWPdW5NxzcY9pVRzLArA13Zwp7KLcB8UBd4eSqH4xLLBycRmwzqNxjUsobmUv8rSr2j73xbR"
+        );
+
+        let sun_account_sub_address_1 = generate_subaddress(&keypair.get_public_spend(), &keypair.view, 1, 1);
+
+        assert_eq!(
+            sun_account_sub_address_1,
+            "83fsQ5aW7PMXxC3NjDiZKdC2LYmjgBgCcix1oFZ51NgfES3YAKC27zxXqVkukpKuhsQzWKcKPMLPpJjVJyTcCphZRCBQtTw"
+        )
+
+    }
 }

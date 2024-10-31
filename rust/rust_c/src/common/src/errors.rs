@@ -200,6 +200,7 @@ pub enum ErrorCodes {
 
     // Zcash
     ZcashGenerateAddressError = 1500,
+    ZcashSigningError,
 }
 
 impl ErrorCodes {
@@ -480,7 +481,8 @@ impl From<&ZcashError> for ErrorCodes {
     fn from(value: &ZcashError) -> Self {
         match value {
             ZcashError::GenerateAddressError(_) => Self::ZcashGenerateAddressError,
-            ZcashError::InvalidDataError(_) => Self::InvalidData
+            ZcashError::InvalidDataError(_) => Self::InvalidData,
+            ZcashError::SigningError(_) => Self::ZcashSigningError,
         }
     }
 }

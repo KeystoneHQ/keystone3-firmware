@@ -1,35 +1,44 @@
-use alloc::vec;
-use alloc::vec::Vec;
-use zcash_vendor::{orchard::keys::FullViewingKey, pczt::Pczt};
+use alloc::string::{String, ToString};
+use bitcoin::secp256k1::Message;
+use keystore::algorithms::secp256k1::sign_message_by_seed;
+use keystore::algorithms::zcash::sign_message_orchard;
+use zcash_vendor::pczt::pczt_ext::{PcztSigner, ZcashSignature};
 
-use crate::errors::Result;
-use bitcoin::bip32::Xpub;
+use crate::errors::ZcashError;
 
-trait PcztTrait {
-    fn sign(&self) -> Result<Pczt>;
-    fn verify(&self) -> Result<bool>;
-    fn hash(&self) -> Result<Vec<u8>>;
+struct SeedSigner {
+    seed: [u8; 32],
 }
 
-fn verify_transparent_part(pczt: &Pczt, xpub: &Xpub) -> Result<bool> {
-    Ok(true)
-}
-
-fn verify_orchard_part(pczt: &Pczt, fvk: &FullViewingKey) -> Result<bool> {
-    Ok(true)
-}
-
-impl PcztTrait for Pczt {
-    fn sign(&self) -> Result<Pczt> {
-        Ok(self.clone())
+impl PcztSigner for SeedSigner {
+    type Error = ZcashError;
+    fn sign_transparent(&self, hash: &[u8], path: String) -> Result<ZcashSignature, Self::Error> {
+        let message = Message::from_digest_slice(hash).unwrap();
+        sign_message_by_seed(&self.seed, &path, &message)
+            .map(|(_rec_id, signature)| ZcashSignature::from(signature))
+            .map_err(|e| ZcashError::SigningError(e.to_string()))
     }
 
-    fn verify(&self) -> Result<bool> {
-        Ok(true)
+    fn sign_sapling(
+        &self,
+        hash: &[u8],
+        alpha: [u8; 32],
+        path: String,
+    ) -> Result<ZcashSignature, Self::Error> {
+        // we don't support sapling yet
+        Err(ZcashError::SigningError(
+            "sapling not supported".to_string(),
+        ))
     }
 
-    fn hash(&self) -> Result<Vec<u8>> {
-        let version = self.global.tx_version;
-        Ok(vec![])
+    fn sign_orchard(
+        &self,
+        hash: &[u8],
+        alpha: [u8; 32],
+        path: String,
+    ) -> Result<ZcashSignature, Self::Error> {
+        sign_message_orchard(&self.seed, alpha, hash, &path)
+            .map(|signature| ZcashSignature::from(signature))
+            .map_err(|e| ZcashError::SigningError(e.to_string()))
     }
 }

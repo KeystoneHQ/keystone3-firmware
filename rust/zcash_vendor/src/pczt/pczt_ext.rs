@@ -72,10 +72,21 @@ struct TransparentDigests {
 
 pub type ZcashSignature = [u8; 64];
 
-pub trait PcztSeedSigner {
-    fn sign_transparent(&self, hash: Hash, path: String) -> Option<ZcashSignature>;
-    fn sign_sapling(&self, hash: Hash, path: String) -> Option<ZcashSignature>;
-    fn sign_orchard(&self, hash: Hash, path: String) -> Option<ZcashSignature>;
+pub trait PcztSigner {
+    type Error;
+    fn sign_transparent(&self, hash: &[u8], path: String) -> Result<ZcashSignature, Self::Error>;
+    fn sign_sapling(
+        &self,
+        hash: &[u8],
+        alpha: [u8; 32],
+        path: String,
+    ) -> Result<ZcashSignature, Self::Error>;
+    fn sign_orchard(
+        &self,
+        hash: &[u8],
+        alpha: [u8; 32],
+        path: String,
+    ) -> Result<ZcashSignature, Self::Error>;
 }
 
 impl Pczt {
@@ -333,35 +344,88 @@ impl Pczt {
         }
     }
 
-    pub fn sign<T: PcztSeedSigner>(&self, signer: &T) -> Self {
+    pub fn sign<T: PcztSigner>(&self, signer: &T) -> Result<Self, T::Error> {
         let mut pczt = self.clone();
         pczt.transparent
             .inputs
             .iter_mut()
             .enumerate()
-            .for_each(|(i, input)| {
+            .try_for_each(|(i, input)| {
                 let signature = signer.sign_transparent(
-                    self.transparent_sig_digest(Some((input, i as u32))),
+                    self.transparent_sig_digest(Some((input, i as u32)))
+                        .as_bytes(),
                     "".to_string(),
-                );
-                if let Some(signature) = signature {
-                    input
-                        .signatures
-                        .insert(input.script_pubkey.clone(), signature.to_vec());
-                }
-            });
-        pczt.sapling.spends.iter_mut().for_each(|spend| {
-            let signature = signer.sign_sapling(self.sheilded_sig_commitment(), "".to_string());
-            if let Some(signature) = signature {
-                spend.spend_auth_sig = Some(signature);
-            }
-        });
-        pczt.orchard.actions.iter_mut().for_each(|action| {
-            let signature = signer.sign_orchard(self.sheilded_sig_commitment(), "".to_string());
-            if let Some(signature) = signature {
-                action.spend.spend_auth_sig = Some(signature);
-            }
-        });
-        pczt
+                )?;
+                input
+                    .signatures
+                    .insert(input.script_pubkey.clone(), signature.to_vec());
+                Ok(())
+            })?;
+        pczt.sapling.spends.iter_mut().try_for_each(|spend| {
+            let signature = signer.sign_sapling(
+                self.sheilded_sig_commitment().as_bytes(),
+                pczt.sapling.anchor.unwrap(),
+                "".to_string(),
+            )?;
+            spend.spend_auth_sig = Some(signature);
+            Ok(())
+        })?;
+        pczt.orchard.actions.iter_mut().try_for_each(|action| {
+            let signature = signer.sign_orchard(
+                self.sheilded_sig_commitment().as_bytes(),
+                pczt.orchard.anchor.unwrap(),
+                "".to_string(),
+            )?;
+            action.spend.spend_auth_sig = Some(signature);
+            Ok(())
+        })?;
+        Ok(pczt)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    extern crate std;
+    use alloc::{collections::btree_map::BTreeMap, vec};
+
+    use crate::pczt::{
+        self, common::Global, orchard, sapling, transparent, Version, V5_TX_VERSION,
+        V5_VERSION_GROUP_ID,
+    };
+
+    use super::*;
+
+    #[test]
+    fn test_pczt_hash() {
+        let pczt = Pczt {
+            version: Version::V0,
+            global: Global {
+                tx_version: V5_TX_VERSION,
+                version_group_id: V5_VERSION_GROUP_ID,
+                consensus_branch_id: 0xc2d6_d0b4,
+                lock_time: 0,
+                expiry_height: 0,
+                proprietary: BTreeMap::new(),
+            },
+            transparent: transparent::Bundle {
+                inputs: vec![],
+                outputs: vec![],
+            },
+            sapling: sapling::Bundle {
+                anchor: None,
+                spends: vec![],
+                outputs: vec![],
+                value_balance: 0,
+                bsk: None,
+            },
+            orchard: orchard::Bundle {
+                anchor: None,
+                actions: vec![],
+                flags: 0,
+                value_balance: 0,
+                zkproof: None,
+                bsk: None,
+            },
+        };
     }
 }

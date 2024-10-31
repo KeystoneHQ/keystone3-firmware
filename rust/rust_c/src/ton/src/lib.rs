@@ -8,9 +8,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use app_ton::{
-    errors::TonError, mnemonic::ton_mnemonic_validate, ton_compare_address_and_public_key,
-};
+use app_ton::{mnemonic::ton_mnemonic_validate, ton_compare_address_and_public_key};
 use common_rust_c::{
     errors::RustCError,
     extract_ptr_with_type,
@@ -25,7 +23,7 @@ use cty::c_char;
 use keystore::algorithms::ed25519;
 use rust_tools::convert_c_char;
 use structs::{DisplayTonProof, DisplayTonTransaction};
-use third_party::{
+use {
     hex,
     ur_registry::{
         ton::{ton_sign_request::TonSignRequest, ton_signature::TonSignature},

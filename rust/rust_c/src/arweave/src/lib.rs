@@ -4,16 +4,16 @@ extern crate alloc;
 
 use crate::structs::{ArweaveRequestType, DisplayArweaveMessage, DisplayArweaveTx};
 use alloc::boxed::Box;
-use alloc::fmt::format;
+
+use alloc::slice;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use alloc::{format, slice};
 use app_arweave::parse_data_item;
 use app_arweave::{
     aes256_decrypt, aes256_encrypt, errors::ArweaveError, fix_address,
     generate_public_key_from_primes, generate_secret, parse,
 };
-use common_rust_c::errors::{ErrorCodes, RustCError};
+use common_rust_c::errors::RustCError;
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
@@ -22,14 +22,14 @@ use common_rust_c::utils::{convert_c_char, recover_c_char};
 use cty::c_char;
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use keystore::algorithms::rsa::{sign_message, SigningOption};
-use third_party::hex;
-use third_party::serde_json;
-use third_party::serde_json::{json, Value};
-use third_party::ur_registry::arweave::arweave_sign_request::{
+use hex;
+use serde_json;
+use serde_json::Value;
+use ur_registry::arweave::arweave_sign_request::{
     ArweaveSignRequest, SaltLen, SignType,
 };
-use third_party::ur_registry::arweave::arweave_signature::ArweaveSignature;
-use third_party::ur_registry::traits::{RegistryItem, To};
+use ur_registry::arweave::arweave_signature::ArweaveSignature;
+use ur_registry::traits::RegistryItem;
 
 pub mod data_item;
 pub mod structs;
@@ -39,9 +39,9 @@ fn generate_aes_key_iv(seed: &[u8]) -> ([u8; 32], [u8; 16]) {
     let key_path = "m/44'/1557192335'/0'/0'/0'".to_string();
     let iv_path = "m/44'/1557192335'/0'/1'/0'".to_string();
     let key = get_private_key_by_seed(seed, &key_path).unwrap();
-    let (_, key_bytes) = third_party::cryptoxide::ed25519::keypair(&key);
+    let (_, key_bytes) = cryptoxide::ed25519::keypair(&key);
     let iv = get_private_key_by_seed(seed, &iv_path).unwrap();
-    let (_, iv) = third_party::cryptoxide::ed25519::keypair(&iv);
+    let (_, iv) = cryptoxide::ed25519::keypair(&iv);
     let mut iv_bytes: [u8; 16] = [0; 16];
     iv_bytes.copy_from_slice(&iv[..16]);
     (key_bytes, iv_bytes)
@@ -171,7 +171,6 @@ pub extern "C" fn ar_request_type(ptr: PtrUR) -> *mut SimpleResponse<ArweaveRequ
         SignType::Transaction => ArweaveRequestType::ArweaveRequestTypeTransaction,
         SignType::Message => ArweaveRequestType::ArweaveRequestTypeMessage,
         SignType::DataItem => ArweaveRequestType::ArweaveRequestTypeDataItem,
-        _ => ArweaveRequestType::ArweaveRequestTypeUnknown,
     };
     SimpleResponse::success(Box::into_raw(Box::new(sign_type_str)) as *mut ArweaveRequestType)
         .simple_c_ptr()

@@ -2,9 +2,9 @@ use crate::errors::{Result, TronError};
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use bitcoin::base58;
+use cryptoxide::hashing::keccak256;
 use keystore::algorithms::secp256k1::derive_public_key;
-use third_party::base58;
-use third_party::cryptoxide::hashing::keccak256;
 
 #[macro_export]
 macro_rules! check_hd_path {

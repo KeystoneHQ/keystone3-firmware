@@ -1,9 +1,9 @@
 use crate::errors::{BitcoinError, Result};
 use crate::network::Network;
 use alloc::string::{String, ToString};
+use bitcoin::bip32::DerivationPath;
 use core::fmt;
 use core::str::FromStr;
-use third_party::bitcoin::bip32::DerivationPath;
 
 #[derive(PartialEq, Debug)]
 pub enum ScriptType {

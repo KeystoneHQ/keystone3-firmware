@@ -10,10 +10,10 @@ use base64::engine::general_purpose::{STANDARD_NO_PAD, URL_SAFE_NO_PAD};
 use base64::Engine;
 use crc::Crc;
 pub use error::*;
+use hex;
 use lazy_static::lazy_static;
-use third_party::hex;
-use third_party::serde::de::{Error, Visitor};
-use third_party::serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{Error, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 lazy_static! {
     pub static ref CRC_16_XMODEM: Crc<u16> = Crc::<u16>::new(&crc::CRC_16_XMODEM);
@@ -327,10 +327,10 @@ mod tests {
     extern crate std;
     use alloc::format;
     use alloc::string::{String, ToString};
+    use hex;
+    use serde_json;
+    use serde_json::Value;
     use std::println;
-    use third_party::hex;
-    use third_party::serde_json;
-    use third_party::serde_json::Value;
 
     use crate::vendor::address::TonAddress;
 

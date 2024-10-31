@@ -2,9 +2,9 @@ use crate::address::ripple_address_codec as codec;
 use crate::errors::R;
 use alloc::string::String;
 use alloc::vec::Vec;
-use third_party::cryptoxide::digest::Digest;
-use third_party::cryptoxide::hashing;
-use third_party::cryptoxide::ripemd160::Ripemd160;
+use cryptoxide::digest::Digest;
+use cryptoxide::hashing;
+use cryptoxide::ripemd160::Ripemd160;
 
 pub(crate) fn sha256_digest(data: &[u8]) -> Vec<u8> {
     hashing::sha256(&data).to_vec()

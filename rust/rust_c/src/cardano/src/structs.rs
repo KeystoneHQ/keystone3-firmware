@@ -1,14 +1,14 @@
 use alloc::boxed::Box;
-use alloc::string::{String, ToString};
+use alloc::string::ToString;
 use alloc::vec::Vec;
 use app_cardano::structs::{
     CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignData,
     ParsedCardanoTx, VotingProcedure, VotingProposal,
 };
 use core::ptr::null_mut;
-use third_party::hex;
-use third_party::itertools::Itertools;
-use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
+use itertools::Itertools;
+use hex;
+use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::{free_ptr_string, Free};

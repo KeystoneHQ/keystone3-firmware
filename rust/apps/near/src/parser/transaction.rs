@@ -9,8 +9,8 @@ use alloc::fmt;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use borsh::{BorshDeserialize, BorshSerialize};
+use hex;
 use serde::{Deserialize, Serialize};
-use third_party::hex;
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct Transaction {
@@ -268,7 +268,7 @@ mod tests {
     use crate::crypto::PublicKey;
     use crate::primitives_core::account::{AccessKeyPermission, FunctionCallPermission};
     use alloc::string::ToString;
-    use third_party::hex;
+    use hex;
 
     /// This test is change checker for a reason - we don't expect transaction format to change.
     /// If it does - you MUST update all of the dependencies: like nearlib and other clients.

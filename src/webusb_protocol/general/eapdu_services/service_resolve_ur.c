@@ -162,12 +162,15 @@ void ProcessURService(EAPDURequestPayload_t *payload)
     PtrT_TransactionCheckResult checkResult = CheckUrResult(urViewType.viewType);
     if (checkResult != NULL && checkResult->error_code == 0) {
         PubValueMsg(UI_MSG_PREPARE_RECEIVE_UR_USB, urViewType.viewType);
-    } else if (checkResult != NULL && checkResult->error_code == 2) {
+    } else if (checkResult != NULL &&
+               (checkResult->error_code == MasterFingerprintMismatch ||
+                checkResult->error_code == BitcoinNoMyInputs)) {
         const char *data = _("usb_transport_mismatched_wallet_desc");
         GotoFailPage(PRS_PARSING_MISMATCHED_WALLET, data);
     } else {
         GotoFailPage(PRS_PARSING_ERROR, checkResult->error_message);
     }
+    free_TransactionCheckResult(checkResult);
 #endif
 }
 

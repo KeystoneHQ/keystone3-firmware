@@ -13,6 +13,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "drv_mpu.h"
+#include "device_setting.h"
 
 static void decodeEthContractData(void *parseResult);
 static bool GetEthErc20ContractData(void *parseResult);
@@ -29,6 +30,8 @@ static char g_fromEthEnsName[64];
 static char g_toEthEnsName[64];
 static bool g_fromEnsExist = false;
 static bool g_toEnsExist = false;
+static bool g_isPermit = false;
+static bool g_isPermitSingle = false;
 static ViewType g_viewType = ViewTypeUnKnown;
 
 const static EvmNetwork_t NETWORKS[] = {
@@ -373,6 +376,7 @@ const static Erc20Contract_t ERC20_CONTRACTS[] = {
     {"NXM", "0xd7c49cee7e9188cca6ad8ff264c1da2e69d4cf3b", 18},
     {"GLM", "0x7DD9c5Cba05E151C895FDe1CF355C9A1D5DA6429", 18},
     {"BAND", "0xba11d00c5f74255f56a5e366f4f77f5a186d7f55", 18},
+    {"TGT", "0x108a850856Db3f85d0269a2693D896B394C80325", 18},
     // BSC
     {"CAKE", "0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82", 18},
     {"BUSD", "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56", 18},
@@ -579,6 +583,7 @@ const static Erc20Contract_t ERC20_CONTRACTS[] = {
     {"DODO", "0x69eb4fa4a2fbd498c257c57ea8b7655a2559a581", 18},
     {"LON", "0x55678cd083fcdc2947a0df635c93c838c89454a3", 18},
     {"GNS", "0x18c11FD286C5EC11c3b683Caa813B77f5163A122", 18},
+    {"TGT", "0x429fEd88f10285E61b12BDF00848315fbDfCC341", 18},
     //Optimism
     {"USDT", "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58", 6},
     {"USDC", "0x0b2c639c533813f4aa9d7837caf62653d097ff85", 6},
@@ -619,6 +624,8 @@ void GuiSetEthUrData(URParseResult *urResult, URParseMultiResult *urMultiResult,
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
     g_viewType = g_isMulti ? g_urMultiResult->t : g_urResult->t;
+    g_isPermitSingle = false;
+    g_isPermit = false;
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                           \
@@ -732,6 +739,22 @@ UREncodeResult *GuiGetEthSignUrDataUnlimited(void)
     return GetEthSignDataDynamic(true);
 }
 
+static void UpdatePermitFlag(const char *primaryType)
+{
+    printf("primaryType: %s\n", primaryType);
+    if (!strcmp("Permit", primaryType) || !strcmp("PermitSingle", primaryType) || !strcmp("PermitBatch", primaryType)) {
+        g_isPermit = true;
+        if (!strcmp("Permit", primaryType)) {
+            g_isPermitSingle = true;
+        } else {
+            g_isPermitSingle = false;
+        }
+    } else {
+        g_isPermit = false;
+        g_isPermitSingle = false;
+    }
+}
+
 void *GuiGetEthTypeData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
@@ -747,6 +770,7 @@ void *GuiGetEthTypeData(void)
         PtrT_TransactionParseResult_DisplayETHTypedData parseResult = eth_parse_typed_data(data, ethXpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
+        UpdatePermitFlag(parseResult->data->primary_type);
     } while (0);
     free_TransactionCheckResult(result);
     free_ptr_string(rootPath);
@@ -890,7 +914,6 @@ static uint8_t GetEthPublickeyIndex(char* rootPath)
 // pase result
 void *GuiGetEthData(void)
 {
-    printf("==========here =====");
     memset_s(g_fromEthEnsName, sizeof(g_fromEthEnsName), 0, sizeof(g_fromEthEnsName));
     memset_s(g_toEthEnsName, sizeof(g_toEthEnsName), 0, sizeof(g_toEthEnsName));
     g_contractDataExist = false;
@@ -1112,6 +1135,12 @@ void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param)
     *y = 130 + g_fromEnsExist * 38;
 }
 
+void GetEthTypeDomainPos(uint16_t *x, uint16_t *y, void *param)
+{
+    *x = 36;
+    *y = (152 + 16) * g_isPermit + 26;
+}
+
 bool GetEthContractDataExist(void *indata, void *param)
 {
     return g_contractDataExist;
@@ -1266,31 +1295,40 @@ static bool GetEthErc20ContractData(void *parseResult)
     return true;
 }
 
-bool GetErc20WarningExist(void *indata, void *param)
+static bool GetSafeContractData(char* inputData)
 {
-    TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)g_parseResult;
-    //make sure is erc20 transfer
-    if (!isErc20Transfer(result->data)) {
-        return false;
-    }
-    //make sure contract data exist
-    if (g_erc20ContractData == NULL) {
-        return false;
-    }
-    //check known erc20 contract list
-    TransactionParseResult_EthParsedErc20Transaction *data = (TransactionParseResult_EthParsedErc20Transaction *)g_erc20ContractData;
-    char *to = result->data->detail->to;
-    for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++) {
-        Erc20Contract_t contract = ERC20_CONTRACTS[i];
-        if (strcasecmp(contract.contract_address, to) == 0) {
+    char selectorId[9] = {0};
+    strncpy(selectorId, inputData, 8);
+    if (strcasecmp(selectorId, "6a761202") == 0) {
+        Response_DisplayContractData *contractData = eth_parse_contract_data(inputData, (char *)safe_json);
+        if (contractData->error_code == 0) {
+            g_contractDataExist = true;
+            g_contractData = contractData;
+        } else {
+            printf("safe contract error: %s\n", contractData->error_message);
+            free_Response_DisplayContractData(contractData);
             return false;
         }
+        return true;
     }
-    return true;
+    return false;
+}
+
+bool GetEthPermitWarningExist(void *indata, void *param)
+{
+    return g_isPermit;
+}
+
+bool GetEthPermitCantSign(void *indata, void *param)
+{
+    return (g_isPermitSingle && !GetPermitSign());
 }
 
 bool GetEthContractFromInternal(char *address, char *inputData)
 {
+    if (GetSafeContractData(inputData)) {
+        return true;
+    }
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(ethereum_abi_map); i++) {
         struct ABIItem item = ethereum_abi_map[i];
         if (strcasecmp(item.address, address) == 0) {

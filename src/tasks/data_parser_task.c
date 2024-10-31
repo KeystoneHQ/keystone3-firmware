@@ -22,6 +22,7 @@
 #include "protocol_parse.h"
 #include "ctaes.h"
 #include "drv_otp.h"
+#include "drv_trng.h"
 #include "librust_c.h"
 
 #define ECC_PRV_KEY_SIZE                                24
@@ -111,18 +112,19 @@ static uint8_t IsPrivileged(void)
     printf("control = %d\n", control);
     return (control & 1) == 0;
 }
+
 static void DataParserCacheMpuInit(void)
 {
-    // uint32_t region_size = (uint32_t)&__data_parser_end - (uint32_t)&__data_parser_start;
-    // uint32_t region_size_pow2 = 1 << (32 - __builtin_clz(region_size - 1));
-    // MpuSetProtection(g_dataParserCache,
-    //                  region_size_pow2,
-    //                  MPU_REGION_NUMBER0,
-    //                  MPU_INSTRUCTION_ACCESS_DISABLE,
-    //                  MPU_REGION_PRIV_RW,
-    //                  MPU_ACCESS_SHAREABLE,
-    //                  MPU_ACCESS_CACHEABLE,
-    //                  MPU_ACCESS_BUFFERABLE);
+    uint32_t region_size = (uint32_t)&__data_parser_end - (uint32_t)&__data_parser_start;
+    uint32_t region_size_pow2 = 1 << (32 - __builtin_clz(region_size - 1));
+    MpuSetProtection((uint32_t)g_dataParserCache,
+                     region_size_pow2,
+                     MPU_REGION_NUMBER0,
+                     MPU_INSTRUCTION_ACCESS_DISABLE,
+                     MPU_REGION_PRIV_RW,
+                     MPU_ACCESS_SHAREABLE,
+                     MPU_ACCESS_CACHEABLE,
+                     MPU_ACCESS_BUFFERABLE);
 }
 
 static void DataParserTask(void *argument)

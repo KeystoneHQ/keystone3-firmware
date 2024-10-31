@@ -10,8 +10,6 @@ use alloc::{
     vec::Vec,
 };
 use app_utils::impl_public_struct;
-use third_party::core2::io::Read;
-use third_party::{core2::io::ErrorKind, hex};
 
 impl_public_struct!(Tags {
     len: i64,
@@ -23,7 +21,7 @@ impl Tags {
         let mut avro_bytes = serial.to_vec();
         let len = avro_decode_long(&mut avro_bytes)?;
         let mut tags = vec![];
-        for i in 0..len {
+        for _i in 0..len {
             let name = avro_decode_string(&mut avro_bytes)?;
             let value = avro_decode_string(&mut avro_bytes)?;
             tags.push(Tag { name, value })
@@ -65,7 +63,7 @@ fn avro_decode_long(reader: &mut Vec<u8>) -> Result<i64> {
 
 fn avro_decode_string(reader: &mut Vec<u8>) -> Result<String> {
     let len = avro_decode_long(reader)?;
-    let mut buf = reader.drain(..len as usize).collect();
+    let buf = reader.drain(..len as usize).collect();
     Ok(
         String::from_utf8(buf)
             .map_err(|e| ArweaveError::AvroError(format!("{}", e.to_string())))?,
@@ -184,11 +182,10 @@ impl DataItem {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_item::avro_decode_string;
 
     use super::DataItem;
-    use alloc::{string::String, vec::Vec};
-    use third_party::hex;
+
+    use hex;
 
     #[test]
     fn test_parse_data_item() {

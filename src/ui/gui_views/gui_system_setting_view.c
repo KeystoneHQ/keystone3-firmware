@@ -22,15 +22,17 @@ int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *par
     case GUI_EVENT_REFRESH:
         GuiSystemSettingAreaRefresh();
         break;
-    case GUI_EVENT_CHANGE_LANGUAGE:
-        GuiSystemSettingAreaRestart();
-        GuiEnterPassLabelRefresh();
-        return ERR_GUI_UNHANDLED;
+    case GUI_EVENT_UPDATE_LANGUAGE:
+        GuiSystemSettingLanguage(param);
+        break;
     case SIG_VERIFY_PASSWORD_PASS:
         if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenToHome();
+                return SUCCESS_CODE;
+            } else if (sig == SIG_SETTING_CHANGE_PERMIT_SWITCH) {
+                GuiDealChangePermitKeyBoard(true);
                 return SUCCESS_CODE;
             }
         }

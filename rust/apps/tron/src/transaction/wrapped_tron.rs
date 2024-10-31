@@ -12,17 +12,17 @@ use app_utils::keystone;
 use ascii::AsciiStr;
 use core::ops::Div;
 use core::str::FromStr;
+use cryptoxide::hashing;
 use ethabi::{
     ethereum_types::{H160, U256},
     Function, Param, ParamType, StateMutability, Token,
 };
+use hex;
 use prost::Message;
 use prost_types::Any;
-use third_party::cryptoxide::hashing;
-use third_party::hex;
-use third_party::ur_registry::pb::protoc;
-use third_party::ur_registry::pb::protoc::sign_transaction::Transaction::TronTx;
-use third_party::ur_registry::pb::protoc::{LatestBlock, Payload, SignTransaction};
+use ur_registry::pb::protoc;
+use ur_registry::pb::protoc::sign_transaction::Transaction::TronTx;
+use ur_registry::pb::protoc::{LatestBlock, Payload, SignTransaction};
 
 #[derive(Debug, Clone)]
 pub struct WrappedTron {

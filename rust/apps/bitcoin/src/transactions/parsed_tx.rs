@@ -1,13 +1,11 @@
 use crate::errors::{BitcoinError, Result};
 use crate::multi_sig::wallet::MultiSigWalletConfig;
-use crate::network::Network;
+use crate::network::{Network, NetworkT};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
 use core::ops::Div;
-use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
-
-use super::legacy::input;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct ParsedTx {
@@ -92,7 +90,7 @@ impl ParseContext {
 pub const DIVIDER: f64 = 100_000_000 as f64;
 
 pub trait TxParser {
-    fn format_amount(value: u64, network: &Network) -> String {
+    fn format_amount(value: u64, network: &dyn NetworkT) -> String {
         format!("{} {}", (value as f64).div(DIVIDER), network.get_unit())
     }
 
@@ -136,7 +134,7 @@ pub trait TxParser {
     }
 
     fn is_need_sign(parsed_inputs: &[ParsedInput]) -> bool {
-        for (index, input) in parsed_inputs.iter().enumerate() {
+        for (_index, input) in parsed_inputs.iter().enumerate() {
             if input.need_sign {
                 return true;
             }
@@ -148,7 +146,7 @@ pub trait TxParser {
         &self,
         inputs: Vec<ParsedInput>,
         outputs: Vec<ParsedOutput>,
-        network: &Network,
+        network: &dyn NetworkT,
     ) -> Result<ParsedTx> {
         let total_input_value = inputs.iter().fold(0, |acc, cur| acc + cur.value);
         let total_output_value = outputs.iter().fold(0, |acc, cur| acc + cur.value);

@@ -29,6 +29,7 @@
 #define KEY_AUTO_LOCK_SCREEN            "auto_lock_screen"
 #define KEY_AUTO_POWER_OFF              "auto_power_off"
 #define KEY_VIBRATION                   "vibration"
+#define KEY_PERMIT_SIGN                 "permit_sign"
 #define KEY_DARK_MODE                   "dark_mode"
 #define KEY_USB_SWITCH                  "usb_switch"
 #define KEY_LAST_VERSION                "last_version"
@@ -41,6 +42,7 @@
 #define DEFAULT_AUTO_LOCK_SCREEN        60
 #define DEFAULT_AUTO_POWER_OFF          0
 #define DEFAULT_VIBRATION               1
+#define DEFAULT_PERMIT_SIGN             0
 #define DEFAULT_DARK_MODE               1
 #define DEFAULT_USB_SWITCH              1
 #define DEFAULT_LAST_VERSION            0
@@ -52,6 +54,7 @@ typedef struct {
     uint32_t autoLockScreen;
     uint32_t autoPowerOff;
     uint32_t vibration;
+    uint32_t permitSign;
     uint32_t darkMode;
     uint32_t usbSwitch;
     uint32_t lastVersion;
@@ -101,6 +104,7 @@ void DeviceSettingsInit(void)
         g_deviceSettings.autoLockScreen = DEFAULT_AUTO_LOCK_SCREEN;
         g_deviceSettings.autoPowerOff = DEFAULT_AUTO_POWER_OFF;
         g_deviceSettings.vibration = DEFAULT_VIBRATION;
+        g_deviceSettings.permitSign = DEFAULT_PERMIT_SIGN;
         g_deviceSettings.darkMode = DEFAULT_DARK_MODE;
         g_deviceSettings.usbSwitch = DEFAULT_USB_SWITCH;
         g_deviceSettings.lastVersion = DEFAULT_LAST_VERSION;
@@ -168,6 +172,16 @@ uint32_t GetVibration(void)
 void SetVibration(uint32_t vibration)
 {
     g_deviceSettings.vibration = vibration;
+}
+
+uint32_t GetPermitSign(void)
+{
+    return g_deviceSettings.permitSign;
+}
+
+void SetPermitSign(uint32_t permitSign)
+{
+    g_deviceSettings.permitSign = permitSign;
 }
 
 uint32_t GetDarkMode(void)
@@ -356,6 +370,7 @@ static bool GetDeviceSettingsFromJsonString(const char *string)
         g_deviceSettings.autoLockScreen = GetIntValue(rootJson, KEY_AUTO_LOCK_SCREEN, DEFAULT_AUTO_LOCK_SCREEN);
         g_deviceSettings.autoPowerOff = GetIntValue(rootJson, KEY_AUTO_POWER_OFF, DEFAULT_AUTO_POWER_OFF);
         g_deviceSettings.vibration = GetIntValue(rootJson, KEY_VIBRATION, DEFAULT_VIBRATION);
+        g_deviceSettings.permitSign = GetIntValue(rootJson, KEY_PERMIT_SIGN, DEFAULT_PERMIT_SIGN);
         g_deviceSettings.darkMode = GetIntValue(rootJson, KEY_DARK_MODE, DEFAULT_DARK_MODE);
         g_deviceSettings.usbSwitch = GetIntValue(rootJson, KEY_USB_SWITCH, DEFAULT_USB_SWITCH);
         g_deviceSettings.lastVersion = GetIntValue(rootJson, KEY_LAST_VERSION, DEFAULT_LAST_VERSION);
@@ -380,6 +395,7 @@ static char *GetJsonStringFromDeviceSettings(void)
     cJSON_AddItemToObject(rootJson, KEY_AUTO_LOCK_SCREEN, cJSON_CreateNumber(g_deviceSettings.autoLockScreen));
     cJSON_AddItemToObject(rootJson, KEY_AUTO_POWER_OFF, cJSON_CreateNumber(g_deviceSettings.autoPowerOff));
     cJSON_AddItemToObject(rootJson, KEY_VIBRATION, cJSON_CreateNumber(g_deviceSettings.vibration));
+    cJSON_AddItemToObject(rootJson, KEY_PERMIT_SIGN, cJSON_CreateNumber(g_deviceSettings.permitSign));
     cJSON_AddItemToObject(rootJson, KEY_DARK_MODE, cJSON_CreateNumber(g_deviceSettings.darkMode));
     cJSON_AddItemToObject(rootJson, KEY_USB_SWITCH, cJSON_CreateNumber(g_deviceSettings.usbSwitch));
     cJSON_AddItemToObject(rootJson, KEY_LAST_VERSION, cJSON_CreateNumber(g_deviceSettings.lastVersion));

@@ -3,12 +3,10 @@ use crate::collect;
 use crate::errors::{BitcoinError, Result};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use bitcoin::{self, Amount};
 use core::str::FromStr;
-use third_party::bitcoin::{self, Amount};
-use third_party::ur_registry::pb::protoc;
-use third_party::ur_registry::pb::protoc::sign_transaction::Transaction::{
-    BchTx, BtcTx, DashTx, LtcTx,
-};
+use ur_registry::pb::protoc;
+use ur_registry::pb::protoc::sign_transaction::Transaction::{BchTx, BtcTx, DashTx, LtcTx};
 
 #[derive(Debug, Clone)]
 pub struct TxOut {

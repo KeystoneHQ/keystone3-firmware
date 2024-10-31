@@ -1,8 +1,8 @@
 use alloc::format;
 use alloc::string::{FromUtf8Error, String, ToString};
 use keystore::errors::KeystoreError;
-use third_party::{hex, thiserror};
 use thiserror::Error;
+use {hex, thiserror};
 
 #[derive(Error, Debug)]
 pub enum AptosError {

@@ -5,9 +5,9 @@ use core::str::FromStr;
 
 use bytes::BytesMut;
 use ethereum_types::{H256, U256};
+use hex;
 use rlp::{Decodable, DecoderError, Encodable, Rlp};
-use third_party::hex;
-use third_party::ur_registry::pb::protoc::EthTx;
+use ur_registry::pb::protoc::EthTx;
 
 use crate::erc20::encode_erc20_transfer_calldata;
 use crate::normalizer::{normalize_price, normalize_value};
@@ -297,7 +297,7 @@ impl TryFrom<EthTx> for LegacyTransaction {
     fn try_from(eth_tx: EthTx) -> Result<Self, Self::Error> {
         // check this transaction is erc20 transaction or not
         if let Some(erc20_override) = eth_tx.r#override {
-            let contract_address = erc20_override.contract_address;
+            let _contract_address = erc20_override.contract_address;
             // generate  erc20 transfer inputdata
             let to = crate::H160::from_str(&eth_tx.to).unwrap();
             let amount = crate::U256::from(eth_tx.value.parse::<u64>().unwrap());

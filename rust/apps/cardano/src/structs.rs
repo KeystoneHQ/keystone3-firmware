@@ -18,13 +18,13 @@ use cardano_serialization_lib::{
 };
 
 use alloc::format;
+use bitcoin::bip32::ChildNumber::{Hardened, Normal};
+use bitcoin::bip32::DerivationPath;
 use core::ops::Div;
-use third_party::bitcoin::bip32::ChildNumber::{Hardened, Normal};
-use third_party::bitcoin::bip32::DerivationPath;
-use third_party::ur_registry::cardano::cardano_sign_structure::CardanoSignStructure;
-use third_party::ur_registry::traits::From;
+use ur_registry::cardano::cardano_sign_structure::CardanoSignStructure;
+use ur_registry::traits::From;
 
-use third_party::hex;
+use hex;
 
 impl_public_struct!(ParseContext {
     utxos: Vec<CardanoUtxo>,
@@ -317,10 +317,16 @@ impl ParsedCardanoTx {
 
     fn judge_network_id(tx: &Transaction) -> u8 {
         match tx.body().network_id() {
-            None => match tx.body().outputs().get(0).address().network_id() {
-                Ok(id) => id,
-                Err(_) => 1,
-            },
+            None => {
+                let outputs = tx.body().outputs();
+                if (outputs.len() == 0) {
+                    return 1;
+                }
+                match outputs.get(0).address().network_id() {
+                    Ok(id) => id,
+                    Err(_) => 1,
+                }
+            }
             Some(id) => match id.kind() {
                 NetworkIdKind::Mainnet => 1,
                 NetworkIdKind::Testnet => 0,
@@ -1201,7 +1207,7 @@ fn normalize_value(value: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+    use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 
     #[test]
     fn test_normalize_coin() {

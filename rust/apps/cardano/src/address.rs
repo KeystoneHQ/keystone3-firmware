@@ -6,10 +6,10 @@ use cardano_serialization_lib::address::{
 };
 use cardano_serialization_lib::crypto::Ed25519KeyHash;
 
-use third_party::cryptoxide::hashing::blake2b_224;
-use third_party::ed25519_bip32_core::{DerivationScheme, XPub};
-use third_party::hex;
-use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
+use cryptoxide::hashing::blake2b_224;
+use ed25519_bip32_core::{DerivationScheme, XPub};
+use hex;
+use ur_registry::crypto_key_path::CryptoKeyPath;
 
 pub enum AddressType {
     Base,
@@ -123,18 +123,18 @@ mod tests {
     use super::*;
     use alloc::string::ToString;
     use alloc::vec;
+    use bech32;
     use cardano_serialization_lib::address::{Address, BaseAddress};
+    use cryptoxide::hashing::blake2b_224;
     use keystore;
-    use third_party::bech32;
-    use third_party::cryptoxide::hashing::blake2b_224;
 
     extern crate std;
 
     use crate::address::{derive_address, AddressType};
+    use bech32::Bech32;
+    use hex;
     use std::println;
-    use third_party::bech32::Bech32;
-    use third_party::hex;
-    use third_party::ur_registry::crypto_key_path::PathComponent;
+    use ur_registry::crypto_key_path::PathComponent;
 
     #[test]
     fn spike() {
@@ -165,16 +165,14 @@ mod tests {
         buf.extend(spend);
         buf.extend(stake);
         let spend_address =
-            bech32::encode::<Bech32>(third_party::bech32::Hrp::parse_unchecked(prefix), &buf)
-                .unwrap();
+            bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked(prefix), &buf).unwrap();
         println!("{}", spend_address);
 
         let mut buf2 = vec![];
         buf2.push(0b1110_0001);
         buf2.extend(stake);
         let reward_address =
-            bech32::encode::<Bech32>(third_party::bech32::Hrp::parse_unchecked("stake"), &buf2)
-                .unwrap();
+            bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked("stake"), &buf2).unwrap();
         println!("{}", reward_address);
     }
 

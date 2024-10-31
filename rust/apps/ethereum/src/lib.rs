@@ -7,11 +7,11 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
+use bitcoin::secp256k1::{Message, PublicKey};
 pub use ethereum_types::{H160, U256};
+use hex;
 pub use legacy_transaction::*;
-use third_party::hex;
-use third_party::secp256k1::{Message, PublicKey};
-use third_party::serde_json;
+use serde_json;
 
 use crate::crypto::keccak256;
 use crate::eip1559_transaction::{EIP1559Transaction, ParsedEIP1559Transaction};
@@ -180,9 +180,9 @@ mod tests {
 
     use core::str::FromStr;
 
+    use hex;
     use keystore::algorithms::secp256k1::get_public_key_by_seed;
-    use third_party::hex;
-    use third_party::serde_json;
+    use serde_json;
 
     use crate::alloc::string::ToString;
     use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};

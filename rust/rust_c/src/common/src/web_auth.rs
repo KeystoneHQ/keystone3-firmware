@@ -3,8 +3,8 @@ use alloc::{
     string::{String, ToString},
     vec,
 };
-use third_party::rsa::BigUint;
-use third_party::{
+use rsa::BigUint;
+use {
     hex,
     serde_json::{from_slice, from_value, Value},
     ur_registry::bytes::Bytes,
@@ -18,7 +18,7 @@ use super::{
     utils::convert_c_char,
 };
 
-use third_party::sha1::Sha1;
+use sha1::Sha1;
 
 #[no_mangle]
 pub extern "C" fn calculate_auth_code(
@@ -35,7 +35,7 @@ pub extern "C" fn calculate_auth_code(
             let data = _json.pointer("/data/data");
             if let Some(_data) = data {
                 match from_value::<String>(_data.clone()) {
-                    Ok(_hex) => match third_party::base64::decode(&_hex) {
+                    Ok(_hex) => match base64::decode(&_hex) {
                         Ok(_value) => unsafe {
                             let rsa_key_n =
                                 slice::from_raw_parts(rsa_key_n, rsa_key_n_len as usize);
@@ -74,7 +74,7 @@ fn _calculate_auth_code(
     let len = data.len();
     let encrypted_data = &data[0..(len - 64)];
     let k1_signature = &data[(len - 64)..];
-    let msg_hash = third_party::cryptoxide::hashing::sha256(encrypted_data);
+    let msg_hash = cryptoxide::hashing::sha256(encrypted_data);
     let k1_pub_key =
         hex::decode("0454cc449aad7b4490ca4f395c3eff29fca0a899e289769dc680190e2e07cf9d0d08e52c6b8c096790a63931cbe4dc53cc7efeb1f58a203b03c6d27b57c998ebb7")
             .map_err(|_e| RustCError::WebAuthFailed("recover k1 pub key failed".to_string()))?;
@@ -84,7 +84,7 @@ fn _calculate_auth_code(
             let d = BigUint::from_bytes_be(rsa_key_d);
             let dummy_p = BigUint::from_bytes_be(&hex::decode("02").unwrap());
             let dummy_q = BigUint::from_bytes_be(&hex::decode("02").unwrap());
-            match third_party::rsa::RsaPrivateKey::from_components(
+            match rsa::RsaPrivateKey::from_components(
                 n,
                 //default E
                 BigUint::from(65537u64),
@@ -92,7 +92,7 @@ fn _calculate_auth_code(
                 vec![dummy_p, dummy_q],
             ) {
                 Ok(_key) => {
-                    match _key.decrypt(third_party::rsa::Oaep::new::<Sha1>(), &encrypted_data) {
+                    match _key.decrypt(rsa::Oaep::new::<Sha1>(), &encrypted_data) {
                         Ok(_value) => String::from_utf8(_value.clone()).map_err(|_err| {
                             RustCError::WebAuthFailed(format!(
                                 "Invalid utf8 hex: {}, {}",
@@ -119,7 +119,7 @@ fn _calculate_auth_code(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use third_party::{base64, hex};
+    use {base64, hex};
 
     extern crate std;
     use std::println;

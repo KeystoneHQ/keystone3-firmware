@@ -1,28 +1,26 @@
 use core::ptr::null_mut;
 
-use crate::{address::utxo_get_address, structs::DisplayBtcMsg};
+use crate::structs::DisplayBtcMsg;
 use alloc::{
     slice,
     string::{String, ToString},
     vec::Vec,
 };
+use base64;
 use common_rust_c::{
     errors::RustCError,
     extract_ptr_with_type,
     ffi::CSliceFFI,
     qrcode::seed_signer_message::SeedSignerMessage,
-    structs::{ExtendedPublicKey, Response, TransactionCheckResult, TransactionParseResult},
+    structs::{ExtendedPublicKey, TransactionCheckResult, TransactionParseResult},
     types::{Ptr, PtrBytes, PtrT, PtrUR},
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
     utils::{convert_c_char, recover_c_array, recover_c_char},
 };
 use keystore::algorithms::secp256k1;
-use third_party::ur_registry::traits::RegistryItem;
-use third_party::{base64, ur_registry::bitcoin::btc_signature::BtcSignature};
-use third_party::{
-    hex,
-    ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType},
-};
+use ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType};
+use ur_registry::traits::RegistryItem;
+use ur_registry::bitcoin::btc_signature::BtcSignature;
 
 #[no_mangle]
 pub extern "C" fn btc_check_msg(

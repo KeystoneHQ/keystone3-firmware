@@ -4,7 +4,6 @@ extern crate alloc;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use alloc::{format, slice};
-use core::str::FromStr;
 
 use app_ethereum::address::derive_address;
 use app_ethereum::erc20::parse_erc20;
@@ -14,16 +13,15 @@ use app_ethereum::{
     LegacyTransaction, TransactionSignature,
 };
 use keystore::algorithms::secp256k1::derive_public_key;
-use third_party::core2::io::Read;
-use third_party::cryptoxide::hashing::keccak256;
-use third_party::hex;
-use third_party::ur_registry::ethereum::eth_sign_request::EthSignRequest;
-use third_party::ur_registry::ethereum::eth_signature::EthSignature;
-use third_party::ur_registry::pb;
-use third_party::ur_registry::pb::protoc::base::Content::ColdVersion;
-use third_party::ur_registry::pb::protoc::payload::Content;
-use third_party::ur_registry::pb::protoc::sign_transaction::Transaction::EthTx;
-use third_party::ur_registry::traits::{RegistryItem, To};
+use cryptoxide::hashing::keccak256;
+use hex;
+use ur_registry::ethereum::eth_sign_request::EthSignRequest;
+use ur_registry::ethereum::eth_signature::EthSignature;
+use ur_registry::pb;
+use ur_registry::pb::protoc::base::Content::ColdVersion;
+use ur_registry::pb::protoc::payload::Content;
+use ur_registry::pb::protoc::sign_transaction::Transaction::EthTx;
+use ur_registry::traits::RegistryItem;
 
 use common_rust_c::errors::{KeystoneError, RustCError};
 use common_rust_c::keystone::build_payload;
@@ -91,7 +89,7 @@ pub extern "C" fn eth_check(
             return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
         }
     };
-    let derivation_path: third_party::ur_registry::crypto_key_path::CryptoKeyPath =
+    let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
         eth_sign_request.get_derivation_path();
     let ur_mfp: [u8; 4] = match derivation_path
         .get_source_fingerprint()
@@ -133,7 +131,7 @@ pub extern "C" fn eth_get_root_path_bytes(ptr: PtrUR) -> PtrString {
 #[no_mangle]
 pub extern "C" fn eth_get_root_path(ptr: PtrUR) -> PtrString {
     let eth_sign_request = extract_ptr_with_type!(ptr, EthSignRequest);
-    let derivation_path: third_party::ur_registry::crypto_key_path::CryptoKeyPath =
+    let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
         eth_sign_request.get_derivation_path();
     if let Some(path) = derivation_path.get_path() {
         if let Some(root_path) = parse_eth_root_path(path) {
@@ -175,14 +173,14 @@ fn parse_eth_sub_path(path: String) -> Option<String> {
 fn try_get_eth_public_key(
     xpub: String,
     eth_sign_request: EthSignRequest,
-) -> Result<third_party::secp256k1::PublicKey, RustCError> {
+) -> Result<bitcoin::secp256k1::PublicKey, RustCError> {
     match eth_sign_request.get_derivation_path().get_path() {
         None => Err(RustCError::InvalidHDPath),
         Some(path) => {
             let _path = path.clone();
             if let Some(sub_path) = parse_eth_sub_path(_path) {
                 derive_public_key(&xpub, &format!("m/{}", sub_path))
-                    .map_err(|e| RustCError::UnexpectedError(format!("unable to derive pubkey")))
+                    .map_err(|_e| RustCError::UnexpectedError(format!("unable to derive pubkey")))
             } else {
                 Err(RustCError::InvalidHDPath)
             }
@@ -465,36 +463,36 @@ pub extern "C" fn eth_sign_tx_bytes(
     let raw_tx = legacy_tx_with_signature.encode_raw();
     rust_tools::debug!(format!("0x{}", hex::encode(raw_tx.clone())));
     // add 0x prefix for tx_id and raw_tx
-    let sign_tx_result = third_party::ur_registry::pb::protoc::SignTransactionResult {
+    let sign_tx_result = ur_registry::pb::protoc::SignTransactionResult {
         sign_id: sign_tx.sign_id,
         tx_id: format!("0x{}", hex::encode(tx_hash)),
         raw_tx: format!("0x{}", hex::encode(raw_tx)),
     };
 
     let content =
-        third_party::ur_registry::pb::protoc::payload::Content::SignTxResult(sign_tx_result);
-    let payload = third_party::ur_registry::pb::protoc::Payload {
-        ///  type is third_party::ur_registry::pb::protoc::payload::Type::SignTxResult
+        ur_registry::pb::protoc::payload::Content::SignTxResult(sign_tx_result);
+    let payload = ur_registry::pb::protoc::Payload {
+        //  type is ur_registry::pb::protoc::payload::Type::SignTxResult
         r#type: 9,
         xfp: hex::encode(mfp).to_uppercase(),
         content: Some(content),
     };
-    let base = third_party::ur_registry::pb::protoc::Base {
+    let base = ur_registry::pb::protoc::Base {
         version: 1,
         description: "keystone qrcode".to_string(),
         data: Some(payload),
         device_type: "keystone Pro".to_string(),
         content: Some(ColdVersion(31206)),
     };
-    let base_vec = third_party::ur_registry::pb::protobuf_parser::serialize_protobuf(base);
+    let base_vec = ur_registry::pb::protobuf_parser::serialize_protobuf(base);
     // zip data can reduce the size of the data
     let zip_data = pb::protobuf_parser::zip(&base_vec).unwrap();
     // data --> protobuf --> zip protobuf data --> cbor bytes data
     UREncodeResult::encode(
-        third_party::ur_registry::bytes::Bytes::new(zip_data)
+        ur_registry::bytes::Bytes::new(zip_data)
             .try_into()
             .unwrap(),
-        third_party::ur_registry::bytes::Bytes::get_registry_type().get_type(),
+        ur_registry::bytes::Bytes::get_registry_type().get_type(),
         FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
     )
     .c_ptr()

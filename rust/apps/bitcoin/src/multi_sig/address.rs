@@ -1,7 +1,7 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use third_party::bitcoin::{opcodes, script, PublicKey, ScriptBuf};
-use third_party::itertools::Itertools;
+use bitcoin::{opcodes, script, PublicKey, ScriptBuf};
+use itertools::Itertools;
 
 use crate::addresses::address::Address;
 use crate::addresses::xyzpub::Version;

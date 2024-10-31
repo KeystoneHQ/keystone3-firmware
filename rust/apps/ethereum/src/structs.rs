@@ -5,9 +5,9 @@ use crate::{Bytes, ParsedLegacyTransaction};
 use alloc::string::String;
 
 use alloc::vec::Vec;
+use bitcoin::secp256k1::PublicKey;
 use ethereum_types::H160;
 use rlp::{Decodable, DecoderError, Encodable, Rlp};
-use third_party::secp256k1::PublicKey;
 
 #[derive(Clone)]
 pub enum TransactionAction {
@@ -166,7 +166,7 @@ impl TypedData {
 #[cfg(test)]
 pub mod tests {
     use crate::structs::EthereumSignature;
-    use third_party::hex;
+    use hex;
 
     extern crate std;
 

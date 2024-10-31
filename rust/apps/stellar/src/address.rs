@@ -2,9 +2,8 @@ use crate::errors::{Result, StellarError};
 use crate::strkeys::{calculate_crc16_checksum, encode_base32, StrKeyType};
 use alloc::string::String;
 use alloc::vec::Vec;
-use core::str::FromStr;
+use hex;
 use keystore::algorithms::ed25519::slip10_ed25519::get_public_key_by_seed;
-use third_party::hex;
 
 pub fn get_address(pub_key: &String) -> Result<String> {
     match hex::decode(pub_key) {
@@ -39,7 +38,7 @@ pub fn generate_stellar_address(seed: &[u8], path: &String) -> Result<String> {
 mod tests {
     use super::*;
     use alloc::string::ToString;
-    use third_party::hex;
+    use hex;
 
     #[test]
     fn test_stellar_address() {

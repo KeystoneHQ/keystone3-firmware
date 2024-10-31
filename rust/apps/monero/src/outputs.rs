@@ -7,7 +7,7 @@ use chacha20::{ChaCha20Legacy, ChaCha20LegacyCore, ChaChaCore};
 use chacha20::cipher::{KeyIvInit, StreamCipher, StreamCipherSeek, generic_array::GenericArray};
 use cuprate_cryptonight::cryptonight_hash_v0;
 use varinteger::*;
-use third_party::hex;
+use hex;
 
 struct ExportedTransferDetail {
     pubkey: PublicKey,

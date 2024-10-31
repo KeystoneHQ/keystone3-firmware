@@ -2,8 +2,8 @@ use alloc::{
     format,
     string::{String, ToString},
 };
+use hex;
 use serde::Serialize;
-use third_party::hex;
 
 use super::{traits::ParseCell, Comment};
 

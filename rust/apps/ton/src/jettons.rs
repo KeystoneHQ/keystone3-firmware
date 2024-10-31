@@ -6,8 +6,8 @@ use alloc::{
 };
 
 use lazy_static::lazy_static;
-use num_bigint::BigUint;
-use third_party::itertools::Itertools;
+
+use itertools::Itertools;
 
 pub struct JettonData {
     pub contract_address: String,

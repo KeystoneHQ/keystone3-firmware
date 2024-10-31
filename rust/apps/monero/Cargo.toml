@@ -6,12 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+hex = { workspace = true }
+cryptoxide = { workspace = true }
+bitcoin = { workspace = true }
 curve25519-dalek = { version = "4", default-features = false }
 base58-monero = { version = "2", default-features = false }
 keystore = { path = "../../keystore", default-features = false }
 zeroize = { version = "^1.5", default-features = false, features = ["zeroize_derive"] }
 rand_core = { version = "0.6", default-features = false, features = ["getrandom"] }
-third_party = { path = "../../third_party" }
 app_utils = { path = "../utils" }
 rust_tools = { path = "../../tools" }
 cuprate-cryptonight = { path = "../../../../../github/cuprate/cryptonight" }
@@ -22,4 +24,3 @@ chacha20 = { version = "0.9.1", default-features = false }
 sha3 = { version = "0.10.8", default-features = false }
 digest = "0.10.7"
 varinteger = "1.0.6"
-

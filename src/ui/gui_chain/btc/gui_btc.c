@@ -13,9 +13,9 @@
 #ifdef BTC_ONLY
 #include "gui_multisig_transaction_signature_widgets.h"
 #include "gui_btc_home_widgets.h"
-#else
-#include "gui_chain_components.h"
 #endif
+#include "gui_chain_components.h"
+
 
 #define CHECK_FREE_PARSE_RESULT(result)                       \
     if (result != NULL)                                       \
@@ -60,6 +60,7 @@ static uint32_t g_psbtBytesLen = 0;
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
 static bool IsMultiSigTx(DisplayTx *data);
+static UREncodeResult *GetBtcSignDataDynamic(bool unLimit);
 
 void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
@@ -128,10 +129,19 @@ static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
 }
 #endif
 
-// The results here are released in the close qr timer species
-UREncodeResult *GuiGetSignQrCodeData(void)
+UREncodeResult *GuiGetBtcSignQrCodeData(void)
 {
+    return GetBtcSignDataDynamic(false);
+}
 
+UREncodeResult *GuiGetBtcSignUrDataUnlimited(void)
+{
+    return GetBtcSignDataDynamic(true);
+}
+
+// The results here are released in the close qr timer species
+static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
+{
 #ifdef BTC_ONLY
     if (g_psbtBytes != NULL) {
         return GuiGetSignPsbtBytesCodeData();
@@ -187,7 +197,11 @@ UREncodeResult *GuiGetSignQrCodeData(void)
                 encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
             }
 #else
-            encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
+            if (unLimit) {
+                encodeResult = btc_sign_psbt_unlimited(data, seed, len, mfp, sizeof(mfp));
+            } else {
+                encodeResult = btc_sign_psbt(data, seed, len, mfp, sizeof(mfp));
+            }
 #endif
         }
     }

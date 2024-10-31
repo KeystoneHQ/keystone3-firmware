@@ -1,11 +1,10 @@
-use alloc::format;
 use app_arweave::{ao_transaction::AOTransferTransaction, parse_data_item};
 use common_rust_c::{
     extract_ptr_with_type,
     structs::TransactionParseResult,
     types::{PtrT, PtrUR},
 };
-use third_party::ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
+use ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
 
 use crate::structs::{DisplayArweaveAOTransfer, DisplayArweaveDataItem};
 
@@ -19,7 +18,7 @@ pub extern "C" fn ar_is_ao_transfer(ptr: PtrUR) -> bool {
             Ok(_ao_transfer) => true,
             Err(_e) => false,
         },
-        Err(e) => false,
+        Err(_e) => false,
     }
 }
 

@@ -10,10 +10,10 @@ use alloc::string::ToString;
 use core::slice;
 
 use cty::c_char;
-use third_party::bitcoin::hex::Case;
-use third_party::bitcoin_hashes::hex::DisplayHex;
-use third_party::hex;
-use third_party::hex::ToHex;
+use bitcoin::hex::Case;
+use bitcoin_hashes::hex::DisplayHex;
+use hex;
+use hex::ToHex;
 
 use errors::ErrorCodes;
 use structs::TransactionCheckResult;
@@ -92,8 +92,8 @@ pub extern "C" fn get_extended_monero_pubkeys_by_seed(
     let public_view_key = keypair.view.get_public_key();
     let result = format!(
         "{}{}",
-        third_party::hex::encode(public_spend_key.as_bytes()),
-        third_party::hex::encode(public_view_key.as_bytes())
+        hex::encode(public_spend_key.as_bytes()),
+        hex::encode(public_view_key.as_bytes())
     );
 
     SimpleResponse::success(convert_c_char(result.to_string())).simple_c_ptr()
@@ -304,7 +304,7 @@ pub extern "C" fn pbkdf2_rust(
 ) -> *mut SimpleResponse<u8> {
     let password_bytes = unsafe { slice::from_raw_parts(password, 32) };
     let salt_bytes = unsafe { slice::from_raw_parts(salt, 32) };
-    let mut output = keystore::algorithms::crypto::hkdf(&password_bytes, &salt_bytes, iterations);
+    let output = keystore::algorithms::crypto::hkdf(&password_bytes, &salt_bytes, iterations);
     SimpleResponse::success(Box::into_raw(Box::new(output)) as *mut u8).simple_c_ptr()
 }
 
@@ -316,7 +316,7 @@ pub extern "C" fn pbkdf2_rust_64(
 ) -> *mut SimpleResponse<u8> {
     let password_bytes = unsafe { slice::from_raw_parts(password, 64) };
     let salt_bytes = unsafe { slice::from_raw_parts(salt, 64) };
-    let mut output = keystore::algorithms::crypto::hkdf64(&password_bytes, &salt_bytes, iterations);
+    let output = keystore::algorithms::crypto::hkdf64(&password_bytes, &salt_bytes, iterations);
     SimpleResponse::success(Box::into_raw(Box::new(output)) as *mut u8).simple_c_ptr()
 }
 

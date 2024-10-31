@@ -245,17 +245,17 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
 {
     switch (cryptoKey) {
     case SECP256K1:
-        return get_extended_pubkey_by_seed(seed, len, path);
+        return get_extended_pubkey_by_seed(seed, len, (char *)path);
     case ED25519:
-        return get_ed25519_pubkey_by_seed(seed, len, path);
+        return get_ed25519_pubkey_by_seed(seed, len, (char *)path);
     case BIP32_ED25519:
         ASSERT(icarusMasterKey);
-        return derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+        return derive_bip32_ed25519_extended_pubkey(icarusMasterKey, (char *)path);
     case LEDGER_BITBOX02:
         ASSERT(ledgerBitbox02MasterKey);
-        return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, path);
+        return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, (char *)path);
     case EDWARDS_25519:
-        return get_extended_monero_pubkeys_by_seed(seed, len, path);
+        return get_extended_monero_pubkeys_by_seed(seed, len, (char *)path);
 #ifndef BTC_ONLY
     case RSA_KEY: {
         Rsa_primes_t *primes = FlashReadRsaPrimes();
@@ -535,7 +535,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             free_simple_response_c_char(xPubResult);
             //store a checksum of entropy for quick compare;
             uint8_t checksum[32] = {'\0'};
-            CalculateTonChecksum(entropy, checksum);
+            CalculateTonChecksum(entropy, (char *)checksum);
             printf("ton checksum: %s\r\n", checksum);
             g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value = SRAM_MALLOC(65);
             char* ptr = g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value;
@@ -1586,12 +1586,18 @@ void SetAccountIndex(const char* chainName, uint32_t index)
 
 uint32_t GetConnectWalletPathIndex(const char* walletName)
 {
-    return GetTemplateWalletValue(walletName, "derivePath");
+    char name[BUFFER_SIZE_32];
+    strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
+    RemoveFormatChar(name);
+    return GetTemplateWalletValue(name, "derivePath");
 }
 
 void SetConnectWalletPathIndex(const char* walletName, uint32_t index)
 {
-    SetTemplateWalletValue(walletName, "derivePath", index);
+    char name[BUFFER_SIZE_32];
+    strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
+    RemoveFormatChar(name);
+    SetTemplateWalletValue(name, "derivePath", index);
 }
 
 uint32_t GetConnectWalletAccountIndex(const char* walletName)
@@ -1601,7 +1607,6 @@ uint32_t GetConnectWalletAccountIndex(const char* walletName)
     strncpy_s(name, BUFFER_SIZE_32, walletName, BUFFER_SIZE_32);
     RemoveFormatChar(name);
     cJSON *rootJson = ReadAndParseAccountJson(NULL, NULL);
-
     cJSON *item = cJSON_GetObjectItem(rootJson, name);
     if (item == NULL) {
         printf("GetConnectWalletAccountIndex get %s not exist\r\n", name);
@@ -1690,7 +1695,6 @@ static uint32_t GetTemplateWalletValue(const char* walletName, const char* key)
 {
     uint32_t value = 0;
     cJSON* rootJson = ReadAndParseAccountJson(NULL, NULL);
-
     cJSON* item = cJSON_GetObjectItem(rootJson, walletName);
     if (item == NULL) {
         printf("GetTemplateWalletValue get %s not exist\r\n", walletName);

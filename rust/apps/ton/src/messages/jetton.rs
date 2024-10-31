@@ -2,16 +2,16 @@ use alloc::{
     format,
     string::{String, ToString},
 };
-use num_bigint::BigUint;
+
+use hex;
 use serde::Serialize;
-use third_party::hex;
 
 use crate::vendor::{
     address::TonAddress,
-    cell::{ArcCell, Cell, TonCellError},
+    cell::{ArcCell, TonCellError},
 };
 
-use super::{traits::ParseCell, Comment, InternalMessage};
+use super::{traits::ParseCell, Comment};
 
 pub const JETTON_TRANSFER: u32 = 0xf8a7ea5;
 // pub const JETTON_TRANSFER_NOTIFICATION: u32 = 0x7362d09c;

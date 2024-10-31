@@ -5,40 +5,12 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[workspace]
-members = [
-    "src/kt_allocator",
-    "src/common",
-
-    "src/bitcoin",
-    "src/ethereum",
-    "src/solana",
-    "src/aptos",
-    "src/near",
-    "src/cosmos",
-    "src/cardano",
-    "src/sui",
-    "src/tron",
-    "src/xrp",
-    "src/arweave",
-    "src/ton",
-
-    "src/wallet",
-    "src/wallet/src/btc_only_wallet",
-    "src/wallet/src/multi_coins_wallet",
-
-    "src/test_cmd",
-    "src/test_cmd/src/btc_test_cmd",
-    "src/test_cmd/src/general_test_cmd",
-]
-
 [dependencies]
-kt_allocator = { path = "./src/kt_allocator" }
-
-common_rust_c = { path = "./src/common", default-features = false, optional = true }
+common_rust_c = { path = "./src/common", optional = true, default-features = false }
 bitcoin_rust_c = { path = "./src/bitcoin", default-features = false, optional = true }
 wallet_rust_c = { path = "./src/wallet", default-features = false, optional = true }
 test_cmd = { path = "./src/test_cmd", default-features = false, optional = true }
+simulator_rust_c = { path = "./src/simulator", optional = true, default-features = false }
 
 ethereum_rust_c = { path = "./src/ethereum", optional = true }
 solana_rust_c = { path = "./src/solana", optional = true }
@@ -54,12 +26,26 @@ stellar_rust_c = { path = "./src/stellar", optional = true }
 ton_rust_c = { path = "./src/ton", optional = true }
 monero_rust_c = { path = "./src/monero", optional = true }
 
+cty = { workspace = true }
+cstr_core = { workspace = true }
+
 [lib]
 crate-type = ["staticlib"]
 
 [features]
+use-allocator = []
+firmware = ["use-allocator", "multi-coins"]
+firmware-btc-only = ["use-allocator", "btc-only"]
+simulator = [
+    "multi-coins",
+    "sui_rust_c/simulator",
+    "simulator_rust_c/multi-coins",
+]
+simulator_btc_only = ["btc-only", "simulator_rust_c/btc-only"]
+default = ["simulator"]
+
 debug-memory = [
-    "default",
+    "multi-coins",
     "common_rust_c/debug-memory",
     "ethereum_rust_c/debug-memory",
     "bitcoin_rust_c/debug-memory",
@@ -76,10 +62,7 @@ debug-memory = [
     "ton_rust_c/debug-memory",
     "monero_rust_c/debug-memory",
 ]
-simulator = ["multi-coins", "no-allocator", "sui_rust_c/simulator"]
-simulator_btc_only = ["btc-only", "no-allocator"]
-no-allocator = []
-default = ["multi-coins"]
+
 multi-coins = [
     "common_rust_c/multi-coins",
     "bitcoin_rust_c/multi-coins",
@@ -108,9 +91,3 @@ btc-only = [
 test_feature = []
 [dev-dependencies]
 keystore = { path = "../keystore" }
-
-[patch.crates-io.bitcoin]
-git = "https://github.com/KeystoneHQ/rust-bitcoin.git"
-tag = "v0.31.2"
-default-features = false
-features = ["no-std", "secp-recovery"]

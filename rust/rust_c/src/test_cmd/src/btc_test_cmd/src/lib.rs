@@ -3,16 +3,13 @@
 extern crate alloc;
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
-use alloc::vec;
+
 use alloc::vec::Vec;
 
-use cty::c_char;
-use third_party::hex;
-
-use third_party::ur_registry::bytes::Bytes;
-use third_party::ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
-use third_party::ur_registry::crypto_psbt::CryptoPSBT;
-use third_party::ur_registry::traits::RegistryItem;
+use hex;
+use ur_registry::bytes::Bytes;
+use ur_registry::crypto_psbt::CryptoPSBT;
+use ur_registry::traits::RegistryItem;
 
 use common_rust_c::errors::ErrorCodes;
 use common_rust_c::ffi::CSliceFFI;
@@ -22,7 +19,7 @@ use common_rust_c::ur::{
     decode_ur, receive, QRCodeType, UREncodeResult, URParseMultiResult, URParseResult, ViewType,
     FRAGMENT_MAX_LENGTH_DEFAULT,
 };
-use common_rust_c::utils::{convert_c_char, recover_c_char};
+use common_rust_c::utils::convert_c_char;
 
 use wallet_rust_c::get_connect_blue_wallet_ur;
 
@@ -39,7 +36,7 @@ pub extern "C" fn test_get_btc_keystone_bytes() -> *mut URParseResult {
 }
 
 fn get_ur_encode_result_for_test(data: Vec<u8>, length: usize, tag: String) -> *mut UREncodeResult {
-    let result = third_party::ur_parse_lib::keystone_ur_encoder::probe_encode(&data, length, tag);
+    let result = ur_parse_lib::keystone_ur_encoder::probe_encode(&data, length, tag);
     match result {
         Ok(result) => {
             if result.is_multi_part {

@@ -9,16 +9,17 @@ use core::slice;
 use core::str::FromStr;
 
 use app_xrp::errors::XRPError;
+use bitcoin::bip32::{DerivationPath, Xpub};
+use bitcoin::secp256k1;
 use cty::c_char;
-use third_party::bitcoin::bip32::{DerivationPath, Xpub};
-use third_party::serde_json::Value;
-use third_party::ur_registry::bytes::Bytes;
-use third_party::ur_registry::pb;
-use third_party::ur_registry::pb::protoc::base::Content::ColdVersion;
-use third_party::ur_registry::pb::protoc::payload::Content;
-use third_party::ur_registry::pb::protoc::sign_transaction::Transaction::XrpTx;
-use third_party::ur_registry::traits::RegistryItem;
-use third_party::{hex, secp256k1};
+use hex;
+use serde_json::Value;
+use ur_registry::bytes::Bytes;
+use ur_registry::pb;
+use ur_registry::pb::protoc::base::Content::ColdVersion;
+use ur_registry::pb::protoc::payload::Content;
+use ur_registry::pb::protoc::sign_transaction::Transaction::XrpTx;
+use ur_registry::traits::RegistryItem;
 
 use common_rust_c::errors::{ErrorCodes, KeystoneError, RustCError};
 use common_rust_c::extract_ptr_with_type;
@@ -137,7 +138,7 @@ pub extern "C" fn xrp_sign_tx_bytes(
         xrp_tx.tag
     );
 
-    let v: Value = third_party::serde_json::from_str(tx_str.as_str()).unwrap();
+    let v: Value = serde_json::from_str(tx_str.as_str()).unwrap();
     let input_bytes = v.to_string().into_bytes();
 
     let sign_result = app_xrp::sign_tx(input_bytes.as_slice(), &hd_path, seed);
@@ -145,35 +146,32 @@ pub extern "C" fn xrp_sign_tx_bytes(
     let raw_tx = sign_result.unwrap();
     let raw_tx_hex = hex::encode(raw_tx);
     // generate a qr code
-    let sign_tx_result = third_party::ur_registry::pb::protoc::SignTransactionResult {
+    let sign_tx_result = ur_registry::pb::protoc::SignTransactionResult {
         sign_id: sign_tx.sign_id,
         tx_id: format!("{}", tx_hash.to_uppercase()),
         raw_tx: format!("{}", raw_tx_hex.clone()),
     };
-    let content =
-        third_party::ur_registry::pb::protoc::payload::Content::SignTxResult(sign_tx_result);
-    let payload = third_party::ur_registry::pb::protoc::Payload {
-        ///  type is third_party::ur_registry::pb::protoc::payload::Type::SignTxResult
+    let content = ur_registry::pb::protoc::payload::Content::SignTxResult(sign_tx_result);
+    let payload = ur_registry::pb::protoc::Payload {
+        // type is ur_registry::pb::protoc::payload::Type::SignTxResult
         r#type: 9,
         xfp: hex::encode(mfp),
         content: Some(content),
     };
-    let base = third_party::ur_registry::pb::protoc::Base {
+    let base = ur_registry::pb::protoc::Base {
         version: 1,
         description: "keystone qrcode".to_string(),
         data: Some(payload),
         device_type: "keystone Pro".to_string(),
         content: Some(ColdVersion(31206)),
     };
-    let base_vec = third_party::ur_registry::pb::protobuf_parser::serialize_protobuf(base);
+    let base_vec = ur_registry::pb::protobuf_parser::serialize_protobuf(base);
     // zip data can reduce the size of the data
     let zip_data = pb::protobuf_parser::zip(&base_vec).unwrap();
     // data --> protobuf --> zip protobuf data --> cbor bytes data
     UREncodeResult::encode(
-        third_party::ur_registry::bytes::Bytes::new(zip_data)
-            .try_into()
-            .unwrap(),
-        third_party::ur_registry::bytes::Bytes::get_registry_type().get_type(),
+        ur_registry::bytes::Bytes::new(zip_data).try_into().unwrap(),
+        ur_registry::bytes::Bytes::get_registry_type().get_type(),
         FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
     )
     .c_ptr()

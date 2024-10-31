@@ -1,12 +1,12 @@
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use third_party::bitcoin::bip32::{ChildNumber, DerivationPath};
-use third_party::hex;
-use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
-use third_party::ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
-use third_party::ur_registry::error::{URError, URResult};
-use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use bitcoin::bip32::{ChildNumber, DerivationPath};
+use hex;
+use ur_registry::crypto_hd_key::CryptoHDKey;
+use ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
+use ur_registry::error::{URError, URResult};
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 
 pub const DEVICE_TYPE: &str = "keystone 3";
 
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn test_generate_crypto_multi_accounts_sync_ur() {
-        let mut master_fingerprint = [0u8; 4];
+        let master_fingerprint = [0u8; 4];
         let public_keys = BTreeMap::new();
         let result =
             generate_crypto_multi_accounts_sync_ur(&master_fingerprint, public_keys, "SUI");

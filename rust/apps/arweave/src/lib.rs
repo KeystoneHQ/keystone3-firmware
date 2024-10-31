@@ -21,15 +21,15 @@ use aes::cipher::block_padding::Pkcs7;
 use aes::cipher::{generic_array::GenericArray, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use base64;
 use data_item::DataItem;
-use keystore::algorithms::rsa::{get_rsa_secret_from_seed, sign_message};
+use hex;
+use keystore::algorithms::rsa::get_rsa_secret_from_seed;
+use rsa::{BigUint, RsaPrivateKey};
+use serde_json;
+use serde_json::{json, Value};
 use sha2;
 use sha2::Digest;
-use third_party::base64;
-use third_party::hex;
-use third_party::rsa::{BigUint, RsaPrivateKey};
-use third_party::serde_json;
-use third_party::serde_json::{json, Value};
 use transaction::{Base64, Transaction};
 
 type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
@@ -168,7 +168,7 @@ pub fn parse_data_item(serial: &[u8]) -> Result<DataItem> {
 mod tests {
     use super::*;
     use alloc::borrow::ToOwned;
-    use third_party::{hex, rsa::PublicKeyParts};
+    use {hex, rsa::PublicKeyParts};
 
     #[test]
     fn test_generate_address() {

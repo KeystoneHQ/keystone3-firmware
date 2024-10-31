@@ -9,8 +9,8 @@ use alloc::string::ToString;
 use alloc::vec;
 use alloc::vec::Vec;
 use core::{fmt, iter::Peekable, str::CharIndices};
-use third_party::thiserror;
-use third_party::thiserror::Error;
+use thiserror;
+use thiserror::Error;
 use unicode_xid::UnicodeXID;
 
 pub type Spanned<Token, Loc, Error> = Result<(Loc, Token, Loc), Error>;

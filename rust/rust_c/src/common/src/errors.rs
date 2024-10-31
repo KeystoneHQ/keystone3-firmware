@@ -26,9 +26,9 @@ use app_tron::errors::TronError;
 #[cfg(feature = "multi-coins")]
 use app_xrp::errors::XRPError;
 use keystore::errors::KeystoreError;
-use third_party::thiserror;
-use third_party::thiserror::Error;
-use third_party::ur_registry::error::URError;
+use thiserror;
+use thiserror::Error;
+use ur_registry::error::URError;
 
 #[derive(Debug, Clone)]
 #[repr(C)]

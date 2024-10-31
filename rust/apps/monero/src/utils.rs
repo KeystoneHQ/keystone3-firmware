@@ -6,11 +6,11 @@ use crate::key::PublicKey;
 use chacha20::{ChaCha20Legacy, ChaCha20LegacyCore, ChaChaCore};
 use chacha20::cipher::{KeyIvInit, StreamCipher, StreamCipherSeek, generic_array::GenericArray};
 use cuprate_cryptonight::cryptonight_hash_v0;
-use third_party::hex;
-use third_party::cryptoxide::digest::Digest;
-use third_party::cryptoxide::sha3::Keccak256;
-use third_party::cryptoxide::hashing;
-use third_party::cryptoxide::ripemd160::Ripemd160;
+use hex;
+use cryptoxide::digest::Digest;
+use cryptoxide::sha3::Keccak256;
+use cryptoxide::hashing;
+use cryptoxide::ripemd160::Ripemd160;
 
 pub const OUTPUT_EXPORT_MAGIC: &str = "Monero output export\x04";
 pub const KEY_IMAGE_EXPORT_MAGIC: &str = "Monero key image export\x03";

@@ -5,9 +5,9 @@ use alloc::string::ToString;
 use core::slice;
 
 use app_wallets::thor_wallet::generate_crypto_multi_accounts;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
-use third_party::ur_registry::traits::RegistryItem;
+use ur_registry::error::URError;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::traits::RegistryItem;
 
 use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::ExtendedPublicKey;
@@ -44,7 +44,7 @@ pub extern "C" fn get_connect_thor_wallet_ur(
         let key3 = keys.get(2);
         let key4 = keys.get(3);
         let key5 = keys.get(4);
-        return if let (Some(k1), Some(k2), Some(k3), Some(k4), Some(k5)) =
+        return if let (Some(_k1), Some(_k2), Some(_k3), Some(_k4), Some(_k5)) =
             (key1, key2, key3, key4, key5)
         {
             let mfp = match <&[u8; 4]>::try_from(mfp) {

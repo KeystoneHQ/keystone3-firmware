@@ -6,10 +6,11 @@ use bitcoin::secp256k1::{ecdsa, SecretKey};
 use core::str::FromStr;
 use secp256k1::{ecdh::SharedSecret, PublicKey, Secp256k1};
 
-use third_party::bitcoin::bip32::{DerivationPath, Fingerprint, Xpriv, Xpub};
-use third_party::bitcoin::Network;
-use third_party::secp256k1::Message;
-use third_party::{bitcoin, secp256k1};
+use bitcoin;
+use bitcoin::bip32::{DerivationPath, Fingerprint, Xpriv, Xpub};
+use bitcoin::secp256k1;
+use bitcoin::Network;
+use secp256k1::Message;
 
 use crate::algorithms::utils::normalize_path;
 
@@ -130,9 +131,9 @@ mod tests {
     use crate::algorithms::crypto::hmac_sha512;
     use crate::algorithms::secp256k1::derive_public_key;
     use alloc::string::{String, ToString};
+    use hex;
+    use hex::ToHex;
     use secp256k1::hashes;
-    use third_party::hex;
-    use third_party::hex::ToHex;
 
     use super::*;
 

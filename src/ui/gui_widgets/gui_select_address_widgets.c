@@ -189,7 +189,6 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
 
 static void JumpToAccountHandler(lv_event_t *e)
 {
-    lv_obj_t * parent = g_standardJumpButtonWidgets.tileSwitchAccount;
     lv_obj_t *cont, *label, *line, *closeBtn;
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     g_standardJumpButtonWidgets.g_inputAccountValid = false;

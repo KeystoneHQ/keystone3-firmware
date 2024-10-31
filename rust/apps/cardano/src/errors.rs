@@ -1,8 +1,8 @@
 use alloc::string::{String, ToString};
 use cardano_serialization_lib::error::DeserializeError;
-use third_party::ed25519_bip32_core::DerivationError;
-use third_party::thiserror;
-use third_party::thiserror::Error;
+use ed25519_bip32_core::DerivationError;
+use thiserror;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum CardanoError {

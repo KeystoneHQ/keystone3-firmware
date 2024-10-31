@@ -1,7 +1,7 @@
 use crate::errors::{Result, SolanaError};
 use alloc::format;
 use alloc::string::String;
-use third_party::base58;
+use bitcoin::base58;
 
 pub fn get_address(pub_key: &String) -> Result<String> {
     let pubkey = hex::decode(pub_key)?;

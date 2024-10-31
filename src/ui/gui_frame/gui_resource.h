@@ -54,6 +54,7 @@ LV_IMG_DECLARE(imgWarn);
 LV_IMG_DECLARE(imgSuccess);
 LV_IMG_DECLARE(imgUnitConversion);
 LV_IMG_DECLARE(imgConfirmSlider);
+LV_IMG_DECLARE(imgDenySign);
 LV_IMG_DECLARE(imgScan);
 LV_IMG_DECLARE(imgScan48);
 LV_IMG_DECLARE(imgLTCorner);
@@ -268,6 +269,7 @@ LV_IMG_DECLARE(walletBegin);
 LV_IMG_DECLARE(walletBitget);
 LV_IMG_DECLARE(walletMintScan);
 LV_IMG_DECLARE(walletHelium);
+LV_IMG_DECLARE(walletSuiet);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
@@ -304,6 +306,7 @@ LV_IMG_DECLARE(walletListBegin);
 LV_IMG_DECLARE(walletListBitget);
 LV_IMG_DECLARE(walletListMintScan);
 LV_IMG_DECLARE(walletListHelium);
+LV_IMG_DECLARE(walletListSuiet);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

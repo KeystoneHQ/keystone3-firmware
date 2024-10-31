@@ -1,7 +1,4 @@
-use alloc::{
-    string::String,
-    vec::{self, Vec},
-};
+use alloc::{string::String, vec::Vec};
 use app_utils::impl_public_struct;
 
 use crate::{
@@ -80,7 +77,7 @@ impl TryFrom<DataItem> for AOTransferTransaction {
 
 #[cfg(test)]
 mod tests {
-    use third_party::hex;
+    use hex;
 
     use crate::data_item::DataItem;
 

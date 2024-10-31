@@ -1,9 +1,9 @@
 use alloc::format;
 use alloc::string::{String, ToString};
+use bitcoin::base58::Error as Base58Error;
 use keystore::errors::KeystoreError;
-use third_party::bitcoin::base58::Error as Base58Error;
-use third_party::thiserror;
-use third_party::thiserror::Error;
+use thiserror;
+use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
 pub enum TronError {

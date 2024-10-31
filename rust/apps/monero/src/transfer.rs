@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 use crate::key::KeyPair;
 use crate::utils::PUBKEY_LEH;
-use third_party::hex;
+use hex;
 
 #[cfg(test)]
 mod tests {

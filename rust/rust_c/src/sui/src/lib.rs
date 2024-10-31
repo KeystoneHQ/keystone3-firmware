@@ -18,9 +18,9 @@ use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use core::slice;
 use cty::c_char;
-use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
-use third_party::ur_registry::sui::sui_signature::SuiSignature;
-use third_party::ur_registry::traits::RegistryItem;
+use ur_registry::sui::sui_sign_request::SuiSignRequest;
+use ur_registry::sui::sui_signature::SuiSignature;
+use ur_registry::traits::RegistryItem;
 
 fn get_public_key(seed: &[u8], path: &String) -> Result<Vec<u8>, SuiError> {
     let path = normalize_path(path);

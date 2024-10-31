@@ -3,7 +3,7 @@
 
 use alloc::{str::FromStr, string::String, vec::Vec};
 use serde::{Deserialize, Serialize};
-use third_party::{bcs, hex};
+use {bcs, hex};
 
 use crate::errors::{Result, SuiError};
 

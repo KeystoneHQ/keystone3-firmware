@@ -6,7 +6,7 @@ use core::ptr::null_mut;
 use app_solana::parser::overview::{ProgramOverviewGeneral, SolanaOverview};
 use app_solana::parser::structs::{ParsedSolanaTx, SolanaTxDisplayType};
 use app_solana::structs::SolanaMessage;
-use third_party::itertools::Itertools;
+use itertools::Itertools;
 
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
@@ -438,7 +438,7 @@ impl From<&ParsedSolanaTx> for DisplaySolanaTxOverview {
             SolanaTxDisplayType::SquadsV4 => {
                 if let SolanaOverview::SquadsV4Proposal(overview) = &value.overview {
                     let display_type = convert_c_char("squads_proposal".to_string());
-                    let mut squads_proposal = VecFFI::from(
+                    let squads_proposal = VecFFI::from(
                         overview
                             .iter()
                             .map(|v| DisplaySolanaTxProposalOverview {

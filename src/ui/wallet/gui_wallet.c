@@ -7,6 +7,7 @@
 #include "user_memory.h"
 #include "gui_chain.h"
 #include "presetting.h"
+#include "version.h"
 
 static UREncodeResult *g_urEncode = NULL;
 
@@ -147,34 +148,52 @@ static UREncodeResult *get_unlimited_connect_metamask_ur(PtrBytes master_fingerp
 
 static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType accountType, MetamaskUrGetter func)
 {
+    if (func == NULL) {
+        return NULL;
+    }
+
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    ExtendedPublicKey keys[10];
+    if (public_keys == NULL) {
+        return NULL;
+    }
+
+    ExtendedPublicKey keys[10] = {0};
     public_keys->data = keys;
 
-    if (accountType == Bip44Standard) {
+    switch (accountType) {
+    case Bip44Standard:
         public_keys->size = 1;
         keys[0].path = "";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
-    } else if (accountType == LedgerLive) {
+        break;
+    case LedgerLive:
         public_keys->size = 10;
         for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
             keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = "";
             keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
         }
-    } else if (accountType == LedgerLegacy) {
+        break;
+    case LedgerLegacy:
         public_keys->size = 1;
         keys[0].path = "";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY);
+        break;
+    default:
+        SRAM_FREE(public_keys);
+        return NULL;
     }
 
     g_urEncode = func(mfp, sizeof(mfp), accountType, public_keys);
-    CHECK_CHAIN_PRINT(g_urEncode);
+    if (g_urEncode == NULL) {
+        SRAM_FREE(public_keys);
+        return NULL;
+    }
+
     SRAM_FREE(public_keys);
     return g_urEncode;
 }
-
 // copy from gui_btc, need to use real data
 UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
 {
@@ -337,7 +356,9 @@ UREncodeResult *GuiGetADADataByIndex(char *walletName)
     CSliceFFI_ExtendedPublicKey keys;
     keys.data = xpubs;
     keys.size = 1;
-    return generate_key_derivation_ur(mfp, 4, &keys);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+    return generate_key_derivation_ur(mfp, 4, &keys, firmwareVersion);
 }
 UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index)
 {
@@ -447,7 +468,6 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
     SRAM_FREE(public_keys);
     return g_urEncode;
 }
-#endif
 
 UREncodeResult *GuiGetBitgetWalletData(void)
 {
@@ -456,9 +476,9 @@ UREncodeResult *GuiGetBitgetWalletData(void)
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
     //   btc 4
     // + eth 10
-    ExtendedPublicKey keys[14];
+    ExtendedPublicKey keys[15];
     public_keys->data = keys;
-    public_keys->size = 14;
+    public_keys->size = 15;
     for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
         keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(BUFFER_SIZE_64);
         snprintf_s(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, BUFFER_SIZE_64, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
@@ -477,6 +497,9 @@ UREncodeResult *GuiGetBitgetWalletData(void)
     keys[13].path = "m/86'/0'/0'";
     keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
 
+    keys[14].path = GetXPubPath(XPUB_TYPE_TON_BIP39);
+    keys[14].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
+
     char serialNumber[256];
     GetSerialNumber(serialNumber);
     char firmwareVersion[12];
@@ -487,7 +510,7 @@ UREncodeResult *GuiGetBitgetWalletData(void)
     return g_urEncode;
 }
 
-
+#endif
 
 UREncodeResult *GuiGetOkxWalletData(void)
 {

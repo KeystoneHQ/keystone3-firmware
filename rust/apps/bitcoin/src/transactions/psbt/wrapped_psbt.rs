@@ -1,11 +1,11 @@
 use crate::errors::{BitcoinError, Result};
 use alloc::format;
-use third_party::bitcoin::opcodes::all::OP_PUSHNUM_1;
-use third_party::bitcoin::script::Instruction;
-use third_party::itertools::Itertools;
+
+use bitcoin::script::Instruction;
+use itertools::Itertools;
 
 use crate::addresses::address::Address;
-use crate::network;
+use crate::network::{self, CustomNewNetwork};
 use crate::transactions::parsed_tx::{ParseContext, ParsedInput, ParsedOutput, TxParser};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
@@ -17,22 +17,21 @@ use keystore::algorithms::secp256k1::derive_public_key;
 use crate::multi_sig::address::calculate_multi_address;
 use crate::multi_sig::wallet::calculate_multi_sig_verify_code;
 use crate::multi_sig::MultiSigFormat;
-use third_party::bitcoin::bip32::{
-    self, ChildNumber, DerivationPath, Fingerprint, KeySource, Xpub,
-};
-use third_party::bitcoin::psbt::{GetKey, KeyRequest, Psbt};
-use third_party::bitcoin::psbt::{Input, Output};
-use third_party::bitcoin::taproot::TapLeafHash;
-use third_party::bitcoin::{script, Network, PrivateKey, Script};
-use third_party::bitcoin::{PublicKey, ScriptBuf, TxOut};
-use third_party::secp256k1::{Secp256k1, Signing, XOnlyPublicKey};
-use third_party::{bitcoin, secp256k1};
+use bitcoin::bip32::{ChildNumber, DerivationPath, Fingerprint, KeySource, Xpub};
+use bitcoin::psbt::{GetKey, KeyRequest, Psbt};
+use bitcoin::psbt::{Input, Output};
+use bitcoin::secp256k1;
+use bitcoin::secp256k1::{Secp256k1, Signing, XOnlyPublicKey};
+use bitcoin::taproot::TapLeafHash;
+use bitcoin::{Network, PrivateKey};
+use bitcoin::{PublicKey, ScriptBuf, TxOut};
 
 pub struct WrappedPsbt {
     pub(crate) psbt: Psbt,
 }
 
 //TODO: use it later
+#[allow(unused)]
 pub enum SignStatus {
     Completed,
     PartlySigned,
@@ -81,7 +80,7 @@ impl WrappedPsbt {
             seed: seed.to_vec(),
         };
         self.psbt
-            .sign(&k, &third_party::secp256k1::Secp256k1::new())
+            .sign(&k, &secp256k1::Secp256k1::new())
             .map_err(|_| BitcoinError::SignFailure(format!("unknown error")))?;
         Ok(self.psbt.clone())
     }
@@ -227,11 +226,11 @@ impl WrappedPsbt {
         )));
     }
 
-    pub fn check_my_input_script(&self, input: &Input, index: usize) -> Result<()> {
+    pub fn check_my_input_script(&self, _input: &Input, _index: usize) -> Result<()> {
         Ok(())
     }
 
-    pub fn check_my_input_derivation(&self, input: &Input, index: usize) -> Result<()> {
+    pub fn check_my_input_derivation(&self, _input: &Input, _index: usize) -> Result<()> {
         Ok(())
     }
 
@@ -413,7 +412,7 @@ impl WrappedPsbt {
         if input.bip32_derivation.len() > 1 {
             let (cur, req) = self.get_input_sign_status(input);
             //already collected needed signatures
-            if (cur >= req) {
+            if cur >= req {
                 return Ok(false);
             }
             // or I have signed this input
@@ -509,7 +508,7 @@ impl WrappedPsbt {
         let (threshold, total) = self.get_multi_sig_input_threshold_and_total(script)?;
 
         let network = if let Some((xpub, _)) = self.psbt.xpub.first_key_value() {
-            if xpub.network == third_party::bitcoin::network::Network::Bitcoin {
+            if xpub.network == bitcoin::network::Network::Bitcoin {
                 network::Network::Bitcoin
             } else {
                 network::Network::BitcoinTestnet
@@ -761,7 +760,7 @@ impl WrappedPsbt {
     }
 
     fn judge_external_key(child: String, parent: String) -> bool {
-        let mut sub_path = &child[parent.len()..];
+        let sub_path = &child[parent.len()..];
         fn judge(v: &mut Chars) -> bool {
             match v.next() {
                 Some('/') => judge(v),
@@ -820,6 +819,21 @@ impl WrappedPsbt {
         }
         return false;
     }
+
+    // use global unknown for some custom usage
+    // current use it for identify whether it is the fractal bitcoin tx
+    pub fn identify_fractal_bitcoin_tx(&self) -> Option<CustomNewNetwork> {
+        self.psbt.unknown.iter().find_map(|(item_key, item_value)| {
+            (String::from_utf8(item_key.key.clone()).ok()? == "chain")
+                .then(|| String::from_utf8(item_value.clone()).ok())
+                .flatten()
+                .and_then(|value| match value.as_str() {
+                    "fb" => Some(CustomNewNetwork::FractalBitcoin),
+                    "tfb" => Some(CustomNewNetwork::FractalBitcoinTest),
+                    _ => None,
+                })
+        })
+    }
 }
 
 fn derive_public_key_by_path(
@@ -851,9 +865,9 @@ mod tests {
     use core::str::FromStr;
 
     use crate::TxChecker;
-    use third_party::bitcoin_hashes::hex::FromHex;
-    use third_party::either::Left;
-    use third_party::hex::{self, ToHex};
+    use bitcoin_hashes::hex::FromHex;
+    use either::Left;
+    use hex::{self, ToHex};
 
     use super::*;
 
@@ -864,11 +878,36 @@ mod tests {
             let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
             let mut wrapper = WrappedPsbt { psbt };
             let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
-            let master_fingerprint =
-                third_party::bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
+            let master_fingerprint = bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
             let result = wrapper.sign(&seed, master_fingerprint).unwrap();
             let psbt_result = result.serialize().encode_hex::<String>();
             assert_eq!("70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220202e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c319483045022100e2b9a7963bed429203bbd73e5ea000bfe58e3fc46ef8c1939e8cf8d1cf8460810220587ba791fc2a42445db70e2b3373493a19e6d5c47a2af0447d811ff479721b0001220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000", psbt_result);
+        }
+    }
+
+    #[test]
+    fn test_identify_fractal_bitcoin_tx() {
+        {
+            // no value in global
+            let psbt_hex = "70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let wrapper = WrappedPsbt { psbt };
+            let result = wrapper.identify_fractal_bitcoin_tx();
+            assert_eq!(result.is_none(), true);
+
+            // globalkey: ff chain fb (utf-8)
+            let psbt_hex = "70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed00000000006ff636861696e0266620001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let wrapper = WrappedPsbt { psbt };
+            let result = wrapper.identify_fractal_bitcoin_tx().unwrap();
+            assert_eq!(result, CustomNewNetwork::FractalBitcoin);
+
+            // globalkey: ff chain tfb (utf-8)
+            let psbt_hex = "70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed00000000006ff636861696e037466620001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000";
+            let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+            let wrapper = WrappedPsbt { psbt };
+            let result = wrapper.identify_fractal_bitcoin_tx().unwrap();
+            assert_eq!(result, CustomNewNetwork::FractalBitcoinTest)
         }
     }
 
@@ -879,8 +918,7 @@ mod tests {
             let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
             let mut wrapper = WrappedPsbt { psbt };
             let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
-            let master_fingerprint =
-                third_party::bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
+            let master_fingerprint = bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
             let result = wrapper.sign(&seed, master_fingerprint).unwrap();
             let psbt_result = result.serialize().encode_hex::<String>();
             assert_eq!("70736274ff01005e02000000013aee4d6b51da574900e56d173041115bd1e1d01d4697a845784cf716a10c98060000000000ffffffff0100190000000000002251202258f2d4637b2ca3fd27614868b33dee1a242b42582d5474f51730005fa99ce8000000000001012bbc1900000000000022512022f3956cc27a6a9b0e0003a0afc113b04f31b95d5cad222a65476e8440371bd10103040000000001134092864dc9e56b6260ecbd54ec16b94bb597a2e6be7cca0de89d75e17921e0e1528cba32dd04217175c237e1835b5db1c8b384401718514f9443dce933c6ba9c872116b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d190073c5da0a5600008001000080000000800000000002000000011720b68df382cad577d8304d5a8e640c3cb42d77c10016ab754caa4d6e68b6cb296d011820c913dc9a8009a074e7bbc493b9d8b7e741ba137f725f99d44fbce99300b2bb0a0000", psbt_result);

@@ -13,18 +13,18 @@ use app_cardano::structs::{CardanoCertKey, CardanoUtxo, ParseContext};
 use app_cardano::transaction::calc_icarus_master_key;
 use core::str::FromStr;
 use cty::c_char;
-use third_party::bitcoin::bip32::DerivationPath;
-use third_party::ed25519_bip32_core::XPrv;
-use third_party::hex;
+use bitcoin::bip32::DerivationPath;
+use ed25519_bip32_core::XPrv;
+use hex;
 
-use third_party::ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
-use third_party::ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
-use third_party::ur_registry::cardano::cardano_delegation::CardanoDelegation;
-use third_party::ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
-use third_party::ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
-use third_party::ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
-use third_party::ur_registry::cardano::cardano_signature::CardanoSignature;
-use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
+use ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
+use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
+
+use ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
+use ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
+use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+use ur_registry::cardano::cardano_signature::CardanoSignature;
+use ur_registry::crypto_key_path::CryptoKeyPath;
 
 use crate::structs::{DisplayCardanoCatalyst, DisplayCardanoSignData, DisplayCardanoTx};
 use common_rust_c::errors::{RustCError, R};
@@ -33,7 +33,7 @@ use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
-use third_party::ur_registry::registry_types::{
+use ur_registry::registry_types::{
     CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE, CARDANO_SIGNATURE, CARDANO_SIGN_DATA_SIGNATURE,
 };
 
@@ -583,7 +583,7 @@ fn get_cardano_derivation_path(path: CryptoKeyPath) -> R<CryptoKeyPath> {
 mod tests {
     use super::*;
     use alloc::vec;
-    use third_party::ur_registry::crypto_key_path::PathComponent;
+    use ur_registry::crypto_key_path::PathComponent;
 
     #[test]
     fn test_get_cardano_derivation_path() {

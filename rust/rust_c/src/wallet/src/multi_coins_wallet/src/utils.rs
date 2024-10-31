@@ -6,7 +6,7 @@ use app_utils::normalize_path;
 use common_rust_c::errors::RustCError;
 use common_rust_c::structs::ExtendedPublicKey;
 use common_rust_c::utils::recover_c_char;
-use third_party::{
+use {
     bitcoin::bip32::{DerivationPath, Xpub},
     hex,
 };

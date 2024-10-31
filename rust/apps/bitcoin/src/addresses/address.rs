@@ -12,18 +12,18 @@ use crate::addresses::encoding::{
 use crate::errors::BitcoinError;
 use crate::network::Network;
 use alloc::string::ToString;
+use bech32;
+use bitcoin::address::Payload;
+use bitcoin::blockdata::script;
+use bitcoin::script::PushBytesBuf;
+use bitcoin::secp256k1::{Secp256k1, XOnlyPublicKey};
+use bitcoin::PublicKey;
+use bitcoin::{base58, TapNodeHash};
+use bitcoin::{PubkeyHash, ScriptHash};
+use bitcoin::{WitnessProgram, WitnessVersion};
+use bitcoin_hashes::Hash;
 use core::fmt;
 use core::str::FromStr;
-use third_party::bech32;
-use third_party::bitcoin::address::Payload;
-use third_party::bitcoin::blockdata::script;
-use third_party::bitcoin::script::PushBytesBuf;
-use third_party::bitcoin::PublicKey;
-use third_party::bitcoin::{base58, TapNodeHash};
-use third_party::bitcoin::{PubkeyHash, ScriptHash};
-use third_party::bitcoin::{WitnessProgram, WitnessVersion};
-use third_party::bitcoin_hashes::Hash;
-use third_party::secp256k1::{Secp256k1, XOnlyPublicKey};
 
 #[derive(Debug)]
 pub struct Address {
@@ -307,6 +307,8 @@ impl FromStr for Address {
 
 #[cfg(test)]
 mod tests {
+    use crate::network::NetworkT;
+
     use super::*;
 
     #[test]

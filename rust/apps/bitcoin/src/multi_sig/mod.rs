@@ -6,23 +6,21 @@ use crate::BitcoinError;
 use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
+use bitcoin::bip32;
+use bitcoin::bip32::Xpub;
+use bitcoin::hex::DisplayHex;
 use core::fmt;
 use core::str::FromStr;
-use third_party::bitcoin::bip32;
-use third_party::bitcoin::bip32::Xpub;
-use third_party::bitcoin::hex::DisplayHex;
-use third_party::serde_json;
-use third_party::serde_json::Value;
-use third_party::ur_registry::bytes::Bytes;
-use third_party::ur_registry::crypto_account::CryptoAccount;
-use third_party::ur_registry::crypto_coin_info::{
-    CoinType, CryptoCoinInfo, Network as NetworkInner,
-};
-use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
-use third_party::ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
-use third_party::ur_registry::crypto_output::CryptoOutput;
-use third_party::ur_registry::error::{URError, URResult};
-use third_party::ur_registry::script_expression::ScriptExpression;
+use serde_json;
+use serde_json::Value;
+use ur_registry::bytes::Bytes;
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::crypto_coin_info::{CoinType, CryptoCoinInfo, Network as NetworkInner};
+use ur_registry::crypto_hd_key::CryptoHDKey;
+use ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
+use ur_registry::crypto_output::CryptoOutput;
+use ur_registry::error::{URError, URResult};
+use ur_registry::script_expression::ScriptExpression;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Network {
@@ -496,6 +494,7 @@ fn get_path_component(index: Option<u32>, hardened: bool) -> URResult<PathCompon
     PathComponent::new(index, hardened).map_err(|e| URError::CborEncodeError(e))
 }
 
+#[allow(unused)]
 fn is_valid_multi_path(path: &str) -> bool {
     const VALID_PATHS: [&str; 5] = [
         MULTI_P2SH_PATH,
@@ -553,10 +552,10 @@ mod tests {
         extract_xpub_info_from_crypto_account, extract_xpub_info_from_str, MultiSigFormat,
         MultiSigType, Network,
     };
-    use third_party::hex;
-    use third_party::hex::FromHex;
-    use third_party::ur_registry::bytes::Bytes;
-    use third_party::ur_registry::crypto_account::CryptoAccount;
+    use hex;
+    use hex::FromHex;
+    use ur_registry::bytes::Bytes;
+    use ur_registry::crypto_account::CryptoAccount;
 
     #[test]
     fn test_generate_multi_sig_crypto_account() {

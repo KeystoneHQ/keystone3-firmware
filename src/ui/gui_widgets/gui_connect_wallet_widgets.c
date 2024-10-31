@@ -51,6 +51,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_VESPR, &walletListVespr, true},
     {WALLET_LIST_BEGIN, &walletListBegin, true},
     {WALLET_LIST_UNISAT, &walletListUniSat, true},
+    {WALLET_LIST_SUIET, &walletListSuiet, true},
     {WALLET_LIST_NIGHTLY, &walletListNightly, true},
     // {WALLET_LIST_YOROI, &walletListYoroi, true},
     {WALLET_LIST_TYPHON, &walletListTyphon, true},
@@ -122,7 +123,7 @@ static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
 };
 
 static const lv_img_dsc_t *g_bitgetWalletCoinArray[] = {
-    &coinBtc, &coinEth
+    &coinBtc, &coinEth, &coinTon
 };
 
 static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {
@@ -1293,6 +1294,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetNightlyData;
         AddNightlyCoins();
         break;
+    case WALLET_LIST_SUIET:
+        func = GuiGetNightlyData;
+        AddNightlyCoins();
+        break;
     case WALLET_LIST_FEWCHA:
         if (!g_isCoinReselected) {
             initFewchaCoinsConfig();
@@ -1787,9 +1792,23 @@ static void ShowEgAddressCont(lv_obj_t *egCont)
     label = GuiCreateIllustrateLabel(egCont, "");
     lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     g_egAddress[0] = label;
-    // if current wallet is solana wallet and the current selected index is not root path, then show the second example address
+    // if current wallet is  solana wallet and the current selected index is not root path, then show the second example address
     if ((g_connectWalletTileView.walletIndex == WALLET_LIST_SOLFARE || g_connectWalletTileView.walletIndex == WALLET_LIST_HELIUM) &&
             GetCurrentSelectedIndex() != SOLBip44ROOT) {
+        index = GuiCreateNoticeLabel(egCont, _("1"));
+        lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);
+        lv_obj_update_layout(index);
+        egContHeight = egContHeight + 4 + lv_obj_get_height(index);
+        g_egAddressIndex[1] = index;
+        prevLabel = index;
+
+        label = GuiCreateIllustrateLabel(egCont, "");
+        lv_obj_align_to(label, prevLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+        g_egAddress[1] = label;
+    }
+    // not solana wallet, show the second example address
+    if (g_connectWalletTileView.walletIndex != WALLET_LIST_SOLFARE && g_connectWalletTileView.walletIndex != WALLET_LIST_HELIUM) {
         index = GuiCreateNoticeLabel(egCont, _("1"));
         lv_obj_align_to(index, prevLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_label_set_long_mode(index, LV_LABEL_LONG_WRAP);

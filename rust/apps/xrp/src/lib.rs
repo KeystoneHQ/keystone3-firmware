@@ -11,10 +11,11 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::str::FromStr;
 
-use third_party::bitcoin::bip32::{DerivationPath, Xpub};
-use third_party::secp256k1::Message;
-use third_party::serde_json::{from_slice, Value};
-use third_party::{hex, secp256k1};
+use bitcoin::bip32::{DerivationPath, Xpub};
+use bitcoin::secp256k1;
+use bitcoin::secp256k1::Message;
+use hex;
+use serde_json::{from_slice, Value};
 
 use crate::errors::{XRPError, R};
 use crate::transaction::WrappedTxData;

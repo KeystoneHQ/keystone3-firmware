@@ -1,11 +1,10 @@
 use crate::errors::Result;
 use crate::structs::{TonProof, TonTransaction};
 use crate::utils::sha256;
-use crate::vendor::cell::{ArcCell, BagOfCells};
+use crate::vendor::cell::BagOfCells;
+use alloc::vec;
 use alloc::vec::Vec;
-use alloc::{format, vec};
-use third_party::cryptoxide::ed25519;
-use third_party::hex;
+use cryptoxide::ed25519;
 
 pub fn parse_transaction(serial: &[u8]) -> Result<TonTransaction> {
     TonTransaction::parse_hex(serial)
@@ -47,9 +46,8 @@ pub fn sign_proof(serial: &[u8], sk: [u8; 32]) -> Result<[u8; 64]> {
 mod tests {
     extern crate std;
     use base64::{engine::general_purpose::STANDARD, Engine};
-    use num_traits::sign;
+    use hex;
     use std::println;
-    use third_party::hex;
     use urlencoding;
 
     use crate::{transaction::parse_transaction, vendor::cell::BagOfCells};

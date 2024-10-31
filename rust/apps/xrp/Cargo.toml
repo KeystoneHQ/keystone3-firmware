@@ -6,14 +6,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keystore = { path = "../../keystore", default-features = false }
-third_party = { path = "../../third_party" }
-app_utils = {path="../utils"}
-base-x = {version="0.2.11", default-features= false}
-serde = { version = "1.0.139", default-features = false }
-serde_derive = { version = "1.0.159"}
-rippled_binary_codec = {git="https://github.com/KeystoneHQ/rippled_binary_codec.git", tag="v0.0.8"}
+keystore = { workspace = true, default-features = false }
+app_utils = { workspace = true }
+base-x = { version = "0.2.11", default-features = false }
+serde = { workspace = true, default-features = false }
+serde_derive = { workspace = true }
+rippled_binary_codec = { git = "https://github.com/KeystoneHQ/rippled_binary_codec.git", tag = "v0.0.8" }
 bytes = { version = "1.1.0", default-features = false }
+bitcoin = { workspace = true }
+hex = { workspace = true }
+cryptoxide = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
-keystore = { path = "../../keystore"}
+keystore = { workspace = true }

@@ -2,7 +2,7 @@ use alloc::string::String;
 use alloc::vec::Vec;
 use core::str::FromStr;
 
-use third_party::bitcoin::bip32::{ChildNumber, DerivationPath};
+use bitcoin::bip32::{ChildNumber, DerivationPath};
 
 use crate::algorithms::crypto::hmac_sha512;
 use crate::algorithms::utils::normalize_path;
@@ -46,16 +46,14 @@ pub fn get_private_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
 
 pub fn get_public_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
     let secret_key = get_private_key_by_seed(seed, path)?;
-    let (_, public_key) = third_party::cryptoxide::ed25519::keypair(&secret_key);
+    let (_, public_key) = cryptoxide::ed25519::keypair(&secret_key);
     Ok(public_key)
 }
 
 pub fn sign_message_by_seed(seed: &[u8], path: &String, message: &[u8]) -> Result<[u8; 64]> {
     let secret_key = get_private_key_by_seed(seed, path)?;
-    let (keypair, _) = third_party::cryptoxide::ed25519::keypair(&secret_key);
-    Ok(third_party::cryptoxide::ed25519::signature(
-        message, &keypair,
-    ))
+    let (keypair, _) = cryptoxide::ed25519::keypair(&secret_key);
+    Ok(cryptoxide::ed25519::signature(message, &keypair))
 }
 
 fn get_master_key_by_seed(seed: &[u8]) -> [u8; 64] {
@@ -65,7 +63,7 @@ fn get_master_key_by_seed(seed: &[u8]) -> [u8; 64] {
 #[cfg(test)]
 mod tests {
     use alloc::string::ToString;
-    use third_party::hex;
+    use hex;
 
     use super::*;
 

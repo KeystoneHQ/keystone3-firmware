@@ -18,6 +18,7 @@
 #include "account_manager.h"
 
 static void UsbTask(void *argument);
+void ClearUSBRequestId(void);
 
 static osThreadId_t g_usbTaskHandle;
 static volatile bool g_usbState = false;
@@ -46,7 +47,9 @@ void CloseUsb()
 void OpenUsb()
 {
     PubValueMsg(USB_MSG_INIT, 0);
+#ifndef BTC_ONLY
     ClearUSBRequestId();
+#endif
 }
 
 bool GetUsbState(void)

@@ -16,15 +16,15 @@ use common_rust_c::structs::{
     ExtendedPublicKey, Response, TransactionCheckResult, TransactionParseResult,
 };
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use common_rust_c::utils::{convert_c_char, recover_c_array, recover_c_char};
-use third_party::bitcoin::bip32::{DerivationPath, Xpub};
-use third_party::hex;
-use third_party::ur_registry::crypto_psbt::CryptoPSBT;
-use third_party::ur_registry::traits::RegistryItem;
+use bitcoin::bip32::{DerivationPath, Xpub};
+use hex;
+use ur_registry::crypto_psbt::CryptoPSBT;
+use ur_registry::traits::RegistryItem;
 
 use crate::multi_sig::structs::MultisigSignResult;
-use crate::structs::{DisplayTx, PsbtSignResult};
+use crate::structs::DisplayTx;
 
 #[no_mangle]
 pub extern "C" fn btc_parse_psbt(
@@ -53,18 +53,19 @@ pub extern "C" fn btc_parse_psbt(
 }
 
 #[no_mangle]
-pub extern "C" fn btc_sign_psbt(
+fn btc_sign_psbt_dynamic(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
     master_fingerprint: PtrBytes,
     master_fingerprint_len: u32,
+    fragment_length: usize,
 ) -> *mut UREncodeResult {
     if master_fingerprint_len != 4 {
         return UREncodeResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
         hex::encode(master_fingerprint.to_vec()).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -86,13 +87,49 @@ pub extern "C" fn btc_sign_psbt(
             Ok(data) => UREncodeResult::encode(
                 data,
                 CryptoPSBT::get_registry_type().get_type(),
-                FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                fragment_length.clone(),
             )
             .c_ptr(),
             Err(e) => UREncodeResult::from(e).c_ptr(),
         },
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
+}
+
+#[no_mangle]
+pub extern "C" fn btc_sign_psbt(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    master_fingerprint: PtrBytes,
+    master_fingerprint_len: u32,
+) -> *mut UREncodeResult {
+    btc_sign_psbt_dynamic(
+        ptr,
+        seed,
+        seed_len,
+        master_fingerprint,
+        master_fingerprint_len,
+        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+    )
+}
+
+#[no_mangle]
+pub extern "C" fn btc_sign_psbt_unlimited(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    master_fingerprint: PtrBytes,
+    master_fingerprint_len: u32,
+) -> *mut UREncodeResult {
+    btc_sign_psbt_dynamic(
+        ptr,
+        seed,
+        seed_len,
+        master_fingerprint,
+        master_fingerprint_len,
+        FRAGMENT_UNLIMITED_LENGTH.clone(),
+    )
 }
 
 #[no_mangle]
@@ -114,7 +151,7 @@ pub extern "C" fn btc_sign_multisig_psbt(
         .c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
         hex::encode(master_fingerprint.to_vec()).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -371,7 +408,7 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
         .c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
         hex::encode(master_fingerprint.to_vec()).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -461,7 +498,7 @@ fn parse_psbt(
     multisig_wallet_config: Option<String>,
 ) -> *mut TransactionParseResult<DisplayTx> {
     let master_fingerprint =
-        third_party::bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
+        bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
             .map_err(|_e| RustCError::InvalidMasterFingerprint);
     match master_fingerprint {
         Ok(fp) => {
@@ -511,7 +548,7 @@ fn check_psbt(
     multisig_wallet_config: Option<String>,
 ) -> PtrT<TransactionCheckResult> {
     let master_fingerprint =
-        third_party::bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
+        bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
             .map_err(|_e| RustCError::InvalidMasterFingerprint);
     match master_fingerprint {
         Ok(fp) => {
@@ -552,12 +589,12 @@ fn check_psbt(
 
 //To be optimized, use a more efficient way to determine whether it is base64 encoding.
 fn is_base64_hex(input: &[u8]) -> bool {
-    third_party::base64::decode(input).is_ok()
+    base64::decode(input).is_ok()
 }
 
 fn get_psbt_bytes(psbt_bytes: &[u8]) -> Result<Vec<u8>, RustCError> {
     if is_base64_hex(psbt_bytes) {
-        third_party::base64::decode(psbt_bytes).map_err(|e| RustCError::InvalidData(e.to_string()))
+        base64::decode(psbt_bytes).map_err(|e| RustCError::InvalidData(e.to_string()))
     } else {
         Ok(psbt_bytes.to_vec())
     }

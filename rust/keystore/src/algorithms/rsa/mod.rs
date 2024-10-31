@@ -8,11 +8,11 @@ use rand_core::SeedableRng;
 
 use num_bigint_dig::traits::ModInverse;
 use num_bigint_dig::BigUint;
+use rsa::pss::SigningKey;
+use rsa::signature::{RandomizedDigestSigner, RandomizedSigner, SignatureEncoding};
+use rsa::{rand_core, PublicKeyParts, RsaPrivateKey};
 use sha2;
 use sha2::{Digest, Sha256};
-use third_party::rsa::pss::SigningKey;
-use third_party::rsa::signature::{RandomizedDigestSigner, RandomizedSigner, SignatureEncoding};
-use third_party::rsa::{rand_core, PublicKeyParts, RsaPrivateKey};
 
 pub const MODULUS_LENGTH: usize = 4096;
 pub const PRIME_LENGTH_IN_BYTE: usize = MODULUS_LENGTH / 8 / 2;
@@ -71,8 +71,7 @@ pub fn sign_message(
             let hash = digest.finalize().to_vec();
             let result = signing_key.sign_with_rng(&mut rng, &hash);
             Ok(Vec::from(result.to_bytes()))
-        }
-        _ => Err(KeystoreError::RSASignError),
+        } // _ => Err(KeystoreError::RSASignError),
     }
 }
 
@@ -147,11 +146,11 @@ pub enum SigningOption {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bitcoin::hex::DisplayHex;
+    use hex;
+    use rsa::pkcs1v15::SigningKey;
+    use rsa::signature::{Keypair, RandomizedSigner, SignatureEncoding, Verifier};
     use sha2::Sha256;
-    use third_party::bitcoin::hex::DisplayHex;
-    use third_party::hex;
-    use third_party::rsa::pkcs1v15::SigningKey;
-    use third_party::rsa::signature::{Keypair, RandomizedSigner, SignatureEncoding, Verifier};
 
     #[test]
     fn test_private_key_recover() {

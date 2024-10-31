@@ -1,11 +1,11 @@
 use alloc::string::ToString;
 use app_xrp::address::get_address;
+use hex;
 use keystore::algorithms::secp256k1::derive_public_key;
-use third_party::hex;
-use third_party::serde_json::{json, Value};
-use third_party::ur_registry::bytes::Bytes;
-use third_party::ur_registry::error::URError::UrEncodeError;
-use third_party::ur_registry::error::URResult;
+use serde_json::{json, Value};
+use ur_registry::bytes::Bytes;
+use ur_registry::error::URError::UrEncodeError;
+use ur_registry::error::URResult;
 
 pub fn generate_sync_ur(hd_path: &str, root_x_pub: &str, root_path: &str) -> URResult<Bytes> {
     let root_path = if !root_path.ends_with("/") {

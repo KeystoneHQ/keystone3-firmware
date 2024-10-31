@@ -3,11 +3,11 @@ use crate::utils::pbkdf2_sha512;
 use alloc::string::String;
 use alloc::vec::Vec;
 use core::cmp;
-use third_party::cryptoxide::ed25519;
-use third_party::cryptoxide::hmac::Hmac;
-use third_party::cryptoxide::mac::Mac;
-use third_party::cryptoxide::pbkdf2::pbkdf2;
-use third_party::cryptoxide::sha2::Sha512;
+use cryptoxide::ed25519;
+use cryptoxide::hmac::Hmac;
+use cryptoxide::mac::Mac;
+use cryptoxide::pbkdf2::pbkdf2;
+use cryptoxide::sha2::Sha512;
 
 const PBKDF_ITERATIONS: u32 = 100000;
 
@@ -102,7 +102,7 @@ pub fn ton_master_seed_to_public_key(master_seed: [u8; 64]) -> [u8; 32] {
 mod tests {
     use alloc::{string::ToString, vec};
     use base64::Engine;
-    use third_party::hex;
+    use hex;
 
     use super::*;
     extern crate std;

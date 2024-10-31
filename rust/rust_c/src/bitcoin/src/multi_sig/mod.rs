@@ -1,44 +1,40 @@
 pub mod structs;
 
-use alloc::boxed::Box;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use alloc::{format, slice, vec};
+
 use app_bitcoin::errors::BitcoinError;
 use app_bitcoin::multi_sig::address::create_multi_sig_address_for_wallet;
 use app_bitcoin::multi_sig::wallet::{
-    self, export_wallet_by_ur, generate_config_data, parse_bsms_wallet_config, parse_wallet_config,
-    strict_verify_wallet_config, MultiSigWalletConfig,
+    export_wallet_by_ur, parse_bsms_wallet_config, parse_wallet_config, strict_verify_wallet_config,
 };
 use app_bitcoin::multi_sig::{
-    export_xpub_by_crypto_account, extract_xpub_info_from_bytes,
-    extract_xpub_info_from_crypto_account, extract_xpub_info_from_ur_bytes, MultiSigXPubInfo,
-    Network,
+    export_xpub_by_crypto_account, extract_xpub_info_from_crypto_account,
 };
 use core::str::FromStr;
 use cty::c_char;
-use third_party::bitcoin::psbt;
-use third_party::cryptoxide::hashing::sha256;
-use third_party::hex;
-use third_party::serde_json::Value::String;
-use third_party::ur_registry::bytes::{self, Bytes};
+use structs::{MultiSigFormatType, MultiSigXPubInfoItem};
+
+use cryptoxide::hashing::sha256;
+use hex;
+
+use ur_registry::bytes::Bytes;
 
 use common_rust_c::errors::RustCError;
-use common_rust_c::ffi::{CSliceFFI, VecFFI};
-use common_rust_c::free::Free;
+use common_rust_c::ffi::CSliceFFI;
+
 use common_rust_c::structs::{ExtendedPublicKey, Response, SimpleResponse};
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, ViewType, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_array, recover_c_char};
 
-use crate::multi_sig::structs::{
-    MultiSigFormatType, MultiSigWallet, MultiSigXPubInfoItem, NetworkType,
-};
-use app_bitcoin::multi_sig::MultiSigFormat;
+use crate::multi_sig::structs::{MultiSigWallet, NetworkType};
+
 use common_rust_c::extract_ptr_with_type;
-use third_party::ur_registry::crypto_account::CryptoAccount;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::traits::RegistryItem;
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::error::URError;
+use ur_registry::traits::RegistryItem;
 
 #[no_mangle]
 pub extern "C" fn export_multi_sig_xpub_by_ur(
@@ -119,7 +115,7 @@ pub extern "C" fn export_multi_sig_wallet_by_ur_test(
     }
     unsafe {
         let master_fingerprint = slice::from_raw_parts(master_fingerprint, length as usize);
-        let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+        let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
             hex::encode(master_fingerprint.to_vec()).as_str(),
         )
         .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -201,7 +197,7 @@ pub extern "C" fn export_multi_sig_wallet_by_ur(
     }
     unsafe {
         let master_fingerprint = slice::from_raw_parts(master_fingerprint, length as usize);
-        let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+        let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
             hex::encode(master_fingerprint.to_vec()).as_str(),
         )
         .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -250,7 +246,7 @@ pub extern "C" fn import_multi_sig_wallet_by_ur(
         return Response::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
         hex::encode(master_fingerprint.to_vec()).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -282,7 +278,7 @@ pub extern "C" fn import_multi_sig_wallet_by_file(
         return Response::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
         hex::encode(master_fingerprint.to_vec()).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -315,7 +311,7 @@ pub extern "C" fn generate_address_for_multisig_wallet_config(
         return SimpleResponse::from(RustCError::InvalidMasterFingerprint).simple_c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
         hex::encode(master_fingerprint.to_vec()).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -375,7 +371,7 @@ pub extern "C" fn parse_and_verify_multisig_config(
     }
     let seed = unsafe { core::slice::from_raw_parts(seed, seed_len as usize) };
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match third_party::bitcoin::bip32::Fingerprint::from_str(
+    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
         hex::encode(master_fingerprint.to_vec()).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)

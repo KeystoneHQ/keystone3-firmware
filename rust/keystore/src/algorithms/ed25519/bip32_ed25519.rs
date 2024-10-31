@@ -1,14 +1,14 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::str::FromStr;
-use third_party::cryptoxide::mac::Mac;
+use cryptoxide::mac::Mac;
 
 use crate::algorithms::utils::normalize_path;
-use third_party::bitcoin::bip32::{ChildNumber, DerivationPath};
-use third_party::cryptoxide::hmac;
-use third_party::cryptoxide::pbkdf2;
-use third_party::cryptoxide::sha2::{Sha256, Sha512};
-use third_party::ed25519_bip32_core::{DerivationScheme, XPrv, XPub};
+use bitcoin::bip32::{ChildNumber, DerivationPath};
+use cryptoxide::hmac;
+use cryptoxide::pbkdf2;
+use cryptoxide::sha2::{Sha256, Sha512};
+use ed25519_bip32_core::{DerivationScheme, XPrv, XPub};
 
 use crate::errors::{KeystoreError, Result};
 
@@ -166,8 +166,8 @@ fn derive_bip32_ed25519_privkey(root: XPrv, path: &String) -> Result<XPrv> {
 mod tests {
 
     use super::*;
+    use hex;
     use std::string::ToString;
-    use third_party::hex;
 
     extern crate std;
 

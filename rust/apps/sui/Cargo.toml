@@ -6,12 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keystore = { path = "../../keystore", default-features = false }
-third_party = { path = "../../third_party", default-features = false }
-app_utils = {path = "../utils"}
+keystore = { workspace = true }
+app_utils = { workspace = true }
 sui-types = { git = "https://github.com/KeystoneHQ/sui.git", tag = "0.1.2", package = "sui-types" }
-serde = { version = "1.0.139", default-features = false }
-serde_derive = { version = "1.0.159"}
+serde = { workspace = true }
+serde_derive = { workspace = true }
+bcs = { workspace = true }
+hex = { workspace = true }
+blake2 = { workspace = true }
+serde_json = { workspace = true }
+bitcoin = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

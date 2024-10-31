@@ -1,13 +1,13 @@
 use crate::errors::{XRPError, R};
 use alloc::format;
 use alloc::string::{String, ToString};
+use bitcoin::secp256k1::ecdsa::Signature;
 use bytes::BytesMut;
+use cryptoxide::hashing;
+use hex;
 use rippled_binary_codec;
 use rippled_binary_codec::definition_fields::DefinitionFields;
-use third_party::cryptoxide::hashing;
-use third_party::hex;
-use third_party::secp256k1::ecdsa::Signature;
-use third_party::serde_json::{from_slice, to_string, Value};
+use serde_json::{from_slice, to_string, Value};
 
 pub struct WrappedTxData {
     pub(crate) tx_data: Value,
@@ -68,7 +68,7 @@ impl WrappedTxData {
 mod tests {
     use super::*;
     use alloc::string::String;
-    use third_party::serde_json::from_str;
+    use serde_json::from_str;
 
     #[test]
     fn test_generate_unsigned_tx_1() {

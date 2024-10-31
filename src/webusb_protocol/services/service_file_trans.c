@@ -35,8 +35,9 @@
 #define TYPE_FILE_FINO_PUBKEY       1
 #define TYPE_FILE_FINO_PUBKEY_SIGN  2
 
-#define MAX_FILE_NAME_LENGTH 32
-#define FILE_TRANS_TIME_OUT 10000
+#define MAX_FILE_SIZE               (8 * 1024 * 1024)       // update max file size
+#define MAX_FILE_NAME_LENGTH        32
+#define FILE_TRANS_TIME_OUT         10000
 #define DEFAULT_FILE_NAME           "keystone3.bin"
 
 #define CHECK_POINTER(ptr) do { \
@@ -161,7 +162,6 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     uint32_t tlvNumber;
     FrameHead_t sendHead = {0};
     uint8_t hash[32];
-    g_isReceivingFile = true;
     printf("ServiceFileTransInfo\n");
 
     tlvNumber = GetTlvFromData(tlvArray, 5, tlvData, head->length);
@@ -204,7 +204,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     SetDeviceParserIv(g_fileTransInfo.iv);
 
     do {
-        if (strnlen_s(g_fileTransInfo.fileName, MAX_FILE_NAME_LENGTH) == 0 || g_fileTransInfo.fileSize == 0) {
+        if (strnlen_s(g_fileTransInfo.fileName, MAX_FILE_NAME_LENGTH) == 0 || g_fileTransInfo.fileSize == 0 || g_fileTransInfo.fileSize >= MAX_FILE_SIZE) {
             sendTlvArray[0].value = 4;
             break;
         }
@@ -266,6 +266,11 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
     Tlv_t tlvArray[2] = {0};
     uint32_t tlvNumber, offset = UINT32_MAX, fileDataSize = UINT32_MAX;
     uint8_t *fileData = NULL;
+    bool isTail = false;
+
+    if (!g_isReceivingFile) {
+        return NULL;
+    }
 
     CHECK_POINTER(g_fileTransTimeOutTimer);
     osTimerStart(g_fileTransTimeOutTimer, FILE_TRANS_TIME_OUT);
@@ -277,7 +282,6 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
         case TYPE_FILE_INFO_FILE_OFFSET:
             CHECK_LENGTH(tlvArray[i].length, 4);
             offset = *(uint32_t *)tlvArray[i].pValue;
-            printf("offset=%d\n", offset);
             break;
         case TYPE_FILE_INFO_FILE_DATA:
             fileData = tlvArray[i].pValue;
@@ -287,8 +291,28 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
             break;
         }
     }
-    if (fileData == NULL || offset == UINT32_MAX || fileDataSize == UINT32_MAX) {
+
+    if (fileData == NULL || offset == UINT32_MAX || fileDataSize == UINT32_MAX || fileDataSize == 0) {
+        printf("Invalid file data or size\n");
         return NULL;
+    }
+
+    if (offset > g_fileTransInfo.fileSize || fileDataSize > g_fileTransInfo.fileSize) {
+        printf("file trans data overflow\n");
+        return NULL;
+    }
+
+    if (offset + fileDataSize > g_fileTransInfo.fileSize) {
+        // data will encrypt frame to expand 16 bytes
+        if (offset + fileDataSize - g_fileTransInfo.fileSize < 16) {
+            isTail = true;
+        } else {
+            printf("offset = %d, file size = %d\n", offset, g_fileTransInfo.fileSize);
+            printf("file data = %d\n", fileDataSize);
+            printf("offset + filedata = %d\n", offset + fileDataSize);
+            printf("file trans data overflow\n");
+            return NULL;
+        }
     }
 
     if (g_fileTransCtrl.offset != offset) {
@@ -296,17 +320,15 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
         return NULL;
     }
 
+#ifndef BTC_ONLY
     if (!g_isNftFile) {
         DataDecrypt(fileData, fileData, fileDataSize);
-        if (fileDataSize < 4096) {
-            fileDataSize = g_fileTransInfo.fileSize - g_fileTransCtrl.offset;
-            g_fileTransCtrl.offset = g_fileTransInfo.fileSize;
-        } else {
-            g_fileTransCtrl.offset += fileDataSize;
+        if (isTail) {
+            fileDataSize = g_fileTransInfo.fileSize - offset;
         }
-    } else {
-        g_fileTransCtrl.offset += fileDataSize;
     }
+#endif
+    g_fileTransCtrl.offset += fileDataSize;
 
     if (FatfsFileAppend(g_fileTransInfo.fileName, fileData, fileDataSize) != RES_OK) {
         printf("append file %s err\n", g_fileTransInfo.fileName);
@@ -347,6 +369,11 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
     uint8_t md5Result[16];
     uint8_t hash[32];
     int ret = 0;
+
+    if (!g_isReceivingFile) {
+        return NULL;
+    }
+    g_isReceivingFile = false;
 
     ASSERT(g_fileTransTimeOutTimer);
     osTimerStop(g_fileTransTimeOutTimer);
@@ -400,6 +427,9 @@ static void FileTransTimeOutTimerFunc(void *argument)
     }
     g_isNftFile = false;
 #endif
+    if (FatfsFileDelete(g_fileTransInfo.fileName) != RES_OK) {
+        printf("delete file %s err\n", g_fileTransInfo.fileName);
+    }
 }
 
 static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
@@ -408,23 +438,20 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
     FrameHead_t sendHead = {0};
     uint8_t pubKey[33 + 1] = {0};
     uint8_t pubKeySign[70 + 1] = {0};
+    bool pubKeyReceived = false;
+    bool pubKeySignReceived = false;
 
-    g_isReceivingFile = true;
     uint32_t tlvNumber = 0;
     tlvNumber = GetTlvFromData(tlvArray, 2, tlvData, head->length);
-    printf("tlvNumber = %d\n", tlvNumber);
     for (uint32_t i = 0; i < tlvNumber; i++) {
-        printf("tlvArray[i].length = %d\n", tlvArray[i].length);
-        char *data = (char *)tlvArray[i].pValue;
-        for (int j = 0; j < tlvArray[i].length; j++) {
-            printf("%02x ", data[j]);
-        }
         switch (tlvArray[i].type) {
         case TYPE_FILE_FINO_PUBKEY:
-            memcpy_s(pubKey, sizeof(pubKey) + 1, tlvArray[i].pValue, tlvArray[i].length);
+            memcpy_s(pubKey, sizeof(pubKey), tlvArray[i].pValue, tlvArray[i].length);
+            pubKeyReceived = true;
             break;
         case TYPE_FILE_FINO_PUBKEY_SIGN:
-            memcpy_s(pubKeySign, sizeof(pubKeySign) + 1, tlvArray[i].pValue, tlvArray[i].length);
+            memcpy_s(pubKeySign, sizeof(pubKeySign), tlvArray[i].pValue, tlvArray[i].length);
+            pubKeySignReceived = true;
             break;
         default:
             break;
@@ -438,23 +465,22 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
     sendHead.flag.b.isHost = 0;
 
     tlvArray[0].type = TYPE_FILE_FINO_PUBKEY;
-    uint8_t hash[32] = {0};
-    sha256((struct sha256 *)hash, pubKey, 33);
-#if 1
-    if (k1_verify_signature(pubKeySign, hash, (uint8_t *)g_webUsbUpdatePubKey) == false) {
-        printf("verify signature fail\n");
+    if (!pubKeyReceived || !pubKeySignReceived) {
         tlvArray[0].length = 4;
         tlvArray[0].value = 3;
     } else {
-        printf("verify signature success\n");
-        tlvArray[0].length = 33;
-        tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey) - 1);
+        uint8_t hash[32] = {0};
+        sha256((struct sha256 *)hash, pubKey, 33);
+        if (k1_verify_signature(pubKeySign, hash, (uint8_t *)g_webUsbUpdatePubKey) == false) {
+            printf("verify signature fail\n");
+            tlvArray[0].length = 4;
+            tlvArray[0].value = 3;
+        } else {
+            printf("verify signature success\n");
+            tlvArray[0].length = 33;
+            tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey) - 1);
+        }
     }
-#else
-    tlvArray[0].length = 33;
-    tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey) - 1);
-#endif
-
     *outLen = GetFrameTotalLength(tlvArray, 1);
     return BuildFrame(&sendHead, tlvArray, 1);
 }
@@ -523,6 +549,11 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     uint8_t hash[32];
     int ret = 0;
 
+    if (!g_isReceivingFile) {
+        return NULL;
+    }
+    g_isReceivingFile = false;
+
     ASSERT(g_fileTransTimeOutTimer);
     g_isNftFile = false;
     osTimerStop(g_fileTransTimeOutTimer);
@@ -559,9 +590,9 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     sendHead.flag.b.isHost = 0;
 
     *outLen = sizeof(FrameHead_t) + 4;
+    WriteNftToFlash();
     SetNftBinValid(true);
     SaveDeviceSettings();
-    WriteNftToFlash();
     GuiApiEmitSignalWithValue(SIG_INIT_NFT_BIN, 0);
     GuiApiEmitSignalWithValue(SIG_INIT_TRANSFER_NFT_SCREEN, 1);
     return BuildFrame(&sendHead, NULL, 0);

@@ -3,15 +3,15 @@ use crate::jettons;
 use crate::messages::jetton::JettonMessage;
 use crate::messages::nft::NFTMessage;
 use crate::messages::traits::ParseCell;
-use crate::messages::{jetton, Comment, Operation, SigningMessage};
+use crate::messages::{Operation, SigningMessage};
 use crate::utils::shorten_string;
 use crate::vendor::address::TonAddress;
 use crate::vendor::cell::BagOfCells;
 use alloc::string::{String, ToString};
-use alloc::{format, vec};
+use alloc::vec;
+use hex;
 use serde::Serialize;
-use third_party::hex;
-use third_party::serde_json::{self, json, Value};
+use serde_json::{self, json, Value};
 
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct TonTransaction {
@@ -129,7 +129,7 @@ impl TryFrom<&SigningMessage> for TonTransaction {
                             "invalid nft message".to_string(),
                         )),
                     },
-                    Operation::OtherMessage(other_message) => Ok(Self {
+                    Operation::OtherMessage(_other_message) => Ok(Self {
                         to,
                         amount,
                         action,

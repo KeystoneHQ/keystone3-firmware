@@ -7,7 +7,7 @@ use core::fmt;
 use core::str::FromStr;
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
-use third_party::base64;
+use base64;
 
 /// Transaction data structure per [Arweave transaction spec](https://docs.arweave.org/developers/server/http-api#transaction-format).
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
@@ -231,7 +231,7 @@ impl DeepHashItem {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use third_party::serde_json;
+    use serde_json;
 
     fn base64_encode(data: &[u8]) -> String {
         base64::encode_config(data, base64::URL_SAFE_NO_PAD)

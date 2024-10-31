@@ -5,7 +5,7 @@ use core::str::FromStr;
 use crate::addresses::cashaddr::{Base58Codec, CashAddrCodec};
 use crate::addresses::get_address;
 use crate::errors::Result;
-use crate::network::Network;
+use crate::network::{Network, NetworkT};
 use crate::transactions::legacy::input::TxIn;
 use crate::transactions::legacy::output::TxOut;
 use crate::transactions::legacy::tx_data::TxData;

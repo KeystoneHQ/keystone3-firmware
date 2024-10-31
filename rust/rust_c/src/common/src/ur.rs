@@ -4,9 +4,9 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ptr::null_mut;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::aptos::aptos_sign_request::AptosSignRequest;
+use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
+use ur_registry::extend::qr_hardware_call::QRHardwareCall;
 
 use app_bitcoin::errors::BitcoinError;
 #[cfg(feature = "multi-coins")]
@@ -14,44 +14,44 @@ use app_ethereum::errors::EthereumError;
 use cstr_core::CString;
 use cty::c_char;
 use keystore::errors::KeystoreError;
-use third_party::ur_parse_lib::keystone_ur_decoder::{
+use ur_parse_lib::keystone_ur_decoder::{
     probe_decode, KeystoneURDecoder, MultiURParseResult as InnerMultiParseResult,
     URParseResult as InnerParseResult,
 };
-use third_party::ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
+use ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
-use third_party::ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
-use third_party::ur_registry::bytes::Bytes;
+use ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
+use ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
+use ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::cardano::{
+use ur_registry::cardano::{
     cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest,
     cardano_sign_data_request::CardanoSignDataRequest, cardano_sign_request::CardanoSignRequest,
 };
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
+use ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::cosmos::evm_sign_request::EvmSignRequest;
-use third_party::ur_registry::crypto_account::CryptoAccount;
-use third_party::ur_registry::crypto_psbt::CryptoPSBT;
-use third_party::ur_registry::error::{URError, URResult};
+use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::crypto_psbt::CryptoPSBT;
+use ur_registry::error::{URError, URResult};
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::ethereum::eth_sign_request::EthSignRequest;
-use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::ethereum::eth_sign_request::EthSignRequest;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
+use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::near::near_sign_request::NearSignRequest;
-use third_party::ur_registry::registry_types::URType as InnerURType;
+use ur_registry::near::near_sign_request::NearSignRequest;
+use ur_registry::registry_types::URType as InnerURType;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::solana::sol_sign_request::SolSignRequest;
+use ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::stellar::stellar_sign_request::StellarSignRequest;
+use ur_registry::stellar::stellar_sign_request::StellarSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::sui::sui_sign_request::SuiSignRequest;
+use ur_registry::sui::sui_sign_request::SuiSignRequest;
 #[cfg(feature = "multi-coins")]
-use third_party::ur_registry::ton::ton_sign_request::TonSignRequest;
-use third_party::ur_registry::traits::RegistryItem;
+use ur_registry::ton::ton_sign_request::TonSignRequest;
+use ur_registry::traits::RegistryItem;
 
 use crate::errors::{ErrorCodes, RustCError};
 use crate::free::Free;
@@ -113,7 +113,7 @@ impl UREncodeResult {
     }
 
     pub fn encode(data: Vec<u8>, tag: String, max_fragment_length: usize) -> Self {
-        let result = third_party::ur_parse_lib::keystone_ur_encoder::probe_encode(
+        let result = ur_parse_lib::keystone_ur_encoder::probe_encode(
             &data,
             max_fragment_length,
             tag,
@@ -539,7 +539,7 @@ impl Free for URParseMultiResult {
 impl_response!(URParseMultiResult);
 
 fn get_ur_type(ur: &String) -> Result<QRCodeType, URError> {
-    let t = third_party::ur_parse_lib::keystone_ur_decoder::get_type(ur)?;
+    let t = ur_parse_lib::keystone_ur_decoder::get_type(ur)?;
     QRCodeType::from(&t)
 }
 
@@ -720,7 +720,7 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
 #[no_mangle]
 pub extern "C" fn get_next_part(ptr: PtrEncoder) -> *mut UREncodeMultiResult {
     let keystone_ur_encoder_ptr =
-        ptr as *mut third_party::ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
+        ptr as *mut ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
     let encoder = unsafe { &mut *keystone_ur_encoder_ptr };
     match encoder.next_part() {
         Ok(result) => UREncodeMultiResult::success(result).c_ptr(),

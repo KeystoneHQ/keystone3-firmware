@@ -15,8 +15,8 @@ use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 use borsh::BorshDeserialize;
-use third_party::serde_json;
-use third_party::serde_json::{json, Value};
+use serde_json;
+use serde_json::{json, Value};
 
 impl ParsedNearTx {
     pub fn build(data: &Vec<u8>) -> Result<Self> {
@@ -95,9 +95,9 @@ mod tests {
     use crate::parse;
     use crate::parser::overview::NearTxOverview;
     use alloc::string::ToString;
-    use third_party::serde_json::{json, Value};
-    use third_party::ur_registry::near::near_sign_request::NearSignRequest;
-    use third_party::{hex, serde_json};
+    use serde_json::{json, Value};
+    use ur_registry::near::near_sign_request::NearSignRequest;
+    use {hex, serde_json};
 
     #[test]
     fn test_parse_transaction_1() {

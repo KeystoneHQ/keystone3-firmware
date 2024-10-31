@@ -4,12 +4,12 @@ use crate::structs::SignVotingRegistrationResult;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use cardano_serialization_lib::address::{Address, BaseAddress};
-use third_party::cryptoxide::hashing::blake2b_256;
-use third_party::ed25519_bip32_core::{XPrv, XPub};
-use third_party::hex;
-use third_party::ur_registry::cardano::cardano_delegation::CardanoDelegation;
-use third_party::ur_registry::cardano::governance::CardanoVotingRegistration;
-use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
+use cryptoxide::hashing::blake2b_256;
+use ed25519_bip32_core::{XPrv, XPub};
+use hex;
+use ur_registry::cardano::cardano_delegation::CardanoDelegation;
+use ur_registry::cardano::governance::CardanoVotingRegistration;
+use ur_registry::crypto_key_path::CryptoKeyPath;
 
 pub fn build_metadata_cbor(
     delegations: Vec<CardanoDelegation>,
@@ -29,7 +29,7 @@ pub fn build_metadata_cbor(
             );
             voting_registration
                 .try_into()
-                .map_err(|e: third_party::ur_registry::error::URError| {
+                .map_err(|e: ur_registry::error::URError| {
                     CardanoError::InvalidTransaction(e.to_string())
                 })
         }
@@ -97,7 +97,7 @@ pub fn parse_payment_address(payment_address: Vec<u8>) -> R<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use third_party::ur_registry::crypto_key_path::PathComponent;
+    use ur_registry::crypto_key_path::PathComponent;
 
     #[test]
     fn test_sign_voting_registration() {

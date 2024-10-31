@@ -4,8 +4,8 @@
 use alloc::vec;
 use alloc::vec::Vec;
 use core::fmt;
+use hex;
 use serde::{Deserialize, Serialize};
-use third_party::hex;
 
 #[derive(Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Module {

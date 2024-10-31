@@ -5,6 +5,7 @@ option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 
 if(BUILD_TYPE STREQUAL "Simulator")
     set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
+    set(COMPILE_SIMULATOR ON CACHE BOOL "compile on Simulator target" FORCE)
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
@@ -350,5 +351,20 @@ else()
 
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
         target_link_libraries(${PROJECT_NAME} PRIVATE windows ntdll)
+    endif()
+
+    if(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+        # add framework for MacOS simulator to scan QR code
+        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework CoreFoundation")
+        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework CoreGraphics")
+        
+        set(CODESIGN_IDENTITY "keystone simulator")
+        set(ENTITLEMENTS_FILE "${CMAKE_SOURCE_DIR}/entitlements.plist")
+        set(CODESIGN_COMMAND codesign --force --options runtime --entitlements ${ENTITLEMENTS_FILE} --sign "${CODESIGN_IDENTITY}")
+        add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CODESIGN_COMMAND} ${PROJECT_NAME}
+            COMMENT "Signing the executable"
+        )
     endif()
 endif()

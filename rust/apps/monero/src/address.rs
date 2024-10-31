@@ -7,7 +7,7 @@ use base58_monero::{decode, encode};
 use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
 
-use third_party::hex;
+use hex;
 
 pub struct Address {
     /// The network on which the address is valid and should be used.
@@ -187,7 +187,7 @@ pub fn generate_subaddress(
 mod tests {
     use super::*;
     use curve25519_dalek::scalar::Scalar;
-    use third_party::bitcoin::address;
+    use bitcoin::address;
 
     #[test]
     fn test_get_address_from_seed() {

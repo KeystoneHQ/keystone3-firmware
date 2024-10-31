@@ -1,4 +1,4 @@
-use third_party::core2::io::Cursor;
+use core2::io::Cursor;
 
 use alloc::format;
 use alloc::vec;
@@ -325,21 +325,4 @@ fn read_var_size(
         result |= usize::from(byte);
     }
     Ok(result)
-}
-
-#[cfg(test)]
-mod tests {
-    use tokio_test::assert_ok;
-
-    use super::*;
-
-    #[test]
-    fn test_raw_cell_serialize() {
-        let raw_cell = RawCell::new(vec![1; 128], 1023, vec![], 255, false);
-        let raw_bag = RawBagOfCells {
-            cells: vec![raw_cell],
-            roots: vec![0],
-        };
-        let _res = assert_ok!(raw_bag.serialize(false));
-    }
 }

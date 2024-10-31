@@ -1,4 +1,4 @@
-use third_party::ur_registry::{
+use ur_registry::{
     crypto_key_path::PathComponent,
     error::{URError, URResult},
 };

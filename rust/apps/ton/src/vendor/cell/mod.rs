@@ -11,24 +11,23 @@ use core::fmt;
 use core::fmt::Debug;
 use core::fmt::Formatter;
 use core::hash::Hash;
-use core::ops::Deref;
-use third_party::core2::io;
-use third_party::core2::io::Cursor;
+
+use core2::io;
+use core2::io::Cursor;
 
 pub use crate::vendor::cell::bag_of_cells::*;
-use crate::vendor::cell::bit_string::*;
+
 pub use crate::vendor::cell::builder::*;
 pub use crate::vendor::cell::error::*;
 pub use crate::vendor::cell::parser::*;
 pub use crate::vendor::cell::raw::*;
-pub use crate::vendor::cell::slice::*;
+
 pub use crate::vendor::cell::state_init::*;
-pub use crate::vendor::cell::util::*;
+
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
 use bitstream_io::{BigEndian, BitReader, BitWrite, BitWriter};
-use num_bigint::BigUint;
-use num_traits::{One, ToPrimitive};
+
 use sha2::Digest;
 use sha2::Sha256;
 

@@ -26,21 +26,19 @@ use alloc::vec::Vec;
 
 use app_wallets::metamask::ETHAccountTypeApp;
 use app_wallets::DEVICE_TYPE;
-use app_wallets::DEVICE_VERSION;
 use cty::uint32_t;
 use keystore::algorithms::secp256k1::derive_extend_public_key;
 use keystore::errors::KeystoreError;
-use third_party::bitcoin::hex::DisplayHex;
-use third_party::core2::io::Read;
-use third_party::ed25519_bip32_core::XPub;
-use third_party::hex;
-use third_party::ur_registry::crypto_account::CryptoAccount;
-use third_party::ur_registry::crypto_hd_key::CryptoHDKey;
-use third_party::ur_registry::crypto_key_path::CryptoKeyPath;
-use third_party::ur_registry::error::URError;
-use third_party::ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
-use third_party::ur_registry::extend::qr_hardware_call::QRHardwareCall;
-use third_party::ur_registry::traits::RegistryItem;
+
+use ed25519_bip32_core::XPub;
+use hex;
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::crypto_hd_key::CryptoHDKey;
+use ur_registry::crypto_key_path::CryptoKeyPath;
+use ur_registry::error::URError;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::extend::qr_hardware_call::QRHardwareCall;
+use ur_registry::traits::RegistryItem;
 
 use common_rust_c::errors::RustCError;
 use common_rust_c::ffi::CSliceFFI;
@@ -213,6 +211,8 @@ pub extern "C" fn check_hardware_call_path(
         "SOL" => "m/44'/501'",
         "XRP" => "m/44'/144'",
         "ADA" => "m/1852'/1815'",
+        "ADA_CIP_1853" => "m/1853'/1815'",
+        "ADA_CIP_1854" => "m/1854'/1815'",
         "TRX" => "m/44'/195'",
         "LTC" => "m/49'/2'",
         "BCH" => "m/44'/145'",
@@ -268,6 +268,7 @@ pub extern "C" fn generate_key_derivation_ur(
     master_fingerprint: PtrBytes,
     master_fingerprint_length: uint32_t,
     xpubs: Ptr<CSliceFFI<ExtendedPublicKey>>,
+    device_version: PtrString,
 ) -> Ptr<UREncodeResult> {
     let mfp = extract_array!(master_fingerprint, u8, master_fingerprint_length);
     let mfp = match <&[u8; 4]>::try_from(mfp) {
@@ -275,6 +276,7 @@ pub extern "C" fn generate_key_derivation_ur(
         Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
     };
     let public_keys = unsafe { recover_c_array(xpubs) };
+    let device_version = unsafe { recover_c_char(device_version) };
     let keys = public_keys
         .iter()
         .map(|v| {
@@ -290,7 +292,7 @@ pub extern "C" fn generate_key_derivation_ur(
                 Ok(v) => {
                     if v.len() >= 78 {
                         // sec256k1 xpub
-                        let xpub = third_party::bitcoin::bip32::Xpub::decode(&v);
+                        let xpub = bitcoin::bip32::Xpub::decode(&v);
                         match xpub {
                             Ok(xpub) => {
                                 let chain_code = xpub.chain_code.as_bytes().to_vec();
@@ -308,7 +310,7 @@ pub extern "C" fn generate_key_derivation_ur(
                             }
                             Err(e) => Err(URError::UrEncodeError(e.to_string())),
                         }
-                    } else if (v.len() == 32) {
+                    } else if v.len() == 32 {
                         //  ed25519
                         Ok(CryptoHDKey::new_extended_key(
                             None,
@@ -358,7 +360,7 @@ pub extern "C" fn generate_key_derivation_ur(
         keys,
         Some(DEVICE_TYPE.to_string()),
         None,
-        Some(DEVICE_VERSION.to_string()),
+        Some(device_version),
     );
     match accounts.try_into() {
         Ok(v) => {

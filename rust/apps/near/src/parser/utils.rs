@@ -7,8 +7,8 @@ pub const NEAR_THRESHOLD: u128 = 10000000000000000000;
 pub const NEAR_DIVIDER: f64 = 1_000_000_000_000_000_000_000_000f64;
 pub const GAS_DIVIDER: f64 = 1000_000_000_000f64;
 
-use third_party::serde_json;
-use third_party::serde_json::Value;
+use serde_json;
+use serde_json::Value;
 
 pub trait Merge {
     fn merge(&mut self, new_json_value: Value);
@@ -76,8 +76,8 @@ where
 mod serde_json_value_updater_test {
     use super::*;
     use alloc::string::ToString;
-    use third_party::serde_json;
-    use third_party::serde_json::Value;
+    use serde_json;
+    use serde_json::Value;
 
     #[test]
     fn it_should_merge_array_string() {

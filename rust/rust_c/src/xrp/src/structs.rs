@@ -3,8 +3,8 @@ use core::ptr::null_mut;
 
 use app_xrp::parser::overview::XrpTxOverview;
 use app_xrp::parser::structs::{ParsedXrpTx, XrpTxDisplayType};
-use third_party::serde_json;
-use third_party::ur_registry::pb::protoc::XrpTx;
+use serde_json;
+use ur_registry::pb::protoc::XrpTx;
 
 use common_rust_c::free::{free_ptr_string, Free};
 use common_rust_c::structs::TransactionParseResult;
@@ -86,12 +86,10 @@ impl_c_ptr!(DisplayXrpTxOverview);
 
 impl Free for DisplayXrpTx {
     fn free(&self) {
-        unsafe {
-            check_and_free_ptr!(self.overview);
-            free_ptr_string(self.network);
-            free_ptr_string(self.detail);
-            free_ptr_string(self.signing_pubkey);
-        }
+        check_and_free_ptr!(self.overview);
+        free_ptr_string(self.network);
+        free_ptr_string(self.detail);
+        free_ptr_string(self.signing_pubkey);
     }
 }
 

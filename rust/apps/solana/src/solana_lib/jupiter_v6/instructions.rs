@@ -137,6 +137,18 @@ pub enum Swap {
         remaining_accounts_info: Option<RemainingAccountsInfo>,
     },
     OneIntro,
+    PumpdotfunWrappedBuy,
+    PumpdotfunWrappedSell,
+    PerpsV2,
+    PerpsV2AddLiquidity,
+    PerpsV2RemoveLiquidity,
+    MoonshotWrappedBuy,
+    MoonshotWrappedSell,
+    StabbleStableSwap,
+    StabbleWeightedSwap,
+    Obric {
+        x_to_y: bool,
+    },
 }
 
 #[derive(BorshDeserialize, Serialize, Debug, Default, Clone)]
@@ -226,27 +238,27 @@ impl Dispatch for JupiterInstructions {
         match ix_type_hex.as_str() {
             "c1209b3341d69c81" => {
                 //  sharedAccountsRoute methodId = sighash(SIGHASH_GLOBAL_NAMESPACE, "shared_accounts_route")
-                Ok(JupiterInstructions::SharedAccountsRoute(
-                    from_slice::<SharedAccountsRouteArgs>(ix_data).unwrap(),
-                ))
+                borsh::from_slice::<SharedAccountsRouteArgs>(ix_data)
+                    .map(JupiterInstructions::SharedAccountsRoute)
+                    .map_err(|e| JupiterError::UnknownJupiterInstruction.into())
             }
             "e517cb977ae3ad2a" => {
                 // route methodId = sighash(SIGHASH_GLOBAL_NAMESPACE, "route")
-                Ok(JupiterInstructions::Route(
-                    from_slice::<RouteArgs>(ix_data).unwrap(),
-                ))
+                borsh::from_slice::<RouteArgs>(ix_data)
+                    .map(JupiterInstructions::Route)
+                    .map_err(|e| JupiterError::UnknownJupiterInstruction.into())
             }
             "d033ef977b2bed5c" => {
                 // exactOutRoute methodId = sighash(SIGHASH_GLOBAL_NAMESPACE, "exact_out_route")
-                Ok(JupiterInstructions::ExactOutRoute(
-                    from_slice::<ExactOutRouteArgs>(ix_data).unwrap(),
-                ))
+                borsh::from_slice::<ExactOutRouteArgs>(ix_data)
+                    .map(JupiterInstructions::ExactOutRoute)
+                    .map_err(|e| JupiterError::UnknownJupiterInstruction.into())
             }
             "b0d169a89a7d453e" => {
                 // sharedAccountsExactOutRoute methodId = sighash(SIGHASH_GLOBAL_NAMESPACE, "shared_accounts_exact_out_route")
-                Ok(JupiterInstructions::SharedAccountsExactOutRoute(
-                    from_slice::<SharedAccountsExactOutRouteArgs>(ix_data).unwrap(),
-                ))
+                borsh::from_slice::<SharedAccountsExactOutRouteArgs>(ix_data)
+                    .map(JupiterInstructions::SharedAccountsExactOutRoute)
+                    .map_err(|e| JupiterError::UnknownJupiterInstruction.into())
             }
             _ => Err(JupiterError::UnknownJupiterInstruction.into()),
         }
@@ -257,8 +269,8 @@ impl Dispatch for JupiterInstructions {
 mod tests {
     use std::prelude::rust_2024::ToString;
 
+    use bitcoin;
     use serde_json::json;
-    use third_party::bitcoin;
 
     use crate::message::Message;
     use crate::read::Read;

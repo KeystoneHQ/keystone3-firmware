@@ -1,14 +1,14 @@
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use num_bigint::BigUint;
+
+use hex;
 use serde::Serialize;
-use third_party::hex;
 
 use self::jetton::JettonMessage;
 use self::nft::{NFTMessage, NFT_TRANSFER};
 use self::traits::ParseCell;
-use crate::vendor::cell::{ArcCell, Cell, CellBuilder, TonCellError};
+use crate::vendor::cell::{ArcCell, CellBuilder, TonCellError};
 use crate::vendor::message::JETTON_TRANSFER;
 
 pub mod jetton;
@@ -225,7 +225,7 @@ impl ParseCell for Comment {
             }
             let remaining_bytes = parser.remaining_bytes();
             String::from_utf8(parser.load_bytes(remaining_bytes)?)
-                .map_err(|e| TonCellError::CellParserError("payload is not a comment".to_string()))
+                .map_err(|_e| TonCellError::CellParserError("payload is not a comment".to_string()))
         })
     }
 }

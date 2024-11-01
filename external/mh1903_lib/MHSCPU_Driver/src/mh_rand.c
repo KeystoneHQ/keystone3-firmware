@@ -164,7 +164,6 @@ const int8_t mh_longest_run_tab[] = {0,  1,  1,  2,  1,  1,  2,  3,  1,  1,  1, 
                                      3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  4,
                                      4,  4,  4,  4,  4,  4,  4,  4,  5,  5,  5,  5,  6,  6,  7,  8
                                     };
-//����û��ʹ��
 //double mh_longest_run_of_ones(uint8_t *s, uint32_t N)
 //{
 //  double          p_value, chi2, pi[7];
@@ -303,15 +302,13 @@ typedef struct {
 
 __STATIC_INLINE void mh_trand_init(void)
 {
-    MH_TRNG->RNG_CSR |= 0x10;   //ʹ���ж�
+    MH_TRNG->RNG_CSR |= 0x10;
     MH_TRNG->RNG_AMA &= ~TRNG_RNG_AMA_PD_ALL_Mask;
-
 }
 
 __STATIC_INLINE void mh_trand_start(void)
 {
     MH_TRNG->RNG_CSR &= ~MH_TRNG_RNG0_CSR_S128_Mask;
-
 }
 
 __STATIC_INLINE uint32_t mh_trand_get(uint32_t rand[4])

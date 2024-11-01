@@ -45,7 +45,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _sstack = .;
-        . = . + 0x2000;
+        . = . + 0x4000;
         . = ALIGN(4);
         _estack = .;
     } > SRAM

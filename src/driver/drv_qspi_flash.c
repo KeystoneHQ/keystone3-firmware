@@ -4,6 +4,7 @@
 #include "assert.h"
 #include "mh_rand.h"
 #include "mhscpu_qspi.h"
+#include "drv_mpu.h"
 
 static uint32_t CheckFlashType(void);
 
@@ -70,6 +71,7 @@ void QspiFlashEraseAndWrite(uint32_t addr, const uint8_t *data, uint32_t len)
     do {
         FLASH_EraseSector(addr);
         CACHE_CleanAll(CACHE);
+        MpuSetOtpProtection(false);
         AES_Program(&g_cmdType, NULL, addr, len, (uint8_t *)data);
         if (first) {
             // first = false;

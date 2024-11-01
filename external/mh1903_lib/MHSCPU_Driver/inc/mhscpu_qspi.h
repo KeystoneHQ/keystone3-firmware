@@ -195,6 +195,7 @@ uint8_t QSPI_EraseChip(QSPI_CommandTypeDef *cmdParam);
 uint8_t QSPI_ProgramPage(QSPI_CommandTypeDef *cmdParam, DMA_TypeDef *DMA_Channelx, uint32_t adr, uint32_t sz, uint8_t *buf);
 
 #if(ENABLE_CACHE_AES)
+uint8_t AES_Program(QSPI_CommandTypeDef *cmdParam, DMA_TypeDef *DMA_Channelx, uint32_t addr, uint32_t size, uint8_t *buffer);
 uint8_t QSPI_ProgramPage_ByAES(QSPI_CommandTypeDef *cmdParam, DMA_TypeDef *DMA_Channelx, uint32_t adr, uint32_t sz, uint8_t *buf);
 #endif
 

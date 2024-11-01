@@ -68,7 +68,6 @@ int main(void)
     LcdInit();
     DrawBootLogoOnLcd();
     Gd25FlashInit();
-    BootUpdate("1:boot.sig");
     NvicInit();
     PsramInit();
     LogInit();
@@ -90,6 +89,7 @@ int main(void)
     ScreenManagerInit();
     AccountManagerInit();
     PowerOnSelfCheck();
+    BootUpdate("1:boot.sig");
 
     PrintSystemInfo();
     osKernelInitialize();

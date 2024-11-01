@@ -205,9 +205,6 @@ void ProcessURService(EAPDURequestPayload_t *payload)
         HandleCheckResult(checkResult, urViewType);
     } while (0);
 
-    if (urResult) {
-        free_ur_parse_result(urResult);
-    }
     if (checkResult) {
         free_TransactionCheckResult(checkResult);
     }

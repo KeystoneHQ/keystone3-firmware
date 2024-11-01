@@ -624,6 +624,9 @@ static void GuiOpenARAddressNoticeWindow()
 
 static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
 {
+    if (coin >= HOME_WALLET_CARD_BUTT) {
+        return;
+    }
     switch (coin) {
     case HOME_WALLET_CARD_BTC:
     case HOME_WALLET_CARD_LTC:

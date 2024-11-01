@@ -34,6 +34,8 @@ static void lv_keyboard_update_map(lv_obj_t * obj);
 
 static void lv_keyboard_update_ctrl_map(lv_obj_t * obj);
 
+static void lv_keyboard_clear_keyboard_mode(void);
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -120,6 +122,9 @@ static const lv_btnmatrix_ctrl_t * kb_ctrl[10] = {
     default_kb_ctrl_lc_map,
     NULL,
 };
+
+static lv_keyboard_user_mode_t keyMode = KEY_STONE_FULL_L;
+static lv_keyboard_user_mode_t oldkeyMode = KEY_STONE_FULL_L;
 
 /**********************
  *      MACROS
@@ -274,8 +279,6 @@ void lv_keyboard_def_event_cb(lv_event_t * e)
 {
     bool out_button_is_inactive(lv_btnmatrix_ctrl_t ctrl_bits);
     lv_obj_t * obj = lv_event_get_target(e);
-    static lv_keyboard_user_mode_t keyMode = KEY_STONE_FULL_L;
-    static lv_keyboard_user_mode_t oldkeyMode = KEY_STONE_FULL_L;
 
     LV_ASSERT_OBJ(obj, MY_CLASS);
     lv_keyboard_t * keyboard = (lv_keyboard_t *)obj;
@@ -291,7 +294,6 @@ void lv_keyboard_def_event_cb(lv_event_t * e)
         lv_btnmatrix_set_map(obj, kb_map[LV_KEYBOARD_MODE_TEXT_LOWER]);
         lv_keyboard_update_ctrl_map(obj);
 #endif
-        // keyMode = oldkeyMode;
         keyMode = KEY_STONE_FULL_L;
         lv_event_send(keyboard->ta, KEY_STONE_KEYBOARD_CHANGE, &keyMode);
         return;
@@ -337,7 +339,6 @@ void lv_keyboard_def_event_cb(lv_event_t * e)
         lv_event_send(keyboard->ta, KEY_STONE_KEYBOARD_CHANGE, &keyMode);
         return;
     } else if (strcmp(txt, "#@") == 0) {
-        // oldkeyMode = keyMode;
         keyMode = KEY_STONE_SYMBOL;
         lv_event_send(keyboard->ta, KEY_STONE_KEYBOARD_CHANGE, &keyMode);
         return;
@@ -394,6 +395,7 @@ static void lv_keyboard_constructor(const lv_obj_class_t * class_p, lv_obj_t * o
 {
     LV_UNUSED(class_p);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_CLICK_FOCUSABLE);
+    lv_keyboard_clear_keyboard_mode();
 
     lv_keyboard_t * keyboard = (lv_keyboard_t *)obj;
     keyboard->ta         = NULL;
@@ -446,4 +448,9 @@ static void lv_keyboard_update_ctrl_map(lv_obj_t * obj)
     }
 }
 
+static void lv_keyboard_clear_keyboard_mode(void)
+{
+    oldkeyMode = KEY_STONE_FULL_L;
+    keyMode = KEY_STONE_FULL_L;
+}
 #endif  /*LV_USE_KEYBOARD*/

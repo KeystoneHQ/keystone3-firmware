@@ -60,6 +60,7 @@ pub struct KeyDerivationSchema {
     curve: PtrString,
     algo: PtrString,
     chain_type: PtrString,
+    is_ada: bool,
 }
 
 impl TryFrom<&mut QRHardwareCall> for QRHardwareCallData {
@@ -129,6 +130,10 @@ impl TryFrom<&ur_registry::extend::key_derivation_schema::KeyDerivationSchema>
                 Curve::Secp256k1 => "Secp256k1".to_string(),
             }),
             chain_type: convert_c_char(value.get_chain_type().unwrap_or("UNKNOWN".to_string())),
+            is_ada: value
+                .get_chain_type()
+                .unwrap_or("UNKNOWN".to_string())
+                .starts_with("ADA"),
         })
     }
 }

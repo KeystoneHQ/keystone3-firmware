@@ -149,8 +149,8 @@ static const lv_img_dsc_t *g_keplrCoinArray[8] = {
     &coinXprt, &coinAxl, &coinBoot, &coinCro,
 };
 
-static const lv_img_dsc_t *g_leapCoinArray[1] = {
-    &coinAtom,
+static const lv_img_dsc_t *g_leapCoinArray[8] = {
+    &coinAtom, &coinOsmo, &coinInj, &coinStrd, &coinStars, &coinJuno, &coinScrt, &coinDym
 };
 
 static const lv_img_dsc_t *g_arconnectCoinArray[1] = {
@@ -1083,12 +1083,18 @@ static void AddLeapCoins(void)
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 8; i++) {
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_leapCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
         lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
     }
+    // Add more
+    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
+    lv_img_set_zoom(img, 150);
+    lv_img_set_pivot(img, 0, 0);
+    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * 8, 2);
 }
 
 static void AddSolflareCoins(void)

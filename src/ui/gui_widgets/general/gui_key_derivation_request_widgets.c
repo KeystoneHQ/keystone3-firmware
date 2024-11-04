@@ -63,6 +63,7 @@ static lv_obj_t *g_egAddress[2];
 static char g_derivationPathAddr[2][2][BUFFER_SIZE_128];
 static bool g_isUsb = false;
 static bool g_isUsbPassWordCheck = false;
+static bool g_hasAda = false;
 
 static void RecalcCurrentWalletIndex(char *origin);
 
@@ -127,7 +128,7 @@ static void RecalcCurrentWalletIndex(char *origin)
         g_walletIndex = WALLET_LIST_ETERNL;
     } else if (strcmp("Typhon Extension", origin) == 0) {
         g_walletIndex = WALLET_LIST_TYPHON;
-    } else if (strcmp("Leap Wallet Extension", origin) == 0) {
+    } else if (strcmp("Leap Extension", origin) == 0) {
         g_walletIndex = WALLET_LIST_LEAP;
     } else if (strcmp("Begin", origin) == 0) {
         g_walletIndex = WALLET_LIST_BEGIN;
@@ -140,6 +141,7 @@ void GuiKeyDerivationRequestInit(bool isUsb)
 {
     g_isUsb = isUsb;
     g_isUsbPassWordCheck = false;
+    g_hasAda = false;
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
     g_keyDerivationTileView.pageWidget = CreatePageWidget();
     g_keyDerivationTileView.cont = g_keyDerivationTileView.pageWidget->contentZone;
@@ -347,6 +349,10 @@ static void ModelParseQRHardwareCall()
     Response_QRHardwareCallData *data = parse_qr_hardware_call(g_data);
     g_callData = data->data;
     g_response = data;
+    for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
+        printf("is_ada: %d\n", g_callData->key_derivation->schemas->data[i].is_ada);
+        g_hasAda = g_hasAda || g_callData->key_derivation->schemas->data[i].is_ada;
+    }
 }
 
 typedef enum {
@@ -1104,7 +1110,11 @@ static void ChangeDerivationPathHandler(lv_event_t *e)
 
 static void OpenMoreHandler(lv_event_t *e)
 {
-    int hintboxHeight = 228;
+    int height = 84;
+    int hintboxHeight = 144;
+    if (g_hasAda) {
+        hintboxHeight += height;
+    }
     g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
     lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_openMoreHintBox);
     lv_obj_t *label = GuiCreateTextLabel(g_openMoreHintBox, _("Tutorial"));
@@ -1125,11 +1135,13 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
                                     OpenTutorialHandler, &g_walletIndex);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-    WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
-    lv_obj_t *derivationBtn = GuiCreateSelectButton(g_openMoreHintBox, _("derivation_path_change"),
-                              &imgPath, ChangeDerivationPathHandler, wallet,
-                              true);
-    lv_obj_align(derivationBtn, LV_ALIGN_BOTTOM_MID, 0, -120);
+    if (g_hasAda) {
+        WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
+        lv_obj_t *derivationBtn = GuiCreateSelectButton(g_openMoreHintBox, _("derivation_path_change"),
+                                  &imgPath, ChangeDerivationPathHandler, wallet,
+                                  true);
+        lv_obj_align(derivationBtn, LV_ALIGN_BOTTOM_MID, 0, -120);
+    }
 }
 
 static void OpenTutorialHandler(lv_event_t *e)

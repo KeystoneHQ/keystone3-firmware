@@ -706,7 +706,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
+
     uint8_t *entropy;
     uint8_t entropyLen;
     int32_t ret;
@@ -773,7 +773,6 @@ if (ret == SUCCESS_CODE)
     GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
 }
 SRAM_FREE(entropy);
-#endif
 SetLockScreen(enable);
 return SUCCESS_CODE;
 }

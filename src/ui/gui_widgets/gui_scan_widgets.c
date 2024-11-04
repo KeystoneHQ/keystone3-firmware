@@ -111,7 +111,7 @@ void GuiScanResult(bool result, void *param)
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
 #ifndef BTC_ONLY
             //we don't support ADA in Slip39 Wallet;
-            if (g_chainType == CHAIN_ADA || g_qrcodeViewType == KeyDerivationRequest) {
+            if (g_chainType == CHAIN_ADA) {
                 ThrowError(ERR_INVALID_QRCODE);
                 return;
             }

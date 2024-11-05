@@ -19,7 +19,7 @@ pub struct Address {
 }
 
 impl Address {
-    pub(crate) fn from_parts(d: Diversifier, pk_d: DiversifiedTransmissionKey) -> Self {
+    pub fn from_parts(d: Diversifier, pk_d: DiversifiedTransmissionKey) -> Self {
         // We assume here that pk_d is correctly-derived from d. We ensure this for
         // internal APIs. For parsing from raw byte encodings, we assume that users aren't
         // modifying internals of encoded address formats. If they do, that can result in
@@ -32,11 +32,11 @@ impl Address {
         self.d
     }
 
-    pub(crate) fn g_d(&self) -> NonIdentityPallasPoint {
+    pub fn g_d(&self) -> NonIdentityPallasPoint {
         diversify_hash(self.d.as_array())
     }
 
-    pub(crate) fn pk_d(&self) -> &DiversifiedTransmissionKey {
+    pub fn pk_d(&self) -> &DiversifiedTransmissionKey {
         &self.pk_d
     }
 

@@ -357,6 +357,7 @@ version = "0.1.0"
 dependencies = [
  "app_utils",
  "bitcoin",
+ "hex",
  "keystore",
  "rust_tools",
  "thiserror-core",

@@ -161,7 +161,7 @@ impl<T: SigType> From<&Signature<T>> for [u8; 64] {
     }
 }
 
-pub(crate) mod private {
+pub mod private {
     use super::{Binding, SpendAuth};
 
     pub trait Sealed {}

@@ -33,7 +33,7 @@ pub const Q_PERSONALIZATION: &str = "z.cash:SinsemillaQ";
 /// SWU hash-to-curve personalization for Sinsemilla $S$ generators.
 pub const S_PERSONALIZATION: &str = "z.cash:SinsemillaS";
 
-pub(crate) fn lebs2ip_k(bits: &[bool]) -> u32 {
+pub fn lebs2ip_k(bits: &[bool]) -> u32 {
     assert!(bits.len() == K);
     bits.iter()
         .enumerate()
@@ -166,7 +166,7 @@ impl HashDomain {
     /// This is only for testing use.
     #[cfg(test)]
     #[allow(non_snake_case)]
-    pub(crate) fn from_Q(Q: pallas::Point) -> Self {
+    pub fn from_Q(Q: pallas::Point) -> Self {
         HashDomain { Q }
     }
 

@@ -304,7 +304,7 @@ pub fn pubkey_to_address(pubkey: &secp256k1::PublicKey) -> TransparentAddress {
     )
 }
 
-pub(crate) mod private {
+pub mod private {
     use super::TransparentKeyScope;
     use bip32::ExtendedPublicKey;
     use secp256k1::PublicKey;

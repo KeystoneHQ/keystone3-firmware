@@ -61,7 +61,7 @@ impl SealedItem for Receiver {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Address(pub(crate) Vec<Receiver>);
+pub struct Address(pub Vec<Receiver>);
 
 impl Address {
     // Returns whether this address has the ability to receive transfers of the given pool type.

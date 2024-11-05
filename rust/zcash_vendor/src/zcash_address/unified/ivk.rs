@@ -110,7 +110,7 @@ impl SealedItem for Ivk {
 /// # }
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Uivk(pub(crate) Vec<Ivk>);
+pub struct Uivk(pub Vec<Ivk>);
 
 impl Container for Uivk {
     type Item = Ivk;

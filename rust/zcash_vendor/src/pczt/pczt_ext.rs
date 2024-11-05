@@ -13,7 +13,7 @@ const ZCASH_TX_PERSONALIZATION_PREFIX: &[u8; 12] = b"ZcashTxHash_";
 
 // TxId level 1 node personalization
 const ZCASH_HEADERS_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdHeadersHash";
-pub(crate) const ZCASH_TRANSPARENT_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdTranspaHash";
+pub const ZCASH_TRANSPARENT_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdTranspaHash";
 const ZCASH_SAPLING_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdSaplingHash";
 #[cfg(zcash_unstable = "zfuture")]
 const ZCASH_TZE_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdTZE____Hash";
@@ -191,7 +191,7 @@ impl Pczt {
         h.update(mh.finalize().as_bytes());
         h.update(nh.finalize().as_bytes());
         h.update(&[self.orchard.flags]);
-        h.update(&self.orchard.value_balance.to_le_bytes());  
+        h.update(&self.orchard.value_balance.to_le_bytes());
         h.update(&self.orchard.anchor.unwrap());
         h.finalize()
     }
@@ -373,8 +373,8 @@ impl Pczt {
         pczt.orchard.actions.iter_mut().try_for_each(|action| {
             let signature = signer.sign_orchard(
                 self.sheilded_sig_commitment().as_bytes(),
-                pczt.orchard.anchor.unwrap(),
-                "".to_string(),
+                action.spend.alpha.unwrap(),
+                "m/44'/133'/0'".to_string(),
             )?;
             action.spend.spend_auth_sig = Some(signature);
             Ok(())
@@ -386,9 +386,10 @@ impl Pczt {
 #[cfg(test)]
 mod tests {
     extern crate std;
-    use std::println;
-    use alloc::{collections::btree_map::BTreeMap, vec::{Vec}};
     use alloc::vec;
+    use alloc::{collections::btree_map::BTreeMap, vec::Vec};
+    use secp256k1::Message;
+    use std::println;
 
     use crate::pczt::{
         self,
@@ -492,6 +493,9 @@ mod tests {
         };
 
         let hash = pczt.sheilded_sig_commitment();
-        assert_eq!("3840e39aef20acc050a509658397bbaa9500370967e37fe30d18e5fba05aba81", hex::encode(hash.as_bytes()));
+        assert_eq!(
+            "3840e39aef20acc050a509658397bbaa9500370967e37fe30d18e5fba05aba81",
+            hex::encode(hash.as_bytes())
+        );
     }
 }

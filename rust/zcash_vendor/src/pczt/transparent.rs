@@ -4,34 +4,34 @@ use super::merge_optional;
 
 /// PCZT fields that are specific to producing the transaction's transparent bundle (if
 /// any).
-#[derive(Clone)]
-pub(crate) struct Bundle {
-    pub(crate) inputs: Vec<Input>,
-    pub(crate) outputs: Vec<Output>,
+#[derive(Clone, Debug)]
+pub struct Bundle {
+    pub inputs: Vec<Input>,
+    pub outputs: Vec<Output>,
 }
 
-#[derive(Clone)]
-pub(crate) struct Input {
+#[derive(Clone, Debug)]
+pub struct Input {
     //
     // Transparent effecting data.
     //
     // These are required fields that are part of the final transaction, and are filled in
     // by the Constructor when adding an output.
     //
-    pub(crate) prevout_txid: [u8; 32],
-    pub(crate) prevout_index: u32,
+    pub prevout_txid: [u8; 32],
+    pub prevout_index: u32,
     /// TODO: which role should set this?
-    pub(crate) sequence: u32,
+    pub sequence: u32,
 
     /// A satisfying witness for the `script_pubkey` of the input being spent.
     ///
     /// This is set by the Spend Finalizer.
-    pub(crate) script_sig: Option<Vec<u8>>,
+    pub script_sig: Option<Vec<u8>>,
 
     // These are required by the Transaction Extractor, to derive the shielded sighash
     // needed for computing the binding signatures.
-    pub(crate) value: u64,
-    pub(crate) script_pubkey: Vec<u8>,
+    pub value: u64,
+    pub script_pubkey: Vec<u8>,
 
     /// A map from a pubkey to a signature created by it.
     ///
@@ -39,34 +39,34 @@ pub(crate) struct Input {
     /// - These are required by the Spend Finalizer to assemble `script_sig`.
     ///
     /// TODO: Decide on map key type.
-    pub(crate) signatures: BTreeMap<Vec<u8>, Vec<u8>>,
+    pub signatures: BTreeMap<Vec<u8>, Vec<u8>>,
 
     // TODO derivation path
 
-    pub(crate) proprietary: BTreeMap<String, Vec<u8>>,
+    pub proprietary: BTreeMap<String, Vec<u8>>,
 }
 
-#[derive(Clone)]
-pub(crate) struct Output {
+#[derive(Clone, Debug)]
+pub struct Output {
     //
     // Transparent effecting data.
     //
     // These are required fields that are part of the final transaction, and are filled in
     // by the Constructor when adding an output.
     //
-    pub(crate) value: u64,
-    pub(crate) script_pubkey: Vec<u8>,
+    pub value: u64,
+    pub script_pubkey: Vec<u8>,
 
     // TODO derivation path
 
-    pub(crate) proprietary: BTreeMap<String, Vec<u8>>,
+    pub proprietary: BTreeMap<String, Vec<u8>>,
 }
 
 impl Bundle {
     /// Merges this bundle with another.
     ///
     /// Returns `None` if the bundles have conflicting data.
-    pub(crate) fn merge(mut self, other: Self) -> Option<Self> {
+    pub fn merge(mut self, other: Self) -> Option<Self> {
         // Destructure `other` to ensure we handle everything.
         let Self {
             mut inputs,

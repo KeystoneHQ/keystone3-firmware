@@ -89,18 +89,18 @@
 //!   - Creates bindingSig and extracts the final transaction.
 
 
-mod common;
-mod orchard;
-mod sapling;
-mod transparent;
+pub mod common;
+pub mod orchard;
+pub mod sapling;
+pub mod transparent;
 
 pub mod pczt_ext;
 
-const V5_TX_VERSION: u32 = 5;
-const V5_VERSION_GROUP_ID: u32 = 0x26A7270A;
+pub const V5_TX_VERSION: u32 = 5;
+pub const V5_VERSION_GROUP_ID: u32 = 0x26A7270A;
 
 /// A partially-created Zcash transaction.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Pczt {
     /// The version of this PCZT format, for storage.
     pub version: Version,
@@ -128,8 +128,8 @@ pub struct Pczt {
 /// TODO: We might just define the version as a prefix byte included within the encoding,
 /// and then permit the entire rest of the format to change arbitrarily in new versions
 /// (though it would likely instead be altered via predictable diffs).
-#[derive(Clone, PartialEq, Eq)]
-enum Version {
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum Version {
     V0,
 }
 

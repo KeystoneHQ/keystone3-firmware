@@ -105,7 +105,7 @@ impl KeyIndex {
 ///
 /// [orchardextendedkeys]: https://zips.z.cash/zip-0032#orchard-extended-keys
 #[derive(Debug, Clone)]
-pub(crate) struct ExtendedSpendingKey {
+pub struct ExtendedSpendingKey {
     depth: u8,
     parent_fvk_tag: FvkTag,
     child_index: KeyIndex,

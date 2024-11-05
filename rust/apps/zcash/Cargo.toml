@@ -12,6 +12,7 @@ app_utils = { workspace = true }
 bitcoin = { workspace = true }
 thiserror = { workspace = true }
 zcash_vendor = { workspace = true }
+hex = { workspace = true }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

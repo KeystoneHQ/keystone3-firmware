@@ -11,9 +11,9 @@ use bech32::{self, Bech32m};
 
 use super::super::zcash_protocol::consensus::NetworkType as Network;
 
-pub(crate) mod address;
-pub(crate) mod fvk;
-pub(crate) mod ivk;
+pub mod address;
+pub mod fvk;
+pub mod ivk;
 
 pub use address::{Address, Receiver};
 pub use fvk::{Fvk, Ufvk};
@@ -159,7 +159,7 @@ impl fmt::Display for ParseError {
 
 impl Error for ParseError {}
 
-pub(crate) mod private {
+pub mod private {
     use crate::zcash_encoding;
     use alloc::vec;
 

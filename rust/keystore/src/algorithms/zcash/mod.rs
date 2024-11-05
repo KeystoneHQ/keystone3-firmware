@@ -57,6 +57,7 @@ pub fn sign_message_orchard(
     let rng_seed = alpha.clone();
     let rng = ChaCha8Rng::from_seed(rng_seed);
     let osk = SpendingKey::from_zip32_seed(seed, coin_type, account_id).unwrap();
+
     let osak = SpendAuthorizingKey::from(&osk);
     let randm = Fq::from_repr(alpha)
         .into_option()

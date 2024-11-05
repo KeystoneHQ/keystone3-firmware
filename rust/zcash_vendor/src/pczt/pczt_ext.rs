@@ -4,6 +4,7 @@ use alloc::string::String;
 use alloc::string::ToString;
 use blake2b_simd::{Hash, Params, State};
 use byteorder::LittleEndian;
+use pasta_curves::Fq;
 
 use super::transparent::{Input, Output};
 
@@ -117,7 +118,7 @@ impl Pczt {
 
         let mut h = hasher(ZCASH_HEADERS_HASH_PERSONALIZATION);
 
-        h.update(&version.to_le_bytes());
+        h.update(&((1 << 31) | version).to_le_bytes());
         h.update(&version_group_id.to_le_bytes());
         h.update(&consensus_branch_id.to_le_bytes());
         h.update(&lock_time.to_le_bytes());
@@ -173,7 +174,6 @@ impl Pczt {
         let mut nh = hasher(ZCASH_ORCHARD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION);
 
         for action in self.orchard.actions.iter() {
-            // println!("{:?}", &action);
             ch.update(&action.spend.nullifier);
             ch.update(&action.output.cmx);
             ch.update(&action.output.ephemeral_key);
@@ -191,7 +191,7 @@ impl Pczt {
         h.update(mh.finalize().as_bytes());
         h.update(nh.finalize().as_bytes());
         h.update(&[self.orchard.flags]);
-        h.update(&self.orchard.value_balance.to_le_bytes());
+        h.update(&self.orchard.value_balance.to_le_bytes());  
         h.update(&self.orchard.anchor.unwrap());
         h.finalize()
     }
@@ -386,11 +386,15 @@ impl Pczt {
 #[cfg(test)]
 mod tests {
     extern crate std;
-    use alloc::{collections::btree_map::BTreeMap, vec};
+    use std::println;
+    use alloc::{collections::btree_map::BTreeMap, vec::{Vec}};
+    use alloc::vec;
 
     use crate::pczt::{
-        self, common::Global, orchard, sapling, transparent, Version, V5_TX_VERSION,
-        V5_VERSION_GROUP_ID,
+        self,
+        common::Global,
+        orchard::{self, Action},
+        sapling, transparent, Version, V5_TX_VERSION, V5_VERSION_GROUP_ID,
     };
 
     use super::*;
@@ -404,7 +408,7 @@ mod tests {
                 version_group_id: V5_VERSION_GROUP_ID,
                 consensus_branch_id: 0xc2d6_d0b4,
                 lock_time: 0,
-                expiry_height: 0,
+                expiry_height: 2705363,
                 proprietary: BTreeMap::new(),
             },
             transparent: transparent::Bundle {
@@ -419,13 +423,75 @@ mod tests {
                 bsk: None,
             },
             orchard: orchard::Bundle {
-                anchor: None,
-                actions: vec![],
-                flags: 0,
-                value_balance: 0,
+                anchor: Some(hex::decode("ed3e3e7dd1c81ac9cc31cd69c213939b2e21067758d4bd7dc9c2fed1eaf95829").unwrap().try_into().unwrap()),
+                actions: vec![
+                    Action {
+                        cv: hex::decode("2262e5f410e151d1f373224cfa45f6287ab7cad2fef81e2926c1c8e052388e07").unwrap().try_into().unwrap(),
+                        spend: orchard::Spend {
+                            value: None,
+                            witness: None,
+                            alpha: Some(hex::decode("1af2a18b8647aa197a70a2779b8272d56cfdb8e0e2c6e50bc837a97716cb2cb7").unwrap().try_into().unwrap()),
+                            fvk: None,
+                            proprietary: BTreeMap::new(),
+                            recipient: None,
+                            rho: None,
+                            rseed: None,
+                            nullifier: hex::decode("f35440b9ef04865f982a9e74a46a66864df9999070d1611a4fae263cb1cf5211").unwrap().try_into().unwrap(),
+                            rk: hex::decode("9e196d6d045d1d43a00100bca908a609e3411cdf5fef2fd89e23f2e60c43540a").unwrap().try_into().unwrap(),
+                            spend_auth_sig: None,
+                        },
+                        output: orchard::Output {
+                            cmx: hex::decode("0b4ca8a1c5c626285ef039069d7147370d512dd0ef94df8430b703701a978d06").unwrap().try_into().unwrap(),
+                            ephemeral_key: hex::decode("d6187bb2b5623400639196b1f7ef73a77a8ceaf3f71c4971ff90922eea642eaa").unwrap().try_into().unwrap(),
+                            enc_ciphertext: hex::decode("9f1739b05e37faaaebf4c25ea1158693c338e8f9e30faeb06716930796ee3a29a40bc74c1e2c2029bd4672ea9e27dbc9055f057ff2d74f39ea04bbc414f0aa7a53386348183d9ddbea1499244fe1f3b000e328cd301f2b25bfa5406a9a02bd80bc07fc1e9f5d0205c0bac50b2cca4c5f82d6e6939366ac4a2bbe4afb1c43cbcf2db08a279d13b997a07d3c4b60b9c57ce9ee1861061d05f5a5c8dd86e416c2d9be8c320f9bcea93340fedb1d6cbbfe9dd6810612f321012174fde466ccf9ec1833ea89eb84f0d8b51bc10388555e23eee06cc8f8f10ae1993fadb1c5a4208ce0b033cbd3cec70f6d1738cd9a88dd6ae173f2185789f231f8a861002a5ecc798989032fe570509187e68eade9b461baa69abec787adfad546e98e6cf55667ba57d11701df67e65f1b551eeb9f402a0b5699a019858537ac49c89231c95932012ec690d0678f0f378ac764a300de1cfafdf2ab96d4dde78f8965da5796a5a4cea3e9fab98c699e74cc0662b084ce86c16fb79a40d07e54975920805b114f1a1db55c4e8d811e12a4245125d4e2a03fd2cedd32ae35fa4a6cbdac8893c3bc0f3c8a7d7b225db6bfc853d7ac5bf438c25d5b8cadbb5c1a5d5b6d9e9e152f02fabf2f02effd685e9d919a4faaa9cc87d64bd9162642c01a467a439bb66181dd5ef647fa1da3433263bef38aefe2a73d6d1eb04ce6b64dd56f4b3ca1665b600f9ec122bce8689a862f53a8d886cf642061db116fde176a6f8d1a9dcb53e91551d1742223e05be553e06a4266e562a06b5ae6a9ceb4fb2b6d338c5118e3c0fb04e5866da51563c8").unwrap().try_into().unwrap(),
+                            out_ciphertext: hex::decode("1d7a687847d1fbafb6c051b952a67361dd66f8bf31ff20ae342dcfc00533b60f9edabe1dc68bc7182e80e89d8274ceedf03c309d676f8b0d0a9e9540adef6f85e808aec8790ceab00173cce2007f71b1").unwrap().try_into().unwrap(),
+                            ock: None,
+                            proprietary: BTreeMap::new(),
+                            recipient: None,
+                            rseed: None,
+                            shared_secret: None,
+                            value: None,
+                        },
+                        rcv: None,
+                    },
+                    Action {
+                        cv: hex::decode("3675ed5f6142e0e407dff2d850754ae13a084e46344d6408eafad993ba509822").unwrap().try_into().unwrap(),
+                        spend: orchard::Spend {
+                            value: None,
+                            witness: None,
+                            alpha: Some(hex::decode("1b1e87277818a289b9af5faccdbeede8d9fb1aa240c4cbd0017bb963119b83cb").unwrap().try_into().unwrap()),
+                            fvk: None,
+                            proprietary: BTreeMap::new(),
+                            recipient: None,
+                            rho: None,
+                            rseed: None,
+                            nullifier: hex::decode("dbf349555524523f0edbc811adb445ed3e79d8d5a94fe29c3a682381c571c123").unwrap().try_into().unwrap(),
+                            rk: hex::decode("9d566b785aee161d20342e7b805facf2e9c103ab36ce3453ccf2161bc0da9d8c").unwrap().try_into().unwrap(),
+                            spend_auth_sig: None,
+                        },
+                        output: orchard::Output {
+                            cmx: hex::decode("40ce12b40aa59c0170f9440e36152509f9191a5b21c0378c6eb02e5ee530a935").unwrap().try_into().unwrap(),
+                            ephemeral_key: hex::decode("70aa37601528cef93f619478d1ccd0a5431735dce8daf870ee3ebfb6b4169ca9").unwrap().try_into().unwrap(),
+                            enc_ciphertext: hex::decode("4074376701408cbe4e06941da0354bc7dbb902776d375b3f355cd9cd82d69203abb8da5dc5ee7fd89db500153d5e024d1f7c29236387e37f53b90776795729295b7a538056b2889952df1652fd31682e629dfc0bfd5a73d9379deff0797081b257fdfad73fba3244813c021315b44fcf2e56a517b12cc8c9d7cb2ab5d8ee1467263c7e0cc9e0aabffc5a54c4f5d3bc4c25bbfaf956be2d64fdcdb27f444a435356e3aa135bf23dca861860d7b793450180b1b6eb063e87275d1bf48c0f39aea51b64d9de58ae8b0f5b5a95892ab4d3037215a7ca1b3ab87dd031412736dad973fa58f0598da9693a1c05b36a2fe580c46b9f02b18335326c4ecb153869e170e719ee80aee3dd22b3e7dedc47a7722a39638db3d97873b9ca1c4b30d1c803d2712fd628eff6edd7ed85890862fa3b59266a1cf3b130b6b044f9c5cbfce7fb2ed760e431bf11b1923bdd44510d0deadb55a427f79ebc3eb85a061b33ec779bb16785adef8a839e86e09f5f05da6ca309835dcde5c061ffa242b6504b712526f73a17ca28bdbc2cfa5cb0fc14c754c1ba5d643d10023049061e97251aa3f55335bbc9d963d6d4da0cbe304da0c76e518fa36a9043fd1030ba64e04ed65ec321de345d522dd1f471ee335f917fca98f516ba09a31aaad8d4f473cfbcb5f9704911bb88f39a6787675f9588afdb8196521484b034987b8df53c6ad54b79e8c3f484e3eb0cdb6182dcf48656165495527cd067a3a7b829be4c971e6714f2c4e2baa2b08de7a7399c3a12bc1a23df7a035d7f54ecd5542268eac06a67b5641e15ed9b423a352eb2").unwrap().try_into().unwrap(),
+                            out_ciphertext: hex::decode("07ac9a6b96fcb208db821504a31b6af0509fff70c46bd2a6643711f1645816935135fabca8ae43c86897135c7653444b3361de0d75a3b886d35832bb6c89ad3b339e4109b3c40b3d3c165b11bffd58f9").unwrap().try_into().unwrap(),
+                            ock: None,
+                            proprietary: BTreeMap::new(),
+                            recipient: None,
+                            rseed: None,
+                            shared_secret: None,
+                            value: None,
+                        },
+                        rcv: None,
+                    }
+                ],
+                flags: 3,
+                value_balance: 10000,
                 zkproof: None,
                 bsk: None,
             },
         };
+
+        let hash = pczt.sheilded_sig_commitment();
+        assert_eq!("3840e39aef20acc050a509658397bbaa9500370967e37fe30d18e5fba05aba81", hex::encode(hash.as_bytes()));
     }
 }

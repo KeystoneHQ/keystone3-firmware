@@ -27,7 +27,7 @@ pub(crate) struct Bundle {
     /// This is initialized by the Creator, and updated by the Constructor as spends or
     /// outputs are added to the PCZT. It enables per-spend and per-output values to be
     /// redacted from the PCZT after they are no longer necessary.
-    pub(crate) value_balance: u64,
+    pub(crate) value_balance: i64,
 
     /// The Orchard anchor for this transaction.
     ///

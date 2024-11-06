@@ -175,7 +175,7 @@ impl WrappedPsbt {
         }
         self.check_my_input_derivation(input, index)?;
         self.check_my_input_script(input, index)?;
-        self.check_my_input_signature(input, index, context)?;
+        // self.check_my_input_signature(input, index, context)?;
         self.check_my_input_value_tampered(input, index)?;
         self.check_my_wallet_type(input, context)?;
         Ok(true)

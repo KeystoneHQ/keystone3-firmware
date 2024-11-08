@@ -165,6 +165,7 @@ dependencies = [
  "keystore",
  "prost",
  "prost-types",
+ "rust_tools",
  "serde",
  "serde_derive",
  "serde_json",

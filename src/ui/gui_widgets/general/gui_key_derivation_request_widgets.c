@@ -350,8 +350,10 @@ static void ModelParseQRHardwareCall()
     g_callData = data->data;
     g_response = data;
     for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
-        printf("is_ada: %d\n", g_callData->key_derivation->schemas->data[i].is_ada);
         g_hasAda = g_hasAda || g_callData->key_derivation->schemas->data[i].is_ada;
+    }
+    if (strcmp("0", g_callData->version) == 0) {
+        g_hasAda = true;
     }
 }
 
@@ -480,6 +482,17 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
             }
         }
     }
+    printf("g_hasAda: %d\n", g_hasAda);
+    if (g_hasAda) {
+        MnemonicType mnemonicType = GetMnemonicType();
+        if (mnemonicType == MNEMONIC_TYPE_SLIP39) {
+            SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
+                false, _("invaild_derive_type"), _("invalid_slip39_ada_con")
+            });
+            return g_hardwareCallParamsCheckResult;
+        }
+    }
+
     SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
         true, "Check Pass", "hardware call params check pass"
     });

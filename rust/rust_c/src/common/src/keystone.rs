@@ -18,9 +18,7 @@ use ur_registry::bytes::Bytes;
 use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::keystone::keystone_sign_result::KeystoneSignResult;
-use ur_registry::pb::protobuf_parser::{
-    parse_protobuf, serialize_protobuf, unzip, zip,
-};
+use ur_registry::pb::protobuf_parser::{parse_protobuf, serialize_protobuf, unzip, zip};
 use ur_registry::pb::protoc::base::Content as VersionContent;
 use ur_registry::pb::protoc::payload::Type as PbType;
 use ur_registry::pb::protoc::{payload, Base, Payload, SignTransactionResult};

@@ -19,8 +19,8 @@ use common_rust_c::{
 };
 use keystore::algorithms::secp256k1;
 use ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType};
-use ur_registry::traits::RegistryItem;
 use ur_registry::bitcoin::btc_signature::BtcSignature;
+use ur_registry::traits::RegistryItem;
 
 #[no_mangle]
 pub extern "C" fn btc_check_msg(

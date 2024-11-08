@@ -39,9 +39,7 @@ use ur_registry::pb::protoc::Base;
 #[cfg(feature = "multi-coins")]
 use ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
-use ur_registry::stellar::stellar_sign_request::{
-    SignType as StellarSignType, StellarSignRequest,
-};
+use ur_registry::stellar::stellar_sign_request::{SignType as StellarSignType, StellarSignRequest};
 #[cfg(feature = "multi-coins")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};

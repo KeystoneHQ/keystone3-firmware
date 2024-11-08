@@ -6,8 +6,8 @@ use app_cardano::structs::{
     ParsedCardanoTx, VotingProcedure, VotingProposal,
 };
 use core::ptr::null_mut;
-use itertools::Itertools;
 use hex;
+use itertools::Itertools;
 use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 
 use common_rust_c::ffi::VecFFI;

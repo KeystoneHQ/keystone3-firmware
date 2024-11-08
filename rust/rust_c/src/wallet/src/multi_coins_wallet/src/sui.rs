@@ -1,6 +1,7 @@
 use alloc::collections::BTreeMap;
 use alloc::format;
 use app_wallets::sui::generate_sync_ur;
+use bitcoin::bip32::DerivationPath;
 use common_rust_c::errors::RustCError;
 use common_rust_c::ffi::CSliceFFI;
 use common_rust_c::structs::ExtendedPublicKey;
@@ -9,7 +10,6 @@ use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{recover_c_array, recover_c_char};
 use core::slice;
 use core::str::FromStr;
-use bitcoin::bip32::DerivationPath;
 use hex;
 use ur_registry::error::URError;
 use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;

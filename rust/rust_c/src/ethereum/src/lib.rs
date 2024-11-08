@@ -12,9 +12,9 @@ use app_ethereum::{
     parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
     LegacyTransaction, TransactionSignature,
 };
-use keystore::algorithms::secp256k1::derive_public_key;
 use cryptoxide::hashing::keccak256;
 use hex;
+use keystore::algorithms::secp256k1::derive_public_key;
 use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 use ur_registry::ethereum::eth_signature::EthSignature;
 use ur_registry::pb;
@@ -469,8 +469,7 @@ pub extern "C" fn eth_sign_tx_bytes(
         raw_tx: format!("0x{}", hex::encode(raw_tx)),
     };
 
-    let content =
-        ur_registry::pb::protoc::payload::Content::SignTxResult(sign_tx_result);
+    let content = ur_registry::pb::protoc::payload::Content::SignTxResult(sign_tx_result);
     let payload = ur_registry::pb::protoc::Payload {
         //  type is ur_registry::pb::protoc::payload::Type::SignTxResult
         r#type: 9,
@@ -489,9 +488,7 @@ pub extern "C" fn eth_sign_tx_bytes(
     let zip_data = pb::protobuf_parser::zip(&base_vec).unwrap();
     // data --> protobuf --> zip protobuf data --> cbor bytes data
     UREncodeResult::encode(
-        ur_registry::bytes::Bytes::new(zip_data)
-            .try_into()
-            .unwrap(),
+        ur_registry::bytes::Bytes::new(zip_data).try_into().unwrap(),
         ur_registry::bytes::Bytes::get_registry_type().get_type(),
         FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
     )

@@ -7,6 +7,7 @@ use alloc::vec::Vec;
 use alloc::{format, vec};
 use app_utils::normalize_path;
 
+use bitcoin::bip32::{DerivationPath, Xpub};
 use common_rust_c::errors::RustCError;
 use common_rust_c::extract_array;
 use common_rust_c::ffi::CSliceFFI;
@@ -17,7 +18,6 @@ use common_rust_c::utils::{recover_c_array, recover_c_char};
 use core::slice;
 use core::str::FromStr;
 use cty::{int32_t, uint32_t};
-use bitcoin::bip32::{DerivationPath, Xpub};
 use hex;
 use ur_registry::bytes::Bytes;
 use ur_registry::crypto_account::CryptoAccount;

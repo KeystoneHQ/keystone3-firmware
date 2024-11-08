@@ -1,8 +1,8 @@
 use alloc::collections::BTreeMap;
 use alloc::format;
+use bitcoin::bip32::DerivationPath;
 use core::slice;
 use core::str::FromStr;
-use bitcoin::bip32::DerivationPath;
 use hex;
 use ur_registry::error::URError;
 use ur_registry::traits::RegistryItem;

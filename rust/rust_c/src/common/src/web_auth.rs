@@ -91,21 +91,19 @@ fn _calculate_auth_code(
                 d,
                 vec![dummy_p, dummy_q],
             ) {
-                Ok(_key) => {
-                    match _key.decrypt(rsa::Oaep::new::<Sha1>(), &encrypted_data) {
-                        Ok(_value) => String::from_utf8(_value.clone()).map_err(|_err| {
-                            RustCError::WebAuthFailed(format!(
-                                "Invalid utf8 hex: {}, {}",
-                                hex::encode(_value),
-                                _err.to_string()
-                            ))
-                        }),
-                        Err(_err) => Err(RustCError::WebAuthFailed(format!(
-                            "RSA decryption failed: {}",
+                Ok(_key) => match _key.decrypt(rsa::Oaep::new::<Sha1>(), &encrypted_data) {
+                    Ok(_value) => String::from_utf8(_value.clone()).map_err(|_err| {
+                        RustCError::WebAuthFailed(format!(
+                            "Invalid utf8 hex: {}, {}",
+                            hex::encode(_value),
                             _err.to_string()
-                        ))),
-                    }
-                }
+                        ))
+                    }),
+                    Err(_err) => Err(RustCError::WebAuthFailed(format!(
+                        "RSA decryption failed: {}",
+                        _err.to_string()
+                    ))),
+                },
                 Err(_err) => Err(RustCError::WebAuthFailed(format!(
                     "RSA key recovery error: {}",
                     _err.to_string()

@@ -113,11 +113,8 @@ impl UREncodeResult {
     }
 
     pub fn encode(data: Vec<u8>, tag: String, max_fragment_length: usize) -> Self {
-        let result = ur_parse_lib::keystone_ur_encoder::probe_encode(
-            &data,
-            max_fragment_length,
-            tag,
-        );
+        let result =
+            ur_parse_lib::keystone_ur_encoder::probe_encode(&data, max_fragment_length, tag);
         match result {
             Ok(result) => {
                 if result.is_multi_part {
@@ -719,8 +716,7 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
 
 #[no_mangle]
 pub extern "C" fn get_next_part(ptr: PtrEncoder) -> *mut UREncodeMultiResult {
-    let keystone_ur_encoder_ptr =
-        ptr as *mut ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
+    let keystone_ur_encoder_ptr = ptr as *mut ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
     let encoder = unsafe { &mut *keystone_ur_encoder_ptr };
     match encoder.next_part() {
         Ok(result) => UREncodeMultiResult::success(result).c_ptr(),

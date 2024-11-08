@@ -5,30 +5,31 @@
 #[macro_use]
 extern crate alloc;
 extern crate core;
-
 #[cfg(test)]
 #[macro_use]
 extern crate std;
 
-use core::str::FromStr;
-
-use crate::{errors::Result, types::intent::IntentScope};
 use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use errors::SuiError;
+use core::str::FromStr;
+
 use serde_derive::{Deserialize, Serialize};
 use sui_types::{message::PersonalMessage, transaction::TransactionData};
-use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
+
 use {bcs, hex};
 use {
     blake2::{
-        digest::{Update, VariableOutput},
         Blake2bVar,
+        digest::{Update, VariableOutput},
     },
     serde_json,
 };
+use errors::SuiError;
+use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
+
+use crate::{errors::Result, types::intent::IntentScope};
 
 pub mod errors;
 pub mod types;
@@ -108,15 +109,24 @@ pub fn sign_intent(seed: &[u8], path: &String, intent: &[u8]) -> Result<[u8; 64]
     hasher.update(intent);
     let mut hash = [0u8; 32];
     hasher.finalize_variable(&mut hash).unwrap();
-    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, &hash)
+    let sig =
+        keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, &hash)
+            .map_err(|e| errors::SuiError::SignFailure(e.to_string()))?;
+    Ok(sig)
+}
+
+pub fn sign_hash(seed: &[u8], path: &String, hash: &[u8]) -> Result<[u8; 64]> {
+    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, hash)
         .map_err(|e| errors::SuiError::SignFailure(e.to_string()))
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use alloc::string::ToString;
+
     use serde_json::json;
+
+    use super::*;
 
     #[test]
     fn test_generate_address() {

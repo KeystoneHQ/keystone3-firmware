@@ -126,6 +126,7 @@ static void HandleHardwareCall(struct URParseResult *urResult)
     if (GuiCheckIfTopView(&g_keyDerivationRequestView) || GuiHomePageIsTop()) {
         GuiSetKeyDerivationRequestData(urResult, NULL, false);
         PubValueMsg(UI_MSG_USB_HARDWARE_VIEW, 0);
+        return;
     }
 
     const char *data = "Export address is just allowed on specific pages";
@@ -205,9 +206,6 @@ void ProcessURService(EAPDURequestPayload_t *payload)
         HandleCheckResult(checkResult, urViewType);
     } while (0);
 
-    if (urResult) {
-        free_ur_parse_result(urResult);
-    }
     if (checkResult) {
         free_TransactionCheckResult(checkResult);
     }

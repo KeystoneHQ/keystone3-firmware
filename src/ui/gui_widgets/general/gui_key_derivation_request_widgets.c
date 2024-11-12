@@ -36,6 +36,12 @@ typedef enum {
     TILE_BUTT,
 } PAGE_TILE;
 
+typedef struct HardwareCallResult {
+    bool isLegal;
+    char *title;
+    char *message;
+} HardwareCallResult_t;
+
 typedef enum HardwareCallV1AdaDerivationAlgo {
     HD_STANDARD_ADA = 0,
     HD_LEDGER_BITBOX_ADA,
@@ -61,6 +67,7 @@ static lv_obj_t *g_egCont = NULL;
 static lv_obj_t *g_egAddressIndex[2];
 static lv_obj_t *g_egAddress[2];
 static char g_derivationPathAddr[2][2][BUFFER_SIZE_128];
+static HardwareCallResult_t g_hardwareCallRes;
 static bool g_isUsb = false;
 static bool g_isUsbPassWordCheck = false;
 static bool g_hasAda = false;
@@ -104,6 +111,8 @@ static AdaXPubType GetAccountType(void);
 static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e);
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
+static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void);
+
 void GuiSetKeyDerivationRequestData(void *urResult, void *multiResult, bool is_multi)
 {
     g_urResult = urResult;
@@ -355,6 +364,7 @@ static void ModelParseQRHardwareCall()
     if (strcmp("0", g_callData->version) == 0) {
         g_hasAda = true;
     }
+    CheckHardwareCallRequestIsLegal();
 }
 
 typedef enum {
@@ -382,11 +392,6 @@ static uint8_t GetDerivationTypeByCurveAndDeriveAlgo(char *curve, char *algo)
     return UNSUPPORT_DERIVATION_TYPE;
 }
 
-typedef struct HardwareCallResult {
-    bool isLegal;
-    char *title;
-    char *message;
-} HardwareCallResult_t;
 
 static HardwareCallResult_t g_hardwareCallParamsCheckResult = {
     .isLegal = false,
@@ -840,9 +845,8 @@ static bool CheckHardWareCallParaIsValied()
 
 static void OnApproveHandler(lv_event_t *e)
 {
-    printf("OnApproveHandler\n");
     // click approve button and check the hardware call params
-    HardwareCallResult_t res =  CheckHardwareCallRequestIsLegal();
+    HardwareCallResult_t res =  g_hardwareCallParamsCheckResult;
     if (!res.isLegal) {
         GuiCreateHardwareCallInvaildParamHintbox(res.title, res.message);
         return;
@@ -1125,7 +1129,9 @@ static void OpenMoreHandler(lv_event_t *e)
 {
     int height = 84;
     int hintboxHeight = 144;
-    if (g_hasAda) {
+    bool hasChangePath = g_hasAda && g_hardwareCallParamsCheckResult.isLegal;
+
+    if (hasChangePath) {
         hintboxHeight += height;
     }
     g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
@@ -1148,7 +1154,7 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_obj_t *btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
                                     OpenTutorialHandler, &g_walletIndex);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-    if (g_hasAda) {
+    if (hasChangePath) {
         WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
         lv_obj_t *derivationBtn = GuiCreateSelectButton(g_openMoreHintBox, _("derivation_path_change"),
                                   &imgPath, ChangeDerivationPathHandler, wallet,

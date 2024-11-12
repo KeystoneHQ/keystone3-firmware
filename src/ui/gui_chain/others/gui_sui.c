@@ -183,7 +183,6 @@ void GuiShowSuiSignMessageHashOverview(lv_obj_t *parent, void *totalData)
     lv_obj_t *message_hash_value = GuiCreateIllustrateLabel(message_hash_card, tempBuf);
     lv_label_set_recolor(message_hash_value, true);
     lv_obj_align_to(message_hash_value, message_hash_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    lv_label_set_long_mode(message_hash_value, LV_LABEL_LONG_WRAP);
 }
 
 

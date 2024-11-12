@@ -1340,6 +1340,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiArDataItemDetail;
     } else if (!strcmp(funcName, "GuiShowSuiSignMessageHashOverview")) {
         return GuiShowSuiSignMessageHashOverview;
+    } else if (!strcmp(funcName, "GuiShowSuiSignMessageHashDetails")) {
+        return GuiShowSuiSignMessageHashDetails;
     }
 #endif
     return NULL;

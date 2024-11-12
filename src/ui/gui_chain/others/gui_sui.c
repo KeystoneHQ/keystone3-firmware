@@ -75,6 +75,17 @@ static void SetContainerDefaultStyle(lv_obj_t *container)
     lv_obj_set_style_bg_opa(container, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
+static void SetFlexContainerStyle(lv_obj_t *container, lv_flex_flow_t flow, lv_coord_t padding_y)
+{
+    lv_obj_set_style_radius(container, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(container, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(container, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_flex_flow(container, flow);
+    lv_obj_set_style_pad_top(container, padding_y, LV_PART_MAIN);
+    lv_obj_set_style_pad_bottom(container, padding_y, LV_PART_MAIN);
+    lv_obj_set_style_pad_left(container, 24, LV_PART_MAIN);
+}
+
 static void SetTitleLabelStyle(lv_obj_t *label)
 {
     lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
@@ -82,87 +93,151 @@ static void SetTitleLabelStyle(lv_obj_t *label)
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
-static void SetContentLableStyle(lv_obj_t *label)
+lv_obj_t *GuiCreateSuiAutoHeightContainer(lv_obj_t *parent, uint16_t width, uint16_t padding_x)
 {
-    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_t * container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    SetContainerDefaultStyle(container);
+    lv_obj_set_style_pad_all(container, 0, LV_PART_MAIN);
+    lv_obj_set_style_pad_top(container, padding_x, LV_PART_MAIN);
+    lv_obj_set_style_pad_bottom(container, padding_x, LV_PART_MAIN);
+    return container;
 }
+lv_obj_t* GuiCreateSuiNoticeCard(lv_obj_t* parent)
+{
+    lv_obj_t* card = GuiCreateSuiAutoHeightContainer(parent, 408, 24);
+    SetContainerDefaultStyle(card);
+    lv_obj_set_style_bg_color(card, lv_color_hex(0xF55831), LV_PART_MAIN);
+    lv_obj_set_style_radius(card, 8, LV_PART_MAIN);
+
+    lv_obj_t* warningIcon = GuiCreateImg(card, &imgInfoOrange);
+    lv_obj_align(warningIcon, LV_ALIGN_TOP_LEFT, 24, 0);
+
+    lv_obj_t* title_label = GuiCreateTextLabel(card, "Notice");
+    lv_obj_set_style_text_color(title_label, lv_color_hex(0xF55831), LV_PART_MAIN);
+    lv_obj_align_to(title_label, warningIcon, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+
+    lv_obj_t* content_label = GuiCreateIllustrateLabel(card, _("sign_message_hash_notice_content"));
+    lv_obj_set_style_text_color(content_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_set_width(content_label, lv_pct(90));
+    lv_obj_align_to(content_label, warningIcon, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+
+    return card;
+}
+
+lv_obj_t *GuiCreateLabelCard(lv_obj_t *parent, const char *title, const char *content)
+{
+    lv_obj_t *card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    SetFlexContainerStyle(card, LV_FLEX_FLOW_ROW, 16);
+    lv_obj_t *title_label = GuiCreateTextLabel(card, title);
+    lv_obj_align_to(title_label, card, LV_ALIGN_OUT_TOP_LEFT, 24, 16);
+    SetTitleLabelStyle(title_label);
+    lv_obj_t *content_label = GuiCreateIllustrateLabel(card, content);
+    lv_obj_align_to(content_label, title_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    return card;
+}
+
+lv_obj_t *GuiCreateSuiFromAddressCard(lv_obj_t *parent, const char *content)
+{
+    lv_obj_t *card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    SetFlexContainerStyle(card, LV_FLEX_FLOW_COLUMN, 16);
+    lv_obj_t *title_label = GuiCreateTextLabel(card, "From Address");
+    lv_obj_align_to(title_label, card, LV_ALIGN_OUT_TOP_LEFT, 24, 16);
+    SetTitleLabelStyle(title_label);
+    lv_obj_t *content_label = GuiCreateIllustrateLabel(card, content);
+    lv_obj_align_to(content_label, title_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_obj_set_width(content_label, lv_pct(90));
+    lv_label_set_long_mode(content_label, LV_LABEL_LONG_WRAP);
+
+    return card;
+}
+
 
 void GuiShowSuiSignMessageHashOverview(lv_obj_t *parent, void *totalData)
 {
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
     DisplaySuiSignMessageHash *hashData = (DisplaySuiSignMessageHash *)totalData;
-    // notice container
-    lv_obj_t *noticeContainer = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
-    lv_obj_align(noticeContainer, LV_ALIGN_DEFAULT, 0, 0);
-    SetContainerDefaultStyle(noticeContainer);
-    // Create a flex container for icon and notice label
-    lv_obj_t *iconNoticeContainer = lv_obj_create(noticeContainer);
-    lv_obj_set_size(iconNoticeContainer, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_obj_set_style_pad_all(iconNoticeContainer, 0, LV_PART_MAIN);
-    lv_obj_set_style_border_width(iconNoticeContainer, 0, LV_PART_MAIN);
-    lv_obj_set_flex_flow(iconNoticeContainer, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(iconNoticeContainer, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_top(iconNoticeContainer, 10, LV_PART_MAIN);
-    lv_obj_set_style_pad_left(iconNoticeContainer, 24, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(iconNoticeContainer, LV_OPA_TRANSP, LV_PART_MAIN); // Set transparent background
-    // Create image inside the flex container
-    lv_obj_t *img = GuiCreateImg(iconNoticeContainer, &imgInfoOrange);
-    lv_obj_set_style_pad_right(img, 2, LV_PART_MAIN); // Add right padding to the image
-    lv_obj_t *noticeLabel = lv_label_create(iconNoticeContainer);
-    lv_obj_set_style_text_font(noticeLabel, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_style_text_color(noticeLabel, lv_color_hex(0xF5870A), LV_PART_MAIN);
-    lv_label_set_text(noticeLabel, "Notice");
+    lv_obj_t * noticeCard = GuiCreateSuiNoticeCard(parent);
+    lv_obj_align(noticeCard, LV_ALIGN_DEFAULT, 0, 0);
+    lv_obj_update_layout(noticeCard);
+    int containerYOffset = lv_obj_get_height(noticeCard) + 16;
+    // network path container
+    lv_obj_t *network_card = GuiCreateLabelCard(parent, "Network", hashData->network);
+    lv_obj_align(network_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
+    lv_obj_update_layout(network_card);
+    containerYOffset += lv_obj_get_height(network_card) + 16;
+    // message hash container
+    lv_obj_t *message_hash_card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    lv_obj_align(message_hash_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
+    SetFlexContainerStyle(message_hash_card, LV_FLEX_FLOW_COLUMN, 16);
+    lv_obj_t *message_hash_label = GuiCreateTextLabel(message_hash_card, "Hash");
+    lv_obj_align_to(message_hash_label, message_hash_card, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 16);
 
-    lv_obj_t *noticeContent = lv_label_create(noticeContainer);
-    lv_obj_set_width(noticeContent, lv_pct(90));
-    lv_label_set_long_mode(noticeContent, LV_LABEL_LONG_WRAP);
-    lv_obj_set_style_text_font(noticeContent, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_style_text_color(noticeContent, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    // multi language support
-    lv_label_set_text(noticeContent, _("solana_parse_tx_notice"));
-    lv_obj_set_style_text_opa(noticeContent, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align_to(noticeContent, iconNoticeContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 10);
+    // color message hash
+    char hash[128] = {0};
+    strncpy(hash, hashData->message, sizeof(hash) - 1);
+    char tempBuf[128] = {0};
+    snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
 
-    // get the height of the notice container
-    lv_obj_update_layout(noticeContainer);
-    int containerYOffset = lv_obj_get_height(noticeContainer) + 16; // set padding between containers
-
-    // container will auto adjust height
-    lv_obj_t *network_path_container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
-    lv_obj_align(network_path_container, LV_ALIGN_DEFAULT, 0, containerYOffset);
-    SetContainerDefaultStyle(network_path_container);
-
-    // network label
-    lv_obj_t * network_label = GuiCreateTextLabel(network_path_container, "Network");
-    lv_obj_align_to(network_label, network_path_container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
-    SetTitleLabelStyle(network_label);
-    lv_obj_set_style_pad_right(network_label, 2, LV_PART_MAIN); // Add right padding to the image
-    lv_obj_t * network_value = GuiCreateIllustrateLabel(network_path_container, hashData->network);
-    lv_label_set_long_mode(network_value, LV_LABEL_LONG_WRAP);
-    lv_obj_t *path_label = GuiCreateTextLabel(network_path_container, "Path");
-    lv_obj_align_to(path_label, network_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
-    SetTitleLabelStyle(path_label);
-
-    // path value
-    lv_obj_t *path_content = GuiCreateIllustrateLabel(network_path_container, hashData->path);
-    lv_obj_align_to(path_content, path_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    lv_label_set_long_mode(path_content, LV_LABEL_LONG_WRAP);
-
-    // update the height of the network_path_container
-    lv_obj_update_layout(network_path_container);
-    containerYOffset += lv_obj_get_height(network_path_container); // set padding between containers
-    lv_obj_t *message_hash_container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
-    lv_obj_align(message_hash_container, LV_ALIGN_DEFAULT, 0, containerYOffset + 16);
-    SetContainerDefaultStyle(message_hash_container);
-
-    lv_obj_t *message_hash_label = GuiCreateTextLabel(message_hash_container, "Message Hash");
-    lv_obj_align_to(message_hash_label, message_hash_container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
-    SetTitleLabelStyle(message_hash_label);
-
-    lv_obj_t *message_hash_value = GuiCreateIllustrateLabel(message_hash_container, hashData->message);
+    lv_obj_t *message_hash_value = GuiCreateIllustrateLabel(message_hash_card, tempBuf);
+    lv_label_set_recolor(message_hash_value, true);
     lv_obj_align_to(message_hash_value, message_hash_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     lv_label_set_long_mode(message_hash_value, LV_LABEL_LONG_WRAP);
 }
+
+
+
+void GuiShowSuiSignMessageHashDetails(lv_obj_t *parent, void *totalData)
+{
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    DisplaySuiSignMessageHash *hashData = (DisplaySuiSignMessageHash *)totalData;
+    // network card
+    lv_obj_t *network_card = GuiCreateLabelCard(parent, "Network", hashData->network);
+    lv_obj_align(network_card, LV_ALIGN_DEFAULT, 0, 0);
+    lv_obj_update_layout(network_card);
+    int containerYOffset = lv_obj_get_height(network_card) + 16;
+    // path card
+    lv_obj_t *path_card = GuiCreateLabelCard(parent, "Path", hashData->path);
+    lv_obj_align(path_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
+    lv_obj_update_layout(path_card);
+    containerYOffset += lv_obj_get_height(path_card) + 16;
+
+    // from address card
+    lv_obj_t *from_address_card = GuiCreateSuiFromAddressCard(parent, hashData->from_address);
+    lv_obj_align(from_address_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
+    lv_obj_update_layout(from_address_card);
+    containerYOffset += lv_obj_get_height(from_address_card) + 16;
+
+    // message hash container
+    lv_obj_t *message_hash_card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    lv_obj_align(message_hash_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
+    SetFlexContainerStyle(message_hash_card, LV_FLEX_FLOW_COLUMN, 16);
+    lv_obj_t *message_hash_label = GuiCreateTextLabel(message_hash_card, "Hash");
+
+    lv_obj_align_to(message_hash_label, message_hash_card, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 1);
+
+    // color message hash
+    char hash[128] = {0};
+    strncpy(hash, hashData->message, sizeof(hash) - 1);
+    char tempBuf[128] = {0};
+    snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
+
+    lv_obj_t *message_hash_value = GuiCreateIllustrateLabel(message_hash_card, tempBuf);
+    lv_label_set_recolor(message_hash_value, true);
+    lv_obj_align_to(message_hash_value, message_hash_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_label_set_long_mode(message_hash_value, LV_LABEL_LONG_WRAP);
+
+    // message hash notice content
+    lv_obj_t *message_hash_notice_content = GuiCreateIllustrateLabel(message_hash_card, _("sign_message_hash_notice_content"));
+    lv_obj_set_width(message_hash_notice_content, lv_pct(90));
+    lv_obj_set_style_text_color(message_hash_notice_content, lv_color_hex(0xF5C131), LV_PART_MAIN);
+    lv_obj_align_to(message_hash_notice_content, message_hash_value, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_label_set_long_mode(message_hash_notice_content, LV_LABEL_LONG_WRAP);
+}
+
 
 
 void FreeSuiMemory(void)

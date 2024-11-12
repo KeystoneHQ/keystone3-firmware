@@ -5,6 +5,7 @@ void GuiSetSuiUrData(URParseResult *urResult, URParseMultiResult *urMultiResult,
 void *GuiGetSuiData(void);
 void *GuiGetSuiSignMessageHashData(void);
 void GuiShowSuiSignMessageHashOverview(lv_obj_t *parent, void *totalData);
+void GuiShowSuiSignMessageHashDetails(lv_obj_t *parent, void *totalData);
 PtrT_TransactionCheckResult GuiGetSuiCheckResult(void);
 PtrT_TransactionCheckResult GuiGetSuiSignHashCheckResult(void);
 void FreeSuiMemory(void);

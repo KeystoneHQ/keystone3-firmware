@@ -49,4 +49,7 @@ bool IsUpdateSuccess(void);
 void WipeDevice(void);
 void DeviceSettingsTest(int argc, char *argv[]);
 
+bool GetEnableBlindSigning(void);
+void SetEnableBlindSigning(bool enable);
+
 #endif

@@ -5,8 +5,8 @@
 #include "gui_transaction_detail_widgets.h"
 #include "gui_lock_widgets.h"
 #include "gui_pending_hintbox.h"
-
-
+#include "gui_attention_hintbox.h"
+#include "device_setting.h"
 int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint8_t viewType = 0;
@@ -18,6 +18,10 @@ int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void 
             return ERR_GUI_ERROR;
         }
         GuiTransactionDetailInit(viewType);
+        if (viewType == SuiSignMessageHash && GetEnableBlindSigning() == false) {
+            // if not enable blind signing, we show hintbox to notify user , this tx may be sensitive
+            GuiCreateEnableBlindSigningHintbox();
+        }
         break;
     case GUI_EVENT_OBJ_DEINIT:
         GuiTransactionDetailDeInit();

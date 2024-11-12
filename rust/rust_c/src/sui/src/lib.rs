@@ -2,27 +2,30 @@
 
 extern crate alloc;
 
-pub mod structs;
-
-use crate::structs::DisplaySuiIntentMessage;
-use alloc::format;
+use alloc::{format, vec};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use core::slice;
+
+use cty::c_char;
+use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
+use ur_registry::sui::sui_sign_request::SuiSignRequest;
+use ur_registry::sui::sui_signature::SuiSignature;
+use ur_registry::traits::RegistryItem;
+
 use app_sui::errors::SuiError;
 use app_utils::normalize_path;
 use common_rust_c::errors::RustCError;
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use common_rust_c::ur::{FRAGMENT_MAX_LENGTH_DEFAULT, UREncodeResult};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
-use core::slice;
-use cty::c_char;
 use structs::DisplaySuiSignMessageHash;
-use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
-use ur_registry::sui::sui_sign_request::SuiSignRequest;
-use ur_registry::sui::sui_signature::SuiSignature;
-use ur_registry::traits::RegistryItem;
+
+use crate::structs::DisplaySuiIntentMessage;
+
+pub mod structs;
 
 fn get_public_key(seed: &[u8], path: &String) -> Result<Vec<u8>, SuiError> {
     let path = normalize_path(path);
@@ -122,9 +125,15 @@ pub extern "C" fn sui_parse_sign_message_hash(
     let message = sign_hash_request.get_message_hash();
     let path = sign_hash_request.get_derivation_paths()[0].get_path();
     let network = "Sui".to_string();
+    let address = sign_hash_request.get_addresses().unwrap_or(vec![]);
     TransactionParseResult::success(
-        DisplaySuiSignMessageHash::new(network, path.unwrap_or("No Path".to_string()), message)
-            .c_ptr(),
+        DisplaySuiSignMessageHash::new(
+            network,
+            path.unwrap_or("No Path".to_string()),
+            message,
+            hex::encode(address[0].clone()),
+        )
+        .c_ptr(),
     )
     .c_ptr()
 }

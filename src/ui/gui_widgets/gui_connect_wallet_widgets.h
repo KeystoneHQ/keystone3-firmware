@@ -56,12 +56,26 @@ typedef enum {
     WALLET_LIST_BUTT,
 } WALLET_LIST_INDEX_ENUM;
 
+typedef enum {
+    WALLET_FILTER_BTC = 0b1,
+    WALLET_FILTER_ETH = 0b10,
+    WALLET_FILTER_SOL = 0b100,
+    WALLET_FILTER_ADA = 0b1000,
+    WALLET_FILTER_OTHER = 0b10000,
+    
+    WALLET_FILTER_ALL = 0b11111111,
+
+    WALLET_FILTER_BUTT = 0,
+} WalletFilter_t;
+
 typedef struct {
     WALLET_LIST_INDEX_ENUM index;
     const lv_img_dsc_t *img;
     bool enable;
 #ifdef BTC_ONLY
     bool alpha;
+#else
+    uint8_t filter;
 #endif
 } WalletListItem_t;
 

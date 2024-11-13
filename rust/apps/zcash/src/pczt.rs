@@ -1,8 +1,17 @@
-use alloc::string::{String, ToString};
+use alloc::{
+    collections::btree_map::BTreeMap,
+    string::{String, ToString},
+    vec::Vec,
+};
 use bitcoin::secp256k1::Message;
-use keystore::algorithms::secp256k1::sign_message_by_seed;
-use keystore::algorithms::zcash::sign_message_orchard;
-use zcash_vendor::pczt::pczt_ext::{PcztSigner, ZcashSignature};
+use keystore::algorithms::secp256k1::{
+    derive_public_key, get_public_key_by_seed, sign_message_by_seed,
+};
+use keystore::algorithms::zcash::{calculate_seed_fingerprint, sign_message_orchard};
+use zcash_vendor::pczt::{
+    common::Zip32Derivation,
+    pczt_ext::{PcztSigner, ZcashSignature},
+};
 
 use crate::errors::ZcashError;
 
@@ -12,19 +21,40 @@ struct SeedSigner {
 
 impl PcztSigner for SeedSigner {
     type Error = ZcashError;
-    fn sign_transparent(&self, hash: &[u8], path: String) -> Result<ZcashSignature, Self::Error> {
+    fn sign_transparent(
+        &self,
+        hash: &[u8],
+        key_path: BTreeMap<Vec<u8>, Zip32Derivation>,
+    ) -> Result<BTreeMap<Vec<u8>, ZcashSignature>, Self::Error> {
         let message = Message::from_digest_slice(hash).unwrap();
-        sign_message_by_seed(&self.seed, &path, &message)
-            .map(|(_rec_id, signature)| ZcashSignature::from(signature))
-            .map_err(|e| ZcashError::SigningError(e.to_string()))
+        let fingerprint = calculate_seed_fingerprint(&self.seed)
+            .map_err(|e| ZcashError::SigningError(e.to_string()))?;
+
+        let mut result = BTreeMap::new();
+        key_path.iter().try_for_each(|(pubkey, path)| {
+            let path_fingerprint = path.seed_fingerprint.clone();
+            if fingerprint == path_fingerprint {
+                let my_pubkey = get_public_key_by_seed(&self.seed, &path.to_string())
+                    .map_err(|e| ZcashError::SigningError(e.to_string()))?;
+                if my_pubkey.serialize().to_vec().eq(pubkey) {
+                    let signature = sign_message_by_seed(&self.seed, &path.to_string(), &message)
+                        .map(|(rec_id, signature)| signature)
+                        .map_err(|e| ZcashError::SigningError(e.to_string()))?;
+                    result.insert(pubkey.clone(), signature);
+                }
+            }
+            Ok(())
+        })?;
+
+        Ok(result)
     }
 
     fn sign_sapling(
         &self,
         hash: &[u8],
         alpha: [u8; 32],
-        path: String,
-    ) -> Result<ZcashSignature, Self::Error> {
+        path: Zip32Derivation,
+    ) -> Result<Option<ZcashSignature>, Self::Error> {
         // we don't support sapling yet
         Err(ZcashError::SigningError(
             "sapling not supported".to_string(),
@@ -35,11 +65,19 @@ impl PcztSigner for SeedSigner {
         &self,
         hash: &[u8],
         alpha: [u8; 32],
-        path: String,
-    ) -> Result<ZcashSignature, Self::Error> {
-        sign_message_orchard(&self.seed, alpha, hash, &path)
-            .map(|signature| ZcashSignature::from(signature))
-            .map_err(|e| ZcashError::SigningError(e.to_string()))
+        path: Zip32Derivation,
+    ) -> Result<Option<ZcashSignature>, Self::Error> {
+        let fingerprint = calculate_seed_fingerprint(&self.seed)
+            .map_err(|e| ZcashError::SigningError(e.to_string()))?;
+
+        let path_fingerprint = path.seed_fingerprint.clone();
+        if fingerprint == path_fingerprint {
+            sign_message_orchard(&self.seed, alpha, hash, &path.to_string())
+                .map(|signature| Some(signature))
+                .map_err(|e| ZcashError::SigningError(e.to_string()))
+        } else {
+            Ok(None)
+        }
     }
 }
 
@@ -47,7 +85,7 @@ impl PcztSigner for SeedSigner {
 mod tests {
     use alloc::{collections::btree_map::BTreeMap, vec};
     use zcash_vendor::pczt::{
-        common::Global,
+        common::{Global, Zip32Derivation},
         orchard::{self, Action},
         sapling, transparent, Pczt, Version, V5_TX_VERSION, V5_VERSION_GROUP_ID,
     };
@@ -55,11 +93,17 @@ mod tests {
     use super::*;
 
     extern crate std;
+
+    const HARDENED_MASK: u32 = 0x8000_0000;
+
     use std::println;
 
     #[test]
     fn test_pczt_sign() {
         let seed = hex::decode("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000").unwrap();
+
+        let fingerprint = hex::decode("a833c2361e2d72d8fef1ec19071a6433b5f3c0b8aafb82ce2930b2349ad985c5").unwrap();
+
         let signer = SeedSigner {
             seed: seed.try_into().unwrap(),
         };
@@ -71,14 +115,14 @@ mod tests {
                 outputs: vec![],
             },
             sapling: sapling::Bundle {
-                anchor: None,
+                anchor: [0; 32],
                 spends: vec![],
                 outputs: vec![],
                 value_balance: 0,
                 bsk: None,
             },
             orchard: orchard::Bundle {
-                anchor: Some(hex::decode("a6c1ad5befd98da596ebe78491d76f76402f3400bf921f73a3b176bd70ab5000").unwrap().try_into().unwrap()),
+                anchor: hex::decode("a6c1ad5befd98da596ebe78491d76f76402f3400bf921f73a3b176bd70ab5000").unwrap().try_into().unwrap(),
                 actions: vec![
                     Action {
                         cv: hex::decode("4ac2480c13624d2b8aabf82ee808b4e4965d6c26efd9cfc9070f69e1a9a69609").unwrap().try_into().unwrap(),
@@ -94,6 +138,10 @@ mod tests {
                             nullifier: hex::decode("ef870733c09572b274782e32e28809c201a90c1e179ad78e88eb1477c7bd9631").unwrap().try_into().unwrap(),
                             rk: hex::decode("7fe9364e043a92f893100dc09fc70f1a4faad022687767f8c3495a83a57e6726").unwrap().try_into().unwrap(),
                             spend_auth_sig: None,
+                            zip32_derivation: Some(Zip32Derivation {
+                                seed_fingerprint: fingerprint.clone().try_into().unwrap(),
+                                derivation_path: vec![HARDENED_MASK + 44, HARDENED_MASK + 133, HARDENED_MASK + 0],
+                            }),
                         },
                         output: orchard::Output {
                             cmx: hex::decode("dbc7cc05319a4c70a6792ec195e99f1f3028194338953ee28f2f9426e06e1039").unwrap().try_into().unwrap(),
@@ -106,6 +154,10 @@ mod tests {
                             rseed: None,
                             shared_secret: None,
                             value: None,
+                            zip32_derivation: Some(Zip32Derivation {
+                                seed_fingerprint: fingerprint.clone().try_into().unwrap(),
+                                derivation_path: vec![HARDENED_MASK + 44, HARDENED_MASK + 133, HARDENED_MASK + 0],
+                            }),
                         },
                         rcv: None,
                     },
@@ -123,6 +175,10 @@ mod tests {
                             nullifier: hex::decode("0e65a80237a3d3e1dcede4fe7632eec67254e0e1af721cd20fa8b9800263f508").unwrap().try_into().unwrap(),
                             rk: hex::decode("afa2899a1fc1f5d16639e162979b29bedbf84aeb0987a2d8143d10134a47f722").unwrap().try_into().unwrap(),
                             spend_auth_sig: None,
+                            zip32_derivation: Some(Zip32Derivation {
+                                seed_fingerprint: fingerprint.clone().try_into().unwrap(),
+                                derivation_path: vec![HARDENED_MASK + 44, HARDENED_MASK + 133, HARDENED_MASK + 0],
+                            }),
                         },
                         output: orchard::Output {
                             cmx: hex::decode("c7e391d7deb77891735e12be5f63e8821a79636a774578706bf495bef678072b").unwrap().try_into().unwrap(),
@@ -135,6 +191,10 @@ mod tests {
                             rseed: None,
                             shared_secret: None,
                             value: None,
+                            zip32_derivation: Some(Zip32Derivation {
+                                seed_fingerprint: fingerprint.clone().try_into().unwrap(),
+                                derivation_path: vec![HARDENED_MASK + 44, HARDENED_MASK + 133, HARDENED_MASK + 0],
+                            }),
                         },
                         rcv: None,
                     }

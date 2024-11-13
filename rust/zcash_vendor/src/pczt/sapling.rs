@@ -1,6 +1,6 @@
 use alloc::{collections::BTreeMap, string::String, vec::Vec};
 
-use super::merge_optional;
+use super::{common::Zip32Derivation, merge_map, merge_optional};
 
 const GROTH_PROOF_SIZE: usize = 48 + 96 + 48;
 
@@ -19,10 +19,8 @@ pub struct Bundle {
 
     /// The Sapling anchor for this transaction.
     ///
-    /// TODO: Should this be non-optional and set by the Creator (which would be simpler)?
-    /// Or do we need a separate role that picks the anchor, which runs before the
-    /// Constructor adds spends?
-    pub anchor: Option<[u8; 32]>,
+    /// Set by the Creator.
+    pub anchor: [u8; 32],
 
     /// The Sapling binding signature signing key.
     ///
@@ -107,9 +105,9 @@ pub struct Spend {
     /// - After`zkproof` / `spend_auth_sig` has been set, this can be redacted.
     pub alpha: Option<[u8; 32]>,
 
-    // TODO derivation path
-
-    // TODO FROST
+    /// The ZIP 32 derivation path at which the spending key can be found for the note
+    /// being spent.
+    pub zip32_derivation: Option<Zip32Derivation>,
 
     pub proprietary: BTreeMap<String, Vec<u8>>,
 }
@@ -126,9 +124,17 @@ pub struct Output {
     pub cv: [u8; 32],
     pub cmu: [u8; 32],
     pub ephemeral_key: [u8; 32],
-    /// TODO: Should it be possible to choose the memo _value_ after defining an Output?
-    pub enc_ciphertext: [u8; 580],
-    pub out_ciphertext: [u8; 80],
+    /// The encrypted note plaintext for the output.
+    ///
+    /// Encoded as a `Vec<u8>` because its length depends on the transaction version.
+    ///
+    /// Once we have memo bundles, we will be able to set memos independently of Outputs.
+    /// For now, the Constructor sets both at the same time.
+    pub enc_ciphertext: Vec<u8>,
+    /// The encrypted note plaintext for the output.
+    ///
+    /// Encoded as a `Vec<u8>` because its length depends on the transaction version.
+    pub out_ciphertext: Vec<u8>,
 
     /// The Output proof.
     ///
@@ -153,11 +159,7 @@ pub struct Output {
     /// The seed randomness for the output.
     ///
     /// - This is set by the Constructor.
-    /// - This is required by the Prover.
-    ///
-    /// TODO: This could instead be decrypted from `enc_ciphertext` if `shared_secret`
-    /// were required by the Prover. Likewise for `recipient` and `value`; is there ever a
-    /// need for these to be independently redacted though?
+    /// - This is required by the Prover, instead of disclosing `shared_secret` to them.
     pub rseed: Option<[u8; 32]>,
 
     /// The value commitment randomness.
@@ -186,7 +188,8 @@ pub struct Output {
     /// "None", to make the output unrecoverable from the chain by the sender.
     pub ock: Option<[u8; 32]>,
 
-    // TODO derivation path
+    /// The ZIP 32 derivation path at which the spending key can be found for the output.
+    pub zip32_derivation: Option<Zip32Derivation>,
 
     pub proprietary: BTreeMap<String, Vec<u8>>,
 }
@@ -234,7 +237,7 @@ impl Bundle {
             }
         }
 
-        if !merge_optional(&mut self.anchor, anchor) {
+        if self.anchor != anchor {
             return None;
         }
 
@@ -255,6 +258,7 @@ impl Bundle {
                 proof_generation_key,
                 witness,
                 alpha,
+                zip32_derivation,
                 proprietary,
             } = rhs;
 
@@ -270,12 +274,12 @@ impl Bundle {
                 && merge_optional(&mut lhs.rcv, rcv)
                 && merge_optional(&mut lhs.proof_generation_key, proof_generation_key)
                 && merge_optional(&mut lhs.witness, witness)
-                && merge_optional(&mut lhs.alpha, alpha))
+                && merge_optional(&mut lhs.alpha, alpha)
+                && merge_optional(&mut lhs.zip32_derivation, zip32_derivation)
+                && merge_map(&mut lhs.proprietary, proprietary))
             {
                 return None;
             }
-
-            // TODO: Decide how to merge proprietary fields.
         }
 
         for (lhs, rhs) in self.outputs.iter_mut().zip(outputs.into_iter()) {
@@ -293,6 +297,7 @@ impl Bundle {
                 rcv,
                 shared_secret,
                 ock,
+                zip32_derivation,
                 proprietary,
             } = rhs;
 
@@ -311,12 +316,12 @@ impl Bundle {
                 && merge_optional(&mut lhs.rseed, rseed)
                 && merge_optional(&mut lhs.rcv, rcv)
                 && merge_optional(&mut lhs.shared_secret, shared_secret)
-                && merge_optional(&mut lhs.ock, ock))
+                && merge_optional(&mut lhs.ock, ock)
+                && merge_optional(&mut lhs.zip32_derivation, zip32_derivation)
+                && merge_map(&mut lhs.proprietary, proprietary))
             {
                 return None;
             }
-
-            // TODO: Decide how to merge proprietary fields.
         }
 
         Some(self)

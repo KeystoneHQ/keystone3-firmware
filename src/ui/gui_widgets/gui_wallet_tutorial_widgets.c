@@ -47,6 +47,16 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_BLUE].items[0].qrTitle = _("connect_bw_title");
     g_tutorials[WALLET_LIST_BLUE].items[0].qrUrl = _("connect_bw_link");
 
+
+    // WALLET_LIST_ZEUS
+    g_tutorials[WALLET_LIST_ZEUS].len = 1;
+    g_tutorials[WALLET_LIST_ZEUS].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_ZEUS].items[0].walletName = _("connect_zeus_title");
+    g_tutorials[WALLET_LIST_ZEUS].items[0].url = _("connect_zeus_link");
+    g_tutorials[WALLET_LIST_ZEUS].items[0].qrTitle = _("connect_zeus_title");
+    g_tutorials[WALLET_LIST_ZEUS].items[0].qrUrl = _("connect_zeus_link");
+
+
     // WALLET_LIST_METAMASK
     g_tutorials[WALLET_LIST_METAMASK].len = 2;
     g_tutorials[WALLET_LIST_METAMASK].desc = _("connect_wallet_desc");

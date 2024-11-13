@@ -34,6 +34,7 @@ impl PrivateKey {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct PublicKey {
     /// The actual Ed25519 point.
     pub point: CompressedEdwardsY,
@@ -77,6 +78,7 @@ impl PublicKey {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct KeyPair {
     /// The private view key needed to recognize owned outputs.
     pub view: PrivateKey,
@@ -86,6 +88,10 @@ pub struct KeyPair {
 
 // KeyPair from raw private keys
 impl KeyPair {
+    pub fn new(view: PrivateKey, spend: PrivateKey) -> KeyPair {
+        KeyPair { view, spend }
+    }
+
     pub fn from_raw_private_keys(raw_private_key: PrvKey) -> KeyPair {
         let secret_spend_key = hash_to_scalar(&raw_private_key.to_bytes());
         KeyPair {
@@ -139,6 +145,20 @@ pub fn generate_keypair(seed: &[u8], major: u32) -> KeyPair {
 
 pub fn generate_private_view_key(seed: &[u8], major: u32) -> PrivateKey {
     generate_keypair(seed, major).view
+}
+
+pub fn generate_sub_secret_key(secret_view_key: PrivateKey, major: u32, minor: u32) -> PrivateKey {
+    let m = calc_subaddress_m(&secret_view_key.to_bytes(), major, minor);
+    PrivateKey {
+        scalar: Scalar::from_bytes_mod_order(m),
+    }
+}
+
+pub fn generate_key_image_from_priavte_key(private_key: &PrivateKey) -> EdwardsPoint {
+    let x = private_key.scalar;
+    let Hp = monero_generators_mirror::hash_to_point((EdwardsPoint::mul_base(&x)).compress().0);
+
+    x * Hp
 }
 
 #[cfg(test)]
@@ -201,12 +221,36 @@ mod tests {
 
     #[test]
     fn test_generate_publickey() {
-        let pvk = PrivateKey::from_bytes(hex::decode("7bb35441e077be8bb8d77d849c926bf1dd0e696c1c83017e648c20513d2d6907").unwrap().as_slice());
+        let pvk = PrivateKey::from_bytes(
+            hex::decode("7bb35441e077be8bb8d77d849c926bf1dd0e696c1c83017e648c20513d2d6907")
+                .unwrap()
+                .as_slice(),
+        );
         let public_key = pvk.get_public_key();
 
         assert_eq!(
             hex::encode(public_key.as_bytes()),
             "b8970905fbeaa1d0fd89659bab506c2f503e60670b7afd1cb56a4dfe8383f38f"
+        );
+    }
+
+    #[test]
+    fn test_generate_keyimages_prvkey_pair() {
+        // https://www.moneroinflation.com/ring_signatures
+        // x = 09321db315661e54fe0d606faffc2437506d6594db804cddd5b5ce27970f2e09
+        // P = xG = cd48cd05ee40c3d42dfd9d39e812cbe7021141d1357eb4316f25ced372a9d695
+        // Hp(P) = c530057dc18b4a216cc15ab76e53720865058b76791ff8c9cef3303d73ae5628
+        // KI = d9a248bf031a2157a5a63991c00848a5879e42b7388458b4716c836bb96d96c0
+        let prvkey = PrivateKey::from_bytes(
+            &hex::decode("09321db315661e54fe0d606faffc2437506d6594db804cddd5b5ce27970f2e09")
+                .unwrap(),
+        );
+
+        let KI = generate_key_image_from_priavte_key(&prvkey);
+
+        assert_eq!(
+            hex::encode(KI.compress().as_bytes()),
+            "d9a248bf031a2157a5a63991c00848a5879e42b7388458b4716c836bb96d96c0"
         );
     }
 }

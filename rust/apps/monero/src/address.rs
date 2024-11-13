@@ -9,6 +9,7 @@ use curve25519_dalek::scalar::Scalar;
 
 use hex;
 
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub struct Address {
     /// The network on which the address is valid and should be used.
     pub network: Network,
@@ -186,8 +187,6 @@ pub fn generate_subaddress(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use curve25519_dalek::scalar::Scalar;
-    use bitcoin::address;
 
     #[test]
     fn test_get_address_from_seed() {
@@ -268,11 +267,7 @@ mod tests {
 
         let point = keypair.get_public_spend().point.decompress().unwrap();
 
-        let m = Scalar::from_bytes_mod_order(calc_subaddress_m(
-            &keypair.view.to_bytes(),
-            1,
-            0,
-        ));
+        let m = Scalar::from_bytes_mod_order(calc_subaddress_m(&keypair.view.to_bytes(), 1, 0));
         let pub_spend_key = PublicKey {
             point: (point + EdwardsPoint::mul_base(&m)).compress(),
         };
@@ -297,12 +292,12 @@ mod tests {
             "8AjYV2hmNQugecQSpckuiGPAWPdW5NxzcY9pVRzLArA13Zwp7KLcB8UBd4eSqH4xLLBycRmwzqNxjUsobmUv8rSr2j73xbR"
         );
 
-        let sun_account_sub_address_1 = generate_subaddress(&keypair.get_public_spend(), &keypair.view, 1, 1);
+        let sun_account_sub_address_1 =
+            generate_subaddress(&keypair.get_public_spend(), &keypair.view, 1, 1);
 
         assert_eq!(
             sun_account_sub_address_1,
             "83fsQ5aW7PMXxC3NjDiZKdC2LYmjgBgCcix1oFZ51NgfES3YAKC27zxXqVkukpKuhsQzWKcKPMLPpJjVJyTcCphZRCBQtTw"
         )
-
     }
 }

@@ -43,6 +43,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SOLFARE, &walletListSolfare, true},
     {WALLET_LIST_HELIUM, &walletListHelium, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
+    {WALLET_LIST_ZEUS, &walletListZeus, true},
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false},
     {WALLET_LIST_RABBY, &walletListRabby, true},
@@ -1242,10 +1243,13 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetOkxWalletData;
         AddOkxWalletCoins();
         break;
+
     case WALLET_LIST_BLUE:
         func = GuiGetBlueWalletBtcData;
         AddBlueWalletCoins();
         break;
+    // todo  zeus wallet use same ur logic as sparrow wallet (m/49'/0'/0' 、 m/44'/0'/0' 、 m/84'/0'/0' and m/86'/0'/0' )
+    case WALLET_LIST_ZEUS:
     case WALLET_LIST_SPARROW:
         func = GuiGetSparrowWalletBtcData;
         AddBlueWalletCoins();

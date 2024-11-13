@@ -196,7 +196,7 @@ void *GuiCreateBlindSigningCheckBoxWithFont(lv_obj_t *parent, const char *text, 
 {
     lv_obj_t *checkBox = lv_checkbox_create(parent);
     lv_obj_add_flag(checkBox, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_size(checkBox, 408, 190);
+    lv_obj_set_size(checkBox, 36, 36);
     lv_checkbox_set_text(checkBox, text);
     lv_obj_set_style_text_color(checkBox, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_text_font(checkBox, font, LV_PART_MAIN);

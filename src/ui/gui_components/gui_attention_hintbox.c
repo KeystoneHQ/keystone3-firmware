@@ -179,9 +179,15 @@ void GuiCreateEnableBlindSigningHintbox()
     lv_obj_t *hint_box_content = GuiCreateIllustrateLabel(hint_box_container, context->context);
     lv_obj_align_to(hint_box_content, hint_box_title, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
-    lv_obj_t *hint_box_checkBox = GuiCreateBlindSigningCheckBoxWithFont(hint_box_container, context->checkBoxText, true, g_defIllustrateFont);
-    lv_obj_align_to(hint_box_checkBox, hint_box_content, LV_ALIGN_OUT_BOTTOM_LEFT, -8, 24);
+
+    // draw a checkbox and notice content
+    lv_obj_t *hint_box_checkBox = GuiCreateBlindSigningCheckBoxWithFont(hint_box_container, "", true, g_defIllustrateFont);
+    lv_obj_align_to(hint_box_checkBox, hint_box_content, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_add_event_cb(hint_box_checkBox, EnableBlindSigningHandler, LV_EVENT_VALUE_CHANGED, NULL);
+
+    lv_obj_t *hint_box_notice = GuiCreateIllustrateLabel(hint_box_container, context->checkBoxText);
+    lv_obj_align_to(hint_box_notice, hint_box_checkBox, LV_ALIGN_OUT_RIGHT_TOP, 8, 0);
+    lv_obj_set_style_text_opa(hint_box_notice, 163, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t *okBtn = GuiCreateTextBtn(g_attentionCont, context->okBtnText);
     lv_obj_set_size(okBtn, RecalculateButtonWidth(okBtn, 94), 66);

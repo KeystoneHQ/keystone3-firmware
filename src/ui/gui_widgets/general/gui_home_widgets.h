@@ -28,7 +28,9 @@ typedef enum {
     HOME_WALLET_CARD_DASH,
     HOME_WALLET_CARD_ARWEAVE,
     HOME_WALLET_CARD_XLM,
-    HOME_WALLET_CARD_COSMOS,
+
+    // HOME_WALLET_CARD_COSMOS,
+    // The following all belong to cosmos eco
     HOME_WALLET_CARD_TIA,
     HOME_WALLET_CARD_DYM,
     HOME_WALLET_CARD_OSMO,

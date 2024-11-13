@@ -73,7 +73,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_BCH, "", &coinBch},       {HOME_WALLET_CARD_APT, "", &coinApt},
     {HOME_WALLET_CARD_SUI, "", &coinSui},       {HOME_WALLET_CARD_DASH, "", &coinDash},
     {HOME_WALLET_CARD_ARWEAVE, "", &coinAr},    {HOME_WALLET_CARD_XLM, "", &coinXlm},
-    {HOME_WALLET_CARD_COSMOS, "", &coinCosmos}, {HOME_WALLET_CARD_TIA, "", &coinTia},
+    {HOME_WALLET_CARD_TIA, "", &coinTia},
     {HOME_WALLET_CARD_DYM, "", &coinDym},       {HOME_WALLET_CARD_OSMO, "", &coinOsmo},
     {HOME_WALLET_CARD_INJ, "", &coinInj},       {HOME_WALLET_CARD_ATOM, "", &coinAtom},
     {HOME_WALLET_CARD_CRO, "", &coinCro},       {HOME_WALLET_CARD_RUNE, "", &coinRune},
@@ -354,6 +354,7 @@ char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
 
 uint8_t GetCurrentDisplayPercent(void)
 {
+    return 100;
 #ifdef COMPILE_SIMULATOR
     return 100;
 #endif

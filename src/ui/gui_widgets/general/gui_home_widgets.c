@@ -29,6 +29,13 @@ typedef enum {
     GestureNone = 0,
 } HomeGesture_t;
 
+typedef enum {
+    COIN_FILTER_MAIN = 0,
+    COIN_FILTER_COSMOS = 1,
+
+    COIN_FILTER_BUTT,
+} CoinFilter_t;
+
 #define CARDS_PER_PAGE              6
 
 static lv_obj_t *g_manageWalletLabel = NULL;
@@ -42,12 +49,12 @@ static bool g_isManageClick = true;
 static PageWidget_t *g_pageWidget;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 static lv_obj_t *g_walletButton[HOME_WALLET_CARD_BUTT];
-static lv_obj_t *g_cosmosPulldownImg = NULL;
-static lv_obj_t *g_endCosmosLine = NULL;
-static lv_obj_t *g_lastCosmosLine = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
 static uint8_t g_currentPage = 0;
 static bool g_isScrolling = false;
+const static char *g_coinFilter[] = {"Main Chain", "COSMOS Eco"};
+static uint8_t g_currentFilter = COIN_FILTER_MAIN;
+static lv_obj_t *g_coinListCont = NULL;
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC", true},
@@ -67,7 +74,6 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_DASH, false, "DASH", true},
     {HOME_WALLET_CARD_ARWEAVE, false, "AR", true},
     {HOME_WALLET_CARD_XLM, false, "XLM", true},
-    {HOME_WALLET_CARD_COSMOS, false, "Cosmos Eco", true},
     {HOME_WALLET_CARD_TIA, false, "TIA", true},
     {HOME_WALLET_CARD_DYM, false, "DYM", true},
     {HOME_WALLET_CARD_OSMO, false, "OSMO", true},
@@ -240,12 +246,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "XLM",
         .chain = "Stellar",
         .icon = &coinXlm,
-    },
-    {
-        .index = HOME_WALLET_CARD_COSMOS,
-        .coin = "Cosmos Eco",
-        .chain = "",
-        .icon = &coinCosmos,
     },
     {
         .index = HOME_WALLET_CARD_TIA,
@@ -467,9 +467,6 @@ static uint8_t GetSelectedWalletCount(void)
 {
     uint8_t selectCnt = 0;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS) {
-            continue;
-        }
         if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
             continue;
         }
@@ -488,9 +485,6 @@ static void UpdateManageWalletState(bool needUpdate)
     g_isManageOpen = false;
     int total = 0;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS) {
-            continue;
-        }
         if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
             continue;
         }
@@ -498,11 +492,13 @@ static void UpdateManageWalletState(bool needUpdate)
         if (g_walletState[i].enable) {
             total++;
         }
-        if (g_walletBakState[i].state == true) {
-            selectCnt++;
-            lv_obj_add_state(g_walletState[i].checkBox, LV_STATE_CHECKED);
-        } else {
-            lv_obj_clear_state(g_walletState[i].checkBox, LV_STATE_CHECKED);
+        if (lv_obj_is_valid(g_walletState[i].checkBox)) {
+            if (g_walletBakState[i].state == true) {
+                selectCnt++;
+                lv_obj_add_state(g_walletState[i].checkBox, LV_STATE_CHECKED);
+            } else {
+                lv_obj_clear_state(g_walletState[i].checkBox, LV_STATE_CHECKED);
+            }
         }
     }
     snprintf_s(tempBuf, sizeof(tempBuf), _("home_select_coin_count_fmt"), selectCnt, total);
@@ -523,7 +519,6 @@ bool GuiHomePageIsTop(void)
 void ReturnManageWalletHandler(lv_event_t *e)
 {
     UpdateManageWalletState(false);
-    GUI_DEL_OBJ(g_lastCosmosLine)
     GUI_DEL_OBJ(g_manageCont);
     GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
 }
@@ -552,8 +547,7 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
     UpdateStartIndex(gesture, totalCoinAmount);
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS ||
-                (g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) ||
+        if ((g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) ||
                 g_walletState[i].state == false ||
                 g_walletState[i].enable == false) {
             j++;
@@ -686,44 +680,15 @@ void GuiHomePasswordErrorCount(void *param)
     GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }
 
-static void UpdateCosmosEnable(bool en)
-{
-    void (*func)(lv_obj_t *, lv_obj_flag_t);
-    if (en) {
-        func = lv_obj_clear_flag;
-        lv_obj_add_flag(g_endCosmosLine, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        func = lv_obj_add_flag;
-        lv_obj_clear_flag(g_endCosmosLine, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);
-    }
-    for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if (IsCosmosChain(g_coinCardArray[i].index)) {
-            func(g_walletButton[i], LV_OBJ_FLAG_HIDDEN);
-        }
-    }
-}
-
 static void ManageCoinChainHandler(lv_event_t *e)
 {
     bool state;
     WalletState_t *wallet = lv_event_get_user_data(e);
-    if (wallet->index == HOME_WALLET_CARD_COSMOS) {
-        state = g_walletBakState[wallet->index].state;
-        if (state) {
-            lv_img_set_src(g_cosmosPulldownImg, &imgArrowRight);
-        } else {
-            lv_img_set_src(g_cosmosPulldownImg, &imgArrowDown);
-        }
-        UpdateCosmosEnable(!state);
-        g_walletBakState[wallet->index].state = !state;
-    } else {
-        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-        state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
-        g_walletBakState[wallet->index].state = state;
-        UpdateManageWalletState(false);
-    }
+
+    lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
+    state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
+    g_walletBakState[wallet->index].state = state;
+    UpdateManageWalletState(false);
 }
 
 void ScanQrCodeHandler(lv_event_t *e)
@@ -742,7 +707,6 @@ void ConfirmManageAssetsHandler(lv_event_t *e)
     g_currentPage = 0;
     UpdateManageWalletState(true);
     UpdateHomeConnectWalletCard(GestureNone);
-    GUI_DEL_OBJ(g_lastCosmosLine)
     GUI_DEL_OBJ(g_manageCont)
     GuiHomeRefresh();
 }
@@ -762,30 +726,21 @@ static void OpenMoreSettingHandler(lv_event_t *e)
     g_moreHintbox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true, &g_moreHintbox);
 }
 
-static void OpenManageAssetsHandler(lv_event_t *e)
+static void GuiUpdateCoinListWidget(void)
 {
-    if (g_isManageClick == false) {
-        return;
-    }
-    memcpy(&g_walletBakState, &g_walletState, sizeof(g_walletState));
-    g_manageCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
-                                      GUI_MAIN_AREA_OFFSET);
-    lv_obj_add_flag(g_manageCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_align(g_manageCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
-    lv_obj_t *checkBoxCont = GuiCreateContainerWithParent(g_manageCont, lv_obj_get_width(lv_scr_act()), 542);
-    lv_obj_set_align(checkBoxCont, LV_ALIGN_DEFAULT);
-    lv_obj_add_flag(checkBoxCont, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_scrollbar_mode(checkBoxCont, LV_SCROLLBAR_MODE_OFF);
-
     int heightIndex = 0;
+    lv_obj_t *coinListCont = g_coinListCont;
+    lv_obj_clean(coinListCont);
+    int startIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_BTC : HOME_WALLET_CARD_TIA;
+    int endIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_TIA : HOME_WALLET_CARD_BUTT;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
         if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
             continue;
         }
-        lv_obj_t *coinLabel = GuiCreateTextLabel(checkBoxCont, g_coinCardArray[i].coin);
-        lv_obj_t *chainLabel = GuiCreateNoticeLabel(checkBoxCont, g_coinCardArray[i].chain);
-        lv_obj_t *icon = GuiCreateImg(checkBoxCont, g_coinCardArray[i].icon);
-        lv_obj_t *checkbox = GuiCreateMultiCheckBox(checkBoxCont, _(""));
+        lv_obj_t *coinLabel = GuiCreateTextLabel(coinListCont, g_coinCardArray[i].coin);
+        lv_obj_t *chainLabel = GuiCreateNoticeLabel(coinListCont, g_coinCardArray[i].chain);
+        lv_obj_t *icon = GuiCreateImg(coinListCont, g_coinCardArray[i].icon);
+        lv_obj_t *checkbox = GuiCreateMultiCheckBox(coinListCont, _(""));
         lv_obj_set_style_pad_top(checkbox, 32, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_size(checkbox, 446, 96);
         g_walletState[i].checkBox = checkbox;
@@ -796,42 +751,14 @@ static void OpenManageAssetsHandler(lv_event_t *e)
             {.obj = chainLabel, .align = LV_ALIGN_DEFAULT, .position = {100, 53}},
             {.obj = checkbox, .align = LV_ALIGN_TOP_MID, .position = {-10, 0}},
         };
-        if (IsCosmosChain(g_coinCardArray[i].index)) {
-            table[0].position.x += 12;
-            table[1].position.x += 12;
-            table[2].position.x += 12;
-        }
 
-        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS) {
-            // lv_obj_del(table[2].obj);
-            lv_obj_t *line = GuiCreateDividerLine(checkBoxCont);
-            lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 96 * heightIndex);
-            g_endCosmosLine = GuiCreateDividerLine(checkBoxCont);
-            lv_obj_align(g_endCosmosLine, LV_ALIGN_DEFAULT, 0, 96 * (heightIndex + 1));
-            lv_obj_t *cosmosCoinImg = GuiCreateImg(checkBoxCont, &coinCosmosEco);
-            table[2].obj = cosmosCoinImg;
-            table[2].align = LV_ALIGN_DEFAULT;
-            table[2].position.x = 100;
-            table[2].position.y = 53;
-
-            lv_obj_del(table[3].obj);
-            g_cosmosPulldownImg = GuiCreateImg(checkBoxCont, &imgArrowRight);
-            table[3].obj = g_cosmosPulldownImg;
-            table[3].align = LV_ALIGN_RIGHT_MID;
-            table[3].position.x = -12;
-            table[3].position.y = 0;
-        }
-
-        lv_obj_t *button = GuiCreateButton(checkBoxCont, 456, 96, table, tableLen,
+        lv_obj_t *button = GuiCreateButton(coinListCont, 456, 96, table, tableLen,
                                            ManageCoinChainHandler, &g_walletState[i]);
         g_walletButton[i] = button;
-        if (IsCosmosChain(g_coinCardArray[i].index)) {
-            lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
-            g_lastCosmosLine = GuiCreateDividerLine(checkBoxCont);
-            lv_obj_add_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_align(g_lastCosmosLine, LV_ALIGN_DEFAULT, 0, 96 * (heightIndex + 1));
-        }
-        if (!g_walletState[i].enable) {
+        // if (IsCosmosChain(g_coinCardArray[i].index)) {
+
+        // }
+        if (!g_walletState[i].enable || i < startIndex || i >= endIndex) {
             lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
             continue;
         }
@@ -840,11 +767,71 @@ static void OpenManageAssetsHandler(lv_event_t *e)
     }
 
     if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
-        lv_obj_t *label = GuiCreateIllustrateLabel(checkBoxCont, _("import_ton_mnemonic_desc"));
+        lv_obj_t *label = GuiCreateIllustrateLabel(coinListCont, _("import_ton_mnemonic_desc"));
         lv_obj_set_width(label, 416);
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 32, 144);
     }
+}
+
+static void GuiUpdateCoinManagerHandler(lv_event_t *e)
+{
+    char *selectFilter = lv_event_get_user_data(e);
+    lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
+    if (strcmp(g_coinFilter[g_currentFilter], selectFilter) == 0) {
+        return;
+    }
+    lv_obj_set_style_border_width(lv_obj_get_child(parent, g_currentFilter), 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    g_currentFilter = !g_currentFilter;
+
+    lv_obj_t *obj = lv_event_get_target(e);
+    lv_obj_set_style_border_color(obj, RED_COLOR, 0);
+    lv_obj_set_style_border_side(obj, LV_BORDER_SIDE_BOTTOM, 0);
+    lv_obj_set_style_border_width(obj, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    GuiUpdateCoinListWidget();
+    UpdateManageWalletState(false);
+}
+
+static void OpenManageAssetsHandler(lv_event_t *e)
+{
+    if (g_isManageClick == false) {
+        return;
+    }
+    memcpy(&g_walletBakState, &g_walletState, sizeof(g_walletState));
+
+    g_manageCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) -
+                                      GUI_MAIN_AREA_OFFSET);
+
+    lv_obj_t *filterBar = GuiCreateContainerWithParent(g_manageCont, 408, 62);
+    lv_obj_align(filterBar, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_set_flex_flow(filterBar, LV_FLEX_FLOW_ROW);
+
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_coinFilter); i++) {
+        lv_obj_t *btn = GuiCreateBtnWithFont(filterBar, g_coinFilter[i], &openSansEnIllustrate);
+        lv_obj_set_size(btn, 200, 62);
+        lv_obj_set_style_radius(btn, 0, 0);
+        lv_obj_set_style_bg_color(btn, BLACK_COLOR, 0);
+        lv_obj_set_flex_grow(btn, 1);
+        lv_obj_set_style_border_color(btn, ORANGE_COLOR, 0);
+        lv_obj_set_style_border_side(btn, LV_BORDER_SIDE_BOTTOM, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_border_width(btn, i == g_currentFilter ? 2 : 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_add_event_cb(btn, GuiUpdateCoinManagerHandler, LV_EVENT_CLICKED, g_coinFilter[i]);
+    }
+
+    lv_obj_add_flag(g_manageCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_align(g_manageCont, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET);
+
+    lv_obj_t *line = GuiCreateDividerLine(g_manageCont);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 62);
+
+    lv_obj_t *coinListCont = GuiCreateContainerWithParent(g_manageCont, 480, 542 - 62 - 1);
+    g_coinListCont = coinListCont;
+    lv_obj_align(coinListCont, LV_ALIGN_TOP_MID, 0, 62 + 1);
+    lv_obj_set_align(coinListCont, LV_ALIGN_DEFAULT);
+    lv_obj_add_flag(coinListCont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scrollbar_mode(coinListCont, LV_SCROLLBAR_MODE_OFF);
+    GuiUpdateCoinListWidget();
 
     lv_obj_t *btn = GuiCreateBtn(g_manageCont, USR_SYMBOL_CHECK);
     lv_obj_add_event_cb(btn, ConfirmManageAssetsHandler, LV_EVENT_CLICKED, NULL);

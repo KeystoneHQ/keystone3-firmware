@@ -6,7 +6,6 @@ pub enum Network {
 }
 
 #[derive(PartialEq, Copy, Clone, Debug)]
-
 pub enum AddressType {
     Standard,
     Subaddress,

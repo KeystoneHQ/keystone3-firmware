@@ -18,16 +18,16 @@ use core::str::FromStr;
 use serde_derive::{Deserialize, Serialize};
 use sui_types::{message::PersonalMessage, transaction::TransactionData};
 
+use errors::SuiError;
+use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
 use {bcs, hex};
 use {
     blake2::{
-        Blake2bVar,
         digest::{Update, VariableOutput},
+        Blake2bVar,
     },
     serde_json,
 };
-use errors::SuiError;
-use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
 
 use crate::{errors::Result, types::intent::IntentScope};
 

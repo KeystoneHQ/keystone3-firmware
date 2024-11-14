@@ -110,6 +110,8 @@ static void CloseEnableBlindSigningHandler(lv_event_t *e)
     }
     // upsert enable blind signing hintbox
     SetEnableBlindSigning(g_isEnableBlindSigning);
+    // flush settings to storage
+    SaveDeviceSettings();
 }
 static void ConfirmAttentionHandler(lv_event_t *e)
 {

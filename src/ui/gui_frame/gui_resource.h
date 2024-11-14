@@ -148,7 +148,7 @@ LV_IMG_DECLARE(imgNft);
 LV_IMG_DECLARE(imgWIF);
 LV_IMG_DECLARE(imgSoftwareWallet);
 LV_IMG_DECLARE(imgJupiter);
-
+LV_IMG_DECLARE(imgEllipse);
 // emoji
 LV_IMG_DECLARE(emojiAlien);
 LV_IMG_DECLARE(emojiAt);

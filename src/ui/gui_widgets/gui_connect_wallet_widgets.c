@@ -1186,7 +1186,7 @@ void GuiConnectWalletInit(void)
     g_currentFilter = WALLET_FILTER_ALL;
     static const char *slip39Filters[] = WALLET_FILTER_SLIP39;
     static const char *normalFilters[] = WALLET_FILTER_NORMAL;
-    if (GetMnemonicType() != MNEMONIC_TYPE_SLIP39) {
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
         memcpy_s(g_walletFilter, sizeof(g_walletFilter), slip39Filters, sizeof(slip39Filters));
         g_walletFilterNum = NUMBER_OF_ARRAYS(slip39Filters);
     } else {

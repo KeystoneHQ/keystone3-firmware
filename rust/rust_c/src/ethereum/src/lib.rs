@@ -62,7 +62,6 @@ pub extern "C" fn eth_check_ur_bytes(
             let xfp = payload.xfp;
             let xfp_vec: [u8; 4] = hex::decode(xfp).unwrap().try_into().unwrap();
             if mfp == xfp_vec {
-                rust_tools::debug!(format!("{:?},{:?}", mfp, xfp_vec));
                 return TransactionCheckResult::new().c_ptr();
             } else {
                 return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
@@ -461,7 +460,6 @@ pub extern "C" fn eth_sign_tx_bytes(
     // tx_id is transaction hash , you can use this hash to search tx detail on the etherscan.
     let tx_hash = keccak256(&legacy_tx_with_signature.encode_raw());
     let raw_tx = legacy_tx_with_signature.encode_raw();
-    rust_tools::debug!(format!("0x{}", hex::encode(raw_tx.clone())));
     // add 0x prefix for tx_id and raw_tx
     let sign_tx_result = ur_registry::pb::protoc::SignTransactionResult {
         sign_id: sign_tx.sign_id,

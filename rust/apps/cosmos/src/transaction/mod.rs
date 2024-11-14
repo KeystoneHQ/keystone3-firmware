@@ -48,7 +48,6 @@ impl ParsedCosmosTx {
         }
     }
     fn build_overview_from_amino(data: Value) -> Result<CosmosTxOverview> {
-        rust_tools::debug!(format!("{:?}", data));
         let chain_id = data["chain_id"].as_str().unwrap_or(&"");
         let kind = CosmosTxOverview::from_value(&data["msgs"])?;
         let common = CommonOverview {

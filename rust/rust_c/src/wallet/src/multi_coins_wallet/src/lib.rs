@@ -346,7 +346,6 @@ pub extern "C" fn generate_key_derivation_ur(
                     }
                 }
                 Err(e) => {
-                    rust_tools::debug!(format!("cant decode xpub error: {:?}", e));
                     Err(URError::UrEncodeError(e.to_string()))
                 }
             }

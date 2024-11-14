@@ -128,6 +128,7 @@ static void GuiInitWalletState()
         g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
+        g_coinFilterNum = 2;
         break;
     case MNEMONIC_TYPE_BIP39:
         for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
@@ -137,14 +138,14 @@ static void GuiInitWalletState()
         g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
+        g_coinFilterNum = 2;
         break;
     default:
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
         g_walletState[HOME_WALLET_CARD_TON].state = true;
+        g_coinFilterNum = 0;
         break;
     }
-
-    g_coinFilterNum = (GetMnemonicType() == MNEMONIC_TYPE_TON) ? 1 : 2;
 }
 
 static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
@@ -523,6 +524,7 @@ void ReturnManageWalletHandler(lv_event_t *e)
 {
     UpdateManageWalletState(false);
     GUI_DEL_OBJ(g_manageCont);
+    g_currentFilter = COIN_FILTER_MAIN;
     GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
 }
 

@@ -9,35 +9,13 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
@@ -324,7 +302,6 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"dice_rolls_entropy_hint", "Dice rolls as entropy"},
     {"enable_blind_signing_hintbox_check", "Do not remind again"},
     {"enable_blind_signing_hintbox_context", "The hash data hides transaction details, which may be risky. Please double-check the hash details before signing."},
-    {"enable_blind_signing_hintbox_ok", "OK"},
     {"enable_blind_signing_hintbox_title", "Notice"},
     {"enter_passcode", "Enter Passcode"},
     {"error_box_duplicated_seed_phrase", "Duplicate Seed Phrase"},
@@ -898,12 +875,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1201,7 +1175,6 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"dice_rolls_entropy_hint", "Würfelrollen als Entropie"},
     {"enable_blind_signing_hintbox_check", "Nicht noch einmal anzeigen"},
     {"enable_blind_signing_hintbox_context", "Die Hash-Daten verbergen Transaktionsdetails, die riskant sein können. Bitte überprüfen Sie die Hash-Details sorgfältig, bevor Sie unterschreiben."},
-    {"enable_blind_signing_hintbox_ok", "OK"},
     {"enable_blind_signing_hintbox_title", "Hinweis"},
     {"enter_passcode", "Zugangscode eingeben"},
     {"error_box_duplicated_seed_phrase", "Doppelte Wiederherstellungsphrase"},
@@ -1775,12 +1748,9 @@ const static lv_i18n_phrase_t de_singulars[] = {
 
 static uint8_t de_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -2078,7 +2048,6 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"dice_rolls_entropy_hint", "Los lanzamientos de dados como entropía"},
     {"enable_blind_signing_hintbox_check", "No mostrar esto de nuevo"},
     {"enable_blind_signing_hintbox_context", "Los datos hash ocultan detalles de la transacción, lo cual puede ser peligroso. Por favor, revise cuidadosamente los detalles del hash antes de firmar."},
-    {"enable_blind_signing_hintbox_ok", "好的"},
     {"enable_blind_signing_hintbox_title", "通知"},
     {"enter_passcode", "Ingresar código de acceso"},
     {"error_box_duplicated_seed_phrase", "Frase de Semilla Duplicada"},
@@ -2652,8 +2621,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
 
 static uint8_t es_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
+    uint32_t n = op_n(num); UNUSED(n);
 
 
     if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2952,8 +2920,7 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"dice_rolls_entropy_hint", "ダイスがエントロピーとして転がる."},
     {"enable_blind_signing_hintbox_check", "これ以上表示しない"},
     {"enable_blind_signing_hintbox_context", "ハッシュデータはトランザクションの詳細を隠しています。これは危険である可能性があります。署名する前にハッシュの詳細をよく確認してください。"},
-    {"enable_blind_signing_hintbox_ok", "OK"},
-    {"enable_blind_signing_hintbox_title", "Hinweis"},
+    {"enable_blind_signing_hintbox_title", "通知"},
     {"enter_passcode", "パスコード入力"},
     {"error_box_duplicated_seed_phrase", "重複したシードフレーズ"},
     {"error_box_duplicated_seed_phrase_desc", "このフレーズはすでにウォレットアカウントで使用されています.別のシードフレーズをインポートしてください."},
@@ -3824,7 +3791,6 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"dice_rolls_entropy_hint", "주사위를 엔트로피로 사용"},
     {"enable_blind_signing_hintbox_check", "다시 보지 않기"},
     {"enable_blind_signing_hintbox_context", "해시 데이터는 거래 세부 정보를 숨깁니다. 서명하기 전에 해시 세부 정보를 다시 확인하세요."},
-    {"enable_blind_signing_hintbox_ok", "Хорошо"},
     {"enable_blind_signing_hintbox_title", "알림"},
     {"enter_passcode", "비밀번호 입력"},
     {"error_box_duplicated_seed_phrase", "중복된 시드 구문"},
@@ -4696,7 +4662,6 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"dice_rolls_entropy_hint", "Кубики выпадают прозвольным образом"},
     {"enable_blind_signing_hintbox_check", "Не показывать это снова"},
     {"enable_blind_signing_hintbox_context", "Хэш-данные скрывают детали транзакции, что может быть опасным. Пожалуйста, дважды проверьте детали хэша перед подписанием."},
-    {"enable_blind_signing_hintbox_ok", "OK"},
     {"enable_blind_signing_hintbox_title", "Уведомление"},
     {"enter_passcode", "Введите код-пароль"},
     {"error_box_duplicated_seed_phrase", "Дубликат сид фразы"},
@@ -5270,12 +5235,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -5576,7 +5538,6 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"dice_rolls_entropy_hint", "骰子作为熵"},
     {"enable_blind_signing_hintbox_check", "不再显示"},
     {"enable_blind_signing_hintbox_context", "哈希数据隐藏了交易细节，这可能是危险的。请在签名前仔细检查哈希细节。"},
-    {"enable_blind_signing_hintbox_ok", "확인"},
     {"enable_blind_signing_hintbox_title", "通知"},
     {"enter_passcode", "输入密码"},
     {"error_box_duplicated_seed_phrase", "重复的助记词"},
@@ -6197,8 +6158,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -6211,13 +6172,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -6230,10 +6191,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -6248,23 +6209,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -6280,31 +6241,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -6319,6 +6280,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

@@ -15,9 +15,7 @@ cstr_core = { workspace = true }
 serde_json = { workspace = true }
 ur-registry = { workspace = true }
 common_rust_c = { path = "../common" }
-
+hex = { workspace = true }
 [features]
 debug-memory = []
-simulator = [
-    "app_sui/simulator"
-]
+simulator = ["app_sui/simulator"]

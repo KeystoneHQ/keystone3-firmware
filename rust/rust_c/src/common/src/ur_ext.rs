@@ -7,7 +7,6 @@ use serde_json::{from_slice, from_value, Value};
 use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SignType};
-use ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
 use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
@@ -43,6 +42,9 @@ use ur_registry::stellar::stellar_sign_request::{SignType as StellarSignType, St
 #[cfg(feature = "multi-coins")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
+use ur_registry::{
+    bitcoin::btc_sign_request::BtcSignRequest, sui::sui_sign_hash_request::SuiSignHashRequest,
+};
 
 use crate::ur::ViewType;
 
@@ -109,6 +111,13 @@ impl InferViewType for EvmSignRequest {
 impl InferViewType for SuiSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::SuiTx)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for SuiSignHashRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::SuiSignMessageHash)
     }
 }
 

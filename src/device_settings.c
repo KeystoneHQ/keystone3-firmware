@@ -36,7 +36,7 @@
 #define KEY_LANGUAGE                    "language"
 #define KEY_NFT_SCREEN                  "nftEnable"
 #define KEY_NFT_VALID                   "nftValid"
-
+#define KEY_ENABLE_BLIND_SIGNING         "enableBlindSigning"
 #define DEFAULT_SETUP_STEP              0
 #define DEFAULT_BRIGHT                  15
 #define DEFAULT_AUTO_LOCK_SCREEN        60
@@ -47,7 +47,6 @@
 #define DEFAULT_USB_SWITCH              1
 #define DEFAULT_LAST_VERSION            0
 #define DEFAULT_LANGUAGE                LANG_EN
-
 typedef struct {
     uint32_t setupStep;
     uint32_t bright;
@@ -61,6 +60,7 @@ typedef struct {
     uint32_t language;
     bool nftEnable;
     bool nftValid;
+    bool enableBlindSigning;
 } DeviceSettings_t;
 
 static int32_t SaveDeviceSettingsAsyncFunc(const void *inData, uint32_t inDataLen);
@@ -111,6 +111,7 @@ void DeviceSettingsInit(void)
         g_deviceSettings.language = DEFAULT_LANGUAGE;
         g_deviceSettings.nftEnable = false;
         g_deviceSettings.nftValid = false;
+        g_deviceSettings.enableBlindSigning = false;
         SaveDeviceSettingsSync();
     }
 }
@@ -247,6 +248,17 @@ void SetNftScreenSaver(bool enable)
     g_deviceSettings.nftEnable = enable;
 }
 
+
+bool GetEnableBlindSigning(void)
+{
+    return g_deviceSettings.enableBlindSigning;
+}
+
+void SetEnableBlindSigning(bool enable)
+{
+    g_deviceSettings.enableBlindSigning = enable;
+}
+
 uint32_t GetLanguage(void)
 {
     return g_deviceSettings.language;
@@ -307,6 +319,7 @@ void DeviceSettingsTest(int argc, char *argv[])
         printf("darkMode=%d\n", GetDarkMode());
         printf("usbSwitch=%d\n", GetUSBSwitch());
         printf("language=%d\n", GetLanguage());
+        printf("enableBlindSigning=%d\n", GetEnableBlindSigning());
     } else if (strcmp(argv[0], "set") == 0) {
         SetSetupStep(0);
         SetBright(50);
@@ -317,6 +330,7 @@ void DeviceSettingsTest(int argc, char *argv[])
         SetUSBSwitch(0);
         g_deviceSettings.lastVersion = 2;
         SetLanguage(DEFAULT_LANGUAGE);
+        SetEnableBlindSigning(false);
         SaveDeviceSettings();
         printf("set device settings test\n");
     } else {
@@ -377,6 +391,7 @@ static bool GetDeviceSettingsFromJsonString(const char *string)
         g_deviceSettings.language = GetIntValue(rootJson, KEY_LANGUAGE, DEFAULT_LANGUAGE);
         g_deviceSettings.nftEnable = GetBoolValue(rootJson, KEY_NFT_SCREEN, false);
         g_deviceSettings.nftValid = GetBoolValue(rootJson, KEY_NFT_VALID, false);
+        g_deviceSettings.enableBlindSigning = GetBoolValue(rootJson, KEY_ENABLE_BLIND_SIGNING, false);
     } while (0);
     cJSON_Delete(rootJson);
 
@@ -402,6 +417,7 @@ static char *GetJsonStringFromDeviceSettings(void)
     cJSON_AddItemToObject(rootJson, KEY_LANGUAGE, cJSON_CreateNumber(g_deviceSettings.language));
     cJSON_AddItemToObject(rootJson, KEY_NFT_SCREEN, cJSON_CreateBool(g_deviceSettings.nftEnable));
     cJSON_AddItemToObject(rootJson, KEY_NFT_VALID, cJSON_CreateBool(g_deviceSettings.nftValid));
+    cJSON_AddItemToObject(rootJson, KEY_ENABLE_BLIND_SIGNING, cJSON_CreateBool(g_deviceSettings.enableBlindSigning));
     retStr = cJSON_Print(rootJson);
     RemoveFormatChar(retStr);
     cJSON_Delete(rootJson);

@@ -134,6 +134,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         FreeSuiMemory,
     },
     {
+        REMAPVIEW_SUI_SIGN_MESSAGE_HASH,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"sui_sign_hash_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSuiSignMessageHashOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSuiSignMessageHashDetails\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_sign_hash.json",
+#endif
+        GuiGetSuiSignMessageHashData,
+        NULL,
+        FreeSuiMemory
+    },
+    {
         REMAPVIEW_SOL,
 #ifndef COMPILE_SIMULATOR
         "{\"name\":\"sol_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxDetail\"}]}]}",
@@ -1327,6 +1338,10 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiArDataItemOverview;
     } else if (!strcmp(funcName, "GuiArDataItemDetail")) {
         return GuiArDataItemDetail;
+    } else if (!strcmp(funcName, "GuiShowSuiSignMessageHashOverview")) {
+        return GuiShowSuiSignMessageHashOverview;
+    } else if (!strcmp(funcName, "GuiShowSuiSignMessageHashDetails")) {
+        return GuiShowSuiSignMessageHashDetails;
     }
 #endif
     return NULL;
@@ -1704,6 +1719,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_COSMOS;
     case SuiTx:
         return REMAPVIEW_SUI;
+    case SuiSignMessageHash:
+        return REMAPVIEW_SUI_SIGN_MESSAGE_HASH;
     case SolanaTx:
         return REMAPVIEW_SOL;
     case SolanaMessage:

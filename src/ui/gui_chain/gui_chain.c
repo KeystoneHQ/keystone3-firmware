@@ -12,6 +12,7 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_BTC:
     case REMAPVIEW_BTC_MESSAGE:
     case REMAPVIEW_COSMOS:
+    case REMAPVIEW_SUI_SIGN_MESSAGE_HASH:
         return true;
     default:
         return false;
@@ -36,6 +37,8 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
         return GuiGetCosmosCheckResult();
     case REMAPVIEW_SUI:
         return GuiGetSuiCheckResult();
+    case REMAPVIEW_SUI_SIGN_MESSAGE_HASH:
+        return GuiGetSuiSignHashCheckResult();
     case REMAPVIEW_SOL:
     case REMAPVIEW_SOL_MESSAGE:
         return GuiGetSolCheckResult();
@@ -91,6 +94,8 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case CosmosEvmTx:
         return GuiGetCosmosTxChain();
     case SuiTx:
+        return CHAIN_SUI;
+    case SuiSignMessageHash:
         return CHAIN_SUI;
     case SolanaTx:
     case SolanaMessage:
@@ -168,6 +173,9 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
         break;
     case SuiTx:
         func = GuiGetSuiSignQrCodeData;
+        break;
+    case SuiSignMessageHash:
+        func = GuiGetSuiSignHashQrCodeData;
         break;
     case SolanaTx:
     case SolanaMessage:

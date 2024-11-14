@@ -191,6 +191,34 @@ void *GuiCreateCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single,
     return checkBox;
 }
 
+void *GuiCreateBlindSigningCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single,
+        const lv_font_t *font)
+{
+    lv_obj_t *checkBox = lv_checkbox_create(parent);
+    lv_obj_add_flag(checkBox, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_size(checkBox, 36, 36);
+    lv_checkbox_set_text(checkBox, text);
+    lv_obj_set_style_text_color(checkBox, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_text_font(checkBox, font, LV_PART_MAIN);
+    lv_obj_set_style_radius(checkBox, LV_RADIUS_CIRCLE, LV_PART_INDICATOR);
+    lv_obj_set_style_border_opa(checkBox, LV_OPA_30, LV_PART_INDICATOR);
+    lv_obj_set_style_border_color(checkBox, WHITE_COLOR, LV_PART_INDICATOR);
+    lv_obj_set_style_border_width(checkBox, 2, LV_PART_INDICATOR);
+    lv_obj_set_style_pad_all(checkBox, 0, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(checkBox, DARK_BG_COLOR,
+                              LV_PART_MAIN | LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(checkBox, ORANGE_COLOR,
+                              LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_bg_img_src(checkBox, &imgMessageRight,
+                                LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_border_opa(checkBox, LV_OPA_0,
+                                LV_PART_INDICATOR | LV_STATE_CHECKED);
+    return checkBox;
+}
+
+
+
+
 void *GuiCreateSelectPathCheckBox(lv_obj_t *parent)
 {
     lv_obj_t *checkBox = lv_btn_create(parent);

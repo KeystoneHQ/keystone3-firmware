@@ -87,6 +87,8 @@ void *GuiCreateNoticeLabel(lv_obj_t *parent, const char *text);
 void *GuiCreateImg(lv_obj_t *parent, const void *src);
 void *GuiCreateScaleImg(lv_obj_t *parent, const void *src, int scale);
 void *GuiCreateCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single, const lv_font_t *font);
+void *GuiCreateBlindSigningCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single,
+        const lv_font_t *font);
 void *GuiCreateBtnWithFont(lv_obj_t *parent, const char *text, const lv_font_t *font);
 void *GuiCreateLine(lv_obj_t *parent, lv_point_t linePoints[], uint16_t pointNum);
 void *GuiCreateDividerLine(lv_obj_t *parent);

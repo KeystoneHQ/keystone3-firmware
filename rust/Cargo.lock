@@ -3468,6 +3468,7 @@ dependencies = [
  "common_rust_c",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
  "rust_tools",
  "serde_json",

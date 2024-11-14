@@ -12,4 +12,6 @@ pub enum ZcashError {
     InvalidDataError(String),
     #[error("failed to sign zcash data, {0}")]
     SigningError(String),
+    #[error("invalid pczt, {0}")]
+    InvalidPczt(String),
 }

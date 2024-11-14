@@ -13,6 +13,7 @@ bitcoin = { workspace = true }
 thiserror = { workspace = true }
 zcash_vendor = { workspace = true }
 hex = { workspace = true }
+bitvec = {version = "1.0.1", default-features = false, features = ["alloc"]}
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

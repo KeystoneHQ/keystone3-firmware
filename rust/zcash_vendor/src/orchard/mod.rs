@@ -5,5 +5,9 @@ pub mod prf_expand;
 pub mod redpallas;
 pub mod spec;
 pub mod zip32;
-
+pub mod note;
+pub mod commitment;
+pub mod note_ext;
+pub mod note_encryption;
+pub mod value;
 pub use address::Address;

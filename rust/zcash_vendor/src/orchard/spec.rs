@@ -3,6 +3,8 @@
 use core::iter;
 use core::ops::Deref;
 
+use crate::poseidon;
+
 use super::{super::sinsemilla, constants::{COMMIT_IVK_PERSONALIZATION, KEY_DIVERSIFICATION_PERSONALIZATION, L_ORCHARD_BASE}};
 use ff::{Field, FromUniformBytes, PrimeField, PrimeFieldBits};
 use group::{Curve, Group, GroupEncoding, WnafBase, WnafScalar};
@@ -249,4 +251,9 @@ pub fn extract_p(point: &pallas::Point) -> pallas::Base {
 /// [concreteextractorpallas]: https://zips.z.cash/protocol/nu5.pdf#concreteextractorpallas
 pub fn extract_p_bottom(point: CtOption<pallas::Point>) -> CtOption<pallas::Base> {
     point.map(|p| extract_p(&p))
+}
+
+pub fn prf_nf(nk: pallas::Base, rho: pallas::Base) -> pallas::Base {
+    poseidon::Hash::<_, poseidon::p128pow5t3::P128Pow5T3, poseidon::ConstantLength<2>, 3, 2>::init()
+        .hash([nk, rho])
 }

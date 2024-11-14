@@ -19,9 +19,7 @@ use super::{
     prf_expand::PrfExpand,
     redpallas::{self, SpendAuth},
     spec::{
-        commit_ivk, diversify_hash, extract_p, ka_orchard, ka_orchard_prepared, to_base, to_scalar,
-        NonIdentityPallasPoint, NonZeroPallasBase, NonZeroPallasScalar, PreparedNonIdentityBase,
-        PreparedNonZeroScalar,
+        commit_ivk, diversify_hash, extract_p, ka_orchard, ka_orchard_prepared, prf_nf, to_base, to_scalar, NonIdentityPallasPoint, NonZeroPallasBase, NonZeroPallasScalar, PreparedNonIdentityBase, PreparedNonZeroScalar
     },
     zip32::{self, ExtendedSpendingKey},
 };
@@ -261,6 +259,10 @@ impl From<&SpendingKey> for NullifierDerivingKey {
 }
 
 impl NullifierDerivingKey {
+    pub fn prf_nf(&self, rho: pallas::Base) -> pallas::Base {
+        prf_nf(self.0, rho)
+    }
+
     /// Converts this nullifier deriving key to its serialized form.
     pub fn to_bytes(self) -> [u8; 32] {
         <[u8; 32]>::from(self.0)

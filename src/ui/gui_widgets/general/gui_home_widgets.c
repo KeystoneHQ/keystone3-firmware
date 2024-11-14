@@ -54,6 +54,7 @@ static uint8_t g_currentPage = 0;
 static bool g_isScrolling = false;
 const static char *g_coinFilter[] = {"Main Chain", "COSMOS Eco"};
 static uint8_t g_currentFilter = COIN_FILTER_MAIN;
+static uint8_t g_coinFilterNum = 0;
 static lv_obj_t *g_coinListCont = NULL;
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
@@ -142,6 +143,8 @@ static void GuiInitWalletState()
         g_walletState[HOME_WALLET_CARD_TON].state = true;
         break;
     }
+
+    g_coinFilterNum = (GetMnemonicType() == MNEMONIC_TYPE_TON) ? 1 : 2;
 }
 
 static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
@@ -807,7 +810,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
     lv_obj_align(filterBar, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_flex_flow(filterBar, LV_FLEX_FLOW_ROW);
 
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_coinFilter); i++) {
+    for (int i = 0; i < g_coinFilterNum; i++) {
         lv_obj_t *btn = GuiCreateBtnWithFont(filterBar, g_coinFilter[i], &openSansEnIllustrate);
         lv_obj_set_size(btn, 200, 62);
         lv_obj_set_style_radius(btn, 0, 0);

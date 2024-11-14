@@ -36,7 +36,7 @@ typedef enum {
 
 WalletListItem_t g_walletListArray[] = {
 #ifndef BTC_ONLY
-    {WALLET_LIST_KEYSTONE, &walletListKeystone, false, WALLET_FILTER_ALL},
+    {WALLET_LIST_KEYSTONE, &walletListKeystone, false, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_OKX, &walletListOkx, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL},
@@ -65,9 +65,9 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ARCONNECT, &walletListArConnect, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_XBULL, &walletListXBull, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_IMTOKEN, &walletListImToken, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_FEWCHA, &walletListFewcha, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_FEWCHA, &walletListFewcha, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_ZAPPER, &walletListZapper, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true, WALLET_FILTER_ETH},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true, WALLET_FILTER_ETH},
 #else
     {WALLET_LIST_BLUE, &walletListBtcBlue, true, false},
@@ -216,8 +216,11 @@ const static ChangeDerivationItem_t g_adaChangeDerivationList[] = {
     {"Ledger/BitBox02", ""},
 };
 
-const static char *g_walletFilter[] = {"All", "BTC", "ETH", "SOL", "ADA", "· · ·"};
-static uint8_t g_currentFilter = WALLET_FILTER_ALL;    // "ALL"
+#define WALLET_FILTER_SLIP39 {"All", "BTC", "ETH", "SOL", "· · ·"}
+#define WALLET_FILTER_NORMAL {"All", "BTC", "ETH", "SOL", "ADA", "· · ·"}
+static char *g_walletFilter[6];
+static uint8_t g_walletFilterNum = 0;
+static uint8_t g_currentFilter = WALLET_FILTER_ALL;
 
 static uint32_t g_currentSelectedPathIndex[3] = {0};
 static lv_obj_t *g_walletListCont = NULL;
@@ -663,7 +666,7 @@ static void GuiUpdateConnectWalletHandler(lv_event_t *e)
     char *selectFilter = lv_event_get_user_data(e);
     int i = 0;
     lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-    for (i = 0; i < NUMBER_OF_ARRAYS(g_walletFilter); i++) {
+    for (i = 0; i < g_walletFilterNum; i++) {
         if (strcmp(g_walletFilter[i], selectFilter) == 0) {
             uint8_t currentFilter = (i == 0) ? WALLET_FILTER_ALL : (1 << (i - 1));
             if (currentFilter == g_currentFilter) {
@@ -676,7 +679,7 @@ static void GuiUpdateConnectWalletHandler(lv_event_t *e)
         lv_obj_set_style_border_width(lv_obj_get_child(parent, i), 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
-    for (++i; i < NUMBER_OF_ARRAYS(g_walletFilter); i++) {
+    for (++i; i < g_walletFilterNum; i++) {
         lv_obj_set_style_border_width(lv_obj_get_child(parent, i), 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
@@ -712,7 +715,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
         lv_obj_align(filterBar, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_set_flex_flow(filterBar, LV_FLEX_FLOW_ROW);
 
-        for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletFilter); i++) {
+        for (int i = 0; i < g_walletFilterNum; i++) {
             lv_obj_t *btn = GuiCreateBtnWithFont(filterBar, g_walletFilter[i], &openSansEnIllustrate);
             lv_obj_set_size(btn, 40, 64);
             lv_obj_set_style_radius(btn, 0, 0);
@@ -1180,6 +1183,16 @@ static void AddBackpackWalletCoins(void)
 
 void GuiConnectWalletInit(void)
 {
+    g_currentFilter = WALLET_FILTER_ALL;
+    static const char *slip39Filters[] = WALLET_FILTER_SLIP39;
+    static const char *normalFilters[] = WALLET_FILTER_NORMAL;
+    if (GetMnemonicType() != MNEMONIC_TYPE_SLIP39) {
+        memcpy_s(g_walletFilter, sizeof(g_walletFilter), slip39Filters, sizeof(slip39Filters));
+        g_walletFilterNum = NUMBER_OF_ARRAYS(slip39Filters);
+    } else {
+        memcpy_s(g_walletFilter, sizeof(g_walletFilter), normalFilters, sizeof(normalFilters));
+        g_walletFilterNum = NUMBER_OF_ARRAYS(normalFilters);
+    }
     GuiInitWalletListArray();
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;

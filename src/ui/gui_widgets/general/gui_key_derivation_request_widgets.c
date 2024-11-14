@@ -518,6 +518,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
 
         GetAccountSeed(GetCurrentAccountIndex(), seed, password);
         ExtendedPublicKey xpubs[24];
+        printf(".......................get size = %d\n", g_callData->key_derivation->schemas->size);
         for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
             uint8_t derivationType = GetDerivationTypeByCurveAndDeriveAlgo(g_callData->key_derivation->schemas->data[i].curve, g_callData->key_derivation->schemas->data[i].algo);
             char *path = g_callData->key_derivation->schemas->data[i].key_path;
@@ -619,7 +620,6 @@ static uint8_t GetXPubIndexByPath(char *path)
 
 static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent)
 {
-
     lv_obj_t *label, *cont, *btn, *pathCont, *noticeCont;
     cont = GuiCreateContainerWithParent(parent, 408, 534);
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 8);

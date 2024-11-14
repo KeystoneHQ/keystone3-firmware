@@ -172,6 +172,7 @@ void GuiShowSuiSignMessageHashOverview(lv_obj_t *parent, void *totalData)
     lv_obj_align(message_hash_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
     SetFlexContainerStyle(message_hash_card, LV_FLEX_FLOW_COLUMN, 16);
     lv_obj_t *message_hash_label = GuiCreateTextLabel(message_hash_card, "Hash");
+    lv_obj_set_style_text_opa(message_hash_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align_to(message_hash_label, message_hash_card, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 16);
 
     // color message hash
@@ -199,7 +200,10 @@ void GuiShowSuiSignMessageHashDetails(lv_obj_t *parent, void *totalData)
     lv_obj_update_layout(network_card);
     int containerYOffset = lv_obj_get_height(network_card) + 16;
     // path card
-    lv_obj_t *path_card = GuiCreateLabelCard(parent, "Path", hashData->path);
+    // path = m/ + hashData->path
+    char path[128] = {0};
+    snprintf(path, sizeof(path), "m/%s", hashData->path);
+    lv_obj_t *path_card = GuiCreateLabelCard(parent, "Path", path);
     lv_obj_align(path_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
     lv_obj_update_layout(path_card);
     containerYOffset += lv_obj_get_height(path_card) + 16;
@@ -215,7 +219,7 @@ void GuiShowSuiSignMessageHashDetails(lv_obj_t *parent, void *totalData)
     lv_obj_align(message_hash_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
     SetFlexContainerStyle(message_hash_card, LV_FLEX_FLOW_COLUMN, 16);
     lv_obj_t *message_hash_label = GuiCreateTextLabel(message_hash_card, "Hash");
-
+    lv_obj_set_style_text_opa(message_hash_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align_to(message_hash_label, message_hash_card, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 1);
 
     // color message hash

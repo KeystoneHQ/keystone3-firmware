@@ -85,7 +85,7 @@ static EnableBlindSigningHintboxContext *BuildEnableBlindSigningHintboxContext()
     context->context = _("enable_blind_signing_hintbox_context");
     context->icon = &imgWarn;
     context->hintboxHeight = 456;
-    context->okBtnText = _("enable_blind_signing_hintbox_ok");
+    context->okBtnText = _("OK");
     context->checkBoxText = _("enable_blind_signing_hintbox_check");
     return context;
 }
@@ -197,6 +197,7 @@ void GuiCreateEnableBlindSigningHintbox()
     lv_obj_set_style_bg_color(okBtn, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_align(okBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
     lv_obj_add_event_cb(okBtn, CloseEnableBlindSigningHandler, LV_EVENT_CLICKED, NULL);
+
 
     SRAM_FREE(context);
 }

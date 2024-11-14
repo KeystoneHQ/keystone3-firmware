@@ -39,7 +39,6 @@ fn path_to_coin_code(path: &str) -> String {
         .collect::<Vec<&str>>()
         .join("/")
         .to_lowercase();
-    rust_tools::debug!(format!("path: {}", path));
     match path.as_str() {
         BTC_LEGACY_PREFIX => "BTC_LEGACY".to_string(),
         BTC_SEGWIT_PREFIX => "BTC".to_string(),
@@ -61,7 +60,6 @@ pub fn generate_crypto_multi_accounts(
     device_type: &str,
     device_version: &str,
 ) -> URResult<Bytes> {
-    rust_tools::debug!(format!("master_fingerprint: {:?}", &master_fingerprint));
     let device_id = get_device_id(serial_number);
     let mut keys = vec![];
     let k1_keys = vec![
@@ -116,10 +114,6 @@ pub fn generate_crypto_multi_accounts(
         let x_pub = key.get_bip32_key();
 
         let coin_code = path_to_coin_code(&hd_path);
-        rust_tools::debug!(format!(
-            "coin_code: {}, hd_path: {}, x_pub: {}",
-            coin_code, hd_path, x_pub
-        ));
         if coin_code == "Unknown" {
             continue;
         }

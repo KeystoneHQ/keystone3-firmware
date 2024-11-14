@@ -6,7 +6,7 @@
 typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param, uint16_t usLen);
 
 #define ITEM_ENUM(x) x,
- #define ITEM_STR(x) #x,
+#define ITEM_STR(x) #x,
 
 #define SCREEN_LIST(add)        \
     add(SCREEN_INIT)            \

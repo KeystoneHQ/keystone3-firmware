@@ -4820,7 +4820,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"invaild_account_path_notice", "Пожалуйста, повторно введите путь в программный кошелек и попробуйте еще раз."},
     {"invaild_ada_path", "Путь не поддерживается"},
     {"invaild_ada_path_con", "Выбранный путь не поддерживается. Пожалуйста, выберите допустимый путь в программном кошельке."},
-    {"invaild_derive_type", "Недопустимый тип деривации"},
+    {"invaild_derive_type", "Недействительный"},
     {"invaild_derive_type_con", "Неподдерживаемый тип деривации"},
     {"invaild_path_index_big", "Индекс пути деривации ada слишком большой"},
     {"invaild_path_index_con", "Путь деривации ada недопустим"},

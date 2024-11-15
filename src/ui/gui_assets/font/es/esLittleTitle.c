@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 28 px
  * Bpp: 1
- * Opts: --bpp 1 --size 28 --no-compress --font NotoSans-Regular.ttf --symbols "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¡£¥·¿Éáéíñóú€  --format lvgl -o ../gui_assets/font/es/esLittleTitle.c
+ * Opts: --bpp 1 --size 28 --no-compress --font NotoSans-Regular.ttf --symbols "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¡£¥·¿Éáéíñóú€知通  --format lvgl -o ../gui_assets/font/es/esLittleTitle.c
  ******************************************************************************/
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE

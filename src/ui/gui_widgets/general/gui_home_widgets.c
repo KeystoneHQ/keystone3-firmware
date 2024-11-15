@@ -966,6 +966,7 @@ void ClearHomePageCurrentIndex(void)
 void GuiHomeRestart(void)
 {
     g_currentPage = 0;
+    g_currentFilter = COIN_FILTER_MAIN;
     GUI_DEL_OBJ(g_manageCont)
     GUI_DEL_OBJ(g_noticeWindow)
     GuiHomeRefresh();

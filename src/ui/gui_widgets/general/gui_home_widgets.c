@@ -534,11 +534,13 @@ static void UpdateManageWalletState(bool needUpdate)
         if (g_walletState[i].enable) {
             total++;
         }
-        if (lv_obj_is_valid(g_walletState[i].checkBox)) {
-            if (g_walletBakState[i].state == true) {
-                selectCnt++;
+        if (g_walletBakState[i].state == true) {
+            selectCnt++;
+            if (g_walletState[i].checkBox != NULL) {
                 lv_obj_add_state(g_walletState[i].checkBox, LV_STATE_CHECKED);
-            } else {
+            }
+        } else {
+            if (g_walletState[i].checkBox != NULL) {
                 lv_obj_clear_state(g_walletState[i].checkBox, LV_STATE_CHECKED);
             }
         }
@@ -603,7 +605,7 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
 
     lv_obj_t *pageSelectCont = GuiCreateContainerWithParent(walletCardCont, 480, 6);
     lv_obj_align(pageSelectCont, LV_ALIGN_BOTTOM_MID, 0, -17);
-    GuiDrawPageSelectLed(pageSelectCont, totalCoinAmount / CARDS_PER_PAGE + 1, g_currentPage);
+    GuiDrawPageSelectLed(pageSelectCont, (totalCoinAmount % CARDS_PER_PAGE == 0) ? (totalCoinAmount / CARDS_PER_PAGE) : (totalCoinAmount / CARDS_PER_PAGE + 1), g_currentPage);
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {
         if ((g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) ||
@@ -739,17 +741,6 @@ void GuiHomePasswordErrorCount(void *param)
     GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }
 
-static void ManageCoinChainHandler(lv_event_t *e)
-{
-    bool state;
-    WalletState_t *wallet = lv_event_get_user_data(e);
-
-    lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-    state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
-    g_walletBakState[wallet->index].state = state;
-    UpdateManageWalletState(false);
-}
-
 void ScanQrCodeHandler(lv_event_t *e)
 {
     g_isManageClick = false;
@@ -764,6 +755,8 @@ void ScanQrCodeHandler(lv_event_t *e)
 void ConfirmManageAssetsHandler(lv_event_t *e)
 {
     g_currentPage = 0;
+    g_coinCurrentPage = 0;
+    g_currentFilter = COIN_FILTER_MAIN;
     UpdateManageWalletState(true);
     UpdateHomeConnectWalletCard(GestureNone);
     GUI_DEL_OBJ(g_manageCont)
@@ -789,19 +782,25 @@ static void GuiUpdateCoinListWidget(HomeGesture_t gesture)
 {
     int heightIndex = 0;
     uint8_t currentCoinAmount = 0;
-    uint8_t totalCoinAmount = 0xFF;
+    uint8_t totalCoinAmount = 0;
 
     lv_obj_t *coinListCont = g_coinListCont;
     lv_obj_clean(coinListCont);
     int startIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_BTC : HOME_WALLET_CARD_TIA;
     int endIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_TIA : HOME_WALLET_CARD_BUTT;
-    totalCoinAmount = endIndex - startIndex;
+    for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+        g_walletState[i].checkBox = NULL;
+        if (i >= startIndex && i < endIndex && g_walletState[i].enable) {
+            totalCoinAmount++;
+        }
+    }
+    
     UpdateCoinStartIndex(gesture, totalCoinAmount);
     lv_obj_t *pageSelectCont = GuiCreateContainerWithParent(coinListCont, 480, 6);
     lv_obj_align(pageSelectCont, LV_ALIGN_BOTTOM_MID, 0, 0);
-    GuiDrawPageSelectLed(pageSelectCont, totalCoinAmount / COIN_PER_PAGE + 1, g_coinCurrentPage);
+    GuiDrawPageSelectLed(pageSelectCont, (totalCoinAmount % COIN_PER_PAGE == 0) ? (totalCoinAmount / COIN_PER_PAGE) : (totalCoinAmount / COIN_PER_PAGE + 1), g_coinCurrentPage);
     for (int i = startIndex, j = startIndex; i < endIndex; i++) {
-        if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
+        if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE || !g_walletState[i].enable) {
             j++;
             continue;
         }
@@ -830,10 +829,6 @@ static void GuiUpdateCoinListWidget(HomeGesture_t gesture)
         lv_obj_add_event_cb(button, CoinScrollHandler, LV_EVENT_ALL, &g_walletState[i]);
 
         g_walletButton[i] = button;
-        if (!g_walletState[i].enable || i < startIndex || i >= endIndex) {
-            lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
-            continue;
-        }
         lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 96 * heightIndex);
         heightIndex++;
         if (currentCoinAmount++ == (COIN_PER_PAGE - 1)) {
@@ -847,6 +842,7 @@ static void GuiUpdateCoinListWidget(HomeGesture_t gesture)
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 32, 144);
     }
+    UpdateManageWalletState(false);
 }
 
 static void GuiUpdateCoinManagerHandler(lv_event_t *e)
@@ -865,7 +861,6 @@ static void GuiUpdateCoinManagerHandler(lv_event_t *e)
     lv_obj_set_style_border_width(obj, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     GuiUpdateCoinListWidget(GestureNone);
-    UpdateManageWalletState(false);
 }
 
 static void OpenManageAssetsHandler(lv_event_t *e)
@@ -903,13 +898,10 @@ static void OpenManageAssetsHandler(lv_event_t *e)
     lv_obj_t *coinListCont = GuiCreateContainerWithParent(g_manageCont, 480, 542 - 62 - 1);
     g_coinListCont = coinListCont;
     lv_obj_clear_flag(coinListCont, LV_OBJ_FLAG_GESTURE_BUBBLE);
-    lv_obj_add_flag(coinListCont, LV_EVENT_CLICKED);
+    lv_obj_add_flag(coinListCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(coinListCont, CoinScrollHandler, LV_EVENT_ALL, NULL);
     lv_obj_align(coinListCont, LV_ALIGN_TOP_MID, 0, 62 + 1);
     lv_obj_set_align(coinListCont, LV_ALIGN_DEFAULT);
-    // lv_obj_add_flag(coinListCont, LV_OBJ_FLAG_SCROLLABLE);
-    // lv_obj_set_scrollbar_mode(coinListCont, LV_SCROLLBAR_MODE_OFF);
-    GuiUpdateCoinListWidget(GestureNone);
 
     lv_obj_t *btn = GuiCreateBtn(g_manageCont, USR_SYMBOL_CHECK);
     lv_obj_add_event_cb(btn, ConfirmManageAssetsHandler, LV_EVENT_CLICKED, NULL);
@@ -921,7 +913,7 @@ static void OpenManageAssetsHandler(lv_event_t *e)
 
     g_manageWalletLabel = label;
 
-    UpdateManageWalletState(false);
+    GuiUpdateCoinListWidget(GestureNone);
 
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, NULL);
@@ -1072,11 +1064,13 @@ static void AddFlagCountDownTimerHandler(lv_timer_t *timer)
 void ClearHomePageCurrentIndex(void)
 {
     g_currentPage = 0;
+    g_coinCurrentPage = 0;
 }
 
 void GuiHomeRestart(void)
 {
     g_currentPage = 0;
+    g_coinCurrentPage = 0;
     g_currentFilter = COIN_FILTER_MAIN;
     GUI_DEL_OBJ(g_manageCont)
     GUI_DEL_OBJ(g_noticeWindow)

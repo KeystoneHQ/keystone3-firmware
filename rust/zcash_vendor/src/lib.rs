@@ -15,3 +15,6 @@ pub mod pczt;
 pub mod poseidon;
 
 pub use pasta_curves;
+pub use ripemd;
+pub use sha2;
+pub use bip32;

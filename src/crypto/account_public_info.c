@@ -172,7 +172,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_SOL_BIP44_CHANGE_7,    ED25519,      "sol_bip44_change_7",       "M/44'/501'/7'/0'"  },
     {XPUB_TYPE_SOL_BIP44_CHANGE_8,    ED25519,      "sol_bip44_change_8",       "M/44'/501'/8'/0'"  },
     {XPUB_TYPE_SOL_BIP44_CHANGE_9,    ED25519,      "sol_bip44_change_9",       "M/44'/501'/9'/0'"  },
-    {XPUB_TYPE_SOL_BIP44_CHANGE_10,   ED25519,      "sol_bip44_change_10",       "M/44'/501'/10'/0'"  },
+    {XPUB_TYPE_SOL_BIP44_CHANGE_10,   ED25519,      "sol_bip44_change_10",      "M/44'/501'/10'/0'"  },
     {XPUB_TYPE_SOL_BIP44_CHANGE_11,   ED25519,      "sol_bip44_change_11",      "M/44'/501'/11'/0'"  },
     {XPUB_TYPE_SOL_BIP44_CHANGE_12,   ED25519,      "sol_bip44_change_12",      "M/44'/501'/12'/0'"  },
     {XPUB_TYPE_SOL_BIP44_CHANGE_13,   ED25519,      "sol_bip44_change_13",      "M/44'/501'/13'/0'"  },

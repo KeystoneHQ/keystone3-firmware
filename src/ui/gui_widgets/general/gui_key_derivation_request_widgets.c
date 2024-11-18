@@ -619,7 +619,6 @@ static uint8_t GetXPubIndexByPath(char *path)
 
 static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent)
 {
-
     lv_obj_t *label, *cont, *btn, *pathCont, *noticeCont;
     cont = GuiCreateContainerWithParent(parent, 408, 534);
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 36, 8);

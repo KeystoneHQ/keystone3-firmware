@@ -208,7 +208,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
     {
         .index = HOME_WALLET_CARD_TON,
         .coin = "TON",
-        .chain = "The Open Network",
+        .chain = "TON-TON",
         .icon = &coinTon,
     },
     {
@@ -298,7 +298,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
     {
         .index = HOME_WALLET_CARD_CRO,
         .coin = "CRO",
-        .chain = "Cronos POS chain",
+        .chain = "CRO-Cronos POS",
         .icon = &coinCro,
     },
     {
@@ -346,7 +346,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
     {
         .index = HOME_WALLET_CARD_SCRT,
         .coin = "SCRT",
-        .chain = "Secret Network",
+        .chain = "SCRT-Secret",
         .icon = &coinScrt,
     },
     {

@@ -104,13 +104,13 @@ pub struct Output {
     // These are required fields that are part of the final transaction, and are filled in
     // by the Constructor when adding an output.
     //
-    pub(crate) value: u64,
-    pub(crate) script_pubkey: Vec<u8>,
+    pub value: u64,
+    pub script_pubkey: Vec<u8>,
 
     /// The script required to spend this output, if it is P2SH.
     ///
     /// Set to `None` if this is a P2PKH output.
-    pub(crate) redeem_script: Option<Vec<u8>>,
+    pub redeem_script: Option<Vec<u8>>,
 
     /// A map from a pubkey to the BIP 32 derivation path at which its corresponding
     /// spending key can be found.
@@ -120,9 +120,9 @@ pub struct Output {
     /// - Individual entries may be required by a Signer.
     ///
     /// TODO: Decide on map key type.
-    pub(crate) bip32_derivation: BTreeMap<Vec<u8>, Zip32Derivation>,
+    pub bip32_derivation: BTreeMap<Vec<u8>, Zip32Derivation>,
 
-    pub(crate) proprietary: BTreeMap<String, Vec<u8>>,
+    pub proprietary: BTreeMap<String, Vec<u8>>,
 }
 
 impl Bundle {

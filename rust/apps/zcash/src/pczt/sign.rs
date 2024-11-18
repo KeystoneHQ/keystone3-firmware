@@ -22,7 +22,7 @@ impl PcztSigner for SeedSigner {
                     .map_err(|e| ZcashError::SigningError(e.to_string()))?;
                 if my_pubkey.serialize().to_vec().eq(pubkey) {
                     let signature = sign_message_by_seed(&self.seed, &path.to_string(), &message)
-                        .map(|(rec_id, signature)| signature)
+                        .map(|(_rec_id, signature)| signature)
                         .map_err(|e| ZcashError::SigningError(e.to_string()))?;
                     result.insert(pubkey.clone(), signature);
                 }
@@ -35,9 +35,9 @@ impl PcztSigner for SeedSigner {
 
     fn sign_sapling(
         &self,
-        hash: &[u8],
-        alpha: [u8; 32],
-        path: Zip32Derivation,
+        _hash: &[u8],
+        _alpha: [u8; 32],
+        _path: Zip32Derivation,
     ) -> Result<Option<ZcashSignature>, Self::Error> {
         // we don't support sapling yet
         Err(ZcashError::SigningError(

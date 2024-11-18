@@ -234,6 +234,10 @@ impl AccountPubKey {
             .map(ExternalIvk)
     }
 
+    pub fn to_inner(&self) -> ExtendedPublicKey<PublicKey> {
+        self.0.clone()
+    }
+
     /// Derives the BIP44 public key at the internal "change level" path
     /// `m/44'/<coin_type>'/<account>'/1`.
     pub fn derive_internal_ivk(&self) -> Result<InternalIvk, bip32::Error> {

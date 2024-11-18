@@ -1,3 +1,14 @@
+
+## 1.7.10(2024-11-18)
+
+
+### What's new
+
+1. Supported managing BTC assets using ZEUS Wallet
+2. Supported managing COSMOS assets using Leap Wallet
+
+
+
 ## 1.7.8(2024-10-30)
 
 ### What's new

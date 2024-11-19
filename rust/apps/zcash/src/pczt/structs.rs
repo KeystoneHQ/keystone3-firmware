@@ -3,7 +3,9 @@ use app_utils::impl_public_struct;
 
 impl_public_struct!(ParsedPczt {
     transparent: Option<ParsedTransparent>,
-    orchard: Option<ParsedOrchard>
+    orchard: Option<ParsedOrchard>,
+    total_transfer_value: String,
+    fee_value: String
 });
 
 impl_public_struct!(ParsedTransparent {
@@ -24,12 +26,15 @@ impl ParsedTransparent {
 impl_public_struct!(ParsedFrom {
     address: String,
     value: String,
+    amount: u64,
     is_mine: bool
 });
 
 impl_public_struct!(ParsedTo {
     address: String,
     value: String,
+    amount: u64,
+    is_change: bool,
     is_mine: bool,
     memo: Option<String>
 });

@@ -69,7 +69,6 @@ const static char *g_coinFilter[] = {"Main Chain", "COSMOS Eco"};
 static uint8_t g_currentFilter = COIN_FILTER_MAIN;
 static uint8_t g_coinFilterNum = 0;
 static lv_obj_t *g_coinListCont = NULL;
-static lv_obj_t *g_pageSelectLed[HOME_WALLET_CARD_BUTT / CARDS_PER_PAGE];
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC", true},
@@ -506,7 +505,7 @@ static void GuiDrawPageSelectLed(lv_obj_t *parent, int numPoints, int onLedIndex
     for (int i = 0; i < numPoints; i++) {
         int x = startX + (i * EACH_PAGE_LED_HORIZONTAL_SPACING);
         lv_obj_t *led = lv_led_create(parent);
-        lv_led_set_brightness(led, 150);
+        lv_led_set_brightness(led, 115);
         lv_obj_set_style_shadow_width(led, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
         lv_led_set_color(led, WHITE_COLOR);
         if (i == onLedIndex) {
@@ -930,13 +929,10 @@ void GuiHomeSetWalletDesc(WalletDesc_t *wallet)
 
 static void HandleDraggingGesture(lv_event_t * e, const ScrollHandler_t *handler)
 {
-    static lv_point_t touchStart;
-    static lv_point_t touchEnd;
-
 #define SWIPE_THRESHOLD 50
     lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_target(e);
-
+    static lv_point_t touchStart;
+    static lv_point_t touchEnd;
     static bool isDragging = false;
 
     if (code == LV_EVENT_PRESSED) {

@@ -298,7 +298,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
     {
         .index = HOME_WALLET_CARD_CRO,
         .coin = "CRO",
-        .chain = "CRO-Cronos POS",
+        .chain = "CRO-Cronos",
         .icon = &coinCro,
     },
     {
@@ -424,7 +424,7 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
     {
         .index = HOME_WALLET_CARD_GRAV,
         .coin = "GRAV",
-        .chain = "Gravity Bridge",
+        .chain = "GRAV-Graviton",
         .icon = &coinGrav,
     },
     {
@@ -506,13 +506,11 @@ static void GuiDrawPageSelectLed(lv_obj_t *parent, int numPoints, int onLedIndex
     for (int i = 0; i < numPoints; i++) {
         int x = startX + (i * EACH_PAGE_LED_HORIZONTAL_SPACING);
         lv_obj_t *led = lv_led_create(parent);
-        lv_led_set_brightness(led, 30);
+        lv_led_set_brightness(led, 150);
         lv_obj_set_style_shadow_width(led, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
-        lv_led_set_color(led, WHITE_COLOR_OPA20);
+        lv_led_set_color(led, WHITE_COLOR);
         if (i == onLedIndex) {
             lv_led_on(led);
-        } else {
-            lv_led_off(led);
         }
         lv_obj_set_size(led, 6, 6);
         lv_obj_set_style_radius(led, 0, LV_PART_MAIN);
@@ -854,7 +852,7 @@ static void GuiUpdateCoinManagerHandler(lv_event_t *e)
     }
     lv_obj_set_style_border_width(lv_obj_get_child(parent, g_currentFilter), 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     g_currentFilter = !g_currentFilter;
-
+    g_coinCurrentPage = 0;
     lv_obj_t *obj = lv_event_get_target(e);
     lv_obj_set_style_border_color(obj, RED_COLOR, 0);
     lv_obj_set_style_border_side(obj, LV_BORDER_SIDE_BOTTOM, 0);

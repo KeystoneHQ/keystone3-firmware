@@ -19,7 +19,7 @@ use zcash_vendor::{
         unified::{self, Encoding, Receiver},
         ToAddress, ZcashAddress,
     },
-    zcash_keys::{keys::UnifiedFullViewingKey},
+    zcash_keys::keys::UnifiedFullViewingKey,
     zcash_protocol::consensus::NetworkType,
 };
 
@@ -74,7 +74,38 @@ pub fn parse_pczt(
 
     let parsed_transparent = parse_transparent(seed_fingerprint, &pczt.transparent)?;
 
-    Ok(ParsedPczt::new(parsed_transparent, parsed_orchard))
+    let mut my_input_value = 0;
+    let mut my_output_value = 0;
+
+    parsed_orchard.and_then(|orchard| {
+        my_input_value = orchard
+            .get_from()
+            .iter()
+            .filter(|v| !v.get_is_mine())
+            .fold(0, |acc, from| acc + from.get_amount());
+        my_output_value = orchard
+            .get_to()
+            .iter()
+            .filter(|v| v.get_is_mine())
+            .fold(0, |acc, to| acc + to.get_amount());
+        Some(())
+    });
+
+    parsed_transparent.and_then(|transparent| {
+        my_input_value += transparent
+            .get_from()
+            .iter()
+            .filter(|v| v.get_is_mine())
+            .fold(0, |acc, from| acc + from.get_amount());
+        my_output_value += transparent
+            .get_to()
+            .iter()
+            .filter(|v| v.get_is_mine())
+            .fold(0, |acc, to| acc + to.get_amount());
+        Some(())
+    });
+
+    Ok(ParsedPczt::new(parsed_transparent, parsed_orchard, my_input_value, my_output_value))
 }
 
 fn parse_transparent(
@@ -120,7 +151,7 @@ fn parse_transparent_input(
         None => false,
     };
 
-    Ok(ParsedFrom::new(ta, zec_value, is_mine))
+    Ok(ParsedFrom::new(ta, zec_value, input.value, is_mine))
 }
 
 fn parse_transparent_output(
@@ -136,11 +167,11 @@ fn parse_transparent_output(
         ZcashAddress::from_transparent_p2pkh(NetworkType::Main, pubkey_hash).encode()
     };
     let zec_value = format!("{:.8}", output.value as f64 / ZEC_DIVIDER as f64);
-    let is_mine = match output.bip32_derivation.get(&output.script_pubkey) {
+    let is_change = match output.bip32_derivation.get(&output.script_pubkey) {
         Some(bip32_derivation) => seed_fingerprint == &bip32_derivation.seed_fingerprint,
         None => false,
     };
-    Ok(ParsedTo::new(ta, zec_value, is_mine, None))
+    Ok(ParsedTo::new(ta, zec_value, output.value, is_change, is_change, None))
 }
 
 fn parse_orchard(
@@ -193,6 +224,7 @@ fn parse_orchard_spend(
     Ok(ParsedFrom::new(
         ua,
         zec_value,
+        value,
         seed_fingerprint == &fingerprint,
     ))
 }
@@ -228,7 +260,13 @@ fn parse_orchard_output(
             .encode(&NetworkType::Main);
         let memo_str = String::from_utf8(memo.to_vec())
             .map_err(|_| ZcashError::InvalidPczt("Invalid UTF-8 sequence in memo".to_string()))?;
-        Ok(ParsedTo::new(ua, zec_value, false, Some(memo_str)))
+        Ok(ParsedTo::new(
+            ua,
+            zec_value,
+            note.value().inner(),
+            false,
+            Some(memo_str),
+        ))
     } else if let Some((note, address, memo)) = decode_output_enc_ciphertext(
         &internal_ovk,
         &rho,
@@ -243,11 +281,18 @@ fn parse_orchard_output(
             .encode(&NetworkType::Main);
         let memo_str = String::from_utf8(memo.to_vec())
             .map_err(|_| ZcashError::InvalidPczt("Invalid UTF-8 sequence in memo".to_string()))?;
-        Ok(ParsedTo::new(ua, zec_value, true, Some(memo_str)))
+        Ok(ParsedTo::new(
+            ua,
+            zec_value,
+            note.value().inner(),
+            true,
+            Some(memo_str),
+        ))
     } else {
         Ok(ParsedTo::new(
             "Unknown Address".to_string(),
             "Unknown Value".to_string(),
+            0,
             false,
             None,
         ))

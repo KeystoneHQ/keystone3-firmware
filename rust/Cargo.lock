@@ -4051,7 +4051,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=zcash-alpha.0#2996f57ad2fce0132cfc0258a3981749d1bf9969"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=zcash-alpha.2#8f25cd9f2cd7bb8fef018b93393ef7946c2c4f05"
 dependencies = [
  "hex",
  "ur",
@@ -4061,7 +4061,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=zcash-alpha.0#2996f57ad2fce0132cfc0258a3981749d1bf9969"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=zcash-alpha.2#8f25cd9f2cd7bb8fef018b93393ef7946c2c4f05"
 dependencies = [
  "bs58 0.4.0",
  "core2",

@@ -1,6 +1,8 @@
 #![no_std]
 extern crate alloc;
 
+pub mod structs;
+
 use core::slice;
 
 use alloc::boxed::Box;

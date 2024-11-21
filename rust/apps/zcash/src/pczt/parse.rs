@@ -77,7 +77,7 @@ pub fn parse_pczt(
     let mut my_input_value = 0;
     let mut my_output_value = 0;
 
-    parsed_orchard.and_then(|orchard| {
+    parsed_orchard.clone().and_then(|orchard| {
         my_input_value = orchard
             .get_from()
             .iter()
@@ -86,12 +86,12 @@ pub fn parse_pczt(
         my_output_value = orchard
             .get_to()
             .iter()
-            .filter(|v| v.get_is_mine())
+            .filter(|v| v.get_is_mine()&&!v.get_is_change())
             .fold(0, |acc, to| acc + to.get_amount());
         Some(())
     });
 
-    parsed_transparent.and_then(|transparent| {
+    parsed_transparent.clone().and_then(|transparent| {
         my_input_value += transparent
             .get_from()
             .iter()
@@ -100,12 +100,14 @@ pub fn parse_pczt(
         my_output_value += transparent
             .get_to()
             .iter()
-            .filter(|v| v.get_is_mine())
+            .filter(|v| v.get_is_mine()&&!v.get_is_change())
             .fold(0, |acc, to| acc + to.get_amount());
         Some(())
     });
 
-    Ok(ParsedPczt::new(parsed_transparent, parsed_orchard, my_input_value, my_output_value))
+    let total_transfer_value = format!("{:.8}", my_input_value as f64 / ZEC_DIVIDER as f64);
+
+    Ok(ParsedPczt::new(parsed_transparent, parsed_orchard, total_transfer_value))
 }
 
 fn parse_transparent(
@@ -171,7 +173,7 @@ fn parse_transparent_output(
         Some(bip32_derivation) => seed_fingerprint == &bip32_derivation.seed_fingerprint,
         None => false,
     };
-    Ok(ParsedTo::new(ta, zec_value, output.value, is_change, is_change, None))
+    Ok(ParsedTo::new(ta, zec_value, output.value, is_change, true, None))
 }
 
 fn parse_orchard(
@@ -265,6 +267,7 @@ fn parse_orchard_output(
             zec_value,
             note.value().inner(),
             false,
+            true,
             Some(memo_str),
         ))
     } else if let Some((note, address, memo)) = decode_output_enc_ciphertext(
@@ -286,6 +289,7 @@ fn parse_orchard_output(
             zec_value,
             note.value().inner(),
             true,
+            true,
             Some(memo_str),
         ))
     } else {
@@ -293,6 +297,7 @@ fn parse_orchard_output(
             "Unknown Address".to_string(),
             "Unknown Value".to_string(),
             0,
+            false,
             false,
             None,
         ))

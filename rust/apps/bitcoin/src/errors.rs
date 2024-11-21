@@ -89,6 +89,12 @@ impl From<io::Error> for BitcoinError {
     }
 }
 
+impl From<bitcoin::io::Error> for BitcoinError {
+    fn from(value: bitcoin::io::Error) -> Self {
+        Self::TransactionConsensusEncodeError(format!("{}", value))
+    }
+}
+
 impl From<PushBytesError> for BitcoinError {
     fn from(value: PushBytesError) -> Self {
         Self::PushBytesFailed(format!("{}", value))
@@ -116,15 +122,11 @@ impl From<bitcoin::witness_program::Error> for BitcoinError {
 impl From<Base58Error> for BitcoinError {
     fn from(value: Base58Error) -> Self {
         match value {
-            Base58Error::BadByte(byte) => Self::Base58Error(format!("bad bytes: {}", byte)),
-            Base58Error::TooShort(size) => Self::Base58Error(format!("too short: {}", size)),
-            Base58Error::InvalidLength(size) => {
-                Self::Base58Error(format!("invalid length: {}", size))
+            Base58Error::IncorrectChecksum(e) => Self::Base58Error(format!("incorrect checksum: {}", e)),
+            Base58Error::TooShort(e) => Self::Base58Error(format!("too short: {}", e)),
+            Base58Error::Decode(e) => {
+                Self::Base58Error(format!("invalid character: {}", e))
             }
-            Base58Error::BadChecksum(expected, actual) => Self::Base58Error(format!(
-                "bad checksum, expected {}, actual {}",
-                expected, actual
-            )),
             _ => Self::Base58Error(format!(": {}", value)),
         }
     }

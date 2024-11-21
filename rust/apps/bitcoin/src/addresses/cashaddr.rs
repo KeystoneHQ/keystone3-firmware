@@ -7,7 +7,7 @@ use crate::errors::Result;
 use crate::network::Network;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use bitcoin::address::Payload;
+use bitcoin::address::AddressData as Payload;
 use bitcoin::PubkeyHash;
 use bitcoin_hashes::Hash;
 use core::{fmt, str};
@@ -338,7 +338,7 @@ impl CashAddrCodec {
         let publickey_hash = PubkeyHash::from_slice(&body.to_vec())
             .map_err(|_| BitcoinError::AddressError(format!("invalid public key hash")))?;
         Ok(Address {
-            payload: Payload::PubkeyHash(publickey_hash),
+            payload: Payload::P2pkh { pubkey_hash: publickey_hash },
             network: Network::BitcoinCash,
         })
     }
@@ -347,15 +347,18 @@ impl CashAddrCodec {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bitcoin::ScriptBuf;
     use hex::ToHex;
 
     #[test]
     fn test_decode_cash_addr() {
         let addr_str = "qz65ywjm92m27wshfnew2w3us5vsgxqkxc55t9lqcw";
         let address = CashAddrCodec::decode(addr_str).unwrap();
-        assert_eq!(
-            address.payload.script_pubkey().encode_hex::<String>(),
-            "76a914b5423a5b2ab6af3a174cf2e53a3c85190418163688ac"
-        );
+        if let Payload::P2sh { script_hash } = address.payload {
+            let script = ScriptBuf::new_p2sh(&script_hash);
+            assert_eq!(script.encode_hex::<String>(), "76a914b5423a5b2ab6af3a174cf2e53a3c85190418163688ac");
+        } else {
+            panic!("invalid payload");
+        }
     }
 }

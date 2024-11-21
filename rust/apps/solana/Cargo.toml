@@ -11,20 +11,25 @@ thiserror = { workspace = true }
 serde_json = { workspace = true }
 serde = { workspace = true }
 hex = { workspace = true }
-bincode = { version = "2.0.0-rc.3", default-features = false, features=['alloc','serde'] }
+bincode = { version = "2.0.0-rc.3", default-features = false, features = [
+    'alloc',
+    'serde',
+] }
 num-derive = "0.3.3"
 serde_derive = { workspace = true }
 uint = { version = "0.9.3", default-features = false }
 arrayref = "0.3.6"
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
-sha2 = {version = "0.9.9",default-features = false}
+sha2 = { workspace = true }
 bs58 = { version = "0.5.1", default-features = false, features = ["alloc"] }
-borsh = {version = "1.5.1", default-features = false,features = ["derive","borsh-derive","unstable__schema"]}
+borsh = { version = "1.5.1", default-features = false, features = [
+    "derive",
+    "borsh-derive",
+    "unstable__schema",
+] }
 bitcoin = { workspace = true }
 ur-registry = { workspace = true }
-
-
 
 
 [dev-dependencies]

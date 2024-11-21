@@ -3,10 +3,11 @@ use crate::collect;
 use crate::errors::{BitcoinError, Result};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use bitcoin::{self, Amount};
+use bitcoin::{self, Amount, ScriptBuf};
 use core::str::FromStr;
 use ur_registry::pb::protoc;
 use ur_registry::pb::protoc::sign_transaction::Transaction::{BchTx, BtcTx, DashTx, LtcTx};
+use bitcoin::address::AddressData as Payload;
 
 #[derive(Debug, Clone)]
 pub struct TxOut {
@@ -21,7 +22,11 @@ impl TryInto<bitcoin::TxOut> for TxOut {
 
     fn try_into(self) -> Result<bitcoin::TxOut> {
         let address = Address::from_str(self.address.as_str())?;
-        let script_pubkey = address.payload.script_pubkey();
+        let script_pubkey = match address.payload {
+            Payload::P2pkh { pubkey_hash } => ScriptBuf::new_p2pkh(&pubkey_hash),
+            Payload::P2sh { script_hash } => ScriptBuf::new_p2sh(&script_hash),
+            _ => return Err(BitcoinError::InvalidRawTxCryptoBytes("invalid address".to_string())),
+        };
         Ok(bitcoin::TxOut {
             value: Amount::from_sat(self.value),
             script_pubkey,

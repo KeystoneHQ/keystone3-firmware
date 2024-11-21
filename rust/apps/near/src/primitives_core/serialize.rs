@@ -13,7 +13,7 @@ pub fn to_base(input: &Vec<u8>) -> String {
 }
 
 pub fn from_base(s: &str) -> Result<Vec<u8>, bs58::Error> {
-    bs58::decode(s)
+    bs58::decode(s).map_err(|e| bs58::Error::Decode(e))
 }
 
 pub fn to_base64<T: AsRef<[u8]>>(input: T) -> String {

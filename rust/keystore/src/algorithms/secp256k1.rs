@@ -132,7 +132,7 @@ mod tests {
     use alloc::string::{String, ToString};
     use hex;
     use hex::ToHex;
-    use secp256k1::hashes;
+    use bitcoin::hashes::{sha256, Hash};
 
     use super::*;
 
@@ -166,7 +166,8 @@ mod tests {
     fn test_sign() {
         let data = [0x01u8];
         let path = "m/84'/0'/0'/0/0";
-        let message = Message::from_hashed_data::<hashes::sha256::Hash>(&data);
+        let hash = sha256::Hash::hash(&data).to_byte_array();
+        let message = Message::from_digest_slice(&hash).unwrap();
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
         let (rec_id, signature) = sign_message_by_seed(&seed, &path.to_string(), &message).unwrap();
         assert_eq!(0, rec_id);

@@ -125,7 +125,7 @@ pub extern "C" fn btc_sign_msg(
                                     let btc_signature = BtcSignature::new(
                                         req.get_request_id(),
                                         sig,
-                                        extended_key.to_pub().to_bytes(),
+                                        extended_key.to_pub().to_bytes().to_vec(),
                                     );
                                     let data: Vec<u8> = match btc_signature.try_into() {
                                         Ok(v) => v,

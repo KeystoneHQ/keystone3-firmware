@@ -4,11 +4,11 @@ use crate::transactions::script_type::ScriptType;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use bitcoin;
+use bitcoin::hashes::Hash;
 use bitcoin::script::{Builder, PushBytesBuf};
 use bitcoin::secp256k1::ecdsa::Signature;
 use bitcoin::WPubkeyHash;
 use bitcoin::{PublicKey, ScriptBuf, Sequence};
-use bitcoin_hashes::Hash;
 use core::iter;
 use core::str::FromStr;
 use ur_registry::pb::protoc;
@@ -78,7 +78,8 @@ impl TryInto<bitcoin::TxIn> for TxIn {
     type Error = BitcoinError;
 
     fn try_into(self) -> Result<bitcoin::TxIn> {
-        let tx_id = bitcoin::Txid::from_str(self.previous_output.as_str())?;
+        let tx_id = bitcoin::Txid::from_str(self.previous_output.as_str())
+            .map_err(|_| BitcoinError::InvalidTransaction(format!("invalid txid")))?;
         Ok(bitcoin::TxIn {
             previous_output: bitcoin::OutPoint {
                 txid: tx_id,

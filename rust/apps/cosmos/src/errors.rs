@@ -27,6 +27,12 @@ impl From<core::fmt::Error> for CosmosError {
     }
 }
 
+impl From<bech32::EncodeError> for CosmosError {
+    fn from(value: bech32::EncodeError) -> Self {
+        Self::InvalidAddressError(format!("bech32 encode error {:?}", value.to_string()))
+    }
+}
+
 impl From<KeystoreError> for CosmosError {
     fn from(value: KeystoreError) -> Self {
         Self::KeystoreError(value.to_string())

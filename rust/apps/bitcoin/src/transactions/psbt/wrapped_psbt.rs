@@ -20,9 +20,9 @@ use crate::multi_sig::MultiSigFormat;
 use bitcoin::bip32::{ChildNumber, DerivationPath, Fingerprint, KeySource, Xpub};
 use bitcoin::psbt::{GetKey, KeyRequest, Psbt};
 use bitcoin::psbt::{Input, Output};
-use bitcoin::secp256k1;
 use bitcoin::secp256k1::{Secp256k1, Signing, XOnlyPublicKey};
 use bitcoin::taproot::TapLeafHash;
+use bitcoin::{secp256k1, NetworkKind};
 use bitcoin::{Network, PrivateKey};
 use bitcoin::{PublicKey, ScriptBuf, TxOut};
 
@@ -508,10 +508,9 @@ impl WrappedPsbt {
         let (threshold, total) = self.get_multi_sig_input_threshold_and_total(script)?;
 
         let network = if let Some((xpub, _)) = self.psbt.xpub.first_key_value() {
-            if xpub.network == bitcoin::network::Network::Bitcoin {
-                network::Network::Bitcoin
-            } else {
-                network::Network::BitcoinTestnet
+            match xpub.network {
+                NetworkKind::Main => network::Network::Bitcoin,
+                _ => network::Network::BitcoinTestnet,
             }
         } else {
             return Err(BitcoinError::MultiSigNetworkError(
@@ -865,9 +864,8 @@ mod tests {
     use core::str::FromStr;
 
     use crate::TxChecker;
-    use bitcoin_hashes::hex::FromHex;
     use either::Left;
-    use hex::{self, ToHex};
+    use hex::{self, FromHex, ToHex};
 
     use super::*;
 

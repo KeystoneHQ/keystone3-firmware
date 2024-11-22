@@ -508,6 +508,7 @@ dependencies = [
 [[package]]
 name = "bip32"
 version = "0.5.2"
+source = "git+https://github.com/KeystoneHQ/crates.git?tag=no_std#47cfb6580188cdad8108523e1ec173f628d5dd69"
 dependencies = [
  "bs58",
  "hmac",
@@ -4045,17 +4046,6 @@ dependencies = [
 [[package]]
 name = "ur"
 version = "0.3.0"
-dependencies = [
- "bitcoin_hashes 0.13.0",
- "crc",
- "minicbor",
- "phf",
- "rand_xoshiro",
-]
-
-[[package]]
-name = "ur"
-version = "0.3.0"
 source = "git+https://github.com/KeystoneHQ/ur-rs?tag=0.3.1#abf91c2417f2bda3ae7e93d3ba6ce9bc3bc2fd6f"
 dependencies = [
  "bitcoin_hashes 0.12.0",
@@ -4070,7 +4060,7 @@ name = "ur-parse-lib"
 version = "0.2.0"
 dependencies = [
  "hex",
- "ur 0.3.0 (git+https://github.com/KeystoneHQ/ur-rs?tag=0.3.1)",
+ "ur",
  "ur-registry",
 ]
 
@@ -4089,7 +4079,7 @@ dependencies = [
  "prost-types",
  "serde",
  "thiserror-core",
- "ur 0.3.0",
+ "ur",
 ]
 
 [[package]]

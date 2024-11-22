@@ -225,6 +225,27 @@ UREncodeResult *GuiGetImTokenData(void)
 #endif
 }
 
+UREncodeResult *GuiGetCoreWalletData(void)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[1];
+    public_keys->data = keys;
+    public_keys->size = 1;
+
+    uint8_t count = 0;
+    keys[0].path = "m/44'/60'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+    count++;
+
+    g_urEncode = get_core_wallet_ur(mfp, sizeof(mfp), public_keys, "Keystone3");
+
+    CHECK_CHAIN_PRINT(g_urEncode);
+    SRAM_FREE(public_keys);
+    return g_urEncode;
+}
+
 UREncodeResult *GuiGetArConnectData(void)
 {
     uint8_t mfp[4] = {0};

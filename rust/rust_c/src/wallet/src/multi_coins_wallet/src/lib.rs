@@ -6,6 +6,7 @@ pub mod arconnect;
 pub mod backpack;
 pub mod bitget;
 mod imtoken;
+mod core_wallet;
 pub mod keplr;
 pub mod keystone;
 pub mod okx;

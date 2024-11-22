@@ -55,7 +55,7 @@ void DerivationPathDescsInit(void)
 char **GetDerivationPathDescs(uint8_t index)
 {
     DerivationPathDescsInit();
-    if (index == ETH_DERIVATION_PATH_DESC) {
+    if (index == ETH_DERIVATION_PATH_DESC || index == AVAX_DERIVATION_PATH_DESC) {
         return (char **)g_ethDerivationPathDesc;
     }
     if (index == SOL_DERIVATION_PATH_DESC) {

@@ -33,6 +33,7 @@ UREncodeResult *GuiGetBackpackData(void);
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index);
 UREncodeResult *GuiGetADADataByIndex(char *walletName);
 UREncodeResult *GuiGetImTokenData(void);
+UREncodeResult *GuiGetCoreWalletData(void);
 UREncodeResult *GuiGetKeystoneWalletData(void);
 UREncodeResult *GuiGetThorWalletBtcData(void);
 #endif

@@ -52,6 +52,7 @@ static bool g_isScrolling = false;
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC", true},
     {HOME_WALLET_CARD_ETH, false, "ETH", true},
+    {HOME_WALLET_CARD_AVAX, false, "AVAX", true},
     {HOME_WALLET_CARD_SOL, false, "SOL", true},
     {HOME_WALLET_CARD_BNB, false, "BNB", false},
     {HOME_WALLET_CARD_HNT, false, "HNT", true},
@@ -150,6 +151,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "ETH",
         .chain = "Ethereum",
         .icon = &coinEth,
+    },
+    {
+        .index = HOME_WALLET_CARD_AVAX,
+        .coin = "Avax",
+        .chain = "Avalanche",
+        .icon = &coinAva,
     },
     {
         .index = HOME_WALLET_CARD_SOL,
@@ -637,6 +644,7 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
     case HOME_WALLET_CARD_ETH:
     case HOME_WALLET_CARD_SOL:
     case HOME_WALLET_CARD_HNT:
+    case HOME_WALLET_CARD_AVAX:
         GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ADA:

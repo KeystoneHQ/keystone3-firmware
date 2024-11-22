@@ -175,6 +175,7 @@ static void InitDerivationPathDesc(uint8_t chain)
 {
     switch (chain) {
     case HOME_WALLET_CARD_ETH:
+    case HOME_WALLET_CARD_AVAX:
         g_derivationPathDescs = GetDerivationPathDescs(ETH_DERIVATION_PATH_DESC);
         break;
     case HOME_WALLET_CARD_SOL:
@@ -191,6 +192,7 @@ static void InitDerivationPathDesc(uint8_t chain)
 
 void GuiMultiPathCoinReceiveInit(uint8_t chain)
 {
+    
     InitDerivationPathDesc(chain);
     if (chain == HOME_WALLET_CARD_ADA) {
         SetPathIndex(GetAccountReceivePath("ADA"));
@@ -239,6 +241,9 @@ void GuiMultiPathCoinReceiveRefresh(void)
         switch (g_chainCard) {
         case HOME_WALLET_CARD_ETH:
             SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, _("receive_eth_receive_main_title"));
+            break;
+        case HOME_WALLET_CARD_AVAX:
+            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_AVAX, _("receive_avax_receive_main_title"));
             break;
         case HOME_WALLET_CARD_SOL:
             snprintf_s(walletTitle, BUFFER_SIZE_32, _("receive_coin_fmt"), "SOL");
@@ -469,6 +474,9 @@ static void GetHint(char *hint)
     case HOME_WALLET_CARD_ETH:
         strcpy_s(hint, BUFFER_SIZE_256, _("receive_eth_alert_desc"));
         break;
+    case HOME_WALLET_CARD_AVAX:
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "AVAX");
+        break;
     case HOME_WALLET_CARD_SOL:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "SOL");
         break;
@@ -623,6 +631,7 @@ static void GetChangePathLabelHint(char* hint)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
+    case HOME_WALLET_CARD_AVAX:
         snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_eth"));
         return;
     case HOME_WALLET_CARD_SOL:
@@ -640,6 +649,7 @@ static void GetChangePathLabelHint(char* hint)
 static const char* GetChangePathItemTitle(uint32_t i)
 {
     switch (g_chainCard) {
+    case HOME_WALLET_CARD_AVAX:
     case HOME_WALLET_CARD_ETH:
         return (char *)g_ethPaths[i].title;
     case HOME_WALLET_CARD_SOL:
@@ -939,6 +949,8 @@ static int GetADAMaxAddressIndex(void)
 static int GetMaxAddressIndex(void)
 {
     switch (g_chainCard) {
+    case HOME_WALLET_CARD_AVAX:
+        return 1;
     case HOME_WALLET_CARD_ETH:
         return GetEthMaxAddressIndex();
     case HOME_WALLET_CARD_SOL:
@@ -1255,6 +1267,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
 
     switch (g_chainCard) {
+    case HOME_WALLET_CARD_AVAX:
     case HOME_WALLET_CARD_ETH:
         ModelGetEthAddress(index, item);
         break;

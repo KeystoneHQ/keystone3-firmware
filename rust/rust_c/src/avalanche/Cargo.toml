@@ -1,0 +1,27 @@
+[package]
+name = "avalanche_rust_c"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keystore = { workspace = true }
+app_bitcoin = { workspace = true }
+app_utils = { workspace = true }
+rust_tools = { workspace = true }
+cty = { workspace = true }
+cstr_core = { workspace = true }
+base64 = { workspace = true }
+ur-registry = { workspace = true }
+bitcoin = { workspace = true }
+cryptoxide = { workspace = true }
+hex = { workspace = true }
+
+common_rust_c = { path = "../common" }
+
+[features]
+debug-memory = ["default"]
+default = ["multi-coins"]
+multi-coins = ["common_rust_c/multi-coins"]
+btc-only = ["common_rust_c/btc-only"]

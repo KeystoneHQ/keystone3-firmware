@@ -83,7 +83,6 @@ hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 itertools = { version = "0.13.0", default-features = false, features = [
     "use_alloc",
 ] }
-
 bitcoin = { version = "0.32.4", default-features = false, features = [
     "secp-recovery",
 ] }

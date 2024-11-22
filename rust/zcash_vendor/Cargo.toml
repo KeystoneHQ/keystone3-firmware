@@ -22,19 +22,21 @@ pasta_curves = { version = "0.5.1", default-features = false, features = [
 ] }
 subtle = { version = "2.6", default-features = false }
 group = { version = "0.13.0" }
-aes = {workspace = true}
+aes = { workspace = true }
 fpe = { version = "0.6", default-features = false, features = ["alloc"] }
 f4jumble = { version = "0.1", default-features = false }
 byteorder = { version = "1", default-features = false }
 ripemd = { version = "0.1", default-features = false, features = ["oid"] }
 bs58 = { version = "0.5", default-features = false, features = ["alloc"] }
-bip32 = { path = "../../../crates/bip32", default-features = false, features = [
+bip32 = { git = "https://github.com/KeystoneHQ/crates.git", tag = "no_std", default-features = false, features = [
     "alloc",
     "secp256k1-ffi",
 ] }
 secp256k1 = { version = "0.29", default-features = false, features = ["alloc"] }
 core2 = { workspace = true }
 hex = { workspace = true }
-bitvec = {version = "1.0.1", default-features = false, features = ["alloc"]}
-chacha20poly1305 = {version = "0.10.1", default-features = false, features = ["alloc"]}
+bitvec = { version = "1.0.1", default-features = false, features = ["alloc"] }
+chacha20poly1305 = { version = "0.10.1", default-features = false, features = [
+    "alloc",
+] }
 #zcash end

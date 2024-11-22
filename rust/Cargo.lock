@@ -504,6 +504,7 @@ dependencies = [
 [[package]]
 name = "bip32"
 version = "0.5.2"
+source = "git+https://github.com/KeystoneHQ/crates.git?tag=no_std#47cfb6580188cdad8108523e1ec173f628d5dd69"
 dependencies = [
  "bs58 0.5.1",
  "hmac",

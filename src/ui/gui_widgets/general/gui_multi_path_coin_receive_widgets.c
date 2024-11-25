@@ -133,6 +133,7 @@ static void GetChangePathLabelHint(char* hint);
 static void SetCurrentSelectIndex(uint32_t selectIndex);
 static uint32_t GetCurrentSelectIndex();
 static void GetHint(char *hint);
+static void ModelGetAvaxAddress(uint32_t index, AddressDataItem_t *item);
 static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item);
 static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
@@ -1268,6 +1269,8 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 
     switch (g_chainCard) {
     case HOME_WALLET_CARD_AVAX:
+        ModelGetAvaxAddress(index, item);
+        break;
     case HOME_WALLET_CARD_ETH:
         ModelGetEthAddress(index, item);
         break;
@@ -1324,12 +1327,38 @@ static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
 
 static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
 {
-    char *xPub, hdPath[BUFFER_SIZE_128], rootPath[BUFFER_SIZE_128];
-    GetEthHdPath(hdPath, index, BUFFER_SIZE_128);
-    GetEthRootPath(rootPath, index, BUFFER_SIZE_128);
+    char *xPub, hdPath[BUFFER_SIZE_32], rootPath[BUFFER_SIZE_32];
+    GetEthHdPath(hdPath, index, BUFFER_SIZE_32);
+    GetEthRootPath(rootPath, index, BUFFER_SIZE_32);
     xPub = GetEthXpub(index);
     ASSERT(xPub);
     SimpleResponse_c_char  *result = eth_get_address(hdPath, xPub, rootPath);
+    if (result->error_code == 0) {
+        item->index = index;
+        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
+    }
+    free_simple_response_c_char(result);
+}
+
+static void ModelGetAvaxAddress(uint32_t index, AddressDataItem_t *item)
+{
+    char *xPub, hdPath[BUFFER_SIZE_32], rootPath[BUFFER_SIZE_32];
+    // x p chain address
+    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
+    ASSERT(xPub);
+    printf("xPub = %s\r\n", xPub);
+    SimpleResponse_c_char *result = avalanche_get_x_p_address(xPub);
+    if (result->error_code == 0) {
+        printf("x/p chain address is %s\r\n", result->data);
+    }
+
+    // c chain
+    GetEthRootPath(rootPath, index, BUFFER_SIZE_32);
+    GetEthHdPath(hdPath, index, BUFFER_SIZE_32);
+    xPub = GetEthXpub(index);
+    ASSERT(xPub);
+    result = eth_get_address(hdPath, xPub, rootPath);
     if (result->error_code == 0) {
         item->index = index;
         strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);

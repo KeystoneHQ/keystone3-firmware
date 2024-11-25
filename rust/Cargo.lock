@@ -114,6 +114,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "app_avalanche"
+version = "0.1.0"
+dependencies = [
+ "app_utils",
+ "base64 0.11.0",
+ "bech32 0.10.0-beta",
+ "bitcoin",
+ "core2",
+ "cryptoxide",
+ "either",
+ "hex",
+ "itertools",
+ "keystore",
+ "rust_tools",
+ "serde",
+ "serde_json",
+ "thiserror-core",
+ "ur-registry",
+]
+
+[[package]]
 name = "app_bitcoin"
 version = "0.1.0"
 dependencies = [
@@ -408,6 +429,24 @@ name = "autocfg"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
+
+[[package]]
+name = "avalanche_rust_c"
+version = "0.1.0"
+dependencies = [
+ "app_avalanche",
+ "app_utils",
+ "base64 0.11.0",
+ "bitcoin",
+ "common_rust_c",
+ "cryptoxide",
+ "cstr_core",
+ "cty",
+ "hex",
+ "keystore",
+ "rust_tools",
+ "ur-registry",
+]
 
 [[package]]
 name = "base-x"
@@ -925,6 +964,7 @@ version = "0.1.0"
 dependencies = [
  "app_aptos",
  "app_arweave",
+ "app_avalanche",
  "app_bitcoin",
  "app_cardano",
  "app_cosmos",
@@ -2971,6 +3011,7 @@ version = "0.1.0"
 dependencies = [
  "aptos_rust_c",
  "arweave_rust_c",
+ "avalanche_rust_c",
  "bitcoin_rust_c",
  "cardano_rust_c",
  "common_rust_c",

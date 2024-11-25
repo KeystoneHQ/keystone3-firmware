@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 keystore = { workspace = true }
-app_bitcoin = { workspace = true }
+app_avalanche = { workspace = true }
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
 cty = { workspace = true }

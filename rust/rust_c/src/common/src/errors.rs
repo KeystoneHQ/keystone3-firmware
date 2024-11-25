@@ -24,6 +24,8 @@ use app_ton::errors::TonError;
 #[cfg(feature = "multi-coins")]
 use app_tron::errors::TronError;
 #[cfg(feature = "multi-coins")]
+use app_avalanche::errors::AvaxError;
+#[cfg(feature = "multi-coins")]
 use app_xrp::errors::XRPError;
 use keystore::errors::KeystoreError;
 use thiserror;
@@ -196,6 +198,21 @@ pub enum ErrorCodes {
     StellarInvalidData,
     StellarParseTxError,
     StellarKeystoreError,
+
+    //Avax
+    AvaxInvalidInput = 1500,
+    AvaxInvalidOutput,
+    AvaxInvalidTransaction,
+    AvaxSignFailure,
+    AvaxAddressError,
+    AvaxUnsupportedTransaction,
+    AvaxGetKeyError,
+    AvaxUnsupportedNetwork,
+    AvaxTransactionConsensusEncodeError,
+    AvaxInvalidHex,
+    AvaxBech32DecodeError,
+    AvaxKeystoreError,
+    AvaxDerivePublicKeyError,
 }
 
 impl ErrorCodes {
@@ -427,6 +444,27 @@ impl From<&TronError> for ErrorCodes {
             TronError::InvalidHDPath(_) => Self::InvalidHDPath,
             TronError::KeystoreError(_) => Self::KeystoreDeivePubkey,
             TronError::NoMyInputs => Self::TronNoMyInputs,
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl From<&AvaxError> for ErrorCodes {
+    fn from(value: &AvaxError) -> Self {
+        match value {
+            AvaxError::InvalidInput => Self::AvaxInvalidInput,
+            AvaxError::InvalidOutput => Self::AvaxInvalidOutput,
+            AvaxError::InvalidTransaction(_) => Self::AvaxInvalidTransaction,
+            AvaxError::SignFailure(_) => Self::AvaxSignFailure,
+            AvaxError::AddressError(_) => Self::AvaxAddressError,
+            AvaxError::GetKeyError(_) => Self::AvaxGetKeyError,
+            AvaxError::UnsupportedTransaction(_) => Self::AvaxUnsupportedTransaction,
+            AvaxError::UnsupportedNetwork(_) => Self::AvaxUnsupportedNetwork,
+            AvaxError::TransactionConsensusEncodeError(_) => Self::AvaxTransactionConsensusEncodeError,
+            AvaxError::InvalidHex(_) => Self::AvaxInvalidHex,
+            AvaxError::Bech32DecodeError(_) => Self::AvaxBech32DecodeError,
+            AvaxError::KeystoreError(_) => Self::AvaxAddressError,
+            AvaxError::DerivePublicKeyError(_) => Self::AvaxDerivePublicKeyError,
         }
     }
 }

@@ -2,8 +2,8 @@ use alloc::boxed::Box;
 use alloc::vec::Vec;
 use core::ptr::null_mut;
 
-use app_bitcoin;
-use app_bitcoin::parsed_tx::{DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx};
+// use app_bitcoin;
+// use app_bitcoin::parsed_tx::{DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx};
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
 use common_rust_c::structs::Response;

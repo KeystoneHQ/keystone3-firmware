@@ -116,6 +116,12 @@ macro_rules! impl_new_error {
             }
         }
         #[cfg(feature = "multi-coins")]
+        impl From<app_avalanche::errors::AvaxError> for $name {
+            fn from(value: app_avalanche::errors::AvaxError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "multi-coins")]
         impl From<app_solana::errors::SolanaError> for $name {
             fn from(value: app_solana::errors::SolanaError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
@@ -333,6 +339,12 @@ macro_rules! impl_simple_new_error {
         #[cfg(feature = "multi-coins")]
         impl<$t> From<app_tron::errors::TronError> for $name<$t> {
             fn from(value: app_tron::errors::TronError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "multi-coins")]
+        impl<$t> From<app_avalanche::errors::AvaxError> for $name<$t> {
+            fn from(value: app_avalanche::errors::AvaxError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

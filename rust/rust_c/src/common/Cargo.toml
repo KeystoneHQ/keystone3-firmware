@@ -38,10 +38,11 @@ app_sui = { workspace = true, optional = true }
 app_arweave = { workspace = true, optional = true }
 app_stellar = { workspace = true, optional = true }
 app_ton = { workspace = true, optional = true }
+app_avalanche = { workspace = true, optional = true }
 
 [features]
 debug-memory = ["default"]
 default = ["multi-coins"]
-multi-coins = ["app_ethereum", "app_cardano", "app_tron", "app_solana", "app_near", "app_xrp", "app_cosmos", "app_aptos", "app_sui", "app_arweave", "app_ton", "app_stellar"]
+multi-coins = ["app_ethereum", "app_cardano", "app_tron", "app_solana", "app_near", "app_xrp", "app_cosmos", "app_aptos", "app_sui", "app_arweave", "app_ton", "app_stellar", "app_avalanche"]
 #
 btc-only = []

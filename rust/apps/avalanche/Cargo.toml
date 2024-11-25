@@ -1,0 +1,32 @@
+[package]
+name = "app_avalanche"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keystore = { workspace = true, default-features = false }
+app_utils = { workspace = true }
+rust_tools = { workspace = true }
+either = { workspace = true, default-features = false }
+itertools = { workspace = true }
+thiserror = { workspace = true }
+core2 = { workspace = true }
+bech32 = { workspace = true }
+hex = { workspace = true }
+ur-registry = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+base64 = { workspace = true }
+cryptoxide = { workspace = true }
+bitcoin = { workspace = true }
+
+[features]
+no_std = []
+default = ["std"]
+std = []
+testnet = []
+
+[dev-dependencies]
+keystore = { workspace = true }

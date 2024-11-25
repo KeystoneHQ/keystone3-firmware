@@ -56,6 +56,7 @@ app_bitcoin = { path = "apps/bitcoin" }
 app_cardano = { path = "apps/cardano" }
 app_cosmos = { path = "apps/cosmos", default-features = false }
 app_ethereum = { path = "apps/ethereum" }
+app_avalanche = { path = "apps/avalanche" }
 app_near = { path = "apps/near" }
 app_solana = { path = "apps/solana" }
 app_stellar = { path = "apps/stellar" }

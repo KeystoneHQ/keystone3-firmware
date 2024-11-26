@@ -1,7 +1,7 @@
 import {readFile, writeFile} from 'fs'
 
-const json_str_path = "assets/page_ar_data_item.txt"
-const file = "assets/page_ar_data_item.json";
+const json_str_path = "assets/page_zcash.txt"
+const file = "assets/page_zcash.json";
 
 readFile(file, "utf-8", (err, data) => {
     const _data = JSON.parse(data);

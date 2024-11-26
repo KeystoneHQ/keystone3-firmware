@@ -86,7 +86,7 @@ pub fn parse_pczt(
         my_output_value = orchard
             .get_to()
             .iter()
-            .filter(|v| v.get_is_mine()&&!v.get_is_change())
+            .filter(|v| v.get_visible()&&!v.get_is_change())
             .fold(0, |acc, to| acc + to.get_amount());
         Some(())
     });
@@ -100,7 +100,7 @@ pub fn parse_pczt(
         my_output_value += transparent
             .get_to()
             .iter()
-            .filter(|v| v.get_is_mine()&&!v.get_is_change())
+            .filter(|v| v.get_visible()&&!v.get_is_change())
             .fold(0, |acc, to| acc + to.get_amount());
         Some(())
     });

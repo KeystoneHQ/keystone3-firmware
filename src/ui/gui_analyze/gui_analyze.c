@@ -300,12 +300,12 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     },
     {
         REMAPVIEW_ZCASH,
-        #ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ton_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Raw Data\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxRawData\"}]}]}",
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"zcash_page\",\"type\":\"custom_container\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"custom_show_func\":\"GuiZcashOverview\"}",
 #else
         PC_SIMULATOR_PATH "/page_zcash.json",
 #endif
-        GuiGetTonProofGUIData,
+        GuiGetZcashGUIData,
         NULL,
         FreeArMemory,
     }
@@ -1339,6 +1339,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiStellarHashNotice;
     } else if (!strcmp(funcName, "GuiTonTxOverview")) {
         return GuiTonTxOverview;
+    } else if (!strcmp(funcName, "GuiZcashOverview")) {
+        return GuiZcashOverview;
     } else if (!strcmp(funcName, "GuiTonTxRawData")) {
         return GuiTonTxRawData;
     } else if (!strcmp(funcName, "GuiTonProofOverview")) {
@@ -1760,6 +1762,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_TON;
     case TonSignProof:
         return REMAPVIEW_TON_SIGNPROOF;
+    case ZcashTx:
+        return REMAPVIEW_ZCASH;
 #endif
     default:
         return REMAPVIEW_BUTT;

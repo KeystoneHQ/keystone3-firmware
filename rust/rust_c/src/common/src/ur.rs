@@ -238,6 +238,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     TonSignProof,
     #[cfg(feature = "multi-coins")]
+    ZcashTx,
+    #[cfg(feature = "multi-coins")]
     AptosTx,
     WebAuthResult,
     #[cfg(feature = "multi-coins")]

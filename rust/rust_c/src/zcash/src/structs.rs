@@ -85,7 +85,7 @@ pub struct DisplayTo {
     pub address: PtrString,
     pub value: PtrString,
     pub is_change: bool,
-    pub is_mine: bool,
+    pub visible: bool,
     pub memo: PtrString,
 }
 
@@ -95,7 +95,7 @@ impl From<&ParsedTo> for DisplayTo {
             address: convert_c_char(to.get_address()),
             value: convert_c_char(to.get_value()),
             is_change: to.get_is_change(),
-            is_mine: to.get_is_mine(),
+            visible: to.get_visible(),
             memo: to.get_memo().map(convert_c_char).unwrap_or(null_mut()),
         }
     }

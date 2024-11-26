@@ -34,7 +34,7 @@ impl_public_struct!(ParsedTo {
     value: String,
     amount: u64,
     is_change: bool,
-    is_mine: bool,
+    visible: bool,
     memo: Option<String>
 });
 

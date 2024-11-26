@@ -15,6 +15,7 @@
 #include "gui_ar.h"
 #include "gui_stellar.h"
 #include "gui_ton.h"
+#include "gui_zcash.h"
 #endif
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
@@ -24,7 +25,6 @@ typedef enum {
     CHAIN_BTC,
 #ifndef BTC_ONLY
     CHAIN_ETH,
-    CHAIN_ZEC,
     CHAIN_SOL,
     CHAIN_BNB,
     CHAIN_HNT,
@@ -74,6 +74,7 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
+    CHAIN_ZCASH,
 
 #endif
     CHAIN_BUTT,

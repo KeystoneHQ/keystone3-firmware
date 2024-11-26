@@ -118,6 +118,8 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case TonTx:
     case TonSignProof:
         return CHAIN_TON;
+    case ZcashTx:
+        return CHAIN_ZCASH;
 #endif
     default:
         return CHAIN_BUTT;

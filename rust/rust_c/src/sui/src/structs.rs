@@ -13,6 +13,25 @@ pub struct DisplaySuiIntentMessage {
     pub detail: PtrString,
 }
 
+#[repr(C)]
+pub struct DisplaySuiSignMessageHash {
+    pub network: PtrString,
+    pub path: PtrString,
+    pub from_address: PtrString,
+    pub message: PtrString,
+}
+
+impl DisplaySuiSignMessageHash {
+    pub fn new(network: String, path: String, message: String, from_address: String) -> Self {
+        Self {
+            network: convert_c_char(network),
+            path: convert_c_char(path),
+            message: convert_c_char(message),
+            from_address: convert_c_char(from_address),
+        }
+    }
+}
+
 impl From<Intent> for DisplaySuiIntentMessage {
     fn from(message: Intent) -> Self {
         Self {
@@ -30,10 +49,22 @@ impl From<Intent> for DisplaySuiIntentMessage {
 
 impl_c_ptr!(DisplaySuiIntentMessage);
 
+impl_c_ptr!(DisplaySuiSignMessageHash);
+
 impl Free for DisplaySuiIntentMessage {
     fn free(&self) {
         free_str_ptr!(self.detail);
     }
 }
 
+impl Free for DisplaySuiSignMessageHash {
+    fn free(&self) {
+        free_str_ptr!(self.network);
+        free_str_ptr!(self.path);
+        free_str_ptr!(self.message);
+        free_str_ptr!(self.from_address);
+    }
+}
+
 make_free_method!(TransactionParseResult<DisplaySuiIntentMessage>);
+make_free_method!(TransactionParseResult<DisplaySuiSignMessageHash>);

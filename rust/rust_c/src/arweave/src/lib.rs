@@ -20,14 +20,12 @@ use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use common_rust_c::utils::{convert_c_char, recover_c_char};
 use cty::c_char;
+use hex;
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use keystore::algorithms::rsa::{sign_message, SigningOption};
-use hex;
 use serde_json;
 use serde_json::Value;
-use ur_registry::arweave::arweave_sign_request::{
-    ArweaveSignRequest, SaltLen, SignType,
-};
+use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen, SignType};
 use ur_registry::arweave::arweave_signature::ArweaveSignature;
 use ur_registry::traits::RegistryItem;
 

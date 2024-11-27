@@ -165,6 +165,7 @@ dependencies = [
  "keystore",
  "prost",
  "prost-types",
+ "rust_tools",
  "serde",
  "serde_derive",
  "serde_json",
@@ -3809,6 +3810,7 @@ dependencies = [
  "common_rust_c",
  "cstr_core",
  "cty",
+ "hex",
  "keystore",
  "rust_tools",
  "serde_json",
@@ -4126,7 +4128,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.33#27f8b181ea1c7801a0e9340c9828a4b7b7f25b96"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.39#b017dad5005cae2661073bb14d5ab5c67933e0cd"
 dependencies = [
  "hex",
  "ur",
@@ -4136,7 +4138,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.33#27f8b181ea1c7801a0e9340c9828a4b7b7f25b96"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.39#b017dad5005cae2661073bb14d5ab5c67933e0cd"
 dependencies = [
  "bs58 0.4.0",
  "core2",

@@ -48,6 +48,8 @@ use ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::stellar::stellar_sign_request::StellarSignRequest;
 #[cfg(feature = "multi-coins")]
+use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
+#[cfg(feature = "multi-coins")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::ton::ton_sign_request::TonSignRequest;
@@ -113,11 +115,8 @@ impl UREncodeResult {
     }
 
     pub fn encode(data: Vec<u8>, tag: String, max_fragment_length: usize) -> Self {
-        let result = ur_parse_lib::keystone_ur_encoder::probe_encode(
-            &data,
-            max_fragment_length,
-            tag,
-        );
+        let result =
+            ur_parse_lib::keystone_ur_encoder::probe_encode(&data, max_fragment_length, tag);
         match result {
             Ok(result) => {
                 if result.is_multi_part {
@@ -223,6 +222,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     SuiTx,
     #[cfg(feature = "multi-coins")]
+    SuiSignMessageHash,
+    #[cfg(feature = "multi-coins")]
     ArweaveTx,
     #[cfg(feature = "multi-coins")]
     ArweaveMessage,
@@ -279,6 +280,8 @@ pub enum QRCodeType {
     #[cfg(feature = "multi-coins")]
     SuiSignRequest,
     #[cfg(feature = "multi-coins")]
+    SuiSignHashRequest,
+    #[cfg(feature = "multi-coins")]
     AptosSignRequest,
     #[cfg(feature = "multi-coins")]
     QRHardwareCall,
@@ -313,6 +316,8 @@ impl QRCodeType {
             InnerURType::EvmSignRequest(_) => Ok(QRCodeType::EvmSignRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::SuiSignRequest(_) => Ok(QRCodeType::SuiSignRequest),
+            #[cfg(feature = "multi-coins")]
+            InnerURType::SuiSignHashRequest(_) => Ok(QRCodeType::SuiSignHashRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::StellarSignRequest(_) => Ok(QRCodeType::StellarSignRequest),
             #[cfg(feature = "multi-coins")]
@@ -446,6 +451,11 @@ fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
         QRCodeType::SuiSignRequest => {
             free_ptr_with_type!(data, SuiSignRequest);
         }
+        #[cfg(feature = "multi-coins")]
+        QRCodeType::SuiSignHashRequest => {
+            free_ptr_with_type!(data, SuiSignHashRequest);
+        }
+
         #[cfg(feature = "multi-coins")]
         QRCodeType::StellarSignRequest => {
             free_ptr_with_type!(data, StellarSignRequest);
@@ -619,6 +629,8 @@ pub fn decode_ur(ur: String) -> URParseResult {
         #[cfg(feature = "multi-coins")]
         QRCodeType::SuiSignRequest => _decode_ur::<SuiSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
+        QRCodeType::SuiSignHashRequest => _decode_ur::<SuiSignHashRequest>(ur, ur_type),
+        #[cfg(feature = "multi-coins")]
         QRCodeType::StellarSignRequest => _decode_ur::<StellarSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
         QRCodeType::ArweaveSignRequest => _decode_ur::<ArweaveSignRequest>(ur, ur_type),
@@ -702,6 +714,8 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         #[cfg(feature = "multi-coins")]
         QRCodeType::SuiSignRequest => _receive_ur::<SuiSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
+        QRCodeType::SuiSignHashRequest => _receive_ur::<SuiSignHashRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "multi-coins")]
         QRCodeType::ArweaveSignRequest => _receive_ur::<ArweaveSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         QRCodeType::StellarSignRequest => _receive_ur::<StellarSignRequest>(ur, ur_type, decoder),
@@ -719,8 +733,7 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
 
 #[no_mangle]
 pub extern "C" fn get_next_part(ptr: PtrEncoder) -> *mut UREncodeMultiResult {
-    let keystone_ur_encoder_ptr =
-        ptr as *mut ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
+    let keystone_ur_encoder_ptr = ptr as *mut ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
     let encoder = unsafe { &mut *keystone_ur_encoder_ptr };
     match encoder.next_part() {
         Ok(result) => UREncodeMultiResult::success(result).c_ptr(),

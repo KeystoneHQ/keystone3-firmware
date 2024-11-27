@@ -9,9 +9,9 @@ use alloc::format;
 use alloc::string::ToString;
 use core::slice;
 
-use cty::c_char;
 use bitcoin::hex::Case;
 use bitcoin_hashes::hex::DisplayHex;
+use cty::c_char;
 use hex;
 use hex::ToHex;
 

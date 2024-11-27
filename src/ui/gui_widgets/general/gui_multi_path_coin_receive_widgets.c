@@ -22,7 +22,7 @@
 
 #define GENERAL_ADDRESS_INDEX_MAX                       (999999999)
 #define ETH_LEDGER_LIVE_ADDRESS_INDEX_MAX               (9)
-#define SOL_BIP44_ADDRESS_INDEX_MAX                     (9)
+#define SOL_BIP44_ADDRESS_INDEX_MAX                     (49)
 #define SOL_BIP44_ROOT_ADDRESS_INDEX_MAX                (0)
 #define SOL_BIP44_CHANGE_ADDRESS_INDEX_MAX              (9)
 

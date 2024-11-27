@@ -9,6 +9,7 @@ use core::str::FromStr;
 
 use app_bitcoin::parsed_tx::ParseContext;
 use app_bitcoin::{self, parse_psbt_hex_sign_status, parse_psbt_sign_status};
+use bitcoin::bip32::{DerivationPath, Xpub};
 use common_rust_c::errors::RustCError;
 use common_rust_c::extract_ptr_with_type;
 use common_rust_c::ffi::{CSliceFFI, VecFFI};
@@ -18,7 +19,6 @@ use common_rust_c::structs::{
 use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use common_rust_c::utils::{convert_c_char, recover_c_array, recover_c_char};
-use bitcoin::bip32::{DerivationPath, Xpub};
 use hex;
 use ur_registry::crypto_psbt::CryptoPSBT;
 use ur_registry::traits::RegistryItem;

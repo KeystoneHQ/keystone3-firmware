@@ -253,6 +253,7 @@ pub extern "C" fn check_hardware_call_path(
         "UMEE" => "m/44'/118'",
         "QCK" => "m/44'/118'",
         "TGD" => "m/44'/118'",
+        "THOR" => "m/44'/931'",
         _ => return Response::success(false).c_ptr(),
     };
     let mut path = recover_c_char(path).to_lowercase();
@@ -344,10 +345,7 @@ pub extern "C" fn generate_key_derivation_ur(
                         }
                     }
                 }
-                Err(e) => {
-                    rust_tools::debug!(format!("cant decode xpub error: {:?}", e));
-                    Err(URError::UrEncodeError(e.to_string()))
-                }
+                Err(e) => Err(URError::UrEncodeError(e.to_string())),
             }
         })
         .collect::<Result<Vec<CryptoHDKey>, URError>>();

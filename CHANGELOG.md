@@ -1,3 +1,29 @@
+
+## 1.7.10(2024-11-18)
+
+
+### What's new
+
+1. Supported managing BTC assets using ZEUS Wallet
+2. Supported managing COSMOS assets using Leap Wallet
+
+
+
+## 1.7.8(2024-10-30)
+
+### What's new
+
+1. Added management for Permit signature permissions and implemented risk notifications for Permit/Permit2 transactions
+
+### Improvements
+
+1. Enhanced display for Safe multisig contract transaction parsing
+2. Optimized the scrolling display of assets on the home page
+
+
+
+
+
 ## 1.7.4(2024-10-23)
 
 ### What's New

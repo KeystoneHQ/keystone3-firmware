@@ -148,7 +148,7 @@ LV_IMG_DECLARE(imgNft);
 LV_IMG_DECLARE(imgWIF);
 LV_IMG_DECLARE(imgSoftwareWallet);
 LV_IMG_DECLARE(imgJupiter);
-
+LV_IMG_DECLARE(imgEllipse);
 // emoji
 LV_IMG_DECLARE(emojiAlien);
 LV_IMG_DECLARE(emojiAt);
@@ -270,6 +270,7 @@ LV_IMG_DECLARE(walletBitget);
 LV_IMG_DECLARE(walletMintScan);
 LV_IMG_DECLARE(walletHelium);
 LV_IMG_DECLARE(walletSuiet);
+LV_IMG_DECLARE(walletZeus);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
@@ -307,6 +308,8 @@ LV_IMG_DECLARE(walletListBitget);
 LV_IMG_DECLARE(walletListMintScan);
 LV_IMG_DECLARE(walletListHelium);
 LV_IMG_DECLARE(walletListSuiet);
+LV_IMG_DECLARE(walletListZeus);
+LV_IMG_DECLARE(walletListLeap);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

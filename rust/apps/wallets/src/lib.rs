@@ -15,6 +15,7 @@ use bitcoin::bip32::DerivationPath;
 
 pub mod aptos;
 pub mod backpack;
+pub mod bitget;
 pub mod blue_wallet;
 mod common;
 pub mod companion_app;
@@ -29,8 +30,6 @@ pub mod tonkeeper;
 mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
-
-pub mod bitget;
 //TODO: get these value from device
 pub const DEVICE_TYPE: &str = "Keystone 3 Pro";
 

@@ -11,7 +11,6 @@ cryptoxide = { workspace = true }
 bitcoin = { workspace = true }
 curve25519-dalek = { version = "4" }
 base58-monero = { version = "2", default-features = false }
-keystore = { path = "../../keystore", default-features = false }
 rand_core = { version = "0.6", default-features = false }
 zeroize = { version = "^1.5", default-features = false }
 app_utils = { path = "../utils" }
@@ -19,6 +18,7 @@ rust_tools = { path = "../../tools" }
 monero-clsag-mirror = { version = "0.1.0", default-features = false }
 monero-primitives-mirror = { version = "0.1.0", default-features = false }
 monero-generators-mirror = { version ="0.4.0", default-features = false }
+monero-serai-mirror = { version = "0.1.5-alpha", default-features = false }
 chacha20 = { version = "0.9.1", default-features = false }
 sha3 = { version = "0.10.8", default-features = false, features = ["oid"] }
 rand_chacha = { workspace = true }
@@ -26,3 +26,5 @@ keccak = "0.1.5"
 groestl = { version = "0.10.1", default-features = false }
 jh = { version = "0.1.0", default-features = false }
 skein = { version = "0.1.0", default-features = false }
+thiserror = { workspace = true }
+keystore = { workspace = true, default-features = false }

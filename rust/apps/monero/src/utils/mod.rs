@@ -1,24 +1,25 @@
 use crate::key::{KeyPair, PrivateKey, PublicKey};
+use crate::errors::{MoneroError, Result};
 use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 use chacha20::cipher::{generic_array::GenericArray, KeyIvInit, StreamCipher};
 use chacha20::ChaCha20Legacy;
-use cryptoxide::digest::Digest;
-use cryptoxide::hashing;
-use cryptoxide::ripemd160::Ripemd160;
-use cryptoxide::sha3::Keccak256;
 use crate::slow_hash::cryptonight_hash_v0;
+use crate::utils::{hash::*, constants::*};
 use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::traits::{IsIdentity, MultiscalarMul, ValidityCheck};
 use rand_core::{RngCore, CryptoRng, SeedableRng};
+use crate::utils::sign::*;
+use monero_serai_mirror::transaction::Input;
+use crate::key_images::Keyimage;
 
-pub const OUTPUT_EXPORT_MAGIC: &str = "Monero output export\x04";
-pub const KEY_IMAGE_EXPORT_MAGIC: &str = "Monero key image export\x03";
-pub const UNSIGNED_TX_PREFIX: &str = "Monero unsigned tx set\x05";
-pub const SIGNED_TX_PREFIX: &str = "Monero signed tx set\x05";
-pub const PUBKEY_LEH: usize = 32;
+pub mod varinteger;
+pub mod hash;
+pub mod io;
+pub mod constants;
+pub mod sign;
 
 pub struct DecryptUrData {
     pub pk1: Option<PublicKey>,
@@ -75,7 +76,7 @@ pub fn encrypt_data_with_pvk(keypair: KeyPair, data: Vec<u8>, magic: &str) -> Ve
     [magic_bytes, &nonce_num, &buffer].concat()
 }
 
-pub fn decrypt_data_with_pvk(pvk: [u8; PUBKEY_LEH], data: Vec<u8>, magic: &str) -> DecryptUrData {
+pub fn decrypt_data_with_pvk(pvk: [u8; PUBKEY_LEH], data: Vec<u8>, magic: &str) -> Result<DecryptUrData> {
     let pvk_hash = cryptonight_hash_v0(&pvk);
     let key = GenericArray::from_slice(&pvk_hash);
 
@@ -111,7 +112,7 @@ pub fn decrypt_data_with_pvk(pvk: [u8; PUBKEY_LEH], data: Vec<u8>, magic: &str) 
         &PrivateKey::from_bytes(&pvk).get_public_key(),
         &Signature(signature.clone().try_into().unwrap()),
     ) {
-        panic!("Invalid signature");
+        return Err(MoneroError::DecryptInvalidSignature);
     }
 
     cipher.apply_keystream(&mut buffer);
@@ -130,7 +131,7 @@ pub fn decrypt_data_with_pvk(pvk: [u8; PUBKEY_LEH], data: Vec<u8>, magic: &str) 
             PublicKey::from_bytes(&buffer[start + PUBKEY_LEH..start + PUBKEY_LEH * 2]).unwrap(),
         );
     }
-    DecryptUrData {
+    Ok(DecryptUrData {
         pk1,
         pk2,
         data: buffer[(start + if has_pubilc_keys { PUBKEY_LEH * 2 } else { 0 })..buffer.len() - 64]
@@ -139,53 +140,7 @@ pub fn decrypt_data_with_pvk(pvk: [u8; PUBKEY_LEH], data: Vec<u8>, magic: &str) 
         magic: magic.to_string(),
         signature: Some(signature),
         hash: keccak256(&raw_data).to_vec(),
-    }
-}
-
-pub fn keccak256(data: &[u8]) -> [u8; PUBKEY_LEH] {
-    let mut hasher = Keccak256::new();
-    hasher.input(data);
-    let mut result = [0u8; PUBKEY_LEH];
-    hasher.result(&mut result);
-    result
-}
-
-pub fn calc_subaddress_m(secret_view_key: &[u8], major: u32, minor: u32) -> [u8; PUBKEY_LEH] {
-    let prefix = "SubAddr".as_bytes().to_vec();
-    let mut data = prefix.clone();
-    data.push(0);
-    data.extend_from_slice(secret_view_key);
-    data.extend_from_slice(&major.to_le_bytes());
-    data.extend_from_slice(&minor.to_le_bytes());
-    hash_to_scalar(&data).to_bytes()
-}
-
-pub fn hash_to_scalar(data: &[u8]) -> Scalar {
-    Scalar::from_bytes_mod_order(keccak256(data))
-}
-
-pub fn hash160(data: &[u8]) -> [u8; 20] {
-    ripemd160_digest(&sha256_digest(data))
-}
-
-pub(crate) fn sha256_digest(data: &[u8]) -> Vec<u8> {
-    hashing::sha256(&data).to_vec()
-}
-
-fn ripemd160_digest(data: &[u8]) -> [u8; 20] {
-    let mut hasher = Ripemd160::new();
-    hasher.input(data);
-    let mut output = [0u8; 20];
-    hasher.result(&mut output);
-    output
-}
-
-pub struct Signature(pub [u8; 64]);
-
-impl From<Signature> for Vec<u8> {
-    fn from(sig: Signature) -> Vec<u8> {
-        sig.0.to_vec()
-    }
+    })
 }
 
 pub fn generate_random_scalar<R: RngCore + CryptoRng>(rng: &mut R) -> Scalar {
@@ -194,141 +149,12 @@ pub fn generate_random_scalar<R: RngCore + CryptoRng>(rng: &mut R) -> Scalar {
     Scalar::from_bytes_mod_order_wide(&scalar_bytes)
 }
 
-pub fn generate_signature<R: RngCore + CryptoRng>(
-    hash: &[u8],
-    pubkey: &PublicKey,
-    seckey: &PrivateKey,
-    rng: &mut R,
-) -> Option<Signature> {
-    if seckey.get_public_key().point != pubkey.point {
-        return None;
+pub fn get_key_image_from_input(input: Input) -> Result<Keyimage> {
+    match input {
+        Input::ToKey { key_image, .. } =>
+            Ok(Keyimage::new(key_image.compress().to_bytes())),
+        _ => Err(MoneroError::UnsupportedInputType),
     }
-    let mut c;
-    let mut r;
-
-    loop {
-        let k = generate_random_scalar(rng);
-        let temp3 = EdwardsPoint::mul_base(&k);
-
-        let data = [hash, pubkey.point.as_bytes(), temp3.compress().as_bytes()].concat();
-        c = hash_to_scalar(&data);
-        if c == Scalar::ZERO {
-            continue;
-        }
-        r = k - c * seckey.scalar;
-        if r == Scalar::ZERO {
-            continue;
-        }
-        break;
-    }
-
-    Some(Signature(
-        [c.to_bytes(), r.to_bytes()].concat().try_into().unwrap(),
-    ))
-}
-
-pub fn check_signature(hash: &[u8], pubkey: &PublicKey, sig: &Signature) -> bool {
-    let sig = sig.0.to_vec();
-    let c = &sig[..32];
-    let r = &sig[32..];
-    let point = pubkey.point.decompress().unwrap();
-    if !point.is_valid() {
-        return false;
-    }
-    let scalar_a = Scalar::from_canonical_bytes(c.try_into().unwrap());
-    let scalar_b = Scalar::from_canonical_bytes(r.try_into().unwrap());
-    let is_valid_a: bool = scalar_a.is_some().into();
-    let is_valid_b: bool = scalar_b.is_some().into();
-    if !point.is_valid() || !is_valid_a || !is_valid_b || scalar_b.unwrap() == Scalar::ZERO {
-        return false;
-    }
-    let result_point = EdwardsPoint::vartime_double_scalar_mul_basepoint(
-        &scalar_a.unwrap(),
-        &point,
-        &scalar_b.unwrap(),
-    );
-
-    if result_point.is_identity() {
-        return false;
-    }
-
-    let data = [
-        hash,
-        pubkey.point.as_bytes(),
-        result_point.compress().as_bytes(),
-    ]
-    .concat();
-    let c2 = hash_to_scalar(&data);
-
-    let res = c2 - Scalar::from_bytes_mod_order(c.try_into().unwrap());
-
-    res == Scalar::ZERO
-}
-
-pub fn generate_ring_signature<R: RngCore + CryptoRng>(
-    prefix_hash: &[u8; 32],
-    key_image: &EdwardsPoint,
-    pubs: Vec<PublicKey>,
-    sec: &PrivateKey,
-    sec_idx: usize,
-    rng: &mut R,
-) -> Vec<[Scalar; 2]> {
-    if sec_idx >= pubs.len() {
-        panic!("Invalid sec_idx");
-    }
-
-    let buffer_len = 32 + 2 * 32 * pubs.len();
-    let mut sig = vec![[Scalar::ZERO, Scalar::ZERO]; pubs.len()];
-    let mut buff = Vec::new();
-    buff.extend_from_slice(prefix_hash);
-    let mut sum = Scalar::ZERO;
-    let mut k = Scalar::ZERO;
-
-    for index in 0..pubs.len() {
-        if index == sec_idx {
-            k = generate_random_scalar(rng);
-            let tmp3 = EdwardsPoint::mul_base(&k);
-            buff.extend_from_slice(&tmp3.compress().0);
-
-            let tmp3 = monero_generators_mirror::hash_to_point(pubs[index].point.0);
-            let temp2 = k * tmp3;
-            buff.extend_from_slice(&temp2.compress().0);
-        } else {
-            sig[index][0] = generate_random_scalar(rng);
-            sig[index][1] = generate_random_scalar(rng);
-            let tmp3 = pubs[index].point.decompress().unwrap();
-            let temp2 = EdwardsPoint::vartime_double_scalar_mul_basepoint(
-                &sig[index][0],
-                &tmp3,
-                &sig[index][1],
-            );
-            buff.extend_from_slice(&temp2.compress().0);
-            let tmp3 = monero_generators_mirror::hash_to_point(tmp3.compress().0);
-            let tmp2 = EdwardsPoint::multiscalar_mul(
-                &[sig[index][1], sig[index][0]],
-                &[tmp3, key_image.clone()],
-            );
-            buff.extend_from_slice(&tmp2.compress().0);
-            sum += sig[index][0];
-        }
-    }
-
-    let h = hash_to_scalar(&buff);
-    sig[sec_idx][0] = h - sum;
-    sig[sec_idx][1] = k - sig[sec_idx][0] * sec.scalar;
-
-    if buffer_len != buff.len() {
-        panic!("Invalid buffer_len");
-    }
-
-    sig
-}
-
-pub fn read_varinteger(data: &[u8], offset: &mut usize) -> u64 {
-    let mut value = 0u64;
-    *offset += crate::varinteger::decode_with_offset(data, *offset, &mut value);
-
-    value
 }
 
 #[cfg(test)]
@@ -406,34 +232,6 @@ mod tests {
     }
 
     #[test]
-    fn test_verify3() {
-        let pvk = hex::decode("bb4346a861b208744ff939ff1faacbbe0c5298a4996f4de05e0d9c04c769d501")
-            .unwrap();
-        let data = hex::decode("4d6f6e65726f206f7574707574206578706f727404eb5fb0d1fc8358931053f6e24d93ec0766aad43a54453593287d0d3dcfdef9371f411a0e179a9c1b0da94a3fe3d51cccf3573c01b6f8d6ee215caf3238976d8e9af5347e44b0d575fa622accdd4b4d5d272e13d77ff897752f52d7617be986efb4d2b1f841bae6c1d041d6ff9df46262b1251a988d5b0fbe5012d2af7b9ff318381bfd8cbe06af6e0750c16ff7a61d31d36526d83d7b6b614b2fd602941f2e94de01d0e3fc5a84414cdeabd943e5d8f0226ab7bea5e47c97253bf2f062e92a6bf27b6099a47cb8bca47e5ad544049611d77bfeb5c16b5b7849ce5d46bb928ce2e9a2b6679653a769f53c7c17d3e91df35ae7b62a4cffcea2d25df1c2e21a58b1746aae00a273317ec3873c53d8ae71d89d70637a6bd1da974e548b48a0f96d119f0f7d04ff034bb7fed3dbe9081d3e3a3212d330328c0edbacad85bab43780f9b5dfd81f359b0827146ebc421e60dba0badab1941bc31a0086aac99d59f55f07d58c02a48a3e1f70222bae1a612dacd09d0b176345a115e6ae6523ecbc346d8a8078111da7f9932f31d6e35500f5195cfdfe6b6eb2b223d171430a1cb7e11a51ac41d06f3a81546378b1ff342a18fb1f01cfd10df9c1ac86531456f240e5500d9c7ba4c47ba8d4455ea2b7e460ee207c064b76019f6bb4efe5a3e27a126b0c8be6a2e6f3d7ede9580ff49598501aafa36187896e245d64461f9f1c24323b1271af9e0a7a9108422de5ecfdaccdcb2b4520a6d75b2511be6f17a272d21e05ead99818e697559714af0a220494004e393eeefdfe029cff0db22c3adadf6f00edbf6bf4fcbcfc1e225451be3c1c700fe796fce6480b02d0cb1f9fbcf6c05895df2eeb8192980df50a0523922c1247fef83a5f631cf64132125477e1a3b13bcbaa691da1e9b45288eb6c7669e7a7857f87ed45f74725b72b4604fda6b44d3999e1d6fab0786f9b14f00a6518ca3fbc5f865d9fc8acd6e5773208").unwrap();
-
-        let res = decrypt_data_with_pvk(pvk.try_into().unwrap(), data, OUTPUT_EXPORT_MAGIC);
-        assert_eq!(
-            hex::encode(res.hash.clone()),
-            "5853d87db51d4d3c0a00b86d06897361b9e49f742fd02988abf6aeca585b988d"
-        );
-
-        let sig = hex::decode("77e1a3b13bcbaa691da1e9b45288eb6c7669e7a7857f87ed45f74725b72b4604fda6b44d3999e1d6fab0786f9b14f00a6518ca3fbc5f865d9fc8acd6e5773208").unwrap();
-        let pk = hex::decode("1981d791ec8683dd818a5d7ef99d5fe1ada7fc71f7518d230af1daf12b6debe1")
-            .unwrap();
-
-        assert_eq!(
-            hex::encode(res.signature.unwrap()),
-            hex::encode(sig.clone())
-        );
-
-        assert!(check_signature(
-            &res.hash,
-            &PublicKey::from_bytes(&pk).unwrap(),
-            &Signature(sig.try_into().unwrap())
-        ));
-    }
-
-    #[test]
     fn test_generate_signature() {
         let pvk = hex::decode("bb4346a861b208744ff939ff1faacbbe0c5298a4996f4de05e0d9c04c769d501")
             .unwrap();
@@ -442,7 +240,7 @@ mod tests {
         let rng_seed = [0u8; 32];
         let mut rng = rand_chacha::ChaCha20Rng::from_seed(rng_seed);
 
-        let res = decrypt_data_with_pvk(pvk.clone().try_into().unwrap(), data.clone(), OUTPUT_EXPORT_MAGIC);
+        let res = decrypt_data_with_pvk(pvk.clone().try_into().unwrap(), data.clone(), OUTPUT_EXPORT_MAGIC).unwrap();
         assert_eq!(
             hex::encode(res.hash.clone()),
             "5853d87db51d4d3c0a00b86d06897361b9e49f742fd02988abf6aeca585b988d"
@@ -505,19 +303,9 @@ mod tests {
 
         let keypair = crate::key::KeyPair::new(sec_v_key, sec_s_key);
 
-        let res = decrypt_data_with_pvk(keypair.view.to_bytes(), bin_data.clone(), magic);
+        let res = decrypt_data_with_pvk(keypair.view.to_bytes(), bin_data.clone(), magic).unwrap();
 
         assert_eq!(hex::encode(res.data.clone()), hex::encode(data));
-    }
-
-    #[test]
-    fn test_generate_random_scalar() {
-        let rng_seed = [0u8; 32];
-        let mut rng = rand_chacha::ChaCha20Rng::from_seed(rng_seed);
-
-        let scalar1 = generate_random_scalar(&mut rng);
-        let scalar2 = generate_random_scalar(&mut rng);
-        assert_ne!(scalar1, scalar2);
     }
 
     #[test]

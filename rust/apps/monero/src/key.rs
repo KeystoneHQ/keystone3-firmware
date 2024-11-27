@@ -1,5 +1,5 @@
-use crate::utils::{calc_subaddress_m, hash_to_scalar, PUBKEY_LEH};
-
+use crate::utils::{hash::hash_to_scalar, constants::PUBKEY_LEH};
+use crate::errors::MoneroError;
 use alloc::format;
 use alloc::string::{String, ToString};
 use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
@@ -8,9 +8,8 @@ use curve25519_dalek::scalar::Scalar;
 use bitcoin::{Network, PrivateKey as PrvKey};
 use hex;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct PrivateKey {
-    /// The actual curve25519 scalar.
     pub scalar: Scalar,
 }
 
@@ -45,14 +44,17 @@ impl PublicKey {
         PublicKey { point }
     }
 
-    pub fn from_bytes(bytes: &[u8]) -> Result<PublicKey, String> {
-        let point =
-            CompressedEdwardsY::from_slice(bytes).map_err(|e| format!("decode error: {:?}", e))?;
-        Ok(PublicKey { point })
+    pub fn from_bytes(bytes: &[u8]) -> Result<PublicKey, MoneroError> {
+        let pub_key =
+            match CompressedEdwardsY::from_slice(bytes).map_err(|e| format!("decode error: {:?}", e)) {
+                Ok(point) => PublicKey { point },
+                _ => return Err(MoneroError::PublicKeyFromBytesError),
+            };
+        Ok(pub_key)
     }
 
-    pub fn from_str(s: &str) -> Result<PublicKey, String> {
-        let bytes = hex::decode(s).map_err(|e| format!("decode error: {:?}", e))?;
+    pub fn from_str(s: &str) -> Result<PublicKey, MoneroError> {
+        let bytes = hex::decode(s).map_err(|e| format!("decode error: {:?}", e)).unwrap();
         PublicKey::from_bytes(&bytes)
     }
 }
@@ -134,17 +136,23 @@ impl KeyPair {
     }
 }
 
-pub fn generate_keypair(seed: &[u8], major: u32) -> KeyPair {
+pub fn generate_keypair(seed: &[u8], major: u32) -> Result<KeyPair, MoneroError> {
     let path = format!("m/44'/128'/{}'/0/0", major);
     let key =
-        keystore::algorithms::secp256k1::get_private_key_by_seed(&seed, &path.to_string()).unwrap();
+        match keystore::algorithms::secp256k1::get_private_key_by_seed(&seed, &path.to_string()) {
+            Ok(key) => key,
+            _ => return Err(MoneroError::GenerateKeypairError),
+        };
     let raw_private_key = PrvKey::new(key, Network::Bitcoin);
 
-    KeyPair::from_raw_private_keys(raw_private_key)
+    Ok(KeyPair::from_raw_private_keys(raw_private_key))
 }
 
-pub fn generate_private_view_key(seed: &[u8], major: u32) -> PrivateKey {
-    generate_keypair(seed, major).view
+pub fn generate_private_view_key(seed: &[u8], major: u32) -> Result<PrivateKey, MoneroError> {
+    match generate_keypair(seed, major) {
+        Ok(keypair) => Ok(keypair.view),
+        Err(e) => Err(e),
+    }
 }
 
 pub fn generate_sub_secret_key(secret_view_key: PrivateKey, major: u32, minor: u32) -> PrivateKey {
@@ -161,6 +169,16 @@ pub fn generate_key_image_from_priavte_key(private_key: &PrivateKey) -> EdwardsP
     x * Hp
 }
 
+pub fn calc_subaddress_m(secret_view_key: &[u8], major: u32, minor: u32) -> [u8; PUBKEY_LEH] {
+    let prefix = "SubAddr".as_bytes().to_vec();
+    let mut data = prefix.clone();
+    data.push(0);
+    data.extend_from_slice(secret_view_key);
+    data.extend_from_slice(&major.to_le_bytes());
+    data.extend_from_slice(&minor.to_le_bytes());
+    hash_to_scalar(&data).to_bytes()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -169,11 +187,11 @@ mod tests {
     fn test_monero_keys() {
         // BIP39 Mnemonic: key stone key stone key stone key stone key stone key stone key stone success
         let seed = hex::decode("45a5056acbe881d7a5f2996558b303e08b4ad1daffacf6ffb757ff2a9705e6b9f806cffe3bd90ff8e3f8e8b629d9af78bcd2ed23e8c711f238308e65b62aa5f0").unwrap();
-        let keypair = generate_keypair(&seed, 0);
+        let keypair = generate_keypair(&seed, 0).unwrap();
         let public_spend_key = keypair.spend.get_public_key();
         let public_view_key = keypair.view.get_public_key();
 
-        let private_view_key = generate_private_view_key(&seed, 0);
+        let private_view_key = generate_private_view_key(&seed, 0).unwrap();
 
         assert_eq!(
             hex::encode(keypair.spend.to_bytes()),
@@ -203,7 +221,7 @@ mod tests {
         let seed = hex::decode("45a5056acbe881d7a5f2996558b303e08b4ad1daffacf6ffb757ff2a9705e6b9f806cffe3bd90ff8e3f8e8b629d9af78bcd2ed23e8c711f238308e65b62aa5f0").unwrap();
         let major = 0;
         let minor = 1;
-        let keypair = generate_keypair(&seed, major);
+        let keypair = generate_keypair(&seed, major).unwrap();
 
         assert_eq!(
             hex::encode(keypair.get_m(major, minor)),

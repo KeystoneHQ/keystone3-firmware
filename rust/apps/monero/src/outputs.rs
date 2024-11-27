@@ -38,7 +38,7 @@ impl ExportedTransferDetail {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ExportedTransferDetails {
     pub offset: u64,
     pub size: u64,

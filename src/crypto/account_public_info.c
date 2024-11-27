@@ -700,7 +700,6 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         }
     }
 
-    monero_test();
     if (regeneratePubKey) {
         ret = AccountPublicSavePublicInfo(accountIndex, password, addr);
     }

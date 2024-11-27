@@ -87,7 +87,7 @@ pub extern "C" fn get_extended_monero_pubkeys_by_seed(
         .parse::<u32>()
         .unwrap();
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    let keypair = app_monero::key::generate_keypair(seed, major);
+    let keypair = app_monero::key::generate_keypair(seed, major).unwrap();
     let public_spend_key = keypair.spend.get_public_key();
     let public_view_key = keypair.view.get_public_key();
     let result = format!(

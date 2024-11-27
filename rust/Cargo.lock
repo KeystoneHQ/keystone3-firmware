@@ -212,11 +212,13 @@ dependencies = [
  "monero-clsag-mirror",
  "monero-generators-mirror",
  "monero-primitives-mirror",
+ "monero-serai-mirror",
  "rand_chacha",
  "rand_core 0.6.4",
  "rust_tools",
  "sha3 0.10.8",
  "skein",
+ "thiserror-core",
  "zeroize",
 ]
 
@@ -2320,6 +2322,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "monero-borromean-mirror"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94245bb25439202f8c4344a316ef11594d723bb424b2a87e59afc610a2024b85"
+dependencies = [
+ "curve25519-dalek",
+ "monero-generators-mirror",
+ "monero-io-mirror",
+ "monero-primitives-mirror",
+ "std-shims-mirror",
+ "zeroize",
+]
+
+[[package]]
+name = "monero-bulletproofs-mirror"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12680d39b77206a64d9bfe08c7c88c7b38546befead75c69d30d23ae95420fb2"
+dependencies = [
+ "curve25519-dalek",
+ "monero-generators-mirror",
+ "monero-io-mirror",
+ "monero-primitives-mirror",
+ "rand_core 0.6.4",
+ "std-shims-mirror",
+ "zeroize",
+]
+
+[[package]]
 name = "monero-clsag-mirror"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2361,6 +2392,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "monero-mlsag-mirror"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14df375dbeb6838572368b34c400098c38763bef1e7d42b2c3220110a5ff130f"
+dependencies = [
+ "curve25519-dalek",
+ "monero-generators-mirror",
+ "monero-io-mirror",
+ "monero-primitives-mirror",
+ "std-shims-mirror",
+ "zeroize",
+]
+
+[[package]]
 name = "monero-primitives-mirror"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2370,6 +2415,25 @@ dependencies = [
  "monero-generators-mirror",
  "monero-io-mirror",
  "sha3 0.10.8",
+ "std-shims-mirror",
+ "zeroize",
+]
+
+[[package]]
+name = "monero-serai-mirror"
+version = "0.1.5-alpha"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a61de52af086a0d2e7b2a3f486429c16fd05ed8e15cb2f2060a1a8b132053d5a"
+dependencies = [
+ "curve25519-dalek",
+ "hex-literal",
+ "monero-borromean-mirror",
+ "monero-bulletproofs-mirror",
+ "monero-clsag-mirror",
+ "monero-generators-mirror",
+ "monero-io-mirror",
+ "monero-mlsag-mirror",
+ "monero-primitives-mirror",
  "std-shims-mirror",
  "zeroize",
 ]

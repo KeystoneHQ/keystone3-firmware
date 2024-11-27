@@ -27,3 +27,9 @@ pub extern "C" fn monero_get_address(
 
     SimpleResponse::success(convert_c_char(address.to_string()) as *mut c_char).simple_c_ptr()
 }
+
+pub extern "C" fn monero_test() -> *mut SimpleResponse<c_char> {
+    app_monero::transfer::test_sign_performance();
+
+    SimpleResponse::success(convert_c_char("Hello from Monero".to_string()) as *mut c_char).simple_c_ptr()
+}

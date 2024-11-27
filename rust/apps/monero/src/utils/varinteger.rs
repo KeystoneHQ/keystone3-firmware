@@ -19,7 +19,6 @@ pub fn encode(value: u64, buf: &mut [u8]) -> usize {
 pub fn encode_with_offset(value: u64, buf: &mut [u8], offset: usize) -> usize {
     let mut off = offset;
     let mut val = value;
-
     while val > 127 {
         buf[off] = (val as u8) | 128;
         off += 1;
@@ -114,5 +113,25 @@ fn sign(value: u64) -> i64 {
         -(((value + 1) / 2) as i64)
     } else {
         (value / 2) as i64
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_verinteger() {
+        let mut buf = [0u8; 2];
+        assert_eq!(encode(0x16f9, &mut buf), 2);
+        assert_eq!(buf, [0xf9, 0x2d]);
+    }
+
+    #[test]
+    fn test_decode() {
+        let buf = [0x8c, 0x02];
+        let mut value = 0;
+        assert_eq!(decode(&buf, &mut value), 2);
+        assert_eq!(value, 268);
     }
 }

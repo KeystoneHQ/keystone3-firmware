@@ -3,7 +3,7 @@ use crate::errors::{CardanoError, R};
 use crate::structs::SignVotingRegistrationResult;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use cardano_serialization_lib::address::{Address, BaseAddress};
+use cardano_serialization_lib::protocol_types::Address;
 use cryptoxide::hashing::blake2b_256;
 use ed25519_bip32_core::{XPrv, XPub};
 use hex;

@@ -1,29 +1,27 @@
-use crate::address::{derive_address, derive_pubkey_hash, AddressType};
+use crate::address::derive_pubkey_hash;
 use crate::errors::{CardanoError, R};
 use alloc::collections::BTreeMap;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
+use bitcoin::bip32::DerivationPath;
 use core::ops::Div;
 
 use app_utils::{impl_internal_struct, impl_public_struct};
 use cardano_serialization_lib::protocol_types::{
-    self, Address, BaseAddress, EnterpriseAddress, RewardAddress,
+    Address, BaseAddress, EnterpriseAddress, RewardAddress,
 };
 
-use cardano_serialization_lib::protocol_types::numeric::BigNum;
-use cardano_serialization_lib::protocol_types::{Anchor, DRepKind};
-use cardano_serialization_lib::protocol_types::{Ed25519KeyHash, ScriptHash};
+use bitcoin::bip32::ChildNumber::{Hardened, Normal};
+use cardano_serialization_lib::protocol_types::DRepKind;
 use cardano_serialization_lib::{
-    protocol_types::FixedTransaction as Transaction, protocol_types::VoteKind, Certificate,
-    CertificateKind, NetworkId, NetworkIdKind,
+    protocol_types::FixedTransaction as Transaction, protocol_types::VoteKind, NetworkIdKind,
 };
 use cryptoxide::hashing::blake2b_224;
+use hex;
 use ur_registry::cardano::cardano_sign_structure::CardanoSignStructure;
 use ur_registry::traits::From;
-
-use hex;
 
 impl_public_struct!(ParseContext {
     utxos: Vec<CardanoUtxo>,

@@ -59,6 +59,10 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
     case REMAPVIEW_STELLAR:
     case REMAPVIEW_STELLAR_HASH:
         return GuiGetStellarCheckResult();
+    case REMAPVIEW_XMR_OUTPUT:
+        return GuiGetMoneroOutputCheckResult();
+    case REMAPVIEW_XMR_UNSIGNED:
+        return GuiGetMoneroUnsignedTxCheckResult();
     case REMAPVIEW_TON:
     case REMAPVIEW_TON_SIGNPROOF:
         return GuiGetTonCheckResult();
@@ -115,6 +119,9 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case StellarTx:
     case StellarHash:
         return CHAIN_STELLAR;
+    case XmrOutput:
+    case XmrTxUnsigned:
+        return CHAIN_XMR;
     case TonTx:
     case TonSignProof:
         return CHAIN_TON;
@@ -204,6 +211,12 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
     case StellarTx:
     case StellarHash:
         func = GuiGetStellarSignQrCodeData;
+        break;
+    case XmrOutput:
+        func = GuiGetMoneroKeyimagesQrCodeData;
+        break;
+    case XmrTxUnsigned:
+        func = GuiGetMoneroSignedTransactionQrCodeData;
         break;
     case TonTx:
         func = GuiGetTonSignQrCodeData;

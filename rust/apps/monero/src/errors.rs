@@ -27,6 +27,10 @@ pub enum MoneroError {
     DecryptInvalidSignature,
     #[error("unsupported input type")]
     UnsupportedInputType,
+    #[error("mismatched mfp")]
+    MismatchedMfp,
+    #[error("invalid private view key")]
+    InvalidPrivateViewKey,
 }
 
 pub type Result<T> = core::result::Result<T, MoneroError>;

@@ -53,6 +53,8 @@ use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::ton::ton_sign_request::TonSignRequest;
+#[cfg(feature = "multi-coins")]
+use ur_registry::monero::{xmr_output::XmrOutput, xmr_txunsigned::XmrTxUnsigned};
 use ur_registry::traits::RegistryItem;
 
 use crate::errors::{ErrorCodes, RustCError};
@@ -239,6 +241,10 @@ pub enum ViewType {
     TonSignProof,
     #[cfg(feature = "multi-coins")]
     AptosTx,
+    #[cfg(feature = "multi-coins")]
+    XmrOutput,
+    #[cfg(feature = "multi-coins")]
+    XmrTxUnsigned,
     WebAuthResult,
     #[cfg(feature = "multi-coins")]
     KeyDerivationRequest,
@@ -291,6 +297,10 @@ pub enum QRCodeType {
     StellarSignRequest,
     #[cfg(feature = "multi-coins")]
     TonSignRequest,
+    #[cfg(feature = "multi-coins")]
+    XmrOutputSignRequest,
+    #[cfg(feature = "multi-coins")]
+    XmrTxUnsignedRequest,
     URTypeUnKnown,
 }
 
@@ -336,6 +346,10 @@ impl QRCodeType {
             InnerURType::TonSignRequest(_) => Ok(QRCodeType::TonSignRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::QRHardwareCall(_) => Ok(QRCodeType::QRHardwareCall),
+            #[cfg(feature = "multi-coins")]
+            InnerURType::XmrTxUnsigned(_) => Ok(QRCodeType::XmrTxUnsignedRequest),
+            #[cfg(feature = "multi-coins")]
+            InnerURType::XmrOutput(_) => Ok(QRCodeType::XmrOutputSignRequest),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
         }
     }
@@ -475,6 +489,14 @@ fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
         #[cfg(feature = "multi-coins")]
         QRCodeType::CardanoSignDataRequest => {
             free_ptr_with_type!(data, CardanoSignDataRequest);
+        }
+        #[cfg(feature = "multi-coins")]
+        QRCodeType::XmrOutputSignRequest => {
+            free_ptr_with_type!(data, XmrOutput);
+        }
+        #[cfg(feature = "multi-coins")]
+        QRCodeType::XmrTxUnsignedRequest => {
+            free_ptr_with_type!(data, XmrTxUnsigned);
         }
         #[cfg(feature = "multi-coins")]
         QRCodeType::CardanoCatalystVotingRegistrationRequest => {
@@ -640,6 +662,10 @@ pub fn decode_ur(ur: String) -> URParseResult {
         QRCodeType::TonSignRequest => _decode_ur::<TonSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
         QRCodeType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
+        #[cfg(feature = "multi-coins")]
+        QRCodeType::XmrOutputSignRequest => _decode_ur::<XmrOutput>(ur, ur_type),
+        #[cfg(feature = "multi-coins")]
+        QRCodeType::XmrTxUnsignedRequest => _decode_ur::<XmrTxUnsigned>(ur, ur_type),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),
         ),
@@ -725,6 +751,10 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         QRCodeType::QRHardwareCall => _receive_ur::<QRHardwareCall>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         QRCodeType::TonSignRequest => _receive_ur::<TonSignRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "multi-coins")]
+        QRCodeType::XmrOutputSignRequest => _receive_ur::<XmrOutput>(ur, ur_type, decoder),
+        #[cfg(feature = "multi-coins")]
+        QRCodeType::XmrTxUnsignedRequest => _receive_ur::<XmrTxUnsigned>(ur, ur_type, decoder),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseMultiResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),
         ),

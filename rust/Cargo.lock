@@ -729,9 +729,6 @@ name = "bs58"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
-dependencies = [
- "sha2 0.9.9",
-]
 
 [[package]]
 name = "bs58"
@@ -739,6 +736,7 @@ version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf88ba1141d185c399bee5288d850d63b8369520c1eafc32a0430b5b6c287bf4"
 dependencies = [
+ "sha2 0.10.8",
  "tinyvec",
 ]
 
@@ -2444,8 +2442,13 @@ name = "monero_rust_c"
 version = "0.1.0"
 dependencies = [
  "app_monero",
+ "app_utils",
  "common_rust_c",
+ "cstr_core",
  "cty",
+ "hex",
+ "keystore",
+ "ur-registry",
 ]
 
 [[package]]
@@ -4128,7 +4131,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.39#b017dad5005cae2661073bb14d5ab5c67933e0cd"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?branch=feat/monero-integration#ecd1e6dc698ff4dd755ad6badc6e0fdbfc47f7b0"
 dependencies = [
  "hex",
  "ur",
@@ -4138,9 +4141,9 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.39#b017dad5005cae2661073bb14d5ab5c67933e0cd"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?branch=feat/monero-integration#ecd1e6dc698ff4dd755ad6badc6e0fdbfc47f7b0"
 dependencies = [
- "bs58 0.4.0",
+ "bs58 0.5.1",
  "core2",
  "hex",
  "libflate",

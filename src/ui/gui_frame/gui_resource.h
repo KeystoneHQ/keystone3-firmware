@@ -228,6 +228,7 @@ LV_IMG_DECLARE(coinMubi);
 LV_IMG_DECLARE(coinTrac);
 LV_IMG_DECLARE(coinSats);
 LV_IMG_DECLARE(coinXlm);
+LV_IMG_DECLARE(coinXmr);
 LV_IMG_DECLARE(coinRune);
 LV_IMG_DECLARE(coinHelium);
 

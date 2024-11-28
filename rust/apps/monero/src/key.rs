@@ -1,5 +1,5 @@
 use crate::utils::{hash::hash_to_scalar, constants::PUBKEY_LEH};
-use crate::errors::MoneroError;
+use crate::errors::{MoneroError, Result};
 use alloc::format;
 use alloc::string::{String, ToString};
 use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
@@ -44,7 +44,7 @@ impl PublicKey {
         PublicKey { point }
     }
 
-    pub fn from_bytes(bytes: &[u8]) -> Result<PublicKey, MoneroError> {
+    pub fn from_bytes(bytes: &[u8]) -> Result<PublicKey> {
         let pub_key =
             match CompressedEdwardsY::from_slice(bytes).map_err(|e| format!("decode error: {:?}", e)) {
                 Ok(point) => PublicKey { point },
@@ -53,7 +53,7 @@ impl PublicKey {
         Ok(pub_key)
     }
 
-    pub fn from_str(s: &str) -> Result<PublicKey, MoneroError> {
+    pub fn from_str(s: &str) -> Result<PublicKey> {
         let bytes = hex::decode(s).map_err(|e| format!("decode error: {:?}", e)).unwrap();
         PublicKey::from_bytes(&bytes)
     }
@@ -136,7 +136,7 @@ impl KeyPair {
     }
 }
 
-pub fn generate_keypair(seed: &[u8], major: u32) -> Result<KeyPair, MoneroError> {
+pub fn generate_keypair(seed: &[u8], major: u32) -> Result<KeyPair> {
     let path = format!("m/44'/128'/{}'/0/0", major);
     let key =
         match keystore::algorithms::secp256k1::get_private_key_by_seed(&seed, &path.to_string()) {
@@ -148,7 +148,7 @@ pub fn generate_keypair(seed: &[u8], major: u32) -> Result<KeyPair, MoneroError>
     Ok(KeyPair::from_raw_private_keys(raw_private_key))
 }
 
-pub fn generate_private_view_key(seed: &[u8], major: u32) -> Result<PrivateKey, MoneroError> {
+pub fn generate_private_view_key(seed: &[u8], major: u32) -> Result<PrivateKey> {
     match generate_keypair(seed, major) {
         Ok(keypair) => Ok(keypair.view),
         Err(e) => Err(e),

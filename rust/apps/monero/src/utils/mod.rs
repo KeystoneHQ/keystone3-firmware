@@ -77,6 +77,9 @@ pub fn encrypt_data_with_pvk(keypair: KeyPair, data: Vec<u8>, magic: &str) -> Ve
 }
 
 pub fn decrypt_data_with_pvk(pvk: [u8; PUBKEY_LEH], data: Vec<u8>, magic: &str) -> Result<DecryptUrData> {
+    if pvk.len() != PUBKEY_LEH {
+        return Err(MoneroError::InvalidPrivateViewKey);
+    }
     let pvk_hash = cryptonight_hash_v0(&pvk);
     let key = GenericArray::from_slice(&pvk_hash);
 

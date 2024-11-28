@@ -746,7 +746,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         ASSERT(false);
     }
 
-    int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
+    int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed);
 
     char *passphrase = GetPassphrase(accountIndex);
     SetIsTempAccount(passphrase != NULL && passphrase[0] != 0);

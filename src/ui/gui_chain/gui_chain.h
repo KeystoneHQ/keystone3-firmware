@@ -15,6 +15,7 @@
 #include "gui_ar.h"
 #include "gui_stellar.h"
 #include "gui_ton.h"
+#include "gui_monero.h"
 #endif
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
@@ -73,6 +74,7 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
+    CHAIN_XMR,
 
 #endif
     CHAIN_BUTT,
@@ -104,6 +106,8 @@ typedef enum {
     REMAPVIEW_STELLAR_HASH,
     REMAPVIEW_TON,
     REMAPVIEW_TON_SIGNPROOF,
+    REMAPVIEW_XMR_OUTPUT,
+    REMAPVIEW_XMR_UNSIGNED,
     REMAPVIEW_WEB_AUTH,
 #endif
     REMAPVIEW_BUTT,

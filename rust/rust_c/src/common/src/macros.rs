@@ -133,6 +133,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "multi-coins")]
+        impl From<app_monero::errors::MoneroError> for $name {
+            fn from(value: app_monero::errors::MoneroError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
 
         impl From<crate::errors::KeystoneError> for $name {
             fn from(value: crate::errors::KeystoneError) -> Self {
@@ -260,6 +266,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "multi-coins")]
+        impl<$t: Free> From<app_monero::errors::MoneroError> for $name<$t> {
+            fn from(value: app_monero::errors::MoneroError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
 
         impl<$t: Free> From<crate::errors::KeystoneError> for $name<$t> {
             fn from(value: crate::errors::KeystoneError) -> Self {
@@ -351,6 +363,12 @@ macro_rules! impl_simple_new_error {
         #[cfg(feature = "multi-coins")]
         impl<$t> From<app_aptos::errors::AptosError> for $name<$t> {
             fn from(value: app_aptos::errors::AptosError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "multi-coins")]
+        impl<$t: Free> From<app_monero::errors::MoneroError> for $name<$t> {
+            fn from(value: app_monero::errors::MoneroError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

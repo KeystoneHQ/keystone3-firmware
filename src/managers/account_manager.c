@@ -238,6 +238,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
             ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
             CalculateZcashUFVK(g_currentAccountIndex, password);
         }
+        SecretCacheSetXmrPrivateViewKey(password);
     } else {
         g_publicInfo.loginPasswordErrorCount++;
     }

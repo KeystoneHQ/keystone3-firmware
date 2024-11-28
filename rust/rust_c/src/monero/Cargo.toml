@@ -9,6 +9,11 @@ edition = "2021"
 cty = "0.2.2"
 app_monero = { path = "../../../apps/monero" }
 common_rust_c = {path = "../common"}
+ur-registry = { workspace = true }
+keystore = { workspace = true }
+app_utils = { workspace = true }
+cstr_core = { workspace = true }
+hex = { workspace = true }
 
 [features]
 debug-memory = []

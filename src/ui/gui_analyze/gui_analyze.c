@@ -319,7 +319,29 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         GuiGetZcashGUIData,
         NULL,
         FreeZcashMemory,
-    }
+    },
+    {
+        REMAPVIEW_XMR_OUTPUT,
+#ifndef COMPILE_SIMULATOR
+        "{}",
+#else
+        PC_SIMULATOR_PATH "/page_xmr_output.json",
+#endif
+        GuiGetMoneroOutputData,
+        NULL,
+        FreeMoneroMemory,
+    },
+    {
+        REMAPVIEW_XMR_UNSIGNED,
+#ifndef COMPILE_SIMULATOR
+        "{}",
+#else
+        PC_SIMULATOR_PATH "/page_xmr_unsigned.json",
+#endif
+        GuiGetMoneroUnsignedTxData,
+        NULL,
+        FreeMoneroMemory,
+    },
 #endif
 };
 
@@ -1782,6 +1804,10 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_STELLAR;
     case StellarHash:
         return REMAPVIEW_STELLAR_HASH;
+    case XmrOutput:
+        return REMAPVIEW_XMR_OUTPUT;
+    case XmrTxUnsigned:
+        return REMAPVIEW_XMR_UNSIGNED;
     case ArweaveDataItem:
         return REMAPVIEW_AR_DATAITEM;
     case TonTx:

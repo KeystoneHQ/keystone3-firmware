@@ -510,19 +510,33 @@ impl ParsedCardanoTx {
                     let fields = vec![
                         CertField {
                             label: LABEL_HOT_KEY.to_string(),
-                            value: _cert
-                                .committee_hot_credential()
-                                .to_scripthash()
-                                .unwrap()
-                                .to_string(),
+                            value: match _cert.committee_hot_credential().kind() {
+                                Ed25519KeyHash => _cert
+                                    .committee_hot_credential()
+                                    .to_keyhash()
+                                    .unwrap()
+                                    .to_string(),
+                                ScriptHash => _cert
+                                    .committee_hot_credential()
+                                    .to_scripthash()
+                                    .unwrap()
+                                    .to_string(),
+                            },
                         },
                         CertField {
                             label: LABEL_COLD_KEY.to_string(),
-                            value: _cert
-                                .committee_cold_credential()
-                                .to_scripthash()
-                                .unwrap()
-                                .to_string(),
+                            value: match _cert.committee_cold_credential().kind() {
+                                Ed25519KeyHash => _cert
+                                    .committee_cold_credential()
+                                    .to_keyhash()
+                                    .unwrap()
+                                    .to_string(),
+                                ScriptHash => _cert
+                                    .committee_cold_credential()
+                                    .to_scripthash()
+                                    .unwrap()
+                                    .to_string(),
+                            },
                         },
                     ];
                     certs.push(CardanoCertificate::new(
@@ -533,11 +547,18 @@ impl ParsedCardanoTx {
                 if let Some(_cert) = cert.as_committee_cold_resign() {
                     let mut fields = vec![CertField {
                         label: LABEL_COLD_KEY.to_string(),
-                        value: _cert
-                            .committee_cold_credential()
-                            .to_scripthash()
-                            .unwrap()
-                            .to_string(),
+                        value: match _cert.committee_cold_credential().kind() {
+                            Ed25519KeyHash => _cert
+                                .committee_cold_credential()
+                                .to_keyhash()
+                                .unwrap()
+                                .to_string(),
+                            ScriptHash => _cert
+                                .committee_cold_credential()
+                                .to_scripthash()
+                                .unwrap()
+                                .to_string(),
+                        },
                     }];
                     if let Some(anchor) = _cert.anchor() {
                         fields.push(CertField {

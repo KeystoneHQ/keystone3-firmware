@@ -507,16 +507,48 @@ impl ParsedSolanaTx {
                     },
                 ));
             }
+            if let ProgramDetail::SquadsV4MultisigCreateV2(v) = &d.kind {
+                let memo = v.memo.clone().unwrap();
+                let memo = serde_json::from_str::<serde_json::Value>(&memo).unwrap();
+                let wallet_name = memo["n"]
+                    .as_str()
+                    .unwrap_or("SquadsV4 Multisig Wallet")
+                    .to_string();
+                let wallet_desc = memo["d"].as_str().unwrap_or("").to_string();
+                let threshold = v.threshold;
+                let member_count = v.members.len();
+                let members = v
+                    .members
+                    .iter()
+                    .map(|m| m.key.to_string())
+                    .collect::<Vec<String>>();
+                let total_value = format!("~{:.3} SOL", total_value);
+                return Ok(SolanaOverview::SquadsV4MultisigCreate(
+                    ProgramOverviewMultisigCreate {
+                        wallet_name,
+                        wallet_desc,
+                        threshold,
+                        member_count,
+                        members,
+                        total_value,
+                        transfers: transfer_overview_vec,
+                    },
+                ));
+            }
         }
         return Self::build_instructions_overview(details);
     }
     fn build_squads_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
-        if details
-            .iter()
-            .any(|d| matches!(d.kind, ProgramDetail::SquadsV4MultisigCreate(_)))
-        {
+        if details.iter().any(|d| {
+            matches!(
+                d.kind,
+                ProgramDetail::SquadsV4MultisigCreate(_)
+                    | ProgramDetail::SquadsV4MultisigCreateV2(_)
+            )
+        }) {
             return Self::build_squads_v4_multisig_overview(details);
         }
+
         if details.iter().any(|d| {
             matches!(
                 d.kind,

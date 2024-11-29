@@ -136,6 +136,7 @@ static uint32_t g_stellarSelectIndex[3] = {0};
 static uint32_t g_aptosSelectIndex[3] = {0};
 static uint32_t g_xrpSelectIndex[3] = {0};
 static uint32_t g_tiaChainSelectIndex[3] = {0};
+static uint32_t g_ntrnChainSelectIndex[3] = {0};
 static uint32_t g_dymChainSelectIndex[3] = {0};
 static uint32_t g_osmoChainSelectIndex[3] = {0};
 static uint32_t g_injChainSelectIndex[3] = {0};
@@ -951,6 +952,7 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
     g_aptosSelectIndex[index] = 0;
     g_xrpSelectIndex[index] = 0;
     g_tiaChainSelectIndex[index] = 0;
+    g_ntrnChainSelectIndex[index] = 0;
     g_dymChainSelectIndex[index] = 0;
     g_osmoChainSelectIndex[index] = 0;
     g_injChainSelectIndex[index] = 0;
@@ -993,6 +995,7 @@ void GuiResetAllStandardAddressIndex(void)
     memset_s(g_aptosSelectIndex, sizeof(g_aptosSelectIndex), 0, sizeof(g_aptosSelectIndex));
     memset_s(g_xrpSelectIndex, sizeof(g_xrpSelectIndex), 0, sizeof(g_xrpSelectIndex));
     memset_s(g_tiaChainSelectIndex, sizeof(g_tiaChainSelectIndex), 0, sizeof(g_tiaChainSelectIndex));
+    memset_s(g_ntrnChainSelectIndex, sizeof(g_ntrnChainSelectIndex), 0, sizeof(g_ntrnChainSelectIndex));
     memset_s(g_dymChainSelectIndex, sizeof(g_dymChainSelectIndex), 0, sizeof(g_dymChainSelectIndex));
     memset_s(g_osmoChainSelectIndex, sizeof(g_osmoChainSelectIndex), 0, sizeof(g_osmoChainSelectIndex));
     memset_s(g_injChainSelectIndex, sizeof(g_injChainSelectIndex), 0, sizeof(g_injChainSelectIndex));
@@ -1032,6 +1035,9 @@ static uint32_t* GetCosmosChainCurrentSelectIndex()
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TIA:
         return &g_tiaChainSelectIndex[GetCurrentAccountIndex()];
+        break;
+    case HOME_WALLET_CARD_NTRN:
+        return &g_ntrnChainSelectIndex[GetCurrentAccountIndex()];
         break;
     case HOME_WALLET_CARD_DYM:
         return &g_dymChainSelectIndex[GetCurrentAccountIndex()];

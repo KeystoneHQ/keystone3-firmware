@@ -41,6 +41,7 @@ typedef enum {
     CHAIN_STELLAR,
     CHAIN_COSMOS,
     CHAIN_TIA,
+    CHAIN_NTRN,
     CHAIN_DYM,
     CHAIN_OSMO,
     CHAIN_INJ,

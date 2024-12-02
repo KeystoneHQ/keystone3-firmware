@@ -210,7 +210,7 @@ impl ParsedCardanoTx {
         let parsed_inputs = Self::parse_inputs(&tx, &context, network_id)?;
         let parsed_outputs = Self::parse_outputs(&tx)?;
 
-        let fee = u64::from(&tx.body().fee());
+        let fee = u64::from(tx.body().fee());
 
         let total_output_amount = {
             let _v = parsed_outputs.iter().fold(0u64, |acc, cur| acc + cur.value);
@@ -318,11 +318,10 @@ impl ParsedCardanoTx {
     fn judge_network_id(tx: &Transaction) -> u8 {
         match tx.body().network_id() {
             None => {
-                let outputs = tx.body().outputs();
-                if (outputs.len() == 0) {
+                if tx.body().outputs().len() == 0 {
                     return 1;
                 }
-                match outputs.get(0).address().network_id() {
+                match tx.body().outputs().get(0).address().network_id() {
                     Ok(id) => id,
                     Err(_) => 1,
                 }
@@ -510,19 +509,33 @@ impl ParsedCardanoTx {
                     let fields = vec![
                         CertField {
                             label: LABEL_HOT_KEY.to_string(),
-                            value: _cert
-                                .committee_hot_credential()
-                                .to_scripthash()
-                                .unwrap()
-                                .to_string(),
+                            value: match _cert.committee_hot_credential().kind() {
+                                Ed25519KeyHash => _cert
+                                    .committee_hot_credential()
+                                    .to_keyhash()
+                                    .unwrap()
+                                    .to_string(),
+                                ScriptHash => _cert
+                                    .committee_hot_credential()
+                                    .to_scripthash()
+                                    .unwrap()
+                                    .to_string(),
+                            },
                         },
                         CertField {
                             label: LABEL_COLD_KEY.to_string(),
-                            value: _cert
-                                .committee_cold_credential()
-                                .to_scripthash()
-                                .unwrap()
-                                .to_string(),
+                            value: match _cert.committee_cold_credential().kind() {
+                                Ed25519KeyHash => _cert
+                                    .committee_cold_credential()
+                                    .to_keyhash()
+                                    .unwrap()
+                                    .to_string(),
+                                ScriptHash => _cert
+                                    .committee_cold_credential()
+                                    .to_scripthash()
+                                    .unwrap()
+                                    .to_string(),
+                            },
                         },
                     ];
                     certs.push(CardanoCertificate::new(
@@ -533,11 +546,18 @@ impl ParsedCardanoTx {
                 if let Some(_cert) = cert.as_committee_cold_resign() {
                     let mut fields = vec![CertField {
                         label: LABEL_COLD_KEY.to_string(),
-                        value: _cert
-                            .committee_cold_credential()
-                            .to_scripthash()
-                            .unwrap()
-                            .to_string(),
+                        value: match _cert.committee_cold_credential().kind() {
+                            Ed25519KeyHash => _cert
+                                .committee_cold_credential()
+                                .to_keyhash()
+                                .unwrap()
+                                .to_string(),
+                            ScriptHash => _cert
+                                .committee_cold_credential()
+                                .to_scripthash()
+                                .unwrap()
+                                .to_string(),
+                        },
                     }];
                     if let Some(anchor) = _cert.anchor() {
                         fields.push(CertField {
@@ -1022,7 +1042,7 @@ impl ParsedCardanoTx {
         network_id: u8,
     ) -> R<Vec<ParsedCardanoInput>> {
         let inputs_len = tx.body().inputs().len();
-        let mut parsed_inputs = vec![];
+        let mut parsed_inputs: Vec<ParsedCardanoInput> = vec![];
         for i in 0..inputs_len {
             let input = tx.body().inputs().get(i);
             let hash = input.transaction_id().to_hex();

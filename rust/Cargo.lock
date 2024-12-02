@@ -764,7 +764,7 @@ dependencies = [
 [[package]]
 name = "cardano-serialization-lib"
 version = "13.2.0"
-source = "git+https://git@github.com/KeystoneHQ/cardano-serialization-lib.git?tag=keystone-0.1.5#c368053f8459a7d5978fd47d068d240368d66932"
+source = "git+https://git@github.com/KeystoneHQ/cardano-serialization-lib.git?tag=keystone-0.1.6#584d9aff8548704b12bc78e78fbd6cdc0b5d1b8a"
 dependencies = [
  "bech32 0.9.1",
  "cbor_event",

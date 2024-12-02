@@ -1,3 +1,12 @@
+## 1.7.12(2024-12-03)
+
+### What's New
+
+1. Supported managing assets on Neutron App Chain in Cosmos
+
+### Bug Fixes
+
+1. Fixed device reboot issue after QR scanning with Backpack for Squads transactions
 
 ## 1.7.10(2024-11-18)
 

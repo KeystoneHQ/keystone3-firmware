@@ -18,7 +18,7 @@ int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void 
             return ERR_GUI_ERROR;
         }
         GuiTransactionDetailInit(viewType);
-        if (viewType == SuiSignMessageHash && GetEnableBlindSigning() == false) {
+        if (viewType == SuiSignMessageHash && viewType == CardanoSignTxHash && GetEnableBlindSigning() == false) {
             // if not enable blind signing, we show hintbox to notify user , this tx may be sensitive
             GuiCreateEnableBlindSigningHintbox();
         }

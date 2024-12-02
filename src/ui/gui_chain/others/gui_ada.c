@@ -650,9 +650,9 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()),false);
         } else {
-            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()),false);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);

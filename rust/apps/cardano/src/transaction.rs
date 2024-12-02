@@ -8,6 +8,7 @@ use cardano_serialization_lib::protocol_types::{Ed25519Signature, PublicKey, Vke
 use cryptoxide::hashing::blake2b_256;
 use ed25519_bip32_core::{XPrv, XPub};
 use hex;
+use ur_registry::crypto_key_path::CryptoKeyPath;
 
 pub fn parse_tx(tx: Vec<u8>, context: ParseContext) -> R<ParsedCardanoTx> {
     let cardano_tx = cardano_serialization_lib::protocol_types::FixedTransaction::from_bytes(tx)?;
@@ -48,6 +49,43 @@ pub fn sign_data(path: &String, payload: &str, icarus_master_key: XPrv) -> R<Sig
         pub_key,
         signed_data.to_bytes().to_vec(),
     ))
+}
+
+pub fn sign_tx_hash(
+    tx_hash: &String,
+    paths: &Vec<CryptoKeyPath>,
+    icarus_master_key: XPrv,
+) -> R<Vec<u8>> {
+    let tx_hash = hex::decode(tx_hash).unwrap();
+    let mut witness_set = cardano_serialization_lib::TransactionWitnessSet::new();
+    let mut vkeys = cardano_serialization_lib::Vkeywitnesses::new();
+    for path in paths {
+        match keystore::algorithms::ed25519::bip32_ed25519::derive_extended_pubkey_by_xprv(
+            &icarus_master_key,
+            &path.get_path().unwrap(),
+        )
+        .map(|v| v.public_key())
+        .map_err(|e| CardanoError::SigningFailed(e.to_string()))
+        {
+            Ok(pubkey) => {
+                let signature = keystore::algorithms::ed25519::bip32_ed25519::sign_message_by_xprv(
+                    &icarus_master_key,
+                    &tx_hash,
+                    &path.get_path().unwrap(),
+                )
+                .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
+                // construct vkeywitness
+                vkeys.add(&Vkeywitness::new(
+                    &Vkey::new(&PublicKey::from_bytes(&pubkey).unwrap()),
+                    &Ed25519Signature::from_bytes(signature.to_vec())
+                        .map_err(|e| CardanoError::SigningFailed(e.to_string()))?,
+                ));
+            }
+            Err(e) => return Err(e),
+        }
+    }
+    witness_set.set_vkeys(&vkeys);
+    Ok(witness_set.to_bytes())
 }
 
 pub fn sign_tx(tx: Vec<u8>, context: ParseContext, icarus_master_key: XPrv) -> R<Vec<u8>> {

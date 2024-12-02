@@ -230,17 +230,19 @@ UREncodeResult *GuiGetCoreWalletData(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    ExtendedPublicKey keys[1];
+    ExtendedPublicKey keys[2];
     public_keys->data = keys;
-    public_keys->size = 1;
+    public_keys->size = NUMBER_OF_ARRAYS(keys);
 
-    uint8_t count = 0;
     keys[0].path = "m/44'/60'/0'";
     keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
-    count++;
+    keys[1].path = "m/44'/9000'/0'/0/0";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
 
     g_urEncode = get_core_wallet_ur(mfp, sizeof(mfp), public_keys, "Keystone3");
-
+    if (g_urEncode->error_code == 0) {
+        printf("g_urEncode: %s\n", g_urEncode->data);
+    }
     CHECK_CHAIN_PRINT(g_urEncode);
     SRAM_FREE(public_keys);
     return g_urEncode;

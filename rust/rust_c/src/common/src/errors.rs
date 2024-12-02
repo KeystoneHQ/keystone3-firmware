@@ -4,6 +4,8 @@ use alloc::string::String;
 use app_aptos::errors::AptosError;
 #[cfg(feature = "multi-coins")]
 use app_arweave::errors::ArweaveError;
+#[cfg(feature = "multi-coins")]
+use app_avalanche::errors::AvaxError;
 use app_bitcoin::errors::BitcoinError;
 #[cfg(feature = "multi-coins")]
 use app_cardano::errors::CardanoError;
@@ -23,8 +25,6 @@ use app_sui::errors::SuiError;
 use app_ton::errors::TonError;
 #[cfg(feature = "multi-coins")]
 use app_tron::errors::TronError;
-#[cfg(feature = "multi-coins")]
-use app_avalanche::errors::AvaxError;
 #[cfg(feature = "multi-coins")]
 use app_xrp::errors::XRPError;
 use keystore::errors::KeystoreError;
@@ -460,7 +460,9 @@ impl From<&AvaxError> for ErrorCodes {
             AvaxError::GetKeyError(_) => Self::AvaxGetKeyError,
             AvaxError::UnsupportedTransaction(_) => Self::AvaxUnsupportedTransaction,
             AvaxError::UnsupportedNetwork(_) => Self::AvaxUnsupportedNetwork,
-            AvaxError::TransactionConsensusEncodeError(_) => Self::AvaxTransactionConsensusEncodeError,
+            AvaxError::TransactionConsensusEncodeError(_) => {
+                Self::AvaxTransactionConsensusEncodeError
+            }
             AvaxError::InvalidHex(_) => Self::AvaxInvalidHex,
             AvaxError::Bech32DecodeError(_) => Self::AvaxBech32DecodeError,
             AvaxError::KeystoreError(_) => Self::AvaxAddressError,

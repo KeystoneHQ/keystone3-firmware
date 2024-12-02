@@ -22,8 +22,8 @@ fn get_device_id(serial_number: &str) -> String {
     hex::encode(&sha256(&sha256(serial_number.as_bytes()))[0..20])
 }
 
-const ETH_STANDARD_PREFIX: &str = "m/44'/60'/0'";
-const ETH_LEDGER_LIVE_PREFIX: &str = "m/44'/60'"; //overlap with ETH_STANDARD at 0
+const AVAX_STANDARD_PREFIX: &str = "m/44'/60'/0'";
+const AVAX_X_P_PREFIX: &str = "m/44'/9000'/0'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
@@ -33,28 +33,23 @@ pub fn generate_crypto_multi_accounts(
     let mut keys = vec![];
     for ele in extended_public_keys {
         match ele.get_path() {
-            _path if _path.to_string().to_lowercase().eq(ETH_STANDARD_PREFIX) => {
+            _path if _path.to_string().to_lowercase().eq(AVAX_STANDARD_PREFIX) => {
                 keys.push(generate_k1_normal_key(
                     master_fingerprint,
                     ele.clone(),
                     Some("account.standard".to_string()),
-                )?);
-                keys.push(generate_eth_ledger_live_key(
-                    master_fingerprint,
-                    ele,
-                    Some("account.ledger_live".to_string()),
                 )?);
             }
             _path
                 if _path
                     .to_string()
                     .to_lowercase()
-                    .starts_with(ETH_LEDGER_LIVE_PREFIX) =>
+                    .starts_with(AVAX_X_P_PREFIX) =>
             {
-                keys.push(generate_eth_ledger_live_key(
+                keys.push(generate_k1_normal_key(
                     master_fingerprint,
                     ele,
-                    Some("account.ledger_live".to_string()),
+                    Some("account.x&p".to_string()),
                 )?);
             }
             _ => {

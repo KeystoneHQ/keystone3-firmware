@@ -8,9 +8,6 @@ use bech32::{self, Bech32};
 use bitcoin::bip32::{ChildNumber, Xpub};
 use core::str::FromStr;
 
-extern crate std;
-use std::println;
-
 pub fn get_address(network: Network, extended_pub_key: &String) -> Result<String> {
     let mut prefix = "avax";
     match network {

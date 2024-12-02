@@ -44,7 +44,7 @@ pub extern "C" fn get_core_wallet_ur(
                         Ok(_v) => UREncodeResult::encode(
                             _v,
                             CryptoMultiAccounts::get_registry_type().get_type(),
-                            500.clone(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
                         )
                         .c_ptr(),
                         Err(_e) => UREncodeResult::from(_e).c_ptr(),

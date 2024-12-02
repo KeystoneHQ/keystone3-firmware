@@ -53,8 +53,8 @@ mod tests {
 
     use super::*;
     extern crate std;
-    use std::println;
     use core::str::FromStr;
+    use std::println;
 
     #[test]
     fn test_generate_address() {
@@ -82,16 +82,16 @@ mod tests {
     fn get_avax_address(public_key: &PublicKey) -> String {
         // 初始化 secp256k1
         // let secp = Secp256k1::new();
-        
+
         // 从私钥生成公钥
         // let secret_key = SecretKey::from_slice(private_key).unwrap();
         // let public_key = PublicKey::from_secret_key(&secp, &secret_key);
         // println!("public_key11 = {:?}", public_key);
-        
+
         // 序列化公钥并去掉第一个字节
         // let pub_key_bytes = public_key.serialize_uncompressed();
         // let pub_key_without_prefix = &pub_key_bytes[1..];
-        
+
         // 计算 Keccak-256 哈希
         // let mut keccak = Keccak::v256();
         // let mut hash = [0u8; 32];
@@ -99,10 +99,10 @@ mod tests {
         // keccak.finalize(&mut hash);
         let hash: [u8; 32] = keccak256(&public_key.serialize_uncompressed()[1..]);
         println!("hash = {}", hex::encode(hash));
-        
+
         // 取最后20字节作为地址
         let address = &hash[12..];
-        
+
         // 转换为16进制并添加0x前缀
         format!("0x{}", hex::encode(address))
     }
@@ -110,8 +110,9 @@ mod tests {
     #[test]
     fn test_avax_address() {
         let pubkey = PublicKey::from_str(
-            "02f01fe98afe9db6a160ec7fd57d4de1dcf9848c97307c4e4babc29ee34074a606"
-        ).unwrap();
+            "02f01fe98afe9db6a160ec7fd57d4de1dcf9848c97307c4e4babc29ee34074a606",
+        )
+        .unwrap();
         println!("{}", pubkey);
         // let address = get_avax_address(&pubkey);
         // println!("address = {}", address);
@@ -120,4 +121,3 @@ mod tests {
         assert_eq!(2, 1);
     }
 }
- 

@@ -8,6 +8,7 @@
 
 1. Fixed device reboot issue after QR scanning with Backpack for Squads transactions
 
+
 ## 1.7.10(2024-11-18)
 
 

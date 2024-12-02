@@ -230,7 +230,7 @@ LV_IMG_DECLARE(coinSats);
 LV_IMG_DECLARE(coinXlm);
 LV_IMG_DECLARE(coinRune);
 LV_IMG_DECLARE(coinHelium);
-
+LV_IMG_DECLARE(coinNtrn);
 // wallet
 LV_IMG_DECLARE(walletKeystone);
 LV_IMG_DECLARE(walletMetamask);

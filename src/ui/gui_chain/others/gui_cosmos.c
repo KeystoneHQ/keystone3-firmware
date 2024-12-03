@@ -20,6 +20,7 @@ static char g_cosmosAddr[MAX_COSMOS_ADDR_LEN];
 static char g_hdPath[26];
 static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_TIA, "celestia", 118, XPUB_TYPE_COSMOS, "celestia"},
+    {CHAIN_NTRN, "neutron", 118, XPUB_TYPE_COSMOS, "neutron-1"},
     {CHAIN_DYM, "dym", 118, XPUB_TYPE_ETH_BIP44_STANDARD, "dymension_1100-1"},
     {CHAIN_ATOM, "cosmos", 118, XPUB_TYPE_COSMOS, "cosmoshub-4"},
     {CHAIN_OSMO, "osmo", 118, XPUB_TYPE_COSMOS, "osmosis-1"},

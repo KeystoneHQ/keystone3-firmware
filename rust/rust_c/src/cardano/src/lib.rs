@@ -2,8 +2,11 @@
 
 extern crate alloc;
 
-use alloc::string::{String, ToString};
 use alloc::{format, slice};
+use alloc::{
+    string::{String, ToString},
+    vec,
+};
 
 use alloc::vec::Vec;
 use app_cardano::address::derive_xpub_from_xpub;
@@ -16,6 +19,7 @@ use core::str::FromStr;
 use cty::c_char;
 use ed25519_bip32_core::XPrv;
 use hex;
+use structs::DisplayCardanoSignTxHash;
 
 use ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
 use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
@@ -195,6 +199,43 @@ pub extern "C" fn cardano_check_tx(
         },
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
     }
+}
+#[no_mangle]
+pub extern "C" fn cardano_check_tx_hash(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+) -> PtrT<TransactionCheckResult> {
+    let cardano_sign_tx_hash_reqeust = extract_ptr_with_type!(ptr, CardanoSignTxHashRequest);
+    let expected_mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    // check mfp
+    let paths = cardano_sign_tx_hash_reqeust.get_paths();
+    for path in paths {
+        let mfp = path.get_source_fingerprint();
+        if let Some(mfp) = mfp {
+            if hex::encode(mfp) != hex::encode(expected_mfp) {
+                return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+            }
+        }
+    }
+    TransactionCheckResult::new().c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_parse_sign_tx_hash(
+    ptr: PtrUR,
+) -> PtrT<TransactionParseResult<DisplayCardanoSignTxHash>> {
+    let sign_hash_request = extract_ptr_with_type!(ptr, CardanoSignTxHashRequest);
+    let message = sign_hash_request.get_tx_hash();
+    let crypto_key_paths = sign_hash_request.get_paths();
+    let paths = crypto_key_paths
+        .iter()
+        .map(|v| v.get_path())
+        .collect::<Option<Vec<String>>>()
+        .unwrap_or(vec![]);
+    let address_list = sign_hash_request.get_address_list();
+    let network = "Cardano".to_string();
+    let result = DisplayCardanoSignTxHash::new(network, paths, message, address_list);
+    TransactionParseResult::success(result.c_ptr()).c_ptr()
 }
 
 #[no_mangle]

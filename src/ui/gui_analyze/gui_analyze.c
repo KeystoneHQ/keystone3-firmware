@@ -149,7 +149,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
 #ifndef COMPILE_SIMULATOR
         "{\"name\":\"ada_sign_tx_hash_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashDetails\"}]}]}",
 #else
-        PC_SIMULATOR_PATH "/page_sign_hash.json",
+        PC_SIMULATOR_PATH "/page_sign_ada_tx_hash.json",
 #endif
         GuiGetAdaSignTxHashData,
         NULL,
@@ -1353,6 +1353,10 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSuiSignMessageHashOverview;
     } else if (!strcmp(funcName, "GuiShowSuiSignMessageHashDetails")) {
         return GuiShowSuiSignMessageHashDetails;
+    } else if (!strcmp(funcName, "GuiShowAdaSignTxHashOverview")) {
+        return GuiShowAdaSignTxHashOverview;
+    } else if (!strcmp(funcName, "GuiShowAdaSignTxHashDetails")) {
+        return GuiShowAdaSignTxHashDetails;
     }
 #endif
     return NULL;

@@ -4,6 +4,7 @@ pub mod transferable;
 pub mod tx_header;
 pub mod type_id;
 pub mod import;
+pub mod export;
 pub mod structs;
 
 pub mod inputs {

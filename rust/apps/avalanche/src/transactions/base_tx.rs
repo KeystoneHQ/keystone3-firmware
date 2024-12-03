@@ -90,7 +90,6 @@ impl TryFrom<Bytes> for BaseTx {
             .collect::<Result<Vec<TransferableOutput>>>()?;
 
         let input_len = bytes.get_u32();
-        println!("input_len = {:?}", input_len);
         let mut input_bytes = bytes.clone();
         let inputs: Vec<TransferableInput> = (0..input_len)
             .map(|_| {

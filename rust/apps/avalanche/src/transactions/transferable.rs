@@ -234,7 +234,32 @@ mod tests {
                 let result = TransferableInput::try_from(bytes.clone());
                 match result {
                     Ok(_) => {
-                        todo!()
+                    }
+                    Err(e) => match e {
+                        AvaxError::InvalidHex(msg) => {
+                            assert_eq!(
+                                msg, "Unsupported output type found in input bytes.",
+                                "Unexpected error message"
+                            );
+                        }
+                        _ => {}
+                    },
+                }
+            }
+        }
+
+        // x-chain import transferin
+        {
+            let input_bytes = "00000001dcf4ca85474e87a743ec8feb54836d2b403b36c7c738c3e2498fdd346dac4774000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000000bebc20000000001000000000000000100000009000000013494447c558e20adc5a9985a7acf9ed5b7ff12011406af213db033bb2b2271504c8224787b352e19db896d3350321487c08dba13c973009aaf682183b0d5f99f00f10c7fe4";
+            let mut bytes =
+                Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
+            let input_len = bytes.get_u32();
+            println!("Input len: {}", input_len);
+            for _ in 0..input_len {
+                let result = TransferableInput::try_from(bytes.clone());
+                match result {
+                    Ok(_) => {
+                        println!("{:?}", result);
                     }
                     Err(e) => match e {
                         AvaxError::InvalidHex(msg) => {

@@ -12,6 +12,7 @@ pub enum TypeId {
     Secp256k1Credential = 0x00000009,
     NftMintOperation = 0x0000000C,
     NftTransferOperation = 0x0000000D,
+    PchainExportTx = 0x00000012,
 }
 
 impl TryFrom<u32> for TypeId {
@@ -30,6 +31,7 @@ impl TryFrom<u32> for TypeId {
             0x0000_0009 => Ok(TypeId::Secp256k1Credential),
             0x0000_000C => Ok(TypeId::NftMintOperation),
             0x0000_000D => Ok(TypeId::NftTransferOperation),
+            0x0000_0012 => Ok(TypeId::PchainExportTx),
             _ => Err(AvaxError::UnknownTypeId(value)),
         }
     }

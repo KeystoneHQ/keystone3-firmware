@@ -29,6 +29,10 @@ impl InputTrait for SECP256K1TransferInput {
             println!("  Addresses: ");
         }
     }
+
+    fn get_transfer_input_len(&self) -> usize {
+        16 + self.addresses_len as usize * 4
+    }
 }
 
 impl TryFrom<Bytes> for SECP256K1TransferInput {

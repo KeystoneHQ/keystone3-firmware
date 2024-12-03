@@ -44,6 +44,10 @@ impl OutputTrait for SECP256K1TransferOutput {
     fn get_addresses_len(&self) -> u32 {
         self.addresses_len
     }
+
+    fn get_transfer_output_len(&self) -> usize {
+        28 + self.addresses_len as usize * 20
+    }
 }
 
 impl TryFrom<Bytes> for SECP256K1TransferOutput {

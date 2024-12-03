@@ -1,8 +1,10 @@
 use crate::errors::{AvaxError, Result};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TypeId {
     BaseTx = 0,
+    CchainExportTx = 0x0000_0001,
+    XchainImportTx = 0x0000_0003,
     Secp256k1TransferInput = 0x0000_0005,
     Secp256k1MintOutput = 0x0000_0006,
     Secp256k1TransferOutput = 0x0000_0007,
@@ -19,6 +21,8 @@ impl TryFrom<u32> for TypeId {
         match value {
             // the code and documentation are not fully consistent.
             0 | 0x0000_0022 => Ok(TypeId::BaseTx),
+            0x0000_0001 => Ok(TypeId::CchainExportTx),
+            0x0000_0003 => Ok(TypeId::XchainImportTx),
             0x0000_0005 => Ok(TypeId::Secp256k1TransferInput),
             0x0000_0006 => Ok(TypeId::Secp256k1MintOutput),
             0x0000_0007 => Ok(TypeId::Secp256k1TransferOutput),

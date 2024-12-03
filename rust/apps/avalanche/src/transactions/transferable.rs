@@ -10,6 +10,7 @@ use alloc::{
     vec::Vec,
 };
 use bytes::{Buf, BufMut, Bytes, BytesMut};
+use core::clone;
 use core::{convert::TryFrom, fmt};
 pub const TX_ID_LEN: usize = 32;
 pub type TxId = [u8; TX_ID_LEN];
@@ -17,7 +18,7 @@ pub type TxId = [u8; TX_ID_LEN];
 extern crate std;
 use std::println;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum OutputType {
     SECP256K1(SECP256K1TransferOutput),
     //todo other output types
@@ -44,6 +45,13 @@ impl OutputTrait for OutputType {
             // OutputType::Other(output) => output.display(),
         }
     }
+
+    fn get_transfer_output_len(&self) -> usize {
+        match self {
+            OutputType::SECP256K1(output) => output.get_transfer_output_len(),
+            // OutputType::Other(output) => output.get_transfer_output_len(),
+        }
+    }
 }
 
 impl TryFrom<Bytes> for OutputType {
@@ -52,9 +60,16 @@ impl TryFrom<Bytes> for OutputType {
     fn try_from(bytes: Bytes) -> Result<Self> {
         let mut type_bytes = bytes.clone();
         let type_id = type_bytes.get_u32();
+        println!("type id = {:?}", type_id);
         match TypeId::try_from(type_id)? {
+            TypeId::CchainExportTx => {
+                todo!()
+            }
             TypeId::Secp256k1TransferOutput => {
                 SECP256K1TransferOutput::try_from(bytes).map(OutputType::SECP256K1)
+            }
+            TypeId::XchainImportTx => {
+                todo!()
             }
             _ => {
                 return Err(AvaxError::InvalidHex(
@@ -69,9 +84,10 @@ pub trait OutputTrait {
     fn display(&self);
     fn get_addresses(&self) -> Vec<[u8; 20]>;
     fn get_addresses_len(&self) -> u32;
+    fn get_transfer_output_len(&self) -> usize;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TransferableOutput {
     asset_id: AssetId,
     pub output: OutputType,
@@ -84,6 +100,10 @@ impl TransferableOutput {
 
     pub fn addresses_len(&self) -> u32 {
         self.output.get_addresses_len()
+    }
+
+    pub fn parsed_size(&self) -> usize {
+        self.output.get_transfer_output_len() + ASSET_ID_LEN as usize
     }
 }
 
@@ -102,9 +122,10 @@ impl TryFrom<Bytes> for TransferableOutput {
 pub trait InputTrait {
     fn display(&self);
     // fn get_addresses(&self) -> Vec<[u8; 20]>;
+    fn get_transfer_input_len(&self) -> usize;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TransferableInput {
     pub tx_id: TxId,
     pub utxo_index: u32,
@@ -130,7 +151,13 @@ impl TryFrom<Bytes> for TransferableInput {
     }
 }
 
-#[derive(Debug)]
+impl TransferableInput {
+    pub fn parsed_size(&self) -> usize {
+        self.input.get_transfer_input_len() + TX_ID_LEN as usize + ASSET_ID_LEN as usize + 4
+    }
+}
+
+#[derive(Debug, Clone)]
 enum InputType {
     SECP256K1(SECP256K1TransferInput),
     //todo other input types
@@ -166,7 +193,12 @@ impl InputTrait for InputType {
     fn display(&self) {
         match self {
             InputType::SECP256K1(input) => input.display(),
-            // OutputType::Other(output) => output.display(),
+        }
+    }
+
+    fn get_transfer_input_len(&self) -> usize {
+        match self {
+            InputType::SECP256K1(input) => input.get_transfer_input_len(),
         }
     }
 }
@@ -187,18 +219,6 @@ mod tests {
             println!("result id = {:?}", result.asset_id());
         }
         assert!(false);
-        // match result {
-        //     Ok(_) => panic!("Expected an error, but got Ok"),
-        //     Err(e) => match e {
-        //         AvaxError::InvalidHex(msg) => {
-        //             assert_eq!(
-        //                 msg, "Unsupported output type found in input bytes.",
-        //                 "Unexpected error message"
-        //             );
-        //         }
-        //         _ => {}
-        //     },
-        // }
     }
 
     #[test]

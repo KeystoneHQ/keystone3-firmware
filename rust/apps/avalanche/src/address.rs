@@ -60,5 +60,16 @@ mod tests {
                 assert_eq!(msg, "invalid xpub path");
             }
         }
+        {
+            let prefix = "fuji";
+            let data = [
+                9, 105, 234, 98, 226, 187, 48, 230, 109, 130, 232, 47, 226, 103, 237, 246, 135, 30,
+                165, 247,
+            ];
+            assert_eq!(
+                "fuji1p9575chzhvcwvmvzaqh7yeld76r3af0h3x77mq",
+                bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked(prefix), &data).unwrap()
+            );
+        }
     }
 }

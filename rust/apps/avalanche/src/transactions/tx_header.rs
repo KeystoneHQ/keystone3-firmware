@@ -4,10 +4,9 @@ use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
 
 pub const BLOCKCHAIN_ID_LEN: usize = 32;
-#[derive(Clone, Debug)]
-pub struct BlockChainId(Bytes);
+pub type BlockChainId = [u8; BLOCKCHAIN_ID_LEN];
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Header {
     pub network_id: u32,
     pub blockchain_id: BlockChainId,
@@ -21,21 +20,21 @@ impl Header {
     pub fn get_blockchain_id(&self) -> BlockChainId {
         self.blockchain_id.clone()
     }
+
+    pub fn parsed_size(&self) -> usize {
+        4 + BLOCKCHAIN_ID_LEN
+    }
 }
 
 impl TryFrom<Bytes> for Header {
     type Error = AvaxError;
 
     fn try_from(mut bytes: Bytes) -> Result<Self> {
-        if bytes.len() != BLOCKCHAIN_ID_LEN + 4 {
-            return Err(AvaxError::InvalidHex(
-                "Invalid length for AssetId".to_string(),
-            ));
-        }
-
         Ok(Header {
             network_id: bytes.get_u32(),
-            blockchain_id: BlockChainId(bytes),
+            blockchain_id: bytes[..32]
+                .try_into()
+                .map_err(|_| AvaxError::InvalidHex(format!("error data to blockchain_id")))?,
         })
     }
 }

@@ -12,11 +12,6 @@ impl TryFrom<Bytes> for AssetId {
     type Error = AvaxError;
 
     fn try_from(bytes: Bytes) -> Result<Self, Self::Error> {
-        if bytes.len() != ASSET_ID_LEN {
-            return Err(AvaxError::InvalidHex(
-                "Invalid length for AssetId".to_string(),
-            ));
-        }
         Ok(AssetId(bytes))
     }
 }

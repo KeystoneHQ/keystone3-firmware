@@ -1,11 +1,69 @@
-// extern crate alloc;
-use alloc::vec::Vec;
-use core::{fmt, str::FromStr};
-use super::asset_id::AssetId;
-use super::outputs::secp256k1_transfer;
+use super::asset_id::{AssetId, ASSET_ID_LEN};
+use super::inputs::secp256k1_transfer_input::SECP256K1TransferInput;
+use super::outputs::secp256k1_transfer_output::SECP256K1TransferOutput;
+use super::type_id::TypeId;
 
+use crate::errors::{AvaxError, Result};
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec::Vec,
+};
+use bytes::{Buf, BufMut, Bytes, BytesMut};
+use core::{convert::TryFrom, fmt};
 pub const TX_ID_LEN: usize = 32;
 pub type TxId = [u8; TX_ID_LEN];
+
+extern crate std;
+use std::println;
+
+#[derive(Debug)]
+enum OutputType {
+    SECP256K1(SECP256K1TransferOutput),
+    //todo other output types
+}
+
+impl OutputTrait for OutputType {
+    fn get_addresses_len(&self) -> u32 {
+        match self {
+            OutputType::SECP256K1(output) => output.get_addresses_len(),
+            // OutputType::Other(output) => output.get_addresses_len(),
+        }
+    }
+
+    fn get_addresses(&self) -> Vec<[u8; 20]> {
+        match self {
+            OutputType::SECP256K1(output) => output.get_addresses(),
+            // OutputType::Other(output) => output.get_addresses(),
+        }
+    }
+
+    fn display(&self) {
+        match self {
+            OutputType::SECP256K1(output) => output.display(),
+            // OutputType::Other(output) => output.display(),
+        }
+    }
+}
+
+impl TryFrom<Bytes> for OutputType {
+    type Error = AvaxError;
+
+    fn try_from(bytes: Bytes) -> Result<Self> {
+        let mut type_bytes = bytes.clone();
+        let type_id = type_bytes.get_u32();
+        match TypeId::try_from(type_id)? {
+            TypeId::Secp256k1TransferOutput => {
+                SECP256K1TransferOutput::try_from(bytes).map(OutputType::SECP256K1)
+            }
+            _ => {
+                return Err(AvaxError::InvalidHex(
+                    "Unsupported output type found in input bytes.".to_string(),
+                ))
+            }
+        }
+    }
+}
 
 pub trait OutputTrait {
     fn display(&self);
@@ -13,101 +71,163 @@ pub trait OutputTrait {
     fn get_addresses_len(&self) -> u32;
 }
 
-pub struct Output<T>
-where
-    T: OutputTrait + FromStr,
-{
-    pub output_type: T,
+#[derive(Debug)]
+pub struct TransferableOutput {
+    asset_id: AssetId,
+    pub output: OutputType,
 }
 
-impl<T> Output<T>
-where
-    T: OutputTrait + FromStr,
-{
-    pub fn new(output_type: T) -> Self {
-        Output { output_type }
+impl TransferableOutput {
+    pub fn asset_id(&self) -> AssetId {
+        self.asset_id.clone()
     }
 
-    pub fn display(&self) {
-        self.output_type.display();
+    pub fn addresses_len(&self) -> u32 {
+        self.output.get_addresses_len()
     }
 }
 
-// impl<T> fmt::Display for Output<T>
-// where
-//     T: OutputTrait + fmt::Display,
-// {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, "{}", self.output_type)
-//     }
-// }
+impl TryFrom<Bytes> for TransferableOutput {
+    type Error = AvaxError;
+
+    fn try_from(mut bytes: Bytes) -> Result<Self> {
+        let asset_id = AssetId::try_from(bytes.split_to(ASSET_ID_LEN))?;
+        Ok(TransferableOutput {
+            asset_id,
+            output: OutputType::try_from(bytes)?,
+        })
+    }
+}
 
 pub trait InputTrait {
     fn display(&self);
-    fn get_addresses(&self) -> Vec<[u8; 20]>;
+    // fn get_addresses(&self) -> Vec<[u8; 20]>;
 }
 
-pub struct TransferableInput<T>
-where
-    T: InputTrait,
-{
+#[derive(Debug)]
+pub struct TransferableInput {
     pub tx_id: TxId,
     pub utxo_index: u32,
     pub asset_id: AssetId,
-    pub input: T,
+    pub input: InputType,
 }
 
-impl<T> TransferableInput<T>
-where
-    T: InputTrait,
-{
-    pub fn new(tx_id: TxId, utxo_index: u32, asset_id: AssetId, input: T) -> Self {
-        TransferableInput {
+impl TryFrom<Bytes> for TransferableInput {
+    type Error = AvaxError;
+
+    fn try_from(mut bytes: Bytes) -> Result<Self> {
+        let tx_id: [u8; TX_ID_LEN] = bytes.split_to(TX_ID_LEN)[..]
+            .try_into()
+            .map_err(|_| AvaxError::InvalidHex(format!("error data to tx_id")))?;
+        let utxo_index = bytes.get_u32();
+        let asset_id = AssetId::try_from(bytes.split_to(ASSET_ID_LEN))?;
+        Ok(TransferableInput {
             tx_id,
             utxo_index,
             asset_id,
-            input,
+            input: InputType::try_from(bytes)?,
+        })
+    }
+}
+
+#[derive(Debug)]
+enum InputType {
+    SECP256K1(SECP256K1TransferInput),
+    //todo other input types
+}
+
+impl TryFrom<Bytes> for InputType {
+    type Error = AvaxError;
+
+    fn try_from(mut bytes: Bytes) -> Result<Self> {
+        let mut type_bytes = bytes.clone();
+        let type_id = type_bytes.get_u32();
+        match TypeId::try_from(type_id)? {
+            TypeId::Secp256k1TransferInput => Ok(InputType::SECP256K1(
+                SECP256K1TransferInput::try_from(bytes)?,
+            )),
+            _ => {
+                return Err(AvaxError::InvalidHex(
+                    "Unsupported output type found in input bytes.".to_string(),
+                ))
+            }
         }
     }
-
-    pub fn display(&self) {
-        self.input.display();
-    }
 }
 
-impl<T> fmt::Display for TransferableInput<T>
-where
-    T: InputTrait + fmt::Display,
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "TxID: {:?}\nUTXO Index: {}\nAssetID: {:?}\nInput: {}",
-            self.tx_id, self.utxo_index, self.asset_id, self.input
-        )
-    }
-}
+impl InputTrait for InputType {
+    // fn get_addresses(&self) -> Vec<[u8; 20]> {
+    //     match self {
+    //         InputType::SECP256K1(input) => input.get_addresses(),
+    //         // OutputType::Other(output) => output.get_addresses(),
+    //     }
+    // }
 
-pub struct SECP256K1Input {
-    pub amount: u64,
-    pub addresses: Vec<[u8; 20]>,
-}
-
-impl InputTrait for SECP256K1Input {
     fn display(&self) {
-    }
-
-    fn get_addresses(&self) -> Vec<[u8; 20]> {
-        self.addresses.clone()
+        match self {
+            InputType::SECP256K1(input) => input.display(),
+            // OutputType::Other(output) => output.display(),
+        }
     }
 }
 
-impl fmt::Display for SECP256K1Input {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "SECP256K1 Input: amount = {}, addresses = {:?}",
-            self.amount, self.addresses
-        )
+mod tests {
+    use super::*;
+    extern crate std;
+    use std::println;
+
+    #[test]
+    fn test_transferable_output() {
+        let input_bytes = "000000023d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000005f5e100000000000000000000000001000000018771921301d5bffff592dae86695a615bdb4a4413d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000017c771d2000000000000000000000001000000010969ea62e2bb30e66d82e82fe267edf6871ea5f7";
+        let binary_data = hex::decode(input_bytes).expect("Failed to decode hex string");
+        let mut bytes = Bytes::from(binary_data);
+        let output_len = bytes.get_u32();
+        for _ in 0..output_len {
+            let result = TransferableOutput::try_from(bytes.clone()).unwrap();
+            println!("result id = {:?}", result.asset_id());
+        }
+        assert!(false);
+        // match result {
+        //     Ok(_) => panic!("Expected an error, but got Ok"),
+        //     Err(e) => match e {
+        //         AvaxError::InvalidHex(msg) => {
+        //             assert_eq!(
+        //                 msg, "Unsupported output type found in input bytes.",
+        //                 "Unexpected error message"
+        //             );
+        //         }
+        //         _ => {}
+        //     },
+        // }
+    }
+
+    #[test]
+    fn test_transferable_intput() {
+        // secp256k1 transfer intput
+        {
+            let input_bytes = "0000000157d5e23e2e1f460b618bba1b55913ff3ceb315f0d1acc41fe6408edc4de9facd000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000001dbd670d0000000100000000";
+            let mut bytes =
+                Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
+            let input_len = bytes.get_u32();
+            println!("Input len: {}", input_len);
+            for _ in 0..input_len {
+                let result = TransferableInput::try_from(bytes.clone());
+                match result {
+                    Ok(_) => {
+                        todo!()
+                    }
+                    Err(e) => match e {
+                        AvaxError::InvalidHex(msg) => {
+                            assert_eq!(
+                                msg, "Unsupported output type found in input bytes.",
+                                "Unexpected error message"
+                            );
+                        }
+                        _ => {}
+                    },
+                }
+            }
+            assert!(false);
+        }
     }
 }

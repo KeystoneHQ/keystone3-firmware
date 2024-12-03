@@ -46,6 +46,9 @@ pub enum AvaxError {
     
     #[error("derive public key error: {0}")]
     DerivePublicKeyError(String),
+
+    #[error("unknown type id: {0}")]
+    UnknownTypeId(u32),
 }
 
 impl From<io::Error> for AvaxError {

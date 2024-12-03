@@ -121,6 +121,7 @@ dependencies = [
  "base64 0.11.0",
  "bech32 0.10.0-beta",
  "bitcoin",
+ "bytes",
  "core2",
  "cryptoxide",
  "either",

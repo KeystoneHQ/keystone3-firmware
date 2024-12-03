@@ -1,0 +1,32 @@
+use crate::errors::{AvaxError, Result};
+
+#[derive(Debug, Copy, Clone)]
+pub enum TypeId {
+    BaseTx = 0,
+    Secp256k1TransferInput = 0x0000_0005,
+    Secp256k1MintOutput = 0x0000_0006,
+    Secp256k1TransferOutput = 0x0000_0007,
+    Secp256k1MintOperation = 0x0000_0008,
+    Secp256k1Credential = 0x00000009,
+    NftMintOperation = 0x0000000C,
+    NftTransferOperation = 0x0000000D,
+}
+
+impl TryFrom<u32> for TypeId {
+    type Error = AvaxError;
+
+    fn try_from(value: u32) -> Result<Self> {
+        match value {
+            // the code and documentation are not fully consistent.
+            0 | 0x0000_0022 => Ok(TypeId::BaseTx),
+            0x0000_0005 => Ok(TypeId::Secp256k1TransferInput),
+            0x0000_0006 => Ok(TypeId::Secp256k1MintOutput),
+            0x0000_0007 => Ok(TypeId::Secp256k1TransferOutput),
+            0x0000_0008 => Ok(TypeId::Secp256k1MintOperation),
+            0x0000_0009 => Ok(TypeId::Secp256k1Credential),
+            0x0000_000C => Ok(TypeId::NftMintOperation),
+            0x0000_000D => Ok(TypeId::NftTransferOperation),
+            _ => Err(AvaxError::UnknownTypeId(value)),
+        }
+    }
+}

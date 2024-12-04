@@ -397,15 +397,15 @@ UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index)
 
 UREncodeResult *GuiGetLeapData()
 {
+    #define CHAIN_AMOUNT 4
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_KeplrAccount publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_KeplrAccount));
-    const uint8_t CHAIN_AMOUNT = 4;
     GuiChainCoinType chains[CHAIN_AMOUNT] = {
         CHAIN_ATOM,
         CHAIN_EVMOS,
         CHAIN_RUNE,
-        CHAIN_SCRT,
+        CHAIN_SCRT
     };
     KeplrAccount keys[CHAIN_AMOUNT];
     publicKeys->data = keys;

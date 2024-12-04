@@ -1,16 +1,15 @@
 use super::asset_id::{AssetId, ASSET_ID_LEN};
 use super::inputs::secp256k1_transfer_input::SECP256K1TransferInput;
 use super::outputs::secp256k1_transfer_output::SECP256K1TransferOutput;
+use super::structs::ParsedSizeAble;
 use super::type_id::TypeId;
-
 use crate::errors::{AvaxError, Result};
 use alloc::{
     format,
-    string::{String, ToString},
+    string::{ToString},
     vec::Vec,
 };
-use bytes::{Buf, BufMut, Bytes, BytesMut};
-use core::clone;
+use bytes::{Buf, Bytes};
 use core::{convert::TryFrom, fmt};
 pub const TX_ID_LEN: usize = 32;
 pub type TxId = [u8; TX_ID_LEN];
@@ -101,8 +100,10 @@ impl TransferableOutput {
     pub fn addresses_len(&self) -> u32 {
         self.output.get_addresses_len()
     }
+}
 
-    pub fn parsed_size(&self) -> usize {
+impl ParsedSizeAble for TransferableOutput {
+    fn parsed_size(&self) -> usize {
         self.output.get_transfer_output_len() + ASSET_ID_LEN as usize
     }
 }
@@ -151,8 +152,8 @@ impl TryFrom<Bytes> for TransferableInput {
     }
 }
 
-impl TransferableInput {
-    pub fn parsed_size(&self) -> usize {
+impl ParsedSizeAble for TransferableInput {
+    fn parsed_size(&self) -> usize {
         self.input.get_transfer_input_len() + TX_ID_LEN as usize + ASSET_ID_LEN as usize + 4
     }
 }
@@ -233,8 +234,7 @@ mod tests {
             for _ in 0..input_len {
                 let result = TransferableInput::try_from(bytes.clone());
                 match result {
-                    Ok(_) => {
-                    }
+                    Ok(_) => {}
                     Err(e) => match e {
                         AvaxError::InvalidHex(msg) => {
                             assert_eq!(

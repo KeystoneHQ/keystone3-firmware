@@ -33,6 +33,10 @@ use crate::errors::{AvaxError, Result};
 // use crate::transactions::tx_checker::TxChecker;
 
 pub mod errors;
+pub mod constants;
+pub mod encode {
+    pub mod cb58;
+}
 mod ripple_keypair;
 mod address;
 pub mod network;

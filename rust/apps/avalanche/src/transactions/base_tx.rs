@@ -1,8 +1,9 @@
 use super::transferable::{TransferableInput, TransferableOutput};
-use super::tx_header::{Header, BLOCKCHAIN_ID_LEN};
+use super::tx_header::Header;
 use super::type_id::TypeId;
-use super::structs::LengthPrefixedVec;
+use super::structs::{LengthPrefixedVec, ParsedSizeAble};
 use crate::errors::{AvaxError, Result};
+use crate::constants::*;
 use alloc::{
     format,
     string::{String, ToString},
@@ -93,16 +94,18 @@ impl TryFrom<Bytes> for BaseTx {
         let mut input_bytes = bytes.clone();
         let inputs: Vec<TransferableInput> = (0..input_len)
             .map(|_| {
-                let output = TransferableInput::try_from(input_bytes.clone())?;
-                input_bytes.advance(output.parsed_size());
-                bytes.advance(output.parsed_size());
-                Ok(output)
+                let inputs = TransferableInput::try_from(input_bytes.clone())?;
+                println!("inputs.parsed_size() = {:?}", inputs.parsed_size());
+                input_bytes.advance(inputs.parsed_size());
+                bytes.advance(inputs.parsed_size());
+                Ok(inputs)
             })
             .collect::<Result<Vec<TransferableInput>>>()?;
 
         let memo_len = bytes.get_u32();
         let memo = bytes.split_to(memo_len as usize).to_vec();
         let tx_size = initial_len - bytes.len();
+        println!("tx_size = {:?}", tx_size);
 
         Ok(BaseTx {
             codec_id,

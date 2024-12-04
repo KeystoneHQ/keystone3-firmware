@@ -1,6 +1,7 @@
-use super::super::tx_header::{Header, BLOCKCHAIN_ID_LEN};
-use super::super::type_id::TypeId;
+use crate::transactions::tx_header::Header;
+use crate::transactions::type_id::TypeId;
 use crate::errors::{AvaxError, Result};
+use crate::constants::*;
 use alloc::{
     format,
     string::{String, ToString},

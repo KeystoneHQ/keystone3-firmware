@@ -208,11 +208,14 @@ void GuiShowSuiSignMessageHashDetails(lv_obj_t *parent, void *totalData)
     lv_obj_update_layout(path_card);
     containerYOffset += lv_obj_get_height(path_card) + 16;
 
-    // from address card
-    lv_obj_t *from_address_card = GuiCreateSuiFromAddressCard(parent, hashData->from_address);
-    lv_obj_align(from_address_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
-    lv_obj_update_layout(from_address_card);
-    containerYOffset += lv_obj_get_height(from_address_card) + 16;
+    // if from_address is empty, don't show from address card
+    if (strlen(hashData->from_address) > 0) {
+        // from address card
+        lv_obj_t *from_address_card = GuiCreateSuiFromAddressCard(parent, hashData->from_address);
+        lv_obj_align(from_address_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
+        lv_obj_update_layout(from_address_card);
+        containerYOffset += lv_obj_get_height(from_address_card) + 16;
+    }
 
     // message hash container
     lv_obj_t *message_hash_card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);

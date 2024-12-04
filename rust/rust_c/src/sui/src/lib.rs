@@ -126,12 +126,17 @@ pub extern "C" fn sui_parse_sign_message_hash(
     let path = sign_hash_request.get_derivation_paths()[0].get_path();
     let network = "Sui".to_string();
     let address = sign_hash_request.get_addresses().unwrap_or(vec![]);
+    let show_address = if address.is_empty() {
+        "".to_string()
+    } else {
+        hex::encode(address[0].clone())
+    };
     TransactionParseResult::success(
         DisplaySuiSignMessageHash::new(
             network,
             path.unwrap_or("No Path".to_string()),
             message,
-            hex::encode(address[0].clone()),
+            show_address,
         )
         .c_ptr(),
     )

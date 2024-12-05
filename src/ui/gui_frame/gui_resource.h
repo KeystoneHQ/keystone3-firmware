@@ -88,6 +88,7 @@ LV_IMG_DECLARE(imgTelegram);
 LV_IMG_DECLARE(imgDiscord);
 LV_IMG_DECLARE(imgWipeDevice);
 LV_IMG_DECLARE(imgQrcode36px);
+LV_IMG_DECLARE(imgQrcodeMask);
 LV_IMG_DECLARE(imgEye);
 LV_IMG_DECLARE(imgEyeOff);
 LV_IMG_DECLARE(imgLockDestroy);

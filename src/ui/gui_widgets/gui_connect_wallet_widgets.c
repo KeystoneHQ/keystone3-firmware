@@ -90,6 +90,7 @@ typedef struct ConnectWalletWidget {
     WALLET_LIST_INDEX_ENUM walletIndex;
     lv_obj_t *qrCode;
     lv_obj_t *privateModeQrCode;
+    lv_obj_t *privateModeQrCodeMask;
     lv_obj_t *privateModePincode;
     lv_obj_t *privateModePincodeBtn;
 } ConnectWalletWidget_t;
@@ -302,6 +303,8 @@ static CoinState_t g_tempFewchaCoinState[FEWCHA_COINS_BUTT];
 static lv_obj_t *g_coinCont = NULL;
 static lv_obj_t *g_coinTitleLabel = NULL;
 static lv_obj_t *g_openMoreHintBox = NULL;
+static lv_obj_t *g_privateModeHintBox = NULL;
+static bool g_isFirstOpenPrivateMode = true;
 static lv_obj_t *g_bottomCont = NULL;
 static lv_obj_t *g_manageImg = NULL;
 static bool g_isCoinReselected = false;
@@ -809,7 +812,10 @@ static void GuiCreateQrCodePrivateModeWidget(lv_obj_t *parent)
 
     lv_obj_t *qrcode = GuiCreateContainerWithParent(qrBgCont, 294, 294);
     lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
+    lv_obj_t *img = GuiCreateImg(qrBgCont, &imgQrcodeMask);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
     g_connectWalletTileView.privateModeQrCode = qrcode;
+    g_connectWalletTileView.privateModeQrCodeMask = img;
 
     lv_obj_t *pincodeCont = GuiCreateContainerWithParent(parent, 408, 80);
     lv_obj_set_style_bg_color(pincodeCont, DARK_BG_COLOR, LV_PART_MAIN);
@@ -820,7 +826,7 @@ static void GuiCreateQrCodePrivateModeWidget(lv_obj_t *parent)
     lv_obj_align(hidePincode, LV_ALIGN_TOP_LEFT, 86, 16);
     lv_obj_set_style_text_color(hidePincode, lv_color_hex(16090890), LV_PART_MAIN);
     g_connectWalletTileView.privateModePincode = hidePincode;
-    lv_obj_t *img = GuiCreateImg(pincodeCont, &imgEye);
+    img = GuiCreateImg(pincodeCont, &imgEye);
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 290, 22);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, ShowOrHiddenPincode, LV_EVENT_CLICKED, NULL);
@@ -1586,10 +1592,42 @@ static void RestorePrivateMode(void)
     lv_label_set_text(g_connectWalletTileView.privateModePincode, HIDDEN_PINCODE);
     lv_obj_set_style_text_color(g_connectWalletTileView.privateModePincode, lv_color_hex(16090890), LV_PART_MAIN);
     lv_img_set_src(g_connectWalletTileView.privateModePincodeBtn, &imgEye);
+    lv_obj_add_flag(g_connectWalletTileView.privateModeQrCodeMask, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(g_connectWalletTileView.privateModeQrCode, LV_OBJ_FLAG_HIDDEN);
+}
+
+static void CloseAttentionHandler(lv_event_t *e)
+{
+    // ConnectWalletReturnHandler
+    if (g_privateModeHintBox) {
+        lv_obj_add_flag(g_privateModeHintBox, LV_OBJ_FLAG_HIDDEN);
+        GUI_DEL_OBJ(g_privateModeHintBox);
+    }
+}
+
+static void CancelAttentionHandler(lv_event_t *e)
+{
+    ConnectWalletReturnHandler(NULL);
+    CloseAttentionHandler(NULL);
+}
+
+static void ContinueAttentionHandler(lv_event_t *e)
+{
+    g_isFirstOpenPrivateMode = false;
+    CloseAttentionHandler(NULL);
+    ShowOrHiddenPincode(NULL);
 }
 
 static void ShowOrHiddenPincode(lv_event_t *e)
 {
+    if (g_isFirstOpenPrivateMode) {
+        g_privateModeHintBox = GuiCreateGeneralHintBox(&imgWarn, _("security_notice_title"), _("private_qr_mode_security_notice_desc"), NULL, _("not_now"), WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
+        lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_privateModeHintBox);
+        lv_obj_add_event_cb(leftBtn, CancelAttentionHandler, LV_EVENT_CLICKED, NULL);
+        lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_privateModeHintBox);
+        lv_obj_add_event_cb(rightBtn, ContinueAttentionHandler, LV_EVENT_CLICKED, NULL);
+        return;
+    }
     char *text = lv_label_get_text(g_connectWalletTileView.privateModePincode);
     if (strcmp(text, HIDDEN_PINCODE) == 0) {
         char pincode[BUFFER_SIZE_32] = {0};
@@ -1599,10 +1637,14 @@ static void ShowOrHiddenPincode(lv_event_t *e)
         lv_label_set_text(g_connectWalletTileView.privateModePincode, pincode);
         lv_obj_set_style_text_color(g_connectWalletTileView.privateModePincode, lv_color_hex(16090890), LV_PART_MAIN);
         lv_img_set_src(g_connectWalletTileView.privateModePincodeBtn, &imgEyeOff);
+        lv_obj_add_flag(g_connectWalletTileView.privateModeQrCode, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_connectWalletTileView.privateModeQrCodeMask, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_label_set_text(g_connectWalletTileView.privateModePincode, HIDDEN_PINCODE);
         lv_obj_set_style_text_color(g_connectWalletTileView.privateModePincode, lv_color_hex(16090890), LV_PART_MAIN);
         lv_img_set_src(g_connectWalletTileView.privateModePincodeBtn, &imgEye);
+        lv_obj_add_flag(g_connectWalletTileView.privateModeQrCodeMask, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_connectWalletTileView.privateModeQrCode, LV_OBJ_FLAG_HIDDEN);
     }
 }
 

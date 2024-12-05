@@ -40,6 +40,7 @@ typedef enum {
     CHAIN_DASH,
     CHAIN_ARWEAVE,
     CHAIN_STELLAR,
+    CHAIN_XMR,
     CHAIN_COSMOS,
     CHAIN_TIA,
     CHAIN_DYM,
@@ -74,7 +75,6 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
-    CHAIN_XMR,
 
 #endif
     CHAIN_BUTT,

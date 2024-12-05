@@ -1,7 +1,9 @@
-use crate::key::PublicKey;
+use crate::key::{PublicKey, PrivateKey};
 use crate::errors::Result;
-use crate::utils::{constants::PUBKEY_LEH, io::*};
+use crate::utils::{decrypt_data_with_decrypt_key, fmt_monero_amount};
+use crate::utils::{constants::PUBKEY_LEH, io::*, constants::OUTPUT_EXPORT_MAGIC};
 use alloc::vec::Vec;
+use alloc::string::String;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
@@ -105,6 +107,35 @@ impl ExportedTransferDetails {
             details,
         })
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct DisplayMoneroOutput {
+    pub txos_num: u64,
+    pub total_amount: String,
+}
+
+pub fn parse_display_info(data: &[u8], decrypt_key: [u8; 32], pvk: [u8; 32]) -> Result<DisplayMoneroOutput> {
+    let decrypted_data = match decrypt_data_with_decrypt_key(
+        decrypt_key,
+        pvk,
+        data.to_vec(),
+        OUTPUT_EXPORT_MAGIC,
+    ) {
+        Ok(data) => data,
+        Err(e) => return Err(e),
+    };
+    let outputs = match ExportedTransferDetails::from_bytes(&decrypted_data.data) {
+        Ok(data) => data,
+        Err(e) => return Err(e),
+    };
+
+    let total_amount = outputs.details.iter().fold(0, |acc, x| acc + x.amount);
+
+    Ok(DisplayMoneroOutput {
+        txos_num: outputs.size,
+        total_amount: fmt_monero_amount(total_amount),
+    })
 }
 
 #[cfg(test)]

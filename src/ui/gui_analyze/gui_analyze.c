@@ -301,7 +301,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_XMR_OUTPUT,
 #ifndef COMPILE_SIMULATOR
-        "{}",
+        "{\"name\":\"monero_transaction_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,100],\"pos\":[0,0],\"radius\":24,\"bg_opa\":31,\"children\":[{\"type\":\"label\",\"text\":\"NumberofTXOs\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetXmrTxoCount\",\"pos\":[195,16],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"TotalAmount\",\"pos\":[24,53],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetXmrTotalAmount\",\"pos\":[195,53],\"font\":\"openSansEnIllustrate\"}]}]}",
 #else
         PC_SIMULATOR_PATH "/page_xmr_output.json",
 #endif
@@ -731,6 +731,16 @@ GetLabelDataFunc GuiTrxTextFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiMoneroTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetXmrTxoCount")) {
+        return GetXmrTxoCount;
+    } else if (!strcmp(type, "GetXmrTotalAmount")) {
+        return GetXmrTotalAmount;
+    }
+    return NULL;
+}
+
 GetLabelDataFunc GuiCosmosTextFuncGet(char *type)
 {
     if (!strcmp(type, "GetCosmosValue")) {
@@ -980,6 +990,9 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
     case REMAPVIEW_STELLAR:
     case REMAPVIEW_STELLAR_HASH:
         return GuiStellarTextFuncGet(type);
+    case REMAPVIEW_XMR_OUTPUT:
+    case REMAPVIEW_XMR_UNSIGNED:
+        return GuiMoneroTextFuncGet(type);
 #endif
     default:
         return NULL;

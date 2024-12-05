@@ -305,6 +305,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_LEAP].items[0].qrTitle = _("connect_leap_title");
     g_tutorials[WALLET_LIST_LEAP].items[0].qrUrl =  _("connect_leap_link");
 
+    // WALLET_LIST_CAKE
+    g_tutorials[WALLET_LIST_CAKE].len = 1;
+    g_tutorials[WALLET_LIST_CAKE].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_CAKE].items[0].walletName = _("connect_cake_title");
+    g_tutorials[WALLET_LIST_CAKE].items[0].url = _("connect_cake_link");
+    g_tutorials[WALLET_LIST_CAKE].items[0].qrTitle = _("connect_cake_title");
+    g_tutorials[WALLET_LIST_CAKE].items[0].qrUrl = _("connect_cake_link");
+
     // WALLET_LIST_NIGHTLY
     g_tutorials[WALLET_LIST_NIGHTLY].len = 1;
     g_tutorials[WALLET_LIST_NIGHTLY].desc = _("connect_wallet_desc");

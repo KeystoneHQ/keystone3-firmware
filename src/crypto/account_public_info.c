@@ -292,15 +292,6 @@ static const ChainItem_t g_chainTable[] = {
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
     // EDWARDS_25519
     {XPUB_TYPE_MONERO_0,              EDWARDS_25519,    "monero_0",              "M/44'/128'/0'"    },
-    {XPUB_TYPE_MONERO_1,              EDWARDS_25519,    "monero_1",              "M/44'/128'/1'"    },
-    {XPUB_TYPE_MONERO_2,              EDWARDS_25519,    "monero_2",              "M/44'/128'/2'"    },
-    {XPUB_TYPE_MONERO_3,              EDWARDS_25519,    "monero_3",              "M/44'/128'/3'"    },
-    {XPUB_TYPE_MONERO_4,              EDWARDS_25519,    "monero_4",              "M/44'/128'/4'"    },
-    {XPUB_TYPE_MONERO_5,              EDWARDS_25519,    "monero_5",              "M/44'/128'/5'"    },
-    {XPUB_TYPE_MONERO_6,              EDWARDS_25519,    "monero_6",              "M/44'/128'/6'"    },
-    {XPUB_TYPE_MONERO_7,              EDWARDS_25519,    "monero_7",              "M/44'/128'/7'"    },
-    {XPUB_TYPE_MONERO_8,              EDWARDS_25519,    "monero_8",              "M/44'/128'/8'"    },
-    {XPUB_TYPE_MONERO_9,              EDWARDS_25519,    "monero_9",              "M/44'/128'/9'"    },
 #else
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },

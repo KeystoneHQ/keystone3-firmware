@@ -189,12 +189,22 @@ fn pub_keys_to_address(
     }
 }
 
-pub fn generate_subaddress(
+pub fn generate_address(
     public_spend_key: &PublicKey,
     private_view_key: &PrivateKey,
     major: u32,
     minor: u32,
+    is_subaddress: bool,
 ) -> Result<String> {
+    if !is_subaddress {
+        return Ok(Address::new(
+            Network::Mainnet,
+            AddressType::Standard,
+            public_spend_key.clone(),
+            private_view_key.get_public_key(),
+        ).to_string());
+    }
+
     let point = public_spend_key.point.decompress().unwrap();
     let m = Scalar::from_bytes_mod_order(calc_subaddress_m(
         &private_view_key.to_bytes(),
@@ -278,7 +288,7 @@ mod tests {
         let public_spend_key = keypair.spend.get_public_key();
         let private_view_key = keypair.view;
 
-        let address = generate_subaddress(&public_spend_key, &private_view_key, major, minor).unwrap();
+        let address = generate_address(&public_spend_key, &private_view_key, major, minor, true).unwrap();
 
         assert_eq!(
             address,
@@ -312,7 +322,7 @@ mod tests {
             "5a69bc37d807013f80e10959bc7855419f1b0b47258a64a6a8c440ffd223070f"
         );
 
-        let sun_account = generate_subaddress(&keypair.get_public_spend(), &keypair.view, 1, 0).unwrap();
+        let sun_account = generate_address(&keypair.get_public_spend(), &keypair.view, 1, 0, true).unwrap();
 
         assert_eq!(
             sun_account,
@@ -320,7 +330,7 @@ mod tests {
         );
 
         let sun_account_sub_address_1 =
-            generate_subaddress(&keypair.get_public_spend(), &keypair.view, 1, 1).unwrap();
+            generate_address(&keypair.get_public_spend(), &keypair.view, 1, 1, true).unwrap();
 
         assert_eq!(
             sun_account_sub_address_1,

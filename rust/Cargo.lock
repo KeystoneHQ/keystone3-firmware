@@ -2486,6 +2486,7 @@ name = "multi_coins_wallet_rust_c"
 version = "0.1.0"
 dependencies = [
  "app_arweave",
+ "app_monero",
  "app_utils",
  "app_wallets",
  "bitcoin",
@@ -2496,6 +2497,7 @@ dependencies = [
  "hex",
  "keystore",
  "rust_tools",
+ "serde_json",
  "ur-registry",
 ]
 

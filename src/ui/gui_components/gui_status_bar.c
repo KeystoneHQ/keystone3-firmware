@@ -73,11 +73,13 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_BCH, "", &coinBch},       {HOME_WALLET_CARD_APT, "", &coinApt},
     {HOME_WALLET_CARD_SUI, "", &coinSui},       {HOME_WALLET_CARD_DASH, "", &coinDash},
     {HOME_WALLET_CARD_ARWEAVE, "", &coinAr},    {HOME_WALLET_CARD_XLM, "", &coinXlm},
+    {HOME_WALLET_CARD_MONERO, "", &coinXmr},
     {HOME_WALLET_CARD_COSMOS, "", &coinCosmos}, {HOME_WALLET_CARD_TIA, "", &coinTia},
     {HOME_WALLET_CARD_DYM, "", &coinDym},       {HOME_WALLET_CARD_OSMO, "", &coinOsmo},
     {HOME_WALLET_CARD_INJ, "", &coinInj},       {HOME_WALLET_CARD_ATOM, "", &coinAtom},
     {HOME_WALLET_CARD_CRO, "", &coinCro},       {HOME_WALLET_CARD_RUNE, "", &coinRune},
-    {HOME_WALLET_CARD_KAVA, "", &coinKava},     {HOME_WALLET_CARD_LUNC, "", &coinLunc},     {HOME_WALLET_CARD_AXL, "", &coinAxl},
+    {HOME_WALLET_CARD_KAVA, "", &coinKava},     {HOME_WALLET_CARD_LUNC, "", &coinLunc},
+    {HOME_WALLET_CARD_AXL, "", &coinAxl},
     {HOME_WALLET_CARD_LUNA, "", &coinLuna},     {HOME_WALLET_CARD_AKT, "", &coinAkt},
     {HOME_WALLET_CARD_STRD, "", &coinStrd},     {HOME_WALLET_CARD_SCRT, "", &coinScrt},
     {HOME_WALLET_CARD_BLD, "", &coinBld},       {HOME_WALLET_CARD_CTK, "", &coinCtk},
@@ -90,7 +92,6 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_NGM, "", &coinNgm},       {HOME_WALLET_CARD_IOV, "", &coinIov},
     {HOME_WALLET_CARD_UMEE, "", &coinUmee},     {HOME_WALLET_CARD_QCK, "", &coinQck},
     {HOME_WALLET_CARD_TGD, "", &coinTgd},       {HOME_WALLET_CARD_DOT, "", &coinDot},
-    {HOME_WALLET_CARD_MONERO, "", &coinXmr},
 #endif
 };
 
@@ -132,7 +133,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_LEAP, "Leap", &walletLeap},
     {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
     {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
-    {WALLET_LIST_LEAP, "Leap", &walletLeap},
+    {WALLET_LIST_CAKE, "Cake", &walletCake},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},

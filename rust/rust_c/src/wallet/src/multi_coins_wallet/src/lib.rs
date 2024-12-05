@@ -13,6 +13,7 @@ pub mod solana;
 pub mod structs;
 pub mod sui;
 pub mod tonkeeper;
+pub mod cake;
 mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;

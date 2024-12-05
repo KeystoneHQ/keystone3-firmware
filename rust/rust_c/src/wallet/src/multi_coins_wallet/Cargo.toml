@@ -11,6 +11,7 @@ app_wallets = { workspace = true }
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
 app_arweave = { workspace = true }
+app_monero = { workspace = true }
 cty = { workspace = true }
 cstr_core = { workspace = true }
 ur-registry = { workspace = true }
@@ -18,6 +19,7 @@ hex = { workspace = true }
 bitcoin = { workspace = true }
 common_rust_c = { path = "../../../common" }
 ed25519-bip32-core = { workspace = true }
+serde_json = { workspace = true }
 
 [features]
 default = ["multi-coins"]

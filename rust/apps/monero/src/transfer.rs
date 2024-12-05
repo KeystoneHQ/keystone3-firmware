@@ -20,7 +20,6 @@ use rand_core::SeedableRng;
 use monero_clsag_mirror::{Clsag, ClsagContext};
 use zeroize::Zeroizing;
 use crate::signed_transaction::{SignedTxSet, PendingTx};
-use alloc::format;
 use core::fmt::Display;
 use crate::outputs::ExportedTransferDetails;
 
@@ -31,10 +30,6 @@ pub struct DisplayTransactionInfo {
     pub input_amount: String,
     pub output_amount: String,
     pub fee: String,
-}
-
-fn fmt_monero_amount(amount: u64) -> String {
-    format!("{:.12}", amount as f64 / 1_000_000_000_000.0)
 }
 
 impl Display for DisplayTransactionInfo {
@@ -658,6 +653,25 @@ impl UnsignedTx {
 
         SignedTxSet::new(penging_tx, vec![], tx_key_images)
     }
+}
+
+pub fn parse_unsigned(request_data: Vec<u8>, decrypt_key: [u8; 32], pvk: [u8; 32]) -> Result<DisplayTransactionInfo> {
+    let decrypted_data = match decrypt_data_with_decrypt_key(
+        decrypt_key,
+        pvk,
+        request_data.clone(),
+        UNSIGNED_TX_PREFIX,
+    ) {
+        Ok(data) => data,
+        Err(e) => match e {
+            MoneroError::DecryptInvalidSignature => return Err(MoneroError::MismatchedMfp),
+            _ => return Err(e)
+        },
+    };
+
+    let unsigned_tx = UnsignedTx::deserialize(&decrypted_data.data);
+
+    Ok(unsigned_tx.display_info())
 }
 
 pub fn sign_tx(keypair: KeyPair, request_data: Vec<u8>) -> Result<Vec<u8>> {

@@ -100,6 +100,15 @@ static void TutorialsInit()
     g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrSubtitle = _("receive_more_t_qr_link");
     g_tutorials[TUTORIAL_SOL_RECEIVE].tutorials[0].qrCode = _("receive_more_t_qr_link");
 
+    // TUTORIAL_XMR_RECEIVE
+    g_tutorials[TUTORIAL_XMR_RECEIVE].len = 1;
+    g_tutorials[TUTORIAL_XMR_RECEIVE].tutorials[0].title = _("receive_xmr_more_t_title1");
+    g_tutorials[TUTORIAL_XMR_RECEIVE].tutorials[0].desc = _("receive_xmr_more_t_desc1");
+    g_tutorials[TUTORIAL_XMR_RECEIVE].tutorials[0].link = _("learn_more");
+    g_tutorials[TUTORIAL_XMR_RECEIVE].tutorials[0].qrTitle = _("receive_xmr_more_t_title1");
+    g_tutorials[TUTORIAL_XMR_RECEIVE].tutorials[0].qrSubtitle = _("receive_more_t_qr_link");
+    g_tutorials[TUTORIAL_XMR_RECEIVE].tutorials[0].qrCode = _("receive_more_t_qr_link");
+
     // TUTORIAL_CHANGE_ENTROPY
     g_tutorials[TUTORIAL_CHANGE_ENTROPY].len = 2;
     g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[0].title = _("tutorial_change_entropy_title1");

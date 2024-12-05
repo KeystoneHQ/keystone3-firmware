@@ -2,6 +2,7 @@ use crate::key::{KeyPair, PrivateKey, PublicKey};
 use crate::errors::{MoneroError, Result};
 use alloc::string::{String, ToString};
 use alloc::vec;
+use alloc::format;
 use alloc::vec::Vec;
 use chacha20::cipher::{generic_array::GenericArray, KeyIvInit, StreamCipher};
 use chacha20::ChaCha20Legacy;
@@ -29,6 +30,34 @@ pub struct DecryptUrData {
     pub magic: String,
     pub signature: Option<Vec<u8>>,
     pub hash: Vec<u8>,
+}
+
+pub fn generate_decrypt_key(pvk: [u8; PUBKEY_LEH]) -> [u8; 32] {
+    cryptonight_hash_v0(&pvk)
+}
+
+pub fn encrypt_data_with_pincode(data: String, pin: [u8; 6]) -> Vec<u8> {
+    let pin_hash = keccak256(&pin);
+    let key = GenericArray::from_slice(&pin_hash);
+    let nonce = GenericArray::from_slice(&[0; 8]);
+    let mut cipher = ChaCha20Legacy::new(key, nonce);
+
+    let mut buffer = data.into_bytes();
+    cipher.apply_keystream(&mut buffer);
+
+    buffer
+}
+
+pub fn decrypt_data_with_pincode(data: Vec<u8>, pin: [u8; 6]) -> String {
+    let pin_hash = keccak256(&pin);
+    let key = GenericArray::from_slice(&pin_hash);
+    let nonce = GenericArray::from_slice(&[0; 8]);
+    let mut cipher = ChaCha20Legacy::new(key, nonce);
+
+    let mut buffer = data.clone();
+    cipher.apply_keystream(&mut buffer);
+
+    String::from_utf8(buffer).unwrap()
 }
 
 pub fn encrypt_data_with_pvk(keypair: KeyPair, data: Vec<u8>, magic: &str) -> Vec<u8> {
@@ -81,7 +110,12 @@ pub fn decrypt_data_with_pvk(pvk: [u8; PUBKEY_LEH], data: Vec<u8>, magic: &str) 
         return Err(MoneroError::InvalidPrivateViewKey);
     }
     let pvk_hash = cryptonight_hash_v0(&pvk);
-    let key = GenericArray::from_slice(&pvk_hash);
+
+    decrypt_data_with_decrypt_key(pvk_hash, pvk, data, magic)
+}
+
+pub fn decrypt_data_with_decrypt_key(decrypt_key: [u8; PUBKEY_LEH], pvk: [u8; PUBKEY_LEH], data: Vec<u8>, magic: &str) -> Result<DecryptUrData> {
+    let key = GenericArray::from_slice(&decrypt_key);
 
     let magic_bytes = magic.as_bytes();
 
@@ -157,6 +191,18 @@ pub fn get_key_image_from_input(input: Input) -> Result<Keyimage> {
         Input::ToKey { key_image, .. } =>
             Ok(Keyimage::new(key_image.compress().to_bytes())),
         _ => Err(MoneroError::UnsupportedInputType),
+    }
+}
+
+
+pub fn fmt_monero_amount(value: u64) -> String {
+    let value = value as f64 / 1_000_000_000_000.0;
+    let value = format!("{:.12}", value);
+    let value = value.trim_end_matches('0').to_string();
+    if value.ends_with('.') {
+        format!("{} XMR", value[..value.len() - 1].to_string())
+    } else {
+        format!("{} XMR", value)
     }
 }
 
@@ -323,5 +369,39 @@ mod tests {
             hex::encode(pvk_hash),
             "87ebc685e15f646cfd4c2fe94cb8325748fdc3e01e360bd474ff554edff370e6"
         );
+    }
+
+    #[test]
+    fn test_fmt_monero_amount() {
+        let amount = 10000000000001;
+        let res = fmt_monero_amount(amount);
+        assert_eq!(res, "10.000000000001 XMR");
+
+        let amount = 0000000000001;
+        let res = fmt_monero_amount(amount);
+        assert_eq!(res, "0.000000000001 XMR");
+
+        let amount = 1000000000000000000;
+        let res = fmt_monero_amount(amount);
+        assert_eq!(res, "1000000 XMR");
+
+        let amount = 1000000000000001;
+        let res = fmt_monero_amount(amount);
+        assert_eq!(res, "1000.000000000001 XMR");
+    }
+
+    #[test]
+    fn test_encrypt_data_with_pincode() {
+        let data = "4Azmp3phZDz1Ae9g14Zp7mjVDko1qQRby76AkGp49J5j4tffM3rEG3jRgXCWNfSdLb7hhK87KSRWn9Fa66AbQTtdDWLVo9i";
+        let res = encrypt_data_with_pincode(data.to_string(), [1, 2, 3, 4, 5, 6]);
+
+        assert_eq!(
+            hex::encode(res.clone()),
+            "dce6e04f6a60fb15d3b00e8ef5e7252f8d7b39220fceff90f7aa82a15cdc9e60a4b4e979ab694355df405021bafde913739ddd82d5fdeef1f1c8b4198a833e204ee1ecc9a2641f9a5e121d6e312223170e3bb07c9aca199cadcb599f01caeb"
+        );
+
+        let res2 = decrypt_data_with_pincode(res, [1, 2, 3, 4, 5, 6]);
+
+        assert_eq!(res2, data);
     }
 }

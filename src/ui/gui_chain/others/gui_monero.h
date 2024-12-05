@@ -22,5 +22,7 @@ void FreeMoneroMemory(void);
 void GuiSetMoneroUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 UREncodeResult *GuiGetMoneroKeyimagesQrCodeData(void);
 UREncodeResult *GuiGetMoneroSignedTransactionQrCodeData(void);
+void GetXmrTxoCount(void *indata, void *param, uint32_t maxLen);
+void GetXmrTotalAmount(void *indata, void *param, uint32_t maxLen);
 
 #endif

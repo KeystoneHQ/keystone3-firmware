@@ -523,7 +523,7 @@ static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
 {
     if (g_urResult == NULL) return SUCCESS_CODE;
     if (g_urResult->is_multi_part) {
-        UREncodeMultiResult *result = get_next_part(g_urResult->encoder);
+        UREncodeMultiResult *result = get_next_cyclic_part(g_urResult->encoder);
         if (result->error_code == 0) {
             // printf("%s\r\n", result->data);
             GuiApiEmitSignal(SIG_BACKGROUND_UR_UPDATE, result->data, strnlen_s(result->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);

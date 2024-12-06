@@ -4608,19 +4608,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "ur"
+version = "0.3.0"
+source = "git+https://github.com/KeystoneHQ/ur-rs?branch=feat/support-encodewholev2#81b8bb3b6b3a823128489c81ffee5bb4001ba2ae"
+dependencies = [
+ "bitcoin_hashes 0.12.0",
+ "crc",
+ "minicbor",
+ "phf",
+ "rand_xoshiro",
+]
+
+[[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?branch=feat/monero-integration#ecd1e6dc698ff4dd755ad6badc6e0fdbfc47f7b0"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?branch=feat/monero-integration#e896204c9c5a7f4e04cda9720e6f25d062efb8cb"
 dependencies = [
  "hex",
- "ur",
+ "ur 0.3.0 (git+https://github.com/KeystoneHQ/ur-rs?branch=feat/support-encodewholev2)",
  "ur-registry",
 ]
 
 [[package]]
 name = "ur-registry"
 version = "0.1.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?branch=feat/monero-integration#ecd1e6dc698ff4dd755ad6badc6e0fdbfc47f7b0"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?branch=feat/monero-integration#e896204c9c5a7f4e04cda9720e6f25d062efb8cb"
 dependencies = [
  "bs58 0.5.1",
  "core2",
@@ -4633,7 +4645,7 @@ dependencies = [
  "prost-types",
  "serde",
  "thiserror-core",
- "ur",
+ "ur 0.3.0 (git+https://github.com/KeystoneHQ/ur-rs?tag=0.3.1)",
 ]
 
 [[package]]

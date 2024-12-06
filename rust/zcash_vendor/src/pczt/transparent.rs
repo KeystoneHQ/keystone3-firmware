@@ -1,16 +1,33 @@
 use alloc::{collections::BTreeMap, string::String, vec::Vec};
+use getset::{Getters, MutGetters};
+use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
 
-use super::{common::Zip32Derivation, merge_map, merge_optional};
+use super::{common::Zip32Derivation, merge_map, merge_optional, ParseError};
 
 /// PCZT fields that are specific to producing the transaction's transparent bundle (if
 /// any).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize, Getters, MutGetters)]
 pub struct Bundle {
-    pub inputs: Vec<Input>,
-    pub outputs: Vec<Output>,
+    #[getset(get = "pub")]
+    pub(crate) inputs: Vec<Input>,
+    #[getset(get = "pub")]
+    pub(crate) outputs: Vec<Output>,
 }
 
-#[derive(Clone, Debug)]
+impl Bundle {
+    pub fn inputs_mut(&mut self) -> &mut [Input] {
+        &mut self.inputs
+    }
+
+    pub fn outputs_mut(&mut self) -> &mut [Output] {
+        &mut self.outputs
+    }
+}
+
+#[serde_as]
+#[derive(Clone, Debug, Serialize, Deserialize, Getters, MutGetters)]
+#[getset(get = "pub", get_mut = "pub")]
 pub struct Input {
     //
     // Transparent effecting data.
@@ -18,28 +35,44 @@ pub struct Input {
     // These are required fields that are part of the final transaction, and are filled in
     // by the Constructor when adding an output.
     //
-    pub prevout_txid: [u8; 32],
-    pub prevout_index: u32,
-    /// TODO: which role should set this?
-    pub sequence: u32,
+    pub(crate) prevout_txid: [u8; 32],
+    pub(crate) prevout_index: u32,
 
-    /// TODO: Both time-based and height-based?
-    pub required_locktime: u32,
+    /// The sequence number of this input.
+    ///
+    /// - This is set by the Constructor.
+    /// - If omitted, the sequence number is assumed to be the final sequence number
+    ///   (`0xffffffff`).
+    pub(crate) sequence: Option<u32>,
+
+    /// The minimum Unix timstamp that this input requires to be set as the transaction's
+    /// lock time.
+    ///
+    /// - This is set by the Constructor.
+    /// - This must be greater than or equal to 500000000.
+    pub(crate) required_time_lock_time: Option<u32>,
+
+    /// The minimum block height that this input requires to be set as the transaction's
+    /// lock time.
+    ///
+    /// - This is set by the Constructor.
+    /// - This must be greater than 0 and less than 500000000.
+    pub(crate) required_height_lock_time: Option<u32>,
 
     /// A satisfying witness for the `script_pubkey` of the input being spent.
     ///
     /// This is set by the Spend Finalizer.
-    pub script_sig: Option<Vec<u8>>,
+    pub(crate) script_sig: Option<Vec<u8>>,
 
     // These are required by the Transaction Extractor, to derive the shielded sighash
     // needed for computing the binding signatures.
-    pub value: u64,
-    pub script_pubkey: Vec<u8>,
+    pub(crate) value: u64,
+    pub(crate) script_pubkey: Vec<u8>,
 
     /// The script required to spend this output, if it is P2SH.
     ///
     /// Set to `None` if this is a P2PKH output.
-    pub redeem_script: Option<Vec<u8>>,
+    pub(crate) redeem_script: Option<Vec<u8>>,
 
     /// A map from a pubkey to a signature created by it.
     ///
@@ -47,9 +80,8 @@ pub struct Input {
     /// - Each entry is set by a Signer, and should contain an ECDSA signature that is
     ///   valid under the corresponding pubkey.
     /// - These are required by the Spend Finalizer to assemble `script_sig`.
-    ///
-    /// TODO: Decide on map key type.
-    pub partial_signatures: BTreeMap<Vec<u8>, Vec<u8>>,
+    #[serde_as(as = "BTreeMap<[_; 33], _>")]
+    pub(crate) partial_signatures: BTreeMap<[u8; 33], Vec<u8>>,
 
     /// The sighash type to be used for this input.
     ///
@@ -57,7 +89,7 @@ pub struct Input {
     ///   cannot produce signatures for this sighash type must not provide a signature.
     /// - Spend Finalizers must fail to finalize inputs which have signatures that do not
     ///   match this sighash type.
-    pub sighash_type: u32,
+    pub(crate) sighash_type: u8,
 
     /// A map from a pubkey to the BIP 32 derivation path at which its corresponding
     /// spending key can be found.
@@ -65,38 +97,41 @@ pub struct Input {
     /// - The pubkeys should appear in `script_pubkey` or `redeem_script`.
     /// - Each entry is set by an Updater.
     /// - Individual entries may be required by a Signer.
-    ///
-    /// TODO: Decide on map key type.
-    pub bip32_derivation: BTreeMap<Vec<u8>, Zip32Derivation>,
+    #[serde_as(as = "BTreeMap<[_; 33], _>")]
+    pub(crate) bip32_derivation: BTreeMap<[u8; 33], Zip32Derivation>,
 
     /// Mappings of the form `key = RIPEMD160(value)`.
     ///
     /// - These may be used by the Signer to inspect parts of `script_pubkey` or
     ///   `redeem_script`.
-    pub ripemd160_preimages: BTreeMap<[u8; 20], Vec<u8>>,
+    pub(crate) ripemd160_preimages: BTreeMap<[u8; 20], Vec<u8>>,
 
     /// Mappings of the form `key = SHA256(value)`.
     ///
     /// - These may be used by the Signer to inspect parts of `script_pubkey` or
     ///   `redeem_script`.
-    pub sha256_preimages: BTreeMap<[u8; 32], Vec<u8>>,
+    pub(crate) sha256_preimages: BTreeMap<[u8; 32], Vec<u8>>,
 
     /// Mappings of the form `key = RIPEMD160(SHA256(value))`.
     ///
     /// - These may be used by the Signer to inspect parts of `script_pubkey` or
     ///   `redeem_script`.
-    pub hash160_preimages: BTreeMap<[u8; 20], Vec<u8>>,
+    pub(crate) hash160_preimages: BTreeMap<[u8; 20], Vec<u8>>,
 
     /// Mappings of the form `key = SHA256(SHA256(value))`.
     ///
     /// - These may be used by the Signer to inspect parts of `script_pubkey` or
     ///   `redeem_script`.
-    pub hash256_preimages: BTreeMap<[u8; 32], Vec<u8>>,
+    pub(crate) hash256_preimages: BTreeMap<[u8; 32], Vec<u8>>,
 
-    pub proprietary: BTreeMap<String, Vec<u8>>,
+    /// Proprietary fields related to the note being spent.
+    #[getset(get = "pub", get_mut = "pub")]
+    pub(crate) proprietary: BTreeMap<String, Vec<u8>>,
 }
 
-#[derive(Clone, Debug)]
+#[serde_as]
+#[derive(Clone, Debug, Serialize, Deserialize, Getters, MutGetters)]
+#[getset(get = "pub")]
 pub struct Output {
     //
     // Transparent effecting data.
@@ -104,13 +139,13 @@ pub struct Output {
     // These are required fields that are part of the final transaction, and are filled in
     // by the Constructor when adding an output.
     //
-    pub value: u64,
-    pub script_pubkey: Vec<u8>,
+    pub(crate) value: u64,
+    pub(crate) script_pubkey: Vec<u8>,
 
     /// The script required to spend this output, if it is P2SH.
     ///
     /// Set to `None` if this is a P2PKH output.
-    pub redeem_script: Option<Vec<u8>>,
+    pub(crate) redeem_script: Option<Vec<u8>>,
 
     /// A map from a pubkey to the BIP 32 derivation path at which its corresponding
     /// spending key can be found.
@@ -118,11 +153,12 @@ pub struct Output {
     /// - The pubkeys should appear in `script_pubkey` or `redeem_script`.
     /// - Each entry is set by an Updater.
     /// - Individual entries may be required by a Signer.
-    ///
-    /// TODO: Decide on map key type.
-    pub bip32_derivation: BTreeMap<Vec<u8>, Zip32Derivation>,
+    #[serde_as(as = "BTreeMap<[_; 33], _>")]
+    pub bip32_derivation: BTreeMap<[u8; 33], Zip32Derivation>,
 
-    pub proprietary: BTreeMap<String, Vec<u8>>,
+    /// Proprietary fields related to the note being spent.
+    #[getset(get = "pub", get_mut = "pub")]
+    pub(crate) proprietary: BTreeMap<String, Vec<u8>>,
 }
 
 impl Bundle {
@@ -149,7 +185,8 @@ impl Bundle {
                 prevout_txid,
                 prevout_index,
                 sequence,
-                required_locktime,
+                required_time_lock_time,
+                required_height_lock_time,
                 script_sig,
                 value,
                 script_pubkey,
@@ -166,8 +203,6 @@ impl Bundle {
 
             if lhs.prevout_txid != prevout_txid
                 || lhs.prevout_index != prevout_index
-                || lhs.sequence != sequence
-                || lhs.required_locktime != required_locktime
                 || lhs.value != value
                 || lhs.script_pubkey != script_pubkey
                 || lhs.sighash_type != sighash_type
@@ -175,7 +210,13 @@ impl Bundle {
                 return None;
             }
 
-            if !(merge_optional(&mut lhs.script_sig, script_sig)
+            if !(merge_optional(&mut lhs.sequence, sequence)
+                && merge_optional(&mut lhs.required_time_lock_time, required_time_lock_time)
+                && merge_optional(
+                    &mut lhs.required_height_lock_time,
+                    required_height_lock_time,
+                )
+                && merge_optional(&mut lhs.script_sig, script_sig)
                 && merge_optional(&mut lhs.redeem_script, redeem_script)
                 && merge_map(&mut lhs.partial_signatures, partial_signatures)
                 && merge_map(&mut lhs.bip32_derivation, bip32_derivation)

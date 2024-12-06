@@ -195,8 +195,7 @@ impl Free for PtrT<ExtendedPublicKey> {
 pub struct ZcashKey {
     pub key_text: PtrString,
     pub key_name: PtrString,
-    pub transparent_key_path: PtrString,
-    pub orchard_key_path: PtrString,
+    pub index: u32,
 }
 
 impl_c_ptr!(ZcashKey);
@@ -205,8 +204,6 @@ impl Free for ZcashKey {
     fn free(&self) {
         free_str_ptr!(self.key_text);
         free_str_ptr!(self.key_name);
-        free_str_ptr!(self.transparent_key_path);
-        free_str_ptr!(self.orchard_key_path);
     }
 }
 

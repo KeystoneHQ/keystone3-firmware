@@ -69,10 +69,10 @@ pub fn parse_pczt(
         ufvk.orchard().ok_or(ZcashError::InvalidDataError(
             "orchard is not present in ufvk".to_string(),
         ))?,
-        &pczt.orchard,
+        &pczt.orchard(),
     )?;
 
-    let parsed_transparent = parse_transparent(seed_fingerprint, &pczt.transparent)?;
+    let parsed_transparent = parse_transparent(seed_fingerprint, &pczt.transparent())?;
 
     let mut my_input_value = 0;
     let mut my_output_value = 0;
@@ -86,7 +86,7 @@ pub fn parse_pczt(
         my_output_value = orchard
             .get_to()
             .iter()
-            .filter(|v| v.get_visible()&&!v.get_is_change())
+            .filter(|v| v.get_visible() && !v.get_is_change())
             .fold(0, |acc, to| acc + to.get_amount());
         Some(())
     });
@@ -100,14 +100,18 @@ pub fn parse_pczt(
         my_output_value += transparent
             .get_to()
             .iter()
-            .filter(|v| v.get_visible()&&!v.get_is_change())
+            .filter(|v| v.get_visible() && !v.get_is_change())
             .fold(0, |acc, to| acc + to.get_amount());
         Some(())
     });
 
     let total_transfer_value = format!("{:.8}", my_input_value as f64 / ZEC_DIVIDER as f64);
 
-    Ok(ParsedPczt::new(parsed_transparent, parsed_orchard, total_transfer_value))
+    Ok(ParsedPczt::new(
+        parsed_transparent,
+        parsed_orchard,
+        total_transfer_value,
+    ))
 }
 
 fn parse_transparent(
@@ -115,12 +119,12 @@ fn parse_transparent(
     transparent: &pczt::transparent::Bundle,
 ) -> Result<Option<ParsedTransparent>, ZcashError> {
     let mut parsed_transparent = ParsedTransparent::new(vec![], vec![]);
-    transparent.inputs.iter().try_for_each(|input| {
+    transparent.inputs().iter().try_for_each(|input| {
         let parsed_from = parse_transparent_input(seed_fingerprint, &input)?;
         parsed_transparent.add_from(parsed_from);
         Ok(())
     })?;
-    transparent.outputs.iter().try_for_each(|output| {
+    transparent.outputs().iter().try_for_each(|output| {
         let parsed_to = parse_transparent_output(seed_fingerprint, &output)?;
         parsed_transparent.add_to(parsed_to);
         Ok(())
@@ -136,44 +140,60 @@ fn parse_transparent_input(
     seed_fingerprint: &[u8; 32],
     input: &pczt::transparent::Input,
 ) -> Result<ParsedFrom, ZcashError> {
-    let ta = if let Some(redeem_script) = input.redeem_script.as_ref() {
+    let ta = if let Some(redeem_script) = input.redeem_script().as_ref() {
         let script_hash = *ripemd::Ripemd160::digest(Sha256::digest(redeem_script)).as_ref();
         ZcashAddress::from_transparent_p2sh(NetworkType::Main, script_hash).encode()
     } else {
         let pubkey_hash =
-            *ripemd::Ripemd160::digest(Sha256::digest(input.script_pubkey.clone())).as_ref();
+            *ripemd::Ripemd160::digest(Sha256::digest(input.script_pubkey().clone())).as_ref();
         ZcashAddress::from_transparent_p2pkh(NetworkType::Main, pubkey_hash).encode()
     };
 
-    let zec_value = format!("{:.8}", input.value as f64 / ZEC_DIVIDER as f64);
+    let zec_value = format!("{:.8}", input.value().clone() as f64 / ZEC_DIVIDER as f64);
 
-    let is_mine = match input.bip32_derivation.get(&input.script_pubkey) {
+    let pubkey: [u8; 33] = input.script_pubkey().clone().try_into().unwrap();
+
+    let is_mine = match input.bip32_derivation().get(&pubkey) {
         //pubkey validation is checked on transaction checking part
         Some(bip32_derivation) => seed_fingerprint == &bip32_derivation.seed_fingerprint,
         None => false,
     };
 
-    Ok(ParsedFrom::new(ta, zec_value, input.value, is_mine))
+    Ok(ParsedFrom::new(
+        ta,
+        zec_value,
+        input.value().clone(),
+        is_mine,
+    ))
 }
 
 fn parse_transparent_output(
     seed_fingerprint: &[u8; 32],
     output: &pczt::transparent::Output,
 ) -> Result<ParsedTo, ZcashError> {
-    let ta = if let Some(redeem_script) = output.redeem_script.as_ref() {
+    let ta = if let Some(redeem_script) = output.redeem_script().as_ref() {
         let script_hash = *ripemd::Ripemd160::digest(Sha256::digest(redeem_script)).as_ref();
         ZcashAddress::from_transparent_p2sh(NetworkType::Main, script_hash).encode()
     } else {
         let pubkey_hash =
-            *ripemd::Ripemd160::digest(Sha256::digest(output.script_pubkey.clone())).as_ref();
+            *ripemd::Ripemd160::digest(Sha256::digest(output.script_pubkey().clone())).as_ref();
         ZcashAddress::from_transparent_p2pkh(NetworkType::Main, pubkey_hash).encode()
     };
-    let zec_value = format!("{:.8}", output.value as f64 / ZEC_DIVIDER as f64);
-    let is_change = match output.bip32_derivation.get(&output.script_pubkey) {
+    let zec_value = format!("{:.8}", output.value().clone() as f64 / ZEC_DIVIDER as f64);
+
+    let pubkey: [u8; 33] = output.script_pubkey().clone().try_into().unwrap();
+    let is_change = match output.bip32_derivation().get(&pubkey) {
         Some(bip32_derivation) => seed_fingerprint == &bip32_derivation.seed_fingerprint,
         None => false,
     };
-    Ok(ParsedTo::new(ta, zec_value, output.value, is_change, true, None))
+    Ok(ParsedTo::new(
+        ta,
+        zec_value,
+        output.value().clone(),
+        is_change,
+        true,
+        None,
+    ))
 }
 
 fn parse_orchard(
@@ -182,8 +202,8 @@ fn parse_orchard(
     orchard: &pczt::orchard::Bundle,
 ) -> Result<Option<ParsedOrchard>, ZcashError> {
     let mut parsed_orchard = ParsedOrchard::new(vec![], vec![]);
-    orchard.actions.iter().try_for_each(|action| {
-        let spend = action.spend.clone();
+    orchard.actions().iter().try_for_each(|action| {
+        let spend = action.spend().clone();
 
         let parsed_from = parse_orchard_spend(seed_fingerprint, &spend)?;
         let parsed_to = parse_orchard_output(fvk, &action)?;
@@ -205,16 +225,17 @@ fn parse_orchard_spend(
     seed_fingerprint: &[u8; 32],
     spend: &pczt::orchard::Spend,
 ) -> Result<ParsedFrom, ZcashError> {
-    let recipient = spend.recipient.clone().ok_or(ZcashError::InvalidPczt(
-        "recipient is not present".to_string(),
-    ))?;
+    let recipient = spend
+        .recipient()
+        .clone()
+        .ok_or(ZcashError::InvalidPczt("recipient is not present".to_string()))?;
     let value = spend
-        .value
+        .value()
         .clone()
         .ok_or(ZcashError::InvalidPczt("value is not present".to_string()))?;
     let zec_value: String = format!("{:.8}", value as f64 / ZEC_DIVIDER as f64);
     let zip32_derivation = spend
-        .zip32_derivation
+        .zip32_derivation()
         .clone()
         .ok_or(ZcashError::InvalidPczt(
             "zip32 derivation is not present".to_string(),
@@ -235,16 +256,16 @@ fn parse_orchard_output(
     fvk: &FullViewingKey,
     action: &pczt::orchard::Action,
 ) -> Result<ParsedTo, ZcashError> {
-    let output = action.output.clone();
-    let epk = output.ephemeral_key.clone();
-    let cmx = output.cmx.clone();
-    let nf_old = action.spend.nullifier.clone();
+    let output = action.output().clone();
+    let epk = output.ephemeral_key().clone();
+    let cmx = output.cmx().clone();
+    let nf_old = action.spend().nullifier().clone();
     let rho = Rho::from_nf_old(Nullifier::from_bytes(&nf_old).into_option().ok_or(
         ZcashError::InvalidPczt("nullifier is not valid".to_string()),
     )?);
-    let cv = action.cv.clone();
-    let enc_ciphertext = output.enc_ciphertext.clone().try_into().unwrap();
-    let out_ciphertext = output.out_ciphertext.clone().try_into().unwrap();
+    let cv = action.cv_net().clone();
+    let enc_ciphertext = output.enc_ciphertext().clone().try_into().unwrap();
+    let out_ciphertext = output.out_ciphertext().clone().try_into().unwrap();
     let external_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::External).clone();
     let internal_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::Internal).clone();
     //it is external output

@@ -39,8 +39,7 @@ pub extern "C" fn get_connect_zcash_wallet_ur(
                 UFVKInfo::new(
                     recover_c_char(v.key_text),
                     recover_c_char(v.key_name),
-                    recover_c_char(v.transparent_key_path),
-                    recover_c_char(v.orchard_key_path),
+                    v.index,
                 )
             })
             .collect();

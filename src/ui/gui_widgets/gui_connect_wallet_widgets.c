@@ -1632,8 +1632,8 @@ static void ShowOrHiddenPincode(lv_event_t *e)
     if (strcmp(text, HIDDEN_PINCODE) == 0) {
         char pincode[BUFFER_SIZE_32] = {0};
         snprintf_s(pincode, sizeof(pincode), "%d %d %d %d %d %d", g_privateModePincode[0],
-                    g_privateModePincode[1], g_privateModePincode[2], g_privateModePincode[3],
-                    g_privateModePincode[4], g_privateModePincode[5]);
+                   g_privateModePincode[1], g_privateModePincode[2], g_privateModePincode[3],
+                   g_privateModePincode[4], g_privateModePincode[5]);
         lv_label_set_text(g_connectWalletTileView.privateModePincode, pincode);
         lv_obj_set_style_text_color(g_connectWalletTileView.privateModePincode, lv_color_hex(16090890), LV_PART_MAIN);
         lv_img_set_src(g_connectWalletTileView.privateModePincodeBtn, &imgEyeOff);
@@ -2176,9 +2176,9 @@ int8_t GuiConnectWalletNextTile(void)
     case CONNECT_WALLET_QRCODE:
         if (IsSupportEncryption()) {
             SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
-                            ConnectWalletReturnHandler, NULL);
+                             ConnectWalletReturnHandler, NULL);
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
-                            OpenMoreHandler, &g_connectWalletTileView.walletIndex);
+                              OpenMoreHandler, &g_connectWalletTileView.walletIndex);
             g_privateModePincode = OpenPrivateQrMode();
             GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         } else {

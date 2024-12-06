@@ -642,8 +642,7 @@ static int GetMaxAddressIndex(void)
 
 static int GetMaxAccountIndex(void)
 {
-    switch (g_chainCard)
-    {
+    switch (g_chainCard) {
     case HOME_WALLET_CARD_ADA:
         return ACCOUNT_INDEX_MAX;
         break;

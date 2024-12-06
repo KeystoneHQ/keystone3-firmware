@@ -2,8 +2,11 @@
 
 extern crate alloc;
 
-use alloc::string::{String, ToString};
 use alloc::{format, slice};
+use alloc::{
+    string::{String, ToString},
+    vec,
+};
 
 use alloc::vec::Vec;
 use app_cardano::address::derive_xpub_from_xpub;
@@ -16,13 +19,14 @@ use core::str::FromStr;
 use cty::c_char;
 use ed25519_bip32_core::XPrv;
 use hex;
+use structs::DisplayCardanoSignTxHash;
 
 use ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
 use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
-
 use ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 use ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
 use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+use ur_registry::cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest;
 use ur_registry::cardano::cardano_signature::CardanoSignature;
 use ur_registry::crypto_key_path::CryptoKeyPath;
 
@@ -195,6 +199,43 @@ pub extern "C" fn cardano_check_tx(
         },
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
     }
+}
+#[no_mangle]
+pub extern "C" fn cardano_check_tx_hash(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+) -> PtrT<TransactionCheckResult> {
+    let cardano_sign_tx_hash_reqeust = extract_ptr_with_type!(ptr, CardanoSignTxHashRequest);
+    let expected_mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    // check mfp
+    let paths = cardano_sign_tx_hash_reqeust.get_paths();
+    for path in paths {
+        let mfp = path.get_source_fingerprint();
+        if let Some(mfp) = mfp {
+            if hex::encode(mfp) != hex::encode(expected_mfp) {
+                return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+            }
+        }
+    }
+    TransactionCheckResult::new().c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_parse_sign_tx_hash(
+    ptr: PtrUR,
+) -> PtrT<TransactionParseResult<DisplayCardanoSignTxHash>> {
+    let sign_hash_request = extract_ptr_with_type!(ptr, CardanoSignTxHashRequest);
+    let message = sign_hash_request.get_tx_hash();
+    let crypto_key_paths = sign_hash_request.get_paths();
+    let paths = crypto_key_paths
+        .iter()
+        .map(|v| v.get_path())
+        .collect::<Option<Vec<String>>>()
+        .unwrap_or(vec![]);
+    let address_list = sign_hash_request.get_address_list();
+    let network = "Cardano".to_string();
+    let result = DisplayCardanoSignTxHash::new(network, paths, message, address_list);
+    TransactionParseResult::success(result.c_ptr()).c_ptr()
 }
 
 #[no_mangle]
@@ -444,6 +485,7 @@ pub extern "C" fn cardano_sign_tx_with_ledger_bitbox02(
     cardano_xpub: PtrString,
     mnemonic: PtrString,
     passphrase: PtrString,
+    enable_blind_sign: bool,
 ) -> PtrT<UREncodeResult> {
     let mnemonic = recover_c_char(mnemonic);
     let passphrase = recover_c_char(passphrase);
@@ -452,10 +494,13 @@ pub extern "C" fn cardano_sign_tx_with_ledger_bitbox02(
             passphrase.as_bytes(),
             mnemonic,
         );
-
     match master_key {
         Ok(master_key) => {
-            cardano_sign_tx_by_icarus(ptr, master_fingerprint, cardano_xpub, master_key)
+            if enable_blind_sign {
+                cardano_sign_tx_hash_by_icarus(ptr, master_key)
+            } else {
+                cardano_sign_tx_by_icarus(ptr, master_fingerprint, cardano_xpub, master_key)
+            }
         }
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
@@ -469,11 +514,32 @@ pub extern "C" fn cardano_sign_tx(
     entropy: PtrBytes,
     entropy_len: u32,
     passphrase: PtrString,
+    enable_blind_sign: bool,
 ) -> PtrT<UREncodeResult> {
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
     let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
-    cardano_sign_tx_by_icarus(ptr, master_fingerprint, cardano_xpub, icarus_master_key)
+    if enable_blind_sign {
+        cardano_sign_tx_hash_by_icarus(ptr, icarus_master_key)
+    } else {
+        cardano_sign_tx_by_icarus(ptr, master_fingerprint, cardano_xpub, icarus_master_key)
+    }
+}
+
+fn cardano_sign_tx_hash_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<UREncodeResult> {
+    let cardano_sign_tx_hash_request = extract_ptr_with_type!(ptr, CardanoSignTxHashRequest);
+    let tx_hash = cardano_sign_tx_hash_request.get_tx_hash();
+    let paths = cardano_sign_tx_hash_request.get_paths();
+    let sign_result = app_cardano::transaction::sign_tx_hash(&tx_hash, &paths, icarus_master_key);
+    match sign_result {
+        Ok(v) => UREncodeResult::encode(
+            v,
+            CARDANO_SIGNATURE.get_type(),
+            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+        )
+        .c_ptr(),
+        Err(e) => UREncodeResult::from(e).c_ptr(),
+    }
 }
 
 fn cardano_sign_tx_by_icarus(

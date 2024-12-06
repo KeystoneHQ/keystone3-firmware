@@ -9,7 +9,6 @@ use ed25519_bip32_core::{XPrv, XPub};
 use hex;
 use ur_registry::cardano::cardano_delegation::CardanoDelegation;
 use ur_registry::cardano::governance::CardanoVotingRegistration;
-use ur_registry::crypto_key_path::CryptoKeyPath;
 
 pub fn build_metadata_cbor(
     delegations: Vec<CardanoDelegation>,

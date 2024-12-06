@@ -1,6 +1,6 @@
-use alloc::boxed::Box;
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use alloc::{boxed::Box, string::String};
 use app_cardano::structs::{
     CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignData,
     ParsedCardanoTx, VotingProcedure, VotingProposal,
@@ -119,12 +119,44 @@ pub struct DisplayCardanoWithdrawal {
     address: PtrString,
     amount: PtrString,
 }
+#[repr(C)]
+pub struct DisplayCardanoSignTxHash {
+    pub network: PtrString,
+    pub path: Ptr<VecFFI<PtrString>>,
+    pub tx_hash: PtrString,
+    pub address_list: Ptr<VecFFI<PtrString>>,
+}
+
+impl DisplayCardanoSignTxHash {
+    pub fn new(
+        network: String,
+        path: Vec<String>,
+        tx_hash: String,
+        address_list: Vec<String>,
+    ) -> Self {
+        Self {
+            network: convert_c_char(network),
+            path: VecFFI::from(path.iter().map(|v| convert_c_char(v.clone())).collect_vec())
+                .c_ptr(),
+            tx_hash: convert_c_char(tx_hash),
+            address_list: VecFFI::from(
+                address_list
+                    .iter()
+                    .map(|v| convert_c_char(v.clone()))
+                    .collect_vec(),
+            )
+            .c_ptr(),
+        }
+    }
+}
 
 impl_c_ptrs!(DisplayCardanoTx);
 
 impl_c_ptrs!(DisplayCardanoCatalyst);
 
 impl_c_ptrs!(DisplayCardanoSignData);
+
+impl_c_ptrs!(DisplayCardanoSignTxHash);
 
 impl Free for DisplayCardanoSignData {
     fn free(&self) {
@@ -141,6 +173,15 @@ impl Free for DisplayCardanoCatalyst {
         free_str_ptr!(self.stake_key);
         free_str_ptr!(self.rewards);
         free_vec!(self.vote_keys);
+    }
+}
+
+impl Free for DisplayCardanoSignTxHash {
+    fn free(&self) {
+        free_str_ptr!(self.network);
+        free_vec!(self.path);
+        free_str_ptr!(self.tx_hash);
+        free_vec!(self.address_list);
     }
 }
 

@@ -12,7 +12,6 @@
 #include "gui.h"
 #include "user_memory.h"
 #include "drv_mpu.h"
-
 #define ADA_ADD_MAX_LEN             (150)
 
 static bool g_isMulti = false;
@@ -107,6 +106,21 @@ void *GuiGetAdaCatalyst(void)
     } while (0);
     return g_parseResult;
 }
+
+
+void *GuiGetAdaSignTxHashData(void)
+{
+    printf("=========== GuiGetAdaSignTxHashData\r\n");
+    CHECK_FREE_PARSE_RESULT(g_parseResult);
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        PtrT_TransactionParseResult_DisplayCardanoSignTxHash parseResult = cardano_parse_sign_tx_hash(data);
+        CHECK_CHAIN_BREAK(parseResult);
+        g_parseResult = (void *)parseResult;
+    } while (0);
+    return g_parseResult;
+}
+
 
 void FreeAdaCatalystMemory(void)
 {
@@ -211,6 +225,16 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     free_simple_response_c_char(path);
     return result;
 }
+
+PtrT_TransactionCheckResult GuiGetAdaSignTxHashCheckResult(void)
+{
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    return cardano_check_tx_hash(data, mfp);
+}
+
+
 
 static AdaXPubType GetXPubTypeByPathAndXPub(char *xpub, char *path)
 {
@@ -650,9 +674,9 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()),false);
         } else {
-            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()),false);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -660,6 +684,209 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     SetLockScreen(enable);
     return encodeResult;
 }
+static void SetContainerDefaultStyle(lv_obj_t *container)
+{
+    lv_obj_set_style_radius(container, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(container, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(container, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
+}
+
+UREncodeResult *GuiGetAdaSignTxHashQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t entropy[64];
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        if (GetAdaXPubType() == LEDGER_ADA) {
+            char *mnemonic = NULL;
+            bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
+            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()),true);
+        } else {
+            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()),true);
+        }
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+}
+lv_obj_t *GuiCreateAdaAutoHeightContainer(lv_obj_t *parent, uint16_t width, uint16_t padding_x)
+{
+    lv_obj_t * container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    SetContainerDefaultStyle(container);
+    lv_obj_set_style_pad_all(container, 0, LV_PART_MAIN);
+    lv_obj_set_style_pad_top(container, padding_x, LV_PART_MAIN);
+    lv_obj_set_style_pad_bottom(container, padding_x, LV_PART_MAIN);
+    return container;
+}
+
+
+
+lv_obj_t* GuiCreateAdaNoticeCard(lv_obj_t* parent)
+{
+    lv_obj_t* card = GuiCreateAdaAutoHeightContainer(parent, 408, 24);
+    SetContainerDefaultStyle(card);
+    lv_obj_set_style_bg_color(card, lv_color_hex(0xF55831), LV_PART_MAIN);
+    lv_obj_set_style_radius(card, 8, LV_PART_MAIN);
+
+    lv_obj_t* warningIcon = GuiCreateImg(card, &imgInfoOrange);
+    lv_obj_align(warningIcon, LV_ALIGN_TOP_LEFT, 24, 0);
+
+    lv_obj_t* title_label = GuiCreateTextLabel(card, "Notice");
+    lv_obj_set_style_text_color(title_label, lv_color_hex(0xF55831), LV_PART_MAIN);
+    lv_obj_align_to(title_label, warningIcon, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+
+    lv_obj_t* content_label = GuiCreateIllustrateLabel(card, _("sign_message_hash_notice_content"));
+    lv_obj_set_style_text_color(content_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_set_width(content_label, lv_pct(90));
+    lv_obj_align_to(content_label, warningIcon, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+
+    return card;
+}
+static void SetTitleLabelStyle(lv_obj_t *label)
+{
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+}
+
+static void SetFlexContainerStyle(lv_obj_t *container, lv_flex_flow_t flow, lv_coord_t padding_y)
+{
+    lv_obj_set_style_radius(container, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(container, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(container, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_flex_flow(container, flow);
+    lv_obj_set_style_pad_top(container, padding_y, LV_PART_MAIN);
+    lv_obj_set_style_pad_bottom(container, padding_y, LV_PART_MAIN);
+    lv_obj_set_style_pad_left(container, 24, LV_PART_MAIN);
+}
+
+lv_obj_t *GuiAdaCreateLabelCard(lv_obj_t *parent, const char *title, const char *content)
+{
+    lv_obj_t *card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    SetFlexContainerStyle(card, LV_FLEX_FLOW_ROW, 16);
+    lv_obj_t *title_label = GuiCreateTextLabel(card, title);
+    lv_obj_align_to(title_label, card, LV_ALIGN_OUT_TOP_LEFT, 24, 16);
+    SetTitleLabelStyle(title_label);
+    lv_obj_t *content_label = GuiCreateIllustrateLabel(card, content);
+    lv_obj_align_to(content_label, title_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    return card;
+}
+
+void GuiShowAdaSignTxHashOverview(lv_obj_t *parent, void *totalData)
+{
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    DisplayCardanoSignTxHash *hashData = (DisplayCardanoSignTxHash *)totalData;
+    lv_obj_t * noticeCard = GuiCreateAdaNoticeCard(parent);
+    lv_obj_align(noticeCard, LV_ALIGN_DEFAULT, 0, 0);
+    lv_obj_update_layout(noticeCard);
+    int containerYOffset = lv_obj_get_height(noticeCard) + 16;
+    // network  container
+    lv_obj_t *network_card = GuiAdaCreateLabelCard(parent, "Network", hashData->network);
+    lv_obj_align(network_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
+    lv_obj_update_layout(network_card);
+    containerYOffset += lv_obj_get_height(network_card) + 16;
+    // tx hash container
+    lv_obj_t *tx_hash_card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    lv_obj_align(tx_hash_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
+    SetFlexContainerStyle(tx_hash_card, LV_FLEX_FLOW_COLUMN, 16);
+    lv_obj_t *tx_hash_label = GuiCreateTextLabel(tx_hash_card, "Hash");
+    lv_obj_set_style_text_opa(tx_hash_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_align_to(tx_hash_label, tx_hash_card, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 16);
+
+    // color tx hash
+    char hash[128] = {0};
+    strncpy(hash, hashData->tx_hash, sizeof(hash) - 1);
+    char tempBuf[128] = {0};
+    snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
+
+    lv_obj_t *tx_hash_value = GuiCreateIllustrateLabel(tx_hash_card, tempBuf);
+    lv_label_set_recolor(tx_hash_value, true);
+    lv_obj_align_to(tx_hash_value, tx_hash_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+}
+
+void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData)
+{
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    DisplayCardanoSignTxHash *hashData = (DisplayCardanoSignTxHash *)totalData;
+    // network card
+    lv_obj_t *network_card = GuiAdaCreateLabelCard(parent, "Network", hashData->network);
+    lv_obj_align(network_card, LV_ALIGN_DEFAULT, 0, 0);
+    lv_obj_update_layout(network_card);
+    int containerYOffset = lv_obj_get_height(network_card) + 16;
+    // From Conatiner 
+    lv_obj_t *from_container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    lv_obj_align(from_container, LV_ALIGN_DEFAULT, 0, containerYOffset);
+    SetFlexContainerStyle(from_container, LV_FLEX_FLOW_COLUMN, 16);
+    lv_obj_t *from_label = GuiCreateTextLabel(from_container, "From");
+    lv_obj_align_to(from_label, from_container, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 16);
+    // address + path card 
+    Ptr_VecFFI_PtrString addressList = hashData->address_list;
+    Ptr_VecFFI_PtrString pathList = hashData->path;
+    for (int i = 0; i < addressList->size; i++) {
+        char *address = addressList->data[i];
+        char *path = pathList->data[i];
+        char formattedPath[128] = {0};
+        snprintf(formattedPath, sizeof(formattedPath), "m/%s", path);
+        char num[10] = {0};
+        snprintf(num, sizeof(num), "%d", i + 1);
+        lv_obj_t *num_label = GuiCreateIllustrateLabel(from_container, num);
+        lv_obj_set_style_text_color(num_label, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(num_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_align_to(num_label, from_container, LV_ALIGN_OUT_TOP_LEFT, 24, 16);
+        lv_obj_t *address_label = GuiCreateIllustrateLabel(from_container, address);
+        lv_obj_set_width(address_label, lv_pct(90));
+        lv_obj_set_style_text_color(address_label, WHITE_COLOR, LV_PART_MAIN);
+        lv_label_set_long_mode(address_label, LV_LABEL_LONG_WRAP);
+        lv_obj_align_to(address_label, num_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        lv_obj_t *path_label = GuiCreateIllustrateLabel(from_container, formattedPath);
+        lv_obj_set_width(path_label, lv_pct(90));
+        lv_label_set_long_mode(path_label, LV_LABEL_LONG_WRAP);
+        lv_obj_set_style_text_color(path_label, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(path_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_align_to(path_label, address_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    }
+    // calculate the height of from_container
+    lv_obj_update_layout(from_container);
+    containerYOffset += lv_obj_get_height(from_container) + 16;
+    // tx hash container
+    lv_obj_t *tx_hash_card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    lv_obj_align(tx_hash_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
+    SetFlexContainerStyle(tx_hash_card, LV_FLEX_FLOW_COLUMN, 16);
+    lv_obj_t *tx_hash_label = GuiCreateTextLabel(tx_hash_card, "Hash");
+    lv_obj_set_style_text_opa(tx_hash_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_align_to(tx_hash_label, tx_hash_card, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 1);
+
+    // color message hash
+    char hash[128] = {0};
+    strncpy(hash, hashData->tx_hash, sizeof(hash) - 1);
+    char tempBuf[128] = {0};
+    snprintf(tempBuf, sizeof(tempBuf), "#F5870A %.8s#%.24s\n%.24s#F5870A %.8s#", hash, &hash[8], &hash[32], &hash[56]);
+
+    lv_obj_t *tx_hash_value = GuiCreateIllustrateLabel(tx_hash_card, tempBuf);
+    lv_label_set_recolor(tx_hash_value, true);
+    lv_obj_align_to(tx_hash_value, tx_hash_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_label_set_long_mode(tx_hash_value, LV_LABEL_LONG_WRAP);
+
+    // tx hash notice content
+    lv_obj_t *tx_hash_notice_content = GuiCreateIllustrateLabel(tx_hash_card, _("sign_message_hash_notice_content"));
+    lv_obj_set_width(tx_hash_notice_content, lv_pct(90));
+    lv_obj_set_style_text_color(tx_hash_notice_content, lv_color_hex(0xF5C131), LV_PART_MAIN);
+    lv_obj_align_to(tx_hash_notice_content, tx_hash_value, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_label_set_long_mode(tx_hash_notice_content, LV_LABEL_LONG_WRAP);
+}
+
 
 ChainType GetAdaXPubTypeByIndexAndDerivationType(AdaXPubType type, uint16_t index)
 {

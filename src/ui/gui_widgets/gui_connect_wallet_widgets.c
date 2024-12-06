@@ -1241,10 +1241,7 @@ UREncodeResult *GuiGetZecData(void)
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
     data[0].key_text = ufvk;
     data[0].key_name = GetWalletName();
-    char transparent_path[24] = "m/44'/133'/0'";
-    char orchard_path[24] = "m/32'/133'/0'";
-    data[0].transparent_key_path = transparent_path;
-    data[0].orchard_key_path = orchard_path;
+    data[0].index = 0;
     return get_connect_zcash_wallet_ur(sfp, 32, keys);
 }
 

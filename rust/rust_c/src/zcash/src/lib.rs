@@ -88,6 +88,16 @@ fn mock_parsed_pczt() -> DisplayPczt {
                 "1 ZEC".to_string(),
                 1,
                 true,
+            ),ParsedFrom::new(
+                "u13axqdhqadqf3aua82uvnp8wle5vf8fgvnxhzr8nd2kpc23d3d06r25cgzsx4gz8gastt8lcqz4v2kyfdj0zvlkhv4vjudlxsrvprx48y".to_string(),
+                "1 ZEC".to_string(),
+                1,
+                true,
+            ),ParsedFrom::new(
+                "u13axqdhqadqf3aua82uvnp8wle5vf8fgvnxhzr8nd2kpc23d3d06r25cgzsx4gz8gastt8lcqz4v2kyfdj0zvlkhv4vjudlxsrvprx48y".to_string(),
+                "1 ZEC".to_string(),
+                1,
+                true,
             )],
             vec![
                 ParsedTo::new(

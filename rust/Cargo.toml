@@ -86,7 +86,7 @@ itertools = { version = "0.13.0", default-features = false, features = [
 bitcoin = { version = "0.32.4", default-features = false, features = [
     "secp-recovery",
 ] }
-bech32 = { version = "0.11.0", default-features = false }
+bech32 = { version = "0.11.0", default-features = false, features = ["alloc"] }
 bitcoin_hashes = { version = "0.14.0", default-features = false }
 core2 = { version = "0.3.3", default_features = false, features = ["alloc"] }
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
@@ -129,4 +129,5 @@ prost-types = { version = "0.11", default-features = false }
 num-bigint = { version = "0.4.5", default-features = false }
 num-integer = { version = "0.1.46", default-features = false }
 num-traits = { version = "0.2.19", default-features = false }
+blake2b_simd = { version = "1.0.2", default-features = false }
 # third party dependencies end

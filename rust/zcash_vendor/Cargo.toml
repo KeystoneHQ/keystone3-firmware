@@ -11,7 +11,7 @@ rand_chacha = { version = "0.3.1", default-features = false }
 sha2 = { version = "0.10.6", default-features = false, features = ["oid"] }
 # zcash
 reddsa = { version = "0.5.1", default-features = false, features = ["alloc"] }
-blake2b_simd = { version = "1.0.2", default-features = false }
+blake2b_simd = { workspace = true }
 ff = { version = "0.13.0", default-features = false, features = [
     "alloc",
     "bits",
@@ -39,4 +39,8 @@ bitvec = { version = "1.0.1", default-features = false, features = ["alloc"] }
 chacha20poly1305 = { version = "0.10.1", default-features = false, features = [
     "alloc",
 ] }
+postcard = { version = "1.0.3", features = ["alloc"] }
+getset = { version = "0.1.3" }
+serde = { workspace = true }
+serde_with = { version = "3.11.0", features = ["alloc", "macros"], default_features = false }
 #zcash end

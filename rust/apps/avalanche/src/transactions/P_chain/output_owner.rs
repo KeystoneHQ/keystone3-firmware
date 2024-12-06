@@ -11,7 +11,6 @@ pub struct OutputOwner {
     type_id: TypeId,
     locktime: u64,
     threshold: u32,
-    
 }
 
 impl Cb58Encodable for NodeId {

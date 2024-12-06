@@ -43,8 +43,6 @@ impl TryFrom<Bytes> for AddPermissLessionValidatorTx {
         let stack_out = LengthPrefixedVec::<TransferableOutput>::try_from(bytes.clone())?;
         bytes.advance(stack_out.parsed_size());
 
-        println!("bytes = {:?}", hex::encode(bytes));
-
         // let subnet_auth = SubnetAuth::try_from(bytes.clone())?;
         // bytes.advance(SUBNET_AUTH_LEN);
 

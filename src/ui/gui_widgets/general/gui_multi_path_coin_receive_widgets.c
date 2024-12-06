@@ -149,6 +149,10 @@ static void GuiCreateAddressDetailWidgets(lv_obj_t *parent);
 static MultiPathCoinReceiveWidgets_t g_multiPathCoinReceiveWidgets;
 static EthereumReceiveTile g_multiPathCoinReceiveTileNow;
 
+static const PathItem_t g_avaxPaths[] = {
+    {"Avalanche C-Chain",       "",     "m/44'/60'/0'"  },
+    {"Avalanche X/P-Chain",     "",     "m/44'/9000'/0'"},
+};
 static const PathItem_t g_ethPaths[] = {
     {"BIP44 Standard",          "",     "m/44'/60'/0'"  },
     {"Ledger Live",             "",     "m/44'/60'"     },
@@ -651,6 +655,7 @@ static const char* GetChangePathItemTitle(uint32_t i)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_AVAX:
+        return (char *)g_avaxPaths[i].title;
     case HOME_WALLET_CARD_ETH:
         return (char *)g_ethPaths[i].title;
     case HOME_WALLET_CARD_SOL:
@@ -676,7 +681,6 @@ static const char* GetChangePathItemTitle(uint32_t i)
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
-
     if (egCont == NULL) {
         printf("egCont is NULL, cannot show eg address\n");
         return;
@@ -749,6 +753,7 @@ static uint32_t GetDerivedPathTypeCount()
     case HOME_WALLET_CARD_HNT:
         return 3;
     case HOME_WALLET_CARD_ADA:
+    case HOME_WALLET_CARD_AVAX:
         return 2;
     default:
         return 3;
@@ -951,7 +956,7 @@ static int GetMaxAddressIndex(void)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_AVAX:
-        return 1;
+        return GENERAL_ADDRESS_INDEX_MAX;
     case HOME_WALLET_CARD_ETH:
         return GetEthMaxAddressIndex();
     case HOME_WALLET_CARD_SOL:
@@ -1105,6 +1110,20 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
     RefreshSwitchAccount();
 }
 
+static void GetAvaxPathItemSubTittle(char* subTitle, int index, uint32_t maxLen)
+{
+    switch (index) {
+    case 0:
+        strcpy_s(subTitle, maxLen, "m/44'/60'/0'/0/#F5870A X#");
+        break;
+    case 1:
+        strcpy_s(subTitle, maxLen, "m/44'/9000'/0'/0'/#F5870A X#");
+        break;
+    default:
+        break;
+    }
+}
+
 static void GetEthPathItemSubTittle(char* subTitle, int index, uint32_t maxLen)
 {
     switch (index) {
@@ -1147,6 +1166,9 @@ static void GetADAPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
 static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
 {
     switch (g_chainCard) {
+    case HOME_WALLET_CARD_AVAX:
+        GetAvaxPathItemSubTittle(subTitle, index, maxLen);
+        break;
     case HOME_WALLET_CARD_ETH:
         GetEthPathItemSubTittle(subTitle, index, maxLen);
         break;
@@ -1344,27 +1366,38 @@ static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
 static void ModelGetAvaxAddress(uint32_t index, AddressDataItem_t *item)
 {
     char *xPub, hdPath[BUFFER_SIZE_32], rootPath[BUFFER_SIZE_32];
-    // x p chain address
-    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
-    ASSERT(xPub);
-    printf("xPub = %s\r\n", xPub);
-    SimpleResponse_c_char *result = avalanche_get_x_p_address(xPub);
-    if (result->error_code == 0) {
-        printf("x/p chain address is %s\r\n", result->data);
+    SimpleResponse_c_char *result;
+    uint32_t selectType = GetPathIndex();
+    if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
+        selectType = g_selectType;
     }
-
-    // c chain
-    GetEthRootPath(rootPath, index, BUFFER_SIZE_32);
-    GetEthHdPath(hdPath, index, BUFFER_SIZE_32);
-    xPub = GetEthXpub(index);
-    ASSERT(xPub);
-    result = eth_get_address(hdPath, xPub, rootPath);
-    if (result->error_code == 0) {
-        item->index = index;
-        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
-        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
+    if (selectType == 0) {
+        // c chain
+        GetEthRootPath(rootPath, index, BUFFER_SIZE_32);
+        GetEthHdPath(hdPath, index, BUFFER_SIZE_32);
+        xPub = GetEthXpub(index);
+        ASSERT(xPub);
+        result = eth_get_address(hdPath, xPub, rootPath);
+        if (result->error_code == 0) {
+            item->index = index;
+            strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+            strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
+        }
+        free_simple_response_c_char(result);
+    } else {
+        // x p chain address
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
+        ASSERT(xPub);
+        snprintf_s(hdPath, sizeof(hdPath), "%s/0/%u", "m/44'/9000'/0'", index);
+        strcpy_s(rootPath, sizeof(rootPath), "m/44'/9000'/0'");
+        SimpleResponse_c_char *result = avalanche_get_x_p_address(hdPath, xPub, rootPath);
+        if (result->error_code == 0) {
+            item->index = index;
+            strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+            strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
+        }
     }
-    free_simple_response_c_char(result);
+    item->index = index;
 }
 
 void GuiResetCurrentEthAddressIndex(uint8_t index)

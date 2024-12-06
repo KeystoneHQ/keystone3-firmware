@@ -3,12 +3,18 @@ use crate::errors::{AvaxError, Result};
 use crate::network::TESTNET_ID;
 use crate::network::{Network, MAINNET_ID};
 use crate::ripple_keypair::hash160;
-use alloc::string::String;
+use alloc::string::{String, ToString};
 use bech32::{self, Bech32};
-use bitcoin::bip32::{ChildNumber, Xpub};
+use bitcoin::bip32::Xpub;
 use core::str::FromStr;
+use keystore::algorithms::secp256k1::derive_public_key;
 
-pub fn get_address(network: Network, extended_pub_key: &String) -> Result<String> {
+pub fn get_address(
+    network: Network,
+    hd_path: &str,
+    root_x_pub: &str,
+    root_path: &str,
+) -> Result<String> {
     let mut prefix = "avax";
     match network {
         Network::AvaxMainNet => {}
@@ -20,20 +26,26 @@ pub fn get_address(network: Network, extended_pub_key: &String) -> Result<String
             return Err(AvaxError::UnsupportedNetwork(format!("{:?}", network)));
         }
     }
-    let xpub = Xpub::from_str(extended_pub_key.as_str())
-        .map_err(|_e| AvaxError::InvalidHex(format!("invalid xpub")))?;
 
-    if let ChildNumber::Normal { index } = xpub.child_number {
-        if xpub.depth != 5 || index != 0 {
-            return Err(AvaxError::InvalidHex(format!("invalid xpub path")));
-        }
+    let root_path = if !root_path.ends_with('/') {
+        root_path.to_string() + "/"
     } else {
-        return Err(AvaxError::InvalidHex(format!("invalid xpub path")));
-    }
+        root_path.to_string()
+    };
 
+    let public_key = derive_public_key(
+        &root_x_pub.to_string(),
+        &format!(
+            "m/{}",
+            hd_path
+                .strip_prefix(&root_path)
+                .ok_or(AvaxError::InvalidHDPath(hd_path.to_string()))?
+        ),
+    )
+    .unwrap();
     bech32::encode::<Bech32>(
         bech32::Hrp::parse_unchecked(prefix),
-        &hash160(&xpub.public_key.serialize()),
+        &hash160(&public_key.serialize()),
     )
     .map_err(|e| AvaxError::InvalidHex(format!("bech32 encode error: {}", e)))
 }
@@ -46,19 +58,12 @@ mod tests {
     #[test]
     fn get_avax_address_test() {
         {
-            let extended_pub_key = "xpub6FhuXFXbBLaLykvMfme4YCM4mwq8mP9HxW8Pww2DdmK18GkZnDjhGCgtU8m9oTz2HeLrdqJaWQp2WxQQprpu2icAWVndHWYDXT8pnMJ46SZ";
-            let address = get_address(Network::AvaxMainNet, &extended_pub_key.to_string()).unwrap();
-            assert_eq!(
-                "avax1fmlmwakmgkezcg95lk97m8p3tgc9anuxemenwh".to_string(),
-                address
-            );
-        }
-        {
-            let extended_pub_key = "xpub6CtGrkSu2vBVfzzN6fn19rH9GWpbVckvoDJL4GtHGyU7a8f6oHsdz4WLtzAkGcfSipG5evZqwqaT1fnmHkeX73jGSjzVwyA9joeijJMdR6R";
-            let address = get_address(Network::AvaxMainNet, &extended_pub_key.to_string());
-            if let Err(AvaxError::InvalidHex(msg)) = address {
-                assert_eq!(msg, "invalid xpub path");
-            }
+            let hd_path = "m/44'/9000'/0'/0/0";
+            let root_x_pub = "xpub6CPE4bhTujy9CeJJbyskjJsp8FGgyWBsWV2W9GfZwuP9aeDBEoPRBsLk3agq32Gp5gkb9nJSjCn9fgZmuvmV3nPLk5Bc2wfKUQZREp4eG13";
+            let root_path = "m/44'/9000'/0'";
+            let address = get_address(Network::AvaxMainNet, &hd_path, &root_x_pub, &root_path);
+            println!("address = {}", address.unwrap());
+            assert!(false);
         }
         {
             let prefix = "fuji";

@@ -49,6 +49,9 @@ pub enum AvaxError {
 
     #[error("unknown type id: {0}")]
     UnknownTypeId(u32),
+
+    #[error("Invalid hd_Path: {0}")]
+    InvalidHDPath(String),
 }
 
 impl From<io::Error> for AvaxError {

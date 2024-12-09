@@ -92,7 +92,7 @@ void CreateDataParserTask(void)
 {
     const osThreadAttr_t dataParserTask_attributes = {
         .name = "data_parser_task",
-        .stack_size = 1024 * 16,
+        .stack_size = 1024 * 28,
         .priority = (osPriority_t)osPriorityHigh,
     };
     g_dataParserHandle = osThreadNew(DataParserTask, NULL, &dataParserTask_attributes);

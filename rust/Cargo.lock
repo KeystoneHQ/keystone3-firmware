@@ -4204,7 +4204,7 @@ dependencies = [
 
 [[package]]
 name = "ur-registry"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bs58",
  "core2",
@@ -4723,9 +4723,11 @@ dependencies = [
  "app_utils",
  "app_zcash",
  "common_rust_c",
+ "cstr_core",
  "cty",
  "keystore",
  "rust_tools",
+ "ur-registry",
 ]
 
 [[package]]

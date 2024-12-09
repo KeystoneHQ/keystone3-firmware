@@ -740,9 +740,7 @@ void ScanQrCodeHandler(lv_event_t *e)
         lv_timer_del(g_countDownTimer);
         g_countDownTimer = NULL;
     }
-    uint8_t viewType = ZcashTx;
-    GuiFrameOpenViewWithParam(&g_transactionDetailView, &viewType, sizeof(viewType));
-    // GuiFrameOpenView(lv_event_get_user_data(e));
+    GuiFrameOpenView(lv_event_get_user_data(e));
 }
 
 void ConfirmManageAssetsHandler(lv_event_t *e)

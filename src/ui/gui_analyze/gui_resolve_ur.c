@@ -42,6 +42,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_STELLAR_HASH, (SetChainDataFunc)GuiSetStellarUrData},
     {REMAPVIEW_TON, (SetChainDataFunc)GuiSetTonUrData},
     {REMAPVIEW_TON_SIGNPROOF, (SetChainDataFunc)GuiSetTonUrData},
+    {REMAPVIEW_ZCASH, (SetChainDataFunc)GuiSetZcashUrData},
 #endif
 };
 

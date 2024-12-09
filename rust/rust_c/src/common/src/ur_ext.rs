@@ -42,6 +42,7 @@ use ur_registry::stellar::stellar_sign_request::{SignType as StellarSignType, St
 #[cfg(feature = "multi-coins")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
+use ur_registry::zcash::zcash_pczt::ZcashPczt;
 use ur_registry::{
     bitcoin::btc_sign_request::BtcSignRequest, sui::sui_sign_hash_request::SuiSignHashRequest,
 };
@@ -157,6 +158,13 @@ impl InferViewType for TonSignRequest {
 impl InferViewType for AptosSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::AptosTx)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for ZcashPczt {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::ZcashTx)
     }
 }
 

@@ -5,11 +5,19 @@ use app_zcash::pczt::structs::{
     ParsedFrom, ParsedOrchard, ParsedPczt, ParsedTo, ParsedTransparent,
 };
 use common_rust_c::{
+    extract_ptr_with_type,
     ffi::VecFFI,
-    impl_c_ptr, impl_c_ptrs,
+    free::Free,
+    free_ptr_with_type,
+    free_str_ptr,
+    free_vec,
+    impl_c_ptr,
+    impl_c_ptrs,
     types::{Ptr, PtrString},
     utils::convert_c_char,
 };
+
+use cstr_core;
 
 #[repr(C)]
 pub struct DisplayPczt {
@@ -31,6 +39,14 @@ impl From<&ParsedPczt> for DisplayPczt {
                 .unwrap_or(null_mut()),
             total_transfer_value: convert_c_char(pczt.get_total_transfer_value()),
         }
+    }
+}
+
+impl Free for DisplayPczt {
+    fn free(&self) {
+        free_str_ptr!(self.total_transfer_value);
+        free_ptr_with_type!(self.transparent, DisplayTransparent);
+        free_ptr_with_type!(self.orchard, DisplayOrchard);
     }
 }
 
@@ -63,6 +79,13 @@ impl From<&ParsedTransparent> for DisplayTransparent {
     }
 }
 
+impl Free for DisplayTransparent {
+    fn free(&self) {
+        free_vec!(self.from);
+        free_vec!(self.to);
+    }
+}
+
 #[repr(C)]
 pub struct DisplayFrom {
     pub address: PtrString,
@@ -77,6 +100,13 @@ impl From<&ParsedFrom> for DisplayFrom {
             value: convert_c_char(from.get_value()),
             is_mine: from.get_is_mine(),
         }
+    }
+}
+
+impl Free for DisplayFrom {
+    fn free(&self) {
+        free_str_ptr!(self.address);
+        free_str_ptr!(self.value);
     }
 }
 
@@ -98,6 +128,14 @@ impl From<&ParsedTo> for DisplayTo {
             visible: to.get_visible(),
             memo: to.get_memo().map(convert_c_char).unwrap_or(null_mut()),
         }
+    }
+}
+
+impl Free for DisplayTo {
+    fn free(&self) {
+        free_str_ptr!(self.address);
+        free_str_ptr!(self.value);
+        free_str_ptr!(self.memo);
     }
 }
 
@@ -127,6 +165,13 @@ impl From<&ParsedOrchard> for DisplayOrchard {
             )
             .c_ptr(),
         }
+    }
+}
+
+impl Free for DisplayOrchard {
+    fn free(&self) {
+        free_vec!(self.from);
+        free_vec!(self.to);
     }
 }
 

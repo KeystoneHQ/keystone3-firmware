@@ -62,6 +62,8 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
     case REMAPVIEW_TON:
     case REMAPVIEW_TON_SIGNPROOF:
         return GuiGetTonCheckResult();
+    case REMAPVIEW_ZCASH:
+        return GuiGetZcashCheckResult();
 #endif
     default:
         return NULL;
@@ -212,6 +214,9 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
         break;
     case TonSignProof:
         func = GuiGetTonProofSignQrCodeData;
+        break;
+    case ZcashTx:
+        func = GuiGetZcashSignQrCodeData;
         break;
 #endif
     default:

@@ -372,10 +372,11 @@ uint8_t *GenerateCakeWalletEncryptPincode(void)
 UREncodeResult *GuiGetCakeData(void)
 {
     char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_0);
+    char *pvk = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_PVK_0);
     if (g_pincode == NULL) {
-        g_urEncode = get_connect_cake_wallet_ur(xPub, SecretCacheGetXmrPrivateViewKey());
+        g_urEncode = get_connect_cake_wallet_ur(xPub, pvk);
     } else {
-        g_urEncode = get_connect_cake_wallet_ur_encrypted(xPub, SecretCacheGetXmrPrivateViewKey(), g_pincode);
+        g_urEncode = get_connect_cake_wallet_ur_encrypted(xPub, pvk, g_pincode);
     }
     CHECK_CHAIN_PRINT(g_urEncode);
     return g_urEncode;

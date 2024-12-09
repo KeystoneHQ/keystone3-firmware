@@ -48,10 +48,6 @@ uint8_t SecretCacheGetWalletIconIndex();
 void SecretCacheSetWalletName(char* walletName);
 char *SecretCacheGetWalletName();
 
-void SecretCacheSetXmrPrivateViewKey(char *password);
-uint8_t *SecretCacheGetXmrPrivateViewKey(void);
-void ClearXmrPrivateViewKey(void);
-
 void ClearSecretCache(void);
 
 #endif

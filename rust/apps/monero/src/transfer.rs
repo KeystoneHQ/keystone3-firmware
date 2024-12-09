@@ -25,7 +25,7 @@ use crate::outputs::ExportedTransferDetails;
 
 #[derive(Debug, Clone)]
 pub struct DisplayTransactionInfo {
-    pub outputs: Vec<(Address, String)>,
+    pub outputs: Vec<(Address, String, bool)>,
     pub inputs: Vec<(PublicKey, String)>,
     pub input_amount: String,
     pub output_amount: String,
@@ -39,7 +39,7 @@ impl Display for DisplayTransactionInfo {
             writeln!(f, "  {:?} - {}", hex::encode(public_key.as_bytes()), amount)?;
         }
         writeln!(f, "Outputs:")?;
-        for (address, amount) in self.outputs.iter() {
+        for (address, amount, _) in self.outputs.iter() {
             writeln!(f, "  {:?} - {}", address.to_string(), amount)?;
         }
         writeln!(f, "Input amount: {}", self.input_amount)?;
@@ -359,7 +359,8 @@ impl UnsignedTx {
             for dest in tx.splitted_dsts.iter() {
                 let address = dest.addr.to_address(Network::Mainnet, dest.is_subaddress);
                 let amount = dest.amount;
-                outputs.push((address, fmt_monero_amount(amount)));
+                let is_change = address == tx.change_dts.addr.to_address(Network::Mainnet, tx.change_dts.is_subaddress);
+                outputs.push((address, fmt_monero_amount(amount), is_change));
             }
         }
         

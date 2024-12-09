@@ -54,13 +54,10 @@ fn generate_wallet_result(
 #[no_mangle]
 pub extern "C" fn get_connect_cake_wallet_ur(
     pub_spend_key: PtrString,
-    private_view_key: PtrBytes,
+    private_view_key: PtrString,
 ) -> *mut UREncodeResult {
     let spend_key = recover_c_char(pub_spend_key);
-    let pvk = match safe_parse_key(private_view_key) {
-        Ok(pvk) => pvk,
-        _ => return UREncodeResult::from(RustCError::InvalidXPub).c_ptr(),
-    };
+    let pvk = hex::decode(recover_c_char(private_view_key)).unwrap();
     
     let primary_address = Address::new(
         Network::Mainnet,
@@ -75,14 +72,11 @@ pub extern "C" fn get_connect_cake_wallet_ur(
 #[no_mangle]
 pub extern "C" fn get_connect_cake_wallet_ur_encrypted(
     pub_spend_key: PtrString,
-    private_view_key: PtrBytes,
+    private_view_key: PtrString,
     pincode: PtrBytes,
 ) -> *mut UREncodeResult {
     let spend_key = recover_c_char(pub_spend_key);
-    let pvk = match safe_parse_key(private_view_key) {
-        Ok(pvk) => pvk,
-        _ => return UREncodeResult::from(RustCError::InvalidXPub).c_ptr(),
-    };
+    let pvk = hex::decode(recover_c_char(private_view_key)).unwrap();
     let pincode = match safe_parse_pincode(pincode) {
         Ok(pincode) => pincode,
         _ => return UREncodeResult::from(RustCError::InvalidXPub).c_ptr(),

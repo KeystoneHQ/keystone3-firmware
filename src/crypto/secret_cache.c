@@ -22,7 +22,6 @@ static char *g_walletName = NULL;
 static uint8_t g_diceRollHashCache[32] = {0};
 static uint16_t g_identifier;
 static uint16_t g_iteration;
-static uint8_t g_xmrPrivateViewKeyCache[32] = {0};
 
 void SecretCacheSetChecksum(uint8_t *checksum)
 {
@@ -188,31 +187,6 @@ void SecretCacheSetDiceRollHash(uint8_t *hash)
 uint8_t *SecretCacheGetDiceRollHash()
 {
     return g_diceRollHashCache;
-}
-
-void SecretCacheSetXmrPrivateViewKey(char *password)
-{
-    uint8_t seed[64];
-    int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, password);
-    if (ret != SUCCESS_CODE) {
-        return;
-    }
-    SimpleResponse_u8 *pvkData = monero_get_pvk(seed, SEED_LEN, 0);
-    if (pvkData->error_code != SUCCESS_CODE) {
-        return;
-    }
-    memcpy(g_xmrPrivateViewKeyCache, pvkData->data, 32);
-    CLEAR_ARRAY(seed);
-}
-
-uint8_t *SecretCacheGetXmrPrivateViewKey(void)
-{
-    return g_xmrPrivateViewKeyCache;
-}
-
-void ClearXmrPrivateViewKey(void)
-{
-    memset_s(g_xmrPrivateViewKeyCache, 32, 0, 32);
 }
 
 void ClearSecretCache(void)

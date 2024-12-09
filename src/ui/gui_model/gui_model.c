@@ -519,11 +519,25 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, Bac
     return SUCCESS_CODE;
 }
 
+static bool ShouldUseCyclicPart(void)
+{
+    if (g_urResult == NULL) return false;
+    if (strnlen_s(g_urResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) < 6) return false;
+    if (strncmp(g_urResult->data, "ur:xmr", 6) == 0 || strncmp(g_urResult->data, "UR:XMR", 6) == 0) {
+        return true;
+    }
+}
+
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
 {
     if (g_urResult == NULL) return SUCCESS_CODE;
     if (g_urResult->is_multi_part) {
-        UREncodeMultiResult *result = get_next_cyclic_part(g_urResult->encoder);
+        UREncodeMultiResult *result = NULL;
+        if (ShouldUseCyclicPart()) {
+            result = get_next_cyclic_part(g_urResult->encoder);
+        } else {
+            result = get_next_part(g_urResult->encoder);
+        }
         if (result->error_code == 0) {
             // printf("%s\r\n", result->data);
             GuiApiEmitSignal(SIG_BACKGROUND_UR_UPDATE, result->data, strnlen_s(result->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);

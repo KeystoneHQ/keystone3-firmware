@@ -21,6 +21,7 @@ pub struct DisplayMoneroOutput {
 pub struct DisplayMoneroUnsignedTxOutput {
     address: PtrString,
     amount: PtrString,
+    is_change: bool,
 }
 
 impl Free for DisplayMoneroUnsignedTxOutput {
@@ -59,6 +60,7 @@ impl From<DisplayTransactionInfo> for DisplayMoneroUnsignedTx {
                 value.outputs.iter().map(|output| DisplayMoneroUnsignedTxOutput {
                     address: convert_c_char(output.0.to_string()),
                     amount: convert_c_char(output.1.to_string()),
+                    is_change: output.2,
                 })
                 .collect::<Vec<DisplayMoneroUnsignedTxOutput>>(),
             )

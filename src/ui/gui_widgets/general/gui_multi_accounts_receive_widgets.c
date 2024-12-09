@@ -1172,7 +1172,7 @@ static void GuiCreateSwitchAccountWidget()
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
-    char *xPub = NULL, hdPath[BUFFER_SIZE_128];
+    char *xPub = NULL, *pvk = NULL, hdPath[BUFFER_SIZE_128];
     SimpleResponse_c_char *result = NULL;
     uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);;
     switch (g_chainCard) {
@@ -1196,16 +1196,18 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
         switch (type) {
         case 1:
             xPub = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_0);
+            pvk = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_PVK_0);
             snprintf_s(hdPath, BUFFER_SIZE_16, "");
             bool isPrimaryAccount = index == 0;
-            result = monero_get_address(xPub, SecretCacheGetXmrPrivateViewKey(), index, 0, !isPrimaryAccount);
+            result = monero_get_address(xPub, pvk, index, 0, !isPrimaryAccount);
             break;
         default:
             xPub = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_0);
+            pvk = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_PVK_0);
             uint32_t accountIndex = g_selectedAccount[GetCurrentAccountIndex()];
             bool isSubAddress = index != 0 || accountIndex != 0;
             snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/128'/0'/0/%u", index);
-            result = monero_get_address(xPub, SecretCacheGetXmrPrivateViewKey(), accountIndex, index, isSubAddress);
+            result = monero_get_address(xPub, pvk, accountIndex, index, isSubAddress);
             break;
         }
         break;

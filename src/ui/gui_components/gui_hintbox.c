@@ -244,6 +244,97 @@ void *GuiCreateGeneralHintBox(const void *src, const char *titleText,
     return cont;
 }
 
+typedef struct TooltipQRCodeParam {
+    char *title;
+    char *link;
+    lv_obj_t *parent;
+} TooltipQRCodeParam_t;
+
+static TooltipQRCodeParam_t* g_tooltipQRCodeParam = NULL;
+
+static void CloseTooltipHintBoxHandler(lv_event_t *e)
+{
+    CloseHintBoxHandler(e);
+    if (g_tooltipQRCodeParam != NULL) {
+        SRAM_FREE(g_tooltipQRCodeParam);
+        g_tooltipQRCodeParam = NULL;
+    }
+}
+
+static void GuiTooltipQRCodeHintBoxOpen(lv_event_t *e)
+{
+    if (g_tooltipQRCodeParam == NULL) {
+        return;
+    }
+    GuiQRCodeHintBoxOpen(g_tooltipQRCodeParam->link, g_tooltipQRCodeParam->title, g_tooltipQRCodeParam->link);
+    if (g_tooltipQRCodeParam->parent != NULL) {
+        lv_obj_del(g_tooltipQRCodeParam->parent);
+        g_tooltipQRCodeParam->parent = NULL;
+    }
+    SRAM_FREE(g_tooltipQRCodeParam);
+    g_tooltipQRCodeParam = NULL;
+}
+
+void GuiCreateTooltipHintBox(char *titleText, char *descText, char *link)
+{
+    lv_obj_t *title = NULL, *desc = NULL, *linkLabel = NULL;
+    lv_obj_t *cont = GuiCreateHintBox(800);
+
+    uint32_t height = 48;
+
+    if (link != NULL) {
+        height += 12;
+        lv_obj_t *learnMoreCont = GuiCreateContainerWithParent(cont, 144, 30);
+        lv_obj_add_flag(learnMoreCont, LV_OBJ_FLAG_CLICKABLE);
+        g_tooltipQRCodeParam = SRAM_MALLOC(sizeof(TooltipQRCodeParam_t));
+        g_tooltipQRCodeParam->title = titleText;
+        g_tooltipQRCodeParam->link = link;
+        g_tooltipQRCodeParam->parent = cont;
+        lv_obj_add_event_cb(learnMoreCont, GuiTooltipQRCodeHintBoxOpen, LV_EVENT_CLICKED, NULL);
+        lv_obj_align(learnMoreCont, LV_ALIGN_BOTTOM_LEFT, 36, -130);
+        lv_obj_set_style_bg_opa(learnMoreCont, 0, LV_PART_MAIN);
+
+        linkLabel = GuiCreateIllustrateLabel(learnMoreCont, _("learn_more"));
+        lv_obj_set_style_text_color(linkLabel, BLUE_GREEN_COLOR, LV_PART_MAIN);
+
+        lv_obj_t *img = GuiCreateImg(learnMoreCont, &imgQrcodeTurquoise);
+        lv_obj_align_to(img, linkLabel, LV_ALIGN_TOP_RIGHT, 36, 3);
+        height = height + 30 +16;
+    }
+
+    uint32_t descHeight = 0;
+    if (descText != NULL) {
+        height += 12;
+        desc = GuiCreateNoticeLabel(cont, descText);
+        if (linkLabel != NULL) {
+            lv_obj_align_to(desc, linkLabel, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+        } else {
+            lv_obj_align(desc, LV_ALIGN_BOTTOM_LEFT, 36, -(lv_obj_get_self_height(desc) + 172));
+        }
+        descHeight = lv_obj_get_self_height(desc);
+        height += descHeight;
+    }
+
+    if (titleText != NULL) {
+        title = GuiCreateTextLabel(cont, titleText);
+        if (desc != NULL) {
+            lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -12);
+        } else {
+            lv_obj_align(title, LV_ALIGN_BOTTOM_LEFT, 36, -(descHeight + 172 + 48));
+        }
+        height += 36;
+    }
+
+    height += 114;
+    lv_obj_t *rightBtn = GuiCreateTextBtn(cont, _("got_it"));
+    lv_obj_align(rightBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_set_size(rightBtn, lv_obj_get_self_width(lv_obj_get_child(rightBtn, 0)) + 60, 66);
+    lv_obj_set_style_bg_color(rightBtn, DARK_GRAY_COLOR, LV_PART_MAIN);
+    lv_obj_add_event_cb(rightBtn, CloseTooltipHintBoxHandler, LV_EVENT_CLICKED, cont);
+
+    GuiHintBoxResize(cont, height);
+}
+
 void *GuiCreateUpdateHintbox(const void *src, const char *titleText,
                              const char *descText, const char *leftBtnText,
                              lv_color_t leftColor, const char *rightBtnText,

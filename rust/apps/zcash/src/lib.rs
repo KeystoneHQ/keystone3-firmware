@@ -8,11 +8,13 @@ pub mod pczt;
 use errors::{Result, ZcashError};
 
 use alloc::{
+    format,
     string::{String, ToString},
     vec::Vec,
 };
 use pczt::structs::ParsedPczt;
 use zcash_vendor::{
+    pczt::Pczt,
     zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
     zcash_protocol::consensus::MainNetwork,
 };
@@ -27,15 +29,26 @@ pub fn get_address(ufvk_text: &str) -> Result<String> {
 }
 
 pub fn check_pczt(pczt: &[u8], ufvk_text: &str, seed_fingerprint: &[u8; 32]) -> Result<()> {
-    unimplemented!()
+    let ufvk = UnifiedFullViewingKey::decode(&MainNetwork, ufvk_text)
+        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
+    let pczt =
+        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
+    pczt::check::check_pczt(seed_fingerprint, &ufvk, &pczt)?;
+    Ok(())
 }
 
 pub fn parse_pczt(pczt: &[u8], ufvk_text: &str, seed_fingerprint: &[u8; 32]) -> Result<ParsedPczt> {
-    unimplemented!()
+    let ufvk = UnifiedFullViewingKey::decode(&MainNetwork, ufvk_text)
+        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
+    let pczt =
+        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
+    pczt::parse::parse_pczt(seed_fingerprint, &ufvk, &pczt)
 }
 
 pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
-    unimplemented!()
+    let pczt =
+        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
+    pczt::sign::sign_pczt(&pczt, seed)
 }
 
 // pub fn sign_transaction(tx: &[u8], seed: &[u8]) -> Result<Vec<u8>> {

@@ -181,6 +181,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "multi-coins")]
+        impl From<app_zcash::errors::ZcashError> for $name {
+            fn from(value: app_zcash::errors::ZcashError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 
     ($name:ident<$t:ident>) => {
@@ -293,6 +299,12 @@ macro_rules! impl_new_error {
         #[cfg(feature = "multi-coins")]
         impl<$t: Free> From<app_ton::errors::TonError> for $name<$t> {
             fn from(value: app_ton::errors::TonError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "multi-coins")]
+        impl<$t: Free> From<app_zcash::errors::ZcashError> for $name<$t> {
+            fn from(value: app_zcash::errors::ZcashError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

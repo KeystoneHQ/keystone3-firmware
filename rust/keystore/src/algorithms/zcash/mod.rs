@@ -106,7 +106,7 @@ mod tests {
     use std::println;
     #[test]
     fn spike() {
-        let seed = hex::decode("a2093a34d4aa4c3ba89aa087a0992cd76e03a303b98f890a7a818d0e1e414db7a3a832791834a6fd9639d9c59430a8855f7f9dd6bed765b6783058ed7bd0ecbd").unwrap();
+        let seed = hex::decode("5d741f330207d529ff7af106616bbffa15c1cf3bf9778830e003a17787926c0bd77261f91a4a3e2e52b8f96f35bdadc94187bef0f53c449a3802b4e7332cfedd").unwrap();
         let usk = UnifiedSpendingKey::from_seed(&MAIN_NETWORK, &seed, AccountId::ZERO).unwrap();
 
         let ufvk = usk.to_unified_full_viewing_key();
@@ -118,6 +118,7 @@ mod tests {
         //uivk1xhvuufquepxdr5zyacha4kde0479wr25hk26w07jmtn0ec08t4fh0yqudc7v8ddya5rrx4q34yuuxy524p59radjndx5u3rqgvs6w5q8s9246q4h8ykuqtfmn7tyzdlvnen2x6p0cjlqvr48hqrgf72tr7l9z0vdnh8xwu42ausdrvuvd3w9h50ql64g0plucqfyx9ewjqjr5k7lhv9qrl7whu93jp6t38rpcyl060pz5sqnancrh
         println!("{}", hex::encode(ufvk.transparent().unwrap().serialize()));
         println!("{}", hex::encode(ufvk.orchard().unwrap().to_bytes()));
+        // println!("{}", hex::encode(ufvk.orchard().unwrap()));
         println!("{}", ufvk.encode(&MAIN_NETWORK));
         let address = ufvk
             .default_address(UnifiedAddressRequest::all().unwrap())

@@ -1,17 +1,46 @@
 #include "gui_zcash.h"
 #include "gui_chain_components.h"
 #include "user_memory.h"
+#include "account_manager.h"
+#include "gui_chain.h"
 
 #define MAX_MEMO_LENGTH 1024
 
+static bool g_isMulti = false;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
+static void *g_parseResult = NULL;
 static DisplayPczt *g_zcashData;
 
-static void *g_parseResult = NULL;
+#define CHECK_FREE_PARSE_RESULT(result)                                                             \
+    if (result != NULL)                                                                             \
+    {                                                                                               \
+        free_TransactionParseResult_DisplayPczt((PtrT_TransactionParseResult_DisplayPczt)result);   \
+        result = NULL;                                                                              \
+    }
+
+void GuiSetZcashUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
+{
+    g_urResult = urResult;
+    g_urMultiResult = urMultiResult;
+    g_isMulti = multi;
+}
 
 void *GuiGetZcashGUIData(void) {
-    TransactionParseResult_DisplayPczt *parseResult = parse_zcash_tx(NULL, NULL);
-    g_parseResult = parseResult;
-    g_zcashData = parseResult->data;
+    CHECK_FREE_PARSE_RESULT(g_parseResult);
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
+    uint8_t sfp[32];
+    GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+
+    PtrT_TransactionParseResult_DisplayPczt parseResult = NULL;
+    do {
+        parseResult = parse_zcash_tx(data, ufvk, sfp);
+        CHECK_CHAIN_BREAK(parseResult);
+        g_zcashData = parseResult->data;
+        g_parseResult = (void *)parseResult;
+        
+    } while (0);
     return g_parseResult;
 }
 
@@ -237,4 +266,31 @@ static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_o
     lv_obj_update_layout(container);
 
     return container;
+}
+
+PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
+{
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
+    uint8_t sfp[32];
+    GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+    return check_zcash_tx(data, ufvk, sfp);
+}
+
+UREncodeResult *GuiGetZcashSignQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t seed[64];
+        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        encodeResult = sign_zcash_tx(data, seed, len);
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
 }

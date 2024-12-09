@@ -12,6 +12,8 @@ app_utils = { workspace = true }
 rust_tools = { workspace = true }
 common_rust_c = { path = "../common" }
 cty = { workspace = true }
+ur-registry = { workspace = true }
+cstr_core = { workspace = true }
 
 [features]
 debug-memory = []

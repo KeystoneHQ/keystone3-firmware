@@ -830,6 +830,7 @@ void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData)
     lv_obj_align(from_container, LV_ALIGN_DEFAULT, 0, containerYOffset);
     SetFlexContainerStyle(from_container, LV_FLEX_FLOW_COLUMN, 16);
     lv_obj_t *from_label = GuiCreateTextLabel(from_container, "From");
+    lv_obj_set_style_text_opa(from_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align_to(from_label, from_container, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 16);
     // address + path card 
     Ptr_VecFFI_PtrString addressList = hashData->address_list;

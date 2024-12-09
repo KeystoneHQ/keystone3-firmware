@@ -50,7 +50,7 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
     case REMAPVIEW_ADA:
         return GuiGetAdaCheckResult();
     case REMAPVIEW_ADA_SIGN_DATA:
-        return GuiGetAdaCheckResult();
+        return GuiGetAdaSignDataCheckResult();
     case REMAPVIEW_ADA_CATALYST:
         return GuiGetAdaCatalystCheckResult();
     case REMAPVIEW_XRP:

@@ -56,7 +56,7 @@ void *GuiGetAdaCatalyst(void);
 void FreeAdaMemory(void);
 void FreeAdaSignDataMemory(void);
 void FreeAdaCatalystMemory(void);
-
+void FreeAdaSignTxHashMemory(void);
 char *GuiGetADABaseAddressByXPub(char *xPub);
 UREncodeResult *GuiGetAdaSignQrCodeData(void);
 UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void);

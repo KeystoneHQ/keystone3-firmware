@@ -74,6 +74,13 @@ void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResul
         result = NULL;                                                                                          \
     }
 
+#define CHECK_FREE_PARSE_SIGN_TX_HASH_RESULT(result)                                                               \
+    if (result != NULL)                                                                                         \
+    {                                                                                                           \
+        free_TransactionParseResult_DisplayCardanoSignTxHash((PtrT_TransactionParseResult_DisplayCardanoSignTxHash)result);     \
+        result = NULL;                                                                                          \
+    }
+
 void *GuiGetAdaData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
@@ -324,6 +331,13 @@ void FreeAdaSignDataMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_SIGN_DATA_RESULT(g_parseResult);
+}
+
+void FreeAdaSignTxHashMemory(void)
+{
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
+    CHECK_FREE_PARSE_SIGN_TX_HASH_RESULT(g_parseResult);
 }
 
 bool GetAdaExtraDataExist(void *indata, void *param)
@@ -830,6 +844,7 @@ void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData)
     lv_obj_align(from_container, LV_ALIGN_DEFAULT, 0, containerYOffset);
     SetFlexContainerStyle(from_container, LV_FLEX_FLOW_COLUMN, 16);
     lv_obj_t *from_label = GuiCreateTextLabel(from_container, "From");
+    lv_obj_set_style_text_opa(from_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align_to(from_label, from_container, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 16);
     // address + path card 
     Ptr_VecFFI_PtrString addressList = hashData->address_list;

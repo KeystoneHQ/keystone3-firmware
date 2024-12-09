@@ -412,3 +412,4 @@ impl Free for DisplayCertField {
 make_free_method!(TransactionParseResult<DisplayCardanoTx>);
 make_free_method!(TransactionParseResult<DisplayCardanoCatalyst>);
 make_free_method!(TransactionParseResult<DisplayCardanoSignData>);
+make_free_method!(TransactionParseResult<DisplayCardanoSignTxHash>);

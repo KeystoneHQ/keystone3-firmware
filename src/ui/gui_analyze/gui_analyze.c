@@ -153,7 +153,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
 #endif
         GuiGetAdaSignTxHashData,
         NULL,
-        FreeAdaMemory
+        FreeAdaSignTxHashMemory,
     },
     {
         REMAPVIEW_SOL,

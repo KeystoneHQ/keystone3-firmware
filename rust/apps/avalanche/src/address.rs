@@ -5,8 +5,6 @@ use crate::network::{Network, MAINNET_ID};
 use crate::ripple_keypair::hash160;
 use alloc::string::{String, ToString};
 use bech32::{self, Bech32};
-use bitcoin::bip32::Xpub;
-use core::str::FromStr;
 use keystore::algorithms::secp256k1::derive_public_key;
 
 pub fn get_address(

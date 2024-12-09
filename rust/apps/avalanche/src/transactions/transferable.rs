@@ -1,9 +1,10 @@
-use super::asset_id::{AssetId, ASSET_ID_LEN};
+use super::asset_id::AssetId;
 use super::inputs::secp256k1_transfer_input::SECP256K1TransferInput;
 use super::outputs::secp256k1_transfer_output::SECP256K1TransferOutput;
 use super::structs::ParsedSizeAble;
 use super::type_id::TypeId;
 use crate::errors::{AvaxError, Result};
+use crate::constants::*;
 use alloc::{
     format,
     string::{ToString},

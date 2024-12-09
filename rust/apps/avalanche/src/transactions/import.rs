@@ -67,5 +67,24 @@ mod tests {
                 },
             }
         }
+
+        // x-chain import from c-chain
+        {
+            let input_bytes = "00000000000300000005ab68eb1ee142a05cfe768c36e11f0b596db5a3c6c77aabe665dad9e638ca94f7000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000005e69ec0000000000000000000000001000000014effb776db45b22c20b4fd8bed9c315a305ecf8600000000000000007fc93d85c6d62c5b2ac0b519c87010ea5294012d1e407030d6acd0021cac10d50000000178479532682bda3cca3ecd79a19a60ead0b929632fa6652b88ae39f4771b2ace000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000050000000005f5e10000000001000000000000000100000009000000018133ecce7737d6449415f7a532c4314fd005d89fc1d4b1d239fe5275673162f86d06852bb1a0881a5454c7646c586d55f422f695532accc3bd7e4a387c745259011c1b1afd";
+            let mut bytes =
+                Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
+            match ImportTx::try_from(bytes) {
+                Ok(result) => {
+                    println!("{:?}", result);
+                    assert_eq!(result.get_base_tx().get_type_id(), TypeId::XchainImportTx);
+                    assert_eq!(result.get_source_chain(), C_BLOCKCHAIN_ID);
+                    let data = b"\x3d\x9b\xda\xc0\xed\x1dv\x130\xcfh\x0e\xfd\xeb\x1aB\x15\x9e\xb3\x87\xd6\xd2\x95\x0c\x96\xf7\xd2\x8fa\xbb\xe2\xaa";
+                    assert!(false);
+                }
+                Err(_) => {
+                    assert!(false);
+                },
+            }
+        }
     }
 }

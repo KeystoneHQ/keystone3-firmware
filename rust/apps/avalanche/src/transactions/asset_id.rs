@@ -3,8 +3,6 @@ use alloc::string::ToString;
 use bytes::Bytes;
 use core::convert::TryFrom;
 
-pub const ASSET_ID_LEN: usize = 32;
-
 #[derive(Clone, Debug)]
 pub struct AssetId(Bytes);
 

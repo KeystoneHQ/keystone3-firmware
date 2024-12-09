@@ -18,6 +18,8 @@ pub mod outputs {
 
 pub mod C_chain {
     pub mod evm_export;
+    pub mod evm_import;
+    pub mod address;
 }
 
 pub mod P_chain {

@@ -233,7 +233,6 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
             printf("passphrase not exist, info switch\r\n");
             ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
         }
-        SecretCacheSetXmrPrivateViewKey(password);
     } else {
         g_publicInfo.loginPasswordErrorCount++;
     }

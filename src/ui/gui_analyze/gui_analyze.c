@@ -301,7 +301,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_XMR_OUTPUT,
 #ifndef COMPILE_SIMULATOR
-        "{\"name\":\"monero_transaction_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,100],\"pos\":[0,0],\"radius\":24,\"bg_opa\":31,\"children\":[{\"type\":\"label\",\"text\":\"NumberofTXOs\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetXmrTxoCount\",\"pos\":[195,16],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"TotalAmount\",\"pos\":[24,53],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetXmrTotalAmount\",\"pos\":[195,53],\"font\":\"openSansEnIllustrate\"}]}]}",
+        "{\"name\":\"monero_output_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"custom_container\",\"pos\":[0,0],\"bg_opa\":0,\"custom_show_func\":\"GuiShowXmrOutputsDetails\"}]}",
 #else
         PC_SIMULATOR_PATH "/page_xmr_output.json",
 #endif
@@ -312,7 +312,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_XMR_UNSIGNED,
 #ifndef COMPILE_SIMULATOR
-        "{}",
+        "{\"name\":\"monero_transaction_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,602],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowXmrTransactionOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowXmrTransactionDetails\"}]}]}",
 #else
         PC_SIMULATOR_PATH "/page_xmr_unsigned.json",
 #endif
@@ -1377,6 +1377,12 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSuiSignMessageHashOverview;
     } else if (!strcmp(funcName, "GuiShowSuiSignMessageHashDetails")) {
         return GuiShowSuiSignMessageHashDetails;
+    } else if (!strcmp(funcName, "GuiShowXmrOutputsDetails")) {
+        return GuiShowXmrOutputsDetails;
+    } else if (!strcmp(funcName, "GuiShowXmrTransactionDetails")) {
+        return GuiShowXmrTransactionDetails;
+    } else if (!strcmp(funcName, "GuiShowXmrTransactionOverview")) {
+        return GuiShowXmrTransactionOverview;
     }
 #endif
     return NULL;

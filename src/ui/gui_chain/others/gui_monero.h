@@ -25,4 +25,8 @@ UREncodeResult *GuiGetMoneroSignedTransactionQrCodeData(void);
 void GetXmrTxoCount(void *indata, void *param, uint32_t maxLen);
 void GetXmrTotalAmount(void *indata, void *param, uint32_t maxLen);
 
+void GuiShowXmrOutputsDetails(lv_obj_t *parent, void *totalData);
+void GuiShowXmrTransactionDetails(lv_obj_t *parent, void *totalData);
+void GuiShowXmrTransactionOverview(lv_obj_t *parent, void *totalData);
+
 #endif

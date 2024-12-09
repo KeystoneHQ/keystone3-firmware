@@ -51,6 +51,7 @@ typedef enum {
     TON_CHECKSUM,
     LEDGER_BITBOX02,
     EDWARDS_25519,
+    MONERO_PVK,
 } PublicInfoType_t;
 
 typedef struct {
@@ -291,7 +292,9 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
     // EDWARDS_25519
-    {XPUB_TYPE_MONERO_0,              EDWARDS_25519,    "monero_0",              "M/44'/128'/0'"    },
+    {XPUB_TYPE_MONERO_0,              EDWARDS_25519,  "monero_0",                "M/44'/128'/0'"    },
+    {XPUB_TYPE_MONERO_PVK_0,          MONERO_PVK,     "monero_pvk_0",            ""                 },
+
 #else
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },
@@ -327,6 +330,8 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
         return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, (char *)path);
     case EDWARDS_25519:
         return get_extended_monero_pubkeys_by_seed(seed, len, (char *)path);
+    case MONERO_PVK:
+        return get_monero_pvk_by_seed(seed, len);
 #ifndef BTC_ONLY
     case RSA_KEY: {
         Rsa_primes_t *primes = FlashReadRsaPrimes();

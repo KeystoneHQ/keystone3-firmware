@@ -94,7 +94,7 @@ impl UREncodeResult {
     pub fn multi(data: String, encoder: KeystoneUREncoder) -> Self {
         UREncodeResult {
             is_multi_part: true,
-            data: convert_c_char(data),
+            data: convert_c_char(data.to_uppercase()),
             encoder: Box::into_raw(Box::new(encoder)) as PtrEncoder,
             ..Self::new()
         }
@@ -103,7 +103,7 @@ impl UREncodeResult {
     pub fn single(data: String) -> Self {
         UREncodeResult {
             is_multi_part: false,
-            data: convert_c_char(data),
+            data: convert_c_char(data.to_uppercase()),
             ..Self::new()
         }
     }
@@ -123,13 +123,13 @@ impl UREncodeResult {
             Ok(result) => {
                 if result.is_multi_part {
                     match result.encoder {
-                        Some(v) => Self::multi(result.data, v),
+                        Some(v) => Self::multi(result.data.to_uppercase(), v),
                         None => {
                             Self::from(RustCError::UnexpectedError(format!("ur encoder is none")))
                         }
                     }
                 } else {
-                    Self::single(result.data)
+                    Self::single(result.data.to_uppercase())
                 }
             }
             Err(e) => Self::from(e),
@@ -766,7 +766,7 @@ pub extern "C" fn get_next_part(ptr: PtrEncoder) -> *mut UREncodeMultiResult {
     let keystone_ur_encoder_ptr = ptr as *mut ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
     let encoder = unsafe { &mut *keystone_ur_encoder_ptr };
     match encoder.next_part() {
-        Ok(result) => UREncodeMultiResult::success(result).c_ptr(),
+        Ok(result) => UREncodeMultiResult::success(result.to_uppercase()).c_ptr(),
         Err(e) => UREncodeMultiResult::from(e).c_ptr(),
     }
 }
@@ -776,7 +776,7 @@ pub extern "C" fn get_next_cyclic_part(ptr: PtrEncoder) -> *mut UREncodeMultiRes
     let keystone_ur_encoder_ptr = ptr as *mut ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
     let encoder = unsafe { &mut *keystone_ur_encoder_ptr };
     match encoder.next_cyclic_part() {
-        Ok(result) => UREncodeMultiResult::success(result).c_ptr(),
+        Ok(result) => UREncodeMultiResult::success(result.to_lowercase()).c_ptr(),
         Err(e) => UREncodeMultiResult::from(e).c_ptr(),
     }
 }

@@ -19,7 +19,7 @@ static void QRTimerHandler(lv_timer_t *timer)
     if (g_result) {
         if (!g_qrcodeSuspend) {
             PtrEncoder encoder = g_result->encoder;
-            UREncodeMultiResult *multiResult = get_next_cyclic_part(encoder);
+            UREncodeMultiResult *multiResult = get_next_part(encoder);
             if (multiResult->error_code == 0) {
                 char *data = multiResult->data;
                 uint16_t dataLen = strnlen_s(data, SIMPLERESPONSE_C_CHAR_MAX_LEN);

@@ -10,7 +10,7 @@ use crate::slow_hash::cryptonight_hash_v0;
 use crate::utils::{hash::*, constants::*};
 use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
-use curve25519_dalek::traits::{IsIdentity, MultiscalarMul, ValidityCheck};
+use curve25519_dalek::traits::{IsIdentity, MultiscalarMul};
 use rand_core::{RngCore, CryptoRng, SeedableRng};
 use crate::utils::sign::*;
 use monero_serai_mirror::transaction::Input;

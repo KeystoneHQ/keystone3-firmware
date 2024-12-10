@@ -232,7 +232,7 @@ dependencies = [
  "bincode",
  "bitcoin",
  "borsh 1.5.1",
- "bs58",
+ "bs58 0.5.1",
  "hex",
  "keystore",
  "num-derive 0.3.3",
@@ -520,7 +520,7 @@ name = "bip32"
 version = "0.5.2"
 source = "git+https://github.com/KeystoneHQ/crates.git?tag=no_std#47cfb6580188cdad8108523e1ec173f628d5dd69"
 dependencies = [
- "bs58",
+ "bs58 0.5.1",
  "hmac",
  "rand_core 0.6.4",
  "ripemd",
@@ -788,6 +788,12 @@ dependencies = [
  "quote",
  "syn 1.0.109",
 ]
+
+[[package]]
+name = "bs58"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
 
 [[package]]
 name = "bs58"
@@ -2435,6 +2441,7 @@ dependencies = [
 [[package]]
 name = "move-core-types"
 version = "0.0.4"
+source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.2#9a64a25a54e80691e629aca9a101665a66297418"
 dependencies = [
  "anyhow",
  "bcs",
@@ -3880,10 +3887,12 @@ dependencies = [
 [[package]]
 name = "sui-enum-compat-util"
 version = "0.1.0"
+source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.2#9a64a25a54e80691e629aca9a101665a66297418"
 
 [[package]]
 name = "sui-macros"
 version = "0.7.0"
+source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.2#9a64a25a54e80691e629aca9a101665a66297418"
 dependencies = [
  "futures",
  "once_cell",
@@ -3894,6 +3903,7 @@ dependencies = [
 [[package]]
 name = "sui-proc-macros"
 version = "0.7.0"
+source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.2#9a64a25a54e80691e629aca9a101665a66297418"
 dependencies = [
  "msim-macros",
  "proc-macro2",
@@ -3905,11 +3915,12 @@ dependencies = [
 [[package]]
 name = "sui-types"
 version = "0.1.2"
+source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.2#9a64a25a54e80691e629aca9a101665a66297418"
 dependencies = [
  "anyhow",
  "base64ct",
  "bcs",
- "bs58",
+ "bs58 0.4.0",
  "core2",
  "hashbrown 0.14.5",
  "hex",
@@ -4267,7 +4278,7 @@ name = "ur-registry"
 version = "0.1.1"
 source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.44#ff77d9834a0831e935c4c191db7ba1cfcd89b5b5"
 dependencies = [
- "bs58",
+ "bs58 0.5.1",
  "core2",
  "hex",
  "libflate",
@@ -4800,7 +4811,7 @@ dependencies = [
  "bip32",
  "bitvec",
  "blake2b_simd",
- "bs58",
+ "bs58 0.5.1",
  "byteorder",
  "chacha20poly1305",
  "core2",

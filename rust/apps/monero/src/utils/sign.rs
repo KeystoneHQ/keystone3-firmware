@@ -49,14 +49,12 @@ pub fn check_signature(hash: &[u8], pubkey: &PublicKey, sig: &Signature) -> bool
   let c = &sig[..32];
   let r = &sig[32..];
   let point = pubkey.point.decompress().unwrap();
-  if !point.is_valid() {
-      return false;
-  }
+
   let scalar_a = Scalar::from_canonical_bytes(c.try_into().unwrap());
   let scalar_b = Scalar::from_canonical_bytes(r.try_into().unwrap());
   let is_valid_a: bool = scalar_a.is_some().into();
   let is_valid_b: bool = scalar_b.is_some().into();
-  if !point.is_valid() || !is_valid_a || !is_valid_b || scalar_b.unwrap() == Scalar::ZERO {
+  if !is_valid_a || !is_valid_b || scalar_b.unwrap() == Scalar::ZERO {
       return false;
   }
   let result_point = EdwardsPoint::vartime_double_scalar_mul_basepoint(

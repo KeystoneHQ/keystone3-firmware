@@ -93,8 +93,8 @@ core2 = { version = "0.3.3", default_features = false, features = ["alloc"] }
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
 rsa = { version = "0.8.2", default-features = false }
 sha1 = { version = "0.10.5", default-features = false }
-ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", branch = "feat/monero-integration" }
-ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", branch = "feat/monero-integration" }
+ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.45" }
+ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.45" }
 ed25519-bip32-core = { version = "0.1.1", default-features = false }
 cryptoxide = "0.4"
 arrayref = "0.3.6"

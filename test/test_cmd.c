@@ -2531,7 +2531,7 @@ static void testCardanoTx(int argc, char *argv[])
     uint8_t entropy[64];
     uint8_t entropyLen = sizeof(entropy);
     GetAccountEntropy(index, entropy, &entropyLen, argv[1]);
-    UREncodeResult *sign_result = cardano_sign_tx(result->data, mfp, xpub, entropy, sizeof(entropy), "", false);
+    UREncodeResult *sign_result = cardano_sign_tx(result->data, mfp, xpub, entropy, sizeof(entropy), "",false);
     if (sign_result->error_code == 0) {
         printf("sign result: %s \r\n", sign_result->data);
     } else {

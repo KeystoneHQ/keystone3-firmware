@@ -192,8 +192,10 @@ mod tests {
     #[test]
     fn test_calculate_instruction_sighash() {
         let multisig_create_sighash = sighash(SIGHASH_GLOBAL_NAMESPACE, "multisig_create");
+        let multisig_create_sighash_v2 = sighash(SIGHASH_GLOBAL_NAMESPACE, "multisig_create_v2");
         let proposal_create_sighash = sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_create");
         assert_eq!("7a4d509f54585ac5", hex::encode(multisig_create_sighash));
+        assert_eq!("32ddc75d28f58be9", hex::encode(multisig_create_sighash_v2));
         assert_eq!("dc3c49e01e6c4f9f", hex::encode(proposal_create_sighash));
     }
 }

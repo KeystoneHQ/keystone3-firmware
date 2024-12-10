@@ -21,7 +21,6 @@ use ur_parse_lib::keystone_ur_decoder::{
 use ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
 #[cfg(feature = "multi-coins")]
 use ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
-use ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
 use ur_registry::cardano::{
@@ -56,6 +55,10 @@ use ur_registry::ton::ton_sign_request::TonSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::monero::{xmr_output::XmrOutput, xmr_txunsigned::XmrTxUnsigned};
 use ur_registry::traits::RegistryItem;
+use ur_registry::{
+    bitcoin::btc_sign_request::BtcSignRequest,
+    cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest,
+};
 
 use crate::errors::{ErrorCodes, RustCError};
 use crate::free::Free;
@@ -214,6 +217,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     CardanoCatalystVotingRegistration,
     #[cfg(feature = "multi-coins")]
+    CardanoSignTxHash,
+    #[cfg(feature = "multi-coins")]
     NearTx,
     #[cfg(feature = "multi-coins")]
     XRPTx,
@@ -225,6 +230,7 @@ pub enum ViewType {
     SuiTx,
     #[cfg(feature = "multi-coins")]
     SuiSignMessageHash,
+
     #[cfg(feature = "multi-coins")]
     ArweaveTx,
     #[cfg(feature = "multi-coins")]
@@ -275,6 +281,9 @@ pub enum QRCodeType {
     NearSignRequest,
     #[cfg(feature = "multi-coins")]
     CardanoSignRequest,
+    #[cfg(feature = "multi-coins")]
+    CardanoSignTxHashRequest,
+
     #[cfg(feature = "multi-coins")]
     CardanoSignDataRequest,
     #[cfg(feature = "multi-coins")]
@@ -336,6 +345,8 @@ impl QRCodeType {
             InnerURType::AptosSignRequest(_) => Ok(QRCodeType::AptosSignRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::CardanoSignRequest(_) => Ok(QRCodeType::CardanoSignRequest),
+            #[cfg(feature = "multi-coins")]
+            InnerURType::CardanoSignTxHashRequest(_) => Ok(QRCodeType::CardanoSignTxHashRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::CardanoSignDataRequest(_) => Ok(QRCodeType::CardanoSignDataRequest),
             #[cfg(feature = "multi-coins")]
@@ -499,6 +510,11 @@ fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
             free_ptr_with_type!(data, XmrTxUnsigned);
         }
         #[cfg(feature = "multi-coins")]
+        QRCodeType::CardanoSignTxHashRequest => {
+            free_ptr_with_type!(data, CardanoSignTxHashRequest);
+        }
+
+        #[cfg(feature = "multi-coins")]
         QRCodeType::CardanoCatalystVotingRegistrationRequest => {
             free_ptr_with_type!(data, CardanoCatalystVotingRegistrationRequest);
         }
@@ -639,6 +655,8 @@ pub fn decode_ur(ur: String) -> URParseResult {
         #[cfg(feature = "multi-coins")]
         QRCodeType::CardanoSignRequest => _decode_ur::<CardanoSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
+        QRCodeType::CardanoSignTxHashRequest => _decode_ur::<CardanoSignTxHashRequest>(ur, ur_type),
+        #[cfg(feature = "multi-coins")]
         QRCodeType::CardanoSignDataRequest => _decode_ur::<CardanoSignDataRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
         QRCodeType::CardanoCatalystVotingRegistrationRequest => {
@@ -725,6 +743,11 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         QRCodeType::NearSignRequest => _receive_ur::<NearSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         QRCodeType::CardanoSignRequest => _receive_ur::<CardanoSignRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "multi-coins")]
+        QRCodeType::CardanoSignTxHashRequest => {
+            _receive_ur::<CardanoSignTxHashRequest>(ur, ur_type, decoder)
+        }
+
         #[cfg(feature = "multi-coins")]
         QRCodeType::CardanoSignDataRequest => {
             _receive_ur::<CardanoSignDataRequest>(ur, ur_type, decoder)

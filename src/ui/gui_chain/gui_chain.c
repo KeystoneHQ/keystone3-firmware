@@ -13,6 +13,7 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_BTC_MESSAGE:
     case REMAPVIEW_COSMOS:
     case REMAPVIEW_SUI_SIGN_MESSAGE_HASH:
+    case REMAPVIEW_ADA_SIGN_TX_HASH:
         return true;
     default:
         return false;
@@ -44,6 +45,8 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
         return GuiGetSolCheckResult();
     case REMAPVIEW_APT:
         return GuiGetAptosCheckResult();
+    case REMAPVIEW_ADA_SIGN_TX_HASH:
+        return GuiGetAdaSignTxHashCheckResult();
     case REMAPVIEW_ADA:
         return GuiGetAdaCheckResult();
     case REMAPVIEW_ADA_SIGN_DATA:
@@ -106,6 +109,8 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
         return CHAIN_SOL;
     case AptosTx:
         return CHAIN_APT;
+    case CardanoSignTxHash:
+        return CHAIN_ADA;
     case CardanoTx:
     case CardanoSignData:
     case CardanoCatalystVotingRegistration:
@@ -190,6 +195,9 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
         break;
     case AptosTx:
         func = GuiGetAptosSignQrCodeData;
+        break;
+    case CardanoSignTxHash:
+        func = GuiGetAdaSignTxHashQrCodeData;
         break;
     case CardanoSignData:
         func = GuiGetAdaSignSignDataQrCodeData;

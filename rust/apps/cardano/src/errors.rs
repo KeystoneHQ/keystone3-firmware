@@ -1,5 +1,5 @@
 use alloc::string::{String, ToString};
-use cardano_serialization_lib::error::DeserializeError;
+use cardano_serialization_lib::DeserializeError;
 use ed25519_bip32_core::DerivationError;
 use thiserror;
 use thiserror::Error;

@@ -1,16 +1,14 @@
 use crate::errors::{CardanoError, R};
 use alloc::string::{String, ToString};
 
-use cardano_serialization_lib::address::{
-    BaseAddress, EnterpriseAddress, RewardAddress, StakeCredential,
+use cardano_serialization_lib::protocol_types::credential::*;
+use cardano_serialization_lib::protocol_types::{
+    BaseAddress, Ed25519KeyHash, EnterpriseAddress, RewardAddress,
 };
-use cardano_serialization_lib::crypto::Ed25519KeyHash;
-
 use cryptoxide::hashing::blake2b_224;
 use ed25519_bip32_core::{DerivationScheme, XPub};
 use hex;
 use ur_registry::crypto_key_path::CryptoKeyPath;
-
 pub enum AddressType {
     Base,
     Stake,
@@ -21,7 +19,7 @@ pub fn calc_stake_address_from_xpub(stake_key: [u8; 32]) -> R<String> {
     let stake_key_hash = blake2b_224(&stake_key);
     let address = RewardAddress::new(
         1,
-        &StakeCredential::from_keyhash(&Ed25519KeyHash::from(stake_key_hash)),
+        &Credential::from_keyhash(&Ed25519KeyHash::from(stake_key_hash)),
     );
     address
         .to_address()
@@ -65,8 +63,8 @@ pub fn derive_address(
             let stake_key_hash = blake2b_224(&stake_key);
             let address = BaseAddress::new(
                 network,
-                &StakeCredential::from_keyhash(&Ed25519KeyHash::from(payment_key_hash)),
-                &StakeCredential::from_keyhash(&Ed25519KeyHash::from(stake_key_hash)),
+                &Credential::from_keyhash(&Ed25519KeyHash::from(payment_key_hash)),
+                &Credential::from_keyhash(&Ed25519KeyHash::from(stake_key_hash)),
             );
             address
                 .to_address()
@@ -81,7 +79,7 @@ pub fn derive_address(
             let stake_key_hash = blake2b_224(&stake_key);
             let address = RewardAddress::new(
                 network,
-                &StakeCredential::from_keyhash(&Ed25519KeyHash::from(stake_key_hash)),
+                &Credential::from_keyhash(&Ed25519KeyHash::from(stake_key_hash)),
             );
             address
                 .to_address()
@@ -96,7 +94,7 @@ pub fn derive_address(
             let payment_key_hash = blake2b_224(&payment_key);
             let address = EnterpriseAddress::new(
                 network,
-                &StakeCredential::from_keyhash(&Ed25519KeyHash::from(payment_key_hash)),
+                &Credential::from_keyhash(&Ed25519KeyHash::from(payment_key_hash)),
             );
             address
                 .to_address()
@@ -124,7 +122,7 @@ mod tests {
     use alloc::string::ToString;
     use alloc::vec;
     use bech32;
-    use cardano_serialization_lib::address::{Address, BaseAddress};
+    use cardano_serialization_lib::protocol_types::{Address, BaseAddress};
     use cryptoxide::hashing::blake2b_224;
     use keystore;
 

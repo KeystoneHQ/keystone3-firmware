@@ -6,7 +6,8 @@
 #include "librust_c.h"
 #include "account_public_info.h"
 
-typedef enum {
+typedef enum
+{
     STANDARD_ADA = 0,
     LEDGER_ADA,
 } AdaXPubType;
@@ -55,7 +56,7 @@ void *GuiGetAdaCatalyst(void);
 void FreeAdaMemory(void);
 void FreeAdaSignDataMemory(void);
 void FreeAdaCatalystMemory(void);
-
+void FreeAdaSignTxHashMemory(void);
 char *GuiGetADABaseAddressByXPub(char *xPub);
 UREncodeResult *GuiGetAdaSignQrCodeData(void);
 UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void);
@@ -86,4 +87,9 @@ ChainType GetReceivePageAdaXPubTypeByIndex(uint16_t index);
 
 AdaXPubType GetKeyDerivationAdaXPubType(void);
 
+void *GuiGetAdaSignTxHashData(void);
+UREncodeResult *GuiGetAdaSignTxHashQrCodeData(void);
+PtrT_TransactionCheckResult GuiGetAdaSignTxHashCheckResult(void);
+void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData);
+void GuiShowAdaSignTxHashOverview(lv_obj_t *parent, void *totalData);
 #endif

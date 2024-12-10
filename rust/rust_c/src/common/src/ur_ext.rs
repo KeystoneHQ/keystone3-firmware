@@ -15,6 +15,8 @@ use ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 #[cfg(feature = "multi-coins")]
+use ur_registry::cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest;
+#[cfg(feature = "multi-coins")]
 use ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
@@ -289,6 +291,13 @@ impl InferViewType for NearSignRequest {
 impl InferViewType for CardanoSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoTx)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for CardanoSignTxHashRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::CardanoSignTxHash)
     }
 }
 

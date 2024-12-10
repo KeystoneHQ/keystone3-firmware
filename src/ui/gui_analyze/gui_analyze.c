@@ -145,6 +145,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         FreeSuiMemory
     },
     {
+        REMAPVIEW_ADA_SIGN_TX_HASH,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ada_sign_tx_hash_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashDetails\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_sign_ada_tx_hash.json",
+#endif
+        GuiGetAdaSignTxHashData,
+        NULL,
+        FreeAdaSignTxHashMemory,
+    },
+    {
         REMAPVIEW_SOL,
 #ifndef COMPILE_SIMULATOR
         "{\"name\":\"sol_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxDetail\"}]}]}",
@@ -1383,6 +1394,10 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowXmrTransactionDetails;
     } else if (!strcmp(funcName, "GuiShowXmrTransactionOverview")) {
         return GuiShowXmrTransactionOverview;
+    } else if (!strcmp(funcName, "GuiShowAdaSignTxHashOverview")) {
+        return GuiShowAdaSignTxHashOverview;
+    } else if (!strcmp(funcName, "GuiShowAdaSignTxHashDetails")) {
+        return GuiShowAdaSignTxHashDetails;
     }
 #endif
     return NULL;
@@ -1768,6 +1783,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_SOL_MESSAGE;
     case AptosTx:
         return REMAPVIEW_APT;
+    case CardanoSignTxHash:
+        return REMAPVIEW_ADA_SIGN_TX_HASH;
     case CardanoTx:
         return REMAPVIEW_ADA;
     case CardanoSignData:

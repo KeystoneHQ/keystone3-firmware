@@ -21,5 +21,5 @@ keystore = { workspace = true }
 bech32 = { workspace = true }
 
 [dependencies.cardano-serialization-lib]
-path = "../../../../cardano-serialization-lib/rust"
-# tag = "keystone-0.1.4"
+git = "https://github.com/KeystoneHQ/cardano-serialization-lib.git"
+tag = "keystone-0.1.4"

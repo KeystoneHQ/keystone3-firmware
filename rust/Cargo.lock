@@ -232,7 +232,7 @@ dependencies = [
  "bincode",
  "bitcoin",
  "borsh 1.5.1",
- "bs58",
+ "bs58 0.5.1",
  "hex",
  "keystore",
  "num-derive 0.3.3",
@@ -520,7 +520,7 @@ name = "bip32"
 version = "0.5.2"
 source = "git+https://github.com/KeystoneHQ/crates.git?tag=no_std#47cfb6580188cdad8108523e1ec173f628d5dd69"
 dependencies = [
- "bs58",
+ "bs58 0.5.1",
  "hmac",
  "rand_core 0.6.4",
  "ripemd",
@@ -791,6 +791,12 @@ dependencies = [
 
 [[package]]
 name = "bs58"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
+
+[[package]]
+name = "bs58"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf88ba1141d185c399bee5288d850d63b8369520c1eafc32a0430b5b6c287bf4"
@@ -867,6 +873,7 @@ dependencies = [
 [[package]]
 name = "cardano-serialization-lib"
 version = "11.5.0"
+source = "git+https://github.com/KeystoneHQ/cardano-serialization-lib.git?tag=keystone-0.1.4#5cf9480ed63962072809971e5f74e0b95035bee2"
 dependencies = [
  "bech32 0.9.1",
  "cbor_event",
@@ -2422,6 +2429,7 @@ dependencies = [
 [[package]]
 name = "move-core-types"
 version = "0.0.4"
+source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.2#9a64a25a54e80691e629aca9a101665a66297418"
 dependencies = [
  "anyhow",
  "bcs",
@@ -3821,10 +3829,12 @@ dependencies = [
 [[package]]
 name = "sui-enum-compat-util"
 version = "0.1.0"
+source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.2#9a64a25a54e80691e629aca9a101665a66297418"
 
 [[package]]
 name = "sui-macros"
 version = "0.7.0"
+source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.2#9a64a25a54e80691e629aca9a101665a66297418"
 dependencies = [
  "futures",
  "once_cell",
@@ -3835,6 +3845,7 @@ dependencies = [
 [[package]]
 name = "sui-proc-macros"
 version = "0.7.0"
+source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.2#9a64a25a54e80691e629aca9a101665a66297418"
 dependencies = [
  "msim-macros",
  "proc-macro2",
@@ -3846,11 +3857,12 @@ dependencies = [
 [[package]]
 name = "sui-types"
 version = "0.1.2"
+source = "git+https://github.com/KeystoneHQ/sui.git?tag=0.1.2#9a64a25a54e80691e629aca9a101665a66297418"
 dependencies = [
  "anyhow",
  "base64ct",
  "bcs",
- "bs58",
+ "bs58 0.4.0",
  "core2",
  "hashbrown 0.14.5",
  "hex",
@@ -4196,6 +4208,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
+source = "git+https://github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.43#96feeb022710c5a86a2d73041ecfec1fee5b21d7"
 dependencies = [
  "hex",
  "ur",
@@ -4204,9 +4217,10 @@ dependencies = [
 
 [[package]]
 name = "ur-registry"
-version = "0.1.1"
+version = "0.1.0"
+source = "git+https://github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.43#96feeb022710c5a86a2d73041ecfec1fee5b21d7"
 dependencies = [
- "bs58",
+ "bs58 0.5.1",
  "core2",
  "hex",
  "libflate",
@@ -4739,7 +4753,7 @@ dependencies = [
  "bip32",
  "bitvec",
  "blake2b_simd",
- "bs58",
+ "bs58 0.5.1",
  "byteorder",
  "chacha20poly1305",
  "core2",

@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 keystore = { workspace = true }
 app_utils = { workspace = true }
-sui-types = { path = "../../../../sui/crates/sui-types" }
+sui-types = { git = "https://github.com/KeystoneHQ/sui.git", tag = "0.1.2", package = "sui-types" }
 serde = { workspace = true }
 serde_derive = { workspace = true }
 bcs = { workspace = true }

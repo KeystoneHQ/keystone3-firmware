@@ -2,6 +2,7 @@ use alloc::vec::Vec;
 use crate::key::*;
 use crate::utils::*;
 use crate::utils::hash::*;
+use curve25519_dalek::traits::ValidityCheck;
 
 pub struct Signature(pub [u8; 64]);
 

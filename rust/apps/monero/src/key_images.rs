@@ -251,7 +251,7 @@ impl ExportedTransferDetail {
 
         let key_to_use = match additional_tx_pub_key {
             Some(key) => &key.as_bytes(),
-            None => tx_pubkey,
+            None => &self.tx_pubkey,
         };
 
         let prvkey = calc_key_image_private_key(

@@ -14,7 +14,7 @@ pub struct ExportedTransferDetail {
     pub tx_pubkey: [u8; 32],
     pub flags: u8,
     pub amount: u64,
-    pub additional_tx_keys: Vec<[u8; 32]>,
+    pub additional_tx_keys: Vec<PublicKey>,
     pub major: u32,
     pub minor: u32,
 }
@@ -95,7 +95,7 @@ impl ExportedTransferDetails {
                 tx_pubkey: tx_pubkey.as_bytes(),
                 flags,
                 amount,
-                additional_tx_keys: Vec::new(),
+                additional_tx_keys: additional_tx_keys,
                 major: major as u32,
                 minor: minor as u32,
             });

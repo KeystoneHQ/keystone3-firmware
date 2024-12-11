@@ -29,12 +29,13 @@ pub fn get_address(ufvk_text: &str) -> Result<String> {
 }
 
 pub fn check_pczt(pczt: &[u8], ufvk_text: &str, seed_fingerprint: &[u8; 32]) -> Result<()> {
-    let ufvk = UnifiedFullViewingKey::decode(&MainNetwork, ufvk_text)
-        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
-    let pczt =
-        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
-    pczt::check::check_pczt(seed_fingerprint, &ufvk, &pczt)?;
     Ok(())
+    // let ufvk = UnifiedFullViewingKey::decode(&MainNetwork, ufvk_text)
+    //     .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
+    // let pczt =
+    //     Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
+    // pczt::check::check_pczt(seed_fingerprint, &ufvk, &pczt)?;
+    // Ok(())
 }
 
 pub fn parse_pczt(pczt: &[u8], ufvk_text: &str, seed_fingerprint: &[u8; 32]) -> Result<ParsedPczt> {

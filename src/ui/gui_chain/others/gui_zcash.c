@@ -60,7 +60,9 @@ void GuiZcashOverview(lv_obj_t *parent, void *totalData) {
 
     lv_obj_t* last_view = CreateTransactionItemView(container, _("Amount"), g_zcashData->total_transfer_value, NULL);
 
-    last_view = GuiZcashOverviewTransparent(container, last_view);
+    if(g_zcashData->transparent != NULL) {
+        last_view = GuiZcashOverviewTransparent(container, last_view);
+    }
 
     last_view = GuiZcashOverviewOrchard(container, last_view);
 }

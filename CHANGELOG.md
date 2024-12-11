@@ -1,3 +1,16 @@
+## 1.7.14(2024-12-10)
+
+### What's new
+
+1. Increased the number of supported SOL receiving addresses to 50
+2. Added support for Cardano Tag 258 transaction type, enhancing transaction compatibility and network interoperability
+
+### Bug Fixes
+
+1. Fixed an issue with signing LTC transactions using the OKX wallet
+
+
+
 ## 1.7.12(2024-12-03)
 
 ### What's New

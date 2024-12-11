@@ -1,26 +1,26 @@
-use crate::key::{KeyPair, PrivateKey, PublicKey};
 use crate::errors::{MoneroError, Result};
+use crate::key::{KeyPair, PrivateKey, PublicKey};
+use crate::key_images::Keyimage;
+use crate::slow_hash::cryptonight_hash_v0;
+use crate::utils::sign::*;
+use crate::utils::{constants::*, hash::*};
+use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec;
-use alloc::format;
 use alloc::vec::Vec;
 use chacha20::cipher::{generic_array::GenericArray, KeyIvInit, StreamCipher};
 use chacha20::ChaCha20Legacy;
-use crate::slow_hash::cryptonight_hash_v0;
-use crate::utils::{hash::*, constants::*};
 use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::traits::{IsIdentity, MultiscalarMul};
-use rand_core::{RngCore, CryptoRng, SeedableRng};
-use crate::utils::sign::*;
 use monero_serai_mirror::transaction::Input;
-use crate::key_images::Keyimage;
+use rand_core::{CryptoRng, RngCore, SeedableRng};
 
-pub mod varinteger;
+pub mod constants;
 pub mod hash;
 pub mod io;
-pub mod constants;
 pub mod sign;
+pub mod varinteger;
 
 pub struct DecryptUrData {
     pub pk1: Option<PublicKey>,
@@ -105,7 +105,11 @@ pub fn encrypt_data_with_pvk(keypair: KeyPair, data: Vec<u8>, magic: &str) -> Ve
     [magic_bytes, &nonce_num, &buffer].concat()
 }
 
-pub fn decrypt_data_with_pvk(pvk: [u8; PUBKEY_LEH], data: Vec<u8>, magic: &str) -> Result<DecryptUrData> {
+pub fn decrypt_data_with_pvk(
+    pvk: [u8; PUBKEY_LEH],
+    data: Vec<u8>,
+    magic: &str,
+) -> Result<DecryptUrData> {
     if pvk.len() != PUBKEY_LEH {
         return Err(MoneroError::InvalidPrivateViewKey);
     }
@@ -114,7 +118,12 @@ pub fn decrypt_data_with_pvk(pvk: [u8; PUBKEY_LEH], data: Vec<u8>, magic: &str) 
     decrypt_data_with_decrypt_key(pvk_hash, pvk, data, magic)
 }
 
-pub fn decrypt_data_with_decrypt_key(decrypt_key: [u8; PUBKEY_LEH], pvk: [u8; PUBKEY_LEH], data: Vec<u8>, magic: &str) -> Result<DecryptUrData> {
+pub fn decrypt_data_with_decrypt_key(
+    decrypt_key: [u8; PUBKEY_LEH],
+    pvk: [u8; PUBKEY_LEH],
+    data: Vec<u8>,
+    magic: &str,
+) -> Result<DecryptUrData> {
     let key = GenericArray::from_slice(&decrypt_key);
 
     let magic_bytes = magic.as_bytes();
@@ -188,12 +197,10 @@ pub fn generate_random_scalar<R: RngCore + CryptoRng>(rng: &mut R) -> Scalar {
 
 pub fn get_key_image_from_input(input: Input) -> Result<Keyimage> {
     match input {
-        Input::ToKey { key_image, .. } =>
-            Ok(Keyimage::new(key_image.compress().to_bytes())),
+        Input::ToKey { key_image, .. } => Ok(Keyimage::new(key_image.compress().to_bytes())),
         _ => Err(MoneroError::UnsupportedInputType),
     }
 }
-
 
 pub fn fmt_monero_amount(value: u64) -> String {
     let value = value as f64 / 1_000_000_000_000.0;
@@ -289,7 +296,12 @@ mod tests {
         let rng_seed = [0u8; 32];
         let mut rng = rand_chacha::ChaCha20Rng::from_seed(rng_seed);
 
-        let res = decrypt_data_with_pvk(pvk.clone().try_into().unwrap(), data.clone(), OUTPUT_EXPORT_MAGIC).unwrap();
+        let res = decrypt_data_with_pvk(
+            pvk.clone().try_into().unwrap(),
+            data.clone(),
+            OUTPUT_EXPORT_MAGIC,
+        )
+        .unwrap();
         assert_eq!(
             hex::encode(res.hash.clone()),
             "5853d87db51d4d3c0a00b86d06897361b9e49f742fd02988abf6aeca585b988d"
@@ -299,8 +311,13 @@ mod tests {
             "03000707013e8c52245d21b22cbcb90f95270a7937d4974d726209f0a41fdefc7f9df01fde01c8b486383e45d72b841a8b76094dbaa26f9800aac4eaced3bc06122a3380bcf6c666d2281480a0b787e905000000012d58a6378c07f230148c11979cc6e3bec2719f0ec92de21f7fae02029ab025e000f385873857dc102abc6d35c878db7be629646658ae1a418afb27a943f8a2591be4f450e9148094ebdc03000001014ef323a52d2e048594ad73acbe5fb7e588b1859ec9aa02b2670f487660b2700901f485873857dc102abc6d35c878db7be629646658ae1a418afb27a943f8a2591be4f450e914c0b5809ce50500000001cb8ab3c1b4dd10404a4a3c9275a7e2e1e9bf2e4edf1c84f61952bb97965573a300d0c78a38bdd50fdc0367b3141fdc055dec3af5e3ac920dd55816823dfe02f70c3d1816431480c2d72f00000301dd8c2a791056760d903bf06e7930585201e0bd20bcba1e720b85ad0e4d628e4801d1c78a38bdd50fdc0367b3141fdc055dec3af5e3ac920dd55816823dfe02f70c3d18164314a0eec19e03000000019b65ada69049d73e4b049ebd50393410cdc05dad5314690d2b4a36628c4e257600a4909d385d43421399107bd34350b8938f9ff69da18e8f083e6522adf6aa270b3f370ed41480e8eda1ba01000100016311ba60a0a8c636806e232db3e1ad7f79e26df3d24258e264e4351e47f4374d01a5909d385d43421399107bd34350b8938f9ff69da18e8f083e6522adf6aa270b3f370ed414c0c2b383ae04000000"
         );
 
-        let sig = generate_signature(&res.hash, &res.pk2.unwrap(), &PrivateKey::from_bytes(&pvk), &mut rng)
-            .unwrap();
+        let sig = generate_signature(
+            &res.hash,
+            &res.pk2.unwrap(),
+            &PrivateKey::from_bytes(&pvk),
+            &mut rng,
+        )
+        .unwrap();
         assert!(check_signature(&res.hash, &res.pk2.unwrap(), &sig));
     }
 
@@ -315,9 +332,7 @@ mod tests {
             hex::decode("7bb35441e077be8bb8d77d849c926bf1dd0e696c1c83017e648c20513d2d6907")
                 .unwrap();
 
-        let mut rng = rand_chacha::ChaCha20Rng::from_seed(
-            hash.clone().try_into().unwrap()
-        );
+        let mut rng = rand_chacha::ChaCha20Rng::from_seed(hash.clone().try_into().unwrap());
 
         let sig = generate_signature(
             &hash,

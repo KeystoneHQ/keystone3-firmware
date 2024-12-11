@@ -1,6 +1,6 @@
+use crate::errors::{MoneroError, Result};
 use crate::key::*;
 use crate::structs::{AddressType, Network};
-use crate::errors::{MoneroError, Result};
 use crate::utils::{constants::PUBKEY_LEH, hash::keccak256};
 use alloc::format;
 use alloc::string::{String, ToString};
@@ -53,16 +53,18 @@ impl Address {
             unknown_prefix => return Err(MoneroError::InvalidPrefix(unknown_prefix.to_string())),
         };
         let is_subaddress = prefix == "2A" || prefix == "3F" || prefix == "24";
-        let public_spend =
-            match PublicKey::from_bytes(&decoded[1..33]).map_err(|e| format!("decode error: {:?}", e)) {
-                Ok(public_spend) => public_spend,
-                _ => return Err(MoneroError::FormatError),
-            };
+        let public_spend = match PublicKey::from_bytes(&decoded[1..33])
+            .map_err(|e| format!("decode error: {:?}", e))
+        {
+            Ok(public_spend) => public_spend,
+            _ => return Err(MoneroError::FormatError),
+        };
         let public_view = match PublicKey::from_bytes(&decoded[33..65])
-            .map_err(|e| format!("decode error: {:?}", e)) {
-                Ok(public_view) => public_view,
-                _ => return Err(MoneroError::FormatError),
-            };
+            .map_err(|e| format!("decode error: {:?}", e))
+        {
+            Ok(public_view) => public_view,
+            _ => return Err(MoneroError::FormatError),
+        };
         Ok(Address {
             network: net,
             addr_type: if is_subaddress {
@@ -134,12 +136,7 @@ pub fn pub_keyring_to_address(
         Err(e) => return Err(e),
     };
 
-    match pub_keys_to_address(
-        net,
-        is_subaddress,
-        &pub_spend_key,
-        &pub_view_key,
-    ) {
+    match pub_keys_to_address(net, is_subaddress, &pub_spend_key, &pub_view_key) {
         Ok(address) => Ok(address),
         Err(e) => Err(e),
     }
@@ -202,7 +199,8 @@ pub fn generate_address(
             AddressType::Standard,
             public_spend_key.clone(),
             private_view_key.get_public_key(),
-        ).to_string());
+        )
+        .to_string());
     }
 
     let point = public_spend_key.point.decompress().unwrap();
@@ -288,7 +286,8 @@ mod tests {
         let public_spend_key = keypair.spend.get_public_key();
         let private_view_key = keypair.view;
 
-        let address = generate_address(&public_spend_key, &private_view_key, major, minor, true).unwrap();
+        let address =
+            generate_address(&public_spend_key, &private_view_key, major, minor, true).unwrap();
 
         assert_eq!(
             address,
@@ -322,7 +321,8 @@ mod tests {
             "5a69bc37d807013f80e10959bc7855419f1b0b47258a64a6a8c440ffd223070f"
         );
 
-        let sun_account = generate_address(&keypair.get_public_spend(), &keypair.view, 1, 0, true).unwrap();
+        let sun_account =
+            generate_address(&keypair.get_public_spend(), &keypair.view, 1, 0, true).unwrap();
 
         assert_eq!(
             sun_account,

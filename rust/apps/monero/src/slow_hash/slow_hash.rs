@@ -1,7 +1,6 @@
-use core::mem::swap;
 use alloc::vec::Vec;
 use cnaes::{AES_BLOCK_SIZE, CN_AES_KEY_SIZE};
-// use digest::Digest as _;
+use core::mem::swap;
 use groestl::Digest;
 use groestl::Groestl256;
 use jh::Jh256;

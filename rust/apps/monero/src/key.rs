@@ -1,5 +1,5 @@
-use crate::utils::{hash::hash_to_scalar, constants::PUBKEY_LEH};
 use crate::errors::{MoneroError, Result};
+use crate::utils::{constants::PUBKEY_LEH, hash::hash_to_scalar};
 use alloc::format;
 use alloc::string::{String, ToString};
 use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
@@ -45,16 +45,19 @@ impl PublicKey {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Result<PublicKey> {
-        let pub_key =
-            match CompressedEdwardsY::from_slice(bytes).map_err(|e| format!("decode error: {:?}", e)) {
-                Ok(point) => PublicKey { point },
-                _ => return Err(MoneroError::PublicKeyFromBytesError),
-            };
+        let pub_key = match CompressedEdwardsY::from_slice(bytes)
+            .map_err(|e| format!("decode error: {:?}", e))
+        {
+            Ok(point) => PublicKey { point },
+            _ => return Err(MoneroError::PublicKeyFromBytesError),
+        };
         Ok(pub_key)
     }
 
     pub fn from_str(s: &str) -> Result<PublicKey> {
-        let bytes = hex::decode(s).map_err(|e| format!("decode error: {:?}", e)).unwrap();
+        let bytes = hex::decode(s)
+            .map_err(|e| format!("decode error: {:?}", e))
+            .unwrap();
         PublicKey::from_bytes(&bytes)
     }
 }

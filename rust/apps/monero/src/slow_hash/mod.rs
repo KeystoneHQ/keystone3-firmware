@@ -1,7 +1,7 @@
 mod blake256;
 mod cnaes;
-mod util;
 mod slow_hash;
+mod util;
 
 use slow_hash::cn_slow_hash;
 

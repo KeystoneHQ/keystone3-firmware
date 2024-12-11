@@ -1,7 +1,7 @@
 use alloc::string::{String, ToString};
 use keystore::errors::KeystoreError;
-use thiserror::Error;
 use thiserror;
+use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
 pub enum MoneroError {

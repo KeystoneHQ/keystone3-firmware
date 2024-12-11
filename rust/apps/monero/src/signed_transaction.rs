@@ -1,10 +1,10 @@
-use alloc::{string::String, vec::Vec, vec};
-use monero_serai_mirror::transaction::{Transaction, NotPruned};
-use curve25519_dalek::Scalar;
-use crate::transfer::{TxDestinationEntry, TxConstructionData};
 use crate::key::*;
 use crate::key_images::Keyimage;
+use crate::transfer::{TxConstructionData, TxDestinationEntry};
 use crate::utils::io::*;
+use alloc::{string::String, vec, vec::Vec};
+use curve25519_dalek::Scalar;
+use monero_serai_mirror::transaction::{NotPruned, Transaction};
 
 #[derive(Debug, Clone)]
 pub struct PendingTx {
@@ -63,15 +63,19 @@ impl PendingTx {
 pub struct SignedTxSet {
     pub ptx: Vec<PendingTx>,
     key_images: Vec<Keyimage>,
-    tx_key_images: Vec<(PublicKey, Keyimage)>
+    tx_key_images: Vec<(PublicKey, Keyimage)>,
 }
 
 impl SignedTxSet {
-    pub fn new(ptx: Vec<PendingTx>, key_images: Vec<Keyimage>, tx_key_images: Vec<(PublicKey, Keyimage)>) -> Self {
+    pub fn new(
+        ptx: Vec<PendingTx>,
+        key_images: Vec<Keyimage>,
+        tx_key_images: Vec<(PublicKey, Keyimage)>,
+    ) -> Self {
         Self {
             ptx,
             key_images,
-            tx_key_images
+            tx_key_images,
         }
     }
 }
@@ -121,7 +125,9 @@ impl SignedTxSet {
         for key_image in signed_tx_set.key_images.clone() {
             res.extend_from_slice(&key_image.to_bytes());
         }
-        res.extend_from_slice(write_varinteger(signed_tx_set.tx_key_images.len() as u64).as_slice());
+        res.extend_from_slice(
+            write_varinteger(signed_tx_set.tx_key_images.len() as u64).as_slice(),
+        );
         for (public_key, key_image) in signed_tx_set.tx_key_images.clone() {
             res.push(2u8);
             res.extend_from_slice(&public_key.point.to_bytes());

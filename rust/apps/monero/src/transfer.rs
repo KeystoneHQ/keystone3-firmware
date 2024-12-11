@@ -1,27 +1,29 @@
+use crate::address::*;
+use crate::errors::{MoneroError, Result};
+use crate::key::*;
+use crate::key_images::{try_to_generate_image, Keyimage};
+use crate::outputs::ExportedTransferDetails;
+use crate::signed_transaction::{PendingTx, SignedTxSet};
+use crate::structs::*;
+use crate::utils::*;
+use crate::utils::{constants::*, hash::*, io::*};
 use alloc::borrow::ToOwned;
+use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
-use alloc::string::{String, ToString};
-use curve25519_dalek::EdwardsPoint;
-use monero_primitives_mirror::Decoys;
-use crate::key_images::{Keyimage, try_to_generate_image};
-use crate::utils::*;
-use crate::utils::{hash::*, io::*, constants::*};
-use crate::address::*;
-use crate::structs::*;
-use crate::key::*;
-use crate::errors::{MoneroError, Result};
-use curve25519_dalek::scalar::Scalar;
-use monero_serai_mirror::transaction::{Transaction, NotPruned, TransactionPrefix, Input, Output, Timelock};
-use monero_serai_mirror::ringct::bulletproofs::Bulletproof;
-use monero_serai_mirror::ringct::{RctPrunable, RctBase, RctProofs};
-use monero_serai_mirror::primitives::Commitment;
-use rand_core::SeedableRng;
-use monero_clsag_mirror::{Clsag, ClsagContext};
-use zeroize::Zeroizing;
-use crate::signed_transaction::{SignedTxSet, PendingTx};
 use core::fmt::Display;
-use crate::outputs::ExportedTransferDetails;
+use curve25519_dalek::scalar::Scalar;
+use curve25519_dalek::EdwardsPoint;
+use monero_clsag_mirror::{Clsag, ClsagContext};
+use monero_primitives_mirror::Decoys;
+use monero_serai_mirror::primitives::Commitment;
+use monero_serai_mirror::ringct::bulletproofs::Bulletproof;
+use monero_serai_mirror::ringct::{RctBase, RctProofs, RctPrunable};
+use monero_serai_mirror::transaction::{
+    Input, NotPruned, Output, Timelock, Transaction, TransactionPrefix,
+};
+use rand_core::SeedableRng;
+use zeroize::Zeroizing;
 
 #[derive(Debug, Clone)]
 pub struct DisplayTransactionInfo {
@@ -96,14 +98,14 @@ pub struct AccountPublicAddress {
 }
 
 impl AccountPublicAddress {
-    pub fn to_address(
-        &self,
-        network: Network,
-        is_subaddress: bool,
-    ) -> Address {
+    pub fn to_address(&self, network: Network, is_subaddress: bool) -> Address {
         let address = Address {
             network,
-            addr_type: if is_subaddress { AddressType::Subaddress } else { AddressType::Standard },
+            addr_type: if is_subaddress {
+                AddressType::Subaddress
+            } else {
+                AddressType::Standard
+            },
             public_spend: PublicKey::from_bytes(&self.spend_public_key).unwrap(),
             public_view: PublicKey::from_bytes(&self.view_public_key).unwrap(),
         };
@@ -176,7 +178,10 @@ impl InnerInputs {
     }
 
     pub fn get_inputs(&self) -> Vec<Input> {
-        self.0.iter().map(|inner_input| inner_input.input.clone()).collect()
+        self.0
+            .iter()
+            .map(|inner_input| inner_input.input.clone())
+            .collect()
     }
 
     pub fn get_key_offsets(&self, index: usize) -> Vec<u64> {
@@ -184,7 +189,10 @@ impl InnerInputs {
     }
 
     pub fn get_sources(&self) -> Vec<TxSourceEntry> {
-        self.0.iter().map(|inner_input| inner_input.source.clone()).collect()
+        self.0
+            .iter()
+            .map(|inner_input| inner_input.source.clone())
+            .collect()
     }
 }
 
@@ -205,11 +213,17 @@ impl InnerOutputs {
     }
 
     pub fn get_outputs(&self) -> Vec<Output> {
-        self.0.iter().map(|inner_output| inner_output.output.clone()).collect()
+        self.0
+            .iter()
+            .map(|inner_output| inner_output.output.clone())
+            .collect()
     }
 
     pub fn get_key_images(&self) -> Vec<Keyimage> {
-        self.0.iter().map(|inner_output| inner_output.key_image.clone()).collect()
+        self.0
+            .iter()
+            .map(|inner_output| inner_output.key_image.clone())
+            .collect()
     }
 }
 
@@ -242,7 +256,7 @@ impl TxConstructionData {
         let mut res = InnerInputs::new();
         for (index, source) in self.sources.iter().enumerate() {
             let key_offsets = self.absolute_output_offsets_to_relative(
-                source.outputs.iter().map(|output| output.index).collect()
+                source.outputs.iter().map(|output| output.index).collect(),
             );
             let key_image = self.calc_key_image_by_index(keypair, index);
             let input = Input::ToKey {
@@ -259,12 +273,21 @@ impl TxConstructionData {
         }
 
         let key_image_sort = |x: &EdwardsPoint, y: &EdwardsPoint| -> core::cmp::Ordering {
-            x.compress().to_bytes().cmp(&y.compress().to_bytes()).reverse()
+            x.compress()
+                .to_bytes()
+                .cmp(&y.compress().to_bytes())
+                .reverse()
         };
-        res.0.sort_by(|a, b| key_image_sort(
-            &get_key_image_from_input(a.input.clone()).unwrap().to_point(),
-            &get_key_image_from_input(b.input.clone()).unwrap().to_point(),
-        ));
+        res.0.sort_by(|a, b| {
+            key_image_sort(
+                &get_key_image_from_input(a.input.clone())
+                    .unwrap()
+                    .to_point(),
+                &get_key_image_from_input(b.input.clone())
+                    .unwrap()
+                    .to_point(),
+            )
+        });
 
         res
     }
@@ -274,7 +297,7 @@ impl TxConstructionData {
         buffer.extend_from_slice(b"view_tag");
         buffer.extend_from_slice(&derivation.compress().to_bytes());
         buffer.extend_from_slice(&write_varinteger(output_index));
-    
+
         keccak256(&buffer)[0]
     }
 
@@ -282,11 +305,16 @@ impl TxConstructionData {
         let shared_key_derivations = self.shared_key_derivations(keypair);
         let mut res = InnerOutputs::new();
         for (dest, shared_key_derivation) in self.splitted_dsts.iter().zip(shared_key_derivations) {
-            let image = generate_key_image_from_priavte_key(&PrivateKey::new(shared_key_derivation.shared_key));
+            let image = generate_key_image_from_priavte_key(&PrivateKey::new(
+                shared_key_derivation.shared_key,
+            ));
 
-            let key =
-                PublicKey::from_bytes(&dest.addr.spend_public_key).unwrap().point.decompress().unwrap() +
-                EdwardsPoint::mul_base(&shared_key_derivation.shared_key);
+            let key = PublicKey::from_bytes(&dest.addr.spend_public_key)
+                .unwrap()
+                .point
+                .decompress()
+                .unwrap()
+                + EdwardsPoint::mul_base(&shared_key_derivation.shared_key);
 
             res.push(InnerOutput {
                 output: Output {
@@ -306,7 +334,11 @@ impl TxConstructionData {
         res
     }
 
-    fn calc_key_image_by_index(&self, keypair: &KeyPair, sources_index: usize) -> (Keyimage, Scalar) {
+    fn calc_key_image_by_index(
+        &self,
+        keypair: &KeyPair,
+        sources_index: usize,
+    ) -> (Keyimage, Scalar) {
         let source = self.sources[sources_index].clone();
         let output_entry = source.outputs[source.real_output as usize];
         let ctkey = output_entry.key;
@@ -318,14 +350,15 @@ impl TxConstructionData {
             source.real_output_in_tx_index,
             self.subaddr_account,
             self.subaddr_indices.clone(),
-        ).unwrap()
+        )
+        .unwrap()
     }
 
     fn calc_key_images(&self, keypair: &KeyPair) -> Vec<Keyimage> {
         let mut key_images = vec![];
         let tx = self;
 
-        for index in 0 .. tx.sources.iter().len() {
+        for index in 0..tx.sources.iter().len() {
             key_images.push(tx.calc_key_image_by_index(keypair, index).0);
         }
 
@@ -341,7 +374,7 @@ impl TxConstructionData {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct  UnsignedTx {
+pub struct UnsignedTx {
     pub txes: Vec<TxConstructionData>,
     transfers: ExportedTransferDetails,
 }
@@ -354,16 +387,23 @@ impl UnsignedTx {
             for source in tx.sources.iter() {
                 let output = source.outputs[source.real_output as usize].clone();
                 let amount = source.amount;
-                inputs.push((PublicKey::from_bytes(&output.key.dest).unwrap(), fmt_monero_amount(amount)));
+                inputs.push((
+                    PublicKey::from_bytes(&output.key.dest).unwrap(),
+                    fmt_monero_amount(amount),
+                ));
             }
             for dest in tx.splitted_dsts.iter() {
                 let address = dest.addr.to_address(Network::Mainnet, dest.is_subaddress);
                 let amount = dest.amount;
-                let is_change = address == tx.change_dts.addr.to_address(Network::Mainnet, tx.change_dts.is_subaddress);
+                let is_change = address
+                    == tx
+                        .change_dts
+                        .addr
+                        .to_address(Network::Mainnet, tx.change_dts.is_subaddress);
                 outputs.push((address, fmt_monero_amount(amount), is_change));
             }
         }
-        
+
         DisplayTransactionInfo {
             inputs,
             outputs,
@@ -389,7 +429,10 @@ impl UnsignedTx {
                     let index = read_varinteger(bytes, &mut offset);
                     let dest = read_next_u8_32(bytes, &mut offset);
                     let mask = read_next_u8_32(bytes, &mut offset);
-                    outputs.push(OutputEntry { index, key: CtKey { dest, mask } });
+                    outputs.push(OutputEntry {
+                        index,
+                        key: CtKey { dest, mask },
+                    });
                 }
                 let real_output = read_next_u64(bytes, &mut offset);
                 let real_out_tx_key = read_next_u8_32(bytes, &mut offset);
@@ -492,17 +535,13 @@ impl UnsignedTx {
         }
         let transfers = ExportedTransferDetails::from_bytes(&bytes[offset..]).unwrap();
 
-        UnsignedTx {
-            txes,
-            transfers,
-        }
+        UnsignedTx { txes, transfers }
     }
 
     pub fn transaction_without_signatures(&self, keypair: &KeyPair) -> Vec<Transaction> {
         let mut txes = vec![];
         for tx in self.txes.iter() {
-            let commitments_and_encrypted_amounts =
-                tx.commitments_and_encrypted_amounts(keypair);
+            let commitments_and_encrypted_amounts = tx.commitments_and_encrypted_amounts(keypair);
             let mut commitments = Vec::with_capacity(tx.splitted_dsts.len());
             let mut bp_commitments = Vec::with_capacity(tx.splitted_dsts.len());
             let mut encrypted_amounts = Vec::with_capacity(tx.splitted_dsts.len());
@@ -518,13 +557,17 @@ impl UnsignedTx {
                 let mut bp_rng = rand_chacha::ChaCha20Rng::from_seed(keccak256(&seed));
                 (match tx.rct_config.bp_version {
                     RctType::RCTTypeFull => Bulletproof::prove(&mut bp_rng, bp_commitments),
-                    RctType::RCTTypeNull | RctType::RCTTypeBulletproof2 => Bulletproof::prove_plus(&mut bp_rng, bp_commitments),
+                    RctType::RCTTypeNull | RctType::RCTTypeBulletproof2 => {
+                        Bulletproof::prove_plus(&mut bp_rng, bp_commitments)
+                    }
                     _ => panic!("unsupported RctType"),
                 })
-                .expect("couldn't prove BP(+)s for this many payments despite checking in constructor?")
+                .expect(
+                    "couldn't prove BP(+)s for this many payments despite checking in constructor?",
+                )
             };
 
-            let tx: Transaction::<NotPruned> = Transaction::V2 {
+            let tx: Transaction<NotPruned> = Transaction::V2 {
                 prefix: TransactionPrefix {
                     additional_timelock: Timelock::None,
                     inputs: tx.inputs(keypair).get_inputs(),
@@ -538,8 +581,12 @@ impl UnsignedTx {
                         pseudo_outs: vec![],
                         commitments,
                     },
-                    prunable: RctPrunable::Clsag { bulletproof, clsags: vec![], pseudo_outs: vec![] },
-                })
+                    prunable: RctPrunable::Clsag {
+                        bulletproof,
+                        clsags: vec![],
+                        pseudo_outs: vec![],
+                    },
+                }),
             };
             txes.push(tx);
         }
@@ -554,17 +601,29 @@ impl UnsignedTx {
         let seed = keccak256(&txes[0].serialize());
         let mut rng = rand_chacha::ChaCha20Rng::from_seed(seed);
         for (tx, unsigned_tx) in txes.iter().zip(self.txes.iter()) {
-
             let mask_sum = unsigned_tx.sum_output_masks(keypair);
             let inputs = unsigned_tx.inputs(keypair);
             let mut clsag_signs = Vec::with_capacity(inputs.0.len());
             for (i, input) in inputs.0.iter().enumerate() {
-                let ring: Vec<[EdwardsPoint; 2]> = input.source.outputs.iter().map(|output| {
-                    [
-                        PublicKey::from_bytes(&output.key.dest).unwrap().point.decompress().unwrap(),
-                        PublicKey::from_bytes(&output.key.mask).unwrap().point.decompress().unwrap(),
-                    ]
-                }).collect();
+                let ring: Vec<[EdwardsPoint; 2]> = input
+                    .source
+                    .outputs
+                    .iter()
+                    .map(|output| {
+                        [
+                            PublicKey::from_bytes(&output.key.dest)
+                                .unwrap()
+                                .point
+                                .decompress()
+                                .unwrap(),
+                            PublicKey::from_bytes(&output.key.mask)
+                                .unwrap()
+                                .point
+                                .decompress()
+                                .unwrap(),
+                        ]
+                    })
+                    .collect();
                 clsag_signs.push((
                     Zeroizing::new(keypair.spend.scalar + input.key_offset),
                     ClsagContext::new(
@@ -572,33 +631,38 @@ impl UnsignedTx {
                             unsigned_tx.inputs(keypair).get_key_offsets(i),
                             input.source.real_output as u8,
                             ring.clone(),
-                        ).unwrap(),
+                        )
+                        .unwrap(),
                         Commitment {
                             mask: Scalar::from_bytes_mod_order(input.source.mask),
                             amount: input.source.amount,
-                        }
-                    ).unwrap(),
+                        },
+                    )
+                    .unwrap(),
                 ));
             }
 
             let msg = tx.signature_hash().unwrap();
-            let clsags_and_pseudo_outs =
-                Clsag::sign(&mut rng, clsag_signs, mask_sum, msg)
-                    .unwrap();
+            let clsags_and_pseudo_outs = Clsag::sign(&mut rng, clsag_signs, mask_sum, msg).unwrap();
 
             let mut tx = tx.clone();
             let inputs_len = tx.prefix().inputs.len();
             let Transaction::V2 {
                 proofs:
                     Some(RctProofs {
-                        prunable: RctPrunable::Clsag { ref mut clsags, ref mut pseudo_outs, .. },
+                        prunable:
+                            RctPrunable::Clsag {
+                                ref mut clsags,
+                                ref mut pseudo_outs,
+                                ..
+                            },
                         ..
                     }),
                 ..
-                } = tx
-                else {
-                    panic!("not signing clsag?")
-                };
+            } = tx
+            else {
+                panic!("not signing clsag?")
+            };
             *clsags = Vec::with_capacity(inputs_len);
             *pseudo_outs = Vec::with_capacity(inputs_len);
             for (clsag, pseudo_out) in clsags_and_pseudo_outs.iter() {
@@ -639,24 +703,23 @@ impl UnsignedTx {
             ));
 
             for item in unsigned_tx.outputs(keypair).0.iter() {
-                tx_key_images.push((
-                    PublicKey::new(item.output.key),
-                    item.key_image,
-                ));
+                tx_key_images.push((PublicKey::new(item.output.key), item.key_image));
             }
         }
 
         for transfer in self.transfers.details.iter() {
-            tx_key_images.push(
-                transfer.generate_key_image_without_signature(keypair)
-            );
+            tx_key_images.push(transfer.generate_key_image_without_signature(keypair));
         }
 
         SignedTxSet::new(penging_tx, vec![], tx_key_images)
     }
 }
 
-pub fn parse_unsigned(request_data: Vec<u8>, decrypt_key: [u8; 32], pvk: [u8; 32]) -> Result<DisplayTransactionInfo> {
+pub fn parse_unsigned(
+    request_data: Vec<u8>,
+    decrypt_key: [u8; 32],
+    pvk: [u8; 32],
+) -> Result<DisplayTransactionInfo> {
     let decrypted_data = match decrypt_data_with_decrypt_key(
         decrypt_key,
         pvk,
@@ -666,7 +729,7 @@ pub fn parse_unsigned(request_data: Vec<u8>, decrypt_key: [u8; 32], pvk: [u8; 32
         Ok(data) => data,
         Err(e) => match e {
             MoneroError::DecryptInvalidSignature => return Err(MoneroError::MismatchedMfp),
-            _ => return Err(e)
+            _ => return Err(e),
         },
     };
 
@@ -684,7 +747,7 @@ pub fn sign_tx(keypair: KeyPair, request_data: Vec<u8>) -> Result<Vec<u8>> {
         Ok(data) => data,
         Err(e) => match e {
             MoneroError::DecryptInvalidSignature => return Err(MoneroError::MismatchedMfp),
-            _ => return Err(e)
+            _ => return Err(e),
         },
     };
 
@@ -692,18 +755,22 @@ pub fn sign_tx(keypair: KeyPair, request_data: Vec<u8>) -> Result<Vec<u8>> {
 
     let signed_txes = unsigned_tx.sign(&keypair);
 
-    Ok(encrypt_data_with_pvk(keypair, signed_txes.serialize(), SIGNED_TX_PREFIX))
+    Ok(encrypt_data_with_pvk(
+        keypair,
+        signed_txes.serialize(),
+        SIGNED_TX_PREFIX,
+    ))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::key::PrivateKey;
-    use rand_core::{RngCore, SeedableRng};
     use alloc::vec;
     use core::ops::Deref;
     use curve25519_dalek::edwards::EdwardsPoint;
     use curve25519_dalek::scalar::Scalar;
+    use rand_core::{RngCore, SeedableRng};
 
     #[test]
     fn test_clsag_signature() {

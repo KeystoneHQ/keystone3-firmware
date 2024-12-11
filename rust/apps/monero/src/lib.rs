@@ -2,13 +2,13 @@
 #![feature(error_in_core)]
 extern crate alloc;
 
+mod extra;
+mod signed_transaction;
 mod slow_hash;
 mod transfer_key;
-mod signed_transaction;
-mod extra;
 
-pub mod errors;
 pub mod address;
+pub mod errors;
 pub mod key;
 pub mod key_images;
 pub mod outputs;

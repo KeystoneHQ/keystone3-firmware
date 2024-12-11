@@ -9,7 +9,7 @@ use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 use chacha20::cipher::{generic_array::GenericArray, KeyIvInit, StreamCipher};
-use chacha20::ChaCha20Legacy;
+use chacha20::{ChaCha20, ChaCha20Legacy};
 use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::traits::{IsIdentity, MultiscalarMul};
@@ -39,8 +39,8 @@ pub fn generate_decrypt_key(pvk: [u8; PUBKEY_LEH]) -> [u8; 32] {
 pub fn encrypt_data_with_pincode(data: String, pin: [u8; 6]) -> Vec<u8> {
     let pin_hash = keccak256(&pin);
     let key = GenericArray::from_slice(&pin_hash);
-    let nonce = GenericArray::from_slice(&[0; 8]);
-    let mut cipher = ChaCha20Legacy::new(key, nonce);
+    let nonce = GenericArray::from_slice(&[0; 12]);
+    let mut cipher = ChaCha20::new(key, nonce);
 
     let mut buffer = data.into_bytes();
     cipher.apply_keystream(&mut buffer);
@@ -51,8 +51,8 @@ pub fn encrypt_data_with_pincode(data: String, pin: [u8; 6]) -> Vec<u8> {
 pub fn decrypt_data_with_pincode(data: Vec<u8>, pin: [u8; 6]) -> String {
     let pin_hash = keccak256(&pin);
     let key = GenericArray::from_slice(&pin_hash);
-    let nonce = GenericArray::from_slice(&[0; 8]);
-    let mut cipher = ChaCha20Legacy::new(key, nonce);
+    let nonce = GenericArray::from_slice(&[0; 12]);
+    let mut cipher = ChaCha20::new(key, nonce);
 
     let mut buffer = data.clone();
     cipher.apply_keystream(&mut buffer);
@@ -418,5 +418,13 @@ mod tests {
         let res2 = decrypt_data_with_pincode(res, [1, 2, 3, 4, 5, 6]);
 
         assert_eq!(res2, data);
+    }
+
+    #[test]
+    fn test_decrypt_data_with_pincode() {
+        let data = hex::decode("54bc35771c98ecbab62f7fb8f0784bca9abea707ea20034e0e3bdda787e273321efce9ae74c7540e1f01e9def05b23187df9b7a75ee257dab2ce775643e9121cec05336442b0ee79070adcd0bafb48c3ae96410fa9b124e2cef89737533062").unwrap();
+        let res = decrypt_data_with_pincode(data, [6, 0, 1, 2, 2, 6]);
+
+        assert_eq!(res, "45bXY5LeQXBThgge1pwxkHYg5wjQ7ctBmfPAKz9dkmfxjUp5GfxQBTDigW2HdoKkwUAocVeBfFLmW7CA7AZxwTRBH6Ui6qq");
     }
 }

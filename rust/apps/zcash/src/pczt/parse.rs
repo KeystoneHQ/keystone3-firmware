@@ -75,29 +75,20 @@ pub fn parse_pczt(
 
     let parsed_transparent = parse_transparent(seed_fingerprint, &pczt.transparent())?;
 
-    let mut my_input_value = 0;
     let mut my_output_value = 0;
 
     parsed_orchard.clone().and_then(|orchard| {
-        my_input_value = orchard
-            .get_from()
-            .iter()
-            .filter(|v| !v.get_is_mine())
-            .fold(0, |acc, from| acc + from.get_amount());
         my_output_value = orchard
             .get_to()
             .iter()
             .filter(|v| v.get_visible() && !v.get_is_change())
-            .fold(0, |acc, to| acc + to.get_amount());
+            .fold(0, |acc, to| {
+                acc + to.get_amount()
+            });
         Some(())
     });
 
     parsed_transparent.clone().and_then(|transparent| {
-        my_input_value += transparent
-            .get_from()
-            .iter()
-            .filter(|v| v.get_is_mine())
-            .fold(0, |acc, from| acc + from.get_amount());
         my_output_value += transparent
             .get_to()
             .iter()
@@ -106,7 +97,7 @@ pub fn parse_pczt(
         Some(())
     });
 
-    let total_transfer_value = format!("{:.8}", my_input_value as f64 / ZEC_DIVIDER as f64);
+    let total_transfer_value = format!("{:.8}", my_output_value as f64 / ZEC_DIVIDER as f64);
 
     Ok(ParsedPczt::new(
         parsed_transparent,

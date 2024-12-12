@@ -52,18 +52,18 @@ pub fn sign_message_orchard(
     };
     let account_id = AccountId::try_from(account_id).unwrap();
 
-    let mut alpha = alpha;
-    alpha.reverse();
     let rng_seed = alpha.clone();
     let rng = ChaCha8Rng::from_seed(rng_seed);
     let osk = SpendingKey::from_zip32_seed(seed, coin_type, account_id).unwrap();
 
     let osak = SpendAuthorizingKey::from(&osk);
+
     let randm = Fq::from_repr(alpha)
         .into_option()
         .ok_or(KeystoreError::InvalidDataError(format!(
             "invalid orchard alpha"
         )))?;
+
     let sig = osak.randomize(&randm).sign(rng, &msg);
     let bytes = <[u8; 64]>::from(&sig);
     Ok(bytes)

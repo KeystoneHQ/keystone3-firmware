@@ -451,13 +451,21 @@ impl Pczt {
             Ok(())
         })?;
         pczt.orchard.actions.iter_mut().try_for_each(|action| {
-            if let Some(ref d) = action.spend.zip32_derivation {
-                let signature = signer.sign_orchard(
-                    self.sheilded_sig_commitment(None).ok(),
-                    action.spend.alpha.unwrap(),
-                    d.clone(),
-                )?;
-                action.spend.spend_auth_sig = signature;
+            match action.spend.value {
+                //dummy spend maybe
+                Some(0) | None => {
+                    return Ok(());
+                }
+                Some(_) => {
+                    if let Some(ref d) = action.spend.zip32_derivation {
+                        let signature = signer.sign_orchard(
+                            self.sheilded_sig_commitment(None).ok(),
+                            action.spend.alpha.unwrap(),
+                            d.clone(),
+                        )?;
+                        action.spend.spend_auth_sig = signature;
+                    }
+                }
             }
             Ok(())
         })?;

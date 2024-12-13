@@ -7,7 +7,6 @@ pub mod orchard;
 pub mod sinsemilla;
 pub mod zcash_keys;
 pub mod zcash_primitives;
-pub mod zip32;
 pub mod pczt;
 pub mod poseidon;
 
@@ -18,3 +17,4 @@ pub use bip32;
 pub use zcash_address;
 pub use zcash_encoding;
 pub use zcash_protocol;
+pub use zip32;

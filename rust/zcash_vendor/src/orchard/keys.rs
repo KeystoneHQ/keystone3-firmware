@@ -11,8 +11,8 @@ use pasta_curves::pallas;
 use rand_chacha::rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
-use crate::zip32::ChildIndex;
-pub use crate::zip32::{AccountId, DiversifierIndex, Scope};
+use ::zip32::ChildIndex;
+pub use ::zip32::{AccountId, DiversifierIndex, Scope};
 
 use super::{
     address::Address,

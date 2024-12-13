@@ -9,7 +9,7 @@ use hex;
 use rand_chacha::rand_core::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use zcash_vendor::{
-    orchard::keys::{SpendAuthorizingKey, SpendingKey},
+    orchard::keys::{SpendAuthorizingKey, SpendValidatingKey, SpendingKey},
     pasta_curves::{group::ff::PrimeField, Fq},
     zcash_keys::keys::UnifiedSpendingKey,
     zcash_protocol::consensus::MAIN_NETWORK,
@@ -39,6 +39,7 @@ pub fn sign_message_orchard(
     alpha: [u8; 32],
     msg: &[u8],
     path: &str,
+    randomness: &[u8; 32],
 ) -> Result<[u8; 64]> {
     let p = normalize_path(path);
     let derivation_path = DerivationPath::from_str(p.as_str())
@@ -52,8 +53,7 @@ pub fn sign_message_orchard(
     };
     let account_id = AccountId::try_from(account_id).unwrap();
 
-    let rng_seed = alpha.clone();
-    let rng = ChaCha8Rng::from_seed(rng_seed);
+    let rng = ChaCha8Rng::from_seed(randomness.clone());
     let osk = SpendingKey::from_zip32_seed(seed, coin_type, account_id).unwrap();
 
     let osak = SpendAuthorizingKey::from(&osk);

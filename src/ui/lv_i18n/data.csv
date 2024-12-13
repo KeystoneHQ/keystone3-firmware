@@ -383,7 +383,7 @@ Kurz gesagt, das Nicht-Wiederverwenden von Adressen schützt die Privatsphäre, 
 ,20,receive_ada_show_address_detail,Show Address Detail,Показать адрес целиком,주소 상세 내역 표시,显示地址细节,Mostrar detalle de dirección,Adresse anzeigen,住所の詳細を表示
 ,20,receive_coin_hint_fmt,"This address is only for %s, other digital assets sent to this address will be lost.","Этот адрес предназначен только для %s, другие цифровые активы, отправленные на этот адрес, будут потеряны.","이 주소는 %s용이며, 이 주소로 전송된 다른 디지털 자산이 손실됩니다.","此地址仅适用于%s,将其他数字货币发送到该地址将会造成丢失.","Esta dirección es solo para %s, los demás activos digitales enviados a esta dirección se perderán.","Diese Adresse gilt nur für %s, andere digitale Vermögenswerte, die an diese Adresse gesendet werden, gehen verloren.",このアドレスは%s専用です.このアドレスに送られた他のデジタルアセットは失われます.
 ,24,receive_generate_new_address,Generate New Address,Создать новый адрес,새 주소 생성,生成新地址,Generar nueva dirección,Neue Adresse generieren,新しいアドレスを作成する
-,24,receive_ada_more_t_standard,Icarus,Icarus,Icarus,Icarus,Icarus,Icarus,Icarus
+,24,receive_ada_more_t_standard,Cardano Native,Cardano 네이티브,Cardano 原生,Cardano 原生,Cardano 네이티브,Cardano Native,Cardano ネイティブ
 ,24,receive_ada_more_t_ledger,Ledger/BitBox02,Ledger/BitBox02,Ledger/BitBox02,Ledger/BitBox02,Ledger/BitBox02,Ledger/BitBox02,Ledger/BitBox02
 ,24,receive_sol_more_t_title1,Exploring Solana Path Options,Узнать о путях вывода Solana,Solana 경로 옵션 탐색,了解 Solana 的各派生路径,Explorando opciones de ruta en Solana,Exploring Solana-Pfadoptionen,ソラナのパスオプションを探る
 ,24,receive_sol_more_t_base_path,Account-based Path,Путь основного счета,계정 기반 경로,基于帐户的路径,Ruta basada en cuentas,Aktengestützter Pfad,アカウントベースのパス

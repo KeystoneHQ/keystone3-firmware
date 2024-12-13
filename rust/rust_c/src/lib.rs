@@ -3,10 +3,11 @@
 #[cfg(feature = "use-allocator")]
 extern crate alloc;
 
+mod bindings;
+mod trng;
+
 #[cfg(feature = "use-allocator")]
 mod allocator;
-#[cfg(feature = "use-allocator")]
-mod bindings;
 #[cfg(feature = "use-allocator")]
 mod my_alloc;
 

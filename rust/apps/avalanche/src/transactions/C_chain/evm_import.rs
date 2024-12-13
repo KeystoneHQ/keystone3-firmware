@@ -81,6 +81,7 @@ impl TryFrom<Bytes> for ExportTx {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use crate::transactions::transferable::OutputTrait;
 

@@ -49,6 +49,7 @@ impl TryFrom<Bytes> for ExportTx {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::transactions::type_id::TypeId;

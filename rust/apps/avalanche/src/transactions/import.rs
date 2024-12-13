@@ -43,6 +43,7 @@ impl TryFrom<Bytes> for ImportTx {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::transactions::type_id::TypeId;

@@ -42,6 +42,7 @@ use ur_registry::stellar::stellar_sign_request::{SignType as StellarSignType, St
 #[cfg(feature = "multi-coins")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
+use ur_registry::avalanche::avax_sign_request::AvaxSignRequest;
 use ur_registry::{
     bitcoin::btc_sign_request::BtcSignRequest, sui::sui_sign_hash_request::SuiSignHashRequest,
 };
@@ -296,6 +297,13 @@ impl InferViewType for QRHardwareCall {
         match self.get_call_type() {
             CallType::KeyDerivation => Ok(ViewType::KeyDerivationRequest),
         }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for AvaxSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+       Ok(ViewType::AvaxTx)
     }
 }
 

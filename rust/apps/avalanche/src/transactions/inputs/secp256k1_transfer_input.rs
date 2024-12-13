@@ -5,9 +5,6 @@ use alloc::vec::Vec;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use core::{convert::TryFrom, fmt, str::FromStr};
 
-extern crate std;
-use std::println;
-
 #[derive(Debug, Clone)]
 pub struct SECP256K1TransferInput {
     pub type_id: u32,
@@ -17,21 +14,12 @@ pub struct SECP256K1TransferInput {
 }
 
 impl InputTrait for SECP256K1TransferInput {
-    fn display(&self) {
-        #[cfg(feature = "std")]
-        {
-            extern crate std;
-            use std::println;
-            println!("SECP256K1TransferInput:");
-            println!("  Type ID: {}", self.type_id);
-            println!("  Amount: {}", self.amount);
-            println!("  Addresses Length: {}", self.addresses_len);
-            println!("  Addresses: ");
-        }
-    }
-
     fn get_transfer_input_len(&self) -> usize {
         16 + self.addresses_len as usize * 4
+    }
+
+    fn get_amount(&self) -> u64 {
+        self.amount
     }
 }
 
@@ -60,6 +48,7 @@ impl TryFrom<Bytes> for SECP256K1TransferInput {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     extern crate std;

@@ -1,11 +1,42 @@
+use crate::constants::*;
 use crate::errors::{AvaxError, Result};
 #[cfg(feature = "testnet")]
 use crate::network::TESTNET_ID;
 use crate::network::{Network, MAINNET_ID};
 use crate::ripple_keypair::hash160;
+use crate::transactions::structs::ParsedSizeAble;
 use alloc::string::{String, ToString};
 use bech32::{self, Bech32};
+use bytes::{Buf, Bytes};
+use core::convert::TryFrom;
 use keystore::algorithms::secp256k1::derive_public_key;
+
+#[derive(Debug, Clone)]
+pub struct Address {
+    address: [u8; ADDRESS_LEN],
+}
+
+impl ParsedSizeAble for Address {
+    fn parsed_size(&self) -> usize {
+        ADDRESS_LEN as usize
+    }
+}
+
+impl Address {
+    pub fn encode(&self) -> String {
+        bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked("avax"), &self.address).unwrap()
+    }
+}
+
+impl TryFrom<Bytes> for Address {
+    type Error = AvaxError;
+
+    fn try_from(mut bytes: Bytes) -> Result<Self> {
+        let mut address = [0u8; ADDRESS_LEN];
+        bytes.copy_to_slice(&mut address);
+        Ok(Address { address })
+    }
+}
 
 pub fn get_address(
     network: Network,

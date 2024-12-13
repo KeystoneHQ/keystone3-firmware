@@ -1,12 +1,11 @@
+use crate::address::Address;
 use crate::errors::{AvaxError, Result};
+use crate::transactions::structs::{LengthPrefixedVec, ParsedSizeAble};
 use crate::transactions::transferable::OutputTrait;
-use alloc::string::ToString;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use core::{convert::TryFrom, fmt, str::FromStr};
-
-extern crate std;
-use std::println;
 
 #[derive(Debug, Clone)]
 pub struct SECP256K1TransferOutput {
@@ -19,34 +18,22 @@ pub struct SECP256K1TransferOutput {
 }
 
 impl OutputTrait for SECP256K1TransferOutput {
-    fn display(&self) {
-        #[cfg(feature = "std")]
-        {
-            extern crate std;
-            use std::println;
-            println!("SECP256K1TransferOutput:");
-            println!("  Type ID: {}", self.type_id);
-            println!("  Amount: {}", self.amount);
-            println!("  Locktime: {}", self.locktime);
-            println!("  Threshold: {}", self.threshold);
-            println!("  Addresses Length: {}", self.addresses_len);
-            println!("  Addresses: ");
-            for (index, address) in self.addresses.iter().enumerate() {
-                println!("    Address {}: {:?}", index, address);
-            }
-        }
+    fn get_addresses(&self) -> Vec<String> {
+        vec!["".to_string()]
     }
 
-    fn get_addresses(&self) -> Vec<[u8; 20]> {
-        self.addresses.clone()
-    }
-
-    fn get_addresses_len(&self) -> u32 {
-        self.addresses_len
+    fn get_addresses_len(&self) -> usize {
+        // self.addresses.get_len()
+        self.addresses_len as usize
     }
 
     fn get_transfer_output_len(&self) -> usize {
+        // 28 + self.addresses.get_len() * self.addresses.parsed_size() as usize
         28 + self.addresses_len as usize * 20
+    }
+
+    fn get_amount(&self) -> u64 {
+        self.amount
     }
 }
 
@@ -85,6 +72,7 @@ impl TryFrom<Bytes> for SECP256K1TransferOutput {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     extern crate std;

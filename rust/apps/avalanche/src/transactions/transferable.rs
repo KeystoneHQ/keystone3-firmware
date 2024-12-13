@@ -3,20 +3,17 @@ use super::inputs::secp256k1_transfer_input::SECP256K1TransferInput;
 use super::outputs::secp256k1_transfer_output::SECP256K1TransferOutput;
 use super::structs::ParsedSizeAble;
 use super::type_id::TypeId;
-use crate::errors::{AvaxError, Result};
 use crate::constants::*;
+use crate::errors::{AvaxError, Result};
 use alloc::{
     format,
-    string::{ToString},
+    string::{String, ToString},
     vec::Vec,
 };
 use bytes::{Buf, Bytes};
 use core::{convert::TryFrom, fmt};
 pub const TX_ID_LEN: usize = 32;
 pub type TxId = [u8; TX_ID_LEN];
-
-extern crate std;
-use std::println;
 
 #[derive(Debug, Clone)]
 enum OutputType {
@@ -25,31 +22,27 @@ enum OutputType {
 }
 
 impl OutputTrait for OutputType {
-    fn get_addresses_len(&self) -> u32 {
+    fn get_addresses_len(&self) -> usize {
         match self {
             OutputType::SECP256K1(output) => output.get_addresses_len(),
-            // OutputType::Other(output) => output.get_addresses_len(),
         }
     }
 
-    fn get_addresses(&self) -> Vec<[u8; 20]> {
+    fn get_addresses(&self) -> Vec<String> {
         match self {
             OutputType::SECP256K1(output) => output.get_addresses(),
-            // OutputType::Other(output) => output.get_addresses(),
-        }
-    }
-
-    fn display(&self) {
-        match self {
-            OutputType::SECP256K1(output) => output.display(),
-            // OutputType::Other(output) => output.display(),
         }
     }
 
     fn get_transfer_output_len(&self) -> usize {
         match self {
             OutputType::SECP256K1(output) => output.get_transfer_output_len(),
-            // OutputType::Other(output) => output.get_transfer_output_len(),
+        }
+    }
+
+    fn get_amount(&self) -> u64 {
+        match self {
+            OutputType::SECP256K1(output) => output.get_amount(),
         }
     }
 }
@@ -60,7 +53,6 @@ impl TryFrom<Bytes> for OutputType {
     fn try_from(bytes: Bytes) -> Result<Self> {
         let mut type_bytes = bytes.clone();
         let type_id = type_bytes.get_u32();
-        println!("type id = {:?}", type_id);
         match TypeId::try_from(type_id)? {
             TypeId::CchainExportTx => {
                 todo!()
@@ -81,10 +73,10 @@ impl TryFrom<Bytes> for OutputType {
 }
 
 pub trait OutputTrait {
-    fn display(&self);
-    fn get_addresses(&self) -> Vec<[u8; 20]>;
-    fn get_addresses_len(&self) -> u32;
+    fn get_addresses(&self) -> Vec<String>;
+    fn get_addresses_len(&self) -> usize;
     fn get_transfer_output_len(&self) -> usize;
+    fn get_amount(&self) -> u64;
 }
 
 #[derive(Debug, Clone)]
@@ -98,8 +90,8 @@ impl TransferableOutput {
         self.asset_id.clone()
     }
 
-    pub fn addresses_len(&self) -> u32 {
-        self.output.get_addresses_len()
+    pub fn get_amount(&self) -> u64 {
+        self.output.get_amount()
     }
 }
 
@@ -122,9 +114,8 @@ impl TryFrom<Bytes> for TransferableOutput {
 }
 
 pub trait InputTrait {
-    fn display(&self);
-    // fn get_addresses(&self) -> Vec<[u8; 20]>;
     fn get_transfer_input_len(&self) -> usize;
+    fn get_amount(&self) -> u64;
 }
 
 #[derive(Debug, Clone)]
@@ -133,6 +124,12 @@ pub struct TransferableInput {
     pub utxo_index: u32,
     pub asset_id: AssetId,
     pub input: InputType,
+}
+
+impl TransferableInput {
+    pub fn get_amount(&self) -> u64 {
+        self.input.get_amount()
+    }
 }
 
 impl TryFrom<Bytes> for TransferableInput {
@@ -177,7 +174,7 @@ impl TryFrom<Bytes> for InputType {
             )),
             _ => {
                 return Err(AvaxError::InvalidHex(
-                    "Unsupported output type found in input bytes.".to_string(),
+                    "Unsupported input type found in input bytes.".to_string(),
                 ))
             }
         }
@@ -185,26 +182,20 @@ impl TryFrom<Bytes> for InputType {
 }
 
 impl InputTrait for InputType {
-    // fn get_addresses(&self) -> Vec<[u8; 20]> {
-    //     match self {
-    //         InputType::SECP256K1(input) => input.get_addresses(),
-    //         // OutputType::Other(output) => output.get_addresses(),
-    //     }
-    // }
-
-    fn display(&self) {
-        match self {
-            InputType::SECP256K1(input) => input.display(),
-        }
-    }
-
     fn get_transfer_input_len(&self) -> usize {
         match self {
             InputType::SECP256K1(input) => input.get_transfer_input_len(),
         }
     }
+
+    fn get_amount(&self) -> u64 {
+        match self {
+            InputType::SECP256K1(input) => input.get_amount(),
+        }
+    }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     extern crate std;
@@ -239,7 +230,7 @@ mod tests {
                     Err(e) => match e {
                         AvaxError::InvalidHex(msg) => {
                             assert_eq!(
-                                msg, "Unsupported output type found in input bytes.",
+                                msg, "Unsupported input type found in input bytes.",
                                 "Unexpected error message"
                             );
                         }

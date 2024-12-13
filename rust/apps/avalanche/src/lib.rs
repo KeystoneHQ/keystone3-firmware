@@ -1,29 +1,31 @@
 #![no_std]
 #![feature(error_in_core)]
 
-#[allow(unused_imports)] // stupid compiler
+#[allow(unused_imports)]
 #[macro_use]
 extern crate alloc;
-extern crate core;
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec::Vec,
+};
 #[cfg(test)]
 #[macro_use]
 extern crate std;
 
-use alloc::string::{String, ToString};
-use alloc::vec::Vec;
-
 pub use address::get_address;
 use app_utils::keystone;
-use bitcoin::bip32::Fingerprint;
 use bitcoin::psbt::Psbt;
 use bitcoin::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use bitcoin::secp256k1::Message;
 use bitcoin::sign_message;
 use either::{Left, Right};
 use hex;
+use bytes::Bytes;
 // pub use transactions::legacy::sign_legacy_tx;
 // pub use transactions::parsed_tx;
 // pub use transactions::psbt::parsed_psbt;
+use transactions::base_tx::BaseTx;
 use ur_registry::pb::protoc;
 
 use crate::errors::{AvaxError, Result};
@@ -32,18 +34,24 @@ use crate::errors::{AvaxError, Result};
 // use crate::transactions::psbt::wrapped_psbt::WrappedPsbt;
 // use crate::transactions::tx_checker::TxChecker;
 
-pub mod errors;
 pub mod constants;
+pub mod errors;
+pub mod transactions;
 pub mod encode {
     pub mod cb58;
 }
-mod ripple_keypair;
 mod address;
 pub mod network;
-mod transactions;
+mod ripple_keypair;
 pub struct PsbtSignStatus {
     pub sign_status: Option<String>,
     pub is_completed: bool,
+}
+
+pub fn parse_base_tx(data: Vec<u8>) -> Result<BaseTx> {
+    let bytes = Bytes::from(data);
+    let data = BaseTx::try_from(bytes).unwrap();
+    Ok(data)
 }
 
 #[cfg(test)]

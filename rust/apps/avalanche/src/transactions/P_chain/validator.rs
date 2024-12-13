@@ -40,10 +40,10 @@ impl TryFrom<Bytes> for Validator {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     extern crate std;
-    use std::println;
 
     #[test]
     fn test_validator_parse() {

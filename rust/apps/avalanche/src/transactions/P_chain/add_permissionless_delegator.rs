@@ -45,6 +45,7 @@ impl TryFrom<Bytes> for AddPermissLessionDelegatorTx {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     extern crate std;

@@ -1,9 +1,9 @@
+use super::structs::{LengthPrefixedVec, ParsedSizeAble};
 use super::transferable::{TransferableInput, TransferableOutput};
 use super::tx_header::Header;
 use super::type_id::TypeId;
-use super::structs::{LengthPrefixedVec, ParsedSizeAble};
-use crate::errors::{AvaxError, Result};
 use crate::constants::*;
+use crate::errors::{AvaxError, Result};
 use alloc::{
     format,
     string::{String, ToString},
@@ -12,18 +12,13 @@ use alloc::{
 use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
 
-extern crate std;
-use std::{println, vec};
-
 #[derive(Debug)]
 pub struct BaseTx {
     codec_id: u16,
     pub type_id: TypeId,
     pub tx_header: Header,
-    pub output_len: u32,
-    pub outputs: Vec<TransferableOutput>,
-    pub input_len: u32,
-    pub inputs: Vec<TransferableInput>,
+    outputs: LengthPrefixedVec<TransferableOutput>,
+    inputs: LengthPrefixedVec<TransferableInput>,
     pub memo_len: u32,
     pub memo: Vec<u8>,
     tx_size: usize,
@@ -43,23 +38,23 @@ impl BaseTx {
     }
 
     pub fn get_inputs_len(&self) -> u32 {
-        self.inputs.len() as u32
+        self.inputs.get_len() as u32
     }
     pub fn get_outputs_len(&self) -> u32 {
-        self.outputs.len() as u32
+        self.outputs.get_len() as u32
     }
 
-    pub fn get_inputs(&self) -> Vec<TransferableInput> {
-        self.inputs.clone()
-    }
+    // pub fn get_inputs(&self) -> Vec<TransferableInput> {
+    // self.inputs.clone()
+    // }
 
     pub fn get_input_by_index(&self, index: usize) -> Option<&TransferableInput> {
         self.inputs.get(index)
     }
 
-    pub fn get_outputs(&self) -> Vec<TransferableOutput> {
-        self.outputs.clone()
-    }
+    // pub fn get_outputs(&self) -> Vec<TransferableOutput> {
+    // self.outputs.clone()
+    // }
 
     pub fn get_memo(&self) -> Vec<u8> {
         self.memo.clone()
@@ -67,6 +62,22 @@ impl BaseTx {
 
     pub fn parsed_size(&self) -> usize {
         self.tx_size
+    }
+
+    pub fn get_total_output_amount(&self) -> u64 {
+        self.outputs
+            .iter()
+            .fold(0, |acc, item| acc + item.get_amount())
+    }
+
+    pub fn get_total_input_amount(&self) -> u64 {
+        self.inputs
+            .iter()
+            .fold(0, |acc, item| acc + item.get_amount())
+    }
+
+    pub fn get_fee_amount(&self) -> u64 {
+        self.get_total_input_amount() - self.get_total_output_amount()
     }
 }
 
@@ -79,41 +90,22 @@ impl TryFrom<Bytes> for BaseTx {
         let type_id = TypeId::try_from(bytes.get_u32())?;
         let tx_header = Header::try_from(bytes.clone())?;
         bytes.advance(tx_header.parsed_size());
-        let output_len = bytes.get_u32();
-        let mut output_bytes = bytes.clone();
-        let outputs = (0..output_len)
-            .map(|_| {
-                let output = TransferableOutput::try_from(output_bytes.clone())?;
-                output_bytes.advance(output.parsed_size());
-                bytes.advance(output.parsed_size());
-                Ok(output)
-            })
-            .collect::<Result<Vec<TransferableOutput>>>()?;
 
-        let input_len = bytes.get_u32();
-        let mut input_bytes = bytes.clone();
-        let inputs: Vec<TransferableInput> = (0..input_len)
-            .map(|_| {
-                let inputs = TransferableInput::try_from(input_bytes.clone())?;
-                println!("inputs.parsed_size() = {:?}", inputs.parsed_size());
-                input_bytes.advance(inputs.parsed_size());
-                bytes.advance(inputs.parsed_size());
-                Ok(inputs)
-            })
-            .collect::<Result<Vec<TransferableInput>>>()?;
+        let outputs = LengthPrefixedVec::<TransferableOutput>::try_from(bytes.clone())?;
+        bytes.advance(outputs.parsed_size());
+
+        let inputs = LengthPrefixedVec::<TransferableInput>::try_from(bytes.clone())?;
+        bytes.advance(inputs.parsed_size());
 
         let memo_len = bytes.get_u32();
         let memo = bytes.split_to(memo_len as usize).to_vec();
         let tx_size = initial_len - bytes.len();
-        println!("tx_size = {:?}", tx_size);
 
         Ok(BaseTx {
             codec_id,
             type_id,
             tx_header,
-            output_len,
             outputs,
-            input_len,
             inputs,
             memo_len,
             memo,
@@ -122,6 +114,7 @@ impl TryFrom<Bytes> for BaseTx {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     extern crate std;
@@ -130,28 +123,25 @@ mod tests {
     #[test]
     fn test_avax_base_transaction() {
         {
+            // x-chain fuji test case
             let input_bytes = "000000000022000000050000000000000000000000000000000000000000000000000000000000000000000000023d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000005f5e100000000000000000000000001000000018771921301d5bffff592dae86695a615bdb4a4413d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000017c771d2000000000000000000000001000000010969ea62e2bb30e66d82e82fe267edf6871ea5f70000000157d5e23e2e1f460b618bba1b55913ff3ceb315f0d1acc41fe6408edc4de9facd000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000001dbd670d000000010000000000000000";
+
+            // x-chain mainnet test case
+            let input_bytes = "00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000dd06a44000000000000000000000000100000001e6c4c18c7d0f5b36c485128ac665d5d02699a53c21e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff00000007000000207a3d6f40000000000000000000000001000000011e80001c158e62dba3b21eb258cc77f975e9917f000000016d624e8c01aebf6588f9238e86d4c5a7395daea0b6dcbf418dc550e50671bbfd0000000021e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000500000021575355c0000000010000000000000000000000010000000900000001958ee8e340ab8ffa3a4cb79931a1afa163b429c73cd8d2c611d6c82b75a6c1ed5fbc0162679e6c0dfef03da82f88d1791da897a11569dbf13b571b8e59245b57008270737e";
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
-            match BaseTx::try_from(bytes) {
-                Ok(result) => {
-                    assert_eq!(result.get_type_id(), TypeId::BaseTx);
-                    assert_eq!(result.get_network_id(), 5);
-                    assert_eq!(result.get_blockchain_id(), [0; BLOCKCHAIN_ID_LEN]);
-                    assert_eq!(result.get_inputs_len(), 1);
-                    assert_eq!(result.get_outputs_len(), 2);
-                    assert_eq!(result.get_memo(), vec![0u8]);
-                }
-                Err(e) => match e {
-                    AvaxError::InvalidHex(msg) => {
-                        assert_eq!(
-                            msg, "Unsupported output type found in input bytes.",
-                            "Unexpected error message"
-                        );
-                    }
-                    _ => {}
-                },
-            }
+            let result = BaseTx::try_from(bytes).unwrap();
+            println!("Result: {:?}", result);
+            println!("total output amount: {}", result.get_total_output_amount());
+            println!("total input amount: {}", result.get_total_input_amount());
+
+            assert_eq!(result.get_type_id(), TypeId::BaseTx);
+            assert_eq!(result.get_network_id(), 5);
+            assert_eq!(result.get_blockchain_id(), [0; BLOCKCHAIN_ID_LEN]);
+            assert_eq!(result.get_inputs_len(), 1);
+            assert_eq!(result.get_outputs_len(), 2);
+            assert_eq!(result.get_memo(), vec![0u8]);
+            assert!(false);
         }
 
         // x chain base tx

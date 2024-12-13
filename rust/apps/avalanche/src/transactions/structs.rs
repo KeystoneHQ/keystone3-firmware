@@ -8,7 +8,7 @@ use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
 #[derive(Debug, Clone)]
 pub struct LengthPrefixedVec<T: ParsedSizeAble> {
-    pub len: u32,
+    pub len: usize,
     pub items: Vec<T>,
 }
 pub trait ParsedSizeAble {
@@ -16,7 +16,7 @@ pub trait ParsedSizeAble {
 }
 
 impl<T: ParsedSizeAble> LengthPrefixedVec<T> {
-    pub fn get_len(&self) -> u32 {
+    pub fn get_len(&self) -> usize {
         self.len
     }
 
@@ -29,6 +29,10 @@ impl<T: ParsedSizeAble> LengthPrefixedVec<T> {
             .items
             .iter()
             .fold(0, |acc, item| acc + item.parsed_size())
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
+        self.items.iter()
     }
 }
 
@@ -45,9 +49,9 @@ where
             ));
         }
 
-        let len = bytes.get_u32();
+        let len = bytes.get_u32() as usize;
 
-        let mut items = Vec::with_capacity(len as usize);
+        let mut items = Vec::with_capacity(len);
 
         for _ in 0..len {
             let item = T::try_from(bytes.clone())?;

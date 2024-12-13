@@ -188,7 +188,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeAdaMemory,
     },
-        {
+    {
         REMAPVIEW_ADA_SIGN_TX_HASH,
 #ifndef COMPILE_SIMULATOR
         "{\"name\":\"ada_sign_tx_hash_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashDetails\"}]}]}",
@@ -1585,6 +1585,9 @@ void *GuiWidgetTabViewChild(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
+
+
+
 static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
 {
     lv_obj_t *obj = NULL;
@@ -1593,7 +1596,13 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         item = cJSON_GetObjectItem(json, "table");
         if (item != NULL) {
             char typeBuf[16];
-            g_analyzeArray[g_reMapIndex].typeFunc(typeBuf, g_totalData, sizeof(typeBuf));
+            // find the ui type 
+            for (int i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++) {
+                if(g_analyzeArray[i].index == g_reMapIndex) {
+                    g_analyzeArray[i].typeFunc(typeBuf, g_totalData, sizeof(typeBuf));
+                    break;
+                }
+            }
             item = cJSON_GetObjectItem(item, typeBuf);
             if (item != NULL) {
                 return GuiWidgetFactoryCreate(parent, item);

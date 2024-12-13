@@ -5,7 +5,6 @@ extern crate alloc;
 
 pub mod orchard;
 pub mod sinsemilla;
-pub mod zcash_address;
 pub mod zcash_keys;
 pub mod zcash_primitives;
 pub mod zip32;
@@ -16,5 +15,6 @@ pub use pasta_curves;
 pub use ripemd;
 pub use sha2;
 pub use bip32;
+pub use zcash_address;
 pub use zcash_encoding;
 pub use zcash_protocol;

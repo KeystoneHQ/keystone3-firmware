@@ -1635,9 +1635,9 @@ dependencies = [
 
 [[package]]
 name = "f4jumble"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a83e8d7fd0c526af4aad893b7c9fe41e2699ed8a776a6c74aecdeafe05afc75"
+checksum = "0d42773cb15447644d170be20231a3268600e0c4cea8987d013b93ac973d3cf7"
 dependencies = [
  "blake2b_simd",
 ]
@@ -4795,6 +4795,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "zcash_address"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b955fe87f2d9052e3729bdbeb0e94975355f4fe39f7d26aea9457bec6a0bb55"
+dependencies = [
+ "bech32 0.11.0",
+ "bs58 0.5.1",
+ "core2",
+ "f4jumble",
+ "zcash_encoding",
+ "zcash_protocol",
+]
+
+[[package]]
 name = "zcash_encoding"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4852,6 +4866,7 @@ dependencies = [
  "serde_with 3.11.0",
  "sha2 0.10.8",
  "subtle",
+ "zcash_address",
  "zcash_encoding",
  "zcash_protocol",
 ]

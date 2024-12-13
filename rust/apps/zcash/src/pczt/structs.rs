@@ -23,7 +23,7 @@ impl ParsedTransparent {
 }
 
 impl_public_struct!(ParsedFrom {
-    address: String,
+    address: Option<String>,
     value: String,
     amount: u64,
     is_mine: bool

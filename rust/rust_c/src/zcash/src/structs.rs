@@ -96,7 +96,7 @@ pub struct DisplayFrom {
 impl From<&ParsedFrom> for DisplayFrom {
     fn from(from: &ParsedFrom) -> Self {
         Self {
-            address: convert_c_char(from.get_address()),
+            address: convert_c_char(from.get_address().unwrap_or("<shielded>".into())),
             value: convert_c_char(from.get_value()),
             is_mine: from.get_is_mine(),
         }

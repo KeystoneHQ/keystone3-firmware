@@ -15,6 +15,7 @@ zcash_vendor = { workspace = true }
 hex = { workspace = true }
 bitvec = {version = "1.0.1", default-features = false, features = ["alloc"]}
 blake2b_simd = { workspace = true }
+rand_core = { workspace = true, features = ["getrandom"] }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

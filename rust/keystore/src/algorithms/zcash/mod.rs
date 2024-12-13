@@ -8,6 +8,7 @@ use bitcoin::bip32::{ChildNumber, DerivationPath};
 use hex;
 use rand_chacha::rand_core::SeedableRng;
 use rand_chacha::ChaCha8Rng;
+use rand_core::{CryptoRng, RngCore};
 use zcash_vendor::{
     orchard::keys::{SpendAuthorizingKey, SpendValidatingKey, SpendingKey},
     pasta_curves::{group::ff::PrimeField, Fq},
@@ -34,12 +35,12 @@ pub fn calculate_seed_fingerprint(seed: &[u8]) -> Result<[u8; 32]> {
     Ok(sfp.to_bytes())
 }
 
-pub fn sign_message_orchard(
+pub fn sign_message_orchard<R: RngCore + CryptoRng>(
     seed: &[u8],
     alpha: [u8; 32],
     msg: &[u8],
     path: &str,
-    randomness: &[u8; 32],
+    rng: R,
 ) -> Result<[u8; 64]> {
     let p = normalize_path(path);
     let derivation_path = DerivationPath::from_str(p.as_str())
@@ -53,7 +54,6 @@ pub fn sign_message_orchard(
     };
     let account_id = AccountId::try_from(account_id).unwrap();
 
-    let rng = ChaCha8Rng::from_seed(randomness.clone());
     let osk = SpendingKey::from_zip32_seed(seed, coin_type, account_id).unwrap();
 
     let osak = SpendAuthorizingKey::from(&osk);

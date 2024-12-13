@@ -371,6 +371,7 @@ dependencies = [
  "blake2b_simd",
  "hex",
  "keystore",
+ "rand_core 0.6.4",
  "rust_tools",
  "thiserror-core",
  "zcash_vendor",
@@ -2253,6 +2254,7 @@ dependencies = [
  "hex",
  "num-bigint-dig",
  "rand_chacha",
+ "rand_core 0.6.4",
  "rsa",
  "rust_tools",
  "sha2 0.10.8",
@@ -3145,6 +3147,9 @@ name = "rand_core"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
+dependencies = [
+ "getrandom",
+]
 
 [[package]]
 name = "rand_os"
@@ -3358,6 +3363,7 @@ dependencies = [
  "cstr_core",
  "cty",
  "ethereum_rust_c",
+ "getrandom",
  "keystore",
  "near_rust_c",
  "simulator_rust_c",

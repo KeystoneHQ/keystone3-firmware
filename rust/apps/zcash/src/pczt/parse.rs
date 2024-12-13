@@ -161,7 +161,7 @@ fn parse_transparent_input(
                 None => false,
             };
             Ok(ParsedFrom::new(
-                ta,
+                Some(ta),
                 zec_value,
                 input.value().clone(),
                 is_mine,
@@ -252,16 +252,11 @@ fn parse_orchard_spend(
     seed_fingerprint: &[u8; 32],
     spend: &pczt::orchard::Spend,
 ) -> Result<ParsedFrom, ZcashError> {
-    let recipient = spend.recipient().clone().ok_or(ZcashError::InvalidPczt(
-        "recipient is not present".to_string(),
-    ))?;
     let value = spend
         .value()
         .clone()
         .ok_or(ZcashError::InvalidPczt("value is not present".to_string()))?;
     let zec_value = format_zec_value(value as f64);
-
-    let ua = unified::Address(vec![Receiver::Orchard(recipient)]).encode(&NetworkType::Main);
 
     let zip32_derivation = spend.zip32_derivation().clone();
 
@@ -270,7 +265,7 @@ fn parse_orchard_spend(
         None => false,
     };
 
-    Ok(ParsedFrom::new(ua, zec_value, value, is_mine))
+    Ok(ParsedFrom::new(None, zec_value, value, is_mine))
 }
 
 fn parse_orchard_output(
@@ -300,8 +295,11 @@ fn parse_orchard_output(
         &out_ciphertext,
     )? {
         let zec_value = format_zec_value(note.value().inner() as f64);
-        let ua = unified::Address(vec![Receiver::Orchard(address.to_raw_address_bytes())])
-            .encode(&NetworkType::Main);
+        let ua = unified::Address::try_from_items(vec![Receiver::Orchard(
+            address.to_raw_address_bytes(),
+        )])
+        .unwrap()
+        .encode(&NetworkType::Main);
         let memo = decode_memo(memo);
         Ok(ParsedTo::new(
             ua,
@@ -321,8 +319,11 @@ fn parse_orchard_output(
         &out_ciphertext,
     )? {
         let zec_value = format_zec_value(note.value().inner() as f64);
-        let ua = unified::Address(vec![Receiver::Orchard(address.to_raw_address_bytes())])
-            .encode(&NetworkType::Main);
+        let ua = unified::Address::try_from_items(vec![Receiver::Orchard(
+            address.to_raw_address_bytes(),
+        )])
+        .unwrap()
+        .encode(&NetworkType::Main);
         let memo = decode_memo(memo);
         Ok(ParsedTo::new(
             ua,

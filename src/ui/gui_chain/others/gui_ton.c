@@ -26,7 +26,6 @@ static void *g_proofParseResult = NULL;
 static bool g_isMulti = false;
 static ViewType g_viewType = ViewTypeUnKnown;
 
-static lv_obj_t *createContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h);
 static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
 static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
 static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
@@ -178,18 +177,10 @@ void GuiTonTxRawData(lv_obj_t *parent, void *totalData)
     lastView = CreateDetailsRawDataView(parent, txData, lastView);
 }
 
-static lv_obj_t *createContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h)
-{
-    lv_obj_t *container = GuiCreateContainerWithParent(parent, w, h);
-    lv_obj_set_style_bg_color(container, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(container, LV_OPA_12, LV_PART_MAIN);
-    lv_obj_set_style_radius(container, 24, LV_PART_MAIN);
-    return container;
-}
 
 static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
 {
-    lv_obj_t *container = createContentContainer(parent, 408, 106);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 106);
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Amount"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
@@ -204,7 +195,7 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonTransactio
 
 static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
 {
-    lv_obj_t *container = createContentContainer(parent, 408, 64);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 64);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Action"));
@@ -218,7 +209,7 @@ static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonTransactio
 
 static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
 {
-    lv_obj_t *container = createContentContainer(parent, 408, 244);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 244);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     bool isTonNative = GetMnemonicType() == MNEMONIC_TYPE_TON;
     char *xPub = NULL;
@@ -258,7 +249,7 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTrans
 
 static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
 {
-    lv_obj_t *container = createContentContainer(parent, 408, 62);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 62);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Comment"));
@@ -303,7 +294,7 @@ static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTran
         char* value = cJSON_GetObjectItem(data, "value")->valuestring;
 
         //100 = 16(padding top) + 16(padding bottom) + 30(title) + 8(margin) + 30(value one line)
-        lv_obj_t *container = createContentContainer(parent, 408, 100);
+        lv_obj_t *container = CreateContentContainer(parent, 408, 100);
         lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
         lv_obj_t *label = GuiCreateIllustrateLabel(container, title);
@@ -329,7 +320,7 @@ static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTran
 
 static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
 {
-    lv_obj_t *container = createContentContainer(parent, 408, 244);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 244);
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 
@@ -346,7 +337,7 @@ static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransacti
 }
 static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
 {
-    lv_obj_t *container = createContentContainer(parent, 408, 244);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 244);
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
     if (lastView != NULL) {
@@ -373,7 +364,7 @@ void GuiTonProofOverview(lv_obj_t *parent, void *totalData)
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
 
-    lv_obj_t *container = createContentContainer(parent, 408, 382);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 382);
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 
@@ -420,7 +411,7 @@ void GuiTonProofRawData(lv_obj_t *parent, void *totalData)
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
 
-    lv_obj_t *container = createContentContainer(parent, 408, 382);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 382);
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 

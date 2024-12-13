@@ -299,6 +299,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         FreeArMemory,
     },
 #endif
+    {
+        REMAPVIEW_AVAX,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ton_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Raw Data\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxRawData\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_avax.json",
+#endif
+        GuiGetAvaxGUIData,
+        NULL,
+        FreeArMemory,
+    },
 };
 
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index);
@@ -1342,6 +1353,10 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSuiSignMessageHashOverview;
     } else if (!strcmp(funcName, "GuiShowSuiSignMessageHashDetails")) {
         return GuiShowSuiSignMessageHashDetails;
+    } else if (!strcmp(funcName, "GuiAvaxTxOverview")) {
+        return GuiAvaxTxOverview;
+    } else if (!strcmp(funcName, "GuiAvaxTxRawData")) {
+        return GuiAvaxTxRawData;
     }
 #endif
     return NULL;
@@ -1747,6 +1762,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_AR_DATAITEM;
     case TonTx:
         return REMAPVIEW_TON;
+    case AvaxTx:
+        return REMAPVIEW_AVAX;
     case TonSignProof:
         return REMAPVIEW_TON_SIGNPROOF;
 #endif
@@ -1831,6 +1848,7 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
     if (g_reMapIndex == REMAPVIEW_BUTT) {
         return NULL;
     }
+    printf("g_remapindex = %d\n", g_reMapIndex);
     g_viewTypeIndex = index;
     g_templateContainer = (lv_obj_t *)GuiCreateContainerWithParent(parent, 480, 542);
     lv_obj_align(g_templateContainer, LV_ALIGN_TOP_MID, 0, 0);

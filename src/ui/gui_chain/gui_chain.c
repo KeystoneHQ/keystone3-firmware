@@ -62,6 +62,8 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
     case REMAPVIEW_TON:
     case REMAPVIEW_TON_SIGNPROOF:
         return GuiGetTonCheckResult();
+    case REMAPVIEW_AVAX:
+        return GuiGetAvaxCheckResult();
 #endif
     default:
         return NULL;
@@ -118,6 +120,8 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
     case TonTx:
     case TonSignProof:
         return CHAIN_TON;
+    case AvaxTx:
+        return CHAIN_AVAX;
 #endif
     default:
         return CHAIN_BUTT;

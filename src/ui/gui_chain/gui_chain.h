@@ -15,6 +15,7 @@
 #include "gui_ar.h"
 #include "gui_stellar.h"
 #include "gui_ton.h"
+#include "gui_avax.h"
 #endif
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);
@@ -105,6 +106,7 @@ typedef enum {
     REMAPVIEW_STELLAR_HASH,
     REMAPVIEW_TON,
     REMAPVIEW_TON_SIGNPROOF,
+    REMAPVIEW_AVAX,
     REMAPVIEW_WEB_AUTH,
 #endif
     REMAPVIEW_BUTT,

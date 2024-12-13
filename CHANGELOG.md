@@ -1,3 +1,12 @@
+## 1.7.16(2024-12-13)
+
+### Bug Fixes
+
+1. Fixed device reboot issue during message signing on Solana.
+
+
+
+
 ## 1.7.14(2024-12-10)
 
 ### What's new

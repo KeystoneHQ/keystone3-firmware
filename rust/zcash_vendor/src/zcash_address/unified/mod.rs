@@ -160,7 +160,6 @@ impl fmt::Display for ParseError {
 impl Error for ParseError {}
 
 pub mod private {
-    use crate::zcash_encoding;
     use alloc::vec;
 
     use super::{ParseError, Typecode, PADDING_LEN};

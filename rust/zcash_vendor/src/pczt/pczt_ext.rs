@@ -1,5 +1,4 @@
 use crate::pczt::Pczt;
-use crate::zcash_encoding::{Vector, WriteBytesExt};
 use alloc::collections::btree_map::BTreeMap;
 use blake2b_simd::{Hash, Params, State};
 use byteorder::LittleEndian;
@@ -336,9 +335,7 @@ impl Pczt {
     fn sheilded_sig_commitment(&self, input_info: Option<(&Input, u32)>) -> Result<Hash, ()> {
         let mut personal = [0; 16];
         personal[..12].copy_from_slice(ZCASH_TX_PERSONALIZATION_PREFIX);
-        (&mut personal[12..])
-            .write_u32::<LittleEndian>(self.global.consensus_branch_id.into())
-            .unwrap();
+        personal[12..].copy_from_slice(&u32::from(self.global.consensus_branch_id).to_le_bytes());
 
         let mut h = hasher(&personal);
         h.update(self.digest_header()?.as_bytes());

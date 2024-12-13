@@ -9,7 +9,7 @@ pub use convert::{
 use encoding::ParseError;
 use unified::Receiver;
 
-use super::zcash_protocol::{consensus::NetworkType as Network, PoolType};
+use zcash_protocol::{consensus::NetworkType as Network, PoolType};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ZcashAddress {

@@ -11,7 +11,7 @@ use subtle::{Choice, ConstantTimeEq};
 use secp256k1::{self, PublicKey};
 
 use crate::orchard::prf_expand::PrfExpand;
-use crate::zcash_protocol::consensus::{self, NetworkConstants};
+use zcash_protocol::consensus::{self, NetworkConstants};
 use crate::zip32::{self, AccountId};
 
 use super::TransparentAddress;

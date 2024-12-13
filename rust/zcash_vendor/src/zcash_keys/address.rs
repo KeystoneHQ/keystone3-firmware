@@ -3,7 +3,7 @@
 use crate::{
     orchard,
     zcash_address::{self, ToAddress},
-    zcash_primitives, zcash_protocol,
+    zcash_primitives,
 };
 
 use alloc::{

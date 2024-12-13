@@ -2,14 +2,14 @@
 
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use bech32::{self, Bech32m};
 use core::cmp;
 use core::convert::{TryFrom, TryInto};
 use core::error::Error;
 use core::fmt;
 use core::num::TryFromIntError;
-use bech32::{self, Bech32m};
 
-use super::super::zcash_protocol::consensus::NetworkType as Network;
+use zcash_protocol::consensus::NetworkType as Network;
 
 pub mod address;
 pub mod fvk;
@@ -163,7 +163,6 @@ pub mod private {
     use crate::zcash_encoding;
     use alloc::vec;
 
-    use super::super::super::zcash_protocol::consensus::NetworkType as Network;
     use super::{ParseError, Typecode, PADDING_LEN};
     use alloc::format;
     use alloc::{borrow::ToOwned, vec::Vec};
@@ -173,6 +172,7 @@ pub mod private {
     };
     use core2::io::Write;
     use zcash_encoding::CompactSize;
+    use zcash_protocol::consensus::NetworkType as Network;
 
     /// A raw address or viewing key.
     pub trait SealedItem: for<'a> TryFrom<(u32, &'a [u8]), Error = ParseError> + Clone {

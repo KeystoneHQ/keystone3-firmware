@@ -5,10 +5,11 @@ use ff::{PrimeField, PrimeFieldBits};
 use pasta_curves::pallas;
 use subtle::{ConstantTimeEq, CtOption};
 
-use crate::sinsemilla;
-
-use super::{note::NoteValue, note_ext::{L_ORCHARD_BASE, NOTE_COMMITMENT_PERSONALIZATION}, spec::extract_p};
-
+use super::{
+    note::NoteValue,
+    note_ext::{L_ORCHARD_BASE, NOTE_COMMITMENT_PERSONALIZATION},
+    spec::extract_p,
+};
 
 #[derive(Clone, Debug)]
 pub struct NoteCommitTrapdoor(pub(super) pallas::Scalar);
@@ -18,7 +19,6 @@ impl NoteCommitTrapdoor {
         self.0
     }
 }
-
 
 #[derive(Copy, Clone, Debug)]
 pub struct ExtractedNoteCommitment(pub(super) pallas::Base);

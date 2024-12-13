@@ -20,6 +20,7 @@ pasta_curves = { version = "0.5.1", default-features = false, features = [
     "alloc",
     "bits",
 ] }
+sinsemilla = "0.1"
 subtle = { version = "2.6", default-features = false }
 group = { version = "0.13.0" }
 aes = { workspace = true }

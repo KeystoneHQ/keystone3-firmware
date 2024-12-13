@@ -3727,6 +3727,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sinsemilla"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d268ae0ea06faafe1662e9967cd4f9022014f5eeb798e0c302c876df8b7af9c"
+dependencies = [
+ "group",
+ "pasta_curves",
+ "subtle",
+]
+
+[[package]]
 name = "siphasher"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4822,6 +4833,7 @@ dependencies = [
  "serde",
  "serde_with 3.11.0",
  "sha2 0.10.8",
+ "sinsemilla",
  "subtle",
  "zcash_address",
  "zcash_encoding",

@@ -319,3 +319,10 @@ UREncodeResult *GuiGetZcashSignQrCodeData(void)
     SetLockScreen(enable);
     return encodeResult;
 }
+
+void FreeZcashMemory(void)
+{
+    CHECK_FREE_UR_RESULT(g_urResult, false);
+    CHECK_FREE_UR_RESULT(g_urMultiResult, true);
+    CHECK_FREE_PARSE_RESULT(g_parseResult);
+}

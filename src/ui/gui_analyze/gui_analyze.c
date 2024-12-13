@@ -307,7 +307,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
 #endif
         GuiGetZcashGUIData,
         NULL,
-        FreeArMemory,
+        FreeZcashMemory,
     }
 #endif
 };

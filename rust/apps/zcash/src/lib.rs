@@ -45,10 +45,10 @@ pub fn parse_pczt(pczt: &[u8], ufvk_text: &str, seed_fingerprint: &[u8; 32]) -> 
     pczt::parse::parse_pczt(seed_fingerprint, &ufvk, &pczt)
 }
 
-pub fn sign_pczt(pczt: &[u8], seed: &[u8], randomness: [u8; 32]) -> Result<Vec<u8>> {
+pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
     let pczt =
         Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
-    pczt::sign::sign_pczt(&pczt, seed, randomness)
+    pczt::sign::sign_pczt(&pczt, seed)
 }
 
 

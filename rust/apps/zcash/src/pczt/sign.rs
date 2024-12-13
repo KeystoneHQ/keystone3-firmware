@@ -1,10 +1,10 @@
 use super::*;
 use alloc::format;
 use blake2b_simd::Hash;
+use rand_core::OsRng;
 
 struct SeedSigner<'a> {
     seed: &'a [u8],
-    randomness: [u8; 32],
 }
 
 impl<'a> PcztSigner for SeedSigner<'a> {
@@ -63,22 +63,16 @@ impl<'a> PcztSigner for SeedSigner<'a> {
 
         let path_fingerprint = path.seed_fingerprint.clone();
         if fingerprint == path_fingerprint {
-            sign_message_orchard(
-                &self.seed,
-                alpha,
-                hash.as_bytes(),
-                &path.to_string(),
-                &self.randomness,
-            )
-            .map(|signature| Some(signature))
-            .map_err(|e| ZcashError::SigningError(e.to_string()))
+            sign_message_orchard(&self.seed, alpha, hash.as_bytes(), &path.to_string(), OsRng)
+                .map(|signature| Some(signature))
+                .map_err(|e| ZcashError::SigningError(e.to_string()))
         } else {
             Ok(None)
         }
     }
 }
-pub fn sign_pczt(pczt: &Pczt, seed: &[u8], randomness: [u8; 32]) -> crate::Result<Vec<u8>> {
-    pczt.sign(&SeedSigner { seed, randomness })
+pub fn sign_pczt(pczt: &Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
+    pczt.sign(&SeedSigner { seed })
         .map(|pczt| {
             rust_tools::debug!(format!("pczt: {:?}", hex::encode(pczt.serialize())));
             pczt.serialize()
@@ -123,9 +117,7 @@ mod tests {
         // //6122d6b5ddcc9eb600a4cedb98932b3a7edf6e8b51bc4478b296450bda68c506
         // println!("alpha: {:?}", hex::encode(pczt.orchard().actions()[0].spend().alpha().unwrap()));
 
-        let randomness = [0u8; 32];
-
-        let result = sign_pczt(&pczt, &seed, randomness);
+        let result = sign_pczt(&pczt, &seed);
 
         // println!("result: {:?}", result.map(|pczt| hex::encode(pczt)));
     }

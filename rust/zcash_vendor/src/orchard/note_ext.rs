@@ -7,8 +7,6 @@ use ff::{PrimeField, PrimeFieldBits};
 use pasta_curves::{arithmetic::CurveExt, group::GroupEncoding, pallas, Ep};
 use subtle::ConstantTimeEq;
 
-use crate::sinsemilla;
-
 use super::note::Nullifier;
 use super::note_encryption::{check_note_validity, NoteValidity};
 use super::{

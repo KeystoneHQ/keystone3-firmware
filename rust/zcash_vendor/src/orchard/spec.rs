@@ -5,10 +5,15 @@ use core::ops::Deref;
 
 use crate::poseidon;
 
-use super::{super::sinsemilla, constants::{COMMIT_IVK_PERSONALIZATION, KEY_DIVERSIFICATION_PERSONALIZATION, L_ORCHARD_BASE}};
+use super::constants::{
+    COMMIT_IVK_PERSONALIZATION, KEY_DIVERSIFICATION_PERSONALIZATION, L_ORCHARD_BASE,
+};
 use ff::{Field, FromUniformBytes, PrimeField, PrimeFieldBits};
 use group::{Curve, Group, GroupEncoding, WnafBase, WnafScalar};
-use pasta_curves::{arithmetic::{CurveAffine, CurveExt}, pallas};
+use pasta_curves::{
+    arithmetic::{CurveAffine, CurveExt},
+    pallas,
+};
 use subtle::{ConditionallySelectable, CtOption};
 
 /// A Pallas point that is guaranteed to not be the identity.
@@ -211,10 +216,7 @@ pub fn diversify_hash(d: &[u8; 11]) -> NonIdentityPallasPoint {
 /// Defined in [Zcash Protocol Spec § 5.4.5.5: Orchard Key Agreement][concreteorchardkeyagreement].
 ///
 /// [concreteorchardkeyagreement]: https://zips.z.cash/protocol/nu5.pdf#concreteorchardkeyagreement
-pub fn ka_orchard(
-    sk: &NonZeroPallasScalar,
-    b: &NonIdentityPallasPoint,
-) -> NonIdentityPallasPoint {
+pub fn ka_orchard(sk: &NonZeroPallasScalar, b: &NonIdentityPallasPoint) -> NonIdentityPallasPoint {
     ka_orchard_prepared(
         &PreparedNonZeroScalar::new(sk),
         &PreparedNonIdentityBase::new(*b),

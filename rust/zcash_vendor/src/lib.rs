@@ -4,7 +4,6 @@ extern crate alloc;
 
 
 pub mod orchard;
-pub mod sinsemilla;
 pub mod zcash_keys;
 pub mod zcash_primitives;
 pub mod pczt;

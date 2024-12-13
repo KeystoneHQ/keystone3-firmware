@@ -145,17 +145,6 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         FreeSuiMemory
     },
     {
-        REMAPVIEW_ADA_SIGN_TX_HASH,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ada_sign_tx_hash_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashDetails\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_sign_ada_tx_hash.json",
-#endif
-        GuiGetAdaSignTxHashData,
-        NULL,
-        FreeAdaSignTxHashMemory,
-    },
-    {
         REMAPVIEW_SOL,
 #ifndef COMPILE_SIMULATOR
         "{\"name\":\"sol_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxDetail\"}]}]}",
@@ -171,7 +160,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
 #ifndef COMPILE_SIMULATOR
         "{\"table\":{\"utf8_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetSolMessageFrom\",\"pos\":[24,54],\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Message\",\"pos\":[24,130],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,168],\"size\":[360,332],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSolMessageUtf8\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\",\"text_color\":16777215}]}]},\"raw_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Raw Message\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,54],\"size\":[360,450],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSolMessageRaw\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}]}}}",
 #else
-        PC_SIMULATOR_PATH "/page_eth.json",
+        PC_SIMULATOR_PATH "/page_sol_message.json",
 #endif
         GuiGetSolMessageData,
         GetSolMessageType,
@@ -198,6 +187,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         GuiGetAdaData,
         NULL,
         FreeAdaMemory,
+    },
+        {
+        REMAPVIEW_ADA_SIGN_TX_HASH,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"ada_sign_tx_hash_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashDetails\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_sign_ada_tx_hash.json",
+#endif
+        GuiGetAdaSignTxHashData,
+        NULL,
+        FreeAdaMemory
     },
     {
         REMAPVIEW_ADA_SIGN_DATA,

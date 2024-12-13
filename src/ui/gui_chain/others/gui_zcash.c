@@ -3,6 +3,7 @@
 #include "user_memory.h"
 #include "account_manager.h"
 #include "gui_chain.h"
+#include "keystore.h"
 
 #define MAX_MEMO_LENGTH 1024
 
@@ -39,7 +40,7 @@ void *GuiGetZcashGUIData(void) {
         CHECK_CHAIN_BREAK(parseResult);
         g_zcashData = parseResult->data;
         g_parseResult = (void *)parseResult;
-        
+
     } while (0);
     return g_parseResult;
 }
@@ -64,27 +65,49 @@ void GuiZcashOverview(lv_obj_t *parent, void *totalData) {
         last_view = GuiZcashOverviewTransparent(container, last_view);
     }
 
-    last_view = GuiZcashOverviewOrchard(container, last_view);
+    if(g_zcashData->orchard != NULL) {
+        last_view = GuiZcashOverviewOrchard(container, last_view);
+    }
 }
 
 static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_view) {
+    lv_obj_t* inner_last_view;
     lv_obj_t* label = GuiCreateIllustrateLabel(parent, _("Transparent"));
     lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
 
-    lv_obj_t* from_view = GuiZcashOverviewFrom(parent, g_zcashData->transparent->from, label);
-    lv_obj_t* to_view = GuiZcashOverviewTo(parent, g_zcashData->transparent->to, from_view);
+    inner_last_view = label;
 
-    return to_view;
+    if (g_zcashData->transparent->from->size > 0) {
+        lv_obj_t* from_view = GuiZcashOverviewFrom(parent, g_zcashData->transparent->from, inner_last_view);
+        inner_last_view = from_view;
+    }
+
+    if (g_zcashData->transparent->to->size > 0) {
+        lv_obj_t* to_view = GuiZcashOverviewTo(parent, g_zcashData->transparent->to, inner_last_view);
+        inner_last_view = to_view;
+    }
+
+    return inner_last_view;
 }
 
 static lv_obj_t* GuiZcashOverviewOrchard(lv_obj_t* parent, lv_obj_t *last_view) {
+    lv_obj_t* inner_last_view;
     lv_obj_t* label = GuiCreateIllustrateLabel(parent, _("Orchard"));
     lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
 
-    lv_obj_t* from_view = GuiZcashOverviewFrom(parent, g_zcashData->orchard->from, label);
-    lv_obj_t* to_view = GuiZcashOverviewTo(parent, g_zcashData->orchard->to, from_view);
+    inner_last_view = label;
 
-    return to_view;
+    if (g_zcashData->orchard->from->size > 0) {
+        lv_obj_t* from_view = GuiZcashOverviewFrom(parent, g_zcashData->orchard->from, inner_last_view);
+        inner_last_view = from_view;
+    }
+
+    if (g_zcashData->orchard->to->size > 0) {
+        lv_obj_t* to_view = GuiZcashOverviewTo(parent, g_zcashData->orchard->to, inner_last_view);
+        inner_last_view = to_view;
+    }
+
+    return inner_last_view;
 }
 
 static lv_obj_t* GuiZcashOverviewFrom(lv_obj_t *parent, VecFFI_DisplayFrom *from, lv_obj_t *last_view) {
@@ -289,7 +312,9 @@ UREncodeResult *GuiGetZcashSignQrCodeData(void)
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = sign_zcash_tx(data, seed, len);
+        uint8_t randomness[TRNG_RANDOMNESS_LEN];
+        GenerateTRNGRandomness(randomness, sizeof(randomness));
+        encodeResult = sign_zcash_tx(data, seed, len, randomness, sizeof(randomness));
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);

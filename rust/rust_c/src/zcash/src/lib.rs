@@ -3,8 +3,8 @@ extern crate alloc;
 
 pub mod structs;
 
-use alloc::boxed::Box;
-use app_zcash::get_address;
+use alloc::{boxed::Box, format};
+use app_zcash::{errors::ZcashError, get_address};
 use common_rust_c::{
     check_and_free_ptr, extract_ptr_with_type,
     free::Free,
@@ -90,10 +90,24 @@ pub extern "C" fn parse_zcash_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn sign_zcash_tx(tx: PtrUR, seed: PtrBytes, seed_len: u32) -> *mut UREncodeResult {
+pub extern "C" fn sign_zcash_tx(
+    tx: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    randomness: PtrBytes,
+    randomness_len: u32,
+) -> *mut UREncodeResult {
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    match app_zcash::sign_pczt(&pczt.get_data(), seed) {
+    let randomness = unsafe { slice::from_raw_parts(randomness, randomness_len as usize) };
+    let randomness = match randomness.try_into() {
+        Ok(x) => x,
+        Err(_e) => {
+            return UREncodeResult::from(ZcashError::SigningError(format!("invalid randomness")))
+                .c_ptr()
+        }
+    };
+    match app_zcash::sign_pczt(&pczt.get_data(), seed, randomness) {
         Ok(pczt) => match ZcashPczt::new(pczt).try_into() {
             Err(e) => UREncodeResult::from(e).c_ptr(),
             Ok(v) => UREncodeResult::encode(

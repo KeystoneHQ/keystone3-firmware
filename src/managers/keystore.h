@@ -17,6 +17,7 @@
 
 #define AES_IV_LEN                              32              //Use first 16 bytes for AES key, last 16 bytes reserved for future features.
 #define ENTROPY_MAX_LEN                         32
+#define TRNG_RANDOMNESS_LEN                     32
 #define TON_ENTROPY_LEN                         64
 #define SEED_LEN                                64
 #define SLIP39_EMS_LEN                          32
@@ -51,7 +52,7 @@ int32_t GetAccountSeed(uint8_t accountIndex, uint8_t *seed, const char *password
 int32_t GetAccountSlip39Ems(uint8_t accountIndex, uint8_t *slip39Ems, const char *password);
 int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char *password);
 int32_t VerifyPassword(uint8_t *accountIndex, const char *password);
-
+int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len);
 bool CheckPassphraseSame(uint8_t accountIndex, const char *passphrase);
 char* GetPassphrase(uint8_t accountIndex);
 

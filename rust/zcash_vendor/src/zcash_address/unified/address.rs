@@ -1,8 +1,6 @@
-// use zcash_protocol::PoolType;
-
 use alloc::{format, vec::Vec};
 
-use crate::zcash_protocol::PoolType;
+use zcash_protocol::PoolType;
 
 use super::{private::SealedItem, ParseError, Typecode};
 

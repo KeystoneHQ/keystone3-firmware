@@ -1,6 +1,7 @@
 use crate::pczt::Pczt;
 use crate::zcash_encoding::{Vector, WriteBytesExt};
 use alloc::collections::btree_map::BTreeMap;
+use alloc::vec::Vec;
 use blake2b_simd::{Hash, Params, State};
 use byteorder::LittleEndian;
 
@@ -72,6 +73,7 @@ struct TransparentDigests {
 }
 
 pub type ZcashSignature = [u8; 64];
+pub type TransparentSignatureDER = Vec<u8>;
 
 pub trait PcztSigner {
     type Error;
@@ -79,7 +81,7 @@ pub trait PcztSigner {
         &self,
         hash: Option<Hash>,
         key_path: BTreeMap<[u8; 33], Zip32Derivation>,
-    ) -> Result<BTreeMap<[u8; 33], ZcashSignature>, Self::Error>;
+    ) -> Result<BTreeMap<[u8; 33], TransparentSignatureDER>, Self::Error>;
     fn sign_sapling(
         &self,
         hash: Option<Hash>,
@@ -342,7 +344,8 @@ impl Pczt {
 
         let mut h = hasher(&personal);
         h.update(self.digest_header()?.as_bytes());
-        h.update(self.transparent_sig_digest(input_info).as_bytes());
+        let sig_digest = self.transparent_sig_digest(input_info)?;
+        h.update(sig_digest.as_bytes());
         h.update(
             self.has_sapling()
                 .then(|| self.digest_sapling())
@@ -358,13 +361,19 @@ impl Pczt {
         Ok(h.finalize())
     }
 
-    fn transparent_sig_digest(&self, input_info: Option<(&Input, u32)>) -> Hash {
+    fn transparent_sig_digest(&self, input_info: Option<(&Input, u32)>) -> Result<Hash, ()> {
         if !self.has_transparent() {
-            self.hash_transparent_tx_id(None)
+            Ok(self.hash_transparent_tx_id(None))
         } else {
             if self.is_transparent_coinbase() || self.transparent.inputs.is_empty() {
-                self.hash_transparent_tx_id(Some(self.transparent_digest()))
+                Ok(self.hash_transparent_tx_id(Some(self.transparent_digest())))
             } else {
+                if let Some((input, _)) = input_info {
+                    if input.sighash_type != SIGHASH_ALL {
+                        // this should not happen, but we need to handle it
+                        return Err(());
+                    }
+                }
                 //SIGHASH_ALL
                 let prevouts_digest = Self::digest_transparent_prevouts(&self.transparent.inputs);
 
@@ -414,7 +423,7 @@ impl Pczt {
                 h.update(sequence_digest.as_bytes());
                 h.update(outputs_digest.as_bytes());
                 h.update(txin_sig_digest.as_bytes());
-                h.finalize()
+                Ok(h.finalize())
             }
         }
     }
@@ -434,9 +443,14 @@ impl Pczt {
                     &mut input.partial_signatures,
                     signatures
                         .iter()
-                        .map(|(pubkey, signature)| (pubkey.clone(), signature.to_vec()))
+                        .map(|(pubkey, signature)| {
+                            let mut sig = signature.to_vec();
+                            sig.push(input.sighash_type);
+                            (pubkey.clone(), sig)
+                        })
                         .collect(),
                 );
+                //TODO: modify signing flags for transparent inputs
                 Ok(())
             })?;
         pczt.sapling.spends.iter_mut().try_for_each(|spend| {

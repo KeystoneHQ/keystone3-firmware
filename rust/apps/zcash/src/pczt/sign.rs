@@ -1,7 +1,9 @@
 use super::*;
 use alloc::format;
+use bitcoin::secp256k1::ecdsa::Signature;
 use blake2b_simd::Hash;
 use rand_core::OsRng;
+use zcash_vendor::pczt::pczt_ext::TransparentSignatureDER;
 
 struct SeedSigner<'a> {
     seed: &'a [u8],
@@ -13,7 +15,7 @@ impl<'a> PcztSigner for SeedSigner<'a> {
         &self,
         hash: Option<Hash>,
         key_path: BTreeMap<[u8; 33], Zip32Derivation>,
-    ) -> Result<BTreeMap<[u8; 33], ZcashSignature>, Self::Error> {
+    ) -> Result<BTreeMap<[u8; 33], TransparentSignatureDER>, Self::Error> {
         let hash = hash.ok_or(ZcashError::InvalidDataError(format!("invalid siging hash")))?;
         let message = Message::from_digest_slice(hash.as_bytes()).unwrap();
         let fingerprint = calculate_seed_fingerprint(&self.seed)
@@ -29,7 +31,13 @@ impl<'a> PcztSigner for SeedSigner<'a> {
                     let signature = sign_message_by_seed(&self.seed, &path.to_string(), &message)
                         .map(|(_rec_id, signature)| signature)
                         .map_err(|e| ZcashError::SigningError(e.to_string()))?;
-                    result.insert(pubkey.clone(), signature);
+
+                    let sig = Signature::from_compact(signature.as_slice())
+                        .map_err(|e| ZcashError::SigningError(e.to_string()))?
+                        .serialize_der()
+                        .as_ref()
+                        .to_vec();
+                    result.insert(pubkey.clone(), sig);
                 }
             }
             Ok(())
@@ -74,7 +82,6 @@ impl<'a> PcztSigner for SeedSigner<'a> {
 pub fn sign_pczt(pczt: &Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
     pczt.sign(&SeedSigner { seed })
         .map(|pczt| {
-            rust_tools::debug!(format!("pczt: {:?}", hex::encode(pczt.serialize())));
             pczt.serialize()
         })
         .map_err(|e| ZcashError::SigningError(e.to_string()))

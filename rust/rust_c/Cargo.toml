@@ -28,6 +28,7 @@ zcash_rust_c = { path = "./src/zcash", optional = true }
 
 cty = { workspace = true }
 cstr_core = { workspace = true }
+getrandom = { workspace = true, features = ["custom"] }
 
 [lib]
 crate-type = ["staticlib"]

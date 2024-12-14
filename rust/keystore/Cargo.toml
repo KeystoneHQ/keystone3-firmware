@@ -9,6 +9,7 @@ edition = "2021"
 cty = { workspace = true }
 cstr_core = { workspace = true }
 rust_tools = { workspace = true }
+rand_core = { workspace = true, features = ["getrandom"] }
 rand_chacha = { workspace = true }
 arrayref = { workspace = true }
 sha2 = { workspace = true }

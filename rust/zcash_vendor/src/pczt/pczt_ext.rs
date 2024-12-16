@@ -212,7 +212,8 @@ impl Pczt {
     fn digest_transparent_outputs(outputs: &[Output]) -> Hash {
         let mut h = hasher(ZCASH_OUTPUTS_HASH_PERSONALIZATION);
         for output in outputs {
-            h.update(&output.value.to_le_bytes());
+            let value = output.value as i64;
+            h.update(&value.to_le_bytes());
             h.update(&output.script_pubkey);
         }
         h.finalize()

@@ -10,7 +10,7 @@ use orchard::{
 use parse::decode_output_enc_ciphertext;
 use zcash_vendor::{
     bip32::ChildNumber,
-    pczt,
+    pczt::{self, Pczt},
     ripemd::Ripemd160,
     sha2::{Digest, Sha256},
     zcash_primitives::legacy::{keys::AccountPubKey, Script, TransparentAddress},

@@ -275,6 +275,7 @@ static void PrivateModeQRSharingHandler(lv_event_t *e);
 static void ShowOrHiddenPincode(lv_event_t *e);
 static void RestorePrivateMode(void);
 static void ExitPrivateMode(void);
+static void PrivateModePrevTileHandler(lv_event_t *e);
 #endif
 static uint32_t GetDerivedPathTypeCount();
 static int GetAccountType(void);
@@ -2176,7 +2177,7 @@ int8_t GuiConnectWalletNextTile(void)
     case CONNECT_WALLET_QRCODE:
         if (IsSupportEncryption()) {
             SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
-                             ConnectWalletReturnHandler, NULL);
+                             PrivateModePrevTileHandler, NULL);
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
                               OpenMoreHandler, &g_connectWalletTileView.walletIndex);
             g_privateModePincode = OpenPrivateQrMode();
@@ -2195,6 +2196,12 @@ int8_t GuiConnectWalletNextTile(void)
     return SUCCESS_CODE;
 }
 
+static void PrivateModePrevTileHandler(lv_event_t *e)
+{
+    ExitPrivateMode();
+    CloseToTargetTileView(g_connectWalletTileView.currentTile,
+                        CONNECT_WALLET_SELECT_WALLET);
+}
 
 int8_t GuiConnectWalletPrevTile(void)
 {
@@ -2239,7 +2246,7 @@ void GuiConnectWalletRefresh(void)
         break;
     case CONNECT_WALLET_QRCODE_PRIVATE_MODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
-                         ConnectWalletReturnHandler, NULL);
+                         PrivateModePrevTileHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
                           OpenMoreHandler, &g_connectWalletTileView.walletIndex);
         SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex,

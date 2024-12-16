@@ -19,7 +19,7 @@ use zcash_protocol::{PoolType, ShieldedProtocol};
 /// A Unified Address.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UnifiedAddress {
-    orchard: Option<orchard::address::Address>,
+    orchard: Option<orchard::Address>,
     transparent: Option<TransparentAddress>,
     unknown: Vec<(u32, Vec<u8>)>,
 }
@@ -79,7 +79,7 @@ impl UnifiedAddress {
     /// Returns `None` if the receivers would produce an invalid Unified Address (namely,
     /// if no shielded receiver is provided).
     pub fn from_receivers(
-        orchard: Option<orchard::address::Address>,
+        orchard: Option<orchard::Address>,
         transparent: Option<TransparentAddress>,
         // TODO: Add handling for address metadata items.
     ) -> Option<Self> {
@@ -107,7 +107,7 @@ impl UnifiedAddress {
     }
 
     /// Returns the Orchard receiver within this Unified Address, if any.
-    pub fn orchard(&self) -> Option<&orchard::address::Address> {
+    pub fn orchard(&self) -> Option<&orchard::Address> {
         self.orchard.as_ref()
     }
 
@@ -193,7 +193,7 @@ impl UnifiedAddress {
 /// used to represent the protocol-level recipient of a transfer, instead of a part of an encoded
 /// address.
 pub enum Receiver {
-    Orchard(orchard::address::Address),
+    Orchard(orchard::Address),
     Transparent(TransparentAddress),
 }
 

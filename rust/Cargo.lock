@@ -374,6 +374,7 @@ dependencies = [
  "rand_core 0.6.4",
  "rust_tools",
  "thiserror-core",
+ "zcash_note_encryption",
  "zcash_vendor",
 ]
 
@@ -1947,6 +1948,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "halo2_poseidon"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fa3da60b81f02f9b33ebc6252d766f843291fb4d2247a07ae73d20b791fc56f"
+dependencies = [
+ "bitvec",
+ "ff",
+ "group",
+ "pasta_curves",
+]
+
+[[package]]
 name = "hash32"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2120,6 +2133,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "incrementalmerkletree"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "216c71634ac6f6ed13c2102d64354c0a04dcbdc30e31692c5972d3974d8b6d97"
+dependencies = [
+ "either",
 ]
 
 [[package]]
@@ -2516,6 +2538,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "nonempty"
+version = "0.10.0"
+source = "git+https://github.com/nuttycom/nonempty.git?rev=38d37189faecb2a0e3d6adc05aa24e1b93c2483b#38d37189faecb2a0e3d6adc05aa24e1b93c2483b"
+
+[[package]]
 name = "noop_proc_macro"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2666,6 +2693,38 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 
 [[package]]
+name = "orchard"
+version = "0.10.1"
+source = "git+https://github.com/zcash/orchard.git?rev=e0cc7ac53ad8c97661b312a8b1c064f4cd3c6629#e0cc7ac53ad8c97661b312a8b1c064f4cd3c6629"
+dependencies = [
+ "aes",
+ "bitvec",
+ "blake2b_simd",
+ "core2",
+ "ff",
+ "fpe",
+ "getset",
+ "group",
+ "halo2_poseidon",
+ "hex",
+ "incrementalmerkletree",
+ "lazy_static",
+ "memuse",
+ "nonempty",
+ "pasta_curves",
+ "rand",
+ "reddsa",
+ "serde",
+ "sinsemilla",
+ "subtle",
+ "tracing",
+ "visibility",
+ "zcash_note_encryption",
+ "zcash_spec",
+ "zip32",
+]
+
+[[package]]
 name = "ordered-float"
 version = "3.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2707,6 +2766,7 @@ dependencies = [
  "blake2b_simd",
  "ff",
  "group",
+ "lazy_static",
  "rand",
  "static_assertions",
  "subtle",
@@ -4269,6 +4329,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
+name = "visibility"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d674d135b4a8c1d7e813e2f8d1c9a58308aee4a680323066025e53132218bd91"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.85",
+]
+
+[[package]]
 name = "wallet_rust_c"
 version = "0.1.0"
 dependencies = [
@@ -4774,6 +4845,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "zcash_note_encryption"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77efec759c3798b6e4d829fcc762070d9b229b0f13338c40bf993b7b609c2272"
+dependencies = [
+ "chacha20",
+ "chacha20poly1305",
+ "cipher",
+ "rand_core 0.6.4",
+ "subtle",
+]
+
+[[package]]
 name = "zcash_protocol"
 version = "0.4.3"
 source = "git+https://github.com/zcash/librustzcash.git?rev=48a569bf93c966692a9a9b19d1dfc907fe6e89bf#48a569bf93c966692a9a9b19d1dfc907fe6e89bf"
@@ -4846,6 +4930,7 @@ dependencies = [
  "getset",
  "group",
  "hex",
+ "orchard",
  "pasta_curves",
  "postcard",
  "rand_chacha",

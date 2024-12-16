@@ -3,13 +3,15 @@ use alloc::{
     string::{String, ToString},
     vec,
 };
+use zcash_note_encryption::{
+    try_output_recovery_with_ovk, try_output_recovery_with_pkd_esk, Domain,
+};
 use zcash_vendor::{
     orchard::{
         self,
-        keys::{EphemeralKeyBytes, FullViewingKey, OutgoingViewingKey},
-        note::{Memo, Note, Nullifier, Rho},
+        keys::OutgoingViewingKey,
+        note::{Note, Nullifier, Rho},
         note_encryption::OrchardDomain,
-        note_ext::{try_output_recovery_with_ovk, ENC_CIPHERTEXT_SIZE, OUT_CIPHERTEXT_SIZE},
         value::ValueCommitment,
         Address,
     },
@@ -22,7 +24,10 @@ use zcash_vendor::{
         ToAddress, ZcashAddress,
     },
     zcash_keys::keys::UnifiedFullViewingKey,
-    zcash_protocol::consensus::{MainNetwork, NetworkType},
+    zcash_protocol::{
+        consensus::{MainNetwork, NetworkType},
+        memo::Memo,
+    },
 };
 
 use crate::errors::ZcashError;
@@ -40,34 +45,57 @@ fn format_zec_value(value: f64) -> String {
     format!("{} ZEC", zec_value)
 }
 
+/// Attempts to decrypt the output with the given `ovk`, or (if `None`) directly via the
+/// PCZT's fields.
+///
+/// Returns:
+/// - `Ok(Some(_))` if the output can be decrypted.
+/// - `Ok(None)` if the output cannot be decrypted.
+/// - `Err(_)` if `ovk` is `None` and the PCZT is missing fields needed to directly
+///   decrypt the output.
 pub fn decode_output_enc_ciphertext(
-    ovk: &OutgoingViewingKey,
-    rho: &Rho,
-    epk: &[u8; 32],
-    cmx: &[u8; 32],
-    cv: &[u8; 32],
-    enc_ciphertext: &[u8; ENC_CIPHERTEXT_SIZE],
-    out_ciphertext: &[u8; OUT_CIPHERTEXT_SIZE],
-) -> Result<Option<(Note, Address, Memo)>, ZcashError> {
-    let domain = OrchardDomain::new(rho.clone());
+    action: &orchard::pczt::Action,
+    ovk: Option<&OutgoingViewingKey>,
+) -> Result<Option<(Note, Address, [u8; 512])>, ZcashError> {
+    let domain = OrchardDomain::for_pczt_action(action);
 
-    let ephemeral_key = EphemeralKeyBytes::from(epk.clone());
+    if let Some(ovk) = ovk {
+        Ok(try_output_recovery_with_ovk(
+            &domain,
+            &ovk,
+            action,
+            action.cv_net(),
+            &action.output().encrypted_note().out_ciphertext,
+        ))
+    } else {
+        // If we reached here, none of our OVKs matched; recover directly as the fallback.
 
-    let cv = ValueCommitment::from_bytes(cv)
-        .into_option()
-        .ok_or(ZcashError::InvalidPczt("cv is not valid".to_string()))?;
+        let recipient = action.output().recipient().ok_or_else(|| {
+            ZcashError::InvalidPczt("Missing recipient field for Orchard action".into())
+        })?;
+        let value = action.output().value().ok_or_else(|| {
+            ZcashError::InvalidPczt("Missing value field for Orchard action".into())
+        })?;
+        let rho = orchard::note::Rho::from_bytes(&action.spend().nullifier().to_bytes())
+            .into_option()
+            .ok_or_else(|| {
+                ZcashError::InvalidPczt("Missing rho field for Orchard action".into())
+            })?;
+        let rseed = action.output().rseed().ok_or_else(|| {
+            ZcashError::InvalidPczt("Missing rseed field for Orchard action".into())
+        })?;
 
-    let result = try_output_recovery_with_ovk(
-        &domain,
-        &ovk,
-        &ephemeral_key,
-        cmx,
-        &cv,
-        enc_ciphertext,
-        out_ciphertext,
-    );
+        let note = orchard::Note::from_parts(recipient, value, rho, rseed)
+            .into_option()
+            .ok_or_else(|| {
+                ZcashError::InvalidPczt("Orchard action contains invalid note".into())
+            })?;
 
-    Ok(result)
+        let pk_d = OrchardDomain::get_pk_d(&note);
+        let esk = OrchardDomain::derive_esk(&note).expect("Orchard notes are post-ZIP 212");
+
+        Ok(try_output_recovery_with_pkd_esk(&domain, pk_d, esk, action))
+    }
 }
 
 pub fn parse_pczt(
@@ -216,13 +244,17 @@ fn parse_orchard(
     ufvk: &UnifiedFullViewingKey,
     orchard: &pczt::orchard::Bundle,
 ) -> Result<Option<ParsedOrchard>, ZcashError> {
+    let orchard = orchard
+        .clone()
+        .into_parsed()
+        .map_err(|e| ZcashError::InvalidPczt(alloc::format!("invalid Orchard bundle: {:?}", e)))?;
     let mut parsed_orchard = ParsedOrchard::new(vec![], vec![]);
     orchard.actions().iter().try_for_each(|action| {
         let spend = action.spend().clone();
 
         if let Some(value) = spend.value() {
             //only adds non-dummy spend
-            if *value != 0 {
+            if value.inner() != 0 {
                 let parsed_from = parse_orchard_spend(seed_fingerprint, &spend)?;
                 parsed_orchard.add_from(parsed_from);
             }
@@ -244,18 +276,18 @@ fn parse_orchard(
 
 fn parse_orchard_spend(
     seed_fingerprint: &[u8; 32],
-    spend: &pczt::orchard::Spend,
+    spend: &orchard::pczt::Spend,
 ) -> Result<ParsedFrom, ZcashError> {
     let value = spend
         .value()
-        .clone()
-        .ok_or(ZcashError::InvalidPczt("value is not present".to_string()))?;
+        .ok_or(ZcashError::InvalidPczt("value is not present".to_string()))?
+        .inner();
     let zec_value = format_zec_value(value as f64);
 
     let zip32_derivation = spend.zip32_derivation().clone();
 
     let is_mine = match zip32_derivation {
-        Some(zip32_derivation) => seed_fingerprint == &zip32_derivation.seed_fingerprint,
+        Some(zip32_derivation) => seed_fingerprint == zip32_derivation.seed_fingerprint(),
         None => false,
     };
 
@@ -264,18 +296,9 @@ fn parse_orchard_spend(
 
 fn parse_orchard_output(
     ufvk: &UnifiedFullViewingKey,
-    action: &pczt::orchard::Action,
+    action: &orchard::pczt::Action,
 ) -> Result<ParsedTo, ZcashError> {
-    let output = action.output().clone();
-    let epk = output.ephemeral_key().clone();
-    let cmx = output.cmx().clone();
-    let nf_old = action.spend().nullifier().clone();
-    let rho = Rho::from_nf_old(Nullifier::from_bytes(&nf_old).into_option().ok_or(
-        ZcashError::InvalidPczt("nullifier is not valid".to_string()),
-    )?);
-    let cv = action.cv_net().clone();
-    let enc_ciphertext = output.enc_ciphertext().clone().try_into().unwrap();
-    let out_ciphertext = output.out_ciphertext().clone().try_into().unwrap();
+    let output = action.output();
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard is not present in ufvk".to_string(),
     ))?;
@@ -286,47 +309,68 @@ fn parse_orchard_output(
         .transparent()
         .map(|k| orchard::keys::OutgoingViewingKey::from(k.internal_ovk().as_bytes()));
 
-    let decode_output = |vk: OutgoingViewingKey, is_internal: bool| {
-        if let Ok(Some((note, address, memo))) = decode_output_enc_ciphertext(
-            &vk,
-            &rho,
-            &epk,
-            &cmx,
-            &cv,
-            &enc_ciphertext,
-            &out_ciphertext,
-        ) {
-            let zec_value = format_zec_value(note.value().inner() as f64);
-            let ua = unified::Address::try_from_items(vec![Receiver::Orchard(
-                address.to_raw_address_bytes(),
-            )])
-            .unwrap()
-            .encode(&NetworkType::Main);
-            let memo = decode_memo(memo);
-            Some(ParsedTo::new(
-                ua,
-                zec_value,
-                note.value().inner(),
-                is_internal,
-                true,
-                false,
-                memo,
-            ))
-        } else {
-            None
-        }
-    };
+    let decode_output =
+        |vk: Option<OutgoingViewingKey>, is_internal: bool| match decode_output_enc_ciphertext(
+            action,
+            vk.as_ref(),
+        )? {
+            Some((note, address, memo)) => {
+                let zec_value = format_zec_value(note.value().inner() as f64);
+                let ua = unified::Address::try_from_items(vec![Receiver::Orchard(
+                    address.to_raw_address_bytes(),
+                )])
+                .unwrap()
+                .encode(&NetworkType::Main);
+                let memo = decode_memo(memo);
+                Ok(Some(ParsedTo::new(
+                    ua,
+                    zec_value,
+                    note.value().inner(),
+                    is_internal,
+                    true,
+                    false,
+                    memo,
+                )))
+            }
+            // We couldn't decrypt.
+            None => match (vk, output.value()) {
+                // We couldn't decrypt with this OVK; try the next key.
+                (Some(_), _) => Ok(None),
+                // This will only occur on the last iteration, because `keys` below uses
+                // `vk.is_none()` as a fallback. We require that non-trivial outputs are
+                // visible to the Keystone device.
+                (None, Some(value)) if value.inner() != 0 => Err(ZcashError::InvalidPczt(
+                    "enc_ciphertext field for Orchard action is undecryptable".into(),
+                )),
+                // We couldn't directly decrypt a zero-valued note. This is okay because
+                // it is checked elsewhere that the direct details in the PCZT are valid,
+                // and thus the output definitely has zero value and thus can't adversely
+                // affect balance. The decryption failure means that the `enc_ciphertext`
+                // contains no in-band data (as is the case for e.g. dummy outputs).
+                (None, _) => Ok(None),
+            },
+        };
 
-    let mut keys = vec![(external_ovk, false), (internal_ovk, true)];
+    let mut keys = vec![(Some(external_ovk), false), (Some(internal_ovk), true)];
 
     if let Some(ovk) = transparent_internal_ovk {
-        keys.push((ovk, true));
+        keys.push((Some(ovk), true));
     }
+
+    // Require that we can view all non-zero-valued outputs by falling back on direct
+    // decryption.
+    keys.push((None, false));
 
     let mut parsed_to = None;
 
     for key in keys {
-        let output = decode_output(key.0, key.1);
+        // TODO: Should this be a soft error ("catch" the decryption failure error here
+        // and store it in `ParsedTo` to inform the user that an output of their
+        // transaction is unreadable, but still give them the option to sign), or a hard
+        // error (throw via `?` and cause the entire transaction to be unsignable)? The
+        // answer will likely depend on what checks are performed on the PCZT prior to
+        // here. For now we've chosen the latter (hard error).
+        let output = decode_output(key.0, key.1)?;
         match output {
             Some(output) => {
                 parsed_to = Some(output);
@@ -343,7 +387,8 @@ fn parse_orchard_output(
     let value = output
         .value()
         .clone()
-        .ok_or(ZcashError::InvalidPczt("value is not present".to_string()))?;
+        .ok_or(ZcashError::InvalidPczt("value is not present".to_string()))?
+        .inner();
 
     // TODO: undecoded output can be non-dummy if it has memo,
     // we should decode the enc_ciphertext with output's rseed and recipient

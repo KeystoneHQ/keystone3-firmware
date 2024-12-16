@@ -48,6 +48,7 @@ serde_with = { version = "3.11.0", features = ["alloc", "macros"], default_featu
 transparent = { package = "zcash_transparent", version = "0.1", default_features = false, features = ["transparent-inputs"] }
 zcash_address = { version = "0.6.2", default_features = false }
 zcash_encoding = { version = "0.2.2", default-features = false }
+zcash_keys = { version = "0.6", default-features = false, features = ["orchard", "transparent-inputs"] }
 zcash_protocol = { version = "0.4.2", default-features = false }
 zip32 = { version = "0.1.3", default-features = false }
 #zcash end

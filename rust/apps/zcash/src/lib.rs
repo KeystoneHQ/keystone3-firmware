@@ -14,16 +14,14 @@ use alloc::{
 };
 use pczt::structs::ParsedPczt;
 use zcash_vendor::{
-    pczt::Pczt,
-    zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
-    zcash_protocol::consensus::MainNetwork,
+    pczt::Pczt, zcash_keys::keys::UnifiedFullViewingKey, zcash_protocol::consensus::MainNetwork,
 };
 
 pub fn get_address(ufvk_text: &str) -> Result<String> {
     let ufvk = UnifiedFullViewingKey::decode(&MainNetwork, ufvk_text)
         .map_err(|e| ZcashError::GenerateAddressError(e.to_string()))?;
     let (address, _) = ufvk
-        .default_address(UnifiedAddressRequest::all().unwrap())
+        .default_address(None)
         .map_err(|e| ZcashError::GenerateAddressError(e.to_string()))?;
     Ok(address.encode(&MainNetwork))
 }
@@ -50,7 +48,6 @@ pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
         Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
     pczt::sign::sign_pczt(&pczt, seed)
 }
-
 
 #[cfg(test)]
 mod tests {

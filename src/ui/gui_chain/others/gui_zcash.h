@@ -7,6 +7,7 @@ void GuiSetZcashUrData(URParseResult *urResult, URParseMultiResult *urMultiResul
 void *GuiGetZcashGUIData(void);
 PtrT_TransactionCheckResult GuiGetZcashCheckResult(void);
 UREncodeResult *GuiGetZcashSignQrCodeData(void);
+void FreeZcashMemory(void);
 
 void GuiZcashOverview(lv_obj_t *parent, void *totalData);
 

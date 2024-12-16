@@ -1610,6 +1610,7 @@ static void CancelAttentionHandler(lv_event_t *e)
 {
     ConnectWalletReturnHandler(NULL);
     CloseAttentionHandler(NULL);
+    GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
 }
 
 static void ContinueAttentionHandler(lv_event_t *e)
@@ -2223,7 +2224,6 @@ int8_t GuiConnectWalletPrevTile(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler,
                          NULL);
         ExitPrivateMode();
-        GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         break;
     }
     g_connectWalletTileView.currentTile--;

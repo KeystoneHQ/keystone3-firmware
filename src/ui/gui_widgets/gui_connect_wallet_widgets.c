@@ -1611,6 +1611,7 @@ static void CancelAttentionHandler(lv_event_t *e)
     ConnectWalletReturnHandler(NULL);
     CloseAttentionHandler(NULL);
     GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+    ExitPrivateMode();
 }
 
 static void ContinueAttentionHandler(lv_event_t *e)

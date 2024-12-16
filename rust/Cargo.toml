@@ -137,6 +137,8 @@ getrandom = "0.2"
 [patch.crates-io]
 bip32 = { git = "https://github.com/KeystoneHQ/crates.git", rev = "9873e8fd56007d792fa60d6e844fdb75d527c858" }
 f4jumble = { git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }
+nonempty = { git = "https://github.com/nuttycom/nonempty.git", rev = "38d37189faecb2a0e3d6adc05aa24e1b93c2483b" }
+orchard = { git = "https://github.com/zcash/orchard.git", rev = "e0cc7ac53ad8c97661b312a8b1c064f4cd3c6629" }
 transparent = { package = "zcash_transparent", git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }
 zcash_address = { git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }
 zcash_encoding = { git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }

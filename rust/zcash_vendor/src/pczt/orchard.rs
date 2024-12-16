@@ -365,3 +365,73 @@ impl Bundle {
         Some(self)
     }
 }
+
+impl Bundle {
+    pub fn into_parsed(self) -> Result<orchard::pczt::Bundle, orchard::pczt::ParseError> {
+        let actions = self
+            .actions
+            .into_iter()
+            .map(|action| {
+                let spend = orchard::pczt::Spend::parse(
+                    action.spend.nullifier,
+                    action.spend.rk,
+                    action.spend.spend_auth_sig,
+                    action.spend.recipient,
+                    action.spend.value,
+                    action.spend.rho,
+                    action.spend.rseed,
+                    action.spend.fvk,
+                    action.spend.witness,
+                    action.spend.alpha,
+                    action
+                        .spend
+                        .zip32_derivation
+                        .map(|z| {
+                            orchard::pczt::Zip32Derivation::parse(
+                                z.seed_fingerprint,
+                                z.derivation_path,
+                            )
+                        })
+                        .transpose()?,
+                    action.spend.dummy_sk,
+                    action.spend.proprietary,
+                )?;
+
+                let output = orchard::pczt::Output::parse(
+                    *spend.nullifier(),
+                    action.output.cmx,
+                    action.output.ephemeral_key,
+                    action.output.enc_ciphertext,
+                    action.output.out_ciphertext,
+                    action.output.recipient,
+                    action.output.value,
+                    action.output.rseed,
+                    action.output.ock,
+                    action
+                        .output
+                        .zip32_derivation
+                        .map(|z| {
+                            orchard::pczt::Zip32Derivation::parse(
+                                z.seed_fingerprint,
+                                z.derivation_path,
+                            )
+                        })
+                        .transpose()?,
+                    None,
+                    action.output.proprietary,
+                )?;
+
+                orchard::pczt::Action::parse(action.cv_net, spend, output, action.rcv)
+            })
+            .collect::<Result<_, _>>()?;
+
+        orchard::pczt::Bundle::parse(
+            actions,
+            self.flags,
+            self.value_sum,
+            self.anchor,
+            self.zkproof,
+            self.bsk,
+        )
+    }
+}

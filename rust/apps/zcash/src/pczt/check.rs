@@ -1,13 +1,6 @@
 use super::*;
 
-use orchard::{
-    commitment::ExtractedNoteCommitment,
-    keys::{FullViewingKey, Scope},
-    note::{Memo, Note, Nullifier, Rho},
-    note_ext::{calculate_note_commitment, calculate_nullifier},
-    Address,
-};
-use parse::decode_output_enc_ciphertext;
+use orchard::{keys::FullViewingKey, value::ValueSum};
 use zcash_vendor::{
     bip32::ChildNumber,
     pczt::{self, Pczt},
@@ -17,7 +10,7 @@ use zcash_vendor::{
         address::{Script, TransparentAddress},
         keys::AccountPubKey,
     },
-    zcash_protocol::consensus,
+    zcash_protocol::consensus::{self, NetworkConstants},
     zip32,
 };
 
@@ -34,7 +27,13 @@ pub fn check_pczt<P: consensus::Parameters>(
     let orchard = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
     ))?;
-    check_orchard(&seed_fingerprint, &orchard, &pczt.orchard())?;
+    check_orchard(
+        params,
+        &seed_fingerprint,
+        account_index,
+        &orchard,
+        &pczt.orchard(),
+    )?;
     check_transparent(
         params,
         seed_fingerprint,
@@ -187,140 +186,119 @@ fn check_transparent_output<P: consensus::Parameters>(
     }
 }
 
-fn check_orchard(
+fn check_orchard<P: consensus::Parameters>(
+    params: &P,
     seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
     fvk: &FullViewingKey,
     bundle: &pczt::orchard::Bundle,
 ) -> Result<(), ZcashError> {
+    let bundle = bundle
+        .clone()
+        .into_parsed()
+        .map_err(|e| ZcashError::InvalidPczt(alloc::format!("invalid Orchard bundle: {:?}", e)))?;
+
     bundle.actions().iter().try_for_each(|action| {
-        check_action(seed_fingerprint, fvk, action)?;
+        check_action(params, seed_fingerprint, account_index, fvk, action)?;
         Ok(())
     })?;
-    Ok(())
+
+    // At this point, we know that every `value` field in the Orchard bundle is present.
+    // Check that `value_sum` is correct so we can use it for fee calculations later.
+    let calculated_value_balance = bundle
+        .actions()
+        .iter()
+        .map(|action| {
+            action.spend().value().expect("present") - action.output().value().expect("present")
+        })
+        .sum::<Result<ValueSum, _>>();
+
+    match calculated_value_balance {
+        Ok(value_balance) if &value_balance == bundle.value_sum() => Ok(()),
+        _ => Err(ZcashError::InvalidPczt(
+            "invalid Orchard bundle value balance".into(),
+        )),
+    }
 }
 
-fn check_action(
+fn check_action<P: consensus::Parameters>(
+    params: &P,
     seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
     fvk: &FullViewingKey,
-    action: &pczt::orchard::Action,
+    action: &orchard::pczt::Action,
 ) -> Result<(), ZcashError> {
-    check_action_spend(seed_fingerprint, fvk, &action.spend())?;
-    check_action_output(fvk, action)
+    // Check `cv_net` first so we know that the `value` fields for both the spend and the
+    // output are present and correct.
+    action.verify_cv_net().map_err(|e| {
+        ZcashError::InvalidPczt(alloc::format!("invalid cv_net in Orchard action: {:?}", e))
+    })?;
+
+    check_action_spend(
+        params,
+        seed_fingerprint,
+        account_index,
+        fvk,
+        &action.spend(),
+    )?;
+    check_action_output(action)
 }
 
 // check spend nullifier
-fn check_action_spend(
+fn check_action_spend<P: consensus::Parameters>(
+    params: &P,
     seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
     fvk: &FullViewingKey,
-    spend: &pczt::orchard::Spend,
+    spend: &orchard::pczt::Spend,
 ) -> Result<(), ZcashError> {
-    if let Some(value) = spend.value() {
-        if *value == 0 {
-            //ignore dummy spend
-            return Ok(());
+    // We can only verify the `nullifier` and `rk` fields of a spend if we know its FVK.
+    let can_verify_nf_rk = match (spend.value(), spend.fvk(), spend.zip32_derivation()) {
+        // If the spend is marked as matching the accounts's FVK, verify with it.
+        (_, _, Some(zip32_derivation))
+            if zip32_derivation.seed_fingerprint() == seed_fingerprint
+                && zip32_derivation.derivation_path()
+                    == &[
+                        zip32::ChildIndex::hardened(32),
+                        zip32::ChildIndex::hardened(params.network_type().coin_type()),
+                        account_index.into(),
+                    ] =>
+        {
+            Some(Some(fvk))
         }
+        // Dummy notes use randomly-generated FVKs, so if one is already present then
+        // don't validate using the account's FVK.
+        (Some(value), Some(_), _) if value.inner() == 0 => Some(None),
+        // Don't verify `nullifier` or `rk` for any other spends.
+        _ => None,
+    };
+
+    if let Some(expected_fvk) = can_verify_nf_rk {
+        spend.verify_nullifier(expected_fvk).map_err(|e| {
+            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action nullifier: {:?}", e))
+        })?;
+        spend.verify_rk(expected_fvk).map_err(|e| {
+            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action rk: {:?}", e))
+        })?;
     }
-    if let Some(zip32_derivation) = spend.zip32_derivation().as_ref() {
-        if zip32_derivation.seed_fingerprint == *seed_fingerprint {
-            let nullifier = spend.nullifier();
-            let rho = spend.rho().ok_or(ZcashError::InvalidPczt(
-                "spend.rho is not present".to_string(),
-            ))?;
-            let rseed = spend.rseed().ok_or(ZcashError::InvalidPczt(
-                "spend.rseed is not present".to_string(),
-            ))?;
-            let value = spend.value().ok_or(ZcashError::InvalidPczt(
-                "spend.value is not present".to_string(),
-            ))?;
-            let nk = fvk.nk();
 
-            let recipient = spend.recipient().ok_or(ZcashError::InvalidPczt(
-                "spend.recipient is not present".to_string(),
-            ))?;
-
-            let note_commitment = calculate_note_commitment(&recipient, value, &rho, &rseed);
-
-            let derived_nullifier = calculate_nullifier(&nk, &rho, &rseed, note_commitment);
-
-            if nullifier.clone() != derived_nullifier {
-                return Err(ZcashError::InvalidPczt(
-                    "orchard action nullifier wrong".to_string(),
-                ));
-            }
-        }
-    }
     Ok(())
 }
 
 //check output cmx
-fn check_action_output(
-    fvk: &FullViewingKey,
-    action: &pczt::orchard::Action,
-) -> Result<(), ZcashError> {
-    let result = decode_action_output(fvk, action)?;
-    if let Some((note, _address, _memo, _)) = result {
-        if note.value().inner() == 0 {
-            //ignore dummy output
-            return Ok(());
-        }
-        let node_commitment = note.commitment();
-        let cmx: ExtractedNoteCommitment = node_commitment.into();
-        if cmx.to_bytes() != action.output().cmx().clone() {
-            return Err(ZcashError::InvalidPczt(
-                "orchard action cmx wrong".to_string(),
-            ));
-        }
-    }
+fn check_action_output(action: &orchard::pczt::Action) -> Result<(), ZcashError> {
+    action
+        .output()
+        .verify_note_commitment(action.spend())
+        .map_err(|e| {
+            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action cmx: {:?}", e))
+        })?;
+
+    // TODO: Currently the "can decrypt output" check is performed implicitly by
+    // `parse_orchard_output`. If desired, that code could be called from here and
+    // checked; then in `parse_orchard_output` it would never error if reached.
+
     Ok(())
-}
-
-pub fn decode_action_output(
-    fvk: &FullViewingKey,
-    action: &pczt::orchard::Action,
-) -> Result<Option<(Note, Address, Memo, bool)>, ZcashError> {
-    let nullifier = Nullifier::from_bytes(&action.spend().nullifier()).unwrap();
-
-    let rho = Rho::from_nf_old(nullifier);
-
-    let epk = action.output().ephemeral_key();
-
-    let cmx = action.output().cmx();
-
-    let cv = action.cv_net();
-
-    let enc_ciphertext = action.output().enc_ciphertext().clone().try_into().unwrap();
-
-    let out_ciphertext = action.output().out_ciphertext().clone().try_into().unwrap();
-
-    let external_ovk = fvk.to_ovk(Scope::External);
-
-    let internal_ovk = fvk.to_ovk(Scope::Internal);
-
-    if let Some((note, address, memo)) = decode_output_enc_ciphertext(
-        &external_ovk,
-        &rho,
-        &epk,
-        &cmx,
-        &cv,
-        &enc_ciphertext,
-        &out_ciphertext,
-    )? {
-        return Ok(Some((note, address, memo, true)));
-    }
-
-    if let Some((note, address, memo)) = decode_output_enc_ciphertext(
-        &internal_ovk,
-        &rho,
-        &epk,
-        &cmx,
-        &cv,
-        &enc_ciphertext,
-        &out_ciphertext,
-    )? {
-        return Ok(Some((note, address, memo, false)));
-    }
-
-    Ok(None)
 }
 
 #[cfg(test)]
@@ -331,7 +309,6 @@ mod tests {
     use zcash_vendor::{
         pczt::{
             common::{Global, Zip32Derivation},
-            orchard::{self, Action},
             sapling, transparent, Pczt, V5_TX_VERSION, V5_VERSION_GROUP_ID,
         },
         zcash_protocol::consensus::MAIN_NETWORK,

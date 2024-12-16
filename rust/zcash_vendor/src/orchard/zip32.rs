@@ -5,7 +5,7 @@ use core::fmt;
 use blake2b_simd::Params as Blake2bParams;
 use subtle::{Choice, ConstantTimeEq, CtOption};
 
-use crate::zip32::{self, ChainCode};
+use zip32::ChainCode;
 
 pub use zip32::ChildIndex;
 

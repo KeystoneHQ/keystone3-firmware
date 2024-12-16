@@ -8,9 +8,6 @@ use {
     hex,
 };
 
-use crate::zcash_address;
-use crate::zcash_encoding;
-
 use zcash_encoding::Vector;
 
 pub mod keys;

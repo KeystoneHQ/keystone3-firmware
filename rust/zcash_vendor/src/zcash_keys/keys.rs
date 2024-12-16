@@ -1,17 +1,10 @@
-use crate::zcash_protocol::consensus::NetworkConstants;
 use core::{
     error,
     fmt::{self, Display},
 };
 
-use super::{
-    super::zcash_address::unified::{self, Typecode, Ufvk, Uivk},
-    address::UnifiedAddress,
-};
-use crate::zcash_address::unified::{Container, Encoding};
+use super::address::UnifiedAddress;
 use crate::zcash_primitives::{self, legacy::keys::IncomingViewingKey};
-use crate::zcash_protocol;
-use crate::zip32::{AccountId, DiversifierIndex};
 use alloc::{
     format,
     string::{String, ToString},
@@ -19,7 +12,9 @@ use alloc::{
     vec::Vec,
 };
 use bip32;
-use zcash_protocol::consensus;
+use zcash_address::unified::{self, Container, Encoding, Typecode, Ufvk, Uivk};
+use zcash_protocol::consensus::{self, NetworkConstants};
+use zip32::{AccountId, DiversifierIndex};
 
 use crate::orchard;
 

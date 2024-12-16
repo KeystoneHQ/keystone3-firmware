@@ -40,6 +40,14 @@ static void CloseAttentionHandler(lv_event_t *e)
     }
 }
 
+static void CloseAllHintBox(void)
+{
+    CloseTooltipHintBoxHandler();
+    if (GuiQRHintBoxIsActive()) {
+        GuiQRHintBoxRemove();
+    }
+}
+
 static void ShowHintBox(lv_event_t *e)
 {
     GuiCreateTooltipHintBox("TXO Total Amount", "This amount represents the total balance of the TXOs included in this QR code for signing. It may not reflect the full balance in your software wallet or the exact transaction amount.", "https://...");
@@ -167,6 +175,7 @@ UREncodeResult *GuiGetMoneroSignedTransactionQrCodeData(void)
 void FreeMoneroMemory(void)
 {
 #ifndef COMPILE_SIMULATOR
+    CloseAllHintBox();
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);

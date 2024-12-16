@@ -61,6 +61,11 @@ pub const SIGHASH_SINGLE: u8 = 0x03;
 pub const SIGHASH_MASK: u8 = 0x1f;
 pub const SIGHASH_ANYONECANPAY: u8 = 0x80;
 
+pub(crate) const FLAG_TRANSPARENT_INPUTS_MODIFIABLE: u8 = 0b0000_0001;
+pub(crate) const FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE: u8 = 0b0000_0010;
+pub(crate) const FLAG_HAS_SIGHASH_SINGLE: u8 = 0b0000_0100;
+pub(crate) const FLAG_SHIELDED_MODIFIABLE: u8 = 0b1000_0000;
+
 fn hasher(personal: &[u8; 16]) -> State {
     Params::new().hash_length(32).personal(personal).to_state()
 }
@@ -447,7 +452,20 @@ impl Pczt {
                         })
                         .collect(),
                 );
-                //TODO: modify signing flags for transparent inputs
+
+                if input.sighash_type & SIGHASH_ANYONECANPAY == 0 {
+                    pczt.global.tx_modifiable &= !FLAG_TRANSPARENT_INPUTS_MODIFIABLE;
+                }
+
+                if (input.sighash_type & !SIGHASH_ANYONECANPAY) != SIGHASH_NONE {
+                    pczt.global.tx_modifiable &= !FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE;
+                }
+
+                if (input.sighash_type & !SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE {
+                    pczt.global.tx_modifiable |= FLAG_HAS_SIGHASH_SINGLE;
+                }
+
+                pczt.global.tx_modifiable &= !FLAG_SHIELDED_MODIFIABLE;
                 Ok(())
             })?;
         pczt.sapling.spends.iter_mut().try_for_each(|spend| {
@@ -458,6 +476,9 @@ impl Pczt {
                     d.clone(),
                 )?;
                 spend.spend_auth_sig = signature;
+                pczt.global.tx_modifiable &= !(FLAG_TRANSPARENT_INPUTS_MODIFIABLE
+                    | FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE
+                    | FLAG_SHIELDED_MODIFIABLE);
             }
             Ok(())
         })?;
@@ -475,6 +496,9 @@ impl Pczt {
                             d.clone(),
                         )?;
                         action.spend.spend_auth_sig = signature;
+                        pczt.global.tx_modifiable &= !(FLAG_TRANSPARENT_INPUTS_MODIFIABLE
+                            | FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE
+                            | FLAG_SHIELDED_MODIFIABLE);
                     }
                 }
             }

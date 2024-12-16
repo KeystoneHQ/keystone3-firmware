@@ -16,12 +16,12 @@ use zcash_vendor::{
     pczt::{self, Pczt},
     ripemd::{Digest, Ripemd160},
     sha2::Sha256,
+    transparent::address::{Script, TransparentAddress},
     zcash_address::{
         unified::{self, Encoding, Receiver},
         ToAddress, ZcashAddress,
     },
     zcash_keys::keys::UnifiedFullViewingKey,
-    zcash_primitives::legacy::{Script, TransparentAddress},
     zcash_protocol::consensus::{MainNetwork, NetworkType},
 };
 

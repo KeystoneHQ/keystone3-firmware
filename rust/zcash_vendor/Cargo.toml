@@ -29,7 +29,7 @@ f4jumble = { version = "0.1.1", default-features = false, features = ["alloc"] }
 byteorder = { version = "1", default-features = false }
 ripemd = { version = "0.1", default-features = false, features = ["oid"] }
 bs58 = { version = "0.5", default-features = false, features = ["alloc"] }
-bip32 = { git = "https://github.com/KeystoneHQ/crates.git", tag = "no_std", default-features = false, features = [
+bip32 = { version = "0.5", default-features = false, features = [
     "alloc",
     "secp256k1-ffi",
 ] }
@@ -44,6 +44,7 @@ postcard = { version = "1.0.3", features = ["alloc"] }
 getset = { version = "0.1.3" }
 serde = { workspace = true }
 serde_with = { version = "3.11.0", features = ["alloc", "macros"], default_features = false }
+transparent = { package = "zcash_transparent", version = "0.1", default_features = false, features = ["transparent-inputs"] }
 zcash_address = { version = "0.6.2", default_features = false }
 zcash_encoding = { version = "0.2.2", default-features = false }
 zcash_protocol = { version = "0.4.2", default-features = false }

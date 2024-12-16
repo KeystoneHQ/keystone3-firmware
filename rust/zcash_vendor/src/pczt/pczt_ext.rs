@@ -214,6 +214,8 @@ impl Pczt {
         for output in outputs {
             let value = output.value as i64;
             h.update(&value.to_le_bytes());
+            let len = output.script_pubkey.len();
+            h.update(&[len as u8]);
             h.update(&output.script_pubkey);
         }
         h.finalize()

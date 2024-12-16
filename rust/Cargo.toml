@@ -142,4 +142,5 @@ orchard = { git = "https://github.com/zcash/orchard.git", rev = "e0cc7ac53ad8c97
 transparent = { package = "zcash_transparent", git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }
 zcash_address = { git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }
 zcash_encoding = { git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }
+zcash_keys = { git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }
 zcash_protocol = { git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }

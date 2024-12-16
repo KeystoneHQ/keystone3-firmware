@@ -585,13 +585,18 @@ static void RefreshQrCode(void)
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
     char string[128] = {0};
+    char *addressPrefix = _("Address");
     if (g_chainCard == HOME_WALLET_CARD_MONERO) {
         snprintf_s(string, sizeof(string), "%s", addressDataItem.address);
+        bool isPrimaryAddress = g_selectedIndex[GetCurrentAccountIndex()] == 0 && g_selectedAccount[GetCurrentAccountIndex()] == 0;
+        if (isPrimaryAddress) {
+            addressPrefix = _("Primary_Address");
+        }
     } else {
         CutAndFormatString(string, sizeof(string), addressDataItem.address, 20);
     }
     lv_label_set_text(g_multiAccountsReceiveWidgets.addressLabel, string);
-    lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "%s-%u", _("Address"), (addressDataItem.index));
+    lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "%s-%u", addressPrefix, (addressDataItem.index));
 }
 
 static void RefreshSwitchAddress(void)
@@ -602,7 +607,15 @@ static void RefreshSwitchAddress(void)
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetAddress(index, &addressDataItem, 0);
-        lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("Address"), (addressDataItem.index));
+        char *addressPrefix = _("Address");
+        if (g_chainCard == HOME_WALLET_CARD_MONERO) {
+            uint32_t accountIndex = g_selectedAccount[GetCurrentAccountIndex()];
+            bool isPrimaryAddress = index == 0 && accountIndex == 0;
+            if (isPrimaryAddress) {
+                addressPrefix = _("Primary_Address");
+            }
+        }
+        lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", addressPrefix, (addressDataItem.index));
         char string[128] = {0};
         CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
@@ -1021,7 +1034,7 @@ static void SwitchAccountHandler(lv_event_t *e)
         } else {
             lv_obj_clear_state(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].checkBox, LV_STATE_CHECKED);
             lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
         }
     }
     UpdateConfirmAccountBtn();
@@ -1062,7 +1075,9 @@ static void RefreshSwitchAccount(void)
     for (uint32_t i = 0; i < 5; i++) {
         if (g_chainCard == HOME_WALLET_CARD_MONERO) {
             ModelGetAddress(index, &addressDataItem, 1);
-            lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, "%s-%u", _("Account"), (addressDataItem.index));
+            bool isPrimaryAccount = index == 0;
+            char *accountPrefix = isPrimaryAccount ? _("primary_account_head") : _("account_head");
+            lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, "%s-%u", accountPrefix, (addressDataItem.index));
             char string[128] = {0};
             CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
             lv_label_set_text(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressLabel, string);
@@ -1070,7 +1085,7 @@ static void RefreshSwitchAccount(void)
             char temp[BUFFER_SIZE_64];
             snprintf_s(temp, BUFFER_SIZE_64, "m/1852'/1815'/%u'", index);
             lv_label_set_text(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressLabel, temp);
-            lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, "%s-%u", _("Account"), index);
+            lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, "%s-%u", _("account_head"), index);
         }
         if (end) {
             lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);

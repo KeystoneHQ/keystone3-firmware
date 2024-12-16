@@ -4,11 +4,6 @@ use keystore::algorithms::secp256k1::{get_public_key_by_seed, sign_message_by_se
 use keystore::algorithms::zcash::{calculate_seed_fingerprint, sign_message_orchard};
 use zcash_vendor::{
     orchard,
-    pczt::{
-        common::Zip32Derivation,
-        pczt_ext::{PcztSigner, ZcashSignature},
-        Pczt,
-    },
     zcash_keys::keys::UnifiedFullViewingKey,
 };
 

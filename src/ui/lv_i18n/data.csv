@@ -573,6 +573,7 @@ Common,24,OK,OK,Хорошо,확인,好的,OK,OK,OK
 ,20,FORGET,FORGET,Забыл,잊었어요,忘记密码,OLVIDAR,vergessen,忘れる
 ,20,pin_code,PIN CODE,PIN-КОД,PIN 코드,PIN码,Código PIN,PIN-Code,ピンコード
 ,20,account_head,Account,Счет,계정 전환,账户,Cuenta,Konto,アカウント
+,20,primary_account_head,Primary Account,Основной счет,기본 계정,主账户,Cuenta Principal,Hauptkonto,主要アカウント
 ,24,switch_account,Switch Account,Сменить счет,계정 전환,更换账户,Cambiar cuenta,Konto wechseln,スイッチアカウント
 ,24,switch_address,Switch Address,Сменить адрес,주소 전환,更换地址,Cambiar dirección,Adresse wechseln,スイッチアドレス
 ,28,Attention,Attention,Внимание,주목,注意,Atención,Achtung,注意
@@ -621,6 +622,7 @@ Common,24,OK,OK,Хорошо,확인,好的,OK,OK,OK
 ,24,Quit,Quit,Выйти,종료,退出,Salir,Aufhören,辞める
 ,24,Passphrase,Passphrase,Кодовая фраза,패스프레이즈,密语钱包,Frase de paso,Kennwort,パスフレーズ
 ,24,Address,Address,Адрес,주소,地址,Dirección,Adresse,住所
+,24,Primary_Address,Primary Address,Основной адрес,기본 주소,主地址,Dirección Principal,Hauptadresse,主要住所
 ,28,update_success,Update Successful,Обновление завершено,업그레이드 성공,升级成功,Actualización exitosa,Update erfolgreich,更新が完了しました.
 ,20,illustrate_supplement,.,.,.,小秒天,,.,秒
 ,20,Undo,Undo,отменить,되돌리다,撤销,Deshacer,Rückgängig machen,アンドゥ

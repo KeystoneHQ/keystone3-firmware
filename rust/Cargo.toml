@@ -133,3 +133,11 @@ num-traits = { version = "0.2.19", default-features = false }
 blake2b_simd = { version = "1.0.2", default-features = false }
 getrandom = "0.2"
 # third party dependencies end
+
+[patch.crates-io]
+bip32 = { git = "https://github.com/KeystoneHQ/crates.git", rev = "9873e8fd56007d792fa60d6e844fdb75d527c858" }
+f4jumble = { git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }
+transparent = { package = "zcash_transparent", git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }
+zcash_address = { git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }
+zcash_encoding = { git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }
+zcash_protocol = { git = "https://github.com/zcash/librustzcash.git", rev = "48a569bf93c966692a9a9b19d1dfc907fe6e89bf" }

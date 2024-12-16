@@ -4,7 +4,6 @@ use core::{
 };
 
 use super::address::UnifiedAddress;
-use crate::zcash_primitives::{self, legacy::keys::IncomingViewingKey};
 use alloc::{
     format,
     string::{String, ToString},
@@ -12,16 +11,14 @@ use alloc::{
     vec::Vec,
 };
 use bip32;
+use transparent::keys::IncomingViewingKey;
 use zcash_address::unified::{self, Container, Encoding, Typecode, Ufvk, Uivk};
 use zcash_protocol::consensus::{self, NetworkConstants};
 use zip32::{AccountId, DiversifierIndex};
 
 use crate::orchard;
 
-use {
-    super::super::zcash_primitives::legacy::keys::{self as legacy, NonHardenedChildIndex},
-    core::convert::TryInto,
-};
+use {core::convert::TryInto, transparent::keys::NonHardenedChildIndex};
 
 use crate::orchard::keys::Scope;
 
@@ -145,7 +142,7 @@ impl Era {
 /// A set of spending keys that are all associated with a single ZIP-0032 account identifier.
 #[derive(Clone, Debug)]
 pub struct UnifiedSpendingKey {
-    transparent: legacy::AccountPrivKey,
+    transparent: transparent::keys::AccountPrivKey,
     orchard: orchard::keys::SpendingKey,
 }
 
@@ -160,7 +157,7 @@ impl UnifiedSpendingKey {
         }
 
         UnifiedSpendingKey::from_checked_parts(
-            legacy::AccountPrivKey::from_seed(_params, seed, _account)
+            transparent::keys::AccountPrivKey::from_seed(_params, seed, _account)
                 .map_err(DerivationError::Transparent)?,
             orchard::keys::SpendingKey::from_zip32_seed(seed, _params.coin_type(), _account)
                 .map_err(DerivationError::Orchard)?,
@@ -170,7 +167,7 @@ impl UnifiedSpendingKey {
     /// Construct a USK from its constituent parts, after verifying that UIVK derivation can
     /// succeed.
     fn from_checked_parts(
-        transparent: legacy::AccountPrivKey,
+        transparent: transparent::keys::AccountPrivKey,
         orchard: orchard::keys::SpendingKey,
     ) -> Result<UnifiedSpendingKey, DerivationError> {
         // Verify that FVK and IVK derivation succeed; we don't want to construct a USK
@@ -193,7 +190,7 @@ impl UnifiedSpendingKey {
 
     /// Returns the transparent component of the unified key at the
     /// BIP44 path `m/44'/<coin_type>'/<account>'`.
-    pub fn transparent(&self) -> &legacy::AccountPrivKey {
+    pub fn transparent(&self) -> &transparent::keys::AccountPrivKey {
         &self.transparent
     }
 
@@ -326,7 +323,7 @@ impl From<bip32::Error> for DerivationError {
 /// A [ZIP 316](https://zips.z.cash/zip-0316) unified full viewing key.
 #[derive(Clone, Debug)]
 pub struct UnifiedFullViewingKey {
-    transparent: Option<legacy::AccountPubKey>,
+    transparent: Option<transparent::keys::AccountPubKey>,
     orchard: Option<orchard::keys::FullViewingKey>,
     unknown: Vec<(u32, Vec<u8>)>,
 }
@@ -335,7 +332,7 @@ impl UnifiedFullViewingKey {
     /// Construct a UFVK from its constituent parts, after verifying that UIVK derivation can
     /// succeed.
     fn from_checked_parts(
-        transparent: Option<legacy::AccountPubKey>,
+        transparent: Option<transparent::keys::AccountPubKey>,
         orchard: Option<orchard::keys::FullViewingKey>,
         unknown: Vec<(u32, Vec<u8>)>,
     ) -> Result<UnifiedFullViewingKey, DerivationError> {
@@ -393,7 +390,7 @@ impl UnifiedFullViewingKey {
                     u32::from(unified::Typecode::Sapling),
                     data.to_vec(),
                 ))),
-                unified::Fvk::P2pkh(data) => legacy::AccountPubKey::deserialize(&data)
+                unified::Fvk::P2pkh(data) => transparent::keys::AccountPubKey::deserialize(&data)
                     .map_err(|_| DecodingError::KeyDataInvalid(Typecode::P2pkh))
                     .map(|tfvk| {
                         transparent = Some(tfvk);
@@ -452,7 +449,7 @@ impl UnifiedFullViewingKey {
 
     /// Returns the transparent component of the unified key at the
     /// BIP44 path `m/44'/<coin_type>'/<account>'`.
-    pub fn transparent(&self) -> Option<&legacy::AccountPubKey> {
+    pub fn transparent(&self) -> Option<&transparent::keys::AccountPubKey> {
         self.transparent.as_ref()
     }
 
@@ -505,7 +502,7 @@ impl UnifiedFullViewingKey {
 /// A [ZIP 316](https://zips.z.cash/zip-0316) unified incoming viewing key.
 #[derive(Clone, Debug)]
 pub struct UnifiedIncomingViewingKey {
-    transparent: Option<zcash_primitives::legacy::keys::ExternalIvk>,
+    transparent: Option<transparent::keys::ExternalIvk>,
     orchard: Option<orchard::keys::IncomingViewingKey>,
     /// Stores the unrecognized elements of the unified encoding.
     unknown: Vec<(u32, Vec<u8>)>,
@@ -550,7 +547,7 @@ impl UnifiedIncomingViewingKey {
                 }
                 unified::Ivk::P2pkh(data) => {
                     transparent = Some(
-                        legacy::ExternalIvk::deserialize(&data)
+                        transparent::keys::ExternalIvk::deserialize(&data)
                             .map_err(|_| DecodingError::KeyDataInvalid(Typecode::P2pkh))?,
                     );
                 }
@@ -598,7 +595,7 @@ impl UnifiedIncomingViewingKey {
     }
 
     /// Returns the Transparent external IVK, if present.
-    pub fn transparent(&self) -> &Option<zcash_primitives::legacy::keys::ExternalIvk> {
+    pub fn transparent(&self) -> &Option<transparent::keys::ExternalIvk> {
         &self.transparent
     }
 

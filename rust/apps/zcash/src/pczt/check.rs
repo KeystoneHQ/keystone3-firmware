@@ -13,11 +13,18 @@ use zcash_vendor::{
     pczt::{self, Pczt},
     ripemd::Ripemd160,
     sha2::{Digest, Sha256},
-    zcash_primitives::legacy::{keys::AccountPubKey, Script, TransparentAddress},
+    transparent::{
+        address::{Script, TransparentAddress},
+        keys::AccountPubKey,
+    },
+    zcash_protocol::consensus,
+    zip32,
 };
 
-pub fn check_pczt(
+pub fn check_pczt<P: consensus::Parameters>(
+    params: &P,
     seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
     ufvk: &UnifiedFullViewingKey,
     pczt: &Pczt,
 ) -> Result<(), ZcashError> {
@@ -28,28 +35,38 @@ pub fn check_pczt(
         "orchard fvk is not present".to_string(),
     ))?;
     check_orchard(&seed_fingerprint, &orchard, &pczt.orchard())?;
-    check_transparent(&seed_fingerprint, &xpub, &pczt.transparent())?;
+    check_transparent(
+        params,
+        seed_fingerprint,
+        account_index,
+        &xpub,
+        &pczt.transparent(),
+    )?;
     Ok(())
 }
 
-fn check_transparent(
+fn check_transparent<P: consensus::Parameters>(
+    params: &P,
     seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
     xpub: &AccountPubKey,
     bundle: &pczt::transparent::Bundle,
 ) -> Result<(), ZcashError> {
     bundle.inputs().iter().try_for_each(|input| {
-        check_transparent_input(seed_fingerprint, xpub, input)?;
+        check_transparent_input(params, seed_fingerprint, account_index, xpub, input)?;
         Ok(())
     })?;
     bundle.outputs().iter().try_for_each(|output| {
-        check_transparent_output(seed_fingerprint, xpub, output)?;
+        check_transparent_output(params, seed_fingerprint, account_index, xpub, output)?;
         Ok(())
     })?;
     Ok(())
 }
 
-fn check_transparent_input(
+fn check_transparent_input<P: consensus::Parameters>(
+    params: &P,
     seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
     xpub: &AccountPubKey,
     input: &pczt::transparent::Input,
 ) -> Result<(), ZcashError> {
@@ -65,21 +82,25 @@ fn check_transparent_input(
                         Some(bip32_derivation) => {
                             if seed_fingerprint == &bip32_derivation.seed_fingerprint {
                                 //verify public key
-                                let xpub = xpub.to_inner();
-                                let target = bip32_derivation.derivation_path.iter().try_fold(
-                                    xpub,
-                                    |acc, n| {
-                                        acc.derive_child(ChildNumber::from(*n)).map_err(|_| {
-                                            ZcashError::InvalidPczt(
-                                                "transparent input bip32 derivation path invalid"
-                                                    .to_string(),
-                                            )
-                                        })
-                                    },
-                                )?;
-                                if target.public_key().serialize().to_vec()
-                                    != input.script_pubkey().clone()
-                                {
+                                let bip32_derivation_path = bip32_derivation
+                                    .derivation_path
+                                    .iter()
+                                    .copied()
+                                    .map(ChildNumber)
+                                    .collect::<Vec<_>>();
+                                let target = xpub
+                                    .derive_pubkey_at_bip32_path(
+                                        params,
+                                        account_index,
+                                        &bip32_derivation_path,
+                                    )
+                                    .map_err(|_| {
+                                        ZcashError::InvalidPczt(
+                                            "transparent input bip32 derivation path invalid"
+                                                .to_string(),
+                                        )
+                                    })?;
+                                if target.serialize().to_vec() != input.script_pubkey().clone() {
                                     return Err(ZcashError::InvalidPczt(
                                         "transparent input script pubkey mismatch".to_string(),
                                     ));
@@ -103,8 +124,10 @@ fn check_transparent_input(
     }
 }
 
-fn check_transparent_output(
+fn check_transparent_output<P: consensus::Parameters>(
+    params: &P,
     seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
     xpub: &AccountPubKey,
     output: &pczt::transparent::Output,
 ) -> Result<(), ZcashError> {
@@ -121,21 +144,25 @@ fn check_transparent_output(
                         Some(bip32_derivation) => {
                             if seed_fingerprint == &bip32_derivation.seed_fingerprint {
                                 //verify public key
-                                let xpub = xpub.to_inner();
-                                let target = bip32_derivation.derivation_path.iter().try_fold(
-                                    xpub,
-                                    |acc, n| {
-                                        acc.derive_child(ChildNumber::from(*n)).map_err(|_| {
-                                            ZcashError::InvalidPczt(
-                                                "transparent output bip32 derivation path invalid"
-                                                    .to_string(),
-                                            )
-                                        })
-                                    },
-                                )?;
-                                if target.public_key().serialize().to_vec()
-                                    != output.script_pubkey().clone()
-                                {
+                                let bip32_derivation_path = bip32_derivation
+                                    .derivation_path
+                                    .iter()
+                                    .copied()
+                                    .map(ChildNumber)
+                                    .collect::<Vec<_>>();
+                                let target = xpub
+                                    .derive_pubkey_at_bip32_path(
+                                        params,
+                                        account_index,
+                                        &bip32_derivation_path,
+                                    )
+                                    .map_err(|_| {
+                                        ZcashError::InvalidPczt(
+                                            "transparent input bip32 derivation path invalid"
+                                                .to_string(),
+                                        )
+                                    })?;
+                                if target.serialize().to_vec() != output.script_pubkey().clone() {
                                     return Err(ZcashError::InvalidPczt(
                                         "transparent output script pubkey mismatch".to_string(),
                                     ));
@@ -332,7 +359,13 @@ mod tests {
 
             let fingerprint = fingerprint.try_into().unwrap();
 
-            let result = check_pczt(&fingerprint, &unified_fvk, &pczt);
+            let result = check_pczt(
+                &MAIN_NETWORK,
+                &fingerprint,
+                zip32::AccountId::ZERO,
+                &unified_fvk,
+                &pczt,
+            );
 
             println!("result: {:?}", result);
 

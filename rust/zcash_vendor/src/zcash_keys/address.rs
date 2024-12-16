@@ -1,17 +1,17 @@
 //! Structs for handling supported address types.
 
-use crate::{orchard, zcash_primitives};
+use crate::orchard;
 
 use alloc::{
     string::{String, ToString},
     vec,
     vec::Vec,
 };
+use transparent::address::TransparentAddress;
 use zcash_address::{
     unified::{self, Container, Encoding, Typecode},
     ConversionError, ToAddress, TryFromRawAddress, ZcashAddress,
 };
-use zcash_primitives::legacy::TransparentAddress;
 use zcash_protocol::consensus::{self, NetworkType};
 
 use zcash_protocol::{PoolType, ShieldedProtocol};

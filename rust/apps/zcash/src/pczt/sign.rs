@@ -110,7 +110,7 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
 #[cfg(test)]
 mod tests {
     use keystore::algorithms::zcash::derive_ufvk;
-    use zcash_vendor::pczt::Pczt;
+    use zcash_vendor::{pczt::Pczt, zcash_protocol::consensus::MAIN_NETWORK};
 
     use super::*;
 
@@ -128,7 +128,7 @@ mod tests {
 
         let seed = hex::decode(seed).unwrap();
 
-        let ufvk = derive_ufvk(&seed).unwrap();
+        let ufvk = derive_ufvk(&MAIN_NETWORK, &seed).unwrap();
         // println!("ufvk: {}", ufvk);
 
         let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();

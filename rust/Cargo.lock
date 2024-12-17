@@ -5000,6 +5000,7 @@ dependencies = [
  "keystore",
  "rust_tools",
  "ur-registry",
+ "zcash_vendor",
 ]
 
 [[package]]

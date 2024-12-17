@@ -16,7 +16,7 @@ use zcash_vendor::{
     },
     pasta_curves::{group::ff::PrimeField, Fq},
     zcash_keys::keys::UnifiedSpendingKey,
-    zcash_protocol::consensus::MAIN_NETWORK,
+    zcash_protocol::consensus::{self, MAIN_NETWORK},
     zip32::{self, fingerprint::SeedFingerprint, AccountId},
 };
 
@@ -24,11 +24,11 @@ use crate::errors::{KeystoreError, Result};
 
 use super::utils::normalize_path;
 
-pub fn derive_ufvk(seed: &[u8]) -> Result<String> {
-    let usk = UnifiedSpendingKey::from_seed(&MAIN_NETWORK, &seed, AccountId::ZERO)
+pub fn derive_ufvk<P: consensus::Parameters>(params: &P, seed: &[u8]) -> Result<String> {
+    let usk = UnifiedSpendingKey::from_seed(params, &seed, AccountId::ZERO)
         .map_err(|e| KeystoreError::DerivationError(e.to_string()))?;
     let ufvk = usk.to_unified_full_viewing_key();
-    Ok(ufvk.encode(&MAIN_NETWORK))
+    Ok(ufvk.encode(params))
 }
 
 pub fn calculate_seed_fingerprint(seed: &[u8]) -> Result<[u8; 32]> {

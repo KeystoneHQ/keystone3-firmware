@@ -25,6 +25,7 @@ typedef enum {
     CHAIN_BTC,
 #ifndef BTC_ONLY
     CHAIN_ETH,
+    CHAIN_ZCASH,
     CHAIN_SOL,
     CHAIN_BNB,
     CHAIN_HNT,
@@ -75,7 +76,6 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
-    CHAIN_ZCASH,
 
 #endif
     CHAIN_BUTT,

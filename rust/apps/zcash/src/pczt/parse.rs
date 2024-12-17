@@ -325,6 +325,15 @@ fn parse_orchard_output(
         .transparent()
         .map(|k| orchard::keys::OutgoingViewingKey::from(k.internal_ovk().as_bytes()));
 
+    // undecodable output
+    // we should verify the cv_net in checking phrase, the transaction checking should failed if the net value is not correct
+    // so the value should be trustable
+    let value = output
+        .value()
+        .clone()
+        .ok_or(ZcashError::InvalidPczt("value is not present".to_string()))?
+        .inner();
+
     let decode_output =
         |vk: Option<OutgoingViewingKey>, is_internal: bool| match decode_output_enc_ciphertext(
             action,
@@ -338,13 +347,22 @@ fn parse_orchard_output(
                 .unwrap()
                 .encode(&NetworkType::Main);
                 let memo = decode_memo(memo);
+
+                let is_dummy = match vk {
+                    Some(_) => false,
+                    None => match (action.output().user_address(), value) {
+                        (None, 0) => true,
+                        _ => false,
+                    },
+                };
+
                 Ok(Some(ParsedTo::new(
                     ua,
                     zec_value,
                     note.value().inner(),
                     is_internal,
                     true,
-                    false,
+                    is_dummy,
                     memo,
                 )))
             }
@@ -396,37 +414,30 @@ fn parse_orchard_output(
         }
     }
 
-    // undecodable output
-    // we should verify the cv_net in checking phrase, the transaction checking should failed if the net value is not correct
-    // so the value should be trustable
-
-    let value = output
-        .value()
-        .clone()
-        .ok_or(ZcashError::InvalidPczt("value is not present".to_string()))?
-        .inner();
-
-    // TODO: This needs to be checked against `output.recipient()` in `crate::pczt::check`.
-    let address = match (output.user_address(), value) {
-        (Some(addr), _) => Ok(addr.clone()),
-        (None, 0) => Ok("Dummy output".into()),
-        (None, _) => Err(ZcashError::InvalidPczt(
-            "missing user address for Orchard output".into(),
-        )),
-    }?;
-
-    // TODO: undecoded output can be non-dummy if it has memo,
-    // we should decode the enc_ciphertext with output's rseed and recipient
-    Ok(parsed_to.unwrap_or(ParsedTo::new(
-        address,
-        format_zec_value(value as f64),
-        value,
-        false,
-        false,
-        value == 0,
-        None,
-    )))
+    match parsed_to {
+        None => {
+            // TODO: This needs to be checked against `output.recipient()` in `crate::pczt::check`.
+            let address = match (output.user_address(), value) {
+                (Some(addr), _) => Ok(addr.clone()),
+                (None, 0) => Ok("Dummy output".into()),
+                (None, _) => Err(ZcashError::InvalidPczt(
+                    "missing user address for Orchard output".into(),
+                )),
+            }?;
+            Ok(ParsedTo::new(
+                address,
+                format_zec_value(value as f64),
+                value,
+                false,
+                false,
+                value == 0,
+                None,
+            ))
+        }
+        Some(x) => Ok(x),
+    }
 }
+
 fn decode_memo(memo_bytes: [u8; 512]) -> Option<String> {
     let first = memo_bytes[0];
 

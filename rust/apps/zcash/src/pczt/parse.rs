@@ -10,9 +10,8 @@ use zcash_vendor::{
     orchard::{
         self,
         keys::OutgoingViewingKey,
-        note::{Note, Nullifier, Rho},
+        note::{Note},
         note_encryption::OrchardDomain,
-        value::ValueCommitment,
         Address,
     },
     pczt::{self, roles::verifier::Verifier, Pczt},
@@ -20,7 +19,7 @@ use zcash_vendor::{
     sha2::Sha256,
     transparent::{
         self,
-        address::{Script, TransparentAddress},
+        address::{TransparentAddress},
     },
     zcash_address::{
         unified::{self, Encoding, Receiver},
@@ -28,8 +27,7 @@ use zcash_vendor::{
     },
     zcash_keys::keys::UnifiedFullViewingKey,
     zcash_protocol::{
-        consensus::{self, MainNetwork, NetworkType},
-        memo::Memo,
+        consensus::{self},
     },
 };
 
@@ -40,7 +38,7 @@ use super::structs::{ParsedFrom, ParsedOrchard, ParsedPczt, ParsedTo, ParsedTran
 const ZEC_DIVIDER: u32 = 1_000_000_00;
 
 fn format_zec_value(value: f64) -> String {
-    let mut zec_value = format!("{:.8}", value as f64 / ZEC_DIVIDER as f64);
+    let zec_value = format!("{:.8}", value as f64 / ZEC_DIVIDER as f64);
     let zec_value = zec_value
         .trim_end_matches('0')
         .trim_end_matches('.')
@@ -500,7 +498,7 @@ fn decode_memo(memo_bytes: [u8; 512]) -> Option<String> {
         let temp_memo = memo_bytes.to_vec();
         let result = temp_memo[1..].iter().find(|&&v| v != 0);
         match result {
-            Some(v) => return Some(hex::encode(memo_bytes)),
+            Some(_v) => return Some(hex::encode(memo_bytes)),
             None => {
                 return None;
             }

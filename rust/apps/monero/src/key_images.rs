@@ -148,7 +148,7 @@ fn generate_key_image<R: RngCore + CryptoRng>(
     mut rng: R,
 ) -> KeyImageAndSignature {
     let mut additional_tx_pub_key = None;
-    if major != 0 || minor != 0 {
+    if major != 0 && minor != 0 {
         if additional_tx_keys.len() == 1 {
             additional_tx_pub_key = Some(additional_tx_keys[0]);
         } else if !additional_tx_keys.is_empty() {

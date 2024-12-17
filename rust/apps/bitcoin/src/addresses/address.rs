@@ -130,12 +130,42 @@ impl Address {
     }
 
     pub fn from_script(script: &script::Script, network: Network) -> Result<Address, BitcoinError> {
-        Ok(Address {
-            payload: Payload::P2sh {
-                script_hash: script.script_hash(),
-            },
-            network,
-        })
+        if script.is_p2pkh() {
+            let bytes = script.as_bytes()[3..23]
+                .try_into()
+                .expect("statically 20B long");
+            let hash = PubkeyHash::from_byte_array(bytes);
+            Ok(Address {
+                network,
+                payload: Payload::P2pkh { pubkey_hash: hash },
+            })
+        } else if script.is_p2sh() {
+            let bytes = script.as_bytes()[2..22]
+                .try_into()
+                .expect("statically 20B long");
+            let hash = ScriptHash::from_byte_array(bytes);
+            Ok(Address {
+                network,
+                payload: Payload::P2sh { script_hash: hash },
+            })
+        } else if script.is_witness_program() {
+            let opcode = script
+                .first_opcode()
+                .expect("is_witness_program guarantees len > 4");
+
+            let version = WitnessVersion::try_from(opcode).map_err(|e| {
+                BitcoinError::AddressError(format!("invalid witness version: {}", e))
+            })?;
+            let program = WitnessProgram::new(version, &script.as_bytes()[2..])?;
+            Ok(Address {
+                network,
+                payload: Payload::Segwit {
+                    witness_program: program,
+                },
+            })
+        } else {
+            Err(BitcoinError::AddressError(format!("unrecognized script")))
+        }
     }
 }
 

@@ -24,6 +24,7 @@ pub struct DisplayPczt {
     pub transparent: Ptr<DisplayTransparent>,
     pub orchard: Ptr<DisplayOrchard>,
     pub total_transfer_value: PtrString,
+    pub fee_value: PtrString,
 }
 
 impl From<&ParsedPczt> for DisplayPczt {
@@ -38,6 +39,7 @@ impl From<&ParsedPczt> for DisplayPczt {
                 .map(|o| DisplayOrchard::from(&o).c_ptr())
                 .unwrap_or(null_mut()),
             total_transfer_value: convert_c_char(pczt.get_total_transfer_value()),
+            fee_value: convert_c_char(pczt.get_fee_value()),
         }
     }
 }
@@ -115,7 +117,6 @@ pub struct DisplayTo {
     pub address: PtrString,
     pub value: PtrString,
     pub is_change: bool,
-    pub visible: bool,
     pub memo: PtrString,
 }
 
@@ -125,7 +126,6 @@ impl From<&ParsedTo> for DisplayTo {
             address: convert_c_char(to.get_address()),
             value: convert_c_char(to.get_value()),
             is_change: to.get_is_change(),
-            visible: to.get_visible(),
             memo: to.get_memo().map(convert_c_char).unwrap_or(null_mut()),
         }
     }

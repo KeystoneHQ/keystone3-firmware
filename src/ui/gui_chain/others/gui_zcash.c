@@ -60,6 +60,7 @@ void GuiZcashOverview(lv_obj_t *parent, void *totalData) {
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t* last_view = CreateTransactionItemView(container, _("Amount"), g_zcashData->total_transfer_value, NULL);
+    last_view = CreateTransactionItemView(container, _("Fee"), g_zcashData->fee_value, last_view);
 
     if(g_zcashData->transparent != NULL) {
         last_view = GuiZcashOverviewTransparent(container, last_view);
@@ -228,54 +229,44 @@ static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_o
         indexLabel = GuiCreateIllustrateLabel(innerContainer, order);
         lv_obj_align(indexLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);
 
-        if(to->data[i].visible) {
-            valueLabel = GuiCreateIllustrateLabel(innerContainer, to->data[i].value);
-            lv_obj_set_style_text_color(valueLabel, ORANGE_COLOR, LV_PART_MAIN);
-            lv_obj_align_to(valueLabel, indexLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
-            if (to->data[i].is_change) {
-                lv_obj_t *tagContainer = GuiCreateContainerWithParent(innerContainer, 87, 30);
-                lv_obj_set_style_radius(tagContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
-                lv_obj_set_style_bg_color(tagContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
-                lv_obj_set_style_bg_opa(tagContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
-                lv_obj_t *tagLabel = lv_label_create(tagContainer);
+        valueLabel = GuiCreateIllustrateLabel(innerContainer, to->data[i].value);
+        lv_obj_set_style_text_color(valueLabel, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_align_to(valueLabel, indexLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+        if (to->data[i].is_change) {
+            lv_obj_t *tagContainer = GuiCreateContainerWithParent(innerContainer, 87, 30);
+            lv_obj_set_style_radius(tagContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(tagContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(tagContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_t *tagLabel = lv_label_create(tagContainer);
 
-                lv_label_set_text(tagLabel, "Change");
-                lv_obj_set_style_text_font(tagLabel, g_defIllustrateFont, LV_PART_MAIN);
-                lv_obj_set_style_text_color(tagLabel, WHITE_COLOR, LV_PART_MAIN);
-                lv_obj_set_style_text_opa(tagLabel, 163, LV_PART_MAIN);
-                lv_obj_align(tagLabel, LV_ALIGN_CENTER, 0, 0);
+            lv_label_set_text(tagLabel, "Change");
+            lv_obj_set_style_text_font(tagLabel, g_defIllustrateFont, LV_PART_MAIN);
+            lv_obj_set_style_text_color(tagLabel, WHITE_COLOR, LV_PART_MAIN);
+            lv_obj_set_style_text_opa(tagLabel, 163, LV_PART_MAIN);
+            lv_obj_align(tagLabel, LV_ALIGN_CENTER, 0, 0);
 
-                lv_obj_align_to(tagContainer, valueLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
-            }
-            innerHeight += 30;
+            lv_obj_align_to(tagContainer, valueLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+        }
+        innerHeight += 30;
 
-            addressLabel = GuiCreateIllustrateLabel(innerContainer, to->data[i].address);
-            lv_obj_set_width(addressLabel, 360);
-            lv_label_set_long_mode(addressLabel, LV_LABEL_LONG_WRAP);
-            lv_obj_align(addressLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);
-            lv_obj_update_layout(addressLabel);
+        addressLabel = GuiCreateIllustrateLabel(innerContainer, to->data[i].address);
+        lv_obj_set_width(addressLabel, 360);
+        lv_label_set_long_mode(addressLabel, LV_LABEL_LONG_WRAP);
+        lv_obj_align(addressLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);
+        lv_obj_update_layout(addressLabel);
 
-            innerHeight += lv_obj_get_height(addressLabel);
+        innerHeight += lv_obj_get_height(addressLabel);
 
-            if(to->data[i].memo != NULL && strnlen(to->data[i].memo, MAX_MEMO_LENGTH) > 0) {
-                char *memo = (char *)malloc(MAX_MEMO_LENGTH);
-                snprintf_s(memo, MAX_MEMO_LENGTH, "Memo: %s", to->data[i].memo);
-                lv_obj_t *memoLabel = GuiCreateIllustrateLabel(innerContainer, memo);
-                lv_obj_align(memoLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);
-                lv_obj_set_style_text_color(memoLabel, WHITE_COLOR, LV_PART_MAIN);
-                lv_obj_set_style_text_opa(memoLabel, LV_OPA_56, LV_PART_MAIN);
-                lv_obj_update_layout(memoLabel);
+        if(to->data[i].memo != NULL && strnlen(to->data[i].memo, MAX_MEMO_LENGTH) > 0) {
+            char *memo = (char *)malloc(MAX_MEMO_LENGTH);
+            snprintf_s(memo, MAX_MEMO_LENGTH, "Memo: %s", to->data[i].memo);
+            lv_obj_t *memoLabel = GuiCreateIllustrateLabel(innerContainer, memo);
+            lv_obj_align(memoLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);
+            lv_obj_set_style_text_color(memoLabel, WHITE_COLOR, LV_PART_MAIN);
+            lv_obj_set_style_text_opa(memoLabel, LV_OPA_56, LV_PART_MAIN);
+            lv_obj_update_layout(memoLabel);
 
-                innerHeight += lv_obj_get_height(memoLabel);
-            }
-
-        } else {
-            innerHeight += 30;
-            addressLabel = GuiCreateIllustrateLabel(innerContainer, "Unknown Output");
-            lv_obj_set_width(addressLabel, 360);
-            lv_obj_align(addressLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);
-            lv_obj_set_style_text_color(addressLabel, RED_COLOR, LV_PART_MAIN);
-            innerHeight += 30;
+            innerHeight += lv_obj_get_height(memoLabel);
         }
 
         lv_obj_set_height(innerContainer, innerHeight);

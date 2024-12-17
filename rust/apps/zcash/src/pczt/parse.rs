@@ -123,32 +123,54 @@ pub fn parse_pczt(
         })
         .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{:?}", e)))?;
 
-    let mut my_output_value = 0;
+    let mut total_input_value = 0;
+    let mut total_output_value = 0;
+    let mut total_change_value = 0;
+    //total_input_value = total_output_value + fee_value
+    //total_output_value = total_transfer_value + total_change_value
 
     parsed_orchard.clone().and_then(|orchard| {
-        my_output_value = orchard
+        total_change_value += orchard
             .get_to()
             .iter()
-            .filter(|v| v.get_visible() && !v.get_is_change())
+            .filter(|v| v.get_is_change())
+            .fold(0, |acc, to| acc + to.get_amount());
+        total_input_value += orchard
+            .get_from()
+            .iter()
+            .fold(0, |acc, from| acc + from.get_amount());
+        total_output_value += orchard
+            .get_to()
+            .iter()
             .fold(0, |acc, to| acc + to.get_amount());
         Some(())
     });
 
     parsed_transparent.clone().and_then(|transparent| {
-        my_output_value += transparent
+        total_change_value += transparent
             .get_to()
             .iter()
-            .filter(|v| v.get_visible() && !v.get_is_change())
+            .filter(|v| v.get_is_change())
+            .fold(0, |acc, to| acc + to.get_amount());
+        total_input_value += transparent
+            .get_from()
+            .iter()
+            .fold(0, |acc, from| acc + from.get_amount());
+        total_output_value += transparent
+            .get_to()
+            .iter()
             .fold(0, |acc, to| acc + to.get_amount());
         Some(())
     });
 
-    let total_transfer_value = format_zec_value(my_output_value as f64);
+    let total_transfer_value = format_zec_value((total_output_value - total_change_value) as f64);
+    let fee_value = format_zec_value((total_input_value - total_output_value) as f64);
 
     Ok(ParsedPczt::new(
         parsed_transparent,
         parsed_orchard,
         total_transfer_value,
+        fee_value,
     ))
 }
 
@@ -246,7 +268,6 @@ fn parse_transparent_output(
                 zec_value,
                 output.value().into_u64(),
                 is_change,
-                true,
                 false,
                 None,
             ))
@@ -361,7 +382,6 @@ fn parse_orchard_output(
                     zec_value,
                     note.value().inner(),
                     is_internal,
-                    true,
                     is_dummy,
                     memo,
                 )))
@@ -417,9 +437,9 @@ fn parse_orchard_output(
     match parsed_to {
         None => {
             // TODO: This needs to be checked against `output.recipient()` in `crate::pczt::check`.
-            let address = match (output.user_address(), value) {
-                (Some(addr), _) => Ok(addr.clone()),
-                (None, 0) => Ok("Dummy output".into()),
+            let (address, is_dummy) = match (output.user_address(), value) {
+                (Some(addr), _) => Ok((addr.clone(), false)),
+                (None, 0) => Ok(("Dummy output".into(), true)),
                 (None, _) => Err(ZcashError::InvalidPczt(
                     "missing user address for Orchard output".into(),
                 )),
@@ -429,8 +449,7 @@ fn parse_orchard_output(
                 format_zec_value(value as f64),
                 value,
                 false,
-                false,
-                value == 0,
+                is_dummy,
                 None,
             ))
         }

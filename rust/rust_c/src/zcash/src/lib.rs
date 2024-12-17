@@ -62,13 +62,14 @@ pub extern "C" fn check_zcash_tx(
     tx: PtrUR,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
+    account_index: u32,
 ) -> *mut TransactionCheckResult {
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
     let ufvk_text = recover_c_char(ufvk);
     let seed_fingerprint = unsafe { slice::from_raw_parts(seed_fingerprint, 32) };
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::check_pczt(&pczt.get_data(), &ufvk_text, seed_fingerprint) {
-        Ok(pczt) => TransactionCheckResult::new().c_ptr(),
+    match app_zcash::check_pczt(&pczt.get_data(), &ufvk_text, seed_fingerprint, account_index) {
+        Ok(_) => TransactionCheckResult::new().c_ptr(),
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
     }
 }

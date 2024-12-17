@@ -14,7 +14,7 @@ use alloc::{
 };
 use pczt::structs::ParsedPczt;
 use zcash_vendor::{
-    pczt::Pczt, zcash_keys::keys::UnifiedFullViewingKey, zcash_protocol::consensus::MainNetwork,
+    pczt::Pczt, zcash_keys::keys::UnifiedFullViewingKey, zcash_protocol::consensus::MainNetwork, zip32,
 };
 
 pub fn get_address(ufvk_text: &str) -> Result<String> {
@@ -26,13 +26,13 @@ pub fn get_address(ufvk_text: &str) -> Result<String> {
     Ok(address.encode(&MainNetwork))
 }
 
-pub fn check_pczt(pczt: &[u8], ufvk_text: &str, seed_fingerprint: &[u8; 32]) -> Result<()> {
-    // let ufvk = UnifiedFullViewingKey::decode(&MainNetwork, ufvk_text)
-    //     .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
-    // let pczt =
-    //     Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
-    // pczt::check::check_pczt(seed_fingerprint, &ufvk, &pczt)?;
-    Ok(())
+pub fn check_pczt(pczt: &[u8], ufvk_text: &str, seed_fingerprint: &[u8; 32], account_index: u32) -> Result<()> {
+    let ufvk = UnifiedFullViewingKey::decode(&MainNetwork, ufvk_text)
+        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
+    let pczt =
+        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
+    let account_index = zip32::AccountId::try_from(account_index).map_err(|_e| ZcashError::InvalidDataError(format!("invalid account index")))?;
+    pczt::check::check_pczt(&MainNetwork, seed_fingerprint, account_index, &ufvk, &pczt)
 }
 
 pub fn parse_pczt(pczt: &[u8], ufvk_text: &str, seed_fingerprint: &[u8; 32]) -> Result<ParsedPczt> {
@@ -40,7 +40,7 @@ pub fn parse_pczt(pczt: &[u8], ufvk_text: &str, seed_fingerprint: &[u8; 32]) -> 
         .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
     let pczt =
         Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
-    pczt::parse::parse_pczt(seed_fingerprint, &ufvk, &pczt)
+    pczt::parse::parse_pczt(&MainNetwork,seed_fingerprint, &ufvk, &pczt)
 }
 
 pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {

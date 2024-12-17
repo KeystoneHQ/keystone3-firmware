@@ -290,7 +290,8 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
     char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
     uint8_t sfp[32];
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
-    return check_zcash_tx(data, ufvk, sfp);
+    uint32_t zcash_account_index = 0;
+    return check_zcash_tx(data, ufvk, sfp, zcash_account_index);
 }
 
 UREncodeResult *GuiGetZcashSignQrCodeData(void)

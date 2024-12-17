@@ -21,6 +21,7 @@ pub struct DisplayPczt {
     pub orchard: Ptr<DisplayOrchard>,
     pub total_transfer_value: PtrString,
     pub fee_value: PtrString,
+    pub has_sapling: bool,
 }
 
 impl From<&ParsedPczt> for DisplayPczt {
@@ -36,6 +37,7 @@ impl From<&ParsedPczt> for DisplayPczt {
                 .unwrap_or(null_mut()),
             total_transfer_value: convert_c_char(pczt.get_total_transfer_value()),
             fee_value: convert_c_char(pczt.get_fee_value()),
+            has_sapling: pczt.get_has_sapling(),
         }
     }
 }

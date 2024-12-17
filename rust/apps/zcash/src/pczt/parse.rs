@@ -156,11 +156,14 @@ pub fn parse_pczt<P: consensus::Parameters>(
     let total_transfer_value = format_zec_value((total_output_value - total_change_value) as f64);
     let fee_value = format_zec_value((total_input_value - total_output_value) as f64);
 
+    let has_sapling = pczt.sapling().spends().len() > 0 || pczt.sapling().outputs().len() > 0;
+
     Ok(ParsedPczt::new(
         parsed_transparent,
         parsed_orchard,
         total_transfer_value,
         fee_value,
+        has_sapling,
     ))
 }
 
@@ -392,7 +395,7 @@ fn parse_orchard_output<P: consensus::Parameters>(
 
                 Ok(Some(ParsedTo::new(
                     if is_internal {
-                        "wallet-internal".to_string()
+                        "<internal-address>".to_string()
                     } else {
                         user_address.clone().unwrap_or(ua)
                     },

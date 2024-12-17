@@ -5,7 +5,8 @@ impl_public_struct!(ParsedPczt {
     transparent: Option<ParsedTransparent>,
     orchard: Option<ParsedOrchard>,
     total_transfer_value: String,
-    fee_value: String
+    fee_value: String,
+    has_sapling: bool
 });
 
 impl_public_struct!(ParsedTransparent {

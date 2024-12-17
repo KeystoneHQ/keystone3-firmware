@@ -59,7 +59,13 @@ void GuiZcashOverview(lv_obj_t *parent, void *totalData) {
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 
-    lv_obj_t* last_view = CreateTransactionItemView(container, _("Amount"), g_zcashData->total_transfer_value, NULL);
+    lv_obj_t* last_view = NULL;
+
+    if(g_zcashData->has_sapling) {
+        last_view = CreateTransactionItemView(container, _("Warning"), _("This transaction contains Sapling spends or outputs. Keystone does not support Sapling spend signing and output checking. Please take care of the potential risks."), last_view);
+    }
+
+    last_view = CreateTransactionItemView(container, _("Amount"), g_zcashData->total_transfer_value, last_view);
     last_view = CreateTransactionItemView(container, _("Fee"), g_zcashData->fee_value, last_view);
 
     if(g_zcashData->transparent != NULL) {

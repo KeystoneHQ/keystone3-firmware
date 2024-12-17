@@ -347,6 +347,9 @@ uint8_t *OpenPrivateQrMode(void)
 
 void ClosePrivateQrMode(void)
 {
+    if (g_pincode == NULL) {
+        return;
+    }
     SRAM_FREE(g_pincode);
     g_pincode = NULL;
 }

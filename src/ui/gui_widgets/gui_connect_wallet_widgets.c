@@ -1648,10 +1648,10 @@ static void CloseAttentionHandler(lv_event_t *e)
 
 static void CancelAttentionHandler(lv_event_t *e)
 {
+    ExitPrivateMode();
     ConnectWalletReturnHandler(NULL);
     CloseAttentionHandler(NULL);
     GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
-    ExitPrivateMode();
 }
 
 static void ContinueAttentionHandler(lv_event_t *e)
@@ -2250,20 +2250,20 @@ int8_t GuiConnectWalletPrevTile(void)
     switch (g_connectWalletTileView.currentTile) {
     case CONNECT_WALLET_SELECT_WALLET:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler,
-                         NULL);
+                        NULL);
         break;
     case CONNECT_WALLET_QRCODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE,
-                         CloseTimerCurrentViewHandler, NULL);
+                        CloseTimerCurrentViewHandler, NULL);
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL,
-                       _("connect_wallet_choose_wallet"));
+                    _("connect_wallet_choose_wallet"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL,
-                          NULL);
+                        NULL);
         GuiAnimatingQRCodeDestroyTimer();
         break;
     case CONNECT_WALLET_QRCODE_PRIVATE_MODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler,
-                         NULL);
+                        NULL);
         ExitPrivateMode();
         break;
     }

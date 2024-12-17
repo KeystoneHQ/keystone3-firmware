@@ -2,11 +2,14 @@ use crate::pczt::Pczt;
 use alloc::collections::btree_map::BTreeMap;
 use alloc::vec::Vec;
 use blake2b_simd::{Hash, Params, State};
-use byteorder::LittleEndian;
-
-use super::common::Zip32Derivation;
-use super::merge_map;
-use super::transparent::{Input, Output};
+use orchard::pczt::Zip32Derivation;
+use pczt::{
+    common::determine_lock_time,
+    roles::low_level_signer::Signer,
+    transparent::{Input, Output},
+};
+use transparent::{pczt::Bip32Derivation, sighash::SignableInput};
+use zcash_protocol::value::ZatBalance;
 
 /// TxId tree root personalization
 const ZCASH_TX_PERSONALIZATION_PREFIX: &[u8; 12] = b"ZcashTxHash_";
@@ -81,451 +84,366 @@ pub type TransparentSignatureDER = Vec<u8>;
 
 pub trait PcztSigner {
     type Error;
-    fn sign_transparent(
+    fn sign_transparent<F>(
         &self,
-        hash: Option<Hash>,
-        key_path: BTreeMap<[u8; 33], Zip32Derivation>,
-    ) -> Result<BTreeMap<[u8; 33], TransparentSignatureDER>, Self::Error>;
-    fn sign_sapling(
-        &self,
-        hash: Option<Hash>,
-        alpha: [u8; 32],
-        path: Zip32Derivation,
-    ) -> Result<Option<ZcashSignature>, Self::Error>;
+        index: usize,
+        input: &mut transparent::pczt::Input,
+        hash: F,
+    ) -> Result<(), Self::Error>
+    where
+        F: FnOnce(SignableInput) -> [u8; 32];
     fn sign_orchard(
         &self,
-        hash: Option<Hash>,
-        alpha: [u8; 32],
-        path: Zip32Derivation,
-    ) -> Result<Option<ZcashSignature>, Self::Error>;
+        action: &mut orchard::pczt::Action,
+        hash: Hash,
+    ) -> Result<(), Self::Error>;
 }
 
-impl Pczt {
-    fn has_transparent(&self) -> bool {
-        !self.transparent.inputs.is_empty() || !self.transparent.outputs.is_empty()
+fn has_transparent(pczt: &Pczt) -> bool {
+    !pczt.transparent().inputs().is_empty() || !pczt.transparent().outputs().is_empty()
+}
+
+fn is_transparent_coinbase(pczt: &Pczt) -> bool {
+    pczt.transparent().inputs().len() == 1
+        && pczt.transparent().inputs()[0].prevout_index() == &u32::MAX
+        && pczt.transparent().inputs()[0].prevout_txid().as_ref() == &[0u8; 32]
+}
+
+fn has_sapling(pczt: &Pczt) -> bool {
+    !pczt.sapling().spends().is_empty() && !pczt.sapling().outputs().is_empty()
+}
+
+fn has_orchard(pczt: &Pczt) -> bool {
+    !pczt.orchard().actions().is_empty()
+}
+
+fn digest_header(pczt: &Pczt, lock_time: u32) -> Hash {
+    let version = pczt.global().tx_version();
+    let version_group_id = pczt.global().version_group_id();
+    let consensus_branch_id = pczt.global().consensus_branch_id();
+    let expiry_height = pczt.global().expiry_height();
+
+    let mut h = hasher(ZCASH_HEADERS_HASH_PERSONALIZATION);
+
+    h.update(&((1 << 31) | version).to_le_bytes());
+    h.update(&version_group_id.to_le_bytes());
+    h.update(&consensus_branch_id.to_le_bytes());
+    h.update(&lock_time.to_le_bytes());
+    h.update(&expiry_height.to_le_bytes());
+
+    h.finalize()
+}
+fn digest_transparent_prevouts(inputs: &[Input]) -> Hash {
+    let mut h = hasher(ZCASH_PREVOUTS_HASH_PERSONALIZATION);
+
+    for input in inputs {
+        h.update(input.prevout_txid());
+        h.update(&input.prevout_index().to_le_bytes());
+    }
+    h.finalize()
+}
+fn digest_transparent_sequence(inputs: &[Input]) -> Hash {
+    let mut h = hasher(ZCASH_SEQUENCE_HASH_PERSONALIZATION);
+    for input in inputs {
+        h.update(&input.sequence().unwrap_or(0xffffffff).to_le_bytes());
+    }
+    h.finalize()
+}
+fn digest_transparent_outputs(outputs: &[Output]) -> Hash {
+    let mut h = hasher(ZCASH_OUTPUTS_HASH_PERSONALIZATION);
+    for output in outputs {
+        let value = *output.value() as i64;
+        h.update(&value.to_le_bytes());
+        let len = output.script_pubkey().len();
+        h.update(&[len as u8]);
+        h.update(&output.script_pubkey());
+    }
+    h.finalize()
+}
+fn transparent_digest(pczt: &Pczt) -> TransparentDigests {
+    TransparentDigests {
+        prevouts_digest: digest_transparent_prevouts(&pczt.transparent().inputs()),
+        sequence_digest: digest_transparent_sequence(&pczt.transparent().inputs()),
+        outputs_digest: digest_transparent_outputs(&pczt.transparent().outputs()),
+    }
+}
+fn hash_transparent_tx_id(t_digests: Option<TransparentDigests>) -> Hash {
+    let mut h = hasher(ZCASH_TRANSPARENT_HASH_PERSONALIZATION);
+    if let Some(d) = t_digests {
+        h.update(d.prevouts_digest.as_bytes());
+        h.update(d.sequence_digest.as_bytes());
+        h.update(d.outputs_digest.as_bytes());
+    }
+    h.finalize()
+}
+
+fn digest_orchard(pczt: &Pczt) -> Hash {
+    let mut h = hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION);
+    let mut ch = hasher(ZCASH_ORCHARD_ACTIONS_COMPACT_HASH_PERSONALIZATION);
+    let mut mh = hasher(ZCASH_ORCHARD_ACTIONS_MEMOS_HASH_PERSONALIZATION);
+    let mut nh = hasher(ZCASH_ORCHARD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION);
+
+    for action in pczt.orchard().actions().iter() {
+        ch.update(action.spend().nullifier());
+        ch.update(action.output().cmx());
+        ch.update(action.output().ephemeral_key());
+        ch.update(&action.output().enc_ciphertext()[..52]);
+
+        mh.update(&action.output().enc_ciphertext()[52..564]);
+
+        nh.update(action.cv_net());
+        nh.update(action.spend().rk());
+        nh.update(&action.output().enc_ciphertext()[564..]);
+        nh.update(&action.output().out_ciphertext());
     }
 
-    fn is_transparent_coinbase(&self) -> bool {
-        self.transparent.inputs.len() == 1
-            && self.transparent.inputs[0].prevout_index == u32::MAX
-            && self.transparent.inputs[0].prevout_txid.as_ref() == &[0u8; 32]
-    }
-
-    fn has_sapling(&self) -> bool {
-        !self.sapling.spends.is_empty() && !self.sapling.outputs.is_empty()
-    }
-
-    fn has_orchard(&self) -> bool {
-        !self.orchard.actions.is_empty()
-    }
-
-    fn determine_lock_time(&self) -> Result<u32, ()> {
-        // The nLockTime field of a transaction is determined by inspecting the
-        // `Global.fallback_lock_time` and each input's `required_time_lock_time` and
-        // `required_height_lock_time` fields.
-
-        // If one or more inputs have a `required_time_lock_time` or `required_height_lock_time`,
-        let have_required_lock_time = self.transparent.inputs.iter().any(|input| {
-            input.required_time_lock_time.is_some() || input.required_height_lock_time.is_some()
-        });
-        // then the field chosen is the one which is supported by all of the inputs. This can
-        // be determined by looking at all of the inputs which specify a locktime in either of
-        // those fields, and choosing the field which is present in all of those inputs.
-        // Inputs not specifying a lock time field can take both types of lock times, as can
-        // those that specify both.
-        let time_lock_time_unsupported = self
-            .transparent
-            .inputs
-            .iter()
-            .any(|input| input.required_height_lock_time.is_some());
-        let height_lock_time_unsupported = self
-            .transparent
-            .inputs
-            .iter()
-            .any(|input| input.required_time_lock_time.is_some());
-
-        // The lock time chosen is then the maximum value of the chosen type of lock time.
-        match (
-            have_required_lock_time,
-            time_lock_time_unsupported,
-            height_lock_time_unsupported,
-        ) {
-            (true, true, true) => Err(()),
-            (true, false, true) => Ok(self
-                .transparent
-                .inputs
-                .iter()
-                .filter_map(|input| input.required_time_lock_time)
-                .max()
-                .expect("iterator is non-empty because have_required_lock_time is true")),
-            // If a PSBT has both types of locktimes possible because one or more inputs
-            // specify both `required_time_lock_time` and `required_height_lock_time`, then
-            // locktime determined by looking at the `required_height_lock_time` fields of the
-            // inputs must be chosen.
-            (true, _, false) => Ok(self
-                .transparent
-                .inputs
-                .iter()
-                .filter_map(|input| input.required_height_lock_time)
-                .max()
-                .expect("iterator is non-empty because have_required_lock_time is true")),
-            // If none of the inputs have a `required_time_lock_time` and
-            // `required_height_lock_time`, then `Global.fallback_lock_time` must be used. If
-            // `Global.fallback_lock_time` is not provided, then it is assumed to be 0.
-            (false, _, _) => Ok(self.global.fallback_lock_time.unwrap_or(0)),
+    h.update(ch.finalize().as_bytes());
+    h.update(mh.finalize().as_bytes());
+    h.update(nh.finalize().as_bytes());
+    h.update(&[*pczt.orchard().flags()]);
+    let value_balance = match pczt.orchard().value_sum() {
+        (magnitude, sign) => {
+            if *sign {
+                -(*magnitude as i64)
+            } else {
+                *magnitude as i64
+            }
         }
-    }
+    };
+    h.update(&value_balance.to_le_bytes());
 
-    fn digest_header(&self) -> Result<Hash, ()> {
-        let version = self.global.tx_version;
-        let version_group_id = self.global.version_group_id;
-        let consensus_branch_id = self.global.consensus_branch_id;
-        let lock_time = self.determine_lock_time()?;
-        let expiry_height = self.global.expiry_height;
+    h.update(pczt.orchard().anchor());
+    h.finalize()
+}
 
-        let mut h = hasher(ZCASH_HEADERS_HASH_PERSONALIZATION);
+fn hash_sapling_spends(pczt: &Pczt) -> Hash {
+    let mut h = hasher(ZCASH_SAPLING_SPENDS_HASH_PERSONALIZATION);
+    if !pczt.sapling().spends().is_empty() {
+        let mut ch = hasher(ZCASH_SAPLING_SPENDS_COMPACT_HASH_PERSONALIZATION);
+        let mut nh = hasher(ZCASH_SAPLING_SPENDS_NONCOMPACT_HASH_PERSONALIZATION);
+        for s_spend in pczt.sapling().spends() {
+            // we build the hash of nullifiers separately for compact blocks.
+            ch.update(s_spend.nullifier());
 
-        h.update(&((1 << 31) | version).to_le_bytes());
-        h.update(&version_group_id.to_le_bytes());
-        h.update(&consensus_branch_id.to_le_bytes());
-        h.update(&lock_time.to_le_bytes());
-        h.update(&expiry_height.to_le_bytes());
-
-        Ok(h.finalize())
-    }
-    fn digest_transparent_prevouts(inputs: &[Input]) -> Hash {
-        let mut h = hasher(ZCASH_PREVOUTS_HASH_PERSONALIZATION);
-
-        for input in inputs {
-            h.update(&input.prevout_txid);
-            h.update(&input.prevout_index.to_le_bytes());
+            nh.update(s_spend.cv());
+            nh.update(pczt.sapling().anchor());
+            nh.update(s_spend.rk());
         }
-        h.finalize()
-    }
-    fn digest_transparent_sequence(inputs: &[Input]) -> Hash {
-        let mut h = hasher(ZCASH_SEQUENCE_HASH_PERSONALIZATION);
-        for input in inputs {
-            h.update(&input.sequence.unwrap_or(0xffffffff).to_le_bytes());
-        }
-        h.finalize()
-    }
-    fn digest_transparent_outputs(outputs: &[Output]) -> Hash {
-        let mut h = hasher(ZCASH_OUTPUTS_HASH_PERSONALIZATION);
-        for output in outputs {
-            let value = output.value as i64;
-            h.update(&value.to_le_bytes());
-            let len = output.script_pubkey.len();
-            h.update(&[len as u8]);
-            h.update(&output.script_pubkey);
-        }
-        h.finalize()
-    }
-    fn transparent_digest(&self) -> TransparentDigests {
-        TransparentDigests {
-            prevouts_digest: Self::digest_transparent_prevouts(&self.transparent.inputs),
-            sequence_digest: Self::digest_transparent_sequence(&self.transparent.inputs),
-            outputs_digest: Self::digest_transparent_outputs(&self.transparent.outputs),
-        }
-    }
-    fn hash_transparent_tx_id(&self, t_digests: Option<TransparentDigests>) -> Hash {
-        let mut h = hasher(ZCASH_TRANSPARENT_HASH_PERSONALIZATION);
-        if let Some(d) = t_digests {
-            h.update(d.prevouts_digest.as_bytes());
-            h.update(d.sequence_digest.as_bytes());
-            h.update(d.outputs_digest.as_bytes());
-        }
-        h.finalize()
-    }
 
-    fn digest_orchard(&self) -> Hash {
-        let mut h = hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION);
-        let mut ch = hasher(ZCASH_ORCHARD_ACTIONS_COMPACT_HASH_PERSONALIZATION);
-        let mut mh = hasher(ZCASH_ORCHARD_ACTIONS_MEMOS_HASH_PERSONALIZATION);
-        let mut nh = hasher(ZCASH_ORCHARD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION);
+        let compact_digest = ch.finalize();
+        h.update(compact_digest.as_bytes());
+        let noncompact_digest = nh.finalize();
+        h.update(noncompact_digest.as_bytes());
+    }
+    h.finalize()
+}
 
-        for action in self.orchard.actions.iter() {
-            ch.update(&action.spend.nullifier);
-            ch.update(&action.output.cmx);
-            ch.update(&action.output.ephemeral_key);
-            ch.update(&action.output.enc_ciphertext[..52]);
+fn hash_sapling_outputs(pczt: &Pczt) -> Hash {
+    let mut h = hasher(ZCASH_SAPLING_OUTPUTS_HASH_PERSONALIZATION);
+    if !pczt.sapling().outputs().is_empty() {
+        let mut ch = hasher(ZCASH_SAPLING_OUTPUTS_COMPACT_HASH_PERSONALIZATION);
+        let mut mh = hasher(ZCASH_SAPLING_OUTPUTS_MEMOS_HASH_PERSONALIZATION);
+        let mut nh = hasher(ZCASH_SAPLING_OUTPUTS_NONCOMPACT_HASH_PERSONALIZATION);
+        for s_out in pczt.sapling().outputs() {
+            ch.update(s_out.cmu());
+            ch.update(s_out.ephemeral_key());
+            ch.update(&s_out.enc_ciphertext()[..52]);
 
-            mh.update(&action.output.enc_ciphertext[52..564]);
+            mh.update(&s_out.enc_ciphertext()[52..564]);
 
-            nh.update(&action.cv_net);
-            nh.update(&action.spend.rk);
-            nh.update(&action.output.enc_ciphertext[564..]);
-            nh.update(&action.output.out_ciphertext);
+            nh.update(s_out.cv());
+            nh.update(&s_out.enc_ciphertext()[564..]);
+            nh.update(&s_out.out_ciphertext());
         }
 
         h.update(ch.finalize().as_bytes());
         h.update(mh.finalize().as_bytes());
         h.update(nh.finalize().as_bytes());
-        h.update(&[self.orchard.flags]);
-        let value_balance = match self.orchard.value_sum {
-            (magnitude, sign) => {
-                if sign {
-                    -(magnitude as i64)
-                } else {
-                    magnitude as i64
-                }
-            }
-        };
-        h.update(&value_balance.to_le_bytes());
-
-        h.update(&self.orchard.anchor);
-        h.finalize()
     }
+    h.finalize()
+}
 
-    fn hash_sapling_spends(&self) -> Hash {
-        let mut h = hasher(ZCASH_SAPLING_SPENDS_HASH_PERSONALIZATION);
-        if !self.sapling.spends.is_empty() {
-            let mut ch = hasher(ZCASH_SAPLING_SPENDS_COMPACT_HASH_PERSONALIZATION);
-            let mut nh = hasher(ZCASH_SAPLING_SPENDS_NONCOMPACT_HASH_PERSONALIZATION);
-            for s_spend in &self.sapling.spends {
-                // we build the hash of nullifiers separately for compact blocks.
-                ch.update(&s_spend.nullifier);
-
-                nh.update(&s_spend.cv);
-                nh.update(&self.sapling.anchor);
-                nh.update(&s_spend.rk);
-            }
-
-            let compact_digest = ch.finalize();
-            h.update(compact_digest.as_bytes());
-            let noncompact_digest = nh.finalize();
-            h.update(noncompact_digest.as_bytes());
-        }
-        h.finalize()
+fn digest_sapling(pczt: &Pczt) -> Hash {
+    let mut h = hasher(ZCASH_SAPLING_HASH_PERSONALIZATION);
+    if !(pczt.sapling().spends().is_empty() && pczt.sapling().outputs().is_empty()) {
+        h.update(hash_sapling_spends(pczt).as_bytes());
+        h.update(hash_sapling_outputs(pczt).as_bytes());
+        let value_balance = (*pczt.sapling().value_sum())
+            .try_into()
+            .ok()
+            .and_then(|v| ZatBalance::from_i64(v).ok())
+            .expect("should be validated before here");
+        h.update(&value_balance.to_i64_le_bytes());
     }
+    h.finalize()
+}
 
-    fn hash_sapling_outputs(&self) -> Hash {
-        let mut h = hasher(ZCASH_SAPLING_OUTPUTS_HASH_PERSONALIZATION);
-        if !self.sapling.outputs.is_empty() {
-            let mut ch = hasher(ZCASH_SAPLING_OUTPUTS_COMPACT_HASH_PERSONALIZATION);
-            let mut mh = hasher(ZCASH_SAPLING_OUTPUTS_MEMOS_HASH_PERSONALIZATION);
-            let mut nh = hasher(ZCASH_SAPLING_OUTPUTS_NONCOMPACT_HASH_PERSONALIZATION);
-            for s_out in &self.sapling.outputs {
-                ch.update(&s_out.cmu);
-                ch.update(&s_out.ephemeral_key);
-                ch.update(&s_out.enc_ciphertext[..52]);
+fn hash_sapling_txid_empty() -> Hash {
+    hasher(ZCASH_SAPLING_HASH_PERSONALIZATION).finalize()
+}
 
-                mh.update(&s_out.enc_ciphertext[52..564]);
+fn hash_orchard_txid_empty() -> Hash {
+    hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION).finalize()
+}
 
-                nh.update(&s_out.cv);
-                nh.update(&s_out.enc_ciphertext[564..]);
-                nh.update(&s_out.out_ciphertext);
-            }
+fn sheilded_sig_commitment(pczt: &Pczt, lock_time: u32, input_info: Option<SignableInput>) -> Hash {
+    let mut personal = [0; 16];
+    personal[..12].copy_from_slice(ZCASH_TX_PERSONALIZATION_PREFIX);
+    personal[12..].copy_from_slice(&pczt.global().consensus_branch_id().to_le_bytes());
 
-            h.update(ch.finalize().as_bytes());
-            h.update(mh.finalize().as_bytes());
-            h.update(nh.finalize().as_bytes());
-        }
-        h.finalize()
-    }
+    let mut h = hasher(&personal);
+    h.update(digest_header(pczt, lock_time).as_bytes());
+    let sig_digest = transparent_sig_digest(pczt, input_info);
+    h.update(sig_digest.as_bytes());
+    h.update(
+        has_sapling(pczt)
+            .then(|| digest_sapling(pczt))
+            .unwrap_or_else(hash_sapling_txid_empty)
+            .as_bytes(),
+    );
+    h.update(
+        has_orchard(pczt)
+            .then(|| digest_orchard(pczt))
+            .unwrap_or_else(hash_orchard_txid_empty)
+            .as_bytes(),
+    );
+    h.finalize()
+}
 
-    fn digest_sapling(&self) -> Hash {
-        let mut h = hasher(ZCASH_SAPLING_HASH_PERSONALIZATION);
-        if !(self.sapling.spends.is_empty() && self.sapling.outputs.is_empty()) {
-            h.update(self.hash_sapling_spends().as_bytes());
-            h.update(self.hash_sapling_outputs().as_bytes());
-            let value_balance = self.sapling.value_sum;
-            h.update(&self.sapling.value_sum.to_le_bytes());
-        }
-        h.finalize()
-    }
-
-    fn hash_sapling_txid_empty() -> Hash {
-        hasher(ZCASH_SAPLING_HASH_PERSONALIZATION).finalize()
-    }
-
-    fn hash_orchard_txid_empty() -> Hash {
-        hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION).finalize()
-    }
-
-    fn sheilded_sig_commitment(&self, input_info: Option<(&Input, u32)>) -> Result<Hash, ()> {
-        let mut personal = [0; 16];
-        personal[..12].copy_from_slice(ZCASH_TX_PERSONALIZATION_PREFIX);
-        personal[12..].copy_from_slice(&u32::from(self.global.consensus_branch_id).to_le_bytes());
-
-        let mut h = hasher(&personal);
-        h.update(self.digest_header()?.as_bytes());
-        let sig_digest = self.transparent_sig_digest(input_info)?;
-        h.update(sig_digest.as_bytes());
-        h.update(
-            self.has_sapling()
-                .then(|| self.digest_sapling())
-                .unwrap_or_else(Self::hash_sapling_txid_empty)
-                .as_bytes(),
-        );
-        h.update(
-            self.has_orchard()
-                .then(|| self.digest_orchard())
-                .unwrap_or_else(Self::hash_orchard_txid_empty)
-                .as_bytes(),
-        );
-        Ok(h.finalize())
-    }
-
-    fn transparent_sig_digest(&self, input_info: Option<(&Input, u32)>) -> Result<Hash, ()> {
-        if !self.has_transparent() {
-            Ok(self.hash_transparent_tx_id(None))
+fn transparent_sig_digest(pczt: &Pczt, input_info: Option<SignableInput>) -> Hash {
+    if !has_transparent(pczt) {
+        hash_transparent_tx_id(None)
+    } else {
+        if is_transparent_coinbase(pczt) || pczt.transparent().inputs().is_empty() {
+            hash_transparent_tx_id(Some(transparent_digest(pczt)))
         } else {
-            if self.is_transparent_coinbase() || self.transparent.inputs.is_empty() {
-                Ok(self.hash_transparent_tx_id(Some(self.transparent_digest())))
-            } else {
-                if let Some((input, _)) = input_info {
-                    if input.sighash_type != SIGHASH_ALL {
-                        // this should not happen, but we need to handle it
-                        return Err(());
-                    }
-                }
-                //SIGHASH_ALL
-                let prevouts_digest = Self::digest_transparent_prevouts(&self.transparent.inputs);
-
-                let amounts_digest = {
-                    let mut h = hasher(ZCASH_TRANSPARENT_AMOUNTS_HASH_PERSONALIZATION);
-                    self.transparent.inputs.iter().for_each(|input| {
-                        h.update(&input.value.to_le_bytes());
-                    });
-                    h.finalize()
-                };
-
-                let scripts_digest = {
-                    let mut h = hasher(ZCASH_TRANSPARENT_SCRIPTS_HASH_PERSONALIZATION);
-                    self.transparent.inputs.iter().for_each(|input| {
-                        //len should be a compact size
-                        let len = input.script_pubkey.len();
-                        h.update(&[len as u8]);
-                        h.update(&input.script_pubkey);
-                    });
-                    h.finalize()
-                };
-                let sequence_digest = Self::digest_transparent_sequence(&self.transparent.inputs);
-
-                let outputs_digest = Self::digest_transparent_outputs(&self.transparent.outputs);
-
-                //S.2g.i:   prevout      (field encoding)
-                //S.2g.ii:  value        (8-byte signed little-endian)
-                //S.2g.iii: scriptPubKey (field encoding)
-                //S.2g.iv:  nSequence    (4-byte unsigned little-endian)
-                let mut ch = hasher(ZCASH_TRANSPARENT_INPUT_HASH_PERSONALIZATION);
-                if let Some((input, index)) = input_info {
-                    ch.update(&input.prevout_txid);
-                    ch.update(&input.prevout_index.to_le_bytes());
-                    ch.update(&(input.value as i64).to_le_bytes());
-                    let len = input.script_pubkey.len();
-                    ch.update(&[len as u8]);
-                    ch.update(&input.script_pubkey);
-                    ch.update(&input.sequence.unwrap_or(0xffffffff).to_le_bytes());
-                }
-                let txin_sig_digest = ch.finalize();
-
-                let mut h = hasher(ZCASH_TRANSPARENT_HASH_PERSONALIZATION);
-                h.update(&[SIGHASH_ALL]);
-                h.update(prevouts_digest.as_bytes());
-                h.update(amounts_digest.as_bytes());
-                h.update(scripts_digest.as_bytes());
-                h.update(sequence_digest.as_bytes());
-                h.update(outputs_digest.as_bytes());
-                h.update(txin_sig_digest.as_bytes());
-                Ok(h.finalize())
+            if let Some(input) = &input_info {
+                // this should have been checked earlier
+                assert_eq!(input.hash_type().encode(), SIGHASH_ALL);
             }
+            //SIGHASH_ALL
+            let prevouts_digest = digest_transparent_prevouts(&pczt.transparent().inputs());
+
+            let amounts_digest = {
+                let mut h = hasher(ZCASH_TRANSPARENT_AMOUNTS_HASH_PERSONALIZATION);
+                pczt.transparent().inputs().iter().for_each(|input| {
+                    h.update(&input.value().to_le_bytes());
+                });
+                h.finalize()
+            };
+
+            let scripts_digest = {
+                let mut h = hasher(ZCASH_TRANSPARENT_SCRIPTS_HASH_PERSONALIZATION);
+                pczt.transparent().inputs().iter().for_each(|input| {
+                    //len should be a compact size
+                    let len = input.script_pubkey().len();
+                    h.update(&[len as u8]);
+                    h.update(&input.script_pubkey());
+                });
+                h.finalize()
+            };
+            let sequence_digest = digest_transparent_sequence(&pczt.transparent().inputs());
+
+            let outputs_digest = digest_transparent_outputs(&pczt.transparent().outputs());
+
+            //S.2g.i:   prevout      (field encoding)
+            //S.2g.ii:  value        (8-byte signed little-endian)
+            //S.2g.iii: scriptPubKey (field encoding)
+            //S.2g.iv:  nSequence    (4-byte unsigned little-endian)
+            let mut ch = hasher(ZCASH_TRANSPARENT_INPUT_HASH_PERSONALIZATION);
+            if let Some(signable_input) = input_info {
+                let input = pczt
+                    .transparent()
+                    .inputs()
+                    .get(*signable_input.index())
+                    .expect("valid by construction");
+                ch.update(input.prevout_txid());
+                ch.update(&input.prevout_index().to_le_bytes());
+                ch.update(&signable_input.value().to_i64_le_bytes());
+                let len = signable_input.script_pubkey().0.len();
+                ch.update(&[len as u8]);
+                ch.update(&signable_input.script_pubkey().0);
+                ch.update(&input.sequence().unwrap_or(0xffffffff).to_le_bytes());
+            }
+            let txin_sig_digest = ch.finalize();
+
+            let mut h = hasher(ZCASH_TRANSPARENT_HASH_PERSONALIZATION);
+            h.update(&[SIGHASH_ALL]);
+            h.update(prevouts_digest.as_bytes());
+            h.update(amounts_digest.as_bytes());
+            h.update(scripts_digest.as_bytes());
+            h.update(sequence_digest.as_bytes());
+            h.update(outputs_digest.as_bytes());
+            h.update(txin_sig_digest.as_bytes());
+            h.finalize()
         }
     }
+}
 
-    pub fn sign<T: PcztSigner>(&self, signer: &T) -> Result<Self, T::Error> {
-        let mut pczt = self.clone();
-        pczt.transparent
-            .inputs
-            .iter_mut()
-            .enumerate()
-            .try_for_each(|(i, input)| {
-                let signatures = signer.sign_transparent(
-                    self.sheilded_sig_commitment(Some((input, i as u32))).ok(),
-                    input.bip32_derivation.clone(),
-                )?;
-                merge_map(
-                    &mut input.partial_signatures,
-                    signatures
-                        .iter()
-                        .map(|(pubkey, signature)| {
-                            let mut sig = signature.to_vec();
-                            sig.push(input.sighash_type);
-                            (pubkey.clone(), sig)
-                        })
-                        .collect(),
-                );
+pub fn sign<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
+where
+    T: PcztSigner,
+    T::Error: From<orchard::pczt::ParseError>,
+    T::Error: From<transparent::pczt::ParseError>,
+{
+    Ok(llsigner
+        .sign_transparent_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
+            let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
+                .map_err(|()| transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
+            signable
+                .inputs_mut()
+                .into_iter()
+                .enumerate()
+                .try_for_each(|(i, input)| {
+                    signer.sign_transparent(i, input, |signable_input| {
+                        sheilded_sig_commitment(pczt, lock_time, Some(signable_input))
+                            .as_bytes()
+                            .try_into()
+                            .expect("correct length")
+                    })?;
 
-                if input.sighash_type & SIGHASH_ANYONECANPAY == 0 {
-                    pczt.global.tx_modifiable &= !FLAG_TRANSPARENT_INPUTS_MODIFIABLE;
-                }
+                    if input.sighash_type().encode() & SIGHASH_ANYONECANPAY == 0 {
+                        *tx_modifiable &= !FLAG_TRANSPARENT_INPUTS_MODIFIABLE;
+                    }
 
-                if (input.sighash_type & !SIGHASH_ANYONECANPAY) != SIGHASH_NONE {
-                    pczt.global.tx_modifiable &= !FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE;
-                }
+                    if (input.sighash_type().encode() & !SIGHASH_ANYONECANPAY) != SIGHASH_NONE {
+                        *tx_modifiable &= !FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE;
+                    }
 
-                if (input.sighash_type & !SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE {
-                    pczt.global.tx_modifiable |= FLAG_HAS_SIGHASH_SINGLE;
-                }
+                    if (input.sighash_type().encode() & !SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE {
+                        *tx_modifiable |= FLAG_HAS_SIGHASH_SINGLE;
+                    }
 
-                pczt.global.tx_modifiable &= !FLAG_SHIELDED_MODIFIABLE;
-                Ok(())
-            })?;
-        pczt.sapling.spends.iter_mut().try_for_each(|spend| {
-            if let Some(ref d) = spend.zip32_derivation {
-                let signature = signer.sign_sapling(
-                    self.sheilded_sig_commitment(None).ok(),
-                    pczt.sapling.anchor,
-                    d.clone(),
-                )?;
-                spend.spend_auth_sig = signature;
-                pczt.global.tx_modifiable &= !(FLAG_TRANSPARENT_INPUTS_MODIFIABLE
-                    | FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE
-                    | FLAG_SHIELDED_MODIFIABLE);
-            }
-            Ok(())
-        })?;
-        pczt.orchard.actions.iter_mut().try_for_each(|action| {
-            match action.spend.value {
-                //dummy spend maybe
-                Some(0) | None => {
-                    return Ok(());
-                }
-                Some(_) => {
-                    if let Some(ref d) = action.spend.zip32_derivation {
-                        let signature = signer.sign_orchard(
-                            self.sheilded_sig_commitment(None).ok(),
-                            action.spend.alpha.unwrap(),
-                            d.clone(),
-                        )?;
-                        action.spend.spend_auth_sig = signature;
-                        pczt.global.tx_modifiable &= !(FLAG_TRANSPARENT_INPUTS_MODIFIABLE
+                    *tx_modifiable &= !FLAG_SHIELDED_MODIFIABLE;
+                    Ok(())
+                })
+        })?
+        .sign_orchard_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
+            let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
+                .expect("didn't fail earlier");
+            signable.actions_mut().into_iter().try_for_each(|action| {
+                match action.spend().value().map(|v| v.inner()) {
+                    //dummy spend maybe
+                    Some(0) | None => {
+                        return Ok(());
+                    }
+                    Some(_) => {
+                        signer
+                            .sign_orchard(action, sheilded_sig_commitment(pczt, lock_time, None))?;
+                        *tx_modifiable &= !(FLAG_TRANSPARENT_INPUTS_MODIFIABLE
                             | FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE
                             | FLAG_SHIELDED_MODIFIABLE);
                     }
                 }
-            }
-            Ok(())
-        })?;
-        Ok(pczt)
-    }
+                Ok(())
+            })
+        })?)
 }
 
 #[cfg(test)]
 mod tests {
     extern crate std;
-    use alloc::vec;
-    use alloc::{collections::btree_map::BTreeMap, vec::Vec};
-    use secp256k1::Message;
     use std::println;
-
-    use crate::pczt::common::Zip32Derivation;
-    use crate::pczt::{
-        self,
-        common::Global,
-        orchard::{self, Action},
-        sapling, transparent, V5_TX_VERSION, V5_VERSION_GROUP_ID,
-    };
 
     const HARDENED_MASK: u32 = 0x8000_0000;
 
@@ -538,7 +456,8 @@ mod tests {
         let pczt_hex = hex::decode(hex_str).unwrap();
         let pczt = Pczt::parse(&pczt_hex).unwrap();
 
-        let x = pczt.digest_header().unwrap();
+        let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs()).unwrap();
+        let x = digest_header(&pczt, lock_time);
         println!("digest header: {}", hex::encode(x.as_bytes()));
 
         // let hash2 = pczt.transparent_sig_digest();

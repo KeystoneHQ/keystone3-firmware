@@ -71,6 +71,7 @@ pub enum ErrorCodes {
     KeystoreRSASignError,
     KeystoreRSAVerifyError,
     KeystoreInvalidDataError,
+    KeystoreZcashOrchardSignError,
 
     //Bitcoin errors
     BitcoinInvalidInput = 100,
@@ -323,6 +324,7 @@ impl From<&KeystoreError> for ErrorCodes {
             KeystoreError::RSAVerifyError => Self::KeystoreRSAVerifyError,
             KeystoreError::RSASignError => Self::KeystoreRSASignError,
             KeystoreError::InvalidDataError(_) => Self::KeystoreInvalidDataError,
+            KeystoreError::ZcashOrchardSign(_) => Self::KeystoreZcashOrchardSignError,
         }
     }
 }

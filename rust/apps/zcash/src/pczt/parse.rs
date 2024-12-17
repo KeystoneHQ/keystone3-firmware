@@ -225,7 +225,11 @@ fn parse_transparent_output(
                 .bip32_derivation()
                 .keys()
                 .find(|pubkey| hash[..] == Ripemd160::digest(Sha256::digest(pubkey))[..]);
-            let ta = ZcashAddress::from_transparent_p2pkh(NetworkType::Main, hash).encode();
+
+            // TODO: This needs to be checked against `output.recipient()` in `crate::pczt::check`.
+            let address = output.user_address().clone().ok_or_else(|| {
+                ZcashError::InvalidPczt("missing user address for transparent output".into())
+            })?;
 
             let zec_value = format_zec_value(output.value().into_u64() as f64);
             let is_change = match pubkey {
@@ -238,7 +242,7 @@ fn parse_transparent_output(
                 None => false,
             };
             Ok(ParsedTo::new(
-                ta,
+                address,
                 zec_value,
                 output.value().into_u64(),
                 is_change,
@@ -402,10 +406,19 @@ fn parse_orchard_output(
         .ok_or(ZcashError::InvalidPczt("value is not present".to_string()))?
         .inner();
 
+    // TODO: This needs to be checked against `output.recipient()` in `crate::pczt::check`.
+    let address = match (output.user_address(), value) {
+        (Some(addr), _) => Ok(addr.clone()),
+        (None, 0) => Ok("Dummy output".into()),
+        (None, _) => Err(ZcashError::InvalidPczt(
+            "missing user address for Orchard output".into(),
+        )),
+    }?;
+
     // TODO: undecoded output can be non-dummy if it has memo,
     // we should decode the enc_ciphertext with output's rseed and recipient
     Ok(parsed_to.unwrap_or(ParsedTo::new(
-        "Unknown Address".to_string(),
+        address,
         format_zec_value(value as f64),
         value,
         false,

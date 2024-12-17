@@ -124,6 +124,7 @@ static void GuiInitWalletState()
         g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
         g_walletState[HOME_WALLET_CARD_ZEC].enable = false;
+        g_walletState[HOME_WALLET_CARD_MONERO].enable = false;
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
         break;
     case MNEMONIC_TYPE_BIP39:

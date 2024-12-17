@@ -353,6 +353,7 @@ static void GuiInitWalletListArray()
             enable = (index == WALLET_LIST_TONKEEPER);
         } else {
             switch (index) {
+            case WALLET_LIST_CAKE:
             case WALLET_LIST_ETERNL:
             case WALLET_LIST_VESPR:
             case WALLET_LIST_TYPHON:

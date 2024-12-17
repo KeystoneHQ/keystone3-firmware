@@ -110,7 +110,7 @@ fn is_transparent_coinbase(pczt: &Pczt) -> bool {
 }
 
 fn has_sapling(pczt: &Pczt) -> bool {
-    !pczt.sapling().spends().is_empty() && !pczt.sapling().outputs().is_empty()
+    pczt.sapling().spends().len() > 0 || pczt.sapling().outputs().len() > 0
 }
 
 fn has_orchard(pczt: &Pczt) -> bool {

@@ -8,27 +8,18 @@ use zcash_note_encryption::{
 };
 use zcash_vendor::{
     orchard::{
-        self,
-        keys::OutgoingViewingKey,
-        note::{Note},
-        note_encryption::OrchardDomain,
-        Address,
+        self, keys::OutgoingViewingKey, note::Note, note_encryption::OrchardDomain, Address,
     },
     pczt::{self, roles::verifier::Verifier, Pczt},
     ripemd::{Digest, Ripemd160},
     sha2::Sha256,
-    transparent::{
-        self,
-        address::{TransparentAddress},
-    },
+    transparent::{self, address::TransparentAddress},
     zcash_address::{
         unified::{self, Encoding, Receiver},
         ToAddress, ZcashAddress,
     },
     zcash_keys::keys::UnifiedFullViewingKey,
-    zcash_protocol::{
-        consensus::{self},
-    },
+    zcash_protocol::consensus::{self},
 };
 
 use crate::errors::ZcashError;
@@ -382,7 +373,9 @@ fn parse_orchard_output<P: consensus::Parameters>(
                 .encode(&params.network_type());
                 let user_address = action.output().user_address();
                 if let Some(user_address) = user_address {
-                    if user_address != &ua {
+                    let za = ZcashAddress::try_from_encoded(user_address).unwrap();
+                    let receiver = Receiver::Orchard(address.to_raw_address_bytes());
+                    if !za.matches_receiver(&receiver) {
                         return Err(ZcashError::InvalidPczt(
                             "user address is not match with address in decoded note".to_string(),
                         ));
@@ -398,7 +391,11 @@ fn parse_orchard_output<P: consensus::Parameters>(
                 };
 
                 Ok(Some(ParsedTo::new(
-                    ua,
+                    if is_internal {
+                        "wallet-internal".to_string()
+                    } else {
+                        user_address.clone().unwrap_or(ua)
+                    },
                     zec_value,
                     note.value().inner(),
                     is_internal,

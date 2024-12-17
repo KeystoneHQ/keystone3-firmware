@@ -14,12 +14,12 @@ use common_rust_c::{
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
     utils::{convert_c_char, recover_c_char},
 };
-use zcash_vendor::zcash_protocol::consensus::MainNetwork;
 use core::slice;
 use cty::c_char;
 use keystore::algorithms::zcash::{calculate_seed_fingerprint, derive_ufvk};
 use structs::DisplayPczt;
 use ur_registry::{traits::RegistryItem, zcash::zcash_pczt::ZcashPczt};
+use zcash_vendor::zcash_protocol::consensus::MainNetwork;
 
 #[no_mangle]
 pub extern "C" fn derive_zcash_ufvk(seed: PtrBytes, seed_len: u32) -> *mut SimpleResponse<c_char> {
@@ -69,7 +69,13 @@ pub extern "C" fn check_zcash_tx(
     let ufvk_text = recover_c_char(ufvk);
     let seed_fingerprint = unsafe { slice::from_raw_parts(seed_fingerprint, 32) };
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::check_pczt(&MainNetwork, &pczt.get_data(), &ufvk_text, seed_fingerprint, account_index) {
+    match app_zcash::check_pczt(
+        &MainNetwork,
+        &pczt.get_data(),
+        &ufvk_text,
+        seed_fingerprint,
+        account_index,
+    ) {
         Ok(_) => TransactionCheckResult::new().c_ptr(),
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
     }

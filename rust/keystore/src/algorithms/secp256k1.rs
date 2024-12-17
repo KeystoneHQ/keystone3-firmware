@@ -2,7 +2,7 @@ extern crate alloc;
 
 use alloc::string::{String, ToString};
 
-use bitcoin::secp256k1::{ecdsa, SecretKey, PublicKey, ecdh::SharedSecret, Secp256k1};
+use bitcoin::secp256k1::{ecdh::SharedSecret, ecdsa, PublicKey, Secp256k1, SecretKey};
 use core::str::FromStr;
 
 use bitcoin;
@@ -130,9 +130,9 @@ mod tests {
     use crate::algorithms::crypto::hmac_sha512;
     use crate::algorithms::secp256k1::derive_public_key;
     use alloc::string::{String, ToString};
+    use bitcoin::hashes::{sha256, Hash};
     use hex;
     use hex::ToHex;
-    use bitcoin::hashes::{sha256, Hash};
 
     use super::*;
 

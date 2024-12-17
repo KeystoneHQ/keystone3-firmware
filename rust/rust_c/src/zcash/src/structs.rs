@@ -8,11 +8,7 @@ use common_rust_c::{
     extract_ptr_with_type,
     ffi::VecFFI,
     free::Free,
-    free_ptr_with_type,
-    free_str_ptr,
-    free_vec,
-    impl_c_ptr,
-    impl_c_ptrs,
+    free_ptr_with_type, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs,
     types::{Ptr, PtrString},
     utils::convert_c_char,
 };

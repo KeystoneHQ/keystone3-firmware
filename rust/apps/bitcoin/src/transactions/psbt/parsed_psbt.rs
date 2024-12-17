@@ -84,8 +84,8 @@ mod tests {
     use alloc::vec::Vec;
 
     use bitcoin::bip32::{DerivationPath, Fingerprint, Xpub};
-    use hex::FromHex;
     use core::str::FromStr;
+    use hex::FromHex;
     use std::collections::BTreeMap;
 
     use super::*;

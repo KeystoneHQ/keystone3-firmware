@@ -6,8 +6,8 @@ extern crate alloc;
 
 use alloc::boxed::Box;
 use alloc::string::ToString;
-use keystore::algorithms::zcash;
 use core::slice;
+use keystore::algorithms::zcash;
 
 use bitcoin::hex::Case;
 use bitcoin_hashes::hex::DisplayHex;

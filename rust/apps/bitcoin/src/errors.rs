@@ -122,11 +122,11 @@ impl From<bitcoin::witness_program::Error> for BitcoinError {
 impl From<Base58Error> for BitcoinError {
     fn from(value: Base58Error) -> Self {
         match value {
-            Base58Error::IncorrectChecksum(e) => Self::Base58Error(format!("incorrect checksum: {}", e)),
-            Base58Error::TooShort(e) => Self::Base58Error(format!("too short: {}", e)),
-            Base58Error::Decode(e) => {
-                Self::Base58Error(format!("invalid character: {}", e))
+            Base58Error::IncorrectChecksum(e) => {
+                Self::Base58Error(format!("incorrect checksum: {}", e))
             }
+            Base58Error::TooShort(e) => Self::Base58Error(format!("too short: {}", e)),
+            Base58Error::Decode(e) => Self::Base58Error(format!("invalid character: {}", e)),
             _ => Self::Base58Error(format!(": {}", value)),
         }
     }

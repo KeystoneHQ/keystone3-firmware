@@ -27,10 +27,10 @@ pub mod solana;
 pub mod sui;
 pub mod thor_wallet;
 pub mod tonkeeper;
-pub mod zcash;
 mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
+pub mod zcash;
 //TODO: get these value from device
 pub const DEVICE_TYPE: &str = "Keystone 3 Pro";
 

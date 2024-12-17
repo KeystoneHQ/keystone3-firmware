@@ -2,12 +2,12 @@ use alloc::boxed::Box;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use ur_registry::zcash::zcash_pczt::ZcashPczt;
 use core::ptr::null_mut;
 #[cfg(feature = "multi-coins")]
 use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::extend::qr_hardware_call::QRHardwareCall;
+use ur_registry::zcash::zcash_pczt::ZcashPczt;
 
 use app_bitcoin::errors::BitcoinError;
 #[cfg(feature = "multi-coins")]

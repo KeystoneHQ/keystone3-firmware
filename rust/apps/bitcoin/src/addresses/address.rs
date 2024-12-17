@@ -110,15 +110,17 @@ impl Address {
     pub fn p2shp2wpkh(pk: &PublicKey, network: Network) -> Result<Address, BitcoinError> {
         match network {
             Network::Bitcoin | Network::BitcoinTestnet | Network::Litecoin => {
-                let builder = script::Builder::new()
-                    .push_int(0)
-                    .push_slice(pk.wpubkey_hash().map_err(|e| {
-                        BitcoinError::AddressError(format!("invalid payload for p2shwpkh: {}", e))
-                    })?);
+                let builder =
+                    script::Builder::new()
+                        .push_int(0)
+                        .push_slice(pk.wpubkey_hash().map_err(|e| {
+                            BitcoinError::AddressError(format!(
+                                "invalid payload for p2shwpkh: {}",
+                                e
+                            ))
+                        })?);
                 let script_hash = builder.as_script().script_hash();
-                let payload = Payload::P2sh {
-                    script_hash,
-                };
+                let payload = Payload::P2sh { script_hash };
                 Ok(Address { network, payload })
             }
             _ => Err(BitcoinError::AddressError(format!(

@@ -60,7 +60,6 @@ use xrp_rust_c;
 #[allow(unused)]
 use zcash_rust_c;
 
-
 #[cfg(any(feature = "simulator", feature = "simulator_btc_only"))]
 #[allow(unused)]
 use simulator_rust_c;

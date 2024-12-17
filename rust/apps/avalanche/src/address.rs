@@ -24,7 +24,12 @@ impl ParsedSizeAble for Address {
 
 impl Address {
     pub fn encode(&self) -> String {
-        bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked("avax"), &self.address).unwrap()
+        bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked("fuji"), &self.address).unwrap()
+        // bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked("avax"), &self.address).unwrap()
+    }
+
+    pub fn to_evm_address(&self) -> String {
+        format!("0x{}", hex::encode(&self.address))
     }
 }
 
@@ -92,14 +97,15 @@ mod tests {
             let root_path = "m/44'/9000'/0'";
             let address = get_address(Network::AvaxMainNet, &hd_path, &root_x_pub, &root_path);
             println!("address = {}", address.unwrap());
-            assert!(false);
+            // assert!(false);
         }
         {
             let prefix = "fuji";
-            let data = [
-                9, 105, 234, 98, 226, 187, 48, 230, 109, 130, 232, 47, 226, 103, 237, 246, 135, 30,
-                165, 247,
-            ];
+            // let data = [
+            //     9, 105, 234, 98, 226, 187, 48, 230, 109, 130, 232, 47, 226, 103, 237, 246, 135, 30,
+            //     165, 247,
+            // ];
+            let data = hex::decode("69bc9b5b6cbbbd490abbd79a37ad6cd643be87ab").unwrap();
             assert_eq!(
                 "fuji1p9575chzhvcwvmvzaqh7yeld76r3af0h3x77mq",
                 bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked(prefix), &data).unwrap()

@@ -1,9 +1,13 @@
-use super::validator::Validator;
+use super::{output_owner::OutputOwner, validator::Validator};
 use crate::constants::*;
 use crate::errors::{AvaxError, Result};
 use crate::transactions::base_tx::BaseTx;
+use crate::transactions::structs::{
+    AvaxFromToInfo, AvaxMethodInfo, AvaxTxInfo, LengthPrefixedVec, ParsedSizeAble,
+};
 use crate::transactions::subnet_auth::SubnetAuth;
 use crate::transactions::subnet_id::SubnetId;
+use crate::transactions::transferable::TransferableOutput;
 use alloc::{
     format,
     string::{String, ToString},
@@ -17,7 +21,55 @@ pub struct AddPermissLessionDelegatorTx {
     base_tx: BaseTx,
     validator: Validator,
     subnet_id: SubnetId,
-    subnet_auth: SubnetAuth,
+    stake_out: LengthPrefixedVec<TransferableOutput>,
+    delegator_owner: OutputOwner,
+}
+
+impl AvaxTxInfo for AddPermissLessionDelegatorTx {
+    fn get_total_input_amount(&self) -> u64 {
+        self.base_tx.get_total_input_amount()
+    }
+
+    fn get_total_output_amount(&self) -> u64 {
+        self.base_tx.get_total_output_amount()
+            + self
+                .stake_out
+                .iter()
+                .fold(0, |acc, item| acc + item.get_amount())
+    }
+
+    fn get_outputs_addresses(&self) -> Vec<AvaxFromToInfo> {
+        self.base_tx
+            .get_outputs_addresses()
+            .into_iter()
+            .chain(self.stake_out.iter().map(|output| {
+                AvaxFromToInfo::from(
+                    format!("{} AVAX", output.get_amount() as f64 / NAVAX_TO_AVAX_RATIO),
+                    output.get_addresses(),
+                )
+            }))
+            .collect()
+    }
+
+    fn get_method_info(&self) -> Option<AvaxMethodInfo> {
+        Some(AvaxMethodInfo::from(
+            "AddPermlessDelegator".to_string(),
+            self.validator.start_time,
+            self.validator.end_time,
+        ))
+    }
+
+    fn get_network(&self) -> Option<String> {
+        Some("Avalanche P-Chain".to_string())
+    }
+
+    fn get_subnet_id(&self) -> Option<String> {
+        Some("Primary Subnet".to_string())
+    }
+
+    fn get_reward_address(&self) -> Option<String> {
+        Some(self.delegator_owner.addresses.get(0).unwrap().encode())
+    }
 }
 
 impl TryFrom<Bytes> for AddPermissLessionDelegatorTx {
@@ -33,14 +85,18 @@ impl TryFrom<Bytes> for AddPermissLessionDelegatorTx {
         let subnet_id = SubnetId::try_from(bytes.clone())?;
         bytes.advance(SUBNET_ID_LEN);
 
-        let subnet_auth = SubnetAuth::try_from(bytes.clone())?;
-        bytes.advance(SUBNET_AUTH_LEN);
+        let stake_out = LengthPrefixedVec::<TransferableOutput>::try_from(bytes.clone())?;
+        bytes.advance(stake_out.parsed_size());
+
+        let delegator_owner = OutputOwner::try_from(bytes.clone())?;
+        bytes.advance(delegator_owner.parsed_size());
 
         Ok(AddPermissLessionDelegatorTx {
             base_tx,
             validator,
             subnet_id,
-            subnet_auth,
+            stake_out,
+            delegator_owner,
         })
     }
 }
@@ -53,10 +109,17 @@ mod tests {
 
     #[test]
     fn test_add_permissionless_delegator() {
-        let input_bytes = "00000000001a000000050000000000000000000000000000000000000000000000000000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000002faec7a5000000000000000000000001000000010969ea62e2bb30e66d82e82fe267edf6871ea5f70000000257d5e23e2e1f460b618bba1b55913ff3ceb315f0d1acc41fe6408edc4de9facd000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b9aca000000000100000000dcf4ca85474e87a743ec8feb54836d2b403b36c7c738c3e2498fdd346dac4774000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000002faef3a100000001000000000000000008e1ac7974a881471c6307919763cbd6e864ca7500000000674fb097000000006751028f000000003b9aca000000000000000000000000000000000000000000000000000000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000003b9aca00000000000000000000000001000000010969ea62e2bb30e66d82e82fe267edf6871ea5f70000000b000000000000000000000001000000010969ea62e2bb30e66d82e82fe267edf6871ea5f700000002000000090000000128c2e89bdf40db8016b300ef82db0cd9c4dd83dc056db63f6a3de89535e04c8656e44f2d1297a3e53165c3f224a2f0a044e26313e0abc47bd202b1d73c628606000000000900000001ff2962796baf62808b6709e9463604e159a8e89b9fb8ac1ce03f5e72099df4132b91b53d1916a9678c25032e58972a8ba06c213586fb6d0cdd4aa5a8715bac08000a0daf59";
+        let input_bytes = "00000000001a000000050000000000000000000000000000000000000000000000000000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000003b9a9e0400000000000000000000000100000001e0beb088f94b8224eb5d6f1115561d7173cd6e7f00000002295a7b15e26c6cafda8883afd0f724e0e0b1dad4517148711434cb96fb3c8a61000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b9aca0000000001000000006109bc613691602ca0811312357676416252412a87ded6c56c240baba1afe042000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b9aca000000000100000000000000007072a3df0cd056d9b9ef00c09630bad3027dc312000000006760c3b100000000676215a9000000003b9aca000000000000000000000000000000000000000000000000000000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000003b9aca0000000000000000000000000100000001e0beb088f94b8224eb5d6f1115561d7173cd6e7f0000000b00000000000000000000000100000001a0f4d4d9a0ea219da5ed5499ad083e1942a0846a000000020000000900000001438c3a393f49bb27791ca830effec456c2642a487ee4ce89300dd2e591fc22ab6b2aa8e08515ca229f2a2f14168700e05a1f96bd61d1fc3ab31e9e71ef9f16bb000000000900000001438c3a393f49bb27791ca830effec456c2642a487ee4ce89300dd2e591fc22ab6b2aa8e08515ca229f2a2f14168700e05a1f96bd61d1fc3ab31e9e71ef9f16bb005c3d047c";
         let mut bytes = Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
         let result = AddPermissLessionDelegatorTx::try_from(bytes.clone()).unwrap();
         println!("{:?}", result);
+        println!("input = {}", result.get_total_input_amount());
+        println!("output = {}", result.get_total_output_amount());
+        println!("fee = {}", result.get_fee_amount());
+        println!(
+            "delegator_owner = {}",
+            result.delegator_owner.addresses.get(0).unwrap().encode()
+        );
         assert!(false);
     }
 }

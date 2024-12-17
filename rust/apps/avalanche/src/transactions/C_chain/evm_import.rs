@@ -1,4 +1,4 @@
-use super::address::Address;
+use crate::address::Address;
 use crate::constants::*;
 use crate::errors::{AvaxError, Result};
 use crate::transactions::structs::{LengthPrefixedVec, ParsedSizeAble};

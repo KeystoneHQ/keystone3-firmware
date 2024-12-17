@@ -96,114 +96,133 @@ void *GuiGetAvaxGUIData(void)
     return g_parseResult;
 }
 
+typedef struct {
+    char *address;
+    char *amount;
+    char *path;
+} DisplayUtxoFromTo;
+
+lv_obj_t *CreateTxOverviewFromTo(lv_obj_t *parent, void *from, int fromLen, void *to, int toLen)
+{
+    int height = 16 + 30 + 8 + (60 + 8) * fromLen - 8 + 16 + 30 + 8 + (60 + 8) * toLen + 16;
+    lv_obj_t *container = CreateContentContainer(parent, 408, height);
+
+    DisplayUtxoFromTo *ptr = (DisplayUtxoFromTo *)from;
+    lv_obj_t *label = GuiCreateNoticeLabel(container, _("From"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    for (int i = 0; i < fromLen; i++) {
+        lv_obj_t *label = GuiCreateIllustrateLabel(container, ptr[i].address);
+        lv_obj_set_width(label, 360);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54 + 60 * i);
+    }
+
+    ptr = (DisplayUtxoFromTo *)to;
+    uint16_t offset = 30 + 8 + (30 + 8) * fromLen + 16;
+    label = GuiCreateNoticeLabel(container, _("To"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, offset);
+    for (int i = 0; i < toLen; i++) {
+        lv_obj_t *label = GuiCreateIllustrateLabel(container, ptr[i].address);
+        lv_obj_set_width(label, 360);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 38 + offset + 68 * i);
+    }
+
+    return container;
+}
+
+lv_obj_t *CreateTxDetailsFromTo(lv_obj_t *parent, char *tag, void *fromTo, int len)
+{
+    int height = 16 + 30 + 8 + (128 + 8) * len - 8 + 16;
+    lv_obj_t *container = CreateContentContainer(parent, 408, height);
+
+    DisplayUtxoFromTo *ptr = (DisplayUtxoFromTo *)fromTo;
+    lv_obj_t *label = GuiCreateNoticeLabel(container, tag);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    for (int i = 0; i < len; i++) {
+        lv_obj_t *label = GuiCreateIllustrateLabel(container, "");
+        lv_label_set_recolor(label, true);
+        lv_label_set_text_fmt(label, "%d    #F5870A %s#", i, ptr[i].amount);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54 + (128 + 8) * i);
+
+        label = GuiCreateIllustrateLabel(container, ptr[i].address);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 88 + (128 + 8) * i);
+        lv_obj_set_width(label, 360);
+    }
+
+    return container;
+}
+
 void GuiAvaxTxOverview(lv_obj_t *parent, void *totalData)
 {
     DisplayAvaxTx *txData = (DisplayAvaxTx *)totalData;
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
 
-    lv_obj_t *container = CreateValueOverviewValue(parent, txData->overview->total_output_amount, txData->overview->fee_amount);
-    container = CreateSingleInfoView(parent, _("Network"), txData->overview->network);
-    GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    lv_obj_t *container = CreateValueOverviewValue(parent, txData->data->total_output_amount, txData->data->fee_amount);
 
-    container = CreateSingleInfoView(parent, _("Method"), txData->overview->method);
+    if (txData->data->network != NULL) {
+        char *key[] = {txData->data->network_key, "Subnet ID"};
+        char *value[] = {txData->data->network, txData->data->subnet_id};
+        container = CreateDynamicInfoView(parent, key, value, NUMBER_OF_ARRAYS(key) - (txData->data->subnet_id ? 0 : 1));
+        GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
+
+    if (txData->data->method != NULL) {
+        container = CreateSingleInfoView(parent, txData->data->method->method_key, txData->data->method->method);
+        GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
+
+    printf("txData->data->from->size->address: %s\n", txData->data->to->data[0].address);
+    container = CreateTxOverviewFromTo(parent, NULL, 0, txData->data->to->data, txData->data->to->size);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     lv_obj_update_layout(parent);
 }
 
 void GuiAvaxTxRawData(lv_obj_t *parent, void *totalData)
 {
-    // DisplayAvaxTx *txData = (DisplayAvaxTx *)totalData;
-    // lv_obj_set_size(parent, 408, 444);
-    // lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
-    // lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
-    // lv_obj_t *lastView = NULL;
-    // if (txData->data_view != NULL) {
-    //     lastView = CreateDetailsDataViewView(parent, txData, NULL);
-    // }
-    // lastView = CreateDetailsRawDataView(parent, txData, lastView);
+    DisplayAvaxTx *txData = (DisplayAvaxTx *)totalData;
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
+
+    lv_obj_t *container = NULL;
+    if (txData->data->network != NULL) {
+        char *key[] = {txData->data->network_key, "Subnet ID"};
+        char *value[] = {txData->data->network, txData->data->subnet_id};
+        container = CreateDynamicInfoView(parent, key, value, NUMBER_OF_ARRAYS(key) - (txData->data->subnet_id ? 0 : 1));
+    }
+
+    if (txData->data->method != NULL) {
+        char startTime[BUFFER_SIZE_64] = {0}, endTime[BUFFER_SIZE_64] = {0};
+        uint8_t keyLen = 1;
+        if (txData->data->method->start_time != 0 && txData->data->method->end_time != 0) {
+            StampTimeToUtcTime(txData->data->method->start_time, startTime, sizeof(startTime));
+            StampTimeToUtcTime(txData->data->method->end_time, endTime, sizeof(endTime));
+            keyLen = 3;
+        }
+        char *key[] = {txData->data->method->method_key, "Start time", "End Time"};
+        char *value[] = {txData->data->method->method, startTime, endTime};
+        container = CreateDynamicInfoView(parent, key, value, keyLen);
+        GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
+
+    container = CreateValueDetailValue(parent, txData->data->total_input_amount, txData->data->total_output_amount, txData->data->fee_amount);
+    GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+
+    container = CreateTxDetailsFromTo(parent, "From", NULL, 0);
+    GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+
+    container = CreateTxDetailsFromTo(parent, "To", txData->data->to->data, txData->data->to->size);
+    GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    lv_obj_update_layout(parent);
 }
-
-// static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView)
-// {
-//     return container;
-// }
-
-// static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView)
-// {
-//     cJSON *contractData = cJSON_Parse(data->contract_data);
-//     int size = cJSON_GetArraySize(contractData);
-//     printf("size: %d\n", size);
-
-//     lv_obj_t *tempLastView = NULL;
-
-//     for (size_t i = 0; i < size; i++) {
-//         cJSON *data = cJSON_GetArrayItem(contractData, i);
-//         char* title = cJSON_GetObjectItem(data, "title")->valuestring;
-//         char* value = cJSON_GetObjectItem(data, "value")->valuestring;
-
-//         //100 = 16(padding top) + 16(padding bottom) + 30(title) + 8(margin) + 30(value one line)
-//         lv_obj_t *container = CreateContentContainer(parent, 408, 100);
-//         lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
-
-//         lv_obj_t *label = GuiCreateIllustrateLabel(container, title);
-//         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
-//         lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
-
-//         label = GuiCreateIllustrateLabel(container, value);
-//         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
-//         lv_obj_set_width(label, 360);
-//         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-//         lv_obj_update_layout(label);
-
-//         uint16_t height = lv_obj_get_height(label);
-
-//         lv_obj_set_height(container, height + 70);
-//         lv_obj_update_layout(container);
-
-//         tempLastView = container;
-//     }
-
-//     return tempLastView;
-// }
 
 static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView)
 {
-    // lv_obj_t *container = CreateContentContainer(parent, 408, 244);
-    // lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
-    // lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
-
-    // lv_obj_t *label = GuiCreateTextLabel(container, _("Data View"));
-    // lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
-    // lv_label_set_recolor(label, true);
-    // lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-
-    // label = GuiCreateIllustrateLabel(container, data->data_view);
-    // lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
-    // lv_obj_set_width(label, 360);
-    // lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    // return container;
 }
 static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView)
 {
-    // lv_obj_t *container = CreateContentContainer(parent, 408, 244);
-    // lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
-    // lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
-    // if (lastView != NULL) {
-    //     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
-    // }
-
-    // lv_obj_t *label = GuiCreateTextLabel(container, _("Raw Data"));
-    // lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
-    // lv_label_set_recolor(label, true);
-    // lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-
-    // label = GuiCreateIllustrateLabel(container, data->raw_data);
-    // lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
-    // lv_obj_set_width(label, 360);
-    // lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-
-    // return container;
 }
 #endif

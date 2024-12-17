@@ -56,6 +56,7 @@ void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiR
 
 void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
 {
+    printf("%s %d..\n", __func__, __LINE__);
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
     switch (urViewType.viewType) {
     case WebAuthResult:

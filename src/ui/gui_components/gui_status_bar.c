@@ -355,6 +355,7 @@ char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
 
 uint8_t GetCurrentDisplayPercent(void)
 {
+    return 100;
 #ifdef COMPILE_SIMULATOR
     return 100;
 #endif

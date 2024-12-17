@@ -93,6 +93,10 @@ impl TransferableOutput {
     pub fn get_amount(&self) -> u64 {
         self.output.get_amount()
     }
+
+    pub fn get_addresses(&self) -> Vec<String> {
+        self.output.get_addresses()
+    }
 }
 
 impl ParsedSizeAble for TransferableOutput {

@@ -106,16 +106,53 @@ lv_obj_t *CreateValueOverviewValue(lv_obj_t *parent, char* value, char *fee)
     return container;
 }
 
-lv_obj_t *CreateSingleInfoView(lv_obj_t *parent, char* key, char *value)
+lv_obj_t *CreateValueDetailValue(lv_obj_t *parent, char* inputValue, char *outputValue, char *fee)
 {
-    lv_obj_t *container = CreateContentContainer(parent, 408, 62);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 138);
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(container, key);
+    lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Input Value"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
-    label = GuiCreateIllustrateLabel(container, value);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 120);
+    label = GuiCreateIllustrateLabel(container, inputValue);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 147, 16);
+    
+    label = GuiCreateIllustrateLabel(container, _("Output Value"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+    label = GuiCreateIllustrateLabel(container, outputValue);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 164, 54);
+
+    label = GuiCreateIllustrateLabel(container, _("Fee"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 92);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+    label = GuiCreateIllustrateLabel(container, fee);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 73, 92);
+
+    return container;
+}
+
+lv_obj_t *CreateSingleInfoView(lv_obj_t *parent, char* key, char *value)
+{
+    return CreateDynamicInfoView(parent, &key, &value, 1);
+}
+
+lv_obj_t *CreateDynamicInfoView(lv_obj_t *parent, char *key[], char *value[], int keyLen)
+{
+    int height = (30 + 8) * keyLen - 8 + 16 + 16;
+
+    lv_obj_t *container = CreateContentContainer(parent, 408, height);
+
+    for (int i = 0; i < keyLen; i++) {
+        lv_obj_t *label = GuiCreateIllustrateLabel(container, _(key[i]));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16 + 30 * i + 8 * i);
+        lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+        label = GuiCreateIllustrateLabel(container, value[i]);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+    }
 
     return container;
 }

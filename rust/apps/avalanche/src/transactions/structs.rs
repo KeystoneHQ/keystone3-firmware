@@ -62,3 +62,74 @@ where
         Ok(LengthPrefixedVec { len, items })
     }
 }
+
+pub trait AvaxTxInfo {
+    fn get_total_input_amount(&self) -> u64;
+    fn get_total_output_amount(&self) -> u64;
+    fn get_fee_amount(&self) -> u64 {
+        self.get_total_input_amount() - self.get_total_output_amount()
+    }
+    fn get_outputs_addresses(&self) -> Vec<AvaxFromToInfo>;
+    fn get_network(&self) -> Option<String> {
+        None
+    }
+    fn get_network_key(&self) -> String {
+        "Network".to_string()
+    }
+
+    fn get_subnet_id(&self) -> Option<String> {
+        None
+    }
+
+    fn get_method_info(&self) -> Option<AvaxMethodInfo> {
+        None
+    }
+
+    fn get_reward_address(&self) -> Option<String> {
+        None
+    }
+}
+
+pub struct AvaxMethodInfo {
+    pub method_key: String,
+    pub method: String,
+    pub start_time: i64,
+    pub end_time: i64,
+}
+
+impl AvaxMethodInfo {
+    pub fn from_string(method: String) -> Self {
+        AvaxMethodInfo {
+            method_key: "Method".to_string(),
+            method,
+            start_time: 0,
+            end_time: 0,
+        }
+    }
+
+    pub fn with_method_key(mut self, method_key: String) -> Self {
+        self.method_key = method_key;
+        self
+    }
+
+    pub fn from(method: String, start_time: i64, end_time: i64) -> Self {
+        AvaxMethodInfo {
+            method_key: "Method".to_string(),
+            method,
+            start_time,
+            end_time,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct AvaxFromToInfo {
+    pub amount: String,
+    pub address: Vec<String>,
+}
+
+impl AvaxFromToInfo {
+    pub fn from(amount: String, address: Vec<String>) -> Self {
+        AvaxFromToInfo { amount, address }
+    }
+}

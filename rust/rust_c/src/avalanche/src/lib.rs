@@ -12,7 +12,19 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use app_avalanche::{parse_base_tx, transactions::base_tx::BaseTx};
+use app_avalanche::{
+    get_avax_tx_type_id, parse_avax_tx,
+    transactions::{
+        base_tx::BaseTx,
+        export::ExportTx,
+        import::ImportTx,
+        type_id::TypeId,
+        P_chain::{
+            add_permissionless_delegator::AddPermissLessionDelegatorTx,
+            add_permissionless_validator::AddPermissLessionValidatorTx,
+        },
+    },
+};
 use common_rust_c::{
     errors::RustCError,
     extract_ptr_with_type,
@@ -33,34 +45,68 @@ use {
 #[no_mangle]
 pub extern "C" fn avax_parse_transaction(
     ptr: PtrUR,
-    // master_fingerprint: PtrBytes,
-    // length: u32,
-    // public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
-    // multisig_wallet_config: PtrString,
 ) -> PtrT<TransactionParseResult<DisplayAvaxTx>> {
     // if length != 4 {
     //     return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     // }
     extern crate std;
     use std::println;
-    println!(".............................\n");
     let unsigned_data = extract_ptr_with_type!(ptr, AvaxSignRequest);
-    let parse_data = parse_base_tx(unsigned_data.get_tx_data()).unwrap();
-    println!("prase_data = {:?}", parse_data);
+    match get_avax_tx_type_id(unsigned_data.get_tx_data()) {
+        Ok(type_id) => unsafe {
+            match type_id {
+                TypeId::BaseTx => {
+                    parse_avax_tx::<BaseTx>(unsigned_data.get_tx_data()).map(|parse_data| {
+                        TransactionParseResult::success(DisplayAvaxTx::from(parse_data).c_ptr())
+                            .c_ptr()
+                    })
+                }
+                TypeId::PchainExportTx | TypeId::XchainExportTx => {
+                    parse_avax_tx::<ExportTx>(unsigned_data.get_tx_data()).map(|parse_data| {
+                        TransactionParseResult::success(DisplayAvaxTx::from(parse_data).c_ptr())
+                            .c_ptr()
+                    })
+                }
+                TypeId::XchainImportTx | TypeId::PchainImportTx => {
+                    parse_avax_tx::<ImportTx>(unsigned_data.get_tx_data()).map(|parse_data| {
+                        TransactionParseResult::success(DisplayAvaxTx::from(parse_data).c_ptr())
+                            .c_ptr()
+                    })
+                }
+                TypeId::AddPermissLessionValidator => {
+                    parse_avax_tx::<AddPermissLessionValidatorTx>(unsigned_data.get_tx_data()).map(
+                        |parse_data| {
+                            TransactionParseResult::success(DisplayAvaxTx::from(parse_data).c_ptr())
+                                .c_ptr()
+                        },
+                    )
+                }
+                TypeId::AddPermissLessionDelegator => {
+                    parse_avax_tx::<AddPermissLessionDelegatorTx>(unsigned_data.get_tx_data()).map(
+                        |parse_data| {
+                            TransactionParseResult::success(DisplayAvaxTx::from(parse_data).c_ptr())
+                                .c_ptr()
+                        },
+                    )
+                }
 
-    unsafe {
-        // let mfp = core::slice::from_raw_parts(master_fingerprint, 4);
-        // let public_keys = recover_c_array(public_keys);
-        TransactionParseResult::success(DisplayAvaxTx::from(tx_data).c_ptr()).c_ptr()
+                _ => Ok(
+                    TransactionParseResult::from(RustCError::InvalidData(format!(
+                        "{:?} not support",
+                        type_id
+                    )))
+                    .c_ptr(),
+                ),
+            }
+            .unwrap_or_else(|_| {
+                TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
+            })
+        },
+        Err(_) => {
+            TransactionParseResult::from(RustCError::InvalidData("Invalid tx type".to_string()))
+                .c_ptr()
+        }
     }
-}
-
-fn parse_tx(tx_data: BaseTx) -> PtrT<TransactionParseResult<DisplayAvaxTx>> { 
-    // let master_fingerprint =
-    //     bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
-    //         .map_err(|_e| RustCError::InvalidMasterFingerprint);
-    TransactionParseResult::success(DisplayAvaxTx::from(tx_data).c_ptr()).c_ptr()
-    // let data = TransactionParseResult::success(DisplayAvaxTx::from(tx_data).c_ptr()).c_ptr();
 }
 
 // #[no_mangle]

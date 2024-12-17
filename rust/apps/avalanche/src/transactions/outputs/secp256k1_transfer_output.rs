@@ -13,23 +13,20 @@ pub struct SECP256K1TransferOutput {
     pub amount: u64,
     pub locktime: u64,
     pub threshold: u32,
-    pub addresses_len: u32,
-    pub addresses: Vec<[u8; 20]>,
+    addresses: LengthPrefixedVec<Address>,
 }
 
 impl OutputTrait for SECP256K1TransferOutput {
     fn get_addresses(&self) -> Vec<String> {
-        vec!["".to_string()]
+        self.addresses.iter().map(|item| item.encode()).collect()
     }
 
     fn get_addresses_len(&self) -> usize {
-        // self.addresses.get_len()
-        self.addresses_len as usize
+        self.addresses.get_len()
     }
 
     fn get_transfer_output_len(&self) -> usize {
-        // 28 + self.addresses.get_len() * self.addresses.parsed_size() as usize
-        28 + self.addresses_len as usize * 20
+        28 + self.addresses.get_len() * 20
     }
 
     fn get_amount(&self) -> u64 {
@@ -49,24 +46,15 @@ impl TryFrom<Bytes> for SECP256K1TransferOutput {
         let amount = bytes.get_u64();
         let locktime = bytes.get_u64();
         let threshold = bytes.get_u32();
-        let addresses_len = bytes.get_u32();
 
-        let mut addresses = Vec::with_capacity(addresses_len as usize);
-        for _ in 0..addresses_len {
-            if bytes.remaining() < 20 {
-                return Err(AvaxError::InvalidOutput);
-            }
-            let mut address = [0u8; 20];
-            bytes.copy_to_slice(&mut address);
-            addresses.push(address);
-        }
+        let addresses = LengthPrefixedVec::<Address>::try_from(bytes.clone())?;
+        bytes.advance(addresses.parsed_size());
 
         Ok(SECP256K1TransferOutput {
             type_id,
             amount,
             locktime,
             threshold,
-            addresses_len,
             addresses,
         })
     }

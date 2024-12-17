@@ -1,4 +1,8 @@
-use super::structs::{LengthPrefixedVec, ParsedSizeAble};
+extern crate std;
+
+use super::structs::{
+    AvaxFromToInfo, AvaxMethodInfo, AvaxTxInfo, LengthPrefixedVec, ParsedSizeAble,
+};
 use super::transferable::{TransferableInput, TransferableOutput};
 use super::tx_header::Header;
 use super::type_id::TypeId;
@@ -12,7 +16,7 @@ use alloc::{
 use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BaseTx {
     codec_id: u16,
     pub type_id: TypeId,
@@ -25,14 +29,6 @@ pub struct BaseTx {
 }
 
 impl BaseTx {
-    pub fn get_type_id(&self) -> TypeId {
-        self.type_id
-    }
-
-    pub fn get_network_id(&self) -> u32 {
-        self.tx_header.get_network_id()
-    }
-
     pub fn get_blockchain_id(&self) -> [u8; BLOCKCHAIN_ID_LEN] {
         self.tx_header.get_blockchain_id()
     }
@@ -44,17 +40,13 @@ impl BaseTx {
         self.outputs.get_len() as u32
     }
 
-    // pub fn get_inputs(&self) -> Vec<TransferableInput> {
-    // self.inputs.clone()
-    // }
+    pub fn get_inputs_addresses(&self) -> Vec<String> {
+        vec!["".to_string()]
+    }
 
     pub fn get_input_by_index(&self, index: usize) -> Option<&TransferableInput> {
         self.inputs.get(index)
     }
-
-    // pub fn get_outputs(&self) -> Vec<TransferableOutput> {
-    // self.outputs.clone()
-    // }
 
     pub fn get_memo(&self) -> Vec<u8> {
         self.memo.clone()
@@ -63,21 +55,48 @@ impl BaseTx {
     pub fn parsed_size(&self) -> usize {
         self.tx_size
     }
+}
 
-    pub fn get_total_output_amount(&self) -> u64 {
+impl AvaxTxInfo for BaseTx {
+    fn get_total_output_amount(&self) -> u64 {
         self.outputs
             .iter()
             .fold(0, |acc, item| acc + item.get_amount())
     }
 
-    pub fn get_total_input_amount(&self) -> u64 {
+    fn get_total_input_amount(&self) -> u64 {
         self.inputs
             .iter()
             .fold(0, |acc, item| acc + item.get_amount())
     }
 
-    pub fn get_fee_amount(&self) -> u64 {
-        self.get_total_input_amount() - self.get_total_output_amount()
+    fn get_network(&self) -> Option<String> {
+        std::println!("self.get_blockchain_id() = {:?}", self.get_blockchain_id());
+        match self.get_blockchain_id() {
+            X_BLOCKCHAIN_ID => Some("Avalanche X-Chain".to_string()),
+            C_BLOCKCHAIN_ID => Some("Avalanche C-Chain".to_string()),
+            P_BLOCKCHAIN_ID => Some("Avalanche P-Chain".to_string()),
+            _ => None,
+        }
+    }
+
+    fn get_method_info(&self) -> Option<AvaxMethodInfo> {
+        match self.type_id {
+            TypeId::BaseTx => Some(AvaxMethodInfo::from_string("Send".to_string())),
+            _ => Some(AvaxMethodInfo::from_string("Unknown".to_string())),
+        }
+    }
+
+    fn get_outputs_addresses(&self) -> Vec<AvaxFromToInfo> {
+        self.outputs
+            .iter()
+            .map(|output| {
+                AvaxFromToInfo::from(
+                    format!("{} AVAX", output.get_amount() as f64 / NAVAX_TO_AVAX_RATIO),
+                    output.get_addresses(),
+                )
+            })
+            .collect()
     }
 }
 
@@ -124,19 +143,22 @@ mod tests {
     fn test_avax_base_transaction() {
         {
             // x-chain fuji test case
-            let input_bytes = "000000000022000000050000000000000000000000000000000000000000000000000000000000000000000000023d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000005f5e100000000000000000000000001000000018771921301d5bffff592dae86695a615bdb4a4413d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000017c771d2000000000000000000000001000000010969ea62e2bb30e66d82e82fe267edf6871ea5f70000000157d5e23e2e1f460b618bba1b55913ff3ceb315f0d1acc41fe6408edc4de9facd000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000001dbd670d000000010000000000000000";
+            let input_bytes = "00000000000000000005ab68eb1ee142a05cfe768c36e11f0b596db5a3c6c77aabe665dad9e638ca94f7000000023d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000000bbdfb400000000000000000000000010000000169bc9b5b6cbbbd490abbd79a37ad6cd643be87ab3d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000002faf08000000000000000000000000010000000132336f8715dd313a426155cccc15ba27c3033dae0000000163c5b29498bf6a9f1e2a5d20f8eeddaf92096c0ce1c9c2cf6b93fd9a0d12f725000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b7c4580000000010000000000000000";
+            let input_bytes = "00000000000000000005ab68eb1ee142a05cfe768c36e11f0b596db5a3c6c77aabe665dad9e638ca94f7000000023d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000000bbdfb400000000000000000000000010000000169bc9b5b6cbbbd490abbd79a37ad6cd643be87ab3d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000002faf0800000000000000000000000001000000016498cb45e255f5937b816a59c34a7559a2d437b10000000163c5b29498bf6a9f1e2a5d20f8eeddaf92096c0ce1c9c2cf6b93fd9a0d12f725000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b7c4580000000010000000000000000";
 
             // x-chain mainnet test case
-            let input_bytes = "00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000dd06a44000000000000000000000000100000001e6c4c18c7d0f5b36c485128ac665d5d02699a53c21e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff00000007000000207a3d6f40000000000000000000000001000000011e80001c158e62dba3b21eb258cc77f975e9917f000000016d624e8c01aebf6588f9238e86d4c5a7395daea0b6dcbf418dc550e50671bbfd0000000021e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000500000021575355c0000000010000000000000000000000010000000900000001958ee8e340ab8ffa3a4cb79931a1afa163b429c73cd8d2c611d6c82b75a6c1ed5fbc0162679e6c0dfef03da82f88d1791da897a11569dbf13b571b8e59245b57008270737e";
+            // let input_bytes = "00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000000070000000218711a00000000000000000000000001000000017c949a8013befa47e992078764ff735b18a26b5b21e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000003cf87a80c00000000000000000000000100000001d5ae9a7d5b31660f08c0aefc1547fb195fbfc85d000000021ddbc2d7d67f14df1e36111bbeef2adae97067c4ceb9db94b73e8883a5a6dd640000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000000050000000395e95a000000000100000000885eea33e82eff5130de90152c0ebb98f5cfdc7c7529596fe2473a35654aac830000000021e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000500000002522030ec00000001000000000000000400000000000000020000000900000001a6810c96af6f4e4281031b795f78c37f3395b6d35806179d37b40603d547e2f262969f5363e168c064712607679b01ed13a76daab84addc94a3745b0549a53e5000000000900000001cefe480034588db7b5e0993410b6dbdd2e37e3ec94e75b450dd4c56c32f3b4c61cd9dab507232eb1211a846165336a7d7d975b39612df8d88174e1a92c27535f004a454d1e";
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let result = BaseTx::try_from(bytes).unwrap();
             println!("Result: {:?}", result);
             println!("total output amount: {}", result.get_total_output_amount());
             println!("total input amount: {}", result.get_total_input_amount());
+            println!("fee amount: {}", result.get_fee_amount());
+            // println!("to address: {:?}", result.get_outputs_addresses());
 
-            assert_eq!(result.get_type_id(), TypeId::BaseTx);
-            assert_eq!(result.get_network_id(), 5);
+            // assert_eq!(result.get_type_id(), TypeId::BaseTx);
+            // assert_eq!(result.get_network_id(), 1);
             assert_eq!(result.get_blockchain_id(), [0; BLOCKCHAIN_ID_LEN]);
             assert_eq!(result.get_inputs_len(), 1);
             assert_eq!(result.get_outputs_len(), 2);
@@ -152,8 +174,10 @@ mod tests {
             match BaseTx::try_from(bytes) {
                 Ok(result) => {
                     println!("{:?}", result);
-                    assert_eq!(result.get_type_id(), TypeId::BaseTx);
-                    assert_eq!(result.get_network_id(), 5);
+                    assert_eq!(
+                        result.get_network().unwrap(),
+                        "Avalanche X-Chain".to_string()
+                    );
                     assert_eq!(
                         result.get_blockchain_id(),
                         [

@@ -19,7 +19,6 @@ pub mod outputs {
 pub mod C_chain {
     pub mod evm_export;
     pub mod evm_import;
-    pub mod address;
 }
 
 pub mod P_chain {
@@ -28,4 +27,5 @@ pub mod P_chain {
     pub mod node_id;
     mod validator;
     mod signer;
+    mod output_owner;
 }

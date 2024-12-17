@@ -7,6 +7,7 @@ pub const PROOF_OF_POSESSION_SIGNATURE_LEN: usize = 100;
 pub const C_CHAIN_ADDRESS_LEN: usize = 20;
 pub const ASSET_ID_LEN: usize = 32;
 pub const ADDRESS_LEN: usize = 20;
+pub const NAVAX_TO_AVAX_RATIO: f64 = 1_000_000_000.0;
 
 pub const X_BLOCKCHAIN_ID: [u8; BLOCKCHAIN_ID_LEN] = [
     171, 104, 235, 30, 225, 66, 160, 92, 254, 118, 140, 54, 225, 31, 11, 89, 109, 181, 163, 198,

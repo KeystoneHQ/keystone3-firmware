@@ -1,12 +1,15 @@
 use alloc::boxed::Box;
-use alloc::vec::Vec;
+use alloc::format;
 use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use app_avalanche::constants::NAVAX_TO_AVAX_RATIO;
 use common_rust_c::types::Ptr;
 use core::ptr::null_mut;
 
-// use app_bitcoin;
-// use app_bitcoin::parsed_tx::{DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx};
-use app_avalanche::transactions::{base_tx::BaseTx};
+use app_avalanche::transactions::{
+    base_tx::BaseTx,
+    structs::{AvaxFromToInfo, AvaxMethodInfo, AvaxTxInfo},
+};
 use common_rust_c::ffi::VecFFI;
 use common_rust_c::free::Free;
 use common_rust_c::structs::Response;
@@ -50,182 +53,118 @@ use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_meth
 
 #[repr(C)]
 pub struct DisplayAvaxTx {
-    overview: *mut DisplayTxAvaxOverview,
-    // detail: DisplayTxDetail,
+    data: *mut DisplayTxAvaxData,
 }
 
 impl_c_ptr!(DisplayAvaxTx);
 
 #[repr(C)]
-pub struct DisplayTxAvaxOverview {
-    total_output_amount: PtrString,
-    fee_amount: PtrString,
+pub struct DisplayTxAvaxData {
     network: PtrString,
-    method: PtrString,
+    network_key: PtrString,
+    subnet_id: PtrString,
+    total_output_amount: PtrString,
+    total_input_amount: PtrString,
+    fee_amount: PtrString,
+    reward_address: PtrString,
+    method: PtrT<DisplayAvaxMethodInfo>,
     // from: PtrT<VecFFI<DisplayAddress>>,
-    // to: PtrT<VecFFI<DisplayAvaxOverview>>,
+    to: PtrT<VecFFI<DisplayAvaxFromToInfo>>,
 }
 
-impl_c_ptr!(DisplayTxAvaxOverview);
-
-// #[repr(C)]
-// pub struct DisplayTxDetail {
-//     network: PtrString,
-//     method: PtrString,
-//     total_input_amount: PtrString,
-//     total_output_amount: PtrString,
-//     fee_amount: PtrString,
-//     from: PtrT<VecFFI<DisplayAvaxDetailInput>>,
-//     to: PtrT<VecFFI<DisplayAvaxDetailInput>>,
-// }
-
-// impl_c_ptr!(DisplayTxDetail);
+impl_c_ptr!(DisplayTxAvaxData);
 
 #[repr(C)]
-pub struct DisplayAddress {
-    address: PtrString,
-}
-
-#[repr(C)]
-pub struct DisplayAvaxDetailInput {
-    // has_address: bool,
+pub struct DisplayAvaxFromToInfo {
     address: PtrString,
     amount: PtrString,
-    // is_mine: bool,
     path: PtrString,
-    // is_external: bool,
+}
+
+impl_c_ptr!(DisplayAvaxFromToInfo);
+
+impl From<&AvaxFromToInfo> for DisplayAvaxFromToInfo {
+    fn from(value: &AvaxFromToInfo) -> Self {
+        DisplayAvaxFromToInfo {
+            address: convert_c_char(value.address.get(0).unwrap().clone()),
+            amount: convert_c_char(value.amount.clone()),
+            path: convert_c_char("".to_string()),
+        }
+    }
 }
 
 #[repr(C)]
-pub struct DisplayAvaxOverview {
-    address: PtrString,
+pub struct DisplayAvaxMethodInfo {
+    method_key: PtrString,
+    method: PtrString,
+    start_time: i64,
+    end_time: i64,
 }
 
-// #[repr(C)]
-// pub struct DisplayAvaxDetailInput {
-//     address: PtrString,
-//     amount: PtrString,
-//     // is_mine: bool,
-//     path: PtrString,
-//     // is_external: bool,
-// }
+impl_c_ptr!(DisplayAvaxMethodInfo);
 
-impl From<BaseTx> for DisplayAvaxTx {
-    fn from(value: BaseTx) -> Self {
+impl From<AvaxMethodInfo> for DisplayAvaxMethodInfo {
+    fn from(value: AvaxMethodInfo) -> Self {
+        DisplayAvaxMethodInfo {
+            method_key: convert_c_char(value.method_key),
+            method: convert_c_char(value.method),
+            start_time: value.start_time,
+            end_time: value.end_time,
+        }
+    }
+}
+
+impl<T: AvaxTxInfo> From<T> for DisplayAvaxTx {
+    fn from(value: T) -> Self {
         DisplayAvaxTx {
-            overview: DisplayTxAvaxOverview::from(value).c_ptr(),
-            // detail: DisplayTxDetail::from(value.detail).c_ptr(),
+            data: DisplayTxAvaxData::from(value).c_ptr(),
         }
     }
 }
 
-impl From<BaseTx> for DisplayTxAvaxOverview {
-    fn from(value: BaseTx) -> Self {
-        DisplayTxAvaxOverview {
-            total_output_amount: convert_c_char(value.get_total_output_amount().to_string()),
-            fee_amount: convert_c_char(value.get_fee_amount().to_string()),
-            // from: VecFFI::from(
-            //     value
-            //         .from
-            //         .iter()
-            //         .map(|v| DisplayAddress {
-            //             address: convert_c_char(v.clone()),
-            //         })
-            //         .collect::<Vec<DisplayAddress>>(),
-            // )
-            // .c_ptr(),
-            // to: VecFFI::from(
-            //     value
-            //         .to
-            //         .iter()
-            //         .map(|v| DisplayAvaxOverview {
-            //             address: convert_c_char(v.clone()),
-            //         })
-            //         .collect::<Vec<DisplayAvaxOverview>>(),
-            // )
-            // .c_ptr(),
-            network: convert_c_char(String::from("main")),
-            // network: convert_c_char(value.network),
-            method: convert_c_char(String::from("Send")),
+impl<T: AvaxTxInfo> From<T> for DisplayTxAvaxData {
+    fn from(value: T) -> Self {
+        DisplayTxAvaxData {
+            total_input_amount: convert_c_char(format!(
+                "{} AVAX",
+                value.get_total_input_amount() as f64 / NAVAX_TO_AVAX_RATIO
+            )),
+            total_output_amount: convert_c_char(format!(
+                "{} AVAX",
+                value.get_total_output_amount() as f64 / NAVAX_TO_AVAX_RATIO
+            )),
+            fee_amount: convert_c_char(format!(
+                "{} AVAX",
+                value.get_fee_amount() as f64 / NAVAX_TO_AVAX_RATIO
+            )),
+            to: VecFFI::from(
+                value
+                    .get_outputs_addresses()
+                    .iter()
+                    .map(|v| DisplayAvaxFromToInfo::from(v))
+                    .collect::<Vec<DisplayAvaxFromToInfo>>(),
+            )
+            .c_ptr(),
+            network_key: convert_c_char(value.get_network_key()),
+            subnet_id: value
+                .get_subnet_id()
+                .map_or(core::ptr::null_mut(), convert_c_char),
+            network: value
+                .get_network()
+                .map_or(core::ptr::null_mut(), convert_c_char),
+            reward_address: value.get_reward_address().map_or(core::ptr::null_mut(), convert_c_char),
+            method: value.get_method_info().map_or(core::ptr::null_mut(), |v| {
+                DisplayAvaxMethodInfo::from(v).c_ptr()
+            }),
         }
     }
 }
 
-// impl From<DetailTx> for DisplayTxDetail {
-//     fn from(value: DetailTx) -> Self {
-//         DisplayTxDetail {
-//             total_input_amount: convert_c_char(value.total_input_amount),
-//             total_output_amount: convert_c_char(value.total_output_amount),
-//             fee_amount: convert_c_char(value.fee_amount),
-//             from: VecFFI::from(
-//                 value
-//                     .from
-//                     .iter()
-//                     .map(|v| DisplayAvaxDetailInput::from(v.clone()))
-//                     .collect::<Vec<DisplayAvaxDetailInput>>(),
-//             )
-//             .c_ptr(),
-//             to: VecFFI::from(
-//                 value
-//                     .to
-//                     .iter()
-//                     .map(|v| DisplayAvaxDetailInput::from(v.clone()))
-//                     .collect::<Vec<DisplayAvaxDetailInput>>(),
-//             )
-//             .c_ptr(),
-//             network: convert_c_char(value.network),
-//             total_output_sat: convert_c_char(value.total_output_sat),
-//             total_input_sat: convert_c_char(value.total_input_sat),
-//             fee_sat: convert_c_char(value.fee_sat),
-//             sign_status: if let Some(sign_status) = value.sign_status {
-//                 convert_c_char(sign_status)
-//             } else {
-//                 null_mut()
-//             },
-//         }
-//     }
-// }
+impl Free for DisplayAvaxTx {
+    fn free(&self) {}
+}
 
-// impl From<ParsedInput> for DisplayAvaxDetailInput {
-//     fn from(value: ParsedInput) -> Self {
-//         DisplayAvaxDetailInput {
-//             has_address: value.address.is_some(),
-//             address: value
-//                 .address
-//                 .map(|v| convert_c_char(v))
-//                 .unwrap_or(null_mut()),
-//             amount: convert_c_char(value.amount),
-//             is_mine: value.path.is_some(),
-//             path: value.path.map(|v| convert_c_char(v)).unwrap_or(null_mut()),
-//             is_external: value.is_external,
-//         }
-//     }
-// }
-
-// impl From<ParsedOutput> for DisplayAvaxDetailInput {
-//     fn from(value: ParsedOutput) -> Self {
-//         DisplayAvaxDetailInput {
-//             address: convert_c_char(value.address),
-//             amount: convert_c_char(value.amount),
-//             is_mine: value.path.is_some(),
-//             path: value.path.map(|v| convert_c_char(v)).unwrap_or(null_mut()),
-//             is_external: value.is_external,
-//         }
-//     }
-// }
-
-// impl Free for DisplayTx {
-//     fn free(&self) {
-//         unsafe {
-//             let x = Box::from_raw(self.overview);
-//             let y = Box::from_raw(self.detail);
-//             x.free();
-//             y.free();
-//         }
-//     }
-// }
-
-// make_free_method!(TransactionParseResult<DisplayTx>);
+make_free_method!(TransactionParseResult<DisplayAvaxTx>);
 
 // impl Free for DisplayTxOverview {
 //     fn free(&self) {
@@ -250,40 +189,7 @@ impl From<BaseTx> for DisplayTxAvaxOverview {
 //     }
 // }
 
-// impl Free for DisplayTxDetail {
-//     fn free(&self) {
-//         unsafe {
-//             let x = Box::from_raw(self.from);
-//             let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-//             ve.iter().for_each(|v| {
-//                 v.free();
-//             });
-//             let x = Box::from_raw(self.to);
-//             let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-//             ve.iter().for_each(|v| {
-//                 v.free();
-//             });
-
-//             let _ = Box::from_raw(self.total_input_amount);
-//             let _ = Box::from_raw(self.total_output_amount);
-//             let _ = Box::from_raw(self.fee_amount);
-//             let _ = Box::from_raw(self.network);
-//             let _ = Box::from_raw(self.total_input_sat);
-//             let _ = Box::from_raw(self.total_output_sat);
-//             let _ = Box::from_raw(self.fee_sat);
-//         }
-//     }
-// }
-
-// impl Free for DisplayAddress {
-//     fn free(&self) {
-//         unsafe {
-//             let _ = Box::from_raw(self.address);
-//         }
-//     }
-// }
-
-// impl Free for DisplayAvaxDetailInput {
+// impl Free for DisplayAvaxFromToDetailInput {
 //     fn free(&self) {
 //         unsafe {
 //             let _ = Box::from_raw(self.address);
@@ -293,7 +199,7 @@ impl From<BaseTx> for DisplayTxAvaxOverview {
 //     }
 // }
 
-// impl Free for DisplayAvaxOverview {
+// impl Free for DisplayAvaxFromToOverview {
 //     fn free(&self) {
 //         unsafe {
 //             let _ = Box::from_raw(self.address);
@@ -301,7 +207,7 @@ impl From<BaseTx> for DisplayTxAvaxOverview {
 //     }
 // }
 
-// impl Free for DisplayAvaxDetailInput {
+// impl Free for DisplayAvaxFromToDetailInput {
 //     fn free(&self) {
 //         unsafe {
 //             let _ = Box::from_raw(self.address);

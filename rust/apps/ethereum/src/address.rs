@@ -103,8 +103,10 @@ mod tests {
         // 取最后20字节作为地址
         let address = &hash[12..];
 
+        let address = [63, 229, 19, 56, 153, 45, 145, 59, 106, 153, 150, 147, 215, 195, 69, 100, 108, 163, 187, 76];
+
         // 转换为16进制并添加0x前缀
-        format!("0x{}", hex::encode(address))
+        format!("0x{}", hex::encode(&address))
     }
 
     #[test]
@@ -114,8 +116,8 @@ mod tests {
         )
         .unwrap();
         println!("{}", pubkey);
-        // let address = get_avax_address(&pubkey);
-        // println!("address = {}", address);
+        let address = get_avax_address(&pubkey);
+        println!("address = {}", address);
         let result = generate_address(pubkey).unwrap();
         println!("{}", result);
         assert_eq!(2, 1);

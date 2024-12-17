@@ -404,7 +404,6 @@ static void RecognizeFailHandler(lv_timer_t *timer)
 static bool GuiCheckIsTransactionSign(void)
 {
 #ifndef BTC_ONLY
-    printf("GetEthPermitCantSign(NULL, NULL) = %d\n", GetEthPermitCantSign(NULL, NULL));
     if (GetEthPermitCantSign(NULL, NULL)) {
         return false;
     }

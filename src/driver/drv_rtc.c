@@ -9,8 +9,6 @@
 #define USE_EXTERN_32K
 static void stampTimeToRealTime(uint32_t stampTime, Times *standardTime);
 
-static char g_currentTimeBuf[BUFFER_SIZE_32];
-
 void SetCurrentStampTime(uint32_t stampTime)
 {
     RTC_SetRefRegister(stampTime);
@@ -27,7 +25,7 @@ uint32_t GetRtcCounter(void)
     return RTC_GetCounter();
 }
 
-static void stampTimeToRealTime(uint32_t stampTime, Times *standardTime)
+static void stampTimeToRealTime(int64_t stampTime, Times *standardTime)
 {
     time_t tick = (time_t)stampTime;
     struct tm tm;
@@ -43,16 +41,13 @@ static void stampTimeToRealTime(uint32_t stampTime, Times *standardTime)
     standardTime->Second = atoi(tempBuf + 17);
 }
 
-const char *GetCurrentTime(void)
+void StampTimeToUtcTime(int64_t timeStamp, char *utcTime, int maxLen)
 {
     Times standardTime;
-    uint32_t stampTime = RTC_GetCounter() + RTC_GetRefRegister();
-    stampTimeToRealTime(stampTime, &standardTime);
+    stampTimeToRealTime(timeStamp, &standardTime);
 
-    snprintf_s(g_currentTimeBuf, BUFFER_SIZE_32, "%04d-%02d-%02d %02d:%02d:%02d", standardTime.Year, standardTime.Mon, standardTime.Day,
+    snprintf_s(utcTime, len, "%04d-%02d-%02d %02d:%02d:%02d UTC", standardTime.Year, standardTime.Mon, standardTime.Day,
                (standardTime.Hour + 8) > 24 ? standardTime.Hour + 8 - 24 : standardTime.Hour + 8, standardTime.Min, standardTime.Second);
-
-    return g_currentTimeBuf;
 }
 
 static void RtcNvicConfiguration(void)

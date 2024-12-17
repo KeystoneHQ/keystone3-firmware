@@ -252,7 +252,7 @@ mod tests {
         let seed = hex::decode("a5004bb4331238ebd23b3176bf121b773d8ada011b68351f5f59ddd47152a0a95fdef5cebd2da9e243d4e18ea02530bb6068077176bab81964e3ffd366032573").unwrap();
         let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
         let result = parse_fee_market_tx(sign_data, pubkey);
-        println!("{:?}", result.unwrap());
+        // println!("{:?}", result.un wrap());
         assert!(false);
         // assert_eq!(31, result.nonce);
         // assert_eq!(1, result.chain_id);

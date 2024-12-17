@@ -10,11 +10,11 @@ typedef struct times {
     int Second;
 } Times;
 
-const char *GetCurrentTime(void);
 void SetCurrentStampTime(uint32_t stampTime);
 uint32_t GetRtcCounter(void);
 uint32_t GetCurrentStampTime(void);
 void RtcInit(void);
+void StampTimeToUtcTime(int64_t timeStamp, char *utcTime, int maxLen);
 
 #endif /* _DRV_RTC_H */
 

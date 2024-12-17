@@ -1,7 +1,11 @@
-use crate::transactions::type_id::TypeId;
+use crate::address::Address;
 use crate::constants::*;
-use crate::errors::{AvaxError, Result};
 use crate::encode::cb58::Cb58Encodable;
+use crate::errors::{AvaxError, Result};
+use crate::transactions::{
+    structs::{LengthPrefixedVec, ParsedSizeAble},
+    type_id::TypeId,
+};
 use alloc::string::ToString;
 use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
@@ -11,24 +15,29 @@ pub struct OutputOwner {
     type_id: TypeId,
     locktime: u64,
     threshold: u32,
+    pub addresses: LengthPrefixedVec<Address>,
 }
 
-impl Cb58Encodable for NodeId {
-    fn get_prefix(&self) -> &'static str {
-        "fuji"
-    }
-
-    fn get_data(&self) -> &[u8] {
-        &self.node_id
+impl ParsedSizeAble for OutputOwner {
+    fn parsed_size(&self) -> usize {
+        4 + 8 + 4 + self.addresses.parsed_size()
     }
 }
 
-impl TryFrom<Bytes> for NodeId {
+impl TryFrom<Bytes> for OutputOwner {
     type Error = AvaxError;
 
     fn try_from(mut bytes: Bytes) -> Result<Self> {
-        let mut node_id = [0u8; NODE_ID_LEN];
-        bytes.copy_to_slice(&mut node_id);
-        Ok(NodeId { node_id })
+        let type_id = TypeId::try_from(bytes.get_u32())?;
+        let locktime = bytes.get_u64();
+        let threshold = bytes.get_u32();
+        let addresses = LengthPrefixedVec::<Address>::try_from(bytes.clone())?;
+        bytes.advance(addresses.parsed_size());
+        Ok(OutputOwner {
+            type_id,
+            locktime,
+            threshold,
+            addresses,
+        })
     }
 }

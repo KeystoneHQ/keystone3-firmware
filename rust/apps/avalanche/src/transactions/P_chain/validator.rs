@@ -15,7 +15,7 @@ use core::convert::TryFrom;
 pub struct Validator {
     pub node_id: NodeId,
     pub start_time: i64,
-    pub endtime: i64,
+    pub end_time: i64,
     pub weight: u64,
 }
 
@@ -34,7 +34,7 @@ impl TryFrom<Bytes> for Validator {
         Ok(Validator {
             node_id,
             start_time: bytes.get_i64(),
-            endtime: bytes.get_i64(),
+            end_time: bytes.get_i64(),
             weight: bytes.get_u64(),
         })
     }

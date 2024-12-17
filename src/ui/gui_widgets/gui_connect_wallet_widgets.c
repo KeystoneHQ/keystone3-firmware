@@ -2264,6 +2264,7 @@ int8_t GuiConnectWalletPrevTile(void)
     case CONNECT_WALLET_QRCODE_PRIVATE_MODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler,
                         NULL);
+        GuiAnimatingQRCodeDestroyTimer();
         ExitPrivateMode();
         break;
     }
@@ -2341,6 +2342,8 @@ void GuiConnectWalletDeInit(void)
     GUI_DEL_OBJ(g_coinCont)
     GUI_DEL_OBJ(g_derivationPathCont)
     GUI_DEL_OBJ(g_noticeWindow)
+    ExitPrivateMode();
+    CloseAttentionHandler(NULL);
 #ifndef BTC_ONLY
     if (g_coinListCont != NULL && HasSelectAddressWidget()) {
         g_coinListCont = NULL;

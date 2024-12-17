@@ -3,8 +3,8 @@ extern crate alloc;
 
 pub mod structs;
 
-use alloc::{boxed::Box, format};
-use app_zcash::{errors::ZcashError, get_address};
+use alloc::{boxed::Box};
+use app_zcash::{get_address};
 use common_rust_c::{
     check_and_free_ptr, extract_ptr_with_type,
     free::Free,

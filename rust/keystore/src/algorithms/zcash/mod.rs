@@ -10,11 +10,14 @@ use rand_chacha::rand_core::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rand_core::{CryptoRng, RngCore};
 use zcash_vendor::{
-    orchard::keys::{SpendAuthorizingKey, SpendValidatingKey, SpendingKey},
+    orchard::{
+        self,
+        keys::{SpendAuthorizingKey, SpendValidatingKey, SpendingKey},
+    },
     pasta_curves::{group::ff::PrimeField, Fq},
     zcash_keys::keys::UnifiedSpendingKey,
     zcash_protocol::consensus::MAIN_NETWORK,
-    zip32::{fingerprint::SeedFingerprint, AccountId},
+    zip32::{self, fingerprint::SeedFingerprint, AccountId},
 };
 
 use crate::errors::{KeystoreError, Result};
@@ -36,37 +39,32 @@ pub fn calculate_seed_fingerprint(seed: &[u8]) -> Result<[u8; 32]> {
 }
 
 pub fn sign_message_orchard<R: RngCore + CryptoRng>(
+    action: &mut orchard::pczt::Action,
     seed: &[u8],
-    alpha: [u8; 32],
-    msg: &[u8],
-    path: &str,
+    sighash: [u8; 32],
+    path: &[zip32::ChildIndex],
     rng: R,
-) -> Result<[u8; 64]> {
-    let p = normalize_path(path);
-    let derivation_path = DerivationPath::from_str(p.as_str())
-        .map_err(|e| KeystoreError::InvalidDerivationPath(e.to_string()))?;
-
+) -> Result<()> {
     let coin_type = 133;
-    let account = derivation_path[2];
-    let account_id = match account {
-        ChildNumber::Normal { index } => index,
-        ChildNumber::Hardened { index } => index,
-    };
-    let account_id = AccountId::try_from(account_id).unwrap();
 
-    let osk = SpendingKey::from_zip32_seed(seed, coin_type, account_id).unwrap();
+    if path.len() == 3
+        && path[0] == zip32::ChildIndex::hardened(32)
+        && path[1] == zip32::ChildIndex::hardened(coin_type)
+    {
+        let account_id = zip32::AccountId::try_from(path[2].index() - (1 << 31)).expect("valid");
 
-    let osak = SpendAuthorizingKey::from(&osk);
+        let osk = SpendingKey::from_zip32_seed(seed, coin_type, account_id).unwrap();
 
-    let randm = Fq::from_repr(alpha)
-        .into_option()
-        .ok_or(KeystoreError::InvalidDataError(format!(
-            "invalid orchard alpha"
-        )))?;
+        let osak = SpendAuthorizingKey::from(&osk);
 
-    let sig = osak.randomize(&randm).sign(rng, &msg);
-    let bytes = <[u8; 64]>::from(&sig);
-    Ok(bytes)
+        action
+            .sign(sighash, &osak, rng)
+            .map_err(|e| KeystoreError::ZcashOrchardSign(format!("{:?}", e)))
+    } else {
+        // Keystone only generates UFVKs at the above path; ignore all other signature
+        // requests.
+        Ok(())
+    }
 }
 
 pub fn test_sign_zec(seed: &[u8], alpha: [u8; 32], msg: &[u8]) -> [u8; 64] {
@@ -86,17 +84,12 @@ pub fn test_sign_zec(seed: &[u8], alpha: [u8; 32], msg: &[u8]) -> [u8; 64] {
 #[cfg(test)]
 mod tests {
     use zcash_vendor::{
-        pasta_curves::Fq,
-        zcash_keys::keys::{UnifiedAddressRequest, UnifiedSpendingKey},
-        zcash_protocol::consensus::{MainNetwork, MAIN_NETWORK},
-        zip32::AccountId,
+        pasta_curves::Fq, zcash_keys::keys::UnifiedSpendingKey,
+        zcash_protocol::consensus::MAIN_NETWORK, zip32::AccountId,
     };
 
-    use zcash_vendor::orchard::{
-        keys::{FullViewingKey, SpendAuthorizingKey, SpendingKey},
-        redpallas::{Signature, SpendAuth},
-    };
-    use zcash_vendor::pasta_curves::group::ff::{FromUniformBytes, PrimeField};
+    use zcash_vendor::orchard::keys::{FullViewingKey, SpendAuthorizingKey, SpendingKey};
+    use zcash_vendor::pasta_curves::group::ff::PrimeField;
 
     use hex;
     use rand_chacha::rand_core::SeedableRng;
@@ -120,9 +113,7 @@ mod tests {
         println!("{}", hex::encode(ufvk.orchard().unwrap().to_bytes()));
         // println!("{}", hex::encode(ufvk.orchard().unwrap()));
         println!("{}", ufvk.encode(&MAIN_NETWORK));
-        let address = ufvk
-            .default_address(UnifiedAddressRequest::all().unwrap())
-            .unwrap();
+        let address = ufvk.default_address(None).unwrap();
         println!("{:?}", address.0.encode(&MAIN_NETWORK));
     }
 

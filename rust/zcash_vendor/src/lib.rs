@@ -2,14 +2,14 @@
 #![feature(error_in_core)]
 extern crate alloc;
 
-
-pub mod pczt;
+pub mod pczt_ext;
 
 pub use pasta_curves;
 pub use ripemd;
 pub use sha2;
 pub use bip32;
 pub use orchard;
+pub use pczt;
 pub use transparent;
 pub use zcash_address;
 pub use zcash_encoding;

@@ -15,10 +15,13 @@ use zcash_vendor::{
         value::ValueCommitment,
         Address,
     },
-    pczt::{self, Pczt},
+    pczt::{self, roles::verifier::Verifier, Pczt},
     ripemd::{Digest, Ripemd160},
     sha2::Sha256,
-    transparent::address::{Script, TransparentAddress},
+    transparent::{
+        self,
+        address::{Script, TransparentAddress},
+    },
     zcash_address::{
         unified::{self, Encoding, Receiver},
         ToAddress, ZcashAddress,
@@ -103,9 +106,22 @@ pub fn parse_pczt(
     ufvk: &UnifiedFullViewingKey,
     pczt: &Pczt,
 ) -> Result<ParsedPczt, ZcashError> {
-    let parsed_orchard = parse_orchard(seed_fingerprint, ufvk, &pczt.orchard())?;
+    let mut parsed_orchard = None;
+    let mut parsed_transparent = None;
 
-    let parsed_transparent = parse_transparent(seed_fingerprint, &pczt.transparent())?;
+    Verifier::new(pczt.clone())
+        .with_orchard(|bundle| {
+            parsed_orchard = parse_orchard(seed_fingerprint, ufvk, bundle)
+                .map_err(pczt::roles::verifier::OrchardError::Custom)?;
+            Ok(())
+        })
+        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{:?}", e)))?
+        .with_transparent(|bundle| {
+            parsed_transparent = parse_transparent(seed_fingerprint, bundle)
+                .map_err(pczt::roles::verifier::TransparentError::Custom)?;
+            Ok(())
+        })
+        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{:?}", e)))?;
 
     let mut my_output_value = 0;
 
@@ -138,18 +154,18 @@ pub fn parse_pczt(
 
 fn parse_transparent(
     seed_fingerprint: &[u8; 32],
-    transparent: &pczt::transparent::Bundle,
+    transparent: &transparent::pczt::Bundle,
 ) -> Result<Option<ParsedTransparent>, ZcashError> {
     let mut parsed_transparent = ParsedTransparent::new(vec![], vec![]);
     transparent.inputs().iter().try_for_each(|input| {
         let parsed_from = parse_transparent_input(seed_fingerprint, &input)?;
         parsed_transparent.add_from(parsed_from);
-        Ok(())
+        Ok::<_, ZcashError>(())
     })?;
     transparent.outputs().iter().try_for_each(|output| {
         let parsed_to = parse_transparent_output(seed_fingerprint, &output)?;
         parsed_transparent.add_to(parsed_to);
-        Ok(())
+        Ok::<_, ZcashError>(())
     })?;
     if parsed_transparent.get_from().is_empty() && parsed_transparent.get_to().is_empty() {
         Ok(None)
@@ -160,9 +176,9 @@ fn parse_transparent(
 
 fn parse_transparent_input(
     seed_fingerprint: &[u8; 32],
-    input: &pczt::transparent::Input,
+    input: &transparent::pczt::Input,
 ) -> Result<ParsedFrom, ZcashError> {
-    let script = Script(input.script_pubkey().clone());
+    let script = input.script_pubkey().clone();
     match script.address() {
         Some(TransparentAddress::PublicKeyHash(hash)) => {
             let pubkey = input
@@ -171,13 +187,13 @@ fn parse_transparent_input(
                 .find(|pubkey| hash[..] == Ripemd160::digest(Sha256::digest(pubkey))[..]);
             let ta = ZcashAddress::from_transparent_p2pkh(NetworkType::Main, hash).encode();
 
-            let zec_value = format_zec_value(input.value().clone() as f64);
+            let zec_value = format_zec_value(input.value().into_u64() as f64);
 
             let is_mine = match pubkey {
                 Some(pubkey) => match input.bip32_derivation().get(pubkey) {
                     //pubkey validation is checked on transaction checking part
                     Some(bip32_derivation) => {
-                        seed_fingerprint == &bip32_derivation.seed_fingerprint
+                        seed_fingerprint == bip32_derivation.seed_fingerprint()
                     }
                     None => false,
                 },
@@ -186,7 +202,7 @@ fn parse_transparent_input(
             Ok(ParsedFrom::new(
                 Some(ta),
                 zec_value,
-                input.value().clone(),
+                input.value().into_u64(),
                 is_mine,
             ))
         }
@@ -200,9 +216,9 @@ fn parse_transparent_input(
 
 fn parse_transparent_output(
     seed_fingerprint: &[u8; 32],
-    output: &pczt::transparent::Output,
+    output: &transparent::pczt::Output,
 ) -> Result<ParsedTo, ZcashError> {
-    let script = Script(output.script_pubkey().clone());
+    let script = output.script_pubkey().clone();
     match script.address() {
         Some(TransparentAddress::PublicKeyHash(hash)) => {
             let pubkey = output
@@ -211,11 +227,11 @@ fn parse_transparent_output(
                 .find(|pubkey| hash[..] == Ripemd160::digest(Sha256::digest(pubkey))[..]);
             let ta = ZcashAddress::from_transparent_p2pkh(NetworkType::Main, hash).encode();
 
-            let zec_value = format_zec_value(output.value().clone() as f64);
+            let zec_value = format_zec_value(output.value().into_u64() as f64);
             let is_change = match pubkey {
                 Some(pubkey) => match output.bip32_derivation().get(pubkey) {
                     Some(bip32_derivation) => {
-                        seed_fingerprint == &bip32_derivation.seed_fingerprint
+                        seed_fingerprint == bip32_derivation.seed_fingerprint()
                     }
                     None => false,
                 },
@@ -224,7 +240,7 @@ fn parse_transparent_output(
             Ok(ParsedTo::new(
                 ta,
                 zec_value,
-                output.value().clone(),
+                output.value().into_u64(),
                 is_change,
                 true,
                 false,
@@ -242,12 +258,8 @@ fn parse_transparent_output(
 fn parse_orchard(
     seed_fingerprint: &[u8; 32],
     ufvk: &UnifiedFullViewingKey,
-    orchard: &pczt::orchard::Bundle,
+    orchard: &orchard::pczt::Bundle,
 ) -> Result<Option<ParsedOrchard>, ZcashError> {
-    let orchard = orchard
-        .clone()
-        .into_parsed()
-        .map_err(|e| ZcashError::InvalidPczt(alloc::format!("invalid Orchard bundle: {:?}", e)))?;
     let mut parsed_orchard = ParsedOrchard::new(vec![], vec![]);
     orchard.actions().iter().try_for_each(|action| {
         let spend = action.spend().clone();
@@ -264,7 +276,7 @@ fn parse_orchard(
             parsed_orchard.add_to(parsed_to);
         }
 
-        Ok(())
+        Ok::<_, ZcashError>(())
     })?;
 
     if parsed_orchard.get_from().is_empty() && parsed_orchard.get_to().is_empty() {

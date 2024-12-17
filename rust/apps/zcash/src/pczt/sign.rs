@@ -1,9 +1,13 @@
 use super::*;
-use alloc::format;
-use bitcoin::secp256k1::ecdsa::Signature;
+use bitcoin::secp256k1;
 use blake2b_simd::Hash;
+use keystore::algorithms::secp256k1::get_private_key_by_seed;
 use rand_core::OsRng;
-use zcash_vendor::pczt::{common::Zip32Derivation, pczt_ext::{PcztSigner, ZcashSignature, TransparentSignatureDER}, Pczt};
+use zcash_vendor::{
+    pczt::{roles::low_level_signer, Pczt},
+    pczt_ext::{self, PcztSigner},
+    transparent::{self, sighash::SignableInput},
+};
 
 struct SeedSigner<'a> {
     seed: &'a [u8],
@@ -11,91 +15,102 @@ struct SeedSigner<'a> {
 
 impl<'a> PcztSigner for SeedSigner<'a> {
     type Error = ZcashError;
-    fn sign_transparent(
+    fn sign_transparent<F>(
         &self,
-        hash: Option<Hash>,
-        key_path: BTreeMap<[u8; 33], Zip32Derivation>,
-    ) -> Result<BTreeMap<[u8; 33], TransparentSignatureDER>, Self::Error> {
-        let hash = hash.ok_or(ZcashError::InvalidDataError(format!("invalid siging hash")))?;
-        let message = Message::from_digest_slice(hash.as_bytes()).unwrap();
+        index: usize,
+        input: &mut transparent::pczt::Input,
+        hash: F,
+    ) -> Result<(), Self::Error>
+    where
+        F: FnOnce(SignableInput) -> [u8; 32],
+    {
         let fingerprint = calculate_seed_fingerprint(&self.seed)
             .map_err(|e| ZcashError::SigningError(e.to_string()))?;
 
-        let mut result = BTreeMap::new();
-        key_path.iter().try_for_each(|(pubkey, path)| {
-            let path_fingerprint = path.seed_fingerprint.clone();
-            if fingerprint == path_fingerprint {
-                let my_pubkey = get_public_key_by_seed(&self.seed, &path.to_string())
-                    .map_err(|e| ZcashError::SigningError(e.to_string()))?;
-                if my_pubkey.serialize().to_vec().eq(pubkey) {
-                    let signature = sign_message_by_seed(&self.seed, &path.to_string(), &message)
-                        .map(|(_rec_id, signature)| signature)
-                        .map_err(|e| ZcashError::SigningError(e.to_string()))?;
+        let key_path = input.bip32_derivation();
 
-                    let sig = Signature::from_compact(signature.as_slice())
-                        .map_err(|e| ZcashError::SigningError(e.to_string()))?
-                        .serialize_der()
-                        .as_ref()
-                        .to_vec();
-                    result.insert(pubkey.clone(), sig);
+        let path = key_path
+            .iter()
+            .find_map(|(pubkey, path)| {
+                let path_fingerprint = path.seed_fingerprint().clone();
+                if fingerprint == path_fingerprint {
+                    let path = {
+                        let mut ret = "m".to_string();
+                        for i in path.derivation_path().iter() {
+                            if i.is_hardened() {
+                                ret.push_str(&alloc::format!("/{}'", i.index()));
+                            } else {
+                                ret.push_str(&alloc::format!("/{}", i.index()));
+                            }
+                        }
+                        ret
+                    };
+                    match get_public_key_by_seed(&self.seed, &path) {
+                        Ok(my_pubkey) if my_pubkey.serialize().to_vec().eq(pubkey) => {
+                            Some(Ok(path))
+                        }
+                        Err(e) => Some(Err(e)),
+                        _ => None,
+                    }
+                } else {
+                    None
                 }
-            }
-            Ok(())
-        })?;
+            })
+            .transpose()
+            .map_err(|e| ZcashError::SigningError(e.to_string()))?;
 
-        Ok(result)
-    }
+        if let Some(path) = path {
+            let sk = get_private_key_by_seed(self.seed, &path).map_err(|e| {
+                ZcashError::SigningError(alloc::format!("failed to get private key: {:?}", e))
+            })?;
+            let secp = secp256k1::Secp256k1::new();
+            input.sign(index, hash, &sk, &secp).map_err(|e| {
+                ZcashError::SigningError(alloc::format!("failed to sign input: {:?}", e))
+            })?;
+        }
 
-    fn sign_sapling(
-        &self,
-        _hash: Option<Hash>,
-        _alpha: [u8; 32],
-        _path: Zip32Derivation,
-    ) -> Result<Option<ZcashSignature>, Self::Error> {
-        // we don't support sapling yet
-        Err(ZcashError::SigningError(
-            "sapling not supported".to_string(),
-        ))
+        Ok(())
     }
 
     fn sign_orchard(
         &self,
-        hash: Option<Hash>,
-        alpha: [u8; 32],
-        path: Zip32Derivation,
-    ) -> Result<Option<ZcashSignature>, Self::Error> {
+        action: &mut orchard::pczt::Action,
+        hash: Hash,
+    ) -> Result<(), Self::Error> {
         let fingerprint = calculate_seed_fingerprint(&self.seed)
             .map_err(|e| ZcashError::SigningError(e.to_string()))?;
 
-        let hash = hash.ok_or(ZcashError::InvalidDataError(format!("invalid siging hash")))?;
+        let derivation = action.spend().zip32_derivation().as_ref().ok_or_else(|| {
+            ZcashError::SigningError("missing ZIP 32 derivation for Orchard action".into())
+        })?;
 
-        let path_fingerprint = path.seed_fingerprint.clone();
-        if fingerprint == path_fingerprint {
-            sign_message_orchard(&self.seed, alpha, hash.as_bytes(), &path.to_string(), OsRng)
-                .map(|signature| Some(signature))
-                .map_err(|e| ZcashError::SigningError(e.to_string()))
+        if &fingerprint == derivation.seed_fingerprint() {
+            sign_message_orchard(
+                action,
+                &self.seed,
+                hash.as_bytes().try_into().expect("correct length"),
+                &derivation.derivation_path().clone(),
+                OsRng,
+            )
+            .map_err(|e| ZcashError::SigningError(e.to_string()))
         } else {
-            Ok(None)
+            Ok(())
         }
     }
 }
-pub fn sign_pczt(pczt: &Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
-    pczt.sign(&SeedSigner { seed })
-        .map(|pczt| {
-            pczt.serialize()
-        })
-        .map_err(|e| ZcashError::SigningError(e.to_string()))
+pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
+    let signer = low_level_signer::Signer::new(pczt);
+
+    let signer = pczt_ext::sign(signer, &SeedSigner { seed })
+        .map_err(|e| ZcashError::SigningError(e.to_string()))?;
+
+    Ok(signer.finish().serialize())
 }
 
 #[cfg(test)]
 mod tests {
-    use alloc::{collections::btree_map::BTreeMap, vec};
     use keystore::algorithms::zcash::derive_ufvk;
-    use zcash_vendor::pczt::{
-        common::{Global, Zip32Derivation},
-        orchard::{self, Action},
-        sapling, transparent, Pczt, V5_TX_VERSION, V5_VERSION_GROUP_ID,
-    };
+    use zcash_vendor::pczt::Pczt;
 
     use super::*;
 
@@ -124,7 +139,7 @@ mod tests {
         // //6122d6b5ddcc9eb600a4cedb98932b3a7edf6e8b51bc4478b296450bda68c506
         // println!("alpha: {:?}", hex::encode(pczt.orchard().actions()[0].spend().alpha().unwrap()));
 
-        let result = sign_pczt(&pczt, &seed).unwrap();
+        let result = sign_pczt(pczt, &seed).unwrap();
 
         // println!("result: {:?}", hex::encode(result));
     }

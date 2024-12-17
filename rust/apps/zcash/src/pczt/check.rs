@@ -3,10 +3,11 @@ use super::*;
 use orchard::{keys::FullViewingKey, value::ValueSum};
 use zcash_vendor::{
     bip32::ChildNumber,
-    pczt::{self, Pczt},
+    pczt::{self, roles::verifier::Verifier, Pczt},
     ripemd::Ripemd160,
     sha2::{Digest, Sha256},
     transparent::{
+        self,
         address::{Script, TransparentAddress},
         keys::AccountPubKey,
     },
@@ -27,20 +28,17 @@ pub fn check_pczt<P: consensus::Parameters>(
     let orchard = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
     ))?;
-    check_orchard(
-        params,
-        &seed_fingerprint,
-        account_index,
-        &orchard,
-        &pczt.orchard(),
-    )?;
-    check_transparent(
-        params,
-        seed_fingerprint,
-        account_index,
-        &xpub,
-        &pczt.transparent(),
-    )?;
+    Verifier::new(pczt.clone())
+        .with_orchard(|bundle| {
+            check_orchard(params, &seed_fingerprint, account_index, &orchard, bundle)
+                .map_err(pczt::roles::verifier::OrchardError::Custom)
+        })
+        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{:?}", e)))?
+        .with_transparent(|bundle| {
+            check_transparent(params, seed_fingerprint, account_index, &xpub, bundle)
+                .map_err(pczt::roles::verifier::TransparentError::Custom)
+        })
+        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{:?}", e)))?;
     Ok(())
 }
 
@@ -49,15 +47,15 @@ fn check_transparent<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: zip32::AccountId,
     xpub: &AccountPubKey,
-    bundle: &pczt::transparent::Bundle,
+    bundle: &transparent::pczt::Bundle,
 ) -> Result<(), ZcashError> {
     bundle.inputs().iter().try_for_each(|input| {
         check_transparent_input(params, seed_fingerprint, account_index, xpub, input)?;
-        Ok(())
+        Ok::<_, ZcashError>(())
     })?;
     bundle.outputs().iter().try_for_each(|output| {
         check_transparent_output(params, seed_fingerprint, account_index, xpub, output)?;
-        Ok(())
+        Ok::<_, ZcashError>(())
     })?;
     Ok(())
 }
@@ -67,9 +65,9 @@ fn check_transparent_input<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: zip32::AccountId,
     xpub: &AccountPubKey,
-    input: &pczt::transparent::Input,
+    input: &transparent::pczt::Input,
 ) -> Result<(), ZcashError> {
-    let script = Script(input.script_pubkey().clone());
+    let script = input.script_pubkey().clone();
     match script.address() {
         Some(TransparentAddress::PublicKeyHash(hash)) => {
             let pubkey = input.bip32_derivation().keys().find(|pubkey| {
@@ -79,19 +77,13 @@ fn check_transparent_input<P: consensus::Parameters>(
                 Some(pubkey) => {
                     match input.bip32_derivation().get(pubkey) {
                         Some(bip32_derivation) => {
-                            if seed_fingerprint == &bip32_derivation.seed_fingerprint {
+                            if seed_fingerprint == bip32_derivation.seed_fingerprint() {
                                 //verify public key
-                                let bip32_derivation_path = bip32_derivation
-                                    .derivation_path
-                                    .iter()
-                                    .copied()
-                                    .map(ChildNumber)
-                                    .collect::<Vec<_>>();
                                 let target = xpub
                                     .derive_pubkey_at_bip32_path(
                                         params,
                                         account_index,
-                                        &bip32_derivation_path,
+                                        &bip32_derivation.derivation_path(),
                                     )
                                     .map_err(|_| {
                                         ZcashError::InvalidPczt(
@@ -99,7 +91,7 @@ fn check_transparent_input<P: consensus::Parameters>(
                                                 .to_string(),
                                         )
                                     })?;
-                                if target.serialize().to_vec() != input.script_pubkey().clone() {
+                                if &target.serialize() != pubkey {
                                     return Err(ZcashError::InvalidPczt(
                                         "transparent input script pubkey mismatch".to_string(),
                                     ));
@@ -128,9 +120,9 @@ fn check_transparent_output<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: zip32::AccountId,
     xpub: &AccountPubKey,
-    output: &pczt::transparent::Output,
+    output: &transparent::pczt::Output,
 ) -> Result<(), ZcashError> {
-    let script = Script(output.script_pubkey().clone());
+    let script = output.script_pubkey().clone();
     match script.address() {
         Some(TransparentAddress::PublicKeyHash(hash)) => {
             let pubkey = output
@@ -141,19 +133,13 @@ fn check_transparent_output<P: consensus::Parameters>(
                 Some(pubkey) => {
                     match output.bip32_derivation().get(pubkey) {
                         Some(bip32_derivation) => {
-                            if seed_fingerprint == &bip32_derivation.seed_fingerprint {
+                            if seed_fingerprint == bip32_derivation.seed_fingerprint() {
                                 //verify public key
-                                let bip32_derivation_path = bip32_derivation
-                                    .derivation_path
-                                    .iter()
-                                    .copied()
-                                    .map(ChildNumber)
-                                    .collect::<Vec<_>>();
                                 let target = xpub
                                     .derive_pubkey_at_bip32_path(
                                         params,
                                         account_index,
-                                        &bip32_derivation_path,
+                                        bip32_derivation.derivation_path(),
                                     )
                                     .map_err(|_| {
                                         ZcashError::InvalidPczt(
@@ -161,7 +147,7 @@ fn check_transparent_output<P: consensus::Parameters>(
                                                 .to_string(),
                                         )
                                     })?;
-                                if target.serialize().to_vec() != output.script_pubkey().clone() {
+                                if &target.serialize() != pubkey {
                                     return Err(ZcashError::InvalidPczt(
                                         "transparent output script pubkey mismatch".to_string(),
                                     ));
@@ -191,16 +177,11 @@ fn check_orchard<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: zip32::AccountId,
     fvk: &FullViewingKey,
-    bundle: &pczt::orchard::Bundle,
+    bundle: &orchard::pczt::Bundle,
 ) -> Result<(), ZcashError> {
-    let bundle = bundle
-        .clone()
-        .into_parsed()
-        .map_err(|e| ZcashError::InvalidPczt(alloc::format!("invalid Orchard bundle: {:?}", e)))?;
-
     bundle.actions().iter().try_for_each(|action| {
         check_action(params, seed_fingerprint, account_index, fvk, action)?;
-        Ok(())
+        Ok::<_, ZcashError>(())
     })?;
 
     // At this point, we know that every `value` field in the Orchard bundle is present.
@@ -303,16 +284,7 @@ fn check_action_output(action: &orchard::pczt::Action) -> Result<(), ZcashError>
 
 #[cfg(test)]
 mod tests {
-    use alloc::vec;
-    use keystore::algorithms::zcash::derive_ufvk;
-    use pczt::common::HARDENED_MASK;
-    use zcash_vendor::{
-        pczt::{
-            common::{Global, Zip32Derivation},
-            sapling, transparent, Pczt, V5_TX_VERSION, V5_VERSION_GROUP_ID,
-        },
-        zcash_protocol::consensus::MAIN_NETWORK,
-    };
+    use zcash_vendor::{pczt::Pczt, zcash_protocol::consensus::MAIN_NETWORK};
 
     use super::*;
 

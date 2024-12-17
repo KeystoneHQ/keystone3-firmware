@@ -2802,6 +2802,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
+name = "pczt"
+version = "0.1.0"
+source = "git+https://github.com/zcash/librustzcash.git?rev=48a569bf93c966692a9a9b19d1dfc907fe6e89bf#48a569bf93c966692a9a9b19d1dfc907fe6e89bf"
+dependencies = [
+ "ff",
+ "getset",
+ "nonempty",
+ "orchard",
+ "pasta_curves",
+ "postcard",
+ "secp256k1",
+ "serde",
+ "serde_with 3.11.0",
+ "zcash_protocol",
+ "zcash_transparent",
+]
+
+[[package]]
 name = "percent-encoding"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5036,6 +5054,7 @@ dependencies = [
  "hex",
  "orchard",
  "pasta_curves",
+ "pczt",
  "postcard",
  "rand_chacha",
  "reddsa",

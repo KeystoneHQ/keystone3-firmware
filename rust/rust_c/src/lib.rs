@@ -37,6 +37,9 @@ use cosmos_rust_c;
 use ethereum_rust_c;
 #[cfg(feature = "multi-coins")]
 #[allow(unused)]
+use monero_rust_c;
+#[cfg(feature = "multi-coins")]
+#[allow(unused)]
 use near_rust_c;
 #[cfg(feature = "multi-coins")]
 #[allow(unused)]

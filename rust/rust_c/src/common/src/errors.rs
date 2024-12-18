@@ -25,7 +25,10 @@ use app_ton::errors::TonError;
 use app_tron::errors::TronError;
 #[cfg(feature = "multi-coins")]
 use app_xrp::errors::XRPError;
+#[cfg(feature = "multi-coins")]
 use app_zcash::errors::ZcashError;
+#[cfg(feature = "multi-coins")]
+use app_monero::errors::MoneroError;
 use keystore::errors::KeystoreError;
 use thiserror;
 use thiserror::Error;
@@ -203,6 +206,9 @@ pub enum ErrorCodes {
     ZcashGenerateAddressError = 1500,
     ZcashSigningError,
     ZcashInvalidPczt,
+
+    // Monero
+    MoneroUnknownError = 1600,
 }
 
 impl ErrorCodes {
@@ -418,6 +424,15 @@ impl From<&AptosError> for ErrorCodes {
             AptosError::KeystoreError(_) => Self::AptosKeystoreError,
             AptosError::SignFailure(_) => Self::AptosSignFailure,
             AptosError::InvalidData(_) => Self::AptosInvalidData,
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl From<&MoneroError> for ErrorCodes {
+    fn from(value: &MoneroError) -> Self {
+        match value {
+            _ => Self::MoneroUnknownError,
         }
     }
 }

@@ -10,6 +10,7 @@
 #include "version.h"
 
 static UREncodeResult *g_urEncode = NULL;
+static uint8_t *g_pincode = NULL;
 
 UREncodeResult *GuiGetBlueWalletBtcData(void)
 {
@@ -338,6 +339,52 @@ UREncodeResult *GuiGetPetraData(void)
     return g_urEncode;
 }
 
+uint8_t *OpenPrivateQrMode(void)
+{
+    GenerateCakeWalletEncryptPincode();
+    return g_pincode;
+}
+
+void ClosePrivateQrMode(void)
+{
+    if (g_pincode == NULL) {
+        return;
+    }
+    SRAM_FREE(g_pincode);
+    g_pincode = NULL;
+}
+
+bool IsPrivateQrMode(void)
+{
+    return g_pincode != NULL;
+}
+
+
+
+uint8_t *GenerateCakeWalletEncryptPincode(void)
+{
+    uint8_t pincode[6];
+    GenerateEntropy(pincode, 6, "Monero Connect Wallet Salt");
+    for (uint8_t i = 0; i < 6; i++) {
+        pincode[i] = pincode[i] % 10;
+    }
+    g_pincode = SRAM_MALLOC(6);
+    memcpy(g_pincode, pincode, 6);
+}
+
+UREncodeResult *GuiGetCakeData(void)
+{
+    char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_0);
+    char *pvk = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_PVK_0);
+    if (g_pincode == NULL) {
+        g_urEncode = get_connect_cake_wallet_ur(xPub, pvk);
+    } else {
+        g_urEncode = get_connect_cake_wallet_ur_encrypted(xPub, pvk, g_pincode);
+    }
+    CHECK_CHAIN_PRINT(g_urEncode);
+    return g_urEncode;
+}
+
 UREncodeResult *GuiGetADADataByIndex(char *walletName)
 {
     uint32_t index = GetConnectWalletAccountIndex(walletName);
@@ -397,7 +444,7 @@ UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index)
 
 UREncodeResult *GuiGetLeapData()
 {
-    #define CHAIN_AMOUNT 4
+#define CHAIN_AMOUNT 4
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_KeplrAccount publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_KeplrAccount));

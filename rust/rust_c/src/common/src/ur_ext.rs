@@ -43,6 +43,8 @@ use ur_registry::solana::sol_sign_request::SolSignRequest;
 use ur_registry::stellar::stellar_sign_request::{SignType as StellarSignType, StellarSignRequest};
 #[cfg(feature = "multi-coins")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
+#[cfg(feature = "multi-coins")]
+use ur_registry::monero::{xmr_output::XmrOutput, xmr_txunsigned::XmrTxUnsigned};
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
 use ur_registry::{
@@ -269,6 +271,20 @@ impl InferViewType for SolSignRequest {
             return Ok(ViewType::SolanaTx);
         }
         Ok(ViewType::SolanaMessage)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for XmrOutput {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::XmrOutput)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for XmrTxUnsigned {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::XmrTxUnsigned)
     }
 }
 

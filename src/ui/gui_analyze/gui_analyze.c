@@ -320,6 +320,28 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeZcashMemory,
     }
+    {
+        REMAPVIEW_XMR_OUTPUT,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"monero_output_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"custom_container\",\"pos\":[0,0],\"bg_opa\":0,\"custom_show_func\":\"GuiShowXmrOutputsDetails\"}]}",
+#else
+        PC_SIMULATOR_PATH "/page_xmr_output.json",
+#endif
+        GuiGetMoneroOutputData,
+        NULL,
+        FreeMoneroMemory,
+    },
+    {
+        REMAPVIEW_XMR_UNSIGNED,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"monero_transaction_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,602],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowXmrTransactionOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowXmrTransactionDetails\"}]}]}",
+#else
+        PC_SIMULATOR_PATH "/page_xmr_unsigned.json",
+#endif
+        GuiGetMoneroUnsignedTxData,
+        NULL,
+        FreeMoneroMemory,
+    },
 #endif
 };
 
@@ -731,6 +753,16 @@ GetLabelDataFunc GuiTrxTextFuncGet(char *type)
     return NULL;
 }
 
+GetLabelDataFunc GuiMoneroTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetXmrTxoCount")) {
+        return GetXmrTxoCount;
+    } else if (!strcmp(type, "GetXmrTotalAmount")) {
+        return GetXmrTotalAmount;
+    }
+    return NULL;
+}
+
 GetLabelDataFunc GuiCosmosTextFuncGet(char *type)
 {
     if (!strcmp(type, "GetCosmosValue")) {
@@ -980,6 +1012,9 @@ GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
     case REMAPVIEW_STELLAR:
     case REMAPVIEW_STELLAR_HASH:
         return GuiStellarTextFuncGet(type);
+    case REMAPVIEW_XMR_OUTPUT:
+    case REMAPVIEW_XMR_UNSIGNED:
+        return GuiMoneroTextFuncGet(type);
 #endif
     default:
         return NULL;
@@ -1366,6 +1401,12 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiShowSuiSignMessageHashOverview;
     } else if (!strcmp(funcName, "GuiShowSuiSignMessageHashDetails")) {
         return GuiShowSuiSignMessageHashDetails;
+    } else if (!strcmp(funcName, "GuiShowXmrOutputsDetails")) {
+        return GuiShowXmrOutputsDetails;
+    } else if (!strcmp(funcName, "GuiShowXmrTransactionDetails")) {
+        return GuiShowXmrTransactionDetails;
+    } else if (!strcmp(funcName, "GuiShowXmrTransactionOverview")) {
+        return GuiShowXmrTransactionOverview;
     } else if (!strcmp(funcName, "GuiShowAdaSignTxHashOverview")) {
         return GuiShowAdaSignTxHashOverview;
     } else if (!strcmp(funcName, "GuiShowAdaSignTxHashDetails")) {
@@ -1782,6 +1823,10 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_STELLAR;
     case StellarHash:
         return REMAPVIEW_STELLAR_HASH;
+    case XmrOutput:
+        return REMAPVIEW_XMR_OUTPUT;
+    case XmrTxUnsigned:
+        return REMAPVIEW_XMR_UNSIGNED;
     case ArweaveDataItem:
         return REMAPVIEW_AR_DATAITEM;
     case TonTx:

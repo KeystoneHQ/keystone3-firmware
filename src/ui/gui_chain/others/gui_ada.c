@@ -688,9 +688,9 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()),false);
+            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), false);
         } else {
-            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()),false);
+            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), false);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -721,9 +721,9 @@ UREncodeResult *GuiGetAdaSignTxHashQrCodeData(void)
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()),true);
+            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), true);
         } else {
-            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()),true);
+            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), true);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -839,14 +839,14 @@ void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData)
     lv_obj_align(network_card, LV_ALIGN_DEFAULT, 0, 0);
     lv_obj_update_layout(network_card);
     int containerYOffset = lv_obj_get_height(network_card) + 16;
-    // From Conatiner 
+    // From Conatiner
     lv_obj_t *from_container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
     lv_obj_align(from_container, LV_ALIGN_DEFAULT, 0, containerYOffset);
     SetFlexContainerStyle(from_container, LV_FLEX_FLOW_COLUMN, 16);
     lv_obj_t *from_label = GuiCreateTextLabel(from_container, "From");
     lv_obj_set_style_text_opa(from_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align_to(from_label, from_container, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 16);
-    // address + path card 
+    // address + path card
     Ptr_VecFFI_PtrString addressList = hashData->address_list;
     Ptr_VecFFI_PtrString pathList = hashData->path;
     for (int i = 0; i < addressList->size; i++) {

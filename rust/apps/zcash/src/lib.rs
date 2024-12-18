@@ -36,14 +36,13 @@ pub fn check_pczt<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: u32,
 ) -> Result<()> {
-    // let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
-    //     .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
-    // let pczt =
-    //     Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
-    // let account_index = zip32::AccountId::try_from(account_index)
-    //     .map_err(|_e| ZcashError::InvalidDataError(format!("invalid account index")))?;
-    // pczt::check::check_pczt(params, seed_fingerprint, account_index, &ufvk, &pczt)
-    Ok(())
+    let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
+        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
+    let pczt =
+        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
+    let account_index = zip32::AccountId::try_from(account_index)
+        .map_err(|_e| ZcashError::InvalidDataError(format!("invalid account index")))?;
+    pczt::check::check_pczt(params, seed_fingerprint, account_index, &ufvk, &pczt)
 }
 
 pub fn parse_pczt<P: consensus::Parameters>(

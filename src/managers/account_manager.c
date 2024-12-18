@@ -33,6 +33,7 @@ static uint8_t g_lastAccountIndex = ACCOUNT_INDEX_LOGOUT;
 static AccountInfo_t g_currentAccountInfo = {0};
 static PublicInfo_t g_publicInfo = {0};
 static ZcashUFVKCache_t g_zcashUFVKcache = {0};
+static void ClearZcashUFVK();
 
 /// @brief Get current account info from SE, and copy info to g_currentAccountInfo.
 /// @return err code.
@@ -226,6 +227,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         ret = ReadCurrentAccountInfo();
         g_publicInfo.loginPasswordErrorCount = 0;
         g_publicInfo.currentPasswordErrorCount = 0;
+        ClearZcashUFVK();
         if (PassphraseExist(g_currentAccountIndex)) {
             //passphrase exist.
             printf("passphrase exist\r\n");
@@ -561,12 +563,16 @@ int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const ch
 static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk, const uint8_t* seedFingerprint) {
     ASSERT(accountIndex <= 2);
     g_zcashUFVKcache.accountIndex = accountIndex;
-    memset_s(g_zcashUFVKcache.ufvkCache, ZCASH_UFVK_MAX_LEN, '\0', ZCASH_UFVK_MAX_LEN);
+    ClearZcashUFVK();
     strcpy_s(g_zcashUFVKcache.ufvkCache, ZCASH_UFVK_MAX_LEN, ufvk);
 
-    memset_s(g_zcashUFVKcache.seedFingerprint, 32, 0, 32);
     memcpy_s(g_zcashUFVKcache.seedFingerprint, 32, seedFingerprint, 32);
     printf("SetZcashUFVK, %s\r\n", g_zcashUFVKcache.ufvkCache);
+}
+
+static void ClearZcashUFVK() {
+    memset_s(g_zcashUFVKcache.ufvkCache, ZCASH_UFVK_MAX_LEN, '\0', ZCASH_UFVK_MAX_LEN);
+    memset_s(g_zcashUFVKcache.seedFingerprint, 32, 0, 32);
 }
 
 int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP) {

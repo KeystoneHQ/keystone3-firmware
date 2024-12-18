@@ -2242,6 +2242,7 @@ int8_t GuiConnectWalletNextTile(void)
 static void PrivateModePrevTileHandler(lv_event_t *e)
 {
     ExitPrivateMode();
+    GuiAnimatingQRCodeDestroyTimer();
     CloseToTargetTileView(g_connectWalletTileView.currentTile,
                         CONNECT_WALLET_SELECT_WALLET);
 }

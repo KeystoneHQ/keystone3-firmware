@@ -3,10 +3,12 @@ extern crate alloc;
 
 pub mod structs;
 
-use alloc::{boxed::Box};
-use app_zcash::{get_address};
+use alloc::{boxed::Box, format};
+use app_zcash::get_address;
 use common_rust_c::{
-    check_and_free_ptr, extract_ptr_with_type,
+    check_and_free_ptr,
+    errors::RustCError,
+    extract_ptr_with_type,
     free::Free,
     make_free_method,
     structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult},
@@ -64,7 +66,14 @@ pub extern "C" fn check_zcash_tx(
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
+    disabled: bool,
 ) -> *mut TransactionCheckResult {
+    if disabled {
+        return TransactionCheckResult::from(RustCError::UnsupportedTransaction(format!(
+            "zcash is not supported for slip39 and passphrase wallet now"
+        )))
+        .c_ptr();
+    }
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
     let ufvk_text = recover_c_char(ufvk);
     let seed_fingerprint = unsafe { slice::from_raw_parts(seed_fingerprint, 32) };

@@ -297,7 +297,10 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
     uint8_t sfp[32];
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
     uint32_t zcash_account_index = 0;
-    return check_zcash_tx(data, ufvk, sfp, zcash_account_index);
+    bool disabled = GetPassphraseMark();
+    MnemonicType mnemonicType = GetMnemonicType();
+    bool disabled = disabled || mnemonicType == MNEMONIC_TYPE_SLIP39;
+    return check_zcash_tx(data, ufvk, sfp, zcash_account_index, disabled);
 }
 
 UREncodeResult *GuiGetZcashSignQrCodeData(void)

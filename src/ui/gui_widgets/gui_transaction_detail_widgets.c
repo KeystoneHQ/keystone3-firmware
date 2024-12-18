@@ -192,7 +192,7 @@ void GuiTransactionDetailDeInit()
 //should get error cod here
 void GuiTransactionParseFailed()
 {
-    ThrowError(ERR_INVALID_FILE);
+    ThrowError(ERR_INVALID_QRCODE);
 }
 
 void GuiTransactionDetailRefresh()

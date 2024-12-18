@@ -1,5 +1,3 @@
-extern crate std;
-
 use super::structs::{
     AvaxFromToInfo, AvaxMethodInfo, AvaxTxInfo, LengthPrefixedVec, ParsedSizeAble,
 };
@@ -71,7 +69,6 @@ impl AvaxTxInfo for BaseTx {
     }
 
     fn get_network(&self) -> Option<String> {
-        std::println!("self.get_blockchain_id() = {:?}", self.get_blockchain_id());
         match self.get_blockchain_id() {
             X_BLOCKCHAIN_ID => Some("Avalanche X-Chain".to_string()),
             C_BLOCKCHAIN_ID => Some("Avalanche C-Chain".to_string()),

@@ -39,15 +39,12 @@ impl AvaxTxInfo for ImportTx {
     }
 
     fn get_method_info(&self) -> Option<AvaxMethodInfo> {
-        extern crate std;
-        std::println!("self.source_chain {:?}", hex::encode(self.source_chain));
         let method = match self.source_chain {
             X_BLOCKCHAIN_ID => "Sending from X-Chain",
             P_BLOCKCHAIN_ID => "Sending from P-Chain",
             C_BLOCKCHAIN_ID => "Sending from C-Chain",
             _ => "Unknown",
         };
-        std::println!("method = {}", method);
 
         Some(
             AvaxMethodInfo::from_string(method.to_string())

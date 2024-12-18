@@ -49,8 +49,6 @@ pub extern "C" fn avax_parse_transaction(
     // if length != 4 {
     //     return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     // }
-    extern crate std;
-    use std::println;
     let unsigned_data = extract_ptr_with_type!(ptr, AvaxSignRequest);
     match get_avax_tx_type_id(unsigned_data.get_tx_data()) {
         Ok(type_id) => unsafe {

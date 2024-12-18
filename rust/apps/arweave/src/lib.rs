@@ -12,10 +12,6 @@ pub mod transaction;
 extern crate alloc;
 extern crate aes;
 
-#[cfg(test)]
-#[macro_use]
-extern crate std;
-
 use crate::errors::{ArweaveError, Result};
 use aes::cipher::block_padding::Pkcs7;
 use aes::cipher::{generic_array::GenericArray, BlockDecryptMut, BlockEncryptMut, KeyIvInit};

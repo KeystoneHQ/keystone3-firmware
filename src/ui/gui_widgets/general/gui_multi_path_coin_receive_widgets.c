@@ -1288,7 +1288,6 @@ static char *GetEthXpub(int index)
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
-
     switch (g_chainCard) {
     case HOME_WALLET_CARD_AVAX:
         ModelGetAvaxAddress(index, item);

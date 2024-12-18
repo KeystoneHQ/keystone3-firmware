@@ -133,7 +133,7 @@ static void GuiInitWalletState()
         g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
-        bool isPassphrase = GetPassphraseMark();
+        bool isPassphrase = PassphraseExist(GetCurrentAccountIndex());
         if (isPassphrase) {
             g_walletState[HOME_WALLET_CARD_ZEC].enable = false;
         }

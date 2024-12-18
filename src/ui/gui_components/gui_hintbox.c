@@ -296,7 +296,7 @@ void GuiCreateTooltipHintBox(char *titleText, char *descText, char *link)
 
         lv_obj_t *img = GuiCreateImg(learnMoreCont, &imgQrcodeTurquoise);
         lv_obj_align_to(img, linkLabel, LV_ALIGN_TOP_RIGHT, 36, 3);
-        height = height + 30 +16;
+        height = height + 30 + 16;
     }
 
     uint32_t descHeight = 0;

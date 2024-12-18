@@ -22,15 +22,7 @@ impl TryInto<bitcoin::TxOut> for TxOut {
 
     fn try_into(self) -> Result<bitcoin::TxOut> {
         let address = Address::from_str(self.address.as_str())?;
-        let script_pubkey = match address.payload {
-            Payload::P2pkh { pubkey_hash } => ScriptBuf::new_p2pkh(&pubkey_hash),
-            Payload::P2sh { script_hash } => ScriptBuf::new_p2sh(&script_hash),
-            _ => {
-                return Err(BitcoinError::InvalidRawTxCryptoBytes(
-                    "invalid address".to_string(),
-                ))
-            }
-        };
+        let script_pubkey = address.script_pubkey();
         Ok(bitcoin::TxOut {
             value: Amount::from_sat(self.value),
             script_pubkey,

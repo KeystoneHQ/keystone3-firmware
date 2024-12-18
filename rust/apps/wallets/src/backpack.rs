@@ -17,9 +17,9 @@ use {
 
 use crate::{common::get_path_component, ExtendedPublicKey};
 
-const ETH_STANDARD_PREFIX: &str = "m/44'/60'/0'";
-const ETH_LEDGER_LIVE_PREFIX: &str = "m/44'/60'"; //overlap with ETH_STANDARD at 0
-const SOL_PREFIX: &str = "m/44'/501'";
+const ETH_STANDARD_PREFIX: &str = "44'/60'/0'";
+const ETH_LEDGER_LIVE_PREFIX: &str = "44'/60'"; //overlap with ETH_STANDARD at 0
+const SOL_PREFIX: &str = "44'/501'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],

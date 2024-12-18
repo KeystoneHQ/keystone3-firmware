@@ -17,7 +17,7 @@ use bitcoin::address::AddressData as Payload;
 use bitcoin::blockdata::script;
 use bitcoin::script::PushBytesBuf;
 use bitcoin::secp256k1::{Secp256k1, XOnlyPublicKey};
-use bitcoin::{base58, Script, TapNodeHash};
+use bitcoin::{base58, Script, ScriptBuf, TapNodeHash};
 use bitcoin::{CompressedPublicKey, PublicKey};
 use bitcoin::{PubkeyHash, ScriptHash};
 use bitcoin::{WitnessProgram, WitnessVersion};
@@ -165,6 +165,15 @@ impl Address {
             })
         } else {
             Err(BitcoinError::AddressError(format!("unrecognized script")))
+        }
+    }
+
+    pub fn script_pubkey(&self) -> ScriptBuf {
+        match self.payload {
+            Payload::P2pkh { pubkey_hash } => ScriptBuf::new_p2pkh(&pubkey_hash),
+            Payload::P2sh { script_hash } => ScriptBuf::new_p2sh(&script_hash),
+            Payload::Segwit { witness_program } => ScriptBuf::new_witness_program(&witness_program),
+            _ => panic!("unrecognized payload"),
         }
     }
 }

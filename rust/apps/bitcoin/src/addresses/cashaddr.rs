@@ -356,14 +356,10 @@ mod tests {
     fn test_decode_cash_addr() {
         let addr_str = "qz65ywjm92m27wshfnew2w3us5vsgxqkxc55t9lqcw";
         let address = CashAddrCodec::decode(addr_str).unwrap();
-        if let Payload::P2sh { script_hash } = address.payload {
-            let script = ScriptBuf::new_p2sh(&script_hash);
-            assert_eq!(
-                script.encode_hex::<String>(),
+        let script = address.script_pubkey();
+        assert_eq!(
+            script.encode_hex::<String>(),
                 "76a914b5423a5b2ab6af3a174cf2e53a3c85190418163688ac"
-            );
-        } else {
-            panic!("invalid payload");
-        }
+        );
     }
 }

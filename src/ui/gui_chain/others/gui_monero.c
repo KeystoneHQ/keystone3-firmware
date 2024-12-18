@@ -50,7 +50,7 @@ static void CloseAllHintBox(void)
 
 static void ShowHintBox(lv_event_t *e)
 {
-    GuiCreateTooltipHintBox("TXO Total Amount", "This amount represents the total balance of the TXOs included in this QR code for signing. It may not reflect the full balance in your software wallet or the exact transaction amount.", "https://...");
+    GuiCreateTooltipHintBox(_("xmr_txo_total_amount_title"), _("xmr_txo_total_amount_desc"), _("xmr_txo_total_amount_link"));
 }
 
 

@@ -319,7 +319,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         GuiGetZcashGUIData,
         NULL,
         FreeZcashMemory,
-    }
+    },
     {
         REMAPVIEW_XMR_OUTPUT,
 #ifndef COMPILE_SIMULATOR

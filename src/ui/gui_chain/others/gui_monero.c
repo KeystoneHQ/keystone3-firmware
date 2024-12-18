@@ -283,8 +283,7 @@ void GuiShowXmrTransactionOverview(lv_obj_t *parent, void *totalData)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
 
-    for (size_t i = 0; i < data->inputs->size; i++)
-    {
+    for (size_t i = 0; i < data->inputs->size; i++) {
         char inputIndex[BUFFER_SIZE_16] = {0};
         sprintf(inputIndex, "%d", i + 1);
         label = GuiCreateIllustrateLabel(detilsContainer, inputIndex);
@@ -295,15 +294,14 @@ void GuiShowXmrTransactionOverview(lv_obj_t *parent, void *totalData)
         lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 54 + i * 90);
         lv_obj_set_width(label, 332);
     }
-    
+
     label = GuiCreateIllustrateLabel(detilsContainer, "Outputs");
     uint32_t outputsLabelY = 18 + 16 + 30 + inputsSize * 90;
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, outputsLabelY);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
 
     uint32_t addressOffset = 0;
-    for (size_t i = 0; i < data->outputs->size; i++)
-    {
+    for (size_t i = 0; i < data->outputs->size; i++) {
         bool is_change = data->outputs->data[i].is_change;
         uint32_t addressY = outputsLabelY + 38 + i * 120 + addressOffset;
         char outputIndex[BUFFER_SIZE_16] = {0};
@@ -379,8 +377,7 @@ void GuiShowXmrTransactionDetails(lv_obj_t *parent, void *totalData)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
 
-    for (size_t i = 0; i < data->inputs->size; i++)
-    {
+    for (size_t i = 0; i < data->inputs->size; i++) {
         char inputIndex[BUFFER_SIZE_16] = {0};
         sprintf(inputIndex, "%d", i + 1);
         label = GuiCreateIllustrateLabel(inputsContainer, inputIndex);
@@ -406,8 +403,7 @@ void GuiShowXmrTransactionDetails(lv_obj_t *parent, void *totalData)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
 
-    for (size_t i = 0; i < data->outputs->size; i++)
-    {
+    for (size_t i = 0; i < data->outputs->size; i++) {
         bool is_change = data->outputs->data[i].is_change;
         char outputIndex[BUFFER_SIZE_16] = {0};
         sprintf(outputIndex, "%d", i + 1);

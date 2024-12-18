@@ -584,9 +584,10 @@ int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password) {
     ASSERT(accountIndex <= 2);
 
     uint8_t seed[SEED_LEN];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     int32_t ret = GetAccountSeed(accountIndex, &seed, password);
 
-    SimpleResponse_c_char *response = derive_zcash_ufvk(seed, SEED_LEN);
+    SimpleResponse_c_char *response = derive_zcash_ufvk(seed, len);
     if (response->error_code != 0)
     {
         ret = response->error_code;
@@ -598,7 +599,7 @@ int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password) {
     strcpy_s(ufvk, ZCASH_UFVK_MAX_LEN, response->data);
     free_simple_response_c_char(response);
 
-    SimpleResponse_u8 *responseSFP = calculate_zcash_seed_fingerprint(seed, SEED_LEN);
+    SimpleResponse_u8 *responseSFP = calculate_zcash_seed_fingerprint(seed, len);
     if (responseSFP->error_code != 0)
     {
         ret = response->error_code;

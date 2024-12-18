@@ -716,8 +716,8 @@ static void RefreshQrCode(void)
         snprintf_s(address, 128, "%.22s\n%s", addressDataItem.address, &addressDataItem.address[22]);
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, address);
     } else if (g_chainCard == HOME_WALLET_CARD_ZEC) {
-        char addressString[128];
-        CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 40);
+        char addressString[256];
+        CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 60);
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressString);
     }
     else {

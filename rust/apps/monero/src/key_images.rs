@@ -148,13 +148,15 @@ fn generate_key_image<R: RngCore + CryptoRng>(
     mut rng: R,
 ) -> KeyImageAndSignature {
     let mut additional_tx_pub_key = None;
-    if additional_tx_keys.len() == 1 {
-        additional_tx_pub_key = Some(additional_tx_keys[0]);
-    } else if !additional_tx_keys.is_empty() {
-        if internal_output_index as usize >= additional_tx_keys.len() {
-            panic!("Wrong number of additional derivations");
+    if major != 0 || minor != 0 {
+        if additional_tx_keys.len() == 1 {
+            additional_tx_pub_key = Some(additional_tx_keys[0]);
+        } else if !additional_tx_keys.is_empty() {
+            if internal_output_index as usize >= additional_tx_keys.len() {
+                panic!("Wrong number of additional derivations");
+            }
+            additional_tx_pub_key = Some(additional_tx_keys[internal_output_index as usize]);
         }
-        additional_tx_pub_key = Some(additional_tx_keys[internal_output_index as usize]);
     }
 
     let key_to_use = match additional_tx_pub_key {

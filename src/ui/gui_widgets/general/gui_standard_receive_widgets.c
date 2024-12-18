@@ -717,7 +717,7 @@ static void RefreshQrCode(void)
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, address);
     } else if (g_chainCard == HOME_WALLET_CARD_ZEC) {
         char addressString[128];
-        CutAndFormatString(addressString, ADDRESS_MAX_LEN, addressDataItem.address, 40);
+        CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 40);
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressString);
     }
     else {
@@ -946,8 +946,8 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     }
     if (result->error_code == 0) {
         item->index = index;
-        strcpy(item->address, result->data);
-        strcpy(item->path, hdPath);
+        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+        strcpy_s(item->path, 32, hdPath);
     }
     free_simple_response_c_char(result);
 }

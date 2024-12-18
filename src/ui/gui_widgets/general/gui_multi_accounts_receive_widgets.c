@@ -129,6 +129,9 @@ static void OpenSwitchAccountHandler(lv_event_t *e);
 static void CloseSwitchAccountHandler(lv_event_t *e);
 static void RefreshSwitchAccount(void);
 
+static void CloseAllHintBox(void);
+static void ShowMoneroSwitchAccountHintBox(lv_event_t *e);
+
 static void OpenSwitchAddressHandler(lv_event_t *e);
 static void CloseSwitchAddressHandler(lv_event_t *e);
 
@@ -195,6 +198,7 @@ void GuiMultiAccountsReceiveDeInit(void)
 
     CLEAR_OBJECT(g_multiAccountsReceiveWidgets);
     GuiFullscreenModeCleanUp();
+    CloseAllHintBox();
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
@@ -1109,7 +1113,7 @@ static void RefreshSwitchAccount(void)
             lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
         }
-        if (index == GetMaxAccountIndex()) {
+        if (index == GetMaxAccountIndex() - 1) {
             end = true;
         }
         index++;
@@ -1127,12 +1131,28 @@ static void RefreshSwitchAccount(void)
     }
 }
 
+static void CloseAllHintBox(void)
+{
+    CloseTooltipHintBoxHandler();
+    if (GuiQRHintBoxIsActive()) {
+        GuiQRHintBoxRemove();
+    }
+}
+
+static void ShowMoneroSwitchAccountHintBox(lv_event_t *e)
+{
+    GuiCreateTooltipHintBox(_("xmr_primary_address_title"), _("xmr_primary_address_desc"), _("xmr_primary_address_link"));
+}
+
 static void GuiCreateSwitchAccountWidget()
 {
     PageWidget_t *page = CreatePageWidget();
     g_multiAccountsReceiveWidgets.switchAccountCont = page;
     SetNavBarLeftBtn(page->navBarWidget, NVS_BAR_RETURN, CloseSwitchAccountHandler, NULL);
     SetMidBtnLabel(page->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
+    if (g_chainCard == HOME_WALLET_CARD_MONERO) {
+        SetNavBarRightBtn(page->navBarWidget, NVS_BAR_QUESTION_MARK, ShowMoneroSwitchAccountHintBox, NULL);
+    }
     // Create the account list page.
     uint32_t index;
     lv_obj_t *cont = GuiCreateContainerWithParent(page->contentZone, 408, 514);

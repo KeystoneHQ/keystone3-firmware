@@ -269,12 +269,12 @@ void GuiShowXmrTransactionOverview(lv_obj_t *parent, void *totalData)
 
     uint32_t inputsSize = data->inputs->size;
     uint32_t outputsSize = data->outputs->size;
-    uint32_t containerHeight = 18 * 2 + 30 + 30 + 16 + outputsSize * 120;
+    uint32_t containerHeight = 18 * 2 + 30 + 16 + outputsSize * 120;
     lv_obj_t * detilsContainer = GuiCreateContainerWithParent(parent, 408, containerHeight);
     SetContainerDefaultStyle(detilsContainer);
     lv_obj_align(detilsContainer, LV_ALIGN_DEFAULT, 0, 238);
 
-    label = GuiCreateIllustrateLabel(detilsContainer, "Outputs");
+    label = GuiCreateIllustrateLabel(detilsContainer, "To");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 18);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
 
@@ -288,9 +288,16 @@ void GuiShowXmrTransactionOverview(lv_obj_t *parent, void *totalData)
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, addressY);
         lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
 
+        label = GuiCreateIllustrateLabel(detilsContainer, data->outputs->data[i].address);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 52, addressY);
+        lv_obj_set_width(label, 332);
+
         if (is_change) {
             lv_obj_t *changeContainer = GuiCreateContainerWithParent(detilsContainer, 87, 30);
-            lv_obj_align(changeContainer, LV_ALIGN_DEFAULT, 52, addressY);
+            lv_obj_update_layout(label);
+            lv_point_t pos;
+            lv_label_get_letter_pos(label, 94, &pos);
+            lv_obj_align_to(changeContainer, label, LV_ALIGN_BOTTOM_LEFT, pos.x + 16, 0);
             lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_opa(changeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -298,13 +305,7 @@ void GuiShowXmrTransactionOverview(lv_obj_t *parent, void *totalData)
             lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
             lv_obj_set_style_text_opa(label, 163, LV_PART_MAIN);
             lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
-
-            addressY += 30;
-            addressOffset = 30;
         }
-        label = GuiCreateIllustrateLabel(detilsContainer, data->outputs->data[i].address);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 52, addressY);
-        lv_obj_set_width(label, 332);
     }
 }
 

@@ -586,7 +586,7 @@ Common,24,OK,OK,Хорошо,확인,好的,OK,OK,OK
 ,28,security_notice_title,Security Notice,Безопасность,보안 공지,安全通知,Aviso de seguridad,Sicherheitshinweis,セキュリティ通知
 ,20,private_mode_qr,Private Mode QR Sharing,Приватный режим QR,개인 모드 QR 공유,私密模式QR分享,Compartir QR en Modo Privado,Privater Modus QR-Teilen,プライベートモードQR共有
 ,20,private_qr_mode_security_notice_desc,"To protect your privacy, the QR code is encrypted. You’ll need to enter a PIN in the software wallet to decrypt it. Your device will display this PIN next; please keep it confidential to ensure your data remains secure.", "", "", "","","",""
-24,Update,Update,Понимать,업데이트,更新,Actualizar,Aktualisierung,更新
+,24,Update,Update,Понимать,업데이트,更新,Actualizar,Aktualisierung,更新
 ,24,Skip,Skip,Пропустить,건너뛰기,跳过,Omitir,Überspringen,スキップ
 ,24,Done,Done,Завершено,완료,完毕,Hecho,Erledigt,終わりました
 ,24,wipe_device,Wipe Device,Сброс устройства,장치 초기화,擦除设备,Borrar dispositivo,Gerät löschen,デバイスをWIPEする

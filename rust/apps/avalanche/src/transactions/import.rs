@@ -91,8 +91,6 @@ mod tests {
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let result = ImportTx::try_from(bytes).unwrap();
-            // println!("{:?}", result.get_fee_amount());
-            // println!("{:?}", result.get_total_input_amount());
             // assert!(false);
         }
 

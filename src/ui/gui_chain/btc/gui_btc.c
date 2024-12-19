@@ -60,6 +60,7 @@ static uint32_t g_psbtBytesLen = 0;
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
 static bool IsMultiSigTx(DisplayTx *data);
+static bool IsAvaxBtcAddress(DisplayTx *data);
 static UREncodeResult *GetBtcSignDataDynamic(bool unLimit);
 
 void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
@@ -358,9 +359,9 @@ void *GuiGetParsedQrData(void)
     keys[13].path = "m/48'/1'/0'/2'";
     keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
 #else
-    ExtendedPublicKey keys[4];
+    ExtendedPublicKey keys[5];
     public_keys->data = keys;
-    public_keys->size = 4;
+    public_keys->size = NUMBER_OF_ARRAYS(keys);
     keys[0].path = "m/84'/0'/0'";
     keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
     keys[1].path = "m/49'/0'/0'";
@@ -369,6 +370,8 @@ void *GuiGetParsedQrData(void)
     keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
     keys[3].path = "m/86'/0'/0'";
     keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+    keys[4].path = "m/44'/60'/0'";
+    keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
 #endif
     do {
         if (urType == CryptoPSBT) {
@@ -548,9 +551,9 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[13].path = "m/48'/1'/0'/2'";
         keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
 #else
-        ExtendedPublicKey keys[4];
+        ExtendedPublicKey keys[5];
         public_keys->data = keys;
-        public_keys->size = 4;
+        public_keys->size = NUMBER_OF_ARRAYS(keys);
         keys[0].path = "m/84'/0'/0'";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
         keys[1].path = "m/49'/0'/0'";
@@ -559,6 +562,8 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
         keys[3].path = "m/86'/0'/0'";
         keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+        keys[4].path = "m/44'/60'/0'";
+        keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
 #endif
 #ifdef BTC_ONLY
         char *verify_code = NULL;
@@ -772,6 +777,11 @@ void FreeBtcMsgMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_MSG_RESULT(g_parseMsgResult);
+}
+
+static bool IsAvaxBtcAddress(DisplayTx *data)
+{
+    return !strcmp("Avalanche BTC", data->overview->network);
 }
 
 static bool IsMultiSigTx(DisplayTx *data)
@@ -1216,26 +1226,27 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
         lv_obj_set_style_text_font(valueLabel, &openSansEnIllustrate, LV_PART_MAIN);
         lv_obj_set_style_text_color(valueLabel, lv_color_hex(0xf5870a), LV_PART_MAIN);
         lv_obj_align_to(valueLabel, orderLabel, LV_ALIGN_OUT_RIGHT_TOP, 16, 0);
-        // only show switch icon when the network contains "Bitcoin Mainnet" or "Bitcoin Testnet"
-        bool showLabelIcon = (strstr(clickParam.overviewData->network, "Bitcoin Mainnet") != NULL || strstr(clickParam.overviewData->network, "Bitcoin Testnet") != NULL);
-        if (to->data[i].is_mine && showLabelIcon) {
-            lv_obj_t *changeContainer = GuiCreateContainerWithParent(toInnerContainer, 87, 30);
-            lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_bg_opa(changeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_t *changeLabel = lv_label_create(changeContainer);
-            if (to->data[i].is_external) {
-                lv_label_set_text(changeLabel, "Receive");
-            } else {
-                lv_label_set_text(changeLabel, "Change");
+        if (clickParam.overviewData) {
+            // only show switch icon when the network contains "Bitcoin Mainnet" or "Bitcoin Testnet"
+            bool showLabelIcon = (strstr(clickParam.overviewData->network, "Bitcoin Mainnet") != NULL || strstr(clickParam.overviewData->network, "Bitcoin Testnet") != NULL);
+            if (to->data[i].is_mine && showLabelIcon) {
+                lv_obj_t *changeContainer = GuiCreateContainerWithParent(toInnerContainer, 87, 30);
+                lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
+                lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+                lv_obj_set_style_bg_opa(changeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
+                lv_obj_t *changeLabel = lv_label_create(changeContainer);
+                if (to->data[i].is_external) {
+                    lv_label_set_text(changeLabel, "Receive");
+                } else {
+                    lv_label_set_text(changeLabel, "Change");
+                }
+                lv_obj_set_style_text_font(changeLabel, g_defIllustrateFont, LV_PART_MAIN);
+                lv_obj_set_style_text_color(changeLabel, WHITE_COLOR, LV_PART_MAIN);
+                lv_obj_set_style_text_opa(changeLabel, 163, LV_PART_MAIN);
+                lv_obj_align(changeLabel, LV_ALIGN_CENTER, 0, 0);
+
+                lv_obj_align_to(changeContainer, valueLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
             }
-            lv_obj_set_style_text_font(changeLabel, g_defIllustrateFont, LV_PART_MAIN);
-            lv_obj_set_style_text_color(changeLabel, WHITE_COLOR, LV_PART_MAIN);
-            lv_obj_set_style_text_opa(changeLabel, 163, LV_PART_MAIN);
-            lv_obj_align(changeLabel, LV_ALIGN_CENTER, 0, 0);
-
-            lv_obj_align_to(changeContainer, valueLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
-
         }
 
         lv_obj_t *addressLabel = lv_label_create(toInnerContainer);
@@ -1271,8 +1282,13 @@ void GuiBtcTxOverview(lv_obj_t *parent, void *totalData)
 
     lv_obj_t *lastView = NULL;
 
+    if (IsAvaxBtcAddress(txData)) {
+        lastView = CreateNoticeCard(parent, _("btc_avalanche_notice"));
+    }
+
     if (IsMultiSigTx(txData)) {
         lastView = CreateSignStatusView(parent, overviewData->sign_status);
+        GuiAlignToPrevObj(lastView, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
     }
     lastView = CreateOverviewAmountView(parent, overviewData, lastView);
     lastView = CreateNetworkView(parent, overviewData->network, lastView);
@@ -1282,7 +1298,6 @@ void GuiBtcTxOverview(lv_obj_t *parent, void *totalData)
 
 void GuiBtcTxDetail(lv_obj_t *parent, void *totalData)
 {
-
     DisplayTx *txData = (DisplayTx *)totalData;
     DisplayTxDetail *detailData = txData->detail;
 

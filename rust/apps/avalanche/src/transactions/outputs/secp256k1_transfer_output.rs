@@ -72,7 +72,6 @@ mod tests {
         let result = SECP256K1TransferOutput::try_from(Bytes::from(
             hex::decode(input_bytes).expect("Failed to decode hex string"),
         ));
-        println!("Result: {:?}", result.unwrap());
         assert!(false);
     }
 }

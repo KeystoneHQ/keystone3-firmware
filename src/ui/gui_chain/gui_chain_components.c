@@ -116,7 +116,7 @@ lv_obj_t *CreateValueDetailValue(lv_obj_t *parent, char* inputValue, char *outpu
 
     label = GuiCreateIllustrateLabel(container, inputValue);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 147, 16);
-    
+
     label = GuiCreateIllustrateLabel(container, _("Output Value"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
@@ -164,4 +164,29 @@ lv_obj_t *CreateContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h)
     lv_obj_set_style_bg_opa(container, LV_OPA_12, LV_PART_MAIN);
     lv_obj_set_style_radius(container, 24, LV_PART_MAIN);
     return container;
+}
+
+lv_obj_t *CreateNoticeCard(lv_obj_t *parent, char *notice)
+{
+    uint16_t height = 24 + 36 + 8 + 24;
+    lv_obj_t* card = GuiCreateContainerWithParent(parent, 408, 24);
+    lv_obj_set_style_radius(card, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(card, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(card, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t* noticeIcon = GuiCreateImg(card, &imgNotice);
+    lv_obj_align(noticeIcon, LV_ALIGN_TOP_LEFT, 24, 24);
+
+    lv_obj_t* title_label = GuiCreateTextLabel(card, "Notice");
+    lv_obj_set_style_text_color(title_label, lv_color_hex(0xF5870A), LV_PART_MAIN);
+    lv_obj_align_to(title_label, noticeIcon, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+
+    lv_obj_t* content_label = GuiCreateIllustrateLabel(card, notice);
+    lv_obj_set_width(content_label, 360);
+    lv_obj_update_layout(content_label);
+    height += lv_obj_get_self_height(content_label);
+    lv_obj_set_height(card, height);
+    lv_obj_align(content_label, LV_ALIGN_TOP_LEFT, 24, 68);
+
+    return card;
 }

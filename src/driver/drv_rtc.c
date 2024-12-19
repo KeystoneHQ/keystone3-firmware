@@ -7,7 +7,7 @@
 #include "time.h"
 
 #define USE_EXTERN_32K
-static void stampTimeToRealTime(uint32_t stampTime, Times *standardTime);
+static void stampTimeToRealTime(int64_t stampTime, Times *standardTime);
 
 void SetCurrentStampTime(uint32_t stampTime)
 {
@@ -46,7 +46,7 @@ void StampTimeToUtcTime(int64_t timeStamp, char *utcTime, int maxLen)
     Times standardTime;
     stampTimeToRealTime(timeStamp, &standardTime);
 
-    snprintf_s(utcTime, len, "%04d-%02d-%02d %02d:%02d:%02d UTC", standardTime.Year, standardTime.Mon, standardTime.Day,
+    snprintf_s(utcTime, maxLen, "%04d-%02d-%02d %02d:%02d:%02d UTC", standardTime.Year, standardTime.Mon, standardTime.Day,
                (standardTime.Hour + 8) > 24 ? standardTime.Hour + 8 - 24 : standardTime.Hour + 8, standardTime.Min, standardTime.Second);
 }
 

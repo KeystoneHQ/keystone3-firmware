@@ -9,9 +9,6 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-#[cfg(test)]
-#[macro_use]
-extern crate std;
 
 pub use address::get_address;
 use app_utils::keystone;

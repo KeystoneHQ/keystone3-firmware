@@ -60,7 +60,6 @@ mod tests {
         let binary_data = hex::decode(input_bytes).expect("Failed to decode hex string");
         let mut bytes = Bytes::from(binary_data);
         let result = SECP256K1TransferInput::try_from(bytes.clone());
-        println!("Result: {:?}", result.unwrap());
         assert!(false);
     }
 }

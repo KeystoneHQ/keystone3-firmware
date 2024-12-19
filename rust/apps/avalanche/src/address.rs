@@ -96,7 +96,6 @@ mod tests {
             let root_x_pub = "xpub6CPE4bhTujy9CeJJbyskjJsp8FGgyWBsWV2W9GfZwuP9aeDBEoPRBsLk3agq32Gp5gkb9nJSjCn9fgZmuvmV3nPLk5Bc2wfKUQZREp4eG13";
             let root_path = "m/44'/9000'/0'";
             let address = get_address(Network::AvaxMainNet, &hd_path, &root_x_pub, &root_path);
-            println!("address = {}", address.unwrap());
             // assert!(false);
         }
         {

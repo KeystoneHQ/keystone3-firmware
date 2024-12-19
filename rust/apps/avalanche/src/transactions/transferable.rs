@@ -213,7 +213,6 @@ mod tests {
         let output_len = bytes.get_u32();
         for _ in 0..output_len {
             let result = TransferableOutput::try_from(bytes.clone()).unwrap();
-            println!("result id = {:?}", result.asset_id());
         }
         assert!(false);
     }
@@ -226,7 +225,6 @@ mod tests {
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let input_len = bytes.get_u32();
-            println!("Input len: {}", input_len);
             for _ in 0..input_len {
                 let result = TransferableInput::try_from(bytes.clone());
                 match result {
@@ -250,7 +248,6 @@ mod tests {
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let input_len = bytes.get_u32();
-            println!("Input len: {}", input_len);
             for _ in 0..input_len {
                 let result = TransferableInput::try_from(bytes.clone());
                 match result {

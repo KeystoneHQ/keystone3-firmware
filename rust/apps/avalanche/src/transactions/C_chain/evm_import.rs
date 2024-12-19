@@ -95,7 +95,6 @@ mod tests {
         let binary_data = hex::decode(input_bytes).expect("Failed to decode hex string");
         let mut bytes = Bytes::from(binary_data);
         let result = ExportTx::try_from(bytes.clone()).unwrap();
-        println!("{:?}", result);
         assert!(false);
     }
 }

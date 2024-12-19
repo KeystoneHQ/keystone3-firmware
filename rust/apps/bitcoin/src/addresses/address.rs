@@ -43,12 +43,16 @@ impl Address {
                 network,
                 payload: Payload::p2pkh(pk),
             }),
+            _ => Err(BitcoinError::AddressError(format!(
+                "Invalid network for p2pkh {:?}",
+                network
+            ))),
         }
     }
 
     pub fn p2wpkh(pk: &PublicKey, network: Network) -> Result<Address, BitcoinError> {
         match network {
-            Network::Bitcoin | Network::BitcoinTestnet => {
+            Network::Bitcoin | Network::BitcoinTestnet | Network::AvaxBtcBridge => {
                 let payload = Payload::p2wpkh(pk).map_err(|_e| {
                     BitcoinError::AddressError(format!("invalid payload for p2wpkh"))
                 })?;
@@ -158,6 +162,15 @@ impl fmt::Display for Address {
                 let encoding = BCHAddressEncoding {
                     payload: &self.payload,
                     p2pkh_prefix: PUBKEY_ADDRESS_PREFIX_BCH,
+                };
+                encoding.fmt(fmt)
+            }
+            Network::AvaxBtcBridge => {
+                let encoding = BTCAddressEncoding {
+                    payload: &self.payload,
+                    p2pkh_prefix: PUBKEY_ADDRESS_PREFIX_BTC,
+                    p2sh_prefix: SCRIPT_ADDRESS_PREFIX_BTC,
+                    bech32_hrp: "bc",
                 };
                 encoding.fmt(fmt)
             }

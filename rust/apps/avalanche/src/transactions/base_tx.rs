@@ -148,11 +148,6 @@ mod tests {
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let result = BaseTx::try_from(bytes).unwrap();
-            println!("Result: {:?}", result);
-            println!("total output amount: {}", result.get_total_output_amount());
-            println!("total input amount: {}", result.get_total_input_amount());
-            println!("fee amount: {}", result.get_fee_amount());
-            // println!("to address: {:?}", result.get_outputs_addresses());
 
             // assert_eq!(result.get_type_id(), TypeId::BaseTx);
             // assert_eq!(result.get_network_id(), 1);
@@ -170,7 +165,6 @@ mod tests {
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             match BaseTx::try_from(bytes) {
                 Ok(result) => {
-                    println!("{:?}", result);
                     assert_eq!(
                         result.get_network().unwrap(),
                         "Avalanche X-Chain".to_string()

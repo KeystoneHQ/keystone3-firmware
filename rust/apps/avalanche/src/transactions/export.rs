@@ -122,14 +122,6 @@ mod tests {
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let result = ExportTx::try_from(bytes).unwrap();
-            println!("{:?}", result);
-            println!("output {:?}", result.get_total_output_amount());
-            println!("input {:?}", result.get_total_input_amount());
-            println!("fee {:?}", result.get_fee_amount());
-            println!(
-                "get_outputs_addresses = {:?}",
-                result.get_outputs_addresses()
-            );
             assert_eq!(result.get_dest_chain(), X_BLOCKCHAIN_ID);
         }
     }

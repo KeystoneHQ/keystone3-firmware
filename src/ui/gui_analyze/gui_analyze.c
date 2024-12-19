@@ -1837,6 +1837,7 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
             yOffset = yOffset + lv_obj_get_content_height(child) + 16;
         }
         lv_obj_set_parent(g_analyzeTabview.obj[i], tabChild);
+        lv_obj_align(tabChild, LV_ALIGN_TOP_LEFT, -20, 0);
         lv_obj_clear_flag(g_analyzeTabview.obj[i], LV_OBJ_FLAG_SCROLL_ELASTIC);
     }
 }

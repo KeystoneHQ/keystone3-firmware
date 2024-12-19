@@ -205,7 +205,7 @@ const static EvmNetwork_t NETWORKS[] = {
     {42220, "Celo Mainnet", "CELO"},
     {43110, "Athereum", "ATH"},
     {43113, "Avalanche Fuji Testnet", "AVAX"},
-    {43114, "Avalanche Mainnet", "AVAX"},
+    {43114, "Avalanche C-Chain", "AVAX"},
     {44787, "Celo Alfajores Testnet", "CELO"},
     {49797, "Energi Testnet", "NRG"},
     {62320, "Celo Baklava Testnet", "CELO"},

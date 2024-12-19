@@ -1,3 +1,11 @@
+## 1.8.0(2024-12-19)
+
+### What's new
+
+1. Supported managing ZEC assets using Zashi Wallet
+
+
+
 ## 1.7.16(2024-12-13)
 
 ### Bug Fixes

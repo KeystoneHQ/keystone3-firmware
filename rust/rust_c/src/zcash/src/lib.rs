@@ -24,9 +24,10 @@ use ur_registry::{traits::RegistryItem, zcash::zcash_pczt::ZcashPczt};
 use zcash_vendor::zcash_protocol::consensus::MainNetwork;
 
 #[no_mangle]
-pub extern "C" fn derive_zcash_ufvk(seed: PtrBytes, seed_len: u32) -> *mut SimpleResponse<c_char> {
+pub extern "C" fn derive_zcash_ufvk(seed: PtrBytes, seed_len: u32, account_path: PtrString) -> *mut SimpleResponse<c_char> {
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    let ufvk_text = derive_ufvk(&MainNetwork, seed);
+    let account_path = recover_c_char(account_path);
+    let ufvk_text = derive_ufvk(&MainNetwork, seed, &account_path);
     match ufvk_text {
         Ok(text) => SimpleResponse::success(convert_c_char(text)).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),

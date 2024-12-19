@@ -22,13 +22,43 @@ use zcash_vendor::{
 
 use crate::errors::{KeystoreError, Result};
 
-use super::utils::normalize_path;
-
-pub fn derive_ufvk<P: consensus::Parameters>(params: &P, seed: &[u8]) -> Result<String> {
-    let usk = UnifiedSpendingKey::from_seed(params, &seed, AccountId::ZERO)
+pub fn derive_ufvk<P: consensus::Parameters>(
+    params: &P,
+    seed: &[u8],
+    account_path: &str,
+) -> Result<String> {
+    let account_path = DerivationPath::from_str(account_path.to_lowercase().as_str())
         .map_err(|e| KeystoreError::DerivationError(e.to_string()))?;
-    let ufvk = usk.to_unified_full_viewing_key();
-    Ok(ufvk.encode(params))
+    if account_path.len() != 3 {
+        return Err(KeystoreError::DerivationError(format!(
+            "invalid account path: {}",
+            account_path
+        )));
+    }
+    //should be hardened(32) hardened(133) hardened(account_id)
+    let purpose = account_path[0];
+    let coin_type = account_path[1];
+    let account_id = account_path[2];
+    match (purpose, coin_type, account_id) {
+        (
+            ChildNumber::Hardened { index: 32 },
+            ChildNumber::Hardened { index: 133 },
+            ChildNumber::Hardened { index: account_id },
+        ) => {
+            let account_index = zip32::AccountId::try_from(account_id)
+                .map_err(|_e| KeystoreError::DerivationError(format!("invalid account index")))?;
+            let usk = UnifiedSpendingKey::from_seed(params, &seed, account_index)
+                .map_err(|e| KeystoreError::DerivationError(e.to_string()))?;
+            let ufvk = usk.to_unified_full_viewing_key();
+            Ok(ufvk.encode(params))
+        }
+        _ => {
+            return Err(KeystoreError::DerivationError(format!(
+                "invalid account path: {}",
+                account_path
+            )));
+        }
+    }
 }
 
 pub fn calculate_seed_fingerprint(seed: &[u8]) -> Result<[u8; 32]> {

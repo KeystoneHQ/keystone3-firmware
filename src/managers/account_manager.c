@@ -600,18 +600,18 @@ int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password) {
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     int32_t ret = GetAccountSeed(accountIndex, &seed, password);
 
-    SimpleResponse_c_char *response = derive_zcash_ufvk(seed, len);
-    if (response->error_code != 0)
-    {
-        ret = response->error_code;
-        printf("error: %s\r\n", response->error_message);
-        return ret;
-    }
+    SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);
+
+    uint8_t iv_bytes[16];
+    memcpy_s(iv_bytes, 16, iv_response->data, 16);
+    free_simple_response_u8(iv_response);
+
+    char *zcashEncrypted = GetCurrentAccountPublicKey(ZCASH_UFVK_ENCRYPTED_0);
+    SimpleResponse_c_char *response = rust_aes256_cbc_decrypt(zcashEncrypted, password, iv_bytes, 16);
 
     char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
     strcpy_s(ufvk, ZCASH_UFVK_MAX_LEN, response->data);
     free_simple_response_c_char(response);
-
     SimpleResponse_u8 *responseSFP = calculate_zcash_seed_fingerprint(seed, len);
     if (responseSFP->error_code != 0)
     {

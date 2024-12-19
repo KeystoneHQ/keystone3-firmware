@@ -22,6 +22,8 @@ rsa = { workspace = true }
 cryptoxide = { workspace = true }
 ur-parse-lib = { workspace = true }
 sha1 = { workspace = true }
+aes = { workspace = true }
+cbc = { workspace = true }
 
 app_bitcoin = { workspace = true }
 app_wallets = { workspace = true }

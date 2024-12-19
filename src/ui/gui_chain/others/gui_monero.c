@@ -269,7 +269,7 @@ void GuiShowXmrTransactionOverview(lv_obj_t *parent, void *totalData)
 
     uint32_t inputsSize = data->inputs->size;
     uint32_t outputsSize = data->outputs->size;
-    uint32_t containerHeight = 18 * 2 + 30 +30 + 16 + outputsSize * 120;
+    uint32_t containerHeight = 18 * 2 + 30 + 30 + 16 + outputsSize * 120;
     lv_obj_t * detilsContainer = GuiCreateContainerWithParent(parent, 408, containerHeight);
     SetContainerDefaultStyle(detilsContainer);
     lv_obj_align(detilsContainer, LV_ALIGN_DEFAULT, 0, 238);

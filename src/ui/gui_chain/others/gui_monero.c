@@ -269,41 +269,19 @@ void GuiShowXmrTransactionOverview(lv_obj_t *parent, void *totalData)
 
     uint32_t inputsSize = data->inputs->size;
     uint32_t outputsSize = data->outputs->size;
-    // 18: top/bottom padding
-    // 30: title height(Outputs/Inputs/Change)
-    // 16: title bottom padding
-    // 90: input height
-    // 120: output height
-    uint32_t containerHeight = 18 * 2 + 30 * 2 + 30 + 16 + inputsSize * 90 + outputsSize * 120;
+    uint32_t containerHeight = 18 * 2 + 30 +30 + 16 + outputsSize * 120;
     lv_obj_t * detilsContainer = GuiCreateContainerWithParent(parent, 408, containerHeight);
     SetContainerDefaultStyle(detilsContainer);
     lv_obj_align(detilsContainer, LV_ALIGN_DEFAULT, 0, 238);
 
-    label = GuiCreateIllustrateLabel(detilsContainer, "Inputs");
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
-    lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
-
-    for (size_t i = 0; i < data->inputs->size; i++) {
-        char inputIndex[BUFFER_SIZE_16] = {0};
-        sprintf(inputIndex, "%d", i + 1);
-        label = GuiCreateIllustrateLabel(detilsContainer, inputIndex);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 54 + i * 90);
-        lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
-
-        label = GuiCreateIllustrateLabel(detilsContainer, data->inputs->data[i].key);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 54 + i * 90);
-        lv_obj_set_width(label, 332);
-    }
-
     label = GuiCreateIllustrateLabel(detilsContainer, "Outputs");
-    uint32_t outputsLabelY = 18 + 16 + 30 + inputsSize * 90;
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, outputsLabelY);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 18);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
 
     uint32_t addressOffset = 0;
     for (size_t i = 0; i < data->outputs->size; i++) {
         bool is_change = data->outputs->data[i].is_change;
-        uint32_t addressY = outputsLabelY + 38 + i * 120 + addressOffset;
+        uint32_t addressY = 18 + 38 + i * 120 + addressOffset;
         char outputIndex[BUFFER_SIZE_16] = {0};
         sprintf(outputIndex, "%d", i + 1);
         label = GuiCreateIllustrateLabel(detilsContainer, outputIndex);
@@ -379,17 +357,17 @@ void GuiShowXmrTransactionDetails(lv_obj_t *parent, void *totalData)
 
     for (size_t i = 0; i < data->inputs->size; i++) {
         char inputIndex[BUFFER_SIZE_16] = {0};
-        sprintf(inputIndex, "%d", i + 1);
-        label = GuiCreateIllustrateLabel(inputsContainer, inputIndex);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 54 + i * 120);
-        lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
+        sprintf(inputIndex, "Pubkey %d", i + 1);
+        lv_obj_t *titleLabel = GuiCreateIllustrateLabel(inputsContainer, inputIndex);
+        lv_obj_align(titleLabel, LV_ALIGN_DEFAULT, 24, 54 + i * 120);
+        lv_obj_set_style_text_opa(titleLabel, 144, LV_PART_MAIN);
 
-        label = GuiCreateIllustrateLabel(inputsContainer, data->inputs->data[i].amount);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 54 + i * 120);
-        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_t *ammountLabel = GuiCreateIllustrateLabel(inputsContainer, data->inputs->data[i].amount);
+        lv_obj_align_to(ammountLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+        lv_obj_set_style_text_color(ammountLabel, ORANGE_COLOR, LV_PART_MAIN);
 
         label = GuiCreateIllustrateLabel(inputsContainer, data->inputs->data[i].key);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 84 + i * 120);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 84 + i * 120);
         lv_obj_set_width(label, 332);
     }
 
@@ -406,19 +384,18 @@ void GuiShowXmrTransactionDetails(lv_obj_t *parent, void *totalData)
     for (size_t i = 0; i < data->outputs->size; i++) {
         bool is_change = data->outputs->data[i].is_change;
         char outputIndex[BUFFER_SIZE_16] = {0};
-        sprintf(outputIndex, "%d", i + 1);
-        label = GuiCreateIllustrateLabel(outputsContainer, outputIndex);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 54 + i * 150);
-        lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
+        sprintf(outputIndex, "Address %d", i + 1);
+        lv_obj_t *titleLabel = GuiCreateIllustrateLabel(outputsContainer, outputIndex);
+        lv_obj_align(titleLabel, LV_ALIGN_DEFAULT, 24, 54 + i * 150);
+        lv_obj_set_style_text_opa(titleLabel, 144, LV_PART_MAIN);
 
-        label = GuiCreateIllustrateLabel(outputsContainer, data->outputs->data[i].amount);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 54 + i * 150);
-        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_t *amountLabel = GuiCreateIllustrateLabel(outputsContainer, data->outputs->data[i].amount);
+        lv_obj_align_to(amountLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+        lv_obj_set_style_text_color(amountLabel, ORANGE_COLOR, LV_PART_MAIN);
 
         if (is_change) {
             lv_obj_t *changeContainer = GuiCreateContainerWithParent(outputsContainer, 87, 30);
-            uint32_t changeContainerX = lv_obj_get_self_width(label) + 16;
-            lv_obj_align(changeContainer, LV_ALIGN_DEFAULT, 52 + changeContainerX, 54 + i * 150);
+            lv_obj_align_to(changeContainer, amountLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
             lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_opa(changeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -429,7 +406,7 @@ void GuiShowXmrTransactionDetails(lv_obj_t *parent, void *totalData)
         }
 
         label = GuiCreateIllustrateLabel(outputsContainer, data->outputs->data[i].address);
-        lv_obj_align(label, LV_ALIGN_DEFAULT, 52, 84 + i * 150);
+        lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 84 + i * 150);
         lv_obj_set_width(label, 332);
     }
 }

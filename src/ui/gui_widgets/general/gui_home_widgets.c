@@ -136,6 +136,7 @@ static void GuiInitWalletState()
         bool isPassphrase = PassphraseExist(GetCurrentAccountIndex());
         if (isPassphrase) {
             g_walletState[HOME_WALLET_CARD_ZEC].enable = false;
+            g_walletState[HOME_WALLET_CARD_ZEC].state = false;
         }
         break;
     default:
@@ -511,6 +512,9 @@ static void UpdateManageWalletState(bool needUpdate)
             continue;
         }
         if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
+            continue;
+        }
+        if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ZEC) {
             continue;
         }
 

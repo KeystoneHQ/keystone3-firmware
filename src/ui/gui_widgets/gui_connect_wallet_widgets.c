@@ -324,6 +324,10 @@ static void GuiInitWalletListArray()
         bool enable = true;
         int index = g_walletListArray[i].index;
 
+        bool passphraseExist = PassphraseExist(GetCurrentAccountIndex());
+        MnemonicType mnemonicType = GetMnemonicType();
+        bool isSlip39 = (mnemonicType == MNEMONIC_TYPE_SLIP39);
+
 #ifndef BTC_ONLY
         if (isTON) {
             enable = (index == WALLET_LIST_TONKEEPER);
@@ -340,6 +344,9 @@ static void GuiInitWalletListArray()
                 break;
             case WALLET_LIST_KEYSTONE:
                 enable = isRussian;
+                break;
+            case WALLET_LIST_ZASHI:
+                enable = !passphraseExist && !isSlip39;
                 break;
             default:
                 break;

@@ -532,7 +532,6 @@ static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e)
     memcpy(g_fewchaCoinState, g_tempFewchaCoinState,
            sizeof(g_tempFewchaCoinState));
     GUI_DEL_OBJ(g_coinListCont)
-    GuiAnimatingQRCodeDestroyTimer();
     GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
                      ConnectWalletReturnHandler, NULL);
@@ -544,7 +543,6 @@ static void RefreshAddressIndex(uint32_t index)
 {
     if (GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)) != index) {
         SetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex), index);
-        GuiAnimatingQRCodeDestroyTimer();
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
     } else {
         QRCodePause(false);
@@ -1306,6 +1304,7 @@ void GuiSetupArConnectWallet(void)
 
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
 {
+    GuiAnimatingQRCodeDestroyTimer();
     GenerateUR func = NULL;
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
 #ifndef BTC_ONLY
@@ -1604,15 +1603,14 @@ static void CloseAttentionHandler(lv_event_t *e)
     if (g_privateModeHintBox) {
         lv_obj_add_flag(g_privateModeHintBox, LV_OBJ_FLAG_HIDDEN);
         GUI_DEL_OBJ(g_privateModeHintBox);
+        g_privateModeHintBox = NULL;
     }
 }
 
 static void CancelAttentionHandler(lv_event_t *e)
 {
-    ExitPrivateMode();
     ConnectWalletReturnHandler(NULL);
     CloseAttentionHandler(NULL);
-    GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
 }
 
 static void ContinueAttentionHandler(lv_event_t *e)
@@ -1657,7 +1655,6 @@ static void ConfirmDerivationHandler(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED && IsSelectChanged()) {
         SetAccountType(GetCurrentSelectedIndex());
-        GuiAnimatingQRCodeDestroyTimer();
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         GUI_DEL_OBJ(g_derivationPathCont);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler,
@@ -2201,8 +2198,6 @@ int8_t GuiConnectWalletNextTile(void)
 
 static void PrivateModePrevTileHandler(lv_event_t *e)
 {
-    ExitPrivateMode();
-    GuiAnimatingQRCodeDestroyTimer();
     CloseToTargetTileView(g_connectWalletTileView.currentTile,
                           CONNECT_WALLET_SELECT_WALLET);
 }
@@ -2226,8 +2221,10 @@ int8_t GuiConnectWalletPrevTile(void)
     case CONNECT_WALLET_QRCODE_PRIVATE_MODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler,
                          NULL);
-        GuiAnimatingQRCodeDestroyTimer();
-        ExitPrivateMode();
+        if (IsPrivateQrMode()) {
+            ExitPrivateMode();
+            GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+        }
         break;
     }
     g_connectWalletTileView.currentTile--;

@@ -54,7 +54,7 @@ void CreateQrDecodeTask(void)
 {
     const osThreadAttr_t qrDecodeTaskAttributes = {
         .name = "qrDecodeTask",
-        .stack_size = 1024 * 16,
+        .stack_size = 1024 * 20,
         .priority = (osPriority_t)osPriorityHigh,
     };
     g_qrDecodeTaskHandle = osThreadNew(QrDecodeTask, NULL, &qrDecodeTaskAttributes);

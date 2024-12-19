@@ -526,6 +526,7 @@ static bool ShouldUseCyclicPart(void)
     if (strncmp(g_urResult->data, "ur:xmr", 6) == 0 || strncmp(g_urResult->data, "UR:XMR", 6) == 0) {
         return true;
     }
+    return false;
 }
 
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)

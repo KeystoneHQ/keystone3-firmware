@@ -51,14 +51,11 @@ where
     let bytes = Bytes::from(data);
     match T::try_from(bytes) {
         Ok(data) => Ok(data),
-        Err(e) => {
-            Err(AvaxError::InvalidInput)
-        }
+        Err(e) => Err(AvaxError::InvalidInput),
     }
 }
 
-pub fn get_avax_tx_type_id(data: Vec<u8>) -> Result<TypeId>
-{
+pub fn get_avax_tx_type_id(data: Vec<u8>) -> Result<TypeId> {
     let mut bytes = Bytes::from(data);
     // codec_id 2 bytes
     bytes.advance(2);

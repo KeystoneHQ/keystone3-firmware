@@ -81,6 +81,16 @@ pub struct DisplayAvaxFromToInfo {
     path: PtrString,
 }
 
+impl Free for DisplayAvaxFromToInfo {
+    fn free(&self) {
+        unsafe {
+            let _ = Box::from_raw(self.address);
+            let _ = Box::from_raw(self.amount);
+            let _ = Box::from_raw(self.path);
+        }
+    }
+}
+
 impl_c_ptr!(DisplayAvaxFromToInfo);
 
 impl From<&AvaxFromToInfo> for DisplayAvaxFromToInfo {
@@ -152,7 +162,9 @@ impl<T: AvaxTxInfo> From<T> for DisplayTxAvaxData {
             network: value
                 .get_network()
                 .map_or(core::ptr::null_mut(), convert_c_char),
-            reward_address: value.get_reward_address().map_or(core::ptr::null_mut(), convert_c_char),
+            reward_address: value
+                .get_reward_address()
+                .map_or(core::ptr::null_mut(), convert_c_char),
             method: value.get_method_info().map_or(core::ptr::null_mut(), |v| {
                 DisplayAvaxMethodInfo::from(v).c_ptr()
             }),
@@ -160,76 +172,37 @@ impl<T: AvaxTxInfo> From<T> for DisplayTxAvaxData {
     }
 }
 
+impl Free for DisplayTxAvaxData {
+    fn free(&self) {
+        unsafe {
+            // let x = Box::from_raw(self.from);
+            // let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+            // ve.iter().for_each(|v| {
+            //     v.free();
+            // });
+            let x = Box::from_raw(self.to);
+            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+            ve.iter().for_each(|v| {
+                v.free();
+            });
+
+            let _ = Box::from_raw(self.total_output_amount);
+            let _ = Box::from_raw(self.fee_amount);
+            let _ = Box::from_raw(self.network);
+            let _ = Box::from_raw(self.reward_address);
+            let _ = Box::from_raw(self.subnet_id);
+            let _ = Box::from_raw(self.method);
+            let _ = Box::from_raw(self.network);
+        }
+    }
+}
+
 impl Free for DisplayAvaxTx {
-    fn free(&self) {}
+    fn free(&self) {
+        unsafe {
+            Box::from_raw(self.data).free();
+        }
+    }
 }
 
 make_free_method!(TransactionParseResult<DisplayAvaxTx>);
-
-// impl Free for DisplayTxOverview {
-//     fn free(&self) {
-//         unsafe {
-//             let x = Box::from_raw(self.from);
-//             let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-//             ve.iter().for_each(|v| {
-//                 v.free();
-//             });
-//             let x = Box::from_raw(self.to);
-//             let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-//             ve.iter().for_each(|v| {
-//                 v.free();
-//             });
-
-//             let _ = Box::from_raw(self.total_output_amount);
-//             let _ = Box::from_raw(self.fee_amount);
-//             let _ = Box::from_raw(self.total_output_sat);
-//             let _ = Box::from_raw(self.fee_sat);
-//             let _ = Box::from_raw(self.network);
-//         }
-//     }
-// }
-
-// impl Free for DisplayAvaxFromToDetailInput {
-//     fn free(&self) {
-//         unsafe {
-//             let _ = Box::from_raw(self.address);
-//             let _ = Box::from_raw(self.amount);
-//             let _ = Box::from_raw(self.path);
-//         }
-//     }
-// }
-
-// impl Free for DisplayAvaxFromToOverview {
-//     fn free(&self) {
-//         unsafe {
-//             let _ = Box::from_raw(self.address);
-//         }
-//     }
-// }
-
-// impl Free for DisplayAvaxFromToDetailInput {
-//     fn free(&self) {
-//         unsafe {
-//             let _ = Box::from_raw(self.address);
-//             let _ = Box::from_raw(self.amount);
-//             let _ = Box::from_raw(self.path);
-//         }
-//     }
-// }
-
-// #[repr(C)]
-// pub struct DisplayBtcMsg {
-//     pub detail: PtrString,
-//     pub address: PtrString,
-// }
-
-// impl_c_ptr!(DisplayBtcMsg);
-
-// impl Free for DisplayBtcMsg {
-//     fn free(&self) {
-//         free_str_ptr!(self.detail);
-//         free_str_ptr!(self.address);
-//     }
-// }
-
-// make_free_method!(TransactionParseResult<DisplayBtcMsg>);

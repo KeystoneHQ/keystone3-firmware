@@ -55,10 +55,10 @@ impl EvmInput {
 
 #[derive(Debug, Clone)]
 pub struct ExportTx {
-    pub codec_id: u16,
-    pub type_id: TypeId,
-    pub tx_header: Header,
-    pub dest_chain: [u8; BLOCKCHAIN_ID_LEN],
+    codec_id: u16,
+    type_id: TypeId,
+    tx_header: Header,
+    dest_chain: [u8; BLOCKCHAIN_ID_LEN],
     inputs: LengthPrefixedVec<EvmInput>,
     outputs: LengthPrefixedVec<TransferableOutput>,
 }
@@ -145,8 +145,6 @@ impl TryFrom<Bytes> for ExportTx {
 
 #[cfg(test)]
 mod tests {
-    use crate::transactions::transferable::OutputTrait;
-
     use super::*;
     extern crate std;
     use std::println;
@@ -158,6 +156,12 @@ mod tests {
         let binary_data = hex::decode(input_bytes).expect("Failed to decode hex string");
         let mut bytes = Bytes::from(binary_data);
         let result = ExportTx::try_from(bytes.clone()).unwrap();
-        assert!(false);
+        println!("result = {:?}", result);
+        assert_eq!(result.codec_id, 0);
+        assert_eq!(result.type_id, TypeId::CchainExportTx);
+        assert_eq!(result.dest_chain, P_BLOCKCHAIN_ID);
+        assert_eq!(result.inputs.get_len(), 1);
+        assert_eq!(result.outputs.get_len(), 1);
+        assert_eq!(result.inputs.get(0).unwrap().amount, 100011230);
     }
 }

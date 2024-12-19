@@ -322,31 +322,30 @@ mod tests {
                 multisig_wallet_config: None,
             }))
             .unwrap();
-        println!("result: {:?}", result);
-        assert!(false);
-        // assert_eq!("0.00005992 tBTC", result.detail.total_input_amount);
-        // assert_eq!("0.00004 tBTC", result.detail.total_output_amount);
-        // assert_eq!("0.00001992 tBTC", result.detail.fee_amount);
+        assert_eq!("0.0005289 BTC", result.detail.total_input_amount);
+        assert_eq!("0.00052516 BTC", result.detail.total_output_amount);
+        assert_eq!("0.00000374 BTC", result.detail.fee_amount);
 
-        // assert_eq!("4000 sats", result.overview.total_output_sat);
-        // assert_eq!("1992 sats", result.overview.fee_sat);
+        assert_eq!("52516 sats", result.overview.total_output_sat);
+        assert_eq!("374 sats", result.overview.fee_sat);
 
-        // assert_eq!("Bitcoin Testnet", result.overview.network);
+        assert_eq!("Avalanche BTC", result.overview.network);
 
-        // let first_input = result.detail.from.get(0).unwrap();
-        // assert_eq!(
-        //     "tb1q6rz28mcfaxtmd6v789l9rrlrusdprr9pqcpvkl",
-        //     first_input.address.clone().unwrap()
-        // );
-        // assert_eq!(true, first_input.path.is_some());
-        // assert_eq!(5992, first_input.value);
+        println!("{:?}", result);
+        let first_input = result.detail.from.get(0).unwrap();
+        assert_eq!(
+            "bc1q6kj04arn7nasy6vhtjqlg4fzwx6cjrewgdczdt",
+            first_input.address.clone().unwrap()
+        );
+        assert_eq!(true, first_input.path.is_some());
+        assert_eq!(47990, first_input.value);
 
-        // let first_output = result.detail.to.get(0).unwrap();
-        // assert_eq!(
-        //     "tb1qvc3c9rqls7l8ssdfk8xrvrfc4c9gkmks87chvk",
-        //     first_output.address
-        // );
-        // assert_eq!(false, first_output.path.is_some());
-        // assert_eq!(4000, first_output.value);
+        let first_output = result.detail.to.get(0).unwrap();
+        assert_eq!(
+            "bc1q8nur2k3xphnsqa5zxgjl7djtkj3ya0gf6rpqa9",
+            first_output.address
+        );
+        assert_eq!(false, first_output.path.is_some());
+        assert_eq!(48000, first_output.value);
     }
 }

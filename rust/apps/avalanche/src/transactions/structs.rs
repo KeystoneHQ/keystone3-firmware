@@ -8,9 +8,10 @@ use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
 #[derive(Debug, Clone)]
 pub struct LengthPrefixedVec<T: ParsedSizeAble> {
-    pub len: usize,
-    pub items: Vec<T>,
+    len: usize,
+    items: Vec<T>,
 }
+
 pub trait ParsedSizeAble {
     fn parsed_size(&self) -> usize;
 }

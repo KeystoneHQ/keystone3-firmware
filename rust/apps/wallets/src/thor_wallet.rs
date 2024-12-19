@@ -22,12 +22,12 @@ fn get_device_id(serial_number: &str) -> String {
     hex::encode(&sha256(&sha256(serial_number.as_bytes()))[0..20])
 }
 
-const BTC_LEGACY_PREFIX: &str = "m/44'/0'/0'";
-const BTC_SEGWIT_PREFIX: &str = "m/49'/0'/0'";
-const BTC_NATIVE_SEGWIT_PREFIX: &str = "m/84'/0'/0'";
-const ETH_STANDARD_PREFIX: &str = "m/44'/60'/0'";
-const ETH_LEDGER_LIVE_PREFIX: &str = "m/44'/60'"; //overlap with ETH_STANDARD at 0
-const THORCHAIN_PREFIX: &str = "m/44'/931'/0'";
+const BTC_LEGACY_PREFIX: &str = "44'/0'/0'";
+const BTC_SEGWIT_PREFIX: &str = "49'/0'/0'";
+const BTC_NATIVE_SEGWIT_PREFIX: &str = "84'/0'/0'";
+const ETH_STANDARD_PREFIX: &str = "44'/60'/0'";
+const ETH_LEDGER_LIVE_PREFIX: &str = "44'/60'"; //overlap with ETH_STANDARD at 0
+const THORCHAIN_PREFIX: &str = "44'/931'/0'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],

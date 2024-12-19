@@ -359,7 +359,7 @@ mod tests {
         let script = address.script_pubkey();
         assert_eq!(
             script.encode_hex::<String>(),
-                "76a914b5423a5b2ab6af3a174cf2e53a3c85190418163688ac"
+            "76a914b5423a5b2ab6af3a174cf2e53a3c85190418163688ac"
         );
     }
 }

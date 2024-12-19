@@ -351,8 +351,8 @@ fn check_action_output(action: &orchard::pczt::Action) -> Result<(), ZcashError>
 
 #[cfg(test)]
 mod tests {
-    use zcash_vendor::{pczt::Pczt, zcash_protocol::consensus::MAIN_NETWORK};
     use super::*;
+    use zcash_vendor::{pczt::Pczt, zcash_protocol::consensus::MAIN_NETWORK};
 
     #[test]
     fn test_check_pczt_to_transparent_output() {

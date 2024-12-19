@@ -137,6 +137,7 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
     ret = SaveCurrentAccountInfo();
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
+    CalculateZcashUFVK(accountIndex, password);
     CHECK_ERRCODE_RETURN_INT(ret);
     return ret;
 }
@@ -235,6 +236,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         } else {
             printf("passphrase not exist, info switch\r\n");
             ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
+            CalculateZcashUFVK(g_currentAccountIndex, password);
         }
     } else {
         g_publicInfo.loginPasswordErrorCount++;
@@ -588,6 +590,11 @@ int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP) {
 
 int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password) {
     ASSERT(accountIndex <= 2);
+
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39 || GetMnemonicType() == MNEMONIC_TYPE_TON)
+    {
+        return SUCCESS_CODE;
+    }
 
     uint8_t seed[SEED_LEN];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();

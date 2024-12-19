@@ -167,13 +167,13 @@ pub fn parse_pczt<P: consensus::Parameters>(
             "sapling value_sum is invalid".to_string(),
         ))?;
     let sapling_value_sum: i64 = value_balance.into();
-    total_output_value = if sapling_value_sum < 0 {
+    if sapling_value_sum < 0 {
         //value transfered to sapling pool
-        total_output_value.saturating_add(sapling_value_sum.abs() as u64)
+        total_output_value = total_output_value.saturating_add(sapling_value_sum.abs() as u64)
     } else {
         //value transfered from sapling pool
         //this should not happen with Zashi.
-        total_input_value.saturating_add(sapling_value_sum as u64)
+        total_input_value = total_input_value.saturating_add(sapling_value_sum as u64)
     };
 
     let total_transfer_value = format_zec_value((total_output_value - total_change_value) as f64);

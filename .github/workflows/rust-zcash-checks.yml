@@ -1,9 +1,9 @@
 on:
   pull_request:
     paths:
-      - rust/apps/wallets/**
+      - rust/apps/zcash/**
 
-name: Wallets Checks
+name: Zcash Checks
 
 jobs:
   UnitTest:
@@ -23,5 +23,5 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
 
-      - name: Run rust/apps/wallets
-        run: cd rust/apps/wallets && cargo +nightly-2024-01-31 llvm-cov --fail-under-regions 39 --fail-under-functions 40 --fail-under-lines 57
+      - name: Run rust/apps/zcash
+        run: cd rust/apps/zcash && cargo +nightly-2024-01-31 llvm-cov  --fail-under-regions 48 --fail-under-functions 42 --fail-under-lines 56

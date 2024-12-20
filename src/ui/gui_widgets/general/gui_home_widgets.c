@@ -68,6 +68,7 @@ static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_DASH, false, "DASH", true},
     {HOME_WALLET_CARD_ARWEAVE, false, "AR", true},
     {HOME_WALLET_CARD_XLM, false, "XLM", true},
+    {HOME_WALLET_CARD_MONERO, false, "XMR", true},
     {HOME_WALLET_CARD_COSMOS, false, "Cosmos Eco", true},
     {HOME_WALLET_CARD_TIA, false, "TIA", true},
     {HOME_WALLET_CARD_NTRN, false, "NTRN", true},
@@ -123,6 +124,7 @@ static void GuiInitWalletState()
         g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
         g_walletState[HOME_WALLET_CARD_ZEC].enable = false;
+        g_walletState[HOME_WALLET_CARD_MONERO].enable = false;
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
         break;
     case MNEMONIC_TYPE_BIP39:
@@ -254,6 +256,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "XLM",
         .chain = "Stellar",
         .icon = &coinXlm,
+    },
+    {
+        .index = HOME_WALLET_CARD_MONERO,
+        .coin = "XMR",
+        .chain = "Monero",
+        .icon = &coinXmr,
     },
     {
         .index = HOME_WALLET_CARD_COSMOS,
@@ -465,7 +473,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .chain = "Tgrade",
         .icon = &coinTgd,
     },
-
 };
 
 static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin);
@@ -663,6 +670,7 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
         GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ADA:
+    case HOME_WALLET_CARD_MONERO:
         GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ARWEAVE: {

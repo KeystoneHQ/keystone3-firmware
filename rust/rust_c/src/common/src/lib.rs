@@ -10,6 +10,7 @@ use aes::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit};
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 use core::ptr::null_mut;
+use alloc::format;
 use core::slice;
 use cryptoxide::hashing::sha256;
 use ffi::VecFFI;
@@ -76,6 +77,28 @@ pub extern "C" fn get_extended_pubkey_by_seed(
         Ok(result) => SimpleResponse::success(convert_c_char(result.to_string())).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }
+}
+
+#[no_mangle]
+pub extern "C" fn get_extended_monero_pubkeys_by_seed(
+    seed: PtrBytes,
+    seed_len: u32,
+    path: PtrString,
+) -> *mut SimpleResponse<c_char> {
+    let path = recover_c_char(path);
+    let major = path
+        .split('/')
+        .nth(3)
+        .unwrap()
+        .replace("'", "")
+        .parse::<u32>()
+        .unwrap();
+    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let keypair = app_monero::key::generate_keypair(seed, major).unwrap();
+    let public_spend_key = keypair.spend.get_public_key();
+    let result = hex::encode(public_spend_key.as_bytes());
+
+    SimpleResponse::success(convert_c_char(result.to_string())).simple_c_ptr()
 }
 
 #[no_mangle]

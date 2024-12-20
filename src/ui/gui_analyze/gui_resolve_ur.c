@@ -44,6 +44,8 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_TON, (SetChainDataFunc)GuiSetTonUrData},
     {REMAPVIEW_TON_SIGNPROOF, (SetChainDataFunc)GuiSetTonUrData},
     {REMAPVIEW_ZCASH, (SetChainDataFunc)GuiSetZcashUrData},
+    {REMAPVIEW_XMR_OUTPUT, (SetChainDataFunc)GuiSetMoneroUrData},
+    {REMAPVIEW_XMR_UNSIGNED, (SetChainDataFunc)GuiSetMoneroUrData},
 #endif
 };
 

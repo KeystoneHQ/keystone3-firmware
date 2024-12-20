@@ -344,6 +344,17 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_HELIUM].items[0].url = _("connect_helium_link");
     g_tutorials[WALLET_LIST_HELIUM].items[0].qrTitle = _("connect_helium_title");
     g_tutorials[WALLET_LIST_HELIUM].items[0].qrUrl = _("connect_helium_link");
+
+    // WALLET_LIST_ZASHI
+    g_tutorials[WALLET_LIST_ZASHI].len = 1;
+    g_tutorials[WALLET_LIST_ZASHI].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_ZASHI].items[0].walletName = _("connect_zashi_title");
+    g_tutorials[WALLET_LIST_ZASHI].items[0].url = _("connect_zashi_link");
+    g_tutorials[WALLET_LIST_ZASHI].items[0].qrTitle = _("connect_zashi_title");
+    g_tutorials[WALLET_LIST_ZASHI].items[0].qrUrl = _("connect_zashi_link");
+
+    
+
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;
     g_tutorials[WALLET_LIST_BLUE].desc = _("connect_wallet_desc");

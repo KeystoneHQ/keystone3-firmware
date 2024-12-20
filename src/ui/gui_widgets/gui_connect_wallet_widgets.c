@@ -40,6 +40,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true},
+    {WALLET_LIST_ZASHI, &walletListZashi, true},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true},
     {WALLET_LIST_HELIUM, &walletListHelium, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
@@ -188,6 +189,10 @@ static const lv_img_dsc_t *g_tonKeeperCoinArray[1] = {
     &coinTon,
 };
 
+static const lv_img_dsc_t *g_zashiCoinArray[1] = {
+    &coinZec,
+};
+
 static const lv_img_dsc_t *g_ThorWalletCoinArray[3] = {
     // todo thorchain will support bitcoin later
     // &coinBtc,
@@ -319,6 +324,10 @@ static void GuiInitWalletListArray()
         bool enable = true;
         int index = g_walletListArray[i].index;
 
+        bool passphraseExist = PassphraseExist(GetCurrentAccountIndex());
+        MnemonicType mnemonicType = GetMnemonicType();
+        bool isSlip39 = (mnemonicType == MNEMONIC_TYPE_SLIP39);
+
 #ifndef BTC_ONLY
         if (isTON) {
             enable = (index == WALLET_LIST_TONKEEPER);
@@ -336,6 +345,9 @@ static void GuiInitWalletListArray()
             case WALLET_LIST_KEYSTONE:
                 enable = isRussian;
                 break;
+            case WALLET_LIST_ZASHI:
+                enable = !passphraseExist && !isSlip39;
+                break;
             default:
                 break;
             }
@@ -351,7 +363,6 @@ static void GuiInitWalletListArray()
         g_walletListArray[i].enable = enable;
     }
 }
-
 
 // static void GuiInitWalletListArray()
 // {
@@ -459,7 +470,6 @@ static void OpenQRCodeHandler(lv_event_t *e)
     g_isCoinReselected = false;
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
 }
-
 
 #ifndef BTC_ONLY
 void GuiConnectWalletPasswordErrorCount(void *param)
@@ -872,7 +882,6 @@ static void AddKeystoneWalletCoins(void)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 132, 2);
 }
 
-
 static void AddBlueWalletCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -975,6 +984,19 @@ static void AddTonCoins(void)
     }
 }
 
+static void AddZecCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 1; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_zashiCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 static void AddThorWalletCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -987,7 +1009,6 @@ static void AddThorWalletCoins(void)
         lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
     }
 }
-
 
 static void AddNightlyCoins(void)
 {
@@ -1002,8 +1023,6 @@ static void AddNightlyCoins(void)
         lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
     }
 }
-
-
 
 static void AddChainAddress(void)
 {
@@ -1216,6 +1235,23 @@ UREncodeResult *GuiGetTonData(void)
     return get_tonkeeper_wallet_ur(xpub, walletName, mfp, mfp == NULL ? 0 : 4, path);
 }
 
+UREncodeResult *GuiGetZecData(void)
+{
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    CSliceFFI_ZcashKey *keys = SRAM_MALLOC(sizeof(CSliceFFI_ZcashKey));
+    ZcashKey data[1];
+    keys->data = data;
+    keys->size = 1;
+    char ufvk[384] = {'\0'};
+    uint8_t sfp[32];
+    GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+    data[0].key_text = ufvk;
+    data[0].key_name = GetWalletName();
+    data[0].index = 0;
+    return get_connect_zcash_wallet_ur(sfp, 32, keys);
+}
+
 void GuiPrepareArConnectWalletView(void)
 {
     GuiDeleteKeyboardWidget(g_keyboardWidget);
@@ -1351,6 +1387,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_TONKEEPER:
         func = GuiGetTonData;
         AddTonCoins();
+        break;
+    case WALLET_LIST_ZASHI:
+        func = GuiGetZecData;
+        AddZecCoins();
         break;
     case WALLET_LIST_KEYSTONE:
         // todo  add keystone ur logic
@@ -2012,7 +2052,6 @@ int8_t GuiConnectWalletNextTile(void)
                        g_connectWalletTileView.currentTile, 0, LV_ANIM_OFF);
     return SUCCESS_CODE;
 }
-
 
 int8_t GuiConnectWalletPrevTile(void)
 {

@@ -3,6 +3,7 @@ use crate::errors::BitcoinError;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use bitcoin::absolute::LockTime;
+use bitcoin::hashes::Hash;
 use keystore::algorithms::secp256k1::derive_public_key;
 use {bitcoin, hex};
 
@@ -11,7 +12,7 @@ use bitcoin::consensus::Encodable;
 use bitcoin::sighash::{EcdsaSighashType, LegacySighash, SegwitV0Sighash, SighashCache};
 use bitcoin::{Amount, Script};
 use bitcoin::{PubkeyHash, ScriptBuf, Transaction};
-use bitcoin_hashes::{sha256, sha256d, Hash};
+use bitcoin_hashes::{sha256, sha256d};
 use core::str::FromStr;
 
 use crate::addresses::cashaddr::{Base58Codec, CashAddrCodec};
@@ -166,8 +167,8 @@ impl TxData {
     }
 
     fn common_cache(&mut self) -> Result<CommonCache> {
-        let mut enc_prevouts = sha256::Hash::engine();
-        let mut enc_sequences = sha256::Hash::engine();
+        let mut enc_prevouts = sha256::HashEngine::default();
+        let mut enc_sequences = sha256::HashEngine::default();
         for txin in self.transaction.input.iter() {
             txin.previous_output.consensus_encode(&mut enc_prevouts)?;
             txin.sequence.consensus_encode(&mut enc_sequences)?;
@@ -176,9 +177,9 @@ impl TxData {
             prevouts: sha256::Hash::from_engine(enc_prevouts),
             sequences: sha256::Hash::from_engine(enc_sequences),
             outputs: {
-                let mut enc = sha256::Hash::engine();
+                let mut enc = sha256::HashEngine::default();
                 for txout in self.transaction.output.iter() {
-                    txout.consensus_encode(&mut &mut enc)?;
+                    txout.consensus_encode(&mut enc)?;
                 }
                 sha256::Hash::from_engine(enc)
             },
@@ -305,15 +306,15 @@ impl TxData {
             input.script_sig = raw_input.script_sig(signature, signature_type, &script_type)?;
         } else if script_type == ScriptType::P2WPKH {
             let sig = EcdsaSignature {
-                sig: signature,
-                hash_ty: EcdsaSighashType::All,
+                signature,
+                sighash_type: EcdsaSighashType::All,
             };
             input.witness.push_ecdsa_signature(&sig);
             input.witness.push(pubkey_slice);
         } else if script_type == ScriptType::P2SHP2WPKH {
             let sig = EcdsaSignature {
-                sig: signature.clone(),
-                hash_ty: EcdsaSighashType::All,
+                signature,
+                sighash_type: EcdsaSighashType::All,
             };
             input.witness.push_ecdsa_signature(&sig);
             input.witness.push(pubkey_slice);

@@ -13,12 +13,12 @@ use crate::errors::BitcoinError;
 use crate::network::Network;
 use alloc::string::ToString;
 use bech32;
-use bitcoin::address::Payload;
+use bitcoin::address::AddressData as Payload;
 use bitcoin::blockdata::script;
 use bitcoin::script::PushBytesBuf;
 use bitcoin::secp256k1::{Secp256k1, XOnlyPublicKey};
-use bitcoin::PublicKey;
-use bitcoin::{base58, TapNodeHash};
+use bitcoin::{base58, Script, ScriptBuf, TapNodeHash};
+use bitcoin::{CompressedPublicKey, PublicKey};
 use bitcoin::{PubkeyHash, ScriptHash};
 use bitcoin::{WitnessProgram, WitnessVersion};
 use bitcoin_hashes::Hash;
@@ -41,7 +41,9 @@ impl Address {
             | Network::BitcoinCash
             | Network::Dash => Ok(Address {
                 network,
-                payload: Payload::p2pkh(pk),
+                payload: Payload::P2pkh {
+                    pubkey_hash: pk.pubkey_hash(),
+                },
             }),
         }
     }
@@ -49,9 +51,13 @@ impl Address {
     pub fn p2wpkh(pk: &PublicKey, network: Network) -> Result<Address, BitcoinError> {
         match network {
             Network::Bitcoin | Network::BitcoinTestnet => {
-                let payload = Payload::p2wpkh(pk).map_err(|_e| {
-                    BitcoinError::AddressError(format!("invalid payload for p2wpkh"))
-                })?;
+                let payload = Payload::Segwit {
+                    witness_program: WitnessProgram::p2wpkh(
+                        &CompressedPublicKey::try_from(pk.clone()).map_err(|e| {
+                            BitcoinError::AddressError(format!("invalid payload for p2wpkh: {}", e))
+                        })?,
+                    ),
+                };
                 Ok(Address { network, payload })
             }
             _ => Err(BitcoinError::AddressError(format!(
@@ -65,7 +71,13 @@ impl Address {
         match network {
             Network::Bitcoin | Network::BitcoinTestnet => {
                 let secp = Secp256k1::verification_only();
-                let payload = Payload::p2tr(&secp, XOnlyPublicKey::from(pk.inner), None);
+                let payload = Payload::Segwit {
+                    witness_program: WitnessProgram::p2tr(
+                        &secp,
+                        XOnlyPublicKey::from(pk.inner),
+                        None,
+                    ),
+                };
                 Ok(Address { network, payload })
             }
             _ => Err(BitcoinError::AddressError(format!(
@@ -83,7 +95,9 @@ impl Address {
         match network {
             Network::Bitcoin | Network::BitcoinTestnet => {
                 let secp = Secp256k1::verification_only();
-                let payload = Payload::p2tr(&secp, *x_only_pubkey, merkle_root);
+                let payload = Payload::Segwit {
+                    witness_program: WitnessProgram::p2tr(&secp, *x_only_pubkey, merkle_root),
+                };
                 Ok(Address { network, payload })
             }
             _ => Err(BitcoinError::AddressError(format!(
@@ -96,9 +110,17 @@ impl Address {
     pub fn p2shp2wpkh(pk: &PublicKey, network: Network) -> Result<Address, BitcoinError> {
         match network {
             Network::Bitcoin | Network::BitcoinTestnet | Network::Litecoin => {
-                let payload = Payload::p2shwpkh(pk).map_err(|_e| {
-                    BitcoinError::AddressError(format!("invalid payload for p2shwpkh"))
-                })?;
+                let builder =
+                    script::Builder::new()
+                        .push_int(0)
+                        .push_slice(pk.wpubkey_hash().map_err(|e| {
+                            BitcoinError::AddressError(format!(
+                                "invalid payload for p2shwpkh: {}",
+                                e
+                            ))
+                        })?);
+                let script_hash = builder.as_script().script_hash();
+                let payload = Payload::P2sh { script_hash };
                 Ok(Address { network, payload })
             }
             _ => Err(BitcoinError::AddressError(format!(
@@ -108,11 +130,51 @@ impl Address {
     }
 
     pub fn from_script(script: &script::Script, network: Network) -> Result<Address, BitcoinError> {
-        Ok(Address {
-            payload: Payload::from_script(script)
-                .map_err(|e| BitcoinError::AddressError(format!("invalid payload, {}", e)))?,
-            network,
-        })
+        if script.is_p2pkh() {
+            let bytes = script.as_bytes()[3..23]
+                .try_into()
+                .expect("statically 20B long");
+            let hash = PubkeyHash::from_byte_array(bytes);
+            Ok(Address {
+                network,
+                payload: Payload::P2pkh { pubkey_hash: hash },
+            })
+        } else if script.is_p2sh() {
+            let bytes = script.as_bytes()[2..22]
+                .try_into()
+                .expect("statically 20B long");
+            let hash = ScriptHash::from_byte_array(bytes);
+            Ok(Address {
+                network,
+                payload: Payload::P2sh { script_hash: hash },
+            })
+        } else if script.is_witness_program() {
+            let opcode = script
+                .first_opcode()
+                .expect("is_witness_program guarantees len > 4");
+
+            let version = WitnessVersion::try_from(opcode).map_err(|e| {
+                BitcoinError::AddressError(format!("invalid witness version: {}", e))
+            })?;
+            let program = WitnessProgram::new(version, &script.as_bytes()[2..])?;
+            Ok(Address {
+                network,
+                payload: Payload::Segwit {
+                    witness_program: program,
+                },
+            })
+        } else {
+            Err(BitcoinError::AddressError(format!("unrecognized script")))
+        }
+    }
+
+    pub fn script_pubkey(&self) -> ScriptBuf {
+        match self.payload {
+            Payload::P2pkh { pubkey_hash } => ScriptBuf::new_p2pkh(&pubkey_hash),
+            Payload::P2sh { script_hash } => ScriptBuf::new_p2sh(&script_hash),
+            Payload::Segwit { witness_program } => ScriptBuf::new_witness_program(&witness_program),
+            _ => panic!("unrecognized payload"),
+        }
     }
 }
 
@@ -190,11 +252,11 @@ impl FromStr for Address {
             let (_hrp, version, data) = bech32::segwit::decode(s)?;
             let version = WitnessVersion::try_from(version).expect("we know this is in range 0-16");
             let program = PushBytesBuf::try_from(data).expect("decode() guarantees valid length");
-            let witness_program = WitnessProgram::new(version, program)?;
+            let witness_program = WitnessProgram::new(version, program.as_bytes())?;
 
             return Ok(Address {
                 network,
-                payload: Payload::WitnessProgram(witness_program),
+                payload: Payload::Segwit { witness_program },
             });
             // let (_, payload, variant) = bech32::decode(s)
             //     .map_err(|_e_| Self::Err::AddressError(format!("bech32 decode failed")))?;
@@ -261,42 +323,42 @@ impl FromStr for Address {
             PUBKEY_ADDRESS_PREFIX_BTC => {
                 let pubkey_hash = PubkeyHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get pubkey hash")))?;
-                (Network::Bitcoin, Payload::PubkeyHash(pubkey_hash))
+                (Network::Bitcoin, Payload::P2pkh { pubkey_hash })
             }
             PUBKEY_ADDRESS_PREFIX_TEST => {
                 let pubkey_hash = PubkeyHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get pubkey hash")))?;
-                (Network::BitcoinTestnet, Payload::PubkeyHash(pubkey_hash))
+                (Network::BitcoinTestnet, Payload::P2pkh { pubkey_hash })
             }
             PUBKEY_ADDRESS_PREFIX_DASH => {
                 let pubkey_hash = PubkeyHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get pubkey hash")))?;
-                (Network::Dash, Payload::PubkeyHash(pubkey_hash))
+                (Network::Dash, Payload::P2pkh { pubkey_hash })
             }
             PUBKEY_ADDRESS_PREFIX_DASH_P2SH => {
                 let script_hash = ScriptHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get script hash")))?;
-                (Network::Dash, Payload::ScriptHash(script_hash))
+                (Network::Dash, Payload::P2sh { script_hash })
             }
             SCRIPT_ADDRESS_PREFIX_LTC_P2PKH => {
                 let pubkey_hash = PubkeyHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get pubkey hash")))?;
-                (Network::Litecoin, Payload::PubkeyHash(pubkey_hash))
+                (Network::Litecoin, Payload::P2pkh { pubkey_hash })
             }
             SCRIPT_ADDRESS_PREFIX_LTC => {
                 let script_hash = ScriptHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get script hash")))?;
-                (Network::Litecoin, Payload::ScriptHash(script_hash))
+                (Network::Litecoin, Payload::P2sh { script_hash })
             }
             SCRIPT_ADDRESS_PREFIX_BTC => {
                 let script_hash = ScriptHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get script hash")))?;
-                (Network::Bitcoin, Payload::ScriptHash(script_hash))
+                (Network::Bitcoin, Payload::P2sh { script_hash })
             }
             SCRIPT_ADDRESS_PREFIX_TEST => {
                 let script_hash = ScriptHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get script hash")))?;
-                (Network::BitcoinTestnet, Payload::ScriptHash(script_hash))
+                (Network::BitcoinTestnet, Payload::P2sh { script_hash })
             }
             _x => return Err(Self::Err::AddressError(format!("invalid address version"))),
         };

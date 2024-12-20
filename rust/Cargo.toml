@@ -17,6 +17,7 @@ members = [
     "apps/utils",
     "apps/wallets",
     "apps/xrp",
+    "apps/zcash",
 
     # C interface entry
     "rust_c",
@@ -38,6 +39,7 @@ members = [
     "rust_c/src/tron",
     "rust_c/src/wallet",
     "rust_c/src/xrp",
+    "rust_c/src/zcash",
 
     "rust_c/src/test_cmd",
     "rust_c/src/test_cmd/src/btc_test_cmd",
@@ -47,6 +49,7 @@ members = [
     "keystore",
     "sim_qr_reader",
     "tools",
+    "zcash_vendor",
 ]
 
 [workspace.dependencies]
@@ -65,27 +68,26 @@ app_tron = { path = "apps/tron" }
 app_utils = { path = "apps/utils" }
 app_wallets = { path = "apps/wallets" }
 app_xrp = { path = "apps/xrp" }
-
+app_zcash = { path = "apps/zcash" }
 keystore = { path = "keystore", default-features = false }
 tools = { path = "tools" }
 sim_qr_reader = { path = "sim_qr_reader" }
 rust_tools = { path = "tools" }
+zcash_vendor = { path = "zcash_vendor" }
 
 # third party dependencies
 cty = "0.2.0"
 cstr_core = "0.2.6"
 either = { version = "1.13.0", default-features = false }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
-itertools = { version = "0.10.5", default-features = false, features = [
+itertools = { version = "0.13.0", default-features = false, features = [
     "use_alloc",
 ] }
-
-bitcoin = { version = "0.31.1", default-features = false, features = [
-    "no-std",
+bitcoin = { version = "0.32.4", default-features = false, features = [
     "secp-recovery",
 ] }
-bech32 = { version = "0.10.0-beta", default-features = false }
-bitcoin_hashes = { version = "0.13.0", default-features = false }
+bech32 = { version = "0.11.0", default-features = false, features = ["alloc"] }
+bitcoin_hashes = { version = "0.14.0", default-features = false }
 core2 = { version = "0.3.3", default_features = false, features = ["alloc"] }
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
 rsa = { version = "0.8.2", default-features = false }
@@ -111,6 +113,7 @@ serde_derive = { version = "1.0.159" }
 serde_bytes = { version = "0.11.5", default-features = false, features = [
     "alloc",
 ] }
+rand_core = { version = "0.6" }
 rand_chacha = { version = "0.3.1", default-features = false }
 sha2 = { version = "0.10.6", default-features = false, features = ["oid"] }
 aes = { version = "0.8.4", default-features = false }
@@ -127,10 +130,18 @@ prost-types = { version = "0.11", default-features = false }
 num-bigint = { version = "0.4.5", default-features = false }
 num-integer = { version = "0.1.46", default-features = false }
 num-traits = { version = "0.2.19", default-features = false }
+blake2b_simd = { version = "1.0.2", default-features = false }
+getrandom = "0.2"
 # third party dependencies end
 
-[patch.crates-io.bitcoin]
-git = "https://github.com/KeystoneHQ/rust-bitcoin.git"
-tag = "v0.31.2"
-default-features = false
-features = ["no-std", "secp-recovery"]
+[patch.crates-io]
+bip32 = { git = "https://github.com/KeystoneHQ/crates.git", rev = "9873e8fd56007d792fa60d6e844fdb75d527c858" }
+f4jumble = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
+nonempty = { git = "https://github.com/nuttycom/nonempty.git", rev = "38d37189faecb2a0e3d6adc05aa24e1b93c2483b" }
+orchard = { git = "https://github.com/zcash/orchard.git", rev = "e0cc7ac53ad8c97661b312a8b1c064f4cd3c6629" }
+pczt = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
+transparent = { package = "zcash_transparent", git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
+zcash_address = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
+zcash_encoding = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
+zcash_keys = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
+zcash_protocol = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }

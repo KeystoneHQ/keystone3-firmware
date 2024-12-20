@@ -1,0 +1,27 @@
+on:
+  pull_request:
+    paths:
+      - rust/apps/zcash/**
+
+name: Zcash Checks
+
+jobs:
+  UnitTest:
+    name: Unit Test And Code coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2024-01-31
+          override: true
+          components: rustfmt
+          target: x86_64-apple-darwin
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Run rust/apps/zcash
+        run: cd rust/apps/zcash && cargo +nightly-2024-01-31 llvm-cov  --fail-under-regions 48 --fail-under-functions 42 --fail-under-lines 56

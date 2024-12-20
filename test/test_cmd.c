@@ -211,6 +211,7 @@ static void RustTestSuiSignTx(int argc, char *argv[]);
 static void RustTestAptosCheckTx(int argc, char *argv[]);
 static void RustTestAptosParseTx(int argc, char *argv[]);
 static void RustADATest(int argc, char *argv[]);
+static void RustZECTest(int argc, char *argv[]);
 #endif
 static void LogTestFunc(int argc, char *argv[]);
 static void ETHDBContractsTest(int argc, char *argv[]);
@@ -231,8 +232,6 @@ static void DeviceSettingsTestFunc(int argc, char *argv[]);
 static void ScreenShotFunc(int argc, char *argv[]);
 static void BpkPrintFunc(int argc, char *argv[]);
 static void SdCardTestFunc(int argc, char *argv[]);
-
-
 
 const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"test", TestFunc},
@@ -380,6 +379,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test aptos check tx:", RustTestAptosCheckTx},
     {"rust test aptos parse tx:", RustTestAptosParseTx},
     {"rust ada test", RustADATest},
+    {"rust zec test:", RustZECTest},
 
 #endif
     {"log test:", LogTestFunc},
@@ -1267,7 +1267,6 @@ static void RustTestCosmosSignTx(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-
 static void RustTestCosmosParseTx(int argc, char *argv[])
 {
     // Example:
@@ -1392,7 +1391,6 @@ static void RustGetConnectSolanaWalletUR(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-
 static void RustGetConnectAptosWalletUR(int argc, char *argv[])
 {
     printf("RustGetConnectAptosWalletUR\r\n");
@@ -1460,7 +1458,6 @@ static void RustSolanaMessage(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-
 static void RustTestCosmosEvmSignTx(int argc, char *argv[])
 {
     //argv[0]: wallet index
@@ -1489,7 +1486,6 @@ static void RustTestCosmosEvmSignTx(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-
 static void RustTestK1SignMeessageByKey(int argc, char *argv[])
 {
     uint8_t privateKey[] = {
@@ -1512,7 +1508,6 @@ static void RustTestK1SignMeessageByKey(int argc, char *argv[])
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
-
 
 static void RustTestK1VerifySignature(int argc, char *argv[])
 {
@@ -1552,7 +1547,6 @@ static void RustTestK1VerifySignature(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-
 static void testWebAuth(int argc, char *argv[])
 {
     URParseResult *_res =  parse_ur("UR:BYTES/1-3/LPADAXCFAXHLCYYNJKWLGOHKADCTHKAXHTKGCPKOIHJPJKINJLJTCPFTEHDWCPIEIHJKIAJPINJOJYINJLJTCPFTCPJEIHKKJKJYJLJTIHCXJSJPIAJLIEIHCXJOJPJLJYJLIAJLJZCPDWCPIEHSJYHSCPFTKGCPJYKKJOIHCPFTCPKTIHIDFPKPJYISCPDWCPIEHSJYHSCPFTCPGSGUKTHDINKPKTHKKPHDDYHKFEKSFWKTDLJZGTGUFPFPGLGOJLHGEHENHTKTFXIDHTDLHGGOGSGAGTIMEYGAIOINIYGHGTGUFYFXFDJTEYDLGWEMKNJNKNFPIAJSGAETJNKTFEJZJLEOGUKNGOINFEHSJLISFPISHDESHTIHKPFGFWECKKEMEOGAJTESJTEEFWGWFYIAFDKKHDJYIHEEGOKKKPHSFPINIOFYJSIYKNKKIMJTFGKSKSIHDLGEFLFXHKIHFWESFPEOJEJYDYHGEHFPFLGUFEIEGEINJTEYKOGDECFEJTECGYGTHFFEEHGEECGSIDGHESKKGRKOHFETGUJPGRJKFLJKENEHGMIHGOHKGOFEGDFXEYKSGEKPGTJNJYGUJSJKJLRSTTIMJO");
@@ -1563,8 +1557,6 @@ static void testWebAuth(int argc, char *argv[])
     char *result = calculate_auth_code(_multi->data, key, 512, &key[512], 512);
     printf("auth_code: %s\r\n", result);
 }
-
-
 
 static void RustTestParseBCHKeystone(int argc, char *argv[])
 {
@@ -2282,6 +2274,16 @@ static void RustTestAptosParseTx(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
+static void RustZECTest(int argc, char *argv[])
+{
+    printf("ZEC test\r\n");
+    int32_t index;
+    sscanf(argv[0], "%d", &index);
+    uint8_t seed[64];
+    int32_t getSeedRet = GetAccountSeed(index, seed, argv[1]);
+    try_sign_zec_orchard(seed, argv[2], argv[3]);
+}
+
 static void RustADATest(int argc, char *argv[])
 {
     printf("ADA test\r\n");
@@ -2374,7 +2376,6 @@ static void testNearParseTx(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-
 static void testXrpParseTx(int argc, char *argv[])
 {
     //    #rust test xrp parse: 7B225472616E73616374696F6E54797065223A225061796D656E74222C22416D6F756E74223A223130303030303030222C2244657374696E6174696F6E223A22724478516F597A635172707A56487554345778366261634A5958794754457462766D222C22466C616773223A323134373438333634382C224163636F756E74223A227247556D6B794C627671474633687758347177474864727A4C6459325170736B756D222C22466565223A223132222C2253657175656E6365223A37393939313836352C224C6173744C656467657253657175656E6365223A38303838323630322C225369676E696E675075624B6579223A22303346354335424231443139454337313044334437464144313939414631304346384243314431313334384535423337363543304230423943304245433332383739227D
@@ -2416,7 +2417,6 @@ static void testXrpParseTx(int argc, char *argv[])
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
-
 
 static void testNearGetAddress(int argc, char *argv[])
 {
@@ -2615,7 +2615,6 @@ static void RustTestParseAptosTx(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-
 static void RustParseEthPersonalMessage(int argc, char *argv[])
 {
 
@@ -2664,7 +2663,6 @@ static void RustParseEthContractData(int argc, char* argv[])
     }
 }
 
-
 static void testXRPGetAddress(int argc, char *argv[])
 {
     // arguments
@@ -2686,7 +2684,6 @@ static void testXRPGetAddress(int argc, char *argv[])
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
-
 
 static void testXRPSignTx(int argc, char *argv[])
 {
@@ -2711,7 +2708,6 @@ static void testXRPSignTx(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-
 static void RustTestCosmosCheckTx(int argc, char *argv[])
 {
     // Example #rust test cosmos check: a601d82550376d126699f54b08b6f3583bb3ddab510259017f7b226163636f756e745f6e756d626572223a2237363431222c22636861696e5f6964223a226f736d6f2d746573742d35222c22666565223a7b22616d6f756e74223a5b7b22616d6f756e74223a2239353132222c2264656e6f6d223a22756f736d6f227d5d2c22676173223a22323337373838227d2c226d656d6f223a22222c226d736773223a5b7b2274797065223a22636f736d6f732d73646b2f4d7367556e64656c6567617465222c2276616c7565223a7b22616d6f756e74223a7b22616d6f756e74223a2232303030303030222c2264656e6f6d223a22756f736d6f227d2c2264656c656761746f725f61646472657373223a226f736d6f3137753032663830766b61666e65396c61347779706478336b78787878776d36667a6d63677963222c2276616c696461746f725f61646472657373223a226f736d6f76616c6f7065723168683067357866323365357a656b673435636d65726339376873346e32303034647932743236227d7d5d2c2273657175656e6365223a2231227d03010481d90130a2018a182cf51876f500f500f400f4021a52744703058178286637316561343964656362373533336339376664616238383136396133363331386336373666343906654b65706c72
@@ -2731,8 +2727,6 @@ static void RustTestCosmosCheckTx(int argc, char *argv[])
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
-
-
 
 #endif
 
@@ -2808,7 +2802,6 @@ static void LcdTestFunc(int argc, char *argv[])
     LcdTest(argc, argv);
 }
 
-
 static void LowPowerTestFunc(int argc, char *argv[])
 {
     LowPowerTest(argc, argv);
@@ -2831,7 +2824,6 @@ static void Sqlite3TestFunc(int argc, char *argv[])
     Sqlite3Test(argc, argv);
 }
 
-
 static void CrcTestFunc(int argc, char *argv[])
 {
     uint8_t *hex;
@@ -2848,37 +2840,30 @@ static void CrcTestFunc(int argc, char *argv[])
     SRAM_FREE(hex);
 }
 
-
 static void ProtocolCodeTestFunc(int argc, char *argv[])
 {
     ProtocolCodecTest(argc, argv);
 }
-
-
 
 static void PresettingTestFunc(int argc, char *argv[])
 {
     PresettingTest(argc, argv);
 }
 
-
 static void UsbTestFunc(int argc, char *argv[])
 {
     UsbTest(argc, argv);
 }
-
 
 static void DeviceSettingsTestFunc(int argc, char *argv[])
 {
     DeviceSettingsTest(argc, argv);
 }
 
-
 static void ScreenShotFunc(int argc, char *argv[])
 {
     PubValueMsg(UI_MSG_SCREEN_SHOT, 0);
 }
-
 
 static void SdCardTestFunc(int argc, char *argv[])
 {

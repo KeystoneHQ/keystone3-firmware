@@ -77,7 +77,7 @@ typedef struct {
 
 typedef struct {
     uint32_t index;
-    char address[128];
+    char address[ADDRESS_MAX_LEN];
     char path[32];
 } AddressDataItem_t;
 
@@ -205,7 +205,6 @@ static void UpdateConfirmIndexBtn(void)
     RefreshQrCode();
     UpdateConfirmBtn();
 }
-
 
 static void RefreshSwitchAddress(void)
 {
@@ -716,7 +715,12 @@ static void RefreshQrCode(void)
         char address[128];
         snprintf_s(address, 128, "%.22s\n%s", addressDataItem.address, &addressDataItem.address[22]);
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, address);
-    } else {
+    } else if (g_chainCard == HOME_WALLET_CARD_ZEC) {
+        char addressString[256];
+        CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 60);
+        lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressString);
+    }
+    else {
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     }
     lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), addressDataItem.index);
@@ -925,6 +929,13 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         result = ton_get_address(xPub);
         break;
     }
+    case HOME_WALLET_CARD_ZEC: {
+        char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
+        uint8_t sfp[32];
+        GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+        result = generate_zcash_default_address(ufvk);
+        break;
+    }
     default:
         if (IsCosmosChain(g_chainCard)) {
             result = (SimpleResponse_c_char *) GetCosmosChainAddressByCoinTypeAndIndex(g_chainCard, index);
@@ -935,8 +946,8 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     }
     if (result->error_code == 0) {
         item->index = index;
-        strcpy(item->address, result->data);
-        strcpy(item->path, hdPath);
+        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+        strcpy_s(item->path, 32, hdPath);
     }
     free_simple_response_c_char(result);
 }

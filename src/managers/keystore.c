@@ -798,6 +798,10 @@ int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
 }
 #endif
 
+int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len) {
+    return GenerateEntropy(randomness, len, "generate trng randomness");
+}
+
 #ifndef BUILD_PRODUCTION
 
 /// @brief

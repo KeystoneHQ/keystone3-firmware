@@ -7,6 +7,7 @@ use core::ptr::null_mut;
 use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::extend::qr_hardware_call::QRHardwareCall;
+use ur_registry::zcash::zcash_pczt::ZcashPczt;
 
 use app_bitcoin::errors::BitcoinError;
 #[cfg(feature = "multi-coins")]
@@ -244,6 +245,8 @@ pub enum ViewType {
     #[cfg(feature = "multi-coins")]
     TonSignProof,
     #[cfg(feature = "multi-coins")]
+    ZcashTx,
+    #[cfg(feature = "multi-coins")]
     AptosTx,
     WebAuthResult,
     #[cfg(feature = "multi-coins")]
@@ -300,6 +303,8 @@ pub enum QRCodeType {
     StellarSignRequest,
     #[cfg(feature = "multi-coins")]
     TonSignRequest,
+    #[cfg(feature = "multi-coins")]
+    ZcashPczt,
     URTypeUnKnown,
 }
 
@@ -345,6 +350,8 @@ impl QRCodeType {
             }
             #[cfg(feature = "multi-coins")]
             InnerURType::TonSignRequest(_) => Ok(QRCodeType::TonSignRequest),
+            #[cfg(feature = "multi-coins")]
+            InnerURType::ZcashPczt(_) => Ok(QRCodeType::ZcashPczt),
             #[cfg(feature = "multi-coins")]
             InnerURType::QRHardwareCall(_) => Ok(QRCodeType::QRHardwareCall),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
@@ -658,6 +665,8 @@ pub fn decode_ur(ur: String) -> URParseResult {
         QRCodeType::TonSignRequest => _decode_ur::<TonSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
         QRCodeType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
+        #[cfg(feature = "multi-coins")]
+        QRCodeType::ZcashPczt => _decode_ur::<ZcashPczt>(ur, ur_type),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),
         ),
@@ -748,6 +757,8 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         QRCodeType::QRHardwareCall => _receive_ur::<QRHardwareCall>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         QRCodeType::TonSignRequest => _receive_ur::<TonSignRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "multi-coins")]
+        QRCodeType::ZcashPczt => _receive_ur::<ZcashPczt>(ur, ur_type, decoder),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseMultiResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),
         ),

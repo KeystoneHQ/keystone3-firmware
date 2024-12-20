@@ -190,3 +190,28 @@ impl Free for PtrT<ExtendedPublicKey> {
         }
     }
 }
+
+#[repr(C)]
+pub struct ZcashKey {
+    pub key_text: PtrString,
+    pub key_name: PtrString,
+    pub index: u32,
+}
+
+impl_c_ptr!(ZcashKey);
+
+impl Free for ZcashKey {
+    fn free(&self) {
+        free_str_ptr!(self.key_text);
+        free_str_ptr!(self.key_name);
+    }
+}
+
+impl Free for PtrT<ZcashKey> {
+    fn free(&self) {
+        unsafe {
+            let x = Box::from_raw(*self);
+            x.free()
+        }
+    }
+}

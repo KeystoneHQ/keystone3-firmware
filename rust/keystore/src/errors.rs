@@ -1,6 +1,7 @@
 use alloc::string::String;
 use thiserror;
 use thiserror::Error;
+use zcash_vendor::orchard;
 
 pub type Result<T> = core::result::Result<T, KeystoreError>;
 
@@ -24,4 +25,6 @@ pub enum KeystoreError {
     RSAVerifyError,
     #[error("InvalidDataError: {0}")]
     InvalidDataError(String),
+    #[error("ZcashOrchardSign: {0}")]
+    ZcashOrchardSign(String),
 }

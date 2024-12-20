@@ -3,7 +3,8 @@ use crate::collect;
 use crate::errors::{BitcoinError, Result};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use bitcoin::{self, Amount};
+use bitcoin::address::AddressData as Payload;
+use bitcoin::{self, Amount, ScriptBuf};
 use core::str::FromStr;
 use ur_registry::pb::protoc;
 use ur_registry::pb::protoc::sign_transaction::Transaction::{BchTx, BtcTx, DashTx, LtcTx};
@@ -21,7 +22,7 @@ impl TryInto<bitcoin::TxOut> for TxOut {
 
     fn try_into(self) -> Result<bitcoin::TxOut> {
         let address = Address::from_str(self.address.as_str())?;
-        let script_pubkey = address.payload.script_pubkey();
+        let script_pubkey = address.script_pubkey();
         Ok(bitcoin::TxOut {
             value: Amount::from_sat(self.value),
             script_pubkey,

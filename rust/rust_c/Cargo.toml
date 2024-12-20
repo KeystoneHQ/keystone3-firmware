@@ -24,9 +24,11 @@ xrp_rust_c = { path = "./src/xrp", optional = true }
 arweave_rust_c = { path = "./src/arweave", optional = true }
 stellar_rust_c = { path = "./src/stellar", optional = true }
 ton_rust_c = { path = "./src/ton", optional = true }
+zcash_rust_c = { path = "./src/zcash", optional = true }
 
 cty = { workspace = true }
 cstr_core = { workspace = true }
+getrandom = { workspace = true, features = ["custom"] }
 
 [lib]
 crate-type = ["staticlib"]
@@ -59,6 +61,7 @@ debug-memory = [
     "tron_rust_c/debug-memory",
     "xrp_rust_c/debug-memory",
     "ton_rust_c/debug-memory",
+    "zcash_rust_c/debug-memory",
 ]
 
 multi-coins = [
@@ -78,6 +81,7 @@ multi-coins = [
     "arweave_rust_c",
     "stellar_rust_c",
     "ton_rust_c",
+    "zcash_rust_c"
 ]
 btc-only = [
     "common_rust_c/btc-only",

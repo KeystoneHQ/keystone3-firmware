@@ -309,6 +309,17 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeArMemory,
     },
+    {
+        REMAPVIEW_ZCASH,
+#ifndef COMPILE_SIMULATOR
+        "{\"name\":\"zcash_page\",\"type\":\"custom_container\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"custom_show_func\":\"GuiZcashOverview\"}",
+#else
+        PC_SIMULATOR_PATH "/page_zcash.json",
+#endif
+        GuiGetZcashGUIData,
+        NULL,
+        FreeZcashMemory,
+    }
 #endif
 };
 
@@ -1339,6 +1350,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiStellarHashNotice;
     } else if (!strcmp(funcName, "GuiTonTxOverview")) {
         return GuiTonTxOverview;
+    } else if (!strcmp(funcName, "GuiZcashOverview")) {
+        return GuiZcashOverview;
     } else if (!strcmp(funcName, "GuiTonTxRawData")) {
         return GuiTonTxRawData;
     } else if (!strcmp(funcName, "GuiTonProofOverview")) {
@@ -1775,6 +1788,8 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
         return REMAPVIEW_TON;
     case TonSignProof:
         return REMAPVIEW_TON_SIGNPROOF;
+    case ZcashTx:
+        return REMAPVIEW_ZCASH;
 #endif
     default:
         return REMAPVIEW_BUTT;

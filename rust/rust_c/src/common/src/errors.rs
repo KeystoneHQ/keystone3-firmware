@@ -25,6 +25,7 @@ use app_ton::errors::TonError;
 use app_tron::errors::TronError;
 #[cfg(feature = "multi-coins")]
 use app_xrp::errors::XRPError;
+use app_zcash::errors::ZcashError;
 use keystore::errors::KeystoreError;
 use thiserror;
 use thiserror::Error;
@@ -70,6 +71,7 @@ pub enum ErrorCodes {
     KeystoreRSASignError,
     KeystoreRSAVerifyError,
     KeystoreInvalidDataError,
+    KeystoreZcashOrchardSignError,
 
     //Bitcoin errors
     BitcoinInvalidInput = 100,
@@ -196,6 +198,11 @@ pub enum ErrorCodes {
     StellarInvalidData,
     StellarParseTxError,
     StellarKeystoreError,
+
+    // Zcash
+    ZcashGenerateAddressError = 1500,
+    ZcashSigningError,
+    ZcashInvalidPczt,
 }
 
 impl ErrorCodes {
@@ -317,6 +324,7 @@ impl From<&KeystoreError> for ErrorCodes {
             KeystoreError::RSAVerifyError => Self::KeystoreRSAVerifyError,
             KeystoreError::RSASignError => Self::KeystoreRSASignError,
             KeystoreError::InvalidDataError(_) => Self::KeystoreInvalidDataError,
+            KeystoreError::ZcashOrchardSign(_) => Self::KeystoreZcashOrchardSignError,
         }
     }
 }
@@ -467,6 +475,18 @@ impl From<&TonError> for ErrorCodes {
             TonError::AddressError(_) => Self::AddressError,
             TonError::InvalidTransaction(_) => Self::TonTransactionError,
             TonError::InvalidProof(_) => Self::InvalidProof,
+        }
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl From<&ZcashError> for ErrorCodes {
+    fn from(value: &ZcashError) -> Self {
+        match value {
+            ZcashError::GenerateAddressError(_) => Self::ZcashGenerateAddressError,
+            ZcashError::InvalidDataError(_) => Self::InvalidData,
+            ZcashError::SigningError(_) => Self::ZcashSigningError,
+            ZcashError::InvalidPczt(_) => Self::ZcashInvalidPczt,
         }
     }
 }

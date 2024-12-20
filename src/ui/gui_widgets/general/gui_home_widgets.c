@@ -52,6 +52,7 @@ static bool g_isScrolling = false;
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
     {HOME_WALLET_CARD_BTC, false, "BTC", true},
     {HOME_WALLET_CARD_ETH, false, "ETH", true},
+    {HOME_WALLET_CARD_ZEC, false, "ZEC", true},
     {HOME_WALLET_CARD_SOL, false, "SOL", true},
     {HOME_WALLET_CARD_BNB, false, "BNB", false},
     {HOME_WALLET_CARD_HNT, false, "HNT", true},
@@ -121,6 +122,7 @@ static void GuiInitWalletState()
         g_walletState[HOME_WALLET_CARD_BNB].enable = false;
         g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = false;
+        g_walletState[HOME_WALLET_CARD_ZEC].enable = false;
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
         break;
     case MNEMONIC_TYPE_BIP39:
@@ -131,6 +133,11 @@ static void GuiInitWalletState()
         g_walletState[HOME_WALLET_CARD_DOT].enable = false;
         g_walletState[HOME_WALLET_CARD_ADA].enable = true;
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
+        bool isPassphrase = PassphraseExist(GetCurrentAccountIndex());
+        if (isPassphrase) {
+            g_walletState[HOME_WALLET_CARD_ZEC].enable = false;
+            g_walletState[HOME_WALLET_CARD_ZEC].state = false;
+        }
         break;
     default:
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
@@ -151,6 +158,12 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .coin = "ETH",
         .chain = "Ethereum",
         .icon = &coinEth,
+    },
+    {
+        .index = HOME_WALLET_CARD_ZEC,
+        .coin = "ZEC",
+        .chain = "Zcash",
+        .icon = &coinZec,
     },
     {
         .index = HOME_WALLET_CARD_SOL,
@@ -501,6 +514,9 @@ static void UpdateManageWalletState(bool needUpdate)
         if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
             continue;
         }
+        if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ZEC) {
+            continue;
+        }
 
         if (g_walletState[i].enable) {
             total++;
@@ -740,7 +756,6 @@ void ScanQrCodeHandler(lv_event_t *e)
         lv_timer_del(g_countDownTimer);
         g_countDownTimer = NULL;
     }
-
     GuiFrameOpenView(lv_event_get_user_data(e));
 }
 

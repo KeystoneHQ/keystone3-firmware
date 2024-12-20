@@ -8,7 +8,6 @@ use base58_monero::{decode, encode};
 use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
 
-use third_party::hex;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub struct Address {

@@ -22,7 +22,7 @@ if(NOT BUILD_TYPE STREQUAL "Simulator")
 
     add_custom_target(rust_c ALL
         COMMAND ${CBINDGEN_EXE} ${CBINDGEN_FLAG}
-        COMMAND rustup run nightly-2024-01-31 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
+        COMMAND rustup run nightly-2024-07-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
         COMMAND ${COPY_COMMAND}
         WORKING_DIRECTORY ${RUST_DIR}
     )
@@ -44,7 +44,7 @@ else()
 
     add_custom_target(rust_c ALL
         COMMAND ${CBINDGEN_EXE} ${CBINDGEN_FLAG}
-        COMMAND rustup run nightly-2024-01-31 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
+        COMMAND rustup run nightly-2024-07-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
         COMMAND ${COPY_COMMAND}
         WORKING_DIRECTORY ${RUST_DIR}
     )

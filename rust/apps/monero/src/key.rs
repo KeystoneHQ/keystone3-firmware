@@ -4,10 +4,8 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
 use curve25519_dalek::scalar::Scalar;
-
-use third_party::bitcoin::{Network, PrivateKey as PrvKey};
-use third_party::hex;
-
+use bitcoin::Network;
+use bitcoin::PrivateKey as PrvKey;
 #[derive(Debug, Clone, Default)]
 pub struct PrivateKey {
     pub scalar: Scalar,

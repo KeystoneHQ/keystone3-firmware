@@ -50,6 +50,7 @@ typedef enum {
     TON_NATIVE,
     TON_CHECKSUM,
     LEDGER_BITBOX02,
+    ZCASH_UFVK_ENCRYPTED,
 } PublicInfoType_t;
 
 typedef struct {
@@ -289,6 +290,12 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_TON_BIP39,             ED25519,       "ton_bip39",                "M/44'/607'/0'"    },
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
+    //this path is not 100% correct because UFVK is a combination of
+    //a k1 key with path M/44'/133'/x'
+    //and
+    //a redpallas key with path M/32'/133'/x'
+    //but we use 32 to identify it for now
+    {ZCASH_UFVK_ENCRYPTED_0,          ZCASH_UFVK_ENCRYPTED, "zcash_ufvk_0",        "M/32'/133'/0'"    },
 
 #else
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
@@ -590,7 +597,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             ledgerBitbox02Key = ledger_bitbox02_response->data;
         }
 
-
 #ifndef BTC_ONLY
         if (isTon) {
             //store public key for ton wallet;
@@ -613,16 +619,34 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         } else {
 #endif
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-                // slip39 wallet does not support ADA
-                if (isSlip39 && (g_chainTable[i].cryptoKey == BIP32_ED25519 || g_chainTable[i].cryptoKey == LEDGER_BITBOX02)) {
+                // slip39 wallet does not support:
+                // ADA
+                // Zcash
+                if (isSlip39 && (g_chainTable[i].cryptoKey == BIP32_ED25519 || g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED)) {
                     continue;
                 }
-                // do not generate public keys for ton wallet;
+                // do not generate public keys for ton-only wallet;
                 if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
                     continue;
                 }
-
-                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+                //encrypt zcash ufvk
+                if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
+                    char* zcashUfvk = NULL;
+                    SimpleResponse_c_char *zcash_ufvk_response = NULL;
+                    zcash_ufvk_response = derive_zcash_ufvk(seed, len, g_chainTable[i].path);
+                    CHECK_AND_FREE_XPUB(zcash_ufvk_response)
+                    zcashUfvk = zcash_ufvk_response->data;
+                    printf("zcash ufvk: %s\r\n", zcashUfvk);
+                    SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);
+                    //iv_response won't fail
+                    uint8_t iv_bytes[16];
+                    memcpy_s(iv_bytes, 16, iv_response->data, 16);
+                    free_simple_response_u8(iv_response);
+                    xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
+                }
+                else {
+                    xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+                }
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                     continue;
                 }
@@ -771,6 +795,9 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
                 continue;
             }
             if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
+                continue;
+            }
+            if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
                 continue;
             }
 

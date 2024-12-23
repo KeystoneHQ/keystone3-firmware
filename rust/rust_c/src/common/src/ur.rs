@@ -21,6 +21,8 @@ use ur_parse_lib::keystone_ur_decoder::{
 use ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
 #[cfg(feature = "multi-coins")]
 use ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
+#[cfg(feature = "multi-coins")]
+use ur_registry::avalanche::avax_sign_request::AvaxSignRequest;
 use ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
@@ -53,8 +55,6 @@ use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::ton::ton_sign_request::TonSignRequest;
-#[cfg(feature = "multi-coins")]
-use ur_registry::avalanche::avax_sign_request::AvaxSignRequest;
 use ur_registry::traits::RegistryItem;
 
 use crate::errors::{ErrorCodes, RustCError};

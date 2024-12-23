@@ -7,6 +7,7 @@ use serde_json::{from_slice, from_value, Value};
 use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SignType};
+use ur_registry::avalanche::avax_sign_request::AvaxSignRequest;
 use ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
 use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
@@ -42,7 +43,6 @@ use ur_registry::stellar::stellar_sign_request::{SignType as StellarSignType, St
 #[cfg(feature = "multi-coins")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
-use ur_registry::avalanche::avax_sign_request::AvaxSignRequest;
 use ur_registry::{
     bitcoin::btc_sign_request::BtcSignRequest, sui::sui_sign_hash_request::SuiSignHashRequest,
 };
@@ -303,7 +303,7 @@ impl InferViewType for QRHardwareCall {
 #[cfg(feature = "multi-coins")]
 impl InferViewType for AvaxSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
-       Ok(ViewType::AvaxTx)
+        Ok(ViewType::AvaxTx)
     }
 }
 

@@ -1,5 +1,5 @@
-use crate::errors::{AvaxError, Result};
 use crate::constants::*;
+use crate::errors::{AvaxError, Result};
 use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
 

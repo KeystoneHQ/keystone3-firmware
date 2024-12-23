@@ -10,40 +10,40 @@ pub type Result<T> = core::result::Result<T, AvaxError>;
 pub enum AvaxError {
     #[error("invalid input")]
     InvalidInput,
-    
+
     #[error("invalid output")]
     InvalidOutput,
-    
+
     #[error("invalid transaction, reason: {0}")]
     InvalidTransaction(String),
-    
+
     #[error("sign failed, reason: {0}")]
     SignFailure(String),
-    
+
     #[error("get addresses failed, reason: {0}")]
     AddressError(String),
-    
+
     #[error("get key error: {0}")]
     GetKeyError(String),
-    
+
     #[error("unsupported: {0}")]
     UnsupportedTransaction(String),
-    
+
     #[error("unsupported network")]
     UnsupportedNetwork(String),
-    
+
     #[error("consensus encode error, reason: {0}")]
     TransactionConsensusEncodeError(String),
-    
+
     #[error("invalid hex: {0}")]
     InvalidHex(String),
-    
+
     #[error("bech32 decode failed, reason: {0}")]
     Bech32DecodeError(String),
-    
+
     #[error("keystore operation failed, reason: {0}")]
     KeystoreError(String),
-    
+
     #[error("derive public key error: {0}")]
     DerivePublicKeyError(String),
 
@@ -65,7 +65,6 @@ impl From<bech32::segwit::DecodeError> for AvaxError {
         Self::Bech32DecodeError(format!("{}", value))
     }
 }
-
 
 impl From<KeystoreError> for AvaxError {
     fn from(value: KeystoreError) -> Self {

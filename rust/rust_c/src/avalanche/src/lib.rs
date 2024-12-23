@@ -5,7 +5,6 @@ extern crate alloc;
 
 pub mod address;
 pub mod structs;
-pub mod transactions;
 
 use alloc::{
     format,

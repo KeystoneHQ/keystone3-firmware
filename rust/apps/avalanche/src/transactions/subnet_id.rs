@@ -18,5 +18,3 @@ impl TryFrom<Bytes> for SubnetId {
         Ok(SubnetId { subnet_id })
     }
 }
-
-

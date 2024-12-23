@@ -13,7 +13,6 @@ pub enum Network {
 
     #[cfg(feature = "testnet")]
     AvaxTestNet,
-
     // @todo: Add Local and CustomNewNetwork
 }
 

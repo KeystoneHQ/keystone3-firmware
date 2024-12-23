@@ -25,7 +25,7 @@ pub mod P_chain {
     pub mod add_permissionless_delegator;
     pub mod add_permissionless_validator;
     pub mod node_id;
-    mod validator;
-    mod signer;
     mod output_owner;
+    mod signer;
+    mod validator;
 }

@@ -591,6 +591,7 @@ static void RefreshQrCode(void)
     char string[128] = {0};
     char *addressPrefix = _("Address");
     if (g_chainCard == HOME_WALLET_CARD_MONERO) {
+        addressPrefix = _("Sub_Address");
         snprintf_s(string, sizeof(string), "%s", addressDataItem.address);
         bool isPrimaryAddress = g_selectedIndex[GetCurrentAccountIndex()] == 0 && g_selectedAccount[GetCurrentAccountIndex()] == 0;
         if (isPrimaryAddress) {
@@ -613,6 +614,7 @@ static void RefreshSwitchAddress(void)
         ModelGetAddress(index, &addressDataItem, 0);
         char *addressPrefix = _("Address");
         if (g_chainCard == HOME_WALLET_CARD_MONERO) {
+            addressPrefix = _("Sub_Address");
             uint32_t accountIndex = g_selectedAccount[GetCurrentAccountIndex()];
             bool isPrimaryAddress = index == 0 && accountIndex == 0;
             if (isPrimaryAddress) {

@@ -299,6 +299,7 @@ static lv_obj_t *g_egAddress[DERIVATION_PATH_EG_LEN];
 static lv_obj_t *g_egAddressIndex[DERIVATION_PATH_EG_LEN];
 
 static CoinState_t g_tempFewchaCoinState[FEWCHA_COINS_BUTT];
+static bool g_isNeedCloseTimer = false;
 #endif
 
 static lv_obj_t *g_coinCont = NULL;
@@ -2198,6 +2199,7 @@ int8_t GuiConnectWalletNextTile(void)
 
 static void PrivateModePrevTileHandler(lv_event_t *e)
 {
+    g_isNeedCloseTimer = true;
     CloseToTargetTileView(g_connectWalletTileView.currentTile,
                           CONNECT_WALLET_SELECT_WALLET);
 }
@@ -2223,8 +2225,13 @@ int8_t GuiConnectWalletPrevTile(void)
                          NULL);
         if (IsPrivateQrMode()) {
             ExitPrivateMode();
+        }
+        if (g_isNeedCloseTimer) {
+            GuiAnimatingQRCodeDestroyTimer();
+        } else {
             GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         }
+        g_isNeedCloseTimer = false;
         break;
     }
     g_connectWalletTileView.currentTile--;

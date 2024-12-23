@@ -4,7 +4,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
 use curve25519_dalek::scalar::Scalar;
-
+use monero_serai_mirror::generators::hash_to_point;
 use bitcoin::{Network, PrivateKey as PrvKey};
 use hex;
 
@@ -167,7 +167,7 @@ pub fn generate_sub_secret_key(secret_view_key: PrivateKey, major: u32, minor: u
 
 pub fn generate_key_image_from_priavte_key(private_key: &PrivateKey) -> EdwardsPoint {
     let x = private_key.scalar;
-    let Hp = monero_generators_mirror::hash_to_point((EdwardsPoint::mul_base(&x)).compress().0);
+    let Hp = hash_to_point((EdwardsPoint::mul_base(&x)).compress().0);
 
     x * Hp
 }

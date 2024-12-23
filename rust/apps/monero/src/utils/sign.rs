@@ -1,6 +1,7 @@
 use crate::key::*;
 use crate::utils::*;
 use alloc::vec::Vec;
+use monero_serai_mirror::generators::hash_to_point;
 
 pub struct Signature(pub [u8; 64]);
 
@@ -104,7 +105,7 @@ pub fn generate_ring_signature<R: RngCore + CryptoRng>(
             let tmp3 = EdwardsPoint::mul_base(&k);
             buff.extend_from_slice(&tmp3.compress().0);
 
-            let tmp3 = monero_generators_mirror::hash_to_point(pubs[index].point.0);
+            let tmp3 = hash_to_point(pubs[index].point.0);
             let temp2 = k * tmp3;
             buff.extend_from_slice(&temp2.compress().0);
         } else {
@@ -117,7 +118,7 @@ pub fn generate_ring_signature<R: RngCore + CryptoRng>(
                 &sig[index][1],
             );
             buff.extend_from_slice(&temp2.compress().0);
-            let tmp3 = monero_generators_mirror::hash_to_point(tmp3.compress().0);
+            let tmp3 = hash_to_point(tmp3.compress().0);
             let tmp2 = EdwardsPoint::multiscalar_mul(
                 &[sig[index][1], sig[index][0]],
                 &[tmp3, key_image.clone()],

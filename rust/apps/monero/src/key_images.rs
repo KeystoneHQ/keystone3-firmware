@@ -17,6 +17,7 @@ use curve25519_dalek::EdwardsPoint;
 use hex;
 use rand_core::SeedableRng;
 use rand_core::{CryptoRng, RngCore};
+use monero_serai_mirror::generators::hash_to_point;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Keyimage(pub [u8; PUBKEY_LEH]);
@@ -194,7 +195,7 @@ fn generate_key_image_from_offset(
         return None;
     }
 
-    Some(input_key * monero_generators_mirror::hash_to_point(output_public_key.point.to_bytes()))
+    Some(input_key * hash_to_point(output_public_key.point.to_bytes()))
 }
 
 pub fn try_to_generate_image(

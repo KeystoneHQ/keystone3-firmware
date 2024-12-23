@@ -14,9 +14,9 @@ use alloc::vec::Vec;
 use core::fmt::Display;
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::EdwardsPoint;
-use monero_clsag_mirror::{Clsag, ClsagContext};
-use monero_primitives_mirror::Decoys;
+use monero_serai_mirror::ringct::clsag::{Clsag, ClsagContext};
 use monero_serai_mirror::primitives::Commitment;
+use monero_serai_mirror::primitives::Decoys;
 use monero_serai_mirror::ringct::bulletproofs::Bulletproof;
 use monero_serai_mirror::ringct::{RctBase, RctProofs, RctPrunable};
 use monero_serai_mirror::transaction::{
@@ -771,6 +771,7 @@ mod tests {
     use curve25519_dalek::edwards::EdwardsPoint;
     use curve25519_dalek::scalar::Scalar;
     use rand_core::{RngCore, SeedableRng};
+    use monero_serai_mirror::generators::hash_to_point;
 
     #[test]
     fn test_clsag_signature() {
@@ -798,7 +799,7 @@ mod tests {
                 let point = EdwardsPoint::mul_base(dest.deref());
                 ring.push([
                     point,
-                    monero_primitives_mirror::Commitment::new(mask, amount).calculate(),
+                    monero_serai_mirror::primitives::Commitment::new(mask, amount).calculate(),
                 ]);
             }
 
@@ -809,13 +810,13 @@ mod tests {
                 vec![(
                     secrets.0.clone(),
                     ClsagContext::new(
-                        monero_primitives_mirror::Decoys::new(
+                        monero_serai_mirror::primitives::Decoys::new(
                             (1..=RING_LEN).collect(),
                             u8::try_from(real).unwrap(),
                             ring.clone(),
                         )
                         .unwrap(),
-                        monero_primitives_mirror::Commitment::new(secrets.1, AMOUNT),
+                        monero_serai_mirror::primitives::Commitment::new(secrets.1, AMOUNT),
                     )
                     .unwrap(),
                 )],
@@ -825,7 +826,7 @@ mod tests {
             .unwrap()
             .swap_remove(0);
 
-            let image = monero_generators_mirror::hash_to_point(
+            let image = hash_to_point(
                 (EdwardsPoint::mul_base(secrets.0.deref())).compress().0,
             ) * secrets.0.deref();
 

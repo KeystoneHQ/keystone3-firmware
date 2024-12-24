@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 24 px
  * Bpp: 2
- * Opts: --bpp 2 --size 24 --no-compress --font NotoSansSC-Regular.ttf --symbols "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~£¥·€、一三上不与个中为主么了二于互交产享亮什从代以件传体何作使例保信候允入公共关准出分列创初删前办功加动助励包化升单卡即压取受变可号各同名后吗启和固在地址坊型基处备复多天太失奖好如始委子字完定密导小屏展差已币帐幕广序度建开异式强当径待志忘快念态总息悉您情成我或户扩扫拒择持指振换捷接描播擦收改教数文新方日时明易是显暂更未本条析查标校格检概模款正毕气永池派测消添熵片版状理生用电白的相知短码确示私种秒称移程稍立端签简算管类系级纹络绝统继续维网置署脚自要解言计认记许设访证词试详语误请败账资路跳软载输过这连退选道重金钟钥钱锁错键闭问除隙页额验骰，：  --format lvgl -o ../gui_assets/font/cn/cnText.c
+ * Opts: --bpp 2 --size 24 --no-compress --font NotoSansSC-Regular.ttf --symbols "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~£¥·€、一三上不与个中为主么了二于互交产享亮什从代以件传体何作使例保信候允入公共关准出分列创初删前办功加动助励包化升单卡即压取受变可号各同名后吗启和固在地址坊型基处备复多天太失奖好如始委子字完定密导小屏展差已币帐幕广序度建开异式强当径待志忘快念态总息悉您情成我或户扩扫拒择持指振换捷接描播擦收改教数文新方日时明易是显暂更未本条析查标校格检概模款正毕气永池派测消添熵片版状理生用电白的相知短码确示私种秒称移程稍立端签简算管类系级纹络绝统继续维网置署脚自要解言计认记许设访证词试详语误请败账资路跳软载输过这连退选道重金钟钥钱锁错键闭问除隙页额验骰，：？  --format lvgl -o ../gui_assets/font/cn/cnText.c
  ******************************************************************************/
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
@@ -5878,7 +5878,17 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     /* U+FF1A "：" */
     0x0, 0x7d, 0xff, 0xbe, 0x14, 0x0, 0x0, 0x0,
     0x0, 0x0, 0x0, 0x0, 0x14, 0xbe, 0xff, 0x7d,
-    0x0
+    0x0,
+
+    /* U+FF1F "？" */
+    0x0, 0x0, 0x0, 0x2, 0xff, 0x80, 0xf, 0xeb,
+    0xf0, 0x3d, 0x0, 0xf8, 0x4, 0x0, 0x3c, 0x0,
+    0x0, 0x3c, 0x0, 0x0, 0x7c, 0x0, 0x0, 0xf4,
+    0x0, 0x3, 0xd0, 0x0, 0xf, 0x40, 0x0, 0x3e,
+    0x0, 0x0, 0x3c, 0x0, 0x0, 0x78, 0x0, 0x0,
+    0x10, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+    0x0, 0x7c, 0x0, 0x0, 0xfc, 0x0, 0x0, 0x7c,
+    0x0, 0x0, 0x0, 0x0
 };
 
 
@@ -6256,7 +6266,8 @@ static const lv_font_fmt_txt_glyph_dsc_t glyph_dsc[] = {
     {.bitmap_index = 39390, .adv_w = 384, .box_w = 24, .box_h = 24, .ofs_x = 0, .ofs_y = -3},
     {.bitmap_index = 39534, .adv_w = 384, .box_w = 23, .box_h = 22, .ofs_x = 1, .ofs_y = -2},
     {.bitmap_index = 39661, .adv_w = 384, .box_w = 5, .box_h = 9, .ofs_x = 3, .ofs_y = -3},
-    {.bitmap_index = 39673, .adv_w = 384, .box_w = 4, .box_h = 17, .ofs_x = 4, .ofs_y = -1}
+    {.bitmap_index = 39673, .adv_w = 384, .box_w = 4, .box_h = 17, .ofs_x = 4, .ofs_y = -1},
+    {.bitmap_index = 39690, .adv_w = 384, .box_w = 12, .box_h = 20, .ofs_x = 0, .ofs_y = -1}
 };
 
 /*---------------------
@@ -6298,7 +6309,7 @@ static const uint16_t unicode_list_1[] = {
     0x8eda, 0x8ef0, 0x8f24, 0x8f36, 0x8f3b, 0x8f5d, 0x8f66, 0x8fb0,
     0x912a, 0x912e, 0x93fc, 0x9402, 0x940e, 0x945e, 0x9476, 0x948b,
     0x954a, 0x954b, 0x95c1, 0x95f6, 0x97d2, 0x97fa, 0x99e9, 0x9a0d,
-    0xfe69, 0xfe77
+    0xfe69, 0xfe77, 0xfe7c
 };
 
 /*Collect the unicode lists and glyph_id offsets*/
@@ -6308,8 +6319,8 @@ static const lv_font_fmt_txt_cmap_t cmaps[] = {
         .unicode_list = NULL, .glyph_id_ofs_list = NULL, .list_length = 0, .type = LV_FONT_FMT_TXT_CMAP_FORMAT0_TINY
     },
     {
-        .range_start = 163, .range_length = 65144, .glyph_id_start = 96,
-        .unicode_list = unicode_list_1, .glyph_id_ofs_list = NULL, .list_length = 274, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY
+        .range_start = 163, .range_length = 65149, .glyph_id_start = 96,
+        .unicode_list = unicode_list_1, .glyph_id_ofs_list = NULL, .list_length = 275, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY
     }
 };
 
@@ -6366,7 +6377,7 @@ static const uint8_t kern_left_class_mapping[] = {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0
+    0, 0, 0
 };
 
 /*Map glyph_ids to kern right classes*/
@@ -6417,7 +6428,7 @@ static const uint8_t kern_right_class_mapping[] = {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0
+    0, 0, 0
 };
 
 /*Kern values between classes*/

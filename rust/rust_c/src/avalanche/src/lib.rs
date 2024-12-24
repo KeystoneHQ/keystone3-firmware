@@ -45,64 +45,45 @@ use {
 pub extern "C" fn avax_parse_transaction(
     ptr: PtrUR,
 ) -> PtrT<TransactionParseResult<DisplayAvaxTx>> {
-    // if length != 4 {
-    //     return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
-    // }
     let unsigned_data = extract_ptr_with_type!(ptr, AvaxSignRequest);
+    
     match get_avax_tx_type_id(unsigned_data.get_tx_data()) {
-        Ok(type_id) => unsafe {
-            match type_id {
-                TypeId::BaseTx => {
-                    parse_avax_tx::<BaseTx>(unsigned_data.get_tx_data()).map(|parse_data| {
-                        TransactionParseResult::success(DisplayAvaxTx::from(parse_data).c_ptr())
-                            .c_ptr()
-                    })
-                }
-                TypeId::PchainExportTx | TypeId::XchainExportTx => {
-                    parse_avax_tx::<ExportTx>(unsigned_data.get_tx_data()).map(|parse_data| {
-                        TransactionParseResult::success(DisplayAvaxTx::from(parse_data).c_ptr())
-                            .c_ptr()
-                    })
-                }
-                TypeId::XchainImportTx | TypeId::PchainImportTx => {
-                    parse_avax_tx::<ImportTx>(unsigned_data.get_tx_data()).map(|parse_data| {
-                        TransactionParseResult::success(DisplayAvaxTx::from(parse_data).c_ptr())
-                            .c_ptr()
-                    })
-                }
-                TypeId::AddPermissLessionValidator => {
-                    parse_avax_tx::<AddPermissLessionValidatorTx>(unsigned_data.get_tx_data()).map(
-                        |parse_data| {
-                            TransactionParseResult::success(DisplayAvaxTx::from(parse_data).c_ptr())
-                                .c_ptr()
-                        },
-                    )
-                }
-                TypeId::AddPermissLessionDelegator => {
-                    parse_avax_tx::<AddPermissLessionDelegatorTx>(unsigned_data.get_tx_data()).map(
-                        |parse_data| {
-                            TransactionParseResult::success(DisplayAvaxTx::from(parse_data).c_ptr())
-                                .c_ptr()
-                        },
-                    )
-                }
+        Ok(type_id) => parse_transaction_by_type(type_id, unsigned_data.get_tx_data()),
+        Err(_) => TransactionParseResult::from(
+            RustCError::InvalidData("Invalid tx type".to_string())
+        ).c_ptr(),
+    }
+}
 
-                _ => Ok(
-                    TransactionParseResult::from(RustCError::InvalidData(format!(
-                        "{:?} not support",
-                        type_id
-                    )))
-                    .c_ptr(),
-                ),
-            }
-            .unwrap_or_else(|_| {
-                TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
-            })
-        },
-        Err(_) => {
-            TransactionParseResult::from(RustCError::InvalidData("Invalid tx type".to_string()))
-                .c_ptr()
-        }
+fn parse_transaction_by_type(
+    type_id: TypeId, 
+    tx_data: Vec<u8>
+) -> PtrT<TransactionParseResult<DisplayAvaxTx>> {
+    macro_rules! parse_tx {
+        ($tx_type:ty) => {
+            parse_avax_tx::<$tx_type>(tx_data)
+                .map(|parse_data| {
+                    TransactionParseResult::success(
+                        DisplayAvaxTx::from(parse_data).c_ptr()
+                    ).c_ptr()
+                })
+                .unwrap_or_else(|_| {
+                    TransactionParseResult::from(
+                        RustCError::InvalidMasterFingerprint
+                    ).c_ptr()
+                })
+        };
+    }
+
+    match type_id {
+        TypeId::BaseTx => parse_tx!(BaseTx),
+        TypeId::PchainExportTx | TypeId::XchainExportTx => parse_tx!(ExportTx),
+        TypeId::XchainImportTx | TypeId::PchainImportTx => parse_tx!(ImportTx),
+        TypeId::AddPermissLessionValidator => parse_tx!(AddPermissLessionValidatorTx),
+        TypeId::AddPermissLessionDelegator => parse_tx!(AddPermissLessionDelegatorTx),
+        _ => TransactionParseResult::from(
+            RustCError::InvalidData(format!("{:?} not support", type_id))
+        ).c_ptr()
     }
 }
 
@@ -192,7 +173,7 @@ pub extern "C" fn avax_check_transaction(
     public_key: PtrString,
 ) -> PtrT<TransactionCheckResult> {
     TransactionCheckResult::new().c_ptr()
-    // let ton_tx = extract_ptr_with_type!(ptr, AvaxSignRequest);
+    // let avax_tx = extract_ptr_with_type!(ptr, AvaxSignRequest);
     // let pk = recover_c_char(public_key);
     // match hex::decode(pk) {
     // Ok(pk) => {}

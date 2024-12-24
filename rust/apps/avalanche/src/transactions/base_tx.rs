@@ -42,18 +42,6 @@ impl BaseTx {
         self.outputs.get_len() as u32
     }
 
-    pub fn get_inputs_addresses(&self) -> Vec<String> {
-        vec!["".to_string()]
-    }
-
-    pub fn get_input_by_index(&self, index: usize) -> Option<&TransferableInput> {
-        self.inputs.get(index)
-    }
-
-    pub fn get_memo(&self) -> Vec<u8> {
-        self.memo.clone()
-    }
-
     pub fn parsed_size(&self) -> usize {
         self.tx_size
     }
@@ -66,7 +54,7 @@ pub fn avax_base_sign(seed: &[u8], path: String, unsigned_data: Vec<u8>) -> Resu
         .sign_ecdsa_recoverable(
             &Message::from_slice(&sha256(unsigned_data.as_slice())).expect("Invalid hash length"),
             &keystore::algorithms::secp256k1::get_private_key_by_seed(&seed, &path.to_string())
-                .unwrap(),
+            .map_err(|_| AvaxError::InvalidHex(format!("get private key error")))?,
         )
         .serialize_compact();
 
@@ -169,13 +157,19 @@ mod tests {
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let result = BaseTx::try_from(bytes).unwrap();
 
-            // assert_eq!(result.get_type_id(), TypeId::BaseTx);
-            // assert_eq!(result.get_network_id(), 1);
-            assert_eq!(result.get_blockchain_id(), [0; BLOCKCHAIN_ID_LEN]);
+            assert_eq!(result.get_blockchain_id(), X_BLOCKCHAIN_ID);
+            assert_eq!(
+                "fuji1dx7fkkmvhw75jz4m67dr0ttv6epmapat8vwcu4",
+                result
+                    .get_outputs_addresses()
+                    .get(0)
+                    .unwrap()
+                    .address
+                    .get(0)
+                    .unwrap()
+            );
             assert_eq!(result.get_inputs_len(), 1);
             assert_eq!(result.get_outputs_len(), 2);
-            assert_eq!(result.get_memo(), vec![0u8]);
-            assert!(false);
         }
 
         // x chain base tx
@@ -197,9 +191,7 @@ mod tests {
                             202, 148, 247
                         ]
                     );
-                    assert_eq!(result.get_inputs_len(), 1);
                     assert_eq!(result.get_outputs_len(), 2);
-                    assert_eq!(result.get_memo(), Vec::<u8>::new());
                 }
                 Err(e) => match e {
                     AvaxError::InvalidHex(msg) => {

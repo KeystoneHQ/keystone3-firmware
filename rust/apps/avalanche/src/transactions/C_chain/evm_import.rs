@@ -137,7 +137,6 @@ mod tests {
         let binary_data = hex::decode(input_bytes).expect("Failed to decode hex string");
         let mut bytes = Bytes::from(binary_data);
         let result = ImportTx::try_from(bytes.clone()).unwrap();
-        println!("{:?}", result);
         assert_eq!(result.type_id, TypeId::BaseTx);
         assert_eq!(result.codec_id, 0);
         assert_eq!(result.inputs.get_len(), 1);

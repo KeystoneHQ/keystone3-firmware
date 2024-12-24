@@ -62,14 +62,3 @@ pub fn get_avax_tx_type_id(data: Vec<u8>) -> Result<TypeId> {
     let type_id = TypeId::try_from(bytes.get_u32())?;
     Ok(type_id)
 }
-
-#[cfg(test)]
-mod test {
-    use alloc::vec::Vec;
-    use core::str::FromStr;
-
-    use app_utils::keystone;
-    use hex::FromHex;
-    use ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
-    use ur_registry::pb::protoc::{Base, Payload};
-}

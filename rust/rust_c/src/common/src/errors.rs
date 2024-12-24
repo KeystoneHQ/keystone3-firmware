@@ -215,6 +215,7 @@ pub enum ErrorCodes {
     AvaxDerivePublicKeyError,
     AvaxUnknownTypeId,
     AvaxInvalidHDPath,
+    AvaxBech32Error,
 }
 
 impl ErrorCodes {
@@ -471,6 +472,7 @@ impl From<&AvaxError> for ErrorCodes {
             AvaxError::DerivePublicKeyError(_) => Self::AvaxDerivePublicKeyError,
             AvaxError::UnknownTypeId(_) => Self::AvaxUnknownTypeId,
             AvaxError::InvalidHDPath(_) => Self::AvaxInvalidHDPath,
+            AvaxError::Bech32Error => Self::AvaxBech32Error,
         }
     }
 }

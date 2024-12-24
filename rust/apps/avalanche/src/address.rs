@@ -24,8 +24,7 @@ impl ParsedSizeAble for Address {
 
 impl Address {
     pub fn encode(&self) -> String {
-        bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked("fuji"), &self.address).unwrap()
-        // bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked("avax"), &self.address).unwrap()
+        bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked("avax"), &self.address).unwrap()
     }
 
     pub fn to_evm_address(&self) -> String {
@@ -76,7 +75,7 @@ pub fn get_address(
                 .ok_or(AvaxError::InvalidHDPath(hd_path.to_string()))?
         ),
     )
-    .unwrap();
+    .map_err(|e| AvaxError::InvalidHex(format!("derive public key error: {}", e)))?;
     bech32::encode::<Bech32>(
         bech32::Hrp::parse_unchecked(prefix),
         &hash160(&public_key.serialize()),

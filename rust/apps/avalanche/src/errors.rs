@@ -1,4 +1,5 @@
 use alloc::string::{String, ToString};
+use bitcoin::address::error;
 use core2::io;
 use keystore::errors::KeystoreError;
 use thiserror;
@@ -52,6 +53,9 @@ pub enum AvaxError {
 
     #[error("Invalid hd_Path: {0}")]
     InvalidHDPath(String),
+
+    #[error("Bech32 error")]
+    Bech32Error,
 }
 
 impl From<io::Error> for AvaxError {

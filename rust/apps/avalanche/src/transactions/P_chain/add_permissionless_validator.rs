@@ -73,7 +73,13 @@ impl AvaxTxInfo for AddPermissLessionValidatorTx {
     }
 
     fn get_reward_address(&self) -> Option<String> {
-        Some(self.validator_owner.addresses.get(0).unwrap().encode())
+        Some(
+            self.delegator_owner
+                .addresses
+                .get(0)
+                .and_then(|addr| Some(addr.encode()))
+                .unwrap_or_default(),
+        )
     }
 }
 
@@ -95,9 +101,6 @@ impl TryFrom<Bytes> for AddPermissLessionValidatorTx {
 
         let stake_out = LengthPrefixedVec::<TransferableOutput>::try_from(bytes.clone())?;
         bytes.advance(stake_out.parsed_size());
-
-        // let subnet_auth = SubnetAuth::try_from(bytes.clone())?;
-        // bytes.advance(SUBNET_AUTH_LEN);
 
         let validator_owner = OutputOwner::try_from(bytes.clone())?;
         bytes.advance(validator_owner.parsed_size());

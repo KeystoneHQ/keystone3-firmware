@@ -1,4 +1,5 @@
 fn main() {
+    return;
     let mut config = cbindgen::Config::default();
     config.language = cbindgen::Language::C;
     let includes = vec![

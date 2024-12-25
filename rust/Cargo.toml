@@ -22,28 +22,7 @@ members = [
     # C interface entry
     "rust_c",
     # rust_c libs
-    "rust_c/src/aptos",
-    "rust_c/src/arweave",
-    "rust_c/src/bitcoin",
-    "rust_c/src/cardano",
     "rust_c/src/common",
-    "rust_c/src/cosmos",
-    "rust_c/src/ethereum",
-    # "rust_c/src/kt_allocator",
-    "rust_c/src/near",
-    "rust_c/src/simulator",
-    "rust_c/src/solana",
-    "rust_c/src/stellar",
-    "rust_c/src/sui",
-    "rust_c/src/ton",
-    "rust_c/src/tron",
-    "rust_c/src/wallet",
-    "rust_c/src/xrp",
-    "rust_c/src/zcash",
-
-    "rust_c/src/test_cmd",
-    "rust_c/src/test_cmd/src/btc_test_cmd",
-    "rust_c/src/test_cmd/src/general_test_cmd",
 
     # other
     "keystore",

@@ -1,8 +1,8 @@
-use crate::ffi::VecFFI;
+use super::ffi::VecFFI;
 use crate::make_free_method;
-use crate::structs::SimpleResponse;
-use crate::types::{PtrString, PtrT};
-use crate::ur::{UREncodeMultiResult, UREncodeResult, URParseMultiResult, URParseResult};
+use super::structs::SimpleResponse;
+use super::types::{PtrString, PtrT};
+use super::ur::{UREncodeMultiResult, UREncodeResult, URParseMultiResult, URParseResult};
 use alloc::boxed::Box;
 use cty::{c_char, c_void};
 
@@ -57,7 +57,7 @@ macro_rules! free_ptr_with_type {
     ($x: expr, $name: ident) => {
         if (!$x.is_null()) {
             unsafe {
-                let x = extract_ptr_with_type!($x, $name);
+                let x = crate::extract_ptr_with_type!($x, $name);
                 let _b = alloc::boxed::Box::from_raw(x);
                 // drop(b);
             }

@@ -1,4 +1,12 @@
 pub mod structs;
+use crate::common::{
+    errors::RustCError,
+    ffi::VecFFI,
+    structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult},
+    types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
+    ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
+    utils::recover_c_char,
+};
 use alloc::{
     boxed::Box,
     format, slice,
@@ -6,16 +14,8 @@ use alloc::{
     vec::Vec,
 };
 use app_ton::{mnemonic::ton_mnemonic_validate, ton_compare_address_and_public_key};
-use common_rust_c::{
-    errors::RustCError,
-    extract_ptr_with_type,
-    ffi::VecFFI,
-    impl_c_ptr,
-    structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult},
-    types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
-    ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
-    utils::recover_c_char,
-};
+
+use crate::{extract_ptr_with_type, impl_c_ptr};
 use cty::c_char;
 use keystore::algorithms::ed25519;
 use rust_tools::convert_c_char;
@@ -239,7 +239,7 @@ pub extern "C" fn ton_seed_to_publickey(
             let public_key = app_ton::mnemonic::ton_master_seed_to_public_key(_seed);
             SimpleResponse::success(convert_c_char(hex::encode(public_key))).simple_c_ptr()
         }
-        Err(_e) => SimpleResponse::from(common_rust_c::errors::RustCError::InvalidData(format!(
+        Err(_e) => SimpleResponse::from(crate::common::errors::RustCError::InvalidData(format!(
             "seed length should be 64"
         )))
         .simple_c_ptr(),
@@ -255,7 +255,7 @@ pub extern "C" fn ton_get_address(public_key: PtrString) -> *mut SimpleResponse<
             Err(e) => SimpleResponse::from(e).simple_c_ptr(),
         },
         Err(e) => {
-            SimpleResponse::from(common_rust_c::errors::RustCError::InvalidHex(e.to_string()))
+            SimpleResponse::from(crate::common::errors::RustCError::InvalidHex(e.to_string()))
                 .simple_c_ptr()
         }
     }

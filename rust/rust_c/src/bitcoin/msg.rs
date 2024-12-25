@@ -6,9 +6,8 @@ use alloc::{
     vec::Vec,
 };
 use base64;
-use common_rust_c::{
+use crate::common::{
     errors::RustCError,
-    extract_ptr_with_type,
     ffi::CSliceFFI,
     qrcode::seed_signer_message::SeedSignerMessage,
     structs::{ExtendedPublicKey, TransactionCheckResult, TransactionParseResult},
@@ -16,6 +15,7 @@ use common_rust_c::{
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
     utils::{convert_c_char, recover_c_array, recover_c_char},
 };
+use crate::extract_ptr_with_type;
 use keystore::algorithms::secp256k1;
 use ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType};
 use ur_registry::bitcoin::btc_signature::BtcSignature;

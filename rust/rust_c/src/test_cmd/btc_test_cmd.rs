@@ -8,15 +8,15 @@ use ur_registry::bytes::Bytes;
 use ur_registry::crypto_psbt::CryptoPSBT;
 use ur_registry::traits::RegistryItem;
 
-use common_rust_c::errors::ErrorCodes;
-use common_rust_c::ffi::CSliceFFI;
-use common_rust_c::structs::ExtendedPublicKey;
-use common_rust_c::types::PtrDecoder;
-use common_rust_c::ur::{
+use crate::common::errors::ErrorCodes;
+use crate::common::ffi::CSliceFFI;
+use crate::common::structs::ExtendedPublicKey;
+use crate::common::types::PtrDecoder;
+use crate::common::ur::{
     decode_ur, receive, QRCodeType, UREncodeResult, URParseMultiResult, URParseResult, ViewType,
     FRAGMENT_MAX_LENGTH_DEFAULT,
 };
-use common_rust_c::utils::convert_c_char;
+use crate::common::utils::convert_c_char;
 
 use wallet_rust_c::get_connect_blue_wallet_ur;
 

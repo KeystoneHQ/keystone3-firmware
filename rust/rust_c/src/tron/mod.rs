@@ -3,12 +3,12 @@ pub mod structs;
 use structs::DisplayTron;
 use alloc::boxed::Box;
 use alloc::slice;
-use common_rust_c::errors::RustCError;
-use common_rust_c::keystone;
-use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
-use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{QRCodeType, UREncodeResult};
-use common_rust_c::utils::{convert_c_char, recover_c_char};
+use crate::common::errors::RustCError;
+use crate::common::keystone;
+use crate::common::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
+use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
+use crate::common::ur::{QRCodeType, UREncodeResult};
+use crate::common::utils::{convert_c_char, recover_c_char};
 use cty::c_char;
 
 #[no_mangle]

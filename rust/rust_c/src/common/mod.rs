@@ -1,9 +1,3 @@
-#![no_std]
-#![feature(vec_into_raw_parts)]
-#![feature(error_in_core)]
-#![allow(unused_unsafe)]
-extern crate alloc;
-
 use aes::cipher::block_padding::Pkcs7;
 use aes::cipher::generic_array::GenericArray;
 use aes::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit};
@@ -25,10 +19,10 @@ use errors::ErrorCodes;
 use structs::{Response, TransactionCheckResult};
 use types::Ptr;
 
-use crate::errors::RustCError;
-use crate::structs::SimpleResponse;
-use crate::types::{PtrBytes, PtrString};
-use crate::utils::{convert_c_char, recover_c_char};
+use errors::RustCError;
+use structs::SimpleResponse;
+use types::{PtrBytes, PtrString};
+use utils::{convert_c_char, recover_c_char};
 
 pub mod errors;
 pub mod ffi;

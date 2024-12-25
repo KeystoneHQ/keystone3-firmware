@@ -2,12 +2,12 @@ use alloc::string::{String, ToString};
 use core::slice;
 
 use crate::extract_ptr_with_type;
-use crate::ffi::CSliceFFI;
-use crate::free::Free;
+use super::ffi::CSliceFFI;
+use super::free::Free;
 use cstr_core::{CStr, CString};
 use cty::c_char;
 
-use crate::types::{PtrString, PtrT};
+use crate::common::types::{PtrString, PtrT};
 
 pub fn convert_c_char(s: String) -> PtrString {
     CString::new(s.clone()).unwrap().into_raw()

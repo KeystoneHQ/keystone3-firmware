@@ -1,9 +1,9 @@
-use app_arweave::{ao_transaction::AOTransferTransaction, parse_data_item};
-use common_rust_c::{
-    extract_ptr_with_type,
+use crate::common::{
     structs::TransactionParseResult,
     types::{PtrT, PtrUR},
 };
+use crate::extract_ptr_with_type;
+use app_arweave::{ao_transaction::AOTransferTransaction, parse_data_item};
 use ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
 
 use super::structs::{DisplayArweaveAOTransfer, DisplayArweaveDataItem};

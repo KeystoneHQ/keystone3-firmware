@@ -1,14 +1,13 @@
 use core::ptr::null_mut;
 
-use app_ton::structs::{TonProof, TonTransaction};
-use common_rust_c::{
-    check_and_free_ptr,
+use crate::common::{
     free::Free,
-    free_str_ptr, impl_c_ptr, make_free_method,
     structs::TransactionParseResult,
     types::{PtrString, PtrT},
     utils::convert_c_char,
 };
+use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
+use app_ton::structs::{TonProof, TonTransaction};
 
 #[repr(C)]
 pub struct DisplayTonTransaction {

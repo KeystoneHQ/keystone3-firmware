@@ -1,9 +1,15 @@
-pub mod structs;
 pub mod data_item;
+pub mod structs;
 
-use structs::{ArweaveRequestType, DisplayArweaveMessage, DisplayArweaveTx};
 use alloc::boxed::Box;
+use structs::{ArweaveRequestType, DisplayArweaveMessage, DisplayArweaveTx};
 
+use crate::common::errors::RustCError;
+use crate::common::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
+use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
+use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::common::utils::{convert_c_char, recover_c_char};
+use crate::extract_ptr_with_type;
 use alloc::slice;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -12,12 +18,6 @@ use app_arweave::{
     aes256_decrypt, aes256_encrypt, errors::ArweaveError, fix_address,
     generate_public_key_from_primes, generate_secret, parse,
 };
-use common_rust_c::errors::RustCError;
-use common_rust_c::extract_ptr_with_type;
-use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
-use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use common_rust_c::utils::{convert_c_char, recover_c_char};
 use cty::c_char;
 use hex;
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
@@ -27,7 +27,6 @@ use serde_json::Value;
 use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen, SignType};
 use ur_registry::arweave::arweave_signature::ArweaveSignature;
 use ur_registry::traits::RegistryItem;
-
 
 fn generate_aes_key_iv(seed: &[u8]) -> ([u8; 32], [u8; 16]) {
     // The number 1557192335 is derived from the ASCII representation of "keystone" hashed with SHA-256, taking the first 32 bits with the highest bit set to 0.

@@ -18,20 +18,19 @@ use structs::{MultiSigFormatType, MultiSigXPubInfoItem};
 
 use cryptoxide::hashing::sha256;
 use hex;
-
 use ur_registry::bytes::Bytes;
 
-use common_rust_c::errors::RustCError;
-use common_rust_c::ffi::CSliceFFI;
+use crate::common::errors::RustCError;
+use crate::common::ffi::CSliceFFI;
 
-use common_rust_c::structs::{ExtendedPublicKey, Response, SimpleResponse};
-use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, ViewType, FRAGMENT_MAX_LENGTH_DEFAULT};
-use common_rust_c::utils::{convert_c_char, recover_c_array, recover_c_char};
+use crate::common::structs::{ExtendedPublicKey, Response, SimpleResponse};
+use crate::common::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
+use crate::common::ur::{UREncodeResult, ViewType, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::common::utils::{convert_c_char, recover_c_array, recover_c_char};
 
 use structs::{MultiSigWallet, NetworkType};
 
-use common_rust_c::extract_ptr_with_type;
+use crate::extract_ptr_with_type;
 use ur_registry::crypto_account::CryptoAccount;
 use ur_registry::error::URError;
 use ur_registry::traits::RegistryItem;

@@ -4,12 +4,12 @@ use app_arweave::{
     ao_transaction::AOTransferTransaction,
     data_item::{DataItem, Tag},
 };
-use common_rust_c::free::Free;
-use common_rust_c::structs::TransactionParseResult;
-use common_rust_c::types::{Ptr, PtrString, PtrT};
-use common_rust_c::utils::convert_c_char;
-use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
-use common_rust_c::{ffi::VecFFI, free_vec};
+use crate::common::free::Free;
+use crate::common::structs::TransactionParseResult;
+use crate::common::types::{Ptr, PtrString, PtrT};
+use crate::common::utils::convert_c_char;
+use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method, free_vec};
+use crate::common::ffi::VecFFI;
 
 #[repr(C)]
 pub enum ArweaveRequestType {

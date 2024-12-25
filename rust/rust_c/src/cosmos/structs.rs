@@ -4,11 +4,11 @@ use app_cosmos::transaction::structs::{CosmosTxDisplayType, ParsedCosmosTx};
 use core::ptr::null_mut;
 use serde_json;
 
-use common_rust_c::free::{free_ptr_string, Free};
-use common_rust_c::structs::TransactionParseResult;
-use common_rust_c::types::{PtrString, PtrT};
-use common_rust_c::utils::convert_c_char;
-use common_rust_c::{check_and_free_ptr, impl_c_ptr, make_free_method};
+use crate::common::free::{free_ptr_string, Free};
+use crate::common::structs::TransactionParseResult;
+use crate::common::types::{PtrString, PtrT};
+use crate::common::utils::convert_c_char;
+use crate::{check_and_free_ptr, impl_c_ptr, make_free_method};
 
 #[repr(C)]
 pub struct DisplayCosmosTx {

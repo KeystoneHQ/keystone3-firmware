@@ -1,8 +1,8 @@
 use super::structs::DisplayContractData;
-use common_rust_c::errors::RustCError;
-use common_rust_c::structs::Response;
-use common_rust_c::types::{Ptr, PtrString};
-use common_rust_c::utils::recover_c_char;
+use crate::common::errors::RustCError;
+use crate::common::structs::Response;
+use crate::common::types::{Ptr, PtrString};
+use crate::common::utils::recover_c_char;
 use hex;
 
 #[no_mangle]

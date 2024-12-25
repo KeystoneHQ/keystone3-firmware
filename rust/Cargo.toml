@@ -21,8 +21,6 @@ members = [
 
     # C interface entry
     "rust_c",
-    # rust_c libs
-    "rust_c/src/common",
 
     # other
     "keystore",

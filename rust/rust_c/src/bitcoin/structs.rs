@@ -4,14 +4,14 @@ use core::ptr::null_mut;
 
 use app_bitcoin;
 use app_bitcoin::parsed_tx::{DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx};
-use common_rust_c::ffi::VecFFI;
-use common_rust_c::free::Free;
-use common_rust_c::structs::Response;
-use common_rust_c::structs::TransactionParseResult;
-use common_rust_c::types::{PtrString, PtrT};
-use common_rust_c::ur::UREncodeResult;
-use common_rust_c::utils::convert_c_char;
-use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
+use crate::common::ffi::VecFFI;
+use crate::common::free::Free;
+use crate::common::structs::Response;
+use crate::common::structs::TransactionParseResult;
+use crate::common::types::{PtrString, PtrT};
+use crate::common::ur::UREncodeResult;
+use crate::common::utils::convert_c_char;
+use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
 
 #[repr(C)]
 pub struct PsbtSignResult {

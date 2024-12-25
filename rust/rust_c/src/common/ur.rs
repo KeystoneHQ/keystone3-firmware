@@ -59,11 +59,11 @@ use ur_registry::{
     cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest,
 };
 
-use crate::errors::{ErrorCodes, RustCError};
-use crate::free::Free;
-use crate::types::{PtrDecoder, PtrEncoder, PtrString, PtrUR};
-use crate::ur_ext::InferViewType;
-use crate::utils::{convert_c_char, recover_c_char};
+use super::errors::{ErrorCodes, RustCError};
+use super::free::Free;
+use super::types::{PtrDecoder, PtrEncoder, PtrString, PtrUR};
+use super::ur_ext::InferViewType;
+use super::utils::{convert_c_char, recover_c_char};
 use crate::{
     extract_ptr_with_type, free_ptr_with_type, free_str_ptr, impl_c_ptr, impl_new_error,
     impl_response,

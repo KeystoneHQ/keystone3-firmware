@@ -2,17 +2,15 @@ pub mod structs;
 
 use alloc::{boxed::Box, format};
 use app_zcash::get_address;
-use common_rust_c::{
-    check_and_free_ptr,
+use crate::common::{
     errors::RustCError,
-    extract_ptr_with_type,
     free::Free,
-    make_free_method,
     structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult},
     types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
     utils::{convert_c_char, recover_c_char},
 };
+use crate::{extract_ptr_with_type, make_free_method, };
 use core::slice;
 use cty::c_char;
 use keystore::algorithms::zcash::{calculate_seed_fingerprint, derive_ufvk};

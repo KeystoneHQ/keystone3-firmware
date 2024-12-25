@@ -20,15 +20,16 @@ use ur_registry::pb::protoc::payload::Content;
 use ur_registry::pb::protoc::sign_transaction::Transaction::EthTx;
 use ur_registry::traits::RegistryItem;
 
-use common_rust_c::errors::{KeystoneError, RustCError};
-use common_rust_c::keystone::build_payload;
-use common_rust_c::structs::{TransactionCheckResult, TransactionParseResult};
-use common_rust_c::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{
+use crate::common::errors::{KeystoneError, RustCError};
+use crate::common::keystone::build_payload;
+use crate::common::structs::{TransactionCheckResult, TransactionParseResult};
+use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
+use crate::common::ur::{
     QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH,
 };
-use common_rust_c::utils::{convert_c_char, recover_c_char};
-use common_rust_c::{extract_ptr_with_type, KEYSTONE};
+use crate::common::utils::{convert_c_char, recover_c_char};
+use crate::common::KEYSTONE;
+use crate::extract_ptr_with_type;
 
 use structs::{
     DisplayETH, DisplayETHPersonalMessage, DisplayETHTypedData, EthParsedErc20Transaction,

@@ -1066,45 +1066,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
-name = "common_rust_c"
-version = "0.1.0"
-dependencies = [
- "aes",
- "app_aptos",
- "app_arweave",
- "app_bitcoin",
- "app_cardano",
- "app_cosmos",
- "app_ethereum",
- "app_near",
- "app_solana",
- "app_stellar",
- "app_sui",
- "app_ton",
- "app_tron",
- "app_utils",
- "app_wallets",
- "app_xrp",
- "app_zcash",
- "base64 0.11.0",
- "bitcoin",
- "bitcoin_hashes 0.14.0",
- "cbc",
- "cryptoxide",
- "cstr_core",
- "cty",
- "hex",
- "keystore",
- "rsa",
- "rust_tools",
- "serde_json",
- "sha1",
- "thiserror-core",
- "ur-parse-lib",
- "ur-registry",
-]
-
-[[package]]
 name = "const-oid"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3370,6 +3331,7 @@ dependencies = [
 name = "rust_c"
 version = "0.1.0"
 dependencies = [
+ "aes",
  "app_aptos",
  "app_arweave",
  "app_bitcoin",
@@ -3388,8 +3350,9 @@ dependencies = [
  "app_zcash",
  "base64 0.11.0",
  "bitcoin",
+ "bitcoin_hashes 0.14.0",
+ "cbc",
  "cbindgen",
- "common_rust_c",
  "core2",
  "cryptoxide",
  "cstr_core",
@@ -3400,9 +3363,12 @@ dependencies = [
  "hex",
  "itertools 0.13.0",
  "keystore",
+ "rsa",
  "rust_tools",
  "serde_json",
+ "sha1",
  "sim_qr_reader",
+ "thiserror-core",
  "ur-parse-lib",
  "ur-registry",
  "zcash_vendor",

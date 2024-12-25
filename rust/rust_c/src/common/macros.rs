@@ -134,8 +134,8 @@ macro_rules! impl_new_error {
             }
         }
 
-        impl From<crate::errors::KeystoneError> for $name {
-            fn from(value: crate::errors::KeystoneError) -> Self {
+        impl From<super::errors::KeystoneError> for $name {
+            fn from(value: super::errors::KeystoneError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
@@ -267,8 +267,8 @@ macro_rules! impl_new_error {
             }
         }
 
-        impl<$t: Free> From<crate::errors::KeystoneError> for $name<$t> {
-            fn from(value: crate::errors::KeystoneError) -> Self {
+        impl<$t: Free> From<super::errors::KeystoneError> for $name<$t> {
+            fn from(value: super::errors::KeystoneError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
@@ -488,7 +488,7 @@ macro_rules! make_free_method {
         app_utils::paste::item! {
             #[no_mangle]
             pub extern "C" fn [<free_ $t>](ptr: PtrT<$t>) {
-                check_and_free_ptr!(ptr)
+                crate::check_and_free_ptr!(ptr)
             }
         }
     };
@@ -496,7 +496,7 @@ macro_rules! make_free_method {
         app_utils::paste::item! {
             #[no_mangle]
             pub extern "C" fn [<free_ $t1 _ $t2>](ptr: PtrT<$t1<$t2>>) {
-                check_and_free_ptr!(ptr)
+                crate::check_and_free_ptr!(ptr)
             }
         }
     };

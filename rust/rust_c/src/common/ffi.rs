@@ -1,8 +1,8 @@
-use crate::free::{Free, SimpleFree};
+use super::free::{Free, SimpleFree};
 use alloc::vec::Vec;
 use cty::size_t;
 
-use crate::types::PtrT;
+use super::types::PtrT;
 use crate::{impl_c_ptr, impl_simple_free};
 
 #[repr(C)]

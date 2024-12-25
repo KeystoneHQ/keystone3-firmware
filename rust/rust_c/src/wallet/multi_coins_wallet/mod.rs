@@ -38,13 +38,13 @@ use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use ur_registry::extend::qr_hardware_call::QRHardwareCall;
 use ur_registry::traits::RegistryItem;
 
-use common_rust_c::errors::RustCError;
-use common_rust_c::ffi::CSliceFFI;
-use common_rust_c::structs::{ExtendedPublicKey, Response};
-use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
-use common_rust_c::utils::{recover_c_array, recover_c_char};
-use common_rust_c::{extract_array, extract_ptr_with_type};
+use crate::common::errors::RustCError;
+use crate::common::ffi::CSliceFFI;
+use crate::common::structs::{ExtendedPublicKey, Response};
+use crate::common::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
+use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
+use crate::common::utils::{recover_c_array, recover_c_char};
+use crate::{extract_array, extract_ptr_with_type};
 
 use structs::QRHardwareCallData;
 

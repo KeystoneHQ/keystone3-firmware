@@ -1,10 +1,10 @@
 use alloc::{format, string::ToString};
-use common_rust_c::extract_array;
-use common_rust_c::ffi::CSliceFFI;
-use common_rust_c::structs::ExtendedPublicKey;
-use common_rust_c::types::{Ptr, PtrBytes, PtrString};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use common_rust_c::utils::{recover_c_array, recover_c_char};
+use crate::extract_array;
+use crate::common::ffi::CSliceFFI;
+use crate::common::structs::ExtendedPublicKey;
+use crate::common::types::{Ptr, PtrBytes, PtrString};
+use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::common::utils::{recover_c_array, recover_c_char};
 use ur_registry::{
     error::URError, extend::crypto_multi_accounts::CryptoMultiAccounts, traits::RegistryItem,
 };

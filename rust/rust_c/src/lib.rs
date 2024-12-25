@@ -13,7 +13,7 @@ mod allocator;
 mod my_alloc;
 
 #[allow(unused)]
-use common_rust_c;
+mod common;
 #[allow(unused)]
 mod wallet;
 

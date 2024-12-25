@@ -18,7 +18,7 @@ use crate::common::ur::{
 };
 use crate::common::utils::convert_c_char;
 
-use wallet_rust_c::get_connect_blue_wallet_ur;
+use crate::wallet::get_connect_blue_wallet_ur;
 
 #[no_mangle]
 pub extern "C" fn test_get_crypto_psbt() -> *mut URParseResult {

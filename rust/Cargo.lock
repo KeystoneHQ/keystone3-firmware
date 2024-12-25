@@ -4841,7 +4841,6 @@ dependencies = [
 name = "zcash_vendor"
 version = "0.1.0"
 dependencies = [
- "aes",
  "bech32 0.11.0",
  "bip32",
  "bitvec",

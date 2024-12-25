@@ -26,8 +26,8 @@ aes = { workspace = true }
 cbc = { workspace = true }
 
 #keystone owned
+sim_qr_reader = { workspace = true, optional = true }
 keystore = { workspace = true }
-sim_qr_reader = { workspace = true }
 ur-registry = { workspace = true }
 ur-parse-lib = { workspace = true }
 zcash_vendor = { workspace = true }
@@ -36,8 +36,8 @@ app_utils = { workspace = true }
 rust_tools = { workspace = true }
 
 #apps
-app_bitcoin = { workspace = true, optional = true }
 app_wallets = { workspace = true }
+app_bitcoin = { workspace = true, optional = true }
 app_ethereum = { workspace = true, optional = true }
 app_cardano = { workspace = true, optional = true }
 app_tron = { workspace = true, optional = true }
@@ -58,7 +58,7 @@ crate-type = ["staticlib"]
 [features]
 # feature toggles
 use-allocator = []
-simulator = []
+simulator = ["dep:sim_qr_reader"]
 aptos = ["dep:app_aptos"]
 arweave = ["dep:app_arweave"]
 bitcoin = ["dep:app_bitcoin"]

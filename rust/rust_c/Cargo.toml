@@ -7,28 +7,54 @@ edition = "2021"
 
 [dependencies]
 common_rust_c = { path = "./src/common", optional = true, default-features = false }
-bitcoin_rust_c = { path = "./src/bitcoin", default-features = false, optional = true }
-wallet_rust_c = { path = "./src/wallet", default-features = false, optional = true }
-test_cmd = { path = "./src/test_cmd", default-features = false, optional = true }
-simulator_rust_c = { path = "./src/simulator", optional = true, default-features = false }
 
-ethereum_rust_c = { path = "./src/ethereum", optional = true }
-solana_rust_c = { path = "./src/solana", optional = true }
-aptos_rust_c = { path = "./src/aptos", optional = true }
-near_rust_c = { path = "./src/near", optional = true }
-cosmos_rust_c = { path = "./src/cosmos", optional = true }
-cardano_rust_c = { path = "./src/cardano", optional = true }
-sui_rust_c = { path = "./src/sui", optional = true }
-tron_rust_c = { path = "./src/tron", optional = true }
-xrp_rust_c = { path = "./src/xrp", optional = true }
-arweave_rust_c = { path = "./src/arweave", optional = true }
-stellar_rust_c = { path = "./src/stellar", optional = true }
-ton_rust_c = { path = "./src/ton", optional = true }
-zcash_rust_c = { path = "./src/zcash", optional = true }
 
 cty = { workspace = true }
 cstr_core = { workspace = true }
 getrandom = { workspace = true, features = ["custom"] }
+keystore = { workspace = true }
+app_aptos = { workspace = true }
+app_utils = { workspace = true }
+rust_tools = { workspace = true }
+serde_json = { workspace = true }
+hex = { workspace = true }
+bitcoin = { workspace = true }
+ur-registry = { workspace = true }
+app_arweave = { workspace = true }
+cryptoxide = { workspace = true }
+app_bitcoin = { workspace = true }
+base64 = { workspace = true }
+app_cardano = { workspace = true }
+itertools = { workspace = true }
+ed25519-bip32-core = { workspace = true }
+
+app_cosmos = { workspace = true, default-features = false }
+either = { workspace = true }
+
+app_ethereum = { workspace = true }
+core2 = { workspace = true }
+
+app_solana = { workspace = true }
+
+app_near = { workspace = true }
+
+app_sui = { workspace = true }
+
+app_stellar = { workspace = true }
+
+app_ton = { workspace = true }
+
+app_tron = { workspace = true }
+
+app_wallets = { workspace = true }
+
+ur-parse-lib = { workspace = true }
+
+app_xrp = { workspace = true }
+
+app_zcash = { workspace = true }
+zcash_vendor = { workspace = true }
+sim_qr_reader = { workspace = true }
 
 [lib]
 crate-type = ["staticlib"]
@@ -37,46 +63,27 @@ crate-type = ["staticlib"]
 # feature toggles
 use-allocator = []
 simulator = []
-aptos = ["dep:aptos_rust_c"]
-arweave = ["dep:arweave_rust_c"]
-bitcoin = ["dep:bitcoin_rust_c"]
-cardano = ["dep:cardano_rust_c"]
-cosmos = ["dep:cosmos_rust_c"]
-ethereum = ["dep:ethereum_rust_c"]
-near = ["dep:near_rust_c"]
-solana = ["dep:solana_rust_c"]
-stellar = ["dep:stellar_rust_c"]
-sui = ["dep:sui_rust_c"]
-ton = ["dep:ton_rust_c"]
-tron = ["dep:tron_rust_c"]
-xrp = ["dep:xrp_rust_c"]
-zcash = ["dep:zcash_rust_c"]
-test_cmd = ["dep:test_cmd"]
+aptos = []
+arweave = []
+bitcoin = []
+cardano = []
+cosmos = []
+ethereum = []
+near = []
+solana = []
+stellar = []
+sui = []
+ton = []
+tron = []
+xrp = []
+zcash = []
+test_cmd = []
 
-debug-memory = [
-    "multi-coins",
-    "common_rust_c/debug-memory",
-    "ethereum_rust_c/debug-memory",
-    "bitcoin_rust_c/debug-memory",
-    "wallet_rust_c/debug-memory",
-    "test_cmd/debug-memory",
-    "solana_rust_c/debug-memory",
-    "aptos_rust_c/debug-memory",
-    "near_rust_c/debug-memory",
-    "cosmos_rust_c/debug-memory",
-    "cardano_rust_c/debug-memory",
-    "sui_rust_c/debug-memory",
-    "tron_rust_c/debug-memory",
-    "xrp_rust_c/debug-memory",
-    "ton_rust_c/debug-memory",
-    "zcash_rust_c/debug-memory",
-]
+debug-memory = ["multi-coins", "common_rust_c/debug-memory"]
 
 multi-coins = [
     "common_rust_c/multi-coins",
     "bitcoin",
-    "bitcoin_rust_c/multi-coins",
-    "wallet_rust_c/multi-coins",
     "ethereum",
     "solana",
     "aptos",
@@ -92,29 +99,22 @@ multi-coins = [
     "zcash",
 ]
 
-btc-only = [
-    "common_rust_c/btc-only",
-    "bitcoin",
-    "bitcoin_rust_c/btc-only",
-    "wallet_rust_c/btc-only",
-]
+btc-only = ["common_rust_c/btc-only", "bitcoin"]
 
 # build variants
 # production
 production-multi-coins = ["use-allocator", "multi-coins"]
 production-btc-only = ["use-allocator", "btc-only"]
 # debug
-debug-multi-coins = ["test_cmd", "test_cmd/multi-coins", "production-multi-coins"]
-debug-btc-only = ["test_cmd", "test_cmd/btc-only", "production-btc-only"]
+debug-multi-coins = ["test_cmd", "production-multi-coins"]
+debug-btc-only = ["test_cmd", "production-btc-only"]
 # simulator
-simulator-multi-coins = [
-    "simulator",
-    "multi-coins",
-    "sui_rust_c/simulator",
-    "simulator_rust_c/multi-coins",
-]
-simulator-btc-only = ["simulator", "btc-only", "simulator_rust_c/btc-only"]
-default = ["debug-multi-coins"]
+simulator-multi-coins = ["simulator", "multi-coins"]
+simulator-btc-only = ["simulator", "btc-only"]
+default = ["simulator-multi-coins"]
 
 [dev-dependencies]
 keystore = { path = "../keystore" }
+
+[build-dependencies]
+cbindgen = "0.27.0"

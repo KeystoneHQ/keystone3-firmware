@@ -80,6 +80,55 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c6cb57a04249c6480766f7f7cef5467412af1490f8d1e243141daddada3264f"
 
 [[package]]
+name = "anstream"
+version = "0.6.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8acc5369981196006228e28809f761875c0327210a891e941f4c683b3a99529b"
+dependencies = [
+ "anstyle",
+ "anstyle-parse",
+ "anstyle-query",
+ "anstyle-wincon",
+ "colorchoice",
+ "is_terminal_polyfill",
+ "utf8parse",
+]
+
+[[package]]
+name = "anstyle"
+version = "1.0.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "55cc3b69f167a1ef2e161439aa98aed94e6028e5f9a59be9a6ffb47aef1651f9"
+
+[[package]]
+name = "anstyle-parse"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b2d16507662817a6a20a9ea92df6652ee4f94f914589377d69f3b21bc5798a9"
+dependencies = [
+ "utf8parse",
+]
+
+[[package]]
+name = "anstyle-query"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79947af37f4177cfead1110013d678905c37501914fba0efea834c3fe9a8d60c"
+dependencies = [
+ "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "anstyle-wincon"
+version = "3.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2109dbce0e72be3ec00bed26e6a7479ca384ad226efdd66db8fa2e3a38c83125"
+dependencies = [
+ "anstyle",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -379,23 +428,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aptos_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_aptos",
- "app_utils",
- "bitcoin",
- "common_rust_c",
- "cstr_core",
- "cty",
- "hex",
- "keystore",
- "rust_tools",
- "serde_json",
- "ur-registry",
-]
-
-[[package]]
 name = "arrayref"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -406,24 +438,6 @@ name = "arrayvec"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
-
-[[package]]
-name = "arweave_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_arweave",
- "app_utils",
- "bitcoin",
- "common_rust_c",
- "cryptoxide",
- "cstr_core",
- "cty",
- "hex",
- "keystore",
- "rust_tools",
- "serde_json",
- "ur-registry",
-]
 
 [[package]]
 name = "ascii"
@@ -599,24 +613,6 @@ checksum = "bb18c03d0db0247e147a21a6faafd5a7eb851c743db062de72018b6b7e8e4d16"
 dependencies = [
  "bitcoin-io",
  "hex-conservative",
-]
-
-[[package]]
-name = "bitcoin_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_bitcoin",
- "app_utils",
- "base64 0.11.0",
- "bitcoin",
- "common_rust_c",
- "cryptoxide",
- "cstr_core",
- "cty",
- "hex",
- "keystore",
- "rust_tools",
- "ur-registry",
 ]
 
 [[package]]
@@ -810,38 +806,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "btc_only_wallet_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_utils",
- "app_wallets",
- "bitcoin",
- "common_rust_c",
- "cstr_core",
- "cty",
- "hex",
- "keystore",
- "rust_tools",
- "ur-registry",
-]
-
-[[package]]
-name = "btc_test_cmd"
-version = "0.1.0"
-dependencies = [
- "app_utils",
- "common_rust_c",
- "cstr_core",
- "cty",
- "hex",
- "keystore",
- "rust_tools",
- "ur-parse-lib",
- "ur-registry",
- "wallet_rust_c",
-]
-
-[[package]]
 name = "bumpalo"
 version = "3.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -907,30 +871,31 @@ dependencies = [
 ]
 
 [[package]]
-name = "cardano_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_cardano",
- "app_utils",
- "bitcoin",
- "common_rust_c",
- "cstr_core",
- "cty",
- "ed25519-bip32-core",
- "hex",
- "itertools 0.13.0",
- "keystore",
- "rust_tools",
- "ur-registry",
-]
-
-[[package]]
 name = "cbc"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "26b52a9543ae338f279b96b0b9fed9c8093744685043739079ce85cd58f289a6"
 dependencies = [
  "cipher",
+]
+
+[[package]]
+name = "cbindgen"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3fce8dd7fcfcbf3a0a87d8f515194b49d6135acab73e18bd380d1d93bb1a15eb"
+dependencies = [
+ "clap",
+ "heck",
+ "indexmap 2.6.0",
+ "log",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn 2.0.85",
+ "tempfile",
+ "toml 0.8.19",
 ]
 
 [[package]]
@@ -1008,6 +973,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "clap"
+version = "4.5.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3135e7ec2ef7b10c6ed8950f0f792ed96ee093fa088608f1c76e569722700c84"
+dependencies = [
+ "clap_builder",
+]
+
+[[package]]
+name = "clap_builder"
+version = "4.5.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30582fc632330df2bd26877bde0c1f4470d57c582bbc070376afcd04d8cb4838"
+dependencies = [
+ "anstream",
+ "anstyle",
+ "clap_lex",
+ "strsim 0.11.1",
+]
+
+[[package]]
+name = "clap_lex"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f46ad14479a25103f283c0f10005961cf086d8dc42205bb44c46ac563475dca6"
+
+[[package]]
 name = "clear_on_drop"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1066,6 +1058,12 @@ name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
+
+[[package]]
+name = "colorchoice"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
 name = "common_rust_c"
@@ -1178,22 +1176,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "239fa3ae9b63c2dc74bd3fa852d4792b8b305ae64eeede946265b6af62f1fff3"
 dependencies = [
  "memchr",
-]
-
-[[package]]
-name = "cosmos_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_cosmos",
- "app_utils",
- "common_rust_c",
- "cstr_core",
- "cty",
- "either",
- "keystore",
- "rust_tools",
- "serde_json",
- "ur-registry",
 ]
 
 [[package]]
@@ -1597,26 +1579,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ethereum_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_ethereum",
- "app_utils",
- "bitcoin",
- "common_rust_c",
- "core2",
- "cryptoxide",
- "cstr_core",
- "cty",
- "hex",
- "itertools 0.13.0",
- "keystore",
- "rust_tools",
- "serde_json",
- "ur-registry",
-]
-
-[[package]]
 name = "ethnum"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1870,21 +1832,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
 dependencies = [
  "byteorder",
-]
-
-[[package]]
-name = "general_test_cmd"
-version = "0.1.0"
-dependencies = [
- "app_utils",
- "common_rust_c",
- "cstr_core",
- "cty",
- "hex",
- "keystore",
- "rust_tools",
- "ur-registry",
- "wallet_rust_c",
 ]
 
 [[package]]
@@ -2202,6 +2149,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "is_terminal_polyfill"
+version = "1.70.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7943c866cc5cd64cbc25b2e01621d07fa8eb2a1a23160ee81ce38704e97b8ecf"
+
+[[package]]
 name = "itertools"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2502,43 +2455,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "multi_coins_wallet_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_arweave",
- "app_utils",
- "app_wallets",
- "bitcoin",
- "common_rust_c",
- "cstr_core",
- "cty",
- "ed25519-bip32-core",
- "hex",
- "keystore",
- "rust_tools",
- "ur-registry",
-]
-
-[[package]]
 name = "multimap"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5ce46fe64a9d73be07dcbe690a38ce1b293be448fd8ce1e6c1b8062c9f72c6a"
-
-[[package]]
-name = "near_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_near",
- "app_utils",
- "common_rust_c",
- "cstr_core",
- "cty",
- "itertools 0.13.0",
- "keystore",
- "rust_tools",
- "ur-registry",
-]
 
 [[package]]
 name = "nix"
@@ -3017,7 +2937,7 @@ version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1d6ea3c4595b96363c13943497db34af4460fb474a95c43f4446ad341b8c9785"
 dependencies = [
- "toml",
+ "toml 0.5.11",
 ]
 
 [[package]]
@@ -3450,28 +3370,42 @@ dependencies = [
 name = "rust_c"
 version = "0.1.0"
 dependencies = [
- "aptos_rust_c",
- "arweave_rust_c",
- "bitcoin_rust_c",
- "cardano_rust_c",
+ "app_aptos",
+ "app_arweave",
+ "app_bitcoin",
+ "app_cardano",
+ "app_cosmos",
+ "app_ethereum",
+ "app_near",
+ "app_solana",
+ "app_stellar",
+ "app_sui",
+ "app_ton",
+ "app_tron",
+ "app_utils",
+ "app_wallets",
+ "app_xrp",
+ "app_zcash",
+ "base64 0.11.0",
+ "bitcoin",
+ "cbindgen",
  "common_rust_c",
- "cosmos_rust_c",
+ "core2",
+ "cryptoxide",
  "cstr_core",
  "cty",
- "ethereum_rust_c",
+ "ed25519-bip32-core",
+ "either",
  "getrandom",
+ "hex",
+ "itertools 0.13.0",
  "keystore",
- "near_rust_c",
- "simulator_rust_c",
- "solana_rust_c",
- "stellar_rust_c",
- "sui_rust_c",
- "test_cmd",
- "ton_rust_c",
- "tron_rust_c",
- "wallet_rust_c",
- "xrp_rust_c",
- "zcash_rust_c",
+ "rust_tools",
+ "serde_json",
+ "sim_qr_reader",
+ "ur-parse-lib",
+ "ur-registry",
+ "zcash_vendor",
 ]
 
 [[package]]
@@ -3728,6 +3662,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_spanned"
+version = "0.6.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87607cb1398ed59d48732e575a4c28a7a8ebf2454b964fe3f224f2afc07909e1"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "serde_with"
 version = "2.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3874,16 +3817,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
 
 [[package]]
-name = "simulator_rust_c"
-version = "0.1.0"
-dependencies = [
- "common_rust_c",
- "cstr_core",
- "cty",
- "sim_qr_reader",
-]
-
-[[package]]
 name = "sinsemilla"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3905,21 +3838,6 @@ name = "smallvec"
 version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
-
-[[package]]
-name = "solana_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_solana",
- "app_utils",
- "common_rust_c",
- "cstr_core",
- "cty",
- "itertools 0.13.0",
- "keystore",
- "rust_tools",
- "ur-registry",
-]
 
 [[package]]
 name = "spin"
@@ -3951,20 +3869,6 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
-
-[[package]]
-name = "stellar_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_stellar",
- "app_utils",
- "common_rust_c",
- "cstr_core",
- "cty",
- "hex",
- "keystore",
- "ur-registry",
-]
 
 [[package]]
 name = "strsim"
@@ -4058,22 +3962,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sui_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_sui",
- "app_utils",
- "common_rust_c",
- "cstr_core",
- "cty",
- "hex",
- "keystore",
- "rust_tools",
- "serde_json",
- "ur-registry",
-]
-
-[[package]]
 name = "syn"
 version = "1.0.109"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4142,14 +4030,6 @@ dependencies = [
  "serde_bytes",
  "subtle-encoding",
  "time",
-]
-
-[[package]]
-name = "test_cmd"
-version = "0.1.0"
-dependencies = [
- "btc_test_cmd",
- "general_test_cmd",
 ]
 
 [[package]]
@@ -4267,10 +4147,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "toml"
+version = "0.8.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1ed1f98e3fdc28d6d910e6737ae6ab1a93bf1985935a1193e68f93eeb68d24e"
+dependencies = [
+ "serde",
+ "serde_spanned",
+ "toml_datetime",
+ "toml_edit",
+]
+
+[[package]]
 name = "toml_datetime"
 version = "0.6.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0dd7358ecb8fc2f8d014bf86f6f638ce72ba252a2c3a2572f2a795f1d23efb41"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "toml_edit"
@@ -4279,23 +4174,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4ae48d6208a266e853d946088ed816055e556cc6028c5e8e2b84d9fa5dd7c7f5"
 dependencies = [
  "indexmap 2.6.0",
+ "serde",
+ "serde_spanned",
  "toml_datetime",
  "winnow",
-]
-
-[[package]]
-name = "ton_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_ton",
- "app_utils",
- "common_rust_c",
- "cstr_core",
- "cty",
- "hex",
- "keystore",
- "rust_tools",
- "ur-registry",
 ]
 
 [[package]]
@@ -4313,19 +4195,6 @@ name = "tracing-core"
 version = "0.1.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c06d3da6113f116aaee68e4d601191614c9053067f9ab7f6edbcb161237daa54"
-
-[[package]]
-name = "tron_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_tron",
- "app_utils",
- "common_rust_c",
- "cstr_core",
- "cty",
- "keystore",
- "rust_tools",
-]
 
 [[package]]
 name = "typenum"
@@ -4421,6 +4290,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
 [[package]]
+name = "utf8parse"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
+
+[[package]]
 name = "version_check"
 version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4435,14 +4310,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.85",
-]
-
-[[package]]
-name = "wallet_rust_c"
-version = "0.1.0"
-dependencies = [
- "btc_only_wallet_rust_c",
- "multi_coins_wallet_rust_c",
 ]
 
 [[package]]
@@ -4905,23 +4772,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "xrp_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_utils",
- "app_xrp",
- "bitcoin",
- "common_rust_c",
- "cstr_core",
- "cty",
- "hex",
- "keystore",
- "rust_tools",
- "serde_json",
- "ur-registry",
-]
-
-[[package]]
 name = "zcash_address"
 version = "0.6.2"
 source = "git+https://github.com/zcash/librustzcash.git?rev=9407f09208d5574a3ba7bf3e6963741114ba77c2#9407f09208d5574a3ba7bf3e6963741114ba77c2"
@@ -4988,21 +4838,6 @@ source = "git+https://github.com/zcash/librustzcash.git?rev=9407f09208d5574a3ba7
 dependencies = [
  "core2",
  "hex",
-]
-
-[[package]]
-name = "zcash_rust_c"
-version = "0.1.0"
-dependencies = [
- "app_utils",
- "app_zcash",
- "common_rust_c",
- "cstr_core",
- "cty",
- "keystore",
- "rust_tools",
- "ur-registry",
- "zcash_vendor",
 ]
 
 [[package]]

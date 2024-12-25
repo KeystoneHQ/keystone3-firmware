@@ -3,14 +3,14 @@ use alloc::vec::Vec;
 use alloc::{format, vec};
 use app_utils::normalize_path;
 
-use bitcoin::bip32::{DerivationPath, Xpub};
 use crate::common::errors::RustCError;
-use crate::extract_array;
 use crate::common::ffi::CSliceFFI;
 use crate::common::structs::ExtendedPublicKey;
 use crate::common::types::{Ptr, PtrBytes, PtrString, PtrT};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{recover_c_array, recover_c_char};
+use crate::extract_array;
+use bitcoin::bip32::{DerivationPath, Xpub};
 use core::slice;
 use core::str::FromStr;
 use cty::{int32_t, uint32_t};

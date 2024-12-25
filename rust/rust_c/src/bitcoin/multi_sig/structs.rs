@@ -2,15 +2,15 @@ use alloc::boxed::Box;
 use alloc::format;
 use alloc::string::ToString;
 
-use alloc::vec::Vec;
-use app_bitcoin::multi_sig::wallet::{BsmsWallet, MultiSigWalletConfig};
-use app_bitcoin::multi_sig::{MultiSigFormat, MultiSigType, MultiSigXPubInfo, Network};
 use crate::common::ffi::VecFFI;
 use crate::common::free::Free;
 use crate::common::types::{Ptr, PtrBytes, PtrString, PtrT};
 use crate::common::ur::UREncodeResult;
 use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::{check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, make_free_method};
+use alloc::vec::Vec;
+use app_bitcoin::multi_sig::wallet::{BsmsWallet, MultiSigWalletConfig};
+use app_bitcoin::multi_sig::{MultiSigFormat, MultiSigType, MultiSigXPubInfo, Network};
 
 #[repr(C)]
 pub enum NetworkType {

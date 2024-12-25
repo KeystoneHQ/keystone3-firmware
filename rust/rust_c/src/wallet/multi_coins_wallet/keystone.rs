@@ -1,10 +1,10 @@
-use alloc::{format, string::ToString};
-use crate::extract_array;
 use crate::common::ffi::CSliceFFI;
 use crate::common::structs::ExtendedPublicKey;
 use crate::common::types::{Ptr, PtrBytes, PtrString};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{recover_c_array, recover_c_char};
+use crate::extract_array;
+use alloc::{format, string::ToString};
 use ur_registry::error::URError;
 
 use super::utils::normalize_xpub;

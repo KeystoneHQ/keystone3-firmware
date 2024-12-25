@@ -1,15 +1,15 @@
 pub mod structs;
 
-use structs::DisplayTron;
-use alloc::boxed::Box;
-use alloc::slice;
 use crate::common::errors::RustCError;
 use crate::common::keystone;
 use crate::common::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{QRCodeType, UREncodeResult};
 use crate::common::utils::{convert_c_char, recover_c_char};
+use alloc::boxed::Box;
+use alloc::slice;
 use cty::c_char;
+use structs::DisplayTron;
 
 #[no_mangle]
 pub extern "C" fn tron_check_keystone(

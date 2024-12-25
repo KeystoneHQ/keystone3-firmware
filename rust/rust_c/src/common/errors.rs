@@ -4,12 +4,12 @@ use thiserror;
 use thiserror::Error;
 use ur_registry::error::URError;
 
-#[cfg(feature = "bitcoin")]
-use app_bitcoin::errors::BitcoinError;
 #[cfg(feature = "aptos")]
 use app_aptos::errors::AptosError;
 #[cfg(feature = "arweave")]
 use app_arweave::errors::ArweaveError;
+#[cfg(feature = "bitcoin")]
+use app_bitcoin::errors::BitcoinError;
 #[cfg(feature = "cardano")]
 use app_cardano::errors::CardanoError;
 #[cfg(feature = "cosmos")]

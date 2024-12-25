@@ -1,9 +1,9 @@
-use app_bitcoin;
-use app_bitcoin::addresses::xyzpub;
-use bitcoin::secp256k1::ffi::types::c_char;
 use crate::common::structs::SimpleResponse;
 use crate::common::types::PtrString;
 use crate::common::utils::{convert_c_char, recover_c_char};
+use app_bitcoin;
+use app_bitcoin::addresses::xyzpub;
+use bitcoin::secp256k1::ffi::types::c_char;
 use core::str::FromStr;
 
 #[no_mangle]

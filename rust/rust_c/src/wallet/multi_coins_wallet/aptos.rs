@@ -8,13 +8,13 @@ use ur_registry::error::URError;
 use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use ur_registry::traits::RegistryItem;
 
-use app_wallets::aptos::generate_sync_ur;
 use crate::common::errors::RustCError;
 use crate::common::ffi::CSliceFFI;
 use crate::common::structs::ExtendedPublicKey;
 use crate::common::types::PtrT;
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{recover_c_array, recover_c_char};
+use app_wallets::aptos::generate_sync_ur;
 
 #[no_mangle]
 pub extern "C" fn get_connect_aptos_wallet_ur(

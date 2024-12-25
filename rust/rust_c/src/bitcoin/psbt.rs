@@ -7,11 +7,7 @@ use app_bitcoin::multi_sig::wallet::parse_wallet_config;
 use core::ptr::null_mut;
 use core::str::FromStr;
 
-use app_bitcoin::parsed_tx::ParseContext;
-use app_bitcoin::{self, parse_psbt_hex_sign_status, parse_psbt_sign_status};
-use bitcoin::bip32::{DerivationPath, Xpub};
 use crate::common::errors::RustCError;
-use crate::extract_ptr_with_type;
 use crate::common::ffi::{CSliceFFI, VecFFI};
 use crate::common::structs::{
     ExtendedPublicKey, Response, TransactionCheckResult, TransactionParseResult,
@@ -19,6 +15,10 @@ use crate::common::structs::{
 use crate::common::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use crate::common::utils::{convert_c_char, recover_c_array, recover_c_char};
+use crate::extract_ptr_with_type;
+use app_bitcoin::parsed_tx::ParseContext;
+use app_bitcoin::{self, parse_psbt_hex_sign_status, parse_psbt_sign_status};
+use bitcoin::bip32::{DerivationPath, Xpub};
 use hex;
 use ur_registry::crypto_psbt::CryptoPSBT;
 use ur_registry::traits::RegistryItem;

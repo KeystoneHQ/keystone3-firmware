@@ -1,13 +1,13 @@
 use super::structs::KeplrAccount;
-use alloc::format;
-use alloc::string::ToString;
-use alloc::vec::Vec;
-use app_wallets::keplr::{generate_sync_ur, sync_info::SyncInfo};
-use crate::extract_array;
 use crate::common::ffi::CSliceFFI;
 use crate::common::types::{PtrBytes, PtrT};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{recover_c_array, recover_c_char};
+use crate::extract_array;
+use alloc::format;
+use alloc::string::ToString;
+use alloc::vec::Vec;
+use app_wallets::keplr::{generate_sync_ur, sync_info::SyncInfo};
 use cty::uint32_t;
 use keystore::algorithms::secp256k1::derive_extend_public_key;
 use ur_registry::error::URError;

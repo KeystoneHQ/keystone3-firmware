@@ -7,13 +7,13 @@ use hex;
 use ur_registry::error::URError;
 use ur_registry::traits::RegistryItem;
 
-use app_wallets::xbull::generate_sync_ur;
 use crate::common::errors::RustCError;
 use crate::common::ffi::CSliceFFI;
 use crate::common::structs::ExtendedPublicKey;
 use crate::common::types::PtrT;
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{recover_c_array, recover_c_char};
+use app_wallets::xbull::generate_sync_ur;
 use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 
 #[no_mangle]

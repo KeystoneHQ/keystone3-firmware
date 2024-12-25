@@ -1,4 +1,4 @@
-use crate::address::{derive_pubkey_hash};
+use crate::address::derive_pubkey_hash;
 use crate::errors::{CardanoError, R};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
@@ -9,8 +9,7 @@ use cardano_serialization_lib::protocol_types::{
     Address, BaseAddress, EnterpriseAddress, RewardAddress,
 };
 
-
-use cardano_serialization_lib::protocol_types::{DRepKind};
+use cardano_serialization_lib::protocol_types::DRepKind;
 
 use cardano_serialization_lib::{
     protocol_types::FixedTransaction as Transaction, protocol_types::VoteKind, NetworkIdKind,

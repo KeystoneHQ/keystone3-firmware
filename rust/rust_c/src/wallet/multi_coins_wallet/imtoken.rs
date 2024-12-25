@@ -1,10 +1,10 @@
-use alloc::format;
-use alloc::string::ToString;
-use app_wallets::metamask::ETHAccountTypeApp::Bip44Standard;
-use crate::extract_array;
 use crate::common::types::{Ptr, PtrBytes, PtrString};
 use crate::common::ur::UREncodeResult;
 use crate::common::utils::recover_c_char;
+use crate::extract_array;
+use alloc::format;
+use alloc::string::ToString;
+use app_wallets::metamask::ETHAccountTypeApp::Bip44Standard;
 use cty::uint32_t;
 use ur_registry::crypto_hd_key::CryptoHDKey;
 use ur_registry::error::URError;

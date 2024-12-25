@@ -8,7 +8,7 @@ use pczt::{
     roles::low_level_signer::Signer,
     transparent::{Input, Output},
 };
-use transparent::{sighash::SignableInput};
+use transparent::sighash::SignableInput;
 use zcash_protocol::value::ZatBalance;
 
 /// TxId tree root personalization

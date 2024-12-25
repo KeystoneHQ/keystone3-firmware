@@ -4,22 +4,13 @@ use alloc::vec::Vec;
 
 use serde_json::{from_slice, from_value, Value};
 
-use ur_registry::bytes::Bytes;
-use ur_registry::crypto_account::CryptoAccount;
-use ur_registry::crypto_psbt::CryptoPSBT;
-use ur_registry::error::URError;
-use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
-use ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
-use ur_registry::pb::protoc;
-use ur_registry::pb::protoc::Base;
-#[cfg(feature = "multi-coins")]
-use ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};
 #[cfg(feature = "aptos")]
 use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 #[cfg(feature = "arweave")]
 use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SignType};
 #[cfg(feature = "bitcoin")]
 use ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
+use ur_registry::bytes::Bytes;
 #[cfg(feature = "cardano")]
 use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 #[cfg(feature = "cardano")]
@@ -32,14 +23,23 @@ use ur_registry::cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest
 use ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 #[cfg(feature = "cosmos")]
 use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::crypto_psbt::CryptoPSBT;
+use ur_registry::error::URError;
 #[cfg(feature = "ethereum")]
 use ur_registry::ethereum::eth_sign_request;
 #[cfg(feature = "ethereum")]
 use ur_registry::ethereum::eth_sign_request::EthSignRequest;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+#[cfg(feature = "multi-coins")]
+use ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};
 #[cfg(feature = "multi-coins")]
 use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
 #[cfg(feature = "near")]
 use ur_registry::near::near_sign_request::NearSignRequest;
+use ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
+use ur_registry::pb::protoc;
+use ur_registry::pb::protoc::Base;
 #[cfg(feature = "solana")]
 use ur_registry::solana::sol_sign_request::SolSignRequest;
 #[cfg(feature = "stellar")]

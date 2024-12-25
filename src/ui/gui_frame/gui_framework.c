@@ -25,64 +25,6 @@ static const char *GuiFrameIdToName(SCREEN_ID_ENUM ID);
 static GUI_VIEW *g_workingView = NULL;
 static uint32_t g_viewCnt = 0;      // Record how many views are opened
 
-static GUI_VIEW *g_viewsTable[] = {
-    &g_initView,
-    &g_lockView,
-    &g_homeView,
-    &g_setupView,
-    &g_createWalletView,
-    &g_singlePhraseView,
-    &g_importPhraseView,
-    &g_createShareView,
-    &g_importShareView,
-    &g_settingView,
-    &g_connectWalletView,
-#ifndef BTC_ONLY
-    &g_USBTransportView,
-#endif
-    &g_passphraseView,
-    &g_utxoReceiveView,
-#ifndef BTC_ONLY
-    &g_multiPathCoinReceiveView,
-    &g_standardReceiveView,
-#endif
-    &g_forgetPassView,
-    &g_lockDeviceView,
-    &g_firmwareUpdateView,
-    &g_webAuthView,
-    &g_webAuthResultView,
-    &g_systemSettingView,
-    &g_purposeView,
-    &g_aboutView,
-    &g_aboutKeystoneView,
-    &g_aboutInfoView,
-    &g_aboutTermsView,
-    &g_wipeDeviceView,
-    &g_walletTutorialView,
-    &g_selfDestructView,
-    &g_inactiveView,
-    &g_displayView,
-    &g_tutorialView,
-    &g_connectionView,
-    &g_DevicePublicKeyView,
-#ifndef BTC_ONLY
-    &g_multiAccountsReceiveView,
-    &g_keyDerivationRequestView,
-#endif
-    &g_scanView,
-    &g_transactionDetailView,
-    &g_transactionSignatureView,
-    &g_diceRollsView,
-#ifdef BTC_ONLY
-    &g_importMultisigWalletInfoView,
-    &g_multisigSelectImportMethodView,
-    &g_multisigWalletExportView,
-    &g_multisigReadSdcardView,
-    &g_createMultisigWalletView,
-    &g_manageMultisigWalletView,
-#endif
-};
-
 bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t usLen)
 {
     int32_t ret;
@@ -297,31 +239,4 @@ static const char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
     printf("id = %d name = %s\n", ID, str);
     const char *name = str;
     return name;
-}
-
-void GuiViewsTest(int argc, char *argv[])
-{
-    VALUE_CHECK(argc, 2);
-    int viewId = atoi(argv[1]);
-    GUI_VIEW *view = NULL;
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewsTable); i++) {
-        if (viewId == g_viewsTable[i]->id) {
-            view = g_viewsTable[i];
-            break;
-        }
-    }
-    if (view == NULL) {
-        return;
-    }
-#ifndef COMPILE_SIMULATOR
-    if (strcmp(argv[0], "open") == 0) {
-        printf("open view %s\n", GuiFrameIdToName(view->id));
-        PubValueMsg(UI_MSG_OPEN_VIEW, (uint32_t)view);
-    } else if (strcmp(argv[0], "close") == 0) {
-        printf("close view %s\n", GuiFrameIdToName(view->id));
-        PubValueMsg(UI_MSG_CLOSE_VIEW, (uint32_t)view);
-    } else if (strcmp(argv[0], "debug") == 0) {
-        GuiFrameDebugging();
-    }
-#endif
 }

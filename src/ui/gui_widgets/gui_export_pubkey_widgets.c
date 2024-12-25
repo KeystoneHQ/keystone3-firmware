@@ -7,13 +7,12 @@
 #include "account_public_info.h"
 #include "assert.h"
 #include "gui_hintbox.h"
-#include "btc_only/gui_btc_home_widgets.h"
 #include "sdcard_manager.h"
 
 #ifdef BTC_ONLY
 #include "gui_animating_qrcode.h"
 #include "keystore.h"
-#include "gui_btc_home_widgets.h"
+#include "gui_home_widgets.h"
 static lv_obj_t *g_noticeWindow = NULL;
 static char *g_xpubConfigName = NULL;
 #endif

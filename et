@@ -1,0 +1,539 @@
+[33mcommit 1aae5288ee58bb0113ec56a59dd93be8f5a6de78[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mrefactor/c_split_chain[m[33m)[m
+Author: 0xApprentice <126858986+0xApprentice@users.noreply.github.com>
+Date:   Wed Dec 25 17:36:33 2024 +0800
+
+    split chain
+
+[33mcommit 3be05c54330da47bdfbb3f371b08baba6162ed11[m[33m ([m[1;31mupstream/master[m[33m, [m[1;31morigin/master[m[33m, [m[1;32mmaster[m[33m)[m
+Merge: 7c449f3b bda731ce
+Author: stone wang <35837388+ww3512687@users.noreply.github.com>
+Date:   Fri Dec 20 10:25:33 2024 +0800
+
+    Merge pull request #1512 from KeystoneHQ/feat/zcash
+    
+    refactor: optimize zcash
+
+[33mcommit bda731ce973ea577cf782de9ba10d891fd26ffb6[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 17:59:24 2024 +0800
+
+    refactor: optimize zcash
+
+[33mcommit 7c449f3b66fff28d06d2a603b76e6453a7a99a2b[m
+Merge: 08a44673 cb186363
+Author: Soralit <soralitria@gmail.com>
+Date:   Fri Dec 20 09:29:26 2024 +0800
+
+    Merge pull request #1511 from KeystoneHQ/merge/v1.8.0
+    
+    Merge/v1.8.0
+
+[33mcommit cb1863637db4b288522978cda5f0e837955b1791[m
+Author: soralit <soralitria@gmail.com>
+Date:   Fri Dec 20 09:13:20 2024 +0800
+
+    chore: update ci config to match current project state
+
+[33mcommit 7a3efe9ad1464b5eb1f896edd0960f99bb8a0756[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 19:22:12 2024 +0800
+
+    style: run fmt
+
+[33mcommit f82da698ce1e7026b3d896ae32c1970eab453f47[m[33m ([m[1;33mtag: [m[1;33m1.8.0[m[33m, [m[1;31mupstream/release/v1.8.0[m[33m, [m[1;31morigin/release/v1.8.0[m[33m)[m
+Merge: 14d54b14 03c6e99d
+Author: Soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 18:24:05 2024 +0800
+
+    Merge pull request #1509 from KeystoneHQ/bump-version
+    
+    chore: bump version
+
+[33mcommit 03c6e99d11c9a34562197c1a127871be16fe3089[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 18:23:33 2024 +0800
+
+    chore: bump version
+
+[33mcommit 14d54b1412061a9de77fefff5ad6ec670e0b278a[m
+Merge: 82a380c4 431156e7
+Author: Soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 18:01:58 2024 +0800
+
+    Merge pull request #1508 from KeystoneHQ/add-changelog
+    
+    docs: add v1.8.0 changelog
+
+[33mcommit 431156e76983133a7a8ca037e2ce9a3bcbf1d1c1[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 18:01:23 2024 +0800
+
+    docs: add v1.8.0 changelog
+
+[33mcommit 82a380c44a740dd58be30b435719b180a607623f[m[33m ([m[1;31mupstream/release/v1.7.18[m[33m, [m[1;31morigin/release/v1.7.18[m[33m)[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 16:25:15 2024 +0800
+
+    fix: ui issues
+
+[33mcommit 79cc49349450fd8ed76b78302c48526b1d55b3d3[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 15:57:33 2024 +0800
+
+    fix: connect wallet issue
+
+[33mcommit 71bdfb8e95f8e4332ea8c64f0fee109d02655440[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 15:53:29 2024 +0800
+
+    fix: app crash
+
+[33mcommit 05b1372c75d3505667e68d31ad49c1feeb8deb3b[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 14:36:46 2024 +0800
+
+    fix: amount calculation
+
+[33mcommit 9a81ada3a4a4a3a3ca2c617be90ca5f37268f433[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 13:39:01 2024 +0800
+
+    feat: allow p2sh transparent output and input. refactor ut
+
+[33mcommit 337981f72789a396643376e9586128e5e96cdf7e[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 19 10:14:07 2024 +0800
+
+    fix: issues
+
+[33mcommit d41a8f232bdbe6008f3676ffb4bf5749cf9e0235[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 18 18:46:08 2024 +0800
+
+    fix: passphrase judge error
+
+[33mcommit 6cc43e1f96dfa2b600687d3769122f5004620376[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 18 18:31:03 2024 +0800
+
+    fix: build
+
+[33mcommit 2a7c87182419fa4ae801ad1888bb3e8aca188eb3[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 18 18:28:07 2024 +0800
+
+    chore: bump beta version
+
+[33mcommit 3882c14b4c2f825a1b2a95366fe6a88b0165b23c[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 18 18:26:50 2024 +0800
+
+    fix: disable zcash for passphrase and slip39 wallet for now
+
+[33mcommit 6a04d6961f03fc8f8ee852d468403158624925a6[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 18 17:57:28 2024 +0800
+
+    fix: open checking logic
+
+[33mcommit fa3f10c56d47d7d148dd33032482845c392111dd[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 18 16:58:01 2024 +0800
+
+    fix: ui issue
+
+[33mcommit bed660d783658a9e5ff6d711ecd4e80be93a2ced[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 18 16:31:50 2024 +0800
+
+    feat: support passphrase and slip39 to zcash
+
+[33mcommit 1a8bc53879a3627de23335cff478bac4712ae61f[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 18 16:20:18 2024 +0800
+
+    feat: upgrade zcash dep
+
+[33mcommit 4641f77e93cfcbaff669af8467fff32e9de8bb07[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 18 16:17:32 2024 +0800
+
+    fix: unit test
+
+[33mcommit 0b79d5c870c69f7c203ac94db5d7f9fcb5622e26[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 18 15:43:48 2024 +0800
+
+    fix: zcash receive page issue
+
+[33mcommit b0b01da23fa86e016147935fd3c2c0e306c276f7[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 20:59:24 2024 +0800
+
+    feat: ui refinement for sapling part
+
+[33mcommit 2e2e5b98825fe328937e1e93ba1ef3d84a05f532[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 20:59:24 2024 +0800
+
+    feat: ui refinement for sapling part
+
+[33mcommit aa0220aada2a988d4309dc6ecc457dba096b21bf[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 20:50:08 2024 +0800
+
+    fix: transaction signing failed issue
+
+[33mcommit f2fb1c34b712d9a2daa6084f88c4599a97d87bea[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 19:00:37 2024 +0800
+
+    fix: disable checking ATM
+
+[33mcommit dd637e486fd6ec9c99dd70c8cfdbe8beb85eec3b[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 18:59:15 2024 +0800
+
+    fix(bitcoin): issues happened after upgrade bitcoin
+
+[33mcommit b379e529d4887d16842731b59bf19d8fdc5ff5f7[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 18:22:54 2024 +0800
+
+    style(zcash): run cargo fix
+
+[33mcommit 7a179c9f0cf2e9877b7570ec59551eefe98c09c6[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 18:21:48 2024 +0800
+
+    style(zcash): optimize import
+
+[33mcommit 90b26f58e8d80fcedb9275cae6b91c0e5d7cf365[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 18:20:26 2024 +0800
+
+    style: run fmt
+
+[33mcommit 55390265461b79c3f45dc01bea10274a041a4b46[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 18:20:11 2024 +0800
+
+    refactor(zcash): no hardcoded network
+
+[33mcommit 76d6a9db7f91d996370ca3a61b6f96c2cbb1cb0f[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 18:06:44 2024 +0800
+
+    fix(zcash): home page zec issue
+
+[33mcommit 3034a283dafcd40641f4d49ffa9f7a2230c99087[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 18:01:40 2024 +0800
+
+    chore: refine checking logic
+
+[33mcommit 373df133e44d266075ffd34d9b39dfb570dd726e[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 16:33:01 2024 +0800
+
+    feat: add fee value display
+
+[33mcommit 5934b1e44025c11c8d15efd025af6a6ffbed6d3f[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 17 16:06:34 2024 +0800
+
+    fix: change output is marked as invalid
+
+[33mcommit eaf9f3036e09e804933c828211d245064a235717[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Tue Dec 17 03:18:24 2024 +0000
+
+    zcash: Display user-facing addresses for outputs
+
+[33mcommit ac1c0ec7871f45cfa2d99175c92be9448c70e853[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Tue Dec 17 02:41:31 2024 +0000
+
+    zcash: Replace vendored `pczt` with upstream branch
+    
+    Co-authored-by: Kris Nuttycombe <kris@nutty.land>
+
+[33mcommit ddd20bac81b7291673d52d96da4d29cd98d3d43b[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Mon Dec 16 22:41:18 2024 +0000
+
+    zcash: Replace vendored `zcash_keys` with upstream branch
+    
+    Co-authored-by: Kris Nuttycombe <kris@nutty.land>
+
+[33mcommit 50109c9b7af917aff4891d0431e9882c8f35dc7c[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Mon Dec 16 13:40:22 2024 +0000
+
+    zcash: Replace vendored `orchard` with upstream branch
+    
+    Co-authored-by: Kris Nuttycombe <kris@nutty.land>
+
+[33mcommit df5de09458c2b32bc0df817a51044f462c3296a6[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Mon Dec 16 10:05:17 2024 +0000
+
+    zcash: Replace vendored `zcash_primitives` with `zcash_transparent`
+
+[33mcommit a9075ea9bd4be4744f103956f99c6dfa3aa935f0[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Mon Dec 16 09:15:29 2024 +0000
+
+    zcash: Remove vendored `zcash_encoding` files
+    
+    I forgot to do this in 7771402e4ccbe69507636f277378632f519544a1.
+
+[33mcommit 43ee41b18c1e5964f9f320d627ec31f20f4e676d[m
+Author: soralit <soralitria@gmail.com>
+Date:   Mon Dec 16 20:34:38 2024 +0800
+
+    fix: unshielding transaction signing
+
+[33mcommit ca92e5e426018f07dd5d598e7c20597948333418[m
+Author: soralit <soralitria@gmail.com>
+Date:   Mon Dec 16 20:17:50 2024 +0800
+
+    chore: upgrade toolchain for CI
+
+[33mcommit 3c3cc5ea06fbdad6f486684eae51f11e5815bc48[m
+Author: soralit <soralitria@gmail.com>
+Date:   Mon Dec 16 20:14:08 2024 +0800
+
+    fix: judge dummy output
+
+[33mcommit 99379eb0272a8f7c384574324c8bc480783a0218[m
+Author: soralit <soralitria@gmail.com>
+Date:   Mon Dec 16 17:18:34 2024 +0800
+
+    chore: update toolchain
+
+[33mcommit 1ef44806726a6e7ca7c6a008371e45573112f2d7[m
+Author: soralit <soralitria@gmail.com>
+Date:   Mon Dec 16 16:21:28 2024 +0800
+
+    chore: update rust-toolchain
+
+[33mcommit 6dfe512a4ae13b775ae6aa81733b1d13749a7fd5[m
+Author: soralit <soralitria@gmail.com>
+Date:   Mon Dec 16 16:10:12 2024 +0800
+
+    fix: unshielding transaction failed because of the hash calculation
+
+[33mcommit d3c483b7f46bd2fde712db77efeff1e3e81e8d19[m
+Author: soralit <soralitria@gmail.com>
+Date:   Mon Dec 16 13:30:49 2024 +0800
+
+    fix(zcash): shielding transaction display issue and modify tx_modifiable flags after signing
+
+[33mcommit b0ab795991dbe1f2b8fad14761fe00166266f24c[m
+Author: soralit <soralitria@gmail.com>
+Date:   Sat Dec 14 21:19:17 2024 +0800
+
+    fix: sign transparent input should return der signature with sighash type
+
+[33mcommit d5923d34917776af1fee409c5ad69b9dd2f9fd1a[m
+Author: soralit <soralitria@gmail.com>
+Date:   Fri Dec 13 18:27:30 2024 +0800
+
+    fix: zcash memory leak
+
+[33mcommit a29783eb539e8313909ed6500d294f07fc8c781c[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Fri Dec 13 13:47:33 2024 +0000
+
+    zcash: Replace vendored Sinsemilla with `sinsemilla` crate
+
+[33mcommit 9d7d6ea723811ae2c40e9a9b35e617b03f273f2a[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Fri Dec 13 23:05:34 2024 +0000
+
+    zcash: Replace vendored `zip32` with published crate
+
+[33mcommit 0b4e182d4d884a2e64ed536016f59ba1c247b44d[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Fri Dec 13 20:37:48 2024 +0000
+
+    zcash: Replace vendored `zcash_address` with published crate
+
+[33mcommit 27170290d06328cf2f0f250d92d1dece6f67a671[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Fri Dec 13 17:04:26 2024 +0000
+
+    zcash: Replace vendored `zcash_encoding` with published crate
+
+[33mcommit e6d109eb834f91d32f0097ac492a23d68924a23c[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Fri Dec 13 15:01:17 2024 +0000
+
+    zcash: Replace vendored `zcash_protocol` with published crate
+
+[33mcommit 286f73b5d9d8c40229051f447aeac431509c7e7d[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Fri Dec 13 09:54:08 2024 +0000
+
+    zcash: Switch to obtaining randomness through `rand_core::OsRng`
+
+[33mcommit 7b76767ce3857cf54e319487c7ecc3d1a683b7fa[m
+Author: Jack Grigg <jack@electriccoin.co>
+Date:   Fri Dec 13 09:41:30 2024 +0000
+
+    feat: Use TRNG as a custom `getrandom` backend
+    
+    This enables Rust crates that depend on the `getrandom` crate (either
+    directly or via `rand::rngs::OsRng`) to get secure randomness directly
+    instead of needing it to be passed through a per-callsite C FFI.
+
+[33mcommit 049014ae4aa3dd8aa911749913a96fb5ecc0ae7a[m
+Author: soralit <soralitria@gmail.com>
+Date:   Fri Dec 13 15:21:24 2024 +0800
+
+    fix: memo decode / an edge case of crash / use TRGN randomness when signing / ui refinement
+
+[33mcommit b8979c11e1afada8560c92dcd8308aaf692feb89[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 12 17:39:19 2024 +0800
+
+    fix: pczt transaction signing and display issues
+
+[33mcommit 6b0db3939585be961bd0e953d34d1520e19cda1f[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Dec 12 14:09:50 2024 +0800
+
+    fix: wrong total transfer value
+
+[33mcommit 33dfe7ac2322682f320bd4d6932c53db6a7c2268[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 11 19:59:04 2024 +0800
+
+    fix: omit pczt checking ATM
+
+[33mcommit 5ac5d2cc49773911c2bcf4fead269dff227d5232[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Dec 11 16:01:51 2024 +0800
+
+    fix: should not render transparent part when it is None
+
+[33mcommit 3b98da78146bbbf6c0e5c44d8ec303441696a4d0[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Dec 10 17:49:49 2024 +0800
+
+    chore: bump version
+
+[33mcommit c68244ae4f6665f115a74f3c9febfcecd1613cfe[m
+Author: soralit <soralitria@gmail.com>
+Date:   Mon Dec 9 19:08:54 2024 +0800
+
+    fix: correct sign hash and check
+
+[33mcommit 783845dddf7b95ae9ec97c547bce6f6d7803b8ac[m
+Author: soralit <soralitria@gmail.com>
+Date:   Fri Dec 6 17:42:41 2024 +0800
+
+    feat: pull pczt latest changes
+
+[33mcommit 2d58467ac79c828e15014d03f71d491ea7b7ddd9[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Nov 26 14:28:25 2024 +0800
+
+    feat: zcash basic transaction view
+
+[33mcommit 8a7e196292f50f0e1f1c73dde572d61e84b7e365[m
+Author: soralit <soralitria@gmail.com>
+Date:   Fri Nov 22 15:15:13 2024 +0800
+
+    chore: update dep
+
+[33mcommit ff0037230f9cf54d75aff4f40cb381932997d4fe[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Nov 21 16:44:11 2024 +0800
+
+    chore: reduce firmware size
+
+[33mcommit ee311c6c7df3805fb611f37b1f16101fbc3023b4[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Nov 21 14:59:40 2024 +0800
+
+    feat: add rust structs
+
+[33mcommit f25494f536714bed1800185ca11e107ce3156cc9[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Nov 19 09:40:30 2024 +0800
+
+    feat: zcash ui
+
+[33mcommit df4dbcf2638a0a9c4b52cce089478ed085726a3c[m
+Author: soralit <soralitria@gmail.com>
+Date:   Mon Nov 18 17:23:23 2024 +0800
+
+    feat: add zcash interfaces
+
+[33mcommit 40b156d1c9f5f98c2008b17a2f7564625c56a509[m
+Author: soralit <soralitria@gmail.com>
+Date:   Mon Nov 18 14:59:24 2024 +0800
+
+    feat: parst pczt transparent and orchard
+
+[33mcommit ec805589b26e121a5b155888a0f85e477f95aaaf[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Nov 14 17:43:35 2024 +0800
+
+    feat: support pczt check and parse output ciphertext
+
+[33mcommit b3e1b9aa3d4b7d430f52363f6590ff965b1780c1[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Nov 13 15:08:55 2024 +0800
+
+    feat: adopt pczt latest changes
+
+[33mcommit 7fdb07d393328eb3ac4191ced4ed7c9e12c0503d[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Nov 5 18:12:52 2024 +0800
+
+    fix: adjust transaction signing code
+
+[33mcommit 905f9f797dd4c364d7ff4e62baa08f0f8e5e674a[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Nov 5 14:32:09 2024 +0800
+
+    fix: pczt hash
+
+[33mcommit a612b3495358a9ed53f37e0e6537a07e113c9592[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Oct 31 17:37:44 2024 +0800
+
+    feat: impl signer for pczt
+
+[33mcommit ac2ece945977de209e034c80a191ed38b4dedb5c[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Oct 31 14:41:35 2024 +0800
+
+    feat: extend pczt functionality
+
+[33mcommit 9a180351bb2065c0715cf3fb8ad65f572438d8ac[m
+Author: soralit <soralitria@gmail.com>
+Date:   Thu Oct 31 13:48:07 2024 +0800
+
+    feat: update pczt data hash
+
+[33mcommit 7b2bfc8cf6dfabc346f77085d9648c2e3695252c[m
+Author: soralit <soralitria@gmail.com>
+Date:   Wed Oct 30 17:21:59 2024 +0800
+
+    fix: build
+
+[33mcommit 938ba47011e967a2f4a2ab4d2964283bcbd41b92[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Oct 29 13:48:18 2024 +0800
+
+    refactor: zcash crates
+
+[33mcommit 45a5272ca2c8c1015ed19b2330e27f54ca7d894e[m
+Author: soralit <soralitria@gmail.com>
+Date:   Tue Oct 29 11:49:27 2024 +0800
+
+    feat: introduce pczt vendor crate

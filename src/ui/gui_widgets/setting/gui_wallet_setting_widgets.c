@@ -24,7 +24,7 @@
 #include "keystore.h"
 
 #ifdef BTC_ONLY
-#include "gui_btc_home_widgets.h"
+#include "gui_home_widgets.h"
 #endif
 /* DEFINES */
 

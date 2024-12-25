@@ -6,7 +6,7 @@
 #include "user_memory.h"
 #include "account_manager.h"
 #include "assert.h"
-#include "gui_btc_home_widgets.h"
+#include "gui_home_widgets.h"
 #include "multi_sig_wallet_manager.h"
 
 #define MAX_NAME_LENGTH 64

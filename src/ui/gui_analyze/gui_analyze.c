@@ -5,6 +5,8 @@
 #include "gui_analyze.h"
 #include "gui_chain.h"
 #include "gui_model.h"
+#include "multi/general/gui_general_analyze.h"
+#include "multi/cyberpunk/gui_cyberpunk_analyze.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
@@ -64,263 +66,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
         NULL,
         FreeBtcMsgMemory,
     },
-#ifndef BTC_ONLY
-    // temper test the ethereum page view not for production usage
-    {
-        REMAPVIEW_ETH,
-#ifndef COMPILE_SIMULATOR
-        // ethJson,
-        "{\"name\":\"eth_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,144],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text\":\"Max Txn Fee\",\"pos\":[24,98],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthValue\",\"pos\":[24,50],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text_func\":\"GetEthTxFee\",\"pos\":[156,98],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthNetWork\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size_func\":\"GetEthToFromSize\",\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthGetFromAddress\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"img\",\"pos\":[24,129],\"exist_func\":\"GetEthEnsExist\",\"img_src\":\"imgEns\"},{\"type\":\"label\",\"text_func\":\"GetEthEnsName\",\"exist_func\":\"GetEthEnsExist\",\"pos\":[56,126],\"font\":\"openSansEnIllustrate\",\"text_color\":1827014},{\"type\":\"label\",\"text\":\"To\",\"pos_func\":\"GetEthToLabelPos\",\"text_opa\":144,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetEthGetToAddress\",\"text_width\":360,\"pos\":[0,8],\"align_to\":-2,\"align\":13,\"font\":\"openSansEnIllustrate\"},{\"type\":\"img\",\"pos\":[0,11],\"align_to\":-2,\"align\":13,\"exist_func\":\"GetToEthEnsExist\",\"img_src\":\"imgEns\"},{\"type\":\"label\",\"text_func\":\"GetToEthEnsName\",\"exist_func\":\"GetToEthEnsExist\",\"pos\":[8,0],\"align_to\":-2,\"align\":20,\"font\":\"openSansEnIllustrate\",\"text_color\":1827014},{\"type\":\"img\",\"pos\":[0,8],\"align_to\":-2,\"align\":13,\"exist_func\":\"GetEthContractDataExist\",\"img_src\":\"imgContract\"},{\"type\":\"label\",\"text_func\":\"GetEthContractName\",\"exist_func\":\"GetEthContractDataExist\",\"pos\":[38,8],\"align_to\":-3,\"align\":13,\"font\":\"openSansEnIllustrate\",\"text_color\":10782207}]}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"table\":{\"FeeMarket\":{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,316],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthValue\",\"pos\":[92,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Max Fee\",\"pos\":[24,54],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthMaxFee\",\"pos\":[118,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"·   Max Fee Price * Gas Limit\",\"pos\":[24,92],\"text_opa\":144,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Max Priority\",\"pos\":[24,124],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthMaxPriority\",\"pos\":[153,124],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"·   Max Priority Fee Price * Gas Limit\",\"pos\":[24,162],\"text_opa\":144,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Max Fee Price\",\"pos\":[24,194],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthMaxFeePrice\",\"pos\":[169,194],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Max Priority Fee Price\",\"pos\":[24,232],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthMaxPriorityFeePrice\",\"pos\":[242,232],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Gas Limit\",\"pos\":[24,270],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthGasLimit\",\"pos\":[127,270],\"font\":\"openSansEnIllustrate\"}]},\"legacy\":{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,208],\"align\":2,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthValue\",\"pos\":[92,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Max Txn Fee\",\"pos\":[24,54],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTxFee\",\"pos\":[156,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetTxnFeeDesc\",\"pos\":[24,92],\"text_opa\":144,\"font\":\"openSansDesc\"},{\"type\":\"label\",\"text\":\"Gas Price\",\"pos\":[24,124],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthGasPrice\",\"pos\":[127,124],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Gas Limit\",\"pos\":[24,162],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthGasLimit\",\"pos\":[127,162],\"font\":\"openSansEnIllustrate\"}]}}},{\"type\":\"container\",\"pos\":[16,16],\"size\":[408,62],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthNetWork\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"exist_func\":\"GetEthContractDataExist\",\"pos\":[0,16],\"size\":[408,62],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthMethodName\",\"pos\":[113,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size_func\":\"GetEthToFromSize\",\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthGetFromAddress\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"img\",\"pos\":[24,129],\"exist_func\":\"GetEthEnsExist\",\"img_src\":\"imgEns\"},{\"type\":\"label\",\"text_func\":\"GetEthEnsName\",\"exist_func\":\"GetEthEnsExist\",\"pos\":[56,126],\"font\":\"openSansEnIllustrate\",\"text_color\":1827014},{\"type\":\"label\",\"text\":\"To\",\"pos_func\":\"GetEthToLabelPos\",\"text_opa\":144,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetEthGetToAddress\",\"text_width\":360,\"pos\":[0,8],\"align_to\":-2,\"align\":13,\"font\":\"openSansEnIllustrate\"},{\"type\":\"img\",\"pos\":[0,11],\"align_to\":-2,\"align\":13,\"exist_func\":\"GetToEthEnsExist\",\"img_src\":\"imgEns\"},{\"type\":\"label\",\"text_func\":\"GetToEthEnsName\",\"exist_func\":\"GetToEthEnsExist\",\"pos\":[8,0],\"align_to\":-2,\"align\":20,\"font\":\"openSansEnIllustrate\",\"text_color\":1827014},{\"type\":\"img\",\"pos\":[0,8],\"align_to\":-2,\"align\":13,\"exist_func\":\"GetEthContractDataExist\",\"img_src\":\"imgContract\"},{\"type\":\"label\",\"text_func\":\"GetEthContractName\",\"exist_func\":\"GetEthContractDataExist\",\"pos\":[38,8],\"align_to\":-3,\"align\":13,\"font\":\"openSansEnIllustrate\",\"text_color\":10782207}]},{\"type\":\"label\",\"text\":\"Input Data\",\"align_to\":-2,\"align\":13,\"exist_func\":\"GetEthInputDataExist\",\"pos\":[0,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[0,16],\"size_func\":\"GetEthContractDataSize\",\"exist_func\":\"GetEthInputDataExist\",\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"exist_func\":\"GetEthContractDataNotExist\",\"text_func\":\"GetEthTransactionData\",\"text_width\":360,\"pos\":[24,16],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"exist_func\":\"GetEthContractDataNotExist\",\"text\":\"Unknown Contract\",\"text_width\":360,\"pos\":[0,8],\"align_to\":-2,\"align\":13,\"text_color\":16105777,\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"exist_func\":\"GetEthContractDataNotExist\",\"aflag\":2,\"cb\":\"EthContractLearnMore\",\"pos\":[0,8],\"size\":[144,30],\"align_to\":-2,\"align\":13,\"bg_color\":1907997,\"children\":[{\"type\":\"label\",\"text\":\"Learn More\",\"text_width\":360,\"pos\":[0,0],\"text_color\":1827014,\"font\":\"openSansEnIllustrate\"},{\"type\":\"img\",\"img_src\":\"imgQrcodeTurquoise\",\"pos\":[120,3],\"text_color\":3056500,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"label\",\"exist_func\":\"GetEthContractDataExist\",\"text\":\"Method\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"exist_func\":\"GetEthContractDataExist\",\"text_func\":\"GetEthMethodName\",\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"name\":\"contract_data\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,100],\"bg_color\":1907997,\"key_width\":30,\"table_func\":\"GetEthContractData\",\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetEthContractDataExist\"}]}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_eth.json",
-#endif
-        GuiGetEthData,
-        GetEthTransType,
-        FreeEthMemory,
-    },
-    {
-        REMAPVIEW_ETH_PERSONAL_MESSAGE,
-#ifndef COMPILE_SIMULATOR
-        "{\"table\":{\"utf8_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetMessageFrom\",\"pos\":[24,54],\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Message\",\"pos\":[24,130],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,168],\"size\":[360,332],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetMessageUtf8\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\",\"text_color\":16777215}]}]},\"raw_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Raw Message\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,54],\"size\":[360,450],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetMessageRaw\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}]}}}",
-#else
-        PC_SIMULATOR_PATH "/page_eth_person.json",
-#endif
-        GuiGetEthPersonalMessage,
-        GetEthPersonalMessageType,
-        FreeEthMemory,
-    },
-    {
-        REMAPVIEW_ETH_TYPEDDATA,
-#ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[0,0],\"size\":[480,542],\"align\":0,\"bg_opa\":0,\"aflag\":16,\"children\":[{\"exist_func\":\"GetEthPermitWarningExist\",\"type\":\"container\",\"pos\":[36,24],\"size\":[408,152],\"align\":0,\"bg_color\":16078897,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"img\",\"pos\":[24,24],\"img_src\":\"imgWarningRed\"},{\"type\":\"label\",\"text\":\"WARNING\",\"pos\":[68,24],\"font\":\"openSansEnText\",\"text_color\":16078897},{\"type\":\"label\",\"text\":\"sign_eth_permit_warn\",\"pos\":[24,68],\"text_color\":16777215,\"font\":\"illustrate\",\"text_width\":360}]},{\"type\":\"container\",\"size\":[408,298],\"pos_func\":\"GetEthTypeDomainPos\",\"align\":0,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Domain Name\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataDomianName\",\"pos\":[24,54],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Verifying Contract\",\"pos\":[24,100],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataDomianVerifyContract\",\"pos\":[24,138],\"text_color\":16777215,\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Primary Type\",\"pos\":[24,214],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataPrimayType\",\"pos\":[24,252],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"label\",\"text\":\"Message\",\"pos\":[0,16],\"align_to\":-2,\"align\":13,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetEthTypedDataMessage\",\"text_len_func\":\"GetEthTypedDataMessageLen\",\"pos\":[0,16],\"align_to\":-2,\"align\":13,\"width\":408,\"bg_color\":16777215,\"bg_opa\":31,\"pad_vertical\":16,\"pad_horizontal\":24,\"radius\":24,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\"},{\"exist_func\":\"GetEthPermitCantSign\",\"type\":\"container\",\"pos\":[0,16],\"align_to\":-2,\"align\":13,\"size\":[408,182],\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"img\",\"pos\":[24,24],\"img_src\":\"imgWarningRed\"},{\"type\":\"label\",\"text\":\"Cant't Sign it Now\",\"pos\":[68,24],\"font\":\"openSansEnText\",\"text_color\":16078897},{\"type\":\"label\",\"text\":\"sign_eth_permit_deny_sing\",\"pos\":[24,68],\"text_color\":16777215,\"font\":\"illustrate\",\"text_width\":360}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_eth_type.json",
-#endif
-        GuiGetEthTypeData,
-        NULL,
-        FreeEthMemory,
-    },
-    {
-        REMAPVIEW_TRX,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"trx_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,106],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetTrxValue\",\"pos\":[24,50],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetTrxMethod\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,244],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetTrxFromAddress\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,130],\"text_opa\":144,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetTrxToAddress\",\"text_width\":360,\"pos\":[0,8],\"align_to\":-2,\"align\":13,\"font\":\"openSansEnIllustrate\"}]}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetTrxValue\",\"pos\":[92,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetTrxMethod\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,244],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetTrxFromAddress\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,130],\"text_opa\":144,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetTrxToAddress\",\"text_width\":360,\"pos\":[0,8],\"align_to\":-2,\"align\":13,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,130],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"exist_func\":\"GetTrxContractExist\",\"children\":[{\"type\":\"label\",\"text\":\"Contract Address\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetTrxContract\",\"pos\":[24,54],\"font\":\"openSansEnIllustrate\",\"text_width\":360}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"exist_func\":\"GetTrxTokenExist\",\"children\":[{\"type\":\"label\",\"text\":\"Token ID\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetTrxToken\",\"pos\":[123,16],\"font\":\"openSansEnIllustrate\"}]}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_eth.json",
-#endif
-        GuiGetTrxData,
-        NULL,
-        FreeTrxMemory,
-    },
-    {
-        REMAPVIEW_COSMOS,
-#ifndef COMPILE_SIMULATOR
-        "{\"table\":{\"tx\":{\"name\":\"cosmos_tx_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"list\",\"exist_func\":\"GetCosmosMsgListExist\",\"len_func\":\"GetCosmosMsgLen\",\"item_key_func\":\"GetCosmosMsgKey\",\"item_map\":{\"default\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,402],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[24,96],\"text_color\":16090890,\"text_width\":2000,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,144],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,144],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,182],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"From\",\"text_width\":360,\"pos\":[24,220],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,288],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,326],\"font\":\"openSansEnIllustrate\"}]},\"Undelegate\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,402],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[24,96],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,144],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,144],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Validator\",\"pos\":[24,182],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Validator\",\"text_width\":360,\"pos\":[24,220],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,288],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,326],\"font\":\"openSansEnIllustrate\"}]},\"Re-delegate\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,402],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[24,96],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,144],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,144],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,182],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,220],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"New Validator\",\"pos\":[24,288],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"New Validator\",\"text_width\":360,\"pos\":[24,326],\"font\":\"openSansEnIllustrate\"}]},\"Withdraw Reward\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,320],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,62],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,138],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Validator\",\"pos\":[24,206],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Validator\",\"text_width\":360,\"pos\":[24,244],\"font\":\"openSansEnIllustrate\"}]},\"Vote\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,290],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Proposal\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Proposal\",\"pos\":[123,62],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Voted\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Voted\",\"pos\":[95,100],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,138],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Voter\",\"pos\":[24,176],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Voter\",\"pos\":[24,214],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}}},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,106],\"bg_opa\":31,\"radius\":24,\"exist_func\":\"GetCosmosValueExist\",\"children\":[{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosValue\",\"pos\":[24,50],\"text_color\":16090890,\"text_width\":2000,\"font\":\"openSansEnLittleTitle\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,106],\"bg_opa\":31,\"radius\":24,\"exist_func\":\"GetCosmosVoteExist\",\"children\":[{\"type\":\"label\",\"text\":\"Proposal\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosProposal\",\"pos\":[123,16],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Voted\",\"pos\":[24,54],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosVoted\",\"pos\":[95,54],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosNetwork\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"exist_func\":\"GetCosmosMethodExist\",\"children\":[{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosMethod\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size_func\":\"GetCosmosOverviewAddrSize\",\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"exist_func\":\"GetCosmosAddrExist\",\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosAddress1Label\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress1Value\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress2Label\",\"pos\":[24,130],\"text_opa\":144,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosAddress2Exist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress2Value\",\"text_width\":360,\"pos\":[0,8],\"align_to\":-2,\"align\":13,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosAddress2Exist\"}]}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"list\",\"exist_func\":\"GetCosmosMsgListExist\",\"len_func\":\"GetCosmosMsgLen\",\"item_key_func\":\"GetCosmosMsgKey\",\"item_map\":{\"default\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,358],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[92,62],\"text_color\":16090890,\"text_width\":2000,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"From\",\"text_width\":360,\"pos\":[24,176],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,244],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,282],\"font\":\"openSansEnIllustrate\"}]},\"IBC Transfer\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,396],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[92,62],\"text_color\":16090890,\"text_width\":2000,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"From\",\"text_width\":360,\"pos\":[24,176],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,244],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,282],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Source Channel\",\"pos\":[24,350],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Source Channel\",\"text_width\":360,\"pos\":[187,350],\"font\":\"openSansEnIllustrate\"}]},\"Undelegate\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,358],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[92,62],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Validator\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Validator\",\"text_width\":360,\"pos\":[24,176],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,244],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,282],\"font\":\"openSansEnIllustrate\"}]},\"Re-delegate\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,464],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Value\",\"pos\":[92,62],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,176],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Old Validator\",\"pos\":[24,244],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Old Validator\",\"text_width\":360,\"pos\":[24,282],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"New Validator\",\"pos\":[24,350],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"New Validator\",\"text_width\":360,\"pos\":[24,388],\"font\":\"openSansEnIllustrate\"}]},\"Withdraw Reward\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,322],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,62],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"To\",\"text_width\":360,\"pos\":[24,138],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Validator\",\"pos\":[24,206],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Validator\",\"text_width\":360,\"pos\":[24,244],\"font\":\"openSansEnIllustrate\"}]},\"Vote\":{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,290],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetCosmosIndex\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16090890},{\"type\":\"label\",\"text\":\"Proposal\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Proposal\",\"pos\":[123,62],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Voted\",\"pos\":[24,100],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Voted\",\"pos\":[95,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,138],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Method\",\"pos\":[113,138],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Voter\",\"pos\":[24,176],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosTextOfKind\",\"text_key\":\"Voter\",\"pos\":[24,214],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}}},{\"type\":\"container\",\"pos\":[0,16],\"size_func\":\"GetCosmosDetailMsgSize\",\"exist_func\":\"GetCosmosMethodExist\",\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"exist_func\":\"GetCosmosValueExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosValue\",\"pos\":[92,16],\"text_color\":16090890,\"text_width\":2000,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosValueExist\"},{\"type\":\"label\",\"text\":\"Proposal\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"exist_func\":\"GetCosmosVoteExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosProposal\",\"pos\":[123,16],\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosVoteExist\"},{\"type\":\"label\",\"text\":\"Voted\",\"pos\":[24,62],\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"exist_func\":\"GetCosmosVoteExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosVoted\",\"pos\":[95,62],\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosVoteExist\"},{\"type\":\"label\",\"text\":\"Method\",\"pos_func\":\"GetCosmosDetailMethodLabelPos\",\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosMethod\",\"pos_func\":\"GetCosmosDetailMethodValuePos\",\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress1Label\",\"pos_func\":\"GetCosmosDetailAddress1LabelPos\",\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress1Value\",\"text_width\":360,\"pos_func\":\"GetCosmosDetailAddress1ValuePos\",\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Old Validator\",\"pos\":[24,222],\"text_opa\":144,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosOldValidatorExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosOldValidator\",\"text_width\":360,\"pos\":[24,260],\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosOldValidatorExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress2Label\",\"pos_func\":\"GetCosmosDetailAddress2LabelPos\",\"text_opa\":144,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosAddress2Exist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosAddress2Value\",\"text_width\":360,\"pos_func\":\"GetCosmosDetailAddress2ValuePos\",\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosAddress2Exist\"},{\"type\":\"label\",\"text\":\"Source Channel\",\"pos\":[24,336],\"text_opa\":144,\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosChannelExist\"},{\"type\":\"label\",\"text_func\":\"GetCosmosChannel\",\"pos\":[187,336],\"font\":\"openSansEnIllustrate\",\"exist_func\":\"GetCosmosChannelExist\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,170],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Max Fee\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosMaxFee\",\"pos\":[118,16],\"text_width\":2000,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"  ·  Max Fee Price * Gas Limit\",\"pos\":[24,54],\"font\":\"openSansDesc\",\"text_opa\":144},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,86],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosFee\",\"pos\":[73,86],\"text_width\":2000,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Gas Limit\",\"pos\":[24,124],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosGasLimit\",\"pos\":[127,124],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,100],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosNetwork\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Chain ID\",\"pos\":[24,54],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosChainId\",\"pos\":[120,54],\"font\":\"openSansEnIllustrate\"}]}]}]},\"unknown\":{\"name\":\"cosmos_unknown_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,600],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"pos\":[0,80],\"size\":[408,170],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Max Fee\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Max Fee\",\"pos\":[118,16],\"text_width\":2000,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"  ·  Max Fee Price * Gas Limit\",\"pos\":[24,54],\"font\":\"openSansDesc\",\"text_opa\":144},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,86],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Fee\",\"pos\":[73,86],\"text_width\":2000,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Gas Limit\",\"pos\":[24,124],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Gas Limit\",\"pos\":[127,124],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Network\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Message\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\",\"text_color\":16105777}]}]},\"msg\":{\"name\":\"cosmos_msg_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,600],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Network\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,130],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Signer\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Signer\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,250],\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCosmosDetailItemValue\",\"text_key\":\"Message\",\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}}}",
-#else
-        PC_SIMULATOR_PATH "/page_cosmos.json",
-#endif
-        GuiGetCosmosData,
-        GuiGetCosmosTmpType,
-        FreeCosmosMemory,
-    },
-    {
-        REMAPVIEW_SUI,
-#ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Transaction Raw Data\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSuiDetail\",\"text_len_func\":\"GetSuiDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_sui.json",
-#endif
-        GuiGetSuiData,
-        NULL,
-        FreeSuiMemory,
-    },
-    {
-        REMAPVIEW_SUI_SIGN_MESSAGE_HASH,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"sui_sign_hash_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSuiSignMessageHashOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSuiSignMessageHashDetails\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_sign_hash.json",
-#endif
-        GuiGetSuiSignMessageHashData,
-        NULL,
-        FreeSuiMemory
-    },
-    {
-        REMAPVIEW_SOL,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"sol_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSolTxDetail\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_sol.json",
-#endif
-        GuiGetSolData,
-        NULL,
-        FreeSolMemory,
-    },
-    {
-        REMAPVIEW_SOL_MESSAGE,
-#ifndef COMPILE_SIMULATOR
-        "{\"table\":{\"utf8_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetSolMessageFrom\",\"pos\":[24,54],\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Message\",\"pos\":[24,130],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,168],\"size\":[360,332],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSolMessageUtf8\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\",\"text_color\":16777215}]}]},\"raw_message\":{\"type\":\"container\",\"pos\":[0,39],\"size\":[408,500],\"align\":2,\"bg_color\":16777215,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Raw Message\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[24,54],\"size\":[360,450],\"align\":1,\"aflag\":16,\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text_func\":\"GetSolMessageRaw\",\"pos\":[0,0],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}]}}}",
-#else
-        PC_SIMULATOR_PATH "/page_sol_message.json",
-#endif
-        GuiGetSolMessageData,
-        GetSolMessageType,
-        FreeSolMemory,
-    },
-    {
-        REMAPVIEW_APT,
-#ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Transaction Raw Data\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetAptosDetail\",\"text_len_func\":\"GetAptosDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_eth.json",
-#endif
-        GuiGetAptosData,
-        NULL,
-        FreeAptosMemory,
-    },
-    {
-        REMAPVIEW_ADA,
-#ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,500],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"container\",\"bg_opa\":31,\"radius\":24,\"size\":[408,62],\"children\":[{\"type\":\"label\",\"text\":\"Network\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetAdaNetwork\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"bg_opa\":31,\"radius\":24,\"align\":13,\"align_to\":-2,\"pos\":[0,16],\"size\":[408,138],\"children\":[{\"type\":\"label\",\"text\":\"InputValue\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetAdaTotalInput\",\"pos\":[147,16],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"OutputValue\",\"pos\":[24,54],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetAdaTotalOutput\",\"pos\":[164,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,92],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetAdaFee\",\"pos\":[73,92],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size_func\":\"GetAdaInputDetailSize\",\"align\":13,\"align_to\":-2,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,54],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetAdaInputDetail\",\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size_func\":\"GetAdaOutputDetailSize\",\"align\":13,\"align_to\":-2,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,54],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetAdaOutputDetail\",\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"label\",\"exist_func\":\"GetAdaVotingProceduresExist\",\"text_func\":\"GetAdaVotingProceduresLabel\",\"pos\":[0,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"align\":13,\"align_to\":-2},{\"name\":\"VotingProcedures\",\"type\":\"container\",\"pos\":[0,16],\"exist_func\":\"GetAdaVotingProceduresExist\",\"size_func\":\"GetAdaVotingProceduresSize\",\"align\":13,\"align_to\":-2,\"bg_opa\":31,\"radius\":24,\"children\":[{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,24],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetAdaVotingProceduresData\",\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"label\",\"exist_func\":\"GetAdaCertificatesExist\",\"text_func\":\"GetAdaCertificatesLabel\",\"pos\":[0,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"align\":13,\"align_to\":-2},{\"name\":\"certificates\",\"type\":\"container\",\"pos\":[0,16],\"exist_func\":\"GetAdaCertificatesExist\",\"size_func\":\"GetAdaCertificatesSize\",\"align\":13,\"align_to\":-2,\"bg_opa\":31,\"radius\":24,\"children\":[{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,24],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetAdaCertificatesData\",\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"label\",\"text_func\":\"GetAdaWithdrawalsLabel\",\"exist_func\":\"GetAdaWithdrawalsExist\",\"pos\":[0,16],\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"align\":13,\"align_to\":-2},{\"name\":\"withdrawal\",\"type\":\"container\",\"pos\":[0,16],\"exist_func\":\"GetAdaWithdrawalsExist\",\"size_func\":\"GetAdaWithdrawalsSize\",\"align\":13,\"align_to\":-2,\"bg_opa\":31,\"radius\":24,\"children\":[{\"name\":\"input\",\"type\":\"table\",\"width\":360,\"align\":2,\"pos\":[0,24],\"bg_color\":2105376,\"key_width\":30,\"table_func\":\"GetAdaWithdrawalsData\",\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"label\",\"pos\":[0,16],\"exist_func\":\"GetAdaExtraDataExist\",\"text\":\"ExtraData\",\"align\":13,\"align_to\":-2,\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,500],\"align\":13,\"align_to\":-2,\"bg_opa\":31,\"radius\":24,\"exist_func\":\"GetAdaExtraDataExist\",\"children\":[{\"type\":\"label\",\"text_func\":\"GetAdaExtraData\",\"text_len_func\":\"GetAdaExtraDataLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"exist_func\":\"GetAdaVotingProposalsExist\",\"pos\":[0,16],\"size\":[408,138],\"bg_opa\":31,\"radius\":24,\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"align\":13,\"align_to\":-2,\"children\":[{\"type\":\"label\",\"text_func\":\"GetAdaVotingProposalsLabel\",\"exist_func\":\"GetAdaVotingProposalsExist\",\"pos\":[16,16],\"text_color\":16090890,\"font\":\"illustrate\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_ada.json",
-#endif
-        GuiGetAdaData,
-        NULL,
-        FreeAdaMemory,
-    },
-    {
-        REMAPVIEW_ADA_SIGN_TX_HASH,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ada_sign_tx_hash_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowAdaSignTxHashDetails\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_sign_ada_tx_hash.json",
-#endif
-        GuiGetAdaSignTxHashData,
-        NULL,
-        FreeAdaMemory
-    },
-    {
-        REMAPVIEW_ADA_SIGN_DATA,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ada_sign_data_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,100],\"pos\":[0,0],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Path \",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataDerviationPathText\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"size\":[408,138],\"pos\":[0,124],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Public Key\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataXPubText\",\"text_len_func\":\"GetAdaSignDataXPubLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"size\":[408,138],\"pos\":[0,278],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Message Hash\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataMessageHashText\",\"text_len_func\":\"GetAdaSignDataMessageHashLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"size\":[408,228],\"pos\":[0,432],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Payload\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetAdaSignDataPayloadText\",\"text_len_func\":\"GetAdaSignDataPayloadLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_ada_sign_data.json",
-#endif
-        GuiGetAdaSignDataData,
-        NULL,
-        FreeAdaSignDataMemory,
-    },
-    {
-        REMAPVIEW_ADA_CATALYST,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ada_catalyst_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"pos\":[0,0],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Method\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text\":\"Catalyst Key Registration\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,78],\"size\":[408,62],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Nonce\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystNonce\",\"pos\":[120,16],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,156],\"size\":[408,160],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"StakeKey\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystVotePublicKey\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,332],\"size\":[408,258],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"RewardsGoTo\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystRewards\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"custom_container\",\"pos\":[24,182],\"custom_show_func\":\"GetCatalystRewardsNotice\"}]},{\"type\":\"container\",\"pos\":[0,606],\"size_func\":\"GetCatalystVoteKeysSize\",\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"VoteKey\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetCatalystVoteKeys\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_ada_catalyst.json",
-#endif
-        GuiGetAdaCatalyst,
-        NULL,
-        FreeAdaCatalystMemory,
-    },
-    {
-        REMAPVIEW_XRP,
-#ifndef COMPILE_SIMULATOR
-        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Transaction Raw Data\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetXrpDetail\",\"text_len_func\":\"GetXrpDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_xrp.json",
-#endif
-        GuiGetXrpData,
-        NULL,
-        FreeXrpMemory,
-    },
-    {
-        REMAPVIEW_AR,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ar_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,144],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Value\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetArweaveValue\",\"pos\":[24,50],\"text_color\":16090890,\"font\":\"openSansEnLittleTitle\"},{\"type\":\"label\",\"text\":\"Fee\",\"pos\":[24,98],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetArweaveFee\",\"pos\":[73,98],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,16],\"size\":[408,244],\"align_to\":-2,\"align\":13,\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"From\",\"pos\":[24,16],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetArweaveFromAddress\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,130],\"text_opa\":144,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetArweaveToAddress\",\"text_width\":360,\"pos\":[0,8],\"align_to\":-2,\"align\":13,\"font\":\"openSansEnIllustrate\"}]}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"container\",\"pos\":[0,12],\"size\":[408,358],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"##1\",\"font\":\"openSansEnIllustrate\",\"text_color\":16090890,\"pos\":[24,16]},{\"type\":\"label\",\"text\":\"Value\",\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"pos\":[24,62]},{\"type\":\"label\",\"text_func\":\"GetArweaveValue\",\"pos\":[92,62],\"text_color\":16090890,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"Fee\",\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"pos\":[24,100]},{\"type\":\"label\",\"text_func\":\"GetArweaveFee\",\"pos\":[73,100],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"From\",\"font\":\"openSansEnIllustrate\",\"text_opa\":144,\"pos\":[24,138]},{\"type\":\"label\",\"text_func\":\"GetArweaveFromAddress\",\"pos\":[24,176],\"text_width\":360,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text\":\"To\",\"pos\":[24,244],\"text_opa\":144,\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetArweaveToAddress\",\"pos\":[24,282],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"custom_container\",\"pos\":[0,16],\"radius\":24,\"custom_show_func\":\"GuiShowArweaveTxDetail\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_ar.json",
-#endif
-        GuiGetArData,
-        NULL,
-        FreeArMemory,
-    },
-    {
-        REMAPVIEW_AR_MESSAGE,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"container\",\"size\":[408,130],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Address \",\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\",\"text_opa\":144},{\"type\":\"label\",\"text_func\":\"GetArweaveMessageAddress\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,146],\"size\":[408,766],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Message(UTF-8)\",\"font\":\"openSansEnIllustrate\",\"text_color\":16090890,\"pos\":[24,16]},{\"type\":\"label\",\"text_func\":\"GetArweaveMessageText\",\"text_len_func\":\"GetArweaveMessageLength\",\"pos\":[24,62],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"container\",\"pos\":[0,928],\"size\":[408,900],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Message\",\"font\":\"openSansEnIllustrate\",\"text_color\":16090890,\"pos\":[24,16]},{\"type\":\"label\",\"text_func\":\"GetArweaveRawMessage\",\"text_len_func\":\"GetArweaveRawMessageLength\",\"pos\":[24,62],\"text_width\":360,\"font\":\"openSansEnIllustrate\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_ar_message.json",
-#endif
-        GuiGetArData,
-        NULL,
-        FreeArMemory,
-    },
-    {
-        REMAPVIEW_STELLAR,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"custom_container\",\"size\":[408,212],\"pos\":[0,0],\"radius\":24,\"custom_show_func\":\"GuiStellarTxNotice\"},{\"type\":\"container\",\"size\":[408,310],\"pos\":[0,236],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"XDR\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetStellarRawMessage\",\"text_len_func\":\"GetStellarRawMessageLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_stellar.json",
-#endif
-        GuiGetStellarData,
-        NULL,
-        FreeStellarMemory,
-    },
-    {
-        REMAPVIEW_STELLAR_HASH,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ar_message_page\",\"type\":\"container\",\"pos\":[36,0],\"size\":[408,542],\"bg_color\":0,\"children\":[{\"type\":\"custom_container\",\"size\":[408,260],\"pos\":[0,0],\"radius\":24,\"custom_show_func\":\"GuiStellarHashNotice\"},{\"type\":\"container\",\"size\":[408,130],\"pos\":[0,284],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text\":\"Hash\",\"text_color\":16090890,\"pos\":[24,16],\"size\":[408,130],\"font\":\"openSansEnIllustrate\"},{\"type\":\"label\",\"text_func\":\"GetStellarRawMessage\",\"text_len_func\":\"GetStellarRawMessageLength\",\"text_width\":360,\"pos\":[24,54],\"font\":\"openSansEnIllustrate\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_stellar_hash.json",
-#endif
-        GuiGetStellarData,
-        NULL,
-        FreeStellarMemory,
-    },
-    {
-        REMAPVIEW_AR_DATAITEM,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ar_data_item_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiArDataItemOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Additions\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiArDataItemDetail\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_ar_data_item.json",
-#endif
-        GuiGetArData,
-        NULL,
-        FreeArMemory,
-    },
-    {
-        REMAPVIEW_TON,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"ton_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Raw Data\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonTxRawData\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_ton.json",
-#endif
-        GuiGetTonGUIData,
-        NULL,
-        FreeArMemory,
-    },
-    {
-        REMAPVIEW_TON_SIGNPROOF,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"btc_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonProofOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Raw Data\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiTonProofRawData\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_ton_proof.json",
-#endif
-        GuiGetTonProofGUIData,
-        NULL,
-        FreeArMemory,
-    },
-    {
-        REMAPVIEW_ZCASH,
-#ifndef COMPILE_SIMULATOR
-        "{\"name\":\"zcash_page\",\"type\":\"custom_container\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"custom_show_func\":\"GuiZcashOverview\"}",
-#else
-        PC_SIMULATOR_PATH "/page_zcash.json",
-#endif
-        GuiGetZcashGUIData,
-        NULL,
-        FreeZcashMemory,
-    }
-#endif
+    GUI_ANALYZE_OBJ_SURPLUS
 };
 
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index);
@@ -382,162 +128,48 @@ GetContSizeFunc GetPsbtContainerSize(char *type)
     return NULL;
 }
 
-#ifndef BTC_ONLY
-GetContSizeFunc GetEthContainerSize(char *type)
+__attribute__((weak)) GetContSizeFunc GetOtherChainContainerSize(char *type, GuiRemapViewType remapIndex)
 {
-    if (!strcmp(type, "GetEthToFromSize")) {
-        return GetEthToFromSize;
-    } else if (!strcmp(type, "GetEthContractDataSize")) {
-        return GetEthContractDataSize;
-    }
     return NULL;
 }
-
-GetContSizeFunc GetCosmosContainerSize(char *type)
-{
-    if (!strcmp(type, "GetCosmosDetailMsgSize")) {
-        return GetCosmosDetailMsgSize;
-    } else if (!strcmp(type, "GetCosmosOverviewAddrSize")) {
-        return GetCosmosOverviewAddrSize;
-    }
-    return NULL;
-}
-
-GetContSizeFunc GetAdaContainerSize(char *type)
-{
-    if (!strcmp(type, "GetAdaInputDetailSize")) {
-        return GetAdaInputDetailSize;
-    }
-    if (!strcmp(type, "GetAdaOutputDetailSize")) {
-        return GetAdaOutputDetailSize;
-    }
-    if (!strcmp(type, "GetAdaCertificatesSize")) {
-        return GetAdaCertificatesSize;
-    }
-    if (!strcmp(type, "GetAdaVotingProceduresSize")) {
-        return GetAdaVotingProceduresSize;
-    }
-    if (!strcmp(type, "GetAdaWithdrawalsSize")) {
-        return GetAdaWithdrawalsSize;
-    }
-    if (!strcmp(type, "GetCatalystVoteKeysSize")) {
-        return GetCatalystVoteKeysSize;
-    }
-    return NULL;
-}
-#endif
 
 GetContSizeFunc GuiTemplateSizeFuncGet(char *type)
 {
-    switch (g_reMapIndex) {
-    case REMAPVIEW_BTC:
+    if (g_reMapIndex == REMAPVIEW_BTC) {
         return GetPsbtContainerSize(type);
-#ifndef BTC_ONLY
-    case REMAPVIEW_ETH:
-        return GetEthContainerSize(type);
-    case REMAPVIEW_COSMOS:
-        return GetCosmosContainerSize(type);
-    case REMAPVIEW_ADA:
-    case REMAPVIEW_ADA_SIGN_DATA:
-    case REMAPVIEW_ADA_CATALYST:
-        return GetAdaContainerSize(type);
-#endif
-    default:
-        return NULL;
+    } else {
+        GetOtherChainContainerSize(type, g_reMapIndex);
     }
-
-    return NULL;
 }
 
-#ifndef BTC_ONLY
-GetListLenFunc GetCosmosListLen(char *type)
+__attribute__((weak)) GetListLenFunc GetOtherChainListLenFuncGet(char *type, GuiRemapViewType remapIndex)
 {
-    if (!strcmp(type, "GetCosmosMsgLen")) {
-        return GetCosmosMsgLen;
-    }
     return NULL;
 }
-#endif
 
 GetListLenFunc GuiTemplateListLenFuncGet(char *type)
 {
-    switch (g_reMapIndex) {
-#ifndef BTC_ONLY
-    case REMAPVIEW_COSMOS:
-        return GetCosmosListLen(type);
-#endif
-    default:
-        return NULL;
-    }
+    return GetOtherChainListLenFuncGet(type, g_reMapIndex);
 }
 
-#ifndef BTC_ONLY
-GetListItemKeyFunc GetCosmosListItemKey(char *type)
+__attribute__((weak)) GetListItemKeyFunc GetOtherChainListItemKeyFuncGet(char *type, GuiRemapViewType remapIndex)
 {
-    if (!strcmp(type, "GetCosmosMsgKey")) {
-        return GetCosmosMsgKey;
-    }
     return NULL;
 }
-#endif
 
 GetListItemKeyFunc GuiTemplateListItemKeyFuncGet(char *type)
 {
-    switch (g_reMapIndex) {
-#ifndef BTC_ONLY
-    case REMAPVIEW_COSMOS:
-        return GetCosmosListItemKey(type);
-#endif
-    default:
-        return NULL;
-    }
+    return GetOtherChainListItemKeyFuncGet(type, g_reMapIndex);
 }
 
-#ifndef BTC_ONLY
-GetContSizeFunc GetEthObjPos(char *type)
+__attribute__((weak)) GetContSizeFunc GetOtherChainPos(char *type, GuiRemapViewType remapIndex)
 {
-    if (!strcmp(type, "GetEthToLabelPos")) {
-        return GetEthToLabelPos;
-    } else if (!strcmp(type, "GetEthTypeDomainPos")) {
-        return GetEthTypeDomainPos;
-    }
     return NULL;
 }
-
-GetContSizeFunc GetCosmosObjPos(char *type)
-{
-    if (!strcmp(type, "GetCosmosDetailMethodLabelPos")) {
-        return GetCosmosDetailMethodLabelPos;
-    } else if (!strcmp(type, "GetCosmosDetailMethodValuePos")) {
-        return GetCosmosDetailMethodValuePos;
-    } else if (!strcmp(type, "GetCosmosDetailAddress1LabelPos")) {
-        return GetCosmosDetailAddress1LabelPos;
-    } else if (!strcmp(type, "GetCosmosDetailAddress1ValuePos")) {
-        return GetCosmosDetailAddress1ValuePos;
-    } else if (!strcmp(type, "GetCosmosDetailAddress2LabelPos")) {
-        return GetCosmosDetailAddress2LabelPos;
-    } else if (!strcmp(type, "GetCosmosDetailAddress2ValuePos")) {
-        return GetCosmosDetailAddress2ValuePos;
-    }
-    return NULL;
-}
-#endif
 
 GetContSizeFunc GuiTemplatePosFuncGet(char *type)
 {
-    switch (g_reMapIndex) {
-#ifndef BTC_ONLY
-    case REMAPVIEW_ETH:
-    case REMAPVIEW_ETH_TYPEDDATA:
-        return GetEthObjPos(type);
-    case REMAPVIEW_COSMOS:
-        return GetCosmosObjPos(type);
-#endif
-    default:
-        return NULL;
-    }
-
-    return NULL;
+    return GetOtherChainPos(type, g_reMapIndex);
 }
 
 GetLabelDataFunc GuiBtcTextFuncGet(char *type)
@@ -562,96 +194,6 @@ GetLabelDataFunc GuiBtcTextFuncGet(char *type)
     return NULL;
 }
 
-#ifndef BTC_ONLY
-GetLabelDataFunc GuiEthTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetEthValue")) {
-        return GetEthValue;
-    } else if (!strcmp(type, "GetEthTxFee")) {
-        return GetEthTxFee;
-    } else if (!strcmp(type, "GetEthGasPrice")) {
-        return GetEthGasPrice;
-    } else if (!strcmp(type, "GetEthGasLimit")) {
-        return GetEthGasLimit;
-    } else if (!strcmp(type, "GetEthNetWork")) {
-        return GetEthNetWork;
-    } else if (!strcmp(type, "GetEthMaxFee")) {
-        return GetEthMaxFee;
-    } else if (!strcmp(type, "GetEthMaxPriority")) {
-        return GetEthMaxPriority;
-    } else if (!strcmp(type, "GetEthMaxFeePrice")) {
-        return GetEthMaxFeePrice;
-    } else if (!strcmp(type, "GetEthMaxPriorityFeePrice")) {
-        return GetEthMaxPriorityFeePrice;
-    } else if (!strcmp(type, "GetEthGetFromAddress")) {
-        return GetEthGetFromAddress;
-    } else if (!strcmp(type, "GetEthGetToAddress")) {
-        return GetEthGetToAddress;
-    } else if (!strcmp(type, "GetTxnFeeDesc")) {
-        return GetTxnFeeDesc;
-    } else if (!strcmp(type, "GetEthEnsName")) {
-        return GetEthEnsName;
-    } else if (!strcmp(type, "GetToEthEnsName")) {
-        return GetToEthEnsName;
-    } else if (!strcmp(type, "GetEthMethodName")) {
-        return GetEthMethodName;
-    } else if (!strcmp(type, "GetEthTransactionData")) {
-        return GetEthTransactionData;
-    } else if (!strcmp(type, "GetEthContractName")) {
-        return GetEthContractName;
-    }
-
-    return NULL;
-}
-
-GetLabelDataFunc GuiEthPersonalMessageTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetMessageFrom")) {
-        return GetMessageFrom;
-    } else if (!strcmp(type, "GetMessageUtf8")) {
-        return GetMessageUtf8;
-    } else if (!strcmp(type, "GetMessageRaw")) {
-        return GetMessageRaw;
-    }
-    return NULL;
-}
-
-GetLabelDataFunc GuiSolMessageTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetSolMessageFrom")) {
-        return GetSolMessageFrom;
-    } else if (!strcmp(type, "GetSolMessageUtf8")) {
-        return GetSolMessageUtf8;
-    } else if (!strcmp(type, "GetSolMessageRaw")) {
-        return GetSolMessageRaw;
-    }
-    return NULL;
-}
-
-GetLabelDataFunc GuiEthTypedDataTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetEthTypedDataDomianName")) {
-        return GetEthTypedDataDomianName;
-    } else if (!strcmp(type, "GetEthTypedDataDomianVersion")) {
-        return GetEthTypedDataDomianVersion;
-    } else if (!strcmp(type, "GetEthTypedDataDomianChainId")) {
-        return GetEthTypedDataDomianChainId;
-    } else if (!strcmp(type, "GetEthTypedDataDomianVerifyContract")) {
-        return GetEthTypedDataDomianVerifyContract;
-    } else if (!strcmp(type, "GetEthTypedDataDomianSalt")) {
-        return GetEthTypedDataDomianSalt;
-    } else if (!strcmp(type, "GetEthTypedDataMessage")) {
-        return GetEthTypedDataMessage;
-    } else if (!strcmp(type, "GetEthTypedDataFrom")) {
-        return GetEthTypedDataFrom;
-    } else if (!strcmp(type, "GetEthTypedDataPrimayType")) {
-        return GetEthTypedDataPrimayType;
-    }
-    return NULL;
-}
-
-#endif
-
 GetTableDataFunc GuiBtcTableFuncGet(char *type)
 {
     if (!strcmp(type, "GetPsbtInputData")) {
@@ -666,346 +208,42 @@ GetTableDataFunc GuiBtcTableFuncGet(char *type)
     return NULL;
 }
 
-#ifndef BTC_ONLY
-GetLabelDataLenFunc GuiStellarTextLenFuncGet(char *type)
+__attribute__((weak)) GetLabelDataLenFunc GuiOtherChainTextLenFuncGet(char *type, GuiRemapViewType remapIndex)
 {
-    if (!strcmp(type, "GetStellarRawMessageLength")) {
-        return GetStellarRawMessageLength;
-    }
     return NULL;
 }
-
-GetLabelDataLenFunc GuiArTextLenFuncGet(char *type)
-{
-    if (!strcmp(type, "GetArweaveRawMessageLength")) {
-        return GetArweaveRawMessageLength;
-    } else if (!strcmp(type, "GetArweaveMessageLength")) {
-        return GetArweaveMessageLength;
-    }
-    return NULL;
-}
-
-GetTableDataFunc GuiEthTableFuncGet(char *type)
-{
-    if (!strcmp(type, "GetEthContractData")) {
-        return GetEthContractData;
-    }
-    return NULL;
-}
-
-GetTableDataFunc GuiAdaTabelFuncGet(char *type)
-{
-    if (!strcmp(type, "GetAdaInputDetail")) {
-        return GetAdaInputDetail;
-    }
-    if (!strcmp(type, "GetAdaOutputDetail")) {
-        return GetAdaOutputDetail;
-    }
-    if (!strcmp(type, "GetAdaWithdrawalsData")) {
-        return GetAdaWithdrawalsData;
-    }
-    if (!strcmp(type, "GetAdaCertificatesData")) {
-        return GetAdaCertificatesData;
-    }
-    if (!strcmp(type, "GetAdaVotingProceduresData")) {
-        return GetAdaVotingProceduresData;
-    }
-    return NULL;
-}
-
-GetLabelDataFunc GuiTrxTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetTrxValue")) {
-        return GetTrxValue;
-    } else if (!strcmp(type, "GetTrxMethod")) {
-        return GetTrxMethod;
-    } else if (!strcmp(type, "GetTrxFromAddress")) {
-        return GetTrxFromAddress;
-    } else if (!strcmp(type, "GetTrxToAddress")) {
-        return GetTrxToAddress;
-    } else if (!strcmp(type, "GetTrxContract")) {
-        return GetTrxContract;
-    } else if (!strcmp(type, "GetTrxToken")) {
-        return GetTrxToken;
-    }
-    return NULL;
-}
-
-GetLabelDataFunc GuiCosmosTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetCosmosValue")) {
-        return GetCosmosValue;
-    } else if (!strcmp(type, "GetCosmosNetwork")) {
-        return GetCosmosNetwork;
-    } else if (!strcmp(type, "GetCosmosMethod")) {
-        return GetCosmosMethod;
-    } else if (!strcmp(type, "GetCosmosAddress1Label")) {
-        return GetCosmosAddress1Label;
-    } else if (!strcmp(type, "GetCosmosAddress1Value")) {
-        return GetCosmosAddress1Value;
-    } else if (!strcmp(type, "GetCosmosAddress2Label")) {
-        return GetCosmosAddress2Label;
-    } else if (!strcmp(type, "GetCosmosAddress2Value")) {
-        return GetCosmosAddress2Value;
-    } else if (!strcmp(type, "GetCosmosMaxFee")) {
-        return GetCosmosMaxFee;
-    } else if (!strcmp(type, "GetCosmosFee")) {
-        return GetCosmosFee;
-    } else if (!strcmp(type, "GetCosmosGasLimit")) {
-        return GetCosmosGasLimit;
-    } else if (!strcmp(type, "GetCosmosChainId")) {
-        return GetCosmosChainId;
-    } else if (!strcmp(type, "GetCosmosChannel")) {
-        return GetCosmosChannel;
-    } else if (!strcmp(type, "GetCosmosOldValidator")) {
-        return GetCosmosOldValidator;
-    } else if (!strcmp(type, "GetCosmosProposal")) {
-        return GetCosmosProposal;
-    } else if (!strcmp(type, "GetCosmosVoted")) {
-        return GetCosmosVoted;
-    } else if (!strcmp(type, "GetCosmosIndex")) {
-        return GetCosmosIndex;
-    } else if (!strcmp(type, "GetCosmosTextOfKind")) {
-        return GetCosmosTextOfKind;
-    } else if (!strcmp(type, "GetCosmosDetailItemValue")) {
-        return GetCosmosDetailItemValue;
-    }
-    return NULL;
-}
-
-GetLabelDataFunc GuiSuiTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetSuiDetail")) {
-        return GetSuiDetail;
-    }
-    return NULL;
-}
-
-GetLabelDataLenFunc GuiSuiTextLenFuncGet(char *type)
-{
-    if (!strcmp(type, "GetSuiDetailLen")) {
-        return GetSuiDetailLen;
-    }
-    return NULL;
-}
-
-GetLabelDataFunc GuiAptosTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetAptosDetail")) {
-        return GetAptosDetail;
-    }
-    return NULL;
-}
-
-GetLabelDataLenFunc GuiAptosTextLenFuncGet(char *type)
-{
-    if (!strcmp(type, "GetAptosDetailLen")) {
-        return GetAptosDetailLen;
-    }
-    return NULL;
-}
-
-GetLabelDataFunc GuiXrpTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetXrpDetail")) {
-        return GetXrpDetail;
-    }
-    return NULL;
-}
-
-GetLabelDataFunc GuiArTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetArweaveValue")) {
-        return GetArweaveValue;
-    } else if (!strcmp(type, "GetArweaveFee")) {
-        return GetArweaveFee;
-    } else if (!strcmp(type, "GetArweaveFromAddress")) {
-        return GetArweaveFromAddress;
-    } else if (!strcmp(type, "GetArweaveToAddress")) {
-        return GetArweaveToAddress;
-    } else if (!strcmp(type, "GetArweaveValue")) {
-        return GetArweaveValue;
-    } else if (!strcmp(type, "GetArweaveMessageText")) {
-        return GetArweaveMessageText;
-    } else if (!strcmp(type, "GetArweaveRawMessage")) {
-        return GetArweaveRawMessage;
-    } else if (!strcmp(type, "GetArweaveMessageAddress")) {
-        return GetArweaveMessageAddress;
-    }
-    return NULL;
-}
-
-GetLabelDataFunc GuiStellarTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetStellarRawMessage")) {
-        return GetStellarRawMessage;
-    }
-    return NULL;
-}
-
-GetLabelDataLenFunc GuiXrpTextLenFuncGet(char *type)
-{
-    if (!strcmp(type, "GetXrpDetailLen")) {
-        return GetXrpDetailLen;
-    }
-    return NULL;
-}
-
-GetLabelDataLenFunc GuiEthTextLenFuncGet(char *type)
-{
-    if (!strcmp(type, "GetEthTypedDataMessageLen")) {
-        return GetEthTypedDataMessageLen;
-    }
-    return NULL;
-}
-
-GetLabelDataFunc GuiAdaTextFuncGet(char *type)
-{
-    if (!strcmp(type, "GetAdaExtraData")) {
-        return GetAdaExtraData;
-    }
-    if (!strcmp(type, "GetAdaNetwork")) {
-        return GetAdaNetwork;
-    }
-    if (!strcmp(type, "GetAdaTotalInput")) {
-        return GetAdaTotalInput;
-    }
-    if (!strcmp(type, "GetAdaTotalOutput")) {
-        return GetAdaTotalOutput;
-    }
-    if (!strcmp(type, "GetAdaFee")) {
-        return GetAdaFee;
-    } else if (!strcmp(type, "GetAdaWithdrawalsLabel")) {
-        return GetAdaWithdrawalsLabel;
-    } else if (!strcmp(type, "GetAdaCertificatesLabel")) {
-        return GetAdaCertificatesLabel;
-    } else if (!strcmp(type, "GetAdaSignDataPayloadText")) {
-        return GetAdaSignDataPayloadText;
-    } else if (!strcmp(type, "GetAdaSignDataDerviationPathText")) {
-        return GetAdaSignDataDerviationPathText;
-    } else if (!strcmp(type, "GetCatalystNonce")) {
-        return GetCatalystNonce;
-    } else if (!strcmp(type, "GetCatalystVotePublicKey")) {
-        return GetCatalystVotePublicKey;
-    } else if (!strcmp(type, "GetCatalystRewards")) {
-        return GetCatalystRewards;
-    } else if (!strcmp(type, "GetCatalystVoteKeys")) {
-        return GetCatalystVoteKeys;
-    } else if (!strcmp(type, "GetAdaSignDataMessageHashText")) {
-        return GetAdaSignDataMessageHashText;
-    } else if (!strcmp(type, "GetAdaSignDataXPubText")) {
-        return GetAdaSignDataXPubText;
-    } else if (!strcmp(type, "GetAdaVotingProceduresLabel")) {
-        return GetAdaVotingProceduresLabel;
-    } else if (!strcmp(type, "GetAdaVotingProposalsLabel")) {
-        return GetAdaVotingProposalsLabel;
-    }
-    return NULL;
-}
-
-GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type)
-{
-    if (!strcmp(type, "GetAdaExtraDataLen")) {
-        return GetAdaExtraDataLen;
-    } else if (!strcmp(type, "GetAdaSignDataPayloadLength")) {
-        return GetAdaSignDataPayloadLength;
-    } else if (!strcmp(type, "GetAdaSignDataMessageHashLength")) {
-        return GetAdaSignDataMessageHashLength;
-    } else if (!strcmp(type, "GetAdaSignDataXPubLength")) {
-        return GetAdaSignDataXPubLength;
-    }
-    return NULL;
-}
-#endif
 
 GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
 {
-    switch (g_reMapIndex) {
-#ifndef BTC_ONLY
-    case REMAPVIEW_SUI:
-        return GuiSuiTextLenFuncGet(type);
-    case REMAPVIEW_APT:
-        return GuiAptosTextLenFuncGet(type);
-    case REMAPVIEW_ADA:
-    case REMAPVIEW_ADA_SIGN_DATA:
-    case REMAPVIEW_ADA_CATALYST:
-        return GuiAdaTextLenFuncGet(type);
-    case REMAPVIEW_XRP:
-        return GuiXrpTextLenFuncGet(type);
-    case REMAPVIEW_ETH_TYPEDDATA:
-        return GuiEthTextLenFuncGet(type);
-    case REMAPVIEW_AR:
-    case REMAPVIEW_AR_MESSAGE:
-        return GuiArTextLenFuncGet(type);
-    case REMAPVIEW_STELLAR:
-        return GuiStellarTextLenFuncGet(type);
-#endif
-    default:
-        return NULL;
-    }
+    return GuiOtherChainTextLenFuncGet(type, g_reMapIndex);
+}
+
+__attribute__((weak)) GetLabelDataFunc GuiOtherChainTextFuncGet(char *type, GuiRemapViewType remapIndex)
+{
+    return NULL;
 }
 
 GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
 {
-    switch (g_reMapIndex) {
-    case REMAPVIEW_BTC:
-    case REMAPVIEW_BTC_MESSAGE:
+    if (g_reMapIndex == REMAPVIEW_BTC || g_reMapIndex == REMAPVIEW_BTC_MESSAGE) {
         return GuiBtcTextFuncGet(type);
-#ifndef BTC_ONLY
-    case REMAPVIEW_ETH:
-        return GuiEthTextFuncGet(type);
-    case REMAPVIEW_ETH_PERSONAL_MESSAGE:
-        return GuiEthPersonalMessageTextFuncGet(type);
-    case REMAPVIEW_ETH_TYPEDDATA:
-        return GuiEthTypedDataTextFuncGet(type);
-    case REMAPVIEW_TRX:
-        return GuiTrxTextFuncGet(type);
-    case REMAPVIEW_COSMOS:
-        return GuiCosmosTextFuncGet(type);
-    case REMAPVIEW_SUI:
-        return GuiSuiTextFuncGet(type);
-    case REMAPVIEW_SOL_MESSAGE:
-        return GuiSolMessageTextFuncGet(type);
-    case REMAPVIEW_APT:
-        return GuiAptosTextFuncGet(type);
-    case REMAPVIEW_ADA:
-    case REMAPVIEW_ADA_SIGN_DATA:
-    case REMAPVIEW_ADA_CATALYST:
-        return GuiAdaTextFuncGet(type);
-    case REMAPVIEW_XRP:
-        return GuiXrpTextFuncGet(type);
-    case REMAPVIEW_AR:
-    case REMAPVIEW_AR_MESSAGE:
-        return GuiArTextFuncGet(type);
-    case REMAPVIEW_STELLAR:
-    case REMAPVIEW_STELLAR_HASH:
-        return GuiStellarTextFuncGet(type);
-#endif
-    default:
-        return NULL;
     }
 
+    return GuiOtherChainTextFuncGet(type, g_reMapIndex);
+}
+
+__attribute__((weak)) GetTableDataFunc GuiOtherChainTableFuncGet(char *type, GuiRemapViewType remapIndex)
+{
     return NULL;
 }
 
 GetTableDataFunc GuiTemplateTableFuncGet(char *type)
 {
-    switch (g_reMapIndex) {
-    case REMAPVIEW_BTC:
+    if (g_reMapIndex == REMAPVIEW_BTC) {
         return GuiBtcTableFuncGet(type);
-#ifndef BTC_ONLY
-    case REMAPVIEW_ETH:
-        return GuiEthTableFuncGet(type);
-    case REMAPVIEW_ADA:
-    case REMAPVIEW_ADA_SIGN_DATA:
-    case REMAPVIEW_ADA_CATALYST:
-        return GuiAdaTabelFuncGet(type);
-#endif
-    default:
-        return NULL;
     }
 
-    return NULL;
+    return GuiOtherChainTableFuncGet(type, g_reMapIndex);
 }
 
 const void *GetImgSrc(char *type)
@@ -1028,56 +266,14 @@ const void *GetImgSrc(char *type)
     return &imgSwitch;
 }
 
+__attribute__((weak)) GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
+{
+    return NULL;
+}
+
 GetObjStateFunc GuiTemplateStateFuncGet(char *type)
 {
-#ifndef BTC_ONLY
-    if (!strcmp(type, "GetEthEnsExist")) {
-        return GetEthEnsExist;
-    } else if (!strcmp(type, "GetToEthEnsExist")) {
-        return GetToEthEnsExist;
-    } else if (!strcmp(type, "GetEthContractDataExist")) {
-        return GetEthContractDataExist;
-    } else if (!strcmp(type, "GetEthContractDataNotExist")) {
-        return GetEthContractDataNotExist;
-    } else if (!strcmp(type, "GetEthInputDataExist")) {
-        return GetEthInputDataExist;
-    } else if (!strcmp(type, "GetTrxContractExist")) {
-        return GetTrxContractExist;
-    } else if (!strcmp(type, "GetTrxTokenExist")) {
-        return GetTrxTokenExist;
-    } else if (!strcmp(type, "GetCosmosChannelExist")) {
-        return GetCosmosChannelExist;
-    } else if (!strcmp(type, "GetCosmosOldValidatorExist")) {
-        return GetCosmosOldValidatorExist;
-    } else if (!strcmp(type, "GetCosmosValueExist")) {
-        return GetCosmosValueExist;
-    } else if (!strcmp(type, "GetCosmosVoteExist")) {
-        return GetCosmosVoteExist;
-    } else if (!strcmp(type, "GetCosmosAddress2Exist")) {
-        return GetCosmosAddress2Exist;
-    } else if (!strcmp(type, "GetCosmosMsgListExist")) {
-        return GetCosmosMsgListExist;
-    } else if (!strcmp(type, "GetCosmosMethodExist")) {
-        return GetCosmosMethodExist;
-    } else if (!strcmp(type, "GetCosmosAddrExist")) {
-        return GetCosmosAddrExist;
-    } else if (!strcmp(type, "GetAdaWithdrawalsExist")) {
-        return GetAdaWithdrawalsExist;
-    } else if (!strcmp(type, "GetAdaCertificatesExist")) {
-        return GetAdaCertificatesExist;
-    } else if (!strcmp(type, "GetAdaExtraDataExist")) {
-        return GetAdaExtraDataExist;
-    } else if (!strcmp(type, "GetAdaVotingProceduresExist")) {
-        return GetAdaVotingProceduresExist;
-    } else if (!strcmp(type, "GetAdaVotingProposalsExist")) {
-        return GetAdaVotingProposalsExist;
-    } else if (!strcmp(type, "GetEthPermitWarningExist")) {
-        return GetEthPermitWarningExist;
-    } else if (!strcmp(type, "GetEthPermitCantSign")) {
-        return GetEthPermitCantSign;
-    }
-#endif
-    return NULL;
+    return GuiOtherChainStateFuncGet(type);
 }
 
 static void SwitchHidden(lv_event_t *e)
@@ -1101,17 +297,18 @@ static void SwitchHidden(lv_event_t *e)
     }
 }
 
+__attribute__((weak)) lv_event_cb_t GuiOtherChainEventCbGet(char *funcName)
+{
+    return NULL;
+}
+
 lv_event_cb_t GuiTemplateEventCbGet(char *type)
 {
     if (!strcmp(type, "SwitchHidden")) {
         return SwitchHidden;
     }
-#ifndef BTC_ONLY
-    if (!strcmp(type, "EthContractLearnMore")) {
-        return EthContractLearnMore;
-    }
-#endif
-    return NULL;
+
+    return GuiOtherChainEventCbGet(type);
 }
 
 void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
@@ -1326,6 +523,11 @@ void *GuiWidgetContainer(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
+__attribute__((weak)) GetCustomContainerFunc GetOtherChainCustomFunc(char *funcName)
+{
+    return NULL;
+}
+
 GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
 {
     if (!strcmp(funcName, "GuiBtcTxOverview")) {
@@ -1335,44 +537,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
     } else if (!strcmp(funcName, "GuiBtcMsg")) {
         return GuiBtcMsg;
     }
-#ifndef BTC_ONLY
-    if (!strcmp(funcName, "GuiShowSolTxOverview")) {
-        return GuiShowSolTxOverview;
-    } else if (!strcmp(funcName, "GuiShowSolTxDetail")) {
-        return GuiShowSolTxDetail;
-    } else if (!strcmp(funcName, "GuiShowArweaveTxDetail")) {
-        return GuiShowArweaveTxDetail;
-    } else if (!strcmp(funcName, "GetCatalystRewardsNotice")) {
-        return GetCatalystRewardsNotice;
-    } else if (!strcmp(funcName, "GuiStellarTxNotice")) {
-        return GuiStellarTxNotice;
-    } else if (!strcmp(funcName, "GuiStellarHashNotice")) {
-        return GuiStellarHashNotice;
-    } else if (!strcmp(funcName, "GuiTonTxOverview")) {
-        return GuiTonTxOverview;
-    } else if (!strcmp(funcName, "GuiZcashOverview")) {
-        return GuiZcashOverview;
-    } else if (!strcmp(funcName, "GuiTonTxRawData")) {
-        return GuiTonTxRawData;
-    } else if (!strcmp(funcName, "GuiTonProofOverview")) {
-        return GuiTonProofOverview;
-    } else if (!strcmp(funcName, "GuiTonProofRawData")) {
-        return GuiTonProofRawData;
-    } else if (!strcmp(funcName, "GuiArDataItemOverview")) {
-        return GuiArDataItemOverview;
-    } else if (!strcmp(funcName, "GuiArDataItemDetail")) {
-        return GuiArDataItemDetail;
-    } else if (!strcmp(funcName, "GuiShowSuiSignMessageHashOverview")) {
-        return GuiShowSuiSignMessageHashOverview;
-    } else if (!strcmp(funcName, "GuiShowSuiSignMessageHashDetails")) {
-        return GuiShowSuiSignMessageHashDetails;
-    } else if (!strcmp(funcName, "GuiShowAdaSignTxHashOverview")) {
-        return GuiShowAdaSignTxHashOverview;
-    } else if (!strcmp(funcName, "GuiShowAdaSignTxHashDetails")) {
-        return GuiShowAdaSignTxHashDetails;
-    }
-#endif
-    return NULL;
+    
+    return GetOtherChainCustomFunc(funcName);
 }
 
 void *GuiWidgetCustomContainer(lv_obj_t *parent, cJSON *json)
@@ -1598,9 +764,6 @@ void *GuiWidgetTabViewChild(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
-
-
-
 static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
 {
     lv_obj_t *obj = NULL;
@@ -1609,9 +772,9 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         item = cJSON_GetObjectItem(json, "table");
         if (item != NULL) {
             char typeBuf[16];
-            // find the ui type 
+            // find the ui type
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++) {
-                if(g_analyzeArray[i].index == g_reMapIndex) {
+                if (g_analyzeArray[i].index == g_reMapIndex) {
                     g_analyzeArray[i].typeFunc(typeBuf, g_totalData, sizeof(typeBuf));
                     break;
                 }
@@ -1725,76 +888,6 @@ void ParseTransaction(uint8_t index)
             break;
         }
     }
-}
-
-GuiRemapViewType ViewTypeReMap(uint8_t viewType)
-{
-    switch (viewType) {
-    case BtcNativeSegwitTx:
-    case BtcSegwitTx:
-    case BtcLegacyTx:
-    case BtcTx:
-#ifndef BTC_ONLY
-    case LtcTx:
-    case DashTx:
-    case BchTx:
-#endif
-        return REMAPVIEW_BTC;
-    case BtcMsg:
-        return REMAPVIEW_BTC_MESSAGE;
-#ifndef BTC_ONLY
-    case EthTx:
-        return REMAPVIEW_ETH;
-    case EthPersonalMessage:
-        return REMAPVIEW_ETH_PERSONAL_MESSAGE;
-    case EthTypedData:
-        return REMAPVIEW_ETH_TYPEDDATA;
-    case TronTx:
-        return REMAPVIEW_TRX;
-    case CosmosTx:
-    case CosmosEvmTx:
-        return REMAPVIEW_COSMOS;
-    case SuiTx:
-        return REMAPVIEW_SUI;
-    case SuiSignMessageHash:
-        return REMAPVIEW_SUI_SIGN_MESSAGE_HASH;
-    case SolanaTx:
-        return REMAPVIEW_SOL;
-    case SolanaMessage:
-        return REMAPVIEW_SOL_MESSAGE;
-    case AptosTx:
-        return REMAPVIEW_APT;
-    case CardanoSignTxHash:
-        return REMAPVIEW_ADA_SIGN_TX_HASH;
-    case CardanoTx:
-        return REMAPVIEW_ADA;
-    case CardanoSignData:
-        return REMAPVIEW_ADA_SIGN_DATA;
-    case CardanoCatalystVotingRegistration:
-        return REMAPVIEW_ADA_CATALYST;
-    case XRPTx:
-        return REMAPVIEW_XRP;
-    case ArweaveTx:
-        return REMAPVIEW_AR;
-    case ArweaveMessage:
-        return REMAPVIEW_AR_MESSAGE;
-    case StellarTx:
-        return REMAPVIEW_STELLAR;
-    case StellarHash:
-        return REMAPVIEW_STELLAR_HASH;
-    case ArweaveDataItem:
-        return REMAPVIEW_AR_DATAITEM;
-    case TonTx:
-        return REMAPVIEW_TON;
-    case TonSignProof:
-        return REMAPVIEW_TON_SIGNPROOF;
-    case ZcashTx:
-        return REMAPVIEW_ZCASH;
-#endif
-    default:
-        return REMAPVIEW_BUTT;
-    }
-    return REMAPVIEW_BUTT;
 }
 
 static lv_obj_t *g_imgCont = NULL;

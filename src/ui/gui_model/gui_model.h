@@ -8,6 +8,7 @@
 #include "anti_tamper.h"
 #include "presetting.h"
 #include "drv_sdcard.h"
+#include "drv_mpu.h"
 #include "log.h"
 #include "presetting.h"
 #include "anti_tamper.h"

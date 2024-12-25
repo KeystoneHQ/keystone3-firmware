@@ -105,14 +105,6 @@ void PushDataToField(uint8_t *data, uint16_t len)
     }
 }
 
-static uint8_t IsPrivileged(void)
-{
-    uint32_t control = 0;
-    __asm volatile("MRS %0, control" : "=r"(control) : : "memory");
-    printf("control = %d\n", control);
-    return (control & 1) == 0;
-}
-
 static void DataParserCacheMpuInit(void)
 {
     uint32_t region_size = (uint32_t)&__data_parser_end - (uint32_t)&__data_parser_start;

@@ -43,6 +43,7 @@
 #endif
 #include "log.h"
 #include "background_task.h"
+#include "fetch_sensitive_data_task.h"
 #include "account_public_info.h"
 #include "version.h"
 #include "drv_motor.h"
@@ -107,7 +108,6 @@ static void AesEncryptTestFunc(int argc, char *argv[]);
 static void HashAndSaltFunc(int argc, char *argv[]);
 static void Sha512Func(int argc, char *argv[]);
 static void KeyStoreTestFunc(int argc, char *argv[]);
-static void GuiFrameDebugTestFunc(int argc, char *argv[]);
 #ifndef EXCLUDE_RUSTC
 static void RustGetMasterFingerprint(int argc, char *argv[]);
 static void RustTestParseCryptoPSBT(int argc, char *argv[]);
@@ -275,7 +275,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"hash and salt:", HashAndSaltFunc},
     {"sha512:", Sha512Func},
     {"key store test:", KeyStoreTestFunc},
-    {"gui debug:", GuiFrameDebugTestFunc},
 #ifndef EXCLUDE_RUSTC
     {"rust get mfp:", RustGetMasterFingerprint},
     {"rust test parse psbt", RustTestParseCryptoPSBT},
@@ -988,11 +987,6 @@ static void Sha512Func(int argc, char *argv[])
 static void KeyStoreTestFunc(int argc, char *argv[])
 {
     KeyStoreTest(argc, argv);
-}
-
-static void GuiFrameDebugTestFunc(int argc, char *argv[])
-{
-    GuiViewsTest(argc, argv);
 }
 
 #ifndef EXCLUDE_RUSTC

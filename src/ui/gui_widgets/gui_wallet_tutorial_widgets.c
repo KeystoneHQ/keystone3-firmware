@@ -9,7 +9,7 @@
 #include "gui_qr_hintbox.h"
 #include "gui_page.h"
 #if BTC_ONLY
-#include "gui_btc_home_widgets.h"
+#include "gui_home_widgets.h"
 #endif
 
 typedef struct WalletTutorialItem {
@@ -353,7 +353,7 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_ZASHI].items[0].qrTitle = _("connect_zashi_title");
     g_tutorials[WALLET_LIST_ZASHI].items[0].qrUrl = _("connect_zashi_link");
 
-    
+
 
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;

@@ -1,5 +1,16 @@
 #include "gui_chain.h"
 
+typedef TransactionCheckResult *(*CheckUrResultHandler)(void);
+
+typedef struct {
+    ViewType type;
+    GenerateUR handler;
+    GenerateUR unlimitHandler;
+    CheckUrResultHandler checkHandler;
+    GuiChainCoinType coinType;
+    GuiRemapViewType remapType;
+} ViewHandlerEntry;
+
 #ifndef BTC_ONLY
 bool CheckViewTypeIsAllow(uint8_t viewType)
 {
@@ -21,128 +32,89 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
 }
 #endif
 
+static const ViewHandlerEntry g_viewHandlerMap[] = {
+    {BtcNativeSegwitTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BTC, REMAPVIEW_BTC},
+    {BtcSegwitTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BTC, REMAPVIEW_BTC},
+    {BtcLegacyTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BTC, REMAPVIEW_BTC},
+    {BtcTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BTC, REMAPVIEW_BTC},
+    {BtcMsg, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BTC, REMAPVIEW_BTC_MESSAGE},
+
+#ifdef BTC_ONLY
+    {LtcTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_LTC, REMAPVIEW_BTC},
+    {DashTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_DASH, REMAPVIEW_BTC},
+    {BchTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BCH, REMAPVIEW_BTC},
+#endif
+
+#ifdef GENERAL_VERSION
+    {EthTx, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH},
+    {EthPersonalMessage, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH_PERSONAL_MESSAGE},
+    {EthTypedData, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH_TYPEDDATA},
+
+    {TronTx, GuiGetTrxSignQrCodeData, NULL, GuiGetTrxCheckResult, CHAIN_TRX, CHAIN_TRX, REMAPVIEW_TRX},
+
+    // must get from GuiGetCosmosTxChain
+    {CosmosTx, GuiGetCosmosSignQrCodeData, NULL, GuiGetCosmosCheckResult, CHAIN_ATOM, REMAPVIEW_COSMOS},
+    {CosmosEvmTx, GuiGetCosmosSignQrCodeData, NULL, GuiGetCosmosCheckResult, CHAIN_ATOM, REMAPVIEW_COSMOS},
+
+    {SuiTx, GuiGetSuiSignQrCodeData, NULL, GuiGetSuiCheckResult, CHAIN_SUI, REMAPVIEW_SUI},
+    {SuiSignMessageHash, GuiGetSuiSignHashQrCodeData, NULL, GuiGetSuiSignHashCheckResult, CHAIN_SUI, REMAPVIEW_SUI_SIGN_MESSAGE_HASH},
+
+    {SolanaTx, GuiGetSolSignQrCodeData, NULL, GuiGetSolCheckResult, CHAIN_SOL, REMAPVIEW_SOL},
+    {SolanaMessage, GuiGetSolSignQrCodeData, NULL, GuiGetSolCheckResult, CHAIN_SOL, REMAPVIEW_SOL_MESSAGE},
+
+    {AptosTx, GuiGetAptosSignQrCodeData, NULL, GuiGetAptosCheckResult, CHAIN_APT, REMAPVIEW_APT},
+
+    {CardanoSignTxHash, GuiGetAdaSignTxHashQrCodeData, NULL, GuiGetAdaSignTxHashCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_TX_HASH},
+    {CardanoSignData, GuiGetAdaSignSignDataQrCodeData, NULL, GuiGetAdaSignDataCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_DATA},
+    {CardanoCatalystVotingRegistration, GuiGetAdaSignCatalystVotingRegistrationQrCodeData, NULL, GuiGetAdaCatalystCheckResult, CHAIN_ADA, REMAPVIEW_ADA_CATALYST},
+    {CardanoTx, GuiGetAdaSignQrCodeData, NULL, GuiGetAdaCheckResult, CHAIN_ADA, REMAPVIEW_ADA},
+
+    {XRPTx, GuiGetXrpSignQrCodeData, NULL, GuiGetXrpCheckResult, CHAIN_XRP, REMAPVIEW_XRP},
+
+    {ArweaveTx, GuiGetArweaveSignQrCodeData, NULL, GuiGetArCheckResult, CHAIN_ARWEAVE, REMAPVIEW_AR},
+    {ArweaveMessage, GuiGetArweaveSignQrCodeData, NULL, GuiGetArCheckResult, CHAIN_ARWEAVE, REMAPVIEW_AR_MESSAGE},
+    {ArweaveDataItem, GuiGetArweaveSignQrCodeData, NULL, GuiGetArCheckResult, CHAIN_ARWEAVE, REMAPVIEW_AR_DATAITEM},
+
+    {StellarTx, GuiGetStellarSignQrCodeData, NULL, GuiGetStellarCheckResult, CHAIN_STELLAR, REMAPVIEW_STELLAR},
+    {StellarHash, GuiGetStellarSignQrCodeData, NULL, GuiGetStellarCheckResult, CHAIN_STELLAR, REMAPVIEW_STELLAR_HASH},
+
+    {TonTx, GuiGetTonSignQrCodeData, NULL, GuiGetTonCheckResult, CHAIN_TON, REMAPVIEW_TON},
+    {TonSignProof, GuiGetTonProofSignQrCodeData, NULL, GuiGetTonCheckResult, CHAIN_TON, REMAPVIEW_TON_SIGNPROOF},
+#endif
+
+#ifdef CYBERPUNK_VERSION
+    {ZcashTx, GuiGetZcashSignQrCodeData, NULL, GuiGetZcashCheckResult, CHAIN_ZCASH, REMAPVIEW_ZCASH},
+#endif
+};
+
+static const ViewHandlerEntry *GetViewHandlerEntry(ViewType viewType);
+
 PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
 {
-    switch (ViewTypeReMap(viewType)) {
-    case REMAPVIEW_BTC:
-    case REMAPVIEW_BTC_MESSAGE:
-        return GuiGetPsbtCheckResult();
-#ifndef BTC_ONLY
-    case REMAPVIEW_ETH:
-    case REMAPVIEW_ETH_PERSONAL_MESSAGE:
-    case REMAPVIEW_ETH_TYPEDDATA:
-        return GuiGetEthCheckResult();
-    case REMAPVIEW_TRX:
-        return GuiGetTrxCheckResult();
-    case REMAPVIEW_COSMOS:
-        return GuiGetCosmosCheckResult();
-    case REMAPVIEW_SUI:
-        return GuiGetSuiCheckResult();
-    case REMAPVIEW_SUI_SIGN_MESSAGE_HASH:
-        return GuiGetSuiSignHashCheckResult();
-    case REMAPVIEW_SOL:
-    case REMAPVIEW_SOL_MESSAGE:
-        return GuiGetSolCheckResult();
-    case REMAPVIEW_APT:
-        return GuiGetAptosCheckResult();
-    case REMAPVIEW_ADA_SIGN_TX_HASH:
-        return GuiGetAdaSignTxHashCheckResult();
-    case REMAPVIEW_ADA:
-        return GuiGetAdaCheckResult();
-    case REMAPVIEW_ADA_SIGN_DATA:
-        return GuiGetAdaSignDataCheckResult();
-    case REMAPVIEW_ADA_CATALYST:
-        return GuiGetAdaCatalystCheckResult();
-    case REMAPVIEW_XRP:
-        return GuiGetXrpCheckResult();
-    case REMAPVIEW_AR:
-    case REMAPVIEW_AR_MESSAGE:
-    case REMAPVIEW_AR_DATAITEM:
-        return GuiGetArCheckResult();
-    case REMAPVIEW_STELLAR:
-    case REMAPVIEW_STELLAR_HASH:
-        return GuiGetStellarCheckResult();
-    case REMAPVIEW_TON:
-    case REMAPVIEW_TON_SIGNPROOF:
-        return GuiGetTonCheckResult();
-    case REMAPVIEW_ZCASH:
-        return GuiGetZcashCheckResult();
-#endif
-    default:
-        return NULL;
+    const ViewHandlerEntry *entry = GetViewHandlerEntry(viewType);
+    if (entry != NULL) {
+        return entry->checkHandler();
     }
+    return NULL;
 }
 
-GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t ViewType)
+GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t viewType)
 {
-    switch (ViewType) {
-    case BtcNativeSegwitTx:
-    case BtcSegwitTx:
-    case BtcLegacyTx:
-    case BtcTx:
-    case BtcMsg:
-        return CHAIN_BTC;
-#ifndef BTC_ONLY
-    case LtcTx:
-        return CHAIN_LTC;
-    case DashTx:
-        return CHAIN_DASH;
-    case BchTx:
-        return CHAIN_BCH;
-    case EthPersonalMessage:
-    case EthTx:
-    case EthTypedData:
-        return CHAIN_ETH;
-    case TronTx:
-        return CHAIN_TRX;
-    case CosmosTx:
-    case CosmosEvmTx:
+    if (viewType == CosmosTx || viewType == CosmosEvmTx) {
         return GuiGetCosmosTxChain();
-    case SuiTx:
-        return CHAIN_SUI;
-    case SuiSignMessageHash:
-        return CHAIN_SUI;
-    case SolanaTx:
-    case SolanaMessage:
-        return CHAIN_SOL;
-    case AptosTx:
-        return CHAIN_APT;
-    case CardanoSignTxHash:
-        return CHAIN_ADA;
-    case CardanoTx:
-    case CardanoSignData:
-    case CardanoCatalystVotingRegistration:
-        return CHAIN_ADA;
-    case XRPTx:
-        return CHAIN_XRP;
-    case ArweaveTx:
-    case ArweaveMessage:
-    case ArweaveDataItem:
-        return CHAIN_ARWEAVE;
-    case StellarTx:
-    case StellarHash:
-        return CHAIN_STELLAR;
-    case TonTx:
-    case TonSignProof:
-        return CHAIN_TON;
-    case ZcashTx:
-        return CHAIN_ZCASH;
-#endif
-    default:
-        return CHAIN_BUTT;
+    }
+
+    const ViewHandlerEntry *entry = GetViewHandlerEntry(viewType);
+    if (entry != NULL) {
+        return entry->coinType;
     }
     return CHAIN_BUTT;
 }
 
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
 bool IsMessageType(uint8_t type)
 {
     return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage || type == CardanoSignData;
-}
-
-bool isTonSignProof(uint8_t type)
-{
-    return type == TonSignProof;
 }
 
 bool isCatalystVotingRegistration(uint8_t type)
@@ -151,86 +123,27 @@ bool isCatalystVotingRegistration(uint8_t type)
 }
 #endif
 
+bool isTonSignProof(uint8_t type)
+{
+    return type == TonSignProof;
+}
+
 static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
 {
-    GenerateUR func = NULL;
-    switch (viewType) {
-    case BtcNativeSegwitTx:
-    case BtcSegwitTx:
-    case BtcLegacyTx:
-    case BtcTx:
-    case BtcMsg:
-#ifndef BTC_ONLY
-    case LtcTx:
-    case DashTx:
-    case BchTx:
-#endif
-        func = isMulti ? GuiGetBtcSignQrCodeData : GuiGetBtcSignUrDataUnlimited;
-        break;
-#ifndef BTC_ONLY
-    case EthTx:
-    case EthPersonalMessage:
-    case EthTypedData:
-        func = isMulti ? GuiGetEthSignQrCodeData : GuiGetEthSignUrDataUnlimited;
-        break;
-    case TronTx:
-        func = GuiGetTrxSignQrCodeData;
-        break;
-    case CosmosTx:
-    case CosmosEvmTx:
-        func = GuiGetCosmosSignQrCodeData;
-        break;
-    case SuiTx:
-        func = GuiGetSuiSignQrCodeData;
-        break;
-    case SuiSignMessageHash:
-        func = GuiGetSuiSignHashQrCodeData;
-        break;
-    case SolanaTx:
-    case SolanaMessage:
-        func = GuiGetSolSignQrCodeData;
-        break;
-    case AptosTx:
-        func = GuiGetAptosSignQrCodeData;
-        break;
-    case CardanoSignTxHash:
-        func = GuiGetAdaSignTxHashQrCodeData;
-        break;
-    case CardanoSignData:
-        func = GuiGetAdaSignSignDataQrCodeData;
-        break;
-    case CardanoCatalystVotingRegistration:
-        func = GuiGetAdaSignCatalystVotingRegistrationQrCodeData;
-        break;
-    case CardanoTx:
-        func = GuiGetAdaSignQrCodeData;
-        break;
-    case XRPTx:
-        func = GuiGetXrpSignQrCodeData;
-        break;
-    case ArweaveTx:
-    case ArweaveMessage:
-    case ArweaveDataItem:
-        func = GuiGetArweaveSignQrCodeData;
-        break;
-    case StellarTx:
-    case StellarHash:
-        func = GuiGetStellarSignQrCodeData;
-        break;
-    case TonTx:
-        func = GuiGetTonSignQrCodeData;
-        break;
-    case TonSignProof:
-        func = GuiGetTonProofSignQrCodeData;
-        break;
-    case ZcashTx:
-        func = GuiGetZcashSignQrCodeData;
-        break;
-#endif
-    default:
-        break;
+    const ViewHandlerEntry *entry = GetViewHandlerEntry(viewType);
+    if (entry != NULL) {
+        return isMulti ? entry->handler : entry->unlimitHandler;
     }
-    return func;
+    return NULL;
+}
+
+GuiRemapViewType ViewTypeReMap(uint8_t viewType)
+{
+    const ViewHandlerEntry *entry = GetViewHandlerEntry(viewType);
+    if (entry != NULL) {
+        return entry->remapType;
+    }
+    return REMAPVIEW_BUTT;
 }
 
 GenerateUR GetUrGenerator(ViewType viewType)
@@ -241,4 +154,14 @@ GenerateUR GetUrGenerator(ViewType viewType)
 GenerateUR GetSingleUrGenerator(ViewType viewType)
 {
     return UrGenerator(viewType, false);
+}
+
+static const ViewHandlerEntry *GetViewHandlerEntry(ViewType viewType)
+{
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_viewHandlerMap); i++) {
+        if (g_viewHandlerMap[i].type == viewType) {
+            return &g_viewHandlerMap[i];
+        }
+    }
+    return NULL;
 }

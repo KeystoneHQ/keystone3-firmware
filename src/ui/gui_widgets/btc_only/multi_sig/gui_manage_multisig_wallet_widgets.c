@@ -18,7 +18,7 @@
 #include "multi_sig_wallet_manager.h"
 #include "account_public_info.h"
 #include "gui_export_pubkey_widgets.h"
-#include "gui_btc_home_widgets.h"
+#include "gui_home_widgets.h"
 #include "gui_manage_multisig_wallet_widgets.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_multisig_wallet_export_widgets.h"

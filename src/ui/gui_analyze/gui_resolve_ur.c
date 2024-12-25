@@ -7,6 +7,7 @@
 #include "gui_resolve_ur.h"
 #include "user_delay.h"
 #include "gui_api.h"
+#include "gui_views.h"
 
 #ifndef BTC_ONLY
 #include "gui_key_derivation_request_widgets.h"
@@ -14,13 +15,15 @@
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_create_multisig_wallet_widgets.h"
 #endif
-#include <gui_views.h>
 
 // The order of the enumeration must be guaranteed
 static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_BTC, (SetChainDataFunc)GuiSetPsbtUrData},
     {REMAPVIEW_BTC_MESSAGE, (SetChainDataFunc)GuiSetPsbtUrData},
 #ifndef BTC_ONLY
+#ifdef CYBERPUNK
+    {REMAPVIEW_ZCASH, (SetChainDataFunc)GuiSetZcashUrData},
+#else
     {REMAPVIEW_ETH, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_PERSONAL_MESSAGE, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_TYPEDDATA, (SetChainDataFunc)GuiSetEthUrData},
@@ -43,7 +46,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_STELLAR_HASH, (SetChainDataFunc)GuiSetStellarUrData},
     {REMAPVIEW_TON, (SetChainDataFunc)GuiSetTonUrData},
     {REMAPVIEW_TON_SIGNPROOF, (SetChainDataFunc)GuiSetTonUrData},
-    {REMAPVIEW_ZCASH, (SetChainDataFunc)GuiSetZcashUrData},
+#endif
 #endif
 };
 
@@ -67,13 +70,13 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
         GuiSetKeyDerivationRequestData(urResult, urMultiResult, is_multi);
         break;
 #else
-    case MultisigWalletImport:
-        GuiSetMultisigImportWalletDataByQRCode(urResult, urMultiResult, is_multi);
-        break;
-    case MultisigCryptoImportXpub:
-    case MultisigBytesImportXpub:
-        GuiSetMultisigImportXpubByQRCode(urResult);
-        break;
+        // case MultisigWalletImport:
+        //     GuiSetMultisigImportWalletDataByQRCode(urResult, urMultiResult, is_multi);
+        //     break;
+        // case MultisigCryptoImportXpub:
+        // case MultisigBytesImportXpub:
+        //     GuiSetMultisigImportXpubByQRCode(urResult);
+        //     break;
 #endif
     default:
         HandleDefaultViewType(urResult, urMultiResult, urViewType, is_multi);
@@ -84,9 +87,9 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
 #ifndef BTC_ONLY
             || urViewType.viewType == KeyDerivationRequest
 #else
-            || urViewType.viewType == MultisigWalletImport
-            || urViewType.viewType == MultisigBytesImportXpub
-            || urViewType.viewType == MultisigCryptoImportXpub
+            // || urViewType.viewType == MultisigWalletImport
+            // || urViewType.viewType == MultisigBytesImportXpub
+            // || urViewType.viewType == MultisigCryptoImportXpub
 #endif
             || viewType != REMAPVIEW_BUTT) {
 #ifndef COMPILE_SIMULATOR

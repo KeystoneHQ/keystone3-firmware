@@ -6,7 +6,7 @@
 #include "gui_status_bar.h"
 #include "gui_page.h"
 #include "gui_button.h"
-#include "gui_btc_home_widgets.h"
+#include "gui_home_widgets.h"
 #include "gui_hintbox.h"
 #include "gui_api.h"
 #include "multi_sig_wallet_manager.h"

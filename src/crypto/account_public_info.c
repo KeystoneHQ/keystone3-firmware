@@ -21,15 +21,9 @@
 #include "multi_sig_wallet_manager.h"
 #include "log_print.h"
 #include "rsa.h"
-
-#ifdef COMPILE_SIMULATOR
-#include "simulator_model.h"
-#else
-#include "drv_mpu.h"
-#endif
+#include "gui_model.h"
 
 #ifdef BTC_ONLY
-#include "gui_btc_home_widgets.h"
 static void LoadCurrentAccountMultiReceiveIndex(void);
 #endif
 
@@ -643,8 +637,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     memcpy_s(iv_bytes, 16, iv_response->data, 16);
                     free_simple_response_u8(iv_response);
                     xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
-                }
-                else {
+                } else {
                     xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {

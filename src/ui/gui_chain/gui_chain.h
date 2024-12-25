@@ -4,6 +4,7 @@
 #include "gui_animating_qrcode.h"
 #include "gui_btc.h"
 #ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
 #include "gui_eth.h"
 #include "gui_trx.h"
 #include "gui_cosmos.h"
@@ -15,7 +16,9 @@
 #include "gui_ar.h"
 #include "gui_stellar.h"
 #include "gui_ton.h"
+#else
 #include "gui_zcash.h"
+#endif
 #endif
 
 typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool multi);

@@ -3,51 +3,55 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
 use serde_json::{from_slice, from_value, Value};
-#[cfg(feature = "multi-coins")]
-use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
-#[cfg(feature = "multi-coins")]
-use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SignType};
+
 use ur_registry::bytes::Bytes;
-#[cfg(feature = "multi-coins")]
-use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
-#[cfg(feature = "multi-coins")]
-use ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
-#[cfg(feature = "multi-coins")]
-use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
-#[cfg(feature = "multi-coins")]
-use ur_registry::cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest;
-#[cfg(feature = "multi-coins")]
-use ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
-#[cfg(feature = "multi-coins")]
-use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
 use ur_registry::crypto_account::CryptoAccount;
 use ur_registry::crypto_psbt::CryptoPSBT;
 use ur_registry::error::URError;
-#[cfg(feature = "multi-coins")]
-use ur_registry::ethereum::eth_sign_request;
-#[cfg(feature = "multi-coins")]
-use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
-#[cfg(feature = "multi-coins")]
-use ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};
-#[cfg(feature = "multi-coins")]
-use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
-#[cfg(feature = "multi-coins")]
-use ur_registry::near::near_sign_request::NearSignRequest;
 use ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
 use ur_registry::pb::protoc;
 use ur_registry::pb::protoc::Base;
 #[cfg(feature = "multi-coins")]
+use ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};
+#[cfg(feature = "aptos")]
+use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
+#[cfg(feature = "arweave")]
+use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SignType};
+#[cfg(feature = "bitcoin")]
+use ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
+#[cfg(feature = "cardano")]
+use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
+#[cfg(feature = "cardano")]
+use ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
+#[cfg(feature = "cardano")]
+use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+#[cfg(feature = "cardano")]
+use ur_registry::cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest;
+#[cfg(feature = "cosmos")]
+use ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
+#[cfg(feature = "cosmos")]
+use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
+#[cfg(feature = "ethereum")]
+use ur_registry::ethereum::eth_sign_request;
+#[cfg(feature = "ethereum")]
+use ur_registry::ethereum::eth_sign_request::EthSignRequest;
+#[cfg(feature = "multi-coins")]
+use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
+#[cfg(feature = "near")]
+use ur_registry::near::near_sign_request::NearSignRequest;
+#[cfg(feature = "solana")]
 use ur_registry::solana::sol_sign_request::SolSignRequest;
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "stellar")]
 use ur_registry::stellar::stellar_sign_request::{SignType as StellarSignType, StellarSignRequest};
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "sui")]
+use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
+#[cfg(feature = "sui")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
+#[cfg(feature = "ton")]
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
+#[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
-use ur_registry::{
-    bitcoin::btc_sign_request::BtcSignRequest, sui::sui_sign_hash_request::SuiSignHashRequest,
-};
 
 use super::ur::ViewType;
 
@@ -77,14 +81,14 @@ impl InferViewType for CryptoAccount {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(not(feature = "btc-only"))]
 impl InferViewType for CryptoAccount {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::ViewTypeUnKnown)
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "ethereum")]
 impl InferViewType for EthSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         match self.get_data_type() {
@@ -96,35 +100,35 @@ impl InferViewType for EthSignRequest {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "cosmos")]
 impl InferViewType for CosmosSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CosmosTx)
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "cosmos")]
 impl InferViewType for EvmSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CosmosEvmTx)
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "sui")]
 impl InferViewType for SuiSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::SuiTx)
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "sui")]
 impl InferViewType for SuiSignHashRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::SuiSignMessageHash)
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "stellar")]
 impl InferViewType for StellarSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         match self.get_sign_type() {
@@ -135,7 +139,7 @@ impl InferViewType for StellarSignRequest {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "arweave")]
 impl InferViewType for ArweaveSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         match self.get_sign_type() {
@@ -146,7 +150,7 @@ impl InferViewType for ArweaveSignRequest {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "ton")]
 impl InferViewType for TonSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         match self.get_data_type() {
@@ -156,14 +160,14 @@ impl InferViewType for TonSignRequest {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "aptos")]
 impl InferViewType for AptosSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::AptosTx)
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "zcash")]
 impl InferViewType for ZcashPczt {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::ZcashTx)
@@ -185,17 +189,17 @@ fn get_view_type_from_keystone(bytes: Vec<u8>) -> Result<ViewType, URError> {
                 "BTC_SEGWIT" => ViewType::BtcSegwitTx,
                 "BTC_LEGACY" => ViewType::BtcLegacyTx,
                 "BTC" => ViewType::BtcSegwitTx,
-                #[cfg(feature = "multi-coins")]
+                #[cfg(feature = "ltc")]
                 "LTC" => ViewType::LtcTx,
-                #[cfg(feature = "multi-coins")]
+                #[cfg(feature = "dash")]
                 "DASH" => ViewType::DashTx,
-                #[cfg(feature = "multi-coins")]
+                #[cfg(feature = "bch")]
                 "BCH" => ViewType::BchTx,
-                #[cfg(feature = "multi-coins")]
+                #[cfg(feature = "ethereum")]
                 "ETH" => ViewType::EthTx,
-                #[cfg(feature = "multi-coins")]
+                #[cfg(feature = "tron")]
                 "TRON" => ViewType::TronTx,
-                #[cfg(feature = "multi-coins")]
+                #[cfg(feature = "xrp")]
                 "XRP" => ViewType::XRPTx,
                 _ => {
                     return Err(URError::ProtobufDecodeError(format!(
@@ -234,7 +238,7 @@ impl InferViewType for Bytes {
                         return Ok(ViewType::WebAuthResult);
                     }
                 }
-                #[cfg(feature = "multi-coins")]
+                #[cfg(feature = "xrp")]
                 return Ok(ViewType::XRPTx);
                 #[cfg(feature = "btc-only")]
                 return Err(URError::UrDecodeError(format!("invalid data")));
@@ -255,16 +259,16 @@ impl InferViewType for Bytes {
     }
 }
 
+#[cfg(feature = "bitcoin")]
 impl InferViewType for BtcSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::BtcMsg)
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "solana")]
 impl InferViewType for SolSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
-        #[cfg(feature = "multi-coins")]
         if app_solana::validate_tx(&mut self.get_sign_data()) {
             return Ok(ViewType::SolanaTx);
         }
@@ -272,35 +276,35 @@ impl InferViewType for SolSignRequest {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "near")]
 impl InferViewType for NearSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::NearTx)
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "cardano")]
 impl InferViewType for CardanoSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoTx)
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "cardano")]
 impl InferViewType for CardanoSignTxHashRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoSignTxHash)
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "cardano")]
 impl InferViewType for CardanoSignDataRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoSignData)
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "cardano")]
 impl InferViewType for CardanoCatalystVotingRegistrationRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoCatalystVotingRegistration)
@@ -326,6 +330,7 @@ mod tests {
     use super::InferViewType;
     use crate::common::ur::ViewType;
 
+    #[cfg(feature = "ltc")]
     #[test]
     fn test_parse_ur_type() {
         {

@@ -1,35 +1,37 @@
 use alloc::string::String;
-
-#[cfg(feature = "multi-coins")]
-use app_aptos::errors::AptosError;
-#[cfg(feature = "multi-coins")]
-use app_arweave::errors::ArweaveError;
-use app_bitcoin::errors::BitcoinError;
-#[cfg(feature = "multi-coins")]
-use app_cardano::errors::CardanoError;
-#[cfg(feature = "multi-coins")]
-use app_cosmos::errors::CosmosError;
-#[cfg(feature = "multi-coins")]
-use app_ethereum::errors::EthereumError;
-#[cfg(feature = "multi-coins")]
-use app_near::errors::NearError;
-#[cfg(feature = "multi-coins")]
-use app_solana::errors::SolanaError;
-#[cfg(feature = "multi-coins")]
-use app_stellar::errors::StellarError;
-#[cfg(feature = "multi-coins")]
-use app_sui::errors::SuiError;
-#[cfg(feature = "multi-coins")]
-use app_ton::errors::TonError;
-#[cfg(feature = "multi-coins")]
-use app_tron::errors::TronError;
-#[cfg(feature = "multi-coins")]
-use app_xrp::errors::XRPError;
-use app_zcash::errors::ZcashError;
 use keystore::errors::KeystoreError;
 use thiserror;
 use thiserror::Error;
 use ur_registry::error::URError;
+
+#[cfg(feature = "bitcoin")]
+use app_bitcoin::errors::BitcoinError;
+#[cfg(feature = "aptos")]
+use app_aptos::errors::AptosError;
+#[cfg(feature = "arweave")]
+use app_arweave::errors::ArweaveError;
+#[cfg(feature = "cardano")]
+use app_cardano::errors::CardanoError;
+#[cfg(feature = "cosmos")]
+use app_cosmos::errors::CosmosError;
+#[cfg(feature = "ethereum")]
+use app_ethereum::errors::EthereumError;
+#[cfg(feature = "near")]
+use app_near::errors::NearError;
+#[cfg(feature = "solana")]
+use app_solana::errors::SolanaError;
+#[cfg(feature = "stellar")]
+use app_stellar::errors::StellarError;
+#[cfg(feature = "sui")]
+use app_sui::errors::SuiError;
+#[cfg(feature = "ton")]
+use app_ton::errors::TonError;
+#[cfg(feature = "tron")]
+use app_tron::errors::TronError;
+#[cfg(feature = "xrp")]
+use app_xrp::errors::XRPError;
+#[cfg(feature = "zcash")]
+use app_zcash::errors::ZcashError;
 
 #[derive(Debug, Clone)]
 #[repr(C)]
@@ -293,7 +295,7 @@ impl From<&RustCError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "ethereum")]
 impl From<&EthereumError> for ErrorCodes {
     fn from(value: &EthereumError) -> Self {
         match value {
@@ -329,7 +331,7 @@ impl From<&KeystoreError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "cardano")]
 impl From<&CardanoError> for ErrorCodes {
     fn from(value: &CardanoError) -> Self {
         match value {
@@ -342,7 +344,7 @@ impl From<&CardanoError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "solana")]
 impl From<&SolanaError> for ErrorCodes {
     fn from(value: &SolanaError) -> Self {
         match value {
@@ -357,7 +359,7 @@ impl From<&SolanaError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "near")]
 impl From<&NearError> for ErrorCodes {
     fn from(value: &NearError) -> Self {
         match value {
@@ -369,7 +371,7 @@ impl From<&NearError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "arweave")]
 impl From<&ArweaveError> for ErrorCodes {
     fn from(value: &ArweaveError) -> Self {
         match value {
@@ -384,7 +386,7 @@ impl From<&ArweaveError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "stellar")]
 impl From<&StellarError> for ErrorCodes {
     fn from(value: &StellarError) -> Self {
         match value {
@@ -396,7 +398,7 @@ impl From<&StellarError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "cosmos")]
 impl From<&CosmosError> for ErrorCodes {
     fn from(value: &CosmosError) -> Self {
         match value {
@@ -410,7 +412,7 @@ impl From<&CosmosError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "aptos")]
 impl From<&AptosError> for ErrorCodes {
     fn from(value: &AptosError) -> Self {
         match value {
@@ -422,7 +424,7 @@ impl From<&AptosError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "tron")]
 impl From<&TronError> for ErrorCodes {
     fn from(value: &TronError) -> Self {
         match value {
@@ -439,7 +441,7 @@ impl From<&TronError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "xrp")]
 impl From<&XRPError> for ErrorCodes {
     fn from(value: &XRPError) -> Self {
         match value {
@@ -452,7 +454,7 @@ impl From<&XRPError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "sui")]
 impl From<&SuiError> for ErrorCodes {
     fn from(value: &SuiError) -> Self {
         match value {
@@ -464,7 +466,7 @@ impl From<&SuiError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "ton")]
 impl From<&TonError> for ErrorCodes {
     fn from(value: &TonError) -> Self {
         match value {
@@ -479,7 +481,7 @@ impl From<&TonError> for ErrorCodes {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "zcash")]
 impl From<&ZcashError> for ErrorCodes {
     fn from(value: &ZcashError) -> Self {
         match value {

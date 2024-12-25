@@ -6,6 +6,19 @@ language = "C"
 
 [defines]
 "feature = multi-coins" = "BUILD_MULTI_COINS"
+"feature = aptos" = "FEATURE_APTOS"
+"feature = arweave" = "FEATURE_ARWEAVE"
+"feature = bitcoin" = "FEATURE_BITCOIN"
+"feature = cardano" = "FEATURE_CARDANO"
+"feature = cosmos" = "FEATURE_COSMOS"
+"feature = ethereum" = "FEATURE_ETHEREUM"
+"feature = near" = "FEATURE_NEAR"
+"feature = solana" = "FEATURE_SOLANA"
+"feature = stellar" = "FEATURE_STELLAR"
+"feature = ton" = "FEATURE_TON"
+"feature = tron" = "FEATURE_TRON"
+"feature = xrp" = "FEATURE_XRP"
+"feature = zcash" = "FEATURE_ZCASH"
 
 [parse]
 extra_bindings = ["rust_c"]

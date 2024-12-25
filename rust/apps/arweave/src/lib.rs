@@ -10,7 +10,6 @@ pub mod transaction;
 
 #[macro_use]
 extern crate alloc;
-extern crate aes;
 
 #[cfg(test)]
 #[macro_use]

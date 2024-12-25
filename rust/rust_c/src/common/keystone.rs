@@ -72,12 +72,13 @@ fn get_signed_tx(
     seed: &[u8],
 ) -> Result<(String, String), KeystoneError> {
     build_parse_context(master_fingerprint, x_pub).and_then(|context| {
+        #[cfg(feature = "bitcoin")]
         if app_bitcoin::network::Network::from_str(coin_code.as_str()).is_ok() {
             return app_bitcoin::sign_raw_tx(payload, context, seed)
                 .map_err(|e| KeystoneError::SignTxFailed(e.to_string()));
         }
         match coin_code.as_str() {
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "tron")]
             "TRON" => app_tron::sign_raw_tx(payload, context, seed)
                 .map_err(|e| KeystoneError::SignTxFailed(e.to_string())),
             _ => Err(KeystoneError::SignTxFailed(format!(
@@ -99,6 +100,7 @@ pub fn build_check_result(
     match payload_content {
         Some(payload::Content::SignTx(sign_tx_content)) => {
             build_parse_context(master_fingerprint, x_pub).and_then(|context| {
+                #[cfg(feature = "bitcoin")]
                 if app_bitcoin::network::Network::from_str(sign_tx_content.coin_code.as_str())
                     .is_ok()
                 {
@@ -106,7 +108,7 @@ pub fn build_check_result(
                         .map_err(|e| KeystoneError::CheckTxFailed(e.to_string()));
                 }
                 match sign_tx_content.coin_code.as_str() {
-                    #[cfg(feature = "multi-coins")]
+                    #[cfg(feature = "tron")]
                     "TRON" => app_tron::check_raw_tx(payload, context)
                         .map_err(|e| KeystoneError::CheckTxFailed(e.to_string())),
                     _ => Err(KeystoneError::CheckTxFailed(format!(

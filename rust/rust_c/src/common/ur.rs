@@ -3,15 +3,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ptr::null_mut;
-#[cfg(feature = "multi-coins")]
-use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
-#[cfg(feature = "multi-coins")]
-use ur_registry::extend::qr_hardware_call::QRHardwareCall;
-use ur_registry::zcash::zcash_pczt::ZcashPczt;
 
-use app_bitcoin::errors::BitcoinError;
-#[cfg(feature = "multi-coins")]
-use app_ethereum::errors::EthereumError;
 use cstr_core::CString;
 use cty::c_char;
 use keystore::errors::KeystoreError;
@@ -20,44 +12,52 @@ use ur_parse_lib::keystone_ur_decoder::{
     URParseResult as InnerParseResult,
 };
 use ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
-#[cfg(feature = "multi-coins")]
-use ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
 use ur_registry::bytes::Bytes;
-#[cfg(feature = "multi-coins")]
+use ur_registry::error::{URError, URResult};
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::registry_types::URType as InnerURType;
+use ur_registry::traits::RegistryItem;
+
+#[cfg(feature = "aptos")]
+use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
+#[cfg(feature = "arweave")]
+use ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
+#[cfg(feature = "bitcoin")]
+use ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
+#[cfg(feature = "cardano")]
 use ur_registry::cardano::{
     cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest,
     cardano_sign_data_request::CardanoSignDataRequest, cardano_sign_request::CardanoSignRequest,
+    cardano_sign_tx_hash_request::CardanoSignTxHashRequest,
 };
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "cosmos")]
 use ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "ethereum")]
 use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
+#[cfg(feature = "bitcoin")]
 use ur_registry::crypto_account::CryptoAccount;
+#[cfg(feature = "bitcoin")]
 use ur_registry::crypto_psbt::CryptoPSBT;
-use ur_registry::error::{URError, URResult};
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "ethereum")]
 use ur_registry::ethereum::eth_sign_request::EthSignRequest;
-use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+#[cfg(feature = "multi-coins")]
+use ur_registry::extend::qr_hardware_call::QRHardwareCall;
 #[cfg(feature = "multi-coins")]
 use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "near")]
 use ur_registry::near::near_sign_request::NearSignRequest;
-use ur_registry::registry_types::URType as InnerURType;
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "solana")]
 use ur_registry::solana::sol_sign_request::SolSignRequest;
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "stellar")]
 use ur_registry::stellar::stellar_sign_request::StellarSignRequest;
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "sui")]
 use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "sui")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "ton")]
 use ur_registry::ton::ton_sign_request::TonSignRequest;
-use ur_registry::traits::RegistryItem;
-use ur_registry::{
-    bitcoin::btc_sign_request::BtcSignRequest,
-    cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest,
-};
+#[cfg(feature = "zcash")]
+use ur_registry::zcash::zcash_pczt::ZcashPczt;
 
 use super::errors::{ErrorCodes, RustCError};
 use super::free::Free;
@@ -186,67 +186,72 @@ impl_response!(UREncodeMultiResult);
 #[repr(C)]
 #[derive(Debug, Eq, PartialEq)]
 pub enum ViewType {
+    #[cfg(feature = "bitcoin")]
     BtcNativeSegwitTx,
+    #[cfg(feature = "bitcoin")]
     BtcSegwitTx,
+    #[cfg(feature = "bitcoin")]
     BtcLegacyTx,
+    #[cfg(feature = "bitcoin")]
     BtcTx,
+    #[cfg(feature = "bitcoin")]
     BtcMsg,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "ltc")]
     LtcTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "dash")]
     DashTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "bch")]
     BchTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "ethereum")]
     EthTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "ethereum")]
     EthPersonalMessage,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "ethereum")]
     EthTypedData,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "tron")]
     TronTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "solana")]
     SolanaTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "solana")]
     SolanaMessage,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "cardano")]
     CardanoTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "cardano")]
     CardanoSignData,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "cardano")]
     CardanoCatalystVotingRegistration,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "cardano")]
     CardanoSignTxHash,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "near")]
     NearTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "xrp")]
     XRPTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "cosmos")]
     CosmosTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "cosmos")]
     CosmosEvmTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "sui")]
     SuiTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "sui")]
     SuiSignMessageHash,
 
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "arweave")]
     ArweaveTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "arweave")]
     ArweaveMessage,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "arweave")]
     ArweaveDataItem,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "stellar")]
     StellarTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "stellar")]
     StellarHash,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "ton")]
     TonTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "ton")]
     TonSignProof,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "zcash")]
     ZcashTx,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "aptos")]
     AptosTx,
     WebAuthResult,
     #[cfg(feature = "multi-coins")]
@@ -262,48 +267,51 @@ pub enum ViewType {
 
 #[repr(C)]
 pub enum QRCodeType {
+    #[cfg(feature = "bitcoin")]
     CryptoPSBT,
     CryptoMultiAccounts,
+    #[cfg(feature = "bitcoin")]
     CryptoAccount,
     Bytes,
+    #[cfg(feature = "bitcoin")]
     BtcSignRequest,
     SeedSignerMessage,
     #[cfg(feature = "multi-coins")]
     KeystoneSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "ethereum")]
     EthSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "solana")]
     SolSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "near")]
     NearSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "cardano")]
     CardanoSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "cardano")]
     CardanoSignTxHashRequest,
 
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "cardano")]
     CardanoSignDataRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "cardano")]
     CardanoCatalystVotingRegistrationRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "cosmos")]
     CosmosSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "ethereum")]
     EvmSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "sui")]
     SuiSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "sui")]
     SuiSignHashRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "aptos")]
     AptosSignRequest,
     #[cfg(feature = "multi-coins")]
     QRHardwareCall,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "arweave")]
     ArweaveSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "stellar")]
     StellarSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "ton")]
     TonSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(feature = "zcash")]
     ZcashPczt,
     URTypeUnKnown,
 }
@@ -311,46 +319,49 @@ pub enum QRCodeType {
 impl QRCodeType {
     pub fn from(value: &InnerURType) -> Result<Self, URError> {
         match value {
+            #[cfg(feature = "bitcoin")]
             InnerURType::CryptoPsbt(_) => Ok(QRCodeType::CryptoPSBT),
             InnerURType::CryptoMultiAccounts(_) => Ok(QRCodeType::CryptoMultiAccounts),
+            #[cfg(feature = "bitcoin")]
             InnerURType::CryptoAccount(_) => Ok(QRCodeType::CryptoAccount),
             InnerURType::Bytes(_) => Ok(QRCodeType::Bytes),
+            #[cfg(feature = "bitcoin")]
             InnerURType::BtcSignRequest(_) => Ok(QRCodeType::BtcSignRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::KeystoneSignRequest(_) => Ok(QRCodeType::KeystoneSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "ethereum")]
             InnerURType::EthSignRequest(_) => Ok(QRCodeType::EthSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "solana")]
             InnerURType::SolSignRequest(_) => Ok(QRCodeType::SolSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "near")]
             InnerURType::NearSignRequest(_) => Ok(QRCodeType::NearSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "cosmos")]
             InnerURType::CosmosSignRequest(_) => Ok(QRCodeType::CosmosSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "ethereum")]
             InnerURType::EvmSignRequest(_) => Ok(QRCodeType::EvmSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "sui")]
             InnerURType::SuiSignRequest(_) => Ok(QRCodeType::SuiSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "sui")]
             InnerURType::SuiSignHashRequest(_) => Ok(QRCodeType::SuiSignHashRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "stellar")]
             InnerURType::StellarSignRequest(_) => Ok(QRCodeType::StellarSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "arweave")]
             InnerURType::ArweaveSignRequest(_) => Ok(QRCodeType::ArweaveSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "aptos")]
             InnerURType::AptosSignRequest(_) => Ok(QRCodeType::AptosSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "cardano")]
             InnerURType::CardanoSignRequest(_) => Ok(QRCodeType::CardanoSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "cardano")]
             InnerURType::CardanoSignTxHashRequest(_) => Ok(QRCodeType::CardanoSignTxHashRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "cardano")]
             InnerURType::CardanoSignDataRequest(_) => Ok(QRCodeType::CardanoSignDataRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "cardano")]
             InnerURType::CardanoCatalystVotingRegistrationRequest(_) => {
                 Ok(QRCodeType::CardanoCatalystVotingRegistrationRequest)
             }
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "ton")]
             InnerURType::TonSignRequest(_) => Ok(QRCodeType::TonSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(feature = "zcash")]
             InnerURType::ZcashPczt(_) => Ok(QRCodeType::ZcashPczt),
             #[cfg(feature = "multi-coins")]
             InnerURType::QRHardwareCall(_) => Ok(QRCodeType::QRHardwareCall),
@@ -426,30 +437,33 @@ impl Free for URParseResult {
 
 fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
     match ur_type {
+        #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoPSBT => {
             free_ptr_with_type!(data, CryptoPSBT);
         }
         QRCodeType::CryptoMultiAccounts => {
             free_ptr_with_type!(data, CryptoMultiAccounts);
         }
+        #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoAccount => {
             free_ptr_with_type!(data, CryptoAccount);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "ethereum")]
         QRCodeType::EthSignRequest => {
             free_ptr_with_type!(data, EthSignRequest);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "solana")]
         QRCodeType::SolSignRequest => {
             free_ptr_with_type!(data, SolSignRequest);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "near")]
         QRCodeType::NearSignRequest => {
             free_ptr_with_type!(data, NearSignRequest);
         }
         QRCodeType::Bytes => {
             free_ptr_with_type!(data, Bytes);
         }
+        #[cfg(feature = "bitcoin")]
         QRCodeType::BtcSignRequest => {
             free_ptr_with_type!(data, BtcSignRequest);
         }
@@ -457,49 +471,48 @@ fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
         QRCodeType::KeystoneSignRequest => {
             free_ptr_with_type!(data, KeystoneSignRequest);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cosmos")]
         QRCodeType::CosmosSignRequest => {
             free_ptr_with_type!(data, CosmosSignRequest);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "ethereum")]
         QRCodeType::EvmSignRequest => {
             free_ptr_with_type!(data, EvmSignRequest);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "sui")]
         QRCodeType::SuiSignRequest => {
             free_ptr_with_type!(data, SuiSignRequest);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "sui")]
         QRCodeType::SuiSignHashRequest => {
             free_ptr_with_type!(data, SuiSignHashRequest);
         }
 
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "stellar")]
         QRCodeType::StellarSignRequest => {
             free_ptr_with_type!(data, StellarSignRequest);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "arweave")]
         QRCodeType::ArweaveSignRequest => {
             free_ptr_with_type!(data, ArweaveSignRequest);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "aptos")]
         QRCodeType::AptosSignRequest => {
             free_ptr_with_type!(data, AptosSignRequest);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignRequest => {
             free_ptr_with_type!(data, CardanoSignRequest);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignDataRequest => {
             free_ptr_with_type!(data, CardanoSignDataRequest);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignTxHashRequest => {
             free_ptr_with_type!(data, CardanoSignTxHashRequest);
         }
-
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoCatalystVotingRegistrationRequest => {
             free_ptr_with_type!(data, CardanoCatalystVotingRegistrationRequest);
         }
@@ -624,49 +637,52 @@ pub fn decode_ur(ur: String) -> URParseResult {
     };
 
     match ur_type {
+        #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoPSBT => _decode_ur::<CryptoPSBT>(ur, ur_type),
+        #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoAccount => _decode_ur::<CryptoAccount>(ur, ur_type),
         QRCodeType::CryptoMultiAccounts => _decode_ur::<CryptoMultiAccounts>(ur, ur_type),
         QRCodeType::Bytes => _decode_ur::<Bytes>(ur, ur_type),
+        #[cfg(feature = "bitcoin")]
         QRCodeType::BtcSignRequest => _decode_ur::<BtcSignRequest>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
         QRCodeType::KeystoneSignRequest => _decode_ur::<KeystoneSignRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "ethereum")]
         QRCodeType::EthSignRequest => _decode_ur::<EthSignRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "solana")]
         QRCodeType::SolSignRequest => _decode_ur::<SolSignRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "near")]
         QRCodeType::NearSignRequest => _decode_ur::<NearSignRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignRequest => _decode_ur::<CardanoSignRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignTxHashRequest => _decode_ur::<CardanoSignTxHashRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignDataRequest => _decode_ur::<CardanoSignDataRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoCatalystVotingRegistrationRequest => {
             _decode_ur::<CardanoCatalystVotingRegistrationRequest>(ur, ur_type)
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cosmos")]
         QRCodeType::CosmosSignRequest => _decode_ur::<CosmosSignRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "ethereum")]
         QRCodeType::EvmSignRequest => _decode_ur::<EvmSignRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "sui")]
         QRCodeType::SuiSignRequest => _decode_ur::<SuiSignRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "sui")]
         QRCodeType::SuiSignHashRequest => _decode_ur::<SuiSignHashRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "stellar")]
         QRCodeType::StellarSignRequest => _decode_ur::<StellarSignRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "arweave")]
         QRCodeType::ArweaveSignRequest => _decode_ur::<ArweaveSignRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "aptos")]
         QRCodeType::AptosSignRequest => _decode_ur::<AptosSignRequest>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "ton")]
         QRCodeType::TonSignRequest => _decode_ur::<TonSignRequest>(ur, ur_type),
+        #[cfg(feature = "zcash")]
+        QRCodeType::ZcashPczt => _decode_ur::<ZcashPczt>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
         QRCodeType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
-        QRCodeType::ZcashPczt => _decode_ur::<ZcashPczt>(ur, ur_type),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),
         ),
@@ -711,53 +727,55 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         Err(e) => return URParseMultiResult::from(e),
     };
     match ur_type {
+        #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoPSBT => _receive_ur::<CryptoPSBT>(ur, ur_type, decoder),
+        #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoAccount => _receive_ur::<CryptoAccount>(ur, ur_type, decoder),
         QRCodeType::CryptoMultiAccounts => _receive_ur::<CryptoMultiAccounts>(ur, ur_type, decoder),
         QRCodeType::Bytes => _receive_ur::<Bytes>(ur, ur_type, decoder),
+        #[cfg(feature = "bitcoin")]
         QRCodeType::BtcSignRequest => _receive_ur::<BtcSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         QRCodeType::KeystoneSignRequest => _receive_ur::<KeystoneSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "ethereum")]
         QRCodeType::EthSignRequest => _receive_ur::<EthSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "solana")]
         QRCodeType::SolSignRequest => _receive_ur::<SolSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "near")]
         QRCodeType::NearSignRequest => _receive_ur::<NearSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignRequest => _receive_ur::<CardanoSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignTxHashRequest => {
             _receive_ur::<CardanoSignTxHashRequest>(ur, ur_type, decoder)
         }
-
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignDataRequest => {
             _receive_ur::<CardanoSignDataRequest>(ur, ur_type, decoder)
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoCatalystVotingRegistrationRequest => {
             _receive_ur::<CardanoCatalystVotingRegistrationRequest>(ur, ur_type, decoder)
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cosmos")]
         QRCodeType::CosmosSignRequest => _receive_ur::<CosmosSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "ethereum")]
         QRCodeType::EvmSignRequest => _receive_ur::<EvmSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "sui")]
         QRCodeType::SuiSignRequest => _receive_ur::<SuiSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "sui")]
         QRCodeType::SuiSignHashRequest => _receive_ur::<SuiSignHashRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "arweave")]
         QRCodeType::ArweaveSignRequest => _receive_ur::<ArweaveSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "stellar")]
         QRCodeType::StellarSignRequest => _receive_ur::<StellarSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "aptos")]
         QRCodeType::AptosSignRequest => _receive_ur::<AptosSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "multi-coins")]
         QRCodeType::QRHardwareCall => _receive_ur::<QRHardwareCall>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "ton")]
         QRCodeType::TonSignRequest => _receive_ur::<TonSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "zcash")]
         QRCodeType::ZcashPczt => _receive_ur::<ZcashPczt>(ur, ur_type, decoder),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseMultiResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),

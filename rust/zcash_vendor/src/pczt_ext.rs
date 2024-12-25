@@ -1,14 +1,14 @@
 use crate::pczt::Pczt;
-use alloc::collections::btree_map::BTreeMap;
+
 use alloc::vec::Vec;
 use blake2b_simd::{Hash, Params, State};
-use orchard::pczt::Zip32Derivation;
+
 use pczt::{
     common::determine_lock_time,
     roles::low_level_signer::Signer,
     transparent::{Input, Output},
 };
-use transparent::{pczt::Bip32Derivation, sighash::SignableInput};
+use transparent::{sighash::SignableInput};
 use zcash_protocol::value::ZatBalance;
 
 /// TxId tree root personalization

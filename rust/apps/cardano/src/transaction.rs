@@ -6,7 +6,7 @@ use alloc::vec::Vec;
 use cardano_serialization_lib;
 use cardano_serialization_lib::protocol_types::{Ed25519Signature, PublicKey, Vkey, Vkeywitness};
 use cryptoxide::hashing::blake2b_256;
-use ed25519_bip32_core::{XPrv, XPub};
+use ed25519_bip32_core::{XPrv};
 use hex;
 use ur_registry::crypto_key_path::CryptoKeyPath;
 

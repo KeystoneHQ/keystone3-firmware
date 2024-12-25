@@ -10,7 +10,7 @@ use zcash_vendor::{
     orchard::{
         self, keys::OutgoingViewingKey, note::Note, note_encryption::OrchardDomain, Address,
     },
-    pczt::{self, roles::verifier::Verifier, sapling, Pczt},
+    pczt::{self, roles::verifier::Verifier, Pczt},
     ripemd::{Digest, Ripemd160},
     sha2::Sha256,
     transparent::{self, address::TransparentAddress},

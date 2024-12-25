@@ -5,7 +5,7 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use cardano_serialization_lib::protocol_types::Address;
 use cryptoxide::hashing::blake2b_256;
-use ed25519_bip32_core::{XPrv, XPub};
+use ed25519_bip32_core::{XPrv};
 use hex;
 use ur_registry::cardano::cardano_delegation::CardanoDelegation;
 use ur_registry::cardano::governance::CardanoVotingRegistration;

@@ -4,9 +4,6 @@ use super::errors::ErrorCodes;
 use super::errors::RustCError;
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
-use app_bitcoin::errors::BitcoinError;
-#[cfg(feature = "multi-coins")]
-use app_ethereum::errors::EthereumError;
 use core::ptr::null_mut;
 use cstr_core::CString;
 use keystore::errors::KeystoreError;

@@ -79,13 +79,6 @@ macro_rules! impl_new_error {
                 }
             }
         }
-
-        impl From<BitcoinError> for $name {
-            fn from(value: BitcoinError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-
         impl From<URError> for $name {
             fn from(value: URError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
@@ -97,91 +90,95 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
-        impl From<EthereumError> for $name {
-            fn from(value: EthereumError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-
         impl From<KeystoreError> for $name {
             fn from(value: KeystoreError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
-        impl From<app_tron::errors::TronError> for $name {
-            fn from(value: app_tron::errors::TronError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-        #[cfg(feature = "multi-coins")]
-        impl From<app_solana::errors::SolanaError> for $name {
-            fn from(value: app_solana::errors::SolanaError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-        #[cfg(feature = "multi-coins")]
-        impl From<app_near::errors::NearError> for $name {
-            fn from(value: app_near::errors::NearError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-        #[cfg(feature = "multi-coins")]
-        impl From<app_aptos::errors::AptosError> for $name {
-            fn from(value: app_aptos::errors::AptosError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-
         impl From<super::errors::KeystoneError> for $name {
             fn from(value: super::errors::KeystoneError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "bitcoin")]
+        impl From<app_bitcoin::errors::BitcoinError> for $name {
+            fn from(value: app_bitcoin::errors::BitcoinError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "ethereum")]
+        impl From<app_ethereum::errors::EthereumError> for $name {
+            fn from(value: app_ethereum::errors::EthereumError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "tron")]
+        impl From<app_tron::errors::TronError> for $name {
+            fn from(value: app_tron::errors::TronError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "solana")]
+        impl From<app_solana::errors::SolanaError> for $name {
+            fn from(value: app_solana::errors::SolanaError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "near")]
+        impl From<app_near::errors::NearError> for $name {
+            fn from(value: app_near::errors::NearError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "aptos")]
+        impl From<app_aptos::errors::AptosError> for $name {
+            fn from(value: app_aptos::errors::AptosError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "cosmos")]
         impl From<app_cosmos::errors::CosmosError> for $name {
             fn from(value: app_cosmos::errors::CosmosError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "xrp")]
         impl From<app_xrp::errors::XRPError> for $name {
             fn from(value: app_xrp::errors::XRPError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "sui")]
         impl From<app_sui::errors::SuiError> for $name {
             fn from(value: app_sui::errors::SuiError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         impl From<app_cardano::errors::CardanoError> for $name {
             fn from(value: app_cardano::errors::CardanoError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "arweave")]
         impl From<app_arweave::errors::ArweaveError> for $name {
             fn from(value: app_arweave::errors::ArweaveError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "stellar")]
         impl From<app_stellar::errors::StellarError> for $name {
             fn from(value: app_stellar::errors::StellarError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "ton")]
         impl From<app_ton::errors::TonError> for $name {
             fn from(value: app_ton::errors::TonError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "zcash")]
         impl From<app_zcash::errors::ZcashError> for $name {
             fn from(value: app_zcash::errors::ZcashError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
@@ -201,12 +198,6 @@ macro_rules! impl_new_error {
             }
         }
 
-        impl<$t: Free> From<BitcoinError> for $name<$t> {
-            fn from(value: BitcoinError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-
         impl<$t: Free> From<URError> for $name<$t> {
             fn from(value: URError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
@@ -218,91 +209,97 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
-        impl<$t: Free> From<EthereumError> for $name<$t> {
-            fn from(value: EthereumError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
 
         impl<$t: Free> From<KeystoreError> for $name<$t> {
             fn from(value: KeystoreError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
-        impl<$t: Free> From<app_tron::errors::TronError> for $name<$t> {
-            fn from(value: app_tron::errors::TronError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-        #[cfg(feature = "multi-coins")]
-        impl<$t: Free> From<app_solana::errors::SolanaError> for $name<$t> {
-            fn from(value: app_solana::errors::SolanaError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-        #[cfg(feature = "multi-coins")]
-        impl<$t: Free> From<app_near::errors::NearError> for $name<$t> {
-            fn from(value: app_near::errors::NearError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-        #[cfg(feature = "multi-coins")]
-        impl<$t: Free> From<app_cosmos::errors::CosmosError> for $name<$t> {
-            fn from(value: app_cosmos::errors::CosmosError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-        #[cfg(feature = "multi-coins")]
-        impl<$t: Free> From<app_xrp::errors::XRPError> for $name<$t> {
-            fn from(value: app_xrp::errors::XRPError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-        #[cfg(feature = "multi-coins")]
-        impl<$t: Free> From<app_aptos::errors::AptosError> for $name<$t> {
-            fn from(value: app_aptos::errors::AptosError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-
         impl<$t: Free> From<super::errors::KeystoneError> for $name<$t> {
             fn from(value: super::errors::KeystoneError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "bitcoin")]
+        impl<$t: Free> From<app_bitcoin::errors::BitcoinError> for $name<$t> {
+            fn from(value: app_bitcoin::errors::BitcoinError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "ethereum")]
+        impl<$t: Free> From<app_ethereum::errors::EthereumError> for $name<$t> {
+            fn from(value: app_ethereum::errors::EthereumError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+
+        #[cfg(feature = "tron")]
+        impl<$t: Free> From<app_tron::errors::TronError> for $name<$t> {
+            fn from(value: app_tron::errors::TronError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "solana")]
+        impl<$t: Free> From<app_solana::errors::SolanaError> for $name<$t> {
+            fn from(value: app_solana::errors::SolanaError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "near")]
+        impl<$t: Free> From<app_near::errors::NearError> for $name<$t> {
+            fn from(value: app_near::errors::NearError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "cosmos")]
+        impl<$t: Free> From<app_cosmos::errors::CosmosError> for $name<$t> {
+            fn from(value: app_cosmos::errors::CosmosError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "xrp")]
+        impl<$t: Free> From<app_xrp::errors::XRPError> for $name<$t> {
+            fn from(value: app_xrp::errors::XRPError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "aptos")]
+        impl<$t: Free> From<app_aptos::errors::AptosError> for $name<$t> {
+            fn from(value: app_aptos::errors::AptosError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "sui")]
         impl<$t: Free> From<app_sui::errors::SuiError> for $name<$t> {
             fn from(value: app_sui::errors::SuiError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         impl<$t: Free> From<app_cardano::errors::CardanoError> for $name<$t> {
             fn from(value: app_cardano::errors::CardanoError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "arweave")]
         impl<$t: Free> From<app_arweave::errors::ArweaveError> for $name<$t> {
             fn from(value: app_arweave::errors::ArweaveError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "stellar")]
         impl<$t: Free> From<app_stellar::errors::StellarError> for $name<$t> {
             fn from(value: app_stellar::errors::StellarError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "ton")]
         impl<$t: Free> From<app_ton::errors::TonError> for $name<$t> {
             fn from(value: app_ton::errors::TonError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "zcash")]
         impl<$t: Free> From<app_zcash::errors::ZcashError> for $name<$t> {
             fn from(value: app_zcash::errors::ZcashError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
@@ -324,100 +321,97 @@ macro_rules! impl_simple_new_error {
                 }
             }
         }
-
-        impl<$t> From<BitcoinError> for $name<$t> {
-            fn from(value: BitcoinError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-
         impl<$t> From<KeystoreError> for $name<$t> {
             fn from(value: KeystoreError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
-        impl<$t> From<EthereumError> for $name<$t> {
-            fn from(value: EthereumError) -> Self {
+        impl<$t> From<RustCError> for $name<$t> {
+            fn from(value: RustCError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "bitcoin")]
+        impl<$t> From<app_bitcoin::errors::BitcoinError> for $name<$t> {
+            fn from(value: app_bitcoin::errors::BitcoinError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "ethereum")]
+        impl<$t> From<app_ethereum::errors::EthereumError> for $name<$t> {
+            fn from(value: app_ethereum::errors::EthereumError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "tron")]
         impl<$t> From<app_tron::errors::TronError> for $name<$t> {
             fn from(value: app_tron::errors::TronError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "solana")]
         impl<$t> From<app_solana::errors::SolanaError> for $name<$t> {
             fn from(value: app_solana::errors::SolanaError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "near")]
         impl<$t> From<app_near::errors::NearError> for $name<$t> {
             fn from(value: app_near::errors::NearError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "aptos")]
         impl<$t> From<app_aptos::errors::AptosError> for $name<$t> {
             fn from(value: app_aptos::errors::AptosError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "xrp")]
         impl<$t> From<app_xrp::errors::XRPError> for $name<$t> {
             fn from(value: app_xrp::errors::XRPError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cosmos")]
         impl<$t> From<app_cosmos::errors::CosmosError> for $name<$t> {
             fn from(value: app_cosmos::errors::CosmosError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "sui")]
         impl<$t> From<app_sui::errors::SuiError> for $name<$t> {
             fn from(value: app_sui::errors::SuiError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "cardano")]
         impl<$t> From<app_cardano::errors::CardanoError> for $name<$t> {
             fn from(value: app_cardano::errors::CardanoError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "arweave")]
         impl<$t> From<app_arweave::errors::ArweaveError> for $name<$t> {
             fn from(value: app_arweave::errors::ArweaveError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "stellar")]
         impl<$t> From<app_stellar::errors::StellarError> for $name<$t> {
             fn from(value: app_stellar::errors::StellarError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "ton")]
         impl<$t> From<app_ton::errors::TonError> for $name<$t> {
             fn from(value: app_ton::errors::TonError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
-
-        #[cfg(feature = "multi-coins")]
+        #[cfg(feature = "zcash")]
         impl<$t> From<app_zcash::errors::ZcashError> for $name<$t> {
             fn from(value: app_zcash::errors::ZcashError) -> Self {
-                Self::error(ErrorCodes::from(&value), value.to_string())
-            }
-        }
-
-        impl<$t> From<RustCError> for $name<$t> {
-            fn from(value: RustCError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

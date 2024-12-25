@@ -1,7 +1,6 @@
 use alloc::string::String;
 use thiserror;
 use thiserror::Error;
-use zcash_vendor::orchard;
 
 pub type Result<T> = core::result::Result<T, KeystoreError>;
 

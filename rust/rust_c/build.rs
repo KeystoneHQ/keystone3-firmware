@@ -1,7 +1,9 @@
+use std::env;
+
 fn main() {
     let mut config =
         cbindgen::Config::from_file("cbindgen.toml").expect("Failed to read cbindgen.toml");
-    let features = vec![
+    let features: Vec<&str> = vec![
         #[cfg(feature = "production-multi-coins")]
         "production-multi-coins",
         #[cfg(feature = "production-btc-only")]
@@ -15,7 +17,9 @@ fn main() {
         #[cfg(feature = "debug-btc-only")]
         "debug-btc-only",
     ];
-    println!("cargo:warning={}", format!("features: {:?}", features));
+    assert!(features.len() > 0, "No build variant enabled");
+    assert!(features.len() == 1, "Multiple build variants enabled: {:?}", features);
+    let output_target = env::var("CBINDGEN_BINDINGS_TARGET").unwrap_or(format!("bindings/{}/librust_c.h", features[0]));
     config.parse.expand.features = Some(features.into_iter().map(|s| s.to_string()).collect());
 
     let builder = cbindgen::Builder::new();
@@ -25,5 +29,5 @@ fn main() {
         .with_config(config)
         .generate()
         .expect("Failed to generate bindings")
-        .write_to_file("librust_c.h");
+        .write_to_file(output_target);
 }

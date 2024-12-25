@@ -8,7 +8,7 @@ use crate::utils::shorten_string;
 use crate::vendor::address::TonAddress;
 use crate::vendor::cell::BagOfCells;
 use alloc::string::{String, ToString};
-use alloc::vec;
+
 use hex;
 use serde::Serialize;
 use serde_json::{self, json, Value};

@@ -22,15 +22,15 @@ use ur_registry::near::near_sign_request::NearSignRequest;
 use ur_registry::solana::sol_sign_request::SolSignRequest;
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 
-use common_rust_c::errors::ErrorCodes;
-use common_rust_c::ffi::CSliceFFI;
-use common_rust_c::structs::ExtendedPublicKey;
-use common_rust_c::types::{PtrBytes, PtrDecoder, PtrString};
-use common_rust_c::ur::{
+use crate::common::errors::ErrorCodes;
+use crate::common::ffi::CSliceFFI;
+use crate::common::structs::ExtendedPublicKey;
+use crate::common::types::{PtrBytes, PtrDecoder, PtrString};
+use crate::common::ur::{
     decode_ur, receive, QRCodeType, UREncodeResult, URParseMultiResult, URParseResult, ViewType,
     FRAGMENT_MAX_LENGTH_DEFAULT,
 };
-use common_rust_c::utils::{convert_c_char, recover_c_char};
+use crate::common::utils::{convert_c_char, recover_c_char};
 
 #[no_mangle]
 pub extern "C" fn test_get_bch_keystone_succeed_bytes() -> *mut URParseResult {

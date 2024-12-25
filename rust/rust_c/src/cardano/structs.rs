@@ -10,12 +10,12 @@ use hex;
 use itertools::Itertools;
 use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 
-use common_rust_c::ffi::VecFFI;
-use common_rust_c::free::{free_ptr_string, Free};
-use common_rust_c::structs::TransactionParseResult;
-use common_rust_c::types::{Ptr, PtrString, PtrT};
-use common_rust_c::utils::convert_c_char;
-use common_rust_c::{
+use crate::common::ffi::VecFFI;
+use crate::common::free::{free_ptr_string, Free};
+use crate::common::structs::TransactionParseResult;
+use crate::common::types::{Ptr, PtrString, PtrT};
+use crate::common::utils::convert_c_char;
+use crate::{
     check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method,
 };
 

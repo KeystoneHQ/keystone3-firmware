@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 use core::ffi::c_void;
 
-use crate::free::Free;
+use super::free::Free;
 use cty::c_char;
 
 pub type PtrString = *mut c_char;

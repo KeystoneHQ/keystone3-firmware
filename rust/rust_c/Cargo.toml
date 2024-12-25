@@ -6,55 +6,51 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-common_rust_c = { path = "./src/common", optional = true, default-features = false }
-
-
+#external
 cty = { workspace = true }
 cstr_core = { workspace = true }
 getrandom = { workspace = true, features = ["custom"] }
-keystore = { workspace = true }
-app_aptos = { workspace = true }
-app_utils = { workspace = true }
-rust_tools = { workspace = true }
 serde_json = { workspace = true }
 hex = { workspace = true }
 bitcoin = { workspace = true }
-ur-registry = { workspace = true }
-app_arweave = { workspace = true }
 cryptoxide = { workspace = true }
-app_bitcoin = { workspace = true }
 base64 = { workspace = true }
-app_cardano = { workspace = true }
 itertools = { workspace = true }
-ed25519-bip32-core = { workspace = true }
-
-app_cosmos = { workspace = true, default-features = false }
 either = { workspace = true }
-
-app_ethereum = { workspace = true }
 core2 = { workspace = true }
+thiserror = { workspace = true }
+bitcoin_hashes = { workspace = true }
+rsa = { workspace = true }
+sha1 = { workspace = true }
+aes = { workspace = true }
+cbc = { workspace = true }
 
-app_solana = { workspace = true }
-
-app_near = { workspace = true }
-
-app_sui = { workspace = true }
-
-app_stellar = { workspace = true }
-
-app_ton = { workspace = true }
-
-app_tron = { workspace = true }
-
-app_wallets = { workspace = true }
-
-ur-parse-lib = { workspace = true }
-
-app_xrp = { workspace = true }
-
-app_zcash = { workspace = true }
-zcash_vendor = { workspace = true }
+#keystone owned
+keystore = { workspace = true }
 sim_qr_reader = { workspace = true }
+ur-registry = { workspace = true }
+ur-parse-lib = { workspace = true }
+zcash_vendor = { workspace = true }
+ed25519-bip32-core = { workspace = true }
+app_utils = { workspace = true }
+rust_tools = { workspace = true }
+
+#apps
+app_bitcoin = { workspace = true, optional = true }
+app_wallets = { workspace = true }
+app_ethereum = { workspace = true, optional = true }
+app_cardano = { workspace = true, optional = true }
+app_tron = { workspace = true, optional = true }
+app_solana = { workspace = true, optional = true }
+app_near = { workspace = true, optional = true }
+app_xrp = { workspace = true, optional = true }
+app_cosmos = { workspace = true, optional = true }
+app_aptos = { workspace = true, optional = true }
+app_sui = { workspace = true, optional = true }
+app_arweave = { workspace = true, optional = true }
+app_stellar = { workspace = true, optional = true }
+app_ton = { workspace = true, optional = true }
+app_zcash = { workspace = true, optional = true }
 
 [lib]
 crate-type = ["staticlib"]
@@ -63,26 +59,25 @@ crate-type = ["staticlib"]
 # feature toggles
 use-allocator = []
 simulator = []
-aptos = []
-arweave = []
-bitcoin = []
-cardano = []
-cosmos = []
-ethereum = []
-near = []
-solana = []
-stellar = []
-sui = []
-ton = []
-tron = []
-xrp = []
-zcash = []
+aptos = ["dep:app_aptos"]
+arweave = ["dep:app_arweave"]
+bitcoin = ["dep:app_bitcoin"]
+cardano = ["dep:app_cardano"]
+cosmos = ["dep:app_cosmos"]
+ethereum = ["dep:app_ethereum"]
+near = ["dep:app_near"]
+solana = ["dep:app_solana"]
+stellar = ["dep:app_stellar"]
+sui = ["dep:app_sui"]
+ton = ["dep:app_ton"]
+tron = ["dep:app_tron"]
+xrp = ["dep:app_xrp"]
+zcash = ["dep:app_zcash"]
 test_cmd = []
 
-debug-memory = ["multi-coins", "common_rust_c/debug-memory"]
+debug-memory = ["multi-coins"]
 
 multi-coins = [
-    "common_rust_c/multi-coins",
     "bitcoin",
     "ethereum",
     "solana",
@@ -99,7 +94,7 @@ multi-coins = [
     "zcash",
 ]
 
-btc-only = ["common_rust_c/btc-only", "bitcoin"]
+btc-only = ["bitcoin"]
 
 # build variants
 # production

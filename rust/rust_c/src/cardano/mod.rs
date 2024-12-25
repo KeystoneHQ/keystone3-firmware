@@ -27,12 +27,12 @@ use ur_registry::cardano::cardano_signature::CardanoSignature;
 use ur_registry::crypto_key_path::CryptoKeyPath;
 
 use structs::{DisplayCardanoCatalyst, DisplayCardanoSignData, DisplayCardanoTx};
-use common_rust_c::errors::{RustCError, R};
-use common_rust_c::extract_ptr_with_type;
-use common_rust_c::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
-use common_rust_c::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use common_rust_c::utils::{convert_c_char, recover_c_char};
+use crate::common::errors::{RustCError, R};
+use crate::extract_ptr_with_type;
+use crate::common::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
+use crate::common::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
+use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::common::utils::{convert_c_char, recover_c_char};
 use ur_registry::registry_types::{
     CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE, CARDANO_SIGNATURE, CARDANO_SIGN_DATA_SIGNATURE,
 };

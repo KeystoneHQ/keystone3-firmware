@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
-use crate::errors::ErrorCodes;
-use crate::errors::RustCError;
+use super::errors::ErrorCodes;
+use super::errors::RustCError;
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 use app_bitcoin::errors::BitcoinError;
@@ -12,8 +12,8 @@ use cstr_core::CString;
 use keystore::errors::KeystoreError;
 use ur_registry::error::URError;
 
-use crate::free::Free;
-use crate::types::{PtrString, PtrT};
+use super::free::Free;
+use super::types::{PtrString, PtrT};
 use crate::{
     check_and_free_ptr, free_str_ptr, impl_c_ptr, impl_new_error, impl_response, impl_simple_c_ptr,
     impl_simple_new_error, make_free_method,

@@ -2,17 +2,17 @@
 use alloc::boxed::Box;
 
 use super::util::{calculate_max_txn_fee, convert_wei_to_eth};
+use crate::common::ffi::VecFFI;
+use crate::common::free::Free;
+use crate::common::structs::{Response, TransactionParseResult};
+use crate::common::types::{PtrString, PtrT};
+use crate::common::utils::convert_c_char;
+use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_ethereum::abi::{ContractData, ContractMethodParam};
 use app_ethereum::erc20::encode_erc20_transfer_calldata;
 use app_ethereum::structs::{ParsedEthereumTransaction, PersonalMessage, TypedData};
-use common_rust_c::ffi::VecFFI;
-use common_rust_c::free::Free;
-use common_rust_c::structs::{Response, TransactionParseResult};
-use common_rust_c::types::{PtrString, PtrT};
-use common_rust_c::utils::convert_c_char;
-use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
 use core::ptr::null_mut;
 use core::str::FromStr;
 use itertools::Itertools;

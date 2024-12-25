@@ -3,7 +3,7 @@ use seed_signer_message::{MessageEncoding, SeedSignerMessage};
 
 pub mod seed_signer_message;
 
-use crate::{
+use super::{
     errors::RustCError,
     types::{Ptr, PtrString},
     ur::URParseResult,
@@ -47,8 +47,8 @@ pub extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
                             MessageEncoding::ASCII,
                         );
                         return URParseResult::single(
-                            crate::ur::ViewType::BtcMsg,
-                            crate::ur::QRCodeType::SeedSignerMessage,
+                            super::ur::ViewType::BtcMsg,
+                            super::ur::QRCodeType::SeedSignerMessage,
                             data,
                         )
                         .c_ptr();

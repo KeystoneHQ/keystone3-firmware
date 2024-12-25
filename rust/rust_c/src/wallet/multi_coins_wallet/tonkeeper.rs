@@ -1,11 +1,11 @@
-use alloc::string::ToString;
-use app_wallets::tonkeeper::{generate_sync_ur, PathInfo};
-use common_rust_c::{
-    extract_array,
+use crate::common::{
     types::{Ptr, PtrBytes, PtrString},
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
     utils::recover_c_char,
 };
+use crate::extract_array;
+use alloc::string::ToString;
+use app_wallets::tonkeeper::{generate_sync_ur, PathInfo};
 use {
     hex,
     ur_registry::{crypto_hd_key::CryptoHDKey, error::URError, traits::RegistryItem},

@@ -49,7 +49,7 @@ use ur_registry::{
     bitcoin::btc_sign_request::BtcSignRequest, sui::sui_sign_hash_request::SuiSignHashRequest,
 };
 
-use crate::ur::ViewType;
+use super::ur::ViewType;
 
 pub trait InferViewType {
     fn infer(&self) -> Result<ViewType, URError> {
@@ -323,8 +323,8 @@ mod tests {
     use hex::FromHex;
     use ur_registry::bytes::Bytes;
 
-    use crate::ur::ViewType;
-    use crate::ur_ext::InferViewType;
+    use super::InferViewType;
+    use crate::common::ur::ViewType;
 
     #[test]
     fn test_parse_ur_type() {

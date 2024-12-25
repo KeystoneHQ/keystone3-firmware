@@ -1,9 +1,9 @@
 use alloc::slice;
 use alloc::vec::Vec;
 use app_arweave::generate_public_key_from_primes;
-use common_rust_c::types::{Ptr, PtrBytes, PtrString};
-use common_rust_c::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use common_rust_c::utils::recover_c_char;
+use crate::common::types::{Ptr, PtrBytes, PtrString};
+use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::common::utils::recover_c_char;
 use cty::uint32_t;
 use hex;
 use ur_registry::arweave::arweave_crypto_account::ArweaveCryptoAccount;

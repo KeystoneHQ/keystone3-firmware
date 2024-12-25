@@ -1,4 +1,4 @@
-use common_rust_c::utils::convert_c_char;
+use crate::common::utils::convert_c_char;
 use cty::c_char;
 use sim_qr_reader::*;
 

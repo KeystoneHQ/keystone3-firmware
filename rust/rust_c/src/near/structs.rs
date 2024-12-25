@@ -1,14 +1,14 @@
+use crate::common::ffi::VecFFI;
+use crate::common::free::{free_ptr_string, Free};
+use crate::common::structs::TransactionParseResult;
+use crate::common::types::{PtrString, PtrT};
+use crate::common::utils::convert_c_char;
+use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, impl_c_ptrs, make_free_method};
 use alloc::boxed::Box;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use app_near::parser::overview::NearTxOverview;
 use app_near::parser::structs::{NearTxDisplayType, ParsedNearTx};
-use common_rust_c::ffi::VecFFI;
-use common_rust_c::free::{free_ptr_string, Free};
-use common_rust_c::structs::TransactionParseResult;
-use common_rust_c::types::{PtrString, PtrT};
-use common_rust_c::utils::convert_c_char;
-use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, impl_c_ptrs, make_free_method};
 use core::ptr::null_mut;
 use itertools::Itertools;
 

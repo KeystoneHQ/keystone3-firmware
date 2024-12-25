@@ -1,18 +1,16 @@
 use core::ptr::null_mut;
 
+use crate::common::{
+    ffi::VecFFI,
+    free::Free,
+    types::{Ptr, PtrString},
+    utils::convert_c_char,
+};
+use crate::{free_ptr_with_type, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs};
 use alloc::vec::Vec;
 use app_zcash::pczt::structs::{
     ParsedFrom, ParsedOrchard, ParsedPczt, ParsedTo, ParsedTransparent,
 };
-use common_rust_c::{
-    extract_ptr_with_type,
-    ffi::VecFFI,
-    free::Free,
-    free_ptr_with_type, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs,
-    types::{Ptr, PtrString},
-    utils::convert_c_char,
-};
-
 use cstr_core;
 
 #[repr(C)]

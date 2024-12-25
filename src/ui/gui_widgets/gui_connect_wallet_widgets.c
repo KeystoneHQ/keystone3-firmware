@@ -9,8 +9,9 @@
 #include "gui_wallet.h"
 #include "rust.h"
 #include "user_memory.h"
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
 #include "gui_multi_path_coin_receive_widgets.h"
+#include "gui_connect_ada_widgets.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_pending_hintbox.h"
 #endif
@@ -19,9 +20,6 @@
 #include "gui_global_resources.h"
 #include "gui_page.h"
 #include "keystore.h"
-#ifndef BTC_ONLY
-#include "gui_connect_ada_widgets.h"
-#endif
 #include "gui_select_address_widgets.h"
 #include "account_public_info.h"
 

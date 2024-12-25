@@ -12,6 +12,8 @@
 #include "log.h"
 #include "presetting.h"
 #include "anti_tamper.h"
+#include "multi/general/gui_general_analyze.h"
+#include "multi/cyberpunk/gui_cyberpunk_analyze.h"
 #else
 #include "simulator_model.h"
 #endif

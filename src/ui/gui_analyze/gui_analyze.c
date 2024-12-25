@@ -5,8 +5,6 @@
 #include "gui_analyze.h"
 #include "gui_chain.h"
 #include "gui_model.h"
-#include "multi/general/gui_general_analyze.h"
-#include "multi/cyberpunk/gui_cyberpunk_analyze.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"

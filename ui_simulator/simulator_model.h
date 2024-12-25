@@ -42,6 +42,19 @@ bool GetEnsName(const char *addr, char *name);
 
 extern bool g_reboot;
 
+#undef GUI_ANALYZE_OBJ_SURPLUS
+#ifdef CYBERPUNK_VERSION
+#define GUI_ANALYZE_OBJ_SURPLUS \
+    { \
+        REMAPVIEW_ZCASH, \
+        PC_SIMULATOR_PATH "/page_zcash.json", \
+        GuiGetZcashGUIData, \
+        NULL, \
+        FreeZcashMemory, \
+    }
+#endif
+
+#ifdef GENERAL_VERSION
 #define GUI_ANALYZE_OBJ_SURPLUS           \
     { \
         REMAPVIEW_ETH, \
@@ -197,5 +210,6 @@ extern bool g_reboot;
         NULL, \
         FreeArMemory, \
     }
+#endif
 
 #endif

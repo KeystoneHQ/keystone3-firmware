@@ -25,7 +25,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_pending_hintbox.h"
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
 #include "gui_eth.h"
 #include "general/eapdu_services/service_resolve_ur.h"
 #endif

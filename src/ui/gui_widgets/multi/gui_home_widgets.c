@@ -282,6 +282,11 @@ static void GuiOpenARAddressNoticeWindow()
     lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
 }
 
+__attribute__((weak)) void CoinOtherDealHandler(HOME_WALLET_CARD_ENUM coin)
+{
+    return NULL;
+}
+
 static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
 {
     if (coin >= HOME_WALLET_CARD_BUTT) {
@@ -294,27 +299,31 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
     case HOME_WALLET_CARD_BCH:
         GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
         break;
-    case HOME_WALLET_CARD_ETH:
-    case HOME_WALLET_CARD_SOL:
-    case HOME_WALLET_CARD_HNT:
-        GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
-        break;
-    case HOME_WALLET_CARD_ADA:
-        GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
-        break;
-    case HOME_WALLET_CARD_ARWEAVE: {
-        bool shouldGenerateArweaveXPub = IsArweaveSetupComplete();
-        if (!shouldGenerateArweaveXPub) {
-            GuiOpenARAddressNoticeWindow();
-            break;
-        }
-        GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
-        break;
-    }
     default:
-        GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
+        CoinOtherDealHandler(coin);
         break;
     }
+    // case HOME_WALLET_CARD_ETH:
+    // case HOME_WALLET_CARD_SOL:
+    // case HOME_WALLET_CARD_HNT:
+    //     GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
+    //     break;
+    // case HOME_WALLET_CARD_ADA:
+    //     GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
+    //     break;
+    // case HOME_WALLET_CARD_ARWEAVE: {
+    //     bool shouldGenerateArweaveXPub = IsArweaveSetupComplete();
+    //     if (!shouldGenerateArweaveXPub) {
+    //         GuiOpenARAddressNoticeWindow();
+    //         break;
+    //     }
+    //     GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
+    //     break;
+    // }
+    // default:
+    //     GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
+    //     break;
+    // }
 }
 
 void GuiRemoveKeyboardWidget(void)

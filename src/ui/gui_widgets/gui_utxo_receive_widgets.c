@@ -177,7 +177,7 @@ static char **g_derivationPathDescs = NULL;
 static char **g_testNetderivationPathDescs = NULL;
 #endif
 
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
 static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_BTC, ""},
     {HOME_WALLET_CARD_LTC, "m/49'/2'/0'"},

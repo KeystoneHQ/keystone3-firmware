@@ -11,7 +11,7 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 
-add_subdirectory(rust)
+# add_subdirectory(rust)
 
 # add definition
 function(add_definition_with_message OPTION_NAME)
@@ -61,7 +61,6 @@ set(WIDGET_PATH "multi")
 # if(CYBERPUNK)
 #     set(WIDGET_SUBPATH "multi/cyberpunk")
 #     add_compile_definitions(CYBERPUNK_VERSION)
-#     message(STATUS "Enabled option: CYBERPUNK_VERSION..............................")
 # elseif(BTC_ONLY)
 #     set(WIDGET_SUBPATH "btc_only/multi_sig")
 #     set(WIDGET_PATH "btc_only")
@@ -71,8 +70,10 @@ set(WIDGET_PATH "multi")
 #     add_compile_definitions(GENERAL_VERSION)
 #     set(WIDGET_SUBPATH "multi/general")
 # endif()
-add_compile_definitions(GENERAL_VERSION)
-set(WIDGET_SUBPATH "multi/general")
+# add_compile_definitions(GENERAL_VERSION)
+# set(WIDGET_SUBPATH "multi/general")
+set(WIDGET_SUBPATH "multi/cyberpunk")
+add_compile_definitions(CYBERPUNK_VERSION)
 
 set(GUI_CUSTOM_INCLUDE_PATH
     src/ui/gui_widgets/${WIDGET_SUBPATH}
@@ -377,7 +378,7 @@ else()
         ${UTILS}
         ${CRYPTO_SLIP39}
     )
-    add_dependencies(${PROJECT_NAME} rust_c)
+    # add_dependencies(${PROJECT_NAME} rust_c)
     target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 ${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds/librust_c.a)
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
       target_link_libraries(${PROJECT_NAME} PRIVATE m dl pthread )

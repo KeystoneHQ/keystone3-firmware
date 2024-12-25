@@ -4,7 +4,7 @@
 #include "gui_views.h"
 #include "librust_c.h"
 #include "gui_attention_hintbox.h"
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
 #include "gui_ar.h"
 #endif
 

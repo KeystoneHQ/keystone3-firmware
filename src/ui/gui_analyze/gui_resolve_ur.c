@@ -9,10 +9,12 @@
 #include "gui_api.h"
 #include "gui_views.h"
 
-#ifndef BTC_ONLY
+#ifdef BTC_ONLY
 #include "gui_key_derivation_request_widgets.h"
-#else
 #include "gui_import_multisig_wallet_info_widgets.h"
+#endif
+
+#ifdef GENERAL_VERSION
 #include "gui_create_multisig_wallet_widgets.h"
 #endif
 
@@ -21,7 +23,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_BTC, (SetChainDataFunc)GuiSetPsbtUrData},
     {REMAPVIEW_BTC_MESSAGE, (SetChainDataFunc)GuiSetPsbtUrData},
 #ifndef BTC_ONLY
-#ifdef CYBERPUNK
+#ifdef CYBERPUNK_VERSION
     {REMAPVIEW_ZCASH, (SetChainDataFunc)GuiSetZcashUrData},
 #else
     {REMAPVIEW_ETH, (SetChainDataFunc)GuiSetEthUrData},

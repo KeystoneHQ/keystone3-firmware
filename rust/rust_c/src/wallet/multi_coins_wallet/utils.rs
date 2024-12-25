@@ -1,11 +1,11 @@
 use core::str::FromStr;
 
-use alloc::vec;
-use alloc::vec::Vec;
-use app_utils::normalize_path;
 use crate::common::errors::RustCError;
 use crate::common::structs::ExtendedPublicKey;
 use crate::common::utils::recover_c_char;
+use alloc::vec;
+use alloc::vec::Vec;
+use app_utils::normalize_path;
 use {
     bitcoin::bip32::{DerivationPath, Xpub},
     hex,

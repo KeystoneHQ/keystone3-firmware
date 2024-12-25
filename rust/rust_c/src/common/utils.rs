@@ -1,9 +1,9 @@
 use alloc::string::{String, ToString};
 use core::slice;
 
-use crate::extract_ptr_with_type;
 use super::ffi::CSliceFFI;
 use super::free::Free;
+use crate::extract_ptr_with_type;
 use cstr_core::{CStr, CString};
 use cty::c_char;
 

@@ -18,8 +18,13 @@ fn main() {
         "debug-btc-only",
     ];
     assert!(features.len() > 0, "No build variant enabled");
-    assert!(features.len() == 1, "Multiple build variants enabled: {:?}", features);
-    let output_target = env::var("CBINDGEN_BINDINGS_TARGET").unwrap_or(format!("bindings/{}/librust_c.h", features[0]));
+    assert!(
+        features.len() == 1,
+        "Multiple build variants enabled: {:?}",
+        features
+    );
+    let output_target = env::var("CBINDGEN_BINDINGS_TARGET")
+        .unwrap_or(format!("bindings/{}/librust_c.h", features[0]));
     config.parse.expand.features = Some(features.into_iter().map(|s| s.to_string()).collect());
 
     let builder = cbindgen::Builder::new();

@@ -1,8 +1,6 @@
 use core::str::FromStr;
 
-use alloc::{
-    string::{String, ToString},
-};
+use alloc::string::{String, ToString};
 use bitcoin::bip32::{ChildNumber, DerivationPath};
 use hex;
 use rand_chacha::rand_core::SeedableRng;

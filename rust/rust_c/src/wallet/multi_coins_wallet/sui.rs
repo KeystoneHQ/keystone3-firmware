@@ -1,13 +1,13 @@
-use alloc::collections::BTreeMap;
-use alloc::format;
-use app_wallets::sui::generate_sync_ur;
-use bitcoin::bip32::DerivationPath;
 use crate::common::errors::RustCError;
 use crate::common::ffi::CSliceFFI;
 use crate::common::structs::ExtendedPublicKey;
 use crate::common::types::PtrT;
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{recover_c_array, recover_c_char};
+use alloc::collections::BTreeMap;
+use alloc::format;
+use app_wallets::sui::generate_sync_ur;
+use bitcoin::bip32::DerivationPath;
 use core::slice;
 use core::str::FromStr;
 use hex;

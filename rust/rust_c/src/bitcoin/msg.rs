@@ -1,11 +1,4 @@
-use core::ptr::null_mut;
 use super::structs::DisplayBtcMsg;
-use alloc::{
-    slice,
-    string::{String, ToString},
-    vec::Vec,
-};
-use base64;
 use crate::common::{
     errors::RustCError,
     ffi::CSliceFFI,
@@ -16,6 +9,13 @@ use crate::common::{
     utils::{convert_c_char, recover_c_array, recover_c_char},
 };
 use crate::extract_ptr_with_type;
+use alloc::{
+    slice,
+    string::{String, ToString},
+    vec::Vec,
+};
+use base64;
+use core::ptr::null_mut;
 use keystore::algorithms::secp256k1;
 use ur_registry::bitcoin::btc_sign_request::{BtcSignRequest, DataType};
 use ur_registry::bitcoin::btc_signature::BtcSignature;

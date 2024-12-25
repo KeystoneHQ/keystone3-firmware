@@ -1,8 +1,8 @@
-use app_cardano;
-use app_cardano::address::AddressType;
 use crate::common::structs::SimpleResponse;
 use crate::common::types::PtrString;
 use crate::common::utils::{convert_c_char, recover_c_char};
+use app_cardano;
+use app_cardano::address::AddressType;
 use cty::c_char;
 
 #[no_mangle]

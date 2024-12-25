@@ -1,8 +1,8 @@
 use super::ffi::VecFFI;
-use crate::make_free_method;
 use super::structs::SimpleResponse;
 use super::types::{PtrString, PtrT};
 use super::ur::{UREncodeMultiResult, UREncodeResult, URParseMultiResult, URParseResult};
+use crate::make_free_method;
 use alloc::boxed::Box;
 use cty::{c_char, c_void};
 

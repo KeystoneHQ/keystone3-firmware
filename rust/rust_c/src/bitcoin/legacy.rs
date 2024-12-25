@@ -1,12 +1,12 @@
 use super::structs::DisplayTx;
-use alloc::boxed::Box;
-use alloc::slice;
 use crate::common::errors::RustCError;
 use crate::common::keystone;
 use crate::common::keystone::{build_parse_context, build_payload};
 use crate::common::structs::{TransactionCheckResult, TransactionParseResult};
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{QRCodeType, UREncodeResult};
+use alloc::boxed::Box;
+use alloc::slice;
 
 #[no_mangle]
 pub extern "C" fn utxo_parse_keystone(

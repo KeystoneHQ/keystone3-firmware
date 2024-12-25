@@ -1,7 +1,7 @@
-use app_wallets::xrp_toolkit::generate_sync_ur;
 use crate::common::types::PtrString;
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::recover_c_char;
+use app_wallets::xrp_toolkit::generate_sync_ur;
 use ur_registry::bytes::Bytes;
 use ur_registry::traits::RegistryItem;
 

@@ -127,7 +127,7 @@ pub extern "C" fn ton_sign_transaction(
 ) -> PtrT<UREncodeResult> {
     let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    let sk = match get_secret_key(&ton_tx, seed) {
+    let sk = match get_secret_key(ton_tx, seed) {
         Ok(_sk) => _sk,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
@@ -144,7 +144,7 @@ pub extern "C" fn ton_sign_transaction(
                 Ok(v) => UREncodeResult::encode(
                     v,
                     TonSignature::get_registry_type().get_type(),
-                    FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT,
                 )
                 .c_ptr(),
             }
@@ -161,7 +161,7 @@ pub extern "C" fn ton_sign_proof(
 ) -> PtrT<UREncodeResult> {
     let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    let sk = match get_secret_key(&ton_tx, seed) {
+    let sk = match get_secret_key(ton_tx, seed) {
         Ok(_sk) => _sk,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
@@ -178,7 +178,7 @@ pub extern "C" fn ton_sign_proof(
                 Ok(v) => UREncodeResult::encode(
                     v,
                     TonSignature::get_registry_type().get_type(),
-                    FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT,
                 )
                 .c_ptr(),
             }
@@ -190,17 +190,14 @@ pub extern "C" fn ton_sign_proof(
 #[no_mangle]
 pub extern "C" fn ton_verify_mnemonic(mnemonic: PtrString) -> bool {
     let mnemonic = recover_c_char(mnemonic);
-    let words: Vec<String> = mnemonic.split(" ").map(|v| v.to_lowercase()).collect();
-    match ton_mnemonic_validate(&words, &None) {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    let words: Vec<String> = mnemonic.split(' ').map(|v| v.to_lowercase()).collect();
+    ton_mnemonic_validate(&words, &None).is_ok()
 }
 
 #[no_mangle]
 pub extern "C" fn ton_mnemonic_to_entropy(mnemonic: PtrString) -> Ptr<VecFFI<u8>> {
     let mnemonic = recover_c_char(mnemonic);
-    let words: Vec<String> = mnemonic.split(" ").map(|v| v.to_lowercase()).collect();
+    let words: Vec<String> = mnemonic.split(' ').map(|v| v.to_lowercase()).collect();
     let entropy = app_ton::mnemonic::ton_mnemonic_to_entropy(&words, &None);
     VecFFI::from(entropy).c_ptr()
 }
@@ -218,7 +215,7 @@ pub extern "C" fn ton_entropy_to_seed(
 #[no_mangle]
 pub extern "C" fn ton_mnemonic_to_seed(mnemonic: PtrString) -> *mut SimpleResponse<u8> {
     let mnemonic = recover_c_char(mnemonic);
-    let words: Vec<String> = mnemonic.split(" ").map(|v| v.to_lowercase()).collect();
+    let words: Vec<String> = mnemonic.split(' ').map(|v| v.to_lowercase()).collect();
     let seed = app_ton::mnemonic::ton_mnemonic_to_master_seed(words, None);
     match seed {
         Ok(seed) => {
@@ -239,9 +236,7 @@ pub extern "C" fn ton_seed_to_publickey(
             let public_key = app_ton::mnemonic::ton_master_seed_to_public_key(_seed);
             SimpleResponse::success(convert_c_char(hex::encode(public_key))).simple_c_ptr()
         }
-        Err(_e) => SimpleResponse::from(crate::common::errors::RustCError::InvalidData(format!(
-            "seed length should be 64"
-        )))
+        Err(_e) => SimpleResponse::from(crate::common::errors::RustCError::InvalidData("seed length should be 64".to_string()))
         .simple_c_ptr(),
     }
 }

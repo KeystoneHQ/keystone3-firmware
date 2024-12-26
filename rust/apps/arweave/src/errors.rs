@@ -27,8 +27,8 @@ pub type Result<T> = core::result::Result<T, ArweaveError>;
 impl From<KeystoreError> for ArweaveError {
     fn from(value: KeystoreError) -> Self {
         match value {
-            KeystoreError::DerivePubKey(data) => Self::KeystoreError(format!("{}", data)),
-            KeystoreError::InvalidDerivationPath(data) => Self::KeystoreError(format!("{}", data)),
+            KeystoreError::DerivePubKey(data) => Self::KeystoreError(data.to_string()),
+            KeystoreError::InvalidDerivationPath(data) => Self::KeystoreError(data.to_string()),
             KeystoreError::XPubError(data) => Self::KeystoreError(data),
             KeystoreError::SeedError(data) => Self::KeystoreError(data),
             KeystoreError::DerivationError(data) => Self::KeystoreError(data),

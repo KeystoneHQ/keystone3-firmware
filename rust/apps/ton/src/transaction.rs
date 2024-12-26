@@ -97,10 +97,10 @@ mod tests {
             sk[i] = master_seed[i]
         }
         let signature = super::sign_transaction(&serial, sk).unwrap();
-        println!("{}", hex::encode(&signature));
+        println!("{}", hex::encode(signature));
         println!(
             "tonkeeper://publish?boc={}",
-            urlencoding::encode(&STANDARD.encode(&signature))
+            urlencoding::encode(&STANDARD.encode(signature))
         );
     }
 

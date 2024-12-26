@@ -40,12 +40,10 @@ pub fn generate_crypto_multi_accounts(
 ) -> URResult<CryptoMultiAccounts> {
     let device_id = get_device_id(serial_number);
     let mut keys = vec![];
-    let k1_keys = vec![
-        BTC_LEGACY_PREFIX.to_string(),
+    let k1_keys = [BTC_LEGACY_PREFIX.to_string(),
         BTC_SEGWIT_PREFIX.to_string(),
         BTC_NATIVE_SEGWIT_PREFIX.to_string(),
-        BTC_TAPROOT_PREFIX.to_string(),
-    ];
+        BTC_TAPROOT_PREFIX.to_string()];
     for ele in extended_public_keys {
         match ele.get_path() {
             _path if k1_keys.contains(&_path.to_string().to_lowercase()) => {
@@ -93,7 +91,7 @@ pub fn generate_crypto_multi_accounts(
             _ => {
                 return Err(URError::UrEncodeError(format!(
                     "Unknown key path: {}",
-                    ele.path.to_string()
+                    ele.path
                 )))
             }
         }
@@ -120,8 +118,8 @@ fn generate_k1_normal_key(
     let key_path = CryptoKeyPath::new(
         path.into_iter()
             .map(|v| match v {
-                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
-                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+                ChildNumber::Normal { index } => get_path_component(Some(*index), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(*index), true),
             })
             .collect::<URResult<Vec<PathComponent>>>()?,
         Some(mfp),
@@ -174,8 +172,8 @@ fn generate_eth_ledger_live_key(
         target_path
             .into_iter()
             .map(|v| match v {
-                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
-                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+                ChildNumber::Normal { index } => get_path_component(Some(*index), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(*index), true),
             })
             .collect::<URResult<Vec<PathComponent>>>()?,
         Some(mfp),
@@ -199,8 +197,8 @@ fn generate_ton_key(mfp: [u8; 4], key: ExtendedPublicKey) -> URResult<CryptoHDKe
         key.path
             .into_iter()
             .map(|v| match v {
-                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
-                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+                ChildNumber::Normal { index } => get_path_component(Some(*index), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(*index), true),
             })
             .collect::<URResult<Vec<PathComponent>>>()?,
         Some(mfp),
@@ -357,18 +355,18 @@ mod tests {
             mfp,
             "31206",
             vec![
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_1_path).unwrap(), x_pub_1),
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_2_path).unwrap(), x_pub_2),
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_3_path).unwrap(), x_pub_3),
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_4_path).unwrap(), x_pub_4),
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_5_path).unwrap(), x_pub_5),
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_6_path).unwrap(), x_pub_6),
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_7_path).unwrap(), x_pub_7),
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_8_path).unwrap(), x_pub_8),
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_9_path).unwrap(), x_pub_9),
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_10_path).unwrap(), x_pub_10),
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_11_path).unwrap(), x_pub_11),
-                ExtendedPublicKey::new(DerivationPath::from_str(&x_pub_12_path).unwrap(), x_pub_12),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_1_path).unwrap(), x_pub_1),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_2_path).unwrap(), x_pub_2),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_3_path).unwrap(), x_pub_3),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_4_path).unwrap(), x_pub_4),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_5_path).unwrap(), x_pub_5),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_6_path).unwrap(), x_pub_6),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_7_path).unwrap(), x_pub_7),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_8_path).unwrap(), x_pub_8),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_9_path).unwrap(), x_pub_9),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_10_path).unwrap(), x_pub_10),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_11_path).unwrap(), x_pub_11),
+                ExtendedPublicKey::new(DerivationPath::from_str(x_pub_12_path).unwrap(), x_pub_12),
             ],
             DEVICE_TYPE,
             "1.1.0",

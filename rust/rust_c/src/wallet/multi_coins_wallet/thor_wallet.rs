@@ -37,12 +37,12 @@ pub extern "C" fn get_connect_thor_wallet_ur(
         let serial_number = recover_c_char(serial_number);
         let device_type = recover_c_char(device_type);
         let device_version = recover_c_char(device_version);
-        let key1 = keys.get(0);
+        let key1 = keys.first();
         let key2 = keys.get(1);
         let key3 = keys.get(2);
         let key4 = keys.get(3);
         let key5 = keys.get(4);
-        return if let (Some(_k1), Some(_k2), Some(_k3), Some(_k4), Some(_k5)) =
+        if let (Some(_k1), Some(_k2), Some(_k3), Some(_k4), Some(_k5)) =
             (key1, key2, key3, key4, key5)
         {
             let mfp = match <&[u8; 4]>::try_from(mfp) {
@@ -65,7 +65,7 @@ pub extern "C" fn get_connect_thor_wallet_ur(
                     Ok(data) => UREncodeResult::encode(
                         data,
                         CryptoMultiAccounts::get_registry_type().get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr(),
                     Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -73,7 +73,7 @@ pub extern "C" fn get_connect_thor_wallet_ur(
                 Err(e) => UREncodeResult::from(e).c_ptr(),
             }
         } else {
-            UREncodeResult::from(URError::UrEncodeError(format!("getting key error"))).c_ptr()
-        };
+            UREncodeResult::from(URError::UrEncodeError("getting key error".to_string())).c_ptr()
+        }
     }
 }

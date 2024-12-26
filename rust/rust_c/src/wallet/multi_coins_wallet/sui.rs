@@ -32,7 +32,7 @@ pub extern "C" fn get_connect_sui_wallet_ur(
         let mfp = slice::from_raw_parts(master_fingerprint, length as usize);
         let public_keys = recover_c_array(public_keys);
         let master_fingerprint =
-            bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
+            bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
                 .map_err(|_e| RustCError::InvalidMasterFingerprint);
         match master_fingerprint {
             Ok(fp) => {
@@ -55,7 +55,7 @@ pub extern "C" fn get_connect_sui_wallet_ur(
                         Ok(data) => UREncodeResult::encode(
                             data,
                             CryptoMultiAccounts::get_registry_type().get_type(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
                         )
                         .c_ptr(),
                         Err(e) => UREncodeResult::from(e).c_ptr(),

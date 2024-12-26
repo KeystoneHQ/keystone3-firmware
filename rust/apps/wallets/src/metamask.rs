@@ -47,7 +47,7 @@ pub fn generate_standard_legacy_hd_key(
             get_path_component(Some(ETH_COIN_TYPE), true)?,
             get_path_component(Some(0), true)?,
         ],
-        Some(master_fingerprint.clone()),
+        Some(*master_fingerprint),
         Some(bip32_extended_pub_key.depth as u32),
     );
 
@@ -92,7 +92,7 @@ pub fn generate_ledger_live_account(
         let output = generate_ledger_live_crypto_output(master_fingerprint, x.as_str(), i as u32)?;
         outputs.push(output);
     }
-    Ok(CryptoAccount::new(master_fingerprint.clone(), outputs))
+    Ok(CryptoAccount::new(*master_fingerprint, outputs))
 }
 
 fn generate_ledger_live_crypto_output(
@@ -128,7 +128,7 @@ pub fn generate_ledger_live_hd_key(
             get_path_component(Some(0), false)?,
             get_path_component(Some(0), false)?,
         ],
-        Some(master_fingerprint.clone()),
+        Some(*master_fingerprint),
         Some(bip32_extended_pub_key.depth as u32),
     );
 
@@ -148,7 +148,7 @@ pub fn generate_ledger_live_hd_key(
 }
 
 fn get_path_component(index: Option<u32>, hardened: bool) -> URResult<PathComponent> {
-    PathComponent::new(index, hardened).map_err(|e| URError::CborEncodeError(e))
+    PathComponent::new(index, hardened).map_err(URError::CborEncodeError)
 }
 
 #[cfg(test)]

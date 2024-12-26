@@ -34,19 +34,19 @@ pub extern "C" fn get_connect_arconnect_wallet_ur(
         unsafe { slice::from_raw_parts(master_fingerprint, master_fingerprint_length as usize) };
     let p = unsafe { slice::from_raw_parts(p, p_len as usize) };
     let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
-    let public_key = generate_public_key_from_primes(&p, &q).unwrap();
+    let public_key = generate_public_key_from_primes(p, q).unwrap();
     let device = Option::None;
     let arweave_account = ArweaveCryptoAccount::new(
         vec_to_array(mfp.to_vec()).unwrap(),
         public_key.to_vec(),
         device,
     );
-    return UREncodeResult::encode(
+    UREncodeResult::encode(
         arweave_account.to_bytes().unwrap(),
         ArweaveCryptoAccount::get_registry_type().get_type(),
         FRAGMENT_MAX_LENGTH_DEFAULT,
     )
-    .c_ptr();
+    .c_ptr()
 }
 
 #[no_mangle]
@@ -64,12 +64,12 @@ pub extern "C" fn get_connect_arconnect_wallet_ur_from_xpub(
         hex::decode(xpub).unwrap(),
         device,
     );
-    return UREncodeResult::encode(
+    UREncodeResult::encode(
         arweave_account.to_bytes().unwrap(),
         ArweaveCryptoAccount::get_registry_type().get_type(),
         FRAGMENT_MAX_LENGTH_DEFAULT,
     )
-    .c_ptr();
+    .c_ptr()
 }
 
 #[cfg(test)]

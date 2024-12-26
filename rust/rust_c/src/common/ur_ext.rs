@@ -232,7 +232,7 @@ impl InferViewType for Bytes {
             Ok(_v) => {
                 if let Some(_type) = _v.pointer("/data/type") {
                     let contract_name: String = from_value(_type.clone()).map_err(|e| {
-                        URError::UrDecodeError(format!("invalid data, {}", e.to_string()))
+                        URError::UrDecodeError(format!("invalid data, {}", e))
                     })?;
                     if contract_name.eq("webAuth") {
                         return Ok(ViewType::WebAuthResult);

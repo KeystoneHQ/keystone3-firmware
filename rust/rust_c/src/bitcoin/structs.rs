@@ -203,11 +203,11 @@ impl From<ParsedInput> for DisplayTxDetailInput {
             has_address: value.address.is_some(),
             address: value
                 .address
-                .map(|v| convert_c_char(v))
+                .map(convert_c_char)
                 .unwrap_or(null_mut()),
             amount: convert_c_char(value.amount),
             is_mine: value.path.is_some(),
-            path: value.path.map(|v| convert_c_char(v)).unwrap_or(null_mut()),
+            path: value.path.map(convert_c_char).unwrap_or(null_mut()),
             is_external: value.is_external,
         }
     }
@@ -219,7 +219,7 @@ impl From<ParsedOutput> for DisplayTxDetailOutput {
             address: convert_c_char(value.address),
             amount: convert_c_char(value.amount),
             is_mine: value.path.is_some(),
-            path: value.path.map(|v| convert_c_char(v)).unwrap_or(null_mut()),
+            path: value.path.map(convert_c_char).unwrap_or(null_mut()),
             is_external: value.is_external,
         }
     }

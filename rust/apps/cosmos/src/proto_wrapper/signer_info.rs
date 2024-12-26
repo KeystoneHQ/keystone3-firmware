@@ -77,7 +77,7 @@ impl TryFrom<&Any> for PublicKey {
                     .map_err(|err| {
                         CosmosError::ParseTxError(format!(
                             "proto ed25519::PubKey deserialize failed {}",
-                            err.to_string()
+                            err
                         ))
                     })?;
                 Ok(PublicKey {
@@ -90,7 +90,7 @@ impl TryFrom<&Any> for PublicKey {
                     Message::decode(&*any.value).map_err(|err| {
                         CosmosError::ParseTxError(format!(
                             "proto secp256k1::PubKey deserialize failed {}",
-                            err.to_string()
+                            err
                         ))
                     })?;
                 Ok(PublicKey {
@@ -100,7 +100,7 @@ impl TryFrom<&Any> for PublicKey {
             }
             other => Err(CosmosError::ParseTxError(format!(
                 "{} is not supported!!!",
-                other.to_string()
+                other
             ))),
         }
     }

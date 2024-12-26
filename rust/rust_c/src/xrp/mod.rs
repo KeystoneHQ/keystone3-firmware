@@ -8,7 +8,7 @@ use app_xrp::errors::XRPError;
 use bitcoin::bip32::{DerivationPath, Xpub};
 use bitcoin::secp256k1;
 use cty::c_char;
-use hex;
+
 use serde_json::Value;
 use ur_registry::bytes::Bytes;
 use ur_registry::pb;
@@ -104,7 +104,7 @@ pub extern "C" fn xrp_sign_tx_bytes(
     let xpub = Xpub::from_str(&root_xpub).unwrap();
     let k1 = secp256k1::Secp256k1::new();
     // M/44'/144'/0'/0/0 -> 0/0
-    let split_hd_path: Vec<&str> = hd_path.split("/").collect();
+    let split_hd_path: Vec<&str> = hd_path.split('/').collect();
     let derive_hd_path = format!("{}/{}", split_hd_path[4], split_hd_path[5]);
     let five_level_xpub = xpub
         .derive_pub(
@@ -144,8 +144,8 @@ pub extern "C" fn xrp_sign_tx_bytes(
     // generate a qr code
     let sign_tx_result = ur_registry::pb::protoc::SignTransactionResult {
         sign_id: sign_tx.sign_id,
-        tx_id: format!("{}", tx_hash.to_uppercase()),
-        raw_tx: format!("{}", raw_tx_hex.clone()),
+        tx_id: tx_hash.to_uppercase().to_string(),
+        raw_tx: raw_tx_hex.clone().to_string(),
     };
     let content = ur_registry::pb::protoc::payload::Content::SignTxResult(sign_tx_result);
     let payload = ur_registry::pb::protoc::Payload {
@@ -168,7 +168,7 @@ pub extern "C" fn xrp_sign_tx_bytes(
     UREncodeResult::encode(
         ur_registry::bytes::Bytes::new(zip_data).try_into().unwrap(),
         ur_registry::bytes::Bytes::get_registry_type().get_type(),
-        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+        FRAGMENT_MAX_LENGTH_DEFAULT,
     )
     .c_ptr()
 }
@@ -187,7 +187,7 @@ pub extern "C" fn xrp_sign_tx(
             Ok(data) => UREncodeResult::encode(
                 data,
                 Bytes::get_registry_type().get_type(),
-                FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                FRAGMENT_MAX_LENGTH_DEFAULT,
             )
             .c_ptr(),
             Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -219,10 +219,7 @@ pub extern "C" fn xrp_check_tx(
 pub extern "C" fn is_keystone_xrp_tx(ur_data_ptr: PtrUR) -> bool {
     // if data can be parsed by protobuf, it is a keyston hot app version2 tx or it is a xrp tx
     let payload = build_payload(ur_data_ptr, QRCodeType::Bytes);
-    match payload {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    payload.is_ok()
 }
 
 #[no_mangle]
@@ -244,9 +241,9 @@ pub extern "C" fn xrp_check_tx_bytes(
             let xfp = payload.xfp;
             let xfp_vec: [u8; 4] = hex::decode(xfp).unwrap().try_into().unwrap();
             if mfp == xfp_vec {
-                return TransactionCheckResult::error(ErrorCodes::Success, "".to_string()).c_ptr();
+                TransactionCheckResult::error(ErrorCodes::Success, "".to_string()).c_ptr()
             } else {
-                return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+                TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr()
             }
         }
         Err(e) => TransactionCheckResult::from(KeystoneError::ProtobufError(e.to_string())).c_ptr(),

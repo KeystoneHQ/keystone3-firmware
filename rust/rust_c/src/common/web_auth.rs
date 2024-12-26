@@ -44,21 +44,21 @@ pub extern "C" fn calculate_auth_code(
                             match _calculate_auth_code(&_value, rsa_key_n, rsa_key_d) {
                                 Ok(_result) => Ok(_result),
                                 Err(_err) => {
-                                    Err(RustCError::WebAuthFailed(format!("{}", _err.to_string())))
+                                    Err(RustCError::WebAuthFailed(format!("{}", _err)))
                                 }
                             }
                         },
                         Err(_err) => {
-                            Err(RustCError::WebAuthFailed(format!("{}", _err.to_string())))
+                            Err(RustCError::WebAuthFailed(format!("{}", _err)))
                         }
                     },
-                    Err(_err) => Err(RustCError::WebAuthFailed(format!("{}", _err.to_string()))),
+                    Err(_err) => Err(RustCError::WebAuthFailed(format!("{}", _err))),
                 }
             } else {
-                Err(RustCError::WebAuthFailed(format!("invalid json")))
+                Err(RustCError::WebAuthFailed("invalid json".to_string()))
             }
         }
-        Err(_err) => Err(RustCError::WebAuthFailed(format!("{}", _err.to_string()))),
+        Err(_err) => Err(RustCError::WebAuthFailed(format!("{}", _err))),
     };
     match result {
         Ok(_value) => convert_c_char(_value),
@@ -91,26 +91,26 @@ fn _calculate_auth_code(
                 d,
                 vec![dummy_p, dummy_q],
             ) {
-                Ok(_key) => match _key.decrypt(rsa::Oaep::new::<Sha1>(), &encrypted_data) {
+                Ok(_key) => match _key.decrypt(rsa::Oaep::new::<Sha1>(), encrypted_data) {
                     Ok(_value) => String::from_utf8(_value.clone()).map_err(|_err| {
                         RustCError::WebAuthFailed(format!(
                             "Invalid utf8 hex: {}, {}",
                             hex::encode(_value),
-                            _err.to_string()
+                            _err
                         ))
                     }),
                     Err(_err) => Err(RustCError::WebAuthFailed(format!(
                         "RSA decryption failed: {}",
-                        _err.to_string()
+                        _err
                     ))),
                 },
                 Err(_err) => Err(RustCError::WebAuthFailed(format!(
                     "RSA key recovery error: {}",
-                    _err.to_string()
+                    _err
                 ))),
             }
         },
-        _ => Err(RustCError::WebAuthFailed(format!("k1 verify failed"))),
+        _ => Err(RustCError::WebAuthFailed("k1 verify failed".to_string())),
     }
 }
 

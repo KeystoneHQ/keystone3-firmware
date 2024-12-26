@@ -31,18 +31,18 @@ impl From<&TonTransaction> for DisplayTonTransaction {
             comment: tx
                 .comment
                 .clone()
-                .map(|v| convert_c_char(v))
+                .map(convert_c_char)
                 .unwrap_or(null_mut()),
             data_view: tx
                 .data_view
                 .clone()
-                .map(|v| convert_c_char(v))
+                .map(convert_c_char)
                 .unwrap_or(null_mut()),
             raw_data: convert_c_char(tx.raw_data.clone()),
             contract_data: tx
                 .contract_data
                 .clone()
-                .map(|e| convert_c_char(e))
+                .map(convert_c_char)
                 .unwrap_or(null_mut()),
         }
     }

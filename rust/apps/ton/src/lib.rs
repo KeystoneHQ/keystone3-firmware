@@ -31,7 +31,7 @@ pub fn ton_public_key_to_address(pk: Vec<u8>) -> Result<String> {
 pub fn ton_compare_address_and_public_key(pk: Vec<u8>, address: String) -> bool {
     match TonWallet::derive_default(vendor::wallet::WalletVersion::V4R2, pk) {
         Ok(wallet) => match TonAddress::from_str(&address) {
-            Ok(address) => return wallet.address.eq(&address),
+            Ok(address) => wallet.address.eq(&address),
             Err(_e) => false,
         },
         Err(_e) => false,
@@ -40,7 +40,7 @@ pub fn ton_compare_address_and_public_key(pk: Vec<u8>, address: String) -> bool 
 
 #[cfg(test)]
 mod tests {
-    use hex;
+    
 
     #[test]
     fn test_generate_address() {

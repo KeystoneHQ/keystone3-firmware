@@ -57,7 +57,7 @@ macro_rules! free_ptr_with_type {
     ($x: expr, $name: ident) => {
         if (!$x.is_null()) {
             unsafe {
-                let x = crate::extract_ptr_with_type!($x, $name);
+                let x = $crate::extract_ptr_with_type!($x, $name);
                 let _b = alloc::boxed::Box::from_raw(x);
                 // drop(b);
             }

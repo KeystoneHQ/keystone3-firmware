@@ -95,7 +95,7 @@ pub extern "C" fn near_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> Ptr
                         UREncodeResult::encode(
                             data,
                             NearSignature::get_registry_type().get_type(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
                         )
                         .c_ptr()
                     },

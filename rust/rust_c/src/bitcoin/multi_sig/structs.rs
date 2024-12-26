@@ -18,18 +18,18 @@ pub enum NetworkType {
     TestNet,
 }
 
-impl Into<Network> for NetworkType {
-    fn into(self) -> Network {
-        match self {
+impl From<NetworkType> for Network {
+    fn from(val: NetworkType) -> Self {
+        match val {
             NetworkType::MainNet => Network::MainNet,
             NetworkType::TestNet => Network::TestNet,
         }
     }
 }
 
-impl Into<Network> for &NetworkType {
-    fn into(self) -> Network {
-        match self {
+impl From<&NetworkType> for Network {
+    fn from(val: &NetworkType) -> Self {
+        match val {
             NetworkType::MainNet => Network::MainNet,
             NetworkType::TestNet => Network::TestNet,
         }
@@ -46,9 +46,9 @@ pub enum MultiSigFormatType {
     P2wshTest,
 }
 
-impl Into<MultiSigType> for MultiSigFormatType {
-    fn into(self) -> MultiSigType {
-        match self {
+impl From<MultiSigFormatType> for MultiSigType {
+    fn from(val: MultiSigFormatType) -> Self {
+        match val {
             MultiSigFormatType::P2sh => MultiSigType::P2sh,
             MultiSigFormatType::P2wshP2sh => MultiSigType::P2wshP2sh,
             MultiSigFormatType::P2wsh => MultiSigType::P2wsh,
@@ -59,9 +59,9 @@ impl Into<MultiSigType> for MultiSigFormatType {
     }
 }
 
-impl Into<MultiSigType> for &MultiSigFormatType {
-    fn into(self) -> MultiSigType {
-        match self {
+impl From<&MultiSigFormatType> for MultiSigType {
+    fn from(val: &MultiSigFormatType) -> Self {
+        match val {
             MultiSigFormatType::P2sh => MultiSigType::P2sh,
             MultiSigFormatType::P2wshP2sh => MultiSigType::P2wshP2sh,
             MultiSigFormatType::P2wsh => MultiSigType::P2wsh,
@@ -72,9 +72,9 @@ impl Into<MultiSigType> for &MultiSigFormatType {
     }
 }
 
-impl Into<MultiSigFormat> for MultiSigFormatType {
-    fn into(self) -> MultiSigFormat {
-        match self {
+impl From<MultiSigFormatType> for MultiSigFormat {
+    fn from(val: MultiSigFormatType) -> Self {
+        match val {
             MultiSigFormatType::P2sh => MultiSigFormat::P2sh,
             MultiSigFormatType::P2wshP2sh => MultiSigFormat::P2wshP2sh,
             MultiSigFormatType::P2wsh => MultiSigFormat::P2wsh,
@@ -85,9 +85,9 @@ impl Into<MultiSigFormat> for MultiSigFormatType {
     }
 }
 
-impl Into<MultiSigFormat> for &MultiSigFormatType {
-    fn into(self) -> MultiSigFormat {
-        match self {
+impl From<&MultiSigFormatType> for MultiSigFormat {
+    fn from(val: &MultiSigFormatType) -> Self {
+        match val {
             MultiSigFormatType::P2sh => MultiSigFormat::P2sh,
             MultiSigFormatType::P2wshP2sh => MultiSigFormat::P2wshP2sh,
             MultiSigFormatType::P2wsh => MultiSigFormat::P2wsh,
@@ -115,12 +115,12 @@ impl From<MultiSigXPubInfo> for MultiSigXPubInfoItem {
     }
 }
 
-impl Into<MultiSigXPubInfo> for &MultiSigXPubInfoItem {
-    fn into(self) -> MultiSigXPubInfo {
+impl From<&MultiSigXPubInfoItem> for MultiSigXPubInfo {
+    fn from(val: &MultiSigXPubInfoItem) -> Self {
         MultiSigXPubInfo {
-            path: recover_c_char(self.path),
-            xfp: recover_c_char(self.xfp),
-            xpub: recover_c_char(self.xpub),
+            path: recover_c_char(val.path),
+            xfp: recover_c_char(val.xfp),
+            xpub: recover_c_char(val.xpub),
         }
     }
 }
@@ -135,13 +135,13 @@ impl From<BsmsWallet> for MultiSigXPubInfoItem {
     }
 }
 
-impl Into<BsmsWallet> for &MultiSigXPubInfoItem {
-    fn into(self) -> BsmsWallet {
+impl From<&MultiSigXPubInfoItem> for BsmsWallet {
+    fn from(val: &MultiSigXPubInfoItem) -> Self {
         BsmsWallet {
             bsms_version: "BSMS 1.0".to_string(),
-            derivation_path: recover_c_char(self.path),
-            xfp: recover_c_char(self.xfp),
-            extended_pubkey: recover_c_char(self.xpub),
+            derivation_path: recover_c_char(val.path),
+            xfp: recover_c_char(val.xfp),
+            extended_pubkey: recover_c_char(val.xpub),
         }
     }
 }
@@ -172,11 +172,11 @@ impl From<&app_bitcoin::multi_sig::wallet::MultiSigXPubItem> for MultiSigXPubIte
     }
 }
 
-impl Into<app_bitcoin::multi_sig::wallet::MultiSigXPubItem> for &MultiSigXPubItem {
-    fn into(self) -> app_bitcoin::multi_sig::wallet::MultiSigXPubItem {
+impl From<&MultiSigXPubItem> for app_bitcoin::multi_sig::wallet::MultiSigXPubItem {
+    fn from(val: &MultiSigXPubItem) -> Self {
         app_bitcoin::multi_sig::wallet::MultiSigXPubItem {
-            xfp: recover_c_char(self.xfp),
-            xpub: recover_c_char(self.xpub),
+            xfp: recover_c_char(val.xfp),
+            xpub: recover_c_char(val.xpub),
         }
     }
 }
@@ -228,7 +228,7 @@ impl From<MultiSigWalletConfig> for MultiSigWallet {
                     .xpub_items
                     .clone()
                     .iter()
-                    .map(|v| MultiSigXPubItem::from(v))
+                    .map(MultiSigXPubItem::from)
                     .collect::<Vec<MultiSigXPubItem>>(),
             )
             .c_ptr(),
@@ -239,18 +239,18 @@ impl From<MultiSigWalletConfig> for MultiSigWallet {
     }
 }
 
-impl Into<MultiSigWalletConfig> for &mut MultiSigWallet {
-    fn into(self) -> MultiSigWalletConfig {
+impl From<&mut MultiSigWallet> for MultiSigWalletConfig {
+    fn from(val: &mut MultiSigWallet) -> Self {
         MultiSigWalletConfig {
-            creator: recover_c_char(self.creator),
-            name: recover_c_char(self.name),
-            threshold: self.threshold,
-            total: self.total,
+            creator: recover_c_char(val.creator),
+            name: recover_c_char(val.name),
+            threshold: val.threshold,
+            total: val.total,
             derivations: {
                 let rebuilt = unsafe {
-                    let ptr = (*self.derivations).data;
-                    let size = (*self.derivations).size;
-                    let cap = (*self.derivations).cap;
+                    let ptr = (*val.derivations).data;
+                    let size = (*val.derivations).size;
+                    let cap = (*val.derivations).cap;
 
                     let ptr = ptr as PtrT<PtrString>;
                     Vec::from_raw_parts(ptr, size, cap)
@@ -261,22 +261,22 @@ impl Into<MultiSigWalletConfig> for &mut MultiSigWallet {
                     .map(|v| recover_c_char(*v))
                     .collect::<Vec<_>>()
             },
-            format: recover_c_char(self.format),
+            format: recover_c_char(val.format),
 
             xpub_items: {
                 let rebuilt = unsafe {
-                    let ptr = (*self.derivations).data;
-                    let size = (*self.derivations).size;
-                    let cap = (*self.derivations).cap;
+                    let ptr = (*val.derivations).data;
+                    let size = (*val.derivations).size;
+                    let cap = (*val.derivations).cap;
 
                     let ptr = ptr as PtrT<MultiSigXPubItem>;
                     Vec::from_raw_parts(ptr, size, cap)
                 };
                 rebuilt.iter().map(|v| v.into()).collect::<Vec<_>>()
             },
-            verify_code: recover_c_char(self.verify_code),
-            config_text: recover_c_char(self.config_text),
-            network: if self.network == 0 {
+            verify_code: recover_c_char(val.verify_code),
+            config_text: recover_c_char(val.config_text),
+            network: if val.network == 0 {
                 Network::MainNet
             } else {
                 Network::TestNet

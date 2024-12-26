@@ -8,14 +8,14 @@ pub use paste;
 
 use alloc::format;
 use alloc::string::String;
-use unicode_blocks;
+
 
 pub fn normalize_path(path: &String) -> String {
     let mut p = path.to_lowercase();
     if !p.starts_with("m/") {
         p = format!("{}{}", "m/", p);
     }
-    if !p.starts_with("m") {
+    if !p.starts_with('m') {
         p = format!("{}{}", "m", p);
     }
     p
@@ -27,7 +27,7 @@ pub fn is_cjk(utf8_string: &str) -> bool {
             return true;
         }
     }
-    return false;
+    false
 }
 
 #[cfg(test)]
@@ -50,18 +50,18 @@ mod tests {
     fn test_is_cjk() {
         let utf8_string = "你好";
         let result = is_cjk(utf8_string);
-        assert_eq!(result, true);
+        assert!(result);
 
         let utf8_string = "hello";
         let result = is_cjk(utf8_string);
-        assert_eq!(result, false);
+        assert!(!result);
 
         let utf8_string = "こんにちは";
         let result = is_cjk(utf8_string);
-        assert_eq!(result, true);
+        assert!(result);
 
         let utf8_string = "안녕하세요";
         let result = is_cjk(utf8_string);
-        assert_eq!(result, true);
+        assert!(result);
     }
 }

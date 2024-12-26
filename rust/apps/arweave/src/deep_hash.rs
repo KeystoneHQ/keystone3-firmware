@@ -23,9 +23,7 @@ pub fn hash_sha384(message: &[u8]) -> Result<[u8; 48], ArweaveError> {
 pub fn hash_all_sha384(messages: Vec<&[u8]>) -> Result<[u8; 48], ArweaveError> {
     let hash: Vec<u8> = messages
         .into_iter()
-        .map(|m| hash_sha384(m).unwrap())
-        .into_iter()
-        .flatten()
+        .flat_map(|m| hash_sha384(m).unwrap())
         .collect();
     let hash = hash_sha384(&hash)?;
     Ok(hash)

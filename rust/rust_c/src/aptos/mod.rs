@@ -8,11 +8,11 @@ use alloc::format;
 use alloc::slice;
 use alloc::string::ToString;
 use alloc::vec::Vec;
-use app_aptos;
+
 use app_aptos::errors::AptosError;
 use app_aptos::parser::is_tx;
 use cty::c_char;
-use hex;
+
 use hex::FromHex;
 use structs::DisplayAptosTx;
 use ur_registry::aptos::aptos_sign_request::{AptosSignRequest, SignType};
@@ -132,7 +132,7 @@ pub extern "C" fn aptos_sign_tx(
                         UREncodeResult::encode(
                             data,
                             AptosSignature::get_registry_type().get_type(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
                         )
                         .c_ptr()
                     },
@@ -148,7 +148,7 @@ pub extern "C" fn aptos_get_path(ptr: PtrUR) -> PtrString {
     if let Some(path) = derivation_path.get_path() {
         return convert_c_char(path);
     }
-    return convert_c_char("".to_string());
+    convert_c_char("".to_string())
 }
 
 #[no_mangle]

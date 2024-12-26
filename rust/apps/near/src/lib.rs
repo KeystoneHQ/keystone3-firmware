@@ -34,7 +34,7 @@ pub fn parse(data: &Vec<u8>) -> Result<parser::structs::ParsedNearTx> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hex;
+    
     use hex::ToHex;
     use ur_registry::near::near_sign_request::NearSignRequest;
     #[test]

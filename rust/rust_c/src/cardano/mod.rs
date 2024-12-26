@@ -14,7 +14,7 @@ use bitcoin::bip32::DerivationPath;
 use core::str::FromStr;
 use cty::c_char;
 use ed25519_bip32_core::XPrv;
-use hex;
+
 use structs::DisplayCardanoSignTxHash;
 
 use ur_registry::cardano::cardano_catalyst_signature::CardanoCatalystSignature;
@@ -109,7 +109,7 @@ pub extern "C" fn cardano_get_catalyst_root_index(ptr: PtrUR) -> Ptr<SimpleRespo
             let index = _data.get_index().unwrap();
             SimpleResponse::success(convert_c_char(index.to_string())).simple_c_ptr()
         }
-        None => SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid path")))
+        None => SimpleResponse::from(CardanoError::InvalidTransaction("invalid path".to_string()))
             .simple_c_ptr(),
     }
 }
@@ -123,7 +123,7 @@ pub extern "C" fn cardano_get_sign_data_root_index(ptr: PtrUR) -> Ptr<SimpleResp
             let index = _data.get_index().unwrap();
             SimpleResponse::success(convert_c_char(index.to_string())).simple_c_ptr()
         }
-        None => SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid path")))
+        None => SimpleResponse::from(CardanoError::InvalidTransaction("invalid path".to_string()))
             .simple_c_ptr(),
     }
 }
@@ -187,7 +187,7 @@ pub extern "C" fn cardano_check_tx(
     let cardano_sign_reqeust = extract_ptr_with_type!(ptr, CardanoSignRequest);
     let tx_hex = cardano_sign_reqeust.get_sign_data();
     let parse_context =
-        prepare_parse_context(&cardano_sign_reqeust, master_fingerprint, cardano_xpub);
+        prepare_parse_context(cardano_sign_reqeust, master_fingerprint, cardano_xpub);
     match parse_context {
         Ok(parse_context) => match app_cardano::transaction::check_tx(tx_hex, parse_context) {
             Ok(_) => TransactionCheckResult::new().c_ptr(),
@@ -237,7 +237,7 @@ pub extern "C" fn cardano_parse_sign_tx_hash(
 #[no_mangle]
 pub extern "C" fn cardano_get_path(ptr: PtrUR) -> Ptr<SimpleResponse<c_char>> {
     let cardano_sign_reqeust = extract_ptr_with_type!(ptr, CardanoSignRequest);
-    match cardano_sign_reqeust.get_cert_keys().get(0) {
+    match cardano_sign_reqeust.get_cert_keys().first() {
         Some(_data) => match _data.get_key_path().get_path() {
             Some(_path) => {
                 if let Some(path) = parse_cardano_root_path(_path) {
@@ -248,19 +248,19 @@ pub extern "C" fn cardano_get_path(ptr: PtrUR) -> Ptr<SimpleResponse<c_char>> {
         },
         None => {}
     };
-    match cardano_sign_reqeust.get_utxos().get(0) {
+    match cardano_sign_reqeust.get_utxos().first() {
         Some(_data) => match _data.get_key_path().get_path() {
             Some(_path) => {
                 if let Some(path) = parse_cardano_root_path(_path) {
                     return SimpleResponse::success(convert_c_char(path)).simple_c_ptr();
                 }
-                SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid utxo")))
+                SimpleResponse::from(CardanoError::InvalidTransaction("invalid utxo".to_string()))
                     .simple_c_ptr()
             }
-            None => SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid utxo")))
+            None => SimpleResponse::from(CardanoError::InvalidTransaction("invalid utxo".to_string()))
                 .simple_c_ptr(),
         },
-        None => SimpleResponse::from(CardanoError::InvalidTransaction(format!("invalid utxo")))
+        None => SimpleResponse::from(CardanoError::InvalidTransaction("invalid utxo".to_string()))
             .simple_c_ptr(),
     }
 }
@@ -269,7 +269,7 @@ fn parse_cardano_root_path(path: String) -> Option<String> {
     let root_path = "1852'/1815'/";
     match path.strip_prefix(root_path) {
         Some(path) => {
-            if let Some(index) = path.find("/") {
+            if let Some(index) = path.find('/') {
                 let sub_path = &path[..index];
                 Some(format!("{}{}", root_path, sub_path))
             } else {
@@ -319,7 +319,7 @@ pub extern "C" fn cardano_parse_tx(
     let cardano_sign_reqeust = extract_ptr_with_type!(ptr, CardanoSignRequest);
     let tx_hex = cardano_sign_reqeust.get_sign_data();
     let parse_context =
-        prepare_parse_context(&cardano_sign_reqeust, master_fingerprint, cardano_xpub);
+        prepare_parse_context(cardano_sign_reqeust, master_fingerprint, cardano_xpub);
     match parse_context {
         Ok(parse_context) => match app_cardano::transaction::parse_tx(tx_hex, parse_context) {
             Ok(v) => TransactionParseResult::success(DisplayCardanoTx::from(v).c_ptr()).c_ptr(),
@@ -365,7 +365,9 @@ pub extern "C" fn cardano_sign_catalyst(
 fn cardano_sign_catalyst_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<UREncodeResult> {
     let cardano_catalyst_request =
         extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
-    let result = governance::sign(
+    
+
+    governance::sign(
         &cardano_catalyst_request
             .get_derivation_path()
             .get_path()
@@ -390,15 +392,13 @@ fn cardano_sign_catalyst_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<
                     UREncodeResult::encode(
                         data,
                         CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE.get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr()
                 },
             )
         },
-    );
-
-    return result;
+    )
 }
 
 #[no_mangle]
@@ -463,7 +463,7 @@ fn cardano_sign_sign_data_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT
                     UREncodeResult::encode(
                         data,
                         CARDANO_SIGN_DATA_SIGNATURE.get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr()
                 },
@@ -471,7 +471,7 @@ fn cardano_sign_sign_data_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT
         },
     );
 
-    return result;
+    result
 }
 
 #[no_mangle]
@@ -531,7 +531,7 @@ fn cardano_sign_tx_hash_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<U
         Ok(v) => UREncodeResult::encode(
             v,
             CARDANO_SIGNATURE.get_type(),
-            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+            FRAGMENT_MAX_LENGTH_DEFAULT,
         )
         .c_ptr(),
         Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -547,7 +547,7 @@ fn cardano_sign_tx_by_icarus(
     let cardano_sign_reqeust = extract_ptr_with_type!(ptr, CardanoSignRequest);
     let tx_hex = cardano_sign_reqeust.get_sign_data();
     let parse_context =
-        prepare_parse_context(&cardano_sign_reqeust, master_fingerprint, cardano_xpub);
+        prepare_parse_context(cardano_sign_reqeust, master_fingerprint, cardano_xpub);
 
     match parse_context {
         Ok(parse_context) => {
@@ -560,7 +560,7 @@ fn cardano_sign_tx_by_icarus(
                     Ok(data) => UREncodeResult::encode(
                         data,
                         CARDANO_SIGNATURE.get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr(),
                     Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -632,7 +632,7 @@ fn get_cardano_derivation_path(path: CryptoKeyPath) -> R<CryptoKeyPath> {
     let components = path.get_components();
     let mut new_components = Vec::new();
     for i in 3..components.len() {
-        new_components.push(components[i].clone());
+        new_components.push(components[i]);
     }
     Ok(CryptoKeyPath::new(
         new_components,
@@ -661,7 +661,7 @@ mod tests {
             None,
         );
         let result = get_cardano_derivation_path(path);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
 
         assert_eq!(result.unwrap().get_path().unwrap(), "2/0");
     }

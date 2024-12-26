@@ -9,7 +9,7 @@ use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use bitcoin::hex::Case;
 use bitcoin_hashes::hex::DisplayHex;
 use cty::c_char;
-use hex;
+
 use hex::ToHex;
 
 use errors::ErrorCodes;
@@ -97,7 +97,7 @@ pub extern "C" fn get_ed25519_pubkey_by_seed(
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
     let path = recover_c_char(path);
     let extended_key =
-        keystore::algorithms::ed25519::slip10_ed25519::get_public_key_by_seed(&seed, &path);
+        keystore::algorithms::ed25519::slip10_ed25519::get_public_key_by_seed(seed, &path);
     match extended_key {
         Ok(result) => SimpleResponse::success(convert_c_char(hex::encode(result))).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
@@ -128,7 +128,7 @@ pub extern "C" fn get_bip32_ed25519_extended_pubkey(
     let passphrase = recover_c_char(passphrase);
     let extended_key =
         keystore::algorithms::ed25519::bip32_ed25519::get_extended_public_key_by_entropy(
-            &entropy,
+            entropy,
             passphrase.as_bytes(),
             &path,
         );
@@ -165,7 +165,7 @@ pub extern "C" fn get_icarus_master_key(
     let entropy = unsafe { slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
     let master_key = keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
-        &entropy,
+        entropy,
         passphrase.as_bytes(),
     );
     match master_key {
@@ -274,7 +274,7 @@ pub extern "C" fn pbkdf2_rust(
 ) -> *mut SimpleResponse<u8> {
     let password_bytes = unsafe { slice::from_raw_parts(password, 32) };
     let salt_bytes = unsafe { slice::from_raw_parts(salt, 32) };
-    let output = keystore::algorithms::crypto::hkdf(&password_bytes, &salt_bytes, iterations);
+    let output = keystore::algorithms::crypto::hkdf(password_bytes, salt_bytes, iterations);
     SimpleResponse::success(Box::into_raw(Box::new(output)) as *mut u8).simple_c_ptr()
 }
 
@@ -286,7 +286,7 @@ pub extern "C" fn pbkdf2_rust_64(
 ) -> *mut SimpleResponse<u8> {
     let password_bytes = unsafe { slice::from_raw_parts(password, 64) };
     let salt_bytes = unsafe { slice::from_raw_parts(salt, 64) };
-    let output = keystore::algorithms::crypto::hkdf64(&password_bytes, &salt_bytes, iterations);
+    let output = keystore::algorithms::crypto::hkdf64(password_bytes, salt_bytes, iterations);
     SimpleResponse::success(Box::into_raw(Box::new(output)) as *mut u8).simple_c_ptr()
 }
 

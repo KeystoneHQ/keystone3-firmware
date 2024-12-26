@@ -30,7 +30,7 @@ pub extern "C" fn infer_qrcode_type(qrcode: PtrString) -> QRProtocol {
 pub extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
     let value = recover_c_char(qr);
     if value.to_lowercase().starts_with("signmessage") {
-        let mut headers_and_message = value.split(":");
+        let mut headers_and_message = value.split(':');
         let headers = headers_and_message.next();
         let message = headers_and_message.next();
         if let (Some(headers), Some(message)) = (headers, message) {
@@ -42,7 +42,7 @@ pub extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
                 match encode {
                     "ascii" => {
                         let data = SeedSignerMessage::new(
-                            path.replace("h", "'").to_string(),
+                            path.replace('h', "'").to_string(),
                             message.to_string(),
                             MessageEncoding::ASCII,
                         );
@@ -63,10 +63,8 @@ pub extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
                 }
             }
         }
-        return URParseResult::from(RustCError::UnsupportedTransaction(format!(
-            "Invalid seed signer message format"
-        )))
+        return URParseResult::from(RustCError::UnsupportedTransaction("Invalid seed signer message format".to_string()))
         .c_ptr();
     }
-    URParseResult::from(RustCError::UnsupportedTransaction(format!("plain text"))).c_ptr()
+    URParseResult::from(RustCError::UnsupportedTransaction("plain text".to_string())).c_ptr()
 }

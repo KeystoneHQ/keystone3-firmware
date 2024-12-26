@@ -66,7 +66,7 @@ fn btc_sign_psbt_dynamic(
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
     let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint.to_vec()).as_str(),
+        hex::encode(master_fingerprint).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
     {
@@ -87,7 +87,7 @@ fn btc_sign_psbt_dynamic(
             Ok(data) => UREncodeResult::encode(
                 data,
                 CryptoPSBT::get_registry_type().get_type(),
-                fragment_length.clone(),
+                fragment_length,
             )
             .c_ptr(),
             Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -110,7 +110,7 @@ pub extern "C" fn btc_sign_psbt(
         seed_len,
         master_fingerprint,
         master_fingerprint_len,
-        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+        FRAGMENT_MAX_LENGTH_DEFAULT,
     )
 }
 
@@ -128,7 +128,7 @@ pub extern "C" fn btc_sign_psbt_unlimited(
         seed_len,
         master_fingerprint,
         master_fingerprint_len,
-        FRAGMENT_UNLIMITED_LENGTH.clone(),
+        FRAGMENT_UNLIMITED_LENGTH,
     )
 }
 
@@ -152,7 +152,7 @@ pub extern "C" fn btc_sign_multisig_psbt(
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
     let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint.to_vec()).as_str(),
+        hex::encode(master_fingerprint).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
     {
@@ -189,7 +189,7 @@ pub extern "C" fn btc_sign_multisig_psbt(
                     ur_result: UREncodeResult::encode(
                         data,
                         CryptoPSBT::get_registry_type().get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr(),
                     sign_status: convert_c_char(sign_state.sign_status.unwrap_or("".to_string())),
@@ -231,7 +231,7 @@ pub extern "C" fn btc_export_multisig_psbt(ptr: PtrUR) -> *mut MultisigSignResul
                 ur_result: UREncodeResult::encode(
                     psbt,
                     CryptoPSBT::get_registry_type().get_type(),
-                    FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT,
                 )
                 .c_ptr(),
                 sign_status: convert_c_char(state.sign_status.unwrap_or("".to_string())),
@@ -268,7 +268,7 @@ pub extern "C" fn btc_export_multisig_psbt_bytes(
                     ur_result: UREncodeResult::encode(
                         psbt,
                         CryptoPSBT::get_registry_type().get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr(),
                     sign_status: convert_c_char(state.sign_status.unwrap_or("".to_string())),
@@ -409,7 +409,7 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
     let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint.to_vec()).as_str(),
+        hex::encode(master_fingerprint).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
     {
@@ -428,7 +428,8 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
 
     let psbt = unsafe {
         let psbt = core::slice::from_raw_parts(psbt_bytes, psbt_bytes_length as usize);
-        let psbt = match get_psbt_bytes(psbt) {
+        
+        match get_psbt_bytes(psbt) {
             Ok(psbt) => psbt,
             Err(e) => {
                 return MultisigSignResult {
@@ -440,8 +441,7 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
                 }
                 .c_ptr()
             }
-        };
-        psbt
+        }
     };
 
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
@@ -461,7 +461,7 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
                     ur_result: UREncodeResult::encode(
                         data,
                         CryptoPSBT::get_registry_type().get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr(),
                     sign_status: convert_c_char(sign_state.sign_status.unwrap_or("".to_string())),
@@ -498,7 +498,7 @@ fn parse_psbt(
     multisig_wallet_config: Option<String>,
 ) -> *mut TransactionParseResult<DisplayTx> {
     let master_fingerprint =
-        bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
+        bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
             .map_err(|_e| RustCError::InvalidMasterFingerprint);
     match master_fingerprint {
         Ok(fp) => {
@@ -510,7 +510,7 @@ fn parse_psbt(
                     Xpub::from_str(xpub.as_str()).map_err(|_e| RustCError::InvalidXPub);
                 let derivation_path =
                     DerivationPath::from_str(path.as_str()).map_err(|_e| RustCError::InvalidHDPath);
-                match extended_public_key.and_then(|k| derivation_path.and_then(|p| Ok((k, p)))) {
+                match extended_public_key.and_then(|k| derivation_path.map(|p| (k, p))) {
                     Ok((k, p)) => {
                         keys.insert(p, k);
                     }
@@ -548,7 +548,7 @@ fn check_psbt(
     multisig_wallet_config: Option<String>,
 ) -> PtrT<TransactionCheckResult> {
     let master_fingerprint =
-        bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
+        bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
             .map_err(|_e| RustCError::InvalidMasterFingerprint);
     match master_fingerprint {
         Ok(fp) => {
@@ -560,7 +560,7 @@ fn check_psbt(
                     Xpub::from_str(xpub.as_str()).map_err(|_e| RustCError::InvalidXPub);
                 let derivation_path =
                     DerivationPath::from_str(path.as_str()).map_err(|_e| RustCError::InvalidHDPath);
-                match extended_public_key.and_then(|k| derivation_path.and_then(|p| Ok((k, p)))) {
+                match extended_public_key.and_then(|k| derivation_path.map(|p| (k, p))) {
                     Ok((k, p)) => {
                         keys.insert(p, k);
                     }

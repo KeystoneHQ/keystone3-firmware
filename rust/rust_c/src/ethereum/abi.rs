@@ -3,7 +3,7 @@ use crate::common::errors::RustCError;
 use crate::common::structs::Response;
 use crate::common::types::{Ptr, PtrString};
 use crate::common::utils::recover_c_char;
-use hex;
+
 
 #[no_mangle]
 pub extern "C" fn eth_parse_contract_data(

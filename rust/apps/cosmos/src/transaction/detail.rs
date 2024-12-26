@@ -37,8 +37,7 @@ impl TryFrom<MsgBeginRedelegate> for DetailRedelegate {
 
     fn try_from(data: MsgBeginRedelegate) -> Result<Self> {
         let value = data
-            .amount
-            .and_then(|coin| Some(format_amount(vec![coin])))
+            .amount.map(|coin| format_amount(vec![coin]))
             .unwrap_or("".to_string());
         Ok(Self {
             method: "Re-delegate".to_string(),
@@ -70,7 +69,7 @@ impl TryFrom<MsgTransfer> for DetailTransfer {
     fn try_from(msg: MsgTransfer) -> Result<Self> {
         let value = msg
             .token
-            .and_then(|v| format_coin(v))
+            .and_then(format_coin)
             .unwrap_or("".to_string());
         Ok(Self {
             method: "IBC Transfer".to_string(),

@@ -13,7 +13,7 @@ mod type_urls;
 
 pub use prost;
 pub use prost_types::Any;
-pub use tendermint_proto as tendermint;
+
 
 /// The version (commit hash) of the Cosmos SDK used when generating this library.
 pub const COSMOS_SDK_VERSION: &str = include_str!("prost/cosmos-sdk/COSMOS_SDK_COMMIT");

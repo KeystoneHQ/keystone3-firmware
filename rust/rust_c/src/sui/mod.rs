@@ -167,7 +167,7 @@ pub extern "C" fn sui_sign_hash(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> Pt
     UREncodeResult::encode(
         sig_data,
         SuiSignature::get_registry_type().get_type(),
-        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+        FRAGMENT_MAX_LENGTH_DEFAULT,
     )
     .c_ptr()
 }
@@ -210,7 +210,7 @@ pub extern "C" fn sui_sign_intent(
     UREncodeResult::encode(
         sig_data,
         SuiSignature::get_registry_type().get_type(),
-        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+        FRAGMENT_MAX_LENGTH_DEFAULT,
     )
     .c_ptr()
 }

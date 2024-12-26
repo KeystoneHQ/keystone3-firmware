@@ -17,11 +17,11 @@ impl TokenInfo {
         let value = u64::from_str_radix(quantity, 10)
             .map_err(|_e| ArweaveError::ParseTxError(_e.to_string()))?;
         let divisor = 10u64.pow(self.get_decimal() as u32) as f64;
-        return Ok(format!(
+        Ok(format!(
             "{} {}",
             (value as f64) / divisor,
             self.get_symbol()
-        ));
+        ))
     }
 }
 
@@ -63,6 +63,5 @@ lazy_static! {
 pub(crate) fn find_token(token_id: &str) -> Option<TokenInfo> {
     TOKENS
         .iter()
-        .find(|v| v.get_token_id().eq(token_id))
-        .map(|v| v.clone())
+        .find(|v| v.get_token_id().eq(token_id)).cloned()
 }

@@ -38,8 +38,7 @@ pub fn build_payload(ptr: PtrUR, ur_type: QRCodeType) -> Result<Payload, Keyston
         _ => return Err(KeystoneError::ProtobufError("invalid ur type".to_string())),
     };
     unzip(bytes)
-        .and_then(|unzip_data| parse_protobuf(unzip_data))
-        .and_then(|base: Base| Ok(base.data))
+        .and_then(parse_protobuf).map(|base: Base| base.data)
         .map_err(|e| KeystoneError::ProtobufError(e.to_string()))?
         .ok_or(KeystoneError::ProtobufError("empty payload".to_string()))
 }
@@ -53,8 +52,8 @@ pub fn build_parse_context(
     let xpub_str = convert_version(x_pub.as_str(), &Version::Xpub)
         .map_err(|e| KeystoneError::InvalidParseContext(e.to_string()))?;
     let master_fingerprint =
-        bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp.to_vec()).as_str())
-            .map_err(|_| KeystoneError::InvalidParseContext(format!("invalid mfp")))?;
+        bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
+            .map_err(|_| KeystoneError::InvalidParseContext("invalid mfp".to_string()))?;
     let extended_pubkey = bitcoin::bip32::Xpub::from_str(&xpub_str).map_err(|_| {
         KeystoneError::InvalidParseContext(format!("invalid extended pub key {}", x_pub))
     })?;
@@ -119,9 +118,9 @@ pub fn build_check_result(
             })
         }
         _ => {
-            return Err(KeystoneError::ProtobufError(
+            Err(KeystoneError::ProtobufError(
                 "empty payload content".to_string(),
-            ));
+            ))
         }
     }
 }
@@ -165,9 +164,9 @@ pub fn build_sign_result(
             zip(&data).map_err(|_| KeystoneError::ProtobufError("zip bytes failed".to_string()))
         }
         _ => {
-            return Err(KeystoneError::ProtobufError(
+            Err(KeystoneError::ProtobufError(
                 "empty payload content".to_string(),
-            ));
+            ))
         }
     }
 }
@@ -211,7 +210,7 @@ pub fn sign(
                     Ok(data) => UREncodeResult::encode(
                         data,
                         KeystoneSignResult::get_registry_type().get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr(),
                     Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -227,7 +226,7 @@ pub fn sign(
                     Ok(data) => UREncodeResult::encode(
                         data,
                         Bytes::get_registry_type().get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr(),
                     Err(e) => UREncodeResult::from(e).c_ptr(),

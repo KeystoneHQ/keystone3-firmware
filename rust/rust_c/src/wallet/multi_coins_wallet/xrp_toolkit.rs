@@ -20,7 +20,7 @@ pub extern "C" fn get_connect_xrp_toolkit_ur(
             Ok(data) => UREncodeResult::encode(
                 data,
                 Bytes::get_registry_type().get_type(),
-                FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                FRAGMENT_MAX_LENGTH_DEFAULT,
             )
             .c_ptr(),
             Err(e) => UREncodeResult::from(e).c_ptr(),

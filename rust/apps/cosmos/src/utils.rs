@@ -4,7 +4,7 @@ use cryptoxide::hashing;
 use cryptoxide::ripemd160::Ripemd160;
 use cryptoxide::sha3::Keccak256;
 pub(crate) fn sha256_digest(data: &[u8]) -> Vec<u8> {
-    hashing::sha256(&data).to_vec()
+    hashing::sha256(data).to_vec()
 }
 
 fn ripemd160_digest(data: &[u8]) -> [u8; 20] {

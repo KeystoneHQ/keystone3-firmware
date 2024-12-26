@@ -6,9 +6,9 @@ use crate::errors::Result;
 
 pub fn detect_msg_type(msg_type: Option<&str>) -> &str {
     let msg_type_parts: Vec<&str> = msg_type
-        .unwrap_or(&"")
-        .split("/")
-        .flat_map(|s| s.split("."))
+        .unwrap_or("")
+        .split('/')
+        .flat_map(|s| s.split('.'))
         .collect();
     msg_type_parts[msg_type_parts.len() - 1]
 }
@@ -51,15 +51,14 @@ pub fn get_network_by_chain_id(chain_id: &str) -> Result<String> {
     map.insert("columbus", "Terra Classic");
     map.insert("thorchain", "THORChain");
     map.insert("neutron", "Neutron");
-    let chain_id_parts: Vec<&str> = chain_id.split("-").collect();
+    let chain_id_parts: Vec<&str> = chain_id.split('-').collect();
     let chain_id_prefix = if chain_id_parts.len() > 1 {
         chain_id_parts[..chain_id_parts.len() - 1].join("-")
     } else {
         chain_id_parts[0].to_string()
     };
     Ok(map
-        .get(chain_id_prefix.as_str())
-        .and_then(|v| Some(v.to_string()))
+        .get(chain_id_prefix.as_str()).map(|v| v.to_string())
         .unwrap_or("Cosmos Hub".to_string()))
 }
 

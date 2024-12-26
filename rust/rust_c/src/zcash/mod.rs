@@ -73,9 +73,7 @@ pub extern "C" fn check_zcash_tx(
     disabled: bool,
 ) -> *mut TransactionCheckResult {
     if disabled {
-        return TransactionCheckResult::from(RustCError::UnsupportedTransaction(format!(
-            "zcash is not supported for slip39 and passphrase wallet now"
-        )))
+        return TransactionCheckResult::from(RustCError::UnsupportedTransaction("zcash is not supported for slip39 and passphrase wallet now".to_string()))
         .c_ptr();
     }
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
@@ -120,7 +118,7 @@ pub extern "C" fn sign_zcash_tx(tx: PtrUR, seed: PtrBytes, seed_len: u32) -> *mu
             Ok(v) => UREncodeResult::encode(
                 v,
                 ZcashPczt::get_registry_type().get_type(),
-                FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                FRAGMENT_MAX_LENGTH_DEFAULT,
             )
             .c_ptr(),
         },
@@ -149,7 +147,7 @@ pub extern "C" fn rust_aes256_cbc_encrypt(
     let password = recover_c_char(password);
     let iv = unsafe { slice::from_raw_parts(iv, iv_len as usize) };
     let key = sha256(password.as_bytes());
-    let iv = GenericArray::from_slice(&iv);
+    let iv = GenericArray::from_slice(iv);
     let key = GenericArray::from_slice(&key);
     let ct = Aes256CbcEnc::new(key, iv).encrypt_padded_vec_mut::<Pkcs7>(data);
     SimpleResponse::success(convert_c_char(hex::encode(ct))).simple_c_ptr()
@@ -167,7 +165,7 @@ pub extern "C" fn rust_aes256_cbc_decrypt(
     let password = recover_c_char(password);
     let iv = unsafe { slice::from_raw_parts(iv, iv_len as usize) };
     let key = sha256(password.as_bytes());
-    let iv = GenericArray::from_slice(&iv);
+    let iv = GenericArray::from_slice(iv);
     let key = GenericArray::from_slice(&key);
 
     match Aes256CbcDec::new(key, iv).decrypt_padded_vec_mut::<Pkcs7>(&data) {

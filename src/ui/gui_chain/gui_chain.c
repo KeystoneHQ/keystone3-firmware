@@ -45,7 +45,7 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
     {BchTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BCH, REMAPVIEW_BTC},
 #endif
 
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     {EthTx, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH},
     {EthPersonalMessage, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH_PERSONAL_MESSAGE},
     {EthTypedData, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH_TYPEDDATA},
@@ -100,7 +100,7 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
 
 GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t viewType)
 {
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     if (viewType == CosmosTx || viewType == CosmosEvmTx) {
         return GuiGetCosmosTxChain();
     }
@@ -113,7 +113,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t viewType)
     return CHAIN_BUTT;
 }
 
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
 bool IsMessageType(uint8_t type)
 {
     return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage || type == CardanoSignData;

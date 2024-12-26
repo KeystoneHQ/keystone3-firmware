@@ -64,7 +64,7 @@ static void RefreshStatusBar(void);
 
 const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_BTC, "", &coinBtc},
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     {HOME_WALLET_CARD_ETH, "", &coinEth},       {HOME_WALLET_CARD_SOL, "", &coinSol},
     {HOME_WALLET_CARD_BNB, "", &coinBnb},       {HOME_WALLET_CARD_HNT, "", &coinHelium},
     {HOME_WALLET_CARD_XRP, "", &coinXrp},

@@ -102,7 +102,7 @@ void ExportAddressReject()
 static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
 {
 #ifndef COMPILE_SIMULATOR
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     UREncodeResult *urResult = GetUnlimitedMetamaskDataForAccountType(type);
 
     if (urResult->error_code != 0) {

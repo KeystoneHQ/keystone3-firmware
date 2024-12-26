@@ -111,7 +111,7 @@ static void GuiConnectUsbPasswordPass(void);
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void);
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
 static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e);
 static AdaXPubType GetAccountType(void);
 #endif
@@ -219,14 +219,14 @@ static void SelectDerivationHandler(lv_event_t *e)
     lv_obj_clear_state(g_derivationTypeCheck[!index], LV_STATE_CHECKED);
     SetCurrentSelectedIndex(index);
     ShowEgAddressCont(g_egCont);
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     UpdateConfirmBtn(index != GetAccountType());
 #endif
 }
 
 static void OpenDerivationPath()
 {
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     if (IsCardano()) {
         SetCurrentSelectedIndex(GetAccountType());
     }
@@ -304,7 +304,7 @@ static void OpenDerivationPath()
     lv_obj_set_style_bg_color(tmCont, BLACK_COLOR, LV_PART_MAIN);
     lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     if (strcmp("1", g_callData->version) == 0) {
         lv_obj_add_event_cb(btn, SaveHardwareCallVersion1AdaDerivationAlgo, LV_EVENT_CLICKED, NULL);
     } else {
@@ -578,7 +578,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
         }
         return generate_key_derivation_ur(mfp, 4, &keys, firmwareVersion);
     }
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     ExtendedPublicKey xpubs[24];
     for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
         KeyDerivationSchema schema = g_callData->key_derivation->schemas->data[i];
@@ -969,7 +969,7 @@ static bool IsCardano()
 
 static void GetCardanoEgAddress(void)
 {
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     char *xPub = NULL;
     xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0);
     SimpleResponse_c_char *result = cardano_get_base_address(xPub, 0, 1);
@@ -1192,7 +1192,7 @@ static void RejectButtonHandler(lv_event_t *e)
     GuiCLoseCurrentWorkingView();
 }
 
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
 static void SetAccountType(uint8_t index)
 {
     SetConnectWalletPathIndex(g_response->data->origin, index);

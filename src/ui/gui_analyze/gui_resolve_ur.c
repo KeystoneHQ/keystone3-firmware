@@ -14,7 +14,7 @@
 #include "gui_create_multisig_wallet_widgets.h"
 #endif
 
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
 #include "gui_key_derivation_request_widgets.h"
 #endif
 
@@ -67,7 +67,7 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
     case WebAuthResult:
         GuiSetWebAuthResultData(urResult, urMultiResult, is_multi);
         break;
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     case KeyDerivationRequest:
         GuiSetKeyDerivationRequestData(urResult, urMultiResult, is_multi);
         break;

@@ -276,7 +276,7 @@ void WipeDevice(void)
     {
         void GuiResetAllUtxoAddressIndex(void);
         GuiResetAllUtxoAddressIndex();
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
         void GuiResetAllEthAddressIndex(void);
         void GuiResetAllStandardAddressIndex(void);
         GuiResetAllEthAddressIndex();

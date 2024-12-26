@@ -67,7 +67,7 @@ elseif(BTC_ONLY)
     add_compile_definitions(BTC_ONLY)
     add_compile_definitions(EXCLUDE_RUSTC)
 else()
-    add_compile_definitions(GENERAL_VERSION)
+    add_compile_definitions(WEB3_VERSION)
     set(WIDGET_SUBPATH "multi/general")
 endif()
 

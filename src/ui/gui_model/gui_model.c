@@ -854,7 +854,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
         {
             GuiResetCurrentUtxoAddressIndex(accountIndex);
             void GuiResetCurrentUtxoAddressIndex(uint8_t index);
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
             void GuiResetCurrentEthAddressIndex(uint8_t index);
             void GuiResetCurrentStandardAddressIndex(uint8_t index);
             void GuiResetCurrentMultiAccountsCache(uint8_t index);

@@ -9,7 +9,7 @@
 #include "gui_wallet.h"
 #include "rust.h"
 #include "user_memory.h"
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
 #include "gui_multi_path_coin_receive_widgets.h"
 #include "gui_connect_ada_widgets.h"
 #include "gui_keyboard_hintbox.h"

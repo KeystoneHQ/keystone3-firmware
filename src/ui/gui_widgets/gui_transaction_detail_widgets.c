@@ -26,7 +26,7 @@
 #include "account_manager.h"
 #include "gui_pending_hintbox.h"
 #include "general/eapdu_services/service_resolve_ur.h"
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
 #include "gui_eth.h"
 #endif
 #ifndef COMPILE_SIMULATOR
@@ -305,7 +305,7 @@ void GuiClearQrcodeSignCnt(void)
 static void GuiTransactionDetailNavBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, TransactionGoToHomeViewHandler, NULL);
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     if (IsMessageType(g_viewType)) {
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
     } else if (isTonSignProof(g_viewType)) {
@@ -319,7 +319,7 @@ static void GuiTransactionDetailNavBarInit()
     } else {
 #endif
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     }
 #endif
 }
@@ -405,7 +405,7 @@ static void RecognizeFailHandler(lv_timer_t *timer)
 
 static bool GuiCheckIsTransactionSign(void)
 {
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     if (GetEthPermitCantSign(NULL, NULL)) {
         return false;
     }

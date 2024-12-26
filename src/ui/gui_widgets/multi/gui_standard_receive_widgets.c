@@ -519,7 +519,7 @@ lv_obj_t* CreateStandardReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
 
 static uint16_t GetAddrYExtend(void)
 {
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 30;
     }
@@ -583,7 +583,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 void GetAttentionText(char* text)
 {
     switch (g_chainCard) {
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_TRX:
         strcpy_s(text, 1024, _("receive_trx_hint"));
         break;
@@ -718,7 +718,7 @@ static void RefreshQrCode(void)
     }
 #endif
 
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     if (g_chainCard == HOME_WALLET_CARD_ARWEAVE) {
         SimpleResponse_c_char *fixedAddress = fix_arweave_address(addressDataItem.address);
         if (fixedAddress->error_code == 0) {
@@ -782,7 +782,7 @@ static void RefreshSwitchAccount(void)
 
 static int GetMaxAddressIndex(void)
 {
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 10;
     }
@@ -854,7 +854,7 @@ static void ConfirmHandler(lv_event_t *e)
 
 static bool IsAccountSwitchable()
 {
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     // all cosmos chain can switch account
     if (IsCosmosChain(g_chainCard)) {
         return true;
@@ -917,7 +917,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     }
 #endif
 
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
@@ -1067,7 +1067,7 @@ void GuiResetAllStandardAddressIndex(void)
 static uint32_t* GetCosmosChainCurrentSelectIndex()
 {
     switch (g_chainCard) {
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_TIA:
         return &g_tiaChainSelectIndex[GetCurrentAccountIndex()];
         break;
@@ -1178,7 +1178,7 @@ static uint32_t* GetCosmosChainCurrentSelectIndex()
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
 {
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     switch (g_chainCard) {
     case HOME_WALLET_CARD_SUI:
         g_suiSelectIndex[GetCurrentAccountIndex()] = selectIndex;

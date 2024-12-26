@@ -72,37 +72,13 @@ int8_t GuiConnectWalletPrevTile(void);
 void GuiConnectWalletRefresh(void);
 void GuiConnectWalletDeInit(void);
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index);
+#ifndef BTC_ONLY
+ETHAccountType GetMetamaskAccountType(void);
+#endif
 void GuiConnectWalletHandleURGenerate(char *data, uint16_t len);
 void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
 uint8_t GuiConnectWalletGetWalletIndex(void);
-#ifdef WEB3_VERSION
-typedef enum {
-    BTC,
-    ETH,
-    BCH,
-    DASH,
-    LTC,
-    TRON,
-    XRP,
-    DOT,
-    COMPANION_APP_COINS_BUTT,
-} COMPANION_APP_COINS_ENUM;
-
-typedef enum {
-    APT,
-    SUI,
-    FEWCHA_COINS_BUTT,
-} FEWCHA_COINS_ENUM;
-
-typedef enum SOLAccountType {
-    SOLBip44,
-    SOLBip44ROOT,
-    SOLBip44Change,
-} SOLAccountType;
-
-ETHAccountType GetMetamaskAccountType(void);
-SOLAccountType GetSolflareAccountType(void);
-SOLAccountType GetHeliumAccountType(void);
+#ifndef BTC_ONLY
 void GuiPrepareArConnectWalletView(void);
 void GuiSetupArConnectWallet(void);
 void GuiConnectWalletPasswordErrorCount(void *param);

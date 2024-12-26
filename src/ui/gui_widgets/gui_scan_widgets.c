@@ -122,7 +122,7 @@ void GuiScanResult(bool result, void *param)
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_webAuthResultView);
             }
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
             if (g_qrcodeViewType == KeyDerivationRequest) {
                 if (!GuiCheckIfTopView(&g_homeView)) {
                     GuiCLoseCurrentWorkingView();
@@ -161,7 +161,7 @@ void GuiTransactionCheckPass(void)
     GuiModelTransactionCheckResultClear();
     SetPageLockScreen(true);
     GuiCLoseCurrentWorkingView();
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     if (g_chainType == CHAIN_ARWEAVE) {
         if (GetIsTempAccount()) {
             ThrowError(ERR_INVALID_QRCODE);

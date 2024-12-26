@@ -54,7 +54,7 @@ extern bool g_reboot;
     }
 #endif
 
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
 #define GUI_ANALYZE_OBJ_SURPLUS           \
     { \
         REMAPVIEW_ETH, \

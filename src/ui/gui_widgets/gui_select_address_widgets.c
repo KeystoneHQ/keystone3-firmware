@@ -244,7 +244,7 @@ static void SelectAddressHandler(lv_event_t *e)
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
     switch (g_chainCoinType) {
-#ifdef GENERAL_VERSION
+#ifdef WEB3_VERSION
     case CHAIN_XRP:
         item->index = index;
         strcpy(item->address, GuiGetXrpAddressByIndex(index));

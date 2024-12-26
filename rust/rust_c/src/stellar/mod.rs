@@ -81,7 +81,7 @@ fn build_signature_data(
     sign_request: StellarSignRequest,
 ) -> PtrT<UREncodeResult> {
     let data = StellarSignature::new(sign_request.get_request_id(), signature.to_vec())
-        .to_bytes()
+        .try_into()
         .unwrap();
     UREncodeResult::encode(
         data,

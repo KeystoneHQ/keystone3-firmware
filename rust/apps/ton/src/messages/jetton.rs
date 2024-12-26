@@ -21,6 +21,7 @@ pub const JETTON_TRANSFER: u32 = 0xf8a7ea5;
 // pub const JETTON_BURN_NOTIFICATION: u32 = 0x7bdd97de;
 
 #[derive(Clone, Debug, Serialize)]
+#[non_exhaustive]
 pub enum JettonMessage {
     JettonTransferMessage(JettonTransferMessage),
 }
@@ -87,7 +88,6 @@ impl ParseCell for JettonTransferMessage {
                 let comment = Comment::parse(child);
 
                 let payload = Some(hex::encode(child.data.clone()));
-                ref_index += 1;
                 (payload, comment.ok())
             } else {
                 (None, None)

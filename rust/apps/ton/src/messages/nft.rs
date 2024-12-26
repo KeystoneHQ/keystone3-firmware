@@ -10,6 +10,7 @@ use super::{traits::ParseCell, Comment};
 pub const NFT_TRANSFER: u32 = 0x5fcc3d14;
 
 #[derive(Clone, Debug, Serialize)]
+#[non_exhaustive]
 pub enum NFTMessage {
     NFTTransferMessage(NFTTransferMessage),
 }
@@ -67,7 +68,6 @@ impl ParseCell for NFTTransferMessage {
                 let comment = Comment::parse(child);
 
                 let payload = Some(hex::encode(child.data.clone()));
-                ref_index += 1;
                 (payload, comment.ok())
             } else {
                 (None, None)

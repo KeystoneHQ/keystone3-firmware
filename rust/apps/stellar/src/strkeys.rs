@@ -5,6 +5,7 @@ use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use keystore::errors::Result;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[allow(non_camel_case_types)]
 pub enum StrKeyType {
     STRKEY_PUBKEY = 6 << 3,
     STRKEY_PRIVKEY = 18 << 3,

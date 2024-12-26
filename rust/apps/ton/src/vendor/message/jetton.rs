@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use alloc::sync::Arc;
 
 use num_bigint::BigUint;

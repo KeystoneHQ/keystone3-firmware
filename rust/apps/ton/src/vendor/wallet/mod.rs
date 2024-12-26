@@ -55,6 +55,7 @@ impl WalletVersion {
         Ok(Arc::new(data_cell))
     }
 
+    #[allow(unused)]
     pub fn has_op(&self) -> bool {
         matches!(self, WalletVersion::V4R2)
     }
@@ -69,6 +70,7 @@ pub struct TonWallet {
 }
 
 impl TonWallet {
+    #[allow(unused)]
     pub fn derive(
         workchain: i32,
         version: WalletVersion,

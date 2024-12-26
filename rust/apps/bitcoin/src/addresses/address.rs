@@ -17,7 +17,7 @@ use bitcoin::address::AddressData as Payload;
 use bitcoin::blockdata::script;
 use bitcoin::script::PushBytesBuf;
 use bitcoin::secp256k1::{Secp256k1, XOnlyPublicKey};
-use bitcoin::{base58, Script, ScriptBuf, TapNodeHash};
+use bitcoin::{base58, ScriptBuf, TapNodeHash};
 use bitcoin::{CompressedPublicKey, PublicKey};
 use bitcoin::{PubkeyHash, ScriptHash};
 use bitcoin::{WitnessProgram, WitnessVersion};

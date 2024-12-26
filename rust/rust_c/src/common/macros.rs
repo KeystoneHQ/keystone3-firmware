@@ -482,7 +482,7 @@ macro_rules! make_free_method {
         app_utils::paste::item! {
             #[no_mangle]
             pub extern "C" fn [<free_ $t>](ptr: PtrT<$t>) {
-                crate::check_and_free_ptr!(ptr)
+                $crate::check_and_free_ptr!(ptr)
             }
         }
     };
@@ -490,7 +490,7 @@ macro_rules! make_free_method {
         app_utils::paste::item! {
             #[no_mangle]
             pub extern "C" fn [<free_ $t1 _ $t2>](ptr: PtrT<$t1<$t2>>) {
-                crate::check_and_free_ptr!(ptr)
+                $crate::check_and_free_ptr!(ptr)
             }
         }
     };

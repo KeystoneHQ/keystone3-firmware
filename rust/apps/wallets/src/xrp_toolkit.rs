@@ -8,7 +8,7 @@ use ur_registry::error::URError::UrEncodeError;
 use ur_registry::error::URResult;
 
 pub fn generate_sync_ur(hd_path: &str, root_x_pub: &str, root_path: &str) -> URResult<Bytes> {
-    let root_path = if !root_path.ends_with("/") {
+    let root_path = if !root_path.ends_with('/') {
         root_path.to_string() + "/"
     } else {
         root_path.to_string()
@@ -25,7 +25,7 @@ pub fn generate_sync_ur(hd_path: &str, root_x_pub: &str, root_path: &str) -> URR
         let input_bytes = v.to_string().into_bytes();
         return Ok(Bytes::new(input_bytes));
     }
-    return Err(UrEncodeError("invalid data".to_string()));
+    Err(UrEncodeError("invalid data".to_string()))
 }
 #[cfg(test)]
 mod tests {

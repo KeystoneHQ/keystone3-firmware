@@ -263,7 +263,7 @@ impl From<ParsedCardanoTx> for DisplayCardanoTx {
             .c_ptr(),
             auxiliary_data: value
                 .get_auxiliary_data()
-                .map(|v| convert_c_char(v))
+                .map(convert_c_char)
                 .unwrap_or(null_mut()),
             voting_procedures: VecFFI::from(
                 value

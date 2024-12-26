@@ -12,7 +12,7 @@ use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::extract_ptr_with_type;
 use app_stellar::strkeys::{sign_hash, sign_signature_base};
 use app_stellar::{address::get_address, base_to_xdr};
-use hex;
+
 use structs::DisplayStellarTx;
 use ur_registry::stellar::stellar_sign_request::{SignType, StellarSignRequest};
 use ur_registry::stellar::stellar_signature::StellarSignature;
@@ -35,7 +35,7 @@ pub extern "C" fn stellar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<Displ
     let sign_request = extract_ptr_with_type!(ptr, StellarSignRequest);
     let raw_message = match sign_request.get_sign_type() {
         SignType::Transaction => base_to_xdr(&sign_request.get_sign_data()),
-        SignType::TransactionHash => hex::encode(&sign_request.get_sign_data()),
+        SignType::TransactionHash => hex::encode(sign_request.get_sign_data()),
         _ => {
             return TransactionParseResult::from(RustCError::UnsupportedTransaction(
                 "Transaction".to_string(),
@@ -61,7 +61,7 @@ pub extern "C" fn stellar_check_tx(
     }
     let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
     let sign_request = extract_ptr_with_type!(ptr, StellarSignRequest);
-    if let Some(mfp) = (mfp.try_into() as Result<[u8; 4], _>).ok() {
+    if let Ok(mfp) = (mfp.try_into() as Result<[u8; 4], _>) {
         let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
             sign_request.get_derivation_path();
         if let Some(ur_mfp) = derivation_path.get_source_fingerprint() {
@@ -86,7 +86,7 @@ fn build_signature_data(
     UREncodeResult::encode(
         data,
         StellarSignature::get_registry_type().get_type(),
-        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+        FRAGMENT_MAX_LENGTH_DEFAULT,
     )
     .c_ptr()
 }
@@ -98,19 +98,19 @@ pub extern "C" fn stellar_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> Ptr
     let sign_data = sign_request.get_sign_data();
     let path = sign_request.get_derivation_path().get_path().unwrap();
     match sign_request.get_sign_type() {
-        SignType::Transaction => match sign_signature_base(&sign_data, &seed, &path) {
+        SignType::Transaction => match sign_signature_base(&sign_data, seed, &path) {
             Ok(signature) => build_signature_data(&signature, sign_request.to_owned()),
             Err(e) => UREncodeResult::from(e).c_ptr(),
         },
-        SignType::TransactionHash => match sign_hash(&sign_data, &seed, &path) {
+        SignType::TransactionHash => match sign_hash(&sign_data, seed, &path) {
             Ok(signature) => build_signature_data(&signature, sign_request.to_owned()),
             Err(e) => UREncodeResult::from(e).c_ptr(),
         },
         _ => {
-            return UREncodeResult::from(RustCError::UnsupportedTransaction(
+            UREncodeResult::from(RustCError::UnsupportedTransaction(
                 "Transaction".to_string(),
             ))
-            .c_ptr();
+            .c_ptr()
         }
     }
 }

@@ -53,12 +53,12 @@ pub fn derive_address(
         AddressType::Base => {
             let payment_key = xpub
                 .derive(DerivationScheme::V2, change)?
-                .derive(DerivationScheme::V2, index.clone())?
+                .derive(DerivationScheme::V2, index)?
                 .public_key();
             let payment_key_hash = blake2b_224(&payment_key);
             let stake_key = xpub
                 .derive(DerivationScheme::V2, 2)?
-                .derive(DerivationScheme::V2, stake_key_index.clone())?
+                .derive(DerivationScheme::V2, stake_key_index)?
                 .public_key();
             let stake_key_hash = blake2b_224(&stake_key);
             let address = BaseAddress::new(
@@ -74,7 +74,7 @@ pub fn derive_address(
         AddressType::Stake => {
             let stake_key = xpub
                 .derive(DerivationScheme::V2, 2)?
-                .derive(DerivationScheme::V2, stake_key_index.clone())?
+                .derive(DerivationScheme::V2, stake_key_index)?
                 .public_key();
             let stake_key_hash = blake2b_224(&stake_key);
             let address = RewardAddress::new(
@@ -89,7 +89,7 @@ pub fn derive_address(
         AddressType::Enterprise => {
             let payment_key = xpub
                 .derive(DerivationScheme::V2, 0)?
-                .derive(DerivationScheme::V2, index.clone())?
+                .derive(DerivationScheme::V2, index)?
                 .public_key();
             let payment_key_hash = blake2b_224(&payment_key);
             let address = EnterpriseAddress::new(
@@ -111,7 +111,7 @@ pub fn derive_pubkey_hash(xpub: String, change: u32, index: u32) -> R<[u8; 28]> 
 
     let payment_key = xpub
         .derive(DerivationScheme::V2, change)?
-        .derive(DerivationScheme::V2, index.clone())?
+        .derive(DerivationScheme::V2, index)?
         .public_key();
     Ok(blake2b_224(&payment_key))
 }
@@ -122,7 +122,7 @@ mod tests {
     use alloc::string::ToString;
     use alloc::vec;
     use bech32;
-    use cardano_serialization_lib::protocol_types::{Address, BaseAddress};
+    
     use cryptoxide::hashing::blake2b_224;
     use keystore;
 

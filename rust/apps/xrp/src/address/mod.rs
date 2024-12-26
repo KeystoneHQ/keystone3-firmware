@@ -8,7 +8,7 @@ pub(crate) mod ripple_address_codec;
 pub(crate) mod ripple_keypair;
 
 pub fn get_address(hd_path: &str, root_x_pub: &str, root_path: &str) -> R<String> {
-    let root_path = if !root_path.ends_with("/") {
+    let root_path = if !root_path.ends_with('/') {
         root_path.to_string() + "/"
     } else {
         root_path.to_string()
@@ -33,7 +33,7 @@ mod tests {
         let root_path = "44'/144'/0'";
         {
             let path = "44'/144'/0'/0/0";
-            let address = get_address(path, &extended_pub_key, root_path).unwrap();
+            let address = get_address(path, extended_pub_key, root_path).unwrap();
             assert_eq!("rHsMGQEkVNJmpGWs8XUBoTBiAAbwxZN5v3".to_string(), address);
         }
         {

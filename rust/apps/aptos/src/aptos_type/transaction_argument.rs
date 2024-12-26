@@ -3,7 +3,7 @@ use crate::aptos_type::value::MoveValue;
 use alloc::format;
 use alloc::vec::Vec;
 use core::{convert::TryFrom, fmt};
-use hex;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]

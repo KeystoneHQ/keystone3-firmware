@@ -37,7 +37,7 @@ pub extern "C" fn get_connect_blue_wallet_ur(
     unsafe {
         let mfp = slice::from_raw_parts(master_fingerprint, length as usize);
         let keys = recover_c_array(public_keys);
-        let key1 = keys.get(0);
+        let key1 = keys.first();
         let key2 = keys.get(1);
         let key3 = keys.get(2);
         return if let (Some(k1), Some(k2), Some(k3)) = (key1, key2, key3) {
@@ -71,7 +71,7 @@ pub extern "C" fn get_connect_blue_wallet_ur(
                     Ok(data) => UREncodeResult::encode(
                         data,
                         CryptoAccount::get_registry_type().get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr(),
                     Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -79,7 +79,7 @@ pub extern "C" fn get_connect_blue_wallet_ur(
                 Err(e) => UREncodeResult::from(e).c_ptr(),
             }
         } else {
-            UREncodeResult::from(URError::UrEncodeError(format!("getting key error"))).c_ptr()
+            UREncodeResult::from(URError::UrEncodeError("getting key error".to_string())).c_ptr()
         };
     }
 }
@@ -100,7 +100,7 @@ pub extern "C" fn get_connect_sparrow_wallet_ur(
     unsafe {
         let mfp = slice::from_raw_parts(master_fingerprint, length as usize);
         let keys = recover_c_array(public_keys);
-        let key1 = keys.get(0);
+        let key1 = keys.first();
         let key2 = keys.get(1);
         let key3 = keys.get(2);
         let key4 = keys.get(3);
@@ -142,7 +142,7 @@ pub extern "C" fn get_connect_sparrow_wallet_ur(
                     Ok(data) => UREncodeResult::encode(
                         data,
                         CryptoAccount::get_registry_type().get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr(),
                     Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -150,7 +150,7 @@ pub extern "C" fn get_connect_sparrow_wallet_ur(
                 Err(e) => UREncodeResult::from(e).c_ptr(),
             }
         } else {
-            UREncodeResult::from(URError::UrEncodeError(format!("getting key error"))).c_ptr()
+            UREncodeResult::from(URError::UrEncodeError("getting key error".to_string())).c_ptr()
         };
     }
 }
@@ -171,7 +171,7 @@ pub extern "C" fn get_connect_specter_wallet_ur(
     unsafe {
         let mfp = slice::from_raw_parts(master_fingerprint, length as usize);
         let keys = recover_c_array(public_keys);
-        let key1 = keys.get(0);
+        let key1 = keys.first();
         let key2 = keys.get(1);
         return if let (Some(k1), Some(k2)) = (key1, key2) {
             let k1_x_pub = recover_c_char(k1.xpub);
@@ -198,7 +198,7 @@ pub extern "C" fn get_connect_specter_wallet_ur(
                     Ok(data) => UREncodeResult::encode(
                         data,
                         CryptoAccount::get_registry_type().get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        FRAGMENT_MAX_LENGTH_DEFAULT,
                     )
                     .c_ptr(),
                     Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -206,7 +206,7 @@ pub extern "C" fn get_connect_specter_wallet_ur(
                 Err(e) => UREncodeResult::from(e).c_ptr(),
             }
         } else {
-            UREncodeResult::from(URError::UrEncodeError(format!("getting key error"))).c_ptr()
+            UREncodeResult::from(URError::UrEncodeError("getting key error".to_string())).c_ptr()
         };
     }
 }
@@ -279,7 +279,7 @@ pub extern "C" fn get_connect_companion_app_ur(
             Ok(data) => UREncodeResult::encode(
                 data,
                 Bytes::get_registry_type().get_type(),
-                FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                FRAGMENT_MAX_LENGTH_DEFAULT,
             )
             .c_ptr(),
             Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -327,7 +327,7 @@ pub extern "C" fn get_okx_wallet_ur_btc_only(
                         Ok(_v) => UREncodeResult::encode(
                             _v,
                             CryptoMultiAccounts::get_registry_type().get_type(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
                         )
                         .c_ptr(),
                         Err(_e) => UREncodeResult::from(_e).c_ptr(),

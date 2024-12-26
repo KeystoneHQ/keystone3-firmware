@@ -35,10 +35,10 @@ pub extern "C" fn get_connect_keplr_wallet_ur(
     unsafe {
         let accounts: &[KeplrAccount] = recover_c_array(keplr_accounts);
         let sync_infos: Vec<SyncInfo> = accounts
-            .into_iter()
+            .iter()
             .map(|account| {
                 let hd_path = recover_c_char(account.path);
-                let path_parts: Vec<&str> = hd_path.split("/").collect();
+                let path_parts: Vec<&str> = hd_path.split('/').collect();
                 let path_len = path_parts.len();
                 SyncInfo {
                     name: recover_c_char(account.name),
@@ -62,7 +62,7 @@ pub extern "C" fn get_connect_keplr_wallet_ur(
                 Ok(data) => UREncodeResult::encode(
                     data,
                     CryptoMultiAccounts::get_registry_type().get_type(),
-                    FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT,
                 )
                 .c_ptr(),
                 Err(e) => UREncodeResult::from(e).c_ptr(),

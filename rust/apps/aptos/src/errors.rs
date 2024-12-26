@@ -26,13 +26,13 @@ impl From<KeystoreError> for AptosError {
 
 impl From<hex::FromHexError> for AptosError {
     fn from(value: hex::FromHexError) -> Self {
-        Self::InvalidData(format!("hex operation failed {}", value.to_string()))
+        Self::InvalidData(format!("hex operation failed {}", value))
     }
 }
 
 impl From<FromUtf8Error> for AptosError {
     fn from(value: FromUtf8Error) -> Self {
-        Self::InvalidData(format!("utf8 operation failed {}", value.to_string()))
+        Self::InvalidData(format!("utf8 operation failed {}", value))
     }
 }
 
@@ -44,6 +44,6 @@ impl From<core::num::ParseIntError> for AptosError {
 
 impl From<bcs::Error> for AptosError {
     fn from(value: bcs::Error) -> Self {
-        Self::InvalidData(format!("bsc operation failed {}", value.to_string()))
+        Self::InvalidData(format!("bsc operation failed {}", value))
     }
 }

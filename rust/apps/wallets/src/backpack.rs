@@ -59,7 +59,7 @@ pub fn generate_crypto_multi_accounts(
             _ => {
                 return Err(URError::UrEncodeError(format!(
                     "Unknown key path: {}",
-                    ele.path.to_string()
+                    ele.path
                 )))
             }
         }
@@ -83,8 +83,8 @@ fn generate_ed25519_key(
     let key_path = CryptoKeyPath::new(
         path.into_iter()
             .map(|v| match v {
-                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
-                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+                ChildNumber::Normal { index } => get_path_component(Some(*index), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(*index), true),
             })
             .collect::<URResult<Vec<PathComponent>>>()?,
         Some(mfp),
@@ -114,8 +114,8 @@ fn generate_k1_normal_key(
     let key_path = CryptoKeyPath::new(
         path.into_iter()
             .map(|v| match v {
-                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
-                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+                ChildNumber::Normal { index } => get_path_component(Some(*index), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(*index), true),
             })
             .collect::<URResult<Vec<PathComponent>>>()?,
         Some(mfp),
@@ -154,8 +154,8 @@ fn generate_eth_ledger_live_key(
         target_path
             .into_iter()
             .map(|v| match v {
-                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
-                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+                ChildNumber::Normal { index } => get_path_component(Some(*index), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(*index), true),
             })
             .collect::<URResult<Vec<PathComponent>>>()?,
         Some(mfp),
@@ -207,23 +207,23 @@ mod tests {
             mfp,
             vec![
                 ExtendedPublicKey::new(
-                    DerivationPath::from_str(&sol_pub_1_path).unwrap(),
-                    hex::decode(&sol_pub_1).unwrap(),
+                    DerivationPath::from_str(sol_pub_1_path).unwrap(),
+                    hex::decode(sol_pub_1).unwrap(),
                 ),
                 ExtendedPublicKey::new(
-                    DerivationPath::from_str(&sol_pub_2_path).unwrap(),
-                    hex::decode(&sol_pub_2).unwrap(),
+                    DerivationPath::from_str(sol_pub_2_path).unwrap(),
+                    hex::decode(sol_pub_2).unwrap(),
                 ),
                 ExtendedPublicKey::new(
-                    DerivationPath::from_str(&eth_bip44_standard_xpub_path).unwrap(),
-                    Xpub::from_str(&eth_bip44_standard_xpub)
+                    DerivationPath::from_str(eth_bip44_standard_xpub_path).unwrap(),
+                    Xpub::from_str(eth_bip44_standard_xpub)
                         .unwrap()
                         .encode()
                         .to_vec(),
                 ),
                 ExtendedPublicKey::new(
-                    DerivationPath::from_str(&eth_ledger_live_xpub_1_path).unwrap(),
-                    Xpub::from_str(&eth_ledger_live_xpub_1)
+                    DerivationPath::from_str(eth_ledger_live_xpub_1_path).unwrap(),
+                    Xpub::from_str(eth_ledger_live_xpub_1)
                         .unwrap()
                         .encode()
                         .to_vec(),

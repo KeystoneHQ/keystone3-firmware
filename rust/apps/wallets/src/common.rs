@@ -4,5 +4,5 @@ use ur_registry::{
 };
 
 pub fn get_path_component(index: Option<u32>, hardened: bool) -> URResult<PathComponent> {
-    PathComponent::new(index, hardened).map_err(|e| URError::CborEncodeError(e))
+    PathComponent::new(index, hardened).map_err(URError::CborEncodeError)
 }

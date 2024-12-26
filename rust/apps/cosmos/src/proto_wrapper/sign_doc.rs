@@ -7,7 +7,7 @@ use crate::proto_wrapper::fee::Fee;
 use crate::proto_wrapper::msg::msg_serialize::Msg;
 use crate::{CosmosError, Result};
 use alloc::boxed::Box;
-use alloc::string::{String, ToString};
+use alloc::string::{String};
 use alloc::vec::Vec;
 use serde::Serialize;
 
@@ -26,7 +26,7 @@ impl SignDoc {
             Message::decode(Bytes::from(proto.body_bytes)).map_err(|e| {
                 CosmosError::ParseTxError(format!(
                     "proto TxBody deserialize failed {}",
-                    e.to_string()
+                    e
                 ))
             })?;
         let body = Body::try_from(tx_body)?;
@@ -35,7 +35,7 @@ impl SignDoc {
             Message::decode(Bytes::from(proto.auth_info_bytes)).map_err(|e| {
                 CosmosError::ParseTxError(format!(
                     "proto AuthInfo deserialize failed {}",
-                    e.to_string()
+                    e
                 ))
             })?;
         let auth_info = AuthInfo::try_from(auth_info)?;
@@ -54,7 +54,7 @@ impl SignDoc {
             Message::decode(Bytes::from(data.clone())).map_err(|e| {
                 CosmosError::ParseTxError(format!(
                     "proto SignDoc deserialize failed {}",
-                    e.to_string()
+                    e
                 ))
             })?;
         SignDoc::from(proto_sign_doc)

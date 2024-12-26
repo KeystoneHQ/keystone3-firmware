@@ -34,7 +34,7 @@ pub fn ton_mnemonic_validate(
             if seed[0] != 1 {
                 return Err(MnemonicError::InvalidFirstByte(seed[0]).into());
             }
-            let entropy = ton_mnemonic_to_entropy(&normalized_words, password);
+            let entropy = ton_mnemonic_to_entropy(normalized_words, password);
             pbkdf2_sha512(
                 &entropy,
                 "TON seed version".as_bytes(),
@@ -101,12 +101,12 @@ pub fn ton_master_seed_to_public_key(master_seed: [u8; 64]) -> [u8; 32] {
 #[cfg(test)]
 mod tests {
     use alloc::{string::ToString, vec};
-    use base64::Engine;
+    
     use hex;
 
     use super::*;
     extern crate std;
-    use std::{println, vec::Vec};
+    use std::{vec::Vec};
 
     #[test]
     fn test_ton_mnemonic_to_entropy() {
@@ -137,15 +137,13 @@ mod tests {
 
     #[test]
     fn test_ton_mnemonic_invalid_mnemonic() {
-        let words = vec![
-            "dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
-            "gas", "diet", "dune",
-        ]
+        let words = ["dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
+            "gas", "diet", "dune"]
         .iter()
         .map(|v| v.to_lowercase())
         .collect();
         let result = ton_mnemonic_to_master_seed(words, None);
-        assert_eq!(result.is_err(), true);
+        assert!(result.is_err());
         assert_eq!(
             result.err().unwrap().to_string(),
             "Invalid TON Mnemonic, Invalid mnemonic word count (count: 12)"

@@ -10,7 +10,7 @@ use app_ethereum::{
     LegacyTransaction, TransactionSignature,
 };
 use cryptoxide::hashing::keccak256;
-use hex;
+
 use keystore::algorithms::secp256k1::derive_public_key;
 use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 use ur_registry::ethereum::eth_signature::EthSignature;
@@ -60,9 +60,9 @@ pub extern "C" fn eth_check_ur_bytes(
             let xfp = payload.xfp;
             let xfp_vec: [u8; 4] = hex::decode(xfp).unwrap().try_into().unwrap();
             if mfp == xfp_vec {
-                return TransactionCheckResult::new().c_ptr();
+                TransactionCheckResult::new().c_ptr()
             } else {
-                return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+                TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr()
             }
         }
         Err(e) => TransactionCheckResult::from(KeystoneError::ProtobufError(e.to_string())).c_ptr(),
@@ -98,9 +98,9 @@ pub extern "C" fn eth_check(
         }
     };
     if ur_mfp == mfp {
-        return TransactionCheckResult::new().c_ptr();
+        TransactionCheckResult::new().c_ptr()
     } else {
-        return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+        TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr()
     }
 }
 
@@ -122,7 +122,7 @@ pub extern "C" fn eth_get_root_path_bytes(ptr: PtrUR) -> PtrString {
         .take(3)
         .collect::<Vec<&str>>()
         .join("/");
-    return convert_c_char(root_path);
+    convert_c_char(root_path)
 }
 
 #[no_mangle]
@@ -135,14 +135,14 @@ pub extern "C" fn eth_get_root_path(ptr: PtrUR) -> PtrString {
             return convert_c_char(root_path);
         }
     }
-    return convert_c_char("".to_string());
+    convert_c_char("".to_string())
 }
 
 fn parse_eth_root_path(path: String) -> Option<String> {
     let root_path = "44'/60'/";
     match path.strip_prefix(root_path) {
         Some(path) => {
-            if let Some(index) = path.find("/") {
+            if let Some(index) = path.find('/') {
                 let sub_path = &path[..index];
                 Some(format!("{}{}", root_path, sub_path))
             } else {
@@ -157,11 +157,7 @@ fn parse_eth_sub_path(path: String) -> Option<String> {
     let root_path = "44'/60'/";
     match path.strip_prefix(root_path) {
         Some(path) => {
-            if let Some(index) = path.find("/") {
-                Some(path[index + 1..].to_string())
-            } else {
-                None
-            }
+            path.find('/').map(|index| path[index + 1..].to_string())
         }
         None => None,
     }
@@ -177,7 +173,7 @@ fn try_get_eth_public_key(
             let _path = path.clone();
             if let Some(sub_path) = parse_eth_sub_path(_path) {
                 derive_public_key(&xpub, &format!("m/{}", sub_path))
-                    .map_err(|_e| RustCError::UnexpectedError(format!("unable to derive pubkey")))
+                    .map_err(|_e| RustCError::UnexpectedError("unable to derive pubkey".to_string()))
             } else {
                 Err(RustCError::InvalidHDPath)
             }
@@ -210,7 +206,7 @@ pub extern "C" fn eth_parse_bytes_data(
         .collect::<Vec<&str>>()
         .join("/");
     let address = derive_address(
-        &sign_tx.hd_path.to_uppercase().trim_start_matches("M/"),
+        sign_tx.hd_path.to_uppercase().trim_start_matches("M/"),
         &xpub,
         root_path,
     )
@@ -254,7 +250,7 @@ pub extern "C" fn eth_parse(
                     }
                 }
                 TransactionType::TypedTransaction => {
-                    match crypto_eth.get_sign_data().get(0) {
+                    match crypto_eth.get_sign_data().first() {
                         Some(02) => {
                             //remove envelop
                             let payload = crypto_eth.get_sign_data()[1..].to_vec();
@@ -368,7 +364,7 @@ pub extern "C" fn eth_sign_tx_dynamic(
         TransactionType::Legacy => {
             app_ethereum::sign_legacy_tx(crypto_eth.get_sign_data().to_vec(), seed, &path)
         }
-        TransactionType::TypedTransaction => match crypto_eth.get_sign_data().get(0) {
+        TransactionType::TypedTransaction => match crypto_eth.get_sign_data().first() {
             Some(0x02) => {
                 app_ethereum::sign_fee_markey_tx(crypto_eth.get_sign_data().to_vec(), seed, &path)
             }
@@ -396,7 +392,7 @@ pub extern "C" fn eth_sign_tx_dynamic(
             let eth_signature = EthSignature::new(
                 crypto_eth.get_request_id(),
                 sig.serialize(),
-                Some(format!("{}", KEYSTONE)),
+                Some(KEYSTONE.to_string()),
             );
             match eth_signature.try_into() {
                 Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -486,14 +482,14 @@ pub extern "C" fn eth_sign_tx_bytes(
     UREncodeResult::encode(
         ur_registry::bytes::Bytes::new(zip_data).try_into().unwrap(),
         ur_registry::bytes::Bytes::get_registry_type().get_type(),
-        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+        FRAGMENT_MAX_LENGTH_DEFAULT,
     )
     .c_ptr()
 }
 
 #[no_mangle]
 pub extern "C" fn eth_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
-    eth_sign_tx_dynamic(ptr, seed, seed_len, FRAGMENT_MAX_LENGTH_DEFAULT.clone())
+    eth_sign_tx_dynamic(ptr, seed, seed_len, FRAGMENT_MAX_LENGTH_DEFAULT)
 }
 
 // _unlimited
@@ -503,7 +499,7 @@ pub extern "C" fn eth_sign_tx_unlimited(
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
-    eth_sign_tx_dynamic(ptr, seed, seed_len, FRAGMENT_UNLIMITED_LENGTH.clone())
+    eth_sign_tx_dynamic(ptr, seed, seed_len, FRAGMENT_UNLIMITED_LENGTH)
 }
 
 #[no_mangle]
@@ -540,9 +536,9 @@ mod tests {
     fn test_test() {
         let _path = "44'/60'/1'/0/0";
         let root_path = "44'/60'/";
-        let sub_path = match _path.strip_prefix(root_path) {
+        match _path.strip_prefix(root_path) {
             Some(path) => {
-                if let Some(index) = path.find("/") {
+                if let Some(index) = path.find('/') {
                     println!("{}", &path[index..]);
                 }
             }

@@ -17,7 +17,7 @@ fn main() {
         #[cfg(feature = "debug-btc-only")]
         "debug-btc-only",
     ];
-    assert!(features.len() > 0, "No build variant enabled");
+    assert!(!features.is_empty(), "No build variant enabled");
     assert!(
         features.len() == 1,
         "Multiple build variants enabled: {:?}",

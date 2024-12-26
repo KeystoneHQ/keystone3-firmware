@@ -373,7 +373,7 @@ impl From<ContractData> for DisplayContractData {
                 value
                     .get_params()
                     .iter()
-                    .map(|v| DisplayContractParam::from(v))
+                    .map(DisplayContractParam::from)
                     .collect_vec(),
             )
             .c_ptr(),

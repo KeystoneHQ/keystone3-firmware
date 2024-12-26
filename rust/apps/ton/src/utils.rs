@@ -25,7 +25,7 @@ pub(crate) fn shorten_string(text: String) -> String {
         let _ = _text.split_off(512);
         _text.push_str("......");
     }
-    return _text;
+    _text
 }
 
 #[cfg(test)]

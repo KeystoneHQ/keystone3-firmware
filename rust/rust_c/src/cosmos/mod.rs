@@ -53,7 +53,7 @@ fn build_sign_result(
                 sign_request.get_sign_data().to_vec(),
                 &path,
                 SignMode::COSMOS,
-                &seed,
+                seed,
             )?;
             Ok(Either::Left(CosmosSignature::new(
                 sign_request.get_request_id(),
@@ -74,14 +74,14 @@ fn build_sign_result(
                 sign_request.get_sign_data().to_vec(),
                 &path,
                 SignMode::EVM,
-                &seed,
+                seed,
             )?;
             Ok(Either::Right(EvmSignature::new(
                 sign_request.get_request_id(),
                 signature.to_vec(),
             )))
         }
-        _ => return Err(CosmosError::SignFailure("invalid ur type".to_string())),
+        _ => Err(CosmosError::SignFailure("invalid ur type".to_string())),
     }
 }
 
@@ -181,7 +181,7 @@ pub extern "C" fn cosmos_sign_tx(
                 v.map_or_else(
                     |e| UREncodeResult::from(e).c_ptr(),
                     |data| {
-                        UREncodeResult::encode(data, ur_tag, FRAGMENT_MAX_LENGTH_DEFAULT.clone())
+                        UREncodeResult::encode(data, ur_tag, FRAGMENT_MAX_LENGTH_DEFAULT)
                             .c_ptr()
                     },
                 )

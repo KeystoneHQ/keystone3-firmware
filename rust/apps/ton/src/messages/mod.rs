@@ -2,7 +2,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-use hex;
+
 use serde::Serialize;
 
 use self::jetton::JettonMessage;
@@ -37,7 +37,7 @@ impl ParseCell for SigningMessage {
             let messages: Result<Vec<TransferMessage>, TonCellError> = cell
                 .references
                 .iter()
-                .map(|cell| TransferMessage::parse(cell))
+                .map(TransferMessage::parse)
                 .collect();
             Ok(Self {
                 wallet_id,
@@ -90,22 +90,20 @@ impl ParseCell for TransferMessage {
             let mut ref_index = 0;
             let state_init = if parser.load_bit()? {
                 let init = Some(hex::encode(cell.reference(ref_index)?.data.clone()));
-                ref_index = ref_index + 1;
+                ref_index += 1;
                 init
             } else {
                 None
             };
             let data = if parser.load_bit()? {
                 Some(InternalMessage::parse(cell.reference(ref_index)?))
+            } else if parser.remaining_bits() > 0 {
+                let mut builder = CellBuilder::new();
+                let remaining_bits = parser.remaining_bits();
+                builder.store_bits(remaining_bits, &parser.load_bits(remaining_bits)?)?;
+                Some(InternalMessage::parse(&builder.build()?.to_arc()))
             } else {
-                if parser.remaining_bits() > 0 {
-                    let mut builder = CellBuilder::new();
-                    let remaining_bits = parser.remaining_bits();
-                    builder.store_bits(remaining_bits, &parser.load_bits(remaining_bits)?)?;
-                    Some(InternalMessage::parse(&builder.build()?.to_arc()))
-                } else {
-                    None
-                }
+                None
             };
             Ok(Self {
                 ihr_disabled,

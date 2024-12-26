@@ -14,7 +14,7 @@ use core::str::FromStr;
 use bitcoin::bip32::{DerivationPath, Xpub};
 use bitcoin::secp256k1;
 use bitcoin::secp256k1::Message;
-use hex;
+
 use serde_json::{from_slice, Value};
 
 use crate::errors::{XRPError, R};
@@ -41,7 +41,7 @@ pub fn sign_tx(raw_hex: &[u8], hd_path: &String, seed: &[u8]) -> R<Vec<u8>> {
         ))
     })?;
     let (_, signature) =
-        keystore::algorithms::secp256k1::sign_message_by_seed(&seed, hd_path, &message)
+        keystore::algorithms::secp256k1::sign_message_by_seed(seed, hd_path, &message)
             .map_err(|e| XRPError::KeystoreError(format!("sign failed {:?}", e.to_string())))?;
     let signed_tx_str = wrapped_tx.generate_signed_tx(&signature)?;
     Ok(hex::decode(signed_tx_str)?.to_vec())
@@ -53,7 +53,7 @@ pub fn parse(raw_hex: &[u8]) -> R<parser::structs::ParsedXrpTx> {
 }
 
 pub fn get_pubkey_path(root_xpub: &str, pubkey: &str, max_i: u32) -> R<String> {
-    let xpub = Xpub::from_str(&root_xpub)?;
+    let xpub = Xpub::from_str(root_xpub)?;
     let k1 = secp256k1::Secp256k1::new();
     let a_xpub = xpub.derive_pub(&k1, &DerivationPath::from_str("m/0")?)?;
     let pubkey_arr = hex::decode(pubkey)?;
@@ -65,7 +65,7 @@ pub fn get_pubkey_path(root_xpub: &str, pubkey: &str, max_i: u32) -> R<String> {
             return Ok(format!("{}:m/0/{}", pubkey, i));
         }
     }
-    return Err(XRPError::InvalidData("pubkey not found".to_string()));
+    Err(XRPError::InvalidData("pubkey not found".to_string()))
 }
 
 pub fn check_tx(raw: &[u8], root_xpub: &str, cached_pubkey: &str) -> R<String> {
@@ -87,7 +87,7 @@ mod tests {
         let raw_hex = "7B2253657175656E6365223A312C22466565223A223230222C224163636F756E74223A22724C354259534C643839757A6A3469344A3437694C51673948776D65584537654374222C2244657374696E6174696F6E223A227248666F6631784E6245744A5973584E384D55626E66396946697843455938346B66222C2244657374696E6174696F6E546167223A313730303337333336342C22416D6F756E74223A2231303030303030222C225472616E73616374696F6E54797065223A225061796D656E74222C22466C616773223A323134373438333634382C225369676E696E675075624B6579223A22303331443638424331413134324536373636423242444642303036434346453133354546324530453245393441424235434635433941423631303437373646424145227D";
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
         let signed_tx = sign_tx(
-            &hex::decode(raw_hex).unwrap().as_slice(),
+            hex::decode(raw_hex).unwrap().as_slice(),
             &hd_paths,
             seed.as_slice(),
         )

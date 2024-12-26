@@ -11,6 +11,7 @@ use cryptoxide::sha2;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Default)]
 pub struct CryptoHash(pub [u8; 32]);
 
 impl CryptoHash {
@@ -23,11 +24,7 @@ impl CryptoHash {
     }
 }
 
-impl Default for CryptoHash {
-    fn default() -> Self {
-        CryptoHash(Default::default())
-    }
-}
+
 
 impl borsh::BorshSerialize for CryptoHash {
     fn serialize<W: io::Write>(&self, writer: &mut W) -> Result<(), io::Error> {

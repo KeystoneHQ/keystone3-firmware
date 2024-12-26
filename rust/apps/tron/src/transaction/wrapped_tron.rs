@@ -43,7 +43,7 @@ pub struct WrappedTron {
 macro_rules! derivation_account_path {
     ($t: expr) => {{
         let parts = $t.split("/").collect::<Vec<&str>>();
-        let result: Result<String> = match crate::check_hd_path!(parts) {
+        let result: Result<String> = match $crate::check_hd_path!(parts) {
             Ok(_) => {
                 let path = parts.as_slice()[1..parts.len() - 2].to_vec().join("/");
                 Ok(format!("{}{}", "m/", path))
@@ -92,7 +92,7 @@ impl WrappedTron {
     ) -> Result<Transaction> {
         let to_address = base58check_to_u8_slice(to)?;
         let owner_address = base58check_to_u8_slice(from)?;
-        return if token.to_uppercase() == "TRX" {
+        if token.to_uppercase() == "TRX" {
             let mut transfer_contract = TransferContract::default();
             transfer_contract.owner_address = owner_address;
             transfer_contract.amount = amount;
@@ -118,7 +118,7 @@ impl WrappedTron {
                 "TransferAssetContract",
                 None,
             )
-        };
+        }
     }
 
     fn build_transfer_contract(
@@ -144,7 +144,7 @@ impl WrappedTron {
         raw.contract = vec![contract];
         let mut transaction = Transaction::default();
         transaction.raw_data = Some(raw);
-        return Ok(transaction);
+        Ok(transaction)
     }
 
     fn ref_with_latest_block(
@@ -153,7 +153,7 @@ impl WrappedTron {
         is_trc_20: bool,
     ) -> Result<Transaction> {
         let number_buf: [u8; 8] = (latest_block.number as u64).to_be_bytes();
-        let hash_buf = hex::decode(latest_block.hash.to_string()).map_err(|_e| {
+        let hash_buf = hex::decode(&latest_block.hash).map_err(|_e| {
             TronError::InvalidRawTxCryptoBytes(format!(
                 "invalid latest block hash {}",
                 latest_block.hash
@@ -172,7 +172,7 @@ impl WrappedTron {
             raw_data.expiration = latest_block.timestamp + 600 * 5 * 1000;
             tx.raw_data = Some(raw_data);
         };
-        return Ok(tx.to_owned());
+        Ok(tx.to_owned())
     }
 
     fn build_transfer_tx(tx_data: &protoc::TronTx) -> Result<Transaction> {
@@ -199,7 +199,7 @@ impl WrappedTron {
                 .ok_or(TronError::InvalidRawTxCryptoBytes(
                     "empty latest block".to_string(),
                 ))?;
-        return Self::ref_with_latest_block(tx, latest_block, false);
+        Self::ref_with_latest_block(tx, latest_block, false)
     }
 
     #[allow(deprecated)]
@@ -314,7 +314,7 @@ impl WrappedTron {
     pub fn format_amount(&self) -> Result<String> {
         let value = f64::from_str(self.value.as_str())?;
         let unit = self.format_unit()?;
-        Ok(format!("{} {}", value.div(self.divider as f64), unit))
+        Ok(format!("{} {}", value.div(self.divider), unit))
     }
 
     pub fn format_method(&self) -> Result<String> {
@@ -334,5 +334,5 @@ impl WrappedTron {
     }
 }
 
-pub const DIVIDER: f64 = 1000000 as f64;
+pub const DIVIDER: f64 = 1000000_f64;
 pub const NETWORK: &str = "TRON";

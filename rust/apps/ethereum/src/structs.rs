@@ -39,7 +39,7 @@ impl Encodable for TransactionAction {
                 s.append_empty_data();
             }
         }
-        ()
+        
     }
 }
 

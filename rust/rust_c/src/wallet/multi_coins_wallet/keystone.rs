@@ -48,7 +48,7 @@ pub extern "C" fn get_keystone_wallet_ur(
                         Ok(_v) => UREncodeResult::encode(
                             _v,
                             "BYTES".to_string(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
                         )
                         .c_ptr(),
                         Err(_e) => UREncodeResult::from(_e).c_ptr(),

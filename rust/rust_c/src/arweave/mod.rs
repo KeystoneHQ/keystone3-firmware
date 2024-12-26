@@ -19,10 +19,10 @@ use app_arweave::{
     generate_public_key_from_primes, generate_secret, parse,
 };
 use cty::c_char;
-use hex;
+
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use keystore::algorithms::rsa::{sign_message, SigningOption};
-use serde_json;
+
 use serde_json::Value;
 use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen, SignType};
 use ur_registry::arweave::arweave_signature::ArweaveSignature;
@@ -65,7 +65,7 @@ pub extern "C" fn generate_arweave_public_key_from_primes(
     let p = unsafe { slice::from_raw_parts(p, p_len as usize) };
     let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
     let public = generate_public_key_from_primes(p, q).unwrap();
-    return SimpleResponse::success(Box::into_raw(Box::new(public)) as *mut u8).simple_c_ptr();
+    SimpleResponse::success(Box::into_raw(Box::new(public)) as *mut u8).simple_c_ptr()
 }
 
 #[no_mangle]
@@ -78,7 +78,7 @@ pub extern "C" fn generate_rsa_public_key(
     let p = unsafe { slice::from_raw_parts(p, p_len as usize) };
     let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
     let public = generate_public_key_from_primes(p, q).unwrap();
-    return SimpleResponse::success(convert_c_char(hex::encode(public))).simple_c_ptr();
+    SimpleResponse::success(convert_c_char(hex::encode(public))).simple_c_ptr()
 }
 
 #[no_mangle]
@@ -93,8 +93,8 @@ pub extern "C" fn aes256_encrypt_primes(
     let encrypted_data = aes256_encrypt(&key, &iv, data).unwrap();
     let mut result_bytes: [u8; 528] = [0; 528];
     result_bytes.copy_from_slice(&encrypted_data);
-    return SimpleResponse::success(Box::into_raw(Box::new(result_bytes)) as *mut u8)
-        .simple_c_ptr();
+    SimpleResponse::success(Box::into_raw(Box::new(result_bytes)) as *mut u8)
+        .simple_c_ptr()
 }
 
 #[no_mangle]
@@ -124,14 +124,14 @@ pub extern "C" fn aes256_decrypt_primes(
 pub extern "C" fn arweave_get_address(xpub: PtrString) -> *mut SimpleResponse<c_char> {
     let xpub = recover_c_char(xpub);
     let address = app_arweave::generate_address(hex::decode(xpub).unwrap()).unwrap();
-    return SimpleResponse::success(convert_c_char(address)).simple_c_ptr();
+    SimpleResponse::success(convert_c_char(address)).simple_c_ptr()
 }
 
 #[no_mangle]
 pub extern "C" fn fix_arweave_address(address: PtrString) -> *mut SimpleResponse<c_char> {
     let address = recover_c_char(address);
     let fixed_address = fix_address(&address);
-    return SimpleResponse::success(convert_c_char(fixed_address)).simple_c_ptr();
+    SimpleResponse::success(convert_c_char(fixed_address)).simple_c_ptr()
 }
 
 #[no_mangle]
@@ -154,7 +154,7 @@ pub extern "C" fn ar_check_tx(
             return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
         }
     }
-    return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
+    TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
 }
 
 #[no_mangle]
@@ -235,7 +235,7 @@ fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
             Ok(data_item.deep_hash()?)
         }
         SignType::Message => {
-            return Ok(sign_data);
+            Ok(sign_data)
         }
     }
 }
@@ -282,7 +282,7 @@ pub extern "C" fn ar_sign_tx(
                         UREncodeResult::encode(
                             data,
                             ArweaveSignature::get_registry_type().get_type(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
                         )
                         .c_ptr()
                     },

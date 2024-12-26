@@ -89,7 +89,7 @@ pub extern "C" fn export_multi_sig_xpub_by_ur(
                 Ok(data) => UREncodeResult::encode(
                     data,
                     CryptoAccount::get_registry_type().get_type(),
-                    FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT,
                 )
                 .c_ptr(),
                 Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -115,7 +115,7 @@ pub extern "C" fn export_multi_sig_wallet_by_ur_test(
     unsafe {
         let master_fingerprint = slice::from_raw_parts(master_fingerprint, length as usize);
         let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-            hex::encode(master_fingerprint.to_vec()).as_str(),
+            hex::encode(master_fingerprint).as_str(),
         )
         .map_err(|_e| RustCError::InvalidMasterFingerprint)
         {
@@ -138,7 +138,7 @@ pub extern "C" fn export_multi_sig_wallet_by_ur_test(
                         UREncodeResult::encode(
                             data,
                             Bytes::get_registry_type().get_type(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
                         )
                         .c_ptr()
                     },
@@ -197,7 +197,7 @@ pub extern "C" fn export_multi_sig_wallet_by_ur(
     unsafe {
         let master_fingerprint = slice::from_raw_parts(master_fingerprint, length as usize);
         let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-            hex::encode(master_fingerprint.to_vec()).as_str(),
+            hex::encode(master_fingerprint).as_str(),
         )
         .map_err(|_e| RustCError::InvalidMasterFingerprint)
         {
@@ -225,7 +225,7 @@ pub extern "C" fn export_multi_sig_wallet_by_ur(
                         UREncodeResult::encode(
                             data,
                             Bytes::get_registry_type().get_type(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
                         )
                         .c_ptr()
                     },
@@ -246,7 +246,7 @@ pub extern "C" fn import_multi_sig_wallet_by_ur(
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
     let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint.to_vec()).as_str(),
+        hex::encode(master_fingerprint).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
     {
@@ -278,7 +278,7 @@ pub extern "C" fn import_multi_sig_wallet_by_file(
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
     let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint.to_vec()).as_str(),
+        hex::encode(master_fingerprint).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
     {
@@ -311,7 +311,7 @@ pub extern "C" fn generate_address_for_multisig_wallet_config(
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
     let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint.to_vec()).as_str(),
+        hex::encode(master_fingerprint).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
     {
@@ -371,7 +371,7 @@ pub extern "C" fn parse_and_verify_multisig_config(
     let seed = unsafe { core::slice::from_raw_parts(seed, seed_len as usize) };
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
     let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint.to_vec()).as_str(),
+        hex::encode(master_fingerprint).as_str(),
     )
     .map_err(|_e| RustCError::InvalidMasterFingerprint)
     {

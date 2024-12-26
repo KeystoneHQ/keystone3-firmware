@@ -127,7 +127,7 @@ impl UREncodeResult {
                     match result.encoder {
                         Some(v) => Self::multi(result.data.to_uppercase(), v),
                         None => {
-                            Self::from(RustCError::UnexpectedError(format!("ur encoder is none")))
+                            Self::from(RustCError::UnexpectedError("ur encoder is none".to_string()))
                         }
                     }
                 } else {
@@ -611,10 +611,10 @@ fn _decode_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTyp
             } else {
                 match parse_result.data {
                     Some(data) => {
-                        return match InferViewType::infer(&data) {
+                        match InferViewType::infer(&data) {
                             Ok(t) => URParseResult::single(t, u, data),
                             Err(e) => URParseResult::from(e),
-                        };
+                        }
                     }
                     None => URParseResult::from(RustCError::UnexpectedError(
                         "ur data is none".to_string(),
@@ -623,7 +623,7 @@ fn _decode_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTyp
             }
         }
         Err(e) => {
-            return URParseResult::from(e);
+            URParseResult::from(e)
         }
     }
 }
@@ -700,10 +700,10 @@ fn _receive_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTy
             if parse_result.is_complete {
                 match parse_result.data {
                     Some(data) => {
-                        return match InferViewType::infer(&data) {
+                        match InferViewType::infer(&data) {
                             Ok(t) => URParseMultiResult::success(t, u, data),
                             Err(e) => URParseMultiResult::from(e),
-                        };
+                        }
                     }
                     None => URParseMultiResult::from(RustCError::UnexpectedError(
                         "UR parsed completely but data is none".to_string(),
@@ -714,7 +714,7 @@ fn _receive_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTy
             }
         }
         Err(e) => {
-            return URParseMultiResult::from(e);
+            URParseMultiResult::from(e)
         }
     }
 }

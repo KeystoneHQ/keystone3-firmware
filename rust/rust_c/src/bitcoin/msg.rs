@@ -73,11 +73,10 @@ pub extern "C" fn btc_parse_msg(
                                 .iter()
                                 .find(|key| {
                                     let xpub_path = recover_c_char(key.path);
-                                    return path.clone().starts_with(&xpub_path);
+                                    path.clone().starts_with(&xpub_path)
                                 })
                                 .map(|v| recover_c_char(v.xpub))
-                                .map(|xpub| app_bitcoin::get_address(path, &xpub).ok())
-                                .flatten();
+                                .and_then(|xpub| app_bitcoin::get_address(path, &xpub).ok());
                             let msg = req.get_sign_data();
                             if let Ok(msg_uft8) = String::from_utf8(msg.to_vec()) {
                                 let display_msg = DisplayBtcMsg {
@@ -133,7 +132,7 @@ pub extern "C" fn btc_sign_msg(
                                     return UREncodeResult::encode(
                                         data,
                                         BtcSignature::get_registry_type().get_type(),
-                                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                                        FRAGMENT_MAX_LENGTH_DEFAULT,
                                     )
                                     .c_ptr();
                                 }
@@ -165,7 +164,7 @@ pub extern "C" fn parse_seed_signer_message(
         .iter()
         .find(|key| {
             let xpub_path = recover_c_char(key.path);
-            return path.clone().starts_with(&xpub_path);
+            path.clone().starts_with(&xpub_path)
         })
         .map(|v| recover_c_char(v.xpub))
         .map(|xpub| app_bitcoin::get_address(path, &xpub));
@@ -204,9 +203,9 @@ pub extern "C" fn sign_seed_signer_message(
         let sig = app_bitcoin::sign_msg(&message, seed, &path);
         match sig {
             Ok(sig) => {
-                return UREncodeResult::text(base64::encode_config(&sig, base64::STANDARD)).c_ptr()
+                UREncodeResult::text(base64::encode_config(&sig, base64::STANDARD)).c_ptr()
             }
-            Err(e) => return UREncodeResult::from(e).c_ptr(),
+            Err(e) => UREncodeResult::from(e).c_ptr(),
         }
     }
 }

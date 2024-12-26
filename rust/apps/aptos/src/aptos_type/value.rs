@@ -3,7 +3,7 @@ use crate::aptos_type::identifier::Identifier;
 use crate::aptos_type::language_storage::{StructTag, TypeTag};
 use crate::errors::AptosError;
 use alloc::boxed::Box;
-use alloc::format;
+
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use core::{
@@ -557,7 +557,7 @@ impl TryInto<StructTag> for &MoveStructLayout {
         use MoveStructLayout::*;
         match self {
             Runtime(..) | CheckedRuntime { fields: _, tag: _ } | WithFields(..) => Err(AptosError::ParseTxError(
-                format!("Invalid MoveTypeLayout -> StructTag conversion--needed MoveLayoutType::WithTypes"))
+                "Invalid MoveTypeLayout -> StructTag conversion--needed MoveLayoutType::WithTypes".to_string())
             ),
             WithTypes { type_, .. } => Ok(type_.clone()),
         }

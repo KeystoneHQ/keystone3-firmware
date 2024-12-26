@@ -116,12 +116,12 @@ pub extern "C" fn get_connect_metamask_ur_dynamic(
                         }
                     }
                     Err(e) => {
-                        return UREncodeResult::from(e).c_ptr();
+                        UREncodeResult::from(e).c_ptr()
                     }
                 }
             }
             _ => {
-                let key = keys.get(0).ok_or(RustCError::InvalidXPub);
+                let key = keys.first().ok_or(RustCError::InvalidXPub);
                 match key {
                     Ok(k) => {
                         let result = app_wallets::metamask::generate_standard_legacy_hd_key(
@@ -143,7 +143,7 @@ pub extern "C" fn get_connect_metamask_ur_dynamic(
                             Err(e) => UREncodeResult::from(e).c_ptr(),
                         }
                     }
-                    Err(e) => return UREncodeResult::from(e).c_ptr(),
+                    Err(e) => UREncodeResult::from(e).c_ptr(),
                 }
             }
         }
@@ -162,8 +162,8 @@ pub extern "C" fn get_connect_metamask_ur_unlimited(
         master_fingerprint_length,
         account_type,
         public_keys,
-        FRAGMENT_UNLIMITED_LENGTH.clone(),
-        FRAGMENT_UNLIMITED_LENGTH.clone(),
+        FRAGMENT_UNLIMITED_LENGTH,
+        FRAGMENT_UNLIMITED_LENGTH,
     )
 }
 
@@ -179,7 +179,7 @@ pub extern "C" fn get_connect_metamask_ur(
         master_fingerprint_length,
         account_type,
         public_keys,
-        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+        FRAGMENT_MAX_LENGTH_DEFAULT,
         240,
     )
 }
@@ -255,7 +255,7 @@ pub extern "C" fn check_hardware_call_path(
         _ => return Response::success(false).c_ptr(),
     };
     let mut path = recover_c_char(path).to_lowercase();
-    if !path.starts_with("m") {
+    if !path.starts_with('m') {
         path = format!("m/{}", path);
     }
     let result = path.starts_with(prefix);
@@ -271,7 +271,7 @@ pub extern "C" fn generate_key_derivation_ur(
 ) -> Ptr<UREncodeResult> {
     let mfp = extract_array!(master_fingerprint, u8, master_fingerprint_length);
     let mfp = match <&[u8; 4]>::try_from(mfp) {
-        Ok(mfp) => mfp.clone(),
+        Ok(mfp) => *mfp,
         Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
     };
     let public_keys = unsafe { recover_c_array(xpubs) };

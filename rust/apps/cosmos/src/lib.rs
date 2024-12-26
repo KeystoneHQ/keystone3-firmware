@@ -17,7 +17,7 @@ use crate::transaction::structs::{ParsedCosmosTx, SignMode};
 use crate::utils::{hash160, keccak256, sha256_digest};
 use bech32::{Bech32, Hrp};
 use bitcoin::secp256k1::{Message, PublicKey};
-use hex;
+
 use keystore::algorithms::secp256k1::derive_public_key;
 
 mod cosmos_sdk_proto;
@@ -76,7 +76,7 @@ pub fn sign_tx(
 
     if let Ok(message) = Message::from_slice(&hash) {
         let (_, signature) = keystore::algorithms::secp256k1::sign_message_by_seed(
-            &seed, path, &message,
+            seed, path, &message,
         )
         .map_err(|e| CosmosError::KeystoreError(format!("sign failed {:?}", e.to_string())))?;
         return Ok(signature);
@@ -90,7 +90,7 @@ pub fn derive_address(
     root_path: &str,
     prefix: &str,
 ) -> Result<String> {
-    let root_path = if !root_path.ends_with("/") {
+    let root_path = if !root_path.ends_with('/') {
         root_path.to_string() + "/"
     } else {
         root_path.to_string()
@@ -100,12 +100,12 @@ pub fn derive_address(
         .ok_or(CosmosError::InvalidHDPath(hd_path.to_string()))?;
     derive_public_key(&root_x_pub.to_string(), &format!("m/{}", sub_path))
         .map(|public_key| generate_address(public_key, prefix))
-        .map_err(|e| CosmosError::from(e))?
+        .map_err(CosmosError::from)?
 }
 
 #[cfg(test)]
 mod tests {
-    use hex;
+    
 
     use super::*;
 

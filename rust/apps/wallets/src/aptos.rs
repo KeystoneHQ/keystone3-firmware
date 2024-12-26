@@ -11,7 +11,7 @@ pub fn generate_sync_ur(
     master_fingerprint: &[u8; 4],
     public_keys: BTreeMap<DerivationPath, String>,
 ) -> URResult<CryptoMultiAccounts> {
-    generate_crypto_multi_accounts_sync_ur(master_fingerprint, public_keys, &"APT")
+    generate_crypto_multi_accounts_sync_ur(master_fingerprint, public_keys, "APT")
 }
 
 #[cfg(test)]

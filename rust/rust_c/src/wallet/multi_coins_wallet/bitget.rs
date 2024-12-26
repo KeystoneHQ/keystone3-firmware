@@ -50,7 +50,7 @@ pub extern "C" fn get_bitget_wallet_ur(
                         Ok(_v) => UREncodeResult::encode(
                             _v,
                             CryptoMultiAccounts::get_registry_type().get_type(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
                         )
                         .c_ptr(),
                         Err(_e) => UREncodeResult::from(_e).c_ptr(),

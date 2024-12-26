@@ -319,10 +319,7 @@ impl ParsedCardanoTx {
                 if tx.body().outputs().len() == 0 {
                     return 1;
                 }
-                match tx.body().outputs().get(0).address().network_id() {
-                    Ok(id) => id,
-                    Err(_) => 1,
-                }
+                tx.body().outputs().get(0).address().network_id().unwrap_or(1)
             }
             Some(id) => match id.kind() {
                 NetworkIdKind::Mainnet => 1,
@@ -661,10 +658,7 @@ impl ParsedCardanoTx {
                     ));
                 }
                 if let Some(_cert) = cert.as_drep_update() {
-                    let anchor_data_hash = match _cert.anchor() {
-                        Some(anchor) => Some(anchor.anchor_data_hash().to_string()),
-                        None => None,
-                    };
+                    let anchor_data_hash = _cert.anchor().map(|anchor| anchor.anchor_data_hash().to_string());
                     let (variant1, variant1_label) = match _cert.voting_credential().kind() {
                         _Ed25519KeyHash => (
                             _cert
@@ -930,10 +924,7 @@ impl ParsedCardanoTx {
                 None => {
                     let cardano_from = CardanoFrom {
                         address: address.clone(),
-                        value: match input.value {
-                            Some(v) => v,
-                            None => 0,
-                        },
+                        value: input.value.unwrap_or(0),
                         amount: match input.value {
                             Some(v) => normalize_coin(v),
                             None => "Unknown amount".to_string(),
@@ -954,14 +945,14 @@ impl ParsedCardanoTx {
             match map.get(&address) {
                 Some(existing) => {
                     let mut to = existing.clone();
-                    to.value = to.value + output.value;
+                    to.value += output.value;
                     to.amount = normalize_coin(to.value);
                     if let Some(assets) = output.assets {
                         for x in assets {
                             match to.assets.get(&x.id) {
                                 Some(asset) => {
                                     let mut new_asset = asset.clone();
-                                    new_asset.value = new_asset.value + x.value;
+                                    new_asset.value += x.value;
                                     new_asset.amount = normalize_value(new_asset.value);
                                     to.assets.insert(new_asset.id.clone(), new_asset);
                                 }
@@ -1012,9 +1003,7 @@ impl ParsedCardanoTx {
             .get_cert_keys()
             .iter()
             .filter(|v| hex::encode(v.get_master_fingerprint()).eq(&mfp))
-            .fold(false, |acc, cur| {
-                acc || hex::encode(cur.get_master_fingerprint()).eq(&mfp)
-            });
+            .any(|cur| hex::encode(cur.get_master_fingerprint()).eq(&mfp));
 
         if has_my_signer {
             return Ok(());
@@ -1085,8 +1074,8 @@ impl ParsedCardanoTx {
                     //check utxo address with payment keyhash;
                     let my_pubkey_hash = hex::encode(derive_pubkey_hash(
                         context.get_cardano_xpub(),
-                        change.clone(),
-                        index.clone(),
+                        *change,
+                        *index,
                     )?);
 
                     let address = utxo.address.clone();
@@ -1243,7 +1232,7 @@ mod tests {
     #[test]
     fn test_parse_sign() {
         let sign_data = hex::decode("84a400828258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99038258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99040182a200581d6179df4c75f7616d7d1fd39cbc1a6ea6b40a0d7b89fea62fc0909b6c370119c350a200581d61c9b0c9761fd1dc0404abd55efc895026628b5035ac623c614fbad0310119c35002198ecb0300a0f5f6").unwrap();
-        let request = CardanoSignRequest::new(
+        let _request = CardanoSignRequest::new(
             Some(
                 hex::decode("9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d")
                     .unwrap()
@@ -1273,6 +1262,6 @@ mod tests {
         assert_eq!(withdrawals.unwrap().len(), 0);
 
         let cardano_tx = ParsedCardanoTx::from_cardano_tx(tx, context);
-        assert_eq!(cardano_tx.is_ok(), true);
+        assert!(cardano_tx.is_ok());
     }
 }

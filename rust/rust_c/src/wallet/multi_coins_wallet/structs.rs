@@ -71,7 +71,7 @@ impl TryFrom<&mut QRHardwareCall> for QRHardwareCallData {
                 let schemas = data
                     .get_schemas()
                     .iter()
-                    .map(|v| KeyDerivationSchema::try_from(v))
+                    .map(KeyDerivationSchema::try_from)
                     .collect::<Result<Vec<KeyDerivationSchema>, RustCError>>()?;
 
                 // todo check path is valid

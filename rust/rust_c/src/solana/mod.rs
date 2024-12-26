@@ -56,7 +56,7 @@ pub extern "C" fn solana_check(
     }
     let sol_sign_request = extract_ptr_with_type!(ptr, SolSignRequest);
     let mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    if let Some(mfp) = (mfp.try_into() as Result<[u8; 4], _>).ok() {
+    if let Ok(mfp) = (mfp.try_into() as Result<[u8; 4], _>) {
         let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
             sol_sign_request.get_derivation_path();
         if let Some(ur_mfp) = derivation_path.get_source_fingerprint() {
@@ -99,7 +99,7 @@ pub extern "C" fn solana_sign_tx(
                         UREncodeResult::encode(
                             data,
                             SolSignature::get_registry_type().get_type(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
                         )
                         .c_ptr()
                     },
@@ -134,5 +134,5 @@ pub extern "C" fn sol_get_path(ptr: PtrUR) -> PtrString {
     if let Some(path) = derivation_path.get_path() {
         return convert_c_char(path);
     }
-    return convert_c_char("".to_string());
+    convert_c_char("".to_string())
 }

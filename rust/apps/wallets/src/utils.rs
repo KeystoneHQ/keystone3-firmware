@@ -2,7 +2,7 @@ use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use bitcoin::bip32::{ChildNumber, DerivationPath};
-use hex;
+
 use ur_registry::crypto_hd_key::CryptoHDKey;
 use ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
 use ur_registry::error::{URError, URResult};
@@ -22,12 +22,12 @@ fn get_origin(
                 ChildNumber::Hardened { index } => index,
                 ChildNumber::Normal { index } => index,
             };
-            PathComponent::new(Some(index.clone()), child_number.is_hardened()).unwrap()
+            PathComponent::new(Some(*index), child_number.is_hardened()).unwrap()
         })
         .collect::<Vec<PathComponent>>();
     Ok(CryptoKeyPath::new(
         components,
-        Some(master_fingerprint.clone()),
+        Some(*master_fingerprint),
         Some(depth as u32),
     ))
 }
@@ -59,7 +59,7 @@ pub fn generate_crypto_multi_accounts_sync_ur(
         }
     }
     Ok(CryptoMultiAccounts::new(
-        master_fingerprint.clone(),
+        *master_fingerprint,
         keys,
         Some(DEVICE_TYPE.to_string()),
         None,
@@ -89,7 +89,7 @@ mod tests {
         let result = get_origin(&master_fingerprint, 2, path);
         assert!(result.is_ok());
         let origin = result.unwrap();
-        assert_eq!(origin.get_depth().unwrap(), 2 as u32);
+        assert_eq!(origin.get_depth().unwrap(), 2_u32);
         assert_eq!(origin.get_components().len(), 4);
         assert_eq!(origin.get_source_fingerprint().unwrap(), master_fingerprint);
     }

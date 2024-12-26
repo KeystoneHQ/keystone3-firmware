@@ -92,7 +92,7 @@ pub fn generate_crypto_multi_accounts(
             _ => {
                 return Err(URError::UrEncodeError(format!(
                     "Unknown key path: {}",
-                    ele.path.to_string()
+                    ele.path
                 )))
             }
         }
@@ -178,8 +178,8 @@ fn generate_k1_normal_key(
     let key_path = CryptoKeyPath::new(
         path.into_iter()
             .map(|v| match v {
-                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
-                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+                ChildNumber::Normal { index } => get_path_component(Some(*index), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(*index), true),
             })
             .collect::<URResult<Vec<PathComponent>>>()?,
         Some(mfp),

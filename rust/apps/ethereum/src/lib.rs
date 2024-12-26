@@ -9,9 +9,9 @@ use alloc::vec::Vec;
 
 use bitcoin::secp256k1::{Message, PublicKey};
 pub use ethereum_types::{H160, U256};
-use hex;
+
 pub use legacy_transaction::*;
-use serde_json;
+
 
 use crate::crypto::keccak256;
 use crate::eip1559_transaction::{EIP1559Transaction, ParsedEIP1559Transaction};
@@ -178,11 +178,11 @@ mod tests {
 
     extern crate std;
 
-    use core::str::FromStr;
+    
 
-    use hex;
+    
     use keystore::algorithms::secp256k1::get_public_key_by_seed;
-    use serde_json;
+    
 
     use crate::alloc::string::ToString;
     use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
@@ -596,7 +596,7 @@ mod tests {
             }
         }        
         "#;
-        let typed_data: Eip712TypedData = serde_json::from_str(&utf8_msg).unwrap();
+        let typed_data: Eip712TypedData = serde_json::from_str(utf8_msg).unwrap();
         let hash = typed_data.encode_eip712().unwrap();
         assert_eq!(
             "cosmos",

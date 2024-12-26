@@ -81,23 +81,23 @@ test_cmd = []
 debug-memory = ["multi-coins"]
 
 multi-coins = [
-    "bitcoin",
-    "ethereum",
-    "solana",
     "aptos",
-    "near",
-    "cosmos",
+    "arweave",
+    "bch",
+    "bitcoin", 
     "cardano",
+    "cosmos",
+    "dash",
+    "ethereum",
+    "ltc",
+    "near",
+    "solana",
+    "stellar",
     "sui",
+    "ton",
     "tron",
     "xrp",
-    "arweave",
-    "stellar",
-    "ton",
     "zcash",
-    "ltc",
-    "dash",
-    "bch",
 ]
 
 btc-only = ["bitcoin"]

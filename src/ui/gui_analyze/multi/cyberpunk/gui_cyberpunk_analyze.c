@@ -6,6 +6,5 @@ GetCustomContainerFunc GetOtherChainCustomFunc(char *funcName)
     if (!strcmp(funcName, "GuiZcashOverview")) {
         return GuiZcashOverview;
     }
-
     return NULL;
 }

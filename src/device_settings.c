@@ -275,12 +275,10 @@ void WipeDevice(void)
     // reset all account address index in receive page
     {
         void GuiResetAllUtxoAddressIndex(void);
-#ifndef BTC_ONLY
+        GuiResetAllUtxoAddressIndex();
+#ifdef GENERAL_VERSION
         void GuiResetAllEthAddressIndex(void);
         void GuiResetAllStandardAddressIndex(void);
-#endif
-        GuiResetAllUtxoAddressIndex();
-#ifndef BTC_ONLY
         GuiResetAllEthAddressIndex();
         GuiResetAllStandardAddressIndex();
 #endif

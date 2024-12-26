@@ -10,12 +10,12 @@
 #include "gui_views.h"
 
 #ifdef BTC_ONLY
-#include "gui_key_derivation_request_widgets.h"
 #include "gui_import_multisig_wallet_info_widgets.h"
+#include "gui_create_multisig_wallet_widgets.h"
 #endif
 
 #ifdef GENERAL_VERSION
-#include "gui_create_multisig_wallet_widgets.h"
+#include "gui_key_derivation_request_widgets.h"
 #endif
 
 // The order of the enumeration must be guaranteed
@@ -67,11 +67,12 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
     case WebAuthResult:
         GuiSetWebAuthResultData(urResult, urMultiResult, is_multi);
         break;
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
     case KeyDerivationRequest:
         GuiSetKeyDerivationRequestData(urResult, urMultiResult, is_multi);
         break;
-#else
+#endif
+#ifdef BTC_ONLY
         // case MultisigWalletImport:
         //     GuiSetMultisigImportWalletDataByQRCode(urResult, urMultiResult, is_multi);
         //     break;

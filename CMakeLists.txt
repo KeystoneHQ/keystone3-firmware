@@ -11,7 +11,7 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 
-# add_subdirectory(rust)
+add_subdirectory(rust)
 
 # add definition
 function(add_definition_with_message OPTION_NAME)
@@ -58,22 +58,18 @@ set(CRYPTO_INCLUDE_PATH
 )
 
 set(WIDGET_PATH "multi")
-# if(CYBERPUNK)
-#     set(WIDGET_SUBPATH "multi/cyberpunk")
-#     add_compile_definitions(CYBERPUNK_VERSION)
-# elseif(BTC_ONLY)
-#     set(WIDGET_SUBPATH "btc_only/multi_sig")
-#     set(WIDGET_PATH "btc_only")
-#     add_compile_definitions(BTC_ONLY)
-#     add_compile_definitions(EXCLUDE_RUSTC)
-# else()
-#     add_compile_definitions(GENERAL_VERSION)
-#     set(WIDGET_SUBPATH "multi/general")
-# endif()
-# add_compile_definitions(GENERAL_VERSION)
-# set(WIDGET_SUBPATH "multi/general")
-set(WIDGET_SUBPATH "multi/cyberpunk")
-add_compile_definitions(CYBERPUNK_VERSION)
+if(CYBERPUNK)
+    set(WIDGET_SUBPATH "multi/cyberpunk")
+    add_compile_definitions(CYBERPUNK_VERSION)
+elseif(BTC_ONLY)
+    set(WIDGET_SUBPATH "btc_only/multi_sig")
+    set(WIDGET_PATH "btc_only")
+    add_compile_definitions(BTC_ONLY)
+    add_compile_definitions(EXCLUDE_RUSTC)
+else()
+    add_compile_definitions(GENERAL_VERSION)
+    set(WIDGET_SUBPATH "multi/general")
+endif()
 
 set(GUI_CUSTOM_INCLUDE_PATH
     src/ui/gui_widgets/${WIDGET_SUBPATH}
@@ -299,20 +295,6 @@ if(COMPILE_KEYSTONE)
         external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
         src/cm_backtrace/fault_handler/gcc/cmb_fault.s
     )
-
-    message(STATUS "WEBUSB_PROTOCOL: ${WEBUSB_PROTOCOL}")
-
-    # if(BTC_ONLY)
-    #     set(excluded_directories
-    #         src/ui/gui_chain/others
-    #         src/ui/gui_widgets/general
-    #         src/ui/gui_views/general
-    #         src/webusb_protocol/general)
-    # else()
-    #     set(excluded_directories
-    #         src/ui/gui_views/btc_only
-    #         src/ui/gui_widgets/btc_only)
-    # endif()
 
     foreach(directory ${excluded_directories})
         file(GLOB_RECURSE excluded_files "${directory}/*")

@@ -477,7 +477,7 @@ static void OpenMoreHandler(lv_event_t *e)
 {
     MoreInfoTable_t moreInfoTable[] = {
         {.name = _("change_entropy"), .src = &imgConnect, .callBack = OpenChangeEntropyHandler, NULL},
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
         {.name = _("generate_ton_mnenonic"), .src = &imgTonPhrase, .callBack = TonPhraseButtonHandler, NULL},
 #endif
         {.name = _("Tutorial"), .src = &imgTutorial, .callBack = QuestionMarkEventCb, NULL},
@@ -663,7 +663,7 @@ static void OpenChangeEntropyTutorialHandler(lv_event_t *e)
     GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
 }
 
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
 static void TonPhraseButtonHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_openMoreHintBox);

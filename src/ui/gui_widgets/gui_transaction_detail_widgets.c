@@ -25,9 +25,9 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_pending_hintbox.h"
+#include "general/eapdu_services/service_resolve_ur.h"
 #ifdef GENERAL_VERSION
 #include "gui_eth.h"
-#include "general/eapdu_services/service_resolve_ur.h"
 #endif
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
@@ -305,7 +305,7 @@ void GuiClearQrcodeSignCnt(void)
 static void GuiTransactionDetailNavBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, TransactionGoToHomeViewHandler, NULL);
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
     if (IsMessageType(g_viewType)) {
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
     } else if (isTonSignProof(g_viewType)) {
@@ -319,7 +319,7 @@ static void GuiTransactionDetailNavBarInit()
     } else {
 #endif
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
     }
 #endif
 }
@@ -405,8 +405,7 @@ static void RecognizeFailHandler(lv_timer_t *timer)
 
 static bool GuiCheckIsTransactionSign(void)
 {
-#ifndef BTC_ONLY
-    printf("GetEthPermitCantSign(NULL, NULL) = %d\n", GetEthPermitCantSign(NULL, NULL));
+#ifdef GENERAL_VERSION
     if (GetEthPermitCantSign(NULL, NULL)) {
         return false;
     }

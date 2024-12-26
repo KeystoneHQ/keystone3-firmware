@@ -100,9 +100,11 @@ PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
 
 GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t viewType)
 {
+#ifdef GENERAL_VERSION
     if (viewType == CosmosTx || viewType == CosmosEvmTx) {
         return GuiGetCosmosTxChain();
     }
+#endif
 
     const ViewHandlerEntry *entry = GetViewHandlerEntry(viewType);
     if (entry != NULL) {

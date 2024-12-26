@@ -122,14 +122,16 @@ void GuiScanResult(bool result, void *param)
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_webAuthResultView);
             }
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
             if (g_qrcodeViewType == KeyDerivationRequest) {
                 if (!GuiCheckIfTopView(&g_homeView)) {
                     GuiCLoseCurrentWorkingView();
                 }
                 GuiFrameOpenViewWithParam(&g_keyDerivationRequestView, NULL, 0);
             }
-#else
+#endif
+
+#ifdef BTC_ONLY
             if (g_qrcodeViewType == MultisigWalletImport) {
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_importMultisigWalletInfoView);
@@ -159,7 +161,7 @@ void GuiTransactionCheckPass(void)
     GuiModelTransactionCheckResultClear();
     SetPageLockScreen(true);
     GuiCLoseCurrentWorkingView();
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
     if (g_chainType == CHAIN_ARWEAVE) {
         if (GetIsTempAccount()) {
             ThrowError(ERR_INVALID_QRCODE);

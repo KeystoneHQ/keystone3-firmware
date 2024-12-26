@@ -102,6 +102,7 @@ void ExportAddressReject()
 static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
 {
 #ifndef COMPILE_SIMULATOR
+#ifdef GENERAL_VERSION
     UREncodeResult *urResult = GetUnlimitedMetamaskDataForAccountType(type);
 
     if (urResult->error_code != 0) {
@@ -125,6 +126,7 @@ static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
     SendEApduResponse(result);
     EXT_FREE(json_str);
     SRAM_FREE(result);
+#endif
 #endif
 }
 

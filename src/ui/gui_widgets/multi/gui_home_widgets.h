@@ -46,6 +46,7 @@ void GuiHomeDeInit(void);
 void GuiShowRsaSetupasswordHintbox(void);
 void GuiShowRsaInitializatioCompleteHintbox(void);
 void ClearHomePageCurrentIndex(void);
+void ReturnManageWalletHandler(lv_event_t *e);
 
 #endif /* _GUI_HOME_WIDGETS_H */
 

@@ -171,6 +171,11 @@ static uint32_t g_thorChainSelectIndex[3] = {0};
 static PageWidget_t *g_pageWidget;
 static bool g_inputAccountValid = true;
 
+__attribute__((weak)) bool IsCosmosChain(uint8_t index)
+{
+    return false;
+}
+
 static void JumpToAccountHandler(lv_event_t *e)
 {
     GuiCreateGotoAddressWidgets(g_standardReceiveWidgets.tileSwitchAccount);
@@ -514,9 +519,11 @@ lv_obj_t* CreateStandardReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
 
 static uint16_t GetAddrYExtend(void)
 {
+#ifdef GENERAL_VERSION
     if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 30;
     }
+#endif
     return 0;
 }
 
@@ -576,12 +583,14 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 void GetAttentionText(char* text)
 {
     switch (g_chainCard) {
+#ifdef GENERAL_VERSION
     case HOME_WALLET_CARD_TRX:
         strcpy_s(text, 1024, _("receive_trx_hint"));
         break;
     case HOME_WALLET_CARD_TON:
         strcpy_s(text, 1024, _("receive_ton_hint"));
         break;
+#endif
     default:
         snprintf_s(text, 1024, _("receive_coin_hint_fmt"), GetCoinCardByIndex(g_chainCard)->coin);
     }
@@ -700,6 +709,16 @@ static void RefreshQrCode(void)
     if (fullscreenQrcode) {
         lv_qrcode_update(fullscreenQrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
+
+#ifdef CYBERPUNK_VERSION
+    if (g_chainCard == HOME_WALLET_CARD_ZEC) {
+        char addressString[256];
+        CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 60);
+        lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressString);
+    }
+#endif
+
+#ifdef GENERAL_VERSION
     if (g_chainCard == HOME_WALLET_CARD_ARWEAVE) {
         SimpleResponse_c_char *fixedAddress = fix_arweave_address(addressDataItem.address);
         if (fixedAddress->error_code == 0) {
@@ -714,13 +733,10 @@ static void RefreshQrCode(void)
         char address[128];
         snprintf_s(address, 128, "%.22s\n%s", addressDataItem.address, &addressDataItem.address[22]);
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, address);
-    } else if (g_chainCard == HOME_WALLET_CARD_ZEC) {
-        char addressString[256];
-        CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 60);
-        lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressString);
     } else {
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     }
+#endif
     lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), addressDataItem.index);
 }
 
@@ -766,6 +782,7 @@ static void RefreshSwitchAccount(void)
 
 static int GetMaxAddressIndex(void)
 {
+#ifdef GENERAL_VERSION
     if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
         return 10;
     }
@@ -775,6 +792,7 @@ static int GetMaxAddressIndex(void)
     if (g_chainCard == HOME_WALLET_CARD_XRP) {
         return 200;
     }
+#endif
     return GENERAL_ADDRESS_INDEX_MAX;
 }
 
@@ -836,6 +854,7 @@ static void ConfirmHandler(lv_event_t *e)
 
 static bool IsAccountSwitchable()
 {
+#ifdef GENERAL_VERSION
     // all cosmos chain can switch account
     if (IsCosmosChain(g_chainCard)) {
         return true;
@@ -851,6 +870,8 @@ static bool IsAccountSwitchable()
     default:
         return false;
     }
+#endif
+    return false;
 }
 
 static bool HasMoreBtn()
@@ -887,6 +908,16 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     char *xPub, hdPath[BUFFER_SIZE_128];
     SimpleResponse_c_char *result;
 
+#ifdef CYBERPUNK_VERSION
+    if (g_chainCard == HOME_WALLET_CARD_ZEC) {
+        char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
+        uint8_t sfp[32];
+        GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+        result = generate_zcash_default_address(ufvk);
+    }
+#endif
+
+#ifdef GENERAL_VERSION
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
@@ -927,13 +958,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         result = ton_get_address(xPub);
         break;
     }
-    case HOME_WALLET_CARD_ZEC: {
-        char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
-        uint8_t sfp[32];
-        GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
-        result = generate_zcash_default_address(ufvk);
-        break;
-    }
     default:
         if (IsCosmosChain(g_chainCard)) {
             result = (SimpleResponse_c_char *) GetCosmosChainAddressByCoinTypeAndIndex(g_chainCard, index);
@@ -942,6 +966,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
             return;
         }
     }
+#endif
     if (result->error_code == 0) {
         item->index = index;
         strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
@@ -1042,6 +1067,7 @@ void GuiResetAllStandardAddressIndex(void)
 static uint32_t* GetCosmosChainCurrentSelectIndex()
 {
     switch (g_chainCard) {
+#ifdef GENERAL_VERSION
     case HOME_WALLET_CARD_TIA:
         return &g_tiaChainSelectIndex[GetCurrentAccountIndex()];
         break;
@@ -1144,7 +1170,7 @@ static uint32_t* GetCosmosChainCurrentSelectIndex()
     case HOME_WALLET_CARD_RUNE:
         return &g_thorChainSelectIndex[GetCurrentAccountIndex()];
         break;
-
+#endif
     default:
         return NULL;
     }
@@ -1152,6 +1178,7 @@ static uint32_t* GetCosmosChainCurrentSelectIndex()
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
 {
+#ifdef GENERAL_VERSION
     switch (g_chainCard) {
     case HOME_WALLET_CARD_SUI:
         g_suiSelectIndex[GetCurrentAccountIndex()] = selectIndex;
@@ -1175,6 +1202,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
             break;
         }
     }
+#endif
     SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
 }
 
@@ -1184,21 +1212,4 @@ static uint32_t GetCurrentSelectIndex()
         return 0;
     }
     return GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
-    switch (g_chainCard) {
-    case HOME_WALLET_CARD_SUI:
-        return g_suiSelectIndex[GetCurrentAccountIndex()];
-    case HOME_WALLET_CARD_XLM:
-        return g_stellarSelectIndex[GetCurrentAccountIndex()];
-    case HOME_WALLET_CARD_APT:
-        return g_aptosSelectIndex[GetCurrentAccountIndex()];
-    case HOME_WALLET_CARD_XRP:
-        return g_xrpSelectIndex[GetCurrentAccountIndex()];
-    default:
-        if (IsCosmosChain(g_chainCard)) {
-            uint32_t *ptr = GetCosmosChainCurrentSelectIndex();
-            return *ptr;
-        } else {
-            return g_selectIndex[GetCurrentAccountIndex()];
-        }
-    }
 }

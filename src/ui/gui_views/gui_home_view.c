@@ -48,7 +48,7 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_INIT_GET_CURRENT_WALLET_DESC:
         GuiHomeSetWalletDesc((WalletDesc_t *)param);
         break;
-#ifndef BTC_ONLY
+#ifdef GENERAL_VERSION
     case SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM:
     case SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM:
         GuiShowRsaSetupasswordHintbox();
@@ -85,10 +85,10 @@ int32_t GuiHomeViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS:
         GuiShowRsaInitializatioCompleteHintbox();
         break;
+#endif
     case SIG_CLEAR_HOME_PAGE_INDEX:
         ClearHomePageCurrentIndex();
         break;
-#endif
     case SIG_QRCODE_VIEW_SCAN_FAIL:
         GuiScanResult(false, param);
         break;

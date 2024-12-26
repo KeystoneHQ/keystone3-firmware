@@ -1,9 +1,8 @@
- #ifdef GENERAL_VERSION
+#ifdef GENERAL_VERSION
 #ifndef _GUI_GENERAL_HOME_WIDGETS_H
 #define _GUI_GENERAL_HOME_WIDGETS_H
 
 #define HOME_WIDGETS_SURPLUS_CARD_ENUM         HOME_WALLET_CARD_ETH, \
-    HOME_WALLET_CARD_ZEC, \
     HOME_WALLET_CARD_SOL, \
     HOME_WALLET_CARD_BNB, \
     HOME_WALLET_CARD_HNT, \
@@ -415,6 +414,8 @@
         .chain = "Tgrade", \
         .icon = &coinTgd, \
     }
+
+#define HOME_WALLET_HIDDEN_CARD_ENUM HOME_WALLET_CARD_COSMOS
 
 #endif
 #endif

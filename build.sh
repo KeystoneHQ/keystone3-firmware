@@ -83,31 +83,22 @@ execute_build() {
         cmake_parm="${cmake_parm} -DDEBUG_MEMORY=true"
     fi
 
-    echo "Building project.............."
-    echo "cmake_parm: $cmake_parm"
     if [[ "${build_options[simulator]}" == true ]]; then
-        echo "Building project---------------"
         mkdir -p "$BUILD_SIMULATOR_FOLDER"
         pushd "$BUILD_SIMULATOR_FOLDER"
         cmake -G "Unix Makefiles" -DBUILD_TYPE=Simulator $cmake_parm ..
         make -j16
         popd
     else
-        echo "Building project.............."
-        mkdir -p "$BUILD_SIMULATOR_FOLDER"
-        pushd "$BUILD_SIMULATOR_FOLDER"
-        cmake -G "Unix Makefiles" -DBUILD_TYPE=Simulator $cmake_parm ..
-        make -j16
+        pushd "$BUILD_FOLDER"
+        cmake -G "Unix Makefiles" $cmake_parm ..
+        if [[ "${build_options[log]}" == true ]]; then
+            make -j16 > makefile.log 2>&1
+        else
+            make -j16
+        fi
+        python3 padding_bin_file.py mh1903.bin
         popd
-        # pushd "$BUILD_FOLDER"
-        # cmake -G "Unix Makefiles" $cmake_parm ..
-        # if [[ "${build_options[log]}" == true ]]; then
-        #     make -j16 > makefile.log 2>&1
-        # else
-        #     make -j16
-        # fi
-        # python3 padding_bin_file.py mh1903.bin
-        # popd
     fi
 
     if [[ "${build_options[copy]}" == true ]]; then

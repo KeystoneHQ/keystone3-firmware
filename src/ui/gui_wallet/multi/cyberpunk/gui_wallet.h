@@ -16,7 +16,6 @@ UREncodeResult *GuiGetCompanionAppData(void);
 UREncodeResult *GuiGetOkxWalletData(void);
 UREncodeResult *GuiGetBitgetWalletData(void);
 UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType);
-UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType);
 UREncodeResult *GuiGetMetamaskData(void);
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin);

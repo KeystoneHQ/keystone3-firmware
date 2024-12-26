@@ -1,7 +1,7 @@
 use alloc::string::String;
 use alloc::vec::Vec;
 
-use borsh::{from_slice, BorshDeserialize};
+use borsh::{BorshDeserialize};
 use serde_derive::Serialize;
 
 use crate::solana_lib::solana_program::errors::ProgramError;
@@ -240,25 +240,25 @@ impl Dispatch for JupiterInstructions {
                 //  sharedAccountsRoute methodId = sighash(SIGHASH_GLOBAL_NAMESPACE, "shared_accounts_route")
                 borsh::from_slice::<SharedAccountsRouteArgs>(ix_data)
                     .map(JupiterInstructions::SharedAccountsRoute)
-                    .map_err(|e| JupiterError::UnknownJupiterInstruction.into())
+                    .map_err(|_e| JupiterError::UnknownJupiterInstruction.into())
             }
             "e517cb977ae3ad2a" => {
                 // route methodId = sighash(SIGHASH_GLOBAL_NAMESPACE, "route")
                 borsh::from_slice::<RouteArgs>(ix_data)
                     .map(JupiterInstructions::Route)
-                    .map_err(|e| JupiterError::UnknownJupiterInstruction.into())
+                    .map_err(|_e| JupiterError::UnknownJupiterInstruction.into())
             }
             "d033ef977b2bed5c" => {
                 // exactOutRoute methodId = sighash(SIGHASH_GLOBAL_NAMESPACE, "exact_out_route")
                 borsh::from_slice::<ExactOutRouteArgs>(ix_data)
                     .map(JupiterInstructions::ExactOutRoute)
-                    .map_err(|e| JupiterError::UnknownJupiterInstruction.into())
+                    .map_err(|_e| JupiterError::UnknownJupiterInstruction.into())
             }
             "b0d169a89a7d453e" => {
                 // sharedAccountsExactOutRoute methodId = sighash(SIGHASH_GLOBAL_NAMESPACE, "shared_accounts_exact_out_route")
                 borsh::from_slice::<SharedAccountsExactOutRouteArgs>(ix_data)
                     .map(JupiterInstructions::SharedAccountsExactOutRoute)
-                    .map_err(|e| JupiterError::UnknownJupiterInstruction.into())
+                    .map_err(|_e| JupiterError::UnknownJupiterInstruction.into())
             }
             _ => Err(JupiterError::UnknownJupiterInstruction.into()),
         }

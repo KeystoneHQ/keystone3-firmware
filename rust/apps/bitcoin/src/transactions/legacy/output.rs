@@ -3,8 +3,8 @@ use crate::collect;
 use crate::errors::{BitcoinError, Result};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use bitcoin::address::AddressData as Payload;
-use bitcoin::{self, Amount, ScriptBuf};
+
+use bitcoin::{self, Amount};
 use core::str::FromStr;
 use ur_registry::pb::protoc;
 use ur_registry::pb::protoc::sign_transaction::Transaction::{BchTx, BtcTx, DashTx, LtcTx};

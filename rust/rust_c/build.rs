@@ -17,6 +17,41 @@ fn main() {
         #[cfg(feature = "debug-btc-only")]
         "debug-btc-only",
     ];
+    config.after_includes = config.after_includes.map(|mut v| {
+        #[cfg(feature = "aptos")]
+        v.push_str("#define FEATURE_APTOS\n");
+        #[cfg(feature = "arweave")]
+        v.push_str("#define FEATURE_ARWEAVE\n");
+        #[cfg(feature = "bch")]
+        v.push_str("#define FEATURE_BCH\n");
+        #[cfg(feature = "bitcoin")]
+        v.push_str("#define FEATURE_BITCOIN\n");
+        #[cfg(feature = "cardano")]
+        v.push_str("#define FEATURE_CARDANO\n");
+        #[cfg(feature = "cosmos")]
+        v.push_str("#define FEATURE_COSMOS\n");
+        #[cfg(feature = "dash")]
+        v.push_str("#define FEATURE_DASH\n");
+        #[cfg(feature = "ethereum")]
+        v.push_str("#define FEATURE_ETHEREUM\n");
+        #[cfg(feature = "ltc")]
+        v.push_str("#define FEATURE_LTC\n");
+        #[cfg(feature = "near")]
+        v.push_str("#define FEATURE_NEAR\n");
+        #[cfg(feature = "solana")]
+        v.push_str("#define FEATURE_SOLANA\n");
+        #[cfg(feature = "stellar")]
+        v.push_str("#define FEATURE_STELLAR\n");
+        #[cfg(feature = "ton")]
+        v.push_str("#define FEATURE_TON\n");
+        #[cfg(feature = "tron")]
+        v.push_str("#define FEATURE_TRON\n");
+        #[cfg(feature = "xrp")]
+        v.push_str("#define FEATURE_XRP\n");
+        #[cfg(feature = "zcash")]
+        v.push_str("#define FEATURE_ZCASH\n");
+        v
+    });
     assert!(!features.is_empty(), "No build variant enabled");
     assert!(
         features.len() == 1,

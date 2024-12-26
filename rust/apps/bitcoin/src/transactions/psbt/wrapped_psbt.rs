@@ -104,7 +104,7 @@ impl WrappedPsbt {
                 .input
                 .get(index)
                 .ok_or(BitcoinError::InvalidInput)?;
-            if !tx_in.previous_output.txid.eq(&prev_tx.txid()) {
+            if !tx_in.previous_output.txid.eq(&prev_tx.compute_txid()) {
                 return Err(BitcoinError::InvalidInput);
             }
             let prevout = prev_tx.output.get(tx_in.previous_output.vout as usize);

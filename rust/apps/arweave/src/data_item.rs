@@ -85,6 +85,7 @@ impl_public_struct!(DataItem {
     raw_data: Vec<u8>
 });
 
+#[allow(unused)]
 enum SignatureType {
     ARWEAVE = 1,
     ED25519,

@@ -42,7 +42,7 @@ pub extern "C" fn get_connect_arconnect_wallet_ur(
         device,
     );
     UREncodeResult::encode(
-        arweave_account.to_bytes().unwrap(),
+        arweave_account.try_into().unwrap(),
         ArweaveCryptoAccount::get_registry_type().get_type(),
         FRAGMENT_MAX_LENGTH_DEFAULT,
     )
@@ -65,7 +65,7 @@ pub extern "C" fn get_connect_arconnect_wallet_ur_from_xpub(
         device,
     );
     UREncodeResult::encode(
-        arweave_account.to_bytes().unwrap(),
+        arweave_account.try_into().unwrap(),
         ArweaveCryptoAccount::get_registry_type().get_type(),
         FRAGMENT_MAX_LENGTH_DEFAULT,
     )

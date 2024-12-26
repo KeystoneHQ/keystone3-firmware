@@ -114,7 +114,7 @@ pub fn sign_raw_tx(
     let signed_tx = sign_legacy_tx(tx_data, seed)?;
     Ok((
         hex::encode(signed_tx),
-        tx_data.transaction.txid().to_string(),
+        tx_data.transaction.compute_txid().to_string(),
     ))
 }
 

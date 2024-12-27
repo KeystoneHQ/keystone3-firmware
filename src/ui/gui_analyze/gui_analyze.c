@@ -216,11 +216,6 @@ GetLabelDataLenFunc GuiTemplateTextLenFuncGet(char *type)
     return GuiOtherChainTextLenFuncGet(type, g_reMapIndex);
 }
 
-__attribute__((weak)) GetLabelDataFunc GuiOtherChainTextFuncGet(char *type, GuiRemapViewType remapIndex)
-{
-    return NULL;
-}
-
 GetLabelDataFunc GuiTemplateTextFuncGet(char *type)
 {
     if (g_reMapIndex == REMAPVIEW_BTC || g_reMapIndex == REMAPVIEW_BTC_MESSAGE) {

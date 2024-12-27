@@ -96,6 +96,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 
 #ifdef CYBERPUNK_VERSION
     {HOME_WALLET_CARD_ZEC, "", &coinZec},
+    {HOME_WALLET_CARD_MONERO, "", &coinXmr},
 #endif
 };
 
@@ -138,7 +139,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_LEAP, "Leap", &walletLeap},
     {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
     {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
-    {WALLET_LIST_LEAP, "Leap", &walletLeap},
+    {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},

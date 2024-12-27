@@ -9,12 +9,8 @@
 #include "gui_wallet.h"
 #include "rust.h"
 #include "user_memory.h"
-#ifdef WEB3_VERSION
-#include "gui_multi_path_coin_receive_widgets.h"
-#include "gui_connect_ada_widgets.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_pending_hintbox.h"
-#endif
 #include "account_manager.h"
 #include "gui_animating_qrcode.h"
 #include "gui_global_resources.h"
@@ -23,11 +19,23 @@
 #include "gui_select_address_widgets.h"
 #include "account_public_info.h"
 
+static bool IsSupportEncryption(void);
+static void PrivateModeQRSharingHandler(lv_event_t *e);
+static void ShowOrHiddenPincode(lv_event_t *e);
+static void RestorePrivateMode(void);
+static void ExitPrivateMode(void);
+static void PrivateModePrevTileHandler(lv_event_t *e);
+static void GuiCreateQrCodePrivateModeWidget(lv_obj_t *parent);
+static void CancelAttentionHandler(lv_event_t *e);
+static void CloseAttentionHandler(lv_event_t *e);
+
 #define DERIVATION_PATH_EG_LEN 2
+#define HIDDEN_PINCODE "* * * * * *"
 
 typedef enum {
     CONNECT_WALLET_SELECT_WALLET = 0,
     CONNECT_WALLET_QRCODE,
+    CONNECT_WALLET_QRCODE_PRIVATE_MODE,
 
     CONNECT_WALLET_BUTT,
 } CONNECT_WALLET_ENUM;
@@ -38,18 +46,22 @@ typedef struct ConnectWalletWidget {
     lv_obj_t *tileView;
     WALLET_LIST_INDEX_ENUM walletIndex;
     lv_obj_t *qrCode;
+    lv_obj_t *privateModeQrCode;
+    lv_obj_t *privateModeQrCodeMask;
+    lv_obj_t *privateModePincode;
+    lv_obj_t *privateModePincodeBtn;
 } ConnectWalletWidget_t;
 
 
 WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZASHI, &walletListZashi, true},
+    {WALLET_LIST_CAKE, &walletListCake, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
     {WALLET_LIST_ZEUS, &walletListZeus, true},
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_UNISAT, &walletListUniSat, true},
 };
 
-#ifndef BTC_ONLY
 typedef struct {
     int8_t index;
     const char *coin;
@@ -60,8 +72,6 @@ static const lv_img_dsc_t *g_bitgetWalletCoinArray[] = {
     &coinBtc, &coinEth, &coinTon
 };
 
-
-
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
     &coinBtc,
 };
@@ -70,7 +80,9 @@ static const lv_img_dsc_t *g_UniSatCoinArray[5] = {
     &coinBtc, &coinOrdi, &coinSats, &coinMubi, &coinTrac,
 };
 
-
+static const lv_img_dsc_t *g_cakeCoinArray[1] = {
+    &coinXmr,
+};
 
 static const lv_img_dsc_t *g_zashiCoinArray[1] = {
     &coinZec,
@@ -101,8 +113,10 @@ const static ChangeDerivationItem_t g_adaChangeDerivationList[] = {
 static uint32_t g_currentSelectedPathIndex[3] = {0};
 static lv_obj_t *g_coinListCont = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
-#endif
-
+static bool g_isNeedCloseTimer = false;
+static lv_obj_t *g_privateModeHintBox = NULL;
+static bool g_isFirstOpenPrivateMode = true;
+static uint8_t *g_privateModePincode = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
 static ConnectWalletWidget_t g_connectWalletTileView;
 static PageWidget_t *g_pageWidget;
@@ -171,17 +185,8 @@ static void GuiInitWalletListArray()
             enable = (index == WALLET_LIST_TONKEEPER);
         } else {
             switch (index) {
-            case WALLET_LIST_ETERNL:
-            case WALLET_LIST_VESPR:
-            case WALLET_LIST_TYPHON:
-            case WALLET_LIST_BEGIN:
+            case WALLET_LIST_CAKE:
                 enable = !isSLIP39;
-                break;
-            case WALLET_LIST_ARCONNECT:
-                enable = !isTempAccount;
-                break;
-            case WALLET_LIST_KEYSTONE:
-                enable = isRussian;
                 break;
             case WALLET_LIST_ZASHI:
                 enable = !passphraseExist && !isSlip39;
@@ -472,6 +477,9 @@ void GuiConnectWalletInit(void)
     tile = lv_tileview_add_tile(tileView, CONNECT_WALLET_QRCODE, 0, LV_DIR_HOR);
     GuiCreateQrCodeWidget(tile);
 
+    tile = lv_tileview_add_tile(tileView, CONNECT_WALLET_QRCODE_PRIVATE_MODE, 0, LV_DIR_HOR);
+    GuiCreateQrCodePrivateModeWidget(tile);
+
     g_connectWalletTileView.currentTile = CONNECT_WALLET_SELECT_WALLET;
     g_connectWalletTileView.tileView = tileView;
     g_connectWalletTileView.cont = cont;
@@ -513,6 +521,7 @@ void GuiSetupArConnectWallet(void)
 
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
 {
+    GuiAnimatingQRCodeDestroyTimer();
     GenerateUR func = NULL;
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
 #ifndef BTC_ONLY
@@ -541,11 +550,19 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetZecData;
         AddZecCoins();
         break;
+    case WALLET_LIST_CAKE:
+        func = GuiGetCakeData;
+        // AddCakeCoins();
+        break;
     default:
         return;
     }
     if (func) {
-        GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
+        lv_obj_t *qrcode = g_connectWalletTileView.qrCode;
+        if (IsPrivateQrMode()) {
+            qrcode = g_connectWalletTileView.privateModeQrCode;
+        }
+        GuiAnimatingQRCodeInit(qrcode, func, true);
     }
 }
 
@@ -969,6 +986,10 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_obj_t *btn = NULL;
     WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
 
+    if (IsSupportEncryption()) {
+        hintboxHeight = 228;
+    }
+
     g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
     lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0),
                         CloseHintBoxHandler, LV_EVENT_CLICKED,
@@ -976,6 +997,12 @@ static void OpenMoreHandler(lv_event_t *e)
     btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
                                 OpenTutorialHandler, wallet, true);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+
+    if (IsSupportEncryption()) {
+        hintboxHeight = 228;
+        btn = GuiCreateSelectButton(g_openMoreHintBox, _("private_mode_qr"), &imgQrcode36px, PrivateModeQRSharingHandler, wallet, true);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
+    }
 }
 
 int8_t GuiConnectWalletNextTile(void)
@@ -989,6 +1016,18 @@ int8_t GuiConnectWalletNextTile(void)
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         break;
     case CONNECT_WALLET_QRCODE:
+        if (IsSupportEncryption()) {
+            SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
+                             PrivateModePrevTileHandler, NULL);
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
+                              OpenMoreHandler, &g_connectWalletTileView.walletIndex);
+            g_privateModePincode = OpenPrivateQrMode();
+            GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+        } else {
+            return 0;
+        }
+        break;
+    case CONNECT_WALLET_QRCODE_PRIVATE_MODE:
         return 0;
     }
 
@@ -1014,6 +1053,19 @@ int8_t GuiConnectWalletPrevTile(void)
                           NULL);
         GuiAnimatingQRCodeDestroyTimer();
         break;
+    case CONNECT_WALLET_QRCODE_PRIVATE_MODE:
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler,
+                         NULL);
+        if (IsPrivateQrMode()) {
+            ExitPrivateMode();
+        }
+        if (g_isNeedCloseTimer) {
+            GuiAnimatingQRCodeDestroyTimer();
+        } else {
+            GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
+        }
+        g_isNeedCloseTimer = false;
+        break;
     }
     g_connectWalletTileView.currentTile--;
     lv_obj_set_tile_id(g_connectWalletTileView.tileView,
@@ -1032,6 +1084,14 @@ void GuiConnectWalletRefresh(void)
                        _("connect_wallet_choose_wallet"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL,
                           NULL);
+        break;
+    case CONNECT_WALLET_QRCODE_PRIVATE_MODE:
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
+                         PrivateModePrevTileHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
+                          OpenMoreHandler, &g_connectWalletTileView.walletIndex);
+        SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex,
+                  NULL);
         break;
     case CONNECT_WALLET_QRCODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
@@ -1076,14 +1136,14 @@ void GuiConnectWalletDeInit(void)
     GUI_DEL_OBJ(g_coinCont)
     GUI_DEL_OBJ(g_derivationPathCont)
     GUI_DEL_OBJ(g_noticeWindow)
-#ifndef BTC_ONLY
+    ExitPrivateMode();
+    CloseAttentionHandler(NULL);
     if (g_coinListCont != NULL && HasSelectAddressWidget()) {
         g_coinListCont = NULL;
         GuiDestroySelectAddressWidget();
     } else {
         GUI_DEL_OBJ(g_coinListCont)
     }
-#endif
     CloseToTargetTileView(g_connectWalletTileView.currentTile,
                           CONNECT_WALLET_SELECT_WALLET);
     GUI_DEL_OBJ(g_connectWalletTileView.cont)
@@ -1096,4 +1156,135 @@ void GuiConnectWalletDeInit(void)
 uint8_t GuiConnectWalletGetWalletIndex(void)
 {
     return g_connectWalletTileView.walletIndex;
+}
+
+static void PrivateModePrevTileHandler(lv_event_t *e)
+{
+    g_isNeedCloseTimer = true;
+    CloseToTargetTileView(g_connectWalletTileView.currentTile,
+                          CONNECT_WALLET_SELECT_WALLET);
+}
+
+static void PrivateModeQRSharingHandler(lv_event_t *e)
+{
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+    GUI_DEL_OBJ(g_openMoreHintBox);
+}
+
+static void ExitPrivateMode(void)
+{
+    ClosePrivateQrMode();
+    RestorePrivateMode();
+    g_privateModePincode = NULL;
+}
+
+static void RestorePrivateMode(void)
+{
+    lv_label_set_text(g_connectWalletTileView.privateModePincode, HIDDEN_PINCODE);
+    lv_obj_set_style_text_color(g_connectWalletTileView.privateModePincode, lv_color_hex(16090890), LV_PART_MAIN);
+    lv_img_set_src(g_connectWalletTileView.privateModePincodeBtn, &imgEye);
+    lv_obj_add_flag(g_connectWalletTileView.privateModeQrCodeMask, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(g_connectWalletTileView.privateModeQrCode, LV_OBJ_FLAG_HIDDEN);
+}
+
+static void CloseAttentionHandler(lv_event_t *e)
+{
+    // ConnectWalletReturnHandler
+    if (g_privateModeHintBox) {
+        lv_obj_add_flag(g_privateModeHintBox, LV_OBJ_FLAG_HIDDEN);
+        GUI_DEL_OBJ(g_privateModeHintBox);
+        g_privateModeHintBox = NULL;
+    }
+}
+
+static void CancelAttentionHandler(lv_event_t *e)
+{
+    ConnectWalletReturnHandler(NULL);
+    CloseAttentionHandler(NULL);
+}
+
+static void ContinueAttentionHandler(lv_event_t *e)
+{
+    g_isFirstOpenPrivateMode = false;
+    CloseAttentionHandler(NULL);
+    ShowOrHiddenPincode(NULL);
+}
+
+static void ShowOrHiddenPincode(lv_event_t *e)
+{
+    if (g_isFirstOpenPrivateMode) {
+        g_privateModeHintBox = GuiCreateGeneralHintBox(&imgWarn, _("security_notice_title"), _("private_qr_mode_security_notice_desc"), NULL, _("not_now"), WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
+        lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_privateModeHintBox);
+        lv_obj_add_event_cb(leftBtn, CancelAttentionHandler, LV_EVENT_CLICKED, NULL);
+        lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_privateModeHintBox);
+        lv_obj_add_event_cb(rightBtn, ContinueAttentionHandler, LV_EVENT_CLICKED, NULL);
+        return;
+    }
+    char *text = lv_label_get_text(g_connectWalletTileView.privateModePincode);
+    if (strcmp(text, HIDDEN_PINCODE) == 0) {
+        char pincode[BUFFER_SIZE_32] = {0};
+        snprintf_s(pincode, sizeof(pincode), "%d %d %d %d %d %d", g_privateModePincode[0],
+                   g_privateModePincode[1], g_privateModePincode[2], g_privateModePincode[3],
+                   g_privateModePincode[4], g_privateModePincode[5]);
+        lv_label_set_text(g_connectWalletTileView.privateModePincode, pincode);
+        lv_obj_set_style_text_color(g_connectWalletTileView.privateModePincode, lv_color_hex(16090890), LV_PART_MAIN);
+        lv_img_set_src(g_connectWalletTileView.privateModePincodeBtn, &imgEyeOff);
+        lv_obj_add_flag(g_connectWalletTileView.privateModeQrCode, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_connectWalletTileView.privateModeQrCodeMask, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_label_set_text(g_connectWalletTileView.privateModePincode, HIDDEN_PINCODE);
+        lv_obj_set_style_text_color(g_connectWalletTileView.privateModePincode, lv_color_hex(16090890), LV_PART_MAIN);
+        lv_img_set_src(g_connectWalletTileView.privateModePincodeBtn, &imgEye);
+        lv_obj_add_flag(g_connectWalletTileView.privateModeQrCodeMask, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(g_connectWalletTileView.privateModeQrCode, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+static bool IsSupportEncryption(void)
+{
+    switch (g_connectWalletTileView.walletIndex) {
+    case WALLET_LIST_CAKE:
+        return g_privateModePincode == NULL;
+    default:
+        return false;
+    }
+}
+
+static void GuiCreateQrCodePrivateModeWidget(lv_obj_t *parent)
+{
+    lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 408);
+    lv_obj_add_flag(qrCont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_bg_color(qrCont, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_radius(qrCont, 24, LV_PART_MAIN);
+    lv_obj_align(qrCont, LV_ALIGN_TOP_MID, 0, 16);
+
+    lv_obj_t *qrBgCont = GuiCreateContainerWithParent(qrCont, 336, 336);
+    lv_obj_align(qrBgCont, LV_ALIGN_TOP_MID, 0, 36);
+    lv_obj_set_style_bg_color(qrBgCont, WHITE_COLOR, LV_PART_MAIN);
+
+    lv_obj_t *qrcode = GuiCreateContainerWithParent(qrBgCont, 294, 294);
+    lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
+    lv_obj_t *img = GuiCreateImg(qrBgCont, &imgQrcodeMask);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
+    g_connectWalletTileView.privateModeQrCode = qrcode;
+    g_connectWalletTileView.privateModeQrCodeMask = img;
+
+    lv_obj_t *pincodeCont = GuiCreateContainerWithParent(parent, 408, 80);
+    lv_obj_set_style_bg_color(pincodeCont, DARK_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_radius(pincodeCont, 24, LV_PART_MAIN);
+    lv_obj_align(pincodeCont, LV_ALIGN_TOP_MID, 0, 448);
+
+    lv_obj_t *hidePincode = GuiCreateTitleLabel(pincodeCont, HIDDEN_PINCODE);
+    lv_obj_align(hidePincode, LV_ALIGN_TOP_LEFT, 86, 16);
+    lv_obj_set_style_text_color(hidePincode, lv_color_hex(16090890), LV_PART_MAIN);
+    g_connectWalletTileView.privateModePincode = hidePincode;
+    img = GuiCreateImg(pincodeCont, &imgEye);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 290, 22);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(img, ShowOrHiddenPincode, LV_EVENT_CLICKED, NULL);
+    g_connectWalletTileView.privateModePincodeBtn = img;
+
+    lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_private_mode_hint"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 550);
+    lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
 }

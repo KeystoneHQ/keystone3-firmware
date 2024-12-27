@@ -9,6 +9,11 @@
 #include "presetting.h"
 #include "version.h"
 
+uint8_t *GenerateCakeWalletEncryptPincode(void);
+
+static UREncodeResult *g_urEncode = NULL;
+static uint8_t *g_pincode = NULL;
+
 UREncodeResult *GuiGetBlueWalletBtcData(void)
 {
     uint8_t mfp[4] = {0};
@@ -64,4 +69,48 @@ UREncodeResult *GuiGetSpecterWalletBtcData(void)
     UREncodeResult *urencode = get_connect_specter_wallet_ur(mfp, sizeof(mfp), public_keys);
     CHECK_CHAIN_PRINT(urencode);
     return urencode;
+}
+
+UREncodeResult *GuiGetCakeData(void)
+{
+    char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_0);
+    char *pvk = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_PVK_0);
+    if (g_pincode == NULL) {
+        g_urEncode = get_connect_cake_wallet_ur(xPub, pvk);
+    } else {
+        g_urEncode = get_connect_cake_wallet_ur_encrypted(xPub, pvk, g_pincode);
+    }
+    CHECK_CHAIN_PRINT(g_urEncode);
+    return g_urEncode;
+}
+
+void ClosePrivateQrMode(void)
+{
+    if (g_pincode == NULL) {
+        return;
+    }
+    SRAM_FREE(g_pincode);
+    g_pincode = NULL;
+}
+
+uint8_t *OpenPrivateQrMode(void)
+{
+    GenerateCakeWalletEncryptPincode();
+    return g_pincode;
+}
+
+bool IsPrivateQrMode(void)
+{
+    return g_pincode != NULL;
+}
+
+uint8_t *GenerateCakeWalletEncryptPincode(void)
+{
+    uint8_t pincode[6];
+    GenerateEntropy(pincode, 6, "Monero Connect Wallet Salt");
+    for (uint8_t i = 0; i < 6; i++) {
+        pincode[i] = pincode[i] % 10;
+    }
+    g_pincode = SRAM_MALLOC(6);
+    memcpy(g_pincode, pincode, 6);
 }

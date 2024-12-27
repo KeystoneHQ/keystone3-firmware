@@ -18,6 +18,7 @@
 #include "gui_ton.h"
 #else
 #include "gui_zcash.h"
+#include "gui_monero.h"
 #endif
 #endif
 
@@ -44,6 +45,7 @@ typedef enum {
     CHAIN_DASH,
     CHAIN_ARWEAVE,
     CHAIN_STELLAR,
+    CHAIN_XMR,
     CHAIN_COSMOS,
     CHAIN_TIA,
     CHAIN_NTRN,
@@ -112,6 +114,8 @@ typedef enum {
     REMAPVIEW_TON,
     REMAPVIEW_TON_SIGNPROOF,
     REMAPVIEW_ZCASH,
+    REMAPVIEW_XMR_OUTPUT,
+    REMAPVIEW_XMR_UNSIGNED,
     REMAPVIEW_WEB_AUTH,
 #endif
     REMAPVIEW_BUTT,

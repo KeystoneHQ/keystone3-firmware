@@ -9,8 +9,6 @@
 #include "presetting.h"
 #include "version.h"
 
-static UREncodeResult *g_urEncode = NULL;
-1
 UREncodeResult *GuiGetBlueWalletBtcData(void)
 {
     uint8_t mfp[4] = {0};
@@ -337,6 +335,7 @@ UREncodeResult *GuiGetPetraData(void)
     SRAM_FREE(publicKeys);
     return g_urEncode;
 }
+
 
 UREncodeResult *GuiGetADADataByIndex(char *walletName)
 {

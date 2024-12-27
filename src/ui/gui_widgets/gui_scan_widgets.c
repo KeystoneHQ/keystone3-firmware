@@ -111,8 +111,8 @@ void GuiScanResult(bool result, void *param)
         // Not a chain based transaction, e.g. WebAuth
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
 #ifndef BTC_ONLY
-            //we don't support ADA in Slip39 Wallet;
-            if (g_chainType == CHAIN_ADA) {
+            //we don't support ADA & XMR in Slip39 Wallet;
+            if (g_chainType == CHAIN_ADA || g_chainType == CHAIN_XMR) {
                 ThrowError(ERR_INVALID_QRCODE);
                 return;
             }

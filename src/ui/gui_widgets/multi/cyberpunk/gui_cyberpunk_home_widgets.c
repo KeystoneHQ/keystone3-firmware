@@ -64,6 +64,7 @@ static void GuiInitWalletState(void)
             g_walletState[i].enable = true;
         }
         g_walletState[HOME_WALLET_CARD_ZEC].enable = false;
+        g_walletState[HOME_WALLET_CARD_MONERO].enable = false;
         break;
     case MNEMONIC_TYPE_BIP39:
         for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
@@ -216,6 +217,9 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
     switch (coin) {
     case HOME_WALLET_CARD_BTC:
         GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
+        break;
+    case HOME_WALLET_CARD_MONERO:
+        // GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
         break;
     default:
         GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));

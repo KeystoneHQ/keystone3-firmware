@@ -51,6 +51,20 @@ extern bool g_reboot;
         GuiGetZcashGUIData, \
         NULL, \
         FreeZcashMemory, \
+    }, \
+    { \
+        REMAPVIEW_XMR_OUTPUT, \
+        PC_SIMULATOR_PATH "/page_xmr_output.json", \
+        GuiGetMoneroOutputData, \
+        NULL, \
+        FreeMoneroMemory, \
+    }, \
+    { \
+        REMAPVIEW_XMR_UNSIGNED, \
+        PC_SIMULATOR_PATH "/page_xmr_unsigned.json", \
+        GuiGetMoneroUnsignedTxData, \
+        NULL, \
+        FreeMoneroMemory, \
     }
 #endif
 

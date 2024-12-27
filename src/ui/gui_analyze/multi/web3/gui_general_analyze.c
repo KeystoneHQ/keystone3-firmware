@@ -242,7 +242,7 @@ GetListItemKeyFunc GetOtherChainListItemKeyFuncGet(char *type, GuiRemapViewType 
 {
     switch (remapIndex) {
     case REMAPVIEW_COSMOS:
-        return GetCosmosListItemKey;
+        return (void *)GetCosmosListItemKey;
     default:
         return NULL;
     }
@@ -252,7 +252,7 @@ GetListLenFunc GetOtherChainListLenFuncGet(char *type, GuiRemapViewType remapInd
 {
     switch (remapIndex) {
     case REMAPVIEW_COSMOS:
-        return GetCosmosListLen;
+        return (void *)GetCosmosListLen;
     default:
         return NULL;
     }

@@ -9,8 +9,6 @@
 #include "presetting.h"
 #include "version.h"
 
-static UREncodeResult *g_urEncode = NULL;
-
 UREncodeResult *GuiGetBlueWalletBtcData(void)
 {
     uint8_t mfp[4] = {0};
@@ -66,11 +64,4 @@ UREncodeResult *GuiGetSpecterWalletBtcData(void)
     UREncodeResult *urencode = get_connect_specter_wallet_ur(mfp, sizeof(mfp), public_keys);
     CHECK_CHAIN_PRINT(urencode);
     return urencode;
-}
-
-typedef UREncodeResult *MetamaskUrGetter(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys);
-
-static UREncodeResult *get_unlimited_connect_metamask_ur(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys)
-{
-    return get_connect_metamask_ur_unlimited(master_fingerprint, master_fingerprint_length, account_type, public_keys);
 }

@@ -175,6 +175,12 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
     UpdateStartIndex(gesture, totalCoinAmount);
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+        if ((g_walletState[i].index == HOME_WALLET_CARD_ZEC && GetIsTempAccount()) ||
+                g_walletState[i].state == false ||
+                g_walletState[i].enable == false) {
+            j++;
+            continue;
+        }
         if ((i - j) < g_currentPage * 6) {
             continue;
         }
@@ -247,6 +253,7 @@ void ScanQrCodeHandler(lv_event_t *e)
 
 void ConfirmManageAssetsHandler(lv_event_t *e)
 {
+    printf("ConfirmManageAssetsHandler\r\n");
     g_currentPage = 0;
     UpdateManageWalletState(true);
     UpdateHomeConnectWalletCard(GestureNone);
@@ -353,7 +360,6 @@ static void HomeScrollHandler(lv_event_t * e)
 
 #define SWIPE_THRESHOLD 50
     lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_target(e);
 
     static bool isDragging = false;
 

@@ -41,7 +41,6 @@ static void VibrationSwitchHandler(lv_event_t * e);
 void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
 void OpenForgetPasswordHandler(lv_event_t *e);
 static void OpenLanguageSelectHandler(lv_event_t *e);
-static void GuiSystemSettingLanguageHandler(void);
 static void PermitSingSwitchHandler(lv_event_t * e);
 
 void GuiSystemSettingAreaInit(void)
@@ -283,9 +282,6 @@ void GuiDealChangePermitKeyBoard(bool pass)
 
 static void PermitSingSwitchHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_target(e);
-
     g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("permit_switch_title"), _("permit_switch_desc"), NULL,
                      _("Cancel"), WHITE_COLOR_OPA20, _("Change"), DEEP_ORANGE_COLOR);
     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);

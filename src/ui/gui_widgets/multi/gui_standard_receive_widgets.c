@@ -120,7 +120,10 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e);
 static void SetKeyboardValid(bool validation);
 static void UpdateConfirmIndexBtn(void);
 static void RefreshSwitchAddress(void);
+
+#ifdef WEB3_VERSION
 static uint32_t* GetCosmosChainCurrentSelectIndex();
+#endif
 
 static StandardReceiveWidgets_t g_standardReceiveWidgets;
 static StandardReceiveTile g_StandardReceiveTileNow;
@@ -1109,7 +1112,6 @@ static uint32_t GetCurrentSelectIndex()
 static uint32_t* GetCosmosChainCurrentSelectIndex()
 {
     switch (g_chainCard) {
-#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_TIA:
         return &g_tiaChainSelectIndex[GetCurrentAccountIndex()];
         break;
@@ -1212,7 +1214,6 @@ static uint32_t* GetCosmosChainCurrentSelectIndex()
     case HOME_WALLET_CARD_RUNE:
         return &g_thorChainSelectIndex[GetCurrentAccountIndex()];
         break;
-#endif
     default:
         return NULL;
     }

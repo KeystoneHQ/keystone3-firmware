@@ -83,7 +83,6 @@ static void OnApproveHandler(lv_event_t *e);
 static void OnReturnHandler(lv_event_t *e);
 static void ModelParseQRHardwareCall();
 static UREncodeResult *ModelGenerateSyncUR(void);
-static uint8_t GetXPubIndexByPath(char *path);
 static void OpenTutorialHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
 
@@ -93,7 +92,6 @@ static void SetCurrentSelectedIndex(uint8_t index);
 static uint32_t GetCurrentSelectedIndex();
 static void SelectDerivationHandler(lv_event_t *e);
 static void CloseDerivationHandler(lv_event_t *e);
-static void ConfirmDerivationHandler(lv_event_t *e);
 static char *GetChangeDerivationPathDesc(void);
 static void GetCardanoEgAddress(void);
 static void UpdateCardanoEgAddress(uint8_t index);
@@ -101,8 +99,6 @@ static void ShowEgAddressCont(lv_obj_t *egCont);
 static void OpenDerivationPath();
 static void ChangeDerivationPathHandler(lv_event_t *e);
 static void UpdateConfirmBtn(bool update);
-static void SetAccountType(uint8_t index);
-static bool IsCardano();
 static void GuiConnectUsbEntranceWidget(lv_obj_t *parent);
 static void GuiConnectUsbCreateImg(lv_obj_t *parent);
 static void RejectButtonHandler(lv_event_t *e);
@@ -114,6 +110,9 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void);
 #ifdef WEB3_VERSION
 static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e);
 static AdaXPubType GetAccountType(void);
+static void SetAccountType(uint8_t index);
+static bool IsCardano();
+static uint8_t GetXPubIndexByPath(char *path);
 #endif
 
 void GuiSetKeyDerivationRequestData(void *urResult, void *multiResult, bool is_multi)
@@ -810,21 +809,6 @@ static void GuiShowKeyBoardDialog(lv_obj_t *parent)
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
-static bool CheckHardWareCallParaIsValied()
-{
-    if (strcmp("1", g_callData->version) == 0) {
-        // only hard ware call version 1 need check
-        for (size_t i = 0; i < g_response->data->key_derivation->schemas->size; i++) {
-            Response_bool *response = check_hardware_call_path(g_response->data->key_derivation->schemas->data[i].key_path, g_response->data->key_derivation->schemas->data[i].chain_type);
-            if (*response->data == false) {
-                printf("path is invalid\n");
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
 static void OnApproveHandler(lv_event_t *e)
 {
     // click approve button and check the hardware call params
@@ -918,6 +902,8 @@ static const char *GetChangeDerivationAccountType(int i)
     } else if (i == 1) {
         return _("receive_ada_more_t_ledger");
     }
+
+    return NULL;
 }
 
 static void SetCurrentSelectedIndex(uint8_t index)
@@ -957,11 +943,6 @@ static void CloseDerivationHandler(lv_event_t *e)
               NULL);
     SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
                       OpenMoreHandler, &g_walletIndex);
-}
-
-static bool IsCardano()
-{
-    return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON || g_walletIndex == WALLET_LIST_BEGIN;
 }
 
 // hardware call version 1 need another CompareDerivationHandler
@@ -1246,21 +1227,8 @@ static uint8_t GetXPubIndexByPath(char *path)
     return GetAdaXPubTypeByIndexAndDerivationType(GetConnectWalletPathIndex(g_response->data->origin), 0);
 }
 
-static void ConfirmDerivationHandler(lv_event_t *e)
+static bool IsCardano()
 {
-    if (IsCardano()) {
-        SetConnectWalletPathIndex(g_response->data->origin, GetAccountType());
-        SetAccountType(GetCurrentSelectedIndex());
-    }
-    GuiAnimatingQRCodeDestroyTimer();
-    GuiAnimatingQRCodeInit(g_keyDerivationTileView.qrCode, ModelGenerateSyncUR, true);
-    GuiKeyDerivationRequestNextTile();
-    GUI_DEL_OBJ(g_derivationPathCont);
-    SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler,
-                     NULL);
-    SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex,
-              NULL);
-    SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
-                      OpenMoreHandler, &g_walletIndex);
+    return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON || g_walletIndex == WALLET_LIST_BEGIN;
 }
 #endif

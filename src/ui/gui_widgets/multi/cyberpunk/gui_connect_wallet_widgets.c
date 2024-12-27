@@ -56,34 +56,11 @@ typedef struct {
     const lv_img_dsc_t *icon;
 } CoinCard_t;
 
-static const lv_img_dsc_t *g_metaMaskCoinArray[5] = {
-    &coinEth, &coinBnb, &coinAva, &coinMatic, &coinScroll,
-};
-
-static const lv_img_dsc_t *g_ethWalletCoinArray[4] = {
-    &coinEth,
-    &coinBnb,
-    &coinAva,
-    &coinMatic,
-};
-
-static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinBnb, &coinMatic, &coinOkb,
-    &coinTrx, &coinLtc, &coinBch, &coinDash,
-};
-
 static const lv_img_dsc_t *g_bitgetWalletCoinArray[] = {
     &coinBtc, &coinEth, &coinTon
 };
 
-static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {
-    &coinSol, &coinEth
-};
 
-static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinBnb, &coinBch,
-    &coinDash, &coinLtc, &coinTrx, &coinXrp,
-};
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
     &coinBtc,
@@ -93,57 +70,11 @@ static const lv_img_dsc_t *g_UniSatCoinArray[5] = {
     &coinBtc, &coinOrdi, &coinSats, &coinMubi, &coinTrac,
 };
 
-static const lv_img_dsc_t *g_keplrCoinArray[8] = {
-    &coinAtom, &coinOsmo, &coinBld, &coinAkt,
-    &coinXprt, &coinAxl, &coinBoot, &coinCro,
-};
 
-static const lv_img_dsc_t *g_leapCoinArray[8] = {
-    &coinAtom, &coinOsmo, &coinInj, &coinStrd, &coinStars, &coinJuno, &coinScrt, &coinDym
-};
-
-static const lv_img_dsc_t *g_arconnectCoinArray[1] = {
-    &coinAr,
-};
-
-static const lv_img_dsc_t *g_xbullCoinArray[1] = {
-    &coinXlm,
-};
-
-
-
-static const lv_img_dsc_t *g_petraCoinArray[1] = {
-    &coinApt,
-};
-
-static const lv_img_dsc_t *g_nightlyCoinArray[1] = {
-    &coinSui,
-};
-
-static const lv_img_dsc_t *g_solfareCoinArray[1] = {
-    &coinSol,
-};
-
-static const lv_img_dsc_t *g_heliumCoinArray[2] = {
-    &coinSol,
-    &coinHelium,
-};
-
-static const lv_img_dsc_t *g_tonKeeperCoinArray[1] = {
-    &coinTon,
-};
 
 static const lv_img_dsc_t *g_zashiCoinArray[1] = {
     &coinZec,
 };
-
-static const lv_img_dsc_t *g_ThorWalletCoinArray[3] = {
-    // todo thorchain will support bitcoin later
-    // &coinBtc,
-    &coinEth,
-    &coinRune,
-};
-
 
 typedef struct {
     const char *accountType;
@@ -180,7 +111,6 @@ static void UpdategAddress(void);
 static void GetEgAddress(void);
 static void GetEthEgAddress(void);
 static void OpenQRCodeHandler(lv_event_t *e);
-static void ReturnShowQRHandler(lv_event_t *e);
 static void JumpSelectCoinPageHandler(lv_event_t *e);
 void ConnectWalletReturnHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
@@ -279,63 +209,6 @@ static void GuiInitWalletListArray()
 //     ConfigureWalletEnabling();
 // }
 
-#ifndef BTC_ONLY
-static bool IsEVMChain(int walletIndex)
-{
-    switch (walletIndex) {
-    case WALLET_LIST_METAMASK:
-    case WALLET_LIST_RABBY:
-    case WALLET_LIST_SAFE:
-    case WALLET_LIST_BLOCK_WALLET:
-    case WALLET_LIST_ZAPPER:
-    case WALLET_LIST_YEARN_FINANCE:
-    case WALLET_LIST_SUSHISWAP:
-        return true;
-    default:
-        return false;
-    }
-}
-
-static bool IsSOL(int walletIndex)
-{
-    switch (walletIndex) {
-    case WALLET_LIST_SOLFARE:
-    case WALLET_LIST_HELIUM:
-        return true;
-    default:
-        return false;
-    }
-}
-
-
-#endif
-
-static void GuiARAddressCheckConfirmHandler(lv_event_t *event)
-{
-    GUI_DEL_OBJ(g_noticeWindow);
-    GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM);
-}
-
-static void GuiOpenARAddressNoticeWindow()
-{
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("Not Now"), WHITE_COLOR_OPA20, _("Understand"), ORANGE_COLOR);
-    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
-    lv_obj_set_width(btn, 192);
-    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
-    lv_obj_add_event_cb(btn, GuiARAddressCheckConfirmHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_set_width(btn, 192);
-    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
-    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
-}
 
 static void OpenQRCodeHandler(lv_event_t *e)
 {
@@ -359,17 +232,6 @@ void GuiConnectShowRsaSetupasswordHintbox(void)
     static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
-
-static void ReturnShowQRHandler(lv_event_t *e)
-{
-    GUI_DEL_OBJ(g_coinListCont)
-    QRCodePause(false);
-    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
-                     ConnectWalletReturnHandler, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
-                      OpenMoreHandler, NULL);
-}
-
 
 static void RefreshAddressIndex(uint32_t index)
 {
@@ -548,97 +410,6 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 }
 
 #ifndef BTC_ONLY
-static void AddMetaMaskCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-    for (int i = 0; i < 5; i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_metaMaskCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
-    }
-
-    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
-    lv_img_set_zoom(img, 150);
-    lv_img_set_pivot(img, 0, 0);
-    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 132, 2);
-}
-
-static void AddEthWalletCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-    for (int i = 0; i < 4; i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_ethWalletCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
-    }
-    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
-    lv_img_set_zoom(img, 150);
-    lv_img_set_pivot(img, 0, 0);
-    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 132, 2);
-}
-
-static void AddOkxWalletCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-    for (int i = 0;
-            i < sizeof(g_okxWalletCoinArray) / sizeof(g_okxWalletCoinArray[0]);
-            i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_okxWalletCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
-    }
-    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
-    lv_img_set_zoom(img, 150);
-    lv_img_set_pivot(img, 0, 0);
-    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 132, 2);
-}
-
-static void AddBitgetWalletCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-    for (int i = 0;
-            i < sizeof(g_bitgetWalletCoinArray) / sizeof(g_bitgetWalletCoinArray[0]);
-            i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_bitgetWalletCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
-    }
-}
-
-static void AddKeystoneWalletCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-    for (int i = 0;
-            i < sizeof(g_keystoneWalletCoinArray) / sizeof(g_keystoneWalletCoinArray[0]);
-            i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_keystoneWalletCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
-    }
-    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
-    lv_img_set_zoom(img, 150);
-    lv_img_set_pivot(img, 0, 0);
-    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 132, 2);
-}
 
 static void AddBlueWalletCoins(void)
 {
@@ -672,30 +443,6 @@ static void AddUniSatWalletCoins(void)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * 5, 2);
 }
 
-static void AddArConnectCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-
-    lv_obj_t *img = GuiCreateImg(g_coinCont, g_arconnectCoinArray[0]);
-    lv_img_set_zoom(img, 110);
-    lv_img_set_pivot(img, 0, 0);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
-}
-
-static void AddXBullCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-
-    lv_obj_t *img = GuiCreateImg(g_coinCont, g_xbullCoinArray[0]);
-    lv_img_set_zoom(img, 110);
-    lv_img_set_pivot(img, 0, 0);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
-}
-
 static void AddZecCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -709,107 +456,6 @@ static void AddZecCoins(void)
     }
 }
 
-static void AddChainAddress(void)
-{
-    if (lv_obj_get_child_cnt(g_bottomCont) > 0) {
-        lv_obj_clean(g_bottomCont);
-        g_manageImg = NULL;
-        g_coinCont = NULL;
-    }
-    lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
-
-    char name[BUFFER_SIZE_32] = {0};
-    snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
-               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
-    lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
-
-    label = GuiCreateImg(g_bottomCont, &imgArrowRight);
-    lv_obj_align(label, LV_ALIGN_CENTER, 150, 0);
-}
-
-static void AddKeplrCoinsAndAddressUI(void)
-{
-    if (lv_obj_get_child_cnt(g_bottomCont) > 0 && g_bottomCont != NULL) {
-        lv_obj_clean(g_bottomCont);
-        g_manageImg = NULL;
-        g_coinCont = NULL;
-    }
-    lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
-    g_coinTitleLabel = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_networks"));
-    lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_networks"));
-    lv_obj_align(g_coinTitleLabel, LV_ALIGN_TOP_LEFT, 36, 10);
-    // supported network icons
-    for (int i = 0; i < 8; i++) {
-        lv_obj_t *img = GuiCreateImg(g_bottomCont, g_keplrCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 36 + 32 * i, 38);
-    }
-
-    lv_obj_t *img = GuiCreateImg(g_bottomCont, &imgMore);
-    lv_img_set_zoom(img, 150);
-    lv_img_set_pivot(img, 0, 0);
-    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 292, 38);
-
-    // select address ui
-    lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
-    char name[BUFFER_SIZE_32] = {0};
-    snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
-               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
-    lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 70);
-
-    label = GuiCreateImg(g_bottomCont, &imgArrowRight);
-    lv_obj_align(label, LV_ALIGN_CENTER, 150, 30);
-}
-
-static void AddLeapCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-    for (int i = 0; i < 8; i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_leapCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
-    }
-    // Add more
-    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
-    lv_img_set_zoom(img, 150);
-    lv_img_set_pivot(img, 0, 0);
-    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * 8, 2);
-}
-
-static void AddSolflareCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-    for (int i = 0; i < 1; i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_solfareCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
-    }
-}
-
-static void AddHeliumWalletCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-
-    for (int i = 0; i < 2; i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_heliumCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
-    }
-}
 #endif
 
 void GuiConnectWalletInit(void)

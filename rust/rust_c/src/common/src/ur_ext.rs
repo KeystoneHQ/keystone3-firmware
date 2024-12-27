@@ -11,6 +11,8 @@ use ur_registry::bytes::Bytes;
 #[cfg(feature = "multi-coins")]
 use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 #[cfg(feature = "multi-coins")]
+use ur_registry::cardano::cardano_sign_cip8_data_request::CardanoSignCip8DataRequest;
+#[cfg(feature = "multi-coins")]
 use ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
@@ -297,6 +299,13 @@ impl InferViewType for CardanoSignTxHashRequest {
 impl InferViewType for CardanoSignDataRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoSignData)
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+impl InferViewType for CardanoSignCip8DataRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::CardanoSignCip8Data)
     }
 }
 

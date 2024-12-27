@@ -117,7 +117,6 @@ void *GuiGetAdaCatalyst(void)
 
 void *GuiGetAdaSignTxHashData(void)
 {
-    printf("=========== GuiGetAdaSignTxHashData\r\n");
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -297,6 +296,21 @@ PtrT_TransactionCheckResult GuiGetAdaSignDataCheckResult(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
+    // first check is sign opcert and then check sign cip8 or cip36 data
+    PtrT_TransactionCheckResult checkCardanoCip1853SignOpcertResult = cardano_check_sign_data_is_sign_opcert(data);
+    if (checkCardanoCip1853SignOpcertResult->error_code != 0) {
+        Try2FixAdaPathType();
+        checkCardanoCip1853SignOpcertResult = cardano_check_sign_data_is_sign_opcert(data);
+        if (checkCardanoCip1853SignOpcertResult->error_code == 0) {
+            free_TransactionCheckResult(checkCardanoCip1853SignOpcertResult);
+            PtrT_TransactionCheckResult result = cardano_check_sign_data(data, mfp);
+            return result;
+        }
+    } else {
+        free_TransactionCheckResult(checkCardanoCip1853SignOpcertResult);
+        PtrT_TransactionCheckResult result = cardano_check_sign_data(data, mfp);
+        return result;
+    }
     Ptr_SimpleResponse_c_char master_key_index = cardano_get_sign_data_root_index(data);
     if (master_key_index->error_code != 0) {
         return NULL;
@@ -671,6 +685,35 @@ UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void)
     return encodeResult;
 }
 
+UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t entropy[64];
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        if (GetAdaXPubType() == LEDGER_ADA) {
+            char *mnemonic = NULL;
+            bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
+            encodeResult = cardano_sign_sign_cip8_data_with_ledger_bitbox02(data, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+        } else {
+            encodeResult = cardano_sign_sign_cip8_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+        }
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+}
+
+
+
 
 UREncodeResult *GuiGetAdaSignQrCodeData(void)
 {
@@ -901,6 +944,37 @@ void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData)
     lv_obj_align_to(tx_hash_notice_content, tx_hash_value, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     lv_label_set_long_mode(tx_hash_notice_content, LV_LABEL_LONG_WRAP);
 }
+
+
+
+UREncodeResult *GuiGetAdaSignUrDataUnlimited(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t entropy[64];
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        if (GetAdaXPubType() == LEDGER_ADA) {
+            char *mnemonic = NULL;
+            bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
+            encodeResult = cardano_sign_tx_with_ledger_bitbox02_unlimited(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+        } else {
+            encodeResult = cardano_sign_tx_unlimited(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+        }
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+}
+
+
 
 
 ChainType GetAdaXPubTypeByIndexAndDerivationType(AdaXPubType type, uint16_t index)

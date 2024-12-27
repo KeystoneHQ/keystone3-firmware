@@ -877,7 +877,7 @@ dependencies = [
 [[package]]
 name = "cardano-serialization-lib"
 version = "13.2.0"
-source = "git+https://git@github.com/KeystoneHQ/cardano-serialization-lib.git?tag=keystone-0.1.6#584d9aff8548704b12bc78e78fbd6cdc0b5d1b8a"
+source = "git+https://git@github.com/KeystoneHQ/cardano-serialization-lib.git?tag=keystone-0.1.7#1822d2223a105aaea5feee6ec888ff3cc74c999d"
 dependencies = [
  "bech32 0.9.1",
  "cbor_event",
@@ -914,12 +914,14 @@ dependencies = [
  "app_utils",
  "bitcoin",
  "common_rust_c",
+ "cryptoxide",
  "cstr_core",
  "cty",
  "ed25519-bip32-core",
  "hex",
  "itertools 0.13.0",
  "keystore",
+ "minicbor",
  "rust_tools",
  "ur-registry",
 ]

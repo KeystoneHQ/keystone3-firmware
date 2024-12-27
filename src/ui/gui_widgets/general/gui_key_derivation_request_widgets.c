@@ -530,14 +530,14 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                 pubkey = get_ed25519_pubkey_by_seed(seed, seedLen, path);
                 break;
             case BIP32_ED25519:
-                if (selected_ada_derivation_algo == HD_STANDARD_ADA) {
+                if (selected_ada_derivation_algo == HD_STANDARD_ADA && !g_isUsb) {
                     uint8_t entropyLen = 0;
                     uint8_t entropy[64];
                     GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
                     SimpleResponse_c_char* cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
                     char* icarusMasterKey = cip3_response->data;
                     pubkey = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
-                } else if (selected_ada_derivation_algo == HD_LEDGER_BITBOX_ADA) {
+                } else if (selected_ada_derivation_algo == HD_LEDGER_BITBOX_ADA || g_isUsb) {
                     // seed -> mnemonic --> master key(m) -> derive key
                     uint8_t entropyLen = 0;
                     uint8_t entropy[64];

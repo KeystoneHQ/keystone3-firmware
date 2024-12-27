@@ -1769,6 +1769,7 @@ GuiRemapViewType ViewTypeReMap(uint8_t viewType)
     case CardanoTx:
         return REMAPVIEW_ADA;
     case CardanoSignData:
+    case CardanoSignCip8Data:
         return REMAPVIEW_ADA_SIGN_DATA;
     case CardanoCatalystVotingRegistration:
         return REMAPVIEW_ADA_CATALYST;

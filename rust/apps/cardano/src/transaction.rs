@@ -1,5 +1,8 @@
-use crate::errors::{CardanoError, R};
 use crate::structs::{ParseContext, ParsedCardanoSignData, ParsedCardanoTx, SignDataResult};
+use crate::{
+    errors::{CardanoError, R},
+    structs::ParsedCardanoSignCip8Data,
+};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -21,6 +24,15 @@ pub fn parse_sign_data(
     xpub: String,
 ) -> R<ParsedCardanoSignData> {
     ParsedCardanoSignData::build(sign_data, derviation_path, xpub)
+}
+
+pub fn parse_sign_cip8_data(
+    sign_data: Vec<u8>,
+    derviation_path: String,
+    xpub: String,
+    hash_payload: bool,
+) -> R<ParsedCardanoSignCip8Data> {
+    ParsedCardanoSignCip8Data::build(sign_data, derviation_path, xpub, hash_payload)
 }
 
 pub fn check_tx(tx: Vec<u8>, context: ParseContext) -> R<()> {
@@ -76,15 +88,15 @@ pub fn sign_tx_hash(
                 .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
                 // construct vkeywitness
                 vkeys.add(&Vkeywitness::new(
-                    &Vkey::new(&PublicKey::from_bytes(&pubkey).unwrap()),
-                    &Ed25519Signature::from_bytes(signature.to_vec())
+                    Vkey::new(&PublicKey::from_bytes(&pubkey).unwrap()),
+                    Ed25519Signature::from_bytes(signature.to_vec())
                         .map_err(|e| CardanoError::SigningFailed(e.to_string()))?,
                 ));
             }
             Err(e) => return Err(e),
         }
     }
-    witness_set.set_vkeys(&vkeys);
+    witness_set.set_vkeys(vkeys);
     Ok(witness_set.to_bytes())
 }
 
@@ -167,16 +179,16 @@ pub fn sign_tx(tx: Vec<u8>, context: ParseContext, icarus_master_key: XPrv) -> R
     }
     for (pubkey, signature) in signatures {
         let v = Vkeywitness::new(
-            &Vkey::new(
+            Vkey::new(
                 &PublicKey::from_bytes(&pubkey)
                     .map_err(|e| CardanoError::SigningFailed(e.to_string()))?,
             ),
-            &Ed25519Signature::from_bytes(signature.to_vec())
+            Ed25519Signature::from_bytes(signature.to_vec())
                 .map_err(|e| CardanoError::SigningFailed(e.to_string()))?,
         );
         vkeys.add(&v);
     }
-    witness_set.set_vkeys(&vkeys);
+    witness_set.set_vkeys(vkeys);
 
     Ok(witness_set.to_bytes())
 }

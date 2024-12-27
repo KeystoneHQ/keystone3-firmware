@@ -624,7 +624,6 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     } else {
         GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
     }
-    PrintArray("entropy", entropy, entropyLen);
     SecretCacheSetEntropy(entropy, entropyLen);
     GetSlip39MnemonicsWords(entropy, ems, slip39->wordCnt, slip39->memberCnt, slip39->threShold, wordsList, &id, &ie);
     SecretCacheSetEms(ems, entropyLen);

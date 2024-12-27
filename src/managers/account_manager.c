@@ -562,7 +562,8 @@ int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const ch
     return ret;
 }
 
-static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk, const uint8_t* seedFingerprint) {
+static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk, const uint8_t* seedFingerprint)
+{
     ASSERT(accountIndex <= 2);
     g_zcashUFVKcache.accountIndex = accountIndex;
     ClearZcashUFVK();
@@ -572,15 +573,16 @@ static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk, const uint8_t* 
     printf("SetZcashUFVK, %s\r\n", g_zcashUFVKcache.ufvkCache);
 }
 
-static void ClearZcashUFVK() {
+static void ClearZcashUFVK()
+{
     memset_s(g_zcashUFVKcache.ufvkCache, ZCASH_UFVK_MAX_LEN, '\0', ZCASH_UFVK_MAX_LEN);
     memset_s(g_zcashUFVKcache.seedFingerprint, 32, 0, 32);
 }
 
-int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP) {
+int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP)
+{
     ASSERT(accountIndex <= 2);
-    if (g_zcashUFVKcache.accountIndex == accountIndex)
-    {
+    if (g_zcashUFVKcache.accountIndex == accountIndex) {
         strcpy_s(outUFVK, ZCASH_UFVK_MAX_LEN, g_zcashUFVKcache.ufvkCache);
         memcpy_s(outSFP, 32, g_zcashUFVKcache.seedFingerprint, 32);
         return SUCCESS_CODE;
@@ -588,11 +590,11 @@ int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP) {
     return ERR_ZCASH_INVALID_ACCOUNT_INDEX;
 }
 
-int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password) {
+int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password)
+{
     ASSERT(accountIndex <= 2);
 
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39 || GetMnemonicType() == MNEMONIC_TYPE_TON)
-    {
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39 || GetMnemonicType() == MNEMONIC_TYPE_TON) {
         return SUCCESS_CODE;
     }
 
@@ -613,8 +615,7 @@ int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password) {
     strcpy_s(ufvk, ZCASH_UFVK_MAX_LEN, response->data);
     free_simple_response_c_char(response);
     SimpleResponse_u8 *responseSFP = calculate_zcash_seed_fingerprint(seed, len);
-    if (responseSFP->error_code != 0)
-    {
+    if (responseSFP->error_code != 0) {
         ret = response->error_code;
         printf("error: %s\r\n", response->error_message);
         return ret;

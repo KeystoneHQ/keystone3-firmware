@@ -1609,9 +1609,9 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         item = cJSON_GetObjectItem(json, "table");
         if (item != NULL) {
             char typeBuf[16];
-            // find the ui type 
+            // find the ui type
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++) {
-                if(g_analyzeArray[i].index == g_reMapIndex) {
+                if (g_analyzeArray[i].index == g_reMapIndex) {
                     g_analyzeArray[i].typeFunc(typeBuf, g_totalData, sizeof(typeBuf));
                     break;
                 }

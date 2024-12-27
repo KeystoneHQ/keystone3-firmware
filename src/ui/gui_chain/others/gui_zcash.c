@@ -27,7 +27,8 @@ void GuiSetZcashUrData(URParseResult *urResult, URParseMultiResult *urMultiResul
     g_isMulti = multi;
 }
 
-void *GuiGetZcashGUIData(void) {
+void *GuiGetZcashGUIData(void)
+{
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
@@ -50,7 +51,8 @@ static lv_obj_t* GuiZcashOverviewOrchard(lv_obj_t *parent, lv_obj_t *last_view);
 static lv_obj_t* GuiZcashOverviewFrom(lv_obj_t *parent, VecFFI_DisplayFrom *from, lv_obj_t *last_view);
 static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_obj_t *last_view);
 
-void GuiZcashOverview(lv_obj_t *parent, void *totalData) {
+void GuiZcashOverview(lv_obj_t *parent, void *totalData)
+{
     lv_obj_set_size(parent, 408, 480);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
@@ -61,23 +63,24 @@ void GuiZcashOverview(lv_obj_t *parent, void *totalData) {
 
     lv_obj_t* last_view = NULL;
 
-    if(g_zcashData->has_sapling) {
+    if (g_zcashData->has_sapling) {
         last_view = CreateTransactionItemView(container, _("Warning"), _("This transaction contains Sapling spends or outputs. Keystone does not support Sapling spend signing and output checking. Please take care of the potential risks."), last_view);
     }
 
     last_view = CreateTransactionItemView(container, _("Amount"), g_zcashData->total_transfer_value, last_view);
     last_view = CreateTransactionItemView(container, _("Fee"), g_zcashData->fee_value, last_view);
 
-    if(g_zcashData->transparent != NULL) {
+    if (g_zcashData->transparent != NULL) {
         last_view = GuiZcashOverviewTransparent(container, last_view);
     }
 
-    if(g_zcashData->orchard != NULL) {
+    if (g_zcashData->orchard != NULL) {
         last_view = GuiZcashOverviewOrchard(container, last_view);
     }
 }
 
-static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_view) {
+static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_view)
+{
     lv_obj_t* inner_last_view;
     lv_obj_t* label = GuiCreateIllustrateLabel(parent, _("Transparent"));
     lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
@@ -97,7 +100,8 @@ static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_vi
     return inner_last_view;
 }
 
-static lv_obj_t* GuiZcashOverviewOrchard(lv_obj_t* parent, lv_obj_t *last_view) {
+static lv_obj_t* GuiZcashOverviewOrchard(lv_obj_t* parent, lv_obj_t *last_view)
+{
     lv_obj_t* inner_last_view;
     lv_obj_t* label = GuiCreateIllustrateLabel(parent, _("Orchard"));
     lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
@@ -117,7 +121,8 @@ static lv_obj_t* GuiZcashOverviewOrchard(lv_obj_t* parent, lv_obj_t *last_view) 
     return inner_last_view;
 }
 
-static lv_obj_t* GuiZcashOverviewFrom(lv_obj_t *parent, VecFFI_DisplayFrom *from, lv_obj_t *last_view) {
+static lv_obj_t* GuiZcashOverviewFrom(lv_obj_t *parent, VecFFI_DisplayFrom *from, lv_obj_t *last_view)
+{
     lv_obj_t* label, *container;
     uint16_t height = 0;
 
@@ -136,11 +141,10 @@ static lv_obj_t* GuiZcashOverviewFrom(lv_obj_t *parent, VecFFI_DisplayFrom *from
 
     lv_obj_t *innerContainer;
 
-    for (size_t i = 0; i < from->size; i++)
-    {
+    for (size_t i = 0; i < from->size; i++) {
         lv_obj_t *valueLabel, *indexLabel, *addressLabel;
         uint16_t innerHeight = 0;
-        if(i > 0) {
+        if (i > 0) {
             //add margin
             innerHeight += 16;
         }
@@ -157,7 +161,7 @@ static lv_obj_t* GuiZcashOverviewFrom(lv_obj_t *parent, VecFFI_DisplayFrom *from
         lv_obj_set_style_text_color(valueLabel, ORANGE_COLOR, LV_PART_MAIN);
         lv_obj_align_to(valueLabel, indexLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
 
-        if(from->data[i].is_mine) {
+        if (from->data[i].is_mine) {
             lv_obj_t *tagContainer = GuiCreateContainerWithParent(innerContainer, 87, 30);
             lv_obj_set_style_radius(tagContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(tagContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -197,7 +201,8 @@ static lv_obj_t* GuiZcashOverviewFrom(lv_obj_t *parent, VecFFI_DisplayFrom *from
     return container;
 }
 
-static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_obj_t *last_view) {
+static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_obj_t *last_view)
+{
     lv_obj_t* label, *container;
     uint16_t height = 0;
 
@@ -218,11 +223,10 @@ static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_o
 
     lv_obj_t *innerContainer;
 
-    for (size_t i = 0; i < to->size; i++)
-    {
+    for (size_t i = 0; i < to->size; i++) {
         lv_obj_t *valueLabel, *indexLabel, *addressLabel;
         uint16_t innerHeight = 0;
-        if(i > 0) {
+        if (i > 0) {
             //add margin
             innerHeight += 16;
         }
@@ -263,7 +267,7 @@ static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_o
 
         innerHeight += lv_obj_get_height(addressLabel);
 
-        if(to->data[i].memo != NULL && strnlen(to->data[i].memo, MAX_MEMO_LENGTH) > 0) {
+        if (to->data[i].memo != NULL && strnlen(to->data[i].memo, MAX_MEMO_LENGTH) > 0) {
             char *memo = (char *)malloc(MAX_MEMO_LENGTH);
             snprintf_s(memo, MAX_MEMO_LENGTH, "Memo: %s", to->data[i].memo);
             lv_obj_t *memoLabel = GuiCreateIllustrateLabel(innerContainer, memo);

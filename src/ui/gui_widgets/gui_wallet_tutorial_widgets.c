@@ -353,7 +353,7 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_ZASHI].items[0].qrTitle = _("connect_zashi_title");
     g_tutorials[WALLET_LIST_ZASHI].items[0].qrUrl = _("connect_zashi_link");
 
-    
+
 
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;

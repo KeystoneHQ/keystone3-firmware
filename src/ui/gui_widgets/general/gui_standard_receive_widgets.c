@@ -719,8 +719,7 @@ static void RefreshQrCode(void)
         char addressString[256];
         CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 60);
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressString);
-    }
-    else {
+    } else {
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     }
     lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), addressDataItem.index);

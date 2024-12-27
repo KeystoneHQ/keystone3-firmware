@@ -12,7 +12,6 @@
 #include "cjson/cJSON.h"
 #include "user_memory.h"
 #include "gui_qr_hintbox.h"
-static uint8_t GetSolPublickeyIndex(char* rootPath);
 typedef struct {
     const char* address;
 } SolanaAddressLearnMoreData;
@@ -101,7 +100,10 @@ void *GuiGetSolMessageData(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
         char *path = sol_get_path(data);
-        char pubkeyIndex = GetSolPublickeyIndex(path);
+        ChainType pubkeyIndex = CheckSolPathSupport(path);
+        if (pubkeyIndex == XPUB_TYPE_NUM) {
+            break;
+        }
         char *pubKey = GetCurrentAccountPublicKey(pubkeyIndex);
         PtrT_TransactionParseResult_DisplaySolanaMessage parseResult = solana_parse_message(data, pubKey);
         free_ptr_string(path);
@@ -182,34 +184,6 @@ void GetSolMessageRaw(void *indata, void *param, uint32_t maxLen)
     } else {
         snprintf((char *)indata, maxLen, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
     }
-}
-
-static uint8_t GetSolPublickeyIndex(char* rootPath)
-{
-    if (strcmp(rootPath, "44'/501'/0'") == 0) return XPUB_TYPE_SOL_BIP44_0;
-    if (strcmp(rootPath, "44'/501'/1'") == 0) return XPUB_TYPE_SOL_BIP44_1;
-    if (strcmp(rootPath, "44'/501'/2'") == 0) return XPUB_TYPE_SOL_BIP44_2;
-    if (strcmp(rootPath, "44'/501'/3'") == 0) return XPUB_TYPE_SOL_BIP44_3;
-    if (strcmp(rootPath, "44'/501'/4'") == 0) return XPUB_TYPE_SOL_BIP44_4;
-    if (strcmp(rootPath, "44'/501'/5'") == 0) return XPUB_TYPE_SOL_BIP44_5;
-    if (strcmp(rootPath, "44'/501'/6'") == 0) return XPUB_TYPE_SOL_BIP44_6;
-    if (strcmp(rootPath, "44'/501'/7'") == 0) return XPUB_TYPE_SOL_BIP44_7;
-    if (strcmp(rootPath, "44'/501'/8'") == 0) return XPUB_TYPE_SOL_BIP44_8;
-    if (strcmp(rootPath, "44'/501'/9'") == 0) return XPUB_TYPE_SOL_BIP44_9;
-    if (strcmp(rootPath, "44'/501'") == 0) return XPUB_TYPE_SOL_BIP44_ROOT;
-    if (strcmp(rootPath, "44'/501'/0'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_0;
-    if (strcmp(rootPath, "44'/501'/1'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_1;
-    if (strcmp(rootPath, "44'/501'/2'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_2;
-    if (strcmp(rootPath, "44'/501'/3'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_3;
-    if (strcmp(rootPath, "44'/501'/4'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_4;
-    if (strcmp(rootPath, "44'/501'/5'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_5;
-    if (strcmp(rootPath, "44'/501'/6'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_6;
-    if (strcmp(rootPath, "44'/501'/7'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_7;
-    if (strcmp(rootPath, "44'/501'/8'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_8;
-    if (strcmp(rootPath, "44'/501'/9'/0'") == 0) return XPUB_TYPE_SOL_BIP44_CHANGE_9;
-    ASSERT(0);
-
-    return -1;
 }
 
 static void SetContainerDefaultStyle(lv_obj_t *container)

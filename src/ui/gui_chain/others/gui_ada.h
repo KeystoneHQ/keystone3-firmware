@@ -6,8 +6,7 @@
 #include "librust_c.h"
 #include "account_public_info.h"
 
-typedef enum
-{
+typedef enum {
     STANDARD_ADA = 0,
     LEDGER_ADA,
 } AdaXPubType;

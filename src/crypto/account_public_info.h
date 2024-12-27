@@ -264,6 +264,7 @@ uint32_t GetConnectWalletAccountIndex(const char* walletName);
 void SetConnectWalletAccountIndex(const char* walletName, uint32_t index);
 uint32_t GetConnectWalletNetwork(const char* walletName);
 void SetConnectWalletNetwork(const char* walletName, uint32_t index);
+ChainType CheckSolPathSupport(char *path);
 
 #ifdef BTC_ONLY
 void ExportMultiSigXpub(ChainType chainType);

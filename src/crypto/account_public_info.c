@@ -317,6 +317,33 @@ static const ChainItem_t g_chainTable[] = {
 #endif
 };
 
+ChainType CheckSolPathSupport(char *path)
+{
+    int startIndex = -1;
+    int endIndex = -1;
+    for (int i = 0; i < XPUB_TYPE_NUM; i++) {
+        if (XPUB_TYPE_SOL_BIP44_0 == g_chainTable[i].chain) {
+            startIndex = i;
+        }
+        if (XPUB_TYPE_SOL_BIP44_CHANGE_49 == g_chainTable[i].chain) {
+            endIndex = i;
+            break;
+        }
+    }
+
+    if (startIndex == -1 || endIndex == -1) {
+        return XPUB_TYPE_NUM;
+    }
+
+    for (int i = startIndex; i < endIndex; i++) {
+        // skip the first two characters
+        if (!strcmp(path, g_chainTable[i].path + 2)) {
+            return g_chainTable[i].chain;
+        }
+    }
+    return XPUB_TYPE_NUM;
+}
+
 static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoKey, const char *path, void *icarusMasterKey, void *ledgerBitbox02MasterKey)
 {
     switch (cryptoKey) {
@@ -643,8 +670,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     memcpy_s(iv_bytes, 16, iv_response->data, 16);
                     free_simple_response_u8(iv_response);
                     xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
-                }
-                else {
+                } else {
                     xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {

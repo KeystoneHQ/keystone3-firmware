@@ -397,7 +397,7 @@ UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index)
 
 UREncodeResult *GuiGetLeapData()
 {
-    #define CHAIN_AMOUNT 4
+#define CHAIN_AMOUNT 4
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_KeplrAccount publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_KeplrAccount));

@@ -852,8 +852,8 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     if (ret == SUCCESS_CODE) {
         // reset address index in receive page
         {
-            GuiResetCurrentUtxoAddressIndex(accountIndex);
             void GuiResetCurrentUtxoAddressIndex(uint8_t index);
+            GuiResetCurrentUtxoAddressIndex(accountIndex);
 #ifdef WEB3_VERSION
             void GuiResetCurrentEthAddressIndex(uint8_t index);
             void GuiResetCurrentStandardAddressIndex(uint8_t index);

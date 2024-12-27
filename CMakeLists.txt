@@ -59,8 +59,8 @@ set(CRYPTO_INCLUDE_PATH
 
 set(WIDGET_PATH "multi")
 if(CYBERPUNK)
-    set(WIDGET_SUBPATH "multi/cyberpunk")
     add_compile_definitions(CYBERPUNK_VERSION)
+    set(WIDGET_SUBPATH "multi/cyberpunk")
 elseif(BTC_ONLY)
     set(WIDGET_SUBPATH "btc_only/multi_sig")
     set(WIDGET_PATH "btc_only")
@@ -68,7 +68,7 @@ elseif(BTC_ONLY)
     add_compile_definitions(EXCLUDE_RUSTC)
 else()
     add_compile_definitions(WEB3_VERSION)
-    set(WIDGET_SUBPATH "multi/general")
+    set(WIDGET_SUBPATH "multi/web3")
 endif()
 
 set(GUI_CUSTOM_INCLUDE_PATH
@@ -175,9 +175,9 @@ endif()
     
 file(GLOB GUI_CUSTOM_VIEW_WIDGETS
     src/ui/gui_views/*.c
-    src/ui/gui_views/general/*.c
+    src/ui/gui_views/web3/*.c
     src/ui/gui_widgets/*.c
-    src/ui/gui_widgets/general/*.c
+    src/ui/gui_widgets/web3/*.c
     src/ui/gui_wallet/*.c
     src/ui/gui_chain/*.c
     src/ui/gui_analyze/*.c

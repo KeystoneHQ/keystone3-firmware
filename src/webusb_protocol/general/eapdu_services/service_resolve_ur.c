@@ -8,6 +8,7 @@
 #include "gui_views.h"
 #include "general_msg.h"
 #include "gui_key_derivation_request_widgets.h"
+#include "gui_home_widgets.h"
 
 /* DEFINES */
 #define REQUEST_ID_IDLE 0xFFFF

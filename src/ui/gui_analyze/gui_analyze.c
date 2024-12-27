@@ -521,11 +521,6 @@ void *GuiWidgetContainer(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
-__attribute__((weak)) GetCustomContainerFunc GetOtherChainCustomFunc(char *funcName)
-{
-    return NULL;
-}
-
 GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
 {
     if (!strcmp(funcName, "GuiBtcTxOverview")) {

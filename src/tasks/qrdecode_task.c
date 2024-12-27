@@ -125,7 +125,7 @@ static void QrDecodeTask(void *argument)
 
 void ProcessQr(uint32_t count)
 {
-    uint8_t *qrString = GetDataParserCache();
+    char *qrString = (char *)GetDataParserCache();
     static uint8_t testProgress = 0;
     static bool firstQrFlag = true;
     static PtrDecoder decoder = NULL;

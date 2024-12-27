@@ -905,8 +905,8 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
-    char *xPub, hdPath[BUFFER_SIZE_128];
-    SimpleResponse_c_char *result;
+    char hdPath[BUFFER_SIZE_128];
+    SimpleResponse_c_char *result = NULL;
 
 #ifdef CYBERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_ZEC) {
@@ -918,6 +918,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 #endif
 
 #ifdef WEB3_VERSION
+    char *xPub = NULL;
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
@@ -1064,6 +1065,47 @@ void GuiResetAllStandardAddressIndex(void)
     memset_s(g_thorChainSelectIndex, sizeof(g_thorChainSelectIndex), 0, sizeof(g_thorChainSelectIndex));
 }
 
+
+
+static void SetCurrentSelectIndex(uint32_t selectIndex)
+{
+#ifdef WEB3_VERSION
+    switch (g_chainCard) {
+    case HOME_WALLET_CARD_SUI:
+        g_suiSelectIndex[GetCurrentAccountIndex()] = selectIndex;
+        break;
+    case HOME_WALLET_CARD_XLM:
+        g_stellarSelectIndex[GetCurrentAccountIndex()] = selectIndex;
+        break;
+    case HOME_WALLET_CARD_APT:
+        g_aptosSelectIndex[GetCurrentAccountIndex()] = selectIndex;
+        break;
+    case HOME_WALLET_CARD_XRP:
+        g_xrpSelectIndex[GetCurrentAccountIndex()] = selectIndex;
+        break;
+    default:
+        if (IsCosmosChain(g_chainCard)) {
+            uint32_t *ptr = GetCosmosChainCurrentSelectIndex();
+            *ptr = selectIndex;
+            break;
+        } else {
+            g_selectIndex[GetCurrentAccountIndex()] = selectIndex;
+            break;
+        }
+    }
+#endif
+    SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
+}
+
+static uint32_t GetCurrentSelectIndex()
+{
+    if (!IsAccountSwitchable()) {
+        return 0;
+    }
+    return GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
+}
+
+#ifdef WEB3_VERSION
 static uint32_t* GetCosmosChainCurrentSelectIndex()
 {
     switch (g_chainCard) {
@@ -1175,41 +1217,4 @@ static uint32_t* GetCosmosChainCurrentSelectIndex()
         return NULL;
     }
 }
-
-static void SetCurrentSelectIndex(uint32_t selectIndex)
-{
-#ifdef WEB3_VERSION
-    switch (g_chainCard) {
-    case HOME_WALLET_CARD_SUI:
-        g_suiSelectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
-    case HOME_WALLET_CARD_XLM:
-        g_stellarSelectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
-    case HOME_WALLET_CARD_APT:
-        g_aptosSelectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
-    case HOME_WALLET_CARD_XRP:
-        g_xrpSelectIndex[GetCurrentAccountIndex()] = selectIndex;
-        break;
-    default:
-        if (IsCosmosChain(g_chainCard)) {
-            uint32_t *ptr = GetCosmosChainCurrentSelectIndex();
-            *ptr = selectIndex;
-            break;
-        } else {
-            g_selectIndex[GetCurrentAccountIndex()] = selectIndex;
-            break;
-        }
-    }
 #endif
-    SetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin, selectIndex);
-}
-
-static uint32_t GetCurrentSelectIndex()
-{
-    if (!IsAccountSwitchable()) {
-        return 0;
-    }
-    return GetAccountReceiveIndex(GetCoinCardByIndex(g_chainCard)->coin);
-}

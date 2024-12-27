@@ -600,7 +600,7 @@ int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password)
 
     uint8_t seed[SEED_LEN];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    int32_t ret = GetAccountSeed(accountIndex, &seed, password);
+    int32_t ret = GetAccountSeed(accountIndex, seed, password);
 
     SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);
 
@@ -626,5 +626,6 @@ int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password)
     free_simple_response_u8(responseSFP);
 
     SetZcashUFVK(accountIndex, ufvk, sfp);
+    return ret;
 }
 #endif

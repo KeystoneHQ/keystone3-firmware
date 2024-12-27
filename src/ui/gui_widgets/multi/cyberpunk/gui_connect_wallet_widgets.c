@@ -179,12 +179,9 @@ static PageWidget_t *g_pageWidget;
 static void UpdategAddress(void);
 static void GetEgAddress(void);
 static void GetEthEgAddress(void);
-static void initFewchaCoinsConfig(void);
 static void OpenQRCodeHandler(lv_event_t *e);
 static void ReturnShowQRHandler(lv_event_t *e);
-static void UpdateFewchaCoinStateHandler(lv_event_t *e);
 static void JumpSelectCoinPageHandler(lv_event_t *e);
-static void ConfirmSelectFewchaCoinsHandler(lv_event_t *e);
 void ConnectWalletReturnHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
 static uint32_t GetCurrentSelectedIndex();
@@ -813,21 +810,6 @@ static void AddHeliumWalletCoins(void)
         lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
     }
 }
-
-static void AddBackpackWalletCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-    for (int i = 0;
-            i < sizeof(g_backpackWalletCoinArray) / sizeof(g_backpackWalletCoinArray[0]);
-            i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_backpackWalletCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
-    }
-}
 #endif
 
 void GuiConnectWalletInit(void)
@@ -1332,12 +1314,6 @@ static void OpenDerivationPath()
     UpdateConfirmBtn();
 
     g_derivationPathCont = bgCont;
-}
-
-static void ChangeDerivationPathHandler(lv_event_t *e)
-{
-    OpenDerivationPath();
-    QRCodePause(true);
 }
 #endif
 

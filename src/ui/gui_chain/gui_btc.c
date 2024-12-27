@@ -68,7 +68,7 @@ void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult
     g_isMulti = multi;
 }
 
-void GuiSetPsbtStrData(char *psbtBytes, uint32_t psbtBytesLen)
+void GuiSetPsbtStrData(uint8_t *psbtBytes, uint32_t psbtBytesLen)
 {
     g_psbtBytes = psbtBytes;
     g_psbtBytesLen = psbtBytesLen;

@@ -530,7 +530,6 @@ static void HomeScrollHandler(lv_event_t * e)
 
 #define SWIPE_THRESHOLD 50
     lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_target(e);
 
     static bool isDragging = false;
 

@@ -687,7 +687,6 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
 {
     int32_t ret;
     AccountSecret_t accountSecret = {0};
-    // char *mnemonic = NULL;
     uint8_t passwordHash[32];
     uint8_t entropy[64] = {0};
     uint8_t seed[64] = {0};

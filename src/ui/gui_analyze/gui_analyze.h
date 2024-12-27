@@ -25,6 +25,8 @@ void GuiTemplateClosePage(void);
 void ParseTransaction(uint8_t index);
 void SetParseTransactionResult(void* result);
 
+GetCustomContainerFunc GetOtherChainCustomFunc(char *funcName);
+
 #ifdef __cplusplus
 }
 #endif

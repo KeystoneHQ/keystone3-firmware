@@ -534,7 +534,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
         for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
             uint8_t derivationType = GetDerivationTypeByCurveAndDeriveAlgo(g_callData->key_derivation->schemas->data[i].curve, g_callData->key_derivation->schemas->data[i].algo);
             char *path = g_callData->key_derivation->schemas->data[i].key_path;
-            SimpleResponse_c_char *pubkey;
+            SimpleResponse_c_char *pubkey = NULL;
             switch (derivationType) {
             case SECP256K1:
                 pubkey = get_extended_pubkey_bytes_by_seed(seed, seedLen, path);

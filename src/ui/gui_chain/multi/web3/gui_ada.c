@@ -497,7 +497,6 @@ bool GetAdaVotingProposalsExist(void *indata, void *param)
 
 void GetAdaVotingProposalsLabel(void *indata, void *param, uint32_t maxLen)
 {
-    DisplayCardanoTx *tx = (DisplayCardanoTx *)param;
     snprintf_s((char *)indata,  maxLen, _("ada_proposals_tx_notice"));
 }
 

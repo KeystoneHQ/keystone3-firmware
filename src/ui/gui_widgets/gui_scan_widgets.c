@@ -25,6 +25,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_btc.h"
+#include "gui_pending_hintbox.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_read_sdcard_widgets.h"
 #endif
@@ -36,6 +37,16 @@ static void GuiScanStart();
 
 #ifdef BTC_ONLY
 static lv_obj_t *g_noticeWindow;
+
+static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, size_t filterSize)
+{
+    for (size_t i = 0; i < filterSize; i++) {
+        if (viewType == viewTypeFilter[i]) {
+            return true;
+        }
+    }
+    return false;
+}
 #endif
 
 static PageWidget_t *g_pageWidget;
@@ -81,16 +92,6 @@ void GuiScanRefresh()
 {
     SetPageLockScreen(false);
     GuiScanStart();
-}
-
-static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, size_t filterSize)
-{
-    for (size_t i = 0; i < filterSize; i++) {
-        if (viewType == viewTypeFilter[i]) {
-            return true;
-        }
-    }
-    return false;
 }
 
 void GuiScanResult(bool result, void *param)

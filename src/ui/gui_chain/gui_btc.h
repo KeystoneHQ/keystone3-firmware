@@ -33,6 +33,6 @@ void GuiBtcMsg(lv_obj_t *parent, void *totalData);
 
 void GuiBtcTxOverview(lv_obj_t *parent, void *g_totalData);
 void GuiBtcTxDetail(lv_obj_t *parent, void *g_totalData);
-void GuiSetPsbtStrData(char *psbtBytes, uint32_t psbtBytesLen);
+void GuiSetPsbtStrData(uint8_t *psbtBytes, uint32_t psbtBytesLen);
 
 #endif

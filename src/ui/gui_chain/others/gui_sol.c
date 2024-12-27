@@ -101,9 +101,7 @@ void *GuiGetSolMessageData(void)
     do {
         char *path = sol_get_path(data);
         ChainType pubkeyIndex = CheckSolPathSupport(path);
-        if (pubkeyIndex == XPUB_TYPE_NUM) {
-            break;
-        }
+        ASSERT(pubkeyIndex != XPUB_TYPE_NUM);
         char *pubKey = GetCurrentAccountPublicKey(pubkeyIndex);
         PtrT_TransactionParseResult_DisplaySolanaMessage parseResult = solana_parse_message(data, pubKey);
         free_ptr_string(path);

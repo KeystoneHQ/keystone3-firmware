@@ -335,7 +335,7 @@ ChainType CheckSolPathSupport(char *path)
         return XPUB_TYPE_NUM;
     }
 
-    for (int i = startIndex; i < endIndex; i++) {
+    for (int i = startIndex; i <= endIndex; i++) {
         // skip the first two characters
         if (!strcmp(path, g_chainTable[i].path + 2)) {
             return g_chainTable[i].chain;

@@ -16,8 +16,20 @@ fn main() {
         "debug-multi-coins",
         #[cfg(feature = "debug-btc-only")]
         "debug-btc-only",
+        #[cfg(feature = "debug-cyberpunk")]
+        "debug-cyberpunk",
+        #[cfg(feature = "simulator-cyberpunk")]
+        "simulator-cyberpunk",
+        #[cfg(feature = "production-cyberpunk")]
+        "production-cyberpunk",
     ];
+    //feature toggle
     config.after_includes = config.after_includes.map(|mut v| {
+        #[cfg(feature = "cyberpunk")]
+        v.push_str("#define BUILD_CYBERPUNK\n");
+        #[cfg(feature = "multi-coins")]
+        v.push_str("#define BUILD_MULTI_COINS\n");
+        
         #[cfg(feature = "aptos")]
         v.push_str("#define FEATURE_APTOS\n");
         #[cfg(feature = "arweave")]

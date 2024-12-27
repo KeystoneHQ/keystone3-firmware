@@ -3,9 +3,17 @@ cmake_minimum_required(VERSION 3.10)
 
 option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 
+set(BUILD_ENVIRONMENT "DEBUG")
+set(BUILD_VARIANT "MULTI_COINS")
+
 if(BUILD_TYPE STREQUAL "Simulator")
     set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
     set(COMPILE_SIMULATOR ON CACHE BOOL "compile on Simulator target" FORCE)
+    set(BUILD_ENVIRONMENT "SIMULATOR")
+endif()
+
+if(BUILD_PRODUCTION)
+    set(BUILD_ENVIRONMENT "PRODUCTION")
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
@@ -26,6 +34,7 @@ add_definition_with_message(ENABLE_SCREEN_SHOT)
 add_definition_with_message(DEBUG_MEMORY)
 
 add_definition_with_message(BUILD_PRODUCTION)
+
 
 get_cmake_property(_variableNames VARIABLES)
 list(SORT _variableNames)
@@ -60,15 +69,18 @@ set(CRYPTO_INCLUDE_PATH
 set(WIDGET_PATH "multi")
 if(CYBERPUNK)
     add_compile_definitions(CYBERPUNK_VERSION)
+    set(BUILD_VARIANT "CYBERPUNK")
     set(WIDGET_SUBPATH "multi/cyberpunk")
 elseif(BTC_ONLY)
     set(WIDGET_SUBPATH "btc_only/multi_sig")
     set(WIDGET_PATH "btc_only")
+    set(BUILD_VARIANT "BTC_ONLY")
     add_compile_definitions(BTC_ONLY)
     add_compile_definitions(EXCLUDE_RUSTC)
 else()
     add_compile_definitions(WEB3_VERSION)
     set(WIDGET_SUBPATH "multi/web3")
+    set(BUILD_VARIANT "MULTI_COINS")
 endif()
 
 set(GUI_CUSTOM_INCLUDE_PATH
@@ -360,7 +372,7 @@ else()
         ${UTILS}
         ${CRYPTO_SLIP39}
     )
-    # add_dependencies(${PROJECT_NAME} rust_c)
+    add_dependencies(${PROJECT_NAME} rust_c)
     target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 ${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds/librust_c.a)
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
       target_link_libraries(${PROJECT_NAME} PRIVATE m dl pthread )

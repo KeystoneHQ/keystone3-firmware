@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2024-01-31
+          toolchain: nightly-2024-07-01
           override: true
           components: rustfmt
           target: x86_64-apple-darwin
@@ -24,4 +24,4 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Run rust/apps/wallets
-        run: cd rust/apps/wallets && cargo +nightly-2024-01-31 llvm-cov --fail-under-regions 39 --fail-under-functions 40 --fail-under-lines 57
+        run: cd rust/apps/wallets && cargo +nightly-2024-07-01 llvm-cov --fail-under-regions 39 --fail-under-functions 40 --fail-under-lines 57

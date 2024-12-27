@@ -184,6 +184,13 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+
+        #[cfg(feature = "monero")]
+        impl From<app_monero::errors::MoneroError> for $name {
+            fn from(value: app_monero::errors::MoneroError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 
     ($name:ident<$t:ident>) => {
@@ -305,6 +312,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "monero")]
+        impl<$t: Free> From<app_monero::errors::MoneroError> for $name<$t> {
+            fn from(value: app_monero::errors::MoneroError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 }
 
@@ -412,6 +425,12 @@ macro_rules! impl_simple_new_error {
         #[cfg(feature = "zcash")]
         impl<$t> From<app_zcash::errors::ZcashError> for $name<$t> {
             fn from(value: app_zcash::errors::ZcashError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "monero")]
+        impl<$t> From<app_monero::errors::MoneroError> for $name<$t> {
+            fn from(value: app_monero::errors::MoneroError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

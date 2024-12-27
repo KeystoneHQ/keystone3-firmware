@@ -23,6 +23,7 @@ language = "C"
 "feature = tron" = "FEATURE_TRON"
 "feature = xrp" = "FEATURE_XRP"
 "feature = zcash" = "FEATURE_ZCASH"
+"feature = monero" = "FEATURE_MONERO"
 
 [parse]
 extra_bindings = ["rust_c"]

@@ -51,6 +51,7 @@ app_arweave = { workspace = true, optional = true }
 app_stellar = { workspace = true, optional = true }
 app_ton = { workspace = true, optional = true }
 app_zcash = { workspace = true, optional = true }
+app_monero = { workspace = true, optional = true }
 
 [lib]
 crate-type = ["staticlib"]
@@ -76,6 +77,7 @@ ton = ["dep:app_ton"]
 tron = ["dep:app_tron"]
 xrp = ["dep:app_xrp"]
 zcash = ["dep:app_zcash", "dep:zcash_vendor"]
+monero = ["dep:app_monero"]
 test_cmd = []
 
 debug-memory = ["multi-coins"]
@@ -98,6 +100,7 @@ multi-coins = [
     "tron",
     "xrp",
     "zcash",
+    "monero",
 ]
 
 btc-only = ["bitcoin"]

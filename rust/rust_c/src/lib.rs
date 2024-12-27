@@ -64,6 +64,9 @@ mod xrp;
 #[cfg(feature = "zcash")]
 #[allow(unused)]
 mod zcash;
+#[cfg(feature = "monero")]
+#[allow(unused)]
+mod monero;
 
 #[cfg(feature = "simulator")]
 #[allow(unused)]

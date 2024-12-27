@@ -58,6 +58,8 @@ use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use ur_registry::ton::ton_sign_request::TonSignRequest;
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
+#[cfg(feature = "monero")]
+use ur_registry::monero::{xmr_output::XmrOutput, xmr_txunsigned::XmrTxUnsigned};
 
 use super::errors::{ErrorCodes, RustCError};
 use super::free::Free;
@@ -168,7 +170,7 @@ impl UREncodeMultiResult {
     }
     fn success(data: String) -> Self {
         Self {
-            data: convert_c_char(data.to_uppercase()),
+            data: convert_c_char(data),
             ..Self::new()
         }
     }
@@ -253,6 +255,10 @@ pub enum ViewType {
     ZcashTx,
     #[cfg(feature = "aptos")]
     AptosTx,
+    #[cfg(feature = "monero")]
+    XmrOutput,
+    #[cfg(feature = "monero")]
+    XmrTxUnsigned,
     WebAuthResult,
     #[cfg(feature = "multi-coins")]
     KeyDerivationRequest,
@@ -313,6 +319,10 @@ pub enum QRCodeType {
     TonSignRequest,
     #[cfg(feature = "zcash")]
     ZcashPczt,
+    #[cfg(feature = "monero")]
+    XmrOutputSignRequest,
+    #[cfg(feature = "monero")]
+    XmrTxUnsignedRequest,
     URTypeUnKnown,
 }
 
@@ -363,6 +373,10 @@ impl QRCodeType {
             InnerURType::TonSignRequest(_) => Ok(QRCodeType::TonSignRequest),
             #[cfg(feature = "zcash")]
             InnerURType::ZcashPczt(_) => Ok(QRCodeType::ZcashPczt),
+            #[cfg(feature = "monero")]
+            InnerURType::XmrTxUnsigned(_) => Ok(QRCodeType::XmrTxUnsignedRequest),
+            #[cfg(feature = "monero")]
+            InnerURType::XmrOutput(_) => Ok(QRCodeType::XmrOutputSignRequest),
             #[cfg(feature = "multi-coins")]
             InnerURType::QRHardwareCall(_) => Ok(QRCodeType::QRHardwareCall),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
@@ -515,6 +529,14 @@ fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
         #[cfg(feature = "cardano")]
         QRCodeType::CardanoCatalystVotingRegistrationRequest => {
             free_ptr_with_type!(data, CardanoCatalystVotingRegistrationRequest);
+        }
+        #[cfg(feature = "monero")]
+        QRCodeType::XmrOutputSignRequest => {
+            free_ptr_with_type!(data, XmrOutput);
+        }
+        #[cfg(feature = "monero")]
+        QRCodeType::XmrTxUnsignedRequest => {
+            free_ptr_with_type!(data, XmrTxUnsigned);
         }
         #[cfg(feature = "multi-coins")]
         QRCodeType::QRHardwareCall => {
@@ -681,6 +703,10 @@ pub fn decode_ur(ur: String) -> URParseResult {
         QRCodeType::TonSignRequest => _decode_ur::<TonSignRequest>(ur, ur_type),
         #[cfg(feature = "zcash")]
         QRCodeType::ZcashPczt => _decode_ur::<ZcashPczt>(ur, ur_type),
+        #[cfg(feature = "monero")]
+        QRCodeType::XmrOutputSignRequest => _decode_ur::<XmrOutput>(ur, ur_type),
+        #[cfg(feature = "monero")]
+        QRCodeType::XmrTxUnsignedRequest => _decode_ur::<XmrTxUnsigned>(ur, ur_type),
         #[cfg(feature = "multi-coins")]
         QRCodeType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseResult::from(
@@ -777,6 +803,10 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         QRCodeType::TonSignRequest => _receive_ur::<TonSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "zcash")]
         QRCodeType::ZcashPczt => _receive_ur::<ZcashPczt>(ur, ur_type, decoder),
+        #[cfg(feature = "monero")]
+        QRCodeType::XmrOutputSignRequest => _receive_ur::<XmrOutput>(ur, ur_type, decoder),
+        #[cfg(feature = "monero")]
+        QRCodeType::XmrTxUnsignedRequest => _receive_ur::<XmrTxUnsigned>(ur, ur_type, decoder),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseMultiResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),
         ),
@@ -788,7 +818,17 @@ pub extern "C" fn get_next_part(ptr: PtrEncoder) -> *mut UREncodeMultiResult {
     let keystone_ur_encoder_ptr = ptr as *mut ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
     let encoder = unsafe { &mut *keystone_ur_encoder_ptr };
     match encoder.next_part() {
-        Ok(result) => UREncodeMultiResult::success(result).c_ptr(),
+        Ok(result) => UREncodeMultiResult::success(result.to_uppercase()).c_ptr(),
+        Err(e) => UREncodeMultiResult::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn get_next_cyclic_part(ptr: PtrEncoder) -> *mut UREncodeMultiResult {
+    let keystone_ur_encoder_ptr = ptr as *mut ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
+    let encoder = unsafe { &mut *keystone_ur_encoder_ptr };
+    match encoder.next_cyclic_part() {
+        Ok(result) => UREncodeMultiResult::success(result.to_lowercase()).c_ptr(),
         Err(e) => UREncodeMultiResult::from(e).c_ptr(),
     }
 }

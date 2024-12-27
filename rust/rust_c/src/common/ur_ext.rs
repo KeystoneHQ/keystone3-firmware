@@ -52,6 +52,8 @@ use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
+#[cfg(feature = "monero")]
+use ur_registry::monero::{xmr_output::XmrOutput, xmr_txunsigned::XmrTxUnsigned};
 
 use super::ur::ViewType;
 
@@ -308,6 +310,20 @@ impl InferViewType for CardanoSignDataRequest {
 impl InferViewType for CardanoCatalystVotingRegistrationRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoCatalystVotingRegistration)
+    }
+}
+
+#[cfg(feature = "monero")]
+impl InferViewType for XmrOutput {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::XmrOutput)
+    }
+}
+
+#[cfg(feature = "monero")]
+impl InferViewType for XmrTxUnsigned {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::XmrTxUnsigned)
     }
 }
 

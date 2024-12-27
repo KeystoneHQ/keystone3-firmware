@@ -14,6 +14,7 @@ mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
 pub mod zcash;
+pub mod cake;
 
 pub mod thor_wallet;
 

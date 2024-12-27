@@ -32,6 +32,8 @@ use app_tron::errors::TronError;
 use app_xrp::errors::XRPError;
 #[cfg(feature = "zcash")]
 use app_zcash::errors::ZcashError;
+#[cfg(feature = "monero")]
+use app_monero::errors::MoneroError;
 
 #[derive(Debug, Clone)]
 #[repr(C)]
@@ -205,6 +207,9 @@ pub enum ErrorCodes {
     ZcashGenerateAddressError = 1500,
     ZcashSigningError,
     ZcashInvalidPczt,
+
+    // Monero
+    MoneroUnknownError = 1600,
 }
 
 impl ErrorCodes {
@@ -489,6 +494,15 @@ impl From<&ZcashError> for ErrorCodes {
             ZcashError::InvalidDataError(_) => Self::InvalidData,
             ZcashError::SigningError(_) => Self::ZcashSigningError,
             ZcashError::InvalidPczt(_) => Self::ZcashInvalidPczt,
+        }
+    }
+}
+
+#[cfg(feature = "monero")]
+impl From<&MoneroError> for ErrorCodes {
+    fn from(value: &MoneroError) -> Self {
+        match value {
+            _ => Self::MoneroUnknownError,
         }
     }
 }

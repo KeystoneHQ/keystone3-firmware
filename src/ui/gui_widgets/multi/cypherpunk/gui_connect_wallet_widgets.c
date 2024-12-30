@@ -135,8 +135,7 @@ static uint32_t GetDerivedPathTypeCount();
 static int GetAccountType(void);
 
 #ifndef BTC_ONLY
-static char g_derivationPathAddr[LedgerLegacy + 1][DERIVATION_PATH_EG_LEN][64];
-static lv_obj_t *g_derivationCheck[LedgerLegacy + 1];
+static lv_obj_t *g_derivationCheck[3];
 static lv_obj_t *g_egAddress[DERIVATION_PATH_EG_LEN];
 static lv_obj_t *g_egAddressIndex[DERIVATION_PATH_EG_LEN];
 #endif

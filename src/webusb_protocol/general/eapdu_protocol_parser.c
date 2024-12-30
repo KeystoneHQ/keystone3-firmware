@@ -108,9 +108,11 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
     case CMD_CHECK_LOCK_STATUS:
         CheckDeviceLockStatusService(request);
         break;
+#ifdef WEB3_VERSION
     case CMD_EXPORT_ADDRESS:
         ExportAddressService(request);
         break;
+#endif
     case CMD_GET_DEVICE_INFO:
         GetDeviceInfoService(request);
         break;
@@ -235,7 +237,7 @@ struct ProtocolParser *NewEApduProtocolParser()
 
 void GotoResultPage(EAPDUResultPage_t *resultPageParams)
 {
-    #ifndef BTC_ONLY
+    #ifdef WEB3_VERSION
     if (resultPageParams != NULL) {
         if (GuiCheckIfTopView(&g_USBTransportView)) {
             return;

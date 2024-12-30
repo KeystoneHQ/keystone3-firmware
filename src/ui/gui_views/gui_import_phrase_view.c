@@ -40,7 +40,7 @@ int32_t GuiImportPhraseViewEventProcess(void *self, uint16_t usEvent, void *para
     case SIG_SETUP_VIEW_TILE_NEXT:
         GuiImportPhraseNextTile();
         break;
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     case SIG_SETUP_SHOW_TON_MNEMONIC_HINT:
         GuiShowTonMnemonicHint();
         break;

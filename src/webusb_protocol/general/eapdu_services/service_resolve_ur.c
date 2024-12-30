@@ -138,7 +138,7 @@ static void HandleHardwareCall(struct URParseResult *urResult)
     g_requestID = REQUEST_ID_IDLE;
 }
 
-
+#ifdef WEB3_VERSION
 static bool HandleNormalCall(void)
 {
     if (GuiHomePageIsTop()) {
@@ -156,6 +156,7 @@ static bool HandleNormalCall(void)
     g_requestID = REQUEST_ID_IDLE;
     return false;
 }
+#endif
 
 static void HandleCheckResult(PtrT_TransactionCheckResult checkResult, UrViewType_t urViewType)
 {
@@ -174,6 +175,7 @@ static void HandleCheckResult(PtrT_TransactionCheckResult checkResult, UrViewTyp
 void ProcessURService(EAPDURequestPayload_t *payload)
 {
 #ifndef COMPILE_SIMULATOR
+#ifdef WEB3_VERSION
     struct URParseResult *urResult = NULL;
     PtrT_TransactionCheckResult checkResult = NULL;
     do {
@@ -193,12 +195,10 @@ void ProcessURService(EAPDURequestPayload_t *payload)
             .urType = urResult->ur_type
         };
 
-#ifdef WEB3_VERSION
         if (urResult->ur_type == QRHardwareCall) {
             HandleHardwareCall(urResult);
             break;
         }
-#endif  
         if (!HandleNormalCall()) {
             break;
         }
@@ -217,6 +217,7 @@ void ProcessURService(EAPDURequestPayload_t *payload)
     if (checkResult) {
         free_TransactionCheckResult(checkResult);
     }
+#endif
 #endif
 }
 #endif

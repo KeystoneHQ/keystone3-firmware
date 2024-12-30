@@ -547,7 +547,7 @@ void AccountsDataCheck(void)
     }
 }
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const char *password)
 {
     ASSERT(accountIndex <= 2);
@@ -567,7 +567,9 @@ int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const ch
     CHECK_ERRCODE_RETURN_INT(ret);
     return ret;
 }
+#endif
 
+#ifdef CYPHERPUNK_VERSION
 static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk, const uint8_t* seedFingerprint)
 {
     ASSERT(accountIndex <= 2);

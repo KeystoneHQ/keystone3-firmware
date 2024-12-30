@@ -3590,6 +3590,7 @@ dependencies = [
  "bitcoin_hashes 0.14.0",
  "cbc",
  "cbindgen",
+ "cipher",
  "core2",
  "cryptoxide",
  "cstr_core",

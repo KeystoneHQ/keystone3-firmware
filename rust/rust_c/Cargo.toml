@@ -24,6 +24,7 @@ rsa = { workspace = true }
 sha1 = { workspace = true }
 aes = { workspace = true }
 cbc = { workspace = true }
+cipher = { workspace = true }
 
 #keystone owned
 sim_qr_reader = { workspace = true, optional = true }

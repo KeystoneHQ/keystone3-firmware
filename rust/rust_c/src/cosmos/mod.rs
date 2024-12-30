@@ -181,8 +181,7 @@ pub extern "C" fn cosmos_sign_tx(
                 v.map_or_else(
                     |e| UREncodeResult::from(e).c_ptr(),
                     |data| {
-                        UREncodeResult::encode(data, ur_tag, FRAGMENT_MAX_LENGTH_DEFAULT)
-                            .c_ptr()
+                        UREncodeResult::encode(data, ur_tag, FRAGMENT_MAX_LENGTH_DEFAULT).c_ptr()
                     },
                 )
             },

@@ -29,7 +29,7 @@ fn main() {
         v.push_str("#define BUILD_CYBERPUNK\n");
         #[cfg(feature = "multi-coins")]
         v.push_str("#define BUILD_MULTI_COINS\n");
-        
+
         #[cfg(feature = "aptos")]
         v.push_str("#define FEATURE_APTOS\n");
         #[cfg(feature = "arweave")]

@@ -1,18 +1,16 @@
-use alloc::slice;
-use alloc::vec::Vec;
-use alloc::string::{ToString, String};
-use app_monero::{
-    address::Address, structs::*, key::*, utils::constants::PRVKEY_LEH, utils::*,
-};
 use crate::common::errors::RustCError;
 use crate::common::types::{Ptr, PtrBytes, PtrString};
 use crate::common::ur::UREncodeResult;
 use crate::common::utils::recover_c_char;
+use alloc::slice;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use app_monero::{address::Address, key::*, structs::*, utils::constants::PRVKEY_LEH, utils::*};
 use cty::uint32_t;
+use serde_json::{json, Value};
 use ur_registry::crypto_hd_key::CryptoHDKey;
 use ur_registry::error::URError;
 use ur_registry::traits::RegistryItem;
-use serde_json::{json, Value};
 
 fn safe_parse_key(decrypt_key: PtrBytes) -> Result<[u8; PRVKEY_LEH], RustCError> {
     let decrypt_key = unsafe { slice::from_raw_parts(decrypt_key, PRVKEY_LEH) };
@@ -66,7 +64,12 @@ pub extern "C" fn get_connect_cake_wallet_ur(
         PrivateKey::from_bytes(&pvk).get_public_key(),
     );
 
-    generate_wallet_result(primary_address.to_string(), hex::encode(pvk.to_vec()), false).c_ptr()
+    generate_wallet_result(
+        primary_address.to_string(),
+        hex::encode(pvk.to_vec()),
+        false,
+    )
+    .c_ptr()
 }
 
 #[no_mangle]
@@ -89,13 +92,13 @@ pub extern "C" fn get_connect_cake_wallet_ur_encrypted(
         PrivateKey::from_bytes(&pvk).get_public_key(),
     );
 
-    let data_encrypt_wrapper = |data: String| -> String {
-        hex::encode(encrypt_data_with_pincode(data, pincode))
-    };
+    let data_encrypt_wrapper =
+        |data: String| -> String { hex::encode(encrypt_data_with_pincode(data, pincode)) };
 
     generate_wallet_result(
         data_encrypt_wrapper(primary_address.to_string()),
         data_encrypt_wrapper(hex::encode(pvk.to_vec())),
-        true
-    ).c_ptr()
+        true,
+    )
+    .c_ptr()
 }

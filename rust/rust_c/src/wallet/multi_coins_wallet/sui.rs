@@ -31,9 +31,8 @@ pub extern "C" fn get_connect_sui_wallet_ur(
     unsafe {
         let mfp = slice::from_raw_parts(master_fingerprint, length as usize);
         let public_keys = recover_c_array(public_keys);
-        let master_fingerprint =
-            bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
-                .map_err(|_e| RustCError::InvalidMasterFingerprint);
+        let master_fingerprint = bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
+            .map_err(|_e| RustCError::InvalidMasterFingerprint);
         match master_fingerprint {
             Ok(fp) => {
                 let mut keys = BTreeMap::new();

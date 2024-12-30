@@ -184,13 +184,11 @@ pub fn sign_tx(tx: Vec<u8>, context: ParseContext, icarus_master_key: XPrv) -> R
 #[cfg(test)]
 mod test {
     use super::*;
-    
 
     extern crate std;
 
-    
     use std::println;
-    
+
     use {cryptoxide::hashing::blake2b_256, hex};
 
     #[test]

@@ -106,11 +106,9 @@ pub extern "C" fn stellar_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> Ptr
             Ok(signature) => build_signature_data(&signature, sign_request.to_owned()),
             Err(e) => UREncodeResult::from(e).c_ptr(),
         },
-        _ => {
-            UREncodeResult::from(RustCError::UnsupportedTransaction(
-                "Transaction".to_string(),
-            ))
-            .c_ptr()
-        }
+        _ => UREncodeResult::from(RustCError::UnsupportedTransaction(
+            "Transaction".to_string(),
+        ))
+        .c_ptr(),
     }
 }

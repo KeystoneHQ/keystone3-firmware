@@ -12,7 +12,6 @@ pub use ethereum_types::{H160, U256};
 
 pub use legacy_transaction::*;
 
-
 use crate::crypto::keccak256;
 use crate::eip1559_transaction::{EIP1559Transaction, ParsedEIP1559Transaction};
 use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
@@ -178,11 +177,7 @@ mod tests {
 
     extern crate std;
 
-    
-
-    
     use keystore::algorithms::secp256k1::get_public_key_by_seed;
-    
 
     use crate::alloc::string::ToString;
     use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};

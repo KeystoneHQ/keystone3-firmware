@@ -101,12 +101,12 @@ pub fn ton_master_seed_to_public_key(master_seed: [u8; 64]) -> [u8; 32] {
 #[cfg(test)]
 mod tests {
     use alloc::{string::ToString, vec};
-    
+
     use hex;
 
     use super::*;
     extern crate std;
-    use std::{vec::Vec};
+    use std::vec::Vec;
 
     #[test]
     fn test_ton_mnemonic_to_entropy() {
@@ -137,8 +137,10 @@ mod tests {
 
     #[test]
     fn test_ton_mnemonic_invalid_mnemonic() {
-        let words = ["dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
-            "gas", "diet", "dune"]
+        let words = [
+            "dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
+            "gas", "diet", "dune",
+        ]
         .iter()
         .map(|v| v.to_lowercase())
         .collect();

@@ -40,7 +40,6 @@ pub fn ton_compare_address_and_public_key(pk: Vec<u8>, address: String) -> bool 
 
 #[cfg(test)]
 mod tests {
-    
 
     #[test]
     fn test_generate_address() {

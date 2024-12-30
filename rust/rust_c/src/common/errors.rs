@@ -16,6 +16,8 @@ use app_cardano::errors::CardanoError;
 use app_cosmos::errors::CosmosError;
 #[cfg(feature = "ethereum")]
 use app_ethereum::errors::EthereumError;
+#[cfg(feature = "monero")]
+use app_monero::errors::MoneroError;
 #[cfg(feature = "near")]
 use app_near::errors::NearError;
 #[cfg(feature = "solana")]
@@ -32,8 +34,6 @@ use app_tron::errors::TronError;
 use app_xrp::errors::XRPError;
 #[cfg(feature = "zcash")]
 use app_zcash::errors::ZcashError;
-#[cfg(feature = "monero")]
-use app_monero::errors::MoneroError;
 
 #[derive(Debug, Clone)]
 #[repr(C)]

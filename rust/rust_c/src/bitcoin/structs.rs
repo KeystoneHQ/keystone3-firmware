@@ -201,10 +201,7 @@ impl From<ParsedInput> for DisplayTxDetailInput {
     fn from(value: ParsedInput) -> Self {
         DisplayTxDetailInput {
             has_address: value.address.is_some(),
-            address: value
-                .address
-                .map(convert_c_char)
-                .unwrap_or(null_mut()),
+            address: value.address.map(convert_c_char).unwrap_or(null_mut()),
             amount: convert_c_char(value.amount),
             is_mine: value.path.is_some(),
             path: value.path.map(convert_c_char).unwrap_or(null_mut()),

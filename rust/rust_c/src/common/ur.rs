@@ -44,6 +44,8 @@ use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 use ur_registry::extend::qr_hardware_call::QRHardwareCall;
 #[cfg(feature = "multi-coins")]
 use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
+#[cfg(feature = "monero")]
+use ur_registry::monero::{xmr_output::XmrOutput, xmr_txunsigned::XmrTxUnsigned};
 #[cfg(feature = "near")]
 use ur_registry::near::near_sign_request::NearSignRequest;
 #[cfg(feature = "solana")]
@@ -58,8 +60,6 @@ use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use ur_registry::ton::ton_sign_request::TonSignRequest;
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
-#[cfg(feature = "monero")]
-use ur_registry::monero::{xmr_output::XmrOutput, xmr_txunsigned::XmrTxUnsigned};
 
 use super::errors::{ErrorCodes, RustCError};
 use super::free::Free;
@@ -128,9 +128,9 @@ impl UREncodeResult {
                 if result.is_multi_part {
                     match result.encoder {
                         Some(v) => Self::multi(result.data.to_uppercase(), v),
-                        None => {
-                            Self::from(RustCError::UnexpectedError("ur encoder is none".to_string()))
-                        }
+                        None => Self::from(RustCError::UnexpectedError(
+                            "ur encoder is none".to_string(),
+                        )),
                     }
                 } else {
                     Self::single(result.data.to_uppercase())
@@ -632,21 +632,17 @@ fn _decode_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTyp
                 }
             } else {
                 match parse_result.data {
-                    Some(data) => {
-                        match InferViewType::infer(&data) {
-                            Ok(t) => URParseResult::single(t, u, data),
-                            Err(e) => URParseResult::from(e),
-                        }
-                    }
+                    Some(data) => match InferViewType::infer(&data) {
+                        Ok(t) => URParseResult::single(t, u, data),
+                        Err(e) => URParseResult::from(e),
+                    },
                     None => URParseResult::from(RustCError::UnexpectedError(
                         "ur data is none".to_string(),
                     )),
                 }
             }
         }
-        Err(e) => {
-            URParseResult::from(e)
-        }
+        Err(e) => URParseResult::from(e),
     }
 }
 
@@ -725,12 +721,10 @@ fn _receive_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTy
         Ok(parse_result) => {
             if parse_result.is_complete {
                 match parse_result.data {
-                    Some(data) => {
-                        match InferViewType::infer(&data) {
-                            Ok(t) => URParseMultiResult::success(t, u, data),
-                            Err(e) => URParseMultiResult::from(e),
-                        }
-                    }
+                    Some(data) => match InferViewType::infer(&data) {
+                        Ok(t) => URParseMultiResult::success(t, u, data),
+                        Err(e) => URParseMultiResult::from(e),
+                    },
                     None => URParseMultiResult::from(RustCError::UnexpectedError(
                         "UR parsed completely but data is none".to_string(),
                     )),
@@ -739,9 +733,7 @@ fn _receive_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTy
                 URParseMultiResult::un_complete(ViewType::ViewTypeUnKnown, u, parse_result.progress)
             }
         }
-        Err(e) => {
-            URParseMultiResult::from(e)
-        }
+        Err(e) => URParseMultiResult::from(e),
     }
 }
 

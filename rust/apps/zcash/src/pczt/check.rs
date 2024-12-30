@@ -282,13 +282,7 @@ fn check_action<P: consensus::Parameters>(
         ZcashError::InvalidPczt(alloc::format!("invalid cv_net in Orchard action: {:?}", e))
     })?;
 
-    check_action_spend(
-        params,
-        seed_fingerprint,
-        account_index,
-        fvk,
-        action.spend(),
-    )?;
+    check_action_spend(params, seed_fingerprint, account_index, fvk, action.spend())?;
     check_action_output(action)
 }
 

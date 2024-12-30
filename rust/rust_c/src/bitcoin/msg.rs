@@ -202,9 +202,7 @@ pub extern "C" fn sign_seed_signer_message(
         let seed = alloc::slice::from_raw_parts(seed, seed_len as usize);
         let sig = app_bitcoin::sign_msg(&message, seed, &path);
         match sig {
-            Ok(sig) => {
-                UREncodeResult::text(base64::encode_config(&sig, base64::STANDARD)).c_ptr()
-            }
+            Ok(sig) => UREncodeResult::text(base64::encode_config(&sig, base64::STANDARD)).c_ptr(),
             Err(e) => UREncodeResult::from(e).c_ptr(),
         }
     }

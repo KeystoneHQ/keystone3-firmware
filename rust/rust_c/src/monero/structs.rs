@@ -1,12 +1,12 @@
-use alloc::string::{String, ToString};
-use alloc::vec::Vec;
-use alloc::boxed::Box;
+use crate::common::ffi::VecFFI;
 use crate::common::free::Free;
 use crate::common::structs::TransactionParseResult;
 use crate::common::types::{PtrString, PtrT};
-use app_monero::transfer::DisplayTransactionInfo;
+use alloc::boxed::Box;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use app_monero::outputs::DisplayMoneroOutput as InnerDisplayMoneroOutput;
-use crate::common::ffi::VecFFI;
+use app_monero::transfer::DisplayTransactionInfo;
 
 use crate::common::utils::convert_c_char;
 use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
@@ -57,20 +57,26 @@ impl From<DisplayTransactionInfo> for DisplayMoneroUnsignedTx {
     fn from(value: DisplayTransactionInfo) -> Self {
         Self {
             outputs: VecFFI::from(
-                value.outputs.iter().map(|output| DisplayMoneroUnsignedTxOutput {
-                    address: convert_c_char(output.0.to_string()),
-                    amount: convert_c_char(output.1.to_string()),
-                    is_change: output.2,
-                })
-                .collect::<Vec<DisplayMoneroUnsignedTxOutput>>(),
+                value
+                    .outputs
+                    .iter()
+                    .map(|output| DisplayMoneroUnsignedTxOutput {
+                        address: convert_c_char(output.0.to_string()),
+                        amount: convert_c_char(output.1.to_string()),
+                        is_change: output.2,
+                    })
+                    .collect::<Vec<DisplayMoneroUnsignedTxOutput>>(),
             )
             .c_ptr(),
             inputs: VecFFI::from(
-                value.inputs.iter().map(|input| DisplayMoneroUnsignedTxInput {
-                    key: convert_c_char(input.0.to_string()),
-                    amount: convert_c_char(input.1.to_string()),
-                })
-                .collect::<Vec<DisplayMoneroUnsignedTxInput>>(),
+                value
+                    .inputs
+                    .iter()
+                    .map(|input| DisplayMoneroUnsignedTxInput {
+                        key: convert_c_char(input.0.to_string()),
+                        amount: convert_c_char(input.1.to_string()),
+                    })
+                    .collect::<Vec<DisplayMoneroUnsignedTxInput>>(),
             )
             .c_ptr(),
             input_amount: convert_c_char(value.input_amount.to_string()),

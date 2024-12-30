@@ -1,6 +1,5 @@
 use alloc::string::String;
 
-
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum ParseKeyTypeError {
     #[error("unknown key type '{unknown_key_type}'")]

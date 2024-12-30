@@ -13,7 +13,6 @@ where
     S: Serializer,
     T: Serialize,
 {
-    
     t.serialize(s)
 }
 

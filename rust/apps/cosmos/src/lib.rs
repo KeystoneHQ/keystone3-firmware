@@ -105,7 +105,6 @@ pub fn derive_address(
 
 #[cfg(test)]
 mod tests {
-    
 
     use super::*;
 

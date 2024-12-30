@@ -236,7 +236,9 @@ pub extern "C" fn ton_seed_to_publickey(
             let public_key = app_ton::mnemonic::ton_master_seed_to_public_key(_seed);
             SimpleResponse::success(convert_c_char(hex::encode(public_key))).simple_c_ptr()
         }
-        Err(_e) => SimpleResponse::from(crate::common::errors::RustCError::InvalidData("seed length should be 64".to_string()))
+        Err(_e) => SimpleResponse::from(crate::common::errors::RustCError::InvalidData(
+            "seed length should be 64".to_string(),
+        ))
         .simple_c_ptr(),
     }
 }

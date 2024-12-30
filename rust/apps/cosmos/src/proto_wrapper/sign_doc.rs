@@ -7,7 +7,7 @@ use crate::proto_wrapper::fee::Fee;
 use crate::proto_wrapper::msg::msg_serialize::Msg;
 use crate::{CosmosError, Result};
 use alloc::boxed::Box;
-use alloc::string::{String};
+use alloc::string::String;
 use alloc::vec::Vec;
 use serde::Serialize;
 
@@ -24,19 +24,13 @@ impl SignDoc {
     fn from(proto: proto::cosmos::tx::v1beta1::SignDoc) -> Result<SignDoc> {
         let tx_body: proto::cosmos::tx::v1beta1::TxBody =
             Message::decode(Bytes::from(proto.body_bytes)).map_err(|e| {
-                CosmosError::ParseTxError(format!(
-                    "proto TxBody deserialize failed {}",
-                    e
-                ))
+                CosmosError::ParseTxError(format!("proto TxBody deserialize failed {}", e))
             })?;
         let body = Body::try_from(tx_body)?;
 
         let auth_info: proto::cosmos::tx::v1beta1::AuthInfo =
             Message::decode(Bytes::from(proto.auth_info_bytes)).map_err(|e| {
-                CosmosError::ParseTxError(format!(
-                    "proto AuthInfo deserialize failed {}",
-                    e
-                ))
+                CosmosError::ParseTxError(format!("proto AuthInfo deserialize failed {}", e))
             })?;
         let auth_info = AuthInfo::try_from(auth_info)?;
 
@@ -52,10 +46,7 @@ impl SignDoc {
     pub fn parse(data: &Vec<u8>) -> Result<SignDoc> {
         let proto_sign_doc: proto::cosmos::tx::v1beta1::SignDoc =
             Message::decode(Bytes::from(data.clone())).map_err(|e| {
-                CosmosError::ParseTxError(format!(
-                    "proto SignDoc deserialize failed {}",
-                    e
-                ))
+                CosmosError::ParseTxError(format!("proto SignDoc deserialize failed {}", e))
             })?;
         SignDoc::from(proto_sign_doc)
     }

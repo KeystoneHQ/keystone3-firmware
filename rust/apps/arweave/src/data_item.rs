@@ -64,8 +64,7 @@ fn avro_decode_long(reader: &mut Vec<u8>) -> Result<i64> {
 fn avro_decode_string(reader: &mut Vec<u8>) -> Result<String> {
     let len = avro_decode_long(reader)?;
     let buf = reader.drain(..len as usize).collect();
-    String::from_utf8(buf)
-            .map_err(|e| ArweaveError::AvroError(format!("{}", e)))
+    String::from_utf8(buf).map_err(|e| ArweaveError::AvroError(format!("{}", e)))
 }
 
 impl_public_struct!(DataItem {

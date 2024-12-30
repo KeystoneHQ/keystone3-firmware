@@ -58,7 +58,8 @@ pub fn get_network_by_chain_id(chain_id: &str) -> Result<String> {
         chain_id_parts[0].to_string()
     };
     Ok(map
-        .get(chain_id_prefix.as_str()).map(|v| v.to_string())
+        .get(chain_id_prefix.as_str())
+        .map(|v| v.to_string())
         .unwrap_or("Cosmos Hub".to_string()))
 }
 

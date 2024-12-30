@@ -5,7 +5,6 @@ use bitcoin::secp256k1::ecdsa::Signature;
 use bytes::BytesMut;
 use cryptoxide::hashing;
 
-
 use rippled_binary_codec::definition_fields::DefinitionFields;
 use serde_json::{from_slice, to_string, Value};
 

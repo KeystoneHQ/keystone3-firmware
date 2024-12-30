@@ -28,11 +28,7 @@ impl From<&TonTransaction> for DisplayTonTransaction {
             amount: convert_c_char(tx.amount.clone()),
             action: convert_c_char(tx.action.clone()),
             to: convert_c_char(tx.to.clone()),
-            comment: tx
-                .comment
-                .clone()
-                .map(convert_c_char)
-                .unwrap_or(null_mut()),
+            comment: tx.comment.clone().map(convert_c_char).unwrap_or(null_mut()),
             data_view: tx
                 .data_view
                 .clone()

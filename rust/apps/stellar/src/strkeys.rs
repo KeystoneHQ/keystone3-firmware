@@ -106,7 +106,7 @@ pub fn sign_signature_base(signature_base: &[u8], seed: &[u8], path: &String) ->
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::string::{ToString};
+    use alloc::string::ToString;
     use hex;
 
     #[test]

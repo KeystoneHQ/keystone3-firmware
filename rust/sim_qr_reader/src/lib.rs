@@ -3,7 +3,7 @@ use image::DynamicImage;
 use quircs::{Code, Quirc};
 use screenshots::Screen;
 use std::thread;
-use std::time::{Duration};
+use std::time::Duration;
 
 #[cfg(target_os = "macos")]
 use cocoa::{appkit::NSScreen, base::nil, foundation::NSArray};
@@ -20,7 +20,7 @@ fn get_screen_scaling_factor() -> f64 {
     unsafe {
         let screens = NSScreen::screens(nil);
         let screen = NSArray::objectAtIndex(screens, 0);
-        
+
         NSScreen::backingScaleFactor(screen)
     }
 

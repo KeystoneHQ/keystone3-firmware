@@ -85,9 +85,7 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
                 value: PersonalMessageUtf8 { message: m },
             }))
         }
-        _ => {
-            Err(SuiError::InvalidData(String::from("unsupported intent")))
-        }
+        _ => Err(SuiError::InvalidData(String::from("unsupported intent"))),
     }
 }
 

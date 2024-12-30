@@ -14,10 +14,10 @@ use alloc::vec::Vec;
 use core::fmt::Display;
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::EdwardsPoint;
-use monero_serai_mirror::ringct::clsag::{Clsag, ClsagContext};
 use monero_serai_mirror::primitives::Commitment;
 use monero_serai_mirror::primitives::Decoys;
 use monero_serai_mirror::ringct::bulletproofs::Bulletproof;
+use monero_serai_mirror::ringct::clsag::{Clsag, ClsagContext};
 use monero_serai_mirror::ringct::{RctBase, RctProofs, RctPrunable};
 use monero_serai_mirror::transaction::{
     Input, NotPruned, Output, Timelock, Transaction, TransactionPrefix,
@@ -770,8 +770,8 @@ mod tests {
     use core::ops::Deref;
     use curve25519_dalek::edwards::EdwardsPoint;
     use curve25519_dalek::scalar::Scalar;
-    use rand_core::{RngCore, SeedableRng};
     use monero_serai_mirror::generators::hash_to_point;
+    use rand_core::{RngCore, SeedableRng};
 
     #[test]
     fn test_clsag_signature() {
@@ -826,9 +826,8 @@ mod tests {
             .unwrap()
             .swap_remove(0);
 
-            let image = hash_to_point(
-                (EdwardsPoint::mul_base(secrets.0.deref())).compress().0,
-            ) * secrets.0.deref();
+            let image = hash_to_point((EdwardsPoint::mul_base(secrets.0.deref())).compress().0)
+                * secrets.0.deref();
 
             assert_eq!(clsag.verify(&ring, &image, &pseudo_out, &msg), Ok(()));
         }

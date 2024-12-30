@@ -63,5 +63,6 @@ lazy_static! {
 pub(crate) fn find_token(token_id: &str) -> Option<TokenInfo> {
     TOKENS
         .iter()
-        .find(|v| v.get_token_id().eq(token_id)).cloned()
+        .find(|v| v.get_token_id().eq(token_id))
+        .cloned()
 }

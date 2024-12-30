@@ -13,7 +13,6 @@ use crate::structs::Network;
 use alloc::string::String;
 use alloc::vec::Vec;
 
-
 pub fn get_network_from_base(base: &[u8]) -> Network {
     let network_id = &base[0..32];
     Network::from_hash(network_id)
@@ -30,7 +29,7 @@ pub fn base_to_xdr(base: &[u8]) -> String {
 
 #[cfg(test)]
 mod tests {
-    
+
     extern crate std;
 
     use super::*;

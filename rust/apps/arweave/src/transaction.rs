@@ -154,11 +154,8 @@ impl<'a> ToItems<'a, Tag<Base64>> for Tag<Base64> {
 }
 
 /// A struct of [`Vec<u8>`] used for all data and address fields.
-#[derive(Debug, Clone, PartialEq)]
-#[derive(Default)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct Base64(pub Vec<u8>);
-
-
 
 impl fmt::Display for Base64 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

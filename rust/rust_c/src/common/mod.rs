@@ -89,7 +89,6 @@ pub extern "C" fn get_extended_pubkey_bytes_by_seed(
     }
 }
 
-
 #[no_mangle]
 pub extern "C" fn get_extended_monero_pubkeys_by_seed(
     seed: PtrBytes,

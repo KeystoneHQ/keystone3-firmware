@@ -18,10 +18,7 @@ pub struct NotSupportMessage {
 impl SerializeJson for NotSupportMessage {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!(
-                "NotSupportMessage serialize failed {}",
-                err
-            ))
+            CosmosError::ParseTxError(format!("NotSupportMessage serialize failed {}", err))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -159,10 +156,7 @@ impl TryFrom<&proto::cosmos::staking::v1beta1::MsgUndelegate> for MsgUndelegate 
 impl SerializeJson for MsgUndelegate {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!(
-                "MsgUndelegate serialize failed {}",
-                err
-            ))
+            CosmosError::ParseTxError(format!("MsgUndelegate serialize failed {}", err))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -305,9 +299,9 @@ impl TryFrom<&proto::ibc::applications::transfer::v1::MsgTransfer> for MsgTransf
         };
 
         let timeout_height: Option<Height> = proto.timeout_height.as_ref().map(|height| Height {
-                revision_number: Some(height.revision_number),
-                revision_height: Some(height.revision_height),
-            });
+            revision_number: Some(height.revision_number),
+            revision_height: Some(height.revision_height),
+        });
 
         Ok(MsgTransfer {
             source_port: proto.source_port.clone(),
@@ -405,10 +399,7 @@ impl TryFrom<&proto::ibc::core::client::v1::MsgUpdateClient> for MsgUpdateClient
 impl SerializeJson for MsgUpdateClient {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!(
-                "MsgUpdateClient serialize failed {}",
-                err
-            ))
+            CosmosError::ParseTxError(format!("MsgUpdateClient serialize failed {}", err))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -454,10 +445,7 @@ impl TryFrom<&proto::cosmos::staking::v1beta1::MsgBeginRedelegate> for MsgBeginR
 impl SerializeJson for MsgBeginRedelegate {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!(
-                "MsgBeginRedelegate serialize failed {}",
-                err
-            ))
+            CosmosError::ParseTxError(format!("MsgBeginRedelegate serialize failed {}", err))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),

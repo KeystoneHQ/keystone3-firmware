@@ -156,9 +156,7 @@ fn parse_eth_root_path(path: String) -> Option<String> {
 fn parse_eth_sub_path(path: String) -> Option<String> {
     let root_path = "44'/60'/";
     match path.strip_prefix(root_path) {
-        Some(path) => {
-            path.find('/').map(|index| path[index + 1..].to_string())
-        }
+        Some(path) => path.find('/').map(|index| path[index + 1..].to_string()),
         None => None,
     }
 }
@@ -172,8 +170,9 @@ fn try_get_eth_public_key(
         Some(path) => {
             let _path = path.clone();
             if let Some(sub_path) = parse_eth_sub_path(_path) {
-                derive_public_key(&xpub, &format!("m/{}", sub_path))
-                    .map_err(|_e| RustCError::UnexpectedError("unable to derive pubkey".to_string()))
+                derive_public_key(&xpub, &format!("m/{}", sub_path)).map_err(|_e| {
+                    RustCError::UnexpectedError("unable to derive pubkey".to_string())
+                })
             } else {
                 Err(RustCError::InvalidHDPath)
             }

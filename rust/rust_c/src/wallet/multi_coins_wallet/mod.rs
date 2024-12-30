@@ -2,7 +2,6 @@ pub mod aptos;
 pub mod arconnect;
 pub mod backpack;
 pub mod bitget;
-pub mod cake;
 mod imtoken;
 pub mod keplr;
 pub mod keystone;
@@ -14,7 +13,6 @@ pub mod tonkeeper;
 mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
-pub mod zcash;
 
 pub mod thor_wallet;
 

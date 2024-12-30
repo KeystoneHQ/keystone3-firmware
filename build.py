@@ -21,6 +21,7 @@ argParser.add_argument("-s", "--skip-image", action="store_true", help="skip bui
 def build_firmware(environment, options, bin_type):
     is_release = environment == "production"
     is_btc_only = bin_type == "btc_only"
+    is_cypherpunk = bin_type == "cypherpunk"
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
 
@@ -39,6 +40,8 @@ def build_firmware(environment, options, bin_type):
         cmd += ' -DRU_SUPPORT=true'
     if is_btc_only:
         cmd += ' -DBTC_ONLY=true'
+    if is_cypherpunk:
+        cmd += ' -DCYPHERPUNK=true'
 
 
     for option in options:

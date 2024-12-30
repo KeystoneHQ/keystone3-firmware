@@ -25,6 +25,9 @@ else()
     set(CARGO_ARM_TARGET thumbv7em-none-eabihf)
 endif()
 
+message(STATUS "build environment: " ${BUILD_ENVIRONMENT})
+message(STATUS "build variant: " ${BUILD_VARIANT})
+
 message(STATUS "build target path: " ${TARGET_PATH})
 if(NOT EXISTS ${TARGET_PATH})
     file(MAKE_DIRECTORY ${TARGET_PATH})

@@ -15,8 +15,7 @@ use core::slice;
 use cryptoxide::hashing::sha256;
 use cty::c_char;
 use keystore::algorithms::{
-    secp256k1::get_private_key_by_seed,
-    zcash::{calculate_seed_fingerprint, derive_ufvk},
+    ed25519::slip10_ed25519::get_private_key_by_seed, zcash::{calculate_seed_fingerprint, derive_ufvk}
 };
 use structs::DisplayPczt;
 use ur_registry::{traits::RegistryItem, zcash::zcash_pczt::ZcashPczt};

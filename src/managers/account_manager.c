@@ -640,4 +640,3 @@ int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password)
     return ret;
 }
 #endif
-#endif

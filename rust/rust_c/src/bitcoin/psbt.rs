@@ -65,16 +65,15 @@ fn btc_sign_psbt_dynamic(
         return UREncodeResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint).as_str(),
-    )
-    .map_err(|_e| RustCError::InvalidMasterFingerprint)
-    {
-        Ok(mfp) => mfp,
-        Err(e) => {
-            return UREncodeResult::from(e).c_ptr();
-        }
-    };
+    let master_fingerprint =
+        match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
+            .map_err(|_e| RustCError::InvalidMasterFingerprint)
+        {
+            Ok(mfp) => mfp,
+            Err(e) => {
+                return UREncodeResult::from(e).c_ptr();
+            }
+        };
 
     let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
     let psbt = crypto_psbt.get_psbt();
@@ -151,23 +150,22 @@ pub extern "C" fn btc_sign_multisig_psbt(
         .c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint).as_str(),
-    )
-    .map_err(|_e| RustCError::InvalidMasterFingerprint)
-    {
-        Ok(mfp) => mfp,
-        Err(e) => {
-            return MultisigSignResult {
-                ur_result: UREncodeResult::from(e).c_ptr(),
-                sign_status: null_mut(),
-                is_completed: false,
-                psbt_hex: null_mut(),
-                psbt_len: 0,
+    let master_fingerprint =
+        match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
+            .map_err(|_e| RustCError::InvalidMasterFingerprint)
+        {
+            Ok(mfp) => mfp,
+            Err(e) => {
+                return MultisigSignResult {
+                    ur_result: UREncodeResult::from(e).c_ptr(),
+                    sign_status: null_mut(),
+                    is_completed: false,
+                    psbt_hex: null_mut(),
+                    psbt_len: 0,
+                }
+                .c_ptr();
             }
-            .c_ptr();
-        }
-    };
+        };
 
     let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
     let psbt = crypto_psbt.get_psbt();
@@ -408,27 +406,26 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
         .c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint).as_str(),
-    )
-    .map_err(|_e| RustCError::InvalidMasterFingerprint)
-    {
-        Ok(mfp) => mfp,
-        Err(e) => {
-            return MultisigSignResult {
-                ur_result: UREncodeResult::from(e).c_ptr(),
-                sign_status: null_mut(),
-                is_completed: false,
-                psbt_hex: null_mut(),
-                psbt_len: 0,
+    let master_fingerprint =
+        match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
+            .map_err(|_e| RustCError::InvalidMasterFingerprint)
+        {
+            Ok(mfp) => mfp,
+            Err(e) => {
+                return MultisigSignResult {
+                    ur_result: UREncodeResult::from(e).c_ptr(),
+                    sign_status: null_mut(),
+                    is_completed: false,
+                    psbt_hex: null_mut(),
+                    psbt_len: 0,
+                }
+                .c_ptr();
             }
-            .c_ptr();
-        }
-    };
+        };
 
     let psbt = unsafe {
         let psbt = core::slice::from_raw_parts(psbt_bytes, psbt_bytes_length as usize);
-        
+
         match get_psbt_bytes(psbt) {
             Ok(psbt) => psbt,
             Err(e) => {
@@ -497,9 +494,8 @@ fn parse_psbt(
     psbt: Vec<u8>,
     multisig_wallet_config: Option<String>,
 ) -> *mut TransactionParseResult<DisplayTx> {
-    let master_fingerprint =
-        bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
-            .map_err(|_e| RustCError::InvalidMasterFingerprint);
+    let master_fingerprint = bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
+        .map_err(|_e| RustCError::InvalidMasterFingerprint);
     match master_fingerprint {
         Ok(fp) => {
             let mut keys = BTreeMap::new();
@@ -547,9 +543,8 @@ fn check_psbt(
     verify_code: Option<String>,
     multisig_wallet_config: Option<String>,
 ) -> PtrT<TransactionCheckResult> {
-    let master_fingerprint =
-        bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
-            .map_err(|_e| RustCError::InvalidMasterFingerprint);
+    let master_fingerprint = bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
+        .map_err(|_e| RustCError::InvalidMasterFingerprint);
     match master_fingerprint {
         Ok(fp) => {
             let mut keys = BTreeMap::new();

@@ -93,8 +93,7 @@ pub extern "C" fn aes256_encrypt_primes(
     let encrypted_data = aes256_encrypt(&key, &iv, data).unwrap();
     let mut result_bytes: [u8; 528] = [0; 528];
     result_bytes.copy_from_slice(&encrypted_data);
-    SimpleResponse::success(Box::into_raw(Box::new(result_bytes)) as *mut u8)
-        .simple_c_ptr()
+    SimpleResponse::success(Box::into_raw(Box::new(result_bytes)) as *mut u8).simple_c_ptr()
 }
 
 #[no_mangle]
@@ -234,9 +233,7 @@ fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
             let data_item = parse_data_item(&sign_data)?;
             Ok(data_item.deep_hash()?)
         }
-        SignType::Message => {
-            Ok(sign_data)
-        }
+        SignType::Message => Ok(sign_data),
     }
 }
 

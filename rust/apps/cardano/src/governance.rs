@@ -96,7 +96,6 @@ pub fn parse_payment_address(payment_address: Vec<u8>) -> R<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     #[test]
     fn test_sign_voting_registration() {

@@ -16,7 +16,6 @@ use alloc::vec;
 use alloc::vec::Vec;
 use core::iter::Peekable;
 
-
 #[derive(Eq, PartialEq, Debug)]
 enum Token {
     U8Type,
@@ -145,7 +144,9 @@ fn next_token(s: &str) -> crate::errors::Result<Option<(Token, usize)>> {
                     match it.next() {
                         Some('"') => break,
                         Some(c) if c.is_ascii() => r.push(c),
-                        _ => return Err(AptosError::ParseTxError("unrecognized token".to_string())),
+                        _ => {
+                            return Err(AptosError::ParseTxError("unrecognized token".to_string()))
+                        }
                     }
                 }
                 let len = r.len() + 3;
@@ -158,7 +159,9 @@ fn next_token(s: &str) -> crate::errors::Result<Option<(Token, usize)>> {
                     match it.next() {
                         Some('"') => break,
                         Some(c) if c.is_ascii_hexdigit() => r.push(c),
-                        _ => return Err(AptosError::ParseTxError("unrecognized token".to_string())),
+                        _ => {
+                            return Err(AptosError::ParseTxError("unrecognized token".to_string()))
+                        }
                     }
                 }
                 let len = r.len() + 3;
@@ -218,7 +221,9 @@ impl<I: Iterator<Item = Token>> Parser<I> {
     fn next(&mut self) -> crate::errors::Result<Token> {
         match self.it.next() {
             Some(tok) => Ok(tok),
-            None => Err(AptosError::ParseTxError("out of tokens, this should not happen".to_string())),
+            None => Err(AptosError::ParseTxError(
+                "out of tokens, this should not happen".to_string(),
+            )),
         }
     }
 

@@ -40,6 +40,9 @@ mod cosmos;
 #[cfg(feature = "ethereum")]
 #[allow(unused)]
 mod ethereum;
+#[cfg(feature = "monero")]
+#[allow(unused)]
+mod monero;
 #[cfg(feature = "near")]
 #[allow(unused)]
 mod near;
@@ -64,9 +67,6 @@ mod xrp;
 #[cfg(feature = "zcash")]
 #[allow(unused)]
 mod zcash;
-#[cfg(feature = "monero")]
-#[allow(unused)]
-mod monero;
 
 #[cfg(feature = "simulator")]
 #[allow(unused)]

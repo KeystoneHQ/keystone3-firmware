@@ -4,7 +4,6 @@ use crate::common::structs::Response;
 use crate::common::types::{Ptr, PtrString};
 use crate::common::utils::recover_c_char;
 
-
 #[no_mangle]
 pub extern "C" fn eth_parse_contract_data(
     input_data: PtrString,

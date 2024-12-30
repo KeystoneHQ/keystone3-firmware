@@ -114,16 +114,15 @@ pub extern "C" fn export_multi_sig_wallet_by_ur_test(
     }
     unsafe {
         let master_fingerprint = slice::from_raw_parts(master_fingerprint, length as usize);
-        let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-            hex::encode(master_fingerprint).as_str(),
-        )
-        .map_err(|_e| RustCError::InvalidMasterFingerprint)
-        {
-            Ok(mfp) => mfp,
-            Err(e) => {
-                return UREncodeResult::from(e).c_ptr();
-            }
-        };
+        let master_fingerprint =
+            match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
+                .map_err(|_e| RustCError::InvalidMasterFingerprint)
+            {
+                Ok(mfp) => mfp,
+                Err(e) => {
+                    return UREncodeResult::from(e).c_ptr();
+                }
+            };
 
         let multi_sig_wallet = extract_ptr_with_type!(multi_sig_wallet, MultiSigWallet);
 
@@ -196,16 +195,15 @@ pub extern "C" fn export_multi_sig_wallet_by_ur(
     }
     unsafe {
         let master_fingerprint = slice::from_raw_parts(master_fingerprint, length as usize);
-        let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-            hex::encode(master_fingerprint).as_str(),
-        )
-        .map_err(|_e| RustCError::InvalidMasterFingerprint)
-        {
-            Ok(mfp) => mfp,
-            Err(e) => {
-                return UREncodeResult::from(e).c_ptr();
-            }
-        };
+        let master_fingerprint =
+            match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
+                .map_err(|_e| RustCError::InvalidMasterFingerprint)
+            {
+                Ok(mfp) => mfp,
+                Err(e) => {
+                    return UREncodeResult::from(e).c_ptr();
+                }
+            };
         // let xfp = hex::encode(xfp);
         let config = recover_c_char(config);
         let multi_sig_wallet =
@@ -245,16 +243,15 @@ pub extern "C" fn import_multi_sig_wallet_by_ur(
         return Response::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint).as_str(),
-    )
-    .map_err(|_e| RustCError::InvalidMasterFingerprint)
-    {
-        Ok(mfp) => mfp,
-        Err(e) => {
-            return Response::from(e).c_ptr();
-        }
-    };
+    let master_fingerprint =
+        match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
+            .map_err(|_e| RustCError::InvalidMasterFingerprint)
+        {
+            Ok(mfp) => mfp,
+            Err(e) => {
+                return Response::from(e).c_ptr();
+            }
+        };
 
     let bytes = extract_ptr_with_type!(ur, Bytes);
 
@@ -277,16 +274,15 @@ pub extern "C" fn import_multi_sig_wallet_by_file(
         return Response::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint).as_str(),
-    )
-    .map_err(|_e| RustCError::InvalidMasterFingerprint)
-    {
-        Ok(mfp) => mfp,
-        Err(e) => {
-            return Response::from(e).c_ptr();
-        }
-    };
+    let master_fingerprint =
+        match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
+            .map_err(|_e| RustCError::InvalidMasterFingerprint)
+        {
+            Ok(mfp) => mfp,
+            Err(e) => {
+                return Response::from(e).c_ptr();
+            }
+        };
 
     let content = recover_c_char(content);
 
@@ -310,16 +306,15 @@ pub extern "C" fn generate_address_for_multisig_wallet_config(
         return SimpleResponse::from(RustCError::InvalidMasterFingerprint).simple_c_ptr();
     }
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint).as_str(),
-    )
-    .map_err(|_e| RustCError::InvalidMasterFingerprint)
-    {
-        Ok(mfp) => mfp,
-        Err(e) => {
-            return SimpleResponse::from(e).simple_c_ptr();
-        }
-    };
+    let master_fingerprint =
+        match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
+            .map_err(|_e| RustCError::InvalidMasterFingerprint)
+        {
+            Ok(mfp) => mfp,
+            Err(e) => {
+                return SimpleResponse::from(e).simple_c_ptr();
+            }
+        };
     let content = recover_c_char(wallet_config);
     match parse_wallet_config(&content, &master_fingerprint.to_string()) {
         Ok(config) => match create_multi_sig_address_for_wallet(&config, account, index) {
@@ -370,16 +365,15 @@ pub extern "C" fn parse_and_verify_multisig_config(
     }
     let seed = unsafe { core::slice::from_raw_parts(seed, seed_len as usize) };
     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-    let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-        hex::encode(master_fingerprint).as_str(),
-    )
-    .map_err(|_e| RustCError::InvalidMasterFingerprint)
-    {
-        Ok(mfp) => mfp,
-        Err(e) => {
-            return Response::from(e).c_ptr();
-        }
-    };
+    let master_fingerprint =
+        match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
+            .map_err(|_e| RustCError::InvalidMasterFingerprint)
+        {
+            Ok(mfp) => mfp,
+            Err(e) => {
+                return Response::from(e).c_ptr();
+            }
+        };
     let content = recover_c_char(wallet_config);
     match parse_wallet_config(&content, &master_fingerprint.to_string()) {
         Ok(mut config) => {

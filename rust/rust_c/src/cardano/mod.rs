@@ -257,8 +257,10 @@ pub extern "C" fn cardano_get_path(ptr: PtrUR) -> Ptr<SimpleResponse<c_char>> {
                 SimpleResponse::from(CardanoError::InvalidTransaction("invalid utxo".to_string()))
                     .simple_c_ptr()
             }
-            None => SimpleResponse::from(CardanoError::InvalidTransaction("invalid utxo".to_string()))
-                .simple_c_ptr(),
+            None => {
+                SimpleResponse::from(CardanoError::InvalidTransaction("invalid utxo".to_string()))
+                    .simple_c_ptr()
+            }
         },
         None => SimpleResponse::from(CardanoError::InvalidTransaction("invalid utxo".to_string()))
             .simple_c_ptr(),
@@ -365,7 +367,6 @@ pub extern "C" fn cardano_sign_catalyst(
 fn cardano_sign_catalyst_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<UREncodeResult> {
     let cardano_catalyst_request =
         extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
-    
 
     governance::sign(
         &cardano_catalyst_request
@@ -528,12 +529,10 @@ fn cardano_sign_tx_hash_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<U
     let paths = cardano_sign_tx_hash_request.get_paths();
     let sign_result = app_cardano::transaction::sign_tx_hash(&tx_hash, &paths, icarus_master_key);
     match sign_result {
-        Ok(v) => UREncodeResult::encode(
-            v,
-            CARDANO_SIGNATURE.get_type(),
-            FRAGMENT_MAX_LENGTH_DEFAULT,
-        )
-        .c_ptr(),
+        Ok(v) => {
+            UREncodeResult::encode(v, CARDANO_SIGNATURE.get_type(), FRAGMENT_MAX_LENGTH_DEFAULT)
+                .c_ptr()
+        }
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }

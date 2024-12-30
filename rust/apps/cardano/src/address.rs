@@ -122,7 +122,7 @@ mod tests {
     use alloc::string::ToString;
     use alloc::vec;
     use bech32;
-    
+
     use cryptoxide::hashing::blake2b_224;
     use keystore;
 

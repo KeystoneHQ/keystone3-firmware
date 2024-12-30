@@ -11,8 +11,6 @@ use crate::transaction::overview::{CommonOverview, CosmosTxOverview, MsgOverview
 use crate::transaction::structs::{CosmosTxDisplayType, DataType, ParsedCosmosTx};
 use crate::transaction::utils::get_network_by_chain_id;
 
-
-
 use self::detail::MsgDetail;
 
 pub mod detail;

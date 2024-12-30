@@ -43,14 +43,10 @@ pub extern "C" fn calculate_auth_code(
                                 slice::from_raw_parts(rsa_key_d, rsa_key_d_len as usize);
                             match _calculate_auth_code(&_value, rsa_key_n, rsa_key_d) {
                                 Ok(_result) => Ok(_result),
-                                Err(_err) => {
-                                    Err(RustCError::WebAuthFailed(format!("{}", _err)))
-                                }
+                                Err(_err) => Err(RustCError::WebAuthFailed(format!("{}", _err))),
                             }
                         },
-                        Err(_err) => {
-                            Err(RustCError::WebAuthFailed(format!("{}", _err)))
-                        }
+                        Err(_err) => Err(RustCError::WebAuthFailed(format!("{}", _err))),
                     },
                     Err(_err) => Err(RustCError::WebAuthFailed(format!("{}", _err))),
                 }

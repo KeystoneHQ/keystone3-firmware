@@ -2,7 +2,6 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-
 use serde::Serialize;
 
 use self::jetton::JettonMessage;
@@ -34,11 +33,8 @@ impl ParseCell for SigningMessage {
             let seq_no = parser.load_u32(32)?;
             let _order = parser.load_u8(8).unwrap();
             let _send_mode = parser.load_u8(8).unwrap();
-            let messages: Result<Vec<TransferMessage>, TonCellError> = cell
-                .references
-                .iter()
-                .map(TransferMessage::parse)
-                .collect();
+            let messages: Result<Vec<TransferMessage>, TonCellError> =
+                cell.references.iter().map(TransferMessage::parse).collect();
             Ok(Self {
                 wallet_id,
                 timeout,

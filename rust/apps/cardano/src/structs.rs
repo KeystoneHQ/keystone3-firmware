@@ -298,7 +298,12 @@ impl ParsedCardanoTx {
                 if tx.body().outputs().len() == 0 {
                     return 1;
                 }
-                tx.body().outputs().get(0).address().network_id().unwrap_or(1)
+                tx.body()
+                    .outputs()
+                    .get(0)
+                    .address()
+                    .network_id()
+                    .unwrap_or(1)
             }
             Some(id) => match id.kind() {
                 NetworkIdKind::Mainnet => 1,
@@ -637,7 +642,9 @@ impl ParsedCardanoTx {
                     ));
                 }
                 if let Some(_cert) = cert.as_drep_update() {
-                    let anchor_data_hash = _cert.anchor().map(|anchor| anchor.anchor_data_hash().to_string());
+                    let anchor_data_hash = _cert
+                        .anchor()
+                        .map(|anchor| anchor.anchor_data_hash().to_string());
                     let (variant1, variant1_label) = match _cert.voting_credential().kind() {
                         CredKind::Key => (
                             _cert

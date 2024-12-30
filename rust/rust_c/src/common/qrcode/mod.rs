@@ -63,7 +63,9 @@ pub extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
                 }
             }
         }
-        return URParseResult::from(RustCError::UnsupportedTransaction("Invalid seed signer message format".to_string()))
+        return URParseResult::from(RustCError::UnsupportedTransaction(
+            "Invalid seed signer message format".to_string(),
+        ))
         .c_ptr();
     }
     URParseResult::from(RustCError::UnsupportedTransaction("plain text".to_string())).c_ptr()

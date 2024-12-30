@@ -2,6 +2,7 @@ pub mod aptos;
 pub mod arconnect;
 pub mod backpack;
 pub mod bitget;
+pub mod cake;
 mod imtoken;
 pub mod keplr;
 pub mod keystone;
@@ -14,7 +15,6 @@ mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
 pub mod zcash;
-pub mod cake;
 
 pub mod thor_wallet;
 
@@ -116,9 +116,7 @@ pub extern "C" fn get_connect_metamask_ur_dynamic(
                             Err(e) => UREncodeResult::from(e).c_ptr(),
                         }
                     }
-                    Err(e) => {
-                        UREncodeResult::from(e).c_ptr()
-                    }
+                    Err(e) => UREncodeResult::from(e).c_ptr(),
                 }
             }
             _ => {

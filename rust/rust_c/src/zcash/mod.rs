@@ -15,7 +15,8 @@ use core::slice;
 use cryptoxide::hashing::sha256;
 use cty::c_char;
 use keystore::algorithms::{
-    ed25519::slip10_ed25519::get_private_key_by_seed, zcash::{calculate_seed_fingerprint, derive_ufvk}
+    ed25519::slip10_ed25519::get_private_key_by_seed,
+    zcash::{calculate_seed_fingerprint, derive_ufvk},
 };
 use structs::DisplayPczt;
 use ur_registry::{traits::RegistryItem, zcash::zcash_pczt::ZcashPczt};
@@ -72,7 +73,9 @@ pub extern "C" fn check_zcash_tx(
     disabled: bool,
 ) -> *mut TransactionCheckResult {
     if disabled {
-        return TransactionCheckResult::from(RustCError::UnsupportedTransaction("zcash is not supported for slip39 and passphrase wallet now".to_string()))
+        return TransactionCheckResult::from(RustCError::UnsupportedTransaction(
+            "zcash is not supported for slip39 and passphrase wallet now".to_string(),
+        ))
         .c_ptr();
     }
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);

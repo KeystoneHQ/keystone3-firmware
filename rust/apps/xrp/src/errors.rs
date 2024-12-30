@@ -1,5 +1,5 @@
 use alloc::format;
-use alloc::string::{String};
+use alloc::string::String;
 use core::str::Utf8Error;
 use keystore::errors::KeystoreError;
 use serde_json::Error;

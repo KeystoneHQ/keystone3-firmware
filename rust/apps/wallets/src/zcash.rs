@@ -1,10 +1,10 @@
-use alloc::string::{String};
+use alloc::string::String;
 
 use alloc::vec::Vec;
 
 use app_utils::impl_public_struct;
 use ur_registry::{
-    error::{URResult},
+    error::URResult,
     zcash::{
         zcash_accounts::ZcashAccounts, zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey,
     },

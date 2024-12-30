@@ -35,6 +35,8 @@ use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};
 #[cfg(feature = "multi-coins")]
 use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
+#[cfg(feature = "monero")]
+use ur_registry::monero::{xmr_output::XmrOutput, xmr_txunsigned::XmrTxUnsigned};
 #[cfg(feature = "near")]
 use ur_registry::near::near_sign_request::NearSignRequest;
 use ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
@@ -52,8 +54,6 @@ use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
-#[cfg(feature = "monero")]
-use ur_registry::monero::{xmr_output::XmrOutput, xmr_txunsigned::XmrTxUnsigned};
 
 use super::ur::ViewType;
 
@@ -233,9 +233,8 @@ impl InferViewType for Bytes {
             // XRPTx or WebAuth
             Ok(_v) => {
                 if let Some(_type) = _v.pointer("/data/type") {
-                    let contract_name: String = from_value(_type.clone()).map_err(|e| {
-                        URError::UrDecodeError(format!("invalid data, {}", e))
-                    })?;
+                    let contract_name: String = from_value(_type.clone())
+                        .map_err(|e| URError::UrDecodeError(format!("invalid data, {}", e)))?;
                     if contract_name.eq("webAuth") {
                         return Ok(ViewType::WebAuthResult);
                     }

@@ -136,7 +136,6 @@ pub fn parse_pczt<P: consensus::Parameters>(
             .get_to()
             .iter()
             .fold(0, |acc, to| acc + to.get_amount());
-        
     });
 
     parsed_transparent.clone().map(|transparent| {
@@ -153,7 +152,6 @@ pub fn parse_pczt<P: consensus::Parameters>(
             .get_to()
             .iter()
             .fold(0, |acc, to| acc + to.get_amount());
-        
     });
 
     //treat all sapling output as output value since we don't support sapling decoding yet
@@ -246,11 +244,9 @@ fn parse_transparent_input<P: consensus::Parameters>(
                 is_mine,
             ))
         }
-        _ => {
-            Err(ZcashError::InvalidPczt(
-                "transparent input script pubkey mismatch".to_string(),
-            ))
-        }
+        _ => Err(ZcashError::InvalidPczt(
+            "transparent input script pubkey mismatch".to_string(),
+        )),
     }
 }
 
@@ -310,11 +306,9 @@ fn parse_transparent_output(
                 None,
             ))
         }
-        _ => {
-            Err(ZcashError::InvalidPczt(
-                "transparent output script pubkey mismatch".to_string(),
-            ))
-        }
+        _ => Err(ZcashError::InvalidPczt(
+            "transparent output script pubkey mismatch".to_string(),
+        )),
     }
 }
 
@@ -561,7 +555,6 @@ mod tests {
     use zcash_vendor::zcash_protocol::consensus::MAIN_NETWORK;
 
     extern crate std;
-    
 
     #[test]
     fn test_format_zec_value() {

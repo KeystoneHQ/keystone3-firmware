@@ -1,4 +1,4 @@
 mod errors;
 mod pubkey;
 
-pub use pubkey::{PublicKey};
+pub use pubkey::PublicKey;

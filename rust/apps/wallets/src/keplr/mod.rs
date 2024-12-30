@@ -42,8 +42,7 @@ pub fn generate_sync_ur(
     let mut keys: Vec<CryptoHDKey> = Vec::new();
     sync_infos.iter().for_each(|sync_info| {
         if let Ok(xpub) = bip32::Xpub::from_str(sync_info.xpub.as_str()) {
-            if let Ok(origin) = get_origin(sync_info, *master_fingerprint, xpub.depth as u32)
-            {
+            if let Ok(origin) = get_origin(sync_info, *master_fingerprint, xpub.depth as u32) {
                 let hd_key: CryptoHDKey = CryptoHDKey::new_extended_key(
                     Some(false),
                     xpub.public_key.serialize().to_vec(),

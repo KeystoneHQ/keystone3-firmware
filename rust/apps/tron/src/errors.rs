@@ -1,4 +1,3 @@
-
 use alloc::string::{String, ToString};
 use bitcoin::base58::Error as Base58Error;
 use keystore::errors::KeystoreError;

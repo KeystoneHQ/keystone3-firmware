@@ -1,28 +1,28 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::slice;
+use crate::common::errors::RustCError;
+use crate::common::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
+use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use alloc::boxed::Box;
+use alloc::slice;
 use alloc::string::ToString;
 use app_monero::address::Address;
 use app_monero::key::{PrivateKey, PublicKey};
 use app_monero::structs::{AddressType, Network};
-use app_monero::utils::constants::{PRVKEY_LEH, OUTPUT_EXPORT_MAGIC, UNSIGNED_TX_PREFIX};
-use crate::common::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
-use crate::common::errors::RustCError;
-use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use app_monero::utils::constants::{OUTPUT_EXPORT_MAGIC, PRVKEY_LEH, UNSIGNED_TX_PREFIX};
 // use crate::free::Free;
 use crate::common::free::Free;
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use crate::extract_ptr_with_type;
 use crate::common::utils::{convert_c_char, recover_c_char};
-use ur_registry::monero::xmr_output::XmrOutput;
-use ur_registry::monero::xmr_keyimage::XmrKeyImage;
-use ur_registry::monero::xmr_txunsigned::XmrTxUnsigned;
-use ur_registry::monero::xmr_txsigned::XmrTxSigned;
+use crate::extract_ptr_with_type;
 use cty::c_char;
-use ur_registry::traits::{RegistryItem, To};
 use structs::{DisplayMoneroOutput, DisplayMoneroUnsignedTx};
+use ur_registry::monero::xmr_keyimage::XmrKeyImage;
+use ur_registry::monero::xmr_output::XmrOutput;
+use ur_registry::monero::xmr_txsigned::XmrTxSigned;
+use ur_registry::monero::xmr_txunsigned::XmrTxUnsigned;
+use ur_registry::traits::{RegistryItem, To};
 
 mod structs;
 
@@ -44,8 +44,11 @@ pub extern "C" fn monero_get_address(
         minor,
         is_subaddress,
     ) {
-        Ok(address) => SimpleResponse::success(convert_c_char(address.to_string()) as *mut c_char).simple_c_ptr(),
-        _ => SimpleResponse::from(RustCError::InvalidData("invalid data".to_string())).simple_c_ptr(),
+        Ok(address) => SimpleResponse::success(convert_c_char(address.to_string()) as *mut c_char)
+            .simple_c_ptr(),
+        _ => {
+            SimpleResponse::from(RustCError::InvalidData("invalid data".to_string())).simple_c_ptr()
+        }
     }
 }
 
@@ -60,7 +63,11 @@ fn safe_parse_key(decrypt_key: PtrBytes) -> Result<[u8; PRVKEY_LEH], RustCError>
 }
 
 #[no_mangle]
-pub extern "C" fn monero_output_request_check(ptr: PtrUR, decrypt_key: PtrBytes, pvk: PtrString) -> PtrT<TransactionCheckResult> {
+pub extern "C" fn monero_output_request_check(
+    ptr: PtrUR,
+    decrypt_key: PtrBytes,
+    pvk: PtrString,
+) -> PtrT<TransactionCheckResult> {
     let request = extract_ptr_with_type!(ptr, XmrOutput);
     let decrypt_key = match safe_parse_key(decrypt_key) {
         Ok(decrypt_key) => decrypt_key,
@@ -70,14 +77,23 @@ pub extern "C" fn monero_output_request_check(ptr: PtrUR, decrypt_key: PtrBytes,
 
     let payload = request.get_payload();
 
-    match app_monero::utils::decrypt_data_with_decrypt_key(decrypt_key, pvk.try_into().unwrap(), payload, OUTPUT_EXPORT_MAGIC) {
+    match app_monero::utils::decrypt_data_with_decrypt_key(
+        decrypt_key,
+        pvk.try_into().unwrap(),
+        payload,
+        OUTPUT_EXPORT_MAGIC,
+    ) {
         Ok(_) => TransactionCheckResult::new().c_ptr(),
         _ => TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr(),
     }
 }
 
 #[no_mangle]
-pub extern "C" fn monero_unsigned_request_check(ptr: PtrUR, decrypt_key: PtrBytes, pvk: PtrString) -> PtrT<TransactionCheckResult> {
+pub extern "C" fn monero_unsigned_request_check(
+    ptr: PtrUR,
+    decrypt_key: PtrBytes,
+    pvk: PtrString,
+) -> PtrT<TransactionCheckResult> {
     let request = extract_ptr_with_type!(ptr, XmrTxUnsigned);
     let decrypt_key = match safe_parse_key(decrypt_key) {
         Ok(decrypt_key) => decrypt_key,
@@ -87,9 +103,16 @@ pub extern "C" fn monero_unsigned_request_check(ptr: PtrUR, decrypt_key: PtrByte
 
     let payload = request.get_payload();
 
-    match app_monero::utils::decrypt_data_with_decrypt_key(decrypt_key, pvk.try_into().unwrap(), payload, UNSIGNED_TX_PREFIX) {
+    match app_monero::utils::decrypt_data_with_decrypt_key(
+        decrypt_key,
+        pvk.try_into().unwrap(),
+        payload,
+        UNSIGNED_TX_PREFIX,
+    ) {
         Ok(_) => TransactionCheckResult::new().c_ptr(),
-        Err(_) => return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr(),
+        Err(_) => {
+            return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
+        }
     }
 }
 
@@ -104,29 +127,46 @@ pub extern "C" fn get_monero_pvk_by_seed(
         Ok(keypair) => {
             let pvk = keypair.view.to_bytes();
             SimpleResponse::success(convert_c_char(hex::encode(pvk)) as *mut c_char).simple_c_ptr()
-        },
-        _ => SimpleResponse::from(RustCError::InvalidData("invalid seed".to_string())).simple_c_ptr(),
+        }
+        _ => {
+            SimpleResponse::from(RustCError::InvalidData("invalid seed".to_string())).simple_c_ptr()
+        }
     }
 }
 
 #[no_mangle]
-pub extern "C" fn monero_parse_output(ptr: PtrUR, decrypt_key: PtrBytes, pvk: PtrString) -> PtrT<TransactionParseResult<DisplayMoneroOutput>> {
+pub extern "C" fn monero_parse_output(
+    ptr: PtrUR,
+    decrypt_key: PtrBytes,
+    pvk: PtrString,
+) -> PtrT<TransactionParseResult<DisplayMoneroOutput>> {
     let request = extract_ptr_with_type!(ptr, XmrOutput);
     let decrypt_key = match safe_parse_key(decrypt_key) {
         Ok(decrypt_key) => decrypt_key,
         _ => return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr(),
     };
     let pvk = hex::decode(recover_c_char(pvk)).unwrap();
-    
-    match app_monero::outputs::parse_display_info(&request.get_payload(), decrypt_key, pvk.try_into().unwrap()) {
-        Ok(display) => TransactionParseResult::success(Box::into_raw(Box::new(DisplayMoneroOutput::from(display))) as *mut DisplayMoneroOutput)
+
+    match app_monero::outputs::parse_display_info(
+        &request.get_payload(),
+        decrypt_key,
+        pvk.try_into().unwrap(),
+    ) {
+        Ok(display) => TransactionParseResult::success(Box::into_raw(Box::new(
+            DisplayMoneroOutput::from(display),
+        )) as *mut DisplayMoneroOutput)
+        .c_ptr(),
+        Err(_) => TransactionParseResult::from(RustCError::InvalidData("invalid data".to_string()))
             .c_ptr(),
-        Err(_) => TransactionParseResult::from(RustCError::InvalidData("invalid data".to_string())).c_ptr(),
     }
 }
 
 #[no_mangle]
-pub extern "C" fn monero_parse_unsigned_tx(ptr: PtrUR, decrypt_key: PtrBytes, pvk: PtrString) -> PtrT<TransactionParseResult<DisplayMoneroUnsignedTx>> {
+pub extern "C" fn monero_parse_unsigned_tx(
+    ptr: PtrUR,
+    decrypt_key: PtrBytes,
+    pvk: PtrString,
+) -> PtrT<TransactionParseResult<DisplayMoneroUnsignedTx>> {
     let request = extract_ptr_with_type!(ptr, XmrTxUnsigned);
     let decrypt_key = match safe_parse_key(decrypt_key) {
         Ok(decrypt_key) => decrypt_key,
@@ -134,15 +174,27 @@ pub extern "C" fn monero_parse_unsigned_tx(ptr: PtrUR, decrypt_key: PtrBytes, pv
     };
     let pvk = hex::decode(recover_c_char(pvk)).unwrap();
 
-    match app_monero::transfer::parse_unsigned(request.get_payload(), decrypt_key, pvk.try_into().unwrap()) {
-        Ok(display) => TransactionParseResult::success(Box::into_raw(Box::new(DisplayMoneroUnsignedTx::from(display))) as *mut DisplayMoneroUnsignedTx)
+    match app_monero::transfer::parse_unsigned(
+        request.get_payload(),
+        decrypt_key,
+        pvk.try_into().unwrap(),
+    ) {
+        Ok(display) => TransactionParseResult::success(Box::into_raw(Box::new(
+            DisplayMoneroUnsignedTx::from(display),
+        )) as *mut DisplayMoneroUnsignedTx)
+        .c_ptr(),
+        Err(_) => TransactionParseResult::from(RustCError::InvalidData("invalid data".to_string()))
             .c_ptr(),
-        Err(_) => TransactionParseResult::from(RustCError::InvalidData("invalid data".to_string())).c_ptr(),
     }
 }
 
 #[no_mangle]
-pub extern "C" fn monero_generate_keyimage(ptr: PtrUR, seed: PtrBytes, seed_len: u32, major: u32) -> PtrT<UREncodeResult> {
+pub extern "C" fn monero_generate_keyimage(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    major: u32,
+) -> PtrT<UREncodeResult> {
     let request = extract_ptr_with_type!(ptr, XmrOutput);
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
     let keypair = app_monero::key::generate_keypair(seed, major).unwrap();
@@ -156,13 +208,18 @@ pub extern "C" fn monero_generate_keyimage(ptr: PtrUR, seed: PtrBytes, seed_len:
                 FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
             )
             .c_ptr()
-        },
+        }
         Err(_) => UREncodeResult::from(RustCError::InvalidData("invalid data".to_string())).c_ptr(),
     }
 }
 
 #[no_mangle]
-pub extern "C" fn monero_generate_signature(ptr: PtrUR, seed: PtrBytes, seed_len: u32, major: u32) -> PtrT<UREncodeResult> {
+pub extern "C" fn monero_generate_signature(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    major: u32,
+) -> PtrT<UREncodeResult> {
     let request = extract_ptr_with_type!(ptr, XmrTxUnsigned);
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
     let keypair = app_monero::key::generate_keypair(seed, major).unwrap();
@@ -176,7 +233,7 @@ pub extern "C" fn monero_generate_signature(ptr: PtrUR, seed: PtrBytes, seed_len
                 FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
             )
             .c_ptr()
-        },
+        }
         Err(_) => UREncodeResult::from(RustCError::InvalidData("invalid data".to_string())).c_ptr(),
     }
 }

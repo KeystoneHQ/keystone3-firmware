@@ -162,11 +162,15 @@ pub extern "C" fn rust_aes256_cbc_decrypt(
     iv: PtrBytes,
     iv_len: u32,
 ) -> *mut SimpleResponse<c_char> {
+    rust_tools::debug!(format!("wtf"));
     let hex_data = recover_c_char(hex_data);
+    rust_tools::debug!(format!("hex_data: {}", hex_data));
     let data = hex::decode(hex_data).unwrap();
     let password = recover_c_char(password);
     let iv = unsafe { slice::from_raw_parts(iv, iv_len as usize) };
+    rust_tools::debug!(format!("iv: {:?}", hex::encode(iv)));
     let key = sha256(password.as_bytes());
+    rust_tools::debug!(format!("key: {:?}", hex::encode(key)));
     let iv = GenericArray::from_slice(iv);
     let key = GenericArray::from_slice(&key);
 

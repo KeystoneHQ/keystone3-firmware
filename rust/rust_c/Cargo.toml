@@ -100,8 +100,6 @@ multi-coins = [
     "ton",
     "tron",
     "xrp",
-    "zcash",
-    "monero",
 ]
 
 btc-only = ["bitcoin"]

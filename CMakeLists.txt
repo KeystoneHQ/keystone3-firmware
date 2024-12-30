@@ -19,6 +19,24 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 
+
+set(WIDGET_PATH "multi")
+if(CYPHERPUNK)
+    add_compile_definitions(CYPHERPUNK_VERSION)
+    set(BUILD_VARIANT "CYPHERPUNK")
+    set(WIDGET_SUBPATH "multi/cypherpunk")
+elseif(BTC_ONLY)
+    set(WIDGET_SUBPATH "btc_only/multi_sig")
+    set(WIDGET_PATH "btc_only")
+    set(BUILD_VARIANT "BTC_ONLY")
+    add_compile_definitions(BTC_ONLY)
+    add_compile_definitions(EXCLUDE_RUSTC)
+else()
+    add_compile_definitions(WEB3_VERSION)
+    set(WIDGET_SUBPATH "multi/web3")
+    set(BUILD_VARIANT "MULTI_COINS")
+endif()
+
 add_subdirectory(rust)
 
 # add definition
@@ -65,23 +83,6 @@ set(CRYPTO_INCLUDE_PATH
     src/crypto/slip39
     src/crypto/slip39/trezor-crypto
 )
-
-set(WIDGET_PATH "multi")
-if(CYPHERPUNK)
-    add_compile_definitions(CYPHERPUNK_VERSION)
-    set(BUILD_VARIANT "CYPHERPUNK")
-    set(WIDGET_SUBPATH "multi/cypherpunk")
-elseif(BTC_ONLY)
-    set(WIDGET_SUBPATH "btc_only/multi_sig")
-    set(WIDGET_PATH "btc_only")
-    set(BUILD_VARIANT "BTC_ONLY")
-    add_compile_definitions(BTC_ONLY)
-    add_compile_definitions(EXCLUDE_RUSTC)
-else()
-    add_compile_definitions(WEB3_VERSION)
-    set(WIDGET_SUBPATH "multi/web3")
-    set(BUILD_VARIANT "MULTI_COINS")
-endif()
 
 set(GUI_CUSTOM_INCLUDE_PATH
     src/ui/gui_widgets/${WIDGET_SUBPATH}

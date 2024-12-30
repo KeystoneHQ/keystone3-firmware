@@ -1,3 +1,15 @@
+## 1.8.2(2024-12-30)
+
+### Bug Fixes  
+
+1. Fixed the issue of long unlocking time after entering the password
+2. Fixed the issue where rapidly switching the number of mnemonics during SLIP39 wallet creation caused creation failure
+3. Fixed message signing errors in certain Solana scenarios
+
+
+
+
+
 ## 1.8.0(2024-12-19)
 
 ### What's new

@@ -24,7 +24,7 @@ declare -A build_options=(
     ["release"]=false
     ["rebuild"]=false
     ["btc_only"]=false
-    ["cyberpunk"]=false
+    ["cypherpunk"]=false
     ["simulator"]=false
     ["language"]=false
     ["clean"]=false
@@ -73,7 +73,7 @@ execute_build() {
     if [[ "${build_options[btc_only]}" == true ]]; then
         cmake_parm="${cmake_parm} -DBTC_ONLY=true"
     fi
-    if [[ "${build_options[cyberpunk]}" == true ]]; then
+    if [[ "${build_options[cypherpunk]}" == true ]]; then
         cmake_parm="${cmake_parm} -DCYBERPUNK=true"
     fi
     if [[ "${build_options[screen]}" == true ]]; then

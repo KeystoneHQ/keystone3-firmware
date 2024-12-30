@@ -12,7 +12,7 @@ SET LANGUAGE_PATH=%CD%\src\ui\lv_i18n
 SET LANGUAGE_SCRIPT=py data_loader.py
 SET RUST_C_PATH=%CD%\rust\rust_c
 
-SET "build_options=log copy production screen debug format release rebuild btc_only cyberpunk simulator language clean"
+SET "build_options=log copy production screen debug format release rebuild btc_only cypherpunk simulator language clean"
 FOR %%O IN (%build_options%) DO SET "build_%%O=false"
 
 FOR %%i in (%*) DO (

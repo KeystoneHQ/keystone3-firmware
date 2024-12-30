@@ -14,4 +14,6 @@ UREncodeResult *GuiGetArConnectData(void);
 UREncodeResult *GuiGetCompanionAppData(void);
 UREncodeResult *GuiGetBitgetWalletData(void);
 UREncodeResult *GuiGetCakeData(void);
+uint8_t *OpenPrivateQrMode(void);
+
 #endif

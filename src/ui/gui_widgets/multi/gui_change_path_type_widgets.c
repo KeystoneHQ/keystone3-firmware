@@ -63,9 +63,11 @@ void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent, HOME_WALLET_CARD_ENUM chain
     g_changed_cb = changed_cb;
     g_currentChain = chain;
     g_currentAccountIndex = GetCurrentAccountIndex();
+#ifdef WEB3_VERSION
     if (chain == HOME_WALLET_CARD_ADA) {
         SetPathIndex(GetReceivePageAdaXPubType());
     }
+#endif
     g_selectType = GetPathIndex();
     InitDerivationPathDesc(chain);
 
@@ -161,10 +163,12 @@ static void ConfirmAddrTypeHandler(lv_event_t *e)
     if (code == LV_EVENT_CLICKED && IsAddrTypeSelectChanged()) {
         SetPathIndex(g_selectType);
         SetAccountReceivePath(GetCoinCardByIndex(g_currentChain)->coin, g_selectType);
+#ifdef WEB3_VERSION
         if (g_changed_cb != NULL) {
             SetReceivePageAdaXPubType(g_selectType);
             g_changed_cb(e);
         }
+#endif
         ReturnHandler(e);
     }
 }
@@ -187,6 +191,7 @@ static void SetPathIndex(uint32_t index)
 static void InitDerivationPathDesc(uint8_t chain)
 {
     switch (chain) {
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_ETH:
         g_derivationPathDescs = GetDerivationPathDescs(ETH_DERIVATION_PATH_DESC);
         break;
@@ -197,6 +202,7 @@ static void InitDerivationPathDesc(uint8_t chain)
     case HOME_WALLET_CARD_ADA:
         g_derivationPathDescs = GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC);
         break;
+#endif
     default:
         break;
     }
@@ -204,14 +210,12 @@ static void InitDerivationPathDesc(uint8_t chain)
 
 static void ShowEgAddressCont(lv_obj_t *egCont)
 {
-
     if (egCont == NULL) {
         printf("egCont is NULL, cannot show eg address\n");
         return;
     }
 
     lv_obj_clean(egCont);
-
     lv_obj_t *prevLabel, *label;
 
     int egContHeight = 12;
@@ -289,35 +293,14 @@ static void RefreshDefaultAddress(void)
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
     switch (g_currentChain) {
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_ADA:
         ModelGetADAAddress(index, item, 0);
         break;
+#endif
     default:
         break;
     }
-}
-
-static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
-{
-    char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
-    SimpleResponse_c_char *result = NULL;
-    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(g_selectType, index));
-    snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", index);
-    switch (type) {
-    case 1:
-        result = cardano_get_enterprise_address(xPub, 0, 1);
-        break;
-    case 2:
-        result = cardano_get_stake_address(xPub, 0, 1);
-        break;
-    default:
-        result = cardano_get_base_address(xPub, 0, 1);
-        break;
-    }
-    item->index = index;
-    strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
-    strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
-    free_simple_response_c_char(result);
 }
 
 static void UpdateConfirmAddrTypeBtn(void)
@@ -333,12 +316,14 @@ static void UpdateConfirmAddrTypeBtn(void)
 
 static bool IsOnlyOneAddress(uint8_t addrType)
 {
+#ifdef WEB3_VERSION
     if (g_currentChain == HOME_WALLET_CARD_SOL && addrType == 1) {
         return true;
     }
     if (g_currentChain == HOME_WALLET_CARD_HNT && addrType == 1) {
         return true;
     }
+#endif
     return false;
 }
 
@@ -365,14 +350,17 @@ static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked)
         lv_obj_add_flag(g_changePathWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_changePathWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
     }
+#ifdef WEB3_VERSION
     if (g_currentChain == HOME_WALLET_CARD_ADA && isChecked) {
         RefreshDefaultAddress();
     }
+#endif
 }
 
 static uint32_t GetDerivedPathTypeCount()
 {
     switch (g_currentChain) {
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_ETH:
         return 3;
     case HOME_WALLET_CARD_SOL:
@@ -380,6 +368,7 @@ static uint32_t GetDerivedPathTypeCount()
         return 3;
     case HOME_WALLET_CARD_ADA:
         return 2;
+#endif
     default:
         return 3;
     }
@@ -388,6 +377,7 @@ static uint32_t GetDerivedPathTypeCount()
 static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
 {
     switch (g_currentChain) {
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_ETH:
         GetEthPathItemSubTittle(subTitle, index, maxLen);
         break;
@@ -397,6 +387,101 @@ static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
         break;
     case HOME_WALLET_CARD_ADA:
         GetADAPathItemSubTitle(subTitle, index, maxLen);
+        break;
+#endif
+    default:
+        break;
+    }
+}
+
+static const char* GetChangePathItemTitle(uint32_t i)
+{
+    switch (g_currentChain) {
+#ifdef WEB3_VERSION
+    case HOME_WALLET_CARD_ETH:
+        return (char *)g_ethPaths[i].title;
+    case HOME_WALLET_CARD_SOL:
+    case HOME_WALLET_CARD_HNT:
+        if (i == 0) {
+            return _("receive_sol_more_t_base_path");
+        } else if (i == 1) {
+            return _("receive_sol_more_t_single_path");
+        } else if (i == 2) {
+            return _("receive_sol_more_t_sub_path");
+        }
+    case HOME_WALLET_CARD_ADA:
+        if (i == 0) {
+            return _("receive_ada_more_t_standard");
+        } else if (i == 1) {
+            return _("receive_ada_more_t_ledger");
+        }
+#endif
+    default:
+        break;
+    }
+    return "";
+}
+
+static void GetChangePathLabelHint(char* hint)
+{
+    switch (g_currentChain) {
+#ifdef WEB3_VERSION
+    case HOME_WALLET_CARD_ETH:
+        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_eth"));
+        return;
+    case HOME_WALLET_CARD_SOL:
+    case HOME_WALLET_CARD_HNT:
+        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_sol"));
+        return;
+    case HOME_WALLET_CARD_ADA:
+        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_ada"));
+        return;
+#endif
+    default:
+        break;
+    }
+}
+
+#ifdef WEB3_VERSION
+static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
+{
+    char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
+    SimpleResponse_c_char *result = NULL;
+    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(g_selectType, index));
+    snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", index);
+    switch (type) {
+    case 1:
+        result = cardano_get_enterprise_address(xPub, 0, 1);
+        break;
+    case 2:
+        result = cardano_get_stake_address(xPub, 0, 1);
+        break;
+    default:
+        result = cardano_get_base_address(xPub, 0, 1);
+        break;
+    }
+    item->index = index;
+    strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+    strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
+    free_simple_response_c_char(result);
+}
+
+static void GetADAPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
+{
+    snprintf_s(subTitle, maxLen, "m/1852'/1815'/#F5870A X#'");
+}
+
+static void GetSolPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
+{
+    switch (index) {
+    case 0:
+        snprintf_s(subTitle, maxLen, "m/44'/501'/#F5870A X#'");
+        break;
+    case 1:
+        snprintf_s(subTitle, maxLen, "m/44'/501'");
+        break;
+    case 2:
+        snprintf_s(subTitle, maxLen, "m/44'/501'/#F5870A X#'/0'");
         break;
     default:
         break;
@@ -419,69 +504,4 @@ static void GetEthPathItemSubTittle(char* subTitle, int index, uint32_t maxLen)
         break;
     }
 }
-
-static void GetSolPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
-{
-    switch (index) {
-    case 0:
-        snprintf_s(subTitle, maxLen, "m/44'/501'/#F5870A X#'");
-        break;
-    case 1:
-        snprintf_s(subTitle, maxLen, "m/44'/501'");
-        break;
-    case 2:
-        snprintf_s(subTitle, maxLen, "m/44'/501'/#F5870A X#'/0'");
-        break;
-    default:
-        break;
-    }
-}
-
-static void GetADAPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
-{
-    snprintf_s(subTitle, maxLen, "m/1852'/1815'/#F5870A X#'");
-}
-
-static const char* GetChangePathItemTitle(uint32_t i)
-{
-    switch (g_currentChain) {
-    case HOME_WALLET_CARD_ETH:
-        return (char *)g_ethPaths[i].title;
-    case HOME_WALLET_CARD_SOL:
-    case HOME_WALLET_CARD_HNT:
-        if (i == 0) {
-            return _("receive_sol_more_t_base_path");
-        } else if (i == 1) {
-            return _("receive_sol_more_t_single_path");
-        } else if (i == 2) {
-            return _("receive_sol_more_t_sub_path");
-        }
-    case HOME_WALLET_CARD_ADA:
-        if (i == 0) {
-            return _("receive_ada_more_t_standard");
-        } else if (i == 1) {
-            return _("receive_ada_more_t_ledger");
-        }
-    default:
-        break;
-    }
-    return "";
-}
-
-static void GetChangePathLabelHint(char* hint)
-{
-    switch (g_currentChain) {
-    case HOME_WALLET_CARD_ETH:
-        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_eth"));
-        return;
-    case HOME_WALLET_CARD_SOL:
-    case HOME_WALLET_CARD_HNT:
-        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_sol"));
-        return;
-    case HOME_WALLET_CARD_ADA:
-        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_ada"));
-        return;
-    default:
-        break;
-    }
-}
+#endif

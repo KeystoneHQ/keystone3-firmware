@@ -1,4 +1,3 @@
-#ifndef BTC_ONLY
 #include "rust.h"
 #include "keystore.h"
 #include "gui_chain.h"
@@ -1093,6 +1092,3 @@ void GetCatalystVoteKeysSize(uint16_t *width, uint16_t *height, void *param)
     *width = 408;
     *height = 62 + 60 * data->vote_keys->size;
 }
-
-#endif
-

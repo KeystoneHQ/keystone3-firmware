@@ -525,7 +525,7 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
     } else if (!strcmp(funcName, "GuiBtcMsg")) {
         return GuiBtcMsg;
     }
-    
+
     return GetOtherChainCustomFunc(funcName);
 }
 

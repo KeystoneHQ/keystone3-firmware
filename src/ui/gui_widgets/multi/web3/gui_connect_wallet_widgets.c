@@ -312,24 +312,15 @@ static void GuiInitWalletListArray()
     bool isTempAccount = false;
     bool isRussian = false;
 
-#ifndef BTC_ONLY
     isTON = (GetMnemonicType() == MNEMONIC_TYPE_TON);
     isSLIP39 = (GetMnemonicType() == MNEMONIC_TYPE_SLIP39);
     isTempAccount = GetIsTempAccount();
     isRussian = (LanguageGetIndex() == LANG_RU);
-#else
-    int currentWalletIndex = GetCurrentWalletIndex();
-#endif
 
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         bool enable = true;
         int index = g_walletListArray[i].index;
 
-        bool passphraseExist = PassphraseExist(GetCurrentAccountIndex());
-        MnemonicType mnemonicType = GetMnemonicType();
-        bool isSlip39 = (mnemonicType == MNEMONIC_TYPE_SLIP39);
-
-#ifndef BTC_ONLY
         if (isTON) {
             enable = (index == WALLET_LIST_TONKEEPER);
         } else {
@@ -350,13 +341,6 @@ static void GuiInitWalletListArray()
                 break;
             }
         }
-#else
-        if (currentWalletIndex != SINGLE_WALLET) {
-            if (index == WALLET_LIST_SPECTER || index == WALLET_LIST_UNISAT) {
-                enable = false;
-            }
-        }
-#endif
 
         g_walletListArray[i].enable = enable;
     }

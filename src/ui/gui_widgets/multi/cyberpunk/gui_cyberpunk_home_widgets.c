@@ -219,7 +219,7 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
         GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_MONERO:
-        // GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
+        GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
         break;
     default:
         GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));

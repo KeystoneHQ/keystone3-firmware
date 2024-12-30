@@ -78,7 +78,7 @@ static const char g_xpubInfoVersion[] = "1.0.0";
 static const char g_multiSigInfoVersion[] = "1.0.0";
 
 static const ChainItem_t g_chainTable[] = {
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     {XPUB_TYPE_BTC,                   SECP256K1,    "btc",                      "M/49'/0'/0'"       },
     {XPUB_TYPE_BTC_LEGACY,            SECP256K1,    "btc_legacy",               "M/44'/0'/0'"       },
     {XPUB_TYPE_BTC_NATIVE_SEGWIT,     SECP256K1,    "btc_nested_segwit",        "M/84'/0'/0'"       },
@@ -291,10 +291,14 @@ static const ChainItem_t g_chainTable[] = {
     //and
     //a redpallas key with path M/32'/133'/x'
     //but we use 32 to identify it for now
+#endif
+#ifdef CYBERPUNK_VERSION
     {ZCASH_UFVK_ENCRYPTED_0,          ZCASH_UFVK_ENCRYPTED, "zcash_ufvk_0",      "M/32'/133'/0'"    },
     {XPUB_TYPE_MONERO_0,              EDWARDS_25519,  "monero_0",                "M/44'/128'/0'"    },
     {XPUB_TYPE_MONERO_PVK_0,          MONERO_PVK,     "monero_pvk_0",            ""                 },
-#else
+#endif
+
+#ifdef BTC_ONLY
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },
     {XPUB_TYPE_BTC_NATIVE_SEGWIT,       SECP256K1,      "btc_native_segwit",        "M/84'/0'/0'"   },

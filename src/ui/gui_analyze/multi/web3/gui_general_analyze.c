@@ -56,7 +56,7 @@ GetContSizeFunc GetOtherChainPos(char *type, GuiRemapViewType remapIndex)
         return GetEthObjPos(type);
     case REMAPVIEW_COSMOS:
         return GetCosmosObjPos(type);
-        default:
+    default:
         break;
     }
     return NULL;

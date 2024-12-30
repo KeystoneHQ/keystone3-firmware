@@ -53,7 +53,7 @@
     HOME_WALLET_CARD_UMEE, \
     HOME_WALLET_CARD_QCK, \
     HOME_WALLET_CARD_TGD
-    // last one cant not with comma
+// last one cant not with comma
 
 #define HOME_WALLET_STATE_SURPLUS          {HOME_WALLET_CARD_ETH, false, "ETH", true}, \
     {HOME_WALLET_CARD_SOL, false, "SOL", true}, \
@@ -106,7 +106,7 @@
     {HOME_WALLET_CARD_UMEE, false, "UMEE", true}, \
     {HOME_WALLET_CARD_QCK, false, "QCK", true}, \
     {HOME_WALLET_CARD_TGD, false, "TGD", true}
-    // last one cant not with comma
+// last one cant not with comma
 
 #define HOME_WALLET_CARD_SURPLUS           { \
         .index = HOME_WALLET_CARD_ETH, \

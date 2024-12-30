@@ -106,21 +106,21 @@ multi-coins = [
 
 btc-only = ["bitcoin"]
 
-cyberpunk = ["bitcoin", "zcash", "monero"]
+cypherpunk = ["bitcoin", "zcash", "monero"]
 
 # build variants
 # production
 production-multi-coins = ["use-allocator", "multi-coins"]
 production-btc-only = ["use-allocator", "btc-only"]
-production-cyberpunk = ["use-allocator", "cyberpunk"]
+production-cypherpunk = ["use-allocator", "cypherpunk"]
 # debug
 debug-multi-coins = ["test_cmd", "use-allocator", "multi-coins"]
 debug-btc-only = ["test_cmd", "use-allocator", "btc-only"]  
-debug-cyberpunk = ["test_cmd", "use-allocator", "cyberpunk"]
+debug-cypherpunk = ["test_cmd", "use-allocator", "cypherpunk"]
 # simulator
 simulator-multi-coins = ["simulator", "multi-coins"]
 simulator-btc-only = ["simulator", "btc-only"]
-simulator-cyberpunk = ["simulator", "cyberpunk"]
+simulator-cypherpunk = ["simulator", "cypherpunk"]
 # make IDE happy
 default = ["simulator-multi-coins"]
 

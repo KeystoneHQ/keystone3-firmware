@@ -13,7 +13,7 @@
 #include "presetting.h"
 #include "anti_tamper.h"
 #include "multi/web3/gui_general_analyze.h"
-#include "multi/cyberpunk/gui_cyberpunk_analyze.h"
+#include "multi/cypherpunk/gui_cyberpunk_analyze.h"
 #else
 #include "simulator_model.h"
 #endif

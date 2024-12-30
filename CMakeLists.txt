@@ -67,10 +67,10 @@ set(CRYPTO_INCLUDE_PATH
 )
 
 set(WIDGET_PATH "multi")
-if(CYBERPUNK)
+if(CYPHERPUNK)
     add_compile_definitions(CYBERPUNK_VERSION)
-    set(BUILD_VARIANT "CYBERPUNK")
-    set(WIDGET_SUBPATH "multi/cyberpunk")
+    set(BUILD_VARIANT "CYPHERPUNK")
+    set(WIDGET_SUBPATH "multi/cypherpunk")
 elseif(BTC_ONLY)
     set(WIDGET_SUBPATH "btc_only/multi_sig")
     set(WIDGET_PATH "btc_only")

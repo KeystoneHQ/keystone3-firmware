@@ -1,4 +1,4 @@
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 #include "rsa.h"
 
 static uint32_t GetRsaAddress();

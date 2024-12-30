@@ -263,18 +263,14 @@ dependencies = [
  "bitcoin",
  "chacha20",
  "cryptoxide",
+ "cuprate-cryptonight",
  "curve25519-dalek",
- "groestl",
  "hex",
- "jh",
- "keccak",
  "keystore",
  "monero-serai-mirror",
  "rand_chacha",
  "rand_core 0.6.4",
  "rust_tools",
- "sha3 0.10.8",
- "skein",
  "thiserror-core",
  "zeroize",
 ]
@@ -1281,6 +1277,19 @@ name = "cty"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b365fabc795046672053e29c954733ec3b05e4be654ab130fe8f1f94d7051f35"
+
+[[package]]
+name = "cuprate-cryptonight"
+version = "0.1.0"
+source = "git+https://github.com/KeystoneHQ/cuprate#24943a8d12188f4a96a2929b17fc907c75d3e620"
+dependencies = [
+ "digest 0.10.7",
+ "groestl",
+ "jh",
+ "keccak",
+ "sha3 0.10.8",
+ "skein",
+]
 
 [[package]]
 name = "curve25519-dalek"

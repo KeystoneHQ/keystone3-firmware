@@ -1,7 +1,6 @@
 use crate::errors::{MoneroError, Result};
 use crate::key::{KeyPair, PrivateKey, PublicKey};
 use crate::key_images::Keyimage;
-use crate::slow_hash::cryptonight_hash_v0;
 use crate::utils::sign::*;
 use crate::utils::{constants::*, hash::*};
 use alloc::format;
@@ -13,6 +12,7 @@ use chacha20::{ChaCha20, ChaCha20Legacy};
 use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::traits::{IsIdentity, MultiscalarMul};
+use cuprate_cryptonight::cryptonight_hash_v0;
 use monero_serai_mirror::transaction::Input;
 use rand_core::{CryptoRng, RngCore, SeedableRng};
 

@@ -4,7 +4,6 @@ extern crate alloc;
 
 mod extra;
 mod signed_transaction;
-mod slow_hash;
 mod transfer_key;
 
 pub mod address;

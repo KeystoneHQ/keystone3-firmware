@@ -2,73 +2,16 @@ use crate::extra::*;
 use crate::key::*;
 use crate::transfer::{TxConstructionData, TxDestinationEntry};
 use crate::utils::*;
-use crate::utils::{hash::*, varinteger::*};
+use crate::utils::hash::*;
 use alloc::vec;
 use alloc::vec::Vec;
 use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
-use monero_serai_mirror::primitives::Commitment;
-use monero_serai_mirror::ringct::EncryptedAmount;
+use monero_serai::primitives::Commitment;
+use monero_serai::ringct::EncryptedAmount;
+use monero_wallet::SharedKeyDerivations;
 use rand_core::SeedableRng;
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct SharedKeyDerivations {
-    pub view_tag: u8,
-    pub shared_key: Scalar,
-}
-
-impl SharedKeyDerivations {
-    fn output_derivations(ecdh: EdwardsPoint, o: usize) -> SharedKeyDerivations {
-        // 8Ra
-        let mut output_derivation = ecdh.mul_by_cofactor().compress().to_bytes().to_vec();
-        // || o
-        {
-            let mut buffer = vec![0];
-            encode(o as u64, &mut buffer);
-            output_derivation.extend(buffer);
-        }
-        let mut buffer = vec![];
-        buffer.extend_from_slice(b"view_tag");
-        buffer.extend_from_slice(&output_derivation);
-
-        let view_tag = keccak256(&buffer)[0];
-
-        SharedKeyDerivations {
-            view_tag,
-            shared_key: hash_to_scalar(&output_derivation),
-        }
-    }
-
-    fn commitment_mask(&self) -> Scalar {
-        let mut mask = b"commitment_mask".to_vec();
-        mask.extend(self.shared_key.as_bytes());
-        let res = hash_to_scalar(&mask);
-        res
-    }
-
-    fn compact_amount_encryption(&self, amount: u64) -> [u8; 8] {
-        let mut amount_mask = b"amount".to_vec();
-        amount_mask.extend(self.shared_key.to_bytes());
-        let amount_mask = keccak256(&amount_mask);
-
-        let mut amount_mask_8 = [0; 8];
-        amount_mask_8.copy_from_slice(&amount_mask[..8]);
-
-        (amount ^ u64::from_le_bytes(amount_mask_8)).to_le_bytes()
-    }
-
-    fn payment_id_xor(ecdh: EdwardsPoint) -> [u8; 8] {
-        // 8Ra
-        let output_derivation = ecdh.mul_by_cofactor().compress().to_bytes().to_vec();
-
-        let mut payment_id_xor = vec![];
-        payment_id_xor.extend_from_slice(&output_derivation);
-        payment_id_xor.extend_from_slice([0x8d].as_ref());
-        let payment_id_xor = keccak256(&payment_id_xor);
-
-        payment_id_xor[..8].try_into().unwrap()
-    }
-}
+use zeroize::Zeroizing;
 
 impl TxConstructionData {
     fn should_use_additional_keys(&self) -> bool {
@@ -164,7 +107,7 @@ impl TxConstructionData {
     fn payment_id_xors(&self, keypair: &KeyPair) -> Vec<[u8; 8]> {
         let mut res = Vec::with_capacity(self.splitted_dsts.len());
         for ecdh in self.ecdhs(keypair) {
-            res.push(SharedKeyDerivations::payment_id_xor(ecdh));
+            res.push(SharedKeyDerivations::payment_id_xor(Zeroizing::new(ecdh)));
         }
         res
     }
@@ -189,11 +132,11 @@ impl TxConstructionData {
         extra.serialize()
     }
 
-    pub fn shared_key_derivations(&self, keypair: &KeyPair) -> Vec<SharedKeyDerivations> {
+    pub fn shared_key_derivations(&self, keypair: &KeyPair) -> Vec<Zeroizing<SharedKeyDerivations>> {
         let ecdhs = self.ecdhs(keypair);
         let mut res = Vec::with_capacity(self.splitted_dsts.len());
         for (i, (_, ecdh)) in self.splitted_dsts.iter().zip(ecdhs).enumerate() {
-            res.push(SharedKeyDerivations::output_derivations(ecdh, i));
+            res.push(SharedKeyDerivations::output_derivations(None, Zeroizing::new(ecdh), i));
         }
 
         res

@@ -15,7 +15,7 @@ use curve25519_dalek::edwards::CompressedEdwardsY;
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::EdwardsPoint;
 use hex;
-use monero_serai_mirror::generators::hash_to_point;
+use monero_serai::generators::hash_to_point;
 use rand_core::SeedableRng;
 use rand_core::{CryptoRng, RngCore};
 

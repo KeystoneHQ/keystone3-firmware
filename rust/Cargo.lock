@@ -267,7 +267,8 @@ dependencies = [
  "curve25519-dalek",
  "hex",
  "keystore",
- "monero-serai-mirror",
+ "monero-serai",
+ "monero-wallet",
  "rand_chacha",
  "rand_core 0.6.4",
  "rust_tools",
@@ -1321,10 +1322,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "dalek-ff-group-mirror"
+name = "dalek-ff-group"
 version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2eeccd55215877bdbd8984b0330bae38681cae504a27068db34afaf3886aa97"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
 dependencies = [
  "crypto-bigint",
  "curve25519-dalek",
@@ -2514,119 +2514,157 @@ dependencies = [
 ]
 
 [[package]]
-name = "monero-borromean-mirror"
+name = "monero-address"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94245bb25439202f8c4344a316ef11594d723bb424b2a87e59afc610a2024b85"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
 dependencies = [
  "curve25519-dalek",
- "monero-generators-mirror",
- "monero-io-mirror",
- "monero-primitives-mirror",
- "std-shims-mirror",
+ "monero-io",
+ "monero-primitives",
+ "std-shims",
  "zeroize",
 ]
 
 [[package]]
-name = "monero-bulletproofs-mirror"
+name = "monero-borromean"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12680d39b77206a64d9bfe08c7c88c7b38546befead75c69d30d23ae95420fb2"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
 dependencies = [
  "curve25519-dalek",
- "monero-generators-mirror",
- "monero-io-mirror",
- "monero-primitives-mirror",
- "rand_core 0.6.4",
- "std-shims-mirror",
+ "monero-generators",
+ "monero-io",
+ "monero-primitives",
+ "std-shims",
  "zeroize",
 ]
 
 [[package]]
-name = "monero-clsag-mirror"
+name = "monero-bulletproofs"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "876a1cf86915b36460813c87dd4121b80ba14f777c57637ff625ee9e45ed54b0"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
 dependencies = [
  "curve25519-dalek",
- "monero-generators-mirror",
- "monero-io-mirror",
- "monero-primitives-mirror",
+ "monero-generators",
+ "monero-io",
+ "monero-primitives",
  "rand_core 0.6.4",
- "std-shims-mirror",
+ "std-shims",
+ "zeroize",
+]
+
+[[package]]
+name = "monero-clsag"
+version = "0.1.0"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
+dependencies = [
+ "curve25519-dalek",
+ "monero-generators",
+ "monero-io",
+ "monero-primitives",
+ "rand_core 0.6.4",
+ "std-shims",
  "subtle",
  "zeroize",
 ]
 
 [[package]]
-name = "monero-generators-mirror"
+name = "monero-generators"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b651dda82cb500ee8461d7a62d83d9a67d8e768315cf926f1d98f54c9ed957dc"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
 dependencies = [
  "curve25519-dalek",
- "dalek-ff-group-mirror",
+ "dalek-ff-group",
  "group",
- "monero-io-mirror",
+ "monero-io",
  "sha3 0.10.8",
- "std-shims-mirror",
+ "std-shims",
  "subtle",
 ]
 
 [[package]]
-name = "monero-io-mirror"
+name = "monero-io"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baf172c6416b3e56737045c1dfb2e8f58e6a910190f90c9cc8a0b02d57b03bda"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
 dependencies = [
  "curve25519-dalek",
- "std-shims-mirror",
+ "std-shims",
 ]
 
 [[package]]
-name = "monero-mlsag-mirror"
+name = "monero-mlsag"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14df375dbeb6838572368b34c400098c38763bef1e7d42b2c3220110a5ff130f"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
 dependencies = [
  "curve25519-dalek",
- "monero-generators-mirror",
- "monero-io-mirror",
- "monero-primitives-mirror",
- "std-shims-mirror",
+ "monero-generators",
+ "monero-io",
+ "monero-primitives",
+ "std-shims",
  "zeroize",
 ]
 
 [[package]]
-name = "monero-primitives-mirror"
+name = "monero-primitives"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f0bb4f732677c055115269180b526252837662a7282b1ae782e92f78bafacec"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
 dependencies = [
  "curve25519-dalek",
- "monero-generators-mirror",
- "monero-io-mirror",
+ "monero-generators",
+ "monero-io",
  "sha3 0.10.8",
- "std-shims-mirror",
+ "std-shims",
  "zeroize",
 ]
 
 [[package]]
-name = "monero-serai-mirror"
-version = "0.1.5-alpha"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a61de52af086a0d2e7b2a3f486429c16fd05ed8e15cb2f2060a1a8b132053d5a"
+name = "monero-rpc"
+version = "0.1.0"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
+dependencies = [
+ "curve25519-dalek",
+ "hex",
+ "monero-address",
+ "monero-serai",
+ "serde",
+ "serde_json",
+ "std-shims",
+ "zeroize",
+]
+
+[[package]]
+name = "monero-serai"
+version = "0.1.4-alpha"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
 dependencies = [
  "curve25519-dalek",
  "hex-literal",
- "monero-borromean-mirror",
- "monero-bulletproofs-mirror",
- "monero-clsag-mirror",
- "monero-generators-mirror",
- "monero-io-mirror",
- "monero-mlsag-mirror",
- "monero-primitives-mirror",
- "std-shims-mirror",
+ "monero-borromean",
+ "monero-bulletproofs",
+ "monero-clsag",
+ "monero-generators",
+ "monero-io",
+ "monero-mlsag",
+ "monero-primitives",
+ "std-shims",
+ "zeroize",
+]
+
+[[package]]
+name = "monero-wallet"
+version = "0.1.0"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
+dependencies = [
+ "curve25519-dalek",
+ "hex",
+ "monero-address",
+ "monero-clsag",
+ "monero-rpc",
+ "monero-serai",
+ "rand",
+ "rand_chacha",
+ "rand_core 0.6.4",
+ "rand_distr",
+ "std-shims",
  "zeroize",
 ]
 
@@ -3374,6 +3412,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rand_distr"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32cb0b9bc82b0a0876c2dd994a7e7a2683d3e7390ca40e6886785ef0c7e3ee31"
+dependencies = [
+ "num-traits",
+ "rand",
+]
+
+[[package]]
 name = "rand_os"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4094,10 +4142,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
-name = "std-shims-mirror"
+name = "std-shims"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75607eda3a2e9fff2e85af7f411137a83c6ab843ce6fda98545883a067d37a21"
+source = "git+https://github.com/KeystoneHQ/serai#c784e6c6fcd6cfd8ac88cdd0d467184aeefaf810"
 dependencies = [
  "hashbrown 0.14.5",
  "spin",

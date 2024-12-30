@@ -4,7 +4,7 @@ use crate::transfer::{TxConstructionData, TxDestinationEntry};
 use crate::utils::io::*;
 use alloc::{string::String, vec, vec::Vec};
 use curve25519_dalek::Scalar;
-use monero_serai_mirror::transaction::{NotPruned, Transaction};
+use monero_serai::transaction::{NotPruned, Transaction};
 
 #[derive(Debug, Clone)]
 pub struct PendingTx {

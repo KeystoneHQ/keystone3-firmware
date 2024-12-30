@@ -15,9 +15,10 @@ rand_core = { version = "0.6", default-features = false }
 zeroize = { version = "^1.5", default-features = false }
 app_utils = { path = "../utils" }
 rust_tools = { path = "../../tools" }
-monero-serai-mirror = { version = "0.1.5-alpha", default-features = false }
 chacha20 = { version = "0.9.1", default-features = false }
 rand_chacha = { workspace = true }
 thiserror = { workspace = true }
 keystore = { workspace = true, default-features = false }
 cuprate-cryptonight = { git = "https://github.com/KeystoneHQ/cuprate", default-features = false}
+monero-serai = { git = "https://github.com/KeystoneHQ/serai", default-features = false }
+monero-wallet = { git = "https://github.com/KeystoneHQ/serai", default-features = false }

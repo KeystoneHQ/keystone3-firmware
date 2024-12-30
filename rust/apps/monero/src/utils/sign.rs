@@ -1,7 +1,7 @@
 use crate::key::*;
 use crate::utils::*;
 use alloc::vec::Vec;
-use monero_serai_mirror::generators::hash_to_point;
+use monero_serai::generators::hash_to_point;
 
 pub struct Signature(pub [u8; 64]);
 

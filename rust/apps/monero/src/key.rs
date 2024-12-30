@@ -6,7 +6,7 @@ use bitcoin::{Network, PrivateKey as PrvKey};
 use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
 use curve25519_dalek::scalar::Scalar;
 use hex;
-use monero_serai_mirror::generators::hash_to_point;
+use monero_serai::generators::hash_to_point;
 
 #[derive(Debug, Clone, Default)]
 pub struct PrivateKey {

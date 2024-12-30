@@ -14,12 +14,12 @@ use alloc::vec::Vec;
 use core::fmt::Display;
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::EdwardsPoint;
-use monero_serai_mirror::primitives::Commitment;
-use monero_serai_mirror::primitives::Decoys;
-use monero_serai_mirror::ringct::bulletproofs::Bulletproof;
-use monero_serai_mirror::ringct::clsag::{Clsag, ClsagContext};
-use monero_serai_mirror::ringct::{RctBase, RctProofs, RctPrunable};
-use monero_serai_mirror::transaction::{
+use monero_serai::primitives::Commitment;
+use monero_serai::primitives::Decoys;
+use monero_serai::ringct::bulletproofs::Bulletproof;
+use monero_serai::ringct::clsag::{Clsag, ClsagContext};
+use monero_serai::ringct::{RctBase, RctProofs, RctPrunable};
+use monero_serai::transaction::{
     Input, NotPruned, Output, Timelock, Transaction, TransactionPrefix,
 };
 use rand_core::SeedableRng;
@@ -770,7 +770,7 @@ mod tests {
     use core::ops::Deref;
     use curve25519_dalek::edwards::EdwardsPoint;
     use curve25519_dalek::scalar::Scalar;
-    use monero_serai_mirror::generators::hash_to_point;
+    use monero_serai::generators::hash_to_point;
     use rand_core::{RngCore, SeedableRng};
 
     #[test]
@@ -799,7 +799,7 @@ mod tests {
                 let point = EdwardsPoint::mul_base(dest.deref());
                 ring.push([
                     point,
-                    monero_serai_mirror::primitives::Commitment::new(mask, amount).calculate(),
+                    monero_serai::primitives::Commitment::new(mask, amount).calculate(),
                 ]);
             }
 
@@ -810,13 +810,13 @@ mod tests {
                 vec![(
                     secrets.0.clone(),
                     ClsagContext::new(
-                        monero_serai_mirror::primitives::Decoys::new(
+                        monero_serai::primitives::Decoys::new(
                             (1..=RING_LEN).collect(),
                             u8::try_from(real).unwrap(),
                             ring.clone(),
                         )
                         .unwrap(),
-                        monero_serai_mirror::primitives::Commitment::new(secrets.1, AMOUNT),
+                        monero_serai::primitives::Commitment::new(secrets.1, AMOUNT),
                     )
                     .unwrap(),
                 )],

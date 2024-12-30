@@ -23,7 +23,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_BTC, (SetChainDataFunc)GuiSetPsbtUrData},
     {REMAPVIEW_BTC_MESSAGE, (SetChainDataFunc)GuiSetPsbtUrData},
 #ifndef BTC_ONLY
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     {REMAPVIEW_ZCASH, (SetChainDataFunc)GuiSetZcashUrData},
     {REMAPVIEW_XMR_OUTPUT, (SetChainDataFunc)GuiSetMoneroUrData},
     {REMAPVIEW_XMR_UNSIGNED, (SetChainDataFunc)GuiSetMoneroUrData},

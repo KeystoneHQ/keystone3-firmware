@@ -344,7 +344,7 @@ static uint16_t GetAddrYExtend(void)
     }
 #endif
 
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_MONERO) {
         return 60;
     }
@@ -374,7 +374,7 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     yOffset += 16;
     g_multiAccountsReceiveWidgets.addressLabel = GuiCreateNoticeLabel(g_multiAccountsReceiveWidgets.qrCodeCont, "");
     uint16_t addressLabelWidth = 280;
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_MONERO) {
         addressLabelWidth = 336;
     }
@@ -603,7 +603,7 @@ static void RefreshQrCode(void)
     }
     char string[128] = {0};
     char *addressPrefix = _("Address");
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_MONERO) {
         addressPrefix = _("Sub_Address");
         snprintf_s(string, sizeof(string), "%s", addressDataItem.address);
@@ -630,7 +630,7 @@ static void RefreshSwitchAddress(void)
     for (uint32_t i = 0; i < 5; i++) {
         ModelGetAddress(index, &addressDataItem, 0);
         char *addressPrefix = _("Address");
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
         if (g_chainCard == HOME_WALLET_CARD_MONERO) {
             addressPrefix = _("Sub_Address");
             uint32_t accountIndex = g_selectedAccount[GetCurrentAccountIndex()];
@@ -687,7 +687,7 @@ static int GetMaxAccountIndex(void)
         break;
 #endif
 
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_MONERO:
         return GENERAL_ACCOUNT_INDEX_MAX;
         break;
@@ -923,7 +923,7 @@ static void TutorialHandler(lv_event_t *e)
     GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
 
     TUTORIAL_LIST_INDEX_ENUM index = TUTORIAL_ADA_RECEIVE;
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_MONERO) {
         index = TUTORIAL_XMR_RECEIVE;
     }
@@ -999,7 +999,7 @@ static void RightSwitchAccountBtnHandler(lv_event_t *e)
 static bool IsAddressSwitchable()
 {
     switch (g_chainCard) {
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_MONERO:
         return true;
 #endif
@@ -1027,7 +1027,7 @@ static bool IsPathTypeSwitchable()
 static bool HasMoreBtn()
 {
     switch (g_chainCard) {
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_MONERO:
         return true;
 #endif
@@ -1107,7 +1107,7 @@ static void RefreshSwitchAccount(void)
 
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
         AddressDataItem_t addressDataItem;
         if (g_chainCard == HOME_WALLET_CARD_MONERO) {
             ModelGetAddress(index, &addressDataItem, 1);
@@ -1181,7 +1181,7 @@ static void GuiCreateSwitchAccountWidget()
     g_multiAccountsReceiveWidgets.switchAccountCont = page;
     SetNavBarLeftBtn(page->navBarWidget, NVS_BAR_RETURN, CloseSwitchAccountHandler, NULL);
     SetMidBtnLabel(page->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_MONERO) {
         SetNavBarRightBtn(page->navBarWidget, NVS_BAR_QUESTION_MARK, ShowMoneroSwitchAccountHintBox, NULL);
     }
@@ -1263,7 +1263,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
         break;
 #endif
 
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_MONERO:
         switch (type) {
         case 1:
@@ -1306,7 +1306,7 @@ void GuiResetCurrentMultiAccountsCache(uint8_t index)
     g_selectedAccount[index] = 0;
 }
 
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
 static void ShowMoneroSwitchAccountHintBox(lv_event_t *e)
 {
     GuiCreateTooltipHintBox(_("xmr_primary_address_title"), _("xmr_primary_address_desc"), _("xmr_primary_address_link"));

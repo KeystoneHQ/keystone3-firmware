@@ -43,7 +43,7 @@ bool GetEnsName(const char *addr, char *name);
 extern bool g_reboot;
 
 #undef GUI_ANALYZE_OBJ_SURPLUS
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
 #define GUI_ANALYZE_OBJ_SURPLUS \
     { \
         REMAPVIEW_ZCASH, \

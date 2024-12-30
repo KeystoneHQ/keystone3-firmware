@@ -94,7 +94,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_TGD, "", &coinTgd},       {HOME_WALLET_CARD_DOT, "", &coinDot},
 #endif
 
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     {HOME_WALLET_CARD_ZEC, "", &coinZec},
     {HOME_WALLET_CARD_MONERO, "", &coinXmr},
 #endif

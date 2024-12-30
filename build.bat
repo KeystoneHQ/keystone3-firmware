@@ -54,7 +54,7 @@ IF "%build_language%"=="true" (
 SET cmake_parm=
 IF "%build_production%"=="true" SET "cmake_parm=%cmake_parm% -DBUILD_PRODUCTION=true"
 IF "%build_btc_only%"=="true" SET "cmake_parm=%cmake_parm% -DBTC_ONLY=true"
-IF "%build_cyberpunk%"=="true" SET "cmake_parm=%cmake_parm% -DCYBERPUNK=true"
+IF "%build_cypherpunk%"=="true" SET "cmake_parm=%cmake_parm% -DCYPHERPUNK=true"
 IF "%build_screen%"=="true" SET "cmake_parm=%cmake_parm% -DENABLE_SCREEN_SHOT=true"
 IF "%build_debug%"=="true" SET "cmake_parm=%cmake_parm% -DDEBUG_MEMORY=true"
 

@@ -43,6 +43,4 @@ uint32_t GetTlvFromData(Tlv_t tlvArray[], uint32_t maxTlvLen, const uint8_t *dat
 void PrintProtocolFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen);
 void PrintFrameHead(const FrameHead_t *pHead);
 
-void ProtocolCodecTest(int argc, char *argv[]);
-
 #endif

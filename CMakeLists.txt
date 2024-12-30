@@ -6,6 +6,22 @@ option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 set(BUILD_ENVIRONMENT "DEBUG")
 set(BUILD_VARIANT "MULTI_COINS")
 
+set(WIDGET_PATH "multi")
+if(CYPHERPUNK)
+    add_compile_definitions(CYPHERPUNK_VERSION)
+    set(BUILD_VARIANT "CYPHERPUNK")
+    set(WIDGET_SUBPATH "multi/cypherpunk")
+elseif(BTC_ONLY)
+    set(WIDGET_SUBPATH "btc_only/multi_sig")
+    set(WIDGET_PATH "btc_only")
+    set(BUILD_VARIANT "BTC_ONLY")
+    add_compile_definitions(BTC_ONLY)
+    add_compile_definitions(EXCLUDE_RUSTC)
+else()
+    add_compile_definitions(WEB3_VERSION)
+    set(WIDGET_SUBPATH "multi/web3")
+    set(BUILD_VARIANT "MULTI_COINS")
+endif()
 if(BUILD_TYPE STREQUAL "Simulator")
     set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
     set(COMPILE_SIMULATOR ON CACHE BOOL "compile on Simulator target" FORCE)
@@ -34,7 +50,6 @@ add_definition_with_message(ENABLE_SCREEN_SHOT)
 add_definition_with_message(DEBUG_MEMORY)
 
 add_definition_with_message(BUILD_PRODUCTION)
-
 
 get_cmake_property(_variableNames VARIABLES)
 list(SORT _variableNames)
@@ -65,23 +80,6 @@ set(CRYPTO_INCLUDE_PATH
     src/crypto/slip39
     src/crypto/slip39/trezor-crypto
 )
-
-set(WIDGET_PATH "multi")
-if(CYPHERPUNK)
-    add_compile_definitions(CYPHERPUNK_VERSION)
-    set(BUILD_VARIANT "CYPHERPUNK")
-    set(WIDGET_SUBPATH "multi/cypherpunk")
-elseif(BTC_ONLY)
-    set(WIDGET_SUBPATH "btc_only/multi_sig")
-    set(WIDGET_PATH "btc_only")
-    set(BUILD_VARIANT "BTC_ONLY")
-    add_compile_definitions(BTC_ONLY)
-    add_compile_definitions(EXCLUDE_RUSTC)
-else()
-    add_compile_definitions(WEB3_VERSION)
-    set(WIDGET_SUBPATH "multi/web3")
-    set(BUILD_VARIANT "MULTI_COINS")
-endif()
 
 set(GUI_CUSTOM_INCLUDE_PATH
     src/ui/gui_widgets/${WIDGET_SUBPATH}
@@ -165,6 +163,7 @@ set(SRC_INCLUDE_PATH
     src/hardware_interface
     src/webusb_protocol
     src/webusb_protocol/services
+    src/webusb_protocol/general
 )
 
 set(INCLUDE_DIR

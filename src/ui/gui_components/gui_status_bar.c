@@ -345,7 +345,7 @@ void GuiStatusBarSetTestNet(void)
     RefreshStatusBar();
 }
 #else
-char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
+const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
 {
     if (index == WALLET_LIST_ETERNL) {
         return "Eternl";
@@ -707,7 +707,7 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
                    const char *name)
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
-    CoinWalletInfo_t *coin = &g_coinWalletBtn[0];
+    CoinWalletInfo_t *coin = g_coinWalletBtn;
     for (size_t i = 0; i < CHAIN_BUTT; i++) {
         if (g_coinWalletBtn[i].index == index) {
             coin = &g_coinWalletBtn[i];

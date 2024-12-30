@@ -137,7 +137,9 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
     ret = SaveCurrentAccountInfo();
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
+#ifdef CYPHERPUNK_VERSION
     CalculateZcashUFVK(accountIndex, password);
+#endif
     CHECK_ERRCODE_RETURN_INT(ret);
     return ret;
 }
@@ -228,7 +230,9 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         ret = ReadCurrentAccountInfo();
         g_publicInfo.loginPasswordErrorCount = 0;
         g_publicInfo.currentPasswordErrorCount = 0;
+#ifdef CYPHERPUNK_VERSION
         ClearZcashUFVK();
+#endif
         if (PassphraseExist(g_currentAccountIndex)) {
             //passphrase exist.
             printf("passphrase exist\r\n");
@@ -236,7 +240,9 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         } else {
             printf("passphrase not exist, info switch\r\n");
             ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
-            CalculateZcashUFVK(g_currentAccountIndex, password);
+#ifdef CYPHERPUNK_VERSION
+    CalculateZcashUFVK(accountIndex, password);
+#endif
         }
     } else {
         g_publicInfo.loginPasswordErrorCount++;

@@ -9,12 +9,12 @@
 #include "secret_cache.h"
 #include "screen_manager.h"
 #include "account_manager.h"
+#include "gui_chain_components.h"
+#include "gui_home_widgets.h"
 #include "gui_transaction_detail_widgets.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_transaction_signature_widgets.h"
-#include "gui_home_widgets.h"
 #endif
-#include "gui_chain_components.h"
 
 
 #define CHECK_FREE_PARSE_RESULT(result)                       \
@@ -45,10 +45,13 @@ static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {BtcNativeSegwitTx, XPUB_TYPE_BTC_NATIVE_SEGWIT, "m/84'/0'/0'"},
     {BtcSegwitTx, XPUB_TYPE_BTC, "m/49'/0'/0'"},
     {BtcLegacyTx, XPUB_TYPE_BTC_LEGACY, "m/44'/0'/0'"},
-    {LtcTx, XPUB_TYPE_LTC, "m/49'/2'/0'"},
-    {DashTx, XPUB_TYPE_DASH, "m/44'/5'/0'"},
-    {BchTx, XPUB_TYPE_BCH, "m/44'/145'/0'"},
 };
+
+#ifdef WEB3_VERSION
+#define CHECK_UR_TYPE() (urType == Bytes || urType == KeystoneSignRequest)
+#else
+#define CHECK_UR_TYPE() (urType == Bytes)
+#endif
 #endif
 
 static bool g_isMulti = false;
@@ -205,7 +208,7 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
         }
     }
 #ifndef BTC_ONLY
-    else if (urType == Bytes || urType == KeystoneSignRequest) {
+    else if (CHECK_UR_TYPE()) {
         char *hdPath = NULL;
         char *xPub = NULL;
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
@@ -395,7 +398,7 @@ void *GuiGetParsedQrData(void)
             return g_parseResult;
         }
 #ifndef BTC_ONLY
-        else if (urType == Bytes || urType == KeystoneSignRequest) {
+        else if (CHECK_UR_TYPE()) {
             char *hdPath = NULL;
             char *xPub = NULL;
             if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
@@ -582,7 +585,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         SRAM_FREE(public_keys);
     }
 #ifndef BTC_ONLY
-    else if (urType == Bytes || urType == KeystoneSignRequest) {
+    else if (CHECK_UR_TYPE()) {
         char *hdPath = NULL;
         char *xPub = NULL;
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
@@ -1094,7 +1097,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         urType = g_urResult->ur_type;
     }
 
-    showChange = (urType != Bytes && urType != KeystoneSignRequest);
+    showChange = !CHECK_UR_TYPE();
 #endif
 
     lv_obj_t *formContainer = GuiCreateContainerWithParent(parent, 408, 0);

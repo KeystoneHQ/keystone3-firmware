@@ -7,8 +7,10 @@
 #include "gui_resolve_ur.h"
 #include "gui_views.h"
 #include "general_msg.h"
-#include "gui_key_derivation_request_widgets.h"
 #include "gui_home_widgets.h"
+#ifdef WEB3_VERSION
+#include "gui_key_derivation_request_widgets.h"
+#endif
 
 /* DEFINES */
 #define REQUEST_ID_IDLE 0xFFFF
@@ -107,6 +109,7 @@ void ClearUSBRequestId(void)
     g_requestID = REQUEST_ID_IDLE;
 }
 
+#ifndef BTC_ONLY
 static bool IsRequestAllowed(uint32_t requestID)
 {
     if (g_requestID != REQUEST_ID_IDLE) {
@@ -134,6 +137,7 @@ static void HandleHardwareCall(struct URParseResult *urResult)
     HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
     g_requestID = REQUEST_ID_IDLE;
 }
+
 
 static bool HandleNormalCall(void)
 {
@@ -189,10 +193,13 @@ void ProcessURService(EAPDURequestPayload_t *payload)
             .urType = urResult->ur_type
         };
 
+#ifdef WEB3_VERSION
         if (urResult->ur_type == QRHardwareCall) {
             HandleHardwareCall(urResult);
             break;
-        } else if (!HandleNormalCall()) {
+        }
+#endif  
+        if (!HandleNormalCall()) {
             break;
         }
 
@@ -212,3 +219,4 @@ void ProcessURService(EAPDURequestPayload_t *payload)
     }
 #endif
 }
+#endif

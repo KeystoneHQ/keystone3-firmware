@@ -24,5 +24,6 @@ TransactionType GuiGetCurrentTransactionType();
 void GuiSetCurrentTransactionNeedSign(bool);
 bool GuiGetCurrentTransactionNeedSign();
 void GuiTransactionUsbPullout(void);
+bool supportBlindSigning(uint8_t viewType);
 
 #endif /* _GUI_TRANSACTION_DETAIL_WIDGETS_H */

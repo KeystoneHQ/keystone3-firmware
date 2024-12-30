@@ -230,12 +230,12 @@ struct ProtocolParser *NewEApduProtocolParser()
         global_parser->registerSendFunc = RegisterSendFunc;
         global_parser->rcvCount = 0;
     }
-    printf("%s global_parser = %p\n", __func__, global_parser);
     return global_parser;
 }
 
 void GotoResultPage(EAPDUResultPage_t *resultPageParams)
 {
+    #ifndef BTC_ONLY
     if (resultPageParams != NULL) {
         if (GuiCheckIfTopView(&g_USBTransportView)) {
             return;
@@ -246,4 +246,5 @@ void GotoResultPage(EAPDUResultPage_t *resultPageParams)
             PubBufferMsg(UI_MSG_USB_TRANSPORT_VIEW, resultPageParams, sizeof(EAPDUResultPage_t));
         }
     }
+    #endif
 }

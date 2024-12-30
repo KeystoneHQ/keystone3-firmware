@@ -1082,12 +1082,6 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
     RefreshSwitchAddress();
 }
 
-static void OpenChangePathTypeHandler(lv_event_t *e)
-{
-    GuiMultiAccountsReceiveGotoTile(RECEIVE_TILE_SWITCH_PATH_TYPE);
-    GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
-}
-
 static void OpenSwitchAccountHandler(lv_event_t *e)
 {
     // g_tmpAccount = g_selectedAccount[GetCurrentAccountIndex()];
@@ -1316,5 +1310,11 @@ static void ShowAddressDetailHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
     GuiCreateAddressDetailWidgets(g_multiAccountsReceiveWidgets.tileQrCode);
+}
+
+static void OpenChangePathTypeHandler(lv_event_t *e)
+{
+    GuiMultiAccountsReceiveGotoTile(RECEIVE_TILE_SWITCH_PATH_TYPE);
+    GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
 }
 #endif

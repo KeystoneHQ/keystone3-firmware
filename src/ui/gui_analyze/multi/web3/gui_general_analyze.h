@@ -2,7 +2,6 @@
 #ifndef _GUI_GENERAL_ANALYZE_WIDGETS_H
 #define _GUI_GENERAL_ANALYZE_WIDGETS_H
 
-// temper test the ethereum page view not for production usage
 #define GUI_ANALYZE_OBJ_SURPLUS           \
     { \
         REMAPVIEW_ETH, \

@@ -33,7 +33,10 @@ static uint8_t g_lastAccountIndex = ACCOUNT_INDEX_LOGOUT;
 static AccountInfo_t g_currentAccountInfo = {0};
 static PublicInfo_t g_publicInfo = {0};
 static ZcashUFVKCache_t g_zcashUFVKcache = {0};
+
+#ifdef CYPHERPUNK_VERSION
 static void ClearZcashUFVK();
+#endif
 
 /// @brief Get current account info from SE, and copy info to g_currentAccountInfo.
 /// @return err code.
@@ -241,7 +244,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
             printf("passphrase not exist, info switch\r\n");
             ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
 #ifdef CYPHERPUNK_VERSION
-    CalculateZcashUFVK(accountIndex, password);
+            CalculateZcashUFVK(g_currentAccountIndex, password);
 #endif
         }
     } else {
@@ -636,4 +639,5 @@ int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password)
     SetZcashUFVK(accountIndex, ufvk, sfp);
     return ret;
 }
+#endif
 #endif

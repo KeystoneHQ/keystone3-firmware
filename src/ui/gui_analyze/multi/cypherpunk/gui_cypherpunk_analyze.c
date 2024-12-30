@@ -3,7 +3,6 @@
 
 static GetLabelDataFunc GuiMoneroTextFuncGet(char *type);
 
-
 GetCustomContainerFunc GetOtherChainCustomFunc(char *funcName)
 {
     if (!strcmp(funcName, "GuiZcashOverview")) {
@@ -27,6 +26,8 @@ GetLabelDataFunc GuiOtherChainTextFuncGet(char *type, GuiRemapViewType remapInde
     default:
         break;
     }
+
+    return NULL;
 }
 
 static GetLabelDataFunc GuiMoneroTextFuncGet(char *type)

@@ -21,14 +21,12 @@
 #include "assert.h"
 #include "qrdecode_task.h"
 #include "gui_resolve_ur.h"
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 #include "gui_key_derivation_request_widgets.h"
 #endif
 
 #define QUIT_AREA_X_START                   10
 #define QUIT_AREA_Y_START                   64
-// #define MICRO_CARD_AREA_X_START             406
-// #define MICRO_CARD_AREA_Y_START             64
 #define TOUCH_AREA_OFFSET                   64
 
 typedef struct {
@@ -39,7 +37,6 @@ typedef struct {
 
 const static QrDecodeViewTouchArea_t g_qrDecodeObjects[2] = {
     {{QUIT_AREA_X_START, QUIT_AREA_Y_START}, {QUIT_AREA_X_START + TOUCH_AREA_OFFSET, QUIT_AREA_Y_START + TOUCH_AREA_OFFSET}, LvglCloseCurrentView},
-    //{{MICRO_CARD_AREA_X_START, MICRO_CARD_AREA_Y_START}, {MICRO_CARD_AREA_X_START + TOUCH_AREA_OFFSET, MICRO_CARD_AREA_Y_START + TOUCH_AREA_OFFSET}, LvglImportMicroCardSigView}
 };
 
 static void QrDecodeTask(void *argument);

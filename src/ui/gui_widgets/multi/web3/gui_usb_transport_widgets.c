@@ -1,4 +1,3 @@
-#ifndef BTC_ONLY
 #include "gui.h"
 #include "gui_views.h"
 #include "gui_page.h"
@@ -59,22 +58,6 @@ static void CountDownTimerHandler(lv_timer_t *timer)
     }
 }
 
-static WalletInfo_t GetConnectWalletInfo()
-{
-    uint8_t wallet = GetExportWallet();
-    WalletInfo_t walletInfo = {
-        .img = &imgConnectWithWallet,
-        .title = _("usb_transport_connect_wallet"),
-    };
-    switch (wallet) {
-    case Rabby:
-        walletInfo.img = &imgConnectWithRabby;
-        walletInfo.title = _("usb_transport_connect_rabby");
-        return walletInfo;
-    default:
-        return walletInfo;
-    }
-}
 
 static void GuiExportXPubViewInit()
 {
@@ -229,4 +212,20 @@ void GuiUSBTransportWidgetsRefresh()
 {
     return;
 }
-#endif
+
+static WalletInfo_t GetConnectWalletInfo()
+{
+    uint8_t wallet = GetExportWallet();
+    WalletInfo_t walletInfo = {
+        .img = &imgConnectWithWallet,
+        .title = _("usb_transport_connect_wallet"),
+    };
+    switch (wallet) {
+    case Rabby:
+        walletInfo.img = &imgConnectWithRabby;
+        walletInfo.title = _("usb_transport_connect_rabby");
+        return walletInfo;
+    default:
+        return walletInfo;
+    }
+}

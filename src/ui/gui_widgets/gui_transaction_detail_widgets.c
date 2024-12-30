@@ -414,3 +414,13 @@ static bool GuiCheckIsTransactionSign(void)
 #endif
     return true;
 }
+
+bool supportBlindSigning(uint8_t viewType)
+{
+    // now we only support blind signing for Sui and Cardano
+#ifdef WEB3_VERSION
+    return viewType == SuiSignMessageHash || viewType == CardanoSignTxHash;
+#else
+    return false;
+#endif
+}

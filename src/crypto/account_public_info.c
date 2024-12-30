@@ -331,11 +331,14 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case LEDGER_BITBOX02:
         ASSERT(ledgerBitbox02MasterKey);
         return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, (char *)path);
+#ifdef CYPHERPUNK_VERSION
     case EDWARDS_25519:
         return get_extended_monero_pubkeys_by_seed(seed, len, (char *)path);
     case MONERO_PVK:
         return get_monero_pvk_by_seed(seed, len);
-#ifndef BTC_ONLY
+#endif
+
+#ifdef WEB3_VERSION
     case RSA_KEY: {
         Rsa_primes_t *primes = FlashReadRsaPrimes();
         if (primes == NULL)
@@ -634,6 +637,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
                     continue;
                 }
+#ifdef CYPHERPUNK_VERSION
                 //encrypt zcash ufvk
                 if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
                     char* zcashUfvk = NULL;
@@ -648,7 +652,9 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     memcpy_s(iv_bytes, 16, iv_response->data, 16);
                     free_simple_response_u8(iv_response);
                     xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
-                } else {
+                }
+#endif
+                if (g_chainTable[i].cryptoKey != ZCASH_UFVK_ENCRYPTED) {
                     xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {

@@ -90,11 +90,11 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
 
     if (urViewType.viewType == WebAuthResult
 #ifndef BTC_ONLY
-            || urViewType.viewType == KeyDerivationRequest
+            // || urViewType.viewType == KeyDerivationRequest
 #else
-            // || urViewType.viewType == MultisigWalletImport
-            // || urViewType.viewType == MultisigBytesImportXpub
-            // || urViewType.viewType == MultisigCryptoImportXpub
+            || urViewType.viewType == MultisigWalletImport
+            || urViewType.viewType == MultisigBytesImportXpub
+            || urViewType.viewType == MultisigCryptoImportXpub
 #endif
             || viewType != REMAPVIEW_BUTT) {
 #ifndef COMPILE_SIMULATOR

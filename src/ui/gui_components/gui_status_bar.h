@@ -68,7 +68,7 @@ void GuiStatusBarSetUsb(void);
 #ifdef BTC_ONLY
 void GuiStatusBarSetTestNet(void);
 #else
-char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index);
+const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index);
 #endif
 NavBarWidget_t *CreateNavBarWidget(lv_obj_t *navBar);
 void DestoryNavBarWidget(NavBarWidget_t *navBarWidget);

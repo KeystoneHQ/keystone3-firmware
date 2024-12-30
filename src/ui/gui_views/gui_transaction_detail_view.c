@@ -8,13 +8,6 @@
 #include "gui_attention_hintbox.h"
 #include "device_setting.h"
 
-bool supportBlindSigning(uint8_t viewType)
-{
-    // now we only support blind signing for Sui and Cardano
-    return viewType == SuiSignMessageHash || viewType == CardanoSignTxHash;
-}
-
-
 int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint8_t viewType = 0;

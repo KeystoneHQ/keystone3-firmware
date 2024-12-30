@@ -108,9 +108,11 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
     case CMD_CHECK_LOCK_STATUS:
         CheckDeviceLockStatusService(request);
         break;
+#ifdef WEB3_VERSION
     case CMD_EXPORT_ADDRESS:
         ExportAddressService(request);
         break;
+#endif
     case CMD_GET_DEVICE_INFO:
         GetDeviceInfoService(request);
         break;
@@ -230,12 +232,12 @@ struct ProtocolParser *NewEApduProtocolParser()
         global_parser->registerSendFunc = RegisterSendFunc;
         global_parser->rcvCount = 0;
     }
-    printf("%s global_parser = %p\n", __func__, global_parser);
     return global_parser;
 }
 
 void GotoResultPage(EAPDUResultPage_t *resultPageParams)
 {
+    #ifdef WEB3_VERSION
     if (resultPageParams != NULL) {
         if (GuiCheckIfTopView(&g_USBTransportView)) {
             return;
@@ -246,4 +248,5 @@ void GotoResultPage(EAPDUResultPage_t *resultPageParams)
             PubBufferMsg(UI_MSG_USB_TRANSPORT_VIEW, resultPageParams, sizeof(EAPDUResultPage_t));
         }
     }
+    #endif
 }

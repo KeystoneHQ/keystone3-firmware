@@ -225,7 +225,6 @@ static void LowPowerTestFunc(int argc, char *argv[]);
 static void Slip39SliceWordTestFunc(int argc, char *argv[]);
 static void Sqlite3TestFunc(int argc, char *argv[]);
 static void CrcTestFunc(int argc, char *argv[]);
-static void ProtocolCodeTestFunc(int argc, char *argv[]);
 static void PresettingTestFunc(int argc, char *argv[]);
 static void UsbTestFunc(int argc, char *argv[]);
 static void DeviceSettingsTestFunc(int argc, char *argv[]);
@@ -393,7 +392,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"slip39 test", Slip39SliceWordTestFunc},
     {"sqlite test:", Sqlite3TestFunc},
     {"crc:", CrcTestFunc},
-    {"protocol codec:", ProtocolCodeTestFunc},
     {"presetting:", PresettingTestFunc},
     {"usb test:", UsbTestFunc},
     {"device settings test:", DeviceSettingsTestFunc},
@@ -990,6 +988,7 @@ static void KeyStoreTestFunc(int argc, char *argv[])
 }
 
 #ifndef EXCLUDE_RUSTC
+#ifdef WEB3_VERSION
 
 static void RustGetMasterFingerprint(int argc, char *argv[])
 {
@@ -2771,6 +2770,7 @@ static void GetReceiveAddress(int argc, char *argv[])
     free_simple_response_c_char(result);
     printf("address is %s\r\n", result->data);
 }
+#endif
 
 static void AccountPublicInfoTestFunc(int argc, char *argv[])
 {
@@ -2834,11 +2834,6 @@ static void CrcTestFunc(int argc, char *argv[])
     SRAM_FREE(hex);
 }
 
-static void ProtocolCodeTestFunc(int argc, char *argv[])
-{
-    ProtocolCodecTest(argc, argv);
-}
-
 static void PresettingTestFunc(int argc, char *argv[])
 {
     PresettingTest(argc, argv);
@@ -2870,3 +2865,4 @@ static void SdCardTestFunc(int argc, char *argv[])
         printf("SdCardGetSectorCount=%d\n", SdCardGetSectorCount());
     }
 }
+

@@ -1,3 +1,4 @@
+#include "define.h"
 #include "gui_chain.h"
 
 typedef TransactionCheckResult *(*CheckUrResultHandler)(void);
@@ -39,13 +40,10 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
     {BtcTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BTC, REMAPVIEW_BTC},
     {BtcMsg, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BTC, REMAPVIEW_BTC_MESSAGE},
 
-#ifdef BTC_ONLY
+#ifdef WEB3_VERSION
     {LtcTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_LTC, REMAPVIEW_BTC},
     {DashTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_DASH, REMAPVIEW_BTC},
     {BchTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BCH, REMAPVIEW_BTC},
-#endif
-
-#ifdef WEB3_VERSION
     {EthTx, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH},
     {EthPersonalMessage, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH_PERSONAL_MESSAGE},
     {EthTypedData, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH_TYPEDDATA},
@@ -125,12 +123,12 @@ bool isCatalystVotingRegistration(uint8_t type)
 {
     return type == CardanoCatalystVotingRegistration;
 }
-#endif
 
 bool isTonSignProof(uint8_t type)
 {
     return type == TonSignProof;
 }
+#endif
 
 static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
 {

@@ -61,7 +61,7 @@ static void TonRegenrateConfirm();
 
 static void UpdatePhraseHandler(lv_event_t *e)
 {
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     if (g_isTon) {
         TonRegenrateConfirm();
         return;
@@ -72,7 +72,7 @@ static void UpdatePhraseHandler(lv_event_t *e)
 
 static void WriteSE()
 {
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     if (g_isTon) {
         GuiUpdateTonWriteSeWidget(g_singlePhraseTileView.writeSe);
         GuiModelTonWriteSe();
@@ -127,7 +127,7 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
     }
     if (!g_isDiceRolls) {
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
         if (g_isTon) {
             GuiModelTonUpdateMnemonic();
             return;
@@ -463,7 +463,7 @@ void GuiSinglePhraseRefresh(void)
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 static void TonUpdateMnemonicHandler(lv_event_t *e);
 static void TonRegenrateConfirm()
 {

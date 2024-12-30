@@ -676,7 +676,7 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
     return ret;
 }
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 /// @brief Save a new ton mnemonic.
 /// @param[in] accountIndex Account index, 0~2.
 /// @param[in] entropy Entropy to be saved.

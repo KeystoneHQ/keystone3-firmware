@@ -1444,7 +1444,7 @@ static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
 }
 
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 static int32_t ModelTonCalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);
 static int32_t ModelTonVerifyMnemonic(const void *inData, uint32_t inDataLen);
 static int32_t ModelTonWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);

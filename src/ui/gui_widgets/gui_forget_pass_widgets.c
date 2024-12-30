@@ -168,7 +168,7 @@ void GuiForgetPassRepeatPinPass(const char* buf)
             GuiModelSlip39CalWriteSe(slip39);
         } else {
             char *mnemonic = SecretCacheGetMnemonic();
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
             bool isTon = ton_verify_mnemonic(mnemonic);
             if (isTon) {
                 TonData_t ton = {

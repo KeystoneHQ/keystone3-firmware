@@ -135,8 +135,7 @@ static uint32_t GetDerivedPathTypeCount();
 static int GetAccountType(void);
 
 #ifndef BTC_ONLY
-static char g_derivationPathAddr[LedgerLegacy + 1][DERIVATION_PATH_EG_LEN][64];
-static lv_obj_t *g_derivationCheck[LedgerLegacy + 1];
+static lv_obj_t *g_derivationCheck[3];
 static lv_obj_t *g_egAddress[DERIVATION_PATH_EG_LEN];
 static lv_obj_t *g_egAddressIndex[DERIVATION_PATH_EG_LEN];
 #endif
@@ -488,7 +487,6 @@ void GuiConnectWalletInit(void)
                        g_connectWalletTileView.currentTile, 0, LV_ANIM_OFF);
 }
 
-#ifndef BTC_ONLY
 UREncodeResult *GuiGetZecData(void)
 {
     uint8_t mfp[4];
@@ -511,13 +509,6 @@ void GuiPrepareArConnectWalletView(void)
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
 }
-
-void GuiSetupArConnectWallet(void)
-{
-    RsaGenerateKeyPair(false);
-}
-
-#endif
 
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
 {
@@ -676,66 +667,13 @@ static void UpdateConfirmBtn(void)
     }
 }
 
-static void GetEthEgAddress(void)
-{
-    SimpleResponse_c_char *result;
-    result = eth_get_address(
-                 "44'/60'/0'/0/0",
-                 GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD), "44'/60'/0'");
-    CutAndFormatString(g_derivationPathAddr[Bip44Standard][0], BUFFER_SIZE_64,
-                       result->data, 24);
-    free_simple_response_c_char(result);
-
-    result = eth_get_address(
-                 "44'/60'/0'/0/1",
-                 GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD), "44'/60'/0'");
-    CutAndFormatString(g_derivationPathAddr[Bip44Standard][1], BUFFER_SIZE_64,
-                       result->data, 24);
-    free_simple_response_c_char(result);
-
-    result = eth_get_address(
-                 "44'/60'/0'/0/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LIVE_0),
-                 "44'/60'/0'");
-    CutAndFormatString(g_derivationPathAddr[LedgerLive][0], BUFFER_SIZE_64,
-                       result->data, 24);
-    free_simple_response_c_char(result);
-
-    result = eth_get_address(
-                 "44'/60'/1'/0/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LIVE_1),
-                 "44'/60'/1'");
-    CutAndFormatString(g_derivationPathAddr[LedgerLive][1], BUFFER_SIZE_64,
-                       result->data, 24);
-    free_simple_response_c_char(result);
-
-    result = eth_get_address(
-                 "44'/60'/0'/0", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY),
-                 "44'/60'/0'");
-    CutAndFormatString(g_derivationPathAddr[LedgerLegacy][0], BUFFER_SIZE_64,
-                       result->data, 24);
-    free_simple_response_c_char(result);
-
-    result = eth_get_address(
-                 "44'/60'/0'/1", GetCurrentAccountPublicKey(XPUB_TYPE_ETH_LEDGER_LEGACY),
-                 "44'/60'/0'");
-    CutAndFormatString(g_derivationPathAddr[LedgerLegacy][1], BUFFER_SIZE_64,
-                       result->data, 24);
-    free_simple_response_c_char(result);
-}
-
 static void GetEgAddress(void)
 {
-    GetEthEgAddress();
 }
 
 static void UpdateEthEgAddress(uint8_t index)
 {
-    lv_label_set_text(g_egAddress[0],
-                      (const char *)g_derivationPathAddr[index][0]);
-    lv_label_set_text(g_egAddress[1],
-                      (const char *)g_derivationPathAddr[index][1]);
 }
-
-
 
 static void UpdategAddress(void)
 {

@@ -186,7 +186,7 @@ void GuiImportPhraseDeInit(void)
     }
 }
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 static void GuiImportTonMnemonicHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_noticeWindow)

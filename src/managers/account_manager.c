@@ -13,7 +13,6 @@
 #include "librust_c.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_storage.h"
-#include "simulator_storage.h"
 #else
 #include "drv_otp.h"
 #include "drv_mpu.h"

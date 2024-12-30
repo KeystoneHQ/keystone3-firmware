@@ -6,13 +6,17 @@ option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 set(BUILD_ENVIRONMENT "DEBUG")
 set(BUILD_VARIANT "MULTI_COINS")
 
+if(BUILD_TYPE STREQUAL "Simulator")
+    set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
+    set(COMPILE_SIMULATOR ON CACHE BOOL "compile on Simulator target" FORCE)
+endif()
+
 if(BUILD_PRODUCTION)
     set(BUILD_ENVIRONMENT "PRODUCTION")
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
-
 
 set(WIDGET_PATH "multi")
 if(CYPHERPUNK)

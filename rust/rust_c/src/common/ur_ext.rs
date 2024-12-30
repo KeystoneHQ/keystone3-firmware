@@ -31,7 +31,7 @@ use ur_registry::ethereum::eth_sign_request;
 #[cfg(feature = "ethereum")]
 use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
-#[cfg(feature = "multi-coins")]
+#[cfg(not(feature = "btc-only"))]
 use ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};
 #[cfg(feature = "multi-coins")]
 use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
@@ -328,7 +328,7 @@ impl InferViewType for XmrTxUnsigned {
     }
 }
 
-#[cfg(feature = "multi-coins")]
+#[cfg(not(feature = "btc-only"))]
 impl InferViewType for QRHardwareCall {
     fn infer(&self) -> Result<ViewType, URError> {
         match self.get_call_type() {

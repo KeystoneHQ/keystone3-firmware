@@ -260,7 +260,7 @@ pub enum ViewType {
     #[cfg(feature = "monero")]
     XmrTxUnsigned,
     WebAuthResult,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(not(feature = "btc-only"))]
     KeyDerivationRequest,
     #[cfg(feature = "btc-only")]
     MultisigWalletImport,

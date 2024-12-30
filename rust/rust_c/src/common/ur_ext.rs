@@ -241,7 +241,7 @@ impl InferViewType for Bytes {
                 }
                 #[cfg(feature = "xrp")]
                 return Ok(ViewType::XRPTx);
-                #[cfg(feature = "btc-only")]
+                #[cfg(not(feature = "xrp"))]
                 return Err(URError::UrDecodeError(format!("invalid data")));
             }
             #[cfg(feature = "multi-coins")]
@@ -256,6 +256,8 @@ impl InferViewType for Bytes {
                 }
                 get_view_type_from_keystone(self.get_bytes())
             }
+            #[cfg(not(any(feature = "btc-only", feature = "multi-coins")))]
+            Err(_e) => return Err(URError::UrDecodeError(format!("invalid data"))),
         }
     }
 }

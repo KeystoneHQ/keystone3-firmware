@@ -713,7 +713,7 @@ static void RefreshQrCode(void)
         lv_qrcode_update(fullscreenQrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
 
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_ZEC) {
         char addressString[256];
         CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 60);
@@ -911,7 +911,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     char hdPath[BUFFER_SIZE_128];
     SimpleResponse_c_char *result = NULL;
 
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_ZEC) {
         char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
         uint8_t sfp[32];

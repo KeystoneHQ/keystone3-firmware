@@ -292,7 +292,7 @@ static const ChainItem_t g_chainTable[] = {
     //a redpallas key with path M/32'/133'/x'
     //but we use 32 to identify it for now
 #endif
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     {ZCASH_UFVK_ENCRYPTED_0,          ZCASH_UFVK_ENCRYPTED, "zcash_ufvk_0",      "M/32'/133'/0'"    },
     {XPUB_TYPE_MONERO_0,              EDWARDS_25519,  "monero_0",                "M/44'/128'/0'"    },
     {XPUB_TYPE_MONERO_PVK_0,          MONERO_PVK,     "monero_pvk_0",            ""                 },

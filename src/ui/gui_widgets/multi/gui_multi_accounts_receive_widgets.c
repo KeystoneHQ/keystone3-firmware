@@ -1311,10 +1311,10 @@ static void ShowAddressDetailHandler(lv_event_t *e)
     GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
     GuiCreateAddressDetailWidgets(g_multiAccountsReceiveWidgets.tileQrCode);
 }
+#endif
 
 static void OpenChangePathTypeHandler(lv_event_t *e)
 {
     GuiMultiAccountsReceiveGotoTile(RECEIVE_TILE_SWITCH_PATH_TYPE);
     GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
 }
-#endif

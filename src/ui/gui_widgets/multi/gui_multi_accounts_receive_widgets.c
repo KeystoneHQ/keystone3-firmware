@@ -1313,6 +1313,7 @@ static void ShowAddressDetailHandler(lv_event_t *e)
 }
 #endif
 
+#ifdef WEB3_VERSION
 static void OpenChangePathTypeHandler(lv_event_t *e)
 {
     GuiMultiAccountsReceiveGotoTile(RECEIVE_TILE_SWITCH_PATH_TYPE);

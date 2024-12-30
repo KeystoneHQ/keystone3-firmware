@@ -7,7 +7,7 @@ find_program(BINDGEN_EXE bindgen)
 find_program(CBINDGEN_EXE cbindgen)
 
 # BUILD_ENVIRONMENT: PRODUCTION, DEBUG, SIMULATOR
-# BUILD_VARIANT: BTC_ONLY, MULTI_COINS
+# BUILD_VARIANT: BTC_ONLY, MULTI_COINS, CYBERPUNK
 
 set(RUST_DIR ${CMAKE_SOURCE_DIR}/rust)
 set(RUST_C_DIR ${RUST_DIR}/rust_c)
@@ -35,10 +35,10 @@ endif()
 
 if(BUILD_VARIANT STREQUAL "BTC_ONLY")
     set(FEATURE_VARIANT "btc-only")
-    set(CBIDGEN_CONFIG_FILE "btc_only.toml")
+elseif(BUILD_VARIANT STREQUAL "CYBERPUNK")
+    set(FEATURE_VARIANT "cyberpunk")
 else()
     set(FEATURE_VARIANT "multi-coins")
-    set(CBIDGEN_CONFIG_FILE "multi_coin.toml")
 endif()
 
 set(FEATURE ${FEATURE_ENVIRONMENT}-${FEATURE_VARIANT})

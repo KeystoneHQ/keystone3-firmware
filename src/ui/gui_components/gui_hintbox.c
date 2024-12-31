@@ -273,7 +273,7 @@ static void GuiTooltipQRCodeHintBoxOpen(lv_event_t *e)
     CloseTooltipHintBoxHandler();
 }
 
-void GuiCreateTooltipHintBox(char *titleText, char *descText, char *link)
+void GuiCreateTooltipHintBox(const char *titleText, const char *descText, const char *link)
 {
     lv_obj_t *title = NULL, *desc = NULL, *linkLabel = NULL;
     g_tooltipHintBox = GuiCreateHintBox(800);

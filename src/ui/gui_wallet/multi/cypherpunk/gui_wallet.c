@@ -9,7 +9,7 @@
 #include "presetting.h"
 #include "version.h"
 
-uint8_t *GenerateCakeWalletEncryptPincode(void);
+void GenerateCakeWalletEncryptPincode(void);
 
 static UREncodeResult *g_urEncode = NULL;
 static uint8_t *g_pincode = NULL;
@@ -104,7 +104,7 @@ bool IsPrivateQrMode(void)
     return g_pincode != NULL;
 }
 
-uint8_t *GenerateCakeWalletEncryptPincode(void)
+void GenerateCakeWalletEncryptPincode(void)
 {
     uint8_t pincode[6];
     GenerateEntropy(pincode, 6, "Monero Connect Wallet Salt");

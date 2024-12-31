@@ -6,20 +6,6 @@ typedef struct {
     char path[PATH_ITEM_MAX_LEN];
 } PathItem_t;
 
-static const PathItem_t g_ethPaths[] = {
-    {"BIP44 Standard",          "",     "m/44'/60'/0'"  },
-    {"Ledger Live",             "",     "m/44'/60'"     },
-    {"Ledger Legacy",           "",     "m/44'/60'/0'"  },
-};
-
-typedef struct {
-    uint32_t index;
-    char address[ADDRESS_MAX_LEN];
-    char path[PATH_ITEM_MAX_LEN];
-} AddressDataItem_t;
-static lv_obj_t *g_egCont = NULL;
-static char **g_derivationPathDescs = NULL;
-
 typedef struct {
     lv_obj_t *checkBox;
     lv_obj_t *checkedImg;
@@ -35,12 +21,27 @@ static lv_obj_t *g_confirmAddrTypeBtn;
 static HOME_WALLET_CARD_ENUM g_currentChain = HOME_WALLET_CARD_BUTT;
 static lv_obj_t *g_derivationPathDescLabel = NULL;
 
+
+typedef struct {
+    uint32_t index;
+    char address[ADDRESS_MAX_LEN];
+    char path[PATH_ITEM_MAX_LEN];
+} AddressDataItem_t;
+static lv_obj_t *g_egCont = NULL;
+static char **g_derivationPathDescs = NULL;
 static lv_event_cb_t g_changed_cb = NULL;
+
+#ifdef WEB3_VERSION
+static const PathItem_t g_ethPaths[] = {
+    {"BIP44 Standard",          "",     "m/44'/60'/0'"  },
+    {"Ledger Live",             "",     "m/44'/60'"     },
+    {"Ledger Legacy",           "",     "m/44'/60'/0'"  },
+};
+#endif
 
 static void GetChangePathLabelHint(char* hint);
 static uint32_t GetDerivedPathTypeCount();
 static const char* GetChangePathItemTitle(uint32_t i);
-static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen);
 static void GetEthPathItemSubTittle(char* subTitle, int index, uint32_t maxLen);
 static void GetSolPathItemSubTitle(char* subTitle, int index, uint32_t maxLen);
 static void GetADAPathItemSubTitle(char* subTitle, int index, uint32_t maxLen);
@@ -371,26 +372,6 @@ static uint32_t GetDerivedPathTypeCount()
 #endif
     default:
         return 3;
-    }
-}
-
-static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
-{
-    switch (g_currentChain) {
-#ifdef WEB3_VERSION
-    case HOME_WALLET_CARD_ETH:
-        GetEthPathItemSubTittle(subTitle, index, maxLen);
-        break;
-    case HOME_WALLET_CARD_SOL:
-    case HOME_WALLET_CARD_HNT:
-        GetSolPathItemSubTitle(subTitle, index, maxLen);
-        break;
-    case HOME_WALLET_CARD_ADA:
-        GetADAPathItemSubTitle(subTitle, index, maxLen);
-        break;
-#endif
-    default:
-        break;
     }
 }
 

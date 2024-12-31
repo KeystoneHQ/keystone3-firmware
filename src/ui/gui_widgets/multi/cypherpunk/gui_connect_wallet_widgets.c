@@ -134,11 +134,9 @@ static void ShowEgAddressCont(lv_obj_t *egCont);
 static uint32_t GetDerivedPathTypeCount();
 static int GetAccountType(void);
 
-#ifndef BTC_ONLY
 static lv_obj_t *g_derivationCheck[3];
 static lv_obj_t *g_egAddress[DERIVATION_PATH_EG_LEN];
 static lv_obj_t *g_egAddressIndex[DERIVATION_PATH_EG_LEN];
-#endif
 
 static lv_obj_t *g_coinCont = NULL;
 static lv_obj_t *g_coinTitleLabel = NULL;
@@ -147,29 +145,21 @@ static lv_obj_t *g_bottomCont = NULL;
 static lv_obj_t *g_manageImg = NULL;
 static bool g_isCoinReselected = false;
 static lv_obj_t *g_derivationPathCont = NULL;
-#ifndef BTC_ONLY
 static char **g_derivationPathDescs = NULL;
 static lv_obj_t *g_derivationPathConfirmBtn = NULL;
 static lv_obj_t *g_egCont = NULL;
-#endif
 
 static void QRCodePause(bool);
 
 static void GuiInitWalletListArray()
 {
-    bool isTON = false;
     bool isSLIP39 = false;
     bool isTempAccount = false;
     bool isRussian = false;
 
-#ifndef BTC_ONLY
-    isTON = (GetMnemonicType() == MNEMONIC_TYPE_TON);
     isSLIP39 = (GetMnemonicType() == MNEMONIC_TYPE_SLIP39);
     isTempAccount = GetIsTempAccount();
     isRussian = (LanguageGetIndex() == LANG_RU);
-#else
-    int currentWalletIndex = GetCurrentWalletIndex();
-#endif
 
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         bool enable = true;
@@ -179,40 +169,19 @@ static void GuiInitWalletListArray()
         MnemonicType mnemonicType = GetMnemonicType();
         bool isSlip39 = (mnemonicType == MNEMONIC_TYPE_SLIP39);
 
-#ifndef BTC_ONLY
-        if (isTON) {
-            enable = (index == WALLET_LIST_TONKEEPER);
-        } else {
-            switch (index) {
-            case WALLET_LIST_CAKE:
-                enable = !isSLIP39;
-                break;
-            case WALLET_LIST_ZASHI:
-                enable = !passphraseExist && !isSlip39;
-                break;
-            default:
-                break;
-            }
+        switch (index) {
+        case WALLET_LIST_CAKE:
+            enable = !isSLIP39;
+            break;
+        case WALLET_LIST_ZASHI:
+            enable = !passphraseExist && !isSlip39;
+            break;
+        default:
+            break;
         }
-#else
-        if (currentWalletIndex != SINGLE_WALLET) {
-            if (index == WALLET_LIST_SPECTER || index == WALLET_LIST_UNISAT) {
-                enable = false;
-            }
-        }
-#endif
-
         g_walletListArray[i].enable = enable;
     }
 }
-
-// static void GuiInitWalletListArray()
-// {
-//     SetWalletListEnable(true);
-
-//     ConfigureWalletEnabling();
-// }
-
 
 static void OpenQRCodeHandler(lv_event_t *e)
 {

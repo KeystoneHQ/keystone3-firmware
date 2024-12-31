@@ -279,6 +279,10 @@ void GuiLockScreenPassCode(bool en)
             GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_homeView);
             GuiFrameOpenView(&g_updateSuccessView);
+#ifdef CYPHERPUNK_VERSION
+        } else if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
+            GuiFrameOpenView(&g_checkDeleteWalletView);
+#endif
         } else if (ModelGetPassphraseQuickAccess()) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiModeGetWalletDesc();

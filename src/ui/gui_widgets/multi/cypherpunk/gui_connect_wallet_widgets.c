@@ -28,6 +28,7 @@ static void PrivateModePrevTileHandler(lv_event_t *e);
 static void GuiCreateQrCodePrivateModeWidget(lv_obj_t *parent);
 static void CancelAttentionHandler(lv_event_t *e);
 static void CloseAttentionHandler(lv_event_t *e);
+static void AddCakeCoins(void);
 
 #define DERIVATION_PATH_EG_LEN 2
 #define HIDDEN_PINCODE "* * * * * *"
@@ -54,12 +55,12 @@ typedef struct ConnectWalletWidget {
 
 
 WalletListItem_t g_walletListArray[] = {
-    {WALLET_LIST_ZASHI, &walletListZashi, true},
-    {WALLET_LIST_CAKE, &walletListCake, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
-    {WALLET_LIST_ZEUS, &walletListZeus, true},
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_UNISAT, &walletListUniSat, true},
+    {WALLET_LIST_ZEUS, &walletListZeus, true},
+    {WALLET_LIST_ZASHI, &walletListZashi, true},
+    {WALLET_LIST_CAKE, &walletListCake, true},
 };
 
 typedef struct {
@@ -191,7 +192,6 @@ static void OpenQRCodeHandler(lv_event_t *e)
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
 }
 
-#ifndef BTC_ONLY
 void GuiConnectWalletPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
@@ -228,24 +228,10 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
 #endif
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_FEWCHA) {
     } else if (HasSelectAddressWidget()) {
-        if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
-            g_coinListCont = GuiCreateSelectAddressWidget(
-                                 CHAIN_XRP, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
-                                 RefreshAddressIndex);
-        } else if (g_connectWalletTileView.walletIndex == WALLET_LIST_VESPR) {
-            g_coinListCont = GuiCreateSelectAddressWidget(
-                                 CHAIN_ADA, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
-                                 RefreshAddressIndex);
-        }
     }
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR || g_connectWalletTileView.walletIndex == WALLET_LIST_MINT_SCAN) {
-        g_coinListCont = GuiCreateSelectAddressWidget(
-                             CHAIN_ATOM, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
-                             RefreshAddressIndex);
     }
 }
-
-#endif
 
 static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 {
@@ -318,7 +304,6 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 #endif
 }
 
-#ifndef BTC_ONLY
 static void GuiCreateSupportedNetworks(uint8_t index)
 {
     if (g_coinCont != NULL && g_manageImg != NULL && g_coinTitleLabel != NULL) {
@@ -341,18 +326,13 @@ static void GuiCreateSupportedNetworks(uint8_t index)
     lv_obj_align(g_manageImg, LV_ALIGN_BOTTOM_RIGHT, -45, -41);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
 }
-#endif
 
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 {
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_scan"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 152 - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-#ifndef BTC_ONLY
     lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 490);
-#else
-    lv_obj_t *qrCont = GuiCreateContainerWithParent(parent, 408, 408);
-#endif
     lv_obj_add_flag(qrCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align_to(qrCont, label, LV_ALIGN_OUT_BOTTOM_MID, 0, 6);
     lv_obj_set_style_bg_color(qrCont, DARK_BG_COLOR, LV_PART_MAIN);
@@ -371,18 +351,8 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(g_bottomCont, DARK_BG_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(g_bottomCont, LV_OPA_0,
                             LV_STATE_DEFAULT | LV_PART_MAIN);
-#ifndef BTC_ONLY
     // GuiCreateSupportedNetworks(g_connectWalletTileView.walletIndex);
-#else
-    if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-        lv_obj_t *button = GuiCreateImgLabelAdaptButton(parent, _("multisig_connect_wallet_notice"), &imgTwoSmallKey, UnHandler, NULL);
-        lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
-        lv_obj_set_style_text_opa(lv_obj_get_child(button, 1), LV_OPA_80, LV_PART_MAIN);
-    }
-#endif
 }
-
-#ifndef BTC_ONLY
 
 static void AddBlueWalletCoins(void)
 {
@@ -429,7 +399,17 @@ static void AddZecCoins(void)
     }
 }
 
-#endif
+static void AddCakeCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+
+    lv_obj_t *img = GuiCreateImg(g_coinCont, g_cakeCoinArray[0]);
+    lv_img_set_zoom(img, 110);
+    lv_img_set_pivot(img, 0, 0);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
+}
 
 void GuiConnectWalletInit(void)
 {
@@ -484,12 +464,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     GuiAnimatingQRCodeDestroyTimer();
     GenerateUR func = NULL;
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
-#ifndef BTC_ONLY
     GuiCreateSupportedNetworks(index);
     lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_networks"));
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
-#endif
     switch (index) {
     case WALLET_LIST_BLUE:
         func = GuiGetBlueWalletBtcData;
@@ -512,7 +490,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
     case WALLET_LIST_CAKE:
         func = GuiGetCakeData;
-        // AddCakeCoins();
+        AddCakeCoins();
         break;
     default:
         return;
@@ -684,7 +662,6 @@ static void OpenTutorialHandler(lv_event_t *e)
     GUI_DEL_OBJ(g_openMoreHintBox);
 }
 
-#ifndef BTC_ONLY
 static const char *GetDerivationPathSelectDes(void)
 {
     switch (g_connectWalletTileView.walletIndex) {
@@ -885,7 +862,6 @@ static void OpenDerivationPath()
 
     g_derivationPathCont = bgCont;
 }
-#endif
 
 static void OpenMoreHandler(lv_event_t *e)
 {
@@ -1007,34 +983,12 @@ void GuiConnectWalletRefresh(void)
                           OpenMoreHandler, &g_connectWalletTileView.walletIndex);
         SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex,
                   NULL);
-#ifndef BTC_ONLY
-        if (g_coinListCont != NULL) {
-            if (g_connectWalletTileView.walletIndex == WALLET_LIST_FEWCHA) {
-                GUI_DEL_OBJ(g_coinListCont)
-            } else if (HasSelectAddressWidget()) {
-                GuiDestroySelectAddressWidget();
-                if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
-                    g_coinListCont = GuiCreateSelectAddressWidget(
-                                         CHAIN_XRP, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
-                                         RefreshAddressIndex);
-                }
-
-                if (g_connectWalletTileView.walletIndex == WALLET_LIST_KEPLR || g_connectWalletTileView.walletIndex == WALLET_LIST_MINT_SCAN) {
-                    g_coinListCont = GuiCreateSelectAddressWidget(
-                                         CHAIN_ATOM, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
-                                         RefreshAddressIndex);
-                }
-            }
-        }
-#endif
         QRCodePause(false);
     }
-#ifndef BTC_ONLY
     if (g_derivationPathCont != NULL) {
         GUI_DEL_OBJ(g_derivationPathCont);
         OpenDerivationPath();
     }
-#endif
 }
 void GuiConnectWalletDeInit(void)
 {
@@ -1156,6 +1110,7 @@ static bool IsSupportEncryption(void)
         return false;
     }
 }
+
 
 static void GuiCreateQrCodePrivateModeWidget(lv_obj_t *parent)
 {

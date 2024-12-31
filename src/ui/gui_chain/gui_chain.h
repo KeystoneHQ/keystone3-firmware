@@ -27,9 +27,8 @@ typedef void (*SetChainDataFunc)(void *resultData, void *multiResultData, bool m
 // Enumeration for displaying in the middle of the status bar
 typedef enum {
     CHAIN_BTC,
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     CHAIN_ETH,
-    CHAIN_ZCASH,
     CHAIN_SOL,
     CHAIN_BNB,
     CHAIN_HNT,
@@ -45,7 +44,8 @@ typedef enum {
     CHAIN_DASH,
     CHAIN_ARWEAVE,
     CHAIN_STELLAR,
-    CHAIN_XMR,
+
+    // cosmos start
     CHAIN_COSMOS,
     CHAIN_TIA,
     CHAIN_NTRN,
@@ -81,7 +81,12 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
+    // cosmos end
+#endif
 
+#ifdef CYPHERPUNK_VERSION
+    CHAIN_ZCASH,
+    CHAIN_XMR,
 #endif
     CHAIN_BUTT,
 } GuiChainCoinType;
@@ -90,7 +95,7 @@ typedef enum {
 typedef enum {
     REMAPVIEW_BTC,
     REMAPVIEW_BTC_MESSAGE,
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     REMAPVIEW_ETH,
     REMAPVIEW_ETH_PERSONAL_MESSAGE,
     REMAPVIEW_ETH_TYPEDDATA,
@@ -113,11 +118,14 @@ typedef enum {
     REMAPVIEW_STELLAR_HASH,
     REMAPVIEW_TON,
     REMAPVIEW_TON_SIGNPROOF,
+#endif
+
+#ifdef CYPHERPUNK_VERSION
     REMAPVIEW_ZCASH,
     REMAPVIEW_XMR_OUTPUT,
     REMAPVIEW_XMR_UNSIGNED,
-    REMAPVIEW_WEB_AUTH,
 #endif
+    REMAPVIEW_WEB_AUTH,
     REMAPVIEW_BUTT,
 } GuiRemapViewType;
 

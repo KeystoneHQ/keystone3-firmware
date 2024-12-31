@@ -15,6 +15,7 @@
 #include "multi/web3/gui_general_analyze.h"
 #include "multi/cypherpunk/gui_cypherpunk_analyze.h"
 #include "btc_only/gui_btc_only_analyze.h"
+#include "drv_battery.h"
 #else
 #include "simulator_model.h"
 #endif

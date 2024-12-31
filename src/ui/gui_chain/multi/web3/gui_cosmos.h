@@ -1,6 +1,6 @@
 #include "rust.h"
 #include "account_public_info.h"
-#define COSMOS_CHAINS_LEN (CHAIN_BUTT - CHAIN_TIA)
+#define COSMOS_CHAINS_LEN (CHAIN_TGD - CHAIN_TIA + 1)
 
 typedef struct {
     uint8_t index;

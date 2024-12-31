@@ -611,6 +611,7 @@ static bool on_qr_detected(const char *qrString)
                 firstQrFlag = true;
                 viewType.viewType = MultiurResult->t;
                 viewType.urType = MultiurResult->ur_type;
+                printf("MultiurResult->t: %u\n", MultiurResult->t);
                 handleURResult(NULL, MultiurResult, viewType, true);
                 return true;
             }

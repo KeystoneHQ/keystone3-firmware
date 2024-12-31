@@ -12,7 +12,7 @@ typedef struct {
     GuiRemapViewType remapType;
 } ViewHandlerEntry;
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 bool CheckViewTypeIsAllow(uint8_t viewType)
 {
     switch (ViewTypeReMap(viewType)) {

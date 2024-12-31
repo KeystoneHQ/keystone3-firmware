@@ -576,7 +576,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
     SimpleResponse_c_char *xPubResult = NULL;
     MnemonicType mnemonicType = GetMnemonicType();
     bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
-    bool isTon = mnemonicType == MNEMONIC_TYPE_TON;
     bool isBip39 = mnemonicType == MNEMONIC_TYPE_BIP39;
     int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
     do {
@@ -604,7 +603,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         }
 
 #ifdef WEB3_VERSION
-        if (isTon) {
+        if (mnemonicType == MNEMONIC_TYPE_TON) {
             //store public key for ton wallet;
             xPubResult = ProcessKeyType(seed, len, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL, NULL);
             CHECK_AND_FREE_XPUB(xPubResult)
@@ -637,7 +636,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 }
 #ifdef CYPHERPUNK_VERSION
                 //encrypt zcash ufvk
-#ifdef CYPHERPUNK_VERSION
                 if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
                     char* zcashUfvk = NULL;
                     SimpleResponse_c_char *zcash_ufvk_response = NULL;
@@ -651,9 +649,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     memcpy_s(iv_bytes, 16, iv_response->data, 16);
                     free_simple_response_u8(iv_response);
                     xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
-                }
-#endif
-                if (g_chainTable[i].cryptoKey != ZCASH_UFVK_ENCRYPTED) {
+                } else {
                     xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
 #else
@@ -662,6 +658,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                     continue;
                 }
+                printf("");
                 CHECK_AND_FREE_XPUB(xPubResult)
                 // printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
                 ASSERT(xPubResult->data);

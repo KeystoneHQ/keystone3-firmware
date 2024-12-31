@@ -4,6 +4,7 @@
 #include "account_manager.h"
 #include "gui_chain.h"
 #include "keystore.h"
+#include "screen_manager.h"
 
 #define MAX_MEMO_LENGTH 1024
 

@@ -135,9 +135,9 @@ GetContSizeFunc GuiTemplateSizeFuncGet(char *type)
 {
     if (g_reMapIndex == REMAPVIEW_BTC) {
         return GetPsbtContainerSize(type);
-    } else {
-        GetOtherChainContainerSize(type, g_reMapIndex);
     }
+
+    return GetOtherChainContainerSize(type, g_reMapIndex);
 }
 
 __attribute__((weak)) GetListLenFunc GetOtherChainListLenFuncGet(char *type, GuiRemapViewType remapIndex)

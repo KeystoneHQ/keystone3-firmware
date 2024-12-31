@@ -19,10 +19,11 @@
 #include "lv_i18n_api.h"
 #include "gui_api.h"
 #include "drv_mpu.h"
+#include "drv_gd25qxx.h"
 
 #define LVGL_FAST_TICK_MS                   5
 #define LVGL_IDLE_TICK_MS                   100
-#define LVGL_GRAM_PIXEL         LCD_DISPLAY_WIDTH * 450
+#define LVGL_GRAM_PIXEL                     LCD_DISPLAY_WIDTH * 450
 
 bool IsWakeupByFinger(void);
 bool GuiLetterKbStatusError(void);

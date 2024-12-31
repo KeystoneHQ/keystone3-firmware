@@ -35,7 +35,7 @@ void GuiHintBoxResize(lv_obj_t *obj, uint16_t height);
 void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText,
                                MoreInfoTable_t *table, uint8_t cnt,
                                bool isCling, void *parent);
-void GuiCreateTooltipHintBox(char *titleText, char *descText, char *link);
+void GuiCreateTooltipHintBox(const char *titleText, const char *descText, const char *link);
 void CloseTooltipHintBoxHandler();
 
 #define GuiCreateConfirmHintBox(src, title, desc1, desc2, btnText, color)      \

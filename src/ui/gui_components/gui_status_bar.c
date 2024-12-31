@@ -707,7 +707,7 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
                    const char *name)
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
-    CoinWalletInfo_t *coin = g_coinWalletBtn;
+    CoinWalletInfo_t *coin = (CoinWalletInfo_t *)g_coinWalletBtn;
     for (size_t i = 0; i < CHAIN_BUTT; i++) {
         if (g_coinWalletBtn[i].index == index) {
             coin = &g_coinWalletBtn[i];

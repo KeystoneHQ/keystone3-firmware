@@ -57,7 +57,10 @@ static bool g_isDiceRolls = false;
 
 static void ResetConfirmInput(void);
 static void SelectPhraseCntHandler(lv_event_t *e);
+
+#ifdef WEB3_VERSION
 static void TonRegenrateConfirm();
+#endif
 
 static void UpdatePhraseHandler(lv_event_t *e)
 {

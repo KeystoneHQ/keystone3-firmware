@@ -39,10 +39,13 @@ static CreateWalletWidget_t g_createWalletTileView;
 
 static void OpenMoreHandler(lv_event_t *e);
 static void OpenChangeEntropyHandler(lv_event_t *e);
-static void TonPhraseButtonHandler(lv_event_t *e);
 static void GuiRefreshNavBar(void);
 static void CloseChangeEntropyHandler(lv_event_t *e);
 static void OpenChangeEntropyTutorialHandler(lv_event_t *e);
+
+#ifdef WEB3_VERSION
+static void TonPhraseButtonHandler(lv_event_t *e);
+#endif
 
 static PageWidget_t *g_pageWidget;
 static KeyBoard_t *g_nameWalletKb = NULL;

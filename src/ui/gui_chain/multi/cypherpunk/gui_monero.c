@@ -24,21 +24,10 @@ static uint8_t g_decryptKey[32] = {0};
     result = NULL;                                                                                              \
   }
 
-static lv_obj_t *g_hintBox = NULL;
-
-static void CloseAttentionHandler(lv_event_t *e);
 static void ShowHintBox(lv_event_t *e);
 static void SetContainerDefaultStyle(lv_obj_t *container);
 static void SetUpMoneroDecryptKey(void);
 static lv_obj_t *CreateNetworkContainer(lv_obj_t *container);
-
-static void CloseAttentionHandler(lv_event_t *e)
-{
-    if (g_hintBox) {
-        lv_obj_add_flag(g_hintBox, LV_OBJ_FLAG_HIDDEN);
-        GUI_DEL_OBJ(g_hintBox);
-    }
-}
 
 static void CloseAllHintBox(void)
 {
@@ -267,7 +256,6 @@ void GuiShowXmrTransactionOverview(lv_obj_t *parent, void *totalData)
     lv_obj_t * networkContainer = CreateNetworkContainer(parent);
     lv_obj_align(networkContainer, LV_ALIGN_DEFAULT, 0, 160);
 
-    uint32_t inputsSize = data->inputs->size;
     uint32_t outputsSize = data->outputs->size;
     uint32_t containerHeight = 18 * 2 + 30 + 16 + outputsSize * 120;
     lv_obj_t * detilsContainer = GuiCreateContainerWithParent(parent, 408, containerHeight);
@@ -315,8 +303,6 @@ void GuiShowXmrTransactionDetails(lv_obj_t *parent, void *totalData)
 
     lv_obj_set_width(parent, 408);
     lv_obj_set_height(parent, 602);
-
-    lv_obj_t * networkContainer = CreateNetworkContainer(parent);
 
     lv_obj_t * amountContainer = GuiCreateContainerWithParent(parent, 408, 138);
     SetContainerDefaultStyle(amountContainer);

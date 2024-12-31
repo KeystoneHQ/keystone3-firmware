@@ -134,9 +134,6 @@ static void ShowMoneroSwitchAccountHintBox(lv_event_t *e);
 
 static void OpenSwitchAddressHandler(lv_event_t *e);
 static void CloseSwitchAddressHandler(lv_event_t *e);
-
-static void OpenChangePathTypeHandler(lv_event_t *e);
-
 static void ShowAddressDetailHandler(lv_event_t *e);
 static void UpdateConfirmIndexBtn(void);
 static void UpdateConfirmAccountBtn(void);
@@ -145,6 +142,10 @@ static void PathTypeChangedCb(lv_event_t *e);
 static void SetCurrentSelectIndex(uint32_t index);
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
+
+#ifdef WEB3_VERSION
+static void OpenChangePathTypeHandler(lv_event_t *e);
+#endif
 
 static MultiAccountsReceiveWidgets_t g_multiAccountsReceiveWidgets;
 static MultiAccountsReceiveTile g_multiAccountsReceiveTileNow;
@@ -1236,10 +1237,10 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
 {
     char *xPub = NULL, *pvk = NULL, hdPath[BUFFER_SIZE_128];
     SimpleResponse_c_char *result = NULL;
-    uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);;
     switch (g_chainCard) {
 #ifdef WEB3_VERSION
-    case HOME_WALLET_CARD_ADA:
+    case HOME_WALLET_CARD_ADA: {
+        uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);;
         xPub = GetCurrentAccountPublicKey(GetReceivePageAdaXPubTypeByIndex(currentAccount));
         snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         // cardano mainnet;
@@ -1255,6 +1256,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
             break;
         }
         break;
+    }
 #endif
 
 #ifdef CYPHERPUNK_VERSION

@@ -52,7 +52,6 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_QCK, "quick", 118, XPUB_TYPE_COSMOS, "quicksilver-1"},
     {CHAIN_LUNA, "terra", 330, XPUB_TYPE_TERRA, "phoenix-1"},
     {CHAIN_LUNC, "terra", 330, XPUB_TYPE_TERRA, "columbus-5"},
-
 };
 
 char *GetCosmosChainAddressByCoinTypeAndIndex(uint8_t chainType,  uint32_t address_index)
@@ -82,6 +81,7 @@ const CosmosChain_t *GuiGetCosmosChain(uint8_t index)
 {
     for (int i = 0; i < COSMOS_CHAINS_LEN; i++) {
         if (g_cosmosChains[i].index == index) {
+            printf("i = %d, index = %d\n", i, index);
             return &g_cosmosChains[i];
         }
     }

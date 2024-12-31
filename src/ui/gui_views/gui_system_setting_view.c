@@ -31,9 +31,11 @@ int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *par
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenToHome();
                 return SUCCESS_CODE;
+#ifdef WEB3_VERSION
             } else if (sig == SIG_SETTING_CHANGE_PERMIT_SWITCH) {
                 GuiDealChangePermitKeyBoard(true);
                 return SUCCESS_CODE;
+#endif
             }
         }
         GuiSystemSettingVerifyPasswordSuccess();

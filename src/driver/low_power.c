@@ -85,7 +85,9 @@ uint32_t EnterLowPower(void)
     printf("sleepSecond=%d\n", sleepSecond);
     TouchClose();
     UserDelay(10);
+#ifdef WEB3_VERSION
     SetNftLockState();
+#endif
     SetLvglHandlerAndSnapShot(false);
     CloseUsb();
     while (GetUsbState()) {

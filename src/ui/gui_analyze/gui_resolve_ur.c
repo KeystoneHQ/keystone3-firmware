@@ -22,12 +22,13 @@
 static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_BTC, (SetChainDataFunc)GuiSetPsbtUrData},
     {REMAPVIEW_BTC_MESSAGE, (SetChainDataFunc)GuiSetPsbtUrData},
-#ifndef BTC_ONLY
 #ifdef CYPHERPUNK_VERSION
     {REMAPVIEW_ZCASH, (SetChainDataFunc)GuiSetZcashUrData},
     {REMAPVIEW_XMR_OUTPUT, (SetChainDataFunc)GuiSetMoneroUrData},
     {REMAPVIEW_XMR_UNSIGNED, (SetChainDataFunc)GuiSetMoneroUrData},
-#else
+#endif
+
+#ifdef WEB3_VERSION
     {REMAPVIEW_ETH, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_PERSONAL_MESSAGE, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_TYPEDDATA, (SetChainDataFunc)GuiSetEthUrData},
@@ -51,14 +52,17 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_TON, (SetChainDataFunc)GuiSetTonUrData},
     {REMAPVIEW_TON_SIGNPROOF, (SetChainDataFunc)GuiSetTonUrData},
 #endif
-#endif
 };
 
 void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
 {
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    if (viewType != REMAPVIEW_BUTT) {
-        g_chainViewArray[viewType].func(urResult, urMultiResult, is_multi);
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainViewArray); i++) {
+        if (g_chainViewArray[i].chain == viewType) {
+            printf("g_chainViewArray[i].type=%d\r\n", g_chainViewArray[i].chain);
+            g_chainViewArray[viewType].func(urResult, urMultiResult, is_multi);
+            break;
+        }
     }
 }
 
@@ -75,13 +79,13 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
         break;
 #endif
 #ifdef BTC_ONLY
-        // case MultisigWalletImport:
-        //     GuiSetMultisigImportWalletDataByQRCode(urResult, urMultiResult, is_multi);
-        //     break;
-        // case MultisigCryptoImportXpub:
-        // case MultisigBytesImportXpub:
-        //     GuiSetMultisigImportXpubByQRCode(urResult);
-        //     break;
+    case MultisigWalletImport:
+        GuiSetMultisigImportWalletDataByQRCode(urResult, urMultiResult, is_multi);
+        break;
+    case MultisigCryptoImportXpub:
+    case MultisigBytesImportXpub:
+        GuiSetMultisigImportXpubByQRCode(urResult);
+        break;
 #endif
     default:
         HandleDefaultViewType(urResult, urMultiResult, urViewType, is_multi);

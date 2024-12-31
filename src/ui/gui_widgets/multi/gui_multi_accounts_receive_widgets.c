@@ -1107,8 +1107,7 @@ static void RefreshSwitchAccount(void)
         if (g_chainCard == HOME_WALLET_CARD_MONERO) {
             ModelGetAddress(index, &addressDataItem, 1);
             bool isPrimaryAccount = index == 0;
-            char *accountPrefix = isPrimaryAccount ? _("primary_account_head") : _("account_head");
-            lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, "%s-%u", accountPrefix, (addressDataItem.index));
+            lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, "%s-%u", isPrimaryAccount ? _("primary_account_head") : _("account_head"), (addressDataItem.index));
             char string[128] = {0};
             CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
             lv_label_set_text(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressLabel, string);

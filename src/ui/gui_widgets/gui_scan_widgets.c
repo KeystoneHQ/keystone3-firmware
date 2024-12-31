@@ -49,6 +49,14 @@ static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, siz
 }
 #endif
 
+#ifdef WEB3_VERSION
+#define IsSlip39WalletNotSupported(viewType) (viewType == CHAIN_ADA)
+#endif
+
+#ifdef CYPHERPUNK_VERSION
+#define IsSlip39WalletNotSupported(viewType) (viewType == CHAIN_XMR)
+#endif
+
 static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_scanErrorHintBox = NULL;
 static ViewType g_qrcodeViewType;
@@ -108,16 +116,16 @@ void GuiScanResult(bool result, void *param)
         }
 #endif
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
+#ifndef BTC_ONLY
         // Not a chain based transaction, e.g. WebAuth
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-#ifndef BTC_ONLY
             //we don't support ADA & XMR in Slip39 Wallet;
-            if (g_chainType == CHAIN_ADA || g_chainType == CHAIN_XMR) {
+            if (IsSlip39WalletNotSupported(g_chainType)) {
                 ThrowError(ERR_INVALID_QRCODE);
                 return;
             }
-#endif
         }
+#endif
         if (g_chainType == CHAIN_BUTT) {
             if (g_qrcodeViewType == WebAuthResult) {
                 GuiCLoseCurrentWorkingView();

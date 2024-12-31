@@ -23,7 +23,7 @@ typedef struct {
 static const ProtocolService_t g_ProtocolServiceList[] = {
     {SERVICE_ID_DEVICE_INFO, COMMAND_ID_DEVICE_INFO_MAX, g_deviceInfoServiceFunc},
     {SERVICE_ID_FILE_TRANS, COMMAND_ID_FILE_TRANS_MAX, g_fileTransInfoServiceFunc},
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     {SERVICE_ID_NFT_FILE_TRANS, COMMAND_ID_FILE_TRANS_MAX, g_nftFileTransInfoServiceFunc},
 #endif
 };

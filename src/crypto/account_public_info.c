@@ -82,7 +82,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_BTC_LEGACY,            SECP256K1,    "btc_legacy",               "M/44'/0'/0'"       },
     {XPUB_TYPE_BTC_NATIVE_SEGWIT,     SECP256K1,    "btc_nested_segwit",        "M/84'/0'/0'"       },
     {XPUB_TYPE_BTC_TAPROOT,           SECP256K1,    "btc_taproot",              "M/86'/0'/0'"       },
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     {XPUB_TYPE_LTC,                   SECP256K1,    "ltc",                      "M/49'/2'/0'"       },
     {XPUB_TYPE_DASH,                  SECP256K1,    "dash",                     "M/44'/5'/0'"       },
     {XPUB_TYPE_BCH,                   SECP256K1,    "bch",                      "M/44'/145'/0'"     },
@@ -286,6 +286,9 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_TON_BIP39,             ED25519,       "ton_bip39",                "M/44'/607'/0'"    },
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
+#endif
+
+#ifdef CYPHERPUNK_VERSION
     //this path is not 100% correct because UFVK is a combination of
     //a k1 key with path M/44'/133'/x'
     //and
@@ -658,7 +661,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                     continue;
                 }
-                printf("");
+                printf("g_chaintable[%d].path=%s\r\n", i, g_chainTable[i].path);
                 CHECK_AND_FREE_XPUB(xPubResult)
                 // printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
                 ASSERT(xPubResult->data);
@@ -977,7 +980,7 @@ void AccountPublicInfoTest(int argc, char *argv[])
 
 static int GetChainTableSizeFromJson(cJSON *keyJson)
 {
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     return cJSON_GetObjectItem(keyJson, "ar") != NULL ? NUMBER_OF_ARRAYS(g_chainTable) : NUMBER_OF_ARRAYS(g_chainTable) - 1;
 #else
     return NUMBER_OF_ARRAYS(g_chainTable);

@@ -286,7 +286,7 @@ static bool IsSelectChanged()
 static int GetMaxAddressIndex(void)
 {
     switch (g_chainCoinType) {
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     case CHAIN_XRP:
         return 200;
     case CHAIN_ADA:
@@ -478,10 +478,12 @@ lv_obj_t *GuiCreateSelectAddressWidget(GuiChainCoinType chainCoinType, uint32_t 
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, BackHandler, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("switch_account"));
     switch (g_chainCoinType) {
+#ifdef WEB3_VERSION
     case CHAIN_ATOM:
         // add jump button at the right of the nav bar
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_SKIP, JumpToAccountHandler, NULL);
         break;
+#endif
     default:
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         break;

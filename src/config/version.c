@@ -48,7 +48,7 @@ void GetSoftWareVersionNumber(char *version)
 const char *GetSoftwareVersionString(void)
 {
     static char version[32] = {0};
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "Firmware v%d.%d.%d%s", SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_SUFFIX);
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "v%d.%d.%d - %s", SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_SUFFIX);
     return version;
 }
 

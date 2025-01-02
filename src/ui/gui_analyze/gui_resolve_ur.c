@@ -93,9 +93,10 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
     }
 
     if (urViewType.viewType == WebAuthResult
-#ifndef BTC_ONLY
-            // || urViewType.viewType == KeyDerivationRequest
-#else
+#ifdef WEB3_VERSION
+            || urViewType.viewType == KeyDerivationRequest
+#endif
+#ifdef BTC_ONLY
             || urViewType.viewType == MultisigWalletImport
             || urViewType.viewType == MultisigBytesImportXpub
             || urViewType.viewType == MultisigCryptoImportXpub

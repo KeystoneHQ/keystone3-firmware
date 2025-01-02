@@ -6,11 +6,6 @@
 #include "gui_chain.h"
 #include "gui_connect_wallet_widgets.h"
 
-#ifdef BTC_ONLY
-#define WALLPAPER_ENABLE            0
-#else
-#define WALLPAPER_ENABLE            0
-#endif
 typedef enum {
     NVS_BAR_RETURN = 0,
     NVS_BAR_CLOSE,
@@ -54,7 +49,6 @@ void GuiNvsBarSetRightCb(NVS_RIGHT_BUTTON_ENUM button, lv_event_cb_t eventCb, vo
 void GuiNvsBarSetRightBtnLabel(NVS_RIGHT_BUTTON_ENUM button, const char *text);
 void GuiNvsBarSetMidCb(NVS_MID_BUTTON_ENUM button, lv_event_cb_t eventCb, void* param);
 void GuiNvsBarSetMidBtnLabel(NVS_MID_BUTTON_ENUM button, const char* text);
-void ShowWallPaper(bool enable);
 void GuiStatusBarInit(void);
 void GuiStatusBarSetBattery(uint8_t percent, bool charging);
 void GuiNvsBarSetWalletIcon(const void *src);

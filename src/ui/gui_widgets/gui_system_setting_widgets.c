@@ -36,9 +36,9 @@ static void VibrationSwitchHandler(lv_event_t * e);
 void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
 void OpenForgetPasswordHandler(lv_event_t *e);
 static void OpenLanguageSelectHandler(lv_event_t *e);
-static void PermitSingSwitchHandler(lv_event_t * e);
 
 #ifdef WEB3_VERSION
+static void PermitSingSwitchHandler(lv_event_t * e);
 static lv_obj_t *g_permitSw;
 #endif
 
@@ -256,25 +256,6 @@ static void VibrationSwitchHandler(lv_event_t * e)
     }
 }
 
-static void GuiShowChangePermitKeyBoard(lv_event_t * e)
-{
-    GUI_DEL_OBJ(g_noticeWindow)
-    g_keyboardWidget = GuiCreateKeyboardWidget(g_container);
-    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
-    static uint16_t sig = SIG_SETTING_CHANGE_PERMIT_SWITCH;
-    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
-}
-
-
-static void PermitSingSwitchHandler(lv_event_t * e)
-{
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("permit_switch_title"), _("permit_switch_desc"), NULL,
-                     _("Cancel"), WHITE_COLOR_OPA20, _("Change"), DEEP_ORANGE_COLOR);
-    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
-    lv_obj_add_event_cb(rightBtn, GuiShowChangePermitKeyBoard, LV_EVENT_CLICKED, NULL);
-}
 
 static void DestroyLanguagePageWidgetHandler(lv_event_t *e)
 {
@@ -306,5 +287,24 @@ void GuiDealChangePermitKeyBoard(bool pass)
         }
         SaveDeviceSettings();
     }
+}
+
+static void PermitSingSwitchHandler(lv_event_t * e)
+{
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("permit_switch_title"), _("permit_switch_desc"), NULL,
+                     _("Cancel"), WHITE_COLOR_OPA20, _("Change"), DEEP_ORANGE_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(rightBtn, GuiShowChangePermitKeyBoard, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiShowChangePermitKeyBoard(lv_event_t * e)
+{
+    GUI_DEL_OBJ(g_noticeWindow)
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_container);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    static uint16_t sig = SIG_SETTING_CHANGE_PERMIT_SWITCH;
+    SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 #endif

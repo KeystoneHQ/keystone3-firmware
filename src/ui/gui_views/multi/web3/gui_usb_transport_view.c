@@ -1,4 +1,3 @@
-#ifndef BTC_ONLY
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_model.h"
@@ -34,5 +33,3 @@ GUI_VIEW g_USBTransportView = {
     .optimization = false,
     .pEvtHandler = GuiUSBTransportViewEventProcess,
 };
-
-#endif

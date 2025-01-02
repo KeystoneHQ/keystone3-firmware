@@ -31,9 +31,9 @@ static uint8_t g_currentAccountIndex = ACCOUNT_INDEX_LOGOUT;
 static uint8_t g_lastAccountIndex = ACCOUNT_INDEX_LOGOUT;
 static AccountInfo_t g_currentAccountInfo = {0};
 static PublicInfo_t g_publicInfo = {0};
-static ZcashUFVKCache_t g_zcashUFVKcache = {0};
 
 #ifdef CYPHERPUNK_VERSION
+static ZcashUFVKCache_t g_zcashUFVKcache = {0};
 static void ClearZcashUFVK();
 #endif
 

@@ -7,22 +7,43 @@
 #include "gui_setup_widgets.h"
 #include "presetting.h"
 #include "version.h"
+#include "gui_hintbox.h"
+#include "gui_lock_widgets.h"
 
 static lv_obj_t *g_deleteWalletCont = NULL;
 
 static void DeleteWalletNextStepHandler(lv_event_t *e)
 {
-    // GUI_DEL_OBJ(g_deleteWalletCont)
-    // GuiCLoseCurrentWorkingView();
-    printf("%s %d.\n", __func__, __LINE__);
-    GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+    GUI_DEL_OBJ(g_deleteWalletCont)
+    g_deleteWalletCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
+    lv_obj_t *label = GuiCreateTextLabel(g_deleteWalletCont, _("wallet_settings_delete_laoding_title"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 427);
+    GuiCreateCircleAroundAnimation(lv_scr_act(), -35);
+    GuiModelSettingDelWalletDesc();
 }
 
 static void DeleteWalletNotNowHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_deleteWalletCont)
     GuiCLoseCurrentWorkingView();
-    printf("%s %d.\n", __func__, __LINE__);
+    static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
+    LogoutCurrentAccount();
+    GuiLockScreenSetFirstUnlock();
+    GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &signal, sizeof(signal));
+}
+
+void GuiCheckDeleteWalletDeInit(void)
+{
+    GUI_DEL_OBJ(g_deleteWalletCont)
+    GuiStopCircleAroundAnimation();
+}
+
+void GuiDelWalletToSetup(void)
+{
+    GuiCLoseCurrentWorkingView();
+    GuiLockScreenHidden();
+
+    GuiFrameOpenView(&g_setupView);
 }
 
 void GuiCheckDeleteWalletInit(void)

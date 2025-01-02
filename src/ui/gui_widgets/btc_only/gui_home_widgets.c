@@ -158,7 +158,6 @@ static void RcvHandler(lv_event_t *e)
 {
     static HOME_WALLET_CARD_ENUM coin;
     coin = HOME_WALLET_CARD_BTC;
-    ShowWallPaper(false);
     GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
 }
 
@@ -169,7 +168,6 @@ void ScanQrCodeHandler(lv_event_t *e)
         lv_timer_del(g_countDownTimer);
         g_countDownTimer = NULL;
     }
-    ShowWallPaper(false);
     GuiFrameOpenView(&g_scanView);
 }
 
@@ -184,13 +182,11 @@ static void OpenMoreViewHandler(lv_event_t *e)
 {
     lv_obj_del(lv_obj_get_parent(lv_event_get_target(e)));
     g_moreHintbox = NULL;
-    ShowWallPaper(false);
     GuiFrameOpenView(lv_event_get_user_data(e));
 }
 
 static void GuiOpenSignBySDCardHandler(lv_event_t *e)
 {
-    ShowWallPaper(false);
     if (SdCardInsert()) {
         static uint8_t fileFilterType = ONLY_PSBT;
         GuiFrameOpenViewWithParam(&g_multisigReadSdcardView, &fileFilterType, sizeof(fileFilterType));
@@ -252,7 +248,6 @@ static void OpenMoreSettingHandler(lv_event_t *e)
 static void OpenWalletProfileHandler(lv_event_t *e)
 {
     printf("OpenWalletProfileHandler\n");
-    ShowWallPaper(false);
     GuiFrameOpenView(&g_btcBtcWalletProfileView);
 }
 
@@ -268,11 +263,6 @@ void GuiHomeAreaInit(void)
 {
     g_pageWidget = CreatePageWidget();
     g_homeViewCont = g_pageWidget->contentZone;
-#if (WALLPAPER_ENABLE == 1)
-    lv_obj_set_style_bg_opa(g_pageWidget->contentZone, LV_OPA_TRANSP, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(g_pageWidget->page, LV_OPA_TRANSP, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(g_pageWidget->navBar, LV_OPA_TRANSP, LV_PART_MAIN);
-#endif
 
     lv_obj_t *walletCardCont = GuiCreateContainerWithParent(g_homeViewCont, lv_obj_get_width(lv_scr_act()),
                                lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
@@ -282,7 +272,6 @@ void GuiHomeAreaInit(void)
     lv_obj_set_style_bg_opa(walletCardCont, LV_OPA_TRANSP, LV_PART_MAIN);
     g_homeWalletCardCont = walletCardCont;
     CreateHomePageButtons();
-    ShowWallPaper(true);
 }
 
 void GuiHomeDisActive(void)
@@ -305,7 +294,6 @@ void GuiHomeRestart(void)
     GUI_DEL_OBJ(g_manageCont)
     lv_obj_clean(g_homeWalletCardCont);
     CreateHomePageButtons();
-    ShowWallPaper(true);
     GuiHomeRefresh();
 }
 
@@ -318,7 +306,6 @@ void GuiHomeRefresh(void)
         return;
     }
     printf("GuiHomeRefresh\n");
-    ShowWallPaper(true);
     g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
     GuiSetSetupPhase(SETUP_PAHSE_DONE);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenWalletProfileHandler, NULL);

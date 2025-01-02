@@ -858,7 +858,6 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     int32_t ret;
     uint8_t accountIndex = GetCurrentAccountIndex();
     UpdateFingerSignFlag(accountIndex, false);
@@ -893,10 +892,6 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     } else {
         GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_FAIL, &ret, sizeof(ret));
     }
-#else
-    // GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
-    GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
-#endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }

@@ -48,6 +48,8 @@ bool g_reboot = false;
 
 #ifdef WEB3_VERSION
 static bool g_lockNft = false;
+void DrawNftImage(void);
+void RefreshDisplay(uint16_t *snapShotAddr);
 #endif
 
 void CreateUiDisplayTask(void)
@@ -334,9 +336,7 @@ static uint8_t *GetActSnapShot(void)
 {
     lv_img_dsc_t imgDsc;
     uint32_t snapShotSize = LCD_DISPLAY_WIDTH * LCD_DISPLAY_HEIGHT * (LV_COLOR_DEPTH / 8);
-    //printf("snap size=%d\r\n", snapShotSize);
     uint8_t *buffer = EXT_MALLOC(snapShotSize);
-    //printf("buffer addr=0x%X\r\n", buffer);
     lv_snapshot_take_to_buf(lv_scr_act(), LV_IMG_CF_TRUE_COLOR, &imgDsc, buffer, snapShotSize);
     return buffer;
 }
@@ -380,7 +380,7 @@ void DrawNftImage(void)
 #define START_ADDR 0x00EB2000
     uint16_t *fileBuf = EXT_MALLOC(LCD_DISPLAY_WIDTH * LCD_DISPLAY_HEIGHT * 2);
     Gd25FlashReadBuffer(START_ADDR, (uint8_t *)fileBuf, LCD_DISPLAY_WIDTH * LCD_DISPLAY_HEIGHT * 2);
-    LcdDraw(0, 0, LCD_WLCD_DISPLAY_WIDTHIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)fileBuf);
+    LcdDraw(0, 0, LCD_DISPLAY_HEIGHT - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)fileBuf);
     EXT_FREE(fileBuf);
 }
 

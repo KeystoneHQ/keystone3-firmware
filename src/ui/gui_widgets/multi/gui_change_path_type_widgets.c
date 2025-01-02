@@ -1,4 +1,5 @@
 #include "gui_change_path_type_widgets.h"
+#include "account_public_info.h"
 
 typedef struct {
     char title[PATH_ITEM_MAX_LEN];

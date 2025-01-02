@@ -1,6 +1,7 @@
 #include "gui_monero.h"
 #include "account_manager.h"
 #include "account_public_info.h"
+#include "screen_manager.h"
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;

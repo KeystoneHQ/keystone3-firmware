@@ -7,5 +7,7 @@
 void GuiUpdateSuccessInit(void);
 void GuiUpdateSuccessDeInit(void);
 
+void GuiCheckDeleteWalletInit(void);
+
 #endif
 

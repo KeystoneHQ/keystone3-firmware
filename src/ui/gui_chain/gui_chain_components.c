@@ -9,7 +9,7 @@ lv_obj_t *CreateTransactionContentContainer(lv_obj_t *parent, uint16_t w, uint16
     return container;
 }
 
-lv_obj_t *CreateTransactionItemViewWithHint(lv_obj_t *parent, const char* title, const char* value, lv_obj_t *lastView, char* hint)
+lv_obj_t *CreateTransactionItemViewWithHint(lv_obj_t *parent, const char* title, const char* value, lv_obj_t *lastView, const char* hint)
 {
     //basic style:
     // ______________________________

@@ -2,6 +2,7 @@
 #include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_check_delete_wallet_widgets.h"
+#include "gui_setting_widgets.h"
 
 int32_t GuiCheckDeleteWalletViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {

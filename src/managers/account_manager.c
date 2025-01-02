@@ -89,9 +89,6 @@ uint8_t *GetCurrentAccountMfp()
 /// @return Mnemonic type.
 MnemonicType GetMnemonicType(void)
 {
-    if (GetCurrentAccountIndex() == 1) {
-        return MNEMONIC_TYPE_TON;
-    }
     if (g_currentAccountInfo.isSlip39) {
         return MNEMONIC_TYPE_SLIP39;
     }

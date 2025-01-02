@@ -22,10 +22,8 @@
 #include "screen_manager.h"
 #include "fingerprint_process.h"
 #include "keystore.h"
-
-#ifdef BTC_ONLY
 #include "gui_home_widgets.h"
-#endif
+
 /* DEFINES */
 
 /* TYPEDEFS */

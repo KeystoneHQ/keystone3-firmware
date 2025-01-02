@@ -79,14 +79,12 @@ static void SignByPasswordCbHandler(lv_event_t *e);
 static void CloseContHandler(lv_event_t *e);
 static void SignByFinger(void);
 static void RecognizeFailHandler(lv_timer_t *timer);
-#ifndef BTC_ONLY
-static TransactionMode GetCurrentTransactionMode(void);
-#endif
 static bool GuiCheckIsTransactionSign(void);
 static void TransactionGoToHomeViewHandler(lv_event_t *e);
 static void ThrowError(int32_t errorCode);
 
 #ifndef BTC_ONLY
+static TransactionMode GetCurrentTransactionMode(void);
 static TransactionMode GetCurrentTransactionMode(void)
 {
     uint16_t requestID = GetCurrentUSParsingRequestID();

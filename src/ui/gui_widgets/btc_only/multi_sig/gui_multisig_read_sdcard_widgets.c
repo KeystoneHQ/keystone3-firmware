@@ -175,7 +175,5 @@ void GuiPSBTTransactionCheckFaild(PtrT_TransactionCheckResult result)
         break;
     }
     GuiModelTransactionCheckResultClear();
-#if BTC_ONLY
     FreePsbtUxtoMemory();
-#endif
 }

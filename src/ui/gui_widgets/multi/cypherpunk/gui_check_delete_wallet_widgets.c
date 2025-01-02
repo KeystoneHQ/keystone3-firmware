@@ -8,6 +8,7 @@
 #include "presetting.h"
 #include "version.h"
 #include "gui_hintbox.h"
+#include "gui_lock_widgets.h"
 
 static lv_obj_t *g_deleteWalletCont = NULL;
 

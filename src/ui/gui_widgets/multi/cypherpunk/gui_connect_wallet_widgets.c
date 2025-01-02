@@ -63,16 +63,11 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_CAKE, &walletListCake, true},
     {WALLET_LIST_FEATHER, &walletListFeather, true},
 };
-
 typedef struct {
     int8_t index;
     const char *coin;
     const lv_img_dsc_t *icon;
 } CoinCard_t;
-
-static const lv_img_dsc_t *g_bitgetWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinTon
-};
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
     &coinBtc,
@@ -125,7 +120,6 @@ static PageWidget_t *g_pageWidget;
 
 static void UpdategAddress(void);
 static void GetEgAddress(void);
-static void GetEthEgAddress(void);
 static void OpenQRCodeHandler(lv_event_t *e);
 static void JumpSelectCoinPageHandler(lv_event_t *e);
 void ConnectWalletReturnHandler(lv_event_t *e);
@@ -156,10 +150,8 @@ static void QRCodePause(bool);
 static void GuiInitWalletListArray()
 {
     bool isSLIP39 = false;
-    bool isTempAccount = false;
 
     isSLIP39 = (GetMnemonicType() == MNEMONIC_TYPE_SLIP39);
-    isTempAccount = GetIsTempAccount();
 
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         bool enable = true;
@@ -204,18 +196,6 @@ void GuiConnectShowRsaSetupasswordHintbox(void)
     SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
     static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
-}
-
-static void RefreshAddressIndex(uint32_t index)
-{
-    if (GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)) != index) {
-        SetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex), index);
-        GuiAnimatingQRCodeDestroyTimer();
-        GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
-    } else {
-        QRCodePause(false);
-    }
-    g_coinListCont = NULL;
 }
 
 static void JumpSelectCoinPageHandler(lv_event_t *e)

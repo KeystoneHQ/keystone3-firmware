@@ -38,14 +38,15 @@ static const PathItem_t g_ethPaths[] = {
     {"Ledger Live",             "",     "m/44'/60'"     },
     {"Ledger Legacy",           "",     "m/44'/60'/0'"  },
 };
+static void GetEthPathItemSubTittle(char* subTitle, int index, uint32_t maxLen);
+static void GetSolPathItemSubTitle(char* subTitle, int index, uint32_t maxLen);
+static void GetADAPathItemSubTitle(char* subTitle, int index, uint32_t maxLen);
+static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
 #endif
 
 static void GetChangePathLabelHint(char* hint);
 static uint32_t GetDerivedPathTypeCount();
 static const char* GetChangePathItemTitle(uint32_t i);
-static void GetEthPathItemSubTittle(char* subTitle, int index, uint32_t maxLen);
-static void GetSolPathItemSubTitle(char* subTitle, int index, uint32_t maxLen);
-static void GetADAPathItemSubTitle(char* subTitle, int index, uint32_t maxLen);
 static void UpdateAddrTypeCheckbox(uint8_t i, bool isChecked);
 static void UpdateConfirmAddrTypeBtn(void);
 static void ShowEgAddressCont(lv_obj_t *egCont);
@@ -58,7 +59,6 @@ static bool IsOnlyOneAddress(uint8_t addrType);
 static void ChangePathCheckHandler(lv_event_t *e);
 static void RefreshDefaultAddress(void);
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item);
-static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t type);
 
 void GuiCreateSwitchPathTypeWidget(lv_obj_t *parent, HOME_WALLET_CARD_ENUM chain, lv_event_cb_t changed_cb)
 {

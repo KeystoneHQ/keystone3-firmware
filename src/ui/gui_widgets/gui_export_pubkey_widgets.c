@@ -87,12 +87,6 @@ static const PathTypeItem_t g_btcMultisigPathList[] = {
     {"Nested SegWit", "P2WSH-P2SH", "m/48'/0'/0'/1'", XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH},
     {"Legacy", "P2SH", "m/45'", XPUB_TYPE_BTC_MULTI_SIG_P2SH},
 };
-
-static const PathTypeItem_t g_btcTestMultisigPathList[] = {
-    {"Native SegWit", "P2WSH", "m/48'/1'/0'/2'", XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST},
-    {"Nested SegWit", "P2WSH-P2SH", "m/48'/1'/0'/1'", XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST},
-    {"Legacy", "P2SH", "m/45'", XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST},
-};
 #endif
 
 static GuiChainCoinType g_chain;
@@ -125,7 +119,6 @@ void OpenExportMultisigViewHandler(lv_event_t *e)
 
 static int CreateExportPubkeyComponent(char *xpub, uint32_t maxLen)
 {
-    char *temp = xpub;
     char *derivHead[3] = {
         "p2wsh_deriv",
         "p2sh_p2wsh_deriv",

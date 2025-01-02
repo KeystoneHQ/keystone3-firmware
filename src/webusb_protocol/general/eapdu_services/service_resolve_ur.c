@@ -19,8 +19,6 @@
 
 /* FUNC DECLARATION*/
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
-static bool CheckURAcceptable(void);
-static void GotoFailPage(StatusEnum error_code, const char *error_message);
 bool GuiIsSetup(void);
 
 /* STATIC VARIABLES */
@@ -47,6 +45,39 @@ static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t reque
     g_requestID = REQUEST_ID_IDLE;
     SRAM_FREE(payload);
 };
+
+void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
+{
+    StatusEnum sendStatus = status;
+    if (status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
+        sendStatus = RSP_SUCCESS_CODE;
+    }
+
+    BasicHandlerFunc(data, data_len, requestID, sendStatus);
+    EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
+    resultPage->command = CMD_RESOLVE_UR;
+    resultPage->error_code = status;
+    resultPage->error_message = (char *)data;
+    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR || status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
+        return;
+    }
+    GotoResultPage(resultPage);
+    SRAM_FREE(resultPage);
+};
+
+uint16_t GetCurrentUSParsingRequestID()
+{
+    return g_requestID;
+};
+
+void ClearUSBRequestId(void)
+{
+    g_requestID = REQUEST_ID_IDLE;
+}
+
+#ifdef WEB3_VERSION
+static void GotoFailPage(StatusEnum error_code, const char *error_message);
+static bool CheckURAcceptable(void);
 
 static bool CheckURAcceptable(void)
 {
@@ -80,36 +111,6 @@ static void GotoFailPage(StatusEnum error_code, const char *error_message)
     SRAM_FREE(resultPage);
 }
 
-void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
-{
-    StatusEnum sendStatus = status;
-    if (status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
-        sendStatus = RSP_SUCCESS_CODE;
-    }
-
-    BasicHandlerFunc(data, data_len, requestID, sendStatus);
-    EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
-    resultPage->command = CMD_RESOLVE_UR;
-    resultPage->error_code = status;
-    resultPage->error_message = (char *)data;
-    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR || status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
-        return;
-    }
-    GotoResultPage(resultPage);
-    SRAM_FREE(resultPage);
-};
-
-uint16_t GetCurrentUSParsingRequestID()
-{
-    return g_requestID;
-};
-
-void ClearUSBRequestId(void)
-{
-    g_requestID = REQUEST_ID_IDLE;
-}
-
-#ifndef BTC_ONLY
 static bool IsRequestAllowed(uint32_t requestID)
 {
     if (g_requestID != REQUEST_ID_IDLE) {
@@ -138,7 +139,6 @@ static void HandleHardwareCall(struct URParseResult *urResult)
     g_requestID = REQUEST_ID_IDLE;
 }
 
-#ifdef WEB3_VERSION
 static bool HandleNormalCall(void)
 {
     if (GuiHomePageIsTop()) {
@@ -156,7 +156,6 @@ static bool HandleNormalCall(void)
     g_requestID = REQUEST_ID_IDLE;
     return false;
 }
-#endif
 
 static void HandleCheckResult(PtrT_TransactionCheckResult checkResult, UrViewType_t urViewType)
 {
@@ -171,6 +170,7 @@ static void HandleCheckResult(PtrT_TransactionCheckResult checkResult, UrViewTyp
         GotoFailPage(PRS_PARSING_ERROR, checkResult->error_message);
     }
 }
+#endif
 
 void ProcessURService(EAPDURequestPayload_t *payload)
 {
@@ -220,4 +220,3 @@ void ProcessURService(EAPDURequestPayload_t *payload)
 #endif
 #endif
 }
-#endif

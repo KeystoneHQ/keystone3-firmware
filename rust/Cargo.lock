@@ -3734,6 +3734,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?branch=feat/avax#0122aafc32d908d87820319c5e7bf0f2aba702c8"
 dependencies = [
  "hex",
  "ur",
@@ -3743,6 +3744,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.1"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?branch=feat/avax#0122aafc32d908d87820319c5e7bf0f2aba702c8"
 dependencies = [
  "bs58 0.5.1",
  "core2",

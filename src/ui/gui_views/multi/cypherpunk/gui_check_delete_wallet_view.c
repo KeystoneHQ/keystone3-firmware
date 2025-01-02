@@ -10,6 +10,13 @@ int32_t GuiCheckDeleteWalletViewEventProcess(void *self, uint16_t usEvent, void 
         GuiCheckDeleteWalletInit();
         break;
     case GUI_EVENT_OBJ_DEINIT:
+        GuiCheckDeleteWalletDeInit();
+        break;
+    case SIG_SETTING_DEL_WALLET_PASS:
+        GuiDelWallet(true);
+        break;
+    case SIG_SETTING_DEL_WALLET_PASS_SETUP:
+        GuiDelWalletToSetup();
         break;
     default:
         return ERR_GUI_UNHANDLED;

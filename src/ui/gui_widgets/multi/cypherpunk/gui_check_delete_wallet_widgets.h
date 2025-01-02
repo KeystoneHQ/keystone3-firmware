@@ -4,10 +4,9 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-void GuiUpdateSuccessInit(void);
-void GuiUpdateSuccessDeInit(void);
-
 void GuiCheckDeleteWalletInit(void);
+void GuiCheckDeleteWalletDeInit(void);
+void GuiDelWalletToSetup(void);
 
 #endif
 

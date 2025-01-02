@@ -61,6 +61,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZEUS, &walletListZeus, true},
     {WALLET_LIST_ZASHI, &walletListZashi, true},
     {WALLET_LIST_CAKE, &walletListCake, true},
+    {WALLET_LIST_FEATHER, &walletListFeather, true},
 };
 
 typedef struct {
@@ -156,11 +157,9 @@ static void GuiInitWalletListArray()
 {
     bool isSLIP39 = false;
     bool isTempAccount = false;
-    bool isRussian = false;
 
     isSLIP39 = (GetMnemonicType() == MNEMONIC_TYPE_SLIP39);
     isTempAccount = GetIsTempAccount();
-    isRussian = (LanguageGetIndex() == LANG_RU);
 
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         bool enable = true;
@@ -172,6 +171,7 @@ static void GuiInitWalletListArray()
 
         switch (index) {
         case WALLET_LIST_CAKE:
+        case WALLET_LIST_FEATHER:
             enable = !isSLIP39;
             break;
         case WALLET_LIST_ZASHI:
@@ -237,71 +237,19 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 {
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
-#ifndef BTC_ONLY
-    bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
-    if (isTon) {
-        WalletListItem_t *t = NULL;
-        for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
-            if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
-                t = &g_walletListArray[i];
-                break;
-            }
-        }
-        ASSERT(t != NULL);
-        lv_obj_t *img = GuiCreateImg(parent, t->img);
-        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
-        lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
-                            t);
-    } else {
-        int offsetY = 0;
-        for (int i = 0, j = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
-            if (!g_walletListArray[i].enable) {
-                continue;
-            }
-            lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[i].img);
-            lv_obj_align(img, LV_ALIGN_TOP_MID, 0, offsetY);
-            lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-            lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
-                                &g_walletListArray[i]);
-            j++;
-            offsetY = j  * 107;
-        }
-    }
-#else
-    lv_obj_t *img, *line, *alphaImg;
-    static lv_point_t points[2] = {{0, 0}, {408, 0}};
-    line = GuiCreateLine(parent, points, 2);
-    lv_obj_align(line, LV_ALIGN_TOP_MID, 0, 0);
-    lv_obj_t *baseView = NULL;
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+    int offsetY = 0;
+    for (int i = 0, j = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         if (!g_walletListArray[i].enable) {
             continue;
         }
-        // temporary fix, when the multi-signature testnet is opened, the logic here
-        // needs to be rewritten
-        if (GetCurrentWalletIndex() == SINGLE_WALLET && GetIsTestNet() &&
-                g_walletListArray[i].index == WALLET_LIST_BLUE) {
-            continue;
-        }
-        img = GuiCreateImg(parent, g_walletListArray[i].img);
-        if (baseView == NULL) {
-            lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 9);
-        } else {
-            lv_obj_align_to(img, baseView, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
-        }
-        baseView = img;
+        lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[i].img);
+        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, offsetY);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
                             &g_walletListArray[i]);
-        if (g_walletListArray[i].alpha) {
-            alphaImg = GuiCreateImg(img, &imgAlpha);
-            lv_obj_align(alphaImg, LV_ALIGN_RIGHT_MID, -219, 0);
-        }
-        line = GuiCreateLine(parent, points, 2);
-        lv_obj_align_to(line, baseView, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+        j++;
+        offsetY = j  * 107;
     }
-#endif
 }
 
 static void GuiCreateSupportedNetworks(uint8_t index)
@@ -489,6 +437,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         AddZecCoins();
         break;
     case WALLET_LIST_CAKE:
+    case WALLET_LIST_FEATHER:
         func = GuiGetCakeData;
         AddCakeCoins();
         break;
@@ -525,7 +474,6 @@ void ConnectWalletReturnHandler(lv_event_t *e)
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
 }
 
-#ifndef BTC_ONLY
 static int GetAccountType(void)
 {
     return GetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex));
@@ -533,21 +481,6 @@ static int GetAccountType(void)
 
 static void SetAccountType(uint8_t index)
 {
-    // switch (g_connectWalletTileView.walletIndex) {
-    // case WALLET_LIST_SOLFARE:
-    //     g_currentSOLPathIndex[GetCurrentAccountIndex()] = index;
-    //     break;
-    // case WALLET_LIST_HELIUM:
-    //     g_currentHeliumPathIndex[GetCurrentAccountIndex()] = index;
-    //     break;
-    // case WALLET_LIST_VESPR:
-    //     g_currentAdaPathIndex[GetCurrentAccountIndex()] = index;
-    //     break;
-    // default:
-    //     g_currentEthPathIndex[GetCurrentAccountIndex()] = index;
-    //     break;
-    // }
-
     SetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex), index);
 }
 
@@ -651,7 +584,6 @@ static void SelectDerivationHandler(lv_event_t *e)
         }
     }
 }
-#endif
 
 static void OpenTutorialHandler(lv_event_t *e)
 {
@@ -1105,6 +1037,7 @@ static bool IsSupportEncryption(void)
 {
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_CAKE:
+    case WALLET_LIST_FEATHER:
         return g_privateModePincode == NULL;
     default:
         return false;

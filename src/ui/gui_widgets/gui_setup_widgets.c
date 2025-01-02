@@ -250,13 +250,13 @@ bool GuiIsSetup(void)
 
 void GuiSetupAreaRefresh(void)
 {
+    GuiNvsBarSetWalletIcon(NULL);
+    GuiNvsBarSetWalletName("");
     if (g_setupTileView.currentTile == SETUP_WELCOME) {
         lv_obj_add_flag(g_selectLanguageCont, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-        GuiNvsBarSetWalletIcon(NULL);
-        GuiNvsBarSetWalletName("");
         if (g_reboot) {
             lastShutDownPage = GetSetupStep();
         }

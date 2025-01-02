@@ -22,9 +22,9 @@ void GetSoftWareVersion(char *version)
 {
 #ifndef BTC_ONLY
     if (SOFTWARE_VERSION_BUILD % 2 == 0) {
-        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
     } else {
-        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d(beta%d)", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_BETA);
+        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d(beta%d)", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_BETA);
     }
 #else
     snprintf(version, SOFTWARE_VERSION_MAX_LEN, "Firmware v%d.%d.%d-BTC", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
@@ -42,21 +42,13 @@ void GetUpdateVersionNumber(char *version)
 
 void GetSoftWareVersionNumber(char *version)
 {
-#ifndef BTC_ONLY
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-#else
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-BTC", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-#endif
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d%s", SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_SUFFIX);
 }
 
 const char *GetSoftwareVersionString(void)
 {
     static char version[32] = {0};
-#ifndef BTC_ONLY
-    sprintf(version, "Firmware v%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-#else
-    sprintf(version, "Firmware v%d.%d.%d-BTC", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-#endif
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "Firmware v%d.%d.%d%s", SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_SUFFIX);
     return version;
 }
 

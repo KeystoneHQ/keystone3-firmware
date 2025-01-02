@@ -9,21 +9,13 @@
 #define CHECK_FREE_PARSE_RESULT(result)                                     \
     if (result != NULL)                                                     \
     {                                                                       \
-        free_TransactionParseResult_DisplayTonTransaction(g_parseResult);   \
-        g_parseResult = NULL;                                               \
-    }
-
-#define CHECK_FREE_PARSE_PROOF_RESULT(result)                                     \
-    if (result != NULL)                                                     \
-    {                                                                       \
-        free_TransactionParseResult_DisplayTonProof(g_proofParseResult);   \
+        free_TransactionParseResult_DisplayAvaxTx(g_parseResult);           \
         g_parseResult = NULL;                                               \
     }
 
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
-static void *g_proofParseResult = NULL;
 static bool g_isMulti = false;
 static ViewType g_viewType = ViewTypeUnKnown;
 

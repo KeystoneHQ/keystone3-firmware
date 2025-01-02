@@ -11,7 +11,7 @@ use app_avalanche::transactions::{
     structs::{AvaxFromToInfo, AvaxMethodInfo, AvaxTxInfo},
 };
 use common_rust_c::ffi::VecFFI;
-use common_rust_c::free::Free;
+use common_rust_c::free::{free_ptr_string, Free};
 use common_rust_c::structs::Response;
 use common_rust_c::structs::TransactionParseResult;
 use common_rust_c::types::{PtrString, PtrT};
@@ -84,9 +84,9 @@ pub struct DisplayAvaxFromToInfo {
 impl Free for DisplayAvaxFromToInfo {
     fn free(&self) {
         unsafe {
-            let _ = Box::from_raw(self.address);
-            let _ = Box::from_raw(self.amount);
-            let _ = Box::from_raw(self.path);
+            free_ptr_string(self.address);
+            free_ptr_string(self.amount);
+            free_ptr_string(self.path);
         }
     }
 }
@@ -112,6 +112,15 @@ pub struct DisplayAvaxMethodInfo {
 }
 
 impl_c_ptr!(DisplayAvaxMethodInfo);
+
+impl Free for DisplayAvaxMethodInfo {
+    fn free(&self) {
+        unsafe {
+            free_ptr_string(self.method_key);
+            free_ptr_string(self.method);
+        }
+    }
+}
 
 impl From<AvaxMethodInfo> for DisplayAvaxMethodInfo {
     fn from(value: AvaxMethodInfo) -> Self {
@@ -186,13 +195,14 @@ impl Free for DisplayTxAvaxData {
                 v.free();
             });
 
-            let _ = Box::from_raw(self.total_output_amount);
-            let _ = Box::from_raw(self.fee_amount);
-            let _ = Box::from_raw(self.network);
-            let _ = Box::from_raw(self.reward_address);
-            let _ = Box::from_raw(self.subnet_id);
-            let _ = Box::from_raw(self.method);
-            let _ = Box::from_raw(self.network);
+            free_ptr_string(self.network);
+            free_ptr_string(self.network_key);
+            free_ptr_string(self.subnet_id);
+            free_ptr_string(self.total_output_amount);
+            free_ptr_string(self.total_input_amount);
+            free_ptr_string(self.fee_amount);
+            free_ptr_string(self.reward_address);
+            Box::from_raw(self.method);
         }
     }
 }

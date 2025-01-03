@@ -311,9 +311,10 @@ static void GuiInitWalletListArray()
             case WALLET_LIST_ARCONNECT:
                 enable = !isTempAccount;
                 break;
-            case WALLET_LIST_KEYSTONE:
-                enable = isRussian;
-                break;
+            // open keystone for test
+            // case WALLET_LIST_KEYSTONE:
+            //     enable = isRussian;
+            //     break;
             default:
                 break;
             }
@@ -1252,7 +1253,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
     case WALLET_LIST_KEYSTONE:
         // todo  add keystone ur logic
-        func = GuiGetKeystoneWalletData;
+        func = GuiGetKeystoneConnectWalletData;
         AddKeystoneWalletCoins();
         break;
     default:

@@ -52,7 +52,7 @@ pub fn avax_base_sign(seed: &[u8], path: String, unsigned_data: Vec<u8>) -> Resu
         .sign_ecdsa_recoverable(
             &Message::from_slice(&sha256(unsigned_data.as_slice())).expect("Invalid hash length"),
             &keystore::algorithms::secp256k1::get_private_key_by_seed(&seed, &path.to_string())
-            .map_err(|_| AvaxError::InvalidHex(format!("get private key error")))?,
+                .map_err(|_| AvaxError::InvalidHex(format!("get private key error")))?,
         )
         .serialize_compact();
 

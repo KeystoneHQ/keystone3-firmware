@@ -7,14 +7,15 @@ pub mod address;
 pub mod structs;
 
 use alloc::{
-    format,
+    format, slice,
     string::{String, ToString},
     vec::Vec,
 };
 use app_avalanche::{
+    errors::AvaxError,
     get_avax_tx_type_id, parse_avax_tx,
     transactions::{
-        base_tx::BaseTx,
+        base_tx::{avax_base_sign, BaseTx},
         export::ExportTx,
         import::ImportTx,
         type_id::TypeId,
@@ -24,53 +25,56 @@ use app_avalanche::{
         },
     },
 };
+use bitcoin::ecdsa::Signature;
 use common_rust_c::{
     errors::RustCError,
     extract_ptr_with_type,
-    ffi::VecFFI,
+    ffi::{CSliceFFI, VecFFI},
     impl_c_ptr,
-    structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult},
+    structs::{ExtendedPublicKey, SimpleResponse, TransactionCheckResult, TransactionParseResult},
     types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
     utils::recover_c_char,
 };
 use structs::DisplayAvaxTx;
-use ur_registry::pb::protoc::Base;
 use {
     hex,
-    ur_registry::{avalanche::avax_sign_request::AvaxSignRequest, traits::RegistryItem},
+    ur_registry::{
+        avalanche::{avax_sign_request::AvaxSignRequest, avax_signature::AvaxSignature},
+        traits::RegistryItem,
+    },
 };
 
 #[no_mangle]
 pub extern "C" fn avax_parse_transaction(
     ptr: PtrUR,
+    mfp: PtrBytes,
+    mfp_len: u32,
+    public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
 ) -> PtrT<TransactionParseResult<DisplayAvaxTx>> {
-    let unsigned_data = extract_ptr_with_type!(ptr, AvaxSignRequest);
-    
-    match get_avax_tx_type_id(unsigned_data.get_tx_data()) {
-        Ok(type_id) => parse_transaction_by_type(type_id, unsigned_data.get_tx_data()),
-        Err(_) => TransactionParseResult::from(
-            RustCError::InvalidData("Invalid tx type".to_string())
-        ).c_ptr(),
+    let avax_sign_request = extract_ptr_with_type!(ptr, AvaxSignRequest);
+
+    match get_avax_tx_type_id(avax_sign_request.get_tx_data()) {
+        Ok(type_id) => parse_transaction_by_type(type_id, avax_sign_request.get_tx_data()),
+        Err(_) => {
+            TransactionParseResult::from(RustCError::InvalidData("Invalid tx type".to_string()))
+                .c_ptr()
+        }
     }
 }
 
 fn parse_transaction_by_type(
-    type_id: TypeId, 
-    tx_data: Vec<u8>
+    type_id: TypeId,
+    tx_data: Vec<u8>,
 ) -> PtrT<TransactionParseResult<DisplayAvaxTx>> {
     macro_rules! parse_tx {
         ($tx_type:ty) => {
             parse_avax_tx::<$tx_type>(tx_data)
                 .map(|parse_data| {
-                    TransactionParseResult::success(
-                        DisplayAvaxTx::from(parse_data).c_ptr()
-                    ).c_ptr()
+                    TransactionParseResult::success(DisplayAvaxTx::from(parse_data).c_ptr()).c_ptr()
                 })
                 .unwrap_or_else(|_| {
-                    TransactionParseResult::from(
-                        RustCError::InvalidMasterFingerprint
-                    ).c_ptr()
+                    TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
                 })
         };
     }
@@ -81,9 +85,11 @@ fn parse_transaction_by_type(
         TypeId::XchainImportTx | TypeId::PchainImportTx => parse_tx!(ImportTx),
         TypeId::AddPermissLessionValidator => parse_tx!(AddPermissLessionValidatorTx),
         TypeId::AddPermissLessionDelegator => parse_tx!(AddPermissLessionDelegatorTx),
-        _ => TransactionParseResult::from(
-            RustCError::InvalidData(format!("{:?} not support", type_id))
-        ).c_ptr()
+        _ => TransactionParseResult::from(RustCError::InvalidData(format!(
+            "{:?} not support",
+            type_id
+        )))
+        .c_ptr(),
     }
 }
 
@@ -131,23 +137,43 @@ fn parse_transaction_by_type(
 //     }
 // }
 
-// #[no_mangle]
-// pub extern "C" fn avax_sign(
-//     ptr: PtrUR,
-//     seed: PtrBytes,
-//     seed_len: u32,
-//     master_fingerprint: PtrBytes,
-//     master_fingerprint_len: u32,
-// ) -> *mut UREncodeResult {
-//     btc_sign_psbt_dynamic(
-//         ptr,
-//         seed,
-//         seed_len,
-//         master_fingerprint,
-//         master_fingerprint_len,
-//         FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
-//     )
-// }
+fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError> {
+    let sign_request = extract_ptr_with_type!(ptr, AvaxSignRequest);
+    let signature = avax_base_sign(
+        seed,
+        format!("m/44'/9000'/0'/0/{}", sign_request.get_wallet_index()),
+        sign_request.get_tx_data(),
+    )
+    .unwrap();
+    Ok(AvaxSignature::new(
+        sign_request.get_request_id(),
+        signature.to_vec(),
+    ))
+}
+
+#[no_mangle]
+pub extern "C" fn avax_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+    // let seed = unsafe { alloc::slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = hex::decode("b75a396d4965e5352b6c2c83e4a59ad3d243fbd58133ea9fe0631e5c1576808cb7c1a578099f35278ba00fccd2709a2ef73d7e31380898a63a15b5b3f4532010").unwrap();
+    build_sign_result(ptr, &seed)
+        .map(|v: AvaxSignature| v.try_into())
+        .map_or_else(
+            |e| UREncodeResult::from(e).c_ptr(),
+            |v| {
+                v.map_or_else(
+                    |e| UREncodeResult::from(e).c_ptr(),
+                    |data| {
+                        UREncodeResult::encode(
+                            data,
+                            AvaxSignature::get_registry_type().get_type(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        )
+                        .c_ptr()
+                    },
+                )
+            },
+        )
+}
 
 // #[no_mangle]
 // pub extern "C" fn avax_sign_unlimited(
@@ -170,13 +196,19 @@ fn parse_transaction_by_type(
 #[no_mangle]
 pub extern "C" fn avax_check_transaction(
     ptr: PtrUR,
-    public_key: PtrString,
+    mfp: PtrBytes,
+    mfp_len: u32,
 ) -> PtrT<TransactionCheckResult> {
-    TransactionCheckResult::new().c_ptr()
-    // let avax_tx = extract_ptr_with_type!(ptr, AvaxSignRequest);
-    // let pk = recover_c_char(public_key);
-    // match hex::decode(pk) {
-    // Ok(pk) => {}
-    // Err(e) => TransactionCheckResult::from(RustCError::InvalidHex(e.to_string())).c_ptr(),
-    // }
+    let avax_tx = extract_ptr_with_type!(ptr, AvaxSignRequest);
+    let mfp: [u8; 4] = match unsafe { slice::from_raw_parts(mfp, mfp_len as usize) }.try_into() {
+        Ok(mfp) => mfp,
+        Err(_) => {
+            return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
+        }
+    };
+    if avax_tx.get_master_fingerprint() == mfp {
+        TransactionCheckResult::new().c_ptr()
+    } else {
+        TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr()
+    }
 }

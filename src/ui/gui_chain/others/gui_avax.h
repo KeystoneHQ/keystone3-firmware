@@ -8,6 +8,7 @@
 void GuiSetAvaxUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetAvaxGUIData(void);
 PtrT_TransactionCheckResult GuiGetAvaxCheckResult(void);
+UREncodeResult *GuiGetAvaxSignQrCodeData(void);
 void GuiAvaxTxOverview(lv_obj_t *parent, void *totalData);
 void GuiAvaxTxRawData(lv_obj_t *parent, void *totalData);
 

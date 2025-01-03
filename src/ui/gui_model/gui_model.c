@@ -1181,7 +1181,9 @@ static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen)
         PubValueMsg(QRDECODE_MSG_STOP, 0);
     }
 #else
-    read_qrcode();
+    if (en) {
+        read_qrcode();
+    }
 #endif
     SetLockScreen(enable);
     return SUCCESS_CODE;

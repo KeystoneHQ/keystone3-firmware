@@ -71,12 +71,16 @@ mod tests {
         let input_bytes = "000000070000000005f5e100000000000000000000000001000000018771921301d5bffff592dae86695a615bdb4a441";
         let result = SECP256K1TransferOutput::try_from(Bytes::from(
             hex::decode(input_bytes).expect("Failed to decode hex string"),
-        )).unwrap();
+        ))
+        .unwrap();
         assert_eq!(result.type_id, 7);
         assert_eq!(result.amount, 100000000);
         assert_eq!(result.locktime, 0);
         assert_eq!(result.threshold, 1);
         assert_eq!(result.addresses.get_len(), 1);
-        assert_eq!(result.addresses.get(0).unwrap().encode(), "avax1saceyycp6klllavjmt5xd9dxzk7mffzp6fzwtu");
+        assert_eq!(
+            result.addresses.get(0).unwrap().encode(),
+            "avax1saceyycp6klllavjmt5xd9dxzk7mffzp6fzwtu"
+        );
     }
 }

@@ -41,24 +41,10 @@ UREncodeResult *GuiGetAvaxSignQrCodeData(void)
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
-        MnemonicType type = GetMnemonicType();
         uint8_t seed[64];
-        int len = 64;
-        switch (type) {
-        case MNEMONIC_TYPE_BIP39: {
-            len = sizeof(seed);
-            break;
-
-        }
-        case MNEMONIC_TYPE_SLIP39: {
-            len = GetCurrentAccountEntropyLen();
-            break;
-        }
-        default:
-            break;
-        }
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = ton_sign_transaction(data, seed, len);
+        encodeResult = avax_sign(data, seed, len);
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
@@ -68,12 +54,10 @@ UREncodeResult *GuiGetAvaxSignQrCodeData(void)
 
 PtrT_TransactionCheckResult GuiGetAvaxCheckResult(void)
 {
-    uint8_t mfp[4];
+    uint8_t mfp[4] = {0};
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
-    char* publicKey;
-    publicKey = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
-    return avax_check_transaction(data, publicKey);
+    return avax_check_transaction(data, mfp, sizeof(mfp));
 }
 
 void *GuiGetAvaxGUIData(void)
@@ -81,13 +65,23 @@ void *GuiGetAvaxGUIData(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
-        PtrT_TransactionParseResult_DisplayTonTransaction parseResult = avax_parse_transaction(data);
+        uint8_t mfp[4] = {0};
+        GetMasterFingerPrint(mfp);
+        PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+        ExtendedPublicKey keys[2];
+        public_keys->data = keys;
+        public_keys->size = NUMBER_OF_ARRAYS(keys);
+        keys[0].path = "m/44'/60'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
+        keys[1].path = "m/44'/9000'/0";
+        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
+        PtrT_TransactionParseResult_DisplayTonTransaction parseResult = avax_parse_transaction(data, mfp, sizeof(mfp), public_keys);
+        SRAM_FREE(public_keys);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
 }
-
 typedef struct {
     char *address;
     char *amount;

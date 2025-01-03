@@ -16,7 +16,7 @@ static void DeleteWalletNextStepHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_deleteWalletCont)
     g_deleteWalletCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
-    lv_obj_t *label = GuiCreateTextLabel(g_deleteWalletCont, _("wallet_settings_delete_laoding_title"));
+    lv_obj_t *label = GuiCreateTextLabel(g_deleteWalletCont, _("wallet_settings_delete_loading_title"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 427);
     GuiCreateCircleAroundAnimation(lv_scr_act(), -35);
     GuiModelSettingDelWalletDesc();
@@ -58,7 +58,7 @@ void GuiCheckDeleteWalletInit(void)
         lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, 132);
         tempObj = GuiCreateLittleTitleLabel(g_deleteWalletCont, _("Warning"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, 238);
-        tempObj = GuiCreateNoticeLabel(g_deleteWalletCont, _("Since you are currently using the Cypherpunk firmware, your TON-Only wallet data will be deleted. Click 'Confirm' to proceed with the deletion."));
+        tempObj = GuiCreateNoticeLabel(g_deleteWalletCont, _("check_ton_wallet_warning"));
         lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, 288);
         lv_obj_set_style_text_align(tempObj, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 

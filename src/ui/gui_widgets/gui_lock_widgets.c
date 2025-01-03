@@ -276,12 +276,19 @@ void GuiLockScreenPassCode(bool en)
             GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_homeView);
             GuiFrameOpenView(&g_updateSuccessView);
+            return;
 #ifdef CYPHERPUNK_VERSION
         } else if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
+            lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_checkDeleteWalletView);
+            return;
+        } else if (GetMnemonicType() != MNEMONIC_TYPE_TON && g_checkDeleteWalletView.isActive) {
+            GuiFrameCLoseView(&g_checkDeleteWalletView);
+            return;
 #endif
-        } else if (ModelGetPassphraseQuickAccess()) {
+        }
+        if (ModelGetPassphraseQuickAccess()) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiModeGetWalletDesc();
             GuiEnterPassCodeStatus(g_verifyLock, true);

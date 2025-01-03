@@ -59,8 +59,8 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_UNISAT, &walletListUniSat, true},
     {WALLET_LIST_ZEUS, &walletListZeus, true},
-    {WALLET_LIST_ZASHI, &walletListZashi, true},
     {WALLET_LIST_CAKE, &walletListCake, true},
+    {WALLET_LIST_ZASHI, &walletListZashi, true},
     {WALLET_LIST_FEATHER, &walletListFeather, true},
 };
 typedef struct {
@@ -986,7 +986,7 @@ static void ContinueAttentionHandler(lv_event_t *e)
 static void ShowOrHiddenPincode(lv_event_t *e)
 {
     if (g_isFirstOpenPrivateMode) {
-        g_privateModeHintBox = GuiCreateGeneralHintBox(&imgWarn, _("security_notice_title"), _("private_qr_mode_security_notice_desc"), NULL, _("not_now"), WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
+        g_privateModeHintBox = GuiCreateGeneralHintBox(&imgWarn, _("security_notice_title"), _("private_mode_security_notice1"), _("private_mode_security_notice2"), _("not_now"), WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
         lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_privateModeHintBox);
         lv_obj_add_event_cb(leftBtn, CancelAttentionHandler, LV_EVENT_CLICKED, NULL);
         lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_privateModeHintBox);
@@ -1017,13 +1017,11 @@ static bool IsSupportEncryption(void)
 {
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_CAKE:
-    case WALLET_LIST_FEATHER:
         return g_privateModePincode == NULL;
     default:
         return false;
     }
 }
-
 
 static void GuiCreateQrCodePrivateModeWidget(lv_obj_t *parent)
 {

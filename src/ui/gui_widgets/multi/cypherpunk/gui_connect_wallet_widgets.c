@@ -60,8 +60,8 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_UNISAT, &walletListUniSat, true},
     {WALLET_LIST_ZEUS, &walletListZeus, true},
     {WALLET_LIST_CAKE, &walletListCake, true},
-    {WALLET_LIST_ZASHI, &walletListZashi, true},
     {WALLET_LIST_FEATHER, &walletListFeather, true},
+    {WALLET_LIST_ZASHI, &walletListZashi, true},
 };
 typedef struct {
     int8_t index;

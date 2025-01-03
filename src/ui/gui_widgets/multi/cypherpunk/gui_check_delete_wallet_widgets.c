@@ -62,13 +62,13 @@ void GuiCheckDeleteWalletInit(void)
         lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, 288);
         lv_obj_set_style_text_align(tempObj, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-        lv_obj_t *btn = GuiCreateTextBtn(g_deleteWalletCont, "Not Now");
+        lv_obj_t *btn = GuiCreateTextBtn(g_deleteWalletCont, _("not_now"));
         lv_obj_set_style_bg_color(btn, DARK_GRAY_COLOR, LV_PART_MAIN);
         lv_obj_set_size(btn, 192, 66);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
         lv_obj_add_event_cb(btn, DeleteWalletNotNowHandler, LV_EVENT_CLICKED, NULL);
 
-        btn = GuiCreateTextBtn(g_deleteWalletCont, "Confirm");
+        btn = GuiCreateTextBtn(g_deleteWalletCont, _("initialization_complete_hintbox_ok"));
         lv_obj_set_size(btn, 192, 66);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
         lv_obj_add_event_cb(btn, DeleteWalletNextStepHandler, LV_EVENT_CLICKED, NULL);

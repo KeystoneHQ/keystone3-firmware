@@ -153,8 +153,7 @@ fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError
 
 #[no_mangle]
 pub extern "C" fn avax_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
-    // let seed = unsafe { alloc::slice::from_raw_parts(seed, seed_len as usize) };
-    let seed = hex::decode("b75a396d4965e5352b6c2c83e4a59ad3d243fbd58133ea9fe0631e5c1576808cb7c1a578099f35278ba00fccd2709a2ef73d7e31380898a63a15b5b3f4532010").unwrap();
+    let seed = unsafe { alloc::slice::from_raw_parts(seed, seed_len as usize) };
     build_sign_result(ptr, &seed)
         .map(|v: AvaxSignature| v.try_into())
         .map_or_else(

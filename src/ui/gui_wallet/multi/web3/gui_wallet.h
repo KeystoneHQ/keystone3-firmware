@@ -31,4 +31,5 @@ UREncodeResult *GuiGetImTokenData(void);
 UREncodeResult *GuiGetCoreWalletData(void);
 UREncodeResult *GuiGetKeystoneWalletData(void);
 UREncodeResult *GuiGetThorWalletBtcData(void);
+UREncodeResult *GuiGetKeystoneConnectWalletData(void);
 #endif

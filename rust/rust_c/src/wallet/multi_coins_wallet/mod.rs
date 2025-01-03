@@ -13,6 +13,7 @@ pub mod tonkeeper;
 mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
+pub mod keystone_connect;
 
 pub mod core_wallet;
 pub mod thor_wallet;

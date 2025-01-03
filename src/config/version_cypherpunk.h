@@ -1,4 +1,4 @@
-#define PLUS9(x) (x + 9)
+#define PLUS9(x) (x + SOFTWARE_VERSION_MAJOR_OFFSET)
 
 #define SOFTWARE_VERSION_MAJOR              PLUS9(1)
 #define SOFTWARE_VERSION_MAJOR_OFFSET       9

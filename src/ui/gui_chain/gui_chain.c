@@ -13,6 +13,7 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_BTC_MESSAGE:
     case REMAPVIEW_COSMOS:
     case REMAPVIEW_SUI_SIGN_MESSAGE_HASH:
+    case REMAPVIEW_AVAX:
         return true;
     default:
         return false;

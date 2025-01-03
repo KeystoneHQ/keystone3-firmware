@@ -284,6 +284,7 @@ void GuiLockScreenPassCode(bool en)
             GuiFrameOpenView(&g_checkDeleteWalletView);
             return;
         } else if (GetMnemonicType() != MNEMONIC_TYPE_TON && g_checkDeleteWalletView.isActive) {
+            lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiFrameCLoseView(&g_checkDeleteWalletView);
             return;
 #endif

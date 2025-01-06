@@ -16,7 +16,7 @@ static void DeleteWalletNextStepHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_deleteWalletCont)
     g_deleteWalletCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
-    lv_obj_t *label = GuiCreateTextLabel(g_deleteWalletCont, _("wallet_settings_delete_loading_title"));
+    lv_obj_t *label = GuiCreateTextLabel(g_deleteWalletCont, _("wallet_deleting"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 427);
     GuiCreateCircleAroundAnimation(lv_scr_act(), -35);
     GuiModelSettingDelWalletDesc();

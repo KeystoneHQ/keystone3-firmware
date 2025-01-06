@@ -270,26 +270,23 @@ void GuiLockScreenPassCode(bool en)
         if (g_oldWalletIndex == 0xFF) {
             g_oldWalletIndex = GetCurrentAccountIndex();
         }
+
         if (IsUpdateSuccess()) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiModeGetWalletDesc();
             GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_homeView);
             GuiFrameOpenView(&g_updateSuccessView);
-            return;
 #ifdef CYPHERPUNK_VERSION
         } else if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_checkDeleteWalletView);
-            return;
         } else if (GetMnemonicType() != MNEMONIC_TYPE_TON && g_checkDeleteWalletView.isActive) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiFrameCLoseView(&g_checkDeleteWalletView);
-            return;
 #endif
-        }
-        if (ModelGetPassphraseQuickAccess()) {
+        } else if (ModelGetPassphraseQuickAccess()) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiModeGetWalletDesc();
             GuiEnterPassCodeStatus(g_verifyLock, true);

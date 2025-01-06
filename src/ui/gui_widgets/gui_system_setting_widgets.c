@@ -273,6 +273,7 @@ static void OpenLanguageSelectHandler(lv_event_t *e)
 }
 
 #ifdef WEB3_VERSION
+static void GuiShowChangePermitKeyBoard(lv_event_t * e);
 void GuiDealChangePermitKeyBoard(bool pass)
 {
     if (pass) {

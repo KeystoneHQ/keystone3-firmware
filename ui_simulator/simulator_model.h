@@ -35,6 +35,7 @@ void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint3
 uint32_t GetCurrentStampTime(void);
 bool FatfsFileExist(const char *path);
 bool GetEnsName(const char *addr, char *name);
+void FpWipeManageInfo(void);
 
 extern bool g_reboot;
 

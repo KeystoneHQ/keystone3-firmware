@@ -408,6 +408,10 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
             } else if ((!strcmp(walletList[i].name, "BTC") || !strcmp(walletList[i].name, "ETH")) && !isTon) {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
+#ifdef CYPHERPUNK_VERSION
+            } else if ((!strcmp(walletList[i].name, "ZEC") || !strcmp(walletList[i].name, "XMR"))) {
+                cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
+#endif
             } else {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));
             }

@@ -109,7 +109,7 @@ void *GuiCreateStatusCoinButton(lv_obj_t *parent, const char *text, const void *
     return button;
 }
 
-void *GuiUpdateStatusCoinButton(lv_obj_t *button, const char *text, const void *src)
+void GuiUpdateStatusCoinButton(lv_obj_t *button, const char *text, const void *src)
 {
     lv_obj_t *label = lv_obj_get_child(button, 1);
     lv_obj_t *img = lv_obj_get_child(button, 0);
@@ -117,7 +117,6 @@ void *GuiUpdateStatusCoinButton(lv_obj_t *button, const char *text, const void *
     lv_img_set_pivot(img, lv_obj_get_self_width(img) / 2, 0);
     lv_img_set_zoom(img, 128);
     lv_label_set_text(label, text);
-    return button;
 }
 
 void *GuiCreateSettingItemButton(lv_obj_t *parent, uint16_t width, const char *text, const char *descText, const void *src,

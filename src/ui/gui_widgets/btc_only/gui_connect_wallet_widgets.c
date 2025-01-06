@@ -62,7 +62,6 @@ static lv_obj_t *g_coinCont = NULL;
 static lv_obj_t *g_coinTitleLabel = NULL;
 static lv_obj_t *g_openMoreHintBox = NULL;
 static lv_obj_t *g_bottomCont = NULL;
-static lv_obj_t *g_manageImg = NULL;
 static bool g_isCoinReselected = false;
 static lv_obj_t *g_derivationPathCont = NULL;
 static void QRCodePause(bool);
@@ -327,7 +326,6 @@ void GuiConnectWalletRefresh(void)
 void GuiConnectWalletDeInit(void)
 {
     GUI_DEL_OBJ(g_openMoreHintBox)
-    GUI_DEL_OBJ(g_manageImg);
     GUI_DEL_OBJ(g_coinCont)
     GUI_DEL_OBJ(g_derivationPathCont)
     GUI_DEL_OBJ(g_noticeWindow)

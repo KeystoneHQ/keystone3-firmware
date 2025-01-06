@@ -55,6 +55,12 @@ typedef struct {
     const lv_img_dsc_t *icon;
 } CoinWalletInfo_t;
 
+typedef struct {
+    WALLET_LIST_INDEX_ENUM index;
+    const char *name;
+    const lv_img_dsc_t *icon;
+} WalletInfo_t;
+
 bool GetLvglHandlerStatus(void);
 
 static void RefreshStatusBar(void);
@@ -97,7 +103,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 #endif
 };
 
-const static CoinWalletInfo_t g_walletBtn[] = {
+const static WalletInfo_t g_walletBtn[] = {
 #ifndef BTC_ONLY
     {WALLET_LIST_KEYSTONE, "Keystone", &walletKeystone},
     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
@@ -337,7 +343,14 @@ const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
     } else if (index == WALLET_LIST_HELIUM) {
         return "Helium";
     }
-    return g_walletBtn[index].name;
+
+    CoinWalletInfo_t *coin = NULL;
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
+        if (g_walletBtn[i].index == index) {
+            return g_walletBtn[i].name;
+        }
+    }
+    return NULL;
 }
 #endif
 
@@ -679,8 +692,7 @@ void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
     }
     lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
     if (midButtonCb != NULL) {
-        lv_obj_add_event_cb(navBarWidget->midBtn, midButtonCb, LV_EVENT_CLICKED,
-                            param);
+        lv_obj_add_event_cb(navBarWidget->midBtn, midButtonCb, LV_EVENT_CLICKED, param);
     }
 }
 
@@ -696,24 +708,26 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
         }
     }
     // tx parse page: Confrim Transaction
-    navBarWidget->midBtn = GuiUpdateStatusCoinButton(
-                               navBarWidget->midBtn, (name != NULL) ? name : _("confirm_transaction"),
-                               coin->icon);
+    GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : _("confirm_transaction"), coin->icon);
 }
 
-void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index,
-               const char *name)
+void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
+    WalletInfo_t *coin = NULL;
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
+        if (g_walletBtn[i].index == index) {
+            coin = &g_walletBtn[i];
+            break;
+        }
+    }
+
     if (name == NULL) {
-        char name[BUFFER_SIZE_64] = {0};
-        snprintf_s(name, BUFFER_SIZE_64, "%s %s", _("connect_head"),
-                   g_walletBtn[index].name);
-        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
-                               g_walletBtn[index].icon);
+        char nameBuf[BUFFER_SIZE_64] = {0};
+        snprintf_s(nameBuf, BUFFER_SIZE_64, "%s %s", _("connect_head"), coin->name);
+        GuiUpdateStatusCoinButton(navBarWidget->midBtn, nameBuf, coin->icon);
     } else {
-        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
-                               g_walletBtn[index].icon);
+        GuiUpdateStatusCoinButton(navBarWidget->midBtn, name, coin->icon);
     }
 }
 

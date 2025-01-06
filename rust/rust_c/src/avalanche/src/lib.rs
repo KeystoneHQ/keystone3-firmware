@@ -12,6 +12,7 @@ use alloc::{
     vec::Vec,
 };
 use app_avalanche::{
+    constants::{C_BLOCKCHAIN_ID, P_BLOCKCHAIN_ID, X_BLOCKCHAIN_ID},
     errors::AvaxError,
     get_avax_tx_type_id, parse_avax_tx,
     transactions::{
@@ -33,7 +34,7 @@ use common_rust_c::{
     impl_c_ptr,
     structs::{ExtendedPublicKey, SimpleResponse, TransactionCheckResult, TransactionParseResult},
     types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
-    ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
+    ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH},
     utils::recover_c_char,
 };
 use structs::DisplayAvaxTx;
@@ -93,66 +94,13 @@ fn parse_transaction_by_type(
     }
 }
 
-// #[no_mangle]
-// fn avax_sign_dynamic(
-//     ptr: PtrUR,
-//     seed: PtrBytes,
-//     seed_len: u32,
-//     master_fingerprint: PtrBytes,
-//     master_fingerprint_len: u32,
-//     fragment_length: usize,
-// ) -> *mut UREncodeResult {
-//     if master_fingerprint_len != 4 {
-//         return UREncodeResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
-//     }
-//     let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
-//     let master_fingerprint = match bitcoin::bip32::Fingerprint::from_str(
-//         hex::encode(master_fingerprint.to_vec()).as_str(),
-//     )
-//     .map_err(|_e| RustCError::InvalidMasterFingerprint)
-//     {
-//         Ok(mfp) => mfp,
-//         Err(e) => {
-//             return UREncodeResult::from(e).c_ptr();
-//         }
-//     };
-
-//     let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
-//     let psbt = crypto_psbt.get_psbt();
-
-//     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-
-//     let result = app_bitcoin::sign_psbt(psbt, seed, master_fingerprint);
-//     match result.map(|v| CryptoPSBT::new(v).try_into()) {
-//         Ok(v) => match v {
-//             Ok(data) => UREncodeResult::encode(
-//                 data,
-//                 CryptoPSBT::get_registry_type().get_type(),
-//                 fragment_length.clone(),
-//             )
-//             .c_ptr(),
-//             Err(e) => UREncodeResult::from(e).c_ptr(),
-//         },
-//         Err(e) => UREncodeResult::from(e).c_ptr(),
-//     }
-// }
-
-fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError> {
-    let sign_request = extract_ptr_with_type!(ptr, AvaxSignRequest);
-    let signature = avax_base_sign(
-        seed,
-        format!("m/44'/9000'/0'/0/{}", sign_request.get_wallet_index()),
-        sign_request.get_tx_data(),
-    )
-    .unwrap();
-    Ok(AvaxSignature::new(
-        sign_request.get_request_id(),
-        signature.to_vec(),
-    ))
-}
-
 #[no_mangle]
-pub extern "C" fn avax_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+fn avax_sign_dynamic(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+    fragment_length: usize,
+) -> PtrT<UREncodeResult> {
     let seed = unsafe { alloc::slice::from_raw_parts(seed, seed_len as usize) };
     build_sign_result(ptr, &seed)
         .map(|v: AvaxSignature| v.try_into())
@@ -165,7 +113,7 @@ pub extern "C" fn avax_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<U
                         UREncodeResult::encode(
                             data,
                             AvaxSignature::get_registry_type().get_type(),
-                            FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                            fragment_length,
                         )
                         .c_ptr()
                     },
@@ -174,23 +122,50 @@ pub extern "C" fn avax_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<U
         )
 }
 
-// #[no_mangle]
-// pub extern "C" fn avax_sign_unlimited(
-//     ptr: PtrUR,
-//     seed: PtrBytes,
-//     seed_len: u32,
-//     master_fingerprint: PtrBytes,
-//     master_fingerprint_len: u32,
-// ) -> *mut UREncodeResult {
-//     btc_sign_psbt_dynamic(
-//         ptr,
-//         seed,
-//         seed_len,
-//         master_fingerprint,
-//         master_fingerprint_len,
-//         FRAGMENT_UNLIMITED_LENGTH.clone(),
-//     )
-// }
+fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError> {
+    let sign_request = extract_ptr_with_type!(ptr, AvaxSignRequest);
+    let wallet_index = sign_request.get_wallet_index();
+    let path = match get_avax_tx_type_id(sign_request.get_tx_data()) {
+        Ok(type_id) => match type_id {
+            TypeId::CchainExportTx => format!("m/44'/60'/0'/0/{}", wallet_index),
+            TypeId::BaseTx => {
+                let base_tx = parse_avax_tx::<BaseTx>(sign_request.get_tx_data()).unwrap();
+                if base_tx.tx_header.get_blockchain_id() == C_BLOCKCHAIN_ID {
+                    format!("m/44'/60'/0'/0/{}", wallet_index)
+                } else {
+                    format!("m/44'/9000'/0'/0/{}", wallet_index)
+                }
+            }
+            _ => format!("m/44'/9000'/0'/0/{}", wallet_index),
+        },
+        Err(_) => {
+            return Err(AvaxError::InvalidInput);
+        }
+    };
+
+    extern crate std;
+    use std::println;
+    println!("sign_request  get_request_id{:?}", sign_request.get_request_id());
+
+    Ok(AvaxSignature::new(
+        sign_request.get_request_id(),
+        avax_base_sign(seed, path, sign_request.get_tx_data())?.to_vec(),
+    ))
+}
+
+#[no_mangle]
+pub extern "C" fn avax_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+    avax_sign_dynamic(ptr, seed, seed_len, FRAGMENT_MAX_LENGTH_DEFAULT.clone())
+}
+
+#[no_mangle]
+pub extern "C" fn avax_sign_unlimited(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> PtrT<UREncodeResult> {
+    avax_sign_dynamic(ptr, seed, seed_len, FRAGMENT_UNLIMITED_LENGTH.clone())
+}
 
 #[no_mangle]
 pub extern "C" fn avax_check_transaction(

@@ -217,7 +217,7 @@ static GenerateUR UrGenerator(ViewType viewType, bool isMulti)
         func = GuiGetTonProofSignQrCodeData;
         break;
     case AvaxTx:
-        func = GuiGetAvaxSignQrCodeData;
+        func = isMulti ? GuiGetAvaxSignQrCodeData : GuiGetAvaxSignUrDataUnlimited;
         break;
 #endif
     default:

@@ -19,38 +19,6 @@ use common_rust_c::ur::UREncodeResult;
 use common_rust_c::utils::convert_c_char;
 use common_rust_c::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
 
-// #[repr(C)]
-// pub struct PsbtSignResult {
-//     base_str: PtrString,
-//     hex_str: PtrString,
-//     ur_result: PtrT<UREncodeResult>,
-// }
-
-// impl PsbtSignResult {
-//     pub fn new(psbt_bytes: &Vec<u8>, ur_result: PtrT<UREncodeResult>) -> Self {
-//         PsbtSignResult {
-//             base_str: convert_c_char(base64::encode(psbt_bytes)),
-//             hex_str: convert_c_char(hex::encode(psbt_bytes)),
-//             ur_result,
-//         }
-//     }
-// }
-
-// impl Free for PsbtSignResult {
-//     fn free(&self) {
-//         free_str_ptr!(self.base_str);
-//         free_str_ptr!(self.hex_str);
-//         unsafe {
-//             let x = Box::from_raw(self.ur_result);
-//             x.free();
-//         }
-//     }
-// }
-
-// impl_c_ptr!(PsbtSignResult);
-
-// make_free_method!(Response<PsbtSignResult>);
-
 #[repr(C)]
 pub struct DisplayAvaxTx {
     data: *mut DisplayTxAvaxData,

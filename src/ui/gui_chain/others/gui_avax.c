@@ -25,6 +25,7 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayAvaxTx *
 static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
 static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
 static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
+UREncodeResult *GetAvaxSignDataDynamic(bool isUnlimited);
 
 void GuiSetAvaxUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
@@ -36,6 +37,16 @@ void GuiSetAvaxUrData(URParseResult *urResult, URParseMultiResult *urMultiResult
 
 UREncodeResult *GuiGetAvaxSignQrCodeData(void)
 {
+    return GetAvaxSignDataDynamic(false);
+}
+
+UREncodeResult *GuiGetAvaxSignUrDataUnlimited(void)
+{
+    return GetAvaxSignDataDynamic(true);
+}
+
+UREncodeResult *GetAvaxSignDataDynamic(bool isUnlimited)
+{
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     UREncodeResult *encodeResult;
@@ -44,7 +55,11 @@ UREncodeResult *GuiGetAvaxSignQrCodeData(void)
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = avax_sign(data, seed, len);
+        if (isUnlimited) {
+            encodeResult = avax_sign_unlimited(data, seed, len);
+        } else {
+            encodeResult = avax_sign(data, seed, len);
+        }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);

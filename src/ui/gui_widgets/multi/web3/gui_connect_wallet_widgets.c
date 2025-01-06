@@ -1754,8 +1754,7 @@ static void OpenDerivationPath()
     lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(scrollCont, LV_OBJ_FLAG_SCROLLABLE);
 
-    lv_obj_t *label =
-        GuiCreateNoticeLabel(scrollCont, GetDerivationPathSelectDes());
+    lv_obj_t *label = GuiCreateNoticeLabel(scrollCont, GetDerivationPathSelectDes());
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
     uint16_t buttonHeight = IsAda(g_connectWalletTileView.walletIndex) ? 68 : 102;
     lv_obj_t *cont = GuiCreateContainerWithParent(scrollCont, 408, (buttonHeight + 1) * GetDerivedPathTypeCount() - 1);

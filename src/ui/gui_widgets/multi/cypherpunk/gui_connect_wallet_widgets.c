@@ -138,7 +138,6 @@ static lv_obj_t *g_coinCont = NULL;
 static lv_obj_t *g_coinTitleLabel = NULL;
 static lv_obj_t *g_openMoreHintBox = NULL;
 static lv_obj_t *g_bottomCont = NULL;
-static lv_obj_t *g_manageImg = NULL;
 static bool g_isCoinReselected = false;
 static lv_obj_t *g_derivationPathCont = NULL;
 static char **g_derivationPathDescs = NULL;
@@ -234,9 +233,6 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 
 static void GuiCreateSupportedNetworks(uint8_t index)
 {
-    if (g_coinCont != NULL && g_manageImg != NULL && g_coinTitleLabel != NULL) {
-        return;
-    }
     lv_obj_clean(g_bottomCont);
     if (index == WALLET_LIST_UNISAT) {
         g_coinTitleLabel = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_tokens"));
@@ -248,11 +244,6 @@ static void GuiCreateSupportedNetworks(uint8_t index)
     g_coinCont = GuiCreateContainerWithParent(g_bottomCont, 280, 30);
     lv_obj_align(g_coinCont, LV_ALIGN_TOP_LEFT, 36, 50);
     lv_obj_set_style_bg_color(g_coinCont, DARK_BG_COLOR, LV_PART_MAIN);
-
-    g_manageImg = GuiCreateImg(g_bottomCont, &imgManage);
-    lv_obj_set_style_img_opa(g_manageImg, LV_OPA_30, LV_PART_MAIN);
-    lv_obj_align(g_manageImg, LV_ALIGN_BOTTOM_RIGHT, -45, -41);
-    lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
 }
 
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
@@ -395,7 +386,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     GuiCreateSupportedNetworks(index);
     lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_networks"));
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
     switch (index) {
     case WALLET_LIST_BLUE:
         func = GuiGetBlueWalletBtcData;
@@ -885,8 +875,7 @@ void GuiConnectWalletRefresh(void)
                          PrivateModePrevTileHandler, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
                           OpenMoreHandler, &g_connectWalletTileView.walletIndex);
-        SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex,
-                  NULL);
+        SetWallet(g_pageWidget->navBarWidget, g_connectWalletTileView.walletIndex, NULL);
         break;
     case CONNECT_WALLET_QRCODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
@@ -905,11 +894,9 @@ void GuiConnectWalletRefresh(void)
 void GuiConnectWalletDeInit(void)
 {
     GUI_DEL_OBJ(g_openMoreHintBox)
-    GUI_DEL_OBJ(g_manageImg);
     GUI_DEL_OBJ(g_coinCont)
     GUI_DEL_OBJ(g_derivationPathCont)
     GUI_DEL_OBJ(g_noticeWindow)
-    ExitPrivateMode();
     CloseAttentionHandler(NULL);
     if (g_coinListCont != NULL && HasSelectAddressWidget()) {
         g_coinListCont = NULL;
@@ -919,6 +906,7 @@ void GuiConnectWalletDeInit(void)
     }
     CloseToTargetTileView(g_connectWalletTileView.currentTile,
                           CONNECT_WALLET_SELECT_WALLET);
+    GuiPendingHintBoxRemove();
     GUI_DEL_OBJ(g_connectWalletTileView.cont)
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);

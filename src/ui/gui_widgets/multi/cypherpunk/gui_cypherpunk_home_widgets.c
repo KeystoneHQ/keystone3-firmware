@@ -63,12 +63,13 @@ static void GuiInitWalletState(void)
         for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
             g_walletState[i].enable = true;
         }
-        g_walletState[HOME_WALLET_CARD_ZEC].enable = true;
-        g_walletState[HOME_WALLET_CARD_MONERO].enable = true;
+        g_walletState[HOME_WALLET_CARD_ZEC].enable = false;
+        g_walletState[HOME_WALLET_CARD_MONERO].enable = false;
         break;
     case MNEMONIC_TYPE_BIP39:
         for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
             g_walletState[i].enable = true;
+            g_walletState[i].state = true;
         }
         bool isPassphrase = PassphraseExist(GetCurrentAccountIndex());
         if (isPassphrase) {

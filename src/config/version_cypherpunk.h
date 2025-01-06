@@ -1,6 +1,4 @@
-#define PLUS9(x) (x + SOFTWARE_VERSION_MAJOR_OFFSET)
-
-#define SOFTWARE_VERSION_MAJOR              PLUS9(1)
+#define SOFTWARE_VERSION_MAJOR              10 // 1 + 9
 #define SOFTWARE_VERSION_MAJOR_OFFSET       9
 #define SOFTWARE_VERSION_MINOR              0
 #define SOFTWARE_VERSION_BUILD              0

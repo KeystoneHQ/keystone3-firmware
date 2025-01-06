@@ -249,6 +249,7 @@ device setting,24,device_setting_mid_btn,Device Settings,Настройки ус
 ,20,wallet_settings_delete_confirm_desc,"To safeguard your digital assets, it is advisable to verify the seed phrase before proceeding with its deletion.","Чтобы защитить ваши цифровые активы перед удалением, рекомендуется проверить сид фразу.",디지털 자산을 보호하려면 삭제를 진행하기 전에 시드 문구를 확인하는 것이 좋습니다.,"为了保护您的资产安全,建议在删除钱包之前验证您是否已备份该助记词.","Para proteger tus activos digitales, es recomendable verificar la frase semilla antes de proceder con su eliminación.","Um Ihre digitalen Vermögenswerte zu schützen, empfiehlt es sich, den Seed-Phrasen vor der Löschung zu überprüfen.",デジタル資産を保護するためには、削除を進める前にシードフレーズを確認することがおすすめです.
 ,20,wallet_settings_delete_confirm_button2,Confirm Deletion,Подтвердить удаление,삭제 확인,确认删除,Confirmar eliminación,Bestätige Löschung,削除を確認
 ,24,wallet_settings_delete_loading_title,Deleting,Удаление,삭제중,删除中......,Borrando,Löschen,削除中
+,24,wallet_deleting,Deleting Wallet,Удаление,삭제중,删除中......,Borrando,Löschen,削除中
 System Settings,24,system_settings_vabiration,Vibration,Вибрация,진동,振动,Vibración,Vibration,振動
 ,24,system_settings_screen_lock_title,Display & Lock Screen,Дисплей и блокировка,디스플레이 & 잠금 화면,显示/锁定屏幕,Pantalla de visualización y bloqueo,Anzeige & Sperrbildschirm,ディスプレイ＆ロック画面
 ,24,system_settings_screen_lock_brightness,Brightness,Яркость,화면 밝기,亮度,Brillo,Helligkeit,輝度

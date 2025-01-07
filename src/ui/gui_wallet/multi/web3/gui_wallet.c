@@ -278,7 +278,7 @@ UREncodeResult *GuiGetADADataByIndex(char *walletName)
     CSliceFFI_ExtendedPublicKey keys;
     keys.data = xpubs;
     keys.size = 1;
-    char firmwareVersion[12];
+    char firmwareVersion[BUFFER_SIZE_32];
     GetSoftWareVersionNumber(firmwareVersion);
     return generate_key_derivation_ur(mfp, 4, &keys, firmwareVersion);
 }
@@ -413,7 +413,7 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
 
     char serialNumber[256];
     GetSerialNumber(serialNumber);
-    char firmwareVersion[12];
+    char firmwareVersion[BUFFER_SIZE_32];
     GetSoftWareVersionNumber(firmwareVersion);
     g_urEncode = get_keystone_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
 
@@ -455,7 +455,7 @@ UREncodeResult *GuiGetBitgetWalletData(void)
 
     char serialNumber[256];
     GetSerialNumber(serialNumber);
-    char firmwareVersion[12];
+    char firmwareVersion[BUFFER_SIZE_32];
     GetSoftWareVersionNumber(firmwareVersion);
     g_urEncode = get_bitget_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
     CHECK_CHAIN_PRINT(g_urEncode);
@@ -509,7 +509,7 @@ UREncodeResult *GuiGetOkxWalletData(void)
 
     char serialNumber[256];
     GetSerialNumber(serialNumber);
-    char firmwareVersion[12];
+    char firmwareVersion[BUFFER_SIZE_32];
     GetSoftWareVersionNumber(firmwareVersion);
     g_urEncode = get_okx_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
     CHECK_CHAIN_PRINT(g_urEncode);
@@ -698,7 +698,7 @@ UREncodeResult *GuiGetThorWalletBtcData(void)
 
     char serialNumber[256];
     GetSerialNumber(serialNumber);
-    char firmwareVersion[12];
+    char firmwareVersion[BUFFER_SIZE_32];
     GetSoftWareVersionNumber(firmwareVersion);
     UREncodeResult *urencode =
         get_connect_thor_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys,

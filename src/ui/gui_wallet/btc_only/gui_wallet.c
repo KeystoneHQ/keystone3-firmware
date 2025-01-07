@@ -135,7 +135,7 @@ UREncodeResult *GuiGetOkxWalletData(void)
     keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
     char serialNumber[256];
     GetSerialNumber(serialNumber);
-    char firmwareVersion[12];
+    char firmwareVersion[BUFFER_SIZE_32];
     GetSoftWareVersionNumber(firmwareVersion);
     g_urEncode = get_okx_wallet_ur_btc_only(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
     CHECK_CHAIN_PRINT(g_urEncode);

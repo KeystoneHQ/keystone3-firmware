@@ -519,7 +519,7 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
     CSliceFFI_ExtendedPublicKey keys;
-    char firmwareVersion[12];
+    char firmwareVersion[BUFFER_SIZE_32];
     GetSoftWareVersionNumber(firmwareVersion);
     if (strcmp("1", g_callData->version) == 0) {
         uint8_t seed[64];

@@ -174,5 +174,6 @@ bool CheckViewTypeIsAllow(uint8_t viewType);
 bool IsMessageType(uint8_t type);
 bool isTonSignProof(uint8_t type);
 bool isCatalystVotingRegistration(uint8_t type);
+bool CheckViewTypeIsAllow(uint8_t viewType);
 #endif
 #endif

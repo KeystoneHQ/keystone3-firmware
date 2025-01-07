@@ -12,9 +12,9 @@ typedef struct {
     GuiRemapViewType remapType;
 } ViewHandlerEntry;
 
-#ifdef WEB3_VERSION
 bool CheckViewTypeIsAllow(uint8_t viewType)
 {
+#ifdef WEB3_VERSION
     switch (ViewTypeReMap(viewType)) {
     case REMAPVIEW_ETH:
     case REMAPVIEW_ETH_PERSONAL_MESSAGE:
@@ -30,8 +30,12 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     default:
         return false;
     }
-}
 #endif
+#ifdef CYPHERPUNK_VERSION
+    return ViewTypeReMap(viewType) == REMAPVIEW_BTC || ViewTypeReMap(viewType) == REMAPVIEW_BTC_MESSAGE;
+#endif
+    return false;
+}
 
 static const ViewHandlerEntry g_viewHandlerMap[] = {
     {BtcNativeSegwitTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BTC, REMAPVIEW_BTC},

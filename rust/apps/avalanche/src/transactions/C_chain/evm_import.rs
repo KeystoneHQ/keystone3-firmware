@@ -40,7 +40,7 @@ impl TryFrom<Bytes> for EvmOutput {
 
 impl ParsedSizeAble for EvmOutput {
     fn parsed_size(&self) -> usize {
-        C_CHAIN_ADDRESS_LEN + 8 + ASSET_ID_LEN + 8
+        C_CHAIN_ADDRESS_LEN + 8 + ASSET_ID_LEN
     }
 }
 

@@ -20,11 +20,14 @@ use app_avalanche::{
         export::ExportTx,
         import::ImportTx,
         type_id::TypeId,
-        C_chain::{evm_export::ExportTx as CchainExportTx, evm_import::ImportTx as CchainImportTx},
         P_chain::{
             add_permissionless_delegator::AddPermissLessionDelegatorTx,
             add_permissionless_validator::AddPermissLessionValidatorTx,
         },
+        C_chain::{
+            evm_export::ExportTx as CchainExportTx,
+            evm_import::ImportTx as CchainImportTx,
+        }
     },
 };
 use bitcoin::ecdsa::Signature;

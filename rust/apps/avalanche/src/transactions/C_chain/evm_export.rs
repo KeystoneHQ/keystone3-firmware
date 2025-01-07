@@ -90,19 +90,14 @@ impl AvaxTxInfo for ExportTx {
 
     fn get_method_info(&self) -> Option<AvaxMethodInfo> {
         let method = match (self.type_id, self.dest_chain) {
-            (TypeId::XchainExportTx, chain) | (TypeId::PchainExportTx, chain) => {
-                let source = if matches!(self.type_id, TypeId::XchainExportTx) {
-                    "X"
-                } else {
-                    "P"
-                };
+            (TypeId::CchainExportTx, chain) => {
                 let dest = match chain {
                     X_BLOCKCHAIN_ID => "X",
                     P_BLOCKCHAIN_ID => "P",
                     C_BLOCKCHAIN_ID => "C",
                     _ => "Unknown",
                 };
-                format!("{} to {} Export", source, dest)
+                format!("C to {} Export", dest)
             }
             _ => "Unknown".to_string(),
         };

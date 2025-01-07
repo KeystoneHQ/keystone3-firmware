@@ -20,6 +20,7 @@ use app_avalanche::{
         export::ExportTx,
         import::ImportTx,
         type_id::TypeId,
+        C_chain::{evm_export::ExportTx as CchainExportTx, evm_import::ImportTx as CchainImportTx},
         P_chain::{
             add_permissionless_delegator::AddPermissLessionDelegatorTx,
             add_permissionless_validator::AddPermissLessionValidatorTx,
@@ -81,9 +82,17 @@ fn parse_transaction_by_type(
     }
 
     match type_id {
-        TypeId::BaseTx => parse_tx!(BaseTx),
+        TypeId::BaseTx => {
+            let base_tx = parse_avax_tx::<BaseTx>(tx_data.clone()).unwrap();
+            if base_tx.tx_header.get_blockchain_id() == C_BLOCKCHAIN_ID {
+                return parse_tx!(CchainImportTx);
+            } else {
+                return parse_tx!(BaseTx);
+            }
+        }
         TypeId::PchainExportTx | TypeId::XchainExportTx => parse_tx!(ExportTx),
         TypeId::XchainImportTx | TypeId::PchainImportTx => parse_tx!(ImportTx),
+        TypeId::CchainExportTx => parse_tx!(CchainExportTx),
         TypeId::AddPermissLessionValidator => parse_tx!(AddPermissLessionValidatorTx),
         TypeId::AddPermissLessionDelegator => parse_tx!(AddPermissLessionDelegatorTx),
         _ => TransactionParseResult::from(RustCError::InvalidData(format!(
@@ -142,10 +151,6 @@ fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError
             return Err(AvaxError::InvalidInput);
         }
     };
-
-    extern crate std;
-    use std::println;
-    println!("sign_request  get_request_id{:?}", sign_request.get_request_id());
 
     Ok(AvaxSignature::new(
         sign_request.get_request_id(),

@@ -1,5 +1,5 @@
-#define SOFTWARE_VERSION_MAJOR              10 // 1 + 9
-#define SOFTWARE_VERSION_MAJOR_OFFSET       9
+#define SOFTWARE_VERSION_MAJOR              9 // 1 + 8
+#define SOFTWARE_VERSION_MAJOR_OFFSET       8
 #define SOFTWARE_VERSION_MINOR              0
 #define SOFTWARE_VERSION_BUILD              0
 #define SOFTWARE_VERSION_BETA               0

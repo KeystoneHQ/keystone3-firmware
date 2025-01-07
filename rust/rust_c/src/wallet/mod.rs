@@ -1,9 +1,40 @@
 pub mod btc_only_wallet;
 pub use btc_only_wallet::*;
+mod structs;
 #[cfg(feature = "cypherpunk")]
 pub mod cypherpunk_wallet;
 #[cfg(feature = "multi-coins")]
 pub mod multi_coins_wallet;
+
+use alloc::format;
+use alloc::string::String;
+use alloc::string::ToString;
+use alloc::vec::Vec;
+
+use app_wallets::metamask::ETHAccountTypeApp;
+use app_wallets::DEVICE_TYPE;
+use cty::uint32_t;
+use keystore::algorithms::secp256k1::derive_extend_public_key;
+use keystore::errors::KeystoreError;
+
+use ed25519_bip32_core::XPub;
+use hex;
+use ur_registry::crypto_account::CryptoAccount;
+use ur_registry::crypto_hd_key::CryptoHDKey;
+use ur_registry::crypto_key_path::CryptoKeyPath;
+use ur_registry::error::URError;
+use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
+use ur_registry::extend::qr_hardware_call::QRHardwareCall;
+use ur_registry::traits::RegistryItem;
+
+use crate::common::errors::RustCError;
+use crate::common::ffi::CSliceFFI;
+use crate::common::structs::{ExtendedPublicKey, Response};
+use crate::common::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
+use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
+use crate::common::utils::{recover_c_array, recover_c_char};
+use crate::{extract_array, extract_ptr_with_type};
+use structs::QRHardwareCallData;
 
 #[no_mangle]
 pub extern "C" fn parse_qr_hardware_call(ur: PtrUR) -> Ptr<Response<QRHardwareCallData>> {

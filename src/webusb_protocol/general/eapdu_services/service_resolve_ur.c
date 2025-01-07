@@ -8,9 +8,7 @@
 #include "gui_views.h"
 #include "general_msg.h"
 #include "gui_home_widgets.h"
-#ifdef WEB3_VERSION
 #include "gui_key_derivation_request_widgets.h"
-#endif
 
 /* DEFINES */
 #define REQUEST_ID_IDLE 0xFFFF
@@ -75,7 +73,6 @@ void ClearUSBRequestId(void)
     g_requestID = REQUEST_ID_IDLE;
 }
 
-#ifdef WEB3_VERSION
 static void GotoFailPage(StatusEnum error_code, const char *error_message);
 static bool CheckURAcceptable(void);
 
@@ -170,12 +167,10 @@ static void HandleCheckResult(PtrT_TransactionCheckResult checkResult, UrViewTyp
         GotoFailPage(PRS_PARSING_ERROR, checkResult->error_message);
     }
 }
-#endif
 
 void ProcessURService(EAPDURequestPayload_t *payload)
 {
 #ifndef COMPILE_SIMULATOR
-#ifdef WEB3_VERSION
     struct URParseResult *urResult = NULL;
     PtrT_TransactionCheckResult checkResult = NULL;
     do {
@@ -217,6 +212,5 @@ void ProcessURService(EAPDURequestPayload_t *payload)
     if (checkResult) {
         free_TransactionCheckResult(checkResult);
     }
-#endif
 #endif
 }

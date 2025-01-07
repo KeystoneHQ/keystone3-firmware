@@ -45,8 +45,6 @@ use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UN
 use crate::common::utils::{recover_c_array, recover_c_char};
 use crate::{extract_array, extract_ptr_with_type};
 
-use structs::QRHardwareCallData;
-
 #[repr(C)]
 pub enum ETHAccountType {
     Bip44Standard,

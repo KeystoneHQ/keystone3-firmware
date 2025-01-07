@@ -29,17 +29,7 @@ static void GuiExportXPubViewInit();
 static void GuiResolveUrResultViewInit();
 static void UsbGoToHomeViewHandler(lv_event_t *e);
 
-static void ApproveButtonHandler(lv_event_t *e)
-{
-    ExportAddressApprove();
-    GuiCLoseCurrentWorkingView();
-}
 
-static void RejectButtonHandler(lv_event_t *e)
-{
-    ExportAddressReject();
-    GuiCLoseCurrentWorkingView();
-}
 static void CountDownTimerHandler(lv_timer_t *timer)
 {
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
@@ -58,39 +48,6 @@ static void CountDownTimerHandler(lv_timer_t *timer)
     }
 }
 
-
-static void GuiExportXPubViewInit()
-{
-    SetLockScreen(false);
-    g_pageWidget = CreatePageWidget();
-    lv_obj_t *cont = g_pageWidget->contentZone;
-
-    WalletInfo_t walletInfo = GetConnectWalletInfo();
-    lv_obj_t *img = GuiCreateImg(cont, walletInfo.img);
-    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 16);
-
-    lv_obj_t *label;
-    label = GuiCreateLittleTitleLabel(cont, _("usb_transport_connection_request"));
-    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 184);
-
-    label = GuiCreateIllustrateLabel(cont, walletInfo.title);
-    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 236);
-
-    lv_obj_t *button = GuiCreateTextBtn(cont, _("Reject"));
-    lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 36, -24);
-    lv_obj_set_size(button, 192, 66);
-    lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);
-    lv_obj_add_event_cb(button, RejectButtonHandler, LV_EVENT_CLICKED, NULL);
-
-    button = GuiCreateTextBtn(cont, _("Approve"));
-    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_set_size(button, 192, 66);
-    lv_obj_set_style_bg_color(button, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_add_event_cb(button, ApproveButtonHandler, LV_EVENT_CLICKED, NULL);
-}
 
 static ResolveUrInfo_t CalcResolveUrPageInfo()
 {
@@ -185,9 +142,11 @@ void GuiUSBTransportWidgetsInit(EAPDUResultPage_t *param)
     case CMD_RESOLVE_UR:
         GuiResolveUrResultViewInit();
         break;
+#ifdef WEB3_VERSION
     case CMD_EXPORT_ADDRESS:
         GuiExportXPubViewInit();
         break;
+#endif
     default:
         break;
     }
@@ -213,6 +172,40 @@ void GuiUSBTransportWidgetsRefresh()
     return;
 }
 
+#ifdef WEB3_VERSION
+static void GuiExportXPubViewInit()
+{
+    SetLockScreen(false);
+    g_pageWidget = CreatePageWidget();
+    lv_obj_t *cont = g_pageWidget->contentZone;
+
+    WalletInfo_t walletInfo = GetConnectWalletInfo();
+    lv_obj_t *img = GuiCreateImg(cont, walletInfo.img);
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 16);
+
+    lv_obj_t *label;
+    label = GuiCreateLittleTitleLabel(cont, _("usb_transport_connection_request"));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 184);
+
+    label = GuiCreateIllustrateLabel(cont, walletInfo.title);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(label, LV_OPA_90, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 236);
+
+    lv_obj_t *button = GuiCreateTextBtn(cont, _("Reject"));
+    lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 36, -24);
+    lv_obj_set_size(button, 192, 66);
+    lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);
+    lv_obj_add_event_cb(button, RejectButtonHandler, LV_EVENT_CLICKED, NULL);
+
+    button = GuiCreateTextBtn(cont, _("Approve"));
+    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_set_size(button, 192, 66);
+    lv_obj_set_style_bg_color(button, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_add_event_cb(button, ApproveButtonHandler, LV_EVENT_CLICKED, NULL);
+}
+
 static WalletInfo_t GetConnectWalletInfo()
 {
     uint8_t wallet = GetExportWallet();
@@ -229,3 +222,16 @@ static WalletInfo_t GetConnectWalletInfo()
         return walletInfo;
     }
 }
+
+static void ApproveButtonHandler(lv_event_t *e)
+{
+    ExportAddressApprove();
+    GuiCLoseCurrentWorkingView();
+}
+
+static void RejectButtonHandler(lv_event_t *e)
+{
+    ExportAddressReject();
+    GuiCLoseCurrentWorkingView();
+}
+#endif

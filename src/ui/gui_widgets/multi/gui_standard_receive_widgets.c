@@ -716,7 +716,7 @@ static void RefreshQrCode(void)
 #ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_ZEC) {
         char addressString[256];
-        CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 60);
+        CutAndFormatString(addressString, sizeof(addressString), addressDataItem.address, 56);
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressString);
     }
 #endif

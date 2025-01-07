@@ -40,7 +40,7 @@ use ur_registry::crypto_account::CryptoAccount;
 use ur_registry::crypto_psbt::CryptoPSBT;
 #[cfg(feature = "ethereum")]
 use ur_registry::ethereum::eth_sign_request::EthSignRequest;
-#[cfg(feature = "multi-coins")]
+#[cfg(not(feature = "btc-only"))]
 use ur_registry::extend::qr_hardware_call::QRHardwareCall;
 #[cfg(feature = "multi-coins")]
 use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
@@ -309,7 +309,7 @@ pub enum QRCodeType {
     SuiSignHashRequest,
     #[cfg(feature = "aptos")]
     AptosSignRequest,
-    #[cfg(feature = "multi-coins")]
+    #[cfg(not(feature = "btc-only"))]
     QRHardwareCall,
     #[cfg(feature = "arweave")]
     ArweaveSignRequest,
@@ -377,7 +377,7 @@ impl QRCodeType {
             InnerURType::XmrTxUnsigned(_) => Ok(QRCodeType::XmrTxUnsignedRequest),
             #[cfg(feature = "monero")]
             InnerURType::XmrOutput(_) => Ok(QRCodeType::XmrOutputSignRequest),
-            #[cfg(feature = "multi-coins")]
+            #[cfg(not(feature = "btc-only"))]
             InnerURType::QRHardwareCall(_) => Ok(QRCodeType::QRHardwareCall),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
         }
@@ -538,7 +538,7 @@ fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
         QRCodeType::XmrTxUnsignedRequest => {
             free_ptr_with_type!(data, XmrTxUnsigned);
         }
-        #[cfg(feature = "multi-coins")]
+        #[cfg(not(feature = "btc-only"))]
         QRCodeType::QRHardwareCall => {
             free_ptr_with_type!(data, QRHardwareCall);
         }
@@ -703,7 +703,7 @@ pub fn decode_ur(ur: String) -> URParseResult {
         QRCodeType::XmrOutputSignRequest => _decode_ur::<XmrOutput>(ur, ur_type),
         #[cfg(feature = "monero")]
         QRCodeType::XmrTxUnsignedRequest => _decode_ur::<XmrTxUnsigned>(ur, ur_type),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(not(feature = "btc-only"))]
         QRCodeType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),
@@ -789,7 +789,7 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         QRCodeType::StellarSignRequest => _receive_ur::<StellarSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "aptos")]
         QRCodeType::AptosSignRequest => _receive_ur::<AptosSignRequest>(ur, ur_type, decoder),
-        #[cfg(feature = "multi-coins")]
+        #[cfg(not(feature = "btc-only"))]
         QRCodeType::QRHardwareCall => _receive_ur::<QRHardwareCall>(ur, ur_type, decoder),
         #[cfg(feature = "ton")]
         QRCodeType::TonSignRequest => _receive_ur::<TonSignRequest>(ur, ur_type, decoder),

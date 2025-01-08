@@ -1,7 +1,7 @@
 #define SOFTWARE_VERSION_MAJOR              8 // 1 + 8
 #define SOFTWARE_VERSION_MAJOR_OFFSET       8
 #define SOFTWARE_VERSION_MINOR              9
-#define SOFTWARE_VERSION_BUILD              0
+#define SOFTWARE_VERSION_BUILD              1
 #define SOFTWARE_VERSION_BETA               1
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
 #define SOFTWARE_VERSION_SUFFIX             "Cypherpunk"

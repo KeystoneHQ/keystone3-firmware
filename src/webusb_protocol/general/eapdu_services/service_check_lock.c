@@ -9,7 +9,7 @@ void CheckDeviceLockStatusService(EAPDURequestPayload_t *payload)
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "payload", GuiLockScreenIsTop());
-    char *json_str = cJSON_Print(root);
+    char *json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024, false);
     cJSON_Delete(root);
     result->data = (uint8_t *)json_str;
     result->dataLen = strlen((char *)result->data);

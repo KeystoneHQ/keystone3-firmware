@@ -69,7 +69,7 @@ void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, St
     EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
     cJSON *root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "payload", error);
-    char *json_str = cJSON_Print(root);
+    char *json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024, false);
     cJSON_Delete(root);
     result->data = (uint8_t *)json_str;
     result->dataLen = strlen((char *)result->data);

@@ -117,7 +117,7 @@ static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "payload", urResult->data);
-    char *json_str = cJSON_Print(root);
+    char *json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024, false);
     cJSON_Delete(root);
     result->data = (uint8_t *)json_str;
     result->dataLen = strlen((char *)result->data);

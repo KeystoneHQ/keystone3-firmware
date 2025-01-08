@@ -109,5 +109,10 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
         GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
     } else {
         printf("unhandled viewType=%d\r\n", urViewType.viewType);
+        if (urViewType.viewType == KeyDerivationRequest) {
+            StopQrDecode();
+            UserDelay(500);
+            GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_FAIL, &urViewType, sizeof(urViewType));
+        }
     }
 }

@@ -12,22 +12,22 @@ use alloc::{
     vec::Vec,
 };
 use app_avalanche::{
-    constants::{C_BLOCKCHAIN_ID, C_TEST_BLOCKCHAIN_ID, P_BLOCKCHAIN_ID, X_BLOCKCHAIN_ID, X_TEST_BLOCKCHAIN_ID},
+    constants::{
+        C_BLOCKCHAIN_ID, C_TEST_BLOCKCHAIN_ID, P_BLOCKCHAIN_ID, X_BLOCKCHAIN_ID,
+        X_TEST_BLOCKCHAIN_ID,
+    },
     errors::AvaxError,
-    get_avax_tx_type_id, parse_avax_tx, get_avax_tx_header,
+    get_avax_tx_header, get_avax_tx_type_id, parse_avax_tx,
     transactions::{
         base_tx::{avax_base_sign, BaseTx},
         export::ExportTx,
         import::ImportTx,
         type_id::TypeId,
+        C_chain::{evm_export::ExportTx as CchainExportTx, evm_import::ImportTx as CchainImportTx},
         P_chain::{
             add_permissionless_delegator::AddPermissLessionDelegatorTx,
             add_permissionless_validator::AddPermissLessionValidatorTx,
         },
-        C_chain::{
-            evm_export::ExportTx as CchainExportTx,
-            evm_import::ImportTx as CchainImportTx,
-        }
     },
 };
 use bitcoin::ecdsa::Signature;
@@ -87,7 +87,9 @@ fn parse_transaction_by_type(
     match type_id {
         TypeId::BaseTx => {
             let header = get_avax_tx_header(tx_data.clone()).unwrap();
-            if header.get_blockchain_id() == C_BLOCKCHAIN_ID || header.get_blockchain_id() == C_TEST_BLOCKCHAIN_ID {
+            if header.get_blockchain_id() == C_BLOCKCHAIN_ID
+                || header.get_blockchain_id() == C_TEST_BLOCKCHAIN_ID
+            {
                 return parse_tx!(CchainImportTx);
             } else {
                 return parse_tx!(BaseTx);
@@ -134,31 +136,45 @@ fn avax_sign_dynamic(
         )
 }
 
-fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError> {
-    let sign_request = extract_ptr_with_type!(ptr, AvaxSignRequest);
-    let wallet_index = sign_request.get_wallet_index();
-    let path = match get_avax_tx_type_id(sign_request.get_tx_data()) {
-        Ok(type_id) => match type_id {
-            TypeId::CchainExportTx => format!("m/44'/60'/0'/0/{}", wallet_index),
-            TypeId::BaseTx => {
-                let header = get_avax_tx_header(sign_request.get_tx_data())?;
-                if header.get_blockchain_id() == C_BLOCKCHAIN_ID || header.get_blockchain_id() == C_TEST_BLOCKCHAIN_ID {
-                    format!("m/44'/60'/0'/0/{}", wallet_index)
-                } else {
-                    format!("m/44'/9000'/0'/0/{}", wallet_index)
-                }
-            }
-            _ => format!("m/44'/9000'/0'/0/{}", wallet_index),
-        },
-        Err(_) => {
-            return Err(AvaxError::InvalidInput);
+fn handle_base_tx_path(
+    sign_request: &AvaxSignRequest,
+    wallet_index: u64,
+) -> Result<String, AvaxError> {
+    let blockchain_id = get_avax_tx_header(sign_request.get_tx_data())?.get_blockchain_id();
+
+    let path = match blockchain_id {
+        id if id == C_BLOCKCHAIN_ID || id == C_TEST_BLOCKCHAIN_ID => {
+            format!("m/44'/60'/0'/0/{}", wallet_index)
         }
+        _ => format!("m/44'/9000'/0'/0/{}", wallet_index),
     };
 
-    Ok(AvaxSignature::new(
-        sign_request.get_request_id(),
-        avax_base_sign(seed, path, sign_request.get_tx_data())?.to_vec(),
-    ))
+    Ok(path)
+}
+
+fn determine_derivation_path(
+    type_id: TypeId,
+    sign_request: &AvaxSignRequest,
+    wallet_index: u64,
+) -> Result<String, AvaxError> {
+    Ok(match type_id {
+        TypeId::CchainExportTx => format!("m/44'/60'/0'/0/{}", wallet_index),
+        TypeId::BaseTx => handle_base_tx_path(sign_request, wallet_index)?,
+        _ => format!("m/44'/9000'/0'/0/{}", wallet_index),
+    })
+}
+
+fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError> {
+    let sign_request = extract_ptr_with_type!(ptr, AvaxSignRequest);
+
+    let path = get_avax_tx_type_id(sign_request.get_tx_data())
+        .map_err(|_| AvaxError::InvalidInput)
+        .and_then(|type_id| {
+            determine_derivation_path(type_id, &sign_request, sign_request.get_wallet_index())
+        })?;
+
+    avax_base_sign(seed, path, sign_request.get_tx_data())
+        .map(|signature| AvaxSignature::new(sign_request.get_request_id(), signature.to_vec()))
 }
 
 #[no_mangle]

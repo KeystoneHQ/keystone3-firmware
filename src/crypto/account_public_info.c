@@ -656,7 +656,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     zcash_ufvk_response = derive_zcash_ufvk(seed, len, g_chainTable[i].path);
                     CHECK_AND_FREE_XPUB(zcash_ufvk_response)
                     zcashUfvk = zcash_ufvk_response->data;
-                    printf("zcash ufvk: %s\r\n", zcashUfvk);
                     SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);
                     //iv_response won't fail
                     uint8_t iv_bytes[16];
@@ -672,7 +671,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                     continue;
                 }
-                printf("g_chaintable[%d].path=%s\r\n", i, g_chainTable[i].path);
                 CHECK_AND_FREE_XPUB(xPubResult)
                 // printf("index=%d,path=%s,pub=%s\r\n", accountIndex, g_chainTable[i].path, xPubResult->data);
                 ASSERT(xPubResult->data);

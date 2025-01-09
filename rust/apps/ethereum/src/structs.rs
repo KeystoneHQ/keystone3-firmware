@@ -1,13 +1,16 @@
 use crate::address::generate_address;
 use crate::eip1559_transaction::ParsedEIP1559Transaction;
+use crate::eip712::eip712::TypedData as Eip712TypedData;
 use crate::errors::Result;
 use crate::{Bytes, ParsedLegacyTransaction};
-use alloc::string::String;
+use alloc::format;
+use alloc::string::{String, ToString};
 
 use alloc::vec::Vec;
 use bitcoin::secp256k1::PublicKey;
 use ethereum_types::H160;
 use rlp::{Decodable, DecoderError, Encodable, Rlp};
+use serde_json::Value;
 
 #[derive(Clone)]
 pub enum TransactionAction {
@@ -160,6 +163,22 @@ impl TypedData {
             from: generate_address(from)?,
             ..data
         })
+    }
+
+    pub fn from_raw(mut data: Eip712TypedData, from: PublicKey) -> Result<Self> {
+        for (index, (key, value)) in data.message.iter_mut().enumerate() {
+            match value {
+                Value::String(value) => {
+                    if value.len() >= 512 {
+                        let mut message = value.to_string();
+                        message.truncate(512);
+                        *value = format!("{}...", message).into();
+                    }
+                }
+                _ => {}
+            }
+        }
+        Self::from(Into::into(data), from)
     }
 }
 

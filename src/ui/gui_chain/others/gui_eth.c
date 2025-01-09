@@ -780,43 +780,71 @@ void *GuiGetEthTypeData(void)
 void GetEthTypedDataDomianName(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy_s((char *)indata, maxLen, message->name);
+    if (message->name != NULL) {
+        strcpy_s((char *)indata, maxLen, message->name);
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
 }
 
 void GetEthTypedDataDomianVersion(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy_s((char *)indata, maxLen, message->version);
+    if (message->version != NULL) {
+        strcpy_s((char *)indata, maxLen, message->version);
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
 }
 
 void GetEthTypedDataDomianChainId(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy_s((char *)indata, maxLen, message->chain_id);
+    if (message->chain_id != NULL) {
+        strcpy_s((char *)indata, maxLen, message->chain_id);
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
 }
 
 void GetEthTypedDataDomianVerifyContract(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy_s((char *)indata, maxLen, message->verifying_contract);
+    if (message->verifying_contract != NULL) {
+        strcpy_s((char *)indata, maxLen, message->verifying_contract);
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
 }
 
 void GetEthTypedDataDomianSalt(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy_s((char *)indata, maxLen, message->salt);
+    if (message->salt != NULL) {
+        strcpy_s((char *)indata, maxLen, message->salt);
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
 }
 
 void GetEthTypedDataPrimayType(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy_s((char *)indata, maxLen, message->primary_type);
+    if (message->primary_type != NULL) {
+        strcpy_s((char *)indata, maxLen, message->primary_type);
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
 }
 
 void GetEthTypedDataMessage(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy_s((char *)indata, maxLen, message->message);
+    if (message->message != NULL) {
+        strcpy_s((char *)indata, maxLen, message->message);
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
 }
 
 int GetEthTypedDataMessageLen(void *param)
@@ -828,7 +856,11 @@ int GetEthTypedDataMessageLen(void *param)
 void GetEthTypedDataFrom(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    strcpy_s((char *)indata, maxLen, message->from);
+    if (message->from != NULL) {
+        strcpy_s((char *)indata, maxLen, message->from);
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
 }
 
 void *GuiGetEthPersonalMessage(void)

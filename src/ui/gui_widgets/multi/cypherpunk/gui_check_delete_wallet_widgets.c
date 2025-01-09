@@ -30,9 +30,6 @@ static void DeleteWalletNotNowHandler(lv_event_t *e)
     LogoutCurrentAccount();
     GuiLockScreenSetFirstUnlock();
     GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &signal, sizeof(signal));
-    if (GuiNeedFpRecognize()) {
-        FpRecognize(RECOGNIZE_UNLOCK);
-    }
 }
 
 void GuiCheckDeleteWalletDeInit(void)

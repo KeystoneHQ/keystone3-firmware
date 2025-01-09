@@ -92,9 +92,9 @@ impl AvaxTxInfo for ExportTx {
         let method = match (self.type_id, self.dest_chain) {
             (TypeId::CchainExportTx, chain) => {
                 let dest = match chain {
-                    X_BLOCKCHAIN_ID => "X",
+                    X_BLOCKCHAIN_ID | X_TEST_BLOCKCHAIN_ID => "X",
                     P_BLOCKCHAIN_ID => "P",
-                    C_BLOCKCHAIN_ID => "C",
+                    C_BLOCKCHAIN_ID | C_TEST_BLOCKCHAIN_ID => "C",
                     _ => "Unknown",
                 };
                 format!("C to {} Export", dest)

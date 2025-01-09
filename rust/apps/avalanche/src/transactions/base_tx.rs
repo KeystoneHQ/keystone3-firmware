@@ -76,8 +76,8 @@ impl AvaxTxInfo for BaseTx {
 
     fn get_network(&self) -> Option<String> {
         match self.get_blockchain_id() {
-            X_BLOCKCHAIN_ID => Some("Avalanche X-Chain".to_string()),
-            C_BLOCKCHAIN_ID => Some("Avalanche C-Chain".to_string()),
+            X_BLOCKCHAIN_ID | X_TEST_BLOCKCHAIN_ID => Some("Avalanche X-Chain".to_string()),
+            C_BLOCKCHAIN_ID | C_TEST_BLOCKCHAIN_ID => Some("Avalanche C-Chain".to_string()),
             P_BLOCKCHAIN_ID => Some("Avalanche P-Chain".to_string()),
             _ => None,
         }

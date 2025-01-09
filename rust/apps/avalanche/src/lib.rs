@@ -11,14 +11,10 @@ use alloc::{
 };
 
 pub use address::get_address;
-use app_utils::keystone;
-use bitcoin::psbt::Psbt;
 use bitcoin::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
-use bitcoin::secp256k1::Message;
-use bitcoin::sign_message;
 use bytes::{Buf, Bytes};
-use either::{Left, Right};
 use hex;
+use transactions::tx_header::Header;
 use transactions::base_tx::BaseTx;
 use ur_registry::pb::protoc;
 
@@ -61,4 +57,19 @@ pub fn get_avax_tx_type_id(data: Vec<u8>) -> Result<TypeId> {
     bytes.advance(2);
     let type_id = TypeId::try_from(bytes.get_u32())?;
     Ok(type_id)
+}
+
+pub fn get_avax_tx_header(data: Vec<u8>) -> Result<Header> {
+    let mut bytes = Bytes::from(data);
+    // codec_id 2 bytes
+    bytes.advance(2);
+
+    // type id
+    bytes.advance(4);
+
+    // tx header
+    let tx_header = Header::try_from(bytes.clone())?;
+    bytes.advance(tx_header.parsed_size());
+
+    Ok(tx_header)
 }

@@ -53,7 +53,7 @@ impl AvaxTxInfo for ExportTx {
                     "P"
                 };
                 let dest = match chain {
-                    X_BLOCKCHAIN_ID => "X",
+                    X_BLOCKCHAIN_ID | X_TEST_BLOCKCHAIN_ID => "X",
                     P_BLOCKCHAIN_ID => "P",
                     C_BLOCKCHAIN_ID => "C",
                     _ => "Unknown",

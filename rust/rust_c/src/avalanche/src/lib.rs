@@ -12,9 +12,9 @@ use alloc::{
     vec::Vec,
 };
 use app_avalanche::{
-    constants::{C_BLOCKCHAIN_ID, P_BLOCKCHAIN_ID, X_BLOCKCHAIN_ID},
+    constants::{C_BLOCKCHAIN_ID, C_TEST_BLOCKCHAIN_ID, P_BLOCKCHAIN_ID, X_BLOCKCHAIN_ID, X_TEST_BLOCKCHAIN_ID},
     errors::AvaxError,
-    get_avax_tx_type_id, parse_avax_tx,
+    get_avax_tx_type_id, parse_avax_tx, get_avax_tx_header,
     transactions::{
         base_tx::{avax_base_sign, BaseTx},
         export::ExportTx,
@@ -86,8 +86,8 @@ fn parse_transaction_by_type(
 
     match type_id {
         TypeId::BaseTx => {
-            let base_tx = parse_avax_tx::<BaseTx>(tx_data.clone()).unwrap();
-            if base_tx.tx_header.get_blockchain_id() == C_BLOCKCHAIN_ID {
+            let header = get_avax_tx_header(tx_data.clone()).unwrap();
+            if header.get_blockchain_id() == C_BLOCKCHAIN_ID || header.get_blockchain_id() == C_TEST_BLOCKCHAIN_ID {
                 return parse_tx!(CchainImportTx);
             } else {
                 return parse_tx!(BaseTx);
@@ -141,8 +141,8 @@ fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError
         Ok(type_id) => match type_id {
             TypeId::CchainExportTx => format!("m/44'/60'/0'/0/{}", wallet_index),
             TypeId::BaseTx => {
-                let base_tx = parse_avax_tx::<BaseTx>(sign_request.get_tx_data()).unwrap();
-                if base_tx.tx_header.get_blockchain_id() == C_BLOCKCHAIN_ID {
+                let header = get_avax_tx_header(sign_request.get_tx_data())?;
+                if header.get_blockchain_id() == C_BLOCKCHAIN_ID || header.get_blockchain_id() == C_TEST_BLOCKCHAIN_ID {
                     format!("m/44'/60'/0'/0/{}", wallet_index)
                 } else {
                     format!("m/44'/9000'/0'/0/{}", wallet_index)

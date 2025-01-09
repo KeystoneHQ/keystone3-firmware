@@ -28,7 +28,7 @@ static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t reque
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "payload", (char *)data);
-    char *json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024 * 2, false);
+    char *json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024 * 4, false);
     cJSON_Delete(root);
     payload->data = (uint8_t *)json_str;
     payload->dataLen = strlen((char *)payload->data);

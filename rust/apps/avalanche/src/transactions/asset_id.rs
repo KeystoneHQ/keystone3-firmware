@@ -1,5 +1,4 @@
 use crate::errors::AvaxError;
-use alloc::string::ToString;
 use bytes::Bytes;
 use core::convert::TryFrom;
 

@@ -236,7 +236,7 @@ UREncodeResult *GuiGetCoreWalletData(void)
 
     keys[0].path = "m/44'/60'/0'";
     keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
-    keys[1].path = "m/44'/9000'/0'/0/0";
+    keys[1].path = "m/44'/9000'/0'";
     keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
 
     g_urEncode = get_core_wallet_ur(mfp, sizeof(mfp), public_keys, "Keystone3");

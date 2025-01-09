@@ -7,7 +7,6 @@ use crate::transactions::base_tx::BaseTx;
 use crate::transactions::structs::{
     AvaxFromToInfo, AvaxMethodInfo, AvaxTxInfo, LengthPrefixedVec, ParsedSizeAble,
 };
-use crate::transactions::subnet_auth::SubnetAuth;
 use crate::transactions::subnet_id::SubnetId;
 use crate::transactions::transferable::TransferableOutput;
 use alloc::{

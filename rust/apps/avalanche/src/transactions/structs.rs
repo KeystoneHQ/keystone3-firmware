@@ -1,6 +1,5 @@
 use crate::errors::{AvaxError, Result};
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };

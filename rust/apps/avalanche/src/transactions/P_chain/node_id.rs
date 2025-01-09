@@ -1,7 +1,6 @@
 use crate::constants::*;
 use crate::encode::cb58::Cb58Encodable;
 use crate::errors::{AvaxError, Result};
-use alloc::string::ToString;
 use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
 

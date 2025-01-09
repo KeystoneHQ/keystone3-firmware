@@ -1,5 +1,5 @@
 use super::structs::{
-    AvaxFromToInfo, AvaxMethodInfo, AvaxTxInfo, LengthPrefixedVec, ParsedSizeAble,
+    AvaxFromToInfo, AvaxMethodInfo, AvaxTxInfo, LengthPrefixedVec,
 };
 use super::transferable::{TransferableInput, TransferableOutput};
 use super::tx_header::Header;
@@ -11,7 +11,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use bitcoin::secp256k1::{ecdsa::RecoverableSignature, Message, PublicKey, Secp256k1};
+use bitcoin::secp256k1::{Message, Secp256k1};
 use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
 use cryptoxide::hashing::sha256;

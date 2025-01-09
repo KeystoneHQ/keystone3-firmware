@@ -1,16 +1,14 @@
 use super::base_tx::BaseTx;
 use super::structs::{AvaxFromToInfo, AvaxMethodInfo, AvaxTxInfo, LengthPrefixedVec};
-use super::{transferable::TransferableInput, type_id::TypeId};
+use super::{transferable::TransferableInput};
 use crate::constants::*;
 use crate::errors::{AvaxError, Result};
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };
 use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
-use ur_registry::extend;
 
 #[derive(Debug)]
 pub struct ImportTx {

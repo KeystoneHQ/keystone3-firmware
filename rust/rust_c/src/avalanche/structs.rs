@@ -42,8 +42,8 @@ pub struct DisplayTxAvaxData {
     fee_amount: PtrString,
     reward_address: PtrString,
     method: PtrT<DisplayAvaxMethodInfo>,
-    // from: PtrT<VecFFI<DisplayAddress>>,
     to: PtrT<VecFFI<DisplayAvaxFromToInfo>>,
+    from: PtrT<DisplayAvaxFromToInfo>,
 }
 
 impl_c_ptr!(DisplayTxAvaxData);
@@ -115,9 +115,30 @@ impl<T: AvaxTxInfo> From<T> for DisplayAvaxTx {
     }
 }
 
+impl DisplayAvaxTx {
+    pub fn with_from_address(mut self, address: String, path: String) -> Self {
+        unsafe {
+            let data = &mut *self.data;
+            let from = &mut *data.from;
+            from.address = convert_c_char(address);
+            from.path = convert_c_char(path);
+        }
+        self
+    }
+}
+
 impl<T: AvaxTxInfo> From<T> for DisplayTxAvaxData {
     fn from(value: T) -> Self {
         DisplayTxAvaxData {
+            from: DisplayAvaxFromToInfo {
+                address: convert_c_char("".to_string()),
+                amount: convert_c_char(format!(
+                    "{} AVAX",
+                    value.get_total_input_amount() as f64 / NAVAX_TO_AVAX_RATIO
+                )),
+                path: convert_c_char("".to_string()),
+            }
+            .c_ptr(),
             total_input_amount: convert_c_char(format!(
                 "{} AVAX",
                 value.get_total_input_amount() as f64 / NAVAX_TO_AVAX_RATIO

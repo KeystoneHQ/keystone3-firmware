@@ -5,6 +5,7 @@
 #include "cjson/cJSON.h"
 #include "stdint.h"
 #include "gui_resolve_ur.h"
+#include <time.h>
 
 #ifndef BTC_ONLY
 #include "eapdu_services/service_resolve_ur.h"
@@ -20,7 +21,17 @@ bool g_reboot = false;
 bool g_otpProtect = false;
 
 // Comment out this macro if you need to retrieve data from the file
-#define GET_QR_DATA_FROM_SCREEN
+// #define GET_QR_DATA_FROM_SCREEN
+
+void StampTimeToUtcTime(int64_t timeStamp, char *utcTime, int maxLen)
+{
+    struct tm *utc_time = gmtime(&timeStamp);
+    strftime(utcTime, maxLen, "%Y-%m-%d %H:%M:%S UTC", utc_time);
+}
+
+void StopQrDecode(void)
+{
+}
 
 void ClearUSBRequestId(void)
 {
@@ -49,8 +60,7 @@ void NftLockDecodeTouchQuit()
 int32_t GetUpdatePubKey(uint8_t *pubKey)
 {
     sprintf(pubKey, "%02x", 0x4);
-    for (int i = 1; i < 65; i++)
-    {
+    for (int i = 1; i < 65; i++) {
         sprintf(&pubKey[i], "%02x", i);
     }
 }
@@ -58,18 +68,13 @@ int32_t GetUpdatePubKey(uint8_t *pubKey)
 void TrngGet(void *buf, uint32_t len)
 {
     uint32_t buf4[4];
-    for (uint32_t i = 0; i < len; i += 16)
-    {
-        for (int i = 0; i < 4; i++)
-        {
+    for (uint32_t i = 0; i < len; i += 16) {
+        for (int i = 0; i < 4; i++) {
             buf4[i] = 0x1 * i;
         }
-        if (len - i >= 16)
-        {
+        if (len - i >= 16) {
             memcpy((uint8_t *)buf + i, buf4, 16);
-        }
-        else
-        {
+        } else {
             memcpy((uint8_t *)buf + i, buf4, len - i);
         }
     }
@@ -78,8 +83,7 @@ void TrngGet(void *buf, uint32_t len)
 void SE_GetTRng(void *buf, uint32_t len)
 {
     uint8_t *data = buf;
-    for (int i = 0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
         uint32_t randNum = rand();
         data[i] = randNum & 0xFF;
     }
@@ -88,8 +92,7 @@ void SE_GetTRng(void *buf, uint32_t len)
 int32_t SE_GetDS28S60Rng(uint8_t *rngArray, uint32_t num)
 {
     uint8_t *data = rngArray;
-    for (int i = 0; i < num; i++)
-    {
+    for (int i = 0; i < num; i++) {
         data[i] = num - i;
     }
 
@@ -99,8 +102,7 @@ int32_t SE_GetDS28S60Rng(uint8_t *rngArray, uint32_t num)
 int32_t SE_GetAtecc608bRng(uint8_t *rngArray, uint32_t num)
 {
     uint8_t *data = rngArray;
-    for (int i = 0; i < num; i++)
-    {
+    for (int i = 0; i < num; i++) {
         data[i] = 2 * i;
     }
 
@@ -155,8 +157,7 @@ bool FatfsFileExist(const char *path)
     lv_fs_file_t fp;
     lv_fs_res_t res = LV_FS_RES_OK;
     res = lv_fs_open(&fp, path, LV_FS_MODE_RD);
-    if (res == LV_FS_RES_OK)
-    {
+    if (res == LV_FS_RES_OK) {
         lv_fs_close(&fp);
         return true;
     }
@@ -308,21 +309,18 @@ int FatfsFileWrite(const char *path, const uint8_t *data, uint32_t len)
     lv_fs_file_t fd;
     lv_fs_res_t ret = LV_FS_RES_OK;
 
-    if (path == NULL)
-    {
+    if (path == NULL) {
         return -1;
     }
 
     ret = lv_fs_open(&fd, path, LV_FS_MODE_WR);
-    if (ret != LV_FS_RES_OK)
-    {
+    if (ret != LV_FS_RES_OK) {
         printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return -1;
     }
 
     ret = lv_fs_write(&fd, data, len, &readBytes);
-    if (ret != LV_FS_RES_OK)
-    {
+    if (ret != LV_FS_RES_OK) {
         printf("lv_fs_write failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return -1;
     }
@@ -433,7 +431,7 @@ int32_t AsyncExecuteWithPtr(void *func, const void *inData)
 
 static uint8_t buffer[100 * 1024];
 
-static char *qrcode[100];
+static char *qrcode[3000];
 static uint32_t qrcode_size;
 
 char *FatfsFileRead(const char *path)
@@ -447,15 +445,13 @@ char *FatfsFileRead(const char *path)
     printf("truePath: %s\n", truePath);
 
     ret = lv_fs_open(&fd, truePath, LV_FS_MODE_RD);
-    if (ret != LV_FS_RES_OK)
-    {
+    if (ret != LV_FS_RES_OK) {
         printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return NULL;
     }
 
     ret = lv_fs_read(&fd, buffer, 1024 * 100, &readBytes);
-    if (ret != LV_FS_RES_OK)
-    {
+    if (ret != LV_FS_RES_OK) {
         printf("lv_fs_read failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return NULL;
     }
@@ -475,15 +471,13 @@ uint8_t *FatfsFileReadBytes(const char *path, uint32_t *readBytes)
     printf("truePath: %s\n", truePath);
 
     ret = lv_fs_open(&fd, truePath, LV_FS_MODE_RD);
-    if (ret != LV_FS_RES_OK)
-    {
+    if (ret != LV_FS_RES_OK) {
         printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return NULL;
     }
 
     ret = lv_fs_read(&fd, buffer, 1024 * 100, readBytes);
-    if (ret != LV_FS_RES_OK)
-    {
+    if (ret != LV_FS_RES_OK) {
         printf("lv_fs_read failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return NULL;
     }
@@ -502,8 +496,7 @@ int32_t prepare_qrcode()
     lv_fs_file_t fd;
     lv_fs_res_t ret = LV_FS_RES_OK;
     ret = lv_fs_open(&fd, path, LV_FS_MODE_RD);
-    if (ret != LV_FS_RES_OK)
-    {
+    if (ret != LV_FS_RES_OK) {
         printf("lv_fs_open failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return -1;
     }
@@ -511,8 +504,7 @@ int32_t prepare_qrcode()
     int32_t readBytes = 0;
 
     ret = lv_fs_read(&fd, buffer, 100 * 1024, &readBytes);
-    if (ret != LV_FS_RES_OK)
-    {
+    if (ret != LV_FS_RES_OK) {
         printf("lv_fs_read failed %s ret = %d line = %d\n", path, ret, __LINE__);
         return -1;
     }
@@ -521,12 +513,9 @@ int32_t prepare_qrcode()
     int lastIndex = 0;
     int lastQRIndex = 0;
 
-    for (size_t i = 0; i < readBytes; i++)
-    {
-        if (buffer[i] == '\n')
-        {
-            if (qrcode[lastQRIndex] != NULL)
-            {
+    for (size_t i = 0; i < readBytes; i++) {
+        if (buffer[i] == '\n') {
+            if (qrcode[lastQRIndex] != NULL) {
                 free(qrcode[lastQRIndex]);
             }
             qrcode[lastQRIndex] = malloc(1024);
@@ -536,11 +525,9 @@ int32_t prepare_qrcode()
             lastIndex = i + 1;
             lastQRIndex++;
         }
-        if (i == readBytes - 1)
-        {
+        if (i == readBytes - 1) {
             // printf("last char: %c\r\n", buffer[i]);
-            if (qrcode[lastQRIndex] != NULL)
-            {
+            if (qrcode[lastQRIndex] != NULL) {
                 free(qrcode[lastQRIndex]);
             }
             qrcode[lastQRIndex] = malloc(1024);
@@ -570,11 +557,9 @@ static void reset_qr_state()
 static bool on_qr_detected(const char *qrString)
 {
     printf("qrString: %s\r\n", qrString);
-    if (firstQrFlag)
-    {
+    if (firstQrFlag) {
         QRProtocol t = infer_qrcode_type(qrString);
-        switch (t)
-        {
+        switch (t) {
         case QRCodeTypeText:
             urResult = parse_qrcode_text(qrString);
             break;
@@ -582,32 +567,24 @@ static bool on_qr_detected(const char *qrString)
             urResult = parse_ur(qrString);
             break;
         }
-        if (urResult->error_code == 0)
-        {
-            if (urResult->is_multi_part == 0)
-            {
+        if (urResult->error_code == 0) {
+            if (urResult->is_multi_part == 0) {
                 // single qr code
                 firstQrFlag = true;
                 viewType.viewType = urResult->t;
                 viewType.urType = urResult->ur_type;
                 handleURResult(urResult, NULL, viewType, false);
                 return true;
-            }
-            else
-            {
+            } else {
                 // first qr code
                 firstQrFlag = false;
                 decoder = urResult->decoder;
             }
         }
-    }
-    else
-    {
+    } else {
         struct URParseMultiResult *MultiurResult = receive(qrString, decoder);
-        if (MultiurResult->error_code == 0)
-        {
-            if (MultiurResult->is_complete)
-            {
+        if (MultiurResult->error_code == 0) {
+            if (MultiurResult->is_complete) {
                 firstQrFlag = true;
                 viewType.viewType = MultiurResult->t;
                 viewType.urType = MultiurResult->ur_type;
@@ -615,15 +592,12 @@ static bool on_qr_detected(const char *qrString)
                 handleURResult(NULL, MultiurResult, viewType, true);
                 return true;
             }
-        }
-        else
-        {
+        } else {
             printf("error code: %d\r\n", MultiurResult->error_code);
             printf("error message: %s\r\n", MultiurResult->error_message);
             return true;
         }
-        if (!(MultiurResult->is_complete))
-        {
+        if (!(MultiurResult->is_complete)) {
             free_ur_parse_multi_result(MultiurResult);
         }
     }
@@ -726,6 +700,7 @@ int32_t read_qrcode()
 }
 #endif
 
-bool GetEnsName(const char *addr, char *name) {
+bool GetEnsName(const char *addr, char *name)
+{
     return false;
 }

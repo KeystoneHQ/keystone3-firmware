@@ -96,6 +96,10 @@ GetCustomContainerFunc GetOtherChainCustomFunc(char *funcName)
         return GuiShowAdaSignTxHashOverview;
     } else if (!strcmp(funcName, "GuiShowAdaSignTxHashDetails")) {
         return GuiShowAdaSignTxHashDetails;
+    } else if (!strcmp(funcName, "GuiAvaxTxOverview")) {
+        return GuiAvaxTxOverview;
+    } else if (!strcmp(funcName, "GuiAvaxTxRawData")) {
+        return GuiAvaxTxRawData;
     }
 
     return NULL;

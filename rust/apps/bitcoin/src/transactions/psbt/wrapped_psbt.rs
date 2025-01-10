@@ -586,13 +586,26 @@ impl WrappedPsbt {
                 //call generate address here
                 match derivation_path.index(0) {
                     ChildNumber::Hardened { index: _i } => match _i {
-                        44 => Ok(Some(
-                            Address::p2pkh(
-                                &bitcoin::PublicKey::new(pubkey.clone()),
-                                network.clone(),
-                            )?
-                            .to_string(),
-                        )),
+                        44 => match derivation_path.index(1) {
+                            ChildNumber::Hardened { index: _i } => match _i {
+                                0 => Ok(Some(
+                                    Address::p2pkh(
+                                        &bitcoin::PublicKey::new(pubkey.clone()),
+                                        network.clone(),
+                                    )?
+                                    .to_string(),
+                                )),
+                                60 => Ok(Some(
+                                    Address::p2wpkh(
+                                        &bitcoin::PublicKey::new(pubkey.clone()),
+                                        network.clone(),
+                                    )?
+                                    .to_string(),
+                                )),
+                                _ => Ok(None),
+                            },
+                            _ => Ok(None),
+                        },
                         49 => Ok(Some(
                             Address::p2shp2wpkh(
                                 &bitcoin::PublicKey::new(pubkey.clone()),

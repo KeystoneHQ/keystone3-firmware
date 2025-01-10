@@ -8,6 +8,8 @@ use ur_registry::error::URError;
 use app_aptos::errors::AptosError;
 #[cfg(feature = "arweave")]
 use app_arweave::errors::ArweaveError;
+#[cfg(feature = "avalanche")]
+use app_avalanche::errors::AvaxError;
 #[cfg(feature = "bitcoin")]
 use app_bitcoin::errors::BitcoinError;
 #[cfg(feature = "cardano")]
@@ -210,6 +212,24 @@ pub enum ErrorCodes {
 
     // Monero
     MoneroUnknownError = 1600,
+
+    //Avax
+    AvaxInvalidInput = 1700,
+    AvaxInvalidOutput,
+    AvaxInvalidTransaction,
+    AvaxSignFailure,
+    AvaxAddressError,
+    AvaxUnsupportedTransaction,
+    AvaxGetKeyError,
+    AvaxUnsupportedNetwork,
+    AvaxTransactionConsensusEncodeError,
+    AvaxInvalidHex,
+    AvaxBech32DecodeError,
+    AvaxKeystoreError,
+    AvaxDerivePublicKeyError,
+    AvaxUnknownTypeId,
+    AvaxInvalidHDPath,
+    AvaxBech32Error,
 }
 
 impl ErrorCodes {
@@ -482,6 +502,32 @@ impl From<&TonError> for ErrorCodes {
             TonError::AddressError(_) => Self::AddressError,
             TonError::InvalidTransaction(_) => Self::TonTransactionError,
             TonError::InvalidProof(_) => Self::InvalidProof,
+        }
+    }
+}
+
+#[cfg(feature = "avalanche")]
+impl From<&AvaxError> for ErrorCodes {
+    fn from(value: &AvaxError) -> Self {
+        match value {
+            AvaxError::InvalidInput => Self::AvaxInvalidInput,
+            AvaxError::InvalidOutput => Self::AvaxInvalidOutput,
+            AvaxError::InvalidTransaction(_) => Self::AvaxInvalidTransaction,
+            AvaxError::SignFailure(_) => Self::AvaxSignFailure,
+            AvaxError::AddressError(_) => Self::AvaxAddressError,
+            AvaxError::GetKeyError(_) => Self::AvaxGetKeyError,
+            AvaxError::UnsupportedTransaction(_) => Self::AvaxUnsupportedTransaction,
+            AvaxError::UnsupportedNetwork(_) => Self::AvaxUnsupportedNetwork,
+            AvaxError::TransactionConsensusEncodeError(_) => {
+                Self::AvaxTransactionConsensusEncodeError
+            }
+            AvaxError::InvalidHex(_) => Self::AvaxInvalidHex,
+            AvaxError::Bech32DecodeError(_) => Self::AvaxBech32DecodeError,
+            AvaxError::KeystoreError(_) => Self::AvaxAddressError,
+            AvaxError::DerivePublicKeyError(_) => Self::AvaxDerivePublicKeyError,
+            AvaxError::UnknownTypeId(_) => Self::AvaxUnknownTypeId,
+            AvaxError::InvalidHDPath(_) => Self::AvaxInvalidHDPath,
+            AvaxError::Bech32Error => Self::AvaxBech32Error,
         }
     }
 }

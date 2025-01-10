@@ -391,6 +391,9 @@ void *GuiCreateSwitch(lv_obj_t *parent)
 
 void GuiAlignToPrevObj(lv_obj_t *obj, lv_align_t align, int16_t x, int16_t y)
 {
+    if (lv_obj_get_child_cnt(lv_obj_get_parent(obj)) == 1) {
+        return;
+    }
     lv_obj_align_to(obj, lv_obj_get_child(lv_obj_get_parent(obj), lv_obj_get_child_cnt(lv_obj_get_parent(obj)) - 2), align, x, y);
 }
 

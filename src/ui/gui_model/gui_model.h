@@ -24,6 +24,7 @@
 #include "drv_battery.h"
 #include "gui_animating_qrcode.h"
 #include "account_manager.h"
+#include "drv_rtc.h"
 
 #define MAX_LOGIN_PASSWORD_ERROR_COUNT  10
 #define MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX 4

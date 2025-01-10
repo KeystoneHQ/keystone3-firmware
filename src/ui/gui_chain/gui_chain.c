@@ -52,7 +52,10 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
     {EthPersonalMessage, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH_PERSONAL_MESSAGE},
     {EthTypedData, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH_TYPEDDATA},
 
-    {TronTx, GuiGetTrxSignQrCodeData, NULL, GuiGetTrxCheckResult, CHAIN_TRX, CHAIN_TRX, REMAPVIEW_TRX},
+    {TronTx, GuiGetTrxSignQrCodeData, NULL, GuiGetTrxCheckResult, CHAIN_TRX, REMAPVIEW_TRX},
+
+    // avax
+    {AvaxTx, GuiGetAvaxSignQrCodeData, GuiGetAvaxSignUrDataUnlimited, GuiGetAvaxCheckResult, CHAIN_AVAX, REMAPVIEW_AVAX},
 
     // must get from GuiGetCosmosTxChain
     {CosmosTx, GuiGetCosmosSignQrCodeData, NULL, GuiGetCosmosCheckResult, CHAIN_ATOM, REMAPVIEW_COSMOS},

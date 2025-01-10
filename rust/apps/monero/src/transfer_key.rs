@@ -1,8 +1,8 @@
 use crate::extra::*;
 use crate::key::*;
 use crate::transfer::{TxConstructionData, TxDestinationEntry};
-use crate::utils::*;
 use crate::utils::hash::*;
+use crate::utils::*;
 use alloc::vec;
 use alloc::vec::Vec;
 use curve25519_dalek::edwards::EdwardsPoint;
@@ -132,11 +132,18 @@ impl TxConstructionData {
         extra.serialize()
     }
 
-    pub fn shared_key_derivations(&self, keypair: &KeyPair) -> Vec<Zeroizing<SharedKeyDerivations>> {
+    pub fn shared_key_derivations(
+        &self,
+        keypair: &KeyPair,
+    ) -> Vec<Zeroizing<SharedKeyDerivations>> {
         let ecdhs = self.ecdhs(keypair);
         let mut res = Vec::with_capacity(self.splitted_dsts.len());
         for (i, (_, ecdh)) in self.splitted_dsts.iter().zip(ecdhs).enumerate() {
-            res.push(SharedKeyDerivations::output_derivations(None, Zeroizing::new(ecdh), i));
+            res.push(SharedKeyDerivations::output_derivations(
+                None,
+                Zeroizing::new(ecdh),
+                i,
+            ));
         }
 
         res

@@ -64,6 +64,7 @@ impl TxParser for WrappedPsbt {
             ChildNumber::Hardened { index } => match index {
                 0 => Ok(Network::Bitcoin),
                 1 => Ok(Network::BitcoinTestnet),
+                60 => Ok(Network::AvaxBtcBridge),
                 _ => Err(BitcoinError::InvalidTransaction(format!(
                     "unknown network {}",
                     index
@@ -301,5 +302,51 @@ mod tests {
         );
         assert_eq!(false, first_output.path.is_some());
         assert_eq!(1880, first_output.value);
+    }
+
+    #[test]
+    fn test_parse_avax_bridge_psbt() {
+        let psbt_hex = "70736274ff01009a02000000026e1f0958c35751b405afbe041bad35dd3fad44b1dee3f44b12507de02e56e6550300000000ffffffff16dd85d17640b078f2e24c7e2ac7ae982710a00a8a09228cc85d3879a3be59231700000000ffffffff0280bb0000000000001600143cf8355a260de70076823225ff364bb4a24ebd09a411000000000000160014d5a4faf473f4fb0269975c81f4552271b5890f2e000000000001011f76bb000000000000160014d5a4faf473f4fb0269975c81f4552271b5890f2e220603b67b96642e75b5be0e44a1280bec81e11874f6c1acd9dfc32487f4ec1dbdf98e18eb16731f2c0000803c0000800000008000000000000000000001011f2413000000000000160014d5a4faf473f4fb0269975c81f4552271b5890f2e220603b67b96642e75b5be0e44a1280bec81e11874f6c1acd9dfc32487f4ec1dbdf98e18eb16731f2c0000803c000080000000800000000000000000000000";
+        let psbt = Psbt::deserialize(&Vec::from_hex(psbt_hex).unwrap()).unwrap();
+        let wpsbt = WrappedPsbt { psbt };
+        let master_fingerprint = Fingerprint::from_str("eb16731f").unwrap();
+        let extended_pubkey = Xpub::from_str("tpubDCjjMQRn1nNw3GW5wM46t3RJtKhF8fDeJenk1tvAMNzZFKi2QjpdjL7oz7r22Zw2McweSH4CwmLQJysqeqzatbiqDbXkeG2QccFRAfzYJhF").unwrap();
+        let path = DerivationPath::from_str("m/44'/60'/0'").unwrap();
+        let mut keys = BTreeMap::new();
+        keys.insert(path, extended_pubkey);
+
+        let result = wpsbt
+            .parse(Some(&ParseContext {
+                master_fingerprint,
+                extended_public_keys: keys,
+                verify_code: None,
+                multisig_wallet_config: None,
+            }))
+            .unwrap();
+        assert_eq!("0.0005289 BTC", result.detail.total_input_amount);
+        assert_eq!("0.00052516 BTC", result.detail.total_output_amount);
+        assert_eq!("0.00000374 BTC", result.detail.fee_amount);
+
+        assert_eq!("52516 sats", result.overview.total_output_sat);
+        assert_eq!("374 sats", result.overview.fee_sat);
+
+        assert_eq!("Avalanche BTC", result.overview.network);
+
+        println!("{:?}", result);
+        let first_input = result.detail.from.get(0).unwrap();
+        assert_eq!(
+            "bc1q6kj04arn7nasy6vhtjqlg4fzwx6cjrewgdczdt",
+            first_input.address.clone().unwrap()
+        );
+        assert_eq!(true, first_input.path.is_some());
+        assert_eq!(47990, first_input.value);
+
+        let first_output = result.detail.to.get(0).unwrap();
+        assert_eq!(
+            "bc1q8nur2k3xphnsqa5zxgjl7djtkj3ya0gf6rpqa9",
+            first_output.address
+        );
+        assert_eq!(false, first_output.path.is_some());
+        assert_eq!(48000, first_output.value);
     }
 }

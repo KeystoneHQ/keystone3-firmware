@@ -288,6 +288,7 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
     case HOME_WALLET_CARD_ETH:
     case HOME_WALLET_CARD_SOL:
     case HOME_WALLET_CARD_HNT:
+    case HOME_WALLET_CARD_AVAX:
         GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ADA:
@@ -361,7 +362,6 @@ static void ManageCoinChainHandler(lv_event_t *e)
     bool state;
     WalletState_t *wallet = lv_event_get_user_data(e);
     if (wallet->index == HOME_WALLET_CARD_COSMOS) {
-        printf("cosmos\n");
         state = g_walletBakState[wallet->index].state;
         if (state) {
             lv_img_set_src(g_cosmosPulldownImg, &imgArrowRight);
@@ -477,8 +477,6 @@ static void OpenManageAssetsHandler(lv_event_t *e)
                                            ManageCoinChainHandler, &g_walletState[i]);
         g_walletButton[i] = button;
         if (IsCosmosChain(g_coinCardArray[i].index)) {
-            printf("g_coinCardArray[i].index = %d\n", g_coinCardArray[i].index);
-            printf("name = %s\n", g_coinCardArray[i].coin);
             lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
             g_lastCosmosLine = GuiCreateDividerLine(checkBoxCont);
             lv_obj_add_flag(g_lastCosmosLine, LV_OBJ_FLAG_HIDDEN);

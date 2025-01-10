@@ -23,6 +23,7 @@ fn main() {
         #[cfg(feature = "production-cypherpunk")]
         "production-cypherpunk",
     ];
+
     //feature toggle
     config.after_includes = config.after_includes.map(|mut v| {
         #[cfg(feature = "cypherpunk")]
@@ -60,6 +61,8 @@ fn main() {
         v.push_str("#define FEATURE_TRON\n");
         #[cfg(feature = "xrp")]
         v.push_str("#define FEATURE_XRP\n");
+        #[cfg(feature = "avalanche")]
+        v.push_str("#define FEATURE_AVAX\n");
         #[cfg(feature = "zcash")]
         v.push_str("#define FEATURE_ZCASH\n");
         #[cfg(feature = "monero")]

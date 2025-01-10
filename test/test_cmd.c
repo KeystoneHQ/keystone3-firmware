@@ -806,7 +806,6 @@ static void ReadAddrFunc(int argc, char *argv[])
 
 static void GetCurrentTimeFunc(int argc, char *argv[])
 {
-    printf("current time : %s\n", GetCurrentTime());
 }
 
 static void SetCurrentTimeFunc(int argc, char *argv[])

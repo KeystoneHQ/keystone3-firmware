@@ -9,10 +9,10 @@ use alloc::vec;
 use alloc::vec::Vec;
 use chacha20::cipher::{generic_array::GenericArray, KeyIvInit, StreamCipher};
 use chacha20::{ChaCha20, ChaCha20Legacy};
+use cuprate_cryptonight::cryptonight_hash_v0;
 use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::traits::{IsIdentity, MultiscalarMul};
-use cuprate_cryptonight::cryptonight_hash_v0;
 use monero_serai::transaction::Input;
 use rand_core::{CryptoRng, RngCore, SeedableRng};
 

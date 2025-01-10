@@ -52,6 +52,9 @@ pub fn derive_address(hd_path: &str, root_x_pub: &str, root_path: &str) -> Resul
 mod tests {
 
     use super::*;
+    extern crate std;
+    use core::str::FromStr;
+    use std::println;
 
     #[test]
     fn test_generate_address() {

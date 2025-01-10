@@ -28,6 +28,9 @@ mod aptos;
 #[cfg(feature = "arweave")]
 #[allow(unused)]
 mod arweave;
+#[cfg(feature = "avalanche")]
+#[allow(unused)]
+mod avalanche;
 #[cfg(feature = "bitcoin")]
 #[allow(unused)]
 mod bitcoin;

@@ -118,6 +118,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "avalanche")]
+        impl From<app_avalanche::errors::AvaxError> for $name {
+            fn from(value: app_avalanche::errors::AvaxError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
         #[cfg(feature = "solana")]
         impl From<app_solana::errors::SolanaError> for $name {
             fn from(value: app_solana::errors::SolanaError) -> Self {
@@ -359,6 +365,12 @@ macro_rules! impl_simple_new_error {
         #[cfg(feature = "tron")]
         impl<$t> From<app_tron::errors::TronError> for $name<$t> {
             fn from(value: app_tron::errors::TronError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "avalanche")]
+        impl<$t> From<app_avalanche::errors::AvaxError> for $name<$t> {
+            fn from(value: app_avalanche::errors::AvaxError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

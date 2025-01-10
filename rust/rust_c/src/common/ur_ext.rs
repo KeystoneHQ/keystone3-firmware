@@ -8,6 +8,8 @@ use serde_json::{from_slice, from_value, Value};
 use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
 #[cfg(feature = "arweave")]
 use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SignType};
+#[cfg(feature = "avalanche")]
+use ur_registry::avalanche::avax_sign_request::AvaxSignRequest;
 #[cfg(feature = "bitcoin")]
 use ur_registry::bitcoin::btc_sign_request::BtcSignRequest;
 use ur_registry::bytes::Bytes;
@@ -173,6 +175,13 @@ impl InferViewType for AptosSignRequest {
 impl InferViewType for ZcashPczt {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::ZcashTx)
+    }
+}
+
+#[cfg(feature = "avalanche")]
+impl InferViewType for AvaxSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::AvaxTx)
     }
 }
 

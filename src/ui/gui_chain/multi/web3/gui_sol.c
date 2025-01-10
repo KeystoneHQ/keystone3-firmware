@@ -472,7 +472,7 @@ static void GuiShowSolTxTransferOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
 }
 
 
-lv_obj_t* GuiCreateNoticeCard(lv_obj_t* parent)
+lv_obj_t* GuiCreateSolNoticeCard(lv_obj_t* parent)
 {
     lv_obj_t* card = GuiCreateAutoHeightContainer(parent, 408, 24);
     SetContainerDefaultStyle(card);
@@ -745,7 +745,7 @@ static void GuiShowSplTokenTransferOverview(lv_obj_t *parent, PtrT_DisplaySolana
     SetContainerDefaultStyle(container);
     PtrT_DisplaySolanaTxSplTokenTransferOverview splTokenTransfer = overviewData->spl_token_transfer;
     if (strcmp(splTokenTransfer->token_name, "Unknown") == 0) {
-        lv_obj_t *noticeCard = GuiCreateNoticeCard(parent);
+        lv_obj_t *noticeCard = GuiCreateSolNoticeCard(parent);
         lv_obj_align_to(tokenInfoCard, noticeCard, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
     lv_obj_align_to(container, tokenInfoCard, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);

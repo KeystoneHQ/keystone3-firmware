@@ -162,6 +162,7 @@ void GuiTransactionDetailInit(uint8_t viewType)
     //btc multisig will change g_transactionType when parsing transaction;
     g_transactionType = TRANSACTION_TYPE_NORMAL;
     g_viewType = viewType;
+    printf("%s %d.\n", __func__, __LINE__);
     g_chainType = ViewTypeToChainTypeSwitch(g_viewType);
     g_pageWidget = CreatePageWidget();
     g_needSign = true;

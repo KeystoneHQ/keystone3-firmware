@@ -50,6 +50,7 @@ typedef struct ConnectWalletWidget {
 
 WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_KEYSTONE, &walletListKeystone, false},
+    {WALLET_LIST_CORE, &walletListSushi, true},
     {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true},
@@ -1151,6 +1152,9 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_IMTOKEN:
         func = GuiGetImTokenData;
         AddEthWalletCoins();
+        break;
+    case WALLET_LIST_CORE:
+        func = GuiGetCoreWalletData;
         break;
     case WALLET_LIST_BITGET:
         func = GuiGetBitgetWalletData;

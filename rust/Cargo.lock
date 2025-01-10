@@ -167,6 +167,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "app_avalanche"
+version = "0.1.0"
+dependencies = [
+ "app_utils",
+ "base64 0.11.0",
+ "bech32 0.11.0",
+ "bitcoin",
+ "bytes",
+ "core2",
+ "cryptoxide",
+ "either",
+ "hex",
+ "itertools 0.13.0",
+ "keystore",
+ "rust_tools",
+ "serde",
+ "serde_json",
+ "thiserror-core",
+ "ur-registry",
+]
+
+[[package]]
 name = "app_bitcoin"
 version = "0.1.0"
 dependencies = [
@@ -3578,6 +3600,7 @@ dependencies = [
  "aes",
  "app_aptos",
  "app_arweave",
+ "app_avalanche",
  "app_bitcoin",
  "app_cardano",
  "app_cosmos",
@@ -4482,7 +4505,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.45#42f5e05834c395b8d7ce5d1a233b371d2b74fa21"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.46#1177ced5da2121414810fdd46ff42fc56c8497ca"
 dependencies = [
  "hex",
  "ur",
@@ -4492,7 +4515,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.1"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.45#42f5e05834c395b8d7ce5d1a233b371d2b74fa21"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.46#1177ced5da2121414810fdd46ff42fc56c8497ca"
 dependencies = [
  "bs58 0.5.1",
  "core2",

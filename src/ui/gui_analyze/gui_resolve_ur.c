@@ -8,6 +8,7 @@
 #include "user_delay.h"
 #include "gui_api.h"
 #include "gui_views.h"
+#include "gui_chain.h"
 
 #ifdef BTC_ONLY
 #include "gui_import_multisig_wallet_info_widgets.h"
@@ -51,14 +52,19 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_STELLAR_HASH, (SetChainDataFunc)GuiSetStellarUrData},
     {REMAPVIEW_TON, (SetChainDataFunc)GuiSetTonUrData},
     {REMAPVIEW_TON_SIGNPROOF, (SetChainDataFunc)GuiSetTonUrData},
+    {REMAPVIEW_AVAX, (SetChainDataFunc)GuiSetAvaxUrData},
 #endif
 };
 
 void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
 {
+    printf("%s %d.\n", __func__,__LINE__);
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
+    printf("%s %d.\n", __func__,__LINE__);
+    printf("viewType=%d\r\n", viewType);
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainViewArray); i++) {
         if (g_chainViewArray[i].chain == viewType) {
+            printf("%s %d.\n", __func__,__LINE__);
             printf("g_chainViewArray[i].type=%d\r\n", g_chainViewArray[i].chain);
             g_chainViewArray[viewType].func(urResult, urMultiResult, is_multi);
             break;
@@ -102,10 +108,8 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
             || urViewType.viewType == MultisigCryptoImportXpub
 #endif
             || viewType != REMAPVIEW_BUTT) {
-#ifndef COMPILE_SIMULATOR
         StopQrDecode();
         UserDelay(500);
-#endif
         GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
     } else {
         printf("unhandled viewType=%d\r\n", urViewType.viewType);

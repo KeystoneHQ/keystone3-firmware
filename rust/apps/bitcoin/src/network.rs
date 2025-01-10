@@ -14,12 +14,13 @@ pub enum Network {
     Litecoin,
     Dash,
     BitcoinCash,
+    AvaxBtcBridge,
 }
 
 impl NetworkT for Network {
     fn get_unit(&self) -> String {
         match self {
-            Network::Bitcoin => "BTC",
+            Network::Bitcoin | Network::AvaxBtcBridge => "BTC",
             Network::BitcoinTestnet => "tBTC",
             Network::Litecoin => "LTC",
             Network::Dash => "DASH",
@@ -35,6 +36,7 @@ impl NetworkT for Network {
             Network::Litecoin => "Litecoin",
             Network::Dash => "Dash",
             Network::BitcoinCash => "Bitcoin Cash",
+            Network::AvaxBtcBridge => "Avalanche BTC",
         }
         .to_string()
     }
@@ -48,6 +50,7 @@ impl Network {
             Network::Litecoin => 2,
             Network::Dash => 5,
             Network::BitcoinCash => 145,
+            Network::AvaxBtcBridge => 60,
         }
         .to_string()
     }
@@ -65,6 +68,7 @@ impl FromStr for Network {
             "BTC_NATIVE_SEGWIT" => Ok(Self::Bitcoin),
             "BTC_SEGWIT" => Ok(Self::Bitcoin),
             "BTC_LEGACY" => Ok(Self::Bitcoin),
+            "AVAX" => Ok(Self::AvaxBtcBridge),
             _ => Err(BitcoinError::UnsupportedNetwork(format!("{:?}", network))),
         }
     }

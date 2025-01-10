@@ -220,7 +220,14 @@ extern bool g_reboot;
         GuiGetTonProofGUIData, \
         NULL, \
         FreeArMemory, \
-    }
+    }, \
+    { \
+        REMAPVIEW_AVAX, \
+        PC_SIMULATOR_PATH "/page_avax.json", \
+        GuiGetAvaxGUIData, \
+        NULL, \
+        FreeAvaxMemory, \
+    },
 #endif
 
 #endif

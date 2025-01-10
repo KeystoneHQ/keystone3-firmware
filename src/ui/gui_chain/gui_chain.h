@@ -16,6 +16,7 @@
 #include "gui_ar.h"
 #include "gui_stellar.h"
 #include "gui_ton.h"
+#include "gui_avax.h"
 #else
 #include "gui_zcash.h"
 #include "gui_monero.h"
@@ -81,6 +82,7 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
+    CHAIN_AVAX,
     // cosmos end
 #endif
 
@@ -118,6 +120,7 @@ typedef enum {
     REMAPVIEW_STELLAR_HASH,
     REMAPVIEW_TON,
     REMAPVIEW_TON_SIGNPROOF,
+    REMAPVIEW_AVAX,
 #endif
 
 #ifdef CYPHERPUNK_VERSION

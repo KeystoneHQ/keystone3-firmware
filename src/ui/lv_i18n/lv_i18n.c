@@ -9,35 +9,13 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
@@ -146,6 +124,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"auto_shutdown_20", "Auto Shutdown"},
     {"beta_version_notice_desc", "The current firmware is a beta version and may contain unknown bugs or risks. It is intended only for testing purposes."},
     {"beta_version_notice_title", "Beta Version"},
+    {"btc_avalanche_notice", "This transaction uses an Avalanche BTC address. Verify all details carefully to avoid errors or asset loss."},
     {"calculat_modal_title", "Calculating"},
     {"catalyst_transactions_notice", "Ensure the address matches. Please verify carefully."},
     {"catalyst_voting_registration", "Confirm Catalyst Registration"},
@@ -591,6 +570,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"receive_ada_more_t_title2", "Key Concepts in Cardano's ADA Addresses"},
     {"receive_ada_show_address_detail", "Show Address Detail"},
     {"receive_ada_stake_address", "Reward Address"},
+    {"receive_avax_receive_main_title", "Receive AVAX"},
     {"receive_btc_address_type", "Address Type"},
     {"receive_btc_alert_desc", "This address is exclusively for BTC transactions only. Sending other types of digital assets to this address will result in their loss."},
     {"receive_btc_extended_public_key", "Extended Public Key"},
@@ -923,12 +903,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1048,6 +1025,7 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"auto_shutdown_20", "Autoabschaltung"},
     {"beta_version_notice_desc", "Die aktuelle Firmware ist eine Betaversion und kann unbekannte Fehler oder Risiken enthalten. Sie ist ausschließlich für Testzwecke vorgesehen."},
     {"beta_version_notice_title", "Beta-Version"},
+    {"btc_avalanche_notice", "Diese Transaktion verwendet eine Avalanche BTC-Adresse. Überprüfen Sie alle Details sorgfältig, um Fehler oder Vermögensverluste zu vermeiden."},
     {"calculat_modal_title", "Berechnung"},
     {"catalyst_transactions_notice", "Prüfen Sie die Adresse sorgfältig."},
     {"catalyst_voting_registration", "Wahlregistrierung bestätigen"},
@@ -1493,6 +1471,7 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"receive_ada_more_t_title2", "Schlüsselkonzepte in Cardanos ADA-Adressen"},
     {"receive_ada_show_address_detail", "Adresse anzeigen"},
     {"receive_ada_stake_address", "Belohnungsadresse"},
+    {"receive_avax_receive_main_title", "Erhalte AVAX"},
     {"receive_btc_address_type", "Adresstyp"},
     {"receive_btc_alert_desc", "Diese Adresse ist ausschließlich für BTC-Transaktionen bestimmt. Das Senden anderer Arten von digitalen Vermögenswerten an diese Adresse führt zu deren Verlust."},
     {"receive_btc_extended_public_key", "Erweitertes öffentliches Schlüssel"},
@@ -1825,12 +1804,9 @@ const static lv_i18n_phrase_t de_singulars[] = {
 
 static uint8_t de_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1950,6 +1926,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"auto_shutdown_20", "Apagado automático"},
     {"beta_version_notice_desc", "La versión actual del firmware es una versión beta y puede contener errores o riesgos desconocidos. Está diseñada únicamente para fines de prueba"},
     {"beta_version_notice_title", "Versión beta"},
+    {"btc_avalanche_notice", " \"Esta transacción utiliza una dirección BTC de Avalanche. Verifique cuidadosamente todos los detalles para evitar errores o pérdida de activos.\""},
     {"calculat_modal_title", "Calculando"},
     {"catalyst_transactions_notice", "Asegúrese de que la dirección coincida. Verifique cuidadosamente."},
     {"catalyst_voting_registration", "Confirmar registro de votación"},
@@ -2395,6 +2372,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"receive_ada_more_t_title2", "Conceptos clave en las direcciones ADA de Cardano"},
     {"receive_ada_show_address_detail", "Mostrar detalle de dirección"},
     {"receive_ada_stake_address", "Dirección de recompensa"},
+    {"receive_avax_receive_main_title", "Recibir AVAX"},
     {"receive_btc_address_type", "Tipo de dirección"},
     {"receive_btc_alert_desc", "Esta dirección es exclusivamente para transacciones con BTC. Si se envían otros tipos de activos digitales a esta dirección, se perderán."},
     {"receive_btc_extended_public_key", "Clave pública extendida"},
@@ -2727,8 +2705,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
 
 static uint8_t es_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
+    uint32_t n = op_n(num); UNUSED(n);
 
 
     if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -2849,6 +2826,7 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"auto_shutdown_20", "自動シャットダウン"},
     {"beta_version_notice_desc", "現在のファームウェアはベータ版であり、未知のバグやリスクが含まれている可能性があります.これはテスト目的のみを意図しています."},
     {"beta_version_notice_title", "ベータ版"},
+    {"btc_avalanche_notice", "このトランザクションはAvalanche BTCアドレスを使用しています。エラーや資産の損失を避けるため、すべての詳細を慎重に確認してください。"},
     {"calculat_modal_title", "計算しています"},
     {"catalyst_transactions_notice", "アドレスが一致することを確認してください。慎重に確認してください"},
     {"catalyst_voting_registration", "投票登録を確認"},
@@ -3294,6 +3272,7 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"receive_ada_more_t_title2", "カルダノのADAアドレスのキーコンセプト"},
     {"receive_ada_show_address_detail", "住所の詳細を表示"},
     {"receive_ada_stake_address", "報酬アドレス"},
+    {"receive_avax_receive_main_title", "AVAXを受け取る"},
     {"receive_btc_address_type", "住所タイプ"},
     {"receive_btc_alert_desc", "このアドレスはBTCの取引のみに利用できます.他の種類のデジタル資産をこのアドレスに送信した場合、それらは失われます."},
     {"receive_btc_extended_public_key", "拡張公開鍵"},
@@ -3746,6 +3725,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"auto_shutdown_20", "자동 종료 시간"},
     {"beta_version_notice_desc", "현재 펌웨어는 베타 버전이며 알려지지 않은 버그 또는 위험을 포함할 수 있습니다. 테스트 목적으로만 사용되어야 합니다."},
     {"beta_version_notice_title", "베타 버전"},
+    {"btc_avalanche_notice", "이 트랜잭션은 Avalanche BTC 주소를 사용합니다. 오류나 자산 손실을 방지하기 위해 모든 세부 사항을 주의 깊게 확인하십시오."},
     {"calculat_modal_title", "계산중 "},
     {"catalyst_transactions_notice", "주소가 일치하는지 확인하세요. 주의깊게 검증해 주세요."},
     {"catalyst_voting_registration", "투표 등록 확인"},
@@ -4191,6 +4171,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"receive_ada_more_t_title2", "카르다노의 ADA 주소의 주요 개념"},
     {"receive_ada_show_address_detail", "주소 상세 내역 표시"},
     {"receive_ada_stake_address", "보상 주소"},
+    {"receive_avax_receive_main_title", "AVAX 받기"},
     {"receive_btc_address_type", "주소 유형"},
     {"receive_btc_alert_desc", "이 주소는 BTC 거래만을 위한 것이다. 이 주소로 다른 종류의 디지털 자산을 전송하면 손실이 발생한다."},
     {"receive_btc_extended_public_key", "공개 키 확장 "},
@@ -4643,6 +4624,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"auto_shutdown_20", "Выключение"},
     {"beta_version_notice_desc", "Текущая прошивка является бета-версией и может содержать неизвестные ошибки или риски. Она предназначена только для тестирования."},
     {"beta_version_notice_title", "Тестовая версия"},
+    {"btc_avalanche_notice", "Эта транзакция использует адрес Avalanche BTC. Внимательно проверьте все детали, чтобы избежать ошибок или потери активов."},
     {"calculat_modal_title", "Расчет"},
     {"catalyst_transactions_notice", "Убедитесь, что адрес совпадает. Тщательно проверьте."},
     {"catalyst_voting_registration", "Регистрация для голосования"},
@@ -5088,6 +5070,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"receive_ada_more_t_title2", "Ключевые понятия в адресах ADA Cardano"},
     {"receive_ada_show_address_detail", "Показать адрес целиком"},
     {"receive_ada_stake_address", "Адрес для награды"},
+    {"receive_avax_receive_main_title", "Получить AVAX"},
     {"receive_btc_address_type", "Тип адреса"},
     {"receive_btc_alert_desc", "Этот адрес предназначен только для Bitcoin, другие цифровые активы, отправленные на этот адрес, будут потеряны."},
     {"receive_btc_extended_public_key", "Расширенный Открытый ключ"},
@@ -5420,12 +5403,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -5548,6 +5528,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"auto_shutdown_20", "自动关闭"},
     {"beta_version_notice_desc", "当前的固件是一个测试版本,可能包含未知的错误或风险.仅供测试目的使用"},
     {"beta_version_notice_title", "测试版本"},
+    {"btc_avalanche_notice", "此交易使用Avalanche BTC地址。请仔细验证所有详细信息，以避免错误或资产损失。"},
     {"calculat_modal_title", "计算中..."},
     {"catalyst_transactions_notice", "请确保地址匹配。仔细核对。"},
     {"catalyst_voting_registration", "确认投票注册"},
@@ -5993,6 +5974,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"receive_ada_more_t_title2", "Cardano 地址中的关键概念"},
     {"receive_ada_show_address_detail", "显示地址细节"},
     {"receive_ada_stake_address", "奖励地址"},
+    {"receive_avax_receive_main_title", "接收 AVAX"},
     {"receive_btc_address_type", "地址类型"},
     {"receive_btc_alert_desc", "此地址仅用于 BTC 交易.将其他类型的数字资产发送到此地址将会导致资产丢失."},
     {"receive_btc_extended_public_key", "扩展公钥"},
@@ -6372,8 +6354,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -6386,13 +6368,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -6405,10 +6387,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -6423,23 +6405,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -6455,31 +6437,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -6494,6 +6476,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

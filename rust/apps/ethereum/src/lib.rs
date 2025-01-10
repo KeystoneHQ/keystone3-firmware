@@ -68,7 +68,7 @@ pub fn parse_typed_data_message(tx_hex: Vec<u8>, from_key: PublicKey) -> Result<
         String::from_utf8(tx_hex).map_err(|e| EthereumError::InvalidUtf8Error(e.to_string()))?;
     let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message)
         .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), utf8_message))?;
-    TypedData::from(Into::into(typed_data), from_key)
+    TypedData::from_raw(typed_data, from_key)
 }
 
 pub fn sign_legacy_tx(sign_data: Vec<u8>, seed: &[u8], path: &String) -> Result<EthereumSignature> {

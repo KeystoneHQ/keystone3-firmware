@@ -15,7 +15,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use cryptoxide::hashing::sha3::Sha3_256;
-use hex;
+
 use parser::AptosTx;
 
 use crate::errors::Result;
@@ -32,15 +32,15 @@ pub fn generate_address(pub_key: &str) -> Result<String> {
 }
 
 pub fn parse_tx(data: &Vec<u8>) -> crate::errors::Result<AptosTx> {
-    Ok(Parser::parse_tx(data)?)
+    Parser::parse_tx(data)
 }
 
 pub fn parse_msg(data: &Vec<u8>) -> crate::errors::Result<String> {
-    Ok(Parser::parse_msg(data)?)
+    Parser::parse_msg(data)
 }
 
 pub fn sign(message: Vec<u8>, hd_path: &String, seed: &[u8]) -> errors::Result<[u8; 64]> {
-    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(&seed, hd_path, &message)
+    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, hd_path, &message)
         .map_err(|e| errors::AptosError::KeystoreError(format!("sign failed {:?}", e.to_string())))
 }
 

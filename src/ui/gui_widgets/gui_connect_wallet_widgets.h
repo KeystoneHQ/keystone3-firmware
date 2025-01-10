@@ -4,7 +4,7 @@
 #include "gui_views.h"
 #include "librust_c.h"
 #include "gui_attention_hintbox.h"
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 #include "gui_ar.h"
 #endif
 
@@ -47,13 +47,14 @@ typedef enum {
     WALLET_LIST_LEAP,
     WALLET_LIST_NIGHTLY,
     WALLET_LIST_SUIET,
+    WALLET_LIST_CAKE,
+    WALLET_LIST_FEATHER,
 #else
     WALLET_LIST_BLUE,
     WALLET_LIST_SPECTER,
     WALLET_LIST_SPARROW,
     WALLET_LIST_NUNCHUK,
     WALLET_LIST_UNISAT,
-
 #endif
     WALLET_LIST_BUTT,
 } WALLET_LIST_INDEX_ENUM;
@@ -67,7 +68,16 @@ typedef struct {
 #endif
 } WalletListItem_t;
 
-#ifndef BTC_ONLY
+void GuiConnectWalletInit(void);
+int8_t GuiConnectWalletNextTile(void);
+int8_t GuiConnectWalletPrevTile(void);
+void GuiConnectWalletRefresh(void);
+void GuiConnectWalletDeInit(void);
+void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index);
+void GuiConnectWalletHandleURGenerate(char *data, uint16_t len);
+void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
+uint8_t GuiConnectWalletGetWalletIndex(void);
+#ifdef WEB3_VERSION
 typedef enum {
     BTC,
     ETH,
@@ -92,28 +102,7 @@ typedef enum SOLAccountType {
     SOLBip44Change,
 } SOLAccountType;
 
-typedef struct {
-    int8_t                  index;
-    bool                    state;
-    lv_obj_t                *checkBox;
-    lv_obj_t                *uncheckedImg;
-    lv_obj_t                *checkedImg;
-} CoinState_t;
-#endif
-
-void GuiConnectWalletInit(void);
-int8_t GuiConnectWalletNextTile(void);
-int8_t GuiConnectWalletPrevTile(void);
-void GuiConnectWalletRefresh(void);
-void GuiConnectWalletDeInit(void);
-void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index);
-#ifndef BTC_ONLY
 ETHAccountType GetMetamaskAccountType(void);
-#endif
-void GuiConnectWalletHandleURGenerate(char *data, uint16_t len);
-void GuiConnectWalletHandleURUpdate(char *data, uint16_t len);
-uint8_t GuiConnectWalletGetWalletIndex(void);
-#ifndef BTC_ONLY
 SOLAccountType GetSolflareAccountType(void);
 SOLAccountType GetHeliumAccountType(void);
 void GuiPrepareArConnectWalletView(void);

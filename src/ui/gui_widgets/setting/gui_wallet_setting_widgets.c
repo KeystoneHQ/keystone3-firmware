@@ -22,10 +22,8 @@
 #include "screen_manager.h"
 #include "fingerprint_process.h"
 #include "keystore.h"
+#include "gui_home_widgets.h"
 
-#ifdef BTC_ONLY
-#include "gui_btc_home_widgets.h"
-#endif
 /* DEFINES */
 
 /* TYPEDEFS */
@@ -298,7 +296,6 @@ void GuiSettingRepeatPinPass(const char *buf)
 void GuiDelWallet(bool result)
 {
     GuiDeleteAnimHintBox();
-    // g_waitAnimWidget.cont = NULL;
     GuiCLoseCurrentWorkingView();
     static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
     LogoutCurrentAccount();
@@ -586,7 +583,7 @@ void GuiFingerCancelRegister(void)
 static void DelWalletConfirmHandler(lv_event_t *e)
 {
     g_waitAnimWidget.cont = GuiCreateAnimHintBox(480, 278, 82);
-    g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("wallet_settings_delete_laoding_title"));
+    g_waitAnimWidget.label = GuiCreateTextLabel(g_waitAnimWidget.cont, _("wallet_settings_delete_loading_title"));
     lv_obj_align(g_waitAnimWidget.label, LV_ALIGN_BOTTOM_MID, 0, -76);
     GuiModelSettingDelWalletDesc();
 }

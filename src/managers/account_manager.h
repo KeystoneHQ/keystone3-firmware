@@ -98,7 +98,9 @@ uint16_t GetSlip39Id(void);
 uint8_t GetSlip39Ie(void);
 
 void AccountsDataCheck(void);
+
+#ifdef CYPHERPUNK_VERSION
 int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP);
 int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password);
-
+#endif
 #endif

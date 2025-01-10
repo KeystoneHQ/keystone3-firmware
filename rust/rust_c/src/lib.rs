@@ -1,6 +1,7 @@
+#![feature(vec_into_raw_parts)]
 #![cfg_attr(feature = "use-allocator", no_std)]
 #![cfg_attr(feature = "use-allocator", feature(alloc_error_handler))]
-#[cfg(feature = "use-allocator")]
+
 extern crate alloc;
 
 mod bindings;
@@ -12,54 +13,61 @@ mod allocator;
 mod my_alloc;
 
 #[allow(unused)]
-use bitcoin_rust_c;
+mod common;
 #[allow(unused)]
-use common_rust_c;
-#[allow(unused)]
-use test_cmd;
-#[allow(unused)]
-use wallet_rust_c;
+mod wallet;
 
-#[cfg(feature = "multi-coins")]
+#[cfg(feature = "test_cmd")]
 #[allow(unused)]
-use aptos_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use arweave_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use cardano_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use cosmos_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use ethereum_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use near_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use solana_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use stellar_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use sui_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use ton_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use tron_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use xrp_rust_c;
-#[cfg(feature = "multi-coins")]
-#[allow(unused)]
-use zcash_rust_c;
+mod test_cmd;
 
-#[cfg(any(feature = "simulator", feature = "simulator_btc_only"))]
+//chains
+#[cfg(feature = "aptos")]
 #[allow(unused)]
-use simulator_rust_c;
+mod aptos;
+#[cfg(feature = "arweave")]
+#[allow(unused)]
+mod arweave;
+#[cfg(feature = "bitcoin")]
+#[allow(unused)]
+mod bitcoin;
+#[cfg(feature = "cardano")]
+#[allow(unused)]
+mod cardano;
+#[cfg(feature = "cosmos")]
+#[allow(unused)]
+mod cosmos;
+#[cfg(feature = "ethereum")]
+#[allow(unused)]
+mod ethereum;
+#[cfg(feature = "monero")]
+#[allow(unused)]
+mod monero;
+#[cfg(feature = "near")]
+#[allow(unused)]
+mod near;
+#[cfg(feature = "solana")]
+#[allow(unused)]
+mod solana;
+#[cfg(feature = "stellar")]
+#[allow(unused)]
+mod stellar;
+#[cfg(feature = "sui")]
+#[allow(unused)]
+mod sui;
+#[cfg(feature = "ton")]
+#[allow(unused)]
+mod ton;
+#[cfg(feature = "tron")]
+#[allow(unused)]
+mod tron;
+#[cfg(feature = "xrp")]
+#[allow(unused)]
+mod xrp;
+#[cfg(feature = "zcash")]
+#[allow(unused)]
+mod zcash;
+
+#[cfg(feature = "simulator")]
+#[allow(unused)]
+mod simulator;

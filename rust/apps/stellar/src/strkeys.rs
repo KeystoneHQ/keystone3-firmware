@@ -5,6 +5,7 @@ use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
 use keystore::errors::Result;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[allow(non_camel_case_types)]
 pub enum StrKeyType {
     STRKEY_PUBKEY = 6 << 3,
     STRKEY_PRIVKEY = 18 << 3,
@@ -94,7 +95,7 @@ pub fn generate_stellar_private_key(seed: &[u8], path: &String) -> Result<String
 }
 
 pub fn sign_hash(hash: &[u8], seed: &[u8], path: &String) -> Result<[u8; 64]> {
-    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, &hash)
+    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, hash)
 }
 
 pub fn sign_signature_base(signature_base: &[u8], seed: &[u8], path: &String) -> Result<[u8; 64]> {
@@ -105,7 +106,7 @@ pub fn sign_signature_base(signature_base: &[u8], seed: &[u8], path: &String) ->
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::string::{String, ToString};
+    use alloc::string::ToString;
     use hex;
 
     #[test]
@@ -137,7 +138,7 @@ mod tests {
         let signed = sign_hash(&hash, &seed, &path).unwrap();
         assert_eq!(
             "baa7bcf26f8ed50d48e3d15d918f1ae684eaf7a2f876bd6913c78df59eeebcb9a5078628391c9e8d83430b9cc358a8548d0da6f0783a72743104a91e97c5f701",
-            hex::encode(&signed)
+            hex::encode(signed)
         );
     }
 
@@ -149,7 +150,7 @@ mod tests {
         let signed = sign_signature_base(&base, &seed, &path).unwrap();
         assert_eq!(
             "baa7bcf26f8ed50d48e3d15d918f1ae684eaf7a2f876bd6913c78df59eeebcb9a5078628391c9e8d83430b9cc358a8548d0da6f0783a72743104a91e97c5f701",
-            hex::encode(&signed)
+            hex::encode(signed)
         );
     }
 }

@@ -95,7 +95,9 @@ void GuiFpRecognizeResult(bool en)
             SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, title);
         }
     }
+#ifdef WEB3_VERSION
     NftLockQuit();
+#endif
     GuiEnterPassCodeStatus(g_verifyLock, true);
     printf("GuiFpRecognizeResult g_fpErrorCount is %d....\n", g_fpErrorCount);
     GuiFingerPrintStatus(g_verifyLock, en, g_fpErrorCount);
@@ -208,9 +210,6 @@ void GuiLockScreenTurnOn(void *param)
     if (*single == SIG_LOCK_VIEW_VERIFY_PIN || *single == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
         GuiNvsBarSetWalletIcon(NULL);
         GuiNvsBarSetWalletName("");
-#ifdef BTC_ONLY
-        ShowWallPaper(false);
-#endif
     }
     lv_obj_clear_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     // g_lockView.isActive = true;
@@ -271,12 +270,22 @@ void GuiLockScreenPassCode(bool en)
         if (g_oldWalletIndex == 0xFF) {
             g_oldWalletIndex = GetCurrentAccountIndex();
         }
+
         if (IsUpdateSuccess()) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiModeGetWalletDesc();
             GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_homeView);
             GuiFrameOpenView(&g_updateSuccessView);
+#ifdef CYPHERPUNK_VERSION
+        } else if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
+            lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
+            GuiEnterPassCodeStatus(g_verifyLock, true);
+            GuiFrameOpenView(&g_checkDeleteWalletView);
+        } else if (GetMnemonicType() != MNEMONIC_TYPE_TON && g_checkDeleteWalletView.isActive) {
+            lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
+            GuiFrameCLoseView(&g_checkDeleteWalletView);
+#endif
         } else if (ModelGetPassphraseQuickAccess()) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiModeGetWalletDesc();

@@ -26,12 +26,12 @@ fn get_origin(
                 ChildNumber::Hardened { index } => index,
                 ChildNumber::Normal { index } => index,
             };
-            PathComponent::new(Some(index.clone()), child_number.is_hardened()).unwrap()
+            PathComponent::new(Some(*index), child_number.is_hardened()).unwrap()
         })
         .collect::<Vec<PathComponent>>();
     Ok(CryptoKeyPath::new(
         components,
-        Some(master_fingerprint.clone()),
+        Some(master_fingerprint),
         Some(depth),
     ))
 }
@@ -40,10 +40,9 @@ pub fn generate_sync_ur(
     sync_infos: &Vec<SyncInfo>,
 ) -> URResult<CryptoMultiAccounts> {
     let mut keys: Vec<CryptoHDKey> = Vec::new();
-    sync_infos.into_iter().for_each(|sync_info| {
+    sync_infos.iter().for_each(|sync_info| {
         if let Ok(xpub) = bip32::Xpub::from_str(sync_info.xpub.as_str()) {
-            if let Ok(origin) = get_origin(sync_info, master_fingerprint.clone(), xpub.depth as u32)
-            {
+            if let Ok(origin) = get_origin(sync_info, *master_fingerprint, xpub.depth as u32) {
                 let hd_key: CryptoHDKey = CryptoHDKey::new_extended_key(
                     Some(false),
                     xpub.public_key.serialize().to_vec(),
@@ -60,7 +59,7 @@ pub fn generate_sync_ur(
         }
     });
     Ok(CryptoMultiAccounts::new(
-        master_fingerprint.clone(),
+        *master_fingerprint,
         keys,
         Some(DEVICE_TYPE.to_string()),
         None,

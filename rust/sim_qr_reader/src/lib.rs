@@ -3,7 +3,7 @@ use image::DynamicImage;
 use quircs::{Code, Quirc};
 use screenshots::Screen;
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 #[cfg(target_os = "macos")]
 use cocoa::{appkit::NSScreen, base::nil, foundation::NSArray};
@@ -20,8 +20,8 @@ fn get_screen_scaling_factor() -> f64 {
     unsafe {
         let screens = NSScreen::screens(nil);
         let screen = NSArray::objectAtIndex(screens, 0);
-        let scale_factor = NSScreen::backingScaleFactor(screen);
-        scale_factor as f64
+
+        NSScreen::backingScaleFactor(screen)
     }
 
     #[cfg(target_os = "windows")]
@@ -98,7 +98,7 @@ where
                 if on_qr_code_detected(&content) {
                     break;
                 }
-                if let None = qr_area {
+                if qr_area.is_none() {
                     qr_area = new_area;
                 }
                 if let Some(area) = qr_area {
@@ -119,10 +119,10 @@ where
 
 fn get_qr_area(code: &Code, image: &DynamicImage) -> (i32, i32, u32, u32) {
     let points = code.corners;
-    let min_x = points.iter().map(|p| p.x).min().unwrap() as i32;
-    let min_y = points.iter().map(|p| p.y).min().unwrap() as i32;
-    let max_x = points.iter().map(|p| p.x).max().unwrap() as i32;
-    let max_y = points.iter().map(|p| p.y).max().unwrap() as i32;
+    let min_x = points.iter().map(|p| p.x).min().unwrap();
+    let min_y = points.iter().map(|p| p.y).min().unwrap();
+    let max_x = points.iter().map(|p| p.x).max().unwrap();
+    let max_y = points.iter().map(|p| p.y).max().unwrap();
 
     let width = (max_x - min_x) as u32;
     let height = (max_y - min_y) as u32;

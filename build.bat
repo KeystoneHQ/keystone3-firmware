@@ -12,7 +12,7 @@ SET LANGUAGE_PATH=%CD%\src\ui\lv_i18n
 SET LANGUAGE_SCRIPT=py data_loader.py
 SET RUST_C_PATH=%CD%\rust\rust_c
 
-SET "build_options=log copy production screen debug format release rebuild btc_only simulator language clean"
+SET "build_options=log copy production screen debug format release rebuild btc_only cypherpunk simulator language clean"
 FOR %%O IN (%build_options%) DO SET "build_%%O=false"
 
 FOR %%i in (%*) DO (
@@ -54,6 +54,7 @@ IF "%build_language%"=="true" (
 SET cmake_parm=
 IF "%build_production%"=="true" SET "cmake_parm=%cmake_parm% -DBUILD_PRODUCTION=true"
 IF "%build_btc_only%"=="true" SET "cmake_parm=%cmake_parm% -DBTC_ONLY=true"
+IF "%build_cypherpunk%"=="true" SET "cmake_parm=%cmake_parm% -DCYPHERPUNK=true"
 IF "%build_screen%"=="true" SET "cmake_parm=%cmake_parm% -DENABLE_SCREEN_SHOT=true"
 IF "%build_debug%"=="true" SET "cmake_parm=%cmake_parm% -DDEBUG_MEMORY=true"
 
@@ -71,7 +72,7 @@ IF "%build_simulator%"=="true" (
     ) ELSE (
         make -j16
     )
-    python3 padding_bin_file.py mh1903.bin
+    py padding_bin_file.py mh1903.bin
     popd
 )
 

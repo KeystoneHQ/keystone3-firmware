@@ -14,20 +14,6 @@ extern bool fingerRegisterState[3];
 #define JSON_MAX_LEN (1024 * 100)
 #define ACCOUNT_PUBLIC_HOME_COIN_PATH "C:/assets/coin.json"
 
-// typedef enum {
-//     RECOGNIZE_UNLOCK = 0,
-//     RECOGNIZE_SIGN,
-// } Recognize_Type;
-
-// typedef struct {
-//     uint8_t unlockFlag;
-//     uint8_t reserve0[3];
-//     uint8_t signFlag[3];
-//     uint8_t fingerNum;
-//     uint8_t fingerId[3];
-//     uint8_t reserve[21];
-// } FingerManagerInfo_t;
-
 size_t xPortGetFreeHeapSize(void);
 int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex);
 uint8_t GetCurrentAccountIndex(void);
@@ -49,11 +35,192 @@ void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint3
 uint32_t GetCurrentStampTime(void);
 bool FatfsFileExist(const char *path);
 bool GetEnsName(const char *addr, char *name);
-
-#define LOW_BATTERY_LIMIT               0
-#define CHECK_BATTERY_LOW_POWER()       ((GetCurrentDisplayPercent() <= LOW_BATTERY_LIMIT) ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE)
-#define SIMULATOR_WALLET_AMOUNT         1
+void FpWipeManageInfo(void);
 
 extern bool g_reboot;
+
+#undef GUI_ANALYZE_OBJ_SURPLUS
+#ifdef CYPHERPUNK_VERSION
+#define GUI_ANALYZE_OBJ_SURPLUS \
+    { \
+        REMAPVIEW_ZCASH, \
+        PC_SIMULATOR_PATH "/page_zcash.json", \
+        GuiGetZcashGUIData, \
+        NULL, \
+        FreeZcashMemory, \
+    }, \
+    { \
+        REMAPVIEW_XMR_OUTPUT, \
+        PC_SIMULATOR_PATH "/page_xmr_output.json", \
+        GuiGetMoneroOutputData, \
+        NULL, \
+        FreeMoneroMemory, \
+    }, \
+    { \
+        REMAPVIEW_XMR_UNSIGNED, \
+        PC_SIMULATOR_PATH "/page_xmr_unsigned.json", \
+        GuiGetMoneroUnsignedTxData, \
+        NULL, \
+        FreeMoneroMemory, \
+    }
+#endif
+
+#ifdef WEB3_VERSION
+#define GUI_ANALYZE_OBJ_SURPLUS           \
+    { \
+        REMAPVIEW_ETH, \
+        PC_SIMULATOR_PATH "/page_eth.json", \
+        GuiGetEthData, \
+        GetEthTransType, \
+        FreeEthMemory, \
+    }, \
+    { \
+        REMAPVIEW_ETH_PERSONAL_MESSAGE, \
+        PC_SIMULATOR_PATH "/page_eth_person.json", \
+        GuiGetEthPersonalMessage, \
+        GetEthPersonalMessageType, \
+        FreeEthMemory, \
+    }, \
+    { \
+        REMAPVIEW_ETH_TYPEDDATA, \
+        PC_SIMULATOR_PATH "/page_eth_type.json", \
+        GuiGetEthTypeData, \
+        NULL, \
+        FreeEthMemory, \
+    }, \
+    { \
+        REMAPVIEW_TRX, \
+        PC_SIMULATOR_PATH "/page_eth.json", \
+        GuiGetTrxData, \
+        NULL, \
+        FreeTrxMemory, \
+    }, \
+    { \
+        REMAPVIEW_COSMOS, \
+        PC_SIMULATOR_PATH "/page_cosmos.json", \
+        GuiGetCosmosData, \
+        GuiGetCosmosTmpType, \
+        FreeCosmosMemory, \
+    }, \
+    { \
+        REMAPVIEW_SUI, \
+        PC_SIMULATOR_PATH "/page_sui.json", \
+        GuiGetSuiData, \
+        NULL, \
+        FreeSuiMemory, \
+    }, \
+    { \
+        REMAPVIEW_SUI_SIGN_MESSAGE_HASH, \
+        PC_SIMULATOR_PATH "/page_sign_hash.json", \
+        GuiGetSuiSignMessageHashData, \
+        NULL, \
+        FreeSuiMemory \
+    }, \
+    { \
+        REMAPVIEW_SOL, \
+        PC_SIMULATOR_PATH "/page_sol.json", \
+        GuiGetSolData, \
+        NULL, \
+        FreeSolMemory, \
+    }, \
+    { \
+        REMAPVIEW_SOL_MESSAGE, \
+        PC_SIMULATOR_PATH "/page_sol_message.json", \
+        GuiGetSolMessageData, \
+        GetSolMessageType, \
+        FreeSolMemory, \
+    }, \
+    { \
+        REMAPVIEW_APT, \
+        PC_SIMULATOR_PATH "/page_eth.json", \
+        GuiGetAptosData, \
+        NULL, \
+        FreeAptosMemory, \
+    }, \
+    { \
+        REMAPVIEW_ADA, \
+        PC_SIMULATOR_PATH "/page_ada.json", \
+        GuiGetAdaData, \
+        NULL, \
+        FreeAdaMemory, \
+    }, \
+    { \
+        REMAPVIEW_ADA_SIGN_TX_HASH, \
+        PC_SIMULATOR_PATH "/page_sign_ada_tx_hash.json", \
+        GuiGetAdaSignTxHashData, \
+        NULL, \
+        FreeAdaMemory \
+    }, \
+    { \
+        REMAPVIEW_ADA_SIGN_DATA, \
+        PC_SIMULATOR_PATH "/page_ada_sign_data.json", \
+        GuiGetAdaSignDataData, \
+        NULL, \
+        FreeAdaSignDataMemory, \
+    }, \
+    { \
+        REMAPVIEW_ADA_CATALYST, \
+        PC_SIMULATOR_PATH "/page_ada_catalyst.json", \
+        GuiGetAdaCatalyst, \
+        NULL, \
+        FreeAdaCatalystMemory, \
+    }, \
+    { \
+        REMAPVIEW_XRP, \
+        PC_SIMULATOR_PATH "/page_xrp.json", \
+        GuiGetXrpData, \
+        NULL, \
+        FreeXrpMemory, \
+    }, \
+    { \
+        REMAPVIEW_AR, \
+        PC_SIMULATOR_PATH "/page_ar.json", \
+        GuiGetArData, \
+        NULL, \
+        FreeArMemory, \
+    }, \
+    { \
+        REMAPVIEW_AR_MESSAGE, \
+        PC_SIMULATOR_PATH "/page_ar_message.json", \
+        GuiGetArData, \
+        NULL, \
+        FreeArMemory, \
+    }, \
+    { \
+        REMAPVIEW_STELLAR, \
+        PC_SIMULATOR_PATH "/page_stellar.json", \
+        GuiGetStellarData, \
+        NULL, \
+        FreeStellarMemory, \
+    }, \
+    { \
+        REMAPVIEW_STELLAR_HASH, \
+        PC_SIMULATOR_PATH "/page_stellar_hash.json", \
+        GuiGetStellarData, \
+        NULL, \
+        FreeStellarMemory, \
+    }, \
+    { \
+        REMAPVIEW_AR_DATAITEM, \
+        PC_SIMULATOR_PATH "/page_ar_data_item.json", \
+        GuiGetArData, \
+        NULL, \
+        FreeArMemory, \
+    }, \
+    { \
+        REMAPVIEW_TON, \
+        PC_SIMULATOR_PATH "/page_ton.json", \
+        GuiGetTonGUIData, \
+        NULL, \
+        FreeArMemory, \
+    }, \
+    { \
+        REMAPVIEW_TON_SIGNPROOF, \
+        PC_SIMULATOR_PATH "/page_ton_proof.json", \
+        GuiGetTonProofGUIData, \
+        NULL, \
+        FreeArMemory, \
+    }
+#endif
 
 #endif

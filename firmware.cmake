@@ -27,7 +27,7 @@ aux_source_directory(src/crypto CRYPTO)
 aux_source_directory(src/crypto/bips BIPS)
 aux_source_directory(src/crypto/checksum CHECKSUM)
 aux_source_directory(src/crypto/utils CRYPTO_UTILS)
-file(GLOB_RECURSE WEBUSB_PROTOCOL WEBUSB_PROTOCOL/*.c)
+file(GLOB_RECURSE WEBUSB_PROTOCOL src/webusb_protocol/*.c)
 list(FILTER all_files EXCLUDE REGEX "some_directory/general/.*")
 
 file(GLOB_RECURSE USB_DRIVER
@@ -50,14 +50,15 @@ set(TASKS
     src/tasks/log_task.c
     src/tasks/data_parser_task.c
     src/tasks/fetch_sensitive_data_task.c
+    src/tasks/cmd_task.c
 )
 
-if(NOT BUILD_PRODUCTION)
-    list(APPEND TASKS src/tasks/cmd_task.c)
-endif()
-
 file(GLOB_RECURSE SRC
-    "src/*.c"
+    "src/device_settings.c"
+    "src/main.c"
+    "src/presetting.c"
+    "src/user_fatfs.c"
+    "src/user_sqlite3.c"
     "src/utils/*.c"
     "src/utils/log/*.c"
     "src/managers/*.c"

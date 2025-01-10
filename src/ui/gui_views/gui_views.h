@@ -213,6 +213,11 @@ extern GUI_VIEW g_multiAccountsReceiveView;
 extern GUI_VIEW g_keyDerivationRequestView;
 extern GUI_VIEW g_tonMnemonicHintView;
 #endif
+
+#ifdef CYPHERPUNK_VERSION
+extern GUI_VIEW g_checkDeleteWalletView;
+#endif
+
 extern GUI_VIEW g_scanView;
 extern GUI_VIEW g_transactionDetailView;
 extern GUI_VIEW g_transactionSignatureView;

@@ -21,17 +21,7 @@
 #include "multi_sig_wallet_manager.h"
 #include "log_print.h"
 #include "rsa.h"
-
-#ifdef COMPILE_SIMULATOR
-#include "simulator_model.h"
-#else
-#include "drv_mpu.h"
-#endif
-
-#ifdef BTC_ONLY
-#include "gui_btc_home_widgets.h"
-static void LoadCurrentAccountMultiReceiveIndex(void);
-#endif
+#include "gui_model.h"
 
 #define PUB_KEY_MAX_LENGTH                  1024 + 1
 #define VERSION_MAX_LENGTH                  64
@@ -51,6 +41,8 @@ typedef enum {
     TON_CHECKSUM,
     LEDGER_BITBOX02,
     ZCASH_UFVK_ENCRYPTED,
+    EDWARDS_25519,
+    MONERO_PVK,
 } PublicInfoType_t;
 
 typedef struct {
@@ -71,6 +63,11 @@ static void FreePublicKeyRam(void);
 static void PrintInfo(void);
 static void SetIsTempAccount(bool isTemp);
 
+#ifdef BTC_ONLY
+static void LoadCurrentAccountMultiReceiveIndex(void);
+#include "btc_only/account_public_info_btc_only.c"
+#endif
+
 static AccountPublicKeyItem_t g_accountPublicInfo[XPUB_TYPE_NUM] = {0};
 
 static cJSON *g_tempParsePhraseJson = NULL;
@@ -82,11 +79,11 @@ static const char g_xpubInfoVersion[] = "1.0.0";
 static const char g_multiSigInfoVersion[] = "1.0.0";
 
 static const ChainItem_t g_chainTable[] = {
-#ifndef BTC_ONLY
     {XPUB_TYPE_BTC,                   SECP256K1,    "btc",                      "M/49'/0'/0'"       },
     {XPUB_TYPE_BTC_LEGACY,            SECP256K1,    "btc_legacy",               "M/44'/0'/0'"       },
     {XPUB_TYPE_BTC_NATIVE_SEGWIT,     SECP256K1,    "btc_nested_segwit",        "M/84'/0'/0'"       },
     {XPUB_TYPE_BTC_TAPROOT,           SECP256K1,    "btc_taproot",              "M/86'/0'/0'"       },
+#ifdef WEB3_VERSION
     {XPUB_TYPE_LTC,                   SECP256K1,    "ltc",                      "M/49'/2'/0'"       },
     {XPUB_TYPE_DASH,                  SECP256K1,    "dash",                     "M/44'/5'/0'"       },
     {XPUB_TYPE_BCH,                   SECP256K1,    "bch",                      "M/44'/145'/0'"     },
@@ -290,14 +287,20 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_TON_BIP39,             ED25519,       "ton_bip39",                "M/44'/607'/0'"    },
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
+#endif
+
+#ifdef CYPHERPUNK_VERSION
     //this path is not 100% correct because UFVK is a combination of
     //a k1 key with path M/44'/133'/x'
     //and
     //a redpallas key with path M/32'/133'/x'
     //but we use 32 to identify it for now
-    {ZCASH_UFVK_ENCRYPTED_0,          ZCASH_UFVK_ENCRYPTED, "zcash_ufvk_0",        "M/32'/133'/0'"    },
+    {ZCASH_UFVK_ENCRYPTED_0,          ZCASH_UFVK_ENCRYPTED, "zcash_ufvk_0",      "M/32'/133'/0'"    },
+    {XPUB_TYPE_MONERO_0,              EDWARDS_25519,  "monero_0",                "M/44'/128'/0'"    },
+    {XPUB_TYPE_MONERO_PVK_0,          MONERO_PVK,     "monero_pvk_0",            ""                 },
+#endif
 
-#else
+#ifdef BTC_ONLY
     {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
     {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },
     {XPUB_TYPE_BTC_NATIVE_SEGWIT,       SECP256K1,      "btc_native_segwit",        "M/84'/0'/0'"   },
@@ -330,7 +333,14 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case LEDGER_BITBOX02:
         ASSERT(ledgerBitbox02MasterKey);
         return derive_bip32_ed25519_extended_pubkey(ledgerBitbox02MasterKey, (char *)path);
-#ifndef BTC_ONLY
+#ifdef CYPHERPUNK_VERSION
+    case EDWARDS_25519:
+        return get_extended_monero_pubkeys_by_seed(seed, len, (char *)path);
+    case MONERO_PVK:
+        return get_monero_pvk_by_seed(seed, len);
+#endif
+
+#ifdef WEB3_VERSION
     case RSA_KEY: {
         Rsa_primes_t *primes = FlashReadRsaPrimes();
         if (primes == NULL)
@@ -398,6 +408,16 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
             } else if ((!strcmp(walletList[i].name, "BTC") || !strcmp(walletList[i].name, "ETH")) && !isTon) {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
+#ifdef CYPHERPUNK_VERSION
+            } else if (!strcmp(walletList[i].name, "ZEC")) {
+                if (GetMnemonicType() == MNEMONIC_TYPE_BIP39 && !PassphraseExist(GetCurrentAccountIndex())) {
+                    cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
+                }
+            } else if (!strcmp(walletList[i].name, "XMR")) {
+                if (GetMnemonicType() == MNEMONIC_TYPE_BIP39) {
+                    cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
+                }
+#endif
             } else {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));
             }
@@ -570,7 +590,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
     SimpleResponse_c_char *xPubResult = NULL;
     MnemonicType mnemonicType = GetMnemonicType();
     bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
-    bool isTon = mnemonicType == MNEMONIC_TYPE_TON;
     bool isBip39 = mnemonicType == MNEMONIC_TYPE_BIP39;
     int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
     do {
@@ -597,8 +616,8 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             ledgerBitbox02Key = ledger_bitbox02_response->data;
         }
 
-#ifndef BTC_ONLY
-        if (isTon) {
+#ifdef WEB3_VERSION
+        if (mnemonicType == MNEMONIC_TYPE_TON) {
             //store public key for ton wallet;
             xPubResult = ProcessKeyType(seed, len, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL, NULL);
             CHECK_AND_FREE_XPUB(xPubResult)
@@ -629,6 +648,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
                     continue;
                 }
+#ifdef CYPHERPUNK_VERSION
                 //encrypt zcash ufvk
                 if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
                     char* zcashUfvk = NULL;
@@ -636,17 +656,18 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     zcash_ufvk_response = derive_zcash_ufvk(seed, len, g_chainTable[i].path);
                     CHECK_AND_FREE_XPUB(zcash_ufvk_response)
                     zcashUfvk = zcash_ufvk_response->data;
-                    printf("zcash ufvk: %s\r\n", zcashUfvk);
                     SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);
                     //iv_response won't fail
                     uint8_t iv_bytes[16];
                     memcpy_s(iv_bytes, 16, iv_response->data, 16);
                     free_simple_response_u8(iv_response);
                     xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
-                }
-                else {
+                } else {
                     xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
+#else
+                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+#endif
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                     continue;
                 }
@@ -658,7 +679,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 // printf("xPubResult=%s\r\n", xPubResult->data);
                 free_simple_response_c_char(xPubResult);
             }
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
         }
 #endif
         printf("erase user data:0x%X\n", addr);
@@ -757,7 +778,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         ASSERT(false);
     }
 
-    int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
+    int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed);
 
     char *passphrase = GetPassphrase(accountIndex);
     SetIsTempAccount(passphrase != NULL && passphrase[0] != 0);
@@ -903,7 +924,7 @@ uint8_t SpecifiedXPubExist(const char *value, bool isTon)
             if (keyJson == NULL) {
                 break;
             }
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
             chainJson = cJSON_GetObjectItem(keyJson, isTon ? g_chainTable[PUBLIC_INFO_TON_CHECKSUM].name : g_chainTable[0].name);
 #else
             chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[0].name);
@@ -968,7 +989,7 @@ void AccountPublicInfoTest(int argc, char *argv[])
 
 static int GetChainTableSizeFromJson(cJSON *keyJson)
 {
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     return cJSON_GetObjectItem(keyJson, "ar") != NULL ? NUMBER_OF_ARRAYS(g_chainTable) : NUMBER_OF_ARRAYS(g_chainTable) - 1;
 #else
     return NUMBER_OF_ARRAYS(g_chainTable);
@@ -1143,246 +1164,6 @@ void SetFirstReceive(const char* chainName, bool isFirst)
     Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
     EXT_FREE(jsonString);
 }
-
-#ifdef BTC_ONLY
-typedef struct {
-    char verifyCode[BUFFER_SIZE_16];
-    uint32_t index;
-} MultiSigReceiveIndex_t;
-
-static MultiSigReceiveIndex_t g_multiSigReceiveIndex[4];
-
-static void ConvertXPub(char *dest, ChainType chainType);
-uint32_t GetAccountMultiReceiveIndexFromFlash(char *verifyCode);
-
-static void LoadCurrentAccountMultiReceiveIndex(void)
-{
-    for (int i = 0; i < 4; i++) {
-        memset_s(&g_multiSigReceiveIndex[i], sizeof(MultiSigReceiveIndex_t), 0, sizeof(MultiSigReceiveIndex_t));
-        if (GetCurrenMultisigWalletByIndex(i) == NULL) {
-            continue;
-        }
-        g_multiSigReceiveIndex[i].index = GetAccountMultiReceiveIndexFromFlash(GetCurrenMultisigWalletByIndex(i)->verifyCode);
-        strcpy(g_multiSigReceiveIndex[i].verifyCode, GetCurrenMultisigWalletByIndex(i)->verifyCode);
-    }
-}
-
-static void replace(char *str, const char *old_str, const char *new_str)
-{
-    char *pos = strstr(str, old_str);
-    if (pos != NULL) {
-        size_t old_len = strlen(old_str);
-        size_t new_len = strlen(new_str);
-        size_t tail_len = strlen(pos + old_len);
-
-        memmove(pos + new_len, pos + old_len, tail_len + 1);
-        memcpy(pos, new_str, new_len);
-
-        replace(pos + new_len, old_str, new_str);
-    }
-}
-
-void ExportMultiSigXpub(ChainType chainType)
-{
-    ASSERT(chainType >= XPUB_TYPE_BTC_MULTI_SIG_P2SH);
-    ASSERT(chainType <= XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
-
-    uint8_t mfp[4] = {0};
-    GetMasterFingerPrint(mfp);
-    char mfpHexStr[9] = {0};
-    ByteArrayToHexStr(mfp, sizeof(mfp), mfpHexStr);
-
-    char path[64] = {0};
-    strcpy(path, GetXPubPath(chainType));
-    replace(path, "M", "m");
-
-    char xpub[128] = {0};
-    ConvertXPub(xpub, chainType);
-
-    char *jsonString = NULL;
-    cJSON *rootJson;
-    rootJson = cJSON_CreateObject();
-    cJSON_AddItemToObject(rootJson, "xfp", cJSON_CreateString(mfpHexStr));
-    cJSON_AddItemToObject(rootJson, "xpub", cJSON_CreateString(xpub));
-    cJSON_AddItemToObject(rootJson, "path", cJSON_CreateString(path));
-    jsonString = cJSON_PrintBuffered(rootJson, 1024, false);
-    RemoveFormatChar(jsonString);
-
-    char exportFileName[32] = {0};
-
-    switch (chainType) {
-    case XPUB_TYPE_BTC_MULTI_SIG_P2SH:
-    case XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST:
-        sprintf(exportFileName, "0:%s_%s.json", mfpHexStr, "P2SH");
-        break;
-    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH:
-    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST:
-        sprintf(exportFileName, "0:%s_%s.json", mfpHexStr, "P2SH-P2WSH");
-        break;
-    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH:
-    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST:
-        sprintf(exportFileName, "0:%s_%s.json", mfpHexStr, "P2WSH");
-        break;
-    default:
-        break;
-    }
-
-    int res = FatfsFileWrite(exportFileName, (uint8_t *)jsonString, strlen(jsonString));
-
-    printf("export data is %s\r\n", jsonString);
-
-    if (res == RES_OK) {
-        printf("multi sig write to sdcard success\r\n");
-    } else {
-        printf("multi sig write to sdcard fail\r\n");
-    }
-
-    cJSON_Delete(rootJson);
-    EXT_FREE(jsonString);
-}
-
-static void ConvertXPub(char *dest, ChainType chainType)
-{
-    SimpleResponse_c_char *result;
-
-    char *xpub = GetCurrentAccountPublicKey(chainType);
-    char head[] = "xpub";
-    switch (chainType) {
-    case XPUB_TYPE_BTC_MULTI_SIG_P2SH:
-        sprintf(dest, "%s", xpub);
-        break;
-    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH:
-        head[0] = 'Y';
-        break;
-    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH:
-        head[0] = 'Z';
-        break;
-    case XPUB_TYPE_BTC_MULTI_SIG_P2SH_TEST:
-        head[0] = 't';
-        break;
-    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_P2SH_TEST:
-        head[0] = 'U';
-        break;
-    case XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST:
-        head[0] = 'V';
-        break;
-    default:
-        break;
-    }
-    result = xpub_convert_version(xpub, head);
-    ASSERT(result);
-    sprintf(dest, "%s", result->data);
-    free_simple_response_c_char(result);
-}
-
-void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
-{
-    ASSERT(accountIndex >= 0);
-    ASSERT(accountIndex <= 2);
-
-    MultiSigWalletItem_t *multiSigWalletItem = GetMultisigWalletByVerifyCode(verifyCode);
-    if (multiSigWalletItem == NULL) {
-        printf("multiSigWalletItem == NULL\r\n");
-        return;
-    }
-    // uint8_t mfp[4] = {0};
-    // GetMasterFingerPrint(mfp);
-    // char mfpHexStr[9] = {0};
-    // ByteArrayToHexStr(mfp, sizeof(mfp), mfpHexStr);
-
-    char exportFileName[32] = {0};
-    sprintf(exportFileName, "0:exprot-%s.txt", multiSigWalletItem->name);
-    int res =  FatfsFileWrite(exportFileName, (uint8_t *)multiSigWalletItem->walletConfig, strlen(multiSigWalletItem->walletConfig));
-    printf("export file name  is %s\r\n", exportFileName);
-    printf("export data is %s\r\n", multiSigWalletItem->walletConfig);
-    if (res == RES_OK) {
-        printf("multi sig write to sdcard success\r\n");
-    } else {
-        printf("multi sig write to sdcard fail\r\n");
-    }
-}
-
-uint32_t GetAccountMultiReceiveIndex(char *verifyCode)
-{
-    for (int i = 0; i < 4; i++) {
-        if (strcmp(g_multiSigReceiveIndex[i].verifyCode, verifyCode) == 0) {
-            return g_multiSigReceiveIndex[i].index;
-        }
-    }
-    return 0;
-}
-
-uint32_t GetAccountMultiReceiveIndexFromFlash(char *verifyCode)
-{
-    char key[BUFFER_SIZE_64] = {0};
-    sprintf(key, "multiRecvIndex_%s", verifyCode);
-    printf("key = %s.\n", key);
-    return GetTemplateWalletValue("BTC", key);
-}
-
-void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
-{
-    char key[BUFFER_SIZE_64] = {0};
-    sprintf(key, "multiRecvIndex_%s", verifyCode);
-    printf("key = %s.\n", key);
-    for (int i = 0; i < 4; i++) {
-        if (strlen(g_multiSigReceiveIndex[i].verifyCode) == 0) {
-            g_multiSigReceiveIndex[i].index = index;
-            strcpy(g_multiSigReceiveIndex[i].verifyCode, verifyCode);
-            break;
-        } else if (strcmp(g_multiSigReceiveIndex[i].verifyCode, verifyCode) == 0) {
-            g_multiSigReceiveIndex[i].index = index;
-            break;
-        }
-    }
-    SetTemplateWalletValue("BTC", key, index);
-}
-
-void DeleteAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
-{
-    uint32_t addr;
-    const char *chainName = "BTC";
-    char key[BUFFER_SIZE_64] = {0};
-    sprintf(key, "multiRecvIndex_%s", verifyCode);
-    printf("key = %s.\n", key);
-    cJSON* rootJson = ReadAndParseAccountJson(&addr, NULL);
-
-    cJSON* item = cJSON_GetObjectItem(rootJson, chainName);
-    if (item == NULL) {
-        item = cJSON_CreateObject();
-        cJSON_AddItemToObject(rootJson, chainName, item);
-    }
-
-    cJSON* valueItem = cJSON_GetObjectItem(item, key);
-    if (valueItem != NULL) {
-        cJSON_DeleteItemFromObject(item, key);
-    }
-
-    WriteJsonToFlash(addr, rootJson);
-    CleanupJson(rootJson);
-    LoadCurrentAccountMultiReceiveIndex();
-}
-
-uint32_t GetAccountTestReceiveIndex(const char* chainName)
-{
-    return GetTemplateWalletValue(chainName, "testRecvIndex");
-}
-
-void SetAccountTestReceiveIndex(const char* chainName, uint32_t index)
-{
-    SetTemplateWalletValue(chainName, "testRecvIndex", index);
-}
-
-uint32_t GetAccountTestReceivePath(const char* chainName)
-{
-    return GetTemplateWalletValue(chainName, "testRecvPath");
-}
-
-void SetAccountTestReceivePath(const char* chainName, uint32_t index)
-{
-    SetTemplateWalletValue(chainName, "testRecvPath", index);
-}
-#endif
 
 void appendWalletItemToJson(MultiSigWalletItem_t *item, void *root)
 {

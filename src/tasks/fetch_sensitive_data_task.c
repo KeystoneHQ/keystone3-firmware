@@ -25,7 +25,7 @@ void CreateFetchSensitiveDataTask(void)
 {
     const osThreadAttr_t SensitiveDataTask_attributes = {
         .name = "SensitiveDataTask",
-        .stack_size = 1024 * 35,
+        .stack_size = 1024 * 40,
         .priority = (osPriority_t)osPriorityBelowNormal,
     };
     g_sensitiveDataTaskHandle = osThreadNew(FetchSensitiveDataTask, NULL, &SensitiveDataTask_attributes);

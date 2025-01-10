@@ -11,8 +11,6 @@ use crate::transaction::overview::{CommonOverview, CosmosTxOverview, MsgOverview
 use crate::transaction::structs::{CosmosTxDisplayType, DataType, ParsedCosmosTx};
 use crate::transaction::utils::get_network_by_chain_id;
 
-use rust_tools;
-
 use self::detail::MsgDetail;
 
 pub mod detail;
@@ -48,7 +46,7 @@ impl ParsedCosmosTx {
         }
     }
     fn build_overview_from_amino(data: Value) -> Result<CosmosTxOverview> {
-        let chain_id = data["chain_id"].as_str().unwrap_or(&"");
+        let chain_id = data["chain_id"].as_str().unwrap_or("");
         let kind = CosmosTxOverview::from_value(&data["msgs"])?;
         let common = CommonOverview {
             network: get_network_by_chain_id(chain_id)?,
@@ -61,7 +59,7 @@ impl ParsedCosmosTx {
     }
 
     fn build_detail_from_amino(data: Value) -> Result<String> {
-        let chain_id = data["chain_id"].as_str().unwrap_or(&"");
+        let chain_id = data["chain_id"].as_str().unwrap_or("");
         let common = CommonDetail {
             network: get_network_by_chain_id(chain_id)?,
             chain_id: chain_id.to_string(),

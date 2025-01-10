@@ -692,9 +692,7 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(cont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
-#ifdef BTC_ONLY
     g_addressSettings = GetIsTestNet() ? g_testNetAddressSettings : g_mainNetAddressSettings;
-#endif
     for (uint32_t i = 0; i < g_addressSettingsNum; i++) {
         lv_obj_t *accountType = GuiCreateTextLabel(cont, g_addressSettings[i].title);
         snprintf_s(string, BUFFER_SIZE_64, "%s (%s)", g_addressSettings[i].subTitle, g_addressSettings[i].multiPath);

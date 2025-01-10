@@ -1,12 +1,10 @@
-use alloc::string::{String, ToString};
-use alloc::vec;
+use alloc::string::String;
+
 use alloc::vec::Vec;
 
 use app_utils::impl_public_struct;
 use ur_registry::{
-    crypto_hd_key::CryptoHDKey,
-    crypto_key_path::CryptoKeyPath,
-    error::{URError, URResult},
+    error::URResult,
     zcash::{
         zcash_accounts::ZcashAccounts, zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey,
     },

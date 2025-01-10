@@ -19,7 +19,7 @@ pub fn generate_sync_ur(
             let key_path = info.path;
             let master_fingerprint = info.mfp;
             let crypto_key_path = CryptoKeyPath::from_path(key_path, Some(master_fingerprint))
-                .map_err(|e| URError::UrEncodeError(e))?;
+                .map_err(URError::UrEncodeError)?;
             Ok(CryptoHDKey::new_extended_key(
                 None,
                 pubkey,

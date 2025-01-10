@@ -1,4 +1,4 @@
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 #include "rsa.h"
 
 static uint32_t GetRsaAddress();
@@ -114,7 +114,7 @@ int FlashWriteRsaPrimes(const uint8_t *data)
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     int32_t seed_ret = GetAccountSeed(GetCurrentAccountIndex(), seed, GetPassword());
     ASSERT(seed_ret == 0);
-    SimpleResponse_u8 *cryptData = aes256_encrypt_primes(seed, len, data);
+    SimpleResponse_u8 *cryptData = aes256_encrypt_primes(seed, len, (PtrBytes)data);
 
     memcpy_s(fullData, SPI_FLASH_RSA_DATA_SIZE, cryptData->data, SPI_FLASH_RSA_DATA_SIZE);
     uint8_t *hash = SRAM_MALLOC(SPI_FLASH_RSA_HASH_SIZE);

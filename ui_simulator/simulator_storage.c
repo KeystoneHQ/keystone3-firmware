@@ -269,7 +269,7 @@ int32_t SimulatorSaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *
     cJSON_AddItemToObject(rootJson, "entropy_len", item);
     item = cJSON_CreateString(password);
     cJSON_AddItemToObject(rootJson, "password", item);
-    char *jsonBuf = cJSON_Print(rootJson);
+    char *jsonBuf = cJSON_PrintBuffered(rootJson, BUFFER_SIZE_1024, false);
     strncpy(buffer, jsonBuf, JSON_MAX_LEN);
     OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, false);
     func(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, buffer, strlen(jsonBuf));
@@ -477,7 +477,7 @@ int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
         return SUCCESS_CODE;
     }
 
-    char *buff = cJSON_Print(rootJson);
+    char *buff = cJSON_PrintBuffered(rootJson, BUFFER_SIZE_1024, false);
     // printf("buff = %s\n", buff);
     func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + account * 0x1000, false);
     if (func) {

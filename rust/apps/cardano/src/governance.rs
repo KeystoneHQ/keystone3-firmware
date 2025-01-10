@@ -5,7 +5,7 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use cardano_serialization_lib::protocol_types::Address;
 use cryptoxide::hashing::blake2b_256;
-use ed25519_bip32_core::{XPrv, XPub};
+use ed25519_bip32_core::XPrv;
 use hex;
 use ur_registry::cardano::cardano_delegation::CardanoDelegation;
 use ur_registry::cardano::governance::CardanoVotingRegistration;
@@ -96,7 +96,6 @@ pub fn parse_payment_address(payment_address: Vec<u8>) -> R<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ur_registry::crypto_key_path::PathComponent;
 
     #[test]
     fn test_sign_voting_registration() {
@@ -134,8 +133,8 @@ mod tests {
             CardanoDelegation::new(vote_pub_key1, 1),
             CardanoDelegation::new(vote_pub_key2, 2),
         ];
-        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
-        let passphrase = b"";
+        let _entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let _passphrase = b"";
         let delegations_vec = build_delegations(delegations).unwrap();
 
         assert_eq!(delegations_vec.len(), 2);

@@ -15,7 +15,6 @@ use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 use core::iter::Peekable;
-use hex;
 
 #[derive(Eq, PartialEq, Debug)]
 enum Token {
@@ -114,7 +113,7 @@ fn next_token(s: &str) -> crate::errors::Result<Option<(Token, usize)>> {
             ',' => (Token::Comma, 1),
             ':' => match it.next() {
                 Some(':') => (Token::ColonColon, 2),
-                _ => return Err(AptosError::ParseTxError(format!("unrecognized token"))),
+                _ => return Err(AptosError::ParseTxError("unrecognized token".to_string())),
             },
             '0' if it.peek() == Some(&'x') || it.peek() == Some(&'X') => {
                 it.next().unwrap();
@@ -134,7 +133,7 @@ fn next_token(s: &str) -> crate::errors::Result<Option<(Token, usize)>> {
                         let len = r.len();
                         (Token::Address(r), len)
                     }
-                    _ => return Err(AptosError::ParseTxError(format!("unrecognized token"))),
+                    _ => return Err(AptosError::ParseTxError("unrecognized token".to_string())),
                 }
             }
             c if c.is_ascii_digit() => next_number(c, it)?,
@@ -145,7 +144,9 @@ fn next_token(s: &str) -> crate::errors::Result<Option<(Token, usize)>> {
                     match it.next() {
                         Some('"') => break,
                         Some(c) if c.is_ascii() => r.push(c),
-                        _ => return Err(AptosError::ParseTxError(format!("unrecognized token"))),
+                        _ => {
+                            return Err(AptosError::ParseTxError("unrecognized token".to_string()))
+                        }
                     }
                 }
                 let len = r.len() + 3;
@@ -158,7 +159,9 @@ fn next_token(s: &str) -> crate::errors::Result<Option<(Token, usize)>> {
                     match it.next() {
                         Some('"') => break,
                         Some(c) if c.is_ascii_hexdigit() => r.push(c),
-                        _ => return Err(AptosError::ParseTxError(format!("unrecognized token"))),
+                        _ => {
+                            return Err(AptosError::ParseTxError("unrecognized token".to_string()))
+                        }
                     }
                 }
                 let len = r.len() + 3;
@@ -190,7 +193,7 @@ fn next_token(s: &str) -> crate::errors::Result<Option<(Token, usize)>> {
                 let len = r.len();
                 (name_token(r), len)
             }
-            _ => return Err(AptosError::ParseTxError(format!("unrecognized token"))),
+            _ => return Err(AptosError::ParseTxError("unrecognized token".to_string())),
         })),
     }
 }
@@ -218,9 +221,9 @@ impl<I: Iterator<Item = Token>> Parser<I> {
     fn next(&mut self) -> crate::errors::Result<Token> {
         match self.it.next() {
             Some(tok) => Ok(tok),
-            None => Err(AptosError::ParseTxError(format!(
-                "out of tokens, this should not happen"
-            ))),
+            None => Err(AptosError::ParseTxError(
+                "out of tokens, this should not happen".to_string(),
+            )),
         }
     }
 

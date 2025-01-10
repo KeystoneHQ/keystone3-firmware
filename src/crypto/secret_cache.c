@@ -2,6 +2,9 @@
 #include "string.h"
 #include "user_memory.h"
 #include "user_utils.h"
+#include "librust_c.h"
+#include "keystore.h"
+#include "log_print.h"
 #include "stdio.h"
 
 static char *g_passwordCache = NULL;
@@ -40,7 +43,7 @@ uint8_t SecretCacheGetWalletIconIndex()
     return g_walletIconIndex;
 }
 
-void SecretCacheSetWalletName(char* walletName)
+void SecretCacheSetWalletName(const char* walletName)
 {
     if (g_walletName) {
         SRAM_FREE(g_walletName);

@@ -13,7 +13,6 @@
 #include "librust_c.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_storage.h"
-#include "simulator_storage.h"
 #else
 #include "drv_otp.h"
 #include "drv_mpu.h"
@@ -32,8 +31,11 @@ static uint8_t g_currentAccountIndex = ACCOUNT_INDEX_LOGOUT;
 static uint8_t g_lastAccountIndex = ACCOUNT_INDEX_LOGOUT;
 static AccountInfo_t g_currentAccountInfo = {0};
 static PublicInfo_t g_publicInfo = {0};
+
+#ifdef CYPHERPUNK_VERSION
 static ZcashUFVKCache_t g_zcashUFVKcache = {0};
 static void ClearZcashUFVK();
+#endif
 
 /// @brief Get current account info from SE, and copy info to g_currentAccountInfo.
 /// @return err code.
@@ -137,7 +139,9 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
     ret = SaveCurrentAccountInfo();
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
+#ifdef CYPHERPUNK_VERSION
     CalculateZcashUFVK(accountIndex, password);
+#endif
     CHECK_ERRCODE_RETURN_INT(ret);
     return ret;
 }
@@ -228,7 +232,9 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         ret = ReadCurrentAccountInfo();
         g_publicInfo.loginPasswordErrorCount = 0;
         g_publicInfo.currentPasswordErrorCount = 0;
+#ifdef CYPHERPUNK_VERSION
         ClearZcashUFVK();
+#endif
         if (PassphraseExist(g_currentAccountIndex)) {
             //passphrase exist.
             printf("passphrase exist\r\n");
@@ -236,7 +242,9 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         } else {
             printf("passphrase not exist, info switch\r\n");
             ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
+#ifdef CYPHERPUNK_VERSION
             CalculateZcashUFVK(g_currentAccountIndex, password);
+#endif
         }
     } else {
         g_publicInfo.loginPasswordErrorCount++;
@@ -541,7 +549,7 @@ void AccountsDataCheck(void)
     }
 }
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const char *password)
 {
     ASSERT(accountIndex <= 2);
@@ -561,8 +569,11 @@ int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const ch
     CHECK_ERRCODE_RETURN_INT(ret);
     return ret;
 }
+#endif
 
-static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk, const uint8_t* seedFingerprint) {
+#ifdef CYPHERPUNK_VERSION
+static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk, const uint8_t* seedFingerprint)
+{
     ASSERT(accountIndex <= 2);
     g_zcashUFVKcache.accountIndex = accountIndex;
     ClearZcashUFVK();
@@ -572,15 +583,16 @@ static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk, const uint8_t* 
     printf("SetZcashUFVK, %s\r\n", g_zcashUFVKcache.ufvkCache);
 }
 
-static void ClearZcashUFVK() {
+static void ClearZcashUFVK()
+{
     memset_s(g_zcashUFVKcache.ufvkCache, ZCASH_UFVK_MAX_LEN, '\0', ZCASH_UFVK_MAX_LEN);
     memset_s(g_zcashUFVKcache.seedFingerprint, 32, 0, 32);
 }
 
-int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP) {
+int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP)
+{
     ASSERT(accountIndex <= 2);
-    if (g_zcashUFVKcache.accountIndex == accountIndex)
-    {
+    if (g_zcashUFVKcache.accountIndex == accountIndex) {
         strcpy_s(outUFVK, ZCASH_UFVK_MAX_LEN, g_zcashUFVKcache.ufvkCache);
         memcpy_s(outSFP, 32, g_zcashUFVKcache.seedFingerprint, 32);
         return SUCCESS_CODE;
@@ -588,17 +600,17 @@ int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP) {
     return ERR_ZCASH_INVALID_ACCOUNT_INDEX;
 }
 
-int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password) {
+int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password)
+{
     ASSERT(accountIndex <= 2);
 
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39 || GetMnemonicType() == MNEMONIC_TYPE_TON)
-    {
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39 || GetMnemonicType() == MNEMONIC_TYPE_TON) {
         return SUCCESS_CODE;
     }
 
     uint8_t seed[SEED_LEN];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    int32_t ret = GetAccountSeed(accountIndex, &seed, password);
+    int32_t ret = GetAccountSeed(accountIndex, seed, password);
 
     SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);
 
@@ -613,8 +625,7 @@ int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password) {
     strcpy_s(ufvk, ZCASH_UFVK_MAX_LEN, response->data);
     free_simple_response_c_char(response);
     SimpleResponse_u8 *responseSFP = calculate_zcash_seed_fingerprint(seed, len);
-    if (responseSFP->error_code != 0)
-    {
+    if (responseSFP->error_code != 0) {
         ret = response->error_code;
         printf("error: %s\r\n", response->error_message);
         return ret;
@@ -625,5 +636,6 @@ int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password) {
     free_simple_response_u8(responseSFP);
 
     SetZcashUFVK(accountIndex, ufvk, sfp);
+    return ret;
 }
 #endif

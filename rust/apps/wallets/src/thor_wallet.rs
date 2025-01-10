@@ -38,7 +38,7 @@ pub fn generate_crypto_multi_accounts(
 ) -> URResult<CryptoMultiAccounts> {
     let device_id = get_device_id(serial_number);
     let mut keys = vec![];
-    let k1_keys = vec![
+    let k1_keys = [
         BTC_LEGACY_PREFIX.to_string(),
         BTC_SEGWIT_PREFIX.to_string(),
         BTC_NATIVE_SEGWIT_PREFIX.to_string(),
@@ -80,7 +80,7 @@ pub fn generate_crypto_multi_accounts(
             _ => {
                 return Err(URError::UrEncodeError(format!(
                     "Unknown key path: {}",
-                    ele.path.to_string()
+                    ele.path
                 )))
             }
         }
@@ -106,8 +106,8 @@ fn generate_k1_normal_key(
     let key_path = CryptoKeyPath::new(
         path.into_iter()
             .map(|v| match v {
-                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
-                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+                ChildNumber::Normal { index } => get_path_component(Some(*index), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(*index), true),
             })
             .collect::<URResult<Vec<PathComponent>>>()?,
         Some(mfp),
@@ -146,8 +146,8 @@ fn generate_eth_ledger_live_key(
         target_path
             .into_iter()
             .map(|v| match v {
-                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
-                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+                ChildNumber::Normal { index } => get_path_component(Some(*index), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(*index), true),
             })
             .collect::<URResult<Vec<PathComponent>>>()?,
         Some(mfp),

@@ -91,8 +91,8 @@ mod tests {
         assert_eq!("0.000001 TRX".to_string(), parsed_tx.detail.value);
         assert_eq!("TRX Transfer".to_string(), parsed_tx.detail.method);
         assert_eq!("TRX Transfer".to_string(), parsed_tx.overview.method);
-        assert_eq!(true, parsed_tx.detail.contract_address.is_empty());
-        assert_eq!(true, parsed_tx.detail.token.is_empty());
+        assert!(parsed_tx.detail.contract_address.is_empty());
+        assert!(parsed_tx.detail.token.is_empty());
     }
 
     #[test]
@@ -125,7 +125,7 @@ mod tests {
         assert_eq!("0.001 BTT".to_string(), parsed_tx.detail.value);
         assert_eq!("TRC-10 Transfer".to_string(), parsed_tx.detail.method);
         assert_eq!("TRC-10 Transfer".to_string(), parsed_tx.overview.method);
-        assert_eq!(true, parsed_tx.detail.contract_address.is_empty());
+        assert!(parsed_tx.detail.contract_address.is_empty());
         assert_eq!("1002000".to_string(), parsed_tx.detail.token);
     }
 
@@ -164,7 +164,7 @@ mod tests {
                 "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t".to_string(),
                 parsed_tx.detail.contract_address
             );
-            assert_eq!(true, parsed_tx.detail.token.is_empty());
+            assert!(parsed_tx.detail.token.is_empty());
         }
         {
             let hex = "1f8b08000000000000036590bb4ec2500086158d212c4ae3409848638231697aaeeda993012f040a166c8074316d4f1b01a1da969b2383a3cfe0ec03b0bac81b38b8b8bab8b9b85a66bf7cc33f7ef9d32961b7199603ee158c30880337b8cdaf52e99490a648254405585ca632db66ebb2211c4080d6320901db9708f76dc9810c4b34c157180714a07cb62e135294a1468b32489461e1ebf169b580873ba5ef4d4134cbe7ba4ef98c5a555e1b75c65ed49df560db98f6f5f6b06359732d2f9aa7837034ad3f443066fde0a27d17e90a19d6303c0b5bb8177771248a666512c57a496db6260ebfbf31c60d7b6e065a87f6355c1f20ab3239da40fb10fce7b89139819e9ff47ac4610e5320f21dc401c19801e062c23d9ff89ae203e051c55535d725d4b63972806d3305a8d4657b9f3fcb5ceee3e5fd6d014bd9cc56f5ca14d2eb97ae9395132acfbf4ae1d5f803c61a369f5e010000";

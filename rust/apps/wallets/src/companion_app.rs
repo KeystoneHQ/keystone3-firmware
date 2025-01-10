@@ -82,14 +82,14 @@ mod tests {
 
     use super::*;
 
-    const BTC_COIN_CODE: &'static str = "BTC";
-    const BTC_PATH: &'static str = "M/49'/0'/0'";
+    const BTC_COIN_CODE: &str = "BTC";
+    const BTC_PATH: &str = "M/49'/0'/0'";
 
-    const BTC_LEGACY_COIN_CODE: &'static str = "BTC_LEGACY";
-    const BTC_LEGACY_PATH: &'static str = "M/44'/0'/0'";
+    const BTC_LEGACY_COIN_CODE: &str = "BTC_LEGACY";
+    const BTC_LEGACY_PATH: &str = "M/44'/0'/0'";
 
-    const BTC_NATIVE_SEGWIT_COIN_CODE: &'static str = "BTC_NATIVE_SEGWIT";
-    const BTC_NATIVE_SEGWIT_PATH: &'static str = "M/84'/0'/0'";
+    const BTC_NATIVE_SEGWIT_COIN_CODE: &str = "BTC_NATIVE_SEGWIT";
+    const BTC_NATIVE_SEGWIT_PATH: &str = "M/84'/0'/0'";
 
     #[test]
     fn test_generate_crypto_account() {

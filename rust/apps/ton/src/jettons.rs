@@ -47,5 +47,5 @@ pub fn get_jetton_amount_text(coins: String, contract_address: String) -> String
         .unwrap();
     let value = u64::from_str_radix(&coins, 10).unwrap();
     let divisor = 10u64.pow(target.decimal as u32) as f64;
-    return format!("{} {}", (value as f64) / divisor, target.symbol);
+    format!("{} {}", (value as f64) / divisor, target.symbol)
 }

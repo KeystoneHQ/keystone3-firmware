@@ -10,7 +10,7 @@ use zcash_vendor::{
     orchard::{
         self, keys::OutgoingViewingKey, note::Note, note_encryption::OrchardDomain, Address,
     },
-    pczt::{self, roles::verifier::Verifier, sapling, Pczt},
+    pczt::{self, roles::verifier::Verifier, Pczt},
     ripemd::{Digest, Ripemd160},
     sha2::Sha256,
     transparent::{self, address::TransparentAddress},
@@ -29,10 +29,10 @@ use crate::errors::ZcashError;
 
 use super::structs::{ParsedFrom, ParsedOrchard, ParsedPczt, ParsedTo, ParsedTransparent};
 
-const ZEC_DIVIDER: u32 = 1_000_000_00;
+const ZEC_DIVIDER: u32 = 100_000_000;
 
 fn format_zec_value(value: f64) -> String {
-    let zec_value = format!("{:.8}", value as f64 / ZEC_DIVIDER as f64);
+    let zec_value = format!("{:.8}", value / ZEC_DIVIDER as f64);
     let zec_value = zec_value
         .trim_end_matches('0')
         .trim_end_matches('.')
@@ -57,7 +57,7 @@ pub fn decode_output_enc_ciphertext(
     if let Some(ovk) = ovk {
         Ok(try_output_recovery_with_ovk(
             &domain,
-            &ovk,
+            ovk,
             action,
             action.cv_net(),
             &action.output().encrypted_note().out_ciphertext,
@@ -122,7 +122,7 @@ pub fn parse_pczt<P: consensus::Parameters>(
     //total_input_value = total_output_value + fee_value
     //total_output_value = total_transfer_value + total_change_value
 
-    parsed_orchard.clone().and_then(|orchard| {
+    parsed_orchard.clone().map(|orchard| {
         total_change_value += orchard
             .get_to()
             .iter()
@@ -136,10 +136,9 @@ pub fn parse_pczt<P: consensus::Parameters>(
             .get_to()
             .iter()
             .fold(0, |acc, to| acc + to.get_amount());
-        Some(())
     });
 
-    parsed_transparent.clone().and_then(|transparent| {
+    parsed_transparent.clone().map(|transparent| {
         total_change_value += transparent
             .get_to()
             .iter()
@@ -153,7 +152,6 @@ pub fn parse_pczt<P: consensus::Parameters>(
             .get_to()
             .iter()
             .fold(0, |acc, to| acc + to.get_amount());
-        Some(())
     });
 
     //treat all sapling output as output value since we don't support sapling decoding yet
@@ -169,7 +167,7 @@ pub fn parse_pczt<P: consensus::Parameters>(
     let sapling_value_sum: i64 = value_balance.into();
     if sapling_value_sum < 0 {
         //value transfered to sapling pool
-        total_output_value = total_output_value.saturating_add(sapling_value_sum.abs() as u64)
+        total_output_value = total_output_value.saturating_add(sapling_value_sum.unsigned_abs())
     } else {
         //value transfered from sapling pool
         //this should not happen with Zashi.
@@ -179,7 +177,7 @@ pub fn parse_pczt<P: consensus::Parameters>(
     let total_transfer_value = format_zec_value((total_output_value - total_change_value) as f64);
     let fee_value = format_zec_value((total_input_value - total_output_value) as f64);
 
-    let has_sapling = pczt.sapling().spends().len() > 0 || pczt.sapling().outputs().len() > 0;
+    let has_sapling = !pczt.sapling().spends().is_empty() || !pczt.sapling().outputs().is_empty();
 
     Ok(ParsedPczt::new(
         parsed_transparent,
@@ -197,12 +195,12 @@ fn parse_transparent<P: consensus::Parameters>(
 ) -> Result<Option<ParsedTransparent>, ZcashError> {
     let mut parsed_transparent = ParsedTransparent::new(vec![], vec![]);
     transparent.inputs().iter().try_for_each(|input| {
-        let parsed_from = parse_transparent_input(params, seed_fingerprint, &input)?;
+        let parsed_from = parse_transparent_input(params, seed_fingerprint, input)?;
         parsed_transparent.add_from(parsed_from);
         Ok::<_, ZcashError>(())
     })?;
     transparent.outputs().iter().try_for_each(|output| {
-        let parsed_to = parse_transparent_output(seed_fingerprint, &output)?;
+        let parsed_to = parse_transparent_output(seed_fingerprint, output)?;
         parsed_transparent.add_to(parsed_to);
         Ok::<_, ZcashError>(())
     })?;
@@ -246,11 +244,9 @@ fn parse_transparent_input<P: consensus::Parameters>(
                 is_mine,
             ))
         }
-        _ => {
-            return Err(ZcashError::InvalidPczt(
-                "transparent input script pubkey mismatch".to_string(),
-            ));
-        }
+        _ => Err(ZcashError::InvalidPczt(
+            "transparent input script pubkey mismatch".to_string(),
+        )),
     }
 }
 
@@ -310,11 +306,9 @@ fn parse_transparent_output(
                 None,
             ))
         }
-        _ => {
-            return Err(ZcashError::InvalidPczt(
-                "transparent output script pubkey mismatch".to_string(),
-            ));
-        }
+        _ => Err(ZcashError::InvalidPczt(
+            "transparent output script pubkey mismatch".to_string(),
+        )),
     }
 }
 
@@ -331,11 +325,11 @@ fn parse_orchard<P: consensus::Parameters>(
         if let Some(value) = spend.value() {
             //only adds non-dummy spend
             if value.inner() != 0 {
-                let parsed_from = parse_orchard_spend(seed_fingerprint, &spend)?;
+                let parsed_from = parse_orchard_spend(seed_fingerprint, spend)?;
                 parsed_orchard.add_from(parsed_from);
             }
         }
-        let parsed_to = parse_orchard_output(params, ufvk, &action)?;
+        let parsed_to = parse_orchard_output(params, ufvk, action)?;
         if !parsed_to.get_is_dummy() {
             parsed_orchard.add_to(parsed_to);
         }
@@ -561,7 +555,6 @@ mod tests {
     use zcash_vendor::zcash_protocol::consensus::MAIN_NETWORK;
 
     extern crate std;
-    use std::println;
 
     #[test]
     fn test_format_zec_value() {
@@ -601,7 +594,7 @@ mod tests {
         let result = parse_pczt(&MAIN_NETWORK, &fingerprint, &unified_fvk, &pczt);
         assert!(result.is_ok());
         let result = result.unwrap();
-        assert_eq!(result.get_has_sapling(), false);
+        assert!(!result.get_has_sapling());
         assert_eq!(result.get_total_transfer_value(), "0.001 ZEC");
         assert_eq!(result.get_fee_value(), "0.00015 ZEC");
         let transparent = result.get_transparent();
@@ -614,8 +607,8 @@ mod tests {
             "t1XTwB8P1x4YipBtLhPWS13JPDQ5RMkMA6M"
         );
         assert_eq!(transparent.get_to()[0].get_value(), "0.001 ZEC");
-        assert_eq!(transparent.get_to()[0].get_is_change(), false);
-        assert_eq!(transparent.get_to()[0].get_is_dummy(), false);
+        assert!(!transparent.get_to()[0].get_is_change());
+        assert!(!transparent.get_to()[0].get_is_dummy());
         assert_eq!(transparent.get_to()[0].get_amount(), 100_000);
         let orchard = result.get_orchard();
         assert!(orchard.is_some());
@@ -623,14 +616,14 @@ mod tests {
         assert_eq!(orchard.get_from().len(), 1);
         assert_eq!(orchard.get_from()[0].get_address(), None);
         assert_eq!(orchard.get_from()[0].get_value(), "0.14985 ZEC");
-        assert_eq!(orchard.get_from()[0].get_is_mine(), true);
+        assert!(orchard.get_from()[0].get_is_mine());
         assert_eq!(orchard.get_from()[0].get_amount(), 14985000);
         assert_eq!(orchard.get_to().len(), 1);
         assert_eq!(orchard.get_to()[0].get_address(), "<internal-address>");
         assert_eq!(orchard.get_to()[0].get_value(), "0.1487 ZEC");
         assert_eq!(orchard.get_to()[0].get_memo(), None);
-        assert_eq!(orchard.get_to()[0].get_is_change(), true);
-        assert_eq!(orchard.get_to()[0].get_is_dummy(), false);
+        assert!(orchard.get_to()[0].get_is_change());
+        assert!(!orchard.get_to()[0].get_is_dummy());
         assert_eq!(orchard.get_to()[0].get_amount(), 14870000);
     }
 
@@ -649,7 +642,7 @@ mod tests {
         let result = parse_pczt(&MAIN_NETWORK, &fingerprint, &unified_fvk, &pczt);
         assert!(result.is_ok());
         let result = result.unwrap();
-        assert_eq!(result.get_has_sapling(), true);
+        assert!(result.get_has_sapling());
         assert_eq!(result.get_total_transfer_value(), "0.001 ZEC");
         assert_eq!(result.get_fee_value(), "0.0002 ZEC");
     }

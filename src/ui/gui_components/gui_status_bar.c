@@ -33,9 +33,6 @@ static int g_currentDisplayPercent = -1;
 
 typedef struct StatusBar {
     lv_obj_t *background;
-#if (WALLPAPER_ENABLE == 1)
-    lv_obj_t *wallPaper;
-#endif
     lv_obj_t *cont;
     lv_obj_t *walletIcon;
     lv_obj_t *walletNameLabel;
@@ -58,13 +55,19 @@ typedef struct {
     const lv_img_dsc_t *icon;
 } CoinWalletInfo_t;
 
+typedef struct {
+    WALLET_LIST_INDEX_ENUM index;
+    const char *name;
+    const lv_img_dsc_t *icon;
+} WalletInfo_t;
+
 bool GetLvglHandlerStatus(void);
 
 static void RefreshStatusBar(void);
 
 const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_BTC, "", &coinBtc},
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     {HOME_WALLET_CARD_ETH, "", &coinEth},       {HOME_WALLET_CARD_SOL, "", &coinSol},
     {HOME_WALLET_CARD_BNB, "", &coinBnb},       {HOME_WALLET_CARD_HNT, "", &coinHelium},
     {HOME_WALLET_CARD_XRP, "", &coinXrp},
@@ -74,11 +77,12 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_SUI, "", &coinSui},       {HOME_WALLET_CARD_DASH, "", &coinDash},
     {HOME_WALLET_CARD_ARWEAVE, "", &coinAr},    {HOME_WALLET_CARD_XLM, "", &coinXlm},
     {HOME_WALLET_CARD_COSMOS, "", &coinCosmos}, {HOME_WALLET_CARD_TIA, "", &coinTia},
-    {HOME_WALLET_CARD_NTRN, "", &coinNtrn},     {HOME_WALLET_CARD_DYM, "", &coinDym},       {HOME_WALLET_CARD_OSMO, "", &coinOsmo},
+    {HOME_WALLET_CARD_NTRN, "", &coinNtrn},     {HOME_WALLET_CARD_DYM, "", &coinDym},
+    {HOME_WALLET_CARD_OSMO, "", &coinOsmo},
     {HOME_WALLET_CARD_INJ, "", &coinInj},       {HOME_WALLET_CARD_ATOM, "", &coinAtom},
     {HOME_WALLET_CARD_CRO, "", &coinCro},       {HOME_WALLET_CARD_RUNE, "", &coinRune},
-    {HOME_WALLET_CARD_KAVA, "", &coinKava},     {HOME_WALLET_CARD_LUNC, "", &coinLunc},     
-    {HOME_WALLET_CARD_AXL, "", &coinAxl},       {HOME_WALLET_CARD_ZEC, "", &coinZec},
+    {HOME_WALLET_CARD_KAVA, "", &coinKava},     {HOME_WALLET_CARD_LUNC, "", &coinLunc},
+    {HOME_WALLET_CARD_AXL, "", &coinAxl},
     {HOME_WALLET_CARD_LUNA, "", &coinLuna},     {HOME_WALLET_CARD_AKT, "", &coinAkt},
     {HOME_WALLET_CARD_STRD, "", &coinStrd},     {HOME_WALLET_CARD_SCRT, "", &coinScrt},
     {HOME_WALLET_CARD_BLD, "", &coinBld},       {HOME_WALLET_CARD_CTK, "", &coinCtk},
@@ -91,11 +95,15 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {HOME_WALLET_CARD_NGM, "", &coinNgm},       {HOME_WALLET_CARD_IOV, "", &coinIov},
     {HOME_WALLET_CARD_UMEE, "", &coinUmee},     {HOME_WALLET_CARD_QCK, "", &coinQck},
     {HOME_WALLET_CARD_TGD, "", &coinTgd},       {HOME_WALLET_CARD_DOT, "", &coinDot},
+#endif
 
+#ifdef CYPHERPUNK_VERSION
+    {HOME_WALLET_CARD_ZEC, "", &coinZec},
+    {HOME_WALLET_CARD_MONERO, "", &coinXmr},
 #endif
 };
 
-const static CoinWalletInfo_t g_walletBtn[] = {
+const static WalletInfo_t g_walletBtn[] = {
 #ifndef BTC_ONLY
     {WALLET_LIST_KEYSTONE, "Keystone", &walletKeystone},
     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
@@ -134,7 +142,8 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_LEAP, "Leap", &walletLeap},
     {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
     {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
-    {WALLET_LIST_LEAP, "Leap", &walletLeap},
+    {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
+    {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
@@ -169,26 +178,9 @@ void GuiNvsBarSetWalletIcon(const void *src)
     lv_obj_align(g_guiStatusBar.walletIcon, LV_ALIGN_LEFT_MID, 26, 0);
 }
 
-void ShowWallPaper(bool enable)
-{
-#if (WALLPAPER_ENABLE == 1)
-    if (enable) {
-        lv_obj_clear_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        lv_obj_add_flag(g_guiStatusBar.wallPaper, LV_OBJ_FLAG_HIDDEN);
-    }
-#endif
-}
-
 void GuiStatusBarInit(void)
 {
-    g_guiStatusBar.background = GuiCreateContainer(
-                                    lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
-#if (WALLPAPER_ENABLE == 1)
-    g_guiStatusBar.wallPaper = GuiCreateImg(g_guiStatusBar.background, NULL);
-    lv_img_set_src(g_guiStatusBar.wallPaper, &imgDeepLayersVolume11);
-    ShowWallPaper(false);
-#endif
+    g_guiStatusBar.background = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
     lv_obj_t *cont = GuiCreateContainerWithParent(g_guiStatusBar.background,
                      lv_obj_get_width(lv_scr_act()),
                      GUI_STATUS_BAR_HEIGHT);
@@ -340,7 +332,7 @@ void GuiStatusBarSetTestNet(void)
     RefreshStatusBar();
 }
 #else
-char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
+const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
 {
     if (index == WALLET_LIST_ETERNL) {
         return "Eternl";
@@ -351,7 +343,14 @@ char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
     } else if (index == WALLET_LIST_HELIUM) {
         return "Helium";
     }
-    return g_walletBtn[index].name;
+
+    CoinWalletInfo_t *coin = NULL;
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
+        if (g_walletBtn[i].index == index) {
+            return g_walletBtn[i].name;
+        }
+    }
+    return NULL;
 }
 #endif
 
@@ -693,8 +692,7 @@ void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
     }
     lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
     if (midButtonCb != NULL) {
-        lv_obj_add_event_cb(navBarWidget->midBtn, midButtonCb, LV_EVENT_CLICKED,
-                            param);
+        lv_obj_add_event_cb(navBarWidget->midBtn, midButtonCb, LV_EVENT_CLICKED, param);
     }
 }
 
@@ -702,7 +700,7 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
                    const char *name)
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
-    CoinWalletInfo_t *coin = &g_coinWalletBtn[0];
+    CoinWalletInfo_t *coin = (CoinWalletInfo_t *)g_coinWalletBtn;
     for (size_t i = 0; i < CHAIN_BUTT; i++) {
         if (g_coinWalletBtn[i].index == index) {
             coin = &g_coinWalletBtn[i];
@@ -710,24 +708,26 @@ void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
         }
     }
     // tx parse page: Confrim Transaction
-    navBarWidget->midBtn = GuiUpdateStatusCoinButton(
-                               navBarWidget->midBtn, (name != NULL) ? name : _("confirm_transaction"),
-                               coin->icon);
+    GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : _("confirm_transaction"), coin->icon);
 }
 
-void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index,
-               const char *name)
+void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)
 {
     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
+    WalletInfo_t *coin = NULL;
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
+        if (g_walletBtn[i].index == index) {
+            coin = &g_walletBtn[i];
+            break;
+        }
+    }
+
     if (name == NULL) {
-        char name[BUFFER_SIZE_64] = {0};
-        snprintf_s(name, BUFFER_SIZE_64, "%s %s", _("connect_head"),
-                   g_walletBtn[index].name);
-        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
-                               g_walletBtn[index].icon);
+        char nameBuf[BUFFER_SIZE_64] = {0};
+        snprintf_s(nameBuf, BUFFER_SIZE_64, "%s %s", _("connect_head"), coin->name);
+        GuiUpdateStatusCoinButton(navBarWidget->midBtn, nameBuf, coin->icon);
     } else {
-        navBarWidget->midBtn = GuiUpdateStatusCoinButton(navBarWidget->midBtn, name,
-                               g_walletBtn[index].icon);
+        GuiUpdateStatusCoinButton(navBarWidget->midBtn, name, coin->icon);
     }
 }
 

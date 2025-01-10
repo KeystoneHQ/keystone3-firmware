@@ -44,11 +44,6 @@ static void GuiShowSDCardExportSuccess();
 static void GuiShowSDCardExportFailed();
 static void ImportMultisigGoToHomeViewHandler(lv_event_t *e);
 
-static void QRCodePause(bool pause)
-{
-    GuiAnimatingQRCodeControl(pause);
-}
-
 static void GuiSDCardHandler(lv_event_t *e)
 {
     if (SdCardInsert()) {

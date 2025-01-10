@@ -519,11 +519,26 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, Bac
     return SUCCESS_CODE;
 }
 
+static bool ShouldUseCyclicPart(void)
+{
+    if (g_urResult == NULL) return false;
+    if (strnlen_s(g_urResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) < 6) return false;
+    if (strncmp(g_urResult->data, "ur:xmr", 6) == 0 || strncmp(g_urResult->data, "UR:XMR", 6) == 0) {
+        return true;
+    }
+    return false;
+}
+
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
 {
     if (g_urResult == NULL) return SUCCESS_CODE;
     if (g_urResult->is_multi_part) {
-        UREncodeMultiResult *result = get_next_part(g_urResult->encoder);
+        UREncodeMultiResult *result = NULL;
+        if (ShouldUseCyclicPart()) {
+            result = get_next_cyclic_part(g_urResult->encoder);
+        } else {
+            result = get_next_part(g_urResult->encoder);
+        }
         if (result->error_code == 0) {
             // printf("%s\r\n", result->data);
             GuiApiEmitSignal(SIG_BACKGROUND_UR_UPDATE, result->data, strnlen_s(result->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
@@ -560,7 +575,7 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
     int ret = 0;
     uint8_t existIndex = 0;
     if (ton) {
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
         VecFFI_u8 *entropyResult = ton_mnemonic_to_entropy(SecretCacheGetMnemonic());
         uint8_t checksum[32] = {0};
         CalculateTonChecksum(entropyResult->data, checksum);
@@ -842,7 +857,6 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     int32_t ret;
     uint8_t accountIndex = GetCurrentAccountIndex();
     UpdateFingerSignFlag(accountIndex, false);
@@ -852,13 +866,11 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
         // reset address index in receive page
         {
             void GuiResetCurrentUtxoAddressIndex(uint8_t index);
-#ifndef BTC_ONLY
+            GuiResetCurrentUtxoAddressIndex(accountIndex);
+#ifdef WEB3_VERSION
             void GuiResetCurrentEthAddressIndex(uint8_t index);
             void GuiResetCurrentStandardAddressIndex(uint8_t index);
             void GuiResetCurrentMultiAccountsCache(uint8_t index);
-#endif
-            GuiResetCurrentUtxoAddressIndex(accountIndex);
-#ifndef BTC_ONLY
             GuiResetCurrentEthAddressIndex(accountIndex);
             GuiResetCurrentStandardAddressIndex(accountIndex);
             GuiResetCurrentMultiAccountsCache(accountIndex);
@@ -879,10 +891,6 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     } else {
         GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_FAIL, &ret, sizeof(ret));
     }
-#else
-    // GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
-    GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
-#endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }
@@ -1430,7 +1438,7 @@ static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
 }
 
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 static int32_t ModelTonCalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);
 static int32_t ModelTonVerifyMnemonic(const void *inData, uint32_t inDataLen);
 static int32_t ModelTonWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);

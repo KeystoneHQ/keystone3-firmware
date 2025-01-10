@@ -7,7 +7,7 @@ use alloc::string::{String, ToString};
 
 use core::ops::Mul;
 use ethereum_types::U256;
-use hex;
+
 use rlp::{Decodable, DecoderError, Rlp};
 
 pub struct EIP1559Transaction {

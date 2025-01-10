@@ -1,4 +1,3 @@
-use alloc::format;
 use alloc::string::{String, ToString};
 use bitcoin::base58::Error as Base58Error;
 use keystore::errors::KeystoreError;
@@ -32,8 +31,8 @@ pub type Result<T> = core::result::Result<T, TronError>;
 impl From<KeystoreError> for TronError {
     fn from(value: KeystoreError) -> Self {
         match value {
-            KeystoreError::DerivePubKey(data) => Self::KeystoreError(format!("{}", data)),
-            KeystoreError::InvalidDerivationPath(data) => Self::KeystoreError(format!("{}", data)),
+            KeystoreError::DerivePubKey(data) => Self::KeystoreError(data.to_string()),
+            KeystoreError::InvalidDerivationPath(data) => Self::KeystoreError(data.to_string()),
             KeystoreError::XPubError(data) => Self::KeystoreError(data),
             KeystoreError::SeedError(data) => Self::KeystoreError(data),
             KeystoreError::DerivationError(data) => Self::KeystoreError(data),

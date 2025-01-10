@@ -2,6 +2,7 @@
 #define _GUI_HINTBOX_H
 #include "lv_event.h"
 #include "lv_obj.h"
+#include "gui_qr_hintbox.h"
 typedef struct {
     const char *name;
     const void *src;
@@ -34,6 +35,8 @@ void GuiHintBoxResize(lv_obj_t *obj, uint16_t height);
 void *GuiCreateMoreInfoHintBox(const void *src, const char *titleText,
                                MoreInfoTable_t *table, uint8_t cnt,
                                bool isCling, void *parent);
+void GuiCreateTooltipHintBox(const char *titleText, const char *descText, const char *link);
+void CloseTooltipHintBoxHandler();
 
 #define GuiCreateConfirmHintBox(src, title, desc1, desc2, btnText, color)      \
   GuiCreateGeneralHintBox(src, title, desc1, desc2, NULL, color, btnText, color)

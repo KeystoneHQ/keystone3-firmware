@@ -8,7 +8,7 @@ use crate::utils::shorten_string;
 use crate::vendor::address::TonAddress;
 use crate::vendor::cell::BagOfCells;
 use alloc::string::{String, ToString};
-use alloc::vec;
+
 use hex;
 use serde::Serialize;
 use serde_json::{self, json, Value};
@@ -27,7 +27,7 @@ pub struct TonTransaction {
 impl TonTransaction {
     pub fn parse(boc: BagOfCells) -> Result<Self> {
         let root = boc.single_root()?;
-        let signing_message = SigningMessage::parse(&root)?;
+        let signing_message = SigningMessage::parse(root)?;
         Self::try_from(&signing_message)
     }
 
@@ -49,7 +49,7 @@ impl TryFrom<&SigningMessage> for TonTransaction {
     type Error = TonError;
 
     fn try_from(signing_message: &SigningMessage) -> Result<Self> {
-        if let None = signing_message.messages.get(0) {
+        if signing_message.messages.first().is_none() {
             return Err(TonError::InvalidTransaction(
                 "transaction does not contain transfer info".to_string(),
             ));
@@ -194,7 +194,7 @@ impl TonProof {
         for i in 0..8 {
             timestamp_bytes[i] = remaining[i + 40 + domain_len as usize];
         }
-        index = index + 8;
+        index += 8;
         // need to transform to date time to display
         let _timestamp = i64::from_le_bytes(timestamp_bytes);
 

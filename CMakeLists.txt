@@ -3,9 +3,36 @@ cmake_minimum_required(VERSION 3.10)
 
 option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 
+set(BUILD_ENVIRONMENT "DEBUG")
+set(BUILD_VARIANT "MULTI_COINS")
+
+set(WIDGET_PATH "multi")
+if(CYPHERPUNK)
+    message(STATUS "Building for CYPHERPUNK")
+    add_compile_definitions(CYPHERPUNK_VERSION)
+    set(BUILD_VARIANT "CYPHERPUNK")
+    set(WIDGET_SUBPATH "multi/cypherpunk")
+elseif(BTC_ONLY)
+    message(STATUS "Building for BTC_ONLY")
+    set(WIDGET_SUBPATH "btc_only/multi_sig")
+    set(WIDGET_PATH "btc_only")
+    set(BUILD_VARIANT "BTC_ONLY")
+    add_compile_definitions(BTC_ONLY)
+    add_compile_definitions(EXCLUDE_RUSTC)
+else()
+    message(STATUS "Building for WEB3_VERSION")
+    add_compile_definitions(WEB3_VERSION)
+    set(WIDGET_SUBPATH "multi/web3")
+    set(BUILD_VARIANT "MULTI_COINS")
+endif()
 if(BUILD_TYPE STREQUAL "Simulator")
     set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
     set(COMPILE_SIMULATOR ON CACHE BOOL "compile on Simulator target" FORCE)
+    set(BUILD_ENVIRONMENT "SIMULATOR")
+endif()
+
+if(BUILD_PRODUCTION)
+    set(BUILD_ENVIRONMENT "PRODUCTION")
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
@@ -36,10 +63,6 @@ foreach(_variableName ${_variableNames})
     endif()
 endforeach()
 
-if(BTC_ONLY)
-    add_compile_definitions(BTC_ONLY)
-    add_compile_definitions(EXCLUDE_RUSTC)
-endif()
 
 set(COMMON_DEFINITIONS
     USE_STDPERIPH_DRIVER
@@ -61,28 +84,31 @@ set(CRYPTO_INCLUDE_PATH
     src/crypto/slip39/trezor-crypto
 )
 
+set(GUI_CUSTOM_INCLUDE_PATH
+    src/ui/gui_widgets/${WIDGET_SUBPATH}
+    src/ui/gui_widgets/${WIDGET_PATH}
+    src/ui/gui_chain/${WIDGET_SUBPATH}
+    src/ui/gui_chain/${WIDGET_PATH}
+    src/ui/gui_wallet/${WIDGET_SUBPATH}
+    src/ui/gui_wallet/${WIDGET_PATH}
+)
+
 set(GUI_INCLUDE_PATH
     src/ui
     src/ui/gui_views
     src/ui/gui_assets
     src/ui/gui_assets/abi
     src/ui/gui_frame
+    ${GUI_CUSTOM_INCLUDE_PATH}
     src/ui/gui_widgets
     src/ui/gui_widgets/setting
     src/ui/lv_i18n
     src/ui/gui_model
     src/ui/gui_analyze
     src/ui/gui_chain
-    src/ui/gui_chain/btc
     src/ui/gui_components
-    src/ui/wallet
+    src/ui/gui_wallet
 )
-
-if(BTC_ONLY)
-    list(APPEND GUI_INCLUDE_PATH src/ui/gui_widgets/btc_only src/ui/gui_widgets/btc_only/multi_sig src/ui/gui_widgets/general)
-else()
-    list(APPEND GUI_INCLUDE_PATH src/ui/gui_chain/others src/ui/gui_widgets/general)
-endif()
 
 set(EXTERNAL_INCLUDE_PATH
     external
@@ -140,6 +166,7 @@ set(SRC_INCLUDE_PATH
     src/hardware_interface
     src/webusb_protocol
     src/webusb_protocol/services
+    src/webusb_protocol/general
 )
 
 set(INCLUDE_DIR
@@ -159,21 +186,37 @@ if(NOT BUILD_PRODUCTION)
     list(APPEND INCLUDE_DIR test)
     set(TEST_CMD test)
 endif()
+    
+file(GLOB GUI_CUSTOM_VIEW_WIDGETS
+    src/ui/gui_views/*.c
+    src/ui/gui_views/web3/*.c
+    src/ui/gui_widgets/*.c
+    src/ui/gui_widgets/web3/*.c
+    src/ui/gui_wallet/*.c
+    src/ui/gui_chain/*.c
+    src/ui/gui_analyze/*.c
+    src/ui/gui_widgets/${WIDGET_SUBPATH}/*.c
+    src/ui/gui_widgets/${WIDGET_PATH}/*.c
+    src/ui/gui_views/${WIDGET_SUBPATH}/*.c
+    src/ui/gui_views/${WIDGET_PATH}/*.c
+    src/ui/gui_chain/${WIDGET_SUBPATH}/*.c
+    src/ui/gui_chain/${WIDGET_PATH}/*.c
+    src/ui/gui_wallet/${WIDGET_SUBPATH}/*.c
+    src/ui/gui_wallet/${WIDGET_PATH}/*.c
+    src/ui/gui_analyze/${WIDGET_SUBPATH}/*.c
+    src/ui/gui_analyze/${WIDGET_PATH}/*.c
+)
 
 file(GLOB_RECURSE GUI
+    ${GUI_CUSTOM_VIEW_WIDGETS}
     "src/ui/gui_assets/*.c"
     "src/ui/gui_assets/font/*.c"
     "src/ui/gui_assets/abi/*.c"
     "src/ui/gui_frame/*.c"
-    "src/ui/gui_views/*.c"
-    "src/ui/gui_widgets/*.c"
     "src/ui/gui_widgets/setting/*.c"
     "src/ui/lv_i18n/*.c"
     "src/ui/gui_model/*.c"
-    "src/ui/gui_analyze/*.c"
-    "src/ui/gui_chain/*.c"
     "src/ui/gui_components/*.c"
-    "src/ui/wallet/*.c"
 )
 
 file(GLOB_RECURSE LVGL
@@ -266,18 +309,6 @@ if(COMPILE_KEYSTONE)
         external/mh1903_lib/Device/MegaHunt/mhscpu/Source/GCC/startup_mhscpu.s
         src/cm_backtrace/fault_handler/gcc/cmb_fault.s
     )
-
-    if(BTC_ONLY)
-        set(excluded_directories
-            src/ui/gui_chain/others
-            src/ui/gui_widgets/general
-            src/ui/gui_views/general
-            src/webusb_protocol/general)
-    else()
-        set(excluded_directories
-            src/ui/gui_views/btc_only
-            src/ui/gui_widgets/btc_only)
-    endif()
 
     foreach(directory ${excluded_directories})
         file(GLOB_RECURSE excluded_files "${directory}/*")

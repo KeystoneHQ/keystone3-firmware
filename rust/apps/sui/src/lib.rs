@@ -55,11 +55,11 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
     match IntentScope::try_from(intent[0])? {
         IntentScope::TransactionData => {
             let tx: IntentMessage<TransactionData> =
-                bcs::from_bytes(&intent).map_err(|err| SuiError::from(err))?;
+                bcs::from_bytes(intent).map_err(SuiError::from)?;
             Ok(Intent::TransactionData(tx))
         }
         IntentScope::PersonalMessage => {
-            let msg: IntentMessage<PersonalMessage> = match bcs::from_bytes(&intent) {
+            let msg: IntentMessage<PersonalMessage> = match bcs::from_bytes(intent) {
                 Ok(msg) => msg,
                 Err(_) => {
                     if intent.len() < 4 {
@@ -67,7 +67,7 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
                     }
                     let intent_bytes = intent[..3].to_vec();
                     IntentMessage::<PersonalMessage>::new(
-                        types::intent::Intent::from_str(hex::encode(&intent_bytes).as_str())?,
+                        types::intent::Intent::from_str(hex::encode(intent_bytes).as_str())?,
                         PersonalMessage {
                             message: intent[3..].to_vec(),
                         },
@@ -85,9 +85,7 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
                 value: PersonalMessageUtf8 { message: m },
             }))
         }
-        _ => {
-            return Err(SuiError::InvalidData(String::from("unsupported intent")));
-        }
+        _ => Err(SuiError::InvalidData(String::from("unsupported intent"))),
     }
 }
 

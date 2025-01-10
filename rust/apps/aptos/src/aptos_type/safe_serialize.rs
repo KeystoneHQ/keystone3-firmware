@@ -13,8 +13,7 @@ where
     S: Serializer,
     T: Serialize,
 {
-    let res = t.serialize(s);
-    res
+    t.serialize(s)
 }
 
 pub(crate) fn type_tag_recursive_deserialize<'de, D, T>(d: D) -> Result<T, D::Error>

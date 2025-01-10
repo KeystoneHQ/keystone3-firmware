@@ -8,9 +8,7 @@
 #include "gui_wallet_tutorial_widgets.h"
 #include "gui_qr_hintbox.h"
 #include "gui_page.h"
-#if BTC_ONLY
-#include "gui_btc_home_widgets.h"
-#endif
+#include "gui_home_widgets.h"
 
 typedef struct WalletTutorialItem {
     const char *walletName;
@@ -305,6 +303,21 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_LEAP].items[0].qrTitle = _("connect_leap_title");
     g_tutorials[WALLET_LIST_LEAP].items[0].qrUrl =  _("connect_leap_link");
 
+    // WALLET_LIST_CAKE
+    g_tutorials[WALLET_LIST_CAKE].len = 1;
+    g_tutorials[WALLET_LIST_CAKE].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_CAKE].items[0].walletName = _("connect_cake_title");
+    g_tutorials[WALLET_LIST_CAKE].items[0].url = _("connect_cake_link");
+    g_tutorials[WALLET_LIST_CAKE].items[0].qrTitle = _("connect_cake_title");
+    g_tutorials[WALLET_LIST_CAKE].items[0].qrUrl = _("connect_cake_link");
+
+    g_tutorials[WALLET_LIST_FEATHER].len = 1;
+    g_tutorials[WALLET_LIST_FEATHER].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_FEATHER].items[0].walletName = _("connect_feather_title");
+    g_tutorials[WALLET_LIST_FEATHER].items[0].url = _("connect_feather_link");
+    g_tutorials[WALLET_LIST_FEATHER].items[0].qrTitle = _("connect_feather_title");
+    g_tutorials[WALLET_LIST_FEATHER].items[0].qrUrl = _("connect_feather_link");
+
     // WALLET_LIST_NIGHTLY
     g_tutorials[WALLET_LIST_NIGHTLY].len = 1;
     g_tutorials[WALLET_LIST_NIGHTLY].desc = _("connect_wallet_desc");
@@ -353,7 +366,7 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_ZASHI].items[0].qrTitle = _("connect_zashi_title");
     g_tutorials[WALLET_LIST_ZASHI].items[0].qrUrl = _("connect_zashi_link");
 
-    
+
 
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;

@@ -22,7 +22,7 @@
 #include "user_memory.h"
 
 #ifdef BTC_ONLY
-#include "gui_btc_home_widgets.h"
+#include "gui_home_widgets.h"
 #include "multi_sig_wallet_manager.h"
 #include "gui_multisig_wallet_export_widgets.h"
 static MultiSigWallet *g_multiSigWallet = NULL;
@@ -177,7 +177,7 @@ static char **g_derivationPathDescs = NULL;
 static char **g_testNetderivationPathDescs = NULL;
 #endif
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_BTC, ""},
     {HOME_WALLET_CARD_LTC, "m/49'/2'/0'"},
@@ -302,7 +302,7 @@ void GuiReceiveDeInit(void)
 static bool HasMoreBtn()
 {
     switch (g_chainCard) {
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_LTC:
     case HOME_WALLET_CARD_BCH:
     case HOME_WALLET_CARD_DASH:
@@ -376,7 +376,7 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
         titleItem->type = CHAIN_BTC;
         snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "BTC");
         break;
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_LTC:
         titleItem->type = CHAIN_LTC;
         snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "LTC");
@@ -545,7 +545,7 @@ static void GetHint(char *hint)
     case HOME_WALLET_CARD_BTC:
         strcpy_s(hint, BUFFER_SIZE_256, _("receive_btc_alert_desc"));
         break;
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_LTC:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "LTC");
         break;
@@ -580,7 +580,7 @@ static uint32_t GetCurrentSelectIndex()
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
         return g_btcSelectIndex[g_currentAccountIndex];
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_LTC:
         return g_ltcSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_DASH:
@@ -600,7 +600,7 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     case HOME_WALLET_CARD_BTC:
         g_btcSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_LTC:
         g_ltcSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
@@ -1380,12 +1380,14 @@ static ChainType GetChainTypeByIndex(uint32_t index)
         }
         break;
     }
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_LTC:
         return XPUB_TYPE_LTC;
     case HOME_WALLET_CARD_DASH:
         return XPUB_TYPE_DASH;
     case HOME_WALLET_CARD_BCH:
         return XPUB_TYPE_BCH;
+#endif
     default:
         break;
     }
@@ -1421,7 +1423,7 @@ static void GetRootHdPath(char *hdPath, uint32_t maxLen)
 #endif
         strcpy_s(hdPath, maxLen, g_addressSettings[addrType].path);
         break;
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_LTC:
         strcpy_s(hdPath, maxLen, g_chainPathItems[1].path);
         break;

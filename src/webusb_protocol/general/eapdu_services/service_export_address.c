@@ -5,7 +5,6 @@
 #include "gui_lock_widgets.h"
 #include "gui_home_widgets.h"
 #include "gui_wallet.h"
-// #include "gui_lock_widgets.h"
 
 /* DEFINES */
 
@@ -20,6 +19,7 @@ enum {
     OFFSET_TYPE = 4
 };
 
+#ifdef WEB3_VERSION
 struct EthParams {
     uint8_t n;
     ETHAccountType type;
@@ -33,7 +33,10 @@ typedef struct {
     uint8_t wallet;
     ETHAccountType type;
 } ExportAddressParams_t;
+#endif
 
+
+#ifdef WEB3_VERSION
 /* FUNC DECLARATION*/
 static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type);
 
@@ -102,6 +105,7 @@ void ExportAddressReject()
 static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
 {
 #ifndef COMPILE_SIMULATOR
+#ifdef WEB3_VERSION
     UREncodeResult *urResult = GetUnlimitedMetamaskDataForAccountType(type);
 
     if (urResult->error_code != 0) {
@@ -113,7 +117,7 @@ static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "payload", urResult->data);
-    char *json_str = cJSON_Print(root);
+    char *json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024, false);
     cJSON_Delete(root);
     result->data = (uint8_t *)json_str;
     result->dataLen = strlen((char *)result->data);
@@ -125,6 +129,7 @@ static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
     SendEApduResponse(result);
     EXT_FREE(json_str);
     SRAM_FREE(result);
+#endif
 #endif
 }
 
@@ -180,3 +185,5 @@ void ExportAddressService(EAPDURequestPayload_t *payload)
 
     SRAM_FREE(params);
 }
+
+#endif

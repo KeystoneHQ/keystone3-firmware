@@ -36,7 +36,7 @@
 #define KEY_LANGUAGE                    "language"
 #define KEY_NFT_SCREEN                  "nftEnable"
 #define KEY_NFT_VALID                   "nftValid"
-#define KEY_ENABLE_BLIND_SIGNING         "enableBlindSigning"
+#define KEY_ENABLE_BLIND_SIGNING        "enableBlindSigning"
 #define DEFAULT_SETUP_STEP              0
 #define DEFAULT_BRIGHT                  15
 #define DEFAULT_AUTO_LOCK_SCREEN        60
@@ -275,12 +275,10 @@ void WipeDevice(void)
     // reset all account address index in receive page
     {
         void GuiResetAllUtxoAddressIndex(void);
-#ifndef BTC_ONLY
+        GuiResetAllUtxoAddressIndex();
+#ifdef WEB3_VERSION
         void GuiResetAllEthAddressIndex(void);
         void GuiResetAllStandardAddressIndex(void);
-#endif
-        GuiResetAllUtxoAddressIndex();
-#ifndef BTC_ONLY
         GuiResetAllEthAddressIndex();
         GuiResetAllStandardAddressIndex();
 #endif
@@ -418,7 +416,7 @@ static char *GetJsonStringFromDeviceSettings(void)
     cJSON_AddItemToObject(rootJson, KEY_NFT_SCREEN, cJSON_CreateBool(g_deviceSettings.nftEnable));
     cJSON_AddItemToObject(rootJson, KEY_NFT_VALID, cJSON_CreateBool(g_deviceSettings.nftValid));
     cJSON_AddItemToObject(rootJson, KEY_ENABLE_BLIND_SIGNING, cJSON_CreateBool(g_deviceSettings.enableBlindSigning));
-    retStr = cJSON_Print(rootJson);
+    retStr = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_NORMAL_PARAM - 4, false);
     RemoveFormatChar(retStr);
     cJSON_Delete(rootJson);
 

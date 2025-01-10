@@ -91,10 +91,7 @@ impl TryFrom<&proto::cosmos::tx::v1beta1::mode_info::Multi> for Multi {
     fn try_from(
         proto: &proto::cosmos::tx::v1beta1::mode_info::Multi,
     ) -> Result<Multi, CosmosError> {
-        let bitarray = match &proto.bitarray {
-            Some(value) => Some(value.into()),
-            None => None,
-        };
+        let bitarray = proto.bitarray.as_ref().map(|value| value.into());
 
         Ok(Multi {
             bitarray,

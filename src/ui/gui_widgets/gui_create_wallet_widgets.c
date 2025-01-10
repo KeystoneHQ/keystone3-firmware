@@ -39,10 +39,13 @@ static CreateWalletWidget_t g_createWalletTileView;
 
 static void OpenMoreHandler(lv_event_t *e);
 static void OpenChangeEntropyHandler(lv_event_t *e);
-static void TonPhraseButtonHandler(lv_event_t *e);
 static void GuiRefreshNavBar(void);
 static void CloseChangeEntropyHandler(lv_event_t *e);
 static void OpenChangeEntropyTutorialHandler(lv_event_t *e);
+
+#ifdef WEB3_VERSION
+static void TonPhraseButtonHandler(lv_event_t *e);
+#endif
 
 static PageWidget_t *g_pageWidget;
 static KeyBoard_t *g_nameWalletKb = NULL;
@@ -477,7 +480,7 @@ static void OpenMoreHandler(lv_event_t *e)
 {
     MoreInfoTable_t moreInfoTable[] = {
         {.name = _("change_entropy"), .src = &imgConnect, .callBack = OpenChangeEntropyHandler, NULL},
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
         {.name = _("generate_ton_mnenonic"), .src = &imgTonPhrase, .callBack = TonPhraseButtonHandler, NULL},
 #endif
         {.name = _("Tutorial"), .src = &imgTutorial, .callBack = QuestionMarkEventCb, NULL},
@@ -663,7 +666,7 @@ static void OpenChangeEntropyTutorialHandler(lv_event_t *e)
     GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
 }
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 static void TonPhraseButtonHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_openMoreHintBox);

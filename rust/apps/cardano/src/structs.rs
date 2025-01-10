@@ -1,4 +1,4 @@
-use crate::address::{derive_address, derive_pubkey_hash, AddressType};
+use crate::address::derive_pubkey_hash;
 use crate::errors::{CardanoError, R};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
@@ -6,15 +6,14 @@ use alloc::vec;
 use alloc::vec::Vec;
 use app_utils::{impl_internal_struct, impl_public_struct};
 use cardano_serialization_lib::protocol_types::{
-    self, Address, BaseAddress, EnterpriseAddress, RewardAddress,
+    Address, BaseAddress, EnterpriseAddress, RewardAddress,
 };
 
-use cardano_serialization_lib::protocol_types::numeric::BigNum;
-use cardano_serialization_lib::protocol_types::{Anchor, DRepKind};
-use cardano_serialization_lib::protocol_types::{Ed25519KeyHash, ScriptHash};
+use cardano_serialization_lib::protocol_types::DRepKind;
+
+use cardano_serialization_lib::CredKind;
 use cardano_serialization_lib::{
-    protocol_types::FixedTransaction as Transaction, protocol_types::VoteKind, Certificate,
-    CertificateKind, NetworkId, NetworkIdKind,
+    protocol_types::FixedTransaction as Transaction, protocol_types::VoteKind, NetworkIdKind,
 };
 
 use alloc::format;
@@ -102,6 +101,7 @@ const LABEL_POOL: &str = "Pool";
 const LABEL_DEPOSIT: &str = "Deposit";
 const LABEL_DREP: &str = "DRep";
 const LABEL_VOTE: &str = "Vote";
+#[allow(unused)]
 const LABEL_ABCHOR: &str = "Anchor";
 const LABEL_ANCHOR_URL: &str = "Anchor URL";
 const LABEL_ANCHOR_DATA_HASH: &str = "Anchor Data Hash";
@@ -152,29 +152,6 @@ impl_public_struct!(ParsedCardanoMultiAsset {
     value: u64
 });
 
-#[derive(Clone)]
-enum CardanoCertAction {
-    Registration(Registration),
-    Deregistration(Deregistration),
-    Delegation(Delegation),
-}
-
-#[derive(Clone)]
-struct Registration {
-    stake_key: RewardAddress,
-}
-
-#[derive(Clone)]
-struct Deregistration {
-    stake_key: RewardAddress,
-}
-
-#[derive(Clone)]
-struct Delegation {
-    pool: String,
-    stake_key: RewardAddress,
-}
-
 impl ParsedCardanoSignData {
     pub fn build(sign_data: Vec<u8>, derivation_path: String, xpub: String) -> R<Self> {
         let sign_structure = CardanoSignStructure::from_cbor(sign_data.clone());
@@ -190,7 +167,7 @@ impl ParsedCardanoSignData {
                     xpub,
                 })
             }
-            Err(e) => Ok(Self {
+            Err(_e) => Ok(Self {
                 payload: hex::encode(sign_data.clone()),
                 derivation_path,
                 message_hash: hex::encode(sign_data),
@@ -321,10 +298,12 @@ impl ParsedCardanoTx {
                 if tx.body().outputs().len() == 0 {
                     return 1;
                 }
-                match tx.body().outputs().get(0).address().network_id() {
-                    Ok(id) => id,
-                    Err(_) => 1,
-                }
+                tx.body()
+                    .outputs()
+                    .get(0)
+                    .address()
+                    .network_id()
+                    .unwrap_or(1)
             }
             Some(id) => match id.kind() {
                 NetworkIdKind::Mainnet => 1,
@@ -510,12 +489,12 @@ impl ParsedCardanoTx {
                         CertField {
                             label: LABEL_HOT_KEY.to_string(),
                             value: match _cert.committee_hot_credential().kind() {
-                                Ed25519KeyHash => _cert
+                                CredKind::Key => _cert
                                     .committee_hot_credential()
                                     .to_keyhash()
                                     .unwrap()
                                     .to_string(),
-                                ScriptHash => _cert
+                                CredKind::Script => _cert
                                     .committee_hot_credential()
                                     .to_scripthash()
                                     .unwrap()
@@ -525,12 +504,12 @@ impl ParsedCardanoTx {
                         CertField {
                             label: LABEL_COLD_KEY.to_string(),
                             value: match _cert.committee_cold_credential().kind() {
-                                Ed25519KeyHash => _cert
+                                CredKind::Key => _cert
                                     .committee_cold_credential()
                                     .to_keyhash()
                                     .unwrap()
                                     .to_string(),
-                                ScriptHash => _cert
+                                CredKind::Script => _cert
                                     .committee_cold_credential()
                                     .to_scripthash()
                                     .unwrap()
@@ -547,12 +526,12 @@ impl ParsedCardanoTx {
                     let mut fields = vec![CertField {
                         label: LABEL_COLD_KEY.to_string(),
                         value: match _cert.committee_cold_credential().kind() {
-                            Ed25519KeyHash => _cert
+                            CredKind::Key => _cert
                                 .committee_cold_credential()
                                 .to_keyhash()
                                 .unwrap()
                                 .to_string(),
-                            ScriptHash => _cert
+                            CredKind::Script => _cert
                                 .committee_cold_credential()
                                 .to_scripthash()
                                 .unwrap()
@@ -577,7 +556,7 @@ impl ParsedCardanoTx {
                 if let Some(_cert) = cert.as_drep_deregistration() {
                     let deposit = normalize_coin(u64::from(&_cert.coin()));
                     let (variant1, variant1_label) = match _cert.voting_credential().kind() {
-                        Ed25519KeyHash => (
+                        CredKind::Key => (
                             _cert
                                 .voting_credential()
                                 .to_keyhash()
@@ -586,7 +565,7 @@ impl ParsedCardanoTx {
                                 .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                             LABEL_DREP.to_string(),
                         ),
-                        ScriptHash => (
+                        CredKind::Script => (
                             _cert
                                 .voting_credential()
                                 .to_scripthash()
@@ -614,7 +593,7 @@ impl ParsedCardanoTx {
                 if let Some(_cert) = cert.as_drep_registration() {
                     let deposit = normalize_coin(u64::from(&_cert.coin()));
                     let (variant1, variant1_label) = match _cert.voting_credential().kind() {
-                        Ed25519KeyHash => (
+                        CredKind::Key => (
                             _cert
                                 .voting_credential()
                                 .to_keyhash()
@@ -623,7 +602,7 @@ impl ParsedCardanoTx {
                                 .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                             LABEL_DREP.to_string(),
                         ),
-                        ScriptHash => (
+                        CredKind::Script => (
                             _cert
                                 .voting_credential()
                                 .to_scripthash()
@@ -663,12 +642,11 @@ impl ParsedCardanoTx {
                     ));
                 }
                 if let Some(_cert) = cert.as_drep_update() {
-                    let anchor_data_hash = match _cert.anchor() {
-                        Some(anchor) => Some(anchor.anchor_data_hash().to_string()),
-                        None => None,
-                    };
+                    let anchor_data_hash = _cert
+                        .anchor()
+                        .map(|anchor| anchor.anchor_data_hash().to_string());
                     let (variant1, variant1_label) = match _cert.voting_credential().kind() {
-                        Ed25519KeyHash => (
+                        CredKind::Key => (
                             _cert
                                 .voting_credential()
                                 .to_keyhash()
@@ -677,7 +655,7 @@ impl ParsedCardanoTx {
                                 .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                             LABEL_DREP.to_string(),
                         ),
-                        ScriptHash => (
+                        CredKind::Script => (
                             _cert
                                 .voting_credential()
                                 .to_scripthash()
@@ -932,10 +910,7 @@ impl ParsedCardanoTx {
                 None => {
                     let cardano_from = CardanoFrom {
                         address: address.clone(),
-                        value: match input.value {
-                            Some(v) => v,
-                            None => 0,
-                        },
+                        value: input.value.unwrap_or(0),
                         amount: match input.value {
                             Some(v) => normalize_coin(v),
                             None => "Unknown amount".to_string(),
@@ -956,14 +931,14 @@ impl ParsedCardanoTx {
             match map.get(&address) {
                 Some(existing) => {
                     let mut to = existing.clone();
-                    to.value = to.value + output.value;
+                    to.value += output.value;
                     to.amount = normalize_coin(to.value);
                     if let Some(assets) = output.assets {
                         for x in assets {
                             match to.assets.get(&x.id) {
                                 Some(asset) => {
                                     let mut new_asset = asset.clone();
-                                    new_asset.value = new_asset.value + x.value;
+                                    new_asset.value += x.value;
                                     new_asset.amount = normalize_value(new_asset.value);
                                     to.assets.insert(new_asset.id.clone(), new_asset);
                                 }
@@ -1014,9 +989,7 @@ impl ParsedCardanoTx {
             .get_cert_keys()
             .iter()
             .filter(|v| hex::encode(v.get_master_fingerprint()).eq(&mfp))
-            .fold(false, |acc, cur| {
-                acc || hex::encode(cur.get_master_fingerprint()).eq(&mfp)
-            });
+            .any(|cur| hex::encode(cur.get_master_fingerprint()).eq(&mfp));
 
         if has_my_signer {
             return Ok(());
@@ -1039,7 +1012,7 @@ impl ParsedCardanoTx {
     fn parse_inputs(
         tx: &Transaction,
         context: &ParseContext,
-        network_id: u8,
+        _network_id: u8,
     ) -> R<Vec<ParsedCardanoInput>> {
         let inputs_len = tx.body().inputs().len();
         let mut parsed_inputs: Vec<ParsedCardanoInput> = vec![];
@@ -1087,11 +1060,11 @@ impl ParsedCardanoTx {
                     //check utxo address with payment keyhash;
                     let my_pubkey_hash = hex::encode(derive_pubkey_hash(
                         context.get_cardano_xpub(),
-                        change.clone(),
-                        index.clone(),
+                        *change,
+                        *index,
                     )?);
 
-                    let mut address = utxo.address.clone();
+                    let address = utxo.address.clone();
 
                     let addr_in_utxo = Address::from_bech32(&utxo.address)
                         .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?;
@@ -1159,8 +1132,8 @@ impl ParsedCardanoTx {
                     .map_err(|e| CardanoError::AddressEncodingError(e.to_string()))?,
                 amount: normalize_coin(u64::from(&output.amount().coin())),
                 value: u64::from(&output.amount().coin()),
-                assets: output.amount().multiasset().map(|v| {
-                    let mut parsed_multi_assets = vec![];
+                assets: output.amount().multiasset().map(|_v| {
+                    let parsed_multi_assets = vec![];
                     // temporary comment multi assets parse logic because it consumes a lot of memory but we don't display it on UI
 
                     // let len = v.keys().len();
@@ -1245,7 +1218,7 @@ mod tests {
     #[test]
     fn test_parse_sign() {
         let sign_data = hex::decode("84a400828258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99038258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99040182a200581d6179df4c75f7616d7d1fd39cbc1a6ea6b40a0d7b89fea62fc0909b6c370119c350a200581d61c9b0c9761fd1dc0404abd55efc895026628b5035ac623c614fbad0310119c35002198ecb0300a0f5f6").unwrap();
-        let request = CardanoSignRequest::new(
+        let _request = CardanoSignRequest::new(
             Some(
                 hex::decode("9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d")
                     .unwrap()
@@ -1275,6 +1248,6 @@ mod tests {
         assert_eq!(withdrawals.unwrap().len(), 0);
 
         let cardano_tx = ParsedCardanoTx::from_cardano_tx(tx, context);
-        assert_eq!(cardano_tx.is_ok(), true);
+        assert!(cardano_tx.is_ok());
     }
 }

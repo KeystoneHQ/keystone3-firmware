@@ -25,6 +25,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_btc.h"
+#include "gui_pending_hintbox.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_read_sdcard_widgets.h"
 #endif
@@ -36,6 +37,24 @@ static void GuiScanStart();
 
 #ifdef BTC_ONLY
 static lv_obj_t *g_noticeWindow;
+
+static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, size_t filterSize)
+{
+    for (size_t i = 0; i < filterSize; i++) {
+        if (viewType == viewTypeFilter[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+#endif
+
+#ifdef WEB3_VERSION
+#define IsSlip39WalletNotSupported(viewType) (viewType == CHAIN_ADA)
+#endif
+
+#ifdef CYPHERPUNK_VERSION
+#define IsSlip39WalletNotSupported(viewType) (viewType == CHAIN_XMR)
 #endif
 
 static PageWidget_t *g_pageWidget;
@@ -83,16 +102,6 @@ void GuiScanRefresh()
     GuiScanStart();
 }
 
-static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, size_t filterSize)
-{
-    for (size_t i = 0; i < filterSize; i++) {
-        if (viewType == viewTypeFilter[i]) {
-            return true;
-        }
-    }
-    return false;
-}
-
 void GuiScanResult(bool result, void *param)
 {
     if (result) {
@@ -107,29 +116,31 @@ void GuiScanResult(bool result, void *param)
         }
 #endif
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
+#ifndef BTC_ONLY
         // Not a chain based transaction, e.g. WebAuth
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-#ifndef BTC_ONLY
-            //we don't support ADA in Slip39 Wallet;
-            if (g_chainType == CHAIN_ADA) {
+            //we don't support ADA & XMR in Slip39 Wallet;
+            if (IsSlip39WalletNotSupported(g_chainType)) {
                 ThrowError(ERR_INVALID_QRCODE);
                 return;
             }
-#endif
         }
+#endif
         if (g_chainType == CHAIN_BUTT) {
             if (g_qrcodeViewType == WebAuthResult) {
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_webAuthResultView);
             }
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
             if (g_qrcodeViewType == KeyDerivationRequest) {
                 if (!GuiCheckIfTopView(&g_homeView)) {
                     GuiCLoseCurrentWorkingView();
                 }
                 GuiFrameOpenViewWithParam(&g_keyDerivationRequestView, NULL, 0);
             }
-#else
+#endif
+
+#ifdef BTC_ONLY
             if (g_qrcodeViewType == MultisigWalletImport) {
                 GuiCLoseCurrentWorkingView();
                 GuiFrameOpenView(&g_importMultisigWalletInfoView);
@@ -159,7 +170,7 @@ void GuiTransactionCheckPass(void)
     GuiModelTransactionCheckResultClear();
     SetPageLockScreen(true);
     GuiCLoseCurrentWorkingView();
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     if (g_chainType == CHAIN_ARWEAVE) {
         if (GetIsTempAccount()) {
             ThrowError(ERR_INVALID_QRCODE);

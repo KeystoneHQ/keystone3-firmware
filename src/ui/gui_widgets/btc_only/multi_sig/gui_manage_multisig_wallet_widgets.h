@@ -1,7 +1,7 @@
 #ifndef _GUI_MANAGE_MULTI_SIG_WIDGETS_H
 #define _GUI_MANAGE_MULTI_SIG_WIDGETS_H
 
-#include "gui_btc_home_widgets.h"
+#include "gui_home_widgets.h"
 
 void GuiManageMultisigWalletInit(CURRENT_WALLET_INDEX_ENUM index);
 void GuiManageMultisigWalletDeInit(void);

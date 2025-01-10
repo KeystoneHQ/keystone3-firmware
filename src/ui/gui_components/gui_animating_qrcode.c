@@ -1,4 +1,3 @@
-#include "lvgl.h"
 #include "gui.h"
 #include "gui_animating_qrcode.h"
 #include "gui_model.h"

@@ -4,8 +4,7 @@ use alloc::string::{String, ToString};
 use bitcoin::secp256k1::ecdsa::Signature;
 use bytes::BytesMut;
 use cryptoxide::hashing;
-use hex;
-use rippled_binary_codec;
+
 use rippled_binary_codec::definition_fields::DefinitionFields;
 use serde_json::{from_slice, to_string, Value};
 
@@ -20,9 +19,9 @@ impl WrappedTxData {
     pub fn from_raw(input: &[u8]) -> R<WrappedTxData> {
         let definition_fields = DefinitionFields::new();
         let tx_data: Value = from_slice(input)?;
-        let signing_pubkey = tx_data["SigningPubKey"].as_str().unwrap_or(&"").to_string();
+        let signing_pubkey = tx_data["SigningPubKey"].as_str().unwrap_or("").to_string();
         if let Some(tag) = tx_data["DestinationTag"].as_i64() {
-            if tag > 0xffffffff || tag < 0 {
+            if !(0..=0xffffffff).contains(&tag) {
                 return Err(XRPError::SignFailure(format!("invalid tag {:?}", tag)));
             }
         }
@@ -106,7 +105,7 @@ mod tests {
     fn test_generate_unsigned_tx_3() {
         //xrp toolkit signrequest
         let input = "7B225472616E73616374696F6E54797065223A225061796D656E74222C22416D6F756E74223A223130303030303030222C2244657374696E6174696F6E223A2272396A79597745503472545278474341636857724C767742754A4646573853734D4A222C22466C616773223A323134373438333634382C224163636F756E74223A227247556D6B794C627671474633687758347177474864727A4C6459325170736B756D222C22466565223A223132222C2253657175656E6365223A37393939313835372C224C6173744C656467657253657175656E6365223A38303730373430342C225369676E696E675075624B6579223A22303346354335424231443139454337313044334437464144313939414631304346384243314431313334384535423337363543304230423943304245433332383739227D";
-        let v: Value = from_slice(&hex::decode(input).unwrap().as_slice()).unwrap();
+        let v: Value = from_slice(hex::decode(input).unwrap().as_slice()).unwrap();
         let wrapped_tx = WrappedTxData::from_raw(v.to_string().into_bytes().as_slice()).unwrap();
         let expected =
             String::from("88dfb47b27747e247bfaeade10c1cdecc64ca2298940cfe8e1b222971be8f41e");

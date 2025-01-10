@@ -8,7 +8,6 @@ pub mod pczt;
 use errors::{Result, ZcashError};
 
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };
@@ -39,9 +38,9 @@ pub fn check_pczt<P: consensus::Parameters>(
     let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
         .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
     let pczt =
-        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
+        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt("invalid pczt data".to_string()))?;
     let account_index = zip32::AccountId::try_from(account_index)
-        .map_err(|_e| ZcashError::InvalidDataError(format!("invalid account index")))?;
+        .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
     pczt::check::check_pczt(params, seed_fingerprint, account_index, &ufvk, &pczt)
 }
 
@@ -54,13 +53,13 @@ pub fn parse_pczt<P: consensus::Parameters>(
     let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
         .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
     let pczt =
-        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
+        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt("invalid pczt data".to_string()))?;
     pczt::parse::parse_pczt(params, seed_fingerprint, &ufvk, &pczt)
 }
 
 pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
     let pczt =
-        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt(format!("invalid pczt data")))?;
+        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt("invalid pczt data".to_string()))?;
     pczt::sign::sign_pczt(pczt, seed)
 }
 

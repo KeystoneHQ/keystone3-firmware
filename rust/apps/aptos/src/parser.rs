@@ -32,7 +32,7 @@ pub fn is_tx(data: &Vec<u8>) -> bool {
         0x6f, 0x66, 0x93, 0xbd, 0xdc, 0x1a, 0x9f, 0xec, 0x9e, 0x67, 0x4a, 0x46, 0x1e, 0xaa, 0x00,
         0xb1, 0x93,
     ];
-    return data.len() > 32 && data[..32] == tx_prefix;
+    data.len() > 32 && data[..32] == tx_prefix
 }
 
 impl Parser {
@@ -41,9 +41,8 @@ impl Parser {
         if is_tx(data) {
             data_parse = data[32..].to_vec();
         }
-        let tx: RawTransaction = bcs::from_bytes(&data_parse).map_err(|err| {
-            AptosError::ParseTxError(format!("bcs deserialize failed {}", err.to_string()))
-        })?;
+        let tx: RawTransaction = bcs::from_bytes(&data_parse)
+            .map_err(|err| AptosError::ParseTxError(format!("bcs deserialize failed {}", err)))?;
         Ok(AptosTx::new(tx))
     }
     pub fn parse_msg(data: &Vec<u8>) -> Result<String> {
@@ -71,16 +70,13 @@ impl AptosTx {
     pub fn get_formatted_json(&self) -> Result<Value> {
         match serde_json::to_string_pretty(&self.tx) {
             Ok(v) => Ok(Value::String(v)),
-            Err(e) => Err(AptosError::ParseTxError(format!(
-                "to json failed {}",
-                e.to_string()
-            ))),
+            Err(e) => Err(AptosError::ParseTxError(format!("to json failed {}", e))),
         }
     }
 
     fn to_json_value(&self) -> Result<Value> {
         let value = serde_json::to_value(&self.tx)
-            .map_err(|e| AptosError::ParseTxError(format!("to json failed {}", e.to_string())))?;
+            .map_err(|e| AptosError::ParseTxError(format!("to json failed {}", e)))?;
         Ok(value)
     }
 

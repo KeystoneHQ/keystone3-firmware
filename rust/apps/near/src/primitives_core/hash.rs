@@ -10,7 +10,7 @@ use cryptoxide::digest::Digest;
 use cryptoxide::sha2;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct CryptoHash(pub [u8; 32]);
 
 impl CryptoHash {
@@ -20,12 +20,6 @@ impl CryptoHash {
         let mut output = [0u8; 32];
         hasher.result(&mut output);
         CryptoHash(output)
-    }
-}
-
-impl Default for CryptoHash {
-    fn default() -> Self {
-        CryptoHash(Default::default())
     }
 }
 

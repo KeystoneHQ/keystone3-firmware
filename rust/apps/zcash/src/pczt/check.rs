@@ -26,12 +26,12 @@ pub fn check_pczt<P: consensus::Parameters>(
     ))?;
     Verifier::new(pczt.clone())
         .with_orchard(|bundle| {
-            check_orchard(params, &seed_fingerprint, account_index, &orchard, bundle)
+            check_orchard(params, seed_fingerprint, account_index, orchard, bundle)
                 .map_err(pczt::roles::verifier::OrchardError::Custom)
         })
         .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{:?}", e)))?
         .with_transparent(|bundle| {
-            check_transparent(params, seed_fingerprint, account_index, &xpub, bundle)
+            check_transparent(params, seed_fingerprint, account_index, xpub, bundle)
                 .map_err(pczt::roles::verifier::TransparentError::Custom)
         })
         .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{:?}", e)))?;
@@ -75,7 +75,7 @@ fn check_transparent_input<P: consensus::Parameters>(
             match my_derivation {
                 None => {
                     //not my input, pass
-                    return Ok(());
+                    Ok(())
                 }
                 Some((pubkey, derivation)) => {
                     // 2: derive my pubkey
@@ -83,7 +83,7 @@ fn check_transparent_input<P: consensus::Parameters>(
                         .derive_pubkey_at_bip32_path(
                             params,
                             account_index,
-                            &derivation.derivation_path(),
+                            derivation.derivation_path(),
                         )
                         .map_err(|_| {
                             ZcashError::InvalidPczt(
@@ -207,7 +207,7 @@ fn check_transparent_output<P: consensus::Parameters>(
             match my_derivation {
                 None => {
                     //not my output, pass
-                    return Ok(());
+                    Ok(())
                 }
                 Some((pubkey, derivation)) => {
                     // 2: derive my pubkey
@@ -215,7 +215,7 @@ fn check_transparent_output<P: consensus::Parameters>(
                         .derive_pubkey_at_bip32_path(
                             params,
                             account_index,
-                            &derivation.derivation_path(),
+                            derivation.derivation_path(),
                         )
                         .map_err(|_| {
                             ZcashError::InvalidPczt(
@@ -282,13 +282,7 @@ fn check_action<P: consensus::Parameters>(
         ZcashError::InvalidPczt(alloc::format!("invalid cv_net in Orchard action: {:?}", e))
     })?;
 
-    check_action_spend(
-        params,
-        seed_fingerprint,
-        account_index,
-        fvk,
-        &action.spend(),
-    )?;
+    check_action_spend(params, seed_fingerprint, account_index, fvk, action.spend())?;
     check_action_output(action)
 }
 
@@ -379,7 +373,7 @@ mod tests {
                 &pczt,
             );
 
-            assert_eq!(true, result.is_ok());
+            assert!(result.is_ok());
         }
     }
     //TODO: add test for happy path

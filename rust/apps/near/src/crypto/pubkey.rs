@@ -108,7 +108,7 @@ impl AsRef<[u8]> for Secp256K1PublicKey {
 
 impl Debug for Secp256K1PublicKey {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
-        write!(f, "{}", bs58::encode(&self.0.to_vec()))
+        write!(f, "{}", bs58::encode(self.0.as_ref()))
     }
 }
 
@@ -150,7 +150,7 @@ impl TryFrom<&[u8]> for ED25519PublicKey {
 
 impl Debug for ED25519PublicKey {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
-        write!(f, "{}", bs58::encode(&self.0.to_vec()))
+        write!(f, "{}", bs58::encode(self.0.as_ref()))
     }
 }
 
@@ -298,7 +298,7 @@ impl From<&PublicKey> for String {
             PublicKey::SECP256K1(public_key) => format!(
                 "{}:{}",
                 KeyType::SECP256K1,
-                bs58::encode(&public_key.0.to_vec())
+                bs58::encode(public_key.0.as_ref())
             ),
         }
     }

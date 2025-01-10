@@ -19,9 +19,11 @@ static int32_t GuiPassphraseViewEventProcess(void *self, uint16_t usEvent, void 
 {
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiPassphraseViewInit();
+        GuiPassphraseInit();
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiPassphraseViewDeInit();
+        GuiPassphraseDeInit();
+        break;
     case GUI_EVENT_DISACTIVE:
         break;
     case GUI_EVENT_REFRESH:

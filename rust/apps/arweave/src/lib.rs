@@ -10,7 +10,6 @@ pub mod transaction;
 
 #[macro_use]
 extern crate alloc;
-extern crate aes;
 
 #[cfg(test)]
 #[macro_use]
@@ -21,14 +20,14 @@ use aes::cipher::block_padding::Pkcs7;
 use aes::cipher::{generic_array::GenericArray, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use base64;
+
 use data_item::DataItem;
-use hex;
+
 use keystore::algorithms::rsa::get_rsa_secret_from_seed;
 use rsa::{BigUint, RsaPrivateKey};
-use serde_json;
+
 use serde_json::{json, Value};
-use sha2;
+
 use sha2::Digest;
 use transaction::{Base64, Transaction};
 
@@ -90,7 +89,7 @@ fn u64_to_ar(value: u64) -> String {
     let value = format!("{:.12}", value);
     let value = value.trim_end_matches('0').to_string();
     if value.ends_with('.') {
-        format!("{} AR", value[..value.len() - 1].to_string())
+        format!("{} AR", &value[..value.len() - 1])
     } else {
         format!("{} AR", value)
     }
@@ -144,13 +143,13 @@ pub fn parse(data: &Vec<u8>) -> Result<String> {
                     "quantity": u64_to_ar(tx.quantity),
                     "reward": u64_to_ar(tx.reward),
                     "data_size": tx.data_size,
-                    "signature_data": tx.deep_hash().map_or_else(|e| format!("unable to deep hash transaction, reason: {}", e.to_string()), |data| hex::encode(data)),
+                    "signature_data": tx.deep_hash().map_or_else(|e| format!("unable to deep hash transaction, reason: {}", e), hex::encode),
                 },
                 "status": "success"
             })
         }
         Err(e) => {
-            let readable = format!("unable to deserialize, reason: {}", e.to_string());
+            let readable = format!("unable to deserialize, reason: {}", e);
             json!({
                 "status": "failed",
                 "reason": readable

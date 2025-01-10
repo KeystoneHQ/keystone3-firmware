@@ -201,10 +201,9 @@ static void GuiMultisigTransactionSignatureSetupUR(lv_obj_t *parent)
     lv_obj_t *qrcode = GuiCreateContainerWithParent(g_qrCont, 336, 336);
     lv_obj_align(qrcode, LV_ALIGN_TOP_LEFT, 36, 36);
     bool showPending = true;
-#if BTC_ONLY
     showPending = false;
-#endif
-    GuiAnimatingQRCodeInitWithCustomSize(qrcode, GuiGetSignQrCodeData, showPending, 336, 336, NULL);
+
+    GuiAnimatingQRCodeInitWithCustomSize(qrcode, GuiGetBtcSignQrCodeData, showPending, 336, 336, NULL);
 
     g_signStatusLabel = GuiCreateIllustrateLabel(g_qrCont, _("multi_signature_status"));
     lv_obj_align_to(g_signStatusLabel, qrcode, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);

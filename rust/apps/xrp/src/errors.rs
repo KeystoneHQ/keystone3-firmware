@@ -1,5 +1,5 @@
 use alloc::format;
-use alloc::string::{String, ToString};
+use alloc::string::String;
 use core::str::Utf8Error;
 use keystore::errors::KeystoreError;
 use serde_json::Error;
@@ -24,7 +24,7 @@ pub type R<T> = Result<T, XRPError>;
 
 impl From<KeystoreError> for XRPError {
     fn from(value: KeystoreError) -> Self {
-        Self::KeystoreError(format!("{}", value.to_string()))
+        Self::KeystoreError(format!("{}", value))
     }
 }
 

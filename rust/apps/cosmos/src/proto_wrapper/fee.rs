@@ -74,7 +74,7 @@ pub fn format_coin(coin: Coin) -> Option<String> {
     } else {
         return Some(format!("{} {}", coin.amount, coin.denom));
     }
-    return None;
+    None
 }
 
 pub fn parse_gas_limit(gas: &serde_json::Value) -> Result<f64> {
@@ -85,10 +85,10 @@ pub fn parse_gas_limit(gas: &serde_json::Value) -> Result<f64> {
     if let Some(gas_limit) = gas.as_f64() {
         return Ok(gas_limit);
     }
-    return Err(CosmosError::InvalidData(format!(
+    Err(CosmosError::InvalidData(format!(
         "failed to parse gas {:?}",
         gas
-    )));
+    )))
 }
 
 pub fn format_fee_from_value(data: serde_json::Value) -> Result<FeeDetail> {
@@ -133,5 +133,5 @@ pub fn format_fee_from_value(data: serde_json::Value) -> Result<FeeDetail> {
             gas_limit: gas_limit.to_string(),
         });
     }
-    return Err(CosmosError::InvalidData("can not parse fee".to_string()));
+    Err(CosmosError::InvalidData("can not parse fee".to_string()))
 }

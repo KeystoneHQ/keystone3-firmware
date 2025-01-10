@@ -207,7 +207,7 @@ static void HandleInputType(MnemonicKeyBoard_t *mkb)
     }
 }
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 static void HandleTonCondition(bool isTon, MnemonicKeyBoard_t *mkb)
 {
     if (isTon) {
@@ -247,7 +247,7 @@ void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 
     SecretCacheSetMnemonic(mnemonic);
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     bool isTon = ton_verify_mnemonic(mnemonic);
     HandleTonCondition(isTon, mkb);
 #else

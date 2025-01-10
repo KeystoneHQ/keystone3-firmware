@@ -38,11 +38,10 @@
 #include "secret_cache.h"
 #include "anti_tamper.h"
 #include "account_manager.h"
-#ifndef EXCLUDE_RUSTC
 #include "librust_c.h"
-#endif
 #include "log.h"
 #include "background_task.h"
+#include "fetch_sensitive_data_task.h"
 #include "account_public_info.h"
 #include "version.h"
 #include "drv_motor.h"
@@ -107,8 +106,35 @@ static void AesEncryptTestFunc(int argc, char *argv[]);
 static void HashAndSaltFunc(int argc, char *argv[]);
 static void Sha512Func(int argc, char *argv[]);
 static void KeyStoreTestFunc(int argc, char *argv[]);
-static void GuiFrameDebugTestFunc(int argc, char *argv[]);
-#ifndef EXCLUDE_RUSTC
+static void LogTestFunc(int argc, char *argv[]);
+static void ETHDBContractsTest(int argc, char *argv[]);
+static void BackgroundTestFunc(int argc, char *argv[]);
+static void GetReceiveAddress(int argc, char *argv[]);
+static void AccountPublicInfoTestFunc(int argc, char *argv[]);
+static void FingerTestFunc(int argc, char *argv[]);
+static void MotorTestFunc(int argc, char *argv[]);
+static void LcdTestFunc(int argc, char *argv[]);
+static void LowPowerTestFunc(int argc, char *argv[]);
+static void Slip39SliceWordTestFunc(int argc, char *argv[]);
+static void Sqlite3TestFunc(int argc, char *argv[]);
+static void CrcTestFunc(int argc, char *argv[]);
+static void PresettingTestFunc(int argc, char *argv[]);
+static void UsbTestFunc(int argc, char *argv[]);
+static void DeviceSettingsTestFunc(int argc, char *argv[]);
+static void ScreenShotFunc(int argc, char *argv[]);
+static void BpkPrintFunc(int argc, char *argv[]);
+static void SdCardTestFunc(int argc, char *argv[]);
+
+#ifdef WEB3_VERSION
+static void RustTestDecodeKeystoneSignRequest(int argc, char *argv[]);
+static void RustTestSignPSBT(int argc, char *argv[]);
+static void RustTestSignBTCKeystone(int argc, char *argv[]);
+static void RustTestSignLTCKeystone(int argc, char *argv[]);
+static void RustTestSignDASHKeystone(int argc, char *argv[]);
+static void RustTestSignBCHKeystone(int argc, char *argv[]);
+static void RustTestDecodeUr(int argc, char *argv[]);
+static void RustGetConnectBlueWalletUR(int argc, char *argv[]);
+static void RustTestKeyDerivation(int argc, char *argv[]);
 static void RustGetMasterFingerprint(int argc, char *argv[]);
 static void RustTestParseCryptoPSBT(int argc, char *argv[]);
 static void RustTestParseBTCKeystone(int argc, char *argv[]);
@@ -123,19 +149,9 @@ static void RustTestParseDASHKeystone(int argc, char *argv[]);
 static void RustTestParseBCHKeystone(int argc, char *argv[]);
 static void RustTestEncodeCryptoPSBT(int argc, char *argv[]);
 static void RustTestDecodeCryptoPSBT(int argc, char *argv[]);
-static void RustTestDecodeKeystoneBTCSignResult(int argc, char *argv[]);
-static void RustTestDecodeKeystoneSignRequest(int argc, char *argv[]);
 static void RustTestDecodeMultiCryptoPSBT(int argc, char *argv[]);
-static void RustTestSignPSBT(int argc, char *argv[]);
-static void RustTestSignBTCKeystone(int argc, char *argv[]);
-static void RustTestSignLTCKeystone(int argc, char *argv[]);
-static void RustTestSignDASHKeystone(int argc, char *argv[]);
-static void RustTestSignBCHKeystone(int argc, char *argv[]);
-static void RustTestDecodeUr(int argc, char *argv[]);
-static void RustGetConnectBlueWalletUR(int argc, char *argv[]);
 static void RustGetConnectKeplrUR(int argc, char *argv[]);
 static void RustGetConnectXrpToolKitUR(int argc, char *argv[]);
-static void RustTestKeyDerivation(int argc, char *argv[]);
 static void RustTestMemory(int argc, char *argv[]);
 static void RustGetSyncCompanionAppUR(int argc, char *argv[]);
 static void RustGetConnectMetaMaskUR(int argc, char *argv[]);
@@ -183,16 +199,7 @@ static void RustTestParseBCHKeystone(int argc, char *argv[]);
 static void RustTestEncodeCryptoPSBT(int argc, char *argv[]);
 static void RustTestDecodeCryptoPSBT(int argc, char *argv[]);
 static void RustTestDecodeKeystoneBTCSignResult(int argc, char *argv[]);
-static void RustTestDecodeKeystoneSignRequest(int argc, char *argv[]);
 static void RustTestDecodeMultiCryptoPSBT(int argc, char *argv[]);
-static void RustTestSignPSBT(int argc, char *argv[]);
-static void RustTestSignBTCKeystone(int argc, char *argv[]);
-static void RustTestSignLTCKeystone(int argc, char *argv[]);
-static void RustTestSignDASHKeystone(int argc, char *argv[]);
-static void RustTestSignBCHKeystone(int argc, char *argv[]);
-static void RustTestDecodeUr(int argc, char *argv[]);
-static void RustGetConnectBlueWalletUR(int argc, char *argv[]);
-static void RustTestKeyDerivation(int argc, char *argv[]);
 static void RustTestMemory(int argc, char *argv[]);
 static void RustGetSyncCompanionAppUR(int argc, char *argv[]);
 static void RustTestGetAddressLTCSucceed(int argc, char *argv[]);
@@ -213,25 +220,6 @@ static void RustTestAptosParseTx(int argc, char *argv[]);
 static void RustADATest(int argc, char *argv[]);
 static void RustZECTest(int argc, char *argv[]);
 #endif
-static void LogTestFunc(int argc, char *argv[]);
-static void ETHDBContractsTest(int argc, char *argv[]);
-static void BackgroundTestFunc(int argc, char *argv[]);
-static void GetReceiveAddress(int argc, char *argv[]);
-static void AccountPublicInfoTestFunc(int argc, char *argv[]);
-static void FingerTestFunc(int argc, char *argv[]);
-static void MotorTestFunc(int argc, char *argv[]);
-static void LcdTestFunc(int argc, char *argv[]);
-static void LowPowerTestFunc(int argc, char *argv[]);
-static void Slip39SliceWordTestFunc(int argc, char *argv[]);
-static void Sqlite3TestFunc(int argc, char *argv[]);
-static void CrcTestFunc(int argc, char *argv[]);
-static void ProtocolCodeTestFunc(int argc, char *argv[]);
-static void PresettingTestFunc(int argc, char *argv[]);
-static void UsbTestFunc(int argc, char *argv[]);
-static void DeviceSettingsTestFunc(int argc, char *argv[]);
-static void ScreenShotFunc(int argc, char *argv[]);
-static void BpkPrintFunc(int argc, char *argv[]);
-static void SdCardTestFunc(int argc, char *argv[]);
 
 const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"test", TestFunc},
@@ -275,22 +263,26 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"hash and salt:", HashAndSaltFunc},
     {"sha512:", Sha512Func},
     {"key store test:", KeyStoreTestFunc},
-    {"gui debug:", GuiFrameDebugTestFunc},
-#ifndef EXCLUDE_RUSTC
-    {"rust get mfp:", RustGetMasterFingerprint},
-    {"rust test parse psbt", RustTestParseCryptoPSBT},
-    {"rust test parse bitcoin keystone", RustTestParseBTCKeystone},
-    {"rust test check bitcoin keystone failed", RustTestCheckFailedBTCKeystone},
-    {"rust test check bch succeed", RustTestCheckSucceedBCHKeystone},
-    {"rust test parse ltc", RustTestParseLTCKeystone},
-    {"rust test parse tron keystone", RustTestParseTronKeystone},
-    {"rust test check tron keystone succeed:", RustTestCheckTronKeystoneSucceed},
-    {"rust test check tron keystone failed", RustTestCheckTronKeystoneFailed},
-    {"rust test sign tron keystone:", RustTestSignTronKeystone},
-    {"rust test parse dash", RustTestParseDASHKeystone},
-    {"rust test parse bch", RustTestParseBCHKeystone},
-    {"rust test encode psbt", RustTestEncodeCryptoPSBT},
-    {"rust test decode psbt", RustTestDecodeCryptoPSBT},
+    {"log test:", LogTestFunc},
+    {"eth db contract test:", ETHDBContractsTest},
+    {"background test:", BackgroundTestFunc},
+    {"get receive address:", GetReceiveAddress},
+    {"account public info test:", AccountPublicInfoTestFunc},
+    {"finger test:", FingerTestFunc},
+    {"motor:", MotorTestFunc},
+    {"lcd:", LcdTestFunc},
+    {"low power:", LowPowerTestFunc},
+    {"slip39 test", Slip39SliceWordTestFunc},
+    {"sqlite test:", Sqlite3TestFunc},
+    {"crc:", CrcTestFunc},
+    {"presetting:", PresettingTestFunc},
+    {"usb test:", UsbTestFunc},
+    {"device settings test:", DeviceSettingsTestFunc},
+    {"screen shot", ScreenShotFunc},
+    {"bpk print:", BpkPrintFunc},
+    {"sd card test:", SdCardTestFunc},
+
+#ifdef WEB3_VERSION
     {"rust test decode keystone btc sign result", RustTestDecodeKeystoneBTCSignResult},
     {"rust test decode keystone sign request", RustTestDecodeKeystoneSignRequest},
     {"rust test decode multi psbt", RustTestDecodeMultiCryptoPSBT},
@@ -301,19 +293,10 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test sign bch:", RustTestSignBCHKeystone},
     {"rust test decode ur", RustTestDecodeUr},
     {"rust test get connect blue wallet ur", RustGetConnectBlueWalletUR},
+    {"rust get mfp:", RustGetMasterFingerprint},
     {"rust test get connect keplr wallet ur", RustGetConnectKeplrUR},
     {"rust test get connect xrp toolkit ur", RustGetConnectXrpToolKitUR},
-    {"rust test derivation:", RustTestKeyDerivation},
-    {"rust test memory", RustTestMemory},
-    {"rust test get connect companion app ur", RustGetSyncCompanionAppUR},
     {"rust test connect metamask", RustGetConnectMetaMaskUR},
-    {"rust test get ltc address succeed", RustTestGetAddressLTCSucceed},
-    {"rust test get tron address succeed", RustTestGetAddressTronSucceed},
-    {"rust test get solana address succeed:", RustTestGetAddressSolanaSucceed},
-    {"rust test get ltc address failed", RustTestGetAddressLTCFailed},
-    {"rust test eth tx:", testEthTx},
-    {"rust test solana tx:", testSolanaTx},
-    {"rust test solana check", testSolanaCheckTx},
     {"rust test solana parse:", testSolanaParseTx},
     {"rust test near parse:", testNearParseTx},
     {"rust test xrp parse:", testXrpParseTx},
@@ -351,15 +334,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test encode psbt", RustTestEncodeCryptoPSBT},
     {"rust test decode psbt", RustTestDecodeCryptoPSBT},
     {"rust test decode keystone btc sign result", RustTestDecodeKeystoneBTCSignResult},
-    {"rust test decode keystone sign request", RustTestDecodeKeystoneSignRequest},
     {"rust test decode multi psbt", RustTestDecodeMultiCryptoPSBT},
-    {"rust test sign psbt:", RustTestSignPSBT},
-    {"rust test sign btc keystone:", RustTestSignBTCKeystone},
-    {"rust test sign ltc:", RustTestSignLTCKeystone},
-    {"rust test sign dash:", RustTestSignDASHKeystone},
-    {"rust test sign bch:", RustTestSignBCHKeystone},
-    {"rust test decode ur", RustTestDecodeUr},
-    {"rust test get connect blue wallet ur", RustGetConnectBlueWalletUR},
     {"rust test derivation:", RustTestKeyDerivation},
     {"rust test memory", RustTestMemory},
     {"rust test get connect companion app ur", RustGetSyncCompanionAppUR},
@@ -380,27 +355,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test aptos parse tx:", RustTestAptosParseTx},
     {"rust ada test", RustADATest},
     {"rust zec test:", RustZECTest},
-
 #endif
-    {"log test:", LogTestFunc},
-    {"eth db contract test:", ETHDBContractsTest},
-    {"background test:", BackgroundTestFunc},
-    {"get receive address:", GetReceiveAddress},
-    {"account public info test:", AccountPublicInfoTestFunc},
-    {"finger test:", FingerTestFunc},
-    {"motor:", MotorTestFunc},
-    {"lcd:", LcdTestFunc},
-    {"low power:", LowPowerTestFunc},
-    {"slip39 test", Slip39SliceWordTestFunc},
-    {"sqlite test:", Sqlite3TestFunc},
-    {"crc:", CrcTestFunc},
-    {"protocol codec:", ProtocolCodeTestFunc},
-    {"presetting:", PresettingTestFunc},
-    {"usb test:", UsbTestFunc},
-    {"device settings test:", DeviceSettingsTestFunc},
-    {"screen shot", ScreenShotFunc},
-    {"bpk print:", BpkPrintFunc},
-    {"sd card test:", SdCardTestFunc},
 };
 
 bool CompareAndRunTestCmd(const char *inputString)
@@ -990,12 +945,318 @@ static void KeyStoreTestFunc(int argc, char *argv[])
     KeyStoreTest(argc, argv);
 }
 
-static void GuiFrameDebugTestFunc(int argc, char *argv[])
+static void LogTestFunc(int argc, char *argv[])
 {
-    GuiViewsTest(argc, argv);
+    LogTest(argc, argv);
 }
 
-#ifndef EXCLUDE_RUSTC
+static void ETHDBContractsTest(int argc, char* argv[])
+{
+    char functionABI[2000];
+    char name[64];
+    if (GetDBContract(argv[0], argv[1], 1, functionABI, name)) {
+        printf("functionABI: %s\r\n", functionABI);
+        printf("name: %s\r\n", name);
+    }
+}
+
+static int32_t __BackgroundTestFunc(const void *inData, uint32_t inDataLen)
+{
+    PrintArray("background execute data", inData, inDataLen);
+    return 0;
+}
+
+static void BackgroundTestFunc(int argc, char *argv[])
+{
+    uint32_t delay;
+    uint8_t data[] = {0x11, 0x22, 0x33};
+    VALUE_CHECK(argc, 1);
+    sscanf(argv[0], "%d", &delay);
+    AsyncDelayExecute(__BackgroundTestFunc, data, sizeof(data), delay);
+}
+
+static void GetReceiveAddress(int argc, char *argv[])
+{
+    char *xpub;
+    uint32_t chain;
+
+    VALUE_CHECK(argc, 2);
+    sscanf(argv[0], "%d", &chain);
+    xpub = GetCurrentAccountPublicKey(chain);
+    printf("xpub addr=0x%08X\r\n", xpub);
+    ASSERT(xpub);
+    printf("chain=%d\r\n", chain);
+    printf("xpub=%s\r\n", xpub);
+    printf("hd path=%s\r\n", argv[1]);
+    SimpleResponse_c_char *result = utxo_get_address(argv[1], xpub);
+    free_simple_response_c_char(result);
+    printf("address is %s\r\n", result->data);
+}
+static void AccountPublicInfoTestFunc(int argc, char *argv[])
+{
+    AccountPublicInfoTest(argc, argv);
+}
+
+static void FingerTestFunc(int argc, char *argv[])
+{
+    FingerTest(argc, argv);
+}
+
+static void MotorTestFunc(int argc, char *argv[])
+{
+    uint32_t pwm, tick;
+    VALUE_CHECK(argc, 2);
+    sscanf(argv[0], "%d", &pwm);
+    sscanf(argv[1], "%d", &tick);
+    MotorCtrl(pwm, tick);
+}
+
+static void LcdTestFunc(int argc, char *argv[])
+{
+    LcdTest(argc, argv);
+}
+
+static void LowPowerTestFunc(int argc, char *argv[])
+{
+    LowPowerTest(argc, argv);
+}
+
+static void Slip39SliceWordTestFunc(int argc, char *argv[])
+{
+    uint8_t threshold = 0;
+    int ret = Slip39OneSliceCheck("river flea academic academic civil duke kidney cinema insect engage explain unknown welfare rhythm branch elite vampire cover airline boring", 20,
+                                  20, 20, &threshold);
+    printf("ret = 0 threshold = %d\n", ret, threshold);
+
+    ret = Slip39OneSliceCheck("river flea academic academic civil duke kidney cinema insect engage explain unknown welfare rhythm branch elite vampire cover airline boring", 20,
+                              24459, 0, &threshold);
+    printf("ret = 0 threshold = %d\n", ret, threshold);
+}
+
+static void Sqlite3TestFunc(int argc, char *argv[])
+{
+    Sqlite3Test(argc, argv);
+}
+
+static void CrcTestFunc(int argc, char *argv[])
+{
+    uint8_t *hex;
+    uint32_t len, crc32;
+    uint16_t crc16;
+
+    VALUE_CHECK(argc, 1);
+    hex = SRAM_MALLOC(strnlen_s(argv[0], DEFAULT_TEST_BUFF_LEN) / 2 + 1);
+    len = StrToHex(hex, argv[0]);
+    PrintArray("hex", hex, len);
+    crc32 = crc32_ieee(0, hex, len);
+    crc16 = crc16_ccitt(hex, len);
+    printf("crc32=0x%08X,crc16=0x%04X\r\n", crc32, crc16);
+    SRAM_FREE(hex);
+}
+
+static void PresettingTestFunc(int argc, char *argv[])
+{
+    PresettingTest(argc, argv);
+}
+
+static void UsbTestFunc(int argc, char *argv[])
+{
+    UsbTest(argc, argv);
+}
+
+static void DeviceSettingsTestFunc(int argc, char *argv[])
+{
+    DeviceSettingsTest(argc, argv);
+}
+
+static void ScreenShotFunc(int argc, char *argv[])
+{
+    PubValueMsg(UI_MSG_SCREEN_SHOT, 0);
+}
+
+static void SdCardTestFunc(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 1);
+    if (strcmp(argv[0], "format") == 0) {
+        printf("format sd card\n");
+        FormatSdFatfs();
+    } else if (strcmp(argv[0], "info") == 0) {
+        printf("SdCardGetSectorSize=%d\n", SdCardGetSectorSize());
+        printf("SdCardGetSectorCount=%d\n", SdCardGetSectorCount());
+    }
+}
+
+#ifdef WEB3_VERSION
+static void RustTestDecodeKeystoneBTCSignResult(int argc, char *argv[])
+{
+    printf("RustTestDecodeKeystoneBTCSignResult\r\n");
+    URParseResult *ur = test_decode_btc_keystone_sign_result();
+    printf("decode ur\r\n");
+    printf("error_code is %d\r\n", ur->error_code);
+    printf("error_message is %s\r\n", ur->error_message);
+}
+
+static void RustTestDecodeKeystoneSignRequest(int argc, char *argv[])
+{
+    printf("RustTestDecodeKeystoneSignRequest\r\n");
+    URParseResult *ur = test_decode_keystone_sign_request();
+    printf("decode ur\r\n");
+    printf("error_code is %d\r\n", ur->error_code);
+    printf("view type is %d\r\n", ur->t);
+    printf("progress is %d\r\n", ur->progress);
+}
+
+static void RustTestDecodeMultiCryptoPSBT(int argc, char *argv[])
+{
+    printf("RustTestDecodeMultiCryptoPSBT\r\n");
+    URParseResult *ur = test_decode_crypto_psbt_1();
+    printf("decode ur\r\n");
+    printf("error_code is %d\r\n", ur->error_code);
+    printf("data is %d\r\n", ur->data);
+    printf("progress is %d\r\n", ur->progress);
+
+    URParseMultiResult *ur2 = test_decode_crypto_psbt_2(ur->decoder);
+
+    printf("decode ur2\r\n");
+    printf("error_code is %d\r\n", ur2->error_code);
+    printf("progress is %d\r\n", ur2->progress);
+    printf("data is %d\r\n", ur2->data);
+
+    URParseMultiResult *ur3 = test_decode_crypto_psbt_3(ur->decoder);
+
+    printf("decode ur3\r\n");
+    printf("error_code is %d\r\n", ur3->error_code);
+    printf("progress is %d\r\n", ur3->progress);
+    printf("data is %d\r\n", ur3->data);
+}
+
+static void RustTestSignBTCKeystone(int argc, char *argv[])
+{
+    printf("RustTestSignBTCKeystone\r\n");
+    int32_t index;
+    VALUE_CHECK(argc, 2);
+    sscanf(argv[0], "%d", &index);
+    URParseResult *ur = test_get_btc_keystone_bytes();
+    void *crypto_bytes = ur->data;
+    char *xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
+    uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
+    int32_t cold_version = SOFTWARE_VERSION;
+    printf("RustTestSignBTCKeystone crypto_bytes %p\r\n", crypto_bytes);
+    uint8_t seed[64];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    GetAccountSeed(index, seed, argv[1]);
+    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    printf("is multi part: %d\r\n", result->is_multi_part);
+    printf("data, %s\r\n", result->data);
+    free_ur_parse_result(ur);
+    free_ur_encode_result(result);
+    PrintRustMemoryStatus();
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
+static void RustTestSignLTCKeystone(int argc, char *argv[])
+{
+    printf("RustTestSignLTCKeystone\r\n");
+    int32_t index;
+    VALUE_CHECK(argc, 2);
+    sscanf(argv[0], "%d", &index);
+    URParseResult *ur = test_get_ltc_keystone_bytes();
+    void *crypto_bytes = ur->data;
+    char *xpub = "Mtub2rz9F1pkisRsSZX8sa4Ajon9GhPP6JymLgpuHqbYdU5JKFLBF7Qy8b1tZ3dccj2fefrAxfrPdVkpCxuWn3g72UctH2bvJRkp6iFmp8aLeRZ";
+    int32_t cold_version = SOFTWARE_VERSION;
+    uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
+    printf("RustTestSignLTCKeystone crypto_bytes %p\r\n", crypto_bytes);
+    uint8_t seed[64];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    GetAccountSeed(index, seed, argv[1]);
+    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    printf("is multi part: %d\r\n", result->is_multi_part);
+    printf("data, %s\r\n", result->data);
+    free_ur_parse_result(ur);
+    free_ur_encode_result(result);
+    PrintRustMemoryStatus();
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
+static void RustTestSignDASHKeystone(int argc, char *argv[])
+{
+    printf("RustTestSignDASHKeystone\r\n");
+    int32_t index;
+    VALUE_CHECK(argc, 2);
+    sscanf(argv[0], "%d", &index);
+    URParseResult *ur = test_get_dash_keystone_bytes();
+    void *crypto_bytes = ur->data;
+    char *xpub = "xpub6CYEjsU6zPM3sADS2ubu2aZeGxCm3C5KabkCpo4rkNbXGAH9M7rRUJ4E5CKiyUddmRzrSCopPzisTBrXkfCD4o577XKM9mzyZtP1Xdbizyk";
+    uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
+    int32_t cold_version = SOFTWARE_VERSION;
+    printf("RustTestSignDASHKeystone crypto_bytes %p\r\n", crypto_bytes);
+    uint8_t seed[64];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    GetAccountSeed(index, seed, argv[1]);
+    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    printf("is multi part: %d\r\n", result->is_multi_part);
+    printf("data, %s\r\n", result->data);
+    free_ur_parse_result(ur);
+    free_ur_encode_result(result);
+    PrintRustMemoryStatus();
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
+static void RustTestSignBCHKeystone(int argc, char *argv[])
+{
+    printf("RustTestSignBCHKeystone\r\n");
+    int32_t index;
+    VALUE_CHECK(argc, 2);
+    sscanf(argv[0], "%d", &index);
+    URParseResult *ur = test_get_bch_keystone_bytes();
+    void *crypto_bytes = ur->data;
+    char *xpub = "xpub6ByHsPNSQXTWZ7PLESMY2FufyYWtLXagSUpMQq7Un96SiThZH2iJB1X7pwviH1WtKVeDP6K8d6xxFzzoaFzF3s8BKCZx8oEDdDkNnp4owAZ";
+    uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
+    int32_t cold_version = SOFTWARE_VERSION;
+    printf("RustTestSignBCHKeystone crypto_bytes %p\r\n", crypto_bytes);
+    uint8_t seed[64];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    GetAccountSeed(index, seed, argv[1]);
+    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
+    printf("is multi part: %d\r\n", result->is_multi_part);
+    printf("data, %s\r\n", result->data);
+    free_ur_parse_result(ur);
+    free_ur_encode_result(result);
+    PrintRustMemoryStatus();
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
+static void RustTestDecodeUr(int argc, char *argv[])
+{
+    printf("RustTestDecodeUr\r\n");
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+    char *ur = SRAM_MALLOC(SIMPLERESPONSE_C_CHAR_MAX_LEN);
+    char *xpub = SRAM_MALLOC(BUFFER_SIZE_128);
+    char *nestedAddress = SRAM_MALLOC(BUFFER_SIZE_128);
+    char *nativeAddress = SRAM_MALLOC(BUFFER_SIZE_128);
+    strcpy_s(ur, SIMPLERESPONSE_C_CHAR_MAX_LEN, "UR:CRYPTO-PSBT/HDRKJOJKIDJYZMADAEGMAOAEAEAEADJNFPVALTEEISYAHTZMKOTSJONYMUQZJSLAWDATLRWEPKSTFDCPLGDWFLFXMTSGGOAEAEAEAEAEZCZMZMZMADNBBSAEAEAEAEAEAECMAEBBIYCNLFLKCTLTRNKSFPPTPASFENBTETPLBKLUJTTIAEAEAEAEAEADADCTISCHAEAEAEAEAEAECMAEBBTISSOTWSASWLMSRPWLNNESKBGYMYVLVECYBYLKOYCPAMAOVDPYDAEMRETYNNMSAXASPKVTJTNNGAWFJZVYSOZERKTYGLSPVTTTSFNBQZYTSRCFCSJKSKTNBKGHAEAELAADAEAELAAEAEAELAAEAEAEAEAEAEAEAEAEAEMNSFFGMW");
+    strcpy_s(xpub, BUFFER_SIZE_128, "xpub6BhcvYN2qwQKRviMKKBTfRcK1RmCTmM7JHsg67r3rwvymhUEt8gPHhnkugQaQ7UN8M5FfhEUfyVuSaK5fQzfUpvAcCxN4bAT9jyySbPGsTs");
+    strcpy_s(nestedAddress, BUFFER_SIZE_128, "xpub6CkG15Jdw866GKs84e7ysjxAhBQUJBdLZTVbQERCjwh2z6wZSSdjfmaXaMvf6Vm5sbWemK43d7HJMicz41G3vEHA9Sa5N2J9j9vgwyiHdMj");
+    strcpy_s(nativeAddress, BUFFER_SIZE_128, "xpub6Bm9M1SxZdzL3TxdNV8897FgtTLBgehR1wVNnMyJ5VLRK5n3tFqXxrCVnVQj4zooN4eFSkf6Sma84reWc5ZCXMxPbLXQs3BcaBdTd4YQa3B");
+    URParseResult *result = parse_ur(ur);
+    free_ur_parse_result(result);
+    SRAM_FREE(ur);
+    SRAM_FREE(xpub);
+    SRAM_FREE(nestedAddress);
+    SRAM_FREE(nativeAddress);
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
+static void RustGetConnectBlueWalletUR(int argc, char *argv[])
+{
+    printf("RustGetConnectBlueWalletUR\r\n");
+    UREncodeResult *ur = test_connect_blue_wallet();
+    printf("encode ur\r\n");
+    printf("is_multi_part is %d\r\n", ur->is_multi_part);
+    printf("data is %s\r\n", ur->data);
+    printf("error_code is %d\r\n", ur->error_code);
+    printf("error_message is %s\r\n", ur->error_message);
+}
 
 static void RustGetMasterFingerprint(int argc, char *argv[])
 {
@@ -1659,48 +1920,6 @@ static void RustTestDecodeCryptoPSBT(int argc, char *argv[])
     printf("progress is %d\r\n", ur->progress);
 }
 
-static void RustTestDecodeKeystoneBTCSignResult(int argc, char *argv[])
-{
-    printf("RustTestDecodeKeystoneBTCSignResult\r\n");
-    URParseResult *ur = test_decode_btc_keystone_sign_result();
-    printf("decode ur\r\n");
-    printf("error_code is %d\r\n", ur->error_code);
-    printf("error_message is %s\r\n", ur->error_message);
-}
-
-static void RustTestDecodeKeystoneSignRequest(int argc, char *argv[])
-{
-    printf("RustTestDecodeKeystoneSignRequest\r\n");
-    URParseResult *ur = test_decode_keystone_sign_request();
-    printf("decode ur\r\n");
-    printf("error_code is %d\r\n", ur->error_code);
-    printf("view type is %d\r\n", ur->t);
-    printf("progress is %d\r\n", ur->progress);
-}
-
-static void RustTestDecodeMultiCryptoPSBT(int argc, char *argv[])
-{
-    printf("RustTestDecodeMultiCryptoPSBT\r\n");
-    URParseResult *ur = test_decode_crypto_psbt_1();
-    printf("decode ur\r\n");
-    printf("error_code is %d\r\n", ur->error_code);
-    printf("data is %d\r\n", ur->data);
-    printf("progress is %d\r\n", ur->progress);
-
-    URParseMultiResult *ur2 = test_decode_crypto_psbt_2(ur->decoder);
-
-    printf("decode ur2\r\n");
-    printf("error_code is %d\r\n", ur2->error_code);
-    printf("progress is %d\r\n", ur2->progress);
-    printf("data is %d\r\n", ur2->data);
-
-    URParseMultiResult *ur3 = test_decode_crypto_psbt_3(ur->decoder);
-
-    printf("decode ur3\r\n");
-    printf("error_code is %d\r\n", ur3->error_code);
-    printf("progress is %d\r\n", ur3->progress);
-    printf("data is %d\r\n", ur3->data);
-}
 
 static void RustTestSignPSBT(int argc, char *argv[])
 {
@@ -1788,133 +2007,6 @@ static void RustTestGetAddressLTCFailed(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustTestSignBTCKeystone(int argc, char *argv[])
-{
-    printf("RustTestSignBTCKeystone\r\n");
-    int32_t index;
-    VALUE_CHECK(argc, 2);
-    sscanf(argv[0], "%d", &index);
-    URParseResult *ur = test_get_btc_keystone_bytes();
-    void *crypto_bytes = ur->data;
-    char *xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
-    uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    int32_t cold_version = SOFTWARE_VERSION;
-    printf("RustTestSignBTCKeystone crypto_bytes %p\r\n", crypto_bytes);
-    uint8_t seed[64];
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
-    printf("is multi part: %d\r\n", result->is_multi_part);
-    printf("data, %s\r\n", result->data);
-    free_ur_parse_result(ur);
-    free_ur_encode_result(result);
-    PrintRustMemoryStatus();
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
-static void RustTestSignLTCKeystone(int argc, char *argv[])
-{
-    printf("RustTestSignLTCKeystone\r\n");
-    int32_t index;
-    VALUE_CHECK(argc, 2);
-    sscanf(argv[0], "%d", &index);
-    URParseResult *ur = test_get_ltc_keystone_bytes();
-    void *crypto_bytes = ur->data;
-    char *xpub = "Mtub2rz9F1pkisRsSZX8sa4Ajon9GhPP6JymLgpuHqbYdU5JKFLBF7Qy8b1tZ3dccj2fefrAxfrPdVkpCxuWn3g72UctH2bvJRkp6iFmp8aLeRZ";
-    int32_t cold_version = SOFTWARE_VERSION;
-    uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    printf("RustTestSignLTCKeystone crypto_bytes %p\r\n", crypto_bytes);
-    uint8_t seed[64];
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
-    printf("is multi part: %d\r\n", result->is_multi_part);
-    printf("data, %s\r\n", result->data);
-    free_ur_parse_result(ur);
-    free_ur_encode_result(result);
-    PrintRustMemoryStatus();
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
-static void RustTestSignDASHKeystone(int argc, char *argv[])
-{
-    printf("RustTestSignDASHKeystone\r\n");
-    int32_t index;
-    VALUE_CHECK(argc, 2);
-    sscanf(argv[0], "%d", &index);
-    URParseResult *ur = test_get_dash_keystone_bytes();
-    void *crypto_bytes = ur->data;
-    char *xpub = "xpub6CYEjsU6zPM3sADS2ubu2aZeGxCm3C5KabkCpo4rkNbXGAH9M7rRUJ4E5CKiyUddmRzrSCopPzisTBrXkfCD4o577XKM9mzyZtP1Xdbizyk";
-    uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    int32_t cold_version = SOFTWARE_VERSION;
-    printf("RustTestSignDASHKeystone crypto_bytes %p\r\n", crypto_bytes);
-    uint8_t seed[64];
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
-    printf("is multi part: %d\r\n", result->is_multi_part);
-    printf("data, %s\r\n", result->data);
-    free_ur_parse_result(ur);
-    free_ur_encode_result(result);
-    PrintRustMemoryStatus();
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
-static void RustTestSignBCHKeystone(int argc, char *argv[])
-{
-    printf("RustTestSignBCHKeystone\r\n");
-    int32_t index;
-    VALUE_CHECK(argc, 2);
-    sscanf(argv[0], "%d", &index);
-    URParseResult *ur = test_get_bch_keystone_bytes();
-    void *crypto_bytes = ur->data;
-    char *xpub = "xpub6ByHsPNSQXTWZ7PLESMY2FufyYWtLXagSUpMQq7Un96SiThZH2iJB1X7pwviH1WtKVeDP6K8d6xxFzzoaFzF3s8BKCZx8oEDdDkNnp4owAZ";
-    uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    int32_t cold_version = SOFTWARE_VERSION;
-    printf("RustTestSignBCHKeystone crypto_bytes %p\r\n", crypto_bytes);
-    uint8_t seed[64];
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *result = utxo_sign_keystone(crypto_bytes, Bytes, mfp, sizeof(mfp), xpub, cold_version, seed, len);
-    printf("is multi part: %d\r\n", result->is_multi_part);
-    printf("data, %s\r\n", result->data);
-    free_ur_parse_result(ur);
-    free_ur_encode_result(result);
-    PrintRustMemoryStatus();
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
-static void RustTestDecodeUr(int argc, char *argv[])
-{
-    printf("RustTestDecodeUr\r\n");
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-    char *ur = SRAM_MALLOC(SIMPLERESPONSE_C_CHAR_MAX_LEN);
-    char *xpub = SRAM_MALLOC(BUFFER_SIZE_128);
-    char *nestedAddress = SRAM_MALLOC(BUFFER_SIZE_128);
-    char *nativeAddress = SRAM_MALLOC(BUFFER_SIZE_128);
-    strcpy_s(ur, SIMPLERESPONSE_C_CHAR_MAX_LEN, "UR:CRYPTO-PSBT/HDRKJOJKIDJYZMADAEGMAOAEAEAEADJNFPVALTEEISYAHTZMKOTSJONYMUQZJSLAWDATLRWEPKSTFDCPLGDWFLFXMTSGGOAEAEAEAEAEZCZMZMZMADNBBSAEAEAEAEAEAECMAEBBIYCNLFLKCTLTRNKSFPPTPASFENBTETPLBKLUJTTIAEAEAEAEAEADADCTISCHAEAEAEAEAEAECMAEBBTISSOTWSASWLMSRPWLNNESKBGYMYVLVECYBYLKOYCPAMAOVDPYDAEMRETYNNMSAXASPKVTJTNNGAWFJZVYSOZERKTYGLSPVTTTSFNBQZYTSRCFCSJKSKTNBKGHAEAELAADAEAELAAEAEAELAAEAEAEAEAEAEAEAEAEAEMNSFFGMW");
-    strcpy_s(xpub, BUFFER_SIZE_128, "xpub6BhcvYN2qwQKRviMKKBTfRcK1RmCTmM7JHsg67r3rwvymhUEt8gPHhnkugQaQ7UN8M5FfhEUfyVuSaK5fQzfUpvAcCxN4bAT9jyySbPGsTs");
-    strcpy_s(nestedAddress, BUFFER_SIZE_128, "xpub6CkG15Jdw866GKs84e7ysjxAhBQUJBdLZTVbQERCjwh2z6wZSSdjfmaXaMvf6Vm5sbWemK43d7HJMicz41G3vEHA9Sa5N2J9j9vgwyiHdMj");
-    strcpy_s(nativeAddress, BUFFER_SIZE_128, "xpub6Bm9M1SxZdzL3TxdNV8897FgtTLBgehR1wVNnMyJ5VLRK5n3tFqXxrCVnVQj4zooN4eFSkf6Sma84reWc5ZCXMxPbLXQs3BcaBdTd4YQa3B");
-    URParseResult *result = parse_ur(ur);
-    free_ur_parse_result(result);
-    SRAM_FREE(ur);
-    SRAM_FREE(xpub);
-    SRAM_FREE(nestedAddress);
-    SRAM_FREE(nativeAddress);
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
-static void RustGetConnectBlueWalletUR(int argc, char *argv[])
-{
-    printf("RustGetConnectBlueWalletUR\r\n");
-    UREncodeResult *ur = test_connect_blue_wallet();
-    printf("encode ur\r\n");
-    printf("is_multi_part is %d\r\n", ur->is_multi_part);
-    printf("data is %s\r\n", ur->data);
-    printf("error_code is %d\r\n", ur->error_code);
-    printf("error_message is %s\r\n", ur->error_message);
-}
 
 static void RustGetConnectKeplrUR(int argc, char *argv[])
 {
@@ -2727,152 +2819,4 @@ static void RustTestCosmosCheckTx(int argc, char *argv[])
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
-
 #endif
-
-static void LogTestFunc(int argc, char *argv[])
-{
-    LogTest(argc, argv);
-}
-
-static void ETHDBContractsTest(int argc, char* argv[])
-{
-    char functionABI[2000];
-    char name[64];
-    if (GetDBContract(argv[0], argv[1], 1, functionABI, name)) {
-        printf("functionABI: %s\r\n", functionABI);
-        printf("name: %s\r\n", name);
-    }
-}
-
-static int32_t __BackgroundTestFunc(const void *inData, uint32_t inDataLen)
-{
-    PrintArray("background execute data", inData, inDataLen);
-    return 0;
-}
-
-static void BackgroundTestFunc(int argc, char *argv[])
-{
-    uint32_t delay;
-    uint8_t data[] = {0x11, 0x22, 0x33};
-    VALUE_CHECK(argc, 1);
-    sscanf(argv[0], "%d", &delay);
-    AsyncDelayExecute(__BackgroundTestFunc, data, sizeof(data), delay);
-}
-
-static void GetReceiveAddress(int argc, char *argv[])
-{
-    char *xpub;
-    uint32_t chain;
-
-    VALUE_CHECK(argc, 2);
-    sscanf(argv[0], "%d", &chain);
-    xpub = GetCurrentAccountPublicKey(chain);
-    printf("xpub addr=0x%08X\r\n", xpub);
-    ASSERT(xpub);
-    printf("chain=%d\r\n", chain);
-    printf("xpub=%s\r\n", xpub);
-    printf("hd path=%s\r\n", argv[1]);
-    SimpleResponse_c_char *result = utxo_get_address(argv[1], xpub);
-    free_simple_response_c_char(result);
-    printf("address is %s\r\n", result->data);
-}
-
-static void AccountPublicInfoTestFunc(int argc, char *argv[])
-{
-    AccountPublicInfoTest(argc, argv);
-}
-
-static void FingerTestFunc(int argc, char *argv[])
-{
-    FingerTest(argc, argv);
-}
-
-static void MotorTestFunc(int argc, char *argv[])
-{
-    uint32_t pwm, tick;
-    VALUE_CHECK(argc, 2);
-    sscanf(argv[0], "%d", &pwm);
-    sscanf(argv[1], "%d", &tick);
-    MotorCtrl(pwm, tick);
-}
-
-static void LcdTestFunc(int argc, char *argv[])
-{
-    LcdTest(argc, argv);
-}
-
-static void LowPowerTestFunc(int argc, char *argv[])
-{
-    LowPowerTest(argc, argv);
-}
-
-static void Slip39SliceWordTestFunc(int argc, char *argv[])
-{
-    uint8_t threshold = 0;
-    int ret = Slip39OneSliceCheck("river flea academic academic civil duke kidney cinema insect engage explain unknown welfare rhythm branch elite vampire cover airline boring", 20,
-                                  20, 20, &threshold);
-    printf("ret = 0 threshold = %d\n", ret, threshold);
-
-    ret = Slip39OneSliceCheck("river flea academic academic civil duke kidney cinema insect engage explain unknown welfare rhythm branch elite vampire cover airline boring", 20,
-                              24459, 0, &threshold);
-    printf("ret = 0 threshold = %d\n", ret, threshold);
-}
-
-static void Sqlite3TestFunc(int argc, char *argv[])
-{
-    Sqlite3Test(argc, argv);
-}
-
-static void CrcTestFunc(int argc, char *argv[])
-{
-    uint8_t *hex;
-    uint32_t len, crc32;
-    uint16_t crc16;
-
-    VALUE_CHECK(argc, 1);
-    hex = SRAM_MALLOC(strnlen_s(argv[0], DEFAULT_TEST_BUFF_LEN) / 2 + 1);
-    len = StrToHex(hex, argv[0]);
-    PrintArray("hex", hex, len);
-    crc32 = crc32_ieee(0, hex, len);
-    crc16 = crc16_ccitt(hex, len);
-    printf("crc32=0x%08X,crc16=0x%04X\r\n", crc32, crc16);
-    SRAM_FREE(hex);
-}
-
-static void ProtocolCodeTestFunc(int argc, char *argv[])
-{
-    ProtocolCodecTest(argc, argv);
-}
-
-static void PresettingTestFunc(int argc, char *argv[])
-{
-    PresettingTest(argc, argv);
-}
-
-static void UsbTestFunc(int argc, char *argv[])
-{
-    UsbTest(argc, argv);
-}
-
-static void DeviceSettingsTestFunc(int argc, char *argv[])
-{
-    DeviceSettingsTest(argc, argv);
-}
-
-static void ScreenShotFunc(int argc, char *argv[])
-{
-    PubValueMsg(UI_MSG_SCREEN_SHOT, 0);
-}
-
-static void SdCardTestFunc(int argc, char *argv[])
-{
-    VALUE_CHECK(argc, 1);
-    if (strcmp(argv[0], "format") == 0) {
-        printf("format sd card\n");
-        FormatSdFatfs();
-    } else if (strcmp(argv[0], "info") == 0) {
-        printf("SdCardGetSectorSize=%d\n", SdCardGetSectorSize());
-        printf("SdCardGetSectorCount=%d\n", SdCardGetSectorCount());
-    }
-}

@@ -31,7 +31,7 @@ int32_t GuiConnectWalletViewEventProcess(void* self, uint16_t usEvent, void* par
     case SIG_BACKGROUND_UR_UPDATE:
         GuiConnectWalletHandleURUpdate((char*)param, usLen);
         break;
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     case SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM:
         GuiConnectShowRsaSetupasswordHintbox();
         break;

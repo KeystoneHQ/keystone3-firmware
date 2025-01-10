@@ -66,7 +66,7 @@ mod tests {
         let address_error = StellarError::AddressError(
             "hex decode error Invalid character 'g' at position 63".to_string(),
         );
-        let error: StellarError = address_error.into();
+        let error: StellarError = address_error;
         let xpub = "5f5a723f0f3ef785387b016a8b61eb2713b02f429edadfacd96082d7da02959g";
         let address_from_xpub = get_address(&xpub.to_string());
         assert_eq!(

@@ -7,6 +7,7 @@
 #include "gui_resolve_ur.h"
 #include "gui_views.h"
 #include "general_msg.h"
+#include "gui_home_widgets.h"
 #include "gui_key_derivation_request_widgets.h"
 
 /* DEFINES */
@@ -16,8 +17,6 @@
 
 /* FUNC DECLARATION*/
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
-static bool CheckURAcceptable(void);
-static void GotoFailPage(StatusEnum error_code, const char *error_message);
 bool GuiIsSetup(void);
 
 /* STATIC VARIABLES */
@@ -29,7 +28,7 @@ static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t reque
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "payload", (char *)data);
-    char *json_str = cJSON_Print(root);
+    char *json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024 * 4, false);
     cJSON_Delete(root);
     payload->data = (uint8_t *)json_str;
     payload->dataLen = strlen((char *)payload->data);
@@ -44,6 +43,38 @@ static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t reque
     g_requestID = REQUEST_ID_IDLE;
     SRAM_FREE(payload);
 };
+
+void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
+{
+    StatusEnum sendStatus = status;
+    if (status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
+        sendStatus = RSP_SUCCESS_CODE;
+    }
+
+    BasicHandlerFunc(data, data_len, requestID, sendStatus);
+    EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
+    resultPage->command = CMD_RESOLVE_UR;
+    resultPage->error_code = status;
+    resultPage->error_message = (char *)data;
+    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR || status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
+        return;
+    }
+    GotoResultPage(resultPage);
+    SRAM_FREE(resultPage);
+};
+
+uint16_t GetCurrentUSParsingRequestID()
+{
+    return g_requestID;
+};
+
+void ClearUSBRequestId(void)
+{
+    g_requestID = REQUEST_ID_IDLE;
+}
+
+static void GotoFailPage(StatusEnum error_code, const char *error_message);
+static bool CheckURAcceptable(void);
 
 static bool CheckURAcceptable(void)
 {
@@ -75,35 +106,6 @@ static void GotoFailPage(StatusEnum error_code, const char *error_message)
     GotoResultPage(resultPage);
     HandleURResultViaUSBFunc(error_message, strlen(error_message), g_requestID, error_code);
     SRAM_FREE(resultPage);
-}
-
-void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
-{
-    StatusEnum sendStatus = status;
-    if (status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
-        sendStatus = RSP_SUCCESS_CODE;
-    }
-
-    BasicHandlerFunc(data, data_len, requestID, sendStatus);
-    EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
-    resultPage->command = CMD_RESOLVE_UR;
-    resultPage->error_code = status;
-    resultPage->error_message = (char *)data;
-    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR || status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
-        return;
-    }
-    GotoResultPage(resultPage);
-    SRAM_FREE(resultPage);
-};
-
-uint16_t GetCurrentUSParsingRequestID()
-{
-    return g_requestID;
-};
-
-void ClearUSBRequestId(void)
-{
-    g_requestID = REQUEST_ID_IDLE;
 }
 
 static bool IsRequestAllowed(uint32_t requestID)
@@ -191,7 +193,8 @@ void ProcessURService(EAPDURequestPayload_t *payload)
         if (urResult->ur_type == QRHardwareCall) {
             HandleHardwareCall(urResult);
             break;
-        } else if (!HandleNormalCall()) {
+        }
+        if (!HandleNormalCall()) {
             break;
         }
 

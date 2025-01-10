@@ -7,20 +7,28 @@
 #include "gui_resolve_ur.h"
 #include "user_delay.h"
 #include "gui_api.h"
+#include "gui_views.h"
 
-#ifndef BTC_ONLY
-#include "gui_key_derivation_request_widgets.h"
-#else
+#ifdef BTC_ONLY
 #include "gui_import_multisig_wallet_info_widgets.h"
 #include "gui_create_multisig_wallet_widgets.h"
 #endif
-#include <gui_views.h>
+
+#ifdef WEB3_VERSION
+#include "gui_key_derivation_request_widgets.h"
+#endif
 
 // The order of the enumeration must be guaranteed
 static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_BTC, (SetChainDataFunc)GuiSetPsbtUrData},
     {REMAPVIEW_BTC_MESSAGE, (SetChainDataFunc)GuiSetPsbtUrData},
-#ifndef BTC_ONLY
+#ifdef CYPHERPUNK_VERSION
+    {REMAPVIEW_ZCASH, (SetChainDataFunc)GuiSetZcashUrData},
+    {REMAPVIEW_XMR_OUTPUT, (SetChainDataFunc)GuiSetMoneroUrData},
+    {REMAPVIEW_XMR_UNSIGNED, (SetChainDataFunc)GuiSetMoneroUrData},
+#endif
+
+#ifdef WEB3_VERSION
     {REMAPVIEW_ETH, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_PERSONAL_MESSAGE, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_TYPEDDATA, (SetChainDataFunc)GuiSetEthUrData},
@@ -43,15 +51,18 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_STELLAR_HASH, (SetChainDataFunc)GuiSetStellarUrData},
     {REMAPVIEW_TON, (SetChainDataFunc)GuiSetTonUrData},
     {REMAPVIEW_TON_SIGNPROOF, (SetChainDataFunc)GuiSetTonUrData},
-    {REMAPVIEW_ZCASH, (SetChainDataFunc)GuiSetZcashUrData},
 #endif
 };
 
 void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
 {
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    if (viewType != REMAPVIEW_BUTT) {
-        g_chainViewArray[viewType].func(urResult, urMultiResult, is_multi);
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainViewArray); i++) {
+        if (g_chainViewArray[i].chain == viewType) {
+            printf("g_chainViewArray[i].type=%d\r\n", g_chainViewArray[i].chain);
+            g_chainViewArray[viewType].func(urResult, urMultiResult, is_multi);
+            break;
+        }
     }
 }
 
@@ -62,11 +73,12 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
     case WebAuthResult:
         GuiSetWebAuthResultData(urResult, urMultiResult, is_multi);
         break;
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     case KeyDerivationRequest:
         GuiSetKeyDerivationRequestData(urResult, urMultiResult, is_multi);
         break;
-#else
+#endif
+#ifdef BTC_ONLY
     case MultisigWalletImport:
         GuiSetMultisigImportWalletDataByQRCode(urResult, urMultiResult, is_multi);
         break;
@@ -81,9 +93,10 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
     }
 
     if (urViewType.viewType == WebAuthResult
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
             || urViewType.viewType == KeyDerivationRequest
-#else
+#endif
+#ifdef BTC_ONLY
             || urViewType.viewType == MultisigWalletImport
             || urViewType.viewType == MultisigBytesImportXpub
             || urViewType.viewType == MultisigCryptoImportXpub
@@ -96,5 +109,10 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
         GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
     } else {
         printf("unhandled viewType=%d\r\n", urViewType.viewType);
+        if (urViewType.viewType == KeyDerivationRequest) {
+            StopQrDecode();
+            UserDelay(500);
+            GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_FAIL, &urViewType, sizeof(urViewType));
+        }
     }
 }

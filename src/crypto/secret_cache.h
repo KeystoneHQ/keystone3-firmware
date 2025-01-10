@@ -45,7 +45,7 @@ uint8_t *SecretCacheGetDiceRollHash();
 void SecretCacheSetWalletIndex(uint8_t iconIndex);
 uint8_t SecretCacheGetWalletIconIndex();
 
-void SecretCacheSetWalletName(char* walletName);
+void SecretCacheSetWalletName(const char* walletName);
 char *SecretCacheGetWalletName();
 
 void ClearSecretCache(void);

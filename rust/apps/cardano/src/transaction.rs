@@ -6,7 +6,7 @@ use alloc::vec::Vec;
 use cardano_serialization_lib;
 use cardano_serialization_lib::protocol_types::{Ed25519Signature, PublicKey, Vkey, Vkeywitness};
 use cryptoxide::hashing::blake2b_256;
-use ed25519_bip32_core::{XPrv, XPub};
+use ed25519_bip32_core::XPrv;
 use hex;
 use ur_registry::crypto_key_path::CryptoKeyPath;
 
@@ -184,13 +184,11 @@ pub fn sign_tx(tx: Vec<u8>, context: ParseContext, icarus_master_key: XPrv) -> R
 #[cfg(test)]
 mod test {
     use super::*;
-    use cardano_serialization_lib::Transaction;
 
     extern crate std;
 
-    use crate::transaction::parse_tx;
     use std::println;
-    use ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
+
     use {cryptoxide::hashing::blake2b_256, hex};
 
     #[test]
@@ -214,7 +212,7 @@ mod test {
         let tx = cardano_serialization_lib::protocol_types::FixedTransaction::from_bytes(tx_bytes)
             .unwrap();
         let body = tx.raw_body();
-        let hash = blake2b_256(&body);
+        let _hash = blake2b_256(&body);
     }
 
     #[test]

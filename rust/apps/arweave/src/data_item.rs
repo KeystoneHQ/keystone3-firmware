@@ -26,7 +26,7 @@ impl Tags {
             let value = avro_decode_string(&mut avro_bytes)?;
             tags.push(Tag { name, value })
         }
-        return Ok(Tags { len, data: tags });
+        Ok(Tags { len, data: tags })
     }
 }
 
@@ -43,7 +43,7 @@ fn avro_decode_long(reader: &mut Vec<u8>) -> Result<i64> {
     loop {
         if j > 9 {
             // if j * 7 > 64
-            return Err(ArweaveError::AvroError(format!("Integer overflow")));
+            return Err(ArweaveError::AvroError("Integer overflow".to_string()));
         }
         let head = reader.remove(0);
         buf[0] = head;
@@ -64,10 +64,7 @@ fn avro_decode_long(reader: &mut Vec<u8>) -> Result<i64> {
 fn avro_decode_string(reader: &mut Vec<u8>) -> Result<String> {
     let len = avro_decode_long(reader)?;
     let buf = reader.drain(..len as usize).collect();
-    Ok(
-        String::from_utf8(buf)
-            .map_err(|e| ArweaveError::AvroError(format!("{}", e.to_string())))?,
-    )
+    String::from_utf8(buf).map_err(|e| ArweaveError::AvroError(format!("{}", e)))
 }
 
 impl_public_struct!(DataItem {
@@ -87,6 +84,7 @@ impl_public_struct!(DataItem {
     raw_data: Vec<u8>
 });
 
+#[allow(unused)]
 enum SignatureType {
     ARWEAVE = 1,
     ED25519,
@@ -102,7 +100,7 @@ impl DataItem {
         let mut reader = binary.to_vec();
         let signature_type =
             u16::from_le_bytes(reader.drain(..2).collect::<Vec<u8>>().try_into().map_err(
-                |_| ArweaveError::ParseTxError(format!("Invalid DataItem signature_type")),
+                |_| ArweaveError::ParseTxError("Invalid DataItem signature_type".to_string()),
             )?);
 
         if signature_type != SignatureType::ARWEAVE as u16 {
@@ -132,12 +130,12 @@ impl DataItem {
 
         let tags_number =
             u64::from_le_bytes(reader.drain(..8).collect::<Vec<u8>>().try_into().map_err(
-                |_| ArweaveError::ParseTxError(format!("Invalid DataItem tags_number")),
+                |_| ArweaveError::ParseTxError("Invalid DataItem tags_number".to_string()),
             )?);
 
         let tags_bytes_number =
             u64::from_le_bytes(reader.drain(..8).collect::<Vec<u8>>().try_into().map_err(
-                |_| ArweaveError::ParseTxError(format!("Invalid DataItem tags_number")),
+                |_| ArweaveError::ParseTxError("Invalid DataItem tags_number".to_string()),
             )?);
 
         let raw_tags: Vec<u8> = reader.drain(..tags_bytes_number as usize).collect();
@@ -201,8 +199,8 @@ mod tests {
         );
         assert_eq!(result.anchor, None);
         assert_eq!(result.tags.len, 8);
-        assert_eq!(result.tags.data.get(0).unwrap().name, "Action");
-        assert_eq!(result.tags.data.get(0).unwrap().value, "Transfer");
+        assert_eq!(result.tags.data.first().unwrap().name, "Action");
+        assert_eq!(result.tags.data.first().unwrap().value, "Transfer");
         assert_eq!(result.tags.data.get(7).unwrap().name, "Content-Type");
         assert_eq!(result.tags.data.get(7).unwrap().value, "text/plain");
     }

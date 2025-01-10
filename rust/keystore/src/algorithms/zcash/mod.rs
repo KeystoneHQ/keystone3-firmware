@@ -1,9 +1,6 @@
 use core::str::FromStr;
 
-use alloc::{
-    string::{String, ToString},
-    vec::Vec,
-};
+use alloc::string::{String, ToString};
 use bitcoin::bip32::{ChildNumber, DerivationPath};
 use hex;
 use rand_chacha::rand_core::SeedableRng;
@@ -12,11 +9,11 @@ use rand_core::{CryptoRng, RngCore};
 use zcash_vendor::{
     orchard::{
         self,
-        keys::{SpendAuthorizingKey, SpendValidatingKey, SpendingKey},
+        keys::{SpendAuthorizingKey, SpendingKey},
     },
     pasta_curves::{group::ff::PrimeField, Fq},
     zcash_keys::keys::UnifiedSpendingKey,
-    zcash_protocol::consensus::{self, MAIN_NETWORK},
+    zcash_protocol::consensus::{self},
     zip32::{self, fingerprint::SeedFingerprint, AccountId},
 };
 

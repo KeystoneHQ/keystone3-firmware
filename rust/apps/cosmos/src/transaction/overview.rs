@@ -55,7 +55,7 @@ impl TryFrom<MsgDelegate> for OverviewDelegate {
     fn try_from(data: MsgDelegate) -> Result<Self> {
         let value = data
             .amount
-            .and_then(|coin| Some(format_amount(vec![coin])))
+            .map(|coin| format_amount(vec![coin]))
             .unwrap_or("".to_string());
         Ok(Self {
             method: "Delegate".to_string(),
@@ -84,7 +84,7 @@ impl TryFrom<MsgUndelegate> for OverviewUndelegate {
     fn try_from(data: MsgUndelegate) -> Result<Self> {
         let value = data
             .amount
-            .and_then(|coin| Some(format_amount(vec![coin])))
+            .map(|coin| format_amount(vec![coin]))
             .unwrap_or("".to_string());
         Ok(Self {
             method: "Undelegate".to_string(),
@@ -113,7 +113,7 @@ impl TryFrom<MsgBeginRedelegate> for OverviewRedelegate {
     fn try_from(data: MsgBeginRedelegate) -> Result<Self> {
         let value = data
             .amount
-            .and_then(|coin| Some(format_amount(vec![coin])))
+            .map(|coin| format_amount(vec![coin]))
             .unwrap_or("".to_string());
         Ok(Self {
             method: "Re-delegate".to_string(),
@@ -164,10 +164,7 @@ impl TryFrom<MsgTransfer> for OverviewTransfer {
     type Error = CosmosError;
 
     fn try_from(msg: MsgTransfer) -> Result<Self> {
-        let value = msg
-            .token
-            .and_then(|v| format_coin(v))
-            .unwrap_or("".to_string());
+        let value = msg.token.and_then(format_coin).unwrap_or("".to_string());
         Ok(Self {
             method: "IBC Transfer".to_string(),
             value,

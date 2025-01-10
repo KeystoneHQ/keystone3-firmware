@@ -32,7 +32,7 @@ pub fn generate_crypto_account(
         )?);
     }
 
-    Ok(CryptoAccount::new(master_fingerprint.clone(), outputs))
+    Ok(CryptoAccount::new(*master_fingerprint, outputs))
 }
 
 fn get_path_level_number(path: &str, index: usize) -> Option<u32> {
@@ -105,7 +105,7 @@ fn generate_crypto_hd_key(
             get_path_component(Some(coin_type), true)?,
             get_path_component(Some(0), true)?,
         ],
-        Some(master_fingerprint.clone()),
+        Some(*master_fingerprint),
         Some(bip32_extended_pub_key.depth as u32),
     );
 
@@ -133,7 +133,7 @@ fn generate_crypto_hd_key(
 }
 
 fn get_path_component(index: Option<u32>, hardened: bool) -> URResult<PathComponent> {
-    PathComponent::new(index, hardened).map_err(|e| URError::CborEncodeError(e))
+    PathComponent::new(index, hardened).map_err(URError::CborEncodeError)
 }
 
 #[cfg(test)]

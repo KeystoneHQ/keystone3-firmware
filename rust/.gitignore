@@ -2,3 +2,4 @@
 /**/target
 signer/build
 .idea/
+rust_c/bindings/

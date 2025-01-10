@@ -358,10 +358,14 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
         if (strnlen_s(passphrase, PASSPHRASE_MAX_LEN) > 0) {
             strcpy_s(g_passphraseInfo[accountIndex].passphrase, PASSPHRASE_MAX_LEN, passphrase);
             g_passphraseInfo[accountIndex].passphraseExist = true;
+            ret = TempAccountPublicInfo(accountIndex, password, true);
         } else {
             ClearAccountPassphrase(accountIndex);
+            ret = AccountPublicInfoSwitch(accountIndex, password, false);
+#ifdef CYPHERPUNK_VERSION
+            CalculateZcashUFVK(accountIndex, password);
+#endif
         }
-        ret = TempAccountPublicInfo(accountIndex, password, true);
         SetPassphraseMark(passphrase[0] != '\0');
     } while (0);
     CLEAR_ARRAY(seed);
@@ -676,7 +680,7 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
     return ret;
 }
 
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
 /// @brief Save a new ton mnemonic.
 /// @param[in] accountIndex Account index, 0~2.
 /// @param[in] entropy Entropy to be saved.
@@ -687,7 +691,6 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
 {
     int32_t ret;
     AccountSecret_t accountSecret = {0};
-    // char *mnemonic = NULL;
     uint8_t passwordHash[32];
     uint8_t entropy[64] = {0};
     uint8_t seed[64] = {0};
@@ -798,7 +801,8 @@ int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
 }
 #endif
 
-int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len) {
+int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len)
+{
     return GenerateEntropy(randomness, len, "generate trng randomness");
 }
 

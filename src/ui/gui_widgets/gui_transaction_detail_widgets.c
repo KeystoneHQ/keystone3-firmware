@@ -25,9 +25,9 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_pending_hintbox.h"
-#ifndef BTC_ONLY
-#include "gui_eth.h"
 #include "general/eapdu_services/service_resolve_ur.h"
+#ifdef WEB3_VERSION
+#include "gui_eth.h"
 #endif
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
@@ -79,14 +79,12 @@ static void SignByPasswordCbHandler(lv_event_t *e);
 static void CloseContHandler(lv_event_t *e);
 static void SignByFinger(void);
 static void RecognizeFailHandler(lv_timer_t *timer);
-#ifndef BTC_ONLY
-static TransactionMode GetCurrentTransactionMode(void);
-#endif
 static bool GuiCheckIsTransactionSign(void);
 static void TransactionGoToHomeViewHandler(lv_event_t *e);
 static void ThrowError(int32_t errorCode);
 
 #ifndef BTC_ONLY
+static TransactionMode GetCurrentTransactionMode(void);
 static TransactionMode GetCurrentTransactionMode(void)
 {
     uint16_t requestID = GetCurrentUSParsingRequestID();
@@ -305,7 +303,7 @@ void GuiClearQrcodeSignCnt(void)
 static void GuiTransactionDetailNavBarInit()
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, TransactionGoToHomeViewHandler, NULL);
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     if (IsMessageType(g_viewType)) {
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("transaction_parse_confirm_message"));
     } else if (isTonSignProof(g_viewType)) {
@@ -316,10 +314,14 @@ static void GuiTransactionDetailNavBarInit()
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("confirm_transaction_hash"));
     } else if (g_viewType == CardanoSignTxHash) {
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("confirm_transaction_hash"));
+#ifdef FEATURE_MONERO
+    }  else if (g_viewType == XmrOutput) {
+        SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, _("confirm_txo_signing"));
+#endif
     } else {
 #endif
         SetCoinWallet(g_pageWidget->navBarWidget, g_chainType, NULL);
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     }
 #endif
 }
@@ -405,11 +407,20 @@ static void RecognizeFailHandler(lv_timer_t *timer)
 
 static bool GuiCheckIsTransactionSign(void)
 {
-#ifndef BTC_ONLY
-    printf("GetEthPermitCantSign(NULL, NULL) = %d\n", GetEthPermitCantSign(NULL, NULL));
+#ifdef WEB3_VERSION
     if (GetEthPermitCantSign(NULL, NULL)) {
         return false;
     }
 #endif
     return true;
+}
+
+bool supportBlindSigning(uint8_t viewType)
+{
+    // now we only support blind signing for Sui and Cardano
+#ifdef WEB3_VERSION
+    return viewType == SuiSignMessageHash || viewType == CardanoSignTxHash;
+#else
+    return false;
+#endif
 }

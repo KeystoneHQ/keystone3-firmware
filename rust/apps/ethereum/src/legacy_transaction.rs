@@ -5,7 +5,7 @@ use core::str::FromStr;
 
 use bytes::BytesMut;
 use ethereum_types::{H256, U256};
-use hex;
+
 use rlp::{Decodable, DecoderError, Encodable, Rlp};
 use ur_registry::pb::protoc::EthTx;
 
@@ -254,7 +254,7 @@ impl Encodable for LegacyTransaction {
         s.append(&self.value);
         s.append(&self.input);
         // chain_id will remove when the signature is added
-        if let None = &self.signature {
+        if self.signature.is_none() {
             s.append(&self.chain_id());
             s.append(&vec![]);
             s.append(&vec![]);
@@ -367,7 +367,7 @@ mod tests {
         let signed_tx_hex = hex::encode(&signed_tx);
         // tx id === tx hash
         let signed_tx_hash = keccak256(&signed_tx);
-        let signed_tx_hash_hex = hex::encode(&signed_tx_hash);
+        let signed_tx_hash_hex = hex::encode(signed_tx_hash);
 
         assert_eq!(
             "fec8bfea5ec13ad726de928654cd1733b1d81d2d2916ac638e6b9a245f034ace".to_string(),
@@ -409,7 +409,7 @@ mod tests {
                 .to_string()
         );
         let unsigned_tx_hash = keccak256(&unsigned_tx);
-        let unsigned_tx_hash_hex = hex::encode(&unsigned_tx_hash);
+        let _unsigned_tx_hash_hex = hex::encode(unsigned_tx_hash);
         // sign tx
         let r = "0x35df2b615912b8be79a13c9b0a1540ade55434ab68778a49943442a9e6d3141a".to_string();
         let s = "0x0a6e33134ba47c1f1cda59ec3ef62a59d4da6a9d111eb4e447828574c1c94f66".to_string();
@@ -430,7 +430,7 @@ mod tests {
 
         // tx id === tx hash
         let signed_tx_hash = keccak256(&signed_tx);
-        let signed_tx_hash_hex = hex::encode(&signed_tx_hash);
+        let signed_tx_hash_hex = hex::encode(signed_tx_hash);
         assert_eq!(
             "c20d7398343b00d1bc5aaf8f6d9a879217003d6cc726053cd41fb960977cd066".to_string(),
             signed_tx_hash_hex
@@ -471,10 +471,10 @@ mod tests {
 
         // raw tx
         let signed_tx = tx.encode_raw();
-        let signed_tx_hex = hex::encode(&signed_tx);
+        let _signed_tx_hex = hex::encode(&signed_tx);
         // tx id === tx hash
         let signed_tx_hash = keccak256(&signed_tx);
-        let signed_tx_hash_hex = hex::encode(&signed_tx_hash);
+        let signed_tx_hash_hex = hex::encode(signed_tx_hash);
         assert_eq!(
             "e01dd745d8cc0983f288da28ab288f7d1be809164c83ae477bdb927d31f49a7c".to_string(),
             signed_tx_hash_hex

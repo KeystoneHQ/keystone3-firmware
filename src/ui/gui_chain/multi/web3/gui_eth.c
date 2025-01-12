@@ -108,7 +108,7 @@ const static EvmNetwork_t NETWORKS[] = {
     {124, "Decentralized Web Mainnet", "DWU"},
     {127, "Factory 127 Mainnet", "FETH"},
     {128, "Huobi ECO Chain Mainnet", "HT"},
-    {137, "Polygon Mainnet", "MATIC"},
+    {137, "Polygon Mainnet", "POL"},
     {142, "DAX CHAIN", "DAX"},
     {162, "Lightstreams Testnet", "PHT"},
     {163, "Lightstreams Mainnet", "PHT"},

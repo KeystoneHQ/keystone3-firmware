@@ -26,6 +26,7 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_COSMOS:
     case REMAPVIEW_SUI_SIGN_MESSAGE_HASH:
     case REMAPVIEW_ADA_SIGN_TX_HASH:
+    case REMAPVIEW_AVAX:
         return true;
     default:
         return false;

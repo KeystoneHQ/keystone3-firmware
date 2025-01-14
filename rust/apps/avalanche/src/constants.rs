@@ -8,6 +8,8 @@ pub const C_CHAIN_ADDRESS_LEN: usize = 20;
 pub const ASSET_ID_LEN: usize = 32;
 pub const ADDRESS_LEN: usize = 20;
 pub const NAVAX_TO_AVAX_RATIO: f64 = 1_000_000_000.0;
+pub const C_CHAIN_PREFIX: &str = "m/44'/60'/0'";
+pub const X_P_CHAIN_PREFIX: &str = "m/44'/9000'/0'";
 
 pub const X_BLOCKCHAIN_ID: [u8; BLOCKCHAIN_ID_LEN] = [
     237, 95, 56, 52, 30, 67, 110, 93, 70, 226, 187, 0, 180, 93, 98, 174, 151, 209, 176, 80, 198,

@@ -22,8 +22,8 @@ use alloc::{
 };
 use app_avalanche::{
     constants::{
-        C_BLOCKCHAIN_ID, C_TEST_BLOCKCHAIN_ID, P_BLOCKCHAIN_ID, X_BLOCKCHAIN_ID,
-        X_TEST_BLOCKCHAIN_ID,
+        C_BLOCKCHAIN_ID, C_CHAIN_PREFIX, C_TEST_BLOCKCHAIN_ID, P_BLOCKCHAIN_ID, X_BLOCKCHAIN_ID,
+        X_P_CHAIN_PREFIX, X_TEST_BLOCKCHAIN_ID,
     },
     errors::AvaxError,
     get_avax_tx_header, get_avax_tx_type_id, parse_avax_tx,
@@ -48,10 +48,6 @@ use {
         traits::RegistryItem,
     },
 };
-
-const C_CHAIN_PREFIX: &str = "m/44'/60'/0'";
-const X_P_CHAIN_PREFIX: &str = "m/44'/9000'/0'";
-
 #[derive(Debug, Clone)]
 pub struct DerivationPath {
     pub base_path: String,
@@ -103,9 +99,13 @@ fn parse_transaction_by_type(
                 parse_avax_tx::<$tx_type>(tx_data)
                     .map(|parse_data| {
                         TransactionParseResult::success(
-                            DisplayAvaxTx::from(parse_data)
-                                .with_from_address(address.to_string(), path.full_path.to_string())
-                                .c_ptr(),
+                            DisplayAvaxTx::from_tx_info(
+                                parse_data,
+                                path.full_path,
+                                address,
+                                sign_request.get_wallet_index(),
+                            )
+                            .c_ptr(),
                         )
                         .c_ptr()
                     })

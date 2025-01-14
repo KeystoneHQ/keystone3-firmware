@@ -47,7 +47,7 @@ UREncodeResult *GuiGetAvaxSignUrDataUnlimited(void)
 
 UREncodeResult *GetAvaxSignDataDynamic(bool isUnlimited)
 {
-    printf("%s %d.\n", __func__,__LINE__);
+    printf("%s %d.\n", __func__, __LINE__);
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     UREncodeResult *encodeResult;
@@ -78,7 +78,7 @@ PtrT_TransactionCheckResult GuiGetAvaxCheckResult(void)
 
 void *GuiGetAvaxGUIData(void)
 {
-    printf("%s %d.\n", __func__,__LINE__);
+    printf("%s %d.\n", __func__, __LINE__);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -148,6 +148,10 @@ lv_obj_t *CreateTxDetailsFromTo(lv_obj_t *parent, char *tag, void *fromTo, int l
 
         label = GuiCreateIllustrateLabel(container, ptr[i].address);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 88 + (128 + 8) * i);
+        lv_obj_set_width(label, 360);
+
+        label = GuiCreateNoticeLabel(container, ptr[i].path);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 150 + (128 + 8) * i);
         lv_obj_set_width(label, 360);
     }
 

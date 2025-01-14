@@ -39,6 +39,7 @@ impl AvaxTxInfo for ExportTx {
                 AvaxFromToInfo::from(
                     format!("{} AVAX", output.get_amount() as f64 / NAVAX_TO_AVAX_RATIO),
                     output.get_addresses(),
+                    X_P_CHAIN_PREFIX.to_string(),
                 )
             }))
             .collect()

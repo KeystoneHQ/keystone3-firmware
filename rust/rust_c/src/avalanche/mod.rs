@@ -63,8 +63,6 @@ pub extern "C" fn avax_parse_transaction(
 ) -> PtrT<TransactionParseResult<DisplayAvaxTx>> {
     parse_transaction_by_type(extract_ptr_with_type!(ptr, AvaxSignRequest), public_keys)
 }
-extern crate std;
-use std::println;
 
 fn parse_transaction_by_type(
     sign_request: &mut AvaxSignRequest,
@@ -173,7 +171,6 @@ pub fn determine_derivation_path(
     sign_request: &AvaxSignRequest,
     wallet_index: u64,
 ) -> Result<DerivationPath, AvaxError> {
-    println!("type_id = {:?}, wallet_index = {}", type_id, wallet_index);
     let wallet_suffix = format!("/0/{}", wallet_index);
 
     let (base_path, full_path) = match type_id {

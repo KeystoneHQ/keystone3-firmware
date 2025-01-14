@@ -22,7 +22,7 @@ RUN rustup target add thumbv7em-none-eabihf --toolchain nightly-2024-07-01
 RUN pip3 install PyYaml
 RUN pip3 install Pillow
 
-FROM base as pillar
+FROM base AS pillar
 RUN wget -q https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2 -O  gcc-arm-none-eabi.tar.bz2
 RUN mkdir gcc-arm-none-eabi && tar xjf gcc-arm-none-eabi.tar.bz2 -C gcc-arm-none-eabi --strip-components 1
 RUN rm gcc-arm-none-eabi.tar.bz2

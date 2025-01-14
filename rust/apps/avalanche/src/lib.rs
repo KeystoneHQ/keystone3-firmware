@@ -5,8 +5,7 @@
 #[macro_use]
 extern crate alloc;
 use alloc::{
-    format,
-    string::{String, ToString},
+    string::{String},
     vec::Vec,
 };
 
@@ -17,7 +16,6 @@ use transactions::tx_header::Header;
 use crate::errors::{AvaxError, Result};
 use core::{
     convert::TryFrom,
-    fmt::{self, Debug},
 };
 
 pub mod constants;

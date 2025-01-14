@@ -3,6 +3,7 @@
 #include "account_manager.h"
 #include "secret_cache.h"
 #include "gui_chain.h"
+#include "gui_chain_components.h"
 
 #define CHECK_FREE_PARSE_RESULT(result)                                     \
     if (result != NULL)                                                     \

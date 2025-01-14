@@ -1,4 +1,6 @@
+use crate::constants::NAVAX_TO_AVAX_RATIO;
 use crate::errors::{AvaxError, Result};
+use crate::get_address;
 use alloc::{
     string::{String, ToString},
     vec::Vec,
@@ -126,10 +128,15 @@ impl AvaxMethodInfo {
 pub struct AvaxFromToInfo {
     pub amount: String,
     pub address: Vec<String>,
+    pub path_prefix: String,
 }
 
 impl AvaxFromToInfo {
-    pub fn from(amount: String, address: Vec<String>) -> Self {
-        AvaxFromToInfo { amount, address }
+    pub fn from(amount: String, address: Vec<String>, path_prefix: String) -> Self {
+        AvaxFromToInfo {
+            amount,
+            address,
+            path_prefix,
+        }
     }
 }

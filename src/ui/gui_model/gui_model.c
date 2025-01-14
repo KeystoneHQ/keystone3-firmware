@@ -1237,7 +1237,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 {
     GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
     ViewType viewType = *((ViewType *)inData);
-    printf("%s %d.\n", __func__,__LINE__);
+    printf("%s %d.\n", __func__, __LINE__);
     g_checkResult = CheckUrResult(viewType);
     if (g_checkResult != NULL && g_checkResult->error_code == 0) {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);

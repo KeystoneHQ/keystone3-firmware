@@ -11,12 +11,8 @@ use alloc::{
 };
 
 pub use address::get_address;
-use bitcoin::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use bytes::{Buf, Bytes};
-use hex;
-use transactions::base_tx::BaseTx;
 use transactions::tx_header::Header;
-use ur_registry::pb::protoc;
 
 use crate::errors::{AvaxError, Result};
 use core::{

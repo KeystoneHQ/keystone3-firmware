@@ -47,7 +47,7 @@ UREncodeResult *GuiGetAvaxSignUrDataUnlimited(void)
 
 UREncodeResult *GetAvaxSignDataDynamic(bool isUnlimited)
 {
-    printf("%s %d.\n", __func__,__LINE__);
+    printf("%s %d.\n", __func__, __LINE__);
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     UREncodeResult *encodeResult;
@@ -78,7 +78,7 @@ PtrT_TransactionCheckResult GuiGetAvaxCheckResult(void)
 
 void *GuiGetAvaxGUIData(void)
 {
-    printf("%s %d.\n", __func__,__LINE__);
+    printf("%s %d.\n", __func__, __LINE__);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -90,7 +90,7 @@ void *GuiGetAvaxGUIData(void)
         public_keys->size = NUMBER_OF_ARRAYS(keys);
         keys[0].path = "m/44'/60'/0'";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
-        keys[1].path = "m/44'/9000'/0";
+        keys[1].path = "m/44'/9000'/0'";
         keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
         PtrT_TransactionParseResult_DisplayTonTransaction parseResult = avax_parse_transaction(data, mfp, sizeof(mfp), public_keys);
         SRAM_FREE(public_keys);
@@ -120,7 +120,7 @@ lv_obj_t *CreateTxOverviewFromTo(lv_obj_t *parent, void *from, int fromLen, void
     }
 
     ptr = (DisplayUtxoFromTo *)to;
-    uint16_t offset = 30 + 8 + (30 + 8) * fromLen + 16;
+    uint16_t offset = 30 + 8 + (60 + 8) * fromLen + 16;
     label = GuiCreateNoticeLabel(container, _("To"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, offset);
     for (int i = 0; i < toLen; i++) {
@@ -149,6 +149,10 @@ lv_obj_t *CreateTxDetailsFromTo(lv_obj_t *parent, char *tag, void *fromTo, int l
         label = GuiCreateIllustrateLabel(container, ptr[i].address);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 88 + (128 + 8) * i);
         lv_obj_set_width(label, 360);
+
+        label = GuiCreateNoticeLabel(container, ptr[i].path);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 150 + (128 + 8) * i);
+        lv_obj_set_width(label, 360);
     }
 
     return container;
@@ -176,8 +180,7 @@ void GuiAvaxTxOverview(lv_obj_t *parent, void *totalData)
         GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
 
-    printf("txData->data->from->size->address: %s\n", txData->data->to->data[0].address);
-    container = CreateTxOverviewFromTo(parent, NULL, 0, txData->data->to->data, txData->data->to->size);
+    container = CreateTxOverviewFromTo(parent, txData->data->from, 1, txData->data->to->data, txData->data->to->size);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     lv_obj_update_layout(parent);
 }
@@ -214,7 +217,7 @@ void GuiAvaxTxRawData(lv_obj_t *parent, void *totalData)
     container = CreateValueDetailValue(parent, txData->data->total_input_amount, txData->data->total_output_amount, txData->data->fee_amount);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
-    container = CreateTxDetailsFromTo(parent, "From", NULL, 0);
+    container = CreateTxDetailsFromTo(parent, "From", txData->data->from, 1);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
     container = CreateTxDetailsFromTo(parent, "To", txData->data->to->data, txData->data->to->size);

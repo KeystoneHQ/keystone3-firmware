@@ -72,6 +72,7 @@ impl AvaxTxInfo for ImportTx {
                 AvaxFromToInfo::from(
                     format!("{} AVAX", output.amount as f64 / NAVAX_TO_AVAX_RATIO),
                     vec![output.address.encode()],
+                    C_CHAIN_PREFIX.to_string(),
                 )
             })
             .collect()

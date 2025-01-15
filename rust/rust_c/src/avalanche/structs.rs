@@ -41,6 +41,7 @@ pub struct DisplayTxAvaxData {
     total_input_amount: PtrString,
     fee_amount: PtrString,
     reward_address: PtrString,
+    amount: PtrString,
     method: PtrT<DisplayAvaxMethodInfo>,
     to: PtrT<VecFFI<DisplayAvaxFromToInfo>>,
     from: PtrT<DisplayAvaxFromToInfo>,
@@ -53,6 +54,7 @@ pub struct DisplayAvaxFromToInfo {
     address: PtrString,
     amount: PtrString,
     path: PtrString,
+    is_change: bool,
 }
 
 impl Free for DisplayAvaxFromToInfo {
@@ -68,11 +70,16 @@ impl Free for DisplayAvaxFromToInfo {
 impl_c_ptr!(DisplayAvaxFromToInfo);
 
 impl DisplayAvaxFromToInfo {
-    fn from_index(value: &AvaxFromToInfo, wallet_index: u64) -> Self {
+    fn from_index(value: &AvaxFromToInfo, wallet_index: u64, from_address: String) -> Self {
+        let address = value.address.get(0).unwrap().clone();
         DisplayAvaxFromToInfo {
-            address: convert_c_char(value.address.get(0).unwrap().clone()),
-            amount: convert_c_char(value.amount.clone()),
+            address: convert_c_char(address.clone()),
+            amount: convert_c_char(format!(
+                "{} AVAX",
+                value.amount as f64 / NAVAX_TO_AVAX_RATIO
+            )),
             path: convert_c_char(format!("{}/0/{}", value.path_prefix, wallet_index)),
+            is_change: address == from_address,
         }
     }
 }
@@ -130,14 +137,21 @@ impl DisplayTxAvaxData {
     ) -> Self {
         DisplayTxAvaxData {
             from: DisplayAvaxFromToInfo {
-                address: convert_c_char(from_address),
+                address: convert_c_char(from_address.clone()),
                 amount: convert_c_char(format!(
                     "{} AVAX",
                     value.get_total_input_amount() as f64 / NAVAX_TO_AVAX_RATIO
                 )),
                 path: convert_c_char(from_path),
+                is_change: false,
             }
             .c_ptr(),
+            amount: convert_c_char(format!(
+                "{} AVAX",value.get_output_amount(
+                from_address.clone()
+            ) as f64
+                / NAVAX_TO_AVAX_RATIO)),
+
             total_input_amount: convert_c_char(format!(
                 "{} AVAX",
                 value.get_total_input_amount() as f64 / NAVAX_TO_AVAX_RATIO
@@ -154,7 +168,9 @@ impl DisplayTxAvaxData {
                 value
                     .get_outputs_addresses()
                     .iter()
-                    .map(|v| DisplayAvaxFromToInfo::from_index(v, wallet_index))
+                    .map(|v| {
+                        DisplayAvaxFromToInfo::from_index(v, wallet_index, from_address.clone())
+                    })
                     .collect::<Vec<DisplayAvaxFromToInfo>>(),
             )
             .c_ptr(),
@@ -189,6 +205,7 @@ impl Free for DisplayTxAvaxData {
                 v.free();
             });
 
+            free_ptr_string(self.amount);
             free_ptr_string(self.network);
             free_ptr_string(self.network_key);
             free_ptr_string(self.subnet_id);

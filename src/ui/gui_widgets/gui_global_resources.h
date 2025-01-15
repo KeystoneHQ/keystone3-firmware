@@ -11,6 +11,11 @@ typedef enum {
 } ETH_PATH_TYPE;
 
 typedef enum {
+    AVAX_C_CHAIN,
+    AVAX_X_P_CHAIN,
+} AVAX_CHAIN_TYPE;
+
+typedef enum {
     SOL_SOLFLARE,
     SOL_SOLLET,
     SOL_PHANTOM,

@@ -68,6 +68,15 @@ where
 pub trait AvaxTxInfo {
     fn get_total_input_amount(&self) -> u64;
     fn get_total_output_amount(&self) -> u64;
+
+    fn get_output_amount(&self, address: String) -> u64 {
+        self.get_outputs_addresses()
+            .iter()
+            .find(|info| {info.address[0] == address})
+            .map(|info| info.amount)
+            .unwrap_or(0)
+    }
+
     fn get_fee_amount(&self) -> u64 {
         self.get_total_input_amount() - self.get_total_output_amount()
     }
@@ -126,13 +135,13 @@ impl AvaxMethodInfo {
 
 #[derive(Debug, Clone)]
 pub struct AvaxFromToInfo {
-    pub amount: String,
+    pub amount: u64,
     pub address: Vec<String>,
     pub path_prefix: String,
 }
 
 impl AvaxFromToInfo {
-    pub fn from(amount: String, address: Vec<String>, path_prefix: String) -> Self {
+    pub fn from(amount: u64, address: Vec<String>, path_prefix: String) -> Self {
         AvaxFromToInfo {
             amount,
             address,

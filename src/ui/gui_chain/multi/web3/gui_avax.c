@@ -78,7 +78,6 @@ PtrT_TransactionCheckResult GuiGetAvaxCheckResult(void)
 
 void *GuiGetAvaxGUIData(void)
 {
-    printf("%s %d.\n", __func__, __LINE__);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -103,6 +102,7 @@ typedef struct {
     char *address;
     char *amount;
     char *path;
+    bool isChange;
 } DisplayUtxoFromTo;
 
 lv_obj_t *CreateTxOverviewFromTo(lv_obj_t *parent, void *from, int fromLen, void *to, int toLen)
@@ -125,8 +125,18 @@ lv_obj_t *CreateTxOverviewFromTo(lv_obj_t *parent, void *from, int fromLen, void
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, offset);
     for (int i = 0; i < toLen; i++) {
         lv_obj_t *label = GuiCreateIllustrateLabel(container, ptr[i].address);
+        printf("address: %s\n", ptr[i].address);
         lv_obj_set_width(label, 360);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 38 + offset + 68 * i);
+        if (ptr[i].isChange) {
+            lv_obj_t *btn = GuiCreateBtnWithFont(container,  _("Change"), &openSansEnIllustrate);
+            lv_obj_set_size(btn, 87, 30);
+            lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
+            lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
+            lv_obj_set_style_radius(btn, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_align_to(btn, label, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+        }
     }
 
     return container;
@@ -145,6 +155,16 @@ lv_obj_t *CreateTxDetailsFromTo(lv_obj_t *parent, char *tag, void *fromTo, int l
         lv_label_set_recolor(label, true);
         lv_label_set_text_fmt(label, "%d    #F5870A %s#", i, ptr[i].amount);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54 + (128 + 8) * i);
+
+        if (ptr[i].isChange && !strcmp(tag, "To")) {
+            lv_obj_t *btn = GuiCreateBtnWithFont(container,  _("Change"), &openSansEnIllustrate);
+            lv_obj_set_size(btn, 87, 30);
+            lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
+            lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
+            lv_obj_set_style_radius(btn, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_align_to(btn, label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+        }
 
         label = GuiCreateIllustrateLabel(container, ptr[i].address);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 88 + (128 + 8) * i);
@@ -166,7 +186,7 @@ void GuiAvaxTxOverview(lv_obj_t *parent, void *totalData)
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
 
-    lv_obj_t *container = CreateValueOverviewValue(parent, txData->data->total_output_amount, txData->data->fee_amount);
+    lv_obj_t *container = CreateValueOverviewValue(parent, txData->data->amount, txData->data->fee_amount);
 
     if (txData->data->network != NULL) {
         char *key[] = {txData->data->network_key, "Subnet ID"};

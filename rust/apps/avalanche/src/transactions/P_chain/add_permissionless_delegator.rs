@@ -44,7 +44,7 @@ impl AvaxTxInfo for AddPermissLessionDelegatorTx {
             .into_iter()
             .chain(self.stake_out.iter().map(|output| {
                 AvaxFromToInfo::from(
-                    format!("{} AVAX", output.get_amount() as f64 / NAVAX_TO_AVAX_RATIO),
+                    output.get_amount(),
                     output.get_addresses(),
                     X_P_CHAIN_PREFIX.to_string(),
                 )

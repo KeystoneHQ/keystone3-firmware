@@ -5,6 +5,7 @@
 #define ETH_DERIVATION_PATH_MAX_LEN                     (128)
 
 static char **g_ethDerivationPathDesc = NULL;
+static char **g_avaxDerivationPathDesc = NULL;
 static char **g_solDerivationPathDesc = NULL;
 static char **g_adaDerivationPathDesc = NULL;
 static char **g_btcDerivationPathDesc = NULL;
@@ -50,14 +51,25 @@ void DerivationPathDescsInit(void)
     g_btcTestNetDerivationPathDesc[BTC_NESTED_SEGWIT] = (char *)_("derivation_path_btc_test_net_2_desc");
     g_btcTestNetDerivationPathDesc[BTC_LEGACY] = (char *)_("derivation_path_btc_test_net_3_desc");
 #endif
+
+    if (g_avaxDerivationPathDesc == NULL) {
+        g_avaxDerivationPathDesc = SRAM_MALLOC(2 * ETH_DERIVATION_PATH_MAX_LEN);
+    }
+    g_avaxDerivationPathDesc[AVAX_C_CHAIN] = (char *)_("chain_path_avax_c_desc");
+    g_avaxDerivationPathDesc[AVAX_X_P_CHAIN] = (char *)_("chain_path_avax_x_p_desc");
 }
 
 char **GetDerivationPathDescs(uint8_t index)
 {
     DerivationPathDescsInit();
-    if (index == ETH_DERIVATION_PATH_DESC || index == AVAX_DERIVATION_PATH_DESC) {
+    if (index == ETH_DERIVATION_PATH_DESC) {
         return (char **)g_ethDerivationPathDesc;
     }
+
+    if (index == AVAX_DERIVATION_PATH_DESC) {
+        return (char **)g_avaxDerivationPathDesc;
+    }
+
     if (index == SOL_DERIVATION_PATH_DESC) {
         return (char **)g_solDerivationPathDesc;
     }

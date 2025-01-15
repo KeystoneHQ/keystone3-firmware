@@ -133,6 +133,15 @@ static void TutorialsInit()
     g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].qrTitle = _("tutorial_ton_mnemonic_title");
     g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].qrSubtitle = _("tutorial_ton_mnemonic_url");
     g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].qrCode = _("tutorial_ton_mnemonic_url");
+
+    //TUTORIAL_TON_MNEMONIC
+    g_tutorials[TUTORIAL_AVAX_RECEIVE].len = 1;
+    g_tutorials[TUTORIAL_AVAX_RECEIVE].tutorials[0].title = _("tutorial_ton_mnemonic_title");
+    g_tutorials[TUTORIAL_AVAX_RECEIVE].tutorials[0].desc = _("tutorial_ton_mnemonic_desc");
+    g_tutorials[TUTORIAL_AVAX_RECEIVE].tutorials[0].link = _("learn_more");
+    g_tutorials[TUTORIAL_AVAX_RECEIVE].tutorials[0].qrTitle = _("tutorial_ton_mnemonic_title");
+    g_tutorials[TUTORIAL_AVAX_RECEIVE].tutorials[0].qrSubtitle = _("tutorial_ton_mnemonic_url");
+    g_tutorials[TUTORIAL_AVAX_RECEIVE].tutorials[0].qrCode = _("tutorial_ton_mnemonic_url");
 }
 
 static void GuiOpenQRHintBox(Tutorial_t *tutorial)

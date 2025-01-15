@@ -70,7 +70,7 @@ impl AvaxTxInfo for ImportTx {
             .iter()
             .map(|output| {
                 AvaxFromToInfo::from(
-                    format!("{} AVAX", output.amount as f64 / NAVAX_TO_AVAX_RATIO),
+                    output.amount,
                     vec![output.address.encode()],
                     C_CHAIN_PREFIX.to_string(),
                 )

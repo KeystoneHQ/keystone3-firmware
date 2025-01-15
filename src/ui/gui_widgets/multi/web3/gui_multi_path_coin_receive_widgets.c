@@ -179,8 +179,10 @@ static void InitDerivationPathDesc(uint8_t chain)
 {
     switch (chain) {
     case HOME_WALLET_CARD_ETH:
-    case HOME_WALLET_CARD_AVAX:
         g_derivationPathDescs = GetDerivationPathDescs(ETH_DERIVATION_PATH_DESC);
+        break;
+    case HOME_WALLET_CARD_AVAX:
+        g_derivationPathDescs = GetDerivationPathDescs(AVAX_DERIVATION_PATH_DESC);
         break;
     case HOME_WALLET_CARD_SOL:
     case HOME_WALLET_CARD_HNT:
@@ -196,7 +198,6 @@ static void InitDerivationPathDesc(uint8_t chain)
 
 void GuiMultiPathCoinReceiveInit(uint8_t chain)
 {
-
     InitDerivationPathDesc(chain);
     if (chain == HOME_WALLET_CARD_ADA) {
         SetPathIndex(GetAccountReceivePath("ADA"));
@@ -292,7 +293,11 @@ void GuiMultiPathCoinReceiveRefresh(void)
         break;
     case RECEIVE_TILE_CHANGE_PATH:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
+        if (g_chainCard == HOME_WALLET_CARD_AVAX) {
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_chain_change"));
+        } else {
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
+        }
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectType = GetPathIndex();
         for (uint32_t i = 0; i < GetDerivedPathTypeCount(); i++) {
@@ -328,7 +333,11 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, ChangePathHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgPath);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateTextLabel(btn, _("derivation_path_change"));
+    if (g_chainCard == HOME_WALLET_CARD_AVAX) {
+        label = GuiCreateTextLabel(btn, _("derivation_chain_change"));
+    } else {
+        label = GuiCreateTextLabel(btn, _("derivation_path_change"));
+    }
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 
     btn = lv_btn_create(cont);
@@ -1116,7 +1125,7 @@ static void GetAvaxPathItemSubTittle(char* subTitle, int index, uint32_t maxLen)
         strcpy_s(subTitle, maxLen, "m/44'/60'/0'/0/#F5870A X#");
         break;
     case 1:
-        strcpy_s(subTitle, maxLen, "m/44'/9000'/0'/0'/#F5870A X#");
+        strcpy_s(subTitle, maxLen, "m/44'/9000'/0'/0/#F5870A X#");
         break;
     default:
         break;

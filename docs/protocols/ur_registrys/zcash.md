@@ -27,25 +27,20 @@ This protocol focuses on the Transparent and Orchard components.
 
 #### CDDL for Zcash Accounts
 
-The specification uses CDDL and includes `crypto-hdkey` and `crypto-key-path` specs defined in https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-007-hdkey.md.
+The specification uses CDDL;
 
 ```cddl
 zcash-accounts = {
     seed-fingerprint: bytes.32, ; the seed fingerprint specified by ZIP-32 to identify the wallet
     accounts: [+ zcash-ufvk],
-    ? origin: text, ; source of data, e.g., Keystone
 }
 
 zcash-ufvk = {
-    ? transparent: crypto-hdkey,
-    orchard: zcash-fvk,
+    ufvk: text, ; the standard UFVK expression, it may includes transparent, orchard and sapling FVK or not;
+    index: uint32, ; the account index
     ? name: text,
 }
 
-zcash-fvk = {
-    key-path: crypto-key-path,
-    key-data: bytes,
-}
 ```
 
 `zcash-ufvk` describes the UFVK of a Zcash account. Each seed has multiple accounts with different indexes. For index 0, `zcash-ufvk` should contain a BIP32 extended public key with path `M/44'/133'/0'` (transparent) and an Orchard FVK with path `M_orchard/32'/133'/0'` (Orchard).

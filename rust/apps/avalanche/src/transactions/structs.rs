@@ -72,7 +72,7 @@ pub trait AvaxTxInfo {
     fn get_output_amount(&self, address: String) -> u64 {
         self.get_outputs_addresses()
             .iter()
-            .find(|info| {info.address[0] == address})
+            .find(|info| info.address[0] == address)
             .map(|info| info.amount)
             .unwrap_or(0)
     }

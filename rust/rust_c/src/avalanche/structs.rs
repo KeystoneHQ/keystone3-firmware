@@ -72,14 +72,20 @@ impl_c_ptr!(DisplayAvaxFromToInfo);
 impl DisplayAvaxFromToInfo {
     fn from_index(value: &AvaxFromToInfo, wallet_index: u64, from_address: String) -> Self {
         let address = value.address.get(0).unwrap().clone();
+        let is_change = address == from_address;
+        let path = if is_change == false {
+            null_mut()
+        } else {
+            convert_c_char(format!("{}/0/{}", value.path_prefix, wallet_index))
+        };
         DisplayAvaxFromToInfo {
             address: convert_c_char(address.clone()),
             amount: convert_c_char(format!(
                 "{} AVAX",
                 value.amount as f64 / NAVAX_TO_AVAX_RATIO
             )),
-            path: convert_c_char(format!("{}/0/{}", value.path_prefix, wallet_index)),
-            is_change: address == from_address,
+            is_change,
+            path,
         }
     }
 }
@@ -147,10 +153,9 @@ impl DisplayTxAvaxData {
             }
             .c_ptr(),
             amount: convert_c_char(format!(
-                "{} AVAX",value.get_output_amount(
-                from_address.clone()
-            ) as f64
-                / NAVAX_TO_AVAX_RATIO)),
+                "{} AVAX",
+                value.get_output_amount(from_address.clone()) as f64 / NAVAX_TO_AVAX_RATIO
+            )),
 
             total_input_amount: convert_c_char(format!(
                 "{} AVAX",

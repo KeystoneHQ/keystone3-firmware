@@ -172,36 +172,37 @@ pub fn determine_derivation_path(
     wallet_index: u64,
 ) -> Result<DerivationPath, AvaxError> {
     let wallet_suffix = format!("/0/{}", wallet_index);
+    let blockchain_id = get_avax_tx_header(sign_request.get_tx_data())?.get_blockchain_id();
+    let is_c_chain = |id: &[u8; 32]| *id == C_BLOCKCHAIN_ID || *id == C_TEST_BLOCKCHAIN_ID;
 
     let (base_path, full_path) = match type_id {
         TypeId::CchainExportTx => (
             C_CHAIN_PREFIX,
             format!("{}{}", C_CHAIN_PREFIX, wallet_suffix),
         ),
-        TypeId::BaseTx => {
-            let blockchain_id = get_avax_tx_header(sign_request.get_tx_data())?.get_blockchain_id();
-
-            if blockchain_id == C_BLOCKCHAIN_ID || blockchain_id == C_TEST_BLOCKCHAIN_ID {
-                (
-                    C_CHAIN_PREFIX,
-                    format!("{}{}", C_CHAIN_PREFIX, wallet_suffix),
-                )
+        TypeId::XchainImportTx | TypeId::PchainImportTx => {
+            let source_chain_id =
+                parse_avax_tx::<ImportTx>(sign_request.get_tx_data())?.get_source_chain_id();
+            let prefix = if is_c_chain(&source_chain_id) {
+                C_CHAIN_PREFIX
             } else {
-                (
-                    X_P_CHAIN_PREFIX,
-                    format!("{}{}", X_P_CHAIN_PREFIX, wallet_suffix),
-                )
-            }
+                X_P_CHAIN_PREFIX
+            };
+            (prefix, format!("{}{}", prefix, wallet_suffix))
         }
-        _ => (
-            X_P_CHAIN_PREFIX,
-            format!("{}{}", X_P_CHAIN_PREFIX, wallet_suffix),
-        ),
+        _ => {
+            let prefix = if is_c_chain(&blockchain_id) {
+                C_CHAIN_PREFIX
+            } else {
+                X_P_CHAIN_PREFIX
+            };
+            (prefix, format!("{}{}", prefix, wallet_suffix))
+        }
     };
 
     Ok(DerivationPath {
         base_path: base_path.to_string(),
-        full_path: full_path,
+        full_path,
     })
 }
 

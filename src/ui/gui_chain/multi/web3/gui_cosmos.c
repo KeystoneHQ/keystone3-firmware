@@ -81,7 +81,6 @@ const CosmosChain_t *GuiGetCosmosChain(uint8_t index)
 {
     for (int i = 0; i < COSMOS_CHAINS_LEN; i++) {
         if (g_cosmosChains[i].index == index) {
-            printf("i = %d, index = %d\n", i, index);
             return &g_cosmosChains[i];
         }
     }

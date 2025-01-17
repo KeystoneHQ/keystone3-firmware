@@ -174,6 +174,7 @@ static HOME_WALLET_CARD_ENUM g_chainCard;
 static lv_obj_t *g_derivationPathDescLabel = NULL;
 static char **g_derivationPathDescs = NULL;
 static lv_obj_t *g_egCont = NULL;
+static lv_obj_t *g_noticeWindow = NULL;
 
 static void InitDerivationPathDesc(uint8_t chain)
 {
@@ -1024,8 +1025,18 @@ static void TutorialHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_multiPathCoinReceiveWidgets.moreCont);
 
-    TUTORIAL_LIST_INDEX_ENUM index = GetTutorialIndex();
-    GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
+    if (g_chainCard == HOME_WALLET_CARD_AVAX) {
+        g_noticeWindow = GuiCreateConfirmHintBox(NULL, _("Why Are AVAX C-Chain and X/P-Chain Addresses Different?"), _("C-Chain uses Ethereum-compatible 0x addresses for smart contracts, while X/P-Chain uses Bech32 for UTXO-based asset transfers and staking."), NULL, _("got_it"), WHITE_COLOR_OPA20);
+        lv_obj_t *obj = lv_obj_get_child(g_noticeWindow, 3);
+        lv_obj_set_style_text_opa(obj, LV_OPA_80, LV_PART_MAIN);
+
+        obj = lv_obj_get_child(g_noticeWindow, 4);
+        lv_obj_set_style_text_font(obj, g_defTextFont, LV_PART_MAIN);
+        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    } else {
+        TUTORIAL_LIST_INDEX_ENUM index = GetTutorialIndex();
+        GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
+    }
 }
 
 static void LeftBtnHandler(lv_event_t *e)

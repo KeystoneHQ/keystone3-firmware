@@ -280,6 +280,7 @@ LV_IMG_DECLARE(walletSuiet);
 LV_IMG_DECLARE(walletZeus);
 LV_IMG_DECLARE(walletZashi);
 LV_IMG_DECLARE(walletFeather);
+LV_IMG_DECLARE(walletCore);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
@@ -322,6 +323,7 @@ LV_IMG_DECLARE(walletListLeap);
 LV_IMG_DECLARE(walletListZashi);
 LV_IMG_DECLARE(walletListCake);
 LV_IMG_DECLARE(walletListFeather);
+LV_IMG_DECLARE(walletListCore);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

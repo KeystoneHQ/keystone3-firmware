@@ -50,11 +50,11 @@ typedef struct ConnectWalletWidget {
 
 WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_KEYSTONE, &walletListKeystone, false},
-    {WALLET_LIST_CORE, &walletListSushi, true},
     {WALLET_LIST_OKX, &walletListOkx, true},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true},
+    {WALLET_LIST_CORE, &walletListCore, true},
     {WALLET_LIST_HELIUM, &walletListHelium, true},
     {WALLET_LIST_BLUE, &walletListBlue, true},
     {WALLET_LIST_ZEUS, &walletListZeus, true},
@@ -165,6 +165,12 @@ static const lv_img_dsc_t *g_fewchaCoinArray[FEWCHA_COINS_BUTT] = {
     &coinSui,
 };
 
+static const lv_img_dsc_t *g_coreCoinArray[] = {
+    &coinAva,
+    &coinEth,
+    &coinBtc,
+};
+
 static const lv_img_dsc_t *g_petraCoinArray[1] = {
     &coinApt,
 };
@@ -244,6 +250,7 @@ static void AddMetaMaskCoins(void);
 static void AddOkxWalletCoins(void);
 static void AddBlueWalletCoins(void);
 static void AddFewchaCoins(void);
+static void AddCoreWalletCoins(void);
 static void AddSolflareCoins(void);
 static void AddNightlyCoins(void);
 static void AddHeliumWalletCoins(void);
@@ -854,6 +861,19 @@ static void AddFewchaCoins()
     }
 }
 
+static void AddCoreWalletCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < CORE_COINS_BUTT; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_coreCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 static void AddPetraCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -1155,6 +1175,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
     case WALLET_LIST_CORE:
         func = GuiGetCoreWalletData;
+        AddCoreWalletCoins();
         break;
     case WALLET_LIST_BITGET:
         func = GuiGetBitgetWalletData;

@@ -139,6 +139,26 @@ lv_obj_t *CreateSingleInfoView(lv_obj_t *parent, char* key, char *value)
     return CreateDynamicInfoView(parent, &key, &value, 1);
 }
 
+lv_obj_t *CreateSingleInfoTwoLineView(lv_obj_t *parent, char* key, char *value)
+{
+    int height = 30 + 8 + 16 + 16;
+
+    lv_obj_t *container = CreateContentContainer(parent, 408, height);
+
+    lv_obj_t *label = GuiCreateIllustrateLabel(container, _(key));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+    label = GuiCreateIllustrateLabel(container, value);
+    lv_obj_set_width(label, 360);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_obj_refr_size(label);
+
+    lv_obj_set_height(container, height + lv_obj_get_self_height(label));
+
+    return container;
+}
+
 lv_obj_t *CreateDynamicInfoView(lv_obj_t *parent, char *key[], char *value[], int keyLen)
 {
     int height = (30 + 8) * keyLen - 8 + 16 + 16;

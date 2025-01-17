@@ -40,7 +40,7 @@ impl AvaxTxInfo for ImportTx {
         let method = match self.source_chain {
             X_BLOCKCHAIN_ID | X_TEST_BLOCKCHAIN_ID => "Sending from X-Chain",
             P_BLOCKCHAIN_ID => "Sending from P-Chain",
-            C_BLOCKCHAIN_ID => "Sending from C-Chain",
+            C_BLOCKCHAIN_ID | C_TEST_BLOCKCHAIN_ID => "Sending from C-Chain",
             _ => "Unknown",
         };
 
@@ -52,8 +52,8 @@ impl AvaxTxInfo for ImportTx {
 }
 
 impl ImportTx {
-    fn get_base_tx(&self) -> &BaseTx {
-        &self.base_tx
+    pub fn get_source_chain_id(&self) -> [u8; BLOCKCHAIN_ID_LEN] {
+        self.source_chain
     }
 }
 

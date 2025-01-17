@@ -366,7 +366,13 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_ZASHI].items[0].qrTitle = _("connect_zashi_title");
     g_tutorials[WALLET_LIST_ZASHI].items[0].qrUrl = _("connect_zashi_link");
 
-
+    // WALLET_LIST_CORE
+    g_tutorials[WALLET_LIST_CORE].len = 1;
+    g_tutorials[WALLET_LIST_CORE].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_CORE].items[0].walletName = _("connect_core_title");
+    g_tutorials[WALLET_LIST_CORE].items[0].url = _("connect_core_link");
+    g_tutorials[WALLET_LIST_CORE].items[0].qrTitle = _("connect_core_title");
+    g_tutorials[WALLET_LIST_CORE].items[0].qrUrl = _("connect_core_link");
 
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;
@@ -431,8 +437,6 @@ static void WalletTutorialsInit()
 void GuiWalletTutorialInit(WALLET_LIST_INDEX_ENUM tutorialIndex)
 {
     WalletTutorialsInit();
-
-    printf("index: %d\r\n", tutorialIndex);
 
     WalletTutorial_t *tutorial = &g_tutorials[tutorialIndex];
 

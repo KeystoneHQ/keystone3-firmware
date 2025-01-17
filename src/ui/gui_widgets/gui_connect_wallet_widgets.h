@@ -97,6 +97,13 @@ typedef enum {
     FEWCHA_COINS_BUTT,
 } FEWCHA_COINS_ENUM;
 
+typedef enum {
+    AVAX,
+    AVAX_ETH,
+    AVAX_BTC,
+    CORE_COINS_BUTT,
+} CORE_COINS_ENUM;
+
 typedef enum SOLAccountType {
     SOLBip44,
     SOLBip44ROOT,

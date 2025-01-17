@@ -4,19 +4,14 @@
 #[allow(unused_imports)]
 #[macro_use]
 extern crate alloc;
-use alloc::{
-    string::{String},
-    vec::Vec,
-};
+use alloc::{string::String, vec::Vec};
 
 pub use address::get_address;
 use bytes::{Buf, Bytes};
 use transactions::tx_header::Header;
 
 use crate::errors::{AvaxError, Result};
-use core::{
-    convert::TryFrom,
-};
+use core::convert::TryFrom;
 
 pub mod constants;
 pub mod errors;

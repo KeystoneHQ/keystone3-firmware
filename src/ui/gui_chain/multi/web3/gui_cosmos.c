@@ -18,40 +18,40 @@ static int8_t g_cosmosListIndex = -1;
 static char g_cosmosAddr[MAX_COSMOS_ADDR_LEN];
 static char g_hdPath[26];
 static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
-    {CHAIN_TIA, "celestia", 118, XPUB_TYPE_COSMOS, "celestia"},
-    {CHAIN_NTRN, "neutron", 118, XPUB_TYPE_COSMOS, "neutron-1"},
-    {CHAIN_DYM, "dym", 118, XPUB_TYPE_ETH_BIP44_STANDARD, "dymension_1100-1"},
-    {CHAIN_ATOM, "cosmos", 118, XPUB_TYPE_COSMOS, "cosmoshub-4"},
-    {CHAIN_OSMO, "osmo", 118, XPUB_TYPE_COSMOS, "osmosis-1"},
-    {CHAIN_SCRT, "secret", 529, XPUB_TYPE_SCRT, "secret-4"},
-    {CHAIN_AKT, "akash", 118, XPUB_TYPE_COSMOS, "akashnet-2"},
-    {CHAIN_CRO, "cro", 394, XPUB_TYPE_CRO, "crypto-org-chain-mainnet-1"},
-    {CHAIN_RUNE, "thor", 931, XPUB_TYPE_THOR, "thorchain-1"},
-    {CHAIN_IOV, "star", 234, XPUB_TYPE_IOV, "iov-mainnet-ibc"},
-    {CHAIN_ROWAN, "sif", 118, XPUB_TYPE_COSMOS, "sifchain-1"},
-    {CHAIN_CTK, "shentu", 118, XPUB_TYPE_COSMOS, "shentu-2.2"},
-    {CHAIN_IRIS, "iaa", 118, XPUB_TYPE_COSMOS, "irishub-1"},
-    {CHAIN_REGEN, "regen", 118, XPUB_TYPE_COSMOS, "regen-1"},
-    {CHAIN_XPRT, "persistence", 118, XPUB_TYPE_COSMOS, "core-1"},
-    {CHAIN_DVPN, "sent", 118, XPUB_TYPE_COSMOS, "sentinelhub-2"},
-    {CHAIN_IXO, "ixo", 118, XPUB_TYPE_COSMOS, "ixo-4"},
-    {CHAIN_NGM, "emoney", 118, XPUB_TYPE_COSMOS, "emoney-3"},
-    {CHAIN_BLD, "agoric", 564, XPUB_TYPE_BLD, "agoric-3"},
-    {CHAIN_BOOT, "bostrom", 118, XPUB_TYPE_COSMOS, "bostrom"},
-    {CHAIN_JUNO, "juno", 118, XPUB_TYPE_COSMOS, "juno-1"},
-    {CHAIN_STARS, "stars", 118, XPUB_TYPE_COSMOS, "stargaze-1"},
-    {CHAIN_AXL, "axelar", 118, XPUB_TYPE_COSMOS, "axelar-dojo-1"},
-    {CHAIN_SOMM, "somm", 118, XPUB_TYPE_COSMOS, "sommelier-3"},
-    {CHAIN_UMEE, "umee", 118, XPUB_TYPE_COSMOS, "umee-1"},
-    {CHAIN_GRAV, "gravity", 118, XPUB_TYPE_COSMOS, "gravity-bridge-3"},
-    {CHAIN_TGD, "tgrade", 118, XPUB_TYPE_COSMOS, "tgrade-mainnet-1"},
-    {CHAIN_STRD, "stride", 118, XPUB_TYPE_COSMOS, "stride-1"},
-    {CHAIN_EVMOS, "evmos", 60, XPUB_TYPE_ETH_BIP44_STANDARD, "evmos_9001-2"},
-    {CHAIN_INJ, "inj", 60, XPUB_TYPE_ETH_BIP44_STANDARD, "injective-1"},
-    {CHAIN_KAVA, "kava", 459, XPUB_TYPE_KAVA, "kava_2222-10"},
-    {CHAIN_QCK, "quick", 118, XPUB_TYPE_COSMOS, "quicksilver-1"},
-    {CHAIN_LUNA, "terra", 330, XPUB_TYPE_TERRA, "phoenix-1"},
-    {CHAIN_LUNC, "terra", 330, XPUB_TYPE_TERRA, "columbus-5"},
+    {CHAIN_TIA, HOME_WALLET_CARD_TIA, 118, "celestia", XPUB_TYPE_COSMOS, "celestia"},
+    {CHAIN_NTRN, HOME_WALLET_CARD_NTRN, 118, "neutron", XPUB_TYPE_COSMOS, "neutron-1"},
+    {CHAIN_DYM, HOME_WALLET_CARD_DYM, 118, "dym", XPUB_TYPE_ETH_BIP44_STANDARD, "dymension_1100-1"},
+    {CHAIN_ATOM, HOME_WALLET_CARD_ATOM, 118, "cosmos", XPUB_TYPE_COSMOS, "cosmoshub-4"},
+    {CHAIN_OSMO, HOME_WALLET_CARD_OSMO, 118, "osmo", XPUB_TYPE_COSMOS, "osmosis-1"},
+    {CHAIN_SCRT, HOME_WALLET_CARD_SCRT, 529, "secret", XPUB_TYPE_SCRT, "secret-4"},
+    {CHAIN_AKT, HOME_WALLET_CARD_AKT, 118, "akash", XPUB_TYPE_COSMOS, "akashnet-2"},
+    {CHAIN_CRO, HOME_WALLET_CARD_CRO, 394, "cro", XPUB_TYPE_CRO, "crypto-org-chain-mainnet-1"},
+    {CHAIN_RUNE, HOME_WALLET_CARD_RUNE, 931, "thor", XPUB_TYPE_THOR, "thorchain-1"},
+    {CHAIN_IOV, HOME_WALLET_CARD_IOV, 234, "star", XPUB_TYPE_IOV, "iov-mainnet-ibc"},
+    {CHAIN_ROWAN, HOME_WALLET_CARD_ROWAN, 118, "sif", XPUB_TYPE_COSMOS, "sifchain-1"},
+    {CHAIN_CTK, HOME_WALLET_CARD_CTK, 118, "shentu", XPUB_TYPE_COSMOS, "shentu-2.2"},
+    {CHAIN_IRIS, HOME_WALLET_CARD_IRIS, 118, "iaa", XPUB_TYPE_COSMOS, "irishub-1"},
+    {CHAIN_REGEN, HOME_WALLET_CARD_REGEN, 118, "regen", XPUB_TYPE_COSMOS, "regen-1"},
+    {CHAIN_XPRT, HOME_WALLET_CARD_XPRT, 118, "persistence", XPUB_TYPE_COSMOS, "core-1"},
+    {CHAIN_DVPN, HOME_WALLET_CARD_DVPN, 118, "sent", XPUB_TYPE_COSMOS, "sentinelhub-2"},
+    {CHAIN_IXO, HOME_WALLET_CARD_IXO, 118, "ixo", XPUB_TYPE_COSMOS, "ixo-4"},
+    {CHAIN_NGM, HOME_WALLET_CARD_NGM, 118, "emoney", XPUB_TYPE_COSMOS, "emoney-3"},
+    {CHAIN_BLD, HOME_WALLET_CARD_BLD, 564, "agoric", XPUB_TYPE_BLD, "agoric-3"},
+    {CHAIN_BOOT, HOME_WALLET_CARD_BOOT, 118, "bostrom", XPUB_TYPE_COSMOS, "bostrom"},
+    {CHAIN_JUNO, HOME_WALLET_CARD_JUNO, 118, "juno", XPUB_TYPE_COSMOS, "juno-1"},
+    {CHAIN_STARS, HOME_WALLET_CARD_STARS, 118, "stars", XPUB_TYPE_COSMOS, "stargaze-1"},
+    {CHAIN_AXL, HOME_WALLET_CARD_AXL, 118, "axelar", XPUB_TYPE_COSMOS, "axelar-dojo-1"},
+    {CHAIN_SOMM, HOME_WALLET_CARD_SOMM, 118, "somm", XPUB_TYPE_COSMOS, "sommelier-3"},
+    {CHAIN_UMEE, HOME_WALLET_CARD_UMEE, 118, "umee", XPUB_TYPE_COSMOS, "umee-1"},
+    {CHAIN_GRAV, HOME_WALLET_CARD_GRAV, 118, "gravity", XPUB_TYPE_COSMOS, "gravity-bridge-3"},
+    {CHAIN_TGD, HOME_WALLET_CARD_TGD, 118, "tgrade", XPUB_TYPE_COSMOS, "tgrade-mainnet-1"},
+    {CHAIN_STRD, HOME_WALLET_CARD_STRD, 118, "stride", XPUB_TYPE_COSMOS, "stride-1"},
+    {CHAIN_EVMOS, HOME_WALLET_CARD_EVMOS, 60, "evmos", XPUB_TYPE_ETH_BIP44_STANDARD, "evmos_9001-2"},
+    {CHAIN_INJ, HOME_WALLET_CARD_INJ, 60, "inj", XPUB_TYPE_ETH_BIP44_STANDARD, "injective-1"},
+    {CHAIN_KAVA, HOME_WALLET_CARD_KAVA, 459, "kava", XPUB_TYPE_KAVA, "kava_2222-10"},
+    {CHAIN_QCK, HOME_WALLET_CARD_QCK, 118, "quick", XPUB_TYPE_COSMOS, "quicksilver-1"},
+    {CHAIN_LUNA, HOME_WALLET_CARD_LUNA, 330, "terra", XPUB_TYPE_TERRA, "phoenix-1"},
+    {CHAIN_LUNC, HOME_WALLET_CARD_LUNC, 330, "terra", XPUB_TYPE_TERRA, "columbus-5"}
 };
 
 char *GetCosmosChainAddressByCoinTypeAndIndex(uint8_t chainType,  uint32_t address_index)
@@ -80,14 +80,14 @@ char *GetKeplrConnectionDisplayAddressByIndex(uint32_t index)
 const CosmosChain_t *GuiGetCosmosChain(uint8_t index)
 {
     for (int i = 0; i < COSMOS_CHAINS_LEN; i++) {
-        if (g_cosmosChains[i].index == index) {
+        if (g_cosmosChains[i].cardIndex == index) {
             return &g_cosmosChains[i];
         }
     }
     return NULL;
 }
 
-bool IsCosmosChain(uint8_t index)
+bool IsCosmosChain(HOME_WALLET_CARD_ENUM index)
 {
     return GuiGetCosmosChain(index) != NULL;
 }

@@ -174,7 +174,7 @@ static uint32_t g_thorChainSelectIndex[3] = {0};
 static PageWidget_t *g_pageWidget;
 static bool g_inputAccountValid = true;
 
-__attribute__((weak)) bool IsCosmosChain(uint8_t index)
+__attribute__((weak)) bool IsCosmosChain(HOME_WALLET_CARD_ENUM index)
 {
     return false;
 }

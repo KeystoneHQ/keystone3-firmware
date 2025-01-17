@@ -67,6 +67,7 @@ static void FpDelayMsgSend(void);
 static void SearchFpAesKeyState(void);
 static void SearchFpChipId(void);
 bool GuiLockScreenIsTop(void);
+static void DecryptFunc(uint8_t *decryptPasscode, uint8_t *encryptPasscode, uint8_t *passwordAesKey, size_t blocks);
 
 /* STATIC VARIABLES */
 extern osTimerId_t g_fpTimeoutTimer;
@@ -78,11 +79,12 @@ static bool g_delFpSave = false;
 static uint8_t g_fpIndex;
 static uint16_t g_delayCmd;
 static uint16_t g_lastCmd;
+static bool g_isAesCbc = false;
 static bool g_devLogSwitch = false;
-static uint8_t g_fpRandomKey[16] = {0};
+static uint8_t g_fpRandomKey[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10};
 static uint8_t g_hostRandomKey[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10};
 static uint8_t g_communicateAesKey[32] = {0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77};
-static uint8_t g_randomAesKey[16] = {0};
+static uint8_t g_randomAesKey[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10};
 static uint8_t g_fpTempAesKey[32] = {0};
 static Recognize_Type g_fingerRecognizeType = RECOGNIZE_UNLOCK;
 static uint8_t g_fpRegCnt = 0;
@@ -216,7 +218,6 @@ static void FpDeleteSend(uint16_t cmd, uint8_t index)
     g_fpIndex = index;
     FpGenericSend(FINGERPRINT_CMD_GET_RANDOM_NUM, false);
     FpSendTimerStart(cmd);
-    // SendPackFingerMsg(cmd, &index, 0, 1, AES_KEY_ENCRYPTION);
 }
 
 // A400 RECV
@@ -286,7 +287,6 @@ static void FpRecognizeSend(uint16_t cmd, uint8_t passwd)
     g_delayCmd = FINGERPRINT_CMD_RECOGNIZE;
     FpGenericSend(FINGERPRINT_CMD_GET_RANDOM_NUM, false);
     FpSendTimerStart(FINGERPRINT_CMD_RECOGNIZE);
-    // SendPackFingerMsg(FINGERPRINT_CMD_RECOGNIZE, &passwd, 0, 1, AES_KEY_ENCRYPTION);
 }
 
 void FpSaveKeyInfo(bool add)
@@ -321,7 +321,8 @@ static void FpRecognizeRecv(char *indata, uint8_t len)
                 uint8_t encryptedPassword[32] = {0};
                 char decryptPasscode[128] = {0};
                 GetFpEncryptedPassword(GetCurrentAccountIndex(), encryptedPassword);
-                decryptFunc((uint8_t *)decryptPasscode, encryptedPassword, (uint8_t *)&indata[6]);
+                DecryptFunc((uint8_t *)decryptPasscode, encryptedPassword, (uint8_t *)&indata[6], sizeof(encryptedPassword) / 16);
+                printf("decryptPasscode = %s\n", decryptPasscode);
                 SecretCacheSetPassword(decryptPasscode);
                 memset_s(decryptPasscode, sizeof(decryptPasscode), 0, sizeof(decryptPasscode));
                 memset_s(encryptedPassword, sizeof(encryptedPassword), 0, sizeof(encryptedPassword));
@@ -413,6 +414,9 @@ static void FpGetVersion(char *indata, uint8_t len)
     }
     printf("version:%d.%d.%d.%d\n", indata[0], indata[1], indata[2], indata[3]);
     memcpy_s(g_fpVersion, sizeof(g_fpVersion), indata, sizeof(g_fpVersion));
+    if (indata[0] == 1) {
+        g_isAesCbc = true;
+    }
 }
 
 static void FpGetAesKeyState(char *indata, uint8_t len)
@@ -695,30 +699,47 @@ static uint8_t *GetRandomAesKey(uint8_t *hostRandomKey, uint8_t *fpRandomKey, ui
     if (communicateAesKey == NULL) {
         memset_s(g_randomAesKey, 16, 0, 16);
     } else {
-        AES128_ctx ctx1;
         uint8_t ptr[16] = {0};
         for (int i = 0; i < 16; i++) {
             ptr[i] = hostRandomKey[i] ^ fpRandomKey[i];
         }
-        AES128_init(&ctx1, &communicateAesKey[0]);
-        AES128_encrypt(&ctx1, 1, g_randomAesKey, ptr);
+        if (g_isAesCbc) {
+            AES128_CBC_ctx ctx;
+            AES128_CBC_init(&ctx, g_communicateAesKey, &g_communicateAesKey[16]);
+            AES128_CBC_encrypt(&ctx, 1, g_randomAesKey, ptr);
+        } else {
+            AES128_ctx ctx;
+            AES128_init(&ctx, &communicateAesKey[0]);
+            AES128_encrypt(&ctx, 1, g_randomAesKey, ptr);
+        }
     }
     return g_randomAesKey;
 }
 
 static void EncryptFingerprintData(uint8_t *cipherData, const uint8_t *plainData, uint16_t len)
 {
-    AES128_ctx ctx;
-    AES128_init(&ctx, g_hostRandomKey);
-
-    AES128_encrypt(&ctx, len / 16, cipherData, plainData);
+    if (g_isAesCbc) {
+        AES128_CBC_ctx ctx;
+        AES128_CBC_init(&ctx, g_hostRandomKey, &g_communicateAesKey[16]);
+        AES128_CBC_encrypt(&ctx, len / 16, cipherData, plainData);
+    } else {
+        AES128_ctx ctx;
+        AES128_init(&ctx, g_hostRandomKey);
+        AES128_encrypt(&ctx, len / 16, cipherData, plainData);
+    }
 }
 
 static void DecryptFingerprintData(uint8_t *decipheredData, const uint8_t *cipherData, uint16_t len)
 {
-    AES128_ctx ctx;
-    AES128_init(&ctx, g_hostRandomKey);
-    AES128_decrypt(&ctx, len / 16, decipheredData, cipherData);
+    if (g_isAesCbc) {
+        AES128_CBC_ctx ctx;
+        AES128_CBC_init(&ctx, g_hostRandomKey, &g_communicateAesKey[16]);
+        AES128_CBC_decrypt(&ctx, len / 16, decipheredData, cipherData);
+    } else {
+        AES128_ctx ctx;
+        AES128_init(&ctx, g_hostRandomKey);
+        AES128_decrypt(&ctx, len / 16, decipheredData, cipherData);
+    }
 }
 
 void RegisterFp(uint8_t index)
@@ -816,7 +837,6 @@ static void SearchFpAesKeyState(void)
     if (ret != SUCCESS_CODE) {
         return;
     }
-    memset_s(&g_communicateAesKey[16], 16, 0, 16);
     FpGenericSend(FINGERPRINT_CMD_GET_AES_KEY_STATE, NO_ENCRYPTION);
 }
 
@@ -1062,11 +1082,11 @@ void SendPackFingerMsg(uint16_t cmd, uint8_t *data, uint16_t frameId, uint32_t l
     SendDataToFp((uint8_t *)&sendData, sendData.packetLen + 3);
 }
 
-void decryptFunc(uint8_t *decryptPasscode, uint8_t *encryptPasscode, uint8_t *passwordAesKey)
+static void DecryptFunc(uint8_t *decryptPasscode, uint8_t *encryptPasscode, uint8_t *passwordAesKey, size_t blocks)
 {
     AES256_ctx ctx;
     AES256_init(&ctx, passwordAesKey);
-    AES256_decrypt(&ctx, 2, decryptPasscode, encryptPasscode);
+    AES256_decrypt(&ctx, blocks, decryptPasscode, encryptPasscode);
 }
 
 void FingerprintInit(void)
@@ -1096,7 +1116,6 @@ void __inline FingerprintIsrRecvProcess(uint8_t byte)
     }
     lastTick = tick;
 
-    lastTick = tick;
     if (rcvByteCount == 0) {   // frame head
         if (byte == 0xAA) {
             intrRecvBuffer[rcvByteCount++] = byte;

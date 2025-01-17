@@ -1,9 +1,11 @@
 #include "drv_mpu.h"
 #include "drv_otp.h"
+#include "cmsis_os.h"
 
 static bool g_otpProtect = false;
 extern uint32_t _sbss;
 extern uint32_t _ebss;
+osSemaphoreId_t g_otpConfigSem = NULL;
 
 void MpuDisable(void)
 {
@@ -90,6 +92,7 @@ void ConfigureMPUForBSS(void)
 
 void MpuInit(void)
 {
+    g_otpConfigSem = osSemaphoreNew(1, 1, NULL);
     ConfigureMPUForBSS();
     MpuSetOtpProtection(true);
 }
@@ -101,6 +104,13 @@ bool GetOtpProtection(void)
 
 void MpuSetOtpProtection(bool noAccess)
 {
+    if (g_otpConfigSem != NULL) {
+        if (noAccess == false) {
+            osSemaphoreRelease(g_otpConfigSem);
+        } else {
+            osSemaphoreAcquire(g_otpConfigSem, osWaitForever);
+        }
+    }
     uint8_t accessPermission = noAccess ? MPU_REGION_NO_ACCESS : MPU_REGION_FULL_ACCESS;
     MpuSetProtection(OTP_ADDR_BASE,
                      MPU_REGION_SIZE_1KB,

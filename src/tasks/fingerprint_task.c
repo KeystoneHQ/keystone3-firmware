@@ -8,6 +8,7 @@
 #include "keystore.h"
 #include "event_groups.h"
 #include "timers.h"
+#include "cmsis_os.h"
 
 extern EventGroupHandle_t g_fpEventGroup;
 extern char g_intrRecvBuffer[RCV_MSG_MAX_LEN];
@@ -52,6 +53,7 @@ static void FingerprintTask(void *pvParameter)
     osTimerId_t fpFpRecognizeTimer = NULL;
 
     FingerprintRestart();
+    osDelay(1000);
     g_fpTimeoutTimer = osTimerNew(FpTimeoutHandle, osTimerPeriodic, NULL, NULL);
     osTimerId_t getAesKeyTimer = osTimerNew(FpGetAesStateHandle, osTimerOnce, NULL, NULL);
     osTimerStart(getAesKeyTimer, 100);

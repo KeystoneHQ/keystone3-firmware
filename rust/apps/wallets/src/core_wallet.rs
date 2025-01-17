@@ -22,8 +22,8 @@ fn get_device_id(serial_number: &str) -> String {
     hex::encode(&sha256(&sha256(serial_number.as_bytes()))[0..20])
 }
 
-const AVAX_STANDARD_PREFIX: &str = "m/44'/60'/0'";
-const AVAX_X_P_PREFIX: &str = "m/44'/9000'/0'";
+const AVAX_STANDARD_PREFIX: &str = "44'/60'/0'";
+const AVAX_X_P_PREFIX: &str = "44'/9000'/0'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],

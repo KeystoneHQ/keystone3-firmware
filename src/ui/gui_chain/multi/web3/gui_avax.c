@@ -47,7 +47,6 @@ UREncodeResult *GuiGetAvaxSignUrDataUnlimited(void)
 
 UREncodeResult *GetAvaxSignDataDynamic(bool isUnlimited)
 {
-    printf("%s %d.\n", __func__, __LINE__);
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     UREncodeResult *encodeResult;
@@ -144,7 +143,7 @@ lv_obj_t *CreateTxOverviewFromTo(lv_obj_t *parent, void *from, int fromLen, void
 
 lv_obj_t *CreateTxDetailsFromTo(lv_obj_t *parent, char *tag, void *fromTo, int len)
 {
-    int height = 16 + 30 + 8 + (128 + 8) * len - 8 + 16;
+    int height = 16 + 30 + 8 + (94 + 8) * len - 8 + 16;
     lv_obj_t *container = CreateContentContainer(parent, 408, height);
 
     DisplayUtxoFromTo *ptr = (DisplayUtxoFromTo *)fromTo;
@@ -154,7 +153,7 @@ lv_obj_t *CreateTxDetailsFromTo(lv_obj_t *parent, char *tag, void *fromTo, int l
         lv_obj_t *label = GuiCreateIllustrateLabel(container, "");
         lv_label_set_recolor(label, true);
         lv_label_set_text_fmt(label, "%d    #F5870A %s#", i, ptr[i].amount);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54 + (128 + 8) * i);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
         if (ptr[i].isChange && !strcmp(tag, "To")) {
             lv_obj_t *btn = GuiCreateBtnWithFont(container,  _("Change"), &openSansEnIllustrate);
@@ -167,13 +166,17 @@ lv_obj_t *CreateTxDetailsFromTo(lv_obj_t *parent, char *tag, void *fromTo, int l
         }
 
         label = GuiCreateIllustrateLabel(container, ptr[i].address);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 88 + (128 + 8) * i);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_obj_set_width(label, 360);
 
-        label = GuiCreateNoticeLabel(container, ptr[i].path);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 150 + (128 + 8) * i);
-        lv_obj_set_width(label, 360);
+        if (ptr[i].path != NULL) {
+            label = GuiCreateNoticeLabel(container, ptr[i].path);
+            GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+            lv_obj_set_width(label, 360);
+            height += 34;
+        }
     }
+    lv_obj_set_height(container, height);
 
     return container;
 }
@@ -236,6 +239,11 @@ void GuiAvaxTxRawData(lv_obj_t *parent, void *totalData)
 
     container = CreateValueDetailValue(parent, txData->data->total_input_amount, txData->data->total_output_amount, txData->data->fee_amount);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+
+    if (txData->data->reward_address != NULL) {
+        container = CreateSingleInfoTwoLineView(parent, "Reward Address", txData->data->reward_address);
+        GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
 
     container = CreateTxDetailsFromTo(parent, "From", txData->data->from, 1);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);

@@ -4,8 +4,9 @@
 
 typedef struct {
     uint8_t index;
-    const char *prefix;
+    HOME_WALLET_CARD_ENUM cardIndex;
     int16_t coinType;
+    const char *prefix;
     ChainType xpubType;
     const char *chainId;
 } CosmosChain_t;
@@ -31,7 +32,7 @@ void FreeCosmosMemory(void);
 void GuiGetCosmosTmpType(void *indata, void *param, uint32_t maxLen);
 UREncodeResult *GuiGetCosmosSignQrCodeData(void);
 const CosmosChain_t *GuiGetCosmosChain(uint8_t index);
-bool IsCosmosChain(uint8_t index);
+bool IsCosmosChain(HOME_WALLET_CARD_ENUM index);
 uint8_t GuiGetCosmosTxChain(void);
 void GetCosmosValue(void *indata, void *param, uint32_t maxLen);
 void GetCosmosNetwork(void *indata, void *param, uint32_t maxLen);

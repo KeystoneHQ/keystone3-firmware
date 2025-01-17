@@ -79,6 +79,7 @@ static bool g_delFpSave = false;
 static uint8_t g_fpIndex;
 static uint16_t g_delayCmd;
 static uint16_t g_lastCmd;
+static uint8_t g_errorCnt = 0;
 static bool g_isAesCbc = false;
 static bool g_devLogSwitch = false;
 static uint8_t g_fpRandomKey[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10};
@@ -284,9 +285,7 @@ static void FpGetNumberRecv(char *indata, uint8_t len)
 // passwd 0 not need passwd 1 need passwd
 static void FpRecognizeSend(uint16_t cmd, uint8_t passwd)
 {
-    g_delayCmd = FINGERPRINT_CMD_RECOGNIZE;
-    FpGenericSend(FINGERPRINT_CMD_GET_RANDOM_NUM, false);
-    FpSendTimerStart(FINGERPRINT_CMD_RECOGNIZE);
+    FpGenericSend(FINGERPRINT_CMD_RECOGNIZE, true);
 }
 
 void FpSaveKeyInfo(bool add)
@@ -854,7 +853,7 @@ void FpTimeoutHandle(void *argument)
     for (uint32_t i = 1; i < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); i++) {  // random number is not processed
         if (g_cmdTimeoutMap[i].cnt != FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT) {
             if (g_cmdHandleMap[i].cmd == FINGERPRINT_CMD_RECOGNIZE) {
-                if (g_cmdTimeoutMap[i].cnt == 2) {
+                if (g_cmdTimeoutMap[i].cnt == 10) {
                     FpRecognize(g_fingerRecognizeType);
                     g_cmdTimeoutMap[i].cnt = 0;
                 }
@@ -880,9 +879,15 @@ void FpTimeoutHandle(void *argument)
             }
             timerStop = false;
             g_cmdTimeoutMap[i].cnt++;
+            g_errorCnt++;
+            if (g_errorCnt == 20) {
+                FingerprintRestart();
+                FpDelayMsgSend();
+            }
         }
     }
     if (timerStop == true) {
+        g_errorCnt = 0;
         osTimerStop(g_fpTimeoutTimer);
     }
     osMutexRelease(g_fpResponseMutex);
@@ -936,6 +941,7 @@ void FingerprintRcvMsgHandle(char *recvBuff, uint8_t len)
     }
     uint16_t cmd = 0;
     FpDataHandelFunc recvFunc;
+    printf("len = %d\n", len);
     if (recvBuff[0] != FINGERPRINT_CMD_FRAME_SYNC_HEAD) {
         printf("UnPickFingerMsg error:frame head error, is 0x%2x\r\n", recvBuff[0]);
         return;

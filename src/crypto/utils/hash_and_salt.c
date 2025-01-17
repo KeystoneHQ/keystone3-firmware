@@ -26,13 +26,13 @@ static const uint8_t g_saltData[] = {
 
 void HashWithSalt(uint8_t *outData, const uint8_t *inData, uint32_t inLen, const char *saltString)
 {
-    MpuSetOtpProtection(false);
     uint8_t saltData[SALT_DATA_LEN];
     uint8_t tempData[32];
 #ifdef HASH_AND_SALT_TEST_MODE
     memcpy(saltData, g_saltData, sizeof(saltData));
 #else
     //Get salt data from OTP, if salt data does not exist, then generate a ramdom salt data.
+    MpuSetOtpProtection(false);
     OTP_PowerOn();
     memcpy(saltData, (uint8_t *)OTP_ADDR_SALT, SALT_DATA_LEN);
     //PrintArray("saltData", saltData, SALT_DATA_LEN);
@@ -43,21 +43,21 @@ void HashWithSalt(uint8_t *outData, const uint8_t *inData, uint32_t inLen, const
         //PrintArray("generate saltData", saltData, SALT_DATA_LEN);
     }
 #endif
+    MpuSetOtpProtection(true);
     hmac_sha256(saltData, SALT_DATA_LEN, (uint8_t *)inData, inLen, tempData);
     hmac_sha256((uint8_t *)saltString, strlen(saltString), tempData, 32, outData);
     memset(saltData, 0, sizeof(saltData));
-    MpuSetOtpProtection(true);
 }
 
 void HashWithSalt512(uint8_t *outData, const uint8_t *inData, uint32_t inLen, const char *saltString)
 {
-    MpuSetOtpProtection(false);
     uint8_t saltData[SALT_DATA_LEN];
     uint8_t tempData[64];
 #ifdef HASH_AND_SALT_TEST_MODE
     memcpy(saltData, g_saltData, sizeof(saltData));
 #else
     //Get salt data from OTP, if salt data does not exist, then generate a ramdom salt data.
+    MpuSetOtpProtection(false);
     OTP_PowerOn();
     memcpy(saltData, (uint8_t *)OTP_ADDR_SALT, SALT_DATA_LEN);
     //PrintArray("saltData", saltData, SALT_DATA_LEN);
@@ -68,8 +68,8 @@ void HashWithSalt512(uint8_t *outData, const uint8_t *inData, uint32_t inLen, co
         //PrintArray("generate saltData", saltData, SALT_DATA_LEN);
     }
 #endif
+    MpuSetOtpProtection(true);
     hmac_sha512(saltData, SALT_DATA_LEN, (uint8_t *)inData, inLen, tempData);
     hmac_sha512((uint8_t *)saltString, strlen(saltString), tempData, 64, outData);
     memset(saltData, 0, sizeof(saltData));
-    MpuSetOtpProtection(true);
 }

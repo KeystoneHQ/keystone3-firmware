@@ -17,6 +17,7 @@
 #include "gui_stellar.h"
 #include "gui_ton.h"
 #include "gui_avax.h"
+#include "gui_ergo.h"
 #else
 #include "gui_zcash.h"
 #include "gui_monero.h"
@@ -123,6 +124,7 @@ typedef enum {
     REMAPVIEW_TON,
     REMAPVIEW_TON_SIGNPROOF,
     REMAPVIEW_AVAX,
+    REMAPVIEW_ERGO,
 #endif
 
 #ifdef CYPHERPUNK_VERSION

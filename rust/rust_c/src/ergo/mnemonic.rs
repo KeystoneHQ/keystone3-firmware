@@ -1,10 +1,10 @@
 use alloc::string::ToString;
-use common_rust_c::structs::SimpleResponse;
-use common_rust_c::types::{PtrBytes, PtrString};
-use common_rust_c::utils::{convert_c_char, recover_c_char};
 
 use core::slice;
 use cty::c_char;
+use crate::common::structs::SimpleResponse;
+use crate::common::types::{PtrBytes, PtrString};
+use crate::common::utils::{convert_c_char, recover_c_char};
 
 #[no_mangle]
 pub extern "C" fn ergo_extended_pubkey_by_seed(

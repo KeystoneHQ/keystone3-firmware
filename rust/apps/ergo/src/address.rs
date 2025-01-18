@@ -1,10 +1,13 @@
 use crate::errors::ErgoError;
-use crate::errors::ErgoError::DerivationError;
+use crate::errors::ErgoError::{DerivationError, TransactionParseError};
 use crate::errors::Result;
-use crate::{derivation_account_path, Vec};
+use crate::{derivation_account_path};
+use alloc::vec::Vec;
 use alloc::string::{String, ToString};
 use core::str::FromStr;
 use ergo_lib::ergotree_ir::chain::address::{Address, NetworkAddress, NetworkPrefix};
+use ergo_lib::ergotree_ir::ergo_tree::ErgoTree;
+use ergo_lib::ergotree_ir::serialization::SigmaSerializable;
 use ergo_lib::wallet::derivation_path::DerivationPath;
 use ergo_lib::wallet::ext_pub_key::ExtPubKey;
 use hex;
@@ -41,16 +44,27 @@ pub fn get_address(hd_path: String, extended_pub_key: &String) -> Result<String>
     Ok(network_address.to_base58())
 }
 
+pub fn ergo_tree_to_address(tree: String) -> Result<String> {
+    let tree_bytes = hex::decode(tree)
+        .map_err(|e| TransactionParseError(format!("could not decode tree from string {}", e.to_string())))?;
+    let ergo_tree = ErgoTree::sigma_parse_bytes(&*tree_bytes)
+        .map_err(|e| TransactionParseError(format!("could not parse tree from bytes {}", e.to_string())))?;
+
+    let address = Address::recreate_from_ergo_tree(&ergo_tree)
+        .map_err(|e| TransactionParseError(format!("could not recreate address from tree {}", e.to_string())))?;
+    Ok(NetworkAddress::new(NetworkPrefix::Mainnet, &address).to_base58())
+}
+
 #[cfg(test)]
 mod tests {
     use crate::address::get_address;
-    use alloc::string::{String, ToString};
+    use alloc::string::ToString;
 
     #[test]
     fn test_get_address() {
         let pub_key_str = "0488b21e030000000000000000fb3010c71c8cd02f74c188e41aac28c171feb6895e0473a1a5009314115d2b9c021c73cd9103dff64df560acf68a9d60dd74dad282caeff8bba53fcbd55185ebbd";
         let address =
-            get_address(String::from("m/44'/429'/0'/0/0"), &pub_key_str.to_string()).unwrap();
+            get_address("m/44'/429'/0'/0/0".to_string(), &pub_key_str.to_string()).unwrap();
         assert_eq!(
             address,
             "9hKtJhaaDXzmHujpWofjZEGLo9vF4j6ueG9vvk9LzrGDKjjMVuo"

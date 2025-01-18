@@ -228,6 +228,13 @@ extern bool g_reboot;
         GuiGetAvaxGUIData, \
         NULL, \
         FreeAvaxMemory, \
+    }, \
+    { \
+        REMAPVIEW_ERGO, \
+        PC_SIMULATOR_PATH "/page_ergo.json", \
+        GuiGetErgoGUIData, \
+        NULL, \
+        FreeErgoMemory, \
     },
 #endif
 

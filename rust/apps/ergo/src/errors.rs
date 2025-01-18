@@ -10,6 +10,12 @@ pub enum ErgoError {
     DerivationError(String),
     #[error("Invalid Ergo Mnemonic, {0}")]
     MnemonicError(String),
+    #[error("error when parsing transaction, {0}")]
+    TransactionParseError(String),
+    #[error("error occurs when signing ergo transaction: {0}")]
+    SigningFailed(String),
+    #[error("invalid transaction: {0}")]
+    InvalidTransaction(String),
 }
 
 #[derive(Debug, Error)]

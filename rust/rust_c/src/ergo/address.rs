@@ -1,7 +1,7 @@
 use cty::c_char;
-use common_rust_c::structs::SimpleResponse;
-use common_rust_c::types::PtrString;
-use common_rust_c::utils::{convert_c_char, recover_c_char};
+use crate::common::structs::SimpleResponse;
+use crate::common::types::PtrString;
+use crate::common::utils::{convert_c_char, recover_c_char};
 
 #[no_mangle]
 pub extern "C" fn ergo_get_address(

@@ -42,6 +42,8 @@ use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
 use ur_registry::crypto_account::CryptoAccount;
 #[cfg(feature = "bitcoin")]
 use ur_registry::crypto_psbt::CryptoPSBT;
+#[cfg(feature = "ergo")]
+use ur_registry::ergo::ergo_sign_request::ErgoSignRequest;
 #[cfg(feature = "ethereum")]
 use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 #[cfg(not(feature = "btc-only"))]
@@ -271,7 +273,7 @@ pub enum ViewType {
     AvaxTx,
     WebAuthResult,
     #[cfg(feature = "ergo")]
-    ErgTx,
+    ErgoTx,
     #[cfg(not(feature = "btc-only"))]
     KeyDerivationRequest,
     #[cfg(feature = "btc-only")]
@@ -341,6 +343,8 @@ pub enum QRCodeType {
     XmrOutputSignRequest,
     #[cfg(feature = "monero")]
     XmrTxUnsignedRequest,
+    #[cfg(feature = "ergo")]
+    ErgoSignRequest,
     URTypeUnKnown,
 }
 
@@ -401,6 +405,8 @@ impl QRCodeType {
             InnerURType::XmrOutput(_) => Ok(QRCodeType::XmrOutputSignRequest),
             #[cfg(feature = "avalanche")]
             InnerURType::AvaxSignRequest(_) => Ok(QRCodeType::AvaxSignRequest),
+            #[cfg(feature = "ergo")]
+            InnerURType::ErgoSignRequest(_) => Ok(QRCodeType::ErgoSignRequest),
             #[cfg(not(feature = "btc-only"))]
             InnerURType::QRHardwareCall(_) => Ok(QRCodeType::QRHardwareCall),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
@@ -573,6 +579,10 @@ fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
         QRCodeType::AvaxSignRequest => {
             free_ptr_with_type!(data, AvaxSignRequest);
         }
+        #[cfg(feature = "ergo")]
+        QRCodeType::ErgoSignRequest => {
+            free_ptr_with_type!(data, ErgoSignRequest);
+        }
         #[cfg(not(feature = "btc-only"))]
         QRCodeType::QRHardwareCall => {
             free_ptr_with_type!(data, QRHardwareCall);
@@ -744,6 +754,8 @@ pub fn decode_ur(ur: String) -> URParseResult {
         QRCodeType::XmrTxUnsignedRequest => _decode_ur::<XmrTxUnsigned>(ur, ur_type),
         #[cfg(feature = "avalanche")]
         QRCodeType::AvaxSignRequest => _decode_ur::<AvaxSignRequest>(ur, ur_type),
+        #[cfg(feature = "ergo")]
+        QRCodeType::ErgoSignRequest => _decode_ur::<ErgoSignRequest>(ur, ur_type),
         #[cfg(not(feature = "btc-only"))]
         QRCodeType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseResult::from(
@@ -846,6 +858,8 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         QRCodeType::XmrTxUnsignedRequest => _receive_ur::<XmrTxUnsigned>(ur, ur_type, decoder),
         #[cfg(feature = "avalanche")]
         QRCodeType::AvaxSignRequest => _receive_ur::<AvaxSignRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "ergo")]
+        QRCodeType::ErgoSignRequest => _receive_ur::<ErgoSignRequest>(ur, ur_type, decoder),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseMultiResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),
         ),

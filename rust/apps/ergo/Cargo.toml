@@ -5,9 +5,17 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-ergo-lib = "0.28.0"
 hex = {workspace = true}
 thiserror = { workspace = true }
+app_utils = { workspace = true }
+rust_tools = { workspace = true }
+core2 = { workspace = true }
 
 [dev-dependencies]
 keystore = { workspace = true }
+
+[dependencies.ergo-lib]
+# can be replaced with https://github.com/ergoplatform/sigma-rust after upgrading toolchain to rustc 1.81+
+git = "https://github.com/Alesfatalis/sigma-rust"
+branch = "keystone"
+default-features = false

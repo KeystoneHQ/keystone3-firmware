@@ -82,6 +82,7 @@ xrp = ["dep:app_xrp"]
 zcash = ["dep:app_zcash", "dep:zcash_vendor"]
 monero = ["dep:app_monero"]
 avalanche = ["dep:app_avalanche"]
+ergo = ["dep:app_ergo"]
 test_cmd = []
 
 debug-memory = ["multi-coins"]

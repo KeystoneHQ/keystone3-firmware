@@ -19,6 +19,7 @@
     HOME_WALLET_CARD_ARWEAVE, \
     HOME_WALLET_CARD_XLM, \
     HOME_WALLET_CARD_AVAX, \
+    HOME_WALLET_CARD_ERG, \
     HOME_WALLET_CARD_COSMOS, \
     HOME_WALLET_CARD_TIA, \
     HOME_WALLET_CARD_NTRN, \
@@ -73,6 +74,7 @@
     {HOME_WALLET_CARD_ARWEAVE, false, "AR", true}, \
     {HOME_WALLET_CARD_XLM, false, "XLM", true}, \
     {HOME_WALLET_CARD_AVAX, false, "AVAX", true}, \
+    {HOME_WALLET_CARD_ERG, false, "ERG", true}, \
     {HOME_WALLET_CARD_COSMOS, false, "Cosmos Eco", true}, \
     {HOME_WALLET_CARD_TIA, false, "TIA", true}, \
     {HOME_WALLET_CARD_NTRN, false, "NTRN", true}, \
@@ -211,6 +213,12 @@
         .coin = "Avax", \
         .chain = "Avalanche", \
         .icon = &coinAva, \
+    }, \
+    { \
+        .index = HOME_WALLET_CARD_ERG, \
+        .coin = "ERG", \
+        .chain = "Ergo", \
+        .icon = &coinErg, \
     }, \
     { \
         .index = HOME_WALLET_CARD_COSMOS, \

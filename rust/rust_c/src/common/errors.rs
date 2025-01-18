@@ -237,6 +237,9 @@ pub enum ErrorCodes {
     ErgoUnknownError = 1800,
     ErgoMnemonicError,
     ErgoDerivationError,
+    ErgoParseTxError,
+    ErgoSignFailure,
+    ErgoInvalidTransaction
 }
 
 impl ErrorCodes {
@@ -567,6 +570,9 @@ impl From<&ErgoError> for ErrorCodes {
             ErgoError::UnknownError => Self::ErgoUnknownError,
             ErgoError::MnemonicError(_) => Self::ErgoMnemonicError,
             ErgoError::DerivationError(_) => Self::ErgoDerivationError,
+            ErgoError::TransactionParseError(_) => Self::ErgoParseTxError,
+            ErgoError::SigningFailed(_) => Self::ErgoSignFailure,
+            ErgoError::InvalidTransaction(_) => Self::ErgoInvalidTransaction
         }
     }
 }

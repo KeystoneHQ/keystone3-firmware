@@ -4,7 +4,6 @@
 
 #define HOME_WIDGETS_SURPLUS_CARD_ENUM         HOME_WALLET_CARD_ETH, \
     HOME_WALLET_CARD_SOL, \
-    HOME_WALLET_CARD_AVAX, \
     HOME_WALLET_CARD_BNB, \
     HOME_WALLET_CARD_HNT, \
     HOME_WALLET_CARD_XRP, \
@@ -19,6 +18,7 @@
     HOME_WALLET_CARD_DASH, \
     HOME_WALLET_CARD_ARWEAVE, \
     HOME_WALLET_CARD_XLM, \
+    HOME_WALLET_CARD_AVAX, \
     HOME_WALLET_CARD_COSMOS, \
     HOME_WALLET_CARD_TIA, \
     HOME_WALLET_CARD_NTRN, \
@@ -58,7 +58,6 @@
 
 #define HOME_WALLET_STATE_SURPLUS          {HOME_WALLET_CARD_ETH, false, "ETH", true}, \
     {HOME_WALLET_CARD_SOL, false, "SOL", true}, \
-    {HOME_WALLET_CARD_AVAX, false, "AVAX", true}, \
     {HOME_WALLET_CARD_BNB, false, "BNB", false}, \
     {HOME_WALLET_CARD_HNT, false, "HNT", true}, \
     {HOME_WALLET_CARD_XRP, false, "XRP", true}, \
@@ -73,6 +72,7 @@
     {HOME_WALLET_CARD_DASH, false, "DASH", true}, \
     {HOME_WALLET_CARD_ARWEAVE, false, "AR", true}, \
     {HOME_WALLET_CARD_XLM, false, "XLM", true}, \
+    {HOME_WALLET_CARD_AVAX, false, "AVAX", true}, \
     {HOME_WALLET_CARD_COSMOS, false, "Cosmos Eco", true}, \
     {HOME_WALLET_CARD_TIA, false, "TIA", true}, \
     {HOME_WALLET_CARD_NTRN, false, "NTRN", true}, \
@@ -121,12 +121,6 @@
         .coin = "SOL", \
         .chain = "Solana", \
         .icon = &coinSol, \
-    }, \
-    { \
-        .index = HOME_WALLET_CARD_AVAX, \
-        .coin = "Avax", \
-        .chain = "Avalanche", \
-        .icon = &coinAva, \
     }, \
     { \
         .index = HOME_WALLET_CARD_BNB, \
@@ -211,6 +205,12 @@
         .coin = "XLM", \
         .chain = "Stellar", \
         .icon = &coinXlm, \
+    }, \
+    { \
+        .index = HOME_WALLET_CARD_AVAX, \
+        .coin = "Avax", \
+        .chain = "Avalanche", \
+        .icon = &coinAva, \
     }, \
     { \
         .index = HOME_WALLET_CARD_COSMOS, \

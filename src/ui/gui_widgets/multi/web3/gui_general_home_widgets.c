@@ -96,7 +96,6 @@ static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
         .icon = &coinBtc,
     },
     HOME_WALLET_CARD_SURPLUS,
-
 };
 
 static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin);

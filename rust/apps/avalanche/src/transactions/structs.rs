@@ -1,6 +1,7 @@
 use crate::constants::NAVAX_TO_AVAX_RATIO;
 use crate::errors::{AvaxError, Result};
 use crate::get_address;
+use crate::transactions::type_id::TypeId;
 use alloc::{
     string::{String, ToString},
     vec::Vec,
@@ -69,12 +70,24 @@ pub trait AvaxTxInfo {
     fn get_total_input_amount(&self) -> u64;
     fn get_total_output_amount(&self) -> u64;
 
-    fn get_output_amount(&self, address: String) -> u64 {
-        self.get_outputs_addresses()
-            .iter()
-            .find(|info| info.address[0] == address)
-            .map(|info| info.amount)
-            .unwrap_or(0)
+    fn get_import_tx_fee(&self) -> u64 {
+        self.get_fee_amount()
+    }
+
+    fn get_output_amount(&self, address: String, type_id: TypeId) -> u64 {
+        let left_amount = self.get_total_input_amount() - self.get_import_tx_fee();
+        match type_id {
+            TypeId::PchainImportTx | TypeId::XchainImportTx => left_amount,
+            _ => {
+                left_amount
+                    - self
+                        .get_outputs_addresses()
+                        .iter()
+                        .find(|info| info.address[0] == address)
+                        .map(|info| info.amount)
+                        .unwrap_or(0)
+            }
+        }
     }
 
     fn get_fee_amount(&self) -> u64 {

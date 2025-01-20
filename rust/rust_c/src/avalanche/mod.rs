@@ -102,6 +102,7 @@ fn parse_transaction_by_type(
                                 path.full_path,
                                 address,
                                 sign_request.get_wallet_index(),
+                                type_id,
                             )
                             .c_ptr(),
                         )

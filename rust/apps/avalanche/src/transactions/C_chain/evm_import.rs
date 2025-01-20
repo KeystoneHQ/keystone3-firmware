@@ -95,6 +95,10 @@ impl AvaxTxInfo for ImportTx {
                 .with_method_key("Import Tx".to_string()),
         )
     }
+
+    fn get_import_tx_fee(&self) -> u64 {
+        0
+    }
 }
 
 impl TryFrom<Bytes> for ImportTx {

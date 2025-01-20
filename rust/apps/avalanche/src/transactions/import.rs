@@ -36,6 +36,10 @@ impl AvaxTxInfo for ImportTx {
         "Import Tx".to_string()
     }
 
+    fn get_import_tx_fee(&self) -> u64 {
+        0
+    }
+
     fn get_method_info(&self) -> Option<AvaxMethodInfo> {
         let method = match self.source_chain {
             X_BLOCKCHAIN_ID | X_TEST_BLOCKCHAIN_ID => "Sending from X-Chain",

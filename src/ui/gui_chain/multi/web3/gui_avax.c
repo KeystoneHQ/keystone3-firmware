@@ -124,7 +124,6 @@ lv_obj_t *CreateTxOverviewFromTo(lv_obj_t *parent, void *from, int fromLen, void
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, offset);
     for (int i = 0; i < toLen; i++) {
         lv_obj_t *label = GuiCreateIllustrateLabel(container, ptr[i].address);
-        printf("address: %s\n", ptr[i].address);
         lv_obj_set_width(label, 360);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 38 + offset + 68 * i);
         if (ptr[i].isChange) {
@@ -166,7 +165,11 @@ lv_obj_t *CreateTxDetailsFromTo(lv_obj_t *parent, char *tag, void *fromTo, int l
         }
 
         label = GuiCreateIllustrateLabel(container, ptr[i].address);
-        GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        if (ptr[i].isChange && !strcmp(tag, "To")) {
+            lv_obj_align_to(label, lv_obj_get_child(container, lv_obj_get_child_cnt(container) - 3), LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        } else {
+            GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        }
         lv_obj_set_width(label, 360);
 
         if (ptr[i].path != NULL) {

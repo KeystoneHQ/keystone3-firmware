@@ -4,10 +4,12 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_avalanche::constants::NAVAX_TO_AVAX_RATIO;
 use core::ptr::null_mut;
+use ur_registry::pb::protoc::payload::Type;
 
 use app_avalanche::transactions::{
     base_tx::BaseTx,
     structs::{AvaxFromToInfo, AvaxMethodInfo, AvaxTxInfo},
+    type_id::TypeId,
 };
 
 use crate::common::{
@@ -70,9 +72,20 @@ impl Free for DisplayAvaxFromToInfo {
 impl_c_ptr!(DisplayAvaxFromToInfo);
 
 impl DisplayAvaxFromToInfo {
-    fn from_index(value: &AvaxFromToInfo, wallet_index: u64, from_address: String) -> Self {
+    fn from_index(
+        value: &AvaxFromToInfo,
+        wallet_index: u64,
+        from_address: String,
+        type_id: TypeId,
+    ) -> Self {
         let address = value.address.get(0).unwrap().clone();
-        let is_change = address == from_address;
+        let is_change = match type_id {
+            TypeId::XchainImportTx
+            | TypeId::PchainImportTx
+            | TypeId::XchainExportTx
+            | TypeId::PchainExportTx => false,
+            _ => address == from_address,
+        };
         let path = if is_change == false {
             null_mut()
         } else {
@@ -126,10 +139,17 @@ impl DisplayAvaxTx {
         from_path: String,
         from_address: String,
         wallet_index: u64,
+        type_id: TypeId,
     ) -> Self {
         DisplayAvaxTx {
-            data: DisplayTxAvaxData::from_tx_info(value, from_path, from_address, wallet_index)
-                .c_ptr(),
+            data: DisplayTxAvaxData::from_tx_info(
+                value,
+                from_path,
+                from_address,
+                wallet_index,
+                type_id,
+            )
+            .c_ptr(),
         }
     }
 }
@@ -140,6 +160,7 @@ impl DisplayTxAvaxData {
         from_path: String,
         from_address: String,
         wallet_index: u64,
+        type_id: TypeId,
     ) -> Self {
         DisplayTxAvaxData {
             from: DisplayAvaxFromToInfo {
@@ -154,7 +175,7 @@ impl DisplayTxAvaxData {
             .c_ptr(),
             amount: convert_c_char(format!(
                 "{} AVAX",
-                value.get_output_amount(from_address.clone()) as f64 / NAVAX_TO_AVAX_RATIO
+                value.get_output_amount(from_address.clone(), type_id) as f64 / NAVAX_TO_AVAX_RATIO
             )),
 
             total_input_amount: convert_c_char(format!(
@@ -174,7 +195,12 @@ impl DisplayTxAvaxData {
                     .get_outputs_addresses()
                     .iter()
                     .map(|v| {
-                        DisplayAvaxFromToInfo::from_index(v, wallet_index, from_address.clone())
+                        DisplayAvaxFromToInfo::from_index(
+                            v,
+                            wallet_index,
+                            from_address.clone(),
+                            type_id,
+                        )
                     })
                     .collect::<Vec<DisplayAvaxFromToInfo>>(),
             )

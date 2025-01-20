@@ -521,7 +521,6 @@ static void WriteNftToFlash(void)
     printf("fileSize = %d\n", fileSize);
     uint32_t lastLen = fileSize;
     fileBuf = SRAM_MALLOC(4096);
-    fileBuf = pvPortMalloc(4096);
 
     while (lastLen) {
         len = lastLen > 4096 ? 4096 : lastLen;

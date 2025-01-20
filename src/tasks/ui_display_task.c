@@ -380,7 +380,7 @@ void DrawNftImage(void)
 #define START_ADDR 0x00EB2000
     uint16_t *fileBuf = EXT_MALLOC(LCD_DISPLAY_WIDTH * LCD_DISPLAY_HEIGHT * 2);
     Gd25FlashReadBuffer(START_ADDR, (uint8_t *)fileBuf, LCD_DISPLAY_WIDTH * LCD_DISPLAY_HEIGHT * 2);
-    LcdDraw(0, 0, LCD_DISPLAY_HEIGHT - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)fileBuf);
+    LcdDraw(0, 0, LCD_DISPLAY_WIDTH - 1, LCD_DISPLAY_HEIGHT - 1, (uint16_t *)fileBuf);
     EXT_FREE(fileBuf);
 }
 

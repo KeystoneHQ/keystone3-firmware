@@ -220,7 +220,9 @@ static uint8_t QSPI_ProgramPage_Ex(QSPI_CommandTypeDef *cmdParam, uint32_t adr, 
     MH_CommandTypeDef sCommand = {0};
 
     adr &= (uint32_t)0x00FFFFFF;
+    printf("%s %d.\n", __func__, __LINE__);
     assert_param(IS_QSPI_ADDR(adr));
+    printf("%s %d.\n", __func__, __LINE__);
     assert_param(IS_QSPI_ADDR_ADD_SZ(adr, sz));
 
     current_addr = 0;
@@ -254,6 +256,7 @@ static uint8_t QSPI_ProgramPage_Ex(QSPI_CommandTypeDef *cmdParam, uint32_t adr, 
         sCommand.CmdFormat = cmdParam->CmdFormat;
     }
 
+    printf("%s %d.\n", __func__, __LINE__);
     do {
         QSPI->BYTE_NUM = MAX_WR_DATA_LEN << 16;
 

@@ -69,7 +69,6 @@ int main(void)
     LcdInit();
     DrawBootLogoOnLcd();
     Gd25FlashInit();
-    BootUpdate("1:boot.sig");
     NvicInit();
     PsramInit();
     LogInit();
@@ -79,6 +78,8 @@ int main(void)
     Atecc608bInit();
     AccountsDataCheck();
     MountUsbFatfs();
+    BootUpdate("1:boot.sig");
+    // UpdateBootFromFlash();
     UsbInit();
     RtcInit();
     MotorInit();
@@ -118,7 +119,8 @@ int _write(int fd, char *pBuffer, int size)
     for (int i = 0; i < size; i++) {
         while (!UART_IsTXEmpty(UART0));
 #ifdef BUILD_PRODUCTION
-        UART_SendData(UART0, '-');
+        // UART_SendData(UART0, '-');
+        UART_SendData(UART0, (uint8_t) pBuffer[i]);
 #else
         UART_SendData(UART0, (uint8_t) pBuffer[i]);
 #endif

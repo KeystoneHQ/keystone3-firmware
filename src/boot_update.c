@@ -5,6 +5,8 @@
 #include "draw_on_lcd.h"
 #include "sha256.h"
 #include "gui_model.h"
+#include "cmsis_os2.h"
+#include "drv_qspi_flash.h"
 
 LV_FONT_DECLARE(openSans_24);
 
@@ -16,6 +18,66 @@ LV_FONT_DECLARE(openSans_24);
 #define APP_END_ADDR                        (0x2000000)
 
 static uint8_t g_fileUnit[4096] = {0};
+
+static void UpdateBootFromOtaFile(const char *filePath)
+{
+    FIL fp;
+    int32_t ret;
+    uint32_t fileSize, readSize, len, offset;
+    static uint32_t g_fileSize = 0, g_lastSize = 0;
+    static uint32_t lastPercent = 101;
+    char percentStr[16];
+    uint8_t hash[32] = {0};
+    char bootHeadBuf[0x134] = {0};
+    DrawStringOnLcd(120, 412, "Bootloader Updating...", 0xFFFF, &openSans_24);
+
+    ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
+    if (ret) {
+        FatfsError((FRESULT)ret);
+        printf("open file failed %s\n", filePath);
+        return;
+    }
+    QspiFlashInit();
+    fileSize = f_size(&fp);
+    g_lastSize = fileSize - 0x134 - 4;
+    g_fileSize = fileSize - 0x134 - 4;
+    uint32_t crcCalc = 0;
+    uint32_t writeAddr = 0x1001000;
+    ret = f_read(&fp, bootHeadBuf, 0x134, (UINT *)&readSize);
+    struct sha256_ctx ctx;
+    sha256_init(&ctx);
+    sha256_update(&ctx, bootHeadBuf, 0x134);
+
+    memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
+    memcpy(g_fileUnit, &bootHeadBuf[0x30], BOOT_HEAD_SIZE);
+    QspiFlashEraseAndWrite(0x01000000, g_fileUnit, 4096);
+    PrintArray("g_fileUnit", g_fileUnit, 4096);
+
+    while (g_lastSize > 0) {
+        UserDelay(100);
+        memset_s(g_fileUnit, sizeof(g_fileUnit), 0xFF, sizeof(g_fileUnit));
+        len = g_lastSize > 4096 ? 4096 : g_lastSize;
+        ret = f_read(&fp, g_fileUnit, len, (UINT *)&readSize);
+        g_lastSize -= len;
+        QspiFlashEraseAndWrite(writeAddr, g_fileUnit, 4096);
+        writeAddr += 4096;
+        sha256_update(&ctx, g_fileUnit, readSize);
+        // sprintf(percentStr, "%d%%", (g_fileSize - g_lastSize) * 100 / g_fileSize);
+        // DrawStringOnLcd(210, 466, (char *)percentStr, 0xFFFF, &openSans_24);
+    }
+    sha256_done(&ctx, (struct sha256 *)hash);
+    uint32_t readCrc = 0;
+    PrintArray("hash", hash, 32);
+    ret = f_read(&fp, &readCrc, 4, (UINT *)&readSize);
+    printf("write over\n");
+}
+
+void BootUpdate(char *filePath)
+{
+    printf("boot update\n");
+    UpdateBootFromOtaFile(filePath);
+    f_unlink(filePath);
+}
 
 static uint32_t BinarySearchBootHead(void)
 {
@@ -41,6 +103,10 @@ static uint32_t BinarySearchBootHead(void)
 
 static void Delay(uint32_t ms)
 {
+    // for (int i = 0; i < ms * 0xFFFF; i++) {
+    //     ;
+    // }
+    // return;
     uint32_t i, tick, countPerMs;
     countPerMs = SYSCTRL->HCLK_1MS_VAL / 4;
     for (tick = 0; tick < ms; tick++) {
@@ -86,25 +152,26 @@ int32_t UpdateBootFromFlash(void)
 
     memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
     memcpy(g_fileUnit, (uint32_t *)(baseAddr + 4 + 32), BOOT_HEAD_SIZE);
-    // QspiFlashInit();
-    // QspiFlashEraseAndWrite(0x01000000, g_fileUnit, 4096);
+    PrintArray("g_fileUnit", g_fileUnit, 4096);
+    QspiFlashInit();
+    QspiFlashEraseAndWrite(0x01000000, g_fileUnit, 4096);
 
     // head
     // memcpy(g_fileUnit, (uint32_t *)(baseAddr + 4 + 32), 0x134);
     sha256_update(&ctx, (uint32_t *)(baseAddr + 4 + 32), 0x134);
 
     for (int i = startNum; i <= startNum + (bootLen - 0x134) / SECTOR_SIZE; i++, writeAddr += SECTOR_SIZE) {
-        Delay(100);
-        memset_s(g_fileUnit, sizeof(g_fileUnit), 0xFF, sizeof(g_fileUnit));
+        Delay(200);
+        memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
+        // memset_s(g_fileUnit, sizeof(g_fileUnit), 0xFF, sizeof(g_fileUnit));
         if (i == startNum + (bootLen - 0x134) / SECTOR_SIZE) {
             len = (bootLen - 0x134) % SECTOR_SIZE;
         } else {
             len = SECTOR_SIZE;
-            memcpy(g_fileUnit, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), len);
         }
         memcpy(g_fileUnit, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), len);
         sha256_update(&ctx, g_fileUnit, len);
-        // QspiFlashEraseAndWrite(writeAddr, g_fileUnit, SECTOR_SIZE);
+        QspiFlashEraseAndWrite(writeAddr, g_fileUnit, SECTOR_SIZE);
     }
     sha256_done(&ctx, (struct sha256 *)calHash);
     PrintArray("calHash", calHash, 32);
@@ -112,9 +179,9 @@ int32_t UpdateBootFromFlash(void)
     osKernelUnlock();
     if (memcmp(hash, calHash, 32) == 0) {
         printf("update success\n");
-        return true;
+        return 0;
     } else {
         printf("update failed\n");
-        return false;
+        return -1;
     }
 }

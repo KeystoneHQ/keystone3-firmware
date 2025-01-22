@@ -4,6 +4,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "err_code.h"
+#include "mhscpu_qspi.h"
 
 /// @brief  QSPI flash init, get model.
 /// @param

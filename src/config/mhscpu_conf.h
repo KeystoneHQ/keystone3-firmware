@@ -52,7 +52,8 @@
 /* Exported functions ------------------------------------------------------- */
 
 #else
-#define assert_param(expr) ((void)0)
+// #define assert_param(expr) ((void)0)
+#define assert_param(expr) (if (!expr) { printf("%s %d.\n", __func__, __LINE__); })
 #endif /* USE_FULL_ASSERT */
 
 #endif

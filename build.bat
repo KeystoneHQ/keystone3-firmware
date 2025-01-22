@@ -72,7 +72,7 @@ IF "%build_simulator%"=="true" (
     ) ELSE (
         make -j16
     )
-    python3 padding_bin_file.py mh1903.bin
+    py padding_bin_file.py mh1903.bin
     popd
 )
 

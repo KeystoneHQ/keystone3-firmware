@@ -3,64 +3,118 @@
 #include "user_fatfs.h"
 #include "user_memory.h"
 #include "draw_on_lcd.h"
+#include "sha256.h"
+#include "gui_model.h"
 
 LV_FONT_DECLARE(openSans_24);
 
-#define FILE_UNIT_SIZE                      0x4000
 #define BOOT_ADDR                           (0x01001000)
-#define APP_ADDR                            (0x1001000 + 0x80000 + 0x80000)   //108 1000
 #define SECTOR_SIZE                         4096
 #define BOOT_HEAD_SIZE                      0x104
-static uint8_t g_readBuf[4096] = {0};
+#define APP_ADDR                            (0x1001000 + 0x80000)   //108 1000
+#define APP_CHECK_START_ADDR                (0x1400000)
+#define APP_END_ADDR                        (0x2000000)
 
-static void UpdateBootFromOtaFile(const char *filePath)
+static uint8_t g_fileUnit[4096] = {0};
+
+static uint32_t BinarySearchBootHead(void)
 {
-    FIL fp;
+    uint8_t *buffer = SRAM_MALLOC(SECTOR_SIZE);
+    uint32_t startIndex = (APP_CHECK_START_ADDR - APP_ADDR) / SECTOR_SIZE;
+    uint32_t endIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
+
+    uint8_t percent = 1;
+
+    for (int i = startIndex + 1; i < endIndex; i++) {
+        memcpy_s(buffer, SECTOR_SIZE, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
+        if ((i - startIndex) % 200 == 0) {
+            percent++;
+        }
+        if (CheckAllFF(&buffer[2], SECTOR_SIZE - 2) && ((buffer[0] * 256 + buffer[1]) < 4096)) {
+            SRAM_FREE(buffer);
+            return i + 1;
+        }
+    }
+    SRAM_FREE(buffer);
+    return -1;
+}
+
+static void Delay(uint32_t ms)
+{
+    uint32_t i, tick, countPerMs;
+    countPerMs = SYSCTRL->HCLK_1MS_VAL / 4;
+    for (tick = 0; tick < ms; tick++) {
+        for (i = 0; i < countPerMs; i++) {
+            if (i > 10000000) {
+                printf("!!\r\n");
+            }
+        }
+    }
+}
+
+int32_t UpdateBootFromFlash(void)
+{
+    osKernelLock();
+    int num = BinarySearchBootHead();
+    printf("num = %d\n", num);
+    if (num <= 0) {
+        osKernelUnlock();
+        return false;
+    }
     int32_t ret;
-    uint32_t fileSize, readSize, len, offset;
-    static uint32_t g_fileSize = 0, g_lastSize = 0;
+    uint32_t len, offset;
+    uint32_t baseAddr = APP_ADDR + num * SECTOR_SIZE;
+    int startNum = num + 1;
     static uint32_t lastPercent = 101;
     char percentStr[16];
     char bootHeadBuf[0x134] = {0};
-    DrawStringOnLcd(120, 412, "Bootloader Updating...", 0xFFFF, &openSans_24);
+    uint8_t hash[32] = {0};
+    uint8_t calHash[32] = {0};
 
-    ret = f_open(&fp, filePath, FA_OPEN_EXISTING | FA_READ);
-    if (ret) {
-        FatfsError((FRESULT)ret);
-        return;
-    }
-    QspiFlashInit();
-    fileSize = f_size(&fp);
-    g_lastSize = fileSize - 0x134 - 4;
-    g_fileSize = fileSize - 0x134 - 4;
-    uint32_t crcCalc = 0;
+    struct sha256_ctx ctx;
+    sha256_init(&ctx);
+
     uint32_t writeAddr = 0x1001000;
-    ret = f_read(&fp, bootHeadBuf, 0x134, (UINT *)&readSize);
-    crcCalc = crc32_ieee(0, bootHeadBuf, readSize);
+    memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
 
-    memset(g_readBuf, 0xFF, sizeof(g_readBuf));
-    memcpy(g_readBuf, &bootHeadBuf[0x30], BOOT_HEAD_SIZE);
-    QspiFlashEraseAndWrite(0x01000000, g_readBuf, 4096);
+    memcpy(g_fileUnit, (uint32_t *)baseAddr, 4 + 32);
+    printf("file %#x %#x %#x %#x\n", g_fileUnit[0], g_fileUnit[1], g_fileUnit[2], g_fileUnit[3]);
+    uint32_t bootLen = (g_fileUnit[0] << 24) + (g_fileUnit[1] << 16) + (g_fileUnit[2] << 8) + g_fileUnit[3];
+    printf("bootLen = %d\n", bootLen);
+    memcpy(hash, &g_fileUnit[4], 32);
+    PrintArray("hash", hash, 32);
 
-    while (g_lastSize > 0) {
-        UserDelay(100);
-        memset_s(g_readBuf, sizeof(g_readBuf), 0xFF, sizeof(g_readBuf));
-        len = g_lastSize > 4096 ? 4096 : g_lastSize;
-        ret = f_read(&fp, g_readBuf, len, (UINT *)&readSize);
-        g_lastSize -= len;
-        QspiFlashEraseAndWrite(writeAddr, g_readBuf, 4096);
-        writeAddr += 4096;
-        crcCalc = crc32_ieee(crcCalc, g_readBuf, readSize);
-        // sprintf(percentStr, "%d%%", (g_fileSize - g_lastSize) * 100 / g_fileSize);
-        // DrawStringOnLcd(210, 466, (char *)percentStr, 0xFFFF, &openSans_24);
+    memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
+    memcpy(g_fileUnit, (uint32_t *)(baseAddr + 4 + 32), BOOT_HEAD_SIZE);
+    // QspiFlashInit();
+    // QspiFlashEraseAndWrite(0x01000000, g_fileUnit, 4096);
+
+    // head
+    // memcpy(g_fileUnit, (uint32_t *)(baseAddr + 4 + 32), 0x134);
+    sha256_update(&ctx, (uint32_t *)(baseAddr + 4 + 32), 0x134);
+
+    for (int i = startNum; i <= startNum + (bootLen - 0x134) / SECTOR_SIZE; i++, writeAddr += SECTOR_SIZE) {
+        Delay(100);
+        memset_s(g_fileUnit, sizeof(g_fileUnit), 0xFF, sizeof(g_fileUnit));
+        if (i == startNum + (bootLen - 0x134) / SECTOR_SIZE) {
+            len = (bootLen - 0x134) % SECTOR_SIZE;
+        } else {
+            len = SECTOR_SIZE;
+            memcpy(g_fileUnit, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), len);
+        }
+        memcpy(g_fileUnit, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), len);
+        sha256_update(&ctx, g_fileUnit, len);
+        // QspiFlashEraseAndWrite(writeAddr, g_fileUnit, SECTOR_SIZE);
     }
-    uint32_t readCrc = 0;
-    ret = f_read(&fp, &readCrc, 4, (UINT *)&readSize);
-    printf("write over\n");
-}
+    sha256_done(&ctx, (struct sha256 *)calHash);
+    PrintArray("calHash", calHash, 32);
 
-void BootUpdate(char *filePath)
-{
-    UpdateBootFromOtaFile(filePath);
-    f_unlink(filePath);
+    osKernelUnlock();
+    if (memcmp(hash, calHash, 32) == 0) {
+        printf("update success\n");
+        return true;
+    } else {
+        printf("update failed\n");
+        return false;
+    }
 }

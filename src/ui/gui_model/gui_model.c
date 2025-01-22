@@ -42,6 +42,7 @@
 #include "safe_mem_lib.h"
 #include "usb_task.h"
 #include "drv_mpu.h"
+#include "boot_update.h"
 #else
 #include "simulator_model.h"
 #endif
@@ -106,7 +107,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc);
 static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen);
-static int32_t ModelCopySdCardBoot(const void *inData, uint32_t inDataLen);
+static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen);
 
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
@@ -274,9 +275,9 @@ void GuiModelCopySdCardOta(void)
     AsyncExecute(ModelCopySdCardOta, NULL, 0);
 }
 
-void GuiModelCopySdCardBootSig(void)
+void GuiModelUpdateBoot(void)
 {
-    AsyncExecute(ModelCopySdCardBoot, NULL, 0);
+    AsyncExecute(ModelUpdateBoot, NULL, 0);
 }
 
 void GuiModelURGenerateQRCode(GenerateUR func)
@@ -1009,10 +1010,6 @@ static void ModelVerifyPassSuccess(uint16_t *param)
         GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY, param, sizeof(*param));
         ModelCopySdCardOta(NULL, 0);
         break;
-    case SIG_INIT_SD_CARD_BOOT_COPY:
-        GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-        GuiApiEmitSignal(SIG_INIT_SD_CARD_BOOT_COPY, param, sizeof(*param));
-        ModelCopySdCardBoot(NULL, 0);
         break;
     case SIG_SETTING_WRITE_PASSPHRASE:
         GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_VERIFY_PASS, param, sizeof(*param));
@@ -1232,20 +1229,21 @@ static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
-static int32_t ModelCopySdCardBoot(const void *inData, uint32_t inDataLen)
+static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen)
 {
 #ifndef COMPILE_SIMULATOR
     static uint8_t walletAmount;
     SetPageLockScreen(false);
-    int32_t ret = FatfsFileCopy("0:/boot.sig", "1:/boot.sig");
+    int32_t ret = UpdateBootFromFlash();
     if (ret == SUCCESS_CODE) {
-        NVIC_SystemReset();
+        // NVIC_SystemReset();
+        GuiApiEmitSignal(SIG_BOOT_UPDATE_SUCCESS, NULL, 0);
     } else {
+        GuiApiEmitSignal(SIG_BOOT_UPDATE_FAIL, NULL, 0);
         SetPageLockScreen(true);
-        GuiApiEmitSignal(SIG_INIT_SD_CARD_BOOT_COPY_FAIL, NULL, 0);
     }
 #else
-    GuiApiEmitSignal(SIG_INIT_SD_CARD_BOOT_COPY_FAIL, NULL, 0);
+        GuiApiEmitSignal(SIG_BOOT_UPDATE_SUCCESS, NULL, 0);
 #endif
     return SUCCESS_CODE;
 }
@@ -1292,7 +1290,7 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
     return SUCCESS_CODE;
 }
 
-static uint32_t BinarySearchLastNonFFSector(void)
+uint32_t BinarySearchLastNonFFSector(void)
 {
     uint8_t *buffer = SRAM_MALLOC(SECTOR_SIZE);
     uint32_t startIndex = (APP_CHECK_START_ADDR - APP_ADDR) / SECTOR_SIZE;

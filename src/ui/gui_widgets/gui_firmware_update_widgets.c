@@ -121,17 +121,6 @@ void GuiCreateSdCardUpdateHintbox(bool checkSumDone)
     }
 }
 
-void GuiCreateBootUpdateHintbox(void)
-{
-    GUI_DEL_OBJ(g_noticeWindow)
-    static uint32_t param = SIG_INIT_SD_CARD_BOOT_COPY;
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgFirmwareUp, _("Bootloader Updating"), _("Recommended to upgrade immediately to enhance device security."), NULL, _("Not Now"), DARK_GRAY_COLOR, _("Update"), ORANGE_COLOR);
-    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
-    lv_obj_add_event_cb(rightBtn, BootSdcardUpdateHandler, LV_EVENT_CLICKED, &param);
-}
-
 static int GetEntryEnum(void)
 {
     if (g_param != NULL) {
@@ -425,10 +414,6 @@ static void ConfirmSdCardUpdate(bool firmware)
 {
     static uint16_t walletSetIndex = SIG_INIT_SD_CARD_OTA_COPY;
     void (*modelFunc)(void) = GuiModelCopySdCardOta;
-    if (!firmware) {
-        walletSetIndex = SIG_INIT_SD_CARD_BOOT_COPY;
-        modelFunc = GuiModelCopySdCardBootSig;
-    }
     uint8_t accountCnt = 0;
     GetExistAccountNum(&accountCnt);
     if (accountCnt == 0) {
@@ -489,8 +474,6 @@ static void BootSdcardUpdateHandler(lv_event_t *e)
     } else if (!SdCardInsert()) {
         //firmware_update_sd_failed_access_title
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
-    } else if (FatfsFileExist(SD_CARD_BOOT_SIG_PATH)) {
-        ConfirmSdCardUpdate(false);
     } else {
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeWindow, NULL);
     }

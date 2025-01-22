@@ -25,9 +25,9 @@ typedef enum {
     SIG_INIT_SD_CARD_OTA_COPY,
     SIG_INIT_SD_CARD_OTA_COPY_SUCCESS,
     SIG_INIT_SD_CARD_OTA_COPY_FAIL,
-    SIG_INIT_SD_CARD_BOOT_COPY,
-    SIG_INIT_SD_CARD_BOOT_COPY_SUCCESS,
-    SIG_INIT_SD_CARD_BOOT_COPY_FAIL,
+    SIG_INIT_UPDATE_BOOT,
+    SIG_BOOT_UPDATE_SUCCESS,
+    SIG_BOOT_UPDATE_FAIL,
     SIG_STATUS_BAR_REFRESH,
     SIG_INIT_TRANSFER_NFT_SCREEN,
     SIG_INIT_CONNECT_USB,
@@ -207,6 +207,7 @@ extern GUI_VIEW g_wipeDeviceView;
 extern GUI_VIEW g_walletTutorialView;
 extern GUI_VIEW g_selfDestructView;
 extern GUI_VIEW g_inactiveView;
+extern GUI_VIEW g_bootUpdateView;
 extern GUI_VIEW g_displayView;
 extern GUI_VIEW g_tutorialView;
 extern GUI_VIEW g_connectionView;

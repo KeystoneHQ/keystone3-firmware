@@ -311,8 +311,6 @@ void GuiStatusBarSetSdCard(bool connected, bool onlyImg)
             if (!GuiLockScreenIsTop() && accountCnt > 0 && !GuiCheckIfTopView(&g_forgetPassView)) {
                 if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
                     GuiCreateSdCardUpdateHintbox(false);
-                } else if (FatfsFileExist(SD_CARD_BOOT_SIG_PATH)) {
-                    GuiCreateBootUpdateHintbox();
                 }
             }
         }

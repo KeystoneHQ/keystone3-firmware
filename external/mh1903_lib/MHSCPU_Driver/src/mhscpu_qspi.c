@@ -21,7 +21,7 @@
 #include "assert.h"
 #include "ctaes.h"
 #include "user_utils.h"
-
+#include "mhscpu_conf.h"
 
 #define QSPI_DEVICE_PARA_FLASH_READY_Mask   (BIT(3))
 
@@ -220,9 +220,7 @@ static uint8_t QSPI_ProgramPage_Ex(QSPI_CommandTypeDef *cmdParam, uint32_t adr, 
     MH_CommandTypeDef sCommand = {0};
 
     adr &= (uint32_t)0x00FFFFFF;
-    printf("%s %d.\n", __func__, __LINE__);
     assert_param(IS_QSPI_ADDR(adr));
-    printf("%s %d.\n", __func__, __LINE__);
     assert_param(IS_QSPI_ADDR_ADD_SZ(adr, sz));
 
     current_addr = 0;
@@ -256,7 +254,6 @@ static uint8_t QSPI_ProgramPage_Ex(QSPI_CommandTypeDef *cmdParam, uint32_t adr, 
         sCommand.CmdFormat = cmdParam->CmdFormat;
     }
 
-    printf("%s %d.\n", __func__, __LINE__);
     do {
         QSPI->BYTE_NUM = MAX_WR_DATA_LEN << 16;
 
@@ -930,13 +927,13 @@ uint8_t FLASH_EraseSector(uint32_t sectorAddress)
 {
     uint8_t ret;
 
-    __disable_irq();
-    __disable_fault_irq();
+    // __disable_irq();
+    // __disable_fault_irq();
 
     ret = ROM_QSPI_EraseSector(NULL, sectorAddress);
 
-    __enable_fault_irq();
-    __enable_irq();
+    // __enable_fault_irq();
+    // __enable_irq();
 
     return ret;
 }
@@ -1093,17 +1090,16 @@ void QSPI_WriteTxFIFO(uint32_t data)
     QSPI->WR_FIFO = data;
 }
 
+uint8_t g_plainBuff[4096];
 uint8_t AES_Program(QSPI_CommandTypeDef *cmdParam, DMA_TypeDef *DMA_Channelx, uint32_t addr, uint32_t size, uint8_t *buffer)
 {
-    uint8_t plain[4096];
-
     ASSERT((addr % 4096) == 0);
     if (EncryptedFlash()) {
-        buf_aes_enc(buffer, 4096, (uint8_t *)plain);
+        buf_aes_enc(buffer, 4096, (uint8_t *)g_plainBuff);
 #ifdef __GNUC__
-        return QSPI_ProgramPage(cmdParam, DMA_Channelx, addr, size, (uint8_t *)plain);
+        return QSPI_ProgramPage(cmdParam, DMA_Channelx, addr, size, (uint8_t *)g_plainBuff);
 #else
-        return FLASH_ProgramPage(cmdParam, DMA_Channelx, addr, size, (uint8_t *)plain);
+        return FLASH_ProgramPage(cmdParam, DMA_Channelx, addr, size, (uint8_t *)g_plainBuff);
 #endif
     } else {
 #ifdef __GNUC__

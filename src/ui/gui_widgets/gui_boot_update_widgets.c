@@ -1,7 +1,6 @@
 #include "gui_views.h"
 #include "gui_boot_update_widgets.h"
 #include "gui_status_bar.h"
-#include "gui_obj.h"
 #include "gui_hintbox.h"
 #include "presetting.h"
 #include "gui_model.h"
@@ -16,23 +15,35 @@ void GuiCreateBootUpdateHandler(lv_event_t * e)
 
 static void JumpToApp(void)
 {
-    // typedef int (*jumpApp)(void);
-    // volatile int *ptr = (int *)APP_ADDR;
-    // jumpApp app;
+#define APP_ADDR                            (0x1001000 + 0x80000)
+    typedef void (*jumpApp)(void);
+    volatile uint32_t *ptr = (uint32_t *)APP_ADDR;
+    jumpApp app;
 
-    // if (*ptr != 0xffffffff) {
-    //     app = (jumpApp)(*(__IO uint32_t*)(APP_ADDR + 4));
-    //     __disable_irq();
-    //     __set_MSP(*(__IO uint32_t*) APP_ADDR);
-
-    //     app();
-    // }
+    if (*ptr != 0xffffffff) {
+        DisableAllHardware();
+        
+        __disable_irq();
+        for (int i = 0; i < 8; i++) {
+            NVIC->ICER[i] = 0xFFFFFFFF;
+            NVIC->ICPR[i] = 0xFFFFFFFF;
+        }
+        
+        SCB->VTOR = APP_ADDR;
+        
+        app = (jumpApp)(*(__IO uint32_t*)(APP_ADDR + 4));
+        __set_MSP(*(__IO uint32_t*)APP_ADDR);
+        __DSB();
+        __ISB();
+        
+        app();
+    }
 }
 
-void GuiCreateBootUpdateHandler(lv_event_t * e)
+void GuiCreateBootUpdateSkipHandler(lv_event_t * e)
 {
-    printf("GuiCreateBootUpdateHandler\n");
-    GuiModelUpdateBoot();
+    printf("GuiCreateBootUpdateSkipHandler\n");
+    GuiCloseCurrentWorkingView();
 }
 
 void GuiCreateBootUpdateRestartToAppHandler(lv_event_t * e)
@@ -96,7 +107,7 @@ void GuiBootUpdateInit(void)
         char serialNumber[SERIAL_NUMBER_MAX_LEN];
         char buff[BUFFER_SIZE_128];
         GetSerialNumber(serialNumber);
-        snprintf_s(buff, sizeof(buff), "sn:%s", serialNumber);
+        snprintf_s(buff, sizeof(buff), "SN:%s", serialNumber);
         tempObj = GuiCreateNoticeLabel(g_bootUpdateCont, buff);
         lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, 620);
 
@@ -108,5 +119,9 @@ void GuiBootUpdateInit(void)
         tempObj = GuiCreateBtn(g_bootUpdateCont, "Skip");
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, 0, -100);
         lv_obj_add_event_cb(tempObj, GuiCreateBootUpdateSkipHandler, LV_EVENT_CLICKED, NULL);
+
+        tempObj = GuiCreateBtn(g_bootUpdateCont, "Restart");
+        lv_obj_align(tempObj, LV_ALIGN_BOTTOM_LEFT, 0, -100);
+        lv_obj_add_event_cb(tempObj, GuiCreateBootUpdateRestartToAppHandler, LV_EVENT_CLICKED, NULL);
     }
 }

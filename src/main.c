@@ -78,8 +78,6 @@ int main(void)
     Atecc608bInit();
     AccountsDataCheck();
     MountUsbFatfs();
-    BootUpdate("1:boot.sig");
-    // UpdateBootFromFlash();
     UsbInit();
     RtcInit();
     MotorInit();

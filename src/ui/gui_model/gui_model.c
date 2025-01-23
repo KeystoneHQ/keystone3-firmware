@@ -1235,12 +1235,12 @@ static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen)
     static uint8_t walletAmount;
     SetPageLockScreen(false);
     int32_t ret = UpdateBootFromFlash();
+    SetPageLockScreen(true);
     if (ret == SUCCESS_CODE) {
-        // NVIC_SystemReset();
+        NVIC_SystemReset();
         GuiApiEmitSignal(SIG_BOOT_UPDATE_SUCCESS, NULL, 0);
     } else {
         GuiApiEmitSignal(SIG_BOOT_UPDATE_FAIL, NULL, 0);
-        SetPageLockScreen(true);
     }
 #else
         GuiApiEmitSignal(SIG_BOOT_UPDATE_FAIL, NULL, 0);

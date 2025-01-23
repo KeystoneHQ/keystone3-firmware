@@ -64,29 +64,21 @@ void QspiFlashWrite(uint32_t addr, const uint8_t *data, uint32_t len)
 /// @param len
 void QspiFlashEraseAndWrite(uint32_t addr, const uint8_t *data, uint32_t len)
 {
-    static bool first = true;
     ASSERT(len == 4096);
 
     do {
         FLASH_EraseSector(addr);
-        printf("%s %d.\n", __func__, __LINE__);
-        __disable_irq();
         CACHE_CleanAll(CACHE);
-        printf("%s %d.\n", __func__, __LINE__);
         AES_Program(&g_cmdType, NULL, addr, len, (uint8_t *)data);
-        if (first) {
-            // first = false;
-            if (memcmp(data, (uint8_t *)addr, len) == 0) {
-                printf("read back check ok %#x\n", addr);
-                break;
-            } else {
-                printf("encrypt check error....... %#x\n", addr);
-                PrintArray("write", data, len);
-                PrintArray("read", (uint8_t *)addr, len);
-            }
+        if (memcmp(data, (uint8_t *)addr, len) == 0) {
+            printf("read back check ok %#x\n", addr);
+            break;
+        } else {
+            printf("encrypt check error....... %#x\n", addr);
+            PrintArray("write", data, len);
+            PrintArray("read", (uint8_t *)addr, len);
         }
     } while (0);
-    __enable_irq();
 }
 
 

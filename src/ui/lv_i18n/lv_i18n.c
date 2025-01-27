@@ -879,7 +879,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"connect_core_title", "Core Wallet"},
     {"connect_core_link", "https://keyst.one/t/3rd/core"},
     {"usb_transport_connect_desc", "The software wallet is requesting to connect to your Keystone via USB.Enter your password to approve"},
-    {"usb_connectioning_wallet_title", "Connectioning Wallet"},
+    {"usb_connectioning_wallet_title", "Connecting to Wallet"},
     {"usb_connectioning_wallet_desc", "Please wait until the software wallet has completed the connection, then click to close."},
     {"invaild_path_index_title", "Invaild Path Index"},
     {"invaild_path_index_con", "ada derivation path is illegal"},

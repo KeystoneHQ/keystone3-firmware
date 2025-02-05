@@ -141,9 +141,8 @@ fn reader_file(file_path: &String) -> Result<Vec<u8>, OTAError> {
                 encode: 1,
                 encodeUnit: 16384,
                 encrypt: 0,
-                signature: Some(String::from("f8415dc9c54f0e3e1536cddc82182afc223691866715d61f46ba3749005601f0cdfff3db28ab3aed43178f33c5143fd2f6b68962b0b3e2f047cc0eca05711a29")),
+                signature: Some(String::from("")),
             };
-            println!("{}", hex::encode(original_sha256));
 
             let header_string = header.to_bytes();
             let hex_string: String = header_string

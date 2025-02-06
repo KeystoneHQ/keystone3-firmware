@@ -88,7 +88,7 @@ int main(void)
     UserSqlite3Init();
     ScreenManagerInit();
     AccountManagerInit();
-    PowerOnSelfCheck();
+    //PowerOnSelfCheck();
     BootUpdate("1:boot.sig");
 
     PrintSystemInfo();

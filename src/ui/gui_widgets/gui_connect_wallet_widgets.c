@@ -65,7 +65,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_KEPLR, &walletListKeplr, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_LEAP, &walletListLeap, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_MINT_SCAN, &walletListMintScan, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_ARCONNECT, &walletListArConnect, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_WANDER, &walletListWander, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_XBULL, &walletListXBull, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_IMTOKEN, &walletListImToken, true, WALLET_FILTER_ETH},
     {WALLET_LIST_FEWCHA, &walletListFewcha, true, WALLET_FILTER_OTHER},
@@ -155,7 +155,7 @@ static const lv_img_dsc_t *g_leapCoinArray[8] = {
     &coinAtom, &coinOsmo, &coinInj, &coinStrd, &coinStars, &coinJuno, &coinScrt, &coinDym
 };
 
-static const lv_img_dsc_t *g_arconnectCoinArray[1] = {
+static const lv_img_dsc_t *g_wanderCoinArray[1] = {
     &coinAr,
 };
 
@@ -345,7 +345,7 @@ static void GuiInitWalletListArray()
             case WALLET_LIST_BEGIN:
                 enable = !isSLIP39;
                 break;
-            case WALLET_LIST_ARCONNECT:
+            case WALLET_LIST_WANDER:
                 enable = !isTempAccount;
                 break;
             case WALLET_LIST_KEYSTONE:
@@ -467,7 +467,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
         return;
     }
     bool skipGenerateArweaveKey = IsArweaveSetupComplete();
-    if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_WANDER && !skipGenerateArweaveKey) {
         GuiOpenARAddressNoticeWindow();
         return;
     }
@@ -983,13 +983,13 @@ static void AddUniSatWalletCoins(void)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * 5, 2);
 }
 
-static void AddArConnectCoins(void)
+static void AddWanderCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
 
-    lv_obj_t *img = GuiCreateImg(g_coinCont, g_arconnectCoinArray[0]);
+    lv_obj_t *img = GuiCreateImg(g_coinCont, g_wanderCoinArray[0]);
     lv_img_set_zoom(img, 110);
     lv_img_set_pivot(img, 0, 0);
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
@@ -1418,9 +1418,9 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetLeapData;
         AddLeapCoins();
         break;
-    case WALLET_LIST_ARCONNECT:
-        func = GuiGetArConnectData;
-        AddArConnectCoins();
+    case WALLET_LIST_WANDER:
+        func = GuiGetWanderData;
+        AddWanderCoins();
         break;
     case WALLET_LIST_XBULL:
         func = GuiGetXBullData;
@@ -1499,7 +1499,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     if (func) {
 #ifndef BTC_ONLY
         bool skipGenerateArweaveKey = IsArweaveSetupComplete();
-        if (index == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
+        if (index == WALLET_LIST_WANDER && !skipGenerateArweaveKey) {
             GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true, _("InitializingRsaTitle"), _("FindingRsaPrimes"));
             return;
         }

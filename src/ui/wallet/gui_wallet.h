@@ -12,7 +12,7 @@ UREncodeResult *GuiGetSpecterWalletBtcData(void);
 #ifndef BTC_ONLY
 UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index);
 UREncodeResult *GuiGetLeapData();
-UREncodeResult *GuiGetArConnectData(void);
+UREncodeResult *GuiGetWanderData(void);
 UREncodeResult *GuiGetCompanionAppData(void);
 UREncodeResult *GuiGetOkxWalletData(void);
 UREncodeResult *GuiGetBitgetWalletData(void);

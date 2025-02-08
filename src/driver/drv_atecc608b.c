@@ -121,7 +121,6 @@ int32_t Atecc608bEncryptRead(uint8_t slot, uint8_t block, uint8_t *data)
     uint8_t encryptKey[32];
     uint8_t authKey[32];
 
-    MpuSetOtpProtection(false);
     do {
         GetEncryptKey(encryptKey);
         GetAuthKey(authKey);
@@ -131,7 +130,6 @@ int32_t Atecc608bEncryptRead(uint8_t slot, uint8_t block, uint8_t *data)
         ret = atcab_read_enc(slot, block, data, encryptKey, SLOT_ENCRYPT_KEY, nonce);
         CHECK_ATECC608B_RET("read_encrypt", ret);
     } while (0);
-    MpuSetOtpProtection(true);
     CLEAR_ARRAY(nonce);
     CLEAR_ARRAY(encryptKey);
     CLEAR_ARRAY(authKey);
@@ -230,6 +228,7 @@ static int32_t Atecc608bBinding(void)
     do {
         ret = atcab_is_config_locked(&isLock);
         CHECK_ATECC608B_RET("get lock", ret);
+        MpuSetOtpProtection(false);
         OTP_PowerOn();
         memcpy(keys, (uint8_t *)OTP_ADDR_ATECC608B, sizeof(keys));
         if (CheckEntropy(keys, 96)) {
@@ -255,6 +254,7 @@ static int32_t Atecc608bBinding(void)
             }
         }
     } while (0);
+    MpuSetOtpProtection(true);
     CLEAR_ARRAY(keys);
 
     assert(ret == 0);
@@ -269,8 +269,10 @@ static void GetIoProtectKey(uint8_t *ioProtectKey)
 #ifdef ATECC608B_TEST_MODE
     memcpy(ioProtectKey, g_ateccTestIoProtectKey, sizeof(g_ateccTestIoProtectKey));
 #else
+    MpuSetOtpProtection(false);
     OTP_PowerOn();
     memcpy(ioProtectKey, (uint8_t *)IO_PROTECT_KEY_ADDR, 32);
+    MpuSetOtpProtection(true);
 #endif
 }
 
@@ -281,8 +283,10 @@ static void GetAuthKey(uint8_t *authKey)
 #ifdef ATECC608B_TEST_MODE
     memcpy(authKey, g_ateccTestAuthKey, sizeof(g_ateccTestAuthKey));
 #else
+    MpuSetOtpProtection(false);
     OTP_PowerOn();
     memcpy(authKey, (uint8_t *)AUTH_KEY_ADDR, 32);
+    MpuSetOtpProtection(true);
 #endif
 }
 
@@ -293,8 +297,10 @@ static void GetEncryptKey(uint8_t *encryptKey)
 #ifdef ATECC608B_TEST_MODE
     memcpy(encryptKey, g_ateccTestEncryptKey, sizeof(g_ateccTestEncryptKey));
 #else
+    MpuSetOtpProtection(false);
     OTP_PowerOn();
     memcpy(encryptKey, (uint8_t *)ENCRYPT_KEY_ADDR, 32);
+    MpuSetOtpProtection(true);
 #endif
 }
 

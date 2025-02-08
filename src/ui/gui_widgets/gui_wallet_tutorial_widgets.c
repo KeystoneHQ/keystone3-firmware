@@ -225,7 +225,7 @@ static void WalletTutorialsInit()
     //WALLET_LIST_WANDER
     g_tutorials[WALLET_LIST_WANDER].len = 1;
     g_tutorials[WALLET_LIST_WANDER].desc = _("connect_wallet_desc");
-    g_tutorials[WALLET_LIST_WANDER].items[0].walletName = _("connect_arconnect_title");
+    g_tutorials[WALLET_LIST_WANDER].items[0].walletName = _("connect_wander_title");
     g_tutorials[WALLET_LIST_WANDER].items[0].url = _("connect_wander_link");
     g_tutorials[WALLET_LIST_WANDER].items[0].qrTitle = _("connect_arconnect_title");
     g_tutorials[WALLET_LIST_WANDER].items[0].qrUrl = _("connect_arconnect_link");

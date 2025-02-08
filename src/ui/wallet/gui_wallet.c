@@ -225,7 +225,7 @@ UREncodeResult *GuiGetImTokenData(void)
 #endif
 }
 
-UREncodeResult *GuiGetArConnectData(void)
+UREncodeResult *GuiGetWanderData(void)
 {
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);

@@ -122,7 +122,7 @@ const static CoinWalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
     {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
     {WALLET_LIST_MINT_SCAN, "Mintscan", &walletMintScan},
-    {WALLET_LIST_ARCONNECT, "ArConnect", &walletArConnect},
+    {WALLET_LIST_WANDER, "Wander", &walletWander},
     {WALLET_LIST_VESPR, "Vespr", &walletVespr},
     {WALLET_LIST_XBULL, "xBull", &walletXBull},
     {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},

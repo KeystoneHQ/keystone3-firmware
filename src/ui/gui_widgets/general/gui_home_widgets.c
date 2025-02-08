@@ -505,7 +505,8 @@ static uint8_t GetSelectedWalletCount(void)
 {
     uint8_t selectCnt = 0;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE) {
+        if (GetIsTempAccount() && (g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE
+                                   || g_walletState[i].index == HOME_WALLET_CARD_ZEC)) {
             continue;
         }
 
@@ -813,7 +814,7 @@ static void GuiUpdateCoinListWidget(HomeGesture_t gesture)
             totalCoinAmount++;
         }
     }
-    
+
     UpdateCoinStartIndex(gesture, totalCoinAmount);
     lv_obj_t *pageSelectCont = GuiCreateContainerWithParent(coinListCont, 480, 6);
     lv_obj_align(pageSelectCont, LV_ALIGN_BOTTOM_MID, 0, 0);

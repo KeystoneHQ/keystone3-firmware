@@ -358,10 +358,12 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
         if (strnlen_s(passphrase, PASSPHRASE_MAX_LEN) > 0) {
             strcpy_s(g_passphraseInfo[accountIndex].passphrase, PASSPHRASE_MAX_LEN, passphrase);
             g_passphraseInfo[accountIndex].passphraseExist = true;
+            ret = TempAccountPublicInfo(accountIndex, password, true);
         } else {
             ClearAccountPassphrase(accountIndex);
+            ret = AccountPublicInfoSwitch(accountIndex, password, false);
+            CalculateZcashUFVK(accountIndex, password);
         }
-        ret = TempAccountPublicInfo(accountIndex, password, true);
         SetPassphraseMark(passphrase[0] != '\0');
     } while (0);
     CLEAR_ARRAY(seed);

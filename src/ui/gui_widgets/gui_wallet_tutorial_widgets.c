@@ -222,13 +222,13 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_MINT_SCAN].items[0].qrTitle = _("connect_mintscan_title");
     g_tutorials[WALLET_LIST_MINT_SCAN].items[0].qrUrl = _("connect_mintscan_link");
 
-    //WALLET_LIST_ARCONNECT
-    g_tutorials[WALLET_LIST_ARCONNECT].len = 1;
-    g_tutorials[WALLET_LIST_ARCONNECT].desc = _("connect_wallet_desc");
-    g_tutorials[WALLET_LIST_ARCONNECT].items[0].walletName = _("connect_arconnect_title");
-    g_tutorials[WALLET_LIST_ARCONNECT].items[0].url = _("connect_arconnect_link");
-    g_tutorials[WALLET_LIST_ARCONNECT].items[0].qrTitle = _("connect_arconnect_title");
-    g_tutorials[WALLET_LIST_ARCONNECT].items[0].qrUrl = _("connect_arconnect_link");
+    //WALLET_LIST_WANDER
+    g_tutorials[WALLET_LIST_WANDER].len = 1;
+    g_tutorials[WALLET_LIST_WANDER].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_WANDER].items[0].walletName = _("connect_wander_title");
+    g_tutorials[WALLET_LIST_WANDER].items[0].url = _("connect_wander_link");
+    g_tutorials[WALLET_LIST_WANDER].items[0].qrTitle = _("connect_arconnect_title");
+    g_tutorials[WALLET_LIST_WANDER].items[0].qrUrl = _("connect_arconnect_link");
 
     // WALLET_LIST_VESPR
     g_tutorials[WALLET_LIST_VESPR].len = 1;

@@ -52,6 +52,7 @@ static void FingerprintTask(void *pvParameter)
     osTimerId_t fpFpRecognizeTimer = NULL;
 
     FingerprintRestart();
+    osDelay(1000);
     g_fpTimeoutTimer = osTimerNew(FpTimeoutHandle, osTimerPeriodic, NULL, NULL);
     osTimerId_t getAesKeyTimer = osTimerNew(FpGetAesStateHandle, osTimerOnce, NULL, NULL);
     osTimerStart(getAesKeyTimer, 100);

@@ -79,7 +79,6 @@ static bool g_delFpSave = false;
 static uint8_t g_fpIndex;
 static uint16_t g_delayCmd;
 static uint16_t g_lastCmd;
-static uint8_t g_errorCnt = 0;
 static bool g_isAesCbc = false;
 static bool g_devLogSwitch = false;
 static uint8_t g_fpRandomKey[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10};
@@ -321,7 +320,6 @@ static void FpRecognizeRecv(char *indata, uint8_t len)
                 char decryptPasscode[128] = {0};
                 GetFpEncryptedPassword(GetCurrentAccountIndex(), encryptedPassword);
                 DecryptFunc((uint8_t *)decryptPasscode, encryptedPassword, (uint8_t *)&indata[6], sizeof(encryptedPassword) / 16);
-                printf("decryptPasscode = %s\n", decryptPasscode);
                 SecretCacheSetPassword(decryptPasscode);
                 memset_s(decryptPasscode, sizeof(decryptPasscode), 0, sizeof(decryptPasscode));
                 memset_s(encryptedPassword, sizeof(encryptedPassword), 0, sizeof(encryptedPassword));
@@ -833,6 +831,8 @@ static void SearchFpAesKeyState(void)
 {
     int32_t ret = FINGERPRINT_SUCCESS;
     ret = GetFpCommAesKey(g_communicateAesKey);
+    // PrintArray("g_communicateAesKey", g_communicateAesKey, 16);
+    // PrintArray("iv", &g_communicateAesKey[16], 16);
     if (ret != SUCCESS_CODE) {
         return;
     }
@@ -879,15 +879,9 @@ void FpTimeoutHandle(void *argument)
             }
             timerStop = false;
             g_cmdTimeoutMap[i].cnt++;
-            g_errorCnt++;
-            if (g_errorCnt == 20) {
-                FingerprintRestart();
-                FpDelayMsgSend();
-            }
         }
     }
     if (timerStop == true) {
-        g_errorCnt = 0;
         osTimerStop(g_fpTimeoutTimer);
     }
     osMutexRelease(g_fpResponseMutex);

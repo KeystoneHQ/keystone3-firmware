@@ -411,8 +411,8 @@ static void OpenQRCodeHandler(lv_event_t *e)
         g_derivationPathDescs = GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC);
     }
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL ||
-            g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON ||
-            g_connectWalletTileView.walletIndex == WALLET_LIST_BEGIN
+    g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON ||
+    g_connectWalletTileView.walletIndex == WALLET_LIST_BEGIN
        ) {
         GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
         return;

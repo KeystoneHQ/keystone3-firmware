@@ -402,7 +402,7 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
     // + xrp 1
 
     // total xpub = 9
-    uint8_t XPUB_AMMOUNT = 9;
+    uint8_t XPUB_AMMOUNT = 10;
     ExtendedPublicKey keys[XPUB_AMMOUNT];
     public_keys->data = keys;
     public_keys->size = XPUB_AMMOUNT;
@@ -433,6 +433,9 @@ UREncodeResult *GuiGetKeystoneWalletData(void)
 
     keys[8].path = GetXPubPath(XPUB_TYPE_ETH_BIP44_STANDARD);
     keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+
+    keys[9].path = GetXPubPath(XPUB_TYPE_ERG);
+    keys[9].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ERG);
 
     char serialNumber[256];
     GetSerialNumber(serialNumber);

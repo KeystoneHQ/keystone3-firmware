@@ -98,8 +98,8 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 #endif
 
 #ifdef CYPHERPUNK_VERSION
-    {CHAIN_ZEC, "", &coinZec},
-    {CHAIN_MONERO, "", &coinXmr},
+    {CHAIN_ZCASH, "", &coinZec},
+    {CHAIN_XMR, "", &coinXmr},
 #endif
 };
 

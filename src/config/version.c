@@ -6,6 +6,8 @@
 #define SOFTWARE_VERSION_MAX_LEN            (32)
 #define STRINGIFY(x)                        #x
 #define EXPAND(x)                           STRINGIFY(x)
+#define BOOT_VERSION_ADDR                   0x01002000
+#define BOOT_VERSION_HEAD                   "Boot v"
 
 #ifndef BTC_ONLY
 #define SOFTWARE_VERSION_STR "Firmware v" EXPAND(SOFTWARE_VERSION_MAJOR) "." EXPAND(SOFTWARE_VERSION_MINOR) "." EXPAND(SOFTWARE_VERSION_BUILD)
@@ -17,6 +19,7 @@ const char g_softwareVersionString[] = SOFTWARE_VERSION_STR;
 #else
 const char g_softwareVersionString[] __attribute__((section(".fixSection"))) = SOFTWARE_VERSION_STR;
 #endif
+static bool GetBootSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uint32_t *build, const uint8_t *data, uint32_t dataLen);
 
 void GetSoftWareVersion(char *version)
 {
@@ -60,3 +63,60 @@ const char *GetSoftwareVersionString(void)
     return version;
 }
 
+bool NeedUpdateBoot(void)
+{
+    uint32_t major, minor, build;
+    if (GetBootSoftwareVersion(&major, &minor, &build) == false) {
+        return true;
+    }
+    printf("major: %d, minor: %d, build: %d\n", major, minor, build);
+    return major == 0 && minor <= 1 && build <= 9;
+}
+
+bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build)
+{
+    uint8_t read[4096];
+    memcpy(read, (void *)BOOT_VERSION_ADDR, 4096);
+    return GetBootSoftwareVersionFormData(major, minor, build, read, 4096);
+}
+
+static bool GetBootSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uint32_t *build, const uint8_t *data, uint32_t dataLen)
+{
+    uint32_t versionInfoOffset = UINT32_MAX, i, headLen;
+    char *versionStr, read[64];
+    int32_t ret;
+    bool succ = false;
+
+    headLen = strlen(BOOT_VERSION_HEAD);
+    for (i = 0; i < dataLen - headLen - 32; i++) {
+        if (data[i] == 'B') {
+            if (strncmp((char *)&data[i], BOOT_VERSION_HEAD, headLen) == 0) {
+                versionInfoOffset = i;
+                break;
+            }
+        }
+    }
+    do {
+        if (versionInfoOffset == UINT32_MAX) {
+            printf("boot version string not found in fixed segment\n");
+            break;
+        }
+        memcpy(read, &data[versionInfoOffset], 64);
+        read[31] = '\0';
+        if (strncmp(read, BOOT_VERSION_HEAD, headLen) != 0) {
+            break;
+        }
+        versionStr = read + headLen;
+        ret = sscanf(versionStr, "%d.%d.%d", major, minor, build);
+        if (ret != 3) {
+            break;
+        }
+        succ = true;
+    } while (0);
+    if (succ == false) {
+        *major = 0;
+        *minor = 0;
+        *build = 0;
+    }
+    return succ;
+}

@@ -67,6 +67,7 @@ void QspiFlashEraseAndWrite(uint32_t addr, const uint8_t *data, uint32_t len)
     ASSERT(len == 4096);
 
     do {
+        __disable_irq();
         FLASH_EraseSector(addr);
         CACHE_CleanAll(CACHE);
         AES_Program(&g_cmdType, NULL, addr, len, (uint8_t *)data);
@@ -79,6 +80,7 @@ void QspiFlashEraseAndWrite(uint32_t addr, const uint8_t *data, uint32_t len)
             PrintArray("read", (uint8_t *)addr, len);
         }
     } while (0);
+    __enable_irq();
 }
 
 

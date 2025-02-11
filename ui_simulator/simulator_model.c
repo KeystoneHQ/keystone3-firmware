@@ -733,3 +733,8 @@ int32_t read_qrcode()
 bool GetEnsName(const char *addr, char *name) {
     return false;
 }
+
+void OTP_PowerOn(void)
+{
+}
+

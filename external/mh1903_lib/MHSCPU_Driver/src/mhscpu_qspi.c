@@ -360,7 +360,6 @@ static uint8_t buf_aes_enc(uint8_t *cp_buf, uint32_t sz, uint8_t *sup_buf)
     uint8_t iv[16] = {0};
     uint8_t cipher[32];
     uint8_t plain[32];
-    //static bool first = false;
 
     SYSCTRL_AHBPeriphClockCmd(SYSCTRL_AHBPeriph_OTP, ENABLE);
     memcpy(key128, (uint32_t *)(0x40009128), 16);
@@ -377,16 +376,8 @@ static uint8_t buf_aes_enc(uint8_t *cp_buf, uint32_t sz, uint8_t *sup_buf)
             plain[k + 16] = cp_buf[i * 32 + 16 + j];
             k += 1;
         }
-        //mh_aes_enc(modes[1], cipher, 32, plain, 32, key128, MH_AES_128, iv, mh_rand_p, NULL);
         AES128_CBC_init(&aesCtx, key128, iv);
         AES128_CBC_encrypt(&aesCtx, 2, cipher, plain);
-        //if (first == false) {
-        //    first = true;
-        //    PrintArray("cipher", cipher, 32);
-        //    PrintArray("plain", plain, 32);
-        //    PrintArray("key128", key128, 16);
-        //    PrintArray("iv", iv, 16);
-        //}
 
         k = 0;
         for (j = 15; j >= 0; j --) {
@@ -394,7 +385,6 @@ static uint8_t buf_aes_enc(uint8_t *cp_buf, uint32_t sz, uint8_t *sup_buf)
             sup_buf[i * 32 + 16 + j] = cipher[k + 16];
             k += 1;
         }
-        //memcpy(cp_buf + i * 32, cipher, 32);
     }
     return 0;
 }

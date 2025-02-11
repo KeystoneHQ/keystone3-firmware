@@ -25,6 +25,7 @@
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_btc.h"
+#include "gui_pending_hintbox.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_read_sdcard_widgets.h"
 #endif
@@ -83,6 +84,7 @@ void GuiScanRefresh()
     GuiScanStart();
 }
 
+#ifdef BTC_ONLY
 static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, size_t filterSize)
 {
     for (size_t i = 0; i < filterSize; i++) {
@@ -92,7 +94,7 @@ static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, siz
     }
     return false;
 }
-
+#endif
 void GuiScanResult(bool result, void *param)
 {
     if (result) {

@@ -43,6 +43,7 @@
 #endif
 #include "log.h"
 #include "background_task.h"
+#include "fetch_sensitive_data_task.h"
 #include "account_public_info.h"
 #include "version.h"
 #include "drv_motor.h"

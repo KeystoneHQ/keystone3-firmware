@@ -1243,7 +1243,7 @@ static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen)
         GuiApiEmitSignal(SIG_BOOT_UPDATE_FAIL, NULL, 0);
     }
 #else
-        GuiApiEmitSignal(SIG_BOOT_UPDATE_FAIL, NULL, 0);
+    GuiApiEmitSignal(SIG_BOOT_UPDATE_FAIL, NULL, 0);
 #endif
     return SUCCESS_CODE;
 }

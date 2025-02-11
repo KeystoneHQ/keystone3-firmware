@@ -278,10 +278,14 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     char showString[BUFFER_SIZE_64] = {0};
     char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     GetSoftWareVersionNumber(version);
+    uint32_t major, minor, build;
+    GetBootSoftwareVersion(&major, &minor, &build);
+    printf("Boot Software Version: %d.%d.%d\r\n", major, minor, build);
     if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
         snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E v%s#  /  #F5870A %s#", version, _("firmware_update_title"));
     } else {
         snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s#", version);
+        snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s# Boot %d.%d.%d", version, major, minor, build);
     }
 
     button = CreateSettingWidgetsButton(parent, _("device_setting_about_title"),

@@ -226,6 +226,7 @@ static void AesEncryptBuffer(uint8_t *cipher, uint32_t sz, uint8_t *plain)
     AES128_CBC_ctx ctx;
     AES128_CBC_init(&ctx, key128, iv);
     AES128_CBC_encrypt(&ctx, sz / 16, cipher, plain);
+    MpuSetOtpProtection(true);
 }
 
 void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher)
@@ -240,6 +241,7 @@ void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher)
     memcpy(iv, (uint32_t *)(0x40009138), 16);
     AES128_CBC_init(&ctx, key128, iv);
     AES128_CBC_decrypt(&ctx, sz / 16, plain, cipher);
+    MpuSetOtpProtection(true);
 }
 
 bool GetBootSecureCheckFlag(void)
@@ -247,19 +249,12 @@ bool GetBootSecureCheckFlag(void)
     uint8_t cipher[16] = {0};
     uint8_t plain[16] = {0};
     Gd25FlashReadBuffer(BOOT_SECURE_CHECK_FLAG, cipher, sizeof(cipher));
-    printf("%s %d.\n", __func__, __LINE__);
-    PrintArray("cipher", cipher, sizeof(cipher));
     if (CheckAllFF(cipher, sizeof(cipher))) {
-        printf("%s %d.\n", __func__, __LINE__);
         SetBootSecureCheckFlag(true);
         Gd25FlashReadBuffer(BOOT_SECURE_CHECK_FLAG, cipher, sizeof(cipher));
     }
 
-    printf("%s %d.\n", __func__, __LINE__);
-    PrintArray("cipher", cipher, sizeof(cipher));
     AesDecryptBuffer(plain, sizeof(plain), cipher);
-    printf("%s %d.\n", __func__, __LINE__);
-    PrintArray("plain", plain, sizeof(plain));
     return (memcmp(plain, g_integrityFlag, sizeof(g_integrityFlag)) == 0);
 }
 
@@ -269,19 +264,11 @@ void SetBootSecureCheckFlag(bool isSet)
     uint8_t plain[16] = {0};
     if (isSet) {
         memcpy(plain, g_integrityFlag, sizeof(g_integrityFlag));
-        printf("%s %d.\n", __func__, __LINE__);
-        PrintArray("plain", plain, sizeof(plain));
     }
-    printf("%s %d.\n", __func__, __LINE__);
-    PrintArray("plain", plain, sizeof(plain));
 
     AesEncryptBuffer(cipher, sizeof(cipher), plain);
-    PrintArray("cipher", cipher, sizeof(cipher));
     Gd25FlashSectorErase(BOOT_SECURE_CHECK_FLAG);
     Gd25FlashWriteBuffer(BOOT_SECURE_CHECK_FLAG, cipher, sizeof(cipher));
-    char buff[16];
-    Gd25FlashReadBuffer(BOOT_SECURE_CHECK_FLAG, buff, sizeof(buff));
-    PrintArray("buff", buff, sizeof(buff));
 }
 
 bool IsUpdateSuccess(void)
@@ -375,7 +362,6 @@ void WipeDevice(void)
         Gd25FlashBlockErase(addr);
         printf("flash erase address: %#x\n", addr);
     }
-    SetBootSecureCheckFlag(true);
 }
 
 /// @brief Device settings test.

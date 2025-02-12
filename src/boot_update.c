@@ -58,7 +58,6 @@ int32_t UpdateBootFromFlash(void)
 {
     osKernelLock();
     int num = BinarySearchBootHead();
-    printf("num = %d\n", num);
     if (num <= 0) {
         osKernelUnlock();
         return false;
@@ -78,7 +77,6 @@ int32_t UpdateBootFromFlash(void)
     memcpy(g_fileUnit, (uint32_t *)baseAddr, 4 + 32);
     uint32_t bootLen = (g_fileUnit[0] << 24) + (g_fileUnit[1] << 16) + (g_fileUnit[2] << 8) + g_fileUnit[3];
     memcpy(hash, &g_fileUnit[4], 32);
-    PrintArray("hash", hash, 32);
 
     memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
     memcpy(g_fileUnit, (uint32_t *)(baseAddr + 4 + 32 + 0x30), BOOT_HEAD_SIZE);
@@ -103,10 +101,7 @@ int32_t UpdateBootFromFlash(void)
         QspiFlashEraseAndWrite(writeAddr, g_fileUnit, SECTOR_SIZE);
     }
 
-    printf("readCrc: %#x\n", readCrc);
-    printf("crcCalc: %#x\n", crcCalc);
     sha256_done(&ctx, (struct sha256 *)calHash);
-    PrintArray("calHash", calHash, 32);
 
     osKernelUnlock();
     if (memcmp(hash, calHash, 32) == 0) {

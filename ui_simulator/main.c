@@ -94,8 +94,6 @@ int main(int argc, char **argv)
     hal_init();
 
     DeviceSettingsInit();
-    SetBootSecureCheckFlag(true);
-    // printf("GetBootSecureCheckFlag: %d\r\n", GetBootSecureCheckFlag());
 
     GuiStyleInit();
     LanguageInit();

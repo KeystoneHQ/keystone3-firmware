@@ -118,16 +118,12 @@ int32_t StorageGetDataSize(uint32_t addr, uint8_t *buffer, uint32_t size)
 
 int32_t StorageGetBootSecureCheck(uint8_t *buffer, uint32_t size)
 {
-    printf("%s %d.\n", __func__, __LINE__);
     static const uint8_t g_integrityFlag[16] = {
         0x01, 0x09, 0x00, 0x03,
         0x01, 0x09, 0x00, 0x03,
         0x01, 0x09, 0x00, 0x03,
         0x01, 0x09, 0x00, 0x03,
     };
-    // buffer[0] = 0x01;
-    // memcpy(buffer, g_integrityFlag, sizeof(g_integrityFlag));
-    printf("%s %d.\n", __func__, __LINE__);
     return 16;
 }
 

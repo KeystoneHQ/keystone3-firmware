@@ -65,6 +65,9 @@ const char *GetSoftwareVersionString(void)
 
 bool NeedUpdateBoot(void)
 {
+#ifdef COMPILE_SIMULATOR
+    return false;
+#endif
     uint32_t major, minor, build;
     if (GetBootSoftwareVersion(&major, &minor, &build) == false) {
         return true;
@@ -75,6 +78,9 @@ bool NeedUpdateBoot(void)
 
 bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build)
 {
+#ifdef COMPILE_SIMULATOR
+    return false;
+#endif
     uint8_t read[4096];
     memcpy(read, (void *)BOOT_VERSION_ADDR, 4096);
     return GetBootSoftwareVersionFormData(major, minor, build, read, 4096);

@@ -106,6 +106,11 @@ int32_t UpdateBootFromFlash(void)
     osKernelUnlock();
     if (memcmp(hash, calHash, 32) == 0) {
         printf("update success\n");
+        memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
+        QspiFlashEraseAndWrite((uint32_t *)(APP_END_ADDR - 4096), g_fileUnit, 4096);
+        memset(g_fileUnit, 0, sizeof(g_fileUnit));
+        memcpy(g_fileUnit, (uint32_t *)(APP_END_ADDR - 4096), 4);
+        PrintArray("update success", g_fileUnit, 1000);
         return 0;
     } else {
         printf("update failed\n");

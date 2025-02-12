@@ -16,7 +16,7 @@ int32_t GuiBootUpdateViewEventProcess(void *self, uint16_t usEvent, void *param,
         GuiBootUpdateSuccess();
         break;
     case SIG_BOOT_UPDATE_FAIL:
-        GuiBootUpdateFail();
+        // GuiBootUpdateFail();
         break;
     default:
         return ERR_GUI_UNHANDLED;

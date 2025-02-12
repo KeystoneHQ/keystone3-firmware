@@ -9,6 +9,7 @@
 
 static lv_obj_t *g_bootUpdateCont = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
+static lv_obj_t *g_startBtn = NULL;
 
 void GuiCreateBootUpdateHandler(lv_event_t * e)
 {
@@ -18,6 +19,9 @@ void GuiCreateBootUpdateHandler(lv_event_t * e)
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
         return;
     }
+
+    lv_obj_set_style_bg_color(g_startBtn, DARK_GRAY_COLOR, LV_PART_MAIN);
+    lv_obj_clear_flag(g_startBtn, LV_OBJ_FLAG_CLICKABLE);
 
     printf("GuiCreateBootUpdateHandler\n");
     GuiModelUpdateBoot();
@@ -109,10 +113,10 @@ void GuiBootUpdateInit(void)
         tempObj = GuiCreateNoticeLabel(g_bootUpdateCont, buff);
         GuiAlignToPrevObj(tempObj, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
 
-        tempObj = GuiCreateBtn(g_bootUpdateCont, "Update");
-        lv_obj_align(tempObj, LV_ALIGN_BOTTOM_MID, 0, -36);
-        lv_obj_set_width(tempObj, 408);
-        lv_obj_add_event_cb(tempObj, GuiCreateBootUpdateHandler, LV_EVENT_CLICKED, NULL);
+        g_startBtn = GuiCreateTextBtn(g_bootUpdateCont, _("Start"));
+        lv_obj_align(g_startBtn, LV_ALIGN_BOTTOM_MID, 0, -36);
+        lv_obj_set_width(g_startBtn, 408);
+        lv_obj_add_event_cb(g_startBtn, GuiCreateBootUpdateHandler, LV_EVENT_CLICKED, NULL);
 
         tempObj = GuiCreateBtn(g_bootUpdateCont, "Skip");
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, 0, -100);

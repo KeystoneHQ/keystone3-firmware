@@ -362,7 +362,6 @@ void WipeDevice(void)
         Gd25FlashBlockErase(addr);
         printf("flash erase address: %#x\n", addr);
     }
-    SetBootSecureCheckFlag(true);
 }
 
 /// @brief Device settings test.

@@ -1,3 +1,4 @@
+#include "gui.h"
 #include "gui_views.h"
 #include "gui_boot_update_widgets.h"
 #include "gui_status_bar.h"
@@ -63,11 +64,13 @@ void GuiBootUpdateFail(void)
 void GuiBootUpdateInit(void)
 {
     lv_obj_t *tempObj;
+    uint32_t height = 336 - GUI_STATUS_BAR_HEIGHT;
     printf("GuiBootUpdateInit\n");
     if (g_bootUpdateCont == NULL) {
-        g_bootUpdateCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
+        g_bootUpdateCont = GuiCreateContainer(480, 800 - GUI_STATUS_BAR_HEIGHT);
+        lv_obj_align(g_bootUpdateCont, LV_ALIGN_TOP_MID, 0, GUI_STATUS_BAR_HEIGHT);
         tempObj = GuiCreateImg(g_bootUpdateCont, &imgFirmwareUp);
-        lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, 150);
+        lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, 150 - GUI_STATUS_BAR_HEIGHT);
         tempObj = GuiCreateLittleTitleLabel(g_bootUpdateCont, _("boot_update_title"));
         GuiAlignToPrevObj(tempObj, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
         tempObj = GuiCreateNoticeLabel(g_bootUpdateCont, _("boot_update_desc1"));
@@ -75,19 +78,23 @@ void GuiBootUpdateInit(void)
         GuiAlignToPrevObj(tempObj, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
         tempObj = GuiCreateNoticeLabel(g_bootUpdateCont, _("boot_update_desc2"));
         lv_obj_set_style_text_align(tempObj, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-        GuiAlignToPrevObj(tempObj, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
+        lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, height);
         lv_label_set_recolor(tempObj, true);
+        height += 30;
         tempObj = GuiCreateNoticeLabel(g_bootUpdateCont, _("boot_update_desc3"));
         lv_obj_set_style_text_align(tempObj, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-        GuiAlignToPrevObj(tempObj, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
+        lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, height);
+        height += 30;
         tempObj = GuiCreateNoticeLabel(g_bootUpdateCont, _("boot_update_desc4"));
         lv_obj_set_style_text_align(tempObj, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-        GuiAlignToPrevObj(tempObj, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
         lv_label_set_recolor(tempObj, true);
+        lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, height);
+        height += 30;
         tempObj = GuiCreateNoticeLabel(g_bootUpdateCont, _("boot_update_desc5"));
         lv_obj_set_style_text_align(tempObj, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
         lv_label_set_recolor(tempObj, true);
-        GuiAlignToPrevObj(tempObj, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
+        lv_obj_align(tempObj, LV_ALIGN_TOP_MID, 0, height);
+        height += 30;
 
         tempObj = GuiCreateLabelWithFontAndTextColor(g_bootUpdateCont, "support@keyst.one", &openSansEnIllustrate, 0x1BE0C6);
         GuiAlignToPrevObj(tempObj, LV_ALIGN_OUT_BOTTOM_MID, 0, 20);
@@ -96,7 +103,7 @@ void GuiBootUpdateInit(void)
         char buff[BUFFER_SIZE_128];
         GetSerialNumber(serialNumber);
         uint32_t major, minor, build;
-        GetBootSoftwareVersion(&major, &minor, &build);
+        // GetBootSoftwareVersion(&major, &minor, &build);
         // snprintf_s(buff, sizeof(buff), "SN:%s ", serialNumber);
         snprintf_s(buff, sizeof(buff), "SN:%s boot:%d.%d.%d", serialNumber, major, minor, build);
         tempObj = GuiCreateNoticeLabel(g_bootUpdateCont, buff);

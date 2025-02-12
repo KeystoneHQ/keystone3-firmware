@@ -4391,7 +4391,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"verification_code_failed_desc", "장치는 잠재적으로 변조될 수 있으며, 개인 데이터 및 디지털 자산에 위협이 될 수 있습니다.자산 보안을 위해 모든 개인 데이터를 삭제하고 즉시 키스톤 지원팀에 연락하여 도움을 요청할 것을 권장합니다."},
     {"verification_code_failed_title", "무단 위반 시도가 감지되었습니다!"},
     {"verification_code_title", "인증 코드"},
-    {"verification_success", "인증 설공 "},
+    {"verification_success", "인증 성공"},
     {"verify_cont1", "저희 웹사이트에 방문하셔서 #F5870A 장치확인 #버튼을 클릭해주세요."},
     {"verify_cont2", "\"장치 확인\" 페이지에 표시된 QR 코드를 스캔하면 장치 인증 코드를 받을 수 있습니다."},
     {"verify_cont3", "\"장치 확인\" 페이지에 인증 코드를 입력하여 장치의 변조 여부를 확인합니다. "},

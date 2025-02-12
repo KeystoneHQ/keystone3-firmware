@@ -12,7 +12,7 @@ static lv_obj_t *g_noticeWindow = NULL;
 void GuiCreateBootUpdateHandler(lv_event_t * e)
 {
     if (GetCurrentDisplayPercent() <= 60 ||
-        GetUsbDetectState() == false) {
+            GetUsbDetectState() == false) {
         g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("boot_update_limit_title"), _("boot_update_limit_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
         return;
@@ -110,9 +110,5 @@ void GuiBootUpdateInit(void)
         tempObj = GuiCreateBtn(g_bootUpdateCont, "Skip");
         lv_obj_align(tempObj, LV_ALIGN_BOTTOM_RIGHT, 0, -100);
         lv_obj_add_event_cb(tempObj, GuiCreateBootUpdateSkipHandler, LV_EVENT_CLICKED, NULL);
-
-        tempObj = GuiCreateBtn(g_bootUpdateCont, "Restart");
-        lv_obj_align(tempObj, LV_ALIGN_BOTTOM_LEFT, 0, -100);
-        lv_obj_add_event_cb(tempObj, GuiCreateBootUpdateRestartToAppHandler, LV_EVENT_CLICKED, NULL);
     }
 }

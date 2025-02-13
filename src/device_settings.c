@@ -244,6 +244,9 @@ void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher)
 
 bool GetBootSecureCheckFlag(void)
 {
+#ifdef COMPILE_SIMULATOR
+    return true;
+#endif
     uint8_t cipher[16] = {0};
     uint8_t plain[16] = {0};
     Gd25FlashReadBuffer(BOOT_SECURE_CHECK_FLAG, cipher, sizeof(cipher));

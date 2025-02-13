@@ -69,6 +69,7 @@ void GuiSystemSettingWebAuthHandler(lv_event_t *e)
 
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
 {
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_t *label, *button;
     uint16_t offset = 0;
 

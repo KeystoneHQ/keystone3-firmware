@@ -13,7 +13,7 @@ static lv_obj_t *g_startBtn = NULL;
 
 void GuiCreateBootUpdateHandler(lv_event_t * e)
 {
-    if (GetCurrentDisplayPercent() <= 60 ||
+    if (GetCurrentDisplayPercent() <= 40 ||
             GetUsbDetectState() == false) {
         g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("boot_update_limit_title"), _("boot_update_limit_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);

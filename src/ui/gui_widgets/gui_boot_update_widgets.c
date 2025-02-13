@@ -106,10 +106,7 @@ void GuiBootUpdateInit(void)
         char serialNumber[SERIAL_NUMBER_MAX_LEN];
         char buff[BUFFER_SIZE_128];
         GetSerialNumber(serialNumber);
-        uint32_t major, minor, build;
-        // GetBootSoftwareVersion(&major, &minor, &build);
-        // snprintf_s(buff, sizeof(buff), "SN:%s ", serialNumber);
-        snprintf_s(buff, sizeof(buff), "SN:%s boot:%d.%d.%d", serialNumber, major, minor, build);
+        snprintf_s(buff, sizeof(buff), "SN:%s ", serialNumber);
         tempObj = GuiCreateNoticeLabel(g_bootUpdateCont, buff);
         GuiAlignToPrevObj(tempObj, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
 

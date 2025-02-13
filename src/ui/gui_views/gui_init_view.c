@@ -73,7 +73,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
             if (IsUpdateSuccess()) {
                 GuiFrameOpenView(&g_updateSuccessView);
             }
-            if (true) {
+            if (NeedUpdateBoot()) {
                 GuiFrameOpenView(&g_bootUpdateView);
             }
             break;

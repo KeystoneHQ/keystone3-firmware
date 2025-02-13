@@ -278,11 +278,17 @@ void GuiLockScreenPassCode(bool en)
             GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_homeView);
             GuiFrameOpenView(&g_updateSuccessView);
+            if (NeedUpdateBoot()) {
+                GuiFrameOpenView(&g_bootUpdateView);
+            }
         } else if (ModelGetPassphraseQuickAccess()) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiModeGetWalletDesc();
             GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_passphraseView);
+            if (NeedUpdateBoot()) {
+                GuiFrameOpenView(&g_bootUpdateView);
+            }
         } else if (g_homeView.isActive) {
             GuiLockScreenTurnOff();
         } else if (g_forgetPassView.isActive) {

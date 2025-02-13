@@ -42,6 +42,7 @@
 #include "safe_mem_lib.h"
 #include "usb_task.h"
 #include "drv_mpu.h"
+#include "boot_update.h"
 #else
 #include "simulator_model.h"
 #endif
@@ -106,6 +107,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc);
 static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen);
+static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen);
 
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
@@ -271,6 +273,11 @@ void GuiModelWriteLastLockDeviceTime(uint32_t time)
 void GuiModelCopySdCardOta(void)
 {
     AsyncExecute(ModelCopySdCardOta, NULL, 0);
+}
+
+void GuiModelUpdateBoot(void)
+{
+    AsyncExecute(ModelUpdateBoot, NULL, 0);
 }
 
 void GuiModelURGenerateQRCode(GenerateUR func)
@@ -1221,6 +1228,25 @@ static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
+static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen)
+{
+#ifndef COMPILE_SIMULATOR
+    static uint8_t walletAmount;
+    SetPageLockScreen(false);
+    int32_t ret = UpdateBootFromFlash();
+    SetPageLockScreen(true);
+    if (ret == SUCCESS_CODE) {
+        NVIC_SystemReset();
+        GuiApiEmitSignal(SIG_BOOT_UPDATE_SUCCESS, NULL, 0);
+    } else {
+        GuiApiEmitSignal(SIG_BOOT_UPDATE_FAIL, NULL, 0);
+    }
+#else
+    GuiApiEmitSignal(SIG_BOOT_UPDATE_FAIL, NULL, 0);
+#endif
+    return SUCCESS_CODE;
+}
+
 static PtrT_TransactionCheckResult g_checkResult = NULL;
 
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
@@ -1263,7 +1289,7 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
     return SUCCESS_CODE;
 }
 
-static uint32_t BinarySearchLastNonFFSector(void)
+uint32_t BinarySearchLastNonFFSector(void)
 {
     uint8_t *buffer = SRAM_MALLOC(SECTOR_SIZE);
     uint32_t startIndex = (APP_CHECK_START_ADDR - APP_ADDR) / SECTOR_SIZE;

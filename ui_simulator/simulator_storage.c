@@ -26,6 +26,8 @@ int32_t StorageGetDataSize(uint32_t addr, uint8_t *buffer, uint32_t size);
 int32_t StorageSetDataSize(uint32_t addr, uint8_t *buffer, uint32_t size);
 int32_t StorageGetData(uint32_t addr, uint8_t *buffer, uint32_t size);
 int32_t StorageSetData(uint32_t addr, uint8_t *buffer, uint32_t size);
+int32_t StorageGetBootSecureCheck(uint8_t *buffer, uint32_t size);
+int32_t StorageSetBootSecureCheck(const uint8_t *buffer, uint32_t size);
 
 #define PC_SIMULATOR_PATH "C:/assets"
 
@@ -62,6 +64,7 @@ SimulatorFlashPath g_simulatorPathMap[] = {
 
     {DS28S60_DATA_ADDR, PC_SIMULATOR_PATH "/ds28s60.json", StorageGetData, StorageSetData},
     {ATECC608B_DATA_ADDR, PC_SIMULATOR_PATH "/atecc608b.json", StorageGetData, StorageSetData},
+    {BOOT_SECURE_CHECK_FLAG, PC_SIMULATOR_PATH "/boot_secure_check.json", StorageGetBootSecureCheck, StorageSetBootSecureCheck},
 };
 
 const char *FindSimulatorFlashPath(uint32_t addr)
@@ -110,6 +113,22 @@ int32_t StorageGetDataSize(uint32_t addr, uint8_t *buffer, uint32_t size)
     *(uint32_t *)buffer = readBytes;
     lv_fs_close(&fd);
 
+    return size;
+}
+
+int32_t StorageGetBootSecureCheck(uint8_t *buffer, uint32_t size)
+{
+    static const uint8_t g_integrityFlag[16] = {
+        0x01, 0x09, 0x00, 0x03,
+        0x01, 0x09, 0x00, 0x03,
+        0x01, 0x09, 0x00, 0x03,
+        0x01, 0x09, 0x00, 0x03,
+    };
+    return 16;
+}
+
+int32_t StorageSetBootSecureCheck(const uint8_t *buffer, uint32_t size)
+{
     return size;
 }
 

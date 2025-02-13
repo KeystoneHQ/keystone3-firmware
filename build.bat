@@ -37,6 +37,7 @@ IF NOT EXIST %BUILD_FOLDER% mkdir %BUILD_FOLDER%
 
 IF NOT EXIST %BUILD_FOLDER%\padding_bin_file.py (
     copy %TOOLS_FOLDER%\padding_bin_file\padding_bin_file.py %BUILD_FOLDER%\padding_bin_file.py /Y
+    copy %TOOLS_FOLDER%\padding_bin_file\boot.sig %BUILD_FOLDER%\boot.sig /Y
 )
 
 CALL :EXECUTE_BUILD
@@ -71,7 +72,7 @@ IF "%build_simulator%"=="true" (
     ) ELSE (
         make -j16
     )
-    python3 padding_bin_file.py mh1903.bin
+    py padding_bin_file.py mh1903.bin
     popd
 )
 

@@ -284,7 +284,9 @@ static void FpGetNumberRecv(char *indata, uint8_t len)
 // passwd 0 not need passwd 1 need passwd
 static void FpRecognizeSend(uint16_t cmd, uint8_t passwd)
 {
-    FpGenericSend(FINGERPRINT_CMD_RECOGNIZE, true);
+    g_delayCmd = FINGERPRINT_CMD_RECOGNIZE;
+    FpGenericSend(FINGERPRINT_CMD_GET_RANDOM_NUM, false);
+    FpSendTimerStart(FINGERPRINT_CMD_RECOGNIZE);
 }
 
 void FpSaveKeyInfo(bool add)

@@ -28,6 +28,7 @@
 #include "usb_task.h"
 #include "ui_display_task.h"
 #include "fetch_sensitive_data_task.h"
+#include "version.h"
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)
@@ -290,6 +291,9 @@ void GuiLockScreenPassCode(bool en)
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
             GuiFrameOpenView(&g_homeView);
+            if (NeedUpdateBoot()) {
+                GuiFrameOpenView(&g_bootUpdateView);
+            }
             HardwareInitAfterWake();
         }
         // Close the loading page after closing the lock screen page

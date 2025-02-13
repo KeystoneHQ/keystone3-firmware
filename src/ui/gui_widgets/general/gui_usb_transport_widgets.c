@@ -33,13 +33,13 @@ static void UsbGoToHomeViewHandler(lv_event_t *e);
 static void ApproveButtonHandler(lv_event_t *e)
 {
     ExportAddressApprove();
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
 }
 
 static void RejectButtonHandler(lv_event_t *e)
 {
     ExportAddressReject();
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
 }
 static void CountDownTimerHandler(lv_timer_t *timer)
 {

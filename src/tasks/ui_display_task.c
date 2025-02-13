@@ -134,7 +134,7 @@ static void UiDisplayTask(void *argument)
             }
             break;
             case UI_MSG_CLOSE_CURRENT_VIEW: {
-                GuiCLoseCurrentWorkingView();
+                GuiCloseCurrentWorkingView();
             }
             break;
             case UI_MSG_SCREEN_SHOT: {

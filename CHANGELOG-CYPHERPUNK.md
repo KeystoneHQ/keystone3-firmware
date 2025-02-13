@@ -1,4 +1,4 @@
-## test/cypherpunk-release
+## test/cypherpunk-release-CYPHERPUNK
 
 ### v1.1.4 比特币单币种固件
 

@@ -20,6 +20,7 @@
 #include "lv_i18n_api.h"
 #include "fetch_sensitive_data_task.h"
 #include "ctaes.h"
+#include "drv_mpu.h"
 
 #define VERSION_MAX_LENGTH      32
 

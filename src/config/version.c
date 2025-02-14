@@ -25,9 +25,9 @@ void GetSoftWareVersion(char *version)
 {
 #ifndef BTC_ONLY
     if (SOFTWARE_VERSION_BUILD % 2 == 0) {
-        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d%s", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_SUFFIX);
     } else {
-        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d(beta%d)", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_BETA);
+        snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d(beta%d)%s", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_SUFFIX);
     }
 #else
     snprintf(version, SOFTWARE_VERSION_MAX_LEN, "Firmware v%d.%d.%d-BTC", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
@@ -46,9 +46,9 @@ void GetUpdateVersionNumber(char *version)
 void GetSoftWareVersionNumber(char *version)
 {
 #ifndef BTC_ONLY
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
 #else
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-BTC", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d%s", SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_SUFFIX);
 #endif
 }
 
@@ -56,9 +56,9 @@ const char *GetSoftwareVersionString(void)
 {
     static char version[32] = {0};
 #ifndef BTC_ONLY
-    sprintf(version, "Firmware v%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+    sprintf(version, "Firmware v%d.%d.%d", SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
 #else
-    sprintf(version, "Firmware v%d.%d.%d-BTC", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "v%d.%d.%d%s", SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_SUFFIX);
 #endif
     return version;
 }
@@ -66,7 +66,7 @@ const char *GetSoftwareVersionString(void)
 bool NeedUpdateBoot(void)
 {
 #ifdef COMPILE_SIMULATOR
-    return false;
+    return true;
 #endif
     uint32_t major, minor, build;
     if (GetBootSoftwareVersion(&major, &minor, &build) == false) {

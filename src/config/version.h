@@ -5,9 +5,9 @@
 
 #define SOFTWARE_VERSION_MAX_LEN            (32)
 #ifdef WEB3_VERSION
-#define SOFTWARE_VERSION_MAJOR              1
+#define SOFTWARE_VERSION_MAJOR              12
 #define SOFTWARE_VERSION_MAJOR_OFFSET       0
-#define SOFTWARE_VERSION_MINOR              8
+#define SOFTWARE_VERSION_MINOR              2
 #define SOFTWARE_VERSION_BUILD              0
 #define SOFTWARE_VERSION_BETA               0
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)

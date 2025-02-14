@@ -1,6 +1,6 @@
-#define SOFTWARE_VERSION_MAJOR              9 // 1 + 8
+#define SOFTWARE_VERSION_MAJOR              12 // 1 + 8
 #define SOFTWARE_VERSION_MAJOR_OFFSET       8
-#define SOFTWARE_VERSION_MINOR              1
+#define SOFTWARE_VERSION_MINOR              2
 #define SOFTWARE_VERSION_BUILD              0
 #define SOFTWARE_VERSION_BETA               0
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)

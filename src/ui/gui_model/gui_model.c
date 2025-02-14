@@ -1231,6 +1231,7 @@ static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
 static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen)
 {
 #ifndef COMPILE_SIMULATOR
+    osDelay(1000);
     static uint8_t walletAmount;
     SetPageLockScreen(false);
     int32_t ret = UpdateBootFromFlash();

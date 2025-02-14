@@ -44,7 +44,7 @@ def padding_bin_file(file_name):
         f.write(offset.to_bytes(2, byteorder='big'))
         f.write(b'\xff' * (4096 - 2))
 
-        # padding_sig_file(f)
+        padding_sig_file(f)
 
 
 if __name__ == '__main__':

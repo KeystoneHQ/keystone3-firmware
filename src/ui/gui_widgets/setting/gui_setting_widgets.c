@@ -283,6 +283,12 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     } else {
         snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s#", version);
     }
+#ifndef COMPILE_SIMULATOR
+    uint32_t major, minor, build;
+    GetBootSoftwareVersion(&major, &minor, &build);
+    printf("Boot Software Version: %d.%d.%d\r\n", major, minor, build);
+    snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s# Boot %d.%d.%d", version, major, minor, build);
+#endif
 
     button = CreateSettingWidgetsButton(parent, _("device_setting_about_title"),
                                         showString, &imgAbout, AboutHandler, NULL);
@@ -697,7 +703,7 @@ int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
     NVS_RIGHT_BUTTON_ENUM rightBtn = NVS_RIGHT_BUTTON_BUTT;
     NVS_LEFT_BUTTON_ENUM leftBtn = NVS_BAR_RETURN;
     if (currentTile == 0) {
-        return GuiCLoseCurrentWorkingView();
+        return GuiCloseCurrentWorkingView();
     }
     if (g_deviceSettingArray[currentTile].destructCb != NULL) {
         g_deviceSettingArray[currentTile].destructCb(g_deviceSettingArray[currentTile].obj, NULL);

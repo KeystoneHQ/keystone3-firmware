@@ -78,7 +78,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_KEPLR, &walletListKeplr, true},
     {WALLET_LIST_LEAP, &walletListLeap, true},
     {WALLET_LIST_MINT_SCAN, &walletListMintScan, true},
-    {WALLET_LIST_ARCONNECT, &walletListArConnect, true},
+    {WALLET_LIST_WANDER, &walletListWander, true},
     {WALLET_LIST_XBULL, &walletListXBull, true},
     {WALLET_LIST_IMTOKEN, &walletListImToken, true},
     {WALLET_LIST_FEWCHA, &walletListFewcha, true},
@@ -315,7 +315,7 @@ static void GuiInitWalletListArray()
             case WALLET_LIST_BEGIN:
                 enable = !isSLIP39;
                 break;
-            case WALLET_LIST_ARCONNECT:
+            case WALLET_LIST_WANDER:
                 enable = !isTempAccount;
                 break;
             case WALLET_LIST_KEYSTONE:
@@ -418,7 +418,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
         return;
     }
     bool skipGenerateArweaveKey = IsArweaveSetupComplete();
-    if (g_connectWalletTileView.walletIndex == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_WANDER && !skipGenerateArweaveKey) {
         GuiOpenARAddressNoticeWindow();
         return;
     }
@@ -1224,7 +1224,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetLeapData;
         AddLeapCoins();
         break;
-    case WALLET_LIST_ARCONNECT:
+    case WALLET_LIST_WANDER:
         func = GuiGetArConnectData;
         AddArConnectCoins();
         break;
@@ -1281,7 +1281,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     }
     if (func) {
         bool skipGenerateArweaveKey = IsArweaveSetupComplete();
-        if (index == WALLET_LIST_ARCONNECT && !skipGenerateArweaveKey) {
+        if (index == WALLET_LIST_WANDER && !skipGenerateArweaveKey) {
             GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true, _("InitializingRsaTitle"), _("FindingRsaPrimes"));
             return;
         }

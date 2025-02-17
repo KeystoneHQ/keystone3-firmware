@@ -130,7 +130,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
     {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
     {WALLET_LIST_MINT_SCAN, "Mintscan", &walletMintScan},
-    {WALLET_LIST_ARCONNECT, "ArConnect", &walletArConnect},
+    {WALLET_LIST_WANDER, "Wander", &walletWander},
     {WALLET_LIST_VESPR, "Vespr", &walletVespr},
     {WALLET_LIST_XBULL, "xBull", &walletXBull},
     {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
@@ -345,7 +345,6 @@ const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
         return "Helium";
     }
 
-    CoinWalletInfo_t *coin = NULL;
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
         if (g_walletBtn[i].index == index) {
             return g_walletBtn[i].name;

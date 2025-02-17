@@ -12,6 +12,7 @@
 #define TYPE_DEVICE_SERIAL_NUMBER               2
 #define TYPE_DEVICE_HARDWARE_VERSION            3
 #define TYPE_DEVICE_FIRMWARE_VERSION            4
+#define TYPE_DEVICE_BOOT_VERSION                5
 
 static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ServiceDeviceInfoRunning(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
@@ -28,6 +29,8 @@ static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData
     const char model[] = "Kv3A";
     char serialNumber[SERIAL_NUMBER_MAX_LEN];
     char version[SOFTWARE_VERSION_MAX_LEN];
+    char bootVersion[SOFTWARE_VERSION_MAX_LEN];
+
     FrameHead_t sendHead = {0};
 
     printf("ServiceDeviceInfoBasic\n");
@@ -56,8 +59,15 @@ static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData
     tlvArray[3].length = strnlen_s(version, SOFTWARE_VERSION_MAX_LEN) + 1;
     tlvArray[3].pValue = version;
 
-    *outLen = GetFrameTotalLength(tlvArray, 4);
-    return BuildFrame(&sendHead, tlvArray, 4);
+    uint32_t major, minor, build;
+    GetBootSoftwareVersion(&major, &minor, &build);
+    snprintf_s(bootVersion, sizeof(bootVersion), "%d.%d.%d", major, minor, build);
+    tlvArray[4].type = TYPE_DEVICE_BOOT_VERSION;
+    tlvArray[4].length = strnlen_s(bootVersion, SOFTWARE_VERSION_MAX_LEN) + 1;
+    tlvArray[4].pValue = bootVersion;
+
+    *outLen = GetFrameTotalLength(tlvArray, 5);
+    return BuildFrame(&sendHead, tlvArray, 5);
 }
 
 static uint8_t *ServiceDeviceInfoRunning(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)

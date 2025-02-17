@@ -202,8 +202,7 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
     UpdateStartIndex(gesture, totalCoinAmount);
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if (g_walletState[i].index == HOME_WALLET_CARD_COSMOS ||
-                (g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) ||
+        if ((g_walletState[i].index == HOME_WALLET_CARD_ARWEAVE && GetIsTempAccount()) ||
                 g_walletState[i].state == false ||
                 g_walletState[i].enable == false) {
             j++;
@@ -360,21 +359,10 @@ static void ManageCoinChainHandler(lv_event_t *e)
 {
     bool state;
     WalletState_t *wallet = lv_event_get_user_data(e);
-    if (wallet->index == HOME_WALLET_CARD_COSMOS) {
-        state = g_walletBakState[wallet->index].state;
-        if (state) {
-            lv_img_set_src(g_cosmosPulldownImg, &imgArrowRight);
-        } else {
-            lv_img_set_src(g_cosmosPulldownImg, &imgArrowDown);
-        }
-        UpdateCosmosEnable(!state);
-        g_walletBakState[wallet->index].state = !state;
-    } else {
-        lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-        state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
-        g_walletBakState[wallet->index].state = state;
-        UpdateManageWalletState(false);
-    }
+    lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
+    state = lv_obj_has_state(lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) - 1), LV_STATE_CHECKED);
+    g_walletBakState[wallet->index].state = state;
+    UpdateManageWalletState(false);
 }
 
 void ScanQrCodeHandler(lv_event_t *e)

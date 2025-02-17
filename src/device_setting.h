@@ -51,5 +51,5 @@ void DeviceSettingsTest(int argc, char *argv[]);
 
 bool GetEnableBlindSigning(void);
 void SetEnableBlindSigning(bool enable);
-
+void SetBootSecureCheckFlag(bool isSet);
 #endif

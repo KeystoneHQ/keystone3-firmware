@@ -143,7 +143,7 @@ int32_t GuiFrameOpenViewWithParam(GUI_VIEW *view, void *param, uint16_t usLen)
     return SUCCESS_CODE;
 }
 
-int32_t GuiCLoseCurrentWorkingView(void)
+int32_t GuiCloseCurrentWorkingView(void)
 {
     g_viewCnt--;
     GuiViewHandleEvent(g_workingView, GUI_EVENT_OBJ_DEINIT, NULL, 0);
@@ -160,7 +160,7 @@ int32_t GuiCLoseCurrentWorkingView(void)
 int32_t GuiFrameCLoseView(GUI_VIEW *view)
 {
     if (g_workingView == view) {
-        return GuiCLoseCurrentWorkingView();
+        return GuiCloseCurrentWorkingView();
     } else {
         GUI_VIEW *current = g_workingView;
         while (current != NULL && current->previous != view) {
@@ -210,7 +210,7 @@ int32_t GuiCloseToTargetView(GUI_VIEW *view)
         GuiViewHandleEvent(view, GUI_EVENT_RESTART, NULL, 0);
     } else {
         while (g_workingView != view) {
-            GuiCLoseCurrentWorkingView();
+            GuiCloseCurrentWorkingView();
         }
         GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
     }

@@ -12,3 +12,4 @@
 pyenv
 !/rust/apps/target/
 !/rust/apps/Cargo.lock
+/tools/boot.sig

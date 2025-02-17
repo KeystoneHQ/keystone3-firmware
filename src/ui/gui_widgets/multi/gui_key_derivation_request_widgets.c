@@ -1170,7 +1170,7 @@ static void RejectButtonHandler(lv_event_t *e)
 {
     const char *data = "UR parsing rejected";
     HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
 }
 
 #ifdef WEB3_VERSION

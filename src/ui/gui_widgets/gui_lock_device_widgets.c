@@ -128,7 +128,7 @@ void GuiLockDeviceRefresh(void)
     if (currentTime - startTime >= needLockTime) {
         GuiLockedDeviceCountDownDestruct(NULL, NULL);
         GuiModelWriteLastLockDeviceTime(0);
-        GuiCLoseCurrentWorkingView();
+        GuiCloseCurrentWorkingView();
         SetLockDeviceAlive(false);
         if (!g_resetSuccessful) {
             static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
@@ -189,7 +189,7 @@ static void CountDownTimerLockTimeHandler(lv_timer_t *timer)
     uint32_t currentTime = GetCurrentStampTime();
     if (currentTime - startTime >= needLockTime) {
         if (GuiCheckIfTopView(&g_lockDeviceView)) {
-            GuiCLoseCurrentWorkingView();
+            GuiCloseCurrentWorkingView();
             if (!g_resetSuccessful) {
                 static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
                 GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));

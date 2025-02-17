@@ -401,7 +401,7 @@ int8_t GuiSinglePhrasePrevTile(void)
 {
     switch (g_singlePhraseTileView.currentTile) {
     case SINGLE_PHRASE_RANDOM_PHRASE:
-        GuiCLoseCurrentWorkingView();
+        GuiCloseCurrentWorkingView();
         return SUCCESS_CODE;
     case SINGLE_PHRASE_CONFIRM_PHRASE:
         ResetConfirmInput();

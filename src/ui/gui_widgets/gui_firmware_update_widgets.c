@@ -254,7 +254,7 @@ void GuiFirmwareUpdatePrevTile(void)
 {
     switch (g_firmwareUpdateWidgets.currentTile) {
     case FIRMWARE_UPDATE_SELECT:
-        GuiCLoseCurrentWorkingView();
+        GuiCloseCurrentWorkingView();
         return;
     case FIRMWARE_UPDATE_SD_INSTRUCTION:
         g_firmwareUpdateWidgets.currentTile--;

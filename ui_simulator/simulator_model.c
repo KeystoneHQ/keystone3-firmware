@@ -23,6 +23,10 @@ bool g_otpProtect = false;
 // Comment out this macro if you need to retrieve data from the file
 // #define GET_QR_DATA_FROM_SCREEN
 
+void OTP_PowerOn(void)
+{
+}
+
 void StampTimeToUtcTime(int64_t timeStamp, char *utcTime, int maxLen)
 {
     struct tm *utc_time = gmtime(&timeStamp);

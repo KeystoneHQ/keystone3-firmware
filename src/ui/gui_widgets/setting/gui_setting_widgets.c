@@ -278,15 +278,17 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     char showString[BUFFER_SIZE_64] = {0};
     char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     GetSoftWareVersionNumber(version);
-    uint32_t major, minor, build;
-    GetBootSoftwareVersion(&major, &minor, &build);
-    printf("Boot Software Version: %d.%d.%d\r\n", major, minor, build);
     if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
         snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E v%s#  /  #F5870A %s#", version, _("firmware_update_title"));
     } else {
         snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s#", version);
-        snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s# Boot %d.%d.%d", version, major, minor, build);
     }
+#ifndef COMPILE_SIMULATOR
+    uint32_t major, minor, build;
+    GetBootSoftwareVersion(&major, &minor, &build);
+    printf("Boot Software Version: %d.%d.%d\r\n", major, minor, build);
+    snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s# Boot %d.%d.%d", version, major, minor, build);
+#endif
 
     button = CreateSettingWidgetsButton(parent, _("device_setting_about_title"),
                                         showString, &imgAbout, AboutHandler, NULL);
@@ -701,7 +703,7 @@ int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
     NVS_RIGHT_BUTTON_ENUM rightBtn = NVS_RIGHT_BUTTON_BUTT;
     NVS_LEFT_BUTTON_ENUM leftBtn = NVS_BAR_RETURN;
     if (currentTile == 0) {
-        return GuiCLoseCurrentWorkingView();
+        return GuiCloseCurrentWorkingView();
     }
     if (g_deviceSettingArray[currentTile].destructCb != NULL) {
         g_deviceSettingArray[currentTile].destructCb(g_deviceSettingArray[currentTile].obj, NULL);

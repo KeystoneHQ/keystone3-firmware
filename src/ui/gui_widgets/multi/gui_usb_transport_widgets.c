@@ -226,12 +226,12 @@ static WalletInfo_t GetConnectWalletInfo()
 static void ApproveButtonHandler(lv_event_t *e)
 {
     ExportAddressApprove();
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
 }
 
 static void RejectButtonHandler(lv_event_t *e)
 {
     ExportAddressReject();
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
 }
 #endif

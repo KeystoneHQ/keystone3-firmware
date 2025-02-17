@@ -296,7 +296,7 @@ void GuiSettingRepeatPinPass(const char *buf)
 void GuiDelWallet(bool result)
 {
     GuiDeleteAnimHintBox();
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
     static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
     LogoutCurrentAccount();
     GuiLockScreenSetFirstUnlock();
@@ -338,7 +338,7 @@ void GuiDelWalletSetup(void)
     // GuiStopCircleAroundAnimation();
     GuiDeleteAnimHintBox();
     // g_waitAnimWidget.cont = NULL; //todo
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
     // close to g_setupView
     GuiCloseToTargetView(&g_setupView);
     // close g_setupView

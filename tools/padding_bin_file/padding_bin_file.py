@@ -5,31 +5,39 @@ import sys
 import hashlib
 
 
-def padding_sig_file(f):
-    # Read and process boot.sig file
+def padding_sig_file(file_name):
+    new_file_name = "mh1903_padding_boot.bin"
+
+    with open(file_name, 'rb') as src_file:
+        content = src_file.read()
+
+    with open(new_file_name, 'wb') as dst_file:
+        dst_file.write(content)
+
     with open("boot.sig", "rb") as sig_file:
-        # Read entire file content
         sig_content = sig_file.read()
         sig_len = len(sig_content)
-        print(f"Signature length: {sig_len}")
-        f.write(sig_len.to_bytes(4, byteorder='big'))
 
-        # Calculate SHA256 for the entire file
+        # Calculate SHA256 for the entire signature file
         sha256_obj = hashlib.sha256()
         sha256_obj.update(sig_content)
         final_hash = sha256_obj.hexdigest()
         print(f'SHA256 hash: {final_hash}')
-        f.write(bytes.fromhex(final_hash))
 
-        # Write first 0x134 bytes
-        f.write(sig_content[:0x134])
+        with open(new_file_name, "ab") as f:
+            f.write(sig_len.to_bytes(4, byteorder='big'))
+            f.write(bytes.fromhex(final_hash))
 
-        # Pad with 0xFF up to 4K boundary
-        padding_size = 4096 - 0x134 - 32 - 4
-        f.write(b'\xff' * padding_size)
+            # Write first 0x134 bytes of signature
+            f.write(sig_content[:0x134])
 
-        # Write remaining content
-        f.write(sig_content[0x134:])
+            # Calculate and pad to 4K boundary
+            current_pos = 4 + 32 + 0x134  # Length + SHA256 + First part of sig
+            padding_size = 4096 - (current_pos % 4096)
+            f.write(b'\xff' * padding_size)
+
+            # Write remaining signature content
+            f.write(sig_content[0x134:])
 
 
 def padding_bin_file(file_name):
@@ -44,7 +52,9 @@ def padding_bin_file(file_name):
         f.write(offset.to_bytes(2, byteorder='big'))
         f.write(b'\xff' * (4096 - 2))
 
-        padding_sig_file(f)
+        f.close()
+
+        padding_sig_file(file_name)
 
 
 if __name__ == '__main__':

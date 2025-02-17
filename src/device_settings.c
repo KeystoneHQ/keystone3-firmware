@@ -227,6 +227,7 @@ static void AesEncryptBuffer(uint8_t *cipher, uint32_t sz, uint8_t *plain)
     AES128_CBC_ctx ctx;
     AES128_CBC_init(&ctx, key128, iv);
     AES128_CBC_encrypt(&ctx, sz / 16, cipher, plain);
+    MpuSetOtpProtection(true);
 }
 
 void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher)
@@ -241,6 +242,7 @@ void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher)
     memcpy(iv, (uint32_t *)(0x40009138), 16);
     AES128_CBC_init(&ctx, key128, iv);
     AES128_CBC_decrypt(&ctx, sz / 16, plain, cipher);
+    MpuSetOtpProtection(true);
 }
 
 bool GetBootSecureCheckFlag(void)

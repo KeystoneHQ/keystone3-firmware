@@ -3,9 +3,13 @@
 
 import sys
 import hashlib
+import os
 
 
 def padding_sig_file(file_name):
+    if not os.path.exists("boot.sig"):
+        return
+
     new_file_name = "mh1903_padding_boot.bin"
 
     with open(file_name, 'rb') as src_file:

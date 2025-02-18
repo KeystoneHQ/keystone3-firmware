@@ -4,22 +4,22 @@
 #define SD_CARD_OTA_BIN_PATH                "0:/keystone3.bin"
 
 #define SOFTWARE_VERSION_MAX_LEN            (32)
-#ifdef WEB3_VERSION
 #define SOFTWARE_VERSION_MAJOR              12
 #define SOFTWARE_VERSION_MAJOR_OFFSET       10
 #define SOFTWARE_VERSION_MINOR              0
 #define SOFTWARE_VERSION_BUILD              0
 #define SOFTWARE_VERSION_BETA               0
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
+#ifdef WEB3_VERSION
 #define SOFTWARE_VERSION_SUFFIX             ""
-#endif /* _VERSION_H */
+#endif
 
 #ifdef CYPHERPUNK_VERSION
-#include "version_cypherpunk.h"
+#define SOFTWARE_VERSION_SUFFIX             " - Cypherpunk"
 #endif
 
 #ifdef BTC_ONLY
-#include "version_btc_only.h"
+#define SOFTWARE_VERSION_SUFFIX             " - BTC"
 #endif
 
 #if SOFTWARE_VERSION_MAJOR > 99 || SOFTWARE_VERSION_MINOR > 99 || SOFTWARE_VERSION_BUILD > 99

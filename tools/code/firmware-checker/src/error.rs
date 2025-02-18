@@ -4,4 +4,8 @@ use thiserror::Error;
 pub enum OTAError {
     #[error("file not exist")]
     NotExist,
+    #[error("invalid format")]
+    InvalidFormat,
+    #[error("decompression error")]
+    DecompressionError,
 }

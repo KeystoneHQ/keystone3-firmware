@@ -1,3 +1,17 @@
+## 2.0.0(2025-2-18)
+
+### What's new
+
+1. Enhanced security mechanisms with the addition of firmware upgrade self-check and integrity verification
+
+### Improvements
+
+1. Optimized UI design and interaction experience on the home page, asset management page, and wallet connection page
+2. Improved UI display for certain pages in the Russian language environment
+3. Corrected text errors in the Korean language environment
+
+
+
 ## 1.8.2(2024-12-30)
 
 ### Bug Fixes  

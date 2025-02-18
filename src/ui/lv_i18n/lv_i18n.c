@@ -153,7 +153,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"boot_update_desc3", "The power adapter is connected."},
     {"boot_update_desc4", "This process may take up to 5 minutes. DO NOT disconnect power or perform any operations."},
     {"boot_update_desc5", "Contact us"},
-    {"boot_update_limit_desc", "Ensure the device has at least 40% battery and is connected tfdo a power source to proceed."},
+    {"boot_update_limit_desc", "Ensure the device has at least 40% battery and is connected to a power source to proceed."},
     {"boot_update_process_desc", "The device is updating to enhance security. Please do not disconnect power or perform any operations."},
     {"boot_update_process_title", "Security Update in Progress..."},
     {"boot_update_title", "Security Upgrade"},

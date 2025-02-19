@@ -12,13 +12,13 @@
 #include "log.h"
 #include "presetting.h"
 #include "anti_tamper.h"
-#include "multi/web3/gui_general_analyze.h"
-#include "multi/cypherpunk/gui_cypherpunk_analyze.h"
-#include "btc_only/gui_btc_only_analyze.h"
 #include "drv_battery.h"
 #else
 #include "simulator_model.h"
 #endif
+#include "multi/web3/gui_general_analyze.h"
+#include "multi/cypherpunk/gui_cypherpunk_analyze.h"
+#include "btc_only/gui_btc_only_analyze.h"
 #include "rsa.h"
 #include "drv_rtc.h"
 #include "drv_battery.h"

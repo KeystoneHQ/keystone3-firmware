@@ -215,7 +215,7 @@ extern GUI_VIEW g_keyDerivationRequestView;
 extern GUI_VIEW g_tonMnemonicHintView;
 #endif
 
-#ifdef CYPHERPUNK_VERSION
+#ifndef WEB3_VERSION
 extern GUI_VIEW g_checkDeleteWalletView;
 #endif
 

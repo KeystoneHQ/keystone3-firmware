@@ -24,7 +24,7 @@ static void UpdateSuccessNextStepHandler(lv_event_t *e)
 #endif
     } else {
         GuiFrameOpenView(&g_homeView);
-}
+    }
 }
 
 void GuiUpdateSuccessInit(void)

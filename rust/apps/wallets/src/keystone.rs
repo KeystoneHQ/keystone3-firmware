@@ -109,7 +109,8 @@ pub fn generate_crypto_multi_accounts(
     let mut coin_configs: Vec<CoinConfig> = vec![];
     for key in data.get_keys() {
         let mut accounts: Vec<AccountConfig> = vec![];
-        let hd_path = "M/".to_string() + &*key.get_origin().unwrap().get_path().unwrap().to_string();
+        let hd_path =
+            "M/".to_string() + &*key.get_origin().unwrap().get_path().unwrap().to_string();
 
         let x_pub = key.get_bip32_key();
 

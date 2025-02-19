@@ -322,6 +322,35 @@ static const ChainItem_t g_chainTable[] = {
 #endif
 };
 
+#ifdef WEB3_VERSION
+ChainType CheckSolPathSupport(char *path)
+{
+    int startIndex = -1;
+    int endIndex = -1;
+    for (int i = 0; i < XPUB_TYPE_NUM; i++) {
+        if (XPUB_TYPE_SOL_BIP44_0 == g_chainTable[i].chain) {
+            startIndex = i;
+        }
+        if (XPUB_TYPE_SOL_BIP44_CHANGE_49 == g_chainTable[i].chain) {
+            endIndex = i;
+            break;
+        }
+    }
+
+    if (startIndex == -1 || endIndex == -1) {
+        return XPUB_TYPE_NUM;
+    }
+
+    for (int i = startIndex; i <= endIndex; i++) {
+        // skip the first two characters
+        if (!strcmp(path, g_chainTable[i].path + 2)) {
+            return g_chainTable[i].chain;
+        }
+    }
+    return XPUB_TYPE_NUM;
+}
+#endif
+
 static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoKey, const char *path, void *icarusMasterKey, void *ledgerBitbox02MasterKey)
 {
     switch (cryptoKey) {

@@ -6299,7 +6299,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"unlock_device_use_password", "使用密码"},
     {"unlock_device_use_pin", "使用 PIN码"},
     {"update_success", "升级成功"},
-    {"usb_connection_desc", "禁用后,USB接口将仅用于充电"},
+    {"usb_connection_desc", "启用气隙模式后,USB接口将仅用于充电"},
     {"usb_connection_subtitle", "气隙模式"},
     {"usb_connection_title", "连接方式"},
     {"usb_connectioning_wallet_desc", "请等待软件钱包完成连接，然后点击关闭。"},

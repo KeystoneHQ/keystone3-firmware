@@ -119,7 +119,7 @@ void GuiCreateShareUpdateMnemonic(void *signalParam, uint16_t paramLen)
     ArrayRandom(SecretCacheGetSlip39Mnemonic(g_createShareTileView.currentSlice), g_randomBuff, g_selectCnt);
     GuiUpdateMnemonicKeyBoard(g_shareConfirmTile.keyBoard, g_randomBuff, true);
     GuiStopCircleAroundAnimation();
-    if (g_pageWidget != NULL) {
+    if (g_pageWidget != NULL && g_createShareTileView.currentTile == CREATE_SHARE_BACKUPFROM) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_selectCnt == 20 ? "20" : "33");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectParseCntHandler, NULL);
     }

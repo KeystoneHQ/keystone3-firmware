@@ -441,7 +441,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
 #ifdef CYPHERPUNK_VERSION
             } else if (!strcmp(walletList[i].name, "ZEC")) {
-                if (GetMnemonicType() == MNEMONIC_TYPE_BIP39 && !PassphraseExist(GetCurrentAccountIndex())) {
+                if (GetMnemonicType() == MNEMONIC_TYPE_BIP39) {
                     cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
                 }
             } else if (!strcmp(walletList[i].name, "XMR")) {
@@ -849,11 +849,26 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
                 continue;
             }
+#ifdef CYPHERPUNK_VERSION
+            //encrypt zcash ufvk
             if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
-                continue;
+                char* zcashUfvk = NULL;
+                SimpleResponse_c_char *zcash_ufvk_response = NULL;
+                zcash_ufvk_response = derive_zcash_ufvk(seed, len, g_chainTable[i].path);
+                CHECK_AND_FREE_XPUB(zcash_ufvk_response)
+                zcashUfvk = zcash_ufvk_response->data;
+                SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);
+                //iv_response won't fail
+                uint8_t iv_bytes[16];
+                memcpy_s(iv_bytes, 16, iv_response->data, 16);
+                free_simple_response_u8(iv_response);
+                xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
+            } else {
+                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
             }
-
+#else
             xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+#endif
             if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                 continue;
             }

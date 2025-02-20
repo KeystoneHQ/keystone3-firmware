@@ -359,6 +359,9 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
             strcpy_s(g_passphraseInfo[accountIndex].passphrase, PASSPHRASE_MAX_LEN, passphrase);
             g_passphraseInfo[accountIndex].passphraseExist = true;
             ret = TempAccountPublicInfo(accountIndex, password, true);
+#ifdef CYPHERPUNK_VERSION
+            CalculateZcashUFVK(accountIndex, password);
+#endif
         } else {
             ClearAccountPassphrase(accountIndex);
             ret = AccountPublicInfoSwitch(accountIndex, password, false);

@@ -182,6 +182,7 @@ static uint32_t prepareWalletBySDCard(char *walletConfig)
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
+    printf("%s %d walletConfig = %s\n", __func__, __LINE__, walletConfig);
     Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(walletConfig, mfp, 4);
     return processResult(result);
 }

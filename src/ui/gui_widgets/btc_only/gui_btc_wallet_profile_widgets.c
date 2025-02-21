@@ -50,15 +50,12 @@ void GuiBtcWalletProfileInit(void)
     g_walletProfile.tileView = GuiCreateTileView(g_pageWidget->contentZone);
     lv_obj_t *tile = lv_tileview_add_tile(g_walletProfile.tileView, WALLET_PROFILE_SELECT, 0, LV_DIR_HOR);
     GuiAddObjFlag(tile, LV_OBJ_FLAG_SCROLLABLE);
-    CreateBtcWalletProfileEntranceRefresh(tile);
     g_walletProfile.profileView = tile;
 
     tile = lv_tileview_add_tile(g_walletProfile.tileView, WALLET_PROFILE_SINGLE_WALLET, 0, LV_DIR_HOR);
     CreateSingleSigWalletWidget(tile);
 
     g_walletProfile.currentTile = WALLET_PROFILE_SELECT;
-
-    GuiBtcWalletProfileRefresh();
 }
 
 void GuiBtcWalletProfileDeInit(void)
@@ -76,6 +73,7 @@ void GuiBtcWalletProfileRefresh(void)
     if (g_walletProfile.currentTile == WALLET_PROFILE_SELECT) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_mid_btn"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+        printf("%s %d.\n", __func__, __LINE__);
         CreateBtcWalletProfileEntranceRefresh(g_walletProfile.profileView);
     } else {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_single_sign_title_text"));
@@ -126,6 +124,7 @@ static void SwitchTestnetHandler(lv_event_t *e)
 
 static void CreateBtcWalletProfileEntranceRefresh(lv_obj_t *parent)
 {
+    printf("%s %d.\n", __func__, __LINE__);
     lv_obj_clean(parent);
     uint8_t skipIndex = 0;
     CURRENT_WALLET_INDEX_ENUM currentWallet = GetCurrentWalletIndex();
@@ -149,17 +148,26 @@ static void CreateBtcWalletProfileEntranceRefresh(lv_obj_t *parent)
         if (item == NULL) {
             break;;
         }
+
+        printf("item->passphrase: %d\n", item->passphrase);
+        printf("PassphraseExist(GetCurrentAccountIndex()): %d\n", PassphraseExist(GetCurrentAccountIndex()));
+        if (item->passphrase != PassphraseExist(GetCurrentAccountIndex())) {
+            ++i;
+            multiSigNum--;
+            continue;
+        }
+
+        lv_obj_t *button = GuiCreateSettingItemButton(parent, 456, item->name, desc,
+                           &imgTwoKey, &imgArrowRight, OpenManageMultisigViewHandler, &currentIndex[i + skipIndex]);
+        lv_obj_set_height(button, height);
+        lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, offSet + singleWalletHeight + 12);
         if (currentWallet == i) {
             strcpy_s(desc, sizeof(desc), _("wallet_profile_default_desc"));
             height = 118;
             offSet += 96;
-        } else if (i != 0) {
+        } else {
             offSet += 96;
         }
-        lv_obj_t *button = GuiCreateSettingItemButton(parent, 456, item->name, desc,
-                           &imgTwoKey, &imgArrowRight, OpenManageMultisigViewHandler, &currentIndex[i + skipIndex]);
-        lv_obj_set_height(button, height);
-        lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, 96 * i + singleWalletHeight + 12);
         ++i;
     }
     if (MAX_MULTI_SIG_WALLET_NUMBER != multiSigNum) {

@@ -23,6 +23,7 @@ typedef struct MultiSigWalletItem {
     char *format;
     int network;
     char *walletConfig;
+    bool passphrase;
 } MultiSigWalletItem_t;
 
 typedef struct MultiSigWalletList MultiSigWalletList_t;

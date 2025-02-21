@@ -160,6 +160,8 @@ MultiSigWalletItem_t *AddMultisigWalletToCurrentAccount(MultiSigWallet *wallet, 
     walletItem->walletConfig = MULTI_SIG_MALLOC(MAX_WALLET_CONFIG_TEXT_LENGTH);
     strcpy_s(walletItem->walletConfig, MAX_WALLET_CONFIG_TEXT_LENGTH, wallet->config_text);
 
+    walletItem->passphrase = PassphraseExist(GetCurrentAccountIndex());
+
     manager->insertNode(walletItem);
     manager->saveToFlash(password);
     return walletItem;

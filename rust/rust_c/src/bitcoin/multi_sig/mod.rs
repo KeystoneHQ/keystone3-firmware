@@ -254,6 +254,7 @@ pub extern "C" fn import_multi_sig_wallet_by_ur(
         };
 
     let bytes = extract_ptr_with_type!(ur, Bytes);
+    rust_tools::debug!(format!("bytes: {:?}", bytes));
 
     let result =
         app_bitcoin::multi_sig::wallet::import_wallet_by_ur(bytes, &master_fingerprint.to_string());

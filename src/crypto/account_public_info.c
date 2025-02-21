@@ -301,10 +301,6 @@ static const ChainItem_t g_chainTable[] = {
 #endif
 
 #ifdef BTC_ONLY
-    {XPUB_TYPE_BTC,                     SECP256K1,      "btc_nested_segwit",        "M/49'/0'/0'"   },
-    {XPUB_TYPE_BTC_LEGACY,              SECP256K1,      "btc_legacy",               "M/44'/0'/0'"   },
-    {XPUB_TYPE_BTC_NATIVE_SEGWIT,       SECP256K1,      "btc_native_segwit",        "M/84'/0'/0'"   },
-    {XPUB_TYPE_BTC_TAPROOT,             SECP256K1,      "btc_taproot",              "M/86'/0'/0'"   },
     {XPUB_TYPE_BTC_TEST,                SECP256K1,      "btc_nested_segwit_test",   "M/49'/1'/0'"   },
     {XPUB_TYPE_BTC_LEGACY_TEST,         SECP256K1,      "btc_legacy_test",          "M/44'/1'/0'"   },
     {XPUB_TYPE_BTC_NATIVE_SEGWIT_TEST,  SECP256K1,      "btc_native_segwit_test",   "M/84'/1'/0'"   },
@@ -783,11 +779,7 @@ static void SetIsTempAccount(bool isTemp)
 
 bool GetIsTempAccount(void)
 {
-#ifndef COMPILE_SIMULATOR
     return g_isTempAccount;
-#else
-    return false;
-#endif
 }
 
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set)
@@ -1219,6 +1211,7 @@ void appendWalletItemToJson(MultiSigWalletItem_t *item, void *root)
     cJSON_AddNumberToObject(walletItem, "network", item->network);
     cJSON_AddStringToObject(walletItem, "wallet_config", item->walletConfig);
     cJSON_AddStringToObject(walletItem, "format", item->format);
+    cJSON_AddBoolToObject(walletItem, "passphrase", item->passphrase);
     cJSON_AddItemToArray((cJSON*)root, walletItem);
 }
 
@@ -1357,6 +1350,9 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
             GetStringValue(wallet, "format", strCache, MULTI_SIG_STR_CACHE_LENGTH);
             multiSigWalletItem->format = MULTI_SIG_MALLOC(strlen(strCache) + 1);
             strcpy(multiSigWalletItem->format, strCache);
+
+            cJSON *passphrase = cJSON_GetObjectItem(wallet, "passphrase");
+            multiSigWalletItem->passphrase = passphrase ? passphrase->valueint : 0;
 
             manager->insertNode(multiSigWalletItem);
         }

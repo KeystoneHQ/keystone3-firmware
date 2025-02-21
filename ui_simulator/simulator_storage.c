@@ -301,11 +301,9 @@ int32_t SimulatorLoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accoun
     GetJsonArrayData(rootJson, accountSecret->seed, SEED_LEN, "seed");
     GetJsonArrayData(rootJson, accountSecret->slip39EmsOrTonEntropyL32, SLIP39_EMS_LEN, "slip39_ems");
     GetJsonArrayData(rootJson, accountSecret->reservedData, SE_DATA_RESERVED_LEN, "reserved_data");
-
-    cJSON *entropyLenJson = cJSON_GetObjectItem(rootJson, "entropy_len");
-    if (entropyLenJson != NULL) {
-        accountSecret->entropyLen = (uint8_t)entropyLenJson->valueint;
-    }
+    uint8_t param[64] = {0};
+    GetJsonArrayData(rootJson, param, 64, "param");
+    accountSecret->entropyLen = param[0];
 
     cJSON_Delete(rootJson);
 
@@ -320,13 +318,11 @@ int32_t SimulatorVerifyPassword(uint8_t *accountIndex, const char *password)
         OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + i * 0x1000, true);
         memset(buffer, 0, JSON_MAX_LEN);
         func(SIMULATOR_USER1_SECRET_ADDR + i * 0x1000, buffer, JSON_MAX_LEN);
-        printf("buffer = %s\n", buffer);
         cJSON *rootJson = cJSON_Parse(buffer);
         if (rootJson == NULL) {
             continue;
         }
         cJSON *item = cJSON_GetObjectItem(rootJson, "password");
-        printf("item->valuestring = %s\n", item->valuestring);
         if (item != NULL && strncmp(item->valuestring, password, strlen(password)) == 0) {
             *accountIndex = i;
             cJSON_Delete(rootJson);

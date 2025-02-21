@@ -32,10 +32,16 @@ void GetSoftWareVersion(char *version)
 
 void GetUpdateVersionNumber(char *version)
 {
-#ifndef BTC_ONLY
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-#else
+#ifdef BTC_ONLY
     snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-B", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+#endif
+
+#ifdef CYPHERPUNK_VERSION
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-C", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
+#endif
+
+#ifdef WEB3_VERSION
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
 #endif
 }
 

@@ -110,7 +110,7 @@ fn has_transparent(pczt: &Pczt) -> bool {
 fn is_transparent_coinbase(pczt: &Pczt) -> bool {
     pczt.transparent().inputs().len() == 1
         && pczt.transparent().inputs()[0].prevout_index() == &u32::MAX
-        && pczt.transparent().inputs()[0].prevout_txid().as_ref() == &[0u8; 32]
+        && pczt.transparent().inputs()[0].prevout_txid() == &[0u8; 32]
 }
 
 fn has_sapling(pczt: &Pczt) -> bool {
@@ -391,7 +391,7 @@ where
     llsigner
         .sign_transparent_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
             let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
-                .map_err(|()| transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
+                .ok_or(transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
             signable
                 .inputs_mut()
                 .iter_mut()

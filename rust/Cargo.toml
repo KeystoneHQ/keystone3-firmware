@@ -114,15 +114,3 @@ blake2b_simd = { version = "1.0.2", default-features = false }
 getrandom = "0.2"
 minicbor = { version = "0.19", features = ["alloc"] }
 # third party dependencies end
-
-[patch.crates-io]
-bip32 = { git = "https://github.com/KeystoneHQ/crates.git", rev = "9873e8fd56007d792fa60d6e844fdb75d527c858" }
-f4jumble = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
-nonempty = { git = "https://github.com/nuttycom/nonempty.git", rev = "38d37189faecb2a0e3d6adc05aa24e1b93c2483b" }
-orchard = { git = "https://github.com/zcash/orchard.git", rev = "e0cc7ac53ad8c97661b312a8b1c064f4cd3c6629" }
-pczt = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
-transparent = { package = "zcash_transparent", git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
-zcash_address = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
-zcash_encoding = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
-zcash_keys = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }
-zcash_protocol = { git = "https://github.com/zcash/librustzcash.git", rev = "9407f09208d5574a3ba7bf3e6963741114ba77c2" }

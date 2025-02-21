@@ -283,7 +283,7 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     } else {
         snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s#", version);
     }
-#ifndef COMPILE_SIMULATOR
+#ifndef BUILD_PRODUCTION
     uint32_t major, minor, build;
     GetBootSoftwareVersion(&major, &minor, &build);
     printf("Boot Software Version: %d.%d.%d\r\n", major, minor, build);

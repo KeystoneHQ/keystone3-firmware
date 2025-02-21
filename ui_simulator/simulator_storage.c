@@ -318,12 +318,15 @@ int32_t SimulatorVerifyPassword(uint8_t *accountIndex, const char *password)
     for (int i = 0; i < 3; i++) {
         // func must be found
         OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + i * 0x1000, true);
+        memset(buffer, 0, JSON_MAX_LEN);
         func(SIMULATOR_USER1_SECRET_ADDR + i * 0x1000, buffer, JSON_MAX_LEN);
+        printf("buffer = %s\n", buffer);
         cJSON *rootJson = cJSON_Parse(buffer);
         if (rootJson == NULL) {
             continue;
         }
         cJSON *item = cJSON_GetObjectItem(rootJson, "password");
+        printf("item->valuestring = %s\n", item->valuestring);
         if (item != NULL && strncmp(item->valuestring, password, strlen(password)) == 0) {
             *accountIndex = i;
             cJSON_Delete(rootJson);

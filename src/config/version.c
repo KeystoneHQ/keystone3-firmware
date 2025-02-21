@@ -9,11 +9,8 @@
 #define STRINGIFY(x)                        #x
 #define EXPAND(x)                           STRINGIFY(x)
 
-#ifndef BTC_ONLY
 #define SOFTWARE_VERSION_STR "Firmware v" EXPAND(SOFTWARE_VERSION_MAJOR) "." EXPAND(SOFTWARE_VERSION_MINOR) "." EXPAND(SOFTWARE_VERSION_BUILD)
-#else
-#define SOFTWARE_VERSION_STR "Firmware v" EXPAND(SOFTWARE_VERSION_BTC_ONLY_MAJOR) "." EXPAND(SOFTWARE_VERSION_MINOR) "." EXPAND(SOFTWARE_VERSION_BUILD)
-#endif
+
 #ifdef COMPILE_SIMULATOR
 const char g_softwareVersionString[] = SOFTWARE_VERSION_STR;
 #else

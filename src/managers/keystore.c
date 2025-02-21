@@ -671,6 +671,7 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
         default:
             ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
             CHECK_ERRCODE_BREAK("GetAccountEntropy", ret);
+            PrintArray("entropy", entropy, entropyLen);
             ret = bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
             CHECK_ERRCODE_BREAK("bip39_mnemonic_from_bytes", ret);
             ret = bip39_mnemonic_to_seed(mnemonic, passphrase, seed, SEED_LEN, NULL);

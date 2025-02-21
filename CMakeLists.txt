@@ -6,22 +6,23 @@ option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 set(BUILD_ENVIRONMENT "DEBUG")
 set(BUILD_VARIANT "MULTI_COINS")
 
-set(WIDGET_PATH "multi")
 if(CYPHERPUNK)
     message(STATUS "Building for CYPHERPUNK")
     add_compile_definitions(CYPHERPUNK_VERSION)
-    set(BUILD_VARIANT "CYPHERPUNK")
+    set(WIDGET_PATH "multi")
     set(WIDGET_SUBPATH "multi/cypherpunk")
+    set(BUILD_VARIANT "CYPHERPUNK")
 elseif(BTC_ONLY)
     message(STATUS "Building for BTC_ONLY")
-    set(WIDGET_SUBPATH "btc_only/multi_sig")
     set(WIDGET_PATH "btc_only")
+    set(WIDGET_SUBPATH "btc_only/multi_sig")
     set(BUILD_VARIANT "BTC_ONLY")
     add_compile_definitions(BTC_ONLY)
     add_compile_definitions(EXCLUDE_RUSTC)
 else()
     message(STATUS "Building for WEB3_VERSION")
     add_compile_definitions(WEB3_VERSION)
+    set(WIDGET_PATH "multi")
     set(WIDGET_SUBPATH "multi/web3")
     set(BUILD_VARIANT "MULTI_COINS")
 endif()
@@ -38,7 +39,7 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g2 -ggdb")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 
-add_subdirectory(rust)
+# add_subdirectory(rust)
 
 # add definition
 function(add_definition_with_message OPTION_NAME)
@@ -189,9 +190,7 @@ endif()
     
 file(GLOB GUI_CUSTOM_VIEW_WIDGETS
     src/ui/gui_views/*.c
-    src/ui/gui_views/web3/*.c
     src/ui/gui_widgets/*.c
-    src/ui/gui_widgets/web3/*.c
     src/ui/gui_wallet/*.c
     src/ui/gui_chain/*.c
     src/ui/gui_analyze/*.c

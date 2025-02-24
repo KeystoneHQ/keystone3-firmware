@@ -149,9 +149,10 @@ static void CreateBtcWalletProfileEntranceRefresh(lv_obj_t *parent)
             break;;
         }
 
-        printf("item->passphrase: %d\n", item->passphrase);
-        printf("PassphraseExist(GetCurrentAccountIndex()): %d\n", PassphraseExist(GetCurrentAccountIndex()));
-        if (item->passphrase != PassphraseExist(GetCurrentAccountIndex())) {
+        uint8_t mfp[4];
+        GetMasterFingerPrint(mfp);
+        Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(item->walletConfig, mfp, 4);
+        if (item->passphrase != PassphraseExist(GetCurrentAccountIndex()) && result->error_code != 0) {
             ++i;
             multiSigNum--;
             continue;

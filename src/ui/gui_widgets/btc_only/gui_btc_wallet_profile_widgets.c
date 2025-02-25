@@ -73,7 +73,6 @@ void GuiBtcWalletProfileRefresh(void)
     if (g_walletProfile.currentTile == WALLET_PROFILE_SELECT) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_mid_btn"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-        printf("%s %d.\n", __func__, __LINE__);
         CreateBtcWalletProfileEntranceRefresh(g_walletProfile.profileView);
     } else {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("wallet_profile_single_sign_title_text"));

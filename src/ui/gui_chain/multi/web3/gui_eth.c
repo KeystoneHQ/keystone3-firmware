@@ -13,6 +13,7 @@
 #include "string.h"
 #include "drv_mpu.h"
 #include "device_setting.h"
+#include "cjson/cJSON.h"
 
 static void decodeEthContractData(void *parseResult);
 static bool GetEthErc20ContractData(void *parseResult);
@@ -31,6 +32,7 @@ static bool g_fromEnsExist = false;
 static bool g_toEnsExist = false;
 static bool g_isPermit = false;
 static bool g_isPermitSingle = false;
+static bool g_isOperation = false;
 static ViewType g_viewType = ViewTypeUnKnown;
 
 const static EvmNetwork_t NETWORKS[] = {
@@ -625,6 +627,7 @@ void GuiSetEthUrData(URParseResult *urResult, URParseMultiResult *urMultiResult,
     g_viewType = g_isMulti ? g_urMultiResult->t : g_urResult->t;
     g_isPermitSingle = false;
     g_isPermit = false;
+    g_isOperation = false;
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                           \
@@ -767,6 +770,14 @@ void *GuiGetEthTypeData(void)
         result = eth_check(data, mfp, sizeof(mfp));
         CHECK_CHAIN_BREAK(result);
         PtrT_TransactionParseResult_DisplayETHTypedData parseResult = eth_parse_typed_data(data, ethXpub);
+        cJSON *json = cJSON_Parse(parseResult->data->message);
+        cJSON *operation = cJSON_GetObjectItem(json, "operation");
+        if (operation) {
+            uint32_t operationValue;
+            sscanf(operation->valuestring, "%d", &operationValue);
+            g_isOperation = operationValue == 1;
+        }
+        cJSON_Delete(json);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
         UpdatePermitFlag(parseResult->data->primary_type);
@@ -1169,7 +1180,11 @@ void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param)
 void GetEthTypeDomainPos(uint16_t *x, uint16_t *y, void *param)
 {
     *x = 36;
-    *y = (152 + 16) * g_isPermit + 26;
+    if (g_isOperation) {
+        *y = 228;
+    } else {
+        *y = (152 + 16) * g_isPermit + 26;
+    }
 }
 
 bool GetEthContractDataExist(void *indata, void *param)
@@ -1348,6 +1363,11 @@ static bool GetSafeContractData(char* inputData)
 bool GetEthPermitWarningExist(void *indata, void *param)
 {
     return g_isPermit;
+}
+
+bool GetEthOperationWarningExist(void *indata, void *param)
+{
+    return g_isOperation;
 }
 
 bool GetEthPermitCantSign(void *indata, void *param)

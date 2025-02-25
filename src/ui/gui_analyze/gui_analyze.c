@@ -8,6 +8,8 @@
 
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
+#else
+#include "simulator_model.h"
 #endif
 
 #define PC_SIMULATOR_PATH "C:/assets"
@@ -789,7 +791,6 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
     if (!type) {
         return NULL;
     }
-
     item = cJSON_GetObjectItem(json, "exist_func");
     if (item != NULL) {
         GetObjStateFunc func = GuiTemplateStateFuncGet(item->valuestring);

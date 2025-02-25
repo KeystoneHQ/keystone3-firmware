@@ -45,6 +45,7 @@ void *GetEthContractData(uint8_t *row, uint8_t *col, void *param);
 bool GetEthInputDataExist(void *indata, void *param);
 bool GetEthPermitWarningExist(void *indata, void *param);
 bool GetEthPermitCantSign(void *indata, void *param);
+bool GetEthOperationWarningExist(void *indata, void *param);
 void *GuiGetEthPersonalMessage(void);
 void GetEthPersonalMessageType(void *indata, void *param, uint32_t maxLen);
 void GetMessageFrom(void *indata, void *param, uint32_t maxLen);

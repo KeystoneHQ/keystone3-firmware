@@ -160,6 +160,8 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetEthPermitWarningExist;
     } else if (!strcmp(type, "GetEthPermitCantSign")) {
         return GetEthPermitCantSign;
+    } else if (!strcmp(type, "GetEthOperationWarningExist")) {
+        return GetEthOperationWarningExist;
     }
     return NULL;
 }

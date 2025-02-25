@@ -878,7 +878,6 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             strcpy(g_accountPublicInfo[i].value, xPubResult->data);
             printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
-            printf("%s %d.\n", __func__, __LINE__);
         }
         if (!isSlip39) {
             free_simple_response_c_char(cip3_response);
@@ -1659,28 +1658,20 @@ static cJSON* ReadAndParseAccountJson(uint32_t *outAddr, uint32_t *outSize)
     char *jsonString = NULL;
     cJSON *rootJson = NULL;
 
-    printf("%s %d..................\r\n", __func__, __LINE__);
     uint8_t account = GetCurrentAccountIndex();
-    printf("%s %d..................\r\n", __func__, __LINE__);
     ASSERT(account < 3);
-    // if (PassphraseExist(account)) {
-    //     printf("%s %d..................\r\n", __func__, __LINE__);
-    //     printf("[%s:%d] Account %d checking passphrase...\n", __func__, __LINE__, account);
-    //     if (g_tempParsePhraseJson == NULL) {
-    //         printf("[%s:%d] Creating new g_tempParsePhraseJson\n", __func__, __LINE__);
-    //         g_tempParsePhraseJson = cJSON_CreateObject();
-    //     } else {
-    //         printf("[%s:%d] Using existing g_tempParsePhraseJson: %p\n", __func__, __LINE__, g_tempParsePhraseJson);
-    //     }
-    //     return g_tempParsePhraseJson;
-    // } else {
-    //     printf("[%s:%d] Account %d has no passphrase\n", __func__, __LINE__, account);
-    //     if (g_tempParsePhraseJson != NULL) {
-    //         printf("[%s:%d] Cleaning up g_tempParsePhraseJson: %p\n", __func__, __LINE__, g_tempParsePhraseJson);
-    //         cJSON_Delete(g_tempParsePhraseJson);
-    //         g_tempParsePhraseJson = NULL;
-    //     }
-    // }
+    if (PassphraseExist(account)) {
+        if (g_tempParsePhraseJson == NULL) {
+            g_tempParsePhraseJson = cJSON_CreateObject();
+        } else {
+        }
+        return g_tempParsePhraseJson;
+    } else {
+        if (g_tempParsePhraseJson != NULL) {
+            cJSON_Delete(g_tempParsePhraseJson);
+            g_tempParsePhraseJson = NULL;
+        }
+    }
     addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + account * SPI_FLASH_ADDR_EACH_SIZE;
     ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
     ASSERT(ret == 4);

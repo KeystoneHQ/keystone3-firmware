@@ -1,3 +1,14 @@
+## 2.99.0(2025-02-25)
+
+**Web3:**
+### What's new
+
+1. multi_coin what's new
+
+### Bug Fixes
+
+1. multi_coin bug fixes
+
 ## 1.8.2(2024-12-30)
 
 ### Bug Fixes  

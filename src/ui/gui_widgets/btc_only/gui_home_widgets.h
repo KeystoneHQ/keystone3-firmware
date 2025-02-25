@@ -29,6 +29,7 @@ typedef struct {
     bool enable;
     bool testNet;
     CURRENT_WALLET_INDEX_ENUM defaultWallet;
+    CURRENT_WALLET_INDEX_ENUM defaultPassphraseWallet;
     lv_obj_t *checkBox;
 } WalletState_t;
 

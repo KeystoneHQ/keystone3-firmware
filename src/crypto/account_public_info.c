@@ -449,6 +449,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
 #ifdef BTC_ONLY
             cJSON_AddItemToObject(jsonItem, "testNet", cJSON_CreateBool(false));
             cJSON_AddItemToObject(jsonItem, "defaultWallet", cJSON_CreateNumber(SINGLE_WALLET));
+            cJSON_AddItemToObject(jsonItem, "defaultPassphraseWallet", cJSON_CreateNumber(SINGLE_WALLET));
 #endif
             cJSON_AddItemToObject(rootJson, walletList[i].name, jsonItem);
         }
@@ -1243,7 +1244,7 @@ static uint32_t MultiSigWalletSaveDefault(uint32_t addr, uint8_t accountIndex)
     return size;
 }
 
-void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
+void MultiSigWalletSave(MultiSigWalletManager_t *manager)
 {
     uint8_t account = GetCurrentAccountIndex();
     ASSERT(account < 3);

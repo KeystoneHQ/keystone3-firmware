@@ -34,7 +34,7 @@ static lv_obj_t *g_twoKeyImg = NULL;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 
 static WalletState_t g_walletState[] = {
-    {HOME_WALLET_CARD_BTC, false, "BTC", true, false, SINGLE_WALLET}
+    {HOME_WALLET_CARD_BTC, false, "BTC", true, false, SINGLE_WALLET, SINGLE_WALLET}
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
 
@@ -337,13 +337,18 @@ void SetIsTestNet(bool testNet)
 
 CURRENT_WALLET_INDEX_ENUM GetCurrentWalletIndex(void)
 {
-    return g_walletState[HOME_WALLET_CARD_BTC].defaultWallet;
+    bool isPassphrase = PassphraseExist(GetCurrentAccountIndex());
+    return isPassphrase ? g_walletState[HOME_WALLET_CARD_BTC].defaultPassphraseWallet : g_walletState[HOME_WALLET_CARD_BTC].defaultWallet;
 }
 
 void SetCurrentWalletIndex(CURRENT_WALLET_INDEX_ENUM walletIndex)
 {
-    printf("walletIndex = %d\n", walletIndex);
-    g_walletState[HOME_WALLET_CARD_BTC].defaultWallet = walletIndex;
+    bool isPassphrase = PassphraseExist(GetCurrentAccountIndex());
+    if (isPassphrase) {
+        g_walletState[HOME_WALLET_CARD_BTC].defaultPassphraseWallet = walletIndex;
+    } else {
+        g_walletState[HOME_WALLET_CARD_BTC].defaultWallet = walletIndex;
+    }
     AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
 }
 

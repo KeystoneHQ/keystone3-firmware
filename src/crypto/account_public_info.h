@@ -280,7 +280,7 @@ ChainType CheckSolPathSupport(char *path);
 
 #ifdef BTC_ONLY
 void ExportMultiSigXpub(ChainType chainType);
-void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager);
+void MultiSigWalletSave(MultiSigWalletManager_t *manager);
 int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWalletManager_t *manager);
 
 void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode);

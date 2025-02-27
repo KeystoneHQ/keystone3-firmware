@@ -1,3 +1,33 @@
+
+## 2.88.0(2025-02-25)
+**Web3:**
+
+### What's new
+
+1. Supported managing ZEC assets using Zashi Wallet
+### Bug Fixes
+1. Fixed the issue of long unlocking time after entering the password
+2. Fixed the issue where rapidly switching the number of mnemonics during SLIP39 wallet creation caused creation failure
+3. Fixed message signing errors in certain Solana scenarios
+
+
+**BTC Only:**
+### What's new
+1. Added support for Chinese, Russian, and Korean languages
+2. Retains receiving address after reboot, no longer reverting to default
+### Bug Fixes
+1. btc_only bug fixes
+
+**Cypherpunk:**
+### What's new
+1. Fixed the issue of long unlocking time after entering the password
+2. Fixed the issue where rapidly switching the number of mnemonics during SLIP39 wallet creation caused creation failure
+3. Fixed message signing errors in certain Solana scenarios
+
+### Bug Fixes
+1. cypherpunk bug fixes
+
+
 ## 1.8.2(2024-12-30)
 
 ### Bug Fixes  

@@ -22,6 +22,7 @@ pub mod companion_app;
 pub mod core_wallet;
 pub mod keplr;
 pub mod keystone;
+pub mod keystone_connect;
 pub mod metamask;
 pub mod okx;
 pub mod solana;
@@ -32,7 +33,6 @@ mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
 pub mod zcash;
-pub mod keystone_connect;
 //TODO: get these value from device
 pub const DEVICE_TYPE: &str = "Keystone 3 Pro";
 

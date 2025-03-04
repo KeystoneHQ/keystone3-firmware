@@ -5,6 +5,7 @@ pub mod bitget;
 mod imtoken;
 pub mod keplr;
 pub mod keystone;
+pub mod keystone_connect;
 pub mod okx;
 pub mod solana;
 pub mod structs;
@@ -13,7 +14,6 @@ pub mod tonkeeper;
 mod utils;
 pub mod xbull;
 pub mod xrp_toolkit;
-pub mod keystone_connect;
 
 pub mod core_wallet;
 pub mod thor_wallet;

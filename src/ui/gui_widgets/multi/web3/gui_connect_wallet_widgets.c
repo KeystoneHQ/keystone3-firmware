@@ -132,8 +132,7 @@ static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinBnb, &coinBch,
-    &coinDash, &coinLtc, &coinTrx, &coinXrp,
+    &coinBtc, &coinEth,&coinTrx
 };
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
@@ -850,11 +849,11 @@ static void AddKeystoneWalletCoins(void)
         lv_img_set_pivot(img, 0, 0);
         lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
     }
-    lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
-    lv_img_set_zoom(img, 150);
-    lv_img_set_pivot(img, 0, 0);
-    lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 132, 2);
+    // lv_obj_t *img = GuiCreateImg(g_coinCont, &imgMore);
+    // lv_img_set_zoom(img, 150);
+    // lv_img_set_pivot(img, 0, 0);
+    // lv_obj_set_style_img_opa(img, LV_OPA_30, LV_PART_MAIN);
+    // lv_obj_align(img, LV_ALIGN_TOP_LEFT, 132, 2);
 }
 
 static void AddBlueWalletCoins(void)

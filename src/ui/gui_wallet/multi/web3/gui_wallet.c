@@ -451,31 +451,31 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
     //   btc 4
-    // + eth 10
+    // + eth 1
     // + trx 1
-    ExtendedPublicKey keys[15];
+    ExtendedPublicKey keys[6];
     public_keys->data = keys;
-    public_keys->size = 15;
-    for (int i = XPUB_TYPE_ETH_LEDGER_LIVE_0; i <= XPUB_TYPE_ETH_LEDGER_LIVE_9; i++) {
-        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path = SRAM_MALLOC(BUFFER_SIZE_64);
-        snprintf_s(keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].path, BUFFER_SIZE_64, "m/44'/60'/%d'", i - XPUB_TYPE_ETH_LEDGER_LIVE_0);
-        keys[i - XPUB_TYPE_ETH_LEDGER_LIVE_0].xpub = GetCurrentAccountPublicKey(i);
-    }
+    public_keys->size = 6;
 
-    keys[10].path = "m/44'/0'/0'";
-    keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+    // eth standard
+    keys[0].path = "m/44'/60'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
 
-    keys[11].path = "m/49'/0'/0'";
-    keys[11].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
 
-    keys[12].path = "m/84'/0'/0'";
-    keys[12].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+    keys[1].path = "m/44'/0'/0'";
+    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
 
-    keys[13].path = "m/86'/0'/0'";
-    keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+    keys[2].path = "m/49'/0'/0'";
+    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
 
-    keys[14].path = GetXPubPath(XPUB_TYPE_TRX);
-    keys[14].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
+    keys[3].path = "m/84'/0'/0'";
+    keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+
+    keys[4].path = "m/86'/0'/0'";
+    keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+
+    keys[5].path = GetXPubPath(XPUB_TYPE_TRX);
+    keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
 
     char serialNumber[256];
     GetSerialNumber(serialNumber);

@@ -152,6 +152,17 @@ mod tests {
 
     #[test]
     fn test_btc_p2tr_no_script_address() {
+        let extended_pubkey = "xpub6Cq9mdT8xwFe9LYQnt9y1hJXTyo7KQJM8pRH6K95F1mbELzgm825m3hyAZ97vsUV8Xh7VRwu7bKuLZEmUV1ABqCRQqFzZHAsfaJXTYSY1cf";
+        let address =
+            get_address("M/86'/0'/0'/0/0".to_string(), &extended_pubkey.to_string()).unwrap();
+        assert_eq!(
+            address,
+            "bc1pf7al7fmsrfxftwp0durgv3zv9ezqzrqdhk34gjcuqasw6fnlxu7sw8xvjs"
+        );
+    }
+
+    #[test]
+    fn test_btc_p2tr_no_script_address_testnet() {
         let extended_pubkey = "tpubDDfvzhdVV4unsoKt5aE6dcsNsfeWbTgmLZPi8LQDYU2xixrYemMfWJ3BaVneH3u7DBQePdTwhpybaKRU95pi6PMUtLPBJLVQRpzEnjfjZzX";
         let address =
             get_address("M/86'/1'/0'/0/0".to_string(), &extended_pubkey.to_string()).unwrap();

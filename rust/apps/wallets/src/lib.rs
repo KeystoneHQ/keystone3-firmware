@@ -22,6 +22,7 @@ pub mod companion_app;
 pub mod core_wallet;
 pub mod keplr;
 pub mod keystone;
+pub mod keystone_connect;
 pub mod metamask;
 pub mod okx;
 pub mod solana;

@@ -22,6 +22,9 @@
 #include "ctaes.h"
 #include "drv_mpu.h"
 #include "log_print.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_model.h"
+#endif
 
 #define VERSION_MAX_LENGTH      32
 

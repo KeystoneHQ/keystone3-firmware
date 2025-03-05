@@ -40,6 +40,7 @@ void SetPageLockScreen(bool enable);
 uint8_t GetFingerSignFlag(void);
 bool IsPreviousLockScreenEnable(void);
 void SetLockScreen(bool enable);
+void OTP_PowerOn(void);
 
 extern bool g_reboot;
 

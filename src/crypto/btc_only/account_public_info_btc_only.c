@@ -187,7 +187,7 @@ void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
     SetTemplateWalletValue("BTC", key, index);
 }
 
-void DeleteAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
+void DeleteAccountMultiReceiveIndex(const char* chain, char *verifyCode)
 {
     uint32_t addr;
     const char *chainName = "BTC";

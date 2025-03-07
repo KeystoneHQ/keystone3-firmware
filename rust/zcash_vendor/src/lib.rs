@@ -1,8 +1,7 @@
 #![no_std]
+pub mod pczt_ext;
 
 extern crate alloc;
-
-pub mod pczt_ext;
 
 pub use bip32;
 pub use orchard;

@@ -90,21 +90,11 @@ pub fn sign_message_orchard<R: RngCore + CryptoRng>(
     } else {
         // Keystone only generates UFVKs at the above path; ignore all other signature
         // requests.
-        Ok(())
+        Err(KeystoreError::ZcashOrchardSign(format!(
+            "invalid orchard account path: {:?}",
+            path
+        )))
     }
-}
-
-pub fn test_sign_zec(seed: &[u8], alpha: [u8; 32], msg: &[u8]) -> [u8; 64] {
-    let mut alpha = alpha;
-    alpha.reverse();
-    let rng_seed = [0u8; 32];
-    let rng = ChaCha8Rng::from_seed(rng_seed);
-    let osk = SpendingKey::from_zip32_seed(seed, 133, AccountId::ZERO).unwrap();
-    let osak = SpendAuthorizingKey::from(&osk);
-    let randm = Fq::from_repr(alpha).unwrap();
-    let sig = osak.randomize(&randm).sign(rng, &msg);
-    let bytes = <[u8; 64]>::from(&sig);
-    bytes
 }
 
 #[cfg(test)]
@@ -123,49 +113,59 @@ mod tests {
 
     extern crate std;
     use std::println;
+
     #[test]
-    fn spike() {
-        let seed = hex::decode("5d741f330207d529ff7af106616bbffa15c1cf3bf9778830e003a17787926c0bd77261f91a4a3e2e52b8f96f35bdadc94187bef0f53c449a3802b4e7332cfedd").unwrap();
+    fn test_ufvk_generation_and_encoding() {
+        // Test seed from which we'll derive keys
+        let seed = hex::decode("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
+            .unwrap();
+
+        // Generate the Unified Spending Key from seed
         let usk = UnifiedSpendingKey::from_seed(&MAIN_NETWORK, &seed, AccountId::ZERO).unwrap();
 
+        // Derive the Unified Full Viewing Key
         let ufvk = usk.to_unified_full_viewing_key();
 
-        // println!(
-        //     "{}",
-        //     ufvk.to_unified_incoming_viewing_key().encode(&MAIN_NETWORK)
-        // );
-        //uivk1xhvuufquepxdr5zyacha4kde0479wr25hk26w07jmtn0ec08t4fh0yqudc7v8ddya5rrx4q34yuuxy524p59radjndx5u3rqgvs6w5q8s9246q4h8ykuqtfmn7tyzdlvnen2x6p0cjlqvr48hqrgf72tr7l9z0vdnh8xwu42ausdrvuvd3w9h50ql64g0plucqfyx9ewjqjr5k7lhv9qrl7whu93jp6t38rpcyl060pz5sqnancrh
-        println!("{}", hex::encode(ufvk.transparent().unwrap().serialize()));
-        println!("{}", hex::encode(ufvk.orchard().unwrap().to_bytes()));
-        // println!("{}", hex::encode(ufvk.orchard().unwrap()));
-        println!("{}", ufvk.encode(&MAIN_NETWORK));
+        // Verify transparent component exists and can be serialized
+        let transparent_bytes = ufvk.transparent().unwrap().serialize();
+        assert!(!transparent_bytes.is_empty());
+
+        // Verify orchard component exists and can be serialized
+        let orchard_bytes = ufvk.orchard().unwrap().to_bytes();
+        assert!(!orchard_bytes.is_empty());
+
+        // Verify UFVK can be encoded to string format
+        let encoded_ufvk = ufvk.encode(&MAIN_NETWORK);
+        assert!(!encoded_ufvk.is_empty());
+        assert!(encoded_ufvk.starts_with("uview"));
+
+        // Verify we can generate a valid address from the UFVK
         let address = ufvk.default_address(None).unwrap();
-        println!("{:?}", address.0.encode(&MAIN_NETWORK));
+        let encoded_address = address.0.encode(&MAIN_NETWORK);
+
+        assert!(!encoded_address.is_empty());
+        assert!(encoded_address.starts_with("u1"));
+        assert_eq!(encoded_address, "u1mnn47asanfdtlsljutd53ha2335q5wvy2r4udavqkxg6e3uzyg2ghrqenzn9my8pr7gfq27yaj80x6ypshmh9tcc3qghzekhzw9tphh2rl3glkdrkg7jl8n3v3mnl7xs7pn7k00zxyx");
+
+        let seed_fingerprint = super::calculate_seed_fingerprint(&seed).unwrap();
+        assert_eq!(
+            hex::encode(seed_fingerprint),
+            "deff604c246710f7176dead02aa746f2fd8d5389f7072556dcb555fdbe5e3ae3"
+        );
     }
 
     #[test]
-    fn spike_address() {
-        let seed = hex::decode("a2093a34d4aa4c3ba89aa087a0992cd76e03a303b98f890a7a818d0e1e414db7a3a832791834a6fd9639d9c59430a8855f7f9dd6bed765b6783058ed7bd0ecbd").unwrap();
-        let osk = SpendingKey::from_zip32_seed(&seed, 133, AccountId::ZERO).unwrap();
-        let ofvk: FullViewingKey = FullViewingKey::from(&osk);
-    }
-
-    #[test]
-    fn spike_sign_transaction() {
+    fn test_orchard_signing() {
         let rng_seed = [0u8; 32];
         let rng: ChaCha8Rng = ChaCha8Rng::from_seed(rng_seed);
-        let seed: std::vec::Vec<u8> = hex::decode("a2093a34d4aa4c3ba89aa087a0992cd76e03a303b98f890a7a818d0e1e414db7a3a832791834a6fd9639d9c59430a8855f7f9dd6bed765b6783058ed7bd0ecbd").unwrap();
-        // let usk = UnifiedSpendingKey::from_seed(&MAIN_NETWORK, &seed, AccountId::ZERO).unwrap();
-        // let ssk = usk.sapling();
-        // let osk = usk.orchard();
+        let seed: std::vec::Vec<u8> =
+            hex::decode("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
+                .unwrap();
 
         let osk = SpendingKey::from_zip32_seed(&seed, 133, AccountId::ZERO).unwrap();
 
         let osak = SpendAuthorizingKey::from(&osk);
-        //SpendAuthorizingKey(SigningKey(SigningKey { sk: 0x3df9e7346783cfadf079fc8fafbc79ede96f13e2c12a6723e4ea1bc16539949a, pk: VerificationKey { point: Ep { x: 0x1fdab0b7f334c8e163218f17c70b26d33b80143ebc7ab629ff5a28006ce4e219, y: 0x29d265bacc851808114cf6d3585a17ab2a3eeadcd336ee3434da4039366183b3, z: 0x2424bad05cb436309bb30378afd371287c9e96814a9453deaa4d193294013e83 }, bytes: VerificationKeyBytes { bytes: "ac82d5f4bf06f0b51a2fcdcfdb7f0542bf49aa1f6d709ba82dbbdcf5112f0c3f" } } }))
-        println!("{:?}", osak);
 
-        // osak.randomize(randomizer)
         let mut bytes: [u8; 32] =
             hex::decode("1f98c5acf5b566b8521f7ea2d9f67f1a565f6ab0e57b45aed4a3d69e7c3c8262")
                 .unwrap()
@@ -178,7 +178,6 @@ mod tests {
             .unwrap();
         let sig = osak.randomize(&randm).sign(rng, &msg);
         let bytes = <[u8; 64]>::from(&sig);
-        println!("{:?}", hex::encode(bytes));
-        //171d28b28da8e267ba17d0dcd5d61a16b5e39ef13bf57408e1c1cb22ee6d7b866b5de14849ca40a9791631ca042206df1f4e852b6e9e317f815a42b86537d421
+        assert_eq!(hex::encode(bytes), "065ef82c33af0ed487e8932112e3359e93c5955d3eac6c3a1f9cb6dd24e19d8a2bba454a4274154dd4ad0c6bdb2022a646950ed521f3de18e99015f4821cbb10");
     }
 }

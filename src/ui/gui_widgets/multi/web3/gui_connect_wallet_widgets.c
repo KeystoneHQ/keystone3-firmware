@@ -1304,7 +1304,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         AddLeapCoins();
         break;
     case WALLET_LIST_WANDER:
-        func = GuiGetArData;
+        func = GuiGetWanderData;
         AddWanderConnectCoins();
         break;
     case WALLET_LIST_XBULL:

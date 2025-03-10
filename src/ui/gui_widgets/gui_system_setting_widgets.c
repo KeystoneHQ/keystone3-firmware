@@ -133,7 +133,7 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     } else {
         lv_obj_clear_state(g_bootSecureSw, LV_STATE_CHECKED);
     }
-    tableSwitch[0].obj = GuiCreateTextLabel(parent, _("boot_secure_switch_title"));
+    tableSwitch[0].obj = GuiCreateTextLabel(parent, _("boot_secure_switch_text_title"));
     tableSwitch[1].obj = g_bootSecureSw;
 
     button = GuiCreateButton(parent, 456, 84, tableSwitch, NUMBER_OF_ARRAYS(tableSwitch),

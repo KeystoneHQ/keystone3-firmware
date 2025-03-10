@@ -29,7 +29,6 @@ static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData
     const char model[] = "Kv3A";
     char serialNumber[SERIAL_NUMBER_MAX_LEN];
     char version[SOFTWARE_VERSION_MAX_LEN];
-    char bootVersion[SOFTWARE_VERSION_MAX_LEN];
 
     FrameHead_t sendHead = {0};
 

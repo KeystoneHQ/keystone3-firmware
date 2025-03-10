@@ -12,7 +12,7 @@ use bitcoin::{PublicKey, ScriptBuf, Sequence};
 use core::iter;
 use core::str::FromStr;
 use ur_registry::pb::protoc;
-use ur_registry::pb::protoc::sign_transaction::Transaction::{BchTx, BtcTx, DashTx, LtcTx};
+use ur_registry::pb::protoc::sign_transaction::Transaction::{BchTx, BtcTx, DashTx, DogeTx, LtcTx};
 use ur_registry::pb::protoc::{bch_tx, dash_tx, Input};
 
 macro_rules! negative_check {
@@ -157,6 +157,7 @@ impl InputConverter for protoc::sign_transaction::Transaction {
             BtcTx(tx) => collect!(&tx.inputs),
             BchTx(tx) => collect!(&tx.inputs),
             DashTx(tx) => collect!(&tx.inputs),
+            DogeTx(tx) => collect!(&tx.inputs),
             _ => Err(BitcoinError::InvalidRawTxCryptoBytes(
                 "invalid tx inputs".to_string(),
             )),

@@ -523,7 +523,7 @@ UREncodeResult *GuiGetOkxWalletData(void)
     keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
 
     keys[14].path = GetXPubPath(XPUB_TYPE_LTC);
-    keys[14].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_LTC);
+    keys[14].xpub = GetCurrentAccountPublicKey( );
 
     keys[15].path = GetXPubPath(XPUB_TYPE_DASH);
     keys[15].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);

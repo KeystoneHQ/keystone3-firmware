@@ -202,6 +202,8 @@ pub enum ViewType {
     BtcMsg,
     #[cfg(feature = "ltc")]
     LtcTx,
+    #[cfg(feature = "doge")]
+    DogeTx,
     #[cfg(feature = "dash")]
     DashTx,
     #[cfg(feature = "bch")]

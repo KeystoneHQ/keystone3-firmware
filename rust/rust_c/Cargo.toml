@@ -66,6 +66,7 @@ aptos = ["dep:app_aptos"]
 arweave = ["dep:app_arweave"]
 bitcoin = ["dep:app_bitcoin"]
 ltc = []
+doge = []
 dash = []
 bch = []
 cardano = ["dep:app_cardano"]
@@ -95,6 +96,7 @@ multi-coins = [
     "dash",
     "ethereum",
     "ltc",
+    "doge",
     "near",
     "solana",
     "stellar",

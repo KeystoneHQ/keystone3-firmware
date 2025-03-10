@@ -26,6 +26,7 @@ impl ScriptType {
             "LTC" => Ok(ScriptType::P2SHP2WPKH),
             "DASH" => Ok(ScriptType::P2PKH),
             "BCH" => Ok(ScriptType::P2PKH),
+            "DOGE" => Ok(ScriptType::P2PKH),
             _ => Err(BitcoinError::UnsupportedScriptType(coin_code)),
         }
     }

@@ -287,7 +287,7 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     uint32_t major, minor, build;
     GetBootSoftwareVersion(&major, &minor, &build);
     printf("Boot Software Version: %d.%d.%d\r\n", major, minor, build);
-    snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s# Boot %d.%d.%d", version, major, minor, build);
+    snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s#", version);
 #endif
 
     button = CreateSettingWidgetsButton(parent, _("device_setting_about_title"),

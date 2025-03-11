@@ -59,7 +59,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SPARROW, &walletListSparrow, true},
     {WALLET_LIST_UNISAT, &walletListUniSat, true},
     {WALLET_LIST_ZEUS, &walletListZeus, true},
-    {WALLET_LIST_CAKE, &walletListCake, true},
+    // {WALLET_LIST_CAKE, &walletListCake, true},
     {WALLET_LIST_FEATHER, &walletListFeather, true},
     {WALLET_LIST_ZASHI, &walletListZashi, true},
 };
@@ -161,7 +161,7 @@ static void GuiInitWalletListArray()
         bool isSlip39 = (mnemonicType == MNEMONIC_TYPE_SLIP39);
 
         switch (index) {
-        case WALLET_LIST_CAKE:
+        // case WALLET_LIST_CAKE:
         case WALLET_LIST_FEATHER:
             enable = !isSLIP39;
             break;
@@ -406,7 +406,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetZecData;
         AddZecCoins();
         break;
-    case WALLET_LIST_CAKE:
+    // case WALLET_LIST_CAKE:
     case WALLET_LIST_FEATHER:
         func = GuiGetCakeData;
         AddCakeCoins();

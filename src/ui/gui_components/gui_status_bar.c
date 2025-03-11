@@ -142,7 +142,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_LEAP, "Leap", &walletLeap},
     {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
     {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
-    {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
+    // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
     {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
     {WALLET_LIST_CORE, "Core Wallet", &walletCore},
 #else

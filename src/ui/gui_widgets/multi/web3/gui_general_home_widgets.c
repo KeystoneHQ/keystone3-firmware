@@ -350,9 +350,9 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
     case HOME_WALLET_CARD_ETH:
     case HOME_WALLET_CARD_SOL:
     case HOME_WALLET_CARD_HNT:
-    // case HOME_WALLET_CARD_AVAX:
-    //     GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
-    //     break;
+    case HOME_WALLET_CARD_AVAX:
+        GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
+        break;
     case HOME_WALLET_CARD_ADA:
         GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
         break;

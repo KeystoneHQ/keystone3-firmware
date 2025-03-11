@@ -116,12 +116,12 @@ void *ExtRealloc(void *p, size_t newSize)
 
 void *RustMalloc(int32_t size)
 {
-    return ExtMalloc(size);
+    return SramMalloc(size);
 }
 
 void RustFree(void *p)
 {
-    ExtFree(p);
+    SramFree(p);
 }
 
 void PrintHeapInfo(void)

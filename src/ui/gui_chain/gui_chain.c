@@ -26,6 +26,9 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_COSMOS:
     case REMAPVIEW_SUI_SIGN_MESSAGE_HASH:
     case REMAPVIEW_ADA_SIGN_TX_HASH:
+    case REMAPVIEW_ADA:
+    case REMAPVIEW_ADA_SIGN_DATA:
+    case REMAPVIEW_ADA_CATALYST:
     case REMAPVIEW_AVAX:
         return true;
     default:
@@ -72,8 +75,9 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
 
     {CardanoSignTxHash, GuiGetAdaSignTxHashQrCodeData, GuiGetAdaSignTxHashQrCodeData, GuiGetAdaSignTxHashCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_TX_HASH},
     {CardanoSignData, GuiGetAdaSignSignDataQrCodeData, NULL, GuiGetAdaSignDataCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_DATA},
+    {CardanoSignCip8Data, GuiGetAdaSignSignCip8DataQrCodeData, NULL, GuiGetAdaSignDataCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_DATA},
     {CardanoCatalystVotingRegistration, GuiGetAdaSignCatalystVotingRegistrationQrCodeData, NULL, GuiGetAdaCatalystCheckResult, CHAIN_ADA, REMAPVIEW_ADA_CATALYST},
-    {CardanoTx, GuiGetAdaSignQrCodeData, NULL, GuiGetAdaCheckResult, CHAIN_ADA, REMAPVIEW_ADA},
+    {CardanoTx, GuiGetAdaSignQrCodeData, GuiGetAdaSignUrDataUnlimited, GuiGetAdaCheckResult, CHAIN_ADA, REMAPVIEW_ADA},
 
     {XRPTx, GuiGetXrpSignQrCodeData, NULL, GuiGetXrpCheckResult, CHAIN_XRP, REMAPVIEW_XRP},
 
@@ -124,7 +128,7 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t viewType)
 #ifdef WEB3_VERSION
 bool IsMessageType(uint8_t type)
 {
-    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage || type == CardanoSignData;
+    return type == EthPersonalMessage || type == EthTypedData || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage || type == CardanoSignData || type == CardanoSignCip8Data;
 }
 
 bool isCatalystVotingRegistration(uint8_t type)

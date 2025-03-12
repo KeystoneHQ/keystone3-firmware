@@ -20,6 +20,7 @@ use alloc::format;
 use bitcoin::bip32::ChildNumber::{Hardened, Normal};
 use bitcoin::bip32::DerivationPath;
 use core::ops::Div;
+use cryptoxide::hashing::blake2b_224;
 use ur_registry::cardano::cardano_sign_structure::CardanoSignStructure;
 use ur_registry::traits::From;
 
@@ -30,6 +31,13 @@ impl_public_struct!(ParseContext {
     cert_keys: Vec<CardanoCertKey>,
     cardano_xpub: String,
     master_fingerprint: Vec<u8>
+});
+impl_public_struct!(ParsedCardanoSignCip8Data {
+    payload: String,
+    derivation_path: String,
+    message_hash: String,
+    xpub: String,
+    hash_payload: bool
 });
 
 impl_public_struct!(CardanoUtxo {
@@ -172,6 +180,43 @@ impl ParsedCardanoSignData {
                 derivation_path,
                 message_hash: hex::encode(sign_data),
                 xpub,
+            }),
+        }
+    }
+}
+
+impl ParsedCardanoSignCip8Data {
+    pub fn build(
+        sign_data: Vec<u8>,
+        derivation_path: String,
+        xpub: String,
+        hash_payload: bool,
+    ) -> R<Self> {
+        let sign_structure = CardanoSignStructure::from_cbor(sign_data.clone());
+        match sign_structure {
+            Ok(sign_structure) => {
+                let raw_payload = sign_structure.get_payload();
+                let mut payload = String::from_utf8(hex::decode(raw_payload.clone()).unwrap())
+                    .unwrap_or_else(|_| raw_payload.clone());
+                let mut message_hash = hex::encode(raw_payload);
+                if hash_payload {
+                    let hash = blake2b_224(payload.as_bytes());
+                    message_hash = hex::encode(hash);
+                }
+                Ok(Self {
+                    payload,
+                    derivation_path,
+                    message_hash,
+                    xpub,
+                    hash_payload,
+                })
+            }
+            Err(e) => Ok(Self {
+                payload: hex::encode(sign_data.clone()),
+                derivation_path,
+                message_hash: hex::encode(sign_data),
+                xpub,
+                hash_payload,
             }),
         }
     }
@@ -1093,11 +1138,6 @@ impl ParsedCardanoTx {
                         }
                     }
 
-                    if !pubkey_hash_paired {
-                        return Err(CardanoError::InvalidTransaction(
-                            "invalid address".to_string(),
-                        ));
-                    }
                     parsed_inputs.push(ParsedCardanoInput {
                         transaction_hash: utxo.transaction_hash.clone(),
                         index: utxo.index,

@@ -145,7 +145,7 @@
     { \
         .index = HOME_WALLET_CARD_TON, \
         .coin = "TON", \
-        .chain = "The Open Network", \
+        .chain = "TON-TON", \
         .icon = &coinTon, \
     }, \
     { \
@@ -241,7 +241,7 @@
     { \
         .index = HOME_WALLET_CARD_CRO, \
         .coin = "CRO", \
-        .chain = "Cronos POS chain", \
+        .chain = "CRO-Cronos", \
         .icon = &coinCro, \
     }, \
     { \
@@ -289,7 +289,7 @@
     { \
         .index = HOME_WALLET_CARD_SCRT, \
         .coin = "SCRT", \
-        .chain = "Secret Network", \
+        .chain = "SCRT-Secret", \
         .icon = &coinScrt, \
     }, \
     { \
@@ -367,7 +367,7 @@
     { \
         .index = HOME_WALLET_CARD_GRAV, \
         .coin = "GRAV", \
-        .chain = "Gravity Bridge", \
+        .chain = "Graviton", \
         .icon = &coinGrav, \
     }, \
     { \

@@ -402,6 +402,9 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
 void GuiStandardReceiveInit(uint8_t chain)
 {
     g_chainCard = chain;
+    printf("HOME_WALLET_CARD_XLM = %d\n", HOME_WALLET_CARD_XLM);
+    printf("HOME_WALLET_CARD_TIA = %d\n", HOME_WALLET_CARD_TIA);
+    printf("g_chainCard: %d\r\n", g_chainCard);
     g_showIndex = GetCurrentSelectIndex() / 5 * 5;
     g_pageWidget = CreatePageWidget();
     g_standardReceiveWidgets.cont = g_pageWidget->contentZone;

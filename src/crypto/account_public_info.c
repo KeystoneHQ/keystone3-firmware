@@ -1179,10 +1179,15 @@ void SetFirstReceive(const char* chainName, bool isFirst)
     cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
     if (item == NULL) {
         printf("SetFirstReceive cannot get %s\r\n", chainName);
-        cJSON_Delete(rootJson);
-        return;
+        cJSON *jsonItem = cJSON_CreateObject();
+        cJSON_AddItemToObject(jsonItem, "recvIndex", cJSON_CreateNumber(0));
+        cJSON_AddItemToObject(jsonItem, "recvPath", cJSON_CreateNumber(0));
+        cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(isFirst));
+        cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
+        cJSON_AddItemToObject(rootJson, chainName, jsonItem);
+    } else {
+        cJSON_ReplaceItemInObject(item, "firstRecv", cJSON_CreateBool(isFirst));
     }
-    cJSON_ReplaceItemInObject(item, "firstRecv", cJSON_CreateBool(isFirst));
 
     for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MUTABLE_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
         Gd25FlashSectorErase(eraseAddr);

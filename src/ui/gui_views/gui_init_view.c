@@ -24,6 +24,7 @@
 #include "drv_aw32001.h"
 #include "usb_task.h"
 #include "ui_display_task.h"
+#include "version.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #else
@@ -67,6 +68,9 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
             GuiFrameOpenView(&g_setupView);
             if (IsUpdateSuccess()) {
                 GuiFrameOpenView(&g_updateSuccessView);
+            }
+            if (NeedUpdateBoot()) {
+                GuiFrameOpenView(&g_bootUpdateView);
             }
             break;
         } else {

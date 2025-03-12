@@ -41,7 +41,7 @@ static void ContinueStopCreateHandler(lv_event_t *e)
 {
     g_importMkb->currentSlice = 0;
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
     GUI_DEL_OBJ(g_noticeWindow)
 }
 

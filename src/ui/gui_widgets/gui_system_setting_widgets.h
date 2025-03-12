@@ -5,6 +5,7 @@ void GuiSystemSettingAreaInit(void);
 void GuiSystemSettingAreaDeInit(void);
 void GuiSystemSettingAreaRefresh(void);
 void GuiSystemSettingAreaRestart(void);
+void GuiDealChangeBootSecureKeyBoard(bool pass);
 
 void GuiSystemSettingVerifyPasswordSuccess(void);
 void GuiSystemSettingVerifyPasswordErrorCount(void *param);

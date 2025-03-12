@@ -32,6 +32,9 @@ int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *par
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenToHome();
                 return SUCCESS_CODE;
+            } else if (sig == SIG_SETTING_CHANGE_BOOT_SECURE_SWITCH) {
+                GuiDealChangeBootSecureKeyBoard(true);
+                return SUCCESS_CODE;
             }
         }
         GuiSystemSettingVerifyPasswordSuccess();

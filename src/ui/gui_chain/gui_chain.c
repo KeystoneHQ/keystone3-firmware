@@ -59,18 +59,18 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
     // {AvaxTx, GuiGetAvaxSignQrCodeData, GuiGetAvaxSignUrDataUnlimited, GuiGetAvaxCheckResult, CHAIN_AVAX, REMAPVIEW_AVAX},
 
     // must get from GuiGetCosmosTxChain
-    {CosmosTx, GuiGetCosmosSignQrCodeData, NULL, GuiGetCosmosCheckResult, CHAIN_ATOM, REMAPVIEW_COSMOS},
-    {CosmosEvmTx, GuiGetCosmosSignQrCodeData, NULL, GuiGetCosmosCheckResult, CHAIN_ATOM, REMAPVIEW_COSMOS},
+    {CosmosTx, GuiGetCosmosSignQrCodeData, GuiGetCosmosSignQrCodeData, GuiGetCosmosCheckResult, CHAIN_ATOM, REMAPVIEW_COSMOS},
+    {CosmosEvmTx, GuiGetCosmosSignQrCodeData, GuiGetCosmosSignQrCodeData, GuiGetCosmosCheckResult, CHAIN_ATOM, REMAPVIEW_COSMOS},
 
     {SuiTx, GuiGetSuiSignQrCodeData, NULL, GuiGetSuiCheckResult, CHAIN_SUI, REMAPVIEW_SUI},
-    {SuiSignMessageHash, GuiGetSuiSignHashQrCodeData, NULL, GuiGetSuiSignHashCheckResult, CHAIN_SUI, REMAPVIEW_SUI_SIGN_MESSAGE_HASH},
+    {SuiSignMessageHash, GuiGetSuiSignHashQrCodeData, GuiGetSuiSignHashQrCodeData, GuiGetSuiSignHashCheckResult, CHAIN_SUI, REMAPVIEW_SUI_SIGN_MESSAGE_HASH},
 
-    {SolanaTx, GuiGetSolSignQrCodeData, NULL, GuiGetSolCheckResult, CHAIN_SOL, REMAPVIEW_SOL},
-    {SolanaMessage, GuiGetSolSignQrCodeData, NULL, GuiGetSolCheckResult, CHAIN_SOL, REMAPVIEW_SOL_MESSAGE},
+    {SolanaTx, GuiGetSolSignQrCodeData, GuiGetSolSignQrCodeData, GuiGetSolCheckResult, CHAIN_SOL, REMAPVIEW_SOL},
+    {SolanaMessage, GuiGetSolSignQrCodeData, GuiGetSolSignQrCodeData, GuiGetSolCheckResult, CHAIN_SOL, REMAPVIEW_SOL_MESSAGE},
 
     {AptosTx, GuiGetAptosSignQrCodeData, NULL, GuiGetAptosCheckResult, CHAIN_APT, REMAPVIEW_APT},
 
-    {CardanoSignTxHash, GuiGetAdaSignTxHashQrCodeData, NULL, GuiGetAdaSignTxHashCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_TX_HASH},
+    {CardanoSignTxHash, GuiGetAdaSignTxHashQrCodeData, GuiGetAdaSignTxHashQrCodeData, GuiGetAdaSignTxHashCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_TX_HASH},
     {CardanoSignData, GuiGetAdaSignSignDataQrCodeData, NULL, GuiGetAdaSignDataCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_DATA},
     {CardanoCatalystVotingRegistration, GuiGetAdaSignCatalystVotingRegistrationQrCodeData, NULL, GuiGetAdaCatalystCheckResult, CHAIN_ADA, REMAPVIEW_ADA_CATALYST},
     {CardanoTx, GuiGetAdaSignQrCodeData, NULL, GuiGetAdaCheckResult, CHAIN_ADA, REMAPVIEW_ADA},

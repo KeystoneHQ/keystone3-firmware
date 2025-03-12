@@ -31,13 +31,13 @@ static void GuiResolveUrResultViewInit();
 static void ApproveButtonHandler(lv_event_t *e)
 {
     ExportAddressApprove();
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
 }
 
 static void RejectButtonHandler(lv_event_t *e)
 {
     ExportAddressReject();
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
 }
 
 static WalletInfo_t GetConnectWalletInfo()

@@ -169,7 +169,7 @@ void GuiMultisigWalletExportWidgetsInit(char *verifyCode, uint16_t len)
     g_multisigWalletItem = wallet;
     if (g_multisigWalletItem == NULL) {
         // TODO: Throw error;
-        GuiCloseCurrentWorkingView();
+        GuiCLoseCurrentWorkingView();
         return;
     }
     GuiContent(g_pageWidget->contentZone);
@@ -298,7 +298,7 @@ static void ModelGenerateAddress(char *address, uint32_t maxLen)
     SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(g_multisigWalletItem->walletConfig, 0, 0, mfp, 4);
     if (result->error_code != 0) {
         printf("errorMessage: %s\r\n", result->error_message);
-        GuiCloseCurrentWorkingView();
+        GuiCLoseCurrentWorkingView();
         return;
     }
     strncpy_s(address, maxLen, result->data, strnlen_s(result->data, maxLen));
@@ -311,7 +311,7 @@ void ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletCo
     SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(walletConfig, 0, index, mfp, 4);
     if (result->error_code != 0) {
         printf("errorMessage: %s\r\n", result->error_message);
-        GuiCloseCurrentWorkingView();
+        GuiCLoseCurrentWorkingView();
         return;
     }
     strncpy_s(address, maxLen, result->data, strnlen_s(result->data, maxLen));

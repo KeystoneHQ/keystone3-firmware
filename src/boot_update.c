@@ -14,7 +14,7 @@ LV_FONT_DECLARE(openSans_24);
 #define SECTOR_SIZE                         4096
 #define BOOT_HEAD_SIZE                      0x104
 #define APP_ADDR                            (0x1001000 + 0x80000)   //108 1000
-#define APP_CHECK_START_ADDR                (0x1400000)
+#define APP_CHECK_START_ADDR                (APP_ADDR)
 #define APP_END_ADDR                        (0x2000000)
 
 static uint8_t g_fileUnit[4096] = {0};
@@ -58,6 +58,7 @@ int32_t UpdateBootFromFlash(void)
 {
     osKernelLock();
     int num = BinarySearchBootHead();
+    printf("num = %d\n", num);
     if (num <= 0) {
         osKernelUnlock();
         return false;
@@ -76,6 +77,7 @@ int32_t UpdateBootFromFlash(void)
 
     memcpy(g_fileUnit, (uint32_t *)baseAddr, 4 + 32);
     uint32_t bootLen = (g_fileUnit[0] << 24) + (g_fileUnit[1] << 16) + (g_fileUnit[2] << 8) + g_fileUnit[3];
+    printf("bootLen = %d\n", bootLen);
     memcpy(hash, &g_fileUnit[4], 32);
 
     memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
@@ -98,6 +100,7 @@ int32_t UpdateBootFromFlash(void)
         }
         memcpy(g_fileUnit, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), len);
         crcCalc = crc32_ieee(crcCalc, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), len);
+        printf("writeAddr = %#x\n", writeAddr);
         QspiFlashEraseAndWrite(writeAddr, g_fileUnit, SECTOR_SIZE);
     }
 

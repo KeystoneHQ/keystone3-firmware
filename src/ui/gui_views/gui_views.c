@@ -55,7 +55,7 @@ void OpenViewHandler(lv_event_t *e)
 void CloseTimerCurrentViewHandler(lv_event_t *e)
 {
     CloseQRTimer();
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
 }
 
 void GoToHomeViewHandler(lv_event_t *e)
@@ -66,7 +66,7 @@ void GoToHomeViewHandler(lv_event_t *e)
 
 void CloseCurrentViewHandler(lv_event_t *e)
 {
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
 }
 
 void ReadyNextTileHandler(lv_event_t *e)
@@ -170,8 +170,8 @@ void GuiUpdateTonWriteSeWidget(lv_obj_t *parent)
 
 void DuplicateShareHandler(lv_event_t *e)
 {
-    GuiCloseCurrentWorkingView();
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
     GuiViewHintBoxClear();

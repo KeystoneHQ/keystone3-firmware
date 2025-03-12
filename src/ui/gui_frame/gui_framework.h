@@ -5,7 +5,7 @@
 
 int32_t GuiEmitSignal(uint16_t usEvent, void *param, uint16_t usLen);
 int32_t GuiPubEvent(uint16_t usEvent, void *param, uint16_t usLen);
-int32_t GuiCloseCurrentWorkingView(void);
+int32_t GuiCLoseCurrentWorkingView(void);
 int32_t GuiFrameCLoseView(GUI_VIEW *view);
 int32_t GuiFrameOpenViewWithParam(GUI_VIEW *view, void *param, uint16_t usLen);
 int32_t GuiFrameOpenView(GUI_VIEW *view);

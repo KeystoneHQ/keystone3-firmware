@@ -76,7 +76,7 @@ static void GuiQuitHandler(lv_event_t *e)
         GuiLockScreenUpdatePassCode();
         GuiLockScreenFpRecognize();
     }
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
 }
 
 static void ContinueStopCreateHandler(lv_event_t *e)
@@ -511,7 +511,7 @@ void GuiForgetPassRefresh(void)
 static void CloseCurrentParentAndCloseViewHandler(lv_event_t *e)
 {
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
     GuiLockScreenFpRecognize();
     GuiLockScreenTurnOn(&single);
     ResetSuccess();

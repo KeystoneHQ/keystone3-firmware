@@ -104,7 +104,7 @@ int8_t GuiManageMultiWalletPrevTile(void)
 {
     switch (g_manageMultisig.currentTile) {
     case MULTI_MULTI_SIG_DETAIL:
-        return GuiCloseCurrentWorkingView();
+        return GuiCLoseCurrentWorkingView();
     }
     g_manageMultisig.currentTile--;
     GuiManageMultisigWalletRefresh();

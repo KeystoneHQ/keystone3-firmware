@@ -697,7 +697,7 @@ int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
     NVS_RIGHT_BUTTON_ENUM rightBtn = NVS_RIGHT_BUTTON_BUTT;
     NVS_LEFT_BUTTON_ENUM leftBtn = NVS_BAR_RETURN;
     if (currentTile == 0) {
-        return GuiCloseCurrentWorkingView();
+        return GuiCLoseCurrentWorkingView();
     }
     if (g_deviceSettingArray[currentTile].destructCb != NULL) {
         g_deviceSettingArray[currentTile].destructCb(g_deviceSettingArray[currentTile].obj, NULL);

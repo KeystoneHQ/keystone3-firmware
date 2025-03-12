@@ -71,7 +71,7 @@ IF "%build_simulator%"=="true" (
     ) ELSE (
         make -j16
     )
-    python3 padding_bin_file.py mh1903.bin
+    py padding_bin_file.py mh1903.bin
     popd
 )
 
@@ -81,7 +81,7 @@ IF "%build_copy%"=="true" (
     echo generating pillar.bin file...
     call make_ota_file.bat %CD%\build\pillar.bin
     call make_ota_file.bat %CD%\build\keystone3.bin
-    call make_ota_file.bat F:\pillar.bin
+    call make_ota_file.bat d:\pillar.bin
     popd
 ) ELSE IF "%build_release%"=="true" (
     pushd %MAKE_OAT_FILE_PATH%

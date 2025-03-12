@@ -92,7 +92,7 @@ static void ContinueStopCreateHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_noticeWindow)
     g_createShareTileView.currentSlice = 0;
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
 }
 
 static void ResetBtnTest(void)

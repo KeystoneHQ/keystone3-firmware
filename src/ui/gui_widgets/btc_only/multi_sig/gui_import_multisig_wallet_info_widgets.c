@@ -62,7 +62,7 @@ uint32_t GuiSetMultisigImportWalletDataBySDCard(char *walletConfig)
 static void CloseWaringAndCurrentPageHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_noticeWindow)
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
 }
 
 static void CreateCheckTheWalletInfoNotice(lv_obj_t *parent)
@@ -155,7 +155,7 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     char *verifyCode = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
     strcpy_s(verifyCode, MAX_VERIFY_CODE_LEN, wallet->verifyCode);
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
     GuiFrameOpenViewWithParam(&g_multisigWalletExportView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LEN));
 }
 
@@ -265,10 +265,10 @@ static void GuiContent(lv_obj_t *parent)
 static void GuiConfirmExportHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_noticeWindow)
-    g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, GuiCloseCurrentWorkingView);
+    g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, GuiCLoseCurrentWorkingView);
     char *verifyCode = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
     strcpy_s(verifyCode, MAX_VERIFY_CODE_LEN, g_wallet->verify_code);
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
     GuiFrameOpenViewWithParam(&g_multisigWalletExportView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LEN));
 }
 
@@ -281,7 +281,7 @@ static void GuiConfirmHandler(lv_event_t *e)
     }
     MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
     if (wallet != NULL) {
-        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, GuiCloseCurrentWorkingView);
+        g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, GuiCLoseCurrentWorkingView);
         return;
     }
     GuiVerifyPassword();

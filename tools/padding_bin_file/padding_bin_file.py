@@ -21,6 +21,7 @@ def padding_sig_file(file_name):
     with open("boot.sig", "rb") as sig_file:
         sig_content = sig_file.read()
         sig_len = len(sig_content)
+        print("len = ", sig_len);
 
         # Calculate SHA256 for the entire signature file
         sha256_obj = hashlib.sha256()

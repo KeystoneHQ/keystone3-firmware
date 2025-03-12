@@ -1,4 +1,3 @@
-#ifndef BTC_ONLY
 #ifndef _VERSION_H
 #define _VERSION_H
 
@@ -11,7 +10,11 @@
 #define SOFTWARE_VERSION_BUILD              0
 #define SOFTWARE_VERSION_BETA               0
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
+#ifdef BTC_ONLY
+#define SOFTWARE_VERSION_SUFFIX             "-BTC"
+#else
 #define SOFTWARE_VERSION_SUFFIX             ""
+#endif
 
 #if SOFTWARE_VERSION_MAJOR > 99 || SOFTWARE_VERSION_MINOR > 99 || SOFTWARE_VERSION_BUILD > 99
 #error "Invalid software version"
@@ -25,7 +28,3 @@ bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build);
 bool NeedUpdateBoot(void);
 
 #endif /* _VERSION_H */
-
-#else
-#include "version_btc_only.h"
-#endif

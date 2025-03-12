@@ -112,6 +112,7 @@ typedef enum {
     SIG_SETTING_SHA256_PERCENT_ERROR,
     SIG_SETTING_MICRO_CARD_FORMAT_SUCCESS,
     SIG_SETTING_MICRO_CARD_FORMAT_FAILED,
+    SIG_SETTING_CHANGE_BOOT_SECURE_SWITCH,
     SIG_SETTING_BUTT,
 
     SIG_FINGER_REGISTER_STEP_SUCCESS = SIG_SETTING_BUTT + 50,
@@ -216,6 +217,7 @@ extern GUI_VIEW g_transactionSignatureView;
 extern GUI_VIEW g_diceRollsView;
 extern GUI_VIEW g_exportPubkeyView;
 extern GUI_VIEW g_updateSuccessView;
+extern GUI_VIEW g_bootUpdateView;
 #ifdef BTC_ONLY
 extern GUI_VIEW g_btcBtcWalletProfileView;
 extern GUI_VIEW g_multisigTransactionSignatureView;

@@ -163,7 +163,7 @@ static void OpenQuitHintBoxHandler(lv_event_t *e)
 static void QuitConfirmHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_quitHintBox);
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
 }
 
 static void ClickDiceHandler(lv_event_t *e)

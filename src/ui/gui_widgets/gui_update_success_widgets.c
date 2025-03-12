@@ -13,7 +13,7 @@ static lv_obj_t *g_updateSuccessCont = NULL;
 static void UpdateSuccessNextStepHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_updateSuccessCont)
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
 
     if (ModelGetPassphraseQuickAccess()) {
         GuiFrameOpenView(&g_passphraseView);

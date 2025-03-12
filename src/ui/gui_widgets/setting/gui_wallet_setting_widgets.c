@@ -299,7 +299,7 @@ void GuiDelWallet(bool result)
 {
     GuiDeleteAnimHintBox();
     // g_waitAnimWidget.cont = NULL;
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
     static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
     LogoutCurrentAccount();
     GuiLockScreenSetFirstUnlock();
@@ -341,7 +341,7 @@ void GuiDelWalletSetup(void)
     // GuiStopCircleAroundAnimation();
     GuiDeleteAnimHintBox();
     // g_waitAnimWidget.cont = NULL; //todo
-    GuiCloseCurrentWorkingView();
+    GuiCLoseCurrentWorkingView();
     // close to g_setupView
     GuiCloseToTargetView(&g_setupView);
     // close g_setupView

@@ -27,14 +27,6 @@ use super::multi_sig::structs::MultisigSignResult;
 use super::structs::DisplayTx;
 use bitcoin::psbt::raw;
 
-pub struct ProprietaryKey(BTreeMap<raw::ProprietaryKey, Vec<u8>>);
-
-impl ProprietaryKey {
-    pub fn new() -> Self {
-        Self(BTreeMap::new())
-    }
-}
-
 #[no_mangle]
 pub extern "C" fn btc_parse_psbt(
     ptr: PtrUR,

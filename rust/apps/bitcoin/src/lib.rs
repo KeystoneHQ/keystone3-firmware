@@ -16,7 +16,7 @@ pub use addresses::get_address;
 use app_utils::keystone;
 use bitcoin::bip32::Fingerprint;
 use bitcoin::hashes::Hash;
-use bitcoin::psbt::Psbt;
+use bitcoin::psbt::{raw, Psbt};
 use bitcoin::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use bitcoin::secp256k1::Message;
 use bitcoin::sign_message;
@@ -90,12 +90,55 @@ pub fn sign_msg(msg: &str, seed: &[u8], path: &String) -> Result<Vec<u8>> {
 
 extern crate std;
 use std::println;
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum CoinType {
+    Bitcoin = 0,
+    DogeCoin = 3,
+}
+
+impl CoinType {
+    pub fn from_vec(value: &[u8]) -> Result<CoinType> {
+        if value.len() > 4 {
+            return Ok(CoinType::Bitcoin);
+        }
+
+        match value
+            .iter()
+            .rev()
+            .enumerate()
+            .map(|(i, &b)| (b as u32) << (i * 8))
+            .sum::<u32>()
+        {
+            v if v == CoinType::Bitcoin as u32 => Ok(CoinType::Bitcoin),
+            v if v == CoinType::DogeCoin as u32 => Ok(CoinType::DogeCoin),
+            _ => Ok(CoinType::Bitcoin),
+        }
+    }
+}
+
+const COIN_TYPE_PREFIX: &[u8] = b"COIN";
+const COIN_TYPE_SUBTYPE: u8 = 0xFC;
+const COIN_TYPE_KEY: &[u8] = b"TYPE";
+
+pub fn get_psbt_coin_type(psbt_hex: Vec<u8>) -> Result<CoinType> {
+    let psbt = deserialize_psbt(psbt_hex)?;
+    let wpsbt = WrappedPsbt { psbt };
+    let key = raw::ProprietaryKey {
+        prefix: COIN_TYPE_PREFIX.to_vec(),
+        subtype: COIN_TYPE_SUBTYPE,
+        key: COIN_TYPE_KEY.to_vec(),
+    };
+    if let Some(value) = wpsbt.psbt.proprietary.get(&key) {
+        CoinType::from_vec(value)
+    } else {
+        Ok(CoinType::Bitcoin)
+    }
+}
+
 pub fn parse_psbt(psbt_hex: Vec<u8>, context: ParseContext) -> Result<ParsedTx> {
     let psbt = deserialize_psbt(psbt_hex)?;
-    if !psbt.proprietary.is_empty() {
-    }
     let wpsbt = WrappedPsbt { psbt };
-    println!("{:?}", wpsbt.psbt);
     wpsbt.parse(Some(&context))
 }
 
@@ -130,11 +173,6 @@ pub fn check_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) ->
 
 fn deserialize_psbt(psbt_hex: Vec<u8>) -> Result<Psbt> {
     Psbt::deserialize(&psbt_hex).map_err(|e| BitcoinError::InvalidPsbt(format!("{}", e)))
-}
-
-pub enum CoinType {
-    Bitcoin,
-    DogeCoin,
 }
 
 #[cfg(test)]
@@ -635,11 +673,11 @@ mod test {
         assert!(false);
     }
 
+    use bitcoin::psbt::raw;
     use bitcoin::psbt::Psbt;
     use bitcoin::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
     use bitcoin::secp256k1::Message;
     use std::string::String;
-    use bitcoin::psbt::raw;
 
     pub fn hex_psbt(s: &str) -> Result<Psbt, String> {
         let r = Vec::from_hex(s);

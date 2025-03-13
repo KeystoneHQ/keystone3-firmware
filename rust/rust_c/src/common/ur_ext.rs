@@ -67,7 +67,11 @@ pub trait InferViewType {
 
 impl InferViewType for CryptoPSBT {
     fn infer(&self) -> Result<ViewType, URError> {
-        Ok(ViewType::BtcTx)
+        match app_bitcoin::get_psbt_coin_type(self.get_psbt()).unwrap() {
+            app_bitcoin::CoinType::Bitcoin => Ok(ViewType::BtcTx),
+            app_bitcoin::CoinType::DogeCoin => Ok(ViewType::DogeTx),
+            _ => Ok(ViewType::BtcTx),
+        }
     }
 }
 

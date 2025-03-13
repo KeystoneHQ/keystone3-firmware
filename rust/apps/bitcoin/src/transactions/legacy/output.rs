@@ -7,7 +7,7 @@ use alloc::vec::Vec;
 use bitcoin::{self, Amount};
 use core::str::FromStr;
 use ur_registry::pb::protoc;
-use ur_registry::pb::protoc::sign_transaction::Transaction::{BchTx, BtcTx, DashTx, LtcTx};
+use ur_registry::pb::protoc::sign_transaction::Transaction::{BchTx, BtcTx, DashTx, DogeTx, LtcTx};
 
 #[derive(Debug, Clone)]
 pub struct TxOut {
@@ -61,6 +61,7 @@ impl OutputConverter for protoc::sign_transaction::Transaction {
             BtcTx(tx) => collect!(&tx.outputs),
             BchTx(tx) => collect!(&tx.outputs),
             DashTx(tx) => collect!(&tx.outputs),
+            DogeTx(tx) => collect!(&tx.outputs),
             _ => Err(BitcoinError::InvalidRawTxCryptoBytes(
                 "invalid tx outputs".to_string(),
             )),

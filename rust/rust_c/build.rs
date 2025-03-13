@@ -49,6 +49,8 @@ fn main() {
         v.push_str("#define FEATURE_ETHEREUM\n");
         #[cfg(feature = "ltc")]
         v.push_str("#define FEATURE_LTC\n");
+        #[cfg(feature = "doge")]
+        v.push_str("#define FEATURE_DOGE\n");
         #[cfg(feature = "near")]
         v.push_str("#define FEATURE_NEAR\n");
         #[cfg(feature = "solana")]

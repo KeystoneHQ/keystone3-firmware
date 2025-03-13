@@ -182,7 +182,8 @@ static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_BTC, ""},
     {HOME_WALLET_CARD_LTC, "m/49'/2'/0'"},
     {HOME_WALLET_CARD_DASH, "m/44'/5'/0'"},
-    {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"}
+    {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"},
+    {HOME_WALLET_CARD_DOGE, "m/44'/3'/0'"},
 };
 #endif
 
@@ -248,6 +249,7 @@ void GuiReceiveInit(uint8_t chain)
 #else
     g_selectType = GetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin);
 #endif
+    printf("g_selectType = %d\n", g_selectType);
     g_addressType[g_currentAccountIndex] = g_selectType;
     g_pageWidget = CreatePageWidget();
     g_utxoReceiveWidgets.cont = g_pageWidget->contentZone;
@@ -306,6 +308,7 @@ static bool HasMoreBtn()
     case HOME_WALLET_CARD_LTC:
     case HOME_WALLET_CARD_BCH:
     case HOME_WALLET_CARD_DASH:
+    case HOME_WALLET_CARD_DOGE:
         return false;
 #endif
     default:
@@ -388,6 +391,10 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
     case HOME_WALLET_CARD_BCH:
         titleItem->type = CHAIN_BCH;
         snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "BCH");
+        break;
+    case HOME_WALLET_CARD_DOGE:
+        titleItem->type = CHAIN_DOGE;
+        snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "DOGE");
         break;
 #endif
     default:
@@ -554,6 +561,9 @@ static void GetHint(char *hint)
         break;
     case HOME_WALLET_CARD_BCH:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "BCH");
+        break;
+    case HOME_WALLET_CARD_DOGE:
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "DOGE");
         break;
 #endif
     default:
@@ -1387,6 +1397,8 @@ static ChainType GetChainTypeByIndex(uint32_t index)
         return XPUB_TYPE_DASH;
     case HOME_WALLET_CARD_BCH:
         return XPUB_TYPE_BCH;
+    case HOME_WALLET_CARD_DOGE:
+        return XPUB_TYPE_DOGE;
 #endif
     default:
         break;
@@ -1433,6 +1445,9 @@ static void GetRootHdPath(char *hdPath, uint32_t maxLen)
     case HOME_WALLET_CARD_BCH:
         strcpy_s(hdPath, maxLen, g_chainPathItems[3].path);
         break;
+    case HOME_WALLET_CARD_DOGE:
+        strcpy_s(hdPath, maxLen, g_chainPathItems[4].path);
+        break;
 #endif
     default:
         break;
@@ -1468,6 +1483,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
         CHECK_CHAIN_BREAK(result);
     } while (0);
     strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+    printf("item->address = %s\n", item->address);
     free_simple_response_c_char(result);
 }
 

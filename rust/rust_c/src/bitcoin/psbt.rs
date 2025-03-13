@@ -25,6 +25,15 @@ use ur_registry::traits::RegistryItem;
 
 use super::multi_sig::structs::MultisigSignResult;
 use super::structs::DisplayTx;
+use bitcoin::psbt::raw;
+
+pub struct ProprietaryKey(BTreeMap<raw::ProprietaryKey, Vec<u8>>);
+
+impl ProprietaryKey {
+    pub fn new() -> Self {
+        Self(BTreeMap::new())
+    }
+}
 
 #[no_mangle]
 pub extern "C" fn btc_parse_psbt(
@@ -487,6 +496,9 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
         .c_ptr(),
     }
 }
+
+extern crate std;
+use std::println;
 
 fn parse_psbt(
     mfp: &[u8],

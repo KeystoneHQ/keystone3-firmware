@@ -195,6 +195,7 @@ fn get_view_type_from_keystone(bytes: Vec<u8>) -> Result<ViewType, URError> {
         .ok_or(URError::NotSupportURTypeError("empty payload".to_string()))?;
     let result = match payload.content {
         Some(protoc::payload::Content::SignTx(sign_tx_content)) => {
+            println!("sign_tx_content: {:?}", sign_tx_content.coin_code);
             match sign_tx_content.coin_code.as_str() {
                 "BTC_NATIVE_SEGWIT" => ViewType::BtcNativeSegwitTx,
                 "BTC_SEGWIT" => ViewType::BtcSegwitTx,
@@ -202,6 +203,8 @@ fn get_view_type_from_keystone(bytes: Vec<u8>) -> Result<ViewType, URError> {
                 "BTC" => ViewType::BtcSegwitTx,
                 #[cfg(feature = "ltc")]
                 "LTC" => ViewType::LtcTx,
+                #[cfg(feature = "doge")]
+                "DOGE" => ViewType::DogeTx,
                 #[cfg(feature = "dash")]
                 "DASH" => ViewType::DashTx,
                 #[cfg(feature = "bch")]

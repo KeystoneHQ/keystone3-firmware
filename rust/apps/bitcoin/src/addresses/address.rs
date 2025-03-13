@@ -3,11 +3,13 @@ extern crate alloc;
 use crate::addresses::cashaddr::CashAddrCodec;
 use crate::addresses::constants::{
     PUBKEY_ADDRESS_PREFIX_BCH, PUBKEY_ADDRESS_PREFIX_BTC, PUBKEY_ADDRESS_PREFIX_DASH,
-    PUBKEY_ADDRESS_PREFIX_DASH_P2SH, PUBKEY_ADDRESS_PREFIX_TEST, SCRIPT_ADDRESS_PREFIX_BTC,
-    SCRIPT_ADDRESS_PREFIX_LTC, SCRIPT_ADDRESS_PREFIX_LTC_P2PKH, SCRIPT_ADDRESS_PREFIX_TEST,
+    PUBKEY_ADDRESS_PREFIX_DASH_P2SH, PUBKEY_ADDRESS_PREFIX_DOGE, PUBKEY_ADDRESS_PREFIX_TEST,
+    SCRIPT_ADDRESS_PREFIX_BTC, SCRIPT_ADDRESS_PREFIX_DOGE, SCRIPT_ADDRESS_PREFIX_LTC,
+    SCRIPT_ADDRESS_PREFIX_LTC_P2PKH, SCRIPT_ADDRESS_PREFIX_TEST,
 };
 use crate::addresses::encoding::{
-    BCHAddressEncoding, BTCAddressEncoding, DASHAddressEncoding, LTCAddressEncoding,
+    BCHAddressEncoding, BTCAddressEncoding, DASHAddressEncoding, DOGEAddressEncoding,
+    LTCAddressEncoding,
 };
 use crate::errors::BitcoinError;
 use crate::network::Network;
@@ -38,6 +40,7 @@ impl Address {
             Network::Bitcoin
             | Network::BitcoinTestnet
             | Network::Litecoin
+            | Network::Dogecoin
             | Network::BitcoinCash
             | Network::Dash => Ok(Address {
                 network,
@@ -236,6 +239,13 @@ impl fmt::Display for Address {
                 };
                 encoding.fmt(fmt)
             }
+            Network::Dogecoin => {
+                let encoding = DOGEAddressEncoding {
+                    payload: &self.payload,
+                    p2pkh_prefix: PUBKEY_ADDRESS_PREFIX_DOGE,
+                };
+                encoding.fmt(fmt)
+            }
         }
     }
 }
@@ -372,6 +382,11 @@ impl FromStr for Address {
                 let script_hash = ScriptHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get script hash")))?;
                 (Network::BitcoinTestnet, Payload::P2sh { script_hash })
+            }
+            SCRIPT_ADDRESS_PREFIX_DOGE => {
+                let script_hash = ScriptHash::from_slice(&data[1..])
+                    .map_err(|_| Self::Err::AddressError(format!("failed to get script hash")))?;
+                (Network::Dogecoin, Payload::P2sh { script_hash })
             }
             _x => return Err(Self::Err::AddressError(format!("invalid address version"))),
         };

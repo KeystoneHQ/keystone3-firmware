@@ -56,35 +56,48 @@ struct SegwitCache {
     outputs: sha256d::Hash,
 }
 
+extern crate std;
+use std::println;
+
 impl TxData {
     pub fn from_payload(
         payload: protoc::Payload,
         context: &keystone::ParseContext,
     ) -> Result<Self> {
+        println!("{}:{}", file!(), line!());
         let sign_tx_content: Result<SignTransaction> = match payload.content {
             Some(protoc::payload::Content::SignTx(sign_tx_content)) => Ok(sign_tx_content),
             _ => {
+                println!("{}:{}", file!(), line!());
                 return Err(BitcoinError::InvalidRawTxCryptoBytes(format!(
                     "invalid payload content {:?}",
                     payload.content
                 )));
             }
         };
+        println!("{}:{}", file!(), line!());
         let content = sign_tx_content?;
+        println!("{}:{}", file!(), line!());
         let tx = &content
             .transaction
             .ok_or(BitcoinError::InvalidRawTxCryptoBytes(
                 "empty transaction field for payload content".to_string(),
             ))?;
+        println!("{}:{}", file!(), line!());
         let inputs: Vec<TxIn> = tx.to_tx_in()?;
+        println!("{}:{}", file!(), line!());
         let outputs: Vec<TxOut> = tx.to_tx_out()?;
+        println!("{}:{}", file!(), line!());
         let script_type = ScriptType::from_coin_code(content.coin_code.to_string())?;
+        println!("{}:{}", file!(), line!());
         let transaction_mapped_input: Result<Vec<bitcoin::blockdata::transaction::TxIn>> =
             collect!(inputs);
         let transaction_mapped_output: Result<Vec<bitcoin::blockdata::transaction::TxOut>> =
             collect!(outputs);
+        println!("{}:{}", file!(), line!());
         let extended_pubkey =
             convert_version(context.extended_public_key.to_string(), &Version::Xpub)?;
+        println!("{}:{}", file!(), line!());
         return Ok(Self {
             inputs,
             outputs,

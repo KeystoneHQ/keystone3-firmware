@@ -47,6 +47,7 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
 
 #ifdef WEB3_VERSION
     {LtcTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_LTC, REMAPVIEW_BTC},
+    {DogeTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_DOGE, REMAPVIEW_BTC},
     {DashTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_DASH, REMAPVIEW_BTC},
     {BchTx, GuiGetBtcSignQrCodeData, GuiGetBtcSignUrDataUnlimited, GuiGetPsbtCheckResult, CHAIN_BCH, REMAPVIEW_BTC},
     {EthTx, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH},

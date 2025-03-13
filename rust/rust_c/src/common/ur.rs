@@ -739,13 +739,7 @@ fn _receive_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTy
             if parse_result.is_complete {
                 match parse_result.data {
                     Some(data) => match InferViewType::infer(&data) {
-                        Ok(t) => 
-                        {
-                            extern crate std;
-                            use std::println;
-                            println!("t = {:?}", t);
-                            return URParseMultiResult::success(t, u, data);
-                        }
+                        Ok(t) => URParseMultiResult::success(t, u, data),
                         Err(e) => URParseMultiResult::from(e),
                     },
                     None => URParseMultiResult::from(RustCError::UnexpectedError(

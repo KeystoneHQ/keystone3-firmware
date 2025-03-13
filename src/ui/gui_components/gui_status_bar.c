@@ -151,6 +151,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
     {WALLET_LIST_NUNCHUK, "Nunchuk", &walletNunchuk},
+    {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
 #endif
 };

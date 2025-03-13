@@ -329,6 +329,7 @@ LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);
 LV_IMG_DECLARE(walletListBtcSparrow);
 LV_IMG_DECLARE(walletListBtcNunchuk);
+LV_IMG_DECLARE(walletListBtcZeus);
 
 // font
 LV_FONT_DECLARE(openSans_20);

@@ -13,12 +13,12 @@ static lv_obj_t *g_startBtn = NULL;
 
 void GuiCreateBootUpdateHandler(lv_event_t * e)
 {
-    // if (GetCurrentDisplayPercent() <= 40 ||
-    //         GetUsbDetectState() == false) {
-    //     g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("error_box_low_power"), _("boot_update_limit_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
-    //     lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    //     return;
-    // }
+    if (GetCurrentDisplayPercent() <= 40 ||
+            GetUsbDetectState() == false) {
+        g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("error_box_low_power"), _("boot_update_limit_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
+        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+        return;
+    }
 
     lv_obj_set_style_bg_color(g_startBtn, DARK_GRAY_COLOR, LV_PART_MAIN);
     lv_obj_clear_flag(g_startBtn, LV_OBJ_FLAG_CLICKABLE);

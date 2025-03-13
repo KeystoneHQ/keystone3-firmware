@@ -25,6 +25,9 @@ typedef enum {
     SIG_INIT_SD_CARD_OTA_COPY,
     SIG_INIT_SD_CARD_OTA_COPY_SUCCESS,
     SIG_INIT_SD_CARD_OTA_COPY_FAIL,
+    SIG_INIT_UPDATE_BOOT,
+    SIG_BOOT_UPDATE_SUCCESS,
+    SIG_BOOT_UPDATE_FAIL,
     SIG_STATUS_BAR_REFRESH,
     SIG_INIT_TRANSFER_NFT_SCREEN,
     SIG_INIT_CONNECT_USB,
@@ -225,6 +228,7 @@ extern GUI_VIEW g_transactionSignatureView;
 extern GUI_VIEW g_diceRollsView;
 extern GUI_VIEW g_exportPubkeyView;
 extern GUI_VIEW g_updateSuccessView;
+extern GUI_VIEW g_bootUpdateView;
 #ifdef BTC_ONLY
 extern GUI_VIEW g_btcBtcWalletProfileView;
 extern GUI_VIEW g_multisigTransactionSignatureView;

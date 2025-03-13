@@ -21,6 +21,9 @@
 #include "fetch_sensitive_data_task.h"
 #include "ctaes.h"
 #include "drv_mpu.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_model.h"
+#endif
 
 #define VERSION_MAX_LENGTH      32
 

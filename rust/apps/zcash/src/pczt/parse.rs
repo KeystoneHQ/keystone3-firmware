@@ -93,6 +93,27 @@ pub fn decode_output_enc_ciphertext(
     }
 }
 
+/// Parses a PCZT (Partially Created Zcash Transaction) into a structured format
+///
+/// This function analyzes the transaction and extracts information about inputs, outputs,
+/// values, and fees across different Zcash pools (transparent and Orchard).
+///
+/// # Parameters
+/// * `params` - Network consensus parameters
+/// * `seed_fingerprint` - Fingerprint of the seed used to identify owned addresses
+/// * `ufvk` - Unified Full Viewing Key used to decrypt transaction details
+/// * `pczt` - The Partially Created Zcash Transaction to parse
+///
+/// # Returns
+/// * `Result<ParsedPczt, ZcashError>` - A structured representation of the transaction or an error
+///
+/// # Details
+/// The function:
+/// 1. Parses Orchard and transparent components of the transaction
+/// 2. Calculates total input, output, and change values
+/// 3. Handles Sapling pool interactions (though full Sapling decoding is not supported)
+/// 4. Computes transfer values and fees
+/// 5. Returns a structured representation of the transaction
 pub fn parse_pczt<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],
@@ -217,8 +238,10 @@ fn parse_transparent_input<P: consensus::Parameters>(
     input: &transparent::pczt::Input,
 ) -> Result<ParsedFrom, ZcashError> {
     let script = input.script_pubkey().clone();
+    //P2SH address is not supported by Zashi yet, we only consider P2PKH address at the moment.
     match script.address() {
         Some(TransparentAddress::PublicKeyHash(hash)) => {
+            //find the pubkey in the derivation path
             let pubkey = input
                 .bip32_derivation()
                 .keys()

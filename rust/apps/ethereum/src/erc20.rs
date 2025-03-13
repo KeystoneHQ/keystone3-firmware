@@ -21,7 +21,7 @@ pub fn encode_erc20_transfer_calldata(to: H160, amount: U256) -> String {
     calldata.push_str(&amount_padding);
     calldata
 }
-
+// parse erc20 transfer calldata
 pub fn parse_erc20(input: &str, decimal: u32) -> Result<ParsedErc20Transaction, &'static str> {
     if input.len() != 136 {
         return Err("Input must be 136 characters long");

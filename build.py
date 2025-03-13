@@ -27,6 +27,8 @@ def build_firmware(environment, options, bin_type):
     padding_script = os.path.join(build_dir, "padding_bin_file.py")
     if not os.path.exists(padding_script):
         shutil.copy(os.path.join("tools/padding_bin_file", "padding_bin_file.py"), build_dir)
+        if os.path.exists(os.path.join("tools", "boot.sig")):
+            shutil.copy(os.path.join("tools", "boot.sig"), build_dir)
 
     os.chdir(build_path)
 

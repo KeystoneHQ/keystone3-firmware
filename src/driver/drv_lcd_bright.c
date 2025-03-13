@@ -104,7 +104,7 @@ static void LcdBrightAsPwm(uint32_t bright)
 
     SYSCTRL_GetClocksFreq(&clocks);
     period = clocks.PCLK_Frequency / LCD_PWM_HZ;
-    highPeriod = period * bright / 100 - 1;
+    highPeriod = period * bright / 200 - 1;
     lowPeriod = period - highPeriod - 2;
 
     if (lcdBrightState != LCD_BRIGHT_STATE_PWM) {

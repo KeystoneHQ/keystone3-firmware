@@ -14,13 +14,16 @@
 #define SPI_FLASH_ADDR_ERR_INFO                 0x00880000
 #define SPI_FLASH_SIZE_ERR_INFO                 0x1000
 
-//USER IMAGE, 480KB
-#define SPI_FLASH_ADDR_USER_IMAGE               0x00F3A000
-#define SPI_FLASH_SIZE_USER_IMAGE               0x78000
+#define SPI_FLASH_ADDR_NFT_BIN                  0x00EB2000
+#define SPI_FLASH_SIZE_NFT_BIN                  (480 * 800 * 2) // 0xBB800
+
+#define BOOT_SECURE_CHECK_FLAG                  0x00F6D800
+#define BOOT_SECURE_CHECK_FLAG_SIZE             0x1000
 
 #define SPI_FLASH_ADDR_EACH_SIZE                0x19000
 
 //USER1 DATA, 100KB
+
 #define SPI_FLASH_ADDR_USER1_DATA               0x00FB2000
 #define SPI_FLASH_SIZE_USER1_DATA               0x00010000
 

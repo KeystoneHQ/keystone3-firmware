@@ -33,6 +33,8 @@ void PowerOnSelfCheck(void)
     }
     assert(ret == SUCCESS_CODE);
 
+    GetBootSecureCheckFlag();
+
     // psram
     uint8_t *data = EXT_MALLOC(SRAM_TEST_LEN);
     memset_s(data, SRAM_TEST_LEN, SRAM_TEST_CHAR, SRAM_TEST_LEN);

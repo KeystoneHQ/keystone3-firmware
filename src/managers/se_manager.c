@@ -354,21 +354,6 @@ bool FpAesKeyExist()
     return ret;
 }
 
-/// @brief Get whether the fingerprint reset key exists.
-/// @return true - exists.
-bool FpResetKeyExist()
-{
-    uint8_t key[32];
-    bool ret;
-
-    if (SE_HmacEncryptRead(key, PAGE_PF_RESET_KEY) != SUCCESS_CODE) {
-        return false;
-    }
-    ret = CheckEntropy(key, 32);
-    CLEAR_ARRAY(key);
-    return ret;
-}
-
 int32_t SignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signaure)
 {
     int32_t ret;

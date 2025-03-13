@@ -18,6 +18,7 @@
 #include "account_manager.h"
 #include "version.h"
 #include "lv_i18n_api.h"
+#include "ctaes.h"
 
 #define VERSION_MAX_LENGTH      32
 
@@ -66,6 +67,12 @@ static char *GetJsonStringFromDeviceSettings(void);
 
 static const char g_deviceSettingsVersion[] = "1.0.0";
 DeviceSettings_t g_deviceSettings;
+static const uint8_t g_integrityFlag[16] = {
+    0x01, 0x09, 0x00, 0x03,
+    0x01, 0x09, 0x00, 0x03,
+    0x01, 0x09, 0x00, 0x03,
+    0x01, 0x09, 0x00, 0x03,
+};
 
 void DeviceSettingsInit(void)
 {
@@ -187,6 +194,64 @@ uint32_t GetUSBSwitch(void)
 void SetUSBSwitch(uint32_t usbSwitch)
 {
     g_deviceSettings.usbSwitch = usbSwitch;
+}
+
+static void AesEncryptBuffer(uint8_t *cipher, uint32_t sz, uint8_t *plain)
+{
+    AES128_CBC_ctx aesCtx;
+    uint8_t key128[16] = {0};
+    uint8_t iv[16] = {0};
+
+    OTP_PowerOn();
+    memcpy(key128, (uint32_t *)(0x40009128), 16);
+    memcpy(iv, (uint32_t *)(0x40009138), 16);
+
+    AES128_CBC_ctx ctx;
+    AES128_CBC_init(&ctx, key128, iv);
+    AES128_CBC_encrypt(&ctx, sz / 16, cipher, plain);
+}
+
+void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher)
+{
+    AES128_CBC_ctx ctx;
+    uint8_t key128[16] = {0};
+    uint8_t iv[16] = {0};
+
+    OTP_PowerOn();
+    memcpy(key128, (uint32_t *)(0x40009128), 16);
+    memcpy(iv, (uint32_t *)(0x40009138), 16);
+    AES128_CBC_init(&ctx, key128, iv);
+    AES128_CBC_decrypt(&ctx, sz / 16, plain, cipher);
+}
+
+bool GetBootSecureCheckFlag(void)
+{
+#ifdef COMPILE_SIMULATOR
+    return true;
+#endif
+    uint8_t cipher[16] = {0};
+    uint8_t plain[16] = {0};
+    Gd25FlashReadBuffer(BOOT_SECURE_CHECK_FLAG, cipher, sizeof(cipher));
+    if (CheckAllFF(cipher, sizeof(cipher))) {
+        SetBootSecureCheckFlag(true);
+        Gd25FlashReadBuffer(BOOT_SECURE_CHECK_FLAG, cipher, sizeof(cipher));
+    }
+
+    AesDecryptBuffer(plain, sizeof(plain), cipher);
+    return (memcmp(plain, g_integrityFlag, sizeof(g_integrityFlag)) == 0);
+}
+
+void SetBootSecureCheckFlag(bool isSet)
+{
+    uint8_t cipher[16] = {0};
+    uint8_t plain[16] = {0};
+    if (isSet) {
+        memcpy(plain, g_integrityFlag, sizeof(g_integrityFlag));
+    }
+
+    AesEncryptBuffer(cipher, sizeof(cipher), plain);
+    Gd25FlashSectorErase(BOOT_SECURE_CHECK_FLAG);
+    Gd25FlashWriteBuffer(BOOT_SECURE_CHECK_FLAG, cipher, sizeof(cipher));
 }
 
 bool IsUpdateSuccess(void)

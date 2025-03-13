@@ -48,7 +48,6 @@ int32_t GetFpCommAesKey(uint8_t *aesKey);
 int32_t SetFpResetKey(const uint8_t *resetKey);
 int32_t GetFpResetKey(uint8_t *resetKey);
 bool FpAesKeyExist();
-bool FpResetKeyExist();
 void GetAccountSlot(AccountSlot_t *accountSlot, uint8_t accountIndex);
 int32_t SignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signaure);
 int32_t GetDevicePublicKey(uint8_t *pubkey);

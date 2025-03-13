@@ -70,7 +70,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 #ifdef WEB3_VERSION
     {CHAIN_ETH, "", &coinEth},       {CHAIN_SOL, "", &coinSol},
     {CHAIN_BNB, "", &coinBnb},       {CHAIN_HNT, "", &coinHelium},
-    {CHAIN_XRP, "", &coinXrp},      
+    {CHAIN_XRP, "", &coinXrp},
     //  {CHAIN_AVAX, "", &coinAva},
     {CHAIN_ADA, "", &coinAda},       {CHAIN_TON, "", &coinTon},
     {CHAIN_TRX, "", &coinTrx},       {CHAIN_LTC, "", &coinLtc},
@@ -151,6 +151,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
     {WALLET_LIST_NUNCHUK, "Nunchuk", &walletNunchuk},
+    {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
 #endif
 };

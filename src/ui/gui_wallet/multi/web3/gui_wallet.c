@@ -656,9 +656,9 @@ UREncodeResult *GuiGetBackpackData(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    ExtendedPublicKey keys[31];
+    ExtendedPublicKey keys[41];
     public_keys->data = keys;
-    public_keys->size = 31;
+    public_keys->size = 41;
 
     uint8_t count = 0;
     // SOLBip44ROOT
@@ -692,6 +692,13 @@ UREncodeResult *GuiGetBackpackData(void)
         keys[count].xpub = GetCurrentAccountPublicKey(i);
     }
 
+    // SUI same with other sui wallet - return 10 keys
+    for (uint8_t i = XPUB_TYPE_SUI_0; i <= XPUB_TYPE_SUI_9; i++, count++) {
+        char *path = SRAM_MALLOC(sizeof(char) * 32);
+        snprintf_s(path, BUFFER_SIZE_32, "m/44'/784'/%u'/0'/0'", i - XPUB_TYPE_SUI_0);
+        keys[count].path = path;
+        keys[count].xpub = GetCurrentAccountPublicKey(i);
+    }
     g_urEncode = get_backpack_wallet_ur(mfp, sizeof(mfp), public_keys);
 
     CHECK_CHAIN_PRINT(g_urEncode);

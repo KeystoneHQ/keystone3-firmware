@@ -234,7 +234,7 @@ impl From<ParsedEthereumTransaction> for DisplayETHOverview {
         }
     }
 }
-
+// parse evm transaction detail
 impl From<ParsedEthereumTransaction> for DisplayETHDetail {
     fn from(tx: ParsedEthereumTransaction) -> Self {
         Self {

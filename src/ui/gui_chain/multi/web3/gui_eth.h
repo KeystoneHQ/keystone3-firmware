@@ -25,6 +25,7 @@ UREncodeResult *GuiGetEthSignQrCodeData(void);
 UREncodeResult *GuiGetEthSignUrDataUnlimited(void);
 void GetEthGetFromAddress(void *indata, void *param, uint32_t maxLen);
 void GetEthGetToAddress(void *indata, void *param, uint32_t maxLen);
+void GetEthGetDetailPageToAddress(void *indata, void *param, uint32_t maxLen);
 void GetTxnFeeDesc(void *indata, void *param, uint32_t maxLen);
 void GetEthToFromSize(uint16_t *width, uint16_t *height, void *param);
 void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param);

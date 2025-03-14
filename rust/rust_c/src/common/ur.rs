@@ -12,11 +12,13 @@ use ur_parse_lib::keystone_ur_decoder::{
     URParseResult as InnerParseResult,
 };
 use ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
-use ur_registry::bytes::Bytes;
 use ur_registry::error::{URError, URResult};
 use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use ur_registry::registry_types::URType as InnerURType;
 use ur_registry::traits::RegistryItem;
+use ur_registry::{
+    bytes::Bytes, cardano::cardano_sign_cip8_data_request::CardanoSignCip8DataRequest,
+};
 
 #[cfg(feature = "aptos")]
 use ur_registry::aptos::aptos_sign_request::AptosSignRequest;
@@ -223,6 +225,8 @@ pub enum ViewType {
     #[cfg(feature = "cardano")]
     CardanoSignData,
     #[cfg(feature = "cardano")]
+    CardanoSignCip8Data,
+    #[cfg(feature = "cardano")]
     CardanoCatalystVotingRegistration,
     #[cfg(feature = "cardano")]
     CardanoSignTxHash,
@@ -303,6 +307,10 @@ pub enum QRCodeType {
     CardanoSignDataRequest,
     #[cfg(feature = "cardano")]
     CardanoCatalystVotingRegistrationRequest,
+
+    #[cfg(feature = "cardano")]
+    CardanoSignCip8DataRequest,
+
     #[cfg(feature = "cosmos")]
     CosmosSignRequest,
     #[cfg(feature = "ethereum")]
@@ -369,6 +377,10 @@ impl QRCodeType {
             InnerURType::CardanoSignRequest(_) => Ok(QRCodeType::CardanoSignRequest),
             #[cfg(feature = "cardano")]
             InnerURType::CardanoSignTxHashRequest(_) => Ok(QRCodeType::CardanoSignTxHashRequest),
+            #[cfg(feature = "cardano")]
+            InnerURType::CardanoSignCip8DataRequest(_) => {
+                Ok(QRCodeType::CardanoSignCip8DataRequest)
+            }
             #[cfg(feature = "cardano")]
             InnerURType::CardanoSignDataRequest(_) => Ok(QRCodeType::CardanoSignDataRequest),
             #[cfg(feature = "cardano")]
@@ -530,6 +542,12 @@ fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
         QRCodeType::CardanoSignDataRequest => {
             free_ptr_with_type!(data, CardanoSignDataRequest);
         }
+
+        #[cfg(feature = "cardano")]
+        QRCodeType::CardanoSignCip8DataRequest => {
+            free_ptr_with_type!(data, CardanoSignCip8DataRequest);
+        }
+
         #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignTxHashRequest => {
             free_ptr_with_type!(data, CardanoSignTxHashRequest);
@@ -691,6 +709,10 @@ pub fn decode_ur(ur: String) -> URParseResult {
         #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignDataRequest => _decode_ur::<CardanoSignDataRequest>(ur, ur_type),
         #[cfg(feature = "cardano")]
+        QRCodeType::CardanoSignCip8DataRequest => {
+            _decode_ur::<CardanoSignCip8DataRequest>(ur, ur_type)
+        }
+        #[cfg(feature = "cardano")]
         QRCodeType::CardanoCatalystVotingRegistrationRequest => {
             _decode_ur::<CardanoCatalystVotingRegistrationRequest>(ur, ur_type)
         }
@@ -785,6 +807,10 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         #[cfg(feature = "cardano")]
         QRCodeType::CardanoSignDataRequest => {
             _receive_ur::<CardanoSignDataRequest>(ur, ur_type, decoder)
+        }
+        #[cfg(feature = "cardano")]
+        QRCodeType::CardanoSignCip8DataRequest => {
+            _receive_ur::<CardanoSignCip8DataRequest>(ur, ur_type, decoder)
         }
         #[cfg(feature = "cardano")]
         QRCodeType::CardanoCatalystVotingRegistrationRequest => {

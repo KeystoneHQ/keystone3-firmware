@@ -56,7 +56,7 @@ void CreateUiDisplayTask(void)
 {
     const osThreadAttr_t testtTask_attributes = {
         .name = "UiDisplayTask",
-        .stack_size = 1024 * 20,
+        .stack_size = 1024 * 24,
         .priority = (osPriority_t) osPriorityHigh,
     };
     g_uiDisplayTaskHandle = osThreadNew(UiDisplayTask, NULL, &testtTask_attributes);

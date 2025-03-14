@@ -238,6 +238,13 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_WANDER].items[0].qrTitle = _("connect_arconnect_title");
     g_tutorials[WALLET_LIST_WANDER].items[0].qrUrl = _("connect_arconnect_link");
 
+    // WALLET_LIST_BEACON
+    g_tutorials[WALLET_LIST_BEACON].len = 1;
+    g_tutorials[WALLET_LIST_BEACON].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_BEACON].items[0].walletName = _("connect_beacon_title");
+    g_tutorials[WALLET_LIST_BEACON].items[0].url = _("connect_beacon_link");
+    g_tutorials[WALLET_LIST_BEACON].items[0].qrTitle = _("connect_beacon_title");
+    g_tutorials[WALLET_LIST_BEACON].items[0].qrUrl = _("connect_beacon_link");
     // WALLET_LIST_VESPR
     g_tutorials[WALLET_LIST_VESPR].len = 1;
     g_tutorials[WALLET_LIST_VESPR].desc = _("connect_wallet_desc");

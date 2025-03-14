@@ -238,6 +238,7 @@ LV_IMG_DECLARE(coinNtrn);
 LV_IMG_DECLARE(coinZec);
 LV_IMG_DECLARE(coinBabylon);
 LV_IMG_DECLARE(coinNeutaro)
+LV_IMG_DECLARE(coinAo);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);
@@ -285,6 +286,8 @@ LV_IMG_DECLARE(walletFeather);
 LV_IMG_DECLARE(walletCore);
 LV_IMG_DECLARE(walletBabylon);
 LV_IMG_DECLARE(walletNufi);
+LV_IMG_DECLARE(walletBeacon);
+
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
 LV_IMG_DECLARE(walletListMetaMask);
@@ -329,6 +332,7 @@ LV_IMG_DECLARE(walletListFeather);
 LV_IMG_DECLARE(walletListCore);
 LV_IMG_DECLARE(walletListBabylon);
 LV_IMG_DECLARE(walletListNufi);
+LV_IMG_DECLARE(walletListBeacon);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

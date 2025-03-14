@@ -22,33 +22,33 @@
 #include "ctaes.h"
 #include "drv_mpu.h"
 
-#define VERSION_MAX_LENGTH      32
+#define VERSION_MAX_LENGTH 32
 
-#define KEY_VERSION                     "version"
+#define KEY_VERSION "version"
 
-#define KEY_SETUP_STEP                  "setup_step"
-#define KEY_BRIGHT                      "bright"
-#define KEY_AUTO_LOCK_SCREEN            "auto_lock_screen"
-#define KEY_AUTO_POWER_OFF              "auto_power_off"
-#define KEY_VIBRATION                   "vibration"
-#define KEY_PERMIT_SIGN                 "permit_sign"
-#define KEY_DARK_MODE                   "dark_mode"
-#define KEY_USB_SWITCH                  "usb_switch"
-#define KEY_LAST_VERSION                "last_version"
-#define KEY_LANGUAGE                    "language"
-#define KEY_NFT_SCREEN                  "nftEnable"
-#define KEY_NFT_VALID                   "nftValid"
-#define KEY_ENABLE_BLIND_SIGNING        "enableBlindSigning"
-#define DEFAULT_SETUP_STEP              0
-#define DEFAULT_BRIGHT                  15
-#define DEFAULT_AUTO_LOCK_SCREEN        60
-#define DEFAULT_AUTO_POWER_OFF          0
-#define DEFAULT_VIBRATION               1
-#define DEFAULT_PERMIT_SIGN             0
-#define DEFAULT_DARK_MODE               1
-#define DEFAULT_USB_SWITCH              1
-#define DEFAULT_LAST_VERSION            0
-#define DEFAULT_LANGUAGE                LANG_EN
+#define KEY_SETUP_STEP "setup_step"
+#define KEY_BRIGHT "bright"
+#define KEY_AUTO_LOCK_SCREEN "auto_lock_screen"
+#define KEY_AUTO_POWER_OFF "auto_power_off"
+#define KEY_VIBRATION "vibration"
+#define KEY_PERMIT_SIGN "permit_sign"
+#define KEY_DARK_MODE "dark_mode"
+#define KEY_USB_SWITCH "usb_switch"
+#define KEY_LAST_VERSION "last_version"
+#define KEY_LANGUAGE "language"
+#define KEY_NFT_SCREEN "nftEnable"
+#define KEY_NFT_VALID "nftValid"
+#define KEY_ENABLE_BLIND_SIGNING "enableBlindSigning"
+#define DEFAULT_SETUP_STEP 0
+#define DEFAULT_BRIGHT 15
+#define DEFAULT_AUTO_LOCK_SCREEN 60
+#define DEFAULT_AUTO_POWER_OFF 0
+#define DEFAULT_VIBRATION 1
+#define DEFAULT_PERMIT_SIGN 0
+#define DEFAULT_DARK_MODE 1
+#define DEFAULT_USB_SWITCH 1
+#define DEFAULT_LAST_VERSION 0
+#define DEFAULT_LANGUAGE LANG_EN
 typedef struct {
     uint32_t setupStep;
     uint32_t bright;
@@ -69,15 +69,39 @@ static int32_t SaveDeviceSettingsAsyncFunc(const void *inData, uint32_t inDataLe
 static void SaveDeviceSettingsSync(void);
 static bool GetDeviceSettingsFromJsonString(const char *string);
 static char *GetJsonStringFromDeviceSettings(void);
+static void AesEncryptBuffer(uint8_t *cipher, uint32_t sz, uint8_t *plain);
+static void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher);
 
+typedef struct {
+    // boot check
+    uint8_t bootCheckFlag[16];
+
+    // recovery mode switch
+    uint8_t recoveryModeSwitch[16];
+} BootParam_t;
+
+static const uint8_t g_integrityFlag[16] = {
+    0x01,
+    0x09,
+    0x00,
+    0x03,
+    0x01,
+    0x09,
+    0x00,
+    0x03,
+    0x01,
+    0x09,
+    0x00,
+    0x03,
+    0x01,
+    0x09,
+    0x00,
+    0x03,
+};
+
+static BootParam_t g_bootParam;
 static const char g_deviceSettingsVersion[] = "1.0.0";
 DeviceSettings_t g_deviceSettings;
-static const uint8_t g_integrityFlag[16] = {
-    0x01, 0x09, 0x00, 0x03,
-    0x01, 0x09, 0x00, 0x03,
-    0x01, 0x09, 0x00, 0x03,
-    0x01, 0x09, 0x00, 0x03,
-};
 
 void DeviceSettingsInit(void)
 {
@@ -122,6 +146,75 @@ void DeviceSettingsInit(void)
         g_deviceSettings.enableBlindSigning = false;
         SaveDeviceSettingsSync();
     }
+
+    // init boot param
+    InitBootParam();
+}
+
+void InitBootParam(void)
+{
+    BootParam_t bootParam;
+    bool needSave = false;
+    uint8_t cipher[sizeof(g_bootParam)] = {0};
+    uint8_t plain[sizeof(g_bootParam)] = {0};
+    Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, (uint8_t *)&bootParam, sizeof(bootParam));
+    if (CheckAllFF(bootParam.bootCheckFlag, sizeof(bootParam.bootCheckFlag))) {
+        memcpy(g_bootParam.bootCheckFlag, bootParam.bootCheckFlag, sizeof(bootParam.bootCheckFlag));
+        needSave = true;
+    }
+    if (CheckAllFF(bootParam.recoveryModeSwitch, sizeof(bootParam.recoveryModeSwitch))) {
+        memcpy(g_bootParam.recoveryModeSwitch, bootParam.recoveryModeSwitch, sizeof(bootParam.recoveryModeSwitch));
+        needSave = true;
+    }
+    if (needSave) {
+        SaveBootParam();
+    } else {
+        AesDecryptBuffer(&g_bootParam, sizeof(g_bootParam), &bootParam);
+        PrintArray("bootParam.bootCheckFlag", g_bootParam.bootCheckFlag, sizeof(g_bootParam.bootCheckFlag));
+        PrintArray("bootParam.recoveryModeSwitch", g_bootParam.recoveryModeSwitch, sizeof(g_bootParam.recoveryModeSwitch));
+    }
+}
+
+int SaveBootParam(void)
+{
+    int ret = SUCCESS_CODE;
+    uint8_t cipher[sizeof(g_bootParam)] = {0};
+    uint8_t plain[sizeof(g_bootParam)] = {0};
+    uint8_t verifyBuffer[sizeof(g_bootParam)] = {0};
+
+    if (sizeof(g_bootParam) > BOOT_SECURE_PARAM_FLAG_SIZE) {
+        return ERR_GD25_BAD_PARAM;
+    }
+
+    memcpy(plain, &g_bootParam, sizeof(g_bootParam));
+
+    AesEncryptBuffer(cipher, sizeof(cipher), plain);
+
+    if (Gd25FlashSectorErase(BOOT_SECURE_PARAM_FLAG) != SUCCESS_CODE) {
+        ret = ERR_GD25_BAD_PARAM;
+        goto cleanup;
+    }
+
+    if (Gd25FlashWriteBuffer(BOOT_SECURE_PARAM_FLAG, cipher, sizeof(cipher)) != SUCCESS_CODE) {
+        ret = ERR_GD25_BAD_PARAM;
+        goto cleanup;
+    }
+
+    if (Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, verifyBuffer, sizeof(verifyBuffer)) != SUCCESS_CODE) {
+        ret = ERR_GD25_BAD_PARAM;
+        goto cleanup;
+    }
+
+    if (memcmp(cipher, verifyBuffer, sizeof(cipher)) != 0) {
+        ret = ERR_GD25_BAD_PARAM;
+    }
+
+cleanup:
+    memset(plain, 0, sizeof(plain));
+    memset(cipher, 0, sizeof(cipher));
+    memset(verifyBuffer, 0, sizeof(verifyBuffer));
+
+    return ret;
 }
 
 /// @brief Save device settings to FLASH in background task.
@@ -230,7 +323,7 @@ static void AesEncryptBuffer(uint8_t *cipher, uint32_t sz, uint8_t *plain)
     MpuSetOtpProtection(true);
 }
 
-void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher)
+static void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher)
 {
     AES128_CBC_ctx ctx;
     uint8_t key128[16] = {0};
@@ -245,34 +338,53 @@ void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher)
     MpuSetOtpProtection(true);
 }
 
+// bool GetBootSecureCheckFlag(void)
+// {
+// #ifdef COMPILE_SIMULATOR
+//     return true;
+// #endif
+//     uint8_t cipher[16] = {0};
+//     uint8_t plain[16] = {0};
+//     Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, cipher, sizeof(cipher));
+//     if (CheckAllFF(cipher, sizeof(cipher))) {
+//         SetBootSecureCheckFlag(true);
+//         Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, cipher, sizeof(cipher));
+//     }
+
+//     AesDecryptBuffer(plain, sizeof(plain), cipher);
+//     return (memcmp(plain, g_integrityFlag, sizeof(g_integrityFlag)) == 0);
+// }
+
 bool GetBootSecureCheckFlag(void)
 {
-#ifdef COMPILE_SIMULATOR
-    return true;
-#endif
-    uint8_t cipher[16] = {0};
-    uint8_t plain[16] = {0};
-    Gd25FlashReadBuffer(BOOT_SECURE_CHECK_FLAG, cipher, sizeof(cipher));
-    if (CheckAllFF(cipher, sizeof(cipher))) {
-        SetBootSecureCheckFlag(true);
-        Gd25FlashReadBuffer(BOOT_SECURE_CHECK_FLAG, cipher, sizeof(cipher));
-    }
-
-    AesDecryptBuffer(plain, sizeof(plain), cipher);
-    return (memcmp(plain, g_integrityFlag, sizeof(g_integrityFlag)) == 0);
+    return (memcmp(g_bootParam.bootCheckFlag, g_integrityFlag, sizeof(g_bootParam.bootCheckFlag)) == 0);
 }
 
 void SetBootSecureCheckFlag(bool isSet)
 {
-    uint8_t cipher[16] = {0};
-    uint8_t plain[16] = {0};
     if (isSet) {
-        memcpy(plain, g_integrityFlag, sizeof(g_integrityFlag));
+        memcpy(g_bootParam.bootCheckFlag, g_integrityFlag, sizeof(g_integrityFlag));
+    } else {
+        memset(g_bootParam.bootCheckFlag, 0, sizeof(g_bootParam.bootCheckFlag));
     }
+    SaveBootParam();
+}
 
-    AesEncryptBuffer(cipher, sizeof(cipher), plain);
-    Gd25FlashSectorErase(BOOT_SECURE_CHECK_FLAG);
-    Gd25FlashWriteBuffer(BOOT_SECURE_CHECK_FLAG, cipher, sizeof(cipher));
+bool GetRecoveryModeSwitch(void)
+{
+    return (memcmp(g_bootParam.recoveryModeSwitch, g_integrityFlag, sizeof(g_bootParam.recoveryModeSwitch)) == 0);
+}
+
+void SetRecoveryModeSwitch(bool isSet)
+{
+    if (isSet) {
+        memset(g_bootParam.recoveryModeSwitch, 0, sizeof(g_bootParam.recoveryModeSwitch));
+    } else {
+        memcpy(g_bootParam.recoveryModeSwitch, g_integrityFlag, sizeof(g_bootParam.recoveryModeSwitch));
+    }
+    SaveBootParam();
+    PrintArray("g_bootParam.recoveryModeSwitch", g_bootParam.recoveryModeSwitch, sizeof(g_bootParam.recoveryModeSwitch));
+    printf("get recovery mode switch=%d\n", GetRecoveryModeSwitch());
 }
 
 bool IsUpdateSuccess(void)
@@ -317,7 +429,6 @@ void SetNftScreenSaver(bool enable)
 {
     g_deviceSettings.nftEnable = enable;
 }
-
 
 bool GetEnableBlindSigning(void)
 {
@@ -419,7 +530,7 @@ static void SaveDeviceSettingsSync(void)
 
     jsonString = GetJsonStringFromDeviceSettings();
     printf("jsonString=%s\n", jsonString);
-    Gd25FlashSectorErase(SPI_FLASH_ADDR_NORMAL_PARAM);      //Only one sector for device settings.
+    Gd25FlashSectorErase(SPI_FLASH_ADDR_NORMAL_PARAM); // Only one sector for device settings.
     size = strnlen_s(jsonString, SPI_FLASH_SIZE_NORMAL_PARAM - 4 - 1);
     ASSERT(size < SPI_FLASH_SIZE_NORMAL_PARAM - 4);
     Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM, (uint8_t *)&size, 4);

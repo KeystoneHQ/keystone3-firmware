@@ -36,8 +36,8 @@ int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *par
                 GuiDealChangePermitKeyBoard(true);
                 return SUCCESS_CODE;
 #endif
-            } else if (sig == SIG_SETTING_CHANGE_BOOT_SECURE_SWITCH) {
-                GuiDealChangeBootSecureKeyBoard(true);
+            } else if (sig == SIG_SETTING_CHANGE_BOOT_SECURE_SWITCH || sig == SIG_SETTING_CHANGE_RECOVERY_MODE_SWITCH) {
+                GuiDealBootSecureParamKeyBoard(sig, true);
                 return SUCCESS_CODE;
             }
         }

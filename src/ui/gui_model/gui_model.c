@@ -890,6 +890,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
             FpWipeManageInfo();
             SetSetupStep(0);
             SaveDeviceSettings();
+            ResetBootParam();
             g_reboot = true;
             GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
         } else {

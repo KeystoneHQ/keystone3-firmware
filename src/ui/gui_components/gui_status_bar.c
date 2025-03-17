@@ -114,6 +114,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
+    {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
     {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
     {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
@@ -152,6 +153,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
     {WALLET_LIST_NUNCHUK, "Nunchuk", &walletNunchuk},
     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
+    {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
 #endif
 };

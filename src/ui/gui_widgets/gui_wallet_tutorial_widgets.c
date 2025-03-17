@@ -55,6 +55,16 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_ZEUS].items[0].qrUrl = _("connect_zeus_link");
 
 
+
+    // WALLET_LIST_BABYLON
+    g_tutorials[WALLET_LIST_BABYLON].len = 1;
+    g_tutorials[WALLET_LIST_BABYLON].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_BABYLON].items[0].walletName = _("connect_babylon_title");
+    g_tutorials[WALLET_LIST_BABYLON].items[0].url = _("connect_babylon_link");
+    g_tutorials[WALLET_LIST_BABYLON].items[0].qrTitle = _("connect_babylon_title");
+    g_tutorials[WALLET_LIST_BABYLON].items[0].qrUrl = _("connect_babylon_link");
+
+
     // WALLET_LIST_METAMASK
     g_tutorials[WALLET_LIST_METAMASK].len = 2;
     g_tutorials[WALLET_LIST_METAMASK].desc = _("connect_wallet_desc");

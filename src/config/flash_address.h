@@ -23,6 +23,7 @@
 #define SPI_FLASH_ADDR_EACH_SIZE                0x19000
 
 //USER1 DATA, 100KB
+
 #define SPI_FLASH_ADDR_USER1_DATA               0x00FB2000
 #define SPI_FLASH_SIZE_USER1_DATA               0x00010000
 

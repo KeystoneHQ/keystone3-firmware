@@ -47,6 +47,7 @@ typedef enum {
     CHAIN_STELLAR,
 
     // cosmos start
+    CHAIN_BABYLON,
     CHAIN_TIA,
     CHAIN_NTRN,
     CHAIN_DYM,

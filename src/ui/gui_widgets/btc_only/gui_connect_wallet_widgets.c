@@ -46,6 +46,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_BLUE, &walletListBtcBlue, true, false},
     {WALLET_LIST_SPARROW, &walletListBtcSparrow, true, false},
     {WALLET_LIST_NUNCHUK, &walletListBtcNunchuk, true, false},
+    {WALLET_LIST_ZEUS, &walletListBtcZeus, true, false},
     // {WALLET_LIST_SPECTER,   &walletListBtcSpecter,  true,   true},
     // {WALLET_LIST_UNISAT,    &walletListBtcUniSat,      true,   true},
 };
@@ -194,6 +195,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         // 84 49 44
         func = GuiGetBlueWalletBtcData;
         break;
+    case WALLET_LIST_ZEUS:
     case WALLET_LIST_SPARROW:
         // 84 49 44 86
         func = GuiGetSparrowWalletBtcData;

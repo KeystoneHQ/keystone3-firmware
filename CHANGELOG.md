@@ -1,3 +1,16 @@
+## 2.0.4(2025-03-18)
+
+**Web3:**
+
+### What's new
+1. Security Update
+
+**Cypherpunk:**
+
+### What's new
+1. Security Update
+
+
 ## 2.0.2(2025-03-13)
 
 **Web3:**

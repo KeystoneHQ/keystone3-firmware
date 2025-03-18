@@ -19,6 +19,7 @@
                                        HOME_WALLET_CARD_ARWEAVE, \
                                        HOME_WALLET_CARD_XLM,     \
                                        HOME_WALLET_CARD_BABYLON, \
+                                       HOME_WALLET_CARD_NEUTARO, \
                                        HOME_WALLET_CARD_TIA,     \
                                        HOME_WALLET_CARD_NTRN,    \
                                        HOME_WALLET_CARD_DYM,     \
@@ -54,60 +55,60 @@
                                        HOME_WALLET_CARD_QCK,     \
                                        HOME_WALLET_CARD_TGD // last one cant not with comma
 
-#define HOME_WALLET_STATE_SURPLUS                        \
-    {HOME_WALLET_CARD_ETH, false, "ETH", true},          \
-        {HOME_WALLET_CARD_SOL, false, "SOL", true},      \
-        {HOME_WALLET_CARD_BNB, false, "BNB", false},     \
-        {HOME_WALLET_CARD_HNT, false, "HNT", true},      \
-        {HOME_WALLET_CARD_XRP, false, "XRP", true},      \
-        {HOME_WALLET_CARD_ADA, false, "ADA", true},      \
-        {HOME_WALLET_CARD_TON, false, "TON", false},     \
-        {HOME_WALLET_CARD_DOT, false, "DOT", false},     \
-        {HOME_WALLET_CARD_TRX, false, "TRX", true},      \
-        {HOME_WALLET_CARD_LTC, false, "LTC", true},      \
-        {HOME_WALLET_CARD_BCH, false, "BCH", true},      \
-        {HOME_WALLET_CARD_APT, false, "APT", true},      \
-        {HOME_WALLET_CARD_SUI, false, "SUI", true},      \
-        {HOME_WALLET_CARD_DASH, false, "DASH", true},    \
-        {HOME_WALLET_CARD_ARWEAVE, false, "AR", true},   \
-        {HOME_WALLET_CARD_XLM, false, "XLM", true},      \
-        {HOME_WALLET_CARD_BABYLON, false, "BABY", true}, \
-        {HOME_WALLET_CARD_TIA, false, "TIA", true},      \
-        {HOME_WALLET_CARD_NTRN, false, "NTRN", true},    \
-        {HOME_WALLET_CARD_DYM, false, "DYM", true},      \
-        {HOME_WALLET_CARD_OSMO, false, "OSMO", true},    \
-        {HOME_WALLET_CARD_INJ, false, "INJ", true},      \
-        {HOME_WALLET_CARD_ATOM, false, "ATOM", true},    \
-        {HOME_WALLET_CARD_CRO, false, "CRO", true},      \
-        {HOME_WALLET_CARD_RUNE, false, "RUNE", true},    \
-        {HOME_WALLET_CARD_KAVA, false, "KAVA", true},    \
-        {HOME_WALLET_CARD_LUNC, false, "LUNC", true},    \
-        {HOME_WALLET_CARD_AXL, false, "AXL", true},      \
-        {HOME_WALLET_CARD_LUNA, false, "LUNA", true},    \
-        {HOME_WALLET_CARD_AKT, false, "AKT", true},      \
-        {HOME_WALLET_CARD_STRD, false, "STRD", true},    \
-        {HOME_WALLET_CARD_SCRT, false, "SCRT", true},    \
-        {HOME_WALLET_CARD_BLD, false, "BLD", true},      \
-        {HOME_WALLET_CARD_CTK, false, "CTK", true},      \
-        {HOME_WALLET_CARD_EVMOS, false, "EVMOS", true},  \
-        {HOME_WALLET_CARD_STARS, false, "STARS", true},  \
-        {HOME_WALLET_CARD_XPRT, false, "XPRT", true},    \
-        {HOME_WALLET_CARD_SOMM, false, "SOMM", true},    \
-        {HOME_WALLET_CARD_JUNO, false, "JUNO", true},    \
-        {HOME_WALLET_CARD_IRIS, false, "IRIS", true},    \
-        {HOME_WALLET_CARD_DVPN, false, "DVPN", true},    \
-        {HOME_WALLET_CARD_ROWAN, false, "ROWAN", true},  \
-        {HOME_WALLET_CARD_REGEN, false, "REGEN", true},  \
-        {HOME_WALLET_CARD_BOOT, false, "BOOT", true},    \
-        {HOME_WALLET_CARD_GRAV, false, "GRAV", true},    \
-        {HOME_WALLET_CARD_IXO, false, "IXO", true},      \
-        {HOME_WALLET_CARD_NGM, false, "NGM", true},      \
-        {HOME_WALLET_CARD_IOV, false, "IOV", true},      \
-        {HOME_WALLET_CARD_UMEE, false, "UMEE", true},    \
-        {HOME_WALLET_CARD_QCK, false, "QCK", true},      \
-        {HOME_WALLET_CARD_TGD, false, "TGD", true},      \
-    {                                                    \
-        HOME_WALLET_CARD_BABYLON, false, "BABY", true    \
+#define HOME_WALLET_STATE_SURPLUS                         \
+    {HOME_WALLET_CARD_ETH, false, "ETH", true},           \
+        {HOME_WALLET_CARD_SOL, false, "SOL", true},       \
+        {HOME_WALLET_CARD_BNB, false, "BNB", false},      \
+        {HOME_WALLET_CARD_HNT, false, "HNT", true},       \
+        {HOME_WALLET_CARD_XRP, false, "XRP", true},       \
+        {HOME_WALLET_CARD_ADA, false, "ADA", true},       \
+        {HOME_WALLET_CARD_TON, false, "TON", false},      \
+        {HOME_WALLET_CARD_DOT, false, "DOT", false},      \
+        {HOME_WALLET_CARD_TRX, false, "TRX", true},       \
+        {HOME_WALLET_CARD_LTC, false, "LTC", true},       \
+        {HOME_WALLET_CARD_BCH, false, "BCH", true},       \
+        {HOME_WALLET_CARD_APT, false, "APT", true},       \
+        {HOME_WALLET_CARD_SUI, false, "SUI", true},       \
+        {HOME_WALLET_CARD_DASH, false, "DASH", true},     \
+        {HOME_WALLET_CARD_ARWEAVE, false, "AR", true},    \
+        {HOME_WALLET_CARD_XLM, false, "XLM", true},       \
+        {HOME_WALLET_CARD_BABYLON, false, "BABY", true},  \
+        {HOME_WALLET_CARD_NEUTARO, false, "NTMPI", true}, \
+        {HOME_WALLET_CARD_TIA, false, "TIA", true},       \
+        {HOME_WALLET_CARD_NTRN, false, "NTRN", true},     \
+        {HOME_WALLET_CARD_DYM, false, "DYM", true},       \
+        {HOME_WALLET_CARD_OSMO, false, "OSMO", true},     \
+        {HOME_WALLET_CARD_INJ, false, "INJ", true},       \
+        {HOME_WALLET_CARD_ATOM, false, "ATOM", true},     \
+        {HOME_WALLET_CARD_CRO, false, "CRO", true},       \
+        {HOME_WALLET_CARD_RUNE, false, "RUNE", true},     \
+        {HOME_WALLET_CARD_KAVA, false, "KAVA", true},     \
+        {HOME_WALLET_CARD_LUNC, false, "LUNC", true},     \
+        {HOME_WALLET_CARD_AXL, false, "AXL", true},       \
+        {HOME_WALLET_CARD_LUNA, false, "LUNA", true},     \
+        {HOME_WALLET_CARD_AKT, false, "AKT", true},       \
+        {HOME_WALLET_CARD_STRD, false, "STRD", true},     \
+        {HOME_WALLET_CARD_SCRT, false, "SCRT", true},     \
+        {HOME_WALLET_CARD_BLD, false, "BLD", true},       \
+        {HOME_WALLET_CARD_CTK, false, "CTK", true},       \
+        {HOME_WALLET_CARD_EVMOS, false, "EVMOS", true},   \
+        {HOME_WALLET_CARD_STARS, false, "STARS", true},   \
+        {HOME_WALLET_CARD_XPRT, false, "XPRT", true},     \
+        {HOME_WALLET_CARD_SOMM, false, "SOMM", true},     \
+        {HOME_WALLET_CARD_JUNO, false, "JUNO", true},     \
+        {HOME_WALLET_CARD_IRIS, false, "IRIS", true},     \
+        {HOME_WALLET_CARD_DVPN, false, "DVPN", true},     \
+        {HOME_WALLET_CARD_ROWAN, false, "ROWAN", true},   \
+        {HOME_WALLET_CARD_REGEN, false, "REGEN", true},   \
+        {HOME_WALLET_CARD_BOOT, false, "BOOT", true},     \
+        {HOME_WALLET_CARD_GRAV, false, "GRAV", true},     \
+        {HOME_WALLET_CARD_IXO, false, "IXO", true},       \
+        {HOME_WALLET_CARD_NGM, false, "NGM", true},       \
+        {HOME_WALLET_CARD_IOV, false, "IOV", true},       \
+        {HOME_WALLET_CARD_UMEE, false, "UMEE", true},     \
+        {HOME_WALLET_CARD_QCK, false, "QCK", true},       \
+    {                                                     \
+        HOME_WALLET_CARD_TGD, false, "TGD", true          \
     }
 // last one cant not with comma
 
@@ -213,6 +214,12 @@
             .coin = "BABY",                    \
             .chain = "Babylon",                \
             .icon = &coinBabylon,              \
+        },                                     \
+        {                                      \
+            .index = HOME_WALLET_CARD_NEUTARO, \
+            .coin = "NTMPI",                   \
+            .chain = "Neutaro",                \
+            .icon = &coinNeutaro,              \
         },                                     \
         {                                      \
             .index = HOME_WALLET_CARD_TIA,     \
@@ -412,18 +419,11 @@
             .chain = "Quicksilver",            \
             .icon = &coinQck,                  \
         },                                     \
-        {                                      \
-            .index = HOME_WALLET_CARD_TGD,     \
-            .coin = "TGD",                     \
-            .chain = "Tgrade",                 \
-            .icon = &coinTgd,                  \
-        },                                     \
     {                                          \
-        .index = HOME_WALLET_CARD_BABYLON,     \
-        .coin = "BABYLON",                     \
-        .chain = "Babylon",                    \
-        .icon = &coinBabylon,                  \
+        .index = HOME_WALLET_CARD_TGD,         \
+        .coin = "TGD",                         \
+        .chain = "Tgrade",                     \
+        .icon = &coinTgd,                      \
     }
-
 #endif
 #endif

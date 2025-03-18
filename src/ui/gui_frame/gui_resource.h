@@ -237,6 +237,7 @@ LV_IMG_DECLARE(coinHelium);
 LV_IMG_DECLARE(coinNtrn);
 LV_IMG_DECLARE(coinZec);
 LV_IMG_DECLARE(coinBabylon);
+LV_IMG_DECLARE(coinNeutaro)
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);

@@ -152,10 +152,22 @@ void InitBootParam(void)
     }
     if (CheckAllFF(bootParam.recoveryModeSwitch, sizeof(bootParam.recoveryModeSwitch))) {
     }
+
     if (needSave) {
         SaveBootParam();
     } else {
         AesDecryptBuffer(&g_bootParam, sizeof(g_bootParam), &bootParam);
+        if (memcmp(g_bootParam.recoveryModeSwitch, g_integrityFlag, sizeof(g_bootParam.recoveryModeSwitch)) != 0) {
+            PrintArray("bootParam.recoveryModeSwitch", g_bootParam.recoveryModeSwitch, sizeof(g_bootParam.recoveryModeSwitch));
+            memset(g_bootParam.recoveryModeSwitch, 0, sizeof(g_bootParam.recoveryModeSwitch));
+            if (SaveBootParam() != SUCCESS_CODE) {
+                printf("SaveBootParam failed\n");
+            } else {
+                printf("SaveBootParam success\n");
+            }
+            Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, (uint8_t *)&bootParam, sizeof(bootParam));
+            AesDecryptBuffer(&g_bootParam, sizeof(g_bootParam), &bootParam);
+        }
         PrintArray("bootParam.bootCheckFlag", g_bootParam.bootCheckFlag, sizeof(g_bootParam.bootCheckFlag));
         PrintArray("bootParam.recoveryModeSwitch", g_bootParam.recoveryModeSwitch, sizeof(g_bootParam.recoveryModeSwitch));
     }
@@ -188,15 +200,9 @@ int SaveBootParam(void)
         goto cleanup;
     }
 
-    if (Gd25FlashWriteBuffer(BOOT_SECURE_PARAM_FLAG, cipher, sizeof(cipher)) != SUCCESS_CODE) {
-        ret = ERR_GD25_BAD_PARAM;
-        goto cleanup;
-    }
+    Gd25FlashWriteBuffer(BOOT_SECURE_PARAM_FLAG, cipher, sizeof(cipher));
 
-    if (Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, verifyBuffer, sizeof(verifyBuffer)) != SUCCESS_CODE) {
-        ret = ERR_GD25_BAD_PARAM;
-        goto cleanup;
-    }
+    Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, verifyBuffer, sizeof(verifyBuffer));
 
     if (memcmp(cipher, verifyBuffer, sizeof(cipher)) != 0) {
         ret = ERR_GD25_BAD_PARAM;

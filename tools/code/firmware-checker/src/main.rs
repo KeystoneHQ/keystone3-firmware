@@ -145,23 +145,30 @@ fn parse_binary_header(content: &[u8]) -> Result<Header, OTAError> {
 async fn get_decompress_file_sha256(file_path: &str) -> Result<String, OTAError> {
     let mut file = File::open(file_path).map_err(|_| OTAError::NotExist)?;
     let mut content = Vec::new();
-    file.read_to_end(&mut content).map_err(|_| OTAError::InvalidFormat)?;
+    file.read_to_end(&mut content)
+        .map_err(|_| OTAError::InvalidFormat)?;
 
     let head_size = Cursor::new(&content[0..4])
         .read_i32::<LittleEndian>()
         .map_err(|_| OTAError::InvalidFormat)?;
     let head_offset = head_size + 4;
-    
+
     let header = parse_binary_header(&content[4..head_offset as usize])?;
 
     let data = &content[(head_offset + 1) as usize..];
     let decompressed_data = decompress_chunks(data, header.file_size)?;
-    
+
     Ok(Message::from_hashed_data::<sha256::Hash>(&decompressed_data).to_string())
+}
+
+fn check_all_ff(data: &[u8]) -> bool {
+    data.iter().all(|&byte| byte == 0xFF)
 }
 
 fn decompress_chunks(data: &[u8], total_size: u32) -> Result<Vec<u8>, OTAError> {
     const CHUNK_SIZE: usize = 16384;
+    const MAGIC_NUMBER: &[u8] = b"mh1903append";
+    const SECTOR_SIZE: usize = 4096;
     let mut offset = 0;
     let mut decompressed_data = Vec::with_capacity(total_size as usize);
 
@@ -170,7 +177,24 @@ fn decompress_chunks(data: &[u8], total_size: u32) -> Result<Vec<u8>, OTAError> 
         let compressed_chunk = &data[offset..offset + compressed_size];
         let decompressed_chunk = decompress(&mut Cursor::new(compressed_chunk), CHUNK_SIZE as u32)
             .map_err(|_| OTAError::DecompressionError)?;
-        
+
+        if let Some(pos) = decompressed_chunk
+            .windows(MAGIC_NUMBER.len())
+            .position(|window| window == MAGIC_NUMBER)
+        {
+            let remaining_in_sector = SECTOR_SIZE - (pos % SECTOR_SIZE) - MAGIC_NUMBER.len();
+            if pos + MAGIC_NUMBER.len() + remaining_in_sector <= decompressed_chunk.len() {
+                let ff_check_data = &decompressed_chunk
+                    [pos + MAGIC_NUMBER.len()..pos + MAGIC_NUMBER.len() + remaining_in_sector];
+                if check_all_ff(ff_check_data) {
+                    let sector_start = (pos / SECTOR_SIZE) * SECTOR_SIZE;
+                    decompressed_data
+                        .extend_from_slice(&decompressed_chunk[..sector_start + SECTOR_SIZE]);
+                    return Ok(decompressed_data);
+                }
+            }
+        }
+
         decompressed_data.extend_from_slice(&decompressed_chunk);
         offset += compressed_size;
     }

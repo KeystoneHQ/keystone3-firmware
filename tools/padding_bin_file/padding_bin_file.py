@@ -5,17 +5,25 @@ import sys
 import hashlib
 import os
 
+MAGIC_NUMBER = b'mh1903bootupdate'
+APP_END_NUMBER = b'mh1903append'
+SIGNATURE_LENGTH = 0x134
+BLOCK_SIZE = 4096
+HASH_SIZE = 32
 
-def padding_sig_file(file_name):
+def write_checked(f, data):
+    written = f.write(data)
+    if written != len(data):
+        raise IOError(f"Failed to write all data: {written} != {len(data)}")
+
+def padding_sig_file(file_name, padding_file_name):
     if not os.path.exists("boot.sig"):
         return
-
-    new_file_name = "mh1903_padding_boot.bin"
 
     with open(file_name, 'rb') as src_file:
         content = src_file.read()
 
-    with open(new_file_name, 'wb') as dst_file:
+    with open(padding_file_name, 'wb') as dst_file:
         dst_file.write(content)
 
     with open("boot.sig", "rb") as sig_file:
@@ -29,37 +37,51 @@ def padding_sig_file(file_name):
         final_hash = sha256_obj.hexdigest()
         print(f'SHA256 hash: {final_hash}')
 
-        with open(new_file_name, "ab") as f:
-            f.write(sig_len.to_bytes(4, byteorder='big'))
-            f.write(bytes.fromhex(final_hash))
+        with open(padding_file_name, "ab") as f:
+            write_checked(f, MAGIC_NUMBER)
+            write_checked(f, sig_len.to_bytes(4, byteorder='big'))
+            write_checked(f, bytes.fromhex(final_hash))
 
             # Write first 0x134 bytes of signature
-            f.write(sig_content[:0x134])
+            write_checked(f, sig_content[:SIGNATURE_LENGTH])
 
             # Calculate and pad to 4K boundary
-            current_pos = 4 + 32 + 0x134  # Length + SHA256 + First part of sig
-            padding_size = 4096 - (current_pos % 4096)
-            f.write(b'\xff' * padding_size)
+            current_pos = len(MAGIC_NUMBER) + 4 + HASH_SIZE + SIGNATURE_LENGTH # Length + SHA256 + First part of sig + magic_number
+            padding_size = BLOCK_SIZE - (current_pos % BLOCK_SIZE)
+            write_checked(f, b'\xff' * padding_size)
 
             # Write remaining signature content
-            f.write(sig_content[0x134:])
+            write_checked(f, sig_content[SIGNATURE_LENGTH:])
+            current_size = f.tell()
+            required_padding = BLOCK_SIZE - (current_size % BLOCK_SIZE)
+            write_checked(f, b'\xff' * required_padding)
+            
+            f.close()
 
 
 def padding_bin_file(file_name):
     with open(file_name, "ab") as f:
         current_size = f.tell()
         # Calculate required padding
-        required_padding = 4096 - (current_size % 4096)
-        f.write(b'\xff' * required_padding)
+        required_padding = BLOCK_SIZE - (current_size % BLOCK_SIZE)
+        write_checked(f, b'\xff' * required_padding)
+                
+        # provides source code check for the app
+        write_checked(f, APP_END_NUMBER)
+        print('len = ', len(APP_END_NUMBER))
 
-        # Write offset and padding
-        offset = current_size % 4096
-        f.write(offset.to_bytes(2, byteorder='big'))
-        f.write(b'\xff' * (4096 - 2))
+        write_checked(f, b'\xff' * (BLOCK_SIZE - len(APP_END_NUMBER)))
 
         f.close()
 
-        padding_sig_file(file_name)
+        full_name = "mh1903_full.bin"
+        padding_sig_file(file_name, full_name)
+        
+        with open(full_name, "ab") as f:
+            offset = current_size % BLOCK_SIZE
+            write_checked(f, offset.to_bytes(2, byteorder='big'))
+            write_checked(f, b'\xff' * (BLOCK_SIZE - 2))
+            f.close()
 
 
 if __name__ == '__main__':

@@ -17,14 +17,14 @@ def write_checked(f, data):
         raise IOError(f"Failed to write all data: {written} != {len(data)}")
 
 def padding_sig_file(file_name, padding_file_name):
-    if not os.path.exists("boot.sig"):
-        return
-
     with open(file_name, 'rb') as src_file:
         content = src_file.read()
 
     with open(padding_file_name, 'wb') as dst_file:
         dst_file.write(content)
+
+    if not os.path.exists("boot.sig"):
+        return
 
     with open("boot.sig", "rb") as sig_file:
         sig_content = sig_file.read()

@@ -1,4 +1,5 @@
 #ifdef CYPHERPUNK_VERSION
+#ifndef COMPILE_SIMULATOR
 #ifndef _GUI_CYPHERPUNK_ANALYZE_WIDGETS_H
 #define _GUI_CYPHERPUNK_ANALYZE_WIDGETS_H
 #define GUI_ANALYZE_OBJ_SURPLUS \
@@ -24,5 +25,6 @@
         FreeMoneroMemory, \
     }
 
+#endif
 #endif
 #endif

@@ -1,3 +1,5 @@
+// checking logic for PCZT
+
 use super::*;
 
 use orchard::{keys::FullViewingKey, value::ValueSum};
@@ -18,6 +20,7 @@ pub fn check_pczt<P: consensus::Parameters>(
     ufvk: &UnifiedFullViewingKey,
     pczt: &Pczt,
 ) -> Result<(), ZcashError> {
+    // checking xpub and orchard keys.
     let xpub = ufvk.transparent().ok_or(ZcashError::InvalidDataError(
         "transparent xpub is not present".to_string(),
     ))?;
@@ -239,6 +242,7 @@ fn check_transparent_output<P: consensus::Parameters>(
     }
 }
 
+// check orchard bundle
 fn check_orchard<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],
@@ -269,6 +273,7 @@ fn check_orchard<P: consensus::Parameters>(
     }
 }
 
+// check orchard action
 fn check_action<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],

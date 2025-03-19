@@ -16,25 +16,22 @@ LV_FONT_DECLARE(openSans_24);
 #define APP_ADDR                            (0x1001000 + 0x80000)   //108 1000
 #define APP_CHECK_START_ADDR                (APP_ADDR)
 #define APP_END_ADDR                        (0x2000000)
+static const uint8_t MAGIC_NUMBER[] = {'m', 'h', '1', '9', '0', '3', 'b', 'o', 'o', 't', 'u', 'p', 'd', 'a', 't', 'e'};
 
 static uint8_t g_fileUnit[4096] = {0};
 
 static uint32_t BinarySearchBootHead(void)
 {
+    size_t MAGIC_NUMBER_SIZE = sizeof(MAGIC_NUMBER);
     uint8_t *buffer = SRAM_MALLOC(SECTOR_SIZE);
     uint32_t startIndex = (APP_CHECK_START_ADDR - APP_ADDR) / SECTOR_SIZE;
     uint32_t endIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
 
-    uint8_t percent = 1;
-
     for (int i = startIndex + 1; i < endIndex; i++) {
         memcpy_s(buffer, SECTOR_SIZE, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
-        if ((i - startIndex) % 200 == 0) {
-            percent++;
-        }
-        if (CheckAllFF(&buffer[2], SECTOR_SIZE - 2) && ((buffer[0] * 256 + buffer[1]) < 4096)) {
-            SRAM_FREE(buffer);
-            return i + 1;
+        if (memcmp(buffer, MAGIC_NUMBER, MAGIC_NUMBER_SIZE) == 0) {
+            printf("find magic number\n");
+            return i;
         }
     }
     SRAM_FREE(buffer);

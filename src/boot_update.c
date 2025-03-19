@@ -65,6 +65,7 @@ int32_t UpdateBootFromFlash(void)
     int startNum = num + 1;
     uint8_t hash[32] = {0};
     uint8_t calHash[32] = {0};
+    size_t MAGIC_NUMBER_SIZE = sizeof(MAGIC_NUMBER);
 
     struct sha256_ctx ctx;
     sha256_init(&ctx);
@@ -72,17 +73,17 @@ int32_t UpdateBootFromFlash(void)
 
     memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
 
-    memcpy(g_fileUnit, (uint32_t *)baseAddr, 4 + 32);
-    uint32_t bootLen = (g_fileUnit[0] << 24) + (g_fileUnit[1] << 16) + (g_fileUnit[2] << 8) + g_fileUnit[3];
+    memcpy(g_fileUnit, (uint32_t *)baseAddr, 4 + 32 + MAGIC_NUMBER_SIZE);
+    uint32_t bootLen = (g_fileUnit[MAGIC_NUMBER_SIZE + 0] << 24) + (g_fileUnit[MAGIC_NUMBER_SIZE + 1] << 16) + (g_fileUnit[MAGIC_NUMBER_SIZE + 2] << 8) + g_fileUnit[MAGIC_NUMBER_SIZE + 3];
     printf("bootLen = %d\n", bootLen);
-    memcpy(hash, &g_fileUnit[4], 32);
+    memcpy(hash, &g_fileUnit[MAGIC_NUMBER_SIZE + 4], 32);
 
     memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
-    memcpy(g_fileUnit, (uint32_t *)(baseAddr + 4 + 32 + 0x30), BOOT_HEAD_SIZE);
+    memcpy(g_fileUnit, (uint32_t *)(baseAddr + 4 + 32 + 0x30 + MAGIC_NUMBER_SIZE), BOOT_HEAD_SIZE);
     QspiFlashEraseAndWrite(0x01000000, g_fileUnit, 4096);
 
-    sha256_update(&ctx, (uint32_t *)(baseAddr + 4 + 32), 0x134);
-    crcCalc = crc32_ieee(0, (uint32_t *)(baseAddr + 4 + 32), 0x134);
+    sha256_update(&ctx, (uint32_t *)(baseAddr + 4 + 32 + MAGIC_NUMBER_SIZE), 0x134);
+    crcCalc = crc32_ieee(0, (uint32_t *)(baseAddr + 4 + 32 + MAGIC_NUMBER_SIZE), 0x134);
 
     for (int i = startNum; i <= startNum + (bootLen - 0x134) / SECTOR_SIZE; i++, writeAddr += SECTOR_SIZE) {
         Delay(100);
@@ -104,6 +105,10 @@ int32_t UpdateBootFromFlash(void)
     sha256_done(&ctx, (struct sha256 *)calHash);
 
     osKernelUnlock();
+    PrintArray("hash", hash, 32);
+    PrintArray("calHash", calHash, 32);
+    printf("crcCalc = %#x\n", crcCalc);
+    printf("readCrc = %#x\n", readCrc);
     if (memcmp(hash, calHash, 32) == 0) {
         printf("update success\n");
         memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));

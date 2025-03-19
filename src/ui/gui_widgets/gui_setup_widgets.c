@@ -68,7 +68,7 @@ static void GuiWelcomeWidget(lv_obj_t *parent)
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, GoToDeviceUIDPage, LV_EVENT_CLICKED, NULL);
 
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("Keystone"));
+    lv_obj_t *label = GuiCreateTitleLabel(parent, "Keystone");
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 268 - GUI_NAV_BAR_HEIGHT);
 
     label = GuiCreateNoticeLabel(parent, GetSoftwareVersionString());

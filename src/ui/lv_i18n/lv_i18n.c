@@ -9,35 +9,13 @@
 
 #define UNUSED(x) (void)(x)
 
-static inline uint32_t op_n(int32_t val)
-{
-    return (uint32_t)(val < 0 ? -val : val);
-}
-static inline uint32_t op_i(uint32_t val)
-{
-    return val;
-}
+static inline uint32_t op_n(int32_t val) { return (uint32_t)(val < 0 ? -val : val); }
+static inline uint32_t op_i(uint32_t val) { return val; }
 // always zero, when decimal part not exists.
-static inline uint32_t op_v(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_w(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_f(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
-static inline uint32_t op_t(uint32_t val)
-{
-    UNUSED(val);
-    return 0;
-}
+static inline uint32_t op_v(uint32_t val) { UNUSED(val); return 0;}
+static inline uint32_t op_w(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
+static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 const static lv_i18n_phrase_t en_singulars[] = {
     {"Address", "Address"},
@@ -558,6 +536,8 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"nft_transfer_failed_desc", "Due to a transfer interruption, the NFTs on the device have been erased. Please retransfer them."},
     {"nft_transfer_failed_title", "Transfer Failed"},
     {"not_now", "Not Now"},
+    {"nufi_connection_notice", "Connection Notice"},
+    {"nufi_connection_notice_desc", "NuFi Wallet QR code connection is not available now.Please connect via USB instead."},
     {"passphrase_access_switch_desc", "Create a passphrase shortcut for device boot-up"},
     {"passphrase_access_switch_title", "Passphrase Quick Access"},
     {"passphrase_add_password", "Now we need you to enter your passcode to setup passphrase wallet."},
@@ -950,12 +930,9 @@ const static lv_i18n_phrase_t en_singulars[] = {
 
 static uint8_t en_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -1487,6 +1464,8 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"nft_transfer_failed_desc", "Aufgrund einer Übertragungsunterbrechung wurden die NFTs auf dem Gerät gelöscht. Bitte übertragen Sie sie erneut"},
     {"nft_transfer_failed_title", "Übertragung fehlgeschlagen"},
     {"not_now", "Nicht jetzt"},
+    {"nufi_connection_notice", "Verbindungshinweis"},
+    {"nufi_connection_notice_desc", "NuFi Wallet QR code connection is not available now.Please connect via USB instead."},
     {"passphrase_access_switch_desc", "Erstellen Sie eine Passwort-Verknüpfung für das Hochfahren des Geräts."},
     {"passphrase_access_switch_title", "Schneller Zugriff auf Passwort"},
     {"passphrase_add_password", "Jetzt benötigen wir von Ihnen die Eingabe Ihres Passcodes, um Ihre Passphrase-Brieftasche einzurichten."},
@@ -1879,12 +1858,9 @@ const static lv_i18n_phrase_t de_singulars[] = {
 
 static uint8_t de_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t i = op_i(n);
-    UNUSED(i);
-    uint32_t v = op_v(n);
-    UNUSED(v);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t i = op_i(n); UNUSED(i);
+    uint32_t v = op_v(n); UNUSED(v);
 
     if ((i == 1 && v == 0)) return LV_I18N_PLURAL_TYPE_ONE;
     return LV_I18N_PLURAL_TYPE_OTHER;
@@ -2416,6 +2392,8 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"nft_transfer_failed_desc", "Debido a una interrupción en la transferencia, los NFT en el dispositivo se han borrado. Por favor, vuelva a transferirlos"},
     {"nft_transfer_failed_title", "Transferencia fallida"},
     {"not_now", "Ahora no"},
+    {"nufi_connection_notice", "Aviso de conexión"},
+    {"nufi_connection_notice_desc", "NuFi Wallet QR code connection is not available now.Please connect via USB instead."},
     {"passphrase_access_switch_desc", "Crear un atajo de contraseña para el arranque del dispositivo"},
     {"passphrase_access_switch_title", "Acceso rápido mediante frase de contraseña"},
     {"passphrase_add_password", "Ahora necesitamos que ingreses tu código de acceso para configurar la billetera con frase de contraseña"},
@@ -2808,8 +2786,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
 
 static uint8_t es_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
+    uint32_t n = op_n(num); UNUSED(n);
 
 
     if ((n == 1)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -3342,6 +3319,8 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"nft_transfer_failed_desc", "転送の中断により、デバイス上のNFTが消去されました。再度転送してください"},
     {"nft_transfer_failed_title", "転送に失敗しました"},
     {"not_now", "今はない"},
+    {"nufi_connection_notice", "接続通知"},
+    {"nufi_connection_notice_desc", "NuFi ウォレット QR コード接続は現在利用できません。USB を使用して接続してください。"},
     {"passphrase_access_switch_desc", "デバイスの起動時にパスフレーズショートカットを作成する"},
     {"passphrase_access_switch_title", "フレーズ クイックアクセス"},
     {"passphrase_add_password", "今、パスフレーズウォレットの設定のためにパスコードを入力していただく必要があります."},
@@ -4266,6 +4245,8 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"nft_transfer_failed_desc", "전송 중단으로 인해 장치의 NFT가 삭제되었습니다. 다시 전송해 주세요"},
     {"nft_transfer_failed_title", "전송 실패"},
     {"not_now", "지금 안함"},
+    {"nufi_connection_notice", "연결 알림"},
+    {"nufi_connection_notice_desc", "NuFi 지갑 QR 코드 연결은 현재 사용할 수 없습니다. USB를 통해 연결하세요."},
     {"passphrase_access_switch_desc", "장치 부팅을 위한 암호 바로 가기 만들기"},
     {"passphrase_access_switch_title", "암호 빠른 액세스"},
     {"passphrase_add_password", "장치 비밀번호를 입력하여 암호화폐 지갑을 설정하십시오."},
@@ -5190,6 +5171,8 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"nft_transfer_failed_desc", "Из-за прерывания передачи, NFT на устройстве были удалены. Пожалуйста, выполните повторную передачу"},
     {"nft_transfer_failed_title", "Передача не удалась"},
     {"not_now", "Не сейчас"},
+    {"nufi_connection_notice", "Подключение уведомление"},
+    {"nufi_connection_notice_desc", "NuFi 지갑 QR 코드 연결은 현재 사용할 수 없습니다. USB를 통해 연결하세요."},
     {"passphrase_access_switch_desc", "Включить ввод кодовой фразы после включения устройства"},
     {"passphrase_access_switch_title", "Быстрый доступ"},
     {"passphrase_add_password", "Введите код-пароль для настройки кошелька с кодовой фразой."},
@@ -5582,12 +5565,9 @@ const static lv_i18n_phrase_t ru_singulars[] = {
 
 static uint8_t ru_plural_fn(int32_t num)
 {
-    uint32_t n = op_n(num);
-    UNUSED(n);
-    uint32_t v = op_v(n);
-    UNUSED(v);
-    uint32_t i = op_i(n);
-    UNUSED(i);
+    uint32_t n = op_n(num); UNUSED(n);
+    uint32_t v = op_v(n); UNUSED(v);
+    uint32_t i = op_i(n); UNUSED(i);
     uint32_t i10 = i % 10;
     uint32_t i100 = i % 100;
     if ((v == 0 && i10 == 1 && i100 != 11)) return LV_I18N_PLURAL_TYPE_ONE;
@@ -6122,6 +6102,8 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"nft_transfer_failed_desc", "由于传输中断,设备上的NFT已被删除.请重新传输"},
     {"nft_transfer_failed_title", "传输失败"},
     {"not_now", "稍后"},
+    {"nufi_connection_notice", "连接通知"},
+    {"nufi_connection_notice_desc", "NuFi 钱包 QR 代码连接目前不可用。请通过 USB 连接。"},
     {"passphrase_access_switch_desc", "开启后将会在设备重启后展示密语钱包快捷入口"},
     {"passphrase_access_switch_title", "密语钱包快捷访问"},
     {"passphrase_add_password", "现在,请输入设备密码来设置密语钱包."},
@@ -6561,8 +6543,8 @@ void __lv_i18n_reset(void)
  */
 int lv_i18n_init(const lv_i18n_language_pack_t * langs)
 {
-    if (langs == NULL) return -1;
-    if (langs[0] == NULL) return -1;
+    if(langs == NULL) return -1;
+    if(langs[0] == NULL) return -1;
 
     current_lang_pack = langs;
     current_lang = langs[0];     /*Automatically select the first language*/
@@ -6575,13 +6557,13 @@ int lv_i18n_init(const lv_i18n_language_pack_t * langs)
  */
 int lv_i18n_set_locale(const char * l_name)
 {
-    if (current_lang_pack == NULL) return -1;
+    if(current_lang_pack == NULL) return -1;
 
     uint16_t i;
 
-    for (i = 0; current_lang_pack[i] != NULL; i++) {
+    for(i = 0; current_lang_pack[i] != NULL; i++) {
         // Found -> finish
-        if (strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
+        if(strcmp(current_lang_pack[i]->locale_name, l_name) == 0) {
             current_lang = current_lang_pack[i];
             return 0;
         }
@@ -6594,10 +6576,10 @@ int lv_i18n_set_locale(const char * l_name)
 static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char * msg_id)
 {
     uint16_t i;
-    for (i = 0; trans[i].msg_id != NULL; i++) {
-        if (strcmp(trans[i].msg_id, msg_id) == 0) {
+    for(i = 0; trans[i].msg_id != NULL; i++) {
+        if(strcmp(trans[i].msg_id, msg_id) == 0) {
             /*The msg_id has found. Check the translation*/
-            if (trans[i].translation) return trans[i].translation;
+            if(trans[i].translation) return trans[i].translation;
         }
     }
 
@@ -6612,23 +6594,23 @@ static const char * __lv_i18n_get_text_core(lv_i18n_phrase_t * trans, const char
  */
 const char * lv_i18n_get_text(const char * msg_id)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
 
     // Search in current locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->singulars != NULL) {
+    if(lang->singulars != NULL) {
         txt = __lv_i18n_get_text_core(lang->singulars, msg_id);
         if (txt != NULL) return txt;
     }
@@ -6644,31 +6626,31 @@ const char * lv_i18n_get_text(const char * msg_id)
  */
 const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
 {
-    if (current_lang == NULL) return msg_id;
+    if(current_lang == NULL) return msg_id;
 
     const lv_i18n_lang_t * lang = current_lang;
     const void * txt;
     lv_i18n_plural_type_t ptype;
 
     // Search in current locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
     }
 
     // Try to fallback
-    if (lang == current_lang_pack[0]) return msg_id;
+    if(lang == current_lang_pack[0]) return msg_id;
     lang = current_lang_pack[0];
 
     // Repeat search for default locale
-    if (lang->locale_plural_fn != NULL) {
+    if(lang->locale_plural_fn != NULL) {
         ptype = lang->locale_plural_fn(num);
 
-        if (lang->plurals[ptype] != NULL) {
+        if(lang->plurals[ptype] != NULL) {
             txt = __lv_i18n_get_text_core(lang->plurals[ptype], msg_id);
             if (txt != NULL) return txt;
         }
@@ -6683,6 +6665,6 @@ const char * lv_i18n_get_text_plural(const char * msg_id, int32_t num)
  */
 const char * lv_i18n_get_current_locale(void)
 {
-    if (!current_lang) return NULL;
+    if(!current_lang) return NULL;
     return current_lang->locale_name;
 }

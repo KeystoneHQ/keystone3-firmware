@@ -403,6 +403,20 @@ static void GuiOpenARAddressNoticeWindow()
     lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
 }
 
+
+static void GuiOpenNufiNoticeWindow()
+{
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("nufi_connection_notice"), _("nufi_connection_notice_desc"), NULL,NULL, WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    // understand button
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_set_width(btn, 408);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+}
+
+
 static void OpenQRCodeHandler(lv_event_t *e)
 {
     WalletListItem_t *wallet = lv_event_get_user_data(e);
@@ -421,6 +435,11 @@ static void OpenQRCodeHandler(lv_event_t *e)
             g_connectWalletTileView.walletIndex == WALLET_LIST_BEGIN
        ) {
         GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
+        return;
+    }
+    // todo: notice if current wallet is nufi , we show a hintbox to notify user to connect usb 
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_NUFI) {
+        GuiOpenNufiNoticeWindow();
         return;
     }
     bool skipGenerateArweaveKey = IsArweaveSetupComplete();

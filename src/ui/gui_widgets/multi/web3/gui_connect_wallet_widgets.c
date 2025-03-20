@@ -54,6 +54,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_METAMASK, &walletListMetaMask, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true, WALLET_FILTER_SOL},
+    {WALLET_LIST_NUFI, &walletListNufi, true, WALLET_FILTER_ETH|WALLET_FILTER_SOL},
     // {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_HELIUM, &walletListHelium, true, WALLET_FILTER_SOL},
     {WALLET_LIST_BLUE, &walletListBlue, true, WALLET_FILTER_BTC},
@@ -345,6 +346,7 @@ static bool IsEVMChain(int walletIndex)
     case WALLET_LIST_ZAPPER:
     case WALLET_LIST_YEARN_FINANCE:
     case WALLET_LIST_SUSHISWAP:
+    case WALLET_LIST_NUFI:
         return true;
     default:
         return false;
@@ -356,6 +358,7 @@ static bool IsSOL(int walletIndex)
     switch (walletIndex) {
     case WALLET_LIST_SOLFARE:
     case WALLET_LIST_HELIUM:
+    case WALLET_LIST_NUFI:
         return true;
     default:
         return false;

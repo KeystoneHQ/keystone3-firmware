@@ -1,14 +1,17 @@
-## 2.0.4(2025-03-18)
+## 2.0.4(2025-03-20)
 
 **Web3:**
 
 ### What's new
-1. Security Update
+1. Enhanced Firmware Upgrade security mechanisms
+2. Added Recovery Mode Setting for user-controlled customization
 
 **Cypherpunk:**
 
 ### What's new
-1. Security Update
+
+1. Enhanced Firmware Upgrade security mechanisms
+2. Added Recovery Mode Setting for user-controlled customization
 
 
 ## 2.0.2(2025-03-13)

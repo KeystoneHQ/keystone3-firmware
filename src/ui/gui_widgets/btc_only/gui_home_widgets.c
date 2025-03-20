@@ -22,9 +22,10 @@
 #include "gui_home_widgets.h"
 #include "gui_multisig_read_sdcard_widgets.h"
 
+#define BTC_HOME_CARD_NUM               (1)
+
 static lv_obj_t *g_manageWalletLabel = NULL;
 static lv_obj_t *g_homeWalletCardCont = NULL;
-static lv_obj_t *g_homeViewCont = NULL;
 static lv_obj_t *g_manageCont = NULL;
 static lv_obj_t *g_moreHintbox = NULL;
 static bool g_isManageOpen = false;
@@ -36,9 +37,9 @@ static lv_timer_t *g_countDownTimer = NULL; // count down timer
 static WalletState_t g_walletState[] = {
     {HOME_WALLET_CARD_BTC, false, "BTC", true, false, SINGLE_WALLET}
 };
-static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
+static WalletState_t g_walletBakState[BTC_HOME_CARD_NUM] = {0};
 
-static const ChainCoinCard_t g_coinCardArray[HOME_WALLET_CARD_BUTT] = {
+static const ChainCoinCard_t g_coinCardArray[BTC_HOME_CARD_NUM] = {
     {
         .index = HOME_WALLET_CARD_BTC,
         .coin = "BTC",
@@ -60,7 +61,7 @@ static void UpdateManageWalletState(bool needUpdate)
     uint8_t selectCnt = 0;
     g_isManageOpen = false;
     int total = 0;
-    for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+    for (int i = 0; i < BTC_HOME_CARD_NUM; i++) {
 
         if (g_walletState[i].enable) {
             total++;
@@ -262,9 +263,7 @@ void GuiHomeSetWalletDesc(WalletDesc_t *wallet)
 void GuiHomeAreaInit(void)
 {
     g_pageWidget = CreatePageWidget();
-    g_homeViewCont = g_pageWidget->contentZone;
-
-    lv_obj_t *walletCardCont = GuiCreateContainerWithParent(g_homeViewCont, lv_obj_get_width(lv_scr_act()),
+    lv_obj_t *walletCardCont = GuiCreateContainerWithParent(g_pageWidget->contentZone, lv_obj_get_width(lv_scr_act()),
                                lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET);
     lv_obj_set_align(walletCardCont, LV_ALIGN_DEFAULT);
     lv_obj_add_flag(walletCardCont, LV_OBJ_FLAG_SCROLLABLE);
@@ -349,7 +348,7 @@ void SetCurrentWalletIndex(CURRENT_WALLET_INDEX_ENUM walletIndex)
 
 const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
 {
-    for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
+    for (int i = 0; i < BTC_HOME_CARD_NUM; i++) {
         if (g_coinCardArray[i].index == index) {
             return &g_coinCardArray[i];
         }

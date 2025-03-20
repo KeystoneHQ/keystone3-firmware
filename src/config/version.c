@@ -56,8 +56,8 @@ const char *GetSoftwareVersionString(void)
 
 bool NeedUpdateBoot(void)
 {
-#ifdef COMPILE_SIMULATOR
-    return true;
+#ifndef BUILD_PRODUCTION
+    return false;
 #endif
     uint32_t major, minor, build;
     if (GetBootSoftwareVersion(&major, &minor, &build) == false) {

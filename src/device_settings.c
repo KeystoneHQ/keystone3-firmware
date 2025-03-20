@@ -139,6 +139,9 @@ void DeviceSettingsInit(void)
 
 void InitBootParam(void)
 {
+#ifdef COMPILE_SIMULATOR
+    return;
+#endif
     BootParam_t bootParam;
     bool needSave = false;
     uint8_t cipher[sizeof(g_bootParam)] = {0};

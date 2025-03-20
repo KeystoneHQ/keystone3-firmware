@@ -94,7 +94,7 @@ int main(int argc, char **argv)
     hal_init();
 
     DeviceSettingsInit();
-
+    InitAccountPublicInfo();
     GuiStyleInit();
     LanguageInit();
 

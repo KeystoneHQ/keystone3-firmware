@@ -98,6 +98,7 @@ static void FetchSensitiveDataTask(void *argument)
     Message_t rcvMsg;
     osStatus_t ret;
     BackgroundAsync_t *async;
+    InitAccountPublicInfo();
     while (1) {
         ret = osMessageQueueGet(g_sensitiveQueue, &rcvMsg, NULL, 10000);
         if (ret != osOK) {

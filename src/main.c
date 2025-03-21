@@ -92,7 +92,6 @@ int main(void)
 
     PrintSystemInfo();
     osKernelInitialize();
-    InitAccountPublicInfo();
     CreateFingerprintTask();
 #ifndef BUILD_PRODUCTION
     CreateCmdTask();
@@ -116,8 +115,7 @@ int _write(int fd, char *pBuffer, int size)
     for (int i = 0; i < size; i++) {
         while (!UART_IsTXEmpty(UART0));
 #ifdef BUILD_PRODUCTION
-        UART_SendData(UART0, (uint8_t) pBuffer[i]);
-        // UART_SendData(UART0, '-');
+        UART_SendData(UART0, '-');
 #else
         UART_SendData(UART0, (uint8_t) pBuffer[i]);
 #endif

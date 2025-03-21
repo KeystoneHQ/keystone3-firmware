@@ -22,9 +22,11 @@ static const GuiFontDesc_t g_langFontArr[] = {
     {LANG_RU, &ruTitle, &ruLittleTitle, &ruText, &ruIllustrate, &ruIllustrate},
     {LANG_ZH_CN, &cnTitle, &cnLittleTitle, &cnText, &cnIllustrate, &cnIllustrate},
     {LANG_KO, &koTitle, &koLittleTitle, &koText, &koIllustrate, &koIllustrate},
+#ifndef BTC_ONLY
     {LANG_ES, &esTitle, &esLittleTitle, &esText, &esIllustrate, &esIllustrate},
     {LANG_DE, &deTitle, &deLittleTitle, &deText, &deIllustrate, &deIllustrate},
     {LANG_JA, &jaTitle, &jaLittleTitle, &jaText, &jaIllustrate, &jaIllustrate},
+#endif
 };
 
 static void GuiBtnmStyleInit(void)

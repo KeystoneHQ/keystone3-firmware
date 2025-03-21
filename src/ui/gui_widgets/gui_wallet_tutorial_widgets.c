@@ -409,6 +409,12 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_NUNCHUK].items[0].url = _("connect_nunchuk_link");
     g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrTitle = _("connect_nunchuk_title");
     g_tutorials[WALLET_LIST_NUNCHUK].items[0].qrUrl = _("connect_nunchuk_link");
+
+    g_tutorials[WALLET_LIST_ZEUS].len = 1;
+    g_tutorials[WALLET_LIST_ZEUS].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_ZEUS].items[0].walletName = _("connect_zeus_title");
+    g_tutorials[WALLET_LIST_ZEUS].items[0].url = _("connect_zeus_link");
+    g_tutorials[WALLET_LIST_ZEUS].items[0].qrTitle = _("connect_zeus_title");
 #endif
 #if BTC_ONLY
     // multisig

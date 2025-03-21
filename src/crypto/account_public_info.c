@@ -580,7 +580,7 @@ ChainType CheckSolPathSupport(char *path)
 void InitAccountPublicInfo(void)
 {
     g_accountPublicInfo = SRAM_MALLOC(sizeof(AccountPublicKeyItem_t) * XPUB_TYPE_NUM);
-    if (g_accountPublicInfo == NULL) {  
+    if (g_accountPublicInfo == NULL) {
         printf("g_accountPublicInfo SRAM_MALLOC failed\r\n");
         return;
     }

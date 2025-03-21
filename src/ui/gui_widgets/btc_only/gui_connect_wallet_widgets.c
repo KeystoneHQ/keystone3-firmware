@@ -75,7 +75,9 @@ static void GuiInitWalletListArray()
         int index = g_walletListArray[i].index;
 
         if (currentWalletIndex != SINGLE_WALLET) {
-            if (index == WALLET_LIST_SPECTER || index == WALLET_LIST_UNISAT) {
+            if (index == WALLET_LIST_SPECTER ||
+                    index == WALLET_LIST_UNISAT ||
+                    index == WALLET_LIST_ZEUS) {
                 enable = false;
             }
         }

@@ -1,9 +1,9 @@
+use crate::derivation_account_path;
 use crate::errors::ErgoError;
 use crate::errors::ErgoError::{DerivationError, TransactionParseError};
 use crate::errors::Result;
-use crate::{derivation_account_path};
-use alloc::vec::Vec;
 use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use core::str::FromStr;
 use ergo_lib::ergotree_ir::chain::address::{Address, NetworkAddress, NetworkPrefix};
 use ergo_lib::ergotree_ir::ergo_tree::ErgoTree;
@@ -45,13 +45,22 @@ pub fn get_address(hd_path: String, extended_pub_key: &String) -> Result<String>
 }
 
 pub fn ergo_tree_to_address(tree: String) -> Result<String> {
-    let tree_bytes = hex::decode(tree)
-        .map_err(|e| TransactionParseError(format!("could not decode tree from string {}", e.to_string())))?;
-    let ergo_tree = ErgoTree::sigma_parse_bytes(&*tree_bytes)
-        .map_err(|e| TransactionParseError(format!("could not parse tree from bytes {}", e.to_string())))?;
+    let tree_bytes = hex::decode(tree).map_err(|e| {
+        TransactionParseError(format!(
+            "could not decode tree from string {}",
+            e.to_string()
+        ))
+    })?;
+    let ergo_tree = ErgoTree::sigma_parse_bytes(&*tree_bytes).map_err(|e| {
+        TransactionParseError(format!("could not parse tree from bytes {}", e.to_string()))
+    })?;
 
-    let address = Address::recreate_from_ergo_tree(&ergo_tree)
-        .map_err(|e| TransactionParseError(format!("could not recreate address from tree {}", e.to_string())))?;
+    let address = Address::recreate_from_ergo_tree(&ergo_tree).map_err(|e| {
+        TransactionParseError(format!(
+            "could not recreate address from tree {}",
+            e.to_string()
+        ))
+    })?;
     Ok(NetworkAddress::new(NetworkPrefix::Mainnet, &address).to_base58())
 }
 

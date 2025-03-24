@@ -1,3 +1,13 @@
+## 2.0.4-btc(2025-03-24)
+
+**BTC Only:**
+
+### What's new
+
+1. Enhanced Firmware Upgrade security mechanisms
+2. Added Recovery Mode Setting for user-controlled customization
+
+
 ## 2.0.4(2025-03-20)
 
 **Web3:**

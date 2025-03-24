@@ -27,8 +27,16 @@ aux_source_directory(src/crypto CRYPTO)
 aux_source_directory(src/crypto/bips BIPS)
 aux_source_directory(src/crypto/checksum CHECKSUM)
 aux_source_directory(src/crypto/utils CRYPTO_UTILS)
-file(GLOB_RECURSE WEBUSB_PROTOCOL src/webusb_protocol/*.c)
 list(FILTER all_files EXCLUDE REGEX "some_directory/general/.*")
+
+file(GLOB WEBUSB_PROTOCOL
+    src/webusb_protocol/*.c
+    src/webusb_protocol/services/*.c
+)
+
+file(GLOB_RECURSE WEBUSB_PROTOCOL_GENERAL
+    src/webusb_protocol/general/*.c
+)
 
 file(GLOB_RECURSE USB_DRIVER
     "src/driver/usb/*.c"
@@ -71,10 +79,12 @@ file(GLOB_RECURSE SRC
 )
 
 file(GLOB_RECURSE EXCLUDED_FILES
-     "src/managers/btc_only/*")
+     "src/managers/btc_only/*"
+     )
      
 if(NOT BTC_ONLY)
     list(REMOVE_ITEM SRC ${EXCLUDED_FILES})
+    list(APPEND WEBUSB_PROTOCOL ${WEBUSB_PROTOCOL_GENERAL})
 endif()
     
 file(GLOB_RECURSE FREERTOS

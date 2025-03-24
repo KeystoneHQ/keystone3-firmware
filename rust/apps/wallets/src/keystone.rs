@@ -22,15 +22,15 @@ fn get_device_id(serial_number: &str) -> String {
     hex::encode(&sha256(&sha256(serial_number.as_bytes()))[0..20])
 }
 
-const BTC_LEGACY_PREFIX: &str = "m/44'/0'/0'";
-const BTC_SEGWIT_PREFIX: &str = "m/49'/0'/0'";
-const BTC_NATIVE_SEGWIT_PREFIX: &str = "m/84'/0'/0'";
-const ETH_STANDARD_PREFIX: &str = "m/44'/60'/0'";
-const BCH_PREFIX: &str = "m/44'/145'/0'";
-const DASH_PREFIX: &str = "m/44'/5'/0'";
-const LTC_PREFIX: &str = "m/49'/2'/0'";
-const TRX_PREFIX: &str = "m/44'/195'/0'";
-const XRP_PREFIX: &str = "m/44'/144'/0'";
+const BTC_LEGACY_PREFIX: &str = "44'/0'/0'";
+const BTC_SEGWIT_PREFIX: &str = "49'/0'/0'";
+const BTC_NATIVE_SEGWIT_PREFIX: &str = "84'/0'/0'";
+const ETH_STANDARD_PREFIX: &str = "44'/60'/0'";
+const BCH_PREFIX: &str = "44'/145'/0'";
+const DASH_PREFIX: &str = "44'/5'/0'";
+const LTC_PREFIX: &str = "49'/2'/0'";
+const TRX_PREFIX: &str = "44'/195'/0'";
+const XRP_PREFIX: &str = "44'/144'/0'";
 
 fn path_to_coin_code(path: &str) -> String {
     let path = path
@@ -109,7 +109,8 @@ pub fn generate_crypto_multi_accounts(
     let mut coin_configs: Vec<CoinConfig> = vec![];
     for key in data.get_keys() {
         let mut accounts: Vec<AccountConfig> = vec![];
-        let hd_path = "M/".to_string() + &*key.get_origin().unwrap().get_path().unwrap();
+        let hd_path =
+            "M/".to_string() + &*key.get_origin().unwrap().get_path().unwrap().to_string();
 
         let x_pub = key.get_bip32_key();
 
@@ -119,7 +120,7 @@ pub fn generate_crypto_multi_accounts(
         }
 
         let account = AccountConfig {
-            hd_path,
+            hd_path: "M/".to_string() + &*hd_path,
             x_pub,
             address_length: 1,
             is_multi_sign: false,

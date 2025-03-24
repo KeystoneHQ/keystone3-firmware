@@ -128,13 +128,13 @@ void GuiScanResult(bool result, void *param)
 #endif
         if (g_chainType == CHAIN_BUTT) {
             if (g_qrcodeViewType == WebAuthResult) {
-                GuiCLoseCurrentWorkingView();
+                GuiCloseCurrentWorkingView();
                 GuiFrameOpenView(&g_webAuthResultView);
             }
 #ifdef WEB3_VERSION
             if (g_qrcodeViewType == KeyDerivationRequest) {
                 if (!GuiCheckIfTopView(&g_homeView)) {
-                    GuiCLoseCurrentWorkingView();
+                    GuiCloseCurrentWorkingView();
                 }
                 GuiFrameOpenViewWithParam(&g_keyDerivationRequestView, NULL, 0);
             }
@@ -142,13 +142,13 @@ void GuiScanResult(bool result, void *param)
 
 #ifdef BTC_ONLY
             if (g_qrcodeViewType == MultisigWalletImport) {
-                GuiCLoseCurrentWorkingView();
+                GuiCloseCurrentWorkingView();
                 GuiFrameOpenView(&g_importMultisigWalletInfoView);
             }
 
             if (g_qrcodeViewType == MultisigCryptoImportXpub ||
-            g_qrcodeViewType ==  MultisigBytesImportXpub) {
-                GuiCLoseCurrentWorkingView();
+                    g_qrcodeViewType ==  MultisigBytesImportXpub) {
+                GuiCloseCurrentWorkingView();
             }
 #endif
             return;
@@ -169,7 +169,7 @@ void GuiTransactionCheckPass(void)
 {
     GuiModelTransactionCheckResultClear();
     SetPageLockScreen(true);
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
 #ifdef WEB3_VERSION
     if (g_chainType == CHAIN_ARWEAVE) {
         if (GetIsTempAccount()) {

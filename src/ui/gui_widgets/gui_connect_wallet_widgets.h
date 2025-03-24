@@ -36,7 +36,7 @@ typedef enum {
     WALLET_LIST_SUSHISWAP,
     WALLET_LIST_KEPLR,
     WALLET_LIST_MINT_SCAN,
-    WALLET_LIST_ARCONNECT,
+    WALLET_LIST_WANDER,
     WALLET_LIST_VESPR,
     WALLET_LIST_XBULL,
     WALLET_LIST_FEWCHA,
@@ -55,10 +55,23 @@ typedef enum {
     WALLET_LIST_SPECTER,
     WALLET_LIST_SPARROW,
     WALLET_LIST_NUNCHUK,
+    WALLET_LIST_ZEUS,
     WALLET_LIST_UNISAT,
 #endif
     WALLET_LIST_BUTT,
 } WALLET_LIST_INDEX_ENUM;
+
+typedef enum {
+    WALLET_FILTER_BTC = 0b1,
+    WALLET_FILTER_ETH = 0b10,
+    WALLET_FILTER_SOL = 0b100,
+    WALLET_FILTER_ADA = 0b1000,
+    WALLET_FILTER_OTHER = 0b10000,
+
+    WALLET_FILTER_ALL = 0b11111111,
+
+    WALLET_FILTER_BUTT = 0,
+} WalletFilter_t;
 
 typedef struct {
     WALLET_LIST_INDEX_ENUM index;
@@ -66,6 +79,8 @@ typedef struct {
     bool enable;
 #ifdef BTC_ONLY
     bool alpha;
+#else
+    uint8_t filter;
 #endif
 } WalletListItem_t;
 

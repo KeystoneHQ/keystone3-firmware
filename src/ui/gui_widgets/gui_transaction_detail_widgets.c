@@ -210,7 +210,7 @@ void GuiTransactionDetailParseSuccess(void *param)
     SetParseTransactionResult(param);
     GuiTemplateReload(g_pageWidget->contentZone, g_viewType);
     if (!g_needSign) {
-        GuiCreateErrorCodeWindow(ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, NULL, (ErrorWindowCallback)GuiCLoseCurrentWorkingView);
+        GuiCreateErrorCodeWindow(ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, NULL, (ErrorWindowCallback)GuiCloseCurrentWorkingView);
     }
     bool isCanSign = GuiCheckIsTransactionSign();
     if (!isCanSign) {

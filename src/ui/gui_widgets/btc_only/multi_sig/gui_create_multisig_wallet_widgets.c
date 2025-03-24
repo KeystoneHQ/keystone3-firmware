@@ -263,7 +263,7 @@ static void ImportMultiXpubHandler(lv_event_t *e)
 
 static void CancelCreateMultisigWalletHandler(lv_event_t *e)
 {
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
 }
 
 static void StopCreateViewHandler(lv_event_t *e)
@@ -563,7 +563,7 @@ int8_t GuiCreateMultiPrevTile(void)
 {
     switch (g_createMultiTileView.currentTile) {
     case CREATE_MULTI_SET_NAME:
-        return GuiCLoseCurrentWorkingView();
+        return GuiCloseCurrentWorkingView();
     case CREATE_MULTI_SELECT_SLICE:
         lv_obj_add_flag(g_createMultiTileView.stepCont, LV_OBJ_FLAG_HIDDEN);
         break;

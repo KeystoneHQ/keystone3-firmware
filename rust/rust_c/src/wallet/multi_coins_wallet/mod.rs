@@ -5,6 +5,7 @@ pub mod bitget;
 mod imtoken;
 pub mod keplr;
 pub mod keystone;
+pub mod keystone_connect;
 pub mod okx;
 pub mod solana;
 pub mod structs;

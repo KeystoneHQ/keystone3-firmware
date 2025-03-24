@@ -21,7 +21,5 @@
         .icon = &coinXmr, \
     }
 
-#define HOME_WALLET_HIDDEN_CARD_ENUM HOME_WALLET_CARD_BUTT
-
 #endif /* _GUI_CYPHERPUNK_HOME_WIDGETS_H */
 #endif

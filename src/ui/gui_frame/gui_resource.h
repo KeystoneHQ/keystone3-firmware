@@ -256,7 +256,7 @@ LV_IMG_DECLARE(walletZapper);
 LV_IMG_DECLARE(walletYearn);
 LV_IMG_DECLARE(walletSushi);
 LV_IMG_DECLARE(walletKeplr);
-LV_IMG_DECLARE(walletArConnect);
+LV_IMG_DECLARE(walletWander);
 LV_IMG_DECLARE(walletCake);
 LV_IMG_DECLARE(walletVespr);
 LV_IMG_DECLARE(walletFewcha);
@@ -301,7 +301,7 @@ LV_IMG_DECLARE(walletListZapper);
 LV_IMG_DECLARE(walletListYearn);
 LV_IMG_DECLARE(walletListSushi);
 LV_IMG_DECLARE(walletListKeplr);
-LV_IMG_DECLARE(walletListArConnect);
+LV_IMG_DECLARE(walletListWander);
 LV_IMG_DECLARE(walletListVespr);
 LV_IMG_DECLARE(walletListXBull);
 LV_IMG_DECLARE(walletListFewcha);
@@ -330,6 +330,7 @@ LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);
 LV_IMG_DECLARE(walletListBtcSparrow);
 LV_IMG_DECLARE(walletListBtcNunchuk);
+LV_IMG_DECLARE(walletListBtcZeus);
 
 // font
 LV_FONT_DECLARE(openSans_20);

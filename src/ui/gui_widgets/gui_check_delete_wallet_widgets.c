@@ -1,3 +1,4 @@
+#ifndef WEB3_VERSION
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_model.h"
@@ -25,7 +26,7 @@ static void DeleteWalletNextStepHandler(lv_event_t *e)
 static void DeleteWalletNotNowHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_deleteWalletCont)
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
     static uint16_t signal = SIG_LOCK_VIEW_VERIFY_PIN;
     LogoutCurrentAccount();
     GuiLockScreenSetFirstUnlock();
@@ -40,7 +41,7 @@ void GuiCheckDeleteWalletDeInit(void)
 
 void GuiDelWalletToSetup(void)
 {
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
     GuiLockScreenHidden();
 
     GuiFrameOpenView(&g_setupView);
@@ -74,5 +75,5 @@ void GuiCheckDeleteWalletInit(void)
         lv_obj_add_event_cb(btn, DeleteWalletNextStepHandler, LV_EVENT_CLICKED, NULL);
     }
 }
-
+#endif
 

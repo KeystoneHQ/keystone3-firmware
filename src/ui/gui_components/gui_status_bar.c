@@ -70,14 +70,14 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 #ifdef WEB3_VERSION
     {CHAIN_ETH, "", &coinEth},       {CHAIN_SOL, "", &coinSol},
     {CHAIN_BNB, "", &coinBnb},       {CHAIN_HNT, "", &coinHelium},
-    {CHAIN_XRP, "", &coinXrp},       {CHAIN_AVAX, "", &coinAva},
+    {CHAIN_XRP, "", &coinXrp},
+    //  {CHAIN_AVAX, "", &coinAva},
     {CHAIN_ADA, "", &coinAda},       {CHAIN_TON, "", &coinTon},
     {CHAIN_TRX, "", &coinTrx},       {CHAIN_LTC, "", &coinLtc},
     {CHAIN_BCH, "", &coinBch},       {CHAIN_APT, "", &coinApt},
     {CHAIN_SUI, "", &coinSui},       {CHAIN_DASH, "", &coinDash},
     {CHAIN_ARWEAVE, "", &coinAr},    {CHAIN_STELLAR, "", &coinXlm},
-    {CHAIN_ERG, "", &coinErg},
-    {CHAIN_COSMOS, "", &coinCosmos}, {CHAIN_TIA, "", &coinTia},
+    {CHAIN_ERG, "", &coinErg},       {CHAIN_TIA, "", &coinTia},
     {CHAIN_NTRN, "", &coinNtrn},     {CHAIN_DYM, "", &coinDym},
     {CHAIN_OSMO, "", &coinOsmo},
     {CHAIN_INJ, "", &coinInj},       {CHAIN_ATOM, "", &coinAtom},
@@ -99,14 +99,14 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 #endif
 
 #ifdef CYPHERPUNK_VERSION
-    {CHAIN_ZEC, "", &coinZec},
-    {CHAIN_MONERO, "", &coinXmr},
+    {CHAIN_ZCASH, "", &coinZec},
+    {CHAIN_XMR, "", &coinXmr},
 #endif
 };
 
 const static WalletInfo_t g_walletBtn[] = {
 #ifndef BTC_ONLY
-    {WALLET_LIST_KEYSTONE, "Keystone", &walletKeystone},
+    {WALLET_LIST_KEYSTONE, "Keystone Nexus", &walletKeystone},
     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
     {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
@@ -131,7 +131,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
     {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
     {WALLET_LIST_MINT_SCAN, "Mintscan", &walletMintScan},
-    {WALLET_LIST_ARCONNECT, "ArConnect", &walletArConnect},
+    {WALLET_LIST_WANDER, "Wander", &walletWander},
     {WALLET_LIST_VESPR, "Vespr", &walletVespr},
     {WALLET_LIST_XBULL, "xBull", &walletXBull},
     {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
@@ -143,14 +143,15 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_LEAP, "Leap", &walletLeap},
     {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
     {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
-    {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
+    // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
     {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
-    {WALLET_LIST_CORE, "Core Wallet", &walletCore},
+    // {WALLET_LIST_CORE, "Core Wallet", &walletCore},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
     {WALLET_LIST_NUNCHUK, "Nunchuk", &walletNunchuk},
+    {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
 #endif
 };
@@ -346,7 +347,6 @@ const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
         return "Helium";
     }
 
-    CoinWalletInfo_t *coin = NULL;
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
         if (g_walletBtn[i].index == index) {
             return g_walletBtn[i].name;

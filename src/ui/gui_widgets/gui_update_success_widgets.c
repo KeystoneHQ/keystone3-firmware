@@ -13,12 +13,12 @@ static lv_obj_t *g_updateSuccessCont = NULL;
 static void UpdateSuccessNextStepHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_updateSuccessCont)
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
 
     if (ModelGetPassphraseQuickAccess()) {
         GuiFrameOpenView(&g_passphraseView);
     } else if (GuiIsSetup()) {
-#ifdef CYPHERPUNK_VERSION
+#ifndef WEB3_VERSION
     } else if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
         GuiFrameOpenView(&g_checkDeleteWalletView);
 #endif

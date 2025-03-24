@@ -275,6 +275,10 @@ void SetConnectWalletAccountIndex(const char* walletName, uint32_t index);
 uint32_t GetConnectWalletNetwork(const char* walletName);
 void SetConnectWalletNetwork(const char* walletName, uint32_t index);
 
+#ifdef WEB3_VERSION
+ChainType CheckSolPathSupport(char *path);
+#endif
+
 #ifdef BTC_ONLY
 void ExportMultiSigXpub(ChainType chainType);
 void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager);

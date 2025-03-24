@@ -304,10 +304,7 @@ static void OpenDerivationPath()
     lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
 #ifdef WEB3_VERSION
-    if (strcmp("1", g_callData->version) == 0) {
-        lv_obj_add_event_cb(btn, SaveHardwareCallVersion1AdaDerivationAlgo, LV_EVENT_CLICKED, NULL);
-    } else {
-    }
+    lv_obj_add_event_cb(btn, SaveHardwareCallVersion1AdaDerivationAlgo, LV_EVENT_CLICKED, NULL);
 #else
 #endif
 
@@ -1170,7 +1167,7 @@ static void RejectButtonHandler(lv_event_t *e)
 {
     const char *data = "UR parsing rejected";
     HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
-    GuiCLoseCurrentWorkingView();
+    GuiCloseCurrentWorkingView();
 }
 
 #ifdef WEB3_VERSION

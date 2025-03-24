@@ -283,7 +283,6 @@ static void GuiSettingEntranceWidget(lv_obj_t *parent)
     } else {
         snprintf_s(showString, BUFFER_SIZE_64, "#8E8E8E %s#", version);
     }
-
     button = CreateSettingWidgetsButton(parent, _("device_setting_about_title"),
                                         showString, &imgAbout, AboutHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 556 - GUI_MAIN_AREA_OFFSET);
@@ -697,7 +696,7 @@ int8_t GuiDevSettingPrevTile(uint8_t tileIndex)
     NVS_RIGHT_BUTTON_ENUM rightBtn = NVS_RIGHT_BUTTON_BUTT;
     NVS_LEFT_BUTTON_ENUM leftBtn = NVS_BAR_RETURN;
     if (currentTile == 0) {
-        return GuiCLoseCurrentWorkingView();
+        return GuiCloseCurrentWorkingView();
     }
     if (g_deviceSettingArray[currentTile].destructCb != NULL) {
         g_deviceSettingArray[currentTile].destructCb(g_deviceSettingArray[currentTile].obj, NULL);

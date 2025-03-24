@@ -13,6 +13,7 @@
 #include "string.h"
 #include "drv_mpu.h"
 #include "device_setting.h"
+#include "cjson/cJSON.h"
 
 static void decodeEthContractData(void *parseResult);
 static bool GetEthErc20ContractData(void *parseResult);
@@ -31,6 +32,7 @@ static bool g_fromEnsExist = false;
 static bool g_toEnsExist = false;
 static bool g_isPermit = false;
 static bool g_isPermitSingle = false;
+static bool g_isOperation = false;
 static ViewType g_viewType = ViewTypeUnKnown;
 
 const static EvmNetwork_t NETWORKS[] = {
@@ -625,6 +627,7 @@ void GuiSetEthUrData(URParseResult *urResult, URParseMultiResult *urMultiResult,
     g_viewType = g_isMulti ? g_urMultiResult->t : g_urResult->t;
     g_isPermitSingle = false;
     g_isPermit = false;
+    g_isOperation = false;
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                           \
@@ -721,7 +724,7 @@ static char *CalcSymbol(void *param)
     }
 
     if (isErc20Transfer(eth)) {
-        return "Unit";
+        return "Token";
     }
 
     EvmNetwork_t network = _FindNetwork(eth->chain_id);
@@ -767,6 +770,14 @@ void *GuiGetEthTypeData(void)
         result = eth_check(data, mfp, sizeof(mfp));
         CHECK_CHAIN_BREAK(result);
         PtrT_TransactionParseResult_DisplayETHTypedData parseResult = eth_parse_typed_data(data, ethXpub);
+        cJSON *json = cJSON_Parse(parseResult->data->message);
+        cJSON *operation = cJSON_GetObjectItem(json, "operation");
+        if (operation) {
+            uint32_t operationValue;
+            sscanf(operation->valuestring, "%d", &operationValue);
+            g_isOperation = operationValue == 1;
+        }
+        cJSON_Delete(json);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
         UpdatePermitFlag(parseResult->data->primary_type);
@@ -1123,6 +1134,17 @@ void GetEthGetToAddress(void *indata, void *param, uint32_t maxLen)
     }
 }
 
+void GetEthGetDetailPageToAddress(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+    if (isErc20Transfer(eth)) {
+        strcpy_s((char *)indata, maxLen, eth->detail->to);
+    } else {
+        strcpy_s((char *)indata, maxLen, eth->overview->to);
+    }
+}
+
+
 void GetTxnFeeDesc(void *indata, void *param, uint32_t maxLen)
 {
     strcpy_s((char *)indata, maxLen, "  \xE2\x80\xA2  Max Txn Fee = Gas Price * Gas Limit");
@@ -1169,7 +1191,11 @@ void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param)
 void GetEthTypeDomainPos(uint16_t *x, uint16_t *y, void *param)
 {
     *x = 36;
-    *y = (152 + 16) * g_isPermit + 26;
+    if (g_isOperation) {
+        *y = 228;
+    } else {
+        *y = (152 + 16) * g_isPermit + 26;
+    }
 }
 
 bool GetEthContractDataExist(void *indata, void *param)
@@ -1208,6 +1234,7 @@ void GetEthContractName(void *indata, void *param, uint32_t maxLen)
         strcpy_s((char *)indata, maxLen, g_erc20Name);
         return;
     }
+    // add contract address string
     if (strlen(contractData->data->contract_name) > 0) {
         strcpy_s((char *)indata, maxLen, contractData->data->contract_name);
     } else {
@@ -1321,7 +1348,7 @@ static bool GetEthErc20ContractData(void *parseResult)
             return true;
         }
     }
-    g_erc20Name = "Erc20";
+    g_erc20Name = "Erc20 Contract Address";
     FixRecipientAndValueWhenErc20Contract(result->data->detail->input, 0);
     return true;
 }
@@ -1348,6 +1375,11 @@ static bool GetSafeContractData(char* inputData)
 bool GetEthPermitWarningExist(void *indata, void *param)
 {
     return g_isPermit;
+}
+
+bool GetEthOperationWarningExist(void *indata, void *param)
+{
+    return g_isOperation;
 }
 
 bool GetEthPermitCantSign(void *indata, void *param)

@@ -12,6 +12,7 @@
 #define TYPE_DEVICE_SERIAL_NUMBER               2
 #define TYPE_DEVICE_HARDWARE_VERSION            3
 #define TYPE_DEVICE_FIRMWARE_VERSION            4
+#define TYPE_DEVICE_BOOT_VERSION                5
 
 static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ServiceDeviceInfoRunning(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
@@ -28,6 +29,7 @@ static uint8_t *ServiceDeviceInfoBasic(FrameHead_t *head, const uint8_t *tlvData
     const char model[] = "Kv3A";
     char serialNumber[SERIAL_NUMBER_MAX_LEN];
     char version[SOFTWARE_VERSION_MAX_LEN];
+
     FrameHead_t sendHead = {0};
 
     printf("ServiceDeviceInfoBasic\n");

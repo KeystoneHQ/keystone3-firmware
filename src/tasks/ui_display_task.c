@@ -122,7 +122,7 @@ static void UiDisplayTask(void *argument)
             }
             break;
             case UI_MSG_CLOSE_CURRENT_VIEW: {
-                GuiCLoseCurrentWorkingView();
+                GuiCloseCurrentWorkingView();
             }
             break;
             case UI_MSG_SCREEN_SHOT: {
@@ -135,6 +135,7 @@ static void UiDisplayTask(void *argument)
 #endif
             }
             break;
+#ifndef BTC_ONLY
             case UI_MSG_USB_TRANSPORT_VIEW: {
                 GuiFrameOpenViewWithParam(&g_USBTransportView, rcvMsg.buffer, rcvMsg.length);
             }
@@ -154,6 +155,7 @@ static void UiDisplayTask(void *argument)
                 }
             }
             break;
+#endif
 #ifdef WEB3_VERSION
             case UI_MSG_CLOSE_NFT_LOCK: {
                 uint8_t *snapShotAddr = GetActSnapShot();

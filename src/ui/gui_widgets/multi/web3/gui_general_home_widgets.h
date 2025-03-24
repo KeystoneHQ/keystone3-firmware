@@ -18,9 +18,7 @@
     HOME_WALLET_CARD_DASH, \
     HOME_WALLET_CARD_ARWEAVE, \
     HOME_WALLET_CARD_XLM, \
-    HOME_WALLET_CARD_AVAX, \
     HOME_WALLET_CARD_ERG, \
-    HOME_WALLET_CARD_COSMOS, \
     HOME_WALLET_CARD_TIA, \
     HOME_WALLET_CARD_NTRN, \
     HOME_WALLET_CARD_DYM, \
@@ -73,9 +71,7 @@
     {HOME_WALLET_CARD_DASH, false, "DASH", true}, \
     {HOME_WALLET_CARD_ARWEAVE, false, "AR", true}, \
     {HOME_WALLET_CARD_XLM, false, "XLM", true}, \
-    {HOME_WALLET_CARD_AVAX, false, "AVAX", true}, \
     {HOME_WALLET_CARD_ERG, false, "ERG", true}, \
-    {HOME_WALLET_CARD_COSMOS, false, "Cosmos Eco", true}, \
     {HOME_WALLET_CARD_TIA, false, "TIA", true}, \
     {HOME_WALLET_CARD_NTRN, false, "NTRN", true}, \
     {HOME_WALLET_CARD_DYM, false, "DYM", true}, \
@@ -151,7 +147,7 @@
     { \
         .index = HOME_WALLET_CARD_TON, \
         .coin = "TON", \
-        .chain = "The Open Network", \
+        .chain = "TON-TON", \
         .icon = &coinTon, \
     }, \
     { \
@@ -209,22 +205,10 @@
         .icon = &coinXlm, \
     }, \
     { \
-        .index = HOME_WALLET_CARD_AVAX, \
-        .coin = "Avax", \
-        .chain = "Avalanche", \
-        .icon = &coinAva, \
-    }, \
-    { \
         .index = HOME_WALLET_CARD_ERG, \
         .coin = "ERG", \
         .chain = "Ergo", \
         .icon = &coinErg, \
-    }, \
-    { \
-        .index = HOME_WALLET_CARD_COSMOS, \
-        .coin = "Cosmos Eco", \
-        .chain = "", \
-        .icon = &coinCosmos, \
     }, \
     { \
         .index = HOME_WALLET_CARD_TIA, \
@@ -265,7 +249,7 @@
     { \
         .index = HOME_WALLET_CARD_CRO, \
         .coin = "CRO", \
-        .chain = "Cronos POS chain", \
+        .chain = "CRO-Cronos", \
         .icon = &coinCro, \
     }, \
     { \
@@ -313,7 +297,7 @@
     { \
         .index = HOME_WALLET_CARD_SCRT, \
         .coin = "SCRT", \
-        .chain = "Secret Network", \
+        .chain = "SCRT-Secret", \
         .icon = &coinScrt, \
     }, \
     { \
@@ -391,7 +375,7 @@
     { \
         .index = HOME_WALLET_CARD_GRAV, \
         .coin = "GRAV", \
-        .chain = "Gravity Bridge", \
+        .chain = "Graviton", \
         .icon = &coinGrav, \
     }, \
     { \
@@ -430,8 +414,6 @@
         .chain = "Tgrade", \
         .icon = &coinTgd, \
     }
-
-#define HOME_WALLET_HIDDEN_CARD_ENUM HOME_WALLET_CARD_COSMOS
 
 #endif
 #endif

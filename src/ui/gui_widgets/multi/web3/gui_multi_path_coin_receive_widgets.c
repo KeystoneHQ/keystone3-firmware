@@ -182,9 +182,6 @@ static void InitDerivationPathDesc(uint8_t chain)
     case HOME_WALLET_CARD_ETH:
         g_derivationPathDescs = GetDerivationPathDescs(ETH_DERIVATION_PATH_DESC);
         break;
-    case HOME_WALLET_CARD_AVAX:
-        g_derivationPathDescs = GetDerivationPathDescs(AVAX_DERIVATION_PATH_DESC);
-        break;
     case HOME_WALLET_CARD_SOL:
     case HOME_WALLET_CARD_HNT:
         g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
@@ -248,9 +245,6 @@ void GuiMultiPathCoinReceiveRefresh(void)
         case HOME_WALLET_CARD_ETH:
             SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, _("receive_eth_receive_main_title"));
             break;
-        case HOME_WALLET_CARD_AVAX:
-            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_AVAX, _("receive_avax_receive_main_title"));
-            break;
         case HOME_WALLET_CARD_SOL:
             snprintf_s(walletTitle, BUFFER_SIZE_32, _("receive_coin_fmt"), "SOL");
             SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_SOL, walletTitle);
@@ -294,11 +288,7 @@ void GuiMultiPathCoinReceiveRefresh(void)
         break;
     case RECEIVE_TILE_CHANGE_PATH:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        if (g_chainCard == HOME_WALLET_CARD_AVAX) {
-            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_chain_change"));
-        } else {
-            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
-        }
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_chain_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         g_selectType = GetPathIndex();
         for (uint32_t i = 0; i < GetDerivedPathTypeCount(); i++) {
@@ -334,11 +324,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, ChangePathHandler, LV_EVENT_CLICKED, NULL);
     img = GuiCreateImg(btn, &imgPath);
     lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    if (g_chainCard == HOME_WALLET_CARD_AVAX) {
-        label = GuiCreateTextLabel(btn, _("derivation_chain_change"));
-    } else {
-        label = GuiCreateTextLabel(btn, _("derivation_path_change"));
-    }
+    label = GuiCreateTextLabel(btn, _("derivation_path_change"));
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 
     btn = lv_btn_create(cont);
@@ -487,9 +473,6 @@ static void GetHint(char *hint)
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
         strcpy_s(hint, BUFFER_SIZE_256, _("receive_eth_alert_desc"));
-        break;
-    case HOME_WALLET_CARD_AVAX:
-        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "AVAX");
         break;
     case HOME_WALLET_CARD_SOL:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "SOL");
@@ -645,9 +628,6 @@ static void GetChangePathLabelHint(char* hint)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
-    case HOME_WALLET_CARD_AVAX:
-        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_eth"));
-        return;
     case HOME_WALLET_CARD_SOL:
     case HOME_WALLET_CARD_HNT:
         snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_sol"));
@@ -663,8 +643,6 @@ static void GetChangePathLabelHint(char* hint)
 static const char* GetChangePathItemTitle(uint32_t i)
 {
     switch (g_chainCard) {
-    case HOME_WALLET_CARD_AVAX:
-        return (char *)g_avaxPaths[i].title;
     case HOME_WALLET_CARD_ETH:
         return (char *)g_ethPaths[i].title;
     case HOME_WALLET_CARD_SOL:
@@ -762,7 +740,6 @@ static uint32_t GetDerivedPathTypeCount()
     case HOME_WALLET_CARD_HNT:
         return 3;
     case HOME_WALLET_CARD_ADA:
-    case HOME_WALLET_CARD_AVAX:
         return 2;
     default:
         return 3;
@@ -964,8 +941,6 @@ static int GetADAMaxAddressIndex(void)
 static int GetMaxAddressIndex(void)
 {
     switch (g_chainCard) {
-    case HOME_WALLET_CARD_AVAX:
-        return GENERAL_ADDRESS_INDEX_MAX;
     case HOME_WALLET_CARD_ETH:
         return GetEthMaxAddressIndex();
     case HOME_WALLET_CARD_SOL:
@@ -1025,18 +1000,8 @@ static void TutorialHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_multiPathCoinReceiveWidgets.moreCont);
 
-    if (g_chainCard == HOME_WALLET_CARD_AVAX) {
-        g_noticeWindow = GuiCreateConfirmHintBox(NULL, _("Why Are AVAX C-Chain and X/P-Chain Addresses Different?"), _("C-Chain uses Ethereum-compatible 0x addresses for smart contracts, while X/P-Chain uses Bech32 for UTXO-based asset transfers and staking."), NULL, _("got_it"), WHITE_COLOR_OPA20);
-        lv_obj_t *obj = lv_obj_get_child(g_noticeWindow, 3);
-        lv_obj_set_style_text_opa(obj, LV_OPA_80, LV_PART_MAIN);
-
-        obj = lv_obj_get_child(g_noticeWindow, 4);
-        lv_obj_set_style_text_font(obj, g_defTextFont, LV_PART_MAIN);
-        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    } else {
-        TUTORIAL_LIST_INDEX_ENUM index = GetTutorialIndex();
-        GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
-    }
+    TUTORIAL_LIST_INDEX_ENUM index = GetTutorialIndex();
+    GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
 }
 
 static void LeftBtnHandler(lv_event_t *e)
@@ -1185,9 +1150,6 @@ static void GetADAPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
 static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
 {
     switch (g_chainCard) {
-    case HOME_WALLET_CARD_AVAX:
-        GetAvaxPathItemSubTittle(subTitle, index, maxLen);
-        break;
     case HOME_WALLET_CARD_ETH:
         GetEthPathItemSubTittle(subTitle, index, maxLen);
         break;
@@ -1308,9 +1270,6 @@ static char *GetEthXpub(int index)
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
     switch (g_chainCard) {
-    case HOME_WALLET_CARD_AVAX:
-        ModelGetAvaxAddress(index, item);
-        break;
     case HOME_WALLET_CARD_ETH:
         ModelGetEthAddress(index, item);
         break;

@@ -48,7 +48,6 @@ typedef enum {
     CHAIN_STELLAR,
     CHAIN_ERG,
     // cosmos start
-    CHAIN_COSMOS,
     CHAIN_TIA,
     CHAIN_NTRN,
     CHAIN_DYM,
@@ -83,7 +82,7 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
-    CHAIN_AVAX,
+    // CHAIN_AVAX,
     // cosmos end
 #endif
 

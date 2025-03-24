@@ -162,6 +162,8 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetEthPermitWarningExist;
     } else if (!strcmp(type, "GetEthPermitCantSign")) {
         return GetEthPermitCantSign;
+    } else if (!strcmp(type, "GetEthOperationWarningExist")) {
+        return GetEthOperationWarningExist;
     }
     return NULL;
 }
@@ -585,6 +587,8 @@ static GetLabelDataFunc GuiEthTextFuncGet(char *type)
         return GetEthGetFromAddress;
     } else if (!strcmp(type, "GetEthGetToAddress")) {
         return GetEthGetToAddress;
+    } else if (!strcmp(type, "GetEthGetDetailPageToAddress")) {
+        return GetEthGetDetailPageToAddress;
     } else if (!strcmp(type, "GetTxnFeeDesc")) {
         return GetTxnFeeDesc;
     } else if (!strcmp(type, "GetEthEnsName")) {

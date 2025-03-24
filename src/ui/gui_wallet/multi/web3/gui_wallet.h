@@ -11,7 +11,7 @@ UREncodeResult *GuiGetSparrowWalletBtcData(void);
 UREncodeResult *GuiGetSpecterWalletBtcData(void);
 UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index);
 UREncodeResult *GuiGetLeapData();
-UREncodeResult *GuiGetArConnectData(void);
+UREncodeResult *GuiGetWanderData(void);
 UREncodeResult *GuiGetCompanionAppData(void);
 UREncodeResult *GuiGetOkxWalletData(void);
 UREncodeResult *GuiGetBitgetWalletData(void);
@@ -29,6 +29,6 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index);
 UREncodeResult *GuiGetADADataByIndex(char *walletName);
 UREncodeResult *GuiGetImTokenData(void);
 UREncodeResult *GuiGetCoreWalletData(void);
-UREncodeResult *GuiGetKeystoneWalletData(void);
 UREncodeResult *GuiGetThorWalletBtcData(void);
+UREncodeResult *GuiGetKeystoneConnectWalletData(void);
 #endif

@@ -20,6 +20,7 @@
 
 static lv_obj_t *g_container;
 static lv_obj_t *g_vibrationSw;
+static lv_obj_t *g_bootSecureSw;
 
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static PageWidget_t *g_pageWidget;
@@ -36,6 +37,7 @@ static void VibrationSwitchHandler(lv_event_t * e);
 void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
 void OpenForgetPasswordHandler(lv_event_t *e);
 static void OpenLanguageSelectHandler(lv_event_t *e);
+static void BootSecureSwitchHandler(lv_event_t * e);
 
 #ifdef WEB3_VERSION
 static void PermitSingSwitchHandler(lv_event_t * e);
@@ -65,6 +67,7 @@ void GuiSystemSettingWebAuthHandler(lv_event_t *e)
 
 void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
 {
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_t *label, *button;
     uint16_t offset = 0;
 
@@ -117,6 +120,26 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;
 #endif
+
+    // boot secure
+    g_bootSecureSw = lv_switch_create(parent);
+    lv_obj_clear_flag(g_bootSecureSw, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_bg_color(g_bootSecureSw, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(g_bootSecureSw, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(g_bootSecureSw, LV_OPA_30, LV_PART_MAIN);
+
+    if (GetBootSecureCheckFlag()) {
+        lv_obj_add_state(g_bootSecureSw, LV_STATE_CHECKED);
+    } else {
+        lv_obj_clear_state(g_bootSecureSw, LV_STATE_CHECKED);
+    }
+    tableSwitch[0].obj = GuiCreateTextLabel(parent, _("boot_secure_switch_text_title"));
+    tableSwitch[1].obj = g_bootSecureSw;
+
+    button = GuiCreateButton(parent, 456, 84, tableSwitch, NUMBER_OF_ARRAYS(tableSwitch),
+                             BootSecureSwitchHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
+    offset += 100;
 
     button = GuiCreateSelectButton(parent, _("verify_title_text"), &imgArrowRight,
                                    GuiSystemSettingWebAuthHandler, NULL, false);
@@ -270,6 +293,44 @@ static void OpenLanguageSelectHandler(lv_event_t *e)
     GuiCreateLanguageWidget(g_selectLanguagePage->contentZone, 12);
     SetNavBarLeftBtn(g_selectLanguagePage->navBarWidget, NVS_BAR_RETURN, DestroyLanguagePageWidgetHandler, g_selectLanguagePage);
     SetMidBtnLabel(g_selectLanguagePage->navBarWidget, NVS_BAR_MID_LABEL, _("language_title"));
+}
+
+static void GuiShowChangeKeyBoard(lv_event_t * e)
+{
+    GUI_DEL_OBJ(g_noticeWindow)
+    g_keyboardWidget = GuiCreateKeyboardWidget(g_container);
+    SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+    uint16_t *sig = (uint16_t *)lv_event_get_user_data(e);
+    SetKeyboardWidgetSig(g_keyboardWidget, sig);
+}
+
+void GuiDealChangeBootSecureKeyBoard(bool pass)
+{
+    if (pass) {
+        GUI_DEL_OBJ(g_noticeWindow)
+        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        if (lv_obj_has_state(g_bootSecureSw, LV_STATE_CHECKED)) {
+            lv_obj_clear_state(g_bootSecureSw, LV_STATE_CHECKED);
+            SetBootSecureCheckFlag(false);
+        } else {
+            lv_obj_add_state(g_bootSecureSw, LV_STATE_CHECKED);
+            SetBootSecureCheckFlag(true);
+        }
+    }
+}
+
+static void BootSecureSwitchHandler(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("boot_secure_switch_title"), _("boot_secure_switch_desc"), NULL,
+                     _("Cancel"), WHITE_COLOR_OPA20, _("Change"), DEEP_ORANGE_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
+    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    static uint16_t sig = SIG_SETTING_CHANGE_BOOT_SECURE_SWITCH;
+    lv_obj_add_event_cb(rightBtn, GuiShowChangeKeyBoard, LV_EVENT_CLICKED, &sig);
 }
 
 #ifdef WEB3_VERSION

@@ -16,6 +16,8 @@ use app_bitcoin::errors::BitcoinError;
 use app_cardano::errors::CardanoError;
 #[cfg(feature = "cosmos")]
 use app_cosmos::errors::CosmosError;
+#[cfg(feature = "ergo")]
+use app_ergo::errors::ErgoError;
 #[cfg(feature = "ethereum")]
 use app_ethereum::errors::EthereumError;
 #[cfg(feature = "monero")]
@@ -36,8 +38,6 @@ use app_tron::errors::TronError;
 use app_xrp::errors::XRPError;
 #[cfg(feature = "zcash")]
 use app_zcash::errors::ZcashError;
-#[cfg(feature = "ergo")]
-use app_ergo::errors::ErgoError;
 
 #[derive(Debug, Clone)]
 #[repr(C)]
@@ -239,7 +239,7 @@ pub enum ErrorCodes {
     ErgoDerivationError,
     ErgoParseTxError,
     ErgoSignFailure,
-    ErgoInvalidTransaction
+    ErgoInvalidTransaction,
 }
 
 impl ErrorCodes {
@@ -572,7 +572,7 @@ impl From<&ErgoError> for ErrorCodes {
             ErgoError::DerivationError(_) => Self::ErgoDerivationError,
             ErgoError::TransactionParseError(_) => Self::ErgoParseTxError,
             ErgoError::SigningFailed(_) => Self::ErgoSignFailure,
-            ErgoError::InvalidTransaction(_) => Self::ErgoInvalidTransaction
+            ErgoError::InvalidTransaction(_) => Self::ErgoInvalidTransaction,
         }
     }
 }

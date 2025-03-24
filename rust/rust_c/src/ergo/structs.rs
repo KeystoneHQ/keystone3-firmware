@@ -1,16 +1,14 @@
-use alloc::boxed::Box;
-use alloc::string::ToString;
-use alloc::vec::Vec;
-use itertools::Itertools;
-use app_ergo::structs::{
-  ParsedErgoInput, ParsedErgoOutput, ParsedErgoTx
-};
 use crate::common::ffi::VecFFI;
 use crate::common::free::Free;
+use crate::common::structs::TransactionParseResult;
 use crate::common::types::{PtrString, PtrT};
 use crate::common::utils::convert_c_char;
 use crate::{free_str_ptr, impl_c_ptr, impl_c_ptrs, make_free_method};
-use crate::common::structs::TransactionParseResult;
+use alloc::boxed::Box;
+use alloc::string::ToString;
+use alloc::vec::Vec;
+use app_ergo::structs::{ParsedErgoInput, ParsedErgoOutput, ParsedErgoTx};
+use itertools::Itertools;
 
 #[repr(C)]
 pub struct DisplayErgoTx {
@@ -18,7 +16,7 @@ pub struct DisplayErgoTx {
     pub total_input: PtrString,
     pub total_output: PtrString,
     pub from: PtrT<VecFFI<DisplayErgoFrom>>,
-    pub to: PtrT<VecFFI<DisplayErgoTo>>
+    pub to: PtrT<VecFFI<DisplayErgoTo>>,
 }
 
 impl From<ParsedErgoTx> for DisplayErgoTx {
@@ -33,14 +31,9 @@ impl From<ParsedErgoTx> for DisplayErgoTx {
                     .iter()
                     .map(DisplayErgoFrom::from)
                     .collect_vec(),
-            ).c_ptr(),
-            to: VecFFI::from(
-                value
-                    .get_to()
-                    .iter()
-                    .map(DisplayErgoTo::from)
-                    .collect_vec(),
-            ).c_ptr(),
+            )
+            .c_ptr(),
+            to: VecFFI::from(value.get_to().iter().map(DisplayErgoTo::from).collect_vec()).c_ptr(),
         }
     }
 }
@@ -74,7 +67,7 @@ pub struct DisplayErgoFrom {
     amount: PtrString,
     is_mine: bool,
     has_assets: bool,
-    assets: PtrT<VecFFI<PtrString>>
+    assets: PtrT<VecFFI<PtrString>>,
 }
 
 impl From<&ParsedErgoInput> for DisplayErgoFrom {
@@ -90,8 +83,9 @@ impl From<&ParsedErgoInput> for DisplayErgoFrom {
                     .unwrap_or_default()
                     .iter()
                     .map(|v| convert_c_char(v.to_string()))
-                    .collect_vec()
-            ).c_ptr(),
+                    .collect_vec(),
+            )
+            .c_ptr(),
         }
     }
 }
@@ -119,7 +113,7 @@ pub struct DisplayErgoTo {
     has_assets: bool,
     assets: PtrT<VecFFI<PtrString>>,
     is_change: bool,
-    is_fee: bool
+    is_fee: bool,
 }
 
 impl From<&ParsedErgoOutput> for DisplayErgoTo {
@@ -134,8 +128,9 @@ impl From<&ParsedErgoOutput> for DisplayErgoTo {
                     .unwrap_or_default()
                     .iter()
                     .map(|v| convert_c_char(v.to_string()))
-                    .collect_vec()
-            ).c_ptr(),
+                    .collect_vec(),
+            )
+            .c_ptr(),
             is_fee: value.get_is_fee(),
             is_change: value.get_is_change(),
         }

@@ -1,3 +1,27 @@
+
+## 2.88.2(2025-03-20)
+
+**Web3:**
+
+### What's new
+1. Enhanced Firmware Upgrade security mechanisms
+2. Added Recovery Mode Setting for user-controlled customization
+
+**Cypherpunk:**
+
+### What's new
+
+1. Enhanced Firmware Upgrade security mechanisms
+2. Added Recovery Mode Setting for user-controlled customization
+
+**BTC Only:**
+
+### What's new
+
+1. Enhanced Firmware Upgrade security mechanisms
+2. Added Recovery Mode Setting for user-controlled customization
+
+
 ## 2.0.4-btc(2025-03-24)
 
 **BTC Only:**

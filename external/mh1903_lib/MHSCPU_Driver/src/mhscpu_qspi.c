@@ -1,3 +1,4 @@
+#ifdef BUILD_PRODUCTION
 /************************ (C) COPYRIGHT Megahuntmicro *************************
  * @file                : mhscpu_qspi.c
  * @author              : Megahuntmicro
@@ -1126,3 +1127,4 @@ static bool EncryptedFlash(void)
 }
 
 /***********************      (C) COPYRIGHT Megahunt    *****END OF FILE****/
+#endif

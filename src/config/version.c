@@ -54,6 +54,7 @@ const char *GetSoftwareVersionString(void)
     return version;
 }
 
+#ifdef BUILD_PRODUCTION
 bool NeedUpdateBoot(void)
 {
 #ifndef BUILD_PRODUCTION
@@ -119,3 +120,9 @@ static bool GetBootSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uin
     }
     return succ;
 }
+#else
+bool NeedUpdateBoot(void)
+{
+    return false;
+}
+#endif

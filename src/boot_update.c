@@ -1,3 +1,4 @@
+#ifdef BUILD_PRODUCTION
 #include "define.h"
 #include "mhscpu.h"
 #include "user_fatfs.h"
@@ -120,3 +121,4 @@ int32_t UpdateBootFromFlash(void)
         return -1;
     }
 }
+#endif

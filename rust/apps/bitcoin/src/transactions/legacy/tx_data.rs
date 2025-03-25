@@ -146,7 +146,10 @@ impl TxData {
             .iter()
             .enumerate()
             .map(|(_, output)| self.judge_then_check_my_output(output))
-            .fold(Ok(()), |acc, cur: core::result::Result<(), BitcoinError>| acc.and(cur))
+            .fold(
+                Ok(()),
+                |acc, cur: core::result::Result<(), BitcoinError>| acc.and(cur),
+            )
     }
 
     pub fn judge_then_check_my_output(&self, output: &TxOut) -> Result<()> {

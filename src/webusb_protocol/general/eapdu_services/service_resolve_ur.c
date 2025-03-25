@@ -159,8 +159,8 @@ static void HandleCheckResult(PtrT_TransactionCheckResult checkResult, UrViewTyp
     if (checkResult != NULL && checkResult->error_code == 0) {
         PubValueMsg(UI_MSG_PREPARE_RECEIVE_UR_USB, urViewType.viewType);
     } else if (checkResult != NULL &&
-               (checkResult->error_code == MasterFingerprintMismatch ||
-                checkResult->error_code == BitcoinNoMyInputs)) {
+    (checkResult->error_code == MasterFingerprintMismatch ||
+    checkResult->error_code == BitcoinNoMyInputs)) {
         const char *data = _("usb_transport_mismatched_wallet_desc");
         GotoFailPage(PRS_PARSING_MISMATCHED_WALLET, data);
     } else {

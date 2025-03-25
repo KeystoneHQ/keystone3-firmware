@@ -46,7 +46,8 @@
         NULL,\
         FreeSuiMemory,\
     },\
-    {REMAPVIEW_SUI_SIGN_MESSAGE_HASH,\
+    {\
+        REMAPVIEW_SUI_SIGN_MESSAGE_HASH,\
         "{\"name\":\"sui_sign_hash_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSuiSignMessageHashOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiShowSuiSignMessageHashDetails\"}]}]}",\
         GuiGetSuiSignMessageHashData,\
         NULL,\
@@ -161,6 +162,13 @@
         GuiGetAvaxGUIData,\
         NULL,\
         FreeAvaxMemory,\
+    },\
+    { \
+        REMAPVIEW_ERGO, \
+        "{\"name\":\"ergo_page\",\"type\":\"custom_container\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"custom_show_func\":\"GuiErgoOverview\"}", \
+        GuiGetErgoGUIData, \
+        NULL, \
+        FreeErgoMemory, \
     }
 #endif
 #endif

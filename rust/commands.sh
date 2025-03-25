@@ -21,10 +21,12 @@ DIRS=(
     "apps/ton"
     "apps/stellar"
     "apps/avalanche"
+    "apps/ergo"
     "keystore"
     "rust_c"
     "rust_c/src/aptos"
     "rust_c/src/avalanche"
+    "rust_c/src/ergo"
     "rust_c/src/bitcoin"
     "rust_c/src/cardano"
     "rust_c/src/common"
@@ -63,6 +65,7 @@ TOOLCHAIN_IGNORE=(
     "rust_c/src/wallet/src/btc_only_wallet"
     "rust_c/src/wallet/src/multi_coins_wallet"
     "rust_c/src/xrp"
+    "rust_c/src/ergo"
 )
 
 command=$1

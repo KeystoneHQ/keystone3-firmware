@@ -16,6 +16,8 @@ use app_bitcoin::errors::BitcoinError;
 use app_cardano::errors::CardanoError;
 #[cfg(feature = "cosmos")]
 use app_cosmos::errors::CosmosError;
+#[cfg(feature = "ergo")]
+use app_ergo::errors::ErgoError;
 #[cfg(feature = "ethereum")]
 use app_ethereum::errors::EthereumError;
 #[cfg(feature = "monero")]
@@ -230,6 +232,14 @@ pub enum ErrorCodes {
     AvaxUnknownTypeId,
     AvaxInvalidHDPath,
     AvaxBech32Error,
+
+    // Ergo
+    ErgoUnknownError = 1800,
+    ErgoMnemonicError,
+    ErgoDerivationError,
+    ErgoParseTxError,
+    ErgoSignFailure,
+    ErgoInvalidTransaction,
 }
 
 impl ErrorCodes {
@@ -549,6 +559,20 @@ impl From<&MoneroError> for ErrorCodes {
     fn from(value: &MoneroError) -> Self {
         match value {
             _ => Self::MoneroUnknownError,
+        }
+    }
+}
+
+#[cfg(feature = "ergo")]
+impl From<&ErgoError> for ErrorCodes {
+    fn from(value: &ErgoError) -> Self {
+        match value {
+            ErgoError::UnknownError => Self::ErgoUnknownError,
+            ErgoError::MnemonicError(_) => Self::ErgoMnemonicError,
+            ErgoError::DerivationError(_) => Self::ErgoDerivationError,
+            ErgoError::TransactionParseError(_) => Self::ErgoParseTxError,
+            ErgoError::SigningFailed(_) => Self::ErgoSignFailure,
+            ErgoError::InvalidTransaction(_) => Self::ErgoInvalidTransaction,
         }
     }
 }

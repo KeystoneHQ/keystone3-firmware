@@ -53,6 +53,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_TON, (SetChainDataFunc)GuiSetTonUrData},
     {REMAPVIEW_TON_SIGNPROOF, (SetChainDataFunc)GuiSetTonUrData},
     {REMAPVIEW_AVAX, (SetChainDataFunc)GuiSetAvaxUrData},
+    {REMAPVIEW_ERGO, (SetChainDataFunc)GuiSetErgoUrData},
 #endif
 };
 

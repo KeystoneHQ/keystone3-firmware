@@ -119,7 +119,7 @@ void ScreenShotTouch(void)
         return;
     }
     if (pStatus->x >= SCREEN_SHOT_AREA_X_START && pStatus->x <= SCREEN_SHOT_AREA_X_END &&
-            pStatus->y >= SCREEN_SHOT_AREA_Y_START && pStatus->y <= SCREEN_SHOT_AREA_Y_END) {
+                      pStatus->y >= SCREEN_SHOT_AREA_Y_START && pStatus->y <= SCREEN_SHOT_AREA_Y_END) {
         if (lastTick == 0) {
             lastTick = osKernelGetTickCount();
             printf("start det long press\n");

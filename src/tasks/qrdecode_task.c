@@ -233,7 +233,7 @@ void QrDecodeTouchQuit(void)
         if (quitArea) {
             for (int i = 0; i < 1; i++) {
                 if (pStatus->x >= g_qrDecodeObjects[i].start.x && pStatus->x <= g_qrDecodeObjects[i].end.x &&
-                        pStatus->y >= g_qrDecodeObjects[i].start.y && pStatus->y <= g_qrDecodeObjects[i].end.y) {
+                                  pStatus->y >= g_qrDecodeObjects[i].start.y && pStatus->y <= g_qrDecodeObjects[i].end.y) {
                     osKernelLock();
                     StopQrDecode();
                     g_qrDecodeObjects[i].func();

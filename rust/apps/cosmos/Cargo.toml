@@ -9,7 +9,6 @@ edition = "2021"
 keystore = { workspace = true, default-features = false }
 serde_json = { workspace = true, features = ['alloc'] }
 serde = { workspace = true }
-serde_derive = { workspace = true }
 prost = { workspace = true }
 prost-types = { workspace = true }
 tendermint-proto = { workspace = true }

@@ -163,10 +163,12 @@ UREncodeResult *GuiGetCoreWalletData(void)
     keys[1].path = "m/44'/9000'/0'";
     keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
 
+    printf("%s %d.\n", __func__, __LINE__);
     g_urEncode = get_core_wallet_ur(mfp, sizeof(mfp), public_keys, "Keystone3");
     if (g_urEncode->error_code == 0) {
         printf("g_urEncode: %s\n", g_urEncode->data);
     }
+    printf("%s %d.\n", __func__, __LINE__);
     CHECK_CHAIN_PRINT(g_urEncode);
     SRAM_FREE(public_keys);
     return g_urEncode;

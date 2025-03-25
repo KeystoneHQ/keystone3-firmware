@@ -88,14 +88,11 @@ pub fn sign_msg(msg: &str, seed: &[u8], path: &String) -> Result<Vec<u8>> {
         })
 }
 
-extern crate std;
-use std::println;
 pub fn parse_psbt(psbt_hex: Vec<u8>, context: ParseContext) -> Result<ParsedTx> {
     let psbt = deserialize_psbt(psbt_hex)?;
     if !psbt.proprietary.is_empty() {
     }
     let wpsbt = WrappedPsbt { psbt };
-    println!("{:?}", wpsbt.psbt);
     wpsbt.parse(Some(&context))
 }
 
@@ -627,50 +624,11 @@ mod test {
         let hex = "1f8b08000000000000030d88bb4a03411440d960b16c93984a5285458806969d3b775edbb9791015830fc480ddccec5d211a5682fe85fe8185d80b2258f80316d6f9004bf1076cb37038704ed868374f97c3aaa0eec9b2baab7c75d3796ad437d43894a39ce5f16323da181d4fc6ed6d29952c99c0842bb289b0ce24596931f1e83d0702c242743f7e3f5ffed94ef81eac82f07bb3b5eac7cf41b46765e6bcb3d61280ab038d4041bca86db8409284199712402a2f2c9231a45de199e3d6944a612be81c4403c675a63361c1802f3590cd388143adb8b4283919a595370c580916bd2202ce00a52b0a2625a207bef5f5fa17c6cd452a442fc55eca6a52d6df8de2e944e9593ebb54f3f122cff4d1ec7e7c76787e3d18e8dbfd6975515ecd5b3f6f0fc11a86ae3b5532010000";
         let pubkey_str = "xpub6Bxse8AT19u9HExKtP1EAudLi9CpLxPpxDvanL2fFtM7UFE2Q7TTWRg4bnMnmT4KcyN6GQkSgZmPWDtyUywSii3MDpMNfXSTuzH7gvZywLU";
         let payload = prepare_payload(hex);
-        // println!("payload: {:?}", payload.clone());
+        println!("payload: {:?}", payload.clone());
         let context = prepare_parse_doge_context(pubkey_str);
-        // println!("context: {:?}", context);
+        println!("context: {:?}", context);
         let mut parsed_tx = parse_raw_tx(payload, context).unwrap();
         println!("parsed_tx: {:?}", parsed_tx);
-        assert!(false);
-    }
-
-    use bitcoin::psbt::Psbt;
-    use bitcoin::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
-    use bitcoin::secp256k1::Message;
-    use std::string::String;
-    use bitcoin::psbt::raw;
-
-    pub fn hex_psbt(s: &str) -> Result<Psbt, String> {
-        let r = Vec::from_hex(s);
-        match r {
-            Err(_e) => Err("unable to parse hex string".to_string()),
-            Ok(v) => Psbt::deserialize(&v).map_err(|_| "unable to parse hex string".to_string()),
-        }
-    }
-
-    #[test]
-    fn serialize_and_deserialize_proprietary_wangwen() {
-        let mut psbt: Psbt = hex_psbt("70736274ff0100a00200000002ab0949a08c5af7c49b8212f417e2f15ab3f5c33dcf153821a8139f877a5b7be40000000000feffffffab0949a08c5af7c49b8212f417e2f15ab3f5c33dcf153821a8139f877a5b7be40100000000feffffff02603bea0b000000001976a914768a40bbd740cbe81d988e71de2a4d5c71396b1d88ac8e240000000000001976a9146f4620b553fa095e721b9ee0efe9fa039cca459788ac000000000001076a47304402204759661797c01b036b25928948686218347d89864b719e1f7fcf57d1e511658702205309eabf56aa4d8891ffd111fdf1336f3a29da866d7f8486d75546ceedaf93190121035cdc61fc7ba971c0b501a646a2a83b102cb43881217ca682dc86e2d73fa882920001012000e1f5050000000017a9143545e6e33b832c47050f24d3eeb93c9c03948bc787010416001485d13537f2e265405a34dbafa9e3dda01fb82308000000").unwrap();
-        psbt.proprietary.insert(
-            raw::ProprietaryKey {
-                prefix: b"test".to_vec(),
-                subtype: 0u8,
-                key: b"test".to_vec(),
-            },
-            b"test".to_vec(),
-        );
-        psbt.proprietary.insert(
-            raw::ProprietaryKey {
-                prefix: b"test".to_vec(),
-                subtype: 0u8,
-                key: b"test1".to_vec(),
-            },
-            b"test1".to_vec(),
-        );
-        println!("psbt: {:?}", psbt.proprietary);
-        let rtt: Psbt = hex_psbt(&psbt.serialize_hex()).unwrap();
-        println!("rtt: {:?}", rtt.serialize_hex());
         assert!(false);
     }
 }

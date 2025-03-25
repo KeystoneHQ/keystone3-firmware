@@ -297,12 +297,11 @@ mod tests {
 
     #[test]
     fn xpub_to_dgub() {
-        let xpub = "xpub6E92QB3YivNhH5KqMT3ouRvwzMwjgsdQZXtTPvm5gU4fbX24zZTQp99t9iFTM2xtuotw3ZwEaYPg8nXNdTzJiqrTsv6xtKGbMZpuBkPcFZk";
-        let expected_dgub = "tpubDCBWBScQPGv4Xk3JSbhw6wYYpayMjb2eAYyArpbSqQTbLDpphHGAetB6VQgVeftLML8vDSUEWcC2xDi3qJJ3YCDChJDvqVzpgoYSuT52MhJ";
+        let xpub = "xpub6Bxse8AT19u9HExKtP1EAudLi9CpLxPpxDvanL2fFtM7UFE2Q7TTWRg4bnMnmT4KcyN6GQkSgZmPWDtyUywSii3MDpMNfXSTuzH7gvZywLU";
+        let expected_dgub = "dgub8rUhDtD3YFGZTUphBfpBbzvFxSMKQXYLzg87Me2ta78r2SdVLmypBUkkxrrn9RTnchsyiJSkHZyLWxD13ibBiXtuFWktBoDaGaZjQUBLNLs";
 
         let result = convert_version(xpub, &Version::Dgub).unwrap();
-        println!("result = {:?}", result);
 
-        assert!(false);
+        assert_eq!(result, expected_dgub);
     }
 }

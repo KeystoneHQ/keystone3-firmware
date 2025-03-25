@@ -84,7 +84,7 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
-    // CHAIN_AVAX,
+    CHAIN_AVAX,
     // cosmos end
 #endif
 

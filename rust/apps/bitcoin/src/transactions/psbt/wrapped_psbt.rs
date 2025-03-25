@@ -737,7 +737,7 @@ impl WrappedPsbt {
                         for (i, xpub_item) in config.xpub_items.iter().enumerate() {
                             if xpub_item.xfp.eq_ignore_ascii_case(&fingerprint.to_string()) {
                                 if let Some(parent_path) = config.get_derivation_by_index(i) {
-                                    if child.starts_with(parent_path) {
+                                    if child.starts_with(&parent_path) {
                                         return Ok(Some((
                                             child.to_uppercase(),
                                             Self::judge_external_key(child, parent_path.clone()),

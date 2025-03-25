@@ -54,7 +54,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_METAMASK, &walletListMetaMask, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true, WALLET_FILTER_SOL},
-    // {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
+    {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_HELIUM, &walletListHelium, true, WALLET_FILTER_SOL},
     {WALLET_LIST_BLUE, &walletListBlue, true, WALLET_FILTER_BTC},
     {WALLET_LIST_ZEUS, &walletListZeus, true, WALLET_FILTER_BTC},
@@ -1249,10 +1249,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetImTokenData;
         AddEthWalletCoins();
         break;
-    // case WALLET_LIST_CORE:
-    //     func = GuiGetCoreWalletData;
-    //     AddCoreWalletCoins();
-    //     break;
+    case WALLET_LIST_CORE:
+        func = GuiGetCoreWalletData;
+        AddCoreWalletCoins();
+        break;
     case WALLET_LIST_BITGET:
         func = GuiGetBitgetWalletData;
         AddBitgetWalletCoins();

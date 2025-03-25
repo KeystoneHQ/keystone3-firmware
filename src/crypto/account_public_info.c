@@ -299,7 +299,8 @@ void SetAccountTestReceivePath(const char* chainName, uint32_t index)
 }
 #endif
 
-static AccountPublicKeyItem_t *g_accountPublicInfo = NULL;
+static AccountPublicKeyItem_t g_accountPublicInfo[XPUB_TYPE_NUM] = {0};
+
 static cJSON *g_tempParsePhraseJson = NULL;
 
 static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
@@ -576,18 +577,6 @@ ChainType CheckSolPathSupport(char *path)
     return XPUB_TYPE_NUM;
 }
 #endif
-
-void InitAccountPublicInfo(void)
-{
-    g_accountPublicInfo = SRAM_MALLOC(sizeof(AccountPublicKeyItem_t) * XPUB_TYPE_NUM);
-    if (g_accountPublicInfo == NULL) {
-        printf("g_accountPublicInfo SRAM_MALLOC failed\r\n");
-        return;
-    }
-    for (int i = 0; i < XPUB_TYPE_NUM; i++) {
-        g_accountPublicInfo[i].value = NULL;
-    }
-}
 
 static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoKey, const char *path, void *icarusMasterKey, void *ledgerBitbox02MasterKey)
 {

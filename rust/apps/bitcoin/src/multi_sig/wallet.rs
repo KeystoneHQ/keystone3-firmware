@@ -85,12 +85,14 @@ impl MultiSigWalletConfig {
         Ok(path)
     }
 
-    pub fn get_derivation_by_index(&self, index: usize) -> Option<&String> {
-        if self.derivations.len() == 1 {
+    pub fn get_derivation_by_index(&self, index: usize) -> Option<String> {
+        let path = if self.derivations.len() == 1 {
             self.derivations.get(0)
         } else {
-            return self.derivations.get(index);
-        }
+            self.derivations.get(index)
+        };
+
+        path.map(|p| p.strip_prefix("m/").unwrap_or(p).to_string())
     }
 }
 

@@ -1,3 +1,4 @@
+#ifdef BUILD_PRODUCTION
 #include "drv_qspi_flash.h"
 #include "stdio.h"
 #include "mhscpu.h"
@@ -177,5 +178,4 @@ static uint32_t CheckFlashType(void)
     }
     return chip_type;
 }
-
-
+#endif

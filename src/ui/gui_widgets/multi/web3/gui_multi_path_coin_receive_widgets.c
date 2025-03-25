@@ -248,9 +248,9 @@ void GuiMultiPathCoinReceiveRefresh(void)
         case HOME_WALLET_CARD_ETH:
             SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, _("receive_eth_receive_main_title"));
             break;
-        // case HOME_WALLET_CARD_AVAX:
-        //     SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_AVAX, _("receive_avax_receive_main_title"));
-        //     break;
+        case HOME_WALLET_CARD_AVAX:
+            SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_AVAX, _("receive_avax_receive_main_title"));
+            break;
         case HOME_WALLET_CARD_SOL:
             snprintf_s(walletTitle, BUFFER_SIZE_32, _("receive_coin_fmt"), "SOL");
             SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_SOL, walletTitle);

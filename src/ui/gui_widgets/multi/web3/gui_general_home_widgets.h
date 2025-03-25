@@ -18,6 +18,7 @@
     HOME_WALLET_CARD_DASH, \
     HOME_WALLET_CARD_ARWEAVE, \
     HOME_WALLET_CARD_XLM, \
+    HOME_WALLET_CARD_AVAX, \
     HOME_WALLET_CARD_TIA, \
     HOME_WALLET_CARD_NTRN, \
     HOME_WALLET_CARD_DYM, \
@@ -70,6 +71,7 @@
     {HOME_WALLET_CARD_DASH, false, "DASH", true}, \
     {HOME_WALLET_CARD_ARWEAVE, false, "AR", true}, \
     {HOME_WALLET_CARD_XLM, false, "XLM", true}, \
+    {HOME_WALLET_CARD_AVAX, false, "AVAX", true}, \
     {HOME_WALLET_CARD_TIA, false, "TIA", true}, \
     {HOME_WALLET_CARD_NTRN, false, "NTRN", true}, \
     {HOME_WALLET_CARD_DYM, false, "DYM", true}, \
@@ -201,6 +203,12 @@
         .coin = "XLM", \
         .chain = "Stellar", \
         .icon = &coinXlm, \
+    }, \
+    { \
+        .index = HOME_WALLET_CARD_AVAX, \
+        .coin = "Avax", \
+        .chain = "Avalanche", \
+        .icon = &coinAva, \
     }, \
     { \
         .index = HOME_WALLET_CARD_TIA, \

@@ -54,6 +54,22 @@ const char *GetSoftwareVersionString(void)
     return version;
 }
 
+#ifdef BUILD_PRODUCTION
+bool NeedUpdateBoot(void)
+{
+#ifndef BUILD_PRODUCTION
+    return false;
+#endif
+    uint32_t major, minor, build;
+    if (GetBootSoftwareVersion(&major, &minor, &build) == false) {
+        return true;
+    }
+    if (major == 0 && minor == 2 && build == 1) {
+        return false;
+    }
+    return true;
+}
+
 bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build)
 {
 #ifdef COMPILE_SIMULATOR
@@ -104,3 +120,9 @@ static bool GetBootSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uin
     }
     return succ;
 }
+#else
+bool NeedUpdateBoot(void)
+{
+    return false;
+}
+#endif

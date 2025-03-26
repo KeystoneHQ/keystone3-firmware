@@ -92,7 +92,6 @@ int main(void)
 
     PrintSystemInfo();
     osKernelInitialize();
-
     CreateFingerprintTask();
 #ifndef BUILD_PRODUCTION
     CreateCmdTask();

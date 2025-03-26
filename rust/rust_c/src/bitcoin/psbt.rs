@@ -497,9 +497,6 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
     }
 }
 
-extern crate std;
-use std::println;
-
 fn parse_psbt(
     mfp: &[u8],
     public_keys: &[ExtendedPublicKey],

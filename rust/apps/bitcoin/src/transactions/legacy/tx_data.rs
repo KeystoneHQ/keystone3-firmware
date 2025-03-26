@@ -56,9 +56,6 @@ struct SegwitCache {
     outputs: sha256d::Hash,
 }
 
-extern crate std;
-use std::println;
-
 impl TxData {
     pub fn from_payload(
         payload: protoc::Payload,
@@ -67,7 +64,6 @@ impl TxData {
         let sign_tx_content: Result<SignTransaction> = match payload.content {
             Some(protoc::payload::Content::SignTx(sign_tx_content)) => Ok(sign_tx_content),
             _ => {
-                println!("{}:{}", file!(), line!());
                 return Err(BitcoinError::InvalidRawTxCryptoBytes(format!(
                     "invalid payload content {:?}",
                     payload.content

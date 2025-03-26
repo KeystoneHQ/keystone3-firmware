@@ -383,6 +383,11 @@ impl FromStr for Address {
                     .map_err(|_| Self::Err::AddressError(format!("failed to get script hash")))?;
                 (Network::BitcoinTestnet, Payload::P2sh { script_hash })
             }
+            PUBKEY_ADDRESS_PREFIX_DOGE => {
+                let pubkey_hash = PubkeyHash::from_slice(&data[1..])
+                    .map_err(|_| Self::Err::AddressError(format!("failed to get pubkey hash")))?;
+                (Network::Dogecoin, Payload::P2pkh { pubkey_hash })
+            }
             SCRIPT_ADDRESS_PREFIX_DOGE => {
                 let script_hash = ScriptHash::from_slice(&data[1..])
                     .map_err(|_| Self::Err::AddressError(format!("failed to get script hash")))?;

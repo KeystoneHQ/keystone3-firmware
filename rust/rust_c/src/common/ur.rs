@@ -741,9 +741,6 @@ fn _receive_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTy
                     Some(data) => match InferViewType::infer(&data) {
                         Ok(t) => 
                         {
-                            extern crate std;
-                            use std::println;
-                            println!("t = {:?}", t);
                             return URParseMultiResult::success(t, u, data);
                         }
                         Err(e) => URParseMultiResult::from(e),

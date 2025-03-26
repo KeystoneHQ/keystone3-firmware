@@ -29,6 +29,7 @@ static MultiSigWallet *g_multiSigWallet = NULL;
 #endif
 
 #define ADDRESS_INDEX_MAX                               (999999999)
+#define DOGE_ADDRESS_INDEX_MAX                          (20)
 
 typedef enum {
     UTXO_RECEIVE_TILE_QRCODE = 0,
@@ -130,6 +131,7 @@ static void GotoAddressKeyboardHandler(lv_event_t *e);
 static void CloseGotoAddressHandler(lv_event_t *e);
 
 static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item);
+static int GetMaxAccountIndex(void);
 
 static void GetHint(char *hint);
 static uint32_t GetCurrentSelectIndex();
@@ -326,7 +328,7 @@ void GuiReceiveRefresh(void)
         SetCoinWallet(g_pageWidget->navBarWidget, titleItem.type, titleItem.title);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, HasMoreBtn() ? NVS_BAR_MORE_INFO : NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
         RefreshQrCode();
-        if (g_selectIndex == ADDRESS_INDEX_MAX) {
+        if (g_selectIndex == GetMaxAccountIndex()) {
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_60, LV_PART_MAIN);
             lv_obj_set_style_text_opa(g_utxoReceiveWidgets.changeLabel, LV_OPA_60, LV_PART_MAIN);
         } else {
@@ -343,7 +345,7 @@ void GuiReceiveRefresh(void)
         if (g_showIndex < 5) {
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_30, LV_PART_MAIN);
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.rightBtnImg, LV_OPA_COVER, LV_PART_MAIN);
-        } else if (g_showIndex >= ADDRESS_INDEX_MAX - 5) {
+        } else if (g_showIndex >= GetMaxAccountIndex() - 5) {
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
             lv_obj_set_style_img_opa(g_utxoReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
         } else {
@@ -1109,7 +1111,7 @@ static void RefreshSwitchAccount(void)
             lv_obj_add_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(g_utxoReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
         }
-        if (index == ADDRESS_INDEX_MAX) {
+        if (index == GetMaxAccountIndex()) {
             end = true;
         }
         index++;
@@ -1173,11 +1175,11 @@ static void LeftBtnHandler(lv_event_t *e)
 static void RightBtnHandler(lv_event_t *e)
 {
     lv_obj_set_style_img_opa(g_utxoReceiveWidgets.leftBtnImg, LV_OPA_COVER, LV_PART_MAIN);
-    if (g_showIndex < ADDRESS_INDEX_MAX - 5) {
+    if (g_showIndex < GetMaxAccountIndex() - 5) {
         g_showIndex += 5;
         RefreshSwitchAccount();
     }
-    if (g_showIndex >= ADDRESS_INDEX_MAX - 5) {
+    if (g_showIndex >= GetMaxAccountIndex() - 5) {
         lv_obj_set_style_img_opa(g_utxoReceiveWidgets.rightBtnImg, LV_OPA_30, LV_PART_MAIN);
     }
 }
@@ -1230,12 +1232,12 @@ static void SwitchAddressHandler(lv_event_t *e)
 static void ChangeAddressHandler(lv_event_t *e)
 {
     uint32_t i = GetCurrentSelectIndex();
-    if (i < ADDRESS_INDEX_MAX) {
+    if (i < GetMaxAccountIndex()) {
         i++;
         SetCurrentSelectIndex(i);
     }
     RefreshQrCode();
-    if (i == ADDRESS_INDEX_MAX) {
+    if (i == GetMaxAccountIndex()) {
         lv_obj_set_style_img_opa(g_utxoReceiveWidgets.changeImg, LV_OPA_60, LV_PART_MAIN);
         lv_obj_set_style_text_opa(g_utxoReceiveWidgets.changeLabel, LV_OPA_60, LV_PART_MAIN);
     } else {
@@ -1305,7 +1307,7 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
         } else if (len < ADDRESS_MAX_LEN - 1) {
             strcat(input, txt);
             longInt = strtol(input, NULL, 10);
-            if (longInt >= ADDRESS_INDEX_MAX) {
+            if (longInt >= GetMaxAccountIndex()) {
                 input[9] = '\0';
                 lv_obj_clear_flag(g_utxoReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
             } else {
@@ -1507,4 +1509,13 @@ void GuiResetAllUtxoAddressIndex(void)
     memset_s(g_dashSelectIndex, sizeof(g_dashSelectIndex), 0, sizeof(g_dashSelectIndex));
     memset_s(g_bchSelectIndex, sizeof(g_bchSelectIndex), 0, sizeof(g_bchSelectIndex));
     memset_s(g_addressType, sizeof(g_addressType), 0, sizeof(g_addressType));
+}
+static int GetMaxAccountIndex(void)
+{
+#ifdef WEB3_VERSION
+    if (g_chainCard == HOME_WALLET_CARD_DOGE) {
+        return DOGE_ADDRESS_INDEX_MAX;
+    }
+#endif
+    return ADDRESS_INDEX_MAX;
 }

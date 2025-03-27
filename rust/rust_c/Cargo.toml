@@ -25,7 +25,7 @@ sha1 = { workspace = true }
 aes = { workspace = true }
 cbc = { workspace = true }
 cipher = { workspace = true }
-
+minicbor = { workspace = true }
 #keystone owned
 sim_qr_reader = { workspace = true, optional = true }
 keystore = { workspace = true }
@@ -89,7 +89,7 @@ multi-coins = [
     "aptos",
     "arweave",
     "bch",
-    "bitcoin", 
+    "bitcoin",
     "cardano",
     "cosmos",
     "dash",
@@ -116,7 +116,7 @@ production-btc-only = ["use-allocator", "btc-only"]
 production-cypherpunk = ["use-allocator", "cypherpunk"]
 # debug
 debug-multi-coins = ["test_cmd", "use-allocator", "multi-coins"]
-debug-btc-only = ["test_cmd", "use-allocator", "btc-only"]  
+debug-btc-only = ["test_cmd", "use-allocator", "btc-only"]
 debug-cypherpunk = ["test_cmd", "use-allocator", "cypherpunk"]
 # simulator
 simulator-multi-coins = ["simulator", "multi-coins"]

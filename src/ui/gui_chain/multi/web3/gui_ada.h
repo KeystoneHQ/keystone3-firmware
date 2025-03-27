@@ -6,7 +6,8 @@
 #include "librust_c.h"
 #include "account_public_info.h"
 
-typedef enum {
+typedef enum
+{
     STANDARD_ADA = 0,
     LEDGER_ADA,
 } AdaXPubType;
@@ -58,7 +59,9 @@ void FreeAdaCatalystMemory(void);
 void FreeAdaSignTxHashMemory(void);
 char *GuiGetADABaseAddressByXPub(char *xPub);
 UREncodeResult *GuiGetAdaSignQrCodeData(void);
+UREncodeResult *GuiGetAdaSignUrDataUnlimited(void);
 UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void);
+UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeData(void);
 UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeData(void);
 
 void GetCatalystNonce(void *indata, void *param, uint32_t maxLen);

@@ -179,7 +179,7 @@ typedef struct {
 
 
 
-#define ENABLE_CACHE_AES        1
+#define ENABLE_CACHE_AES        0
 
 
 void QSPI_Init(QSPI_InitTypeDef *mhqspi);

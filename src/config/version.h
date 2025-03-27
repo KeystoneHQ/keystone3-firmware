@@ -26,13 +26,11 @@
 #error "Invalid software version"
 #endif
 
-#ifdef BUILD_PRODUCTION
 void GetSoftWareVersion(char *version);
 void GetSoftWareVersionNumber(char *version);
 const char *GetSoftwareVersionString(void);
 void GetUpdateVersionNumber(char *version);
 bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build);
-#endif
-bool NeedUpdateBoot(void);
 
-#endif /* _VERSION_H */
+#endif
+

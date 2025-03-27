@@ -54,10 +54,12 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_METAMASK, &walletListMetaMask, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true, WALLET_FILTER_SOL},
+    {WALLET_LIST_NUFI, &walletListNufi, true, WALLET_FILTER_ETH|WALLET_FILTER_SOL},
     // {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_HELIUM, &walletListHelium, true, WALLET_FILTER_SOL},
     {WALLET_LIST_BLUE, &walletListBlue, true, WALLET_FILTER_BTC},
     {WALLET_LIST_ZEUS, &walletListZeus, true, WALLET_FILTER_BTC},
+    {WALLET_LIST_BABYLON, &walletListBabylon, true, WALLET_FILTER_BTC},
     {WALLET_LIST_SPARROW, &walletListSparrow, true, WALLET_FILTER_BTC},
     {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false, WALLET_FILTER_OTHER},
     {WALLET_LIST_RABBY, &walletListRabby, true, WALLET_FILTER_ETH},
@@ -344,6 +346,7 @@ static bool IsEVMChain(int walletIndex)
     case WALLET_LIST_ZAPPER:
     case WALLET_LIST_YEARN_FINANCE:
     case WALLET_LIST_SUSHISWAP:
+    case WALLET_LIST_NUFI:
         return true;
     default:
         return false;
@@ -355,6 +358,7 @@ static bool IsSOL(int walletIndex)
     switch (walletIndex) {
     case WALLET_LIST_SOLFARE:
     case WALLET_LIST_HELIUM:
+    case WALLET_LIST_NUFI:
         return true;
     default:
         return false;
@@ -399,6 +403,20 @@ static void GuiOpenARAddressNoticeWindow()
     lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
 }
 
+
+static void GuiOpenNufiNoticeWindow()
+{
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("nufi_connection_notice"), _("nufi_connection_notice_desc"), NULL,NULL, WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    // understand button
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_set_width(btn, 408);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+}
+
+
 static void OpenQRCodeHandler(lv_event_t *e)
 {
     WalletListItem_t *wallet = lv_event_get_user_data(e);
@@ -417,6 +435,11 @@ static void OpenQRCodeHandler(lv_event_t *e)
             g_connectWalletTileView.walletIndex == WALLET_LIST_BEGIN
        ) {
         GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
+        return;
+    }
+    // todo: notice if current wallet is nufi , we show a hintbox to notify user to connect usb 
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_NUFI) {
+        GuiOpenNufiNoticeWindow();
         return;
     }
     bool skipGenerateArweaveKey = IsArweaveSetupComplete();
@@ -1269,6 +1292,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     // todo  zeus wallet use same ur logic as sparrow wallet (m/49'/0'/0' 、 m/44'/0'/0' 、 m/84'/0'/0' and m/86'/0'/0' )
     case WALLET_LIST_ZEUS:
     case WALLET_LIST_SPARROW:
+    case WALLET_LIST_BABYLON:
         func = GuiGetSparrowWalletBtcData;
         AddBlueWalletCoins();
         break;

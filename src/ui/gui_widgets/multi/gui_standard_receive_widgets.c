@@ -137,6 +137,8 @@ static uint32_t g_suiSelectIndex[3] = {0};
 static uint32_t g_stellarSelectIndex[3] = {0};
 static uint32_t g_aptosSelectIndex[3] = {0};
 static uint32_t g_xrpSelectIndex[3] = {0};
+static uint32_t g_babylonChainSelectIndex[3] = {0};
+static uint32_t g_neutaroChainSelectIndex[3] = {0};
 static uint32_t g_tiaChainSelectIndex[3] = {0};
 static uint32_t g_ntrnChainSelectIndex[3] = {0};
 static uint32_t g_dymChainSelectIndex[3] = {0};
@@ -989,6 +991,8 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
     g_stellarSelectIndex[index] = 0;
     g_aptosSelectIndex[index] = 0;
     g_xrpSelectIndex[index] = 0;
+    g_babylonChainSelectIndex[index] = 0;
+    g_neutaroChainSelectIndex[index] = 0;
     g_tiaChainSelectIndex[index] = 0;
     g_ntrnChainSelectIndex[index] = 0;
     g_dymChainSelectIndex[index] = 0;
@@ -1032,6 +1036,8 @@ void GuiResetAllStandardAddressIndex(void)
     memset_s(g_stellarSelectIndex, sizeof(g_stellarSelectIndex), 0, sizeof(g_stellarSelectIndex));
     memset_s(g_aptosSelectIndex, sizeof(g_aptosSelectIndex), 0, sizeof(g_aptosSelectIndex));
     memset_s(g_xrpSelectIndex, sizeof(g_xrpSelectIndex), 0, sizeof(g_xrpSelectIndex));
+    memset_s(g_babylonChainSelectIndex, sizeof(g_babylonChainSelectIndex), 0, sizeof(g_babylonChainSelectIndex));
+    memset_s(g_neutaroChainSelectIndex, sizeof(g_neutaroChainSelectIndex), 0, sizeof(g_neutaroChainSelectIndex));
     memset_s(g_tiaChainSelectIndex, sizeof(g_tiaChainSelectIndex), 0, sizeof(g_tiaChainSelectIndex));
     memset_s(g_ntrnChainSelectIndex, sizeof(g_ntrnChainSelectIndex), 0, sizeof(g_ntrnChainSelectIndex));
     memset_s(g_dymChainSelectIndex, sizeof(g_dymChainSelectIndex), 0, sizeof(g_dymChainSelectIndex));
@@ -1112,6 +1118,12 @@ static uint32_t GetCurrentSelectIndex()
 static uint32_t* GetCosmosChainCurrentSelectIndex()
 {
     switch (g_chainCard) {
+    case HOME_WALLET_CARD_BABYLON:
+        return &g_babylonChainSelectIndex[GetCurrentAccountIndex()];
+        break;
+    case HOME_WALLET_CARD_NEUTARO:
+        return &g_neutaroChainSelectIndex[GetCurrentAccountIndex()];
+        break;
     case HOME_WALLET_CARD_TIA:
         return &g_tiaChainSelectIndex[GetCurrentAccountIndex()];
         break;

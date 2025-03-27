@@ -77,6 +77,8 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_BCH, "", &coinBch},       {CHAIN_APT, "", &coinApt},
     {CHAIN_SUI, "", &coinSui},       {CHAIN_DASH, "", &coinDash},
     {CHAIN_ARWEAVE, "", &coinAr},    {CHAIN_STELLAR, "", &coinXlm},
+    {CHAIN_BABYLON, "", &coinBabylon},
+    {CHAIN_NEUTARO, "", &coinNeutaro},
     {CHAIN_TIA, "", &coinTia},
     {CHAIN_NTRN, "", &coinNtrn},     {CHAIN_DYM, "", &coinDym},
     {CHAIN_OSMO, "", &coinOsmo},
@@ -114,9 +116,11 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
+    {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
     {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
     {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
+    {WALLET_LIST_NUFI, "NuFi", &walletNufi},
     {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
     {WALLET_LIST_RABBY, "Rabby", &walletRabby},
     {WALLET_LIST_BITGET, "Bitget Wallet", &walletBitget},
@@ -152,6 +156,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
     {WALLET_LIST_NUNCHUK, "Nunchuk", &walletNunchuk},
     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
+    {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
 #endif
 };

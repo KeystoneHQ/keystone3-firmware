@@ -441,8 +441,8 @@ static void GuiUpdateCoinListWidget(HomeGesture_t gesture)
 
     lv_obj_t *coinListCont = g_coinListCont;
     lv_obj_clean(coinListCont);
-    int startIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_BTC : HOME_WALLET_CARD_TIA;
-    int endIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_TIA : HOME_WALLET_CARD_BUTT;
+    int startIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_BTC : HOME_WALLET_CARD_BABYLON;
+    int endIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_BABYLON : HOME_WALLET_CARD_BUTT;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
         g_walletState[i].checkBox = NULL;
         if (i >= startIndex && i < endIndex && g_walletState[i].enable) {

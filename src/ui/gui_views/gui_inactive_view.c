@@ -3,25 +3,15 @@
 #include "gui_views.h"
 #include "gui_inactive_widgets.h"
 
-static int32_t GuiInactiveViewInit(void)
-{
-    GuiInactiveInit();
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiInactiveViewDeInit(void)
-{
-    GuiInactiveDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiInactiveViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiInactiveViewInit();
+        GuiInactiveInit();
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiInactiveViewDeInit();
+        GuiInactiveDeInit();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

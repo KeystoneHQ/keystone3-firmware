@@ -8,6 +8,9 @@
 #define SOFTWARE_VERSION_MAX_LEN            (32)
 #define STRINGIFY(x)                        #x
 #define EXPAND(x)                           STRINGIFY(x)
+#define BOOT_MATCH_MAJOR                    0
+#define BOOT_MATCH_MINOR                    2
+#define BOOT_MATCH_BUILD                    1
 
 #define SOFTWARE_VERSION_STR "Firmware v" EXPAND(SOFTWARE_VERSION_MAJOR) "." EXPAND(SOFTWARE_VERSION_MINOR) "." EXPAND(SOFTWARE_VERSION_BUILD)
 
@@ -52,6 +55,15 @@ const char *GetSoftwareVersionString(void)
     static char version[32] = {0};
     snprintf(version, SOFTWARE_VERSION_MAX_LEN, "v%d.%d.%d%s", SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_SUFFIX);
     return version;
+}
+
+bool IsBootVersionMatch(void)
+{
+    uint32_t major, minor, build;
+    if (GetBootSoftwareVersion(&major, &minor, &build) == false) {
+        return false;
+    }
+    return major == BOOT_MATCH_MAJOR && minor == BOOT_MATCH_MINOR && build == BOOT_MATCH_BUILD;
 }
 
 bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build)

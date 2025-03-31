@@ -6,6 +6,7 @@
 #include "gui_enter_passcode.h"
 #include "gui_pop_message_box.h"
 #include "gui_power_option_widgets.h"
+#include "gui_init_widgets.h"
 #include "gui_firmware_process_widgets.h"
 #include "gui_usb_connection_widgets.h"
 #include "gui_low_battery_widgets.h"
@@ -31,7 +32,6 @@ static int32_t GuiInitViewInit(void *param)
     if (param != NULL) {
         isTamper = *(bool *)param;
     }
-    printf("isTamper=%d..........\n", isTamper);
     GuiEnterPassLabelRefresh();
     GuiStyleInit();
     GuiStatusBarInit();
@@ -40,6 +40,12 @@ static int32_t GuiInitViewInit(void *param)
         GuiFrameOpenView(&g_inactiveView);
         return SUCCESS_CODE;
     }
+
+    if (IsBootVersionMatch() == false) {
+        GuiBootVersionNotMatchWidget();
+        return SUCCESS_CODE;
+    }
+
     if (isTamper) {
         GuiFrameOpenView(&g_selfDestructView);
         return SUCCESS_CODE;

@@ -52,7 +52,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_KEYSTONE, &walletListKeystone, false, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_OKX, &walletListOkx, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL},
+    {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_OTHER},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true, WALLET_FILTER_SOL},
     {WALLET_LIST_NUFI, &walletListNufi, true, WALLET_FILTER_ETH|WALLET_FILTER_SOL},
     // {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
@@ -128,8 +128,8 @@ static const lv_img_dsc_t *g_bitgetWalletCoinArray[] = {
     &coinBtc, &coinEth, &coinTon
 };
 
-static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {
-    &coinSol, &coinEth
+static const lv_img_dsc_t *g_backpackWalletCoinArray[3] = {
+    &coinSol, &coinEth,&coinSui
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {

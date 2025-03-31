@@ -15,12 +15,12 @@ use {
     },
 };
 
-use crate::{common::get_path_component, ExtendedPublicKey};
+use crate::{common::get_path_component, utils::get_origin, ExtendedPublicKey};
 
 const ETH_STANDARD_PREFIX: &str = "44'/60'/0'";
 const ETH_LEDGER_LIVE_PREFIX: &str = "44'/60'"; //overlap with ETH_STANDARD at 0
 const SOL_PREFIX: &str = "44'/501'";
-
+const SUI_PREFIX: &str = "44'/784'";
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
     extended_public_keys: Vec<ExtendedPublicKey>,
@@ -55,6 +55,23 @@ pub fn generate_crypto_multi_accounts(
                     ele,
                     Some("account.ledger_live".to_string()),
                 )?);
+            }
+            _path if _path.to_string().to_lowercase().starts_with(SUI_PREFIX) => {
+                let depth = ele.get_path().len();
+                if let Ok(origin) = get_origin(&master_fingerprint, depth, ele.get_path()) {
+                    let hd_key: CryptoHDKey = CryptoHDKey::new_extended_key(
+                        Some(false),
+                        ele.get_key(),
+                        None,
+                        None,
+                        Some(origin),
+                        None,
+                        None,
+                        Some(format!("Keystone")),
+                        None,
+                    );
+                    keys.push(hd_key);
+                }
             }
             _ => {
                 return Err(URError::UrEncodeError(format!(

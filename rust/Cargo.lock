@@ -876,11 +876,12 @@ dependencies = [
 
 [[package]]
 name = "bounded-vec"
-version = "0.7.1"
-source = "git+https://github.com/Alesfatalis/bounded-vec?branch=keystone#93ec64826cb3332550ef62f63ac63ddf29caf31e"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b451a6c6addff8fcee482f91334190161fe734148d760b54fc3b66e4995d462"
 dependencies = [
  "serde",
- "thiserror-core",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -1686,26 +1687,23 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 
 [[package]]
 name = "ergo-chain-types"
-version = "0.15.0"
-source = "git+https://github.com/Alesfatalis/sigma-rust?branch=keystone#80090f89ed803339d640e1d8d05a6a793c0355f2"
+version = "0.14.1"
+source = "git+https://github.com/Alesfatalis/sigma-rust-mini?branch=develop#d322f11b6f095b6cac0e83fcc9efc3e1e3fe5693"
 dependencies = [
  "base16",
  "base64 0.13.1",
- "core2 0.4.0",
  "derive_more 0.99.18",
  "elliptic-curve",
  "k256",
- "num-bigint",
- "num-traits",
  "sigma-ser",
  "sigma-util",
- "thiserror-core",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
 name = "ergo-lib"
-version = "0.28.0"
-source = "git+https://github.com/Alesfatalis/sigma-rust?branch=keystone#80090f89ed803339d640e1d8d05a6a793c0355f2"
+version = "0.27.1"
+source = "git+https://github.com/Alesfatalis/sigma-rust-mini?branch=develop#d322f11b6f095b6cac0e83fcc9efc3e1e3fe5693"
 dependencies = [
  "base16",
  "bounded-vec",
@@ -1715,63 +1713,39 @@ dependencies = [
  "ergotree-ir",
  "hashbrown 0.14.5",
  "hmac",
- "indexmap 2.6.0",
- "k256",
  "lazy_static",
  "pbkdf2",
  "sha2 0.10.8",
- "sigma-ser",
- "sigma-util",
- "thiserror-core",
+ "thiserror 2.0.12",
  "unicode-normalization",
 ]
 
 [[package]]
-name = "ergo_avltree_rust"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "040e68223ab3775e54463c0f97b340d8fe6b4080acc5236fb4c19da477650668"
-dependencies = [
- "anyhow",
- "base16",
- "blake2",
- "byteorder",
- "bytes",
- "rand",
- "sha2 0.9.9",
-]
-
-[[package]]
 name = "ergotree-interpreter"
-version = "0.28.0"
-source = "git+https://github.com/Alesfatalis/sigma-rust?branch=keystone#80090f89ed803339d640e1d8d05a6a793c0355f2"
+version = "0.27.1"
+source = "git+https://github.com/Alesfatalis/sigma-rust-mini?branch=develop#d322f11b6f095b6cac0e83fcc9efc3e1e3fe5693"
 dependencies = [
  "base16",
  "blake2",
  "bounded-vec",
- "bytes",
  "core2 0.4.0",
  "derive_more 0.99.18",
  "elliptic-curve",
  "ergo-chain-types",
- "ergo_avltree_rust",
  "ergotree-ir",
  "gf2_192",
- "hashbrown 0.14.5",
- "indexmap 2.6.0",
  "k256",
- "lazy_static",
  "num-bigint",
  "num-traits",
  "sigma-ser",
  "sigma-util",
- "thiserror-core",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
 name = "ergotree-ir"
-version = "0.28.0"
-source = "git+https://github.com/Alesfatalis/sigma-rust?branch=keystone#80090f89ed803339d640e1d8d05a6a793c0355f2"
+version = "0.27.1"
+source = "git+https://github.com/Alesfatalis/sigma-rust-mini?branch=develop#d322f11b6f095b6cac0e83fcc9efc3e1e3fe5693"
 dependencies = [
  "base16",
  "bnum",
@@ -1786,16 +1760,12 @@ dependencies = [
  "impl-trait-for-tuples",
  "indexmap 2.6.0",
  "k256",
- "lazy_static",
  "num-bigint",
  "num-derive 0.4.2",
- "num-integer",
  "num-traits",
  "sigma-ser",
  "sigma-util",
- "strum",
- "strum_macros 0.26.4",
- "thiserror-core",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -2192,11 +2162,11 @@ dependencies = [
 
 [[package]]
 name = "gf2_192"
-version = "0.28.0"
-source = "git+https://github.com/Alesfatalis/sigma-rust?branch=keystone#80090f89ed803339d640e1d8d05a6a793c0355f2"
+version = "0.27.1"
+source = "git+https://github.com/Alesfatalis/sigma-rust-mini?branch=develop#d322f11b6f095b6cac0e83fcc9efc3e1e3fe5693"
 dependencies = [
  "derive_more 0.99.18",
- "thiserror-core",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -2330,12 +2300,6 @@ name = "heck"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
-
-[[package]]
-name = "heck"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
 name = "hermit-abi"
@@ -2693,7 +2657,7 @@ dependencies = [
  "log",
  "memmap2",
  "nix",
- "thiserror",
+ "thiserror 1.0.65",
  "wayland-client",
  "wayland-protocols",
  "wayland-protocols-wlr",
@@ -3557,7 +3521,7 @@ dependencies = [
  "quote",
  "regex-syntax 0.6.29",
  "syn 1.0.109",
- "thiserror",
+ "thiserror 1.0.65",
 ]
 
 [[package]]
@@ -3586,7 +3550,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "119533552c9a7ffacc21e099c24a0ac8bb19c2a2a3f363de84cd9b844feab270"
 dependencies = [
  "bytes",
- "heck 0.4.1",
+ "heck",
  "itertools 0.10.5",
  "lazy_static",
  "log",
@@ -3658,7 +3622,7 @@ checksum = "ec3fec90fc7a119692a6244ed4404d152878a47f0bf3f90f34dc79bb7a339d24"
 dependencies = [
  "num-derive 0.4.2",
  "num-traits",
- "thiserror",
+ "thiserror 1.0.65",
 ]
 
 [[package]]
@@ -4386,19 +4350,19 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
 name = "sigma-ser"
-version = "0.19.0"
-source = "git+https://github.com/Alesfatalis/sigma-rust?branch=keystone#80090f89ed803339d640e1d8d05a6a793c0355f2"
+version = "0.15.0"
+source = "git+https://github.com/Alesfatalis/sigma-rust-mini?branch=develop#d322f11b6f095b6cac0e83fcc9efc3e1e3fe5693"
 dependencies = [
  "bitvec",
  "bounded-vec",
  "core2 0.4.0",
- "thiserror-core",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
 name = "sigma-util"
-version = "0.18.0"
-source = "git+https://github.com/Alesfatalis/sigma-rust?branch=keystone#80090f89ed803339d640e1d8d05a6a793c0355f2"
+version = "0.14.0"
+source = "git+https://github.com/Alesfatalis/sigma-rust-mini?branch=develop#d322f11b6f095b6cac0e83fcc9efc3e1e3fe5693"
 dependencies = [
  "blake2",
  "sha2 0.10.8",
@@ -4518,38 +4482,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
-name = "strum"
-version = "0.26.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8fec0f0aef304996cf250b31b5a10dee7980c85da9d759361292b8bca5a18f06"
-dependencies = [
- "strum_macros 0.26.4",
-]
-
-[[package]]
 name = "strum_macros"
 version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e385be0d24f186b4ce2f9982191e7101bb737312ad61c1f2f984f34bcf85d59"
 dependencies = [
- "heck 0.4.1",
+ "heck",
  "proc-macro2",
  "quote",
  "rustversion",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "strum_macros"
-version = "0.26.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c6bee85a5a24955dc440386795aa378cd9cf82acd5f764469152d2270e581be"
-dependencies = [
- "heck 0.5.0",
- "proc-macro2",
- "quote",
- "rustversion",
- "syn 2.0.100",
 ]
 
 [[package]]
@@ -4613,7 +4555,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with 2.3.3",
- "strum_macros 0.24.3",
+ "strum_macros",
  "sui-macros",
  "thiserror-core",
 ]
@@ -4695,7 +4637,16 @@ version = "1.0.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d11abd9594d9b38965ef50805c5e469ca9cc6f197f883f717e0269a3057b3d5"
 dependencies = [
- "thiserror-impl",
+ "thiserror-impl 1.0.65",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
+dependencies = [
+ "thiserror-impl 2.0.12",
 ]
 
 [[package]]
@@ -4723,6 +4674,17 @@ name = "thiserror-impl"
 version = "1.0.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ae71770322cbd277e69d762a16c444af02aa0575ac0d174f0b9562d3b37f8602"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.100",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
 dependencies = [
  "proc-macro2",
  "quote",

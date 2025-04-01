@@ -54,7 +54,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_METAMASK, &walletListMetaMask, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true, WALLET_FILTER_SOL},
-    {WALLET_LIST_NUFI, &walletListNufi, true, WALLET_FILTER_ETH|WALLET_FILTER_SOL},
+    {WALLET_LIST_NUFI, &walletListNufi, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL},
     // {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_HELIUM, &walletListHelium, true, WALLET_FILTER_SOL},
     {WALLET_LIST_BLUE, &walletListBlue, true, WALLET_FILTER_BTC},
@@ -406,7 +406,7 @@ static void GuiOpenARAddressNoticeWindow()
 
 static void GuiOpenNufiNoticeWindow()
 {
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("nufi_connection_notice"), _("nufi_connection_notice_desc"), NULL,NULL, WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("nufi_connection_notice"), _("nufi_connection_notice_desc"), NULL, NULL, WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
     lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     // understand button
@@ -437,7 +437,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
         GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
         return;
     }
-    // todo: notice if current wallet is nufi , we show a hintbox to notify user to connect usb 
+    // todo: notice if current wallet is nufi , we show a hintbox to notify user to connect usb
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_NUFI) {
         GuiOpenNufiNoticeWindow();
         return;

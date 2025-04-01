@@ -66,9 +66,19 @@ bool IsBootVersionMatch(void)
     return major == BOOT_MATCH_MAJOR && minor == BOOT_MATCH_MINOR && build == BOOT_MATCH_BUILD;
 }
 
+void GetBootVersionNumber(char *version)
+{
+    uint32_t major = 0, minor = 0, build = 0;
+    GetBootSoftwareVersion(&major, &minor, &build);
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", major, minor, build);
+}
+
 bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build)
 {
 #ifdef COMPILE_SIMULATOR
+    *major = 0;
+    *minor = 0;
+    *build = 0;
     return false;
 #endif
     uint8_t read[4096];

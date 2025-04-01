@@ -41,13 +41,13 @@ static int32_t GuiInitViewInit(void *param)
         return SUCCESS_CODE;
     }
 
-    if (IsBootVersionMatch() == false) {
-        GuiBootVersionNotMatchWidget();
+    if (isTamper) {
+        GuiFrameOpenView(&g_selfDestructView);
         return SUCCESS_CODE;
     }
 
-    if (isTamper) {
-        GuiFrameOpenView(&g_selfDestructView);
+    if (IsBootVersionMatch() == false) {
+        GuiBootVersionNotMatchWidget();
         return SUCCESS_CODE;
     }
     GuiModeGetAccount();

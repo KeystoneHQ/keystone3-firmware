@@ -209,14 +209,11 @@ fn digest_orchard(pczt: &Pczt) -> Hash {
     h.update(mh.finalize().as_bytes());
     h.update(nh.finalize().as_bytes());
     h.update(&[*pczt.orchard().flags()]);
-    let value_balance = match pczt.orchard().value_sum() {
-        (magnitude, sign) => {
-            if *sign {
-                -(*magnitude as i64)
-            } else {
-                *magnitude as i64
-            }
-        }
+    let (magnitude, sign) = pczt.orchard().value_sum();
+    let value_balance = if *sign {
+        -(*magnitude as i64)
+    } else {
+        *magnitude as i64
     };
     h.update(&value_balance.to_le_bytes());
 

@@ -4,6 +4,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "mhscpu.h"
+#include "mhscpu_otp.h"
 
 #define OTA_ADDR_FACTORY_BASE       0x40009400
 

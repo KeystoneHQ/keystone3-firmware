@@ -8,6 +8,9 @@
 #define SOFTWARE_VERSION_MAX_LEN            (32)
 #define STRINGIFY(x)                        #x
 #define EXPAND(x)                           STRINGIFY(x)
+#define BOOT_MATCH_MAJOR                    0
+#define BOOT_MATCH_MINOR                    2
+#define BOOT_MATCH_BUILD                    1
 
 #define SOFTWARE_VERSION_STR "Firmware v" EXPAND(SOFTWARE_VERSION_MAJOR) "." EXPAND(SOFTWARE_VERSION_MINOR) "." EXPAND(SOFTWARE_VERSION_BUILD)
 
@@ -54,9 +57,28 @@ const char *GetSoftwareVersionString(void)
     return version;
 }
 
+bool IsBootVersionMatch(void)
+{
+    uint32_t major, minor, build;
+    if (GetBootSoftwareVersion(&major, &minor, &build) == false) {
+        return false;
+    }
+    return major == BOOT_MATCH_MAJOR && minor == BOOT_MATCH_MINOR && build == BOOT_MATCH_BUILD;
+}
+
+void GetBootVersionNumber(char *version)
+{
+    uint32_t major = 0, minor = 0, build = 0;
+    GetBootSoftwareVersion(&major, &minor, &build);
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", major, minor, build);
+}
+
 bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build)
 {
 #ifdef COMPILE_SIMULATOR
+    *major = 0;
+    *minor = 0;
+    *build = 0;
     return false;
 #endif
     uint8_t read[4096];

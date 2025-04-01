@@ -31,6 +31,8 @@ void GetSoftWareVersionNumber(char *version);
 const char *GetSoftwareVersionString(void);
 void GetUpdateVersionNumber(char *version);
 bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build);
+bool IsBootVersionMatch(void);
+void GetBootVersionNumber(char *version);
 
 #endif
 

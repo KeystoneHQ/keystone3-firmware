@@ -4,7 +4,6 @@ use alloc::vec;
 use alloc::vec::Vec;
 use app_utils::impl_public_struct;
 use core::ops::Div;
-use ergo_lib::chain::transaction::ergo_transaction::ErgoTransaction;
 use ergo_lib::chain::transaction::unsigned::UnsignedTransaction;
 use ergo_lib::ergotree_ir::chain::address::NetworkPrefix::Mainnet;
 use ergo_lib::ergotree_ir::chain::address::{Address, NetworkAddress};

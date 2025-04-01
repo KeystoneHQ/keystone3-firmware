@@ -7,7 +7,6 @@ pub mod pczt;
 use errors::{Result, ZcashError};
 
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };

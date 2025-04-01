@@ -16,7 +16,7 @@ struct SeedSigner<'a> {
     seed: &'a [u8],
 }
 
-impl<'a> PcztSigner for SeedSigner<'a> {
+impl PcztSigner for SeedSigner<'_> {
     type Error = ZcashError;
     fn sign_transparent<F>(
         &self,

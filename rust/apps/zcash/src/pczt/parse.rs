@@ -143,7 +143,7 @@ pub fn parse_pczt<P: consensus::Parameters>(
     //total_input_value = total_output_value + fee_value
     //total_output_value = total_transfer_value + total_change_value
 
-    parsed_orchard.clone().map(|orchard| {
+    if let Some(orchard) = &parsed_orchard {
         total_change_value += orchard
             .get_to()
             .iter()
@@ -157,9 +157,9 @@ pub fn parse_pczt<P: consensus::Parameters>(
             .get_to()
             .iter()
             .fold(0, |acc, to| acc + to.get_amount());
-    });
+    }
 
-    parsed_transparent.clone().map(|transparent| {
+    if let Some(transparent) = &parsed_transparent {
         total_change_value += transparent
             .get_to()
             .iter()
@@ -173,7 +173,7 @@ pub fn parse_pczt<P: consensus::Parameters>(
             .get_to()
             .iter()
             .fold(0, |acc, to| acc + to.get_amount());
-    });
+    }
 
     //treat all sapling output as output value since we don't support sapling decoding yet
     //sapling value_sum can be trusted
@@ -447,10 +447,7 @@ fn parse_orchard_output<P: consensus::Parameters>(
 
                 let is_dummy = match vk {
                     Some(_) => false,
-                    None => match (action.output().user_address(), value) {
-                        (None, 0) => true,
-                        _ => false,
-                    },
+                    None => matches!((action.output().user_address(), value), (None, 0)),
                 };
 
                 Ok(Some(ParsedTo::new(

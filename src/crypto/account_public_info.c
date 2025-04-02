@@ -112,7 +112,6 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_THOR,                  SECP256K1,    "thor",                     "M/44'/931'/0'"     },
     {XPUB_TYPE_AVAX_BIP44_STANDARD,   SECP256K1,    "avax_c",                   "M/44'/60'/0'"      },
     {XPUB_TYPE_AVAX_X_P,              SECP256K1,    "avax_x_p",                 "M/44'/9000'/0'"    },
-    {XPUB_TYPE_ERG,                   ERGO_NATIVE,  "erg",                      "M/44'/429'/0'"     },
     {XPUB_TYPE_SOL_BIP44_0,           ED25519,      "sol_bip44_0",              "M/44'/501'/0'"     },
     {XPUB_TYPE_SOL_BIP44_1,           ED25519,      "sol_bip44_1",              "M/44'/501'/1'"     },
     {XPUB_TYPE_SOL_BIP44_2,           ED25519,      "sol_bip44_2",              "M/44'/501'/2'"     },
@@ -302,6 +301,7 @@ static const ChainItem_t g_chainTable[] = {
     {ZCASH_UFVK_ENCRYPTED_0,          ZCASH_UFVK_ENCRYPTED, "zcash_ufvk_0",      "M/32'/133'/0'"    },
     {XPUB_TYPE_MONERO_0,              EDWARDS_25519,  "monero_0",                "M/44'/128'/0'"    },
     {XPUB_TYPE_MONERO_PVK_0,          MONERO_PVK,     "monero_pvk_0",            ""                 },
+    {XPUB_TYPE_ERG,                   ERGO_NATIVE,  "erg",                      "M/44'/429'/0'"     },
 #endif
 
 #ifdef BTC_ONLY
@@ -371,6 +371,8 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
         return get_extended_monero_pubkeys_by_seed(seed, len, (char *)path);
     case MONERO_PVK:
         return get_monero_pvk_by_seed(seed, len);
+    case ERGO_NATIVE:
+        return ergo_extended_pubkey_by_seed(seed, len, (char *)path);
 #endif
 
 #ifdef WEB3_VERSION
@@ -387,8 +389,6 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     case TON_CHECKSUM:
         // should not be here.
         ASSERT(0);
-    case ERGO_NATIVE:
-        return ergo_extended_pubkey_by_seed(seed, len, (char *)path);
 #endif
     default:
         return NULL;

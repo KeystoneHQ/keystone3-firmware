@@ -217,6 +217,7 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
     }
     switch (coin) {
     case HOME_WALLET_CARD_BTC:
+    case HOME_WALLET_CARD_ERG:
         GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_MONERO:

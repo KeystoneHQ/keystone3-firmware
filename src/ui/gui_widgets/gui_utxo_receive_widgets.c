@@ -183,7 +183,12 @@ static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_LTC, "m/49'/2'/0'"},
     {HOME_WALLET_CARD_DASH, "m/44'/5'/0'"},
     {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"},
-    {HOME_WALLET_CARD_ERG, "m/44'/429'/0'"}
+};
+#endif
+#ifdef CYPHERPUNK_VERSION
+static const ChainPathItem_t g_chainPathItems[] = {
+    {HOME_WALLET_CARD_BTC, ""},
+    {HOME_WALLET_CARD_ERG, "m/44'/429'/0'"},
 };
 #endif
 
@@ -308,6 +313,9 @@ static bool HasMoreBtn()
     case HOME_WALLET_CARD_LTC:
     case HOME_WALLET_CARD_BCH:
     case HOME_WALLET_CARD_DASH:
+        return false;
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         return false;
 #endif
@@ -392,6 +400,8 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
         titleItem->type = CHAIN_BCH;
         snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "BCH");
         break;
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         titleItem->type = CHAIN_ERG;
         snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "ERG");
@@ -562,6 +572,8 @@ static void GetHint(char *hint)
     case HOME_WALLET_CARD_BCH:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "BCH");
         break;
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "ERG");
         break;
@@ -597,6 +609,8 @@ static uint32_t GetCurrentSelectIndex()
         return g_dashSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_BCH:
         return g_bchSelectIndex[g_currentAccountIndex];
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         return g_ergSelectIndex[g_currentAccountIndex];
 #endif
@@ -622,6 +636,8 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     case HOME_WALLET_CARD_BCH:
         g_bchSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         g_ergSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
@@ -1452,8 +1468,10 @@ static void GetRootHdPath(char *hdPath, uint32_t maxLen)
     case HOME_WALLET_CARD_BCH:
         strcpy_s(hdPath, maxLen, g_chainPathItems[3].path);
         break;
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
-        strcpy_s(hdPath, maxLen, g_chainPathItems[4].path);
+        strcpy_s(hdPath, maxLen, g_chainPathItems[1].path);
         break;
 #endif
     default:

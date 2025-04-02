@@ -439,8 +439,6 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
     // keys[8].path = GetXPubPath(XPUB_TYPE_ETH_BIP44_STANDARD);
     // keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
 
-    keys[9].path = GetXPubPath(XPUB_TYPE_ERG);
-    keys[9].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ERG);
 
     char serialNumber[256];
     GetSerialNumber(serialNumber);

@@ -182,10 +182,10 @@
             .icon = &coinBch,                  \
         },                                     \
         {                                      \
-        .index = HOME_WALLET_CARD_DOGE,        \
-        .coin = "DOGE",                        \
-        .chain = "Dogecoin",                   \
-        .icon = &coinDoge,                     \
+            .index = HOME_WALLET_CARD_DOGE,    \
+            .coin = "DOGE",                    \
+            .chain = "Dogecoin",               \
+            .icon = &coinDoge,                 \
         },                                     \
         {                                      \
             .index = HOME_WALLET_CARD_APT,     \

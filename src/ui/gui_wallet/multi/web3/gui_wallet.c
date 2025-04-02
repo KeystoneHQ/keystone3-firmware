@@ -422,7 +422,6 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
 
     keys[6].path = GetXPubPath(XPUB_TYPE_DOGE);
     keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DOGE);
-    printf("keys[6].xpub = %s\r\n", keys[6].xpub);
 
     // keys[3].path = GetXPubPath(XPUB_TYPE_BCH);
     // keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);

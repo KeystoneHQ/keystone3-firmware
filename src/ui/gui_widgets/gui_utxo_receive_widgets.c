@@ -251,7 +251,6 @@ void GuiReceiveInit(uint8_t chain)
 #else
     g_selectType = GetAccountReceivePath(GetCoinCardByIndex(g_chainCard)->coin);
 #endif
-    printf("g_selectType = %d\n", g_selectType);
     g_addressType[g_currentAccountIndex] = g_selectType;
     g_pageWidget = CreatePageWidget();
     g_utxoReceiveWidgets.cont = g_pageWidget->contentZone;
@@ -1485,7 +1484,6 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
         CHECK_CHAIN_BREAK(result);
     } while (0);
     strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
-    printf("item->address = %s\n", item->address);
     free_simple_response_c_char(result);
 }
 

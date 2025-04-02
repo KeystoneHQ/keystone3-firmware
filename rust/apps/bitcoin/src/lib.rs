@@ -90,8 +90,6 @@ pub fn sign_msg(msg: &str, seed: &[u8], path: &String) -> Result<Vec<u8>> {
 
 pub fn parse_psbt(psbt_hex: Vec<u8>, context: ParseContext) -> Result<ParsedTx> {
     let psbt = deserialize_psbt(psbt_hex)?;
-    if !psbt.proprietary.is_empty() {
-    }
     let wpsbt = WrappedPsbt { psbt };
     wpsbt.parse(Some(&context))
 }
@@ -129,11 +127,6 @@ fn deserialize_psbt(psbt_hex: Vec<u8>) -> Result<Psbt> {
     Psbt::deserialize(&psbt_hex).map_err(|e| BitcoinError::InvalidPsbt(format!("{}", e)))
 }
 
-pub enum CoinType {
-    Bitcoin,
-    DogeCoin,
-}
-
 #[cfg(test)]
 mod test {
     use alloc::vec::Vec;
@@ -151,7 +144,6 @@ mod test {
         DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx,
     };
     use crate::{parse_raw_tx, sign_msg};
-    use std::println;
 
     macro_rules! build_overview_tx {
         ($total_output_amount:expr, $fee_amount:expr, $total_output_sat:expr, $fee_sat:expr,$from:expr, $to: expr, $network: expr, $fee_larger_than_amount:expr) => {
@@ -242,7 +234,6 @@ mod test {
         let hex = "1f8b0800000000000003558dbb4a03411846b36be192266baa902a2c8212583233ffdc162ccc0d63349268306837333b2b1875558c0979061fc0c242ec051b0b0b5b0b3bc156b0147d005bd30a1f070e1cf83c379feb9dd7d3d896bae7e9456ad2a3e2a7ebb9794f20d16c36783d7873b3739bfd7a7e9131ce12442124dcaa902a2dc32851101a3086608b2dc4b498293d7e3dddfda2654f5fbbdeeb82ff5e2e66825b27bbaa58a48d564a598cf54c4052a096c4334a42c1320b11610c63c60d5560a5b442c70669a264c239f84e713d5b43444422a20a4b6c1281ad8a88c51a04274c01235672c18d4418255881e1d6628230301dc78831008349e1e5fedb0b72c7151a2d55c85205cd5641e5301b74d6b8185407fbfcb0795c8dc4e660d4dc6ef787b59a386d75d2dde4e0d0ff7cb8720a9920535e99e583eaeede683c9d801e9eb5b6366abd8bbdc664e7723a1df346efa43d4efd9b9f8ff98213e43affcf4acfdd3f9997819c79010000";
         let pubkey_str = "ypub6X1mUc1jWSVhJJvVdafzD2SNG88rEsGWwbboBrrmWnMJ4HQwgvKrTkW2L7bQcLs1Pi1enPCXica1fnDryixfCptU1cQCYxVuSMw6woSKr47";
         let payload = prepare_payload(hex);
-        println!("payload: {:?}", payload);
         let context = prepare_parse_context(pubkey_str);
         let mut parsed_tx = parse_raw_tx(payload, context).unwrap();
         // set output is_external always false to pass the test
@@ -296,7 +287,6 @@ mod test {
 
         let expected_parsed_tx = ParsedTx { overview, detail };
         assert_eq!(expected_parsed_tx, parsed_tx);
-        assert!(false);
     }
 
     #[test]
@@ -610,25 +600,5 @@ mod test {
 
         let sig = sign_msg(msg, &seed, &path).unwrap();
         assert_eq!(base64::encode(&sig), "H8CDgK7sBj7o+OFZ+IVZyrKmcZuJn2/KFNHHv+kAxi+FWCUEYpZCyAGz0fj1OYwFM0E+q/TyQ2uZziqWI8k0eYE=");
-    }
-
-    pub fn prepare_parse_doge_context(pubkey_str: &str) -> keystone::ParseContext {
-        let master_fingerprint = bitcoin::bip32::Fingerprint::from_str("12345678").unwrap();
-        let extended_pubkey_str = convert_version(pubkey_str, &Version::Xpub).unwrap();
-        let extended_pubkey = bitcoin::bip32::Xpub::from_str(extended_pubkey_str.as_str()).unwrap();
-        keystone::ParseContext::new(master_fingerprint, extended_pubkey)
-    }
-
-    #[test]
-    fn test_parse_legacy_doge_tx() {
-        let hex = "1f8b08000000000000030d88bb4a03411440d960b16c93984a5285458806969d3b775edbb9791015830fc480ddccec5d211a5682fe85fe8185d80b2258f80316d6f9004bf1076cb37038704ed868374f97c3aaa0eec9b2baab7c75d3796ad437d43894a39ce5f16323da181d4fc6ed6d29952c99c0842bb289b0ce24596931f1e83d0702c242743f7e3f5ffed94ef81eac82f07bb3b5eac7cf41b46765e6bcb3d61280ab038d4041bca86db8409284199712402a2f2c9231a45de199e3d6944a612be81c4403c675a63361c1802f3590cd388143adb8b4283919a595370c580916bd2202ce00a52b0a2625a207bef5f5fa17c6cd452a442fc55eca6a52d6df8de2e944e9593ebb54f3f122cff4d1ec7e7c76787e3d18e8dbfd6975515ecd5b3f6f0fc11a86ae3b5532010000";
-        let pubkey_str = "xpub6Bxse8AT19u9HExKtP1EAudLi9CpLxPpxDvanL2fFtM7UFE2Q7TTWRg4bnMnmT4KcyN6GQkSgZmPWDtyUywSii3MDpMNfXSTuzH7gvZywLU";
-        let payload = prepare_payload(hex);
-        println!("payload: {:?}", payload.clone());
-        let context = prepare_parse_doge_context(pubkey_str);
-        println!("context: {:?}", context);
-        let mut parsed_tx = parse_raw_tx(payload, context).unwrap();
-        println!("parsed_tx: {:?}", parsed_tx);
-        assert!(false);
     }
 }

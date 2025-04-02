@@ -186,7 +186,6 @@ static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_DASH, "m/44'/5'/0'"},
     {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"},
     {HOME_WALLET_CARD_DOGE, "m/44'/3'/0'"},
-    {HOME_WALLET_CARD_ERG, "m/44'/429'/0'"},
 };
 #endif
 
@@ -319,6 +318,7 @@ static bool HasMoreBtn()
     case HOME_WALLET_CARD_BCH:
     case HOME_WALLET_CARD_DASH:
     case HOME_WALLET_CARD_DOGE:
+        return false;
 #endif
 #ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
@@ -1516,6 +1516,7 @@ static void GetRootHdPath(char *hdPath, uint32_t maxLen)
         break;
     case HOME_WALLET_CARD_DOGE:
         strcpy_s(hdPath, maxLen, g_chainPathItems[4].path);
+        break;
         break;
 #endif
 #ifdef CYPHERPUNK_VERSION

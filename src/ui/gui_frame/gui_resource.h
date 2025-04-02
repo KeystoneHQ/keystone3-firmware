@@ -287,6 +287,7 @@ LV_IMG_DECLARE(walletCore);
 LV_IMG_DECLARE(walletBabylon);
 LV_IMG_DECLARE(walletNufi);
 LV_IMG_DECLARE(walletBeacon);
+LV_IMG_DECLARE(walletBtcSafe);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
@@ -333,6 +334,7 @@ LV_IMG_DECLARE(walletListCore);
 LV_IMG_DECLARE(walletListBabylon);
 LV_IMG_DECLARE(walletListNufi);
 LV_IMG_DECLARE(walletListBeacon);
+LV_IMG_DECLARE(walletListBtcSafe);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

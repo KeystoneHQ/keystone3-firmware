@@ -159,6 +159,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
     {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
+    {WALLET_LIST_BITCOIN_SAFE, "Bitcoin Safe", &walletBtcSafe},
 #endif
 };
 

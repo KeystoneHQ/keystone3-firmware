@@ -432,6 +432,21 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_ZEUS].items[0].walletName = _("connect_zeus_title");
     g_tutorials[WALLET_LIST_ZEUS].items[0].url = _("connect_zeus_link");
     g_tutorials[WALLET_LIST_ZEUS].items[0].qrTitle = _("connect_zeus_title");
+    g_tutorials[WALLET_LIST_ZEUS].items[0].qrUrl = _("connect_zeus_link");
+
+    g_tutorials[WALLET_LIST_BABYLON].len = 1;
+    g_tutorials[WALLET_LIST_BABYLON].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_BABYLON].items[0].walletName = "Babylon";
+    g_tutorials[WALLET_LIST_BABYLON].items[0].url = "https://keyst.one/t/3rd/babylon";
+    g_tutorials[WALLET_LIST_BABYLON].items[0].qrTitle = "Babylon";
+    g_tutorials[WALLET_LIST_BABYLON].items[0].qrUrl = "https://keyst.one/t/3rd/babylon";
+
+    g_tutorials[WALLET_LIST_BITCOIN_SAFE].len = 1;
+    g_tutorials[WALLET_LIST_BITCOIN_SAFE].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_BITCOIN_SAFE].items[0].walletName = "Bitcoin Safe";
+    g_tutorials[WALLET_LIST_BITCOIN_SAFE].items[0].url = "https://keyst.one/t/3rd/bitcoinsafe";
+    g_tutorials[WALLET_LIST_BITCOIN_SAFE].items[0].qrTitle = "Bitcoin Safe";
+    g_tutorials[WALLET_LIST_BITCOIN_SAFE].items[0].qrUrl = "https://keyst.one/t/3rd/bitcoinsafe";
 #endif
 #if BTC_ONLY
     // multisig

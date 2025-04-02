@@ -59,6 +59,9 @@ const char *GetSoftwareVersionString(void)
 
 bool IsBootVersionMatch(void)
 {
+#ifndef BUILD_PRODUCTION
+    return true;
+#endif
     uint32_t major, minor, build;
     if (GetBootSoftwareVersion(&major, &minor, &build) == false) {
         return false;

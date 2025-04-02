@@ -49,6 +49,7 @@ static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {LtcTx, XPUB_TYPE_LTC, "m/49'/2'/0'"},
     {DashTx, XPUB_TYPE_DASH, "m/44'/5'/0'"},
     {BchTx, XPUB_TYPE_BCH, "m/44'/145'/0'"},
+    {DogeTx, XPUB_TYPE_DOGE, "m/44'/3'/0'"},
 #endif
 };
 

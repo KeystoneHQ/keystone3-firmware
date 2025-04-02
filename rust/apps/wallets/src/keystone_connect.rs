@@ -30,6 +30,7 @@ const BTC_TAPROOT_PREFIX: &str = "86'/0'/0'";
 const ETH_STANDARD_PREFIX: &str = "44'/60'/0'";
 const ETH_LEDGER_LIVE_PREFIX: &str = "44'/60'"; //overlap with ETH_STANDARD at 0
 const TRX_PREFIX: &str = "44'/195'/0'";
+const DOGE_LEGACY_PREFIX: &str = "44'/3'/0'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
@@ -46,6 +47,7 @@ pub fn generate_crypto_multi_accounts(
         BTC_NATIVE_SEGWIT_PREFIX.to_string(),
         BTC_TAPROOT_PREFIX.to_string(),
         TRX_PREFIX.to_string(),
+        DOGE_LEGACY_PREFIX.to_string(),
     ];
     for ele in extended_public_keys {
         match ele.get_path() {

@@ -343,6 +343,7 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
     case HOME_WALLET_CARD_LTC:
     case HOME_WALLET_CARD_DASH:
     case HOME_WALLET_CARD_BCH:
+    case HOME_WALLET_CARD_DOGE:
         GuiFrameOpenViewWithParam(&g_utxoReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ETH:

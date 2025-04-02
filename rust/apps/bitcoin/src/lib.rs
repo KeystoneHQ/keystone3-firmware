@@ -130,6 +130,7 @@ fn deserialize_psbt(psbt_hex: Vec<u8>) -> Result<Psbt> {
 #[cfg(test)]
 mod test {
     use alloc::vec::Vec;
+    use core::fmt::Error;
     use core::str::FromStr;
 
     use app_utils::keystone;

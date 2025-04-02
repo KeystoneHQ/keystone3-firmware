@@ -395,9 +395,10 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
     //   btc 4
     // + eth 1
     // + trx 1
-    ExtendedPublicKey keys[6];
+    // + doge 1
+    ExtendedPublicKey keys[7];
     public_keys->data = keys;
-    public_keys->size = 6;
+    public_keys->size = NUMBER_OF_ARRAYS(keys);
 
     // eth standard
     keys[0].path = "m/44'/60'/0'";
@@ -419,7 +420,8 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
     keys[5].path = GetXPubPath(XPUB_TYPE_TRX);
     keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
 
-
+    keys[6].path = GetXPubPath(XPUB_TYPE_DOGE);
+    keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DOGE);
 
     // keys[3].path = GetXPubPath(XPUB_TYPE_BCH);
     // keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);

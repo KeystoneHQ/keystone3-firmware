@@ -12,6 +12,7 @@
                                        HOME_WALLET_CARD_DOT,     \
                                        HOME_WALLET_CARD_TRX,     \
                                        HOME_WALLET_CARD_LTC,     \
+                                       HOME_WALLET_CARD_DOGE,    \
                                        HOME_WALLET_CARD_BCH,     \
                                        HOME_WALLET_CARD_APT,     \
                                        HOME_WALLET_CARD_SUI,     \
@@ -66,6 +67,7 @@
         {HOME_WALLET_CARD_DOT, false, "DOT", false},      \
         {HOME_WALLET_CARD_TRX, false, "TRX", true},       \
         {HOME_WALLET_CARD_LTC, false, "LTC", true},       \
+        {HOME_WALLET_CARD_DOGE, false, "DOGE", true},     \
         {HOME_WALLET_CARD_BCH, false, "BCH", true},       \
         {HOME_WALLET_CARD_APT, false, "APT", true},       \
         {HOME_WALLET_CARD_SUI, false, "SUI", true},       \
@@ -178,6 +180,12 @@
             .coin = "BCH",                     \
             .chain = "Bitcoin Cash",           \
             .icon = &coinBch,                  \
+        },                                     \
+        {                                      \
+            .index = HOME_WALLET_CARD_DOGE,    \
+            .coin = "DOGE",                    \
+            .chain = "Dogecoin",               \
+            .icon = &coinDoge,                 \
         },                                     \
         {                                      \
             .index = HOME_WALLET_CARD_APT,     \

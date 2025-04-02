@@ -2,19 +2,15 @@ use core::str::FromStr;
 
 use alloc::string::{String, ToString};
 use bitcoin::bip32::{ChildNumber, DerivationPath};
-use hex;
-use rand_chacha::rand_core::SeedableRng;
-use rand_chacha::ChaCha8Rng;
 use rand_core::{CryptoRng, RngCore};
 use zcash_vendor::{
     orchard::{
         self,
         keys::{SpendAuthorizingKey, SpendingKey},
     },
-    pasta_curves::{group::ff::PrimeField, Fq},
     zcash_keys::keys::UnifiedSpendingKey,
-    zcash_protocol::consensus::{self},
-    zip32::{self, fingerprint::SeedFingerprint, AccountId},
+    zcash_protocol::consensus,
+    zip32::{self, fingerprint::SeedFingerprint},
 };
 
 use crate::errors::{KeystoreError, Result};
@@ -43,25 +39,23 @@ pub fn derive_ufvk<P: consensus::Parameters>(
             ChildNumber::Hardened { index: account_id },
         ) => {
             let account_index = zip32::AccountId::try_from(account_id)
-                .map_err(|_e| KeystoreError::DerivationError(format!("invalid account index")))?;
-            let usk = UnifiedSpendingKey::from_seed(params, &seed, account_index)
+                .map_err(|_e| KeystoreError::DerivationError("invalid account index".into()))?;
+            let usk = UnifiedSpendingKey::from_seed(params, seed, account_index)
                 .map_err(|e| KeystoreError::DerivationError(e.to_string()))?;
             let ufvk = usk.to_unified_full_viewing_key();
             Ok(ufvk.encode(params))
         }
-        _ => {
-            return Err(KeystoreError::DerivationError(format!(
-                "invalid account path: {}",
-                account_path
-            )));
-        }
+        _ => Err(KeystoreError::DerivationError(format!(
+            "invalid account path: {}",
+            account_path
+        ))),
     }
 }
 
 pub fn calculate_seed_fingerprint(seed: &[u8]) -> Result<[u8; 32]> {
-    let sfp = SeedFingerprint::from_seed(seed).ok_or(KeystoreError::SeedError(format!(
-        "Invalid seed, cannot calculate ZIP-32 Seed Fingerprint"
-    )))?;
+    let sfp = SeedFingerprint::from_seed(seed).ok_or(KeystoreError::SeedError(
+        "Invalid seed, cannot calculate ZIP-32 Seed Fingerprint".into(),
+    ))?;
     Ok(sfp.to_bytes())
 }
 

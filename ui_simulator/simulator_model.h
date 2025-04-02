@@ -62,6 +62,13 @@ extern bool g_reboot;
         GuiGetMoneroUnsignedTxData, \
         NULL, \
         FreeMoneroMemory, \
+    }, \
+    { \
+        REMAPVIEW_ERGO, \
+        PC_SIMULATOR_PATH "/page_ergo.json", \
+        GuiGetErgoGUIData, \
+        NULL, \
+        FreeErgoMemory, \
     }
 #endif
 
@@ -227,14 +234,7 @@ extern bool g_reboot;
         GuiGetAvaxGUIData, \
         NULL, \
         FreeAvaxMemory, \
-    }, \
-    { \
-        REMAPVIEW_ERGO, \
-        PC_SIMULATOR_PATH "/page_ergo.json", \
-        GuiGetErgoGUIData, \
-        NULL, \
-        FreeErgoMemory, \
-    },
+    }
 #endif
 
 #endif

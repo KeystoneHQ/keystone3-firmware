@@ -1402,6 +1402,8 @@ static ChainType GetChainTypeByIndex(uint32_t index)
         return XPUB_TYPE_DASH;
     case HOME_WALLET_CARD_BCH:
         return XPUB_TYPE_BCH;
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         return XPUB_TYPE_ERG;
 #endif
@@ -1484,6 +1486,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
     ASSERT(xPub);
     SimpleResponse_c_char *result;
     do {
+#ifdef CYPHERPUNK_VERSION
         if (chainType == XPUB_TYPE_ERG) {
             result = ergo_get_address(hdPath, xPub);
             CHECK_CHAIN_BREAK(result);
@@ -1492,6 +1495,10 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
             result = utxo_get_address(hdPath, xPub);
             CHECK_CHAIN_BREAK(result);
         }
+#else
+        result = utxo_get_address(hdPath, xPub);
+        CHECK_CHAIN_BREAK(result);
+#endif
     } while (0);
     strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
     free_simple_response_c_char(result);

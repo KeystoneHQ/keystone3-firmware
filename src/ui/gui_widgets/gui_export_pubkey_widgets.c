@@ -639,8 +639,8 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
     SimpleResponse_c_char *result;
     snprintf_s(hdPath, sizeof(hdPath), "%s/0/%u", g_pathTypeList[pathType].path, index);
     do {
-        result = utxo_get_address(hdPath, xPub);
-        CHECK_CHAIN_BREAK(result);
+            result = utxo_get_address(hdPath, xPub);
+            CHECK_CHAIN_BREAK(result);
     } while (0);
     snprintf_s(dest, maxLen, "%s", result->data);
     free_simple_response_c_char(result);

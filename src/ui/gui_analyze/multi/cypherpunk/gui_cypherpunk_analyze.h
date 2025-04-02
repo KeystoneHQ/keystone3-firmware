@@ -22,6 +22,13 @@
         GuiGetMoneroUnsignedTxData, \
         NULL, \
         FreeMoneroMemory, \
+    },\
+    { \
+        REMAPVIEW_ERGO, \
+        "{\"name\":\"ergo_page\",\"type\":\"custom_container\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"custom_show_func\":\"GuiErgoOverview\"}", \
+        GuiGetErgoGUIData, \
+        NULL, \
+        FreeErgoMemory, \
     }
 
 #endif

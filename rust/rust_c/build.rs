@@ -67,6 +67,8 @@ fn main() {
         v.push_str("#define FEATURE_ZCASH\n");
         #[cfg(feature = "monero")]
         v.push_str("#define FEATURE_MONERO\n");
+        #[cfg(feature = "ergo")]
+        v.push_str("#define FEATURE_ERGO\n");
         v
     });
     assert!(!features.is_empty(), "No build variant enabled");

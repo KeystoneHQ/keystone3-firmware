@@ -118,8 +118,8 @@ void FreeSolMemory(void)
     // free account data
     for (int i = 0; i < g_accountCount; i++) {
         if (g_accountData[i] != NULL) {
-            free(g_accountData[i]->address);
-            free(g_accountData[i]);
+            SRAM_FREE(g_accountData[i]->address);
+            SRAM_FREE(g_accountData[i]);
         }
     }
     g_accountCount = 0;
@@ -1338,11 +1338,11 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
                 // add account click event
                 lv_obj_add_flag(info_icon, LV_OBJ_FLAG_CLICKABLE);
                 // remember free the data
-                SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)malloc(sizeof(SolanaAddressLearnMoreData));
+                SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)SRAM_MALLOC(sizeof(SolanaAddressLearnMoreData));
                 if (data != NULL) {
                     const char* address = accounts->data[j];
                     size_t address_len = strlen(address);
-                    data->address = (char*)malloc(address_len + 1);
+                    data->address = (char*)SRAM_MALLOC(address_len + 1);
                     strcpy(data->address, address);
                     lv_obj_set_user_data(info_icon, data);
                     SolanaAddressLearnMoreData* retrieved_data = (SolanaAddressLearnMoreData*)lv_obj_get_user_data(info_icon);

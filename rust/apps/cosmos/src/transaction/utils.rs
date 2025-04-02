@@ -51,6 +51,8 @@ pub fn get_network_by_chain_id(chain_id: &str) -> Result<String> {
     map.insert("columbus", "Terra Classic");
     map.insert("thorchain", "THORChain");
     map.insert("neutron", "Neutron");
+    map.insert("Neutaro-1", "Neutaro");
+    map.insert("baby_3535-1", "Babylon");
     let chain_id_parts: Vec<&str> = chain_id.split('-').collect();
     let chain_id_prefix = if chain_id_parts.len() > 1 {
         chain_id_parts[..chain_id_parts.len() - 1].join("-")
@@ -98,6 +100,8 @@ pub fn get_chain_id_by_address(address: &str) -> String {
     map.insert("terra", "phoenix-1");
     map.insert("thor", "thorchain");
     map.insert("neutron", "neutron");
+    map.insert("bbn", "baby_3535-1");
+    map.insert("neutaro", "Neutaro-1");
     for (k, v) in map {
         if address.starts_with(k) {
             return v.to_string();

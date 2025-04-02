@@ -15,6 +15,9 @@
 #include "gui_lock_widgets.h"
 #include "account_public_info.h"
 #include "gui_key_derivation_request_widgets.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_model.h"
+#endif
 
 typedef struct KeyDerivationWidget {
     uint8_t currentTile;

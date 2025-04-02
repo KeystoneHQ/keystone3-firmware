@@ -51,8 +51,9 @@ pub fn get_network_by_chain_id(chain_id: &str) -> Result<String> {
     map.insert("columbus", "Terra Classic");
     map.insert("thorchain", "THORChain");
     map.insert("neutron", "Neutron");
-    map.insert("Neutaro-1", "Neutaro");
-    map.insert("baby_3535-1", "Babylon");
+    map.insert("Neutaro", "Neutaro");
+    map.insert("baby_3535", "Babylon");
+    // notice： don't use chain_id like "baby_3535-1" directly, we need to remove the last part "-1" and set "baby_3535" as key
     let chain_id_parts: Vec<&str> = chain_id.split('-').collect();
     let chain_id_prefix = if chain_id_parts.len() > 1 {
         chain_id_parts[..chain_id_parts.len() - 1].join("-")

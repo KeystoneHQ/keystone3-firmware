@@ -107,12 +107,11 @@ multi-coins = [
     "tron",
     "xrp",
     "avalanche",
-    "ergo"
 ]
 
 btc-only = ["bitcoin"]
 
-cypherpunk = ["bitcoin", "zcash", "monero"]
+cypherpunk = ["bitcoin", "zcash", "monero", "ergo"]
 
 # build variants
 # production

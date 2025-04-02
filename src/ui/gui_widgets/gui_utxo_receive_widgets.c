@@ -190,6 +190,13 @@ static const ChainPathItem_t g_chainPathItems[] = {
 };
 #endif
 
+#ifdef CYPHERPUNK_VERSION
+static const ChainPathItem_t g_chainPathItems[] = {
+    {HOME_WALLET_CARD_BTC, ""},
+    {HOME_WALLET_CARD_ERG, "m/44'/429'/0'"},
+};
+#endif
+
 static uint32_t g_showIndex;
 static uint32_t g_selectIndex;
 static uint32_t g_selectType = 0;
@@ -312,6 +319,8 @@ static bool HasMoreBtn()
     case HOME_WALLET_CARD_BCH:
     case HOME_WALLET_CARD_DASH:
     case HOME_WALLET_CARD_DOGE:
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         return false;
 #endif
@@ -400,6 +409,8 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
         titleItem->type = CHAIN_DOGE;
         snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "DOGE");
         break;
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         titleItem->type = CHAIN_ERG;
         snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "ERG");
@@ -573,6 +584,8 @@ static void GetHint(char *hint)
     case HOME_WALLET_CARD_DOGE:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "DOGE");
         break;
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "ERG");
         break;
@@ -608,6 +621,8 @@ static uint32_t GetCurrentSelectIndex()
         return g_dashSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_BCH:
         return g_bchSelectIndex[g_currentAccountIndex];
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         return g_ergSelectIndex[g_currentAccountIndex];
 #endif
@@ -633,6 +648,8 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     case HOME_WALLET_CARD_BCH:
         g_bchSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         g_ergSelectIndex[g_currentAccountIndex] = selectIndex;
         break;
@@ -1447,6 +1464,8 @@ static ChainType GetChainTypeByIndex(uint32_t index)
         return XPUB_TYPE_BCH;
     case HOME_WALLET_CARD_DOGE:
         return XPUB_TYPE_DOGE;
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
         return XPUB_TYPE_ERG;
 #endif
@@ -1498,8 +1517,10 @@ static void GetRootHdPath(char *hdPath, uint32_t maxLen)
     case HOME_WALLET_CARD_DOGE:
         strcpy_s(hdPath, maxLen, g_chainPathItems[4].path);
         break;
+#endif
+#ifdef CYPHERPUNK_VERSION
     case HOME_WALLET_CARD_ERG:
-        strcpy_s(hdPath, maxLen, g_chainPathItems[5].path);
+        strcpy_s(hdPath, maxLen, g_chainPathItems[1].path);
         break;
 #endif
     default:
@@ -1532,6 +1553,7 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
     ASSERT(xPub);
     SimpleResponse_c_char *result;
     do {
+#ifdef CYPHERPUNK_VERSION
         if (chainType == XPUB_TYPE_ERG) {
             result = ergo_get_address(hdPath, xPub);
             CHECK_CHAIN_BREAK(result);
@@ -1540,6 +1562,10 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
             result = utxo_get_address(hdPath, xPub);
             CHECK_CHAIN_BREAK(result);
         }
+#else
+        result = utxo_get_address(hdPath, xPub);
+        CHECK_CHAIN_BREAK(result);
+#endif
     } while (0);
     strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
     free_simple_response_c_char(result);

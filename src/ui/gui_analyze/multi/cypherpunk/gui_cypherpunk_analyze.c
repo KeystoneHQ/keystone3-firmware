@@ -13,6 +13,8 @@ GetCustomContainerFunc GetOtherChainCustomFunc(char *funcName)
         return GuiShowXmrTransactionDetails;
     } else if (!strcmp(funcName, "GuiShowXmrTransactionOverview")) {
         return GuiShowXmrTransactionOverview;
+    } else if (!strcmp(funcName, "GuiErgoOverview")) {
+        return GuiErgoOverview;
     }
     return NULL;
 }

@@ -92,14 +92,13 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
 
     {TonTx, GuiGetTonSignQrCodeData, NULL, GuiGetTonCheckResult, CHAIN_TON, REMAPVIEW_TON},
     {TonSignProof, GuiGetTonProofSignQrCodeData, NULL, GuiGetTonCheckResult, CHAIN_TON, REMAPVIEW_TON_SIGNPROOF},
-
-    {ErgoTx, GuiGetErgoSignQrCodeData, NULL, GuiGetErgoCheckResult, CHAIN_ERG, REMAPVIEW_ERGO},
 #endif
 
 #ifdef CYPHERPUNK_VERSION
     {ZcashTx, GuiGetZcashSignQrCodeData, NULL, GuiGetZcashCheckResult, CHAIN_ZCASH, REMAPVIEW_ZCASH},
     {XmrOutput, GuiGetMoneroKeyimagesQrCodeData, NULL, GuiGetMoneroOutputCheckResult, CHAIN_XMR, REMAPVIEW_XMR_OUTPUT},
     {XmrTxUnsigned, GuiGetMoneroSignedTransactionQrCodeData, NULL, GuiGetMoneroUnsignedTxCheckResult, CHAIN_XMR, REMAPVIEW_XMR_UNSIGNED},
+    {ErgoTx, GuiGetErgoSignQrCodeData, NULL, GuiGetErgoCheckResult, CHAIN_ERG, REMAPVIEW_ERGO},
 #endif
 };
 

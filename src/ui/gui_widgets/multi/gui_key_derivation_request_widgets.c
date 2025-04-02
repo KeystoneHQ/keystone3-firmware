@@ -53,12 +53,12 @@ typedef enum HardwareCallV1AdaDerivationAlgo {
 static ADA_DERIVATION_ALGO selected_ada_derivation_algo = HD_STANDARD_ADA;
 
 static void *g_data;
-static URParseResult *g_urResult;
-static URParseMultiResult *g_urMultiResult;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
 static bool g_isMulti;
 static KeyDerivationWidget_t g_keyDerivationTileView;
-static QRHardwareCallData *g_callData;
-static Response_QRHardwareCallData *g_response;
+static QRHardwareCallData *g_callData = NULL;
+static Response_QRHardwareCallData *g_response = NULL;
 static WALLET_LIST_INDEX_ENUM g_walletIndex;
 static lv_obj_t *g_openMoreHintBox;
 static lv_obj_t *g_derivationPathCont = NULL;
@@ -117,6 +117,7 @@ static uint8_t GetXPubIndexByPath(char *path);
 
 void GuiSetKeyDerivationRequestData(void *urResult, void *multiResult, bool is_multi)
 {
+    FreeKeyDerivationRequestMemory();
     g_urResult = urResult;
     g_urMultiResult = multiResult;
     g_isMulti = is_multi;
@@ -357,6 +358,10 @@ void GuiKeyDerivationRequestPrevTile()
 void UpdateAndParseHardwareCall(void)
 {
     if (strnlen_s(SecretCacheGetPassword(), PASSWORD_MAX_LEN) != 0 && g_isUsbPassWordCheck) {
+        if (g_response != NULL) {
+            free_Response_QRHardwareCallData(g_response);
+            g_response = NULL;
+        }
         ModelParseQRHardwareCall();
         HiddenKeyboardAndShowAnimateQR();
     }

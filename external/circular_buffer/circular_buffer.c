@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <assert.h>
+#include "user_memory.h"
 
 #include "circular_buffer.h"
 
@@ -34,7 +35,7 @@ cbuf_handle_t circular_buf_init(uint8_t* buffer, size_t size)
 {
 	assert(buffer && size > 1);
 
-	cbuf_handle_t cbuf = malloc(sizeof(circular_buf_t));
+	cbuf_handle_t cbuf = SRAM_MALLOC(sizeof(circular_buf_t));
 	assert(cbuf);
 
 	cbuf->buffer = buffer;
@@ -49,7 +50,7 @@ cbuf_handle_t circular_buf_init(uint8_t* buffer, size_t size)
 void circular_buf_free(cbuf_handle_t me)
 {
 	assert(me);
-	free(me);
+	SRAM_FREE(me);
 }
 
 void circular_buf_reset(cbuf_handle_t me)

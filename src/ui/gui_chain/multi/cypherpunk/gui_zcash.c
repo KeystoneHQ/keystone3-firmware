@@ -153,7 +153,7 @@ static lv_obj_t* GuiZcashOverviewFrom(lv_obj_t *parent, VecFFI_DisplayFrom *from
         lv_obj_set_style_bg_opa(innerContainer, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_align(innerContainer, LV_ALIGN_TOP_LEFT, 24, height);
 
-        char *order = (char *)malloc(5);
+        char *order = (char *)SRAM_MALLOC(5);
         snprintf_s(order, 5, "#%d", i + 1);
         indexLabel = GuiCreateIllustrateLabel(innerContainer, order);
         lv_obj_align(indexLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);
@@ -235,7 +235,7 @@ static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_o
         lv_obj_set_style_bg_opa(innerContainer, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_align(innerContainer, LV_ALIGN_TOP_LEFT, 24, height);
 
-        char *order = (char *)malloc(5);
+        char *order = (char *)SRAM_MALLOC(5);
         snprintf_s(order, 5, "#%d", i + 1);
         indexLabel = GuiCreateIllustrateLabel(innerContainer, order);
         lv_obj_align(indexLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);
@@ -269,7 +269,7 @@ static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_o
         innerHeight += lv_obj_get_height(addressLabel);
 
         if (to->data[i].memo != NULL && strnlen(to->data[i].memo, MAX_MEMO_LENGTH) > 0) {
-            char *memo = (char *)malloc(MAX_MEMO_LENGTH);
+            char *memo = (char *)SRAM_MALLOC(MAX_MEMO_LENGTH);
             snprintf_s(memo, MAX_MEMO_LENGTH, "Memo: %s", to->data[i].memo);
             lv_obj_t *memoLabel = GuiCreateIllustrateLabel(innerContainer, memo);
             lv_obj_align(memoLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);

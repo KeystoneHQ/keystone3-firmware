@@ -52,13 +52,14 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_KEYSTONE, &walletListKeystone, false, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_OKX, &walletListOkx, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_METAMASK, &walletListMetaMask, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL},
-    {WALLET_LIST_ZASHI, &walletListZashi, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_OTHER},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true, WALLET_FILTER_SOL},
-    {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
+    {WALLET_LIST_NUFI, &walletListNufi, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL},
+    // {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_HELIUM, &walletListHelium, true, WALLET_FILTER_SOL},
     {WALLET_LIST_BLUE, &walletListBlue, true, WALLET_FILTER_BTC},
     {WALLET_LIST_ZEUS, &walletListZeus, true, WALLET_FILTER_BTC},
+    {WALLET_LIST_BABYLON, &walletListBabylon, true, WALLET_FILTER_BTC},
     {WALLET_LIST_SPARROW, &walletListSparrow, true, WALLET_FILTER_BTC},
     {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false, WALLET_FILTER_OTHER},
     {WALLET_LIST_RABBY, &walletListRabby, true, WALLET_FILTER_ETH},
@@ -80,6 +81,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_LEAP, &walletListLeap, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_MINT_SCAN, &walletListMintScan, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_WANDER, &walletListWander, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_BEACON, &walletListBeacon, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_XBULL, &walletListXBull, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_IMTOKEN, &walletListImToken, true, WALLET_FILTER_ETH},
     {WALLET_LIST_FEWCHA, &walletListFewcha, true, WALLET_FILTER_OTHER},
@@ -127,8 +129,8 @@ static const lv_img_dsc_t *g_bitgetWalletCoinArray[] = {
     &coinBtc, &coinEth, &coinTon
 };
 
-static const lv_img_dsc_t *g_backpackWalletCoinArray[2] = {
-    &coinSol, &coinEth
+static const lv_img_dsc_t *g_backpackWalletCoinArray[3] = {
+    &coinSol, &coinEth, &coinSui
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
@@ -154,6 +156,12 @@ static const lv_img_dsc_t *g_leapCoinArray[8] = {
 
 static const lv_img_dsc_t *g_wanderCoinArray[1] = {
     &coinAr,
+};
+
+static const lv_img_dsc_t *g_beaconCoinArray[2] = {
+    &coinAr,
+    // todo add ao
+    &coinAo,
 };
 
 static const lv_img_dsc_t *g_xbullCoinArray[1] = {
@@ -321,6 +329,7 @@ static void GuiInitWalletListArray()
                 enable = !isSLIP39;
                 break;
             case WALLET_LIST_WANDER:
+            case WALLET_LIST_BEACON:
                 enable = !isTempAccount;
                 break;
             // open keystone for test
@@ -345,6 +354,7 @@ static bool IsEVMChain(int walletIndex)
     case WALLET_LIST_ZAPPER:
     case WALLET_LIST_YEARN_FINANCE:
     case WALLET_LIST_SUSHISWAP:
+    case WALLET_LIST_NUFI:
         return true;
     default:
         return false;
@@ -356,6 +366,7 @@ static bool IsSOL(int walletIndex)
     switch (walletIndex) {
     case WALLET_LIST_SOLFARE:
     case WALLET_LIST_HELIUM:
+    case WALLET_LIST_NUFI:
         return true;
     default:
         return false;
@@ -383,17 +394,15 @@ static void GuiARAddressCheckConfirmHandler(lv_event_t *event)
 
 static void GuiOpenARAddressNoticeWindow()
 {
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("Not Now"), WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("not_now"), WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
     lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_set_width(btn, 192);
-    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
     lv_obj_add_event_cb(btn, GuiARAddressCheckConfirmHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
     lv_obj_set_width(btn, 192);
-    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
@@ -401,6 +410,20 @@ static void GuiOpenARAddressNoticeWindow()
     lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
     lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
 }
+
+
+static void GuiOpenNufiNoticeWindow()
+{
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("nufi_connection_notice"), _("nufi_connection_notice_desc"), NULL, NULL, WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+    // understand button
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_set_width(btn, 408);
+    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+
+}
+
 
 static void OpenQRCodeHandler(lv_event_t *e)
 {
@@ -422,8 +445,17 @@ static void OpenQRCodeHandler(lv_event_t *e)
         GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
         return;
     }
+    // todo: notice if current wallet is nufi , we show a hintbox to notify user to connect usb
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_NUFI) {
+        GuiOpenNufiNoticeWindow();
+        return;
+    }
     bool skipGenerateArweaveKey = IsArweaveSetupComplete();
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_WANDER && !skipGenerateArweaveKey) {
+        GuiOpenARAddressNoticeWindow();
+        return;
+    }
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_BEACON && !skipGenerateArweaveKey) {
         GuiOpenARAddressNoticeWindow();
         return;
     }
@@ -900,6 +932,20 @@ static void AddWanderConnectCoins(void)
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
 }
 
+static void AddBeaconCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+
+    for (int i = 0; i < 2; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_beaconCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 static void AddXBullCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -1252,10 +1298,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetImTokenData;
         AddEthWalletCoins();
         break;
-    case WALLET_LIST_CORE:
-        func = GuiGetCoreWalletData;
-        AddCoreWalletCoins();
-        break;
+    // case WALLET_LIST_CORE:
+    //     func = GuiGetCoreWalletData;
+    //     AddCoreWalletCoins();
+    //     break;
     case WALLET_LIST_BITGET:
         func = GuiGetBitgetWalletData;
         AddBitgetWalletCoins();
@@ -1272,6 +1318,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     // todo  zeus wallet use same ur logic as sparrow wallet (m/49'/0'/0' 、 m/44'/0'/0' 、 m/84'/0'/0' and m/86'/0'/0' )
     case WALLET_LIST_ZEUS:
     case WALLET_LIST_SPARROW:
+    case WALLET_LIST_BABYLON:
         func = GuiGetSparrowWalletBtcData;
         AddBlueWalletCoins();
         break;
@@ -1306,6 +1353,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_WANDER:
         func = GuiGetWanderData;
         AddWanderConnectCoins();
+        break;
+    case WALLET_LIST_BEACON:
+        func = GuiGetWanderData;
+        AddBeaconCoins();
         break;
     case WALLET_LIST_XBULL:
         func = GuiGetXBullData;
@@ -1361,6 +1412,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     if (func) {
         bool skipGenerateArweaveKey = IsArweaveSetupComplete();
         if (index == WALLET_LIST_WANDER && !skipGenerateArweaveKey) {
+            GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true, _("InitializingRsaTitle"), _("FindingRsaPrimes"));
+            return;
+        }
+        if (index == WALLET_LIST_BEACON && !skipGenerateArweaveKey) {
             GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true, _("InitializingRsaTitle"), _("FindingRsaPrimes"));
             return;
         }

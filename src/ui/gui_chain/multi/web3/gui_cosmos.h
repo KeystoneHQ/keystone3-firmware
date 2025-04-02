@@ -1,6 +1,6 @@
 #include "rust.h"
 #include "account_public_info.h"
-#define COSMOS_CHAINS_LEN (CHAIN_TGD - CHAIN_TIA + 1)
+#define COSMOS_CHAINS_LEN (CHAIN_TGD - CHAIN_BABYLON + 1)
 
 typedef struct {
     uint8_t index;
@@ -24,7 +24,7 @@ typedef enum {
     COSMOS_MESSAGE,
 } CosmosMsgType;
 
-const char* GuiGetCosmosTxTypeName(CosmosMsgType type);
+const char *GuiGetCosmosTxTypeName(CosmosMsgType type);
 void GuiSetCosmosUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetCosmosData(void);
 PtrT_TransactionCheckResult GuiGetCosmosCheckResult(void);

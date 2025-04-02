@@ -67,6 +67,7 @@ file(GLOB_RECURSE SRC
     "src/presetting.c"
     "src/user_fatfs.c"
     "src/user_sqlite3.c"
+    "src/boot_update.c"
     "src/utils/*.c"
     "src/utils/log/*.c"
     "src/managers/*.c"

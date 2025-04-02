@@ -316,17 +316,15 @@ static void GuiARAddressCheckConfirmHandler(lv_event_t *event)
 
 static void GuiOpenARAddressNoticeWindow()
 {
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("Not Now"), WHITE_COLOR_OPA20, _("Understand"), ORANGE_COLOR);
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("not_now"), WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
     lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_set_width(btn, 192);
-    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
     lv_obj_add_event_cb(btn, GuiARAddressCheckConfirmHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
     lv_obj_set_width(btn, 192);
-    lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
@@ -351,7 +349,6 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
     case HOME_WALLET_CARD_ETH:
     case HOME_WALLET_CARD_SOL:
     case HOME_WALLET_CARD_HNT:
-    case HOME_WALLET_CARD_AVAX:
         GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ADA:
@@ -445,8 +442,8 @@ static void GuiUpdateCoinListWidget(HomeGesture_t gesture)
 
     lv_obj_t *coinListCont = g_coinListCont;
     lv_obj_clean(coinListCont);
-    int startIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_BTC : HOME_WALLET_CARD_TIA;
-    int endIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_TIA : HOME_WALLET_CARD_BUTT;
+    int startIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_BTC : HOME_WALLET_CARD_BABYLON;
+    int endIndex = g_currentFilter == COIN_FILTER_MAIN ? HOME_WALLET_CARD_BABYLON : HOME_WALLET_CARD_BUTT;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
         g_walletState[i].checkBox = NULL;
         if (i >= startIndex && i < endIndex && g_walletState[i].enable) {

@@ -883,6 +883,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
             FpWipeManageInfo();
             SetSetupStep(0);
             SaveDeviceSettings();
+            ResetBootParam();
             g_reboot = true;
             GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
         } else {
@@ -1273,8 +1274,10 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
     return SUCCESS_CODE;
 }
 
-static uint32_t BinarySearchLastNonFFSector(void)
+static const uint8_t APP_END_MAGIC_NUMBER[] = {'m', 'h', '1', '9', '0', '3', 'a', 'p', 'p', 'e', 'n', 'd'};
+uint32_t BinarySearchLastNonFFSector(void)
 {
+    size_t APP_END_MAGIC_NUMBER_SIZE = sizeof(APP_END_MAGIC_NUMBER);
     uint8_t *buffer = SRAM_MALLOC(SECTOR_SIZE);
     uint32_t startIndex = (APP_CHECK_START_ADDR - APP_ADDR) / SECTOR_SIZE;
     uint32_t endIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
@@ -1292,9 +1295,11 @@ static uint32_t BinarySearchLastNonFFSector(void)
             percent++;
             GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
         }
-        if (CheckAllFF(&buffer[2], SECTOR_SIZE - 2) && ((buffer[0] * 256 + buffer[1]) < 4096)) {
-            SRAM_FREE(buffer);
-            return i;
+        if (memcmp(buffer, APP_END_MAGIC_NUMBER, APP_END_MAGIC_NUMBER_SIZE) == 0) {
+            if (CheckAllFF(&buffer[APP_END_MAGIC_NUMBER_SIZE], SECTOR_SIZE - APP_END_MAGIC_NUMBER_SIZE)) {
+                SRAM_FREE(buffer);
+                return i;
+            }
         }
     }
     SRAM_FREE(buffer);

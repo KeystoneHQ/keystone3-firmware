@@ -724,7 +724,7 @@ static char *CalcSymbol(void *param)
     }
 
     if (isErc20Transfer(eth)) {
-        return "Unit";
+        return "Token";
     }
 
     EvmNetwork_t network = _FindNetwork(eth->chain_id);
@@ -1134,6 +1134,17 @@ void GetEthGetToAddress(void *indata, void *param, uint32_t maxLen)
     }
 }
 
+void GetEthGetDetailPageToAddress(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+    if (isErc20Transfer(eth)) {
+        strcpy_s((char *)indata, maxLen, eth->detail->to);
+    } else {
+        strcpy_s((char *)indata, maxLen, eth->overview->to);
+    }
+}
+
+
 void GetTxnFeeDesc(void *indata, void *param, uint32_t maxLen)
 {
     strcpy_s((char *)indata, maxLen, "  \xE2\x80\xA2  Max Txn Fee = Gas Price * Gas Limit");
@@ -1223,6 +1234,7 @@ void GetEthContractName(void *indata, void *param, uint32_t maxLen)
         strcpy_s((char *)indata, maxLen, g_erc20Name);
         return;
     }
+    // add contract address string
     if (strlen(contractData->data->contract_name) > 0) {
         strcpy_s((char *)indata, maxLen, contractData->data->contract_name);
     } else {
@@ -1336,7 +1348,7 @@ static bool GetEthErc20ContractData(void *parseResult)
             return true;
         }
     }
-    g_erc20Name = "Erc20";
+    g_erc20Name = "Erc20 Contract Address";
     FixRecipientAndValueWhenErc20Contract(result->data->detail->input, 0);
     return true;
 }

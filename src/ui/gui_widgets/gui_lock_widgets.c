@@ -28,6 +28,7 @@
 #include "usb_task.h"
 #include "ui_display_task.h"
 #include "fetch_sensitive_data_task.h"
+#include "version.h"
 #ifdef COMPILE_SIMULATOR
 #include "assert.h"
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)

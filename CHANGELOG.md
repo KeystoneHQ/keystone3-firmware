@@ -1,3 +1,50 @@
+## 2.0.4-btc(2025-03-24)
+
+**BTC Only:**
+
+### What's new
+
+1. Enhanced Firmware Upgrade security mechanisms
+2. Added Recovery Mode Setting for user-controlled customization
+
+
+## 2.0.4(2025-03-20)
+
+**Web3:**
+
+### What's new
+1. Enhanced Firmware Upgrade security mechanisms
+2. Added Recovery Mode Setting for user-controlled customization
+
+**Cypherpunk:**
+
+### What's new
+
+1. Enhanced Firmware Upgrade security mechanisms
+2. Added Recovery Mode Setting for user-controlled customization
+
+
+## 2.0.2(2025-03-13)
+
+**Web3:**
+
+### What's new
+
+1. Supported managing BTC,ETH,TRX,and certain ERC20,TRC20 assets using Keystone Nexus Wallet
+
+### Improvements
+
+1. Optimized transaction parsing for Safe multisig contract transaction
+
+**Cypherpunk:**
+
+### What's new
+
+1. Supported managing BTC assets using BlueWallet,Sparrow,Unisat,ZEUS Wallets
+2. Supported managing ZEC assets using Zashi Wallet
+3. Supported managing XMR assets using Feather Wallet
+
+
 ## 1.8.2(2024-12-30)
 
 ### Bug Fixes  

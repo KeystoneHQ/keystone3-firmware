@@ -16,6 +16,8 @@ use ur_registry::bytes::Bytes;
 #[cfg(feature = "cardano")]
 use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 #[cfg(feature = "cardano")]
+use ur_registry::cardano::cardano_sign_cip8_data_request::CardanoSignCip8DataRequest;
+#[cfg(feature = "cardano")]
 use ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 #[cfg(feature = "cardano")]
 use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
@@ -322,6 +324,13 @@ impl InferViewType for CardanoSignDataRequest {
 impl InferViewType for CardanoCatalystVotingRegistrationRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::CardanoCatalystVotingRegistration)
+    }
+}
+
+#[cfg(feature = "cardano")]
+impl InferViewType for CardanoSignCip8DataRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::CardanoSignCip8Data)
     }
 }
 

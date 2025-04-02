@@ -7,7 +7,7 @@
 #define SOFTWARE_VERSION_MAJOR              12
 #define SOFTWARE_VERSION_MAJOR_OFFSET       10
 #define SOFTWARE_VERSION_MINOR              0
-#define SOFTWARE_VERSION_BUILD              2
+#define SOFTWARE_VERSION_BUILD              4
 #define SOFTWARE_VERSION_BETA               0
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
 #ifdef WEB3_VERSION
@@ -31,6 +31,8 @@ void GetSoftWareVersionNumber(char *version);
 const char *GetSoftwareVersionString(void);
 void GetUpdateVersionNumber(char *version);
 bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build);
+bool IsBootVersionMatch(void);
+void GetBootVersionNumber(char *version);
 
 #endif
 

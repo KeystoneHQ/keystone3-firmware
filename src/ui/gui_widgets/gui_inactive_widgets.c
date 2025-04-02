@@ -10,7 +10,6 @@ static lv_obj_t *g_inactiveCont = NULL;
 void GuiInactiveInit(void)
 {
     lv_obj_t *tempObj;
-    printf("GuiInactiveInit\n");
     if (g_inactiveCont == NULL) {
         g_inactiveCont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()));
         tempObj = GuiCreateImg(g_inactiveCont, &imgWarn);

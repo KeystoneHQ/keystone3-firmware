@@ -137,6 +137,8 @@ static uint32_t g_suiSelectIndex[3] = {0};
 static uint32_t g_stellarSelectIndex[3] = {0};
 static uint32_t g_aptosSelectIndex[3] = {0};
 static uint32_t g_xrpSelectIndex[3] = {0};
+static uint32_t g_babylonChainSelectIndex[3] = {0};
+static uint32_t g_neutaroChainSelectIndex[3] = {0};
 static uint32_t g_tiaChainSelectIndex[3] = {0};
 static uint32_t g_ntrnChainSelectIndex[3] = {0};
 static uint32_t g_dymChainSelectIndex[3] = {0};
@@ -989,6 +991,8 @@ void GuiResetCurrentStandardAddressIndex(uint8_t index)
     g_stellarSelectIndex[index] = 0;
     g_aptosSelectIndex[index] = 0;
     g_xrpSelectIndex[index] = 0;
+    g_babylonChainSelectIndex[index] = 0;
+    g_neutaroChainSelectIndex[index] = 0;
     g_tiaChainSelectIndex[index] = 0;
     g_ntrnChainSelectIndex[index] = 0;
     g_dymChainSelectIndex[index] = 0;
@@ -1032,6 +1036,8 @@ void GuiResetAllStandardAddressIndex(void)
     memset_s(g_stellarSelectIndex, sizeof(g_stellarSelectIndex), 0, sizeof(g_stellarSelectIndex));
     memset_s(g_aptosSelectIndex, sizeof(g_aptosSelectIndex), 0, sizeof(g_aptosSelectIndex));
     memset_s(g_xrpSelectIndex, sizeof(g_xrpSelectIndex), 0, sizeof(g_xrpSelectIndex));
+    memset_s(g_babylonChainSelectIndex, sizeof(g_babylonChainSelectIndex), 0, sizeof(g_babylonChainSelectIndex));
+    memset_s(g_neutaroChainSelectIndex, sizeof(g_neutaroChainSelectIndex), 0, sizeof(g_neutaroChainSelectIndex));
     memset_s(g_tiaChainSelectIndex, sizeof(g_tiaChainSelectIndex), 0, sizeof(g_tiaChainSelectIndex));
     memset_s(g_ntrnChainSelectIndex, sizeof(g_ntrnChainSelectIndex), 0, sizeof(g_ntrnChainSelectIndex));
     memset_s(g_dymChainSelectIndex, sizeof(g_dymChainSelectIndex), 0, sizeof(g_dymChainSelectIndex));
@@ -1112,108 +1118,78 @@ static uint32_t GetCurrentSelectIndex()
 static uint32_t* GetCosmosChainCurrentSelectIndex()
 {
     switch (g_chainCard) {
+    case HOME_WALLET_CARD_BABYLON:
+        return &g_babylonChainSelectIndex[GetCurrentAccountIndex()];
+    case HOME_WALLET_CARD_NEUTARO:
+        return &g_neutaroChainSelectIndex[GetCurrentAccountIndex()];
     case HOME_WALLET_CARD_TIA:
         return &g_tiaChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_NTRN:
         return &g_ntrnChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_DYM:
         return &g_dymChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_OSMO:
         return &g_osmoChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_INJ:
         return &g_injChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_ATOM:
         return &g_atomChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_CRO:
         return &g_croChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_KAVA:
         return &g_kavaChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_LUNC:
         return &g_lunaChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_AXL:
         return &g_axlChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_LUNA:
         return &g_lunaChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_AKT:
         return &g_aktChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_STRD:
         return &g_strdChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_SCRT:
         return &g_scrtChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_BLD:
         return &g_bldChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_CTK:
         return &g_ctkChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_EVMOS:
         return &g_evmosChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_STARS:
         return &g_starsChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_XPRT:
         return &g_xprtChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_SOMM:
         return &g_sommChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_JUNO:
         return &g_junoChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_IRIS:
         return &g_irisChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_DVPN:
         return &g_dvpnChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_ROWAN:
         return &g_rowanChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_REGEN:
         return &g_regenChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_BOOT:
         return &g_bootChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_GRAV:
         return &g_gravChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_IXO:
         return &g_ixoChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_NGM:
         return &g_ngmChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_IOV:
         return &g_iovChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_UMEE:
         return &g_umeeChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_QCK:
         return &g_qckChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_TGD:
         return &g_tgdChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     case HOME_WALLET_CARD_RUNE:
         return &g_thorChainSelectIndex[GetCurrentAccountIndex()];
-        break;
     default:
         return NULL;
     }

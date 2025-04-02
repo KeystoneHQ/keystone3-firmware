@@ -53,12 +53,12 @@ typedef enum HardwareCallV1AdaDerivationAlgo {
 static ADA_DERIVATION_ALGO selected_ada_derivation_algo = HD_STANDARD_ADA;
 
 static void *g_data;
-static URParseResult *g_urResult;
-static URParseMultiResult *g_urMultiResult;
+static URParseResult *g_urResult = NULL;
+static URParseMultiResult *g_urMultiResult = NULL;
 static bool g_isMulti;
 static KeyDerivationWidget_t g_keyDerivationTileView;
-static QRHardwareCallData *g_callData;
-static Response_QRHardwareCallData *g_response;
+static QRHardwareCallData *g_callData = NULL;
+static Response_QRHardwareCallData *g_response = NULL;
 static WALLET_LIST_INDEX_ENUM g_walletIndex;
 static lv_obj_t *g_openMoreHintBox;
 static lv_obj_t *g_derivationPathCont = NULL;
@@ -117,6 +117,7 @@ static uint8_t GetXPubIndexByPath(char *path);
 
 void GuiSetKeyDerivationRequestData(void *urResult, void *multiResult, bool is_multi)
 {
+    FreeKeyDerivationRequestMemory();
     g_urResult = urResult;
     g_urMultiResult = multiResult;
     g_isMulti = is_multi;
@@ -304,10 +305,7 @@ static void OpenDerivationPath()
     lv_obj_t *btn = GuiCreateBtn(tmCont, USR_SYMBOL_CHECK);
     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -36, 0);
 #ifdef WEB3_VERSION
-    if (strcmp("1", g_callData->version) == 0) {
-        lv_obj_add_event_cb(btn, SaveHardwareCallVersion1AdaDerivationAlgo, LV_EVENT_CLICKED, NULL);
-    } else {
-    }
+    lv_obj_add_event_cb(btn, SaveHardwareCallVersion1AdaDerivationAlgo, LV_EVENT_CLICKED, NULL);
 #else
 #endif
 
@@ -360,6 +358,10 @@ void GuiKeyDerivationRequestPrevTile()
 void UpdateAndParseHardwareCall(void)
 {
     if (strnlen_s(SecretCacheGetPassword(), PASSWORD_MAX_LEN) != 0 && g_isUsbPassWordCheck) {
+        if (g_response != NULL) {
+            free_Response_QRHardwareCallData(g_response);
+            g_response = NULL;
+        }
         ModelParseQRHardwareCall();
         HiddenKeyboardAndShowAnimateQR();
     }
@@ -542,14 +544,14 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                 pubkey = get_ed25519_pubkey_by_seed(seed, seedLen, path);
                 break;
             case BIP32_ED25519:
-                if (selected_ada_derivation_algo == HD_STANDARD_ADA) {
+                if (selected_ada_derivation_algo == HD_STANDARD_ADA && !g_isUsb) {
                     uint8_t entropyLen = 0;
                     uint8_t entropy[64];
                     GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
                     SimpleResponse_c_char* cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
                     char* icarusMasterKey = cip3_response->data;
                     pubkey = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
-                } else if (selected_ada_derivation_algo == HD_LEDGER_BITBOX_ADA) {
+                } else if (selected_ada_derivation_algo == HD_LEDGER_BITBOX_ADA || g_isUsb) {
                     // seed -> mnemonic --> master key(m) -> derive key
                     uint8_t entropyLen = 0;
                     uint8_t entropy[64];

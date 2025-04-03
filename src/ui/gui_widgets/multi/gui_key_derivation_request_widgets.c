@@ -104,6 +104,7 @@ static void GuiConnectUsbCreateImg(lv_obj_t *parent);
 static void RejectButtonHandler(lv_event_t *e);
 static void ApproveButtonHandler(lv_event_t *e);
 static void GuiConnectUsbPasswordPass(void);
+static void FreeKeyDerivationRequestMemory(void);
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void);

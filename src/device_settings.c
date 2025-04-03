@@ -21,6 +21,7 @@
 #include "fetch_sensitive_data_task.h"
 #include "ctaes.h"
 #include "drv_mpu.h"
+#include "log_print.h"
 
 #define VERSION_MAX_LENGTH      32
 
@@ -71,6 +72,7 @@ static bool GetDeviceSettingsFromJsonString(const char *string);
 static char *GetJsonStringFromDeviceSettings(void);
 static void AesEncryptBuffer(uint8_t *cipher, uint32_t sz, uint8_t *plain);
 static void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher);
+static void InitBootParam(void);
 
 typedef struct {
     // boot check

@@ -20,7 +20,6 @@ typedef struct KeyDerivationWidget {
     uint8_t currentTile;
     PageWidget_t *pageWidget;
     lv_obj_t *tileView;
-    lv_obj_t *cont;
     lv_obj_t *qrCode;
     lv_obj_t *usbCont;
 } KeyDerivationWidget_t;
@@ -161,9 +160,8 @@ void GuiKeyDerivationRequestInit(bool isUsb)
     g_hasAda = false;
     GUI_PAGE_DEL(g_keyDerivationTileView.pageWidget);
     g_keyDerivationTileView.pageWidget = CreatePageWidget();
-    g_keyDerivationTileView.cont = g_keyDerivationTileView.pageWidget->contentZone;
     SetNavBarLeftBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-    lv_obj_t *tileView = GuiCreateTileView(g_keyDerivationTileView.cont);
+    lv_obj_t *tileView = GuiCreateTileView(g_keyDerivationTileView.pageWidget->contentZone);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, TILE_APPROVE, 0, LV_DIR_HOR);
     ModelParseQRHardwareCall();
     // choose different animate qr widget by hardware call  version
@@ -357,6 +355,7 @@ void GuiKeyDerivationRequestPrevTile()
 
 void UpdateAndParseHardwareCall(void)
 {
+    GuiModelURClear();
     if (strnlen_s(SecretCacheGetPassword(), PASSWORD_MAX_LEN) != 0 && g_isUsbPassWordCheck) {
         if (g_response != NULL) {
             free_Response_QRHardwareCallData(g_response);
@@ -451,7 +450,6 @@ static HardwareCallResult_t CheckHardWareCallV0AdaPathIsLegal(char *path)
             true, "Check Pass", "hardware call params check pass"
         });
         return g_hardwareCallParamsCheckResult;
-
     }
 }
 
@@ -501,7 +499,6 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
             }
         }
     }
-    printf("g_hasAda: %d\n", g_hasAda);
     if (g_hasAda) {
         MnemonicType mnemonicType = GetMnemonicType();
         if (mnemonicType == MNEMONIC_TYPE_SLIP39) {
@@ -532,16 +529,16 @@ static UREncodeResult *ModelGenerateSyncUR(void)
 
         GetAccountSeed(GetCurrentAccountIndex(), seed, password);
         ExtendedPublicKey xpubs[24];
+        SimpleResponse_c_char *pubkey[24];
         for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
             uint8_t derivationType = GetDerivationTypeByCurveAndDeriveAlgo(g_callData->key_derivation->schemas->data[i].curve, g_callData->key_derivation->schemas->data[i].algo);
             char *path = g_callData->key_derivation->schemas->data[i].key_path;
-            SimpleResponse_c_char *pubkey = NULL;
             switch (derivationType) {
             case SECP256K1:
-                pubkey = get_extended_pubkey_bytes_by_seed(seed, seedLen, path);
+                pubkey[i] = get_extended_pubkey_bytes_by_seed(seed, seedLen, path);
                 break;
             case SLIP10_ED25519:
-                pubkey = get_ed25519_pubkey_by_seed(seed, seedLen, path);
+                pubkey[i] = get_ed25519_pubkey_by_seed(seed, seedLen, path);
                 break;
             case BIP32_ED25519:
                 if (selected_ada_derivation_algo == HD_STANDARD_ADA && !g_isUsb) {
@@ -550,7 +547,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                     GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
                     SimpleResponse_c_char* cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
                     char* icarusMasterKey = cip3_response->data;
-                    pubkey = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+                    pubkey[i] = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
                 } else if (selected_ada_derivation_algo == HD_LEDGER_BITBOX_ADA || g_isUsb) {
                     // seed -> mnemonic --> master key(m) -> derive key
                     uint8_t entropyLen = 0;
@@ -560,14 +557,14 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                     bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
                     SimpleResponse_c_char *ledger_bitbox02_response  = get_ledger_bitbox02_master_key(mnemonic, GetPassphrase(GetCurrentAccountIndex()));
                     char* ledgerBitbox02Key = ledger_bitbox02_response->data;
-                    pubkey = derive_bip32_ed25519_extended_pubkey(ledgerBitbox02Key, path);
+                    pubkey[i] = derive_bip32_ed25519_extended_pubkey(ledgerBitbox02Key, path);
                 }
                 break;
             default:
                 break;
             }
             xpubs[i].path = path;
-            xpubs[i].xpub = pubkey->data;
+            xpubs[i].xpub = pubkey[i]->data;
         }
         keys.data = xpubs;
         keys.size = g_callData->key_derivation->schemas->size;
@@ -577,7 +574,13 @@ static UREncodeResult *ModelGenerateSyncUR(void)
         if (!g_isUsb) {
             ClearSecretCache();
         }
-        return generate_key_derivation_ur(mfp, 4, &keys, firmwareVersion);
+        Ptr_UREncodeResult urResult = generate_key_derivation_ur(mfp, 4, &keys, firmwareVersion);
+        for (size_t i = 0; i < g_callData->key_derivation->schemas->size; i++) {
+            if (pubkey[i] != NULL) {
+                free_simple_response_c_char(pubkey[i]);
+            }
+        }
+        return urResult;
     }
 #ifdef WEB3_VERSION
     ExtendedPublicKey xpubs[24];
@@ -677,8 +680,6 @@ static void GuiCreateHardwareCallApproveWidget(lv_obj_t *parent)
 
 static void GuiCreateApproveWidget(lv_obj_t *parent)
 {
-    ModelParseQRHardwareCall();
-
     lv_obj_t *label, *cont, *btn, *pathCont;
 
     cont = GuiCreateContainerWithParent(parent, 408, 534);

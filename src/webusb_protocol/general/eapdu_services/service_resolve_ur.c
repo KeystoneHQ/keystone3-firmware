@@ -52,14 +52,13 @@ void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requ
     }
 
     BasicHandlerFunc(data, data_len, requestID, sendStatus);
+    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR || status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
+        return;
+    }
     EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
     resultPage->command = CMD_RESOLVE_UR;
     resultPage->error_code = status;
     resultPage->error_message = (char *)data;
-    if (status == PRS_PARSING_DISALLOWED || status == PRS_PARSING_REJECTED || status == PRS_PARSING_VERIFY_PASSWORD_ERROR || status == PRS_EXPORT_HARDWARE_CALL_SUCCESS) {
-        SRAM_FREE(resultPage);
-        return;
-    }
     GotoResultPage(resultPage);
     SRAM_FREE(resultPage);
 };

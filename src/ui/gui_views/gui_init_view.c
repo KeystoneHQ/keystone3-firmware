@@ -25,6 +25,7 @@
 #include "drv_aw32001.h"
 #include "usb_task.h"
 #include "ui_display_task.h"
+#include "version.h"
 
 static int32_t GuiInitViewInit(void *param)
 {

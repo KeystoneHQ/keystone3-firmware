@@ -36,6 +36,7 @@ uint32_t GetCurrentStampTime(void);
 bool FatfsFileExist(const char *path);
 bool GetEnsName(const char *addr, char *name);
 void FpWipeManageInfo(void);
+void SetPageLockScreen(bool enable);
 
 extern bool g_reboot;
 

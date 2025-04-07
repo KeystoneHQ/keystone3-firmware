@@ -63,13 +63,13 @@ static void UsbTask(void *argument)
     osStatus_t ret;
 
     osDelay(1000);
-#if (USB_POP_WINDOW_ENABLE == 1)
-    CloseUsb();
-#else
+// #if (USB_POP_WINDOW_ENABLE == 1)
+    // CloseUsb();
+// #else
     if (GetUSBSwitch() && GetUsbDetectState()) {
         OpenUsb();
     }
-#endif
+// #endif
     while (1) {
         ret = osMessageQueueGet(g_usbQueue, &rcvMsg, NULL, 10000);
         if (ret == osOK) {

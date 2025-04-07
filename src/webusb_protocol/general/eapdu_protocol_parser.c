@@ -170,6 +170,12 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
         return;
     }
     EAPDUFrame_t *eapduFrame = FrameParser(frame, len);
+    printf("eapduFrame->cla = %d\n", eapduFrame->cla);
+    printf("eapduFrame->ins = %d\n", eapduFrame->ins);
+    printf("eapduFrame->p1 = %d\n", eapduFrame->p1);
+    printf("eapduFrame->p2 = %d\n", eapduFrame->p2);
+    printf("eapduFrame->lc = %d\n", eapduFrame->lc);
+    printf("eapduFrame->dataLen = %d\n", eapduFrame->dataLen);
     if (!eapduFrame || CheckFrameValidity(eapduFrame) != FRAME_CHECKSUM_OK) {
         SRAM_FREE(eapduFrame);
         return;

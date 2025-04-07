@@ -29,7 +29,7 @@ static MultiSigWallet *g_multiSigWallet = NULL;
 #endif
 
 #define ADDRESS_INDEX_MAX                               (999999999)
-#define DOGE_ADDRESS_INDEX_MAX                          (20)
+#define DOGE_ADDRESS_INDEX_MAX                          (19)
 
 typedef enum {
     UTXO_RECEIVE_TILE_QRCODE = 0,
@@ -1023,7 +1023,11 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
         g_utxoReceiveWidgets.inputAddressLabel = GuiCreateTextLabel(cont, "");
         lv_obj_align(g_utxoReceiveWidgets.inputAddressLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
-        label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_limit"));
+        if (g_chainCard == CHAIN_DOGE) {
+            label = GuiCreateIllustrateLabel(cont, _("receive_doge_receive_change_address_limit"));
+        } else {
+            label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_limit"));
+        }
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 170 + 270);
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
@@ -1282,8 +1286,8 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
 
     if (code == LV_EVENT_CLICKED) {
         const char *txt = lv_btnmatrix_get_btn_text(obj, id);
-        uint32_t len = strnlen_s(input, ADDRESS_MAX_LEN);
         strcpy_s(input, ADDRESS_MAX_LEN, lv_label_get_text(g_utxoReceiveWidgets.inputAddressLabel));
+        uint32_t len = strnlen_s(input, ADDRESS_MAX_LEN);
         if (strcmp(txt, LV_SYMBOL_OK) == 0) {
             if (g_gotoAddressValid) {
                 if (sscanf(input, "%u", &g_selectIndex) == 1) {
@@ -1298,20 +1302,21 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
             if (len > 0) {
                 input[len - 1] = '\0';
                 lv_label_set_text(g_utxoReceiveWidgets.inputAddressLabel, input);
-                lv_obj_add_flag(g_utxoReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
-                g_gotoAddressValid = true;
+                if (g_chainCard == CHAIN_DOGE) {
+                    longInt = strtol(input, NULL, 10);
+                    g_gotoAddressValid = longInt <= 19;
+                } else {
+                    g_gotoAddressValid = true;
+                }
+                if (g_gotoAddressValid) {
+                    lv_obj_add_flag(g_utxoReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+                }
             } else {
                 g_gotoAddressValid = false;
             }
         } else if (len < ADDRESS_MAX_LEN - 1) {
             strcat(input, txt);
             longInt = strtol(input, NULL, 10);
-            if (longInt >= GetMaxAccountIndex()) {
-                input[9] = '\0';
-                lv_obj_clear_flag(g_utxoReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
-            } else {
-                lv_obj_add_flag(g_utxoReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
-            }
             if (longInt > 0) {
                 if (input[0] == '0') {
                     lv_label_set_text(g_utxoReceiveWidgets.inputAddressLabel, input + 1);
@@ -1321,7 +1326,22 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
             } else {
                 lv_label_set_text(g_utxoReceiveWidgets.inputAddressLabel, "0");
             }
-            g_gotoAddressValid = true;
+            if (longInt >= GetMaxAccountIndex()) {
+                if (g_chainCard == CHAIN_DOGE) {
+                    g_gotoAddressValid = longInt <= 19;
+                } else {
+                    g_gotoAddressValid = false;
+                }
+                input[9] = '\0';
+                if (g_gotoAddressValid) {
+                    lv_obj_add_flag(g_utxoReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+                } else {
+                    lv_obj_clear_flag(g_utxoReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+                }
+            } else {
+                lv_obj_add_flag(g_utxoReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
+                g_gotoAddressValid = true;
+            }
         } else {
             g_gotoAddressValid = false;
             printf("input to long\r\n");

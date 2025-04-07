@@ -1301,7 +1301,6 @@ static void decodeEthContractData(void *parseResult)
         // not a valid contract data;
         return;
     }
-
     if (GetEthErc20ContractData(parseResult)) {
         return;
     }
@@ -1392,9 +1391,14 @@ bool GetEthContractFromInternal(char *address, char *inputData)
     if (GetSafeContractData(inputData)) {
         return true;
     }
+    // address_key = address + "_" + functionSelector
+    char* address_key = (char*)SRAM_MALLOC(strlen(address) + 9);
+    strcpy_s(address_key, strlen(address) + 9, address);
+    strcat_s(address_key, strlen(address) + 9, "_");
+    strcat_s(address_key, strlen(address) + 9, inputData);
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(ethereum_abi_map); i++) {
         struct ABIItem item = ethereum_abi_map[i];
-        if (strcasecmp(item.address, address) == 0) {
+        if (strcasecmp(item.address, address_key) == 0) {
             Response_DisplayContractData *contractData = eth_parse_contract_data(inputData, (char *)item.json);
             if (contractData->error_code == 0) {
                 g_contractDataExist = true;

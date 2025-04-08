@@ -557,6 +557,12 @@ static GetLabelDataFunc GuiEthTypedDataTextFuncGet(char *type)
         return GetEthTypedDataFrom;
     } else if (!strcmp(type, "GetEthTypedDataPrimayType")) {
         return GetEthTypedDataPrimayType;
+    } else if (!strcmp(type, "GetEthTypedDataMessageHash")) {
+        return GetEthTypedDataMessageHash;
+    } else if (!strcmp(type, "GetEthTypedDataSafeTxHash")) {
+        return GetEthTypedDataSafeTxHash;
+    } else if (!strcmp(type, "GetEthTypedDataDomainHash")) {
+        return GetEthTypedDataDomainHash;
     }
     return NULL;
 }
@@ -610,6 +616,8 @@ static GetContSizeFunc GetEthObjPos(char *type)
         return GetEthToLabelPos;
     } else if (!strcmp(type, "GetEthTypeDomainPos")) {
         return GetEthTypeDomainPos;
+    } else if (!strcmp(type, "GetEthTypeDataHashCardPos")) {
+        return GetEthTypeDataHashCardPos;
     }
     return NULL;
 }

@@ -28,11 +28,13 @@ void GetEthGetToAddress(void *indata, void *param, uint32_t maxLen);
 void GetEthGetDetailPageToAddress(void *indata, void *param, uint32_t maxLen);
 void GetTxnFeeDesc(void *indata, void *param, uint32_t maxLen);
 void GetEthToFromSize(uint16_t *width, uint16_t *height, void *param);
+void GetEthInputDataSize(uint16_t *width, uint16_t *height, void *param);
 void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param);
 void GetEthTypeDomainPos(uint16_t *x, uint16_t *y, void *param);
 void GetEthTypeDataHashCardPos(uint16_t *x, uint16_t *y, void *param);
 void GetEthEnsName(void *indata, void *param, uint32_t maxLen);
 void GetToEthEnsName(void *indata, void *param, uint32_t maxLen);
+void GetEthInputData(void *indata, void *param, uint32_t maxLen);
 bool GetEthContractFromInternal(char *address, char *inputData);
 bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainId, char *inputData);
 void GetEthMethodName(void *indata, void *param, uint32_t maxLen);
@@ -68,22 +70,19 @@ void GetEthTypedDataMessage(void *indata, void *param, uint32_t maxLen);
 int GetEthTypedDataMessageLen(void *param);
 void GetEthTypedDataFrom(void *indata, void *param, uint32_t maxLen);
 void EthContractLearnMore(lv_event_t *e);
-typedef struct
-{
+typedef struct {
     uint64_t chainId;
     char *name;
     char *symbol;
 } EvmNetwork_t;
 
-typedef struct
-{
+typedef struct {
     char *symbol;
     char *contract_address;
     uint8_t decimals;
 } Erc20Contract_t;
 
-typedef struct
-{
+typedef struct {
     char *recipient;
     char *value;
 } Erc20Transfer_t;

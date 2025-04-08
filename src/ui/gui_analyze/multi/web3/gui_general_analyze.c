@@ -605,6 +605,8 @@ static GetLabelDataFunc GuiEthTextFuncGet(char *type)
         return GetEthTransactionData;
     } else if (!strcmp(type, "GetEthContractName")) {
         return GetEthContractName;
+    } else if (!strcmp(type, "GetEthInputData")) {
+        return GetEthInputData;
     }
 
     return NULL;
@@ -662,6 +664,8 @@ static GetContSizeFunc GetEthContainerSize(char *type)
         return GetEthToFromSize;
     } else if (!strcmp(type, "GetEthContractDataSize")) {
         return GetEthContractDataSize;
+    } else if (!strcmp(type, "GetEthInputDataSize")) {
+        return GetEthInputDataSize;
     }
     return NULL;
 }

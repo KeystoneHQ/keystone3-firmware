@@ -797,6 +797,70 @@ void GetEthTypedDataDomianName(void *indata, void *param, uint32_t maxLen)
     }
 }
 
+void _colorfulHash(char *hash, char *indata, uint32_t maxLen) {
+    size_t len = strlen(hash);
+    if (len >= 19) {
+        char prefix[9] = {0};
+        char suffix[9] = {0};
+        char middle[233] = {0};
+        strncpy(prefix, hash, 8);
+        strncpy(suffix, hash + (len - 8), 8);
+        strncpy(middle, hash + 8, len - 16);
+
+        snprintf_s((char *)indata, maxLen, "#F5870A %s#%s#F5870A %s#", prefix, middle, suffix);
+    } else {
+        strcpy_s((char *)indata, maxLen, hash);
+    }
+
+}
+
+void GetEthTypedDataDomainHash(void *indata, void *param, uint32_t maxLen) {
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    if (message->domain_hash != NULL) {
+        // first 8 char and last 8 char color #F5870A
+        char *hash = message->domain_hash;
+        // if not start with 0x, add 0x
+        if (hash[0] != '0' || (hash[1] != 'x' && hash[1] != 'X')) {
+            strcpy_s((char *)indata, maxLen, "0x");
+            strcat_s((char *)indata, maxLen, hash);
+            _colorfulHash((char *)indata, (char *)indata, maxLen);
+        } else {
+            _colorfulHash(hash, (char *)indata, maxLen);
+        }
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
+}
+
+
+void GetEthTypedDataMessageHash(void *indata, void *param, uint32_t maxLen) {
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    if (message->message_hash != NULL) {
+        // first 8 char and last 8 char color #F5870A
+        char *hash = message->message_hash;
+        // if not start with 0x, add 0x
+        if (hash[0] != '0' || (hash[1] != 'x' && hash[1] != 'X')) {
+            strcpy_s((char *)indata, maxLen, "0x");
+            strcat_s((char *)indata, maxLen, hash);
+            _colorfulHash((char *)indata, (char *)indata, maxLen);
+        } else {
+            _colorfulHash(hash, (char *)indata, maxLen);
+        }
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
+}
+
+void GetEthTypedDataSafeTxHash(void *indata, void *param, uint32_t maxLen) {
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    if (message->safe_tx_hash != NULL) {
+        char *hash = message->safe_tx_hash;
+        _colorfulHash(hash, (char *)indata, maxLen);
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
+}
+
 void GetEthTypedDataDomianVersion(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
@@ -1196,6 +1260,12 @@ void GetEthTypeDomainPos(uint16_t *x, uint16_t *y, void *param)
     } else {
         *y = (152 + 16) * g_isPermit + 26;
     }
+}
+
+void GetEthTypeDataHashCardPos(uint16_t *x, uint16_t *y, void *param)
+{
+    *x = 36;
+    *y = 360;
 }
 
 bool GetEthContractDataExist(void *indata, void *param)

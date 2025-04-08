@@ -801,7 +801,8 @@ void GetEthTypedDataDomianName(void *indata, void *param, uint32_t maxLen)
     }
 }
 
-void _colorfulHash(char *hash, char *indata, uint32_t maxLen) {
+void _colorfulHash(char *hash, char *indata, uint32_t maxLen)
+{
     size_t len = strlen(hash);
     if (len >= 19) {
         char prefix[9] = {0};
@@ -818,7 +819,8 @@ void _colorfulHash(char *hash, char *indata, uint32_t maxLen) {
 
 }
 
-void GetEthTypedDataDomainHash(void *indata, void *param, uint32_t maxLen) {
+void GetEthTypedDataDomainHash(void *indata, void *param, uint32_t maxLen)
+{
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->domain_hash != NULL) {
         // first 8 char and last 8 char color #F5870A
@@ -837,7 +839,8 @@ void GetEthTypedDataDomainHash(void *indata, void *param, uint32_t maxLen) {
 }
 
 
-void GetEthTypedDataMessageHash(void *indata, void *param, uint32_t maxLen) {
+void GetEthTypedDataMessageHash(void *indata, void *param, uint32_t maxLen)
+{
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->message_hash != NULL) {
         // first 8 char and last 8 char color #F5870A
@@ -855,7 +858,8 @@ void GetEthTypedDataMessageHash(void *indata, void *param, uint32_t maxLen) {
     }
 }
 
-void GetEthTypedDataSafeTxHash(void *indata, void *param, uint32_t maxLen) {
+void GetEthTypedDataSafeTxHash(void *indata, void *param, uint32_t maxLen)
+{
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->safe_tx_hash != NULL) {
         char *hash = message->safe_tx_hash;
@@ -1243,6 +1247,12 @@ void GetToEthEnsName(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, g_toEthEnsName);
 }
 
+void GetEthInputData(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+    strcpy_s((char *)indata, maxLen, eth->detail->input);
+}
+
 bool GetEthEnsExist(void *indata, void *param)
 {
     return g_fromEnsExist;
@@ -1260,6 +1270,12 @@ bool GetEthInputDataExist(void *indata, void *param)
 }
 
 void GetEthToFromSize(uint16_t *width, uint16_t *height, void *param)
+{
+    *width = 408;
+    *height = 244 + (g_fromEnsExist + g_toEnsExist) * (GAP + TEXT_LINE_HEIGHT) + g_contractDataExist * (GAP + TEXT_LINE_HEIGHT);
+}
+
+void GetEthInputDataSize(uint16_t *width, uint16_t *height, void *param)
 {
     *width = 408;
     *height = 244 + (g_fromEnsExist + g_toEnsExist) * (GAP + TEXT_LINE_HEIGHT) + g_contractDataExist * (GAP + TEXT_LINE_HEIGHT);

@@ -1023,11 +1023,15 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN);
         g_utxoReceiveWidgets.inputAddressLabel = GuiCreateTextLabel(cont, "");
         lv_obj_align(g_utxoReceiveWidgets.inputAddressLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
+#ifdef WEB3_VERSION
         if (g_chainCard == CHAIN_DOGE) {
             label = GuiCreateIllustrateLabel(cont, _("receive_doge_receive_change_address_limit"));
         } else {
             label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_limit"));
         }
+#else
+        label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_limit"));
+#endif
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 170 + 270);
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
@@ -1302,12 +1306,16 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
             if (len > 0) {
                 input[len - 1] = '\0';
                 lv_label_set_text(g_utxoReceiveWidgets.inputAddressLabel, input);
+#ifdef WEB3_VERSION
                 if (g_chainCard == CHAIN_DOGE) {
                     longInt = strtol(input, NULL, 10);
                     g_gotoAddressValid = longInt <= 19;
                 } else {
                     g_gotoAddressValid = true;
                 }
+#else
+                g_gotoAddressValid = true;
+#endif
                 if (g_gotoAddressValid) {
                     lv_obj_add_flag(g_utxoReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);
                 }
@@ -1327,11 +1335,15 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
                 lv_label_set_text(g_utxoReceiveWidgets.inputAddressLabel, "0");
             }
             if (longInt >= GetMaxAccountIndex()) {
+#ifdef WEB3_VERSION
                 if (g_chainCard == CHAIN_DOGE) {
                     g_gotoAddressValid = longInt <= 19;
                 } else {
                     g_gotoAddressValid = false;
                 }
+#else
+                g_gotoAddressValid = false;
+#endif
                 input[9] = '\0';
                 if (g_gotoAddressValid) {
                     lv_obj_add_flag(g_utxoReceiveWidgets.overflowLabel, LV_OBJ_FLAG_HIDDEN);

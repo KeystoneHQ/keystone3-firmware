@@ -121,7 +121,7 @@ pub fn sign_fee_markey_tx(
 ) -> Result<EthereumSignature> {
     // sign_data should starts with 0x02
     let first_byte = *sign_data.first().ok_or(EthereumError::InvalidTransaction)?;
-    if first_byte != 0x02 {
+    if first_byte != 0x02 && first_byte != 0x04 {
         return Err(EthereumError::InvalidTransaction);
     }
 
@@ -716,4 +716,17 @@ mod tests {
         assert_eq!("59c81deb0d98c36f152f286fcb97c0fa79d6b1451b8027ae4b0e20bc595c59e7457335ab527ccacf520f5c1f1687b20003ffe7f99b1035ac2deea3f5728e242b00",
                    hex::encode(message.serialize()));
     }
+
+    #[test]
+    fn test_sign_7702_tx() {
+        let sign_data =
+            hex::decode("04f8918210e18204d2018405f5e100825208946fac4d18c912343bf86fa7049364dd4e424ab9c088016345785d8a000080c0f860f85e8210e1949858effd232b4033e47d90003d41ec34ecaeda948204d280a059c81deb0d98c36f152f286fcb97c0fa79d6b1451b8027ae4b0e20bc595c59e7a0457335ab527ccacf520f5c1f1687b20003ffe7f99b1035ac2deea3f5728e242b").unwrap();
+        let path = "m/44'/60'/0'/0/0".to_string();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let message = sign_fee_markey_tx(sign_data, &seed, &path).unwrap();
+        assert_eq!("65dc51921635fb8b319a55960dac95575c0ba017a8561b6fdc2e098b4e4a1a611fa19e53811ea03af848da123f2981f566ff37768b3f4daf3327f2d194eb5dca01",
+                   hex::encode(message.serialize()));
+    }
+
+
 }

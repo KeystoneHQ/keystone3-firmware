@@ -251,7 +251,7 @@ pub extern "C" fn eth_parse(
                 }
                 TransactionType::TypedTransaction => {
                     match crypto_eth.get_sign_data().first() {
-                        Some(02) => {
+                        Some(02) | Some(04) => {
                             //remove envelop
                             let payload = crypto_eth.get_sign_data()[1..].to_vec();
                             let tx = parse_fee_market_tx(payload, key);
@@ -396,7 +396,7 @@ pub extern "C" fn eth_sign_tx_dynamic(
             app_ethereum::sign_legacy_tx(crypto_eth.get_sign_data().to_vec(), seed, &path)
         }
         TransactionType::TypedTransaction => match crypto_eth.get_sign_data().first() {
-            Some(0x02) => {
+            Some(0x02) | Some(0x04) => {
                 app_ethereum::sign_fee_markey_tx(crypto_eth.get_sign_data().to_vec(), seed, &path)
             }
             Some(x) => {

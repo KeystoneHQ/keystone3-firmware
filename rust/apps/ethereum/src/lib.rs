@@ -14,14 +14,16 @@ pub use legacy_transaction::*;
 
 use crate::crypto::keccak256;
 use crate::eip1559_transaction::{EIP1559Transaction, ParsedEIP1559Transaction};
+use crate::eip7702_authorization::{EIP7702Authorization};
 use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
 use crate::errors::{EthereumError, Result};
-use crate::structs::{EthereumSignature, ParsedEthereumTransaction, PersonalMessage, TypedData};
+use crate::structs::{EthereumSignature, ParsedEthereumTransaction, PersonalMessage, TypedData, Auth7702};
 
 pub mod abi;
 pub mod address;
 mod crypto;
 mod eip1559_transaction;
+mod eip7702_authorization;
 pub mod eip712;
 pub mod erc20;
 pub mod errors;
@@ -69,6 +71,10 @@ pub fn parse_typed_data_message(tx_hex: Vec<u8>, from_key: PublicKey) -> Result<
     let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message)
         .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), utf8_message))?;
     TypedData::from_raw(typed_data, from_key)
+}
+
+pub fn parse_7702_authorization(auth_hex: Vec<u8>, account_key: PublicKey) -> Result<Auth7702> {
+    Auth7702::from(EIP7702Authorization::decode_raw(auth_hex.as_slice())?, account_key)
 }
 
 pub fn sign_legacy_tx(sign_data: Vec<u8>, seed: &[u8], path: &String) -> Result<EthereumSignature> {
@@ -172,6 +178,24 @@ pub fn sign_typed_data_message(
         })
 }
 
+const PREFIX_7702_AUTHORIZATION: u8 = 0x05;
+
+pub fn sign_7702_authorization(
+    sign_data: Vec<u8>,
+    seed: &[u8],
+    path: &String,
+) -> Result<EthereumSignature> {
+    let mut auth: Vec<u8> = Vec::new();
+    auth.push(PREFIX_7702_AUTHORIZATION);
+    auth.extend(sign_data);
+    let hash = keccak256(auth.as_slice());
+    let message =
+        Message::from_digest_slice(&hash).map_err(|e| EthereumError::SignFailure(e.to_string()))?;
+    keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
+        .map_err(|e| EthereumError::SignFailure(e.to_string()))
+        .map(|(rec_id, rs)| EthereumSignature(rec_id as u64, rs))
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -182,8 +206,8 @@ mod tests {
     use crate::alloc::string::ToString;
     use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
     use crate::{
-        parse_fee_market_tx, parse_personal_message, parse_typed_data_message,
-        sign_personal_message, sign_typed_data_message,
+        parse_fee_market_tx, parse_personal_message, parse_typed_data_message, parse_7702_authorization,
+        sign_fee_markey_tx, sign_personal_message, sign_typed_data_message, sign_7702_authorization,
     };
 
     #[test]
@@ -255,6 +279,21 @@ mod tests {
             &result.verifying_contract
         );
     }
+
+    #[test]
+    fn test_parse_7702_authorization() {
+        let auth_data = hex::decode("db8210e1949858effd232b4033e47d90003d41ec34ecaeda948204d2").unwrap();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let path = "m/44'/60'/0'/0/0".to_string();
+
+        let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+        let result = parse_7702_authorization(auth_data, pubkey).unwrap();
+        assert_eq!("0x9858EfFD232B4033E47d90003D41EC34EcaEda94", result.account);
+        assert_eq!(4321, result.chain_id);
+        assert_eq!("0x9858effd232b4033e47d90003d41ec34ecaeda94", result.delegate);
+        assert_eq!(1234, result.nonce);
+    }
+
 
     #[test]
 
@@ -665,5 +704,16 @@ mod tests {
             "cbf0b0d6ef4b47e1624267fb41e00de27f5812d5ff324f1817e73791905554844a80df5ead72fec8ac2be5fa9eebbfddb953577ea6f6f9df3c9dbf490035dd3f1c",
             hex::encode(message.serialize())
         );
+    }
+
+    #[test]
+    fn test_sign_7702_authorization() {
+        let sign_data =
+            hex::decode("db8210e1949858effd232b4033e47d90003d41ec34ecaeda948204d2").unwrap();
+        let path = "m/44'/60'/0'/0/0".to_string();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let message = sign_7702_authorization(sign_data, &seed, &path).unwrap();
+        assert_eq!("59c81deb0d98c36f152f286fcb97c0fa79d6b1451b8027ae4b0e20bc595c59e7457335ab527ccacf520f5c1f1687b20003ffe7f99b1035ac2deea3f5728e242b00",
+                   hex::encode(message.serialize()));
     }
 }

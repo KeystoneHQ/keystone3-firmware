@@ -63,6 +63,13 @@ void GetEthTypedDataPrimayType(void *indata, void *param, uint32_t maxLen);
 void GetEthTypedDataMessage(void *indata, void *param, uint32_t maxLen);
 int GetEthTypedDataMessageLen(void *param);
 void GetEthTypedDataFrom(void *indata, void *param, uint32_t maxLen);
+
+void *GuiGetEthAuth7702(void);
+void GetEthAuth7702Account(void *indata, void *param, uint32_t maxLen);
+void GetEthAuth7702ChainId(void *indata, void *param, uint32_t maxLen);
+void GetEthAuth7702Delegate(void *indata, void *param, uint32_t maxLen);
+void getEthAuth7702Nonce(void *indata, void *param, uint32_t maxLen);
+
 void EthContractLearnMore(lv_event_t *e);
 typedef struct {
     uint64_t chainId;

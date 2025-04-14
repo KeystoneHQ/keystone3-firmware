@@ -1225,11 +1225,6 @@ static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e)
 {
     selected_ada_derivation_algo = GetCurrentSelectedIndex();
     // save the derivation path type to the json file that be saved in flash
-    // SetConnectWalletPathIndex(g_response->data->origin, GetAccountType());
-    // stored account type
-    // printf("GetKeyDerivationAdaXPubType: %d\n", GetKeyDerivationAdaXPubType());
-    // printf("memory account type: %d\n", selected_ada_derivation_algo);
-    // SetAccountType(GetKeyDerivationAdaXPubType());
     SetAccountType(selected_ada_derivation_algo);
     CloseDerivationHandler(e);
 }

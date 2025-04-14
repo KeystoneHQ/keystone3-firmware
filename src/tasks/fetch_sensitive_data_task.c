@@ -25,7 +25,11 @@ void CreateFetchSensitiveDataTask(void)
 {
     const osThreadAttr_t SensitiveDataTask_attributes = {
         .name = "SensitiveDataTask",
+#ifdef CYPHERPUNK_VERSION
         .stack_size = 1024 * 40,
+#else
+        .stack_size = 1024 * 35,
+#endif
         .priority = (osPriority_t)osPriorityBelowNormal,
     };
     g_sensitiveDataTaskHandle = osThreadNew(FetchSensitiveDataTask, NULL, &SensitiveDataTask_attributes);

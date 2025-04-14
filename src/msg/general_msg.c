@@ -35,7 +35,7 @@ uint32_t PubBufferMsg(uint32_t messageID, void *buffer, uint32_t length)
         queue = GetQueueFromMid(messageID, i);
         if (queue == NULL) {
             if (i == 0) {
-                printf("msg id err,msg id=0x%08X\r\n", messageID);
+                printf("PubBufferMsg msg id err,msg id=0x%08X\r\n", messageID);
                 return MSG_MESSAGE_ID_ERROR;
             } else {
                 return MSG_SUCCESS;
@@ -73,7 +73,7 @@ uint32_t PubValueMsg(uint32_t messageID, uint32_t value)
         queue = GetQueueFromMid(messageID, i);
         if (queue == NULL) { // queue is empty
             if (i == 0) {
-                printf("msg id err,msg id=0x%08X\r\n", messageID);
+                printf("PubValueMsg msg id err,msg id=0x%08X\r\n", messageID);
                 return MSG_MESSAGE_ID_ERROR;
             } else {
                 return MSG_SUCCESS;

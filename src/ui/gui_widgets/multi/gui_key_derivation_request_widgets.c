@@ -607,6 +607,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     SetLockScreen(enable);
     return generate_key_derivation_ur(mfp, 4, &keys, firmwareVersion);
 #endif
+    SetLockScreen(enable);
     return NULL;
 }
 

@@ -520,6 +520,8 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
 
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
     CSliceFFI_ExtendedPublicKey keys;
     char firmwareVersion[BUFFER_SIZE_32];
     GetSoftWareVersionNumber(firmwareVersion);
@@ -583,6 +585,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                 free_simple_response_c_char(pubkey[i]);
             }
         }
+        SetLockScreen(enable);
         return urResult;
     }
 #ifdef WEB3_VERSION
@@ -601,8 +604,10 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     for (size_t i = 0; i < keys.size; i++) {
         printf("v0 path: %s, xpub: %s\n", keys.data[i].path, keys.data[i].xpub);
     }
+    SetLockScreen(enable);
     return generate_key_derivation_ur(mfp, 4, &keys, firmwareVersion);
 #endif
+    SetLockScreen(enable);
     return NULL;
 }
 

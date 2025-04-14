@@ -1,3 +1,32 @@
+## 2.0.6(2025-04-14)
+
+**Web3:**
+
+### 新增 
+1. 支持 Keystone Nexus 钱包管理 DOGE 资产
+2. 支持 Beacon 钱包管理 AR/AO 资产
+3. 支持 USB 连接 NuFi 钱包管理 SOL/ETH 资产
+4. 支持 Backpack 钱包管理 SUI 资产
+5. 支持管理 Cosmos 上的 Neutaro 及 Babylpon App Chain 资产
+7. 新增支持 Cardano-HW-CLI 
+
+### Bug 修复
+1. 修复了 EVM 交易中因数据量较大导致的签名报错问题
+2. 修复了 ADA 部分场景签名报错卡顿问题
+3. 修复了 SOL 签名重启问题
+
+
+**BTC Only:**
+
+### 新增 
+1. 支持 Bitcoin-Safe 钱包管理 BTC 资产
+
+
+
+
+
+
+
 ## 2.0.4-btc(2025-03-24)
 
 **BTC Only:**

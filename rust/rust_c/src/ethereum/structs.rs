@@ -18,7 +18,6 @@ use core::str::FromStr;
 use itertools::Itertools;
 use ur_registry::ethereum::eth_sign_request::DataType;
 use ur_registry::pb::protoc::EthTx;
-
 #[repr(C)]
 pub struct DisplayETH {
     pub(crate) tx_type: PtrString,

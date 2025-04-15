@@ -432,7 +432,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     GetLabelDataFunc pFunc = NULL;
     GetLabelDataLenFunc lenFunc = NULL;
     int textWidth = 0;
-    int bufLen = BUFFER_SIZE_1024;
+    int bufLen = BUFFER_SIZE_512;
     cJSON *item = cJSON_GetObjectItem(json, "text_len_func");
     if (item != NULL) {
         lenFunc = GuiTemplateTextLenFuncGet(item->valuestring);
@@ -440,9 +440,14 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
             bufLen = lenFunc(g_totalData) + 1;
         }
     }
-    char *text = EXT_MALLOC(bufLen);
-    lv_obj_t *obj = lv_label_create(parent);
+    // PrintHeapInfo();
+    lv_obj_t *obj =  lv_label_create(parent);
+    lv_label_set_long_mode(obj, LV_LABEL_LONG_SCROLL);
     item = cJSON_GetObjectItem(json, "text");
+    if (strcmp("InputData", item->valuestring) == 0) {
+        bufLen = BUFFER_SIZE_1024 * 5;
+    }
+    char *text = EXT_MALLOC(bufLen);
     if (item != NULL) {
         lv_label_set_text(obj, _(item->valuestring));
     } else {
@@ -474,7 +479,13 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
         pFunc = GuiTemplateTextFuncGet(item->valuestring);
         item = cJSON_GetObjectItem(json, "text_key");
         if (item != NULL) {
-            strcpy_s(text, BUFFER_SIZE_1024, item->valuestring);
+            if (strlen(item->valuestring) > BUFFER_SIZE_1024) {
+                printf("value string is too long\n");
+                uint32_t len = BUFFER_SIZE_1024 * 5;
+                strcpy_s(text, len, item->valuestring);
+            } else {
+                strcpy_s(text, BUFFER_SIZE_1024, item->valuestring);
+            }
         }
     }
 
@@ -487,7 +498,75 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     lv_obj_set_style_text_letter_space(obj, LV_STATE_DEFAULT | LV_PART_MAIN, 20);
     if (pFunc) {
         pFunc(text, g_totalData, bufLen);
-        lv_label_set_text(obj, text);
+        printf("text: %s\n", text);
+        printf("strlen(text): %d\n", strlen(text));
+        printf("buffer size: %d\n", BUFFER_SIZE_1024);
+        if (strlen(text) > BUFFER_SIZE_1024) {
+            printf("text is too long\n");
+            printf("original text: %s\n", text);
+            lv_obj_del(obj);
+
+            lv_obj_t *container = lv_obj_create(parent);
+            lv_obj_set_size(container, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_bg_opa(container, LV_OPA_0, 0);
+            lv_obj_set_style_border_width(container, 0, 0);
+            lv_obj_set_style_pad_all(container, 0, 0);
+            lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
+
+            const int SEGMENT_SIZE = BUFFER_SIZE_512;
+            size_t textLen = strlen(text);
+            size_t offset = 0;
+            printf("sram malloc for segment\n");
+            char *segment = SRAM_MALLOC(SEGMENT_SIZE + 1);
+            if (segment == NULL) {
+                printf("sram malloc for segment failed\n");
+                EXT_FREE(text);
+                return container;
+            }
+            printf("sram malloc for segment success\n");
+            while (offset < textLen) {
+                size_t segmentLen = (textLen - offset > SEGMENT_SIZE) ? SEGMENT_SIZE : textLen - offset;
+
+                if (segmentLen == SEGMENT_SIZE && offset + segmentLen < textLen) {
+                    size_t lookBack = (segmentLen > 100) ? 100 : segmentLen;
+                    for (size_t i = segmentLen; i > segmentLen - lookBack; i--) {
+                        char c = text[offset + i - 1];
+                        if (c == '\n') {
+                            segmentLen = i;
+                            break;
+                        }
+                    }
+                }
+
+                memcpy(segment, text + offset, segmentLen);
+                segment[segmentLen] = '\0';
+
+                printf("create label for segment\n");
+                // label text
+                printf("segment: %s\n", segment);
+                lv_obj_t *label = lv_label_create(container);
+
+                lv_label_set_recolor(label, true);
+                lv_obj_set_style_text_letter_space(label, 20, LV_STATE_DEFAULT | LV_PART_MAIN);
+
+                lv_label_set_text(label, segment);
+
+                if (lv_obj_get_self_width(label) >= textWidth) {
+                    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+                    lv_obj_set_width(label, textWidth);
+                }
+
+                offset += segmentLen;
+                printf("loop for next segment\n");
+            }
+
+            SRAM_FREE(segment);
+            SRAM_FREE(text);
+            printf("sram free for segment and text\n");
+            return container;
+        } else {
+            lv_label_set_text(obj, text);
+        }
     }
     if (lv_obj_get_self_width(obj) >= textWidth) {
         item = cJSON_GetObjectItem(json, "one_line");

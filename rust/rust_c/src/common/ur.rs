@@ -216,6 +216,8 @@ pub enum ViewType {
     EthPersonalMessage,
     #[cfg(feature = "ethereum")]
     EthTypedData,
+    #[cfg(feature = "ethereum")]
+    EthAuth7702,
     #[cfg(feature = "tron")]
     TronTx,
     #[cfg(feature = "solana")]

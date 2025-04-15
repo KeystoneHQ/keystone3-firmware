@@ -22,6 +22,7 @@ static GetLabelDataFunc GuiSolMessageTextFuncGet(char *type);
 static GetLabelDataFunc GuiEthTypedDataTextFuncGet(char *type);
 static GetLabelDataFunc GuiEthPersonalMessageTextFuncGet(char *type);
 static GetLabelDataFunc GuiEthTextFuncGet(char *type);
+static GetLabelDataFunc GuiEthAuth7702TextFuncGet(char *type);
 static GetContSizeFunc GetEthObjPos(char *type);
 static GetContSizeFunc GetCosmosObjPos(char *type);
 static GetListItemKeyFunc GetCosmosListItemKey(char *type);
@@ -189,6 +190,8 @@ GetLabelDataFunc GuiOtherChainTextFuncGet(char *type, GuiRemapViewType remapInde
         return GuiEthPersonalMessageTextFuncGet(type);
     case REMAPVIEW_ETH_TYPEDDATA:
         return GuiEthTypedDataTextFuncGet(type);
+    case REMAPVIEW_ETH_AUTH7702:
+        return GuiEthAuth7702TextFuncGet(type);
     case REMAPVIEW_TRX:
         return GuiTrxTextFuncGet(type);
     case REMAPVIEW_COSMOS:
@@ -557,6 +560,20 @@ static GetLabelDataFunc GuiEthTypedDataTextFuncGet(char *type)
         return GetEthTypedDataFrom;
     } else if (!strcmp(type, "GetEthTypedDataPrimayType")) {
         return GetEthTypedDataPrimayType;
+    }
+    return NULL;
+}
+
+static GetLabelDataFunc GuiEthAuth7702TextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetEthAuth7702Account")) {
+        return GetEthAuth7702Account;
+    } else if (!strcmp(type, "GetEthAuth7702ChainId")) {
+        return GetEthAuth7702ChainId;
+    } else if (!strcmp(type, "GetEthAuth7702Delegate")) {
+        return GetEthAuth7702Delegate;
+    } else if (!strcmp(type, "getEthAuth7702Nonce")) {
+        return getEthAuth7702Nonce;
     }
     return NULL;
 }

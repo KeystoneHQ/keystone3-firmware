@@ -1,5 +1,6 @@
 use crate::address::generate_address;
 use crate::eip1559_transaction::ParsedEIP1559Transaction;
+use crate::eip7702_authorization::EIP7702Authorization;
 use crate::eip712::eip712::TypedData as Eip712TypedData;
 use crate::errors::Result;
 use crate::{Bytes, ParsedLegacyTransaction};
@@ -178,6 +179,25 @@ impl TypedData {
             }
         }
         Self::from(Into::into(data), from)
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Auth7702 {
+    pub chain_id: u64,
+    pub nonce: u32,
+    pub delegate: String,
+    pub account: String,
+}
+
+impl Auth7702 {
+    pub fn from(auth: EIP7702Authorization, account: PublicKey) -> Result<Self> {
+        Ok(Self {
+            chain_id: auth.chain_id,
+            delegate: format!("0x{}", hex::encode(auth.delegate)),
+            nonce: auth.nonce.as_u32(),
+            account: generate_address(account)?,
+        })
     }
 }
 

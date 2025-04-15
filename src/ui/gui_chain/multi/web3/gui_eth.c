@@ -1230,8 +1230,39 @@ void GetToEthEnsName(void *indata, void *param, uint32_t maxLen)
 
 void GetEthInputData(void *indata, void *param, uint32_t maxLen)
 {
+    if (indata != NULL) {
+        *((char *)indata) = '\0';
+    }
     DisplayETH *eth = (DisplayETH *)param;
-    strcpy_s((char *)indata, maxLen, eth->detail->input);
+    char *hash = eth->detail->input;
+    // pre 8 char to color #F5870A
+    char prefix[9] = {0};
+    char *middle = NULL;
+    if (strlen(hash) > maxLen) {
+        char *suffix = "...";
+        char *notice = "Raw data length exceeds the limit #";
+        uint32_t middleLen = 500;
+        strncpy(prefix, "0x", 2);
+        strncpy(prefix + 2, hash, 6);
+        // middle = (char *)SRAM_MALLOC(middleLen + 1);
+        strncpy(middle, hash + 6, middleLen);
+        char* temp = (char*)SRAM_MALLOC(BUFFER_SIZE_1024);
+        for (int i = 0; i < strlen(hash); i += BUFFER_SIZE_1024) {
+            strncpy_s(temp, BUFFER_SIZE_1024, hash + i, BUFFER_SIZE_1024 - 1);
+            strcat_s(indata, BUFFER_SIZE_1024 * 5, temp);
+            printf("indata: %s\n", indata);
+        }
+        printf("total indata: %s\n", indata);
+        free(temp);
+    } else {
+        uint32_t middleLen = strlen(hash);
+        middle = (char *)malloc(maxLen + 1);
+        strncpy(prefix, "0x", 2);
+        strncpy(prefix + 2, hash, 6);
+        strncpy(middle, hash + 6, middleLen);
+        snprintf_s((char *)indata, maxLen, "#F5870A %s#%s", prefix, middle);
+        free(middle);
+    }
 }
 
 bool GetEthEnsExist(void *indata, void *param)
@@ -1370,9 +1401,18 @@ void *GetEthContractData(uint8_t *row, uint8_t *col, void *param)
                 indata[i][j] = SRAM_MALLOC(len);
                 snprintf_s(indata[i][j], len, "#919191 %s#", param.name);
             } else {
-                uint32_t len = strnlen_s(param.value, BUFFER_SIZE_128) + 1;
-                indata[i][j] = SRAM_MALLOC(len);
-                strcpy_s(indata[i][j], len, param.value);
+                // if param.value length > 512, we only show first 512-3 char
+                if (strlen(param.value) > BUFFER_SIZE_512) {
+                    uint32_t len = strlen(param.value) + 1;
+                    char *suffix = "...";
+                    indata[i][j] = SRAM_MALLOC(len);
+                    strncpy(indata[i][j], param.value, 509);
+                    strncat_s(indata[i][j], sizeof(char) * (strlen(param.value) + 1), suffix, 3);
+                } else {
+                    uint32_t len = strnlen_s(param.value, BUFFER_SIZE_512) + 1;
+                    indata[i][j] = SRAM_MALLOC(len);
+                    strcpy_s(indata[i][j], len, param.value);
+                }
             }
         }
     }

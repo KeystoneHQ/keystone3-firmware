@@ -192,7 +192,7 @@ impl TypedData {
         // bytes32 safeTxHash = keccak256(
         //     abi.encode(SAFE_TX_TYPEHASH, to, value, keccak256(data), operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, _nonce)
         // );
-        if self.verifying_contract != "0x28bb1ba844129cc339a47ad84d41edb0f475b2c6".to_string() {
+        if self.primary_type != "SafeTx".to_string() {
             return "".to_string();
         }
         let safe_tx_typehash =

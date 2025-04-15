@@ -18,7 +18,6 @@ use core::str::FromStr;
 use itertools::Itertools;
 use ur_registry::ethereum::eth_sign_request::DataType;
 use ur_registry::pb::protoc::EthTx;
-
 #[repr(C)]
 pub struct DisplayETH {
     pub(crate) tx_type: PtrString,
@@ -414,9 +413,18 @@ pub struct DisplayContractParam {
 
 impl From<&ContractMethodParam> for DisplayContractParam {
     fn from(value: &ContractMethodParam) -> Self {
-        Self {
-            name: convert_c_char(value.get_name()),
-            value: convert_c_char(value.get_value()),
+        // check value is start with "0x"
+        let value_str = value.get_value();
+        if value_str.is_empty() {
+            Self {
+                name: convert_c_char(value.get_name()),
+                value: convert_c_char("0x".to_string()),
+            }
+        } else {
+            Self {
+                name: convert_c_char(value.get_name()),
+                value: convert_c_char(value_str),
+            }
         }
     }
 }

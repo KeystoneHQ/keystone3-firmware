@@ -490,8 +490,17 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
         lv_label_set_text(obj, text);
     }
     if (lv_obj_get_self_width(obj) >= textWidth) {
-        lv_label_set_long_mode(obj, LV_LABEL_LONG_WRAP);
-        lv_obj_set_width(obj, textWidth);
+        item = cJSON_GetObjectItem(json, "one_line");
+        if (item != NULL) {
+            lv_label_set_long_mode(obj, LV_LABEL_LONG_SCROLL);
+            lv_obj_set_width(obj, textWidth);
+            lv_obj_set_style_anim_speed(obj, 100, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_anim_time(obj, 1000, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_anim_set_playback_delay(obj, 1000);
+        } else {
+            lv_label_set_long_mode(obj, LV_LABEL_LONG_WRAP);
+            lv_obj_set_width(obj, textWidth);
+        }
     }
     EXT_FREE(text);
     return obj;

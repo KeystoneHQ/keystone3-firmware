@@ -10,7 +10,7 @@ use cty::c_char;
 use crate::common::types::{PtrString, PtrT};
 
 pub fn convert_c_char(s: String) -> PtrString {
-    CString::new(s.clone()).unwrap().into_raw()
+    CString::new(s).unwrap().into_raw()
 }
 
 pub fn recover_c_char(s: *mut c_char) -> String {

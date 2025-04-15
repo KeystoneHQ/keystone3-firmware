@@ -62,6 +62,9 @@ bool IsBootVersionMatch(void)
 #ifndef BUILD_PRODUCTION
     return true;
 #endif
+#ifndef BUILD_PRODUCTION
+    return false;
+#endif
     uint32_t major, minor, build;
     if (GetBootSoftwareVersion(&major, &minor, &build) == false) {
         return false;

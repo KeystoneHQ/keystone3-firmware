@@ -41,7 +41,9 @@ void SetUsbState(bool enable)
 
 void CloseUsb()
 {
+#ifndef USB_AUTO_TEST
     PubValueMsg(USB_MSG_DEINIT, 0);
+#endif
 }
 
 void OpenUsb()
@@ -86,15 +88,19 @@ static void UsbTask(void *argument)
             }
             break;
             case USB_MSG_INIT: {
-                g_usbState = true;
-                UsbInit();
-                SetUsbState(true);
+                if (g_usbState == false) {
+                    g_usbState = true;
+                    UsbInit();
+                    SetUsbState(true);
+                }
             }
             break;
             case USB_MSG_DEINIT: {
-                g_usbState = false;
-                UsbDeInit();
-                SetUsbState(false);
+                if (g_usbState == true) {
+                    g_usbState = false;
+                    UsbDeInit();
+                    SetUsbState(false);
+                }
             }
             break;
             default:

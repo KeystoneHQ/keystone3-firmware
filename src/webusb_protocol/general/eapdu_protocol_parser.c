@@ -120,7 +120,12 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
         GetDeviceUsbPubkeyService(request);
         break;
     default:
-        printf("Invalid command: %u\n", request->commandType);
+#ifdef USB_AUTO_TEST
+        if (HandleUSBTestFunc(request)) {
+            break;
+        }
+#endif
+        printf("Invalid command: %#x\n", request->commandType);
         break;
     }
 }

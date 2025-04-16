@@ -155,6 +155,12 @@ static void UiDisplayTask(void *argument)
                 }
             }
             break;
+#ifdef USB_AUTO_TEST
+            case UI_MSG_USB_UNLOCK_VIEW: {
+                GuiEmitSignal(SIG_USB_HARDWARE_CALL_PARSE_UR, rcvMsg.value, rcvMsg.length);
+            }
+            break;
+#endif
 #endif
 #ifdef WEB3_VERSION
             case UI_MSG_CLOSE_NFT_LOCK: {

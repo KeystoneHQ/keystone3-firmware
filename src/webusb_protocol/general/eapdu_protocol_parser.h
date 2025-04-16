@@ -20,6 +20,25 @@ typedef enum {
     CMD_GET_DEVICE_INFO,           // Command to get device info
     CMD_GET_DEVICE_USB_PUBKEY,     // Command to get device public key
 
+#if USB_AUTO_TEST
+    // device 
+    CMD_GOTO_TARGET_VIEW = 0x00001000,
+    CMD_SET_DEVICE_CONFIG,
+    CMD_GET_DEVICE_CONFIG,
+
+    // wallet setting
+    CMD_GET_DEVICE_WALLET_AMOUNT = 0x00002000,
+    CMD_GET_CURRENT_WALLET_INFO,
+    CMD_UNLOCK_DEVICE,
+    CMD_CREATE_WALLET,
+    CMD_IMPORT_WALLET,
+    CMD_DELETE_WALLET,
+    CMD_GET_WALLET_ADDRESS,
+    CMD_GET_WALLET_SIGN_TRANSACTION,
+    CMD_GET_WALLET_SIGN_MESSAGE,
+    CMD_GET_WALLET_SIGN_HASH,
+#endif
+
     CMD_MAX_VALUE = 0xFFFFFFFF,    // The maximum value for command
 } CommandType;
 

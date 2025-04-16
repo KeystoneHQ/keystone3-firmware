@@ -30,6 +30,7 @@ if(BUILD_TYPE STREQUAL "Simulator")
     set(COMPILE_SIMULATOR ON CACHE BOOL "compile on Simulator target" FORCE)
     set(BUILD_ENVIRONMENT "SIMULATOR")
 endif()
+add_compile_definitions(USB_AUTO_TEST)
 
 if(BUILD_PRODUCTION)
     set(BUILD_ENVIRONMENT "PRODUCTION")

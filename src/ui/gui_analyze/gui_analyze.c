@@ -440,12 +440,11 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
             bufLen = lenFunc(g_totalData) + 1;
         }
     }
-    // PrintHeapInfo();
     lv_obj_t *obj =  lv_label_create(parent);
     lv_label_set_long_mode(obj, LV_LABEL_LONG_SCROLL);
     item = cJSON_GetObjectItem(json, "text");
     if (strcmp("InputData", item->valuestring) == 0) {
-        bufLen = BUFFER_SIZE_1024 * 5;
+        bufLen = BUFFER_SIZE_1024 * 4;
     }
     char *text = EXT_MALLOC(bufLen);
     if (item != NULL) {
@@ -480,8 +479,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
         item = cJSON_GetObjectItem(json, "text_key");
         if (item != NULL) {
             if (strlen(item->valuestring) > BUFFER_SIZE_1024) {
-                printf("value string is too long\n");
-                uint32_t len = BUFFER_SIZE_1024 * 5;
+                uint32_t len = BUFFER_SIZE_1024 * 4;
                 strcpy_s(text, len, item->valuestring);
             } else {
                 strcpy_s(text, BUFFER_SIZE_1024, item->valuestring);
@@ -498,12 +496,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     lv_obj_set_style_text_letter_space(obj, LV_STATE_DEFAULT | LV_PART_MAIN, 20);
     if (pFunc) {
         pFunc(text, g_totalData, bufLen);
-        printf("text: %s\n", text);
-        printf("strlen(text): %d\n", strlen(text));
-        printf("buffer size: %d\n", BUFFER_SIZE_1024);
         if (strlen(text) > BUFFER_SIZE_1024) {
-            printf("text is too long\n");
-            printf("original text: %s\n", text);
             lv_obj_del(obj);
 
             lv_obj_t *container = lv_obj_create(parent);
@@ -516,14 +509,11 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
             const int SEGMENT_SIZE = BUFFER_SIZE_512;
             size_t textLen = strlen(text);
             size_t offset = 0;
-            printf("sram malloc for segment\n");
-            char *segment = SRAM_MALLOC(SEGMENT_SIZE + 1);
+            char *segment = EXT_MALLOC(SEGMENT_SIZE + 1);
             if (segment == NULL) {
-                printf("sram malloc for segment failed\n");
                 EXT_FREE(text);
-                return container;
+                return obj;
             }
-            printf("sram malloc for segment success\n");
             while (offset < textLen) {
                 size_t segmentLen = (textLen - offset > SEGMENT_SIZE) ? SEGMENT_SIZE : textLen - offset;
 
@@ -541,9 +531,6 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
                 memcpy(segment, text + offset, segmentLen);
                 segment[segmentLen] = '\0';
 
-                printf("create label for segment\n");
-                // label text
-                printf("segment: %s\n", segment);
                 lv_obj_t *label = lv_label_create(container);
 
                 lv_label_set_recolor(label, true);
@@ -557,12 +544,9 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
                 }
 
                 offset += segmentLen;
-                printf("loop for next segment\n");
             }
-
-            SRAM_FREE(segment);
-            SRAM_FREE(text);
-            printf("sram free for segment and text\n");
+            EXT_FREE(segment);
+            EXT_FREE(text);
             return container;
         } else {
             lv_label_set_text(obj, text);

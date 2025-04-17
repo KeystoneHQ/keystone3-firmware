@@ -1245,14 +1245,12 @@ void GetEthInputData(void *indata, void *param, uint32_t maxLen)
         strncpy(prefix, "0x", 2);
         strncpy(prefix + 2, hash, 6);
         // middle = (char *)SRAM_MALLOC(middleLen + 1);
-        strncpy(middle, hash + 6, middleLen);
+        // strncpy(middle, hash + 6, middleLen);
         char* temp = (char*)SRAM_MALLOC(BUFFER_SIZE_1024);
         for (int i = 0; i < strlen(hash); i += BUFFER_SIZE_1024) {
             strncpy_s(temp, BUFFER_SIZE_1024, hash + i, BUFFER_SIZE_1024 - 1);
-            strcat_s(indata, BUFFER_SIZE_1024 * 5, temp);
-            printf("indata: %s\n", indata);
+            strcat_s(indata, BUFFER_SIZE_1024 * 4, temp);
         }
-        printf("total indata: %s\n", indata);
         free(temp);
     } else {
         uint32_t middleLen = strlen(hash);

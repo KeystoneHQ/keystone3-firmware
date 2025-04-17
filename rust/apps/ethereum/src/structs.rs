@@ -341,7 +341,7 @@ pub mod tests {
             chain_id: chain_id.to_string(),
             verifying_contract: verifying_contract.to_string(),
             salt: "".to_string(),
-            primary_type: "".to_string(),
+            primary_type: "SafeTx".to_string(),
             message: message.to_string(),
             from: "".to_string(),
             domain_separator: "0x1c9fbcac173da0e989115be1cf7e8c85442bac869e1de9f72ea59ec6c4e1b43d"

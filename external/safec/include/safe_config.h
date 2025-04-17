@@ -63,8 +63,7 @@ extern "C"
 
 #ifndef RSIZE_MAX_STR
 /* maximum string length. default: 4UL << 10 (4KB) */
-// #define RSIZE_MAX_STR (4UL << 10) /* 4KB */
-#define RSIZE_MAX_STR (5UL << 10) /* 5KB */
+#define RSIZE_MAX_STR (4UL << 10) /* 4KB */
 #endif
 
 /* Null out the remaining part of a string buffer if it is not completely used */

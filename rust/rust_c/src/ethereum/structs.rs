@@ -18,7 +18,6 @@ use core::str::FromStr;
 use itertools::Itertools;
 use ur_registry::ethereum::eth_sign_request::DataType;
 use ur_registry::pb::protoc::EthTx;
-
 #[repr(C)]
 pub struct DisplayETH {
     pub(crate) tx_type: PtrString,
@@ -297,6 +296,9 @@ pub struct DisplayETHTypedData {
     primary_type: PtrString,
     message: PtrString,
     from: PtrString,
+    domain_hash: PtrString,
+    message_hash: PtrString,
+    safe_tx_hash: PtrString,
 }
 
 impl From<TypedData> for DisplayETHTypedData {
@@ -309,6 +311,8 @@ impl From<TypedData> for DisplayETHTypedData {
             }
         }
 
+        let safe_tx_hash = message.get_safe_tx_hash();
+
         Self {
             name: to_ptr_string(message.name),
             version: to_ptr_string(message.version),
@@ -318,6 +322,9 @@ impl From<TypedData> for DisplayETHTypedData {
             primary_type: to_ptr_string(message.primary_type),
             message: to_ptr_string(message.message),
             from: to_ptr_string(message.from),
+            domain_hash: to_ptr_string(message.domain_separator),
+            message_hash: to_ptr_string(message.message_hash),
+            safe_tx_hash: to_ptr_string(safe_tx_hash),
         }
     }
 }
@@ -334,6 +341,9 @@ impl Free for DisplayETHTypedData {
         free_str_ptr!(self.primary_type);
         free_str_ptr!(self.message);
         free_str_ptr!(self.from);
+        free_str_ptr!(self.domain_hash);
+        free_str_ptr!(self.message_hash);
+        free_str_ptr!(self.safe_tx_hash);
     }
 }
 
@@ -403,9 +413,18 @@ pub struct DisplayContractParam {
 
 impl From<&ContractMethodParam> for DisplayContractParam {
     fn from(value: &ContractMethodParam) -> Self {
-        Self {
-            name: convert_c_char(value.get_name()),
-            value: convert_c_char(value.get_value()),
+        // check value is start with "0x"
+        let value_str = value.get_value();
+        if value_str.is_empty() {
+            Self {
+                name: convert_c_char(value.get_name()),
+                value: convert_c_char("0x".to_string()),
+            }
+        } else {
+            Self {
+                name: convert_c_char(value.get_name()),
+                value: convert_c_char(value_str),
+            }
         }
     }
 }

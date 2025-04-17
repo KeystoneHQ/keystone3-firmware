@@ -111,7 +111,7 @@ extern "C" {
 #endif
 
 /*
- * Defined by --enable-warn-dmax, to enable dmax checks against 
+ * Defined by --enable-warn-dmax, to enable dmax checks against
  *  __builtin_object_size(dest)
  */
 #undef HAVE_WARN_DMAX

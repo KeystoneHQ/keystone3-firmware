@@ -797,6 +797,74 @@ void GetEthTypedDataDomianName(void *indata, void *param, uint32_t maxLen)
     }
 }
 
+void _colorfulHash(char *hash, char *indata, uint32_t maxLen)
+{
+    size_t len = strlen(hash);
+    if (len >= 19) {
+        char prefix[9] = {0};
+        char suffix[9] = {0};
+        char middle[233] = {0};
+        strncpy(prefix, hash, 8);
+        strncpy(suffix, hash + (len - 8), 8);
+        strncpy(middle, hash + 8, len - 16);
+
+        snprintf_s((char *)indata, maxLen, "#F5870A %s#%s#F5870A %s#", prefix, middle, suffix);
+    } else {
+        strcpy_s((char *)indata, maxLen, hash);
+    }
+
+}
+
+void GetEthTypedDataDomainHash(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    if (message->domain_hash != NULL) {
+        // first 8 char and last 8 char color #F5870A
+        char *hash = message->domain_hash;
+        // if not start with 0x, add 0x
+        if (hash[0] != '0' || (hash[1] != 'x' && hash[1] != 'X')) {
+            strcpy_s((char *)indata, maxLen, "0x");
+            strcat_s((char *)indata, maxLen, hash);
+            _colorfulHash((char *)indata, (char *)indata, maxLen);
+        } else {
+            _colorfulHash(hash, (char *)indata, maxLen);
+        }
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
+}
+
+
+void GetEthTypedDataMessageHash(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    if (message->message_hash != NULL) {
+        // first 8 char and last 8 char color #F5870A
+        char *hash = message->message_hash;
+        // if not start with 0x, add 0x
+        if (hash[0] != '0' || (hash[1] != 'x' && hash[1] != 'X')) {
+            strcpy_s((char *)indata, maxLen, "0x");
+            strcat_s((char *)indata, maxLen, hash);
+            _colorfulHash((char *)indata, (char *)indata, maxLen);
+        } else {
+            _colorfulHash(hash, (char *)indata, maxLen);
+        }
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
+}
+
+void GetEthTypedDataSafeTxHash(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    if (message->safe_tx_hash != NULL) {
+        char *hash = message->safe_tx_hash;
+        _colorfulHash(hash, (char *)indata, maxLen);
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
+}
+
 void GetEthTypedDataDomianVersion(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
@@ -1160,6 +1228,41 @@ void GetToEthEnsName(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, g_toEthEnsName);
 }
 
+void GetEthInputData(void *indata, void *param, uint32_t maxLen)
+{
+    if (indata != NULL) {
+        *((char *)indata) = '\0';
+    }
+    DisplayETH *eth = (DisplayETH *)param;
+    char *hash = eth->detail->input;
+    // pre 8 char to color #F5870A
+    char prefix[9] = {0};
+    char *middle = NULL;
+    if (strlen(hash) > maxLen) {
+        char *suffix = "...";
+        char *notice = "Raw data length exceeds the limit #";
+        uint32_t middleLen = 500;
+        strncpy(prefix, "0x", 2);
+        strncpy(prefix + 2, hash, 6);
+        // middle = (char *)SRAM_MALLOC(middleLen + 1);
+        // strncpy(middle, hash + 6, middleLen);
+        char* temp = (char*)SRAM_MALLOC(BUFFER_SIZE_1024);
+        for (int i = 0; i < strlen(hash); i += BUFFER_SIZE_1024) {
+            strncpy_s(temp, BUFFER_SIZE_1024, hash + i, BUFFER_SIZE_1024 - 1);
+            strcat_s(indata, BUFFER_SIZE_1024 * 4, temp);
+        }
+        free(temp);
+    } else {
+        uint32_t middleLen = strlen(hash);
+        middle = (char *)malloc(maxLen + 1);
+        strncpy(prefix, "0x", 2);
+        strncpy(prefix + 2, hash, 6);
+        strncpy(middle, hash + 6, middleLen);
+        snprintf_s((char *)indata, maxLen, "#F5870A %s#%s", prefix, middle);
+        free(middle);
+    }
+}
+
 bool GetEthEnsExist(void *indata, void *param)
 {
     return g_fromEnsExist;
@@ -1182,6 +1285,12 @@ void GetEthToFromSize(uint16_t *width, uint16_t *height, void *param)
     *height = 244 + (g_fromEnsExist + g_toEnsExist) * (GAP + TEXT_LINE_HEIGHT) + g_contractDataExist * (GAP + TEXT_LINE_HEIGHT);
 }
 
+void GetEthInputDataSize(uint16_t *width, uint16_t *height, void *param)
+{
+    *width = 408;
+    *height = 244 + (g_fromEnsExist + g_toEnsExist) * (GAP + TEXT_LINE_HEIGHT) + g_contractDataExist * (GAP + TEXT_LINE_HEIGHT);
+}
+
 void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param)
 {
     *x = 24;
@@ -1196,6 +1305,12 @@ void GetEthTypeDomainPos(uint16_t *x, uint16_t *y, void *param)
     } else {
         *y = (152 + 16) * g_isPermit + 26;
     }
+}
+
+void GetEthTypeDataHashCardPos(uint16_t *x, uint16_t *y, void *param)
+{
+    *x = 36;
+    *y = 360;
 }
 
 bool GetEthContractDataExist(void *indata, void *param)
@@ -1284,9 +1399,18 @@ void *GetEthContractData(uint8_t *row, uint8_t *col, void *param)
                 indata[i][j] = SRAM_MALLOC(len);
                 snprintf_s(indata[i][j], len, "#919191 %s#", param.name);
             } else {
-                uint32_t len = strnlen_s(param.value, BUFFER_SIZE_128) + 1;
-                indata[i][j] = SRAM_MALLOC(len);
-                strcpy_s(indata[i][j], len, param.value);
+                // if param.value length > 512, we only show first 512-3 char
+                if (strlen(param.value) > BUFFER_SIZE_512) {
+                    uint32_t len = strlen(param.value) + 1;
+                    char *suffix = "...";
+                    indata[i][j] = SRAM_MALLOC(len);
+                    strncpy(indata[i][j], param.value, 509);
+                    strncat_s(indata[i][j], sizeof(char) * (strlen(param.value) + 1), suffix, 3);
+                } else {
+                    uint32_t len = strnlen_s(param.value, BUFFER_SIZE_512) + 1;
+                    indata[i][j] = SRAM_MALLOC(len);
+                    strcpy_s(indata[i][j], len, param.value);
+                }
             }
         }
     }

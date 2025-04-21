@@ -1,3 +1,34 @@
+## 2.0.6(2025-04-14)
+
+**Web3:**
+
+### What's new
+
+1. Supported managing DOGE assets using Keystone Nexus
+2. Supported managing AR/AO assets using Beacon Wallet
+3. Supported managing SOL/ETH assets using NuFi Wallet via USB
+4. Supported managing SUI assets using Backpack Wallet
+5. Added support for Cardano-HW-CLI
+6. Supported BTC staking using Babylon Bitcoin Staking
+7. Suppported managing assets on Neutaro and Babylon App Chain in Cosmos
+
+
+### Bug Fixes
+
+1. Fixed signing error when signing EVM transactions with large data
+2. Fixed an issue when signing ADA transactions
+3. Fixed device reboot issue after QR scanning on SOL
+
+
+**BTC Only:**
+
+### What's new
+
+1. Managing BTC assets using Bitcoin-Safe Wallet
+
+
+
+
 ## 2.0.4-btc(2025-03-24)
 
 **BTC Only:**

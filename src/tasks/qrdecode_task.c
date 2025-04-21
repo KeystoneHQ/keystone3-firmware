@@ -170,13 +170,21 @@ void ProcessQr(uint32_t count)
                     firstQrFlag = true;
                     urViewType.viewType = MultiurResult->t;
                     urViewType.urType = MultiurResult->ur_type;
-                    handleURResult(urResult, MultiurResult, urViewType, true);
+                    if(urResult != NULL) {
+                        free_ur_parse_result(urResult);
+                        urResult = NULL; 
+                    }
+                    handleURResult(NULL, MultiurResult, urViewType, true);
                     testProgress = 0;
                 }
             } else {
                 retFromRust = MultiurResult->error_code;
                 printf("error code: %d\r\n", MultiurResult->error_code);
                 printf("error message: %s\r\n", MultiurResult->error_message);
+                if(urResult != NULL) {
+                    free_ur_parse_result(urResult);
+                    urResult = NULL; 
+                }
             }
             if (!(MultiurResult->is_complete)) {
                 free_ur_parse_multi_result(MultiurResult);

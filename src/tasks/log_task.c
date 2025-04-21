@@ -17,7 +17,7 @@ void CreateLogTask(void)
 {
     const osThreadAttr_t logTaskAttributes = {
         .name = "LogTask",
-        .stack_size = 1024 * 8,
+        .stack_size = 1024 * 6,
         .priority = (osPriority_t) osPriorityLow,
     };
     g_logTaskHandle = osThreadNew(LogTask, NULL, &logTaskAttributes);

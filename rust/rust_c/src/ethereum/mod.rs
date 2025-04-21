@@ -163,7 +163,7 @@ fn parse_eth_sub_path(path: String) -> Option<String> {
 
 fn try_get_eth_public_key(
     xpub: String,
-    eth_sign_request: EthSignRequest,
+    eth_sign_request: &EthSignRequest,
 ) -> Result<bitcoin::secp256k1::PublicKey, RustCError> {
     match eth_sign_request.get_derivation_path().get_path() {
         None => Err(RustCError::InvalidHDPath),
@@ -232,7 +232,7 @@ pub extern "C" fn eth_parse(
 ) -> PtrT<TransactionParseResult<DisplayETH>> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
     let xpub = recover_c_char(xpub);
-    let pubkey = try_get_eth_public_key(xpub, crypto_eth.clone());
+    let pubkey = try_get_eth_public_key(xpub, &crypto_eth);
     let transaction_type = TransactionType::from(crypto_eth.get_data_type());
 
     match (pubkey, transaction_type) {
@@ -240,7 +240,7 @@ pub extern "C" fn eth_parse(
         (Ok(key), ty) => {
             match ty {
                 TransactionType::Legacy => {
-                    let tx = parse_legacy_tx(crypto_eth.get_sign_data(), key);
+                    let tx = parse_legacy_tx(&crypto_eth.get_sign_data(), key);
                     match tx {
                         Ok(t) => {
                             TransactionParseResult::success(DisplayETH::from(t).c_ptr()).c_ptr()
@@ -252,7 +252,7 @@ pub extern "C" fn eth_parse(
                     match crypto_eth.get_sign_data().first() {
                         Some(02) => {
                             //remove envelop
-                            let payload = crypto_eth.get_sign_data()[1..].to_vec();
+                            let payload = &crypto_eth.get_sign_data()[1..];
                             let tx = parse_fee_market_tx(payload, key);
                             match tx {
                                 Ok(t) => {
@@ -287,7 +287,7 @@ pub extern "C" fn eth_parse_personal_message(
 ) -> PtrT<TransactionParseResult<DisplayETHPersonalMessage>> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
     let xpub = recover_c_char(xpub);
-    let pubkey = try_get_eth_public_key(xpub, crypto_eth.clone());
+    let pubkey = try_get_eth_public_key(xpub, &crypto_eth);
 
     let transaction_type = TransactionType::from(crypto_eth.get_data_type());
 
@@ -319,7 +319,7 @@ pub extern "C" fn eth_parse_typed_data(
 ) -> PtrT<TransactionParseResult<DisplayETHTypedData>> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
     let xpub = recover_c_char(xpub);
-    let pubkey = try_get_eth_public_key(xpub, crypto_eth.clone());
+    let pubkey = try_get_eth_public_key(xpub, &crypto_eth);
 
     let transaction_type = TransactionType::from(crypto_eth.get_data_type());
 

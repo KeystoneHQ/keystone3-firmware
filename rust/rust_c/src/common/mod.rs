@@ -71,25 +71,6 @@ pub extern "C" fn get_extended_pubkey_by_seed(
 }
 
 #[no_mangle]
-pub extern "C" fn get_extended_pubkey_bytes_by_seed(
-    seed: PtrBytes,
-    seed_len: u32,
-    path: PtrString,
-) -> *mut SimpleResponse<c_char> {
-    let path = recover_c_char(path);
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    let extended_key =
-        keystore::algorithms::secp256k1::get_extended_public_key_by_seed(seed, &path);
-    match extended_key {
-        Ok(result) => {
-            SimpleResponse::success(convert_c_char(result.encode().to_hex_string(Case::Lower)))
-                .simple_c_ptr()
-        }
-        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
-    }
-}
-
-#[no_mangle]
 pub extern "C" fn get_ed25519_pubkey_by_seed(
     seed: PtrBytes,
     seed_len: u32,

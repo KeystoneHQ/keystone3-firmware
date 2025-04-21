@@ -542,7 +542,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
             char *path = g_callData->key_derivation->schemas->data[i].key_path;
             switch (derivationType) {
             case SECP256K1:
-                pubkey[i] = get_extended_pubkey_bytes_by_seed(seed, seedLen, path);
+                pubkey[i] = get_extended_pubkey_by_seed(seed, seedLen, path);
                 break;
             case SLIP10_ED25519:
                 pubkey[i] = get_ed25519_pubkey_by_seed(seed, seedLen, path);

@@ -136,6 +136,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
     {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
+    {WALLET_LIST_MEDUSA, "Medusa", &walletMedusa},
     // {WALLET_LIST_YOROI, "Yoroi Wallet", &walletYoroi},
     {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
@@ -376,6 +377,8 @@ const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
         return "Begin";
     } else if (index == WALLET_LIST_HELIUM) {
         return "Helium";
+    } else if (index == WALLET_LIST_MEDUSA) {
+        return "Medusa";
     }
 
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {

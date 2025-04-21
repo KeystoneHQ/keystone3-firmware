@@ -120,6 +120,15 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_ETERNL].items[0].qrTitle = _("connect_eternl_title");
     g_tutorials[WALLET_LIST_ETERNL].items[0].qrUrl = _("connect_eternl_link");
 
+
+
+    // WALLET_LIST_MEDUSA
+    g_tutorials[WALLET_LIST_MEDUSA].len = 1;
+    g_tutorials[WALLET_LIST_MEDUSA].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_MEDUSA].items[0].walletName = _("connect_medusa_title");
+    g_tutorials[WALLET_LIST_MEDUSA].items[0].url = _("connect_medusa_link");
+    g_tutorials[WALLET_LIST_MEDUSA].items[0].qrTitle = _("connect_medusa_title");
+    g_tutorials[WALLET_LIST_MEDUSA].items[0].qrUrl = _("connect_medusa_link");
     // WALLET_LIST_YOROI
     //  g_tutorials[WALLET_LIST_YOROI].len = 1;
     //  g_tutorials[WALLET_LIST_YOROI].desc = _("connect_wallet_desc");

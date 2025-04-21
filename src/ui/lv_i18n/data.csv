@@ -1043,3 +1043,5 @@ Wallet Profile,24,wallet_profile_mid_btn,Wallet Profile,Профиль коше�
 ,24,enter_system,"Enter System","Вход в систему","시스템 진입","进入系统","Entrar al sistema","Systeme eingeben","システムに入る"
 ,24,connect_beacon_title,"Beacon Wallet","Beacon Wallet","Beacon Wallet","Beacon Wallet","Beacon Wallet","Beacon Wallet","Beacon Wallet"
 ,20,connect_beacon_link,https://keyst.one/t/3rd/beacon,https://keyst.one/t/3rd/beacon,https://keyst.one/t/3rd/beacon,https://keyst.one/t/3rd/beacon,https://keyst.one/t/3rd/beacon,https://keyst.one/t/3rd/beacon,https://keyst.one/t/3rd/beacon
+,24,connect_medusa_title,"Medusa","Medusa","Medusa","Medusa","Medusa","Medusa","Medusa"
+,20,connect_medusa_link,https://keyst.one/t/3rd/medusa,https://keyst.one/t/3rd/medusa,https://keyst.one/t/3rd/medusa,https://keyst.one/t/3rd/medusa,https://keyst.one/t/3rd/medusa,https://keyst.one/t/3rd/medusa,https://keyst.one/t/3rd/medusa

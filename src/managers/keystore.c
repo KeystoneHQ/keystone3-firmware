@@ -179,6 +179,8 @@ int32_t GetAccountEntropy(uint8_t accountIndex, uint8_t *entropy, uint8_t *entro
 
     ASSERT(accountIndex <= 2);
     ret = LoadAccountSecret(accountIndex, &accountSecret, password);
+    printf("accountIndex = %d\r\n", accountIndex);
+    printf("ret = %d\r\n", ret);
     MnemonicType mnemonicType = GetMnemonicType();
     if (ret == SUCCESS_CODE) {
         if (mnemonicType == MNEMONIC_TYPE_TON) {

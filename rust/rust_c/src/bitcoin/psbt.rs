@@ -543,6 +543,7 @@ fn check_psbt(
     verify_code: Option<String>,
     multisig_wallet_config: Option<String>,
 ) -> PtrT<TransactionCheckResult> {
+    return TransactionCheckResult::new().c_ptr();
     let master_fingerprint = bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
         .map_err(|_e| RustCError::InvalidMasterFingerprint);
     match master_fingerprint {

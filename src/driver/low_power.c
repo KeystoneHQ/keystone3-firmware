@@ -147,13 +147,15 @@ void RecoverFromLowPower(void)
     g_lowPowerState = LOW_POWER_STATE_WORKING;
     PubValueMsg(BACKGROUND_MSG_SD_CARD_CHANGE, 0);
     LcdBacklightOn();
-    OpenUsb();
 #if (USB_POP_WINDOW_ENABLE == 0)
     if (GetUSBSwitch() && GetUsbDetectState()) {
         OpenUsb();
     }
 #else
     AsyncExecute(GetWalletAmountAfterWakeup, NULL, 0);
+#endif
+#if USB_AUTO_TEST
+    OpenUsb();
 #endif
 }
 

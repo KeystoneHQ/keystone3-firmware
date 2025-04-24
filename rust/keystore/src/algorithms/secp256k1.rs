@@ -133,6 +133,7 @@ mod tests {
     use bitcoin::hashes::{sha256, Hash};
     use hex;
     use hex::ToHex;
+    use zcash_vendor::bip32::PrivateKey;
 
     use super::*;
 
@@ -151,9 +152,10 @@ mod tests {
 
     #[test]
     fn test_get_key() {
-        let path = "m/84'/0'/0'/0/0";
-        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let path = "m/44'/0'/0'/0/0";
+        let seed = hex::decode("802a072492e50e354da080d3c660a830f9eddcc09fe4fd70ba0f33a3448f4e18e41263809bd52f83e303e81b3105cb93f787cb039833c52f8b1e976aa75cc6d0").unwrap();
         let key = get_private_key_by_seed(&seed, &path.to_string()).unwrap();
+        println!("key: {:?}", hex::encode(key.to_bytes()));
         assert_eq!(
             "0330d54fd0dd420a6e5f8d3624f5f3482cae350f79d5f0753bf5beef9c2d91af3c",
             key.public_key(&secp256k1::Secp256k1::new())
@@ -218,6 +220,27 @@ mod tests {
 
         let signature = sign_message_hash_by_private_key(&message_hash, &test_key_bytes).unwrap();
         let result = verify_signature(&signature, &message_hash, &test_pubkey).unwrap();
+        assert_eq!(result, true);
+    }
+
+    #[test]
+    fn wangwen_test_verify_signature() {
+        let test_key = "8bf658d58383958863b508a5d801e79899d525803af410ea328ccd2c2ae3401d";
+        let test_key_bytes = hex::decode(test_key).unwrap();
+        let tmp_private_key = SecretKey::from_slice(&test_key_bytes).unwrap();
+        let secp = secp256k1::Secp256k1::new();
+        let test_pubkey = tmp_private_key.public_key(&secp).serialize_uncompressed();
+        let message_hash =
+            hex::decode("50cd31ef3ee8d9835a9a5b700f1f2cba3b03f87723ce8b5cea3e714a8c0297ed")
+                .unwrap();
+
+        let signature = sign_message_hash_by_private_key(&message_hash, &test_key_bytes).unwrap();
+        println!("signature: {:?}", hex::encode(signature));
+        // let signature = hex::decode("20b4c9bd35fc65ab2b41876770e41080b066e9e40732605a4cc18f30dcb1126b7b326f0ec95eaeb1dd65e8fe789d358430fbf5dcedaf9ab596ca12213fd081ec").unwrap();
+        // let message_hash = hex::decode("50cd31ef3ee8d9835a9a5b700f1f2cba3b03f87723ce8b5cea3e714a8c0297ed").unwrap();
+        // let test_pubkey = hex::decode("028dcd3ba0a6dc57a42de412355c70a69aad441290f82bda64d41f56eb93aa7e8b").unwrap();
+        let result = verify_signature(&signature, &message_hash, &test_pubkey).unwrap();
+        assert!(false);
         assert_eq!(result, true);
     }
 

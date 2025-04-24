@@ -768,6 +768,7 @@ void *GuiGetEthTypeData(void)
     TransactionCheckResult *result = NULL;
     do {
         result = eth_check(data, mfp, sizeof(mfp));
+        printf("check result: error_code%d\n", result->error_code);
         CHECK_CHAIN_BREAK(result);
         PtrT_TransactionParseResult_DisplayETHTypedData parseResult = eth_parse_typed_data(data, ethXpub);
         cJSON *json = cJSON_Parse(parseResult->data->message);
@@ -981,14 +982,19 @@ void *GuiGetEthData(void)
     } else {
         rootPath = eth_get_root_path(data);
     }
+    printf("rootPath: %s\n", rootPath);
     char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
     GetMasterFingerPrint(mfp);
     PtrT_TransactionParseResult_DisplayETH parseResult = NULL;
+    printf("%s %d..\n", __func__, __LINE__);
     do {
         if (urType == Bytes) {
             parseResult = eth_parse_bytes_data(data, ethXpub);
         } else {
+            printf("%s %d..\n", __func__, __LINE__);
+            printf("ethxpub: %s\n", ethXpub);
             parseResult = eth_parse(data, ethXpub);
+            printf("%s %d..\n", __func__, __LINE__);
         }
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;

@@ -21,7 +21,27 @@ bool g_reboot = false;
 bool g_otpProtect = false;
 
 // Comment out this macro if you need to retrieve data from the file
-#define GET_QR_DATA_FROM_SCREEN
+// #define GET_QR_DATA_FROM_SCREEN
+
+void UsdCreateWalletResult(bool success, uint8_t newAccount)
+{
+
+}
+
+void UsdImportWalletResult(bool success, uint8_t newAccount)
+{
+
+}
+
+void UsbUnlockDeviceSuccess(bool success)
+{
+
+}
+
+void UsdWalletSeedCheckResult(bool success)
+{
+
+}
 
 void OTP_PowerOn(void)
 {

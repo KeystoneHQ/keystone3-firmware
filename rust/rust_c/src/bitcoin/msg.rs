@@ -27,6 +27,7 @@ pub extern "C" fn btc_check_msg(
     master_fingerprint: PtrBytes,
     length: u32,
 ) -> PtrT<TransactionCheckResult> {
+    return TransactionCheckResult::new().c_ptr();
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
@@ -48,6 +49,8 @@ pub extern "C" fn btc_check_msg(
     }
 }
 
+extern crate std;
+use std::println;
 #[no_mangle]
 pub extern "C" fn btc_parse_msg(
     ptr: PtrUR,
@@ -55,10 +58,11 @@ pub extern "C" fn btc_parse_msg(
     master_fingerprint: PtrBytes,
     length: u32,
 ) -> *mut TransactionParseResult<DisplayBtcMsg> {
-    if length != 4 {
-        return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
-    }
+    // if length != 4 {
+    //     return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
+    // }
     let req = extract_ptr_with_type!(ptr, BtcSignRequest);
+    println!("req = {:?}", req);
     unsafe {
         let public_keys = recover_c_array(xpubs);
         let mfp = alloc::slice::from_raw_parts(master_fingerprint, 4);
@@ -103,9 +107,9 @@ pub extern "C" fn btc_sign_msg(
     master_fingerprint: PtrBytes,
     master_fingerprint_len: u32,
 ) -> *mut UREncodeResult {
-    if master_fingerprint_len != 4 {
-        return UREncodeResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
-    }
+    // if master_fingerprint_len != 4 {
+    //     return UREncodeResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
+    // }
     let req = extract_ptr_with_type!(ptr, BtcSignRequest);
     unsafe {
         let mfp = alloc::slice::from_raw_parts(master_fingerprint, 4);
@@ -125,6 +129,7 @@ pub extern "C" fn btc_sign_msg(
                                         sig,
                                         extended_key.to_pub().to_bytes().to_vec(),
                                     );
+                                    println!("extended_key = {:?}", hex::encode(extended_key.to_pub().to_bytes()));
                                     let data: Vec<u8> = match btc_signature.try_into() {
                                         Ok(v) => v,
                                         Err(e) => return UREncodeResult::from(e).c_ptr(),

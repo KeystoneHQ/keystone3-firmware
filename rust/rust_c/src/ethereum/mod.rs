@@ -130,6 +130,7 @@ pub extern "C" fn eth_get_root_path(ptr: PtrUR) -> PtrString {
     let eth_sign_request = extract_ptr_with_type!(ptr, EthSignRequest);
     let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
         eth_sign_request.get_derivation_path();
+    println!("derivation_path: {:?}", derivation_path);
     if let Some(path) = derivation_path.get_path() {
         if let Some(root_path) = parse_eth_root_path(path) {
             return convert_c_char(root_path);
@@ -225,14 +226,22 @@ pub extern "C" fn eth_parse_bytes_data(
     TransactionParseResult::success(display_eth.c_ptr()).c_ptr()
 }
 
+extern crate std;
+use std::println;
+
 #[no_mangle]
 pub extern "C" fn eth_parse(
     ptr: PtrUR,
     xpub: PtrString,
 ) -> PtrT<TransactionParseResult<DisplayETH>> {
+    println!("eth parse");
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
+    println!("crypto_eth: {:?}", crypto_eth);
+    println!("xpub: {:?}", xpub);
     let xpub = recover_c_char(xpub);
+    println!("xpub: {:?}", xpub);
     let pubkey = try_get_eth_public_key(xpub, crypto_eth.clone());
+    println!("pubkey: {:?}", pubkey);
     let transaction_type = TransactionType::from(crypto_eth.get_data_type());
 
     match (pubkey, transaction_type) {

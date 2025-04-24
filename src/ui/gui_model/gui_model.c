@@ -51,6 +51,28 @@
 #define APP_CHECK_START_ADDR                (0x1400000)
 #define APP_END_ADDR                        (0x2000000)
 
+#ifdef USB_AUTO_TEST
+#define MODEL_WRITE_SE_HEAD                 do {                                \
+        ret = GetBlankAccountIndex(&newAccount);                                \
+        CHECK_ERRCODE_BREAK("get blank account", ret);                          \
+        ret = GetExistAccountNum(&accountCnt);                                  \
+        CHECK_ERRCODE_BREAK("get exist account", ret);                          \
+        printf("before accountCnt = %d\n", accountCnt);
+
+#define MODEL_WRITE_SE_END                                                      \
+        ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword()); \
+        CHECK_ERRCODE_BREAK("login error", ret);                                \
+        GetExistAccountNum(&accountCnt);                                        \
+        printf("after accountCnt = %d\n", accountCnt);                          \
+        UsdCreateWalletResult(ret == SUCCESS_CODE, newAccount);                 \
+    } while (0);                                                                \
+    if (ret == SUCCESS_CODE) {                                                  \
+        ClearSecretCache();                                                     \
+        GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));  \
+    } else {                                                                            \
+        GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));     \
+    }
+#else
 #define MODEL_WRITE_SE_HEAD                 do {                                \
         ret = CHECK_BATTERY_LOW_POWER();                                        \
         CHECK_ERRCODE_BREAK("save low power", ret);                             \
@@ -72,6 +94,8 @@
     } else {                                                                            \
         GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));     \
     }
+#endif
+
 
 static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen);
 static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen);
@@ -129,7 +153,6 @@ void GuiModelWriteSe(void)
     GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
     AsyncExecute(ModelWriteEntropyAndSeed, NULL, 0);
 }
-
 
 void GuiModelBip39CalWriteSe(Bip39Data_t bip39)
 {
@@ -404,6 +427,7 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     entropy = SRAM_MALLOC(entropyInLen);
 
     MODEL_WRITE_SE_HEAD
+    printf("mnemonic = %s\n", SecretCacheGetMnemonic());
     ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), entropy, entropyInLen, &entropyOutLen);
     CHECK_ERRCODE_BREAK("mnemonic error", ret);
     if (bip39Data->forget) {
@@ -416,6 +440,7 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     if (bip39Data->forget) {
         GetAccountInfo(newAccount, &accountInfo);
     }
+    printf("newAccount = %d\n", newAccount);
     ret = CreateNewAccount(newAccount, entropy, (uint8_t)entropyOutLen, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     ClearAccountPassphrase(newAccount);
@@ -430,6 +455,10 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     }
     GetExistAccountNum(&accountCnt);
     printf("after accountCnt = %d\n", accountCnt);
+#ifdef USB_AUTO_TEST
+void UsdImportWalletResult(bool success, uint8_t newAccount);
+    UsdImportWalletResult(ret == SUCCESS_CODE, newAccount);
+#endif
 }
 while (0);
 if (ret == SUCCESS_CODE)
@@ -478,6 +507,9 @@ static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
         GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_PASS, NULL, 0);
     }
     SetLockScreen(enable);
+#ifdef USB_AUTO_TEST
+    UsdWalletSeedCheckResult(ret == SUCCESS_CODE);
+#endif
     return 0;
 }
 
@@ -955,6 +987,9 @@ static int32_t ModelChangeAccountPass(const void *inData, uint32_t inDataLen)
     }
 
     ClearSecretCache();
+#ifdef USB_AUTO_TEST
+    UsbWalletChangePasswordResult(ret == SUCCESS_CODE);
+#endif
 #else
     uint8_t *entropy;
     uint8_t entropyLen;
@@ -1138,6 +1173,11 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
     } else {
         ModelVerifyPassFailed(param);
     }
+#ifdef USB_AUTO_TEST
+    if (SIG_LOCK_VIEW_VERIFY_PIN == *param) {
+        UsbUnlockDeviceSuccess(ret == SUCCESS_CODE);
+    }
+#endif
     return SUCCESS_CODE;
 }
 
@@ -1340,6 +1380,9 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
     SetPageLockScreen(true);
     SecretCacheSetChecksum(hash);
     GuiApiEmitSignal(SIG_SETTING_CHECKSUM_PERCENT, &percent, sizeof(percent));
+#ifdef USB_AUTO_TEST
+    UsbGetFirmwareChecksumResult();
+#endif
 #else
     uint8_t percent = 100;
     char *hash = "131b3a1e9314ba076f8e459a1c4c6713eeb38862f3eb6f9371360aa234cdde1f";

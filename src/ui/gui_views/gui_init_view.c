@@ -103,7 +103,6 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         break;
     case SIG_INIT_TRANSFER_NFT_SCREEN:
         rcvValue = *(uint32_t *)param;
-        printf("rcvValue=%d\r\n", rcvValue);
         if (rcvValue != 0) {
             OpenMsgBox(&g_guiMsgBoxNftScreen);
         } else {
@@ -200,6 +199,14 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         break;
     case SIG_INIT_NFT_BIN_TRANS_FAIL:
         GuiNftTransferFailed();
+        break;
+#endif
+#ifdef USB_AUTO_TEST
+    case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS:
+        GuiWriteSeResult(true, 0);
+        break;
+    case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL:
+        GuiWriteSeResult(false, 0);
         break;
 #endif
     default:

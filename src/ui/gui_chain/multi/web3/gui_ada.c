@@ -221,8 +221,13 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     }
     char *adaPath = path->data;
     xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
+    printf("adaPath: %s\n", adaPath);
+    printf("xpub: %s\n", xpub);
+    printf("%s %d.\n", __func__, __LINE__);
     PtrT_TransactionCheckResult result = cardano_check_tx(data, mfp, xpub);
+    printf("%s %d.\n", __func__, __LINE__);
     if (result->error_code != 0) {
+        printf("%s %d.\n", __func__, __LINE__);
         free_TransactionCheckResult(result);
         Try2FixAdaPathType();
         xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
@@ -267,6 +272,7 @@ PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
     uint16_t index = atoi(master_key_index->data);
     char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
     PtrT_TransactionCheckResult precheckResult;
+    printf("%s %d.\n", __func__, __LINE__);
     precheckResult = cardano_check_catalyst_path_type(data, xpub);
     if (precheckResult->error_code != 0) {
         Try2FixAdaPathType();
@@ -716,30 +722,9 @@ UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeData(void)
 
 UREncodeResult *GuiGetAdaSignQrCodeData(void)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    UREncodeResult *encodeResult;
-    uint8_t mfp[4];
-    GetMasterFingerPrint(mfp);
-
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    do {
-        uint8_t entropy[64];
-        uint8_t len = 0;
-        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
-        if (GetAdaXPubType() == LEDGER_ADA) {
-            char *mnemonic = NULL;
-            bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), false);
-        } else {
-            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), false);
-        }
-        ClearSecretCache();
-        CHECK_CHAIN_BREAK(encodeResult);
-    } while (0);
-    SetLockScreen(enable);
-    return encodeResult;
+    return GuiGetAdaSignUrData(false);
 }
+
 static void SetContainerDefaultStyle(lv_obj_t *container)
 {
     lv_obj_set_style_radius(container, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -944,7 +929,7 @@ void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData)
     lv_label_set_long_mode(tx_hash_notice_content, LV_LABEL_LONG_WRAP);
 }
 
-UREncodeResult *GuiGetAdaSignUrDataUnlimited(void)
+UREncodeResult *GuiGetAdaSignUrData(bool unlimited)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
@@ -960,7 +945,11 @@ UREncodeResult *GuiGetAdaSignUrDataUnlimited(void)
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_tx_with_ledger_bitbox02_unlimited(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+            if (unlimited) {
+                encodeResult = cardano_sign_tx_with_ledger_bitbox02_unlimited(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+            } else {
+                encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+            }
         } else {
             encodeResult = cardano_sign_tx_unlimited(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
         }
@@ -969,6 +958,11 @@ UREncodeResult *GuiGetAdaSignUrDataUnlimited(void)
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
+}
+
+UREncodeResult *GuiGetAdaSignUrDataUnlimited(void)
+{
+    return GuiGetAdaSignUrData(true);
 }
 
 

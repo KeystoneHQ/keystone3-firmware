@@ -71,18 +71,12 @@ pub fn parse_psbt_sign_status(psbt: Psbt) -> PsbtSignStatus {
     }
 }
 
-extern crate std;
-use std::println;
 pub fn sign_msg(msg: &str, seed: &[u8], path: &String) -> Result<Vec<u8>> {
-    println!("str = {:?}", msg);
     let hash = sign_message::signed_msg_hash(msg).to_byte_array();
-    println!("hash: {:?}", hex::encode(hash));
     let message =
         Message::from_digest_slice(&hash).map_err(|e| BitcoinError::SignFailure(e.to_string()))?;
     let (rec_id, rs) = keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| BitcoinError::SignFailure(e.to_string()))?;
-    println!("rs: {:?}", hex::encode(rs));
-    println!("rec_id: {:?}", rec_id);
     let rec_id =
         RecoveryId::from_i32(rec_id).map_err(|e| BitcoinError::SignFailure(e.to_string()))?;
     let data = RecoverableSignature::from_compact(&rs, rec_id)

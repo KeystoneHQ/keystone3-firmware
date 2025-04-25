@@ -170,11 +170,11 @@ void GuiTransactionDetailInit(uint8_t viewType)
     g_signSlider = GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
     g_fingerSignCount = 0;
     GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
-// #ifdef USB_AUTO_TEST
-//     if (strnlen_s(SecretCacheGetPassword(), PASSWORD_MAX_LEN) != 0) {
-//         // GuiTransactionDetailVerifyPasswordSuccess();
-//     }
-// #endif
+#ifdef USB_AUTO_TEST
+    if (strnlen_s(SecretCacheGetPassword(), PASSWORD_MAX_LEN) != 0) {
+        GuiTransactionDetailVerifyPasswordSuccess();
+    }
+#endif
 }
 
 void GuiTransactionDetailDeInit()

@@ -650,8 +650,9 @@ int32_t read_qrcode()
 
     char *qrString = qrcode[i++];
     printf("qrString read: %s\r\n", qrString);
+    printf("qrcode_size: %d\r\n", qrcode_size);
     QRProtocol t = infer_qrcode_type(qrString);
-    printf("t: %u\n", t);
+    printf("t: %u............\n", t);
     switch (t)
     {
     case QRCodeTypeText:

@@ -49,8 +49,6 @@ pub extern "C" fn btc_check_msg(
     }
 }
 
-extern crate std;
-use std::println;
 #[no_mangle]
 pub extern "C" fn btc_parse_msg(
     ptr: PtrUR,
@@ -62,7 +60,6 @@ pub extern "C" fn btc_parse_msg(
     //     return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     // }
     let req = extract_ptr_with_type!(ptr, BtcSignRequest);
-    println!("req = {:?}", req);
     unsafe {
         let public_keys = recover_c_array(xpubs);
         let mfp = alloc::slice::from_raw_parts(master_fingerprint, 4);
@@ -129,7 +126,6 @@ pub extern "C" fn btc_sign_msg(
                                         sig,
                                         extended_key.to_pub().to_bytes().to_vec(),
                                     );
-                                    println!("extended_key = {:?}", hex::encode(extended_key.to_pub().to_bytes()));
                                     let data: Vec<u8> = match btc_signature.try_into() {
                                         Ok(v) => v,
                                         Err(e) => return UREncodeResult::from(e).c_ptr(),

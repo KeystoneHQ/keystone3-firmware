@@ -11,26 +11,27 @@ pub fn normalize_price(gas: u64) -> String {
 }
 
 pub fn normalize_value(value: U256) -> String {
-    let mut value = format!("{}", value.div(U_DIVIDER));
-    let len = value.len();
-    let mut res = match len {
-        0 => "0".to_string(),
-        1..10 => {
-            //less than 1 ETH
-            value = format!("{:0>9}", value);
-            while value.ends_with('0') {
-                value.pop();
-            }
-            format!("0.{}", value)
+    let value_str = value.to_string();
+    if value_str == "0" {
+        return "0".to_string();
+    }
+
+    let padded_value = format!("{:0>18}", value_str);
+    let len = padded_value.len();
+
+    let mut res = if len <= 18 {
+        let mut val = padded_value;
+        while val.ends_with('0') {
+            val.pop();
         }
-        _l => {
-            let (int_part, decimal_part) = value.split_at(len - 9);
-            let mut decimal_part = decimal_part.to_string();
-            while decimal_part.ends_with('0') {
-                decimal_part.pop();
-            }
-            format!("{}.{}", int_part, decimal_part)
+        format!("0.{}", val)
+    } else {
+        let (int_part, decimal_part) = padded_value.split_at(len - 18);
+        let mut decimal = decimal_part.to_string();
+        while decimal.ends_with('0') {
+            decimal.pop();
         }
+        format!("{}.{}", int_part, decimal)
     };
     if res.ends_with('.') {
         res.pop();

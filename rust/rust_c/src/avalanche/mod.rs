@@ -82,13 +82,23 @@ fn parse_transaction_by_type(
         let mut address = String::new();
         for key in recover_c_array(public_keys).iter() {
             if recover_c_char(key.path) == path.base_path {
-                address = app_avalanche::get_address(
-                    app_avalanche::network::Network::AvaxMainNet,
-                    &path.full_path.as_str(),
-                    &recover_c_char(key.xpub).as_str(),
-                    &path.base_path.as_str(),
-                )
-                .unwrap();
+                address = match (type_id, path.base_path.as_str()) {
+                    (TypeId::CchainExportTx, "m/44'/60'/0'") => {
+                        app_ethereum::address::derive_address(
+                            &path.full_path.as_str(),
+                            &recover_c_char(key.xpub),
+                            &path.base_path.as_str(),
+                        )
+                        .unwrap()
+                    }
+                    _ => app_avalanche::get_address(
+                        app_avalanche::network::Network::AvaxMainNet,
+                        &path.full_path.as_str(),
+                        &recover_c_char(key.xpub).as_str(),
+                        &path.base_path.as_str(),
+                    )
+                    .unwrap(),
+                }
             }
         }
 

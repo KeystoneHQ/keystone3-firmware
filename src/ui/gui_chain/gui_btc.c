@@ -366,9 +366,9 @@ void *GuiGetParsedQrData(void)
     keys[13].path = "m/48'/1'/0'/2'";
     keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
 #else
-    ExtendedPublicKey keys[4];
+    ExtendedPublicKey keys[5];
     public_keys->data = keys;
-    public_keys->size = 4;
+    public_keys->size = NUMBER_OF_ARRAYS(keys);
     keys[0].path = "m/84'/0'/0'";
     keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
     keys[1].path = "m/49'/0'/0'";
@@ -377,6 +377,8 @@ void *GuiGetParsedQrData(void)
     keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
     keys[3].path = "m/86'/0'/0'";
     keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+    keys[4].path = "m/44'/60'/0'";
+    keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
 #endif
     do {
         if (urType == CryptoPSBT) {
@@ -556,9 +558,9 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[13].path = "m/48'/1'/0'/2'";
         keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
 #else
-        ExtendedPublicKey keys[4];
+        ExtendedPublicKey keys[5];
         public_keys->data = keys;
-        public_keys->size = 4;
+        public_keys->size = NUMBER_OF_ARRAYS(keys);
         keys[0].path = "m/84'/0'/0'";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
         keys[1].path = "m/49'/0'/0'";
@@ -567,6 +569,8 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
         keys[3].path = "m/86'/0'/0'";
         keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+        keys[4].path = "m/44'/60'/0'";
+        keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
 #endif
 #ifdef BTC_ONLY
         char *verify_code = NULL;

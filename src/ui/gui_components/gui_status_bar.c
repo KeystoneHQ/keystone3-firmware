@@ -73,7 +73,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_BNB, "", &coinBnb},
     {CHAIN_HNT, "", &coinHelium},
     {CHAIN_XRP, "", &coinXrp},
-    // {CHAIN_AVAX, "", &coinAva},
+    {CHAIN_AVAX, "", &coinAva},
     {CHAIN_ADA, "", &coinAda},
     {CHAIN_TON, "", &coinTon},
     {CHAIN_TRX, "", &coinTrx},
@@ -175,7 +175,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
     // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
     {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
-    // {WALLET_LIST_CORE, "Core Wallet", &walletCore},
+    {WALLET_LIST_CORE, "Core Wallet", &walletCore},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},

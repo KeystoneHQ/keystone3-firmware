@@ -1,3 +1,21 @@
+
+## 2.0.8(2025-04-25)
+
+**Web3:**
+
+### Improvments
+1.Stability enhancement for USB firmware upgrade communication
+
+**BTC Only:**
+
+### Improvments
+1.Stability enhancement for USB firmware upgrade communication
+
+**Cypherpunk:**
+
+### Improvments
+1.Stability enhancement for USB firmware upgrade communication
+
 ## 2.0.6(2025-04-14)
 
 **Web3:**

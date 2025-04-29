@@ -791,6 +791,11 @@ static bool IsMultiSigTx(DisplayTx *data)
     return data->overview->is_multisig;
 }
 
+static bool IsAvalancheTx(DisplayTx *data)
+{
+    return strcmp(data->overview->network, "Avalanche BTC") == 0;
+}
+
 static void SetContainerDefaultStyle(lv_obj_t *container)
 {
     lv_obj_set_style_radius(container, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -853,6 +858,30 @@ static lv_obj_t *CreateSignStatusView(lv_obj_t *parent, char *multi_sig_status)
     SetContentLableStyle(value);
 
     return signStatusContainer;
+}
+
+static lv_obj_t *CreateAvalancheNoticeView(lv_obj_t *parent, lv_obj_t *lastView)
+{
+    lv_obj_t *noticeContainer = GuiCreateContainerWithParent(parent, 408, 182);
+    if (lastView == NULL) {
+        lv_obj_align(noticeContainer, LV_ALIGN_DEFAULT, 0, 0);
+    } else {
+        lv_obj_align_to(noticeContainer, lastView, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
+    }
+    SetContainerDefaultStyle(noticeContainer);
+
+    lv_obj_t *img = GuiCreateImg(noticeContainer, &imgNotice);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 24, 24);
+
+    lv_obj_t *label = GuiCreateIllustrateLabel(noticeContainer, _("Notice"));
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_align_to(label, img, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+
+    label = GuiCreateIllustrateLabel(noticeContainer, _("btc_avalanche_notice"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 68);
+    lv_obj_set_width(label, 360);
+
+    return noticeContainer;
 }
 
 static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *overviewData, lv_obj_t *lastView)
@@ -1284,6 +1313,10 @@ void GuiBtcTxOverview(lv_obj_t *parent, void *totalData)
 
     if (IsMultiSigTx(txData)) {
         lastView = CreateSignStatusView(parent, overviewData->sign_status);
+    }
+
+    if (IsAvalancheTx(txData)) {
+        lastView = CreateAvalancheNoticeView(parent, lastView);
     }
     lastView = CreateOverviewAmountView(parent, overviewData, lastView);
     lastView = CreateNetworkView(parent, overviewData->network, lastView);

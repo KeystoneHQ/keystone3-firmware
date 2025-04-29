@@ -194,12 +194,7 @@ pub fn determine_derivation_path(
         TypeId::XchainImportTx | TypeId::PchainImportTx => {
             let source_chain_id =
                 parse_avax_tx::<ImportTx>(sign_request.get_tx_data())?.get_source_chain_id();
-            let prefix = if is_c_chain(&source_chain_id) {
-                C_CHAIN_PREFIX
-            } else {
-                X_P_CHAIN_PREFIX
-            };
-            (prefix, format!("{}{}", prefix, wallet_suffix))
+            (X_P_CHAIN_PREFIX, format!("{}{}", X_P_CHAIN_PREFIX, wallet_suffix))
         }
         _ => {
             let prefix = if is_c_chain(&blockchain_id) {

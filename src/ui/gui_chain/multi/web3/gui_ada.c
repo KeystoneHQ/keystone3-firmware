@@ -20,6 +20,11 @@ static void *g_parseResult = NULL;
 static char g_adaBaseAddr[ADA_ADD_MAX_LEN];
 static char *xpub = NULL;
 static void Try2FixAdaPathType();
+UREncodeResult *GuiGetAdaSignUrData(bool unlimited);
+UREncodeResult *GuiGetAdaSignTxHashUrData(bool unlimited);
+UREncodeResult *GuiGetAdaSignSignDataUrData(bool unlimited);
+UREncodeResult *GuiGetAdaSignCatalystVotingRegistration(bool unlimited);
+UREncodeResult *GuiGetAdaSignSignCip8Data(bool unlimited);
 
 AdaXPubType GetAdaXPubType(void)
 {
@@ -112,7 +117,6 @@ void *GuiGetAdaCatalyst(void)
     } while (0);
     return g_parseResult;
 }
-
 
 void *GuiGetAdaSignTxHashData(void)
 {
@@ -636,7 +640,17 @@ void *GetAdaWithdrawalsData(uint8_t *row, uint8_t *col, void *param)
     return (void *)indata;
 }
 
+UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeDataUnlimited(void)
+{
+    return GuiGetAdaSignCatalystVotingRegistration(true);
+}
+
 UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeData(void)
+{
+    return GuiGetAdaSignCatalystVotingRegistration(false);
+}
+
+UREncodeResult *GuiGetAdaSignCatalystVotingRegistration(bool unlimited)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
@@ -652,47 +666,28 @@ UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeData(void)
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_catalyst_with_ledger_bitbox02(data, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_catalyst_with_ledger_bitbox02(data, mnemonic, GetPassphrase(GetCurrentAccountIndex()), unlimited);
         } else {
-            encodeResult = cardano_sign_catalyst(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_catalyst(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()), unlimited);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
+}
+
+UREncodeResult *GuiGetAdaSignSignDataQrCodeDataUnlimited(void)
+{
+    return GuiGetAdaSignSignDataUrData(true);
 }
 
 UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    UREncodeResult *encodeResult;
-    uint8_t mfp[4];
-    GetMasterFingerPrint(mfp);
-
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    do {
-        uint8_t entropy[64];
-        uint8_t len = 0;
-        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
-        if (GetAdaXPubType() == LEDGER_ADA) {
-            char *mnemonic = NULL;
-            bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_sign_data_with_ledger_bitbox02(data, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
-        } else {
-            encodeResult = cardano_sign_sign_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
-        }
-        ClearSecretCache();
-        CHECK_CHAIN_BREAK(encodeResult);
-    } while (0);
-    SetLockScreen(enable);
-    return encodeResult;
+    return GuiGetAdaSignSignDataUrData(false);
 }
 
-
-
-UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeData(void)
+UREncodeResult *GuiGetAdaSignSignDataUrData(bool unlimited)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
@@ -708,9 +703,46 @@ UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeData(void)
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_sign_cip8_data_with_ledger_bitbox02(data, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_sign_data_with_ledger_bitbox02(data, mnemonic, GetPassphrase(GetCurrentAccountIndex()), unlimited);
         } else {
-            encodeResult = cardano_sign_sign_cip8_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_sign_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()), unlimited);
+        }
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+}
+
+UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeDataUnlimited(void)
+{
+    return GuiGetAdaSignSignCip8Data(true);
+}
+
+UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeData(void)
+{
+    return GuiGetAdaSignSignCip8Data(false);
+}
+
+UREncodeResult *GuiGetAdaSignSignCip8Data(bool unlimited)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t entropy[64];
+        uint8_t len = 0;
+        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        if (GetAdaXPubType() == LEDGER_ADA) {
+            char *mnemonic = NULL;
+            bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
+            encodeResult = cardano_sign_sign_cip8_data_with_ledger_bitbox02(data, mnemonic, GetPassphrase(GetCurrentAccountIndex()), unlimited);
+        } else {
+            encodeResult = cardano_sign_sign_cip8_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()), unlimited);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -734,6 +766,16 @@ static void SetContainerDefaultStyle(lv_obj_t *container)
 
 UREncodeResult *GuiGetAdaSignTxHashQrCodeData(void)
 {
+    return GuiGetAdaSignTxHashUrData(false);
+}
+
+UREncodeResult *GuiGetAdaSignTxHashUrDataUnlimited(void)
+{
+    return GuiGetAdaSignTxHashUrData(true);
+}
+
+UREncodeResult *GuiGetAdaSignTxHashUrData(bool unlimited)
+{
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     UREncodeResult *encodeResult;
@@ -748,7 +790,11 @@ UREncodeResult *GuiGetAdaSignTxHashQrCodeData(void)
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), true);
+            if (unlimited) {
+                encodeResult = cardano_sign_tx_with_ledger_bitbox02_unlimited(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), true);
+            } else {
+                encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), true);
+            }
         } else {
             encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), true);
         }
@@ -946,12 +992,16 @@ UREncodeResult *GuiGetAdaSignUrData(bool unlimited)
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
             if (unlimited) {
-                encodeResult = cardano_sign_tx_with_ledger_bitbox02_unlimited(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+                encodeResult = cardano_sign_tx_unlimited(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));        
             } else {
-                encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+                encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), false);            
             }
         } else {
-            encodeResult = cardano_sign_tx_unlimited(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+            if (unlimited) {
+                encodeResult = cardano_sign_tx_unlimited(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+            } else {
+                encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), false);        
+            }
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);

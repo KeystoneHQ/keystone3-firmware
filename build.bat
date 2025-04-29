@@ -62,7 +62,7 @@ IF "%build_simulator%"=="true" (
     IF NOT EXIST %BUILD_SIMULATOR_FOLDER% mkdir %BUILD_SIMULATOR_FOLDER%
     pushd %BUILD_SIMULATOR_FOLDER%
     cmake -G "Unix Makefiles" -DBUILD_TYPE=Simulator %cmake_parm% .. 
-    make -j16
+    make -j16 -O
     popd
 ) ELSE (
     pushd %BUILD_FOLDER%
@@ -70,7 +70,7 @@ IF "%build_simulator%"=="true" (
     IF "%build_log%"=="true" (
         make -j16 > makefile.log 2>&1
     ) ELSE (
-        make -j16
+        make -j16 -O
     )
     py padding_bin_file.py mh1903.bin
     popd

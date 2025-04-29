@@ -60,8 +60,11 @@ char *GuiGetADABaseAddressByXPub(char *xPub);
 UREncodeResult *GuiGetAdaSignQrCodeData(void);
 UREncodeResult *GuiGetAdaSignUrDataUnlimited(void);
 UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void);
+UREncodeResult *GuiGetAdaSignSignDataQrCodeDataUnlimited(void);
 UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeData(void);
+UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeDataUnlimited(void);
 UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeData(void);
+UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeDataUnlimited(void);
 
 void GetCatalystNonce(void *indata, void *param, uint32_t maxLen);
 void GetCatalystVotePublicKey(void *indata, void *param, uint32_t maxLen);
@@ -90,6 +93,7 @@ AdaXPubType GetKeyDerivationAdaXPubType(void);
 
 void *GuiGetAdaSignTxHashData(void);
 UREncodeResult *GuiGetAdaSignTxHashQrCodeData(void);
+UREncodeResult *GuiGetAdaSignTxHashUrDataUnlimited(void);
 PtrT_TransactionCheckResult GuiGetAdaSignTxHashCheckResult(void);
 void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData);
 void GuiShowAdaSignTxHashOverview(lv_obj_t *parent, void *totalData);

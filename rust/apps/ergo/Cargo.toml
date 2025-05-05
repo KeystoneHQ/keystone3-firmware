@@ -16,5 +16,5 @@ keystore = { workspace = true }
 
 [dependencies.ergo-lib]
 git = "https://github.com/Alesfatalis/sigma-rust-mini"
-branch = "develop"
+branch = "secp256k1"
 default-features = false

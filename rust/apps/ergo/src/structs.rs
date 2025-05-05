@@ -6,11 +6,10 @@ use app_utils::impl_public_struct;
 use core::ops::Div;
 use ergo_lib::chain::transaction::unsigned::UnsignedTransaction;
 use ergo_lib::ergotree_ir::chain::address::NetworkPrefix::Mainnet;
-use ergo_lib::ergotree_ir::chain::address::{Address, NetworkAddress};
+use ergo_lib::ergotree_ir::chain::address::{base58_address_from_tree, NetworkAddress};
 use ergo_lib::ergotree_ir::chain::ergo_box::BoxTokens;
 use ergo_lib::ergotree_ir::serialization::SigmaSerializable;
-use ergo_lib::wallet::box_selector::ErgoBoxAssets;
-use ergo_lib::wallet::miner_fee::{MINERS_FEE_ADDRESS, MINERS_FEE_MAINNET_ADDRESS_STR};
+use ergo_lib::wallet::miner_fee::MINERS_FEE_MAINNET_ADDRESS_STR;
 use hex;
 
 impl_public_struct!(ParsedErgoTx {
@@ -71,8 +70,8 @@ impl ParsedErgoTx {
                 .output_candidates
                 .iter()
                 .filter(|x| {
-                    Address::recreate_from_ergo_tree(&x.ergo_tree)
-                        .map(|address| address.eq(&MINERS_FEE_ADDRESS))
+                    base58_address_from_tree(Mainnet, &x.ergo_tree)
+                        .map(|address| address.eq(&MINERS_FEE_MAINNET_ADDRESS_STR.to_string()))
                         .unwrap_or(false)
                 })
                 .map(|fee| fee.value.as_u64())
@@ -174,12 +173,9 @@ impl ParsedErgoTx {
     ) -> Result<Vec<ParsedErgoOutput>> {
         let mut parsed_outputs = vec![];
         for output in tx.output_candidates.iter() {
-            let address = NetworkAddress::new(
-                Mainnet,
-                &Address::recreate_from_ergo_tree(&output.ergo_tree)
-                    .map_err(|e| ErgoError::TransactionParseError(e.to_string()))?,
-            );
-            let address_str = normalize_address(address.to_base58().as_str());
+            let address = &base58_address_from_tree(Mainnet, &output.ergo_tree)
+                .map_err(|e| ErgoError::TransactionParseError(e.to_string()))?;
+            let address_str = normalize_address(address);
 
             let value = output.value.as_u64();
 
@@ -203,10 +199,8 @@ impl ParsedErgoTx {
                 amount: normalize_coin(*value),
                 address: address_str.clone(),
                 assets: assets_formatted,
-                is_change: context.addresses.contains(&address.to_base58()),
-                is_fee: address
-                    .to_base58()
-                    .eq(&MINERS_FEE_MAINNET_ADDRESS_STR.as_str()),
+                is_change: context.addresses.contains(&address),
+                is_fee: address.eq(&MINERS_FEE_MAINNET_ADDRESS_STR.as_str()),
             });
         }
         Ok(parsed_outputs)
@@ -253,8 +247,8 @@ fn normalize_address(address: &str) -> String {
 
 mod tests {
     use crate::structs::{
-        normalize_coin, normalize_token_id, ErgoUnspentBox, ParseContext, ParsedErgoAsset,
-        ParsedErgoTx, UnparsedErgoAsset,
+        normalize_coin, normalize_token_id, ErgoUnspentBox, ParseContext, ParsedErgoTx,
+        UnparsedErgoAsset,
     };
     use alloc::string::ToString;
     use ergo_lib::chain::transaction::reduced::ReducedTransaction;
@@ -274,9 +268,9 @@ mod tests {
 
     #[test]
     fn test_parse_ergo_tx() {
-        let tx_bytes = hex::decode("9402011a9f15bfac9379c882fe0b7ecb2288153ce4f2def4f272214fb80f8e2630f04c00000001fbbaac7337d051c10fc3da0ccb864f4d32d40027551e1c3ea3ce361f39b91e4003c0843d0008cd02dc5b9d9d2081889ef00e6452fb5ad1730df42444ceccb9ea02258256d2fbd262e4f25601006400c0843d1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304e4f2560000809bee020008cd0388fa54338147371023aacb846c96c57e72cdcd73bc85d20250467e5b79dfa2aae4f25601006400cd0388fa54338147371023aacb846c96c57e72cdcd73bc85d20250467e5b79dfa2aa0000").unwrap();
+        let tx_bytes = hex::decode("9702011a9f15bfac9379c882fe0b7ecb2288153ce4f2def4f272214fb80f8e2630f04c00000001fbbaac7337d051c10fc3da0ccb864f4d32d40027551e1c3ea3ce361f39b91e4003c0843d240008cd02dc5b9d9d2081889ef00e6452fb5ad1730df42444ceccb9ea02258256d2fbd262e4f25601006400c0843d691005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304e4f2560000809bee02240008cd0388fa54338147371023aacb846c96c57e72cdcd73bc85d20250467e5b79dfa2aae4f25601006400cd0388fa54338147371023aacb846c96c57e72cdcd73bc85d20250467e5b79dfa2aa0000").unwrap();
 
-        let reduced_tx = ReducedTransaction::sigma_parse_bytes(&*tx_bytes).unwrap();
+        let reduced_tx = ReducedTransaction::keystone_sigma_parse_bytes(&*tx_bytes).unwrap();
 
         let parse_context = ParseContext::new(
             vec![ErgoUnspentBox {

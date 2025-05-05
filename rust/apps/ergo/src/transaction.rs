@@ -13,7 +13,7 @@ use ergo_lib::wallet::mnemonic::MnemonicSeed;
 use ergo_lib::wallet::Wallet;
 
 pub fn parse_tx(tx: Vec<u8>, context: ParseContext) -> Result<ParsedErgoTx> {
-    let reduced_ergo_tx = ReducedTransaction::sigma_parse_bytes(tx.clone().as_mut_slice())
+    let reduced_ergo_tx = ReducedTransaction::keystone_sigma_parse_bytes(tx.clone().as_mut_slice())
         .map_err(|e| ErgoError::TransactionParseError(e.to_string()))?;
     ParsedErgoTx::from_ergo_tx(reduced_ergo_tx.unsigned_tx, context)
 }
@@ -24,7 +24,7 @@ pub fn sign_tx(
     entropy: &[u8],
     derivation_paths: &Vec<String>,
 ) -> Result<Vec<u8>> {
-    let reduced_ergo_tx = ReducedTransaction::sigma_parse_bytes(tx.clone().as_mut_slice())
+    let reduced_ergo_tx = ReducedTransaction::keystone_sigma_parse_bytes(tx.clone().as_mut_slice())
         .map_err(|e| ErgoError::TransactionParseError(e.to_string()))?;
 
     let _seed: [u8; 64] = seed
@@ -49,12 +49,12 @@ pub fn sign_tx(
         .map_err(|e| ErgoError::SigningFailed(e.to_string()))?;
 
     signed_tx
-        .sigma_serialize_bytes()
+        .keystone_sigma_serialize_bytes()
         .map_err(|e| ErgoError::SigningFailed(e.to_string()))
 }
 
 pub fn check_tx(tx: Vec<u8>, context: ParseContext) -> Result<()> {
-    let reduced_ergo_tx = ReducedTransaction::sigma_parse_bytes(tx.clone().as_mut_slice())
+    let reduced_ergo_tx = ReducedTransaction::keystone_sigma_parse_bytes(tx.clone().as_mut_slice())
         .map_err(|e| ErgoError::TransactionParseError(e.to_string()))?;
 
     ParsedErgoTx::verify(reduced_ergo_tx.unsigned_tx, context)

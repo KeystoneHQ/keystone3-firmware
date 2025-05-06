@@ -126,15 +126,6 @@ lv_obj_t *CreateTxOverviewFromTo(lv_obj_t *parent, void *from, int fromLen, void
         lv_obj_t *label = GuiCreateIllustrateLabel(container, ptr[i].address);
         lv_obj_set_width(label, 360);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 38 + offset + 68 * i);
-        if (ptr[i].isChange) {
-            lv_obj_t *btn = GuiCreateBtnWithFont(container,  _("Change"), &openSansEnIllustrate);
-            lv_obj_set_size(btn, 87, 30);
-            lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
-            lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
-            lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
-            lv_obj_set_style_radius(btn, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_align_to(btn, label, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
-        }
     }
 
     return container;

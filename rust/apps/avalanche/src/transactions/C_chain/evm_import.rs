@@ -71,7 +71,7 @@ impl AvaxTxInfo for ImportTx {
             .map(|output| {
                 AvaxFromToInfo::from(
                     output.amount,
-                    vec![output.address.encode()],
+                    vec![output.address.to_evm_address()],
                     C_CHAIN_PREFIX.to_string(),
                 )
             })

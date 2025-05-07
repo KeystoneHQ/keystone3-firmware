@@ -74,7 +74,7 @@ impl AvaxTxInfo for AddPermissLessionValidatorTx {
 
     fn get_reward_address(&self) -> Option<String> {
         Some(
-            self.delegator_owner
+            self.validator_owner
                 .addresses
                 .get(0)
                 .and_then(|addr| Some(addr.encode()))

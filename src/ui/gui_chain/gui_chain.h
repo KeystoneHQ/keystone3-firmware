@@ -40,6 +40,7 @@ typedef enum {
     CHAIN_TRX,
     CHAIN_LTC,
     CHAIN_DOGE,
+    CHAIN_AVAX,
     CHAIN_BCH,
     CHAIN_APT,
     CHAIN_SUI,
@@ -84,7 +85,6 @@ typedef enum {
     CHAIN_UMEE,
     CHAIN_QCK,
     CHAIN_TGD,
-    CHAIN_AVAX,
     // cosmos end
 #endif
 

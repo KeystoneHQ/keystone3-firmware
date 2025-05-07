@@ -54,7 +54,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_METAMASK, &walletListMetaMask, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_OTHER},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true, WALLET_FILTER_SOL},
-    {WALLET_LIST_NUFI, &walletListNufi, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL},
+    {WALLET_LIST_NUFI, &walletListNufi, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_ADA},
     {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_HELIUM, &walletListHelium, true, WALLET_FILTER_SOL},
     {WALLET_LIST_BLUE, &walletListBlue, true, WALLET_FILTER_BTC},
@@ -424,7 +424,6 @@ static void GuiOpenNufiNoticeWindow()
     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_set_width(btn, 408);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
 }
 
 

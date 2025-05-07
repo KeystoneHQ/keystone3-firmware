@@ -8,6 +8,8 @@
 
 int32_t GuiScanViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
+    printf("usEvent=%d\n", usEvent);
+    printf("scanview event process\n");
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
         GuiScanInit(param, usLen);

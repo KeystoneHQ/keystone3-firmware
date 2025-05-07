@@ -31,6 +31,8 @@ use ur_registry::crypto_account::CryptoAccount;
 use ur_registry::crypto_psbt::CryptoPSBT;
 use ur_registry::error::URError;
 #[cfg(feature = "ethereum")]
+use ur_registry::ethereum::eth_batch_sign_requests::EthBatchSignRequest;
+#[cfg(feature = "ethereum")]
 use ur_registry::ethereum::eth_sign_request;
 #[cfg(feature = "ethereum")]
 use ur_registry::ethereum::eth_sign_request::EthSignRequest;
@@ -103,6 +105,13 @@ impl InferViewType for EthSignRequest {
             eth_sign_request::DataType::TypedData => Ok(ViewType::EthTypedData),
             eth_sign_request::DataType::PersonalMessage => Ok(ViewType::EthPersonalMessage),
         }
+    }
+}
+
+#[cfg(feature = "ethereum")]
+impl InferViewType for EthBatchSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::EthBatchTx)
     }
 }
 

@@ -163,7 +163,7 @@ lv_obj_t *CreateTxDetailsFromTo(lv_obj_t *parent, char *tag, void *fromTo, int l
         }
         lv_obj_set_width(label, 360);
 
-        if (ptr[i].path != NULL) {
+        if (ptr[i].path != NULL && strlen(ptr[i].path) > 0) {
             label = GuiCreateNoticeLabel(container, ptr[i].path);
             GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
             lv_obj_set_width(label, 360);

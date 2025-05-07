@@ -72,7 +72,7 @@ fn parse_transaction_by_type(
     let type_id = get_avax_tx_type_id(sign_request.get_tx_data()).unwrap();
 
     unsafe {
-        let path = get_avax_tx_type_id(sign_request.get_tx_data())
+        let mut path = get_avax_tx_type_id(sign_request.get_tx_data())
             .map_err(|_| AvaxError::InvalidInput)
             .and_then(|type_id| {
                 determine_derivation_path(type_id, &sign_request, sign_request.get_wallet_index())
@@ -130,6 +130,7 @@ fn parse_transaction_by_type(
                 if header.get_blockchain_id() == C_BLOCKCHAIN_ID
                     || header.get_blockchain_id() == C_TEST_BLOCKCHAIN_ID
                 {
+                    path.full_path = "".to_string();
                     return parse_tx!(CchainImportTx);
                 } else {
                     return parse_tx!(BaseTx);

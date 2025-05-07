@@ -21,7 +21,7 @@ bool g_reboot = false;
 bool g_otpProtect = false;
 
 // Comment out this macro if you need to retrieve data from the file
-#define GET_QR_DATA_FROM_SCREEN
+// #define GET_QR_DATA_FROM_SCREEN
 
 void OTP_PowerOn(void)
 {
@@ -639,6 +639,7 @@ int32_t read_qrcode()
         break;
     default:
         urResult = parse_ur(qrString);
+        printf("urResult->error_code: %d\r\n", urResult->error_code);
         break;
     }
 

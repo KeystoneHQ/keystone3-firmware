@@ -7,7 +7,7 @@ use crate::common::free::Free;
 use crate::common::structs::{Response, TransactionParseResult};
 use crate::common::types::{PtrString, PtrT};
 use crate::common::utils::convert_c_char;
-use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
+use crate::{check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, make_free_method};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_ethereum::abi::{ContractData, ContractMethodParam};
@@ -442,6 +442,29 @@ impl Free for EthParsedErc20Transaction {
 }
 
 impl_c_ptr!(EthParsedErc20Transaction);
+
+#[repr(C)]
+pub struct DisplayETHBatchTx {
+    pub txs: PtrT<VecFFI<DisplayETH>>,
+}
+
+impl From<Vec<DisplayETH>> for DisplayETHBatchTx {
+    fn from(value: Vec<DisplayETH>) -> Self {
+        Self {
+            txs: VecFFI::from(value).c_ptr(),
+        }
+    }
+}
+
+impl Free for DisplayETHBatchTx {
+    fn free(&self) {
+        unsafe {
+            free_vec!(self.txs);
+        }
+    }
+}
+
+impl_c_ptr!(DisplayETHBatchTx);
 
 make_free_method!(TransactionParseResult<DisplayETH>);
 make_free_method!(TransactionParseResult<DisplayETHPersonalMessage>);

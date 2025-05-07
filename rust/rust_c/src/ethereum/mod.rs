@@ -12,6 +12,8 @@ use app_ethereum::{
 use cryptoxide::hashing::keccak256;
 
 use keystore::algorithms::secp256k1::derive_public_key;
+use ur_registry::ethereum::eth_batch_sign_requests::EthBatchSignRequest;
+use ur_registry::ethereum::eth_batch_signature::EthBatchSignature;
 use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 use ur_registry::ethereum::eth_signature::EthSignature;
 use ur_registry::pb;
@@ -32,8 +34,8 @@ use crate::common::KEYSTONE;
 use crate::extract_ptr_with_type;
 
 use structs::{
-    DisplayETH, DisplayETHPersonalMessage, DisplayETHTypedData, EthParsedErc20Transaction,
-    TransactionType,
+    DisplayETH, DisplayETHBatchTx, DisplayETHPersonalMessage, DisplayETHTypedData,
+    EthParsedErc20Transaction, TransactionType,
 };
 
 mod abi;
@@ -309,6 +311,223 @@ pub extern "C" fn eth_parse_personal_message(
             ))
             .c_ptr(),
         },
+    }
+}
+
+fn eth_check_batch_tx(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+    length: u32,
+) -> Result<(), RustCError> {
+    if length != 4 {
+        return Err(RustCError::InvalidMasterFingerprint);
+    }
+    let batch_transaction = extract_ptr_with_type!(ptr, EthBatchSignRequest);
+    let mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let mfp: [u8; 4] = match mfp.try_into() {
+        Ok(mfp) => mfp,
+        Err(_) => {
+            return Err(RustCError::InvalidMasterFingerprint);
+        }
+    };
+    for request in batch_transaction.get_requests() {
+        let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
+            request.get_derivation_path();
+        let ur_mfp: [u8; 4] = match derivation_path
+            .get_source_fingerprint()
+            .ok_or(RustCError::InvalidMasterFingerprint)
+        {
+            Ok(ur_mfp) => ur_mfp,
+            Err(e) => {
+                return Err(e);
+            }
+        };
+        if ur_mfp == mfp {
+            continue;
+        } else {
+            return Err(RustCError::MasterFingerprintMismatch);
+        }
+    }
+
+    let mut path = None;
+    for request in batch_transaction.get_requests() {
+        let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
+            request.get_derivation_path();
+        if let Some(p) = derivation_path.get_path() {
+            if let Some(last_path) = path.clone() {
+                if last_path != p {
+                    return Err(RustCError::InvalidHDPath);
+                }
+            } else {
+                path = Some(p);
+            }
+        }
+    }
+
+    if let Some(p) = path {
+        Ok(())
+    } else {
+        Err(RustCError::InvalidHDPath)
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn eth_check_then_parse_batch_tx(
+    ptr: PtrUR,
+    master_fingerprint: PtrBytes,
+    mfp_length: u32,
+    xpub: PtrString,
+) -> PtrT<TransactionParseResult<DisplayETHBatchTx>> {
+    let batch_transaction = extract_ptr_with_type!(ptr, EthBatchSignRequest);
+
+    if let Err(e) = eth_check_batch_tx(ptr, master_fingerprint, mfp_length) {
+        return TransactionParseResult::from(e).c_ptr();
+    }
+
+    let xpub = recover_c_char(xpub);
+
+    let requests = batch_transaction.get_requests();
+    let mut result = Vec::new();
+    for request in requests {
+        let request_type = request.get_data_type();
+        let key = try_get_eth_public_key(xpub.clone(), &request);
+        if let Err(e) = key {
+            return TransactionParseResult::from(e).c_ptr();
+        }
+        let key = key.unwrap();
+        let transaction_type = TransactionType::from(request_type);
+        match transaction_type {
+            TransactionType::Legacy => {
+                let tx = parse_legacy_tx(&request.get_sign_data(), key);
+                match tx {
+                    Ok(t) => {
+                        result.push(DisplayETH::from(t));
+                    }
+                    Err(e) => return TransactionParseResult::from(e).c_ptr(),
+                }
+            }
+            TransactionType::TypedTransaction => {
+                match request.get_sign_data().first() {
+                    Some(02) => {
+                        //remove envelop
+                        let payload = &request.get_sign_data()[1..];
+                        let tx = parse_fee_market_tx(payload, key);
+                        match tx {
+                            Ok(t) => result.push(DisplayETH::from(t)),
+                            Err(e) => return TransactionParseResult::from(e).c_ptr(),
+                        }
+                    }
+                    Some(x) => {
+                        return TransactionParseResult::from(RustCError::UnsupportedTransaction(
+                            format!("ethereum tx type:{}", x),
+                        ))
+                        .c_ptr()
+                    }
+                    None => {
+                        return TransactionParseResult::from(EthereumError::InvalidTransaction)
+                            .c_ptr()
+                    }
+                }
+            }
+            _ => {
+                return TransactionParseResult::from(RustCError::UnsupportedTransaction(
+                    "Batch signing Message".to_string(),
+                ))
+                .c_ptr()
+            } // TransactionType::PersonalMessage => {
+              //     let tx = parse_personal_message(request.get_sign_data(), key);
+              //     match tx {
+              //         Ok(t) => {
+              //             TransactionParseResult::success(DisplayETHPersonalMessage::from(t).c_ptr())
+              //                 .c_ptr()
+              //         }
+              //         Err(e) => TransactionParseResult::from(e).c_ptr(),
+              //     }
+              // }
+              // TransactionType::TypedData => {
+              //     let tx = parse_typed_data_message(request.get_sign_data(), key);
+              //     match tx {
+              //         Ok(t) => TransactionParseResult::success(DisplayETHTypedData::from(t).c_ptr())
+              //             .c_ptr(),
+              //         Err(e) => TransactionParseResult::from(e).c_ptr(),
+              //     }
+              // }
+        }
+    }
+    let display_eth_batch_tx = DisplayETHBatchTx::from(result);
+    TransactionParseResult::success(display_eth_batch_tx.c_ptr()).c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn eth_sign_batch_tx(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> PtrT<UREncodeResult> {
+    let batch_transaction = extract_ptr_with_type!(ptr, EthBatchSignRequest);
+    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let mut result = Vec::new();
+    for request in batch_transaction.get_requests() {
+        let mut path = match request.get_derivation_path().get_path() {
+            Some(v) => v,
+            None => return UREncodeResult::from(EthereumError::InvalidTransaction).c_ptr(),
+        };
+        if !path.starts_with("m/") {
+            path = format!("m/{}", path);
+        }
+
+        let signature = match TransactionType::from(request.get_data_type()) {
+            TransactionType::Legacy => {
+                app_ethereum::sign_legacy_tx(request.get_sign_data().to_vec(), seed, &path)
+            }
+            TransactionType::TypedTransaction => match request.get_sign_data().first() {
+                Some(0x02) => {
+                    app_ethereum::sign_fee_markey_tx(request.get_sign_data().to_vec(), seed, &path)
+                }
+                Some(x) => {
+                    return UREncodeResult::from(RustCError::UnsupportedTransaction(format!(
+                        "ethereum tx type: {}",
+                        x
+                    )))
+                    .c_ptr();
+                }
+                None => {
+                    return UREncodeResult::from(EthereumError::InvalidTransaction).c_ptr();
+                }
+            },
+            _ => {
+                return UREncodeResult::from(RustCError::UnsupportedTransaction(
+                    "Batch signing Message".to_string(),
+                ))
+                .c_ptr()
+            }
+        };
+        match signature {
+            Err(e) => return UREncodeResult::from(e).c_ptr(),
+            Ok(sig) => {
+                let eth_signature = EthSignature::new(
+                    request.get_request_id(),
+                    sig.serialize(),
+                    Some(KEYSTONE.to_string()),
+                );
+                result.push(eth_signature)
+            }
+        }
+    }
+
+    let ret = EthBatchSignature::new(result);
+
+    match ret.try_into() {
+        Err(e) => UREncodeResult::from(e).c_ptr(),
+        Ok(v) => {
+            rust_tools::debug!(format!("v: {:?}", hex::encode(&v)));
+            let encode_result = UREncodeResult::encode(
+                v,
+                EthBatchSignature::get_registry_type().get_type(),
+                FRAGMENT_MAX_LENGTH_DEFAULT,
+            );
+            encode_result.c_ptr()
+        }
     }
 }
 

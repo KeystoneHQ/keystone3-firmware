@@ -1,3 +1,14 @@
+## 2.1.0(2025-05-09)
+
+**Web3:**
+
+### What's new
+
+1. Added support for managing AVAX assets via USB connection with Core Wallet
+2. Added support for managing ADA/BTC assets via USB connection with NuFi Wallet
+3. Added support for managing ADA assets with Medusa Wallet
+
+
 
 ## 2.0.8(2025-04-25)
 

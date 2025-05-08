@@ -12,7 +12,7 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_ethereum::abi::{ContractData, ContractMethodParam};
 use app_ethereum::erc20::encode_erc20_transfer_calldata;
-use app_ethereum::structs::{ParsedEthereumTransaction, PersonalMessage, TypedData};
+use app_ethereum::structs::{ParsedEthereumTransaction, PersonalMessage, TypedData, Auth7702};
 use core::ptr::null_mut;
 use core::str::FromStr;
 use itertools::Itertools;
@@ -342,6 +342,7 @@ pub enum TransactionType {
     TypedTransaction,
     PersonalMessage,
     TypedData,
+    Auth7702,
 }
 
 impl From<DataType> for TransactionType {
@@ -351,6 +352,7 @@ impl From<DataType> for TransactionType {
             DataType::TypedTransaction => TransactionType::TypedTransaction,
             DataType::TypedData => TransactionType::TypedData,
             DataType::PersonalMessage => TransactionType::PersonalMessage,
+            DataType::Auth7702 => TransactionType::Auth7702,
         }
     }
 }
@@ -443,8 +445,38 @@ impl Free for EthParsedErc20Transaction {
 
 impl_c_ptr!(EthParsedErc20Transaction);
 
+#[repr(C)]
+pub struct DisplayAuth7702 {
+    pub chain_id: u64,
+    pub delegate: PtrString,
+    pub nonce: u32,
+    pub account: PtrString,
+}
+
+impl From<Auth7702> for DisplayAuth7702 {
+    fn from(value: Auth7702) -> Self {
+        Self {
+            chain_id: value.chain_id,
+            delegate: convert_c_char(value.delegate.clone()),
+            nonce: value.nonce,
+            account: convert_c_char(value.account.clone()),
+        }
+    }
+}
+
+impl Free for DisplayAuth7702 {
+    fn free(&self) {
+        free_str_ptr!(self.delegate);
+        free_str_ptr!(self.account);
+    }
+}
+
+impl_c_ptr!(DisplayAuth7702);
+
+
 make_free_method!(TransactionParseResult<DisplayETH>);
 make_free_method!(TransactionParseResult<DisplayETHPersonalMessage>);
 make_free_method!(TransactionParseResult<DisplayETHTypedData>);
 make_free_method!(Response<DisplayContractData>);
 make_free_method!(TransactionParseResult<EthParsedErc20Transaction>);
+make_free_method!(TransactionParseResult<DisplayAuth7702>);

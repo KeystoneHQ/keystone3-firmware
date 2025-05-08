@@ -33,6 +33,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_ETH, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_PERSONAL_MESSAGE, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_ETH_TYPEDDATA, (SetChainDataFunc)GuiSetEthUrData},
+    {REMAPVIEW_ETH_AUTH7702, (SetChainDataFunc)GuiSetEthUrData},
     {REMAPVIEW_TRX, (SetChainDataFunc)GuiSetTrxUrData},
     {REMAPVIEW_COSMOS, (SetChainDataFunc)GuiSetCosmosUrData},
     {REMAPVIEW_SUI, (SetChainDataFunc)GuiSetSuiUrData},

@@ -90,6 +90,13 @@ extern bool g_reboot;
         FreeEthMemory, \
     }, \
     { \
+        REMAPVIEW_ETH_AUTH7702, \
+        PC_SIMULATOR_PATH "/page_eth_auth7702.json", \
+        GuiGetEthAuth7702, \
+        NULL, \
+        FreeEthMemory, \
+    }, \
+    { \
         REMAPVIEW_TRX, \
         PC_SIMULATOR_PATH "/page_eth.json", \
         GuiGetTrxData, \

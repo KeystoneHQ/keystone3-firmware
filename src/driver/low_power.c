@@ -154,6 +154,9 @@ void RecoverFromLowPower(void)
 #else
     AsyncExecute(GetWalletAmountAfterWakeup, NULL, 0);
 #endif
+#if USB_AUTO_TEST
+    OpenUsb();
+#endif
 }
 
 void EnterDeepSleep(void)

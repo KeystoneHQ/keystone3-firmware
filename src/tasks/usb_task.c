@@ -64,7 +64,9 @@ static void UsbTask(void *argument)
 
     osDelay(1000);
 #if (USB_POP_WINDOW_ENABLE == 1)
+#ifndef USB_AUTO_TEST
     CloseUsb();
+#endif
 #else
     if (GetUSBSwitch() && GetUsbDetectState()) {
         OpenUsb();

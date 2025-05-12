@@ -32,6 +32,10 @@ static void UsbGoToHomeViewHandler(lv_event_t *e);
 
 static void CountDownTimerHandler(lv_timer_t *timer)
 {
+#ifdef USB_AUTO_TEST
+    UsbGoToHomeViewHandler(NULL);
+    return;
+#endif
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
     char buf[32] = {0};
     --g_countDown;

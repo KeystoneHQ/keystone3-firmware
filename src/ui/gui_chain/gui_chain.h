@@ -37,6 +37,7 @@ typedef enum {
     CHAIN_ADA,
     CHAIN_TON,
     CHAIN_DOT,
+    CHAIN_AVAX,
     CHAIN_TRX,
     CHAIN_LTC,
     CHAIN_DOGE,

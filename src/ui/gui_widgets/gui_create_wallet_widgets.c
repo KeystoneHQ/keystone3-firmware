@@ -85,6 +85,15 @@ const char *GetCurrentKbWalletName(void)
     return "";
 }
 
+#ifdef USB_AUTO_TEST
+void GuiSetCurrentKbWalletName(const char *name)
+{
+    if (g_nameWalletKb != NULL) {
+        lv_textarea_set_text(g_nameWalletKb->ta, name);
+    }
+}
+#endif
+
 static void QuestionMarkEventCb(lv_event_t *e)
 {
     uint8_t index = TUTORIAL_SHAMIR_BACKUP;

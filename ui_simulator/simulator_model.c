@@ -21,7 +21,27 @@ bool g_reboot = false;
 bool g_otpProtect = false;
 
 // Comment out this macro if you need to retrieve data from the file
-#define GET_QR_DATA_FROM_SCREEN
+// #define GET_QR_DATA_FROM_SCREEN
+
+void UsdCreateWalletResult(bool success, uint8_t newAccount)
+{
+
+}
+
+void UsdImportWalletResult(bool success, uint8_t newAccount)
+{
+
+}
+
+void UsbUnlockDeviceSuccess(bool success)
+{
+
+}
+
+void UsdWalletSeedCheckResult(bool success)
+{
+
+}
 
 void OTP_PowerOn(void)
 {
@@ -630,8 +650,9 @@ int32_t read_qrcode()
 
     char *qrString = qrcode[i++];
     printf("qrString read: %s\r\n", qrString);
+    printf("qrcode_size: %d\r\n", qrcode_size);
     QRProtocol t = infer_qrcode_type(qrString);
-    printf("t: %u\n", t);
+    printf("t: %u............\n", t);
     switch (t)
     {
     case QRCodeTypeText:

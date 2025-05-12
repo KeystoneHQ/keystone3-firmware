@@ -455,6 +455,7 @@ pub extern "C" fn cardano_sign_catalyst_with_ledger_bitbox02(
     ptr: PtrUR,
     mnemonic: PtrString,
     passphrase: PtrString,
+    unlimited: bool,
 ) -> PtrT<UREncodeResult> {
     let mnemonic = recover_c_char(mnemonic);
     let passphrase = recover_c_char(passphrase);
@@ -465,7 +466,7 @@ pub extern "C" fn cardano_sign_catalyst_with_ledger_bitbox02(
         );
 
     match master_key {
-        Ok(master_key) => cardano_sign_catalyst_by_icarus(ptr, master_key),
+        Ok(master_key) => cardano_sign_catalyst_by_icarus(ptr, master_key, unlimited),
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }
@@ -476,14 +477,15 @@ pub extern "C" fn cardano_sign_catalyst(
     entropy: PtrBytes,
     entropy_len: u32,
     passphrase: PtrString,
+    unlimited: bool,
 ) -> PtrT<UREncodeResult> {
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
     let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
-    cardano_sign_catalyst_by_icarus(ptr, icarus_master_key)
+    cardano_sign_catalyst_by_icarus(ptr, icarus_master_key, unlimited)
 }
 
-fn cardano_sign_catalyst_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<UREncodeResult> {
+fn cardano_sign_catalyst_by_icarus(ptr: PtrUR, icarus_master_key: XPrv, unlimited: bool) -> PtrT<UREncodeResult> {
     let cardano_catalyst_request =
         extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
 
@@ -512,7 +514,11 @@ fn cardano_sign_catalyst_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<
                     UREncodeResult::encode(
                         data,
                         CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE.get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT,
+                        if unlimited {
+                            FRAGMENT_UNLIMITED_LENGTH
+                        } else {
+                            FRAGMENT_MAX_LENGTH_DEFAULT
+                        },
                     )
                     .c_ptr()
                 },
@@ -526,6 +532,7 @@ pub extern "C" fn cardano_sign_sign_data_with_ledger_bitbox02(
     ptr: PtrUR,
     mnemonic: PtrString,
     passphrase: PtrString,
+    unlimited: bool,
 ) -> PtrT<UREncodeResult> {
     let mnemonic = recover_c_char(mnemonic);
     let passphrase = recover_c_char(passphrase);
@@ -536,7 +543,7 @@ pub extern "C" fn cardano_sign_sign_data_with_ledger_bitbox02(
         );
 
     match master_key {
-        Ok(master_key) => cardano_sign_sign_data_by_icarus(ptr, master_key),
+        Ok(master_key) => cardano_sign_sign_data_by_icarus(ptr, master_key, unlimited),
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }
@@ -546,6 +553,7 @@ pub extern "C" fn cardano_sign_sign_cip8_data_with_ledger_bitbox02(
     ptr: PtrUR,
     mnemonic: PtrString,
     passphrase: PtrString,
+    unlimited: bool,
 ) -> PtrT<UREncodeResult> {
     let mnemonic = recover_c_char(mnemonic);
     let passphrase = recover_c_char(passphrase);
@@ -556,7 +564,7 @@ pub extern "C" fn cardano_sign_sign_cip8_data_with_ledger_bitbox02(
         );
 
     match master_key {
-        Ok(master_key) => cardano_sign_sign_cip8_data_by_icarus(ptr, master_key),
+        Ok(master_key) => cardano_sign_sign_cip8_data_by_icarus(ptr, master_key, unlimited),
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }
@@ -567,17 +575,18 @@ pub extern "C" fn cardano_sign_sign_data(
     entropy: PtrBytes,
     entropy_len: u32,
     passphrase: PtrString,
+    unlimited: bool,
 ) -> PtrT<UREncodeResult> {
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
     let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
-    cardano_sign_sign_data_by_icarus(ptr, icarus_master_key)
+    cardano_sign_sign_data_by_icarus(ptr, icarus_master_key, unlimited)
 }
 
-fn cardano_sign_sign_data_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<UREncodeResult> {
+fn cardano_sign_sign_data_by_icarus(ptr: PtrUR, icarus_master_key: XPrv, unlimited: bool) -> PtrT<UREncodeResult> {
     let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
     let sign_data = cardano_sign_data_reqeust.get_sign_data();
-
+    
     let result = app_cardano::transaction::sign_data(
         &cardano_sign_data_reqeust
             .get_derivation_path()
@@ -603,7 +612,11 @@ fn cardano_sign_sign_data_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT
                     UREncodeResult::encode(
                         data,
                         CARDANO_SIGN_DATA_SIGNATURE.get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT,
+                        if unlimited {
+                            FRAGMENT_UNLIMITED_LENGTH
+                        } else {
+                            FRAGMENT_MAX_LENGTH_DEFAULT
+                        },
                     )
                     .c_ptr()
                 },
@@ -620,11 +633,12 @@ pub extern "C" fn cardano_sign_sign_cip8_data(
     entropy: PtrBytes,
     entropy_len: u32,
     passphrase: PtrString,
+    unlimited: bool,
 ) -> PtrT<UREncodeResult> {
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
     let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
-    cardano_sign_sign_cip8_data_by_icarus(ptr, icarus_master_key)
+    cardano_sign_sign_cip8_data_by_icarus(ptr, icarus_master_key, unlimited)
 }
 
 #[no_mangle]
@@ -646,7 +660,7 @@ pub extern "C" fn cardano_sign_tx_with_ledger_bitbox02(
     match master_key {
         Ok(master_key) => {
             if enable_blind_sign {
-                cardano_sign_tx_hash_by_icarus(ptr, master_key)
+                cardano_sign_tx_hash_by_icarus(ptr, master_key, false)
             } else {
                 cardano_sign_tx_by_icarus(ptr, master_fingerprint, cardano_xpub, master_key)
             }
@@ -662,6 +676,7 @@ pub extern "C" fn cardano_sign_tx_with_ledger_bitbox02_unlimited(
     cardano_xpub: PtrString,
     mnemonic: PtrString,
     passphrase: PtrString,
+    enable_blind_sign: bool
 ) -> PtrT<UREncodeResult> {
     let mnemonic = recover_c_char(mnemonic);
     let passphrase = recover_c_char(passphrase);
@@ -673,7 +688,16 @@ pub extern "C" fn cardano_sign_tx_with_ledger_bitbox02_unlimited(
 
     match master_key {
         Ok(master_key) => {
-            cardano_sign_tx_by_icarus_unlimited(ptr, master_fingerprint, cardano_xpub, master_key)
+            if enable_blind_sign {
+                cardano_sign_tx_hash_by_icarus(ptr, master_key, true)
+            } else {
+                cardano_sign_tx_by_icarus_unlimited(
+                    ptr,
+                    master_fingerprint,
+                    cardano_xpub,
+                    master_key,
+                )
+            }
         }
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
@@ -693,22 +717,28 @@ pub extern "C" fn cardano_sign_tx(
     let passphrase = recover_c_char(passphrase);
     let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
     if enable_blind_sign {
-        cardano_sign_tx_hash_by_icarus(ptr, icarus_master_key)
+        cardano_sign_tx_hash_by_icarus(ptr, icarus_master_key, enable_blind_sign)
     } else {
         cardano_sign_tx_by_icarus(ptr, master_fingerprint, cardano_xpub, icarus_master_key)
     }
 }
 
-fn cardano_sign_tx_hash_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<UREncodeResult> {
+fn cardano_sign_tx_hash_by_icarus(ptr: PtrUR, icarus_master_key: XPrv, unlimited: bool) -> PtrT<UREncodeResult> {
     let cardano_sign_tx_hash_request = extract_ptr_with_type!(ptr, CardanoSignTxHashRequest);
     let tx_hash = cardano_sign_tx_hash_request.get_tx_hash();
     let paths = cardano_sign_tx_hash_request.get_paths();
     let sign_result = app_cardano::transaction::sign_tx_hash(&tx_hash, &paths, icarus_master_key);
     match sign_result {
-        Ok(v) => {
-            UREncodeResult::encode(v, CARDANO_SIGNATURE.get_type(), FRAGMENT_MAX_LENGTH_DEFAULT)
-                .c_ptr()
-        }
+        Ok(v) => UREncodeResult::encode(
+            v,
+            CARDANO_SIGNATURE.get_type(),
+            if unlimited {
+                FRAGMENT_UNLIMITED_LENGTH
+            } else {
+                FRAGMENT_MAX_LENGTH_DEFAULT
+            },
+        )
+        .c_ptr(),
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }
@@ -793,6 +823,7 @@ fn cardano_sign_tx_by_icarus_dynamic(
 fn cardano_sign_sign_cip8_data_by_icarus(
     ptr: PtrUR,
     icarus_master_key: XPrv,
+    unlimited: bool,
 ) -> PtrT<UREncodeResult> {
     let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignCip8DataRequest);
     let mut sign_data = cardano_sign_data_reqeust.get_sign_data();
@@ -853,7 +884,11 @@ fn cardano_sign_sign_cip8_data_by_icarus(
                     UREncodeResult::encode(
                         data,
                         CARDANO_SIGN_CIP8_DATA_SIGNATURE.get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT.clone(),
+                        if unlimited {
+                            FRAGMENT_UNLIMITED_LENGTH
+                        } else {
+                            FRAGMENT_MAX_LENGTH_DEFAULT
+                        },
                     )
                     .c_ptr()
                 },

@@ -170,6 +170,13 @@ void GuiTransactionDetailInit(uint8_t viewType)
     g_signSlider = GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
     g_fingerSignCount = 0;
     GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
+#ifndef COMPILE_SIMULATOR
+#ifdef USB_AUTO_TEST
+    if (strnlen_s(SecretCacheGetPassword(), PASSWORD_MAX_LEN) != 0) {
+        GuiTransactionDetailVerifyPasswordSuccess();
+    }
+#endif
+#endif
 }
 
 void GuiTransactionDetailDeInit()
@@ -235,6 +242,7 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
         }
         UREncodeResult *urResult = func();
         if (urResult->error_code == 0) {
+            printf("urResult->data: ..%s..\n", urResult->data);
             HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), RSP_SUCCESS_CODE);
         } else {
             HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), GetCurrentUSParsingRequestID(), PRS_PARSING_ERROR);

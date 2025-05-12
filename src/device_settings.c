@@ -69,7 +69,7 @@ typedef struct {
 static int32_t SaveDeviceSettingsAsyncFunc(const void *inData, uint32_t inDataLen);
 static void SaveDeviceSettingsSync(void);
 static bool GetDeviceSettingsFromJsonString(const char *string);
-static char *GetJsonStringFromDeviceSettings(void);
+char *GetJsonStringFromDeviceSettings(void);
 static void AesEncryptBuffer(uint8_t *cipher, uint32_t sz, uint8_t *plain);
 static void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher);
 static void InitBootParam(void);
@@ -558,7 +558,7 @@ static bool GetDeviceSettingsFromJsonString(const char *string)
     return ret;
 }
 
-static char *GetJsonStringFromDeviceSettings(void)
+char *GetJsonStringFromDeviceSettings(void)
 {
     cJSON *rootJson;
     char *retStr;

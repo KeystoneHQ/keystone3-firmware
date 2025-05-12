@@ -231,6 +231,7 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = btc_sign_msg(data, seed, len, mfp, sizeof(mfp));
+        printf("encodeResult: %s\n", encodeResult->data);
     } else if (urType == SeedSignerMessage) {
         uint8_t seed[64];
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
@@ -418,7 +419,9 @@ void *GuiGetParsedQrData(void)
         }
 #endif
         else if (urType == BtcSignRequest) {
+            printf("%s %d.....\n", __func__, __LINE__);
             g_parseMsgResult = btc_parse_msg(crypto, public_keys, mfp, sizeof(mfp));
+            printf("%s %d.....\n", __func__, __LINE__);
             CHECK_CHAIN_RETURN(g_parseMsgResult);
             return g_parseMsgResult;
         } else if (urType == SeedSignerMessage) {

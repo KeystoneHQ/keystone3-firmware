@@ -178,6 +178,7 @@ void ProcessURService(EAPDURequestPayload_t *payload)
             break;
         }
         g_requestID = payload->requestID;
+        printf("payload->data = .%s.\n", payload->data);
 
         urResult = parse_ur((char *)payload->data);
         if (urResult->error_code != 0) {

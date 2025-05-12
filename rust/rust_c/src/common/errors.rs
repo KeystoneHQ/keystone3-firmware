@@ -128,7 +128,8 @@ pub enum ErrorCodes {
     EthereumDecodeContractDataError,
     EthereumInvalidTypedData,
     EthereumHashTypedDataError,
-
+    EthereumInvalidSwapTransaction,
+    EthereumInvalidSwapkitMemo,
     //Tron
     TronInvalidRawTxCryptoBytes = 300,
     TronInvalidParseContext,
@@ -335,6 +336,8 @@ impl From<&EthereumError> for ErrorCodes {
             EthereumError::DecodeContractDataError(_) => Self::EthereumDecodeContractDataError,
             EthereumError::InvalidTypedData(_, _) => Self::EthereumInvalidTypedData,
             EthereumError::HashTypedDataError(_) => Self::EthereumHashTypedDataError,
+            EthereumError::InvalidSwapTransaction(_) => Self::EthereumInvalidSwapTransaction,
+            EthereumError::InvalidSwapkitMemo => Self::EthereumInvalidSwapkitMemo,
         }
     }
 }

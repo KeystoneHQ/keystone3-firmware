@@ -11,6 +11,11 @@ pub struct ParsedErc20Transaction {
     pub value: String,
 }
 
+pub struct ParsedErc20Approval {
+    pub spender: String,
+    pub value: String,
+}
+
 pub fn encode_erc20_transfer_calldata(to: H160, amount: U256) -> String {
     // transfer(address recipient, uint256 amount) function signature is 0xa9059cbb
     let mut calldata = "a9059cbb".to_string();
@@ -53,6 +58,45 @@ pub fn parse_erc20(input: &str, decimal: u32) -> Result<ParsedErc20Transaction, 
     };
 
     Ok(ParsedErc20Transaction { to, value })
+}
+
+pub fn parse_erc20_approval(input: &str, decimal: u32) -> Result<ParsedErc20Approval, &'static str> {
+    //095ea7b30000000000000000000000000000000000001ff3684f28c67538d4d072c2273400000000000000000000000000000000000000000000000000000000006acfc0
+    if input.len() != 136 {
+        return Err("Input must be 136 characters long");
+    }
+
+    let method_id = &input[0..8];
+    if method_id != "095ea7b3" {
+        return Err("Invalid method id");
+    }
+
+    let spender = match hex::decode(&input[32..72]) {
+        Ok(bytes) => format!("0x{}", hex::encode(bytes)),
+        Err(_) => return Err("Failed to decode 'spender' address"),
+    };
+
+    let value_hex = &input[72..];
+    let value_biguint = BigUint::parse_bytes(value_hex.as_bytes(), 16)
+        .ok_or("Failed to parse 'value' as a big uint")?;
+
+    let decimal_biguint = BigUint::from(10u64.pow(decimal));
+
+    let value_decimal = value_biguint.clone() / &decimal_biguint;
+    let remainder = &value_biguint % &decimal_biguint;
+
+    let value = if remainder != BigUint::new(Vec::new()) {
+        // If there is a remainder, convert it to a decimal
+        let remainder_decimal = remainder.to_string();
+        let padded_remainder = format!("{:0>width$}", remainder_decimal, width = decimal as usize);
+        format!("{}.{}", value_decimal, padded_remainder)
+            .trim_end_matches('0')
+            .to_string()
+    } else {
+        value_decimal.to_string()
+    };
+
+    Ok(ParsedErc20Approval { spender, value })
 }
 
 #[cfg(test)]

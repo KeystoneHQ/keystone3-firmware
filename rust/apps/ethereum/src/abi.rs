@@ -112,6 +112,9 @@ fn _parse_by_function(
                         Token::Address(_) => {
                             format!("0x{}", _token)
                         }
+                        Token::Uint(uint) => {
+                            format!("{}", uint)
+                        }
                         _ => _token.to_string(),
                     },
                 ))

@@ -3,7 +3,8 @@ use alloc::vec::Vec;
 use alloc::{format, slice};
 
 use app_ethereum::address::derive_address;
-use app_ethereum::erc20::parse_erc20;
+use app_ethereum::batch_tx_rules::rule_swap;
+use app_ethereum::erc20::{parse_erc20, parse_erc20_approval};
 use app_ethereum::errors::EthereumError;
 use app_ethereum::{
     parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
@@ -24,7 +25,7 @@ use ur_registry::traits::RegistryItem;
 
 use crate::common::errors::{KeystoneError, RustCError};
 use crate::common::keystone::build_payload;
-use crate::common::structs::{TransactionCheckResult, TransactionParseResult};
+use crate::common::structs::{Response, TransactionCheckResult, TransactionParseResult};
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{
     QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH,
@@ -35,7 +36,7 @@ use crate::extract_ptr_with_type;
 
 use structs::{
     DisplayETH, DisplayETHBatchTx, DisplayETHPersonalMessage, DisplayETHTypedData,
-    EthParsedErc20Transaction, TransactionType,
+    EthParsedErc20Approval, EthParsedErc20Transaction, TransactionType,
 };
 
 mod abi;
@@ -401,7 +402,7 @@ pub extern "C" fn eth_check_then_parse_batch_tx(
                 let tx = parse_legacy_tx(&request.get_sign_data(), key);
                 match tx {
                     Ok(t) => {
-                        result.push(DisplayETH::from(t));
+                        result.push(t);
                     }
                     Err(e) => return TransactionParseResult::from(e).c_ptr(),
                 }
@@ -413,7 +414,7 @@ pub extern "C" fn eth_check_then_parse_batch_tx(
                         let payload = &request.get_sign_data()[1..];
                         let tx = parse_fee_market_tx(payload, key);
                         match tx {
-                            Ok(t) => result.push(DisplayETH::from(t)),
+                            Ok(t) => result.push(t),
                             Err(e) => return TransactionParseResult::from(e).c_ptr(),
                         }
                     }
@@ -454,8 +455,20 @@ pub extern "C" fn eth_check_then_parse_batch_tx(
               // }
         }
     }
-    let display_eth_batch_tx = DisplayETHBatchTx::from(result);
-    TransactionParseResult::success(display_eth_batch_tx.c_ptr()).c_ptr()
+
+    match rule_swap(result.clone()) {
+        Ok(_) => {
+            let display_result = result
+                .iter()
+                .map(|t| DisplayETH::from(t.clone()))
+                .collect::<Vec<DisplayETH>>();
+            let display_eth_batch_tx = DisplayETHBatchTx::from(display_result);
+            return TransactionParseResult::success(display_eth_batch_tx.c_ptr()).c_ptr();
+        }
+        Err(e) => {
+            return TransactionParseResult::from(e).c_ptr();
+        }
+    }
 }
 
 #[no_mangle]
@@ -737,6 +750,23 @@ pub extern "C" fn eth_parse_erc20(
         .c_ptr(),
     }
 }
+
+#[no_mangle]
+pub extern "C" fn eth_parse_erc20_approval(
+    input: PtrString,
+    decimal: u32,
+) -> PtrT<Response<EthParsedErc20Approval>> {
+    let input = recover_c_char(input);
+    let tx = parse_erc20_approval(&input, decimal);
+    match tx {
+        Ok(t) => Response::success(EthParsedErc20Approval::from(t)),
+        Err(_) => Response::from(EthereumError::DecodeContractDataError(String::from(
+            "invalid input data",
+        ))),
+    }
+    .c_ptr()
+}
+
 #[cfg(test)]
 mod tests {
     extern crate std;

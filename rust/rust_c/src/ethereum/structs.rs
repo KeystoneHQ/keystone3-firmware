@@ -5,7 +5,7 @@ use super::util::{calculate_max_txn_fee, convert_wei_to_eth};
 use crate::common::ffi::VecFFI;
 use crate::common::free::Free;
 use crate::common::structs::{Response, TransactionParseResult};
-use crate::common::types::{PtrString, PtrT};
+use crate::common::types::{Ptr, PtrString, PtrT};
 use crate::common::utils::convert_c_char;
 use crate::{check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, make_free_method};
 use alloc::string::{String, ToString};
@@ -444,6 +444,30 @@ impl Free for EthParsedErc20Transaction {
 impl_c_ptr!(EthParsedErc20Transaction);
 
 #[repr(C)]
+pub struct EthParsedErc20Approval {
+    pub spender: PtrString,
+    pub value: PtrString,
+}
+
+impl_c_ptr!(EthParsedErc20Approval);
+
+impl From<app_ethereum::erc20::ParsedErc20Approval> for EthParsedErc20Approval {
+    fn from(value: app_ethereum::erc20::ParsedErc20Approval) -> Self {
+        Self {
+            spender: convert_c_char(value.spender),
+            value: convert_c_char(value.value),
+        }
+    }
+}
+
+impl Free for EthParsedErc20Approval {
+    fn free(&self) {
+        free_str_ptr!(self.spender);
+        free_str_ptr!(self.value);
+    }
+}
+
+#[repr(C)]
 pub struct DisplayETHBatchTx {
     pub txs: PtrT<VecFFI<DisplayETH>>,
 }
@@ -464,6 +488,42 @@ impl Free for DisplayETHBatchTx {
     }
 }
 
+#[repr(C)]
+pub struct DisplaySwapkitContractData {
+    pub vault: PtrString,
+    pub swap_in_asset: PtrString,
+    pub swap_in_amount: PtrString,
+    pub swap_out_asset: PtrString,
+    pub receive_address: PtrString,
+    pub expiration: PtrString,
+}
+
+impl From<app_ethereum::swap::SwapkitContractData> for DisplaySwapkitContractData {
+    fn from(value: app_ethereum::swap::SwapkitContractData) -> Self {
+        Self {
+            vault: convert_c_char(value.vault),
+            swap_in_asset: convert_c_char(value.swap_in_asset),
+            swap_in_amount: convert_c_char(value.swap_in_amount),
+            swap_out_asset: convert_c_char(value.swap_out_asset),
+            receive_address: convert_c_char(value.receive_address),
+            expiration: value.expiration.map(convert_c_char).unwrap_or(null_mut()),
+        }
+    }
+}
+
+impl_c_ptr!(DisplaySwapkitContractData);
+
+impl Free for DisplaySwapkitContractData {
+    fn free(&self) {
+        free_str_ptr!(self.vault);
+        free_str_ptr!(self.swap_in_asset);
+        free_str_ptr!(self.swap_in_amount);
+        free_str_ptr!(self.swap_out_asset);
+        free_str_ptr!(self.receive_address);
+        free_str_ptr!(self.expiration);
+    }
+}
+
 impl_c_ptr!(DisplayETHBatchTx);
 
 make_free_method!(TransactionParseResult<DisplayETH>);
@@ -471,3 +531,5 @@ make_free_method!(TransactionParseResult<DisplayETHPersonalMessage>);
 make_free_method!(TransactionParseResult<DisplayETHTypedData>);
 make_free_method!(Response<DisplayContractData>);
 make_free_method!(TransactionParseResult<EthParsedErc20Transaction>);
+make_free_method!(Response<EthParsedErc20Approval>);
+make_free_method!(Response<DisplaySwapkitContractData>);

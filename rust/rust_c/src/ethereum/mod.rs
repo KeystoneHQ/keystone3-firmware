@@ -435,24 +435,7 @@ pub extern "C" fn eth_check_then_parse_batch_tx(
                     "Batch signing Message".to_string(),
                 ))
                 .c_ptr()
-            } // TransactionType::PersonalMessage => {
-              //     let tx = parse_personal_message(request.get_sign_data(), key);
-              //     match tx {
-              //         Ok(t) => {
-              //             TransactionParseResult::success(DisplayETHPersonalMessage::from(t).c_ptr())
-              //                 .c_ptr()
-              //         }
-              //         Err(e) => TransactionParseResult::from(e).c_ptr(),
-              //     }
-              // }
-              // TransactionType::TypedData => {
-              //     let tx = parse_typed_data_message(request.get_sign_data(), key);
-              //     match tx {
-              //         Ok(t) => TransactionParseResult::success(DisplayETHTypedData::from(t).c_ptr())
-              //             .c_ptr(),
-              //         Err(e) => TransactionParseResult::from(e).c_ptr(),
-              //     }
-              // }
+            }
         }
     }
 

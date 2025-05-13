@@ -3398,7 +3398,15 @@ const ABIItem_t ethereum_abi_map[] = {
     {
         "0x4e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec67_1688f0b9",
         "{\"name\":\"Safe Proxy Factory 1.4.1\",\"address\":\"0x4e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec67\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_singleton\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initializer\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"saltNonce\",\"type\":\"uint256\"}],\"name\":\"createProxyWithNonce\",\"outputs\":[{\"internalType\":\"contract SafeProxy\",\"name\":\"proxy\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
-    }
+    },
+    {
+        "0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146_1fece7b4",
+        "{\"name\":\"THORChain Router\",\"address\":\"0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"}],\"name\":\"deposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146_44bc937b",
+        "{\"name\":\"THORChain Router\",\"address\":\"0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"}],\"name\":\"depositWithExpiry\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
 };
 
 uint32_t GetEthereumABIMapSize() {

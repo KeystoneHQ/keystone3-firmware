@@ -1,5 +1,14 @@
 #include "gui_chain_components.h"
 
+lv_obj_t* CreateRelativeTransactionContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h, lv_obj_t *last_view)
+{
+    lv_obj_t *container = CreateTransactionContentContainer(parent, w, h);
+    if (last_view != NULL) {
+        lv_obj_align_to(container, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
+    return container;
+}
+
 lv_obj_t *CreateTransactionContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h)
 {
     lv_obj_t *container = GuiCreateContainerWithParent(parent, w, h);

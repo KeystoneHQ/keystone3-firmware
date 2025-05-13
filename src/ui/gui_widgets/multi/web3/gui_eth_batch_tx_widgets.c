@@ -7,6 +7,7 @@
 #include "gui_chain_components.h"
 #include "gui_obj.h"
 #include "gui_eth.h"
+#include "gui_qr_hintbox.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
@@ -47,6 +48,7 @@ static lv_obj_t *g_cont;
 static lv_obj_t *g_txContainer = NULL;
 static lv_obj_t *g_overviewContainer = NULL;
 static lv_obj_t *g_detailContainer = NULL;
+static lv_obj_t *g_parseErrorHintBox = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static lv_obj_t *g_bottomBtnContainer = NULL;
 static lv_obj_t *g_signSlider = NULL;
@@ -69,6 +71,7 @@ static void HandleCurrentTransactionParseFail(uint32_t errorCode, const char *er
 //GUI Event Handlers
 static void HandleClickPreviousBtn(lv_event_t *e);
 static void HandleClickNextBtn(lv_event_t *e);
+static void HandleClickAddressChecker(lv_event_t *e);
 
 void GuiSetEthBatchTxData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi) {
     g_urResult = urResult;
@@ -124,6 +127,16 @@ static void HandleClickNextBtn(lv_event_t *e) {
     }
 }
 
+static void HandleClickAddressChecker(lv_event_t *e) {
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_CLICKED) {
+        char *address = lv_event_get_user_data(e);
+        printf("address: %s\n", address);
+        char *text = malloc(BUFFER_SIZE_128);
+        sprintf(text, "https://etherscan.io/address/%s", address);
+        GuiQRCodeHintBoxOpen(text, _("Check the Address"), text);
+    }
+}
 static void SignByPasswordCbHandler(lv_event_t *e)
 {
     SignByPasswordCb(true);
@@ -181,19 +194,26 @@ static void ParseErc20ContractData(const char* inputData, const uint8_t decimals
 }
 
 void GuiEthBatchTxWidgetsRefresh() {
-    GuiEthBatchTxNavBarRefresh();
-    if(!HandleCurrentTransaction(g_currentTxIndex)) {
-        return;
+    printf("GuiEthBatchTxWidgetsRefresh\n");
+    if(g_parseResult -> error_code == 0) {
+        GuiEthBatchTxNavBarRefresh();
+        if(!HandleCurrentTransaction(g_currentTxIndex)) {
+            return;
+        }
+
+        bool showSwapHint = g_currentTxIndex == 0 && g_txCount > 1;
+        bool showSignSlider = g_currentTxIndex == g_txCount - 1;
+
+        GuiRenderCurrentTransaction(showSwapHint, showSignSlider);
     }
+}
 
-    bool showSwapHint = g_currentTxIndex == 0 && g_txCount > 1;
-    bool showSignSlider = g_currentTxIndex == g_txCount - 1;
-
-    GuiRenderCurrentTransaction(showSwapHint, showSignSlider);
+static void GuiReturnHome() {
+    GuiCloseToTargetView(&g_homeView);
 }
 
 static void OnReturnHandler(lv_event_t *e) {
-    GuiCloseToTargetView(&g_homeView);
+    GuiReturnHome();
 }
 
 static void *GuiParseEthBatchTxData(void) {
@@ -231,9 +251,8 @@ void GuiEthBatchTxWidgetsSignVerifyPasswordErrorCount(void *param)
     GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }
 
-void GuiEthBatchTxWidgetsTransactionParseFail() {
-    printf("GuiEthBatchTxWidgetsTransactionParseFail\n");
-    printf("error: %s\n", g_parseResult->error_message);
+void GuiEthBatchTxWidgetsTransactionParseFail(void* params) {
+    g_parseErrorHintBox = GuiCreateErrorCodeWindow(ERR_INVALID_QRCODE, &g_parseErrorHintBox, GuiReturnHome);
 }
 
 static void HandleCurrentTransactionParseFail(uint32_t errorCode, const char *errorMessage) {
@@ -287,6 +306,7 @@ void GuiEthBatchTxWidgetsInit() {
     g_cont = cont;
     GuiEthBatchTxNavBarInit();
     GuiCreatePageContent(g_cont);
+    GuiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
     GuiModelParseTransaction(GuiParseEthBatchTxData);
 }
 
@@ -387,7 +407,7 @@ static lv_obj_t* GuiRenderSwapSummary(lv_obj_t *parent, const char* from_asset, 
     return container;
 }
 
-static lv_obj_t *GuiRenderUnknownSwapSummary(lv_obj_t *parent, const char* from_asset, const char* from_amount, const char* to_asset) {
+static lv_obj_t *GuiRenderUnknownErc20SwapSummary(lv_obj_t *parent, const char* from_asset, const char* from_amount, const char* to_asset) {
     lv_obj_t *last_view = NULL;
     last_view = CreateTransactionItemView(parent, _("Operation"), "Swap", last_view);
     last_view = CreateTransactionItemView(parent, _("From"), from_asset, last_view);
@@ -451,7 +471,6 @@ static lv_obj_t *GuiRenderApprove(lv_obj_t *parent, const bool showAmount, lv_ob
 }
 
 static void GuiRenderOverview(lv_obj_t *parent, bool showSwapHint) {
-    lv_obj_set_style_bg_color(parent, BLUE_COLOR, LV_PART_MAIN);
     lv_obj_t *last_view = NULL;
     if(showSwapHint) {
         last_view = GuiOvewviewSwapHint(parent);
@@ -481,7 +500,7 @@ static void GuiRenderOverview(lv_obj_t *parent, bool showSwapHint) {
             }
             else {
                 //is unknown erc20 token
-                last_view = GuiRenderUnknownSwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
+                last_view = GuiRenderUnknownErc20SwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
             }
             last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
             last_view = CreateTransactionItemView(parent, _("From"), g_currentTransaction->overview->from, last_view);
@@ -490,8 +509,247 @@ static void GuiRenderOverview(lv_obj_t *parent, bool showSwapHint) {
     }
 }
 
-static void GuiRenderDetail(lv_obj_t *parent) {
+static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *last_view) {
+    uint16_t height = 16 ; //top padding
+    lv_obj_t *container = CreateRelativeTransactionContentContainer(parent, 408, 0, last_view);
+    lv_obj_align(container, LV_ALIGN_TOP_LEFT, 0, 4);
 
+    lv_obj_t *titleLabel, *valueLabel;
+
+    titleLabel = GuiCreateIllustrateLabel(container, _("Value"));
+    lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
+    lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
+
+    char* value = malloc(BUFFER_SIZE_32);
+    sprintf(value, "%s %s", g_currentTransaction->detail->value, g_currentNetwork.symbol);
+
+    valueLabel = GuiCreateIllustrateLabel(container, value);
+    lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+    lv_obj_set_style_text_color(valueLabel, ORANGE_COLOR, LV_PART_MAIN);
+
+    height += 30 + 8;
+
+    titleLabel = GuiCreateIllustrateLabel(container, _("Max Fee"));
+    lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
+    lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
+
+    valueLabel = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->max_txn_fee);
+    lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+
+    height += 30 + 8;
+
+    titleLabel = GuiCreateIllustrateLabel(container, "  \xE2\x80\xA2  Max Fee Price * Gas Limit");
+    lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
+
+    height += 30 + 8;
+
+    if(g_currentTransaction->detail->max_priority != NULL) {
+        titleLabel = GuiCreateIllustrateLabel(container, _("Max Priority"));
+        lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
+        lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
+
+        valueLabel = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->max_priority);
+        lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+
+        height += 30 + 8;
+
+        titleLabel = GuiCreateIllustrateLabel(container, "  \xE2\x80\xA2  Max Priority Fee Price * Gas Limit");
+        lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
+
+        height += 30 + 8;
+    }
+
+    if(g_currentTransaction->detail->max_fee_price != NULL) {
+        titleLabel = GuiCreateIllustrateLabel(container, _("Max Fee Price"));
+        lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
+        lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
+
+        valueLabel = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->max_fee_price);
+        lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+
+        height += 30 + 8;
+    }
+
+    if(g_currentTransaction->detail->max_priority_price != NULL) {
+        titleLabel = GuiCreateIllustrateLabel(container, _("Max Priority Fee Price"));
+        lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
+        lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
+
+        valueLabel = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->max_priority_price);
+        lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+
+        height += 30 + 8;
+    }
+
+    if(g_currentTransaction->detail->gas_price != NULL) {
+        titleLabel = GuiCreateIllustrateLabel(container, _("Gas Price"));
+        lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
+        lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
+
+        valueLabel = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->gas_price);
+        lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+
+        height += 30 + 8;
+    }
+
+    titleLabel = GuiCreateIllustrateLabel(container, _("Gas Limit"));
+    lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
+    lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
+
+    valueLabel = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->gas_limit);
+    lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+
+    height += 30;
+
+    height += 16; //bottom padding
+
+    lv_obj_set_height(container, height);
+    lv_obj_update_layout(container);
+
+    return container;
+}
+
+static lv_obj_t *GuiRenderDetailFromTo(lv_obj_t *parent, lv_obj_t *last_view) {
+    uint16_t height = 16; //top padding
+    lv_obj_t *container = CreateRelativeTransactionContentContainer(parent, 408, 0, last_view);
+
+    lv_obj_t *label;
+    label = GuiCreateIllustrateLabel(container, _("From"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+    height += 30 + 8;
+
+    label = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->from);
+    lv_obj_set_width(label, 360);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+
+    height += 60 + 8;
+
+    label = GuiCreateIllustrateLabel(container, _("To"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+    height += 30 + 8;
+
+    label = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->to);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+    lv_obj_set_width(label, 360);
+
+    height += 60 + 8;
+
+    lv_obj_t *img;
+
+    img = GuiCreateImg(container, &imgContract);
+    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 24, height);
+
+    if(g_currentErc20Contract != NULL) {
+        label = GuiCreateIllustrateLabel(container, g_currentErc20Contract->symbol);
+    }
+    else {
+        label = GuiCreateIllustrateLabel(container, g_contractData->data->contract_name);
+    }
+
+    lv_obj_set_style_text_color(label, PURPLE_COLOR, LV_PART_MAIN);
+    lv_obj_align_to(label, img, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+    height += 30 + 16;
+
+    lv_obj_set_height(container, height);
+    lv_obj_update_layout(container);
+
+    return container;
+}
+
+static lv_obj_t *GuiRenderDetailContractData(lv_obj_t *parent, lv_obj_t *last_view) {
+    lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("Input Data"));
+    lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+
+    lv_obj_t *container = CreateRelativeTransactionContentContainer(parent, 408, 0, label);
+
+    uint16_t height = 16;
+
+    for(int i = 0; i < g_contractData->data->params->size ; i++) {
+        DisplayContractParam param = g_contractData->data->params->data[i];
+        lv_obj_t *label = GuiCreateIllustrateLabel(container, param.name);
+        lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+        height += 30 + 8;
+
+        bool showAddressChecker = false;
+
+        //handle address case
+        if(strcmp(param.param_type, "address") == 0) {
+            bool asset_is_eth = strcmp(param.value, "0x0000000000000000000000000000000000000000") == 0;
+            Erc20Contract_t *erc20Contract = FindErc20Contract(param.value);
+            char* text = malloc(BUFFER_SIZE_64);
+            if(erc20Contract != NULL) {
+                sprintf(text, "%s (#1BE0C6 %s#)", param.value, erc20Contract->symbol);
+                showAddressChecker = true;
+            }
+            else if (asset_is_eth) {
+                sprintf(text, "%s (#F5870A %s#)", param.value, g_currentNetwork.symbol);
+                showAddressChecker = false;
+            }
+            else {
+                sprintf(text, "%s", param.value);
+                showAddressChecker = true;
+            }
+            label = GuiCreateIllustrateLabel(container, text);
+            lv_label_set_recolor(label, true);
+        }
+        else {
+            label = GuiCreateIllustrateLabel(container, param.value);
+        }
+
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+        lv_obj_set_width(label, 360);
+        lv_obj_update_layout(label);
+
+        uint16_t labelHeight = lv_obj_get_height(label);
+        height += labelHeight + 8;
+
+        if(showAddressChecker) {
+            lv_obj_t *cont = GuiCreateContainerWithParent(container, 360, 30);
+            lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_set_style_bg_opa(cont, LV_OPA_0, LV_PART_MAIN);
+            lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 24, height);
+
+            label = GuiCreateIllustrateLabel(cont, _("Check the Address"));
+            lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
+            lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
+
+            lv_obj_t *img;
+            img = GuiCreateImg(cont, &imgQrcodeTurquoise);
+            lv_obj_align_to(img, label, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+
+            lv_obj_add_event_cb(cont, HandleClickAddressChecker, LV_EVENT_CLICKED, param.value);
+
+            height += 30 + 8;
+        }
+    }
+    height += 8;
+
+    lv_obj_set_height(container, height);
+    lv_obj_update_layout(container);
+
+    return container;
+}
+
+static void GuiRenderDetail(lv_obj_t *parent) {
+    lv_obj_t *last_view = NULL;
+    last_view = GuiRenderDetailTransactionInfoCard(parent, last_view);
+
+    last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
+
+    if(g_contractData != NULL && g_contractData->error_code == 0) {
+        last_view = CreateTransactionItemView(parent, _("Method"), g_contractData->data->method_name, last_view);
+    }
+
+    last_view = GuiRenderDetailFromTo(parent, last_view);
+
+    if(g_contractData != NULL && g_contractData->error_code == 0) {
+        last_view = GuiRenderDetailContractData(parent, last_view);
+    }
 }
 
 static void GuiRenderTransactionFrame(lv_obj_t *parent) {

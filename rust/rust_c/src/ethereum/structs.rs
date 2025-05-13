@@ -399,6 +399,7 @@ impl Free for DisplayContractData {
 pub struct DisplayContractParam {
     pub name: PtrString,
     pub value: PtrString,
+    pub param_type: PtrString,
 }
 
 impl From<&ContractMethodParam> for DisplayContractParam {
@@ -406,6 +407,7 @@ impl From<&ContractMethodParam> for DisplayContractParam {
         Self {
             name: convert_c_char(value.get_name()),
             value: convert_c_char(value.get_value()),
+            param_type: convert_c_char(value.get_param_type()),
         }
     }
 }

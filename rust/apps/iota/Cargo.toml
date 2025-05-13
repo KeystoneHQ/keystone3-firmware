@@ -13,6 +13,8 @@ ur-registry = { workspace = true }
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
 thiserror = { workspace = true }
+bytes = {version = "1.4.0", default-features = false}
+serde = { workspace = true }
 
 [dev-dependencies]
 keystore = { workspace = true }

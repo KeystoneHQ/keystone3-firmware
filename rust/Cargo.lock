@@ -283,10 +283,12 @@ version = "0.1.0"
 dependencies = [
  "app_utils",
  "bech32 0.11.0",
+ "bytes",
  "cryptoxide",
  "hex",
  "keystore",
  "rust_tools",
+ "serde",
  "thiserror-core",
  "ur-registry",
 ]

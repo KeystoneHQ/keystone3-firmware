@@ -41,6 +41,7 @@ typedef enum {
     CHAIN_LTC,
     CHAIN_DOGE,
     CHAIN_AVAX,
+    CHAIN_IOTA,
     CHAIN_BCH,
     CHAIN_APT,
     CHAIN_SUI,

@@ -14,6 +14,7 @@
                                        HOME_WALLET_CARD_LTC,     \
                                        HOME_WALLET_CARD_DOGE,    \
                                        HOME_WALLET_CARD_AVAX,    \
+                                       HOME_WALLET_CARD_IOTA,    \
                                        HOME_WALLET_CARD_BCH,     \
                                        HOME_WALLET_CARD_APT,     \
                                        HOME_WALLET_CARD_SUI,     \
@@ -70,6 +71,7 @@
         {HOME_WALLET_CARD_LTC, false, "LTC", true},       \
         {HOME_WALLET_CARD_DOGE, false, "DOGE", true},     \
         {HOME_WALLET_CARD_AVAX, false, "AVAX", true},     \
+        {HOME_WALLET_CARD_IOTA, false, "IOTA", true},     \
         {HOME_WALLET_CARD_BCH, false, "BCH", true},       \
         {HOME_WALLET_CARD_APT, false, "APT", true},       \
         {HOME_WALLET_CARD_SUI, false, "SUI", true},       \
@@ -117,12 +119,12 @@
 // last one cant not with comma
 
 #define HOME_WALLET_CARD_SURPLUS               \
-    {                                          \
-        .index = HOME_WALLET_CARD_ETH,         \
-        .coin = "ETH",                         \
-        .chain = "Ethereum",                   \
-        .icon = &coinEth,                      \
-    },                                         \
+        {                                      \
+            .index = HOME_WALLET_CARD_ETH,     \
+            .coin = "ETH",                     \
+            .chain = "Ethereum",               \
+            .icon = &coinEth,                  \
+        },                                     \
         {                                      \
             .index = HOME_WALLET_CARD_SOL,     \
             .coin = "SOL",                     \
@@ -194,6 +196,12 @@
             .coin = "AVAX",                    \
             .chain = "Avalanche",              \
             .icon = &coinAva,                  \
+        },                                     \
+        {                                      \
+            .index = HOME_WALLET_CARD_IOTA,    \
+            .coin = "IOTA",                    \
+            .chain = "IOTA",                   \
+            .icon = &coinDym,                 \
         },                                     \
         {                                      \
             .index = HOME_WALLET_CARD_APT,     \

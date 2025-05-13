@@ -65,6 +65,8 @@ fn main() {
         v.push_str("#define FEATURE_XRP\n");
         #[cfg(feature = "avalanche")]
         v.push_str("#define FEATURE_AVAX\n");
+        #[cfg(feature = "iota")]
+        v.push_str("#define FEATURE_IOTA\n");
         #[cfg(feature = "zcash")]
         v.push_str("#define FEATURE_ZCASH\n");
         #[cfg(feature = "monero")]

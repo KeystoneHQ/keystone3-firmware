@@ -353,6 +353,7 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
         GuiFrameOpenViewWithParam(&g_multiPathCoinReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ADA:
+    case HOME_WALLET_CARD_IOTA:
         GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ARWEAVE: {

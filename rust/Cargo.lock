@@ -278,6 +278,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "app_iota"
+version = "0.1.0"
+dependencies = [
+ "app_utils",
+ "bech32 0.11.0",
+ "cryptoxide",
+ "hex",
+ "keystore",
+ "rust_tools",
+ "thiserror-core",
+ "ur-registry",
+]
+
+[[package]]
 name = "app_monero"
 version = "0.1.0"
 dependencies = [
@@ -3655,6 +3669,7 @@ dependencies = [
  "app_cardano",
  "app_cosmos",
  "app_ethereum",
+ "app_iota",
  "app_monero",
  "app_near",
  "app_solana",

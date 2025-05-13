@@ -31,6 +31,10 @@ mod arweave;
 #[cfg(feature = "avalanche")]
 #[allow(unused)]
 mod avalanche;
+#[cfg(feature = "iota")]
+#[allow(unused)]
+mod iota;
+
 #[cfg(feature = "bitcoin")]
 #[allow(unused)]
 mod bitcoin;

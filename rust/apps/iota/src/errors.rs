@@ -25,6 +25,18 @@ pub enum IotaError {
 
     #[error("Could not parse transaction, reason: `{0}`")]
     ParseTxError(String),
+
+    #[error("Invalid field: `{0}`")]
+    InvalidField(String),
+
+    #[error("Unexpected EOF")]
+    UnexpectedEof,
+
+    #[error("Invalid length")]
+    InvalidLength,
+
+    #[error("Invalid command: {0}")]
+    InvalidCommand(u8),
 }
 
 pub type Result<T> = core::result::Result<T, IotaError>;

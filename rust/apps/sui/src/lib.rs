@@ -51,14 +51,21 @@ pub fn generate_address(pub_key: &str) -> Result<String> {
     Ok(format!("0x{}", hex::encode(addr)))
 }
 
+extern crate std;
+use std::println;
+
 pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
     match IntentScope::try_from(intent[0])? {
         IntentScope::TransactionData => {
+            println!("TransactionData");
             let tx: IntentMessage<TransactionData> =
                 bcs::from_bytes(intent).map_err(SuiError::from)?;
+            println!("TransactionData parsed");
+            println!("tx: {:?}", tx);
             Ok(Intent::TransactionData(tx))
         }
         IntentScope::PersonalMessage => {
+            println!("PersonalMessage");
             let msg: IntentMessage<PersonalMessage> = match bcs::from_bytes(intent) {
                 Ok(msg) => msg,
                 Err(_) => {
@@ -74,6 +81,8 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
                     )
                 }
             };
+            println!("PersonalMessage parsed");
+            println!("msg: {:?}", msg);
             let m = match decode_utf8(&msg.value.message) {
                 Ok(m) => m,
                 Err(_) => serde_json::to_string(&msg.value.message)?,

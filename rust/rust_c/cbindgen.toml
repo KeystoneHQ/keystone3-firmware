@@ -27,6 +27,7 @@ language = "C"
 "feature = zcash" = "FEATURE_ZCASH"
 "feature = monero" = "FEATURE_MONERO"
 "feature = avax" = "FEATURE_AVAX"
+"feature = iota" = "FEATURE_IOTA"
 
 [parse]
 extra_bindings = ["rust_c"]

@@ -124,6 +124,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "iota")]
+        impl From<app_iota::errors::IotaError> for $name {
+            fn from(value: app_iota::errors::IotaError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
         #[cfg(feature = "solana")]
         impl From<app_solana::errors::SolanaError> for $name {
             fn from(value: app_solana::errors::SolanaError) -> Self {
@@ -282,6 +288,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "iota")]
+        impl<$t: Free> From<app_iota::errors::IotaError> for $name<$t> {
+            fn from(value: app_iota::errors::IotaError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
         #[cfg(feature = "sui")]
         impl<$t: Free> From<app_sui::errors::SuiError> for $name<$t> {
             fn from(value: app_sui::errors::SuiError) -> Self {
@@ -389,6 +401,12 @@ macro_rules! impl_simple_new_error {
         #[cfg(feature = "aptos")]
         impl<$t> From<app_aptos::errors::AptosError> for $name<$t> {
             fn from(value: app_aptos::errors::AptosError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "iota")]
+        impl<$t> From<app_iota::errors::IotaError> for $name<$t> {
+            fn from(value: app_iota::errors::IotaError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

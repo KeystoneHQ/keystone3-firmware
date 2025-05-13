@@ -184,7 +184,6 @@ void GuiMultiAccountsReceiveInit(uint8_t chain)
         g_multiAccountsReceiveWidgets.tileSwitchPathType = lv_tileview_add_tile(g_multiAccountsReceiveWidgets.tileView, RECEIVE_TILE_SWITCH_PATH_TYPE, 0, LV_DIR_HOR);
     }
     lv_obj_clear_flag(g_multiAccountsReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
-
     GuiMultiAccountsReceiveRefresh();
 }
 
@@ -1254,6 +1253,15 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
             result = cardano_get_base_address(xPub, index, 1);
             break;
         }
+        break;
+    }
+    case HOME_WALLET_CARD_IOTA: {
+        uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);
+        printf("currentAccount: %u\n", currentAccount);
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0);
+        printf("xPub: %s\n", xPub);
+        result = iota_get_address_from_xpub(xPub);
+        printf("result: %s\n", result->data);
         break;
     }
 #endif

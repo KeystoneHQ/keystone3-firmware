@@ -15,28 +15,21 @@
 
 #include "abi_ethereum.h"
 
-const ABIItem_t allowed_swap_abi_map[] = {
-    {   "0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146_1fece7b4",
-        "{\"name\":\"THORChain Router\",\"address\":\"0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"}],\"name\":\"deposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
-    },
-    {
-        "0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146_44bc937b",
-        "{\"name\":\"THORChain Router\",\"address\":\"0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"}],\"name\":\"depositWithExpiry\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
-    },
-};
-
 #define QRCODE_CONFIRM_SIGN_PROCESS 66
 #define FINGER_SIGN_MAX_COUNT 5
 
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
-static TransactionParseResult_DisplayETHBatchTx *g_parseResult = NULL;
 static bool g_isMulti = false;
-static DisplayETHBatchTx *g_displayEthBatchTx = NULL;
 
 static uint32_t g_currentTxIndex = 0;
 static uint32_t g_txCount = 0;
+
+static TransactionParseResult_DisplayETHBatchTx *g_parseResult = NULL;
+//don't need to free g_currentTransaction and g_displayEthBatchTx, since they are freed in g_parseResult
+static DisplayETHBatchTx *g_displayEthBatchTx = NULL;
 static DisplayETH *g_currentTransaction = NULL;
+
 static Erc20Contract_t *g_currentErc20Contract = NULL;
 static EvmNetwork_t g_currentNetwork;
 static Response_EthParsedErc20Approval *g_parseErc20Approval = NULL;
@@ -72,6 +65,41 @@ static void HandleCurrentTransactionParseFail(uint32_t errorCode, const char *er
 static void HandleClickPreviousBtn(lv_event_t *e);
 static void HandleClickNextBtn(lv_event_t *e);
 static void HandleClickAddressChecker(lv_event_t *e);
+
+static void ClearPageData() {
+    g_currentTxIndex = 0;
+    g_txCount = 0;
+    g_currentErc20Contract = NULL;
+
+    if(g_parseResult != NULL) {
+        free_TransactionParseResult_DisplayETHBatchTx(g_parseResult);
+        g_parseResult = NULL;
+    }
+
+    if(g_parseErc20Approval!=NULL) {
+        free_Response_EthParsedErc20Approval(g_parseErc20Approval);
+        g_parseErc20Approval = NULL;
+    }
+
+    if(g_swapkitContractData != NULL) {
+        free_Response_DisplaySwapkitContractData(g_swapkitContractData);
+        g_swapkitContractData = NULL;
+    }
+
+    if(g_contractData != NULL) {
+        free_Response_DisplayContractData(g_contractData);
+        g_contractData = NULL;
+    }
+
+    if(g_isMulti) {
+        free_ur_parse_multi_result((PtrT_URParseMultiResult)g_urMultiResult);
+        g_urMultiResult = NULL;
+    }
+    else {
+        free_ur_parse_result((PtrT_URParseResult)g_urResult);
+        g_urResult = NULL;
+    }
+}
 
 void GuiSetEthBatchTxData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi) {
     g_urResult = urResult;
@@ -148,6 +176,7 @@ static void CloseContHandler(lv_event_t *e)
 
 void GuiEthBatchTxWidgetsDeInit() {
     GUI_PAGE_DEL(g_pageWidget);
+    ClearPageData();
 }
 
 static void ParseSwapContractData(const char* address, const char* inputData) {
@@ -157,8 +186,8 @@ static void ParseSwapContractData(const char* address, const char* inputData) {
     strcpy_s(address_key, strlen(address) + 9, address);
     strcat_s(address_key, strlen(address) + 9, "_");
     strcat_s(address_key, strlen(address) + 9, selectorId);
-    for (size_t i = 0; i < NUMBER_OF_ARRAYS(allowed_swap_abi_map); i++) {
-        struct ABIItem item = allowed_swap_abi_map[i];
+    for (size_t i = 0; i < GetEthereumABIMapSize(); i++) {
+        struct ABIItem item = ethereum_abi_map[i];
         if (strcasecmp(item.address, address_key) == 0) {
             g_swapkitContractData = eth_parse_swapkit_contract(inputData, (char *)item.json);
             g_contractData = eth_parse_contract_data(inputData, (char *)item.json);
@@ -194,7 +223,6 @@ static void ParseErc20ContractData(const char* inputData, const uint8_t decimals
 }
 
 void GuiEthBatchTxWidgetsRefresh() {
-    printf("GuiEthBatchTxWidgetsRefresh\n");
     if(g_parseResult -> error_code == 0) {
         GuiEthBatchTxNavBarRefresh();
         if(!HandleCurrentTransaction(g_currentTxIndex)) {
@@ -279,12 +307,15 @@ static bool HandleCurrentTransaction(uint32_t index) {
     g_currentErc20Contract = FindErc20Contract(g_currentTransaction->overview->to);
     if(g_currentErc20Contract == NULL) {
         ParseSwapContractData(g_currentTransaction->overview->to, g_currentTransaction->detail->input);
-        if( g_swapkitContractData->error_code != 0 || g_contractData->error_code != 0) {
-            return false;
-        }
+        // even if parse failed, we should render the general transaction info
+        // if( g_swapkitContractData->error_code != 0 || g_contractData->error_code != 0) {
+        //     return false;
+        // }
+        return true;
     }
     else {
         ParseErc20ContractData(g_currentTransaction->detail->input, g_currentErc20Contract->decimals);
+        // this case should not happen
         if(g_parseErc20Approval->error_code != 0 || g_contractData->error_code != 0) {
             return false;
         }
@@ -301,6 +332,17 @@ void GuiEthBatchTxWidgetsTransactionParseSuccess() {
 }
 
 void GuiEthBatchTxWidgetsInit() {
+    g_pageWidget = NULL;
+    g_cont = NULL;
+    g_txContainer = NULL;
+    g_overviewContainer = NULL;
+    g_detailContainer = NULL;
+    g_parseErrorHintBox = NULL;
+    g_keyboardWidget = NULL;
+    g_bottomBtnContainer = NULL;
+    g_signSlider = NULL;
+
+
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
     g_cont = cont;
@@ -333,20 +375,6 @@ static void GuiEthBatchTxNavBarRefresh() {
 }
 
 // GUI Impelementation Part
-static lv_obj_t* GuiOvewviewSwapHint(lv_obj_t *parent) {
-    lv_obj_t *swapHint = CreateTransactionContentContainer(parent, 408, 182);
-    lv_obj_align(swapHint, LV_ALIGN_TOP_LEFT, 0, 4);
-    lv_obj_t *img, *title, *text;
-    img = GuiCreateImg(swapHint, &imgNotice);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 24, 24);
-    title = GuiCreateIllustrateLabel(swapHint, _("Notice"));
-    lv_obj_align(title, LV_ALIGN_TOP_LEFT, 68, 24);
-    lv_obj_set_style_text_color(title, ORANGE_COLOR, LV_PART_MAIN);
-    text = GuiCreateIllustrateLabel(swapHint, _("swap_token_approve_hint"));
-    lv_obj_align(text, LV_ALIGN_TOP_LEFT, 24, 68);
-    return swapHint;
-}
-
 static lv_obj_t* GuiRenderSwapSummary(lv_obj_t *parent, const char* from_asset, const char* from_amount, const char* to_asset) {
     uint16_t height = 16;//top padding
     lv_obj_t *container = CreateTransactionContentContainer(parent, 408, 0);
@@ -473,39 +501,41 @@ static lv_obj_t *GuiRenderApprove(lv_obj_t *parent, const bool showAmount, lv_ob
 static void GuiRenderOverview(lv_obj_t *parent, bool showSwapHint) {
     lv_obj_t *last_view = NULL;
     if(showSwapHint) {
-        last_view = GuiOvewviewSwapHint(parent);
+        last_view = CreateNoticeCard(parent, _("swap_token_approve_hint"));
     }
-    if(g_parseErc20Approval != NULL) {
+    bool isApprove = g_parseErc20Approval != NULL;
+    bool isSwap = g_swapkitContractData != NULL && g_swapkitContractData->error_code == 0;
+    if(isApprove) {
         bool showAmount = false;
         if(strcmp(g_parseErc20Approval->data->value, "0") != 0) {
             showAmount = true;
-
         }
         last_view = GuiRenderApprove(parent, showAmount, last_view);
     }
-    else {
-        if (g_swapkitContractData != NULL) {
-            Erc20Contract_t *erc20Contract = FindErc20Contract(g_swapkitContractData->data->swap_in_asset);
-            if(erc20Contract != NULL) {
-                //is known erc20 token
-                SimpleResponse_c_char *response = format_value_with_decimals(g_swapkitContractData->data->swap_in_amount, erc20Contract->decimals);
-                if(response->error_code == 0) {
-                    char *amount = response->data;
-                    last_view = GuiRenderSwapSummary(parent, erc20Contract->symbol, amount, g_swapkitContractData->data->swap_out_asset);
-                }
-                else {
-                    printf("format_value_with_decimals failed\n");
-                }
-
+    else if (isSwap) {
+        Erc20Contract_t *erc20Contract = FindErc20Contract(g_swapkitContractData->data->swap_in_asset);
+        if(erc20Contract != NULL) {
+            //is known erc20 token
+            SimpleResponse_c_char *response = format_value_with_decimals(g_swapkitContractData->data->swap_in_amount, erc20Contract->decimals);
+            if(response->error_code == 0) {
+                char *amount = response->data;
+                last_view = GuiRenderSwapSummary(parent, erc20Contract->symbol, amount, g_swapkitContractData->data->swap_out_asset);
             }
             else {
-                //is unknown erc20 token
-                last_view = GuiRenderUnknownErc20SwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
+                printf("format_value_with_decimals failed\n");
             }
-            last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
-            last_view = CreateTransactionItemView(parent, _("From"), g_currentTransaction->overview->from, last_view);
-            last_view = CreateTransactionItemView(parent, _("Destination"), g_swapkitContractData->data->receive_address, last_view);
         }
+        else {
+            //is unknown erc20 token
+            last_view = GuiRenderUnknownErc20SwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
+        }
+        last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
+        last_view = CreateTransactionItemView(parent, _("From"), g_currentTransaction->overview->from, last_view);
+        last_view = CreateTransactionItemView(parent, _("Destination"), g_swapkitContractData->data->receive_address, last_view);
+    }
+    else {
+        //is general transaction
+        last_view = GuiRenderUnknownErc20SwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
     }
 }
 

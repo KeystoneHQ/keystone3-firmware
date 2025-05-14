@@ -531,6 +531,7 @@ impl_c_ptr!(DisplayETHBatchTx);
 make_free_method!(TransactionParseResult<DisplayETH>);
 make_free_method!(TransactionParseResult<DisplayETHPersonalMessage>);
 make_free_method!(TransactionParseResult<DisplayETHTypedData>);
+make_free_method!(TransactionParseResult<DisplayETHBatchTx>);
 make_free_method!(Response<DisplayContractData>);
 make_free_method!(TransactionParseResult<EthParsedErc20Transaction>);
 make_free_method!(Response<EthParsedErc20Approval>);

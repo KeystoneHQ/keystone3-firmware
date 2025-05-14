@@ -3407,6 +3407,13 @@ const ABIItem_t ethereum_abi_map[] = {
         "0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146_44bc937b",
         "{\"name\":\"THORChain Router\",\"address\":\"0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"}],\"name\":\"depositWithExpiry\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
     },
+    {
+        "0xe3985E6b61b814F7Cdb188766562ba71b446B46d_1fece7b4",
+        "{\"name\":\"MAYAChain Router\",\"address\":\"0xe3985E6b61b814F7Cdb188766562ba71b446B46d\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"}],\"name\":\"deposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {   "0xe3985E6b61b814F7Cdb188766562ba71b446B46d_44bc937b",
+        "{\"name\":\"MAYAChain Router\",\"address\":\"0xe3985E6b61b814F7Cdb188766562ba71b446B46d\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"}],\"name\":\"depositWithExpiry\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    }
 };
 
 uint32_t GetEthereumABIMapSize() {

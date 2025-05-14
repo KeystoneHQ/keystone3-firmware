@@ -647,6 +647,9 @@ void GuiSetEthUrData(URParseResult *urResult, URParseMultiResult *urMultiResult,
         case EthTypedData:                                                                                                        \
             free_TransactionParseResult_DisplayETHTypedData((PtrT_TransactionParseResult_DisplayETHTypedData)result);             \
             break;                                                                                                                \
+        case EthAuth7702:                                                                                                         \
+            free_TransactionParseResult_DisplayAuth7702((PtrT_TransactionParseResult_DisplayAuth7702)result);                     \
+            break;                                                                                                                \
         default:                                                                                                                  \
             break;                                                                                                                \
         }                                                                                                                         \
@@ -1441,6 +1444,56 @@ bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainI
     }
     SRAM_FREE(contractMethodJson);
     return false;
+}
+
+void *GuiGetEthAuth7702(void)
+{
+    CHECK_FREE_PARSE_RESULT(g_parseResult);
+    uint8_t mfp[4];
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    char *rootPath = eth_get_root_path(data);
+    char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
+    GetMasterFingerPrint(mfp);
+    TransactionCheckResult *result = NULL;
+    do {
+        result = eth_check(data, mfp, sizeof(mfp));
+        CHECK_CHAIN_BREAK(result);
+        PtrT_TransactionParseResult_DisplayAuth7702 parseResult = eth_parse_7702_authorization(data, ethXpub);
+        CHECK_CHAIN_BREAK(parseResult);
+        g_parseResult = (void *)parseResult;
+    } while (0);
+    free_TransactionCheckResult(result);
+    free_ptr_string(rootPath);
+    return g_parseResult;
+}
+
+void GetEthAuth7702Account(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayAuth7702 *auth = (DisplayAuth7702 *)param;
+    strcpy_s((char *)indata, maxLen, auth->account);
+}
+
+void GetEthAuth7702ChainId(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayAuth7702 *auth = (DisplayAuth7702 *)param;
+    EvmNetwork_t network = _FindNetwork(auth->chain_id);
+    if (network.chainId == 0) {
+        snprintf_s((char *)indata,  maxLen, "ID: %lu", auth->chain_id);
+        return;
+    }
+    strcpy_s((char *)indata, maxLen, network.name);
+}
+
+void GetEthAuth7702Delegate(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayAuth7702 *auth = (DisplayAuth7702 *)param;
+    strcpy_s((char *)indata, maxLen, auth->delegate);
+}
+
+void getEthAuth7702Nonce(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayAuth7702 *auth = (DisplayAuth7702 *)param;
+    snprintf_s((char *)indata,  maxLen, "%d", auth->nonce);
 }
 
 void FreeContractData(void)

@@ -102,6 +102,7 @@ impl InferViewType for EthSignRequest {
             | eth_sign_request::DataType::TypedTransaction => Ok(ViewType::EthTx),
             eth_sign_request::DataType::TypedData => Ok(ViewType::EthTypedData),
             eth_sign_request::DataType::PersonalMessage => Ok(ViewType::EthPersonalMessage),
+            eth_sign_request::DataType::Auth7702 => Ok(ViewType::EthAuth7702),
         }
     }
 }

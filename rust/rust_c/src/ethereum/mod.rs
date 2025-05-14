@@ -7,6 +7,7 @@ use app_ethereum::erc20::parse_erc20;
 use app_ethereum::errors::EthereumError;
 use app_ethereum::{
     parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
+    parse_7702_authorization,
     LegacyTransaction, TransactionSignature,
 };
 use cryptoxide::hashing::keccak256;
@@ -33,7 +34,7 @@ use crate::extract_ptr_with_type;
 
 use structs::{
     DisplayETH, DisplayETHPersonalMessage, DisplayETHTypedData, EthParsedErc20Transaction,
-    TransactionType,
+    TransactionType, DisplayAuth7702
 };
 
 mod abi;
@@ -250,7 +251,7 @@ pub extern "C" fn eth_parse(
                 }
                 TransactionType::TypedTransaction => {
                     match crypto_eth.get_sign_data().first() {
-                        Some(02) => {
+                        Some(02) | Some(04) => {
                             //remove envelop
                             let payload = &crypto_eth.get_sign_data()[1..];
                             let tx = parse_fee_market_tx(payload, key);
@@ -343,6 +344,37 @@ pub extern "C" fn eth_parse_typed_data(
 }
 
 #[no_mangle]
+pub extern "C" fn eth_parse_7702_authorization(
+    ptr: PtrUR,
+    xpub: PtrString,
+) -> PtrT<TransactionParseResult<DisplayAuth7702>> {
+    let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
+    let xpub = recover_c_char(xpub);
+    let pubkey = try_get_eth_public_key(xpub, crypto_eth.clone());
+
+    let transaction_type = TransactionType::from(crypto_eth.get_data_type());
+
+    match (pubkey, transaction_type) {
+        (Err(e), _) => TransactionParseResult::from(e).c_ptr(),
+        (Ok(key), ty) => match ty {
+            TransactionType::Auth7702 => {
+                let tx = parse_7702_authorization(crypto_eth.get_sign_data(), key);
+                match tx {
+                    Ok(t) => TransactionParseResult::success(DisplayAuth7702::from(t).c_ptr())
+                        .c_ptr(),
+                    Err(e) => TransactionParseResult::from(e).c_ptr(),
+                }
+            }
+            _ => TransactionParseResult::from(RustCError::UnsupportedTransaction(
+                "Unexpected message for 7702 authorization".to_string(),
+            ))
+            .c_ptr(),
+        },
+    }
+}
+
+
+#[no_mangle]
 pub extern "C" fn eth_sign_tx_dynamic(
     ptr: PtrUR,
     seed: PtrBytes,
@@ -364,7 +396,7 @@ pub extern "C" fn eth_sign_tx_dynamic(
             app_ethereum::sign_legacy_tx(crypto_eth.get_sign_data().to_vec(), seed, &path)
         }
         TransactionType::TypedTransaction => match crypto_eth.get_sign_data().first() {
-            Some(0x02) => {
+            Some(0x02) | Some(0x04) => {
                 app_ethereum::sign_fee_markey_tx(crypto_eth.get_sign_data().to_vec(), seed, &path)
             }
             Some(x) => {
@@ -383,6 +415,9 @@ pub extern "C" fn eth_sign_tx_dynamic(
         }
         TransactionType::TypedData => {
             app_ethereum::sign_typed_data_message(crypto_eth.get_sign_data().to_vec(), seed, &path)
+        }
+        TransactionType::Auth7702 => {
+            app_ethereum::sign_7702_authorization(crypto_eth.get_sign_data().to_vec(), seed, &path)
         }
     };
     match signature {

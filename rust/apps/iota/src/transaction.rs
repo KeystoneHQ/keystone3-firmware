@@ -1,5 +1,7 @@
 use crate::{
     errors::{IotaError, Result},
+    byte_reader::BytesReader,
+    commands::{Command, Commands},
 };
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -7,18 +9,16 @@ use hex;
 use bytes::{Buf, Bytes};
 use serde::{Deserialize, Serialize};
 use crate::base_type::{ObjectID, ObjectRef, SequenceNumber};
+use std::io::{self, Write};
 
 #[derive(Debug)]
 pub enum TransactionData {
     V1(TransactionDataV1),
-    // When new variants are introduced, it is important that we check version support
-    // in the validity_check function based on the protocol config.
 }
 
 pub const IOTA_ADDRESS_LENGTH: usize = ObjectID::LENGTH;
 
 #[derive(Debug)]
-// #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub struct TransactionDataV1 {
     pub kind: TransactionKind,
     pub sender: [u8; 32],
@@ -28,9 +28,7 @@ pub struct TransactionDataV1 {
 
 #[derive(Debug)]
 pub enum TransactionKind {
-    /// 可编程交易块
     ProgrammableTransaction(ProgrammableTransaction),
-    // Future: MoveCallOnly(MoveCall), etc.
 }
 
 #[derive(Debug)]
@@ -45,33 +43,8 @@ pub enum TransactionInput {
 }
 
 #[derive(Debug)]
-pub enum Command {
-    SplitCoins {
-        coin: CoinArg,
-        amounts: Vec<CommandArgument>,
-    },
-    TransferObjects {
-        objects: Vec<CommandArgument>,
-        target: CommandArgument,
-    },
-}
-
-#[derive(Debug)]
-pub enum CoinArg {
-    GasCoin,
-    // Future: OtherCoin types...
-}
-
-#[derive(Debug)]
-pub enum CommandArgument {
-    Input(u16),
-    NestedResult(u16, u16),
-    GasCoin,
-}
-
-#[derive(Debug)]
 pub struct GasData {
-    pub payment: Vec<([u8; 32], u64, [u8; 32])>, // (object_id, version, digest)
+    pub payments: Vec<([u8; 32], u64, [u8; 32])>, // (object_id, version, digest)
     pub owner: [u8; 32],
     pub price: u64,
     pub budget: u64,
@@ -82,153 +55,143 @@ pub enum TransactionExpiration {
     None,
 }
 
-pub fn parse_transaction_data(hex_str: &str) -> Result<TransactionData> {
+impl TransactionDataV1 {
+    fn parse(reader: &mut BytesReader) -> Result<String> {
+    // fn parse(reader: &mut BytesReader) -> Result<Self> {
+        // Parse inputs and commands
+        let kind = TransactionKind::parse(reader)?;
+        println!("kind: {:?}", kind);
+        // Parse sender
+        let mut sender = [0u8; 32];
+        let sender_bytes = reader.read_bytes(32)?;
+        sender.copy_from_slice(&sender_bytes);
+        
+        // // Parse gas_data
+        let gas_data = GasData::parse(reader)?;
+        
+        // // Parse expiration
+        // let expiration = TransactionExpiration::parse(reader)?;
+        return Ok("".to_string());
+        
+        // Ok(TransactionDataV1 {
+            //     kind,
+            //     sender,
+            //     gas_data,
+            //     expiration,
+            // })
+        }
+    }
+    
+    impl TransactionKind {
+        fn parse(reader: &mut BytesReader) -> Result<Self> {
+            let tx = ProgrammableTransaction::parse(reader)?;
+            println!("tx: {:?}", tx);
+        Ok(TransactionKind::ProgrammableTransaction(tx))
+    }
+}
+const MAX_INPUT_SIZE: usize = 1024;
+impl ProgrammableTransaction {
+    fn parse(reader: &mut BytesReader) -> Result<Self> {
+        // Parse inputs
+        println!("{}:{}, reader.bytes: {:?}", file!(), line!(), hex::encode(reader.bytes.clone()));
+        let inp_cnt: usize = reader.read_u8()? as usize;
+        println!("inp_cnt: {:?}", inp_cnt);
+        // let data = reader.read_bytes(2 + 8 + 2 + 32);
+        println!("{}:{}, reader.bytes: {:?}", file!(), line!(), hex::encode(reader.bytes.clone()));
+        let mut inputs = Vec::with_capacity(inp_cnt);
+        for _ in 0..1 {
+            println!("Raw bytes: {:02x?}", &reader.peek_bytes(2)?);
+            io::stdout().flush().ok();
+            
+            let data_len = reader.read_u16()? as usize;
+            println!("data_len: {:?}", data_len);
+            io::stdout().flush().ok();
+            
+            if data_len > MAX_INPUT_SIZE {
+                return Err(IotaError::InvalidField(format!("Input size too large: {}", data_len)));
+            }
+            
+            let data = reader.read_bytes(data_len)?;
+            println!("data: {:?}", data);
+            io::stdout().flush().ok();
+            
+            inputs.push(TransactionInput::Pure(data));
+        }
+        
+        for _ in 0..1 {
+            let data_len = reader.read_u16()? as usize;
+            if data_len > MAX_INPUT_SIZE {
+                return Err(IotaError::InvalidField(format!("Input size too large: {}", data_len)));
+            }
+            let data = reader.read_bytes(data_len)?;
+            
+            inputs.push(TransactionInput::Pure(data));
+        }
+
+        println!("{}:{}, reader.bytes: {:?}", file!(), line!(), hex::encode(reader.bytes.clone()));
+        let commands = Commands::parse(reader)?.commands;
+        println!("commands: {:?}", commands);
+
+        Ok(ProgrammableTransaction { inputs, commands })
+    }
+}
+
+impl GasData {
+    fn parse(reader: &mut BytesReader) -> Result<Self> {
+        let payment_cnt = reader.read_u8()? as usize;
+        let mut payments = Vec::with_capacity(payment_cnt);
+        for _ in 0..payment_cnt {
+            let mut payment = [0u8; 32];
+            let payment_bytes = reader.read_bytes(32)?;
+            payment.copy_from_slice(&payment_bytes);
+            
+            let sequence_number = reader.read_u64_le()?;
+            println!("sequence_number: {:?}", sequence_number);
+
+            let mut object_digest = [0u8; 32];
+            let object_digest_bytes = reader.read_bytes(32)?;
+            object_digest.copy_from_slice(&object_digest_bytes);
+
+            payments.push((payment, sequence_number, object_digest));
+        }
+
+        let mut owner = [0u8; 32];
+        let owner_bytes = reader.read_bytes(32)?;
+        owner.copy_from_slice(&owner_bytes);
+        
+        let price = reader.read_u64_le()?;
+        reader.read_u8()?;
+        let budget = reader.read_u64_le()?;
+        println!("budget: {:?}", budget);
+        println!("owner: {:?}", hex::encode(owner));
+
+        Ok(GasData { payments, owner, price, budget })
+    }
+}
+
+impl TransactionExpiration {
+    fn parse(reader: &mut BytesReader) -> Result<Self> {
+        let _exp_tag = reader.read_u32_le()?;
+        Ok(TransactionExpiration::None)
+    }
+}
+
+// pub fn parse_transaction_data(hex_str: &str) -> Result<TransactionData> {
+pub fn parse_transaction_data(hex_str: &str) -> Result<String> {
     let raw = hex::decode(hex_str)?;
     let mut buf = Bytes::from(raw);
+    let mut reader = BytesReader::new(&mut buf);
 
-    if buf.remaining() < 4 {
-        return Err(IotaError::UnexpectedEof);
-    }
-    let version = buf.get_u16_le();
-    match version {
-        0 => {
-            let v1 = parse_v1(&mut buf)?;
-            Ok(TransactionData::V1(v1))
-        }
-        other => Err(IotaError::InvalidField(format!("unsupported version {}", other))),
-    }
-}
-
-fn parse_v1(buf: &mut Bytes) -> Result<TransactionDataV1> {
-    // 1. inputs: Vec<TransactionInput>
-    if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-    let inp_cnt = buf.get_u8() as usize;
-    println!("inp_cnt: {}", inp_cnt);
-    let mut inputs = Vec::with_capacity(inp_cnt);
-    for _ in 0..inp_cnt {
-        if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-        println!("buf = {:?}", hex::encode(buf.clone()));
-        let data_len = buf.get_u16() as usize;
-        println!("data_len: {}", data_len);
-        let mut data = vec![0u8; data_len];
-        buf.copy_to_slice(&mut data);
-        inputs.push(TransactionInput::Pure(data));
-    }
-
-    if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-    let cmd_cnt = buf.get_u32_le() as usize;
-    let mut commands = Vec::with_capacity(cmd_cnt);
-    for _ in 0..cmd_cnt {
-        if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-        let cmd_tag = buf.get_u32_le();
-        match cmd_tag {
-            2 => {
-                // SplitCoins
-                if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-                let ctag = buf.get_u32_le();
-                let coin = match ctag {
-                    1 => CoinArg::GasCoin,
-                    other => return Err(IotaError::InvalidField(format!("unknown CoinArg tag {}", other))),
-                };
-                if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-                let amt_cnt = buf.get_u32_le() as usize;
-                let mut amounts = Vec::with_capacity(amt_cnt);
-                for _ in 0..amt_cnt {
-                    if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-                    let atag = buf.get_u32_le();
-                    let arg = match atag {
-                        0 => {
-                            if buf.remaining() < 2 { return Err(IotaError::UnexpectedEof); }
-                            let idx = buf.get_u16_le();
-                            CommandArgument::Input(idx)
-                        }
-                        2 => CommandArgument::GasCoin,
-                        other => return Err(IotaError::InvalidField(format!("unknown Arg tag {}", other))),
-                    };
-                    amounts.push(arg);
-                }
-                commands.push(Command::SplitCoins { coin, amounts });
-            }
-            1 => {
-                // TransferObjects
-                if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-                let obj_cnt = buf.get_u32_le() as usize;
-                let mut objects = Vec::with_capacity(obj_cnt);
-                for _ in 0..obj_cnt {
-                    if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-                    let atag = buf.get_u32_le();
-                    let arg = match atag {
-                        0 => {
-                            if buf.remaining() < 2 { return Err(IotaError::UnexpectedEof); }
-                            let idx = buf.get_u16_le();
-                            CommandArgument::Input(idx)
-                        }
-                        3 => {
-                            if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-                            let a = buf.get_u16_le();
-                            let b = buf.get_u16_le();
-                            CommandArgument::NestedResult(a, b)
-                        }
-                        other => return Err(IotaError::InvalidField(format!("unknown ObjArg tag {}", other))),
-                    };
-                    objects.push(arg);
-                }
-                if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-                let ttag = buf.get_u32_le();
-                let target = match ttag {
-                    0 => {
-                        if buf.remaining() < 2 { return Err(IotaError::UnexpectedEof); }
-                        let idx = buf.get_u16_le();
-                        CommandArgument::Input(idx)
-                    }
-                    other => return Err(IotaError::InvalidField(format!("unknown TargetArg tag {}", other))),
-                };
-                commands.push(Command::TransferObjects { objects, target });
-            }
-            other => return Err(IotaError::InvalidField(format!("unknown Command tag {}", other))),
-        }
-    }
-    let kind = TransactionKind::ProgrammableTransaction(ProgrammableTransaction { inputs, commands });
-
-    // 3. sender
-    if buf.remaining() < 32 { return Err(IotaError::UnexpectedEof); }
-    let mut sender = [0u8; 32];
-    buf.copy_to_slice(&mut sender);
-
-    // 4. gas_data
-    if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-    let payment_cnt = buf.get_u32_le() as usize;
-    let mut payment = Vec::with_capacity(payment_cnt);
-    for _ in 0..payment_cnt {
-        if buf.remaining() < 32 + 8 + 4 { return Err(IotaError::UnexpectedEof); }
-        let mut oid = [0u8; 32];
-        buf.copy_to_slice(&mut oid);
-        let version = buf.get_u64_le();
-        let dlen = buf.get_u32_le() as usize;
-        if buf.remaining() < dlen { return Err(IotaError::UnexpectedEof); }
-        let mut digest = [0u8; 32];
-        buf.copy_to_slice(&mut digest[..dlen]);
-        payment.push((oid, version, digest));
-    }
-    if buf.remaining() < 32 + 8 + 8 { return Err(IotaError::UnexpectedEof); }
-    let mut owner = [0u8; 32];
-    buf.copy_to_slice(&mut owner);
-    let price  = buf.get_u64_le();
-    let budget = buf.get_u64_le();
-    let gas_data = GasData { payment, owner, price, budget };
-
-    // 5. expiration
-    if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
-    let exp_tag = buf.get_u32_le();
-    let expiration = match exp_tag {
-        0 => TransactionExpiration::None,
-        _ => TransactionExpiration::None,
-    };
-
-    Ok(TransactionDataV1 { kind, sender, gas_data, expiration })
-}
-
-fn parse_transaction(data: &mut Bytes) -> Result<String> {
+    let version = reader.read_u16_le()?;
+    // reader.read_bytes(1 + 2 + 8 + 2 + 32);
+    TransactionDataV1::parse(&mut reader)?;
+    // match version {
+    //     0 => {
+    //         let v1 = TransactionDataV1::parse(&mut reader)?;
+    //         Ok(TransactionData::V1(v1))
+    //     }
+    //     other => Err(IotaError::InvalidField(format!("unsupported version {}", other))),
+    // }
     Ok("".to_string())
 }
 
@@ -241,9 +204,16 @@ mod test {
     #[test]
     fn test_iota_parse_transaction() {
         let data = "000002000800e40b54020000000020193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb04020200010100000101030000000001010032bc9471570ca24fcd1fe5b201ea6894748aa0ddd44d20c68f1a4f99db513aa201b9ee296780e0b8e23456c605bacfaad200e468985e5e9a898c7b31919225066eef48630d0000000020b1d6709ed59ff892f9a86cd38493b45b7cbb96cf5a459fdc49cbdbc6e79921f832bc9471570ca24fcd1fe5b201ea6894748aa0ddd44d20c68f1a4f99db513aa2e80300000000000000e40b540200000000";
-        let data = "000002000800e40b54020000000020193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb04020200010100000101030000000001010032bc9471570ca24fcd1fe5b201ea6894748aa0ddd44d20c68f1a4f99db513aa201b9ee296780e0b8e23456c605bacfaad200e468985e5e9a898c7b31919225066eef48630d0000000020b1d6709ed59ff892f9a86cd38493b45b7cbb96cf5a459fdc49cbdbc6e79921f832bc9471570ca24fcd1fe5b201ea6894748aa0ddd44d20c68f1a4f99db513aa2e80300000000000000e40b540200000000";
         let tx = parse_transaction_data(data);
         println!("tx: {:?}", tx.unwrap());
         assert!(false);
+    }
+
+    #[test]
+    fn test_iota_copy_to_slice() {
+        let mut buf = Bytes::from(hex::decode("193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb04").unwrap());
+        let mut data = vec![0u8; 32];
+        buf.copy_to_slice(&mut data);
+        assert_eq!(data, vec![1, 2, 3]);
     }
 }

@@ -342,7 +342,6 @@ void GuiEthBatchTxWidgetsInit() {
     g_bottomBtnContainer = NULL;
     g_signSlider = NULL;
 
-
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
     g_cont = cont;
@@ -376,63 +375,9 @@ static void GuiEthBatchTxNavBarRefresh() {
 
 // GUI Impelementation Part
 static lv_obj_t* GuiRenderSwapSummary(lv_obj_t *parent, const char* from_asset, const char* from_amount, const char* to_asset) {
-    uint16_t height = 16;//top padding
-    lv_obj_t *container = CreateTransactionContentContainer(parent, 408, 0);
-    lv_obj_align(container, LV_ALIGN_TOP_LEFT, 0, 4);
-
-    lv_obj_t *label;
-    label = GuiCreateIllustrateLabel(container, _("Swap"));
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
-    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
-
-    height += 30 + 4;
     char* text = malloc(BUFFER_SIZE_128);
     sprintf(text, "%s %s", from_amount, from_asset);
-    label = GuiCreateLittleTitleLabel(container, text);
-    lv_obj_set_width(label, 360);
-    lv_obj_update_layout(label);
-    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
-
-    height += lv_obj_get_self_height(label) + 8;
-
-    label = GuiCreateIllustrateLabel(container, _("To"));
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
-    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
-
-    lv_obj_t *titleLabel = label;
-    lv_obj_update_layout(label);
-    uint16_t titleWidth = lv_obj_get_self_width(label);
-
-    label = GuiCreateIllustrateLabel(container, to_asset);
-    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_update_layout(label);
-    lv_obj_t *valueLabel = label;
-
-    uint16_t valueWidth = lv_obj_get_width(valueLabel);
-    uint16_t valueHeight = lv_obj_get_height(valueLabel);
-
-    uint16_t totalWidth = 24 + titleWidth + 16 + valueWidth + 24;
-    bool overflow = totalWidth > 408 || valueHeight > 30;
-
-    height += 30; //title height;
-
-    if (!overflow) {
-        lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
-    } else {
-        lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
-        lv_obj_set_width(valueLabel, 360);
-        lv_label_set_long_mode(valueLabel, LV_LABEL_LONG_WRAP);
-        lv_obj_update_layout(valueLabel);
-
-        height += lv_obj_get_height(valueLabel);
-    }
-
-    height += 16;
-
-    lv_obj_set_height(container, height);
-
-    return container;
+    return CreateTransactionOvewviewCard(parent, _("Swap"), text, _("To"), to_asset);
 }
 
 static lv_obj_t *GuiRenderUnknownErc20SwapSummary(lv_obj_t *parent, const char* from_asset, const char* from_amount, const char* to_asset) {
@@ -498,44 +443,167 @@ static lv_obj_t *GuiRenderApprove(lv_obj_t *parent, const bool showAmount, lv_ob
     return container;
 }
 
-static void GuiRenderOverview(lv_obj_t *parent, bool showSwapHint) {
+static void GuiRenderApprovalOverview(lv_obj_t *parent, bool showSwapHint) {
     lv_obj_t *last_view = NULL;
     if(showSwapHint) {
         last_view = CreateNoticeCard(parent, _("swap_token_approve_hint"));
     }
+    bool showAmount = false;
+    if(strcmp(g_parseErc20Approval->data->value, "0") != 0) {
+        showAmount = true;
+    }
+    char* text = malloc(BUFFER_SIZE_32);
+    if(showAmount) {
+        text = "Approve";
+    }
+    else {
+        text = "Revoke";
+    }
+    last_view = CreateTransactionItemView(parent, _("Operation"), text, last_view);
+
+    lv_obj_t *container = CreateRelativeTransactionContentContainer(parent, 408, 290, last_view);
+
+    lv_obj_t *label;
+
+    label = GuiCreateIllustrateLabel(container, _("Network"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+    label = GuiCreateIllustrateLabel(container, g_currentNetwork.name);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
+
+    if(showAmount) {
+        label = GuiCreateIllustrateLabel(container, _("Amount"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
+        lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+        char* amount = malloc(BUFFER_SIZE_64);
+        sprintf(amount, "%s %s", g_parseErc20Approval->data->value, g_currentErc20Contract->symbol);
+
+        label = GuiCreateIllustrateLabel(container, amount);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 138);
+    }
+    else {
+        label = GuiCreateIllustrateLabel(container, _("Token"));
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
+        lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+        label = GuiCreateIllustrateLabel(container, g_currentErc20Contract->symbol);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 138);
+    }
+
+    label = GuiCreateIllustrateLabel(container, _("Spender"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 184);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+    label = GuiCreateIllustrateLabel(container, g_parseErc20Approval->data->spender);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 222);
+    lv_obj_set_width(label, 360);
+}
+
+static void GuiRenderSwapOverview(lv_obj_t *parent) {
+    lv_obj_t *last_view = NULL;
+    Erc20Contract_t *erc20Contract = FindErc20Contract(g_swapkitContractData->data->swap_in_asset);
+    if(erc20Contract != NULL) {
+        //is known erc20 token
+        SimpleResponse_c_char *response = format_value_with_decimals(g_swapkitContractData->data->swap_in_amount, erc20Contract->decimals);
+        if(response->error_code == 0) {
+            char *amount = response->data;
+            last_view = GuiRenderSwapSummary(parent, erc20Contract->symbol, amount, g_swapkitContractData->data->swap_out_asset);
+        }
+        else {
+            //this should not happen
+            printf("format_value_with_decimals failed\n");
+        }
+    }
+    else {
+        //is unknown erc20 token
+        last_view = GuiRenderUnknownErc20SwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
+    }
+    last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
+    last_view = CreateTransactionItemView(parent, _("From"), g_currentTransaction->overview->from, last_view);
+    last_view = CreateTransactionItemView(parent, _("Destination"), g_swapkitContractData->data->receive_address, last_view);
+}
+
+static lv_obj_t *GuiRenderFromToCard(lv_obj_t *parent, const char* from, const char* to, const char* to_badge, lv_obj_t *last_view) {
+    uint16_t height = 16; //top padding
+    lv_obj_t *container = CreateRelativeTransactionContentContainer(parent, 408, 0, last_view);
+
+    lv_obj_t *label;
+    label = GuiCreateIllustrateLabel(container, _("From"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+    height += 30 + 8;
+
+    label = GuiCreateIllustrateLabel(container, from);
+    lv_obj_set_width(label, 360);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+
+    height += 60 + 8;
+
+    label = GuiCreateIllustrateLabel(container, _("To"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+    height += 30 + 8;
+
+    label = GuiCreateIllustrateLabel(container, to);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+    lv_obj_set_width(label, 360);
+
+    height += 60 + 8;
+
+    if (to_badge != NULL) {
+        lv_obj_t *img;
+
+        img = GuiCreateImg(container, &imgContract);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 24, height);
+
+        label = GuiCreateIllustrateLabel(container, to_badge);
+
+        lv_obj_set_style_text_color(label, PURPLE_COLOR, LV_PART_MAIN);
+        lv_obj_align_to(label, img, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+        height += 30 + 8;
+    }
+
+    height += 8;
+
+    lv_obj_set_height(container, height);
+    lv_obj_update_layout(container);
+
+    return container;
+}
+
+static void GuiRenderGeneralOverview(lv_obj_t *parent) {
+    lv_obj_t *last_view = NULL;
+
+    last_view = CreateTransactionOvewviewCard(parent, _("Value"), g_currentTransaction->overview->value, _("Max Txn Fee"), g_currentTransaction->overview->max_txn_fee);
+
+    last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
+
+    char* to_badge = NULL;
+    if(g_contractData != NULL && g_contractData->error_code == 0) {
+        last_view = CreateTransactionItemView(parent, _("Method"), g_contractData->data->method_name, last_view);
+        to_badge = g_contractData->data->contract_name;
+    }
+
+    last_view = GuiRenderFromToCard(parent, g_currentTransaction->overview->from, g_currentTransaction->overview->to, to_badge, last_view);
+}
+
+static void GuiRenderOverview(lv_obj_t *parent, bool showSwapHint) {
+    lv_obj_t *last_view = NULL;
     bool isApprove = g_parseErc20Approval != NULL;
     bool isSwap = g_swapkitContractData != NULL && g_swapkitContractData->error_code == 0;
     if(isApprove) {
-        bool showAmount = false;
-        if(strcmp(g_parseErc20Approval->data->value, "0") != 0) {
-            showAmount = true;
-        }
-        last_view = GuiRenderApprove(parent, showAmount, last_view);
+        GuiRenderApprovalOverview(parent, showSwapHint);
     }
     else if (isSwap) {
-        Erc20Contract_t *erc20Contract = FindErc20Contract(g_swapkitContractData->data->swap_in_asset);
-        if(erc20Contract != NULL) {
-            //is known erc20 token
-            SimpleResponse_c_char *response = format_value_with_decimals(g_swapkitContractData->data->swap_in_amount, erc20Contract->decimals);
-            if(response->error_code == 0) {
-                char *amount = response->data;
-                last_view = GuiRenderSwapSummary(parent, erc20Contract->symbol, amount, g_swapkitContractData->data->swap_out_asset);
-            }
-            else {
-                printf("format_value_with_decimals failed\n");
-            }
-        }
-        else {
-            //is unknown erc20 token
-            last_view = GuiRenderUnknownErc20SwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
-        }
-        last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
-        last_view = CreateTransactionItemView(parent, _("From"), g_currentTransaction->overview->from, last_view);
-        last_view = CreateTransactionItemView(parent, _("Destination"), g_swapkitContractData->data->receive_address, last_view);
+        GuiRenderSwapOverview(parent);
     }
     else {
         //is general transaction
-        last_view = GuiRenderUnknownErc20SwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
+        GuiRenderGeneralOverview(parent);
     }
 }
 
@@ -640,54 +708,16 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
 }
 
 static lv_obj_t *GuiRenderDetailFromTo(lv_obj_t *parent, lv_obj_t *last_view) {
-    uint16_t height = 16; //top padding
-    lv_obj_t *container = CreateRelativeTransactionContentContainer(parent, 408, 0, last_view);
-
-    lv_obj_t *label;
-    label = GuiCreateIllustrateLabel(container, _("From"));
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
-    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
-
-    height += 30 + 8;
-
-    label = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->from);
-    lv_obj_set_width(label, 360);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
-
-    height += 60 + 8;
-
-    label = GuiCreateIllustrateLabel(container, _("To"));
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
-    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
-
-    height += 30 + 8;
-
-    label = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->to);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
-    lv_obj_set_width(label, 360);
-
-    height += 60 + 8;
-
-    lv_obj_t *img;
-
-    img = GuiCreateImg(container, &imgContract);
-    lv_obj_align(img, LV_ALIGN_TOP_LEFT, 24, height);
+    char* to_badge = NULL;
 
     if(g_currentErc20Contract != NULL) {
-        label = GuiCreateIllustrateLabel(container, g_currentErc20Contract->symbol);
+        to_badge = g_currentErc20Contract->symbol;
     }
-    else {
-        label = GuiCreateIllustrateLabel(container, g_contractData->data->contract_name);
+    else if (g_contractData != NULL && g_contractData->error_code == 0) {
+        to_badge = g_contractData->data->contract_name;
     }
 
-    lv_obj_set_style_text_color(label, PURPLE_COLOR, LV_PART_MAIN);
-    lv_obj_align_to(label, img, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
-    height += 30 + 16;
-
-    lv_obj_set_height(container, height);
-    lv_obj_update_layout(container);
-
-    return container;
+    return GuiRenderFromToCard(parent, g_currentTransaction->detail->from, g_currentTransaction->detail->to, to_badge, last_view);
 }
 
 static lv_obj_t *GuiRenderDetailContractData(lv_obj_t *parent, lv_obj_t *last_view) {
@@ -765,6 +795,40 @@ static lv_obj_t *GuiRenderDetailContractData(lv_obj_t *parent, lv_obj_t *last_vi
     return container;
 }
 
+static lv_obj_t *GuiRenderDetailInputData(lv_obj_t *parent, lv_obj_t *last_view) {
+    lv_obj_t *container = CreateRelativeTransactionContentContainer(parent, 408, 0, last_view);
+
+    uint16_t height = 16;
+
+    char* input_data = malloc(BUFFER_SIZE_128);
+
+    if (strlen(g_currentTransaction->detail->input) > 51) {
+        char data[49];
+        strncpy(data, g_currentTransaction->detail->input, 48);
+        data[48] = '\0';
+        snprintf_s(input_data, BUFFER_SIZE_128, "0x%s...", data);
+    } else {
+        snprintf_s(input_data, BUFFER_SIZE_128, "0x%s", g_currentTransaction->detail->input);
+    }
+
+    lv_obj_t *label = GuiCreateIllustrateLabel(container, input_data);
+    lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, height);
+    lv_obj_update_layout(label);
+    height += lv_obj_get_height(label) + 8;
+    
+    label = GuiCreateIllustrateLabel(container, _("Unknown Data"));
+    lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, height);
+    lv_obj_set_style_text_color(label, YELLOW_COLOR, LV_PART_MAIN);
+    lv_obj_update_layout(label);
+    height += lv_obj_get_height(label);
+    
+    height += 16;
+    lv_obj_set_height(container, height);
+    lv_obj_update_layout(container);
+
+    return container;
+}
+
 static void GuiRenderDetail(lv_obj_t *parent) {
     lv_obj_t *last_view = NULL;
     last_view = GuiRenderDetailTransactionInfoCard(parent, last_view);
@@ -779,6 +843,9 @@ static void GuiRenderDetail(lv_obj_t *parent) {
 
     if(g_contractData != NULL && g_contractData->error_code == 0) {
         last_view = GuiRenderDetailContractData(parent, last_view);
+    }
+    else {
+        last_view = GuiRenderDetailInputData(parent, last_view);
     }
 }
 

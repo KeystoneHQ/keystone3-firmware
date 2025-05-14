@@ -6,6 +6,7 @@ use core::slice;
 use cryptoxide::hashing::sha256;
 use ffi::VecFFI;
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
+use alloc::vec::Vec;
 
 use bitcoin::hex::Case;
 use bitcoin_hashes::hex::DisplayHex;

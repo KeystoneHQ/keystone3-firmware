@@ -1,51 +1,26 @@
 use bytes::{Buf, Bytes};
-use core::convert::TryFrom;
 use crate::errors::{IotaError, Result};
 use alloc::vec::Vec;
+use crate::byte_reader::BytesReader;
 
 #[derive(Debug, Clone)]
 pub enum Argument {
-    /// The gas coin. The gas coin can only be used by-ref, except for with
-    /// `TransferObjects`, which can use it by-value.
     GasCoin,
-    /// One of the input objects or primitive values (from
-    /// `ProgrammableTransaction` inputs)
     Input(u16),
-    /// The result of another command (from `ProgrammableTransaction` commands)
     Result(u16),
-    /// Like a `Result` but it accesses a nested result. Currently, the only
-    /// usage of this is to access a value from a Move call with multiple
-    /// return values.
     NestedResult(u16, u16),
 }
 
 impl Argument {
-    fn try_from(bytes: &mut Bytes) -> Result<(Self, usize)> {
-        if bytes.remaining() < 1 {
-            return Err(IotaError::UnexpectedEof);
-        }
-
-        match bytes.get_u8() {
-            0x00 => {
-                Ok((Argument::GasCoin, 1))
-            }
-            0x01 => {
-                if bytes.remaining() < 2 {
-                    return Err(IotaError::UnexpectedEof);
-                }
-                Ok((Argument::Input(bytes.get_u16()), 2))
-            }
-            0x02 => {
-                if bytes.remaining() < 2 {
-                    return Err(IotaError::UnexpectedEof);
-                }
-                Ok((Argument::Result(bytes.get_u16()), 2))
-            }
+    pub fn parse(reader: &mut BytesReader) -> Result<Self> {
+        match reader.read_u8()? {
+            0x00 => Ok(Argument::GasCoin),
+            0x01 => Ok(Argument::Input(reader.read_u16_le()?)),
+            0x02 => Ok(Argument::Result(reader.read_u16_le()?)),
             0x03 => {
-                if bytes.remaining() < 4 {
-                    return Err(IotaError::UnexpectedEof);
-                }
-                Ok((Argument::NestedResult(bytes.get_u16(), bytes.get_u16()), 4))
+                let a = reader.read_u16_le()?;
+                let b = reader.read_u16_le()?;
+                Ok(Argument::NestedResult(a, b))
             }
             tag => Err(IotaError::InvalidCommand(tag)),
         }
@@ -54,53 +29,33 @@ impl Argument {
 
 #[derive(Debug)]
 pub enum Command {
-    // MoveCall(Box<ProgrammableMoveCall>),
     TransferObjects(Vec<Argument>, Argument),
     SplitCoins(Argument, Vec<Argument>),
-    // MergeCoins(Argument, Vec<Argument>),
-    // Publish(Vec<Vec<u8>>, Vec<ObjectID>),
-    // MakeMoveVec(Option<TypeTag>, Vec<Argument>),
-    // Upgrade(Vec<Vec<u8>>, Vec<ObjectID>, ObjectID, Argument),
 }
 
-impl TryFrom<&mut Bytes> for Command {
-    type Error = IotaError;
-
-    fn try_from(bytes: &mut Bytes) -> Result<Self> {
-        if bytes.remaining() < 1 {
-            return Err(IotaError::UnexpectedEof);
-        }
-
-        match bytes.get_u8() {
+impl Command {
+    pub fn parse(reader: &mut BytesReader) -> Result<Self> {
+        match reader.read_u8()? {
             0x01 => {
-                if bytes.remaining() < 1 {
-                    return Err(IotaError::UnexpectedEof);
-                }
-                let count = bytes.get_u8() as usize;
-                let mut v = Vec::with_capacity(count);
+                // TransferObjects
+                let count = reader.read_u8()? as usize;
+                let mut objects = Vec::with_capacity(count);
                 
                 for _ in 0..count {
-                    let (arg, size) = Argument::try_from(bytes)?;
-                    v.push(arg);
+                    objects.push(Argument::parse(reader)?);
                 }
                 
-                let (recipient, _) = Argument::try_from(bytes)?;
-                Ok(Command::TransferObjects(v, recipient))
+                let recipient = Argument::parse(reader)?;
+                Ok(Command::TransferObjects(objects, recipient))
             }
             0x02 => {
-                let (coin, size) = Argument::try_from(bytes)?;
-                bytes.advance(size);
-                
-                if bytes.remaining() < 1 {
-                    return Err(IotaError::UnexpectedEof);
-                }
-                let amount_count = bytes.get_u8() as usize;
+                // SplitCoins
+                let coin = Argument::parse(reader)?;
+                let amount_count = reader.read_u8()? as usize;
                 
                 let mut amounts = Vec::with_capacity(amount_count);
                 for _ in 0..amount_count {
-                    let (amount, size) = Argument::try_from(bytes)?;
-                    amounts.push(amount);
-                    bytes.advance(size);
+                    amounts.push(Argument::parse(reader)?);
                 }
                 
                 Ok(Command::SplitCoins(coin, amounts))
@@ -112,24 +67,28 @@ impl TryFrom<&mut Bytes> for Command {
 
 #[derive(Debug)]
 pub struct Commands {
-    commands: Vec<Command>,
+    pub commands: Vec<Command>,
+}
+
+impl Commands {
+    pub fn parse(reader: &mut BytesReader) -> Result<Self> {
+        let command_count = reader.read_u8()? as usize;
+        let mut commands = Vec::with_capacity(command_count);
+        
+        for _ in 0..command_count {
+            commands.push(Command::parse(reader)?);
+        }
+        
+        Ok(Commands { commands })
+    }
 }
 
 impl TryFrom<Bytes> for Commands {
     type Error = IotaError;
 
     fn try_from(mut bytes: Bytes) -> Result<Self> {
-        if bytes.remaining() < 1 {
-            return Err(IotaError::UnexpectedEof);
-        }
-
-        let mut commands = Vec::new();
-        let command_count = bytes.get_u8();
-        println!("command_count: {:?}", command_count);
-        for _ in 0..command_count {
-            commands.push(Command::try_from(&mut bytes)?);
-        }
-        Ok(Commands { commands })
+        let mut reader = BytesReader::new(&mut bytes);
+        Commands::parse(&mut reader)
     }
 }
 
@@ -141,8 +100,9 @@ mod tests {
     #[test]
     fn test_command_try_from() {
         let data = "0202000101000001010300000000010100";
-        let command_bytes = Bytes::from(hex::decode(data).unwrap());
-        let commands = Commands::try_from(command_bytes).unwrap();
+        let mut bytes = Bytes::from(hex::decode(data).unwrap());
+        let mut reader = BytesReader::new(&mut bytes);
+        let commands = Commands::parse(&mut reader).unwrap();
         println!("{:?}", commands);
         assert!(false);
     }

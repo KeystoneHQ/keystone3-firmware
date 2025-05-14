@@ -13,3 +13,4 @@ pub mod account;
 pub mod transaction;
 mod base_type;
 mod commands;
+mod byte_reader;

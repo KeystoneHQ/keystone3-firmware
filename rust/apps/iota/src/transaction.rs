@@ -80,16 +80,12 @@ pub struct GasData {
 #[derive(Debug)]
 pub enum TransactionExpiration {
     None,
-    // Some(T) 如果有具体类型
 }
 
-/// 解析入口：根据版本 tag 分发
 pub fn parse_transaction_data(hex_str: &str) -> Result<TransactionData> {
-    // hex 解码
     let raw = hex::decode(hex_str)?;
     let mut buf = Bytes::from(raw);
 
-    // 读版本 tag (u32 LE)
     if buf.remaining() < 4 {
         return Err(IotaError::UnexpectedEof);
     }
@@ -103,7 +99,6 @@ pub fn parse_transaction_data(hex_str: &str) -> Result<TransactionData> {
     }
 }
 
-/// 解析版本1 的内容
 fn parse_v1(buf: &mut Bytes) -> Result<TransactionDataV1> {
     // 1. inputs: Vec<TransactionInput>
     if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
@@ -120,7 +115,6 @@ fn parse_v1(buf: &mut Bytes) -> Result<TransactionDataV1> {
         inputs.push(TransactionInput::Pure(data));
     }
 
-    // 2. commands: Vec<Command>
     if buf.remaining() < 4 { return Err(IotaError::UnexpectedEof); }
     let cmd_cnt = buf.get_u32_le() as usize;
     let mut commands = Vec::with_capacity(cmd_cnt);

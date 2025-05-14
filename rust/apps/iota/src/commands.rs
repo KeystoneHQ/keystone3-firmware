@@ -3,7 +3,7 @@ use core::convert::TryFrom;
 use crate::errors::{IotaError, Result};
 use alloc::vec::Vec;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Argument {
     /// The gas coin. The gas coin can only be used by-ref, except for with
     /// `TransferObjects`, which can use it by-value.
@@ -19,39 +19,33 @@ pub enum Argument {
     NestedResult(u16, u16),
 }
 
-impl TryFrom<&mut Bytes> for Argument {
-    type Error = IotaError;
-
-    fn try_from(bytes: &mut Bytes) -> Result<Self> {
+impl Argument {
+    fn try_from(bytes: &mut Bytes) -> Result<(Self, usize)> {
         if bytes.remaining() < 1 {
             return Err(IotaError::UnexpectedEof);
         }
 
         match bytes.get_u8() {
             0x00 => {
-                bytes.advance(1);
-                Ok(Argument::GasCoin)
+                Ok((Argument::GasCoin, 1))
             }
             0x01 => {
                 if bytes.remaining() < 2 {
                     return Err(IotaError::UnexpectedEof);
                 }
-                bytes.advance(2);
-                Ok(Argument::Input(bytes.get_u16()))
+                Ok((Argument::Input(bytes.get_u16()), 2))
             }
             0x02 => {
                 if bytes.remaining() < 2 {
                     return Err(IotaError::UnexpectedEof);
                 }
-                bytes.advance(2);
-                Ok(Argument::Result(bytes.get_u16()))
+                Ok((Argument::Result(bytes.get_u16()), 2))
             }
             0x03 => {
                 if bytes.remaining() < 4 {
                     return Err(IotaError::UnexpectedEof);
                 }
-                bytes.advance(4);
-                Ok(Argument::NestedResult(bytes.get_u16(), bytes.get_u16()))
+                Ok((Argument::NestedResult(bytes.get_u16(), bytes.get_u16()), 4))
             }
             tag => Err(IotaError::InvalidCommand(tag)),
         }
@@ -76,32 +70,43 @@ impl TryFrom<&mut Bytes> for Command {
         if bytes.remaining() < 1 {
             return Err(IotaError::UnexpectedEof);
         }
-        println!("command: {:?}", bytes.clone());
 
-        let command = match bytes.get_u8() {
+        match bytes.get_u8() {
             0x01 => {
-                let amount_count = bytes.get_u8() as usize;
-                let mut amounts = Vec::with_capacity(amount_count);
-                for _ in 0..amount_count {
-                    amounts.push(Argument::try_from(bytes.clone())?);
+                if bytes.remaining() < 1 {
+                    return Err(IotaError::UnexpectedEof);
                 }
-                let argument = Argument::try_from(bytes)?;
-                println!("argument: {:?}", argument);
-                Command::TransferObjects(amounts, argument)
+                let count = bytes.get_u8() as usize;
+                let mut v = Vec::with_capacity(count);
+                
+                for _ in 0..count {
+                    let (arg, size) = Argument::try_from(bytes)?;
+                    v.push(arg);
+                }
+                
+                let (recipient, _) = Argument::try_from(bytes)?;
+                Ok(Command::TransferObjects(v, recipient))
             }
             0x02 => {
-                let argument = Argument::try_from(bytes)?;
-                println!("argument: {:?}", argument);
+                let (coin, size) = Argument::try_from(bytes)?;
+                bytes.advance(size);
+                
+                if bytes.remaining() < 1 {
+                    return Err(IotaError::UnexpectedEof);
+                }
                 let amount_count = bytes.get_u8() as usize;
+                
                 let mut amounts = Vec::with_capacity(amount_count);
                 for _ in 0..amount_count {
-                    amounts.push(Argument::try_from(bytes)?);
+                    let (amount, size) = Argument::try_from(bytes)?;
+                    amounts.push(amount);
+                    bytes.advance(size);
                 }
-                Command::SplitCoins(argument, amounts)
+                
+                Ok(Command::SplitCoins(coin, amounts))
             }
-            _ => return Err(IotaError::InvalidCommand(bytes.get_u8()))
+            tag => Err(IotaError::InvalidCommand(tag))
         }
-        Ok(command)
     }
 }
 

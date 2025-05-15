@@ -6,11 +6,11 @@ extern crate alloc;
 #[macro_use]
 extern crate std;
 
+pub mod account;
 pub mod address;
+mod base_type;
+mod byte_reader;
+mod commands;
 pub mod errors;
 pub mod structs;
-pub mod account;
 pub mod transaction;
-mod base_type;
-mod commands;
-mod byte_reader;

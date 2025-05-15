@@ -1,6 +1,6 @@
-use bytes::{Buf, Bytes, BytesMut};
 use crate::errors::{IotaError, Result};
 use alloc::vec::Vec;
+use bytes::{Buf, Bytes, BytesMut};
 
 pub struct BytesReader<'a> {
     pub bytes: &'a mut Bytes,
@@ -59,6 +59,14 @@ impl<'a> BytesReader<'a> {
         }
         self.consumed += 8;
         Ok(self.bytes.get_u64_le())
+    }
+
+    pub fn read_u64(&mut self) -> Result<u64> {
+        if self.bytes.remaining() < 8 {
+            return Err(IotaError::UnexpectedEof);
+        }
+        self.consumed += 8;
+        Ok(self.bytes.get_u64())
     }
 
     pub fn read_bytes(&mut self, len: usize) -> Result<Vec<u8>> {

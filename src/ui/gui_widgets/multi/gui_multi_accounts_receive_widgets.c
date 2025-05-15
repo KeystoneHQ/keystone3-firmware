@@ -1238,7 +1238,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
     switch (g_chainCard) {
 #ifdef WEB3_VERSION
     case HOME_WALLET_CARD_ADA: {
-        uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);;
+        uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);
         xPub = GetCurrentAccountPublicKey(GetReceivePageAdaXPubTypeByIndex(currentAccount));
         snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         // cardano mainnet;
@@ -1258,7 +1258,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
     case HOME_WALLET_CARD_IOTA: {
         uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);
         printf("currentAccount: %u\n", currentAccount);
-        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0);
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + currentAccount);
         printf("xPub: %s\n", xPub);
         result = iota_get_address_from_xpub(xPub);
         printf("result: %s\n", result->data);

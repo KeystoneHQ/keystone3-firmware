@@ -1,5 +1,8 @@
-use crate::errors::{Result, IotaError};
-use alloc::{format, string::{String, ToString}};
+use crate::errors::{IotaError, Result};
+use alloc::{
+    format,
+    string::{String, ToString},
+};
 use cryptoxide::hashing::blake2b_256;
 use hex;
 
@@ -21,6 +24,9 @@ mod tests {
     fn test_get_address_from_xpub() {
         let xpub = "bfa73107effa14b21ff1b9ae2e6b2e770232b7c29018abbf76475b25395369c0";
         let address = get_address_from_xpub(xpub.to_string());
-        assert_eq!(address.unwrap(), "0x193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb04");
+        assert_eq!(
+            address.unwrap(),
+            "0x193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb04"
+        );
     }
 }

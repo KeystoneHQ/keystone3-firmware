@@ -208,10 +208,10 @@ void GuiEthBatchTxWidgetsDeInit() {
 static void ParseSwapContractData(const char* address, const char* inputData) {
     char selectorId[9] = {0};
     strncpy(selectorId, inputData, 8);
-    char* address_key = (char*)SRAM_MALLOC(strlen(address) + 9);
-    strcpy_s(address_key, strlen(address) + 9, address);
-    strcat_s(address_key, strlen(address) + 9, "_");
-    strcat_s(address_key, strlen(address) + 9, selectorId);
+    char* address_key = (char*)SRAM_MALLOC(strlen(address) + 10);
+    strcpy_s(address_key, strlen(address) + 10, address);
+    strcat_s(address_key, strlen(address) + 10, "_");
+    strcat_s(address_key, strlen(address) + 10, selectorId);
     for (size_t i = 0; i < GetEthereumABIMapSize(); i++) {
         struct ABIItem item = ethereum_abi_map[i];
         if (strcasecmp(item.address, address_key) == 0) {

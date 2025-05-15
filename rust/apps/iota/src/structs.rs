@@ -1,12 +1,12 @@
-use crate::errors::{Result, IotaError};
+use crate::errors::{IotaError, Result};
+use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_utils::{impl_internal_struct, impl_public_struct};
-use alloc::format;
 use core::ops::Div;
 use cryptoxide::hashing::blake2b_224;
-use ur_registry::traits::From;
 use hex;
+use ur_registry::traits::From;
 
 #[cfg(test)]
 mod tests {

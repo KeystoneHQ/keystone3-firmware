@@ -100,6 +100,10 @@ GetCustomContainerFunc GetOtherChainCustomFunc(char *funcName)
         return GuiAvaxTxOverview;
     } else if (!strcmp(funcName, "GuiAvaxTxRawData")) {
         return GuiAvaxTxRawData;
+    } else if (!strcmp(funcName, "GuiIotaTxOverview")) {
+        return GuiIotaTxOverview;
+    } else if (!strcmp(funcName, "GuiIotaTxRawData")) {
+        return GuiIotaTxRawData;
     }
 
     return NULL;

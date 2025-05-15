@@ -211,6 +211,7 @@ mod tests {
     #[test]
     fn test_command_parse_transaction() {
         let data = "0202000101000001010300000000010100";
+        let data = "020200010100000101020000010100";
         let mut bytes = Bytes::from(hex::decode(data).unwrap());
         let mut reader = BytesReader::new(&mut bytes);
         let commands = Commands::parse(&mut reader).unwrap();

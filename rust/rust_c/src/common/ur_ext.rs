@@ -54,6 +54,8 @@ use ur_registry::stellar::stellar_sign_request::{SignType as StellarSignType, St
 use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
 #[cfg(feature = "sui")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
+#[cfg(feature = "iota")]
+use ur_registry::iota::iota_sign_request::IotaSignRequest;
 #[cfg(feature = "ton")]
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 #[cfg(feature = "zcash")]
@@ -124,6 +126,13 @@ impl InferViewType for EvmSignRequest {
 impl InferViewType for SuiSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::SuiTx)
+    }
+}
+
+#[cfg(feature = "iota")]
+impl InferViewType for IotaSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::IotaTx)
     }
 }
 

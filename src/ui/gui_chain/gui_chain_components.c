@@ -171,7 +171,12 @@ lv_obj_t *CreateDynamicInfoView(lv_obj_t *parent, char *key[], char *value[], in
         lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
         label = GuiCreateIllustrateLabel(container, value[i]);
+        lv_obj_set_width(label, 300);
         GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+        lv_obj_refr_size(label);
+        int labelHeight = lv_obj_get_self_height(label);
+        height += labelHeight;
+        lv_obj_set_height(container, height - 38);
     }
 
     return container;

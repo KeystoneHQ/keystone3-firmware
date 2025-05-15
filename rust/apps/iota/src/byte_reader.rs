@@ -1,4 +1,5 @@
 use crate::errors::{IotaError, Result};
+use alloc::vec;
 use alloc::vec::Vec;
 use bytes::{Buf, Bytes, BytesMut};
 

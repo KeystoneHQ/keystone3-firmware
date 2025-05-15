@@ -51,21 +51,15 @@ pub fn generate_address(pub_key: &str) -> Result<String> {
     Ok(format!("0x{}", hex::encode(addr)))
 }
 
-extern crate std;
-use std::println;
 
 pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
     match IntentScope::try_from(intent[0])? {
         IntentScope::TransactionData => {
-            println!("TransactionData");
             let tx: IntentMessage<TransactionData> =
                 bcs::from_bytes(intent).map_err(SuiError::from)?;
-            println!("TransactionData parsed");
-            println!("tx: {:?}", tx);
             Ok(Intent::TransactionData(tx))
         }
         IntentScope::PersonalMessage => {
-            println!("PersonalMessage");
             let msg: IntentMessage<PersonalMessage> = match bcs::from_bytes(intent) {
                 Ok(msg) => msg,
                 Err(_) => {
@@ -81,8 +75,6 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
                     )
                 }
             };
-            println!("PersonalMessage parsed");
-            println!("msg: {:?}", msg);
             let m = match decode_utf8(&msg.value.message) {
                 Ok(m) => m,
                 Err(_) => serde_json::to_string(&msg.value.message)?,
@@ -214,6 +206,16 @@ mod tests {
         let mut hash = [0u8; 32];
         hasher.finalize_variable(&mut hash).unwrap();
         let signature = sign_hash(&seed, &hd_path, &hash).unwrap();
+        let expected_signature = hex::decode("f4b79835417490958c72492723409289b444f3af18274ba484a9eeaca9e760520e453776e5975df058b537476932a45239685f694fc6362fe5af6ba714da6505").unwrap();
+        assert_eq!(expected_signature, signature);
+    }
+
+    #[test]
+    fn test_sign_123() {
+        let seed = hex::decode("1233e88dd9325e7d5b0a30aaa74df3a8d54b7ec0f3f6a2b7220f04d1120b02f5145706807bc4fa958093465835785c79cce0dbad18b2b5fe0d5a0607508dc927").unwrap();
+        let hd_path = "m/44'/4218'/0'/0'/0'".to_string();
+        let msg =  hex::decode("0000020008001a7118020000000020a9b6de90462abd42d8fc56ab56674507599248fac694584d8e892c0f8b54e7ba020200010100000101020000010100193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb04090266c887c1357c50c0b5e6fe7073a22f89deb9c3dfba9edf937edf6f2ca32cbedc42630d00000000206fba305d1986cc6f670d705a8f3cf26b924056aed263d2ab00ec5ad41e8e90691d2ce2ecd7bcf96a333b3ecb850fb57818e998e193ac5c363a831e74ceb0b362e048630d0000000020d154d59ca6838636b0301b1ec42c981628930efaee3afa70360765e85f6f73a723b37ad20af1ff2804bd5bb8d0511fa4bd61a6b069915a86d6c2d133ed4dd699ef48630d0000000020a11d126dc0d3c29fe24890fd4e92b46625dcc914503e5f06ecb847d3a80487755d374b5b4a251b954ccafed02d5d21d6288810b61171bc679c116d6b88b4dc44e148630d0000000020fa23490904041226c3c2d63d5e34ed9228e570f2425064a4f5fbfefa1f00e0347f8ac467b7ca30bf83da6674e5eaae3e534f30ffabdd0eb70cdbc176dec04233414d630d000000002002b9c3b4b45e5cb3498e075e74a6b029b60f096d52485af29688353c990f2c2588f1fc45ae31711da6b398f0ccc10a84979890e1ef7d4d5d7339a71241aa363ddf48630d00000000208e715afd576dc9d8e66ada27436390b4e2fd527cea9cba24cd6b551fb4ea9537915ef82c255b2d9daaefa83e60d0c51eef9cd292abdf8f866e45ba00f8669639f048630d0000000020d37b4af6e26dec342487c5ab5c4b7c3b3da3dfcf1657ee8b34fc3f3c95d0aea3b6c86132d3cf6b13124662c173fa1fc385d15d09d04310390b58331801238090424d630d0000000020dafec40eb97f6c5c6c6dd4440189cff0d9b6beea126d29f23a077a42d4b675c4ba3a5922cb826a3cc2ba0c0398ed8a513f46c867554820370744a5ceeb046864de48630d0000000020d22c4facbc674ccc489de2bbc768fd2a9a9784a539bf84148183cb014c075b70193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb04e803000000000000e06f3c000000000000").unwrap();
+        let signature = sign_intent(&seed, &hd_path, &msg).unwrap();
         let expected_signature = hex::decode("f4b79835417490958c72492723409289b444f3af18274ba484a9eeaca9e760520e453776e5975df058b537476932a45239685f694fc6362fe5af6ba714da6505").unwrap();
         assert_eq!(expected_signature, signature);
     }

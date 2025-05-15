@@ -94,8 +94,10 @@ pub fn sign_message_orchard<R: RngCore + CryptoRng>(
 #[cfg(test)]
 mod tests {
     use zcash_vendor::{
-        pasta_curves::Fq, zcash_keys::keys::UnifiedSpendingKey,
-        zcash_protocol::consensus::MAIN_NETWORK, zip32::AccountId,
+        pasta_curves::Fq,
+        zcash_keys::keys::{UnifiedAddressRequest, UnifiedSpendingKey},
+        zcash_protocol::consensus::MAIN_NETWORK,
+        zip32::AccountId,
     };
 
     use zcash_vendor::orchard::keys::{FullViewingKey, SpendAuthorizingKey, SpendingKey};
@@ -134,7 +136,9 @@ mod tests {
         assert!(encoded_ufvk.starts_with("uview"));
 
         // Verify we can generate a valid address from the UFVK
-        let address = ufvk.default_address(None).unwrap();
+        let address = ufvk
+            .default_address(UnifiedAddressRequest::AllAvailableKeys)
+            .unwrap();
         let encoded_address = address.0.encode(&MAIN_NETWORK);
 
         assert!(!encoded_address.is_empty());

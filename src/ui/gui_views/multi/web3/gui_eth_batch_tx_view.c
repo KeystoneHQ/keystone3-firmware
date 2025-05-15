@@ -51,9 +51,9 @@ int32_t GuiEthBatchTxViewEventProcess(void *self, uint16_t usEvent, void *param,
         GuiLockScreenPassCode(false);
         GuiEthBatchTxWidgetsSignVerifyPasswordErrorCount(param);
         break;
-    // case SIG_FINGER_RECOGNIZE_RESPONSE:
-    //     GuiSignDealFingerRecognize(param);
-    //     break;
+    case SIG_FINGER_RECOGNIZE_RESPONSE:
+        GuiEthBatchTxWidgetsSignDealFingerRecognize(param);
+        break;
     case SIG_TRANSACTION_PARSE_SUCCESS:
         GuiEthBatchTxWidgetsTransactionParseSuccess(param);
         break;

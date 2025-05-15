@@ -8,6 +8,27 @@
 #include "gui_obj.h"
 #include "gui_eth.h"
 #include "gui_qr_hintbox.h"
+#include "fingerprint_process.h"
+#include "gui_button.h"
+
+#ifndef COMPILE_SIMULATOR
+#include "keystore.h"
+
+#else
+#define FP_SUCCESS_CODE 0
+#define RECOGNIZE_UNLOCK 0
+#define RECOGNIZE_OPEN_SIGN 1
+#define RECOGNIZE_SIGN 2
+
+#define NO_ENCRYPTION 0
+#define AES_KEY_ENCRYPTION 1
+#define RESET_AES_KEY_ENCRYPTION 2
+#define FINGERPRINT_EN_SING_ERR_TIMES (5)
+#define FINGERPRINT_RESPONSE_MSG_LEN (23)
+#define FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT (0xFF)
+#define FINGERPRINT_SING_ERR_TIMES (3)
+#define FINGERPRINT_SING_DISABLE_ERR_TIMES (15)
+#endif
 
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
@@ -45,7 +66,13 @@ static lv_obj_t *g_parseErrorHintBox = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 static lv_obj_t *g_bottomBtnContainer = NULL;
 static lv_obj_t *g_signSlider = NULL;
+
+static lv_obj_t *g_fingerSingContainer = NULL;
+static lv_obj_t *g_fpErrorImg = NULL;
+static lv_obj_t *g_fpErrorLabel = NULL;
 static uint32_t g_fingerSignCount = FINGER_SIGN_MAX_COUNT;
+static uint32_t g_fingerSignErrCount = 0;
+static lv_timer_t *g_fpRecognizeTimer;
 
 //GUI Render Functions
 static void GuiCreatePageContent(lv_obj_t *parent);
@@ -126,9 +153,9 @@ UREncodeResult *GuiGetEthBatchTxSignQrCodeData() {
 
 static void SignByPasswordCb(bool cancel)
 {
-    // if (cancel) {
-    //     FpCancelCurOperate();
-    // }
+    if (cancel) {
+        FpCancelCurOperate();
+    }
     g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
     SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
     static uint16_t sig = SIG_SIGN_TRANSACTION_WITH_PASSWORD;
@@ -159,7 +186,6 @@ static void HandleClickAddressChecker(lv_event_t *e) {
     lv_event_code_t code = lv_event_get_code(e);
     if(code == LV_EVENT_CLICKED) {
         char *address = lv_event_get_user_data(e);
-        printf("address: %s\n", address);
         char *text = malloc(BUFFER_SIZE_128);
         sprintf(text, "https://etherscan.io/address/%s", address);
         GuiQRCodeHintBoxOpen(text, _("Check the Address"), text);
@@ -255,6 +281,35 @@ static void *GuiParseEthBatchTxData(void) {
     return g_parseResult;
 }
 
+static void SignByFinger(void)
+{
+    GUI_DEL_OBJ(g_fingerSingContainer)
+
+    g_fingerSingContainer = GuiCreateHintBox(428);
+    lv_obj_t *cont = g_fingerSingContainer;
+    lv_obj_t *label = GuiCreateNoticeLabel(cont, _("scan_qr_code_sign_fingerprint_verify_fingerprint"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 402);
+
+    lv_obj_t *button = GuiCreateImgButton(cont, &imgClose, 64, CloseContHandler, cont);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 384, 394);
+
+    g_fpErrorImg = GuiCreateImg(cont, &imgYellowFinger);
+    lv_obj_align(g_fpErrorImg, LV_ALIGN_BOTTOM_MID, 0, -178);
+
+    lv_obj_t *arc = GuiCreateArc(cont);
+    lv_obj_set_style_arc_opa(arc, LV_OPA_10, LV_PART_MAIN);
+    lv_obj_align(arc, LV_ALIGN_BOTTOM_MID, 0, -154);
+
+    g_fpErrorLabel = GuiCreateIllustrateLabel(cont, _("scan_qr_code_sign_unsigned_content_fingerprint_failed_desc"));
+    lv_obj_set_style_text_color(g_fpErrorLabel, RED_COLOR, LV_PART_MAIN);
+    lv_obj_align(g_fpErrorLabel, LV_ALIGN_BOTTOM_MID, 0, -100);
+    lv_obj_add_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);
+
+    button = GuiCreateImgLabelAdaptButton(cont, _("enter_passcode"), &imgLockedLock, SignByPasswordCbHandler, cont);
+    lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -27);
+    FpRecognize(RECOGNIZE_SIGN);
+}
+
 static void CheckSliderProcessHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -262,7 +317,7 @@ static void CheckSliderProcessHandler(lv_event_t *e)
         int32_t value = lv_slider_get_value(lv_event_get_target(e));
         if (value >= QRCODE_CONFIRM_SIGN_PROCESS) {
             if ((GetCurrentAccountIndex() < 3) && GetFingerSignFlag() && g_fingerSignCount < 3) {
-                // SignByFinger();
+                SignByFinger();
             } else {
                 SignByPasswordCb(false);
             }
@@ -279,7 +334,53 @@ void GuiEthBatchTxWidgetsSignVerifyPasswordErrorCount(void *param)
     GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
 }
 
+static void RecognizeFailHandler(lv_timer_t *timer)
+{
+    if (g_fingerSingContainer != NULL) {
+        lv_img_set_src(g_fpErrorImg, &imgYellowFinger);
+        lv_obj_add_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);
+    }
+    lv_timer_del(timer);
+    g_fpRecognizeTimer = NULL;
+}
+
+void GuiEthBatchTxWidgetsSignDealFingerRecognize(void *param)
+{
+    uint8_t errCode = *(uint8_t *)param;
+    static uint16_t passCodeType = SIG_SIGN_TRANSACTION_WITH_PASSWORD;
+    if (g_fingerSingContainer == NULL) {
+        return;
+    }
+    if (errCode == FP_SUCCESS_CODE) {
+        lv_img_set_src(g_fpErrorImg, &imgYellowFinger);
+        GuiModelVerifyAccountPassWord(&passCodeType);
+        g_fingerSignErrCount = 0;
+    } else {
+        g_fingerSignErrCount++;
+        g_fingerSignCount++;
+        if (g_fpErrorLabel != NULL && lv_obj_has_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN)) {
+            lv_obj_clear_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);
+        }
+        lv_img_set_src(g_fpErrorImg, &imgRedFinger);
+        printf("g_fingerSingCount is %d\n", g_fingerSignCount);
+        if (g_fingerSignCount < FINGERPRINT_SING_ERR_TIMES) {
+            FpRecognize(RECOGNIZE_SIGN);
+            g_fpRecognizeTimer = lv_timer_create(RecognizeFailHandler, 1000, NULL);
+        } else {
+            SignByPasswordCb(false);
+        }
+        printf("g_fingerSignErrCount.... = %d\n", g_fingerSignErrCount);
+        if (g_fingerSignErrCount >= FINGERPRINT_SING_DISABLE_ERR_TIMES) {
+            for (int i = 0; i < 3; i++) {
+                UpdateFingerSignFlag(i, false);
+            }
+        }
+    }
+}
+
 void GuiEthBatchTxWidgetsTransactionParseFail(void* params) {
+    printf("GuiEthBatchTxWidgetsTransactionParseFail\n");
+    printf("error: %s\n", g_parseResult->error_message);
     g_parseErrorHintBox = GuiCreateErrorCodeWindow(ERR_INVALID_QRCODE, &g_parseErrorHintBox, GuiReturnHome);
 }
 
@@ -815,13 +916,13 @@ static lv_obj_t *GuiRenderDetailInputData(lv_obj_t *parent, lv_obj_t *last_view)
     lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, height);
     lv_obj_update_layout(label);
     height += lv_obj_get_height(label) + 8;
-    
+
     label = GuiCreateIllustrateLabel(container, _("Unknown Data"));
     lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, height);
     lv_obj_set_style_text_color(label, YELLOW_COLOR, LV_PART_MAIN);
     lv_obj_update_layout(label);
     height += lv_obj_get_height(label);
-    
+
     height += 16;
     lv_obj_set_height(container, height);
     lv_obj_update_layout(container);

@@ -16,7 +16,7 @@ void GuiEthBatchTxWidgetsTransactionParseSuccess();
 void GuiEthBatchTxWidgetsTransactionParseFail();
 void GuiCreateEthBatchTxWidget();
 void GuiSetEthBatchTxData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
-
+void GuiEthBatchTxWidgetsSignDealFingerRecognize(void *param);
 void GuiEthBatchTxWidgetsSignVerifyPasswordErrorCount(void *param);
 UREncodeResult *GuiGetEthBatchTxSignQrCodeData();
 

@@ -908,7 +908,6 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
 
 static void MoreHandler(lv_event_t *e)
 {
-
     if (g_multiAccountsReceiveWidgets.moreCont == NULL) {
         GuiCreateMoreWidgets(g_multiAccountsReceiveWidgets.tileQrCode);
     } else {
@@ -919,7 +918,6 @@ static void MoreHandler(lv_event_t *e)
 
 static void TutorialHandler(lv_event_t *e)
 {
-
     GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
 
     TUTORIAL_LIST_INDEX_ENUM index = TUTORIAL_ADA_RECEIVE;
@@ -1253,15 +1251,6 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
             result = cardano_get_base_address(xPub, index, 1);
             break;
         }
-        break;
-    }
-    case HOME_WALLET_CARD_IOTA: {
-        uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);
-        printf("currentAccount: %u\n", currentAccount);
-        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + currentAccount);
-        printf("xPub: %s\n", xPub);
-        result = iota_get_address_from_xpub(xPub);
-        printf("result: %s\n", result->data);
         break;
     }
 #endif

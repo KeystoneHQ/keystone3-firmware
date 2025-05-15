@@ -83,6 +83,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_BCH, "", &coinBch},
     {CHAIN_APT, "", &coinApt},
     {CHAIN_SUI, "", &coinSui},
+    {CHAIN_IOTA, "", &coinSui},
     {CHAIN_DASH, "", &coinDash},
     {CHAIN_ARWEAVE, "", &coinAr},
     {CHAIN_STELLAR, "", &coinXlm},

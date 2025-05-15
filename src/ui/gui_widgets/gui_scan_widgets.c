@@ -116,6 +116,8 @@ void GuiScanResult(bool result, void *param)
         }
 #endif
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
+        printf("g_chainType: %d\n", g_chainType);
+        printf("%s %d..\n", __func__, __LINE__);
 #ifndef BTC_ONLY
         // Not a chain based transaction, e.g. WebAuth
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
@@ -159,6 +161,7 @@ void GuiScanResult(bool result, void *param)
             ThrowError(ERR_INVALID_QRCODE);
             return;
         }
+        printf("%s %d..\n", __func__, __LINE__);
         GuiModelCheckTransaction(g_qrcodeViewType);
     } else {
         ThrowError(ERR_INVALID_QRCODE);

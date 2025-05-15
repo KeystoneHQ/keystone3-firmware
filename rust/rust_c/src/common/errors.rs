@@ -242,6 +242,11 @@ pub enum ErrorCodes {
     IotaAddressError,
     IotaKeystoreError,
     IotaUnsupportedProgram,
+    IotaInvalidCommand,
+    IotaInvalidLength,
+    IotaInvalidTransaction,
+    IotaUnexpectedEof,
+    IotaInvalidField,
 }
 
 impl ErrorCodes {
@@ -555,6 +560,10 @@ impl From<&IotaError> for ErrorCodes {
             IotaError::ProgramError(_) => Self::IotaProgramError,
             IotaError::AccountNotFound(_) => Self::IotaAccountNotFound,
             IotaError::ParseTxError(_) => Self::IotaParseTxError,
+            IotaError::InvalidField(_) => Self::IotaInvalidField,
+            IotaError::UnexpectedEof => Self::IotaUnexpectedEof,
+            IotaError::InvalidLength => Self::IotaInvalidLength,
+            IotaError::InvalidCommand(_) => Self::IotaInvalidTransaction,
         }
     }
 }

@@ -134,6 +134,7 @@ static uint32_t g_showIndex;
 static uint32_t g_tmpIndex = 0;
 static uint32_t g_selectIndex[3] = {0};
 static uint32_t g_suiSelectIndex[3] = {0};
+static uint32_t g_iotaSelectIndex[3] = {0};
 static uint32_t g_stellarSelectIndex[3] = {0};
 static uint32_t g_aptosSelectIndex[3] = {0};
 static uint32_t g_xrpSelectIndex[3] = {0};
@@ -525,7 +526,7 @@ lv_obj_t* CreateStandardReceiveQRCode(lv_obj_t* parent, uint16_t w, uint16_t h)
 static uint16_t GetAddrYExtend(void)
 {
 #ifdef WEB3_VERSION
-    if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
+    if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT || g_chainCard == HOME_WALLET_CARD_IOTA) {
         return 30;
     }
 #endif
@@ -788,7 +789,7 @@ static void RefreshSwitchAccount(void)
 static int GetMaxAddressIndex(void)
 {
 #ifdef WEB3_VERSION
-    if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT) {
+    if (g_chainCard == HOME_WALLET_CARD_SUI || g_chainCard == HOME_WALLET_CARD_APT || g_chainCard == HOME_WALLET_CARD_IOTA) {
         return 10;
     }
     if (g_chainCard == HOME_WALLET_CARD_XLM) {
@@ -867,6 +868,7 @@ static bool IsAccountSwitchable()
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
     case HOME_WALLET_CARD_SUI:
+    case HOME_WALLET_CARD_IOTA:
     case HOME_WALLET_CARD_APT:
     case HOME_WALLET_CARD_XRP:
     case HOME_WALLET_CARD_XLM:
@@ -932,8 +934,11 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         break;
     case HOME_WALLET_CARD_SUI:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + index);
-        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/784'/%u'/0'/0'", index);
         result = sui_generate_address(xPub);
+        break;
+    case HOME_WALLET_CARD_IOTA:
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + index);
+        result = iota_get_address_from_xpub(xPub);
         break;
     case HOME_WALLET_CARD_APT:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + index);
@@ -1082,6 +1087,9 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
     switch (g_chainCard) {
     case HOME_WALLET_CARD_SUI:
         g_suiSelectIndex[GetCurrentAccountIndex()] = selectIndex;
+        break;
+    case HOME_WALLET_CARD_IOTA:
+        g_iotaSelectIndex[GetCurrentAccountIndex()] = selectIndex;
         break;
     case HOME_WALLET_CARD_XLM:
         g_stellarSelectIndex[GetCurrentAccountIndex()] = selectIndex;

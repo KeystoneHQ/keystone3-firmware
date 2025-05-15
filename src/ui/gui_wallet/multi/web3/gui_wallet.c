@@ -194,7 +194,7 @@ UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    #define NIGHTLY_XPUB_COUNT 15
+    #define NIGHTLY_XPUB_COUNT 20
     ExtendedPublicKey keys[NIGHTLY_XPUB_COUNT];
     publicKeys->data = keys;
     publicKeys->size = NIGHTLY_XPUB_COUNT;
@@ -215,7 +215,7 @@ UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
         snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/%u'/%u'/0'/0'", coinType, xpubIndex);
         keys[xpubIndex].xpub = GetCurrentAccountPublicKey(xpubBaseIndex + xpubIndex);
     }
-    for (uint8_t startIndex = xpubIndex; xpubIndex < 15; xpubIndex++, startIndex++) {
+    for (uint8_t startIndex = xpubIndex; xpubIndex < NIGHTLY_XPUB_COUNT; xpubIndex++, startIndex++) {
         keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
         snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/4218'/0'/0/%u", startIndex);
         keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + startIndex);

@@ -1,18 +1,21 @@
-use crate::base_type::{ObjectID, ObjectRef, SequenceNumber, ObjectDigest, Digest};
 use crate::account::AccountAddress;
+use crate::base_type::{Digest, ObjectDigest, ObjectID, ObjectRef, SequenceNumber};
 use crate::{
     byte_reader::BytesReader,
     commands::{Command, Commands},
     errors::{IotaError, Result},
 };
+use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use alloc::format;
+use blake2::{
+    digest::{Update, VariableOutput},
+    Blake2bVar,
+};
 use bytes::{Buf, Bytes};
+use cryptoxide::hashing::keccak256;
 use hex;
 use serde::Serialize;
-use cryptoxide::hashing::keccak256;
-// use app_sui::sign_intent;
 
 #[derive(Debug)]
 pub enum TransactionData {
@@ -53,7 +56,9 @@ pub enum TransactionKind {
 impl TransactionKind {
     pub fn get_inputs_string(&self) -> Vec<String> {
         match self {
-            TransactionKind::ProgrammableTransaction(tx) => tx.inputs.iter().map(|v| v.serialize().unwrap()).collect(),
+            TransactionKind::ProgrammableTransaction(tx) => {
+                tx.inputs.iter().map(|v| v.serialize().unwrap()).collect()
+            }
         }
     }
 }
@@ -138,11 +143,9 @@ impl TransactionInput {
                         let digest = ObjectDigest(Digest(digest_bytes));
 
                         Ok(TransactionInput::Object(ObjectArg::ImmOrOwnedObject((
-                            object_id,
-                            sequence,
-                            digest,
+                            object_id, sequence, digest,
                         ))))
-                    },
+                    }
                     1 => {
                         // SharedObject
                         let mut id = [0u8; 32];
@@ -158,7 +161,7 @@ impl TransactionInput {
                             initial_shared_version,
                             mutable,
                         }))
-                    },
+                    }
                     2 => {
                         // Receiving
                         let mut object_id = [0u8; 32];
@@ -174,17 +177,15 @@ impl TransactionInput {
                         let digest = ObjectDigest(Digest(digest_bytes));
 
                         Ok(TransactionInput::Object(ObjectArg::Receiving((
-                            object_id,
-                            sequence,
-                            digest,
+                            object_id, sequence, digest,
                         ))))
-                    },
+                    }
                     other => Err(IotaError::InvalidField(format!(
                         "Invalid Object type: {}",
                         other
                     ))),
                 }
-            },
+            }
             other => Err(IotaError::InvalidField(format!(
                 "Invalid TransactionInput type: {}",
                 other
@@ -227,7 +228,6 @@ pub enum TransactionExpiration {
 impl TransactionDataV1 {
     fn parse(reader: &mut BytesReader) -> Result<Self> {
         let kind = TransactionKind::parse(reader)?;
-        println!("kind: {:?}", kind);
         let mut sender = [0u8; 32];
         let sender_bytes = reader.read_bytes(32)?;
         sender.copy_from_slice(&sender_bytes);
@@ -245,7 +245,9 @@ impl TransactionDataV1 {
 
 impl TransactionKind {
     fn parse(reader: &mut BytesReader) -> Result<Self> {
-        Ok(TransactionKind::ProgrammableTransaction(ProgrammableTransaction::parse(reader)?))
+        Ok(TransactionKind::ProgrammableTransaction(
+            ProgrammableTransaction::parse(reader)?,
+        ))
     }
 }
 
@@ -256,7 +258,6 @@ impl ProgrammableTransaction {
         for _ in 0..inp_cnt {
             inputs.push(TransactionInput::parse(reader)?);
         }
-        println!("inputs: {:?}", inputs);
         Ok(ProgrammableTransaction {
             inputs,
             commands: Commands::parse(reader)?.commands,
@@ -282,7 +283,6 @@ impl GasData {
 
             payments.push((payment, sequence_number, object_digest));
         }
-        println!("payments: {:?}", payments);
 
         let mut owner = [0u8; 32];
         let owner_bytes = reader.read_bytes(32)?;
@@ -334,6 +334,18 @@ pub fn parse_intent(intent: &[u8]) -> Result<TransactionData> {
 //     Ok(tx_hash_str)
 // }
 
+pub fn sign_intent(seed: &[u8], path: &String, intent: &[u8]) -> Result<[u8; 64]> {
+    let mut hasher = Blake2bVar::new(32).unwrap();
+    hasher.update(intent);
+    let mut hash = [0u8; 32];
+    hasher.finalize_variable(&mut hash).unwrap();
+    println!("hash: {:?}", hex::encode(hash));
+    let sig =
+        keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, &hash)
+            .map_err(|e| IotaError::SignFailure(e.to_string()))?;
+    Ok(sig)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -357,13 +369,12 @@ mod test {
     //     assert!(false);
     // }
 
-    // #[test]
-    // fn test_sign_123() {
-    //     let seed = hex::decode("1233e88dd9325e7d5b0a30aaa74df3a8d54b7ec0f3f6a2b7220f04d1120b02f5145706807bc4fa958093465835785c79cce0dbad18b2b5fe0d5a0607508dc927").unwrap();
-    //     let hd_path = "m/44'/4218'/0'/0'/0'".to_string();
-    //     let msg =  hex::decode("0000020008001a7118020000000020a9b6de90462abd42d8fc56ab56674507599248fac694584d8e892c0f8b54e7ba020200010100000101020000010100193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb04090266c887c1357c50c0b5e6fe7073a22f89deb9c3dfba9edf937edf6f2ca32cbedc42630d00000000206fba305d1986cc6f670d705a8f3cf26b924056aed263d2ab00ec5ad41e8e90691d2ce2ecd7bcf96a333b3ecb850fb57818e998e193ac5c363a831e74ceb0b362e048630d0000000020d154d59ca6838636b0301b1ec42c981628930efaee3afa70360765e85f6f73a723b37ad20af1ff2804bd5bb8d0511fa4bd61a6b069915a86d6c2d133ed4dd699ef48630d0000000020a11d126dc0d3c29fe24890fd4e92b46625dcc914503e5f06ecb847d3a80487755d374b5b4a251b954ccafed02d5d21d6288810b61171bc679c116d6b88b4dc44e148630d0000000020fa23490904041226c3c2d63d5e34ed9228e570f2425064a4f5fbfefa1f00e0347f8ac467b7ca30bf83da6674e5eaae3e534f30ffabdd0eb70cdbc176dec04233414d630d000000002002b9c3b4b45e5cb3498e075e74a6b029b60f096d52485af29688353c990f2c2588f1fc45ae31711da6b398f0ccc10a84979890e1ef7d4d5d7339a71241aa363ddf48630d00000000208e715afd576dc9d8e66ada27436390b4e2fd527cea9cba24cd6b551fb4ea9537915ef82c255b2d9daaefa83e60d0c51eef9cd292abdf8f866e45ba00f8669639f048630d0000000020d37b4af6e26dec342487c5ab5c4b7c3b3da3dfcf1657ee8b34fc3f3c95d0aea3b6c86132d3cf6b13124662c173fa1fc385d15d09d04310390b58331801238090424d630d0000000020dafec40eb97f6c5c6c6dd4440189cff0d9b6beea126d29f23a077a42d4b675c4ba3a5922cb826a3cc2ba0c0398ed8a513f46c867554820370744a5ceeb046864de48630d0000000020d22c4facbc674ccc489de2bbc768fd2a9a9784a539bf84148183cb014c075b70193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb04e803000000000000e06f3c000000000000").unwrap();
-    //     let signature = sign_intent(&seed, &hd_path, &msg).unwrap();
-    //     let expected_signature = hex::decode("f4b79835417490958c72492723409289b444f3af18274ba484a9eeaca9e760520e453776e5975df058b537476932a45239685f694fc6362fe5af6ba714da6505").unwrap();
-    //     assert_eq!(expected_signature, signature);
-    // }
+    #[test]
+    fn test_sign_123() {
+        let seed = hex::decode("1233e88dd9325e7d5b0a30aaa74df3a8d54b7ec0f3f6a2b7220f04d1120b02f5145706807bc4fa958093465835785c79cce0dbad18b2b5fe0d5a0607508dc927").unwrap();
+        let hd_path = "m/44'/4218'/0'/0'/0'".to_string();
+        let msg =  hex::decode("000000000002000801000000000000000020193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb040202000101000001010300000000010100193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb04010266c887c1357c50c0b5e6fe7073a22f89deb9c3dfba9edf937edf6f2ca32cbe424e630d0000000020afd57ea9cebffe7de3cbbb64344d6afa15d5a53ad682f525e5ccfbcbce138bf8193a4811b7207ac7a861f840552f9c718172400f4c46bdef5935008a7977fb04e803000000000000404b4c000000000000").unwrap();
+        let signature = sign_intent(&seed, &hd_path, &msg).unwrap();
+        assert_eq!(hex::encode(signature), "f4b79835417490958c72492723409289b444f3af18274ba484a9eeaca9e760520e453776e5975df058b537476932a45239685f694fc6362fe5af6ba714da6505");
+    }
 }

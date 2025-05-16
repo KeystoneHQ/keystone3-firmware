@@ -245,6 +245,7 @@ pub enum ErrorCodes {
     IotaInvalidCommand,
     IotaInvalidLength,
     IotaInvalidTransaction,
+    IotaSignFailure,
     IotaUnexpectedEof,
     IotaInvalidField,
 }
@@ -564,6 +565,7 @@ impl From<&IotaError> for ErrorCodes {
             IotaError::UnexpectedEof => Self::IotaUnexpectedEof,
             IotaError::InvalidLength => Self::IotaInvalidLength,
             IotaError::InvalidCommand(_) => Self::IotaInvalidTransaction,
+            IotaError::SignFailure(_) => Self::IotaSignFailure,
         }
     }
 }

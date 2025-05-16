@@ -12,7 +12,7 @@ use crate::common::types::{PtrString, PtrUR, PtrT};
 use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::extract_ptr_with_type;
 use crate::common::structs::{TransactionParseResult, TransactionCheckResult};
-use app_iota::transaction;
+use app_sui::Intent;
 use ur_registry::iota::iota_sign_request::IotaSignRequest;
 use structs::DisplayIotaIntentData;
 
@@ -36,7 +36,7 @@ pub extern "C" fn iota_parse_intent(
     let sign_request = extract_ptr_with_type!(ptr, IotaSignRequest);
     println!("sign_request: {:?}", sign_request);
     let sign_data = sign_request.get_intent_message();
-    let data = app_iota::transaction::parse_intent(&sign_data);
+    let data = app_sui::parse_intent(&sign_data);
     println!("data: {:?}", data);
     TransactionParseResult::success(DisplayIotaIntentData::from(data.unwrap()).c_ptr()).c_ptr()
 }

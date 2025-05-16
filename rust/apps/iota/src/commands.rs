@@ -1,11 +1,11 @@
 use crate::base_type::ObjectID;
 use crate::byte_reader::BytesReader;
 use crate::errors::{IotaError, Result};
-use alloc::vec::Vec;
-use bytes::{Buf, Bytes};
 use alloc::boxed::Box;
 use alloc::string::String;
 use alloc::string::ToString;
+use alloc::vec::Vec;
+use bytes::{Buf, Bytes};
 
 #[derive(Debug, Clone)]
 pub enum Argument {
@@ -163,7 +163,7 @@ impl Command {
                 } else {
                     None
                 };
-                
+
                 let arg_count = reader.read_u8()? as usize;
                 let mut arguments = Vec::with_capacity(arg_count);
                 for _ in 0..arg_count {

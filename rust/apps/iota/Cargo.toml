@@ -15,7 +15,7 @@ rust_tools = { workspace = true }
 thiserror = { workspace = true }
 bytes = {version = "1.4.0", default-features = false}
 serde = { workspace = true }
-app_sui = { workspace = true }
+blake2 = { workspace = true }
 
 [dev-dependencies]
 keystore = { workspace = true }

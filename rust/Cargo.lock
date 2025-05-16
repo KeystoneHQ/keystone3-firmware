@@ -3706,6 +3706,7 @@ dependencies = [
  "serde_json",
  "sha1",
  "sim_qr_reader",
+ "sui-types",
  "thiserror-core",
  "ur-parse-lib",
  "ur-registry",

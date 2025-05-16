@@ -35,6 +35,7 @@ zcash_vendor = { workspace = true, optional = true }
 ed25519-bip32-core = { workspace = true }
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
+sui-types = { git = "https://github.com/KeystoneHQ/sui.git", tag = "0.1.2", package = "sui-types" }
 
 #apps
 app_wallets = { workspace = true }

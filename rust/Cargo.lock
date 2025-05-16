@@ -281,9 +281,9 @@ dependencies = [
 name = "app_iota"
 version = "0.1.0"
 dependencies = [
- "app_sui",
  "app_utils",
  "bech32 0.11.0",
+ "blake2",
  "bytes",
  "cryptoxide",
  "hex",

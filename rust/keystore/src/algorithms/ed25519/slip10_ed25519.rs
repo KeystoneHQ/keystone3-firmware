@@ -50,8 +50,11 @@ pub fn get_public_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
     Ok(public_key)
 }
 
+extern crate std;
+use std::println;
 pub fn sign_message_by_seed(seed: &[u8], path: &String, message: &[u8]) -> Result<[u8; 64]> {
     let secret_key = get_private_key_by_seed(seed, path)?;
+    println!("secret_key = {:?}", hex::encode(secret_key));
     let (keypair, _) = cryptoxide::ed25519::keypair(&secret_key);
     Ok(cryptoxide::ed25519::signature(message, &keypair))
 }

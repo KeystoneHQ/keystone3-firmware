@@ -18,7 +18,7 @@ use crate::common::utils::convert_c_char;
 use crate::{
     check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method,
 };
-use app_iota::transaction::TransactionData;
+use app_sui::Intent;
 
 #[repr(C)]
 pub struct DisplayIotaSignData {
@@ -47,19 +47,30 @@ pub struct DisplayIotaIntentData {
 
 impl_c_ptr!(DisplayIotaIntentData);
 
-impl From<TransactionData> for DisplayIotaIntentData {
-    fn from(value: TransactionData) -> Self {
-        match value {
-            TransactionData::V1(data) => {
-                Self {
-                    kind: convert_c_char(String::from("ProgrammableTransaction")),
-                    inputs: VecFFI::from(data.get_kind().get_inputs_string().iter().map(|v| convert_c_char(v.to_string())).collect_vec()).c_ptr(),
-                    sender: convert_c_char(hex::encode(data.get_sender())),
-                    owner: convert_c_char(hex::encode(data.get_gas_data().get_owner())),
-                    price: convert_c_char(data.get_gas_data().get_price().to_string()),
-                    gas_budget: convert_c_char(data.get_gas_data().get_budget().to_string()),
-                }
-            }
+impl From<Intent> for DisplayIotaIntentData {
+    fn from(value: Intent) -> Self {
+        Self {
+            kind: convert_c_char(String::from("ProgrammableTransaction")),
+            inputs: VecFFI::from(vec![]).c_ptr(),
+            sender: convert_c_char("".to_string()),
+            owner: convert_c_char("".to_string()),
+            price: convert_c_char("".to_string()),
+            gas_budget: convert_c_char("".to_string()),
         }
+        // match value {
+        //     Intent::TransactionData(data) => {
+        //         Self {
+        //             kind: convert_c_char(String::from("ProgrammableTransaction")),
+        //             inputs: VecFFI::from(data.get_kind().get_inputs_string().iter().map(|v| convert_c_char(v.to_string())).collect_vec()).c_ptr(),
+        //             sender: convert_c_char(hex::encode(data.get_sender())),
+        //             owner: convert_c_char(hex::encode(data.get_gas_data().get_owner())),
+        //             price: convert_c_char(data.get_gas_data().get_price().to_string()),
+        //             gas_budget: convert_c_char(data.get_gas_data().get_budget().to_string()),
+        //         }
+        //     }
+        //     _ => {
+        //         todo!()
+        //     }
+        // }
     }
 }

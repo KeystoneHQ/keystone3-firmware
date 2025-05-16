@@ -233,7 +233,7 @@ UREncodeResult *GuiGetIotaSignQrCodeData(void)
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        // encodeResult = iota_sign_intent(data, seed, len);
+        encodeResult = iota_sign_intent(data, seed, len);
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);

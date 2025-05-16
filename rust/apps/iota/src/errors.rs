@@ -37,6 +37,9 @@ pub enum IotaError {
 
     #[error("Invalid command: {0}")]
     InvalidCommand(u8),
+
+    #[error("Sign failure: {0}")]
+    SignFailure(String),
 }
 
 pub type Result<T> = core::result::Result<T, IotaError>;

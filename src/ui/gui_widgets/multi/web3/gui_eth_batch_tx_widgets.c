@@ -464,7 +464,12 @@ static void GuiEthBatchTxNavBarInit()
 
 static void GuiEthBatchTxNavBarRefresh() {
     char* text = malloc(BUFFER_SIZE_32);
-    sprintf(text, "%s (%d/%d)", _("confirm_transaction"), g_currentTxIndex + 1, g_txCount);
+    if(g_txCount > 1){
+        sprintf(text, "%s (%d/%d)", _("confirm_transaction"), g_currentTxIndex + 1, g_txCount);
+    }
+    else {
+        sprintf(text, "%s", _("confirm_transaction"));
+    }
     SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, text);
     if(g_currentTxIndex == 0) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, OnReturnHandler, NULL);

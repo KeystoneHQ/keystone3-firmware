@@ -381,9 +381,9 @@ pub extern "C" fn eth_check_then_parse_batch_tx(
 ) -> PtrT<TransactionParseResult<DisplayETHBatchTx>> {
     let batch_transaction = extract_ptr_with_type!(ptr, EthBatchSignRequest);
 
-    // if let Err(e) = eth_check_batch_tx(ptr, master_fingerprint, mfp_length) {
-    //     return TransactionParseResult::from(e).c_ptr();
-    // }
+    if let Err(e) = eth_check_batch_tx(ptr, master_fingerprint, mfp_length) {
+        return TransactionParseResult::from(e).c_ptr();
+    }
 
     let xpub = recover_c_char(xpub);
 

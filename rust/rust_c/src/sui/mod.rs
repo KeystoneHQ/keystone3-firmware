@@ -172,6 +172,9 @@ pub extern "C" fn sui_sign_hash(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> Pt
     .c_ptr()
 }
 
+extern crate std;
+use std::println;
+
 #[no_mangle]
 pub extern "C" fn sui_sign_intent(
     ptr: PtrUR,
@@ -194,10 +197,12 @@ pub extern "C" fn sui_sign_intent(
         Ok(v) => v,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
+    println!("signature: {:?}", hex::encode(signature));
     let pub_key = match get_public_key(seed, &path) {
         Ok(v) => v,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
+    println!("pub_key: {:?}", hex::encode(&pub_key));
     let sig = SuiSignature::new(
         sign_request.get_request_id(),
         signature.to_vec(),

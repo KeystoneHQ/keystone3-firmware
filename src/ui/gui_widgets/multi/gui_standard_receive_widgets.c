@@ -938,7 +938,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         break;
     case HOME_WALLET_CARD_IOTA:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + index);
-        result = iota_get_address_from_xpub(xPub);
+        result = iota_get_address_from_pubkey(xPub);
         break;
     case HOME_WALLET_CARD_APT:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + index);

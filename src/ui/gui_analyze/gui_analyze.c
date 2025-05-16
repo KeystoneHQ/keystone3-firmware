@@ -867,7 +867,6 @@ static void* CreateTransactionDetailWidgets()
 
 #ifdef COMPILE_SIMULATOR
     cJSON *paramJson = cJSON_Parse(buf);
-    printf("buf = %s\n", buf);
 #else
     cJSON *paramJson = cJSON_Parse(g_analyzeArray[index].config);
 #endif

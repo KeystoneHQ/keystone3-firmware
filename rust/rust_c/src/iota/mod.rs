@@ -19,11 +19,11 @@ use structs::DisplayIotaIntentData;
 pub mod structs;
 
 #[no_mangle]
-pub extern "C" fn iota_get_address_from_xpub(
+pub extern "C" fn iota_get_address_from_pubkey(
     xpub: PtrString,
 ) -> *mut SimpleResponse<c_char> {
     let xpub = recover_c_char(xpub);
-    match app_iota::address::get_address_from_xpub(xpub) {
+    match app_iota::address::get_address_from_pubkey(xpub) {
         Ok(result) => SimpleResponse::success(convert_c_char(result)).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }

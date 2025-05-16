@@ -13,7 +13,7 @@ use alloc::{
 use pczt::structs::ParsedPczt;
 use zcash_vendor::{
     pczt::Pczt,
-    zcash_keys::keys::UnifiedFullViewingKey,
+    zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
     zcash_protocol::consensus::{self},
     zip32,
 };
@@ -34,7 +34,7 @@ pub fn get_address<P: consensus::Parameters>(params: &P, ufvk_text: &str) -> Res
     let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
         .map_err(|e| ZcashError::GenerateAddressError(e.to_string()))?;
     let (address, _) = ufvk
-        .default_address(None)
+        .default_address(UnifiedAddressRequest::AllAvailableKeys)
         .map_err(|e| ZcashError::GenerateAddressError(e.to_string()))?;
     Ok(address.encode(params))
 }

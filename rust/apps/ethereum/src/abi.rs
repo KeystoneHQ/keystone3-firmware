@@ -15,7 +15,8 @@ impl_public_struct!(ContractData {
 
 impl_public_struct!(ContractMethodParam {
     name: String,
-    value: String
+    value: String,
+    param_type: String
 });
 
 pub fn parse_contract_data(input: Vec<u8>, contract_str: String) -> Result<ContractData> {
@@ -112,8 +113,12 @@ fn _parse_by_function(
                         Token::Address(_) => {
                             format!("0x{}", _token)
                         }
+                        Token::Uint(uint) => {
+                            format!("{}", uint)
+                        }
                         _ => _token.to_string(),
                     },
+                    format!("{}", _input.kind)
                 ))
             } else {
                 return Some(Err(EthereumError::DecodeContractDataError(String::from(

@@ -81,7 +81,9 @@ typedef struct {
     char *value;
 } Erc20Transfer_t;
 
-EvmNetwork_t _FindNetwork(uint64_t chainId);
+EvmNetwork_t FindEvmNetwork(uint64_t chainId);
+void *FindErc20Contract(char *contract_address);
+
 
 void FreeEthMemory(void);
 

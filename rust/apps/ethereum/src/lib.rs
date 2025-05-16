@@ -1,6 +1,4 @@
-#![feature(exclusive_range_pattern)]
 #![no_std]
-#![feature(error_in_core)]
 extern crate alloc;
 
 use alloc::format;
@@ -25,9 +23,11 @@ mod eip1559_transaction;
 pub mod eip712;
 pub mod erc20;
 pub mod errors;
+pub mod batch_tx_rules;
 mod legacy_transaction;
 mod normalizer;
 pub mod structs;
+pub mod swap;
 mod traits;
 pub type Bytes = Vec<u8>;
 
@@ -171,6 +171,8 @@ pub fn sign_typed_data_message(
             EthereumSignature(v, rs)
         })
 }
+
+
 
 #[cfg(test)]
 mod tests {

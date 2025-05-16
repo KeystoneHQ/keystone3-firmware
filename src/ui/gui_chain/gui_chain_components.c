@@ -1,5 +1,14 @@
 #include "gui_chain_components.h"
 
+lv_obj_t* CreateRelativeTransactionContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h, lv_obj_t *last_view)
+{
+    lv_obj_t *container = CreateTransactionContentContainer(parent, w, h);
+    if (last_view != NULL) {
+        lv_obj_align_to(container, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
+    return container;
+}
+
 lv_obj_t *CreateTransactionContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h)
 {
     lv_obj_t *container = GuiCreateContainerWithParent(parent, w, h);
@@ -82,6 +91,65 @@ lv_obj_t *CreateTransactionItemViewWithHint(lv_obj_t *parent, const char* title,
 lv_obj_t *CreateTransactionItemView(lv_obj_t *parent, const char* title, const char* value, lv_obj_t *lastView)
 {
     return CreateTransactionItemViewWithHint(parent, title, value, lastView, NULL);
+}
+
+lv_obj_t *CreateTransactionOvewviewCard(lv_obj_t *parent,const char* title1, const char* text1, const char* title2, const char* text2) 
+{
+    uint16_t height = 16;//top padding
+    lv_obj_t *container = CreateTransactionContentContainer(parent, 408, 0);
+    lv_obj_align(container, LV_ALIGN_TOP_LEFT, 0, 4);
+
+    lv_obj_t *label;
+    label = GuiCreateIllustrateLabel(container, title1);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+    height += 30 + 4;
+    label = GuiCreateLittleTitleLabel(container, text1);
+    lv_obj_set_width(label, 360);
+    lv_obj_update_layout(label);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+
+    height += lv_obj_get_self_height(label) + 8;
+
+    label = GuiCreateIllustrateLabel(container, title2);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+
+    lv_obj_t *titleLabel = label;
+    lv_obj_update_layout(label);
+    uint16_t titleWidth = lv_obj_get_self_width(label);
+
+    label = GuiCreateIllustrateLabel(container, text2);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_update_layout(label);
+    lv_obj_t *valueLabel = label;
+
+    uint16_t valueWidth = lv_obj_get_width(valueLabel);
+    uint16_t valueHeight = lv_obj_get_height(valueLabel);
+
+    uint16_t totalWidth = 24 + titleWidth + 16 + valueWidth + 24;
+    bool overflow = totalWidth > 408 || valueHeight > 30;
+
+    height += 30; //title height;
+
+    if (!overflow) {
+        lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+    } else {
+        lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+        lv_obj_set_width(valueLabel, 360);
+        lv_label_set_long_mode(valueLabel, LV_LABEL_LONG_WRAP);
+        lv_obj_update_layout(valueLabel);
+
+        height += lv_obj_get_height(valueLabel);
+    }
+
+    height += 16;
+
+    lv_obj_set_height(container, height);
+
+    return container;
 }
 
 lv_obj_t *CreateValueOverviewValue(lv_obj_t *parent, char* value, char *fee)

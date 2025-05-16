@@ -17,6 +17,7 @@ pub fn swapkit_asset_name_convert(asset: &str) -> Result<&str> {
     match asset {
         "e" => Ok("ETH"),
         "bitcoin" => Ok("BTC"),
+        "b" => Ok("BTC"),
         x => Ok(x),
     }
 }

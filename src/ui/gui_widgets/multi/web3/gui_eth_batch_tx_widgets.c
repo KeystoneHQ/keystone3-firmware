@@ -605,6 +605,12 @@ static void GuiRenderApprovalOverview(lv_obj_t *parent, bool showSwapHint) {
 static void GuiRenderSwapOverview(lv_obj_t *parent) {
     lv_obj_t *last_view = NULL;
     Erc20Contract_t *erc20Contract = FindErc20Contract(g_swapkitContractData->data->swap_in_asset);
+    bool is_eth = strcmp(g_swapkitContractData->data->swap_in_asset, "0x0000000000000000000000000000000000000000") == 0;
+    if (is_eth) {
+        erc20Contract = malloc(sizeof(Erc20Contract_t));
+        erc20Contract->symbol = "ETH";
+        erc20Contract->decimals = 18;
+    }
     if(erc20Contract != NULL) {
         //is known erc20 token
         SimpleResponse_c_char *response = format_value_with_decimals(g_swapkitContractData->data->swap_in_amount, erc20Contract->decimals);
@@ -618,12 +624,15 @@ static void GuiRenderSwapOverview(lv_obj_t *parent) {
         }
     }
     else {
-        //is unknown erc20 token
         last_view = GuiRenderUnknownErc20SwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
     }
     last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
     last_view = CreateTransactionItemView(parent, _("From"), g_currentTransaction->overview->from, last_view);
     last_view = CreateTransactionItemView(parent, _("Destination"), g_swapkitContractData->data->receive_address, last_view);
+    if(erc20Contract != NULL) {
+        free(erc20Contract);
+        erc20Contract = NULL;
+    }
 }
 
 static lv_obj_t *GuiRenderFromToCard(lv_obj_t *parent, const char* from, const char* to, const char* to_badge, lv_obj_t *last_view) {

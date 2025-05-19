@@ -84,11 +84,12 @@ lv_obj_t *CreateTransactionItemView(lv_obj_t *parent, const char* title, const c
     return CreateTransactionItemViewWithHint(parent, title, value, lastView, NULL);
 }
 
-lv_obj_t *CreateValueOverviewValue(lv_obj_t *parent, char* value, char *fee)
+lv_obj_t *CreateValueOverviewValue(lv_obj_t *parent, const char *valueKey, const char *value, 
+    const char *feeKey, const char *fee)
 {
-    lv_obj_t *container = CreateContentContainer(parent, 408, 144);
+    lv_obj_t *container = CreateContentContainer(parent, 408, feeKey == NULL ? 115 : 144);
 
-    lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Value"));
+    lv_obj_t *label = GuiCreateIllustrateLabel(container, valueKey);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
@@ -96,12 +97,14 @@ lv_obj_t *CreateValueOverviewValue(lv_obj_t *parent, char* value, char *fee)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 50);
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
-    label = GuiCreateIllustrateLabel(container, _("Fee"));
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 98);
-    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+    if (feeKey != NULL) {
+        label = GuiCreateIllustrateLabel(container, feeKey);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 98);
+        lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
-    label = GuiCreateIllustrateLabel(container, fee);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 73, 98);
+        label = GuiCreateIllustrateLabel(container, fee);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 73, 98);
+    }
 
     return container;
 }

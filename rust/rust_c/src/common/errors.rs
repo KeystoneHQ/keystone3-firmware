@@ -10,8 +10,6 @@ use app_aptos::errors::AptosError;
 use app_arweave::errors::ArweaveError;
 #[cfg(feature = "avalanche")]
 use app_avalanche::errors::AvaxError;
-#[cfg(feature = "iota")]
-use app_iota::errors::IotaError;
 #[cfg(feature = "bitcoin")]
 use app_bitcoin::errors::BitcoinError;
 #[cfg(feature = "cardano")]
@@ -20,6 +18,8 @@ use app_cardano::errors::CardanoError;
 use app_cosmos::errors::CosmosError;
 #[cfg(feature = "ethereum")]
 use app_ethereum::errors::EthereumError;
+#[cfg(feature = "iota")]
+use app_iota::errors::IotaError;
 #[cfg(feature = "monero")]
 use app_monero::errors::MoneroError;
 #[cfg(feature = "near")]

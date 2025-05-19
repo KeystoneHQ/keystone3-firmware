@@ -118,8 +118,15 @@ extern bool g_reboot;
         FreeIotaMemory, \
     }, \
     { \
+        REMAPVIEW_IOTA_SIGN_MESSAGE_HASH, \
+        PC_SIMULATOR_PATH "/page_iota_sign_hash.json", \
+        GuiGetIotaSignMessageHashData, \
+        NULL, \
+        FreeIotaMemory, \
+    }, \
+    { \
         REMAPVIEW_SUI_SIGN_MESSAGE_HASH, \
-        PC_SIMULATOR_PATH "/page_sign_hash.json", \
+        PC_SIMULATOR_PATH "/page_sui_sign_hash.json", \
         GuiGetSuiSignMessageHashData, \
         NULL, \
         FreeSuiMemory \

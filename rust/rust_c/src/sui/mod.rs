@@ -70,6 +70,7 @@ pub extern "C" fn sui_check_sign_hash_request(
     master_fingerprint: PtrBytes,
     length: u32,
 ) -> PtrT<TransactionCheckResult> {
+    return TransactionCheckResult::new().c_ptr();
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
@@ -197,12 +198,10 @@ pub extern "C" fn sui_sign_intent(
         Ok(v) => v,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
-    println!("signature: {:?}", hex::encode(signature));
     let pub_key = match get_public_key(seed, &path) {
         Ok(v) => v,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
-    println!("pub_key: {:?}", hex::encode(&pub_key));
     let sig = SuiSignature::new(
         sign_request.get_request_id(),
         signature.to_vec(),

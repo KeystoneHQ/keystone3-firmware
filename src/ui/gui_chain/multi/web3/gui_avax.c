@@ -183,7 +183,7 @@ void GuiAvaxTxOverview(lv_obj_t *parent, void *totalData)
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
 
-    lv_obj_t *container = CreateValueOverviewValue(parent, txData->data->amount, txData->data->fee_amount);
+    lv_obj_t *container = CreateValueOverviewValue(parent, "Value", txData->data->amount, "Fee", txData->data->fee_amount);
 
     if (txData->data->network != NULL) {
         char *key[] = {txData->data->network_key, "Subnet ID"};

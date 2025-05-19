@@ -888,10 +888,14 @@ static void* CreateTransactionDetailWidgets()
 void ParseTransaction(uint8_t index)
 {
     g_reMapIndex = ViewTypeReMap(index);
+    printf("%s.......%d.......\n", __func__, __LINE__);
     g_viewTypeIndex = index;
+    printf("g_reMapIndex = %d\n", g_reMapIndex);
+    printf("REMAPVIEW_IOTA_SIGN_MESSAGE_HASH = %d\n", REMAPVIEW_IOTA_SIGN_MESSAGE_HASH);
 
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_analyzeArray); i++) {
         if (g_reMapIndex == g_analyzeArray[i].index) {
+            printf("%s.......%d.......\n", __func__, __LINE__);
             GuiModelParseTransaction(g_analyzeArray[i].func);
             break;
         }

@@ -8,20 +8,30 @@ use crate::abi::ContractData;
 use crate::errors::EthereumError;
 use crate::errors::Result;
 
+pub fn swapkit_asset_name_convert(asset: &str) -> Result<(String, Option<String>)> {
+    match asset {
+        "e" => Ok(("ETH".to_string(), None)),
+        "bitcoin" => Ok(("BTC".to_string(), None)),
+        "b" => Ok(("BTC".to_string(), None)),
+        x => {
+            //ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7
+            let parts = x.split('-').collect::<Vec<&str>>();
+            if parts.len() == 2 {
+                let asset_name = parts[0];
+                let contract_address = parts[1];
+                Ok((asset_name.to_string(), Some(contract_address.to_string())))
+            } else {
+                Err(EthereumError::InvalidSwapkitMemo)
+            }
+        }
+    }
+}
+
+
 // =:e:0x742636d8FBD2C1dD721Db619b49eaD254385D77d:256699:-_/kns:20/0
 // =:ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7:0x742636d8FBD2C1dD721Db619b49eaD254385D77d:662901600:-_/kns:20/0
 
 // =:{asset}:{receiveAddress}:{ignore others}
-
-pub fn swapkit_asset_name_convert(asset: &str) -> Result<&str> {
-    match asset {
-        "e" => Ok("ETH"),
-        "bitcoin" => Ok("BTC"),
-        "b" => Ok("BTC"),
-        x => Ok(x),
-    }
-}
-
 fn parse_swapkit_memo(memo: &str) -> Result<SwapkitMemo> {
     let memo = memo.trim();
     if memo.is_empty() {
@@ -32,11 +42,12 @@ fn parse_swapkit_memo(memo: &str) -> Result<SwapkitMemo> {
         return Err(EthereumError::InvalidSwapkitMemo);
     }
 
-    let asset = swapkit_asset_name_convert(parts[1])?;
+    let (asset, swap_out_asset_contract_address) = swapkit_asset_name_convert(parts[1])?;
     let receive_address = parts[2];
     Ok(SwapkitMemo::new(
-        asset.to_string(),
+        asset,
         receive_address.to_string(),
+        swap_out_asset_contract_address,
     ))
 }
 
@@ -86,6 +97,7 @@ pub fn parse_swapkit_contract(
         swap_in_asset.unwrap(),
         swap_in_amount.unwrap(),
         swapkit_memo.asset,
+        swapkit_memo.swap_out_asset_contract_address,
         swapkit_memo.receive_address,
         expiration,
         contract_data,
@@ -95,13 +107,15 @@ pub fn parse_swapkit_contract(
 pub struct SwapkitMemo {
     pub asset: String,
     pub receive_address: String,
+    pub swap_out_asset_contract_address: Option<String>,
 }
 
 impl SwapkitMemo {
-    pub fn new(asset: String, receive_address: String) -> Self {
+    pub fn new(asset: String, receive_address: String, swap_out_asset_contract_address: Option<String>) -> Self {
         Self {
             asset,
             receive_address,
+            swap_out_asset_contract_address,
         }
     }
 }
@@ -111,6 +125,7 @@ pub struct SwapkitContractData {
     pub swap_in_asset: String,
     pub swap_in_amount: String,
     pub swap_out_asset: String,
+    pub swap_out_asset_contract_address: Option<String>,
     pub receive_address: String,
     pub expiration: Option<String>,
 
@@ -123,6 +138,7 @@ impl SwapkitContractData {
         swap_in_asset: String,
         swap_in_amount: String,
         swap_out_asset: String,
+        swap_out_asset_contract_address: Option<String>,
         receive_address: String,
         expiration: Option<String>,
         contract_data: ContractData,
@@ -132,6 +148,7 @@ impl SwapkitContractData {
             swap_in_asset,
             swap_in_amount,
             swap_out_asset,
+            swap_out_asset_contract_address,
             receive_address,
             expiration,
             contract_data,

@@ -496,6 +496,7 @@ pub struct DisplaySwapkitContractData {
     pub swap_in_asset: PtrString,
     pub swap_in_amount: PtrString,
     pub swap_out_asset: PtrString,
+    pub swap_out_asset_contract_address: PtrString,
     pub receive_address: PtrString,
     pub expiration: PtrString,
 }
@@ -507,6 +508,7 @@ impl From<app_ethereum::swap::SwapkitContractData> for DisplaySwapkitContractDat
             swap_in_asset: convert_c_char(value.swap_in_asset),
             swap_in_amount: convert_c_char(value.swap_in_amount),
             swap_out_asset: convert_c_char(value.swap_out_asset),
+            swap_out_asset_contract_address: value.swap_out_asset_contract_address.map(convert_c_char).unwrap_or(null_mut()),
             receive_address: convert_c_char(value.receive_address),
             expiration: value.expiration.map(convert_c_char).unwrap_or(null_mut()),
         }

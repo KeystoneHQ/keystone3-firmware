@@ -463,8 +463,8 @@ static void GuiEthBatchTxNavBarInit()
 }
 
 static void GuiEthBatchTxNavBarRefresh() {
-    char* text = malloc(BUFFER_SIZE_32);
-    if(g_txCount > 1){
+    char* text = malloc(BUFFER_SIZE_128);
+    if(g_txCount > 1) {
         sprintf(text, "%s (%d/%d)", _("confirm_transaction"), g_currentTxIndex + 1, g_txCount);
     }
     else {
@@ -607,45 +607,12 @@ static void GuiRenderApprovalOverview(lv_obj_t *parent, bool showSwapHint) {
     lv_obj_set_width(label, 360);
 }
 
-static void GuiRenderSwapOverview(lv_obj_t *parent) {
-    lv_obj_t *last_view = NULL;
-    Erc20Contract_t *erc20Contract = FindErc20Contract(g_swapkitContractData->data->swap_in_asset);
-    bool is_eth = strcmp(g_swapkitContractData->data->swap_in_asset, "0x0000000000000000000000000000000000000000") == 0;
-    if (is_eth) {
-        erc20Contract = malloc(sizeof(Erc20Contract_t));
-        erc20Contract->symbol = "ETH";
-        erc20Contract->decimals = 18;
-    }
-    if(erc20Contract != NULL) {
-        //is known erc20 token
-        SimpleResponse_c_char *response = format_value_with_decimals(g_swapkitContractData->data->swap_in_amount, erc20Contract->decimals);
-        if(response->error_code == 0) {
-            char *amount = response->data;
-            last_view = GuiRenderSwapSummary(parent, erc20Contract->symbol, amount, g_swapkitContractData->data->swap_out_asset);
-        }
-        else {
-            //this should not happen
-            printf("format_value_with_decimals failed\n");
-        }
-    }
-    else {
-        last_view = GuiRenderUnknownErc20SwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
-    }
-    last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
-    last_view = CreateTransactionItemView(parent, _("From"), g_currentTransaction->overview->from, last_view);
-    last_view = CreateTransactionItemView(parent, _("Destination"), g_swapkitContractData->data->receive_address, last_view);
-    if(erc20Contract != NULL) {
-        free(erc20Contract);
-        erc20Contract = NULL;
-    }
-}
-
-static lv_obj_t *GuiRenderFromToCard(lv_obj_t *parent, const char* from, const char* to, const char* to_badge, lv_obj_t *last_view) {
+static lv_obj_t *GuiRenderFromToCard(lv_obj_t *parent, const char* title, const char* from, const char* title2, const char* to, const char* to_badge, lv_obj_t *last_view) {
     uint16_t height = 16; //top padding
     lv_obj_t *container = CreateRelativeTransactionContentContainer(parent, 408, 0, last_view);
 
     lv_obj_t *label;
-    label = GuiCreateIllustrateLabel(container, _("From"));
+    label = GuiCreateIllustrateLabel(container, title);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
@@ -657,7 +624,7 @@ static lv_obj_t *GuiRenderFromToCard(lv_obj_t *parent, const char* from, const c
 
     height += 60 + 8;
 
-    label = GuiCreateIllustrateLabel(container, _("To"));
+    label = GuiCreateIllustrateLabel(container, title2);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
@@ -690,6 +657,54 @@ static lv_obj_t *GuiRenderFromToCard(lv_obj_t *parent, const char* from, const c
     return container;
 }
 
+static void GuiRenderSwapOverview(lv_obj_t *parent) {
+    lv_obj_t *last_view = NULL;
+    Erc20Contract_t *erc20Contract = FindErc20Contract(g_swapkitContractData->data->swap_in_asset);
+    bool is_eth = strcmp(g_swapkitContractData->data->swap_in_asset, "0x0000000000000000000000000000000000000000") == 0;
+    if (is_eth) {
+        erc20Contract = malloc(sizeof(Erc20Contract_t));
+        erc20Contract->symbol = "ETH";
+        erc20Contract->decimals = 18;
+    }
+    if(erc20Contract != NULL) {
+        //is known erc20 token
+        SimpleResponse_c_char *response = format_value_with_decimals(g_swapkitContractData->data->swap_in_amount, erc20Contract->decimals);
+        if(response->error_code == 0) {
+            char *amount = response->data;
+            last_view = GuiRenderSwapSummary(parent, erc20Contract->symbol, amount, g_swapkitContractData->data->swap_out_asset);
+        }
+        else {
+            //this should not happen
+            printf("format_value_with_decimals failed\n");
+        }
+    }
+    else {
+        last_view = GuiRenderUnknownErc20SwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
+    }
+    if(erc20Contract != NULL) {
+        free(erc20Contract);
+        erc20Contract = NULL;
+    }
+    last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
+
+    char* to_badge = NULL;
+    if(g_swapkitContractData->data->swap_out_asset_contract_address != NULL) {
+        erc20Contract = FindErc20Contract(g_swapkitContractData->data->swap_out_asset_contract_address);
+        if(erc20Contract != NULL) {
+            to_badge = erc20Contract->symbol;
+        }
+    }
+
+    last_view = GuiRenderFromToCard(parent, _("From"), g_currentTransaction->overview->from, _("Contract Address"), g_swapkitContractData->data->swap_out_asset_contract_address, to_badge, last_view);
+
+    last_view = CreateTransactionItemView(parent, _("Destination"), g_swapkitContractData->data->receive_address, last_view);
+
+    if(erc20Contract != NULL) {
+        free(erc20Contract);
+        erc20Contract = NULL;
+    }
+}
+
 static void GuiRenderGeneralOverview(lv_obj_t *parent) {
     lv_obj_t *last_view = NULL;
 
@@ -703,7 +718,7 @@ static void GuiRenderGeneralOverview(lv_obj_t *parent) {
         to_badge = g_contractData->data->contract_name;
     }
 
-    last_view = GuiRenderFromToCard(parent, g_currentTransaction->overview->from, g_currentTransaction->overview->to, to_badge, last_view);
+    last_view = GuiRenderFromToCard(parent, _("From"), g_currentTransaction->overview->from, _("To"), g_currentTransaction->overview->to, to_badge, last_view);
 }
 
 static void GuiRenderOverview(lv_obj_t *parent, bool showSwapHint) {
@@ -832,7 +847,7 @@ static lv_obj_t *GuiRenderDetailFromTo(lv_obj_t *parent, lv_obj_t *last_view) {
         to_badge = g_contractData->data->contract_name;
     }
 
-    return GuiRenderFromToCard(parent, g_currentTransaction->detail->from, g_currentTransaction->detail->to, to_badge, last_view);
+    return GuiRenderFromToCard(parent, _("From"), g_currentTransaction->detail->from, _("To"), g_currentTransaction->detail->to, to_badge, last_view);
 }
 
 static lv_obj_t *GuiRenderDetailContractData(lv_obj_t *parent, lv_obj_t *last_view) {
@@ -984,7 +999,8 @@ static void GuiRenderTransactionFrame(lv_obj_t *parent) {
     lv_obj_set_style_pad_all(g_overviewContainer, 0, LV_PART_MAIN);
     lv_obj_set_style_border_width(g_overviewContainer, 0, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(g_overviewContainer, 0, LV_PART_MAIN);
-    g_detailContainer = lv_tabview_add_tab(tabView, _("Detail"));
+
+    g_detailContainer = lv_tabview_add_tab(tabView, _("Details"));
     lv_obj_set_scrollbar_mode(g_detailContainer, LV_SCROLLBAR_MODE_OFF);
     lv_obj_clear_flag(g_detailContainer, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_style_pad_all(g_detailContainer, 0, LV_PART_MAIN);
@@ -998,7 +1014,12 @@ static void GuiRenderTransactionFrame(lv_obj_t *parent) {
     lv_obj_set_style_text_color(tab_btns, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_side(tab_btns, LV_BORDER_SIDE_BOTTOM, LV_PART_ITEMS | LV_STATE_CHECKED);
 
-    lv_obj_set_width(tab_btns, 200);
+    uint16_t width = 0;
+    lv_obj_t *temp = GuiCreateIllustrateLabel(tabView, _("Overview"));
+    width = lv_obj_get_self_width(temp) > 100 ? 300 : 200;
+    lv_obj_del(temp);
+
+    lv_obj_set_width(tab_btns, width);
 }
 
 static void GuiRenderBottomBtn(lv_obj_t *parent, bool showSignSlider) {

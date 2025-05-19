@@ -240,6 +240,7 @@ LV_IMG_DECLARE(coinDoge);
 LV_IMG_DECLARE(coinBabylon);
 LV_IMG_DECLARE(coinNeutaro)
 LV_IMG_DECLARE(coinAo);
+LV_IMG_DECLARE(coinIota);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);

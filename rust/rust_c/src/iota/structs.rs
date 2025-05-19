@@ -19,7 +19,9 @@ use crate::{
     check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method,
 };
 use app_sui::Intent;
-use sui_types::transaction::{TransactionData, TransactionDataV1, TransactionKind, CallArg};
+use sui_types::transaction::{
+    CallArg, Command, TransactionData, TransactionDataV1, TransactionKind,
+};
 
 #[repr(C)]
 pub struct DisplayIotaSignData {
@@ -35,10 +37,9 @@ pub struct DisplayIotaIntentData {
     network: PtrString,
     sender: PtrString,
     recipient: PtrString,
-    owner: PtrString,
-    price: PtrString,
-    gas_budget: PtrString,
     details: PtrString,
+    transaction_type: PtrString,
+    method: PtrString,
 }
 
 impl_c_ptr!(DisplayIotaIntentData);
@@ -58,16 +59,28 @@ impl From<Intent> for DisplayIotaIntentData {
                 };
 
                 let (amount, recipient) = extract_transaction_params(&kind_data.inputs);
+                let (transaction_type, method, network) = if check_stake(&kind_data.commands) {
+                    (
+                        convert_c_char("Programmable Transaction".to_string()),
+                        convert_c_char("Stake".to_string()),
+                        null_mut(),
+                    )
+                } else {
+                    (
+                        null_mut(),
+                        null_mut(),
+                        convert_c_char("IOTA Mainnet".to_string()),
+                    )
+                };
 
                 Self {
                     amount: convert_c_char(amount),
                     recipient: convert_c_char(recipient),
-                    network: convert_c_char("IOTA Mainnet".to_string()),
+                    network,
                     sender: convert_c_char(data.sender.to_string()),
-                    owner: convert_c_char(data.gas_data.owner.to_string()),
-                    price: convert_c_char(data.gas_data.price.to_string()),
-                    gas_budget: convert_c_char(data.gas_data.budget.to_string()),
                     details: convert_c_char(details),
+                    transaction_type,
+                    method,
                 }
             }
             _ => todo!("Other Intent types not implemented"),
@@ -76,35 +89,88 @@ impl From<Intent> for DisplayIotaIntentData {
 }
 
 fn extract_transaction_params(args: &Vec<CallArg>) -> (String, String) {
-    let amount = args.get(0)
-        .and_then(|arg| if let CallArg::Pure(bytes) = arg {
-            Some(format!("{}", u64::from_le_bytes(
-                bytes.as_slice().try_into().unwrap_or([0; 8])
-            )))
-        } else {
-            None
+    let mut pure_args = args
+        .iter()
+        .filter_map(|arg| {
+            if let CallArg::Pure(data) = arg {
+                Some(data)
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+
+    let amount = pure_args
+        .get(0)
+        .map(|bytes| {
+            if bytes.len() == 8 {
+                format!(
+                    "{} IOTA",
+                    u64::from_le_bytes(bytes.as_slice().try_into().unwrap_or([0; 8])) as f64
+                        / 1000_000_000.0
+                )
+            } else {
+                "0".to_string()
+            }
         })
         .unwrap_or_default();
 
-    let recipient = args.get(1)
-        .and_then(|arg| if let CallArg::Pure(bytes) = arg {
-            Some(format!("0x{}", hex::encode(bytes)))
-        } else {
-            None
-        })
+    let recipient = pure_args
+        .last()
+        .map(|bytes| format!("0x{}", hex::encode(bytes)))
         .unwrap_or_default();
 
     (amount, recipient)
 }
+
+fn check_stake(commands: &Vec<Command>) -> bool {
+    commands.iter().any(|command| {
+        if let Command::MoveCall(kind_data) = command {
+            println!("kind_data function: {:?}", kind_data.function.to_string());
+            kind_data.function.to_string().contains("stake")
+        } else {
+            false
+        }
+    })
+}
+
+#[repr(C)]
+pub struct DisplayIotaSignMessageHash {
+    pub network: PtrString,
+    pub path: PtrString,
+    pub from_address: PtrString,
+    pub message: PtrString,
+}
+
+impl DisplayIotaSignMessageHash {
+    pub fn new(network: String, path: String, message: String, from_address: String) -> Self {
+        Self {
+            network: convert_c_char(network),
+            path: convert_c_char(path),
+            message: convert_c_char(message),
+            from_address: convert_c_char(from_address),
+        }
+    }
+}
+
+impl_c_ptr!(DisplayIotaSignMessageHash);
+
+impl Free for DisplayIotaSignMessageHash {
+    fn free(&self) {
+        free_str_ptr!(self.network);
+        free_str_ptr!(self.path);
+        free_str_ptr!(self.message);
+        free_str_ptr!(self.from_address);
+    }
+}
+
+make_free_method!(DisplayIotaSignMessageHash);
 
 impl Free for DisplayIotaIntentData {
     fn free(&self) {
         free_str_ptr!(self.network);
         free_str_ptr!(self.sender);
         free_str_ptr!(self.recipient);
-        free_str_ptr!(self.owner);
-        free_str_ptr!(self.price);
-        free_str_ptr!(self.gas_budget);
         free_str_ptr!(self.details);
     }
 }

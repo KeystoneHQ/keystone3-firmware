@@ -37,6 +37,10 @@ use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 #[cfg(not(feature = "btc-only"))]
 use ur_registry::extend::qr_hardware_call::{CallType, QRHardwareCall};
+#[cfg(feature = "iota")]
+use ur_registry::iota::iota_sign_request::IotaSignRequest;
+#[cfg(feature = "iota")]
+use ur_registry::iota::iota_sign_hash_request::IotaSignHashRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
 #[cfg(feature = "monero")]
@@ -54,8 +58,6 @@ use ur_registry::stellar::stellar_sign_request::{SignType as StellarSignType, St
 use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
 #[cfg(feature = "sui")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
-#[cfg(feature = "iota")]
-use ur_registry::iota::iota_sign_request::IotaSignRequest;
 #[cfg(feature = "ton")]
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 #[cfg(feature = "zcash")]
@@ -133,6 +135,13 @@ impl InferViewType for SuiSignRequest {
 impl InferViewType for IotaSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::IotaTx)
+    }
+}
+
+#[cfg(feature = "iota")]
+impl InferViewType for IotaSignHashRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::IotaSignMessageHash)
     }
 }
 

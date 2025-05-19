@@ -37,6 +37,7 @@ pub mod types;
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Intent {
     TransactionData(IntentMessage<TransactionData>),
+    TransactionEffects(IntentMessage<TransactionData>),
     PersonalMessage(IntentMessage<PersonalMessageUtf8>),
 }
 
@@ -51,10 +52,9 @@ pub fn generate_address(pub_key: &str) -> Result<String> {
     Ok(format!("0x{}", hex::encode(addr)))
 }
 
-
 pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
     match IntentScope::try_from(intent[0])? {
-        IntentScope::TransactionData => {
+        IntentScope::TransactionData | IntentScope::TransactionEffects => {
             let tx: IntentMessage<TransactionData> =
                 bcs::from_bytes(intent).map_err(SuiError::from)?;
             Ok(Intent::TransactionData(tx))
@@ -103,11 +103,14 @@ pub fn decode_utf8(msg: &[u8]) -> Result<String> {
     }
 }
 
+extern crate std;
+use std::println;
 pub fn sign_intent(seed: &[u8], path: &String, intent: &[u8]) -> Result<[u8; 64]> {
     let mut hasher = Blake2bVar::new(32).unwrap();
     hasher.update(intent);
     let mut hash = [0u8; 32];
     hasher.finalize_variable(&mut hash).unwrap();
+    println!("hash: {:?}", hex::encode(hash));
     let sig =
         keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, &hash)
             .map_err(|e| errors::SuiError::SignFailure(e.to_string()))?;

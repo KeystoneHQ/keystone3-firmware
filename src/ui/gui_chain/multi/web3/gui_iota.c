@@ -40,17 +40,17 @@ void *GuiGetIotaData(void)
     return g_parseResult;
 }
 
-// void *GuiGetIotaSignMessageHashData(void)
-// {
-//     CHECK_FREE_PARSE_RESULT(g_parseResult);
-//     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-//     do {
-//         PtrT_TransactionParseResult_DisplayIotaSignMessageHash parseResult = iota_parse_sign_message_hash(data);
-//         CHECK_CHAIN_BREAK(parseResult);
-//         g_parseResult = (void *)parseResult;
-//     } while (0);
-//     return g_parseResult;
-// }
+void *GuiGetIotaSignMessageHashData(void)
+{
+    CHECK_FREE_PARSE_RESULT(g_parseResult);
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        PtrT_TransactionParseResult_DisplayIotaSignMessageHash parseResult = iota_parse_sign_message_hash(data);
+        CHECK_CHAIN_BREAK(parseResult);
+        g_parseResult = (void *)parseResult;
+    } while (0);
+    return g_parseResult;
+}
 
 PtrT_TransactionCheckResult GuiGetIotaCheckResult(void)
 {
@@ -61,13 +61,16 @@ PtrT_TransactionCheckResult GuiGetIotaCheckResult(void)
     return result;
 }
 
-// PtrT_TransactionCheckResult GuiGetIotaSignHashCheckResult(void)
-// {
-//     uint8_t mfp[4];
-//     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-//     GetMasterFingerPrint(mfp);
-//     return iota_check_sign_hash_request(data, mfp, sizeof(mfp));
-// }
+PtrT_TransactionCheckResult GuiGetIotaSignHashCheckResult(void)
+{
+    uint8_t mfp[4];
+    printf("%s.......%d.......\n", __func__, __LINE__);
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    printf("%s.......%d.......\n", __func__, __LINE__);
+    GetMasterFingerPrint(mfp);
+    printf("%s.......%d.......\n", __func__, __LINE__);
+    return sui_check_sign_hash_request(data, mfp, sizeof(mfp));
+}
 
 void FreeIotaMemory(void)
 {
@@ -102,22 +105,25 @@ void GuiIotaTxOverview(lv_obj_t *parent, void *totalData)
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
 
-    lv_obj_t *container = CreateSingleInfoView(parent, "amount", txData->amount);
+    lv_obj_t *container = CreateValueOverviewValue(parent, "amount", txData->amount, NULL, NULL);
     lv_obj_align(container, LV_ALIGN_TOP_LEFT, 0, 0);
 
-    container = CreateSingleInfoView(parent, "price", txData->price);
-    GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    if (txData->network != NULL) {
+        container = CreateSingleInfoView(parent, "network", txData->network);
+        GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    }
 
-    container = CreateSingleInfoView(parent, "gas budget", txData->gas_budget);
-    GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    if (txData->transaction_type != NULL) {
+        container = CreateSingleInfoView(parent, "Type", txData->transaction_type);
+        GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    }
 
-    container = CreateSingleInfoView(parent, "network", txData->network);
-    GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    if (txData->method != NULL) {
+        container = CreateSingleInfoView(parent, "Method", txData->method);
+        GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    }
 
     container = CreateSingleInfoTwoLineView(parent, "sender", txData->sender);
-    GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
-
-    container = CreateSingleInfoTwoLineView(parent, "owner", txData->owner);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     container = CreateSingleInfoTwoLineView(parent, "recipient", txData->recipient);
@@ -141,20 +147,20 @@ void GuiIotaTxRawData(lv_obj_t *parent, void *totalData)
     lv_obj_set_style_pad_bottom(rawDataLabel, 16, LV_PART_MAIN);
 }
 
-// UREncodeResult *GuiGetIotaSignHashQrCodeData(void)
-// {
-//     bool enable = IsPreviousLockScreenEnable();
-//     SetLockScreen(false);
-//     UREncodeResult *encodeResult;
-//     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-//     do {
-//         uint8_t seed[64];
-//         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-//         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-//         encodeResult = sui_sign_hash(data, seed, len);
-//         ClearSecretCache();
-//         CHECK_CHAIN_BREAK(encodeResult);
-//     } while (0);
-//     SetLockScreen(enable);
-//     return encodeResult;
-// }
+UREncodeResult *GuiGetIotaSignHashQrCodeData(void)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult;
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    do {
+        uint8_t seed[64];
+        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        encodeResult = sui_sign_hash(data, seed, len);
+        ClearSecretCache();
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+    SetLockScreen(enable);
+    return encodeResult;
+}

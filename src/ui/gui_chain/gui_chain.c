@@ -70,6 +70,7 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
     {SuiSignMessageHash, GuiGetSuiSignHashQrCodeData, GuiGetSuiSignHashQrCodeData, GuiGetSuiSignHashCheckResult, CHAIN_SUI, REMAPVIEW_SUI_SIGN_MESSAGE_HASH},
 
     {IotaTx, GuiGetIotaSignQrCodeData, NULL, GuiGetIotaCheckResult, CHAIN_IOTA, REMAPVIEW_IOTA},
+    {IotaSignMessageHash, GuiGetIotaSignHashQrCodeData, GuiGetIotaSignHashQrCodeData, GuiGetIotaSignHashCheckResult, CHAIN_IOTA, REMAPVIEW_IOTA_SIGN_MESSAGE_HASH},
 
     {SolanaTx, GuiGetSolSignQrCodeData, GuiGetSolSignQrCodeData, GuiGetSolCheckResult, CHAIN_SOL, REMAPVIEW_SOL},
     {SolanaMessage, GuiGetSolSignQrCodeData, GuiGetSolSignQrCodeData, GuiGetSolCheckResult, CHAIN_SOL, REMAPVIEW_SOL_MESSAGE},
@@ -106,11 +107,8 @@ static const ViewHandlerEntry *GetViewHandlerEntry(ViewType viewType);
 
 PtrT_TransactionCheckResult CheckUrResult(uint8_t viewType)
 {
-    printf("%s %d..\n", __func__, __LINE__);
     const ViewHandlerEntry *entry = GetViewHandlerEntry(viewType);
-    printf("%s %d..\n", __func__, __LINE__);
     if (entry != NULL) {
-    printf("%s %d..\n", __func__, __LINE__);
         return entry->checkHandler();
     }
     return NULL;

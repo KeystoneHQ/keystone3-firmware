@@ -39,6 +39,9 @@ impl From<Intent> for DisplaySuiIntentMessage {
                 Intent::TransactionData(tx) => {
                     convert_c_char(serde_json::to_string_pretty(&tx).unwrap_or(String::from("")))
                 }
+                Intent::TransactionEffects(tx) => {
+                    convert_c_char(serde_json::to_string_pretty(&tx).unwrap_or(String::from("")))
+                }
                 Intent::PersonalMessage(m) => {
                     convert_c_char(serde_json::to_string_pretty(&m).unwrap_or(String::from("")))
                 }

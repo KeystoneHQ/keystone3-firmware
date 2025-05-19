@@ -201,7 +201,7 @@
             .index = HOME_WALLET_CARD_IOTA,    \
             .coin = "IOTA",                    \
             .chain = "IOTA",                   \
-            .icon = &coinDym,                 \
+            .icon = &coinIota,                 \
         },                                     \
         {                                      \
             .index = HOME_WALLET_CARD_APT,     \

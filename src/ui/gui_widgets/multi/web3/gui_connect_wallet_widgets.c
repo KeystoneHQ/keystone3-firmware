@@ -185,7 +185,7 @@ static const lv_img_dsc_t *g_petraCoinArray[1] = {
 };
 
 static const lv_img_dsc_t *g_nightlyCoinArray[1] = {
-    &coinSui,
+    &coinSui, &coinIota
 };
 
 static const lv_img_dsc_t *g_solfareCoinArray[1] = {
@@ -1038,7 +1038,7 @@ static void AddNightlyCoins(void)
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_nightlyCoinArray); i++) {
         // todo add more coins
         lv_obj_t *img = GuiCreateImg(g_coinCont, g_nightlyCoinArray[i]);
         lv_img_set_zoom(img, 110);

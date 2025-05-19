@@ -167,7 +167,6 @@ void GuiTransactionDetailInit(uint8_t viewType)
     g_needSign = true;
     GuiTransactionDetailNavBarInit();
     ParseTransaction(g_viewType);
-    printf("%s.......%d.......\n", __func__, __LINE__);
     g_signSlider = GuiCreateConfirmSlider(g_pageWidget->contentZone, CheckSliderProcessHandler);
     g_fingerSignCount = 0;
     GuiPendingHintBoxMoveToTargetParent(lv_scr_act());

@@ -60,14 +60,10 @@ static SetChainData_t g_chainViewArray[] = {
 
 void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
 {
-    printf("%s %d..\n", __func__, __LINE__);
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
-    printf("%s %d..\n", __func__, __LINE__);
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainViewArray); i++) {
         if (g_chainViewArray[i].chain == viewType) {
-            printf("%s %d..\n", __func__, __LINE__);
             g_chainViewArray[i].func(urResult, urMultiResult, is_multi);
-            printf("%s %d..\n", __func__, __LINE__);
             break;
         }
     }
@@ -95,7 +91,6 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
         break;
 #endif
     default:
-        printf("%s  %d..\n\r\n", __func__, __LINE__);
         HandleDefaultViewType(urResult, urMultiResult, urViewType, is_multi);
         break;
     }

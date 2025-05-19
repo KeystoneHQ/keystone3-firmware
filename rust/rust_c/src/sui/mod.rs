@@ -173,9 +173,6 @@ pub extern "C" fn sui_sign_hash(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> Pt
     .c_ptr()
 }
 
-extern crate std;
-use std::println;
-
 #[no_mangle]
 pub extern "C" fn sui_sign_intent(
     ptr: PtrUR,

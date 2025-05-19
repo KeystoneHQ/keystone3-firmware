@@ -4587,6 +4587,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
+source = "git+https://github.com/KeystoneHQ/keystone-sdk-rust.git?branch=feat/iota#6aa5aec744a49dcf6f61e3a85b64f7cdcae5ef45"
 dependencies = [
  "hex",
  "ur",
@@ -4596,6 +4597,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.1"
+source = "git+https://github.com/KeystoneHQ/keystone-sdk-rust.git?branch=feat/iota#6aa5aec744a49dcf6f61e3a85b64f7cdcae5ef45"
 dependencies = [
  "bs58 0.5.1",
  "core2",

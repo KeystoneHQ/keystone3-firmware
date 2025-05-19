@@ -28,6 +28,13 @@ void GuiSetIotaUrData(URParseResult *urResult, URParseMultiResult *urMultiResult
         result = NULL;                                                                                                    \
     }
 
+#define CHECK_FREE_PARSE_RESULT_SIGN_MESSAGE_HASH(result)                                                                                   \
+    if (result != NULL)                                                                                                   \
+    {                                                                                                                     \
+        free_DisplayIotaSignMessageHash((PtrT_DisplayIotaSignMessageHash)result); \
+        result = NULL;                                                                                                    \
+    }
+
 void *GuiGetIotaData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
@@ -64,11 +71,8 @@ PtrT_TransactionCheckResult GuiGetIotaCheckResult(void)
 PtrT_TransactionCheckResult GuiGetIotaSignHashCheckResult(void)
 {
     uint8_t mfp[4];
-    printf("%s.......%d.......\n", __func__, __LINE__);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    printf("%s.......%d.......\n", __func__, __LINE__);
     GetMasterFingerPrint(mfp);
-    printf("%s.......%d.......\n", __func__, __LINE__);
     return sui_check_sign_hash_request(data, mfp, sizeof(mfp));
 }
 
@@ -77,6 +81,7 @@ void FreeIotaMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
+    CHECK_FREE_PARSE_RESULT_SIGN_MESSAGE_HASH(g_parseResult);
 }
 
 UREncodeResult *GuiGetIotaSignQrCodeData(void)

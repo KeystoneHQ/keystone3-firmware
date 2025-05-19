@@ -63,8 +63,3 @@ pub extern "C" fn iota_parse_sign_message_hash(
     )
     .c_ptr()
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-}

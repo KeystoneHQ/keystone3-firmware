@@ -84,8 +84,8 @@ lv_obj_t *CreateTransactionItemView(lv_obj_t *parent, const char* title, const c
     return CreateTransactionItemViewWithHint(parent, title, value, lastView, NULL);
 }
 
-lv_obj_t *CreateValueOverviewValue(lv_obj_t *parent, const char *valueKey, const char *value, 
-    const char *feeKey, const char *fee)
+lv_obj_t *CreateValueOverviewValue(lv_obj_t *parent, const char *valueKey, const char *value,
+                                   const char *feeKey, const char *fee)
 {
     lv_obj_t *container = CreateContentContainer(parent, 408, feeKey == NULL ? 115 : 144);
 

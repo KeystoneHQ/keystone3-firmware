@@ -194,7 +194,7 @@ UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    #define NIGHTLY_XPUB_COUNT 20
+#define NIGHTLY_XPUB_COUNT 20
     ExtendedPublicKey keys[NIGHTLY_XPUB_COUNT];
     publicKeys->data = keys;
     publicKeys->size = NIGHTLY_XPUB_COUNT;

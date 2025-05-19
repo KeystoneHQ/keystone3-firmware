@@ -639,7 +639,6 @@ int32_t read_qrcode()
         break;
     default:
         urResult = parse_ur(qrString);
-        printf("urResult: %d\r\n", urResult->is_multi_part);
         break;
     }
 

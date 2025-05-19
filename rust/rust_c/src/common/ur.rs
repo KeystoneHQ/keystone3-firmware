@@ -64,8 +64,6 @@ use ur_registry::stellar::stellar_sign_request::StellarSignRequest;
 use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
 #[cfg(feature = "sui")]
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
-// #[cfg(feature = "iota")]
-// use ur_registry::iota::iota_sign_message_hash::IotaSignMessageHash;
 #[cfg(feature = "ton")]
 use ur_registry::ton::ton_sign_request::TonSignRequest;
 #[cfg(feature = "zcash")]
@@ -84,9 +82,6 @@ use crate::{
 #[no_mangle]
 pub static FRAGMENT_MAX_LENGTH_DEFAULT: usize = 200;
 pub static FRAGMENT_UNLIMITED_LENGTH: usize = 11000;
-
-extern crate std;
-use std::println;
 
 #[repr(C)]
 pub struct UREncodeResult {
@@ -361,7 +356,6 @@ pub enum QRCodeType {
 
 impl QRCodeType {
     pub fn from(value: &InnerURType) -> Result<Self, URError> {
-        println!("value: {:?}", value);
         match value {
             #[cfg(feature = "bitcoin")]
             InnerURType::CryptoPsbt(_) => Ok(QRCodeType::CryptoPSBT),
@@ -663,10 +657,7 @@ impl_response!(URParseMultiResult);
 
 fn get_ur_type(ur: &String) -> Result<QRCodeType, URError> {
     let t = ur_parse_lib::keystone_ur_decoder::get_type(ur)?;
-    println!("t: {:?}", t);
-    let data = QRCodeType::from(&t);
-    println!("11111");
-    data
+    QRCodeType::from(&t)
 }
 
 fn _decode_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewType>(
@@ -706,7 +697,6 @@ fn _decode_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTyp
 
 pub fn decode_ur(ur: String) -> URParseResult {
     let ur = ur.trim().to_lowercase();
-    println!("ur: {}", ur);
     let ur_type = get_ur_type(&ur);
     let ur_type = match ur_type {
         Ok(t) => t,

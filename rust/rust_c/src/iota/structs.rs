@@ -1,5 +1,6 @@
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use alloc::format;
 use alloc::{boxed::Box, string::String};
 use app_cardano::structs::{
     CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignCip8Data,
@@ -126,7 +127,6 @@ fn extract_transaction_params(args: &Vec<CallArg>) -> (String, String) {
 fn check_stake(commands: &Vec<Command>) -> bool {
     commands.iter().any(|command| {
         if let Command::MoveCall(kind_data) = command {
-            println!("kind_data function: {:?}", kind_data.function.to_string());
             kind_data.function.to_string().contains("stake")
         } else {
             false

@@ -27,7 +27,6 @@ pub fn swapkit_asset_name_convert(asset: &str) -> Result<(String, Option<String>
     }
 }
 
-
 // =:e:0x742636d8FBD2C1dD721Db619b49eaD254385D77d:256699:-_/kns:20/0
 // =:ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7:0x742636d8FBD2C1dD721Db619b49eaD254385D77d:662901600:-_/kns:20/0
 
@@ -111,7 +110,11 @@ pub struct SwapkitMemo {
 }
 
 impl SwapkitMemo {
-    pub fn new(asset: String, receive_address: String, swap_out_asset_contract_address: Option<String>) -> Self {
+    pub fn new(
+        asset: String,
+        receive_address: String,
+        swap_out_asset_contract_address: Option<String>,
+    ) -> Self {
         Self {
             asset,
             receive_address,

@@ -1,12 +1,12 @@
 use alloc::boxed::Box;
 use alloc::format;
 use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use core::ptr::null_mut;
 use core::slice;
 use cryptoxide::hashing::sha256;
 use ffi::VecFFI;
 use keystore::algorithms::ed25519::slip10_ed25519::get_private_key_by_seed;
-use alloc::vec::Vec;
 
 use bitcoin::hex::Case;
 use bitcoin_hashes::hex::DisplayHex;
@@ -79,7 +79,8 @@ pub extern "C" fn format_value_with_decimals(
     let trimmed = formatted.trim_end_matches('0');
 
     if trimmed.ends_with('.') {
-        SimpleResponse::success(convert_c_char(trimmed[0..trimmed.len() - 1].to_string())).simple_c_ptr()
+        SimpleResponse::success(convert_c_char(trimmed[0..trimmed.len() - 1].to_string()))
+            .simple_c_ptr()
     } else {
         SimpleResponse::success(convert_c_char(trimmed.to_string())).simple_c_ptr()
     }

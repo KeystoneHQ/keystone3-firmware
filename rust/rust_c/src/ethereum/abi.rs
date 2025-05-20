@@ -52,7 +52,6 @@ pub extern "C" fn eth_parse_contract_data_by_method(
     contract_name: PtrString,
     contract_method_json: PtrString,
 ) -> Ptr<Response<DisplayContractData>> {
-
     let input_data = recover_c_char(input_data);
     let contract_name = recover_c_char(contract_name);
     let contract_method_json = recover_c_char(contract_method_json);

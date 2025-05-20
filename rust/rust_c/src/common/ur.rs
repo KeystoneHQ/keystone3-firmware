@@ -2,8 +2,8 @@ use alloc::boxed::Box;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use ur_registry::ethereum::eth_batch_sign_requests::EthBatchSignRequest;
 use core::ptr::null_mut;
+use ur_registry::ethereum::eth_batch_sign_requests::EthBatchSignRequest;
 
 use cstr_core::CString;
 use cty::c_char;

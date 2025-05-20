@@ -164,14 +164,11 @@ pub extern "C" fn cardano_check_sign_data_path_type(
     let cardano_xpub = recover_c_char(cardano_xpub);
     let xpub = cardano_sign_data_reqeust.get_xpub();
     let xpub = hex::encode(xpub);
-    rust_tools::debug!(format!("xpub: {}", xpub));
     let derivation_path =
         get_cardano_derivation_path(cardano_sign_data_reqeust.get_derivation_path());
-    rust_tools::debug!(format!("derivation_path: {:?}", derivation_path));
     match derivation_path {
         Ok(derivation_path) => match derive_xpub_from_xpub(cardano_xpub, derivation_path) {
             Ok(_xpub) => {
-                rust_tools::debug!(format!("derived xpub: {}", _xpub));
                 if _xpub == xpub {
                     TransactionCheckResult::new().c_ptr()
                 } else {
@@ -816,7 +813,6 @@ fn cardano_sign_sign_cip8_data_by_icarus(
         .unwrap()
         .1;
     } else {
-        rust_tools::debug!(format!("address type: {}", address_type.as_str()));
         let public_key = cardano_sign_data_reqeust.get_xpub();
         address_field = blake2b_224(&public_key).to_vec();
     }

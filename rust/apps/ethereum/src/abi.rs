@@ -118,7 +118,7 @@ fn _parse_by_function(
                         }
                         _ => _token.to_string(),
                     },
-                    format!("{}", _input.kind)
+                    format!("{}", _input.kind),
                 ))
             } else {
                 return Some(Err(EthereumError::DecodeContractDataError(String::from(

@@ -60,7 +60,10 @@ pub fn parse_erc20(input: &str, decimal: u32) -> Result<ParsedErc20Transaction, 
     Ok(ParsedErc20Transaction { to, value })
 }
 
-pub fn parse_erc20_approval(input: &str, decimal: u32) -> Result<ParsedErc20Approval, &'static str> {
+pub fn parse_erc20_approval(
+    input: &str,
+    decimal: u32,
+) -> Result<ParsedErc20Approval, &'static str> {
     //095ea7b30000000000000000000000000000000000001ff3684f28c67538d4d072c2273400000000000000000000000000000000000000000000000000000000006acfc0
     if input.len() != 136 {
         return Err("Input must be 136 characters long");

@@ -10,6 +10,7 @@
 #include "gui_qr_hintbox.h"
 #include "fingerprint_process.h"
 #include "gui_button.h"
+#include "gui_keyboard_hintbox.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
@@ -201,6 +202,8 @@ static void CloseContHandler(lv_event_t *e)
 }
 
 void GuiEthBatchTxWidgetsDeInit() {
+    GUI_DEL_OBJ(g_fingerSingContainer)
+    GuiDeleteKeyboardWidget(g_keyboardWidget);
     GUI_PAGE_DEL(g_pageWidget);
     ClearPageData();
 }
@@ -1033,6 +1036,7 @@ static void GuiRenderBottomBtn(lv_obj_t *parent, bool showSignSlider) {
             return;
         }
         g_signSlider = GuiCreateConfirmSlider(parent, CheckSliderProcessHandler);
+        g_fingerSignCount = 0;
     }
     else {
         if (g_signSlider != NULL) {

@@ -516,7 +516,6 @@ pub extern "C" fn eth_sign_batch_tx(
     match ret.try_into() {
         Err(e) => UREncodeResult::from(e).c_ptr(),
         Ok(v) => {
-            rust_tools::debug!(format!("v: {:?}", hex::encode(&v)));
             let encode_result = UREncodeResult::encode(
                 v,
                 EthBatchSignature::get_registry_type().get_type(),

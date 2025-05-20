@@ -38,6 +38,8 @@ bool GetEnsName(const char *addr, char *name);
 void FpWipeManageInfo(void);
 void SetPageLockScreen(bool enable);
 uint8_t GetFingerSignFlag(void);
+bool IsPreviousLockScreenEnable(void);
+void SetLockScreen(bool enable);
 
 extern bool g_reboot;
 

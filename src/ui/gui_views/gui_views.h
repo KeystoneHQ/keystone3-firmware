@@ -214,6 +214,7 @@ extern GUI_VIEW g_DevicePublicKeyView;
 extern GUI_VIEW g_multiAccountsReceiveView;
 extern GUI_VIEW g_keyDerivationRequestView;
 extern GUI_VIEW g_tonMnemonicHintView;
+extern GUI_VIEW g_ethBatchTxView;
 #endif
 
 #ifndef WEB3_VERSION

@@ -4,6 +4,7 @@
 #include "gui_obj.h"
 
 lv_obj_t *CreateTransactionContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h);
+lv_obj_t* CreateRelativeTransactionContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h, lv_obj_t *last_view);
 lv_obj_t *CreateTransactionItemView(lv_obj_t *parent, const char* title, const char* value, lv_obj_t *lastView);
 lv_obj_t *CreateTransactionItemViewWithHint(lv_obj_t *parent, const char* title, const char* value, lv_obj_t *lastView, const char* hint);
 lv_obj_t *CreateValueOverviewValue(lv_obj_t *parent, char* value, char *fee);
@@ -13,5 +14,6 @@ lv_obj_t *CreateValueDetailValue(lv_obj_t *parent, char* inputValue, char *outpu
 lv_obj_t *CreateDynamicInfoView(lv_obj_t *parent, char *key[], char *value[], int keyLen);
 lv_obj_t *CreateNoticeCard(lv_obj_t *parent, char* notice);
 lv_obj_t *CreateSingleInfoTwoLineView(lv_obj_t *parent, char* key, char *value);
+lv_obj_t *CreateTransactionOvewviewCard(lv_obj_t *parent,const char* title1, const char* text1, const char* title2, const char* text2);
 
 #endif

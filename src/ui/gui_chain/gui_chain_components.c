@@ -93,7 +93,7 @@ lv_obj_t *CreateTransactionItemView(lv_obj_t *parent, const char* title, const c
     return CreateTransactionItemViewWithHint(parent, title, value, lastView, NULL);
 }
 
-lv_obj_t *CreateTransactionOvewviewCard(lv_obj_t *parent,const char* title1, const char* text1, const char* title2, const char* text2) 
+lv_obj_t *CreateTransactionOvewviewCard(lv_obj_t *parent, const char* title1, const char* text1, const char* title2, const char* text2)
 {
     uint16_t height = 16;//top padding
     lv_obj_t *container = CreateTransactionContentContainer(parent, 408, 0);

@@ -341,7 +341,7 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     /* U+0052 "R" */
     0xff, 0xfe, 0x3, 0xd5, 0xbf, 0xf, 0x0, 0x2d,
     0x3c, 0x0, 0x38, 0xf0, 0x0, 0xe3, 0xc0, 0xb,
-    0x8f, 0x1, 0xbc, 0x3f, 0xff, 0x80, 0xf5, 0xb8,
+    0x4f, 0x1, 0xbc, 0x3f, 0xff, 0x80, 0xf5, 0xb8,
     0x3, 0xc0, 0xb4, 0xf, 0x0, 0xf0, 0x3c, 0x2,
     0xe0, 0xf0, 0x3, 0xc3, 0xc0, 0x7, 0xc0,
 
@@ -961,7 +961,7 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     /* U+ACF5 "공" */
     0x5, 0x55, 0x55, 0x50, 0x3, 0xff, 0xff, 0xfd,
     0x0, 0x0, 0x0, 0x3, 0x40, 0x0, 0x0, 0x0,
-    0xd0, 0x0, 0x1, 0x40, 0x34, 0x0, 0x0, 0xe0,
+    0xd0, 0x0, 0x1, 0x40, 0x74, 0x0, 0x0, 0xe0,
     0x1d, 0x0, 0x0, 0x38, 0x7, 0x0, 0x0, 0xe,
     0x0, 0x0, 0xff, 0xff, 0xff, 0xff, 0x95, 0x55,
     0x55, 0x55, 0x40, 0x0, 0x0, 0x0, 0x0, 0x6,
@@ -4175,7 +4175,7 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     /* U+C778 "인" */
     0x0, 0x0, 0x0, 0x10, 0x0, 0x0, 0x0, 0x38,
     0x7, 0xfd, 0x0, 0x38, 0x2f, 0x5b, 0x80, 0x38,
-    0x38, 0x1, 0xd0, 0x38, 0xb0, 0x0, 0xf0, 0x38,
+    0x38, 0x1, 0xd0, 0x38, 0xb0, 0x0, 0xe0, 0x38,
     0xb0, 0x0, 0xf0, 0x38, 0x70, 0x0, 0xe0, 0x38,
     0x3c, 0x2, 0xd0, 0x38, 0x1f, 0xaf, 0x80, 0x38,
     0x2, 0xf9, 0x0, 0x38, 0x0, 0x0, 0x0, 0x38,
@@ -4935,7 +4935,7 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
     0x80, 0x3, 0xc0, 0xf, 0x0, 0xf, 0x0, 0x7c,
     0x0, 0x3c, 0x2, 0xf4, 0x0, 0xf0, 0xe, 0xf0,
     0x3, 0xc0, 0xb1, 0xe0, 0xf, 0xb, 0x42, 0xe0,
-    0x3c, 0xb8, 0x2, 0xf0, 0xf7, 0x80, 0x1, 0xc3,
+    0x3c, 0xb8, 0x2, 0xf0, 0xf7, 0x80, 0x2, 0xc3,
     0xc0, 0x0, 0x0, 0xf, 0x0, 0x0, 0x0, 0x3c,
     0x0, 0x0, 0x0, 0xf0, 0x0, 0x0, 0x3, 0xc0,
 
@@ -6600,8 +6600,7 @@ static const uint16_t unicode_list_1[] = {
 };
 
 /*Collect the unicode lists and glyph_id offsets*/
-static const lv_font_fmt_txt_cmap_t cmaps[] =
-{
+static const lv_font_fmt_txt_cmap_t cmaps[] = {
     {
         .range_start = 32, .range_length = 95, .glyph_id_start = 1,
         .unicode_list = NULL, .glyph_id_ofs_list = NULL, .list_length = 0, .type = LV_FONT_FMT_TXT_CMAP_FORMAT0_TINY
@@ -6618,8 +6617,7 @@ static const lv_font_fmt_txt_cmap_t cmaps[] =
 
 
 /*Map glyph_ids to kern left classes*/
-static const uint8_t kern_left_class_mapping[] =
-{
+static const uint8_t kern_left_class_mapping[] = {
     0, 0, 1, 2, 0, 0, 0, 0,
     2, 3, 0, 0, 0, 4, 5, 4,
     6, 0, 0, 0, 0, 0, 0, 0,
@@ -6692,8 +6690,7 @@ static const uint8_t kern_left_class_mapping[] =
 };
 
 /*Map glyph_ids to kern right classes*/
-static const uint8_t kern_right_class_mapping[] =
-{
+static const uint8_t kern_right_class_mapping[] = {
     0, 0, 1, 2, 0, 0, 0, 0,
     2, 0, 3, 4, 0, 5, 6, 7,
     8, 0, 0, 0, 0, 0, 0, 0,
@@ -6766,8 +6763,7 @@ static const uint8_t kern_right_class_mapping[] =
 };
 
 /*Kern values between classes*/
-static const int8_t kern_class_values[] =
-{
+static const int8_t kern_class_values[] = {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
@@ -7029,8 +7025,7 @@ static const int8_t kern_class_values[] =
 
 
 /*Collect the kern class' data in one place*/
-static const lv_font_fmt_txt_kern_classes_t kern_classes =
-{
+static const lv_font_fmt_txt_kern_classes_t kern_classes = {
     .class_pair_values   = kern_class_values,
     .left_class_mapping  = kern_left_class_mapping,
     .right_class_mapping = kern_right_class_mapping,
@@ -7042,12 +7037,9 @@ static const lv_font_fmt_txt_kern_classes_t kern_classes =
  *  ALL CUSTOM DATA
  *--------------------*/
 
-#if LVGL_VERSION_MAJOR == 8
+#if LV_VERSION_CHECK(8, 0, 0)
 /*Store all the custom data of the font*/
 static  lv_font_fmt_txt_glyph_cache_t cache;
-#endif
-
-#if LVGL_VERSION_MAJOR >= 8
 static const lv_font_fmt_txt_dsc_t font_dsc = {
 #else
 static lv_font_fmt_txt_dsc_t font_dsc = {
@@ -7061,11 +7053,10 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
     .bpp = 2,
     .kern_classes = 1,
     .bitmap_format = 0,
-#if LVGL_VERSION_MAJOR == 8
+#if LV_VERSION_CHECK(8, 0, 0)
     .cache = &cache
 #endif
 };
-
 
 
 /*-----------------
@@ -7073,7 +7064,7 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
  *----------------*/
 
 /*Initialize a public general font descriptor*/
-#if LVGL_VERSION_MAJOR >= 8
+#if LV_VERSION_CHECK(8, 0, 0)
 const lv_font_t koIllustrate = {
 #else
 lv_font_t koIllustrate = {
@@ -7089,11 +7080,7 @@ lv_font_t koIllustrate = {
     .underline_position = -2,
     .underline_thickness = 1,
 #endif
-    .dsc = &font_dsc,          /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
-#if LV_VERSION_CHECK(8, 2, 0) || LVGL_VERSION_MAJOR >= 9
-    .fallback = NULL,
-#endif
-    .user_data = NULL,
+    .dsc = &font_dsc           /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
 };
 
 

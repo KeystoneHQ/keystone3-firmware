@@ -615,6 +615,7 @@ const static Erc20Contract_t ERC20_CONTRACTS[] = {
     {"PNG", "0x60781C2586D68229fde47564546784ab3fACA982", 18},
     {"WAVAX", "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7", 18},
     {"JOE", "0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd", 18},
+    {"WETH.e", "0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB", 18},
 };
 #include "abi_ethereum.h"
 #include "gui_constants.h"

@@ -1069,7 +1069,7 @@ void *FindErc20Contract(char *contract_address)
     return NULL;
 }
 
-void GetEthValue(void *indata, void *param, uint32_t maxLen)    
+void GetEthValue(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
     if (isErc20Transfer(eth)) {

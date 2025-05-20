@@ -94,54 +94,57 @@ static void HandleClickPreviousBtn(lv_event_t *e);
 static void HandleClickNextBtn(lv_event_t *e);
 static void HandleClickAddressChecker(lv_event_t *e);
 
-static void ClearPageData() {
+static void ClearPageData()
+{
     g_currentTxIndex = 0;
     g_txCount = 0;
     g_currentErc20Contract = NULL;
 
-    if(g_parseResult != NULL) {
+    if (g_parseResult != NULL) {
         free_TransactionParseResult_DisplayETHBatchTx(g_parseResult);
         g_parseResult = NULL;
     }
 
-    if(g_parseErc20Approval!=NULL) {
+    if (g_parseErc20Approval != NULL) {
         free_Response_EthParsedErc20Approval(g_parseErc20Approval);
         g_parseErc20Approval = NULL;
     }
 
-    if(g_swapkitContractData != NULL) {
+    if (g_swapkitContractData != NULL) {
         free_Response_DisplaySwapkitContractData(g_swapkitContractData);
         g_swapkitContractData = NULL;
     }
 
-    if(g_contractData != NULL) {
+    if (g_contractData != NULL) {
         free_Response_DisplayContractData(g_contractData);
         g_contractData = NULL;
     }
 
-    if(g_isMulti) {
+    if (g_isMulti) {
         free_ur_parse_multi_result((PtrT_URParseMultiResult)g_urMultiResult);
         g_urMultiResult = NULL;
-    }
-    else {
+    } else {
         free_ur_parse_result((PtrT_URParseResult)g_urResult);
         g_urResult = NULL;
     }
 }
 
-void GuiSetEthBatchTxData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi) {
+void GuiSetEthBatchTxData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
+{
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
 }
 
-void GuiEthBatchTxWidgetsVerifyPasswordSuccess() {
+void GuiEthBatchTxWidgetsVerifyPasswordSuccess()
+{
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     uint8_t viewType = EthBatchTx;
     GuiFrameOpenViewWithParam(&g_transactionSignatureView, &viewType, sizeof(viewType));
 }
 
-UREncodeResult *GuiGetEthBatchTxSignQrCodeData() {
+UREncodeResult *GuiGetEthBatchTxSignQrCodeData()
+{
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t seed[64];
@@ -163,29 +166,32 @@ static void SignByPasswordCb(bool cancel)
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
-static void HandleClickPreviousBtn(lv_event_t *e) {
+static void HandleClickPreviousBtn(lv_event_t *e)
+{
     lv_event_code_t code = lv_event_get_code(e);
-    if(code == LV_EVENT_CLICKED) {
-        if(g_currentTxIndex > 0) {
+    if (code == LV_EVENT_CLICKED) {
+        if (g_currentTxIndex > 0) {
             g_currentTxIndex--;
             GuiEthBatchTxWidgetsRefresh();
         }
     }
 }
 
-static void HandleClickNextBtn(lv_event_t *e) {
+static void HandleClickNextBtn(lv_event_t *e)
+{
     lv_event_code_t code = lv_event_get_code(e);
-    if(code == LV_EVENT_CLICKED) {
-        if(g_currentTxIndex < g_txCount - 1) {
+    if (code == LV_EVENT_CLICKED) {
+        if (g_currentTxIndex < g_txCount - 1) {
             g_currentTxIndex++;
             GuiEthBatchTxWidgetsRefresh();
         }
     }
 }
 
-static void HandleClickAddressChecker(lv_event_t *e) {
+static void HandleClickAddressChecker(lv_event_t *e)
+{
     lv_event_code_t code = lv_event_get_code(e);
-    if(code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED) {
         char *address = lv_event_get_user_data(e);
         char *text = malloc(BUFFER_SIZE_128);
         sprintf(text, "https://etherscan.io/address/%s", address);
@@ -201,14 +207,16 @@ static void CloseContHandler(lv_event_t *e)
 {
 }
 
-void GuiEthBatchTxWidgetsDeInit() {
+void GuiEthBatchTxWidgetsDeInit()
+{
     GUI_DEL_OBJ(g_fingerSingContainer)
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     GUI_PAGE_DEL(g_pageWidget);
     ClearPageData();
 }
 
-static void ParseSwapContractData(const char* address, const char* inputData) {
+static void ParseSwapContractData(const char* address, const char* inputData)
+{
     char selectorId[9] = {0};
     strncpy(selectorId, inputData, 8);
     char* address_key = (char*)SRAM_MALLOC(strlen(address) + 10);
@@ -237,10 +245,11 @@ static void ParseSwapContractData(const char* address, const char* inputData) {
     }
 }
 
-static void ParseErc20ContractData(const char* inputData, const uint8_t decimals) {
+static void ParseErc20ContractData(const char* inputData, const uint8_t decimals)
+{
     g_parseErc20Approval = eth_parse_erc20_approval(inputData, decimals);
     g_contractData = eth_parse_contract_data(inputData, (char *)ethereum_erc20_json);
-    if(g_parseErc20Approval->error_code != 0 || g_contractData->error_code != 0) {
+    if (g_parseErc20Approval->error_code != 0 || g_contractData->error_code != 0) {
         if (g_parseErc20Approval->error_code != 0) {
             HandleCurrentTransactionParseFail(g_parseErc20Approval->error_code, g_parseErc20Approval->error_message);
         }
@@ -251,10 +260,11 @@ static void ParseErc20ContractData(const char* inputData, const uint8_t decimals
     }
 }
 
-void GuiEthBatchTxWidgetsRefresh() {
-    if(g_parseResult -> error_code == 0) {
+void GuiEthBatchTxWidgetsRefresh()
+{
+    if (g_parseResult -> error_code == 0) {
         GuiEthBatchTxNavBarRefresh();
-        if(!HandleCurrentTransaction(g_currentTxIndex)) {
+        if (!HandleCurrentTransaction(g_currentTxIndex)) {
             return;
         }
 
@@ -265,15 +275,18 @@ void GuiEthBatchTxWidgetsRefresh() {
     }
 }
 
-static void GuiReturnHome() {
+static void GuiReturnHome()
+{
     GuiCloseToTargetView(&g_homeView);
 }
 
-static void OnReturnHandler(lv_event_t *e) {
+static void OnReturnHandler(lv_event_t *e)
+{
     GuiReturnHome();
 }
 
-static void *GuiParseEthBatchTxData(void) {
+static void *GuiParseEthBatchTxData(void)
+{
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
@@ -381,27 +394,30 @@ void GuiEthBatchTxWidgetsSignDealFingerRecognize(void *param)
     }
 }
 
-void GuiEthBatchTxWidgetsTransactionParseFail(void* params) {
+void GuiEthBatchTxWidgetsTransactionParseFail(void* params)
+{
     printf("GuiEthBatchTxWidgetsTransactionParseFail\n");
     printf("error: %s\n", g_parseResult->error_message);
     g_parseErrorHintBox = GuiCreateErrorCodeWindow(ERR_INVALID_QRCODE, &g_parseErrorHintBox, GuiReturnHome);
 }
 
-static void HandleCurrentTransactionParseFail(uint32_t errorCode, const char *errorMessage) {
+static void HandleCurrentTransactionParseFail(uint32_t errorCode, const char *errorMessage)
+{
     printf("error: %s\n", errorMessage);
 }
 
-static bool HandleCurrentTransaction(uint32_t index) {
+static bool HandleCurrentTransaction(uint32_t index)
+{
     //clear previous data
-    if(g_contractData != NULL) {
+    if (g_contractData != NULL) {
         free_Response_DisplayContractData(g_contractData);
         g_contractData = NULL;
     }
-    if(g_swapkitContractData != NULL) {
+    if (g_swapkitContractData != NULL) {
         free_Response_DisplaySwapkitContractData(g_swapkitContractData);
         g_swapkitContractData = NULL;
     }
-    if(g_parseErc20Approval != NULL) {
+    if (g_parseErc20Approval != NULL) {
         free_Response_EthParsedErc20Approval(g_parseErc20Approval);
         g_parseErc20Approval = NULL;
     }
@@ -409,25 +425,25 @@ static bool HandleCurrentTransaction(uint32_t index) {
     g_currentTransaction = &g_displayEthBatchTx->txs->data[g_currentTxIndex];
     g_currentNetwork = FindEvmNetwork(g_currentTransaction->chain_id);
     g_currentErc20Contract = FindErc20Contract(g_currentTransaction->overview->to);
-    if(g_currentErc20Contract == NULL) {
+    if (g_currentErc20Contract == NULL) {
         ParseSwapContractData(g_currentTransaction->overview->to, g_currentTransaction->detail->input);
         // even if parse failed, we should render the general transaction info
         // if( g_swapkitContractData->error_code != 0 || g_contractData->error_code != 0) {
         //     return false;
         // }
         return true;
-    }
-    else {
+    } else {
         ParseErc20ContractData(g_currentTransaction->detail->input, g_currentErc20Contract->decimals);
         // this case should not happen
-        if(g_parseErc20Approval->error_code != 0 || g_contractData->error_code != 0) {
+        if (g_parseErc20Approval->error_code != 0 || g_contractData->error_code != 0) {
             return false;
         }
     }
     return true;
 }
 
-void GuiEthBatchTxWidgetsTransactionParseSuccess() {
+void GuiEthBatchTxWidgetsTransactionParseSuccess()
+{
     g_displayEthBatchTx = g_parseResult->data;
     g_txCount = g_displayEthBatchTx->txs->size;
 
@@ -435,7 +451,8 @@ void GuiEthBatchTxWidgetsTransactionParseSuccess() {
     GuiEthBatchTxWidgetsRefresh();
 }
 
-void GuiEthBatchTxWidgetsInit() {
+void GuiEthBatchTxWidgetsInit()
+{
     g_pageWidget = NULL;
     g_cont = NULL;
     g_txContainer = NULL;
@@ -455,7 +472,8 @@ void GuiEthBatchTxWidgetsInit() {
     GuiModelParseTransaction(GuiParseEthBatchTxData);
 }
 
-static void GuiCreatePageContent(lv_obj_t *container) {
+static void GuiCreatePageContent(lv_obj_t *container)
+{
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_remove_style(container, NULL, LV_PART_SCROLLBAR);
 }
@@ -465,31 +483,32 @@ static void GuiEthBatchTxNavBarInit()
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, OnReturnHandler, NULL);
 }
 
-static void GuiEthBatchTxNavBarRefresh() {
+static void GuiEthBatchTxNavBarRefresh()
+{
     char* text = malloc(BUFFER_SIZE_128);
-    if(g_txCount > 1) {
+    if (g_txCount > 1) {
         sprintf(text, "%s (%d/%d)", _("confirm_transaction"), g_currentTxIndex + 1, g_txCount);
-    }
-    else {
+    } else {
         sprintf(text, "%s", _("confirm_transaction"));
     }
     SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, text);
-    if(g_currentTxIndex == 0) {
+    if (g_currentTxIndex == 0) {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, OnReturnHandler, NULL);
-    }
-    else {
+    } else {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, HandleClickPreviousBtn, NULL);
     }
 }
 
 // GUI Impelementation Part
-static lv_obj_t* GuiRenderSwapSummary(lv_obj_t *parent, const char* from_asset, const char* from_amount, const char* to_asset) {
+static lv_obj_t* GuiRenderSwapSummary(lv_obj_t *parent, const char* from_asset, const char* from_amount, const char* to_asset)
+{
     char* text = malloc(BUFFER_SIZE_128);
     sprintf(text, "%s %s", from_amount, from_asset);
     return CreateTransactionOvewviewCard(parent, _("Swap"), text, _("To"), to_asset);
 }
 
-static lv_obj_t *GuiRenderUnknownErc20SwapSummary(lv_obj_t *parent, const char* from_asset, const char* from_amount, const char* to_asset) {
+static lv_obj_t *GuiRenderUnknownErc20SwapSummary(lv_obj_t *parent, const char* from_asset, const char* from_amount, const char* to_asset)
+{
     lv_obj_t *last_view = NULL;
     last_view = CreateTransactionItemView(parent, _("Operation"), "Swap", last_view);
     last_view = CreateTransactionItemView(parent, _("From"), from_asset, last_view);
@@ -498,12 +517,12 @@ static lv_obj_t *GuiRenderUnknownErc20SwapSummary(lv_obj_t *parent, const char* 
     return last_view;
 }
 
-static lv_obj_t *GuiRenderApprove(lv_obj_t *parent, const bool showAmount, lv_obj_t *last_view) {
+static lv_obj_t *GuiRenderApprove(lv_obj_t *parent, const bool showAmount, lv_obj_t *last_view)
+{
     char* text = malloc(BUFFER_SIZE_32);
-    if(showAmount) {
+    if (showAmount) {
         text = "Approve";
-    }
-    else {
+    } else {
         text = "Revoke";
     }
     last_view = CreateTransactionItemView(parent, _("Operation"), text, last_view);
@@ -521,7 +540,7 @@ static lv_obj_t *GuiRenderApprove(lv_obj_t *parent, const bool showAmount, lv_ob
     label = GuiCreateIllustrateLabel(container, g_currentNetwork.name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
 
-    if(showAmount) {
+    if (showAmount) {
         label = GuiCreateIllustrateLabel(container, _("Amount"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
         lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
@@ -531,8 +550,7 @@ static lv_obj_t *GuiRenderApprove(lv_obj_t *parent, const bool showAmount, lv_ob
 
         label = GuiCreateIllustrateLabel(container, amount);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 138);
-    }
-    else {
+    } else {
         label = GuiCreateIllustrateLabel(container, _("Token"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
         lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
@@ -552,20 +570,20 @@ static lv_obj_t *GuiRenderApprove(lv_obj_t *parent, const bool showAmount, lv_ob
     return container;
 }
 
-static void GuiRenderApprovalOverview(lv_obj_t *parent, bool showSwapHint) {
+static void GuiRenderApprovalOverview(lv_obj_t *parent, bool showSwapHint)
+{
     lv_obj_t *last_view = NULL;
-    if(showSwapHint) {
+    if (showSwapHint) {
         last_view = CreateNoticeCard(parent, _("swap_token_approve_hint"));
     }
     bool showAmount = false;
-    if(strcmp(g_parseErc20Approval->data->value, "0") != 0) {
+    if (strcmp(g_parseErc20Approval->data->value, "0") != 0) {
         showAmount = true;
     }
     char* text = malloc(BUFFER_SIZE_32);
-    if(showAmount) {
+    if (showAmount) {
         text = "Approve";
-    }
-    else {
+    } else {
         text = "Revoke";
     }
     last_view = CreateTransactionItemView(parent, _("Operation"), text, last_view);
@@ -581,7 +599,7 @@ static void GuiRenderApprovalOverview(lv_obj_t *parent, bool showSwapHint) {
     label = GuiCreateIllustrateLabel(container, g_currentNetwork.name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
 
-    if(showAmount) {
+    if (showAmount) {
         label = GuiCreateIllustrateLabel(container, _("Amount"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
         lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
@@ -591,8 +609,7 @@ static void GuiRenderApprovalOverview(lv_obj_t *parent, bool showSwapHint) {
 
         label = GuiCreateIllustrateLabel(container, amount);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 138);
-    }
-    else {
+    } else {
         label = GuiCreateIllustrateLabel(container, _("Token"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
         lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
@@ -610,7 +627,8 @@ static void GuiRenderApprovalOverview(lv_obj_t *parent, bool showSwapHint) {
     lv_obj_set_width(label, 360);
 }
 
-static lv_obj_t *GuiRenderFromToCard(lv_obj_t *parent, const char* title, const char* from, const char* title2, const char* to, const char* to_badge, lv_obj_t *last_view) {
+static lv_obj_t *GuiRenderFromToCard(lv_obj_t *parent, const char* title, const char* from, const char* title2, const char* to, const char* to_badge, lv_obj_t *last_view)
+{
     uint16_t height = 16; //top padding
     lv_obj_t *container = CreateRelativeTransactionContentContainer(parent, 408, 0, last_view);
 
@@ -660,7 +678,8 @@ static lv_obj_t *GuiRenderFromToCard(lv_obj_t *parent, const char* title, const 
     return container;
 }
 
-static void GuiRenderSwapOverview(lv_obj_t *parent) {
+static void GuiRenderSwapOverview(lv_obj_t *parent)
+{
     lv_obj_t *last_view = NULL;
     Erc20Contract_t *erc20Contract = FindErc20Contract(g_swapkitContractData->data->swap_in_asset);
     bool is_eth = strcmp(g_swapkitContractData->data->swap_in_asset, "0x0000000000000000000000000000000000000000") == 0;
@@ -669,31 +688,29 @@ static void GuiRenderSwapOverview(lv_obj_t *parent) {
         erc20Contract->symbol = "ETH";
         erc20Contract->decimals = 18;
     }
-    if(erc20Contract != NULL) {
+    if (erc20Contract != NULL) {
         //is known erc20 token
         SimpleResponse_c_char *response = format_value_with_decimals(g_swapkitContractData->data->swap_in_amount, erc20Contract->decimals);
-        if(response->error_code == 0) {
+        if (response->error_code == 0) {
             char *amount = response->data;
             last_view = GuiRenderSwapSummary(parent, erc20Contract->symbol, amount, g_swapkitContractData->data->swap_out_asset);
-        }
-        else {
+        } else {
             //this should not happen
             printf("format_value_with_decimals failed\n");
         }
-    }
-    else {
+    } else {
         last_view = GuiRenderUnknownErc20SwapSummary(parent, g_swapkitContractData->data->swap_in_asset, g_swapkitContractData->data->swap_in_amount, g_swapkitContractData->data->swap_out_asset);
     }
-    if(erc20Contract != NULL) {
+    if (erc20Contract != NULL) {
         free(erc20Contract);
         erc20Contract = NULL;
     }
     last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
 
     char* to_badge = NULL;
-    if(g_swapkitContractData->data->swap_out_asset_contract_address != NULL) {
+    if (g_swapkitContractData->data->swap_out_asset_contract_address != NULL) {
         erc20Contract = FindErc20Contract(g_swapkitContractData->data->swap_out_asset_contract_address);
-        if(erc20Contract != NULL) {
+        if (erc20Contract != NULL) {
             to_badge = erc20Contract->symbol;
         }
     }
@@ -702,13 +719,14 @@ static void GuiRenderSwapOverview(lv_obj_t *parent) {
 
     last_view = CreateTransactionItemView(parent, _("Destination"), g_swapkitContractData->data->receive_address, last_view);
 
-    if(erc20Contract != NULL) {
+    if (erc20Contract != NULL) {
         free(erc20Contract);
         erc20Contract = NULL;
     }
 }
 
-static void GuiRenderGeneralOverview(lv_obj_t *parent) {
+static void GuiRenderGeneralOverview(lv_obj_t *parent)
+{
     lv_obj_t *last_view = NULL;
 
     last_view = CreateTransactionOvewviewCard(parent, _("Value"), g_currentTransaction->overview->value, _("Max Txn Fee"), g_currentTransaction->overview->max_txn_fee);
@@ -716,7 +734,7 @@ static void GuiRenderGeneralOverview(lv_obj_t *parent) {
     last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
 
     char* to_badge = NULL;
-    if(g_contractData != NULL && g_contractData->error_code == 0) {
+    if (g_contractData != NULL && g_contractData->error_code == 0) {
         last_view = CreateTransactionItemView(parent, _("Method"), g_contractData->data->method_name, last_view);
         to_badge = g_contractData->data->contract_name;
     }
@@ -724,23 +742,23 @@ static void GuiRenderGeneralOverview(lv_obj_t *parent) {
     last_view = GuiRenderFromToCard(parent, _("From"), g_currentTransaction->overview->from, _("To"), g_currentTransaction->overview->to, to_badge, last_view);
 }
 
-static void GuiRenderOverview(lv_obj_t *parent, bool showSwapHint) {
+static void GuiRenderOverview(lv_obj_t *parent, bool showSwapHint)
+{
     lv_obj_t *last_view = NULL;
     bool isApprove = g_parseErc20Approval != NULL;
     bool isSwap = g_swapkitContractData != NULL && g_swapkitContractData->error_code == 0;
-    if(isApprove) {
+    if (isApprove) {
         GuiRenderApprovalOverview(parent, showSwapHint);
-    }
-    else if (isSwap) {
+    } else if (isSwap) {
         GuiRenderSwapOverview(parent);
-    }
-    else {
+    } else {
         //is general transaction
         GuiRenderGeneralOverview(parent);
     }
 }
 
-static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *last_view) {
+static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *last_view)
+{
     uint16_t height = 16 ; //top padding
     lv_obj_t *container = CreateRelativeTransactionContentContainer(parent, 408, 0, last_view);
     lv_obj_align(container, LV_ALIGN_TOP_LEFT, 0, 4);
@@ -769,12 +787,12 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
 
     height += 30 + 8;
 
-    titleLabel = GuiCreateIllustrateLabel(container, "  \xE2\x80\xA2  Max Fee Price * Gas Limit");
+    titleLabel = GuiCreateIllustrateLabel(container, "  ·  Max Fee Price * Gas Limit");
     lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
 
     height += 30 + 8;
 
-    if(g_currentTransaction->detail->max_priority != NULL) {
+    if (g_currentTransaction->detail->max_priority != NULL) {
         titleLabel = GuiCreateIllustrateLabel(container, _("Max Priority"));
         lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
         lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
@@ -790,7 +808,7 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
         height += 30 + 8;
     }
 
-    if(g_currentTransaction->detail->max_fee_price != NULL) {
+    if (g_currentTransaction->detail->max_fee_price != NULL) {
         titleLabel = GuiCreateIllustrateLabel(container, _("Max Fee Price"));
         lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
         lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
@@ -801,7 +819,7 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
         height += 30 + 8;
     }
 
-    if(g_currentTransaction->detail->max_priority_price != NULL) {
+    if (g_currentTransaction->detail->max_priority_price != NULL) {
         titleLabel = GuiCreateIllustrateLabel(container, _("Max Priority Fee Price"));
         lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
         lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
@@ -812,7 +830,7 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
         height += 30 + 8;
     }
 
-    if(g_currentTransaction->detail->gas_price != NULL) {
+    if (g_currentTransaction->detail->gas_price != NULL) {
         titleLabel = GuiCreateIllustrateLabel(container, _("Gas Price"));
         lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
         lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
@@ -840,20 +858,21 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
     return container;
 }
 
-static lv_obj_t *GuiRenderDetailFromTo(lv_obj_t *parent, lv_obj_t *last_view) {
+static lv_obj_t *GuiRenderDetailFromTo(lv_obj_t *parent, lv_obj_t *last_view)
+{
     char* to_badge = NULL;
 
-    if(g_currentErc20Contract != NULL) {
+    if (g_currentErc20Contract != NULL) {
         to_badge = g_currentErc20Contract->symbol;
-    }
-    else if (g_contractData != NULL && g_contractData->error_code == 0) {
+    } else if (g_contractData != NULL && g_contractData->error_code == 0) {
         to_badge = g_contractData->data->contract_name;
     }
 
     return GuiRenderFromToCard(parent, _("From"), g_currentTransaction->detail->from, _("To"), g_currentTransaction->detail->to, to_badge, last_view);
 }
 
-static lv_obj_t *GuiRenderDetailContractData(lv_obj_t *parent, lv_obj_t *last_view) {
+static lv_obj_t *GuiRenderDetailContractData(lv_obj_t *parent, lv_obj_t *last_view)
+{
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("Input Data"));
     lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
@@ -861,7 +880,7 @@ static lv_obj_t *GuiRenderDetailContractData(lv_obj_t *parent, lv_obj_t *last_vi
 
     uint16_t height = 16;
 
-    for(int i = 0; i < g_contractData->data->params->size ; i++) {
+    for (int i = 0; i < g_contractData->data->params->size ; i++) {
         DisplayContractParam param = g_contractData->data->params->data[i];
         lv_obj_t *label = GuiCreateIllustrateLabel(container, param.name);
         lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
@@ -871,26 +890,23 @@ static lv_obj_t *GuiRenderDetailContractData(lv_obj_t *parent, lv_obj_t *last_vi
         bool showAddressChecker = false;
 
         //handle address case
-        if(strcmp(param.param_type, "address") == 0) {
+        if (strcmp(param.param_type, "address") == 0) {
             bool asset_is_eth = strcmp(param.value, "0x0000000000000000000000000000000000000000") == 0;
             Erc20Contract_t *erc20Contract = FindErc20Contract(param.value);
             char* text = malloc(BUFFER_SIZE_64);
-            if(erc20Contract != NULL) {
+            if (erc20Contract != NULL) {
                 sprintf(text, "%s (#1BE0C6 %s#)", param.value, erc20Contract->symbol);
                 showAddressChecker = true;
-            }
-            else if (asset_is_eth) {
+            } else if (asset_is_eth) {
                 sprintf(text, "%s (#F5870A %s#)", param.value, g_currentNetwork.symbol);
                 showAddressChecker = false;
-            }
-            else {
+            } else {
                 sprintf(text, "%s", param.value);
                 showAddressChecker = true;
             }
             label = GuiCreateIllustrateLabel(container, text);
             lv_label_set_recolor(label, true);
-        }
-        else {
+        } else {
             label = GuiCreateIllustrateLabel(container, param.value);
         }
 
@@ -901,7 +917,7 @@ static lv_obj_t *GuiRenderDetailContractData(lv_obj_t *parent, lv_obj_t *last_vi
         uint16_t labelHeight = lv_obj_get_height(label);
         height += labelHeight + 8;
 
-        if(showAddressChecker) {
+        if (showAddressChecker) {
             lv_obj_t *cont = GuiCreateContainerWithParent(container, 360, 30);
             lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
             lv_obj_set_style_bg_opa(cont, LV_OPA_0, LV_PART_MAIN);
@@ -928,7 +944,8 @@ static lv_obj_t *GuiRenderDetailContractData(lv_obj_t *parent, lv_obj_t *last_vi
     return container;
 }
 
-static lv_obj_t *GuiRenderDetailInputData(lv_obj_t *parent, lv_obj_t *last_view) {
+static lv_obj_t *GuiRenderDetailInputData(lv_obj_t *parent, lv_obj_t *last_view)
+{
     lv_obj_t *container = CreateRelativeTransactionContentContainer(parent, 408, 0, last_view);
 
     uint16_t height = 16;
@@ -962,27 +979,28 @@ static lv_obj_t *GuiRenderDetailInputData(lv_obj_t *parent, lv_obj_t *last_view)
     return container;
 }
 
-static void GuiRenderDetail(lv_obj_t *parent) {
+static void GuiRenderDetail(lv_obj_t *parent)
+{
     lv_obj_t *last_view = NULL;
     last_view = GuiRenderDetailTransactionInfoCard(parent, last_view);
 
     last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
 
-    if(g_contractData != NULL && g_contractData->error_code == 0) {
+    if (g_contractData != NULL && g_contractData->error_code == 0) {
         last_view = CreateTransactionItemView(parent, _("Method"), g_contractData->data->method_name, last_view);
     }
 
     last_view = GuiRenderDetailFromTo(parent, last_view);
 
-    if(g_contractData != NULL && g_contractData->error_code == 0) {
+    if (g_contractData != NULL && g_contractData->error_code == 0) {
         last_view = GuiRenderDetailContractData(parent, last_view);
-    }
-    else {
+    } else {
         last_view = GuiRenderDetailInputData(parent, last_view);
     }
 }
 
-static void GuiRenderTransactionFrame(lv_obj_t *parent) {
+static void GuiRenderTransactionFrame(lv_obj_t *parent)
+{
     lv_obj_t *tabView = lv_tabview_create(parent, LV_DIR_TOP, 64);
     lv_obj_set_style_bg_color(tabView, lv_color_hex(0x0), LV_PART_MAIN);
     lv_obj_set_style_bg_color(tabView, lv_color_hex(0x0), LV_PART_ITEMS);
@@ -1025,20 +1043,20 @@ static void GuiRenderTransactionFrame(lv_obj_t *parent) {
     lv_obj_set_width(tab_btns, width);
 }
 
-static void GuiRenderBottomBtn(lv_obj_t *parent, bool showSignSlider) {
+static void GuiRenderBottomBtn(lv_obj_t *parent, bool showSignSlider)
+{
     //clear bottom container if need
     if (showSignSlider) {
-        if(g_bottomBtnContainer != NULL) {
+        if (g_bottomBtnContainer != NULL) {
             lv_obj_del(g_bottomBtnContainer);
             g_bottomBtnContainer = NULL;
         }
-        if(g_signSlider != NULL) {
+        if (g_signSlider != NULL) {
             return;
         }
         g_signSlider = GuiCreateConfirmSlider(parent, CheckSliderProcessHandler);
         g_fingerSignCount = 0;
-    }
-    else {
+    } else {
         if (g_signSlider != NULL) {
             lv_obj_del(g_signSlider);
             g_signSlider = NULL;
@@ -1063,8 +1081,9 @@ static void GuiRenderBottomBtn(lv_obj_t *parent, bool showSignSlider) {
     }
 }
 
-static void GuiRenderCurrentTransaction(bool showSwapHint, bool showSignSlider) {
-    if(g_txContainer != NULL) {
+static void GuiRenderCurrentTransaction(bool showSwapHint, bool showSignSlider)
+{
+    if (g_txContainer != NULL) {
         lv_obj_del(g_txContainer);
         g_txContainer = NULL;
         g_overviewContainer = NULL;

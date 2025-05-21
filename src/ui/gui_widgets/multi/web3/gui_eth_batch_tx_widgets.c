@@ -645,17 +645,19 @@ static lv_obj_t *GuiRenderFromToCard(lv_obj_t *parent, const char* title, const 
 
     height += 60 + 8;
 
-    label = GuiCreateIllustrateLabel(container, title2);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
-    lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+    if(to != NULL) {
+        label = GuiCreateIllustrateLabel(container, title2);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+        lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
-    height += 30 + 8;
+        height += 30 + 8;
 
-    label = GuiCreateIllustrateLabel(container, to);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
-    lv_obj_set_width(label, 360);
+        label = GuiCreateIllustrateLabel(container, to);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
+        lv_obj_set_width(label, 360);
 
-    height += 60 + 8;
+        height += 60 + 8;
+    }
 
     if (to_badge != NULL) {
         lv_obj_t *img;

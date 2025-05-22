@@ -94,7 +94,7 @@ extern bool g_reboot;
     }, \
     { \
         REMAPVIEW_TRX, \
-        PC_SIMULATOR_PATH "/page_eth.json", \
+        PC_SIMULATOR_PATH "/page_trx.json", \
         GuiGetTrxData, \
         NULL, \
         FreeTrxMemory, \

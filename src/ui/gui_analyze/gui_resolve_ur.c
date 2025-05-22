@@ -62,7 +62,7 @@ void HandleDefaultViewType(URParseResult *urResult, URParseMultiResult *urMultiR
     GuiRemapViewType viewType = ViewTypeReMap(urViewType.viewType);
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainViewArray); i++) {
         if (g_chainViewArray[i].chain == viewType) {
-            g_chainViewArray[viewType].func(urResult, urMultiResult, is_multi);
+            g_chainViewArray[i].func(urResult, urMultiResult, is_multi);
             break;
         }
     }

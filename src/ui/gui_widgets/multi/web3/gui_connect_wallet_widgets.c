@@ -185,7 +185,7 @@ static const lv_img_dsc_t *g_petraCoinArray[1] = {
 };
 
 static const lv_img_dsc_t *g_nightlyCoinArray[1] = {
-    &coinSui, &coinIota
+    &coinSui, &coinIota, &coinApt
 };
 
 static const lv_img_dsc_t *g_solfareCoinArray[1] = {

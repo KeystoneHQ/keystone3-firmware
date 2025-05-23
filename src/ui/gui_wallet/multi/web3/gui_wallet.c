@@ -194,11 +194,13 @@ UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    ExtendedPublicKey keys[10];
+#define NIGHTLY_XPUB_COUNT 30
+    ExtendedPublicKey keys[NIGHTLY_XPUB_COUNT];
     publicKeys->data = keys;
-    publicKeys->size = 10;
+    publicKeys->size = NIGHTLY_XPUB_COUNT;
     int16_t coinType = 0;
     int16_t xpubBaseIndex = 0;
+    uint8_t xpubIndex = 0;
     switch (coin) {
     case CHAIN_SUI:
         coinType = 784;
@@ -208,15 +210,27 @@ UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
         printf("invalid coin type\r\n");
         return NULL;
     }
-    for (uint8_t i = 0; i < 10; i++) {
-        keys[i].path = SRAM_MALLOC(BUFFER_SIZE_32);
-        snprintf_s(keys[i].path, BUFFER_SIZE_32, "m/44'/%u'/%u'/0'/0'", coinType, i);
-        keys[i].xpub = GetCurrentAccountPublicKey(xpubBaseIndex + i);
+    for (xpubIndex = 0; xpubIndex < 10; xpubIndex++) {
+        keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/%u'/%u'/0'/0'", coinType, xpubIndex);
+        keys[xpubIndex].xpub = GetCurrentAccountPublicKey(xpubBaseIndex + xpubIndex);
+    }
+    for (uint8_t startIndex = 0; startIndex < 10; xpubIndex++, startIndex++) {
+        keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/4218'/%u'/0/0", startIndex);
+        keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + startIndex);
+    }
+    for (uint8_t startIndex = 0; startIndex < 10; xpubIndex++, startIndex++) {
+        keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0/0", startIndex);
+        keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + startIndex);
     }
     g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
     CHECK_CHAIN_PRINT(g_urEncode);
-    for (uint8_t i = 0; i < 10; i++) {
-        SRAM_FREE(keys[i].path);
+    for (uint8_t i = 0; i < NIGHTLY_XPUB_COUNT; i++) {
+        if (keys[i].path != NULL) {
+            SRAM_FREE(keys[i].path);
+        }
     }
     SRAM_FREE(publicKeys);
     return g_urEncode;

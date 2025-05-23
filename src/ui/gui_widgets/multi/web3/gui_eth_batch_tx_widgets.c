@@ -157,6 +157,7 @@ UREncodeResult *GuiGetEthBatchTxSignQrCodeData()
 
 static void SignByPasswordCb(bool cancel)
 {
+    GUI_DEL_OBJ(g_fingerSingContainer)
     if (cancel) {
         FpCancelCurOperate();
     }

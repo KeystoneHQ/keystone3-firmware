@@ -1,3 +1,12 @@
+## 2.1.2(2025-05-29)
+
+**Web3:**
+
+### What's new
+
+1. Added support for swap operation via Keystone Nexus
+
+
 ## 2.1.0(2025-05-09)
 
 **Web3:**

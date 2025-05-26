@@ -93,6 +93,7 @@ static void HandleCurrentTransactionParseFail(uint32_t errorCode, const char *er
 static void HandleClickPreviousBtn(lv_event_t *e);
 static void HandleClickNextBtn(lv_event_t *e);
 static void HandleClickAddressChecker(lv_event_t *e);
+static void CloseContHandler(lv_event_t *e);
 
 static void ClearPageData()
 {
@@ -206,6 +207,7 @@ static void SignByPasswordCbHandler(lv_event_t *e)
 
 static void CloseContHandler(lv_event_t *e)
 {
+    GUI_DEL_OBJ(g_fingerSingContainer)
 }
 
 void GuiEthBatchTxWidgetsDeInit()

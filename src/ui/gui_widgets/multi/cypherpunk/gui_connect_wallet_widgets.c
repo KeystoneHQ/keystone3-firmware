@@ -62,6 +62,7 @@ WalletListItem_t g_walletListArray[] = {
     // {WALLET_LIST_CAKE, &walletListCake, true},
     {WALLET_LIST_FEATHER, &walletListFeather, true},
     {WALLET_LIST_ZASHI, &walletListZashi, true},
+    {WALLET_LIST_ERGO, &walletListZashi, true},
 };
 typedef struct {
     int8_t index;
@@ -82,6 +83,10 @@ static const lv_img_dsc_t *g_cakeCoinArray[1] = {
 };
 
 static const lv_img_dsc_t *g_zashiCoinArray[1] = {
+    &coinZec,
+};
+
+static const lv_img_dsc_t *g_ergoCoinArray[1] = {
     &coinZec,
 };
 
@@ -318,6 +323,19 @@ static void AddZecCoins(void)
     }
 }
 
+static void AddErgoCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < 1; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_ergoCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 static void AddCakeCoins(void)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
@@ -405,6 +423,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_ZASHI:
         func = GuiGetZecData;
         AddZecCoins();
+        break;
+    case WALLET_LIST_ERGO:
+        func = GuiGetErgoData;
+        AddErgoCoins();
         break;
     // case WALLET_LIST_CAKE:
     case WALLET_LIST_FEATHER:

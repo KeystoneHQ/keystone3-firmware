@@ -43,7 +43,6 @@ typedef enum {
     ZCASH_UFVK_ENCRYPTED,
     EDWARDS_25519,
     MONERO_PVK,
-    ERGO_NATIVE,
 } PublicInfoType_t;
 
 typedef struct {
@@ -532,7 +531,7 @@ static const ChainItem_t g_chainTable[] = {
     {ZCASH_UFVK_ENCRYPTED_0,          ZCASH_UFVK_ENCRYPTED, "zcash_ufvk_0",      "M/32'/133'/0'"    },
     {XPUB_TYPE_MONERO_0,              EDWARDS_25519,  "monero_0",                "M/44'/128'/0'"    },
     {XPUB_TYPE_MONERO_PVK_0,          MONERO_PVK,     "monero_pvk_0",            ""                 },
-    {XPUB_TYPE_ERG,                   ERGO_NATIVE,  "erg",                      "M/44'/429'/0'"     },
+    {XPUB_TYPE_ERG,                   SECP256K1,  "erg",                      "M/44'/429'/0'"     },
 #endif
 
 #ifdef BTC_ONLY
@@ -598,8 +597,6 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
         return get_extended_monero_pubkeys_by_seed(seed, len, (char *)path);
     case MONERO_PVK:
         return get_monero_pvk_by_seed(seed, len);
-    case ERGO_NATIVE:
-        return ergo_extended_pubkey_by_seed(seed, len, (char *)path);
 #endif
 
 #ifdef WEB3_VERSION

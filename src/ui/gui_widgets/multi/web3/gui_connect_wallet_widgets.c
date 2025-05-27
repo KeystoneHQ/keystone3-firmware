@@ -1223,9 +1223,7 @@ UREncodeResult *GuiGetFewchaData(void)
 
 UREncodeResult *GuiGetNightlyData(void)
 {
-    GuiChainCoinType coin = CHAIN_SUI;
-    // get pub by coin
-    return GuiGetNightlyDataByCoin(coin);
+    return GuiGetNightlyDataByCoin();
 }
 
 UREncodeResult *GuiGetXrpToolkitData(void)

@@ -189,7 +189,7 @@ UREncodeResult *GuiGetWanderData(void)
     return g_urEncode;
 }
 
-UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
+UREncodeResult *GuiGetNightlyDataByCoin(void)
 {
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
@@ -198,22 +198,11 @@ UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
     ExtendedPublicKey keys[NIGHTLY_XPUB_COUNT];
     publicKeys->data = keys;
     publicKeys->size = NIGHTLY_XPUB_COUNT;
-    int16_t coinType = 0;
-    int16_t xpubBaseIndex = 0;
     uint8_t xpubIndex = 0;
-    switch (coin) {
-    case CHAIN_SUI:
-        coinType = 784;
-        xpubBaseIndex = XPUB_TYPE_SUI_0;
-        break;
-    default:
-        printf("invalid coin type\r\n");
-        return NULL;
-    }
     for (xpubIndex = 0; xpubIndex < 10; xpubIndex++) {
         keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
-        snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/%u'/%u'/0'/0'", coinType, xpubIndex);
-        keys[xpubIndex].xpub = GetCurrentAccountPublicKey(xpubBaseIndex + xpubIndex);
+        snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/784'/%u'/0'/0'", xpubIndex);
+        keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + xpubIndex);
     }
 
     for (uint8_t startIndex = 0; startIndex < 10; xpubIndex++, startIndex++) {
@@ -221,7 +210,7 @@ UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
         snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0/0", startIndex);
         keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + startIndex);
     }
-    g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys); 
     CHECK_CHAIN_PRINT(g_urEncode);
     for (uint8_t i = 0; i < NIGHTLY_XPUB_COUNT; i++) {
         if (keys[i].path != NULL) {

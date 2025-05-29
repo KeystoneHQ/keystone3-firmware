@@ -18,7 +18,6 @@ use core::str::FromStr;
 use itertools::Itertools;
 use ur_registry::ethereum::eth_sign_request::DataType;
 use ur_registry::pb::protoc::EthTx;
-
 #[repr(C)]
 pub struct DisplayETH {
     pub(crate) tx_type: PtrString,
@@ -80,6 +79,7 @@ impl TryFrom<EthTx> for DisplayETH {
                 gas_limit: convert_c_char(eth_tx.gas_limit),
                 from: convert_c_char(temp_from_address.clone()),
                 to: convert_c_char(contract_address),
+                nonce: convert_c_char(eth_tx.nonce.to_string()),
                 input: convert_c_char(input_data),
             };
             let display_eth = DisplayETH {
@@ -116,6 +116,7 @@ impl TryFrom<EthTx> for DisplayETH {
                 gas_limit: convert_c_char(eth_tx.gas_limit),
                 from: convert_c_char(temp_from_address.clone()),
                 to: convert_c_char(eth_tx.to),
+                nonce: convert_c_char(eth_tx.nonce.to_string()),
                 input: convert_c_char(eth_tx.memo),
             };
             let display_eth = DisplayETH {
@@ -172,6 +173,8 @@ pub struct DisplayETHDetail {
     from: PtrString,
     to: PtrString,
 
+    nonce: PtrString,
+
     input: PtrString,
 }
 
@@ -189,6 +192,7 @@ impl Free for DisplayETHDetail {
         free_str_ptr!(self.max_priority);
         free_str_ptr!(self.max_fee_price);
         free_str_ptr!(self.max_priority_price);
+        free_str_ptr!(self.nonce);
         free_str_ptr!(self.input);
     }
 }
@@ -251,6 +255,7 @@ impl From<ParsedEthereumTransaction> for DisplayETHDetail {
             gas_limit: convert_c_char(tx.gas_limit),
             from: convert_c_char(tx.from),
             to: convert_c_char(tx.to),
+            nonce: convert_c_char(tx.nonce.to_string()),
             input: convert_c_char(tx.input),
         }
     }
@@ -297,6 +302,9 @@ pub struct DisplayETHTypedData {
     primary_type: PtrString,
     message: PtrString,
     from: PtrString,
+    domain_hash: PtrString,
+    message_hash: PtrString,
+    safe_tx_hash: PtrString,
 }
 
 impl From<TypedData> for DisplayETHTypedData {
@@ -309,6 +317,8 @@ impl From<TypedData> for DisplayETHTypedData {
             }
         }
 
+        let safe_tx_hash = message.get_safe_tx_hash();
+
         Self {
             name: to_ptr_string(message.name),
             version: to_ptr_string(message.version),
@@ -318,6 +328,9 @@ impl From<TypedData> for DisplayETHTypedData {
             primary_type: to_ptr_string(message.primary_type),
             message: to_ptr_string(message.message),
             from: to_ptr_string(message.from),
+            domain_hash: to_ptr_string(message.domain_separator),
+            message_hash: to_ptr_string(message.message_hash),
+            safe_tx_hash: to_ptr_string(safe_tx_hash),
         }
     }
 }
@@ -334,6 +347,9 @@ impl Free for DisplayETHTypedData {
         free_str_ptr!(self.primary_type);
         free_str_ptr!(self.message);
         free_str_ptr!(self.from);
+        free_str_ptr!(self.domain_hash);
+        free_str_ptr!(self.message_hash);
+        free_str_ptr!(self.safe_tx_hash);
     }
 }
 

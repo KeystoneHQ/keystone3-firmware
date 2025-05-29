@@ -35,6 +35,7 @@ GetContSizeFunc GetOtherChainContainerSize(char *type, GuiRemapViewType remapInd
 {
     switch (remapIndex) {
     case REMAPVIEW_ETH:
+    case REMAPVIEW_ETH_TYPEDDATA:
         return GetEthContainerSize(type);
     case REMAPVIEW_COSMOS:
         return GetCosmosContainerSize(type);
@@ -118,6 +119,8 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
 {
     if (!strcmp(type, "GetEthEnsExist")) {
         return GetEthEnsExist;
+    } else if (!strcmp(type, "GetEthTypeDataHashExist")) {
+        return GetEthTypeDataHashExist;
     } else if (!strcmp(type, "GetToEthEnsExist")) {
         return GetToEthEnsExist;
     } else if (!strcmp(type, "GetEthContractDataExist")) {
@@ -232,6 +235,7 @@ GetLabelDataLenFunc GuiOtherChainTextLenFuncGet(char *type, GuiRemapViewType rem
     case REMAPVIEW_XRP:
         return GuiXrpTextLenFuncGet(type);
     case REMAPVIEW_ETH_TYPEDDATA:
+    case REMAPVIEW_ETH:
         return GuiEthTextLenFuncGet(type);
     case REMAPVIEW_AR:
     case REMAPVIEW_AR_MESSAGE:
@@ -326,6 +330,8 @@ static GetLabelDataLenFunc GuiEthTextLenFuncGet(char *type)
 {
     if (!strcmp(type, "GetEthTypedDataMessageLen")) {
         return GetEthTypedDataMessageLen;
+    } else if (!strcmp(type, "GetEthInputDataLen")) {
+        return GetEthInputDataLen;
     }
     return NULL;
 }
@@ -557,6 +563,14 @@ static GetLabelDataFunc GuiEthTypedDataTextFuncGet(char *type)
         return GetEthTypedDataFrom;
     } else if (!strcmp(type, "GetEthTypedDataPrimayType")) {
         return GetEthTypedDataPrimayType;
+    } else if (!strcmp(type, "GetEthGetSignerAddress")) {
+        return GetEthGetSignerAddress;
+    } else if (!strcmp(type, "GetEthTypedDataMessageHash")) {
+        return GetEthTypedDataMessageHash;
+    } else if (!strcmp(type, "GetEthTypedDataSafeTxHash")) {
+        return GetEthTypedDataSafeTxHash;
+    } else if (!strcmp(type, "GetEthTypedDataDomainHash")) {
+        return GetEthTypedDataDomainHash;
     }
     return NULL;
 }
@@ -599,6 +613,10 @@ static GetLabelDataFunc GuiEthTextFuncGet(char *type)
         return GetEthTransactionData;
     } else if (!strcmp(type, "GetEthContractName")) {
         return GetEthContractName;
+    } else if (!strcmp(type, "GetEthInputData")) {
+        return GetEthInputData;
+    } else if (!strcmp(type, "GetEthNonce")) {
+        return GetEthNonce;
     }
 
     return NULL;
@@ -654,6 +672,8 @@ static GetContSizeFunc GetEthContainerSize(char *type)
         return GetEthToFromSize;
     } else if (!strcmp(type, "GetEthContractDataSize")) {
         return GetEthContractDataSize;
+    } else if (!strcmp(type, "GetEthTypeDomainSize")) {
+        return GetEthTypeDomainSize;
     }
     return NULL;
 }

@@ -29,10 +29,9 @@ typedef struct {
     FreeChainDataFunc freeFunc;
 } GuiAnalyze_t;
 
-#define GUI_ANALYZE_TABVIEW_CNT 2
+#define GUI_ANALYZE_TABVIEW_CNT 3
 typedef struct {
     lv_obj_t *obj[GUI_ANALYZE_TABVIEW_CNT];
-    lv_obj_t *img[GUI_ANALYZE_TABVIEW_CNT];
     uint8_t tabviewIndex;
 } GuiAnalyzeTabview_t;
 static GuiAnalyzeTabview_t g_analyzeTabview;
@@ -71,7 +70,7 @@ const static GuiAnalyze_t g_analyzeArray[] = {
 
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index);
 void GuiTemplateClosePage(void);
-static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json);
+static lv_obj_t *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json);
 
 lv_obj_t *g_templateContainer = NULL;
 lv_obj_t *g_tableView = NULL;
@@ -427,13 +426,12 @@ void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
     }
 }
 
-void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
+static char *GetLabelText(lv_obj_t *parent, cJSON *json)
 {
     GetLabelDataFunc pFunc = NULL;
     GetLabelDataLenFunc lenFunc = NULL;
-    int textWidth = 0;
-    int bufLen = BUFFER_SIZE_1024;
     cJSON *item = cJSON_GetObjectItem(json, "text_len_func");
+    int bufLen = BUFFER_SIZE_512;
     if (item != NULL) {
         lenFunc = GuiTemplateTextLenFuncGet(item->valuestring);
         if (lenFunc != NULL) {
@@ -441,15 +439,69 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
         }
     }
     char *text = EXT_MALLOC(bufLen);
-    lv_obj_t *obj = lv_label_create(parent);
     item = cJSON_GetObjectItem(json, "text");
     if (item != NULL) {
-        lv_label_set_text(obj, _(item->valuestring));
-    } else {
-        lv_label_set_text(obj, "");
+        strcpy_s(text, bufLen, item->valuestring);
+        return text;
     }
 
-    item = cJSON_GetObjectItem(json, "text_width");
+    item = cJSON_GetObjectItem(json, "text_key");
+    if (item != NULL) {
+        strcpy_s(text, bufLen, item->valuestring);
+        return text;
+    }
+
+    item = cJSON_GetObjectItem(json, "text_func");
+    if (item != NULL) {
+        pFunc = GuiTemplateTextFuncGet(item->valuestring);
+        if (pFunc != NULL) {
+            pFunc(text, g_totalData, bufLen);
+        }
+    }
+    return text;
+}
+
+lv_obj_t *GuiWidgetTextArea(lv_obj_t *parent, cJSON *json)
+{
+    lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_t *cont = GuiCreateContainerWithParent(parent, 360, 330);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    char *text = GetLabelText(parent, json);
+    int textLen = strlen(text);
+    int segmentSize = 1000;
+    int numSegments = (textLen + segmentSize - 1) / segmentSize;
+    
+    for (int i = 0; i < numSegments; i++) {
+        int offset = i * segmentSize;
+        lv_obj_t *label = GuiCreateIllustrateLabel(cont, text + offset);
+        lv_obj_set_width(label, 360);
+        lv_label_set_recolor(label, true);
+        if (i == 0) {
+            lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 10);
+        } else {
+            GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        }
+        
+        if (i < numSegments - 1 && textLen > offset + segmentSize) {
+            char savedChar = text[offset + segmentSize];
+            text[offset + segmentSize] = '\0';
+            lv_label_set_text(label, text + offset);
+            text[offset + segmentSize] = savedChar;
+        }
+    }
+    
+    EXT_FREE(text);
+    return cont;
+}
+
+lv_obj_t *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
+{
+    char *text = GetLabelText(parent, json);
+    lv_obj_t *obj = lv_label_create(parent);
+    lv_label_set_long_mode(obj, LV_LABEL_LONG_SCROLL);
+    int textWidth = 0;
+    cJSON *item = cJSON_GetObjectItem(json, "text_width");
     if (item != NULL) {
         textWidth = item->valueint;
     } else {
@@ -469,15 +521,6 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
         lv_obj_set_style_text_color(obj, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
     }
 
-    item = cJSON_GetObjectItem(json, "text_func");
-    if (item != NULL) {
-        pFunc = GuiTemplateTextFuncGet(item->valuestring);
-        item = cJSON_GetObjectItem(json, "text_key");
-        if (item != NULL) {
-            strcpy_s(text, BUFFER_SIZE_1024, item->valuestring);
-        }
-    }
-
     item = cJSON_GetObjectItem(json, "text_opa");
     if (item != NULL) {
         lv_obj_set_style_text_opa(obj, item->valueint, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -485,10 +528,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
 
     lv_label_set_recolor(obj, true);
     lv_obj_set_style_text_letter_space(obj, LV_STATE_DEFAULT | LV_PART_MAIN, 20);
-    if (pFunc) {
-        pFunc(text, g_totalData, bufLen);
-        lv_label_set_text(obj, text);
-    }
+    lv_label_set_text(obj, text);
     if (lv_obj_get_self_width(obj) >= textWidth) {
         item = cJSON_GetObjectItem(json, "one_line");
         if (item != NULL) {
@@ -506,7 +546,7 @@ void *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
-void *GuiWidgetContainer(lv_obj_t *parent, cJSON *json)
+lv_obj_t *GuiWidgetContainer(lv_obj_t *parent, cJSON *json)
 {
     uint16_t contWidth = 0;
     uint16_t contHeight = 0;
@@ -550,7 +590,7 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
     return GetOtherChainCustomFunc(funcName);
 }
 
-void *GuiWidgetCustomContainer(lv_obj_t *parent, cJSON *json)
+lv_obj_t *GuiWidgetCustomContainer(lv_obj_t *parent, cJSON *json)
 {
     lv_obj_t *obj = lv_obj_create(parent);
     lv_obj_set_style_outline_width(obj, 0, LV_STATE_DEFAULT | LV_PART_MAIN);
@@ -610,7 +650,7 @@ void GuiWidgetList(lv_obj_t *parent, cJSON *json)
     }
 }
 
-void *GuiWidgetTable(lv_obj_t *parent, cJSON *json)
+lv_obj_t *GuiWidgetTable(lv_obj_t *parent, cJSON *json)
 {
     uint16_t tableWidth = 400;
     char ***tableData;
@@ -678,7 +718,7 @@ void *GuiWidgetTable(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
-void *GuiWidgetImg(lv_obj_t *parent, cJSON *json)
+lv_obj_t *GuiWidgetImg(lv_obj_t *parent, cJSON *json)
 {
     lv_obj_t *obj = lv_img_create(parent);
     cJSON *item = cJSON_GetObjectItem(json, "img_src");
@@ -717,7 +757,7 @@ void *GuiWidgetImg(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
-void *GuiWidgetTabView(lv_obj_t *parent, cJSON *json)
+lv_obj_t *GuiWidgetTabView(lv_obj_t *parent, cJSON *json)
 {
     lv_obj_t *obj = lv_tabview_create(parent, LV_DIR_TOP, 64);
     lv_obj_set_style_bg_color(obj, lv_color_hex(0x0), LV_PART_MAIN);
@@ -738,7 +778,7 @@ void *GuiWidgetTabView(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
-void *GuiWidgetTabViewChild(lv_obj_t *parent, cJSON *json)
+lv_obj_t *GuiWidgetTabViewChild(lv_obj_t *parent, cJSON *json)
 {
     cJSON *item = cJSON_GetObjectItem(json, "tab_name");
     lv_obj_t *obj = lv_tabview_add_tab(g_tableView, item->valuestring);
@@ -773,7 +813,7 @@ void *GuiWidgetTabViewChild(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
-static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
+static lv_obj_t *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
 {
     lv_obj_t *obj = NULL;
     cJSON *item = cJSON_GetObjectItem(json, "type");
@@ -826,6 +866,8 @@ static void *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         obj = GuiWidgetTabViewChild(parent, json);
     } else if (0 == strcmp(type, "custom_container")) {
         obj = GuiWidgetCustomContainer(parent, json);
+    } else if (0 == strcmp(type, "textarea")) {
+        obj = GuiWidgetTextArea(parent, json);
     } else {
         printf("json type is %s\n", type);
         return NULL;
@@ -925,17 +967,14 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     lv_obj_t *line = (lv_obj_t *)GuiCreateLine(g_imgCont, points, 2);
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 64);
+    char *tabName[GUI_ANALYZE_TABVIEW_CNT] = {_("Overview"), _("Details"), _("Raw Data")};
 
-    for (int i = 0; i < 2; i++) {
-        lv_obj_t *tabChild;
-        if (i == 0) {
-            tabChild = lv_tabview_add_tab(tabView, _("Overview"));
-            lv_obj_t *temp = GuiCreateIllustrateLabel(tabView, _("Overview"));
-            width = lv_obj_get_self_width(temp) > 100 ? 300 : 200;
-            lv_obj_del(temp);
-        } else if (i == 1) {
-            tabChild = lv_tabview_add_tab(tabView, _("Details"));
+    for (int i = 0; i < GUI_ANALYZE_TABVIEW_CNT; i++) {
+        if (g_analyzeTabview.obj[i] == NULL) {
+            break;
         }
+        lv_obj_t *tabChild;
+        tabChild = lv_tabview_add_tab(tabView, tabName[i]);
         lv_obj_set_scrollbar_mode(tabChild, LV_SCROLLBAR_MODE_OFF);
         lv_obj_clear_flag(tabChild, LV_OBJ_FLAG_SCROLL_ELASTIC);
         lv_obj_set_style_pad_all(tabChild, 0, LV_PART_MAIN);
@@ -949,7 +988,7 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
         lv_obj_set_style_border_side(tab_btns, LV_BORDER_SIDE_BOTTOM, LV_PART_ITEMS | LV_STATE_CHECKED);
         lv_obj_set_style_text_opa(tab_btns, 255, LV_PART_MAIN | LV_STATE_CHECKED);
         lv_obj_set_style_text_opa(tab_btns, 150, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_obj_set_width(tab_btns, width);
+        lv_obj_set_width(tab_btns, 300);
         int childCnt = lv_obj_get_child_cnt(g_analyzeTabview.obj[i]);
         int yOffset = 12;
         for (int j = 0; j < childCnt; j++) {
@@ -970,6 +1009,9 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
 {
     g_tableView = NULL;
     g_analyzeTabview.tabviewIndex = 0;
+    for (uint32_t i = 0; i < GUI_ANALYZE_TABVIEW_CNT; i++) {
+        g_analyzeTabview.obj[i] = NULL;
+    }
     g_reMapIndex = ViewTypeReMap(index);
     if (g_reMapIndex == REMAPVIEW_BUTT) {
         return NULL;

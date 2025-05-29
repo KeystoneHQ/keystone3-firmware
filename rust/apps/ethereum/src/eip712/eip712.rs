@@ -1,17 +1,3 @@
-use super::human_readable::lexer::HumanReadableParser;
-use super::serde_helpers::deserialize_salt_opt;
-use super::serde_helpers::deserialize_stringified_array_opt;
-use super::serde_helpers::deserialize_stringified_numeric_opt;
-use super::serde_helpers::StringifiedNumeric;
-use super::types::bytes::Bytes;
-use crate::structs::TypedData as StructTypedDta;
-
-use ethabi::encode;
-use ethabi::ParamType;
-use ethabi::Token;
-use ethereum_types::Address;
-use ethereum_types::U256;
-
 use alloc::collections::BTreeMap;
 use alloc::collections::BTreeSet;
 use alloc::format;
@@ -21,14 +7,25 @@ use alloc::vec;
 use alloc::vec::Vec;
 use core::iter::FromIterator;
 use core::str::FromStr;
-use serde::{Deserialize, Deserializer, Serialize};
 
+use ethabi::encode;
+use ethabi::ParamType;
+use ethabi::Token;
+use ethereum_types::Address;
+use ethereum_types::U256;
 use hex;
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_json;
 use thiserror;
-use thiserror::Error;
 
 use crate::crypto::keccak256;
+use crate::structs::TypedData as StructTypedDta;
+
+use super::human_readable::lexer::HumanReadableParser;
+use super::serde_helpers::deserialize_salt_opt;
+use super::serde_helpers::deserialize_stringified_numeric_opt;
+use super::serde_helpers::StringifiedNumeric;
+use super::types::bytes::Bytes;
 
 /// Custom types for `TypedData`
 pub type Types = BTreeMap<String, Vec<Eip712DomainType>>;
@@ -333,6 +330,8 @@ pub struct TypedData {
 
 impl Into<StructTypedDta> for TypedData {
     fn into(self) -> StructTypedDta {
+        let domain_separator = self.domain.separator(Some(&self.types));
+        let message_hash = self.struct_hash().unwrap();
         StructTypedDta {
             name: self.domain.name.unwrap_or_default(),
             version: self.domain.version.unwrap_or_default(),
@@ -358,6 +357,8 @@ impl Into<StructTypedDta> for TypedData {
             primary_type: self.primary_type,
             message: serde_json::to_string_pretty(&self.message).unwrap_or("".to_string()),
             from: "".to_string(),
+            message_hash: hex::encode(&message_hash),
+            domain_separator: hex::encode(&domain_separator),
         }
     }
 }
@@ -786,7 +787,6 @@ mod tests {
     extern crate std;
 
     use super::*;
-    use std::println;
 
     #[test]
     fn test_full_domain() {

@@ -37,6 +37,9 @@ bool FatfsFileExist(const char *path);
 bool GetEnsName(const char *addr, char *name);
 void FpWipeManageInfo(void);
 void SetPageLockScreen(bool enable);
+uint8_t GetFingerSignFlag(void);
+bool IsPreviousLockScreenEnable(void);
+void SetLockScreen(bool enable);
 
 extern bool g_reboot;
 
@@ -91,7 +94,7 @@ extern bool g_reboot;
     }, \
     { \
         REMAPVIEW_TRX, \
-        PC_SIMULATOR_PATH "/page_eth.json", \
+        PC_SIMULATOR_PATH "/page_trx.json", \
         GuiGetTrxData, \
         NULL, \
         FreeTrxMemory, \

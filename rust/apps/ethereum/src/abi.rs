@@ -15,7 +15,8 @@ impl_public_struct!(ContractData {
 
 impl_public_struct!(ContractMethodParam {
     name: String,
-    value: String
+    value: String,
+    param_type: String
 });
 
 pub fn parse_contract_data(input: Vec<u8>, contract_str: String) -> Result<ContractData> {
@@ -112,8 +113,12 @@ fn _parse_by_function(
                         Token::Address(_) => {
                             format!("0x{}", _token)
                         }
+                        Token::Uint(uint) => {
+                            format!("{}", uint)
+                        }
                         _ => _token.to_string(),
                     },
+                    format!("{}", _input.kind),
                 ))
             } else {
                 return Some(Err(EthereumError::DecodeContractDataError(String::from(
@@ -160,7 +165,7 @@ mod tests {
         assert_eq!(result.params.get(1).unwrap().name, "inputs");
         assert_eq!(result.params.get(1).unwrap().value, "[0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000002386f26fc10000,0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000002386f26fc10000000000000000000000000000000000000000000000000000f84605ccc515414000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc20001f46b175474e89094c44da98b954eedeac495271d0f000000000000000000000000000000000000000000]");
         assert_eq!(result.params.get(2).unwrap().name, "deadline");
-        assert_eq!(result.params.get(2).unwrap().value, "64996e5f");
+        assert_eq!(result.params.get(2).unwrap().value, "1687776863");
     }
     #[test]
     fn test_parse_method_data() {
@@ -187,6 +192,6 @@ mod tests {
         assert_eq!(result.params.get(1).unwrap().name, "inputs");
         assert_eq!(result.params.get(1).unwrap().value, "[0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000002386f26fc10000,0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000002386f26fc10000000000000000000000000000000000000000000000000000f84605ccc515414000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc20001f46b175474e89094c44da98b954eedeac495271d0f000000000000000000000000000000000000000000]");
         assert_eq!(result.params.get(2).unwrap().name, "deadline");
-        assert_eq!(result.params.get(2).unwrap().value, "64996e5f");
+        assert_eq!(result.params.get(2).unwrap().value, "1687776863");
     }
 }

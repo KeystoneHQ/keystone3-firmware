@@ -615,6 +615,7 @@ const static Erc20Contract_t ERC20_CONTRACTS[] = {
     {"PNG", "0x60781C2586D68229fde47564546784ab3fACA982", 18},
     {"WAVAX", "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7", 18},
     {"JOE", "0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd", 18},
+    {"WETH.e", "0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB", 18},
 };
 #include "abi_ethereum.h"
 #include "gui_constants.h"
@@ -730,7 +731,7 @@ static char *CalcSymbol(void *param)
         return "Token";
     }
 
-    EvmNetwork_t network = _FindNetwork(eth->chain_id);
+    EvmNetwork_t network = FindEvmNetwork(eth->chain_id);
     return network.symbol;
 }
 
@@ -1037,13 +1038,13 @@ void GetEthTxFee(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
     if (eth->overview->max_txn_fee != NULL) {
-        snprintf_s((char *)indata,  maxLen, "%s %s", eth->overview->max_txn_fee, _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "%s %s", eth->overview->max_txn_fee, FindEvmNetwork(eth->chain_id).symbol);
     } else {
-        snprintf_s((char *)indata,  maxLen, "0 %s", _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "0 %s", FindEvmNetwork(eth->chain_id).symbol);
     }
 }
 
-EvmNetwork_t _FindNetwork(uint64_t chainId)
+EvmNetwork_t FindEvmNetwork(uint64_t chainId)
 {
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(NETWORKS); i++) {
         EvmNetwork_t network = NETWORKS[i];
@@ -1052,6 +1053,21 @@ EvmNetwork_t _FindNetwork(uint64_t chainId)
         }
     }
     return NETWORKS[0];
+}
+
+void *FindErc20Contract(char *contract_address)
+{
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++) {
+        Erc20Contract_t contract = ERC20_CONTRACTS[i];
+        if (strcasecmp(contract.contract_address, contract_address) == 0) {
+            Erc20Contract_t *result = malloc(sizeof(Erc20Contract_t));
+            result->contract_address = contract.contract_address;
+            result->decimals = contract.decimals;
+            result->symbol = contract.symbol;
+            return result;
+        }
+    }
+    return NULL;
 }
 
 void GetEthValue(void *indata, void *param, uint32_t maxLen)
@@ -1080,7 +1096,7 @@ void GetEthGasLimit(void *indata, void *param, uint32_t maxLen)
 void GetEthNetWork(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    EvmNetwork_t network = _FindNetwork(eth->chain_id);
+    EvmNetwork_t network = FindEvmNetwork(eth->chain_id);
     if (network.chainId == 0) {
         snprintf_s((char *)indata,  maxLen, "ID: %lu", eth->chain_id);
         return;
@@ -1092,9 +1108,9 @@ void GetEthMaxFee(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
     if (eth->detail->max_fee != NULL) {
-        snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_fee, _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_fee, FindEvmNetwork(eth->chain_id).symbol);
     } else {
-        snprintf_s((char *)indata,  maxLen, "0 %s", _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "0 %s", FindEvmNetwork(eth->chain_id).symbol);
     }
 }
 
@@ -1102,9 +1118,9 @@ void GetEthMaxPriority(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
     if (eth->detail->max_priority != NULL) {
-        snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_priority, _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_priority, FindEvmNetwork(eth->chain_id).symbol);
     } else {
-        snprintf_s((char *)indata,  maxLen, "0 %s", _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "0 %s", FindEvmNetwork(eth->chain_id).symbol);
     }
 }
 
@@ -1399,7 +1415,7 @@ bool GetEthContractFromInternal(char *address, char *inputData)
     strcpy_s(address_key, strlen(address) + 9, address);
     strcat_s(address_key, strlen(address) + 9, "_");
     strcat_s(address_key, strlen(address) + 9, inputData);
-    for (size_t i = 0; i < NUMBER_OF_ARRAYS(ethereum_abi_map); i++) {
+    for (size_t i = 0; i < GetEthereumABIMapSize(); i++) {
         struct ABIItem item = ethereum_abi_map[i];
         if (strcasecmp(item.address, address_key) == 0) {
             Response_DisplayContractData *contractData = eth_parse_contract_data(inputData, (char *)item.json);

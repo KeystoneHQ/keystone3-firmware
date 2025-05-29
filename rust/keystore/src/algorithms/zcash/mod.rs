@@ -104,7 +104,6 @@ pub fn test_sign_zec(seed: &[u8], alpha: [u8; 32], msg: &[u8]) -> [u8; 64] {
     let randm = Fq::from_repr(alpha).unwrap();
     let sig = osak.randomize(&randm).sign(rng, &msg);
     let bytes = <[u8; 64]>::from(&sig);
-    rust_tools::debug!(format!("signature: {:?}", hex::encode(&bytes)));
     bytes
 }
 

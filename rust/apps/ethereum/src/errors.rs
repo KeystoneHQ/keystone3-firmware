@@ -31,6 +31,10 @@ pub enum EthereumError {
     InvalidTypedData(String, String),
     #[error("Hash TypedData error: {0}")]
     HashTypedDataError(String),
+    #[error("Invalid Swap Transaction, {0}")]
+    InvalidSwapTransaction(String),
+    #[error("Invalid SwapkitMemo")]
+    InvalidSwapkitMemo,
 }
 
 impl From<DecoderError> for EthereumError {

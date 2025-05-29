@@ -79,6 +79,7 @@ impl TryFrom<EthTx> for DisplayETH {
                 gas_limit: convert_c_char(eth_tx.gas_limit),
                 from: convert_c_char(temp_from_address.clone()),
                 to: convert_c_char(contract_address),
+                nonce: convert_c_char(eth_tx.nonce.to_string()),
                 input: convert_c_char(input_data),
             };
             let display_eth = DisplayETH {
@@ -115,6 +116,7 @@ impl TryFrom<EthTx> for DisplayETH {
                 gas_limit: convert_c_char(eth_tx.gas_limit),
                 from: convert_c_char(temp_from_address.clone()),
                 to: convert_c_char(eth_tx.to),
+                nonce: convert_c_char(eth_tx.nonce.to_string()),
                 input: convert_c_char(eth_tx.memo),
             };
             let display_eth = DisplayETH {
@@ -171,6 +173,8 @@ pub struct DisplayETHDetail {
     from: PtrString,
     to: PtrString,
 
+    nonce: PtrString,
+
     input: PtrString,
 }
 
@@ -188,6 +192,7 @@ impl Free for DisplayETHDetail {
         free_str_ptr!(self.max_priority);
         free_str_ptr!(self.max_fee_price);
         free_str_ptr!(self.max_priority_price);
+        free_str_ptr!(self.nonce);
         free_str_ptr!(self.input);
     }
 }
@@ -250,6 +255,7 @@ impl From<ParsedEthereumTransaction> for DisplayETHDetail {
             gas_limit: convert_c_char(tx.gas_limit),
             from: convert_c_char(tx.from),
             to: convert_c_char(tx.to),
+            nonce: convert_c_char(tx.nonce.to_string()),
             input: convert_c_char(tx.input),
         }
     }

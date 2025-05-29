@@ -1331,7 +1331,7 @@ static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
     GetEthRootPath(rootPath, index, BUFFER_SIZE_32);
     xPub = GetEthXpub(index);
     ASSERT(xPub);
-    SimpleResponse_c_char  *result = eth_get_address(hdPath, xPub, rootPath);
+    SimpleResponse_c_char *result = eth_get_address(hdPath, xPub, rootPath);
     if (result->error_code == 0) {
         item->index = index;
         strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);

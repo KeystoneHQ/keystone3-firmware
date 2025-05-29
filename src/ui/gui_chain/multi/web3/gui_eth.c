@@ -834,6 +834,14 @@ void GetEthTypedDataDomainHash(void *indata, void *param, uint32_t maxLen)
     }
 }
 
+bool GetEthTypeDataHashExist(void *indata, void *param)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    if (strncmp(message->primary_type, "SafeTx", 6) == 0) {
+        return true;
+    }
+    return false;
+}
 
 void GetEthTypedDataMessageHash(void *indata, void *param, uint32_t maxLen)
 {
@@ -1228,6 +1236,12 @@ void GetToEthEnsName(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, g_toEthEnsName);
 }
 
+void GetEthNonce(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+    strcpy_s((char *)indata, maxLen, eth->detail->nonce);
+}
+
 void GetEthInputData(void *indata, void *param, uint32_t maxLen)
 {
     if (indata != NULL) {
@@ -1251,16 +1265,22 @@ void GetEthInputData(void *indata, void *param, uint32_t maxLen)
             strncpy_s(temp, BUFFER_SIZE_1024, hash + i, BUFFER_SIZE_1024 - 1);
             strcat_s(indata, BUFFER_SIZE_1024 * 4, temp);
         }
-        free(temp);
+        SRAM_FREE(temp);
     } else {
         uint32_t middleLen = strlen(hash);
-        middle = (char *)malloc(maxLen + 1);
+        middle = (char *)SRAM_MALLOC(maxLen + 1);
         strncpy(prefix, "0x", 2);
         strncpy(prefix + 2, hash, 6);
         strncpy(middle, hash + 6, middleLen);
-        snprintf_s((char *)indata, maxLen, "#F5870A %s#%s", prefix, middle);
-        free(middle);
+        snprintf((char *)indata, maxLen, "#F5870A %s#%s", prefix, middle);
+        SRAM_FREE(middle);
     }
+}
+
+int GetEthInputDataLen(void *param)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+    return strlen(eth->detail->input);
 }
 
 bool GetEthEnsExist(void *indata, void *param)
@@ -1280,12 +1300,6 @@ bool GetEthInputDataExist(void *indata, void *param)
 }
 
 void GetEthToFromSize(uint16_t *width, uint16_t *height, void *param)
-{
-    *width = 408;
-    *height = 244 + (g_fromEnsExist + g_toEnsExist) * (GAP + TEXT_LINE_HEIGHT) + g_contractDataExist * (GAP + TEXT_LINE_HEIGHT);
-}
-
-void GetEthInputDataSize(uint16_t *width, uint16_t *height, void *param)
 {
     *width = 408;
     *height = 244 + (g_fromEnsExist + g_toEnsExist) * (GAP + TEXT_LINE_HEIGHT) + g_contractDataExist * (GAP + TEXT_LINE_HEIGHT);

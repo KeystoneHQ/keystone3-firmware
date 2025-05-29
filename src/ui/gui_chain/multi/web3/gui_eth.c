@@ -1218,6 +1218,12 @@ void GetEthGetFromAddress(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, eth->overview->from);
 }
 
+void GetEthGetSignerAddress(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    strcpy_s((char *)indata, maxLen, message->from);
+}
+
 void GetEthGetToAddress(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
@@ -1324,6 +1330,12 @@ void GetEthToFromSize(uint16_t *width, uint16_t *height, void *param)
     *height = 244 + (g_fromEnsExist + g_toEnsExist) * (GAP + TEXT_LINE_HEIGHT) + g_contractDataExist * (GAP + TEXT_LINE_HEIGHT);
 }
 
+void GetEthTypeDomainSize(uint16_t *width, uint16_t *height, void *param)
+{
+    *width = 408;
+    *height = 298 + (98 + 16) * GetEthTypeDataHashExist(NULL, param);
+}
+
 void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param)
 {
     *x = 24;
@@ -1338,12 +1350,6 @@ void GetEthTypeDomainPos(uint16_t *x, uint16_t *y, void *param)
     } else {
         *y = (152 + 16) * g_isPermit + 26;
     }
-}
-
-void GetEthTypeDataHashCardPos(uint16_t *x, uint16_t *y, void *param)
-{
-    *x = 36;
-    *y = 360;
 }
 
 bool GetEthContractDataExist(void *indata, void *param)

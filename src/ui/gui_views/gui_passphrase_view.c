@@ -3,18 +3,6 @@
 #include "gui_views.h"
 #include "gui_passphrase_widgets.h"
 
-static int32_t GuiPassphraseViewInit(void)
-{
-    GuiPassphraseInit();
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiPassphraseViewDeInit(void)
-{
-    GuiPassphraseDeInit();
-    return SUCCESS_CODE;
-}
-
 static int32_t GuiPassphraseViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     switch (usEvent) {

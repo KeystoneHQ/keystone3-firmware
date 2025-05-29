@@ -35,6 +35,7 @@ GetContSizeFunc GetOtherChainContainerSize(char *type, GuiRemapViewType remapInd
 {
     switch (remapIndex) {
     case REMAPVIEW_ETH:
+    case REMAPVIEW_ETH_TYPEDDATA:
         return GetEthContainerSize(type);
     case REMAPVIEW_COSMOS:
         return GetCosmosContainerSize(type);
@@ -562,6 +563,8 @@ static GetLabelDataFunc GuiEthTypedDataTextFuncGet(char *type)
         return GetEthTypedDataFrom;
     } else if (!strcmp(type, "GetEthTypedDataPrimayType")) {
         return GetEthTypedDataPrimayType;
+    } else if (!strcmp(type, "GetEthGetSignerAddress")) {
+        return GetEthGetSignerAddress;
     } else if (!strcmp(type, "GetEthTypedDataMessageHash")) {
         return GetEthTypedDataMessageHash;
     } else if (!strcmp(type, "GetEthTypedDataSafeTxHash")) {
@@ -625,8 +628,6 @@ static GetContSizeFunc GetEthObjPos(char *type)
         return GetEthToLabelPos;
     } else if (!strcmp(type, "GetEthTypeDomainPos")) {
         return GetEthTypeDomainPos;
-    } else if (!strcmp(type, "GetEthTypeDataHashCardPos")) {
-        return GetEthTypeDataHashCardPos;
     }
     return NULL;
 }
@@ -671,6 +672,8 @@ static GetContSizeFunc GetEthContainerSize(char *type)
         return GetEthToFromSize;
     } else if (!strcmp(type, "GetEthContractDataSize")) {
         return GetEthContractDataSize;
+    } else if (!strcmp(type, "GetEthTypeDomainSize")) {
+        return GetEthTypeDomainSize;
     }
     return NULL;
 }

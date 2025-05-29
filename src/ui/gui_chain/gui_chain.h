@@ -20,6 +20,7 @@
 #else
 #include "gui_zcash.h"
 #include "gui_monero.h"
+#include "gui_ergo.h"
 #endif
 #endif
 
@@ -47,7 +48,6 @@ typedef enum {
     CHAIN_DASH,
     CHAIN_ARWEAVE,
     CHAIN_STELLAR,
-
     // cosmos start
     CHAIN_BABYLON,
     CHAIN_NEUTARO,
@@ -91,6 +91,7 @@ typedef enum {
 #ifdef CYPHERPUNK_VERSION
     CHAIN_ZCASH,
     CHAIN_XMR,
+    CHAIN_ERG,
 #endif
     CHAIN_BUTT,
 } GuiChainCoinType;
@@ -129,6 +130,7 @@ typedef enum {
     REMAPVIEW_ZCASH,
     REMAPVIEW_XMR_OUTPUT,
     REMAPVIEW_XMR_UNSIGNED,
+    REMAPVIEW_ERGO,
 #endif
     REMAPVIEW_WEB_AUTH,
     REMAPVIEW_BUTT,

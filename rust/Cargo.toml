@@ -19,6 +19,7 @@ members = [
     "apps/xrp",
     "apps/zcash",
     "apps/avalanche",
+    "apps/ergo",
 
     # C interface entry
     "rust_c",
@@ -38,6 +39,7 @@ app_cardano = { path = "apps/cardano" }
 app_cosmos = { path = "apps/cosmos", default-features = false }
 app_ethereum = { path = "apps/ethereum" }
 app_avalanche = { path = "apps/avalanche" }
+app_ergo = { path = "apps/ergo"}
 app_near = { path = "apps/near" }
 app_solana = { path = "apps/solana" }
 app_stellar = { path = "apps/stellar" }

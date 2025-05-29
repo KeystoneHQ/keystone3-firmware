@@ -29,6 +29,8 @@ use ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
 use ur_registry::crypto_account::CryptoAccount;
 use ur_registry::crypto_psbt::CryptoPSBT;
+#[cfg(feature = "ergo")]
+use ur_registry::ergo::ergo_sign_request::ErgoSignRequest;
 use ur_registry::error::URError;
 #[cfg(feature = "ethereum")]
 use ur_registry::ethereum::eth_sign_request;
@@ -184,6 +186,13 @@ impl InferViewType for ZcashPczt {
 impl InferViewType for AvaxSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::AvaxTx)
+    }
+}
+
+#[cfg(feature = "ergo")]
+impl InferViewType for ErgoSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::ErgoTx)
     }
 }
 

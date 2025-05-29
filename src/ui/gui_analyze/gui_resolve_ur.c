@@ -27,6 +27,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_ZCASH, (SetChainDataFunc)GuiSetZcashUrData},
     {REMAPVIEW_XMR_OUTPUT, (SetChainDataFunc)GuiSetMoneroUrData},
     {REMAPVIEW_XMR_UNSIGNED, (SetChainDataFunc)GuiSetMoneroUrData},
+    {REMAPVIEW_ERGO, (SetChainDataFunc)GuiSetErgoUrData},
 #endif
 
 #ifdef WEB3_VERSION

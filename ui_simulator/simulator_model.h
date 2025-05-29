@@ -36,6 +36,9 @@ uint32_t GetCurrentStampTime(void);
 bool FatfsFileExist(const char *path);
 bool GetEnsName(const char *addr, char *name);
 void FpWipeManageInfo(void);
+void OTP_PowerOn(void);
+bool IsPreviousLockScreenEnable(void);
+void SetLockScreen(bool enable);
 void SetPageLockScreen(bool enable);
 
 extern bool g_reboot;
@@ -63,6 +66,13 @@ extern bool g_reboot;
         GuiGetMoneroUnsignedTxData, \
         NULL, \
         FreeMoneroMemory, \
+    }, \
+    { \
+        REMAPVIEW_ERGO, \
+        PC_SIMULATOR_PATH "/page_ergo.json", \
+        GuiGetErgoGUIData, \
+        NULL, \
+        FreeErgoMemory, \
     }
 #endif
 
@@ -228,7 +238,7 @@ extern bool g_reboot;
         GuiGetAvaxGUIData, \
         NULL, \
         FreeAvaxMemory, \
-    },
+    }
 #endif
 
 #endif

@@ -71,6 +71,30 @@ UREncodeResult *GuiGetSpecterWalletBtcData(void)
     return urencode;
 }
 
+UREncodeResult *GuiGetErgoData(void)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    // + ergo 1
+    ExtendedPublicKey keys[1];
+    public_keys->data = keys;
+    public_keys->size = NUMBER_OF_ARRAYS(keys);
+
+    // eth standard
+    keys[0].path = GetXPubPath(XPUB_TYPE_ERG);
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ERG);
+
+    char serialNumber[256];
+    GetSerialNumber(serialNumber);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+    g_urEncode = generate_ergo_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    SRAM_FREE(public_keys);
+    return g_urEncode;
+}
+
 UREncodeResult *GuiGetCakeData(void)
 {
     char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_0);

@@ -231,6 +231,7 @@ typedef enum {
     ZCASH_UFVK_ENCRYPTED_0,
     XPUB_TYPE_MONERO_0,
     XPUB_TYPE_MONERO_PVK_0,
+    XPUB_TYPE_ERG,
 #endif
 
 #ifdef BTC_ONLY

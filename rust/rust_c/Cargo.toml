@@ -54,6 +54,7 @@ app_ton = { workspace = true, optional = true }
 app_zcash = { workspace = true, optional = true }
 app_monero = { workspace = true, optional = true }
 app_avalanche = { workspace = true, optional = true }
+app_ergo = { workspace = true, optional = true }
 
 [lib]
 crate-type = ["staticlib"]
@@ -82,6 +83,7 @@ xrp = ["dep:app_xrp"]
 zcash = ["dep:app_zcash", "dep:zcash_vendor"]
 monero = ["dep:app_monero"]
 avalanche = ["dep:app_avalanche"]
+ergo = ["dep:app_ergo"]
 test_cmd = []
 
 debug-memory = ["multi-coins"]
@@ -109,7 +111,7 @@ multi-coins = [
 
 btc-only = ["bitcoin"]
 
-cypherpunk = ["bitcoin", "zcash", "monero"]
+cypherpunk = ["bitcoin", "zcash", "monero", "ergo"]
 
 # build variants
 # production
@@ -125,7 +127,7 @@ simulator-multi-coins = ["simulator", "multi-coins"]
 simulator-btc-only = ["simulator", "btc-only"]
 simulator-cypherpunk = ["simulator", "cypherpunk"]
 # make IDE happy
-default = ["simulator-multi-coins"]
+default = ["simulator-cypherpunk"]
 
 [dev-dependencies]
 keystore = { path = "../keystore" }

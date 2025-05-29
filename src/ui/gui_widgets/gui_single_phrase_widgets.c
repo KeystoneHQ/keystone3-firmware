@@ -236,7 +236,7 @@ static void GuiConfirmPhraseWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     g_confirmPhraseKb = GuiCreateMnemonicKeyBoard(parent, MnemonicConfirmHandler,
-                        g_phraseCnt == 12 ? KEY_STONE_MNEMONIC_12 : KEY_STONE_MNEMONIC_24, NULL);
+    g_phraseCnt == 12 ? KEY_STONE_MNEMONIC_12 : KEY_STONE_MNEMONIC_24, NULL);
     lv_obj_align(g_confirmPhraseKb->cont, LV_ALIGN_TOP_MID, 0, 310 - GUI_MAIN_AREA_OFFSET);
 }
 

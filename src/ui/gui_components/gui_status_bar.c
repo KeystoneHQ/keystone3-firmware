@@ -127,6 +127,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 #ifdef CYPHERPUNK_VERSION
     {CHAIN_ZCASH, "", &coinZec},
     {CHAIN_XMR, "", &coinXmr},
+    {CHAIN_ERG, "", &coinErg},       
 #endif
 };
 
@@ -175,6 +176,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
     // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
     {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
+    {WALLET_LIST_ERGO, "Ergo Wallet", &walletFeather},
     {WALLET_LIST_CORE, "Core Wallet", &walletCore},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},

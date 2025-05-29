@@ -13,6 +13,7 @@ UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index);
 UREncodeResult *GuiGetCompanionAppData(void);
 UREncodeResult *GuiGetBitgetWalletData(void);
 UREncodeResult *GuiGetCakeData(void);
+UREncodeResult *GuiGetErgoData(void);
 uint8_t *OpenPrivateQrMode(void);
 void ClosePrivateQrMode(void);
 bool IsPrivateQrMode(void);

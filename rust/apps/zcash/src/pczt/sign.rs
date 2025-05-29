@@ -4,7 +4,10 @@ use blake2b_simd::Hash;
 use keystore::algorithms::secp256k1::get_private_key_by_seed;
 use rand_core::OsRng;
 use zcash_vendor::{
-    pczt::{roles::low_level_signer, Pczt},
+    pczt::{
+        roles::{low_level_signer, redactor::Redactor},
+        Pczt,
+    },
     pczt_ext::{self, PcztSigner},
     transparent::{self, sighash::SignableInput},
 };
@@ -13,7 +16,7 @@ struct SeedSigner<'a> {
     seed: &'a [u8],
 }
 
-impl<'a> PcztSigner for SeedSigner<'a> {
+impl PcztSigner for SeedSigner<'_> {
     type Error = ZcashError;
     fn sign_transparent<F>(
         &self,
@@ -104,5 +107,75 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
     let signer = pczt_ext::sign(signer, &SeedSigner { seed })
         .map_err(|e| ZcashError::SigningError(e.to_string()))?;
 
-    Ok(signer.finish().serialize())
+    // Now that we've created the signature, remove the other optional fields from the
+    // PCZT, to reduce its size for the return trip and make the QR code scanning more
+    // reliable. The wallet that provided the unsigned PCZT can retain it for combining if
+    // these fields are needed.
+    let signed_pczt = Redactor::new(signer.finish())
+        .redact_orchard_with(|mut r| {
+            r.redact_actions(|mut ar| {
+                ar.clear_spend_recipient();
+                ar.clear_spend_value();
+                ar.clear_spend_rho();
+                ar.clear_spend_rseed();
+                ar.clear_spend_fvk();
+                ar.clear_spend_witness();
+                ar.clear_spend_alpha();
+                ar.clear_spend_zip32_derivation();
+                ar.clear_spend_dummy_sk();
+                ar.clear_output_recipient();
+                ar.clear_output_value();
+                ar.clear_output_rseed();
+                ar.clear_output_ock();
+                ar.clear_output_zip32_derivation();
+                ar.clear_output_user_address();
+                ar.clear_rcv();
+            });
+            r.clear_zkproof();
+            r.clear_bsk();
+        })
+        .redact_sapling_with(|mut r| {
+            r.redact_spends(|mut sr| {
+                sr.clear_zkproof();
+                sr.clear_recipient();
+                sr.clear_value();
+                sr.clear_rcm();
+                sr.clear_rseed();
+                sr.clear_rcv();
+                sr.clear_proof_generation_key();
+                sr.clear_witness();
+                sr.clear_alpha();
+                sr.clear_zip32_derivation();
+                sr.clear_dummy_ask();
+            });
+            r.redact_outputs(|mut or| {
+                or.clear_zkproof();
+                or.clear_recipient();
+                or.clear_value();
+                or.clear_rseed();
+                or.clear_rcv();
+                or.clear_ock();
+                or.clear_zip32_derivation();
+                or.clear_user_address();
+            });
+            r.clear_bsk();
+        })
+        .redact_transparent_with(|mut r| {
+            r.redact_inputs(|mut ir| {
+                ir.clear_redeem_script();
+                ir.clear_bip32_derivation();
+                ir.clear_ripemd160_preimages();
+                ir.clear_sha256_preimages();
+                ir.clear_hash160_preimages();
+                ir.clear_hash256_preimages();
+            });
+            r.redact_outputs(|mut or| {
+                or.clear_redeem_script();
+                or.clear_bip32_derivation();
+                or.clear_user_address();
+            });
+        })
+        .finish();
+
+    Ok(signed_pczt.serialize())
 }

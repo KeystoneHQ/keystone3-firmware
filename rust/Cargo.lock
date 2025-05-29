@@ -5238,9 +5238,9 @@ dependencies = [
 
 [[package]]
 name = "zcash_address"
-version = "0.7.1"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71591bb4eb2fd7622e88eed42e7d7d8501cd1e920a0698c7fb08723a8c1d0b4f"
+checksum = "6a21f218c86b350d706c22489af999b098e19bf92ed6dd71770660ea29ee707d"
 dependencies = [
  "bech32 0.11.0",
  "bs58 0.5.1",
@@ -5324,9 +5324,9 @@ dependencies = [
 
 [[package]]
 name = "zcash_transparent"
-version = "0.2.3"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2cd8c2d138ec893d3d384d97304da9ff879424056087c8ac811780a0e8d96a99"
+checksum = "97b0c4ea6d9b94b5159106b65b57c4a9ea46859e7f7f8fb1be3e18e2d25bc372"
 dependencies = [
  "bip32",
  "blake2b_simd",

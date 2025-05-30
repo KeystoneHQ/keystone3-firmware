@@ -185,7 +185,7 @@ static const lv_img_dsc_t *g_petraCoinArray[1] = {
 };
 
 static const lv_img_dsc_t *g_nightlyCoinArray[1] = {
-    &coinSui,
+    &coinSui, &coinApt
 };
 
 static const lv_img_dsc_t *g_solfareCoinArray[1] = {
@@ -1223,9 +1223,7 @@ UREncodeResult *GuiGetFewchaData(void)
 
 UREncodeResult *GuiGetNightlyData(void)
 {
-    GuiChainCoinType coin = CHAIN_SUI;
-    // get pub by coin
-    return GuiGetNightlyDataByCoin(coin);
+    return GuiGetNightlyDataByCoin();
 }
 
 UREncodeResult *GuiGetXrpToolkitData(void)

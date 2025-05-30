@@ -648,7 +648,7 @@ static lv_obj_t *GuiRenderFromToCard(lv_obj_t *parent, const char* title, const 
 
     height += 60 + 8;
 
-    if(to != NULL) {
+    if (to != NULL) {
         label = GuiCreateIllustrateLabel(container, title2);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, height);
         lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);

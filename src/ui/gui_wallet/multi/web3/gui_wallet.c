@@ -189,15 +189,17 @@ UREncodeResult *GuiGetWanderData(void)
     return g_urEncode;
 }
 
-UREncodeResult *GuiGetNightlyDataByCoin(void)
+UREncodeResult *GuiGetWalletDataByCoin(bool includeApt)
 {
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
+
+#define MAX_XPUB_COUNT 20
+    ExtendedPublicKey keys[MAX_XPUB_COUNT];
     PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-#define NIGHTLY_XPUB_COUNT 20
-    ExtendedPublicKey keys[NIGHTLY_XPUB_COUNT];
     publicKeys->data = keys;
-    publicKeys->size = NIGHTLY_XPUB_COUNT;
+    publicKeys->size = includeApt ? 20 : 10;
+
     uint8_t xpubIndex = 0;
     for (xpubIndex = 0; xpubIndex < 10; xpubIndex++) {
         keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
@@ -205,14 +207,18 @@ UREncodeResult *GuiGetNightlyDataByCoin(void)
         keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + xpubIndex);
     }
 
-    for (uint8_t startIndex = 0; startIndex < 10; xpubIndex++, startIndex++) {
-        keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
-        snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0/0", startIndex);
-        keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + startIndex);
+    if (includeApt) {
+        for (uint8_t startIndex = 0; startIndex < 10; xpubIndex++, startIndex++) {
+            keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
+            snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0/0", startIndex);
+            keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + startIndex);
+        }
     }
-    g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys); 
+
+    g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
     CHECK_CHAIN_PRINT(g_urEncode);
-    for (uint8_t i = 0; i < NIGHTLY_XPUB_COUNT; i++) {
+
+    for (uint8_t i = 0; i < publicKeys->size; i++) {
         if (keys[i].path != NULL) {
             SRAM_FREE(keys[i].path);
         }

@@ -471,7 +471,7 @@ lv_obj_t *GuiWidgetTextArea(lv_obj_t *parent, cJSON *json)
     int textLen = strlen(text);
     int segmentSize = 1000;
     int numSegments = (textLen + segmentSize - 1) / segmentSize;
-    
+
     for (int i = 0; i < numSegments; i++) {
         int offset = i * segmentSize;
         lv_obj_t *label = GuiCreateIllustrateLabel(cont, text + offset);
@@ -482,7 +482,7 @@ lv_obj_t *GuiWidgetTextArea(lv_obj_t *parent, cJSON *json)
         } else {
             GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         }
-        
+
         if (i < numSegments - 1 && textLen > offset + segmentSize) {
             char savedChar = text[offset + segmentSize];
             text[offset + segmentSize] = '\0';
@@ -490,7 +490,7 @@ lv_obj_t *GuiWidgetTextArea(lv_obj_t *parent, cJSON *json)
             text[offset + segmentSize] = savedChar;
         }
     }
-    
+
     EXT_FREE(text);
     return cont;
 }

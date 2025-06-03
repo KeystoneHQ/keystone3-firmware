@@ -1558,7 +1558,7 @@ bool GetEthContractFromInternal(char *address, char *inputData)
     char* address_key = (char*)SRAM_MALLOC(strlen(address) + 9);
     strcpy_s(address_key, strlen(address) + 9, address);
     strcat_s(address_key, strlen(address) + 9, "_");
-    strcat_s(address_key, strlen(address) + 9, inputData);
+    strncat_s(address_key, strlen(address) + 9, inputData, 8);
     for (size_t i = 0; i < GetEthereumABIMapSize(); i++) {
         struct ABIItem item = ethereum_abi_map[i];
         if (strcasecmp(item.address, address_key) == 0) {
@@ -1568,11 +1568,14 @@ bool GetEthContractFromInternal(char *address, char *inputData)
                 g_contractData = contractData;
             } else {
                 free_Response_DisplayContractData(contractData);
+                SRAM_FREE(address_key);
                 return false;
             }
+            SRAM_FREE(address_key);
             return true;
         }
     }
+    SRAM_FREE(address_key);
     return false;
 }
 

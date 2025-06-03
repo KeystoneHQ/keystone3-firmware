@@ -3414,7 +3414,79 @@ const ABIItem_t ethereum_abi_map[] = {
     {
         "0xe3985E6b61b814F7Cdb188766562ba71b446B46d_44bc937b",
         "{\"name\":\"MAYAChain Router\",\"address\":\"0xe3985E6b61b814F7Cdb188766562ba71b446B46d\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"}],\"name\":\"depositWithExpiry\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
-    }
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_66de3b36",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"addSupportedChainId\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_dd62ed3e",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_095ea7b3",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_70a08231",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_42966c68",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_79cc6790",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burnFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_21d93090",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"chainIds\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_313ce567",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_a457c2d7",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"subtractedValue\",\"type\":\"uint256\"}],\"name\":\"decreaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_39509351",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"addedValue\",\"type\":\"uint256\"}],\"name\":\"increaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_5d9898d3",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newBridgeRoleAddress\",\"type\":\"address\"}],\"name\":\"migrateBridgeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_a888d914",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"feeAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"originTxId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"originOutputIndex\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_06fdde03",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_95d89b41",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_18160ddd",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_a9059cbb",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"  
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_23b872dd",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0x1f1b9111cA669eF0B28b3AF839520b51caedc080_6e286671",
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x1f1b9111cA669eF0B28b3AF839520b51caedc080\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"unwrap\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
 };
 
 uint32_t GetEthereumABIMapSize()

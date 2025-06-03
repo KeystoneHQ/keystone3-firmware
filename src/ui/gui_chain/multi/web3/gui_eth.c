@@ -1555,10 +1555,8 @@ bool GetEthContractFromInternal(char *address, char *inputData)
         return true;
     }
     // address_key = address + "_" + functionSelector
-    char* address_key = (char*)SRAM_MALLOC(strlen(address) + 9);
-    strcpy_s(address_key, strlen(address) + 9, address);
-    strcat_s(address_key, strlen(address) + 9, "_");
-    strncat_s(address_key, strlen(address) + 9, inputData, 8);
+    char* address_key = (char*)SRAM_MALLOC(strlen(address) + 10);
+    snprintf_s(address_key, strlen(address) + 10, "%s_%.8s", address, inputData);
     for (size_t i = 0; i < GetEthereumABIMapSize(); i++) {
         struct ABIItem item = ethereum_abi_map[i];
         if (strcasecmp(item.address, address_key) == 0) {

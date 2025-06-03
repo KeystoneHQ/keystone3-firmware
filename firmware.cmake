@@ -43,8 +43,9 @@ file(GLOB_RECURSE USB_DRIVER
     "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/src/*.c"
     "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/src/*.c"
     "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/src/*.c"
+    "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/hid/src/*.c"
     "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/src/*.c"
-    "external/mh1903_lib/USB-ESL/CircularBuffer.c"    
+    "external/mh1903_lib/USB-ESL/CircularBuffer.c"
 )
 
 set(TASKS

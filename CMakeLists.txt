@@ -143,6 +143,7 @@ set(EXTERNAL_INCLUDE_PATH
     external/mh1903_lib/MHSCPU_Driver/inc/emvlib
     external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/inc
     external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/inc
+    external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/hid/inc
     external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/inc
     external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Core/inc
     external/mh1903_lib/USB-ESL

@@ -179,6 +179,7 @@ void ProcessURService(EAPDURequestPayload_t *payload)
         }
         g_requestID = payload->requestID;
 
+        printf("payload->data = %s\r\n", payload->data);
         urResult = parse_ur((char *)payload->data);
         if (urResult->error_code != 0) {
             HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), g_requestID, PRS_PARSING_ERROR);

@@ -74,9 +74,12 @@ static void CreateCheckTheWalletInfoNotice(lv_obj_t *parent)
 
 void GuiImportMultisigWalletInfoWidgetsInit(void)
 {
-    if ((GetCurrentAccountMultisigWalletNum() >= MAX_MULTI_SIG_WALLET_NUMBER) && (!GuiGetExportMultisigWalletSwitch())) {
+    bool isPassphrase = PassphraseExist(GetCurrentAccountIndex());
+    bool checkLimit = isPassphrase ? (GetCurrentAccountMultisigWalletNum(true) >= MAX_MULTI_SIG_PASSPHRASE_WALLET_NUMBER) :
+                      (GetCurrentAccountMultisigWalletNum(false) >= MAX_MULTI_SIG_WALLET_NUMBER_EXCEPT_PASSPHRASE);
+    if (checkLimit && (!GuiGetExportMultisigWalletSwitch())) {
         g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("manage_multi_wallet_add_limit_title"),
-                         _("manage_multi_wallet_add_scan_limit_title"), NULL, _("OK"), WHITE_COLOR_OPA20);
+                         _("manage_multi_wallet_add_limit_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseWaringAndCurrentPageHandler, LV_EVENT_CLICKED, NULL);
         return;
     }
@@ -182,6 +185,7 @@ static uint32_t prepareWalletBySDCard(char *walletConfig)
 {
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
+    printf("%s %d walletConfig = %s\n", __func__, __LINE__, walletConfig);
     Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(walletConfig, mfp, 4);
     return processResult(result);
 }

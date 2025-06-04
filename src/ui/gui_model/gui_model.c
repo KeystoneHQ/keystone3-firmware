@@ -916,11 +916,11 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     int32_t ret = 0;
     if (CheckPassphraseSame(GetCurrentAccountIndex(), SecretCacheGetPassphrase())) {
         GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
     } else {
+        printf("get passphrase = %s...\n", SecretCacheGetPassphrase());
         ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
         if (ret == SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
@@ -930,9 +930,6 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
         }
         ClearSecretCache();
     }
-#else
-    GuiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
-#endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }
@@ -1421,7 +1418,7 @@ static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
 bool ModelGetPassphraseQuickAccess(void)
 {
 #ifdef COMPILE_SIMULATOR
-    return false;
+    return true;
 #else
     if (PassphraseExist(GetCurrentAccountIndex()) == false && GetPassphraseQuickAccess() == true && GetPassphraseMark() == true) {
         return true;

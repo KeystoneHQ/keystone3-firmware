@@ -34,7 +34,7 @@ static int deleteNode(char *verifyCode);
 static int getLength();
 static void traverseList(void (*callback)(MultiSigWalletItem_t *, void *), void *any);
 static void destroyMultiSigWalletList();
-static void saveToFlash(const char *password);
+static void saveToFlash(void);
 static void modifyNode(char *verifyCode, MultiSigWalletItem_t *newItem);
 static MultiSigWalletItem_t *findNode(char *verifyCode);
 static void DestoryMultisigWalletManager(MultiSigWalletManager_t *manager);
@@ -77,19 +77,29 @@ MultiSigWalletItem_t *GetMultisigWalletByVerifyCode(const char *verifyCode)
     return g_multisigWalletManager->findNode((char *)verifyCode);
 }
 
-int DeleteMultisigWalletByVerifyCode(const char *verifyCode, const char *password)
+int DeleteMultisigWalletByVerifyCode(const char *verifyCode)
 {
     ASSERT_WALLET_MANAGER_EXIST
     int index = g_multisigWalletManager->deleteNode((char *)verifyCode);
-    g_multisigWalletManager->saveToFlash(password);
+    g_multisigWalletManager->saveToFlash();
     return index;
 }
 
-int GetCurrentAccountMultisigWalletNum(void)
+int GetCurrentAccountMultisigWalletNum(bool isPassphrase)
 {
     ASSERT_WALLET_MANAGER_EXIST
-    g_multisigWalletManager->getLength();
-    return getLength();
+    int length = g_multisigWalletManager->getLength();
+    int passPhraseNum = 0;
+    for (int i = 0; i < length; i++) {
+        if (GetCurrenMultisigWalletByIndex(i)->passphrase == true) {
+            passPhraseNum++;
+            break;
+        }
+    }
+    if (isPassphrase) {
+        return passPhraseNum;
+    }
+    return length - passPhraseNum;
 }
 
 MultiSigWalletItem_t *GetCurrenMultisigWalletByIndex(int index)
@@ -160,8 +170,10 @@ MultiSigWalletItem_t *AddMultisigWalletToCurrentAccount(MultiSigWallet *wallet, 
     walletItem->walletConfig = MULTI_SIG_MALLOC(MAX_WALLET_CONFIG_TEXT_LENGTH);
     strcpy_s(walletItem->walletConfig, MAX_WALLET_CONFIG_TEXT_LENGTH, wallet->config_text);
 
+    walletItem->passphrase = PassphraseExist(GetCurrentAccountIndex());
+
     manager->insertNode(walletItem);
-    manager->saveToFlash(password);
+    manager->saveToFlash();
     return walletItem;
 }
 
@@ -317,8 +329,8 @@ static void destroyMultiSigWalletList()
     manager->list = NULL;
 }
 
-static void saveToFlash(const char *password)
+static void saveToFlash(void)
 {
     // todo  判断是否需要更新
-    MultiSigWalletSave(password, g_multisigWalletManager);
+    MultiSigWalletSave(g_multisigWalletManager);
 }

@@ -12,11 +12,11 @@ extern "C" {
 
 #if defined(CONFIG_USB_DEVICE_HID_DEFAULT)
 /* HID Default Config Start */
-#define HID_IN_EP  0x83
+#define HID_IN_EP  0x82
 #define HID_IN_PACKET_SIZE  0x40
 #define HID_IN_BUFFER_COUNT 16
 
-// #define HID_OUT_EP 0x03
+// #define HID_OUT_EP 0x02
 #define HID_OUT_PACKET_SIZE 0x40
 #define HID_OUT_BUFFER_COUNT 16
 

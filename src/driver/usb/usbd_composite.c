@@ -7,6 +7,7 @@
 #include "usbd_desc.h"
 #include "log_print.h"
 #include "usb_task.h"
+#include "usbd_def.h"
 
 #define USB_COMPOSITE_CONFIG_DESC_MAX_SIZE 192
 
@@ -104,10 +105,10 @@ void CompositeCbInit(void)
     // g_endpointInMap[CDC_IN_EP & 0x0F] = &USBD_CDC_cb;
     g_interfaceCount += 2;
 
-    // g_interfaceMap[g_interfaceCount] = &USBD_HID_cb;
-    // g_endpointInMap[HID_IN_EP & 0X0F] = &USBD_HID_cb;
-    // USBD_HID_OutputReport_Event = hid_StateChangedEvent;
-    // g_interfaceCount++;
+    g_interfaceMap[g_interfaceCount] = &USBD_HID_cb;
+    g_endpointInMap[HID_IN_EP & 0X0F] = &USBD_HID_cb;
+    USBD_HID_OutputReport_Event = hid_StateChangedEvent;
+    g_interfaceCount++;
 }
 
 static uint8_t CompositeInit(void *pdev, uint8_t cfgidx)
@@ -190,45 +191,127 @@ static uint8_t CompositeSOF(void* pdev)
     return USBD_OK;
 }
 
+static __ALIGN_BEGIN uint8_t USBD_Composite_ConfigDesc[] __ALIGN_END = {
+    /* Configuration Descriptor */
+    0x09,                       // bLength: Configuration Descriptor size
+    USB_DESC_TYPE_CONFIGURATION,// bDescriptorType: Configuration
+    0,   // wTotalLength
+    0,
+    0x02,                       // bNumInterfaces: 2
+    0x01,                       // bConfigurationValue
+    0x00,                       // iConfiguration
+    0xC0,                       // bmAttributes: self powered
+    0x32,                       // MaxPower 100 mA
+
+    /************ Interface 0: WinUSB ************/
+    0x09,                       // bLength: Interface Descriptor size
+    USB_DESC_TYPE_INTERFACE,    
+    0x00,                       // bInterfaceNumber: 0
+    0x00,                       // bAlternateSetting
+    0x02,                       // bNumEndpoints
+    0xFF,                       // bInterfaceClass: Vendor Specific
+    0x00,                       // bInterfaceSubClass
+    0x00,                       // bInterfaceProtocol
+    0x00,                       // iInterface
+
+    // Endpoint OUT
+    0x07, USB_DESC_TYPE_ENDPOINT, CDC_OUT_EP, 0x02,
+    LOBYTE(CDC_DATA_HS_MAX_PACKET_SIZE),
+    HIBYTE(CDC_DATA_HS_MAX_PACKET_SIZE),
+    0x00,
+
+    // Endpoint IN
+    0x07, USB_DESC_TYPE_ENDPOINT, CDC_IN_EP, 0x02,
+    LOBYTE(CDC_DATA_HS_MAX_PACKET_SIZE),
+    HIBYTE(CDC_DATA_HS_MAX_PACKET_SIZE),
+    0x00,
+
+    /************ Interface 1: HID ************/
+    0x09, USB_DESC_TYPE_INTERFACE,
+    0x01,                       // bInterfaceNumber: 1
+    0x00,                       // bAlternateSetting
+#ifdef HID_OUT_EP
+    0x02,                       // bNumEndpoints
+#else
+    0x01,                       // bNumEndpoints
+#endif
+    HID_CLASS, HID_SUBCLASS_NONE, HID_PROTOCOL_NONE,
+    0x00,
+
+    // HID Descriptor
+    HID_DESCRIPTOR_SIZE, HID_DESCRIPTOR,
+    LSB(HID_VERSION), MSB(HID_VERSION),
+    0x00, 0x01, REPORT_DESCRIPTOR,
+    LSB(HID_REPORT_DESC_SIZE), MSB(HID_REPORT_DESC_SIZE),
+
+    // HID IN Endpoint
+    0x07, USB_DESC_TYPE_ENDPOINT,
+    HID_IN_EP, 0x03,
+    LOBYTE(HID_IN_PACKET_SIZE),
+    HIBYTE(HID_IN_PACKET_SIZE),
+    HID_INTERVAL,
+
+#ifdef HID_OUT_EP
+    // HID OUT Endpoint
+    0x07, USB_DESC_TYPE_ENDPOINT,
+    HID_OUT_EP, 0x03,
+    LOBYTE(HID_OUT_PACKET_SIZE),
+    HIBYTE(HID_OUT_PACKET_SIZE),
+    HID_INTERVAL,
+#endif
+};
+
+
 static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length)
 {
     uint16_t descriptorSize = 0;
     uint8_t *descriptor;
     uint8_t interfaceIndex = 0;
 
-    *length = 9;
+//     *length = 9;
 
-#ifdef USBD_ENABLE_MSC
-    //MSC
-    descriptor = USBD_MSC_cb.GetConfigDescriptor(speed, &descriptorSize);
-    descriptorSize -= 9;
-    descriptor[9 + 2] = interfaceIndex;
-    interfaceIndex++;
-    memcpy(CompositeConfigDescriptor + *length, descriptor + 9, descriptorSize);
-    *length += descriptorSize;
-    interfaceIndex++;
-#endif
+// #ifdef USBD_ENABLE_MSC
+//     //MSC
+//     descriptor = USBD_MSC_cb.GetConfigDescriptor(speed, &descriptorSize);
+//     descriptorSize -= 9;
+//     descriptor[9 + 2] = interfaceIndex;
+//     interfaceIndex++;
+//     memcpy(CompositeConfigDescriptor + *length, descriptor + 9, descriptorSize);
+//     *length += descriptorSize;
+//     interfaceIndex++;
+// #endif
 
-    //CDC
-    descriptor = USBD_CDC_cb.GetConfigDescriptor(speed, &descriptorSize);
-    descriptorSize -= 9;
-    descriptor[9 + 2] = interfaceIndex;
-    memcpy(CompositeConfigDescriptor + *length, descriptor + 9, descriptorSize);
-    *length += descriptorSize;
-    interfaceIndex++;
+//     //CDC
+//     descriptor = USBD_CDC_cb.GetConfigDescriptor(speed, &descriptorSize);
+//     descriptorSize -= 9;
+//     descriptor[9 + 2] = interfaceIndex;
+//     memcpy(CompositeConfigDescriptor + *length, descriptor + 9, descriptorSize);
+//     *length += descriptorSize;
+//     interfaceIndex++;
 
-    //HID
-    // descriptor = USBD_HID_cb.GetConfigDescriptor(speed, &descriptorSize);
-    // descriptorSize -= 9;
-    // descriptor[9 + 2] = interfaceIndex;
-    // memcpy(CompositeConfigDescriptor + *length, descriptor + 9, descriptorSize);
-    // *length += descriptorSize;
-    // interfaceIndex++;
+//     //HID
+//     descriptor = USBD_HID_cb.GetConfigDescriptor(speed, &descriptorSize);
+//     descriptorSize -= 9;
+//     descriptor[9 + 2] = interfaceIndex;          // HID接口
+//     interfaceIndex++;
+//     memcpy(CompositeConfigDescriptor + *length, descriptor + 9, descriptorSize);
+//     *length += descriptorSize;
 
-    CompositeConfigDescriptor[2] = *length;
-    CompositeConfigDescriptor[4] = interfaceIndex;
-    //printf("length=%d\r\n", *length);
-    //PrintArray("Descriptor", CompositeConfigDescriptor, *length);
+    *length = sizeof(USBD_Composite_ConfigDesc);
+    USBD_Composite_ConfigDesc[2] = LOBYTE(*length);
+    USBD_Composite_ConfigDesc[3] = HIBYTE(*length);
+    memcpy(CompositeConfigDescriptor, USBD_Composite_ConfigDesc, *length);
+    
+    // CompositeConfigDescriptor[2] = LOBYTE(*length);
+    // CompositeConfigDescriptor[3] = HIBYTE(*length);
+    // CompositeConfigDescriptor[4] = interfaceIndex;  // 总接口数应该是2
+    printf("length: %d\n", *length);
+    printf("InterfaceCount: %d\n", interfaceIndex);
+    for (int i = 0; i < *length; i++)
+    {
+        printf("%02X", CompositeConfigDescriptor[i]);
+    }
+    printf("\n");
     return CompositeConfigDescriptor;
 }
 

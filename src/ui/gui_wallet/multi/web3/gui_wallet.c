@@ -401,7 +401,7 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
     // + eth 1
     // + trx 1
     // + doge 1
-    ExtendedPublicKey keys[7];
+    ExtendedPublicKey keys[8];
     public_keys->data = keys;
     public_keys->size = NUMBER_OF_ARRAYS(keys);
 
@@ -427,23 +427,8 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
     keys[6].path = GetXPubPath(XPUB_TYPE_DOGE);
     keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DOGE);
 
-    // keys[3].path = GetXPubPath(XPUB_TYPE_BCH);
-    // keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
-
-    // keys[4].path = GetXPubPath(XPUB_TYPE_DASH);
-    // keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
-
-    // keys[5].path = GetXPubPath(XPUB_TYPE_LTC);
-    // keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_LTC);
-
-    // keys[6].path = GetXPubPath(XPUB_TYPE_TRX);
-    // keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
-
-    // keys[7].path = GetXPubPath(XPUB_TYPE_XRP);
-    // keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
-
-    // keys[8].path = GetXPubPath(XPUB_TYPE_ETH_BIP44_STANDARD);
-    // keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+    keys[7].path = GetXPubPath(XPUB_TYPE_XRP);
+    keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
 
     char serialNumber[256];
     GetSerialNumber(serialNumber);

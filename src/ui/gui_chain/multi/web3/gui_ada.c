@@ -20,6 +20,7 @@ static void *g_parseResult = NULL;
 static char g_adaBaseAddr[ADA_ADD_MAX_LEN];
 static char *xpub = NULL;
 static void Try2FixAdaPathType();
+static bool IsLocalAdaPath(char *path);
 
 AdaXPubType GetAdaXPubType(void)
 {
@@ -31,7 +32,6 @@ void SetReceivePageAdaXPubType(AdaXPubType type)
 {
     SetAccountReceivePath("ADA", type);
 }
-
 
 AdaXPubType GetReceivePageAdaXPubType(void)
 {
@@ -91,8 +91,13 @@ void *GuiGetAdaData(void)
         path = cardano_get_path(data);
         CHECK_CHAIN_BREAK(path);
         char *adaPath = path->data;
-        uint8_t xpubIndex = GetXPubIndexByPath(adaPath);
-        xpub = GetCurrentAccountPublicKey(xpubIndex);
+        if (!IsLocalAdaPath(adaPath)) {
+            xpub = NULL;
+        }
+        else {
+            uint8_t xpubIndex = GetXPubIndexByPath(adaPath);
+            xpub = GetCurrentAccountPublicKey(xpubIndex);
+        }
         TransactionParseResult_DisplayCardanoTx *parseResult = cardano_parse_tx(data, mfp, xpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
@@ -113,7 +118,6 @@ void *GuiGetAdaCatalyst(void)
     return g_parseResult;
 }
 
-
 void *GuiGetAdaSignTxHashData(void)
 {
     printf("=========== GuiGetAdaSignTxHashData\r\n");
@@ -126,7 +130,6 @@ void *GuiGetAdaSignTxHashData(void)
     } while (0);
     return g_parseResult;
 }
-
 
 void FreeAdaCatalystMemory(void)
 {
@@ -220,12 +223,22 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
         return NULL;
     }
     char *adaPath = path->data;
-    xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
+    if (!IsLocalAdaPath(adaPath)) {
+        xpub = NULL;
+    }
+    else {
+        xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
+    }
     PtrT_TransactionCheckResult result = cardano_check_tx(data, mfp, xpub);
     if (result->error_code != 0) {
         free_TransactionCheckResult(result);
         Try2FixAdaPathType();
-        xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
+        if (!IsLocalAdaPath(adaPath)) {
+            xpub = NULL;
+        }
+        else {
+            xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
+        }
         result = cardano_check_tx(data, mfp, xpub);
     }
     free_simple_response_c_char(path);
@@ -239,8 +252,6 @@ PtrT_TransactionCheckResult GuiGetAdaSignTxHashCheckResult(void)
     GetMasterFingerPrint(mfp);
     return cardano_check_tx_hash(data, mfp);
 }
-
-
 
 static AdaXPubType GetXPubTypeByPathAndXPub(char *xpub, char *path)
 {
@@ -684,8 +695,6 @@ UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void)
     return encodeResult;
 }
 
-
-
 UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
@@ -712,7 +721,6 @@ UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeData(void)
     SetLockScreen(enable);
     return encodeResult;
 }
-
 
 UREncodeResult *GuiGetAdaSignQrCodeData(void)
 {
@@ -782,8 +790,6 @@ lv_obj_t *GuiCreateAdaAutoHeightContainer(lv_obj_t *parent, uint16_t width, uint
     lv_obj_set_style_pad_bottom(container, padding_x, LV_PART_MAIN);
     return container;
 }
-
-
 
 lv_obj_t* GuiCreateAdaNoticeCard(lv_obj_t* parent)
 {
@@ -971,7 +977,6 @@ UREncodeResult *GuiGetAdaSignUrDataUnlimited(void)
     return encodeResult;
 }
 
-
 ChainType GetAdaXPubTypeByIndexAndDerivationType(AdaXPubType type, uint16_t index)
 {
     switch (index) {
@@ -1047,6 +1052,34 @@ char *GuiGetADABaseAddressByXPub(char *xPub)
     }
     free_simple_response_c_char(result);
     return g_adaBaseAddr;
+}
+
+static bool IsLocalAdaPath(char *path)
+{
+    return strcmp("1852'/1815'/0'", path) == 0 ||
+           strcmp("1852'/1815'/1'", path) == 0 ||
+           strcmp("1852'/1815'/2'", path) == 0 ||
+           strcmp("1852'/1815'/3'", path) == 0 ||
+           strcmp("1852'/1815'/4'", path) == 0 ||
+           strcmp("1852'/1815'/5'", path) == 0 ||
+           strcmp("1852'/1815'/6'", path) == 0 ||
+           strcmp("1852'/1815'/7'", path) == 0 ||
+           strcmp("1852'/1815'/8'", path) == 0 ||
+           strcmp("1852'/1815'/9'", path) == 0 ||
+           strcmp("1852'/1815'/10'", path) == 0 ||
+           strcmp("1852'/1815'/11'", path) == 0 ||
+           strcmp("1852'/1815'/12'", path) == 0 ||
+           strcmp("1852'/1815'/13'", path) == 0 ||
+           strcmp("1852'/1815'/14'", path) == 0 ||
+           strcmp("1852'/1815'/15'", path) == 0 ||
+           strcmp("1852'/1815'/16'", path) == 0 ||
+           strcmp("1852'/1815'/17'", path) == 0 ||
+           strcmp("1852'/1815'/18'", path) == 0 ||
+           strcmp("1852'/1815'/19'", path) == 0 ||
+           strcmp("1852'/1815'/20'", path) == 0 ||
+           strcmp("1852'/1815'/21'", path) == 0 ||
+           strcmp("1852'/1815'/22'", path) == 0 ||
+           strcmp("1852'/1815'/23'", path) == 0;
 }
 
 static uint8_t GetXPubIndexByPath(char *path)

@@ -865,7 +865,11 @@ fn prepare_parse_context(
     master_fingerprint: PtrBytes,
     cardano_xpub: PtrString,
 ) -> R<ParseContext> {
-    let xpub = recover_c_char(cardano_xpub);
+    let xpub = if cardano_xpub.is_null() {
+        None
+    } else {
+        Some(recover_c_char(cardano_xpub))
+    };
     let mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
     Ok(ParseContext::new(
         cardano_sign_request

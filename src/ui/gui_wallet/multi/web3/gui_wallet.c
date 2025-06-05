@@ -217,12 +217,12 @@ UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
     }
     for (uint8_t startIndex = 0; startIndex < 10; xpubIndex++, startIndex++) {
         keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
-        snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/4218'/%u'/0/0", startIndex);
+        snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/4218'/%u'/0'/0'", startIndex);
         keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + startIndex);
     }
     for (uint8_t startIndex = 0; startIndex < 10; xpubIndex++, startIndex++) {
         keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
-        snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0/0", startIndex);
+        snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0'/0'", startIndex);
         keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + startIndex);
     }
     g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);

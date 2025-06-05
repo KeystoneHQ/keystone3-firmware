@@ -847,6 +847,20 @@ bool GetEthTypeDataHashExist(void *indata, void *param)
     return false;
 }
 
+bool GetEthTypeDataChainExist(void *indata, void *param)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    printf("message->chain_id: %s\n", message->chain_id);
+    return message->chain_id != NULL;
+}
+
+bool GetEthTypeDataVersionExist(void *indata, void *param)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    printf("message->version: %s\n", message->version);
+    return message->version != NULL;
+}
+
 void GetEthTypedDataMessageHash(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
@@ -891,7 +905,7 @@ void GetEthTypedDataDomianChainId(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->chain_id != NULL) {
-        strcpy_s((char *)indata, maxLen, message->chain_id);
+        snprintf_s((char *)indata, maxLen, "%s (%s)", message->chain_id, FindEvmNetwork(atoi(message->chain_id)).name);
     } else {
         strcpy_s((char *)indata, maxLen, "");
     }
@@ -1333,7 +1347,9 @@ void GetEthToFromSize(uint16_t *width, uint16_t *height, void *param)
 void GetEthTypeDomainSize(uint16_t *width, uint16_t *height, void *param)
 {
     *width = 408;
-    *height = 298 + (98 + 16) * GetEthTypeDataHashExist(NULL, param);
+    *height = 298 + (98 + 16) * GetEthTypeDataHashExist(NULL, param) + 
+            GetEthTypeDataChainExist(NULL, param) * 90 + 
+            GetEthTypeDataVersionExist(NULL, param) * 90;
 }
 
 void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param)

@@ -123,6 +123,10 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetEthTypeDataHashExist;
     } else if (!strcmp(type, "GetToEthEnsExist")) {
         return GetToEthEnsExist;
+    } else if (!strcmp(type, "GetEthTypeDataChainExist")) {
+        return GetEthTypeDataChainExist;
+    } else if (!strcmp(type, "GetEthTypeDataVersionExist")) {
+        return GetEthTypeDataVersionExist;
     } else if (!strcmp(type, "GetEthContractDataExist")) {
         return GetEthContractDataExist;
     } else if (!strcmp(type, "GetEthContractDataNotExist")) {

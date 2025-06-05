@@ -18,7 +18,7 @@
 #define USBD_ENABLE_MSC
 #endif
 
-#ifndef CONFIG_USB_DEVICE_VCP
+// #ifdef CONFIG_USB_DEVICE_VCP
 /* VCP default Config Start */
 #define CDC_IN_EP                0x83
 #define CDC_OUT_EP               0x03
@@ -33,7 +33,7 @@
 
 #define APP_FOPS VCPHandle
 /* VCP default Config End */
-#endif
+// #endif
 
 #ifdef CDC_CMD_EP
 #define USB_CDC_CONFIG_DESC_SIZ (68 + 7)

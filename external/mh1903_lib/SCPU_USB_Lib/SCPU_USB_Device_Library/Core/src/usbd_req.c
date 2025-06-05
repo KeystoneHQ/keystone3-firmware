@@ -60,15 +60,17 @@ USBD_Status USBD_StdDevReq(USB_OTG_CORE_HANDLE* pdev, USB_SETUP_REQ* req)
 {
     USBD_Status ret = USBD_OK;
 
-    //printf("bRequest=%X\r\n", req->bRequest);
+    // printf("bRequest=%X wIndex=%X wValue=%X\r\n", req->bRequest, req->wIndex, req->wValue);
     switch (req->bRequest) {
     case USB_REQ_GET_DESCRIPTOR:
         USBD_GetDescriptor(pdev, req);
         break;
     //case USB_REQ_MS_VENDOR_CODE:
+#if VCP_ENABLE
     case 0xA0:
         USBD_WinUSBGetDescriptor(pdev, req);
         break;
+#endif
     case USB_REQ_SET_ADDRESS:
         pdev->dev.addr_param.SetAddress_Flag = 1;
         pdev->dev.addr_param.Address_Value   = (uint8_t)(req->wValue) & 0x7F;

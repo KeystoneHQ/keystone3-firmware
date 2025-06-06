@@ -499,58 +499,48 @@ typedef struct {
     int y_offset;
 } RenderContext;
 
-lv_obj_t *GuiCreateValueLabel(lv_obj_t *parent, const char *text, int indent, RenderContext* ctx)
+lv_obj_t *GuiCreateValueLabel(lv_obj_t *parent, const char *text, int indent, uint32_t *yOffset)
 {
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, text);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_obj_set_width(label, 300);
-    printf("text = %s\n", text);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, indent * 20, ctx->y_offset);
+    lv_obj_set_width(label, 320);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, indent * 20, *yOffset);
     lv_obj_refr_size(label);
-    ctx->y_offset += lv_obj_get_self_height(label);
-    printf("y_offset = %d\n", ctx->y_offset);
+    *yOffset += lv_obj_get_self_height(label);
     return label;
 }
 
-void display_json_recursive(lv_obj_t *parent, cJSON *item, int indent, RenderContext* ctx)
+static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint32_t *yOffset)
 {
     lv_obj_t* label;
     char buf[512];
 
     while (item != NULL) {
         if (item->string != NULL) {
-            // snprintf(buf, sizeof(buf), "%*s%s:", indent * 2, "", item->string);
             snprintf(buf, sizeof(buf), "%s:", item->string);
-            label = GuiCreateValueLabel(parent, buf, indent, ctx);
+            label = GuiCreateValueLabel(parent, buf, indent, yOffset);
         }
 
         if (cJSON_IsObject(item)) {
-            display_json_recursive(parent, item->child, indent + 1, ctx);
-        }
-        else if (cJSON_IsArray(item)) {
+            DisplayJsonRecursive(parent, item->child, indent + 1, yOffset);
+        } else if (cJSON_IsArray(item)) {
             int size = cJSON_GetArraySize(item);
             for (int i = 0; i < 1; i++) {
                 cJSON* subitem = cJSON_GetArrayItem(item, i);
-                display_json_recursive(parent, subitem, indent + 1, ctx);
+                DisplayJsonRecursive(parent, subitem, indent, yOffset);
             }
-        }
-        else if (cJSON_IsString(item)) {
-            // snprintf(buf, sizeof(buf), "%*s%s", (indent + 1) * 2, "", item->valuestring);
+        } else if (cJSON_IsString(item)) {
             snprintf(buf, sizeof(buf), "%s", item->valuestring);
-            printf("%s %d buf = %s\n", __func__, __LINE__, buf);
-            label = GuiCreateValueLabel(parent, buf, indent, ctx);
-        }
-        else if (cJSON_IsNumber(item)) {
+            label = GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
+        } else if (cJSON_IsNumber(item)) {
             snprintf(buf, sizeof(buf), "%*s%f", (indent + 1) * 2, "", item->valuedouble);
-            label = GuiCreateValueLabel(parent, buf, indent, ctx);
-        }
-        else if (cJSON_IsBool(item)) {
+            label = GuiCreateValueLabel(parent, buf, indent, yOffset);
+        } else if (cJSON_IsBool(item)) {
             snprintf(buf, sizeof(buf), "%*s%s", (indent + 1) * 2, "", item->valueint ? "true" : "false");
-            label = GuiCreateValueLabel(parent, buf, indent, ctx);
-        }
-        else if (cJSON_IsNull(item)) {
+            label = GuiCreateValueLabel(parent, buf, indent, yOffset);
+        } else if (cJSON_IsNull(item)) {
             snprintf(buf, sizeof(buf), "%*snull", (indent + 1) * 2, "");
-            label = GuiCreateValueLabel(parent, buf, indent, ctx);
+            label = GuiCreateValueLabel(parent, buf, indent, yOffset);
         }
 
         item = item->next;
@@ -560,17 +550,14 @@ void display_json_recursive(lv_obj_t *parent, cJSON *item, int indent, RenderCon
 lv_obj_t *GuiWidgetJsonLabel(lv_obj_t *parent, cJSON *json)
 {
     char *text = GetLabelText(parent, json);
-    printf("text: %s\n", text);
-    strcpy(text, "{\"contents\": \"Hello, Bob!\",\"from\": {\"name\": \"Cow\",\"wallets\": [\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\",\"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF\"]}}");
-
     cJSON *root = cJSON_Parse(text);
     if (root == NULL) {
         printf("cJSON_Parse failed\n");
         return parent;
     }
-    RenderContext ctx = { .y_offset = 0 };
 
-    display_json_recursive(parent, root, 0, &ctx);
+    uint32_t yOffset = 16;
+    DisplayJsonRecursive(parent, root, 0, &yOffset);
     cJSON_Delete(root);
     EXT_FREE(text);
     return parent;

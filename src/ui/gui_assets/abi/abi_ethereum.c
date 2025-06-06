@@ -3477,7 +3477,7 @@ const ABIItem_t ethereum_abi_map[] = {
     },
     {
         "0x152b9d0FdC40C096757F570A51E494bd4b943E50_a9059cbb",
-        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x152b9d0FdC40C096757F570A51E494bd4b943E50\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"  
+        "{\"name\":\"Avax BridgeToken\",\"address\":\"0x152b9d0FdC40C096757F570A51E494bd4b943E50\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
     },
     {
         "0x152b9d0FdC40C096757F570A51E494bd4b943E50_23b872dd",

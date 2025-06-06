@@ -93,8 +93,7 @@ void *GuiGetAdaData(void)
         char *adaPath = path->data;
         if (!IsLocalAdaPath(adaPath)) {
             xpub = NULL;
-        }
-        else {
+        } else {
             uint8_t xpubIndex = GetXPubIndexByPath(adaPath);
             xpub = GetCurrentAccountPublicKey(xpubIndex);
         }
@@ -225,8 +224,7 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     char *adaPath = path->data;
     if (!IsLocalAdaPath(adaPath)) {
         xpub = NULL;
-    }
-    else {
+    } else {
         xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
     }
     PtrT_TransactionCheckResult result = cardano_check_tx(data, mfp, xpub);
@@ -235,8 +233,7 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
         Try2FixAdaPathType();
         if (!IsLocalAdaPath(adaPath)) {
             xpub = NULL;
-        }
-        else {
+        } else {
             xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
         }
         result = cardano_check_tx(data, mfp, xpub);

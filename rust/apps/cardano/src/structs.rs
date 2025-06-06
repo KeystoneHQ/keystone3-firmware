@@ -29,7 +29,7 @@ use hex;
 impl_public_struct!(ParseContext {
     utxos: Vec<CardanoUtxo>,
     cert_keys: Vec<CardanoCertKey>,
-    cardano_xpub: String,
+    cardano_xpub: Option<String>,
     master_fingerprint: Vec<u8>
 });
 impl_public_struct!(ParsedCardanoSignCip8Data {
@@ -1102,19 +1102,33 @@ impl ParsedCardanoTx {
                             "invalid derivation path".to_string(),
                         )),
                     }?;
-                    //check utxo address with payment keyhash;
-                    let my_pubkey_hash = hex::encode(derive_pubkey_hash(
-                        context.get_cardano_xpub(),
-                        *change,
-                        *index,
-                    )?);
 
                     let address = utxo.address.clone();
 
                     let addr_in_utxo = Address::from_bech32(&utxo.address)
                         .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?;
 
+                    let xpub = context.get_cardano_xpub();
+                    if xpub.is_none() {
+                        parsed_inputs.push(ParsedCardanoInput {
+                            transaction_hash: utxo.transaction_hash.clone(),
+                            index: utxo.index,
+                            value: Some(utxo.value),
+                            address: Some(address),
+                            path: Some(utxo.path.to_string()),
+                            is_mine: utxo.master_fingerprint.eq(&context.master_fingerprint),
+                        });
+                        continue;
+                    }
+
                     let mut pubkey_hash_paired = false;
+
+                    //check utxo address with payment keyhash;
+                    let my_pubkey_hash = hex::encode(derive_pubkey_hash(
+                        context.get_cardano_xpub().unwrap(),
+                        *change,
+                        *index,
+                    )?);
 
                     if let Some(addr) = BaseAddress::from_address(&addr_in_utxo) {
                         match addr.payment_cred().to_keyhash() {

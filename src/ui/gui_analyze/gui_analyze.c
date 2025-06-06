@@ -441,7 +441,7 @@ static char *GetLabelText(lv_obj_t *parent, cJSON *json)
     char *text = EXT_MALLOC(bufLen);
     item = cJSON_GetObjectItem(json, "text");
     if (item != NULL) {
-        strcpy_s(text, bufLen, item->valuestring);
+        strcpy_s(text, bufLen, _(item->valuestring));
         return text;
     }
 
@@ -509,7 +509,7 @@ lv_obj_t *GuiCreateValueLabel(lv_obj_t *parent, const char *text, int indent, ui
 static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint32_t *yOffset)
 {
     lv_obj_t* label;
-    char buf[512];
+    char buf[BUFFER_SIZE_512];
 
     while (item != NULL) {
         if (item->string != NULL) {

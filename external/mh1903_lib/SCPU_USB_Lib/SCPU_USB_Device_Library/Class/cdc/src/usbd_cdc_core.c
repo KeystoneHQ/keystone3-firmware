@@ -214,87 +214,87 @@ static __ALIGN_BEGIN uint8_t USBD_CDC_CfgHSDesc[WINUSB_CONFIG_DESC_SIZE] __ALIGN
 };
 
 #endif
-// ... existing code ...
-__ALIGN_BEGIN uint8_t usbd_cdc_CfgDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END = {
-    /*Configuration Descriptor*/
-    0x09,                              /* bLength: Configuration Descriptor size */
-    USB_CONFIGURATION_DESCRIPTOR_TYPE, /* bDescriptorType: Configuration */
-    LOBYTE(USB_CDC_CONFIG_DESC_SIZ),   /* wTotalLength:no of returned bytes */
-    HIBYTE(USB_CDC_CONFIG_DESC_SIZ),   /* */
-    0x01,                              /* bNumInterfaces: 1 interface */
-    0x01,                              /* bConfigurationValue: Configuration value */
-    0x00,                              /* iConfiguration: Index of string descriptor describing the configuration */
-    0xC0,                              /* bmAttributes: self powered */
-    0x32,                              /* MaxPower 0 mA */
+// // ... existing code ...
+// __ALIGN_BEGIN uint8_t usbd_cdc_CfgDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END = {
+//     /*Configuration Descriptor*/
+//     0x09,                              /* bLength: Configuration Descriptor size */
+//     USB_CONFIGURATION_DESCRIPTOR_TYPE, /* bDescriptorType: Configuration */
+//     LOBYTE(USB_CDC_CONFIG_DESC_SIZ),   /* wTotalLength:no of returned bytes */
+//     HIBYTE(USB_CDC_CONFIG_DESC_SIZ),   /* */
+//     0x01,                              /* bNumInterfaces: 1 interface */
+//     0x01,                              /* bConfigurationValue: Configuration value */
+//     0x00,                              /* iConfiguration: Index of string descriptor describing the configuration */
+//     0xC0,                              /* bmAttributes: self powered */
+//     0x32,                              /* MaxPower 0 mA */
 
-    /* Interface Descriptor */
-    0x09,                          /* bLength: Interface Descriptor size */
-    USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType: Interface descriptor type */
-    0x00,                          /* bInterfaceNumber: Number of Interface */
-    0x00,                          /* bAlternateSetting: Alternate setting */
-    0x02,                          /* bNumEndpoints: Two endpoints used */
-    0xFF,                          /* bInterfaceClass: Vendor Specific */
-    0x00,                          /* bInterfaceSubClass */
-    0x00,                          /* bInterfaceProtocol */
-    0x00,                          /* iInterface */
+//     /* Interface Descriptor */
+//     0x09,                          /* bLength: Interface Descriptor size */
+//     USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType: Interface descriptor type */
+//     0x00,                          /* bInterfaceNumber: Number of Interface */
+//     0x00,                          /* bAlternateSetting: Alternate setting */
+//     0x02,                          /* bNumEndpoints: Two endpoints used */
+//     0xFF,                          /* bInterfaceClass: Vendor Specific */
+//     0x00,                          /* bInterfaceSubClass */
+//     0x00,                          /* bInterfaceProtocol */
+//     0x00,                          /* iInterface */
 
-    /* WebUSB Platform Descriptor */
-    0x18,                          /* bLength: Platform Descriptor size */
-    0x10,                          /* bDescriptorType: Platform Descriptor */
-    0x05,                          /* bDevCapabilityType: Platform Capability */
-    0x00,                          /* bReserved */
-    /* WebUSB Platform Capability UUID */
-    0x38, 0xB6, 0x08, 0x34, 0xA9, 0x09, 0xA0, 0x47,
-    0x8B, 0xFD, 0xA0, 0x76, 0x88, 0x15, 0xB6, 0x65,
-    0x00,                          /* bcdVersion: 1.0 */
-    0x01,
-    0x01,                          /* bVendorCode */
-    0x01,                          /* iLandingPage: URL descriptor index */
+//     /* WebUSB Platform Descriptor */
+//     0x18,                          /* bLength: Platform Descriptor size */
+//     0x10,                          /* bDescriptorType: Platform Descriptor */
+//     0x05,                          /* bDevCapabilityType: Platform Capability */
+//     0x00,                          /* bReserved */
+//     /* WebUSB Platform Capability UUID */
+//     0x38, 0xB6, 0x08, 0x34, 0xA9, 0x09, 0xA0, 0x47,
+//     0x8B, 0xFD, 0xA0, 0x76, 0x88, 0x15, 0xB6, 0x65,
+//     0x00,                          /* bcdVersion: 1.0 */
+//     0x01,
+//     0x01,                          /* bVendorCode */
+//     0x01,                          /* iLandingPage: URL descriptor index */
 
-    /* Microsoft Compatible ID Descriptor */
-    0x12,                          /* bLength: Compatible ID Descriptor size */
-    0x10,                          /* bDescriptorType: Platform Descriptor */
-    0x04,                          /* bDevCapabilityType: Compatible ID */
-    0x00,                          /* bReserved */
-    0x00,                          /* Compatible ID */
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    'W',                           /* Compatible ID String */
-    'I',
-    'N',
-    'U',
-    'S',
-    'B',
-    0x00,                          /* Sub-Compatible ID */
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
+//     /* Microsoft Compatible ID Descriptor */
+//     0x12,                          /* bLength: Compatible ID Descriptor size */
+//     0x10,                          /* bDescriptorType: Platform Descriptor */
+//     0x04,                          /* bDevCapabilityType: Compatible ID */
+//     0x00,                          /* bReserved */
+//     0x00,                          /* Compatible ID */
+//     0x00,
+//     0x00,
+//     0x00,
+//     0x00,
+//     0x00,
+//     0x00,
+//     'W',                           /* Compatible ID String */
+//     'I',
+//     'N',
+//     'U',
+//     'S',
+//     'B',
+//     0x00,                          /* Sub-Compatible ID */
+//     0x00,
+//     0x00,
+//     0x00,
+//     0x00,
+//     0x00,
+//     0x00,
 
-    /*Endpoint OUT Descriptor*/
-    0x07,                             /* bLength: Endpoint Descriptor size */
-    USB_ENDPOINT_DESCRIPTOR_TYPE,     /* bDescriptorType: Endpoint */
-    CDC_OUT_EP,                       /* bEndpointAddress */
-    0x02,                             /* bmAttributes: Bulk */
-    LOBYTE(CDC_DATA_OUT_PACKET_SIZE), /* wMaxPacketSize: */
-    HIBYTE(CDC_DATA_OUT_PACKET_SIZE), /* */
-    0x00,                             /* bInterval: ignore for Bulk transfer */
+//     /*Endpoint OUT Descriptor*/
+//     0x07,                             /* bLength: Endpoint Descriptor size */
+//     USB_ENDPOINT_DESCRIPTOR_TYPE,     /* bDescriptorType: Endpoint */
+//     CDC_OUT_EP,                       /* bEndpointAddress */
+//     0x02,                             /* bmAttributes: Bulk */
+//     LOBYTE(CDC_DATA_OUT_PACKET_SIZE), /* wMaxPacketSize: */
+//     HIBYTE(CDC_DATA_OUT_PACKET_SIZE), /* */
+//     0x00,                             /* bInterval: ignore for Bulk transfer */
 
-    /*Endpoint IN Descriptor*/
-    0x07,                            /* bLength: Endpoint Descriptor size */
-    USB_ENDPOINT_DESCRIPTOR_TYPE,    /* bDescriptorType: Endpoint */
-    CDC_IN_EP,                       /* bEndpointAddress */
-    0x02,                            /* bmAttributes: Bulk */
-    LOBYTE(CDC_DATA_IN_PACKET_SIZE), /* wMaxPacketSize: */
-    HIBYTE(CDC_DATA_IN_PACKET_SIZE), /* */
-    0x00                             /* bInterval: ignore for Bulk transfer */
-};
+//     /*Endpoint IN Descriptor*/
+//     0x07,                            /* bLength: Endpoint Descriptor size */
+//     USB_ENDPOINT_DESCRIPTOR_TYPE,    /* bDescriptorType: Endpoint */
+//     CDC_IN_EP,                       /* bEndpointAddress */
+//     0x02,                            /* bmAttributes: Bulk */
+//     LOBYTE(CDC_DATA_IN_PACKET_SIZE), /* wMaxPacketSize: */
+//     HIBYTE(CDC_DATA_IN_PACKET_SIZE), /* */
+//     0x00                             /* bInterval: ignore for Bulk transfer */
+// };
 
 /* USB CDC device Configuration Descriptor */
 // __ALIGN_BEGIN uint8_t usbd_cdc_CfgDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END = {
@@ -615,14 +615,14 @@ static uint8_t usbd_cdc_SOF(void* pdev)
  */
 static uint8_t* USBD_cdc_GetCfgDesc(uint8_t speed, uint16_t* length)
 {
-// #ifdef USBD_ENABLE_MSC
-    // *length = sizeof(usbd_cdc_CfgDesc);
-    // return usbd_cdc_CfgDesc;
-// #else
+#ifdef USBD_ENABLE_MSC
+    *length = sizeof(usbd_cdc_CfgDesc);
+    return usbd_cdc_CfgDesc;
+#else
     printf("%s %d......\r\n", __func__, __LINE__);
     *length = sizeof(USBD_CDC_CfgHSDesc);
     return USBD_CDC_CfgHSDesc;
-// #endif
+#endif
 }
 
 void USBD_cdc_SendBuffer_Cb(const uint8_t *data, uint32_t len)

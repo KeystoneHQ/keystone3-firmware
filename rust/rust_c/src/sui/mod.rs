@@ -22,7 +22,7 @@ use structs::DisplaySuiSignMessageHash;
 
 pub mod structs;
 
-fn get_public_key(seed: &[u8], path: &String) -> Result<Vec<u8>, SuiError> {
+pub fn get_public_key(seed: &[u8], path: &String) -> Result<Vec<u8>, SuiError> {
     let path = normalize_path(path);
     let public_key =
         match keystore::algorithms::ed25519::slip10_ed25519::get_public_key_by_seed(seed, &path) {

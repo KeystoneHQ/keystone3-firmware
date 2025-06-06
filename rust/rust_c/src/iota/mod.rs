@@ -1,16 +1,21 @@
 use crate::common::structs::SimpleResponse;
 use crate::common::structs::{TransactionCheckResult, TransactionParseResult};
-use crate::common::types::{PtrString, PtrT, PtrUR};
+use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
+use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::extract_ptr_with_type;
+use crate::sui::get_public_key;
 use alloc::vec::Vec;
 use alloc::{format, slice};
 use alloc::{
     string::{String, ToString},
     vec,
 };
+use app_sui::errors::SuiError;
 use app_sui::Intent;
 use bitcoin::bip32::DerivationPath;
+use ur_registry::iota::iota_signature::IotaSignature;
+use ur_registry::traits::RegistryItem;
 use core::str::FromStr;
 use cty::c_char;
 use structs::DisplayIotaIntentData;
@@ -60,6 +65,88 @@ pub extern "C" fn iota_parse_sign_message_hash(
             hex::encode(address[0].clone()),
         )
         .c_ptr(),
+    )
+    .c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn iota_sign_hash(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let sign_request = extract_ptr_with_type!(ptr, IotaSignHashRequest);
+    let hash = sign_request.get_message_hash();
+    let path = match sign_request.get_derivation_paths()[0].get_path() {
+        Some(p) => p,
+        None => {
+            return UREncodeResult::from(SuiError::SignFailure(
+                "invalid derivation path".to_string(),
+            ))
+            .c_ptr()
+        }
+    };
+    let signature = match app_sui::sign_hash(seed, &path, &hex::decode(hash).unwrap()) {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    let pub_key = match get_public_key(seed, &path) {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    let sig = IotaSignature::new(
+        sign_request.get_request_id(),
+        signature.to_vec(),
+        Some(pub_key),
+    );
+    let sig_data: Vec<u8> = match sig.try_into() {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    UREncodeResult::encode(
+        sig_data,
+        IotaSignature::get_registry_type().get_type(),
+        FRAGMENT_MAX_LENGTH_DEFAULT,
+    )
+    .c_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn iota_sign_intent(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> PtrT<UREncodeResult> {
+    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let sign_request = extract_ptr_with_type!(ptr, IotaSignRequest);
+    let sign_data = sign_request.get_intent_message();
+    let path = match sign_request.get_derivation_paths()[0].get_path() {
+        Some(p) => p,
+        None => {
+            return UREncodeResult::from(SuiError::SignFailure(
+                "invalid derivation path".to_string(),
+            ))
+            .c_ptr()
+        }
+    };
+    let signature = match app_sui::sign_intent(seed, &path, &sign_data.to_vec()) {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    let pub_key = match get_public_key(seed, &path) {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    let sig = IotaSignature::new(
+        sign_request.get_request_id(),
+        signature.to_vec(),
+        Some(pub_key),
+    );
+    let sig_data: Vec<u8> = match sig.try_into() {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    UREncodeResult::encode(
+        sig_data,
+        IotaSignature::get_registry_type().get_type(),
+        FRAGMENT_MAX_LENGTH_DEFAULT,
     )
     .c_ptr()
 }

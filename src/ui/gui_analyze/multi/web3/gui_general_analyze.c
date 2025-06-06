@@ -166,6 +166,8 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetEthPermitCantSign;
     } else if (!strcmp(type, "GetEthOperationWarningExist")) {
         return GetEthOperationWarningExist;
+    } else if (!strcmp(type, "GetIotaDetailExist")) {
+        return GetIotaDetailExist;
     }
     return NULL;
 }

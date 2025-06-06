@@ -102,8 +102,18 @@ UREncodeResult *GuiGetIotaSignQrCodeData(void)
     return encodeResult;
 }
 
+bool GetIotaDetailExist(void *indata, void *param)
+{
+    printf("%s %d..\n", __func__, __LINE__);
+    DisplayIotaIntentData *iota = (DisplayIotaIntentData *)param;
+    printf("%s %d..\n", __func__, __LINE__);
+    printf("type: %s\n", iota->transaction_type);
+    return !strcmp(iota->transaction_type, "Message1");
+}
+
 void GuiIotaTxOverview(lv_obj_t *parent, void *totalData)
 {
+    return;
     DisplayIotaIntentData *txData = (DisplayIotaIntentData *)totalData;
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
@@ -137,6 +147,7 @@ void GuiIotaTxOverview(lv_obj_t *parent, void *totalData)
 
 void GuiIotaTxRawData(lv_obj_t *parent, void *totalData)
 {
+    return;
     DisplayIotaIntentData *txData = (DisplayIotaIntentData *)totalData;
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_size(parent, 408, 444);

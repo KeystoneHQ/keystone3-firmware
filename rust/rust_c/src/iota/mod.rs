@@ -33,6 +33,9 @@ pub extern "C" fn iota_get_address_from_pubkey(xpub: PtrString) -> *mut SimpleRe
     }
 }
 
+extern crate std;
+use std::println;
+
 #[no_mangle]
 pub extern "C" fn iota_parse_intent(
     ptr: PtrUR,
@@ -40,6 +43,7 @@ pub extern "C" fn iota_parse_intent(
     let sign_request = extract_ptr_with_type!(ptr, IotaSignRequest);
     let sign_data = sign_request.get_intent_message();
     let data = app_sui::parse_intent(&sign_data);
+    println!("data: {:?}", data);
     match data {
         Ok(data) => {
             TransactionParseResult::success(DisplayIotaIntentData::from(data).c_ptr()).c_ptr()

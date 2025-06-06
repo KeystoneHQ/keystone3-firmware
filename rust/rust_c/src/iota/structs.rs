@@ -9,7 +9,6 @@ use app_cardano::structs::{
 use core::ptr::null_mut;
 use hex;
 use itertools::Itertools;
-use ur_registry::cardano::cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest;
 
 use crate::common::ffi::VecFFI;
 use crate::common::free::{free_ptr_string, Free};
@@ -20,8 +19,11 @@ use crate::{
     check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method,
 };
 use app_sui::Intent;
-use sui_types::transaction::{
-    CallArg, Command, TransactionData, TransactionDataV1, TransactionKind,
+use sui_types::{
+    transaction::{
+        CallArg, Command, TransactionData, TransactionDataV1, TransactionKind
+    },
+    message::PersonalMessage
 };
 
 #[repr(C)]
@@ -41,6 +43,7 @@ pub struct DisplayIotaIntentData {
     details: PtrString,
     transaction_type: PtrString,
     method: PtrString,
+    message: PtrString,
 }
 
 impl_c_ptr!(DisplayIotaIntentData);
@@ -82,6 +85,19 @@ impl From<Intent> for DisplayIotaIntentData {
                     details: convert_c_char(details),
                     transaction_type,
                     method,
+                    message: null_mut(),
+                }
+            }
+            Intent::PersonalMessage(personal_message) => {
+                Self {
+                    amount: null_mut(),
+                    recipient: null_mut(),
+                    network: null_mut(),
+                    sender: null_mut(),
+                    details: null_mut(),
+                    transaction_type: convert_c_char("Message".to_string()),
+                    method: null_mut(),
+                    message: convert_c_char(personal_message.value.message),
                 }
             }
             _ => todo!("Other Intent types not implemented"),

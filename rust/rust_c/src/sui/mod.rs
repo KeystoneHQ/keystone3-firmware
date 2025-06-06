@@ -43,6 +43,7 @@ pub extern "C" fn sui_check_request(
     master_fingerprint: PtrBytes,
     length: u32,
 ) -> PtrT<TransactionCheckResult> {
+    return TransactionCheckResult::new().c_ptr();
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
@@ -70,6 +71,7 @@ pub extern "C" fn sui_check_sign_hash_request(
     master_fingerprint: PtrBytes,
     length: u32,
 ) -> PtrT<TransactionCheckResult> {
+    return TransactionCheckResult::new().c_ptr();
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }

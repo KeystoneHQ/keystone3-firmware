@@ -37,6 +37,8 @@ void GetEthNonce(void *indata, void *param, uint32_t maxLen);
 int GetEthInputDataLen(void *param);
 bool GetEthTypeDataHashExist(void *indata, void *param);
 bool GetEthContractFromInternal(char *address, char *inputData);
+bool GetEthTypeDataChainExist(void *indata, void *param);
+bool GetEthTypeDataVersionExist(void *indata, void *param);
 bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainId, char *inputData);
 void GetEthMethodName(void *indata, void *param, uint32_t maxLen);
 void GetEthContractName(void *indata, void *param, uint32_t maxLen);

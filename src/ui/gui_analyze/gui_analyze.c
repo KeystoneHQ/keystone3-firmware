@@ -495,10 +495,6 @@ lv_obj_t *GuiWidgetTextArea(lv_obj_t *parent, cJSON *json)
     return cont;
 }
 
-typedef struct {
-    int y_offset;
-} RenderContext;
-
 lv_obj_t *GuiCreateValueLabel(lv_obj_t *parent, const char *text, int indent, uint32_t *yOffset)
 {
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, text);

@@ -102,18 +102,34 @@ UREncodeResult *GuiGetIotaSignQrCodeData(void)
     return encodeResult;
 }
 
-bool GetIotaDetailExist(void *indata, void *param)
+bool GetIotaIsTransaction(void *indata, void *param)
 {
-    printf("%s %d..\n", __func__, __LINE__);
+    return !GetIotaIsMessage(indata, param);
+}
+
+bool GetIotaIsMessage(void *indata, void *param)
+{
     DisplayIotaIntentData *iota = (DisplayIotaIntentData *)param;
-    printf("%s %d..\n", __func__, __LINE__);
-    printf("type: %s\n", iota->transaction_type);
-    return !strcmp(iota->transaction_type, "Message1");
+    return !strcmp(iota->transaction_type, "Message");
+}
+
+void GuiIotaTxOverviewMessage(lv_obj_t *parent, void *totalData)
+{
+    DisplayIotaIntentData *txData = (DisplayIotaIntentData *)totalData;
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_t *container = CreateSingleInfoTwoLineView(parent, "address", txData->sender);
+    lv_obj_align(container, LV_ALIGN_TOP_LEFT, 0, 0);
+
+    container = CreateSingleInfoTwoLineView(parent, "Message", txData->message);
+    GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 }
 
 void GuiIotaTxOverview(lv_obj_t *parent, void *totalData)
 {
-    return;
+    if (GetIotaIsMessage(NULL, totalData)) {
+        GuiIotaTxOverviewMessage(parent, totalData);
+        return;
+    }
     DisplayIotaIntentData *txData = (DisplayIotaIntentData *)totalData;
     lv_obj_set_size(parent, 408, 444);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
@@ -147,7 +163,6 @@ void GuiIotaTxOverview(lv_obj_t *parent, void *totalData)
 
 void GuiIotaTxRawData(lv_obj_t *parent, void *totalData)
 {
-    return;
     DisplayIotaIntentData *txData = (DisplayIotaIntentData *)totalData;
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_size(parent, 408, 444);

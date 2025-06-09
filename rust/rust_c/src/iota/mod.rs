@@ -14,13 +14,15 @@ use alloc::{
 use app_sui::errors::SuiError;
 use app_sui::Intent;
 use bitcoin::bip32::DerivationPath;
-use ur_registry::iota::iota_signature::IotaSignature;
-use ur_registry::traits::RegistryItem;
 use core::str::FromStr;
 use cty::c_char;
 use structs::DisplayIotaIntentData;
 use structs::DisplayIotaSignMessageHash;
-use ur_registry::iota::{iota_sign_request::IotaSignRequest, iota_sign_hash_request::IotaSignHashRequest};
+use ur_registry::iota::iota_signature::IotaSignature;
+use ur_registry::iota::{
+    iota_sign_hash_request::IotaSignHashRequest, iota_sign_request::IotaSignRequest,
+};
+use ur_registry::traits::RegistryItem;
 
 pub mod structs;
 
@@ -33,21 +35,27 @@ pub extern "C" fn iota_get_address_from_pubkey(xpub: PtrString) -> *mut SimpleRe
     }
 }
 
-extern crate std;
-use std::println;
-
 #[no_mangle]
 pub extern "C" fn iota_parse_intent(
     ptr: PtrUR,
 ) -> PtrT<TransactionParseResult<DisplayIotaIntentData>> {
     let sign_request = extract_ptr_with_type!(ptr, IotaSignRequest);
     let sign_data = sign_request.get_intent_message();
+    let address = format!("0x{}", hex::encode(sign_request.get_addresses().unwrap_or(vec![])[0].clone()));
     let data = app_sui::parse_intent(&sign_data);
-    println!("data: {:?}", data);
     match data {
-        Ok(data) => {
-            TransactionParseResult::success(DisplayIotaIntentData::from(data).c_ptr()).c_ptr()
-        }
+        Ok(data) => match data {
+            Intent::TransactionData(ref transaction_data) => {
+                TransactionParseResult::success(DisplayIotaIntentData::from(data).c_ptr()).c_ptr()
+            }
+            Intent::PersonalMessage(ref personal_message) => TransactionParseResult::success(
+                DisplayIotaIntentData::from(data)
+                    .with_address(address)
+                    .c_ptr(),
+            )
+            .c_ptr(),
+            _ => TransactionParseResult::from(SuiError::InvalidData("Invalid intent".to_string())).c_ptr(),
+        },
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
 }
@@ -74,7 +82,11 @@ pub extern "C" fn iota_parse_sign_message_hash(
 }
 
 #[no_mangle]
-pub extern "C" fn iota_sign_hash(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+pub extern "C" fn iota_sign_hash(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> PtrT<UREncodeResult> {
     let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
     let sign_request = extract_ptr_with_type!(ptr, IotaSignHashRequest);
     let hash = sign_request.get_message_hash();

@@ -928,6 +928,9 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
 
     for (int i = 0; i < 2; i++) {
         lv_obj_t *tabChild;
+        if (g_analyzeTabview.obj[i] == NULL) {
+            continue;
+        }
         if (i == 0) {
             tabChild = lv_tabview_add_tab(tabView, _("Overview"));
             lv_obj_t *temp = GuiCreateIllustrateLabel(tabView, _("Overview"));
@@ -966,9 +969,33 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
     }
 }
 
+void GuiRefreshOnePage(void)
+{
+    lv_obj_t *line = lv_obj_get_child(g_templateContainer, 1);
+    lv_obj_del(line);
+    lv_obj_t *firstChild = lv_obj_get_child(g_templateContainer, 0);
+    uint8_t childCnt = lv_obj_get_child_cnt(firstChild);
+    for (int i = 0; i < childCnt; i++) {
+        lv_obj_t *child = lv_obj_get_child(firstChild, i);
+        if (child == NULL) {
+            continue;
+        }
+        if (i == 1) {
+            lv_obj_set_parent(child, g_templateContainer);
+        } else {
+            lv_obj_del(child);
+        }
+    }
+    lv_obj_del(firstChild);
+    lv_obj_align(g_templateContainer, LV_ALIGN_TOP_MID, 12, 0);
+}
+
 void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
 {
     g_tableView = NULL;
+    for (int i = 0; i < GUI_ANALYZE_TABVIEW_CNT; i++) {
+        g_analyzeTabview.obj[i] = NULL;
+    }
     g_analyzeTabview.tabviewIndex = 0;
     g_reMapIndex = ViewTypeReMap(index);
     if (g_reMapIndex == REMAPVIEW_BUTT) {
@@ -983,7 +1010,10 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
         return NULL;
     }
 
-    if (g_tableView == NULL) {
+    if (g_tableView == NULL || g_analyzeTabview.obj[0] == NULL) {
+        if (g_analyzeTabview.obj[0] == NULL) {
+            GuiRefreshOnePage();
+        }
         return g_templateContainer;
     }
     GuiAnalyzeViewInit(parent);

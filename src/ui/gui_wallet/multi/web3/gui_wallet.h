@@ -20,6 +20,7 @@ UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountTyp
 UREncodeResult *GuiGetMetamaskData(void);
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin);
+UREncodeResult *GuiGetIotaWalletData(void);
 UREncodeResult *GuiGetPetraData(void);
 UREncodeResult *GuiGetSolflareData(void);
 UREncodeResult *GuiGetHeliumData(void);

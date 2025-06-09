@@ -236,6 +236,31 @@ UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin)
     return g_urEncode;
 }
 
+UREncodeResult *GuiGetIotaWalletData(void)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+#define NIGHTLY_XPUB_COUNT 10
+    ExtendedPublicKey keys[NIGHTLY_XPUB_COUNT];
+    publicKeys->data = keys;
+    publicKeys->size = NIGHTLY_XPUB_COUNT;
+    for (uint8_t startIndex = 0; startIndex < NIGHTLY_XPUB_COUNT; startIndex++) {
+        keys[startIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[startIndex].path, BUFFER_SIZE_32, "m/44'/4218'/%u'/0'/0'", startIndex);
+        keys[startIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + startIndex);
+    }
+    g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    for (uint8_t i = 0; i < NIGHTLY_XPUB_COUNT; i++) {
+        if (keys[i].path != NULL) {
+            SRAM_FREE(keys[i].path);
+        }
+    }
+    SRAM_FREE(publicKeys);
+    return g_urEncode;
+}
+
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin)
 {
     uint8_t mfp[4] = {0};

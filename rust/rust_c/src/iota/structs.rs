@@ -1,6 +1,6 @@
+use alloc::format;
 use alloc::string::ToString;
 use alloc::vec::Vec;
-use alloc::format;
 use alloc::{boxed::Box, string::String};
 use app_cardano::structs::{
     CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignCip8Data,
@@ -20,10 +20,8 @@ use crate::{
 };
 use app_sui::Intent;
 use sui_types::{
-    transaction::{
-        CallArg, Command, TransactionData, TransactionDataV1, TransactionKind
-    },
-    message::PersonalMessage
+    message::PersonalMessage,
+    transaction::{CallArg, Command, TransactionData, TransactionDataV1, TransactionKind},
 };
 
 #[repr(C)]
@@ -47,6 +45,13 @@ pub struct DisplayIotaIntentData {
 }
 
 impl_c_ptr!(DisplayIotaIntentData);
+
+impl DisplayIotaIntentData {
+    pub fn with_address(mut self, address: String) -> Self {
+        self.sender = convert_c_char(address);
+        self
+    }
+}
 
 impl From<Intent> for DisplayIotaIntentData {
     fn from(value: Intent) -> Self {
@@ -88,18 +93,16 @@ impl From<Intent> for DisplayIotaIntentData {
                     message: null_mut(),
                 }
             }
-            Intent::PersonalMessage(personal_message) => {
-                Self {
-                    amount: null_mut(),
-                    recipient: null_mut(),
-                    network: null_mut(),
-                    sender: null_mut(),
-                    details: null_mut(),
-                    transaction_type: convert_c_char("Message".to_string()),
-                    method: null_mut(),
-                    message: convert_c_char(personal_message.value.message),
-                }
-            }
+            Intent::PersonalMessage(personal_message) => Self {
+                amount: null_mut(),
+                recipient: null_mut(),
+                network: null_mut(),
+                sender: null_mut(),
+                details: null_mut(),
+                transaction_type: convert_c_char("Message".to_string()),
+                method: null_mut(),
+                message: convert_c_char(personal_message.value.message),
+            },
             _ => todo!("Other Intent types not implemented"),
         }
     }
@@ -188,6 +191,10 @@ impl Free for DisplayIotaIntentData {
         free_str_ptr!(self.sender);
         free_str_ptr!(self.recipient);
         free_str_ptr!(self.details);
+        free_str_ptr!(self.transaction_type);
+        free_str_ptr!(self.method);
+        free_str_ptr!(self.amount);
+        free_str_ptr!(self.message);
     }
 }
 

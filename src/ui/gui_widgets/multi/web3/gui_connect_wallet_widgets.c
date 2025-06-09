@@ -88,6 +88,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_FEWCHA, &walletListFewcha, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_ZAPPER, &walletListZapper, true, WALLET_FILTER_ETH},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_IOTA, &walletListIota, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true, WALLET_FILTER_ETH},
 };
 
@@ -186,6 +187,10 @@ static const lv_img_dsc_t *g_petraCoinArray[1] = {
 
 static const lv_img_dsc_t *g_nightlyCoinArray[1] = {
     &coinSui, &coinIota, &coinApt
+};
+
+static const lv_img_dsc_t *g_iotaCoinArray[1] = {
+    &coinIota,
 };
 
 static const lv_img_dsc_t *g_solfareCoinArray[1] = {
@@ -1047,6 +1052,20 @@ static void AddNightlyCoins(void)
     }
 }
 
+static void AddIotaCoins(void)
+{
+    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
+        lv_obj_clean(g_coinCont);
+    }
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_iotaCoinArray); i++) {
+        // todo add more coins
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_iotaCoinArray[i]);
+        lv_img_set_zoom(img, 110);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
+    }
+}
+
 static void AddChainAddress(void)
 {
     if (lv_obj_get_child_cnt(g_bottomCont) > 0) {
@@ -1376,6 +1395,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_NIGHTLY:
         func = GuiGetNightlyData;
         AddNightlyCoins();
+        break;
+    case WALLET_LIST_IOTA:
+        func = GuiGetIotaWalletData;
+        AddIotaCoins();
         break;
     case WALLET_LIST_SUIET:
         func = GuiGetNightlyData;

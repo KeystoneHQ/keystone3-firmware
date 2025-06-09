@@ -47,9 +47,9 @@ use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 #[cfg(not(feature = "btc-only"))]
 use ur_registry::extend::qr_hardware_call::QRHardwareCall;
 #[cfg(feature = "iota")]
-use ur_registry::iota::iota_sign_request::IotaSignRequest;
-#[cfg(feature = "iota")]
 use ur_registry::iota::iota_sign_hash_request::IotaSignHashRequest;
+#[cfg(feature = "iota")]
+use ur_registry::iota::iota_sign_request::IotaSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
 #[cfg(feature = "monero")]

@@ -1282,43 +1282,14 @@ void GetEthNonce(void *indata, void *param, uint32_t maxLen)
 
 void GetEthInputData(void *indata, void *param, uint32_t maxLen)
 {
-    if (indata != NULL) {
-        *((char *)indata) = '\0';
-    }
     DisplayETH *eth = (DisplayETH *)param;
-    char *hash = eth->detail->input;
-    // pre 8 char to color #F5870A
-    char prefix[9] = {0};
-    char *middle = NULL;
-    if (strlen(hash) > maxLen) {
-        char *suffix = "...";
-        char *notice = "Raw data length exceeds the limit #";
-        uint32_t middleLen = 500;
-        strncpy(prefix, "0x", 2);
-        strncpy(prefix + 2, hash, 6);
-        // middle = (char *)SRAM_MALLOC(middleLen + 1);
-        // strncpy(middle, hash + 6, middleLen);
-        char* temp = (char*)SRAM_MALLOC(BUFFER_SIZE_1024);
-        for (int i = 0; i < strlen(hash); i += BUFFER_SIZE_1024) {
-            strncpy_s(temp, BUFFER_SIZE_1024, hash + i, BUFFER_SIZE_1024 - 1);
-            strcat_s(indata, BUFFER_SIZE_1024 * 4, temp);
-        }
-        SRAM_FREE(temp);
-    } else {
-        uint32_t middleLen = strlen(hash);
-        middle = (char *)SRAM_MALLOC(maxLen + 1);
-        strncpy(prefix, "0x", 2);
-        strncpy(prefix + 2, hash, 6);
-        strncpy(middle, hash + 6, middleLen);
-        snprintf((char *)indata, maxLen, "#F5870A %s#%s", prefix, middle);
-        SRAM_FREE(middle);
-    }
+    snprintf_s((char *)indata, maxLen, "0x%s", eth->detail->input);
 }
 
 int GetEthInputDataLen(void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    return strlen(eth->detail->input);
+    return strlen(eth->detail->input) + 3;
 }
 
 bool GetEthEnsExist(void *indata, void *param)

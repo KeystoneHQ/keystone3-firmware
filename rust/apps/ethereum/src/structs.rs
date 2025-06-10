@@ -172,18 +172,6 @@ impl TypedData {
     }
 
     pub fn from_raw(mut data: Eip712TypedData, from: PublicKey) -> Result<Self> {
-        for (index, (key, value)) in data.message.iter_mut().enumerate() {
-            match value {
-                Value::String(value) => {
-                    if value.len() >= 512 {
-                        let mut message = value.to_string();
-                        message.truncate(512);
-                        *value = format!("{}...", message).into();
-                    }
-                }
-                _ => {}
-            }
-        }
         Self::from(Into::into(data), from)
     }
 

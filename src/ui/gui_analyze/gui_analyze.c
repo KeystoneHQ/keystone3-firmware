@@ -526,8 +526,7 @@ static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint
                 DisplayJsonRecursive(parent, subitem, indent, yOffset);
             }
         } else if (cJSON_IsString(item)) {
-            snprintf(buf, sizeof(buf), "%s", item->valuestring);
-            label = GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
+            label = GuiCreateValueLabel(parent, item->valuestring, indent + 1, yOffset);
         } else if (cJSON_IsNumber(item)) {
             snprintf(buf, sizeof(buf), "%.0f", item->valuedouble);
             label = GuiCreateValueLabel(parent, buf, indent + 1, yOffset);

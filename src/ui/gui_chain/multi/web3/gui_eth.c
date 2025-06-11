@@ -944,7 +944,7 @@ void GetEthTypedDataMessage(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->message != NULL) {
-        strcpy_s((char *)indata, maxLen, message->message);
+        snprintf((char *)indata, maxLen, "%s", message->message);
     } else {
         strcpy_s((char *)indata, maxLen, "");
     }
@@ -953,7 +953,7 @@ void GetEthTypedDataMessage(void *indata, void *param, uint32_t maxLen)
 int GetEthTypedDataMessageLen(void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    return strlen(message->message);
+    return strlen(message->message) + 3;
 }
 
 void GetEthTypedDataFrom(void *indata, void *param, uint32_t maxLen)

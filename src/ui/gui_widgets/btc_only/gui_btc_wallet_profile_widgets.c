@@ -339,8 +339,7 @@ static void OpenManageMultisigViewHandler(lv_event_t *e)
 static void OpenExportShowXpubHandler(lv_event_t *e)
 {
     static bool testStatus[] = {false, true};
-    bool isPassPhrase = PassphraseExist(GetCurrentAccountIndex());
-    uint16_t offset = isPassPhrase ? 96 : 0;
+    uint16_t offset = 0;
     g_noticeWindow = GuiCreateHintBox(408 - offset);
     lv_obj_t *title = GuiCreateIllustrateLabel(g_noticeWindow, _("wallet_profile_multi_wallet_show_xpub"));
     lv_obj_align(title, LV_ALIGN_DEFAULT, 36, 422 + offset);
@@ -359,11 +358,8 @@ static void OpenExportShowXpubHandler(lv_event_t *e)
                              OpenBtcExportViewHandler, &testStatus[1]);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 578 + offset);
     lv_obj_set_style_text_color(lv_obj_get_child(button, 1), YELLOW_COLOR, 0);
-
-    if (!isPassPhrase) {
-        button = GuiCreateSelectButton(g_noticeWindow, _("wallet_profile_multi_sign_title"), &imgArrowRight, OpenBtcExportMultisigViewHandler, NULL, false);
-        lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -12);
-    }
+    button = GuiCreateSelectButton(g_noticeWindow, _("wallet_profile_multi_sign_title"), &imgArrowRight, OpenBtcExportMultisigViewHandler, NULL, false);
+    lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -12);
 }
 
 static void OpenBtcExportViewHandler(lv_event_t *e)

@@ -208,14 +208,14 @@ void GuiTransactionDetailParseSuccess(void *param)
 {
     SetParseTransactionResult(param);
     GuiTemplateReload(g_pageWidget->contentZone, g_viewType);
-    if (!g_needSign) {
-        GuiCreateErrorCodeWindow(ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, NULL, (ErrorWindowCallback)GuiCloseCurrentWorkingView);
-    }
-    bool isCanSign = GuiCheckIsTransactionSign();
-    if (!isCanSign) {
-        lv_obj_add_state(g_signSlider, LV_STATE_DISABLED);
-        lv_obj_set_style_bg_img_src(g_signSlider, &imgDenySign, LV_PART_KNOB);
-    }
+    // if (!g_needSign) {
+    //     GuiCreateErrorCodeWindow(ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, NULL, (ErrorWindowCallback)GuiCloseCurrentWorkingView);
+    // }
+    // bool isCanSign = GuiCheckIsTransactionSign();
+    // if (!isCanSign) {
+    //     lv_obj_add_state(g_signSlider, LV_STATE_DISABLED);
+    //     lv_obj_set_style_bg_img_src(g_signSlider, &imgDenySign, LV_PART_KNOB);
+    // }
 }
 
 void GuiTransactionDetailVerifyPasswordSuccess(void)

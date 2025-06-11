@@ -506,10 +506,11 @@ lv_obj_t *GuiCreateValueLabel(lv_obj_t *parent, const char *text, int indent, ui
     return label;
 }
 
+static bool g_isJsonStringTooLong = false;
 static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint32_t *yOffset)
 {
     lv_obj_t* label;
-    char buf[BUFFER_SIZE_512];
+    char buf[BUFFER_SIZE_256];
 
     while (item != NULL) {
         if (item->string != NULL) {
@@ -526,7 +527,13 @@ static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint
                 DisplayJsonRecursive(parent, subitem, indent, yOffset);
             }
         } else if (cJSON_IsString(item)) {
-            label = GuiCreateValueLabel(parent, item->valuestring, indent + 1, yOffset);
+            if (strlen(item->valuestring) >= BUFFER_SIZE_256) {
+                g_isJsonStringTooLong = true;
+                snprintf_s(buf, sizeof(buf), "%.252s...", item->valuestring);
+            } else {
+                snprintf_s(buf, sizeof(buf), "%s", item->valuestring);
+            }
+            label = GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
         } else if (cJSON_IsNumber(item)) {
             snprintf(buf, sizeof(buf), "%.0f", item->valuedouble);
             label = GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
@@ -544,6 +551,7 @@ static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint
 
 lv_obj_t *GuiWidgetJsonLabel(lv_obj_t *parent, cJSON *json)
 {
+    g_isJsonStringTooLong = false;
     char *text = GetLabelText(parent, json);
     cJSON *root = cJSON_Parse(text);
     if (root == NULL) {
@@ -555,6 +563,13 @@ lv_obj_t *GuiWidgetJsonLabel(lv_obj_t *parent, cJSON *json)
     DisplayJsonRecursive(parent, root, 0, &yOffset);
     cJSON_Delete(root);
     EXT_FREE(text);
+    if (g_isJsonStringTooLong) {
+        lv_obj_t *label = GuiCreateIllustrateLabel(parent, "Some data has been truncated due to display limitations. Please refer to the #F55831 Raw Data#  for full details.");
+        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+        lv_label_set_recolor(label, true);
+        lv_obj_set_width(label, 360);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -20, 4);
+    }
     return parent;
 }
 

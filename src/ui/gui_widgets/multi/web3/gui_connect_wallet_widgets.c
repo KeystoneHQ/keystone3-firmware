@@ -135,7 +135,7 @@ static const lv_img_dsc_t *g_backpackWalletCoinArray[3] = {
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinTrx, &coinDoge
+    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinDoge
 };
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {

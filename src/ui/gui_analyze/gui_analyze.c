@@ -530,7 +530,7 @@ static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint
             label = GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
         } else if (cJSON_IsNumber(item)) {
             snprintf(buf, sizeof(buf), "%.0f", item->valuedouble);
-            label = GuiCreateValueLabel(parent, buf, indent, yOffset);
+            label = GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
         } else if (cJSON_IsBool(item)) {
             snprintf(buf, sizeof(buf), "%*s%s", (indent + 1) * 2, "", item->valueint ? "true" : "false");
             label = GuiCreateValueLabel(parent, buf, indent, yOffset);

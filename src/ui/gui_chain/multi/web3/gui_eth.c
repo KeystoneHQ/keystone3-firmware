@@ -1283,7 +1283,7 @@ void GetEthNonce(void *indata, void *param, uint32_t maxLen)
 void GetEthInputData(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    snprintf_s((char *)indata, maxLen, "0x%s", eth->detail->input);
+    snprintf((char *)indata, maxLen, "0x%s", eth->detail->input);
 }
 
 int GetEthInputDataLen(void *param)

@@ -179,7 +179,7 @@ static void CreateAddWalletButton(lv_obj_t *parent, uint16_t offset, int multiSi
 static void CreateNoticeLabel(lv_obj_t *parent, bool isPassphraseExist, int multiSigNum)
 {
     lv_obj_t *label = NULL;
-    if (isPassphraseExist) {
+    if (isPassphraseExist && multiSigNum != 0) {
         label = GuiCreateNoticeLabel(parent, _("manage_multi_wallet_passphrase_add_limit_desc"));
     } else if (multiSigNum == MAX_MULTI_SIG_WALLET_NUMBER_EXCEPT_PASSPHRASE) {
         label = GuiCreateNoticeLabel(parent, _("manage_multi_wallet_add_limit_desc"));
@@ -216,7 +216,7 @@ static int HandleInvalidMultiSigWallet(MultiSigWalletItem_t *item)
     DeleteAccountMultiReceiveIndex("BTC", item->verifyCode);
     int index = DeleteMultisigWalletByVerifyCode(item->verifyCode);
     SetCurrentWalletIndex(SINGLE_WALLET);
-    return GetCurrentAccountMultisigWalletNum(item->passphrase) - 1;
+    return GetCurrentAccountMultisigWalletNum(item->passphrase);
 }
 
 static void CreateMultiWalletButtons(lv_obj_t *parent, uint16_t startOffset,
@@ -261,8 +261,10 @@ static void CreateBtcWalletProfileEntranceRefresh(lv_obj_t *parent)
     CreateSingleWalletButton(parent, &offset);
 
     CreateMultiWalletButtons(parent, offset, isPassphrase, &multiSigNum, &isPassphraseExist);
+    printf("isPassphraseExist: %d, multiSigNum: %d\r\n", isPassphraseExist, multiSigNum);
 
-    if (!isPassphraseExist && multiSigNum < MAX_MULTI_SIG_WALLET_NUMBER_EXCEPT_PASSPHRASE) {
+    if ((!isPassphraseExist && multiSigNum < MAX_MULTI_SIG_WALLET_NUMBER_EXCEPT_PASSPHRASE) || 
+        (isPassphraseExist && multiSigNum == 0)) {
         CreateAddWalletButton(parent, offset, multiSigNum);
     }
 

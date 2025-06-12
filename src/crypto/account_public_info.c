@@ -1105,6 +1105,13 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             cJSON_Delete(g_tempParsePhraseJson);
             g_tempParsePhraseJson = NULL;
         }
+
+#ifdef BTC_ONLY
+        initMultiSigWalletManager();
+        ret = LoadCurrentAccountMultisigWallet(password);
+        CHECK_ERRCODE_RETURN_INT(ret);
+        LoadCurrentAccountMultiReceiveIndex();
+#endif
     }
     CLEAR_ARRAY(seed);
 

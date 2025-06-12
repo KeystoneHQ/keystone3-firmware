@@ -181,9 +181,9 @@ impl WrappedPsbt {
         Ok(true)
     }
 
-    fn get_my_input_verify_code(&self, input: &Input) -> Option<String> {
+    fn get_my_input_verify_code(&self, input: &Input, mfp: Fingerprint) -> Option<String> {
         return if input.bip32_derivation.len() > 1 {
-            match self.get_multi_sig_input_verify_code(input) {
+            match self.get_multi_sig_input_verify_code(input, mfp) {
                 Ok(verify_code) => Some(verify_code),
                 Err(_) => None,
             }
@@ -193,7 +193,7 @@ impl WrappedPsbt {
     }
 
     fn check_my_wallet_type(&self, input: &Input, context: &ParseContext) -> Result<()> {
-        let input_verify_code = self.get_my_input_verify_code(input);
+        let input_verify_code = self.get_my_input_verify_code(input, context.master_fingerprint);
         match &context.verify_code {
             //single sig
             None => {
@@ -478,7 +478,7 @@ impl WrappedPsbt {
         ))
     }
 
-    fn get_multi_sig_input_verify_code(&self, input: &Input) -> Result<String> {
+    fn get_multi_sig_input_verify_code(&self, input: &Input, mfp: Fingerprint) -> Result<String> {
         if self.psbt.xpub.is_empty() {
             return Err(BitcoinError::MultiSigInputError(
                 "xpub is empty".to_string(),
@@ -524,6 +524,7 @@ impl WrappedPsbt {
             total,
             format,
             &crate::multi_sig::Network::try_from(&network)?,
+            mfp.to_string().as_str()
         )?)
     }
 

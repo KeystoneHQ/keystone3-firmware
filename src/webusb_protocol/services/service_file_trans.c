@@ -304,7 +304,7 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
 
     if (offset + fileDataSize > g_fileTransInfo.fileSize) {
         // data will encrypt frame to expand 16 bytes
-        if (offset + fileDataSize - g_fileTransInfo.fileSize < 16) {
+        if (offset + fileDataSize - g_fileTransInfo.fileSize <= 16) {
             isTail = true;
         } else {
             printf("offset = %d, file size = %d\n", offset, g_fileTransInfo.fileSize);

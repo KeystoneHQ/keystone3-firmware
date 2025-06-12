@@ -26,6 +26,8 @@ void UsbInit(void)
 
         memset_s(&g_usbDev, sizeof(g_usbDev), 0x00, sizeof(g_usbDev));
 
+        CompositeCbInit();
+
         USBD_Init(&g_usbDev, USB_OTG_FS_CORE_ID, &USR_desc, DeviceCallback, &USRD_cb);
         g_usbInit = true;
     }

@@ -6,5 +6,6 @@
 #include "usb_core.h"
 
 extern USBD_Class_cb_TypeDef USBCompositeCb;
+void CompositeCbInit(void);
 
 #endif

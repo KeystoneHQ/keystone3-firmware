@@ -210,7 +210,7 @@ UREncodeResult *GuiGetWalletDataByCoin(bool includeApt)
     if (includeApt) {
         for (uint8_t startIndex = 0; startIndex < 10; xpubIndex++, startIndex++) {
             keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
-            snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0/0", startIndex);
+            snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0'/0'", startIndex);
             keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + startIndex);
         }
     }

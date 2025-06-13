@@ -448,7 +448,6 @@ static char *GetLabelText(lv_obj_t *parent, cJSON *json)
     item = cJSON_GetObjectItem(json, "text_key");
     if (item != NULL) {
         strcpy_s(text, bufLen, item->valuestring);
-        return text;
     }
 
     item = cJSON_GetObjectItem(json, "text_func");

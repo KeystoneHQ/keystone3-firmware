@@ -1,3 +1,16 @@
+## 2.1.4(2025-06-16)
+
+### What's New
+1. Supported managing APT assets via Nightly Wallet
+2. Supported managing XRP assets via Keystone Nexus Wallet
+
+### Improvements
+1. Optimized transaction parsing experience for EVM chains
+
+### Bug Fixes
+1. Fixed a bug where ADA transactions failed after importing accounts beyond the default limit in Eternl Wallet
+
+
 ## 2.1.2(2025-05-29)
 
 **Web3:**

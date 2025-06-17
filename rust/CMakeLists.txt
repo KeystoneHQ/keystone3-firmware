@@ -61,7 +61,7 @@ message(STATUS "cargo build command: " ${CARGO_FLAG})
 
 #run build
 add_custom_target(rust_c ALL
-    COMMAND rustup run nightly-2024-07-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
+    COMMAND rustup run nightly-2024-10-09 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
     COMMAND ${COPY_BUILD_TARGET}
     COMMAND ${COPY_BINDINGS_TARGET}
     WORKING_DIRECTORY ${RUST_DIR}

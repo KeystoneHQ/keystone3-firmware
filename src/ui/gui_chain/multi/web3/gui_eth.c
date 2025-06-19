@@ -148,7 +148,8 @@ const static EvmNetwork_t NETWORKS[] = {
     {888, "Wanchain", "WAN"},
     {940, "PulseChain Testnet", "tPLS"},
     {977, "Nepal Blockchain Network", "YETI"},
-    {999, "Wanchain Testnet", "WAN"},
+    {998, "Hyperliquid Testnet", "HYPE"},
+    {999, "Hyperliquid", "HYPE"},
     {1001, "Klaytn Testnet Baobab", "KLAY"},
     {1007, "Newton Testnet", "NEW"},
     {1010, "Evrice Network", "EVC"},
@@ -847,6 +848,18 @@ bool GetEthTypeDataHashExist(void *indata, void *param)
     return false;
 }
 
+bool GetEthTypeDataChainExist(void *indata, void *param)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    return message->chain_id != NULL;
+}
+
+bool GetEthTypeDataVersionExist(void *indata, void *param)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    return message->version != NULL;
+}
+
 void GetEthTypedDataMessageHash(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
@@ -881,7 +894,7 @@ void GetEthTypedDataDomianVersion(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->version != NULL) {
-        strcpy_s((char *)indata, maxLen, message->version);
+        snprintf_s((char *)indata, maxLen, "v%s", message->version);
     } else {
         strcpy_s((char *)indata, maxLen, "");
     }
@@ -891,7 +904,7 @@ void GetEthTypedDataDomianChainId(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->chain_id != NULL) {
-        strcpy_s((char *)indata, maxLen, message->chain_id);
+        snprintf_s((char *)indata, maxLen, "%s (%s)", message->chain_id, FindEvmNetwork(atoi(message->chain_id)).name);
     } else {
         strcpy_s((char *)indata, maxLen, "");
     }
@@ -931,7 +944,7 @@ void GetEthTypedDataMessage(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->message != NULL) {
-        strcpy_s((char *)indata, maxLen, message->message);
+        snprintf((char *)indata, maxLen, "%s", message->message);
     } else {
         strcpy_s((char *)indata, maxLen, "");
     }
@@ -940,7 +953,7 @@ void GetEthTypedDataMessage(void *indata, void *param, uint32_t maxLen)
 int GetEthTypedDataMessageLen(void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    return strlen(message->message);
+    return strlen(message->message) + 3;
 }
 
 void GetEthTypedDataFrom(void *indata, void *param, uint32_t maxLen)
@@ -1269,43 +1282,14 @@ void GetEthNonce(void *indata, void *param, uint32_t maxLen)
 
 void GetEthInputData(void *indata, void *param, uint32_t maxLen)
 {
-    if (indata != NULL) {
-        *((char *)indata) = '\0';
-    }
     DisplayETH *eth = (DisplayETH *)param;
-    char *hash = eth->detail->input;
-    // pre 8 char to color #F5870A
-    char prefix[9] = {0};
-    char *middle = NULL;
-    if (strlen(hash) > maxLen) {
-        char *suffix = "...";
-        char *notice = "Raw data length exceeds the limit #";
-        uint32_t middleLen = 500;
-        strncpy(prefix, "0x", 2);
-        strncpy(prefix + 2, hash, 6);
-        // middle = (char *)SRAM_MALLOC(middleLen + 1);
-        // strncpy(middle, hash + 6, middleLen);
-        char* temp = (char*)SRAM_MALLOC(BUFFER_SIZE_1024);
-        for (int i = 0; i < strlen(hash); i += BUFFER_SIZE_1024) {
-            strncpy_s(temp, BUFFER_SIZE_1024, hash + i, BUFFER_SIZE_1024 - 1);
-            strcat_s(indata, BUFFER_SIZE_1024 * 4, temp);
-        }
-        SRAM_FREE(temp);
-    } else {
-        uint32_t middleLen = strlen(hash);
-        middle = (char *)SRAM_MALLOC(maxLen + 1);
-        strncpy(prefix, "0x", 2);
-        strncpy(prefix + 2, hash, 6);
-        strncpy(middle, hash + 6, middleLen);
-        snprintf((char *)indata, maxLen, "#F5870A %s#%s", prefix, middle);
-        SRAM_FREE(middle);
-    }
+    snprintf((char *)indata, maxLen, "0x%s", eth->detail->input);
 }
 
 int GetEthInputDataLen(void *param)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    return strlen(eth->detail->input);
+    return strlen(eth->detail->input) + 3;
 }
 
 bool GetEthEnsExist(void *indata, void *param)
@@ -1333,7 +1317,9 @@ void GetEthToFromSize(uint16_t *width, uint16_t *height, void *param)
 void GetEthTypeDomainSize(uint16_t *width, uint16_t *height, void *param)
 {
     *width = 408;
-    *height = 298 + (98 + 16) * GetEthTypeDataHashExist(NULL, param);
+    *height = 298 + (98 + 16) * GetEthTypeDataHashExist(NULL, param) +
+              GetEthTypeDataChainExist(NULL, param) * 90 +
+              GetEthTypeDataVersionExist(NULL, param) * 90;
 }
 
 void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param)
@@ -1429,6 +1415,10 @@ void *GetEthContractData(uint8_t *row, uint8_t *col, void *param)
     int i = 0, j = 0;
     char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++) {
+        if (*row == 0) {
+            indata[i] = NULL;
+            continue;
+        }
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
             int index = j / 2;

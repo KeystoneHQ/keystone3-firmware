@@ -81,7 +81,7 @@ lv_obj_t *g_defaultVector[OBJ_VECTOR_MAX_LEN];
 lv_obj_t *g_hiddenVector[OBJ_VECTOR_MAX_LEN];
 GuiAnalyzeTable_t g_tableData[8];
 uint8_t g_tableDataAmount = 0;
-
+static char g_tableName[GUI_ANALYZE_TABVIEW_CNT][16];
 void GuiAnalyzeFreeTable(uint8_t row, uint8_t col, void *param)
 {
     if (param == NULL) {
@@ -441,14 +441,13 @@ static char *GetLabelText(lv_obj_t *parent, cJSON *json)
     char *text = EXT_MALLOC(bufLen);
     item = cJSON_GetObjectItem(json, "text");
     if (item != NULL) {
-        strcpy_s(text, bufLen, item->valuestring);
+        strcpy_s(text, bufLen, _(item->valuestring));
         return text;
     }
 
     item = cJSON_GetObjectItem(json, "text_key");
     if (item != NULL) {
         strcpy_s(text, bufLen, item->valuestring);
-        return text;
     }
 
     item = cJSON_GetObjectItem(json, "text_func");
@@ -493,6 +492,84 @@ lv_obj_t *GuiWidgetTextArea(lv_obj_t *parent, cJSON *json)
 
     EXT_FREE(text);
     return cont;
+}
+
+lv_obj_t *GuiCreateValueLabel(lv_obj_t *parent, const char *text, int indent, uint32_t *yOffset)
+{
+    lv_obj_t *label = GuiCreateIllustrateLabel(parent, text);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(label, 320);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, indent * 20, *yOffset);
+    lv_obj_refr_size(label);
+    *yOffset += lv_obj_get_self_height(label);
+    return label;
+}
+
+static bool g_isJsonStringTooLong = false;
+static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint32_t *yOffset)
+{
+    lv_obj_t* label;
+    char buf[BUFFER_SIZE_256];
+
+    while (item != NULL) {
+        if (item->string != NULL) {
+            snprintf(buf, sizeof(buf), "%s:", item->string);
+            label = GuiCreateValueLabel(parent, buf, indent, yOffset);
+        }
+
+        if (cJSON_IsObject(item)) {
+            DisplayJsonRecursive(parent, item->child, indent + 1, yOffset);
+        } else if (cJSON_IsArray(item)) {
+            int size = cJSON_GetArraySize(item);
+            for (int i = 0; i < 1; i++) {
+                cJSON* subitem = cJSON_GetArrayItem(item, i);
+                DisplayJsonRecursive(parent, subitem, indent, yOffset);
+            }
+        } else if (cJSON_IsString(item)) {
+            if (strlen(item->valuestring) >= BUFFER_SIZE_256) {
+                g_isJsonStringTooLong = true;
+                snprintf_s(buf, sizeof(buf), "%.252s...", item->valuestring);
+            } else {
+                snprintf_s(buf, sizeof(buf), "%s", item->valuestring);
+            }
+            label = GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
+        } else if (cJSON_IsNumber(item)) {
+            snprintf(buf, sizeof(buf), "%.0f", item->valuedouble);
+            label = GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
+        } else if (cJSON_IsBool(item)) {
+            snprintf(buf, sizeof(buf), "%*s%s", (indent + 1) * 2, "", item->valueint ? "true" : "false");
+            label = GuiCreateValueLabel(parent, buf, indent, yOffset);
+        } else if (cJSON_IsNull(item)) {
+            snprintf(buf, sizeof(buf), "%*snull", (indent + 1) * 2, "");
+            label = GuiCreateValueLabel(parent, buf, indent, yOffset);
+        }
+
+        item = item->next;
+    }
+}
+
+lv_obj_t *GuiWidgetJsonLabel(lv_obj_t *parent, cJSON *json)
+{
+    g_isJsonStringTooLong = false;
+    char *text = GetLabelText(parent, json);
+    cJSON *root = cJSON_Parse(text);
+    if (root == NULL) {
+        printf("cJSON_Parse failed\n");
+        return parent;
+    }
+
+    uint32_t yOffset = 16;
+    DisplayJsonRecursive(parent, root, 0, &yOffset);
+    cJSON_Delete(root);
+    EXT_FREE(text);
+    if (g_isJsonStringTooLong) {
+        lv_obj_t *label = GuiCreateIllustrateLabel(parent, "Some data has been truncated due to display limitations. Please refer to the #F55831 Raw Data#  for full details.");
+        lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+        lv_label_set_recolor(label, true);
+        lv_obj_set_width(label, 360);
+        GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -20, 4);
+    }
+    return parent;
 }
 
 lv_obj_t *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
@@ -781,6 +858,9 @@ lv_obj_t *GuiWidgetTabView(lv_obj_t *parent, cJSON *json)
 lv_obj_t *GuiWidgetTabViewChild(lv_obj_t *parent, cJSON *json)
 {
     cJSON *item = cJSON_GetObjectItem(json, "tab_name");
+    if (item != NULL) {
+        strcpy(g_tableName[g_analyzeTabview.tabviewIndex], item->valuestring);
+    }
     lv_obj_t *obj = lv_tabview_add_tab(g_tableView, item->valuestring);
 
     lv_obj_t *tab_btns = lv_tabview_get_tab_btns(g_tableView);
@@ -868,6 +948,8 @@ static lv_obj_t *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         obj = GuiWidgetCustomContainer(parent, json);
     } else if (0 == strcmp(type, "textarea")) {
         obj = GuiWidgetTextArea(parent, json);
+    } else if (0 == strcmp(type, "json_label")) {
+        obj = GuiWidgetJsonLabel(parent, json);
     } else {
         printf("json type is %s\n", type);
         return NULL;
@@ -967,14 +1049,13 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     lv_obj_t *line = (lv_obj_t *)GuiCreateLine(g_imgCont, points, 2);
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 64);
-    char *tabName[GUI_ANALYZE_TABVIEW_CNT] = {_("Overview"), _("Details"), _("Raw Data")};
 
     for (int i = 0; i < GUI_ANALYZE_TABVIEW_CNT; i++) {
         if (g_analyzeTabview.obj[i] == NULL) {
             break;
         }
         lv_obj_t *tabChild;
-        tabChild = lv_tabview_add_tab(tabView, tabName[i]);
+        tabChild = lv_tabview_add_tab(tabView, g_tableName[i]);
         lv_obj_set_scrollbar_mode(tabChild, LV_SCROLLBAR_MODE_OFF);
         lv_obj_clear_flag(tabChild, LV_OBJ_FLAG_SCROLL_ELASTIC);
         lv_obj_set_style_pad_all(tabChild, 0, LV_PART_MAIN);
@@ -1011,6 +1092,7 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
     g_analyzeTabview.tabviewIndex = 0;
     for (uint32_t i = 0; i < GUI_ANALYZE_TABVIEW_CNT; i++) {
         g_analyzeTabview.obj[i] = NULL;
+        memset_s(g_tableName[i], sizeof(g_tableName[i]), 0, sizeof(g_tableName[i]));
     }
     g_reMapIndex = ViewTypeReMap(index);
     if (g_reMapIndex == REMAPVIEW_BUTT) {

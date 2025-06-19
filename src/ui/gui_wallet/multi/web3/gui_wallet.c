@@ -210,7 +210,7 @@ UREncodeResult *GuiGetWalletDataByCoin(bool includeApt)
     if (includeApt) {
         for (uint8_t startIndex = 0; startIndex < 10; xpubIndex++, startIndex++) {
             keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
-            snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0/0", startIndex);
+            snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0'/0'", startIndex);
             keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + startIndex);
         }
     }
@@ -401,7 +401,8 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
     // + eth 1
     // + trx 1
     // + doge 1
-    ExtendedPublicKey keys[7];
+    // + xrp 1
+    ExtendedPublicKey keys[8];
     public_keys->data = keys;
     public_keys->size = NUMBER_OF_ARRAYS(keys);
 
@@ -426,6 +427,9 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
 
     keys[6].path = GetXPubPath(XPUB_TYPE_DOGE);
     keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DOGE);
+
+    keys[7].path = GetXPubPath(XPUB_TYPE_XRP);
+    keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
 
     // keys[3].path = GetXPubPath(XPUB_TYPE_BCH);
     // keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);

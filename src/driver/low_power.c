@@ -31,6 +31,7 @@
 #include "device_setting.h"
 
 #define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                // 80 seconds
+#define RTC_WAKE_UP_INTERVAL_DISCHARGE                  (60 * 15)           // 15 minutes
 #define RTC_WAKE_UP_INTERVAL_LOW_BATTERY                (60 * 30)           // 30 minutes
 static void SetRtcWakeUp(uint32_t second);
 int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen);
@@ -81,7 +82,7 @@ uint32_t EnterLowPower(void)
     uint32_t sleepSecond, wakeUpSecond, wakeUpCount = 0;
     g_lowPowerState = LOW_POWER_STATE_DEEP_SLEEP;
     printf("enter deep sleep\r\n");
-    sleepSecond = 80;
+    sleepSecond = RTC_WAKE_UP_INTERVAL_CHARGING;
     printf("sleepSecond=%d\n", sleepSecond);
     TouchClose();
     UserDelay(10);
@@ -106,12 +107,20 @@ uint32_t EnterLowPower(void)
             Gd25FlashOpen();
             Aw32001RefreshState();
             BatteryIntervalHandler();
-            sleepSecond = (GetUsbPowerState() == USB_POWER_STATE_CONNECT) ? RTC_WAKE_UP_INTERVAL_CHARGING : RTC_WAKE_UP_INTERVAL_LOW_BATTERY;
+            if (GetChargeState() != CHARGE_STATE_NOT_CHARGING) {
+                sleepSecond = RTC_WAKE_UP_INTERVAL_CHARGING;
+            } else if (GetBatterPercent() > 20) {
+                sleepSecond = RTC_WAKE_UP_INTERVAL_DISCHARGE;
+            } else {
+                sleepSecond = RTC_WAKE_UP_INTERVAL_LOW_BATTERY;
+            }
             AutoShutdownHandler(sleepSecond);
             SetRtcWakeUp(sleepSecond);
             wakeUpSecond = GetRtcCounter() + sleepSecond;
         }
+        printf("enter low power\n");
         DisableAllHardware();
+        UserDelay(10);
         ExtInterruptInit();
         EnterDeepSleep();
     }

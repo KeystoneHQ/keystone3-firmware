@@ -29,7 +29,7 @@
 #define BATTERY_LOG_PERCENT_INTERVAL                    10
 #define BATTERY_LOG_ONLY_LOW_BATTERY                    1
 #define BATTERY_LOG_DETAIL                              1
-#define BATTERY_ADC_TIMES                               50
+#define BATTERY_ADC_TIMES                               10
 #define BATTERY_PCT_CHANGE_MIN_TICK_DISCHARGE           (80 * 1000)
 #define BATTERY_PCT_CHANGE_MIN_TICK_CHARGING            (80 * 1000)
 #define BATTERY_INVALID_PERCENT_VALUE                   101
@@ -218,6 +218,7 @@ bool BatteryIntervalHandler(void)
     uint32_t milliVolt = 0;
     bool change = false;
     static bool first = true;
+    static uint8_t powerOffCnt = 0;
     static uint8_t delayIncrease = 0, delayDecrease = 0;
 
     usbPowerState = GetUsbPowerState();
@@ -227,9 +228,12 @@ bool BatteryIntervalHandler(void)
     printf("handler,milliVolt=%d,percent=%d,showPercent=%d,usbPowerState=%d\n", milliVolt, percent, GetBatterPercent(), usbPowerState);
     if (usbPowerState == USB_POWER_STATE_DISCONNECT && milliVolt < dischargeCurve[0]) {
         printf("low volt,power off\n");
-        Aw32001PowerOff();
+        powerOffCnt++;
+        if (powerOffCnt >= 10) {
+            Aw32001PowerOff();
+        }
     }
-
+    powerOffCnt = 0;
     if (first) {
         first = false;
         change = true;
@@ -275,20 +279,19 @@ bool BatteryIntervalHandler(void)
     }
     BATTERY_PRINTF("g_batterPercent=%d\r\n", g_batterPercent);
     if (change) {
-        if (g_batterPercent % BATTERY_LOG_PERCENT_INTERVAL == 0) {
-
-#if BATTERY_LOG_ONLY_LOW_BATTERY == 1
-            if (g_batterPercent <= 20) {
-#endif
-#if BATTERY_LOG_DETAIL == 1
-                WriteLogFormat(EVENT_ID_BATTERY, "%dmv,%d%%,disp=%d%%", milliVolt, percent, g_batterPercent);
-#else
-                WriteLogValue(EVENT_ID_BATTERY, g_batterPercent);
-#endif
-#if BATTERY_LOG_ONLY_LOW_BATTERY == 1
-            }
-#endif
-        }
+        // if (g_batterPercent % BATTERY_LOG_PERCENT_INTERVAL == 0) {
+// #if BATTERY_LOG_ONLY_LOW_BATTERY == 1
+//             if (g_batterPercent <= 100) {
+// #endif
+// #if BATTERY_LOG_DETAIL == 1
+//                 WriteLogFormat(EVENT_ID_BATTERY, "%dmv,%d%%,disp=%d%%", milliVolt, percent, g_batterPercent);
+// #else
+//                 WriteLogValue(EVENT_ID_BATTERY, g_batterPercent);
+// #endif
+// #if BATTERY_LOG_ONLY_LOW_BATTERY == 1
+//             }
+// #endif
+        // }
         SaveBatteryPercent(g_batterPercent);
     }
     return change;

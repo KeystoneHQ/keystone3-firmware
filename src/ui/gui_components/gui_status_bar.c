@@ -405,9 +405,7 @@ static int GetDisplayPercent(int actualPercent, bool charging)
     static const int displayValuesCharge[] = {0, 20, 40, 60, 80};
     uint8_t currentPercent = 0;
 
-    int size = sizeof(thresholds) / sizeof(thresholds[0]);
-
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < sizeof(thresholds) / sizeof(thresholds[0]); i++) {
         if (actualPercent <= thresholds[i]) {
             if (charging) {
                 currentPercent = displayValuesCharge[i];
@@ -418,14 +416,13 @@ static int GetDisplayPercent(int actualPercent, bool charging)
         }
     }
 
-    if ((charging && actualPercent == 100)) {
-        currentPercent = 100;
-        g_currentDisplayPercent = currentPercent;
-    }
-
     if (charging) {
         if (currentPercent >= g_currentDisplayPercent) {
             g_currentDisplayPercent = currentPercent;
+        }
+
+        if (actualPercent >= 95) {
+            g_currentDisplayPercent = 100;
         }
     } else {
         if (currentPercent <= g_currentDisplayPercent) {

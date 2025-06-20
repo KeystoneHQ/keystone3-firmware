@@ -78,17 +78,22 @@ void GuiImportMultisigWalletInfoWidgetsInit(void)
     bool checkLimit = isPassphrase ? (GetCurrentAccountMultisigWalletNum(true) >= MAX_MULTI_SIG_PASSPHRASE_WALLET_NUMBER) :
                       (GetCurrentAccountMultisigWalletNum(false) >= MAX_MULTI_SIG_WALLET_NUMBER_EXCEPT_PASSPHRASE);
     if (checkLimit && (!GuiGetExportMultisigWalletSwitch())) {
-        g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("manage_multi_wallet_add_limit_title"),
-                         _("manage_multi_wallet_add_limit_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
+        if (PassphraseExist(GetCurrentAccountIndex()) == true) {
+            g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("manage_import_wallet_passphrase_error_title"),
+                             _("manage_multi_wallet_passphrase_add_limit_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
+        } else {
+            g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("manage_multi_wallet_add_limit_title"),
+                             _("manage_multi_wallet_add_limit_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
+        }
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseWaringAndCurrentPageHandler, LV_EVENT_CLICKED, NULL);
         return;
     }
     g_pageWidget = CreatePageWidget();
     if (g_wallet == NULL) {
         if (g_isQRCode) {
-            if (PassphraseExist(GetCurrentAccountIndex()) == true) {
+            if (PassphraseExist(GetCurrentAccountIndex())) {
                 g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("manage_import_wallet_passphrase_error_title"),
-                                 _("manage_import_wallet_passphrase_error_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
+                                 _("scan_qr_code_error_invalid_wallet_file_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
             } else {
                 g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("scan_qr_code_error_invalid_qrcode"),
                                  _("scan_qr_code_error_invalid_qrcode_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
@@ -150,6 +155,7 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
         free_MultiSigWallet(response->data);
         return;
     }
+    printf("%s %d..............\n", __func__, __LINE__);
     MultiSigWalletItem_t *wallet = AddMultisigWalletToCurrentAccount(g_wallet, SecretCacheGetPassword());
     if (wallet == NULL) {
         printf("multi sigwallet not found\n");
@@ -220,6 +226,17 @@ static void GuiContent(lv_obj_t *parent)
     lv_obj_set_style_bg_color(cont, WHITE_COLOR_OPA12, LV_PART_MAIN);
     lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 116);
 
+    label = GuiCreateNoticeLabel(cont, _("Verify Code"));
+    lv_obj_align(label, LV_ALIGN_LEFT_MID, 24, 0);
+    label = GuiCreateIllustrateLabel(cont, g_wallet->verify_without_mfp);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+
+    cont = GuiCreateContainerWithParent(bgCont, 408, 62);
+    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR_OPA12, LV_PART_MAIN);
+    lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 116);
+    GuiAlignToPrevObj(cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+
     label = GuiCreateNoticeLabel(cont, _("Policy"));
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 24, 0);
     label = GuiCreateIllustrateLabel(cont, g_wallet->policy);
@@ -228,7 +245,7 @@ static void GuiContent(lv_obj_t *parent)
     cont = GuiCreateContainerWithParent(bgCont, 408, 62);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR_OPA12, LV_PART_MAIN);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 194);
+    GuiAlignToPrevObj(cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
     label = GuiCreateNoticeLabel(cont, _("sdcard_format_confirm"));
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 24, 0);
@@ -238,7 +255,7 @@ static void GuiContent(lv_obj_t *parent)
     cont = GuiCreateContainerWithParent(bgCont, 408, g_wallet->total * 220 - 16);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN);
     lv_obj_set_style_bg_color(cont, WHITE_COLOR_OPA12, LV_PART_MAIN);
-    lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 272);
+    GuiAlignToPrevObj(cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     for (int i = 0; i < g_wallet->total; i++) {
         char buff[8] = {0};
         snprintf(buff, sizeof(buff), "%d/%d", i + 1, g_wallet->total);
@@ -284,6 +301,8 @@ static void GuiConfirmHandler(lv_event_t *e)
         return;
     }
     MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
+    printf("verify_without_mfp: %s..............\n", g_wallet->verify_without_mfp);
+    printf("verify_code: %s..............\n", g_wallet->verify_code);
     if (wallet != NULL) {
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, (ErrorWindowCallback)GuiCloseCurrentWorkingView);
         return;

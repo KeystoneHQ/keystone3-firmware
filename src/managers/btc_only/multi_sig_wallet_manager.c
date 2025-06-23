@@ -232,7 +232,7 @@ static void modifyNode(char *verifyCode, MultiSigWalletItem_t *newItem)
         }
         temp = temp->next;
     }
-}
+}f
 
 static MultiSigWalletItem_t *findNode(char *verifyCode)
 {

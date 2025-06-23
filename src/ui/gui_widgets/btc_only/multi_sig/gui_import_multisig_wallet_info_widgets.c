@@ -155,7 +155,6 @@ void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
         free_MultiSigWallet(response->data);
         return;
     }
-    printf("%s %d..............\n", __func__, __LINE__);
     MultiSigWalletItem_t *wallet = AddMultisigWalletToCurrentAccount(g_wallet, SecretCacheGetPassword());
     if (wallet == NULL) {
         printf("multi sigwallet not found\n");
@@ -301,8 +300,6 @@ static void GuiConfirmHandler(lv_event_t *e)
         return;
     }
     MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
-    printf("verify_without_mfp: %s..............\n", g_wallet->verify_without_mfp);
-    printf("verify_code: %s..............\n", g_wallet->verify_code);
     if (wallet != NULL) {
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, (ErrorWindowCallback)GuiCloseCurrentWorkingView);
         return;

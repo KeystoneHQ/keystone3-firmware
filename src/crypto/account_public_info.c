@@ -697,7 +697,6 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
     ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
     ASSERT(ret == size);
     jsonString[size] = 0;
-    printf("jsonString: %s...\r\n", jsonString);
 
     cJSON *rootJson = cJSON_Parse(jsonString);
     SRAM_FREE(jsonString);
@@ -735,8 +734,6 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
 
     rootJson = cJSON_Parse(jsonString);
     SRAM_FREE(jsonString);
-    printf("walletList[i].defaultWallet: %d\r\n", walletList[0].defaultWallet);
-    printf("walletList[i].defaultPassphraseWallet: %d\r\n", walletList[0].defaultPassphraseWallet);
     for (int i = 0; i < count; i++) {
         cJSON *item = cJSON_GetObjectItem(rootJson, walletList[i].name);
         if (item == NULL) {
@@ -791,7 +788,6 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
             Gd25FlashSectorErase(eraseAddr);
         }
         jsonString = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4, false);
-        printf("jsonString: %s...\r\n", jsonString);
         RemoveFormatChar(jsonString);
         size = strlen(jsonString);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);

@@ -76,7 +76,6 @@ static void UpdateManageWalletState(bool needUpdate)
     snprintf_s(tempBuf, BUFFER_SIZE_16, _("home_select_coin_count_fmt"), selectCnt, total);
     lv_label_set_text(g_manageWalletLabel, tempBuf);
     if (needUpdate) {
-    printf("%s %d..............\n", __func__, __LINE__);
         if (memcmp(g_walletState, g_walletBakState, sizeof(g_walletState))) {
             memcpy(g_walletState, g_walletBakState, sizeof(g_walletBakState));
             AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
@@ -322,6 +321,10 @@ void GuiHomeRefresh(void)
         lv_img_set_src(g_twoKeyImg, &imgArrowRight);
     }
     GuiStatusBarSetTestNet();
+
+    if (PassphraseExist(GetCurrentAccountIndex())) {
+        CheckPassPhraseWallet(true);
+    }
 }
 
 bool GetIsTestNet(void)
@@ -332,7 +335,6 @@ bool GetIsTestNet(void)
 void SetIsTestNet(bool testNet)
 {
     g_walletState[HOME_WALLET_CARD_BTC].testNet = testNet;
-    printf("%s %d..............\n", __func__, __LINE__);
     AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
 }
 
@@ -350,7 +352,6 @@ void SetCurrentWalletIndex(CURRENT_WALLET_INDEX_ENUM walletIndex)
     } else {
         g_walletState[HOME_WALLET_CARD_BTC].defaultWallet = walletIndex;
     }
-    printf("%s %d..............\n", __func__, __LINE__);
     AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
 }
 

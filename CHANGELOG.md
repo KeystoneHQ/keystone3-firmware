@@ -1,4 +1,14 @@
+## 2.1.6(2025-06-24)
+
+**Web3:**
+
+### Improvements
+1. Optimized swap transaction parsing to support swap via Keystone Nexus
+
+
 ## 2.1.4(2025-06-16)
+
+**Web3:**
 
 ### What's New
 1. Supported managing APT assets via Nightly Wallet

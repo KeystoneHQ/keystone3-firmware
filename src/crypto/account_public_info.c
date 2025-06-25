@@ -1445,6 +1445,7 @@ void appendWalletItemToJson(MultiSigWalletItem_t *item, void *root)
     cJSON_AddNumberToObject(walletItem, "order", item->order);
     cJSON_AddStringToObject(walletItem, "name", item->name);
     cJSON_AddStringToObject(walletItem, "verify_code", item->verifyCode);
+    cJSON_AddStringToObject(walletItem, "verify_without_mfp", item->verifyWithoutMfp);
     cJSON_AddNumberToObject(walletItem, "network", item->network);
     cJSON_AddStringToObject(walletItem, "wallet_config", item->walletConfig);
     cJSON_AddStringToObject(walletItem, "format", item->format);
@@ -1575,6 +1576,10 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
             GetStringValue(wallet, "verify_code", strCache, MULTI_SIG_STR_CACHE_LENGTH);
             multiSigWalletItem->verifyCode = MULTI_SIG_MALLOC(strlen(strCache) + 1);
             strcpy(multiSigWalletItem->verifyCode, strCache);
+
+            GetStringValue(wallet, "verify_without_mfp", strCache, MULTI_SIG_STR_CACHE_LENGTH);
+            multiSigWalletItem->verifyWithoutMfp = MULTI_SIG_MALLOC(strlen(strCache) + 1);
+            strcpy(multiSigWalletItem->verifyWithoutMfp, strCache);
 
             cJSON *network = cJSON_GetObjectItem(wallet, "network");
 

@@ -1417,7 +1417,7 @@ static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
 bool ModelGetPassphraseQuickAccess(void)
 {
 #ifdef COMPILE_SIMULATOR
-    return true;
+    return false;
 #else
     if (PassphraseExist(GetCurrentAccountIndex()) == false && GetPassphraseQuickAccess() == true && GetPassphraseMark() == true) {
         return true;

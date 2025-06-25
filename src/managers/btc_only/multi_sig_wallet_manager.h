@@ -21,6 +21,7 @@
 typedef struct MultiSigWalletItem {
     int order;
     char *verifyCode;
+    char *verifyWithoutMfp;
     char *name;
     char *format;
     int network;

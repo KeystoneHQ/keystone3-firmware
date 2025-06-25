@@ -482,15 +482,21 @@ fn calculate_wallet_verify_code(
         .map(|x| x.xpub.to_string())
         .collect::<Vec<_>>();
 
-    wallet.verify_without_mfp =
-        hex::encode(sha256(wallet.config_text.as_bytes()))[0..8].to_string();
+    wallet.verify_without_mfp = calculate_multi_sig_verify_code(
+        &xpubs,
+        wallet.threshold as u8,
+        wallet.total as u8,
+        MultiSigFormat::from(&wallet.format)?,
+        wallet.get_network(),
+        None
+    )?;
     wallet.verify_code = calculate_multi_sig_verify_code(
         &xpubs,
         wallet.threshold as u8,
         wallet.total as u8,
         MultiSigFormat::from(&wallet.format)?,
         wallet.get_network(),
-        Some(xfp),
+        Some(xfp)
     )?;
     Ok(())
 }

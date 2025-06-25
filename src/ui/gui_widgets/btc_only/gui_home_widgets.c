@@ -21,6 +21,7 @@
 #include "log_print.h"
 #include "gui_home_widgets.h"
 #include "gui_multisig_read_sdcard_widgets.h"
+#include "gui_btc_wallet_profile_widgets.h"
 
 #define BTC_HOME_CARD_NUM               (1)
 

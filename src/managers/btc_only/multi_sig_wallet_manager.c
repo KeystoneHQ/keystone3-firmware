@@ -164,6 +164,9 @@ MultiSigWalletItem_t *AddMultisigWalletToCurrentAccount(MultiSigWallet *wallet, 
     walletItem->verifyCode = MULTI_SIG_MALLOC(MAX_VERIFY_CODE_LENGTH);
     strcpy_s(walletItem->verifyCode, MAX_VERIFY_CODE_LENGTH, wallet->verify_code);
 
+    walletItem->verifyWithoutMfp = MULTI_SIG_MALLOC(MAX_VERIFY_CODE_LENGTH);
+    strcpy_s(walletItem->verifyWithoutMfp, MAX_VERIFY_CODE_LENGTH, wallet->verify_without_mfp);
+
     walletItem->format = MULTI_SIG_MALLOC(MAX_FORMAT_LENGTH);
     strcpy_s(walletItem->format, MAX_FORMAT_LENGTH, wallet->format);
 

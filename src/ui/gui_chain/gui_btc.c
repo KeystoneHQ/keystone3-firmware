@@ -474,14 +474,14 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
 
-    char *verify_code = NULL;
+    char *verify_without_mfp = NULL;
     char *wallet_config = NULL;
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
         if (item != NULL) {
-            verify_code = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
-            memset_s(verify_code, MAX_VERIFY_CODE_LEN, '\0', MAX_VERIFY_CODE_LEN);
-            strncpy_s(verify_code, MAX_VERIFY_CODE_LEN, item->verifyCode, strnlen_s(item->verifyCode, MAX_VERIFY_CODE_LEN));
+            verify_without_mfp = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
+            memset_s(verify_without_mfp, MAX_VERIFY_CODE_LEN, '\0', MAX_VERIFY_CODE_LEN);
+            strncpy_s(verify_without_mfp, MAX_VERIFY_CODE_LEN, item->verifyWithoutMfp, strnlen_s(item->verifyWithoutMfp, MAX_VERIFY_CODE_LEN));
             wallet_config = SRAM_MALLOC(MAX_WALLET_CONFIG_LEN);
             memset_s(wallet_config, MAX_WALLET_CONFIG_LEN, '\0', MAX_WALLET_CONFIG_LEN);
             strncpy_s(wallet_config, MAX_WALLET_CONFIG_LEN, item->walletConfig, strnlen_s(item->walletConfig, MAX_WALLET_CONFIG_LEN));
@@ -489,9 +489,9 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
     }
     printf("wallet_config = %s\n", wallet_config);
 
-    result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, verify_code, wallet_config);
+    result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, verify_without_mfp, wallet_config);
     SRAM_FREE(public_keys);
-    SRAM_FREE(verify_code);
+    SRAM_FREE(verify_without_mfp);
     SRAM_FREE(wallet_config);
     return result;
 }
@@ -579,21 +579,21 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
 #endif
 #endif
 #ifdef BTC_ONLY
-        char *verify_code = NULL;
+        char *verify_without_mfp = NULL;
         char *wallet_config = NULL;
         if (GetCurrentWalletIndex() != SINGLE_WALLET) {
             MultiSigWalletItem_t *item = GetDefaultMultisigWallet();
             if (item != NULL) {
-                verify_code = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
-                memset_s(verify_code, MAX_VERIFY_CODE_LEN, '\0', MAX_VERIFY_CODE_LEN);
-                strncpy_s(verify_code, MAX_VERIFY_CODE_LEN, item->verifyCode, strnlen_s(item->verifyCode, MAX_VERIFY_CODE_LEN));
+                verify_without_mfp = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
+                memset_s(verify_without_mfp, MAX_VERIFY_CODE_LEN, '\0', MAX_VERIFY_CODE_LEN);
+                strncpy_s(verify_without_mfp, MAX_VERIFY_CODE_LEN, item->verifyWithoutMfp, strnlen_s(item->verifyWithoutMfp, MAX_VERIFY_CODE_LEN));
                 wallet_config = SRAM_MALLOC(MAX_WALLET_CONFIG_LEN);
                 memset_s(wallet_config, MAX_WALLET_CONFIG_LEN, '\0', MAX_WALLET_CONFIG_LEN);
                 strncpy_s(wallet_config, MAX_WALLET_CONFIG_LEN, item->walletConfig, strnlen_s(item->walletConfig, MAX_WALLET_CONFIG_LEN));
             }
         }
-        result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, verify_code, wallet_config);
-        SRAM_FREE(verify_code);
+        result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, verify_without_mfp, wallet_config);
+        SRAM_FREE(verify_without_mfp);
         SRAM_FREE(wallet_config);
 #else
         result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, NULL, NULL);

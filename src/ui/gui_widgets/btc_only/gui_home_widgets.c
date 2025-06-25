@@ -316,16 +316,17 @@ void GuiHomeRefresh(void)
     }
     GUI_DEL_OBJ(g_moreHintbox)
     AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
+
+    if (PassphraseExist(GetCurrentAccountIndex())) {
+        CheckPassPhraseWallet(true);
+    }
+
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         lv_img_set_src(g_twoKeyImg, &imgTwoKey);
     } else {
         lv_img_set_src(g_twoKeyImg, &imgArrowRight);
     }
     GuiStatusBarSetTestNet();
-
-    if (PassphraseExist(GetCurrentAccountIndex())) {
-        CheckPassPhraseWallet(true);
-    }
 }
 
 bool GetIsTestNet(void)

@@ -77,7 +77,7 @@ uint32_t GetAccountMultiReceiveIndexFromFlash(char *verifyCode);
 
 static void LoadCurrentAccountMultiReceiveIndex(void)
 {
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < MAX_MULTI_SIG_WALLET_NUMBER; i++) {
         memset_s(&g_multiSigReceiveIndex[i], sizeof(MultiSigReceiveIndex_t), 0, sizeof(MultiSigReceiveIndex_t));
         if (GetCurrenMultisigWalletByIndex(i) == NULL) {
             continue;

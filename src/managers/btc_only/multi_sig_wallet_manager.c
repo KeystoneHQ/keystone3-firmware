@@ -142,13 +142,11 @@ MultiSigWalletItem_t *GetDefaultMultisigWallet(void)
     CURRENT_WALLET_INDEX_ENUM defaultIndex = GetCurrentWalletIndex();
     MultiSigWalletList_t *list = g_multisigWalletManager->list;
     MultiSigWalletNode_t *temp = list->head;
-    int innerIndex = 0;
     while (temp != NULL) {
-        if (innerIndex == defaultIndex) {
+        if (temp->value->order == defaultIndex) {
             return temp->value;
         }
         temp = temp->next;
-        innerIndex++;
     }
     return NULL;
 }

@@ -55,11 +55,11 @@ static PageWidget_t *g_pageWidget;
 static MultiSigWalletItem_t *g_walletItem;
 static MultiSigWallet *g_multiSigWallet = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
-static CURRENT_WALLET_INDEX_ENUM g_currentIndex;
+static int g_currentIndex;
 
 static void CreateMultiSigWalletDetailWidget(lv_obj_t *parent);
 static void CreateCoSignerDetailWidget(lv_obj_t *parent);
-static void ReloadAndUpdateMultisigItem(CURRENT_WALLET_INDEX_ENUM index);
+static void ReloadAndUpdateMultisigItem(int index);
 static void DeleteMultiWalletHandler(lv_event_t *e);
 static void SetDefaultMultiWalletHandler(lv_event_t *e);
 static void GuiConfirmDeleteHandler(lv_event_t *e);
@@ -67,7 +67,7 @@ static void ExportMultiWalletHandler(lv_event_t *e);
 static void UpdateCurrentWalletState(void);
 void GuiResetCurrentUtxoAddressIndex(uint8_t index);
 
-void GuiManageMultisigWalletInit(CURRENT_WALLET_INDEX_ENUM index)
+void GuiManageMultisigWalletInit(int index)
 {
     g_currentIndex = index;
     ReloadAndUpdateMultisigItem(index);
@@ -184,7 +184,7 @@ static void CreateMultiSigWalletDetailWidget(lv_obj_t *parent)
     UpdateCurrentWalletState();
 }
 
-static void ReloadAndUpdateMultisigItem(CURRENT_WALLET_INDEX_ENUM index)
+static void ReloadAndUpdateMultisigItem(int order)
 {
     if (g_multiSigWallet != NULL) {
         free_MultiSigWallet(g_multiSigWallet);
@@ -193,7 +193,8 @@ static void ReloadAndUpdateMultisigItem(CURRENT_WALLET_INDEX_ENUM index)
 
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    g_walletItem = GetCurrenMultisigWalletByIndex(index);
+    g_walletItem = GetCurrenMultisigWalletByOrder(order);
+    printf("g_walletItem->config = %s\n", g_walletItem->walletConfig);
     Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(g_walletItem->walletConfig, mfp, 4);
     if (result->error_code != 0) {
         return;
@@ -289,7 +290,7 @@ void DeleteMultisigWallet(void)
 {
     DeleteAccountMultiReceiveIndex("BTC", g_walletItem->verifyCode);
     int index = DeleteMultisigWalletByVerifyCode(g_walletItem->verifyCode);
-    CorrectDefaultWalletIndex(index);
+    // CorrectDefaultWalletIndex(index);
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     ClearSecretCache();
     GuiManageMultiWalletPrevTile();

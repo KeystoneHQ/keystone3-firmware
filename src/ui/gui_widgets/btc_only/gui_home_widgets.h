@@ -49,7 +49,9 @@ bool GuiHomePageIsTop(void);
 bool GetIsTestNet(void);
 void SetIsTestNet(bool testNet);
 void SetCurrentWalletIndex(CURRENT_WALLET_INDEX_ENUM walletIndex);
+void SetDefaultPassphraseWalletIndex(CURRENT_WALLET_INDEX_ENUM walletIndex);
 CURRENT_WALLET_INDEX_ENUM GetCurrentWalletIndex(void);
 const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);
 void GuiHomeDeInit(void);
+
 #endif /* _GUI_HOME_WIDGETS_H */

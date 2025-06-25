@@ -140,12 +140,6 @@ static void CreateSingleWalletButton(lv_obj_t *parent, uint16_t *offset)
 static uint16_t CreateMultiWalletButton(lv_obj_t *parent, MultiSigWalletItem_t *item,
                                         int index, CURRENT_WALLET_INDEX_ENUM currentWallet, uint16_t currentOffset)
 {
-    static CURRENT_WALLET_INDEX_ENUM currentIndex[] = {
-        MULTI_SIG_WALLET_FIRST, MULTI_SIG_WALLET_SECOND,
-        MULTI_SIG_WALLET_THIRD, MULTI_SIG_WALLET_FOURTH,
-        MULTI_SIG_WALLET_FIFTH
-    };
-
     char desc[BUFFER_SIZE_32] = {0};
     uint16_t height = 84;
 
@@ -156,7 +150,7 @@ static uint16_t CreateMultiWalletButton(lv_obj_t *parent, MultiSigWalletItem_t *
 
     lv_obj_t *button = GuiCreateSettingItemButton(parent, 456,
                        item->name, desc, &imgTwoKey, &imgArrowRight,
-                       OpenManageMultisigViewHandler, &currentIndex[index]);
+                       OpenManageMultisigViewHandler, &item->order);
 
     lv_obj_set_height(button, height);
     lv_obj_align(button, LV_ALIGN_TOP_LEFT, 12, currentOffset + 12);
@@ -269,7 +263,7 @@ static void CreateMultiWalletButtons(lv_obj_t *parent, uint16_t startOffset,
             }
         }
 
-        offset = CreateMultiWalletButton(parent, item, i, currentWallet, offset);
+        offset = CreateMultiWalletButton(parent, item, item->order, currentWallet, offset);
     }
 }
 
@@ -358,7 +352,7 @@ static void OpenCreateMultiViewHandler(lv_event_t *e)
 
 static void OpenManageMultisigViewHandler(lv_event_t *e)
 {
-    GuiFrameOpenViewWithParam(&g_manageMultisigWalletView, lv_event_get_user_data(e), sizeof(CURRENT_WALLET_INDEX_ENUM));
+    GuiFrameOpenViewWithParam(&g_manageMultisigWalletView, lv_event_get_user_data(e), sizeof(int));
 }
 
 static void OpenExportShowXpubHandler(lv_event_t *e)

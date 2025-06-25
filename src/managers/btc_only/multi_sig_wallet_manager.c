@@ -35,6 +35,7 @@ static int getLength();
 static void traverseList(void (*callback)(MultiSigWalletItem_t *, void *), void *any);
 static void destroyMultiSigWalletList();
 static void saveToFlash(void);
+static int findAvailableIndex(void);
 static void modifyNode(char *verifyCode, MultiSigWalletItem_t *newItem);
 static MultiSigWalletItem_t *findNode(char *verifyCode);
 static void DestoryMultisigWalletManager(MultiSigWalletManager_t *manager);
@@ -54,6 +55,7 @@ MultiSigWalletManager_t *initMultiSigWalletManager()
     g_multisigWalletManager->saveToFlash = saveToFlash;
     g_multisigWalletManager->modifyNode = modifyNode;
     g_multisigWalletManager->findNode = findNode;
+    g_multisigWalletManager->findAvailableIndex = findAvailableIndex;
     g_multisigWalletManager->list = NULL;
     createMultiSigWalletList();
     return g_multisigWalletManager;
@@ -100,6 +102,21 @@ int GetCurrentAccountMultisigWalletNum(bool isPassphrase)
         return passPhraseNum;
     }
     return length - passPhraseNum;
+}
+
+MultiSigWalletItem_t *GetCurrenMultisigWalletByOrder(int index)
+{
+    ASSERT_WALLET_MANAGER_EXIST
+    MultiSigWalletList_t *list = g_multisigWalletManager->list;
+    MultiSigWalletNode_t *temp = list->head;
+
+    while (temp != NULL) {
+        if (temp->value->order == index) {
+            return temp->value;
+        }
+        temp = temp->next;
+    }
+    return NULL;
 }
 
 MultiSigWalletItem_t *GetCurrenMultisigWalletByIndex(int index)
@@ -159,7 +176,7 @@ MultiSigWalletItem_t *AddMultisigWalletToCurrentAccount(MultiSigWallet *wallet, 
 
     walletItem->network = wallet->network;
 
-    walletItem->order = manager->getLength(manager->list);
+    walletItem->order = manager->findAvailableIndex();
 
     walletItem->verifyCode = MULTI_SIG_MALLOC(MAX_VERIFY_CODE_LENGTH);
     strcpy_s(walletItem->verifyCode, MAX_VERIFY_CODE_LENGTH, wallet->verify_code);
@@ -235,6 +252,35 @@ static void modifyNode(char *verifyCode, MultiSigWalletItem_t *newItem)
         }
         temp = temp->next;
     }
+}
+
+static int findAvailableIndex(void)
+{
+    ASSERT_WALLET_MANAGER_EXIST
+    MultiSigWalletList_t *list = g_multisigWalletManager->list;
+
+    if (list->head == NULL) {
+        return 0;
+    }
+
+    for (int index = 0; index < MAX_MULTI_SIG_WALLET_NUMBER; index++) {
+        bool found = false;
+        MultiSigWalletNode_t *temp = list->head;
+
+        while (temp != NULL) {
+            if (temp->value->order == index) {
+                found = true;
+                break;
+            }
+            temp = temp->next;
+        }
+
+        if (!found) {
+            return index;
+        }
+    }
+
+    return MAX_MULTI_SIG_WALLET_NUMBER;
 }
 
 static MultiSigWalletItem_t *findNode(char *verifyCode)

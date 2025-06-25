@@ -37,6 +37,7 @@ typedef struct MultiSigWalletManager {
     void (*insertNode)(MultiSigWalletItem_t *item);
     int (*deleteNode)(char *verifyCode);
     int (*getLength)();
+    int (*findAvailableIndex)();
     void (*traverseList)(void (*callback)(MultiSigWalletItem_t*, void*), void *any);
     void (*modifyNode)(char *verifyCode, MultiSigWalletItem_t* newItem);
     MultiSigWalletItem_t* (*findNode)(char *verifyCode);
@@ -55,5 +56,6 @@ int GetCurrentAccountMultisigWalletNum(bool isPassphrase);
 MultiSigWalletItem_t *GetCurrenMultisigWalletByIndex(int index);
 int DeleteMultisigWalletByVerifyCode(const char *verifyCode);
 MultiSigWalletItem_t *GetDefaultMultisigWallet(void);
+MultiSigWalletItem_t *GetCurrenMultisigWalletByOrder(int index);
 
 #endif

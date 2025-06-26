@@ -70,7 +70,7 @@ typedef struct {
     uint32_t index;
 } MultiSigReceiveIndex_t;
 
-static MultiSigReceiveIndex_t g_multiSigReceiveIndex[4];
+static MultiSigReceiveIndex_t g_multiSigReceiveIndex[MAX_MULTI_SIG_WALLET_NUMBER];
 
 static void ConvertXPub(char *dest, ChainType chainType);
 uint32_t GetAccountMultiReceiveIndexFromFlash(char *verifyCode);
@@ -219,7 +219,7 @@ void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
 
 uint32_t GetAccountMultiReceiveIndex(char *verifyCode)
 {
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < MAX_MULTI_SIG_WALLET_NUMBER; i++) {
         if (strcmp(g_multiSigReceiveIndex[i].verifyCode, verifyCode) == 0) {
             return g_multiSigReceiveIndex[i].index;
         }
@@ -240,7 +240,7 @@ void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
     char key[BUFFER_SIZE_64] = {0};
     sprintf(key, "multiRecvIndex_%s", verifyCode);
     printf("key = %s.\n", key);
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < MAX_MULTI_SIG_WALLET_NUMBER; i++) {
         if (strlen(g_multiSigReceiveIndex[i].verifyCode) == 0) {
             g_multiSigReceiveIndex[i].index = index;
             strcpy(g_multiSigReceiveIndex[i].verifyCode, verifyCode);

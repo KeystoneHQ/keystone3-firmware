@@ -223,6 +223,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
     uint8_t tempIndex;
 
     ret = VerifyPassword(&tempIndex, password);
+    printf("%s %d...............\n", __func__, __LINE__);
     if (ret == SUCCESS_CODE) {
         g_currentAccountIndex = tempIndex;
         g_lastAccountIndex = tempIndex;
@@ -236,10 +237,13 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         ClearZcashUFVK();
 #endif
         if (PassphraseExist(g_currentAccountIndex)) {
+            printf("%s %d...............\n", __func__, __LINE__);
             //passphrase exist.
             printf("passphrase exist\r\n");
             TempAccountPublicInfo(g_currentAccountIndex, password, false);
+            printf("%s %d...............\n", __func__, __LINE__);
         } else {
+            printf("%s %d...............\n", __func__, __LINE__);
             printf("passphrase not exist, info switch\r\n");
             ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
 #ifdef CYPHERPUNK_VERSION

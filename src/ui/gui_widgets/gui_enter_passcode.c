@@ -114,6 +114,7 @@ static void SetPinEventHandler(lv_event_t *e)
                 }
             }
 
+            printf("item->currentNum: %d.............\n", item->currentNum);
             if (item->currentNum == CREATE_PIN_NUM) {
                 for (int i = 0; i < CREATE_PIN_NUM; i++) {
                     GuiSetLedStatus(item->numLed[i], PASSCODE_LED_OFF);
@@ -128,6 +129,7 @@ static void SetPinEventHandler(lv_event_t *e)
                 switch (item->mode) {
                 case ENTER_PASSCODE_VERIFY_PIN:
                     SecretCacheSetPassword(g_pinBuf);
+                    printf("g_pinBuf: %s.............\n", g_pinBuf);
                     GuiModelVerifyAccountPassWord(g_userParam);
                     break;
                 case ENTER_PASSCODE_SET_PIN:

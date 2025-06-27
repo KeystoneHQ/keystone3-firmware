@@ -65,6 +65,7 @@ static ViewType g_viewTypeFilter[2];
 
 void GuiScanInit(void *param, uint16_t len)
 {
+    SetCanTouch(false);
     if (param == NULL) {
         for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewTypeFilter); i++) {
             g_viewTypeFilter[i] = 0xFF;
@@ -100,6 +101,8 @@ void GuiScanRefresh()
 {
     SetPageLockScreen(false);
     GuiScanStart();
+    osDelay(500);
+    SetCanTouch(true);
 }
 
 void GuiScanResult(bool result, void *param)

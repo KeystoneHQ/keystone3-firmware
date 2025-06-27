@@ -22,6 +22,7 @@ osThreadId_t g_touchPadTaskHandle;
 osSemaphoreId_t g_touchPadSem = NULL;
 TouchStatus_t g_touchStatus[TOUCH_RING_BUFFER_SIZE];
 volatile bool g_touchPress;
+volatile bool g_canTouch = true;
 static uint8_t g_touchWriteIndex, g_touchReadIndex;
 TouchStatus_t g_latestTouchStatus;
 
@@ -33,6 +34,11 @@ void CreateTouchPadTask(void)
         .priority = (osPriority_t) osPriorityHigh7,
     };
     g_touchPadTaskHandle = osThreadNew(TouchPadTask, NULL, &touchPadTask_attributes);
+}
+
+void SetCanTouch(bool canTouch)
+{
+    g_canTouch = canTouch;
 }
 
 static void TouchPadTask(void *argument)
@@ -47,6 +53,11 @@ static void TouchPadTask(void *argument)
     while (1) {
         waitTime = touchStatus.touch ? 1000 : osWaitForever;
         osSemaphoreAcquire(g_touchPadSem, waitTime);
+        if (!g_canTouch) {
+            osDelay(100);
+            osSemaphoreRelease(g_touchPadSem);
+            continue;
+        }
         osKernelLock();
         ClearLockScreenTime();
         TouchGetStatus(&touchStatus);

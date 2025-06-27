@@ -494,12 +494,13 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
     printf("wallet_config = %s\n", wallet_config);
 
     result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, verify_without_mfp, wallet_config);
-    if (result->error_code != 0) {
+    if (result->error_code != 0 && strnlen_s(verify_without_mfp, MAX_VERIFY_CODE_LEN) == 0) {
         free_TransactionCheckResult(result);
         result = btc_check_psbt_bytes(g_psbtBytes, g_psbtBytesLen, mfp, sizeof(mfp), public_keys, verify_code, wallet_config);
     }
 
     SRAM_FREE(public_keys);
+    SRAM_FREE(verify_code);
     SRAM_FREE(verify_without_mfp);
     SRAM_FREE(wallet_config);
     return result;
@@ -605,8 +606,9 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
                 strncpy_s(wallet_config, MAX_WALLET_CONFIG_LEN, item->walletConfig, strnlen_s(item->walletConfig, MAX_WALLET_CONFIG_LEN));
             }
         }
+
         result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, verify_without_mfp, wallet_config);
-        if (result->error_code != 0) {
+        if (result->error_code != 0 && strnlen_s(verify_without_mfp, MAX_VERIFY_CODE_LEN) == 0) {
             free_TransactionCheckResult(result);
             result = btc_check_psbt(crypto, mfp, sizeof(mfp), public_keys, verify_code, wallet_config);
         }

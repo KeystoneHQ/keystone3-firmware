@@ -299,8 +299,8 @@ static void GuiConfirmHandler(lv_event_t *e)
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), GuiConfirmExportHandler, LV_EVENT_CLICKED, NULL);
         return;
     }
-    MultiSigWalletItem_t *wallet = GetMultisigWalletByVerifyCode(g_wallet->verify_code);
-    if (wallet != NULL) {
+
+    if (GetMultisigWalletByVerifyCode(g_wallet->verify_code) != NULL || GetMultisigWalletByVerifyCode(g_wallet->verify_without_mfp) != NULL) {
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_EXIST, &g_noticeWindow, (ErrorWindowCallback)GuiCloseCurrentWorkingView);
         return;
     }

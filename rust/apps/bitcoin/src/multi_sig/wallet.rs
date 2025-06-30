@@ -488,7 +488,7 @@ fn calculate_wallet_verify_code(
         wallet.total as u8,
         MultiSigFormat::from(&wallet.format)?,
         wallet.get_network(),
-        None
+        None,
     )?;
     wallet.verify_code = calculate_multi_sig_verify_code(
         &xpubs,
@@ -496,7 +496,7 @@ fn calculate_wallet_verify_code(
         wallet.total as u8,
         MultiSigFormat::from(&wallet.format)?,
         wallet.get_network(),
-        Some(xfp)
+        Some(xfp),
     )?;
     Ok(())
 }

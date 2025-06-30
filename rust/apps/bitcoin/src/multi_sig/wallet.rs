@@ -35,6 +35,7 @@ pub struct MultiSigWalletConfig {
     pub format: String,
     pub xpub_items: Vec<MultiSigXPubItem>,
     pub verify_code: String,
+    pub verify_without_mfp: String,
     pub config_text: String,
     pub network: Network,
 }
@@ -50,6 +51,7 @@ impl Default for MultiSigWalletConfig {
             format: String::new(),
             xpub_items: vec![],
             verify_code: String::new(),
+            verify_without_mfp: String::new(),
             config_text: String::new(),
             network: Network::MainNet,
         }
@@ -192,8 +194,8 @@ pub fn create_wallet(
     wallet.name = name.to_string();
 
     verify_wallet_config(&wallet, xfp)?;
-    calculate_wallet_verify_code(&mut wallet)?;
     wallet.config_text = generate_config_data(&wallet, xfp)?;
+    calculate_wallet_verify_code(&mut wallet, xfp)?;
     Ok(wallet)
 }
 
@@ -254,7 +256,7 @@ fn _parse_plain_wallet_config(content: &str) -> Result<MultiSigWalletConfig, Bit
 pub fn parse_wallet_config(content: &str, xfp: &str) -> Result<MultiSigWalletConfig, BitcoinError> {
     let mut wallet = _parse_plain_wallet_config(content)?;
     verify_wallet_config(&wallet, xfp)?;
-    calculate_wallet_verify_code(&mut wallet)?;
+    calculate_wallet_verify_code(&mut wallet, xfp)?;
     Ok(wallet)
 }
 
@@ -470,19 +472,31 @@ fn verify_wallet_config(wallet: &MultiSigWalletConfig, xfp: &str) -> Result<(), 
     Ok(())
 }
 
-fn calculate_wallet_verify_code(wallet: &mut MultiSigWalletConfig) -> Result<(), BitcoinError> {
+fn calculate_wallet_verify_code(
+    wallet: &mut MultiSigWalletConfig,
+    xfp: &str,
+) -> Result<(), BitcoinError> {
     let xpubs = wallet
         .xpub_items
         .iter()
         .map(|x| x.xpub.to_string())
         .collect::<Vec<_>>();
 
+    wallet.verify_without_mfp = calculate_multi_sig_verify_code(
+        &xpubs,
+        wallet.threshold as u8,
+        wallet.total as u8,
+        MultiSigFormat::from(&wallet.format)?,
+        wallet.get_network(),
+        None,
+    )?;
     wallet.verify_code = calculate_multi_sig_verify_code(
         &xpubs,
         wallet.threshold as u8,
         wallet.total as u8,
         MultiSigFormat::from(&wallet.format)?,
         wallet.get_network(),
+        Some(xfp),
     )?;
     Ok(())
 }
@@ -493,6 +507,7 @@ pub fn calculate_multi_sig_verify_code(
     total: u8,
     format: MultiSigFormat,
     network: &Network,
+    xfp: Option<&str>,
 ) -> Result<String, BitcoinError> {
     let join_xpubs = xpubs
         .iter()
@@ -510,7 +525,10 @@ pub fn calculate_multi_sig_verify_code(
         (MultiSigFormat::P2wsh, Network::TestNet) => MULTI_P2WSH_PATH_TEST,
     };
 
-    let data = format!("{}{}of{}{}", join_xpubs, threshold, total, path,);
+    let data = match xfp {
+        Some(xfp) => format!("{}{}{}of{}{}", xfp, join_xpubs, threshold, total, path),
+        None => format!("{}{}of{}{}", join_xpubs, threshold, total, path),
+    };
 
     Ok(hex::encode(sha256(data.as_bytes()))[0..8].to_string())
 }

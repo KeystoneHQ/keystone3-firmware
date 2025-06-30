@@ -1541,8 +1541,6 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
     ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
     ASSERT(ret == size);
     jsonString[size] = 0;
-    printf("multi sig wallet get data is %s\r\n", jsonString);
-    printf("jsonString=%s\r\n", jsonString);
 
 #ifndef COMPILE_SIMULATOR
     sha256((struct sha256 *)hash, jsonString, strlen(jsonString));

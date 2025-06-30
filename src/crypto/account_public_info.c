@@ -790,7 +790,6 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
         jsonString = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4, false);
         RemoveFormatChar(jsonString);
         size = strlen(jsonString);
-        printf("jsonString = %s\n", jsonString);
         Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
         EXT_FREE(jsonString);
@@ -1040,7 +1039,6 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     if (isTon) {
         ASSERT(false);
     }
-    printf("XPUB_TYPE_NUM = %d\n", XPUB_TYPE_NUM);
     int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed);
 
     char *passphrase = GetPassphrase(accountIndex);
@@ -1506,8 +1504,6 @@ void MultiSigWalletSave(MultiSigWalletManager_t *manager)
     assert(size < SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA - 4);
     cJSON_Delete(rootJson);
 
-    printf("save jsonString=%s\r\n", retStr);
-
     Gd25FlashWriteBuffer(addr, (uint8_t *)&size, sizeof(size));
     len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)retStr, size);
     assert(len == size);
@@ -1907,7 +1903,6 @@ static cJSON* ReadAndParseAccountJson(uint32_t *outAddr, uint32_t *outSize)
     if (PassphraseExist(account)) {
         if (g_tempParsePhraseJson == NULL) {
             g_tempParsePhraseJson = cJSON_CreateObject();
-        } else {
         }
         return g_tempParsePhraseJson;
     } else {
@@ -1924,7 +1919,6 @@ static cJSON* ReadAndParseAccountJson(uint32_t *outAddr, uint32_t *outSize)
     ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
     ASSERT(ret == size);
     jsonString[size] = 0;
-    printf("read jsonString=%s\r\n", jsonString);
 
     rootJson = cJSON_Parse(jsonString);
     SRAM_FREE(jsonString);

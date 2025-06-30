@@ -21,7 +21,6 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
 {
     if (g_lockView.isActive) {
         if (usEvent == SIG_LOCK_VIEW_SCREEN_ON_VERIFY) {
-            printf("%s %d...............\n", __func__, __LINE__);
             // close forgetPassView if present, ignore general error;
             GuiFrameCLoseView(&g_forgetPassView);
             // close passphraseView if present, ignore general error;
@@ -59,7 +58,6 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiModeGetWalletDesc();
     case SIG_LOCK_VIEW_SCREEN_ON_PASSPHRASE_PASS:
     case SIG_VERIFY_PASSWORD_PASS:
-        printf("%s %d...............\n", __func__, __LINE__);
         GuiLockScreenClearFirstUnlock();
         GuiLockScreenPassCode(true);
         QRCodeControl(false);

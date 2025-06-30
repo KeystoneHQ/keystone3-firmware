@@ -191,9 +191,6 @@ static void SkipHandler(lv_event_t *e)
 #ifndef COMPILE_SIMULATOR
     SetPassphraseMark(false);
 #endif
-    SecretCacheSetPassphrase("");
-    GuiModelSettingWritePassphrase();
-
     GuiCloseCurrentWorkingView();
     GuiLockScreenHidden();
     ClearSecretCache();

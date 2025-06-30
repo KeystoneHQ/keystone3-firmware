@@ -194,7 +194,6 @@ static void ReloadAndUpdateMultisigItem(int order)
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     g_walletItem = GetCurrenMultisigWalletByOrder(order);
-    printf("g_walletItem->config = %s\n", g_walletItem->walletConfig);
     Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(g_walletItem->walletConfig, mfp, 4);
     if (result->error_code != 0) {
         return;
@@ -273,24 +272,10 @@ static void GuiConfirmDeleteHandler(lv_event_t *e)
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
-static void CorrectDefaultWalletIndex(int deleteIndex)
-{
-    if (deleteIndex != -1) {
-        if (GetCurrentWalletIndex() == deleteIndex) {
-            SetCurrentWalletIndex(SINGLE_WALLET);
-        } else if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-            if (GetCurrentWalletIndex() > deleteIndex) {
-                SetCurrentWalletIndex(GetCurrentWalletIndex() - 1);
-            }
-        }
-    }
-}
-
 void DeleteMultisigWallet(void)
 {
     DeleteAccountMultiReceiveIndex("BTC", g_walletItem->verifyCode);
     int index = DeleteMultisigWalletByVerifyCode(g_walletItem->verifyCode);
-    // CorrectDefaultWalletIndex(index);
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     ClearSecretCache();
     GuiManageMultiWalletPrevTile();

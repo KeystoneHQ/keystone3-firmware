@@ -1035,7 +1035,6 @@ static void ModelVerifyPassSuccess(uint16_t *param)
         GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_PASS, param, sizeof(*param));
         break;
     default:
-        printf("%s %d...............\n", __func__, __LINE__);
         GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
         break;
     }
@@ -1093,13 +1092,10 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
     uint8_t accountIndex;
     int32_t ret;
     uint16_t *param = (uint16_t *)inData;
-    printf("%s %d...............\n", __func__, __LINE__);
 
     // Unlock screen
     if (SIG_LOCK_VIEW_VERIFY_PIN == *param || SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS == *param) {
-        printf("%s %d...............\n", __func__, __LINE__);
         ret = VerifyPasswordAndLogin(&accountIndex, SecretCacheGetPassword());
-        printf("%s %d...............\n", __func__, __LINE__);
         if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
             GuiApiEmitSignal(SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH, NULL, 0);
             return ret;
@@ -1113,7 +1109,6 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
     if (SIG_LOCK_VIEW_VERIFY_PIN == *param && firstVerify && ModelGetPassphraseQuickAccess()) {
         *param = SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE;
         firstVerify = false;
-        printf("%s %d...............\n", __func__, __LINE__);
     }
 
     // some scene would need clear secret after check
@@ -1136,7 +1131,6 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
     SetLockScreen(enable);
     if (ret == SUCCESS_CODE) {
         ModelVerifyPassSuccess(param);
-        printf("%s %d...............\n", __func__, __LINE__);
     } else {
         ModelVerifyPassFailed(param);
     }

@@ -323,6 +323,9 @@ void GuiHomeRefresh(void)
 
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         lv_img_set_src(g_twoKeyImg, &imgTwoKey);
+        if (GetDefaultMultisigWallet() == NULL) {
+            SetCurrentWalletIndex(SINGLE_WALLET);
+        }
     } else {
         lv_img_set_src(g_twoKeyImg, &imgArrowRight);
     }

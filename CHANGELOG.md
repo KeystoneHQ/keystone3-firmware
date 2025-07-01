@@ -1,3 +1,14 @@
+## 2.1.8(2025-07-01)
+
+**BTC Only:**
+
+### What's new
+
+1. Added support for using passphrase wallets to create and sign BTC multi-signature wallets
+2. Introduced multsig wallet verify code to enhance signature validation and security
+
+
+
 ## 2.1.4(2025-06-16)
 
 ### What's New

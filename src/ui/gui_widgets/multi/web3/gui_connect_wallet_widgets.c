@@ -193,6 +193,10 @@ static const lv_img_dsc_t *g_suiWalletCoinArray[] = {
     &coinSui
 };
 
+static const lv_img_dsc_t *g_iotaCoinArray[1] = {
+    &coinIota,
+};
+
 static const lv_img_dsc_t *g_solfareCoinArray[1] = {
     &coinSol,
 };
@@ -1386,7 +1390,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
     case WALLET_LIST_IOTA:
         func = GuiGetIotaWalletData;
-        AddIotaCoins();
+        AddWalletCoins(g_nightlyCoinArray, NUMBER_OF_ARRAYS(g_nightlyCoinArray));
         break;
     case WALLET_LIST_SUIET:
         func = GuiGetSuiWalletData;

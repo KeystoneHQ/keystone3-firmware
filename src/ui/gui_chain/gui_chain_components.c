@@ -152,7 +152,8 @@ lv_obj_t *CreateTransactionOvewviewCard(lv_obj_t *parent, const char* title1, co
     return container;
 }
 
-lv_obj_t *CreateValueOverviewValue(lv_obj_t *parent, char* value, char *fee)
+lv_obj_t *CreateValueOverviewValue(lv_obj_t *parent, const char *valueKey, const char *value,
+                                   const char *feeKey, const char *fee)
 {
     lv_obj_t *container = CreateContentContainer(parent, 408, feeKey == NULL ? 115 : 144);
 

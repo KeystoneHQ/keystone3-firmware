@@ -6,6 +6,7 @@
 #ifndef BTC_ONLY
 #ifdef WEB3_VERSION
 #include "gui_eth.h"
+#include "gui_eth_batch_tx_widgets.h"
 #include "gui_trx.h"
 #include "gui_cosmos.h"
 #include "gui_sui.h"
@@ -105,6 +106,7 @@ typedef enum {
     REMAPVIEW_ETH,
     REMAPVIEW_ETH_PERSONAL_MESSAGE,
     REMAPVIEW_ETH_TYPEDDATA,
+    REMAPVIEW_ETH_BATCH_TX,
     REMAPVIEW_TRX,
     REMAPVIEW_COSMOS,
     REMAPVIEW_SUI,

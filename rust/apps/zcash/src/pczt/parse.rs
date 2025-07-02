@@ -93,6 +93,27 @@ pub fn decode_output_enc_ciphertext(
     }
 }
 
+/// Parses a PCZT (Partially Created Zcash Transaction) into a structured format
+///
+/// This function analyzes the transaction and extracts information about inputs, outputs,
+/// values, and fees across different Zcash pools (transparent and Orchard).
+///
+/// # Parameters
+/// * `params` - Network consensus parameters
+/// * `seed_fingerprint` - Fingerprint of the seed used to identify owned addresses
+/// * `ufvk` - Unified Full Viewing Key used to decrypt transaction details
+/// * `pczt` - The Partially Created Zcash Transaction to parse
+///
+/// # Returns
+/// * `Result<ParsedPczt, ZcashError>` - A structured representation of the transaction or an error
+///
+/// # Details
+/// The function:
+/// 1. Parses Orchard and transparent components of the transaction
+/// 2. Calculates total input, output, and change values
+/// 3. Handles Sapling pool interactions (though full Sapling decoding is not supported)
+/// 4. Computes transfer values and fees
+/// 5. Returns a structured representation of the transaction
 pub fn parse_pczt<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],
@@ -122,7 +143,7 @@ pub fn parse_pczt<P: consensus::Parameters>(
     //total_input_value = total_output_value + fee_value
     //total_output_value = total_transfer_value + total_change_value
 
-    parsed_orchard.clone().map(|orchard| {
+    if let Some(orchard) = &parsed_orchard {
         total_change_value += orchard
             .get_to()
             .iter()
@@ -136,9 +157,9 @@ pub fn parse_pczt<P: consensus::Parameters>(
             .get_to()
             .iter()
             .fold(0, |acc, to| acc + to.get_amount());
-    });
+    }
 
-    parsed_transparent.clone().map(|transparent| {
+    if let Some(transparent) = &parsed_transparent {
         total_change_value += transparent
             .get_to()
             .iter()
@@ -152,7 +173,7 @@ pub fn parse_pczt<P: consensus::Parameters>(
             .get_to()
             .iter()
             .fold(0, |acc, to| acc + to.get_amount());
-    });
+    }
 
     //treat all sapling output as output value since we don't support sapling decoding yet
     //sapling value_sum can be trusted
@@ -217,8 +238,10 @@ fn parse_transparent_input<P: consensus::Parameters>(
     input: &transparent::pczt::Input,
 ) -> Result<ParsedFrom, ZcashError> {
     let script = input.script_pubkey().clone();
+    //P2SH address is not supported by Zashi yet, we only consider P2PKH address at the moment.
     match script.address() {
         Some(TransparentAddress::PublicKeyHash(hash)) => {
+            //find the pubkey in the derivation path
             let pubkey = input
                 .bip32_derivation()
                 .keys()
@@ -424,10 +447,7 @@ fn parse_orchard_output<P: consensus::Parameters>(
 
                 let is_dummy = match vk {
                     Some(_) => false,
-                    None => match (action.output().user_address(), value) {
-                        (None, 0) => true,
-                        _ => false,
-                    },
+                    None => matches!((action.output().user_address(), value), (None, 0)),
                 };
 
                 Ok(Some(ParsedTo::new(

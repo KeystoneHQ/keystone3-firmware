@@ -148,7 +148,8 @@ const static EvmNetwork_t NETWORKS[] = {
     {888, "Wanchain", "WAN"},
     {940, "PulseChain Testnet", "tPLS"},
     {977, "Nepal Blockchain Network", "YETI"},
-    {999, "Wanchain Testnet", "WAN"},
+    {998, "Hyperliquid Testnet", "HYPE"},
+    {999, "Hyperliquid", "HYPE"},
     {1001, "Klaytn Testnet Baobab", "KLAY"},
     {1007, "Newton Testnet", "NEW"},
     {1010, "Evrice Network", "EVC"},
@@ -615,6 +616,7 @@ const static Erc20Contract_t ERC20_CONTRACTS[] = {
     {"PNG", "0x60781C2586D68229fde47564546784ab3fACA982", 18},
     {"WAVAX", "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7", 18},
     {"JOE", "0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd", 18},
+    {"WETH.e", "0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB", 18},
 };
 #include "abi_ethereum.h"
 #include "gui_constants.h"
@@ -730,7 +732,7 @@ static char *CalcSymbol(void *param)
         return "Token";
     }
 
-    EvmNetwork_t network = _FindNetwork(eth->chain_id);
+    EvmNetwork_t network = FindEvmNetwork(eth->chain_id);
     return network.symbol;
 }
 
@@ -800,11 +802,99 @@ void GetEthTypedDataDomianName(void *indata, void *param, uint32_t maxLen)
     }
 }
 
+void _colorfulHash(char *hash, char *indata, uint32_t maxLen)
+{
+    size_t len = strlen(hash);
+    if (len >= 19) {
+        char prefix[9] = {0};
+        char suffix[9] = {0};
+        char middle[233] = {0};
+        strncpy(prefix, hash, 8);
+        strncpy(suffix, hash + (len - 8), 8);
+        strncpy(middle, hash + 8, len - 16);
+
+        snprintf_s((char *)indata, maxLen, "#F5870A %s#%s#F5870A %s#", prefix, middle, suffix);
+    } else {
+        strcpy_s((char *)indata, maxLen, hash);
+    }
+
+}
+
+void GetEthTypedDataDomainHash(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    if (message->domain_hash != NULL) {
+        // first 8 char and last 8 char color #F5870A
+        char *hash = message->domain_hash;
+        // if not start with 0x, add 0x
+        if (hash[0] != '0' || (hash[1] != 'x' && hash[1] != 'X')) {
+            strcpy_s((char *)indata, maxLen, "0x");
+            strcat_s((char *)indata, maxLen, hash);
+            _colorfulHash((char *)indata, (char *)indata, maxLen);
+        } else {
+            _colorfulHash(hash, (char *)indata, maxLen);
+        }
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
+}
+
+bool GetEthTypeDataHashExist(void *indata, void *param)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    if (strncmp(message->primary_type, "SafeTx", 6) == 0) {
+        return true;
+    }
+    return false;
+}
+
+bool GetEthTypeDataChainExist(void *indata, void *param)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    return message->chain_id != NULL;
+}
+
+bool GetEthTypeDataVersionExist(void *indata, void *param)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    return message->version != NULL;
+}
+
+void GetEthTypedDataMessageHash(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    if (message->message_hash != NULL) {
+        // first 8 char and last 8 char color #F5870A
+        char *hash = message->message_hash;
+        // if not start with 0x, add 0x
+        if (hash[0] != '0' || (hash[1] != 'x' && hash[1] != 'X')) {
+            strcpy_s((char *)indata, maxLen, "0x");
+            strcat_s((char *)indata, maxLen, hash);
+            _colorfulHash((char *)indata, (char *)indata, maxLen);
+        } else {
+            _colorfulHash(hash, (char *)indata, maxLen);
+        }
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
+}
+
+void GetEthTypedDataSafeTxHash(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    if (message->safe_tx_hash != NULL) {
+        char *hash = message->safe_tx_hash;
+        _colorfulHash(hash, (char *)indata, maxLen);
+    } else {
+        strcpy_s((char *)indata, maxLen, "");
+    }
+}
+
 void GetEthTypedDataDomianVersion(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->version != NULL) {
-        strcpy_s((char *)indata, maxLen, message->version);
+        snprintf_s((char *)indata, maxLen, "v%s", message->version);
     } else {
         strcpy_s((char *)indata, maxLen, "");
     }
@@ -814,7 +904,7 @@ void GetEthTypedDataDomianChainId(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->chain_id != NULL) {
-        strcpy_s((char *)indata, maxLen, message->chain_id);
+        snprintf_s((char *)indata, maxLen, "%s (%s)", message->chain_id, FindEvmNetwork(atoi(message->chain_id)).name);
     } else {
         strcpy_s((char *)indata, maxLen, "");
     }
@@ -854,7 +944,7 @@ void GetEthTypedDataMessage(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->message != NULL) {
-        strcpy_s((char *)indata, maxLen, message->message);
+        snprintf((char *)indata, maxLen, "%s", message->message);
     } else {
         strcpy_s((char *)indata, maxLen, "");
     }
@@ -863,7 +953,7 @@ void GetEthTypedDataMessage(void *indata, void *param, uint32_t maxLen)
 int GetEthTypedDataMessageLen(void *param)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
-    return strlen(message->message);
+    return strlen(message->message) + 3;
 }
 
 void GetEthTypedDataFrom(void *indata, void *param, uint32_t maxLen)
@@ -1037,13 +1127,13 @@ void GetEthTxFee(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
     if (eth->overview->max_txn_fee != NULL) {
-        snprintf_s((char *)indata,  maxLen, "%s %s", eth->overview->max_txn_fee, _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "%s %s", eth->overview->max_txn_fee, FindEvmNetwork(eth->chain_id).symbol);
     } else {
-        snprintf_s((char *)indata,  maxLen, "0 %s", _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "0 %s", FindEvmNetwork(eth->chain_id).symbol);
     }
 }
 
-EvmNetwork_t _FindNetwork(uint64_t chainId)
+EvmNetwork_t FindEvmNetwork(uint64_t chainId)
 {
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(NETWORKS); i++) {
         EvmNetwork_t network = NETWORKS[i];
@@ -1052,6 +1142,21 @@ EvmNetwork_t _FindNetwork(uint64_t chainId)
         }
     }
     return NETWORKS[0];
+}
+
+void *FindErc20Contract(char *contract_address)
+{
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(ERC20_CONTRACTS); i++) {
+        Erc20Contract_t contract = ERC20_CONTRACTS[i];
+        if (strcasecmp(contract.contract_address, contract_address) == 0) {
+            Erc20Contract_t *result = malloc(sizeof(Erc20Contract_t));
+            result->contract_address = contract.contract_address;
+            result->decimals = contract.decimals;
+            result->symbol = contract.symbol;
+            return result;
+        }
+    }
+    return NULL;
 }
 
 void GetEthValue(void *indata, void *param, uint32_t maxLen)
@@ -1080,7 +1185,7 @@ void GetEthGasLimit(void *indata, void *param, uint32_t maxLen)
 void GetEthNetWork(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    EvmNetwork_t network = _FindNetwork(eth->chain_id);
+    EvmNetwork_t network = FindEvmNetwork(eth->chain_id);
     if (network.chainId == 0) {
         snprintf_s((char *)indata,  maxLen, "ID: %lu", eth->chain_id);
         return;
@@ -1092,9 +1197,9 @@ void GetEthMaxFee(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
     if (eth->detail->max_fee != NULL) {
-        snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_fee, _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_fee, FindEvmNetwork(eth->chain_id).symbol);
     } else {
-        snprintf_s((char *)indata,  maxLen, "0 %s", _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "0 %s", FindEvmNetwork(eth->chain_id).symbol);
     }
 }
 
@@ -1102,9 +1207,9 @@ void GetEthMaxPriority(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
     if (eth->detail->max_priority != NULL) {
-        snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_priority, _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "%s %s", eth->detail->max_priority, FindEvmNetwork(eth->chain_id).symbol);
     } else {
-        snprintf_s((char *)indata,  maxLen, "0 %s", _FindNetwork(eth->chain_id).symbol);
+        snprintf_s((char *)indata,  maxLen, "0 %s", FindEvmNetwork(eth->chain_id).symbol);
     }
 }
 
@@ -1124,6 +1229,12 @@ void GetEthGetFromAddress(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
     strcpy_s((char *)indata, maxLen, eth->overview->from);
+}
+
+void GetEthGetSignerAddress(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETHTypedData *message = (DisplayETHTypedData *)param;
+    strcpy_s((char *)indata, maxLen, message->from);
 }
 
 void GetEthGetToAddress(void *indata, void *param, uint32_t maxLen)
@@ -1163,6 +1274,24 @@ void GetToEthEnsName(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, g_toEthEnsName);
 }
 
+void GetEthNonce(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+    strcpy_s((char *)indata, maxLen, eth->detail->nonce);
+}
+
+void GetEthInputData(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+    snprintf((char *)indata, maxLen, "0x%s", eth->detail->input);
+}
+
+int GetEthInputDataLen(void *param)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+    return strlen(eth->detail->input) + 3;
+}
+
 bool GetEthEnsExist(void *indata, void *param)
 {
     return g_fromEnsExist;
@@ -1183,6 +1312,14 @@ void GetEthToFromSize(uint16_t *width, uint16_t *height, void *param)
 {
     *width = 408;
     *height = 244 + (g_fromEnsExist + g_toEnsExist) * (GAP + TEXT_LINE_HEIGHT) + g_contractDataExist * (GAP + TEXT_LINE_HEIGHT);
+}
+
+void GetEthTypeDomainSize(uint16_t *width, uint16_t *height, void *param)
+{
+    *width = 408;
+    *height = 298 + (98 + 16) * GetEthTypeDataHashExist(NULL, param) +
+              GetEthTypeDataChainExist(NULL, param) * 90 +
+              GetEthTypeDataVersionExist(NULL, param) * 90;
 }
 
 void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param)
@@ -1278,6 +1415,10 @@ void *GetEthContractData(uint8_t *row, uint8_t *col, void *param)
     int i = 0, j = 0;
     char ***indata = (char ***)SRAM_MALLOC(sizeof(char **) * *col);
     for (i = 0; i < *col; i++) {
+        if (*row == 0) {
+            indata[i] = NULL;
+            continue;
+        }
         indata[i] = SRAM_MALLOC(sizeof(char *) * *row);
         for (j = 0; j < *row; j++) {
             int index = j / 2;
@@ -1287,9 +1428,18 @@ void *GetEthContractData(uint8_t *row, uint8_t *col, void *param)
                 indata[i][j] = SRAM_MALLOC(len);
                 snprintf_s(indata[i][j], len, "#919191 %s#", param.name);
             } else {
-                uint32_t len = strnlen_s(param.value, BUFFER_SIZE_128) + 1;
-                indata[i][j] = SRAM_MALLOC(len);
-                strcpy_s(indata[i][j], len, param.value);
+                // if param.value length > 512, we only show first 512-3 char
+                if (strlen(param.value) > BUFFER_SIZE_512) {
+                    uint32_t len = strlen(param.value) + 1;
+                    char *suffix = "...";
+                    indata[i][j] = SRAM_MALLOC(len);
+                    strncpy(indata[i][j], param.value, 509);
+                    strncat_s(indata[i][j], sizeof(char) * (strlen(param.value) + 1), suffix, 3);
+                } else {
+                    uint32_t len = strnlen_s(param.value, BUFFER_SIZE_512) + 1;
+                    indata[i][j] = SRAM_MALLOC(len);
+                    strcpy_s(indata[i][j], len, param.value);
+                }
             }
         }
     }
@@ -1395,11 +1545,9 @@ bool GetEthContractFromInternal(char *address, char *inputData)
         return true;
     }
     // address_key = address + "_" + functionSelector
-    char* address_key = (char*)SRAM_MALLOC(strlen(address) + 9);
-    strcpy_s(address_key, strlen(address) + 9, address);
-    strcat_s(address_key, strlen(address) + 9, "_");
-    strcat_s(address_key, strlen(address) + 9, inputData);
-    for (size_t i = 0; i < NUMBER_OF_ARRAYS(ethereum_abi_map); i++) {
+    char* address_key = (char*)SRAM_MALLOC(strlen(address) + 10);
+    snprintf_s(address_key, strlen(address) + 10, "%s_%.8s", address, inputData);
+    for (size_t i = 0; i < GetEthereumABIMapSize(); i++) {
         struct ABIItem item = ethereum_abi_map[i];
         if (strcasecmp(item.address, address_key) == 0) {
             Response_DisplayContractData *contractData = eth_parse_contract_data(inputData, (char *)item.json);
@@ -1408,11 +1556,14 @@ bool GetEthContractFromInternal(char *address, char *inputData)
                 g_contractData = contractData;
             } else {
                 free_Response_DisplayContractData(contractData);
+                SRAM_FREE(address_key);
                 return false;
             }
+            SRAM_FREE(address_key);
             return true;
         }
     }
+    SRAM_FREE(address_key);
     return false;
 }
 

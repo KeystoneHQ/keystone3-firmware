@@ -1,8 +1,7 @@
 #![no_std]
-#![feature(error_in_core)]
-extern crate alloc;
-
 pub mod pczt_ext;
+
+extern crate alloc;
 
 pub use bip32;
 pub use orchard;

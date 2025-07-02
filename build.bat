@@ -70,7 +70,7 @@ IF "%build_simulator%"=="true" (
     IF "%build_log%"=="true" (
         make -j16 > makefile.log 2>&1
     ) ELSE (
-        make -j16
+        make -j16 -O
     )
     py padding_bin_file.py mh1903.bin
     popd

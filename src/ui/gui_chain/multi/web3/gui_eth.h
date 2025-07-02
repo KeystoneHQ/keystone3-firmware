@@ -32,8 +32,14 @@ void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param);
 void GetEthTypeDomainPos(uint16_t *x, uint16_t *y, void *param);
 void GetEthEnsName(void *indata, void *param, uint32_t maxLen);
 void GetToEthEnsName(void *indata, void *param, uint32_t maxLen);
-bool GetEthContractFromInternal(char *address, char* inputData);
-bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainId, char* inputData);
+void GetEthInputData(void *indata, void *param, uint32_t maxLen);
+void GetEthNonce(void *indata, void *param, uint32_t maxLen);
+int GetEthInputDataLen(void *param);
+bool GetEthTypeDataHashExist(void *indata, void *param);
+bool GetEthContractFromInternal(char *address, char *inputData);
+bool GetEthTypeDataChainExist(void *indata, void *param);
+bool GetEthTypeDataVersionExist(void *indata, void *param);
+bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainId, char *inputData);
 void GetEthMethodName(void *indata, void *param, uint32_t maxLen);
 void GetEthContractName(void *indata, void *param, uint32_t maxLen);
 void GetEthTransactionData(void *indata, void *param, uint32_t maxLen);
@@ -41,7 +47,9 @@ bool GetEthEnsExist(void *indata, void *param);
 bool GetToEthEnsExist(void *indata, void *param);
 bool GetEthContractDataExist(void *indata, void *param);
 bool GetEthContractDataNotExist(void *indata, void *param);
+void GetEthGetSignerAddress(void *indata, void *param, uint32_t maxLen);
 void GetEthContractDataSize(uint16_t *width, uint16_t *height, void *param);
+void GetEthTypeDomainSize(uint16_t *width, uint16_t *height, void *param);
 void *GetEthContractData(uint8_t *row, uint8_t *col, void *param);
 bool GetEthInputDataExist(void *indata, void *param);
 bool GetEthPermitWarningExist(void *indata, void *param);
@@ -55,6 +63,9 @@ void GetMessageRaw(void *indata, void *param, uint32_t maxLen);
 
 void *GuiGetEthTypeData(void);
 void GetEthTypedDataDomianName(void *indata, void *param, uint32_t maxLen);
+void GetEthTypedDataDomainHash(void *indata, void *param, uint32_t maxLen);
+void GetEthTypedDataMessageHash(void *indata, void *param, uint32_t maxLen);
+void GetEthTypedDataSafeTxHash(void *indata, void *param, uint32_t maxLen);
 void GetEthTypedDataDomianVersion(void *indata, void *param, uint32_t maxLen);
 void GetEthTypedDataDomianChainId(void *indata, void *param, uint32_t maxLen);
 void GetEthTypedDataDomianVerifyContract(void *indata, void *param, uint32_t maxLen);
@@ -81,7 +92,9 @@ typedef struct {
     char *value;
 } Erc20Transfer_t;
 
-EvmNetwork_t _FindNetwork(uint64_t chainId);
+EvmNetwork_t FindEvmNetwork(uint64_t chainId);
+void *FindErc20Contract(char *contract_address);
+
 
 void FreeEthMemory(void);
 

@@ -1,6 +1,7 @@
 use alloc::boxed::Box;
 use alloc::format;
 use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use core::ptr::null_mut;
 use core::slice;
 use cryptoxide::hashing::sha256;
@@ -52,6 +53,37 @@ pub extern "C" fn get_master_fingerprint(seed: PtrBytes, seed_len: u32) -> *mut 
 #[no_mangle]
 pub extern "C" fn dummy_function_to_export_error_codes() -> ErrorCodes {
     ErrorCodes::Success
+}
+
+#[no_mangle]
+pub extern "C" fn format_value_with_decimals(
+    value: PtrString,
+    decimals: u32,
+) -> *mut SimpleResponse<c_char> {
+    let value = recover_c_char(value);
+    let decimals = decimals as usize;
+    let mut chars: Vec<char> = value.chars().collect();
+
+    while chars.len() < decimals {
+        chars.insert(0, '0');
+    }
+
+    chars.insert(chars.len() - decimals, '.');
+
+    if chars[0] == '.' {
+        chars.insert(0, '0');
+    }
+
+    let formatted = chars.into_iter().collect::<String>();
+
+    let trimmed = formatted.trim_end_matches('0');
+
+    if trimmed.ends_with('.') {
+        SimpleResponse::success(convert_c_char(trimmed[0..trimmed.len() - 1].to_string()))
+            .simple_c_ptr()
+    } else {
+        SimpleResponse::success(convert_c_char(trimmed.to_string())).simple_c_ptr()
+    }
 }
 
 #[no_mangle]

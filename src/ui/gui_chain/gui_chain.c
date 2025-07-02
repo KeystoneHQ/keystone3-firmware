@@ -29,6 +29,7 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_ADA:
     case REMAPVIEW_ADA_SIGN_DATA:
     case REMAPVIEW_ADA_CATALYST:
+    case REMAPVIEW_APT:
     case REMAPVIEW_AVAX:
         return true;
     default:
@@ -56,7 +57,7 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
     {EthTx, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH},
     {EthPersonalMessage, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH_PERSONAL_MESSAGE},
     {EthTypedData, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH_TYPEDDATA},
-
+    {EthBatchTx, GuiGetEthBatchTxSignQrCodeData, NULL, NULL, CHAIN_ETH, REMAPVIEW_ETH_BATCH_TX},
     {TronTx, GuiGetTrxSignQrCodeData, NULL, GuiGetTrxCheckResult, CHAIN_TRX, REMAPVIEW_TRX},
 
     // avax

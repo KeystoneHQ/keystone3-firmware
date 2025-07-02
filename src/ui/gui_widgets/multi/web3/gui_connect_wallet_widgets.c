@@ -136,7 +136,7 @@ static const lv_img_dsc_t *g_backpackWalletCoinArray[3] = {
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinTrx, &coinDoge
+    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinDoge
 };
 
 static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
@@ -185,12 +185,12 @@ static const lv_img_dsc_t *g_petraCoinArray[1] = {
     &coinApt,
 };
 
-static const lv_img_dsc_t *g_nightlyCoinArray[1] = {
+static const lv_img_dsc_t *g_nightlyCoinArray[] = {
     &coinSui, &coinIota, &coinApt
 };
 
-static const lv_img_dsc_t *g_iotaCoinArray[1] = {
-    &coinIota,
+static const lv_img_dsc_t *g_suiWalletCoinArray[] = {
+    &coinSui
 };
 
 static const lv_img_dsc_t *g_solfareCoinArray[1] = {
@@ -1038,28 +1038,13 @@ static void AddThorWalletCoins(void)
     }
 }
 
-static void AddNightlyCoins(void)
+static void AddWalletCoins(const char *coinArray[], uint32_t arraySize)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);
     }
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_nightlyCoinArray); i++) {
-        // todo add more coins
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_nightlyCoinArray[i]);
-        lv_img_set_zoom(img, 110);
-        lv_img_set_pivot(img, 0, 0);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
-    }
-}
-
-static void AddIotaCoins(void)
-{
-    if (lv_obj_get_child_cnt(g_coinCont) > 0) {
-        lv_obj_clean(g_coinCont);
-    }
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_iotaCoinArray); i++) {
-        // todo add more coins
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_iotaCoinArray[i]);
+    for (uint32_t i = 0; i < arraySize; i++) {
+        lv_obj_t *img = GuiCreateImg(g_coinCont, coinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
         lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
@@ -1242,9 +1227,12 @@ UREncodeResult *GuiGetFewchaData(void)
 
 UREncodeResult *GuiGetNightlyData(void)
 {
-    GuiChainCoinType coin = CHAIN_SUI;
-    // get pub by coin
-    return GuiGetNightlyDataByCoin(coin);
+    return GuiGetWalletDataByCoin(true);
+}
+
+UREncodeResult *GuiGetSuiWalletData(void)
+{
+    return GuiGetWalletDataByCoin(false);
 }
 
 UREncodeResult *GuiGetXrpToolkitData(void)
@@ -1394,15 +1382,15 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
     case WALLET_LIST_NIGHTLY:
         func = GuiGetNightlyData;
-        AddNightlyCoins();
+        AddWalletCoins(g_nightlyCoinArray, NUMBER_OF_ARRAYS(g_nightlyCoinArray));
         break;
     case WALLET_LIST_IOTA:
         func = GuiGetIotaWalletData;
         AddIotaCoins();
         break;
     case WALLET_LIST_SUIET:
-        func = GuiGetNightlyData;
-        AddNightlyCoins();
+        func = GuiGetSuiWalletData;
+        AddWalletCoins(g_suiWalletCoinArray, NUMBER_OF_ARRAYS(g_suiWalletCoinArray));
         break;
     case WALLET_LIST_FEWCHA:
         if (!g_isCoinReselected) {

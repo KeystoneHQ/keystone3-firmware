@@ -3,6 +3,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ptr::null_mut;
+use ur_registry::ethereum::eth_batch_sign_requests::EthBatchSignRequest;
 
 use cstr_core::CString;
 use cty::c_char;
@@ -217,6 +218,8 @@ pub enum ViewType {
     #[cfg(feature = "ethereum")]
     EthTx,
     #[cfg(feature = "ethereum")]
+    EthBatchTx,
+    #[cfg(feature = "ethereum")]
     EthPersonalMessage,
     #[cfg(feature = "ethereum")]
     EthTypedData,
@@ -280,6 +283,8 @@ pub enum ViewType {
     WebAuthResult,
     #[cfg(not(feature = "btc-only"))]
     KeyDerivationRequest,
+    #[cfg(feature = "multi-coins")]
+    BatchCall,
     #[cfg(feature = "btc-only")]
     MultisigWalletImport,
     #[cfg(feature = "btc-only")]
@@ -304,6 +309,8 @@ pub enum QRCodeType {
     KeystoneSignRequest,
     #[cfg(feature = "ethereum")]
     EthSignRequest,
+    #[cfg(feature = "ethereum")]
+    EthBatchSignRequest,
     #[cfg(feature = "solana")]
     SolSignRequest,
     #[cfg(feature = "near")]
@@ -369,6 +376,8 @@ impl QRCodeType {
             InnerURType::KeystoneSignRequest(_) => Ok(QRCodeType::KeystoneSignRequest),
             #[cfg(feature = "ethereum")]
             InnerURType::EthSignRequest(_) => Ok(QRCodeType::EthSignRequest),
+            #[cfg(feature = "ethereum")]
+            InnerURType::EthBatchSignRequest(_) => Ok(QRCodeType::EthBatchSignRequest),
             #[cfg(feature = "solana")]
             InnerURType::SolSignRequest(_) => Ok(QRCodeType::SolSignRequest),
             #[cfg(feature = "near")]
@@ -503,6 +512,10 @@ fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
         #[cfg(feature = "ethereum")]
         QRCodeType::EthSignRequest => {
             free_ptr_with_type!(data, EthSignRequest);
+        }
+        #[cfg(feature = "ethereum")]
+        QRCodeType::EthBatchSignRequest => {
+            free_ptr_with_type!(data, EthBatchSignRequest);
         }
         #[cfg(feature = "solana")]
         QRCodeType::SolSignRequest => {
@@ -716,6 +729,8 @@ pub fn decode_ur(ur: String) -> URParseResult {
         QRCodeType::KeystoneSignRequest => _decode_ur::<KeystoneSignRequest>(ur, ur_type),
         #[cfg(feature = "ethereum")]
         QRCodeType::EthSignRequest => _decode_ur::<EthSignRequest>(ur, ur_type),
+        #[cfg(feature = "ethereum")]
+        QRCodeType::EthBatchSignRequest => _decode_ur::<EthBatchSignRequest>(ur, ur_type),
         #[cfg(feature = "solana")]
         QRCodeType::SolSignRequest => _decode_ur::<SolSignRequest>(ur, ur_type),
         #[cfg(feature = "near")]
@@ -816,6 +831,8 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         QRCodeType::KeystoneSignRequest => _receive_ur::<KeystoneSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "ethereum")]
         QRCodeType::EthSignRequest => _receive_ur::<EthSignRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "ethereum")]
+        QRCodeType::EthBatchSignRequest => _receive_ur::<EthBatchSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "solana")]
         QRCodeType::SolSignRequest => _receive_ur::<SolSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "near")]

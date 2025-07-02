@@ -15,11 +15,9 @@ static void *g_parseResult = NULL;
 
 void GuiSetTrxUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
-#ifndef COMPILE_SIMULATOR
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
-#endif
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                              \
@@ -31,7 +29,6 @@ void GuiSetTrxUrData(URParseResult *urResult, URParseMultiResult *urMultiResult,
 
 void *GuiGetTrxData(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
@@ -44,31 +41,23 @@ void *GuiGetTrxData(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
-#else
-    return NULL;
-#endif
 }
 
 PtrT_TransactionCheckResult GuiGetTrxCheckResult(void)
 {
-#ifndef COMPILE_SIMULATOR
+    printf("GuiGetTrxCheckResult\r\n");
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
     GetMasterFingerPrint(mfp);
     return tron_check_keystone(data, urType, mfp, sizeof(mfp), trxXpub);
-#else
-    return NULL;
-#endif
 }
 void FreeTrxMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-#endif
 }
 
 void GetTrxValue(void *indata, void *param, uint32_t maxLen)
@@ -123,7 +112,6 @@ UREncodeResult *GuiGetTrxSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
@@ -140,13 +128,4 @@ UREncodeResult *GuiGetTrxSignQrCodeData(void)
     } while (0);
     SetLockScreen(enable);
     return encodeResult;
-#else
-    UREncodeResult *encodeResult = NULL;
-    encodeResult->is_multi_part = 0;
-    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    encodeResult->encoder = NULL;
-    encodeResult->error_code = 0;
-    encodeResult->error_message = NULL;
-    return encodeResult;
-#endif
 }

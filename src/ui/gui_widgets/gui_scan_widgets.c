@@ -153,6 +153,16 @@ void GuiScanResult(bool result, void *param)
 #endif
             return;
         }
+#ifdef WEB3_VERSION
+        if (g_qrcodeViewType == EthBatchTx) {
+            printf("g_qrcodeViewType == EthBatchTx\n");
+            if (!GuiCheckIfTopView(&g_homeView)) {
+                GuiCloseCurrentWorkingView();
+            }
+            GuiFrameOpenView(&g_ethBatchTxView);
+            return;
+        }
+#endif
         uint8_t accountNum = 0;
         GetExistAccountNum(&accountNum);
         if (accountNum <= 0) {

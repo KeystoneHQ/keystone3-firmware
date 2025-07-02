@@ -18,6 +18,7 @@ UREncodeResult *GuiGetBitgetWalletData(void);
 UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType);
 UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType);
 UREncodeResult *GuiGetMetamaskData(void);
+UREncodeResult *GuiGetWalletDataByCoin(bool includeApt);
 UREncodeResult *GuiGetFewchaDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetNightlyDataByCoin(GuiChainCoinType coin);
 UREncodeResult *GuiGetIotaWalletData(void);

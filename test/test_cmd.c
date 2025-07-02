@@ -218,7 +218,6 @@ static void RustTestSuiSignTx(int argc, char *argv[]);
 static void RustTestAptosCheckTx(int argc, char *argv[]);
 static void RustTestAptosParseTx(int argc, char *argv[]);
 static void RustADATest(int argc, char *argv[]);
-static void RustZECTest(int argc, char *argv[]);
 #endif
 
 const static UartTestCmdItem_t g_uartTestCmdTable[] = {
@@ -354,7 +353,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test aptos check tx:", RustTestAptosCheckTx},
     {"rust test aptos parse tx:", RustTestAptosParseTx},
     {"rust ada test", RustADATest},
-    {"rust zec test:", RustZECTest},
 #endif
 };
 
@@ -2363,16 +2361,6 @@ static void RustTestAptosParseTx(int argc, char *argv[])
     free_TransactionParseResult_DisplayAptosTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
-static void RustZECTest(int argc, char *argv[])
-{
-    printf("ZEC test\r\n");
-    int32_t index;
-    sscanf(argv[0], "%d", &index);
-    uint8_t seed[64];
-    int32_t getSeedRet = GetAccountSeed(index, seed, argv[1]);
-    try_sign_zec_orchard(seed, argv[2], argv[3]);
 }
 
 static void RustADATest(int argc, char *argv[])

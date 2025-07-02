@@ -41,7 +41,10 @@ pub extern "C" fn iota_parse_intent(
 ) -> PtrT<TransactionParseResult<DisplayIotaIntentData>> {
     let sign_request = extract_ptr_with_type!(ptr, IotaSignRequest);
     let sign_data = sign_request.get_intent_message();
-    let address = format!("0x{}", hex::encode(sign_request.get_addresses().unwrap_or(vec![])[0].clone()));
+    let address = format!(
+        "0x{}",
+        hex::encode(sign_request.get_addresses().unwrap_or(vec![])[0].clone())
+    );
     let data = app_sui::parse_intent(&sign_data);
     match data {
         Ok(data) => match data {
@@ -54,7 +57,8 @@ pub extern "C" fn iota_parse_intent(
                     .c_ptr(),
             )
             .c_ptr(),
-            _ => TransactionParseResult::from(SuiError::InvalidData("Invalid intent".to_string())).c_ptr(),
+            _ => TransactionParseResult::from(SuiError::InvalidData("Invalid intent".to_string()))
+                .c_ptr(),
         },
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }

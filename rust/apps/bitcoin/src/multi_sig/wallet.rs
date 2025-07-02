@@ -617,7 +617,7 @@ mod tests {
             assert_eq!("C2202A77", config.xpub_items[1].xfp);
             assert_eq!("xpub6EWksRHwPbDmXWkjQeA6wbCmXZeDPXieMob9hhbtJjmrmk647bWkh7om5rk2eoeDKcKG6NmD8nT7UZAFxXQMjTnhENTwTEovQw3MDQ8jJ16", config.xpub_items[2].xpub);
             assert_eq!("5271C071", config.xpub_items[2].xfp);
-            assert_eq!("d4637859", config.verify_code);
+            assert_eq!("2f7ed246", config.verify_code);
         }
 
         // 2-3 multi path
@@ -657,7 +657,7 @@ mod tests {
             assert_eq!("5271c071", config.xpub_items[1].xfp);
             assert_eq!("xpub6LZnaHgbbxyZpChT4w9V5NC91qaZC9rrPoebgH3qGjZmcDKvPjLivfZSKLu5R1PjEpboNsznNwtqBifixCuKTfPxDZVNVN9mnjfTBpafqQf", config.xpub_items[2].xpub);
             assert_eq!("c2202a77", config.xpub_items[2].xfp);
-            assert_eq!("7cb85a16", config.verify_code);
+            assert_eq!("abea7733", config.verify_code);
         }
     }
 

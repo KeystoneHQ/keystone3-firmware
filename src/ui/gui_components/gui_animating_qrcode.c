@@ -97,6 +97,9 @@ void GuiAnimantingQRCodeFirstUpdate(char* data, uint16_t len)
 
 void GuiAnimatingQRCodeUpdate(char* data, uint16_t len)
 {
+    if (g_qrcode == NULL) {
+        return;
+    }
     lv_qrcode_update(g_qrcode, data, len);
 
     lv_obj_t *fullscreen_qrcode = GuiFullscreenModeGetCreatedObjectWhenVisible();

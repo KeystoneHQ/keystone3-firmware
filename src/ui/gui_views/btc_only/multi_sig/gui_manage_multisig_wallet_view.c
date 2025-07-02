@@ -12,7 +12,7 @@ int32_t GuiManageMultiViewEventProcess(void *self, uint16_t usEvent, void *param
         if (param == NULL) {
             return ERR_GUI_ERROR;
         }
-        GuiManageMultisigWalletInit(*(CURRENT_WALLET_INDEX_ENUM *)param);
+        GuiManageMultisigWalletInit(*(int *)param);
         break;
     case GUI_EVENT_OBJ_DEINIT:
         GuiManageMultisigWalletDeInit();

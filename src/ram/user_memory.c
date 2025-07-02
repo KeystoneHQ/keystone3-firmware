@@ -85,7 +85,11 @@ void ExtFreeTrack(void *p, const char *file, int line, const char *func)
 
 void *ExtMalloc(size_t size)
 {
+#ifdef COMPILE_SIMULATOR
+    void *p = malloc(size);
+#else
     void *p = PsramMalloc(size);
+#endif
     ASSERT(p != NULL);
     g_extHeapCount++;
     return p;
@@ -93,14 +97,22 @@ void *ExtMalloc(size_t size)
 
 void ExtFree(void *p)
 {
+#ifdef COMPILE_SIMULATOR
+    free(p);
+#else
     if (p != NULL) {
         PsramFree(p);
         g_extHeapCount--;
     }
+#endif
 }
 
 void *ExtRealloc(void *p, size_t newSize)
 {
+#ifdef COMPILE_SIMULATOR
+    void *dest = malloc(newSize);
+    return dest;
+#endif
     if (p == NULL) {
         return ExtMalloc(newSize);
     }

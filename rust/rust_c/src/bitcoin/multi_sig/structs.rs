@@ -201,6 +201,7 @@ pub struct MultiSigWallet {
     format: PtrString,
     xpub_items: PtrT<VecFFI<MultiSigXPubItem>>,
     verify_code: PtrString,
+    verify_without_mfp: PtrString,
     config_text: PtrString,
     network: u32,
 }
@@ -233,6 +234,7 @@ impl From<MultiSigWalletConfig> for MultiSigWallet {
             )
             .c_ptr(),
             verify_code: convert_c_char(value.verify_code.clone()),
+            verify_without_mfp: convert_c_char(value.verify_without_mfp.clone()),
             config_text: convert_c_char(value.config_text.clone()),
             network: value.get_network_u32(),
         }
@@ -275,6 +277,7 @@ impl From<&mut MultiSigWallet> for MultiSigWalletConfig {
                 rebuilt.iter().map(|v| v.into()).collect::<Vec<_>>()
             },
             verify_code: recover_c_char(val.verify_code),
+            verify_without_mfp: recover_c_char(val.verify_without_mfp),
             config_text: recover_c_char(val.config_text),
             network: if val.network == 0 {
                 Network::MainNet

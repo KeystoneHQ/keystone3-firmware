@@ -524,6 +524,7 @@ impl WrappedPsbt {
             total,
             format,
             &crate::multi_sig::Network::try_from(&network)?,
+            None,
         )?)
     }
 

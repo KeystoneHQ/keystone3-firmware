@@ -150,7 +150,7 @@ static void GuiWriteToMicroCardHandler(lv_event_t *e)
 
     char *xPubBuff = EXT_MALLOC(1024);
     int len = CreateExportPubkeyComponent(xPubBuff, 1024);
-    int ret = FileWrite(g_xpubConfigName, xPubBuff, len);
+    int ret = FileWrite(g_xpubConfigName, (const char *)xPubBuff, len);
     if (ret) {
         g_noticeWindow =  GuiCreateErrorCodeWindow(ERR_EXPORT_FILE_TO_MICRO_CARD_FAILED, &g_noticeWindow, NULL);
     }

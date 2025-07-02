@@ -496,21 +496,9 @@ void GuiWalletSetWidget(lv_obj_t *parent)
         imgArrow = GuiCreateImg(parent, &imgArrowRight);
         table[0].obj = label;
         table[1].obj = imgArrow;
-#ifdef BTC_ONLY
-        if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-            passphraseCb = UnHandler;
-        }
-#endif
         button = GuiCreateButton(parent, 456, 84, table, 2, passphraseCb, &walletSetting[2]);
         lv_obj_align(button, LV_ALIGN_DEFAULT, 12, nextY);
         nextY = nextY + 96;
-#ifdef BTC_ONLY
-        if (GetCurrentWalletIndex() != SINGLE_WALLET) {
-            lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
-            lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_80, LV_PART_MAIN);
-            lv_obj_set_style_img_opa(lv_obj_get_child(button, 1), LV_OPA_80, LV_PART_MAIN);
-        }
-#endif
     }
 
     label = GuiCreateTextLabel(parent, _("wallet_setting_seed_phrase"));

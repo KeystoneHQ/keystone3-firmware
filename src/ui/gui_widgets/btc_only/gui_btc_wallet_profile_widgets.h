@@ -8,5 +8,6 @@ void GuiBtcWalletProfileDeInit(void);
 void GuiBtcWalletProfileRefresh(void);
 int8_t GuiBtcWalletProfilePrevTile(void);
 int8_t GuiBtcWalletProfileNextTile(void);
+void CheckPassPhraseWallet(bool isPassphrase);
 
 #endif

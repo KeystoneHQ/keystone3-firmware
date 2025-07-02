@@ -18,6 +18,8 @@ use app_cardano::errors::CardanoError;
 use app_cosmos::errors::CosmosError;
 #[cfg(feature = "ethereum")]
 use app_ethereum::errors::EthereumError;
+#[cfg(feature = "iota")]
+use app_iota::errors::IotaError;
 #[cfg(feature = "monero")]
 use app_monero::errors::MoneroError;
 #[cfg(feature = "near")]
@@ -231,6 +233,22 @@ pub enum ErrorCodes {
     AvaxUnknownTypeId,
     AvaxInvalidHDPath,
     AvaxBech32Error,
+
+    // Iota
+    IotaError = 1800,
+    IotaInvalidData,
+    IotaProgramError,
+    IotaAccountNotFound,
+    IotaParseTxError,
+    IotaAddressError,
+    IotaKeystoreError,
+    IotaUnsupportedProgram,
+    IotaInvalidCommand,
+    IotaInvalidLength,
+    IotaInvalidTransaction,
+    IotaSignFailure,
+    IotaUnexpectedEof,
+    IotaInvalidField,
 }
 
 impl ErrorCodes {
@@ -535,6 +553,25 @@ impl From<&AvaxError> for ErrorCodes {
     }
 }
 
+#[cfg(feature = "iota")]
+impl From<&IotaError> for ErrorCodes {
+    fn from(value: &IotaError) -> Self {
+        match value {
+            IotaError::AddressError(_) => Self::IotaAddressError,
+            IotaError::KeystoreError(_) => Self::IotaKeystoreError,
+            IotaError::UnsupportedProgram(_) => Self::IotaUnsupportedProgram,
+            IotaError::InvalidData(_) => Self::IotaInvalidData,
+            IotaError::ProgramError(_) => Self::IotaProgramError,
+            IotaError::AccountNotFound(_) => Self::IotaAccountNotFound,
+            IotaError::ParseTxError(_) => Self::IotaParseTxError,
+            IotaError::InvalidField(_) => Self::IotaInvalidField,
+            IotaError::UnexpectedEof => Self::IotaUnexpectedEof,
+            IotaError::InvalidLength => Self::IotaInvalidLength,
+            IotaError::InvalidCommand(_) => Self::IotaInvalidTransaction,
+            IotaError::SignFailure(_) => Self::IotaSignFailure,
+        }
+    }
+}
 #[cfg(feature = "zcash")]
 impl From<&ZcashError> for ErrorCodes {
     fn from(value: &ZcashError) -> Self {

@@ -98,8 +98,6 @@ int main(int argc, char **argv)
     LanguageInit();
 
     GuiFrameOpenView(&g_initView);
-
-    //  lv_example_switch_1();
     //  lv_example_calendar_1();
     //  lv_example_btnmatrix_2();
     //  lv_example_checkbox_1();

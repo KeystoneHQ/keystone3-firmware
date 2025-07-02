@@ -194,31 +194,62 @@ UREncodeResult *GuiGetWalletDataByCoin(bool includeApt)
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
 
-#define MAX_XPUB_COUNT 20
-    ExtendedPublicKey keys[MAX_XPUB_COUNT];
     PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+#define NIGHTLY_XPUB_COUNT 30
+    ExtendedPublicKey keys[NIGHTLY_XPUB_COUNT];
     publicKeys->data = keys;
-    publicKeys->size = includeApt ? 20 : 10;
-
+    int16_t coinType = 0;
+    int16_t xpubBaseIndex = 0;
     uint8_t xpubIndex = 0;
     for (xpubIndex = 0; xpubIndex < 10; xpubIndex++) {
         keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
         snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/784'/%u'/0'/0'", xpubIndex);
         keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + xpubIndex);
     }
-
     if (includeApt) {
+        for (uint8_t startIndex = 0; startIndex < 10; xpubIndex++, startIndex++) {
+            keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
+            snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/4218'/%u'/0'/0'", startIndex);
+            keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + startIndex);
+        }
         for (uint8_t startIndex = 0; startIndex < 10; xpubIndex++, startIndex++) {
             keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
             snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0'/0'", startIndex);
             keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + startIndex);
         }
+        publicKeys->size = NIGHTLY_XPUB_COUNT;
+    } else {
+        publicKeys->size = 10;
     }
 
     g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
     CHECK_CHAIN_PRINT(g_urEncode);
+    for (uint8_t i = 0; i < NIGHTLY_XPUB_COUNT; i++) {
+        if (keys[i].path != NULL) {
+            SRAM_FREE(keys[i].path);
+        }
+    }
+    SRAM_FREE(publicKeys);
+    return g_urEncode;
+}
 
-    for (uint8_t i = 0; i < publicKeys->size; i++) {
+UREncodeResult *GuiGetIotaWalletData(void)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+#define IOTA_XPUB_COUNT 10
+    ExtendedPublicKey keys[IOTA_XPUB_COUNT];
+    publicKeys->data = keys;
+    publicKeys->size = IOTA_XPUB_COUNT;
+    for (uint8_t startIndex = 0; startIndex < IOTA_XPUB_COUNT; startIndex++) {
+        keys[startIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[startIndex].path, BUFFER_SIZE_32, "m/44'/4218'/%u'/0'/0'", startIndex);
+        keys[startIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + startIndex);
+    }
+    g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
+    CHECK_CHAIN_PRINT(g_urEncode);
+    for (uint8_t i = 0; i < IOTA_XPUB_COUNT; i++) {
         if (keys[i].path != NULL) {
             SRAM_FREE(keys[i].path);
         }

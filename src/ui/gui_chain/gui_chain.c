@@ -70,6 +70,9 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
     {SuiTx, GuiGetSuiSignQrCodeData, NULL, GuiGetSuiCheckResult, CHAIN_SUI, REMAPVIEW_SUI},
     {SuiSignMessageHash, GuiGetSuiSignHashQrCodeData, GuiGetSuiSignHashQrCodeData, GuiGetSuiSignHashCheckResult, CHAIN_SUI, REMAPVIEW_SUI_SIGN_MESSAGE_HASH},
 
+    {IotaTx, GuiGetIotaSignQrCodeData, NULL, GuiGetIotaCheckResult, CHAIN_IOTA, REMAPVIEW_IOTA},
+    {IotaSignMessageHash, GuiGetIotaSignHashQrCodeData, GuiGetIotaSignHashQrCodeData, GuiGetIotaSignHashCheckResult, CHAIN_IOTA, REMAPVIEW_IOTA_SIGN_MESSAGE_HASH},
+
     {SolanaTx, GuiGetSolSignQrCodeData, GuiGetSolSignQrCodeData, GuiGetSolCheckResult, CHAIN_SOL, REMAPVIEW_SOL},
     {SolanaMessage, GuiGetSolSignQrCodeData, GuiGetSolSignQrCodeData, GuiGetSolCheckResult, CHAIN_SOL, REMAPVIEW_SOL_MESSAGE},
 

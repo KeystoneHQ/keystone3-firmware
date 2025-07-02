@@ -240,6 +240,7 @@ LV_IMG_DECLARE(coinDoge);
 LV_IMG_DECLARE(coinBabylon);
 LV_IMG_DECLARE(coinNeutaro)
 LV_IMG_DECLARE(coinAo);
+LV_IMG_DECLARE(coinIota);
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);
@@ -338,6 +339,7 @@ LV_IMG_DECLARE(walletListNufi);
 LV_IMG_DECLARE(walletListBeacon);
 LV_IMG_DECLARE(walletListBtcSafe);
 LV_IMG_DECLARE(walletListMedusa);
+LV_IMG_DECLARE(walletListIota);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

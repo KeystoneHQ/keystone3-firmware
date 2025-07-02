@@ -18,6 +18,7 @@
 #include "gui_stellar.h"
 #include "gui_ton.h"
 #include "gui_avax.h"
+#include "gui_iota.h"
 #else
 #include "gui_zcash.h"
 #include "gui_monero.h"
@@ -45,6 +46,7 @@ typedef enum {
     CHAIN_BCH,
     CHAIN_APT,
     CHAIN_SUI,
+    CHAIN_IOTA,
     CHAIN_DASH,
     CHAIN_ARWEAVE,
     CHAIN_STELLAR,
@@ -111,6 +113,8 @@ typedef enum {
     REMAPVIEW_SUI_SIGN_MESSAGE_HASH,
     REMAPVIEW_SOL,
     REMAPVIEW_SOL_MESSAGE,
+    REMAPVIEW_IOTA,
+    REMAPVIEW_IOTA_SIGN_MESSAGE_HASH,
     REMAPVIEW_APT,
     REMAPVIEW_ADA,
     REMAPVIEW_ADA_SIGN_TX_HASH,

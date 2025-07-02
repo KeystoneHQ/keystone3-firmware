@@ -184,7 +184,6 @@ void GuiMultiAccountsReceiveInit(uint8_t chain)
         g_multiAccountsReceiveWidgets.tileSwitchPathType = lv_tileview_add_tile(g_multiAccountsReceiveWidgets.tileView, RECEIVE_TILE_SWITCH_PATH_TYPE, 0, LV_DIR_HOR);
     }
     lv_obj_clear_flag(g_multiAccountsReceiveWidgets.tileView, LV_OBJ_FLAG_SCROLLABLE);
-
     GuiMultiAccountsReceiveRefresh();
 }
 
@@ -909,7 +908,6 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
 
 static void MoreHandler(lv_event_t *e)
 {
-
     if (g_multiAccountsReceiveWidgets.moreCont == NULL) {
         GuiCreateMoreWidgets(g_multiAccountsReceiveWidgets.tileQrCode);
     } else {
@@ -920,7 +918,6 @@ static void MoreHandler(lv_event_t *e)
 
 static void TutorialHandler(lv_event_t *e)
 {
-
     GUI_DEL_OBJ(g_multiAccountsReceiveWidgets.moreCont);
 
     TUTORIAL_LIST_INDEX_ENUM index = TUTORIAL_ADA_RECEIVE;
@@ -1239,7 +1236,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
     switch (g_chainCard) {
 #ifdef WEB3_VERSION
     case HOME_WALLET_CARD_ADA: {
-        uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);;
+        uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);
         xPub = GetCurrentAccountPublicKey(GetReceivePageAdaXPubTypeByIndex(currentAccount));
         snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
         // cardano mainnet;

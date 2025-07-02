@@ -37,6 +37,7 @@ pub mod types;
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Intent {
     TransactionData(IntentMessage<TransactionData>),
+    TransactionEffects(IntentMessage<TransactionData>),
     PersonalMessage(IntentMessage<PersonalMessageUtf8>),
 }
 
@@ -53,7 +54,7 @@ pub fn generate_address(pub_key: &str) -> Result<String> {
 
 pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
     match IntentScope::try_from(intent[0])? {
-        IntentScope::TransactionData => {
+        IntentScope::TransactionData | IntentScope::TransactionEffects => {
             let tx: IntentMessage<TransactionData> =
                 bcs::from_bytes(intent).map_err(SuiError::from)?;
             Ok(Intent::TransactionData(tx))

@@ -1,0 +1,22 @@
+[package]
+name = "app_iota"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keystore = { workspace = true, default-features = false }
+hex = { workspace = true }
+cryptoxide = { workspace = true }
+ur-registry = { workspace = true }
+app_utils = { workspace = true }
+rust_tools = { workspace = true }
+thiserror = { workspace = true }
+bytes = {version = "1.4.0", default-features = false}
+serde = { workspace = true }
+blake2 = { workspace = true }
+
+[dev-dependencies]
+keystore = { workspace = true }
+bech32 = { workspace = true }

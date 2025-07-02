@@ -47,6 +47,10 @@ use ur_registry::crypto_psbt::CryptoPSBT;
 use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 #[cfg(not(feature = "btc-only"))]
 use ur_registry::extend::qr_hardware_call::QRHardwareCall;
+#[cfg(feature = "iota")]
+use ur_registry::iota::iota_sign_hash_request::IotaSignHashRequest;
+#[cfg(feature = "iota")]
+use ur_registry::iota::iota_sign_request::IotaSignRequest;
 #[cfg(feature = "multi-coins")]
 use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
 #[cfg(feature = "monero")]
@@ -247,6 +251,10 @@ pub enum ViewType {
     SuiTx,
     #[cfg(feature = "sui")]
     SuiSignMessageHash,
+    #[cfg(feature = "iota")]
+    IotaTx,
+    #[cfg(feature = "iota")]
+    IotaSignMessageHash,
 
     #[cfg(feature = "arweave")]
     ArweaveTx,
@@ -328,6 +336,10 @@ pub enum QRCodeType {
     SuiSignRequest,
     #[cfg(feature = "sui")]
     SuiSignHashRequest,
+    #[cfg(feature = "iota")]
+    IotaSignRequest,
+    #[cfg(feature = "iota")]
+    IotaSignHashRequest,
     #[cfg(feature = "aptos")]
     AptosSignRequest,
     #[cfg(not(feature = "btc-only"))]
@@ -378,6 +390,10 @@ impl QRCodeType {
             InnerURType::SuiSignRequest(_) => Ok(QRCodeType::SuiSignRequest),
             #[cfg(feature = "sui")]
             InnerURType::SuiSignHashRequest(_) => Ok(QRCodeType::SuiSignHashRequest),
+            #[cfg(feature = "iota")]
+            InnerURType::IotaSignRequest(_) => Ok(QRCodeType::IotaSignRequest),
+            #[cfg(feature = "iota")]
+            InnerURType::IotaSignHashRequest(_) => Ok(QRCodeType::IotaSignHashRequest),
             #[cfg(feature = "stellar")]
             InnerURType::StellarSignRequest(_) => Ok(QRCodeType::StellarSignRequest),
             #[cfg(feature = "arweave")]
@@ -741,6 +757,10 @@ pub fn decode_ur(ur: String) -> URParseResult {
         QRCodeType::SuiSignRequest => _decode_ur::<SuiSignRequest>(ur, ur_type),
         #[cfg(feature = "sui")]
         QRCodeType::SuiSignHashRequest => _decode_ur::<SuiSignHashRequest>(ur, ur_type),
+        #[cfg(feature = "iota")]
+        QRCodeType::IotaSignRequest => _decode_ur::<IotaSignRequest>(ur, ur_type),
+        #[cfg(feature = "iota")]
+        QRCodeType::IotaSignHashRequest => _decode_ur::<IotaSignHashRequest>(ur, ur_type),
         #[cfg(feature = "stellar")]
         QRCodeType::StellarSignRequest => _decode_ur::<StellarSignRequest>(ur, ur_type),
         #[cfg(feature = "arweave")]
@@ -843,6 +863,10 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         QRCodeType::SuiSignRequest => _receive_ur::<SuiSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "sui")]
         QRCodeType::SuiSignHashRequest => _receive_ur::<SuiSignHashRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "iota")]
+        QRCodeType::IotaSignRequest => _receive_ur::<IotaSignRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "iota")]
+        QRCodeType::IotaSignHashRequest => _receive_ur::<IotaSignHashRequest>(ur, ur_type, decoder),
         #[cfg(feature = "arweave")]
         QRCodeType::ArweaveSignRequest => _receive_ur::<ArweaveSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "stellar")]

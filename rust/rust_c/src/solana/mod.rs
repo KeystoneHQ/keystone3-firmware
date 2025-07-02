@@ -46,6 +46,16 @@ pub extern "C" fn solana_get_address(pubkey: PtrString) -> *mut SimpleResponse<c
 }
 
 #[no_mangle]
+pub extern "C" fn iota_get_address(pubkey: PtrString) -> *mut SimpleResponse<c_char> {
+    let x_pub = recover_c_char(pubkey);
+    let address = app_solana::get_address(&x_pub);
+    match address {
+        Ok(result) => SimpleResponse::success(convert_c_char(result) as *mut c_char).simple_c_ptr(),
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn solana_check(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,

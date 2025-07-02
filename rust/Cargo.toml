@@ -19,6 +19,7 @@ members = [
     "apps/xrp",
     "apps/zcash",
     "apps/avalanche",
+    "apps/iota",
 
     # C interface entry
     "rust_c",
@@ -49,6 +50,7 @@ app_wallets = { path = "apps/wallets" }
 app_xrp = { path = "apps/xrp" }
 app_zcash = { path = "apps/zcash" }
 app_monero = { path = "apps/monero" }
+app_iota = { path = "apps/iota" }
 keystore = { path = "keystore", default-features = false }
 tools = { path = "tools" }
 sim_qr_reader = { path = "sim_qr_reader" }
@@ -72,8 +74,8 @@ core2 = { version = "0.3.3", default-features = false, features = ["alloc"] }
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
 rsa = { version = "0.8.2", default-features = false }
 sha1 = { version = "0.10.5", default-features = false }
-ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.48" }
-ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.48" }
+ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.49" }
+ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.49" }
 ed25519-bip32-core = { version = "0.1.1", default-features = false }
 cryptoxide = "0.4"
 arrayref = "0.3.6"

@@ -84,7 +84,11 @@ impl From<Intent> for DisplayIotaIntentData {
 
                 Self {
                     amount: convert_c_char(amount),
-                    recipient: convert_c_char(recipient),
+                    recipient: if recipient.len() > 0 {
+                        convert_c_char(recipient)
+                    } else {
+                        null_mut()
+                    },
                     network,
                     sender: convert_c_char(data.sender.to_string()),
                     details: convert_c_char(details),
@@ -101,7 +105,12 @@ impl From<Intent> for DisplayIotaIntentData {
                 details: null_mut(),
                 transaction_type: convert_c_char("Message".to_string()),
                 method: null_mut(),
-                message: convert_c_char(personal_message.value.message),
+                message: convert_c_char(
+                    base64::decode(&personal_message.value.message)
+                        .ok()
+                        .and_then(|bytes| String::from_utf8(bytes).ok())
+                        .unwrap_or_else(|| personal_message.value.message.clone()),
+                ),
             },
             _ => todo!("Other Intent types not implemented"),
         }
@@ -109,7 +118,7 @@ impl From<Intent> for DisplayIotaIntentData {
 }
 
 fn extract_transaction_params(args: &Vec<CallArg>) -> (String, String) {
-    let mut pure_args = args
+    let pure_args = args
         .iter()
         .filter_map(|arg| {
             if let CallArg::Pure(data) = arg {
@@ -121,22 +130,17 @@ fn extract_transaction_params(args: &Vec<CallArg>) -> (String, String) {
         .collect::<Vec<_>>();
 
     let amount = pure_args
-        .get(0)
+        .iter()
+        .find(|bytes| bytes.len() == 8)
         .map(|bytes| {
-            if bytes.len() == 8 {
-                format!(
-                    "{} IOTA",
-                    u64::from_le_bytes(bytes.as_slice().try_into().unwrap_or([0; 8])) as f64
-                        / 1000_000_000.0
-                )
-            } else {
-                "0".to_string()
-            }
+            let amount_value = u64::from_le_bytes(bytes.as_slice().try_into().unwrap_or([0; 8]));
+            format!("{} IOTA", amount_value as f64 / 1000_000_000.0)
         })
         .unwrap_or_default();
 
     let recipient = pure_args
-        .last()
+        .iter()
+        .find(|bytes| bytes.len() == 32)
         .map(|bytes| format!("0x{}", hex::encode(bytes)))
         .unwrap_or_default();
 

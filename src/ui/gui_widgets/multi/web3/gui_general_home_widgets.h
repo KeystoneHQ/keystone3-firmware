@@ -14,10 +14,10 @@
                                        HOME_WALLET_CARD_LTC,     \
                                        HOME_WALLET_CARD_DOGE,    \
                                        HOME_WALLET_CARD_AVAX,    \
-                                       HOME_WALLET_CARD_IOTA,    \
                                        HOME_WALLET_CARD_BCH,     \
                                        HOME_WALLET_CARD_APT,     \
                                        HOME_WALLET_CARD_SUI,     \
+                                       HOME_WALLET_CARD_IOTA,    \
                                        HOME_WALLET_CARD_DASH,    \
                                        HOME_WALLET_CARD_ARWEAVE, \
                                        HOME_WALLET_CARD_XLM,     \
@@ -71,10 +71,10 @@
         {HOME_WALLET_CARD_LTC, false, "LTC", true},       \
         {HOME_WALLET_CARD_DOGE, false, "DOGE", true},     \
         {HOME_WALLET_CARD_AVAX, false, "AVAX", true},     \
-        {HOME_WALLET_CARD_IOTA, false, "IOTA", true},     \
         {HOME_WALLET_CARD_BCH, false, "BCH", true},       \
         {HOME_WALLET_CARD_APT, false, "APT", true},       \
         {HOME_WALLET_CARD_SUI, false, "SUI", true},       \
+        {HOME_WALLET_CARD_IOTA, false, "IOTA", true},     \
         {HOME_WALLET_CARD_DASH, false, "DASH", true},     \
         {HOME_WALLET_CARD_ARWEAVE, false, "AR", true},    \
         {HOME_WALLET_CARD_XLM, false, "XLM", true},       \
@@ -198,12 +198,6 @@
             .icon = &coinAva,                  \
         },                                     \
         {                                      \
-            .index = HOME_WALLET_CARD_IOTA,    \
-            .coin = "IOTA",                    \
-            .chain = "IOTA",                   \
-            .icon = &coinIota,                 \
-        },                                     \
-        {                                      \
             .index = HOME_WALLET_CARD_APT,     \
             .coin = "APT",                     \
             .chain = "Aptos",                  \
@@ -214,6 +208,12 @@
             .coin = "SUI",                     \
             .chain = "Sui",                    \
             .icon = &coinSui,                  \
+        },                                     \
+        {                                      \
+            .index = HOME_WALLET_CARD_IOTA,    \
+            .coin = "IOTA",                    \
+            .chain = "IOTA",                   \
+            .icon = &coinIota,                 \
         },                                     \
         {                                      \
             .index = HOME_WALLET_CARD_DASH,    \

@@ -84,7 +84,11 @@ impl From<Intent> for DisplayIotaIntentData {
 
                 Self {
                     amount: convert_c_char(amount),
-                    recipient: if recipient.len() > 0 { convert_c_char(recipient) } else { null_mut() },
+                    recipient: if recipient.len() > 0 {
+                        convert_c_char(recipient)
+                    } else {
+                        null_mut()
+                    },
                     network,
                     sender: convert_c_char(data.sender.to_string()),
                     details: convert_c_char(details),
@@ -105,7 +109,7 @@ impl From<Intent> for DisplayIotaIntentData {
                     base64::decode(&personal_message.value.message)
                         .ok()
                         .and_then(|bytes| String::from_utf8(bytes).ok())
-                        .unwrap_or_else(|| personal_message.value.message.clone())
+                        .unwrap_or_else(|| personal_message.value.message.clone()),
                 ),
             },
             _ => todo!("Other Intent types not implemented"),
@@ -133,7 +137,7 @@ fn extract_transaction_params(args: &Vec<CallArg>) -> (String, String) {
             format!("{} IOTA", amount_value as f64 / 1000_000_000.0)
         })
         .unwrap_or_default();
-    
+
     let recipient = pure_args
         .iter()
         .find(|bytes| bytes.len() == 32)

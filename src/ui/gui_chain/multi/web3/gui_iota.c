@@ -157,8 +157,10 @@ void GuiIotaTxOverview(lv_obj_t *parent, void *totalData)
     container = CreateSingleInfoTwoLineView(parent, "sender", txData->sender);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
-    container = CreateSingleInfoTwoLineView(parent, "recipient", txData->recipient);
-    GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    if (txData->recipient != NULL) {
+        container = CreateSingleInfoTwoLineView(parent, "recipient", txData->recipient);
+        GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    }
 }
 
 void GuiIotaTxRawData(lv_obj_t *parent, void *totalData)

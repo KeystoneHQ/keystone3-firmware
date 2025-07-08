@@ -185,18 +185,22 @@ fn get_method(commands: &Vec<Command>) -> String {
         })
         .collect();
 
-    let has_assets_bag_new = move_calls.iter().any(|call| {
-        call.module.to_string() == "assets_bag" && call.function.to_string() == "new"
-    });
+    let has_assets_bag_new = move_calls
+        .iter()
+        .any(|call| call.module.to_string() == "assets_bag" && call.function.to_string() == "new");
     let has_request_create = move_calls.iter().any(|call| {
-        call.module.to_string() == "request" && call.function.to_string() == "create_and_send_request"
+        call.module.to_string() == "request"
+            && call.function.to_string() == "create_and_send_request"
     });
 
     if has_assets_bag_new && has_request_create {
         return "bridge".to_string();
     }
 
-    if move_calls.iter().any(|call| call.function.to_string().contains("stake")) {
+    if move_calls
+        .iter()
+        .any(|call| call.function.to_string().contains("stake"))
+    {
         return "stake".to_string();
     }
 
@@ -205,8 +209,6 @@ fn get_method(commands: &Vec<Command>) -> String {
         .map(|call| call.function.to_string())
         .unwrap_or_default()
 }
-
-
 
 #[repr(C)]
 pub struct DisplayIotaSignMessageHash {

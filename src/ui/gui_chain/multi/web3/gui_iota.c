@@ -144,11 +144,6 @@ void GuiIotaTxOverview(lv_obj_t *parent, void *totalData)
         GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     }
 
-    if (txData->transaction_type != NULL) {
-        container = CreateSingleInfoView(parent, "Type", txData->transaction_type);
-        GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
-    }
-
     if (txData->method != NULL) {
         container = CreateSingleInfoView(parent, "Method", txData->method);
         GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
@@ -159,6 +154,11 @@ void GuiIotaTxOverview(lv_obj_t *parent, void *totalData)
 
     if (txData->recipient != NULL) {
         container = CreateSingleInfoTwoLineView(parent, "recipient", txData->recipient);
+        GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    }
+
+    if (txData->to != NULL) {
+        container = CreateSingleInfoTwoLineView(parent, "to", txData->to);
         GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     }
 }

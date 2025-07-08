@@ -165,69 +165,48 @@ fn extract_transaction_params(
         let recipient = pure_args
             .iter()
             .find(|bytes| bytes.len() == 32)
-            .map(|bytes| format!("0x{}", hex::encode(bytes)))
-            .unwrap_or_default();
-        (convert_c_char(recipient), null_mut())
+            .map(|bytes| convert_c_char(format!("0x{}", hex::encode(bytes))))
+            .unwrap_or(null_mut());
+        (recipient, null_mut())
     };
 
     (amount, recipient, to)
 }
 
 fn get_method(commands: &Vec<Command>) -> String {
-    let has_assets_bag_new = commands.iter().any(|command| {
-        if let Command::MoveCall(kind_data) = command {
-            kind_data.module.to_string() == "assets_bag" && kind_data.function.to_string() == "new"
-        } else {
-            false
-        }
-    });
+    let move_calls: Vec<_> = commands
+        .iter()
+        .filter_map(|command| {
+            if let Command::MoveCall(kind_data) = command {
+                Some(kind_data)
+            } else {
+                None
+            }
+        })
+        .collect();
 
-    let has_request_create = commands.iter().any(|command| {
-        if let Command::MoveCall(kind_data) = command {
-            kind_data.module.to_string() == "request"
-                && kind_data.function.to_string() == "create_and_send_request"
-        } else {
-            false
-        }
+    let has_assets_bag_new = move_calls.iter().any(|call| {
+        call.module.to_string() == "assets_bag" && call.function.to_string() == "new"
+    });
+    let has_request_create = move_calls.iter().any(|call| {
+        call.module.to_string() == "request" && call.function.to_string() == "create_and_send_request"
     });
 
     if has_assets_bag_new && has_request_create {
         return "bridge".to_string();
     }
 
-    let has_stake = commands.iter().any(|command| {
-        if let Command::MoveCall(kind_data) = command {
-            kind_data.function.to_string().contains("stake")
-        } else {
-            false
-        }
-    });
-
-    if has_stake {
+    if move_calls.iter().any(|call| call.function.to_string().contains("stake")) {
         return "stake".to_string();
     }
 
-    commands
-        .iter()
-        .find_map(|command| {
-            if let Command::MoveCall(kind_data) = command {
-                Some(kind_data.function.to_string())
-            } else {
-                None
-            }
-        })
+    move_calls
+        .first()
+        .map(|call| call.function.to_string())
         .unwrap_or_default()
 }
 
-fn check_stake(commands: &Vec<Command>) -> bool {
-    commands.iter().any(|command| {
-        if let Command::MoveCall(kind_data) = command {
-            kind_data.function.to_string().contains("stake")
-        } else {
-            false
-        }
-    })
-}
+
 
 #[repr(C)]
 pub struct DisplayIotaSignMessageHash {
@@ -271,6 +250,7 @@ impl Free for DisplayIotaIntentData {
         free_str_ptr!(self.method);
         free_str_ptr!(self.amount);
         free_str_ptr!(self.message);
+        free_str_ptr!(self.to);
     }
 }
 

@@ -18,6 +18,7 @@ use crate::common::utils::convert_c_char;
 use crate::{
     check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method,
 };
+use app_ethereum::address::checksum_address;
 use app_sui::Intent;
 use sui_types::{
     message::PersonalMessage,
@@ -42,6 +43,7 @@ pub struct DisplayIotaIntentData {
     transaction_type: PtrString,
     method: PtrString,
     message: PtrString,
+    to: PtrString,
 }
 
 impl_c_ptr!(DisplayIotaIntentData);
@@ -67,34 +69,25 @@ impl From<Intent> for DisplayIotaIntentData {
                     unreachable!("Only ProgrammableTransaction is supported")
                 };
 
-                let (amount, recipient) = extract_transaction_params(&kind_data.inputs);
-                let (transaction_type, method, network) = if check_stake(&kind_data.commands) {
-                    (
-                        convert_c_char("Programmable Transaction".to_string()),
-                        convert_c_char("Stake".to_string()),
-                        null_mut(),
-                    )
-                } else {
-                    (
-                        null_mut(),
-                        null_mut(),
-                        convert_c_char("IOTA Mainnet".to_string()),
-                    )
+                let method_string = get_method(&kind_data.commands);
+                let method = match method_string.as_str() {
+                    "stake" => convert_c_char("Stake".to_string()),
+                    "bridge" => convert_c_char("Bridge".to_string()),
+                    _ => null_mut(),
                 };
+                let (amount, recipient, to) =
+                    extract_transaction_params(&kind_data.inputs, &method_string);
 
                 Self {
-                    amount: convert_c_char(amount),
-                    recipient: if recipient.len() > 0 {
-                        convert_c_char(recipient)
-                    } else {
-                        null_mut()
-                    },
-                    network,
+                    amount,
+                    recipient,
+                    network: convert_c_char("IOTA Mainnet".to_string()),
                     sender: convert_c_char(data.sender.to_string()),
                     details: convert_c_char(details),
-                    transaction_type,
+                    transaction_type: convert_c_char("Programmable Transaction".to_string()),
                     method,
                     message: null_mut(),
+                    to,
                 }
             }
             Intent::PersonalMessage(personal_message) => Self {
@@ -111,13 +104,17 @@ impl From<Intent> for DisplayIotaIntentData {
                         .and_then(|bytes| String::from_utf8(bytes).ok())
                         .unwrap_or_else(|| personal_message.value.message.clone()),
                 ),
+                to: null_mut(),
             },
             _ => todo!("Other Intent types not implemented"),
         }
     }
 }
 
-fn extract_transaction_params(args: &Vec<CallArg>) -> (String, String) {
+fn extract_transaction_params(
+    args: &Vec<CallArg>,
+    method_string: &String,
+) -> (PtrString, PtrString, PtrString) {
     let pure_args = args
         .iter()
         .filter_map(|arg| {
@@ -129,32 +126,88 @@ fn extract_transaction_params(args: &Vec<CallArg>) -> (String, String) {
         })
         .collect::<Vec<_>>();
 
-    let amount = pure_args
+    let amounts: Vec<u64> = pure_args
         .iter()
-        .find(|bytes| bytes.len() == 8)
-        .map(|bytes| {
-            let amount_value = u64::from_le_bytes(bytes.as_slice().try_into().unwrap_or([0; 8]));
-            format!("{} IOTA", amount_value as f64 / 1000_000_000.0)
+        .filter_map(|bytes| {
+            if bytes.len() == 8 {
+                Some(u64::from_le_bytes(
+                    bytes.as_slice().try_into().unwrap_or([0; 8]),
+                ))
+            } else {
+                None
+            }
         })
-        .unwrap_or_default();
+        .collect();
 
-    let recipient = pure_args
-        .iter()
-        .find(|bytes| bytes.len() == 32)
-        .map(|bytes| format!("0x{}", hex::encode(bytes)))
-        .unwrap_or_default();
+    let amount = if amounts.len() >= 2 {
+        let max_amount = amounts.iter().max().unwrap_or(&0);
+        let min_amount = amounts.iter().min().unwrap_or(&0);
+        let net_amount = max_amount - min_amount;
+        convert_c_char(format!("{} IOTA", net_amount as f64 / 1000_000_000.0))
+    } else if amounts.len() == 1 {
+        convert_c_char(format!("{} IOTA", amounts[0] as f64 / 1000_000_000.0))
+    } else {
+        null_mut()
+    };
 
-    (amount, recipient)
+    let (recipient, to) = if method_string.contains("bridge") {
+        let to = pure_args
+            .iter()
+            .find(|bytes| bytes.len() == (20 + 1 + 1 + 1))
+            .map(|bytes| {
+                convert_c_char(
+                    checksum_address(&format!("0x{}", hex::encode(&bytes[3..]))).unwrap(),
+                )
+            })
+            .unwrap_or(null_mut());
+        (null_mut(), to)
+    } else {
+        let recipient = pure_args
+            .iter()
+            .find(|bytes| bytes.len() == 32)
+            .map(|bytes| convert_c_char(format!("0x{}", hex::encode(bytes))))
+            .unwrap_or(null_mut());
+        (recipient, null_mut())
+    };
+
+    (amount, recipient, to)
 }
 
-fn check_stake(commands: &Vec<Command>) -> bool {
-    commands.iter().any(|command| {
-        if let Command::MoveCall(kind_data) = command {
-            kind_data.function.to_string().contains("stake")
-        } else {
-            false
-        }
-    })
+fn get_method(commands: &Vec<Command>) -> String {
+    let move_calls: Vec<_> = commands
+        .iter()
+        .filter_map(|command| {
+            if let Command::MoveCall(kind_data) = command {
+                Some(kind_data)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    let has_assets_bag_new = move_calls
+        .iter()
+        .any(|call| call.module.to_string() == "assets_bag" && call.function.to_string() == "new");
+    let has_request_create = move_calls.iter().any(|call| {
+        call.module.to_string() == "request"
+            && call.function.to_string() == "create_and_send_request"
+    });
+
+    if has_assets_bag_new && has_request_create {
+        return "bridge".to_string();
+    }
+
+    if move_calls
+        .iter()
+        .any(|call| call.function.to_string().contains("stake"))
+    {
+        return "stake".to_string();
+    }
+
+    move_calls
+        .first()
+        .map(|call| call.function.to_string())
+        .unwrap_or_default()
 }
 
 #[repr(C)]
@@ -199,6 +252,7 @@ impl Free for DisplayIotaIntentData {
         free_str_ptr!(self.method);
         free_str_ptr!(self.amount);
         free_str_ptr!(self.message);
+        free_str_ptr!(self.to);
     }
 }
 

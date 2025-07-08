@@ -12,7 +12,7 @@ pub fn generate_address(key: PublicKey) -> Result<String> {
     checksum_address(&hex::encode(&hash[12..]))
 }
 
-fn checksum_address(address: &str) -> Result<String> {
+pub fn checksum_address(address: &str) -> Result<String> {
     let address = address.trim_start_matches("0x").to_lowercase();
     let address_hash = hex::encode(keccak256(address.as_bytes()));
     address

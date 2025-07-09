@@ -352,9 +352,6 @@ void GuiDealBootSecureParamKeyBoard(uint16_t sig, bool pass)
 
 static void BootSecureSwitchHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_target(e);
-
     g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("boot_secure_switch_title"), _("boot_secure_switch_desc"), NULL,
                      _("Cancel"), WHITE_COLOR_OPA20, _("Change"), DEEP_ORANGE_COLOR);
     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
@@ -366,9 +363,6 @@ static void BootSecureSwitchHandler(lv_event_t * e)
 
 static void RecoveryModeSwitchHandler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_target(e);
-
     g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("recovery_mode_switch_title"), _("recovery_mode_switch_desc"), NULL,
                      _("Cancel"), WHITE_COLOR_OPA20, _("Change"), DEEP_ORANGE_COLOR);
     lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);

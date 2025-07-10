@@ -75,8 +75,11 @@ impl From<Intent> for DisplayIotaIntentData {
                     "bridge" => convert_c_char("Bridge".to_string()),
                     _ => null_mut(),
                 };
-                let (amount, recipient, to) =
-                    extract_transaction_params(&kind_data.inputs, &method_string);
+                let (amount, recipient, to) = extract_transaction_params(
+                    &kind_data.inputs,
+                    &kind_data.commands,
+                    &method_string,
+                );
 
                 Self {
                     amount,
@@ -113,6 +116,7 @@ impl From<Intent> for DisplayIotaIntentData {
 
 fn extract_transaction_params(
     args: &Vec<CallArg>,
+    commands: &Vec<Command>,
     method_string: &String,
 ) -> (PtrString, PtrString, PtrString) {
     let pure_args = args
@@ -147,7 +151,20 @@ fn extract_transaction_params(
     } else if amounts.len() == 1 {
         convert_c_char(format!("{} IOTA", amounts[0] as f64 / 1000_000_000.0))
     } else {
-        null_mut()
+        let has_transfer_gas_coin = commands.iter().any(|command| {
+            if let Command::TransferObjects(objects, target) = command {
+                objects.len() == 1
+                    && matches!(objects[0], sui_types::transaction::Argument::GasCoin)
+                    && matches!(target, sui_types::transaction::Argument::Input(0))
+            } else {
+                false
+            }
+        });
+        if has_transfer_gas_coin {
+            convert_c_char("max".to_string())
+        } else {
+            null_mut()
+        }
     };
 
     let (recipient, to) = if method_string.contains("bridge") {

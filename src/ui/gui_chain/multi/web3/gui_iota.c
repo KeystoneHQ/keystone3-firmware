@@ -107,11 +107,11 @@ bool GetIotaIsTransaction(void *indata, void *param)
     return !GetIotaIsMessage(indata, param);
 }
 
-bool GetIotaIsNotBridge(void *indata, void *param)
+bool GetIotaIsTransfer(void *indata, void *param)
 {
     DisplayIotaIntentData *iota = (DisplayIotaIntentData *)param;
     if (iota->method != NULL) {
-        return strcmp(iota->method, "Bridge");
+        return false;
     }
     return true;
 }

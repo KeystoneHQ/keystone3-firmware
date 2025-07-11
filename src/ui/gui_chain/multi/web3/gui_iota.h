@@ -17,5 +17,5 @@ void GuiIotaTxOverview(lv_obj_t *parent, void *totalData);
 void GuiIotaTxRawData(lv_obj_t *parent, void *totalData);
 bool GetIotaIsMessage(void *indata, void *param);
 bool GetIotaIsTransaction(void *indata, void *param);
-bool GetIotaIsNotBridge(void *indata, void *param);
+bool GetIotaIsTransfer(void *indata, void *param);
 #endif

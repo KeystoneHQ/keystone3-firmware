@@ -1143,7 +1143,7 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
     }
 
     if (g_tableView == NULL || g_analyzeTabview.obj[0] == NULL) {
-        if (g_analyzeTabview.obj[0] == NULL) {
+        if (g_analyzeTabview.obj[0] == NULL && (g_reMapIndex == REMAPVIEW_IOTA || g_reMapIndex == REMAPVIEW_IOTA_SIGN_MESSAGE_HASH)) {
             GuiRefreshOnePage();
         }
         return g_templateContainer;

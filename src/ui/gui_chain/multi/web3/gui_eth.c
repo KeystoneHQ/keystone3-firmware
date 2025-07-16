@@ -1612,4 +1612,5 @@ void FreeEthMemory(void)
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     FreeContractData();
+    g_isPermitSingle = false;
 }

@@ -834,6 +834,32 @@ lv_obj_t *GuiWidgetImg(lv_obj_t *parent, cJSON *json)
     return obj;
 }
 
+lv_obj_t *GuiWidgetBtn(lv_obj_t *parent, cJSON *json)
+{
+    lv_obj_t *obj = NULL;
+    cJSON *item = cJSON_GetObjectItem(json, "text");
+    if (item != NULL) {
+        obj = lv_btn_create(parent);
+        lv_obj_t *label = GuiCreateTextLabel(obj, item->valuestring);
+        lv_obj_set_style_text_font(label, &openSansEnIllustrate, LV_PART_MAIN);
+        lv_obj_align(label, LV_ALIGN_LEFT_MID, 0, 0);
+        lv_obj_set_style_outline_width(obj, 0, LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(obj, 0, LV_PART_MAIN);
+        item = cJSON_GetObjectItem(json, "text_color");
+        if (item != NULL) {
+            lv_obj_set_style_text_color(label, lv_color_hex(item->valueint), LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+    }
+
+    item = cJSON_GetObjectItem(json, "cb");
+    if (item != NULL) {
+        lv_obj_add_event_cb(obj, GuiTemplateEventCbGet(item->valuestring), LV_EVENT_CLICKED, NULL);
+        lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE);
+    }
+
+    return obj;
+}
+
 lv_obj_t *GuiWidgetTabView(lv_obj_t *parent, cJSON *json)
 {
     lv_obj_t *obj = lv_tabview_create(parent, LV_DIR_TOP, 64);
@@ -950,6 +976,8 @@ static lv_obj_t *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         obj = GuiWidgetTextArea(parent, json);
     } else if (0 == strcmp(type, "json_label")) {
         obj = GuiWidgetJsonLabel(parent, json);
+    } else if (0 == strcmp(type, "btn")) {
+        obj = GuiWidgetBtn(parent, json);
     } else {
         printf("json type is %s\n", type);
         return NULL;

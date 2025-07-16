@@ -96,6 +96,8 @@ void GuiModelSettingWritePassphrase(void);
 void GuiModelCalculateBinSha256(void);
 void GuiModelFormatMicroSd(void);
 uint32_t BinarySearchLastNonFFSector(void);
+void GuiModelParseTransactionRawData(void);
+void GuiModelTransactionParseRawDataDelay(void);
 
 #ifndef BTC_ONLY
 void GuiModelTonWriteSe(void);

@@ -52,6 +52,7 @@ void GetEthContractDataSize(uint16_t *width, uint16_t *height, void *param);
 void GetEthTypeDomainSize(uint16_t *width, uint16_t *height, void *param);
 void *GetEthContractData(uint8_t *row, uint8_t *col, void *param);
 bool GetEthInputDataExist(void *indata, void *param);
+bool EthInputExistContractNot(void *indata, void *param);
 bool GetEthPermitWarningExist(void *indata, void *param);
 bool GetEthPermitCantSign(void *indata, void *param);
 bool GetEthOperationWarningExist(void *indata, void *param);
@@ -60,6 +61,7 @@ void GetEthPersonalMessageType(void *indata, void *param, uint32_t maxLen);
 void GetMessageFrom(void *indata, void *param, uint32_t maxLen);
 void GetMessageUtf8(void *indata, void *param, uint32_t maxLen);
 void GetMessageRaw(void *indata, void *param, uint32_t maxLen);
+void EthContractCheckRawDataCallback(void);
 
 void *GuiGetEthTypeData(void);
 void GetEthTypedDataDomianName(void *indata, void *param, uint32_t maxLen);
@@ -75,6 +77,8 @@ void GetEthTypedDataMessage(void *indata, void *param, uint32_t maxLen);
 int GetEthTypedDataMessageLen(void *param);
 void GetEthTypedDataFrom(void *indata, void *param, uint32_t maxLen);
 void EthContractLearnMore(lv_event_t *e);
+void EthContractCheckRawData(lv_event_t *e);
+
 typedef struct {
     uint64_t chainId;
     char *name;

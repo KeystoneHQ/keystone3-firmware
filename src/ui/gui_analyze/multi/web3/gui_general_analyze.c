@@ -114,6 +114,8 @@ lv_event_cb_t GuiOtherChainEventCbGet(char *type)
 {
     if (!strcmp(type, "EthContractLearnMore")) {
         return EthContractLearnMore;
+    } else if (!strcmp(type, "EthContractCheckRawData")) {
+        return EthContractCheckRawData;
     }
 
     return NULL;
@@ -137,6 +139,8 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetEthContractDataNotExist;
     } else if (!strcmp(type, "GetEthInputDataExist")) {
         return GetEthInputDataExist;
+    } else if (!strcmp(type, "EthInputExistContractNot")) {
+        return EthInputExistContractNot;
     } else if (!strcmp(type, "GetTrxContractExist")) {
         return GetTrxContractExist;
     } else if (!strcmp(type, "GetTrxTokenExist")) {

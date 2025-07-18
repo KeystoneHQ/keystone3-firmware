@@ -21,6 +21,7 @@
 #include "log_print.h"
 #include "gui_home_widgets.h"
 #include "gui_multisig_read_sdcard_widgets.h"
+#include "gui_btc_wallet_profile_widgets.h"
 
 #define BTC_HOME_CARD_NUM               (1)
 
@@ -35,7 +36,7 @@ static lv_obj_t *g_twoKeyImg = NULL;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 
 static WalletState_t g_walletState[] = {
-    {HOME_WALLET_CARD_BTC, false, "BTC", true, false, SINGLE_WALLET}
+    {HOME_WALLET_CARD_BTC, false, "BTC", true, false, SINGLE_WALLET, SINGLE_WALLET}
 };
 static WalletState_t g_walletBakState[BTC_HOME_CARD_NUM] = {0};
 
@@ -315,8 +316,16 @@ void GuiHomeRefresh(void)
     }
     GUI_DEL_OBJ(g_moreHintbox)
     AccountPublicHomeCoinGet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
+
+    if (PassphraseExist(GetCurrentAccountIndex())) {
+        CheckPassPhraseWallet(true);
+    }
+
     if (GetCurrentWalletIndex() != SINGLE_WALLET) {
         lv_img_set_src(g_twoKeyImg, &imgTwoKey);
+        if (GetDefaultMultisigWallet() == NULL) {
+            SetCurrentWalletIndex(SINGLE_WALLET);
+        }
     } else {
         lv_img_set_src(g_twoKeyImg, &imgArrowRight);
     }
@@ -336,13 +345,18 @@ void SetIsTestNet(bool testNet)
 
 CURRENT_WALLET_INDEX_ENUM GetCurrentWalletIndex(void)
 {
-    return g_walletState[HOME_WALLET_CARD_BTC].defaultWallet;
+    bool isPassphrase = PassphraseExist(GetCurrentAccountIndex());
+    return isPassphrase ? g_walletState[HOME_WALLET_CARD_BTC].defaultPassphraseWallet : g_walletState[HOME_WALLET_CARD_BTC].defaultWallet;
 }
 
 void SetCurrentWalletIndex(CURRENT_WALLET_INDEX_ENUM walletIndex)
 {
-    printf("walletIndex = %d\n", walletIndex);
-    g_walletState[HOME_WALLET_CARD_BTC].defaultWallet = walletIndex;
+    bool isPassphrase = PassphraseExist(GetCurrentAccountIndex());
+    if (isPassphrase) {
+        g_walletState[HOME_WALLET_CARD_BTC].defaultPassphraseWallet = walletIndex;
+    } else {
+        g_walletState[HOME_WALLET_CARD_BTC].defaultWallet = walletIndex;
+    }
     AccountPublicHomeCoinSet(g_walletState, NUMBER_OF_ARRAYS(g_walletState));
 }
 

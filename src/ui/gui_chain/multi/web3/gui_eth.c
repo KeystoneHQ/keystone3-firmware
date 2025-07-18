@@ -1583,6 +1583,7 @@ void EthContractLearnMore(lv_event_t *e)
 lv_obj_t *g_contractRawDataHintbox = NULL;
 lv_obj_t *GuiCreateContractRawDataHintbox(const char *titleText, const char *descText)
 {
+    uint16_t descHeight = 290;
     lv_obj_t *title = NULL, *desc = NULL, *rightBtn = NULL;
     lv_obj_t *cont = GuiCreateHintBox(800);
 
@@ -1614,11 +1615,13 @@ lv_obj_t *GuiCreateContractRawDataHintbox(const char *titleText, const char *des
                 lv_label_set_text(label, text + offset);
                 text[offset + segmentSize] = savedChar;
             }
-        } 
+        }
     } else {
         desc = GuiCreateIllustrateLabel(cont, descText);
         lv_obj_set_width(desc, 360);
         lv_obj_align(desc, LV_ALIGN_BOTTOM_LEFT, 36 + 20, -110);
+        lv_obj_refr_size(desc);
+        descHeight = lv_obj_get_self_height(desc);
     }
     title = GuiCreateLittleTitleLabel(cont, titleText);
     lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -16);
@@ -1629,7 +1632,7 @@ lv_obj_t *GuiCreateContractRawDataHintbox(const char *titleText, const char *des
     lv_obj_set_style_bg_color(rightBtn, WHITE_COLOR_OPA12, LV_PART_MAIN);
 
     uint32_t height =
-        24 + lv_obj_get_self_height(title) + 12 + 290 + 16 + 114;
+        24 + lv_obj_get_self_height(title) + 12 + descHeight + 16 + 114;
     GuiHintBoxResize(cont, height);
 
     return cont;
@@ -1644,7 +1647,7 @@ void EthContractCheckRawData(lv_event_t *e)
 void EthContractCheckRawDataCallback(void)
 {
     char *rawData = ((TransactionParseResult_DisplayETH *)g_parseResult)->data->detail->input;
-    g_contractRawDataHintbox = GuiCreateContractRawDataHintbox("Raw Data", rawData);
+    g_contractRawDataHintbox = GuiCreateContractRawDataHintbox("Raw Data", "0x1234");
     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_contractRawDataHintbox);
     lv_obj_add_event_cb(rightBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_contractRawDataHintbox);
     GuiModelTransactionParseRawDataDelay();

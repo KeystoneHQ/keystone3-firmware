@@ -295,6 +295,32 @@ pub extern "C" fn import_multi_sig_wallet_by_file(
 }
 
 #[no_mangle]
+pub extern "C" fn check_multi_sig_wallet_exist(
+    content: PtrString,
+    master_fingerprint: PtrBytes,
+    master_fingerprint_len: u32,
+) -> bool {
+    if master_fingerprint_len != 4 {
+        return false;
+    }
+    let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let master_fingerprint =
+        match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
+            .map_err(|_e| RustCError::InvalidMasterFingerprint)
+        {
+            Ok(mfp) => mfp,
+            Err(e) => {
+                return false;
+            }
+        };
+
+    match parse_wallet_config(&recover_c_char(content), &master_fingerprint.to_string()) {
+        Ok(wallet) => true,
+        Err(e) => false,
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn generate_address_for_multisig_wallet_config(
     wallet_config: PtrString,
     account: u32,

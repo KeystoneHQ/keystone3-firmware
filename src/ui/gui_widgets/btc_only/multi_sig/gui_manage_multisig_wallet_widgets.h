@@ -3,7 +3,7 @@
 
 #include "gui_home_widgets.h"
 
-void GuiManageMultisigWalletInit(CURRENT_WALLET_INDEX_ENUM index);
+void GuiManageMultisigWalletInit(int index);
 void GuiManageMultisigWalletDeInit(void);
 void GuiManageMultisigWalletRefresh(void);
 int8_t GuiManageMultiWalletPrevTile(void);

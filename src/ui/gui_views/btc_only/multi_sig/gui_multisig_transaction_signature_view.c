@@ -29,6 +29,7 @@ int32_t GuiMultisigTransactionSignatureViewEventProcess(void *self, uint16_t usE
         break;
     case SIG_BACKGROUND_UR_GENERATE_SUCCESS:
         GuiAnimantingQRCodeFirstUpdate((char*)param, usLen);
+        UpdateDoneBtnState();
         break;
     case SIG_BACKGROUND_UR_UPDATE:
         GuiAnimatingQRCodeUpdate((char*)param, usLen);

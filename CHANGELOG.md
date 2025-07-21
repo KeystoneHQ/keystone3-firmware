@@ -1,3 +1,16 @@
+## 2.2.2(2025-07-21)
+**Web3:**
+
+### Bug Fixes
+
+1. Optimized slow parsing issues in certain EVM transaction scenarios.
+
+**BTC-only:**
+
+### Bug Fixes
+1.Fixed the passphrase multi-sig support functionality.
+
+
 ## 2.2.0(2025-07-16)
 **Web3:**
 

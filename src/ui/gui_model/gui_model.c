@@ -106,6 +106,8 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc);
 static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen);
+static int32_t ModelParseTransactionRawData(const void *inData, uint32_t inDataLen);
+static int32_t ModelTransactionParseRawDataDelay(const void *inData, uint32_t inDataLen);
 
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
@@ -130,6 +132,15 @@ void GuiModelWriteSe(void)
     AsyncExecute(ModelWriteEntropyAndSeed, NULL, 0);
 }
 
+void GuiModelParseTransactionRawData(void)
+{
+    AsyncExecute(ModelParseTransactionRawData, NULL, 0);
+}
+
+void GuiModelTransactionParseRawDataDelay(void)
+{
+    AsyncExecute(ModelTransactionParseRawDataDelay, NULL, 0);
+}
 
 void GuiModelBip39CalWriteSe(Bip39Data_t bip39)
 {
@@ -349,6 +360,17 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
     SRAM_FREE(mnemonic);
     SetLockScreen(enable);
     return SUCCESS_CODE;
+}
+
+static int32_t ModelParseTransactionRawData(const void *inData, uint32_t inDataLen)
+{
+    UserDelay(100);
+    GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING_DELAY, NULL, 0);
+}
+
+static int32_t ModelTransactionParseRawDataDelay(const void *inData, uint32_t inDataLen)
+{
+    GuiApiEmitSignal(SIG_HIDE_TRANSACTION_PARSE_LOADING_DELAY, NULL, 0);
 }
 
 // Generate bip39 wallet writes

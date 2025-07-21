@@ -1,13 +1,16 @@
 on:
   push:
     tags:
-      - '2.88.0'
+      - '[0-9]+.[0-9]+.[0-9]+'
 
 name: On Release
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2

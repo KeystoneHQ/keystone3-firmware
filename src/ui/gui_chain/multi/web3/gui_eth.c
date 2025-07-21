@@ -14,6 +14,8 @@
 #include "drv_mpu.h"
 #include "device_setting.h"
 #include "cjson/cJSON.h"
+#include "gui_hintbox.h"
+#include "gui_views.h"
 
 static void decodeEthContractData(void *parseResult);
 static bool GetEthErc20ContractData(void *parseResult);
@@ -1308,6 +1310,12 @@ bool GetEthInputDataExist(void *indata, void *param)
     return strlen(eth->detail->input) > 0;
 }
 
+bool EthInputExistContractNot(void *indata, void *param)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+    return !g_contractDataExist && strlen(eth->detail->input) > 0;
+}
+
 void GetEthToFromSize(uint16_t *width, uint16_t *height, void *param)
 {
     *width = 408;
@@ -1572,6 +1580,79 @@ void EthContractLearnMore(lv_event_t *e)
     GuiQRCodeHintBoxOpen(_("tx_details_eth_decoding_qr_link"), _("tx_details_eth_decoding_qr_title"), _("tx_details_eth_decoding_qr_link"));
 }
 
+lv_obj_t *g_contractRawDataHintbox = NULL;
+lv_obj_t *GuiCreateContractRawDataHintbox(const char *titleText, const char *descText)
+{
+    uint16_t descHeight = 290;
+    lv_obj_t *title = NULL, *desc = NULL, *rightBtn = NULL;
+    lv_obj_t *cont = GuiCreateHintBox(800);
+
+    if (strlen(descText) > 512) {
+        desc = GuiCreateContainerWithParent(lv_obj_get_child(cont, lv_obj_get_child_cnt(cont) - 1), 360, 300);
+        lv_obj_set_style_bg_color(desc, DARK_BG_COLOR, LV_PART_MAIN);
+        lv_obj_add_flag(desc, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_add_flag(desc, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_align(desc, LV_ALIGN_BOTTOM_LEFT, 36 + 20, -110);
+        char *text = descText;
+        int textLen = strlen(text); 
+        int segmentSize = 1000;
+        int numSegments = (textLen + segmentSize - 1) / segmentSize;
+
+        for (int i = 0; i < numSegments; i++) {
+            int offset = i * segmentSize;
+            lv_obj_t *label = GuiCreateIllustrateLabel(desc, text + offset);
+            lv_obj_set_width(label, 360);
+            lv_label_set_recolor(label, true);
+            if (i == 0) {
+                lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
+            } else {
+                GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+            }
+
+            if (i < numSegments - 1 && textLen > offset + segmentSize) {
+                char savedChar = text[offset + segmentSize];
+                text[offset + segmentSize] = '\0';
+                lv_label_set_text(label, text + offset);
+                text[offset + segmentSize] = savedChar;
+            }
+        }
+    } else {
+        desc = GuiCreateIllustrateLabel(cont, descText);
+        lv_obj_set_width(desc, 360);
+        lv_obj_align(desc, LV_ALIGN_BOTTOM_LEFT, 36 + 20, -110);
+        lv_obj_refr_size(desc);
+        descHeight = lv_obj_get_self_height(desc);
+    }
+    title = GuiCreateLittleTitleLabel(cont, titleText);
+    lv_obj_align_to(title, desc, LV_ALIGN_OUT_TOP_LEFT, 0, -16);
+
+    rightBtn = GuiCreateTextBtn(cont, _("Ok"));
+    lv_obj_align(rightBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -20);
+    lv_obj_set_size(rightBtn, lv_obj_get_self_width(lv_obj_get_child(rightBtn, 0)) + 40, 66);
+    lv_obj_set_style_bg_color(rightBtn, WHITE_COLOR_OPA12, LV_PART_MAIN);
+
+    uint32_t height =
+        24 + lv_obj_get_self_height(title) + 12 + descHeight + 16 + 114;
+    GuiHintBoxResize(cont, height);
+
+    return cont;
+}
+
+void EthContractCheckRawData(lv_event_t *e)
+{
+    GuiNoPendingHintBoxOpen(_("Loading"));
+    GuiModelParseTransactionRawData();
+}
+
+void EthContractCheckRawDataCallback(void)
+{
+    char *rawData = ((TransactionParseResult_DisplayETH *)g_parseResult)->data->detail->input;
+    g_contractRawDataHintbox = GuiCreateContractRawDataHintbox("Raw Data", rawData);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_contractRawDataHintbox);
+    lv_obj_add_event_cb(rightBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_contractRawDataHintbox);
+    GuiModelTransactionParseRawDataDelay();
+}
+
 bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainId, char *inputData)
 {
     char *contractMethodJson = SRAM_MALLOC(SQL_ABI_BUFF_MAX_SIZE);
@@ -1612,4 +1693,5 @@ void FreeEthMemory(void)
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     FreeContractData();
+    GUI_DEL_OBJ(g_contractRawDataHintbox);
 }

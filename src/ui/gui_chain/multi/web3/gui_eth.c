@@ -1694,4 +1694,5 @@ void FreeEthMemory(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     FreeContractData();
     GUI_DEL_OBJ(g_contractRawDataHintbox);
+    g_isPermitSingle = false;
 }

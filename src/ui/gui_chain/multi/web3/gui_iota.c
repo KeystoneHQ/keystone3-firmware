@@ -107,6 +107,15 @@ bool GetIotaIsTransaction(void *indata, void *param)
     return !GetIotaIsMessage(indata, param);
 }
 
+bool GetIotaIsTransfer(void *indata, void *param)
+{
+    DisplayIotaIntentData *iota = (DisplayIotaIntentData *)param;
+    if (iota->method != NULL) {
+        return false;
+    }
+    return true;
+}
+
 bool GetIotaIsMessage(void *indata, void *param)
 {
     DisplayIotaIntentData *iota = (DisplayIotaIntentData *)param;
@@ -136,8 +145,16 @@ void GuiIotaTxOverview(lv_obj_t *parent, void *totalData)
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
 
-    lv_obj_t *container = CreateValueOverviewValue(parent, "amount", txData->amount, NULL, NULL);
-    lv_obj_align(container, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_t *container = NULL;
+    if (txData->amount != NULL) {
+        if (strcmp(txData->amount, "max") == 0) {
+            container = CreateNoticeView(parent, 408, 212, _("iota_max_amount_notice"));
+            lv_obj_align(container, LV_ALIGN_TOP_LEFT, 0, 0);
+        } else {
+            container = CreateValueOverviewValue(parent, "amount", txData->amount, NULL, NULL);
+            lv_obj_align(container, LV_ALIGN_TOP_LEFT, 0, 0);
+        }
+    }
 
     if (txData->network != NULL) {
         container = CreateSingleInfoView(parent, "network", txData->network);

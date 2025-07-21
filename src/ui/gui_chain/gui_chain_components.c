@@ -286,3 +286,24 @@ lv_obj_t *CreateNoticeCard(lv_obj_t *parent, char *notice)
 
     return card;
 }
+
+lv_obj_t *CreateNoticeView(lv_obj_t *parent, uint16_t width, uint16_t height, const char *notice)
+{
+    lv_obj_t *noticeContainer = GuiCreateContainerWithParent(parent, width, height);
+    lv_obj_set_style_radius(noticeContainer, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(noticeContainer, RED_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(noticeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t *img = GuiCreateImg(noticeContainer, &imgNotice);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 24, 24);
+
+    lv_obj_t *label = GuiCreateIllustrateLabel(noticeContainer, _("Notice"));
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_align_to(label, img, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+
+    label = GuiCreateIllustrateLabel(noticeContainer, notice);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 68);
+    lv_obj_set_width(label, 360);
+
+    return noticeContainer;
+}

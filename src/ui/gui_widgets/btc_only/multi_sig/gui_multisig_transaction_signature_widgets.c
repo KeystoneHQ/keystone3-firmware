@@ -25,6 +25,7 @@ static lv_obj_t *g_qrCont = NULL;
 static lv_obj_t *g_signStatusLabel = NULL;
 static lv_obj_t *g_signStatusView = NULL;
 static lv_obj_t *g_hintView = NULL;
+static lv_obj_t *g_doneBtn = NULL;
 
 static char *g_signStatus = NULL;
 static bool g_signCompleted = false;
@@ -209,9 +210,19 @@ static void GuiMultisigTransactionSignatureSetupUR(lv_obj_t *parent)
     lv_obj_align_to(g_signStatusLabel, qrcode, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 }
 
+static void BackToHomeViewHandler(lv_event_t *e)
+{
+    GuiAnimatingQRCodeDestroyTimer();
+    GuiCloseToTargetView(&g_homeView);
+}
+
+void UpdateDoneBtnState(void)
+{
+    lv_obj_add_flag(g_doneBtn, LV_OBJ_FLAG_CLICKABLE);
+}
+
 static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
 {
-
     if (g_signStatus != NULL) {
         char signStatus[64] = {0};
         if (strncmp(g_signStatus, "Completed", 9) == 0) {
@@ -242,11 +253,12 @@ static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
     lv_obj_align_to(g_hintView, g_qrCont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_text_align(g_hintView, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
-    lv_obj_t *btn = GuiCreateTextBtn(g_cont, _("Done"));
-    lv_obj_set_size(btn, 408, 66);
-    lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-    lv_obj_add_event_cb(btn, GoToHomeViewHandler, LV_EVENT_CLICKED, NULL);
+    g_doneBtn = GuiCreateTextBtn(g_cont, _("Done"));
+    lv_obj_set_size(g_doneBtn, 408, 66);
+    lv_obj_set_style_bg_color(g_doneBtn, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_align(g_doneBtn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_clear_flag(g_doneBtn, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(g_doneBtn, BackToHomeViewHandler, LV_EVENT_CLICKED, NULL);
 }
 
 void GuiMultisigTransactionSignatureNVSBarInit()

@@ -181,6 +181,8 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetIotaIsMessage;
     } else if (!strcmp(type, "GetIotaIsTransaction")) {
         return GetIotaIsTransaction;
+    } else if (!strcmp(type, "GetIotaIsTransfer")) {
+        return GetIotaIsTransfer;
     }
     return NULL;
 }

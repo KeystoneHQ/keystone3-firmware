@@ -938,7 +938,6 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     int32_t ret = 0;
     if (CheckPassphraseSame(GetCurrentAccountIndex(), SecretCacheGetPassphrase())) {
         GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
@@ -952,9 +951,6 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
         }
         ClearSecretCache();
     }
-#else
-    GuiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
-#endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }

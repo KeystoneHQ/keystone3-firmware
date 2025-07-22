@@ -18,6 +18,12 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout Merge Branch
+        run: |
+          git checkout release/v${{ github.ref_name }}
+          git checkout -b merge/v${{ github.ref_name }}
+          git push origin merge/v${{ github.ref_name }}
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:

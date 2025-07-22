@@ -23,10 +23,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base: master
-          branch: release/v${{ github.ref_name }}
-          title: "Release v${{ github.ref_name }}"
+          branch: merge/v${{ github.ref_name }}
+          title: "Merge release v${{ github.ref_name }}"
           body: |
-            ## Release ${{ github.ref_name }}
+            ## Merge release ${{ github.ref_name }}
             
             This is an automated pull request created for release ${{ github.ref_name }}.
             

@@ -20,26 +20,20 @@ jobs:
 
       - name: Checkout Merge Branch
         run: |
-          git checkout release/v${{ github.ref_name }}
+          git fetch origin release/v${{ github.ref_name }}
+          git checkout origin/release/v${{ github.ref_name }}
           git checkout -b merge/v${{ github.ref_name }}
           git push origin merge/v${{ github.ref_name }}
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: master
-          branch: merge/v${{ github.ref_name }}
-          title: "Merge release v${{ github.ref_name }}"
-          body: |
-            ## Merge release ${{ github.ref_name }}
-            
-            This is an automated pull request created for release ${{ github.ref_name }}.
-            
-            ### Changes
-            - Release version: ${{ github.ref_name }}
-            - Created from tag: ${{ github.ref }}
-            
-            Please review and merge this pull request to update the master branch with the release changes.
-          commit-message: "Release ${{ github.ref_name }}"
-          delete-branch: true
+        run: |
+          curl -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/keystonehq/keystone3-firmware/pulls \
+          -d '{
+            "title": "Merge release v${{ github.ref_name }}",
+            "body": "Release v${{ github.ref_name }}",
+            "head": "merge/v${{ github.ref_name }}",
+            "base": "master"
+          }'

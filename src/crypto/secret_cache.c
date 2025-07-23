@@ -22,7 +22,6 @@ static char *g_walletName = NULL;
 static uint8_t g_diceRollHashCache[32] = {0};
 static uint16_t g_identifier;
 static uint16_t g_iteration;
-static bool g_extendable;
 
 void SecretCacheSetChecksum(uint8_t *checksum)
 {
@@ -120,16 +119,6 @@ uint16_t SecretCacheGetIdentifier(void)
     return g_identifier;
 }
 
-void SecretCacheSetExtendable(bool flag)
-{
-    g_extendable = flag;
-}
-
-bool SecretCacheGetExtendable(void)
-{
-    return g_extendable;
-}
-
 void SecretCacheSetEntropy(uint8_t *entropy, uint32_t len)
 {
     if (g_entropyCache) {
@@ -205,7 +194,6 @@ void ClearSecretCache(void)
     uint32_t len;
     g_identifier = 0;
     g_iteration = 0;
-    g_extendable = false;
 
     if (g_passwordCache != NULL) {
         len = strnlen_s(g_passwordCache, PASSWORD_MAX_LEN);

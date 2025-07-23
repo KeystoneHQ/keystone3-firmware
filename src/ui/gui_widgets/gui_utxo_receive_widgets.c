@@ -1024,7 +1024,7 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         g_utxoReceiveWidgets.inputAddressLabel = GuiCreateTextLabel(cont, "");
         lv_obj_align(g_utxoReceiveWidgets.inputAddressLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
 #ifdef WEB3_VERSION
-        if (g_chainCard == HOME_WALLET_CARD_DOGE) {
+        if (g_chainCard == CHAIN_DOGE) {
             label = GuiCreateIllustrateLabel(cont, _("receive_doge_receive_change_address_limit"));
         } else {
             label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_limit"));
@@ -1307,7 +1307,7 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
                 input[len - 1] = '\0';
                 lv_label_set_text(g_utxoReceiveWidgets.inputAddressLabel, input);
 #ifdef WEB3_VERSION
-                if (g_chainCard == HOME_WALLET_CARD_DOGE) {
+                if (g_chainCard == CHAIN_DOGE) {
                     longInt = strtol(input, NULL, 10);
                     g_gotoAddressValid = longInt <= 19;
                 } else {
@@ -1336,7 +1336,7 @@ static void GotoAddressKeyboardHandler(lv_event_t *e)
             }
             if (longInt >= GetMaxAccountIndex()) {
 #ifdef WEB3_VERSION
-                if (g_chainCard == HOME_WALLET_CARD_DOGE) {
+                if (g_chainCard == CHAIN_DOGE) {
                     g_gotoAddressValid = longInt <= 19;
                 } else {
                     g_gotoAddressValid = false;

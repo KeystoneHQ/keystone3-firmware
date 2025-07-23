@@ -659,9 +659,9 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
 
         switch (mnemonicType) {
         case MNEMONIC_TYPE_SLIP39: {
-            uint8_t slip39Ems[SLIP39_EMS_LEN];
+            uint8_t slip39Ems[32];
             GetAccountSlip39Ems(accountIndex, slip39Ems, password);
-            ret = Slip39GetSeed(slip39Ems, seed, GetCurrentAccountEntropyLen(), passphrase, GetSlip39Ie(), GetSlip39Eb(), GetSlip39Id());
+            ret = Slip39GetSeed(slip39Ems, seed, GetCurrentAccountEntropyLen(), passphrase, GetSlip39Ie(), GetSlip39Id());
             CHECK_ERRCODE_BREAK("slip39_mnemonic_to_seed", ret);
             break;
         }
@@ -834,7 +834,7 @@ void KeyStoreTest(int argc, char *argv[])
         entropyLen = tempI32;
         GenerateEntropy(entropy, entropyLen, argv[3]);
         PrintArray("entropy", entropy, entropyLen);
-        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[3], 4543, false, 0);
+        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[3], 4543, 0);
         printf("CreateNewSlip39Account=%d\r\n", ret);
     } else if (strcmp(argv[0], "save_slip39_entropy") == 0) {
         VALUE_CHECK(argc, 5);
@@ -847,7 +847,7 @@ void KeyStoreTest(int argc, char *argv[])
         }
         PrintArray("entropy", entropy, entropyLen);
         uint8_t ems[32] = {0};
-        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[4], 1234, false, 0);
+        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[4], 1234, 0);
         printf("CreateNewSlip39Account=%d\r\n", ret);
     } else if (strcmp(argv[0], "get_entropy") == 0) {
         VALUE_CHECK(argc, 3);

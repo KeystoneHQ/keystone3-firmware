@@ -273,20 +273,6 @@ uint32_t slip39_words_for_strings(
     return j;
 }
 
-static int _get_salt(uint16_t id, bool eb, uint8_t *salt)
-{
-    if (eb) {
-        return 0;
-    } else {
-        if (salt != NULL) {
-            memcpy(salt, SHAMIR_SALT_HEAD, 6);
-            salt[6] = id >> 8;
-            salt[7] = id & 0xFF;
-        }
-        return SHAMIR_SALT_HEAD_LEN;
-    }
-}
-
 int FormatShareMnemonic(Slip39Shared_t *shared, uint16_t *destination, uint32_t destination_length)
 {
     uint16_t gt = (shared->groupThreshold - 1) & 0xF;
@@ -295,12 +281,12 @@ int FormatShareMnemonic(Slip39Shared_t *shared, uint16_t *destination, uint32_t 
     uint16_t mt = (shared->memberThreshold - 1) & 0xF;
 
     destination[0] = (shared->identifier >> 5) & 0x3FF; // ID high 10bit
-    destination[1] = ((shared->identifier & 0x1F) << 5) | (shared->extendableBackupFlag << 4) | (shared->iteration & 0x0F); // ID low 5bit | ie 5bit
+    destination[1] = ((shared->identifier & 0x1F) << 5) | (shared->iteration & 0x1F); // ID low 5bit | ie 5bit
     destination[2] = ((shared->groupIndex & 0xF) << 6) | ((gt & 0xF) << 2) | ((gc & 0xF) >> 2);
     destination[3] = ((gc & 0xF) << 8) | ((mi & 0xF) << 4) | (mt & 0xF);
 
     uint32_t words = slip39_words_for_data(shared->value, shared->valueLength, destination + 4, destination_length - METADATA_LENGTH_WORDS);
-    rs1024_create_checksum(destination, words + METADATA_LENGTH_WORDS, shared->extendableBackupFlag);
+    rs1024_create_checksum(destination, words + METADATA_LENGTH_WORDS);
 
     return words + METADATA_LENGTH_WORDS;
 }
@@ -430,11 +416,10 @@ int SplitSecret(uint8_t count, uint8_t threshold, uint8_t *enMasterSecret, uint8
                 MS = R || L
  * param      : enMasterSecret:     encrypted master secret, a string
                 identifier:         random identifier
-                extendableBackupFlag:  extendable backup flag, a boolean
                 iterationExponent:  the total number of iterations to be used in PBKDF2
  * return     :
 ***********************************************************************/
-int MasterSecretEncrypt(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t iterationExponent, bool extendableBackupFlag, uint16_t identifier, uint8_t *passPhrase,
+int MasterSecretEncrypt(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t iterationExponent, uint16_t identifier, uint8_t *passPhrase,
                         uint8_t *enMasterSecret)
 {
     if (masterSecret == NULL) {
@@ -442,8 +427,7 @@ int MasterSecretEncrypt(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t 
     }
     uint8_t halfLen = masterSecretLen / 2;
     uint8_t left[halfLen], right[halfLen], rightTemp[halfLen], key[halfLen];
-    uint8_t saltLen = _get_salt(identifier, extendableBackupFlag, NULL);
-    uint8_t salt[saltLen + halfLen];
+    uint8_t salt[SHAMIR_SALT_HEAD_LEN + halfLen];
     uint8_t passPhraseLen = strlen((const char *)passPhrase) + 1;
     uint8_t pass[passPhraseLen];
     uint32_t iterations;
@@ -455,7 +439,9 @@ int MasterSecretEncrypt(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t 
     memcpy(right, masterSecret + halfLen, halfLen);
 
     // get salt
-    _get_salt(identifier, extendableBackupFlag, salt);
+    memcpy(salt, SHAMIR_SALT_HEAD, strlen((const char *)masterSecret));
+    salt[6] = identifier >> 8;
+    salt[7] = identifier & 0xFF;
 
     // todo pass
     memset(pass, 0, sizeof(pass));
@@ -464,7 +450,7 @@ int MasterSecretEncrypt(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t 
     iterations = PBKDF2_BASE_ITERATION_COUNT << iterationExponent;
     for (int i = 0; i < PBKDF2_ROUND_COUNT; i++) {
         pass[0] = i;
-        memcpy(salt + saltLen, right, halfLen);
+        memcpy(salt + 8, right, halfLen);
         pbkdf2_hmac_sha256_slip39(pass, sizeof(pass), salt, sizeof(salt), iterations, key, sizeof(key));
 
         // (L, R) = (R, L xor F(i, R))
@@ -491,7 +477,7 @@ int MasterSecretEncrypt(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t 
  * param      :
  * return     :
 ***********************************************************************/
-int GenerateMnemonics(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t *ems, uint8_t iterationExponent, bool extendableBackupFlag, uint16_t identifier, uint8_t *passPhrase,
+int GenerateMnemonics(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t *ems, uint8_t iterationExponent, uint16_t identifier, uint8_t *passPhrase,
                       uint8_t groupCount, uint8_t groupThreshold, GroupDesc_t *groups, uint16_t *sharesBuffer,
                       uint16_t sharesBufferLen)
 {
@@ -514,7 +500,7 @@ int GenerateMnemonics(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t *e
     Slip39Shared_t shards[groups[0].count];
 
     // identifier = identifier & 0x7FFF; // a 15-bit positive integer
-    MasterSecretEncrypt(masterSecret, masterSecretLen, iterationExponent, extendableBackupFlag, identifier, passPhrase, enMasterSecret);
+    MasterSecretEncrypt(masterSecret, masterSecretLen, iterationExponent, identifier, passPhrase, enMasterSecret);
     memcpy(ems, enMasterSecret, masterSecretLen);
 
     for (int i = 0; i < groupCount; i++) {
@@ -525,7 +511,6 @@ int GenerateMnemonics(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t *e
         }
         for (int j = 0; j < groups[i].count; j++) {
             shards[j].identifier = identifier;
-            shards[j].extendableBackupFlag = extendableBackupFlag;
             shards[j].iteration = iterationExponent;
             shards[j].groupIndex = i;
             shards[j].groupThreshold = groupThreshold;
@@ -562,19 +547,16 @@ int GenerateMnemonics(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t *e
 ***********************************************************************/
 int DecodeMnemonics(uint16_t *wordsIndex, uint8_t wordsCount, Slip39Shared_t *shard)
 {
-    bool extendableBackupFlag = (wordsIndex[1] >> 4) & 0x01;
-
     /*
      * The checksum of each share MUST be valid. Implementations SHOULD NOT implement correction beyond potentially
      * suggesting to the user where in the mnemonic an error might be found, without suggesting the correction to make5.
      */
-    if (!rs1024_verify_checksum(wordsIndex, wordsCount, extendableBackupFlag)) {
+    if (!rs1024_verify_checksum(wordsIndex, wordsCount)) {
         return SLIP39_INVALID_MNEMONIC_CHECKSUM;
     }
 
     shard->identifier = wordsIndex[0] << 5 | (wordsIndex[1] >> 5);
-    shard->extendableBackupFlag = extendableBackupFlag;
-    shard->iteration = wordsIndex[1] & 0x0F;
+    shard->iteration = wordsIndex[1] & 0x1F;
     shard->groupThreshold = ((wordsIndex[2] >> 2) & 0XF) + 1;
     shard->groupIndex = wordsIndex[2] >> 6;
     shard->groupCount = (((wordsIndex[2] & 0x3) << 8) | ((wordsIndex[3] >> 8) & 0x3)) + 1;
@@ -628,13 +610,13 @@ static int _recover_secret(uint8_t t, int sl, uint8_t *gsi, const uint8_t **gs, 
 }
 
 static int _decrypt(uint8_t *ems, int emsl, uint8_t *ms, int msl,
-                    uint8_t *pp, int ppl, uint8_t ie, bool eb, uint16_t id)
+                    uint8_t *pp, int ppl, uint8_t ie, uint16_t id)
 {
     int j, hl = emsl / 2;
     uint8_t l[hl], r[hl];
     uint8_t _r[hl], f[hl];
-    int csl = _get_salt(id, eb, NULL);
-    uint8_t salt[csl + hl];
+    int csl = strlen(SHAMIR_SALT_HEAD);
+    uint8_t salt[hl + csl + 2];
     uint8_t pass[ppl + 1];
     int i;
     uint32_t it;
@@ -648,7 +630,9 @@ static int _decrypt(uint8_t *ems, int emsl, uint8_t *ms, int msl,
     memcpy(r, ems + hl, hl);
 
     // salt
-    _get_salt(id, eb, salt);
+    memcpy(salt, SHAMIR_SALT_HEAD, csl);
+    salt[csl] = id >> 8;
+    salt[csl + 1] = id & 0xff;
 
     // pass
     memcpy(pass + 1, pp, ppl);
@@ -658,7 +642,7 @@ static int _decrypt(uint8_t *ems, int emsl, uint8_t *ms, int msl,
 
     for (i = PBKDF2_ROUND_COUNT - 1; i >= 0; i--) {
         // salt
-        memcpy(salt + csl, r, hl);
+        memcpy(salt + 8, r, hl);
         // pass
         pass[0] = i;
         // PBKDF2
@@ -686,16 +670,14 @@ static int _decrypt(uint8_t *ems, int emsl, uint8_t *ms, int msl,
 extern void TrngGet(void *buf, uint32_t len);
 #define SHARE_BUFFER_SIZE               4096
 void GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCnt, uint8_t memberCnt, uint8_t memberThreshold,
-                             char *wordsList[], uint16_t *id, bool *eb, uint8_t *ie)
+                             char *wordsList[], uint16_t *id, uint8_t *ie)
 {
     uint8_t *passPhrase = (uint8_t *)"";
     uint8_t iterationExponent  = 0;
-    bool extendableBackupFlag = true;
     uint16_t identifier = 0;
     TrngGet(&identifier, 2);
     identifier = identifier & 0x7FFF;
     *ie = iterationExponent;
-    *eb = extendableBackupFlag;
     *id = identifier;
     uint8_t masterSecretLen = (wordCnt == 20) ? 16 : 32;
 
@@ -709,7 +691,7 @@ void GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCn
     uint16_t shareBufferSize = SHARE_BUFFER_SIZE;
     uint16_t sharesBuff[SHARE_BUFFER_SIZE];
 
-    GenerateMnemonics(masterSecret, masterSecretLen, ems, iterationExponent, extendableBackupFlag, identifier, passPhrase,
+    GenerateMnemonics(masterSecret, masterSecretLen, ems, iterationExponent, identifier, passPhrase,
                       groupCnt, groupThereshold, groups, sharesBuff, shareBufferSize);
 
     for (int i = 0; i < memberCnt; i++) {
@@ -718,13 +700,13 @@ void GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCn
     }
 }
 
-int Slip39GetSeed(uint8_t *ems, uint8_t *seed, uint8_t emsLen, const char *passphrase, uint8_t ie, bool eb, uint16_t id)
+int Slip39GetSeed(uint8_t *ems, uint8_t *seed, uint8_t emsLen, const char *passphrase, uint8_t ie, uint16_t id)
 {
-    return _decrypt(ems, emsLen, seed, emsLen, (uint8_t *)passphrase, strlen(passphrase), ie, eb, id);
+    return _decrypt(ems, emsLen, seed, emsLen, (uint8_t *)passphrase, strlen(passphrase), ie, id);
 }
 
-int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, uint8_t *masterSecret,
-                          char *wordsList[], uint16_t *id, uint8_t *eb, uint8_t *ie)
+int Sli39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, uint8_t *masterSecret,
+                         char *wordsList[], uint16_t *id, uint8_t *ie)
 {
     uint16_t wordsIndexBuf[threshold][wordsCount];
     Slip39Shared_t shards[threshold];
@@ -751,7 +733,6 @@ int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, u
             printf("word list %d decode error\n", i);
 #if 0
             printf("gs[i].id = %#x\n", shards[i].identifier);
-            printf("gs[i].id = %#x\n", shards[i].extendableBackupFlag);
             printf("gs[i].ie = %d\n", shards[i].iteration);
             printf("gs[i].gi = %d\n", shards[i].groupIndex);
             printf("gs[i].gt = %d\n", shards[i].groupThreshold);
@@ -770,7 +751,6 @@ int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, u
 
     uint16_t groupMemberThreshold, mic, gmic = 0;
     uint16_t identifier;
-    bool extendableBackupFlag;
     uint16_t iteration;
     uint16_t groupThreshold, groupIndex, valueLength;
     int j, i, k;
@@ -784,8 +764,6 @@ int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, u
 
     identifier = shards[0].identifier;
     *id = identifier;
-    extendableBackupFlag = shards[0].extendableBackupFlag;
-    *eb = extendableBackupFlag;
     iteration = shards[0].iteration;
     *ie = iteration;
     groupThreshold = shards[0].groupThreshold;
@@ -867,7 +845,7 @@ int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, u
     ret = _recover_secret(gmic, valueLength, xi, (const uint8_t **)tempShare, gsv);
     if (ret == 0) {
         memcpy(ems, gsv, valueLength);
-        _decrypt(gsv, valueLength, gsv, valueLength, pp, ppl, iteration, extendableBackupFlag, identifier);
+        _decrypt(gsv, valueLength, gsv, valueLength, pp, ppl, iteration, identifier);
         memcpy(masterSecret, gsv, valueLength);
 //        *msl = sl;
     } else {
@@ -889,7 +867,7 @@ exit:
     return ret;
 }
 
-int Slip39OneSliceCheck(char *wordsList, uint8_t wordCnt, uint16_t id, uint8_t eb, uint8_t ie, uint8_t *threshold)
+int Slip39OneSliceCheck(char *wordsList, uint8_t wordCnt, uint16_t id, uint8_t ie, uint8_t *threshold)
 {
     uint16_t wordIndexBuf[wordCnt];
     Slip39Shared_t shards;
@@ -901,9 +879,8 @@ int Slip39OneSliceCheck(char *wordsList, uint8_t wordCnt, uint16_t id, uint8_t e
     }
 
     shards.identifier = wordIndexBuf[0] << 5 | (wordIndexBuf[1] >> 5);
-    shards.extendableBackupFlag = (wordIndexBuf[1] >> 4) & 0x01;
-    shards.iteration = wordIndexBuf[1] & 0x0F;
-    if (id != shards.identifier || eb != shards.extendableBackupFlag || ie != shards.iteration) {
+    shards.iteration = wordIndexBuf[1] & 0x1F;
+    if (id != shards.identifier || ie != shards.iteration) {
         return SLIP39_NOT_BELONG_THIS_WALLET;
     }
 

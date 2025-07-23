@@ -91,7 +91,7 @@ static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen);
 static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen);
 static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen);
 static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen);
-static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8_t emsLen, uint16_t id, uint8_t ie, uint8_t *index);
+static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8_t emsLen, uint16_t id, bool eb, uint8_t ie, uint8_t *index);
 static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen);
 static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen);
 static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen);
@@ -397,7 +397,7 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     memset_s(entropyCheck, entropyLen, 0, entropyLen);
     SRAM_FREE(entropyCheck);
     MODEL_WRITE_SE_HEAD
-    ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, 0, NULL);
+    ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
     ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
     ClearAccountPassphrase(newAccount);
@@ -429,10 +429,10 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), entropy, entropyInLen, &entropyOutLen);
     CHECK_ERRCODE_BREAK("mnemonic error", ret);
     if (bip39Data->forget) {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, 0, &newAccount);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, &newAccount);
         CHECK_ERRCODE_BREAK("mnemonic not match", !ret);
     } else {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, 0, NULL);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
         CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
     }
     if (bip39Data->forget) {
@@ -512,7 +512,7 @@ static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen)
     do {
         ret = CHECK_BATTERY_LOW_POWER();
         CHECK_ERRCODE_BREAK("save low power", ret);
-        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, 0, NULL);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
         if (ret != SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
             SetLockScreen(enable);
@@ -582,7 +582,7 @@ static int32_t ModelURClear(const void *inData, uint32_t inDataLen)
 }
 
 // Compare the generated extended public key
-static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8_t emsLen, uint16_t id, uint8_t ie, uint8_t *index)
+static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8_t emsLen, uint16_t id, bool eb, uint8_t ie, uint8_t *index)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
@@ -624,7 +624,7 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
                 xPubResult = get_extended_pubkey_by_seed(seed, 64, "M/49'/0'/0'");
             }
             if (slip39) {
-                ret = Slip39GetSeed(ems, seed, emsLen, "", ie, id);
+                ret = Slip39GetSeed(ems, seed, emsLen, "", ie, eb, id);
                 xPubResult = get_extended_pubkey_by_seed(seed, emsLen, "M/49'/0'/0'");
             }
 
@@ -654,6 +654,7 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     uint32_t entropyLen;
     uint16_t id;
     uint8_t ie;
+    bool eb;
     entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
     char *wordsList[slip39->memberCnt];
     if (isDiceRoll) {
@@ -662,7 +663,7 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
         GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
     }
     SecretCacheSetEntropy(entropy, entropyLen);
-    GetSlip39MnemonicsWords(entropy, ems, slip39->wordCnt, slip39->memberCnt, slip39->threShold, wordsList, &id, &ie);
+    GetSlip39MnemonicsWords(entropy, ems, slip39->wordCnt, slip39->memberCnt, slip39->threShold, wordsList, &id, &eb, &ie);
     SecretCacheSetEms(ems, entropyLen);
     SecretCacheSetIdentifier(id);
     SecretCacheSetIteration(ie);
@@ -703,6 +704,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     uint8_t accountCnt;
     uint16_t id;
     uint8_t ie;
+    bool eb;
     uint8_t msCheck[32], emsCheck[32];
     uint8_t threShold;
     uint8_t wordCnt = *(uint8_t *)inData;
@@ -719,16 +721,16 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     for (int i = 0; i < threShold; i++) {
         words[i] = SecretCacheGetSlip39Mnemonic(i);
     }
-    ret = Sli39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &ie);
+    ret = Slip39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &eb, &ie);
     if ((ret != SUCCESS_CODE) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
         ret = ERR_KEYSTORE_MNEMONIC_INVALID;
         break;
     }
     CLEAR_ARRAY(emsCheck);
     CLEAR_ARRAY(msCheck);
-    ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, ie, NULL);
+    ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, false, ie, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
-    ret = CreateNewSlip39Account(newAccount, ems, entropy, entropyLen, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetIteration());
+    ret = CreateNewSlip39Account(newAccount, ems, entropy, entropyLen, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetExtendable(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
     MODEL_WRITE_SE_END
@@ -748,6 +750,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     int32_t ret;
     uint16_t id;
     uint8_t ie;
+    bool eb;
     uint8_t newAccount;
     uint8_t accountCnt;
     Slip39Data_t *slip39 = (Slip39Data_t *)inData;
@@ -764,7 +767,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     }
 
     MODEL_WRITE_SE_HEAD
-    ret = Sli39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &ie);
+    ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &eb, &ie);
     if (ret != SUCCESS_CODE) {
         printf("get master secret error\n");
         break;
@@ -772,17 +775,17 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     memcpy_s(emsBak, sizeof(emsBak), ems, entropyLen);
 
     if (slip39->forget) {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, ie, &newAccount);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, false, ie, &newAccount);
         CHECK_ERRCODE_BREAK("mnemonic not match", !ret);
     } else {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, ie, NULL);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, false, ie, NULL);
         CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
     }
     printf("before accountCnt = %d\n", accountCnt);
     if (slip39->forget) {
         GetAccountInfo(newAccount, &accountInfo);
     }
-    ret = CreateNewSlip39Account(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, ie);
+    ret = CreateNewSlip39Account(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, eb, ie);
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
@@ -823,6 +826,7 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
     uint8_t entropyLen;
     uint16_t id;
     uint8_t ie;
+    bool eb;
     Slip39Data_t *slip39 = (Slip39Data_t *)inData;
 
     entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
@@ -837,12 +841,12 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
     do {
         ret = CHECK_BATTERY_LOW_POWER();
         CHECK_ERRCODE_BREAK("save low power", ret);
-        ret = Sli39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &ie);
+        ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &eb, &ie);
         if (ret != SUCCESS_CODE) {
             printf("get master secret error\n");
             break;
         }
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, ie, NULL);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, false, ie, NULL);
         if (ret != SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
             SetLockScreen(enable);
@@ -1539,7 +1543,7 @@ static int32_t ModelTonWriteEntropyAndSeed(const void *inData, uint32_t inDataLe
     char *mnemonic;
     mnemonic = SecretCacheGetMnemonic();
     MODEL_WRITE_SE_HEAD
-    ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, 0, NULL);
+    ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, false, 0, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
     ret = CreateNewTonAccount(newAccount, mnemonic, SecretCacheGetNewPassword());
     ClearAccountPassphrase(newAccount);
@@ -1568,10 +1572,10 @@ static int32_t ModelTonCalWriteEntropyAndSeed(const void *inData, uint32_t inDat
         break;
     }
     if (tonData->forget) {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, 0, &newAccount);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, false, 0, &newAccount);
         CHECK_ERRCODE_BREAK("mnemonic not match", !ret);
     } else {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, 0, NULL);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, false, 0, NULL);
         CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
     }
     if (tonData->forget) {
@@ -1656,7 +1660,7 @@ static int32_t ModelTonForgetPass(const void *inData, uint32_t inDataLen)
     do {
         ret = CHECK_BATTERY_LOW_POWER();
         CHECK_ERRCODE_BREAK("save low power", ret);
-        ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, 0, NULL);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, false, 0, NULL);
         if (ret != SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
             SetLockScreen(enable);

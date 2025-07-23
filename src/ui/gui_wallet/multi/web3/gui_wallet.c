@@ -198,8 +198,6 @@ UREncodeResult *GuiGetWalletDataByCoin(bool includeApt)
 #define NIGHTLY_XPUB_COUNT 30
     ExtendedPublicKey keys[NIGHTLY_XPUB_COUNT];
     publicKeys->data = keys;
-    int16_t coinType = 0;
-    int16_t xpubBaseIndex = 0;
     uint8_t xpubIndex = 0;
     for (xpubIndex = 0; xpubIndex < 10; xpubIndex++) {
         keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);

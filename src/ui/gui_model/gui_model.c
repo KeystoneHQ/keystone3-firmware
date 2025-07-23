@@ -645,6 +645,7 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     SecretCacheSetEms(ems, entropyLen);
     SecretCacheSetIdentifier(id);
     SecretCacheSetIteration(ie);
+    SecretCacheSetExtendable(eb);
     for (int i = 0; i < slip39->memberCnt; i++) {
         SecretCacheSetSlip39Mnemonic(wordsList[i], i);
     }
@@ -691,6 +692,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     ems = SecretCacheGetEms(&entropyLen);
     entropy = SecretCacheGetEntropy(&entropyLen);
     id = SecretCacheGetIdentifier();
+    eb = SecretCacheGetExtendable();
     ie = SecretCacheGetIteration();
 
     MODEL_WRITE_SE_HEAD
@@ -706,7 +708,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     }
     CLEAR_ARRAY(emsCheck);
     CLEAR_ARRAY(msCheck);
-    ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, false, ie, NULL);
+    ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
     ret = CreateNewSlip39Account(newAccount, ems, entropy, entropyLen, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetExtendable(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
@@ -753,10 +755,10 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     memcpy_s(emsBak, sizeof(emsBak), ems, entropyLen);
 
     if (slip39->forget) {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, false, ie, &newAccount);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, &newAccount);
         CHECK_ERRCODE_BREAK("mnemonic not match", !ret);
     } else {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, false, ie, NULL);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, NULL);
         CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
     }
     printf("before accountCnt = %d\n", accountCnt);
@@ -824,7 +826,7 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
             printf("get master secret error\n");
             break;
         }
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, false, ie, NULL);
+        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, NULL);
         if (ret != SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
             SetLockScreen(enable);

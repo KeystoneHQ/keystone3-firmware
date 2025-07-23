@@ -111,6 +111,7 @@ void GuiUpdatePendingHintBoxSubtitle(const char *subtitle)
 void GuiPendingHintBoxRemove()
 {
     if (g_pendingHintBox != NULL) {
+        printf("remove pending hint box...........\n");
         GUI_DEL_OBJ(g_pendingHintBox)
         lv_anim_del_all();
     }

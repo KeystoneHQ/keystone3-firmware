@@ -1077,7 +1077,7 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     lv_obj_t *line = (lv_obj_t *)GuiCreateLine(g_imgCont, points, 2);
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 64);
-    uint16_t tabWidth = 0;
+    uint16_t tabWidth = 300;
     for (int i = 0; i < GUI_ANALYZE_TABVIEW_CNT; i++) {
         if (g_analyzeTabview.obj[i] == NULL) {
             if (i <= 1) {
@@ -1171,9 +1171,11 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
     }
 
     if (g_tableView == NULL || g_analyzeTabview.obj[0] == NULL) {
-        if (g_analyzeTabview.obj[0] == NULL) {
+#ifdef WEB3_VERSION
+        if (g_analyzeTabview.obj[0] == NULL && (g_reMapIndex == REMAPVIEW_IOTA || g_reMapIndex == REMAPVIEW_IOTA_SIGN_MESSAGE_HASH)) {
             GuiRefreshOnePage();
         }
+#endif
         return g_templateContainer;
     }
     GuiAnalyzeViewInit(parent);

@@ -1,3 +1,37 @@
+## 2.2.2(2025-07-21)
+**Web3:**
+
+### Bug Fixes
+
+1. Optimized slow parsing issues in certain EVM transaction scenarios.
+
+**BTC-only:**
+
+### Bug Fixes
+1.Fixed the passphrase multi-sig support functionality.
+
+
+## 2.2.0(2025-07-16)
+**Web3:**
+
+### What's new
+1. Supported managing IOTA assets via Nightly Wallet
+
+### Bug Fixes
+1. Fixed an issue where the device would occasionally enter sleep mode unexpectedly
+2. Fixed a bug where the battery UI did not display full charge correctly
+
+## 2.1.8(2025-07-01)
+
+**BTC Only:**
+
+### What's new
+
+1. Added support for using passphrase wallets to create and sign BTC multi-signature wallets
+2. Introduced multsig wallet verify code to enhance signature validation and security
+
+
+
 ## 2.1.4(2025-06-16)
 
 ### What's New

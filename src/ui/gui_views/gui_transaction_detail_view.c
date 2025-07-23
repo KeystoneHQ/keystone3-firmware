@@ -67,9 +67,11 @@ int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void 
     case SIG_HIDE_TRANSACTION_PARSE_LOADING_DELAY:
         GuiPendingHintBoxRemove();
         break;
+#ifdef WEB3_VERSION
     case SIG_SHOW_TRANSACTION_LOADING_DELAY:
         EthContractCheckRawDataCallback();
         break;
+#endif
 #ifndef BTC_ONLY
     case SIG_INIT_PULLOUT_USB:
         GuiTransactionUsbPullout();

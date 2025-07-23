@@ -16,6 +16,7 @@ typedef enum {
     MULTI_SIG_WALLET_SECOND,
     MULTI_SIG_WALLET_THIRD,
     MULTI_SIG_WALLET_FOURTH,
+    MULTI_SIG_WALLET_FIFTH, // just for passphrase
     SINGLE_WALLET,
 
     CURRENT_WALLET_BUTT,
@@ -28,6 +29,7 @@ typedef struct {
     bool enable;
     bool testNet;
     CURRENT_WALLET_INDEX_ENUM defaultWallet;
+    CURRENT_WALLET_INDEX_ENUM defaultPassphraseWallet;
     lv_obj_t *checkBox;
 } WalletState_t;
 
@@ -47,7 +49,9 @@ bool GuiHomePageIsTop(void);
 bool GetIsTestNet(void);
 void SetIsTestNet(bool testNet);
 void SetCurrentWalletIndex(CURRENT_WALLET_INDEX_ENUM walletIndex);
+void SetDefaultPassphraseWalletIndex(CURRENT_WALLET_INDEX_ENUM walletIndex);
 CURRENT_WALLET_INDEX_ENUM GetCurrentWalletIndex(void);
 const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);
 void GuiHomeDeInit(void);
+
 #endif /* _GUI_HOME_WIDGETS_H */

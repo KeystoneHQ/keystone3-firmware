@@ -29,6 +29,7 @@
 #include "gui_views.h"
 #include "assert.h"
 #include "version.h"
+#include "user_delay.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "rust.h"
@@ -36,7 +37,6 @@
 #include "general_msg.h"
 #include "cmsis_os.h"
 #include "fingerprint_process.h"
-#include "user_delay.h"
 #include "user_fatfs.h"
 #include "mhscpu_qspi.h"
 #include "safe_mem_lib.h"

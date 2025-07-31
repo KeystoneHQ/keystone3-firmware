@@ -224,7 +224,7 @@ UREncodeResult *GuiGetWalletDataByCoin(bool includeApt)
 
     g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
     CHECK_CHAIN_PRINT(g_urEncode);
-    for (uint8_t i = 0; i < NIGHTLY_XPUB_COUNT; i++) {
+    for (uint8_t i = 0; i < publicKeys->size; i++) {
         if (keys[i].path != NULL) {
             SRAM_FREE(keys[i].path);
         }

@@ -9,5 +9,6 @@ void GuiMultisigTransactionSignaureWidgetsDeInit();
 void GuiMultisigTransactionSignaureWidgetsRefresh();
 void GuiMultisigTransactionSignatureSetSignStatus(char *signStatus, bool signCompleted, uint8_t *psbtHex, uint32_t psbtLen);
 void GuiMultisigTransactionSginatureSetPsbtName(char *psbtName);
+void UpdateDoneBtnState(void);
 
 #endif

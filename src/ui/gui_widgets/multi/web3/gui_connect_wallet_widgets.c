@@ -88,7 +88,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_FEWCHA, &walletListFewcha, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_ZAPPER, &walletListZapper, true, WALLET_FILTER_ETH},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_IOTA, &walletListIota, true, WALLET_FILTER_OTHER},
+    // {WALLET_LIST_IOTA, &walletListIota, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true, WALLET_FILTER_ETH},
 };
 
@@ -1388,10 +1388,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetNightlyData;
         AddWalletCoins(g_nightlyCoinArray, NUMBER_OF_ARRAYS(g_nightlyCoinArray));
         break;
-    case WALLET_LIST_IOTA:
-        func = GuiGetIotaWalletData;
-        AddWalletCoins(g_nightlyCoinArray, NUMBER_OF_ARRAYS(g_nightlyCoinArray));
-        break;
+    // case WALLET_LIST_IOTA:
+    //     func = GuiGetIotaWalletData;
+    //     AddWalletCoins(g_nightlyCoinArray, NUMBER_OF_ARRAYS(g_nightlyCoinArray));
+    //     break;
     case WALLET_LIST_SUIET:
         func = GuiGetSuiWalletData;
         AddWalletCoins(g_suiWalletCoinArray, NUMBER_OF_ARRAYS(g_suiWalletCoinArray));

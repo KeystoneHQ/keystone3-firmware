@@ -29,6 +29,7 @@
 #include "gui_views.h"
 #include "assert.h"
 #include "version.h"
+#include "user_delay.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "rust.h"
@@ -36,7 +37,6 @@
 #include "general_msg.h"
 #include "cmsis_os.h"
 #include "fingerprint_process.h"
-#include "user_delay.h"
 #include "user_fatfs.h"
 #include "mhscpu_qspi.h"
 #include "safe_mem_lib.h"
@@ -938,7 +938,6 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
     int32_t ret = 0;
     if (CheckPassphraseSame(GetCurrentAccountIndex(), SecretCacheGetPassphrase())) {
         GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
@@ -952,9 +951,6 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
         }
         ClearSecretCache();
     }
-#else
-    GuiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
-#endif
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }

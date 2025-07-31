@@ -12,8 +12,9 @@ pub fn swapkit_asset_name_convert(asset: &str) -> Result<(String, Option<String>
     match asset.to_lowercase().as_str() {
         "e" | "eth.eth" => Ok(("ETH".to_string(), None)),
         "bitcoin" | "b" | "btc.btc" => Ok(("BTC".to_string(), None)),
-        "xrp.xrp" => Ok(("XRP".to_string(), None)),
-        "doge.doge" => Ok(("DOGE".to_string(), None)),
+        "x" => Ok(("XRP".to_string(), None)),
+        "d" | "doge.doge" => Ok(("DOGE".to_string(), None)),
+        "s" | "bnb.bnb" => Ok(("BNB".to_string(), None)),
         x => {
             //ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7
             let parts = x.split('-').collect::<Vec<&str>>();

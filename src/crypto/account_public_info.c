@@ -70,14 +70,14 @@ typedef struct {
     uint32_t index;
 } MultiSigReceiveIndex_t;
 
-static MultiSigReceiveIndex_t g_multiSigReceiveIndex[4];
+static MultiSigReceiveIndex_t g_multiSigReceiveIndex[MAX_MULTI_SIG_WALLET_NUMBER];
 
 static void ConvertXPub(char *dest, ChainType chainType);
 uint32_t GetAccountMultiReceiveIndexFromFlash(char *verifyCode);
 
 static void LoadCurrentAccountMultiReceiveIndex(void)
 {
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < MAX_MULTI_SIG_WALLET_NUMBER; i++) {
         memset_s(&g_multiSigReceiveIndex[i], sizeof(MultiSigReceiveIndex_t), 0, sizeof(MultiSigReceiveIndex_t));
         if (GetCurrenMultisigWalletByIndex(i) == NULL) {
             continue;
@@ -219,7 +219,7 @@ void ExportMultiSigWallet(char *verifyCode, uint8_t accountIndex)
 
 uint32_t GetAccountMultiReceiveIndex(char *verifyCode)
 {
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < MAX_MULTI_SIG_WALLET_NUMBER; i++) {
         if (strcmp(g_multiSigReceiveIndex[i].verifyCode, verifyCode) == 0) {
             return g_multiSigReceiveIndex[i].index;
         }
@@ -240,7 +240,7 @@ void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
     char key[BUFFER_SIZE_64] = {0};
     sprintf(key, "multiRecvIndex_%s", verifyCode);
     printf("key = %s.\n", key);
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < MAX_MULTI_SIG_WALLET_NUMBER; i++) {
         if (strlen(g_multiSigReceiveIndex[i].verifyCode) == 0) {
             g_multiSigReceiveIndex[i].index = index;
             strcpy(g_multiSigReceiveIndex[i].verifyCode, verifyCode);
@@ -298,10 +298,8 @@ void SetAccountTestReceivePath(const char* chainName, uint32_t index)
 }
 #endif
 
-static AccountPublicKeyItem_t g_accountPublicInfo[XPUB_TYPE_NUM] = {0};
-
 static cJSON *g_tempParsePhraseJson = NULL;
-
+static AccountPublicKeyItem_t g_accountPublicInfo[XPUB_TYPE_NUM] = {0};
 static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
 static bool g_isTempAccount = false;
 
@@ -692,6 +690,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
 #ifdef BTC_ONLY
             cJSON_AddItemToObject(jsonItem, "testNet", cJSON_CreateBool(false));
             cJSON_AddItemToObject(jsonItem, "defaultWallet", cJSON_CreateNumber(SINGLE_WALLET));
+            cJSON_AddItemToObject(jsonItem, "defaultPassphraseWallet", cJSON_CreateNumber(SINGLE_WALLET));
 #endif
             cJSON_AddItemToObject(rootJson, walletList[i].name, jsonItem);
         }
@@ -718,6 +717,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
 #ifdef BTC_ONLY
             walletList[i].testNet = GetBoolValue(item, "testNet", false);
             walletList[i].defaultWallet = GetIntValue(item, "defaultWallet", SINGLE_WALLET);
+            walletList[i].defaultPassphraseWallet = GetIntValue(item, "defaultPassphraseWallet", SINGLE_WALLET);
 #endif
         }
     }
@@ -755,6 +755,7 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
 #ifdef BTC_ONLY
             cJSON_AddItemToObject(item, "testNet", cJSON_CreateBool(walletList[i].testNet));
             cJSON_AddItemToObject(item, "defaultWallet", cJSON_CreateNumber(walletList[i].defaultWallet));
+            cJSON_AddItemToObject(item, "defaultPassphraseWallet", cJSON_CreateNumber(walletList[i].defaultPassphraseWallet));
 #endif
             cJSON_AddItemToObject(rootJson, walletList[i].name, item);
             needUpdate = true;
@@ -779,6 +780,13 @@ void AccountPublicHomeCoinSet(WalletState_t *walletList, uint8_t count)
                 needUpdate = true;
             } else if (GetIntValue(item, "defaultWallet", SINGLE_WALLET) != walletList[i].defaultWallet) {
                 cJSON_ReplaceItemInObject(item, "defaultWallet", cJSON_CreateNumber(walletList[i].defaultWallet));
+                needUpdate = true;
+            }
+            if (cJSON_GetObjectItem(item, "defaultPassphraseWallet") == NULL) {
+                cJSON_AddItemToObject(item, "defaultPassphraseWallet", cJSON_CreateNumber(walletList[i].defaultPassphraseWallet));
+                needUpdate = true;
+            } else if (GetIntValue(item, "defaultPassphraseWallet", SINGLE_WALLET) != walletList[i].defaultPassphraseWallet) {
+                cJSON_ReplaceItemInObject(item, "defaultPassphraseWallet", cJSON_CreateNumber(walletList[i].defaultPassphraseWallet));
                 needUpdate = true;
             }
 #endif
@@ -1022,11 +1030,7 @@ static void SetIsTempAccount(bool isTemp)
 
 bool GetIsTempAccount(void)
 {
-#ifndef COMPILE_SIMULATOR
     return g_isTempAccount;
-#else
-    return false;
-#endif
 }
 
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set)
@@ -1045,7 +1049,6 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     if (isTon) {
         ASSERT(false);
     }
-
     int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed);
 
     char *passphrase = GetPassphrase(accountIndex);
@@ -1135,6 +1138,13 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             cJSON_Delete(g_tempParsePhraseJson);
             g_tempParsePhraseJson = NULL;
         }
+
+#ifdef BTC_ONLY
+        initMultiSigWalletManager();
+        ret = LoadCurrentAccountMultisigWallet(password);
+        CHECK_ERRCODE_RETURN_INT(ret);
+        LoadCurrentAccountMultiReceiveIndex();
+#endif
     }
     CLEAR_ARRAY(seed);
 
@@ -1459,9 +1469,11 @@ void appendWalletItemToJson(MultiSigWalletItem_t *item, void *root)
     cJSON_AddNumberToObject(walletItem, "order", item->order);
     cJSON_AddStringToObject(walletItem, "name", item->name);
     cJSON_AddStringToObject(walletItem, "verify_code", item->verifyCode);
+    cJSON_AddStringToObject(walletItem, "verify_without_mfp", item->verifyWithoutMfp);
     cJSON_AddNumberToObject(walletItem, "network", item->network);
     cJSON_AddStringToObject(walletItem, "wallet_config", item->walletConfig);
     cJSON_AddStringToObject(walletItem, "format", item->format);
+    cJSON_AddBoolToObject(walletItem, "passphrase", item->passphrase);
     cJSON_AddItemToArray((cJSON*)root, walletItem);
 }
 
@@ -1493,7 +1505,7 @@ static uint32_t MultiSigWalletSaveDefault(uint32_t addr, uint8_t accountIndex)
     return size;
 }
 
-void MultiSigWalletSave(const char *password, MultiSigWalletManager_t *manager)
+void MultiSigWalletSave(MultiSigWalletManager_t *manager)
 {
     uint8_t account = GetCurrentAccountIndex();
     ASSERT(account < 3);
@@ -1550,7 +1562,6 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
     ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
     ASSERT(ret == size);
     jsonString[size] = 0;
-    printf("multi sig wallet get data is %s\r\n", jsonString);
 
 #ifndef COMPILE_SIMULATOR
     sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
@@ -1589,6 +1600,10 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
             multiSigWalletItem->verifyCode = MULTI_SIG_MALLOC(strlen(strCache) + 1);
             strcpy(multiSigWalletItem->verifyCode, strCache);
 
+            GetStringValue(wallet, "verify_without_mfp", strCache, MULTI_SIG_STR_CACHE_LENGTH);
+            multiSigWalletItem->verifyWithoutMfp = MULTI_SIG_MALLOC(strlen(strCache) + 1);
+            strcpy(multiSigWalletItem->verifyWithoutMfp, strCache);
+
             cJSON *network = cJSON_GetObjectItem(wallet, "network");
 
             multiSigWalletItem->network = network->valueint;
@@ -1600,6 +1615,9 @@ int32_t MultiSigWalletGet(uint8_t accountIndex, const char *password, MultiSigWa
             GetStringValue(wallet, "format", strCache, MULTI_SIG_STR_CACHE_LENGTH);
             multiSigWalletItem->format = MULTI_SIG_MALLOC(strlen(strCache) + 1);
             strcpy(multiSigWalletItem->format, strCache);
+
+            cJSON *passphrase = cJSON_GetObjectItem(wallet, "passphrase");
+            multiSigWalletItem->passphrase = passphrase ? passphrase->valueint : 0;
 
             manager->insertNode(multiSigWalletItem);
         }

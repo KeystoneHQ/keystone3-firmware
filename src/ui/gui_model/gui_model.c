@@ -1281,6 +1281,7 @@ static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inD
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc)
 {
     ReturnVoidPointerFunc func = (ReturnVoidPointerFunc)parseTransactionFunc;
+    SetPageLockScreen(false);
     // There is no need to release here, the parsing results will be released when exiting the details page.
     TransactionParseResult_DisplayTx *parsedResult = (TransactionParseResult_DisplayTx *)func();
     if (parsedResult != NULL && parsedResult->error_code == 0 && parsedResult->data != NULL) {
@@ -1289,6 +1290,7 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
         GuiApiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
     }
     GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
+    SetPageLockScreen(true);
     return SUCCESS_CODE;
 }
 

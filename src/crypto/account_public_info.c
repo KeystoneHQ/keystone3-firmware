@@ -1083,7 +1083,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
 
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
             // SLIP32 wallet does not support ADA
-            if (isSlip39 && (g_chainTable[i].cryptoKey == BIP32_ED25519 || g_chainTable[i].cryptoKey == LEDGER_BITBOX02)) {
+            if (isSlip39 && (g_chainTable[i].cryptoKey == BIP32_ED25519 || g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED)) {
                 continue;
             }
             if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {

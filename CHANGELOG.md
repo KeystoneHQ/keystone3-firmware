@@ -5,7 +5,7 @@
 ### What's new
 1. Support for XRP swap transactions via Keystone Nexus
 ### Bug Fixes
-2. Fixed UI issue when connecting to Suiet wallet
+1. Fixed UI issue when connecting to Suiet wallet
 
 
 

@@ -52,7 +52,7 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_INJ, HOME_WALLET_CARD_INJ, 60, "inj", XPUB_TYPE_ETH_BIP44_STANDARD, "injective-1"},
     {CHAIN_KAVA, HOME_WALLET_CARD_KAVA, 459, "kava", XPUB_TYPE_KAVA, "kava_2222-10"},
     {CHAIN_QCK, HOME_WALLET_CARD_QCK, 118, "quick", XPUB_TYPE_COSMOS, "quicksilver-1"},
-    {CHAIN_LUNA, HOME_WALLET_CARD_LUNA, 330, "terra", XPUB_TYPE_TERRA, "phoenix-1"},
+    {CHAIN_LUNA, HOME_WALLET_CARD_LUNA, 330, "terra2", XPUB_TYPE_TERRA2, "phoenix-1"},
     {CHAIN_LUNC, HOME_WALLET_CARD_LUNC, 330, "terra", XPUB_TYPE_TERRA, "columbus-5"}
 };
 

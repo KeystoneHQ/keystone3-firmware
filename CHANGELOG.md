@@ -1,11 +1,11 @@
-## 2.2.4(2025-08-01)
+## 2.2.4(2025-08-04)
 
 **Web3:**
 
-### 新增
-1.支持通过Keystone Nexus进行XRP swap交易
-### Bug 修复
-1.修复Suiet wallet连接UI问题
+### What's new
+1. Support for XRP swap transactions via Keystone Nexus
+### Bug Fixes
+1. Fixed UI issue when connecting to Suiet wallet
 
 
 

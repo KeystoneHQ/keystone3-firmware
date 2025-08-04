@@ -1,10 +1,20 @@
+## 2.2.4(2025-08-04)
+
+**Web3:**
+
+### 新增
+1. 支持通过Keystone Nexus进行XRP swap交易
+### Bug 修复
+1. 修复Suiet wallet连接UI问题
+
+
 ## 2.2.2(2025-07-21)
 **Web3:**
 
 ### Bug 修复
 1.优化EVM交易部分场景解析过慢问题
 
-**BTC-only:**
+**BTC Only:**
 
 ### Bug 修复
 1.修复passphrase多签支持功能

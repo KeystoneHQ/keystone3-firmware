@@ -3,9 +3,9 @@
 **Web3:**
 
 ### What's new
-Support for XRP swap transactions via Keystone Nexus
+1. Support for XRP swap transactions via Keystone Nexus
 ### Bug Fixes
-Fixed UI issue when connecting to Suiet wallet
+2. Fixed UI issue when connecting to Suiet wallet
 
 
 

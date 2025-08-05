@@ -298,14 +298,12 @@ static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_o
 PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
+    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
     uint8_t sfp[32];
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
     uint32_t zcash_account_index = 0;
-    bool disabled = PassphraseExist(GetCurrentAccountIndex());
     MnemonicType mnemonicType = GetMnemonicType();
-    disabled = disabled || mnemonicType == MNEMONIC_TYPE_SLIP39;
-    return check_zcash_tx(data, ufvk, sfp, zcash_account_index, disabled);
+    return check_zcash_tx(data, ufvk, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39);
 }
 
 UREncodeResult *GuiGetZcashSignQrCodeData(void)

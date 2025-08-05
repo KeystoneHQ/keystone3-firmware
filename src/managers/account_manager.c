@@ -242,10 +242,10 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
         } else {
             printf("passphrase not exist, info switch\r\n");
             ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
-#ifdef CYPHERPUNK_VERSION
-            CalculateZcashUFVK(g_currentAccountIndex, password);
-#endif
         }
+#ifdef CYPHERPUNK_VERSION
+        CalculateZcashUFVK(g_currentAccountIndex, password);
+#endif
     } else {
         g_publicInfo.loginPasswordErrorCount++;
     }

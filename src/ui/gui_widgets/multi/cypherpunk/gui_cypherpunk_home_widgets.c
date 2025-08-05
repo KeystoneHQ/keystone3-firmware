@@ -71,11 +71,6 @@ static void GuiInitWalletState(void)
             g_walletState[i].enable = true;
             g_walletState[i].state = true;
         }
-        bool isPassphrase = PassphraseExist(GetCurrentAccountIndex());
-        if (isPassphrase) {
-            g_walletState[HOME_WALLET_CARD_ZEC].enable = false;
-            g_walletState[HOME_WALLET_CARD_ZEC].state = false;
-        }
         break;
     default:
         break;
@@ -117,10 +112,6 @@ static void UpdateManageWalletState(bool needUpdate)
     g_isManageOpen = false;
     int total = 0;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if (GetIsTempAccount() && g_walletState[i].index == HOME_WALLET_CARD_ZEC) {
-            continue;
-        }
-
         if (g_walletState[i].enable) {
             total++;
         }
@@ -177,9 +168,7 @@ static void UpdateHomeConnectWalletCard(HomeGesture_t gesture)
     UpdateStartIndex(gesture, totalCoinAmount);
 
     for (int i = 0, j = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if ((g_walletState[i].index == HOME_WALLET_CARD_ZEC && GetIsTempAccount()) ||
-                g_walletState[i].state == false ||
-                g_walletState[i].enable == false) {
+        if (g_walletState[i].state == false || g_walletState[i].enable == false) {
             j++;
             continue;
         }

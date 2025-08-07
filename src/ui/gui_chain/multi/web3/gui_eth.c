@@ -1098,9 +1098,7 @@ void *GuiGetEthData(void)
         } else {
             parseResult = eth_parse(data, ethXpub);
         }
-        printf("%s %d..\n", __func__, __LINE__);
         CHECK_CHAIN_BREAK(parseResult);
-        printf("%s %d..\n", __func__, __LINE__);
         g_parseResult = (void *)parseResult;
         if (parseResult->data->overview->from != NULL) {
             g_fromEnsExist = GetEnsName((const char *)parseResult->data->overview->from, g_fromEthEnsName);

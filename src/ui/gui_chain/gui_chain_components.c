@@ -287,6 +287,12 @@ lv_obj_t *CreateNoticeCard(lv_obj_t *parent, char *notice)
     return card;
 }
 
+void GuiCustomPathNotice(lv_obj_t *parent, void *totalData)
+{
+    lv_obj_set_size(parent, 408, 182);
+    CreateNoticeCard(parent, _("custom_path_parse_notice"));
+}
+
 lv_obj_t *CreateNoticeView(lv_obj_t *parent, uint16_t width, uint16_t height, const char *notice)
 {
     lv_obj_t *noticeContainer = GuiCreateContainerWithParent(parent, width, height);

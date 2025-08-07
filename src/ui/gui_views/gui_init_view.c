@@ -47,10 +47,10 @@ static int32_t GuiInitViewInit(void *param)
         return SUCCESS_CODE;
     }
 
-    if (IsBootVersionMatch() == false) {
-        GuiBootVersionNotMatchWidget();
-        return SUCCESS_CODE;
-    }
+    // if (IsBootVersionMatch() == false) {
+    //     GuiBootVersionNotMatchWidget();
+    //     return SUCCESS_CODE;
+    // }
     GuiModeGetAccount();
     return SUCCESS_CODE;
 }

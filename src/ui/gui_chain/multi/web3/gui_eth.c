@@ -1089,7 +1089,6 @@ void *GuiGetEthData(void)
     if (chainType != 0xFF) {
         ethXpub = GetCurrentAccountPublicKey(chainType);
     }
-    printf("ethXpub: %s\n", ethXpub);
     GetMasterFingerPrint(mfp);
     PtrT_TransactionParseResult_DisplayETH parseResult = NULL;
     do {

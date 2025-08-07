@@ -751,6 +751,7 @@ mod tests {
         println!("{:?}", p.strip_prefix(prefix))
     }
 
+    #[test]
     fn test_test() {
         let _path = "44'/60'/1'/0/0";
         let root_path = "44'/60'/";

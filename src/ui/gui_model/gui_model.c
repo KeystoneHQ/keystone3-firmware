@@ -1256,12 +1256,23 @@ static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
-static PtrT_TransactionCheckResult g_checkResult = NULL;
+#ifdef CYPHERPUNK_VERSION
+static bool CheckNeedDelay(ViewType viewType)
+{
+    return viewType == ZcashTx;
+}
+#endif
 
+static PtrT_TransactionCheckResult g_checkResult = NULL;
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 {
     GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
     ViewType viewType = *((ViewType *)inData);
+#ifdef CYPHERPUNK_VERSION
+    if (CheckNeedDelay(viewType)) {
+        UserDelay(100);
+    }
+#endif
     g_checkResult = CheckUrResult(viewType);
     if (g_checkResult != NULL && g_checkResult->error_code == 0) {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);

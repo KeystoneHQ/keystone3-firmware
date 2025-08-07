@@ -31,7 +31,10 @@ pub mod swap;
 mod traits;
 pub type Bytes = Vec<u8>;
 
-pub fn parse_legacy_tx(tx_hex: &[u8], from_key: PublicKey) -> Result<ParsedEthereumTransaction> {
+pub fn parse_legacy_tx(
+    tx_hex: &[u8],
+    from_key: Option<PublicKey>,
+) -> Result<ParsedEthereumTransaction> {
     ParsedEthereumTransaction::from_legacy(
         ParsedLegacyTransaction::from(LegacyTransaction::decode_raw(tx_hex)?),
         from_key,
@@ -40,7 +43,7 @@ pub fn parse_legacy_tx(tx_hex: &[u8], from_key: PublicKey) -> Result<ParsedEther
 
 pub fn parse_fee_market_tx(
     tx_hex: &[u8],
-    from_key: PublicKey,
+    from_key: Option<PublicKey>,
 ) -> Result<ParsedEthereumTransaction> {
     ParsedEthereumTransaction::from_eip1559(
         ParsedEIP1559Transaction::from(EIP1559Transaction::decode_raw(tx_hex)?),
@@ -48,7 +51,10 @@ pub fn parse_fee_market_tx(
     )
 }
 
-pub fn parse_personal_message(tx_hex: Vec<u8>, from_key: PublicKey) -> Result<PersonalMessage> {
+pub fn parse_personal_message(
+    tx_hex: Vec<u8>,
+    from_key: Option<PublicKey>,
+) -> Result<PersonalMessage> {
     let raw_messge = hex::encode(tx_hex.clone());
     let utf8_message = match String::from_utf8(tx_hex) {
         Ok(utf8_message) => {

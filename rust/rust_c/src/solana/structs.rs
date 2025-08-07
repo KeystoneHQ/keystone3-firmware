@@ -611,7 +611,11 @@ impl From<SolanaMessage> for DisplaySolanaMessage {
             } else {
                 convert_c_char(message.utf8_message)
             },
-            from: convert_c_char(message.from),
+            from: if message.from.is_empty() {
+                null_mut()
+            } else {
+                convert_c_char(message.from)
+            },
         }
     }
 }

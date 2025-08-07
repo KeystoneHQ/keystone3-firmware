@@ -54,7 +54,7 @@ impl Encodable for TransactionAction {
 pub struct ParsedEthereumTransaction {
     pub nonce: u32,
     pub chain_id: u64,
-    pub from: String,
+    pub from: Option<String>,
     pub to: String,
     pub value: String,
     pub input: String,
@@ -70,12 +70,15 @@ pub struct ParsedEthereumTransaction {
 }
 
 impl ParsedEthereumTransaction {
-    pub(crate) fn from_legacy(tx: ParsedLegacyTransaction, from: PublicKey) -> Result<Self> {
+    pub(crate) fn from_legacy(
+        tx: ParsedLegacyTransaction,
+        from: Option<PublicKey>,
+    ) -> Result<Self> {
         Ok(Self {
             nonce: tx.nonce,
             gas_limit: tx.gas_limit,
             gas_price: Some(tx.gas_price),
-            from: generate_address(from)?,
+            from: from.map_or(None, |key| Some(generate_address(key).unwrap_or_default())),
             to: tx.to,
             value: tx.value,
             chain_id: tx.chain_id,
@@ -89,11 +92,14 @@ impl ParsedEthereumTransaction {
         })
     }
 
-    pub(crate) fn from_eip1559(tx: ParsedEIP1559Transaction, from: PublicKey) -> Result<Self> {
+    pub(crate) fn from_eip1559(
+        tx: ParsedEIP1559Transaction,
+        from: Option<PublicKey>,
+    ) -> Result<Self> {
         Ok(Self {
             nonce: tx.nonce,
             gas_limit: tx.gas_limit,
-            from: generate_address(from)?,
+            from: from.map_or(None, |key| Some(generate_address(key).unwrap_or_default())),
             to: tx.to,
             value: tx.value,
             chain_id: tx.chain_id,
@@ -136,15 +142,19 @@ impl EthereumSignature {
 pub struct PersonalMessage {
     pub raw_message: String,
     pub utf8_message: String,
-    pub from: String,
+    pub from: Option<String>,
 }
 
 impl PersonalMessage {
-    pub fn from(raw_message: String, utf8_message: String, from: PublicKey) -> Result<Self> {
+    pub fn from(
+        raw_message: String,
+        utf8_message: String,
+        from: Option<PublicKey>,
+    ) -> Result<Self> {
         Ok(Self {
             raw_message,
             utf8_message,
-            from: generate_address(from)?,
+            from: from.map_or(None, |key| Some(generate_address(key).unwrap_or_default())),
         })
     }
 }

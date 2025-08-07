@@ -235,15 +235,25 @@ pub extern "C" fn eth_parse(
 ) -> PtrT<TransactionParseResult<DisplayETH>> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
     let xpub = recover_c_char(xpub);
-    let pubkey = try_get_eth_public_key(xpub, &crypto_eth);
+    let pubkey = match try_get_eth_public_key(xpub, &crypto_eth) {
+        Ok(key) => Some(key),
+        Err(e) => None,
+    };
     let transaction_type = TransactionType::from(crypto_eth.get_data_type());
-
-    match (pubkey, transaction_type) {
-        (Err(e), _) => TransactionParseResult::from(e).c_ptr(),
-        (Ok(key), ty) => {
-            match ty {
-                TransactionType::Legacy => {
-                    let tx = parse_legacy_tx(&crypto_eth.get_sign_data(), key);
+    match transaction_type {
+        TransactionType::Legacy => {
+            let tx = parse_legacy_tx(&crypto_eth.get_sign_data(), pubkey);
+            match tx {
+                Ok(t) => TransactionParseResult::success(DisplayETH::from(t).c_ptr()).c_ptr(),
+                Err(e) => TransactionParseResult::from(e).c_ptr(),
+            }
+        }
+        TransactionType::TypedTransaction => {
+            match crypto_eth.get_sign_data().first() {
+                Some(02) => {
+                    //remove envelop
+                    let payload = &crypto_eth.get_sign_data()[1..];
+                    let tx = parse_fee_market_tx(payload, pubkey);
                     match tx {
                         Ok(t) => {
                             TransactionParseResult::success(DisplayETH::from(t).c_ptr()).c_ptr()
@@ -251,35 +261,17 @@ pub extern "C" fn eth_parse(
                         Err(e) => TransactionParseResult::from(e).c_ptr(),
                     }
                 }
-                TransactionType::TypedTransaction => {
-                    match crypto_eth.get_sign_data().first() {
-                        Some(02) => {
-                            //remove envelop
-                            let payload = &crypto_eth.get_sign_data()[1..];
-                            let tx = parse_fee_market_tx(payload, key);
-                            match tx {
-                                Ok(t) => {
-                                    TransactionParseResult::success(DisplayETH::from(t).c_ptr())
-                                        .c_ptr()
-                                }
-                                Err(e) => TransactionParseResult::from(e).c_ptr(),
-                            }
-                        }
-                        Some(x) => TransactionParseResult::from(
-                            RustCError::UnsupportedTransaction(format!("ethereum tx type:{}", x)),
-                        )
-                        .c_ptr(),
-                        None => {
-                            TransactionParseResult::from(EthereumError::InvalidTransaction).c_ptr()
-                        }
-                    }
-                }
-                _ => TransactionParseResult::from(RustCError::UnsupportedTransaction(
-                    "PersonalMessage or TypedData".to_string(),
+                Some(x) => TransactionParseResult::from(RustCError::UnsupportedTransaction(
+                    format!("ethereum tx type:{}", x),
                 ))
                 .c_ptr(),
+                None => TransactionParseResult::from(EthereumError::InvalidTransaction).c_ptr(),
             }
         }
+        _ => TransactionParseResult::from(RustCError::UnsupportedTransaction(
+            "PersonalMessage or TypedData".to_string(),
+        ))
+        .c_ptr(),
     }
 }
 
@@ -290,28 +282,26 @@ pub extern "C" fn eth_parse_personal_message(
 ) -> PtrT<TransactionParseResult<DisplayETHPersonalMessage>> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
     let xpub = recover_c_char(xpub);
-    let pubkey = try_get_eth_public_key(xpub, &crypto_eth);
-
+    let pubkey = match try_get_eth_public_key(xpub, &crypto_eth) {
+        Ok(key) => Some(key),
+        Err(e) => None,
+    };
     let transaction_type = TransactionType::from(crypto_eth.get_data_type());
 
-    match (pubkey, transaction_type) {
-        (Err(e), _) => TransactionParseResult::from(e).c_ptr(),
-        (Ok(key), ty) => match ty {
-            TransactionType::PersonalMessage => {
-                let tx = parse_personal_message(crypto_eth.get_sign_data(), key);
-                match tx {
-                    Ok(t) => {
-                        TransactionParseResult::success(DisplayETHPersonalMessage::from(t).c_ptr())
-                            .c_ptr()
-                    }
-                    Err(e) => TransactionParseResult::from(e).c_ptr(),
+    match transaction_type {
+        TransactionType::PersonalMessage => {
+            match parse_personal_message(crypto_eth.get_sign_data(), pubkey) {
+                Ok(tx) => {
+                    TransactionParseResult::success(DisplayETHPersonalMessage::from(tx).c_ptr())
+                        .c_ptr()
                 }
+                Err(e) => TransactionParseResult::from(e).c_ptr(),
             }
-            _ => TransactionParseResult::from(RustCError::UnsupportedTransaction(
-                "Legacy or TypedTransaction or TypedData".to_string(),
-            ))
-            .c_ptr(),
-        },
+        }
+        _ => TransactionParseResult::from(RustCError::UnsupportedTransaction(
+            "Legacy or TypedTransaction or TypedData".to_string(),
+        ))
+        .c_ptr(),
     }
 }
 
@@ -391,15 +381,14 @@ pub extern "C" fn eth_check_then_parse_batch_tx(
     let mut result = Vec::new();
     for request in requests {
         let request_type = request.get_data_type();
-        let key = try_get_eth_public_key(xpub.clone(), &request);
-        if let Err(e) = key {
-            return TransactionParseResult::from(e).c_ptr();
-        }
-        let key = key.unwrap();
+        let pubkey = match try_get_eth_public_key(xpub.clone(), &request) {
+            Ok(key) => Some(key),
+            Err(e) => return TransactionParseResult::from(e).c_ptr(),
+        };
         let transaction_type = TransactionType::from(request_type);
         match transaction_type {
             TransactionType::Legacy => {
-                let tx = parse_legacy_tx(&request.get_sign_data(), key);
+                let tx = parse_legacy_tx(&request.get_sign_data(), pubkey);
                 match tx {
                     Ok(t) => {
                         result.push(t);
@@ -412,7 +401,7 @@ pub extern "C" fn eth_check_then_parse_batch_tx(
                     Some(02) => {
                         //remove envelop
                         let payload = &request.get_sign_data()[1..];
-                        let tx = parse_fee_market_tx(payload, key);
+                        let tx = parse_fee_market_tx(payload, pubkey);
                         match tx {
                             Ok(t) => result.push(t),
                             Err(e) => return TransactionParseResult::from(e).c_ptr(),
@@ -762,7 +751,6 @@ mod tests {
         println!("{:?}", p.strip_prefix(prefix))
     }
 
-    #[test]
     fn test_test() {
         let _path = "44'/60'/1'/0/0";
         let root_path = "44'/60'/";

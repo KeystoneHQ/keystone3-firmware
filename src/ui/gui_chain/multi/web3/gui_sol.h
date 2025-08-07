@@ -12,6 +12,9 @@ void GetSolMessageType(void *indata, void *param, uint32_t maxLen);
 void GetSolMessageFrom(void *indata, void *param, uint32_t maxLen);
 void GetSolMessageUtf8(void *indata, void *param, uint32_t maxLen);
 void GetSolMessageRaw(void *indata, void *param, uint32_t maxLen);
+bool GetSolMessageFromExist(void *indata, void *param);
+bool GetSolMessageFromNotExist(void *indata, void *param);
+void GetSolMessagePos(uint16_t *x, uint16_t *y, void *param);
 
 void FreeSolMemory(void);
 

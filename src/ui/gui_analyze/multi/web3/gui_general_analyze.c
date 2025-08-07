@@ -1,5 +1,6 @@
 #include "gui_chain.h"
 #include "gui_analyze.h"
+#include "gui_chain_components.h"
 
 static GetLabelDataFunc GuiAdaTextFuncGet(char *type);
 static GetLabelDataLenFunc GuiAdaTextLenFuncGet(char *type);
@@ -29,7 +30,7 @@ static GetListLenFunc GetCosmosListLen(char *type);
 static GetContSizeFunc GetAdaContainerSize(char *type);
 static GetContSizeFunc GetCosmosContainerSize(char *type);
 static GetContSizeFunc GetEthContainerSize(char *type);
-
+static GetContSizeFunc GetSolObjPos(char *type);
 
 GetContSizeFunc GetOtherChainContainerSize(char *type, GuiRemapViewType remapIndex)
 {
@@ -54,9 +55,12 @@ GetContSizeFunc GetOtherChainPos(char *type, GuiRemapViewType remapIndex)
     switch (remapIndex) {
     case REMAPVIEW_ETH:
     case REMAPVIEW_ETH_TYPEDDATA:
+    case REMAPVIEW_ETH_PERSONAL_MESSAGE:
         return GetEthObjPos(type);
     case REMAPVIEW_COSMOS:
         return GetCosmosObjPos(type);
+    case REMAPVIEW_SOL_MESSAGE:
+        return GetSolObjPos(type);
     default:
         break;
     }
@@ -105,6 +109,8 @@ GetCustomContainerFunc GetOtherChainCustomFunc(char *funcName)
         return GuiIotaTxOverview;
     } else if (!strcmp(funcName, "GuiIotaTxRawData")) {
         return GuiIotaTxRawData;
+    } else if (!strcmp(funcName, "GuiCustomPathNotice")) {
+        return GuiCustomPathNotice;
     }
 
     return NULL;
@@ -141,6 +147,14 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetEthInputDataExist;
     } else if (!strcmp(type, "EthInputExistContractNot")) {
         return EthInputExistContractNot;
+    } else if (!strcmp(type, "GetEthFromAddressExist")) {
+        return GetEthFromAddressExist;
+    } else if (!strcmp(type, "GetEthFromAddressNotExist")) {
+        return GetEthFromAddressNotExist;
+    } else if (!strcmp(type, "GetEthMessageFromExist")) {
+        return GetEthMessageFromExist;
+    } else if (!strcmp(type, "GetEthMessageFromNotExist")) {
+        return GetEthMessageFromNotExist;
     } else if (!strcmp(type, "GetTrxContractExist")) {
         return GetTrxContractExist;
     } else if (!strcmp(type, "GetTrxTokenExist")) {
@@ -183,6 +197,10 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetIotaIsTransaction;
     } else if (!strcmp(type, "GetIotaIsTransfer")) {
         return GetIotaIsTransfer;
+    } else if (!strcmp(type, "GetSolMessageFromExist")) {
+        return GetSolMessageFromExist;
+    } else if (!strcmp(type, "GetSolMessageFromNotExist")) {
+        return GetSolMessageFromNotExist;
     }
     return NULL;
 }
@@ -646,6 +664,8 @@ static GetContSizeFunc GetEthObjPos(char *type)
         return GetEthToLabelPos;
     } else if (!strcmp(type, "GetEthTypeDomainPos")) {
         return GetEthTypeDomainPos;
+    } else if (!strcmp(type, "GetEthMessagePos")) {
+        return GetEthMessagePos;
     }
     return NULL;
 }
@@ -664,6 +684,14 @@ static GetContSizeFunc GetCosmosObjPos(char *type)
         return GetCosmosDetailAddress2LabelPos;
     } else if (!strcmp(type, "GetCosmosDetailAddress2ValuePos")) {
         return GetCosmosDetailAddress2ValuePos;
+    }
+    return NULL;
+}
+
+static GetContSizeFunc GetSolObjPos(char *type)
+{
+    if (!strcmp(type, "GetSolMessagePos")) {
+        return GetSolMessagePos;
     }
     return NULL;
 }

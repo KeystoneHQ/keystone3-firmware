@@ -29,7 +29,7 @@ typedef struct {
     FreeChainDataFunc freeFunc;
 } GuiAnalyze_t;
 
-#define GUI_ANALYZE_TABVIEW_CNT 3
+#define GUI_ANALYZE_TABVIEW_CNT 2
 typedef struct {
     lv_obj_t *obj[GUI_ANALYZE_TABVIEW_CNT];
     uint8_t tabviewIndex;
@@ -321,28 +321,28 @@ void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
     if (item != NULL) {
         func = GuiTemplatePosFuncGet(item->valuestring);
         func(&xpos, &ypos, g_totalData);
-        lv_obj_align(obj, LV_ALIGN_DEFAULT, xpos, ypos);
     } else {
         item = cJSON_GetObjectItem(json, "pos");
         if (item != NULL) {
             xpos = item->child->valueint;
             ypos = item->child->next->valueint;
-            item = cJSON_GetObjectItem(json, "align");
-            if (item != NULL) {
-                align = item->valueint;
-                item = cJSON_GetObjectItem(json, "align_to");
-                if (item != NULL) {
-                    lv_obj_t *parent = lv_obj_get_parent(obj);
-                    lv_obj_t *alignChild = lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) + item->valueint);
-                    lv_obj_align_to(obj, alignChild, align, xpos, ypos);
-                } else {
-                    lv_obj_align(obj, align, xpos, ypos);
-                }
-            } else {
-                lv_obj_align(obj, LV_ALIGN_DEFAULT, xpos, ypos);
-            }
         }
     }
+    item = cJSON_GetObjectItem(json, "align");
+    if (item != NULL) {
+        align = item->valueint;
+        item = cJSON_GetObjectItem(json, "align_to");
+        if (item != NULL) {
+            lv_obj_t *parent = lv_obj_get_parent(obj);
+            lv_obj_t *alignChild = lv_obj_get_child(parent, lv_obj_get_child_cnt(parent) + item->valueint);
+            lv_obj_align_to(obj, alignChild, align, xpos, ypos);
+        } else {
+            lv_obj_align(obj, align, xpos, ypos);
+        }
+    } else {
+        lv_obj_align(obj, LV_ALIGN_DEFAULT, xpos, ypos);
+    }
+
     item = cJSON_GetObjectItem(json, "size");
     if (item != NULL) {
         xsize = item->child->valueint;
@@ -1053,7 +1053,6 @@ void ParseTransaction(uint8_t index)
 static lv_obj_t *g_imgCont = NULL;
 void GuiAnalyzeViewInit(lv_obj_t *parent)
 {
-    uint16_t width = 0;
     g_imgCont = (lv_obj_t *)GuiCreateContainerWithParent(parent, 440, 530);
     lv_obj_align(g_imgCont, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_scroll_dir(g_imgCont, LV_DIR_VER);
@@ -1164,11 +1163,16 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
     g_viewTypeIndex = index;
     g_templateContainer = (lv_obj_t *)GuiCreateContainerWithParent(parent, 480, 542);
     lv_obj_align(g_templateContainer, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_add_flag(g_templateContainer, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(g_templateContainer, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_scrollbar_mode(g_templateContainer, LV_SCROLLBAR_MODE_OFF);
     if (CreateTransactionDetailWidgets() == NULL) {
         lv_obj_del(g_templateContainer);
         return NULL;
     }
+#ifdef COMPILE_SIMULATOR
+    return g_templateContainer;
+#endif
 
     if (g_tableView == NULL || g_analyzeTabview.obj[0] == NULL) {
 #ifdef WEB3_VERSION

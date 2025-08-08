@@ -61,6 +61,8 @@ This is a transaction layout JSON, the code says if you are not compiling simula
 You will find that the file is not exists, so you need to parse this JSON text by your own then create a `page_btc.json` in that folder. You can use the script `ui_simulator/tools/read_then_write_json.mjs` to do the stuff but you need to change the code inside because the parameters are hardcoded now. 
 > cd ui_simulator & node tools/read_then_write_json.mjs
 
+For other coins the same steps are needed, just with `btc` replaced by another name, for example `page_iota`.
+
 ### Reading QR code
 
 #### MacOS
@@ -89,7 +91,9 @@ Simulating the camera is difficult, but we have a workaround.
 
 A file `ui_simulator/assets/qrcode_data.txt` is created when you run the simulator build.
 
-You can scan the QR codes with your phone or other scanner tools then paste the text into the `qrcode_data.txt`, then click the scanner button in the home page, it will reads the data in this file then continue process the data.
+To read from the text file, you have to comment `#define GET_QR_DATA_FROM_SCREEN` in `ui_simulator/simulator_model.c`.
+
+You can scan the QR codes with your phone or other scanner tools then paste the text into the `qrcode_data.txt`, then click the scanner button in the home page, it will read the data in this file then continue process the data.
 
 If your QR code is animating, just read them by your phone and paste the data line by line. Most QR codes start with `UR` and have a format of `UR:{NAME}/M-N`, UR(Please read [this](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md)) is a fountain code generator so `M` indicates the index of this qr code, and `N` indicates the how many qr codes construct the original data.
 

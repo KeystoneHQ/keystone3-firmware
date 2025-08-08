@@ -1,3 +1,25 @@
+## 2.2.6(2025-08-06)
+
+**Web3:**
+
+### What's new
+1.Compatible with the updated SLIP-39 protocol
+
+**BTC Only:**
+
+### What's new
+1.Compatible with the updated SLIP-39 protocol
+
+**Cypherpunk:**
+
+### What's new
+1. Support managing ZEC assets with Passphrase wallets
+2. Compatible with the updated SLIP-39 protocol
+### Bug 修复
+1. Fixed unexpected sleep issue after signing Zcash transactions
+
+
+
 ## 2.2.4(2025-08-04)
 
 **Web3:**

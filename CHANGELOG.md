@@ -15,7 +15,8 @@
 ### What's new
 1. Support managing ZEC assets with Passphrase wallets
 2. Compatible with the updated SLIP-39 protocol
-### Bug 修复
+
+### Bug Fixes
 1. Fixed unexpected sleep issue after signing Zcash transactions
 
 

@@ -327,7 +327,7 @@ impl From<TypedData> for DisplayETHTypedData {
             salt: to_ptr_string(message.salt),
             primary_type: to_ptr_string(message.primary_type),
             message: to_ptr_string(message.message),
-            from: to_ptr_string(message.from),
+            from: message.from.map(to_ptr_string).unwrap_or(null_mut()),
             domain_hash: to_ptr_string(message.domain_separator),
             message_hash: to_ptr_string(message.message_hash),
             safe_tx_hash: to_ptr_string(safe_tx_hash),

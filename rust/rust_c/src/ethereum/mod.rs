@@ -522,26 +522,26 @@ pub extern "C" fn eth_parse_typed_data(
 ) -> PtrT<TransactionParseResult<DisplayETHTypedData>> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
     let xpub = recover_c_char(xpub);
-    let pubkey = try_get_eth_public_key(xpub, &crypto_eth);
-
+    let pubkey = match try_get_eth_public_key(xpub, &crypto_eth) {
+        Ok(key) => Some(key),
+        Err(e) => None,
+    };
     let transaction_type = TransactionType::from(crypto_eth.get_data_type());
 
-    match (pubkey, transaction_type) {
-        (Err(e), _) => TransactionParseResult::from(e).c_ptr(),
-        (Ok(key), ty) => match ty {
-            TransactionType::TypedData => {
-                let tx = parse_typed_data_message(crypto_eth.get_sign_data(), key);
-                match tx {
-                    Ok(t) => TransactionParseResult::success(DisplayETHTypedData::from(t).c_ptr())
-                        .c_ptr(),
-                    Err(e) => TransactionParseResult::from(e).c_ptr(),
+    match transaction_type {
+        TransactionType::TypedData => {
+            let tx = parse_typed_data_message(crypto_eth.get_sign_data(), pubkey);
+            match tx {
+                Ok(t) => {
+                    TransactionParseResult::success(DisplayETHTypedData::from(t).c_ptr()).c_ptr()
                 }
+                Err(e) => TransactionParseResult::from(e).c_ptr(),
             }
-            _ => TransactionParseResult::from(RustCError::UnsupportedTransaction(
-                "Legacy or TypedTransaction or PersonalMessage".to_string(),
-            ))
-            .c_ptr(),
-        },
+        }
+        _ => TransactionParseResult::from(RustCError::UnsupportedTransaction(
+            "Legacy or TypedTransaction or PersonalMessage".to_string(),
+        ))
+        .c_ptr(),
     }
 }
 

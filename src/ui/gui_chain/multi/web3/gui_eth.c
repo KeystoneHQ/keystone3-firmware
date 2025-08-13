@@ -1646,11 +1646,14 @@ void EthContractCheckRawData(lv_event_t *e)
 
 void EthContractCheckRawDataCallback(void)
 {
+    SetLockScreen(false);
     char *rawData = ((TransactionParseResult_DisplayETH *)g_parseResult)->data->detail->input;
     g_contractRawDataHintbox = GuiCreateContractRawDataHintbox("Raw Data", rawData);
     lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_contractRawDataHintbox);
     lv_obj_add_event_cb(rightBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_contractRawDataHintbox);
     GuiModelTransactionParseRawDataDelay();
+    ClearLockScreenTime();
+    SetLockScreen(true);
 }
 
 bool GetEthContractFromExternal(char *address, char *selectorId, uint64_t chainId, char *inputData)

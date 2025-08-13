@@ -168,20 +168,20 @@ pub struct TypedData {
     pub salt: String,
     pub primary_type: String,
     pub message: String,
-    pub from: String,
+    pub from: Option<String>,
     pub domain_separator: String,
     pub message_hash: String,
 }
 
 impl TypedData {
-    pub fn from(data: TypedData, from: PublicKey) -> Result<Self> {
+    pub fn from(data: TypedData, from: Option<PublicKey>) -> Result<Self> {
         Ok(Self {
-            from: generate_address(from)?,
+            from: from.map_or(None, |key| Some(generate_address(key).unwrap_or_default())),
             ..data
         })
     }
 
-    pub fn from_raw(mut data: Eip712TypedData, from: PublicKey) -> Result<Self> {
+    pub fn from_raw(mut data: Eip712TypedData, from: Option<PublicKey>) -> Result<Self> {
         Self::from(Into::into(data), from)
     }
 

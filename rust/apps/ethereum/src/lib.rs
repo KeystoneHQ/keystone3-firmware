@@ -69,7 +69,7 @@ pub fn parse_personal_message(
     PersonalMessage::from(raw_messge, utf8_message, from_key)
 }
 
-pub fn parse_typed_data_message(tx_hex: Vec<u8>, from_key: PublicKey) -> Result<TypedData> {
+pub fn parse_typed_data_message(tx_hex: Vec<u8>, from_key: Option<PublicKey>) -> Result<TypedData> {
     let utf8_message =
         String::from_utf8(tx_hex).map_err(|e| EthereumError::InvalidUtf8Error(e.to_string()))?;
     let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message)

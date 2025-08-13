@@ -770,7 +770,11 @@ void *GuiGetEthTypeData(void)
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char *rootPath = eth_get_root_path(data);
-    char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
+    char *ethXpub = "";
+    ChainType chainType = GetEthPublickeyIndex(rootPath);
+    if (chainType != 0xFF) {
+        ethXpub = GetCurrentAccountPublicKey(chainType);
+    }
     GetMasterFingerPrint(mfp);
     TransactionCheckResult *result = NULL;
     do {

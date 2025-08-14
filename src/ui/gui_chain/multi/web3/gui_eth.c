@@ -770,7 +770,11 @@ void *GuiGetEthTypeData(void)
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char *rootPath = eth_get_root_path(data);
-    char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
+    char *ethXpub = "";
+    ChainType chainType = GetEthPublickeyIndex(rootPath);
+    if (chainType != 0xFF) {
+        ethXpub = GetCurrentAccountPublicKey(chainType);
+    }
     GetMasterFingerPrint(mfp);
     TransactionCheckResult *result = NULL;
     do {
@@ -974,7 +978,11 @@ void *GuiGetEthPersonalMessage(void)
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char *rootPath = eth_get_root_path(data);
-    char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
+    char *ethXpub = "";
+    ChainType chainType = GetEthPublickeyIndex(rootPath);
+    if (chainType != 0xFF) {
+        ethXpub = GetCurrentAccountPublicKey(chainType);
+    }
     GetMasterFingerPrint(mfp);
     TransactionCheckResult *result = NULL;
     do {
@@ -1002,6 +1010,10 @@ void GetEthPersonalMessageType(void *indata, void *param, uint32_t maxLen)
 void GetMessageFrom(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHPersonalMessage *message = (DisplayETHPersonalMessage *)param;
+    if (message->from == NULL) {
+        strcpy_s((char *)indata, maxLen, "");
+        return;
+    }
     if (strlen(message->from) >= maxLen) {
         snprintf((char *)indata, maxLen - 3, "%s", message->from);
         strcat((char *)indata, "...");
@@ -1045,7 +1057,7 @@ static uint8_t GetEthPublickeyIndex(char* rootPath)
     if (strcmp(rootPath, "44'/60'/8'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_8;
     if (strcmp(rootPath, "44'/60'/9'") == 0) return XPUB_TYPE_ETH_LEDGER_LIVE_9;
 
-    return -1;
+    return 0xFF;
 }
 
 // pase result
@@ -1072,11 +1084,15 @@ void *GuiGetEthData(void)
     }
     char *rootPath = NULL;
     if (urType == Bytes) {
-        rootPath  = eth_get_root_path_bytes(data);
+        rootPath = eth_get_root_path_bytes(data);
     } else {
         rootPath = eth_get_root_path(data);
     }
-    char *ethXpub = GetCurrentAccountPublicKey(GetEthPublickeyIndex(rootPath));
+    char *ethXpub = "";
+    ChainType chainType = GetEthPublickeyIndex(rootPath);
+    if (chainType != 0xFF) {
+        ethXpub = GetCurrentAccountPublicKey(chainType);
+    }
     GetMasterFingerPrint(mfp);
     PtrT_TransactionParseResult_DisplayETH parseResult = NULL;
     do {
@@ -1087,7 +1103,11 @@ void *GuiGetEthData(void)
         }
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
-        g_fromEnsExist = GetEnsName((const char *)parseResult->data->overview->from, g_fromEthEnsName);
+        if (parseResult->data->overview->from != NULL) {
+            g_fromEnsExist = GetEnsName((const char *)parseResult->data->overview->from, g_fromEthEnsName);
+        } else {
+            g_fromEnsExist = false;
+        }
         g_toEnsExist = GetEnsName((const char *)parseResult->data->overview->to, g_toEthEnsName);
         decodeEthContractData(parseResult);
     } while (0);
@@ -1230,7 +1250,11 @@ void GetEthMaxPriorityFeePrice(void *indata, void *param, uint32_t maxLen)
 void GetEthGetFromAddress(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETH *eth = (DisplayETH *)param;
-    strcpy_s((char *)indata, maxLen, eth->overview->from);
+    if (eth->overview->from == NULL) {
+        strcpy_s((char *)indata, maxLen, "0x0");
+    } else {
+        strcpy_s((char *)indata, maxLen, eth->overview->from);
+    }
 }
 
 void GetEthGetSignerAddress(void *indata, void *param, uint32_t maxLen)
@@ -1294,6 +1318,28 @@ int GetEthInputDataLen(void *param)
     return strlen(eth->detail->input) + 3;
 }
 
+bool GetEthFromAddressExist(void *indata, void *param)
+{
+    DisplayETH *eth = (DisplayETH *)param;
+    return eth->overview->from != NULL;
+}
+
+bool GetEthFromAddressNotExist(void *indata, void *param)
+{
+    return !GetEthFromAddressExist(indata, param);
+}
+
+bool GetEthMessageFromExist(void *indata, void *param)
+{
+    DisplayETHPersonalMessage *eth = (DisplayETHPersonalMessage *)param;
+    return eth->from != NULL;
+}
+
+bool GetEthMessageFromNotExist(void *indata, void *param)
+{
+    return !GetEthMessageFromExist(indata, param);
+}
+
 bool GetEthEnsExist(void *indata, void *param)
 {
     return g_fromEnsExist;
@@ -1319,7 +1365,7 @@ bool EthInputExistContractNot(void *indata, void *param)
 void GetEthToFromSize(uint16_t *width, uint16_t *height, void *param)
 {
     *width = 408;
-    *height = 244 + (g_fromEnsExist + g_toEnsExist) * (GAP + TEXT_LINE_HEIGHT) + g_contractDataExist * (GAP + TEXT_LINE_HEIGHT);
+    *height = (244 - 114) + GetEthFromAddressExist(NULL, param) * 114 + (g_fromEnsExist + g_toEnsExist) * (GAP + TEXT_LINE_HEIGHT) + g_contractDataExist * (GAP + TEXT_LINE_HEIGHT);
 }
 
 void GetEthTypeDomainSize(uint16_t *width, uint16_t *height, void *param)
@@ -1333,7 +1379,13 @@ void GetEthTypeDomainSize(uint16_t *width, uint16_t *height, void *param)
 void GetEthToLabelPos(uint16_t *x, uint16_t *y, void *param)
 {
     *x = 24;
-    *y = 130 + g_fromEnsExist * 38;
+    *y = 16 + GetEthFromAddressExist(NULL, param) * 114 + g_fromEnsExist * 38;
+}
+
+void GetEthMessagePos(uint16_t *x, uint16_t *y, void *param)
+{
+    *x = GetEthMessageFromExist(NULL, param) ? 0 : 24;
+    *y = 11;
 }
 
 void GetEthTypeDomainPos(uint16_t *x, uint16_t *y, void *param)
@@ -1594,7 +1646,7 @@ lv_obj_t *GuiCreateContractRawDataHintbox(const char *titleText, const char *des
         lv_obj_add_flag(desc, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_align(desc, LV_ALIGN_BOTTOM_LEFT, 36 + 20, -110);
         char *text = descText;
-        int textLen = strlen(text); 
+        int textLen = strlen(text);
         int segmentSize = 1000;
         int numSegments = (textLen + segmentSize - 1) / segmentSize;
 

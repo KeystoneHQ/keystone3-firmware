@@ -1675,8 +1675,8 @@ void SetAccountReceiveIndex(const char* chainName, uint32_t index)
         cJSON_AddItemToObject(item, "recvIndex", cJSON_CreateNumber(index));
     }
 
-    WriteJsonToFlash(addr, rootJson);
     if (!PassphraseExist(GetCurrentAccountIndex())) {
+        WriteJsonToFlash(addr, rootJson);
         cJSON_Delete(rootJson);
     }
 }
@@ -1689,6 +1689,19 @@ uint32_t GetAccountReceivePath(const char* chainName)
     cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
     if (item == NULL) {
         printf("GetAccountReceivePath index cannot get %s\r\n", chainName);
+        printf("receive index cannot get %s\r\n", chainName);
+        cJSON *jsonItem = cJSON_CreateObject();
+        cJSON_AddItemToObject(jsonItem, "recvIndex", cJSON_CreateNumber(0)); // recvIndex is the address index
+        cJSON_AddItemToObject(jsonItem, "recvPath", cJSON_CreateNumber(0)); // recvPath is the derivation path type
+        cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(true)); // firstRecv is the first receive address
+        if (!strcmp(chainName, "TON")) {
+            cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
+        } else if ((!strcmp(chainName, "BTC") || !strcmp(chainName, "ETH"))) {
+            cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
+        } else {
+            cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));
+        }
+        cJSON_AddItemToObject(rootJson, chainName, jsonItem);
     } else {
         cJSON *recvPath = cJSON_GetObjectItem(item, "recvPath");
         index = recvPath ? recvPath->valueint : 0;
@@ -1707,7 +1720,9 @@ void SetAccountReceivePath(const char* chainName, uint32_t index)
     cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
     if (item == NULL) {
         printf("SetAccountReceivePath cannot get %s\r\n", chainName);
-        cJSON_Delete(rootJson);
+        if (!PassphraseExist(GetCurrentAccountIndex())) {
+            cJSON_Delete(rootJson);
+        }
         return;
     }
     cJSON *recvPath = cJSON_GetObjectItem(item, "recvPath");

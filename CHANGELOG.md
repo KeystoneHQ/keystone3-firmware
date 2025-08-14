@@ -1,3 +1,12 @@
+## 2.2.8(2025-08-14)
+
+**Web3:**
+
+### Bug Fixes
+1. Fixed an issue with custom path signing
+2. Fixed an issue with WebUSB upgrade failures
+
+
 ## 2.2.6(2025-08-06)
 
 **Web3:**

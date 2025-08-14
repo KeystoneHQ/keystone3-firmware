@@ -93,6 +93,20 @@ PtrT_TransactionCheckResult GuiGetSolCheckResult(void)
     return solana_check(data,  mfp, sizeof(mfp));
 }
 
+bool GetSolMessageFromExist(void *indata, void *param)
+{
+    DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
+    if (message->from == NULL) {
+        return false;
+    }
+    return true;
+}
+
+bool GetSolMessageFromNotExist(void *indata, void *param)
+{
+    return !GetSolMessageFromExist(indata, param);
+}
+
 void *GuiGetSolMessageData(void)
 {
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
@@ -100,8 +114,10 @@ void *GuiGetSolMessageData(void)
     do {
         char *path = sol_get_path(data);
         ChainType pubkeyIndex = CheckSolPathSupport(path);
-        ASSERT(pubkeyIndex != XPUB_TYPE_NUM);
-        char *pubKey = GetCurrentAccountPublicKey(pubkeyIndex);
+        char *pubKey = "";
+        if (pubkeyIndex != XPUB_TYPE_NUM) {
+            pubKey = GetCurrentAccountPublicKey(pubkeyIndex);
+        }
         PtrT_TransactionParseResult_DisplaySolanaMessage parseResult = solana_parse_message(data, pubKey);
         free_ptr_string(path);
         CHECK_CHAIN_BREAK(parseResult);
@@ -125,7 +141,15 @@ void FreeSolMemory(void)
     g_accountCount = 0;
 }
 
-
+void GetSolMessagePos(uint16_t *x, uint16_t *y, void *param)
+{
+    if (GetSolMessageFromExist(NULL, param)) {
+        *x = 0;
+    } else {
+        *x = 24;
+    }
+    *y = 11;
+}
 
 static void learn_more_click_event_handler(lv_event_t *e)
 {

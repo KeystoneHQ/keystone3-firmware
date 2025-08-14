@@ -356,7 +356,7 @@ impl Into<StructTypedDta> for TypedData {
             }),
             primary_type: self.primary_type,
             message: serde_json::to_string_pretty(&self.message).unwrap_or("".to_string()),
-            from: "".to_string(),
+            from: None,
             message_hash: hex::encode(&message_hash),
             domain_separator: hex::encode(&domain_separator),
         }

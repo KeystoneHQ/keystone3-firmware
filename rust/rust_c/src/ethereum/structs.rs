@@ -233,7 +233,7 @@ impl From<ParsedEthereumTransaction> for DisplayETHOverview {
                 Some(s) => convert_c_char(s),
             },
             gas_limit: convert_c_char(tx.gas_limit),
-            from: convert_c_char(tx.from),
+            from: tx.from.map(convert_c_char).unwrap_or(null_mut()),
             to: convert_c_char(tx.to),
         }
     }
@@ -253,7 +253,7 @@ impl From<ParsedEthereumTransaction> for DisplayETHDetail {
                 .unwrap_or(null_mut()),
             gas_price: tx.gas_price.map(convert_c_char).unwrap_or(null_mut()),
             gas_limit: convert_c_char(tx.gas_limit),
-            from: convert_c_char(tx.from),
+            from: tx.from.map(convert_c_char).unwrap_or(null_mut()),
             to: convert_c_char(tx.to),
             nonce: convert_c_char(tx.nonce.to_string()),
             input: convert_c_char(tx.input),
@@ -277,7 +277,7 @@ impl From<PersonalMessage> for DisplayETHPersonalMessage {
             } else {
                 convert_c_char(message.utf8_message)
             },
-            from: convert_c_char(message.from),
+            from: message.from.map(convert_c_char).unwrap_or(null_mut()),
         }
     }
 }
@@ -327,7 +327,7 @@ impl From<TypedData> for DisplayETHTypedData {
             salt: to_ptr_string(message.salt),
             primary_type: to_ptr_string(message.primary_type),
             message: to_ptr_string(message.message),
-            from: to_ptr_string(message.from),
+            from: message.from.map(to_ptr_string).unwrap_or(null_mut()),
             domain_hash: to_ptr_string(message.domain_separator),
             message_hash: to_ptr_string(message.message_hash),
             safe_tx_hash: to_ptr_string(safe_tx_hash),

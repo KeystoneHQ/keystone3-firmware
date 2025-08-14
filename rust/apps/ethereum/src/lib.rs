@@ -31,7 +31,10 @@ pub mod swap;
 mod traits;
 pub type Bytes = Vec<u8>;
 
-pub fn parse_legacy_tx(tx_hex: &[u8], from_key: PublicKey) -> Result<ParsedEthereumTransaction> {
+pub fn parse_legacy_tx(
+    tx_hex: &[u8],
+    from_key: Option<PublicKey>,
+) -> Result<ParsedEthereumTransaction> {
     ParsedEthereumTransaction::from_legacy(
         ParsedLegacyTransaction::from(LegacyTransaction::decode_raw(tx_hex)?),
         from_key,
@@ -40,7 +43,7 @@ pub fn parse_legacy_tx(tx_hex: &[u8], from_key: PublicKey) -> Result<ParsedEther
 
 pub fn parse_fee_market_tx(
     tx_hex: &[u8],
-    from_key: PublicKey,
+    from_key: Option<PublicKey>,
 ) -> Result<ParsedEthereumTransaction> {
     ParsedEthereumTransaction::from_eip1559(
         ParsedEIP1559Transaction::from(EIP1559Transaction::decode_raw(tx_hex)?),
@@ -48,7 +51,10 @@ pub fn parse_fee_market_tx(
     )
 }
 
-pub fn parse_personal_message(tx_hex: Vec<u8>, from_key: PublicKey) -> Result<PersonalMessage> {
+pub fn parse_personal_message(
+    tx_hex: Vec<u8>,
+    from_key: Option<PublicKey>,
+) -> Result<PersonalMessage> {
     let raw_messge = hex::encode(tx_hex.clone());
     let utf8_message = match String::from_utf8(tx_hex) {
         Ok(utf8_message) => {
@@ -63,7 +69,7 @@ pub fn parse_personal_message(tx_hex: Vec<u8>, from_key: PublicKey) -> Result<Pe
     PersonalMessage::from(raw_messge, utf8_message, from_key)
 }
 
-pub fn parse_typed_data_message(tx_hex: Vec<u8>, from_key: PublicKey) -> Result<TypedData> {
+pub fn parse_typed_data_message(tx_hex: Vec<u8>, from_key: Option<PublicKey>) -> Result<TypedData> {
     let utf8_message =
         String::from_utf8(tx_hex).map_err(|e| EthereumError::InvalidUtf8Error(e.to_string()))?;
     let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message)
@@ -194,13 +200,16 @@ mod tests {
         let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
         let sign_data =
             hex::decode("4578616d706c652060706572736f6e616c5f7369676e60206d657373616765").unwrap();
-        let result = parse_personal_message(sign_data, pubkey).unwrap();
+        let result = parse_personal_message(sign_data, Some(pubkey)).unwrap();
         assert_eq!(
             "4578616d706c652060706572736f6e616c5f7369676e60206d657373616765",
             result.raw_message
         );
         assert_eq!("Example `personal_sign` message", result.utf8_message);
-        assert_eq!("0x9858EfFD232B4033E47d90003D41EC34EcaEda94", result.from);
+        assert_eq!(
+            "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
+            result.from.unwrap()
+        );
     }
 
     #[test]
@@ -222,10 +231,13 @@ mod tests {
         //data: 3593564c000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000064996e5f00000000000000000000000000000000000000000000000000000000000000020b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000002386f26fc1000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000002386f26fc10000000000000000000000000000000000000000000000000000f84605ccc515414000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc20001f46b175474e89094c44da98b954eedeac495271d0f000000000000000000000000000000000000000000
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
         let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
-        let result = parse_fee_market_tx(&sign_data, pubkey).unwrap();
+        let result = parse_fee_market_tx(&sign_data, Some(pubkey)).unwrap();
         assert_eq!(31, result.nonce);
         assert_eq!(1, result.chain_id);
-        assert_eq!("0x9858EfFD232B4033E47d90003D41EC34EcaEda94", result.from);
+        assert_eq!(
+            "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
+            result.from.unwrap()
+        );
         assert_eq!("0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad", result.to);
         assert_eq!("0.01", result.value);
         assert_eq!(None, result.gas_price);
@@ -246,7 +258,7 @@ mod tests {
 
         let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
         let sign_data = hex::decode(sign_data).unwrap();
-        let result = parse_typed_data_message(sign_data, pubkey).unwrap();
+        let result = parse_typed_data_message(sign_data, Some(pubkey)).unwrap();
         assert_eq!("Seaport", &result.name);
         assert_eq!("1.1", &result.version);
         assert_eq!("1", &result.chain_id);

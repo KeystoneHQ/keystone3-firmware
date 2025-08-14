@@ -258,7 +258,7 @@ mod tests {
 
         let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
         let sign_data = hex::decode(sign_data).unwrap();
-        let result = parse_typed_data_message(sign_data, pubkey).unwrap();
+        let result = parse_typed_data_message(sign_data, Some(pubkey)).unwrap();
         assert_eq!("Seaport", &result.name);
         assert_eq!("1.1", &result.version);
         assert_eq!("1", &result.chain_id);

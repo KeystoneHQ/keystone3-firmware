@@ -1292,7 +1292,7 @@ mod tests {
         );
         let xpub = hex::encode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c");
         let master_fingerprint = hex::decode("52744703").unwrap();
-        let context = ParseContext::new(vec![], vec![], xpub, master_fingerprint);
+        let context = ParseContext::new(vec![], vec![], Some(xpub), master_fingerprint);
         let tx = Transaction::from_hex(&hex::encode(sign_data)).unwrap();
 
         let network_id = ParsedCardanoTx::judge_network_id(&tx);

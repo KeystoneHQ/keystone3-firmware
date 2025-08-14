@@ -341,7 +341,7 @@ pub mod tests {
             salt: "".to_string(),
             primary_type: "SafeTx".to_string(),
             message: message.to_string(),
-            from: "".to_string(),
+            from: Some("".to_string()),
             domain_separator: "0x1c9fbcac173da0e989115be1cf7e8c85442bac869e1de9f72ea59ec6c4e1b43d"
                 .to_string(),
             message_hash: "0x2760e0669e7dbd5a2a9f695bac8db1432400df52a9895d8eae50d94dcb82976b"

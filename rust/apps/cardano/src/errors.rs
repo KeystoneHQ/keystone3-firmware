@@ -16,6 +16,8 @@ pub enum CardanoError {
     UnsupportedTransaction(String),
     #[error("error occurs when signing cardano transaction: {0}")]
     SigningFailed(String),
+    #[error("invalid seed: {0}")]
+    InvalidSeed(String),
 }
 
 pub type R<T> = Result<T, CardanoError>;
@@ -46,5 +48,11 @@ mod tests {
     fn test_cardano_error2() {
         let error = CardanoError::InvalidTransaction("test".to_string());
         assert_eq!(error.to_string(), "invalid transaction: test");
+    }
+
+    #[test]
+    fn test_invalid_seed_error() {
+        let error = CardanoError::InvalidSeed("test".to_string());
+        assert_eq!(error.to_string(), "invalid seed: test");
     }
 }

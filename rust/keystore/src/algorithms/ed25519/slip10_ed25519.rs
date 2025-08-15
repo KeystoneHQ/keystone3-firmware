@@ -56,7 +56,7 @@ pub fn sign_message_by_seed(seed: &[u8], path: &String, message: &[u8]) -> Resul
     Ok(cryptoxide::ed25519::signature(message, &keypair))
 }
 
-fn get_master_key_by_seed(seed: &[u8]) -> [u8; 64] {
+pub fn get_master_key_by_seed(seed: &[u8]) -> [u8; 64] {
     hmac_sha512(b"ed25519 seed", seed)
 }
 

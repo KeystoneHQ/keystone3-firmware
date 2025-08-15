@@ -1,6 +1,7 @@
 use crate::errors::{CardanoError, R};
 use alloc::string::{String, ToString};
 
+use crate::slip23::from_seed_slip23;
 use cardano_serialization_lib::protocol_types::credential::*;
 use cardano_serialization_lib::protocol_types::{
     BaseAddress, Ed25519KeyHash, EnterpriseAddress, RewardAddress,
@@ -9,6 +10,7 @@ use cryptoxide::hashing::blake2b_224;
 use ed25519_bip32_core::{DerivationScheme, XPub};
 use hex;
 use ur_registry::crypto_key_path::CryptoKeyPath;
+
 pub enum AddressType {
     Base,
     Stake,
@@ -254,5 +256,24 @@ mod tests {
             derived_xpub,
             "ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c"
         );
+    }
+
+    #[test]
+    fn test_address_from_slip39_ms() {
+        let path = "m/1852'/1815'/0'/0/0";
+        let entropy = hex::decode("cb9d63db98ccce6a3329e36fe53860df").unwrap();
+        let xpub =
+            keystore::algorithms::ed25519::bip32_ed25519::get_extended_public_key_by_entropy(
+                entropy.as_slice(),
+                b"",
+                &path.to_string(),
+            )
+            .unwrap();
+        {
+            println!("{}", xpub);
+            let spend_address =
+                derive_address(xpub.to_string(), 0, 0, 0, AddressType::Base, 1).unwrap();
+            assert_eq!("addr1qy8ac7qqy0vtulyl7wntmsxc6wex80gvcyjy33qffrhm7sh927ysx5sftuw0dlft05dz3c7revpf7jx0xnlcjz3g69mq4afdhv", spend_address)
+        }
     }
 }

@@ -1722,6 +1722,13 @@ void SetAccountReceivePath(const char* chainName, uint32_t index)
         printf("SetAccountReceivePath cannot get %s\r\n", chainName);
         if (!PassphraseExist(GetCurrentAccountIndex())) {
             cJSON_Delete(rootJson);
+        } else {
+            cJSON *jsonItem = cJSON_CreateObject();
+            cJSON_AddItemToObject(jsonItem, "recvIndex", cJSON_CreateNumber(0)); // recvIndex is the address index
+            cJSON_AddItemToObject(jsonItem, "recvPath", cJSON_CreateNumber(index)); // recvPath is the derivation path type
+            cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(false)); // firstRecv is the first receive address
+            cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));
+            cJSON_AddItemToObject(rootJson, chainName, jsonItem);
         }
         return;
     }

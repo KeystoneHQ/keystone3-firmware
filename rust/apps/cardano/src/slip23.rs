@@ -1,7 +1,7 @@
 use crate::errors::{CardanoError, R};
 use alloc::{format, string::ToString, vec::Vec};
 use cryptoxide::hashing::sha512;
-use ed25519_bip32_core::XPrv;
+use ed25519_bip32_core::{DerivationScheme, XPrv};
 use keystore::algorithms::crypto::hmac_sha512;
 
 #[derive(Debug, Clone)]
@@ -62,6 +62,49 @@ pub fn from_seed_slip23(seed: &[u8]) -> R<CardanoHDNode> {
     let hd_node = CardanoHDNode::new(xprv);
 
     Ok(hd_node)
+}
+
+pub fn from_seed_slip23_path(seed: &[u8], path: &str) -> R<CardanoHDNode> {
+    let root_node = from_seed_slip23(seed)?;
+
+    let components = parse_derivation_path(path)?;
+    let mut current_xprv = root_node.xprv;
+
+    for component in components {
+        current_xprv = current_xprv.derive(DerivationScheme::V2, component);
+    }
+
+    Ok(CardanoHDNode::new(current_xprv))
+}
+
+fn parse_derivation_path(path: &str) -> R<Vec<u32>> {
+    let mut components = Vec::new();
+
+    let path = path.strip_prefix("m/").unwrap_or(path);
+    for part in path.split('/') {
+        if part.is_empty() {
+            continue;
+        }
+
+        let hardened = part.ends_with('\'');
+        let index_str = if hardened {
+            &part[..part.len() - 1]
+        } else {
+            part
+        };
+
+        let index: u32 = index_str.parse().map_err(|_| {
+            CardanoError::DerivationError(format!("Invalid path component: {}", part))
+        })?;
+
+        if hardened {
+            components.push(index + 0x80000000);
+        } else {
+            components.push(index);
+        }
+    }
+
+    Ok(components)
 }
 
 #[cfg(test)]

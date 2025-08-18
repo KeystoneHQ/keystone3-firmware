@@ -725,6 +725,24 @@ pub extern "C" fn cardano_sign_tx_unlimited(
     cardano_sign_tx_by_icarus_unlimited(ptr, master_fingerprint, cardano_xpub, icarus_master_key)
 }
 
+#[no_mangle]
+pub extern "C" fn cardano_get_pubkey_by_slip23(
+    entropy: PtrString,
+    entropy_len: u32,
+    path: PtrString,
+) -> *mut SimpleResponse<c_char> {
+    let entropy = recover_c_char(entropy);
+    // len check
+    let path = recover_c_char(path);
+    let xpub = app_cardano::slip23::from_seed_slip23_path(entropy.as_bytes(), path.as_str());
+    match xpub {
+        Ok(xpub) => {
+            SimpleResponse::success(convert_c_char(xpub.xprv.public().to_string())).simple_c_ptr()
+        }
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
+}
+
 fn cardano_sign_tx_by_icarus(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,

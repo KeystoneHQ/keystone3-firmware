@@ -24,6 +24,7 @@ impl CardanoHDNode {
     }
 }
 
+// https://github.com/satoshilabs/slips/blob/master/slip-0023.md
 pub fn from_seed_slip23(seed: &[u8]) -> R<CardanoHDNode> {
     if seed.is_empty() {
         return Err(CardanoError::InvalidSeed("seed is empty".to_string()));

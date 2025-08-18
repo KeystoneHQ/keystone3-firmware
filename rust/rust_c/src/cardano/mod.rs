@@ -727,14 +727,17 @@ pub extern "C" fn cardano_sign_tx_unlimited(
 
 #[no_mangle]
 pub extern "C" fn cardano_get_pubkey_by_slip23(
-    entropy: PtrString,
+    entropy: PtrBytes,
     entropy_len: u32,
     path: PtrString,
 ) -> *mut SimpleResponse<c_char> {
-    let entropy = recover_c_char(entropy);
-    // len check
+    if entropy_len != 16 && entropy_len != 32 {
+        return SimpleResponse::from(RustCError::InvalidData("Invalid entropy length".to_string()))
+            .simple_c_ptr();
+    }
+    let entropy = unsafe { core::slice::from_raw_parts(entropy, entropy_len as usize) };
     let path = recover_c_char(path);
-    let xpub = app_cardano::slip23::from_seed_slip23_path(entropy.as_bytes(), path.as_str());
+    let xpub = app_cardano::slip23::from_seed_slip23_path(entropy, path.as_str());
     match xpub {
         Ok(xpub) => {
             SimpleResponse::success(convert_c_char(xpub.xprv.public().to_string())).simple_c_ptr()

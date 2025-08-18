@@ -124,9 +124,9 @@ int WordsListSlice(char *words, char wordsList[][10], uint8_t wordsCount)
 
 void ArrayRandom(char *words, char *out, int count)
 {
-#ifndef BUILD_PRODUCTION
     strcpy_s(out, BUFFER_SIZE_512, words);
     return;
+#ifndef BUILD_PRODUCTION
 #endif
     char wordList[33][10];
     memset_s(out, BUFFER_SIZE_512, 0, BUFFER_SIZE_512);

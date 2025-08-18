@@ -69,20 +69,57 @@ void GuiDevicePublicKeyEntranceWidget(lv_obj_t *parent)
     lv_obj_set_style_bg_color(qrCodeCont, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(qrCodeCont, LV_OPA_10 + LV_OPA_2, LV_PART_MAIN);
 
-    lv_obj_t * innerCont = lv_obj_create(qrCodeCont);
-    lv_obj_set_size(innerCont, 336, 336);
-    lv_obj_align(innerCont, LV_ALIGN_TOP_MID, 0, 36);
-    lv_obj_clear_flag(innerCont, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_clear_flag(innerCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_style_bg_color(innerCont, WHITE_COLOR, LV_PART_MAIN);
+    // lv_obj_t * innerCont = lv_obj_create(qrCodeCont);
+    // lv_obj_set_size(innerCont, 336, 336);
+    // lv_obj_align(innerCont, LV_ALIGN_TOP_MID, 0, 36);
+    // lv_obj_clear_flag(innerCont, LV_OBJ_FLAG_SCROLLABLE);
+    // lv_obj_clear_flag(innerCont, LV_OBJ_FLAG_CLICKABLE);
+    // lv_obj_set_style_bg_color(innerCont, WHITE_COLOR, LV_PART_MAIN);
 
-    char hexStr[131] = {0};
+    char hexStr[256] = {0};
     uint8_t pubkey[BUFFER_SIZE_64 + 1] = {0};
+    uint16_t slotConfig[BUFFER_SIZE_64 + 1] = {0};
+    uint16_t keyConfig[BUFFER_SIZE_64 + 1] = {0};
     int32_t ret = GetDevicePublicKey(pubkey);
-    if (ret == 0) {
-        ByteArrayToHexStr(pubkey, sizeof(pubkey), hexStr);
+    int32_t ret2 = Get6080Config(slotConfig, keyConfig);
+    char buff[32] = {0};
+    // if (ret == 0) {
+    //     ByteArrayToHexStr(pubkey, sizeof(pubkey), hexStr);
+    // } else {
+    //     snprintf_s(hexStr, sizeof(hexStr), "%s%d", "get pubkey error, error code is ", ret);
+    // }
+    printf("slot config:\r\n");
+    for (int i = 0; i < 16; i++) {
+        printf("%04X ", slotConfig[i]);
+        if (i % 4 == 0) {
+            printf("\r\n");
+        }
+    }
+    printf("key config:\r\n");
+    for (int i = 0; i < 16; i++) {
+        printf("%04X ", keyConfig[i]);
+        if (i % 4 == 0) {
+            printf("\r\n");
+        }
+    }
+
+    if (ret2 != 1234) {
+        snprintf_s(hexStr, sizeof(hexStr), "slot config:\n");
+        for (int i = 0; i < 16; i++) {
+            snprintf_s(hexStr, sizeof(hexStr), "%s %04X ", hexStr, slotConfig[i]);
+            if ((i + 1) % 4 == 0) {
+                strcat_s(hexStr, sizeof(hexStr), "\n");
+            }
+        }
+        strcat_s(hexStr, sizeof(hexStr), "\nkey config:\n");
+        for (int i = 0; i < 16; i++) {
+            snprintf_s(hexStr, sizeof(hexStr), "%s %04X ", hexStr, keyConfig[i]);
+            if ((i + 1) % 4 == 0) {
+                strcat_s(hexStr, sizeof(hexStr), "\n");
+            }
+        }
     } else {
-        snprintf_s(hexStr, sizeof(hexStr), "%s%d", "get pubkey error, error code is ", ret);
+        snprintf_s(hexStr, sizeof(hexStr), "%s%d", "get slotConfig error, error code is ", ret2);
     }
 
     printf("pubkey is %s\n", hexStr);
@@ -93,21 +130,21 @@ void GuiDevicePublicKeyEntranceWidget(lv_obj_t *parent)
     char qrData[BUFFER_SIZE_256] = {0};
     snprintf_s(qrData, BUFFER_SIZE_256, "%s#%s", serialNumber, hexStr);
 
-    lv_obj_t * qrCode = lv_qrcode_create(innerCont, 294, BLACK_COLOR, WHITE_COLOR);
-    lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
+    // lv_obj_t * qrCode = lv_qrcode_create(innerCont, 294, BLACK_COLOR, WHITE_COLOR);
+    // lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
 
-    lv_qrcode_update(qrCode, qrData, (uint32_t)strnlen_s(qrData, BUFFER_SIZE_256));
+    // lv_qrcode_update(qrCode, qrData, (uint32_t)strnlen_s(qrData, BUFFER_SIZE_256));
 
-    lv_obj_t * contentCont = lv_obj_create(qrCodeCont);
-    lv_obj_set_size(contentCont, 336, 180);
-    lv_obj_set_style_bg_opa(contentCont, LV_OPA_0, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(contentCont, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(contentCont, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
-    lv_obj_set_style_border_width(contentCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_clip_corner(contentCont, 0, 0);
-    lv_obj_set_style_pad_all(contentCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_clear_flag(contentCont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_align(contentCont, LV_ALIGN_TOP_MID, 0, 396);
+    // lv_obj_t * contentCont = lv_obj_create(qrCodeCont);
+    // lv_obj_set_size(contentCont, 336, 180);
+    // lv_obj_set_style_bg_opa(contentCont, LV_OPA_0, LV_PART_MAIN);
+    // lv_obj_set_style_bg_opa(contentCont, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
+    // lv_obj_set_style_bg_opa(contentCont, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
+    // lv_obj_set_style_border_width(contentCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    // lv_obj_set_style_clip_corner(contentCont, 0, 0);
+    // lv_obj_set_style_pad_all(contentCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    // lv_obj_clear_flag(contentCont, LV_OBJ_FLAG_CLICKABLE);
+    // lv_obj_align(contentCont, LV_ALIGN_TOP_MID, 0, 396);
 
     char sn[BUFFER_SIZE_64 + 1] = {0};
     snprintf_s(sn, sizeof(sn), "SN:%s", serialNumber);
@@ -116,9 +153,10 @@ void GuiDevicePublicKeyEntranceWidget(lv_obj_t *parent)
     snprintf_s(uid, BUFFER_SIZE_256, "UID:%s", hexStr);
 
     char show[BUFFER_SIZE_256] = {0};
-    snprintf_s(show, BUFFER_SIZE_256, "%s\n%s", sn, uid);
+    // snprintf_s(show, BUFFER_SIZE_256, "%s\n%s", sn, uid);
+    snprintf_s(show, BUFFER_SIZE_256, "%s", hexStr);
 
-    lv_obj_t * label = GuiCreateIllustrateLabel(contentCont, show);
+    lv_obj_t * label = GuiCreateIllustrateLabel(qrCodeCont, show);
     lv_obj_set_width(label, 336);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
 }

@@ -51,6 +51,7 @@ bool FpAesKeyExist();
 void GetAccountSlot(AccountSlot_t *accountSlot, uint8_t accountIndex);
 int32_t SignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signaure);
 int32_t GetDevicePublicKey(uint8_t *pubkey);
+int32_t Get6080Config(uint16_t *slotConfig, uint16_t *keyConfig);
 int32_t SetWalletDataHash(uint8_t index, uint8_t *info);
 bool VerifyWalletDataHash(uint8_t index, uint8_t *info);
 int32_t SetMultisigDataHash(uint8_t index, uint8_t *info);

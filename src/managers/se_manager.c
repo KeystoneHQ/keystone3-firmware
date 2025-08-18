@@ -385,3 +385,14 @@ int32_t GetDevicePublicKey(uint8_t *pubkey)
     } while (0);
     return ret;
 }
+
+int32_t Atecc608bGetDeviceConfig(uint16_t *slotConfig, uint16_t *keyConfig);
+int32_t Get6080Config(uint16_t *slotConfig, uint16_t *keyConfig)
+{
+    int32_t ret;
+    do {
+        ret = Atecc608bGetDeviceConfig(slotConfig, keyConfig);
+        CHECK_ERRCODE_BREAK("get device config error", ret);
+    } while (0);
+    return ret;
+}

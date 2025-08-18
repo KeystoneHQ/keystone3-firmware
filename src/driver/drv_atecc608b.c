@@ -516,6 +516,22 @@ int32_t Atecc608bSignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signatu
     return ret;
 }
 
+int32_t Atecc608bGetDeviceConfig(uint16_t *slotConfig, uint16_t *keyConfig)
+{
+    Atecc608bConfig_t config;
+    bool isLock;
+    int32_t ret;
+    uint8_t tempKey[32];
+    do {
+        ret = atcab_read_config_zone((uint8_t *)&config);
+        CHECK_ATECC608B_RET("get config", ret);
+        memcpy(slotConfig, config.slotConfig, sizeof(config.slotConfig));
+        memcpy(keyConfig, config.keyConfig, sizeof(config.keyConfig));
+    } while (0);
+
+    return ret;
+}
+
 /// @brief
 /// @param argc Test arg count.
 /// @param argv Test arg values.

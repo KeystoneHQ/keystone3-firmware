@@ -181,18 +181,6 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.y = 0;
     button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table) - 1,
                              LogExportHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 383);
-
-    titleLabel = GuiCreateTextLabel(parent, _("about_info_device_uid"));
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-
-    table[0].obj = titleLabel;
-    table[1].obj = imgArrow;
-    table[1].align = LV_ALIGN_RIGHT_MID;
-    table[1].position.x = -24;
-    table[1].position.y = 0;
-    button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table) - 1,
-                             OpenViewHandler, &g_DevicePublicKeyView);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 282);
 
     uint16_t height = 82;
@@ -219,10 +207,10 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.y = -24;
     button = GuiCreateButton(parent, 456, height, table, NUMBER_OF_ARRAYS(table) - 1,
                              NULL, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 484);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 383);
 
     line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 484 + height + 12);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 383 + height + 12);
 
     titleLabel = GuiCreateTextLabel(parent, _("about_info_battery_voltage"));
     contentLabel = GuiCreateNoticeLabel(parent, "");
@@ -238,7 +226,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.y = 64;
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table) - 1,
                              NULL, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 484 + height + 12 + 9);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 383 + height + 12 + 9);
 }
 
 void GuiAboutWidgetsLogExport(bool en, int32_t errCode)

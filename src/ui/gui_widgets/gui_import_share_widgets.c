@@ -146,22 +146,25 @@ void GuiImportShareInit(uint8_t wordsCnt)
     g_importShareTileView.ssbInput = tile;
     GuiShareSsbInputWidget(tile);
 
-    SecretCacheSetSlip39Mnemonic("visitor else academic acid dynamic fumes trust envelope editor join chubby salon equip agree detect wireless spider maiden bundle display", 0);
-    SecretCacheSetSlip39Mnemonic("visitor else academic agency dining remember inmate aide meaning strike junk source gravity crystal alcohol beard staff frozen expand short", 1);
-
     tile = lv_tileview_add_tile(tileView, IMPORT_SHARE_WRITE_SE, 0, LV_DIR_HOR);
     g_importShareTileView.writeSe = tile;
     GuiWriteSeWidget(tile);
 
-    g_importShareTileView.currentTile = IMPORT_SHARE_WRITE_SE;
+    g_importShareTileView.currentTile = IMPORT_SHARE_SSB_INPUT;
     g_importShareTileView.tileView = tileView;
     g_importShareTileView.cont = cont;
 
     lv_obj_set_tile_id(g_importShareTileView.tileView, g_importShareTileView.currentTile, 0, LV_ANIM_OFF);
+    int8_t GuiImportShareNextTile(void);
+    GuiImportShareNextTile();
 }
 
 int8_t GuiImportShareNextTile(void)
 {
+    SecretCacheSetSlip39Mnemonic("visitor else academic acid dynamic fumes trust envelope editor join chubby salon equip agree detect wireless spider maiden bundle display", 0);
+    SecretCacheSetSlip39Mnemonic("visitor else academic agency dining remember inmate aide meaning strike junk source gravity crystal alcohol beard staff frozen expand short", 1);
+    g_importMkb->threShold = 2;
+    g_phraseCnt = 20;
     Slip39Data_t slip39 = {
         .threShold = g_importMkb->threShold,
         .wordCnt = g_phraseCnt,

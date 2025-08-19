@@ -788,6 +788,8 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
         GetAccountInfo(newAccount, &accountInfo);
     }
     ret = CreateNewSlip39Account(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, eb, ie);
+    PrintArray("entropy", entropy, entropyLen);
+    PrintArray("ems", emsBak, entropyLen);
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());

@@ -100,7 +100,7 @@ int main(int argc, char **argv)
     // c080e9d40873204bb1bb5837dc88886b
     uint8_t seed[32] = {0xc0, 0x80, 0xe9, 0xd4, 0x08, 0x73, 0x20, 0x4b, 0xb1, 0xbb, 0x58, 0x37, 0xdc, 0x88, 0x88, 0x6b};
     uint8_t len = 16;
-    char *path = "m/1852'/1815'/0'";
+    char *path = "M/1852'/1815'/0'";
     SimpleResponse_c_char *result = cardano_get_pubkey_by_slip23(seed, len, path);
     printf("xpub: %s\r\n", result->data);
     free_simple_response_c_char(result);

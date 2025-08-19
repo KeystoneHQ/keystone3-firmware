@@ -939,14 +939,14 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     free_simple_response_u8(iv_response);
                     xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
                 } else {
-                    if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
-                        xPubResult = cardano_get_pubkey_by_slip23(seed, len, g_chainTable[i].path);
-                    } else {
-                        xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
-                    }
+                    xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
 #else
-                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+                if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
+                    xPubResult = cardano_get_pubkey_by_slip23(seed, len, g_chainTable[i].path);
+                } else {
+                    xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+                }
 #endif
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                     continue;
@@ -1109,15 +1109,15 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
                 free_simple_response_u8(iv_response);
                 xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
             } else {
-                if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
-                    // ada slip23
-                    xPubResult = cardano_get_pubkey_by_slip23(seed, len, g_chainTable[i].path);
-                } else {
-                    xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
-                }
+                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
             }
 #else
-            xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+            if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
+                // ada slip23
+                xPubResult = cardano_get_pubkey_by_slip23(seed, len, g_chainTable[i].path);
+            } else {
+                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+            }
 #endif
             if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                 continue;

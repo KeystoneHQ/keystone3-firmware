@@ -736,7 +736,7 @@ pub extern "C" fn cardano_get_pubkey_by_slip23(
             .simple_c_ptr();
     }
     let entropy = unsafe { core::slice::from_raw_parts(entropy, entropy_len as usize) };
-    let path = recover_c_char(path);
+    let path = recover_c_char(path).to_lowercase();
     let xpub = app_cardano::slip23::from_seed_slip23_path(entropy, path.as_str());
     match xpub {
         Ok(xpub) => {

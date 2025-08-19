@@ -210,7 +210,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 383);
 
     line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 484 + height + 12);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 383 + height + 12);
 
     titleLabel = GuiCreateTextLabel(parent, _("about_info_battery_voltage"));
     contentLabel = GuiCreateNoticeLabel(parent, "");
@@ -226,7 +226,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     table[1].position.y = 64;
     button = GuiCreateButton(parent, 456, 118, table, NUMBER_OF_ARRAYS(table) - 1,
                              NULL, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 484 + height + 12 + 9);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 383 + height + 12 + 9);
 }
 
 void GuiAboutWidgetsLogExport(bool en, int32_t errCode)

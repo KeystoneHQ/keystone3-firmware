@@ -252,23 +252,23 @@ impl TxConstructionData {
         res
     }
 
-    pub fn inputs(&self, keypair: &KeyPair) -> InnerInputs {
+    pub fn inputs(&self, keypair: &KeyPair) -> Result<InnerInputs> {
         let mut res = InnerInputs::new();
         for (index, source) in self.sources.iter().enumerate() {
             let key_offsets = self.absolute_output_offsets_to_relative(
                 source.outputs.iter().map(|output| output.index).collect(),
             );
-            let key_image = self.calc_key_image_by_index(keypair, index);
+            let (key_image, key_offset) = self.calc_key_image_by_index(keypair, index)?;
             let input = Input::ToKey {
                 amount: None,
                 key_offsets: key_offsets.clone(),
-                key_image: key_image.0.to_point(),
+                key_image: key_image.to_point(),
             };
             res.push(InnerInput {
                 key_offsets,
                 input,
                 source: source.clone(),
-                key_offset: key_image.1,
+                key_offset,
             });
         }
 
@@ -289,7 +289,7 @@ impl TxConstructionData {
             )
         });
 
-        res
+        Ok(res)
     }
 
     pub fn derive_view_tag(&self, derivation: &EdwardsPoint, output_index: u64) -> u8 {
@@ -338,31 +338,33 @@ impl TxConstructionData {
         &self,
         keypair: &KeyPair,
         sources_index: usize,
-    ) -> (Keyimage, Scalar) {
+    ) -> Result<(Keyimage, Scalar)> {
         let source = self.sources[sources_index].clone();
         let output_entry = source.outputs[source.real_output as usize];
         let ctkey = output_entry.key;
 
-        try_to_generate_image(
+        match try_to_generate_image(
             keypair,
             &source.real_out_tx_key,
             &ctkey.dest,
             source.real_output_in_tx_index,
             self.subaddr_account,
             self.subaddr_indices.clone(),
-        )
-        .unwrap()
+        ) {
+            Ok((key_image, key_offset)) => Ok((key_image, key_offset)),
+            Err(e) => Err(e),
+        }
     }
 
-    fn calc_key_images(&self, keypair: &KeyPair) -> Vec<Keyimage> {
+    fn calc_key_images(&self, keypair: &KeyPair) -> Result<Vec<Keyimage>> {
         let mut key_images = vec![];
         let tx = self;
 
         for index in 0..tx.sources.iter().len() {
-            key_images.push(tx.calc_key_image_by_index(keypair, index).0);
+            key_images.push(tx.calc_key_image_by_index(keypair, index)?.0);
         }
 
-        key_images
+        Ok(key_images)
     }
 
     pub fn serialize(&self) -> Vec<u8> {
@@ -538,7 +540,7 @@ impl UnsignedTx {
         UnsignedTx { txes, transfers }
     }
 
-    pub fn transaction_without_signatures(&self, keypair: &KeyPair) -> Vec<Transaction> {
+    pub fn transaction_without_signatures(&self, keypair: &KeyPair) -> Result<Vec<Transaction>> {
         let mut txes = vec![];
         for tx in self.txes.iter() {
             let commitments_and_encrypted_amounts = tx.commitments_and_encrypted_amounts(keypair);
@@ -570,7 +572,7 @@ impl UnsignedTx {
             let tx: Transaction<NotPruned> = Transaction::V2 {
                 prefix: TransactionPrefix {
                     additional_timelock: Timelock::None,
-                    inputs: tx.inputs(keypair).get_inputs(),
+                    inputs: tx.inputs(keypair)?.get_inputs(),
                     outputs: tx.outputs(keypair).get_outputs(),
                     extra: tx.extra(keypair),
                 },
@@ -591,18 +593,18 @@ impl UnsignedTx {
             txes.push(tx);
         }
 
-        txes
+        Ok(txes)
     }
 
-    pub fn sign(&self, keypair: &KeyPair) -> SignedTxSet {
+    pub fn sign(&self, keypair: &KeyPair) -> Result<SignedTxSet> {
         let mut penging_tx = vec![];
-        let txes = self.transaction_without_signatures(keypair);
+        let txes = self.transaction_without_signatures(keypair)?;
         let mut tx_key_images = vec![];
         let seed = keccak256(&txes[0].serialize());
         let mut rng = rand_chacha::ChaCha20Rng::from_seed(seed);
         for (tx, unsigned_tx) in txes.iter().zip(self.txes.iter()) {
             let mask_sum = unsigned_tx.sum_output_masks(keypair);
-            let inputs = unsigned_tx.inputs(keypair);
+            let inputs = unsigned_tx.inputs(keypair)?;
             let mut clsag_signs = Vec::with_capacity(inputs.0.len());
             for (i, input) in inputs.0.iter().enumerate() {
                 let ring: Vec<[EdwardsPoint; 2]> = input
@@ -628,7 +630,7 @@ impl UnsignedTx {
                     Zeroizing::new(keypair.spend.scalar + input.key_offset),
                     ClsagContext::new(
                         Decoys::new(
-                            unsigned_tx.inputs(keypair).get_key_offsets(i),
+                            unsigned_tx.inputs(keypair)?.get_key_offsets(i),
                             input.source.real_output as u8,
                             ring.clone(),
                         )
@@ -670,7 +672,7 @@ impl UnsignedTx {
                 pseudo_outs.push(*pseudo_out);
             }
 
-            let key_images = unsigned_tx.calc_key_images(keypair);
+            let key_images = unsigned_tx.calc_key_images(keypair)?;
             let key_images_str = if key_images.len() == 0 {
                 "".to_owned()
             } else {
@@ -711,7 +713,7 @@ impl UnsignedTx {
             tx_key_images.push(transfer.generate_key_image_without_signature(keypair));
         }
 
-        SignedTxSet::new(penging_tx, vec![], tx_key_images)
+        Ok(SignedTxSet::new(penging_tx, vec![], tx_key_images))
     }
 }
 
@@ -753,7 +755,7 @@ pub fn sign_tx(keypair: KeyPair, request_data: Vec<u8>) -> Result<Vec<u8>> {
 
     let unsigned_tx = UnsignedTx::deserialize(&decrypted_data.data);
 
-    let signed_txes = unsigned_tx.sign(&keypair);
+    let signed_txes = unsigned_tx.sign(&keypair)?;
 
     Ok(encrypt_data_with_pvk(
         keypair,

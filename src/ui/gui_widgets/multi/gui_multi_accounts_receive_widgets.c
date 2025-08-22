@@ -240,7 +240,6 @@ void GuiMultiAccountsReceiveRefresh(void)
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("derivation_path_change"));
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, MoreHandler, NULL);
         GuiCreateSwitchPathTypeWidget(g_multiAccountsReceiveWidgets.tileSwitchPathType, g_chainCard, PathTypeChangedCb);
-        printf("%s %d\n", __func__, __LINE__);
         break;
     default:
         break;
@@ -303,7 +302,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 
 #ifdef WEB3_VERSION
-    if (g_chainCard == HOME_WALLET_CARD_ADA) {
+    if (g_chainCard == HOME_WALLET_CARD_ADA && GetMnemonicType() != MNEMONIC_TYPE_SLIP39) {
         btn = lv_btn_create(cont);
         lv_obj_set_size(btn, 456, 84);
         lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 24 + 476);
@@ -1015,7 +1014,7 @@ static bool IsPathTypeSwitchable()
     switch (g_chainCard) {
 #ifdef WEB3_VERSION
     case HOME_WALLET_CARD_ADA:
-        return true;
+        return (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) ? false : true;
 #endif
     default:
         return false;

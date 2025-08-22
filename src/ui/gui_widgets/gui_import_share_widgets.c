@@ -66,9 +66,6 @@ void GuiImportShareWriteSe(bool en, int32_t errCode)
     if (en == true) {
         ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
     } else {
-        // if (errCode == ERR_KEYSTORE_MNEMONIC_REPEAT) {
-        // } else {
-        // }
         lv_btnmatrix_set_selected_btn(g_importMkb->btnm, g_importMkb->currentId - 1);
         g_importMkb->currentId--;
     }
@@ -161,10 +158,6 @@ void GuiImportShareInit(uint8_t wordsCnt)
 
 int8_t GuiImportShareNextTile(void)
 {
-    SecretCacheSetSlip39Mnemonic("visitor else academic acid dynamic fumes trust envelope editor join chubby salon equip agree detect wireless spider maiden bundle display", 0);
-    SecretCacheSetSlip39Mnemonic("visitor else academic agency dining remember inmate aide meaning strike junk source gravity crystal alcohol beard staff frozen expand short", 1);
-    g_importMkb->threShold = 2;
-    g_phraseCnt = 20;
     Slip39Data_t slip39 = {
         .threShold = g_importMkb->threShold,
         .wordCnt = g_phraseCnt,

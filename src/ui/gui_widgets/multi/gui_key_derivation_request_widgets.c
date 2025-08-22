@@ -504,15 +504,6 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
             }
         }
     }
-    if (g_hasAda) {
-        MnemonicType mnemonicType = GetMnemonicType();
-        if (mnemonicType == MNEMONIC_TYPE_SLIP39) {
-            SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
-                false, _("invaild_derive_type"), _("invalid_slip39_ada_con")
-            });
-            return g_hardwareCallParamsCheckResult;
-        }
-    }
 
     SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
         true, "Check Pass", "hardware call params check pass"

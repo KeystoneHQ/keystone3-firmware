@@ -343,10 +343,17 @@ impl TxConstructionData {
         let output_entry = source.outputs[source.real_output as usize];
         let ctkey = output_entry.key;
 
+        let additional_tx_keys: Vec<PublicKey> = source
+            .real_out_additional_tx_keys
+            .iter()
+            .map(|key_bytes| PublicKey::from_bytes(key_bytes).unwrap())
+            .collect();
+
         match try_to_generate_image(
             keypair,
             &source.real_out_tx_key,
             &ctkey.dest,
+            additional_tx_keys,
             source.real_output_in_tx_index,
             self.subaddr_account,
             self.subaddr_indices.clone(),

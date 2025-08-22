@@ -202,20 +202,37 @@ pub fn try_to_generate_image(
     keypair: &KeyPair,
     tx_pubkey: &[u8; 32],
     output_pubkey: &[u8; 32],
+    additional_tx_keys: Vec<PublicKey>,
     internal_output_index: u64,
     major: u32,
     optional_minors: Vec<u32>,
 ) -> Result<(Keyimage, Scalar)> {
+    let mut additional_tx_pub_key = None;
+    if major != 0 || !optional_minors.is_empty() {
+        if additional_tx_keys.len() == 1 {
+            additional_tx_pub_key = Some(additional_tx_keys[0]);
+        } else if !additional_tx_keys.is_empty() {
+            if internal_output_index as usize >= additional_tx_keys.len() {
+                return Err(MoneroError::GenerateKeyImageError);
+            }
+            additional_tx_pub_key = Some(additional_tx_keys[internal_output_index as usize]);
+        }
+    }
+
+    let key_to_use = match additional_tx_pub_key {
+        Some(key) => &key.as_bytes(),
+        None => tx_pubkey,
+    };
+
     for minor in optional_minors {
         let offset =
-            calc_output_key_offset(keypair, tx_pubkey, internal_output_index, major, minor);
-        match generate_key_image_from_offset(
+            calc_output_key_offset(keypair, key_to_use, internal_output_index, major, minor);
+        if let Some(image) = generate_key_image_from_offset(
             &keypair.spend,
             &offset,
             &PublicKey::from_bytes(output_pubkey).unwrap(),
         ) {
-            Some(image) => return Ok((Keyimage::new(image.compress().to_bytes()), offset)),
-            None => continue,
+            return Ok((Keyimage::new(image.compress().to_bytes()), offset));
         };
     }
 

@@ -48,6 +48,9 @@ uint8_t SecretCacheGetWalletIconIndex();
 void SecretCacheSetWalletName(const char* walletName);
 char *SecretCacheGetWalletName();
 
+void SecretCacheSetExtendable(bool flag);
+bool SecretCacheGetExtendable(void);
+
 void ClearSecretCache(void);
 
 #endif

@@ -181,8 +181,11 @@ LV_FONT_DECLARE(openSans_20);
 
 void LogRustPanic(char* panic_info)
 {
-    PrintOnLcd(&openSans_20, 0xFFFF, "Rust Panic: %s\r\n", panic_info);
+    PrintOnLcd(&openSans_20, 0xFFFF, "The error was caused by a failed data request.\nYour assets remain safe.\n");
     PrintErrorInfoOnLcd();
+    uint32_t c = 0x666666;
+    uint16_t color = (uint16_t)(((c & 0xF80000) >> 16) | ((c & 0xFC00) >> 13) | ((c & 0x1C00) << 3) | ((c & 0xF8) << 5));
+    PrintOnLcd(&openSans_20, color, "Rust Panic: %s\r\n", panic_info);
     while (1);
 }
 

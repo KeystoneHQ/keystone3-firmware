@@ -216,8 +216,13 @@ static void HandleTonCondition(bool isTon, MnemonicKeyBoard_t *mkb)
             GuiEmitSignal(SIG_SETUP_SHOW_TON_MNEMONIC_HINT, NULL, 0);
             break;
         case MNEMONIC_INPUT_SETTING_VIEW:
-            GuiModelTonRecoveryCheck();
-            GuiSettingRecoveryCheck();
+            if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
+                GuiModelTonRecoveryCheck();
+                GuiSettingRecoveryCheck();
+            } else {
+                GuiModelBip39RecoveryCheck(mkb->wordCnt);
+                GuiSettingRecoveryCheck();
+            }
             break;
         case MNEMONIC_INPUT_FORGET_VIEW:
             GuiForgetAnimContDel(1);

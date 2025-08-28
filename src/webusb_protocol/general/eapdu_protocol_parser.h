@@ -10,7 +10,17 @@
 #define EAPDU_PROTOCOL_HEADER             0x00
 #define EAPDU_PROTOCOL_PARSER_NAME        "eapdu_protocol_parser"
 
-enum { OFFSET_CLA = 0, OFFSET_INS = 1, OFFSET_P1 = 3, OFFSET_P2 = 5, OFFSET_LC = 7, OFFSET_CDATA = 9 };
+enum { 
+    OFFSET_CLA = 0, 
+    OFFSET_INS = 1, 
+    OFFSET_P1 = 3, 
+    OFFSET_P2 = 5, 
+    OFFSET_LC = 7, 
+    OFFSET_CDATA = 9,
+    OFFSET_HID_TAG = 9,
+    OFFSET_DATA_LEN = 10, 
+    OFFSET_HID_DATA = 11
+};
 
 typedef enum {
     CMD_ECHO_TEST = 0x00000001,    // Command to test echo

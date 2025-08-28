@@ -60,9 +60,6 @@ static bool g_isManageClick = true;
 static PageWidget_t *g_pageWidget;
 static lv_timer_t *g_countDownTimer = NULL; // count down timer
 static lv_obj_t *g_walletButton[HOME_WALLET_CARD_BUTT];
-static lv_obj_t *g_cosmosPulldownImg = NULL;
-static lv_obj_t *g_endCosmosLine = NULL;
-static lv_obj_t *g_lastCosmosLine = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
 static uint8_t g_currentPage = 0;
 static uint8_t g_coinCurrentPage = 0;
@@ -220,7 +217,6 @@ bool GuiHomePageIsTop(void)
 void ReturnManageWalletHandler(lv_event_t *e)
 {
     UpdateManageWalletState(false);
-    GUI_DEL_OBJ(g_lastCosmosLine)
     GUI_DEL_OBJ(g_manageCont);
     g_currentFilter = COIN_FILTER_MAIN;
     GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);

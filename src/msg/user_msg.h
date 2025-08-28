@@ -82,6 +82,7 @@ enum {
 
 enum {
     SPRING_MSG_GET = SPRING_MSG_BASE,
+    SPRING_MSG_HID_GET,
 };
 
 enum {

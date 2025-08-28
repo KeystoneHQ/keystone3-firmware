@@ -72,6 +72,7 @@ void UserMsgInit(void)
     SubMessageID(LOW_POWER_QUIT, g_lowPowerQueue);
 
     SubMessageID(SPRING_MSG_GET, g_springQueue);
+    SubMessageID(SPRING_MSG_HID_GET, g_springQueue);
 
     SubMessageID(SENSITIVE_MSG_EXECUTE, g_sensitiveQueue);
     SubMessageID(SENSITIVE_MSG_EXECUTE_RUNNABLE, g_sensitiveQueue);

@@ -8,6 +8,7 @@
 #include "user_memory.h"
 #include "gui_views.h"
 #include "user_delay.h"
+#include "cJSON.h"
 #include "eapdu_services/service_resolve_ur.h"
 #include "eapdu_services/service_check_lock.h"
 #include "eapdu_services/service_echo_test.h"
@@ -88,7 +89,7 @@ static void free_parser()
     memset_s(g_receivedPackets, sizeof(g_receivedPackets), 0, sizeof(g_receivedPackets));
     memset_s(g_packetLengths, sizeof(g_packetLengths), 0, sizeof(g_packetLengths));
     for (int i = 0; i < MAX_PACKETS; i++) {
-        memset_s(g_protocolRcvBuffer, sizeof(g_protocolRcvBuffer[i]), 0, sizeof(g_protocolRcvBuffer[i]));
+        memset_s(g_protocolRcvBuffer[i], sizeof(g_protocolRcvBuffer[i]), 0, sizeof(g_protocolRcvBuffer[i]));
     }
 }
 

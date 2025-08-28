@@ -41,6 +41,10 @@ set(CMAKE_C_FLAGS_RELEASE "-O3")
 
 add_subdirectory(rust)
 
+# USB feature toggles
+option(USBD_ENABLE_HID "Enable USB HID interface" ON)
+option(USBD_ENABLE_WEBUSB "Enable USB WebUSB/CDC interface" ON)
+
 # add definition
 function(add_definition_with_message OPTION_NAME)
     if(${OPTION_NAME})

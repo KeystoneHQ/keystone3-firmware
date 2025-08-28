@@ -4,6 +4,7 @@
 #include "user_msg.h"
 #include <stdio.h>
 #include <string.h>
+#include "cmsis_os2.h"
 
 void USBD_cdc_SendBuffer_Cb(const uint8_t *data, uint32_t len);
 void USBD_cdc_SendHidBuffer_Cb(const uint8_t *data, uint32_t len);

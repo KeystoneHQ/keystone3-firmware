@@ -415,6 +415,7 @@ void GuiForgetPassInit(void *param)
 void GuiForgetPassDeInit(void)
 {
     GUI_DEL_OBJ(g_noticeWindow)
+    g_isTonMnemonic = false;
     GuiMnemonicHintboxClear();
     GuiWalletRecoverySinglePhraseClear();
     g_enterMnemonicCont = NULL;

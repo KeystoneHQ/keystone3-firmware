@@ -152,8 +152,6 @@ void GuiImportShareInit(uint8_t wordsCnt)
     g_importShareTileView.cont = cont;
 
     lv_obj_set_tile_id(g_importShareTileView.tileView, g_importShareTileView.currentTile, 0, LV_ANIM_OFF);
-    int8_t GuiImportShareNextTile(void);
-    GuiImportShareNextTile();
 }
 
 int8_t GuiImportShareNextTile(void)

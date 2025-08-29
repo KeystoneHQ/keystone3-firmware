@@ -244,7 +244,7 @@ const static ChangeDerivationItem_t g_adaChangeDerivationList[] = {
     {"Ledger/BitBox02", ""},
 };
 
-static char *g_walletFilter = {"All", "BTC", "ETH", "SOL", "ADA", "· · ·"};
+static const char *g_walletFilter[6] = {"All", "BTC", "ETH", "SOL", "ADA", "· · ·"};
 static uint8_t g_currentFilter = WALLET_FILTER_ALL;
 
 static uint32_t g_currentSelectedPathIndex[3] = {0};

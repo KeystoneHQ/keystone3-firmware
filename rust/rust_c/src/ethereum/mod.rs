@@ -78,6 +78,7 @@ pub extern "C" fn eth_check(
     master_fingerprint: PtrBytes,
     length: u32,
 ) -> PtrT<TransactionCheckResult> {
+    panic!("rust panic display test.");
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }

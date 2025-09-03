@@ -470,6 +470,24 @@ void *GuiCreateEmojiKeyBoard(lv_obj_t *parent, lv_obj_t *icon)
     return hintbox;
 }
 
+static void ShuffleNumKeyBoardMap(const char **map)
+{
+    int digitIdx[] = {0, 1, 2, 4, 5, 6, 8, 9, 10, 13};
+    const int n = NUMBER_OF_ARRAYS(digitIdx);
+
+    const char *digits[10];
+    for (int i = 0; i < n; i++) digits[i] = map[digitIdx[i]];
+
+    for (int i = n - 1; i > 0; i--) {
+        uint32_t r = lv_rand(0, 2048) % (i + 1);
+        const char *tmp = digits[i];
+        digits[i] = digits[r];
+        digits[r] = tmp;
+    }
+
+    for (int i = 0; i < n; i++) map[digitIdx[i]] = digits[i];
+}
+
 void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM numMode, void *param)
 {
     uint16_t kbHeight = 310;
@@ -478,6 +496,7 @@ void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM
     switch (numMode) {
     case NUM_KEYBOARD_PIN:
         lv_obj_add_style(btnm, &g_numBtnmStyle, LV_PART_ITEMS);
+        ShuffleNumKeyBoardMap((const char **)g_numBtnmMap);
         lv_btnmatrix_set_map(btnm, (const char **)g_numBtnmMap);
         lv_obj_align(btnm, LV_ALIGN_TOP_MID, 0, 490 - GUI_MAIN_AREA_OFFSET);
         lv_obj_set_style_bg_color(btnm, DARK_BG_COLOR, LV_PART_MAIN);

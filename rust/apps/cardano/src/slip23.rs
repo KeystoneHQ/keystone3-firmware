@@ -132,7 +132,10 @@ mod tests {
         let path = "m/1852'/1815'/0'/0/0";
         let result = parse_derivation_path(path);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), vec![2147485500, 2147485463, 2147483648, 0, 0]);
+        assert_eq!(
+            result.unwrap(),
+            vec![2147485500, 2147485463, 2147483648, 0, 0]
+        );
     }
 
     #[test]

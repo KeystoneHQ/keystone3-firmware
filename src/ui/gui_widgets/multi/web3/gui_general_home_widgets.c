@@ -93,7 +93,6 @@ static void GuiInitWalletState(void)
         }
         g_walletState[HOME_WALLET_CARD_BNB].enable = false;
         g_walletState[HOME_WALLET_CARD_DOT].enable = false;
-        g_walletState[HOME_WALLET_CARD_ADA].enable = false;
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
         g_coinFilterNum = 2;
         break;
@@ -103,7 +102,6 @@ static void GuiInitWalletState(void)
         }
         g_walletState[HOME_WALLET_CARD_BNB].enable = false;
         g_walletState[HOME_WALLET_CARD_DOT].enable = false;
-        g_walletState[HOME_WALLET_CARD_ADA].enable = true;
         g_walletState[HOME_WALLET_CARD_TON].enable = true;
         g_coinFilterNum = 2;
         break;

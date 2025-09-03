@@ -942,12 +942,16 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 } else {
                     xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
-#else
+#endif
+#ifdef WEB3_VERSION
                 if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
                     xPubResult = cardano_get_pubkey_by_slip23(seed, len, g_chainTable[i].path);
                 } else {
                     xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
+#endif
+#ifdef BTC_ONLY
+                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
 #endif
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                     continue;
@@ -1112,13 +1116,17 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             } else {
                 xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
             }
-#else
+#endif
+#ifdef WEB3_VERSION
             if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
                 // ada slip23
                 xPubResult = cardano_get_pubkey_by_slip23(seed, len, g_chainTable[i].path);
             } else {
                 xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
             }
+#endif
+#ifdef BTC_ONLY
+            xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
 #endif
             if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                 continue;

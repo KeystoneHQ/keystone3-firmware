@@ -66,9 +66,6 @@ void GuiImportShareWriteSe(bool en, int32_t errCode)
     if (en == true) {
         ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
     } else {
-        // if (errCode == ERR_KEYSTORE_MNEMONIC_REPEAT) {
-        // } else {
-        // }
         lv_btnmatrix_set_selected_btn(g_importMkb->btnm, g_importMkb->currentId - 1);
         g_importMkb->currentId--;
     }

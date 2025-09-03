@@ -244,9 +244,7 @@ const static ChangeDerivationItem_t g_adaChangeDerivationList[] = {
     {"Ledger/BitBox02", ""},
 };
 
-#define WALLET_FILTER_SLIP39 {"All", "BTC", "ETH", "SOL", "", "· · ·"}
-#define WALLET_FILTER_NORMAL {"All", "BTC", "ETH", "SOL", "ADA", "· · ·"}
-static char *g_walletFilter[6];
+static const char *g_walletFilter[6] = {"All", "BTC", "ETH", "SOL", "ADA", "· · ·"};
 static uint8_t g_currentFilter = WALLET_FILTER_ALL;
 
 static uint32_t g_currentSelectedPathIndex[3] = {0};
@@ -332,13 +330,6 @@ static void GuiInitWalletListArray()
             enable = (index == WALLET_LIST_TONKEEPER);
         } else {
             switch (index) {
-            case WALLET_LIST_ETERNL:
-            case WALLET_LIST_MEDUSA:
-            case WALLET_LIST_VESPR:
-            case WALLET_LIST_TYPHON:
-            case WALLET_LIST_BEGIN:
-                enable = !isSLIP39;
-                break;
             case WALLET_LIST_WANDER:
             case WALLET_LIST_BEACON:
                 enable = !isTempAccount;
@@ -386,6 +377,9 @@ static bool IsSOL(int walletIndex)
 
 static bool IsAda(int walletIndex)
 {
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+        return false;
+    }
     switch (walletIndex) {
     case WALLET_LIST_VESPR:
     case WALLET_LIST_ETERNL:
@@ -670,7 +664,7 @@ static void GuiUpdateWalletListWidget(void)
         lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
                             &g_walletListArray[i]);
         j++;
-        offsetY = j  * 107;
+        offsetY = j * 107;
     }
 }
 
@@ -740,9 +734,6 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
             lv_obj_set_style_border_side(btn, LV_BORDER_SIDE_BOTTOM, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_border_width(btn, i == 0 ? 2 : 0, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_add_event_cb(btn, GuiUpdateConnectWalletHandler, LV_EVENT_CLICKED, g_walletFilter[i]);
-            if (i == 4 && isSlip39) {
-                lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-            }
         }
 
         lv_obj_t *line = GuiCreateDividerLine(parent);
@@ -1193,13 +1184,6 @@ static void AddBackpackWalletCoins(void)
 void GuiConnectWalletInit(void)
 {
     g_currentFilter = WALLET_FILTER_ALL;
-    static const char *slip39Filters[] = WALLET_FILTER_SLIP39;
-    static const char *normalFilters[] = WALLET_FILTER_NORMAL;
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-        memcpy_s(g_walletFilter, sizeof(g_walletFilter), slip39Filters, sizeof(slip39Filters));
-    } else {
-        memcpy_s(g_walletFilter, sizeof(g_walletFilter), normalFilters, sizeof(normalFilters));
-    }
     GuiInitWalletListArray();
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;

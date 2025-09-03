@@ -80,6 +80,16 @@ void GuiSetupAdaUrData(URParseResult *urResult, URParseMultiResult *urMultiResul
         result = NULL;                                                                                          \
     }
 
+static int32_t GetAccountAdaEntropy(uint8_t accountIndex, uint8_t *entropy, uint8_t *entropyLen, const char *password, bool isSlip39)
+{
+    if (isSlip39) {
+        *entropyLen = GetCurrentAccountEntropyLen();
+        return GetAccountSeed(accountIndex, entropy, password);
+    } else {
+        return GetAccountEntropy(accountIndex, entropy, entropyLen, password);
+    }
+}
+
 void *GuiGetAdaData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
@@ -292,6 +302,9 @@ PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
 
 static void Try2FixAdaPathType()
 {
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+        return;
+    }
     if (GetAdaXPubType() == LEDGER_ADA) {
         SetReceivePageAdaXPubType(STANDARD_ADA);
     } else {
@@ -650,13 +663,14 @@ UREncodeResult *GuiGetAdaSignCatalystVotingRegistrationQrCodeData(void)
     do {
         uint8_t entropy[64];
         uint8_t len = 0;
-        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
+        GetAccountAdaEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword(), isSlip39);
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
             encodeResult = cardano_sign_catalyst_with_ledger_bitbox02(data, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
         } else {
-            encodeResult = cardano_sign_catalyst(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_catalyst(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()), isSlip39);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -677,13 +691,14 @@ UREncodeResult *GuiGetAdaSignSignDataQrCodeData(void)
     do {
         uint8_t entropy[64];
         uint8_t len = 0;
-        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
+        GetAccountAdaEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword(), isSlip39);
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
             encodeResult = cardano_sign_sign_data_with_ledger_bitbox02(data, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
         } else {
-            encodeResult = cardano_sign_sign_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_sign_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()), isSlip39);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -704,13 +719,14 @@ UREncodeResult *GuiGetAdaSignSignCip8DataQrCodeData(void)
     do {
         uint8_t entropy[64];
         uint8_t len = 0;
-        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
+        GetAccountAdaEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword(), isSlip39);
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
             encodeResult = cardano_sign_sign_cip8_data_with_ledger_bitbox02(data, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
         } else {
-            encodeResult = cardano_sign_sign_cip8_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_sign_cip8_data(data, entropy, len, GetPassphrase(GetCurrentAccountIndex()), isSlip39);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -731,13 +747,14 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
     do {
         uint8_t entropy[64];
         uint8_t len = 0;
-        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
+        GetAccountAdaEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword(), isSlip39);
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
             encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), false);
         } else {
-            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), false);
+            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), false, isSlip39);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -764,13 +781,14 @@ UREncodeResult *GuiGetAdaSignTxHashQrCodeData(void)
     do {
         uint8_t entropy[64];
         uint8_t len = 0;
-        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
+        GetAccountAdaEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword(), isSlip39);
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
             encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), true);
         } else {
-            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), true);
+            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), true, isSlip39);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -959,13 +977,14 @@ UREncodeResult *GuiGetAdaSignUrDataUnlimited(void)
     do {
         uint8_t entropy[64];
         uint8_t len = 0;
-        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword());
+        bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
+        GetAccountAdaEntropy(GetCurrentAccountIndex(), entropy, &len, SecretCacheGetPassword(), isSlip39);
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
             encodeResult = cardano_sign_tx_with_ledger_bitbox02_unlimited(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
         } else {
-            encodeResult = cardano_sign_tx_unlimited(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_tx_unlimited(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), isSlip39);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);

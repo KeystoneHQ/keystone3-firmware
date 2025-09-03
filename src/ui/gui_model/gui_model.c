@@ -1689,7 +1689,7 @@ static int32_t ModelTonForgetPass(const void *inData, uint32_t inDataLen)
             ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
             break;
         }
-        
+
         SetLockScreen(enable);
         return ret;
     } while (0);

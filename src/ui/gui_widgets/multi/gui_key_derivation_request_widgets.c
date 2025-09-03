@@ -504,15 +504,6 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
             }
         }
     }
-    if (g_hasAda) {
-        MnemonicType mnemonicType = GetMnemonicType();
-        if (mnemonicType == MNEMONIC_TYPE_SLIP39) {
-            SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
-                false, _("invaild_derive_type"), _("invalid_slip39_ada_con")
-            });
-            return g_hardwareCallParamsCheckResult;
-        }
-    }
 
     SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
         true, "Check Pass", "hardware call params check pass"
@@ -549,12 +540,16 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                 break;
             case BIP32_ED25519:
                 if (selected_ada_derivation_algo == HD_STANDARD_ADA && !g_isUsb) {
-                    uint8_t entropyLen = 0;
-                    uint8_t entropy[64];
-                    GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
-                    SimpleResponse_c_char* cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
-                    char* icarusMasterKey = cip3_response->data;
-                    pubkey[i] = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+                    if (isSlip39) {
+                        pubkey[i] = cardano_get_pubkey_by_slip23(seed, seedLen, path);
+                    } else {
+                        uint8_t entropyLen = 0;
+                        uint8_t entropy[64];
+                        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
+                        SimpleResponse_c_char* cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
+                        char* icarusMasterKey = cip3_response->data;
+                        pubkey[i] = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+                    }
                 } else if (selected_ada_derivation_algo == HD_LEDGER_BITBOX_ADA || g_isUsb) {
                     // seed -> mnemonic --> master key(m) -> derive key
                     uint8_t entropyLen = 0;
@@ -1068,7 +1063,7 @@ static void OpenMoreHandler(lv_event_t *e)
 {
     int height = 84;
     int hintboxHeight = 144;
-    bool hasChangePath = g_hasAda && g_hardwareCallParamsCheckResult.isLegal;
+    bool hasChangePath = g_hasAda && g_hardwareCallParamsCheckResult.isLegal && (GetMnemonicType() == MNEMONIC_TYPE_BIP39);
 
     if (hasChangePath) {
         hintboxHeight += height;

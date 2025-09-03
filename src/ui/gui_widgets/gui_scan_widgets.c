@@ -49,10 +49,6 @@ static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, siz
 }
 #endif
 
-#ifdef WEB3_VERSION
-#define IsSlip39WalletNotSupported(viewType) (viewType == CHAIN_ADA)
-#endif
-
 #ifdef CYPHERPUNK_VERSION
 #define IsSlip39WalletNotSupported(viewType) (viewType == CHAIN_XMR)
 #endif
@@ -116,7 +112,7 @@ void GuiScanResult(bool result, void *param)
         }
 #endif
         g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
-#ifndef BTC_ONLY
+#ifdef CYPHERPUNK_VERSION
         // Not a chain based transaction, e.g. WebAuth
         if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
             //we don't support ADA & XMR in Slip39 Wallet;

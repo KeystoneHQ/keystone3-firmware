@@ -386,6 +386,7 @@ impl From<&CardanoError> for ErrorCodes {
             CardanoError::DerivationError(_) => Self::KeystoreDerivationError,
             CardanoError::UnsupportedTransaction(_) => Self::UnsupportedTransaction,
             CardanoError::SigningFailed(_) => Self::SignFailure,
+            CardanoError::InvalidSeed(_) => Self::InvalidData,
         }
     }
 }

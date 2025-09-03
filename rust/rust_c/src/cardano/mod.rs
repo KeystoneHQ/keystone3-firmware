@@ -360,6 +360,18 @@ pub extern "C" fn cardano_get_path(ptr: PtrUR) -> Ptr<SimpleResponse<c_char>> {
     }
 }
 
+fn generate_master_key(
+    entropy: &[u8],
+    passphrase: &str,
+    is_slip39: bool,
+) -> Result<XPrv, CardanoError> {
+    if is_slip39 {
+        app_cardano::slip23::from_seed_slip23(entropy).map(|v| v.xprv)
+    } else {
+        Ok(calc_icarus_master_key(entropy, passphrase.as_bytes()))
+    }
+}
+
 fn parse_cardano_root_path(path: String) -> Option<String> {
     let root_path = "1852'/1815'/";
     match path.strip_prefix(root_path) {
@@ -473,11 +485,15 @@ pub extern "C" fn cardano_sign_catalyst(
     entropy: PtrBytes,
     entropy_len: u32,
     passphrase: PtrString,
+    is_slip39: bool,
 ) -> PtrT<UREncodeResult> {
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
-    let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
-    cardano_sign_catalyst_by_icarus(ptr, icarus_master_key)
+    let master_key = match generate_master_key(entropy, &passphrase, is_slip39) {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    cardano_sign_catalyst_by_icarus(ptr, master_key)
 }
 
 fn cardano_sign_catalyst_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<UREncodeResult> {
@@ -564,11 +580,16 @@ pub extern "C" fn cardano_sign_sign_data(
     entropy: PtrBytes,
     entropy_len: u32,
     passphrase: PtrString,
+    is_slip39: bool,
 ) -> PtrT<UREncodeResult> {
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
-    let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
-    cardano_sign_sign_data_by_icarus(ptr, icarus_master_key)
+    let master_key = match generate_master_key(entropy, &passphrase, is_slip39) {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+
+    cardano_sign_sign_data_by_icarus(ptr, master_key)
 }
 
 fn cardano_sign_sign_data_by_icarus(ptr: PtrUR, icarus_master_key: XPrv) -> PtrT<UREncodeResult> {
@@ -617,11 +638,16 @@ pub extern "C" fn cardano_sign_sign_cip8_data(
     entropy: PtrBytes,
     entropy_len: u32,
     passphrase: PtrString,
+    is_slip39: bool,
 ) -> PtrT<UREncodeResult> {
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
-    let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
-    cardano_sign_sign_cip8_data_by_icarus(ptr, icarus_master_key)
+    let master_key = match generate_master_key(entropy, &passphrase, is_slip39) {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+
+    cardano_sign_sign_cip8_data_by_icarus(ptr, master_key)
 }
 
 #[no_mangle]
@@ -685,14 +711,19 @@ pub extern "C" fn cardano_sign_tx(
     entropy_len: u32,
     passphrase: PtrString,
     enable_blind_sign: bool,
+    is_slip39: bool,
 ) -> PtrT<UREncodeResult> {
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
-    let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
+    let master_key = match generate_master_key(entropy, &passphrase, is_slip39) {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+
     if enable_blind_sign {
-        cardano_sign_tx_hash_by_icarus(ptr, icarus_master_key)
+        cardano_sign_tx_hash_by_icarus(ptr, master_key)
     } else {
-        cardano_sign_tx_by_icarus(ptr, master_fingerprint, cardano_xpub, icarus_master_key)
+        cardano_sign_tx_by_icarus(ptr, master_fingerprint, cardano_xpub, master_key)
     }
 }
 
@@ -718,11 +749,38 @@ pub extern "C" fn cardano_sign_tx_unlimited(
     entropy: PtrBytes,
     entropy_len: u32,
     passphrase: PtrString,
+    is_slip39: bool,
 ) -> PtrT<UREncodeResult> {
     let entropy = unsafe { alloc::slice::from_raw_parts(entropy, entropy_len as usize) };
     let passphrase = recover_c_char(passphrase);
-    let icarus_master_key = calc_icarus_master_key(entropy, passphrase.as_bytes());
-    cardano_sign_tx_by_icarus_unlimited(ptr, master_fingerprint, cardano_xpub, icarus_master_key)
+    let master_key = match generate_master_key(entropy, &passphrase, is_slip39) {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    cardano_sign_tx_by_icarus_unlimited(ptr, master_fingerprint, cardano_xpub, master_key)
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_get_pubkey_by_slip23(
+    entropy: PtrBytes,
+    entropy_len: u32,
+    path: PtrString,
+) -> *mut SimpleResponse<c_char> {
+    if entropy_len != 16 && entropy_len != 32 {
+        return SimpleResponse::from(RustCError::InvalidData(
+            "Invalid entropy length".to_string(),
+        ))
+        .simple_c_ptr();
+    }
+    let entropy = unsafe { core::slice::from_raw_parts(entropy, entropy_len as usize) };
+    let path = recover_c_char(path).to_lowercase();
+    let xpub = app_cardano::slip23::from_seed_slip23_path(entropy, path.as_str());
+    match xpub {
+        Ok(xpub) => {
+            SimpleResponse::success(convert_c_char(xpub.xprv.public().to_string())).simple_c_ptr()
+        }
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
 }
 
 fn cardano_sign_tx_by_icarus(

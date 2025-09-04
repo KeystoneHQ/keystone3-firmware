@@ -55,9 +55,9 @@ char *GetHardwareVersionString(void)
     } else if (version == VERSION_DVT2) {
         return "DVT2";
     } else if (version == VERSION_V3_0) {
-        return "Version 3.0";
+        return "V3.0";
     } else if (version == VERSION_V3_1) {
-        return "Version 3.1";
+        return "V3.1";
     } else {
         return "NONE";
     }

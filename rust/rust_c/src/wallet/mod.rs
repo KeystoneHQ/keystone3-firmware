@@ -104,6 +104,7 @@ pub extern "C" fn check_hardware_call_path(
         "QCK" => "m/44'/118'",
         "TGD" => "m/44'/118'",
         "THOR" => "m/44'/931'",
+        "IOTA" => "m/44'/4218'",
         _ => return Response::success(false).c_ptr(),
     };
     let mut path = recover_c_char(path).to_lowercase();

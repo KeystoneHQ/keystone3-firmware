@@ -488,6 +488,12 @@ static void ShuffleNumKeyBoardMap(const char **map)
     for (int i = 0; i < n; i++) map[digitIdx[i]] = digits[i];
 }
 
+void GuiUpdateNumKeyBoardMap(lv_obj_t *btnm)
+{
+    ShuffleNumKeyBoardMap((const char **)g_numBtnmMap);
+    lv_btnmatrix_set_map(btnm, (const char **)g_numBtnmMap);
+}
+
 void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM numMode, void *param)
 {
     uint16_t kbHeight = 310;

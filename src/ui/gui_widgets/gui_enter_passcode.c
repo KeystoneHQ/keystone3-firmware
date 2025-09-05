@@ -336,6 +336,11 @@ static void PassWordPinSwitchHandler(lv_event_t *e)
     PassWordPinSwitch(item);
 }
 
+void GuiShuffleNumKeyBoardMap(GuiEnterPasscodeItem_t *item)
+{
+    GuiUpdateNumKeyBoardMap(item->btnm);
+}
+
 void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *passCodeParam)
 {
     lv_obj_t *pinCont = item->pinCont;

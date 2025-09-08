@@ -540,6 +540,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                 break;
             case BIP32_ED25519:
                 if (selected_ada_derivation_algo == HD_STANDARD_ADA && !g_isUsb) {
+#ifdef WEB3_VERSION
                     if (isSlip39) {
                         pubkey[i] = cardano_get_pubkey_by_slip23(seed, seedLen, path);
                     } else {
@@ -550,6 +551,15 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                         char* icarusMasterKey = cip3_response->data;
                         pubkey[i] = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
                     }
+#endif
+#ifdef CYPHERPUNK_VERSION
+                    uint8_t entropyLen = 0;
+                    uint8_t entropy[64];
+                    GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
+                    SimpleResponse_c_char* cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
+                    char* icarusMasterKey = cip3_response->data;
+                    pubkey[i] = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+#endif
                 } else if (selected_ada_derivation_algo == HD_LEDGER_BITBOX_ADA || g_isUsb) {
                     // seed -> mnemonic --> master key(m) -> derive key
                     uint8_t entropyLen = 0;

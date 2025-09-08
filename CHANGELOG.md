@@ -1,3 +1,17 @@
+## 2.2.12(2025-09-03)
+
+**Web3:**
+
+### What's new
+1. Support for ADA using Shamir Backup
+
+### Bug Fixes
+1. Fixed an issue with Cardano passphrase message signing
+2. Improved transaction error messages
+
+
+
+
 ## 2.2.8(2025-08-14)
 
 **Web3:**

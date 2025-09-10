@@ -16,5 +16,9 @@ void GuiForgetPassVerifyResult(bool en, int errCode);
 void GuiForgetPassUpdateKeyboard(void);
 bool GuiIsForgetPass(void);
 
+#ifdef WEB3_VERSION
+void GuiForgetPassTonSuccess(void);
+#endif
+
 #endif /* _GUI_FORGET_PASS_WIDGETS_H */
 

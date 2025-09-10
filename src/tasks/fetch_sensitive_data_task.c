@@ -28,7 +28,7 @@ void CreateFetchSensitiveDataTask(void)
 #ifdef CYPHERPUNK_VERSION
         .stack_size = 1024 * 44,
 #else
-        .stack_size = 1024 * 35,
+        .stack_size = 1024 * 40,
 #endif
         .priority = (osPriority_t)osPriorityBelowNormal,
     };

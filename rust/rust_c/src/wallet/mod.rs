@@ -224,7 +224,6 @@ pub extern "C" fn generate_key_derivation_ur(
     }
 }
 
-
 pub fn normalize_xpub(
     keys: &[ExtendedPublicKey],
 ) -> Result<Vec<app_wallets::ExtendedPublicKey>, RustCError> {

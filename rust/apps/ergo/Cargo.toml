@@ -10,6 +10,7 @@ thiserror = { workspace = true }
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
 core2 = { workspace = true }
+bitcoin = { workspace = true }
 
 [dev-dependencies]
 keystore = { workspace = true }

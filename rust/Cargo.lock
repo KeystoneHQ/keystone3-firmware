@@ -259,6 +259,7 @@ name = "app_ergo"
 version = "0.1.0"
 dependencies = [
  "app_utils",
+ "bitcoin",
  "core2 0.3.3",
  "ergo-lib",
  "hex",

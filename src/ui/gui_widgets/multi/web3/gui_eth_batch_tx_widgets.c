@@ -689,8 +689,8 @@ static void GuiRenderSwapOverview(lv_obj_t *parent)
     Erc20Contract_t *erc20Contract = FindErc20Contract(g_swapkitContractData->data->swap_in_asset);
     bool is_eth = strcmp(g_swapkitContractData->data->swap_in_asset, "0x0000000000000000000000000000000000000000") == 0;
     if (is_eth) {
-        erc20Contract = malloc(sizeof(Erc20Contract_t));
-        erc20Contract->symbol = "ETH";
+        erc20Contract = malloc(sizeof(Erc20Contract_t));        
+        erc20Contract->symbol = strcpy_s(malloc(strlen(g_currentNetwork.symbol) + 1), strlen(g_currentNetwork.symbol) + 1, g_currentNetwork.symbol);
         erc20Contract->decimals = 18;
     }
     if (erc20Contract != NULL) {

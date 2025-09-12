@@ -3416,6 +3416,14 @@ const ABIItem_t ethereum_abi_map[] = {
         "{\"name\":\"MAYAChain Router\",\"address\":\"0xe3985E6b61b814F7Cdb188766562ba71b446B46d\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"}],\"name\":\"depositWithExpiry\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
     },
     {
+        "0xb30eC53F98ff5947EDe720D32aC2da7e52A5f56b_1fece7b4",
+        "{\"name\":\"THORChain Router\",\"address\":\"0xb30eC53F98ff5947EDe720D32aC2da7e52A5f56b\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"}],\"name\":\"deposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
+        "0xb30eC53F98ff5947EDe720D32aC2da7e52A5f56b_44bc937b",
+        "{\"name\":\"THORChain Router\",\"address\":\"0xb30eC53F98ff5947EDe720D32aC2da7e52A5f56b\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"}],\"name\":\"depositWithExpiry\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
+    },
+    {
         "0x152b9d0FdC40C096757F570A51E494bd4b943E50_66de3b36",
         "{\"name\":\"Avax BridgeToken\",\"address\":\"0x152b9d0FdC40C096757F570A51E494bd4b943E50\",\"metadata\":{\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"addSupportedChainId\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]}},\"version\":1,\"checkPoints\":[]}"
     },

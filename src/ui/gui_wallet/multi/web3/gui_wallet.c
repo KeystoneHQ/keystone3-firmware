@@ -235,8 +235,11 @@ UREncodeResult *GuiGetIotaWalletData(void)
 {
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
+    printf("%s %d..\n", __func__, __LINE__);
     PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-#define IOTA_XPUB_COUNT 10
+    printf("%s %d..\n", __func__, __LINE__);
+    #define IOTA_XPUB_COUNT 10
+    printf("%s %d..\n", __func__, __LINE__);
     ExtendedPublicKey keys[IOTA_XPUB_COUNT];
     publicKeys->data = keys;
     publicKeys->size = IOTA_XPUB_COUNT;
@@ -245,8 +248,10 @@ UREncodeResult *GuiGetIotaWalletData(void)
         snprintf_s(keys[startIndex].path, BUFFER_SIZE_32, "m/44'/4218'/%u'/0'/0'", startIndex);
         keys[startIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + startIndex);
     }
+    printf("%s %d..\n", __func__, __LINE__);
     g_urEncode = get_connect_sui_wallet_ur(mfp, sizeof(mfp), publicKeys);
     CHECK_CHAIN_PRINT(g_urEncode);
+    printf("%s %d..\n", __func__, __LINE__);
     for (uint8_t i = 0; i < IOTA_XPUB_COUNT; i++) {
         if (keys[i].path != NULL) {
             SRAM_FREE(keys[i].path);

@@ -291,6 +291,7 @@ LV_IMG_DECLARE(walletNufi);
 LV_IMG_DECLARE(walletBeacon);
 LV_IMG_DECLARE(walletBtcSafe);
 LV_IMG_DECLARE(walletMedusa);
+LV_IMG_DECLARE(walletIota);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);

@@ -177,7 +177,7 @@ const static WalletInfo_t g_walletBtn[] = {
     // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
     {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
     {WALLET_LIST_CORE, "Core Wallet", &walletCore},
-    {WALLET_LIST_IOTA, "IOTA", &walletIota},
+    {WALLET_LIST_IOTA, "IOTA Wallet", &walletIota},
 #else
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},

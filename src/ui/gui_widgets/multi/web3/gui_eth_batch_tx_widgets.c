@@ -691,7 +691,7 @@ static void GuiRenderSwapOverview(lv_obj_t *parent)
     if (is_eth) {
         erc20Contract = malloc(sizeof(Erc20Contract_t));        
         erc20Contract->symbol = malloc(strlen(g_currentNetwork.symbol) + 1);
-        erc20Contract->symbol = strcpy_s(erc20Contract->symbol, strlen(g_currentNetwork.symbol) + 1, g_currentNetwork.symbol);
+        strcpy_s(erc20Contract->symbol, strlen(g_currentNetwork.symbol) + 1, g_currentNetwork.symbol);
         erc20Contract->decimals = 18;
     }
     if (erc20Contract != NULL) {

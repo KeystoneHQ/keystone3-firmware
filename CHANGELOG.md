@@ -3,7 +3,7 @@
 **Web3:**
 
 ### What's new
-1. support for BSC transfers and swap  on Keystone Nexus
+1. support for BSC transfers and swap on Keystone Nexus
 2. Introduced randomized PIN input for enhanced security
 3. Added connection entry for IOTA Wallet
 

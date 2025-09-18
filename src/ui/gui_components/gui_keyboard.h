@@ -61,6 +61,7 @@ void GuiDeleteKeyBoard(KeyBoard_t *kb);
 void GuiKeyBoardRestoreDefault(KeyBoard_t *keyBoard);
 void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM numMode, void *param);
 void GuiUpdateSsbKeyBoard(lv_obj_t *btnm, uint8_t memberCnt);
+void GuiUpdateNumKeyBoardMap(lv_obj_t *btnm);
 
 // full keyboard
 void *GuiCreateFullKeyBoard(lv_obj_t *parent, lv_event_cb_t kbCb, lv_keyboard_user_mode_t keyMode, void *param);

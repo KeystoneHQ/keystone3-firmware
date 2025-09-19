@@ -178,6 +178,9 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
     UREncodeResult *encodeResult = NULL;
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
+    uint8_t seed[64];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
 
     if (urType == CryptoPSBT) {
         if (!GuiGetCurrentTransactionNeedSign()) {
@@ -192,9 +195,6 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
         } else {
             uint8_t mfp[4] = {0};
             GetMasterFingerPrint(mfp);
-            uint8_t seed[64];
-            int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-            GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
 #ifdef BTC_ONLY
             if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
                 MultisigSignResult *result = btc_sign_multisig_psbt(data, seed, len, mfp, sizeof(mfp));
@@ -220,22 +220,15 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
             return NULL;
         }
-        uint8_t seed[64];
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = utxo_sign_keystone(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
     }
 #endif
     else if (urType == BtcSignRequest) {
-        uint8_t seed[64];
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = btc_sign_msg(data, seed, len, mfp, sizeof(mfp));
     } else if (urType == SeedSignerMessage) {
-        uint8_t seed[64];
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = sign_seed_signer_message(data, seed, len);
+    } else if (urType == CryptoPSBTExtend) {
+        encodeResult = utxo_sign_psbt_extend(data, seed, len, mfp, sizeof(mfp), unLimit);
     }
     CHECK_CHAIN_PRINT(encodeResult);
     ClearSecretCache();
@@ -366,7 +359,7 @@ void *GuiGetParsedQrData(void)
     keys[13].path = "m/48'/1'/0'/2'";
     keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
 #else
-    ExtendedPublicKey keys[5];
+    ExtendedPublicKey keys[9];
     public_keys->data = keys;
     public_keys->size = 4;
     keys[0].path = "m/84'/0'/0'";
@@ -381,6 +374,15 @@ void *GuiGetParsedQrData(void)
     public_keys->size = NUMBER_OF_ARRAYS(keys);
     keys[4].path = "m/44'/60'/0'";
     keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
+    keys[5].path = "m/44'/3'/0'";
+    keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DOGE);
+    // ltc、dash、bch
+    keys[6].path = "m/49'/2'/0'";
+    keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_LTC);
+    keys[7].path = "m/44'/5'/0'";
+    keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
+    keys[8].path = "m/44'/145'/0'";
+    keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
 #endif
 #endif
     do {
@@ -428,6 +430,10 @@ void *GuiGetParsedQrData(void)
             g_parseMsgResult = parse_seed_signer_message(crypto, public_keys);
             CHECK_CHAIN_RETURN(g_parseMsgResult);
             return g_parseMsgResult;
+        } else if (urType == CryptoPSBTExtend) {
+            g_parseResult = utxo_parse_extend_psbt(crypto, public_keys, mfp, sizeof(mfp));
+            CHECK_CHAIN_RETURN(g_parseResult);
+            return g_parseResult;
         }
     } while (0);
     return g_parseResult;
@@ -571,7 +577,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[13].path = "m/48'/1'/0'/2'";
         keys[13].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_MULTI_SIG_P2WSH_TEST);
 #else
-        ExtendedPublicKey keys[5];
+        ExtendedPublicKey keys[9];
         public_keys->data = keys;
         public_keys->size = 4;
         keys[0].path = "m/84'/0'/0'";
@@ -586,6 +592,15 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         public_keys->size = NUMBER_OF_ARRAYS(keys);
         keys[4].path = "m/44'/60'/0'";
         keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
+        keys[5].path = "m/44'/3'/0'";
+        keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DOGE);
+        // ltc、dash、bch
+        keys[6].path = "m/49'/2'/0'";
+        keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_LTC);
+        keys[7].path = "m/44'/5'/0'";
+        keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
+        keys[8].path = "m/44'/145'/0'";
+        keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
 #endif
 #endif
 #ifdef BTC_ONLY
@@ -634,10 +649,36 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         result = btc_check_msg(crypto, mfp, sizeof(mfp));
     } else if (urType == SeedSignerMessage) {
         result = tx_check_pass();
+    } else if (urType == CryptoPSBTExtend) {
+        PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+        ExtendedPublicKey keys[9];
+        public_keys->data = keys;
+        public_keys->size = 4;
+        keys[0].path = "m/84'/0'/0'";
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
+        keys[1].path = "m/49'/0'/0'";
+        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
+        keys[2].path = "m/44'/0'/0'";
+        keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
+        keys[3].path = "m/86'/0'/0'";
+        keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
+        public_keys->size = NUMBER_OF_ARRAYS(keys);
+        keys[4].path = "m/44'/60'/0'";
+        keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
+        keys[5].path = "m/44'/3'/0'";
+        keys[5].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DOGE);
+        // ltc、dash、bch
+        keys[6].path = "m/49'/2'/0'";
+        keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_LTC);
+        keys[7].path = "m/44'/5'/0'";
+        keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
+        keys[8].path = "m/44'/145'/0'";
+        keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
+        result = utxo_check_psbt_extend(crypto, mfp, sizeof(mfp), public_keys, NULL, NULL);
     }
     return result;
 }
-
+ 
 void GetPsbtTotalOutAmount(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;

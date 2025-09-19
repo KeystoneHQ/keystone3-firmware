@@ -589,7 +589,7 @@ impl WrappedPsbt {
                     ChildNumber::Hardened { index: _i } => match _i {
                         44 => match derivation_path.index(1) {
                             ChildNumber::Hardened { index: _i } => match _i {
-                                0 => Ok(Some(
+                                0 | 3 => Ok(Some(
                                     Address::p2pkh(
                                         &bitcoin::PublicKey::new(pubkey.clone()),
                                         network.clone(),

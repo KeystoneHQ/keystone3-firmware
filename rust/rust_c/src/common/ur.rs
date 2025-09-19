@@ -43,6 +43,8 @@ use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
 use ur_registry::crypto_account::CryptoAccount;
 #[cfg(feature = "bitcoin")]
 use ur_registry::crypto_psbt::CryptoPSBT;
+#[cfg(feature = "bitcoin")]
+use ur_registry::crypto_psbt_extend::CryptoPSBTExtend;
 #[cfg(feature = "ethereum")]
 use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 #[cfg(not(feature = "btc-only"))]
@@ -298,6 +300,8 @@ pub enum ViewType {
 pub enum QRCodeType {
     #[cfg(feature = "bitcoin")]
     CryptoPSBT,
+    #[cfg(feature = "bitcoin")]
+    CryptoPSBTExtend,
     CryptoMultiAccounts,
     #[cfg(feature = "bitcoin")]
     CryptoAccount,
@@ -366,6 +370,8 @@ impl QRCodeType {
         match value {
             #[cfg(feature = "bitcoin")]
             InnerURType::CryptoPsbt(_) => Ok(QRCodeType::CryptoPSBT),
+            #[cfg(feature = "bitcoin")]
+            InnerURType::CryptoPsbtExtend(_) => Ok(QRCodeType::CryptoPSBTExtend),
             InnerURType::CryptoMultiAccounts(_) => Ok(QRCodeType::CryptoMultiAccounts),
             #[cfg(feature = "bitcoin")]
             InnerURType::CryptoAccount(_) => Ok(QRCodeType::CryptoAccount),
@@ -720,6 +726,8 @@ pub fn decode_ur(ur: String) -> URParseResult {
         #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoPSBT => _decode_ur::<CryptoPSBT>(ur, ur_type),
         #[cfg(feature = "bitcoin")]
+        QRCodeType::CryptoPSBTExtend => _decode_ur::<CryptoPSBTExtend>(ur, ur_type),
+        #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoAccount => _decode_ur::<CryptoAccount>(ur, ur_type),
         QRCodeType::CryptoMultiAccounts => _decode_ur::<CryptoMultiAccounts>(ur, ur_type),
         QRCodeType::Bytes => _decode_ur::<Bytes>(ur, ur_type),
@@ -821,6 +829,8 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
     match ur_type {
         #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoPSBT => _receive_ur::<CryptoPSBT>(ur, ur_type, decoder),
+        #[cfg(feature = "bitcoin")]
+        QRCodeType::CryptoPSBTExtend => _receive_ur::<CryptoPSBTExtend>(ur, ur_type, decoder),
         #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoAccount => _receive_ur::<CryptoAccount>(ur, ur_type, decoder),
         QRCodeType::CryptoMultiAccounts => _receive_ur::<CryptoMultiAccounts>(ur, ur_type, decoder),

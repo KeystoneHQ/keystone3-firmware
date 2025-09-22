@@ -4789,6 +4789,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
+source = "git+https://github.com/KeystoneHQ/keystone-sdk-rust.git?branch=support_crypto_extend#414ecb6cc3730d780067dc52754b5c2f61a6cc7b"
 dependencies = [
  "hex",
  "ur",
@@ -4798,6 +4799,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.1"
+source = "git+https://github.com/KeystoneHQ/keystone-sdk-rust.git?branch=support_crypto_extend#414ecb6cc3730d780067dc52754b5c2f61a6cc7b"
 dependencies = [
  "bs58 0.5.1",
  "core2",

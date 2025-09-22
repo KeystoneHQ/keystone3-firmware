@@ -653,7 +653,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
         ExtendedPublicKey keys[9];
         public_keys->data = keys;
-        public_keys->size = 4;
+        public_keys->size = NUMBER_OF_ARRAYS(keys);
         keys[0].path = "m/84'/0'/0'";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
         keys[1].path = "m/49'/0'/0'";
@@ -662,7 +662,6 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
         keys[3].path = "m/86'/0'/0'";
         keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
-        public_keys->size = NUMBER_OF_ARRAYS(keys);
         keys[4].path = "m/44'/60'/0'";
         keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
         keys[5].path = "m/44'/3'/0'";

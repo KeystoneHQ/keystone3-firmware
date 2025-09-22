@@ -57,9 +57,9 @@ pub extern "C" fn btc_parse_psbt(
 #[no_mangle]
 pub extern "C" fn utxo_parse_extend_psbt(
     ptr: PtrUR,
+    public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
     master_fingerprint: PtrBytes,
     length: u32,
-    public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
 ) -> *mut TransactionParseResult<DisplayTx> {
     if length != 4 {
         return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr();

@@ -116,7 +116,7 @@ impl Address {
 
     pub fn p2shp2wpkh(pk: &PublicKey, network: Network) -> Result<Address, BitcoinError> {
         match network {
-            Network::Bitcoin | Network::BitcoinTestnet | Network::Litecoin => {
+            Network::Bitcoin | Network::BitcoinTestnet | Network::Litecoin | Network::Dogecoin => {
                 let builder =
                     script::Builder::new()
                         .push_int(0)
@@ -243,6 +243,7 @@ impl fmt::Display for Address {
                 let encoding = DOGEAddressEncoding {
                     payload: &self.payload,
                     p2pkh_prefix: PUBKEY_ADDRESS_PREFIX_DOGE,
+                    p2sh_prefix: SCRIPT_ADDRESS_PREFIX_DOGE,
                 };
                 encoding.fmt(fmt)
             }

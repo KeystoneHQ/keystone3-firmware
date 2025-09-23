@@ -32,6 +32,25 @@ pub fn create_multi_sig_address_for_wallet(
     calculate_multi_address(&p2ms, format, wallet.get_network())
 }
 
+pub fn create_multi_sig_address_for_pubkeys_with_sorting(
+    threshold: u8,
+    pub_keys: &[PublicKey],
+    format: MultiSigFormat,
+    network: crate::network::Network,
+    sort_keys: bool,
+) -> Result<String, BitcoinError> {
+    let p2ms = if sort_keys {
+        let ordered_pub_keys = pub_keys.iter().sorted().cloned().collect::<Vec<_>>();
+        let ordered_refs = ordered_pub_keys.iter().collect::<Vec<&PublicKey>>();
+        crate_p2ms_script(&ordered_refs, threshold as u32)
+    } else {
+        let ordered_refs = pub_keys.iter().collect::<Vec<&PublicKey>>();
+        crate_p2ms_script(&ordered_refs, threshold as u32)
+    };
+
+    calculate_multi_address_with_network(&p2ms, format, network)
+}
+
 pub fn calculate_multi_address(
     p2ms: &ScriptBuf,
     format: MultiSigFormat,
@@ -50,6 +69,22 @@ pub fn calculate_multi_address(
         network::Network::BitcoinTestnet
     } else {
         network::Network::Bitcoin
+    };
+    Ok(Address::from_script(script.as_script(), network)?.to_string())
+}
+
+pub fn calculate_multi_address_with_network(
+    p2ms: &ScriptBuf,
+    format: MultiSigFormat,
+    network: crate::network::Network,
+) -> Result<String, BitcoinError> {
+    let script = match format {
+        MultiSigFormat::P2sh => ScriptBuf::new_p2sh(&p2ms.script_hash()),
+        MultiSigFormat::P2wshP2sh => {
+            let p2wsh = ScriptBuf::new_p2wsh(&p2ms.wscript_hash());
+            ScriptBuf::new_p2sh(&p2wsh.script_hash())
+        }
+        MultiSigFormat::P2wsh => ScriptBuf::new_p2wsh(&p2ms.wscript_hash()),
     };
     Ok(Address::from_script(script.as_script(), network)?.to_string())
 }
@@ -77,9 +112,14 @@ fn crate_p2ms_script(pub_keys: &Vec<&PublicKey>, threshold: u32) -> ScriptBuf {
 mod tests {
     extern crate std;
 
-    use crate::multi_sig::address::create_multi_sig_address_for_wallet;
+    use crate::multi_sig::address::{
+        create_multi_sig_address_for_pubkeys_with_sorting, create_multi_sig_address_for_wallet,
+    };
     use crate::multi_sig::wallet::parse_wallet_config;
-    use crate::multi_sig::Network;
+    use crate::multi_sig::MultiSigFormat;
+    use crate::network::Network;
+    use bitcoin::PublicKey;
+    use alloc::vec::Vec;
 
     #[test]
     fn test_create_multi_sig_address_for_wallet() {
@@ -162,5 +202,27 @@ mod tests {
             let address = create_multi_sig_address_for_wallet(&config, 0, 0).unwrap();
             assert_eq!("3A3vK8133WTMePMpPDmZSqSqK3gobohtG8", address);
         }
+    }
+
+    #[test]
+    fn test_create_multi_sig_address_for_pubkeys() {
+        let pubkey_str = vec![
+            "03a0c95fd48f1a251c744629e19ad154dfe1d7fb992d6955d62c417ae4ac333340",
+            "0361769c55b3035962fd3267da5cc4efa03cb400fe1971f5ec1c686d6b301ccd60",
+            "021d24a7eda6ccbff4616d9965c9bb2a7871ce048b0161b71e91be83671be514d5",
+        ];
+        let pubkeys = pubkey_str
+            .iter()
+            .map(|s| PublicKey::from_slice(&hex::decode(s).unwrap()).unwrap())
+            .collect::<Vec<_>>();
+        let address = create_multi_sig_address_for_pubkeys_with_sorting(
+            2,
+            &pubkeys,
+            MultiSigFormat::P2sh,
+            Network::Dogecoin,
+            false,
+        )
+        .unwrap();
+        assert_eq!(address, "A2nev5Fc7tFZ11oy1Ybz1kJRbebTWff8K6");
     }
 }

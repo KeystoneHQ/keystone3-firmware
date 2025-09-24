@@ -223,6 +223,16 @@ void GuiLockScreenTurnOn(void *param)
     GuilockScreenRefresh();
 }
 
+void GuiLockScreenSetNumKeyBoardMapDefault(void)
+{
+    GuiSetNumKeyBoardMapDefault(g_verifyLock);
+}
+
+void GuiLockScreenShuffleNumKeyBoardMap(void)
+{
+    GuiShuffleNumKeyBoardMap(g_verifyLock);
+}
+
 void GuiLockScreenTurnOff(void)
 {
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;

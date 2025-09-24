@@ -13,6 +13,7 @@
 #include "account_manager.h"
 #include "gui_keyboard_hintbox.h"
 #include "drv_mpu.h"
+#include "device_setting.h"
 
 typedef enum {
     PASSWORD_STRENGTH_LEN,
@@ -338,7 +339,14 @@ static void PassWordPinSwitchHandler(lv_event_t *e)
 
 void GuiShuffleNumKeyBoardMap(GuiEnterPasscodeItem_t *item)
 {
-    GuiUpdateNumKeyBoardMap(item->btnm);
+    if (!!GetRandomPinPad()) {
+        GuiUpdateNumKeyBoardMap(item->btnm, true);
+    }
+}
+
+void GuiSetNumKeyBoardMapDefault(GuiEnterPasscodeItem_t *item)
+{
+    GuiUpdateNumKeyBoardMap(item->btnm, false);
 }
 
 void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *passCodeParam)

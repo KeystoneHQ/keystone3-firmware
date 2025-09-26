@@ -363,24 +363,24 @@ void GuiCreateEnterVerify(GuiEnterPasscodeItem_t *item, EnterPassCodeParam_t *pa
         GetExistAccountNum(&walletCount);
         printf("DEBUG: Creating delete wallet buttons, mode=%d, walletCount=%d\n", item->mode, walletCount);
 
-        lv_obj_t *deleteWalletCont = GuiCreateContainerWithParent(pinCont, 400, 80);
-        lv_obj_align(deleteWalletCont, LV_ALIGN_TOP_MID, 0, 50);
-        lv_obj_set_style_bg_opa(deleteWalletCont, LV_OPA_0, LV_PART_MAIN);
+        // lv_obj_t *deleteWalletCont = GuiCreateContainerWithParent(pinCont, 400, 80);
+        // lv_obj_align(deleteWalletCont, LV_ALIGN_TOP_MID, 0, 50);
+        // lv_obj_set_style_bg_opa(deleteWalletCont, LV_OPA_0, LV_PART_MAIN);
 
-        for (int i = 0; i < 3; i++) {
-            static uint8_t walletIndices[3] = {0, 1, 2};
+        // for (int i = 0; i < 3; i++) {
+        //     static uint8_t walletIndices[3] = {0, 1, 2};
 
-            char btnText[32];
-            snprintf_s(btnText, sizeof(btnText), "delwallet %d", i + 1);
-            printf("DEBUG: Creating button %d: %s\n", i, btnText);
+        //     char btnText[32];
+        //     snprintf_s(btnText, sizeof(btnText), "delwallet %d", i + 1);
+        //     printf("DEBUG: Creating button %d: %s\n", i, btnText);
 
-            lv_obj_t *btn = GuiCreateTextBtn(deleteWalletCont, btnText);
-            lv_obj_set_size(btn, 120, 40);
-            lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10 + i * 130, 0);
-            lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
-            lv_obj_set_style_text_color(btn, lv_color_white(), LV_PART_MAIN);
-            lv_obj_add_event_cb(btn, DeleteWalletHandler, LV_EVENT_CLICKED, &walletIndices[i]);
-        }
+        //     lv_obj_t *btn = GuiCreateTextBtn(deleteWalletCont, btnText);
+        //     lv_obj_set_size(btn, 120, 40);
+        //     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10 + i * 130, 0);
+        //     lv_obj_set_style_bg_color(btn, RED_COLOR, LV_PART_MAIN);
+        //     lv_obj_set_style_text_color(btn, lv_color_white(), LV_PART_MAIN);
+        //     lv_obj_add_event_cb(btn, DeleteWalletHandler, LV_EVENT_CLICKED, &walletIndices[i]);
+        // }
     }
     if (item->mode == ENTER_PASSCODE_VERIFY_PIN) {
         lv_obj_t *btnm = GuiCreateNumKeyboard(pinCont, SetPinEventHandler, NUM_KEYBOARD_PIN, passCodeParam);

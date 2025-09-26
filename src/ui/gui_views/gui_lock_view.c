@@ -108,6 +108,12 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case GUI_EVENT_CHANGE_LANGUAGE:
         GuiLockViewRefreshLanguage();
         break;
+    case SIG_UPDATE_NUM_KEYBOARD_MAP:
+        GuiLockScreenShuffleNumKeyBoardMap();
+        break;
+    case SIG_SET_NUM_KEYBOARD_MAP_DEFAULT:
+        GuiLockScreenSetNumKeyBoardMapDefault();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

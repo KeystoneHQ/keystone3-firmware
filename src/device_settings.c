@@ -35,6 +35,7 @@
 #define KEY_AUTO_LOCK_SCREEN            "auto_lock_screen"
 #define KEY_AUTO_POWER_OFF              "auto_power_off"
 #define KEY_VIBRATION                   "vibration"
+#define KEY_RANDOM_PIN_PAD              "random_pin_pad"
 #define KEY_PERMIT_SIGN                 "permit_sign"
 #define KEY_DARK_MODE                   "dark_mode"
 #define KEY_USB_SWITCH                  "usb_switch"
@@ -48,6 +49,7 @@
 #define DEFAULT_AUTO_LOCK_SCREEN        60
 #define DEFAULT_AUTO_POWER_OFF          0
 #define DEFAULT_VIBRATION               1
+#define DEFAULT_RANDOM_PIN_PAD          0
 #define DEFAULT_PERMIT_SIGN             0
 #define DEFAULT_DARK_MODE               1
 #define DEFAULT_USB_SWITCH              1
@@ -59,6 +61,7 @@ typedef struct {
     uint32_t autoLockScreen;
     uint32_t autoPowerOff;
     uint32_t vibration;
+    uint32_t randomPinPad;
     uint32_t permitSign;
     uint32_t darkMode;
     uint32_t usbSwitch;
@@ -127,6 +130,7 @@ void DeviceSettingsInit(void)
         g_deviceSettings.autoLockScreen = DEFAULT_AUTO_LOCK_SCREEN;
         g_deviceSettings.autoPowerOff = DEFAULT_AUTO_POWER_OFF;
         g_deviceSettings.vibration = DEFAULT_VIBRATION;
+        g_deviceSettings.randomPinPad = DEFAULT_RANDOM_PIN_PAD;
         g_deviceSettings.permitSign = DEFAULT_PERMIT_SIGN;
         g_deviceSettings.darkMode = DEFAULT_DARK_MODE;
         g_deviceSettings.usbSwitch = DEFAULT_USB_SWITCH;
@@ -277,6 +281,16 @@ void SetVibration(uint32_t vibration)
     g_deviceSettings.vibration = vibration;
 }
 
+uint32_t GetRandomPinPad(void)
+{
+    return g_deviceSettings.randomPinPad;
+}
+
+void SetRandomPinPad(uint32_t randomPinPad)
+{
+    g_deviceSettings.randomPinPad = randomPinPad;
+}
+
 uint32_t GetPermitSign(void)
 {
     return g_deviceSettings.permitSign;
@@ -367,8 +381,6 @@ void SetRecoveryModeSwitch(bool isSet)
         memset(g_bootParam.recoveryModeSwitch, 0, sizeof(g_bootParam.recoveryModeSwitch));
     }
     SaveBootParam();
-    PrintArray("g_bootParam.recoveryModeSwitch", g_bootParam.recoveryModeSwitch, sizeof(g_bootParam.recoveryModeSwitch));
-    printf("get recovery mode switch=%d\n", GetRecoveryModeSwitch());
 }
 
 bool IsUpdateSuccess(void)
@@ -547,6 +559,7 @@ static bool GetDeviceSettingsFromJsonString(const char *string)
         g_deviceSettings.autoLockScreen = GetIntValue(rootJson, KEY_AUTO_LOCK_SCREEN, DEFAULT_AUTO_LOCK_SCREEN);
         g_deviceSettings.autoPowerOff = GetIntValue(rootJson, KEY_AUTO_POWER_OFF, DEFAULT_AUTO_POWER_OFF);
         g_deviceSettings.vibration = GetIntValue(rootJson, KEY_VIBRATION, DEFAULT_VIBRATION);
+        g_deviceSettings.randomPinPad = GetIntValue(rootJson, KEY_RANDOM_PIN_PAD, DEFAULT_RANDOM_PIN_PAD);
         g_deviceSettings.permitSign = GetIntValue(rootJson, KEY_PERMIT_SIGN, DEFAULT_PERMIT_SIGN);
         g_deviceSettings.darkMode = GetIntValue(rootJson, KEY_DARK_MODE, DEFAULT_DARK_MODE);
         g_deviceSettings.usbSwitch = GetIntValue(rootJson, KEY_USB_SWITCH, DEFAULT_USB_SWITCH);
@@ -573,6 +586,7 @@ static char *GetJsonStringFromDeviceSettings(void)
     cJSON_AddItemToObject(rootJson, KEY_AUTO_LOCK_SCREEN, cJSON_CreateNumber(g_deviceSettings.autoLockScreen));
     cJSON_AddItemToObject(rootJson, KEY_AUTO_POWER_OFF, cJSON_CreateNumber(g_deviceSettings.autoPowerOff));
     cJSON_AddItemToObject(rootJson, KEY_VIBRATION, cJSON_CreateNumber(g_deviceSettings.vibration));
+    cJSON_AddItemToObject(rootJson, KEY_RANDOM_PIN_PAD, cJSON_CreateNumber(g_deviceSettings.randomPinPad));
     cJSON_AddItemToObject(rootJson, KEY_PERMIT_SIGN, cJSON_CreateNumber(g_deviceSettings.permitSign));
     cJSON_AddItemToObject(rootJson, KEY_DARK_MODE, cJSON_CreateNumber(g_deviceSettings.darkMode));
     cJSON_AddItemToObject(rootJson, KEY_USB_SWITCH, cJSON_CreateNumber(g_deviceSettings.usbSwitch));

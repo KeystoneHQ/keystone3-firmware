@@ -29,6 +29,8 @@ void GuiFpRecognizeResult(bool en);
 void GuiLockScreenPasscodeSwitch(bool isPin);
 void GuiLockScreenSetFirstUnlock(void);
 void GuiLockViewRefreshLanguage(void);
+void GuiLockScreenSetNumKeyBoardMapDefault(void);
+void GuiLockScreenShuffleNumKeyBoardMap(void);
 
 void GuiLockScreenErrorCount(void *param);
 void GuiLockScreenToHome(void);

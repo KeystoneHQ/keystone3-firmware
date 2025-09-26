@@ -14,8 +14,12 @@
 #include "gui_single_phrase_widgets.h"
 #include "gui_mnemonic_input.h"
 #include "gui_page.h"
+#include "gui_create_wallet_widgets.h"
+#include "gui_setting_widgets.h"
+
 typedef enum {
     SINGLE_PHRASE_INPUT_PHRASE = 0,
+    SINGLE_PHRASE_PASSPHRASE,
     SINGLE_PHRASE_WRITE_SE,
 
     SINGLE_PHRASE_BUTT,
@@ -26,6 +30,7 @@ typedef struct ImportSinglePhraseWidget {
     lv_obj_t    *cont;
     lv_obj_t    *tileView;
     lv_obj_t    *inputPhrase;
+    lv_obj_t    *passphrase;
     lv_obj_t    *writeSe;
 } ImportSinglePhraseWidget_t;
 
@@ -106,15 +111,24 @@ void GuiImportPhraseUpdateKeyboard(void)
     GuiKeyBoardSetMode(g_importPhraseKb);
 }
 
+static void GuiPassphraseWidget(lv_obj_t *parent)
+{
+    GuiWalletPassphraseEnter(parent, false);
+}
+
 void GuiImportPhraseInit(uint8_t num)
 {
     g_inputWordsCnt = num;
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
     lv_obj_t *tileView = GuiCreateTileView(cont);
-    lv_obj_t *tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_INPUT_PHRASE, 0, LV_DIR_RIGHT);
+    lv_obj_t *    tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_INPUT_PHRASE, 0, LV_DIR_RIGHT);
     g_importSinglePhraseTileView.inputPhrase = tile;
     GuiInputPhraseWidget(tile);
+
+    tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_PASSPHRASE, 0, LV_DIR_HOR);
+    g_importSinglePhraseTileView.passphrase = tile;
+    GuiPassphraseWidget(tile);
 
     tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_WRITE_SE, 0, LV_DIR_HOR);
     g_importSinglePhraseTileView.writeSe = tile;
@@ -127,13 +141,34 @@ void GuiImportPhraseInit(uint8_t num)
     lv_obj_set_tile_id(g_importSinglePhraseTileView.tileView, g_importSinglePhraseTileView.currentTile, 0, LV_ANIM_OFF);
 }
 
-int8_t GuiImportPhraseNextTile(void)
+int8_t GuiImportPhraseNextTile(const char *passphrase)
 {
+    Bip39Data_t bip39 = {
+        .wordCnt = g_importMkb->wordCnt,
+        .forget = false,
+    };
+    if (passphrase != NULL) {
+        SecretCacheSetPassphrase(passphrase);
+    }
     switch (g_importSinglePhraseTileView.currentTile) {
     case SINGLE_PHRASE_INPUT_PHRASE:
         if (g_buttonCont != NULL) lv_obj_add_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        if (GuiCreateWalletNeedPassphrase()) {
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        } else {
+            SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+            g_importSinglePhraseTileView.currentTile++;
+            GuiModelBip39CalWriteSe(bip39);
+            GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+        }
+        break;
+    case SINGLE_PHRASE_PASSPHRASE:
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+        GuiModelBip39CalWriteSe(bip39);
+        GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
         break;
     }
 
@@ -147,7 +182,7 @@ int8_t GuiImportPhrasePrevTile(void)
     switch (g_importSinglePhraseTileView.currentTile) {
     case SINGLE_PHRASE_INPUT_PHRASE:
         break;
-    case SINGLE_PHRASE_WRITE_SE:
+    case SINGLE_PHRASE_PASSPHRASE:
         if (g_buttonCont != NULL) lv_obj_clear_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
         GuiImportPhraseRefresh();

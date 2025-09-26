@@ -5,7 +5,7 @@ void GuiImportShareInit(uint8_t wordsCnt);
 void GuiImportShareDeInit(void);
 void GuiImportShareRefresh(void);
 int8_t GuiImportSharePrevTile(void);
-int8_t GuiImportShareNextTile(void);
+int8_t GuiImportShareNextTile(const char *passphrase);
 int8_t GuiImportShareNextSlice(void);
 void GuiImportShareWriteSe(bool en, int32_t ret);
 

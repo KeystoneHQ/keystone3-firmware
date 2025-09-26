@@ -28,7 +28,10 @@ int32_t GuiSinglePhraseViewEventProcess(void *self, uint16_t usEvent, void *para
         GuiSinglePhrasePrevTile();
         break;
     case SIG_SETUP_VIEW_TILE_NEXT:
-        GuiSinglePhraseNextTile();
+        GuiSinglePhraseNextTile(NULL);
+        break;
+    case SIG_SETTING_WRITE_PASSPHRASE:
+        GuiSinglePhraseNextTile((const char *)param);
         break;
     case SIG_CREAT_SINGLE_PHRASE_TON_GENERATION_START:
         GuiShowTonGeneratingModal(true);

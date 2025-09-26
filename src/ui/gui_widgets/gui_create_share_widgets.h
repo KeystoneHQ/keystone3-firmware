@@ -5,7 +5,7 @@ void GuiCreateShareInit(uint8_t entropyMethod);
 void GuiCreateShareDeInit(void);
 void GuiCreateShareRefresh(void);
 int8_t GuiCreateSharePrevTile(void);
-int8_t GuiCreateShareNextTile(void);
+int8_t GuiCreateShareNextTile(const char *passphrase);
 int8_t GuiCreateShareNextSlice(void);
 void GuiCreateShareUpdateMnemonic(void *signalParam, uint16_t paramLen);
 

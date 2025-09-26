@@ -49,7 +49,10 @@ int32_t GuiImportShareViewEventProcess(void *self, uint16_t usEvent, void *param
         GuiImportSharePrevTile();
         break;
     case SIG_SETUP_VIEW_TILE_NEXT:
-        GuiImportShareNextTile();
+        GuiImportShareNextTile(NULL);
+        break;
+    case SIG_SETTING_WRITE_PASSPHRASE:
+        GuiImportShareNextTile((const char *)param);
         break;
     default:
         return ERR_GUI_UNHANDLED;

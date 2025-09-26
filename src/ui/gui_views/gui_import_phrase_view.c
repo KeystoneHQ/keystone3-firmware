@@ -38,7 +38,10 @@ int32_t GuiImportPhraseViewEventProcess(void *self, uint16_t usEvent, void *para
         GuiImportPhrasePrevTile();
         break;
     case SIG_SETUP_VIEW_TILE_NEXT:
-        GuiImportPhraseNextTile();
+        GuiImportPhraseNextTile(NULL);
+        break;
+    case SIG_SETTING_WRITE_PASSPHRASE:
+        GuiImportPhraseNextTile((const char *)param);
         break;
 #ifdef WEB3_VERSION
     case SIG_SETUP_SHOW_TON_MNEMONIC_HINT:

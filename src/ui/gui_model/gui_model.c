@@ -325,7 +325,13 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     uint32_t mnemonicNum, entropyLen;
     mnemonicNum = *((uint32_t *)inData);
     entropyLen = (mnemonicNum == 24) ? 32 : 16;
+#ifndef COMPILE_SIMULATOR
     GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
+#else
+    for (int i = 0; i < entropyLen; i++) {
+        entropy[i] = 0xFF;
+    }
+#endif
     SecretCacheSetEntropy(entropy, entropyLen);
     bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
     SecretCacheSetMnemonic(mnemonic);
@@ -348,7 +354,7 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
     uint32_t mnemonicNum, entropyLen;
     mnemonicNum = *((uint32_t *)inData);
     entropyLen = (mnemonicNum == 24) ? 32 : 16;
-    // GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
+    GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
     hash = SecretCacheGetDiceRollHash();
     memcpy_s(entropy, sizeof(entropy), hash, entropyLen);
     SecretCacheSetEntropy(entropy, entropyLen);
@@ -387,6 +393,7 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
 
     entropy = SecretCacheGetEntropy(&entropyLen);
     entropyCheck = SRAM_MALLOC(entropyLen);
+    printf("SecretCacheGetMnemonic = %s..........\n", SecretCacheGetMnemonic());
     ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), entropyCheck, entropyLen, &entropyOutLen);
     if (memcmp(entropyCheck, entropy, entropyLen) != 0) {
         memset_s(entropyCheck, entropyLen, 0, entropyLen);
@@ -399,9 +406,17 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     MODEL_WRITE_SE_HEAD
     ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
+    printf("%s %d.........\n", __func__, __LINE__);
+    printf("SecretCacheGetNewPassword = %s..........\n", SecretCacheGetNewPassword());
     ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
-    ClearAccountPassphrase(newAccount);
     CHECK_ERRCODE_BREAK("save entropy error", ret);
+    printf("%s %d.........\n", __func__, __LINE__);
+    ClearAccountPassphrase(newAccount);
+    if (SecretCacheGetPassphrase()) {
+        printf("%s %d.........\n", __func__, __LINE__);
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     MODEL_WRITE_SE_END
     SetLockScreen(enable);
     return 0;
@@ -441,6 +456,10 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     ret = CreateNewAccount(newAccount, entropy, (uint8_t)entropyOutLen, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     ClearAccountPassphrase(newAccount);
+    if (SecretCacheGetPassphrase()) {
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
@@ -660,7 +679,13 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     if (isDiceRoll) {
         memcpy_s(entropy, sizeof(entropy), SecretCacheGetDiceRollHash(), entropyLen);
     } else {
+#ifndef COMPILE_SIMULATOR
+        for (int i = 0; i < entropyLen; i++) {
+            entropy[i] = 0xFF;
+        }
+#else
         GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
+#endif
     }
     SecretCacheSetEntropy(entropy, entropyLen);
     GetSlip39MnemonicsWords(entropy, ems, slip39->wordCnt, slip39->memberCnt, slip39->threShold, wordsList, &id, &eb, &ie);
@@ -722,6 +747,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     char *words[threShold];
     for (int i = 0; i < threShold; i++) {
         words[i] = SecretCacheGetSlip39Mnemonic(i);
+        printf("words[%d] = %s\n", i, words[i]);
     }
     ret = Slip39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &eb, &ie);
     if ((ret != SUCCESS_CODE) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
@@ -734,7 +760,13 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
     ret = CreateNewSlip39Account(newAccount, ems, entropy, entropyLen, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetExtendable(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
+    printf("SecretCacheGetPassphrase() = %s.................\n", SecretCacheGetPassphrase());
     ClearAccountPassphrase(newAccount);
+    if (SecretCacheGetPassphrase()) {
+        printf("%s %d.........\n", __func__, __LINE__);
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     MODEL_WRITE_SE_END
 
     SetLockScreen(enable);
@@ -790,6 +822,10 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     ret = CreateNewSlip39Account(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, eb, ie);
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
+    if (SecretCacheGetPassphrase()) {
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
@@ -1124,6 +1160,7 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
     // Unlock screen
     if (SIG_LOCK_VIEW_VERIFY_PIN == *param || SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS == *param) {
         ret = VerifyPasswordAndLogin(&accountIndex, SecretCacheGetPassword());
+        printf("accountIndex = %d..........................\n", accountIndex);
         if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
             GuiApiEmitSignal(SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH, NULL, 0);
             return ret;

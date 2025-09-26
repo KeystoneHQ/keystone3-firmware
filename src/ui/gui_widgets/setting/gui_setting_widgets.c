@@ -603,7 +603,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         break;
     case DEVICE_SETTING_PASSPHRASE_ENTER:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        GuiWalletPassphraseEnter(tile);
+        GuiWalletPassphraseEnter(tile, true);
         strcpy_s(midLabel, sizeof(midLabel), _("Passphrase"));
         break;
 

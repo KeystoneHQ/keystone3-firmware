@@ -396,7 +396,6 @@ pub extern "C" fn utxo_check_psbt_extend(
     verify_code: PtrString,
     multisig_wallet_config: PtrString,
 ) -> PtrT<TransactionCheckResult> {
-    return TransactionCheckResult::new().c_ptr();
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }

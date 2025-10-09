@@ -182,12 +182,6 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 static void ProceedWithBip39(MnemonicKeyBoard_t *mkb)
 {
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-    Bip39Data_t bip39 = {
-        .wordCnt = mkb->wordCnt,
-        .forget = false,
-    };
-    GuiModelBip39CalWriteSe(bip39);
-    GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
 }
 
 static void HandleInputType(MnemonicKeyBoard_t *mkb)

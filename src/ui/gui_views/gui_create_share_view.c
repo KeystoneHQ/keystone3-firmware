@@ -28,7 +28,10 @@ int32_t GuiCreateShareViewEventProcess(void *self, uint16_t usEvent, void *param
         GuiCreateSharePrevTile();
         break;
     case SIG_SETUP_VIEW_TILE_NEXT:
-        GuiCreateShareNextTile();
+        GuiCreateShareNextTile(NULL);
+        break;
+    case SIG_SETTING_WRITE_PASSPHRASE:
+        GuiCreateShareNextTile((const char *)param);
         break;
     case SIG_CREATE_SHARE_VIEW_NEXT_SLICE:
         GuiCreateShareNextSlice();

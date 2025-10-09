@@ -14,12 +14,14 @@
 #include "user_utils.h"
 #include "motor_manager.h"
 #include "gui_page.h"
+#include "gui_setting_widgets.h"
 
 typedef enum {
     CREATE_SHARE_SELECT_SLICE = 0,
     CREATE_SHARE_CUSTODIAN,
     CREATE_SHARE_BACKUPFROM,
     CREATE_SHARE_CONFIRM,
+    CREATE_SHARE_PASSPHRASE,
     CREATE_SHARE_WRITE_SE,
 
     CREATE_SHARE_BUTT,
@@ -34,6 +36,7 @@ typedef struct CreateShareWidget {
     lv_obj_t    *custodian;
     lv_obj_t    *backupFrom;
     lv_obj_t    *confirm;
+    lv_obj_t    *passphrase;
     lv_obj_t    *writeSe;
 } CreateShareWidget_t;
 static CreateShareWidget_t g_createShareTileView;
@@ -357,6 +360,11 @@ static void GuiShareBackupWidget(lv_obj_t *parent)
     lv_obj_add_event_cb(btn, ShareUpdateTileHandler, LV_EVENT_CLICKED, NULL);
 }
 
+static void GuiSharePassphraseWidget(lv_obj_t *parent)
+{
+    GuiWalletPassphraseEnter(parent, false);
+}
+
 static void GuiShareConfirmWidget(lv_obj_t *parent)
 {
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_phrase_confirm_title"));
@@ -377,12 +385,10 @@ void GuiCreateShareInit(uint8_t entropyMethod)
     g_entropyMethod = entropyMethod;
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
-
     lv_obj_t *tileView = GuiCreateTileView(cont);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, CREATE_SHARE_SELECT_SLICE, 0, LV_DIR_HOR);
     g_createShareTileView.selectSlice = tile;
     GuiShareSelectSliceWidget(tile);
-
     tile = lv_tileview_add_tile(tileView, CREATE_SHARE_CUSTODIAN, 0, LV_DIR_HOR);
     g_createShareTileView.custodian = tile;
     GuiShareCustodianWidget(tile);
@@ -394,6 +400,10 @@ void GuiCreateShareInit(uint8_t entropyMethod)
     tile = lv_tileview_add_tile(tileView, CREATE_SHARE_CONFIRM, 0, LV_DIR_HOR);
     g_createShareTileView.confirm = tile;
     GuiShareConfirmWidget(tile);
+
+    tile = lv_tileview_add_tile(tileView, CREATE_SHARE_PASSPHRASE, 0, LV_DIR_HOR);
+    g_createShareTileView.passphrase = tile;
+    GuiSharePassphraseWidget(tile);
 
     tile = lv_tileview_add_tile(tileView, CREATE_SHARE_WRITE_SE, 0, LV_DIR_HOR);
     g_createShareTileView.writeSe = tile;
@@ -408,7 +418,9 @@ void GuiCreateShareInit(uint8_t entropyMethod)
 
 int8_t GuiCreateShareNextSlice(void)
 {
-    g_createShareTileView.currentSlice++;
+    if (g_createShareTileView.currentSlice < g_selectSliceTile.memberCnt) {
+        g_createShareTileView.currentSlice++;
+    }
     if (g_createShareTileView.currentSlice == g_selectSliceTile.memberCnt) {
         // GuiModelWriteSe();
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
@@ -429,13 +441,16 @@ int8_t GuiCreateShareNextSlice(void)
     return SUCCESS_CODE;
 }
 
-int8_t GuiCreateShareNextTile(void)
+int8_t GuiCreateShareNextTile(const char *passphrase)
 {
     Slip39Data_t slip39 = {
         .threShold = g_selectSliceTile.memberThreshold,
         .memberCnt = g_selectSliceTile.memberCnt,
         .wordCnt = g_selectCnt,
     };
+    if (passphrase != NULL) {
+        SecretCacheSetPassphrase(passphrase);
+    }
     switch (g_createShareTileView.currentTile) {
     case CREATE_SHARE_SELECT_SLICE:
         if (g_entropyMethod == 0) {
@@ -460,8 +475,21 @@ int8_t GuiCreateShareNextTile(void)
         lv_obj_add_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_SHARE_CONFIRM:
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        if (GuiCreateWalletNeedPassphrase()) {
+            SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseTutorialHandler, NULL);
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
+        } else {
+            SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+            SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+            g_createShareTileView.currentTile++;
+            GuiModelSlip39WriteSe(g_selectCnt);
+        }
+        break;
+    case CREATE_SHARE_PASSPHRASE:
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         GuiModelSlip39WriteSe(g_selectCnt);
         break;
     }
@@ -480,6 +508,17 @@ int8_t GuiCreateSharePrevTile(void)
         break;
     case CREATE_SHARE_BACKUPFROM:
         lv_obj_add_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
+        break;
+    case CREATE_SHARE_CONFIRM:
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
+        lv_obj_clear_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
+        break;
+    case CREATE_SHARE_PASSPHRASE:
+        g_createShareTileView.currentSlice--;
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
         break;
     }
 
@@ -525,6 +564,9 @@ void GuiCreateShareRefresh(void)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, ResetBtnHandler, NULL);
     } else if (g_createShareTileView.currentTile == CREATE_SHARE_WRITE_SE) {
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    } else if (g_createShareTileView.currentTile == CREATE_SHARE_PASSPHRASE) {
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseTutorialHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
     }
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }

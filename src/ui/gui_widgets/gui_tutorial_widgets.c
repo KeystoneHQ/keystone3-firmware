@@ -146,6 +146,66 @@ static void GuiOpenQRHintBoxHandler(lv_event_t *e)
     GuiOpenQRHintBox(t);
 }
 
+static void GuiOpenPassphraseLearnMoreHandler(void)
+{
+    uint16_t height;
+    lv_obj_t *cont = g_tutorialWidget.cont;
+    lv_obj_t *label = GuiCreateTextLabel(cont, _("passphrase_learn_more_title"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
+
+    lv_obj_t *led = lv_led_create(cont);
+    lv_led_set_brightness(led, 150);
+    lv_obj_align_to(led, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12 + 15);
+    lv_obj_set_size(led, 12, 12);
+    lv_led_set_color(led, ORANGE_COLOR);
+    label = GuiCreateNoticeLabel(cont, _("passphrase_learn_more_desc1"));
+    lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
+    height = lv_obj_get_self_height(label) + 12;
+
+    lv_obj_t *newLed = lv_led_create(cont);
+    lv_led_set_brightness(newLed, 150);
+    lv_obj_set_size(newLed, 12, 12);
+    lv_led_set_color(newLed, ORANGE_COLOR);
+    lv_obj_align_to(newLed, led, LV_ALIGN_TOP_LEFT, 0, height + 15);
+    led = newLed;
+    label = GuiCreateNoticeLabel(cont, _("passphrase_learn_more_desc2"));
+    lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
+    height = lv_obj_get_self_height(label) + 12;
+
+    newLed = lv_led_create(cont);
+    lv_led_set_brightness(newLed, 150);
+    lv_obj_set_size(newLed, 12, 12);
+    lv_led_set_color(newLed, ORANGE_COLOR);
+    lv_obj_align_to(newLed, led, LV_ALIGN_TOP_LEFT, 0, height + 15);
+    led = newLed;
+    label = GuiCreateNoticeLabel(cont, _("passphrase_learn_more_desc3"));
+    lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
+    height = lv_obj_get_self_height(label) + 12;
+
+    newLed = lv_led_create(cont);
+    lv_led_set_brightness(newLed, 150);
+    lv_obj_align(newLed, LV_ALIGN_DEFAULT, 36, 432 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_set_size(newLed, 12, 12);
+    lv_led_set_color(newLed, ORANGE_COLOR);
+    lv_obj_align_to(newLed, led, LV_ALIGN_TOP_LEFT, 0, height + 15);
+    led = newLed;
+    label = GuiCreateNoticeLabel(cont, _("passphrase_learn_more_desc4"));
+    lv_obj_align_to(label, led, LV_ALIGN_OUT_RIGHT_TOP, 12, -15);
+    height = lv_obj_get_self_height(label) + 12;
+
+    cont = GuiCreateContainerWithParent(cont, 144, 30);
+    lv_obj_align_to(cont, newLed, LV_ALIGN_TOP_LEFT, 0, height);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(cont, cont, LV_EVENT_CLICKED, NULL);
+
+    label = GuiCreateIllustrateLabel(cont, _("learn_more"));
+    lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
+
+    lv_obj_t *img = GuiCreateImg(cont, &imgQrcodeTurquoise);
+    lv_obj_align_to(img, label, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+    lv_obj_set_width(cont, lv_obj_get_self_width(label) + lv_obj_get_self_width(img) + 10);
+}
+
 void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
 {
     TutorialsInit();
@@ -162,6 +222,11 @@ void GuiTutorialInit(TUTORIAL_LIST_INDEX_ENUM tutorialIndex)
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     g_tutorialWidget.cont = parent;
     GuiAddObjFlag(parent, LV_OBJ_FLAG_SCROLLABLE);
+
+    if (tutorialIndex == TUTORIAL_PASSPHRASE_LEARN_MORE) {
+        GuiOpenPassphraseLearnMoreHandler();
+        return;
+    }
 
     TutorialList_t *tutorialList = &g_tutorials[tutorialIndex];
 

@@ -513,7 +513,7 @@ static void OpenMoreHandler(lv_event_t *e)
     const char *passphraseText = GuiCreateWalletNeedPassphrase() ? _("disable_passphrase") : _("enable_passphrase");
     if (g_createWalletTileView.walletMethod == WALLET_METHOD_CREATE) {
         MoreInfoTable_t moreInfoTable[] = {
-            {.name = _("change_entropy"), .src = &imgConnect, .callBack = OpenChangeEntropyHandler, NULL},
+            {.name = _("change_entropy"), .src = &imgDice, .callBack = OpenChangeEntropyHandler, NULL},
             {.name = passphraseText, .src = &imgEnterPassphrase, .callBack = PassphraseButtonHandler, NULL},
 #ifdef WEB3_VERSION
             {.name = _("generate_ton_mnenonic"), .src = &imgTonPhrase, .callBack = TonPhraseButtonHandler, NULL},

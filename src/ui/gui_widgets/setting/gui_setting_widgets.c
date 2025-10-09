@@ -20,6 +20,7 @@
 #include "screen_manager.h"
 #include <stdlib.h>
 #include "user_fatfs.h"
+#include "gui_tutorial_widgets.h"
 
 typedef void (*setting_update_cb)(void *obj, void *param);
 
@@ -204,6 +205,12 @@ static void GuiOpenPassphraseLearnMore()
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, CloseCurrentPage, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
+}
+
+void OpenPassphraseTutorialHandler(lv_event_t *e)
+{
+    TUTORIAL_LIST_INDEX_ENUM index = TUTORIAL_PASSPHRASE_LEARN_MORE;
+    GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
 }
 
 static void OpenPassphraseLearnMoreHandler(lv_event_t *e)
@@ -603,7 +610,7 @@ int8_t GuiDevSettingNextTile(uint8_t tileIndex)
         break;
     case DEVICE_SETTING_PASSPHRASE_ENTER:
         tile = lv_tileview_add_tile(g_deviceSetTileView.tileView, currentTile, 0, LV_DIR_HOR);
-        GuiWalletPassphraseEnter(tile);
+        GuiWalletPassphraseEnter(tile, true);
         strcpy_s(midLabel, sizeof(midLabel), _("Passphrase"));
         break;
 

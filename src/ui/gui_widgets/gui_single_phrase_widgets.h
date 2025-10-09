@@ -2,7 +2,7 @@
 #define _GUI_SINGLE_PHRASE_WIDGETS_H
 
 void GuiSinglePhraseInit(uint8_t entropyMethod);
-int8_t GuiSinglePhraseNextTile(void);
+int8_t GuiSinglePhraseNextTile(const char *passphrase);
 int8_t GuiSinglePhrasePrevTile(void);
 void GuiSinglePhraseDeInit(void);
 void GuiSinglePhraseRefresh(void);

@@ -16,6 +16,7 @@ void GuiCreateWalletRepeatPinPass(const char* buf);
 const char *GetCurrentKbWalletName(void);
 void GuiCreateWalletRefresh(void);
 void GuiSetupKeyboardWidgetMode(void);
+bool GuiCreateWalletNeedPassphrase(void);
 
 #define WALLET_TYPE_TON             0b00000010
 #define ENTROPY_TYPE_STANDARD       0b00000000

@@ -3,7 +3,7 @@
 
 void GuiImportPhraseInit(uint8_t num);
 void GuiImportPhraseDeInit(void);
-int8_t GuiImportPhraseNextTile(void);
+int8_t GuiImportPhraseNextTile(const char *passphrase);
 int8_t GuiImportPhrasePrevTile(void);
 void GuiImportPhraseWriteSe(bool en, int32_t errCode);
 void GuiImportPhraseRefresh(void);

@@ -28,7 +28,7 @@ char *SecretCacheGetMnemonic(void);
 char *SecretCacheGetSlip39Mnemonic(int index);
 void SecretCacheSetSlip39Mnemonic(char *mnemonic, int index);
 
-void SecretCacheSetPassphrase(char *passPhrase);
+void SecretCacheSetPassphrase(const char *passPhrase);
 char *SecretCacheGetPassphrase(void);
 
 void SecretCacheSetIteration(uint8_t ie);

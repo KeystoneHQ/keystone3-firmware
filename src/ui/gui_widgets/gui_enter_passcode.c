@@ -738,17 +738,18 @@ void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt)
     }
 }
 
+void SwitchPasswordMode(lv_obj_t *ta, lv_obj_t *img, bool isPassword)
+{
+    lv_textarea_set_password_mode(ta, isPassword);
+    lv_img_set_src(img, isPassword ? &imgEyeOff : &imgEyeOn);
+}
+
 void SwitchPasswordModeHandler(lv_event_t *e)
 {
     lv_obj_t *ta = lv_event_get_user_data(e);
     lv_obj_t *img = lv_event_get_target(e);
     bool en = lv_textarea_get_password_mode(ta);
-    lv_textarea_set_password_mode(ta, !en);
-    if (en) {
-        lv_img_set_src(img, &imgEyeOn);
-    } else {
-        lv_img_set_src(img, &imgEyeOff);
-    }
+    SwitchPasswordMode(ta, img, !en);
 }
 
 const int8_t MAX_SCORE = 90; // MAX SCORE = 25 + 10 + 10 + 20 + 25 = 90

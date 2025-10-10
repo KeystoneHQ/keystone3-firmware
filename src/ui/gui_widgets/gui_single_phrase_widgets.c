@@ -445,6 +445,7 @@ int8_t GuiSinglePhrasePrevTile(void)
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
+        GuiPassphraseWidgetClearText();
         ResetConfirmInput();
         break;
     }

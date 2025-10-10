@@ -210,6 +210,7 @@ int8_t GuiImportSharePrevTile(void)
     case IMPORT_SHARE_WRITE_SE:
         break;
     case IMPORT_SHARE_PASSPHRASE:
+        GuiPassphraseWidgetClearText();
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));

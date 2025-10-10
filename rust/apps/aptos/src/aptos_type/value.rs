@@ -493,8 +493,8 @@ impl fmt::Display for MoveTypeLayout {
             U64 => write!(f, "u64"),
             U128 => write!(f, "u128"),
             Address => write!(f, "address"),
-            Vector(typ) => write!(f, "vector<{}>", typ),
-            Struct(s) => write!(f, "{}", s),
+            Vector(typ) => write!(f, "vector<{typ}>"),
+            Struct(s) => write!(f, "{s}"),
             Signer => write!(f, "signer"),
         }
     }
@@ -510,19 +510,19 @@ impl fmt::Display for MoveStructLayout {
                 tag: _,
             } => {
                 for (i, l) in layouts.iter().enumerate() {
-                    write!(f, "{}: {}, ", i, l)?
+                    write!(f, "{i}: {l}, ")?
                 }
             }
             Self::WithFields(layouts) => {
                 for layout in layouts {
-                    write!(f, "{}, ", layout)?
+                    write!(f, "{layout}, ")?
                 }
             }
             Self::WithTypes { type_, fields } => {
-                write!(f, "Type: {}", type_)?;
+                write!(f, "Type: {type_}")?;
                 write!(f, "Fields:")?;
                 for field in fields {
-                    write!(f, "{}, ", field)?
+                    write!(f, "{field}, ")?
                 }
             }
         }
@@ -567,9 +567,9 @@ impl TryInto<StructTag> for &MoveStructLayout {
 impl fmt::Display for MoveValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            MoveValue::U8(u) => write!(f, "{}u8", u),
-            MoveValue::U64(u) => write!(f, "{}u64", u),
-            MoveValue::U128(u) => write!(f, "{}u128", u),
+            MoveValue::U8(u) => write!(f, "{u}u8"),
+            MoveValue::U64(u) => write!(f, "{u}u64"),
+            MoveValue::U128(u) => write!(f, "{u}u128"),
             MoveValue::Bool(false) => write!(f, "false"),
             MoveValue::Bool(true) => write!(f, "true"),
             MoveValue::Address(a) => write!(f, "{}", a.to_hex_literal()),
@@ -600,7 +600,7 @@ struct DisplayFieldBinding<'a>(&'a (Identifier, MoveValue));
 impl fmt::Display for DisplayFieldBinding<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let DisplayFieldBinding((field, value)) = self;
-        write!(f, "{}: {}", field, value)
+        write!(f, "{field}: {value}")
     }
 }
 
@@ -610,14 +610,14 @@ fn fmt_list<T: fmt::Display>(
     items: impl IntoIterator<Item = T>,
     end: &str,
 ) -> fmt::Result {
-    write!(f, "{}", begin)?;
+    write!(f, "{begin}")?;
     let mut items = items.into_iter();
     if let Some(x) = items.next() {
-        write!(f, "{}", x)?;
+        write!(f, "{x}")?;
         for x in items {
-            write!(f, ", {}", x)?;
+            write!(f, ", {x}")?;
         }
     }
-    write!(f, "{}", end)?;
+    write!(f, "{end}")?;
     Ok(())
 }

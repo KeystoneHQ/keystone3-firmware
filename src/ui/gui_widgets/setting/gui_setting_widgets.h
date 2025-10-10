@@ -167,6 +167,7 @@ void GuiWalletFingerOpenSign(void);
 void GuiWalletPassphrase(lv_obj_t *parent);
 void GuiWalletPassphraseEnter(lv_obj_t *parent, bool needVerify);
 void OpenPassphraseTutorialHandler(lv_event_t *e);
+bool GuiPassphraseQuickAccess(void);
 
 // seed check
 void GuiWalletRecoveryMethodCheck(lv_obj_t *parent);

@@ -28,27 +28,23 @@ impl<T> From<Vec<T>> for VecFFI<T> {
 impl_simple_free!(u8);
 
 impl<T: SimpleFree> SimpleFree for VecFFI<T> {
-    fn free(&self) {
+    unsafe fn free(&self) {
         if self.data.is_null() {
             return;
         }
-        unsafe {
-            let _x = Vec::from_raw_parts(self.data, self.size, self.cap);
-        }
+        let _x = Vec::from_raw_parts(self.data, self.size, self.cap);
     }
 }
 
 impl<T: Free> Free for VecFFI<T> {
-    fn free(&self) {
+    unsafe fn free(&self) {
         if self.data.is_null() {
             return;
         }
-        unsafe {
-            let x = Vec::from_raw_parts(self.data, self.size, self.cap);
-            x.iter().for_each(|v| {
-                v.free();
-            });
-        }
+        let x = Vec::from_raw_parts(self.data, self.size, self.cap);
+        x.iter().for_each(|v| {
+            v.free();
+        });
     }
 }
 

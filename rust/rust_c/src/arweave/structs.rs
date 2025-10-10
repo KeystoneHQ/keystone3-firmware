@@ -3,7 +3,7 @@ use crate::common::free::Free;
 use crate::common::structs::TransactionParseResult;
 use crate::common::types::{Ptr, PtrString, PtrT};
 use crate::common::utils::convert_c_char;
-use crate::{check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, make_free_method};
+use crate::{free_str_ptr, free_vec, impl_c_ptr, make_free_method};
 use alloc::vec::Vec;
 use app_arweave::{
     ao_transaction::AOTransferTransaction,
@@ -35,7 +35,7 @@ pub struct DisplayArweaveMessage {
 }
 
 impl Free for DisplayArweaveTx {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.value);
         free_str_ptr!(self.fee);
         free_str_ptr!(self.from);
@@ -44,7 +44,7 @@ impl Free for DisplayArweaveTx {
 }
 
 impl Free for DisplayArweaveMessage {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.message);
         free_str_ptr!(self.raw_message);
     }
@@ -75,7 +75,7 @@ impl From<Tag> for DisplayTag {
 }
 
 impl Free for DisplayTag {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.name);
         free_str_ptr!(self.value);
     }
@@ -111,7 +111,7 @@ impl From<DataItem> for DisplayArweaveDataItem {
 }
 
 impl Free for DisplayArweaveDataItem {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.owner);
         free_str_ptr!(self.target);
         free_str_ptr!(self.anchor);
@@ -151,7 +151,7 @@ impl From<AOTransferTransaction> for DisplayArweaveAOTransfer {
 }
 
 impl Free for DisplayArweaveAOTransfer {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.from);
         free_str_ptr!(self.to);
         free_str_ptr!(self.token_id);

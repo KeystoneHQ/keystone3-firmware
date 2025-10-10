@@ -76,8 +76,7 @@ impl TryFrom<&Any> for PublicKey {
                 let pub_key: proto::cosmos::crypto::ed25519::PubKey = Message::decode(&*any.value)
                     .map_err(|err| {
                         CosmosError::ParseTxError(format!(
-                            "proto ed25519::PubKey deserialize failed {}",
-                            err
+                            "proto ed25519::PubKey deserialize failed {err}"
                         ))
                     })?;
                 Ok(PublicKey {
@@ -89,8 +88,7 @@ impl TryFrom<&Any> for PublicKey {
                 let pub_key: proto::cosmos::crypto::secp256k1::PubKey =
                     Message::decode(&*any.value).map_err(|err| {
                         CosmosError::ParseTxError(format!(
-                            "proto secp256k1::PubKey deserialize failed {}",
-                            err
+                            "proto secp256k1::PubKey deserialize failed {err}"
                         ))
                     })?;
                 Ok(PublicKey {
@@ -99,8 +97,7 @@ impl TryFrom<&Any> for PublicKey {
                 })
             }
             other => Err(CosmosError::ParseTxError(format!(
-                "{} is not supported!!!",
-                other
+                "{other} is not supported!!!"
             ))),
         }
     }

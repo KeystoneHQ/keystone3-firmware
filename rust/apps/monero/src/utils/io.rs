@@ -136,7 +136,7 @@ pub fn write_tx_construction_data(data: &TxConstructionData) -> Vec<u8> {
     buffer.extend_from_slice(&write_varinteger(data.extra.len() as u64));
     buffer.extend_from_slice(&data.extra);
     buffer.extend_from_slice(&data.unlock_time.to_le_bytes());
-    buffer.push(data.use_rct as u8);
+    buffer.push(data.use_rct);
     buffer.extend_from_slice(&write_varinteger(data.rct_config.version as u64));
     buffer.extend_from_slice(&write_varinteger(data.rct_config.range_proof_type as u64));
     buffer.extend_from_slice(&write_varinteger(data.rct_config.bp_version as u64));

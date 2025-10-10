@@ -7,7 +7,7 @@ use crate::common::free::Free;
 use crate::common::structs::{Response, TransactionParseResult};
 use crate::common::types::{Ptr, PtrString, PtrT};
 use crate::common::utils::convert_c_char;
-use crate::{check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, make_free_method};
+use crate::{free_str_ptr, free_vec, impl_c_ptr, make_free_method};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_ethereum::abi::{ContractData, ContractMethodParam};
@@ -145,7 +145,7 @@ pub struct DisplayETHOverview {
 impl_c_ptr!(DisplayETHOverview);
 
 impl Free for DisplayETHOverview {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.value);
         free_str_ptr!(self.max_txn_fee);
         free_str_ptr!(self.gas_price);
@@ -181,7 +181,7 @@ pub struct DisplayETHDetail {
 impl_c_ptr!(DisplayETHDetail);
 
 impl Free for DisplayETHDetail {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.value);
         free_str_ptr!(self.max_txn_fee);
         free_str_ptr!(self.gas_price);
@@ -198,14 +198,12 @@ impl Free for DisplayETHDetail {
 }
 
 impl Free for DisplayETH {
-    fn free(&self) {
-        unsafe {
-            let x = Box::from_raw(self.overview);
-            x.free();
-            free_str_ptr!(self.tx_type);
-            let y = Box::from_raw(self.detail);
-            y.free();
-        }
+    unsafe fn free(&self) {
+        let x = Box::from_raw(self.overview);
+        x.free();
+        free_str_ptr!(self.tx_type);
+        let y = Box::from_raw(self.detail);
+        y.free()
     }
 }
 
@@ -285,7 +283,7 @@ impl From<PersonalMessage> for DisplayETHPersonalMessage {
 impl_c_ptr!(DisplayETHPersonalMessage);
 
 impl Free for DisplayETHPersonalMessage {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.raw_message);
         free_str_ptr!(self.utf8_message);
         free_str_ptr!(self.from);
@@ -338,7 +336,7 @@ impl From<TypedData> for DisplayETHTypedData {
 impl_c_ptr!(DisplayETHTypedData);
 
 impl Free for DisplayETHTypedData {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.name);
         free_str_ptr!(self.version);
         free_str_ptr!(self.chain_id);
@@ -398,15 +396,13 @@ impl From<ContractData> for DisplayContractData {
 }
 
 impl Free for DisplayContractData {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.method_name);
         free_str_ptr!(self.contract_name);
-        unsafe {
-            let x = Box::from_raw(self.params);
-            let v = Vec::from_raw_parts(x.data, x.size, x.cap);
-            for x in v {
-                x.free()
-            }
+        let x = Box::from_raw(self.params);
+        let v = Vec::from_raw_parts(x.data, x.size, x.cap);
+        for x in v {
+            x.free()
         }
     }
 }
@@ -429,7 +425,7 @@ impl From<&ContractMethodParam> for DisplayContractParam {
 }
 
 impl Free for DisplayContractParam {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.name);
         free_str_ptr!(self.value);
     }
@@ -453,7 +449,7 @@ impl From<app_ethereum::erc20::ParsedErc20Transaction> for EthParsedErc20Transac
 }
 
 impl Free for EthParsedErc20Transaction {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.to);
         free_str_ptr!(self.value);
     }
@@ -479,7 +475,7 @@ impl From<app_ethereum::erc20::ParsedErc20Approval> for EthParsedErc20Approval {
 }
 
 impl Free for EthParsedErc20Approval {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.spender);
         free_str_ptr!(self.value);
     }
@@ -499,10 +495,8 @@ impl From<Vec<DisplayETH>> for DisplayETHBatchTx {
 }
 
 impl Free for DisplayETHBatchTx {
-    fn free(&self) {
-        unsafe {
-            free_vec!(self.txs);
-        }
+    unsafe fn free(&self) {
+        free_vec!(self.txs);
     }
 }
 
@@ -537,7 +531,7 @@ impl From<app_ethereum::swap::SwapkitContractData> for DisplaySwapkitContractDat
 impl_c_ptr!(DisplaySwapkitContractData);
 
 impl Free for DisplaySwapkitContractData {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.vault);
         free_str_ptr!(self.swap_in_asset);
         free_str_ptr!(self.swap_in_amount);

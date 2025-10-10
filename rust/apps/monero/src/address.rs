@@ -38,7 +38,7 @@ impl Address {
     }
 
     pub fn from_str(address: &str) -> Result<Address> {
-        let decoded = match decode(address).map_err(|e| format!("decode error: {:?}", e)) {
+        let decoded = match decode(address).map_err(|e| format!("decode error: {e:?}")) {
             Ok(decoded) => decoded,
             _ => return Err(MoneroError::Base58DecodeError),
         };
@@ -54,13 +54,13 @@ impl Address {
         };
         let is_subaddress = prefix == "2A" || prefix == "3F" || prefix == "24";
         let public_spend = match PublicKey::from_bytes(&decoded[1..33])
-            .map_err(|e| format!("decode error: {:?}", e))
+            .map_err(|e| format!("decode error: {e:?}"))
         {
             Ok(public_spend) => public_spend,
             _ => return Err(MoneroError::FormatError),
         };
         let public_view = match PublicKey::from_bytes(&decoded[33..65])
-            .map_err(|e| format!("decode error: {:?}", e))
+            .map_err(|e| format!("decode error: {e:?}"))
         {
             Ok(public_view) => public_view,
             _ => return Err(MoneroError::FormatError),
@@ -97,10 +97,7 @@ pub fn get_address_from_seed(
     major: u32,
     minor: u32,
 ) -> Result<Address> {
-    let keypair = match generate_keypair(seed, major) {
-        Ok(keypair) => keypair,
-        Err(e) => return Err(e),
-    };
+    let keypair = generate_keypair(seed, major)?;
     let mut public_spend_key = keypair.spend.get_public_key();
     let mut public_view_key = keypair.view.get_public_key();
     if is_subaddress {
@@ -127,19 +124,10 @@ pub fn pub_keyring_to_address(
     if pub_keyring.len() != PUBKEY_LEH * 4 {
         return Err(MoneroError::PubKeyringLengthError);
     }
-    let pub_spend_key = match PublicKey::from_bytes(&hex::decode(&pub_keyring[0..64]).unwrap()) {
-        Ok(pub_spend_key) => pub_spend_key,
-        Err(e) => return Err(e),
-    };
-    let pub_view_key = match PublicKey::from_bytes(&hex::decode(&pub_keyring[64..128]).unwrap()) {
-        Ok(pub_view_key) => pub_view_key,
-        Err(e) => return Err(e),
-    };
+    let pub_spend_key = PublicKey::from_bytes(&hex::decode(&pub_keyring[0..64]).unwrap())?;
+    let pub_view_key = PublicKey::from_bytes(&hex::decode(&pub_keyring[64..128]).unwrap())?;
 
-    match pub_keys_to_address(net, is_subaddress, &pub_spend_key, &pub_view_key) {
-        Ok(address) => Ok(address),
-        Err(e) => Err(e),
-    }
+    pub_keys_to_address(net, is_subaddress, &pub_spend_key, &pub_view_key)
 }
 
 fn pub_keys_to_address(
@@ -197,7 +185,7 @@ pub fn generate_address(
         return Ok(Address::new(
             Network::Mainnet,
             AddressType::Standard,
-            public_spend_key.clone(),
+            *public_spend_key,
             private_view_key.get_public_key(),
         )
         .to_string());

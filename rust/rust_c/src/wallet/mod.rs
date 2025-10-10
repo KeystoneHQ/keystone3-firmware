@@ -18,7 +18,6 @@ use keystore::algorithms::secp256k1::derive_extend_public_key;
 use keystore::errors::KeystoreError;
 
 use ed25519_bip32_core::XPub;
-use hex;
 use ur_registry::crypto_account::CryptoAccount;
 use ur_registry::crypto_hd_key::CryptoHDKey;
 use ur_registry::crypto_key_path::CryptoKeyPath;
@@ -37,7 +36,7 @@ use crate::{extract_array, extract_ptr_with_type};
 use structs::QRHardwareCallData;
 
 #[no_mangle]
-pub extern "C" fn parse_qr_hardware_call(ur: PtrUR) -> Ptr<Response<QRHardwareCallData>> {
+pub unsafe extern "C" fn parse_qr_hardware_call(ur: PtrUR) -> Ptr<Response<QRHardwareCallData>> {
     let qr_hardware_call = extract_ptr_with_type!(ur, QRHardwareCall);
     let data = QRHardwareCallData::try_from(qr_hardware_call);
     match data {
@@ -47,7 +46,7 @@ pub extern "C" fn parse_qr_hardware_call(ur: PtrUR) -> Ptr<Response<QRHardwareCa
 }
 
 #[no_mangle]
-pub extern "C" fn check_hardware_call_path(
+pub unsafe extern "C" fn check_hardware_call_path(
     path: PtrString,
     chain_type: PtrString,
 ) -> *mut Response<bool> {
@@ -109,14 +108,14 @@ pub extern "C" fn check_hardware_call_path(
     };
     let mut path = recover_c_char(path).to_lowercase();
     if !path.starts_with('m') {
-        path = format!("m/{}", path);
+        path = format!("m/{path}");
     }
     let result = path.starts_with(prefix);
     Response::success(result).c_ptr()
 }
 
 #[no_mangle]
-pub extern "C" fn generate_key_derivation_ur(
+pub unsafe extern "C" fn generate_key_derivation_ur(
     master_fingerprint: PtrBytes,
     master_fingerprint_length: uint32_t,
     xpubs: Ptr<CSliceFFI<ExtendedPublicKey>>,
@@ -127,8 +126,8 @@ pub extern "C" fn generate_key_derivation_ur(
         Ok(mfp) => *mfp,
         Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
     };
-    let public_keys = unsafe { recover_c_array(xpubs) };
-    let device_version = unsafe { recover_c_char(device_version) };
+    let public_keys = recover_c_array(xpubs);
+    let device_version = recover_c_char(device_version);
     let keys = public_keys
         .iter()
         .map(|v| {

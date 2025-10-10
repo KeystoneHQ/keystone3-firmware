@@ -9,7 +9,7 @@ use crate::common::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
-use crate::extract_ptr_with_type;
+use crate::{extract_array, extract_ptr_with_type};
 use alloc::slice;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -120,21 +120,21 @@ pub extern "C" fn aes256_decrypt_primes(
 }
 
 #[no_mangle]
-pub extern "C" fn arweave_get_address(xpub: PtrString) -> *mut SimpleResponse<c_char> {
+pub unsafe extern "C" fn arweave_get_address(xpub: PtrString) -> *mut SimpleResponse<c_char> {
     let xpub = recover_c_char(xpub);
     let address = app_arweave::generate_address(hex::decode(xpub).unwrap()).unwrap();
     SimpleResponse::success(convert_c_char(address)).simple_c_ptr()
 }
 
 #[no_mangle]
-pub extern "C" fn fix_arweave_address(address: PtrString) -> *mut SimpleResponse<c_char> {
+pub unsafe extern "C" fn fix_arweave_address(address: PtrString) -> *mut SimpleResponse<c_char> {
     let address = recover_c_char(address);
     let fixed_address = fix_address(&address);
     SimpleResponse::success(convert_c_char(fixed_address)).simple_c_ptr()
 }
 
 #[no_mangle]
-pub extern "C" fn ar_check_tx(
+pub unsafe extern "C" fn ar_check_tx(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     length: u32,
@@ -142,7 +142,7 @@ pub extern "C" fn ar_check_tx(
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let ur_mfp = sign_request.get_master_fingerprint();
 
@@ -157,7 +157,7 @@ pub extern "C" fn ar_check_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn ar_request_type(ptr: PtrUR) -> *mut SimpleResponse<ArweaveRequestType> {
+pub unsafe extern "C" fn ar_request_type(ptr: PtrUR) -> *mut SimpleResponse<ArweaveRequestType> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_type = sign_request.get_sign_type();
     let sign_type_str = match sign_type {
@@ -170,7 +170,7 @@ pub extern "C" fn ar_request_type(ptr: PtrUR) -> *mut SimpleResponse<ArweaveRequ
 }
 
 #[no_mangle]
-pub extern "C" fn ar_message_parse(
+pub unsafe extern "C" fn ar_message_parse(
     ptr: PtrUR,
 ) -> PtrT<TransactionParseResult<DisplayArweaveMessage>> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
@@ -195,7 +195,7 @@ fn get_value(raw_json: &Value, key: &str) -> String {
 }
 
 #[no_mangle]
-pub extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArweaveTx>> {
+pub unsafe extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArweaveTx>> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_data = sign_request.get_sign_data();
     let raw_tx = parse(&sign_data).unwrap();
@@ -216,7 +216,7 @@ pub extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArw
         .c_ptr()
 }
 
-fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
+unsafe fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_data = sign_request.get_sign_data();
     match sign_request.get_sign_type() {
@@ -237,7 +237,7 @@ fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
     }
 }
 
-fn build_sign_result(ptr: PtrUR, p: &[u8], q: &[u8]) -> Result<ArweaveSignature, ArweaveError> {
+unsafe fn build_sign_result(ptr: PtrUR, p: &[u8], q: &[u8]) -> Result<ArweaveSignature, ArweaveError> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let salt_len = match sign_request.get_salt_len() {
         SaltLen::Zero => 0,
@@ -258,15 +258,15 @@ fn build_sign_result(ptr: PtrUR, p: &[u8], q: &[u8]) -> Result<ArweaveSignature,
 }
 
 #[no_mangle]
-pub extern "C" fn ar_sign_tx(
+pub unsafe extern "C" fn ar_sign_tx(
     ptr: PtrUR,
     p: PtrBytes,
     p_len: u32,
     q: PtrBytes,
     q_len: u32,
 ) -> PtrT<UREncodeResult> {
-    let p = unsafe { slice::from_raw_parts(p, p_len as usize) };
-    let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
+    let p = extract_array!(p, u8, p_len as usize);
+    let q = extract_array!(q, u8, q_len as usize);
 
     build_sign_result(ptr, p, q)
         .map(|v: ArweaveSignature| v.try_into())

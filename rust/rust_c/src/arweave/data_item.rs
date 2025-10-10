@@ -9,7 +9,7 @@ use ur_registry::arweave::arweave_sign_request::ArweaveSignRequest;
 use super::structs::{DisplayArweaveAOTransfer, DisplayArweaveDataItem};
 
 #[no_mangle]
-pub extern "C" fn ar_is_ao_transfer(ptr: PtrUR) -> bool {
+pub unsafe extern "C" fn ar_is_ao_transfer(ptr: PtrUR) -> bool {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_data = sign_request.get_sign_data();
     let data_item = parse_data_item(&sign_data);
@@ -23,7 +23,7 @@ pub extern "C" fn ar_is_ao_transfer(ptr: PtrUR) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn ar_parse_data_item(
+pub unsafe extern "C" fn ar_parse_data_item(
     ptr: PtrUR,
 ) -> PtrT<TransactionParseResult<DisplayArweaveDataItem>> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
@@ -38,7 +38,7 @@ pub extern "C" fn ar_parse_data_item(
 }
 
 #[no_mangle]
-pub extern "C" fn ar_parse_ao_transfer(
+pub unsafe extern "C" fn ar_parse_ao_transfer(
     ptr: PtrUR,
 ) -> PtrT<TransactionParseResult<DisplayArweaveAOTransfer>> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);

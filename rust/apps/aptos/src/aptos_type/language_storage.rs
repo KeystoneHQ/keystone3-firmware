@@ -174,9 +174,9 @@ impl Display for StructTag {
         )?;
         if let Some(first_ty) = self.type_params.first() {
             write!(f, "<")?;
-            write!(f, "{}", first_ty)?;
+            write!(f, "{first_ty}")?;
             for ty in self.type_params.iter().skip(1) {
-                write!(f, ", {}", ty)?;
+                write!(f, ", {ty}")?;
             }
             write!(f, ">")?;
         }
@@ -187,8 +187,8 @@ impl Display for StructTag {
 impl Display for TypeTag {
     fn fmt(&self, f: &mut Formatter) -> core::fmt::Result {
         match self {
-            TypeTag::Struct(s) => write!(f, "{}", s),
-            TypeTag::Vector(ty) => write!(f, "vector<{}>", ty),
+            TypeTag::Struct(s) => write!(f, "{s}"),
+            TypeTag::Vector(ty) => write!(f, "vector<{ty}>"),
             TypeTag::U8 => write!(f, "u8"),
             TypeTag::U64 => write!(f, "u64"),
             TypeTag::U128 => write!(f, "u128"),

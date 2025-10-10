@@ -1,12 +1,12 @@
 pub mod structs;
-use crate::common::{
+use crate::{common::{
     errors::RustCError,
     ffi::VecFFI,
     structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult},
     types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
-    ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
+    ur::{FRAGMENT_MAX_LENGTH_DEFAULT, UREncodeResult},
     utils::recover_c_char,
-};
+}, extract_array};
 use alloc::{
     boxed::Box,
     format, slice,
@@ -36,7 +36,7 @@ pub struct DisplayTon {
 impl_c_ptr!(DisplayTon);
 
 #[no_mangle]
-pub extern "C" fn ton_parse_transaction(
+pub unsafe extern "C" fn ton_parse_transaction(
     ptr: PtrUR,
 ) -> PtrT<TransactionParseResult<DisplayTonTransaction>> {
     let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
@@ -53,7 +53,7 @@ pub extern "C" fn ton_parse_transaction(
 }
 
 #[no_mangle]
-pub extern "C" fn ton_parse_proof(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayTonProof>> {
+pub unsafe extern "C" fn ton_parse_proof(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayTonProof>> {
     let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
 
     let serial = ton_tx.get_sign_data();
@@ -68,7 +68,7 @@ pub extern "C" fn ton_parse_proof(ptr: PtrUR) -> PtrT<TransactionParseResult<Dis
 }
 
 #[no_mangle]
-pub extern "C" fn ton_check_transaction(
+pub unsafe extern "C" fn ton_check_transaction(
     ptr: PtrUR,
     public_key: PtrString,
 ) -> PtrT<TransactionCheckResult> {
@@ -87,7 +87,7 @@ pub extern "C" fn ton_check_transaction(
 }
 
 #[no_mangle]
-pub extern "C" fn ton_not_supported_error() -> PtrT<TransactionCheckResult> {
+pub unsafe extern "C" fn ton_not_supported_error() -> PtrT<TransactionCheckResult> {
     TransactionCheckResult::from(RustCError::UnsupportedTransaction(
         "ton transaction".to_string(),
     ))
@@ -120,13 +120,13 @@ fn get_secret_key(tx: &TonSignRequest, seed: &[u8]) -> Result<[u8; 32], RustCErr
 }
 
 #[no_mangle]
-pub extern "C" fn ton_sign_transaction(
+pub unsafe extern "C" fn ton_sign_transaction(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
     let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let sk = match get_secret_key(ton_tx, seed) {
         Ok(_sk) => _sk,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
@@ -154,13 +154,13 @@ pub extern "C" fn ton_sign_transaction(
 }
 
 #[no_mangle]
-pub extern "C" fn ton_sign_proof(
+pub unsafe extern "C" fn ton_sign_proof(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
     let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let sk = match get_secret_key(ton_tx, seed) {
         Ok(_sk) => _sk,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
@@ -188,14 +188,14 @@ pub extern "C" fn ton_sign_proof(
 }
 
 #[no_mangle]
-pub extern "C" fn ton_verify_mnemonic(mnemonic: PtrString) -> bool {
+pub unsafe extern "C" fn ton_verify_mnemonic(mnemonic: PtrString) -> bool {
     let mnemonic = recover_c_char(mnemonic);
     let words: Vec<String> = mnemonic.split(' ').map(|v| v.to_lowercase()).collect();
     ton_mnemonic_validate(&words, &None).is_ok()
 }
 
 #[no_mangle]
-pub extern "C" fn ton_mnemonic_to_entropy(mnemonic: PtrString) -> Ptr<VecFFI<u8>> {
+pub unsafe extern "C" fn ton_mnemonic_to_entropy(mnemonic: PtrString) -> Ptr<VecFFI<u8>> {
     let mnemonic = recover_c_char(mnemonic);
     let words: Vec<String> = mnemonic.split(' ').map(|v| v.to_lowercase()).collect();
     let entropy = app_ton::mnemonic::ton_mnemonic_to_entropy(&words, &None);
@@ -203,17 +203,17 @@ pub extern "C" fn ton_mnemonic_to_entropy(mnemonic: PtrString) -> Ptr<VecFFI<u8>
 }
 
 #[no_mangle]
-pub extern "C" fn ton_entropy_to_seed(
+pub unsafe extern "C" fn ton_entropy_to_seed(
     entropy: PtrBytes,
     entropy_len: u32,
 ) -> *mut SimpleResponse<u8> {
-    let entropy = unsafe { slice::from_raw_parts(entropy, entropy_len as usize) }.to_vec();
+    let entropy = extract_array!(entropy, u8, entropy_len as usize);
     let seed = app_ton::mnemonic::ton_entropy_to_seed(entropy);
     SimpleResponse::success(Box::into_raw(Box::new(seed)) as *mut u8).simple_c_ptr()
 }
 
 #[no_mangle]
-pub extern "C" fn ton_mnemonic_to_seed(mnemonic: PtrString) -> *mut SimpleResponse<u8> {
+pub unsafe extern "C" fn ton_mnemonic_to_seed(mnemonic: PtrString) -> *mut SimpleResponse<u8> {
     let mnemonic = recover_c_char(mnemonic);
     let words: Vec<String> = mnemonic.split(' ').map(|v| v.to_lowercase()).collect();
     let seed = app_ton::mnemonic::ton_mnemonic_to_master_seed(words, None);
@@ -226,11 +226,11 @@ pub extern "C" fn ton_mnemonic_to_seed(mnemonic: PtrString) -> *mut SimpleRespon
 }
 
 #[no_mangle]
-pub extern "C" fn ton_seed_to_publickey(
+pub unsafe extern "C" fn ton_seed_to_publickey(
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut SimpleResponse<c_char> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) }.to_vec();
+    let seed = extract_array!(seed, u8, seed_len as usize);
     match seed.try_into() {
         Ok(_seed) => {
             let public_key = app_ton::mnemonic::ton_master_seed_to_public_key(_seed);
@@ -244,7 +244,7 @@ pub extern "C" fn ton_seed_to_publickey(
 }
 
 #[no_mangle]
-pub extern "C" fn ton_get_address(public_key: PtrString) -> *mut SimpleResponse<c_char> {
+pub unsafe extern "C" fn ton_get_address(public_key: PtrString) -> *mut SimpleResponse<c_char> {
     let pk = recover_c_char(public_key);
     match hex::decode(pk) {
         Ok(pk) => match app_ton::ton_public_key_to_address(pk) {

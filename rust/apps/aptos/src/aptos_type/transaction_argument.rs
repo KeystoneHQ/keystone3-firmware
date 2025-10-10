@@ -19,11 +19,11 @@ pub enum TransactionArgument {
 impl fmt::Debug for TransactionArgument {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            TransactionArgument::U8(value) => write!(f, "{{U8: {}}}", value),
-            TransactionArgument::U64(value) => write!(f, "{{U64: {}}}", value),
-            TransactionArgument::U128(value) => write!(f, "{{U128: {}}}", value),
-            TransactionArgument::Bool(boolean) => write!(f, "{{BOOL: {}}}", boolean),
-            TransactionArgument::Address(address) => write!(f, "{{ADDRESS: {:?}}}", address),
+            TransactionArgument::U8(value) => write!(f, "{{U8: {value}}}"),
+            TransactionArgument::U64(value) => write!(f, "{{U64: {value}}}"),
+            TransactionArgument::U128(value) => write!(f, "{{U128: {value}}}"),
+            TransactionArgument::Bool(boolean) => write!(f, "{{BOOL: {boolean}}}"),
+            TransactionArgument::Address(address) => write!(f, "{{ADDRESS: {address:?}}}"),
             TransactionArgument::U8Vector(vector) => {
                 write!(f, "{{U8Vector: 0x{}}}", hex::encode(vector))
             }
@@ -60,8 +60,7 @@ impl TryFrom<MoveValue> for TransactionArgument {
                             Ok(byte)
                         } else {
                             Err(crate::errors::AptosError::ParseTxError(format!(
-                                "unexpected value in bytes: {:?}",
-                                mv
+                                "unexpected value in bytes: {mv:?}"
                             )))
                         }
                     })
@@ -69,8 +68,7 @@ impl TryFrom<MoveValue> for TransactionArgument {
             ),
             MoveValue::Signer(_) | MoveValue::Struct(_) => {
                 return Err(crate::errors::AptosError::ParseTxError(format!(
-                    "invalid transaction argument: {:?}",
-                    val
+                    "invalid transaction argument: {val:?}"
                 )))
             }
         })

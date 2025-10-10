@@ -46,7 +46,7 @@ impl PublicKey {
 
     pub fn from_bytes(bytes: &[u8]) -> Result<PublicKey> {
         let pub_key = match CompressedEdwardsY::from_slice(bytes)
-            .map_err(|e| format!("decode error: {:?}", e))
+            .map_err(|e| format!("decode error: {e:?}"))
         {
             Ok(point) => PublicKey { point },
             _ => return Err(MoneroError::PublicKeyFromBytesError),
@@ -56,7 +56,7 @@ impl PublicKey {
 
     pub fn from_str(s: &str) -> Result<PublicKey> {
         let bytes = hex::decode(s)
-            .map_err(|e| format!("decode error: {:?}", e))
+            .map_err(|e| format!("decode error: {e:?}"))
             .unwrap();
         PublicKey::from_bytes(&bytes)
     }
@@ -64,7 +64,7 @@ impl PublicKey {
 
 impl ToString for PublicKey {
     fn to_string(&self) -> String {
-        hex::encode(&self.point.to_bytes())
+        hex::encode(self.point.to_bytes())
     }
 }
 
@@ -140,9 +140,9 @@ impl KeyPair {
 }
 
 pub fn generate_keypair(seed: &[u8], major: u32) -> Result<KeyPair> {
-    let path = format!("m/44'/128'/{}'/0/0", major);
+    let path = format!("m/44'/128'/{major}'/0/0");
     let key =
-        match keystore::algorithms::secp256k1::get_private_key_by_seed(&seed, &path.to_string()) {
+        match keystore::algorithms::secp256k1::get_private_key_by_seed(seed, &path.to_string()) {
             Ok(key) => key,
             _ => return Err(MoneroError::GenerateKeypairError),
         };

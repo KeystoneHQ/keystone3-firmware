@@ -98,7 +98,7 @@ pub fn derive_address(
     let sub_path = hd_path
         .strip_prefix(&root_path)
         .ok_or(CosmosError::InvalidHDPath(hd_path.to_string()))?;
-    derive_public_key(&root_x_pub.to_string(), &format!("m/{}", sub_path))
+    derive_public_key(&root_x_pub.to_string(), &format!("m/{sub_path}"))
         .map(|public_key| generate_address(public_key, prefix))
         .map_err(CosmosError::from)?
 }

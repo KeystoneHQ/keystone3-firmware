@@ -14,9 +14,9 @@ use crate::common::{
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH},
     utils::{recover_c_array, recover_c_char},
 };
-use crate::{extract_ptr_with_type, impl_c_ptr};
+use crate::{extract_array, extract_ptr_with_type, impl_c_ptr};
 use alloc::{
-    format, slice,
+    format,
     string::{String, ToString},
     vec::Vec,
 };
@@ -55,7 +55,7 @@ pub struct DerivationPath {
 }
 
 #[no_mangle]
-pub extern "C" fn avax_parse_transaction(
+pub unsafe extern "C" fn avax_parse_transaction(
     ptr: PtrUR,
     mfp: PtrBytes,
     mfp_len: u32,
@@ -64,101 +64,96 @@ pub extern "C" fn avax_parse_transaction(
     parse_transaction_by_type(extract_ptr_with_type!(ptr, AvaxSignRequest), public_keys)
 }
 
-fn parse_transaction_by_type(
+unsafe fn parse_transaction_by_type(
     sign_request: &mut AvaxSignRequest,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
 ) -> PtrT<TransactionParseResult<DisplayAvaxTx>> {
     let tx_data = sign_request.get_tx_data();
     let type_id = get_avax_tx_type_id(sign_request.get_tx_data()).unwrap();
 
-    unsafe {
-        let mut path = get_avax_tx_type_id(sign_request.get_tx_data())
-            .map_err(|_| AvaxError::InvalidInput)
-            .and_then(|type_id| {
-                determine_derivation_path(type_id, &sign_request, sign_request.get_wallet_index())
-            })
-            .unwrap();
+    let mut path = get_avax_tx_type_id(sign_request.get_tx_data())
+        .map_err(|_| AvaxError::InvalidInput)
+        .and_then(|type_id| {
+            determine_derivation_path(type_id, sign_request, sign_request.get_wallet_index())
+        })
+        .unwrap();
 
-        let mut address = String::new();
-        for key in recover_c_array(public_keys).iter() {
-            if recover_c_char(key.path) == path.base_path {
-                address = match (type_id, path.base_path.as_str()) {
-                    (TypeId::CchainExportTx, "m/44'/60'/0'") => {
-                        app_ethereum::address::derive_address(
-                            &path.full_path.as_str(),
-                            &recover_c_char(key.xpub),
-                            &path.base_path.as_str(),
+    let mut address = String::new();
+    for key in recover_c_array(public_keys).iter() {
+        if recover_c_char(key.path) == path.base_path {
+            address = match (type_id, path.base_path.as_str()) {
+                (TypeId::CchainExportTx, "m/44'/60'/0'") => app_ethereum::address::derive_address(
+                    path.full_path.as_str(),
+                    &recover_c_char(key.xpub),
+                    path.base_path.as_str(),
+                )
+                .unwrap(),
+                _ => app_avalanche::get_address(
+                    app_avalanche::network::Network::AvaxMainNet,
+                    path.full_path.as_str(),
+                    recover_c_char(key.xpub).as_str(),
+                    path.base_path.as_str(),
+                )
+                .unwrap(),
+            }
+        }
+    }
+
+    macro_rules! parse_tx {
+        ($tx_type:ty) => {
+            parse_avax_tx::<$tx_type>(tx_data)
+                .map(|parse_data| {
+                    TransactionParseResult::success(
+                        DisplayAvaxTx::from_tx_info(
+                            parse_data,
+                            path.full_path,
+                            address,
+                            sign_request.get_wallet_index(),
+                            type_id,
                         )
-                        .unwrap()
-                    }
-                    _ => app_avalanche::get_address(
-                        app_avalanche::network::Network::AvaxMainNet,
-                        &path.full_path.as_str(),
-                        &recover_c_char(key.xpub).as_str(),
-                        &path.base_path.as_str(),
+                        .c_ptr(),
                     )
-                    .unwrap(),
-                }
+                    .c_ptr()
+                })
+                .unwrap_or_else(|_| {
+                    TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
+                })
+        };
+    }
+
+    match type_id {
+        TypeId::BaseTx => {
+            let header = get_avax_tx_header(tx_data.clone()).unwrap();
+            if header.get_blockchain_id() == C_BLOCKCHAIN_ID
+                || header.get_blockchain_id() == C_TEST_BLOCKCHAIN_ID
+            {
+                path.full_path = "".to_string();
+                parse_tx!(CchainImportTx)
+            } else {
+                parse_tx!(BaseTx)
             }
         }
-
-        macro_rules! parse_tx {
-            ($tx_type:ty) => {
-                parse_avax_tx::<$tx_type>(tx_data)
-                    .map(|parse_data| {
-                        TransactionParseResult::success(
-                            DisplayAvaxTx::from_tx_info(
-                                parse_data,
-                                path.full_path,
-                                address,
-                                sign_request.get_wallet_index(),
-                                type_id,
-                            )
-                            .c_ptr(),
-                        )
-                        .c_ptr()
-                    })
-                    .unwrap_or_else(|_| {
-                        TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
-                    })
-            };
-        }
-
-        match type_id {
-            TypeId::BaseTx => {
-                let header = get_avax_tx_header(tx_data.clone()).unwrap();
-                if header.get_blockchain_id() == C_BLOCKCHAIN_ID
-                    || header.get_blockchain_id() == C_TEST_BLOCKCHAIN_ID
-                {
-                    path.full_path = "".to_string();
-                    return parse_tx!(CchainImportTx);
-                } else {
-                    return parse_tx!(BaseTx);
-                }
-            }
-            TypeId::PchainExportTx | TypeId::XchainExportTx => parse_tx!(ExportTx),
-            TypeId::XchainImportTx | TypeId::PchainImportTx => parse_tx!(ImportTx),
-            TypeId::CchainExportTx => parse_tx!(CchainExportTx),
-            TypeId::AddPermissLessionValidator => parse_tx!(AddPermissLessionValidatorTx),
-            TypeId::AddPermissLessionDelegator => parse_tx!(AddPermissLessionDelegatorTx),
-            _ => TransactionParseResult::from(RustCError::InvalidData(format!(
-                "{:?} not support",
-                type_id
-            )))
-            .c_ptr(),
-        }
+        TypeId::PchainExportTx | TypeId::XchainExportTx => parse_tx!(ExportTx),
+        TypeId::XchainImportTx | TypeId::PchainImportTx => parse_tx!(ImportTx),
+        TypeId::CchainExportTx => parse_tx!(CchainExportTx),
+        TypeId::AddPermissLessionValidator => parse_tx!(AddPermissLessionValidatorTx),
+        TypeId::AddPermissLessionDelegator => parse_tx!(AddPermissLessionDelegatorTx),
+        _ => TransactionParseResult::from(RustCError::InvalidData(format!(
+            "{type_id:?} not support"
+        )))
+        .c_ptr(),
     }
 }
 
 #[no_mangle]
-fn avax_sign_dynamic(
+unsafe fn avax_sign_dynamic(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
     fragment_length: usize,
 ) -> PtrT<UREncodeResult> {
-    let seed = unsafe { alloc::slice::from_raw_parts(seed, seed_len as usize) };
-    build_sign_result(ptr, &seed)
+    let seed = extract_array!(seed, u8, seed_len as usize);
+    build_sign_result(ptr, seed)
         .map(|v: AvaxSignature| v.try_into())
         .map_or_else(
             |e| UREncodeResult::from(e).c_ptr(),
@@ -183,21 +178,18 @@ pub fn determine_derivation_path(
     sign_request: &AvaxSignRequest,
     wallet_index: u64,
 ) -> Result<DerivationPath, AvaxError> {
-    let wallet_suffix = format!("/0/{}", wallet_index);
+    let wallet_suffix = format!("/0/{wallet_index}");
     let blockchain_id = get_avax_tx_header(sign_request.get_tx_data())?.get_blockchain_id();
     let is_c_chain = |id: &[u8; 32]| *id == C_BLOCKCHAIN_ID || *id == C_TEST_BLOCKCHAIN_ID;
 
     let (base_path, full_path) = match type_id {
-        TypeId::CchainExportTx => (
-            C_CHAIN_PREFIX,
-            format!("{}{}", C_CHAIN_PREFIX, wallet_suffix),
-        ),
+        TypeId::CchainExportTx => (C_CHAIN_PREFIX, format!("{C_CHAIN_PREFIX}{wallet_suffix}")),
         TypeId::XchainImportTx | TypeId::PchainImportTx => {
             let source_chain_id =
                 parse_avax_tx::<ImportTx>(sign_request.get_tx_data())?.get_source_chain_id();
             (
                 X_P_CHAIN_PREFIX,
-                format!("{}{}", X_P_CHAIN_PREFIX, wallet_suffix),
+                format!("{X_P_CHAIN_PREFIX}{wallet_suffix}"),
             )
         }
         _ => {
@@ -206,7 +198,7 @@ pub fn determine_derivation_path(
             } else {
                 X_P_CHAIN_PREFIX
             };
-            (prefix, format!("{}{}", prefix, wallet_suffix))
+            (prefix, format!("{prefix}{wallet_suffix}"))
         }
     };
 
@@ -216,13 +208,13 @@ pub fn determine_derivation_path(
     })
 }
 
-fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError> {
+unsafe fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError> {
     let sign_request = extract_ptr_with_type!(ptr, AvaxSignRequest);
 
     let path = get_avax_tx_type_id(sign_request.get_tx_data())
         .map_err(|_| AvaxError::InvalidInput)
         .and_then(|type_id| {
-            determine_derivation_path(type_id, &sign_request, sign_request.get_wallet_index())
+            determine_derivation_path(type_id, sign_request, sign_request.get_wallet_index())
         })?
         .full_path;
 
@@ -231,27 +223,27 @@ fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError
 }
 
 #[no_mangle]
-pub extern "C" fn avax_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
-    avax_sign_dynamic(ptr, seed, seed_len, FRAGMENT_MAX_LENGTH_DEFAULT.clone())
+pub unsafe extern "C" fn avax_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+    avax_sign_dynamic(ptr, seed, seed_len, FRAGMENT_MAX_LENGTH_DEFAULT)
 }
 
 #[no_mangle]
-pub extern "C" fn avax_sign_unlimited(
+pub unsafe extern "C" fn avax_sign_unlimited(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
-    avax_sign_dynamic(ptr, seed, seed_len, FRAGMENT_UNLIMITED_LENGTH.clone())
+    avax_sign_dynamic(ptr, seed, seed_len, FRAGMENT_UNLIMITED_LENGTH)
 }
 
 #[no_mangle]
-pub extern "C" fn avax_check_transaction(
+pub unsafe extern "C" fn avax_check_transaction(
     ptr: PtrUR,
     mfp: PtrBytes,
     mfp_len: u32,
 ) -> PtrT<TransactionCheckResult> {
     let avax_tx = extract_ptr_with_type!(ptr, AvaxSignRequest);
-    let mfp: [u8; 4] = match unsafe { slice::from_raw_parts(mfp, mfp_len as usize) }.try_into() {
+    let mfp: [u8; 4] = match extract_array!(mfp, u8, mfp_len as usize).try_into() {
         Ok(mfp) => mfp,
         Err(_) => {
             return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();

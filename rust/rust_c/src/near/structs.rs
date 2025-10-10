@@ -25,7 +25,7 @@ pub struct DisplayNearTxOverviewGeneralAction {
 }
 
 impl Free for DisplayNearTxOverviewGeneralAction {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.action)
     }
 }
@@ -60,28 +60,26 @@ impl Default for DisplayNearTxOverview {
 }
 
 impl Free for DisplayNearTx {
-    fn free(&self) {
+    unsafe fn free(&self) {
         check_and_free_ptr!(self.overview);
-        free_ptr_string(self.network);
-        free_ptr_string(self.detail);
+        free_str_ptr!(self.network);
+        free_str_ptr!(self.detail);
     }
 }
 
 impl Free for DisplayNearTxOverview {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.display_type);
         free_str_ptr!(self.main_action);
         free_str_ptr!(self.transfer_value);
         free_str_ptr!(self.transfer_from);
         free_str_ptr!(self.transfer_to);
-        unsafe {
             if !self.action_list.is_null() {
                 let x = Box::from_raw(self.action_list);
                 let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
                 ve.iter().for_each(|v| {
                     v.free();
-                });
-            }
+            });
         }
     }
 }

@@ -235,8 +235,7 @@ impl<I: Iterator<Item = Token>> Parser<I> {
         let t = self.next()?;
         if t != tok {
             return Err(AptosError::ParseTxError(format!(
-                "expected token {:?}, got {:?}",
-                tok, t
+                "expected token {tok:?}, got {t:?}"
             )));
         }
         Ok(())
@@ -273,8 +272,7 @@ impl<I: Iterator<Item = Token>> Parser<I> {
             Token::Name(s) => s,
             tok => {
                 return Err(AptosError::ParseTxError(format!(
-                    "unexpected token {:?}, expected string",
-                    tok
+                    "unexpected token {tok:?}, expected string"
                 )))
             }
         })
@@ -283,8 +281,7 @@ impl<I: Iterator<Item = Token>> Parser<I> {
     fn parse_type_tag(&mut self, depth: u8) -> crate::errors::Result<TypeTag> {
         if depth >= safe_serialize::MAX_TYPE_TAG_NESTING {
             AptosError::ParseTxError(format!(
-                "Exceeded TypeTag nesting limit during parsing: {}",
-                depth
+                "Exceeded TypeTag nesting limit during parsing: {depth}"
             ));
         }
 
@@ -329,24 +326,21 @@ impl<I: Iterator<Item = Token>> Parser<I> {
                             }
                             t => {
                                 return Err(AptosError::ParseTxError(format!(
-                                    "expected name, got {:?}",
-                                    t
+                                    "expected name, got {t:?}"
                                 )))
                             }
                         }
                     }
                     t => {
                         return Err(AptosError::ParseTxError(format!(
-                            "expected name, got {:?}",
-                            t
+                            "expected name, got {t:?}"
                         )))
                     }
                 }
             }
             tok => {
                 return Err(AptosError::ParseTxError(format!(
-                    "unexpected token {:?}, expected type tag",
-                    tok
+                    "unexpected token {tok:?}, expected type tag"
                 )))
             }
         })
@@ -365,8 +359,7 @@ impl<I: Iterator<Item = Token>> Parser<I> {
             Token::Bytes(s) => TransactionArgument::U8Vector(hex::decode(s)?),
             tok => {
                 return Err(AptosError::ParseTxError(format!(
-                    "unexpected token {:?}, expected transaction argument",
-                    tok
+                    "unexpected token {tok:?}, expected transaction argument"
                 )))
             }
         })
@@ -420,13 +413,12 @@ pub fn parse_transaction_argument(s: &str) -> crate::errors::Result<TransactionA
 
 pub fn parse_struct_tag(s: &str) -> crate::errors::Result<StructTag> {
     let type_tag = parse(s, |parser| parser.parse_type_tag(0))
-        .map_err(|e| AptosError::ParseTxError(format!("invalid struct tag: {}, {}", s, e)))?;
+        .map_err(|e| AptosError::ParseTxError(format!("invalid struct tag: {s}, {e}")))?;
     if let TypeTag::Struct(struct_tag) = type_tag {
         Ok(*struct_tag)
     } else {
         Err(AptosError::ParseTxError(format!(
-            "invalid struct tag: {}",
-            s
+            "invalid struct tag: {s}"
         )))
     }
 }

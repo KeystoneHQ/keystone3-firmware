@@ -16,7 +16,7 @@ use crate::common::structs::TransactionParseResult;
 use crate::common::types::{Ptr, PtrString, PtrT};
 use crate::common::utils::convert_c_char;
 use crate::{
-    check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method,
+    free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method,
 };
 use app_ethereum::address::checksum_address;
 use app_sui::Intent;
@@ -147,9 +147,9 @@ fn extract_transaction_params(
         let max_amount = amounts.iter().max().unwrap_or(&0);
         let min_amount = amounts.iter().min().unwrap_or(&0);
         let net_amount = max_amount - min_amount;
-        convert_c_char(format!("{} IOTA", net_amount as f64 / 1000_000_000.0))
+        convert_c_char(format!("{} IOTA", net_amount as f64 / 1_000_000_000.0))
     } else if amounts.len() == 1 {
-        convert_c_char(format!("{} IOTA", amounts[0] as f64 / 1000_000_000.0))
+        convert_c_char(format!("{} IOTA", amounts[0] as f64 / 1_000_000_000.0))
     } else {
         let has_transfer_gas_coin = commands.iter().any(|command| {
             if let Command::TransferObjects(objects, target) = command {
@@ -249,7 +249,7 @@ impl DisplayIotaSignMessageHash {
 impl_c_ptr!(DisplayIotaSignMessageHash);
 
 impl Free for DisplayIotaSignMessageHash {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.network);
         free_str_ptr!(self.path);
         free_str_ptr!(self.message);
@@ -260,7 +260,7 @@ impl Free for DisplayIotaSignMessageHash {
 make_free_method!(DisplayIotaSignMessageHash);
 
 impl Free for DisplayIotaIntentData {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.network);
         free_str_ptr!(self.sender);
         free_str_ptr!(self.recipient);

@@ -10,6 +10,7 @@
 #include "user_memory.h"
 #include "gui_hintbox.h"
 #include "gui_button.h"
+#include "device_setting.h"
 
 #pragma GCC optimize ("O0")
 

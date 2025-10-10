@@ -50,7 +50,7 @@ fn generate_wallet_result(
 }
 
 #[no_mangle]
-pub extern "C" fn get_connect_cake_wallet_ur(
+pub unsafe extern "C" fn get_connect_cake_wallet_ur(
     pub_spend_key: PtrString,
     private_view_key: PtrString,
 ) -> *mut UREncodeResult {
@@ -66,14 +66,14 @@ pub extern "C" fn get_connect_cake_wallet_ur(
 
     generate_wallet_result(
         primary_address.to_string(),
-        hex::encode(pvk.to_vec()),
+        hex::encode(&pvk),
         false,
     )
     .c_ptr()
 }
 
 #[no_mangle]
-pub extern "C" fn get_connect_cake_wallet_ur_encrypted(
+pub unsafe extern "C" fn get_connect_cake_wallet_ur_encrypted(
     pub_spend_key: PtrString,
     private_view_key: PtrString,
     pincode: PtrBytes,
@@ -97,7 +97,7 @@ pub extern "C" fn get_connect_cake_wallet_ur_encrypted(
 
     generate_wallet_result(
         data_encrypt_wrapper(primary_address.to_string()),
-        data_encrypt_wrapper(hex::encode(pvk.to_vec())),
+        data_encrypt_wrapper(hex::encode(&pvk)),
         true,
     )
     .c_ptr()

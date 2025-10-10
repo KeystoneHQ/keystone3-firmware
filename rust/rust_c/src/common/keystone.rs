@@ -3,7 +3,7 @@ use super::structs::TransactionCheckResult;
 use super::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use super::ur::{QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use super::utils::recover_c_char;
-use crate::extract_ptr_with_type;
+use crate::{extract_array, extract_ptr_with_type};
 use alloc::borrow::ToOwned;
 use alloc::format;
 use alloc::string::{String, ToString};
@@ -24,7 +24,7 @@ use ur_registry::pb::protoc::payload::Type as PbType;
 use ur_registry::pb::protoc::{payload, Base, Payload, SignTransactionResult};
 use ur_registry::traits::RegistryItem;
 
-pub fn build_payload(ptr: PtrUR, ur_type: QRCodeType) -> Result<Payload, KeystoneError> {
+pub unsafe fn build_payload(ptr: PtrUR, ur_type: QRCodeType) -> Result<Payload, KeystoneError> {
     let bytes = match ur_type {
         #[cfg(feature = "multi-coins")]
         QRCodeType::KeystoneSignRequest => {
@@ -44,18 +44,18 @@ pub fn build_payload(ptr: PtrUR, ur_type: QRCodeType) -> Result<Payload, Keyston
         .ok_or(KeystoneError::ProtobufError("empty payload".to_string()))
 }
 
-pub fn build_parse_context(
+pub unsafe fn build_parse_context(
     master_fingerprint: PtrBytes,
     x_pub: PtrString,
 ) -> Result<app_utils::keystone::ParseContext, KeystoneError> {
-    let mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
     let x_pub = recover_c_char(x_pub);
     let xpub_str = convert_version(x_pub.as_str(), &Version::Xpub)
         .map_err(|e| KeystoneError::InvalidParseContext(e.to_string()))?;
     let master_fingerprint = bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
         .map_err(|_| KeystoneError::InvalidParseContext("invalid mfp".to_string()))?;
     let extended_pubkey = bitcoin::bip32::Xpub::from_str(&xpub_str).map_err(|_| {
-        KeystoneError::InvalidParseContext(format!("invalid extended pub key {}", x_pub))
+        KeystoneError::InvalidParseContext(format!("invalid extended pub key {x_pub}"))
     })?;
     Ok(app_utils::keystone::ParseContext::new(
         master_fingerprint,
@@ -63,7 +63,7 @@ pub fn build_parse_context(
     ))
 }
 
-fn get_signed_tx(
+unsafe fn get_signed_tx(
     coin_code: String,
     payload: Payload,
     master_fingerprint: PtrBytes,
@@ -81,14 +81,13 @@ fn get_signed_tx(
             "TRON" => app_tron::sign_raw_tx(payload, context, seed)
                 .map_err(|e| KeystoneError::SignTxFailed(e.to_string())),
             _ => Err(KeystoneError::SignTxFailed(format!(
-                "chain is not supported {}",
-                coin_code
+                "chain is not supported {coin_code}"
             ))),
         }
     })
 }
 
-pub fn build_check_result(
+pub unsafe fn build_check_result(
     ptr: PtrUR,
     ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
@@ -123,7 +122,7 @@ pub fn build_check_result(
     }
 }
 
-pub fn build_sign_result(
+pub unsafe fn build_sign_result(
     ptr: PtrUR,
     ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
@@ -167,7 +166,7 @@ pub fn build_sign_result(
     }
 }
 
-pub fn check(
+pub unsafe fn check(
     ptr: PtrUR,
     ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
@@ -184,7 +183,7 @@ pub fn check(
     }
 }
 
-pub fn sign(
+pub unsafe fn sign(
     ptr: PtrUR,
     ur_type: QRCodeType,
     master_fingerprint: PtrBytes,

@@ -117,7 +117,7 @@ fn calc_output_key_offset(
         hash_to_scalar(&[&recv_derivation.compress().0, scalar.as_slice()].concat());
 
     if major != 0 || minor != 0 {
-        key_offset = key_offset + Scalar::from_bytes_mod_order(keypair.get_m(major, minor));
+        key_offset += Scalar::from_bytes_mod_order(keypair.get_m(major, minor));
     }
 
     key_offset
@@ -273,14 +273,11 @@ impl ExportedTransferDetail {
 }
 
 pub fn generate_export_ur_data(keypair: KeyPair, request_data: Vec<u8>) -> Result<Vec<u8>> {
-    let decrypted_data = match decrypt_data_with_pvk(
+    let decrypted_data = decrypt_data_with_pvk(
         keypair.view.to_bytes().try_into().unwrap(),
         request_data.clone(),
         OUTPUT_EXPORT_MAGIC,
-    ) {
-        Ok(data) => data,
-        Err(e) => return Err(e),
-    };
+    )?;
 
     if decrypted_data.pk1 != Some(keypair.get_public_spend()) {
         panic!("Public spend key does not match");
@@ -289,10 +286,7 @@ pub fn generate_export_ur_data(keypair: KeyPair, request_data: Vec<u8>) -> Resul
         panic!("Public view key does not match");
     }
 
-    let outputs = match ExportedTransferDetails::from_bytes(&decrypted_data.data) {
-        Ok(data) => data,
-        Err(e) => return Err(e),
-    };
+    let outputs = ExportedTransferDetails::from_bytes(&decrypted_data.data)?;
 
     let mut key_images: KeyImages = KeyImages(vec![]);
     let rng_seed = keccak256(request_data.as_slice());

@@ -8,6 +8,7 @@ use crate::common::{
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
     utils::{convert_c_char, recover_c_char},
 };
+use crate::extract_array;
 use crate::{extract_ptr_with_type, make_free_method};
 use alloc::{boxed::Box, format, string::String, string::ToString};
 use app_zcash::get_address;
@@ -23,12 +24,12 @@ use ur_registry::{traits::RegistryItem, zcash::zcash_pczt::ZcashPczt};
 use zcash_vendor::zcash_protocol::consensus::MainNetwork;
 
 #[no_mangle]
-pub extern "C" fn derive_zcash_ufvk(
+pub unsafe extern "C" fn derive_zcash_ufvk(
     seed: PtrBytes,
     seed_len: u32,
     account_path: PtrString,
 ) -> *mut SimpleResponse<c_char> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let account_path = recover_c_char(account_path);
     let ufvk_text = derive_ufvk(&MainNetwork, seed, &account_path);
     match ufvk_text {
@@ -38,11 +39,11 @@ pub extern "C" fn derive_zcash_ufvk(
 }
 
 #[no_mangle]
-pub extern "C" fn calculate_zcash_seed_fingerprint(
+pub unsafe extern "C" fn calculate_zcash_seed_fingerprint(
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut SimpleResponse<u8> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = slice::from_raw_parts(seed, seed_len as usize);
     let sfp = calculate_seed_fingerprint(seed);
     match sfp {
         Ok(bytes) => {
@@ -53,7 +54,7 @@ pub extern "C" fn calculate_zcash_seed_fingerprint(
 }
 
 #[no_mangle]
-pub extern "C" fn generate_zcash_default_address(
+pub unsafe extern "C" fn generate_zcash_default_address(
     ufvk_text: PtrString,
 ) -> *mut SimpleResponse<c_char> {
     let ufvk_text = recover_c_char(ufvk_text);
@@ -65,7 +66,7 @@ pub extern "C" fn generate_zcash_default_address(
 }
 
 #[no_mangle]
-pub extern "C" fn check_zcash_tx(
+pub unsafe extern "C" fn check_zcash_tx(
     tx: PtrUR,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
@@ -80,7 +81,7 @@ pub extern "C" fn check_zcash_tx(
     }
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
     let ufvk_text = recover_c_char(ufvk);
-    let seed_fingerprint = unsafe { slice::from_raw_parts(seed_fingerprint, 32) };
+    let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
     match app_zcash::check_pczt(
         &MainNetwork,
@@ -95,14 +96,14 @@ pub extern "C" fn check_zcash_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn parse_zcash_tx(
+pub unsafe extern "C" fn parse_zcash_tx(
     tx: PtrUR,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
 ) -> Ptr<TransactionParseResult<DisplayPczt>> {
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
     let ufvk_text = recover_c_char(ufvk);
-    let seed_fingerprint = unsafe { slice::from_raw_parts(seed_fingerprint, 32) };
+    let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
     match app_zcash::parse_pczt(&MainNetwork, &pczt.get_data(), &ufvk_text, seed_fingerprint) {
         Ok(pczt) => TransactionParseResult::success(DisplayPczt::from(&pczt).c_ptr()).c_ptr(),
@@ -111,9 +112,13 @@ pub extern "C" fn parse_zcash_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn sign_zcash_tx(tx: PtrUR, seed: PtrBytes, seed_len: u32) -> *mut UREncodeResult {
+pub unsafe extern "C" fn sign_zcash_tx(
+    tx: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> *mut UREncodeResult {
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     match app_zcash::sign_pczt(&pczt.get_data(), seed) {
         Ok(pczt) => match ZcashPczt::new(pczt).try_into() {
             Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -138,7 +143,7 @@ type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
 type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
 
 #[no_mangle]
-pub extern "C" fn rust_aes256_cbc_encrypt(
+pub unsafe extern "C" fn rust_aes256_cbc_encrypt(
     data: PtrString,
     password: PtrString,
     iv: PtrBytes,
@@ -147,7 +152,7 @@ pub extern "C" fn rust_aes256_cbc_encrypt(
     let data = recover_c_char(data);
     let data = data.as_bytes();
     let password = recover_c_char(password);
-    let iv = unsafe { slice::from_raw_parts(iv, iv_len as usize) };
+    let iv = extract_array!(iv, u8, iv_len as usize);
     let key = sha256(password.as_bytes());
     let iv = GenericArray::from_slice(iv);
     let key = GenericArray::from_slice(&key);
@@ -156,7 +161,7 @@ pub extern "C" fn rust_aes256_cbc_encrypt(
 }
 
 #[no_mangle]
-pub extern "C" fn rust_aes256_cbc_decrypt(
+pub unsafe extern "C" fn rust_aes256_cbc_decrypt(
     hex_data: PtrString,
     password: PtrString,
     iv: PtrBytes,
@@ -165,7 +170,7 @@ pub extern "C" fn rust_aes256_cbc_decrypt(
     let hex_data = recover_c_char(hex_data);
     let data = hex::decode(hex_data).unwrap();
     let password = recover_c_char(password);
-    let iv = unsafe { slice::from_raw_parts(iv, iv_len as usize) };
+    let iv = extract_array!(iv, u8, iv_len as usize);
     let key = sha256(password.as_bytes());
     let iv = GenericArray::from_slice(iv);
     let key = GenericArray::from_slice(&key);
@@ -180,11 +185,11 @@ pub extern "C" fn rust_aes256_cbc_decrypt(
 }
 
 #[no_mangle]
-pub extern "C" fn rust_derive_iv_from_seed(
+pub unsafe extern "C" fn rust_derive_iv_from_seed(
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut SimpleResponse<u8> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let iv_path = "m/44'/1557192335'/0'/2'/0'".to_string();
     let iv = get_private_key_by_seed(seed, &iv_path).unwrap();
     let mut iv_bytes = [0; 16];

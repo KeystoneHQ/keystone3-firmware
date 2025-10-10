@@ -1,7 +1,6 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use alloc::{format, vec};
-use core::slice;
 
 use cty::c_char;
 use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
@@ -14,6 +13,7 @@ use crate::common::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
+use crate::extract_array;
 use crate::extract_ptr_with_type;
 use app_sui::errors::SuiError;
 use app_utils::normalize_path;
@@ -29,8 +29,7 @@ pub fn get_public_key(seed: &[u8], path: &String) -> Result<Vec<u8>, SuiError> {
             Ok(pub_key) => pub_key,
             Err(e) => {
                 return Err(SuiError::SignFailure(format!(
-                    "derive public key failed {:?}",
-                    e
+                    "derive public key failed {e:?}"
                 )))
             }
         };
@@ -38,7 +37,7 @@ pub fn get_public_key(seed: &[u8], path: &String) -> Result<Vec<u8>, SuiError> {
 }
 
 #[no_mangle]
-pub extern "C" fn sui_check_request(
+pub unsafe extern "C" fn sui_check_request(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     length: u32,
@@ -46,7 +45,7 @@ pub extern "C" fn sui_check_request(
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    let mfp: &[u8] = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
     let sign_request = extract_ptr_with_type!(ptr, SuiSignRequest);
     let ur_mfp = sign_request.get_derivation_paths()[0].get_source_fingerprint();
 
@@ -65,7 +64,7 @@ pub extern "C" fn sui_check_request(
 }
 
 #[no_mangle]
-pub extern "C" fn sui_check_sign_hash_request(
+pub unsafe extern "C" fn sui_check_sign_hash_request(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     length: u32,
@@ -73,7 +72,7 @@ pub extern "C" fn sui_check_sign_hash_request(
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    let mfp: &[u8] = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
     let sign_hash_request = extract_ptr_with_type!(ptr, SuiSignHashRequest);
     let ur_mfp = sign_hash_request.get_derivation_paths()[0].get_source_fingerprint();
 
@@ -92,7 +91,7 @@ pub extern "C" fn sui_check_sign_hash_request(
 }
 
 #[no_mangle]
-pub extern "C" fn sui_generate_address(pub_key: PtrString) -> *mut SimpleResponse<c_char> {
+pub unsafe extern "C" fn sui_generate_address(pub_key: PtrString) -> *mut SimpleResponse<c_char> {
     let pub_key = recover_c_char(pub_key);
     let address = app_sui::generate_address(&pub_key);
     match address {
@@ -102,7 +101,7 @@ pub extern "C" fn sui_generate_address(pub_key: PtrString) -> *mut SimpleRespons
 }
 
 #[no_mangle]
-pub extern "C" fn sui_parse_intent(
+pub unsafe extern "C" fn sui_parse_intent(
     ptr: PtrUR,
 ) -> PtrT<TransactionParseResult<DisplaySuiIntentMessage>> {
     let sign_request = extract_ptr_with_type!(ptr, SuiSignRequest);
@@ -113,7 +112,7 @@ pub extern "C" fn sui_parse_intent(
     }
 }
 #[no_mangle]
-pub extern "C" fn sui_parse_sign_message_hash(
+pub unsafe extern "C" fn sui_parse_sign_message_hash(
     ptr: PtrUR,
 ) -> PtrT<TransactionParseResult<DisplaySuiSignMessageHash>> {
     let sign_hash_request = extract_ptr_with_type!(ptr, SuiSignHashRequest);
@@ -134,8 +133,8 @@ pub extern "C" fn sui_parse_sign_message_hash(
 }
 
 #[no_mangle]
-pub extern "C" fn sui_sign_hash(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+pub unsafe extern "C" fn sui_sign_hash(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let sign_request = extract_ptr_with_type!(ptr, SuiSignHashRequest);
     let hash = sign_request.get_message_hash();
     let path = match sign_request.get_derivation_paths()[0].get_path() {
@@ -173,12 +172,12 @@ pub extern "C" fn sui_sign_hash(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> Pt
 }
 
 #[no_mangle]
-pub extern "C" fn sui_sign_intent(
+pub unsafe extern "C" fn sui_sign_intent(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let sign_request = extract_ptr_with_type!(ptr, SuiSignRequest);
     let sign_data = sign_request.get_intent_message();
     let path = match sign_request.get_derivation_paths()[0].get_path() {

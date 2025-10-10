@@ -204,12 +204,12 @@ pub fn get_key_image_from_input(input: Input) -> Result<Keyimage> {
 
 pub fn fmt_monero_amount(value: u64) -> String {
     let value = value as f64 / 1_000_000_000_000.0;
-    let value = format!("{:.12}", value);
+    let value = format!("{value:.12}");
     let value = value.trim_end_matches('0').to_string();
     if value.ends_with('.') {
-        format!("{} XMR", value[..value.len() - 1].to_string())
+        format!("{} XMR", &value[..value.len() - 1])
     } else {
-        format!("{} XMR", value)
+        format!("{value} XMR")
     }
 }
 

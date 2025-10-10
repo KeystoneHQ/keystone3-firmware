@@ -1,5 +1,4 @@
 #![no_std]
-#![feature(error_in_core)]
 
 pub mod ao_transaction;
 pub mod data_item;
@@ -82,12 +81,12 @@ pub fn generate_secret(seed: &[u8]) -> Result<RsaPrivateKey> {
 
 fn u64_to_ar(value: u64) -> String {
     let value = value as f64 / 1_000_000_000_000.0;
-    let value = format!("{:.12}", value);
+    let value = format!("{value:.12}");
     let value = value.trim_end_matches('0').to_string();
     if value.ends_with('.') {
         format!("{} AR", &value[..value.len() - 1])
     } else {
-        format!("{} AR", value)
+        format!("{value} AR")
     }
 }
 
@@ -139,13 +138,13 @@ pub fn parse(data: &Vec<u8>) -> Result<String> {
                     "quantity": u64_to_ar(tx.quantity),
                     "reward": u64_to_ar(tx.reward),
                     "data_size": tx.data_size,
-                    "signature_data": tx.deep_hash().map_or_else(|e| format!("unable to deep hash transaction, reason: {}", e), hex::encode),
+                    "signature_data": tx.deep_hash().map_or_else(|e| format!("unable to deep hash transaction, reason: {e}"), hex::encode),
                 },
                 "status": "success"
             })
         }
         Err(e) => {
-            let readable = format!("unable to deserialize, reason: {}", e);
+            let readable = format!("unable to deserialize, reason: {e}");
             json!({
                 "status": "failed",
                 "reason": readable

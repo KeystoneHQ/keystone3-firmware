@@ -7,7 +7,7 @@ use crate::common::free::Free;
 use crate::common::types::{Ptr, PtrBytes, PtrString, PtrT};
 use crate::common::ur::UREncodeResult;
 use crate::common::utils::{convert_c_char, recover_c_char};
-use crate::{check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, make_free_method};
+use crate::{free_str_ptr, free_vec, impl_c_ptr, make_free_method};
 use alloc::vec::Vec;
 use app_bitcoin::multi_sig::wallet::{BsmsWallet, MultiSigWalletConfig};
 use app_bitcoin::multi_sig::{MultiSigFormat, MultiSigType, MultiSigXPubInfo, Network};
@@ -117,10 +117,12 @@ impl From<MultiSigXPubInfo> for MultiSigXPubInfoItem {
 
 impl From<&MultiSigXPubInfoItem> for MultiSigXPubInfo {
     fn from(val: &MultiSigXPubInfoItem) -> Self {
-        MultiSigXPubInfo {
-            path: recover_c_char(val.path),
-            xfp: recover_c_char(val.xfp),
-            xpub: recover_c_char(val.xpub),
+        unsafe {
+            MultiSigXPubInfo {
+                path: recover_c_char(val.path),
+                xfp: recover_c_char(val.xfp),
+                xpub: recover_c_char(val.xpub),
+            }
         }
     }
 }
@@ -137,11 +139,13 @@ impl From<BsmsWallet> for MultiSigXPubInfoItem {
 
 impl From<&MultiSigXPubInfoItem> for BsmsWallet {
     fn from(val: &MultiSigXPubInfoItem) -> Self {
-        BsmsWallet {
-            bsms_version: "BSMS 1.0".to_string(),
-            derivation_path: recover_c_char(val.path),
-            xfp: recover_c_char(val.xfp),
-            extended_pubkey: recover_c_char(val.xpub),
+        unsafe {
+            BsmsWallet {
+                bsms_version: "BSMS 1.0".to_string(),
+                derivation_path: recover_c_char(val.path),
+                xfp: recover_c_char(val.xfp),
+                extended_pubkey: recover_c_char(val.xpub),
+            }
         }
     }
 }
@@ -149,7 +153,7 @@ impl From<&MultiSigXPubInfoItem> for BsmsWallet {
 impl_c_ptr!(MultiSigXPubInfoItem);
 
 impl Free for MultiSigXPubInfoItem {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.xfp);
         free_str_ptr!(self.xpub);
         free_str_ptr!(self.path);
@@ -174,9 +178,11 @@ impl From<&app_bitcoin::multi_sig::wallet::MultiSigXPubItem> for MultiSigXPubIte
 
 impl From<&MultiSigXPubItem> for app_bitcoin::multi_sig::wallet::MultiSigXPubItem {
     fn from(val: &MultiSigXPubItem) -> Self {
-        app_bitcoin::multi_sig::wallet::MultiSigXPubItem {
-            xfp: recover_c_char(val.xfp),
-            xpub: recover_c_char(val.xpub),
+        unsafe {
+            app_bitcoin::multi_sig::wallet::MultiSigXPubItem {
+                xfp: recover_c_char(val.xfp),
+                xpub: recover_c_char(val.xpub),
+            }
         }
     }
 }
@@ -184,7 +190,7 @@ impl From<&MultiSigXPubItem> for app_bitcoin::multi_sig::wallet::MultiSigXPubIte
 impl_c_ptr!(MultiSigXPubItem);
 
 impl Free for MultiSigXPubItem {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.xfp);
         free_str_ptr!(self.xpub);
     }
@@ -208,88 +214,92 @@ pub struct MultiSigWallet {
 
 impl From<MultiSigWalletConfig> for MultiSigWallet {
     fn from(value: MultiSigWalletConfig) -> Self {
-        MultiSigWallet {
-            creator: convert_c_char(value.creator.clone()),
-            name: convert_c_char(value.name.clone()),
-            policy: convert_c_char(format!("{} of {}", value.threshold, value.total)),
-            threshold: value.threshold,
-            total: value.total,
-            derivations: VecFFI::from(
-                value
-                    .derivations
-                    .clone()
-                    .iter()
-                    .map(|v| convert_c_char(v.to_string()))
-                    .collect::<Vec<_>>(),
-            )
-            .c_ptr(),
-            format: convert_c_char(value.format.clone()),
-            xpub_items: VecFFI::from(
-                value
-                    .xpub_items
-                    .clone()
-                    .iter()
-                    .map(MultiSigXPubItem::from)
-                    .collect::<Vec<MultiSigXPubItem>>(),
-            )
-            .c_ptr(),
-            verify_code: convert_c_char(value.verify_code.clone()),
-            verify_without_mfp: convert_c_char(value.verify_without_mfp.clone()),
-            config_text: convert_c_char(value.config_text.clone()),
-            network: value.get_network_u32(),
+        unsafe {
+            MultiSigWallet {
+                creator: convert_c_char(value.creator.clone()),
+                name: convert_c_char(value.name.clone()),
+                policy: convert_c_char(format!("{} of {}", value.threshold, value.total)),
+                threshold: value.threshold,
+                total: value.total,
+                derivations: VecFFI::from(
+                    value
+                        .derivations
+                        .clone()
+                        .iter()
+                        .map(|v| convert_c_char(v.to_string()))
+                        .collect::<Vec<_>>(),
+                )
+                .c_ptr(),
+                format: convert_c_char(value.format.clone()),
+                xpub_items: VecFFI::from(
+                    value
+                        .xpub_items
+                        .clone()
+                        .iter()
+                        .map(MultiSigXPubItem::from)
+                        .collect::<Vec<MultiSigXPubItem>>(),
+                )
+                .c_ptr(),
+                verify_code: convert_c_char(value.verify_code.clone()),
+                verify_without_mfp: convert_c_char(value.verify_without_mfp.clone()),
+                config_text: convert_c_char(value.config_text.clone()),
+                network: value.get_network_u32(),
+            }
         }
     }
 }
 
 impl From<&mut MultiSigWallet> for MultiSigWalletConfig {
     fn from(val: &mut MultiSigWallet) -> Self {
-        MultiSigWalletConfig {
-            creator: recover_c_char(val.creator),
-            name: recover_c_char(val.name),
-            threshold: val.threshold,
-            total: val.total,
-            derivations: {
-                let rebuilt = unsafe {
-                    let ptr = (*val.derivations).data;
-                    let size = (*val.derivations).size;
-                    let cap = (*val.derivations).cap;
+        unsafe {
+            MultiSigWalletConfig {
+                creator: recover_c_char(val.creator),
+                name: recover_c_char(val.name),
+                threshold: val.threshold,
+                total: val.total,
+                derivations: {
+                    let rebuilt = unsafe {
+                        let ptr = (*val.derivations).data;
+                        let size = (*val.derivations).size;
+                        let cap = (*val.derivations).cap;
 
-                    let ptr = ptr as PtrT<PtrString>;
-                    Vec::from_raw_parts(ptr, size, cap)
-                };
+                        let ptr = ptr as PtrT<PtrString>;
+                        Vec::from_raw_parts(ptr, size, cap)
+                    };
 
-                rebuilt
-                    .iter()
-                    .map(|v| recover_c_char(*v))
-                    .collect::<Vec<_>>()
-            },
-            format: recover_c_char(val.format),
+                    rebuilt
+                        .iter()
+                        .map(|v| recover_c_char(*v))
+                        .collect::<Vec<_>>()
+                },
+                format: recover_c_char(val.format),
 
-            xpub_items: {
-                let rebuilt = unsafe {
-                    let ptr = (*val.derivations).data;
-                    let size = (*val.derivations).size;
-                    let cap = (*val.derivations).cap;
+                xpub_items: {
+                    let rebuilt = unsafe {
+                        let ptr = (*val.derivations).data;
+                        let size = (*val.derivations).size;
+                        let cap = (*val.derivations).cap;
 
-                    let ptr = ptr as PtrT<MultiSigXPubItem>;
-                    Vec::from_raw_parts(ptr, size, cap)
-                };
-                rebuilt.iter().map(|v| v.into()).collect::<Vec<_>>()
-            },
-            verify_code: recover_c_char(val.verify_code),
-            verify_without_mfp: recover_c_char(val.verify_without_mfp),
-            config_text: recover_c_char(val.config_text),
-            network: if val.network == 0 {
-                Network::MainNet
-            } else {
-                Network::TestNet
-            },
+                        let ptr = ptr as PtrT<MultiSigXPubItem>;
+                        Vec::from_raw_parts(ptr, size, cap)
+                    };
+                    rebuilt.iter().map(|v| v.into()).collect::<Vec<_>>()
+                },
+                verify_code: recover_c_char(val.verify_code),
+                verify_without_mfp: recover_c_char(val.verify_without_mfp),
+                config_text: recover_c_char(val.config_text),
+                network: if val.network == 0 {
+                    Network::MainNet
+                } else {
+                    Network::TestNet
+                },
+            }
         }
     }
 }
 
 impl Free for MultiSigWallet {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.creator);
         free_str_ptr!(self.name);
         free_str_ptr!(self.policy);
@@ -315,12 +325,10 @@ pub struct MultisigSignResult {
 }
 
 impl Free for MultisigSignResult {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.sign_status);
-        unsafe {
-            if !self.psbt_hex.is_null() {
-                let _x = Box::from_raw(self.psbt_hex);
-            }
+        if !self.psbt_hex.is_null() {
+            let _x = Box::from_raw(self.psbt_hex);
         }
         //do not free ur_result because it will be released by itself;
     }

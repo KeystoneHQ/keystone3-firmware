@@ -12,7 +12,7 @@ pub struct DisplayStellarTx {
 impl_c_ptr!(DisplayStellarTx);
 
 impl Free for DisplayStellarTx {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.raw_message);
     }
 }

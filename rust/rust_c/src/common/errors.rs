@@ -588,9 +588,7 @@ impl From<&ZcashError> for ErrorCodes {
 #[cfg(feature = "monero")]
 impl From<&MoneroError> for ErrorCodes {
     fn from(value: &MoneroError) -> Self {
-        match value {
-            _ => Self::MoneroUnknownError,
-        }
+        Self::MoneroUnknownError
     }
 }
 

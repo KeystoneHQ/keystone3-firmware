@@ -15,9 +15,7 @@ use crate::common::free::{free_ptr_string, Free};
 use crate::common::structs::TransactionParseResult;
 use crate::common::types::{Ptr, PtrString, PtrT};
 use crate::common::utils::convert_c_char;
-use crate::{
-    check_and_free_ptr, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method,
-};
+use crate::{free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method};
 
 #[repr(C)]
 pub struct DisplayCardanoSignData {
@@ -159,7 +157,7 @@ impl_c_ptrs!(DisplayCardanoSignData);
 impl_c_ptrs!(DisplayCardanoSignTxHash);
 
 impl Free for DisplayCardanoSignData {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.payload);
         free_str_ptr!(self.derivation_path);
         free_str_ptr!(self.message_hash);
@@ -168,7 +166,7 @@ impl Free for DisplayCardanoSignData {
 }
 
 impl Free for DisplayCardanoCatalyst {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.nonce);
         free_str_ptr!(self.stake_key);
         free_str_ptr!(self.rewards);
@@ -177,7 +175,7 @@ impl Free for DisplayCardanoCatalyst {
 }
 
 impl Free for DisplayCardanoSignTxHash {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.network);
         free_vec!(self.path);
         free_str_ptr!(self.tx_hash);
@@ -186,28 +184,26 @@ impl Free for DisplayCardanoSignTxHash {
 }
 
 impl Free for DisplayCardanoTx {
-    fn free(&self) {
-        unsafe {
-            let x = Box::from_raw(self.from);
-            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-            ve.iter().for_each(|v| {
-                v.free();
-            });
-            let x = Box::from_raw(self.to);
-            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-            ve.iter().for_each(|v| {
-                v.free();
-            });
-            free_vec!(self.withdrawals);
-            free_vec!(self.certificates);
-            free_vec!(self.voting_procedures);
-            free_vec!(self.voting_proposals);
+    unsafe fn free(&self) {
+        let x = Box::from_raw(self.from);
+        let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+        ve.iter().for_each(|v| {
+            v.free();
+        });
+        let x = Box::from_raw(self.to);
+        let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+        ve.iter().for_each(|v| {
+            v.free();
+        });
+        free_vec!(self.withdrawals);
+        free_vec!(self.certificates);
+        free_vec!(self.voting_procedures);
+        free_vec!(self.voting_proposals);
 
-            free_ptr_string(self.total_input);
-            free_ptr_string(self.total_output);
-            free_ptr_string(self.fee);
-            free_ptr_string(self.network);
-        }
+        free_str_ptr!(self.total_input);
+        free_str_ptr!(self.total_output);
+        free_str_ptr!(self.fee);
+        free_str_ptr!(self.network);
     }
 }
 
@@ -308,7 +304,7 @@ impl From<&CardanoFrom> for DisplayCardanoFrom {
 }
 
 impl Free for DisplayCardanoTo {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.assets_text);
         free_str_ptr!(self.address);
         free_str_ptr!(self.amount);
@@ -316,7 +312,7 @@ impl Free for DisplayCardanoTo {
 }
 
 impl Free for DisplayCardanoFrom {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.path);
         free_str_ptr!(self.amount);
         free_str_ptr!(self.address);
@@ -376,14 +372,14 @@ impl From<&CardanoCertificate> for DisplayCardanoCertificate {
 }
 
 impl Free for DisplayCardanoCertificate {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.cert_type);
         free_vec!(self.fields);
     }
 }
 
 impl Free for DisplayVotingProcedure {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.voter);
         free_str_ptr!(self.transaction_id);
         free_str_ptr!(self.index);
@@ -392,7 +388,7 @@ impl Free for DisplayVotingProcedure {
 }
 
 impl Free for DisplayVotingProposal {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.anchor);
     }
 }
@@ -407,14 +403,14 @@ impl From<&CardanoWithdrawal> for DisplayCardanoWithdrawal {
 }
 
 impl Free for DisplayCardanoWithdrawal {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.address);
         free_str_ptr!(self.amount);
     }
 }
 
 impl Free for DisplayCertField {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.label);
         free_str_ptr!(self.value);
     }

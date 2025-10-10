@@ -7,11 +7,11 @@ use alloc::boxed::Box;
 use cty::{c_char, c_void};
 
 pub trait Free {
-    fn free(&self);
+    unsafe fn free(&self);
 }
 
 pub trait SimpleFree {
-    fn free(&self);
+    unsafe fn free(&self);
 }
 
 #[macro_export]
@@ -20,10 +20,8 @@ macro_rules! check_and_free_ptr {
         if $p.is_null() {
             return;
         } else {
-            unsafe {
-                let x = alloc::boxed::Box::from_raw($p);
-                x.free()
-            }
+            let x = alloc::boxed::Box::from_raw($p);
+            x.free()
         }
     };
 }
@@ -32,9 +30,7 @@ macro_rules! check_and_free_ptr {
 macro_rules! free_str_ptr {
     ($p: expr) => {
         if !$p.is_null() {
-            unsafe {
-                cstr_core::CString::from_raw($p);
-            }
+            cstr_core::CString::from_raw($p);
         }
     };
 }
@@ -43,11 +39,9 @@ macro_rules! free_str_ptr {
 macro_rules! free_vec {
     ($p: expr) => {
         if !$p.is_null() {
-            unsafe {
-                let x = alloc::boxed::Box::from_raw($p);
-                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-                ve.iter().for_each(|v| v.free())
-            }
+            let x = alloc::boxed::Box::from_raw($p);
+            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+            ve.iter().for_each(|v| v.free())
         }
     };
 }
@@ -56,11 +50,9 @@ macro_rules! free_vec {
 macro_rules! free_ptr_with_type {
     ($x: expr, $name: ident) => {
         if (!$x.is_null()) {
-            unsafe {
-                let x = $crate::extract_ptr_with_type!($x, $name);
-                let _b = alloc::boxed::Box::from_raw(x);
-                // drop(b);
-            }
+            let x = $crate::extract_ptr_with_type!($x, $name);
+            let _b = alloc::boxed::Box::from_raw(x);
+            // drop(b);
         }
     };
 }
@@ -94,48 +86,46 @@ macro_rules! free_ptr_with_type {
 // }
 
 #[no_mangle]
-pub extern "C" fn free_ur_parse_result(ur_parse_result: PtrT<URParseResult>) {
+pub unsafe extern "C" fn free_ur_parse_result(ur_parse_result: PtrT<URParseResult>) {
     check_and_free_ptr!(ur_parse_result);
 }
 
 #[no_mangle]
-pub extern "C" fn free_ur_parse_multi_result(ptr: PtrT<URParseMultiResult>) {
+pub unsafe extern "C" fn free_ur_parse_multi_result(ptr: PtrT<URParseMultiResult>) {
     check_and_free_ptr!(ptr)
 }
 
 #[no_mangle]
-pub extern "C" fn free_ur_encode_result(ptr: PtrT<UREncodeResult>) {
+pub unsafe extern "C" fn free_ur_encode_result(ptr: PtrT<UREncodeResult>) {
     check_and_free_ptr!(ptr);
 }
 
 #[no_mangle]
-pub extern "C" fn free_ur_encode_muilt_result(ptr: PtrT<UREncodeMultiResult>) {
+pub unsafe extern "C" fn free_ur_encode_muilt_result(ptr: PtrT<UREncodeMultiResult>) {
     check_and_free_ptr!(ptr);
 }
 
 #[no_mangle]
-pub extern "C" fn free_simple_response_u8(ptr: PtrT<SimpleResponse<u8>>) {
+pub unsafe extern "C" fn free_simple_response_u8(ptr: PtrT<SimpleResponse<u8>>) {
     check_and_free_ptr!(ptr);
 }
 
 #[no_mangle]
-pub extern "C" fn free_simple_response_c_char(ptr: PtrT<SimpleResponse<c_char>>) {
+pub unsafe extern "C" fn free_simple_response_c_char(ptr: PtrT<SimpleResponse<c_char>>) {
     check_and_free_ptr!(ptr);
 }
 
 #[no_mangle]
-pub extern "C" fn free_ptr_string(ptr: PtrString) {
+pub unsafe extern "C" fn free_ptr_string(ptr: PtrString) {
     free_str_ptr!(ptr);
 }
 
 #[no_mangle]
-pub extern "C" fn free_rust_value(any_ptr: *mut c_void) {
+pub unsafe extern "C" fn free_rust_value(any_ptr: *mut c_void) {
     if any_ptr.is_null() {
         return;
     }
-    unsafe {
-        drop(Box::from_raw(any_ptr));
-    }
+    drop(Box::from_raw(any_ptr));
 }
 
 // make_free_method!(Response<DisplayContractData>);

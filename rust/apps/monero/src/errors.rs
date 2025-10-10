@@ -37,8 +37,6 @@ pub type Result<T> = core::result::Result<T, MoneroError>;
 
 impl From<KeystoreError> for MoneroError {
     fn from(value: KeystoreError) -> Self {
-        match value {
-            _ => Self::KeystoreError(value.to_string()),
-        }
+        Self::KeystoreError(value.to_string())
     }
 }

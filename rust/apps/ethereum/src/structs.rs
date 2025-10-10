@@ -1,5 +1,3 @@
-use core::ops::Add;
-
 use crate::eip1559_transaction::ParsedEIP1559Transaction;
 use crate::eip712::eip712::TypedData as Eip712TypedData;
 use crate::errors::Result;
@@ -15,7 +13,7 @@ use ethabi::{encode, Address, Token};
 use ethereum_types::{H160, U256};
 use hex;
 use rlp::{Decodable, DecoderError, Encodable, Rlp};
-use serde_json::{from_str, Value};
+use serde_json::Value;
 
 #[derive(Clone)]
 pub enum TransactionAction {
@@ -181,7 +179,7 @@ impl TypedData {
         })
     }
 
-    pub fn from_raw(mut data: Eip712TypedData, from: Option<PublicKey>) -> Result<Self> {
+    pub fn from_raw(data: Eip712TypedData, from: Option<PublicKey>) -> Result<Self> {
         Self::from(Into::into(data), from)
     }
 

@@ -42,7 +42,7 @@ impl Parser {
             data_parse = data[32..].to_vec();
         }
         let tx: RawTransaction = bcs::from_bytes(&data_parse)
-            .map_err(|err| AptosError::ParseTxError(format!("bcs deserialize failed {}", err)))?;
+            .map_err(|err| AptosError::ParseTxError(format!("bcs deserialize failed {err}")))?;
         Ok(AptosTx::new(tx))
     }
     pub fn parse_msg(data: &Vec<u8>) -> Result<String> {
@@ -70,13 +70,13 @@ impl AptosTx {
     pub fn get_formatted_json(&self) -> Result<Value> {
         match serde_json::to_string_pretty(&self.tx) {
             Ok(v) => Ok(Value::String(v)),
-            Err(e) => Err(AptosError::ParseTxError(format!("to json failed {}", e))),
+            Err(e) => Err(AptosError::ParseTxError(format!("to json failed {e}"))),
         }
     }
 
     fn to_json_value(&self) -> Result<Value> {
         let value = serde_json::to_value(&self.tx)
-            .map_err(|e| AptosError::ParseTxError(format!("to json failed {}", e)))?;
+            .map_err(|e| AptosError::ParseTxError(format!("to json failed {e}")))?;
         Ok(value)
     }
 

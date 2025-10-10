@@ -3,9 +3,9 @@ use crate::common::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
+use crate::extract_array;
 use crate::extract_ptr_with_type;
 use alloc::format;
-use alloc::slice;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 
@@ -21,7 +21,7 @@ use ur_registry::traits::RegistryItem;
 
 pub mod structs;
 
-fn build_sign_result(
+unsafe fn build_sign_result(
     ptr: PtrUR,
     seed: &[u8],
     pub_key: PtrString,
@@ -34,7 +34,7 @@ fn build_sign_result(
             "invalid derivation path".to_string(),
         ))?;
     if !path.starts_with("m/") {
-        path = format!("m/{}", path);
+        path = format!("m/{path}");
     }
     let signature = app_aptos::sign(sign_request.get_sign_data().to_vec(), &path, seed)?;
     let buf: Vec<u8> = hex::decode(pub_key)?;
@@ -46,7 +46,7 @@ fn build_sign_result(
 }
 
 #[no_mangle]
-pub extern "C" fn aptos_generate_address(pub_key: PtrString) -> *mut SimpleResponse<c_char> {
+pub unsafe extern "C" fn aptos_generate_address(pub_key: PtrString) -> *mut SimpleResponse<c_char> {
     let pub_key = recover_c_char(pub_key);
     let address = app_aptos::generate_address(&pub_key);
     match address {
@@ -56,7 +56,7 @@ pub extern "C" fn aptos_generate_address(pub_key: PtrString) -> *mut SimpleRespo
 }
 
 #[no_mangle]
-pub extern "C" fn aptos_check_request(
+pub unsafe extern "C" fn aptos_check_request(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     length: u32,
@@ -64,7 +64,7 @@ pub extern "C" fn aptos_check_request(
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
     let sign_request = extract_ptr_with_type!(ptr, AptosSignRequest);
     let ur_mfp = sign_request.get_authentication_key_derivation_paths()[0].get_source_fingerprint();
 
@@ -83,7 +83,7 @@ pub extern "C" fn aptos_check_request(
 }
 
 #[no_mangle]
-pub extern "C" fn aptos_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayAptosTx>> {
+pub unsafe extern "C" fn aptos_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayAptosTx>> {
     let sign_request = extract_ptr_with_type!(ptr, AptosSignRequest);
     let sign_data = sign_request.get_sign_data();
     let sign_type = match sign_request.get_sign_type() {
@@ -114,13 +114,13 @@ pub extern "C" fn aptos_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<Display
 }
 
 #[no_mangle]
-pub extern "C" fn aptos_sign_tx(
+pub unsafe extern "C" fn aptos_sign_tx(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
     pub_key: PtrString,
 ) -> PtrT<UREncodeResult> {
-    let seed = unsafe { alloc::slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     build_sign_result(ptr, seed, pub_key)
         .map(|v| v.try_into())
         .map_or_else(
@@ -142,7 +142,7 @@ pub extern "C" fn aptos_sign_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn aptos_get_path(ptr: PtrUR) -> PtrString {
+pub unsafe extern "C" fn aptos_get_path(ptr: PtrUR) -> PtrString {
     let aptos_sign_request = extract_ptr_with_type!(ptr, AptosSignRequest);
     let derivation_path = &aptos_sign_request.get_authentication_key_derivation_paths()[0];
     if let Some(path) = derivation_path.get_path() {
@@ -152,7 +152,7 @@ pub extern "C" fn aptos_get_path(ptr: PtrUR) -> PtrString {
 }
 
 #[no_mangle]
-pub extern "C" fn test_aptos_parse() -> *mut SimpleResponse<c_char> {
+pub unsafe extern "C" fn test_aptos_parse() -> *mut SimpleResponse<c_char> {
     let data = "8bbbb70ae8b90a8686b2a27f10e21e44f2fb64ffffcaa4bb0242e9f1ea698659010000000000000002000000000000000000000000000000000000000000000000000000000000000104636f696e087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220834f4b75dcaacbd7c549a993cdd3140676e172d1fee0609bf6876c74aaa7116008400d0300000000009a0e0000000000006400000000000000b6b747630000000021";
     let buf_message = Vec::from_hex(data).unwrap();
     match app_aptos::parse_tx(&buf_message) {

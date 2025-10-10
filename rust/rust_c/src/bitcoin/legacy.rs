@@ -6,10 +6,10 @@ use crate::common::structs::{TransactionCheckResult, TransactionParseResult};
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{QRCodeType, UREncodeResult};
 use alloc::boxed::Box;
-use alloc::slice;
+use crate::extract_array;
 
 #[no_mangle]
-pub extern "C" fn utxo_parse_keystone(
+pub unsafe extern "C" fn utxo_parse_keystone(
     ptr: PtrUR,
     ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
@@ -41,7 +41,7 @@ pub extern "C" fn utxo_parse_keystone(
 }
 
 #[no_mangle]
-pub extern "C" fn utxo_sign_keystone(
+pub unsafe extern "C" fn utxo_sign_keystone(
     ptr: PtrUR,
     ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
@@ -51,7 +51,7 @@ pub extern "C" fn utxo_sign_keystone(
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut UREncodeResult {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     keystone::sign(
         ptr,
         ur_type,
@@ -64,7 +64,7 @@ pub extern "C" fn utxo_sign_keystone(
 }
 
 #[no_mangle]
-pub extern "C" fn utxo_check_keystone(
+pub unsafe extern "C" fn utxo_check_keystone(
     ptr: PtrUR,
     ur_type: QRCodeType,
     master_fingerprint: PtrBytes,

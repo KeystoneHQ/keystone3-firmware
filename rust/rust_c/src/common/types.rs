@@ -16,9 +16,7 @@ pub type PtrT<T> = *mut T;
 pub type Ptr<T> = *mut T;
 
 impl Free for PtrString {
-    fn free(&self) {
-        unsafe {
-            let _ = Box::from_raw(*self);
-        }
+    unsafe fn free(&self) {
+        let _ = Box::from_raw(*self);
     }
 }

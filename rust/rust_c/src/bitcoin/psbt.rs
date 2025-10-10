@@ -1,6 +1,5 @@
 use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
-use alloc::slice;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_bitcoin::multi_sig::wallet::parse_wallet_config;
@@ -15,6 +14,7 @@ use crate::common::structs::{
 use crate::common::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
 use crate::common::utils::{convert_c_char, recover_c_array, recover_c_char};
+use crate::extract_array;
 use crate::extract_ptr_with_type;
 use app_bitcoin::parsed_tx::ParseContext;
 use app_bitcoin::{self, parse_psbt_hex_sign_status, parse_psbt_sign_status};
@@ -27,7 +27,7 @@ use super::multi_sig::structs::MultisigSignResult;
 use super::structs::DisplayTx;
 
 #[no_mangle]
-pub extern "C" fn btc_parse_psbt(
+pub unsafe extern "C" fn btc_parse_psbt(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     length: u32,
@@ -40,20 +40,18 @@ pub extern "C" fn btc_parse_psbt(
     let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
     let psbt = crypto_psbt.get_psbt();
 
-    unsafe {
-        let multisig_wallet_config = if multisig_wallet_config.is_null() {
-            None
-        } else {
-            Some(recover_c_char(multisig_wallet_config))
-        };
-        let mfp = core::slice::from_raw_parts(master_fingerprint, 4);
-        let public_keys = recover_c_array(public_keys);
-        parse_psbt(mfp, public_keys, psbt, multisig_wallet_config)
-    }
+    let multisig_wallet_config = if multisig_wallet_config.is_null() {
+        None
+    } else {
+        Some(recover_c_char(multisig_wallet_config))
+    };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
+    let public_keys = recover_c_array(public_keys);
+    parse_psbt(mfp, public_keys, psbt, multisig_wallet_config)
 }
 
 #[no_mangle]
-fn btc_sign_psbt_dynamic(
+unsafe fn btc_sign_psbt_dynamic(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
@@ -64,7 +62,7 @@ fn btc_sign_psbt_dynamic(
     if master_fingerprint_len != 4 {
         return UREncodeResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let master_fingerprint = extract_array!(master_fingerprint, u8, 4);
     let master_fingerprint =
         match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
             .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -78,7 +76,7 @@ fn btc_sign_psbt_dynamic(
     let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
     let psbt = crypto_psbt.get_psbt();
 
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
 
     let result = app_bitcoin::sign_psbt(psbt, seed, master_fingerprint);
     match result.map(|v| CryptoPSBT::new(v).try_into()) {
@@ -96,7 +94,7 @@ fn btc_sign_psbt_dynamic(
 }
 
 #[no_mangle]
-pub extern "C" fn btc_sign_psbt(
+pub unsafe extern "C" fn btc_sign_psbt(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
@@ -114,7 +112,7 @@ pub extern "C" fn btc_sign_psbt(
 }
 
 #[no_mangle]
-pub extern "C" fn btc_sign_psbt_unlimited(
+pub unsafe extern "C" fn btc_sign_psbt_unlimited(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
@@ -132,7 +130,7 @@ pub extern "C" fn btc_sign_psbt_unlimited(
 }
 
 #[no_mangle]
-pub extern "C" fn btc_sign_multisig_psbt(
+pub unsafe extern "C" fn btc_sign_multisig_psbt(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
@@ -149,7 +147,7 @@ pub extern "C" fn btc_sign_multisig_psbt(
         }
         .c_ptr();
     }
-    let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let master_fingerprint = extract_array!(master_fingerprint, u8, 4);
     let master_fingerprint =
         match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
             .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -170,7 +168,7 @@ pub extern "C" fn btc_sign_multisig_psbt(
     let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
     let psbt = crypto_psbt.get_psbt();
 
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
 
     let result = app_bitcoin::sign_psbt_no_serialize(psbt, seed, master_fingerprint);
     match result.map(|v| {
@@ -218,7 +216,7 @@ pub extern "C" fn btc_sign_multisig_psbt(
 }
 
 #[no_mangle]
-pub extern "C" fn btc_export_multisig_psbt(ptr: PtrUR) -> *mut MultisigSignResult {
+pub unsafe extern "C" fn btc_export_multisig_psbt(ptr: PtrUR) -> *mut MultisigSignResult {
     let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
     let psbt = crypto_psbt.get_psbt();
     let sign_state = parse_psbt_hex_sign_status(&psbt);
@@ -251,45 +249,43 @@ pub extern "C" fn btc_export_multisig_psbt(ptr: PtrUR) -> *mut MultisigSignResul
 }
 
 #[no_mangle]
-pub extern "C" fn btc_export_multisig_psbt_bytes(
+pub unsafe extern "C" fn btc_export_multisig_psbt_bytes(
     psbt_bytes: PtrBytes,
     psbt_bytes_length: u32,
 ) -> *mut MultisigSignResult {
-    unsafe {
-        let psbt = core::slice::from_raw_parts(psbt_bytes, psbt_bytes_length as usize);
-        let psbt = psbt.to_vec();
-        let sign_state = parse_psbt_hex_sign_status(&psbt);
-        match sign_state {
-            Ok(state) => {
-                let (ptr, size, _cap) = psbt.clone().into_raw_parts();
-                MultisigSignResult {
-                    ur_result: UREncodeResult::encode(
-                        psbt,
-                        CryptoPSBT::get_registry_type().get_type(),
-                        FRAGMENT_MAX_LENGTH_DEFAULT,
-                    )
-                    .c_ptr(),
-                    sign_status: convert_c_char(state.sign_status.unwrap_or("".to_string())),
-                    is_completed: state.is_completed,
-                    psbt_hex: ptr,
-                    psbt_len: size as u32,
-                }
-                .c_ptr()
+    let psbt = extract_array!(psbt_bytes, u8, psbt_bytes_length as usize);
+    let psbt = psbt.to_vec();
+    let sign_state = parse_psbt_hex_sign_status(&psbt);
+    match sign_state {
+        Ok(state) => {
+            let (ptr, size, _cap) = psbt.clone().into_raw_parts();
+            MultisigSignResult {
+                ur_result: UREncodeResult::encode(
+                    psbt,
+                    CryptoPSBT::get_registry_type().get_type(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT,
+                )
+                .c_ptr(),
+                sign_status: convert_c_char(state.sign_status.unwrap_or("".to_string())),
+                is_completed: state.is_completed,
+                psbt_hex: ptr,
+                psbt_len: size as u32,
             }
-            Err(e) => MultisigSignResult {
-                ur_result: UREncodeResult::from(e).c_ptr(),
-                sign_status: null_mut(),
-                is_completed: false,
-                psbt_hex: null_mut(),
-                psbt_len: 0,
-            }
-            .c_ptr(),
+            .c_ptr()
         }
+        Err(e) => MultisigSignResult {
+            ur_result: UREncodeResult::from(e).c_ptr(),
+            sign_status: null_mut(),
+            is_completed: false,
+            psbt_hex: null_mut(),
+            psbt_len: 0,
+        }
+        .c_ptr(),
     }
 }
 
 #[no_mangle]
-pub extern "C" fn btc_check_psbt(
+pub unsafe extern "C" fn btc_check_psbt(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     length: u32,
@@ -303,25 +299,23 @@ pub extern "C" fn btc_check_psbt(
     let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
     let psbt = crypto_psbt.get_psbt();
 
-    unsafe {
-        let verify_code = if verify_code.is_null() {
-            None
-        } else {
-            Some(recover_c_char(verify_code))
-        };
-        let multisig_wallet_config = if multisig_wallet_config.is_null() {
-            None
-        } else {
-            Some(recover_c_char(multisig_wallet_config))
-        };
-        let mfp = core::slice::from_raw_parts(master_fingerprint, 4);
-        let public_keys = recover_c_array(public_keys);
-        check_psbt(mfp, public_keys, psbt, verify_code, multisig_wallet_config)
-    }
+    let verify_code = if verify_code.is_null() {
+        None
+    } else {
+        Some(recover_c_char(verify_code))
+    };
+    let multisig_wallet_config = if multisig_wallet_config.is_null() {
+        None
+    } else {
+        Some(recover_c_char(multisig_wallet_config))
+    };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
+    let public_keys = recover_c_array(public_keys);
+    check_psbt(mfp, public_keys, psbt, verify_code, multisig_wallet_config)
 }
 
 #[no_mangle]
-pub extern "C" fn btc_check_psbt_bytes(
+pub unsafe extern "C" fn btc_check_psbt_bytes(
     psbt_bytes: PtrBytes,
     psbt_bytes_length: u32,
     master_fingerprint: PtrBytes,
@@ -333,32 +327,30 @@ pub extern "C" fn btc_check_psbt_bytes(
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    unsafe {
-        let psbt = core::slice::from_raw_parts(psbt_bytes, psbt_bytes_length as usize);
-        let psbt = match get_psbt_bytes(psbt) {
-            Ok(psbt) => psbt,
-            Err(e) => return TransactionCheckResult::from(e).c_ptr(),
-        };
+    let psbt = extract_array!(psbt_bytes, u8, psbt_bytes_length as usize);
+    let psbt = match get_psbt_bytes(psbt) {
+        Ok(psbt) => psbt,
+        Err(e) => return TransactionCheckResult::from(e).c_ptr(),
+    };
 
-        let verify_code = if verify_code.is_null() {
-            None
-        } else {
-            Some(recover_c_char(verify_code))
-        };
+    let verify_code = if verify_code.is_null() {
+        None
+    } else {
+        Some(recover_c_char(verify_code))
+    };
 
-        let multisig_wallet_config = if multisig_wallet_config.is_null() {
-            None
-        } else {
-            Some(recover_c_char(multisig_wallet_config))
-        };
-        let mfp = core::slice::from_raw_parts(master_fingerprint, 4);
-        let public_keys = recover_c_array(public_keys);
-        check_psbt(mfp, public_keys, psbt, verify_code, multisig_wallet_config)
-    }
+    let multisig_wallet_config = if multisig_wallet_config.is_null() {
+        None
+    } else {
+        Some(recover_c_char(multisig_wallet_config))
+    };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
+    let public_keys = recover_c_array(public_keys);
+    check_psbt(mfp, public_keys, psbt, verify_code, multisig_wallet_config)
 }
 
 #[no_mangle]
-pub extern "C" fn btc_parse_psbt_bytes(
+pub unsafe extern "C" fn btc_parse_psbt_bytes(
     psbt_bytes: PtrBytes,
     psbt_bytes_length: u32,
     master_fingerprint: PtrBytes,
@@ -369,25 +361,23 @@ pub extern "C" fn btc_parse_psbt_bytes(
     if length != 4 {
         return TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    unsafe {
-        let psbt = core::slice::from_raw_parts(psbt_bytes, psbt_bytes_length as usize);
-        let psbt = match get_psbt_bytes(psbt) {
-            Ok(psbt) => psbt,
-            Err(e) => return TransactionParseResult::from(e).c_ptr(),
-        };
-        let multisig_wallet_config = if multisig_wallet_config.is_null() {
-            None
-        } else {
-            Some(recover_c_char(multisig_wallet_config))
-        };
-        let mfp = core::slice::from_raw_parts(master_fingerprint, 4);
-        let public_keys = recover_c_array(public_keys);
-        parse_psbt(mfp, public_keys, psbt, multisig_wallet_config)
-    }
+    let psbt = extract_array!(psbt_bytes, u8, psbt_bytes_length as usize);
+    let psbt = match get_psbt_bytes(psbt) {
+        Ok(psbt) => psbt,
+        Err(e) => return TransactionParseResult::from(e).c_ptr(),
+    };
+    let multisig_wallet_config = if multisig_wallet_config.is_null() {
+        None
+    } else {
+        Some(recover_c_char(multisig_wallet_config))
+    };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
+    let public_keys = recover_c_array(public_keys);
+    parse_psbt(mfp, public_keys, psbt, multisig_wallet_config)
 }
 
 #[no_mangle]
-pub extern "C" fn btc_sign_multisig_psbt_bytes(
+pub unsafe extern "C" fn btc_sign_multisig_psbt_bytes(
     psbt_bytes: PtrBytes,
     psbt_bytes_length: u32,
     seed: PtrBytes,
@@ -405,7 +395,7 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
         }
         .c_ptr();
     }
-    let master_fingerprint = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let master_fingerprint = extract_array!(master_fingerprint, u8, 4);
     let master_fingerprint =
         match bitcoin::bip32::Fingerprint::from_str(hex::encode(master_fingerprint).as_str())
             .map_err(|_e| RustCError::InvalidMasterFingerprint)
@@ -423,8 +413,8 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
             }
         };
 
-    let psbt = unsafe {
-        let psbt = core::slice::from_raw_parts(psbt_bytes, psbt_bytes_length as usize);
+    let psbt = {
+        let psbt = extract_array!(psbt_bytes, u8, psbt_bytes_length as usize);
 
         match get_psbt_bytes(psbt) {
             Ok(psbt) => psbt,
@@ -441,7 +431,7 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
         }
     };
 
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
 
     let result = app_bitcoin::sign_psbt_no_serialize(psbt, seed, master_fingerprint);
     match result.map(|v| {
@@ -488,7 +478,7 @@ pub extern "C" fn btc_sign_multisig_psbt_bytes(
     }
 }
 
-fn parse_psbt(
+unsafe fn parse_psbt(
     mfp: &[u8],
     public_keys: &[ExtendedPublicKey],
     psbt: Vec<u8>,
@@ -536,7 +526,7 @@ fn parse_psbt(
     }
 }
 
-fn check_psbt(
+unsafe fn check_psbt(
     mfp: &[u8],
     public_keys: &[ExtendedPublicKey],
     psbt: Vec<u8>,

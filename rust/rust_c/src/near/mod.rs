@@ -2,6 +2,7 @@ use crate::common::errors::RustCError;
 use crate::common::structs::{TransactionCheckResult, TransactionParseResult};
 use crate::common::types::{PtrBytes, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::extract_array;
 use crate::extract_ptr_with_type;
 use alloc::string::ToString;
 use alloc::{format, vec};
@@ -13,7 +14,7 @@ use ur_registry::traits::RegistryItem;
 
 pub mod structs;
 
-fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<NearSignature, NearError> {
+unsafe fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<NearSignature, NearError> {
     let sign_request = extract_ptr_with_type!(ptr, NearSignRequest);
     let mut path =
         sign_request
@@ -23,7 +24,7 @@ fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<NearSignature, NearError
                 "invalid derivation path".to_string(),
             ))?;
     if !path.starts_with("m/") {
-        path = format!("m/{}", path);
+        path = format!("m/{path}");
     }
     let sign_data = sign_request.get_sign_data();
     if sign_data.len() != 1 {
@@ -39,7 +40,7 @@ fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<NearSignature, NearError
 }
 
 #[no_mangle]
-pub extern "C" fn near_check(
+pub unsafe extern "C" fn near_check(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     length: u32,
@@ -48,7 +49,7 @@ pub extern "C" fn near_check(
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
     let near_sign_request = extract_ptr_with_type!(ptr, NearSignRequest);
-    let mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
     if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
         let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
             near_sign_request.get_derivation_path();
@@ -66,7 +67,7 @@ pub extern "C" fn near_check(
 }
 
 #[no_mangle]
-pub extern "C" fn near_parse_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayNearTx>> {
+pub unsafe extern "C" fn near_parse_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayNearTx>> {
     let near_sign_reqeust = extract_ptr_with_type!(ptr, NearSignRequest);
     let sign_data = near_sign_reqeust.get_sign_data();
     if sign_data.len() != 1 {
@@ -82,8 +83,8 @@ pub extern "C" fn near_parse_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<Displ
 }
 
 #[no_mangle]
-pub extern "C" fn near_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
-    let seed = unsafe { alloc::slice::from_raw_parts(seed, seed_len as usize) };
+pub unsafe extern "C" fn near_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+    let seed = extract_array!(seed, u8, seed_len as usize);
     build_sign_result(ptr, seed)
         .map(|v| v.try_into())
         .map_or_else(

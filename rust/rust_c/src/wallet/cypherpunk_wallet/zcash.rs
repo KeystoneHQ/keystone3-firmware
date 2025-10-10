@@ -14,15 +14,14 @@ use ur_registry::traits::RegistryItem;
 use ur_registry::zcash::zcash_accounts::ZcashAccounts;
 
 #[no_mangle]
-pub extern "C" fn get_connect_zcash_wallet_ur(
+pub unsafe extern "C" fn get_connect_zcash_wallet_ur(
     seed_fingerprint: PtrBytes,
     seed_fingerprint_len: u32,
     zcash_keys: Ptr<CSliceFFI<ZcashKey>>,
 ) -> *mut UREncodeResult {
     if seed_fingerprint_len != 32 {
         return UREncodeResult::from(URError::UrEncodeError(format!(
-            "zip-32 seed fingerprint length must be 32, current is {}",
-            seed_fingerprint_len
+            "zip-32 seed fingerprint length must be 32, current is {seed_fingerprint_len}"
         )))
         .c_ptr();
     }
@@ -31,30 +30,28 @@ pub extern "C" fn get_connect_zcash_wallet_ur(
         Ok(seed_fingerprint) => seed_fingerprint,
         Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
     };
-    unsafe {
-        let keys = recover_c_array(zcash_keys);
-        let ufvks: Vec<UFVKInfo> = keys
-            .iter()
-            .map(|v| {
-                UFVKInfo::new(
-                    recover_c_char(v.key_text),
-                    recover_c_char(v.key_name),
-                    v.index,
-                )
-            })
-            .collect();
-        let result = generate_sync_ur(ufvks, seed_fingerprint);
-        match result.map(|v| v.try_into()) {
-            Ok(v) => match v {
-                Ok(data) => UREncodeResult::encode(
-                    data,
-                    ZcashAccounts::get_registry_type().get_type(),
-                    FRAGMENT_MAX_LENGTH_DEFAULT,
-                )
-                .c_ptr(),
-                Err(e) => UREncodeResult::from(e).c_ptr(),
-            },
+    let keys = recover_c_array(zcash_keys);
+    let ufvks: Vec<UFVKInfo> = keys
+        .iter()
+        .map(|v| {
+            UFVKInfo::new(
+                recover_c_char(v.key_text),
+                recover_c_char(v.key_name),
+                v.index,
+            )
+        })
+        .collect();
+    let result = generate_sync_ur(ufvks, seed_fingerprint);
+    match result.map(|v| v.try_into()) {
+        Ok(v) => match v {
+            Ok(data) => UREncodeResult::encode(
+                data,
+                ZcashAccounts::get_registry_type().get_type(),
+                FRAGMENT_MAX_LENGTH_DEFAULT,
+            )
+            .c_ptr(),
             Err(e) => UREncodeResult::from(e).c_ptr(),
-        }
+        },
+        Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }

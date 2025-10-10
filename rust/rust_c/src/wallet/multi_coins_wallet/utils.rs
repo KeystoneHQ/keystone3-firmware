@@ -11,7 +11,7 @@ use {
     hex,
 };
 
-pub fn normalize_xpub(
+pub unsafe fn normalize_xpub(
     keys: &[ExtendedPublicKey],
 ) -> Result<Vec<app_wallets::ExtendedPublicKey>, RustCError> {
     let mut result = vec![];

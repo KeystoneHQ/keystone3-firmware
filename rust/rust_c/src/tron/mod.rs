@@ -6,13 +6,14 @@ use crate::common::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{QRCodeType, UREncodeResult};
 use crate::common::utils::{convert_c_char, recover_c_char};
+use crate::extract_array;
 use alloc::boxed::Box;
 use alloc::slice;
 use cty::c_char;
 use structs::DisplayTron;
 
 #[no_mangle]
-pub extern "C" fn tron_check_keystone(
+pub unsafe extern "C" fn tron_check_keystone(
     ptr: PtrUR,
     ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
@@ -23,7 +24,7 @@ pub extern "C" fn tron_check_keystone(
 }
 
 #[no_mangle]
-pub extern "C" fn tron_parse_keystone(
+pub unsafe extern "C" fn tron_parse_keystone(
     ptr: PtrUR,
     ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
@@ -55,7 +56,7 @@ pub extern "C" fn tron_parse_keystone(
 }
 
 #[no_mangle]
-pub extern "C" fn tron_sign_keystone(
+pub unsafe extern "C" fn tron_sign_keystone(
     ptr: PtrUR,
     ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
@@ -65,7 +66,7 @@ pub extern "C" fn tron_sign_keystone(
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut UREncodeResult {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     keystone::sign(
         ptr,
         ur_type,
@@ -78,7 +79,7 @@ pub extern "C" fn tron_sign_keystone(
 }
 
 #[no_mangle]
-pub extern "C" fn tron_get_address(
+pub unsafe extern "C" fn tron_get_address(
     hd_path: PtrString,
     x_pub: PtrString,
 ) -> *mut SimpleResponse<c_char> {

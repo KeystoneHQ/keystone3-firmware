@@ -29,7 +29,7 @@ pub struct DisplaySolanaTxOverviewGeneral {
 }
 
 impl Free for DisplaySolanaTxOverviewGeneral {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.program);
         free_str_ptr!(self.method);
     }
@@ -59,28 +59,26 @@ pub struct Instruction {
 }
 
 impl Free for DisplaySolanaTxOverviewUnknownInstructions {
-    fn free(&self) {
-        unsafe {
-            if !self.overview_accounts.is_null() {
-                let x = Box::from_raw(self.overview_accounts);
-                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-                ve.iter().for_each(|v| {
-                    v.free();
+    unsafe fn free(&self) {
+        if !self.overview_accounts.is_null() {
+            let x = Box::from_raw(self.overview_accounts);
+            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+            ve.iter().for_each(|v| {
+                v.free();
+            });
+        }
+        if !self.overview_instructions.is_null() {
+            let x = Box::from_raw(self.overview_instructions);
+            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+            ve.iter().for_each(|v| {
+                let accounts = Box::from_raw(v.accounts);
+                let accounts = Vec::from_raw_parts(accounts.data, accounts.size, accounts.cap);
+                accounts.iter().for_each(|a| {
+                    free_str_ptr!(*a);
                 });
-            }
-            if !self.overview_instructions.is_null() {
-                let x = Box::from_raw(self.overview_instructions);
-                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-                ve.iter().for_each(|v| {
-                    let accounts = Box::from_raw(v.accounts);
-                    let accounts = Vec::from_raw_parts(accounts.data, accounts.size, accounts.cap);
-                    accounts.iter().for_each(|a| {
-                        free_str_ptr!(*a);
-                    });
-                    free_str_ptr!(v.data);
-                    free_str_ptr!(v.program_address);
-                });
-            }
+                free_str_ptr!(v.data);
+                free_str_ptr!(v.program_address);
+            });
         }
     }
 }
@@ -94,7 +92,7 @@ pub struct DisplaySolanaTxProposalOverview {
 }
 impl_c_ptrs!(DisplaySolanaTxProposalOverview);
 impl Free for DisplaySolanaTxProposalOverview {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.program);
         free_str_ptr!(self.method);
         free_str_ptr!(self.memo);
@@ -114,7 +112,7 @@ pub struct DisplaySolanaTxSplTokenTransferOverview {
 }
 impl_c_ptrs!(DisplaySolanaTxSplTokenTransferOverview);
 impl Free for DisplaySolanaTxSplTokenTransferOverview {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.source);
         free_str_ptr!(self.destination);
         free_str_ptr!(self.authority);
@@ -150,7 +148,7 @@ impl_c_ptrs!(
 );
 
 impl Free for JupiterV6SwapTokenInfoOverview {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.token_name);
         free_str_ptr!(self.token_symbol);
         free_str_ptr!(self.token_address);
@@ -158,18 +156,18 @@ impl Free for JupiterV6SwapTokenInfoOverview {
     }
 }
 impl Free for DisplaySolanaTxOverviewJupiterV6Swap {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.program_name);
         free_str_ptr!(self.program_address);
         free_str_ptr!(self.instruction_name);
         free_str_ptr!(self.slippage_bps);
         free_str_ptr!(self.platform_fee_bps);
         if !self.token_a_overview.is_null() {
-            let x = unsafe { Box::from_raw(self.token_a_overview) };
+            let x = Box::from_raw(self.token_a_overview);
             x.free();
         }
         if !self.token_b_overview.is_null() {
-            let x = unsafe { Box::from_raw(self.token_b_overview) };
+            let x = Box::from_raw(self.token_b_overview);
             x.free();
         }
     }
@@ -229,31 +227,29 @@ impl_c_ptrs!(
 );
 
 impl Free for DisplaySolanaTxOverviewSquadsV4MultisigCreate {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.wallet_name);
         free_str_ptr!(self.wallet_desc);
         free_str_ptr!(self.total_value);
-        unsafe {
-            if !self.members.is_null() {
-                let x = Box::from_raw(self.members);
-                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-                ve.iter().for_each(|v| {
-                    free_str_ptr!(*v);
-                });
-            }
-            if !self.transfers.is_null() {
-                let x = Box::from_raw(self.transfers);
-                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-                ve.iter().for_each(|v| {
-                    v.free();
-                });
-            }
+        if !self.members.is_null() {
+            let x = Box::from_raw(self.members);
+            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+            ve.iter().for_each(|v| {
+                free_str_ptr!(*v);
+            });
+        }
+        if !self.transfers.is_null() {
+            let x = Box::from_raw(self.transfers);
+            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+            ve.iter().for_each(|v| {
+                v.free();
+            });
         }
     }
 }
 
 impl Free for ProgramOverviewTransfer {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.value);
         free_str_ptr!(self.main_action);
         free_str_ptr!(self.from);
@@ -267,7 +263,7 @@ pub struct DisplaySolanaTxOverviewVotesOn {
 }
 
 impl Free for DisplaySolanaTxOverviewVotesOn {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.slot);
     }
 }
@@ -295,7 +291,7 @@ impl Default for DisplaySolanaTxOverview {
 }
 
 impl Free for DisplaySolanaTx {
-    fn free(&self) {
+    unsafe fn free(&self) {
         check_and_free_ptr!(self.overview);
         free_str_ptr!(self.network);
         free_str_ptr!(self.detail);
@@ -303,49 +299,47 @@ impl Free for DisplaySolanaTx {
 }
 
 impl Free for DisplaySolanaTxOverview {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.display_type);
         free_str_ptr!(self.main_action);
         free_str_ptr!(self.transfer_value);
         free_str_ptr!(self.transfer_from);
         free_str_ptr!(self.transfer_to);
         free_str_ptr!(self.vote_account);
-        unsafe {
-            if !self.general.is_null() {
-                let x = Box::from_raw(self.general);
-                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-                ve.iter().for_each(|v| {
-                    v.free();
-                });
-            }
-            if !self.votes_on.is_null() {
-                let x = Box::from_raw(self.votes_on);
-                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-                ve.iter().for_each(|v| {
-                    v.free();
-                });
-            }
-            // free unknown_instructions
-            if !self.unknown_instructions.is_null() {
-                let x = Box::from_raw(self.unknown_instructions);
-                x.free();
-            }
-            if !self.squads_multisig_create.is_null() {
-                let x = Box::from_raw(self.squads_multisig_create);
-                x.free();
-            }
+        if !self.general.is_null() {
+            let x = Box::from_raw(self.general);
+            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+            ve.iter().for_each(|v| {
+                v.free();
+            });
+        }
+        if !self.votes_on.is_null() {
+            let x = Box::from_raw(self.votes_on);
+            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+            ve.iter().for_each(|v| {
+                v.free();
+            });
+        }
+        // free unknown_instructions
+        if !self.unknown_instructions.is_null() {
+            let x = Box::from_raw(self.unknown_instructions);
+            x.free();
+        }
+        if !self.squads_multisig_create.is_null() {
+            let x = Box::from_raw(self.squads_multisig_create);
+            x.free();
+        }
 
-            if !self.squads_proposal.is_null() {
-                let x = Box::from_raw(self.squads_proposal);
-                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-                ve.iter().for_each(|v| {
-                    v.free();
-                });
-            }
-            if !self.spl_token_transfer.is_null() {
-                let x = Box::from_raw(self.spl_token_transfer);
-                x.free();
-            }
+        if !self.squads_proposal.is_null() {
+            let x = Box::from_raw(self.squads_proposal);
+            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+            ve.iter().for_each(|v| {
+                v.free();
+            });
+        }
+        if !self.spl_token_transfer.is_null() {
+            let x = Box::from_raw(self.spl_token_transfer);
+            x.free();
         }
     }
 }
@@ -623,7 +617,7 @@ impl From<SolanaMessage> for DisplaySolanaMessage {
 impl_c_ptr!(DisplaySolanaMessage);
 
 impl Free for DisplaySolanaMessage {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.raw_message);
         free_str_ptr!(self.utf8_message);
         free_str_ptr!(self.from);

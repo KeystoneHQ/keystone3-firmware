@@ -5,7 +5,7 @@ use crate::common::types::{Ptr, PtrString};
 use crate::common::utils::recover_c_char;
 
 #[no_mangle]
-pub extern "C" fn eth_parse_contract_data(
+pub unsafe extern "C" fn eth_parse_contract_data(
     input_data: PtrString,
     contract_json: PtrString,
 ) -> Ptr<Response<DisplayContractData>> {
@@ -26,7 +26,7 @@ pub extern "C" fn eth_parse_contract_data(
 }
 
 #[no_mangle]
-pub extern "C" fn eth_parse_swapkit_contract(
+pub unsafe extern "C" fn eth_parse_swapkit_contract(
     input_data: PtrString,
     contract_json: PtrString,
 ) -> Ptr<Response<DisplaySwapkitContractData>> {
@@ -47,7 +47,7 @@ pub extern "C" fn eth_parse_swapkit_contract(
 }
 
 #[no_mangle]
-pub extern "C" fn eth_parse_contract_data_by_method(
+pub unsafe extern "C" fn eth_parse_contract_data_by_method(
     input_data: PtrString,
     contract_name: PtrString,
     contract_method_json: PtrString,

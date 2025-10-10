@@ -40,8 +40,8 @@ pub fn decode(buf: &[u8], value: &mut u64) -> usize {
 /// many bytes were decoded.
 #[inline]
 pub fn decode_with_offset(buf: &[u8], offset: usize, value: &mut u64) -> usize {
-    let mut val = 0 as u64;
-    let mut fac = 1 as u64;
+    let mut val = 0_u64;
+    let mut fac = 1_u64;
     let mut off = offset;
 
     loop {
@@ -110,7 +110,7 @@ fn unsign(value: i64) -> u64 {
 #[inline]
 fn sign(value: u64) -> i64 {
     if value & 1 != 0 {
-        -(((value + 1) / 2) as i64)
+        -(value.div_ceil(2) as i64)
     } else {
         (value / 2) as i64
     }

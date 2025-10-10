@@ -5,6 +5,7 @@ use crate::common::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
+use crate::extract_array;
 use crate::extract_ptr_with_type;
 use alloc::format;
 use alloc::string::{String, ToString};
@@ -12,7 +13,6 @@ use alloc::vec::Vec;
 use app_cosmos::errors::CosmosError;
 use app_cosmos::transaction::structs::SignMode;
 use app_utils::normalize_path;
-use core::slice;
 use cty::c_char;
 use either::Either;
 use structs::DisplayCosmosTx;
@@ -30,15 +30,14 @@ fn get_public_key(seed: &[u8], path: &String) -> Result<Vec<u8>, CosmosError> {
         Ok(xpub) => xpub.public_key,
         Err(e) => {
             return Err(CosmosError::SignFailure(format!(
-                "derive public key failed {:?}",
-                e
+                "derive public key failed {e:?}"
             )))
         }
     };
     Ok(public_key.serialize().to_vec())
 }
 
-fn build_sign_result(
+unsafe fn build_sign_result(
     ptr: PtrUR,
     ur_type: QRCodeType,
     seed: &[u8],
@@ -86,7 +85,7 @@ fn build_sign_result(
 }
 
 #[no_mangle]
-pub extern "C" fn cosmos_check_tx(
+pub unsafe extern "C" fn cosmos_check_tx(
     ptr: PtrUR,
     ur_type: QRCodeType,
     master_fingerprint: PtrBytes,
@@ -95,7 +94,7 @@ pub extern "C" fn cosmos_check_tx(
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
     let ur_mfp = match ur_type {
         QRCodeType::CosmosSignRequest => {
             let sign_request = extract_ptr_with_type!(ptr, CosmosSignRequest);
@@ -128,7 +127,7 @@ pub extern "C" fn cosmos_check_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn cosmos_get_address(
+pub unsafe extern "C" fn cosmos_get_address(
     hd_path: PtrString,
     root_x_pub: PtrString,
     root_path: PtrString,
@@ -140,8 +139,7 @@ pub extern "C" fn cosmos_get_address(
     let prefix = recover_c_char(prefix);
     if !hd_path.starts_with(root_path.as_str()) {
         return SimpleResponse::from(CosmosError::InvalidHDPath(format!(
-            "{} does not match {}",
-            hd_path, root_path
+            "{hd_path} does not match {root_path}"
         )))
         .simple_c_ptr();
     }
@@ -153,13 +151,13 @@ pub extern "C" fn cosmos_get_address(
 }
 
 #[no_mangle]
-pub extern "C" fn cosmos_sign_tx(
+pub unsafe extern "C" fn cosmos_sign_tx(
     ptr: PtrUR,
     ur_type: QRCodeType,
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let ur_tag = match ur_type {
         QRCodeType::CosmosSignRequest => CosmosSignature::get_registry_type().get_type(),
         QRCodeType::EvmSignRequest => EvmSignature::get_registry_type().get_type(),
@@ -189,7 +187,7 @@ pub extern "C" fn cosmos_sign_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn cosmos_parse_tx(
+pub unsafe extern "C" fn cosmos_parse_tx(
     ptr: PtrUR,
     ur_type: QRCodeType,
 ) -> PtrT<TransactionParseResult<DisplayCosmosTx>> {

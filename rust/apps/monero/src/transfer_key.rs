@@ -1,7 +1,6 @@
 use crate::extra::*;
 use crate::key::*;
 use crate::transfer::{TxConstructionData, TxDestinationEntry};
-use crate::utils::hash::*;
 use crate::utils::*;
 use alloc::vec;
 use alloc::vec::Vec;
@@ -10,14 +9,14 @@ use curve25519_dalek::scalar::Scalar;
 use monero_serai::primitives::Commitment;
 use monero_serai::ringct::EncryptedAmount;
 use monero_wallet::SharedKeyDerivations;
-use rand_core::SeedableRng;
+use rand_core::OsRng;
 use zeroize::Zeroizing;
 
 impl TxConstructionData {
     fn should_use_additional_keys(&self) -> bool {
         self.sources
             .iter()
-            .any(|source| source.real_out_additional_tx_keys.len() > 0)
+            .any(|source| !source.real_out_additional_tx_keys.is_empty())
     }
 
     fn has_payments_to_subaddresses(&self) -> bool {
@@ -27,14 +26,12 @@ impl TxConstructionData {
     pub fn transaction_keys(
         &self,
     ) -> (PrivateKey, Vec<PrivateKey>, EdwardsPoint, Vec<EdwardsPoint>) {
-        let seed = keccak256(&self.extra);
-        let mut rng = rand_chacha::ChaCha20Rng::from_seed(seed);
-        let tx_key = generate_random_scalar(&mut rng);
+        let tx_key = generate_random_scalar(&mut OsRng);
         let mut additional_keys = vec![];
         if self.should_use_additional_keys() {
             for _ in 0..self.splitted_dsts.len() {
                 additional_keys.push(PrivateKey::from_bytes(
-                    generate_random_scalar(&mut rng).as_bytes(),
+                    generate_random_scalar(&mut OsRng).as_bytes(),
                 ));
             }
         }

@@ -5,7 +5,7 @@ static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 
-static void CreateStellarNoticeCOntainer(lv_obj_t *parent, char *title, char *context, lv_coord_t w, lv_coord_t h);
+static void CreateStellarNoticeCOntainer(lv_obj_t *parent, const char *title, const char *context, lv_coord_t w, lv_coord_t h);
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                   \
     if (result != NULL)                                                                                                   \
@@ -89,7 +89,7 @@ UREncodeResult *GuiGetStellarSignQrCodeData(void)
     return encodeResult;
 }
 
-static void CreateStellarNoticeCOntainer(lv_obj_t *parent, char *title, char *context, lv_coord_t w, lv_coord_t h)
+static void CreateStellarNoticeCOntainer(lv_obj_t *parent, const char *title, const char *context, lv_coord_t w, lv_coord_t h)
 {
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_CLICKABLE);

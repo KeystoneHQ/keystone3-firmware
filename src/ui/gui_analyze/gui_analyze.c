@@ -508,13 +508,12 @@ lv_obj_t *GuiCreateValueLabel(lv_obj_t *parent, const char *text, int indent, ui
 static bool g_isJsonStringTooLong = false;
 static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint32_t *yOffset)
 {
-    lv_obj_t* label;
     char buf[BUFFER_SIZE_256];
 
     while (item != NULL) {
         if (item->string != NULL) {
             snprintf(buf, sizeof(buf), "%s:", item->string);
-            label = GuiCreateValueLabel(parent, buf, indent, yOffset);
+            GuiCreateValueLabel(parent, buf, indent, yOffset);
         }
 
         if (cJSON_IsObject(item)) {
@@ -532,16 +531,16 @@ static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint
             } else {
                 snprintf_s(buf, sizeof(buf), "%s", item->valuestring);
             }
-            label = GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
+            GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
         } else if (cJSON_IsNumber(item)) {
             snprintf(buf, sizeof(buf), "%.0f", item->valuedouble);
-            label = GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
+            GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
         } else if (cJSON_IsBool(item)) {
             snprintf(buf, sizeof(buf), "%*s%s", (indent + 1) * 2, "", item->valueint ? "true" : "false");
-            label = GuiCreateValueLabel(parent, buf, indent, yOffset);
+            GuiCreateValueLabel(parent, buf, indent, yOffset);
         } else if (cJSON_IsNull(item)) {
             snprintf(buf, sizeof(buf), "%*snull", (indent + 1) * 2, "");
-            label = GuiCreateValueLabel(parent, buf, indent, yOffset);
+            GuiCreateValueLabel(parent, buf, indent, yOffset);
         }
 
         item = item->next;
@@ -613,7 +612,6 @@ lv_obj_t *GuiWidgetLabel(lv_obj_t *parent, cJSON *json)
             lv_obj_set_width(obj, textWidth);
             lv_obj_set_style_anim_speed(obj, 100, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_anim_time(obj, 1000, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_anim_set_playback_delay(obj, 1000);
         } else {
             lv_label_set_long_mode(obj, LV_LABEL_LONG_WRAP);
             lv_obj_set_width(obj, textWidth);

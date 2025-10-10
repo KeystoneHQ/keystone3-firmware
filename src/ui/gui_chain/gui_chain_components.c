@@ -262,7 +262,7 @@ lv_obj_t *CreateContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h)
     return container;
 }
 
-lv_obj_t *CreateNoticeCard(lv_obj_t *parent, char *notice)
+lv_obj_t *CreateNoticeCard(lv_obj_t *parent, const char *notice)
 {
     uint16_t height = 24 + 36 + 8 + 24;
     lv_obj_t* card = GuiCreateContainerWithParent(parent, 408, 24);

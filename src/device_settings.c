@@ -153,8 +153,6 @@ void InitBootParam(void)
 #endif
     BootParam_t bootParam;
     bool needSave = false;
-    uint8_t cipher[sizeof(g_bootParam)] = {0};
-    uint8_t plain[sizeof(g_bootParam)] = {0};
     Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, (uint8_t *)&bootParam, sizeof(bootParam));
     PrintArray("bootParam.bootCheckFlag", bootParam.bootCheckFlag, sizeof(bootParam.bootCheckFlag));
     PrintArray("bootParam.recoveryModeSwitch", bootParam.recoveryModeSwitch, sizeof(bootParam.recoveryModeSwitch));
@@ -323,7 +321,6 @@ void SetUSBSwitch(uint32_t usbSwitch)
 
 static void AesEncryptBuffer(uint8_t *cipher, uint32_t sz, uint8_t *plain)
 {
-    AES128_CBC_ctx aesCtx;
     uint8_t key128[16] = {0};
     uint8_t iv[16] = {0};
 

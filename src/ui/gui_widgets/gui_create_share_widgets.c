@@ -475,7 +475,6 @@ int8_t GuiCreateShareNextTile(const char *passphrase)
         lv_obj_add_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
         break;
     case CREATE_SHARE_CONFIRM:
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         if (GuiCreateWalletNeedPassphrase()) {
             SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseTutorialHandler, NULL);
@@ -483,6 +482,7 @@ int8_t GuiCreateShareNextTile(const char *passphrase)
         } else {
             SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
             SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
             g_createShareTileView.currentTile++;
             GuiModelSlip39WriteSe(g_selectCnt);
         }
@@ -490,6 +490,7 @@ int8_t GuiCreateShareNextTile(const char *passphrase)
     case CREATE_SHARE_PASSPHRASE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiModelSlip39WriteSe(g_selectCnt);
         break;
     }

@@ -309,4 +309,5 @@ void GuiPassphraseWidgetClearText(void)
     if (g_setPassPhraseKb != NULL) {
         lv_keyboard_set_textarea(g_setPassPhraseKb->kb, g_passphraseWidget.inputTa);
     }
+    lv_obj_clear_state(g_passphraseQuickAccessSwitch, LV_STATE_CHECKED);
 }

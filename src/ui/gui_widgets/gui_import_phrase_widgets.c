@@ -186,6 +186,7 @@ int8_t GuiImportPhrasePrevTile(void)
         GuiCloseCurrentWorkingView();
         break;
     case SINGLE_PHRASE_PASSPHRASE:
+        GuiPassphraseWidgetClearText();
         if (g_buttonCont != NULL) lv_obj_clear_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);

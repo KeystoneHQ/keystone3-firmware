@@ -26,6 +26,8 @@
 typedef struct PassphraseWidget {
     lv_obj_t *inputTa;
     lv_obj_t *repeatTa;
+    lv_obj_t *inputEyeImg;
+    lv_obj_t *repeatEyeImg;
     lv_obj_t *errLabel;
     lv_obj_t *lenOverLabel;
 } PassphraseWidget_t;
@@ -128,6 +130,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent, bool needVerify)
     lv_obj_align(img, LV_ALIGN_DEFAULT, 411, 168 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
+    g_passphraseWidget.inputEyeImg = img;
     lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
     lv_obj_set_scrollbar_mode(ta, LV_SCROLLBAR_MODE_OFF);
@@ -159,6 +162,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent, bool needVerify)
     lv_obj_align(img, LV_ALIGN_DEFAULT, 411, 252 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, repeatTa);
+    g_passphraseWidget.repeatEyeImg = img;
     g_passphraseWidget.repeatTa = repeatTa;
 
     g_setPassPhraseKb = GuiCreateFullKeyBoard(parent, UpdatePassPhraseHandler, KEY_STONE_FULL_L, NULL);
@@ -292,4 +296,18 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
             }
         }
     }
+}
+
+void GuiPassphraseWidgetClearText(void)
+{
+    lv_textarea_set_text(g_passphraseWidget.inputTa, "");
+    lv_textarea_set_text(g_passphraseWidget.repeatTa, "");
+    SwitchPasswordMode(g_passphraseWidget.inputTa, g_passphraseWidget.inputEyeImg, true);
+    SwitchPasswordMode(g_passphraseWidget.repeatTa, g_passphraseWidget.repeatEyeImg, true);
+    lv_obj_add_state(g_passphraseWidget.inputTa, LV_STATE_FOCUSED);
+    lv_obj_clear_state(g_passphraseWidget.repeatTa, LV_STATE_FOCUSED);
+    if (g_setPassPhraseKb != NULL) {
+        lv_keyboard_set_textarea(g_setPassPhraseKb->kb, g_passphraseWidget.inputTa);
+    }
+    lv_obj_clear_state(g_passphraseQuickAccessSwitch, LV_STATE_CHECKED);
 }

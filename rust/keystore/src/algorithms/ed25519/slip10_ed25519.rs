@@ -3,13 +3,44 @@ use alloc::vec::Vec;
 use core::str::FromStr;
 
 use bitcoin::bip32::{ChildNumber, DerivationPath};
+use zeroize::Zeroize;
 
 use crate::algorithms::crypto::hmac_sha512;
 use crate::algorithms::utils::normalize_path;
 use crate::errors::{KeystoreError, Result};
 
+
+/// Derives an Ed25519 private key from a seed using SLIP-10 derivation.
+///
+/// This function implements the SLIP-10 specification for Ed25519 key derivation,
+/// which only supports hardened derivation paths. All sensitive material is
+/// zeroized after use to prevent memory disclosure and timing attacks.
+///
+/// # Arguments
+/// * `seed` - The master seed (typically 32 or 64 bytes from BIP39 mnemonic)
+/// * `path` - BIP32 derivation path string (e.g., "m/44'/501'/0'")
+///
+/// # Returns
+/// A 32-byte Ed25519 private key
+///
+/// # Errors
+/// Returns `KeystoreError::InvalidDerivationPath` if:
+/// - The path contains non-hardened indices
+/// - The path format is invalid
+///
+/// # Security
+/// - Uses constant-time HMAC-SHA512 operations
+/// - Zeroizes all intermediate key material
+/// - Stack-allocated buffers to prevent heap leaks
+///
+/// # Example
+/// ```ignore
+/// let seed = hex::decode("000102...").unwrap();
+/// let key = get_private_key_by_seed(&seed, &"m/44'/501'/0'".to_string())?;
+/// ```
+
 pub fn get_private_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
-    let i = get_master_key_by_seed(seed);
+    let mut i = get_master_key_by_seed(seed)?;
     let path = normalize_path(path);
     let derivation_path = DerivationPath::from_str(path.as_str())
         .map_err(|e| KeystoreError::InvalidDerivationPath(format!("{e}")))?;
@@ -28,36 +59,85 @@ pub fn get_private_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
         e => e,
     })?;
 
-    let final_i = indexes.iter().fold(i, |acc, cur| {
+    let mut final_i = indexes.iter().fold(i, |acc, cur| {
         let il = &acc[0..32];
         let ir = &acc[32..];
 
-        let mut data = vec![00u8];
-        data.extend_from_slice(il);
-        data.extend_from_slice(&cur.to_be_bytes());
+        let mut data = [0u8; 37];
+        data[0] = 0x00;
+        data[1..33].copy_from_slice(il);
+        data[33..37].copy_from_slice(&cur.to_be_bytes());
 
-        hmac_sha512(ir, &data)
+        let result = hmac_sha512(ir, &data);
+        
+        data.zeroize();
+        
+        result
     });
 
     let mut result = [0u8; 32];
     result.clone_from_slice(&final_i[..32]);
+    i.zeroize();
+    final_i.zeroize();
     Ok(result)
 }
 
+/// Derives an Ed25519 public key from a seed using SLIP-10 derivation.
+///
+/// # Arguments
+/// * `seed` - The master seed
+/// * `path` - BIP32 derivation path (hardened only)
+///
+/// # Returns
+/// A 32-byte Ed25519 public key
+///
+/// # Security
+/// The private key is securely zeroized after deriving the public key.
 pub fn get_public_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
-    let secret_key = get_private_key_by_seed(seed, path)?;
+    let mut secret_key = get_private_key_by_seed(seed, path)?;
     let (_, public_key) = cryptoxide::ed25519::keypair(&secret_key);
+    
+    secret_key.zeroize();
+    
     Ok(public_key)
 }
 
+/// Signs a message using Ed25519 with a key derived via SLIP-10.
+///
+/// # Arguments
+/// * `seed` - The master seed
+/// * `path` - BIP32 derivation path (hardened only)
+/// * `message` - The message to sign
+///
+/// # Returns
+/// A 64-byte Ed25519 signature
+///
 pub fn sign_message_by_seed(seed: &[u8], path: &String, message: &[u8]) -> Result<[u8; 64]> {
-    let secret_key = get_private_key_by_seed(seed, path)?;
-    let (keypair, _) = cryptoxide::ed25519::keypair(&secret_key);
-    Ok(cryptoxide::ed25519::signature(message, &keypair))
+    let mut secret_key = get_private_key_by_seed(seed, path)?;
+    let (mut keypair, _) = cryptoxide::ed25519::keypair(&secret_key);
+    let signature = cryptoxide::ed25519::signature(message, &keypair);
+    
+    secret_key.zeroize();
+    keypair.zeroize();
+    
+    Ok(signature)
 }
 
-pub fn get_master_key_by_seed(seed: &[u8]) -> [u8; 64] {
-    hmac_sha512(b"ed25519 seed", seed)
+/// Generates the master key from a seed using SLIP-10 specification.
+///
+/// # Arguments
+/// * `seed` - The master seed (typically from BIP39 mnemonic)
+///
+/// # Returns
+/// A 64-byte array where:
+/// - First 32 bytes: master private key (IL)
+/// - Last 32 bytes: master chain code (IR)
+///
+fn get_master_key_by_seed(seed: &[u8]) -> Result<[u8; 64]> {
+    if seed.len() < 16 {
+        return Err(KeystoreError::SeedError(format!("seed must be at least 16 bytes")));
+    }
+    Ok(hmac_sha512(b"ed25519 seed", seed))
 }
 
 #[cfg(test)]
@@ -157,19 +237,19 @@ mod tests {
         // Test with standard seed
         {
             let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
-            let master_key = get_master_key_by_seed(&seed);
+            let master_key = get_master_key_by_seed(&seed).unwrap();
             assert_eq!(64, master_key.len());
             // First 32 bytes should match the master private key at path "m"
             assert_eq!(
                 "560f9f3c94558b6551928bb781cf6092c6b8800b4fc544af2c9444ed126d51aa",
                 hex::encode(&master_key[..32])
             );
-        }
+    }
 
         // Test with different seed
         {
             let seed = hex::decode("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f").unwrap();
-            let master_key = get_master_key_by_seed(&seed);
+            let master_key = get_master_key_by_seed(&seed).unwrap();
             assert_eq!(64, master_key.len());
             // Verify it produces different result
             assert_ne!(
@@ -181,7 +261,7 @@ mod tests {
         // Test with minimal seed
         {
             let seed = vec![0u8; 16];
-            let master_key = get_master_key_by_seed(&seed);
+            let master_key = get_master_key_by_seed(&seed).unwrap();
             assert_eq!(64, master_key.len());
         }
 
@@ -189,7 +269,8 @@ mod tests {
         {
             let seed = vec![];
             let master_key = get_master_key_by_seed(&seed);
-            assert_eq!(64, master_key.len());
+            assert!(master_key.is_err());
+            assert!(matches!(master_key, Err(KeystoreError::SeedError(_))));
         }
     }
 

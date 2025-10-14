@@ -2463,6 +2463,7 @@ dependencies = [
  "sha2 0.10.9",
  "thiserror-core",
  "zcash_vendor",
+ "zeroize",
 ]
 
 [[package]]

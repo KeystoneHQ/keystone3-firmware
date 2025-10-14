@@ -97,6 +97,12 @@ mod tests {
                 "e8ad866785e4152c7e7533454cf69a5c30761002f18ac268d20860e5ecdba44a",
                 hex::encode(key)
             );
+            let path_missing_m = "0'/1'".to_string();
+            let key_missing_m = get_private_key_by_seed(&seed, &path_missing_m).unwrap();
+            assert_eq!(
+                "e8ad866785e4152c7e7533454cf69a5c30761002f18ac268d20860e5ecdba44a",
+                hex::encode(key_missing_m)
+            );
         }
         {
             let path = "m/0'/1'/2'".to_string();
@@ -107,6 +113,19 @@ mod tests {
                 hex::encode(key)
             );
         }
+        {
+            let wrong_path = "x/y'/z'/1'".to_string();
+            let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+            let result = get_private_key_by_seed(&seed, &wrong_path);
+            assert!(result.is_err());
+            assert!(matches!(result, Err(KeystoreError::InvalidDerivationPath(_))));
+
+            let none_harden_path = "m/0'/1'/2".to_string();
+            let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+            let result = get_private_key_by_seed(&seed, &none_harden_path);
+            assert!(result.is_err());
+            assert!(matches!(result, Err(KeystoreError::InvalidDerivationPath(e)) if e == "non hardened derivation is not supported for slip10-ed25519"));
+        };
     }
 
     #[test]

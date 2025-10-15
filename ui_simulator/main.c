@@ -96,10 +96,6 @@ int main(int argc, char **argv)
     DeviceSettingsInit();
     GuiStyleInit();
     LanguageInit();
-    #include "librust_c.h"
-
-    char *ur = "ur:crypto-psbt-extend/oeadhdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkaoadkirkbbly";
-    URParseResult *result = parse_ur(ur);
 
     GuiFrameOpenView(&g_initView);
     //  lv_example_calendar_1();

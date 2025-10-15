@@ -642,14 +642,11 @@ int32_t read_qrcode()
         printf("urResult->error_code: %d\r\n", urResult->error_code);
         break;
     }
-    printf("%s. %d.\n", __func__, __LINE__);
 
     if (urResult->error_code == 0)
     {
-        printf("%s. %d.\n", __func__, __LINE__);
         if (urResult->is_multi_part == 0)
         {
-            printf("%s. %d.\n", __func__, __LINE__);
             // single qr code
             firstQrFlag = true;
             viewType.viewType = urResult->t;

@@ -68,15 +68,13 @@ impl TryFrom<&mut QRHardwareCall> for QRHardwareCallData {
 }
 
 impl Free for QRHardwareCallData {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.call_type);
         free_str_ptr!(self.origin);
-        unsafe {
-            let data = Box::from_raw(self.key_derivation);
-            let vec = Box::from_raw(data.schemas);
-            let v = Vec::from_raw_parts(vec.data, vec.size, vec.cap);
-            v.iter().for_each(|v| v.free());
-        }
+        let data = Box::from_raw(self.key_derivation);
+        let vec = Box::from_raw(data.schemas);
+        let v = Vec::from_raw_parts(vec.data, vec.size, vec.cap);
+        v.iter().for_each(|v| v.free());
         free_str_ptr!(self.version);
     }
 }
@@ -114,7 +112,7 @@ impl TryFrom<&ur_registry::extend::key_derivation_schema::KeyDerivationSchema>
 }
 
 impl Free for KeyDerivationSchema {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.algo);
         free_str_ptr!(self.curve);
         free_str_ptr!(self.key_path);

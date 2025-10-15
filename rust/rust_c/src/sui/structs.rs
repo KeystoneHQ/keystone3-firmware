@@ -55,13 +55,13 @@ impl_c_ptr!(DisplaySuiIntentMessage);
 impl_c_ptr!(DisplaySuiSignMessageHash);
 
 impl Free for DisplaySuiIntentMessage {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.detail);
     }
 }
 
 impl Free for DisplaySuiSignMessageHash {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.network);
         free_str_ptr!(self.path);
         free_str_ptr!(self.message);

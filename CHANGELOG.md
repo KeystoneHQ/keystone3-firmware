@@ -1,3 +1,58 @@
+## 2.2.16(2025-10-13)
+
+**Web3:**
+
+### What's new
+
+1. Added toggle for PIN shuffle
+2. Added Passphrase setup support in wallet initialization (create/import)
+
+**BTC Only:**
+
+### What's new
+1. Added toggle for PIN shuffle
+2. Added Passphrase setup support in wallet initialization (create/import)
+
+**Cypherpunk:**
+
+### What's new
+1. Added toggle for PIN shuffle
+2. Added Passphrase setup support in wallet initialization (create/import)
+
+
+
+
+
+## 2.2.14(2025-09-18)
+
+**Web3:**
+
+### What's new
+1. support for BSC transfers and swap on Keystone Nexus
+2. Introduced randomized PIN input for enhanced security
+3. Added connection entry for IOTA Wallet
+
+### Bug fixes
+1. Fixed an issue where certain ADA transactions caused the device to restart during signing
+
+
+
+
+
+## 2.2.12(2025-09-03)
+
+**Web3:**
+
+### What's new
+1. Support for ADA using Shamir Backup
+
+### Bug Fixes
+1. Fixed an issue with Cardano passphrase message signing
+2. Improved transaction error messages
+
+
+
+
 ## 2.2.8(2025-08-14)
 
 **Web3:**

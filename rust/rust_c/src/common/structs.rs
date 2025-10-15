@@ -12,7 +12,7 @@ use ur_registry::error::URError;
 use super::free::Free;
 use super::types::{PtrString, PtrT};
 use crate::{
-    check_and_free_ptr, free_str_ptr, impl_c_ptr, impl_new_error, impl_response, impl_simple_c_ptr,
+    free_str_ptr, impl_c_ptr, impl_new_error, impl_response, impl_simple_c_ptr,
     impl_simple_new_error, make_free_method,
 };
 
@@ -38,15 +38,13 @@ impl<T> TransactionParseResult<T> {
 }
 
 impl<T: Free> Free for TransactionParseResult<T> {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.error_message);
         if self.data.is_null() {
             return;
         }
-        unsafe {
-            let x = Box::from_raw(self.data);
-            x.free()
-        }
+        let x = Box::from_raw(self.data);
+        x.free()
     }
 }
 
@@ -68,7 +66,7 @@ impl TransactionCheckResult {
 }
 
 impl Free for TransactionCheckResult {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.error_message);
     }
 }
@@ -99,22 +97,18 @@ impl<T> SimpleResponse<T> {
 }
 
 impl Free for SimpleResponse<u8> {
-    fn free(&self) {
-        unsafe {
-            if !self.data.is_null() {
-                let _x = Box::from_raw(self.data);
-            }
+    unsafe fn free(&self) {
+        if !self.data.is_null() {
+            let _x = Box::from_raw(self.data);
         }
         free_str_ptr!(self.error_message);
     }
 }
 
 impl Free for SimpleResponse<i8> {
-    fn free(&self) {
-        unsafe {
-            if !self.data.is_null() {
-                let _x = Box::from_raw(self.data);
-            }
+    unsafe fn free(&self) {
+        if !self.data.is_null() {
+            let _x = Box::from_raw(self.data);
         }
         free_str_ptr!(self.error_message);
     }
@@ -150,15 +144,13 @@ impl<T> Response<T> {
 }
 
 impl<T: Free> Free for Response<T> {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.error_message);
         if self.data.is_null() {
             return;
         }
-        unsafe {
-            let x = Box::from_raw(self.data);
-            x.free()
-        }
+        let x = Box::from_raw(self.data);
+        x.free()
     }
 }
 
@@ -173,18 +165,16 @@ pub struct ExtendedPublicKey {
 impl_c_ptr!(ExtendedPublicKey);
 
 impl Free for ExtendedPublicKey {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.path);
         free_str_ptr!(self.xpub);
     }
 }
 
 impl Free for PtrT<ExtendedPublicKey> {
-    fn free(&self) {
-        unsafe {
-            let x = Box::from_raw(*self);
-            x.free()
-        }
+    unsafe fn free(&self) {
+        let x = Box::from_raw(*self);
+        x.free()
     }
 }
 
@@ -198,17 +188,15 @@ pub struct ZcashKey {
 impl_c_ptr!(ZcashKey);
 
 impl Free for ZcashKey {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.key_text);
         free_str_ptr!(self.key_name);
     }
 }
 
 impl Free for PtrT<ZcashKey> {
-    fn free(&self) {
-        unsafe {
-            let x = Box::from_raw(*self);
-            x.free()
-        }
+    unsafe fn free(&self) {
+        let x = Box::from_raw(*self);
+        x.free()
     }
 }

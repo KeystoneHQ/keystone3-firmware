@@ -12,7 +12,7 @@ use ur_registry::traits::RegistryItem;
 
 //only support export bip44standard eth account to imToken, rewrite this func if imToken supports other chains
 #[no_mangle]
-pub extern "C" fn get_connect_imtoken_ur(
+pub unsafe extern "C" fn get_connect_imtoken_ur(
     master_fingerprint: PtrBytes,
     master_fingerprint_length: uint32_t,
     xpub: PtrString,
@@ -20,8 +20,7 @@ pub extern "C" fn get_connect_imtoken_ur(
 ) -> Ptr<UREncodeResult> {
     if master_fingerprint_length != 4 {
         return UREncodeResult::from(URError::UrEncodeError(format!(
-            "master fingerprint length must be 4, current is {}",
-            master_fingerprint_length
+            "master fingerprint length must be 4, current is {master_fingerprint_length}"
         )))
         .c_ptr();
     }

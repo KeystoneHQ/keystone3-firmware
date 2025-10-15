@@ -360,6 +360,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_SUIET].items[0].qrTitle = _("tutorial_suiet_title");
     g_tutorials[WALLET_LIST_SUIET].items[0].qrUrl = _("tutorial_suiet_link");
 
+    // WALLET_LIST_IOTA
+    g_tutorials[WALLET_LIST_IOTA].len = 1;
+    g_tutorials[WALLET_LIST_IOTA].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_IOTA].items[0].walletName = "IOTA Wallet";
+    g_tutorials[WALLET_LIST_IOTA].items[0].url = "https://keyst.one/t/3rd/iotawallet";
+    g_tutorials[WALLET_LIST_IOTA].items[0].qrTitle = "IOTA Wallet";
+    g_tutorials[WALLET_LIST_IOTA].items[0].qrUrl = "https://keyst.one/t/3rd/iotawallet";
+
     // WALLET_LIST_BEGIN
     g_tutorials[WALLET_LIST_BEGIN].len = 1;
     g_tutorials[WALLET_LIST_BEGIN].desc = _("connect_wallet_desc");

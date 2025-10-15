@@ -42,7 +42,7 @@ static void OpenChangeEntropyHandler(lv_event_t *e);
 static void GuiRefreshNavBar(void);
 static void CloseChangeEntropyHandler(lv_event_t *e);
 static void OpenChangeEntropyTutorialHandler(lv_event_t *e);
-
+static void PassphraseButtonHandler(lv_event_t *e);
 #ifdef WEB3_VERSION
 static void TonPhraseButtonHandler(lv_event_t *e);
 #endif
@@ -58,6 +58,7 @@ static lv_obj_t *g_noticeWindow = NULL;
 static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 static lv_obj_t *g_openMoreHintBox;
 static PageWidget_t *g_changeEntropyPage;
+static lv_obj_t *g_warningCont = NULL;
 //indicates the way to generate entropy;
 static uint8_t g_selectedEntropyMethod = ENTROPY_TYPE_STANDARD;
 
@@ -206,7 +207,7 @@ static void SelectImportShareHandler(lv_event_t *e)
     g_noticeWindow = GuiCreateMoreInfoHintBox(&imgClose, _("single_phrase_word_amount_select"), moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), false, &g_noticeWindow);
 }
 
-static void GuiCreateBackupWidget(lv_obj_t *parent)
+static void GuiCreateBackupWidget(lv_obj_t *parent, bool enablePassphrase)
 {
     lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_backup_choose_backup_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
@@ -222,13 +223,13 @@ static void GuiCreateBackupWidget(lv_obj_t *parent)
 
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRightO);
     GuiButton_t table[] = {
-        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 24}},
-        {.obj = GuiCreateLabelWithFontAndTextColor(parent, _("single_backup_single_phrase_title"), g_defLittleTitleFont, 0xF5870A), .align = LV_ALIGN_DEFAULT, .position = {24, 84}},
-        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 86}},
-        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 132}}
+        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 14}},
+        {.obj = GuiCreateLabelWithFontAndTextColor(parent, _("single_backup_single_phrase_title"), g_defLittleTitleFont, 0xF5870A), .align = LV_ALIGN_DEFAULT, .position = {24, 74}},
+        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 76}},
+        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 112}}
     };
-    lv_obj_t *button = GuiCreateButton(parent, 432, 216, table, NUMBER_OF_ARRAYS(table), OpenNoticeHandler, NULL);
-    lv_obj_align_to(button, label, LV_ALIGN_OUT_BOTTOM_LEFT, -12, 20);
+    lv_obj_t *button = GuiCreateButton(parent, 432, 176, table, NUMBER_OF_ARRAYS(table), OpenNoticeHandler, NULL);
+    lv_obj_align_to(button, label, LV_ALIGN_OUT_BOTTOM_LEFT, -12, 10);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align_to(line, button, LV_ALIGN_OUT_BOTTOM_LEFT, -24, 10);
@@ -236,12 +237,12 @@ static void GuiCreateBackupWidget(lv_obj_t *parent)
     labelNotice = GuiCreateNoticeLabel(parent, _("single_backup_shamir_desc"));
     lv_obj_set_width(labelNotice, 384);
     GuiButton_t importTable[] = {
-        {.obj = GuiCreateScrollLittleTitleLabel(parent, _("single_backup_shamir_title"), 350), .align = LV_ALIGN_DEFAULT, .position = {24, 24}},
-        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 72}},
-        {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_DEFAULT, .position = {372, 26}},
+        {.obj = GuiCreateScrollLittleTitleLabel(parent, _("single_backup_shamir_title"), 350), .align = LV_ALIGN_DEFAULT, .position = {24, 14}},
+        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 62}},
+        {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_DEFAULT, .position = {372, 16}},
     };
-    lv_obj_t *importButton = GuiCreateButton(parent, 432, 157, importTable, 3, OpenSecretShareHandler, NULL);
-    lv_obj_align_to(importButton, button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+    lv_obj_t *importButton = GuiCreateButton(parent, 432, 136, importTable, 3, OpenSecretShareHandler, NULL);
+    lv_obj_align_to(importButton, button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
 
     lv_obj_t *obj = GuiCreateContainerWithParent(parent, 222, 30);
     lv_obj_align(obj, LV_ALIGN_BOTTOM_MID, 0, -54);
@@ -255,10 +256,25 @@ static void GuiCreateBackupWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
     lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
 
+    lv_obj_t *warningCont = GuiCreateContainerWithParent(parent, 432, 100);
+    lv_obj_align_to(warningCont, importButton, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+
+    button = GuiCreateImgLabelAdaptButton(warningCont, _("passphrase_enabled_title"), &imgLock, UnHandler, NULL);
+    lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 0);
+
+    lv_obj_t *warningLabel = GuiCreateNoticeLabel(warningCont, _("passphrase_warning_text"));
+    lv_obj_align(warningLabel, LV_ALIGN_TOP_MID, 0, 38);
+    lv_obj_set_style_text_align(warningLabel, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_set_width(warningLabel, 432);
+    g_warningCont = warningCont;
+    if (!enablePassphrase) {
+        lv_obj_add_flag(g_warningCont, LV_OBJ_FLAG_HIDDEN);
+    }
     g_createWalletTileView.diceRollsHint = obj;
 }
 
-static void GuiImportBackupWidget(lv_obj_t *parent)
+static void GuiImportBackupWidget(lv_obj_t *parent, bool enablePassphrase)
 {
     lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("import_wallet_choose_method"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
@@ -272,13 +288,13 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
     lv_obj_set_style_text_opa(labelNotice, LV_OPA_60, LV_PART_MAIN);
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRightO);
     GuiButton_t table[] = {
-        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 24}},
-        {.obj = GuiCreateLabelWithFontAndTextColor(parent, _("import_wallet_single_phrase"), g_defLittleTitleFont, 0xF5870A), .align = LV_ALIGN_DEFAULT, .position = {24, 84}},
-        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 86}},
-        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 132}}
+        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 14}},
+        {.obj = GuiCreateLabelWithFontAndTextColor(parent, _("import_wallet_single_phrase"), g_defLittleTitleFont, 0xF5870A), .align = LV_ALIGN_DEFAULT, .position = {24, 74}},
+        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 76}},
+        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 112}}
     };
-    lv_obj_t *button = GuiCreateButton(parent, 432, 216, table, NUMBER_OF_ARRAYS(table), ChooseWordsAmountHandler, NULL);
-    lv_obj_align_to(button, label, LV_ALIGN_OUT_BOTTOM_LEFT, -12, 20);
+    lv_obj_t *button = GuiCreateButton(parent, 432, 176, table, NUMBER_OF_ARRAYS(table), ChooseWordsAmountHandler, NULL);
+    lv_obj_align_to(button, label, LV_ALIGN_OUT_BOTTOM_LEFT, -12, 10);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
     lv_obj_align_to(line, button, LV_ALIGN_OUT_BOTTOM_LEFT, -24, 10);
@@ -286,13 +302,29 @@ static void GuiImportBackupWidget(lv_obj_t *parent)
     labelNotice = GuiCreateNoticeLabel(parent, _("import_wallet_shamir_backup_desc"));
     lv_obj_set_width(labelNotice, 384);
     GuiButton_t importTable[] = {
-        {.obj = GuiCreateScrollLittleTitleLabel(parent, _("import_wallet_shamir_backup"), 350), .align = LV_ALIGN_DEFAULT, .position = {24, 24}},
-        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 72}},
-        {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_DEFAULT, .position = {372, 26}},
+        {.obj = GuiCreateScrollLittleTitleLabel(parent, _("import_wallet_shamir_backup"), 350), .align = LV_ALIGN_DEFAULT, .position = {24, 14}},
+        {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 62}},
+        {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_DEFAULT, .position = {372, 16}},
     };
 
-    lv_obj_t *importButton = GuiCreateButton(parent, 432, 156, importTable, 3, SelectImportShareHandler, NULL);
-    lv_obj_align_to(importButton, button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+    lv_obj_t *importButton = GuiCreateButton(parent, 432, 136, importTable, 3, SelectImportShareHandler, NULL);
+    lv_obj_align_to(importButton, button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+
+    lv_obj_t *warningCont = GuiCreateContainerWithParent(parent, 432, 100);
+    lv_obj_align_to(warningCont, importButton, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+
+    button = GuiCreateImgLabelAdaptButton(warningCont, _("passphrase_enabled_title"), &imgEnterPassphrase, UnHandler, NULL);
+    lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 0);
+
+    lv_obj_t *warningLabel = GuiCreateNoticeLabel(warningCont, _("passphrase_warning_text"));
+    lv_obj_align(warningLabel, LV_ALIGN_TOP_MID, 0, 38);
+    lv_obj_set_style_text_align(warningLabel, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_set_width(warningLabel, 432);
+    g_warningCont = warningCont;
+    if (!enablePassphrase) {
+        lv_obj_add_flag(g_warningCont, LV_OBJ_FLAG_HIDDEN);
+    }
 }
 
 void GuiCreateWalletInit(uint8_t walletMethod)
@@ -318,9 +350,9 @@ void GuiCreateWalletInit(uint8_t walletMethod)
     tile = lv_tileview_add_tile(tileView, CREATE_WALLET_BACKUPFROM, 0, LV_DIR_HOR);
     g_createWalletTileView.backupForm = tile;
     if (walletMethod == WALLET_METHOD_CREATE) {
-        GuiCreateBackupWidget(tile);
+        GuiCreateBackupWidget(tile, false);
     } else {
-        GuiImportBackupWidget(tile);
+        GuiImportBackupWidget(tile, false);
     }
 
     g_createWalletTileView.currentTile = CREATE_WALLET_SETPIN;
@@ -452,7 +484,7 @@ static void GuiRefreshNavBar(void)
         }
         //import wallet, dont't show change entropy
         else {
-            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, QuestionMarkEventCb, NULL);
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
         }
     }
     if (CREATE_WALLET_SETPIN == g_createWalletTileView.currentTile) {
@@ -478,14 +510,24 @@ void GuiCreateWalletRefresh(void)
 
 static void OpenMoreHandler(lv_event_t *e)
 {
-    MoreInfoTable_t moreInfoTable[] = {
-        {.name = _("change_entropy"), .src = &imgConnect, .callBack = OpenChangeEntropyHandler, NULL},
+    const char *passphraseText = GuiCreateWalletNeedPassphrase() ? _("disable_passphrase") : _("enable_passphrase");
+    if (g_createWalletTileView.walletMethod == WALLET_METHOD_CREATE) {
+        MoreInfoTable_t moreInfoTable[] = {
+            {.name = _("change_entropy"), .src = &imgDice, .callBack = OpenChangeEntropyHandler, NULL},
+            {.name = passphraseText, .src = &imgEnterPassphrase, .callBack = PassphraseButtonHandler, NULL},
 #ifdef WEB3_VERSION
-        {.name = _("generate_ton_mnenonic"), .src = &imgTonPhrase, .callBack = TonPhraseButtonHandler, NULL},
+            {.name = _("generate_ton_mnenonic"), .src = &imgTonPhrase, .callBack = TonPhraseButtonHandler, NULL},
 #endif
-        {.name = _("Tutorial"), .src = &imgTutorial, .callBack = QuestionMarkEventCb, NULL},
-    };
-    g_openMoreHintBox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true, &g_openMoreHintBox);
+            {.name = _("Tutorial"), .src = &imgTutorial, .callBack = QuestionMarkEventCb, NULL},
+        };
+        g_openMoreHintBox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true, &g_openMoreHintBox);
+    } else {
+        MoreInfoTable_t moreInfoTable[] = {
+            {.name = passphraseText, .src = &imgEnterPassphrase, .callBack = PassphraseButtonHandler, NULL},
+            {.name = _("Tutorial"), .src = &imgTutorial, .callBack = QuestionMarkEventCb, NULL},
+        };
+        g_openMoreHintBox = GuiCreateMoreInfoHintBox(NULL, NULL, moreInfoTable, NUMBER_OF_ARRAYS(moreInfoTable), true, &g_openMoreHintBox);
+    }
 }
 
 // Change Entropy
@@ -664,6 +706,26 @@ static void OpenChangeEntropyTutorialHandler(lv_event_t *e)
 {
     uint8_t index = TUTORIAL_CHANGE_ENTROPY;
     GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
+}
+
+static void PassphraseButtonHandler(lv_event_t *e)
+{
+    if (lv_obj_has_flag(g_warningCont, LV_OBJ_FLAG_HIDDEN)) {
+        lv_obj_clear_flag(g_warningCont, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(g_warningCont, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    GUI_DEL_OBJ(g_openMoreHintBox);
+}
+
+
+bool GuiCreateWalletNeedPassphrase(void)
+{
+    if (g_warningCont == NULL) {
+        return false;
+    }
+    return !lv_obj_has_flag(g_warningCont, LV_OBJ_FLAG_HIDDEN);
 }
 
 #ifdef WEB3_VERSION

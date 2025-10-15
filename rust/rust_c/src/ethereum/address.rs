@@ -8,7 +8,7 @@ use crate::common::utils::{convert_c_char, recover_c_char};
 use app_ethereum::errors::EthereumError;
 
 #[no_mangle]
-pub extern "C" fn eth_get_address(
+pub unsafe extern "C" fn eth_get_address(
     hd_path: PtrString,
     root_x_pub: PtrString,
     root_path: PtrString,
@@ -18,8 +18,7 @@ pub extern "C" fn eth_get_address(
     let root_path = recover_c_char(root_path);
     if !hd_path.starts_with(root_path.as_str()) {
         return SimpleResponse::from(EthereumError::InvalidHDPath(format!(
-            "{} does not match {}",
-            hd_path, root_path
+            "{hd_path} does not match {root_path}"
         )))
         .simple_c_ptr();
     }

@@ -16,7 +16,6 @@ static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static int8_t g_cosmosListIndex = -1;
 static char g_cosmosAddr[MAX_COSMOS_ADDR_LEN];
-static char g_hdPath[26];
 static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_BABYLON, HOME_WALLET_CARD_BABYLON, 118, "bbn", XPUB_TYPE_COSMOS, "baby_3535-1"},
     {CHAIN_NEUTARO, HOME_WALLET_CARD_NEUTARO, 118, "neutaro", XPUB_TYPE_COSMOS, "Neutaro-1"},

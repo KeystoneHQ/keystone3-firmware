@@ -8,7 +8,7 @@ use crate::common::utils::{convert_c_char, recover_c_char};
 use app_avalanche::{errors::AvaxError, network::Network};
 
 #[no_mangle]
-pub extern "C" fn avalanche_get_x_p_address(
+pub unsafe extern "C" fn avalanche_get_x_p_address(
     hd_path: PtrString,
     root_x_pub: PtrString,
     root_path: PtrString,

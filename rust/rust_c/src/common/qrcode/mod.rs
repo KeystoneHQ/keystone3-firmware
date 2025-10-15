@@ -17,7 +17,7 @@ pub enum QRProtocol {
 }
 
 #[no_mangle]
-pub extern "C" fn infer_qrcode_type(qrcode: PtrString) -> QRProtocol {
+pub unsafe extern "C" fn infer_qrcode_type(qrcode: PtrString) -> QRProtocol {
     let value = recover_c_char(qrcode);
     if value.to_uppercase().starts_with("UR:") {
         QRProtocol::QRCodeTypeUR
@@ -27,7 +27,7 @@ pub extern "C" fn infer_qrcode_type(qrcode: PtrString) -> QRProtocol {
 }
 
 #[no_mangle]
-pub extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
+pub unsafe extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
     let value = recover_c_char(qr);
     if value.to_lowercase().starts_with("signmessage") {
         let mut headers_and_message = value.split(':');
@@ -55,8 +55,7 @@ pub extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
                     }
                     _ => {
                         return URParseResult::from(RustCError::UnsupportedTransaction(format!(
-                            "message encode not supported: {}",
-                            encode
+                            "message encode not supported: {encode}"
                         )))
                         .c_ptr()
                     }

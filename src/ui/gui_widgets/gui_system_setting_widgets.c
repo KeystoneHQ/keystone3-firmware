@@ -20,6 +20,7 @@
 
 static lv_obj_t *g_container;
 static lv_obj_t *g_vibrationSw;
+static lv_obj_t *g_randomPinPadSw;
 static lv_obj_t *g_bootSecureSw;
 static lv_obj_t *g_recoveryModeSw;
 
@@ -35,6 +36,8 @@ static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 static void DispalyHandler(lv_event_t *e);
 static void VibrationHandler(lv_event_t *e);
 static void VibrationSwitchHandler(lv_event_t * e);
+static void RandomPinPadHandler(lv_event_t *e);
+static void RandomPinPadSwitchHandler(lv_event_t * e);
 void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
 void OpenForgetPasswordHandler(lv_event_t *e);
 static void OpenLanguageSelectHandler(lv_event_t *e);
@@ -99,6 +102,23 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     };
     button = GuiCreateButton(parent, 456, 84, tableSwitch, NUMBER_OF_ARRAYS(tableSwitch),
                              VibrationHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
+    offset += 100;
+
+    g_randomPinPadSw = lv_switch_create(parent);
+    lv_obj_add_event_cb(g_randomPinPadSw, RandomPinPadSwitchHandler, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_set_style_bg_color(g_randomPinPadSw, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(g_randomPinPadSw, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(g_randomPinPadSw, LV_OPA_30, LV_PART_MAIN);
+    if (GetRandomPinPad()) {
+        lv_obj_add_state(g_randomPinPadSw, LV_STATE_CHECKED);
+    } else {
+        lv_obj_clear_state(g_randomPinPadSw, LV_STATE_CHECKED);
+    }
+    tableSwitch[0].obj = GuiCreateTextLabel(parent, _("system_settings_random_pin_pad"));
+    tableSwitch[1].obj = g_randomPinPadSw;
+    button = GuiCreateButton(parent, 456, 84, tableSwitch, NUMBER_OF_ARRAYS(tableSwitch),
+                             RandomPinPadHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;
 
@@ -298,6 +318,33 @@ static void VibrationSwitchHandler(lv_event_t * e)
         }
         SaveDeviceSettings();
     }
+}
+
+static void RandomPinPadHandler(lv_event_t *e)
+{
+    if (lv_obj_has_state(g_randomPinPadSw, LV_STATE_CHECKED)) {
+        lv_obj_clear_state(g_randomPinPadSw, LV_STATE_CHECKED);
+    } else {
+        lv_obj_add_state(g_randomPinPadSw, LV_STATE_CHECKED);
+    }
+    lv_event_send(g_randomPinPadSw, LV_EVENT_VALUE_CHANGED, NULL);
+}
+
+static void RandomPinPadSwitchHandler(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+
+    if (code == LV_EVENT_VALUE_CHANGED) {
+        if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
+            SetRandomPinPad(1);
+            GuiEmitSignal(SIG_UPDATE_NUM_KEYBOARD_MAP, NULL, 0);
+        } else {
+            SetRandomPinPad(0);
+            GuiEmitSignal(SIG_SET_NUM_KEYBOARD_MAP_DEFAULT, NULL, 0);
+        }
+    }
+    SaveDeviceSettings();
 }
 
 

@@ -23,8 +23,6 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayAvaxTx *data,
 static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
 static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
 static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
-static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
-static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
 UREncodeResult *GetAvaxSignDataDynamic(bool isUnlimited);
 
 void GuiSetAvaxUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
@@ -245,13 +243,6 @@ void GuiAvaxTxRawData(lv_obj_t *parent, void *totalData)
     container = CreateTxDetailsFromTo(parent, "To", txData->data->to->data, txData->data->to->size);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     lv_obj_update_layout(parent);
-}
-
-static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView)
-{
-}
-static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView)
-{
 }
 
 void FreeAvaxMemory(void)

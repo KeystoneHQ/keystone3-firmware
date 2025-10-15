@@ -471,12 +471,12 @@ macro_rules! impl_simple_new_error {
 macro_rules! extract_ptr_with_type {
     ($x: expr, $name: ident) => {{
         let ptr = $x as *mut $name;
-        let result: &mut $name = unsafe { &mut *ptr };
+        let result: &mut $name = &mut *ptr;
         result
     }};
     ($x: expr, $name: ident<$t: ident>) => {{
         let ptr = $x as *mut $name<$t>;
-        let result: &mut $name<$t> = unsafe { &mut *ptr };
+        let result: &mut $name<$t> = &mut *ptr;
         result
     }};
 }
@@ -485,7 +485,7 @@ macro_rules! extract_ptr_with_type {
 macro_rules! extract_array {
     ($x: expr, $name: ident, $length: expr) => {{
         let ptr = $x as *mut $name;
-        let result: &[$name] = unsafe { core::slice::from_raw_parts(ptr, $length as usize) };
+        let result: &[$name] = core::slice::from_raw_parts(ptr, $length as usize);
         result
     }};
 }
@@ -520,7 +520,7 @@ macro_rules! impl_c_ptrs {
 macro_rules! impl_simple_free {
     ($($name: ident), *) => {
         $(
-            impl SimpleFree for $name {fn free(&self){}}
+            impl SimpleFree for $name {unsafe fn free(&self){}}
         )*
     };
 }
@@ -530,7 +530,7 @@ macro_rules! make_free_method {
     ($t: ident) => {
         app_utils::paste::item! {
             #[no_mangle]
-            pub extern "C" fn [<free_ $t>](ptr: PtrT<$t>) {
+            pub unsafe extern "C" fn [<free_ $t>](ptr: PtrT<$t>) {
                 $crate::check_and_free_ptr!(ptr)
             }
         }
@@ -538,7 +538,7 @@ macro_rules! make_free_method {
     ($t1:ident<$t2:ident>) => {
         app_utils::paste::item! {
             #[no_mangle]
-            pub extern "C" fn [<free_ $t1 _ $t2>](ptr: PtrT<$t1<$t2>>) {
+            pub unsafe extern "C" fn [<free_ $t1 _ $t2>](ptr: PtrT<$t1<$t2>>) {
                 $crate::check_and_free_ptr!(ptr)
             }
         }

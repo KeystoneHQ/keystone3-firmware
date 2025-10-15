@@ -163,10 +163,12 @@ void FingerSignHandler(lv_event_t *e);
 void GuiFingerManagerDestruct(void *obj, void *param);
 void GuiFpVerifyDestruct(void);
 void GuiWalletFingerOpenSign(void);
-
 // set passphrase
 void GuiWalletPassphrase(lv_obj_t *parent);
-void GuiWalletPassphraseEnter(lv_obj_t *parent);
+void GuiWalletPassphraseEnter(lv_obj_t *parent, bool needVerify);
+void OpenPassphraseTutorialHandler(lv_event_t *e);
+bool GuiPassphraseQuickAccess(void);
+void GuiPassphraseWidgetClearText(void);
 
 // seed check
 void GuiWalletRecoveryMethodCheck(lv_obj_t *parent);

@@ -29,6 +29,7 @@
 #include "usb_task.h"
 #include "gui_setup_widgets.h"
 #include "device_setting.h"
+#include "fetch_sensitive_data_task.h"
 
 #define RTC_WAKE_UP_INTERVAL_CHARGING                   (80)                // 80 seconds
 #define RTC_WAKE_UP_INTERVAL_DISCHARGE                  (60 * 15)           // 15 minutes

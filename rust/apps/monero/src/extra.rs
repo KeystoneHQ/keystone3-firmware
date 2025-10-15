@@ -57,7 +57,7 @@ impl Extra {
             match field {
                 ExtraField::Padding(size) => {
                     res.push(0x00);
-                    res.extend(core::iter::repeat(0).take(*size));
+                    res.extend(core::iter::repeat_n(0, *size));
                 }
                 ExtraField::PublicKey(key) => {
                     res.push(0x01);

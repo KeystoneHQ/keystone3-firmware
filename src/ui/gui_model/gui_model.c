@@ -401,7 +401,10 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
     ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
     ClearAccountPassphrase(newAccount);
-    CHECK_ERRCODE_BREAK("save entropy error", ret);
+    if (SecretCacheGetPassphrase()) {
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     MODEL_WRITE_SE_END
     SetLockScreen(enable);
     return 0;
@@ -441,6 +444,10 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     ret = CreateNewAccount(newAccount, entropy, (uint8_t)entropyOutLen, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     ClearAccountPassphrase(newAccount);
+    if (SecretCacheGetPassphrase()) {
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
@@ -735,6 +742,10 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     ret = CreateNewSlip39Account(newAccount, ems, entropy, entropyLen, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetExtendable(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
+    if (SecretCacheGetPassphrase()) {
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     MODEL_WRITE_SE_END
 
     SetLockScreen(enable);
@@ -790,6 +801,10 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     ret = CreateNewSlip39Account(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, eb, ie);
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
+    if (SecretCacheGetPassphrase()) {
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
@@ -1672,16 +1687,26 @@ static int32_t ModelTonForgetPass(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret = SUCCESS_CODE;
+    int32_t bip39Ret = SUCCESS_CODE;
+    int32_t tonRet = SUCCESS_CODE;
     do {
         ret = CHECK_BATTERY_LOW_POWER();
         CHECK_ERRCODE_BREAK("save low power", ret);
-        ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, false, 0, NULL);
-        if (ret != SUCCESS_CODE) {
+        bip39Ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
+        tonRet = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, false, 0, NULL);
+        if (tonRet != SUCCESS_CODE && bip39Ret != SUCCESS_CODE) {
+            GuiApiEmitSignal(SIG_FORGET_TON_BIP39_SUCCESS, NULL, 0);
+        } else if (tonRet != SUCCESS_CODE) {
+            GuiApiEmitSignal(SIG_FORGET_TON_SUCCESS, NULL, 0);
+        } else if (bip39Ret != SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
-            SetLockScreen(enable);
-            return ret;
+        } else {
+            ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
+            break;
         }
-        ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
+
+        SetLockScreen(enable);
+        return ret;
     } while (0);
     GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
     SetLockScreen(enable);

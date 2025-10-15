@@ -274,7 +274,7 @@ impl InferViewType for Bytes {
             Ok(_v) => {
                 if let Some(_type) = _v.pointer("/data/type") {
                     let contract_name: String = from_value(_type.clone())
-                        .map_err(|e| URError::UrDecodeError(format!("invalid data, {}", e)))?;
+                        .map_err(|e| URError::UrDecodeError(format!("invalid data, {e}")))?;
                     if contract_name.eq("webAuth") {
                         return Ok(ViewType::WebAuthResult);
                     }
@@ -282,7 +282,7 @@ impl InferViewType for Bytes {
                 #[cfg(feature = "xrp")]
                 return Ok(ViewType::XRPTx);
                 #[cfg(not(feature = "xrp"))]
-                return Err(URError::UrDecodeError(format!("invalid data")));
+                return Err(URError::UrDecodeError("invalid data".to_string()));
             }
             #[cfg(feature = "multi-coins")]
             Err(_e) => get_view_type_from_keystone(self.get_bytes()),
@@ -297,7 +297,7 @@ impl InferViewType for Bytes {
                 get_view_type_from_keystone(self.get_bytes())
             }
             #[cfg(not(any(feature = "btc-only", feature = "multi-coins")))]
-            Err(_e) => return Err(URError::UrDecodeError(format!("invalid data"))),
+            Err(_e) => Err(URError::UrDecodeError("invalid data".to_string())),
         }
     }
 }

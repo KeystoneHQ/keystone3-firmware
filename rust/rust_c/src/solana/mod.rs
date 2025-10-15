@@ -3,7 +3,7 @@ use crate::common::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
-use crate::extract_ptr_with_type;
+use crate::{extract_array, extract_ptr_with_type};
 use alloc::format;
 use alloc::string::ToString;
 use app_solana::errors::SolanaError;
@@ -16,7 +16,7 @@ use ur_registry::traits::RegistryItem;
 
 pub mod structs;
 
-fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<SolSignature, SolanaError> {
+unsafe fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<SolSignature, SolanaError> {
     let sign_request = extract_ptr_with_type!(ptr, SolSignRequest);
     let mut path =
         sign_request
@@ -26,7 +26,7 @@ fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<SolSignature, SolanaErro
                 "invalid derivation path".to_string(),
             ))?;
     if !path.starts_with("m/") {
-        path = format!("m/{}", path);
+        path = format!("m/{path}");
     }
     let signature = app_solana::sign(sign_request.get_sign_data().to_vec(), &path, seed)?;
     Ok(SolSignature::new(
@@ -36,7 +36,7 @@ fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<SolSignature, SolanaErro
 }
 
 #[no_mangle]
-pub extern "C" fn solana_get_address(pubkey: PtrString) -> *mut SimpleResponse<c_char> {
+pub unsafe extern "C" fn solana_get_address(pubkey: PtrString) -> *mut SimpleResponse<c_char> {
     let x_pub = recover_c_char(pubkey);
     let address = app_solana::get_address(&x_pub);
     match address {
@@ -46,7 +46,7 @@ pub extern "C" fn solana_get_address(pubkey: PtrString) -> *mut SimpleResponse<c
 }
 
 #[no_mangle]
-pub extern "C" fn iota_get_address(pubkey: PtrString) -> *mut SimpleResponse<c_char> {
+pub unsafe extern "C" fn iota_get_address(pubkey: PtrString) -> *mut SimpleResponse<c_char> {
     let x_pub = recover_c_char(pubkey);
     let address = app_solana::get_address(&x_pub);
     match address {
@@ -56,7 +56,7 @@ pub extern "C" fn iota_get_address(pubkey: PtrString) -> *mut SimpleResponse<c_c
 }
 
 #[no_mangle]
-pub extern "C" fn solana_check(
+pub unsafe extern "C" fn solana_check(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     length: u32,
@@ -65,7 +65,7 @@ pub extern "C" fn solana_check(
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
     let sol_sign_request = extract_ptr_with_type!(ptr, SolSignRequest);
-    let mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
     if let Ok(mfp) = (mfp.try_into() as Result<[u8; 4], _>) {
         let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
             sol_sign_request.get_derivation_path();
@@ -82,7 +82,9 @@ pub extern "C" fn solana_check(
 }
 
 #[no_mangle]
-pub extern "C" fn solana_parse_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplaySolanaTx>> {
+pub unsafe extern "C" fn solana_parse_tx(
+    ptr: PtrUR,
+) -> PtrT<TransactionParseResult<DisplaySolanaTx>> {
     let solan_sign_reqeust = extract_ptr_with_type!(ptr, SolSignRequest);
     let tx_hex = solan_sign_reqeust.get_sign_data();
     match app_solana::parse(&tx_hex.to_vec()) {
@@ -92,12 +94,12 @@ pub extern "C" fn solana_parse_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<Dis
 }
 
 #[no_mangle]
-pub extern "C" fn solana_sign_tx(
+pub unsafe extern "C" fn solana_sign_tx(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
-    let seed = unsafe { alloc::slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     build_sign_result(ptr, seed)
         .map(|v| v.try_into())
         .map_or_else(
@@ -119,7 +121,7 @@ pub extern "C" fn solana_sign_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn solana_parse_message(
+pub unsafe extern "C" fn solana_parse_message(
     ptr: PtrUR,
     pubkey: PtrString,
 ) -> PtrT<TransactionParseResult<DisplaySolanaMessage>> {
@@ -138,7 +140,7 @@ pub extern "C" fn solana_parse_message(
 }
 
 #[no_mangle]
-pub extern "C" fn sol_get_path(ptr: PtrUR) -> PtrString {
+pub unsafe extern "C" fn sol_get_path(ptr: PtrUR) -> PtrString {
     let sol_sign_request = extract_ptr_with_type!(ptr, SolSignRequest);
     let derivation_path = sol_sign_request.get_derivation_path();
     if let Some(path) = derivation_path.get_path() {

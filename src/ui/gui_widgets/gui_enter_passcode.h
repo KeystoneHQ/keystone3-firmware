@@ -50,6 +50,9 @@ uint8_t GetPassWordStrength(const char *password, uint8_t len);
 void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt);
 void PassWordPinSwitch(GuiEnterPasscodeItem_t *item);
 void GuiEnterPassLabelRefresh(void);
+void GuiShuffleNumKeyBoardMap(GuiEnterPasscodeItem_t *item);
+void GuiSetNumKeyBoardMapDefault(GuiEnterPasscodeItem_t *item);
+void SwitchPasswordMode(lv_obj_t *ta, lv_obj_t *img, bool isPassword);
 
 #endif /* _GUI_ENTER_PASSCODE_H */
 

@@ -18,7 +18,7 @@ pub struct NotSupportMessage {
 impl SerializeJson for NotSupportMessage {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("NotSupportMessage serialize failed {}", err))
+            CosmosError::ParseTxError(format!("NotSupportMessage serialize failed {err}"))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -64,7 +64,7 @@ impl TryFrom<&proto::cosmos::bank::v1beta1::MsgSend> for MsgSend {
 impl SerializeJson for MsgSend {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgSend serialize failed {}", err))
+            CosmosError::ParseTxError(format!("MsgSend serialize failed {err}"))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -93,11 +93,10 @@ impl TryFrom<&proto::cosmos::staking::v1beta1::MsgDelegate> for MsgDelegate {
     fn try_from(
         proto: &proto::cosmos::staking::v1beta1::MsgDelegate,
     ) -> Result<MsgDelegate, CosmosError> {
-        let amount: Option<Coin>;
-        match &proto.amount {
-            Some(coin) => amount = Some(coin.try_into()?),
-            None => amount = None,
-        }
+        let amount: Option<Coin> = match &proto.amount {
+            Some(coin) => Some(coin.try_into()?),
+            None => None,
+        };
 
         Ok(MsgDelegate {
             delegator_address: proto.delegator_address.clone(),
@@ -110,7 +109,7 @@ impl TryFrom<&proto::cosmos::staking::v1beta1::MsgDelegate> for MsgDelegate {
 impl SerializeJson for MsgDelegate {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgDelegate serialize failed {}", err))
+            CosmosError::ParseTxError(format!("MsgDelegate serialize failed {err}"))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -139,11 +138,10 @@ impl TryFrom<&proto::cosmos::staking::v1beta1::MsgUndelegate> for MsgUndelegate 
     fn try_from(
         proto: &proto::cosmos::staking::v1beta1::MsgUndelegate,
     ) -> Result<MsgUndelegate, CosmosError> {
-        let amount: Option<Coin>;
-        match &proto.amount {
-            Some(coin) => amount = Some(coin.try_into()?),
-            None => amount = None,
-        }
+        let amount: Option<Coin> = match &proto.amount {
+            Some(coin) => Some(coin.try_into()?),
+            None => None,
+        };
 
         Ok(MsgUndelegate {
             delegator_address: proto.delegator_address.clone(),
@@ -156,7 +154,7 @@ impl TryFrom<&proto::cosmos::staking::v1beta1::MsgUndelegate> for MsgUndelegate 
 impl SerializeJson for MsgUndelegate {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgUndelegate serialize failed {}", err))
+            CosmosError::ParseTxError(format!("MsgUndelegate serialize failed {err}"))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -188,8 +186,7 @@ where
                 Ok(data)
             } else {
                 Err(serde::de::Error::custom(format!(
-                    "invalid proposal id {:?}",
-                    value
+                    "invalid proposal id {value:?}"
                 )))
             }
         }
@@ -208,8 +205,7 @@ where
                 Ok(Some(data))
             } else {
                 Err(serde::de::Error::custom(format!(
-                    "invalid proposal id {:?}",
-                    value
+                    "invalid proposal id {value:?}"
                 )))
             }
         }
@@ -237,7 +233,7 @@ impl TryFrom<&proto::cosmos::gov::v1beta1::MsgVote> for MsgVote {
 impl SerializeJson for MsgVote {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgVote serialize failed {}", err))
+            CosmosError::ParseTxError(format!("MsgVote serialize failed {err}"))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -318,7 +314,7 @@ impl TryFrom<&proto::ibc::applications::transfer::v1::MsgTransfer> for MsgTransf
 impl SerializeJson for MsgTransfer {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgTransfer serialize failed {}", err))
+            CosmosError::ParseTxError(format!("MsgTransfer serialize failed {err}"))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -359,8 +355,7 @@ impl SerializeJson for MsgWithdrawDelegatorReward {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
             CosmosError::ParseTxError(format!(
-                "MsgWithdrawDelegatorReward serialize failed {}",
-                err
+                "MsgWithdrawDelegatorReward serialize failed {err}"
             ))
         })?;
         let msg = json!({
@@ -399,7 +394,7 @@ impl TryFrom<&proto::ibc::core::client::v1::MsgUpdateClient> for MsgUpdateClient
 impl SerializeJson for MsgUpdateClient {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgUpdateClient serialize failed {}", err))
+            CosmosError::ParseTxError(format!("MsgUpdateClient serialize failed {err}"))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -445,7 +440,7 @@ impl TryFrom<&proto::cosmos::staking::v1beta1::MsgBeginRedelegate> for MsgBeginR
 impl SerializeJson for MsgBeginRedelegate {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgBeginRedelegate serialize failed {}", err))
+            CosmosError::ParseTxError(format!("MsgBeginRedelegate serialize failed {err}"))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -485,7 +480,7 @@ impl TryFrom<&proto::cosmos::authz::v1beta1::MsgExec> for MsgExec {
 impl SerializeJson for MsgExec {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgExec serialize failed {}", err))
+            CosmosError::ParseTxError(format!("MsgExec serialize failed {err}"))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -573,7 +568,7 @@ impl TryFrom<&proto::cosmos::bank::v1beta1::MsgMultiSend> for MsgMultiSend {
 impl SerializeJson for MsgMultiSend {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgMultiSend serialize failed {}", err))
+            CosmosError::ParseTxError(format!("MsgMultiSend serialize failed {err}"))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),

@@ -9,6 +9,7 @@ use crate::common::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
+use crate::extract_array;
 use crate::extract_ptr_with_type;
 use app_stellar::strkeys::{sign_hash, sign_signature_base};
 use app_stellar::{address::get_address, base_to_xdr};
@@ -21,7 +22,7 @@ use ur_registry::traits::{RegistryItem, To};
 pub mod structs;
 
 #[no_mangle]
-pub extern "C" fn stellar_get_address(pubkey: PtrString) -> *mut SimpleResponse<c_char> {
+pub unsafe extern "C" fn stellar_get_address(pubkey: PtrString) -> *mut SimpleResponse<c_char> {
     let x_pub = recover_c_char(pubkey);
     let address = get_address(&x_pub);
     match address {
@@ -31,7 +32,7 @@ pub extern "C" fn stellar_get_address(pubkey: PtrString) -> *mut SimpleResponse<
 }
 
 #[no_mangle]
-pub extern "C" fn stellar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayStellarTx>> {
+pub unsafe extern "C" fn stellar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayStellarTx>> {
     let sign_request = extract_ptr_with_type!(ptr, StellarSignRequest);
     let raw_message = match sign_request.get_sign_type() {
         SignType::Transaction => base_to_xdr(&sign_request.get_sign_data()),
@@ -51,7 +52,7 @@ pub extern "C" fn stellar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<Displ
 }
 
 #[no_mangle]
-pub extern "C" fn stellar_check_tx(
+pub unsafe extern "C" fn stellar_check_tx(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     length: u32,
@@ -59,7 +60,7 @@ pub extern "C" fn stellar_check_tx(
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    let mfp = unsafe { slice::from_raw_parts(master_fingerprint, 4) };
+    let mfp = extract_array!(master_fingerprint, u8, 4);
     let sign_request = extract_ptr_with_type!(ptr, StellarSignRequest);
     if let Ok(mfp) = (mfp.try_into() as Result<[u8; 4], _>) {
         let derivation_path: ur_registry::crypto_key_path::CryptoKeyPath =
@@ -92,8 +93,8 @@ fn build_signature_data(
 }
 
 #[no_mangle]
-pub extern "C" fn stellar_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
-    let seed = unsafe { alloc::slice::from_raw_parts(seed, seed_len as usize) };
+pub unsafe extern "C" fn stellar_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let sign_request = extract_ptr_with_type!(ptr, StellarSignRequest);
     let sign_data = sign_request.get_sign_data();
     let path = sign_request.get_derivation_path().get_path().unwrap();

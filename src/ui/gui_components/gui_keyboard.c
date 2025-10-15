@@ -10,6 +10,7 @@
 #include "user_memory.h"
 #include "gui_hintbox.h"
 #include "gui_button.h"
+#include "device_setting.h"
 
 #pragma GCC optimize ("O0")
 
@@ -32,6 +33,13 @@
 #define MNEMONIC_MATRIX_WORD_MAX_LEN                        24
 
 static void KbTextAreaHandler(lv_event_t *e);
+
+static const char *g_numBtnmMapDefault[] = {
+    "1", "2", "3", "\n",
+    "4", "5", "6", "\n",
+    "7", "8", "9", "\n",
+    " ", "0", USR_SYMBOL_DELETE, '\0'
+};
 
 static const char *g_numBtnmMap[] = {
     "1", "2", "3", "\n",
@@ -470,6 +478,33 @@ void *GuiCreateEmojiKeyBoard(lv_obj_t *parent, lv_obj_t *icon)
     return hintbox;
 }
 
+static void ShuffleNumKeyBoardMap(const char **map)
+{
+    int digitIdx[] = {0, 1, 2, 4, 5, 6, 8, 9, 10, 13};
+    const int n = NUMBER_OF_ARRAYS(digitIdx);
+
+    const char *digits[10];
+    for (int i = 0; i < n; i++) digits[i] = map[digitIdx[i]];
+
+    for (int i = n - 1; i > 0; i--) {
+        uint32_t r = lv_rand(0, 2048) % (i + 1);
+        const char *tmp = digits[i];
+        digits[i] = digits[r];
+        digits[r] = tmp;
+    }
+    for (int i = 0; i < n; i++) map[digitIdx[i]] = digits[i];
+}
+
+void GuiUpdateNumKeyBoardMap(lv_obj_t *btnm, bool randomPinPad)
+{
+    if (randomPinPad) {
+        ShuffleNumKeyBoardMap((const char **)g_numBtnmMap);
+        lv_btnmatrix_set_map(btnm, (const char **)g_numBtnmMap);
+    } else {
+        lv_btnmatrix_set_map(btnm, (const char **)g_numBtnmMapDefault);
+    }
+}
+
 void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM numMode, void *param)
 {
     uint16_t kbHeight = 310;
@@ -478,7 +513,7 @@ void *GuiCreateNumKeyboard(lv_obj_t *parent, lv_event_cb_t cb, NUM_KEYBOARD_ENUM
     switch (numMode) {
     case NUM_KEYBOARD_PIN:
         lv_obj_add_style(btnm, &g_numBtnmStyle, LV_PART_ITEMS);
-        lv_btnmatrix_set_map(btnm, (const char **)g_numBtnmMap);
+        GuiUpdateNumKeyBoardMap(btnm, !!GetRandomPinPad());
         lv_obj_align(btnm, LV_ALIGN_TOP_MID, 0, 490 - GUI_MAIN_AREA_OFFSET);
         lv_obj_set_style_bg_color(btnm, DARK_BG_COLOR, LV_PART_MAIN);
         lv_btnmatrix_set_ctrl_map(btnm, g_numBtnmMapCtrl);

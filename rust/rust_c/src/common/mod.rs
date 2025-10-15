@@ -23,6 +23,8 @@ use structs::SimpleResponse;
 use types::{PtrBytes, PtrString};
 use utils::{convert_c_char, recover_c_char};
 
+use crate::extract_array;
+
 pub mod errors;
 pub mod ffi;
 pub mod free;
@@ -56,7 +58,7 @@ pub extern "C" fn dummy_function_to_export_error_codes() -> ErrorCodes {
 }
 
 #[no_mangle]
-pub extern "C" fn format_value_with_decimals(
+pub unsafe extern "C" fn format_value_with_decimals(
     value: PtrString,
     decimals: u32,
 ) -> *mut SimpleResponse<c_char> {
@@ -87,13 +89,13 @@ pub extern "C" fn format_value_with_decimals(
 }
 
 #[no_mangle]
-pub extern "C" fn get_extended_pubkey_by_seed(
+pub unsafe extern "C" fn get_extended_pubkey_by_seed(
     seed: PtrBytes,
     seed_len: u32,
     path: PtrString,
 ) -> *mut SimpleResponse<c_char> {
     let path = recover_c_char(path);
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let extended_key =
         keystore::algorithms::secp256k1::get_extended_public_key_by_seed(seed, &path);
     match extended_key {
@@ -103,13 +105,13 @@ pub extern "C" fn get_extended_pubkey_by_seed(
 }
 
 #[no_mangle]
-pub extern "C" fn get_extended_pubkey_bytes_by_seed(
+pub unsafe extern "C" fn get_extended_pubkey_bytes_by_seed(
     seed: PtrBytes,
     seed_len: u32,
     path: PtrString,
 ) -> *mut SimpleResponse<c_char> {
     let path = recover_c_char(path);
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let extended_key =
         keystore::algorithms::secp256k1::get_extended_public_key_by_seed(seed, &path);
     match extended_key {
@@ -122,12 +124,12 @@ pub extern "C" fn get_extended_pubkey_bytes_by_seed(
 }
 
 #[no_mangle]
-pub extern "C" fn get_ed25519_pubkey_by_seed(
+pub unsafe extern "C" fn get_ed25519_pubkey_by_seed(
     seed: PtrBytes,
     seed_len: u32,
     path: PtrString,
 ) -> *mut SimpleResponse<c_char> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let path = recover_c_char(path);
     let extended_key =
         keystore::algorithms::ed25519::slip10_ed25519::get_public_key_by_seed(seed, &path);
@@ -138,8 +140,11 @@ pub extern "C" fn get_ed25519_pubkey_by_seed(
 }
 
 #[no_mangle]
-pub extern "C" fn get_rsa_pubkey_by_seed(seed: PtrBytes, seed_len: u32) -> *mut SimpleResponse<u8> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+pub unsafe extern "C" fn get_rsa_pubkey_by_seed(
+    seed: PtrBytes,
+    seed_len: u32,
+) -> *mut SimpleResponse<u8> {
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let public_key = keystore::algorithms::rsa::get_rsa_pubkey_by_seed(seed);
     match public_key {
         Ok(result) => {
@@ -150,13 +155,13 @@ pub extern "C" fn get_rsa_pubkey_by_seed(seed: PtrBytes, seed_len: u32) -> *mut 
 }
 
 #[no_mangle]
-pub extern "C" fn get_bip32_ed25519_extended_pubkey(
+pub unsafe extern "C" fn get_bip32_ed25519_extended_pubkey(
     entropy: PtrBytes,
     entropy_len: u32,
     passphrase: PtrString,
     path: PtrString,
 ) -> *mut SimpleResponse<c_char> {
-    let entropy = unsafe { slice::from_raw_parts(entropy, entropy_len as usize) };
+    let entropy = extract_array!(entropy, u8, entropy_len as usize);
     let path = recover_c_char(path);
     let passphrase = recover_c_char(passphrase);
     let extended_key =
@@ -172,7 +177,7 @@ pub extern "C" fn get_bip32_ed25519_extended_pubkey(
 }
 
 #[no_mangle]
-pub extern "C" fn get_ledger_bitbox02_master_key(
+pub unsafe extern "C" fn get_ledger_bitbox02_master_key(
     mnemonic: PtrString,
     passphrase: PtrString,
 ) -> *mut SimpleResponse<c_char> {
@@ -190,12 +195,12 @@ pub extern "C" fn get_ledger_bitbox02_master_key(
 }
 
 #[no_mangle]
-pub extern "C" fn get_icarus_master_key(
+pub unsafe extern "C" fn get_icarus_master_key(
     entropy: PtrBytes,
     entropy_len: u32,
     passphrase: PtrString,
 ) -> *mut SimpleResponse<c_char> {
-    let entropy = unsafe { slice::from_raw_parts(entropy, entropy_len as usize) };
+    let entropy = extract_array!(entropy, u8, entropy_len as usize);
     let passphrase = recover_c_char(passphrase);
     let master_key = keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
         entropy,
@@ -208,7 +213,7 @@ pub extern "C" fn get_icarus_master_key(
 }
 
 #[no_mangle]
-pub extern "C" fn derive_bip32_ed25519_extended_pubkey(
+pub unsafe extern "C" fn derive_bip32_ed25519_extended_pubkey(
     master_key: PtrString,
     path: PtrString,
 ) -> *mut SimpleResponse<c_char> {
@@ -230,12 +235,12 @@ pub extern "C" fn derive_bip32_ed25519_extended_pubkey(
 }
 
 #[no_mangle]
-pub extern "C" fn k1_sign_message_hash_by_private_key(
+pub unsafe extern "C" fn k1_sign_message_hash_by_private_key(
     private_key: PtrBytes,
     message_hash: PtrBytes,
 ) -> *mut SimpleResponse<c_char> {
-    let private_key_bytes = unsafe { slice::from_raw_parts(private_key, 32) };
-    let message_hash_bytes = unsafe { slice::from_raw_parts(message_hash, 32) };
+    let private_key_bytes = extract_array!(private_key, u8, 32);
+    let message_hash_bytes = extract_array!(message_hash, u8, 32);
     let signature = keystore::algorithms::secp256k1::sign_message_hash_by_private_key(
         message_hash_bytes,
         private_key_bytes,
@@ -247,34 +252,31 @@ pub extern "C" fn k1_sign_message_hash_by_private_key(
 }
 
 #[no_mangle]
-pub extern "C" fn k1_verify_signature(
+pub unsafe extern "C" fn k1_verify_signature(
     signature: PtrBytes,
     message_hash: PtrBytes,
     public_key: PtrBytes,
 ) -> bool {
-    let signature_bytes = unsafe { slice::from_raw_parts(signature, 64) };
-    let message_hash_bytes = unsafe { slice::from_raw_parts(message_hash, 32) };
-    let public_key_bytes = unsafe { slice::from_raw_parts(public_key, 65) };
+    let signature_bytes = extract_array!(signature, u8, 64);
+    let message_hash_bytes = extract_array!(message_hash, u8, 32);
+    let public_key_bytes = extract_array!(public_key, u8, 65);
     let result = keystore::algorithms::secp256k1::verify_signature(
         signature_bytes,
         message_hash_bytes,
         public_key_bytes,
     );
-    match result {
-        Ok(data) => data,
-        Err(_e) => false,
-    }
+    result.unwrap_or_default()
 }
 
 #[no_mangle]
-pub extern "C" fn k1_generate_ecdh_sharekey(
+pub unsafe extern "C" fn k1_generate_ecdh_sharekey(
     privkey: PtrBytes,
     privkey_len: u32,
     pubkey: PtrBytes,
     pubkey_len: u32,
 ) -> *mut SimpleResponse<u8> {
-    let private_key = unsafe { slice::from_raw_parts(privkey, privkey_len as usize) };
-    let public_key = unsafe { slice::from_raw_parts(pubkey, pubkey_len as usize) };
+    let private_key = extract_array!(privkey, u8, privkey_len as usize);
+    let public_key = extract_array!(pubkey, u8, pubkey_len as usize);
     let result = keystore::algorithms::secp256k1::get_share_key(private_key, public_key);
     match result {
         Ok(share_key) => {
@@ -285,11 +287,11 @@ pub extern "C" fn k1_generate_ecdh_sharekey(
 }
 
 #[no_mangle]
-pub extern "C" fn k1_generate_pubkey_by_privkey(
+pub unsafe extern "C" fn k1_generate_pubkey_by_privkey(
     privkey: PtrBytes,
     privkey_len: u32,
 ) -> *mut SimpleResponse<u8> {
-    let private_key = unsafe { slice::from_raw_parts(privkey, privkey_len as usize) };
+    let private_key = extract_array!(privkey, u8, privkey_len as usize);
     let result = keystore::algorithms::secp256k1::get_public_key(private_key);
     match result {
         Ok(pubkey) => {
@@ -300,25 +302,25 @@ pub extern "C" fn k1_generate_pubkey_by_privkey(
 }
 
 #[no_mangle]
-pub extern "C" fn pbkdf2_rust(
+pub unsafe extern "C" fn pbkdf2_rust(
     password: PtrBytes,
     salt: PtrBytes,
     iterations: u32,
 ) -> *mut SimpleResponse<u8> {
-    let password_bytes = unsafe { slice::from_raw_parts(password, 32) };
-    let salt_bytes = unsafe { slice::from_raw_parts(salt, 32) };
+    let password_bytes = extract_array!(password, u8, 32);
+    let salt_bytes = extract_array!(salt, u8, 32);
     let output = keystore::algorithms::crypto::hkdf(password_bytes, salt_bytes, iterations);
     SimpleResponse::success(Box::into_raw(Box::new(output)) as *mut u8).simple_c_ptr()
 }
 
 #[no_mangle]
-pub extern "C" fn pbkdf2_rust_64(
+pub unsafe extern "C" fn pbkdf2_rust_64(
     password: PtrBytes,
     salt: PtrBytes,
     iterations: u32,
 ) -> *mut SimpleResponse<u8> {
-    let password_bytes = unsafe { slice::from_raw_parts(password, 64) };
-    let salt_bytes = unsafe { slice::from_raw_parts(salt, 64) };
+    let password_bytes = extract_array!(password, u8, 64);
+    let salt_bytes = extract_array!(salt, u8, 64);
     let output = keystore::algorithms::crypto::hkdf64(password_bytes, salt_bytes, iterations);
     SimpleResponse::success(Box::into_raw(Box::new(output)) as *mut u8).simple_c_ptr()
 }

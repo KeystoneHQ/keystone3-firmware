@@ -82,6 +82,14 @@ int32_t GuiForgetViewEventProcess(void *self, uint16_t usEvent, void *param, uin
     case GUI_EVENT_UPDATE_KEYBOARD:
         GuiForgetPassUpdateKeyboard();
         break;
+#ifdef WEB3_VERSION
+    case SIG_FORGET_TON_SUCCESS:
+        GuiForgetPassTonSuccess();
+        break;
+    case SIG_FORGET_TON_BIP39_SUCCESS:
+        GuiForgetPassTonBip39Success();
+        break;
+#endif
     default:
         return ERR_GUI_UNHANDLED;
     }

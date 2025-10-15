@@ -7,7 +7,7 @@ use bitcoin::secp256k1::ffi::types::c_char;
 use core::str::FromStr;
 
 #[no_mangle]
-pub extern "C" fn utxo_get_address(
+pub unsafe extern "C" fn utxo_get_address(
     hd_path: PtrString,
     x_pub: PtrString,
 ) -> *mut SimpleResponse<c_char> {
@@ -21,7 +21,7 @@ pub extern "C" fn utxo_get_address(
 }
 
 #[no_mangle]
-pub extern "C" fn xpub_convert_version(
+pub unsafe extern "C" fn xpub_convert_version(
     x_pub: PtrString,
     target: PtrString,
 ) -> *mut SimpleResponse<c_char> {

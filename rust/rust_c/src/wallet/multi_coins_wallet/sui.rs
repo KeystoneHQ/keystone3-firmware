@@ -23,8 +23,7 @@ pub extern "C" fn get_connect_sui_wallet_ur(
 ) -> *mut UREncodeResult {
     if length != 4 {
         return UREncodeResult::from(URError::UrEncodeError(format!(
-            "master fingerprint length must be 4, current is {}",
-            length
+            "master fingerprint length must be 4, current is {length}"
         )))
         .c_ptr();
     }

@@ -1,5 +1,4 @@
 #include "gui.h"
-
 #include "gui_views.h"
 #include "gui_status_bar.h"
 #include "gui_keyboard.h"
@@ -13,9 +12,12 @@
 #include "gui_single_phrase_widgets.h"
 #include "gui_mnemonic_input.h"
 #include "gui_page.h"
+#include "gui_create_wallet_widgets.h"
+#include "gui_setting_widgets.h"
 
 typedef enum {
     IMPORT_SHARE_SSB_INPUT = 0,
+    IMPORT_SHARE_PASSPHRASE,
     IMPORT_SHARE_WRITE_SE,
 
     IMPORT_SHARE_BUTT,
@@ -26,6 +28,7 @@ typedef struct ImportShareWidget {
     lv_obj_t    *cont;
     lv_obj_t    *tileView;
     lv_obj_t    *ssbInput;
+    lv_obj_t    *passphrase;
     lv_obj_t    *writeSe;
 } ImportShareWidget_t;
 static ImportShareWidget_t g_importShareTileView;
@@ -66,9 +69,6 @@ void GuiImportShareWriteSe(bool en, int32_t errCode)
     if (en == true) {
         ClearMnemonicKeyboard(g_importMkb, &g_importMkb->currentId);
     } else {
-        // if (errCode == ERR_KEYSTORE_MNEMONIC_REPEAT) {
-        // } else {
-        // }
         lv_btnmatrix_set_selected_btn(g_importMkb->btnm, g_importMkb->currentId - 1);
         g_importMkb->currentId--;
     }
@@ -78,6 +78,11 @@ void GuiImportShareWriteSe(bool en, int32_t errCode)
 static void ImportShareNextSliceHandler(lv_event_t *e)
 {
     ImportShareNextSlice(g_importMkb, g_ssbImportKb);
+}
+
+static void GuiSharePassphraseWidget(lv_obj_t *parent)
+{
+    GuiWalletPassphraseEnter(parent, false);
 }
 
 static void GuiShareSsbInputWidget(lv_obj_t *parent)
@@ -146,6 +151,10 @@ void GuiImportShareInit(uint8_t wordsCnt)
     g_importShareTileView.ssbInput = tile;
     GuiShareSsbInputWidget(tile);
 
+    tile = lv_tileview_add_tile(tileView, IMPORT_SHARE_PASSPHRASE, 0, LV_DIR_HOR);
+    g_importShareTileView.passphrase = tile;
+    GuiSharePassphraseWidget(tile);
+
     tile = lv_tileview_add_tile(tileView, IMPORT_SHARE_WRITE_SE, 0, LV_DIR_HOR);
     g_importShareTileView.writeSe = tile;
     GuiWriteSeWidget(tile);
@@ -157,21 +166,38 @@ void GuiImportShareInit(uint8_t wordsCnt)
     lv_obj_set_tile_id(g_importShareTileView.tileView, g_importShareTileView.currentTile, 0, LV_ANIM_OFF);
 }
 
-int8_t GuiImportShareNextTile(void)
+int8_t GuiImportShareNextTile(const char *passphrase)
 {
     Slip39Data_t slip39 = {
         .threShold = g_importMkb->threShold,
         .wordCnt = g_phraseCnt,
         .forget = false,
     };
+    if (passphrase != NULL) {
+        SecretCacheSetPassphrase(passphrase);
+    }
     switch (g_importShareTileView.currentTile) {
     case IMPORT_SHARE_SSB_INPUT:
+        if (GuiCreateWalletNeedPassphrase()) {
+            SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseTutorialHandler, NULL);
+        } else {
+            g_importShareTileView.currentTile++;
+            SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+            GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+            GuiModelSlip39CalWriteSe(slip39);
+        }
+        lv_obj_add_flag(g_nextCont, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(g_ssbImportKb->cont, LV_OBJ_FLAG_HIDDEN);
+        break;
+    case IMPORT_SHARE_PASSPHRASE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
         GuiModelSlip39CalWriteSe(slip39);
-        lv_obj_add_flag(g_nextCont, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(g_ssbImportKb->cont, LV_OBJ_FLAG_HIDDEN);
         break;
     }
     g_importShareTileView.currentTile++;
@@ -183,6 +209,13 @@ int8_t GuiImportSharePrevTile(void)
 {
     switch (g_importShareTileView.currentTile) {
     case IMPORT_SHARE_WRITE_SE:
+        break;
+    case IMPORT_SHARE_PASSPHRASE:
+        GuiPassphraseWidgetClearText();
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
+        SetRightBtnCb(g_pageWidget->navBarWidget, ConfirmClearHandler, NULL);
         break;
     }
     g_importShareTileView.currentTile--;
@@ -212,10 +245,15 @@ void GuiImportShareRefresh(void)
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ConfirmClearHandler, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
+    } else if (g_importShareTileView.currentTile == IMPORT_SHARE_PASSPHRASE) {
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseTutorialHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     } else {
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
     }
-    SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
 

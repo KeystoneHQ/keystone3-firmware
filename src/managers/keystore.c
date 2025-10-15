@@ -809,6 +809,27 @@ int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len)
     return GenerateEntropy(randomness, len, "generate trng randomness");
 }
 
+#ifndef COMPILE_SIMULATOR
+void random_buffer(uint8_t *buf, size_t len)
+{
+    uint8_t *tempBuf1 = SRAM_MALLOC(len);
+    uint8_t *tempBuf2 = SRAM_MALLOC(len);
+
+    if (tempBuf1 && tempBuf2) {
+        TrngGet(buf, len);
+        assert(SE_GetDS28S60Rng(tempBuf1, len) == 0);
+        assert(SE_GetAtecc608bRng(tempBuf2, len) == 0);
+
+        for (size_t i = 0; i < len; i++) {
+            buf[i] ^= tempBuf1[i] ^ tempBuf2[i];
+        }
+
+        SRAM_FREE(tempBuf1);
+        SRAM_FREE(tempBuf2);
+    }
+}
+#endif
+
 #ifndef BUILD_PRODUCTION
 
 /// @brief

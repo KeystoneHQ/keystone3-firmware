@@ -152,6 +152,7 @@ LV_IMG_DECLARE(imgWIF);
 LV_IMG_DECLARE(imgSoftwareWallet);
 LV_IMG_DECLARE(imgJupiter);
 LV_IMG_DECLARE(imgEllipse);
+LV_IMG_DECLARE(imgEnterPassphrase);
 // emoji
 LV_IMG_DECLARE(emojiAlien);
 LV_IMG_DECLARE(emojiAt);
@@ -291,6 +292,7 @@ LV_IMG_DECLARE(walletNufi);
 LV_IMG_DECLARE(walletBeacon);
 LV_IMG_DECLARE(walletBtcSafe);
 LV_IMG_DECLARE(walletMedusa);
+LV_IMG_DECLARE(walletIota);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);

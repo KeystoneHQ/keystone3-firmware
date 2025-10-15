@@ -51,8 +51,7 @@ impl AccountAddress {
     pub fn from_hex_literal(literal: &str) -> crate::errors::Result<Self> {
         if !literal.starts_with("0x") {
             return Err(crate::errors::AptosError::InvalidData(format!(
-                "{} not start with 0x",
-                literal
+                "{literal} not start with 0x"
             )));
         }
 
@@ -82,7 +81,7 @@ impl AccountAddress {
     }
 
     pub fn to_hex(&self) -> String {
-        format!("{:x}", self)
+        format!("{self:x}")
     }
 
     pub fn from_bytes<T: AsRef<[u8]>>(bytes: T) -> crate::errors::Result<Self> {
@@ -108,13 +107,13 @@ impl core::ops::Deref for AccountAddress {
 
 impl fmt::Display for AccountAddress {
     fn fmt(&self, f: &mut fmt::Formatter) -> core::fmt::Result {
-        write!(f, "{:x}", self)
+        write!(f, "{self:x}")
     }
 }
 
 impl fmt::Debug for AccountAddress {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:x}", self)
+        write!(f, "{self:x}")
     }
 }
 
@@ -125,7 +124,7 @@ impl fmt::LowerHex for AccountAddress {
         }
 
         for byte in &self.0 {
-            write!(f, "{:02x}", byte)?;
+            write!(f, "{byte:02x}")?;
         }
 
         Ok(())
@@ -139,7 +138,7 @@ impl fmt::UpperHex for AccountAddress {
         }
 
         for byte in &self.0 {
-            write!(f, "{:02X}", byte)?;
+            write!(f, "{byte:02X}")?;
         }
 
         Ok(())

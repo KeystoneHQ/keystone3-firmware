@@ -218,8 +218,19 @@ void GuiLockScreenTurnOn(void *param)
     if (GetKeyboardWidgetMode() != g_verifyLock->mode % 2) {
         PassWordPinSwitch(g_verifyLock);
     }
+    GuiShuffleNumKeyBoardMap(g_verifyLock);
     GuiUpdateEnterPasscodeParam(g_verifyLock, single);
     GuilockScreenRefresh();
+}
+
+void GuiLockScreenSetNumKeyBoardMapDefault(void)
+{
+    GuiSetNumKeyBoardMapDefault(g_verifyLock);
+}
+
+void GuiLockScreenShuffleNumKeyBoardMap(void)
+{
+    GuiShuffleNumKeyBoardMap(g_verifyLock);
 }
 
 void GuiLockScreenTurnOff(void)

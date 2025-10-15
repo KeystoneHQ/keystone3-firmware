@@ -7,7 +7,7 @@ use cryptoxide::sha3::Keccak256;
 use curve25519_dalek::scalar::Scalar;
 
 pub(crate) fn sha256_digest(data: &[u8]) -> Vec<u8> {
-    hashing::sha256(&data).to_vec()
+    hashing::sha256(data).to_vec()
 }
 
 fn ripemd160_digest(data: &[u8]) -> [u8; 20] {

@@ -279,7 +279,8 @@ static int _get_salt(uint16_t id, bool eb, uint8_t *salt)
         return 0;
     } else {
         if (salt != NULL) {
-            memcpy(salt, SHAMIR_SALT_HEAD, 6);
+            memset(salt, 0, SHAMIR_SALT_HEAD_LEN);
+            memcpy(salt, SHAMIR_SALT_HEAD, strlen(SHAMIR_SALT_HEAD));
             salt[6] = id >> 8;
             salt[7] = id & 0xFF;
         }
@@ -444,7 +445,10 @@ int MasterSecretEncrypt(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t 
     uint8_t left[halfLen], right[halfLen], rightTemp[halfLen], key[halfLen];
     uint8_t saltLen = _get_salt(identifier, extendableBackupFlag, NULL);
     uint8_t salt[saltLen + halfLen];
-    uint8_t passPhraseLen = strlen((const char *)passPhrase) + 1;
+    size_t passPhraseLen = (passPhrase != NULL) ? strlen((const char *)passPhrase) + 1 : 1;
+    if (passPhraseLen > 255) {
+        return -1;
+    }
     uint8_t pass[passPhraseLen];
     uint32_t iterations;
 
@@ -457,9 +461,10 @@ int MasterSecretEncrypt(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t 
     // get salt
     _get_salt(identifier, extendableBackupFlag, salt);
 
-    // todo pass
     memset(pass, 0, sizeof(pass));
-    // memcpy(pass, passPhraseLen + 1, strlen(passPhrase));
+    if (passPhrase != NULL && passPhraseLen > 1) {
+        memcpy(pass + 1, passPhrase, passPhraseLen - 1);
+    }
 
     iterations = PBKDF2_BASE_ITERATION_COUNT << iterationExponent;
     for (int i = 0; i < PBKDF2_ROUND_COUNT; i++) {

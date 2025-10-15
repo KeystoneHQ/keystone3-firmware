@@ -41,18 +41,18 @@ impl From<KeystoreError> for CosmosError {
 
 impl From<hex::FromHexError> for CosmosError {
     fn from(value: hex::FromHexError) -> Self {
-        Self::InvalidData(format!("hex operation failed {}", value))
+        Self::InvalidData(format!("hex operation failed {value}"))
     }
 }
 
 impl From<serde_json::Error> for CosmosError {
     fn from(value: serde_json::Error) -> Self {
-        Self::InvalidData(format!("serde_json operation failed {}", value))
+        Self::InvalidData(format!("serde_json operation failed {value}"))
     }
 }
 
 impl From<core::num::ParseFloatError> for CosmosError {
     fn from(value: core::num::ParseFloatError) -> Self {
-        CosmosError::InvalidData(format!("parse float failed {}", value))
+        CosmosError::InvalidData(format!("parse float failed {value}"))
     }
 }

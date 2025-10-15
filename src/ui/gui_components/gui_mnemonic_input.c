@@ -182,12 +182,6 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 static void ProceedWithBip39(MnemonicKeyBoard_t *mkb)
 {
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-    Bip39Data_t bip39 = {
-        .wordCnt = mkb->wordCnt,
-        .forget = false,
-    };
-    GuiModelBip39CalWriteSe(bip39);
-    GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
 }
 
 static void HandleInputType(MnemonicKeyBoard_t *mkb)
@@ -216,8 +210,13 @@ static void HandleTonCondition(bool isTon, MnemonicKeyBoard_t *mkb)
             GuiEmitSignal(SIG_SETUP_SHOW_TON_MNEMONIC_HINT, NULL, 0);
             break;
         case MNEMONIC_INPUT_SETTING_VIEW:
-            GuiModelTonRecoveryCheck();
-            GuiSettingRecoveryCheck();
+            if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
+                GuiModelTonRecoveryCheck();
+                GuiSettingRecoveryCheck();
+            } else {
+                GuiModelBip39RecoveryCheck(mkb->wordCnt);
+                GuiSettingRecoveryCheck();
+            }
             break;
         case MNEMONIC_INPUT_FORGET_VIEW:
             GuiForgetAnimContDel(1);

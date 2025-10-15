@@ -6,7 +6,7 @@ use ur_registry::bytes::Bytes;
 use ur_registry::traits::RegistryItem;
 
 #[no_mangle]
-pub extern "C" fn get_connect_xrp_toolkit_ur(
+pub unsafe extern "C" fn get_connect_xrp_toolkit_ur(
     hd_path: PtrString,
     root_x_pub: PtrString,
     root_path: PtrString,

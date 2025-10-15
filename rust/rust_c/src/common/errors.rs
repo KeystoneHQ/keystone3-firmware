@@ -386,6 +386,7 @@ impl From<&CardanoError> for ErrorCodes {
             CardanoError::DerivationError(_) => Self::KeystoreDerivationError,
             CardanoError::UnsupportedTransaction(_) => Self::UnsupportedTransaction,
             CardanoError::SigningFailed(_) => Self::SignFailure,
+            CardanoError::InvalidSeed(_) => Self::InvalidData,
         }
     }
 }
@@ -587,9 +588,7 @@ impl From<&ZcashError> for ErrorCodes {
 #[cfg(feature = "monero")]
 impl From<&MoneroError> for ErrorCodes {
     fn from(value: &MoneroError) -> Self {
-        match value {
-            _ => Self::MoneroUnknownError,
-        }
+        Self::MoneroUnknownError
     }
 }
 

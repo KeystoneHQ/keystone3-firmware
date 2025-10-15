@@ -45,7 +45,7 @@ impl From<&TonTransaction> for DisplayTonTransaction {
 }
 
 impl Free for DisplayTonTransaction {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.amount);
         free_str_ptr!(self.action);
         free_str_ptr!(self.to);
@@ -80,7 +80,7 @@ impl From<&TonProof> for DisplayTonProof {
 }
 
 impl Free for DisplayTonProof {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.domain);
         free_str_ptr!(self.payload);
         free_str_ptr!(self.address);

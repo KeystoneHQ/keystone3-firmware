@@ -72,7 +72,7 @@ char *SecretCacheGetPassword(void)
     return g_passwordCache;
 }
 
-void SecretCacheSetPassphrase(char *passPhrase)
+void SecretCacheSetPassphrase(const char *passPhrase)
 {
     if (g_passphraseCache) {
         SRAM_FREE(g_passphraseCache);

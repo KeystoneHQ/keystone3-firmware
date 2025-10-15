@@ -9,7 +9,7 @@ use app_monero::outputs::DisplayMoneroOutput as InnerDisplayMoneroOutput;
 use app_monero::transfer::DisplayTransactionInfo;
 
 use crate::common::utils::convert_c_char;
-use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
+use crate::{free_str_ptr, impl_c_ptr, make_free_method};
 
 #[repr(C)]
 pub struct DisplayMoneroOutput {
@@ -25,7 +25,7 @@ pub struct DisplayMoneroUnsignedTxOutput {
 }
 
 impl Free for DisplayMoneroUnsignedTxOutput {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.address);
         free_str_ptr!(self.amount);
     }
@@ -38,7 +38,7 @@ pub struct DisplayMoneroUnsignedTxInput {
 }
 
 impl Free for DisplayMoneroUnsignedTxInput {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.key);
         free_str_ptr!(self.amount);
     }
@@ -90,30 +90,28 @@ impl_c_ptr!(DisplayMoneroOutput);
 impl_c_ptr!(DisplayMoneroUnsignedTx);
 
 impl Free for DisplayMoneroOutput {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.txos_num);
         free_str_ptr!(self.total_amount);
     }
 }
 
 impl Free for DisplayMoneroUnsignedTx {
-    fn free(&self) {
-        unsafe {
-            let x = Box::from_raw(self.outputs);
-            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-            ve.iter().for_each(|v| {
-                v.free();
-            });
-            let x = Box::from_raw(self.inputs);
-            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-            ve.iter().for_each(|v| {
-                v.free();
-            });
+    unsafe fn free(&self) {
+        let x = Box::from_raw(self.outputs);
+        let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+        ve.iter().for_each(|v| {
+            v.free();
+        });
+        let x = Box::from_raw(self.inputs);
+        let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+        ve.iter().for_each(|v| {
+            v.free();
+        });
 
-            free_str_ptr!(self.input_amount);
-            free_str_ptr!(self.output_amount);
-            free_str_ptr!(self.fee);
-        }
+        free_str_ptr!(self.input_amount);
+        free_str_ptr!(self.output_amount);
+        free_str_ptr!(self.fee);
     }
 }
 

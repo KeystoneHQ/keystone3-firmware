@@ -303,7 +303,8 @@ static AccountPublicKeyItem_t g_accountPublicInfo[XPUB_TYPE_NUM] = {0};
 static uint8_t g_tempPublicKeyAccountIndex = INVALID_ACCOUNT_INDEX;
 static bool g_isTempAccount = false;
 
-static const char g_xpubInfoVersion[] = "1.0.0";
+// 1.0.1 support slip39 for ada
+static const char g_xpubInfoVersion[] = "1.0.1";
 static const char g_multiSigInfoVersion[] = "1.0.0";
 
 static const ChainItem_t g_chainTable[] = {
@@ -917,7 +918,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 // slip39 wallet does not support:
                 // ADA
                 // Zcash
-                if (isSlip39 && (g_chainTable[i].cryptoKey == BIP32_ED25519 || g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED)) {
+                if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED)) {
                     continue;
                 }
                 // do not generate public keys for ton-only wallet;
@@ -941,7 +942,15 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 } else {
                     xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
-#else
+#endif
+#ifdef WEB3_VERSION
+                if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
+                    xPubResult = cardano_get_pubkey_by_slip23(seed, len, g_chainTable[i].path);
+                } else {
+                    xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+                }
+#endif
+#ifdef BTC_ONLY
                 xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
 #endif
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
@@ -1083,7 +1092,8 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
 
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
             // SLIP32 wallet does not support ADA
-            if (isSlip39 && (g_chainTable[i].cryptoKey == BIP32_ED25519 || g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED)) {
+            // slip23 for ada
+            if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED)) {
                 continue;
             }
             if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
@@ -1106,7 +1116,16 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             } else {
                 xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
             }
-#else
+#endif
+#ifdef WEB3_VERSION
+            if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
+                // ada slip23
+                xPubResult = cardano_get_pubkey_by_slip23(seed, len, g_chainTable[i].path);
+            } else {
+                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+            }
+#endif
+#ifdef BTC_ONLY
             xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
 #endif
             if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
@@ -1675,8 +1694,8 @@ void SetAccountReceiveIndex(const char* chainName, uint32_t index)
         cJSON_AddItemToObject(item, "recvIndex", cJSON_CreateNumber(index));
     }
 
-    WriteJsonToFlash(addr, rootJson);
     if (!PassphraseExist(GetCurrentAccountIndex())) {
+        WriteJsonToFlash(addr, rootJson);
         cJSON_Delete(rootJson);
     }
 }
@@ -1689,6 +1708,19 @@ uint32_t GetAccountReceivePath(const char* chainName)
     cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
     if (item == NULL) {
         printf("GetAccountReceivePath index cannot get %s\r\n", chainName);
+        printf("receive index cannot get %s\r\n", chainName);
+        cJSON *jsonItem = cJSON_CreateObject();
+        cJSON_AddItemToObject(jsonItem, "recvIndex", cJSON_CreateNumber(0)); // recvIndex is the address index
+        cJSON_AddItemToObject(jsonItem, "recvPath", cJSON_CreateNumber(0)); // recvPath is the derivation path type
+        cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(true)); // firstRecv is the first receive address
+        if (!strcmp(chainName, "TON")) {
+            cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
+        } else if ((!strcmp(chainName, "BTC") || !strcmp(chainName, "ETH"))) {
+            cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
+        } else {
+            cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));
+        }
+        cJSON_AddItemToObject(rootJson, chainName, jsonItem);
     } else {
         cJSON *recvPath = cJSON_GetObjectItem(item, "recvPath");
         index = recvPath ? recvPath->valueint : 0;
@@ -1707,7 +1739,16 @@ void SetAccountReceivePath(const char* chainName, uint32_t index)
     cJSON *item = cJSON_GetObjectItem(rootJson, chainName);
     if (item == NULL) {
         printf("SetAccountReceivePath cannot get %s\r\n", chainName);
-        cJSON_Delete(rootJson);
+        if (!PassphraseExist(GetCurrentAccountIndex())) {
+            cJSON_Delete(rootJson);
+        } else {
+            cJSON *jsonItem = cJSON_CreateObject();
+            cJSON_AddItemToObject(jsonItem, "recvIndex", cJSON_CreateNumber(0)); // recvIndex is the address index
+            cJSON_AddItemToObject(jsonItem, "recvPath", cJSON_CreateNumber(index)); // recvPath is the derivation path type
+            cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(false)); // firstRecv is the first receive address
+            cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));
+            cJSON_AddItemToObject(rootJson, chainName, jsonItem);
+        }
         return;
     }
     cJSON *recvPath = cJSON_GetObjectItem(item, "recvPath");
@@ -1969,7 +2010,6 @@ static void WriteJsonToFlash(uint32_t addr, cJSON *rootJson)
         Gd25FlashSectorErase(eraseAddr);
     }
     jsonString = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4, false);
-    printf("save jsonString=%s\r\n", jsonString);
     RemoveFormatChar(jsonString);
     size = strlen(jsonString);
     Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);

@@ -76,8 +76,7 @@ fn main() {
     assert!(!features.is_empty(), "No build variant enabled");
     assert!(
         features.len() == 1,
-        "Multiple build variants enabled: {:?}",
-        features
+        "Multiple build variants enabled: {features:?}"
     );
     let output_target = env::var("CBINDGEN_BINDINGS_TARGET")
         .unwrap_or(format!("bindings/{}/librust_c.h", features[0]));
@@ -89,6 +88,10 @@ fn main() {
         .with_crate(".")
         .with_config(config)
         .generate()
-        .expect("Failed to generate bindings")
-        .write_to_file(output_target);
+        .map_or_else(
+            |error| {},
+            |bindings| {
+                bindings.write_to_file(output_target);
+            },
+        )
 }

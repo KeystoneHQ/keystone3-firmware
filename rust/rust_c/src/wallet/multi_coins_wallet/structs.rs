@@ -22,7 +22,7 @@ pub struct KeplrAccount {
 }
 
 impl Free for KeplrAccount {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.name);
         free_str_ptr!(self.path);
         free_str_ptr!(self.xpub);
@@ -31,10 +31,12 @@ impl Free for KeplrAccount {
 
 impl From<&KeplrAccount> for SyncInfo {
     fn from(value: &KeplrAccount) -> Self {
-        SyncInfo {
-            name: recover_c_char(value.name),
-            hd_path: recover_c_char(value.path),
-            xpub: recover_c_char(value.xpub),
+        unsafe {
+            SyncInfo {
+                name: recover_c_char(value.name),
+                hd_path: recover_c_char(value.path),
+                xpub: recover_c_char(value.xpub),
+            }
         }
     }
 }

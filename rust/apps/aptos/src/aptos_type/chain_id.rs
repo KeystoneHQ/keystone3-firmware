@@ -39,8 +39,7 @@ impl NamedChain {
             PREMAINNET => NamedChain::PREMAINNET,
             _ => {
                 return Err(crate::errors::AptosError::ParseTxError(format!(
-                    "Not a reserved chain: {:?}",
-                    s
+                    "Not a reserved chain: {s:?}"
                 )));
             }
         };
@@ -107,7 +106,7 @@ where
 
 impl fmt::Debug for ChainId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 
@@ -157,7 +156,7 @@ impl FromStr for ChainId {
             let value = s
                 .parse::<u8>()
                 .map_err(|e| crate::errors::AptosError::ParseTxError(e.to_string()))?;
-            if value <= 0 {
+            if value == 0 {
                 return Err(crate::errors::AptosError::ParseTxError(
                     "cannot have chain ID with 0".to_string(),
                 ));

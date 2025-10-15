@@ -12,7 +12,7 @@ use {
 };
 
 #[no_mangle]
-pub extern "C" fn get_tonkeeper_wallet_ur(
+pub unsafe extern "C" fn get_tonkeeper_wallet_ur(
     public_key: PtrString,
     wallet_name: PtrString,
 

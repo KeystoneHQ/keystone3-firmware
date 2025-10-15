@@ -28,6 +28,9 @@ void SetAutoPowerOff(uint32_t autoPowerOff);
 uint32_t GetVibration(void);
 void SetVibration(uint32_t vibration);
 
+uint32_t GetRandomPinPad(void);
+void SetRandomPinPad(uint32_t random);
+
 uint32_t GetPermitSign(void);
 void SetPermitSign(uint32_t permitSign);
 

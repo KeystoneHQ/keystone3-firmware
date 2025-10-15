@@ -55,8 +55,7 @@ impl Identifier {
             Ok(Self(s))
         } else {
             Err(AptosError::ParseTxError(format!(
-                "Invalid identifier '{}'",
-                s
+                "Invalid identifier '{s}'"
             )))
         }
     }
@@ -131,8 +130,7 @@ impl IdentStr {
             Ok(IdentStr::ref_cast(s))
         } else {
             Err(AptosError::ParseTxError(format!(
-                "Invalid identifier '{}'",
-                s
+                "Invalid identifier '{s}'"
             )))
         }
     }

@@ -22,7 +22,7 @@ use monero_serai::ringct::{RctBase, RctProofs, RctPrunable};
 use monero_serai::transaction::{
     Input, NotPruned, Output, Timelock, Transaction, TransactionPrefix,
 };
-use rand_core::SeedableRng;
+use rand_core::OsRng;
 use zeroize::Zeroizing;
 
 #[derive(Debug, Clone)]
@@ -99,7 +99,9 @@ pub struct AccountPublicAddress {
 
 impl AccountPublicAddress {
     pub fn to_address(&self, network: Network, is_subaddress: bool) -> Address {
-        let address = Address {
+        
+
+        Address {
             network,
             addr_type: if is_subaddress {
                 AddressType::Subaddress
@@ -108,9 +110,7 @@ impl AccountPublicAddress {
             },
             public_spend: PublicKey::from_bytes(&self.spend_public_key).unwrap(),
             public_view: PublicKey::from_bytes(&self.view_public_key).unwrap(),
-        };
-
-        address
+        }
     }
 }
 
@@ -168,6 +168,12 @@ pub struct InnerInput {
 
 pub struct InnerInputs(Vec<InnerInput>);
 
+impl Default for InnerInputs {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl InnerInputs {
     pub fn new() -> InnerInputs {
         InnerInputs(vec![])
@@ -203,6 +209,12 @@ pub struct InnerOutput {
 
 pub struct InnerOutputs(Vec<InnerOutput>);
 
+impl Default for InnerOutputs {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl InnerOutputs {
     pub fn new() -> InnerOutputs {
         InnerOutputs(vec![])
@@ -222,7 +234,7 @@ impl InnerOutputs {
     pub fn get_key_images(&self) -> Vec<Keyimage> {
         self.0
             .iter()
-            .map(|inner_output| inner_output.key_image.clone())
+            .map(|inner_output| inner_output.key_image)
             .collect()
     }
 }
@@ -242,7 +254,7 @@ impl TxConstructionData {
 
     fn absolute_output_offsets_to_relative(&self, off: Vec<u64>) -> Vec<u64> {
         let mut res = off;
-        if res.len() == 0 {
+        if res.is_empty() {
             return res;
         }
         res.sort();
@@ -385,7 +397,7 @@ impl UnsignedTx {
         let mut outputs = vec![];
         for tx in self.txes.iter() {
             for source in tx.sources.iter() {
-                let output = source.outputs[source.real_output as usize].clone();
+                let output = source.outputs[source.real_output as usize];
                 let amount = source.amount;
                 inputs.push((
                     PublicKey::from_bytes(&output.key.dest).unwrap(),
@@ -551,14 +563,10 @@ impl UnsignedTx {
                 encrypted_amounts.push(encrypted_amount);
             }
             let bulletproof = {
-                let mut seed = vec![];
-                seed.extend_from_slice(b"bulletproof");
-                seed.extend_from_slice(&tx.extra);
-                let mut bp_rng = rand_chacha::ChaCha20Rng::from_seed(keccak256(&seed));
                 (match tx.rct_config.bp_version {
-                    RctType::RCTTypeFull => Bulletproof::prove(&mut bp_rng, bp_commitments),
+                    RctType::RCTTypeFull => Bulletproof::prove(&mut OsRng, bp_commitments),
                     RctType::RCTTypeNull | RctType::RCTTypeBulletproof2 => {
-                        Bulletproof::prove_plus(&mut bp_rng, bp_commitments)
+                        Bulletproof::prove_plus(&mut OsRng, bp_commitments)
                     }
                     _ => panic!("unsupported RctType"),
                 })
@@ -598,8 +606,6 @@ impl UnsignedTx {
         let mut penging_tx = vec![];
         let txes = self.transaction_without_signatures(keypair);
         let mut tx_key_images = vec![];
-        let seed = keccak256(&txes[0].serialize());
-        let mut rng = rand_chacha::ChaCha20Rng::from_seed(seed);
         for (tx, unsigned_tx) in txes.iter().zip(self.txes.iter()) {
             let mask_sum = unsigned_tx.sum_output_masks(keypair);
             let inputs = unsigned_tx.inputs(keypair);
@@ -643,7 +649,8 @@ impl UnsignedTx {
             }
 
             let msg = tx.signature_hash().unwrap();
-            let clsags_and_pseudo_outs = Clsag::sign(&mut rng, clsag_signs, mask_sum, msg).unwrap();
+            let clsags_and_pseudo_outs =
+                Clsag::sign(&mut OsRng, clsag_signs, mask_sum, msg).unwrap();
 
             let mut tx = tx.clone();
             let inputs_len = tx.prefix().inputs.len();
@@ -671,7 +678,7 @@ impl UnsignedTx {
             }
 
             let key_images = unsigned_tx.calc_key_images(keypair);
-            let key_images_str = if key_images.len() == 0 {
+            let key_images_str = if key_images.is_empty() {
                 "".to_owned()
             } else {
                 let mut key_images_str = "".to_owned();

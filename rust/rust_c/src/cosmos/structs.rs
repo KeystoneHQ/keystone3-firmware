@@ -4,11 +4,11 @@ use app_cosmos::transaction::structs::{CosmosTxDisplayType, ParsedCosmosTx};
 use core::ptr::null_mut;
 use serde_json;
 
-use crate::common::free::{free_ptr_string, Free};
+use crate::common::free::Free;
 use crate::common::structs::TransactionParseResult;
 use crate::common::types::{PtrString, PtrT};
 use crate::common::utils::convert_c_char;
-use crate::{check_and_free_ptr, impl_c_ptr, make_free_method};
+use crate::{check_and_free_ptr, impl_c_ptr, make_free_method, free_str_ptr};
 
 #[repr(C)]
 pub struct DisplayCosmosTx {
@@ -89,37 +89,37 @@ impl Default for DisplayCosmosTxOverview {
 }
 
 impl Free for DisplayCosmosTx {
-    fn free(&self) {
+    unsafe fn free(&self) {
         check_and_free_ptr!(self.overview);
-        free_ptr_string(self.detail);
+        free_str_ptr!(self.detail);
     }
 }
 impl Free for DisplayCosmosTxOverview {
-    fn free(&self) {
-        free_ptr_string(self.display_type);
-        free_ptr_string(self.method);
-        free_ptr_string(self.network);
-        free_ptr_string(self.send_value);
-        free_ptr_string(self.send_from);
-        free_ptr_string(self.send_to);
-        free_ptr_string(self.delegate_value);
-        free_ptr_string(self.delegate_from);
-        free_ptr_string(self.delegate_to);
-        free_ptr_string(self.undelegate_value);
-        free_ptr_string(self.undelegate_to);
-        free_ptr_string(self.undelegate_validator);
-        free_ptr_string(self.redelegate_value);
-        free_ptr_string(self.redelegate_to);
-        free_ptr_string(self.redelegate_new_validator);
-        free_ptr_string(self.withdraw_reward_to);
-        free_ptr_string(self.withdraw_reward_validator);
-        free_ptr_string(self.transfer_from);
-        free_ptr_string(self.transfer_to);
-        free_ptr_string(self.transfer_value);
-        free_ptr_string(self.vote_voted);
-        free_ptr_string(self.vote_proposal);
-        free_ptr_string(self.vote_voter);
-        free_ptr_string(self.overview_list);
+    unsafe fn free(&self) {
+        free_str_ptr!(self.display_type);
+        free_str_ptr!(self.method);
+        free_str_ptr!(self.network);
+        free_str_ptr!(self.send_value);
+        free_str_ptr!(self.send_from);
+        free_str_ptr!(self.send_to);
+        free_str_ptr!(self.delegate_value);
+        free_str_ptr!(self.delegate_from);
+        free_str_ptr!(self.delegate_to);
+        free_str_ptr!(self.undelegate_value);
+        free_str_ptr!(self.undelegate_to);
+        free_str_ptr!(self.undelegate_validator);
+        free_str_ptr!(self.redelegate_value);
+        free_str_ptr!(self.redelegate_to);
+        free_str_ptr!(self.redelegate_new_validator);
+        free_str_ptr!(self.withdraw_reward_to);
+        free_str_ptr!(self.withdraw_reward_validator);
+        free_str_ptr!(self.transfer_from);
+        free_str_ptr!(self.transfer_to);
+        free_str_ptr!(self.transfer_value);
+        free_str_ptr!(self.vote_voted);
+        free_str_ptr!(self.vote_proposal);
+        free_str_ptr!(self.vote_voter);
+        free_str_ptr!(self.overview_list);
     }
 }
 

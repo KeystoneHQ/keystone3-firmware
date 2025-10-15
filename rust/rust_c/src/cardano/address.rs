@@ -6,7 +6,7 @@ use app_cardano::address::AddressType;
 use cty::c_char;
 
 #[no_mangle]
-pub extern "C" fn cardano_get_base_address(
+pub unsafe extern "C" fn cardano_get_base_address(
     xpub: PtrString,
     index: u32,
     network_id: u8,
@@ -19,7 +19,7 @@ pub extern "C" fn cardano_get_base_address(
 }
 
 #[no_mangle]
-pub extern "C" fn cardano_get_enterprise_address(
+pub unsafe extern "C" fn cardano_get_enterprise_address(
     xpub: PtrString,
     index: u32,
     network_id: u8,
@@ -39,7 +39,7 @@ pub extern "C" fn cardano_get_enterprise_address(
 }
 
 #[no_mangle]
-pub extern "C" fn cardano_get_stake_address(
+pub unsafe extern "C" fn cardano_get_stake_address(
     xpub: PtrString,
     index: u32,
     network_id: u8,

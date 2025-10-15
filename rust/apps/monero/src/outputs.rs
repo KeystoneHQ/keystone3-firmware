@@ -50,7 +50,7 @@ pub struct ExportedTransferDetails {
 impl ExportedTransferDetails {
     pub fn from_bytes(bytes: &[u8]) -> Result<ExportedTransferDetails> {
         let mut offset = 0;
-        let has_transfers = read_varinteger(&bytes, &mut offset);
+        let has_transfers = read_varinteger(bytes, &mut offset);
         if has_transfers == 0 {
             return Ok(ExportedTransferDetails {
                 offset: 0,
@@ -59,34 +59,34 @@ impl ExportedTransferDetails {
             });
         }
         // offset
-        read_varinteger(&bytes, &mut offset);
+        read_varinteger(bytes, &mut offset);
         // transfers.size()
-        let value_offset = read_varinteger(&bytes, &mut offset);
+        let value_offset = read_varinteger(bytes, &mut offset);
         // details size
-        let value_size = read_varinteger(&bytes, &mut offset);
+        let value_size = read_varinteger(bytes, &mut offset);
         // for size
         let mut details = Vec::new();
         for _ in 0..value_size {
             // version ignore
-            read_varinteger(&bytes, &mut offset);
+            read_varinteger(bytes, &mut offset);
             let pubkey = PublicKey::from_bytes(&bytes[offset..offset + PUBKEY_LEH]).unwrap();
             offset += PUBKEY_LEH;
-            let internal_output_index = read_varinteger(&bytes, &mut offset);
-            let global_output_index = read_varinteger(&bytes, &mut offset);
+            let internal_output_index = read_varinteger(bytes, &mut offset);
+            let global_output_index = read_varinteger(bytes, &mut offset);
             let tx_pubkey = PublicKey::from_bytes(&bytes[offset..offset + PUBKEY_LEH]).unwrap();
             let flags = bytes[offset + PUBKEY_LEH];
             offset += PUBKEY_LEH + 1;
-            let amount = read_varinteger(&bytes, &mut offset);
+            let amount = read_varinteger(bytes, &mut offset);
             // FIXME: additional_tx_keys
-            let keys_num = read_varinteger(&bytes, &mut offset);
+            let keys_num = read_varinteger(bytes, &mut offset);
             let mut additional_tx_keys = Vec::new();
             for _ in 0..keys_num {
                 let key = PublicKey::from_bytes(&bytes[offset..offset + PUBKEY_LEH]).unwrap();
                 additional_tx_keys.push(key);
                 offset += PUBKEY_LEH;
             }
-            let major = read_varinteger(&bytes, &mut offset);
-            let minor = read_varinteger(&bytes, &mut offset);
+            let major = read_varinteger(bytes, &mut offset);
+            let minor = read_varinteger(bytes, &mut offset);
 
             details.push(ExportedTransferDetail {
                 pubkey: pubkey.as_bytes(),
@@ -95,7 +95,7 @@ impl ExportedTransferDetails {
                 tx_pubkey: tx_pubkey.as_bytes(),
                 flags,
                 amount,
-                additional_tx_keys: additional_tx_keys,
+                additional_tx_keys,
                 major: major as u32,
                 minor: minor as u32,
             });
@@ -121,14 +121,8 @@ pub fn parse_display_info(
     pvk: [u8; 32],
 ) -> Result<DisplayMoneroOutput> {
     let decrypted_data =
-        match decrypt_data_with_decrypt_key(decrypt_key, pvk, data.to_vec(), OUTPUT_EXPORT_MAGIC) {
-            Ok(data) => data,
-            Err(e) => return Err(e),
-        };
-    let outputs = match ExportedTransferDetails::from_bytes(&decrypted_data.data) {
-        Ok(data) => data,
-        Err(e) => return Err(e),
-    };
+        decrypt_data_with_decrypt_key(decrypt_key, pvk, data.to_vec(), OUTPUT_EXPORT_MAGIC)?;
+    let outputs = ExportedTransferDetails::from_bytes(&decrypted_data.data)?;
 
     let total_amount = outputs.details.iter().fold(0, |acc, x| acc + x.amount);
 

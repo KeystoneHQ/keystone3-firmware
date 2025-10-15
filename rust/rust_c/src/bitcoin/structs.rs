@@ -9,7 +9,7 @@ use crate::common::structs::TransactionParseResult;
 use crate::common::types::{PtrString, PtrT};
 use crate::common::ur::UREncodeResult;
 use crate::common::utils::convert_c_char;
-use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
+use crate::{free_str_ptr, impl_c_ptr, make_free_method};
 use app_bitcoin;
 use app_bitcoin::parsed_tx::{DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx};
 
@@ -31,13 +31,11 @@ impl PsbtSignResult {
 }
 
 impl Free for PsbtSignResult {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.base_str);
         free_str_ptr!(self.hex_str);
-        unsafe {
-            let x = Box::from_raw(self.ur_result);
-            x.free();
-        }
+        let x = Box::from_raw(self.ur_result);
+        x.free();
     }
 }
 
@@ -223,99 +221,85 @@ impl From<ParsedOutput> for DisplayTxDetailOutput {
 }
 
 impl Free for DisplayTx {
-    fn free(&self) {
-        unsafe {
-            let x = Box::from_raw(self.overview);
-            let y = Box::from_raw(self.detail);
-            x.free();
-            y.free();
-        }
+    unsafe fn free(&self) {
+        let x = Box::from_raw(self.overview);
+        let y = Box::from_raw(self.detail);
+        x.free();
+        y.free();
     }
 }
 
 make_free_method!(TransactionParseResult<DisplayTx>);
 
 impl Free for DisplayTxOverview {
-    fn free(&self) {
-        unsafe {
-            let x = Box::from_raw(self.from);
-            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-            ve.iter().for_each(|v| {
-                v.free();
-            });
-            let x = Box::from_raw(self.to);
-            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-            ve.iter().for_each(|v| {
-                v.free();
-            });
+    unsafe fn free(&self) {
+        let x = Box::from_raw(self.from);
+        let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+        ve.iter().for_each(|v| {
+            v.free();
+        });
+        let x = Box::from_raw(self.to);
+        let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+        ve.iter().for_each(|v| {
+            v.free();
+        });
 
-            let _ = Box::from_raw(self.total_output_amount);
-            let _ = Box::from_raw(self.fee_amount);
-            let _ = Box::from_raw(self.total_output_sat);
-            let _ = Box::from_raw(self.fee_sat);
-            let _ = Box::from_raw(self.network);
-        }
+        let _ = Box::from_raw(self.total_output_amount);
+        let _ = Box::from_raw(self.fee_amount);
+        let _ = Box::from_raw(self.total_output_sat);
+        let _ = Box::from_raw(self.fee_sat);
+        let _ = Box::from_raw(self.network);
     }
 }
 
 impl Free for DisplayTxDetail {
-    fn free(&self) {
-        unsafe {
-            let x = Box::from_raw(self.from);
-            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-            ve.iter().for_each(|v| {
-                v.free();
-            });
-            let x = Box::from_raw(self.to);
-            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-            ve.iter().for_each(|v| {
-                v.free();
-            });
+    unsafe fn free(&self) {
+        let x = Box::from_raw(self.from);
+        let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+        ve.iter().for_each(|v| {
+            v.free();
+        });
+        let x = Box::from_raw(self.to);
+        let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+        ve.iter().for_each(|v| {
+            v.free();
+        });
 
-            let _ = Box::from_raw(self.total_input_amount);
-            let _ = Box::from_raw(self.total_output_amount);
-            let _ = Box::from_raw(self.fee_amount);
-            let _ = Box::from_raw(self.network);
-            let _ = Box::from_raw(self.total_input_sat);
-            let _ = Box::from_raw(self.total_output_sat);
-            let _ = Box::from_raw(self.fee_sat);
-        }
+        let _ = Box::from_raw(self.total_input_amount);
+        let _ = Box::from_raw(self.total_output_amount);
+        let _ = Box::from_raw(self.fee_amount);
+        let _ = Box::from_raw(self.network);
+        let _ = Box::from_raw(self.total_input_sat);
+        let _ = Box::from_raw(self.total_output_sat);
+        let _ = Box::from_raw(self.fee_sat);
     }
 }
 
 impl Free for DisplayTxOverviewInput {
-    fn free(&self) {
-        unsafe {
-            let _ = Box::from_raw(self.address);
-        }
+    unsafe fn free(&self) {
+        let _ = Box::from_raw(self.address);
     }
 }
 
 impl Free for DisplayTxDetailInput {
-    fn free(&self) {
-        unsafe {
-            let _ = Box::from_raw(self.address);
-            let _ = Box::from_raw(self.amount);
-            let _ = Box::from_raw(self.path);
-        }
+    unsafe fn free(&self) {
+        let _ = Box::from_raw(self.address);
+        let _ = Box::from_raw(self.amount);
+        let _ = Box::from_raw(self.path);
     }
 }
 
 impl Free for DisplayTxOverviewOutput {
-    fn free(&self) {
-        unsafe {
-            let _ = Box::from_raw(self.address);
-        }
+    unsafe fn free(&self) {
+        let _ = Box::from_raw(self.address);
     }
 }
 
 impl Free for DisplayTxDetailOutput {
-    fn free(&self) {
-        unsafe {
-            let _ = Box::from_raw(self.address);
-            let _ = Box::from_raw(self.amount);
-            let _ = Box::from_raw(self.path);
-        }
+    unsafe fn free(&self) {
+        let _ = Box::from_raw(self.address);
+        let _ = Box::from_raw(self.amount);
+        let _ = Box::from_raw(self.path);
     }
 }
 
@@ -328,7 +312,7 @@ pub struct DisplayBtcMsg {
 impl_c_ptr!(DisplayBtcMsg);
 
 impl Free for DisplayBtcMsg {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.detail);
         free_str_ptr!(self.address);
     }

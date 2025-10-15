@@ -18,7 +18,7 @@ pub struct XRPHDPath {
 }
 
 impl Free for XRPHDPath {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.path);
     }
 }
@@ -85,7 +85,7 @@ impl_c_ptr!(DisplayXrpTx);
 impl_c_ptr!(DisplayXrpTxOverview);
 
 impl Free for DisplayXrpTx {
-    fn free(&self) {
+    unsafe fn free(&self) {
         check_and_free_ptr!(self.overview);
         free_ptr_string(self.network);
         free_ptr_string(self.detail);
@@ -94,7 +94,7 @@ impl Free for DisplayXrpTx {
 }
 
 impl Free for DisplayXrpTxOverview {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.display_type);
         free_str_ptr!(self.transaction_type);
         free_str_ptr!(self.from);

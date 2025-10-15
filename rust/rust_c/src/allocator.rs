@@ -10,7 +10,7 @@ use cstr_core::CString;
 fn oom(layout: core::alloc::Layout) -> ! {
     unsafe {
         crate::bindings::LogRustPanic(
-            CString::new(alloc::format!("Out of memory: {:?}", layout))
+            CString::new(alloc::format!("Out of memory: {layout:?}"))
                 .unwrap()
                 .into_raw(),
         )
@@ -22,7 +22,7 @@ fn oom(layout: core::alloc::Layout) -> ! {
 fn panic(e: &PanicInfo) -> ! {
     unsafe {
         crate::bindings::LogRustPanic(
-            CString::new(alloc::format!("rust panic: {:?}", e))
+            CString::new(alloc::format!("rust panic: {e:?}"))
                 .unwrap()
                 .into_raw(),
         )

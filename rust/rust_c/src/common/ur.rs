@@ -153,12 +153,10 @@ impl UREncodeResult {
 }
 
 impl Free for UREncodeResult {
-    fn free(&self) {
-        unsafe {
-            free_str_ptr!(self.data);
-            free_str_ptr!(self.error_message);
-            free_ptr_with_type!(self.encoder, KeystoneUREncoder);
-        }
+    unsafe fn free(&self) {
+        free_str_ptr!(self.data);
+        free_str_ptr!(self.error_message);
+        free_ptr_with_type!(self.encoder, KeystoneUREncoder);
     }
 }
 
@@ -188,7 +186,7 @@ impl UREncodeMultiResult {
 }
 
 impl Free for UREncodeMultiResult {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.data);
         free_str_ptr!(self.error_message);
     }
@@ -495,14 +493,14 @@ impl URParseResult {
 }
 
 impl Free for URParseResult {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.error_message);
         free_ptr_with_type!(self.decoder, KeystoneURDecoder);
         free_ur(&self.ur_type, self.data);
     }
 }
 
-fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
+unsafe fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
     match ur_type {
         #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoPSBT => {
@@ -666,7 +664,7 @@ impl URParseMultiResult {
 }
 
 impl Free for URParseMultiResult {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.error_message);
         free_ur(&self.ur_type, self.data);
     }
@@ -922,12 +920,12 @@ pub extern "C" fn get_next_cyclic_part(ptr: PtrEncoder) -> *mut UREncodeMultiRes
 }
 
 #[no_mangle]
-pub extern "C" fn parse_ur(ur: PtrString) -> *mut URParseResult {
+pub unsafe extern "C" fn parse_ur(ur: PtrString) -> *mut URParseResult {
     decode_ur(recover_c_char(ur)).c_ptr()
 }
 
 #[no_mangle]
-pub extern "C" fn receive(ur: PtrString, decoder: PtrDecoder) -> *mut URParseMultiResult {
+pub unsafe extern "C" fn receive(ur: PtrString, decoder: PtrDecoder) -> *mut URParseMultiResult {
     let decoder = extract_ptr_with_type!(decoder, KeystoneURDecoder);
     receive_ur(recover_c_char(ur), decoder).c_ptr()
 }

@@ -42,11 +42,9 @@ impl TryFrom<DataItem> for AOTransferTransaction {
             let to = recipient.get_value();
             let quantity = quantity.get_value();
             let mut tags = vec![];
-            loop {
-                match rest_tags.next() {
-                    Some(tag) => tags.push(tag.clone()),
-                    None => break,
-                }
+            
+            while let Some(tag) = rest_tags.next() {
+                tags.push(tag.clone());
             }
 
             let token_info = find_token(&token_id);

@@ -65,7 +65,7 @@ impl From<ETHAccountType> for ETHAccountTypeApp {
 }
 
 #[no_mangle]
-pub extern "C" fn get_connect_metamask_ur_dynamic(
+pub unsafe extern "C" fn get_connect_metamask_ur_dynamic(
     master_fingerprint: PtrBytes,
     master_fingerprint_length: uint32_t,
     account_type: ETHAccountType,
@@ -75,8 +75,7 @@ pub extern "C" fn get_connect_metamask_ur_dynamic(
 ) -> *mut UREncodeResult {
     if master_fingerprint_length != 4 {
         return UREncodeResult::from(URError::UrEncodeError(format!(
-            "master fingerprint length must be 4, current is {}",
-            master_fingerprint_length
+            "master fingerprint length must be 4, current is {master_fingerprint_length}"
         )))
         .c_ptr();
     }
@@ -85,70 +84,68 @@ pub extern "C" fn get_connect_metamask_ur_dynamic(
         Ok(mfp) => mfp,
         Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
     };
-    unsafe {
-        let keys = recover_c_array(public_keys);
-        match account_type {
-            ETHAccountType::LedgerLive => {
-                let extended_public_keys = keys
-                    .iter()
-                    .map(|v: &ExtendedPublicKey| {
-                        derive_extend_public_key(&recover_c_char(v.xpub), &String::from("m/0/0"))
-                            .map(|e| e.to_string())
-                    })
-                    .collect::<Result<Vec<String>, KeystoreError>>();
 
-                match extended_public_keys {
-                    Ok(value) => {
-                        let result =
-                            app_wallets::metamask::generate_ledger_live_account(mfp, &value);
-                        match result.map(|v| v.try_into()) {
-                            Ok(v) => match v {
-                                Ok(data) => UREncodeResult::encode(
-                                    data,
-                                    CryptoAccount::get_registry_type().get_type(),
-                                    fragment_max_length_default,
-                                )
-                                .c_ptr(),
-                                Err(e) => UREncodeResult::from(e).c_ptr(),
-                            },
+    let keys = recover_c_array(public_keys);
+    match account_type {
+        ETHAccountType::LedgerLive => {
+            let extended_public_keys = keys
+                .iter()
+                .map(|v: &ExtendedPublicKey| {
+                    derive_extend_public_key(&recover_c_char(v.xpub), &String::from("m/0/0"))
+                        .map(|e| e.to_string())
+                })
+                .collect::<Result<Vec<String>, KeystoreError>>();
+
+            match extended_public_keys {
+                Ok(value) => {
+                    let result = app_wallets::metamask::generate_ledger_live_account(mfp, &value);
+                    match result.map(|v| v.try_into()) {
+                        Ok(v) => match v {
+                            Ok(data) => UREncodeResult::encode(
+                                data,
+                                CryptoAccount::get_registry_type().get_type(),
+                                fragment_max_length_default,
+                            )
+                            .c_ptr(),
                             Err(e) => UREncodeResult::from(e).c_ptr(),
-                        }
+                        },
+                        Err(e) => UREncodeResult::from(e).c_ptr(),
                     }
-                    Err(e) => UREncodeResult::from(e).c_ptr(),
                 }
+                Err(e) => UREncodeResult::from(e).c_ptr(),
             }
-            _ => {
-                let key = keys.first().ok_or(RustCError::InvalidXPub);
-                match key {
-                    Ok(k) => {
-                        let result = app_wallets::metamask::generate_standard_legacy_hd_key(
-                            mfp,
-                            &recover_c_char(k.xpub),
-                            account_type.into(),
-                            None,
-                        );
-                        match result.map(|v| v.try_into()) {
-                            Ok(v) => match v {
-                                Ok(data) => UREncodeResult::encode(
-                                    data,
-                                    CryptoHDKey::get_registry_type().get_type(),
-                                    fragment_max_length_other,
-                                )
-                                .c_ptr(),
-                                Err(e) => UREncodeResult::from(e).c_ptr(),
-                            },
+        }
+        _ => {
+            let key = keys.first().ok_or(RustCError::InvalidXPub);
+            match key {
+                Ok(k) => {
+                    let result = app_wallets::metamask::generate_standard_legacy_hd_key(
+                        mfp,
+                        &recover_c_char(k.xpub),
+                        account_type.into(),
+                        None,
+                    );
+                    match result.map(|v| v.try_into()) {
+                        Ok(v) => match v {
+                            Ok(data) => UREncodeResult::encode(
+                                data,
+                                CryptoHDKey::get_registry_type().get_type(),
+                                fragment_max_length_other,
+                            )
+                            .c_ptr(),
                             Err(e) => UREncodeResult::from(e).c_ptr(),
-                        }
+                        },
+                        Err(e) => UREncodeResult::from(e).c_ptr(),
                     }
-                    Err(e) => UREncodeResult::from(e).c_ptr(),
                 }
+                Err(e) => UREncodeResult::from(e).c_ptr(),
             }
         }
     }
 }
 
 #[no_mangle]
-pub extern "C" fn get_connect_metamask_ur_unlimited(
+pub unsafe extern "C" fn get_connect_metamask_ur_unlimited(
     master_fingerprint: PtrBytes,
     master_fingerprint_length: uint32_t,
     account_type: ETHAccountType,
@@ -165,7 +162,7 @@ pub extern "C" fn get_connect_metamask_ur_unlimited(
 }
 
 #[no_mangle]
-pub extern "C" fn get_connect_metamask_ur(
+pub unsafe extern "C" fn get_connect_metamask_ur(
     master_fingerprint: PtrBytes,
     master_fingerprint_length: uint32_t,
     account_type: ETHAccountType,

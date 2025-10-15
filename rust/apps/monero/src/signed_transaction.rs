@@ -102,9 +102,9 @@ impl SignedTxSet {
             }
             let key_images_bytes = ptx.key_images.as_bytes();
             res.extend_from_slice(write_varinteger(key_images_bytes.len() as u64).as_slice());
-            if key_images_bytes.len() > 0 {
+            if !key_images_bytes.is_empty() {
                 // res.push(0x01);
-                res.extend_from_slice(&key_images_bytes);
+                res.extend_from_slice(key_images_bytes);
             }
             // tx_key ZERO
             res.extend_from_slice(&Scalar::ONE.to_bytes());

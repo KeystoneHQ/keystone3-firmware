@@ -1,6 +1,4 @@
 #![no_std]
-#![feature(error_in_core)]
-#![feature(prelude_2024)]
 #![allow(dead_code)] // add for solana use a lot of external code
 
 extern crate alloc;
@@ -27,6 +25,7 @@ pub mod message;
 pub mod parser;
 pub mod read;
 mod resolvers;
+#[allow(clippy::all)]
 mod solana_lib;
 pub mod structs;
 pub mod utils;

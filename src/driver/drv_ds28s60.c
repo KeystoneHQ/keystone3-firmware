@@ -5,6 +5,7 @@
 #include "string.h"
 #include "mhscpu.h"
 //#include "drv_spi.h"
+#include "drv_mpu.h"
 #include "drv_spi_io.h"
 #include "cmsis_os.h"
 #include "user_memory.h"

@@ -72,7 +72,7 @@ impl From<ParsedTx> for DisplayTron {
 }
 
 impl Free for DisplayTronOverview {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.from);
         free_str_ptr!(self.to);
         free_str_ptr!(self.value);
@@ -82,7 +82,7 @@ impl Free for DisplayTronOverview {
 }
 
 impl Free for DisplayTronDetail {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.from);
         free_str_ptr!(self.to);
         free_str_ptr!(self.value);
@@ -94,13 +94,11 @@ impl Free for DisplayTronDetail {
 }
 
 impl Free for DisplayTron {
-    fn free(&self) {
-        unsafe {
-            let x = Box::from_raw(self.overview);
-            let y = Box::from_raw(self.detail);
-            x.free();
-            y.free();
-        }
+    unsafe fn free(&self) {
+        let x = Box::from_raw(self.overview);
+        let y = Box::from_raw(self.detail);
+        x.free();
+        y.free();
     }
 }
 

@@ -86,8 +86,7 @@ pub fn parse_gas_limit(gas: &serde_json::Value) -> Result<f64> {
         return Ok(gas_limit);
     }
     Err(CosmosError::InvalidData(format!(
-        "failed to parse gas {:?}",
-        gas
+        "failed to parse gas {gas:?}"
     )))
 }
 
@@ -122,7 +121,7 @@ pub fn format_fee_from_value(data: serde_json::Value) -> Result<FeeDetail> {
                         ))
                     } else {
                         max_fee.push(format!("{} {}", value * gas_limit, denom));
-                        fee.push(format!("{} {}", value, denom));
+                        fee.push(format!("{value} {denom}"));
                     };
                 }
             }

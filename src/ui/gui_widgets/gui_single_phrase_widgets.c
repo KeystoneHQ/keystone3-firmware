@@ -17,11 +17,13 @@
 #include "gui_page.h"
 #include "gui_pending_hintbox.h"
 #include "gui_tutorial_widgets.h"
+#include "gui_setting_widgets.h"
 
 #define SINGLE_PHRASE_MAX_WORDS         24
 typedef enum {
     SINGLE_PHRASE_RANDOM_PHRASE = 0,
     SINGLE_PHRASE_CONFIRM_PHRASE,
+    SINGLE_PHRASE_PASSPHRASE,
     SINGLE_PHRASE_WRITE_SE,
     SINGLE_PHRASE_CONNECT,
 
@@ -35,6 +37,7 @@ typedef struct SinglePhraseWidget {
     lv_obj_t    *notice;
     lv_obj_t    *randomPhrase;
     lv_obj_t    *confirmPhrase;
+    lv_obj_t    *passphrase;
     lv_obj_t    *writeSe;
     lv_obj_t    *backupForm;
 } SinglePhraseWidget_t;
@@ -203,7 +206,6 @@ static void MnemonicConfirmHandler(lv_event_t *e)
                 }
             }
             if (strcmp(confirmMnemonic, SecretCacheGetMnemonic()) == 0) {
-                WriteSE();
                 GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
             } else {
                 g_noticeHintBox = GuiCreateErrorCodeWindow(ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET, &g_noticeHintBox, NULL);
@@ -223,6 +225,11 @@ static void ResetConfirmInput(void)
     g_currId = 0;
     GuiUpdateMnemonicKeyBoard(g_confirmPhraseKb, g_randomBuff, true);
     lv_btnmatrix_clear_btn_ctrl_all(g_confirmPhraseKb->btnm, LV_BTNMATRIX_CTRL_CHECKED);
+}
+
+static void GuiPassphraseWidget(lv_obj_t *parent)
+{
+    GuiWalletPassphraseEnter(parent, false);
 }
 
 static void GuiConfirmPhraseWidget(lv_obj_t *parent)
@@ -257,6 +264,10 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
     tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_CONFIRM_PHRASE, 0, LV_DIR_HOR);
     g_singlePhraseTileView.confirmPhrase = tile;
     GuiConfirmPhraseWidget(tile);
+
+    tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_PASSPHRASE, 0, LV_DIR_HOR);
+    g_singlePhraseTileView.passphrase = tile;
+    GuiPassphraseWidget(tile);
 
     tile = lv_tileview_add_tile(tileView, SINGLE_PHRASE_WRITE_SE, 0, LV_DIR_HOR);
     g_singlePhraseTileView.writeSe = tile;
@@ -369,8 +380,11 @@ static void ResetBtnHandler(lv_event_t *e)
     ResetConfirmInput();
 }
 
-int8_t GuiSinglePhraseNextTile(void)
+int8_t GuiSinglePhraseNextTile(const char *passphrase)
 {
+    if (passphrase != NULL) {
+        SecretCacheSetPassphrase(passphrase);
+    }
     switch (g_singlePhraseTileView.currentTile) {
     case SINGLE_PHRASE_CONNECT:
         return SUCCESS_CODE;
@@ -387,8 +401,21 @@ int8_t GuiSinglePhraseNextTile(void)
         GuiUpdateMnemonicKeyBoard(g_confirmPhraseKb, g_randomBuff, true);
         break;
     case SINGLE_PHRASE_CONFIRM_PHRASE:
+        if (!g_isTon && GuiCreateWalletNeedPassphrase()) {
+            SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseTutorialHandler, NULL);
+        } else {
+            g_singlePhraseTileView.currentTile++;
+            SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+            WriteSE();
+        }
+        break;
+    case SINGLE_PHRASE_PASSPHRASE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+        WriteSE();
         break;
     }
 
@@ -414,9 +441,11 @@ int8_t GuiSinglePhrasePrevTile(void)
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
         }
         break;
-    case SINGLE_PHRASE_WRITE_SE:
+    case SINGLE_PHRASE_PASSPHRASE:
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
+        GuiPassphraseWidgetClearText();
         ResetConfirmInput();
         break;
     }
@@ -459,11 +488,15 @@ void GuiSinglePhraseRefresh(void)
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
         }
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
     } else if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_CONFIRM_PHRASE) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));
+        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
+    } else if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_PASSPHRASE) {
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseTutorialHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
     }
-    SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
 }
 
 #ifdef WEB3_VERSION

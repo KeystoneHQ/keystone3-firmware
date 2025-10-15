@@ -15,7 +15,7 @@ use app_avalanche::transactions::{
 use crate::common::{
     errors::RustCError,
     ffi::{CSliceFFI, VecFFI},
-    free::{free_ptr_string, Free},
+    free::Free,
     structs::{ExtendedPublicKey, SimpleResponse, TransactionCheckResult, TransactionParseResult},
     types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH},
@@ -23,8 +23,8 @@ use crate::common::{
 };
 
 use crate::{
-    check_and_free_ptr, extract_ptr_with_type, free_str_ptr, impl_c_ptr, impl_new_error,
-    impl_response, impl_simple_c_ptr, impl_simple_new_error, make_free_method,
+    extract_ptr_with_type, free_str_ptr, impl_c_ptr, impl_new_error, impl_response,
+    impl_simple_c_ptr, impl_simple_new_error, make_free_method,
 };
 
 #[repr(C)]
@@ -60,12 +60,10 @@ pub struct DisplayAvaxFromToInfo {
 }
 
 impl Free for DisplayAvaxFromToInfo {
-    fn free(&self) {
-        unsafe {
-            free_ptr_string(self.address);
-            free_ptr_string(self.amount);
-            free_ptr_string(self.path);
-        }
+    unsafe fn free(&self) {
+        free_str_ptr!(self.address);
+        free_str_ptr!(self.amount);
+        free_str_ptr!(self.path);
     }
 }
 
@@ -78,7 +76,7 @@ impl DisplayAvaxFromToInfo {
         from_address: String,
         type_id: TypeId,
     ) -> Self {
-        let address = value.address.get(0).unwrap().clone();
+        let address = value.address.first().unwrap().clone();
         let is_change = match type_id {
             TypeId::XchainImportTx
             | TypeId::PchainImportTx
@@ -86,7 +84,7 @@ impl DisplayAvaxFromToInfo {
             | TypeId::PchainExportTx => false,
             _ => address == from_address,
         };
-        let path = if is_change == false {
+        let path = if !is_change {
             null_mut()
         } else {
             convert_c_char(format!("{}/0/{}", value.path_prefix, wallet_index))
@@ -114,11 +112,9 @@ pub struct DisplayAvaxMethodInfo {
 impl_c_ptr!(DisplayAvaxMethodInfo);
 
 impl Free for DisplayAvaxMethodInfo {
-    fn free(&self) {
-        unsafe {
-            free_ptr_string(self.method_key);
-            free_ptr_string(self.method);
-        }
+    unsafe fn free(&self) {
+        free_str_ptr!(self.method_key);
+        free_str_ptr!(self.method);
     }
 }
 
@@ -223,37 +219,33 @@ impl DisplayTxAvaxData {
 }
 
 impl Free for DisplayTxAvaxData {
-    fn free(&self) {
-        unsafe {
-            // let x = Box::from_raw(self.from);
-            // let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-            // ve.iter().for_each(|v| {
-            //     v.free();
-            // });
-            let x = Box::from_raw(self.to);
-            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-            ve.iter().for_each(|v| {
-                v.free();
-            });
+    unsafe fn free(&self) {
+        // let x = Box::from_raw(self.from);
+        // let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+        // ve.iter().for_each(|v| {
+        //     v.free();
+        // });
+        let x = Box::from_raw(self.to);
+        let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+        ve.iter().for_each(|v| {
+            v.free();
+        });
 
-            free_ptr_string(self.amount);
-            free_ptr_string(self.network);
-            free_ptr_string(self.network_key);
-            free_ptr_string(self.subnet_id);
-            free_ptr_string(self.total_output_amount);
-            free_ptr_string(self.total_input_amount);
-            free_ptr_string(self.fee_amount);
-            free_ptr_string(self.reward_address);
-            Box::from_raw(self.method);
-        }
+        free_str_ptr!(self.amount);
+        free_str_ptr!(self.network);
+        free_str_ptr!(self.network_key);
+        free_str_ptr!(self.subnet_id);
+        free_str_ptr!(self.total_output_amount);
+        free_str_ptr!(self.total_input_amount);
+        free_str_ptr!(self.fee_amount);
+        free_str_ptr!(self.reward_address);
+        Box::from_raw(self.method);
     }
 }
 
 impl Free for DisplayAvaxTx {
-    fn free(&self) {
-        unsafe {
-            Box::from_raw(self.data).free();
-        }
+    unsafe fn free(&self) {
+        Box::from_raw(self.data).free();
     }
 }
 

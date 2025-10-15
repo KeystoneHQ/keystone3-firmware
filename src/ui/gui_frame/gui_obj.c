@@ -215,9 +215,6 @@ void *GuiCreateBlindSigningCheckBoxWithFont(lv_obj_t *parent, const char *text, 
     return checkBox;
 }
 
-
-
-
 void *GuiCreateSelectPathCheckBox(lv_obj_t *parent)
 {
     lv_obj_t *checkBox = lv_btn_create(parent);

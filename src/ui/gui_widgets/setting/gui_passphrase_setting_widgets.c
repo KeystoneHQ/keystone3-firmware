@@ -26,6 +26,8 @@
 typedef struct PassphraseWidget {
     lv_obj_t *inputTa;
     lv_obj_t *repeatTa;
+    lv_obj_t *inputEyeImg;
+    lv_obj_t *repeatEyeImg;
     lv_obj_t *errLabel;
     lv_obj_t *lenOverLabel;
 } PassphraseWidget_t;
@@ -34,9 +36,11 @@ static PassphraseWidget_t g_passphraseWidget;
 static void PassphraseQuickAccessHandler(lv_event_t *e);
 static void SetKeyboardTaHandler(lv_event_t *e);
 static void UpdatePassPhraseHandler(lv_event_t *e);
+static void UpdatePassphraseQuickAccess(lv_event_t *e);
 
 static lv_obj_t *g_passphraseQuickAccessSwitch = NULL;
 static KeyBoard_t *g_setPassPhraseKb = NULL;         // setting keyboard
+static bool g_needVerify = false;
 
 void GuiWalletPassphrase(lv_obj_t *parent)
 {
@@ -99,8 +103,9 @@ void GuiWalletPassphrase(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 254 - GUI_MAIN_AREA_OFFSET);
 }
 
-void GuiWalletPassphraseEnter(lv_obj_t *parent)
+void GuiWalletPassphraseEnter(lv_obj_t *parent, bool needVerify)
 {
+    g_needVerify = needVerify;
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
 
@@ -125,6 +130,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_align(img, LV_ALIGN_DEFAULT, 411, 168 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
+    g_passphraseWidget.inputEyeImg = img;
     lv_textarea_set_max_length(ta, PASSWORD_MAX_LEN);
     lv_textarea_set_one_line(ta, true);
     lv_obj_set_scrollbar_mode(ta, LV_SCROLLBAR_MODE_OFF);
@@ -156,6 +162,7 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_align(img, LV_ALIGN_DEFAULT, 411, 252 - GUI_MAIN_AREA_OFFSET);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, repeatTa);
+    g_passphraseWidget.repeatEyeImg = img;
     g_passphraseWidget.repeatTa = repeatTa;
 
     g_setPassPhraseKb = GuiCreateFullKeyBoard(parent, UpdatePassPhraseHandler, KEY_STONE_FULL_L, NULL);
@@ -172,6 +179,23 @@ void GuiWalletPassphraseEnter(lv_obj_t *parent)
     lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
     lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     g_passphraseWidget.lenOverLabel = label;
+
+    if (!needVerify) {
+        label = GuiCreateTextLabel(parent, _("passphrase_access_switch_title"));
+        g_passphraseQuickAccessSwitch = lv_switch_create(parent);
+        lv_obj_set_style_bg_color(g_passphraseQuickAccessSwitch, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
+        lv_obj_set_style_bg_color(g_passphraseQuickAccessSwitch, WHITE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_bg_opa(g_passphraseQuickAccessSwitch, LV_OPA_30, LV_PART_MAIN);
+        lv_obj_clear_state(g_passphraseQuickAccessSwitch, LV_STATE_CHECKED);
+        GuiButton_t tableSwitch[] = {
+            {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {8, 18},},
+            {.obj = GuiCreateNoticeLabel(parent, _("passphrase_access_switch_desc")), .align = LV_ALIGN_DEFAULT, .position = {8, 60},},
+            {.obj = g_passphraseQuickAccessSwitch, .align = LV_ALIGN_TOP_RIGHT, .position = {-8, 16},},
+        };
+        lv_obj_t *button = GuiCreateButton(parent, 432, 132, tableSwitch, NUMBER_OF_ARRAYS(tableSwitch),
+                                           UpdatePassphraseQuickAccess, NULL);
+        lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 336 - GUI_MAIN_AREA_OFFSET);
+    }
 }
 
 static void SetKeyboardTaHandler(lv_event_t *e)
@@ -199,7 +223,7 @@ static void SetKeyboardTaHandler(lv_event_t *e)
     }
 }
 
-static void PassphraseQuickAccessHandler(lv_event_t *e)
+static void UpdatePassphraseQuickAccess(lv_event_t *e)
 {
     lv_obj_t *switchBox = g_passphraseQuickAccessSwitch;
     bool en = lv_obj_has_state(switchBox, LV_STATE_CHECKED);
@@ -208,8 +232,20 @@ static void PassphraseQuickAccessHandler(lv_event_t *e)
     } else {
         lv_obj_add_state(switchBox, LV_STATE_CHECKED);
     }
-    SetPassphraseQuickAccess(!en);
     lv_event_send(switchBox, LV_EVENT_VALUE_CHANGED, NULL);
+}
+
+static void PassphraseQuickAccessHandler(lv_event_t *e)
+{
+    lv_obj_t *switchBox = g_passphraseQuickAccessSwitch;
+    bool en = lv_obj_has_state(switchBox, LV_STATE_CHECKED);
+    UpdatePassphraseQuickAccess(e);
+    SetPassphraseQuickAccess(!en);
+}
+
+bool GuiPassphraseQuickAccess(void)
+{
+    return lv_obj_has_state(g_passphraseQuickAccessSwitch, LV_STATE_CHECKED);
 }
 
 static void UpdatePassPhraseHandler(lv_event_t *e)
@@ -225,9 +261,14 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
             const char *input = lv_textarea_get_text(g_passphraseWidget.inputTa);
             const char *repeat = lv_textarea_get_text(g_passphraseWidget.repeatTa);
             if (!strcmp(input, repeat)) {
-                SecretCacheSetPassphrase((char *)repeat);
-                static uint16_t signal = SIG_SETTING_WRITE_PASSPHRASE;
-                GuiShowKeyboard(&signal, true, NULL);
+                if (g_needVerify) {
+                    SecretCacheSetPassphrase(repeat);
+                    static uint16_t signal = SIG_SETTING_WRITE_PASSPHRASE;
+                    GuiShowKeyboard(&signal, true, NULL);
+                } else {
+                    SecretCacheSetPassphrase(repeat);
+                    GuiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE, (char *)repeat, strnlen_s(repeat, PASSWORD_MAX_LEN));
+                }
             } else {
                 delayFlag = true;
                 lv_obj_clear_flag(g_passphraseWidget.errLabel, LV_OBJ_FLAG_HIDDEN);
@@ -255,4 +296,18 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
             }
         }
     }
+}
+
+void GuiPassphraseWidgetClearText(void)
+{
+    lv_textarea_set_text(g_passphraseWidget.inputTa, "");
+    lv_textarea_set_text(g_passphraseWidget.repeatTa, "");
+    SwitchPasswordMode(g_passphraseWidget.inputTa, g_passphraseWidget.inputEyeImg, true);
+    SwitchPasswordMode(g_passphraseWidget.repeatTa, g_passphraseWidget.repeatEyeImg, true);
+    lv_obj_add_state(g_passphraseWidget.inputTa, LV_STATE_FOCUSED);
+    lv_obj_clear_state(g_passphraseWidget.repeatTa, LV_STATE_FOCUSED);
+    if (g_setPassPhraseKb != NULL) {
+        lv_keyboard_set_textarea(g_setPassPhraseKb->kb, g_passphraseWidget.inputTa);
+    }
+    lv_obj_clear_state(g_passphraseQuickAccessSwitch, LV_STATE_CHECKED);
 }

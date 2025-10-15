@@ -1,5 +1,5 @@
 use alloc::{
-    format, slice,
+    format,
     string::{String, ToString},
     vec,
 };
@@ -10,7 +10,7 @@ use {
     ur_registry::bytes::Bytes,
 };
 
-use crate::extract_ptr_with_type;
+use crate::{extract_array, extract_ptr_with_type};
 
 use super::{
     errors::RustCError,
@@ -21,7 +21,7 @@ use super::{
 use sha1::Sha1;
 
 #[no_mangle]
-pub extern "C" fn calculate_auth_code(
+pub unsafe extern "C" fn calculate_auth_code(
     web_auth_data: ConstPtrUR,
     rsa_key_n: PtrBytes,
     rsa_key_n_len: u32,
@@ -38,23 +38,23 @@ pub extern "C" fn calculate_auth_code(
                     Ok(_hex) => match base64::decode(&_hex) {
                         Ok(_value) => unsafe {
                             let rsa_key_n =
-                                slice::from_raw_parts(rsa_key_n, rsa_key_n_len as usize);
+                                extract_array!(rsa_key_n, u8, rsa_key_n_len as usize);
                             let rsa_key_d =
-                                slice::from_raw_parts(rsa_key_d, rsa_key_d_len as usize);
+                                extract_array!(rsa_key_d, u8, rsa_key_d_len as usize);
                             match _calculate_auth_code(&_value, rsa_key_n, rsa_key_d) {
                                 Ok(_result) => Ok(_result),
-                                Err(_err) => Err(RustCError::WebAuthFailed(format!("{}", _err))),
+                                Err(_err) => Err(RustCError::WebAuthFailed(format!("{_err}"))),
                             }
                         },
-                        Err(_err) => Err(RustCError::WebAuthFailed(format!("{}", _err))),
+                        Err(_err) => Err(RustCError::WebAuthFailed(format!("{_err}"))),
                     },
-                    Err(_err) => Err(RustCError::WebAuthFailed(format!("{}", _err))),
+                    Err(_err) => Err(RustCError::WebAuthFailed(format!("{_err}"))),
                 }
             } else {
                 Err(RustCError::WebAuthFailed("invalid json".to_string()))
             }
         }
-        Err(_err) => Err(RustCError::WebAuthFailed(format!("{}", _err))),
+        Err(_err) => Err(RustCError::WebAuthFailed(format!("{_err}"))),
     };
     match result {
         Ok(_value) => convert_c_char(_value),
@@ -96,13 +96,11 @@ fn _calculate_auth_code(
                         ))
                     }),
                     Err(_err) => Err(RustCError::WebAuthFailed(format!(
-                        "RSA decryption failed: {}",
-                        _err
+                        "RSA decryption failed: {_err}"
                     ))),
                 },
                 Err(_err) => Err(RustCError::WebAuthFailed(format!(
-                    "RSA key recovery error: {}",
-                    _err
+                    "RSA key recovery error: {_err}"
                 ))),
             }
         },

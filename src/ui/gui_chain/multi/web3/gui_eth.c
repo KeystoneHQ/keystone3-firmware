@@ -1073,13 +1073,10 @@ void *GuiGetEthData(void)
 
     enum ViewType viewType = ViewTypeUnKnown;
     enum QRCodeType urType = URTypeUnKnown;
-    void *crypto = NULL;
     if (g_isMulti) {
-        crypto = g_urMultiResult->data;
         urType = g_urMultiResult->ur_type;
         viewType = g_urMultiResult->t;
     } else {
-        crypto = g_urResult->data;
         urType = g_urResult->ur_type;
     }
     char *rootPath = NULL;
@@ -1119,13 +1116,11 @@ PtrT_TransactionCheckResult GuiGetEthCheckResult(void)
 {
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    enum ViewType viewType = ViewTypeUnKnown;
     enum QRCodeType urType = URTypeUnKnown;
     void *crypto = NULL;
     if (g_isMulti) {
         crypto = g_urMultiResult->data;
         urType = g_urMultiResult->ur_type;
-        viewType = g_urMultiResult->t;
     } else {
         crypto = g_urResult->data;
         urType = g_urResult->ur_type;

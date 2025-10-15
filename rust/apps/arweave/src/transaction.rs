@@ -54,7 +54,7 @@ pub mod stringify {
     {
         String::deserialize(deserializer)?
             .parse::<T>()
-            .map_err(|e| D::Error::custom(format!("{}", e)))
+            .map_err(|e| D::Error::custom(format!("{e}")))
     }
 
     pub fn serialize<S, T>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
@@ -62,7 +62,7 @@ pub mod stringify {
         S: Serializer,
         T: fmt::Display,
     {
-        format!("{}", value).serialize(serializer)
+        format!("{value}").serialize(serializer)
     }
 }
 
@@ -160,7 +160,7 @@ pub struct Base64(pub Vec<u8>);
 impl fmt::Display for Base64 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let string = &base64::display::Base64Display::with_config(&self.0, base64::URL_SAFE_NO_PAD);
-        write!(f, "{}", string)
+        write!(f, "{string}")
     }
 }
 

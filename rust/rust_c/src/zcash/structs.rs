@@ -41,7 +41,7 @@ impl From<&ParsedPczt> for DisplayPczt {
 }
 
 impl Free for DisplayPczt {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.total_transfer_value);
         free_ptr_with_type!(self.transparent, DisplayTransparent);
         free_ptr_with_type!(self.orchard, DisplayOrchard);
@@ -78,7 +78,7 @@ impl From<&ParsedTransparent> for DisplayTransparent {
 }
 
 impl Free for DisplayTransparent {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_vec!(self.from);
         free_vec!(self.to);
     }
@@ -102,7 +102,7 @@ impl From<&ParsedFrom> for DisplayFrom {
 }
 
 impl Free for DisplayFrom {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.address);
         free_str_ptr!(self.value);
     }
@@ -128,7 +128,7 @@ impl From<&ParsedTo> for DisplayTo {
 }
 
 impl Free for DisplayTo {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_str_ptr!(self.address);
         free_str_ptr!(self.value);
         free_str_ptr!(self.memo);
@@ -165,7 +165,7 @@ impl From<&ParsedOrchard> for DisplayOrchard {
 }
 
 impl Free for DisplayOrchard {
-    fn free(&self) {
+    unsafe fn free(&self) {
         free_vec!(self.from);
         free_vec!(self.to);
     }

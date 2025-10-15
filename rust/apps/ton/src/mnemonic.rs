@@ -62,10 +62,10 @@ pub fn ton_mnemonic_validate(
     Ok(())
 }
 
-pub fn ton_entropy_to_seed(entropy: Vec<u8>) -> [u8; 64] {
+pub fn ton_entropy_to_seed(entropy: &[u8]) -> [u8; 64] {
     let mut master_seed = [0u8; 64];
     pbkdf2(
-        &mut Hmac::new(Sha512::new(), &entropy),
+        &mut Hmac::new(Sha512::new(), entropy),
         b"TON default seed",
         PBKDF_ITERATIONS,
         &mut master_seed,
@@ -83,7 +83,7 @@ pub fn ton_mnemonic_to_master_seed(
     let normalized_words: Vec<String> = words.iter().map(|w| w.trim().to_lowercase()).collect();
     ton_mnemonic_validate(&normalized_words, &password)?;
     let entropy = ton_mnemonic_to_entropy(&normalized_words, &password);
-    Ok(ton_entropy_to_seed(entropy))
+    Ok(ton_entropy_to_seed(&entropy))
 }
 
 pub fn ton_master_seed_to_keypair(master_seed: [u8; 64]) -> ([u8; 64], [u8; 32]) {

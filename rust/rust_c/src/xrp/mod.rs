@@ -23,6 +23,7 @@ use crate::common::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
+use crate::extract_array;
 use crate::extract_ptr_with_type;
 
 use structs::DisplayXrpTx;
@@ -30,7 +31,7 @@ use structs::DisplayXrpTx;
 pub mod structs;
 
 #[no_mangle]
-pub extern "C" fn xrp_get_address(
+pub unsafe extern "C" fn xrp_get_address(
     hd_path: PtrString,
     root_x_pub: PtrString,
     root_path: PtrString,
@@ -40,8 +41,7 @@ pub extern "C" fn xrp_get_address(
     let root_path = recover_c_char(root_path);
     if !hd_path.starts_with(root_path.as_str()) {
         return SimpleResponse::from(XRPError::InvalidHDPath(format!(
-            "{} does not match {}",
-            hd_path, root_path
+            "{hd_path} does not match {root_path}"
         )))
         .simple_c_ptr();
     }
@@ -52,14 +52,14 @@ pub extern "C" fn xrp_get_address(
     }
 }
 
-fn build_sign_result(ptr: PtrUR, hd_path: PtrString, seed: &[u8]) -> Result<Vec<u8>, XRPError> {
+unsafe fn build_sign_result(ptr: PtrUR, hd_path: PtrString, seed: &[u8]) -> Result<Vec<u8>, XRPError> {
     let crypto_bytes = extract_ptr_with_type!(ptr, Bytes);
     let hd_path = recover_c_char(hd_path);
     app_xrp::sign_tx(crypto_bytes.get_bytes().as_slice(), &hd_path, seed)
 }
 
 #[no_mangle]
-pub extern "C" fn xrp_parse_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayXrpTx>> {
+pub unsafe extern "C" fn xrp_parse_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayXrpTx>> {
     let crypto_bytes = extract_ptr_with_type!(ptr, Bytes);
     match app_xrp::parse(crypto_bytes.get_bytes().as_slice()) {
         Ok(v) => TransactionParseResult::success(DisplayXrpTx::from(v).c_ptr()).c_ptr(),
@@ -68,7 +68,7 @@ pub extern "C" fn xrp_parse_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<Displa
 }
 
 #[no_mangle]
-pub extern "C" fn xrp_sign_tx_bytes(
+pub unsafe extern "C" fn xrp_sign_tx_bytes(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
@@ -76,8 +76,8 @@ pub extern "C" fn xrp_sign_tx_bytes(
     mfp_len: u32,
     root_xpub: PtrString,
 ) -> PtrT<UREncodeResult> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    let mfp = unsafe { slice::from_raw_parts(mfp, mfp_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len);
+    let mfp = extract_array!(mfp, u8, mfp_len);
     let payload = build_payload(ptr, QRCodeType::Bytes).unwrap();
     let content = payload.content.unwrap();
     let sign_tx = match content {
@@ -109,7 +109,7 @@ pub extern "C" fn xrp_sign_tx_bytes(
     let five_level_xpub = xpub
         .derive_pub(
             &k1,
-            &DerivationPath::from_str(format!("m/{}", derive_hd_path).as_str()).unwrap(),
+            &DerivationPath::from_str(format!("m/{derive_hd_path}").as_str()).unwrap(),
         )
         .unwrap();
     let key = five_level_xpub.public_key.serialize();
@@ -174,13 +174,13 @@ pub extern "C" fn xrp_sign_tx_bytes(
 }
 
 #[no_mangle]
-pub extern "C" fn xrp_sign_tx(
+pub unsafe extern "C" fn xrp_sign_tx(
     ptr: PtrUR,
     hd_path: PtrString,
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
+    let seed = extract_array!(seed, u8, seed_len);
     let result = build_sign_result(ptr, hd_path, seed);
     match result.map(|v| Bytes::new(v).try_into()) {
         Ok(v) => match v {
@@ -197,7 +197,7 @@ pub extern "C" fn xrp_sign_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn xrp_check_tx(
+pub unsafe extern "C" fn xrp_check_tx(
     ptr: PtrUR,
     root_xpub: PtrString,
     cached_pubkey: PtrString,
@@ -216,14 +216,14 @@ pub extern "C" fn xrp_check_tx(
 }
 
 #[no_mangle]
-pub extern "C" fn is_keystone_xrp_tx(ur_data_ptr: PtrUR) -> bool {
+pub unsafe extern "C" fn is_keystone_xrp_tx(ur_data_ptr: PtrUR) -> bool {
     // if data can be parsed by protobuf, it is a keyston hot app version2 tx or it is a xrp tx
     let payload = build_payload(ur_data_ptr, QRCodeType::Bytes);
     payload.is_ok()
 }
 
 #[no_mangle]
-pub extern "C" fn xrp_check_tx_bytes(
+pub unsafe extern "C" fn xrp_check_tx_bytes(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
     length: u32,
@@ -235,7 +235,7 @@ pub extern "C" fn xrp_check_tx_bytes(
     let payload = build_payload(ptr, ur_type);
     match payload {
         Ok(payload) => {
-            let mfp = unsafe { core::slice::from_raw_parts(master_fingerprint, 4) };
+            let mfp = extract_array!(master_fingerprint, u8, 4);
             let mfp: [u8; 4] = mfp.to_vec().try_into().unwrap();
 
             let xfp = payload.xfp;
@@ -251,7 +251,7 @@ pub extern "C" fn xrp_check_tx_bytes(
 }
 
 #[no_mangle]
-pub extern "C" fn xrp_parse_bytes_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayXrpTx>> {
+pub unsafe extern "C" fn xrp_parse_bytes_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayXrpTx>> {
     let payload = build_payload(ptr, QRCodeType::Bytes).unwrap();
     let content = payload.content.unwrap();
     let sign_tx = match content {

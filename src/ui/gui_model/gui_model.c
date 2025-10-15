@@ -401,7 +401,10 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
     ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
     ClearAccountPassphrase(newAccount);
-    CHECK_ERRCODE_BREAK("save entropy error", ret);
+    if (SecretCacheGetPassphrase()) {
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     MODEL_WRITE_SE_END
     SetLockScreen(enable);
     return 0;
@@ -441,6 +444,10 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     ret = CreateNewAccount(newAccount, entropy, (uint8_t)entropyOutLen, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     ClearAccountPassphrase(newAccount);
+    if (SecretCacheGetPassphrase()) {
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
@@ -735,6 +742,10 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     ret = CreateNewSlip39Account(newAccount, ems, entropy, entropyLen, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetExtendable(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
+    if (SecretCacheGetPassphrase()) {
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     MODEL_WRITE_SE_END
 
     SetLockScreen(enable);
@@ -790,6 +801,10 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     ret = CreateNewSlip39Account(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, eb, ie);
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
+    if (SecretCacheGetPassphrase()) {
+        SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
+        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    }
     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("login error", ret);
     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);

@@ -1,3 +1,28 @@
+## 2.2.16(2025-10-13)
+
+**Web3:**
+
+### What's new
+
+1. Added toggle for PIN shuffle
+2. Added Passphrase setup support in wallet initialization (create/import)
+
+**BTC Only:**
+
+### What's new
+1. Added toggle for PIN shuffle
+2. Added Passphrase setup support in wallet initialization (create/import)
+
+**Cypherpunk:**
+
+### What's new
+1. Added toggle for PIN shuffle
+2. Added Passphrase setup support in wallet initialization (create/import)
+
+
+
+
+
 ## 2.2.14(2025-09-18)
 
 **Web3:**

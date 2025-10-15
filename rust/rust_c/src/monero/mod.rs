@@ -110,9 +110,7 @@ pub unsafe extern "C" fn monero_unsigned_request_check(
         UNSIGNED_TX_PREFIX,
     ) {
         Ok(_) => TransactionCheckResult::new().c_ptr(),
-        Err(_) => {
-            TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
-        }
+        Err(_) => TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr(),
     }
 }
 

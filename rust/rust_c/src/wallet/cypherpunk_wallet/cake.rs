@@ -64,12 +64,7 @@ pub unsafe extern "C" fn get_connect_cake_wallet_ur(
         PrivateKey::from_bytes(&pvk).get_public_key(),
     );
 
-    generate_wallet_result(
-        primary_address.to_string(),
-        hex::encode(&pvk),
-        false,
-    )
-    .c_ptr()
+    generate_wallet_result(primary_address.to_string(), hex::encode(&pvk), false).c_ptr()
 }
 
 #[no_mangle]

@@ -33,6 +33,7 @@ pub struct BCHAddressEncoding<'a> {
 pub struct DOGEAddressEncoding<'a> {
     pub payload: &'a Payload,
     pub p2pkh_prefix: u8,
+    pub p2sh_prefix: u8,
 }
 
 struct UpperWriter<W: fmt::Write>(W);
@@ -162,6 +163,12 @@ impl<'a> fmt::Display for DOGEAddressEncoding<'a> {
                 let mut prefixed = [0; 21];
                 prefixed[0] = self.p2pkh_prefix;
                 prefixed[1..].copy_from_slice(&pubkey_hash[..]);
+                base58::encode_check_to_fmt(fmt, &prefixed[..])
+            }
+            Payload::P2sh { script_hash } => {
+                let mut prefixed = [0; 21];
+                prefixed[0] = self.p2sh_prefix;
+                prefixed[1..].copy_from_slice(&script_hash[..]);
                 base58::encode_check_to_fmt(fmt, &prefixed[..])
             }
             _ => {

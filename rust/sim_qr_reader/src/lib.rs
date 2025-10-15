@@ -50,7 +50,7 @@ where
     let mut decoder = Quirc::default();
 
     let scaling_factor = get_screen_scaling_factor();
-    println!("Screen scaling factor: {}", scaling_factor);
+    println!("Screen scaling factor: {scaling_factor}");
 
     let mut qr_area: Option<(i32, i32, u32, u32)> = None;
 
@@ -63,8 +63,7 @@ where
                     let scaled_width = (width as f64 / scaling_factor) as u32;
                     let scaled_height = (height as f64 / scaling_factor) as u32;
                     println!(
-                        "Capture area: ({}, {}, {}, {})",
-                        scaled_x, scaled_y, scaled_width, scaled_height
+                        "Capture area: ({scaled_x}, {scaled_y}, {scaled_width}, {scaled_height})"
                     );
                     screen.capture_area(scaled_x, scaled_y, scaled_width, scaled_height)?
                 }
@@ -92,7 +91,7 @@ where
     let mut loop_count = 0;
 
     while loop_count < max_loop_count {
-        println!("Loop count: {}, max: {}", loop_count, max_loop_count);
+        println!("Loop count: {loop_count}, max: {max_loop_count}");
         match capture_and_decode(qr_area) {
             Ok((content, new_area)) => {
                 if on_qr_code_detected(&content) {
@@ -102,7 +101,7 @@ where
                     qr_area = new_area;
                 }
                 if let Some(area) = qr_area {
-                    println!("QR code area determined: {:?}", area);
+                    println!("QR code area determined: {area:?}");
                 }
             }
             Err(_) => {

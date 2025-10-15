@@ -196,7 +196,7 @@ impl ParsedCardanoSignCip8Data {
         match sign_structure {
             Ok(sign_structure) => {
                 let raw_payload = sign_structure.get_payload();
-                let mut payload = String::from_utf8(hex::decode(raw_payload.clone()).unwrap())
+                let payload = String::from_utf8(hex::decode(raw_payload.clone()).unwrap())
                     .unwrap_or_else(|_| raw_payload.clone());
                 let mut message_hash = hex::encode(raw_payload);
                 if hash_payload {
@@ -402,14 +402,11 @@ impl ParsedCardanoTx {
                             .to_bech32(None)
                             .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                     }];
-                    match _cert.coin() {
-                        Some(v) => {
-                            fields.push(CertField {
-                                label: LABEL_DEPOSIT.to_string(),
-                                value: normalize_coin(u64::from(&v)),
-                            });
-                        }
-                        None => {}
+                    if let Some(v) = _cert.coin() {
+                        fields.push(CertField {
+                            label: LABEL_DEPOSIT.to_string(),
+                            value: normalize_coin(u64::from(&v)),
+                        });
                     }
                     certs.push(CardanoCertificate::new(
                         "Stake Deregistration".to_string(),
@@ -424,14 +421,11 @@ impl ParsedCardanoTx {
                             .to_bech32(None)
                             .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                     }];
-                    match _cert.coin() {
-                        Some(v) => {
-                            fields.push(CertField {
-                                label: LABEL_DEPOSIT.to_string(),
-                                value: normalize_coin(u64::from(&v)),
-                            });
-                        }
-                        None => {}
+                    if let Some(v) = _cert.coin() {
+                        fields.push(CertField {
+                            label: LABEL_DEPOSIT.to_string(),
+                            value: normalize_coin(u64::from(&v)),
+                        });
                     }
                     certs.push(CardanoCertificate::new(
                         "Account Registration".to_string(),
@@ -995,7 +989,7 @@ impl ParsedCardanoTx {
                     }
                     to.assets_text = match to.assets.len() {
                         0 => None,
-                        x => Some(format!("{} more assets", x)),
+                        x => Some(format!("{x} more assets")),
                     };
                     map.insert(address, to);
                 }
@@ -1015,7 +1009,7 @@ impl ParsedCardanoTx {
                         assets: assets_map.clone(),
                         assets_text: match assets_map.len() {
                             0 => None,
-                            x => Some(format!("{} more assets", x)),
+                            x => Some(format!("{x} more assets")),
                         },
                     };
                     map.insert(address, to);
@@ -1131,24 +1125,18 @@ impl ParsedCardanoTx {
                     )?);
 
                     if let Some(addr) = BaseAddress::from_address(&addr_in_utxo) {
-                        match addr.payment_cred().to_keyhash() {
-                            Some(keyhash) => {
-                                if my_pubkey_hash.eq(&keyhash.to_hex()) {
-                                    pubkey_hash_paired = true;
-                                }
+                        if let Some(keyhash) = addr.payment_cred().to_keyhash() {
+                            if my_pubkey_hash.eq(&keyhash.to_hex()) {
+                                pubkey_hash_paired = true;
                             }
-                            None => {}
                         }
                     }
 
                     if let Some(addr) = EnterpriseAddress::from_address(&addr_in_utxo) {
-                        match addr.payment_cred().to_keyhash() {
-                            Some(keyhash) => {
-                                if my_pubkey_hash.eq(&keyhash.to_hex()) {
-                                    pubkey_hash_paired = true;
-                                }
+                        if let Some(keyhash) = addr.payment_cred().to_keyhash() {
+                            if my_pubkey_hash.eq(&keyhash.to_hex()) {
+                                pubkey_hash_paired = true;
                             }
-                            None => {}
                         }
                     }
 

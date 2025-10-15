@@ -26,7 +26,7 @@ impl AccountId {
 
     pub fn is_sub_account_of(&self, parent: &AccountId) -> bool {
         self.strip_suffix(parent.as_str())
-            .map_or(false, |s| !s.is_empty() && s.find('.') == Some(s.len() - 1))
+            .is_some_and(|s| !s.is_empty() && s.find('.') == Some(s.len() - 1))
     }
 
     pub fn is_implicit(&self) -> bool {
@@ -244,7 +244,7 @@ mod tests {
 
         for account_id in BAD_ACCOUNT_IDS.iter().cloned() {
             if AccountId::validate(account_id).is_ok() {
-                panic!("Invalid account id {:?} marked valid", account_id);
+                panic!("Invalid account id {account_id:?} marked valid");
             }
         }
     }
@@ -260,8 +260,7 @@ mod tests {
                     char: Some((0, 'E'))
                 })
             ),
-            "{:?}",
-            id
+            "{id:?}"
         );
 
         let id = "-KarlUrban.near".parse::<AccountId>();
@@ -273,8 +272,7 @@ mod tests {
                     char: Some((0, '-'))
                 })
             ),
-            "{:?}",
-            id
+            "{id:?}"
         );
 
         let id = "anthonystarr.".parse::<AccountId>();
@@ -286,8 +284,7 @@ mod tests {
                     char: Some((12, '.'))
                 })
             ),
-            "{:?}",
-            id
+            "{id:?}"
         );
 
         let id = "jack__Quaid.near".parse::<AccountId>();
@@ -299,8 +296,7 @@ mod tests {
                     char: Some((5, '_'))
                 })
             ),
-            "{:?}",
-            id
+            "{id:?}"
         );
     }
 
@@ -326,9 +322,8 @@ mod tests {
             assert!(
                 account_id
                     .parse::<AccountId>()
-                    .map_or(false, |account_id| account_id.is_top_level()),
-                "Valid top level account id {:?} marked invalid",
-                account_id
+                    .is_ok_and(|account_id| account_id.is_top_level()),
+                "Valid top level account id {account_id:?} marked invalid"
             );
         }
 
@@ -374,9 +369,8 @@ mod tests {
             assert!(
                 !account_id
                     .parse::<AccountId>()
-                    .map_or(false, |account_id| account_id.is_top_level()),
-                "Invalid top level account id {:?} marked valid",
-                account_id
+                    .is_ok_and(|account_id| account_id.is_top_level()),
+                "Invalid top level account id {account_id:?} marked valid"
             );
         }
     }
@@ -400,9 +394,7 @@ mod tests {
                     (signer_id.parse::<AccountId>(), sub_account_id.parse::<AccountId>()),
                     (Ok(signer_id), Ok(sub_account_id)) if sub_account_id.is_sub_account_of(&signer_id)
                 ),
-                "Failed to create sub-account {:?} by account {:?}",
-                sub_account_id,
-                signer_id
+                "Failed to create sub-account {sub_account_id:?} by account {signer_id:?}"
             );
         }
 
@@ -456,9 +448,7 @@ mod tests {
                     (signer_id.parse::<AccountId>(), sub_account_id.parse::<AccountId>()),
                     (Ok(signer_id), Ok(sub_account_id)) if sub_account_id.is_sub_account_of(&signer_id)
                 ),
-                "Invalid sub-account {:?} created by account {:?}",
-                sub_account_id,
-                signer_id
+                "Invalid sub-account {sub_account_id:?} created by account {signer_id:?}"
             );
         }
     }
@@ -478,8 +468,7 @@ mod tests {
                     valid_account_id.parse::<AccountId>(),
                     Ok(account_id) if account_id.is_implicit()
                 ),
-                "Account ID {} should be valid 64-len hex",
-                valid_account_id
+                "Account ID {valid_account_id} should be valid 64-len hex"
             );
         }
 
@@ -497,8 +486,7 @@ mod tests {
                     invalid_account_id.parse::<AccountId>(),
                     Ok(account_id) if account_id.is_implicit()
                 ),
-                "Account ID {} is not an implicit account",
-                invalid_account_id
+                "Account ID {invalid_account_id} is not an implicit account"
             );
         }
     }

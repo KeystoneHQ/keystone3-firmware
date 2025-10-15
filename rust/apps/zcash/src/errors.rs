@@ -19,12 +19,12 @@ pub enum ZcashError {
 
 impl From<orchard::pczt::ParseError> for ZcashError {
     fn from(e: orchard::pczt::ParseError) -> Self {
-        Self::InvalidPczt(alloc::format!("Invalid Orchard bundle: {:?}", e))
+        Self::InvalidPczt(alloc::format!("Invalid Orchard bundle: {e:?}"))
     }
 }
 
 impl From<transparent::pczt::ParseError> for ZcashError {
     fn from(e: transparent::pczt::ParseError) -> Self {
-        Self::InvalidPczt(alloc::format!("Invalid transparent bundle: {:?}", e))
+        Self::InvalidPczt(alloc::format!("Invalid transparent bundle: {e:?}"))
     }
 }

@@ -349,7 +349,7 @@ impl CashAddrCodec {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bitcoin::ScriptBuf;
+    
     use hex::ToHex;
 
     #[test]

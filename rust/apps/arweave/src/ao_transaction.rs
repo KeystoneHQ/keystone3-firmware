@@ -43,7 +43,7 @@ impl TryFrom<DataItem> for AOTransferTransaction {
             let quantity = quantity.get_value();
             let mut tags = vec![];
 
-            while let Some(tag) = rest_tags.next() {
+            for tag in rest_tags {
                 tags.push(tag.clone());
             }
 

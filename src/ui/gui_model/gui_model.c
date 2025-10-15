@@ -401,7 +401,7 @@ static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
     CHECK_ERRCODE_BREAK("duplicated entropy", ret);
     ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
     ClearAccountPassphrase(newAccount);
-    if (SecretCacheGetPassphrase()) {
+    if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) > 0) {
         SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
         SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
     }
@@ -444,7 +444,7 @@ static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inD
     ret = CreateNewAccount(newAccount, entropy, (uint8_t)entropyOutLen, SecretCacheGetNewPassword());
     CHECK_ERRCODE_BREAK("save entropy error", ret);
     ClearAccountPassphrase(newAccount);
-    if (SecretCacheGetPassphrase()) {
+    if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) > 0) {
         SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
         SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
     }
@@ -742,7 +742,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     ret = CreateNewSlip39Account(newAccount, ems, entropy, entropyLen, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetExtendable(), SecretCacheGetIteration());
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
-    if (SecretCacheGetPassphrase()) {
+    if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) > 0) {
         SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
         SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
     }
@@ -801,7 +801,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     ret = CreateNewSlip39Account(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, eb, ie);
     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
     ClearAccountPassphrase(newAccount);
-    if (SecretCacheGetPassphrase()) {
+    if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) > 0) {
         SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
         SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
     }

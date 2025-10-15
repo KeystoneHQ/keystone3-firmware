@@ -160,10 +160,7 @@ mod tests {
     #[test]
     fn test_deserialize_not_base58() {
         let encoded = "\"---\"";
-        match serde_json::from_str(encoded) {
-            Ok(CryptoHash(_)) => assert!(false, "should have failed"),
-            Err(_) => (),
-        }
+        if let Ok(CryptoHash(_)) = serde_json::from_str(encoded) { assert!(false, "should have failed") }
     }
 
     #[test]
@@ -179,8 +176,7 @@ mod tests {
                 Err(e) => if e.to_string() == "could not convert slice to array" {},
                 res => assert!(
                     false,
-                    "should have failed with incorrect length error: {:?}",
-                    res
+                    "should have failed with incorrect length error: {res:?}"
                 ),
             };
         }

@@ -11,7 +11,7 @@ use alloc::{
     vec::Vec,
 };
 use bytes::{Buf, Bytes};
-use core::{convert::TryFrom, fmt};
+use core::convert::TryFrom;
 pub const TX_ID_LEN: usize = 32;
 pub type TxId = [u8; TX_ID_LEN];
 
@@ -169,7 +169,7 @@ enum InputType {
 impl TryFrom<Bytes> for InputType {
     type Error = AvaxError;
 
-    fn try_from(mut bytes: Bytes) -> Result<Self> {
+    fn try_from(bytes: Bytes) -> Result<Self> {
         let mut type_bytes = bytes.clone();
         let type_id = type_bytes.get_u32();
         match TypeId::try_from(type_id)? {

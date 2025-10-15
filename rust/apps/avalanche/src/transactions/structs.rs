@@ -1,6 +1,4 @@
-use crate::constants::NAVAX_TO_AVAX_RATIO;
 use crate::errors::{AvaxError, Result};
-use crate::get_address;
 use crate::transactions::type_id::TypeId;
 use alloc::{
     string::{String, ToString},

@@ -51,6 +51,6 @@ impl From<KeystoreError> for IotaError {
 
 impl From<hex::FromHexError> for IotaError {
     fn from(value: hex::FromHexError) -> Self {
-        Self::InvalidData(format!("hex operation failed {}", value))
+        Self::InvalidData(format!("hex operation failed {value}"))
     }
 }

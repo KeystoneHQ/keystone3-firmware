@@ -148,9 +148,9 @@ mod tests {
     use super::*;
     use bitcoin::hex::DisplayHex;
     use hex;
-    use rsa::pkcs1v15::SigningKey;
-    use rsa::signature::{Keypair, RandomizedSigner, SignatureEncoding, Verifier};
-    use sha2::Sha256;
+    
+    
+    
 
     #[test]
     fn test_private_key_recover() {

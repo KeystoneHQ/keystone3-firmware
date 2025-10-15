@@ -2,6 +2,7 @@ use alloc::vec::Vec;
 use curve25519_dalek::edwards::EdwardsPoint;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
+#[allow(unused)]
 pub enum ExtraField {
     /// Padding.
     ///

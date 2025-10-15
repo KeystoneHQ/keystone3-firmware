@@ -158,7 +158,6 @@ fn pub_keys_to_address(
                 "18"
             }
         }
-        _ => return Err(MoneroError::UnknownNetwork),
     };
     let mut res_hex = format!(
         "{}{}{}",

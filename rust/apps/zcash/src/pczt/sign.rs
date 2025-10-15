@@ -64,11 +64,11 @@ impl PcztSigner for SeedSigner<'_> {
 
         if let Some(path) = path {
             let sk = get_private_key_by_seed(self.seed, &path).map_err(|e| {
-                ZcashError::SigningError(alloc::format!("failed to get private key: {:?}", e))
+                ZcashError::SigningError(alloc::format!("failed to get private key: {e:?}"))
             })?;
             let secp = secp256k1::Secp256k1::new();
             input.sign(index, hash, &sk, &secp).map_err(|e| {
-                ZcashError::SigningError(alloc::format!("failed to sign input: {:?}", e))
+                ZcashError::SigningError(alloc::format!("failed to sign input: {e:?}"))
             })?;
         }
 

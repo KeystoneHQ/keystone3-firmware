@@ -38,8 +38,7 @@ impl ParseCell for JettonMessage {
                     JettonTransferMessage::parse(cell).map(JettonMessage::JettonTransferMessage)
                 }
                 _ => Err(TonCellError::InternalError(format!(
-                    "Invalid Op Code: {:X}",
-                    op_code
+                    "Invalid Op Code: {op_code:X}"
                 ))),
             }
         })

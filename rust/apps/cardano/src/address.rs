@@ -1,7 +1,6 @@
 use crate::errors::{CardanoError, R};
 use alloc::string::{String, ToString};
 
-use crate::slip23::{from_seed_slip23, from_seed_slip23_path};
 use cardano_serialization_lib::protocol_types::credential::*;
 use cardano_serialization_lib::protocol_types::{
     BaseAddress, Ed25519KeyHash, EnterpriseAddress, RewardAddress,

@@ -4,8 +4,8 @@ use crate::transactions::structs::{LengthPrefixedVec, ParsedSizeAble};
 use crate::transactions::transferable::OutputTrait;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use bytes::{Buf, BufMut, Bytes, BytesMut};
-use core::{convert::TryFrom, fmt, str::FromStr};
+use bytes::{Buf, Bytes};
+use core::convert::TryFrom;
 
 #[derive(Debug, Clone)]
 pub struct SECP256K1TransferOutput {

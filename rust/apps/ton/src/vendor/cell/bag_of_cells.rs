@@ -49,8 +49,7 @@ impl BagOfCells {
             Ok(&self.roots[0])
         } else {
             Err(TonCellError::CellParserError(format!(
-                "Single root expected, got {}",
-                root_count
+                "Single root expected, got {root_count}"
             )))
         }
     }

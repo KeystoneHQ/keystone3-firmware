@@ -20,7 +20,7 @@ use monero_serai::ringct::bulletproofs::Bulletproof;
 use monero_serai::ringct::clsag::{Clsag, ClsagContext};
 use monero_serai::ringct::{RctBase, RctProofs, RctPrunable};
 use monero_serai::transaction::{
-    Input, NotPruned, Output, Timelock, Transaction, TransactionPrefix,
+    Input, Output, Timelock, Transaction, TransactionPrefix,
 };
 use rand_core::OsRng;
 use zeroize::Zeroizing;
@@ -122,6 +122,9 @@ pub struct TxDestinationEntry {
 }
 
 #[derive(Debug, Clone, Copy)]
+#[allow(non_camel_case_types)]
+#[allow(non_snake_case)]
+
 pub struct Multisig_kLRki {
     pub k: [u8; 32],
     pub L: [u8; 32],
@@ -130,6 +133,7 @@ pub struct Multisig_kLRki {
 }
 
 #[derive(Debug, Clone)]
+#[allow(non_snake_case)]
 pub struct TxSourceEntry {
     pub outputs: Vec<OutputEntry>,
     pub real_output: u64,
@@ -311,8 +315,8 @@ impl TxConstructionData {
         keccak256(&buffer)[0]
     }
 
-    pub fn outputs(&self, keypair: &KeyPair) -> InnerOutputs {
-        let shared_key_derivations = self.shared_key_derivations(keypair);
+    pub fn outputs(&self, keypair: &KeyPair, tx_key: &PrivateKey, additional_keys: &Vec<PrivateKey>, tx_key_pub: &EdwardsPoint) -> InnerOutputs {
+        let shared_key_derivations = self.shared_key_derivations(keypair, tx_key, additional_keys, tx_key_pub);
         let mut res = InnerOutputs::new();
         for (dest, shared_key_derivation) in self.splitted_dsts.iter().zip(shared_key_derivations) {
             let image = generate_key_image_from_priavte_key(&PrivateKey::new(
@@ -465,6 +469,7 @@ impl UnsignedTx {
                 let amount = read_next_u64(bytes, &mut offset);
                 let rct = read_next_bool(bytes, &mut offset);
                 let mask = read_next_u8_32(bytes, &mut offset);
+                #[allow(non_snake_case)]
                 let multisig_kLRki = Multisig_kLRki {
                     k: read_next_u8_32(bytes, &mut offset),
                     L: read_next_u8_32(bytes, &mut offset),
@@ -557,64 +562,62 @@ impl UnsignedTx {
         UnsignedTx { txes, transfers }
     }
 
-    pub fn transaction_without_signatures(&self, keypair: &KeyPair) -> Result<Vec<Transaction>> {
-        let mut txes = vec![];
-        for tx in self.txes.iter() {
-            let commitments_and_encrypted_amounts = tx.commitments_and_encrypted_amounts(keypair);
-            let mut commitments = Vec::with_capacity(tx.splitted_dsts.len());
-            let mut bp_commitments = Vec::with_capacity(tx.splitted_dsts.len());
-            let mut encrypted_amounts = Vec::with_capacity(tx.splitted_dsts.len());
-            for (commitment, encrypted_amount) in commitments_and_encrypted_amounts {
-                commitments.push(commitment.calculate());
-                bp_commitments.push(commitment);
-                encrypted_amounts.push(encrypted_amount);
-            }
-            let bulletproof = {
-                (match tx.rct_config.bp_version {
-                    RctType::RCTTypeFull => Bulletproof::prove(&mut OsRng, bp_commitments),
-                    RctType::RCTTypeNull | RctType::RCTTypeBulletproof2 => {
-                        Bulletproof::prove_plus(&mut OsRng, bp_commitments)
-                    }
-                    _ => panic!("unsupported RctType"),
-                })
-                .expect(
-                    "couldn't prove BP(+)s for this many payments despite checking in constructor?",
-                )
-            };
 
-            let tx: Transaction<NotPruned> = Transaction::V2 {
-                prefix: TransactionPrefix {
-                    additional_timelock: Timelock::None,
-                    inputs: tx.inputs(keypair)?.get_inputs(),
-                    outputs: tx.outputs(keypair).get_outputs(),
-                    extra: tx.extra(keypair),
-                },
-                proofs: Some(RctProofs {
-                    base: RctBase {
-                        fee: tx.fee(),
-                        encrypted_amounts,
-                        pseudo_outs: vec![],
-                        commitments,
-                    },
-                    prunable: RctPrunable::Clsag {
-                        bulletproof,
-                        clsags: vec![],
-                        pseudo_outs: vec![],
-                    },
-                }),
-            };
-            txes.push(tx);
+    pub fn construct_tx(&self, tx: &TxConstructionData, keypair: &KeyPair, tx_key: &PrivateKey, additional_keys: &Vec<PrivateKey>, tx_key_pub: &EdwardsPoint, additional_keys_pub: &Vec<EdwardsPoint>) -> Result<Transaction> {
+        let commitments_and_encrypted_amounts = tx.commitments_and_encrypted_amounts(keypair, tx_key, additional_keys, tx_key_pub);
+        let mut commitments = Vec::with_capacity(tx.splitted_dsts.len());
+        let mut bp_commitments = Vec::with_capacity(tx.splitted_dsts.len());
+        let mut encrypted_amounts = Vec::with_capacity(tx.splitted_dsts.len());
+        for (commitment, encrypted_amount) in commitments_and_encrypted_amounts {
+            commitments.push(commitment.calculate());
+            bp_commitments.push(commitment);
+            encrypted_amounts.push(encrypted_amount);
         }
-
-        Ok(txes)
+        let bulletproof = {
+            (match tx.rct_config.bp_version {
+                RctType::RCTTypeFull => Bulletproof::prove(&mut OsRng, bp_commitments),
+                RctType::RCTTypeNull | RctType::RCTTypeBulletproof2 => {
+                    Bulletproof::prove_plus(&mut OsRng, bp_commitments)
+                }
+                _ => panic!("unsupported RctType"),
+            })
+            .expect(
+                "couldn't prove BP(+)s for this many payments despite checking in constructor?",
+            )
+        };
+        let tx = Transaction::V2 {
+            prefix: TransactionPrefix {
+                additional_timelock: Timelock::None,
+                inputs: tx.inputs(keypair)?.get_inputs(),
+                outputs: tx.outputs(keypair, tx_key, additional_keys, tx_key_pub).get_outputs(),
+                extra: tx.extra(keypair, tx_key, additional_keys, tx_key_pub, additional_keys_pub),
+            },
+            proofs: Some(RctProofs {
+                base: RctBase {
+                    fee: tx.fee(),
+                    encrypted_amounts,
+                    pseudo_outs: vec![],
+                    commitments,
+                },
+                prunable: RctPrunable::Clsag {
+                    bulletproof,
+                    clsags: vec![],
+                    pseudo_outs: vec![],
+                },
+            }),
+        };
+        Ok(tx)
     }
 
     pub fn sign(&self, keypair: &KeyPair) -> Result<SignedTxSet> {
         let mut penging_tx = vec![];
-        let txes = self.transaction_without_signatures(keypair)?;
         let mut tx_key_images = vec![];
-        for (tx, unsigned_tx) in txes.iter().zip(self.txes.iter()) {
-            let mask_sum = unsigned_tx.sum_output_masks(keypair);
+        for unsigned_tx in self.txes.iter() {
+            let (tx_key, additional_keys, tx_key_pub, additional_keys_pub) = unsigned_tx.transaction_keys();
+
+            let tx = self.construct_tx(unsigned_tx, keypair, &tx_key, &additional_keys, &tx_key_pub, &additional_keys_pub)?;
+
+            let mask_sum = unsigned_tx.sum_output_masks(keypair, &tx_key, &additional_keys, &tx_key_pub);
             let inputs = unsigned_tx.inputs(keypair)?;
             let mut clsag_signs = Vec::with_capacity(inputs.0.len());
             for (i, input) in inputs.0.iter().enumerate() {
@@ -698,7 +701,9 @@ impl UnsignedTx {
                 key_images_str
             };
 
-            let keys = unsigned_tx.transaction_keys();
+            for item in unsigned_tx.outputs(keypair, &tx_key, &additional_keys, &tx_key_pub).0.iter() {
+                tx_key_images.push((PublicKey::new(item.output.key), item.key_image));
+            }
 
             penging_tx.push(PendingTx::new(
                 tx.clone(),
@@ -708,17 +713,14 @@ impl UnsignedTx {
                 unsigned_tx.change_dts.clone(),
                 unsigned_tx.selected_transfers.clone(),
                 key_images_str,
-                keys.0,
-                keys.1,
+                tx_key,
+                additional_keys,
                 unsigned_tx.dests.clone(),
                 // vec![],
                 unsigned_tx.clone(),
                 // PrivateKey::default(),
             ));
 
-            for item in unsigned_tx.outputs(keypair).0.iter() {
-                tx_key_images.push((PublicKey::new(item.output.key), item.key_image));
-            }
         }
 
         for transfer in self.transfers.details.iter() {
@@ -779,7 +781,7 @@ pub fn sign_tx(keypair: KeyPair, request_data: Vec<u8>) -> Result<Vec<u8>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::key::PrivateKey;
+    
     use alloc::vec;
     use core::ops::Deref;
     use curve25519_dalek::edwards::EdwardsPoint;

@@ -18,11 +18,7 @@ pub struct CellParser<'a> {
 impl CellParser<'_> {
     pub fn remaining_bits(&mut self) -> usize {
         let pos = self.bit_reader.position_in_bits().unwrap_or_default() as usize;
-        if self.bit_len > pos {
-            self.bit_len - pos
-        } else {
-            0
-        }
+        self.bit_len.saturating_sub(pos)
     }
 
     /// Return number of full bytes remaining
@@ -83,7 +79,7 @@ impl CellParser<'_> {
     }
 
     pub fn load_uint(&mut self, bit_len: usize) -> Result<BigUint, TonCellError> {
-        let num_words = (bit_len + 31) / 32;
+        let num_words = bit_len.div_ceil(32);
         let high_word_bits = if bit_len % 32 == 0 { 32 } else { bit_len % 32 };
         let mut words: Vec<u32> = vec![0_u32; num_words];
         let high_word = self.load_u32(high_word_bits)?;
@@ -97,7 +93,7 @@ impl CellParser<'_> {
     }
 
     pub fn load_int(&mut self, bit_len: usize) -> Result<BigInt, TonCellError> {
-        let num_words = (bit_len + 31) / 32;
+        let num_words = bit_len.div_ceil(32);
         let high_word_bits = if bit_len % 32 == 0 { 32 } else { bit_len % 32 };
         let mut words: Vec<u32> = vec![0_u32; num_words];
         let high_word = self.load_u32(high_word_bits)?;
@@ -139,7 +135,7 @@ impl CellParser<'_> {
     }
 
     pub fn load_bits(&mut self, num_bits: usize) -> Result<Vec<u8>, TonCellError> {
-        let total_bytes = (num_bits + 7) / 8;
+        let total_bytes = num_bits.div_ceil(8);
         let mut res = vec![0_u8; total_bytes];
         self.load_bits_to_slice(num_bits, res.as_mut_slice())?;
         Ok(res)

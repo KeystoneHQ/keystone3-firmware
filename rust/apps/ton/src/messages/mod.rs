@@ -150,12 +150,12 @@ impl ParseCell for InternalMessage {
             let op_code = parser.load_u32(32)?;
             match op_code {
                 JETTON_TRANSFER => Ok(Self {
-                    op_code: format!("{:x}", op_code),
+                    op_code: format!("{op_code:x}"),
                     action: infer_action(op_code),
                     operation: Operation::JettonMessage(JettonMessage::parse(cell)?),
                 }),
                 NFT_TRANSFER => Ok(Self {
-                    op_code: format!("{:x}", op_code),
+                    op_code: format!("{op_code:x}"),
                     action: infer_action(op_code),
                     operation: Operation::NFTMessage(NFTMessage::parse(cell)?),
                 }),
@@ -173,7 +173,7 @@ impl ParseCell for InternalMessage {
                         child = t.reference(0);
                     }
                     Ok(Self {
-                        op_code: format!("{:x}", op_code),
+                        op_code: format!("{op_code:x}"),
                         action: None,
                         operation: Operation::Comment(comment),
                     })
@@ -181,7 +181,7 @@ impl ParseCell for InternalMessage {
                 _ => {
                     let remaining_bytes = parser.remaining_bytes();
                     Ok(Self {
-                        op_code: format!("{:x}", op_code),
+                        op_code: format!("{op_code:x}"),
                         action: infer_action(op_code),
                         operation: Operation::OtherMessage(OtherMessage {
                             payload: hex::encode(parser.load_bytes(remaining_bytes)?),

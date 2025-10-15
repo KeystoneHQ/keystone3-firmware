@@ -111,10 +111,10 @@ fn _parse_by_function(
                     _input.name.clone(),
                     match _token {
                         Token::Address(_) => {
-                            format!("0x{}", _token)
+                            format!("0x{_token}")
                         }
                         Token::Uint(uint) => {
-                            format!("{}", uint)
+                            format!("{uint}")
                         }
                         _ => _token.to_string(),
                     },

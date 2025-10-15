@@ -21,8 +21,8 @@ pub fn encode_erc20_transfer_calldata(to: H160, amount: U256) -> String {
     let mut calldata = "a9059cbb".to_string();
     calldata.push_str(&format!("{:0>64}", hex::encode(to)));
     // convert value to hex and pad it to 64 bytes
-    let amount_hex = format!("{:x}", amount);
-    let amount_padding = format!("{:0>64}", amount_hex);
+    let amount_hex = format!("{amount:x}");
+    let amount_padding = format!("{amount_hex:0>64}");
     calldata.push_str(&amount_padding);
     calldata
 }
@@ -50,7 +50,7 @@ pub fn parse_erc20(input: &str, decimal: u32) -> Result<ParsedErc20Transaction, 
         // If there is a remainder, convert it to a decimal
         let remainder_decimal = remainder.to_string();
         let padded_remainder = format!("{:0>width$}", remainder_decimal, width = decimal as usize);
-        format!("{}.{}", value_decimal, padded_remainder)
+        format!("{value_decimal}.{padded_remainder}")
             .trim_end_matches('0')
             .to_string()
     } else {
@@ -92,7 +92,7 @@ pub fn parse_erc20_approval(
         // If there is a remainder, convert it to a decimal
         let remainder_decimal = remainder.to_string();
         let padded_remainder = format!("{:0>width$}", remainder_decimal, width = decimal as usize);
-        format!("{}.{}", value_decimal, padded_remainder)
+        format!("{value_decimal}.{padded_remainder}")
             .trim_end_matches('0')
             .to_string()
     } else {

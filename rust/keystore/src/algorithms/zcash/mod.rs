@@ -100,7 +100,7 @@ mod tests {
         zip32::AccountId,
     };
 
-    use zcash_vendor::orchard::keys::{FullViewingKey, SpendAuthorizingKey, SpendingKey};
+    use zcash_vendor::orchard::keys::{SpendAuthorizingKey, SpendingKey};
     use zcash_vendor::pasta_curves::group::ff::PrimeField;
 
     use hex;
@@ -108,7 +108,7 @@ mod tests {
     use rand_chacha::ChaCha8Rng;
 
     extern crate std;
-    use std::println;
+    
 
     #[test]
     fn test_ufvk_generation_and_encoding() {

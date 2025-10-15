@@ -36,6 +36,7 @@ pub struct DOGEAddressEncoding<'a> {
     pub p2sh_prefix: u8,
 }
 
+#[allow(unused)]
 struct UpperWriter<W: fmt::Write>(W);
 
 impl<W: fmt::Write> fmt::Write for UpperWriter<W> {

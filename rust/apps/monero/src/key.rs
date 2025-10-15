@@ -167,9 +167,9 @@ pub fn generate_sub_secret_key(secret_view_key: PrivateKey, major: u32, minor: u
 
 pub fn generate_key_image_from_priavte_key(private_key: &PrivateKey) -> EdwardsPoint {
     let x = private_key.scalar;
-    let Hp = hash_to_point((EdwardsPoint::mul_base(&x)).compress().0);
+    let hp = hash_to_point((EdwardsPoint::mul_base(&x)).compress().0);
 
-    x * Hp
+    x * hp
 }
 
 pub fn calc_subaddress_m(secret_view_key: &[u8], major: u32, minor: u32) -> [u8; PUBKEY_LEH] {

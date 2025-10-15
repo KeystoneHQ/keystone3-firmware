@@ -33,14 +33,14 @@ fn safe_parse_pincode(pincode: PtrBytes) -> Result<[u8; 6], RustCError> {
 }
 
 fn generate_wallet_result(
-    primaryAddress: String,
-    privateViewKey: String,
+    primary_address: String,
+    private_view_key: String,
     is_encrypted: bool,
 ) -> UREncodeResult {
     let result = json!({
         "version": 0,
-        "primaryAddress": primaryAddress,
-        "privateViewKey": privateViewKey,
+        "primaryAddress": primary_address,
+        "privateViewKey": private_view_key,
         "restoreHeight": 0,
         "encrypted": is_encrypted,
         "source": "Keystone"

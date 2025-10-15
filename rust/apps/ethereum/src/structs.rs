@@ -76,7 +76,7 @@ impl ParsedEthereumTransaction {
             nonce: tx.nonce,
             gas_limit: tx.gas_limit,
             gas_price: Some(tx.gas_price),
-            from: from.map_or(None, |key| Some(generate_address(key).unwrap_or_default())),
+            from: from.map(|key| generate_address(key).unwrap_or_default()),
             to: tx.to,
             value: tx.value,
             chain_id: tx.chain_id,
@@ -97,7 +97,7 @@ impl ParsedEthereumTransaction {
         Ok(Self {
             nonce: tx.nonce,
             gas_limit: tx.gas_limit,
-            from: from.map_or(None, |key| Some(generate_address(key).unwrap_or_default())),
+            from: from.map(|key| generate_address(key).unwrap_or_default()),
             to: tx.to,
             value: tx.value,
             chain_id: tx.chain_id,
@@ -152,7 +152,7 @@ impl PersonalMessage {
         Ok(Self {
             raw_message,
             utf8_message,
-            from: from.map_or(None, |key| Some(generate_address(key).unwrap_or_default())),
+            from: from.map(|key| generate_address(key).unwrap_or_default()),
         })
     }
 }
@@ -174,7 +174,7 @@ pub struct TypedData {
 impl TypedData {
     pub fn from(data: TypedData, from: Option<PublicKey>) -> Result<Self> {
         Ok(Self {
-            from: from.map_or(None, |key| Some(generate_address(key).unwrap_or_default())),
+            from: from.map(|key| generate_address(key).unwrap_or_default()),
             ..data
         })
     }
@@ -188,7 +188,7 @@ impl TypedData {
         // bytes32 safeTxHash = keccak256(
         //     abi.encode(SAFE_TX_TYPEHASH, to, value, keccak256(data), operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, _nonce)
         // );
-        if self.primary_type != "SafeTx".to_string() {
+        if self.primary_type != "SafeTx" {
             return "".to_string();
         }
         let safe_tx_typehash =
@@ -200,7 +200,7 @@ impl TypedData {
         let value = U256::from_dec_str(value_str).unwrap_or_default();
 
         let data = hex::decode(
-            &message["data"]
+            message["data"]
                 .as_str()
                 .unwrap_or_default()
                 .trim_start_matches("0x"),
@@ -280,7 +280,7 @@ impl TypedData {
         // Convert to hex string with 0x prefix
         // return abi.encodePacked(byte(0x19), byte(0x01), domainSeparator, safeTxHash);
         let domain_separator =
-            hex::decode(&self.domain_separator.trim_start_matches("0x")).unwrap_or_default();
+            hex::decode(self.domain_separator.trim_start_matches("0x")).unwrap_or_default();
         let mut transaction_data = Vec::new();
         transaction_data.push(0x19);
         transaction_data.push(0x01);

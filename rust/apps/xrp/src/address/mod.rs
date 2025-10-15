@@ -16,7 +16,7 @@ pub fn get_address(hd_path: &str, root_x_pub: &str, root_path: &str) -> R<String
     let sub_path = hd_path
         .strip_prefix(&root_path)
         .ok_or(XRPError::InvalidHDPath(hd_path.to_string()))?;
-    let pubkey = derive_public_key(&root_x_pub.to_string(), &format!("m/{}", sub_path))?;
+    let pubkey = derive_public_key(&root_x_pub.to_string(), &format!("m/{sub_path}"))?;
     derive_address(&pubkey.serialize())
 }
 

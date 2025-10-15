@@ -7,6 +7,7 @@ const ALPHABET: &str = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAx
 
 struct Address;
 
+#[allow(unused)]
 trait Settings {
     const PAYLOAD_LEN: usize;
     const PREFIX: &'static [u8] = &[];

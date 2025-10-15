@@ -2,7 +2,7 @@ use crate::constants::*;
 use crate::errors::{AvaxError, Result};
 #[cfg(feature = "testnet")]
 use crate::network::TESTNET_ID;
-use crate::network::{Network, MAINNET_ID};
+use crate::network::Network;
 use crate::ripple_keypair::hash160;
 use crate::transactions::structs::ParsedSizeAble;
 use alloc::string::{String, ToString};
@@ -48,7 +48,7 @@ pub fn get_address(
     root_x_pub: &str,
     root_path: &str,
 ) -> Result<String> {
-    let mut prefix = "avax";
+    let prefix = "avax";
     match network {
         Network::AvaxMainNet => {}
         #[cfg(feature = "testnet")]

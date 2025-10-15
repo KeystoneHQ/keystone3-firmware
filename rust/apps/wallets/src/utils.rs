@@ -52,7 +52,7 @@ pub fn generate_crypto_multi_accounts_sync_ur(
                 Some(origin),
                 None,
                 None,
-                Some(format!("{}-{}", account_prefix, index)),
+                Some(format!("{account_prefix}-{index}")),
                 None,
             );
             keys.push(hd_key);

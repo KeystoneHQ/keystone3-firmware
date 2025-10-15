@@ -23,8 +23,7 @@ pub fn get_address(pub_key: &String) -> Result<String> {
             Ok(encode_base32(&data))
         }
         Err(e) => Err(StellarError::AddressError(format!(
-            "hex decode error {}",
-            e
+            "hex decode error {e}"
         ))),
     }
 }

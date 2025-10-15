@@ -7,6 +7,7 @@ use curve25519_dalek::Scalar;
 use monero_serai::transaction::{NotPruned, Transaction};
 
 #[derive(Debug, Clone)]
+#[allow(unused)]
 pub struct PendingTx {
     pub tx: Transaction<NotPruned>,
     dust: u64,
@@ -23,6 +24,8 @@ pub struct PendingTx {
     multisig_tx_key_entropy: PrivateKey,
 }
 
+#[allow(non_snake_case)]
+#[allow(clippy::too_many_arguments)]
 impl PendingTx {
     pub fn new(
         tx: Transaction<NotPruned>,

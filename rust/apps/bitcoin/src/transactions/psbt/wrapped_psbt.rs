@@ -347,7 +347,7 @@ impl WrappedPsbt {
     fn get_multi_sig_script_and_format<'a>(
         &'a self,
         input: &'a Input,
-    ) -> Result<(&ScriptBuf, MultiSigFormat)> {
+    ) -> Result<(&'a ScriptBuf, MultiSigFormat)> {
         match (&input.redeem_script, &input.witness_script) {
             (Some(script), None) => Ok((script, MultiSigFormat::P2sh)),
             (Some(_), Some(script)) => Ok((script, MultiSigFormat::P2wshP2sh)),

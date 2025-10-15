@@ -177,7 +177,7 @@ impl CellBuilder {
         if val.is_zero() {
             self.store_u8(4, 0)
         } else {
-            let num_bytes = (val.bits() as usize + 7) / 8;
+            let num_bytes = (val.bits() as usize).div_ceil(8);
             self.store_u8(4, num_bytes as u8)?;
             self.store_uint(num_bytes * 8, val)
         }
@@ -210,8 +210,7 @@ impl CellBuilder {
         let ref_count = self.references.len() + 1;
         if ref_count > 4 {
             return Err(TonCellError::cell_builder_error(format!(
-                "Cell must contain at most 4 references, got {}",
-                ref_count
+                "Cell must contain at most 4 references, got {ref_count}"
             )));
         }
         self.references.push(cell.clone());
@@ -268,15 +267,13 @@ impl CellBuilder {
             let bit_len = vec.len() * 8 - trailing_zeros;
             if bit_len > MAX_CELL_BITS {
                 return Err(TonCellError::cell_builder_error(format!(
-                    "Cell must contain at most {} bits, got {}",
-                    MAX_CELL_BITS, bit_len
+                    "Cell must contain at most {MAX_CELL_BITS} bits, got {bit_len}"
                 )));
             }
             let ref_count = self.references.len();
             if ref_count > MAX_CELL_REFERENCES {
                 return Err(TonCellError::cell_builder_error(format!(
-                    "Cell must contain at most 4 references, got {}",
-                    ref_count
+                    "Cell must contain at most 4 references, got {ref_count}"
                 )));
             }
 
@@ -297,13 +294,12 @@ impl CellBuilder {
 fn extend_and_invert_bits(bits_cnt: usize, src: &BigUint) -> Result<BigUint, TonCellError> {
     if bits_cnt < src.bits() as usize {
         return Err(TonCellError::cell_builder_error(format!(
-            "Can't invert bits: value {} doesn't fit in {} bits",
-            src, bits_cnt
+            "Can't invert bits: value {src} doesn't fit in {bits_cnt} bits"
         )));
     }
 
     let src_bytes = src.to_bytes_be();
-    let inverted_bytes_cnt = (bits_cnt + 7) / 8;
+    let inverted_bytes_cnt = bits_cnt.div_ceil(8);
     let mut inverted = vec![0xffu8; inverted_bytes_cnt];
     // can be optimized
     for (pos, byte) in src_bytes.iter().rev().enumerate() {

@@ -43,10 +43,7 @@ fn get_path_level_number(path: &str, index: usize) -> Option<u32> {
     }
 
     let num_str = segments[index].trim_matches('\'');
-    match num_str.parse::<u32>() {
-        Ok(num) => Some(num),
-        Err(_) => None,
-    }
+    num_str.parse::<u32>().ok()
 }
 
 fn generate_output(
@@ -68,8 +65,7 @@ fn generate_output(
         PURPOSE_NATIVE_SEGWIT => vec![ScriptExpression::WitnessPublicKeyHash],
         _ => {
             return Err(URError::UrEncodeError(format!(
-                "not supported purpose:{}",
-                purpose
+                "not supported purpose:{purpose}"
             )))
         }
     };

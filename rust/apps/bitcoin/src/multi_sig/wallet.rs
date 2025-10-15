@@ -570,16 +570,16 @@ pub fn strict_verify_wallet_config(
 
 #[cfg(test)]
 mod tests {
-    use core::result;
+    
 
     use alloc::string::ToString;
 
     use crate::multi_sig::wallet::{
-        create_wallet, export_wallet_by_ur, generate_config_data, is_valid_xyzpub,
+        create_wallet, generate_config_data, is_valid_xyzpub,
         parse_bsms_wallet_config, parse_wallet_config, strict_verify_wallet_config,
     };
     use crate::multi_sig::{MultiSigXPubInfo, Network};
-    use alloc::vec::Vec;
+    
     use hex;
     use ur_registry::bytes::Bytes;
 

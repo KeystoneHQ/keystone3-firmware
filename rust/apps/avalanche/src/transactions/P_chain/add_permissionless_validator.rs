@@ -10,7 +10,6 @@ use crate::transactions::structs::{
 use crate::transactions::subnet_id::SubnetId;
 use crate::transactions::transferable::TransferableOutput;
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };

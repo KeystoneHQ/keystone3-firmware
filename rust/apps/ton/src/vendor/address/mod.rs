@@ -434,18 +434,18 @@ mod tests {
 
         let res = "EQDk2VTvn04SUKJrW7rXahzdF8_Qi6utb0wj43InCu9vdjrR".parse::<TonAddress>()?;
         let serial = serde_json::to_string(&res).unwrap();
-        println!("{}", serial);
+        println!("{serial}");
         assert_eq!(serial.as_str(), expected);
 
         let res = "0:e4d954ef9f4e1250a26b5bbad76a1cdd17cfd08babad6f4c23e372270aef6f76"
             .parse::<TonAddress>()?;
         let serial = serde_json::to_string(&res).unwrap();
-        println!("{}", serial);
+        println!("{serial}");
         assert_eq!(serial.as_str(), expected);
 
         let res = "EQDk2VTvn04SUKJrW7rXahzdF8/Qi6utb0wj43InCu9vdjrR".parse::<TonAddress>()?;
         let serial = serde_json::to_string(&res).unwrap();
-        println!("{}", serial);
+        println!("{serial}");
         assert_eq!(serial.as_str(), expected);
 
         Ok(())
@@ -454,35 +454,35 @@ mod tests {
     #[test]
     fn deserialization_works() -> anyhow::Result<()> {
         let address = "EQDk2VTvn04SUKJrW7rXahzdF8_Qi6utb0wj43InCu9vdjrR";
-        let a = format!("\"{}\"", address);
+        let a = format!("\"{address}\"");
         let deserial: TonAddress = serde_json::from_str(a.as_str()).unwrap();
         let expected = address.parse()?;
-        println!("{}", deserial);
+        println!("{deserial}");
         assert_eq!(deserial, expected);
 
         let address = "EQDk2VTvn04SUKJrW7rXahzdF8/Qi6utb0wj43InCu9vdjrR";
-        let a = format!("\"{}\"", address);
+        let a = format!("\"{address}\"");
         let deserial: TonAddress = serde_json::from_str(a.as_str()).unwrap();
         let expected = address.parse()?;
-        println!("{}", deserial);
+        println!("{deserial}");
         assert_eq!(deserial, expected);
 
         let address = "0:e4d954ef9f4e1250a26b5bbad76a1cdd17cfd08babad6f4c23e372270aef6f76";
-        let a = format!("\"{}\"", address);
+        let a = format!("\"{address}\"");
         let deserial: TonAddress = serde_json::from_str(a.as_str()).unwrap();
         let expected = address.parse()?;
-        println!("{}", deserial);
+        println!("{deserial}");
         assert_eq!(deserial, expected);
 
         let address =
             String::from("0:e4d954ef9f4e1250a26b5bbad76a1cdd17cfd08babad6f4c23e372270aef6f76");
         let deserial: TonAddress = serde_json::from_value(Value::String(address.clone())).unwrap();
         let expected = address.clone().parse()?;
-        println!("{}", deserial);
+        println!("{deserial}");
         assert_eq!(deserial, expected);
 
         let address = "124";
-        let a = format!("\"{}\"", address);
+        let a = format!("\"{address}\"");
         let deserial: serde_json::Result<TonAddress> = serde_json::from_str(a.as_str());
         assert!(deserial.is_err());
 

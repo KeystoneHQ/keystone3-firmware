@@ -1,5 +1,4 @@
 use alloc::string::{String, ToString};
-use bitcoin::address::error;
 use core2::io;
 use keystore::errors::KeystoreError;
 use thiserror;

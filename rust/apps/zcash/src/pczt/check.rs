@@ -32,12 +32,12 @@ pub fn check_pczt<P: consensus::Parameters>(
             check_orchard(params, seed_fingerprint, account_index, orchard, bundle)
                 .map_err(pczt::roles::verifier::OrchardError::Custom)
         })
-        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{:?}", e)))?
+        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{e:?}")))?
         .with_transparent(|bundle| {
             check_transparent(params, seed_fingerprint, account_index, xpub, bundle)
                 .map_err(pczt::roles::verifier::TransparentError::Custom)
         })
-        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{:?}", e)))?;
+        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{e:?}")))?;
     Ok(())
 }
 
@@ -284,7 +284,7 @@ fn check_action<P: consensus::Parameters>(
     // Check `cv_net` first so we know that the `value` fields for both the spend and the
     // output are present and correct.
     action.verify_cv_net().map_err(|e| {
-        ZcashError::InvalidPczt(alloc::format!("invalid cv_net in Orchard action: {:?}", e))
+        ZcashError::InvalidPczt(alloc::format!("invalid cv_net in Orchard action: {e:?}"))
     })?;
 
     check_action_spend(params, seed_fingerprint, account_index, fvk, action.spend())?;
@@ -322,10 +322,10 @@ fn check_action_spend<P: consensus::Parameters>(
 
     if let Some(expected_fvk) = can_verify_nf_rk {
         spend.verify_nullifier(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action nullifier: {:?}", e))
+            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action nullifier: {e:?}"))
         })?;
         spend.verify_rk(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action rk: {:?}", e))
+            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action rk: {e:?}"))
         })?;
     }
 
@@ -338,7 +338,7 @@ fn check_action_output(action: &orchard::pczt::Action) -> Result<(), ZcashError>
         .output()
         .verify_note_commitment(action.spend())
         .map_err(|e| {
-            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action cmx: {:?}", e))
+            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action cmx: {e:?}"))
         })?;
 
     // TODO: Currently the "can decrypt output" check is performed implicitly by

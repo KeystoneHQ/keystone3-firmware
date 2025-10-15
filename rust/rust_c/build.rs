@@ -89,7 +89,7 @@ fn main() {
         .with_config(config)
         .generate()
         .map_or_else(
-            |error| {},
+            |_| {},
             |bindings| {
                 bindings.write_to_file(output_target);
             },

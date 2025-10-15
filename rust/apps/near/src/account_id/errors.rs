@@ -20,7 +20,7 @@ impl fmt::Display for ParseAccountError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut buf = self.kind.to_string();
         if let Some((idx, char)) = self.char {
-            write!(buf, " {:?} at index {}", char, idx)?
+            write!(buf, " {char:?} at index {idx}")?
         }
         buf.fmt(f)
     }

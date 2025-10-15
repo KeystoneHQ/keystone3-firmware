@@ -9,7 +9,6 @@ use crate::transactions::tx_header::Header;
 use crate::transactions::{asset_id::AssetId, type_id::TypeId};
 
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };

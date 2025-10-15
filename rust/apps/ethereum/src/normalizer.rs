@@ -16,7 +16,7 @@ pub fn normalize_value(value: U256) -> String {
         return "0".to_string();
     }
 
-    let padded_value = format!("{:0>18}", value_str);
+    let padded_value = format!("{value_str:0>18}");
     let len = padded_value.len();
 
     let mut res = if len <= 18 {
@@ -24,14 +24,14 @@ pub fn normalize_value(value: U256) -> String {
         while val.ends_with('0') {
             val.pop();
         }
-        format!("0.{}", val)
+        format!("0.{val}")
     } else {
         let (int_part, decimal_part) = padded_value.split_at(len - 18);
         let mut decimal = decimal_part.to_string();
         while decimal.ends_with('0') {
             decimal.pop();
         }
-        format!("{}.{}", int_part, decimal)
+        format!("{int_part}.{decimal}")
     };
     if res.ends_with('.') {
         res.pop();
@@ -52,6 +52,6 @@ mod tests {
     fn test() {
         let x = U256::from(000_000_100_000_000_001u64);
         let y = normalize_value(x);
-        println!("{}", y);
+        println!("{y}");
     }
 }

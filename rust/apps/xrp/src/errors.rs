@@ -24,30 +24,30 @@ pub type R<T> = Result<T, XRPError>;
 
 impl From<KeystoreError> for XRPError {
     fn from(value: KeystoreError) -> Self {
-        Self::KeystoreError(format!("{}", value))
+        Self::KeystoreError(format!("{value}"))
     }
 }
 
 impl From<Utf8Error> for XRPError {
     fn from(value: Utf8Error) -> Self {
-        Self::InvalidData(format!("utf8 operation failed {}", value))
+        Self::InvalidData(format!("utf8 operation failed {value}"))
     }
 }
 
 impl From<hex::FromHexError> for XRPError {
     fn from(value: hex::FromHexError) -> Self {
-        Self::InvalidData(format!("hex operation failed {}", value))
+        Self::InvalidData(format!("hex operation failed {value}"))
     }
 }
 
 impl From<serde_json::Error> for XRPError {
     fn from(value: Error) -> Self {
-        Self::InvalidData(format!("serde_json operation failed {}", value))
+        Self::InvalidData(format!("serde_json operation failed {value}"))
     }
 }
 
 impl From<bitcoin::bip32::Error> for XRPError {
     fn from(value: bitcoin::bip32::Error) -> Self {
-        Self::InvalidData(format!("bip32 operation failed {}", value))
+        Self::InvalidData(format!("bip32 operation failed {value}"))
     }
 }

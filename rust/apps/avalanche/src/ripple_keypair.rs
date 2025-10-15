@@ -1,4 +1,3 @@
-use alloc::string::String;
 use alloc::vec::Vec;
 use cryptoxide::digest::Digest;
 use cryptoxide::hashing;

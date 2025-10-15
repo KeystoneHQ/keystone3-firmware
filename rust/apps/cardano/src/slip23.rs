@@ -42,7 +42,7 @@ pub fn from_seed_slip23(seed: &[u8]) -> R<CardanoHDNode> {
     k.copy_from_slice(&sha512(il));
 
     // Step 5: Modify k by specific bit operations for EdDSA compatibility
-    k[0] = k[0] & 0xf8; // Clear the 3 least significant bits
+    k[0] &= 0xf8; // Clear the 3 least significant bits
     k[31] = (k[31] & 0x1f) | 0x40; // Set the 6th bit and clear the 3 most significant bits
 
     // Step 6: Construct the 96-byte extended private key
@@ -95,7 +95,7 @@ fn parse_derivation_path(path: &str) -> R<Vec<u32>> {
         };
 
         let index: u32 = index_str.parse().map_err(|_| {
-            CardanoError::DerivationError(format!("Invalid path component: {}", part))
+            CardanoError::DerivationError(format!("Invalid path component: {part}"))
         })?;
 
         if hardened {

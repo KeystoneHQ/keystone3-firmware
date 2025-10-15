@@ -43,7 +43,7 @@ pub fn derive_address(hd_path: &str, root_x_pub: &str, root_path: &str) -> Resul
     let sub_path = hd_path
         .strip_prefix(&root_path)
         .ok_or(EthereumError::InvalidHDPath(hd_path.to_string()))?;
-    derive_public_key(&root_x_pub.to_string(), &format!("m/{}", sub_path))
+    derive_public_key(&root_x_pub.to_string(), &format!("m/{sub_path}"))
         .map(generate_address)
         .map_err(EthereumError::from)?
 }
@@ -53,8 +53,8 @@ mod tests {
 
     use super::*;
     extern crate std;
-    use core::str::FromStr;
-    use std::println;
+    
+    
 
     #[test]
     fn test_generate_address() {

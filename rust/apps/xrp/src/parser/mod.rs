@@ -60,12 +60,11 @@ impl ParsedXrpTx {
             if let (Some(currency), Some(value)) =
                 (value["currency"].as_str(), value["value"].as_str())
             {
-                return Ok(format!("{} {}", value, currency));
+                return Ok(format!("{value} {currency}"));
             }
         }
         Err(XRPError::ParseTxError(format!(
-            "format amount failed {:?}",
-            amount
+            "format amount failed {amount:?}"
         )))
     }
 
@@ -74,8 +73,7 @@ impl ParsedXrpTx {
             return Ok(v.to_string());
         }
         Err(XRPError::ParseTxError(format!(
-            "format field failed {:?}",
-            field
+            "format field failed {field:?}"
         )))
     }
 
@@ -84,8 +82,7 @@ impl ParsedXrpTx {
             return Ok(value);
         }
         Err(XRPError::ParseTxError(format!(
-            "format field failed {:?}",
-            sequence
+            "format field failed {sequence:?}"
         )))
     }
 

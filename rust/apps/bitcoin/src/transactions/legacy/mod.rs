@@ -65,16 +65,16 @@ mod tests {
             // check without change address
             let payload = prepare_payload(hex);
             let context = prepare_parse_context(pubkey_str);
-            let check = check_raw_tx(payload, context).unwrap();
-            assert_eq!((), check);
+            let check = check_raw_tx(payload, context);
+            assert!(check.is_ok());
         }
         {
             // check with change address
             let hex = "1f8b0800000000000003558fbd4a0341144649b458b64948155285458808cbcecfbd7766ac2491086a82011bed66efcc54e24262d0c7b0b448656369ef43f80cfa02f6766e2b7cd5c739c5c9ba83de6a3d6b421c5fad9b87869bbbd15bb77d33a3198317be78e9e67b97d7b3c101b303aaa32a6d042e41d5b1f45ac912c9a3f696134a1abfff7c7dfc8ac3acfeee649fc3feeb7eb1ebe427081eadb1cc48d618762c153a8989d032266d74140a58308b284400a3586bcfb527d44669994667f954a816f144e46c100c96d05b23add7412393a32441440812594182e0406244e742ad83694b9276c3e765d15b54e026959a54a25da58e8ef36271b170b4e1c7ed26f8a58590ead57a7efad4f0cdfcbe996e196efbbbf361e7bf2b2bf107321aa6643d010000";
             let payload = prepare_payload(hex);
             let context = prepare_parse_context(pubkey_str);
-            let check = check_raw_tx(payload, context).unwrap();
-            assert_eq!((), check);
+            let check = check_raw_tx(payload, context);
+            assert!(check.is_ok());
         }
     }
 
@@ -86,8 +86,8 @@ mod tests {
         let extended_pubkey = bitcoin::bip32::Xpub::from_str(extended_pubkey_str).unwrap();
         let context = keystone::ParseContext::new(master_fingerprint, extended_pubkey);
         let payload = prepare_payload(hex);
-        let check = check_raw_tx(payload, context.clone()).unwrap();
-        assert_eq!((), check);
+        let check = check_raw_tx(payload, context.clone());
+        assert!(check.is_ok());
     }
 
     #[test]
@@ -98,8 +98,8 @@ mod tests {
         let extended_pubkey = bitcoin::bip32::Xpub::from_str(extended_pubkey_str).unwrap();
         let context = keystone::ParseContext::new(master_fingerprint, extended_pubkey);
         let payload = prepare_payload(hex);
-        let check = check_raw_tx(payload, context.clone()).unwrap();
-        assert_eq!((), check);
+        let check = check_raw_tx(payload, context.clone());
+        assert!(check.is_ok());
     }
 
     #[test]
@@ -120,16 +120,16 @@ mod tests {
             // check
             let payload = prepare_payload(hex);
             let context = prepare_parse_context(pubkey_str);
-            let check = check_raw_tx(payload, context).unwrap();
-            assert_eq!((), check);
+            let check = check_raw_tx(payload, context);
+            assert!(check.is_ok());
         }
         {
             // check with change address
             let hex = "1f8b08000000000000034d8cbb4a03411440c962b12445d654c12a2c426461d979dc79596914492318022a763377660ca22e59a248fe44f003ececfd046b4b0bfd016beddc5238d58173d264d09f3507b50fa393a65ed5585f6f3d27ad4d1547e12db1f963d2dd38dc9f4f07db8806a40bacd401b004e6426939a3a5905670ab310a2a472fdf9fafbf6427bdf8eaa46f9bd97b913f75ba7b4244190965d2a38b129011698da59ae816a10565c87c081a99a28a6a678956a82804a5a5f204b264f8d3cb278439e69c17968009d447a18d33dc8918a3891a0238b4a09807c76500a95d7b71c148248ca3a65edaa27f5c018c2b31ae484bc58bdd6e7e1e26feae599f368be66875b98c66feb09e2def17d3da3bc16fafce20fbe80d3b79ffe65f4b2bf2076c698bec3e010000";
             let payload = prepare_payload(hex);
             let context = prepare_parse_context(pubkey_str);
-            let check = check_raw_tx(payload, context).unwrap();
-            assert_eq!((), check);
+            let check = check_raw_tx(payload, context);
+            assert!(check.is_ok());
         }
     }
 
@@ -141,8 +141,8 @@ mod tests {
         let extended_pubkey = bitcoin::bip32::Xpub::from_str(extended_pubkey_str).unwrap();
         let context = keystone::ParseContext::new(master_fingerprint, extended_pubkey);
         let payload = prepare_payload(hex);
-        let check = check_raw_tx(payload, context.clone()).unwrap();
-        assert_eq!((), check);
+        let check = check_raw_tx(payload, context.clone());
+        assert!(check.is_ok());
     }
 
     #[test]
@@ -187,16 +187,16 @@ mod tests {
             // check
             let payload = prepare_payload(hex);
             let context = prepare_parse_context(pubkey_str);
-            let check = check_raw_tx(payload, context).unwrap();
-            assert_eq!(check, ());
+            let check = check_raw_tx(payload, context);
+            assert!(check.is_ok());
         }
         {
             // check with change address
             let hex="1f8b0800000000000003ad8e3f6b935114c689510959123b854ce545500a21f79e7bcefdb36943a91d14c5a063b9e7dc7b108c491b0df912ee2e05c12fe0ee8710fc061d9dc4b1ddfa429742d7c2333c3cc3eff9f5eeed0cdeac67ab52775faf575f56b25a8ccfbbedda0b4ea864939b3fddfea3fdf9ecf8d5f3f9d1bb83e3b70787ef8fe63b8f45127aae3089156582c075921dd809f94c2e4751b27ef7e7bff35f97e6690fbe767bbf47c31ff79bb34eff998fc8ce8126a7925204086c5995c187546c4a89c0327bb462a2538b1923615b8ca9c4e8717cd8df37ce9942a8c5948260b2afa4b1380fa8a40e2348ae8e8cb6445213c8b112d7aa49a0249bd5c9e82236834fd3884fa6e63a53d37c6ff5587d0a106d604915b268ca56347b66eb2d5355eba2a10c364bb0220801ab27058e4cdc3e0e3be3177722f8edef835b867bb3fe1e8b3d8de2f5f3872d94c576b30cf5e3329d6ed505d9c07a1988362772e2eb62f8ffece1a8d30c5ede80d8a9b90290f88bd8f6010000";
             let payload = prepare_payload(hex);
             let context = prepare_parse_context(pubkey_str);
-            let check = check_raw_tx(payload, context).unwrap();
-            assert_eq!(check, ());
+            let check = check_raw_tx(payload, context);
+            assert!(check.is_ok());
         }
     }
 
@@ -216,16 +216,16 @@ mod tests {
         {
             let payload = prepare_payload(hex);
             let context = prepare_parse_context(pubkey_str);
-            let check = check_raw_tx(payload, context).unwrap();
-            assert_eq!((), check);
+            let check = check_raw_tx(payload, context);
+            assert!(check.is_ok());
         }
         {
             //check with change address
             let hex="1f8b08000000000000035d8e3d6b94411485892bb8ac4562aa2555580425b0ecfd987be78e9564c514364a9226dddcf9108cf2424c10acfc21d6b696823fc0c2dad2c2d2cade2e2f4995c069ce81e7f04cef6c6fbe3a5b0fb5edbe3c1bce8732bcddf93119d769e42235435e7c9bcc26fb47ebed87a5a4a0de68692d9465206fcbcc844bd12c9cad7441ddfdfaefcff7fff0784a9f26d39f0fb67eed2d3e6fcc9e6a94184d8b5bd3d00395ce4dc6a6298c9f1648bb0117456fad31024bb244923c2504cfb67330db074ece3e126ebd884b83d81d3495685c728912ba54b6c20dcc5bc5a4305ef5ea586b662914e65fee2e36dfad427ab482ebace04a2f8c4cf79a72abb5ba96d23843004382d490b57974175522a78c50136384d2cc230124cd577a443910f61cb24ab658713409c48622d5a447af346abb4565eacce812893a228869ce986cfef7de6d3ddc7b325b7078217a7af8e6f5f1faf8f0991d1c9d5f3c8f259d7cfc309cfa7bbd38895bbfefcf376eb2b8824b3d3de48fdc010000";
             let payload = prepare_payload(hex);
             let context = prepare_parse_context(pubkey_str);
-            let check = check_raw_tx(payload, context).unwrap();
-            assert_eq!((), check);
+            let check = check_raw_tx(payload, context);
+            assert!(check.is_ok());
         }
     }
 
@@ -246,16 +246,16 @@ mod tests {
             // check
             let payload = prepare_payload(hex);
             let context = prepare_parse_context(pubkey_str);
-            let check = check_raw_tx(payload, context).unwrap();
-            assert_eq!((), check);
+            let check = check_raw_tx(payload, context);
+            assert!(check.is_ok());
         }
         {
             // check with output(cash address)
             let hex="1f8b0800000000000003658dbb4e0241144003361b1a818a58c1c604b3c966e73db39d819858aa7f70e7ce5c88aeac3c43f8173b7b0b3b3fc1da0fe003d4c6c2d8496f72aa539c9334bbc7d78b711d62ff6a51af6aacab9397e6c12656a20ec0207d6ab68e46e3cbee2962a98c8f22775161ae848f3948c1736d404b70489a9bfef3d7fef5979d25379f8de4add37ecfd2c746ebdcb8e049490dca033990e8a3e1589205a7b577b204511a292df1923312a06244a4084c4783e0796fff3348474c781f6df018c879210cd79281333690e58e796ea1645e39415691b0d2f8c3890549569ba84414dc669dfb42a961c1951e16ec40c1b28b56367f704b0ad3c96d35376e5aedeea0ac70b95de16cb3decc02dbceb7eb09ed76a8db1fdf835e23fd97e17f24a9ccb649010000";
             let payload = prepare_payload(hex);
             let context = prepare_parse_context(pubkey_str);
-            let check = check_raw_tx(payload, context).unwrap();
-            assert_eq!((), check);
+            let check = check_raw_tx(payload, context);
+            assert!(check.is_ok());
         }
     }
 }

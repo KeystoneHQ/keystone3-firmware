@@ -119,10 +119,8 @@ pub fn generate_ring_signature<R: RngCore + CryptoRng>(
             );
             buff.extend_from_slice(&temp2.compress().0);
             let tmp3 = hash_to_point(tmp3.compress().0);
-            let tmp2 = EdwardsPoint::multiscalar_mul(
-                &[sig[index][1], sig[index][0]],
-                &[tmp3, *key_image],
-            );
+            let tmp2 =
+                EdwardsPoint::multiscalar_mul(&[sig[index][1], sig[index][0]], &[tmp3, *key_image]);
             buff.extend_from_slice(&tmp2.compress().0);
             sum += sig[index][0];
         }

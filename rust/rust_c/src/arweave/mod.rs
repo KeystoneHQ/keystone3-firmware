@@ -237,7 +237,11 @@ unsafe fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
     }
 }
 
-unsafe fn build_sign_result(ptr: PtrUR, p: &[u8], q: &[u8]) -> Result<ArweaveSignature, ArweaveError> {
+unsafe fn build_sign_result(
+    ptr: PtrUR,
+    p: &[u8],
+    q: &[u8],
+) -> Result<ArweaveSignature, ArweaveError> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let salt_len = match sign_request.get_salt_len() {
         SaltLen::Zero => 0,

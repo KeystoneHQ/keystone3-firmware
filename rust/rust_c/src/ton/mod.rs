@@ -1,12 +1,15 @@
 pub mod structs;
-use crate::{common::{
-    errors::RustCError,
-    ffi::VecFFI,
-    structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult},
-    types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
-    ur::{FRAGMENT_MAX_LENGTH_DEFAULT, UREncodeResult},
-    utils::recover_c_char,
-}, extract_array};
+use crate::{
+    common::{
+        errors::RustCError,
+        ffi::VecFFI,
+        structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult},
+        types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
+        ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
+        utils::recover_c_char,
+    },
+    extract_array,
+};
 use alloc::{
     boxed::Box,
     format, slice,
@@ -53,7 +56,9 @@ pub unsafe extern "C" fn ton_parse_transaction(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ton_parse_proof(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayTonProof>> {
+pub unsafe extern "C" fn ton_parse_proof(
+    ptr: PtrUR,
+) -> PtrT<TransactionParseResult<DisplayTonProof>> {
     let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
 
     let serial = ton_tx.get_sign_data();

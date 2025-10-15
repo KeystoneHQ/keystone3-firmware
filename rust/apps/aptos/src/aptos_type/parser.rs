@@ -417,8 +417,6 @@ pub fn parse_struct_tag(s: &str) -> crate::errors::Result<StructTag> {
     if let TypeTag::Struct(struct_tag) = type_tag {
         Ok(*struct_tag)
     } else {
-        Err(AptosError::ParseTxError(format!(
-            "invalid struct tag: {s}"
-        )))
+        Err(AptosError::ParseTxError(format!("invalid struct tag: {s}")))
     }
 }

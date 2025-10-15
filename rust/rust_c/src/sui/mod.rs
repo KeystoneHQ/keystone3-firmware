@@ -133,7 +133,11 @@ pub unsafe extern "C" fn sui_parse_sign_message_hash(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn sui_sign_hash(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+pub unsafe extern "C" fn sui_sign_hash(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> PtrT<UREncodeResult> {
     let seed = extract_array!(seed, u8, seed_len as usize);
     let sign_request = extract_ptr_with_type!(ptr, SuiSignHashRequest);
     let hash = sign_request.get_message_hash();

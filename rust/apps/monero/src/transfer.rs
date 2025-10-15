@@ -99,8 +99,6 @@ pub struct AccountPublicAddress {
 
 impl AccountPublicAddress {
     pub fn to_address(&self, network: Network, is_subaddress: bool) -> Address {
-        
-
         Address {
             network,
             addr_type: if is_subaddress {
@@ -687,7 +685,7 @@ impl UnsignedTx {
             }
 
             let key_images = unsigned_tx.calc_key_images(keypair)?;
-            let key_images_str = if key_images.len() == 0 {
+            let key_images_str = if key_images.is_empty() {
                 "".to_owned()
             } else {
                 let mut key_images_str = "".to_owned();

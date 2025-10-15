@@ -6,7 +6,10 @@ use bitcoin::base58;
 pub fn get_address(pub_key: &String) -> Result<String> {
     let pubkey = hex::decode(pub_key)?;
     if pubkey.len() != 32 {
-        return Err(SolanaError::AddressError(format!("bad public key {:?}", pub_key)));
+        return Err(SolanaError::AddressError(format!(
+            "bad public key {:?}",
+            pub_key
+        )));
     }
     return Ok(base58::encode(pubkey.as_slice()));
 }
@@ -90,10 +93,7 @@ mod tests {
                 );
             }
             {
-                let result = get_address(
-                    &"0102030405060708090a0b0c0d0e0f10"
-                        .to_string()
-                );
+                let result = get_address(&"0102030405060708090a0b0c0d0e0f10".to_string());
                 assert!(result.is_err());
                 assert!(matches!(result, Err(SolanaError::AddressError(_))));
             }

@@ -8,7 +8,7 @@ use crate::common::free::Free;
 use crate::common::structs::TransactionParseResult;
 use crate::common::types::{PtrString, PtrT};
 use crate::common::utils::convert_c_char;
-use crate::{check_and_free_ptr, impl_c_ptr, make_free_method, free_str_ptr};
+use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
 
 #[repr(C)]
 pub struct DisplayCosmosTx {

@@ -63,9 +63,8 @@ impl TryFrom<&proto::cosmos::bank::v1beta1::MsgSend> for MsgSend {
 
 impl SerializeJson for MsgSend {
     fn to_json(&self) -> Result<Value, CosmosError> {
-        let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgSend serialize failed {err}"))
-        })?;
+        let value = serde_json::to_value(self)
+            .map_err(|err| CosmosError::ParseTxError(format!("MsgSend serialize failed {err}")))?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
         "value": value,
@@ -232,9 +231,8 @@ impl TryFrom<&proto::cosmos::gov::v1beta1::MsgVote> for MsgVote {
 
 impl SerializeJson for MsgVote {
     fn to_json(&self) -> Result<Value, CosmosError> {
-        let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgVote serialize failed {err}"))
-        })?;
+        let value = serde_json::to_value(self)
+            .map_err(|err| CosmosError::ParseTxError(format!("MsgVote serialize failed {err}")))?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
         "value": value,
@@ -354,9 +352,7 @@ impl TryFrom<&proto::cosmos::distribution::v1beta1::MsgWithdrawDelegatorReward>
 impl SerializeJson for MsgWithdrawDelegatorReward {
     fn to_json(&self) -> Result<Value, CosmosError> {
         let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!(
-                "MsgWithdrawDelegatorReward serialize failed {err}"
-            ))
+            CosmosError::ParseTxError(format!("MsgWithdrawDelegatorReward serialize failed {err}"))
         })?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
@@ -479,9 +475,8 @@ impl TryFrom<&proto::cosmos::authz::v1beta1::MsgExec> for MsgExec {
 
 impl SerializeJson for MsgExec {
     fn to_json(&self) -> Result<Value, CosmosError> {
-        let value = serde_json::to_value(self).map_err(|err| {
-            CosmosError::ParseTxError(format!("MsgExec serialize failed {err}"))
-        })?;
+        let value = serde_json::to_value(self)
+            .map_err(|err| CosmosError::ParseTxError(format!("MsgExec serialize failed {err}")))?;
         let msg = json!({
         "type": Value::String(Self::TYPE_URL.to_string()),
         "value": value,

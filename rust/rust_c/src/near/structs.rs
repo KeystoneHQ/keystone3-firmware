@@ -74,11 +74,11 @@ impl Free for DisplayNearTxOverview {
         free_str_ptr!(self.transfer_value);
         free_str_ptr!(self.transfer_from);
         free_str_ptr!(self.transfer_to);
-            if !self.action_list.is_null() {
-                let x = Box::from_raw(self.action_list);
-                let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-                ve.iter().for_each(|v| {
-                    v.free();
+        if !self.action_list.is_null() {
+            let x = Box::from_raw(self.action_list);
+            let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+            ve.iter().for_each(|v| {
+                v.free();
             });
         }
     }

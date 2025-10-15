@@ -6,8 +6,8 @@ use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::extract_array;
 use crate::extract_ptr_with_type;
 use crate::sui::get_public_key;
+use alloc::format;
 use alloc::vec::Vec;
-use alloc::{format};
 use alloc::{
     string::{String, ToString},
     vec,

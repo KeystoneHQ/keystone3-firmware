@@ -32,7 +32,9 @@ pub unsafe extern "C" fn stellar_get_address(pubkey: PtrString) -> *mut SimpleRe
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn stellar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayStellarTx>> {
+pub unsafe extern "C" fn stellar_parse(
+    ptr: PtrUR,
+) -> PtrT<TransactionParseResult<DisplayStellarTx>> {
     let sign_request = extract_ptr_with_type!(ptr, StellarSignRequest);
     let raw_message = match sign_request.get_sign_type() {
         SignType::Transaction => base_to_xdr(&sign_request.get_sign_data()),
@@ -93,7 +95,11 @@ fn build_signature_data(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn stellar_sign(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+pub unsafe extern "C" fn stellar_sign(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> PtrT<UREncodeResult> {
     let seed = extract_array!(seed, u8, seed_len as usize);
     let sign_request = extract_ptr_with_type!(ptr, StellarSignRequest);
     let sign_data = sign_request.get_sign_data();

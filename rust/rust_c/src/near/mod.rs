@@ -83,7 +83,11 @@ pub unsafe extern "C" fn near_parse_tx(ptr: PtrUR) -> PtrT<TransactionParseResul
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn near_sign_tx(ptr: PtrUR, seed: PtrBytes, seed_len: u32) -> PtrT<UREncodeResult> {
+pub unsafe extern "C" fn near_sign_tx(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> PtrT<UREncodeResult> {
     let seed = extract_array!(seed, u8, seed_len as usize);
     build_sign_result(ptr, seed)
         .map(|v| v.try_into())

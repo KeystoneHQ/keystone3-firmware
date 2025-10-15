@@ -37,10 +37,8 @@ pub unsafe extern "C" fn calculate_auth_code(
                 match from_value::<String>(_data.clone()) {
                     Ok(_hex) => match base64::decode(&_hex) {
                         Ok(_value) => unsafe {
-                            let rsa_key_n =
-                                extract_array!(rsa_key_n, u8, rsa_key_n_len as usize);
-                            let rsa_key_d =
-                                extract_array!(rsa_key_d, u8, rsa_key_d_len as usize);
+                            let rsa_key_n = extract_array!(rsa_key_n, u8, rsa_key_n_len as usize);
+                            let rsa_key_d = extract_array!(rsa_key_d, u8, rsa_key_d_len as usize);
                             match _calculate_auth_code(&_value, rsa_key_n, rsa_key_d) {
                                 Ok(_result) => Ok(_result),
                                 Err(_err) => Err(RustCError::WebAuthFailed(format!("{_err}"))),

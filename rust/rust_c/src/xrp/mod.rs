@@ -52,7 +52,11 @@ pub unsafe extern "C" fn xrp_get_address(
     }
 }
 
-unsafe fn build_sign_result(ptr: PtrUR, hd_path: PtrString, seed: &[u8]) -> Result<Vec<u8>, XRPError> {
+unsafe fn build_sign_result(
+    ptr: PtrUR,
+    hd_path: PtrString,
+    seed: &[u8],
+) -> Result<Vec<u8>, XRPError> {
     let crypto_bytes = extract_ptr_with_type!(ptr, Bytes);
     let hd_path = recover_c_char(hd_path);
     app_xrp::sign_tx(crypto_bytes.get_bytes().as_slice(), &hd_path, seed)
@@ -251,7 +255,9 @@ pub unsafe extern "C" fn xrp_check_tx_bytes(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn xrp_parse_bytes_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayXrpTx>> {
+pub unsafe extern "C" fn xrp_parse_bytes_tx(
+    ptr: PtrUR,
+) -> PtrT<TransactionParseResult<DisplayXrpTx>> {
     let payload = build_payload(ptr, QRCodeType::Bytes).unwrap();
     let content = payload.content.unwrap();
     let sign_tx = match content {

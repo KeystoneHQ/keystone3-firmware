@@ -80,7 +80,7 @@ impl InferViewType for CryptoPSBT {
     }
 }
 
-#[cfg(feature = "bitcoin")]
+#[cfg(feature = "multi-coins")]
 impl InferViewType for CryptoPSBTExtend {
     fn infer(&self) -> Result<ViewType, URError> {
         match self.get_coin_id() {

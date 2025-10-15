@@ -15,9 +15,7 @@ use crate::common::free::{free_ptr_string, Free};
 use crate::common::structs::TransactionParseResult;
 use crate::common::types::{Ptr, PtrString, PtrT};
 use crate::common::utils::convert_c_char;
-use crate::{
-    free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method,
-};
+use crate::{free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method};
 use app_ethereum::address::checksum_address;
 use app_sui::Intent;
 use sui_types::{

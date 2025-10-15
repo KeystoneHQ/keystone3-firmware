@@ -30,7 +30,7 @@ pub unsafe extern "C" fn derive_zcash_ufvk(
     account_path: PtrString,
 ) -> *mut SimpleResponse<c_char> {
     let seed = extract_array!(seed, u8, seed_len as usize);
-    let account_path = recover_c_char(account_path);
+    let account_path = unsafe { recover_c_char(account_path) };
     let ufvk_text = derive_ufvk(&MainNetwork, seed, &account_path);
     match ufvk_text {
         Ok(text) => SimpleResponse::success(convert_c_char(text)).simple_c_ptr(),
@@ -57,7 +57,7 @@ pub unsafe extern "C" fn calculate_zcash_seed_fingerprint(
 pub unsafe extern "C" fn generate_zcash_default_address(
     ufvk_text: PtrString,
 ) -> *mut SimpleResponse<c_char> {
-    let ufvk_text = recover_c_char(ufvk_text);
+    let ufvk_text = unsafe { recover_c_char(ufvk_text) };
     let address = get_address(&MainNetwork, &ufvk_text);
     match address {
         Ok(text) => SimpleResponse::success(convert_c_char(text)).simple_c_ptr(),
@@ -80,7 +80,7 @@ pub unsafe extern "C" fn check_zcash_tx(
         .c_ptr();
     }
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
-    let ufvk_text = recover_c_char(ufvk);
+    let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
     match app_zcash::check_pczt(
@@ -102,7 +102,7 @@ pub unsafe extern "C" fn parse_zcash_tx(
     seed_fingerprint: PtrBytes,
 ) -> Ptr<TransactionParseResult<DisplayPczt>> {
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
-    let ufvk_text = recover_c_char(ufvk);
+    let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
     match app_zcash::parse_pczt(&MainNetwork, &pczt.get_data(), &ufvk_text, seed_fingerprint) {
@@ -149,9 +149,9 @@ pub unsafe extern "C" fn rust_aes256_cbc_encrypt(
     iv: PtrBytes,
     iv_len: u32,
 ) -> *mut SimpleResponse<c_char> {
-    let data = recover_c_char(data);
+    let data = unsafe { recover_c_char(data) };
     let data = data.as_bytes();
-    let password = recover_c_char(password);
+    let password = unsafe { recover_c_char(password) };
     let iv = extract_array!(iv, u8, iv_len as usize);
     let key = sha256(password.as_bytes());
     let iv = GenericArray::from_slice(iv);
@@ -167,9 +167,9 @@ pub unsafe extern "C" fn rust_aes256_cbc_decrypt(
     iv: PtrBytes,
     iv_len: u32,
 ) -> *mut SimpleResponse<c_char> {
-    let hex_data = recover_c_char(hex_data);
+    let hex_data = unsafe { recover_c_char(hex_data) };
     let data = hex::decode(hex_data).unwrap();
-    let password = recover_c_char(password);
+    let password = unsafe { recover_c_char(password) };
     let iv = extract_array!(iv, u8, iv_len as usize);
     let key = sha256(password.as_bytes());
     let iv = GenericArray::from_slice(iv);
@@ -208,12 +208,12 @@ mod tests {
         let mut data = convert_c_char("hello world".to_string());
         let mut password = convert_c_char("password".to_string());
         let mut seed = hex::decode("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000").unwrap();
-        let iv = rust_derive_iv_from_seed(seed.as_mut_ptr(), 64);
+        let iv = unsafe { rust_derive_iv_from_seed(seed.as_mut_ptr(), 64) };
         let mut iv = unsafe { slice::from_raw_parts_mut((*iv).data, 16) };
         let iv_len = 16;
-        let ct = rust_aes256_cbc_encrypt(data, password, iv.as_mut_ptr(), iv_len as u32);
+        let ct = unsafe { rust_aes256_cbc_encrypt(data, password, iv.as_mut_ptr(), iv_len as u32) };
         let ct_vec = unsafe { (*ct).data };
-        let value = recover_c_char(ct_vec);
+        let value = unsafe { recover_c_char(ct_vec) };
         assert_eq!(value, "639194f4bf964e15d8ea9c9bd9d96918");
     }
 
@@ -225,13 +225,13 @@ mod tests {
         let data = convert_c_char("639194f4bf964e15d8ea9c9bd9d96918".to_string());
         let password = convert_c_char("password".to_string());
         let mut seed = hex::decode("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000").unwrap();
-        let iv = rust_derive_iv_from_seed(seed.as_mut_ptr(), 64);
+        let iv = unsafe { rust_derive_iv_from_seed(seed.as_mut_ptr(), 64) };
         let iv = unsafe { slice::from_raw_parts_mut((*iv).data, 16) };
         let iv_len = 16;
-        let pt = rust_aes256_cbc_decrypt(data, password, iv.as_mut_ptr(), iv_len as u32);
+        let pt = unsafe { rust_aes256_cbc_decrypt(data, password, iv.as_mut_ptr(), iv_len as u32) };
         assert!(!pt.is_null());
         let ct_vec = unsafe { (*pt).data };
-        let value = recover_c_char(ct_vec);
+        let value = unsafe { recover_c_char(ct_vec) };
         assert_eq!(value, "hello world");
     }
 

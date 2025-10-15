@@ -49,9 +49,7 @@ pub fn map_messages(messages: &[Any]) -> Result<Vec<Box<dyn Msg>>, CosmosError> 
                         ))
                     })?;
                 let msg_undelegate = MsgUnDelegateWrapper::try_from(&unpacked).map_err(|e| {
-                    CosmosError::ParseTxError(format!(
-                        "proto MsgUndelegate deserialize failed {e}"
-                    ))
+                    CosmosError::ParseTxError(format!("proto MsgUndelegate deserialize failed {e}"))
                 })?;
                 message_vec.push(Box::new(msg_undelegate));
             }
@@ -115,9 +113,7 @@ pub fn map_messages(messages: &[Any]) -> Result<Vec<Box<dyn Msg>>, CosmosError> 
                         ))
                     })?;
                 let msg_multi_send = MsgMultiSendWrapper::try_from(&unpacked).map_err(|e| {
-                    CosmosError::ParseTxError(format!(
-                        "proto MsgMultiSend deserialize failed {e}"
-                    ))
+                    CosmosError::ParseTxError(format!("proto MsgMultiSend deserialize failed {e}"))
                 })?;
                 message_vec.push(Box::new(msg_multi_send));
             }
@@ -147,9 +143,7 @@ pub fn map_messages(messages: &[Any]) -> Result<Vec<Box<dyn Msg>>, CosmosError> 
                         },
                     )?;
                 let msg_exec = MsgExecWrapper::try_from(&unpacked).map_err(|e| {
-                    CosmosError::ParseTxError(format!(
-                        "proto MsgMultiSend deserialize failed {e}"
-                    ))
+                    CosmosError::ParseTxError(format!("proto MsgMultiSend deserialize failed {e}"))
                 })?;
                 message_vec.push(Box::new(msg_exec));
             }

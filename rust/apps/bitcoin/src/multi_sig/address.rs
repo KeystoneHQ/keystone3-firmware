@@ -118,8 +118,8 @@ mod tests {
     use crate::multi_sig::wallet::parse_wallet_config;
     use crate::multi_sig::MultiSigFormat;
     use crate::network::Network;
-    use bitcoin::PublicKey;
     use alloc::vec::Vec;
+    use bitcoin::PublicKey;
 
     #[test]
     fn test_create_multi_sig_address_for_wallet() {

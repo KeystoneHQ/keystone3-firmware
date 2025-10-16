@@ -804,11 +804,6 @@ int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
 }
 #endif
 
-int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len)
-{
-    return GenerateEntropy(randomness, len, "generate trng randomness");
-}
-
 #ifndef COMPILE_SIMULATOR
 void random_buffer(uint8_t *buf, size_t len)
 {
@@ -829,6 +824,12 @@ void random_buffer(uint8_t *buf, size_t len)
     }
 }
 #endif
+
+int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len)
+{
+    random_buffer(randomness, len);
+    return SUCCESS_CODE;
+}
 
 #ifndef BUILD_PRODUCTION
 

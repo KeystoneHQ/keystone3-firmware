@@ -30,10 +30,13 @@ pub unsafe extern "C" fn infer_qrcode_type(qrcode: PtrString) -> QRProtocol {
 pub unsafe extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
     let value = recover_c_char(qr);
     if value.to_lowercase().starts_with("signmessage") {
-        let mut headers_and_message = value.split(':');
-        let headers = headers_and_message.next();
-        let message = headers_and_message.next();
-        if let (Some(headers), Some(message)) = (headers, message) {
+        if let Some((headers, message)) = value.split_once(':') {
+            if message.is_empty() {
+                return URParseResult::from(RustCError::UnsupportedTransaction(
+                    "Invalid seed signer message format".to_string(),
+                ))
+                .c_ptr();
+            }
             let mut pieces = headers.split_ascii_whitespace();
             let _ = pieces.next(); //drop "signmessage"
             let path = pieces.next();

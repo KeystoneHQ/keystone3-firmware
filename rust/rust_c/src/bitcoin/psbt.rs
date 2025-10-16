@@ -407,7 +407,8 @@ pub unsafe extern "C" fn utxo_check_psbt_extend(
 
 #[no_mangle]
 pub unsafe extern "C" fn btc_check_psbt_bytes(
-    ptr: PtrUR,
+    psbt_bytes: PtrBytes,
+    psbt_bytes_length: u32,
     master_fingerprint: PtrBytes,
     length: u32,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
@@ -417,8 +418,11 @@ pub unsafe extern "C" fn btc_check_psbt_bytes(
     if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBT);
-    let psbt = crypto_psbt.get_psbt();
+    let psbt = extract_array!(psbt_bytes, u8, psbt_bytes_length as usize);
+    let psbt = match get_psbt_bytes(psbt) {
+        Ok(psbt) => psbt,
+        Err(e) => return TransactionCheckResult::from(e).c_ptr(),
+    };
 
     btc_check_psbt_common(
         psbt,

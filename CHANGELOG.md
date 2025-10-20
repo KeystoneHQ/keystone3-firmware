@@ -1,3 +1,22 @@
+## 2.2.18(2025-10-20)
+
+**Web3:**
+
+### What's new
+
+1. Added support for parsing DOGE transactions sent to P2SH addrresses
+2. Added support for parsing DOGE PSBT
+
+**Cypherpunk:**
+
+### Bug Fixes
+1. Fixed an issue when generating Key Image in XMR transactions
+
+
+
+
+
+
 ## 2.2.16(2025-10-13)
 
 **Web3:**

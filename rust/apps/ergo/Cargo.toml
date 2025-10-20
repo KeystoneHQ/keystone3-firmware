@@ -10,11 +10,12 @@ thiserror = { workspace = true }
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
 core2 = { workspace = true }
+bitcoin = { workspace = true }
 
 [dev-dependencies]
 keystore = { workspace = true }
 
 [dependencies.ergo-lib]
 git = "https://github.com/Alesfatalis/sigma-rust-mini"
-branch = "develop"
+branch = "secp256k1"
 default-features = false

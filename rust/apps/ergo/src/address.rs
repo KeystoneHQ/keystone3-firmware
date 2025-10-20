@@ -6,7 +6,9 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use bitcoin::bip32::Xpub;
 use core::str::FromStr;
-use ergo_lib::ergotree_ir::chain::address::{Address, NetworkAddress, NetworkPrefix};
+use ergo_lib::ergotree_ir::chain::address::{
+    base58_address_from_tree, Address, NetworkAddress, NetworkPrefix,
+};
 use ergo_lib::ergotree_ir::ergo_tree::ErgoTree;
 use ergo_lib::ergotree_ir::serialization::SigmaSerializable;
 use ergo_lib::wallet::derivation_path::DerivationPath;
@@ -45,17 +47,17 @@ pub fn ergo_tree_to_address(tree: String) -> Result<String> {
             e.to_string()
         ))
     })?;
-    let ergo_tree = ErgoTree::sigma_parse_bytes(&*tree_bytes).map_err(|e| {
+    let ergo_tree = ErgoTree::keystone_sigma_parse_bytes(&*tree_bytes).map_err(|e| {
         TransactionParseError(format!("could not parse tree from bytes {}", e.to_string()))
     })?;
 
-    let address = Address::recreate_from_ergo_tree(&ergo_tree).map_err(|e| {
+    let address = base58_address_from_tree(NetworkPrefix::Mainnet, &ergo_tree).map_err(|e| {
         TransactionParseError(format!(
             "could not recreate address from tree {}",
             e.to_string()
         ))
     })?;
-    Ok(NetworkAddress::new(NetworkPrefix::Mainnet, &address).to_base58())
+    Ok(address)
 }
 
 #[cfg(test)]

@@ -74,7 +74,7 @@ impl FromStr for Network {
             "BTC_SEGWIT" => Ok(Self::Bitcoin),
             "BTC_LEGACY" => Ok(Self::Bitcoin),
             "AVAX" => Ok(Self::AvaxBtcBridge),
-            _ => Err(BitcoinError::UnsupportedNetwork(format!("{:?}", network))),
+            _ => Err(BitcoinError::UnsupportedNetwork(format!("{network:?}"))),
         }
     }
 }

@@ -195,7 +195,7 @@ impl FromStr for Version {
             "Zprv" => Ok(Version::ZprvMultisig),
             "Uprv" => Ok(Version::UprvMultisig),
             "Vprv" => Ok(Version::VprvMultisig),
-            _ => Err(Self::Err::Base58Error(format!("unknown version prefix"))),
+            _ => Err(Self::Err::Base58Error("unknown version prefix".to_string())),
         }
     }
 }

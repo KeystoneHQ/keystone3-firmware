@@ -87,7 +87,7 @@ impl ParseContext {
     }
 }
 
-pub const DIVIDER: f64 = 100_000_000 as f64;
+pub const DIVIDER: f64 = 100_000_000_f64;
 
 pub trait TxParser {
     fn format_amount(value: u64, network: &dyn NetworkT) -> String {
@@ -95,7 +95,7 @@ pub trait TxParser {
     }
 
     fn format_sat(value: u64) -> String {
-        format!("{} sats", value)
+        format!("{value} sats")
     }
 
     fn parse(&self, context: Option<&ParseContext>) -> Result<ParsedTx>;
@@ -110,7 +110,7 @@ pub trait TxParser {
         let first_multi_status = parsed_inputs[0].sign_status;
         //none of inputs is signed
         if parsed_inputs.iter().all(|input| input.sign_status.0 == 0) {
-            return Some(String::from("Unsigned"));
+            Some(String::from("Unsigned"))
         }
         //or some inputs are signed and completed
         else if parsed_inputs
@@ -134,12 +134,12 @@ pub trait TxParser {
     }
 
     fn is_need_sign(parsed_inputs: &[ParsedInput]) -> bool {
-        for (_index, input) in parsed_inputs.iter().enumerate() {
+        for input in parsed_inputs.iter() {
             if input.need_sign {
                 return true;
             }
         }
-        return false;
+        false
     }
 
     fn normalize(
@@ -152,8 +152,7 @@ pub trait TxParser {
         let total_output_value = outputs.iter().fold(0, |acc, cur| acc + cur.value);
         let has_anyone_can_pay = inputs
             .iter()
-            .find(|v| v.ecdsa_sighash_type & 0x80 > 0)
-            .is_some();
+            .any(|v| v.ecdsa_sighash_type & 0x80 > 0);
         let fee = if has_anyone_can_pay {
             0
         } else {
@@ -179,8 +178,7 @@ pub trait TxParser {
         });
         let mut overview_from = inputs
             .iter()
-            .filter(|v| v.address.is_some())
-            .map(|v| v.address.clone().unwrap_or("Unknown Address".to_string()))
+            .filter_map(|v| v.address.clone())
             .collect::<Vec<String>>();
         overview_from.sort();
         overview_from.dedup();

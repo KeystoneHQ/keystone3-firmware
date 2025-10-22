@@ -20,7 +20,6 @@ use bitcoin::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use bitcoin::secp256k1::Message;
 use bitcoin::sign_message;
 use either::{Left, Right};
-use hex;
 pub use transactions::legacy::sign_legacy_tx;
 pub use transactions::parsed_tx;
 pub use transactions::psbt::parsed_psbt;

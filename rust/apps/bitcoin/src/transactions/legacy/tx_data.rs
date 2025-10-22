@@ -85,7 +85,7 @@ impl TxData {
             collect!(outputs);
         let extended_pubkey =
             convert_version(context.extended_public_key.to_string(), &Version::Xpub)?;
-        return Ok(Self {
+        Ok(Self {
             inputs,
             outputs,
             script_type: script_type.to_string(),
@@ -98,11 +98,11 @@ impl TxData {
                 input: transaction_mapped_input?,
                 output: transaction_mapped_output?,
             },
-        });
+        })
     }
 
     pub fn check_inputs(&self, context: &keystone::ParseContext) -> Result<()> {
-        if self.inputs.len() == 0 {
+        if self.inputs.is_empty() {
             return Err(BitcoinError::NoInputs);
         }
         if self.xfp.to_uppercase() != hex::encode(context.master_fingerprint).to_uppercase() {
@@ -115,8 +115,7 @@ impl TxData {
         let has_my_input = self
             .inputs
             .iter()
-            .enumerate()
-            .map(|(_, inp)| self.check_my_input(inp, context))
+            .map(|inp| self.check_my_input(inp, context))
             .fold(Ok(false), |acc, cur| match (acc, cur) {
                 (Ok(b1), Ok(b2)) => Ok(b1 | b2),
                 (a, b) => a.and(b),
@@ -139,13 +138,12 @@ impl TxData {
     }
 
     pub fn check_outputs(&self, _context: &keystone::ParseContext) -> Result<()> {
-        if self.outputs.len() == 0 {
+        if self.outputs.is_empty() {
             return Err(BitcoinError::NoOutputs);
         }
         self.outputs
             .iter()
-            .enumerate()
-            .map(|(_, output)| self.judge_then_check_my_output(output))
+            .map(|output| self.judge_then_check_my_output(output))
             .fold(Ok(()), |acc, cur| acc.and(cur))
     }
 
@@ -192,7 +190,7 @@ impl TxData {
         script: &Script,
         sig_hash_type: u32,
     ) -> Result<SegwitV0Sighash> {
-        let raw_input = &self.inputs[input_index.clone()].clone();
+        let raw_input = &self.inputs[input_index].clone();
         let mut enc = SegwitV0Sighash::engine();
         self.transaction.version.consensus_encode(&mut enc)?;
         let common_cache = self.common_cache()?;
@@ -225,7 +223,7 @@ impl TxData {
         &mut self,
         input_index: usize,
     ) -> Result<Either<LegacySighash, SegwitV0Sighash>> {
-        let raw_input = &self.inputs[input_index.clone()].clone();
+        let raw_input = &self.inputs[input_index].clone();
         let mut sig_hasher = SighashCache::new(&self.transaction);
         let script_type = ScriptType::from_str(&self.script_type)?;
         let pubkey_slice =
@@ -240,21 +238,20 @@ impl TxData {
                         &script,
                         sig_hash_type,
                     )
-                    .map(|v| Right(v))
+                    .map(Right)
                 } else {
                     sig_hasher
                         .legacy_signature_hash(
-                            input_index.clone(),
+                            input_index,
                             &script,
                             EcdsaSighashType::All.to_u32(),
                         )
                         .map_err(|_e| {
                             BitcoinError::SignLegacyTxError(format!(
-                                "invalid sig hash for {:?}",
-                                script_type
+                                "invalid sig hash for {script_type:?}"
                             ))
                         })
-                        .map(|v| Left(v))
+                        .map(Left)
                 }
             }
             ScriptType::P2WPKH | ScriptType::P2SHP2WPKH => {
@@ -266,17 +263,15 @@ impl TxData {
                         Amount::from_sat(raw_input.value),
                         EcdsaSighashType::All,
                     )
-                    .map(|v| Right(v))
+                    .map(Right)
                     .map_err(|_e| {
                         BitcoinError::SignLegacyTxError(format!(
-                            "invalid sig hash for {:?}",
-                            script_type
+                            "invalid sig hash for {script_type:?}"
                         ))
                     })
             }
             _ => Err(BitcoinError::SignLegacyTxError(format!(
-                "invalid script type sig hash {:?}",
-                script_type
+                "invalid script type sig hash {script_type:?}"
             ))),
         }
     }
@@ -301,7 +296,7 @@ impl TxData {
         let signature_type = self.sig_hash_type();
         let pubkey_slice =
             hex::decode(&raw_input.pubkey).map_err(|_e| BitcoinError::InvalidInput)?;
-        let input = &mut self.transaction.input[input_index.clone()];
+        let input = &mut self.transaction.input[input_index];
         if script_type == ScriptType::P2PKH {
             input.script_sig = raw_input.script_sig(signature, signature_type, &script_type)?;
         } else if script_type == ScriptType::P2WPKH {
@@ -321,11 +316,10 @@ impl TxData {
             input.script_sig = raw_input.script_sig(signature, signature_type, &script_type)?;
         } else {
             return Err(BitcoinError::SignFailure(format!(
-                "invalid script type {:?}",
-                script_type
+                "invalid script type {script_type:?}"
             )));
         }
-        return Ok(self);
+        Ok(self)
     }
 }
 

@@ -63,12 +63,10 @@ impl GetKey for Keystore {
                     .map_err(|e| BitcoinError::GetKeyError(e.to_string()))?;
                     Ok(Some(PrivateKey::new(key, Network::Bitcoin)))
                 } else {
-                    Err(BitcoinError::GetKeyError(format!("mfp is not match")))
+                    Err(BitcoinError::GetKeyError("mfp is not match".to_string()))
                 }
             }
-            _ => Err(BitcoinError::GetKeyError(format!(
-                "get private key by public key is not supported"
-            ))),
+            _ => Err(BitcoinError::GetKeyError("get private key by public key is not supported".to_string())),
         }
     }
 }
@@ -81,7 +79,7 @@ impl WrappedPsbt {
         };
         self.psbt
             .sign(&k, &secp256k1::Secp256k1::new())
-            .map_err(|_| BitcoinError::SignFailure(format!("unknown error")))?;
+            .map_err(|_| BitcoinError::SignFailure("unknown error".to_string()))?;
         Ok(self.psbt.clone())
     }
 
@@ -108,11 +106,8 @@ impl WrappedPsbt {
                 return Err(BitcoinError::InvalidInput);
             }
             let prevout = prev_tx.output.get(tx_in.previous_output.vout as usize);
-            match prevout {
-                Some(out) => {
-                    value = out.value.to_sat();
-                }
-                None => {}
+            if let Some(out) = prevout {
+                value = out.value.to_sat();
             }
         }
         if let Some(utxo) = &input.witness_utxo {
@@ -132,7 +127,7 @@ impl WrappedPsbt {
             path: path.clone().map(|v| v.0),
             sign_status,
             is_multisig,
-            is_external: path.clone().map_or(false, |v| v.1),
+            is_external: path.is_some_and(|(_, external)| external),
             need_sign,
             ecdsa_sighash_type: input
                 .sighash_type
@@ -143,7 +138,7 @@ impl WrappedPsbt {
     }
 
     pub fn check_inputs(&self, context: &ParseContext) -> Result<()> {
-        if self.psbt.inputs.len() == 0 {
+        if self.psbt.inputs.is_empty() {
             return Err(BitcoinError::NoInputs);
         }
         let has_my_input = self
@@ -182,14 +177,11 @@ impl WrappedPsbt {
     }
 
     fn get_my_input_verify_code(&self, input: &Input) -> Option<String> {
-        return if input.bip32_derivation.len() > 1 {
-            match self.get_multi_sig_input_verify_code(input) {
-                Ok(verify_code) => Some(verify_code),
-                Err(_) => None,
-            }
+        if input.bip32_derivation.len() > 1 {
+            self.get_multi_sig_input_verify_code(input).ok()
         } else {
             None
-        };
+        }
     }
 
     fn check_my_wallet_type(&self, input: &Input, context: &ParseContext) -> Result<()> {
@@ -220,10 +212,9 @@ impl WrappedPsbt {
             None => "null".to_string(),
             Some(verify_code) => verify_code.to_string(),
         };
-        return Err(BitcoinError::WalletTypeError(format!(
-            "wallet type mismatch wallet verify code is {} input verify code is {}",
-            wallet_verify_code, input_verify_code
-        )));
+        Err(BitcoinError::WalletTypeError(format!(
+            "wallet type mismatch wallet verify code is {wallet_verify_code} input verify code is {input_verify_code}"
+        )))
     }
 
     pub fn check_my_input_script(&self, _input: &Input, _index: usize) -> Result<()> {
@@ -270,25 +261,20 @@ impl WrappedPsbt {
                         .contains_key(&(x_only_pubkey, *leasfhash))
                     {
                         return Err(BitcoinError::InvalidTransaction(format!(
-                            "input #{} has already been signed",
-                            index
+                            "input #{index} has already been signed"
                         )));
                     }
                 }
             }
             if input.tap_key_sig.is_some() {
                 return Err(BitcoinError::InvalidTransaction(format!(
-                    "input #{} has already been signed",
-                    index
+                    "input #{index} has already been signed"
                 )));
             }
-        } else {
-            if input.partial_sigs.len() > 0 {
-                return Err(BitcoinError::InvalidTransaction(format!(
-                    "input #{} has already been signed",
-                    index
-                )));
-            }
+        } else if !input.partial_sigs.is_empty() {
+            return Err(BitcoinError::InvalidTransaction(format!(
+                "input #{index} has already been signed"
+            )));
         }
         Ok(())
     }
@@ -302,10 +288,9 @@ impl WrappedPsbt {
                 .output
                 .get(this_tx_in.previous_output.vout as usize)
                 .ok_or(BitcoinError::InvalidInput)?;
-            if !prev_tx_out_value.eq(&utxo) {
+            if !prev_tx_out_value.eq(utxo) {
                 return Err(BitcoinError::InputValueTampered(format!(
-                    "input #{}'s value does not match the value in previous transaction",
-                    index
+                    "input #{index}'s value does not match the value in previous transaction"
                 )));
             }
         }
@@ -422,15 +407,14 @@ impl WrappedPsbt {
                     .get(key)
                     .ok_or(BitcoinError::InvalidInput)?;
 
-                if fingerprint.eq(&context.master_fingerprint) {
-                    if input.partial_sigs.contains_key(&PublicKey::new(*key)) {
+                if fingerprint.eq(&context.master_fingerprint)
+                    && input.partial_sigs.contains_key(&PublicKey::new(*key)) {
                         return Ok(false);
                     }
-                }
             }
             Ok(true)
         } else {
-            Ok(input.partial_sigs.len() < 1)
+            Ok(input.partial_sigs.is_empty())
         }
     }
 
@@ -451,13 +435,10 @@ impl WrappedPsbt {
             }
         }
         while let Some(Ok(instruction)) = instructions.next() {
-            match instruction {
-                Instruction::Op(op) => {
-                    if op.to_u8() >= 0x51 && op.to_u8() <= 0x60 {
-                        total = op.to_u8() - 0x50;
-                    }
+            if let Instruction::Op(op) = instruction {
+                if op.to_u8() >= 0x51 && op.to_u8() <= 0x60 {
+                    total = op.to_u8() - 0x50;
                 }
-                _ => {}
             }
         }
         Ok((required_sigs, total))
@@ -518,14 +499,14 @@ impl WrappedPsbt {
             ));
         };
 
-        Ok(calculate_multi_sig_verify_code(
+        calculate_multi_sig_verify_code(
             &xpubs,
             threshold,
             total,
             format,
             &crate::multi_sig::Network::try_from(&network)?,
             None,
-        )?)
+        )
     }
 
     pub fn get_overall_sign_status(&self) -> Option<String> {
@@ -541,12 +522,12 @@ impl WrappedPsbt {
             .collect();
         //none of inputs is signed
         if all_inputs_status.iter().all(|(sigs, _)| sigs.eq(&0)) {
-            return Some(String::from("Unsigned"));
+            Some(String::from("Unsigned"))
         }
         //or some inputs are signed and completed
         else if all_inputs_status
             .iter()
-            .all(|(sigs, requires)| sigs.ge(&requires))
+            .all(|(sigs, requires)| sigs.ge(requires))
         {
             return Some(String::from("Completed"));
         }
@@ -555,7 +536,7 @@ impl WrappedPsbt {
             .iter()
             .all(|(sigs, requires)| sigs.eq(&first_sigs) && requires.eq(&first_requires))
         {
-            return Some(format!("{}/{} Signed", first_sigs, first_requires));
+            return Some(format!("{first_sigs}/{first_requires} Signed"));
         } else {
             return Some(String::from("Partly Signed"));
         }
@@ -565,7 +546,7 @@ impl WrappedPsbt {
         if let Some(res) = self.get_overall_sign_status() {
             return res.eq("Completed");
         }
-        return false;
+        false
     }
 
     pub fn calculate_address_for_input(
@@ -591,14 +572,14 @@ impl WrappedPsbt {
                             ChildNumber::Hardened { index: _i } => match _i {
                                 0 | 3 => Ok(Some(
                                     Address::p2pkh(
-                                        &bitcoin::PublicKey::new(pubkey.clone()),
+                                        &bitcoin::PublicKey::new(*pubkey),
                                         network.clone(),
                                     )?
                                     .to_string(),
                                 )),
                                 60 => Ok(Some(
                                     Address::p2wpkh(
-                                        &bitcoin::PublicKey::new(pubkey.clone()),
+                                        &bitcoin::PublicKey::new(*pubkey),
                                         network.clone(),
                                     )?
                                     .to_string(),
@@ -609,14 +590,14 @@ impl WrappedPsbt {
                         },
                         49 => Ok(Some(
                             Address::p2shp2wpkh(
-                                &bitcoin::PublicKey::new(pubkey.clone()),
+                                &bitcoin::PublicKey::new(*pubkey),
                                 network.clone(),
                             )?
                             .to_string(),
                         )),
                         84 => Ok(Some(
                             Address::p2wpkh(
-                                &bitcoin::PublicKey::new(pubkey.clone()),
+                                &bitcoin::PublicKey::new(*pubkey),
                                 network.clone(),
                             )?
                             .to_string(),
@@ -648,7 +629,7 @@ impl WrappedPsbt {
             amount: Self::format_amount(tx_out.value.to_sat(), network),
             value: tx_out.value.to_sat(),
             path: path.clone().map(|v| v.0),
-            is_external: path.clone().map_or(false, |v| v.1),
+            is_external: path.clone().is_some_and(|v| v.1),
         })
     }
 
@@ -669,13 +650,10 @@ impl WrappedPsbt {
         index: usize,
         context: &ParseContext,
     ) -> Result<Option<(String, bool)>> {
-        if context.multisig_wallet_config.is_some() {
-            if self.is_taproot_input(input) {
-                return Err(BitcoinError::InvalidPsbt(format!(
-                    "multisig with taproot is not supported"
-                )));
+        if context.multisig_wallet_config.is_some()
+            && self.is_taproot_input(input) {
+                return Err(BitcoinError::InvalidPsbt("multisig with taproot is not supported".to_string()));
             }
-        }
         if self.is_taproot_input(input) {
             self.get_my_key_path_for_taproot(&input.tap_key_origins, index, "input", context)
         } else {
@@ -715,12 +693,12 @@ impl WrappedPsbt {
                 .iter()
                 .map(|v| v.xfp.clone())
                 .sorted()
-                .fold("".to_string(), |acc, cur| format!("{}{}", acc, cur));
+                .fold("".to_string(), |acc, cur| format!("{acc}{cur}"));
             let xfps = bip32_derivation
                 .values()
                 .map(|(fp, _)| fp.to_string())
                 .sorted()
-                .fold("".to_string(), |acc, cur| format!("{}{}", acc, cur));
+                .fold("".to_string(), |acc, cur| format!("{acc}{cur}"));
             // not my multisig key
             if !wallet_xfps.eq_ignore_ascii_case(&xfps) {
                 return Ok(None);
@@ -748,8 +726,7 @@ impl WrappedPsbt {
                             }
                         }
                         return Err(BitcoinError::InvalidTransaction(format!(
-                            "invalid {} #{}, fingerprint matched but cannot derive associated public key",
-                            purpose, index
+                            "invalid {purpose} #{index}, fingerprint matched but cannot derive associated public key"
                         )));
                     }
                     None => {
@@ -762,8 +739,7 @@ impl WrappedPsbt {
                             }
                         }
                         return Err(BitcoinError::InvalidTransaction(format!(
-                            "invalid {} #{}, fingerprint matched but cannot derive associated public key",
-                            purpose, index
+                            "invalid {purpose} #{index}, fingerprint matched but cannot derive associated public key"
                         )));
                     }
                 }
@@ -805,8 +781,7 @@ impl WrappedPsbt {
                     }
                 }
                 return Err(BitcoinError::InvalidTransaction(format!(
-                    "invalid {} #{}, fingerprint matched but cannot derive associated public key",
-                    purpose, index
+                    "invalid {purpose} #{index}, fingerprint matched but cannot derive associated public key"
                 )));
             }
         }
@@ -820,7 +795,7 @@ impl WrappedPsbt {
     ) -> Option<(XOnlyPublicKey, Vec<TapLeafHash>)> {
         for (pk, (leaf_hashes, (fingerprint, _))) in input.tap_key_origins.iter() {
             if *fingerprint == context.master_fingerprint && !leaf_hashes.is_empty() {
-                return Some((pk.clone(), leaf_hashes.clone()));
+                return Some((*pk, leaf_hashes.clone()));
             }
         }
         None
@@ -830,7 +805,7 @@ impl WrappedPsbt {
         if let Some(witness_utxo) = &input.witness_utxo {
             return witness_utxo.script_pubkey.is_p2tr();
         }
-        return false;
+        false
     }
 
     // use global unknown for some custom usage
@@ -865,7 +840,7 @@ fn derive_public_key_by_path(
         .ok_or(BitcoinError::InvalidPsbt(hd_path.to_string()))?
         .to_string();
 
-    let public_key = derive_public_key(&xpub.to_string(), &format!("m/{}", sub_path))
+    let public_key = derive_public_key(&xpub.to_string(), &format!("m/{sub_path}"))
         .map_err(|e| BitcoinError::DerivePublicKeyError(e.to_string()))?;
 
     Ok(public_key)

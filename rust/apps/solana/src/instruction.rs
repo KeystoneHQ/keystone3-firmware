@@ -68,8 +68,8 @@ impl SupportedProgram {
 }
 
 impl Instruction {
-    pub fn parse(&self, program_id: &String, accounts: Vec<String>) -> Result<SolanaDetail> {
-        let program = SupportedProgram::from_program_id(program_id.clone())?;
+    pub fn parse(&self, program_id: &str, accounts: Vec<String>) -> Result<SolanaDetail> {
+        let program = SupportedProgram::from_program_id(program_id.to_string())?;
         match program {
             SupportedProgram::SystemProgram => {
                 let instruction =

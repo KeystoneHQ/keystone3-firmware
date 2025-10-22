@@ -35,6 +35,8 @@ impl TryFrom<Bytes> for Validator {
 
 #[cfg(test)]
 mod tests {
+    use crate::encode::cb58::Cb58Encodable;
+
     use super::*;
     extern crate std;
 

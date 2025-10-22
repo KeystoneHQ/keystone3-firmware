@@ -128,7 +128,7 @@ simulator-multi-coins = ["simulator", "multi-coins"]
 simulator-btc-only = ["simulator", "btc-only"]
 simulator-cypherpunk = ["simulator", "cypherpunk"]
 # make IDE happy
-default = ["simulator-cypherpunk"]
+default = ["simulator-multi-coins"]
 
 [dev-dependencies]
 keystore = { path = "../keystore" }

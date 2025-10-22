@@ -6,7 +6,7 @@ use bitcoin::base58;
 pub fn get_address(pub_key: &String) -> Result<String> {
     let pubkey = hex::decode(pub_key)?;
     if pubkey.len() != 32 {
-        SolanaError::AddressError(format!("bad public key {:?}", pub_key));
+        SolanaError::AddressError(format!("bad public key {pub_key:?}"));
     }
     Ok(base58::encode(pubkey.as_slice()))
 }

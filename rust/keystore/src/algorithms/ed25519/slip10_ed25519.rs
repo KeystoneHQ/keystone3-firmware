@@ -1,4 +1,4 @@
-use alloc::string::String;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::str::FromStr;
 
@@ -12,7 +12,7 @@ pub fn get_private_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
     let i = get_master_key_by_seed(seed);
     let path = normalize_path(path);
     let derivation_path = DerivationPath::from_str(path.as_str())
-        .map_err(|e| KeystoreError::InvalidDerivationPath(format!("{}", e)))?;
+        .map_err(|e| KeystoreError::InvalidDerivationPath(format!("{e}")))?;
     let children: Vec<ChildNumber> = derivation_path.into();
     let indexes: Vec<u32> = children.iter().fold(Ok(vec![]), |acc, cur| match acc {
         Ok(vec) => {
@@ -21,9 +21,7 @@ pub fn get_private_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
                 new_vec.push(index + 0x80000000);
                 return Ok(new_vec);
             }
-            Err(KeystoreError::InvalidDerivationPath(format!(
-                "non hardened derivation is not supported for slip10-ed25519"
-            )))
+            Err(KeystoreError::InvalidDerivationPath("non hardened derivation is not supported for slip10-ed25519".to_string()))
         }
         e => e,
     })?;

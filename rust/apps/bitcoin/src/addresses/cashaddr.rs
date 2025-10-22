@@ -11,6 +11,7 @@ use bitcoin::address::AddressData as Payload;
 use bitcoin::PubkeyHash;
 use bitcoin_hashes::Hash;
 use core::{fmt, str};
+use alloc::format;
 
 // Prefixes
 const DASH_PREFIX: &str = "bitcoincash";
@@ -110,7 +111,7 @@ fn expand_prefix(prefix: &str) -> Vec<u8> {
 
 fn convert_bits(data: &[u8], inbits: u8, outbits: u8, pad: bool) -> Vec<u8> {
     assert!(inbits <= 8 && outbits <= 8);
-    let num_bytes = (data.len() * inbits as usize + outbits as usize - 1) / outbits as usize;
+    let num_bytes = (data.len() * inbits as usize).div_ceil(outbits as usize);
     let mut ret = Vec::with_capacity(num_bytes);
     let mut acc: u16 = 0; // accumulator of bits
     let mut num: u8 = 0; // num bits in acc
@@ -148,12 +149,12 @@ fn from_base58_str(data: &str) -> Result<Vec<u8>> {
     for d58 in data.bytes() {
         // Compute "X = X * 58 + next_digit" in base 256
         if d58 as usize > BASE58_DIGITS.len() {
-            return Err(BitcoinError::AddressError(format!("invalid char")));
+            return Err(BitcoinError::AddressError("invalid char".to_string()));
         }
         let mut carry = match BASE58_DIGITS[d58 as usize] {
             Some(d58) => u32::from(d58),
             None => {
-                return Err(BitcoinError::AddressError(format!("invalid char")));
+                return Err(BitcoinError::AddressError("invalid char".to_string()));
             }
         };
         for d256 in scratch.iter_mut().rev() {
@@ -186,15 +187,13 @@ impl Base58Codec {
         let length = raw.len();
         if length != 25 {
             return Err(BitcoinError::AddressError(format!(
-                "BCH addresses decode error: invalid length {:?}",
-                length
+                "BCH addresses decode error: invalid length {length:?}"
             )));
         }
         let version_byte = raw[0];
         if version_byte != PUBKEY_ADDRESS_PREFIX_BCH {
             return Err(BitcoinError::AddressError(format!(
-                "invalid version {:?}",
-                version_byte
+                "invalid version {version_byte:?}"
             )));
         };
         // Verify checksum
@@ -202,7 +201,7 @@ impl Base58Codec {
         let checksum_actual = &raw[raw.len() - 4..];
         let checksum_expected = &bitcoin_hashes::sha256d::Hash::hash(payload)[0..4];
         if checksum_expected != checksum_actual {
-            return Err(BitcoinError::AddressError(format!("checksum failed")));
+            return Err(BitcoinError::AddressError("checksum failed".to_string()));
         }
 
         let body = payload[1..].to_vec();
@@ -213,7 +212,7 @@ impl Base58Codec {
 impl CashAddrCodec {
     pub fn encode_to_fmt(fmt: &mut fmt::Formatter, raw: Vec<u8>) -> fmt::Result {
         let encoded = CashAddrCodec::encode(raw).map_err(|_| fmt::Error)?;
-        write!(fmt, "{}", encoded)
+        write!(fmt, "{encoded}")
     }
 
     pub fn encode(raw: Vec<u8>) -> Result<String> {
@@ -272,13 +271,13 @@ impl CashAddrCodec {
         if let Some(first_char) = payload_chars.next() {
             if first_char.is_lowercase() {
                 if payload_chars.any(|c| c.is_uppercase()) {
-                    return Err(BitcoinError::AddressError(format!("mixed case")));
+                    return Err(BitcoinError::AddressError("mixed case".to_string()));
                 }
             } else if payload_chars.any(|c| c.is_lowercase()) {
-                return Err(BitcoinError::AddressError(format!("mixed case")));
+                return Err(BitcoinError::AddressError("mixed case".to_string()));
             }
         } else {
-            return Err(BitcoinError::AddressError(format!("invalid length")));
+            return Err(BitcoinError::AddressError("invalid length".to_string()));
         }
 
         // Decode payload to 5 bit array
@@ -287,9 +286,9 @@ impl CashAddrCodec {
             .map(|c| {
                 let i = c as usize;
                 if let Some(Some(d)) = CHARSET_REV.get(i) {
-                    Ok(*d as u8)
+                    Ok(*d)
                 } else {
-                    return Err(BitcoinError::AddressError(format!("invalid char")));
+                    Err(BitcoinError::AddressError("invalid char".to_string()))
                 }
             })
             .collect();
@@ -298,7 +297,7 @@ impl CashAddrCodec {
         // Verify the checksum
         let checksum = polymod(&[&expand_prefix(prefix), &payload_5_bits[..]].concat());
         if checksum != 0 {
-            return Err(BitcoinError::AddressError(format!("invalid checksum")));
+            return Err(BitcoinError::AddressError("invalid checksum".to_string()));
         }
 
         // Convert from 5 bit array to byte array
@@ -322,8 +321,7 @@ impl CashAddrCodec {
             || (version_size == version_byte_flags::SIZE_512 && body_len != 64)
         {
             return Err(BitcoinError::AddressError(format!(
-                "invalid length {:?}",
-                body_len
+                "invalid length {body_len:?}"
             )));
         }
 
@@ -331,12 +329,11 @@ impl CashAddrCodec {
         let version_type = version & version_byte_flags::TYPE_MASK;
         if version_type != version_byte_flags::TYPE_P2PKH {
             return Err(BitcoinError::AddressError(format!(
-                "invalid version {:?}",
-                version_type
+                "invalid version {version_type:?}"
             )));
         };
-        let publickey_hash = PubkeyHash::from_slice(&body.to_vec())
-            .map_err(|_| BitcoinError::AddressError(format!("invalid public key hash")))?;
+        let publickey_hash = PubkeyHash::from_slice(body)
+            .map_err(|_| BitcoinError::AddressError("invalid public key hash".to_string()))?;
         Ok(Address {
             payload: Payload::P2pkh {
                 pubkey_hash: publickey_hash,

@@ -85,37 +85,37 @@ pub enum BitcoinError {
 
 impl From<io::Error> for BitcoinError {
     fn from(value: io::Error) -> Self {
-        Self::TransactionConsensusEncodeError(format!("{}", value))
+        Self::TransactionConsensusEncodeError(format!("{value}"))
     }
 }
 
 impl From<bitcoin::io::Error> for BitcoinError {
     fn from(value: bitcoin::io::Error) -> Self {
-        Self::TransactionConsensusEncodeError(format!("{}", value))
+        Self::TransactionConsensusEncodeError(format!("{value}"))
     }
 }
 
 impl From<PushBytesError> for BitcoinError {
     fn from(value: PushBytesError) -> Self {
-        Self::PushBytesFailed(format!("{}", value))
+        Self::PushBytesFailed(format!("{value}"))
     }
 }
 
 impl From<HexToArrayError> for BitcoinError {
     fn from(value: HexToArrayError) -> Self {
-        Self::InvalidHex(format!("{}", value))
+        Self::InvalidHex(format!("{value}"))
     }
 }
 
 impl From<bech32::segwit::DecodeError> for BitcoinError {
     fn from(value: bech32::segwit::DecodeError) -> Self {
-        Self::Bech32DecodeError(format!("{}", value))
+        Self::Bech32DecodeError(format!("{value}"))
     }
 }
 
 impl From<bitcoin::witness_program::Error> for BitcoinError {
     fn from(value: bitcoin::witness_program::Error) -> Self {
-        Self::WitnessProgramError(format!("{}", value))
+        Self::WitnessProgramError(format!("{value}"))
     }
 }
 
@@ -123,11 +123,11 @@ impl From<Base58Error> for BitcoinError {
     fn from(value: Base58Error) -> Self {
         match value {
             Base58Error::IncorrectChecksum(e) => {
-                Self::Base58Error(format!("incorrect checksum: {}", e))
+                Self::Base58Error(format!("incorrect checksum: {e}"))
             }
-            Base58Error::TooShort(e) => Self::Base58Error(format!("too short: {}", e)),
-            Base58Error::Decode(e) => Self::Base58Error(format!("invalid character: {}", e)),
-            _ => Self::Base58Error(format!(": {}", value)),
+            Base58Error::TooShort(e) => Self::Base58Error(format!("too short: {e}")),
+            Base58Error::Decode(e) => Self::Base58Error(format!("invalid character: {e}")),
+            _ => Self::Base58Error(format!(": {value}")),
         }
     }
 }
@@ -135,8 +135,8 @@ impl From<Base58Error> for BitcoinError {
 impl From<KeystoreError> for BitcoinError {
     fn from(value: KeystoreError) -> Self {
         match value {
-            KeystoreError::DerivePubKey(data) => Self::KeystoreError(format!("{}", data)),
-            KeystoreError::InvalidDerivationPath(data) => Self::KeystoreError(format!("{}", data)),
+            KeystoreError::DerivePubKey(data) => Self::KeystoreError(data.to_string()),
+            KeystoreError::InvalidDerivationPath(data) => Self::KeystoreError(data.to_string()),
             KeystoreError::XPubError(data) => Self::KeystoreError(data),
             KeystoreError::SeedError(data) => Self::KeystoreError(data),
             KeystoreError::DerivationError(data) => Self::KeystoreError(data),

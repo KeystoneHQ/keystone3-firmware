@@ -248,10 +248,10 @@ unsafe fn build_sign_result(
         SaltLen::Digest => 32,
     };
     let signature_data = parse_sign_data(ptr)?;
-    let sign_type = sign_request.get_sign_type();
-    let signing_option = match sign_type {
-        SignType::Transaction | SignType::DataItem => SigningOption::PSS { salt_len },
-        SignType::Message => SigningOption::RSA { salt_len },
+    let signing_option = match sign_request.get_sign_type() {
+        SignType::Transaction => SigningOption::Transaction { salt_len },
+        SignType::DataItem => SigningOption::DataItem { salt_len },
+        SignType::Message => SigningOption::Message { salt_len },
     };
     let signature = sign_message(&signature_data, p, q, &signing_option)?;
 

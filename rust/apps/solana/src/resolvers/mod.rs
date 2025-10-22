@@ -21,7 +21,6 @@ pub fn format_amount(value: String) -> Result<String> {
         return Ok(format!("{} {}", value.div(DIVIDER), "SOL"));
     }
     Err(SolanaError::ParseTxError(format!(
-        "invalid value {:?}",
-        value
+        "invalid value {value:?}"
     )))
 }

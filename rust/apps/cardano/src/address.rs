@@ -261,7 +261,7 @@ mod tests {
     fn test_address_from_slip39_ms() {
         let path = "m/1852'/1815'/0'";
         let seed = hex::decode("c080e9d40873204bb1bb5837dc88886b").unwrap();
-        let xpub = from_seed_slip23_path(&seed, path)
+        let xpub = crate::slip23::from_seed_slip23_path(&seed, path)
             .unwrap()
             .xprv
             .public()

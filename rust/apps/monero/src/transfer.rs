@@ -756,7 +756,7 @@ pub fn parse_unsigned(
 
 pub fn sign_tx(keypair: KeyPair, request_data: Vec<u8>) -> Result<Vec<u8>> {
     let decrypted_data = match decrypt_data_with_pvk(
-        keypair.view.to_bytes().try_into().unwrap(),
+        keypair.view.to_bytes(),
         request_data.clone(),
         UNSIGNED_TX_PREFIX,
     ) {

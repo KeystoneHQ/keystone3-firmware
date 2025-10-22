@@ -1,7 +1,8 @@
 use crate::errors::{Result, SolanaError};
 use crate::read::Read;
 use alloc::vec::Vec;
-use alloc::{format, vec};
+use alloc::vec;
+use alloc::string::ToString;
 
 pub struct Compact<T> {
     compact_length: u32,
@@ -25,8 +26,8 @@ impl<T: Read<T>> Compact<T> {
         let mut len: u32 = 0;
         let mut size: u32 = 0;
         loop {
-            if raw.len() < 1 {
-                return Err(SolanaError::InvalidData(format!("compact length")));
+            if raw.is_empty() {
+                return Err(SolanaError::InvalidData("compact length".to_string()));
             }
             let element: u32 = raw.remove(0) as u32;
             len |= (element & 0x7f) << (size * 7);

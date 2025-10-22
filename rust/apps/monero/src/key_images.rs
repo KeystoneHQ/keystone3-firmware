@@ -4,7 +4,7 @@ use crate::outputs::{ExportedTransferDetail, ExportedTransferDetails};
 use crate::utils::{
     constants::*,
     decrypt_data_with_pvk, encrypt_data_with_pvk,
-    hash::{hash_to_scalar, keccak256},
+    hash::hash_to_scalar,
     sign::generate_ring_signature,
     varinteger::*,
 };
@@ -16,7 +16,7 @@ use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::EdwardsPoint;
 use hex;
 use monero_serai::generators::hash_to_point;
-use rand_core::SeedableRng;
+use rand_core::OsRng;
 use rand_core::{CryptoRng, RngCore};
 
 #[derive(Debug, Clone, Copy)]
@@ -306,12 +306,10 @@ pub fn generate_export_ur_data(keypair: KeyPair, request_data: Vec<u8>) -> Resul
     let outputs = ExportedTransferDetails::from_bytes(&decrypted_data.data)?;
 
     let mut key_images: KeyImages = KeyImages(vec![]);
-    let rng_seed = keccak256(request_data.as_slice());
-    let mut rng = rand_chacha::ChaCha20Rng::from_seed(rng_seed.try_into().unwrap());
     for output in outputs.details.iter() {
         key_images
             .0
-            .push(output.key_image(&keypair.clone(), &mut rng));
+            .push(output.key_image(&keypair.clone(), OsRng));
     }
 
     Ok(encrypt_data_with_pvk(

@@ -33,11 +33,11 @@ impl ScriptType {
     pub fn to_derivation_path(&self, network: &Network) -> Result<DerivationPath> {
         let coin_type = network.bip44_coin_type();
         let path_str = match self {
-            ScriptType::P2PKH => Ok(format!("m/44'/{}'/0'", coin_type)),
+            ScriptType::P2PKH => Ok(format!("m/44'/{coin_type}'/0'")),
             ScriptType::P2SHP2WPKH | ScriptType::P2SH | ScriptType::P2SHP2WSH => {
-                Ok(format!("m/49'/{}'/0'", coin_type))
+                Ok(format!("m/49'/{coin_type}'/0'"))
             }
-            ScriptType::P2WPKH | ScriptType::P2WSH => Ok(format!("m/84'/{}'/0'", coin_type)),
+            ScriptType::P2WPKH | ScriptType::P2WSH => Ok(format!("m/84'/{coin_type}'/0'")),
             ScriptType::RAW => Err(BitcoinError::UnsupportedScriptType("raw".to_string())),
         }?;
         DerivationPath::from_str(path_str.as_str())
@@ -57,8 +57,7 @@ impl FromStr for ScriptType {
             "P2SH" => Ok(Self::P2SH),
             "RAW" => Ok(Self::RAW),
             _ => Err(BitcoinError::UnsupportedScriptType(format!(
-                "{:?}",
-                script_type
+                "{script_type:?}"
             ))),
         }
     }
@@ -76,6 +75,6 @@ impl fmt::Display for ScriptType {
             ScriptType::RAW => "RAW",
         }
         .to_string();
-        write!(f, "{}", script_type_str)
+        write!(f, "{script_type_str}")
     }
 }

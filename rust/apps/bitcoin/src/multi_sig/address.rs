@@ -90,10 +90,10 @@ pub fn calculate_multi_address_with_network(
 }
 
 fn derive_pub_key(xpub: &String, change: u32, account: u32) -> Result<PublicKey, BitcoinError> {
-    Ok(derive_public_key(
+    derive_public_key(
         xpub,
-        format!("m/{}/{}", change, account),
-    )?)
+        format!("m/{change}/{account}"),
+    )
 }
 
 fn crate_p2ms_script(pub_keys: &Vec<&PublicKey>, threshold: u32) -> ScriptBuf {

@@ -17,24 +17,22 @@ pub fn sign_legacy_tx(tx_data: &mut TxData, seed: &[u8]) -> Result<Vec<u8>> {
     let input_len = tx_data.inputs.len();
     for index in 0..input_len {
         let raw_input = &tx_data.inputs[index].clone();
-        let sig_hash = tx_data.signature_hash(index.clone())?;
+        let sig_hash = tx_data.signature_hash(index)?;
         let message = match sig_hash {
             either::Left(s) => Message::from_digest_slice(s.as_ref()).map_err(|_e| {
                 BitcoinError::SignFailure(format!(
-                    "invalid sig hash for input #{}",
-                    (index as u8).to_string()
+                    "invalid sig hash for input #{index}"
                 ))
             })?,
             either::Right(r) => Message::from_digest_slice(r.as_ref()).map_err(|_e| {
                 BitcoinError::SignFailure(format!(
-                    "invalid sig hash for input #{}",
-                    (index as u8).to_string()
+                    "invalid sig hash for input #{index}"
                 ))
             })?,
         };
         let (_, signature) =
             &secp256k1::sign_message_by_seed(seed, &raw_input.hd_path.to_string(), &message)?;
-        tx_data.add_signature(index.clone(), signature)?;
+        tx_data.add_signature(index, signature)?;
     }
     Ok(serialize(&tx_data.transaction))
 }

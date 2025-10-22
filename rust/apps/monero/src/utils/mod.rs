@@ -14,7 +14,7 @@ use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::traits::{IsIdentity, MultiscalarMul};
 use monero_serai::transaction::Input;
-use rand_core::{CryptoRng, RngCore, SeedableRng};
+use rand_core::{CryptoRng, OsRng, RngCore};
 
 pub mod constants;
 pub mod hash;
@@ -63,9 +63,7 @@ pub fn decrypt_data_with_pincode(data: Vec<u8>, pin: [u8; 6]) -> String {
 pub fn encrypt_data_with_pvk(keypair: KeyPair, data: Vec<u8>, magic: &str) -> Vec<u8> {
     let pvk_hash = cryptonight_hash_v0(&keypair.view.to_bytes());
     let magic_bytes = magic.as_bytes();
-    let rng_seed = keccak256(&data.clone());
-    let mut rng = rand_chacha::ChaCha20Rng::from_seed(rng_seed);
-    let nonce_num = rng.next_u64().to_be_bytes();
+    let nonce_num = OsRng.next_u64().to_be_bytes();
 
     let key = GenericArray::from_slice(&pvk_hash);
     let nonce = GenericArray::from_slice(&nonce_num);
@@ -90,14 +88,11 @@ pub fn encrypt_data_with_pvk(keypair: KeyPair, data: Vec<u8>, magic: &str) -> Ve
     unsigned_buffer.extend_from_slice(&nonce_num.clone());
     unsigned_buffer.extend_from_slice(&buffer.clone());
 
-    let rng_seed = keccak256(&data);
-    let mut rng = rand_chacha::ChaCha20Rng::from_seed(rng_seed);
-
     let signature = generate_signature(
         &keccak256(&unsigned_buffer),
         &keypair.view.get_public_key(),
         &PrivateKey::from_bytes(&keypair.view.to_bytes()),
-        &mut rng,
+        &mut OsRng,
     )
     .unwrap();
     buffer.extend_from_slice(&signature.0);

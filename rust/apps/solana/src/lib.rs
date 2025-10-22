@@ -32,7 +32,7 @@ pub mod utils;
 pub fn parse_message(tx_hex: Vec<u8>, from_key: &String) -> errors::Result<SolanaMessage> {
     let raw_message = hex::encode(tx_hex.clone());
     let mut utf8_message =
-        String::from_utf8(tx_hex).map_or_else(|_| "".to_string(), |utf8_msg| utf8_msg);
+        String::from_utf8(tx_hex).unwrap_or_else(|_| "".to_string());
     if app_utils::is_cjk(&utf8_message) {
         utf8_message = "".to_string();
     }
@@ -48,7 +48,7 @@ pub fn parse(data: &Vec<u8>) -> errors::Result<ParsedSolanaTx> {
 }
 
 pub fn sign(message: Vec<u8>, hd_path: &String, seed: &[u8]) -> errors::Result<[u8; 64]> {
-    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(&seed, hd_path, &message)
+    keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, hd_path, &message)
         .map_err(|e| errors::SolanaError::KeystoreError(format!("sign failed {:?}", e.to_string())))
 }
 

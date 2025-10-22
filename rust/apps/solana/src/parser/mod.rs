@@ -45,7 +45,7 @@ impl ParsedSolanaTx {
             .iter()
             .filter(|d| Self::is_sqauds_v4_detail(&d.common))
             .collect::<Vec<&SolanaDetail>>();
-        if squads.len() >= 1 {
+        if !squads.is_empty() {
             return SolanaTxDisplayType::SquadsV4;
         }
 
@@ -53,7 +53,7 @@ impl ParsedSolanaTx {
             .iter()
             .filter(|d| Self::is_jupiter_v6_detail(&d.common))
             .collect::<Vec<&SolanaDetail>>();
-        if jupiter.len() >= 1 {
+        if !jupiter.is_empty() {
             return SolanaTxDisplayType::JupiterV6;
         }
 
@@ -104,11 +104,11 @@ impl ParsedSolanaTx {
     }
 
     fn is_unknown_detail(common: &CommonDetail) -> bool {
-        common.program.eq("Unknown") && common.method.eq("")
+        common.program.eq("Unknown") && common.method.is_empty()
     }
 
     fn is_instructions_detail(common: &CommonDetail) -> bool {
-        common.program.eq("Instructions") && common.method.eq("")
+        common.program.eq("Instructions") && common.method.is_empty()
     }
 
     fn is_sqauds_v4_detail(common: &CommonDetail) -> bool {
@@ -126,7 +126,7 @@ impl ParsedSolanaTx {
                         return SolanaDetail {
                             common: d.common.clone(),
                             kind: ProgramDetail::GeneralUnknown(
-                                ProgramDetailGeneralUnknown::from_unknown_detail(&v),
+                                ProgramDetailGeneralUnknown::from_unknown_detail(v),
                             ),
                         };
                     }
@@ -456,7 +456,7 @@ impl ParsedSolanaTx {
                 _ => {}
             }
         }
-        return Ok(SolanaOverview::SquadsV4Proposal(proposal_overview_vec));
+        Ok(SolanaOverview::SquadsV4Proposal(proposal_overview_vec))
     }
     fn build_squads_v4_multisig_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
         let mut transfer_overview_vec: Vec<ProgramOverviewTransfer> = Vec::new();
@@ -494,7 +494,7 @@ impl ParsedSolanaTx {
                     .iter()
                     .map(|m| m.key.to_string())
                     .collect::<Vec<String>>();
-                let total_value = format!("~{:.3} SOL", total_value);
+                let total_value = format!("~{total_value:.3} SOL");
                 return Ok(SolanaOverview::SquadsV4MultisigCreate(
                     ProgramOverviewMultisigCreate {
                         wallet_name,
@@ -522,7 +522,7 @@ impl ParsedSolanaTx {
                     .iter()
                     .map(|m| m.key.to_string())
                     .collect::<Vec<String>>();
-                let total_value = format!("~{:.3} SOL", total_value);
+                let total_value = format!("~{total_value:.3} SOL");
                 return Ok(SolanaOverview::SquadsV4MultisigCreate(
                     ProgramOverviewMultisigCreate {
                         wallet_name,
@@ -536,7 +536,7 @@ impl ParsedSolanaTx {
                 ));
             }
         }
-        return Self::build_instructions_overview(details);
+        Self::build_instructions_overview(details)
     }
     fn build_squads_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {
         if details.iter().any(|d| {
@@ -563,7 +563,7 @@ impl ParsedSolanaTx {
         }) {
             return Self::build_squads_v4_proposal_overview(details);
         }
-        return Self::build_instructions_overview(details);
+        Self::build_instructions_overview(details)
     }
 
     // util function to check the account is exist in the address lookup table
@@ -700,7 +700,7 @@ impl ParsedSolanaTx {
                     let token_b_mint = v.accounts[5].clone();
                     return Ok(Self::genreate_jupiter_swap_overview(
                         "JupiterV6Route",
-                        &token_a_mint,
+                        token_a_mint,
                         &token_b_mint,
                         v.args.slippage_bps,
                         v.args.platform_fee_bps as u16,
@@ -711,7 +711,7 @@ impl ParsedSolanaTx {
                 _ => {}
             }
         }
-        return Self::build_instructions_overview(details);
+        Self::build_instructions_overview(details)
     }
 
     fn build_instructions_overview(details: &[SolanaDetail]) -> Result<SolanaOverview> {

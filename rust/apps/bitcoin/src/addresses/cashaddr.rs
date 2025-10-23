@@ -5,13 +5,13 @@ use crate::addresses::constants::PUBKEY_ADDRESS_PREFIX_BCH;
 use crate::errors::BitcoinError;
 use crate::errors::Result;
 use crate::network::Network;
+use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use bitcoin::address::AddressData as Payload;
 use bitcoin::PubkeyHash;
 use bitcoin_hashes::Hash;
 use core::{fmt, str};
-use alloc::format;
 
 // Prefixes
 const DASH_PREFIX: &str = "bitcoincash";
@@ -346,7 +346,7 @@ impl CashAddrCodec {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     use hex::ToHex;
 
     #[test]

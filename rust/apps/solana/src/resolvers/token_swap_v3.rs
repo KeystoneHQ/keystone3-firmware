@@ -32,7 +32,8 @@ pub fn resolve(instruction: SwapInstruction, accounts: Vec<String>) -> Result<So
 
 fn initialize(accounts: Vec<String>, initialize: Initialize) -> Result<SolanaDetail> {
     let method_name = "Initialize";
-    let token_swap = accounts.first()
+    let token_swap = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.token_swap"
         )))?
@@ -100,7 +101,8 @@ fn initialize(accounts: Vec<String>, initialize: Initialize) -> Result<SolanaDet
 
 fn swap(accounts: Vec<String>, swap: Swap) -> Result<SolanaDetail> {
     let method_name = "Swap";
-    let token_swap = accounts.first()
+    let token_swap = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.token_swap"
         )))?
@@ -187,7 +189,8 @@ fn deposit_all_token_types(
     args: DepositAllTokenTypes,
 ) -> Result<SolanaDetail> {
     let method_name = "DepositAllTokenTypes";
-    let token_swap = accounts.first()
+    let token_swap = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.token_swap"
         )))?
@@ -272,7 +275,8 @@ fn withdraw_all_token_types(
     args: WithdrawAllTokenTypes,
 ) -> Result<SolanaDetail> {
     let method_name = "WithdrawAllTokenTypes";
-    let token_swap = accounts.first()
+    let token_swap = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.token_swap"
         )))?
@@ -366,7 +370,8 @@ fn deposit_single_token_type_exact_amount_in(
     args: DepositSingleTokenTypeExactAmountIn,
 ) -> Result<SolanaDetail> {
     let method_name = "DepositSingleTokenTypeExactAmountIn";
-    let token_swap = accounts.first()
+    let token_swap = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.token_swap"
         )))?
@@ -446,7 +451,8 @@ fn withdraw_single_token_type_exact_amount_out(
     args: WithdrawSingleTokenTypeExactAmountOut,
 ) -> Result<SolanaDetail> {
     let method_name = "WithdrawSingleTokenTypeExactAmountOut";
-    let token_swap = accounts.first()
+    let token_swap = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.token_swap"
         )))?

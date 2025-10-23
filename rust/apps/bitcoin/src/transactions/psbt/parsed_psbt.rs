@@ -2,16 +2,18 @@ use crate::errors::{BitcoinError, Result};
 use crate::network::Network;
 use crate::transactions::parsed_tx::{ParseContext, ParsedInput, ParsedOutput, ParsedTx, TxParser};
 use crate::transactions::psbt::wrapped_psbt::WrappedPsbt;
+use alloc::string::ToString;
 use alloc::vec::Vec;
 use bitcoin::bip32::ChildNumber;
 use bitcoin::NetworkKind;
 use core::ops::Index;
-use alloc::string::ToString;
 
 impl TxParser for WrappedPsbt {
     fn parse(&self, context: Option<&ParseContext>) -> Result<ParsedTx> {
         let network = self.determine_network()?;
-        let context = context.ok_or(BitcoinError::InvalidParseContext("empty context".to_string()))?;
+        let context = context.ok_or(BitcoinError::InvalidParseContext(
+            "empty context".to_string(),
+        ))?;
         let inputs = self
             .psbt
             .inputs

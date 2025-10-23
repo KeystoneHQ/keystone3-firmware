@@ -160,7 +160,9 @@ mod tests {
     #[test]
     fn test_deserialize_not_base58() {
         let encoded = "\"---\"";
-        if let Ok(CryptoHash(_)) = serde_json::from_str(encoded) { assert!(false, "should have failed") }
+        if let Ok(CryptoHash(_)) = serde_json::from_str(encoded) {
+            assert!(false, "should have failed")
+        }
     }
 
     #[test]

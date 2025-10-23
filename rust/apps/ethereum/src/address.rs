@@ -53,8 +53,6 @@ mod tests {
 
     use super::*;
     extern crate std;
-    
-    
 
     #[test]
     fn test_generate_address() {

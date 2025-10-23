@@ -20,14 +20,10 @@ pub fn sign_legacy_tx(tx_data: &mut TxData, seed: &[u8]) -> Result<Vec<u8>> {
         let sig_hash = tx_data.signature_hash(index)?;
         let message = match sig_hash {
             either::Left(s) => Message::from_digest_slice(s.as_ref()).map_err(|_e| {
-                BitcoinError::SignFailure(format!(
-                    "invalid sig hash for input #{index}"
-                ))
+                BitcoinError::SignFailure(format!("invalid sig hash for input #{index}"))
             })?,
             either::Right(r) => Message::from_digest_slice(r.as_ref()).map_err(|_e| {
-                BitcoinError::SignFailure(format!(
-                    "invalid sig hash for input #{index}"
-                ))
+                BitcoinError::SignFailure(format!("invalid sig hash for input #{index}"))
             })?,
         };
         let (_, signature) =

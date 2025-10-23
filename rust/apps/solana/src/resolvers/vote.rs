@@ -53,7 +53,8 @@ pub fn resolve(instruction: VoteInstruction, accounts: Vec<String>) -> Result<So
 
 fn resolve_initialize_account(accounts: Vec<String>, vote_init: VoteInit) -> Result<SolanaDetail> {
     let method_name = "InitializeAccount".to_string();
-    let account = accounts.first()
+    let account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.account"
         )))?
@@ -104,7 +105,8 @@ fn resolve_authorize(
     vote_authority: VoteAuthorize,
 ) -> Result<SolanaDetail> {
     let method_name = "Authorize".to_string();
-    let vote_account = accounts.first()
+    let vote_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.vote_account"
         )))?
@@ -144,7 +146,8 @@ fn resolve_authorize(
 fn resolve_vote(accounts: Vec<String>, vote: Vote) -> Result<SolanaDetail> {
     let method_name = "Vote".to_string();
 
-    let vote_account = accounts.first()
+    let vote_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.vote_account"
         )))?
@@ -196,7 +199,8 @@ fn resolve_vote(accounts: Vec<String>, vote: Vote) -> Result<SolanaDetail> {
 fn resolve_withdraw(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail> {
     let method_name = "Withdraw";
 
-    let vote_account = accounts.first()
+    let vote_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.vote_account"
         )))?
@@ -231,7 +235,8 @@ fn resolve_withdraw(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail
 fn resolve_update_validator_identity(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "UpdateValidatorIdentity".to_string();
 
-    let vote_account = accounts.first()
+    let vote_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.vote_account"
         )))?
@@ -266,7 +271,8 @@ fn resolve_update_validator_identity(accounts: Vec<String>) -> Result<SolanaDeta
 fn resolve_update_commission(accounts: Vec<String>, new_commission: u8) -> Result<SolanaDetail> {
     let method_name = "UpdateCommission".to_string();
 
-    let vote_account = accounts.first()
+    let vote_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.vote_account"
         )))?
@@ -297,7 +303,8 @@ fn resolve_vote_switch(
 ) -> Result<SolanaDetail> {
     let method_name = "VoteSwitch".to_string();
 
-    let vote_account = accounts.first()
+    let vote_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.vote_account"
         )))?
@@ -354,7 +361,8 @@ fn resolve_authorize_checked(
 ) -> Result<SolanaDetail> {
     let method_name = "AuthorizeChecked".to_string();
 
-    let vote_account = accounts.first()
+    let vote_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.vote_account"
         )))?
@@ -403,7 +411,8 @@ fn resolve_update_vote_state(
 ) -> Result<SolanaDetail> {
     let method_name = "UpdateVoteState".to_string();
 
-    let vote_account = accounts.first()
+    let vote_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.vote_account"
         )))?
@@ -451,7 +460,8 @@ fn resolve_update_vote_state_switch(
 ) -> Result<SolanaDetail> {
     let method_name = "UpdateVoteStateSwitch".to_string();
 
-    let vote_account = accounts.first()
+    let vote_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.vote_account"
         )))?
@@ -499,7 +509,8 @@ fn resolve_authorize_with_seed(
 ) -> Result<SolanaDetail> {
     let method_name = "AuthorizeWithSeed".to_string();
 
-    let vote_account = accounts.first()
+    let vote_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.vote_account"
         )))?
@@ -548,7 +559,8 @@ fn resolve_authorize_checked_with_seed(
 ) -> Result<SolanaDetail> {
     let method_name = "AuthorizeCheckedWithSeed".to_string();
 
-    let vote_account = accounts.first()
+    let vote_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.vote_account"
         )))?

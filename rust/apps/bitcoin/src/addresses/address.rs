@@ -117,15 +117,15 @@ impl Address {
                     script::Builder::new()
                         .push_int(0)
                         .push_slice(pk.wpubkey_hash().map_err(|e| {
-                            BitcoinError::AddressError(format!(
-                                "invalid payload for p2shwpkh: {e}"
-                            ))
+                            BitcoinError::AddressError(format!("invalid payload for p2shwpkh: {e}"))
                         })?);
                 let script_hash = builder.as_script().script_hash();
                 let payload = Payload::P2sh { script_hash };
                 Ok(Address { network, payload })
             }
-            _ => Err(BitcoinError::AddressError("Invalid network for p2wpkh".to_string())),
+            _ => Err(BitcoinError::AddressError(
+                "Invalid network for p2wpkh".to_string(),
+            )),
         }
     }
 
@@ -153,9 +153,8 @@ impl Address {
                 .first_opcode()
                 .expect("is_witness_program guarantees len > 4");
 
-            let version = WitnessVersion::try_from(opcode).map_err(|e| {
-                BitcoinError::AddressError(format!("invalid witness version: {e}"))
-            })?;
+            let version = WitnessVersion::try_from(opcode)
+                .map_err(|e| BitcoinError::AddressError(format!("invalid witness version: {e}")))?;
             let program = WitnessProgram::new(version, &script.as_bytes()[2..])?;
             Ok(Address {
                 network,
@@ -164,7 +163,9 @@ impl Address {
                 },
             })
         } else {
-            Err(BitcoinError::AddressError("unrecognized script".to_string()))
+            Err(BitcoinError::AddressError(
+                "unrecognized script".to_string(),
+            ))
         }
     }
 
@@ -338,56 +339,70 @@ impl FromStr for Address {
 
         let (network, payload) = match data[0] {
             PUBKEY_ADDRESS_PREFIX_BTC => {
-                let pubkey_hash = PubkeyHash::from_slice(&data[1..])
-                    .map_err(|_| Self::Err::AddressError("failed to get pubkey hash".to_string()))?;
+                let pubkey_hash = PubkeyHash::from_slice(&data[1..]).map_err(|_| {
+                    Self::Err::AddressError("failed to get pubkey hash".to_string())
+                })?;
                 (Network::Bitcoin, Payload::P2pkh { pubkey_hash })
             }
             PUBKEY_ADDRESS_PREFIX_TEST => {
-                let pubkey_hash = PubkeyHash::from_slice(&data[1..])
-                    .map_err(|_| Self::Err::AddressError("failed to get pubkey hash".to_string()))?;
+                let pubkey_hash = PubkeyHash::from_slice(&data[1..]).map_err(|_| {
+                    Self::Err::AddressError("failed to get pubkey hash".to_string())
+                })?;
                 (Network::BitcoinTestnet, Payload::P2pkh { pubkey_hash })
             }
             PUBKEY_ADDRESS_PREFIX_DASH => {
-                let pubkey_hash = PubkeyHash::from_slice(&data[1..])
-                    .map_err(|_| Self::Err::AddressError("failed to get pubkey hash".to_string()))?;
+                let pubkey_hash = PubkeyHash::from_slice(&data[1..]).map_err(|_| {
+                    Self::Err::AddressError("failed to get pubkey hash".to_string())
+                })?;
                 (Network::Dash, Payload::P2pkh { pubkey_hash })
             }
             PUBKEY_ADDRESS_PREFIX_DASH_P2SH => {
-                let script_hash = ScriptHash::from_slice(&data[1..])
-                    .map_err(|_| Self::Err::AddressError("failed to get script hash".to_string()))?;
+                let script_hash = ScriptHash::from_slice(&data[1..]).map_err(|_| {
+                    Self::Err::AddressError("failed to get script hash".to_string())
+                })?;
                 (Network::Dash, Payload::P2sh { script_hash })
             }
             SCRIPT_ADDRESS_PREFIX_LTC_P2PKH => {
-                let pubkey_hash = PubkeyHash::from_slice(&data[1..])
-                    .map_err(|_| Self::Err::AddressError("failed to get pubkey hash".to_string()))?;
+                let pubkey_hash = PubkeyHash::from_slice(&data[1..]).map_err(|_| {
+                    Self::Err::AddressError("failed to get pubkey hash".to_string())
+                })?;
                 (Network::Litecoin, Payload::P2pkh { pubkey_hash })
             }
             SCRIPT_ADDRESS_PREFIX_LTC => {
-                let script_hash = ScriptHash::from_slice(&data[1..])
-                    .map_err(|_| Self::Err::AddressError("failed to get script hash".to_string()))?;
+                let script_hash = ScriptHash::from_slice(&data[1..]).map_err(|_| {
+                    Self::Err::AddressError("failed to get script hash".to_string())
+                })?;
                 (Network::Litecoin, Payload::P2sh { script_hash })
             }
             SCRIPT_ADDRESS_PREFIX_BTC => {
-                let script_hash = ScriptHash::from_slice(&data[1..])
-                    .map_err(|_| Self::Err::AddressError("failed to get script hash".to_string()))?;
+                let script_hash = ScriptHash::from_slice(&data[1..]).map_err(|_| {
+                    Self::Err::AddressError("failed to get script hash".to_string())
+                })?;
                 (Network::Bitcoin, Payload::P2sh { script_hash })
             }
             SCRIPT_ADDRESS_PREFIX_TEST => {
-                let script_hash = ScriptHash::from_slice(&data[1..])
-                    .map_err(|_| Self::Err::AddressError("failed to get script hash".to_string()))?;
+                let script_hash = ScriptHash::from_slice(&data[1..]).map_err(|_| {
+                    Self::Err::AddressError("failed to get script hash".to_string())
+                })?;
                 (Network::BitcoinTestnet, Payload::P2sh { script_hash })
             }
             PUBKEY_ADDRESS_PREFIX_DOGE => {
-                let pubkey_hash = PubkeyHash::from_slice(&data[1..])
-                    .map_err(|_| Self::Err::AddressError("failed to get pubkey hash".to_string()))?;
+                let pubkey_hash = PubkeyHash::from_slice(&data[1..]).map_err(|_| {
+                    Self::Err::AddressError("failed to get pubkey hash".to_string())
+                })?;
                 (Network::Dogecoin, Payload::P2pkh { pubkey_hash })
             }
             SCRIPT_ADDRESS_PREFIX_DOGE => {
-                let script_hash = ScriptHash::from_slice(&data[1..])
-                    .map_err(|_| Self::Err::AddressError("failed to get script hash".to_string()))?;
+                let script_hash = ScriptHash::from_slice(&data[1..]).map_err(|_| {
+                    Self::Err::AddressError("failed to get script hash".to_string())
+                })?;
                 (Network::Dogecoin, Payload::P2sh { script_hash })
             }
-            _x => return Err(Self::Err::AddressError("invalid address version".to_string())),
+            _x => {
+                return Err(Self::Err::AddressError(
+                    "invalid address version".to_string(),
+                ))
+            }
         };
 
         Ok(Address { network, payload })

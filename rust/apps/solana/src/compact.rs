@@ -1,8 +1,8 @@
 use crate::errors::{Result, SolanaError};
 use crate::read::Read;
-use alloc::vec::Vec;
-use alloc::vec;
 use alloc::string::ToString;
+use alloc::vec;
+use alloc::vec::Vec;
 
 pub struct Compact<T> {
     compact_length: u32,

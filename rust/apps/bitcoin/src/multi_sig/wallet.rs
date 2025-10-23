@@ -233,13 +233,17 @@ fn _parse_plain_wallet_config(content: &str) -> Result<MultiSigWalletConfig, Bit
     for xpub_item in wallet.xpub_items.iter() {
         let this_network = detect_network(&xpub_item.xpub);
         if this_network == Network::TestNet {
-            return Err(BitcoinError::MultiSigWalletParseError("we don't support testnet for multisig yet".to_string()));
+            return Err(BitcoinError::MultiSigWalletParseError(
+                "we don't support testnet for multisig yet".to_string(),
+            ));
         }
         if is_first {
             wallet.network = this_network;
             is_first = false;
         } else if wallet.network != this_network {
-            return Err(BitcoinError::MultiSigWalletParseError("xpub networks inconsistent".to_string()));
+            return Err(BitcoinError::MultiSigWalletParseError(
+                "xpub networks inconsistent".to_string(),
+            ));
         }
     }
 
@@ -380,7 +384,9 @@ fn process_xpub_and_xfp(
                 let result1 = xyzpub::convert_version(xpub_item.xpub.clone(), &Version::Xpub)?;
                 let result2 = xyzpub::convert_version(value, &Version::Xpub)?;
                 if result1.eq_ignore_ascii_case(&result2) {
-                    return Err(BitcoinError::MultiSigWalletParseError("found duplicated xpub".to_string()));
+                    return Err(BitcoinError::MultiSigWalletParseError(
+                        "found duplicated xpub".to_string(),
+                    ));
                 }
             }
             wallet.xpub_items.push(MultiSigXPubItem {
@@ -543,9 +549,7 @@ pub fn strict_verify_wallet_config(
             )?;
             let true_xpub =
                 get_extended_public_key_by_seed(seed, true_derivation).map_err(|e| {
-                    BitcoinError::MultiSigWalletParseError(format!(
-                        "Unable to generate xpub, {e}"
-                    ))
+                    BitcoinError::MultiSigWalletParseError(format!("Unable to generate xpub, {e}"))
                 })?;
             let this_xpub = xyzpub::convert_version(&xpub_item.xpub, &Version::Xpub)?;
             if !true_xpub.to_string().eq(&this_xpub) {
@@ -560,16 +564,15 @@ pub fn strict_verify_wallet_config(
 
 #[cfg(test)]
 mod tests {
-    
 
     use alloc::string::ToString;
 
     use crate::multi_sig::wallet::{
-        create_wallet, generate_config_data, is_valid_xyzpub,
-        parse_bsms_wallet_config, parse_wallet_config, strict_verify_wallet_config,
+        create_wallet, generate_config_data, is_valid_xyzpub, parse_bsms_wallet_config,
+        parse_wallet_config, strict_verify_wallet_config,
     };
     use crate::multi_sig::{MultiSigXPubInfo, Network};
-    
+
     use hex;
     use ur_registry::bytes::Bytes;
 

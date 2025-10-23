@@ -105,7 +105,6 @@ mod tests {
     use rand_chacha::ChaCha8Rng;
 
     extern crate std;
-    
 
     #[test]
     fn test_ufvk_generation_and_encoding() {

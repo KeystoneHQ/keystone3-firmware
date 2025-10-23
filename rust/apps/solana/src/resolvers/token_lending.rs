@@ -66,7 +66,8 @@ fn init_lending_market(
     quote_currency: [u8; 32],
 ) -> Result<SolanaDetail> {
     let method_name = "InitLendingMarket";
-    let lending_market_account = accounts.first()
+    let lending_market_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.lending_market_account",
         )))?
@@ -111,7 +112,8 @@ fn init_lending_market(
 
 fn set_lending_market_owner(accounts: Vec<String>, new_owner: Pubkey) -> Result<SolanaDetail> {
     let method_name = "SetLendingMarketOwner";
-    let lending_market_account = accounts.first()
+    let lending_market_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.lending_market_account",
         )))?
@@ -144,7 +146,8 @@ fn init_reserve(
     config: ReserveConfig,
 ) -> Result<SolanaDetail> {
     let method_name = "SetLendingMarketOwner";
-    let source_liquidity_account = accounts.first()
+    let source_liquidity_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_liquidity_account",
         )))?
@@ -277,7 +280,8 @@ fn init_reserve(
 
 fn refresh_reserve(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "RefreshReserve";
-    let reserve_account = accounts.first()
+    let reserve_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.reserve_account",
         )))?
@@ -309,7 +313,8 @@ fn refresh_reserve(accounts: Vec<String>) -> Result<SolanaDetail> {
 
 fn deposit_reserve_liquidity(accounts: Vec<String>, liquidity_amount: u64) -> Result<SolanaDetail> {
     let method_name = "DepositReserveLiquidity";
-    let source_liquidity_account = accounts.first()
+    let source_liquidity_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_liquidity_account",
         )))?
@@ -397,7 +402,8 @@ fn redeem_reserve_collateral(
     collateral_amount: u64,
 ) -> Result<SolanaDetail> {
     let method_name = "RedeemReserveCollateral";
-    let source_collateral_account = accounts.first()
+    let source_collateral_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_collateral_account",
         )))?
@@ -481,7 +487,8 @@ fn redeem_reserve_collateral(
 
 fn init_obligation(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "InitObligation";
-    let obligation_account = accounts.first()
+    let obligation_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.obligation_account",
         )))?
@@ -534,7 +541,8 @@ fn init_obligation(accounts: Vec<String>) -> Result<SolanaDetail> {
 
 fn refresh_obligation(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "RefreshObligation";
-    let obligation_account = accounts.first()
+    let obligation_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.obligation_account",
         )))?
@@ -564,7 +572,8 @@ fn deposit_obligation_collateral(
     collateral_amount: u64,
 ) -> Result<SolanaDetail> {
     let method_name = "DepositObligationCollateral";
-    let source_collateral_account = accounts.first()
+    let source_collateral_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_collateral_account",
         )))?
@@ -644,7 +653,8 @@ fn withdraw_obligation_collateral(
     collateral_amount: u64,
 ) -> Result<SolanaDetail> {
     let method_name = "WithdrawObligationCollateral";
-    let source_collateral_account = accounts.first()
+    let source_collateral_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_collateral_account",
         )))?
@@ -724,7 +734,8 @@ fn borrow_obligation_liquidity(
     liquidity_amount: u64,
 ) -> Result<SolanaDetail> {
     let method_name = "BorrowObligationLiquidity";
-    let source_liquidity_account = accounts.first()
+    let source_liquidity_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_liquidity_account",
         )))?
@@ -814,7 +825,8 @@ fn repay_obligation_liquidity(
 ) -> Result<SolanaDetail> {
     let method_name = "RepayObligationLiquidity";
 
-    let source_liquidity_account = accounts.first()
+    let source_liquidity_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_liquidity_account",
         )))?
@@ -884,7 +896,8 @@ fn repay_obligation_liquidity(
 
 fn liquidate_obligation(accounts: Vec<String>, liquidity_amount: u64) -> Result<SolanaDetail> {
     let method_name = "LiquidateObligation";
-    let source_liquidity_account = accounts.first()
+    let source_liquidity_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_liquidity_account",
         )))?
@@ -980,7 +993,8 @@ fn liquidate_obligation(accounts: Vec<String>, liquidity_amount: u64) -> Result<
 
 fn flash_loan(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
     let method_name = "FlashLoan";
-    let source_liquidity_account = accounts.first()
+    let source_liquidity_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_liquidity_account",
         )))?

@@ -70,7 +70,8 @@ fn resolve_initialize(
     lockup: Lockup,
 ) -> Result<SolanaDetail> {
     let method_name = "Initialize".to_string();
-    let stake_account = accounts.first()
+    let stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.stake_account"
         )))?
@@ -109,7 +110,8 @@ fn resolve_authorize(
     stake_authorize: StakeAuthorize,
 ) -> Result<SolanaDetail> {
     let method_name = "Authorize".to_string();
-    let stake_account = accounts.first()
+    let stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.stake_account"
         )))?
@@ -122,7 +124,9 @@ fn resolve_authorize(
         .to_string();
     let old_authority_pubkey = accounts
         .get(2)
-        .ok_or(SolanaError::AccountNotFound("Authorize.old_authority_pubkey".to_string()))?
+        .ok_or(SolanaError::AccountNotFound(
+            "Authorize.old_authority_pubkey".to_string(),
+        ))?
         .to_string();
     let lockup_authority_pubkey = accounts.get(3).unwrap_or(&"".to_string()).to_string();
     let new_authority_pubkey = pubkey.to_string();
@@ -149,7 +153,8 @@ fn resolve_authorize(
 
 fn resolve_delegate_stake(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "DelegateStake".to_string();
-    let stake_account = accounts.first()
+    let stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.stake_account"
         )))?
@@ -202,7 +207,8 @@ fn resolve_delegate_stake(accounts: Vec<String>) -> Result<SolanaDetail> {
 
 fn resolve_split(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail> {
     let method_name = "Split".to_string();
-    let stake_account = accounts.first()
+    let stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.stake_account"
         )))?
@@ -236,7 +242,8 @@ fn resolve_split(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail> {
 
 fn resolve_withdraw(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail> {
     let method_name = "Withdraw".to_string();
-    let stake_account = accounts.first()
+    let stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.stake_account"
         )))?
@@ -286,7 +293,8 @@ fn resolve_withdraw(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail
 
 fn resolve_deactivate(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "Deactivate".to_string();
-    let delegated_stake_account = accounts.first()
+    let delegated_stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.delegated_stake_account"
         )))?
@@ -318,7 +326,8 @@ fn resolve_deactivate(accounts: Vec<String>) -> Result<SolanaDetail> {
 
 fn resolve_set_lockup(accounts: Vec<String>, lockup: LockupArgs) -> Result<SolanaDetail> {
     let method_name = "SetLockup".to_string();
-    let stake_account = accounts.first()
+    let stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.stake_account"
         )))?
@@ -351,7 +360,8 @@ fn resolve_set_lockup(accounts: Vec<String>, lockup: LockupArgs) -> Result<Solan
 
 fn resolve_merge(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "Merge".to_string();
-    let destination_stake_account = accounts.first()
+    let destination_stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.destination_stake_account"
         )))?
@@ -400,7 +410,8 @@ fn resolve_authorize_with_seed(
     args: AuthorizeWithSeedArgs,
 ) -> Result<SolanaDetail> {
     let method_name = "AuthorizeWithSeed".to_string();
-    let stake_account = accounts.first()
+    let stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.stake_account"
         )))?
@@ -446,7 +457,8 @@ fn resolve_authorize_with_seed(
 
 fn resolve_initialize_checked(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "InitializeChecked".to_string();
-    let stake_account = accounts.first()
+    let stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.stake_account"
         )))?
@@ -488,7 +500,8 @@ fn resolve_authorize_checked(
     stake_authorize: StakeAuthorize,
 ) -> Result<SolanaDetail> {
     let method_name = "AuthorizeChecked".to_string();
-    let stake_account = accounts.first()
+    let stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.stake_account"
         )))?
@@ -538,7 +551,8 @@ fn resolve_authorize_checked_with_seed(
     args: AuthorizeCheckedWithSeedArgs,
 ) -> Result<SolanaDetail> {
     let method_name = "AuthorizeCheckedWithSeed".to_string();
-    let stake_account = accounts.first()
+    let stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.stake_account"
         )))?
@@ -594,7 +608,8 @@ fn resolve_set_lockup_checked(
     args: LockupCheckedArgs,
 ) -> Result<SolanaDetail> {
     let method_name = "SetLockupChecked".to_string();
-    let stake_account = accounts.first()
+    let stake_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.stake_account"
         )))?

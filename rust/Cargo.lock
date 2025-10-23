@@ -3840,6 +3840,7 @@ dependencies = [
  "itertools 0.13.0",
  "keystore",
  "minicbor",
+ "rand_core 0.6.4",
  "rsa",
  "rust_tools",
  "serde_json",

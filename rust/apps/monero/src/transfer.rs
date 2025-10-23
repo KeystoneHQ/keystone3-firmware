@@ -806,6 +806,7 @@ pub fn sign_tx(keypair: KeyPair, request_data: Vec<u8>) -> Result<Vec<u8>> {
         keypair,
         signed_txes.serialize(),
         SIGNED_TX_PREFIX,
+        OsRng,
     ))
 }
 

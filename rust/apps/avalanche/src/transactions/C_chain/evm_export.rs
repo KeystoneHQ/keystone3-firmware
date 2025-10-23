@@ -142,8 +142,6 @@ impl TryFrom<Bytes> for ExportTx {
 #[cfg(test)]
 mod tests {
     use super::*;
-    extern crate std;
-    use std::println;
 
     #[test]
     fn test_avax_c_export() {

@@ -21,7 +21,9 @@ pub fn get_private_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
                 new_vec.push(index + 0x80000000);
                 return Ok(new_vec);
             }
-            Err(KeystoreError::InvalidDerivationPath("non hardened derivation is not supported for slip10-ed25519".to_string()))
+            Err(KeystoreError::InvalidDerivationPath(
+                "non hardened derivation is not supported for slip10-ed25519".to_string(),
+            ))
         }
         e => e,
     })?;

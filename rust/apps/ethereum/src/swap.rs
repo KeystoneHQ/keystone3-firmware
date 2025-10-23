@@ -81,7 +81,9 @@ pub fn parse_swapkit_contract(
     }
 
     if vault.is_none() || swap_in_asset.is_none() || swap_in_amount.is_none() || memo.is_none() {
-        return Err(EthereumError::InvalidSwapTransaction("Invalid swapkit contract data".to_string()));
+        return Err(EthereumError::InvalidSwapTransaction(
+            "Invalid swapkit contract data".to_string(),
+        ));
     }
 
     let swapkit_memo = parse_swapkit_memo(&memo.unwrap())?;

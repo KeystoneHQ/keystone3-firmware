@@ -251,9 +251,7 @@ pub fn export_xpub_by_crypto_account(
                 )?)
             }
             _ => {
-                return Err(URError::UrEncodeError(format!(
-                    "not supported path:{path}"
-                )));
+                return Err(URError::UrEncodeError(format!("not supported path:{path}")));
             }
         }
     }

@@ -66,7 +66,9 @@ impl GetKey for Keystore {
                     Err(BitcoinError::GetKeyError("mfp is not match".to_string()))
                 }
             }
-            _ => Err(BitcoinError::GetKeyError("get private key by public key is not supported".to_string())),
+            _ => Err(BitcoinError::GetKeyError(
+                "get private key by public key is not supported".to_string(),
+            )),
         }
     }
 }
@@ -408,9 +410,10 @@ impl WrappedPsbt {
                     .ok_or(BitcoinError::InvalidInput)?;
 
                 if fingerprint.eq(&context.master_fingerprint)
-                    && input.partial_sigs.contains_key(&PublicKey::new(*key)) {
-                        return Ok(false);
-                    }
+                    && input.partial_sigs.contains_key(&PublicKey::new(*key))
+                {
+                    return Ok(false);
+                }
             }
             Ok(true)
         } else {
@@ -596,11 +599,8 @@ impl WrappedPsbt {
                             .to_string(),
                         )),
                         84 => Ok(Some(
-                            Address::p2wpkh(
-                                &bitcoin::PublicKey::new(*pubkey),
-                                network.clone(),
-                            )?
-                            .to_string(),
+                            Address::p2wpkh(&bitcoin::PublicKey::new(*pubkey), network.clone())?
+                                .to_string(),
                         )),
                         _ => Ok(None),
                     },
@@ -650,10 +650,11 @@ impl WrappedPsbt {
         index: usize,
         context: &ParseContext,
     ) -> Result<Option<(String, bool)>> {
-        if context.multisig_wallet_config.is_some()
-            && self.is_taproot_input(input) {
-                return Err(BitcoinError::InvalidPsbt("multisig with taproot is not supported".to_string()));
-            }
+        if context.multisig_wallet_config.is_some() && self.is_taproot_input(input) {
+            return Err(BitcoinError::InvalidPsbt(
+                "multisig with taproot is not supported".to_string(),
+            ));
+        }
         if self.is_taproot_input(input) {
             self.get_my_key_path_for_taproot(&input.tap_key_origins, index, "input", context)
         } else {

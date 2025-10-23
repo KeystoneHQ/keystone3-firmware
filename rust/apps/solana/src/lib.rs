@@ -31,8 +31,7 @@ pub mod structs;
 pub mod utils;
 pub fn parse_message(tx_hex: Vec<u8>, from_key: &String) -> errors::Result<SolanaMessage> {
     let raw_message = hex::encode(tx_hex.clone());
-    let mut utf8_message =
-        String::from_utf8(tx_hex).unwrap_or_else(|_| "".to_string());
+    let mut utf8_message = String::from_utf8(tx_hex).unwrap_or_else(|_| "".to_string());
     if app_utils::is_cjk(&utf8_message) {
         utf8_message = "".to_string();
     }
@@ -56,8 +55,6 @@ pub fn sign(message: Vec<u8>, hd_path: &String, seed: &[u8]) -> errors::Result<[
 mod tests {
     use hex::{FromHex, ToHex};
     use ur_registry::solana::sol_sign_request::SolSignRequest;
-
-    
 
     use super::*;
 

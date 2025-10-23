@@ -21,9 +21,8 @@ use crate::errors::{BitcoinError, Result};
 pub fn derive_public_key(xpub: &String, path: String) -> Result<PublicKey> {
     let converted_xpub = convert_version(xpub, &Version::Xpub)
         .map_err(|_| BitcoinError::AddressError(String::from("xpub is not valid")))?;
-    let secp256k1_pubkey = secp256k1::derive_public_key(&converted_xpub, &path).map_err(|_| {
-        BitcoinError::AddressError(format!("failed to derive public key {xpub:?}"))
-    })?;
+    let secp256k1_pubkey = secp256k1::derive_public_key(&converted_xpub, &path)
+        .map_err(|_| BitcoinError::AddressError(format!("failed to derive public key {xpub:?}")))?;
     PublicKey::from_slice(secp256k1_pubkey.serialize().as_slice())
         .map_err(|e| BitcoinError::GetKeyError(e.to_string()))
 }

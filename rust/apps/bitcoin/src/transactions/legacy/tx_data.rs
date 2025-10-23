@@ -241,11 +241,7 @@ impl TxData {
                     .map(Right)
                 } else {
                     sig_hasher
-                        .legacy_signature_hash(
-                            input_index,
-                            &script,
-                            EcdsaSighashType::All.to_u32(),
-                        )
+                        .legacy_signature_hash(input_index, &script, EcdsaSighashType::All.to_u32())
                         .map_err(|_e| {
                             BitcoinError::SignLegacyTxError(format!(
                                 "invalid sig hash for {script_type:?}"

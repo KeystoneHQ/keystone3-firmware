@@ -301,12 +301,20 @@ fn sheilded_sig_commitment(pczt: &Pczt, lock_time: u32, input_info: Option<Signa
     let sig_digest = transparent_sig_digest(pczt, input_info);
     h.update(sig_digest.as_bytes());
     h.update(
-        if has_sapling(pczt) { digest_sapling(pczt) } else { hash_sapling_txid_empty() }
-            .as_bytes(),
+        if has_sapling(pczt) {
+            digest_sapling(pczt)
+        } else {
+            hash_sapling_txid_empty()
+        }
+        .as_bytes(),
     );
     h.update(
-        if has_orchard(pczt) { digest_orchard(pczt) } else { hash_orchard_txid_empty() }
-            .as_bytes(),
+        if has_orchard(pczt) {
+            digest_orchard(pczt)
+        } else {
+            hash_orchard_txid_empty()
+        }
+        .as_bytes(),
     );
     h.finalize()
 }

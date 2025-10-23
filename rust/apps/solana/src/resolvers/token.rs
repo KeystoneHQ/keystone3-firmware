@@ -82,10 +82,9 @@ fn initialize_mint(
     freeze_authority_pubkey: COption<Pubkey>,
 ) -> Result<SolanaDetail> {
     let method_name = "InitializeMint";
-    let mint = accounts.first()
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.mint"
-        )))?
+    let mint = accounts
+        .first()
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
         .to_string();
     let sysver_rent = accounts
         .get(1)
@@ -115,22 +114,19 @@ fn initialize_mint(
 fn initialize_account(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "InitializeAccount";
 
-    let account = accounts.first()
+    let account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.account"
         )))?
         .to_string();
     let mint = accounts
         .get(1)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.mint"
-        )))?
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
         .to_string();
     let owner = accounts
         .get(2)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.owner"
-        )))?
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
         .to_string();
     let sysver_rent = accounts
         .get(3)
@@ -155,7 +151,8 @@ fn initialize_account(accounts: Vec<String>) -> Result<SolanaDetail> {
 fn initialize_multisig(accounts: Vec<String>, m: u8) -> Result<SolanaDetail> {
     let method_name = "InitializeMultisig";
 
-    let multisig_account = accounts.first()
+    let multisig_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.multisig_account"
         )))?
@@ -185,7 +182,8 @@ fn initialize_multisig(accounts: Vec<String>, m: u8) -> Result<SolanaDetail> {
 fn transfer(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
     let method_name = "Transfer";
 
-    let source_account = accounts.first()
+    let source_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_account"
         )))?
@@ -200,9 +198,7 @@ fn transfer(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
     if is_multisig(&accounts, 3) {
         let owner = accounts
             .get(2)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         let signers = Some(accounts[3..].to_vec());
         return Ok(SolanaDetail {
@@ -241,7 +237,8 @@ fn transfer(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
 fn approve(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
     let method_name = "Approve";
 
-    let source_account = accounts.first()
+    let source_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_account"
         )))?
@@ -256,9 +253,7 @@ fn approve(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
     if is_multisig(&accounts, 3) {
         let owner = accounts
             .get(2)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         let signers = Some(accounts[3..].to_vec());
         return Ok(SolanaDetail {
@@ -277,9 +272,7 @@ fn approve(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
     }
     let owner = accounts
         .get(2)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.owner"
-        )))?
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
         .to_string();
     Ok(SolanaDetail {
         common: CommonDetail {
@@ -299,7 +292,8 @@ fn approve(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
 fn revoke(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "Revoke";
 
-    let source_account = accounts.first()
+    let source_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.source_account"
         )))?
@@ -307,9 +301,7 @@ fn revoke(accounts: Vec<String>) -> Result<SolanaDetail> {
     if is_multisig(&accounts, 2) {
         let owner = accounts
             .get(1)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         let signers = Some(accounts[2..].to_vec());
         return Ok(SolanaDetail {
@@ -326,9 +318,7 @@ fn revoke(accounts: Vec<String>) -> Result<SolanaDetail> {
     }
     let owner = accounts
         .get(1)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.owner"
-        )))?
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
         .to_string();
     Ok(SolanaDetail {
         common: CommonDetail {
@@ -350,7 +340,8 @@ fn set_authority(
 ) -> Result<SolanaDetail> {
     let method_name = "SetAuthority";
 
-    let account = accounts.first()
+    let account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.account"
         )))?
@@ -411,10 +402,9 @@ fn set_authority(
 fn mint_to(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
     let method_name = "MintTo";
 
-    let mint = accounts.first()
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.mint"
-        )))?
+    let mint = accounts
+        .first()
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
         .to_string();
     let mint_to_account = accounts
         .get(1)
@@ -470,24 +460,21 @@ fn mint_to(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
 fn burn(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
     let method_name = "Burn";
 
-    let account = accounts.first()
+    let account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.account"
         )))?
         .to_string();
     let mint = accounts
         .get(1)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.mint"
-        )))?
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
         .to_string();
     let amount = amount.to_string();
     if is_multisig(&accounts, 3) {
         let owner = accounts
             .get(2)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         let signers = Some(accounts[3..].to_vec());
         Ok(SolanaDetail {
@@ -506,9 +493,7 @@ fn burn(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
     } else {
         let owner = accounts
             .get(2)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         Ok(SolanaDetail {
             common: CommonDetail {
@@ -528,7 +513,8 @@ fn burn(accounts: Vec<String>, amount: u64) -> Result<SolanaDetail> {
 
 fn close_account(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "CloseAccount";
-    let account = accounts.first()
+    let account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.account"
         )))?
@@ -542,9 +528,7 @@ fn close_account(accounts: Vec<String>) -> Result<SolanaDetail> {
     if is_multisig(&accounts, 3) {
         let owner = accounts
             .get(2)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         let signers = Some(accounts[3..].to_vec());
         Ok(SolanaDetail {
@@ -562,7 +546,9 @@ fn close_account(accounts: Vec<String>) -> Result<SolanaDetail> {
     } else {
         let owner = accounts
             .get(2)
-            .ok_or(SolanaError::AccountNotFound("CloseAccount.owner".to_string()))?
+            .ok_or(SolanaError::AccountNotFound(
+                "CloseAccount.owner".to_string(),
+            ))?
             .to_string();
         Ok(SolanaDetail {
             common: CommonDetail {
@@ -581,16 +567,15 @@ fn close_account(accounts: Vec<String>) -> Result<SolanaDetail> {
 
 fn freeze_account(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "FreezeAccount";
-    let account = accounts.first()
+    let account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.account"
         )))?
         .to_string();
     let mint = accounts
         .get(1)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.mint"
-        )))?
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
         .to_string();
     if is_multisig(&accounts, 3) {
         let mint_freeze_authority_pubkey = accounts
@@ -636,16 +621,15 @@ fn freeze_account(accounts: Vec<String>) -> Result<SolanaDetail> {
 
 fn thaw_account(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "ThawAccount";
-    let account = accounts.first()
+    let account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.account"
         )))?
         .to_string();
     let mint = accounts
         .get(1)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.mint"
-        )))?
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
         .to_string();
     if is_multisig(&accounts, 3) {
         let mint_freeze_authority_pubkey = accounts
@@ -692,16 +676,15 @@ fn thaw_account(accounts: Vec<String>) -> Result<SolanaDetail> {
 fn transfer_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<SolanaDetail> {
     let method_name = "TransferChecked";
     if is_multisig(&accounts, 4) {
-        let account = accounts.first()
+        let account = accounts
+            .first()
             .ok_or(SolanaError::AccountNotFound(format!(
                 "{method_name}.account"
             )))?
             .to_string();
         let mint = accounts
             .get(1)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.mint"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
             .to_string();
         let recipient = accounts
             .get(2)
@@ -711,9 +694,7 @@ fn transfer_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<
             .to_string();
         let owner = accounts
             .get(3)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         let signers = Some(accounts[4..].to_vec());
         let amount = amount.to_string();
@@ -733,16 +714,15 @@ fn transfer_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<
             }),
         })
     } else {
-        let account = accounts.first()
+        let account = accounts
+            .first()
             .ok_or(SolanaError::AccountNotFound(format!(
                 "{method_name}.account"
             )))?
             .to_string();
         let mint = accounts
             .get(1)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.mint"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
             .to_string();
         let recipient = accounts
             .get(2)
@@ -752,9 +732,7 @@ fn transfer_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<
             .to_string();
         let owner = accounts
             .get(3)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         let amount = amount.to_string();
         Ok(SolanaDetail {
@@ -778,16 +756,15 @@ fn transfer_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<
 fn approve_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<SolanaDetail> {
     let method_name = "ApproveChecked";
     if is_multisig(&accounts, 4) {
-        let account = accounts.first()
+        let account = accounts
+            .first()
             .ok_or(SolanaError::AccountNotFound(format!(
                 "{method_name}.account"
             )))?
             .to_string();
         let mint = accounts
             .get(1)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.mint"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
             .to_string();
         let delegate = accounts
             .get(2)
@@ -797,9 +774,7 @@ fn approve_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<S
             .to_string();
         let owner = accounts
             .get(3)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         let signers = Some(accounts[4..].to_vec());
         let amount = amount.to_string();
@@ -819,16 +794,15 @@ fn approve_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<S
             }),
         })
     } else {
-        let account = accounts.first()
+        let account = accounts
+            .first()
             .ok_or(SolanaError::AccountNotFound(format!(
                 "{method_name}.account"
             )))?
             .to_string();
         let mint = accounts
             .get(1)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.mint"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
             .to_string();
         let delegate = accounts
             .get(2)
@@ -838,9 +812,7 @@ fn approve_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<S
             .to_string();
         let owner = accounts
             .get(3)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         let amount = amount.to_string();
         Ok(SolanaDetail {
@@ -863,10 +835,9 @@ fn approve_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<S
 
 fn mint_to_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<SolanaDetail> {
     let method_name = "MintToChecked";
-    let mint = accounts.first()
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.mint"
-        )))?
+    let mint = accounts
+        .first()
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
         .to_string();
     let mint_to_account = accounts
         .get(1)
@@ -923,24 +894,21 @@ fn mint_to_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<S
 
 fn burn_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<SolanaDetail> {
     let method_name = "BurnChecked";
-    let account = accounts.first()
+    let account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.account"
         )))?
         .to_string();
     let mint = accounts
         .get(1)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.mint"
-        )))?
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
         .to_string();
     let amount = amount.to_string();
     if is_multisig(&accounts, 3) {
         let owner = accounts
             .get(2)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         let signers = Some(accounts[3..].to_vec());
         Ok(SolanaDetail {
@@ -960,9 +928,7 @@ fn burn_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<Sola
     } else {
         let owner = accounts
             .get(2)
-            .ok_or(SolanaError::AccountNotFound(format!(
-                "{method_name}.owner"
-            )))?
+            .ok_or(SolanaError::AccountNotFound(format!("{method_name}.owner")))?
             .to_string();
         Ok(SolanaDetail {
             common: CommonDetail {
@@ -983,16 +949,15 @@ fn burn_checked(accounts: Vec<String>, decimals: u8, amount: u64) -> Result<Sola
 
 fn initialize_account_2(accounts: Vec<String>, owner: Pubkey) -> Result<SolanaDetail> {
     let method_name = "InitializeAccount2";
-    let account = accounts.first()
+    let account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.account"
         )))?
         .to_string();
     let mint = accounts
         .get(1)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.mint"
-        )))?
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
         .to_string();
     let sysver_rent = accounts
         .get(2)
@@ -1017,7 +982,8 @@ fn initialize_account_2(accounts: Vec<String>, owner: Pubkey) -> Result<SolanaDe
 
 fn sync_native(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "SyncNative";
-    let account_to_sync = accounts.first()
+    let account_to_sync = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.account_to_sync"
         )))?
@@ -1033,16 +999,15 @@ fn sync_native(accounts: Vec<String>) -> Result<SolanaDetail> {
 
 fn initialize_account_3(accounts: Vec<String>, owner: Pubkey) -> Result<SolanaDetail> {
     let method_name = "InitializeAccount3";
-    let account = accounts.first()
+    let account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.account"
         )))?
         .to_string();
     let mint = accounts
         .get(1)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.mint"
-        )))?
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
         .to_string();
     let owner = owner.to_string();
     Ok(SolanaDetail {
@@ -1060,7 +1025,8 @@ fn initialize_account_3(accounts: Vec<String>, owner: Pubkey) -> Result<SolanaDe
 
 fn initialize_multisig_2(accounts: Vec<String>, m: u8) -> Result<SolanaDetail> {
     let method_name = "InitializeMultisig2";
-    let multisig_account = accounts.first()
+    let multisig_account = accounts
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
             "{method_name}.multisig_account"
         )))?
@@ -1087,10 +1053,9 @@ fn initialize_mint_2(
     freeze_authority_pubkey: COption<Pubkey>,
 ) -> Result<SolanaDetail> {
     let method_name = "InitializeMint2";
-    let mint = accounts.first()
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{method_name}.mint"
-        )))?
+    let mint = accounts
+        .first()
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.mint")))?
         .to_string();
     let mint_authority_pubkey = mint_authority_pubkey.to_string();
     let freeze_authority_pubkey =

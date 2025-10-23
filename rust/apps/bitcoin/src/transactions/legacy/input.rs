@@ -130,9 +130,9 @@ impl TryFrom<Input> for TxIn {
     type Error = BitcoinError;
 
     fn try_from(value: protoc::Input) -> Result<Self> {
-        let utxo = value
-            .utxo
-            .ok_or(BitcoinError::InvalidRawTxCryptoBytes("empty utxo".to_string()))?;
+        let utxo = value.utxo.ok_or(BitcoinError::InvalidRawTxCryptoBytes(
+            "empty utxo".to_string(),
+        ))?;
         negative_check!("utxo value".to_string(), utxo.value)?;
         let utxo_value = utxo.value as u64;
         negative_check!("utxo index".to_string(), value.index)?;

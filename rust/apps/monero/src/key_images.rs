@@ -2,11 +2,8 @@ use crate::errors::{MoneroError, Result};
 use crate::key::{generate_key_image_from_priavte_key, KeyPair, PrivateKey, PublicKey};
 use crate::outputs::{ExportedTransferDetail, ExportedTransferDetails};
 use crate::utils::{
-    constants::*,
-    decrypt_data_with_pvk, encrypt_data_with_pvk,
-    hash::hash_to_scalar,
-    sign::generate_ring_signature,
-    varinteger::*,
+    constants::*, decrypt_data_with_pvk, encrypt_data_with_pvk, hash::hash_to_scalar,
+    sign::generate_ring_signature, varinteger::*,
 };
 use alloc::string::{String, ToString};
 use alloc::vec;
@@ -307,9 +304,7 @@ pub fn generate_export_ur_data(keypair: KeyPair, request_data: Vec<u8>) -> Resul
 
     let mut key_images: KeyImages = KeyImages(vec![]);
     for output in outputs.details.iter() {
-        key_images
-            .0
-            .push(output.key_image(&keypair.clone(), OsRng));
+        key_images.0.push(output.key_image(&keypair.clone(), OsRng));
     }
 
     Ok(encrypt_data_with_pvk(

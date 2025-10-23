@@ -77,7 +77,13 @@ impl TxConstructionData {
         dest == &self.change_dts
     }
 
-    fn ecdhs(&self, keypair: &KeyPair, tx_key: &PrivateKey, additional_keys: &Vec<PrivateKey>, tx_key_pub: &EdwardsPoint) -> Vec<EdwardsPoint> {
+    fn ecdhs(
+        &self,
+        keypair: &KeyPair,
+        tx_key: &PrivateKey,
+        additional_keys: &Vec<PrivateKey>,
+        tx_key_pub: &EdwardsPoint,
+    ) -> Vec<EdwardsPoint> {
         let mut res = Vec::with_capacity(self.splitted_dsts.len());
         for (i, dest) in self.splitted_dsts.iter().enumerate() {
             let key_to_use = if dest.is_subaddress {
@@ -100,7 +106,13 @@ impl TxConstructionData {
         res
     }
 
-    fn payment_id_xors(&self, keypair: &KeyPair, tx_key: &PrivateKey, additional_keys: &Vec<PrivateKey>, tx_key_pub: &EdwardsPoint) -> Vec<[u8; 8]> {
+    fn payment_id_xors(
+        &self,
+        keypair: &KeyPair,
+        tx_key: &PrivateKey,
+        additional_keys: &Vec<PrivateKey>,
+        tx_key_pub: &EdwardsPoint,
+    ) -> Vec<[u8; 8]> {
         let mut res = Vec::with_capacity(self.splitted_dsts.len());
         for ecdh in self.ecdhs(keypair, tx_key, additional_keys, tx_key_pub) {
             res.push(SharedKeyDerivations::payment_id_xor(Zeroizing::new(ecdh)));
@@ -108,7 +120,14 @@ impl TxConstructionData {
         res
     }
 
-    pub fn extra(&self, keypair: &KeyPair, tx_key: &PrivateKey, additional_keys: &Vec<PrivateKey>, tx_key_pub: &EdwardsPoint, additional_keys_pub: &Vec<EdwardsPoint>) -> Vec<u8> {
+    pub fn extra(
+        &self,
+        keypair: &KeyPair,
+        tx_key: &PrivateKey,
+        additional_keys: &Vec<PrivateKey>,
+        tx_key_pub: &EdwardsPoint,
+        additional_keys_pub: &Vec<EdwardsPoint>,
+    ) -> Vec<u8> {
         let payment_id_xors = self.payment_id_xors(keypair, tx_key, additional_keys, tx_key_pub);
         let mut extra = Extra::new(*tx_key_pub, additional_keys_pub.clone());
         if self.splitted_dsts.len() == 2 {
@@ -154,7 +173,8 @@ impl TxConstructionData {
         additional_keys: &Vec<PrivateKey>,
         tx_key_pub: &EdwardsPoint,
     ) -> Vec<(Commitment, EncryptedAmount)> {
-        let shared_key_derivations = self.shared_key_derivations(keypair, tx_key, additional_keys, tx_key_pub);
+        let shared_key_derivations =
+            self.shared_key_derivations(keypair, tx_key, additional_keys, tx_key_pub);
 
         let mut res = Vec::with_capacity(self.splitted_dsts.len());
         for (dest, shared_key_derivation) in self.splitted_dsts.iter().zip(shared_key_derivations) {
@@ -170,7 +190,13 @@ impl TxConstructionData {
         res
     }
 
-    pub fn sum_output_masks(&self, keypair: &KeyPair, tx_key: &PrivateKey, additional_keys: &Vec<PrivateKey>, tx_key_pub: &EdwardsPoint) -> Scalar {
+    pub fn sum_output_masks(
+        &self,
+        keypair: &KeyPair,
+        tx_key: &PrivateKey,
+        additional_keys: &Vec<PrivateKey>,
+        tx_key_pub: &EdwardsPoint,
+    ) -> Scalar {
         self.commitments_and_encrypted_amounts(keypair, tx_key, additional_keys, tx_key_pub)
             .into_iter()
             .map(|(commitment, _)| commitment.mask)

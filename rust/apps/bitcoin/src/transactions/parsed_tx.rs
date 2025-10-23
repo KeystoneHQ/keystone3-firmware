@@ -150,9 +150,7 @@ pub trait TxParser {
     ) -> Result<ParsedTx> {
         let total_input_value = inputs.iter().fold(0, |acc, cur| acc + cur.value);
         let total_output_value = outputs.iter().fold(0, |acc, cur| acc + cur.value);
-        let has_anyone_can_pay = inputs
-            .iter()
-            .any(|v| v.ecdsa_sighash_type & 0x80 > 0);
+        let has_anyone_can_pay = inputs.iter().any(|v| v.ecdsa_sighash_type & 0x80 > 0);
         let fee = if has_anyone_can_pay {
             0
         } else {

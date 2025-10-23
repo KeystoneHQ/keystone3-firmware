@@ -1,8 +1,8 @@
 use crate::constants::*;
 use crate::errors::{AvaxError, Result};
+use crate::network::Network;
 #[cfg(feature = "testnet")]
 use crate::network::TESTNET_ID;
-use crate::network::Network;
 use crate::ripple_keypair::hash160;
 use crate::transactions::structs::ParsedSizeAble;
 use alloc::string::{String, ToString};

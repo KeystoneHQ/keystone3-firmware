@@ -51,8 +51,6 @@ impl TryFrom<Bytes> for SECP256K1TransferInput {
 #[cfg(test)]
 mod tests {
     use super::*;
-    extern crate std;
-    use std::println;
 
     #[test]
     fn test_secp256k1_transfer_input_try_from() {

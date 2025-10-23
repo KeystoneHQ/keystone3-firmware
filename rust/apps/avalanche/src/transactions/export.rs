@@ -105,9 +105,6 @@ impl TryFrom<Bytes> for ExportTx {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::transactions::type_id::TypeId;
-    extern crate std;
-    use std::println;
 
     #[test]
     fn test_avax_base_export_tx() {
@@ -123,7 +120,7 @@ mod tests {
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let result = ExportTx::try_from(bytes).unwrap();
-            assert_eq!(result.get_dest_chain(), X_BLOCKCHAIN_ID);
+            assert_eq!(result.get_dest_chain(), C_TEST_BLOCKCHAIN_ID);
         }
     }
 }

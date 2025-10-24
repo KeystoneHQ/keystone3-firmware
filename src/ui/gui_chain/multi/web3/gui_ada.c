@@ -532,7 +532,7 @@ bool GetAdaVotingProposalsExist(void *indata, void *param)
 
 void GetAdaVotingProposalsLabel(void *indata, void *param, uint32_t maxLen)
 {
-    snprintf_s((char *)indata,  maxLen, _("ada_proposals_tx_notice"));
+    snprintf_s((char *)indata,  maxLen, "%s", _("ada_proposals_tx_notice"));
 }
 
 void GetAdaVotingProceduresSize(uint16_t *width, uint16_t *height, void *param)

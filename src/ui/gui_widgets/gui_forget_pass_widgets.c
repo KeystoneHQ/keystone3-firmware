@@ -98,14 +98,14 @@ static void StopCreateViewHandler(lv_event_t *e)
     lv_obj_add_event_cb(rightBtn, ContinueStopCreateHandler, LV_EVENT_CLICKED, NULL);
 }
 
-void GuiForgetAnimContDel(int errCode)
+void GuiForgetAnimContDel(bool isReset)
 {
     if (g_waitAnimCont != NULL) {
         lv_obj_del(g_waitAnimCont);
         g_waitAnimCont = NULL;
     }
 
-    if (errCode == 0) {
+    if (isReset) {
         g_waitAnimCont = GuiCreateAnimHintBox(480, 326, 82);
         lv_obj_t *title = GuiCreateLittleTitleLabel(g_waitAnimCont, _("change_passcode_reset_title"));
         lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -124);
@@ -190,7 +190,7 @@ void GuiForgetPassRepeatPinPass(const char* buf)
     if (!strcmp(buf, g_pinBuf)) {
         SecretCacheSetNewPassword((char *)buf);
         memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
-        GuiForgetAnimContDel(0);
+        GuiForgetAnimContDel(true);
         if (g_forgetMkb->wordCnt == 33 || g_forgetMkb->wordCnt == 20) {
             Slip39Data_t slip39 = {
                 .threShold = g_forgetMkb->threShold,

@@ -5,6 +5,7 @@ use alloc::vec::Vec;
 use arrayref::array_ref;
 use rand_chacha::ChaCha20Rng;
 use rand_core::{OsRng, SeedableRng};
+use zeroize::Zeroize;
 
 use num_bigint_dig::traits::ModInverse;
 use num_bigint_dig::BigUint;
@@ -33,10 +34,11 @@ fn get_rsa_seed(seed: &[u8]) -> Result<[u8; 32]> {
 }
 
 pub fn get_rsa_secret_from_seed(seed: &[u8]) -> Result<RsaPrivateKey> {
-    let rsa_seed = get_rsa_seed(seed)?;
+    let mut rsa_seed = get_rsa_seed(seed)?;
     let mut rng = ChaCha20Rng::from_seed(rsa_seed);
-    let private_key = RsaPrivateKey::new(&mut rng, MODULUS_LENGTH).map_err(|_| {
-        KeystoreError::GenerateSigningKeyError("generate rsa private key failed".to_string())
+    rsa_seed.zeroize();
+    let private_key = RsaPrivateKey::new(&mut rng, MODULUS_LENGTH).map_err(|e| {
+        KeystoreError::GenerateSigningKeyError(format!("generate rsa private key failed: {}", e))
     })?;
     Ok(private_key)
 }

@@ -6,6 +6,7 @@
 #include "gui_create_wallet_widgets.h"
 #include "sha256.h"
 #include "log_print.h"
+#include "assert.h"
 
 #define DICE_ROLLS_MAX_LEN                              256
 
@@ -301,23 +302,28 @@ static void ConfirmHandler(lv_event_t *e)
 
     // convert result
     const char *txt = lv_textarea_get_text(ta);
-    char *temp = SRAM_MALLOC(BUFFER_SIZE_512);
-    size_t len = strnlen_s(txt, BUFFER_SIZE_512);
-    strcpy_s(temp, BUFFER_SIZE_512, txt);
-    for (size_t i = 0; i < len; i++) {
+    char *temp = SRAM_MALLOC(DICE_ROLLS_MAX_LEN + 1);
+    size_t rollsLen = strnlen_s(txt, DICE_ROLLS_MAX_LEN);
+    strcpy_s(temp, DICE_ROLLS_MAX_LEN + 1, txt);
+    for (size_t i = 0; i < rollsLen; i++) {
         char c = temp[i];
+        if (c < '1' || c > '6') {
+            ASSERT(false);
+        }
         if (c == '6') {
             temp[i] = '0';
         }
     }
     uint8_t hash[32] = {0};
-    sha256((struct sha256 *)hash, temp, strnlen_s(temp, BUFFER_SIZE_512));
-    uint8_t entropyMethod = 1;
-    SecretCacheSetDiceRollHash(hash);
-    if (g_seedType == SEED_TYPE_BIP39) {
-        GuiFrameOpenViewWithParam(&g_singlePhraseView, &entropyMethod, 1);
-    } else {
-        GuiFrameOpenViewWithParam(&g_createShareView, &entropyMethod, 1);
-    }
+    sha256((struct sha256 *)hash, temp, rollsLen);
+    memset_s(temp, DICE_ROLLS_MAX_LEN + 1, 0, DICE_ROLLS_MAX_LEN + 1);
     SRAM_FREE(temp);
+    uint8_t entropyMethod = ENTROPY_TYPE_DICE_ROLLS;
+    SecretCacheSetDiceRollHash(hash);
+    CLEAR_ARRAY(hash);
+    if (g_seedType == SEED_TYPE_BIP39) {
+        GuiFrameOpenViewWithParam(&g_singlePhraseView, &entropyMethod, sizeof(entropyMethod));
+    } else {
+        GuiFrameOpenViewWithParam(&g_createShareView, &entropyMethod, sizeof(entropyMethod));
+    }
 }

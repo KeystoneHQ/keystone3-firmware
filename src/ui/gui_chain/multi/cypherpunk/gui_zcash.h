@@ -3,6 +3,7 @@
 #include "rust.h"
 #include "gui.h"
 
+NetworkType GetZcashNetworkType(void);
 void GuiSetZcashUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetZcashGUIData(void);
 PtrT_TransactionCheckResult GuiGetZcashCheckResult(void);

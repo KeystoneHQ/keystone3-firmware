@@ -22,6 +22,7 @@ typedef struct {
     bool state;
     const char *name;
     bool enable;
+    NetworkType network;
     lv_obj_t *checkBox;
 } WalletState_t;
 
@@ -38,6 +39,8 @@ void GuiHomeDisActive(void);
 void GuiHomeSetWalletDesc(WalletDesc_t *wallet);
 void GuiHomeRestart(void);
 bool GuiHomePageIsTop(void);
+NetworkType GetNetworkType(HOME_WALLET_CARD_ENUM index);
+void SetNetworkType(HOME_WALLET_CARD_ENUM index, NetworkType network);
 void GuiHomePasswordErrorCount(void *param);
 void GuiRemoveKeyboardWidget(void);
 void RecalculateManageWalletState(void);
@@ -49,4 +52,3 @@ void ClearHomePageCurrentIndex(void);
 void ReturnManageWalletHandler(lv_event_t *e);
 
 #endif /* _GUI_HOME_WIDGETS_H */
-

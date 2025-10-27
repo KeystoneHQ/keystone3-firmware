@@ -920,7 +920,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
         uint8_t sfp[32];
         GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
-        result = generate_zcash_default_address(ufvk);
+        result = generate_zcash_default_address(ufvk, GetZcashNetworkType());
     }
 #endif
 

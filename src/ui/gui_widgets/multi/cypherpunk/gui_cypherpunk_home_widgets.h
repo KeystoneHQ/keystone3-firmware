@@ -5,8 +5,8 @@
 #define HOME_WIDGETS_SURPLUS_CARD_ENUM     HOME_WALLET_CARD_ZEC, \
     HOME_WALLET_CARD_MONERO
 
-#define HOME_WALLET_STATE_SURPLUS          {HOME_WALLET_CARD_ZEC, true, "ZEC", true}, \
-    {HOME_WALLET_CARD_MONERO, true, "XMR", true}
+#define HOME_WALLET_STATE_SURPLUS          {HOME_WALLET_CARD_ZEC, true, "ZEC", true, MainNet}, \
+    {HOME_WALLET_CARD_MONERO, true, "XMR", true, MainNet}
 
 #define HOME_WALLET_CARD_SURPLUS           { \
         .index = HOME_WALLET_CARD_ZEC, \

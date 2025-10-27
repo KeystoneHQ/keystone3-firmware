@@ -81,9 +81,7 @@ impl TryFrom<Bytes> for ImportTx {
 mod tests {
     use super::*;
     use crate::transactions::type_id::TypeId;
-    extern crate std;
     use core::result;
-    use std::println;
 
     #[test]
     fn test_avax_base_import_tx() {
@@ -93,8 +91,7 @@ mod tests {
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let result = ImportTx::try_from(bytes).unwrap();
-            println!("result = {:?}", result);
-            assert_eq!(result.base_tx.get_blockchain_id(), X_BLOCKCHAIN_ID);
+            assert_eq!(result.base_tx.get_blockchain_id(), X_TEST_BLOCKCHAIN_ID);
         }
 
         // x-chain import from c-chain
@@ -103,7 +100,7 @@ mod tests {
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let result = ImportTx::try_from(bytes).unwrap();
-            assert_eq!(result.source_chain, C_BLOCKCHAIN_ID);
+            assert_eq!(result.source_chain, C_TEST_BLOCKCHAIN_ID);
         }
 
         // p-chain import form c-chain xZAN6Dr6snqq3LzAhQsCJWpXntGaMVrQRDqDE1ZdCsCgBkwWS

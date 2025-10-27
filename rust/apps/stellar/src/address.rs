@@ -22,10 +22,7 @@ pub fn get_address(pub_key: &String) -> Result<String> {
                 .collect::<Vec<u8>>();
             Ok(encode_base32(&data))
         }
-        Err(e) => Err(StellarError::AddressError(format!(
-            "hex decode error {}",
-            e
-        ))),
+        Err(e) => Err(StellarError::AddressError(format!("hex decode error {e}"))),
     }
 }
 

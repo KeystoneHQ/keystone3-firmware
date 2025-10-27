@@ -83,8 +83,7 @@ impl MultiSigFormat {
             "P2SH-P2WSH" => Ok(MultiSigFormat::P2wshP2sh),
             "P2WSH" => Ok(MultiSigFormat::P2wsh),
             _ => Err(BitcoinError::MultiSigWalletFormatError(format!(
-                "not support this format {}",
-                format_str
+                "not support this format {format_str}"
             ))),
         }
     }
@@ -151,15 +150,13 @@ pub fn extract_xpub_info_from_str(
         .get(deriv_field_name)
         .ok_or_else(|| {
             BitcoinError::MultiSigWalletImportXpubError(format!(
-                "have no {} field in json",
-                deriv_field_name
+                "have no {deriv_field_name} field in json"
             ))
         })?
         .as_str()
         .ok_or_else(|| {
             BitcoinError::MultiSigWalletImportXpubError(format!(
-                "{} field is not a string",
-                deriv_field_name
+                "{deriv_field_name} field is not a string"
             ))
         })?
         .to_string();
@@ -168,15 +165,13 @@ pub fn extract_xpub_info_from_str(
         .get(xpub_field_name)
         .ok_or_else(|| {
             BitcoinError::MultiSigWalletImportXpubError(format!(
-                "have no {} field in json",
-                xpub_field_name
+                "have no {xpub_field_name} field in json"
             ))
         })?
         .as_str()
         .ok_or_else(|| {
             BitcoinError::MultiSigWalletImportXpubError(format!(
-                "{} field is not a string",
-                xpub_field_name
+                "{xpub_field_name} field is not a string"
             ))
         })?
         .to_string();
@@ -256,14 +251,11 @@ pub fn export_xpub_by_crypto_account(
                 )?)
             }
             _ => {
-                return Err(URError::UrEncodeError(format!(
-                    "not supported path:{}",
-                    path.to_string()
-                )));
+                return Err(URError::UrEncodeError(format!("not supported path:{path}")));
             }
         }
     }
-    Ok(CryptoAccount::new(master_fingerprint.clone(), outputs))
+    Ok(CryptoAccount::new(*master_fingerprint, outputs))
 }
 
 fn crypto_output_to_multi_sig_xpub_info(
@@ -325,7 +317,7 @@ fn crypto_output_to_multi_sig_xpub_info(
     ret[0..4].copy_from_slice(&VERSION_XPUB);
     ret[4] = depth;
     ret[5..9].copy_from_slice(&parent_fingerprint);
-    ret[9..13].copy_from_slice(&u32::from(child_number).to_be_bytes());
+    ret[9..13].copy_from_slice(&child_number.to_be_bytes());
     ret[13..45].copy_from_slice(&chain_code);
     ret[45..78].copy_from_slice(&key);
 
@@ -471,7 +463,7 @@ fn generate_multi_sig_crypto_hd_key(
 
     let origin = CryptoKeyPath::new(
         path_components,
-        Some(master_fingerprint.clone()),
+        Some(*master_fingerprint),
         Some(bip32_extended_pub_key.depth as u32),
     );
 
@@ -491,7 +483,7 @@ fn generate_multi_sig_crypto_hd_key(
 }
 
 fn get_path_component(index: Option<u32>, hardened: bool) -> URResult<PathComponent> {
-    PathComponent::new(index, hardened).map_err(|e| URError::CborEncodeError(e))
+    PathComponent::new(index, hardened).map_err(URError::CborEncodeError)
 }
 
 #[allow(unused)]

@@ -1,12 +1,9 @@
-use core::str::FromStr;
-
 use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
 use {
-    bitcoin::bip32::{ChildNumber, DerivationPath},
-    bitcoin::secp256k1::Secp256k1,
+    bitcoin::bip32::ChildNumber,
     ur_registry::{
         crypto_hd_key::CryptoHDKey,
         crypto_key_path::{CryptoKeyPath, PathComponent},
@@ -16,11 +13,6 @@ use {
 };
 
 use crate::{common::get_path_component, ExtendedPublicKey};
-
-fn get_device_id(serial_number: &str) -> String {
-    use cryptoxide::hashing::sha256;
-    hex::encode(&sha256(&sha256(serial_number.as_bytes()))[0..20])
-}
 
 const AVAX_STANDARD_PREFIX: &str = "44'/60'/0'";
 const AVAX_X_P_PREFIX: &str = "44'/9000'/0'";
@@ -55,7 +47,7 @@ pub fn generate_crypto_multi_accounts(
             _ => {
                 return Err(URError::UrEncodeError(format!(
                     "Unknown key path: {}",
-                    ele.path.to_string()
+                    ele.path
                 )))
             }
         }
@@ -81,8 +73,8 @@ fn generate_k1_normal_key(
     let key_path = CryptoKeyPath::new(
         path.into_iter()
             .map(|v| match v {
-                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
-                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
+                ChildNumber::Normal { index } => get_path_component(Some(*index), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(*index), true),
             })
             .collect::<URResult<Vec<PathComponent>>>()?,
         Some(mfp),
@@ -96,46 +88,6 @@ fn generate_k1_normal_key(
         Some(key_path),
         None,
         Some(xpub.parent_fingerprint.to_bytes()),
-        Some("Keystone".to_string()),
-        note,
-    ))
-}
-
-fn generate_eth_ledger_live_key(
-    mfp: [u8; 4],
-    key: ExtendedPublicKey,
-    note: Option<String>,
-) -> URResult<CryptoHDKey> {
-    let xpub = bitcoin::bip32::Xpub::decode(&key.get_key())
-        .map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
-    let path = key.get_path();
-    let sub_path =
-        DerivationPath::from_str("m/0/0").map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
-    let _target_key = xpub
-        .derive_pub(&Secp256k1::new(), &sub_path)
-        .map_err(|_e| URError::UrEncodeError(_e.to_string()))?;
-    let target_path = path
-        .child(ChildNumber::Normal { index: 0 })
-        .child(ChildNumber::Normal { index: 0 });
-    let key_path = CryptoKeyPath::new(
-        target_path
-            .into_iter()
-            .map(|v| match v {
-                ChildNumber::Normal { index } => get_path_component(Some(index.clone()), false),
-                ChildNumber::Hardened { index } => get_path_component(Some(index.clone()), true),
-            })
-            .collect::<URResult<Vec<PathComponent>>>()?,
-        Some(mfp),
-        Some(xpub.depth as u32),
-    );
-    Ok(CryptoHDKey::new_extended_key(
-        Some(false),
-        _target_key.public_key.serialize().to_vec(),
-        None,
-        None,
-        Some(key_path),
-        None,
-        Some(_target_key.parent_fingerprint.to_bytes()),
         Some("Keystone".to_string()),
         note,
     ))

@@ -192,6 +192,11 @@ int8_t GuiImportPhrasePrevTile(void)
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         break;
+    case SINGLE_PHRASE_WRITE_SE:
+        if (!GuiCreateWalletNeedPassphrase()) {
+            g_importSinglePhraseTileView.currentTile--;
+        }
+        break;
     }
 
     g_importSinglePhraseTileView.currentTile--;

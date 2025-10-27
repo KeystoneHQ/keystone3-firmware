@@ -17,6 +17,7 @@ use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::extract_array;
 use crate::extract_ptr_with_type;
 use cty::c_char;
+use rand_core::OsRng;
 use structs::{DisplayMoneroOutput, DisplayMoneroUnsignedTx};
 use ur_registry::monero::xmr_keyimage::XmrKeyImage;
 use ur_registry::monero::xmr_output::XmrOutput;
@@ -196,7 +197,7 @@ pub unsafe extern "C" fn monero_generate_keyimage(
     let request = extract_ptr_with_type!(ptr, XmrOutput);
     let seed = extract_array!(seed, u8, seed_len as usize);
     let keypair = app_monero::key::generate_keypair(seed, major).unwrap();
-    match app_monero::key_images::generate_export_ur_data(keypair, request.get_payload()) {
+    match app_monero::key_images::generate_export_ur_data(keypair, request.get_payload(), OsRng) {
         Ok(data) => {
             let data = XmrKeyImage::new(data);
 

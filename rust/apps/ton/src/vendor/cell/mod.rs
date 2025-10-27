@@ -185,8 +185,7 @@ impl Cell {
         let ref_count = self.references.len();
         if ref_count != expected_refs {
             Err(TonCellError::CellParserError(format!(
-                "Cell should contain {} reference cells, actual: {}",
-                expected_refs, ref_count
+                "Cell should contain {expected_refs} reference cells, actual: {ref_count}"
             )))
         } else {
             Ok(())
@@ -207,7 +206,7 @@ impl Debug for Cell {
             t,
             self.data
                 .iter()
-                .map(|&byte| format!("{:02X}", byte))
+                .map(|&byte| format!("{byte:02X}"))
                 .collect::<Vec<_>>()
                 .join(""),
             self.bit_len,
@@ -217,7 +216,7 @@ impl Debug for Cell {
             writeln!(
                 f,
                 "    {}\n",
-                format!("{:?}", reference).replace('\n', "\n    ")
+                format!("{reference:?}").replace('\n', "\n    ")
             )?;
         }
 

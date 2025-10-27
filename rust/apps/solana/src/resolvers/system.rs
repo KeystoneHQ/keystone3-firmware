@@ -70,7 +70,7 @@ fn resolve_create_account(
 ) -> Result<SolanaDetail> {
     let method_name = "CreateAccount".to_string();
     let funding_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(
             "CreateAccount.funding_account".to_string(),
         ))?
@@ -101,10 +101,11 @@ fn resolve_create_account(
 
 fn resolve_assign(accounts: Vec<String>, owner: Pubkey) -> Result<SolanaDetail> {
     let method_name = "Assign".to_string();
-    let account = accounts.get(0).ok_or(SolanaError::AccountNotFound(format!(
-        "{}.account",
-        method_name
-    )))?;
+    let account = accounts
+        .first()
+        .ok_or(SolanaError::AccountNotFound(format!(
+            "{method_name}.account"
+        )))?;
     let new_owner = owner.to_string();
     Ok(SolanaDetail {
         common: CommonDetail {
@@ -121,17 +122,13 @@ fn resolve_assign(accounts: Vec<String>, owner: Pubkey) -> Result<SolanaDetail> 
 fn resolve_transfer(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail> {
     let method_name = "Transfer".to_string();
     let from = accounts
-        .get(0)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.from",
-            method_name
-        )))?
+        .first()
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.from")))?
         .to_string();
     let to = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.recipient",
-            method_name
+            "{method_name}.recipient"
         )))?
         .to_string();
     let value = format_amount(lamports.to_string())?;
@@ -154,17 +151,15 @@ fn resolve_create_account_with_seed(
 ) -> Result<SolanaDetail> {
     let method_name = "CreateAccountWithSeed".to_string();
     let funding_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.funding_account",
-            method_name
+            "{method_name}.funding_account"
         )))?
         .to_string();
     let new_account = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.new_account",
-            method_name
+            "{method_name}.new_account"
         )))?
         .to_string();
     let base_account = accounts.get(2).unwrap_or(&"".to_string()).to_string();
@@ -195,24 +190,21 @@ fn resolve_create_account_with_seed(
 fn resolve_advance_nonce_account(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "AdvanceNonceAccount".to_string();
     let nonce_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.nonce_account",
-            method_name
+            "{method_name}.nonce_account"
         )))?
         .to_string();
     let recent_blockhashes_sysvar = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.recent_blockhashes_sysvar",
-            method_name
+            "{method_name}.recent_blockhashes_sysvar"
         )))?
         .to_string();
     let nonce_authority_pubkey = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.nonce_authority_pubkey",
-            method_name
+            "{method_name}.nonce_authority_pubkey"
         )))?
         .to_string();
     Ok(SolanaDetail {
@@ -231,38 +223,33 @@ fn resolve_advance_nonce_account(accounts: Vec<String>) -> Result<SolanaDetail> 
 fn resolve_withdraw_nonce_account(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail> {
     let method_name = "WithdrawNonceAccount".to_string();
     let nonce_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.nonce_account",
-            method_name
+            "{method_name}.nonce_account"
         )))?
         .to_string();
     let recipient = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.recipient",
-            method_name
+            "{method_name}.recipient"
         )))?
         .to_string();
     let recent_blockhashes_sysvar = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.recent_blockhashes_sysvar",
-            method_name
+            "{method_name}.recent_blockhashes_sysvar"
         )))?
         .to_string();
     let rent_sysvar = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.rent_sysvar",
-            method_name
+            "{method_name}.rent_sysvar"
         )))?
         .to_string();
     let nonce_authority_pubkey = accounts
         .get(4)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.nonce_authority_pubkey",
-            method_name
+            "{method_name}.nonce_authority_pubkey"
         )))?
         .to_string();
     let amount = lamports.to_string();
@@ -285,24 +272,21 @@ fn resolve_withdraw_nonce_account(accounts: Vec<String>, lamports: u64) -> Resul
 fn resolve_initialize_nonce_account(accounts: Vec<String>, pubkey: Pubkey) -> Result<SolanaDetail> {
     let method_name = "InitializeNonceAccount".to_string();
     let nonce_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.nonce_account",
-            method_name
+            "{method_name}.nonce_account"
         )))?
         .to_string();
     let sysvar_recent_blockhashes = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_recent_blockhashes",
-            method_name
+            "{method_name}.sysvar_recent_blockhashes"
         )))?
         .to_string();
     let sysvar_rent = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_rent",
-            method_name
+            "{method_name}.sysvar_rent"
         )))?
         .to_string();
     let nonce_authority_pubkey = pubkey.to_string();
@@ -325,17 +309,15 @@ fn resolve_initialize_nonce_account(accounts: Vec<String>, pubkey: Pubkey) -> Re
 fn resolve_authorize_nonce_account(accounts: Vec<String>, pubkey: Pubkey) -> Result<SolanaDetail> {
     let method_name = "AuthorizeNonceAccount".to_string();
     let nonce_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.nonce_account",
-            method_name
+            "{method_name}.nonce_account"
         )))?
         .to_string();
     let old_nonce_authority_pubkey = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.old_nonce_authority_pubkey",
-            method_name
+            "{method_name}.old_nonce_authority_pubkey"
         )))?
         .to_string();
     let new_nonce_authority_pubkey = pubkey.to_string();
@@ -357,10 +339,9 @@ fn resolve_authorize_nonce_account(accounts: Vec<String>, pubkey: Pubkey) -> Res
 fn resolve_allocate(accounts: Vec<String>, space: u64) -> Result<SolanaDetail> {
     let method_name = "Allocate".to_string();
     let new_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.account",
-            method_name
+            "{method_name}.account"
         )))?
         .to_string();
     Ok(SolanaDetail {
@@ -384,17 +365,15 @@ fn resolve_allocate_with_seed(
 ) -> Result<SolanaDetail> {
     let method_name = "AllocateWithSeed".to_string();
     let allocated_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.allocated_account",
-            method_name
+            "{method_name}.allocated_account"
         )))?
         .to_string();
     let base_account = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.base_account",
-            method_name
+            "{method_name}.base_account"
         )))?
         .to_string();
     let owner = owner.to_string();
@@ -424,17 +403,15 @@ fn resolve_assign_with_seed(
 ) -> Result<SolanaDetail> {
     let method_name = "AssignWithSeed".to_string();
     let assigned_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.assigned_account",
-            method_name
+            "{method_name}.assigned_account"
         )))?
         .to_string();
     let base_account = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.base_account",
-            method_name
+            "{method_name}.base_account"
         )))?
         .to_string();
     Ok(SolanaDetail {
@@ -460,24 +437,19 @@ fn resolve_transfer_with_seed(
 ) -> Result<SolanaDetail> {
     let method_name = "TransferWithSeed".to_string();
     let from = accounts
-        .get(0)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.from",
-            method_name
-        )))?
+        .first()
+        .ok_or(SolanaError::AccountNotFound(format!("{method_name}.from")))?
         .to_string();
     let from_base_pubkey = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.from_base_pubkey",
-            method_name
+            "{method_name}.from_base_pubkey"
         )))?
         .to_string();
     let recipient = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.recipient",
-            method_name
+            "{method_name}.recipient"
         )))?
         .to_string();
     let amount = format_amount(lamports.to_string())?;
@@ -501,7 +473,7 @@ fn resolve_transfer_with_seed(
 fn resolve_upgrade_nonce_account(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "UpgradeNonceAccount".to_string();
     let nonce_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(
             "UpgradeNonceAccount.nonce_account".to_string(),
         ))?

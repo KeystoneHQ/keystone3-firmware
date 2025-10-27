@@ -22,7 +22,7 @@ impl WrappedTxData {
         let signing_pubkey = tx_data["SigningPubKey"].as_str().unwrap_or("").to_string();
         if let Some(tag) = tx_data["DestinationTag"].as_i64() {
             if !(0..=0xffffffff).contains(&tag) {
-                return Err(XRPError::SignFailure(format!("invalid tag {:?}", tag)));
+                return Err(XRPError::SignFailure(format!("invalid tag {tag:?}")));
             }
         }
         let serialized_tx: String = rippled_binary_codec::serialize::serialize_tx(

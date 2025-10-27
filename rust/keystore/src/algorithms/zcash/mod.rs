@@ -24,8 +24,7 @@ pub fn derive_ufvk<P: consensus::Parameters>(
         .map_err(|e| KeystoreError::DerivationError(e.to_string()))?;
     if account_path.len() != 3 {
         return Err(KeystoreError::DerivationError(format!(
-            "invalid account path: {}",
-            account_path
+            "invalid account path: {account_path}"
         )));
     }
     //should be hardened(32) hardened(133) hardened(account_id)
@@ -46,8 +45,7 @@ pub fn derive_ufvk<P: consensus::Parameters>(
             Ok(ufvk.encode(params))
         }
         _ => Err(KeystoreError::DerivationError(format!(
-            "invalid account path: {}",
-            account_path
+            "invalid account path: {account_path}"
         ))),
     }
 }
@@ -80,13 +78,12 @@ pub fn sign_message_orchard<R: RngCore + CryptoRng>(
 
         action
             .sign(sighash, &osak, rng)
-            .map_err(|e| KeystoreError::ZcashOrchardSign(format!("{:?}", e)))
+            .map_err(|e| KeystoreError::ZcashOrchardSign(format!("{e:?}")))
     } else {
         // Keystone only generates UFVKs at the above path; ignore all other signature
         // requests.
         Err(KeystoreError::ZcashOrchardSign(format!(
-            "invalid orchard account path: {:?}",
-            path
+            "invalid orchard account path: {path:?}"
         )))
     }
 }
@@ -100,7 +97,7 @@ mod tests {
         zip32::AccountId,
     };
 
-    use zcash_vendor::orchard::keys::{FullViewingKey, SpendAuthorizingKey, SpendingKey};
+    use zcash_vendor::orchard::keys::{SpendAuthorizingKey, SpendingKey};
     use zcash_vendor::pasta_curves::group::ff::PrimeField;
 
     use hex;
@@ -108,7 +105,6 @@ mod tests {
     use rand_chacha::ChaCha8Rng;
 
     extern crate std;
-    use std::println;
 
     #[test]
     fn test_ufvk_generation_and_encoding() {

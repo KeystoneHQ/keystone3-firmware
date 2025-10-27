@@ -111,7 +111,7 @@ pub fn get_share_key(private_key: &[u8], pubkey: &[u8]) -> Result<[u8; 32]> {
     let pk = PublicKey::from_slice(pubkey)
         .map_err(|e| KeystoreError::InvalidDataError(e.to_string()))?;
     let shared_secret1 = SharedSecret::new(&pk, &sk);
-    share_key.copy_from_slice(&shared_secret1.as_ref());
+    share_key.copy_from_slice(shared_secret1.as_ref());
     Ok(share_key)
 }
 

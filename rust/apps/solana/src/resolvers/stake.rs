@@ -8,7 +8,6 @@ use crate::parser::detail::{
     ProgramDetailStakeSetLockup, ProgramDetailStakeSetLockupChecked, ProgramDetailStakeSplit,
     ProgramDetailStakeWithdraw, SolanaDetail,
 };
-use crate::solana_lib::solana_program::clock::{Epoch, UnixTimestamp};
 use crate::solana_lib::solana_program::pubkey::Pubkey;
 use crate::solana_lib::solana_program::stake::instruction::{
     AuthorizeCheckedWithSeedArgs, AuthorizeWithSeedArgs, LockupArgs, LockupCheckedArgs,
@@ -72,17 +71,15 @@ fn resolve_initialize(
 ) -> Result<SolanaDetail> {
     let method_name = "Initialize".to_string();
     let stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_account",
-            method_name
+            "{method_name}.stake_account"
         )))?
         .to_string();
     let sysvar_rent = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_rent",
-            method_name
+            "{method_name}.sysvar_rent"
         )))?
         .to_string();
     let staker = authorized.staker.to_string();
@@ -114,24 +111,22 @@ fn resolve_authorize(
 ) -> Result<SolanaDetail> {
     let method_name = "Authorize".to_string();
     let stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_account",
-            method_name
+            "{method_name}.stake_account"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let old_authority_pubkey = accounts
         .get(2)
-        .ok_or(SolanaError::AccountNotFound(format!(
-            "Authorize.old_authority_pubkey"
-        )))?
+        .ok_or(SolanaError::AccountNotFound(
+            "Authorize.old_authority_pubkey".to_string(),
+        ))?
         .to_string();
     let lockup_authority_pubkey = accounts.get(3).unwrap_or(&"".to_string()).to_string();
     let new_authority_pubkey = pubkey.to_string();
@@ -159,45 +154,39 @@ fn resolve_authorize(
 fn resolve_delegate_stake(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "DelegateStake".to_string();
     let stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_account",
-            method_name
+            "{method_name}.stake_account"
         )))?
         .to_string();
     let vote_account = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let sysvar_stake_history = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_stake_history",
-            method_name
+            "{method_name}.sysvar_stake_history"
         )))?
         .to_string();
     let config_account = accounts
         .get(4)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.config_account",
-            method_name
+            "{method_name}.config_account"
         )))?
         .to_string();
     let stake_authority_pubkey = accounts
         .get(5)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_authority_pubkey",
-            method_name
+            "{method_name}.stake_authority_pubkey"
         )))?
         .to_string();
     Ok(SolanaDetail {
@@ -219,24 +208,21 @@ fn resolve_delegate_stake(accounts: Vec<String>) -> Result<SolanaDetail> {
 fn resolve_split(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail> {
     let method_name = "Split".to_string();
     let stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_account",
-            method_name
+            "{method_name}.stake_account"
         )))?
         .to_string();
     let target_account = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.target_account",
-            method_name
+            "{method_name}.target_account"
         )))?
         .to_string();
     let stake_authority_pubkey = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_authority_pubkey",
-            method_name
+            "{method_name}.stake_authority_pubkey"
         )))?
         .to_string();
     let amount = lamports.to_string();
@@ -257,38 +243,33 @@ fn resolve_split(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail> {
 fn resolve_withdraw(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail> {
     let method_name = "Withdraw".to_string();
     let stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_account",
-            method_name
+            "{method_name}.stake_account"
         )))?
         .to_string();
     let recipient = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.recipient",
-            method_name
+            "{method_name}.recipient"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let sysvar_stake_history = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_stake_history",
-            method_name
+            "{method_name}.sysvar_stake_history"
         )))?
         .to_string();
     let withdraw_authority_pubkey = accounts
         .get(4)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.withdraw_authority_pubkey",
-            method_name
+            "{method_name}.withdraw_authority_pubkey"
         )))?
         .to_string();
     let stake_authority_pubkey = accounts.get(5).unwrap_or(&"".to_string()).to_string();
@@ -313,24 +294,21 @@ fn resolve_withdraw(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail
 fn resolve_deactivate(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "Deactivate".to_string();
     let delegated_stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.delegated_stake_account",
-            method_name
+            "{method_name}.delegated_stake_account"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let stake_authority_pubkey = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_authority_pubkey",
-            method_name
+            "{method_name}.stake_authority_pubkey"
         )))?
         .to_string();
     Ok(SolanaDetail {
@@ -349,21 +327,19 @@ fn resolve_deactivate(accounts: Vec<String>) -> Result<SolanaDetail> {
 fn resolve_set_lockup(accounts: Vec<String>, lockup: LockupArgs) -> Result<SolanaDetail> {
     let method_name = "SetLockup".to_string();
     let stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_account",
-            method_name
+            "{method_name}.stake_account"
         )))?
         .to_string();
     let lockup_authority_pubkey = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.lockup_authority_pubkey",
-            method_name
+            "{method_name}.lockup_authority_pubkey"
         )))?
         .to_string();
-    let unix_timestamp = lockup.unix_timestamp.unwrap_or(UnixTimestamp::default());
-    let epoch = lockup.epoch.unwrap_or(Epoch::default());
+    let unix_timestamp = lockup.unix_timestamp.unwrap_or_default();
+    let epoch = lockup.epoch.unwrap_or_default();
     let custodian = lockup
         .custodian
         .map_or_else(|| "".to_string(), |v| v.to_string());
@@ -385,38 +361,33 @@ fn resolve_set_lockup(accounts: Vec<String>, lockup: LockupArgs) -> Result<Solan
 fn resolve_merge(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "Merge".to_string();
     let destination_stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.destination_stake_account",
-            method_name
+            "{method_name}.destination_stake_account"
         )))?
         .to_string();
     let source_stake_account = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.source_stake_account",
-            method_name
+            "{method_name}.source_stake_account"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let sysvar_stake_history = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_stake_history",
-            method_name
+            "{method_name}.sysvar_stake_history"
         )))?
         .to_string();
     let stake_authority_pubkey = accounts
         .get(4)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_authority_pubkey",
-            method_name
+            "{method_name}.stake_authority_pubkey"
         )))?
         .to_string();
     Ok(SolanaDetail {
@@ -440,24 +411,21 @@ fn resolve_authorize_with_seed(
 ) -> Result<SolanaDetail> {
     let method_name = "AuthorizeWithSeed".to_string();
     let stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_account",
-            method_name
+            "{method_name}.stake_account"
         )))?
         .to_string();
     let old_base_pubkey = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.old_base_pubkey",
-            method_name
+            "{method_name}.old_base_pubkey"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let lockup_authority_pubkey = accounts.get(3).unwrap_or(&"".to_string()).to_string();
@@ -490,31 +458,27 @@ fn resolve_authorize_with_seed(
 fn resolve_initialize_checked(accounts: Vec<String>) -> Result<SolanaDetail> {
     let method_name = "InitializeChecked".to_string();
     let stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_account",
-            method_name
+            "{method_name}.stake_account"
         )))?
         .to_string();
     let sysvar_rent = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_rent",
-            method_name
+            "{method_name}.sysvar_rent"
         )))?
         .to_string();
     let stake_authority_pubkey = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_authority_pubkey",
-            method_name
+            "{method_name}.stake_authority_pubkey"
         )))?
         .to_string();
     let withdraw_authority_pubkey = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.withdraw_authority_pubkey",
-            method_name
+            "{method_name}.withdraw_authority_pubkey"
         )))?
         .to_string();
     Ok(SolanaDetail {
@@ -537,31 +501,27 @@ fn resolve_authorize_checked(
 ) -> Result<SolanaDetail> {
     let method_name = "AuthorizeChecked".to_string();
     let stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_account",
-            method_name
+            "{method_name}.stake_account"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let old_authority_pubkey = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.old_authority_pubkey",
-            method_name
+            "{method_name}.old_authority_pubkey"
         )))?
         .to_string();
     let new_authority_pubkey = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.new_authority_pubkey",
-            method_name
+            "{method_name}.new_authority_pubkey"
         )))?
         .to_string();
     let lockup_authority_pubkey = accounts.get(4).unwrap_or(&"".to_string()).to_string();
@@ -592,31 +552,27 @@ fn resolve_authorize_checked_with_seed(
 ) -> Result<SolanaDetail> {
     let method_name = "AuthorizeCheckedWithSeed".to_string();
     let stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_account",
-            method_name
+            "{method_name}.stake_account"
         )))?
         .to_string();
     let old_base_pubkey = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.old_base_pubkey",
-            method_name
+            "{method_name}.old_base_pubkey"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let new_authority_pubkey = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.new_authority_pubkey",
-            method_name
+            "{method_name}.new_authority_pubkey"
         )))?
         .to_string();
     let lockup_authority = accounts.get(4).unwrap_or(&"".to_string()).to_string();
@@ -653,23 +609,21 @@ fn resolve_set_lockup_checked(
 ) -> Result<SolanaDetail> {
     let method_name = "SetLockupChecked".to_string();
     let stake_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.stake_account",
-            method_name
+            "{method_name}.stake_account"
         )))?
         .to_string();
     let lockup_authority_pubkey = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.authority_pubkey",
-            method_name
+            "{method_name}.authority_pubkey"
         )))?
         .to_string();
     let new_lockup_authority_pubkey = accounts.get(2).unwrap_or(&"".to_string()).to_string();
 
-    let timestamp = args.unix_timestamp.unwrap_or(UnixTimestamp::default());
-    let epoch = args.epoch.unwrap_or(Epoch::default());
+    let timestamp = args.unix_timestamp.unwrap_or_default();
+    let epoch = args.epoch.unwrap_or_default();
     Ok(SolanaDetail {
         common: CommonDetail {
             method: method_name.to_string(),

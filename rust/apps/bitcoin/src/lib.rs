@@ -20,7 +20,6 @@ use bitcoin::secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use bitcoin::secp256k1::Message;
 use bitcoin::sign_message;
 use either::{Left, Right};
-use hex;
 pub use transactions::legacy::sign_legacy_tx;
 pub use transactions::parsed_tx;
 pub use transactions::psbt::parsed_psbt;
@@ -123,13 +122,13 @@ pub fn check_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) ->
 }
 
 fn deserialize_psbt(psbt_hex: Vec<u8>) -> Result<Psbt> {
-    Psbt::deserialize(&psbt_hex).map_err(|e| BitcoinError::InvalidPsbt(format!("{}", e)))
+    Psbt::deserialize(&psbt_hex).map_err(|e| BitcoinError::InvalidPsbt(e.to_string()))
 }
 
 #[cfg(test)]
 mod test {
     use alloc::vec::Vec;
-    use core::fmt::Error;
+
     use core::str::FromStr;
 
     use app_utils::keystone;

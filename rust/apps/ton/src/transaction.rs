@@ -60,11 +60,11 @@ mod tests {
         let body = "te6cckEBAwEA7AABHCmpoxdmOZW/AAAABgADAQHTYgAIqFqMWTE1aoxM/MRD/EEluAMqKyKvv/FAn4CTTNIDD6B4KbgAAAAAAAAAAAAAAAAAAA+KfqUACSD7UyTMBDtxsAgA7zuZAqJxsqAciTilI8/iTnGEeq62piAAHtRKd6wOcJwQOThwAwIA1yWThWGAApWA5YrFIkZa+bJ7vYJARri8uevEBP6Td4tUTty6RJsGAh5xAC1IywyQwixSOU8pezOZDC9rv2xCV4CGJzOWH6RX8BTsMAK2ELwgIrsrweR+b2yZuUsWugqtisQzBm6gPg1ubkuzBkk1zw8=";
         let result = STANDARD.decode(body).unwrap();
         let result = BagOfCells::parse(&result).unwrap();
-        println!("{:?}", result);
+        println!("{result:?}");
         result.single_root().unwrap().parse_fully(|parser| {
             let address = parser.load_address().unwrap();
             println!("{}", parser.remaining_bits());
-            println!("{}", address);
+            println!("{address}");
             Ok(())
         });
         // let result = super::parse_transaction(&serial);
@@ -77,9 +77,9 @@ mod tests {
         let body = "te6cckEBAgEARwABHCmpoxdmOz6lAAAACAADAQBoQgArFnMvHAX9tOjTp4/RDd3vP2Bn8xG+U5MTuKRKUE1NoqHc1lAAAAAAAAAAAAAAAAAAAHBy4G8=";
         let serial = STANDARD.decode(body).unwrap();
         let tx = parse_transaction(&serial).unwrap();
-        println!("{:?}", tx);
+        println!("{tx:?}");
         let tx_json = tx.to_json().unwrap();
-        println!("{}", tx_json);
+        println!("{tx_json}");
     }
 
     #[test]
@@ -112,7 +112,7 @@ mod tests {
         //true destination UQBWLOZeOAv7adGnTx-iG7vefsDP5iN8pyYncUiUoJqbRdx9
         //transaction to: EQASODeyhIBbcGlrLvpUJiYjOHRwAZHCBGf1HV5tjKvZVsJb
         //contract destination: EQBWLOZeOAv7adGnTx+iG7vefsDP5iN8pyYncUiUoJqbRYG4
-        println!("{:?}", tx);
+        println!("{tx:?}");
     }
 
     // #[test]
@@ -130,7 +130,7 @@ mod tests {
         let serial = "b5ee9c724102050100019700011c29a9a31766611df6000000140003010166420013587ccf19c39b1ca51c29f0253ac98d03b8e5ccfc64c3ac2f21c59c20ee8b65987a1200000000000000000000000000010201fe000000004b657973746f6e652068617264776172652077616c6c6574206f666665727320756e6265617461626c65207365637572697479207769746820332050434920736563757269747920636869707320746f206d616e61676520426974636f696e20616e64206f746865722063727970746f20617373657473206f66660301fe6c696e652e4b657973746f6e65206f666665727320332077616c6c6574732c207768696368206d65616e7320796f752063616e206d616e616765206d756c7469706c65206163636f756e74732073657061726174656c79206f6e206f6e65206465766963652e4b657973746f6e65206f666665727320332077616c6c6574730400942c207768696368206d65616e7320796f752063616e206d616e616765206d756c7469706c65206163636f756e74732073657061726174656c79206f6e206f6e65206465766963652e0a0ac04eabc7";
         let serial = hex::decode(serial).unwrap();
         let tx = parse_transaction(&serial).unwrap();
-        println!("{:?}", tx);
+        println!("{tx:?}");
     }
 
     #[test]

@@ -19,7 +19,7 @@ struct Signature {
 impl Read<Signature> for Signature {
     fn read(raw: &mut Vec<u8>) -> Result<Signature> {
         if raw.len() < 64 {
-            return Err(SolanaError::InvalidData(format!("signature")));
+            return Err(SolanaError::InvalidData("signature".to_string()));
         }
         Ok(Signature {
             value: raw.splice(0..64, []).collect(),
@@ -35,7 +35,7 @@ pub struct Account {
 impl Read<Account> for Account {
     fn read(raw: &mut Vec<u8>) -> Result<Account> {
         if raw.len() < 32 {
-            return Err(SolanaError::InvalidData(format!("account")));
+            return Err(SolanaError::InvalidData("account".to_string()));
         }
         Ok(Account {
             value: raw.splice(0..32, []).collect(),
@@ -51,7 +51,7 @@ pub struct BlockHash {
 impl Read<BlockHash> for BlockHash {
     fn read(raw: &mut Vec<u8>) -> Result<BlockHash> {
         if raw.len() < 32 {
-            return Err(SolanaError::InvalidData(format!("blockhash")));
+            return Err(SolanaError::InvalidData("blockhash".to_string()));
         }
         Ok(BlockHash {
             value: raw.splice(0..32, []).collect(),
@@ -71,7 +71,7 @@ pub struct Message {
 
 impl Read<Message> for Message {
     fn read(raw: &mut Vec<u8>) -> Result<Message> {
-        let first_byte = raw.get(0);
+        let first_byte = raw.first();
         let is_versioned = match first_byte {
             Some(0x80) => true,
             Some(_) => false,

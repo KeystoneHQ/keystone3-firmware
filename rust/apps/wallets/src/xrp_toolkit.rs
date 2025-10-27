@@ -16,7 +16,7 @@ pub fn generate_sync_ur(hd_path: &str, root_x_pub: &str, root_path: &str) -> URR
     let sub_path = hd_path.strip_prefix(&root_path).unwrap();
     if let (Ok(address), Ok(pubkey)) = (
         get_address(hd_path, root_x_pub, root_path.as_str()),
-        derive_public_key(&root_x_pub.to_string(), &format!("m/{}", sub_path)),
+        derive_public_key(&root_x_pub.to_string(), &format!("m/{sub_path}")),
     ) {
         let v: Value = json!({
             "address": address,

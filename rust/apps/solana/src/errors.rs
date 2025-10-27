@@ -33,7 +33,7 @@ pub type Result<T> = core::result::Result<T, SolanaError>;
 
 impl From<Base58Error> for SolanaError {
     fn from(value: Base58Error) -> Self {
-        Self::AddressError(format!("base58Error: {}", value.to_string()))
+        Self::AddressError(format!("base58Error: {value}"))
     }
 }
 
@@ -45,7 +45,7 @@ impl From<KeystoreError> for SolanaError {
 
 impl From<hex::FromHexError> for SolanaError {
     fn from(value: hex::FromHexError) -> Self {
-        Self::InvalidData(format!("hex operation failed {}", value))
+        Self::InvalidData(format!("hex operation failed {value}"))
     }
 }
 

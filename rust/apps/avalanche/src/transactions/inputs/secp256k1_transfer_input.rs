@@ -2,8 +2,8 @@ use crate::errors::{AvaxError, Result};
 use crate::transactions::transferable::InputTrait;
 use alloc::string::ToString;
 use alloc::vec::Vec;
-use bytes::{Buf, BufMut, Bytes, BytesMut};
-use core::{convert::TryFrom, fmt, str::FromStr};
+use bytes::{Buf, Bytes};
+use core::convert::TryFrom;
 
 #[derive(Debug, Clone)]
 pub struct SECP256K1TransferInput {
@@ -51,8 +51,6 @@ impl TryFrom<Bytes> for SECP256K1TransferInput {
 #[cfg(test)]
 mod tests {
     use super::*;
-    extern crate std;
-    use std::println;
 
     #[test]
     fn test_secp256k1_transfer_input_try_from() {

@@ -29,7 +29,7 @@ impl TryFrom<DataItem> for AOTransferTransaction {
         let recipient = tags.iter().find(|i| i.get_name().eq("Recipient"));
         let quantity = tags.iter().find(|i| i.get_name().eq("Quantity"));
         let token_id = value.get_target();
-        let mut rest_tags = tags.iter().filter(|v| {
+        let rest_tags = tags.iter().filter(|v| {
             v.get_name().ne("DataProtocol")
                 && v.get_name().ne("Action")
                 && v.get_name().ne("Recipient")
@@ -43,7 +43,7 @@ impl TryFrom<DataItem> for AOTransferTransaction {
             let quantity = quantity.get_value();
             let mut tags = vec![];
 
-            while let Some(tag) = rest_tags.next() {
+            for tag in rest_tags {
                 tags.push(tag.clone());
             }
 

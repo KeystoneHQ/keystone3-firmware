@@ -235,7 +235,7 @@ impl WrappedTron {
             Token::Uint(value),
         ];
         fun.encode_input(&tokens)
-            .map_err(|_| TronError::InvalidRawTxCryptoBytes(format!("invalid token {:?}", tokens)))
+            .map_err(|_| TronError::InvalidRawTxCryptoBytes(format!("invalid token {tokens:?}")))
     }
 
     fn generate_trc20_tx(tx_data: &protoc::TronTx) -> Result<Transaction> {

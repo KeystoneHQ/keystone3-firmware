@@ -54,31 +54,27 @@ pub fn resolve(instruction: VoteInstruction, accounts: Vec<String>) -> Result<So
 fn resolve_initialize_account(accounts: Vec<String>, vote_init: VoteInit) -> Result<SolanaDetail> {
     let method_name = "InitializeAccount".to_string();
     let account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.account",
-            method_name
+            "{method_name}.account"
         )))?
         .to_string();
     let sysvar_rent = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_rent",
-            method_name
+            "{method_name}.sysvar_rent"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let new_validator_identity = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.new_validator_identity",
-            method_name
+            "{method_name}.new_validator_identity"
         )))?
         .to_string();
     let node_pubkey = vote_init.node_pubkey.to_string();
@@ -110,24 +106,21 @@ fn resolve_authorize(
 ) -> Result<SolanaDetail> {
     let method_name = "Authorize".to_string();
     let vote_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let old_authority_pubkey = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.old_authority_pubkey",
-            method_name
+            "{method_name}.old_authority_pubkey"
         )))?
         .to_string();
     let authority_type = match vote_authority {
@@ -154,31 +147,27 @@ fn resolve_vote(accounts: Vec<String>, vote: Vote) -> Result<SolanaDetail> {
     let method_name = "Vote".to_string();
 
     let vote_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let sysvar_slot_hashes = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_slot_hashes",
-            method_name
+            "{method_name}.sysvar_slot_hashes"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let vote_authority_pubkey = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_authority_pubkey",
-            method_name
+            "{method_name}.vote_authority_pubkey"
         )))?
         .to_string();
     let vote_slots = vote
@@ -211,24 +200,21 @@ fn resolve_withdraw(accounts: Vec<String>, lamports: u64) -> Result<SolanaDetail
     let method_name = "Withdraw";
 
     let vote_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let recipient = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.recipient",
-            method_name
+            "{method_name}.recipient"
         )))?
         .to_string();
     let withdraw_authority_pubkey = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.withdraw_authority_pubkey",
-            method_name
+            "{method_name}.withdraw_authority_pubkey"
         )))?
         .to_string();
     let amount = lamports.to_string();
@@ -250,24 +236,21 @@ fn resolve_update_validator_identity(accounts: Vec<String>) -> Result<SolanaDeta
     let method_name = "UpdateValidatorIdentity".to_string();
 
     let vote_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let new_validator_identity = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.new_validator_identity",
-            method_name
+            "{method_name}.new_validator_identity"
         )))?
         .to_string();
     let withdraw_authority_pubkey = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.withdraw_authority_pubkey",
-            method_name
+            "{method_name}.withdraw_authority_pubkey"
         )))?
         .to_string();
     Ok(SolanaDetail {
@@ -289,17 +272,15 @@ fn resolve_update_commission(accounts: Vec<String>, new_commission: u8) -> Resul
     let method_name = "UpdateCommission".to_string();
 
     let vote_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let withdraw_authority_pubkey = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.withdraw_authority_pubkey",
-            method_name
+            "{method_name}.withdraw_authority_pubkey"
         )))?
         .to_string();
     Ok(SolanaDetail {
@@ -323,31 +304,27 @@ fn resolve_vote_switch(
     let method_name = "VoteSwitch".to_string();
 
     let vote_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let sysvar_slot_hashes = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_slot_hashes",
-            method_name
+            "{method_name}.sysvar_slot_hashes"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let vote_authority_pubkey = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_authority_pubkey",
-            method_name
+            "{method_name}.vote_authority_pubkey"
         )))?
         .to_string();
     let vote_slots = vote
@@ -385,31 +362,27 @@ fn resolve_authorize_checked(
     let method_name = "AuthorizeChecked".to_string();
 
     let vote_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let old_authority_pubkey = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.old_authority_pubkey",
-            method_name
+            "{method_name}.old_authority_pubkey"
         )))?
         .to_string();
     let new_authority_pubkey = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.new_authority_pubkey",
-            method_name
+            "{method_name}.new_authority_pubkey"
         )))?
         .to_string();
     let authority_type = match vote_authority {
@@ -439,17 +412,15 @@ fn resolve_update_vote_state(
     let method_name = "UpdateVoteState".to_string();
 
     let vote_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let vote_authority_pubkey = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_authority_pubkey",
-            method_name
+            "{method_name}.vote_authority_pubkey"
         )))?
         .to_string();
 
@@ -490,17 +461,15 @@ fn resolve_update_vote_state_switch(
     let method_name = "UpdateVoteStateSwitch".to_string();
 
     let vote_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let vote_authority_pubkey = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_authority_pubkey",
-            method_name
+            "{method_name}.vote_authority_pubkey"
         )))?
         .to_string();
     let lockouts = state
@@ -541,24 +510,21 @@ fn resolve_authorize_with_seed(
     let method_name = "AuthorizeWithSeed".to_string();
 
     let vote_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let old_base_pubkey = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.old_base_pubkey",
-            method_name
+            "{method_name}.old_base_pubkey"
         )))?
         .to_string();
 
@@ -594,31 +560,27 @@ fn resolve_authorize_checked_with_seed(
     let method_name = "AuthorizeCheckedWithSeed".to_string();
 
     let vote_account = accounts
-        .get(0)
+        .first()
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.vote_account",
-            method_name
+            "{method_name}.vote_account"
         )))?
         .to_string();
     let sysvar_clock = accounts
         .get(1)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.sysvar_clock",
-            method_name
+            "{method_name}.sysvar_clock"
         )))?
         .to_string();
     let old_base_pubkey = accounts
         .get(2)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.old_base_pubkey",
-            method_name
+            "{method_name}.old_base_pubkey"
         )))?
         .to_string();
     let new_authority_pubkey = accounts
         .get(3)
         .ok_or(SolanaError::AccountNotFound(format!(
-            "{}.new_authority_pubkey",
-            method_name
+            "{method_name}.new_authority_pubkey"
         )))?
         .to_string();
 

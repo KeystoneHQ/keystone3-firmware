@@ -22,13 +22,13 @@ pub type Result<T> = core::result::Result<T, SuiError>;
 
 impl From<hex::FromHexError> for SuiError {
     fn from(value: hex::FromHexError) -> Self {
-        Self::InvalidData(format!("hex operation failed {}", value))
+        Self::InvalidData(format!("hex operation failed {value}"))
     }
 }
 
 impl From<serde_json::Error> for SuiError {
     fn from(value: serde_json::Error) -> Self {
-        Self::InvalidData(format!("serde_json operation failed {}", value))
+        Self::InvalidData(format!("serde_json operation failed {value}"))
     }
 }
 

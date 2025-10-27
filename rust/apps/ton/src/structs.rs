@@ -49,7 +49,7 @@ impl TryFrom<&SigningMessage> for TonTransaction {
     type Error = TonError;
 
     fn try_from(signing_message: &SigningMessage) -> Result<Self> {
-        if signing_message.messages.first().is_none() {
+        if signing_message.messages.is_empty() {
             return Err(TonError::InvalidTransaction(
                 "transaction does not contain transfer info".to_string(),
             ));

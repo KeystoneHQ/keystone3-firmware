@@ -13,27 +13,29 @@ static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
+static bool g_isSignMessageHash = false;
 
 void GuiSetIotaUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
+    g_isSignMessageHash = false;
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                   \
     if (result != NULL)                                                                                                   \
     {                                                                                                                     \
-        free_TransactionParseResult_DisplayIotaIntentData((PtrT_TransactionParseResult_DisplayIotaIntentData)result); \
+        if (g_isSignMessageHash)                                                                                          \
+        {                                                                                                                 \
+            free_TransactionParseResult_DisplayIotaSignMessageHash((PtrT_TransactionParseResult_DisplayIotaSignMessageHash)result);                                     \
+        } else                                                                                                            \
+        {                                                                                                                 \
+            free_TransactionParseResult_DisplayIotaIntentData((PtrT_TransactionParseResult_DisplayIotaIntentData)result); \
+        }                                                                                                                 \
         result = NULL;                                                                                                    \
-    }
+    }                                                                                                                     \
 
-#define CHECK_FREE_PARSE_RESULT_SIGN_MESSAGE_HASH(result)                                                                                   \
-    if (result != NULL)                                                                                                   \
-    {                                                                                                                     \
-        free_DisplayIotaSignMessageHash((PtrT_DisplayIotaSignMessageHash)result); \
-        result = NULL;                                                                                                    \
-    }
 
 void *GuiGetIotaData(void)
 {
@@ -54,6 +56,7 @@ void *GuiGetIotaSignMessageHashData(void)
     do {
         PtrT_TransactionParseResult_DisplayIotaSignMessageHash parseResult = iota_parse_sign_message_hash(data);
         CHECK_CHAIN_BREAK(parseResult);
+        g_isSignMessageHash = true;
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
@@ -81,7 +84,6 @@ void FreeIotaMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-    CHECK_FREE_PARSE_RESULT_SIGN_MESSAGE_HASH(g_parseResult);
 }
 
 UREncodeResult *GuiGetIotaSignQrCodeData(void)

@@ -2,11 +2,8 @@ use crate::errors::{MoneroError, Result};
 use crate::key::{generate_key_image_from_priavte_key, KeyPair, PrivateKey, PublicKey};
 use crate::outputs::{ExportedTransferDetail, ExportedTransferDetails};
 use crate::utils::{
-    constants::*,
-    decrypt_data_with_pvk, encrypt_data_with_pvk,
-    hash::{hash_to_scalar, keccak256},
-    sign::generate_ring_signature,
-    varinteger::*,
+    constants::*, decrypt_data_with_pvk, encrypt_data_with_pvk, hash::hash_to_scalar,
+    sign::generate_ring_signature, varinteger::*,
 };
 use alloc::string::{String, ToString};
 use alloc::vec;
@@ -16,7 +13,6 @@ use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::EdwardsPoint;
 use hex;
 use monero_serai::generators::hash_to_point;
-use rand_core::SeedableRng;
 use rand_core::{CryptoRng, RngCore};
 
 #[derive(Debug, Clone, Copy)]
@@ -243,7 +239,7 @@ impl ExportedTransferDetail {
     pub fn key_image<R: RngCore + CryptoRng>(
         &self,
         keypair: &KeyPair,
-        rng: R,
+        mut rng: R,
     ) -> KeyImageAndSignature {
         generate_key_image(
             keypair,
@@ -289,7 +285,11 @@ impl ExportedTransferDetail {
     }
 }
 
-pub fn generate_export_ur_data(keypair: KeyPair, request_data: Vec<u8>) -> Result<Vec<u8>> {
+pub fn generate_export_ur_data<R: RngCore + CryptoRng>(
+    keypair: KeyPair,
+    request_data: Vec<u8>,
+    mut rng: R,
+) -> Result<Vec<u8>> {
     let decrypted_data = decrypt_data_with_pvk(
         keypair.view.to_bytes().try_into().unwrap(),
         request_data.clone(),
@@ -306,8 +306,6 @@ pub fn generate_export_ur_data(keypair: KeyPair, request_data: Vec<u8>) -> Resul
     let outputs = ExportedTransferDetails::from_bytes(&decrypted_data.data)?;
 
     let mut key_images: KeyImages = KeyImages(vec![]);
-    let rng_seed = keccak256(request_data.as_slice());
-    let mut rng = rand_chacha::ChaCha20Rng::from_seed(rng_seed.try_into().unwrap());
     for output in outputs.details.iter() {
         key_images
             .0
@@ -318,11 +316,14 @@ pub fn generate_export_ur_data(keypair: KeyPair, request_data: Vec<u8>) -> Resul
         keypair,
         key_images.to_bytes(),
         KEY_IMAGE_EXPORT_MAGIC,
+        &mut rng,
     ))
 }
 
 #[cfg(test)]
 mod tests {
+    use rand_core::SeedableRng;
+
     use super::*;
 
     #[test]
@@ -387,6 +388,8 @@ mod tests {
 
     #[test]
     fn test_build_key_images_response() {
+        let rng_seed = [0; 32];
+        let rng = rand_chacha::ChaCha20Rng::from_seed(rng_seed.try_into().unwrap());
         let data = hex::decode("4d6f6e65726f206f7574707574206578706f727404a66c8ac44d24aefcdc62411394362a9ca0a5622a0f9be2ea6af704e9ffa43d53a139338aa1ae8b86f8f2c4cef08bed7f059f8ea7adc6760e894acd4f7d67c5b4e60e4fbd16a9f5ba34196b42899a8a1bed460e12d37f6a9e9e57305ab2d227a0ee2142d18444e396e60ad70f8cc8d22f6195391ed8e770755f64dacf9768a34946e1094692ec12dc2dc4430f").unwrap();
 
         let sec_s_key = PrivateKey::from_bytes(
@@ -400,9 +403,9 @@ mod tests {
         let keypair = crate::key::KeyPair::new(sec_v_key.clone(), sec_s_key.clone());
 
         let key_images_export_data =
-            generate_export_ur_data(keypair.clone(), data.clone()).unwrap();
+            generate_export_ur_data(keypair.clone(), data.clone(), rng).unwrap();
 
-        assert_eq!(hex::encode(key_images_export_data), "4d6f6e65726f206b657920696d616765206578706f727403a7f77b9eb360d066d49f2eaa597fe16862b5c1c90eba00af226a1e6c43b774b2b468994d6ff7ee2a7d829812c2d6adedcb9131133f043ff98223531f2b721ff7c1468885baea1a7acd4d6c929ea8ce07161c7f443e9e6ed19677c6c6f53185a50a0418f14ce26d7988c2190e09a04809346d6d7aabdfe929ce88bed228531a44d4c9f1ee2826dcd2f4d78900");
+        assert_eq!(hex::encode(key_images_export_data), "4d6f6e65726f206b657920696d616765206578706f727403903df1a0ade0b87669089dd7b782428c6cc412dbd2ea7da1aa91a84de1213f8e3fdfd09875d6a119b90a158db50787b36f383f87e29ca264a635e90e3d6dce3d2334cab3ee8e2461fc7614fe05c5d83b23f8f7e9906bffc471cd99f31ec56e6870a9ce5ade2f32b43d5966014a4f57bc8837fb004ebe67e284e64c970a0201ec32b57aae7ce0d614274bd60e");
     }
 
     #[test]

@@ -10,7 +10,6 @@ use crate::transactions::structs::{
 use crate::transactions::subnet_id::SubnetId;
 use crate::transactions::transferable::TransferableOutput;
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };
@@ -134,7 +133,7 @@ mod tests {
         let mut bytes = Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
         let result = AddPermissLessionValidatorTx::try_from(bytes.clone()).unwrap();
         assert_eq!(
-            "fuji1v8xh6fk89mwxx82pzntwaukyup57eysxj5xrzz".to_string(),
+            "avax1v8xh6fk89mwxx82pzntwaukyup57eysx7xzuwa".to_string(),
             result.get_reward_address().unwrap()
         );
     }

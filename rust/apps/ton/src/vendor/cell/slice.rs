@@ -136,7 +136,7 @@ impl CellSlice {
     /// Converts the slice to full `Cell` dropping references to original cell.
     pub fn to_cell(&self) -> Result<Cell, TonCellError> {
         let bit_len = self.end_bit - self.start_bit;
-        let total_bytes = (bit_len + 7) / 8;
+        let total_bytes = bit_len.div_ceil(8);
         let mut data = vec![0u8; total_bytes];
         let cursor = Cursor::new(&self.cell.data);
         let mut bit_reader: BitReader<Cursor<&Vec<u8>>, BigEndian> =

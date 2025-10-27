@@ -77,14 +77,19 @@ impl TxConstructionData {
         dest == &self.change_dts
     }
 
-    fn ecdhs(&self, keypair: &KeyPair) -> Vec<EdwardsPoint> {
-        let (tx_key, additional_keys, tx_key_pub, _) = self.transaction_keys();
+    fn ecdhs(
+        &self,
+        keypair: &KeyPair,
+        tx_key: &PrivateKey,
+        additional_keys: &Vec<PrivateKey>,
+        tx_key_pub: &EdwardsPoint,
+    ) -> Vec<EdwardsPoint> {
         let mut res = Vec::with_capacity(self.splitted_dsts.len());
         for (i, dest) in self.splitted_dsts.iter().enumerate() {
             let key_to_use = if dest.is_subaddress {
-                additional_keys.get(i).unwrap_or(&tx_key)
+                additional_keys.get(i).unwrap_or(tx_key)
             } else {
-                &tx_key
+                tx_key
             };
             res.push(if !self.is_change_dest(dest) {
                 key_to_use.scalar
@@ -101,18 +106,30 @@ impl TxConstructionData {
         res
     }
 
-    fn payment_id_xors(&self, keypair: &KeyPair) -> Vec<[u8; 8]> {
+    fn payment_id_xors(
+        &self,
+        keypair: &KeyPair,
+        tx_key: &PrivateKey,
+        additional_keys: &Vec<PrivateKey>,
+        tx_key_pub: &EdwardsPoint,
+    ) -> Vec<[u8; 8]> {
         let mut res = Vec::with_capacity(self.splitted_dsts.len());
-        for ecdh in self.ecdhs(keypair) {
+        for ecdh in self.ecdhs(keypair, tx_key, additional_keys, tx_key_pub) {
             res.push(SharedKeyDerivations::payment_id_xor(Zeroizing::new(ecdh)));
         }
         res
     }
 
-    pub fn extra(&self, keypair: &KeyPair) -> Vec<u8> {
-        let (_, _, tx_key, additional_keys) = self.transaction_keys();
-        let payment_id_xors = self.payment_id_xors(keypair);
-        let mut extra = Extra::new(tx_key, additional_keys);
+    pub fn extra(
+        &self,
+        keypair: &KeyPair,
+        tx_key: &PrivateKey,
+        additional_keys: &Vec<PrivateKey>,
+        tx_key_pub: &EdwardsPoint,
+        additional_keys_pub: &Vec<EdwardsPoint>,
+    ) -> Vec<u8> {
+        let payment_id_xors = self.payment_id_xors(keypair, tx_key, additional_keys, tx_key_pub);
+        let mut extra = Extra::new(*tx_key_pub, additional_keys_pub.clone());
         if self.splitted_dsts.len() == 2 {
             let (_, payment_id_xor) = self
                 .splitted_dsts
@@ -132,8 +149,11 @@ impl TxConstructionData {
     pub fn shared_key_derivations(
         &self,
         keypair: &KeyPair,
+        tx_key: &PrivateKey,
+        additional_keys: &Vec<PrivateKey>,
+        tx_key_pub: &EdwardsPoint,
     ) -> Vec<Zeroizing<SharedKeyDerivations>> {
-        let ecdhs = self.ecdhs(keypair);
+        let ecdhs = self.ecdhs(keypair, tx_key, additional_keys, tx_key_pub);
         let mut res = Vec::with_capacity(self.splitted_dsts.len());
         for (i, (_, ecdh)) in self.splitted_dsts.iter().zip(ecdhs).enumerate() {
             res.push(SharedKeyDerivations::output_derivations(
@@ -149,8 +169,12 @@ impl TxConstructionData {
     pub fn commitments_and_encrypted_amounts(
         &self,
         keypair: &KeyPair,
+        tx_key: &PrivateKey,
+        additional_keys: &Vec<PrivateKey>,
+        tx_key_pub: &EdwardsPoint,
     ) -> Vec<(Commitment, EncryptedAmount)> {
-        let shared_key_derivations = self.shared_key_derivations(keypair);
+        let shared_key_derivations =
+            self.shared_key_derivations(keypair, tx_key, additional_keys, tx_key_pub);
 
         let mut res = Vec::with_capacity(self.splitted_dsts.len());
         for (dest, shared_key_derivation) in self.splitted_dsts.iter().zip(shared_key_derivations) {
@@ -166,8 +190,14 @@ impl TxConstructionData {
         res
     }
 
-    pub fn sum_output_masks(&self, keypair: &KeyPair) -> Scalar {
-        self.commitments_and_encrypted_amounts(keypair)
+    pub fn sum_output_masks(
+        &self,
+        keypair: &KeyPair,
+        tx_key: &PrivateKey,
+        additional_keys: &Vec<PrivateKey>,
+        tx_key_pub: &EdwardsPoint,
+    ) -> Scalar {
+        self.commitments_and_encrypted_amounts(keypair, tx_key, additional_keys, tx_key_pub)
             .into_iter()
             .map(|(commitment, _)| commitment.mask)
             .sum()

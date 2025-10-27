@@ -227,8 +227,10 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
         encodeResult = btc_sign_msg(data, seed, len, mfp, sizeof(mfp));
     } else if (urType == SeedSignerMessage) {
         encodeResult = sign_seed_signer_message(data, seed, len);
+#ifdef WEB3_VERSION
     } else if (urType == CryptoPSBTExtend) {
         encodeResult = utxo_sign_psbt_extend(data, seed, len, mfp, sizeof(mfp), unLimit);
+#endif
     }
     CHECK_CHAIN_PRINT(encodeResult);
     ClearSecretCache();
@@ -430,10 +432,12 @@ void *GuiGetParsedQrData(void)
             g_parseMsgResult = parse_seed_signer_message(crypto, public_keys);
             CHECK_CHAIN_RETURN(g_parseMsgResult);
             return g_parseMsgResult;
+#ifdef WEB3_VERSION
         } else if (urType == CryptoPSBTExtend) {
             g_parseResult = utxo_parse_extend_psbt(crypto, public_keys, mfp, sizeof(mfp));
             CHECK_CHAIN_RETURN(g_parseResult);
             return g_parseResult;
+#endif
         }
     } while (0);
     return g_parseResult;
@@ -649,6 +653,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         result = btc_check_msg(crypto, mfp, sizeof(mfp));
     } else if (urType == SeedSignerMessage) {
         result = tx_check_pass();
+#ifdef WEB3_VERSION
     } else if (urType == CryptoPSBTExtend) {
         PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
         ExtendedPublicKey keys[9];
@@ -674,6 +679,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         keys[8].path = "m/44'/145'/0'";
         keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
         result = utxo_check_psbt_extend(crypto, mfp, sizeof(mfp), public_keys, NULL, NULL);
+#endif
     }
     return result;
 }

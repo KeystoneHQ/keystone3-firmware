@@ -29,7 +29,7 @@ pub fn get_extended_private_key_by_entropy(
     let icarus_master_key = get_icarus_master_key_by_entropy(entropy, passphrase)?;
     let path = normalize_path(path);
     let derivation_path = DerivationPath::from_str(path.as_str())
-        .map_err(|e| KeystoreError::InvalidDerivationPath(format!("{}", e)))?;
+        .map_err(|e| KeystoreError::InvalidDerivationPath(format!("{e}")))?;
     let childrens: Vec<ChildNumber> = derivation_path.into();
     let key = childrens
         .iter()
@@ -153,7 +153,7 @@ pub fn derive_extended_privkey_by_xprv(xprv: &XPrv, path: &String) -> Result<XPr
 fn derive_bip32_ed25519_privkey(root: XPrv, path: &String) -> Result<XPrv> {
     let path = normalize_path(path);
     let derivation_path = DerivationPath::from_str(path.as_str())
-        .map_err(|e| KeystoreError::InvalidDerivationPath(format!("{}", e)))?;
+        .map_err(|e| KeystoreError::InvalidDerivationPath(format!("{e}")))?;
     let childrens: Vec<ChildNumber> = derivation_path.into();
     let key = childrens.iter().fold(root, |acc, cur| match cur {
         ChildNumber::Hardened { index } => acc.derive(DerivationScheme::V2, index + 0x80000000),

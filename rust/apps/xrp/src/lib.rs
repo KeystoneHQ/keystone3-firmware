@@ -1,5 +1,4 @@
 #![no_std]
-#![feature(error_in_core)]
 extern crate alloc;
 extern crate core;
 #[cfg(test)]
@@ -59,10 +58,10 @@ pub fn get_pubkey_path(root_xpub: &str, pubkey: &str, max_i: u32) -> R<String> {
     let pubkey_arr = hex::decode(pubkey)?;
     let pubkey_bytes = pubkey_arr.as_slice();
     for i in 0..max_i {
-        let pk = a_xpub.derive_pub(&k1, &DerivationPath::from_str(&format!("m/{}", i))?)?;
+        let pk = a_xpub.derive_pub(&k1, &DerivationPath::from_str(&format!("m/{i}"))?)?;
         let key = pk.public_key.serialize();
         if key.eq(pubkey_bytes) {
-            return Ok(format!("{}:m/0/{}", pubkey, i));
+            return Ok(format!("{pubkey}:m/0/{i}"));
         }
     }
     Err(XRPError::InvalidData("pubkey not found".to_string()))

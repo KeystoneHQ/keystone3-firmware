@@ -89,7 +89,7 @@ impl MultiSigWalletConfig {
 
     pub fn get_derivation_by_index(&self, index: usize) -> Option<String> {
         let path = if self.derivations.len() == 1 {
-            self.derivations.get(0)
+            self.derivations.first()
         } else {
             self.derivations.get(index)
         };
@@ -132,7 +132,7 @@ fn _parse_plain_xpub_config(content: &str) -> Result<BsmsWallet, BitcoinError> {
                     let derivation_path = &line[9..=end_bracket_pos - 1].trim();
                     let extended_pubkey = &line[end_bracket_pos + 1..].trim();
                     bsms_wallet.xfp = xfp.to_string();
-                    bsms_wallet.derivation_path = format!("m{}", derivation_path);
+                    bsms_wallet.derivation_path = format!("m{derivation_path}");
                     bsms_wallet.extended_pubkey = extended_pubkey.to_string();
                     return Ok(bsms_wallet);
                 }
@@ -230,22 +230,20 @@ fn _parse_plain_wallet_config(content: &str) -> Result<MultiSigWalletConfig, Bit
         }
     }
 
-    for (_, xpub_item) in wallet.xpub_items.iter().enumerate() {
+    for xpub_item in wallet.xpub_items.iter() {
         let this_network = detect_network(&xpub_item.xpub);
         if this_network == Network::TestNet {
-            return Err(BitcoinError::MultiSigWalletParseError(format!(
-                "we don't support testnet for multisig yet"
-            )));
+            return Err(BitcoinError::MultiSigWalletParseError(
+                "we don't support testnet for multisig yet".to_string(),
+            ));
         }
         if is_first {
             wallet.network = this_network;
             is_first = false;
-        } else {
-            if wallet.network != this_network {
-                return Err(BitcoinError::MultiSigWalletParseError(format!(
-                    "xpub networks inconsistent"
-                )));
-            }
+        } else if wallet.network != this_network {
+            return Err(BitcoinError::MultiSigWalletParseError(
+                "xpub networks inconsistent".to_string(),
+            ));
         }
     }
 
@@ -282,12 +280,12 @@ pub fn generate_config_data(
     ));
     config_data.push_str("#\n");
     config_data.push_str(&format!("Name: {}\n", config.name));
-    config_data.push_str(&format!("Policy: {}\n", policy));
+    config_data.push_str(&format!("Policy: {policy}\n"));
 
     if config.derivations.len() == 1 {
         config_data.push_str(&format!("Derivation: {}\n", config.derivations[0]));
         config_data.push_str(&format!("Format: {}\n", config.format));
-        config_data.push_str("\n");
+        config_data.push('\n');
         let xpub_items = config
             .xpub_items
             .iter()
@@ -331,7 +329,7 @@ pub fn is_valid_xpub_config(bytes: &Bytes) -> bool {
     if let Ok(d) = String::from_utf8(bytes.get_bytes())
         .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))
     {
-        if let Ok(_) = _parse_plain_xpub_config(&d) {
+        if _parse_plain_xpub_config(&d).is_ok() {
             return true;
         }
     }
@@ -342,7 +340,7 @@ pub fn is_valid_wallet_config(bytes: &Bytes) -> bool {
     if let Ok(d) = String::from_utf8(bytes.get_bytes())
         .map_err(|e| BitcoinError::MultiSigWalletImportXpubError(e.to_string()))
     {
-        if let Ok(_) = _parse_plain_wallet_config(&d) {
+        if _parse_plain_wallet_config(&d).is_ok() {
             return true;
         }
     }
@@ -363,8 +361,8 @@ fn parse_and_set_policy(
         })?;
 
         if is_valid_multi_sig_policy(total, threshold) {
-            wallet.threshold = threshold.clone();
-            wallet.total = total.clone();
+            wallet.threshold = threshold;
+            wallet.total = total;
         } else {
             return Err(BitcoinError::MultiSigWalletParseError(
                 "this is not a valid policy".to_string(),
@@ -382,13 +380,13 @@ fn process_xpub_and_xfp(
 ) -> Result<(), BitcoinError> {
     if is_valid_xfp(label) {
         if is_valid_xyzpub(value) {
-            for (_, xpub_item) in wallet.xpub_items.iter().enumerate() {
+            for xpub_item in wallet.xpub_items.iter() {
                 let result1 = xyzpub::convert_version(xpub_item.xpub.clone(), &Version::Xpub)?;
                 let result2 = xyzpub::convert_version(value, &Version::Xpub)?;
                 if result1.eq_ignore_ascii_case(&result2) {
-                    return Err(BitcoinError::MultiSigWalletParseError(format!(
-                        "found duplicated xpub"
-                    )));
+                    return Err(BitcoinError::MultiSigWalletParseError(
+                        "found duplicated xpub".to_string(),
+                    ));
                 }
             }
             wallet.xpub_items.push(MultiSigXPubItem {
@@ -409,7 +407,7 @@ fn process_xpub_and_xfp(
 }
 
 fn is_valid_multi_sig_policy(total: u32, threshold: u32) -> bool {
-    total <= 15 && total >= 2 && threshold <= total || threshold >= 1
+    (2..=15).contains(&total) && threshold <= total || threshold >= 1
 }
 
 fn is_valid_xfp(xfp: &str) -> bool {
@@ -417,7 +415,7 @@ fn is_valid_xfp(xfp: &str) -> bool {
         return false;
     }
     for c in xfp.chars() {
-        if !c.is_digit(16) {
+        if !c.is_ascii_hexdigit() {
             return false;
         }
     }
@@ -526,8 +524,8 @@ pub fn calculate_multi_sig_verify_code(
     };
 
     let data = match xfp {
-        Some(xfp) => format!("{}{}{}of{}{}", xfp, join_xpubs, threshold, total, path),
-        None => format!("{}{}of{}{}", join_xpubs, threshold, total, path),
+        Some(xfp) => format!("{xfp}{join_xpubs}{threshold}of{total}{path}"),
+        None => format!("{join_xpubs}{threshold}of{total}{path}"),
     };
 
     Ok(hex::encode(sha256(data.as_bytes()))[0..8].to_string())
@@ -547,20 +545,16 @@ pub fn strict_verify_wallet_config(
                 false => index,
             };
             let true_derivation = wallet.derivations.get(true_index).ok_or(
-                BitcoinError::MultiSigWalletParseError(format!("Invalid derivations")),
+                BitcoinError::MultiSigWalletParseError("Invalid derivations".to_string()),
             )?;
             let true_xpub =
                 get_extended_public_key_by_seed(seed, true_derivation).map_err(|e| {
-                    BitcoinError::MultiSigWalletParseError(format!(
-                        "Unable to generate xpub, {}",
-                        e.to_string()
-                    ))
+                    BitcoinError::MultiSigWalletParseError(format!("Unable to generate xpub, {e}"))
                 })?;
             let this_xpub = xyzpub::convert_version(&xpub_item.xpub, &Version::Xpub)?;
             if !true_xpub.to_string().eq(&this_xpub) {
                 return Err(BitcoinError::MultiSigWalletParseError(format!(
-                    "extended public key not match, xfp: {}",
-                    xfp
+                    "extended public key not match, xfp: {xfp}"
                 )));
             }
         }
@@ -570,16 +564,15 @@ pub fn strict_verify_wallet_config(
 
 #[cfg(test)]
 mod tests {
-    use core::result;
 
     use alloc::string::ToString;
 
     use crate::multi_sig::wallet::{
-        create_wallet, export_wallet_by_ur, generate_config_data, is_valid_xyzpub,
-        parse_bsms_wallet_config, parse_wallet_config, strict_verify_wallet_config,
+        create_wallet, generate_config_data, is_valid_xyzpub, parse_bsms_wallet_config,
+        parse_wallet_config, strict_verify_wallet_config,
     };
     use crate::multi_sig::{MultiSigXPubInfo, Network};
-    use alloc::vec::Vec;
+
     use hex;
     use ur_registry::bytes::Bytes;
 

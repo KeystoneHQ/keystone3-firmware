@@ -23,7 +23,7 @@ macro_rules! check_hd_path {
 macro_rules! derivation_address_path {
     ($t: expr) => {{
         let parts = $t.split("/").collect::<Vec<&str>>();
-        let result: Result<String> = match crate::check_hd_path!(parts) {
+        let result: Result<String> = match $crate::check_hd_path!(parts) {
             Ok(_) => {
                 let path = parts.as_slice()[parts.len() - 2..].to_vec().join("/");
                 Ok(format!("{}{}", "m/", path))
@@ -38,7 +38,7 @@ macro_rules! derivation_address_path {
 macro_rules! derivation_account_path {
     ($t: expr) => {{
         let parts = $t.split("/").collect::<Vec<&str>>();
-        let result: Result<String> = match crate::check_hd_path!(parts) {
+        let result: Result<String> = match $crate::check_hd_path!(parts) {
             Ok(_) => {
                 let path = parts.as_slice()[1..parts.len() - 2].to_vec().join("/");
                 Ok(format!("{}{}", "m/", path))

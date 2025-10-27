@@ -255,7 +255,7 @@ impl Free for DisplayIotaSignMessageHash {
     }
 }
 
-make_free_method!(DisplayIotaSignMessageHash);
+make_free_method!(TransactionParseResult<DisplayIotaSignMessageHash>);
 
 impl Free for DisplayIotaIntentData {
     unsafe fn free(&self) {

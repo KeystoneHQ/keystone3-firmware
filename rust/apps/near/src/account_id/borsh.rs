@@ -17,7 +17,7 @@ impl BorshDeserialize for AccountId {
         Self::validate(&account_id).map_err(|err| {
             io::Error::new(
                 io::ErrorKind::InvalidData,
-                format!("invalid value: \"{}\", {}", account_id, err),
+                format!("invalid value: \"{account_id}\", {err}"),
             )
         })?;
         Ok(Self(account_id))
@@ -35,20 +35,20 @@ mod tests {
     fn test_is_valid_account_id() {
         for account_id in OK_ACCOUNT_IDS.iter() {
             let parsed_account_id = account_id.parse::<AccountId>().unwrap_or_else(|err| {
-                panic!("Valid account id {:?} marked invalid: {}", account_id, err)
+                panic!("Valid account id {account_id:?} marked invalid: {err}")
             });
 
             let str_serialized_account_id = account_id.try_to_vec().unwrap();
 
             let deserialized_account_id = AccountId::try_from_slice(&str_serialized_account_id)
                 .unwrap_or_else(|err| {
-                    panic!("failed to deserialize account ID {:?}: {}", account_id, err)
+                    panic!("failed to deserialize account ID {account_id:?}: {err}")
                 });
             assert_eq!(deserialized_account_id, parsed_account_id);
 
             let serialized_account_id =
                 deserialized_account_id.try_to_vec().unwrap_or_else(|err| {
-                    panic!("failed to serialize account ID {:?}: {}", account_id, err)
+                    panic!("failed to serialize account ID {account_id:?}: {err}")
                 });
             assert_eq!(serialized_account_id, str_serialized_account_id);
         }
@@ -58,8 +58,7 @@ mod tests {
 
             assert!(
                 AccountId::try_from_slice(&str_serialized_account_id).is_err(),
-                "successfully deserialized invalid account ID {:?}",
-                account_id
+                "successfully deserialized invalid account ID {account_id:?}"
             );
         }
     }

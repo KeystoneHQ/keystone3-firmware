@@ -37,7 +37,7 @@ fn format_zec_value(value: f64) -> String {
         .trim_end_matches('0')
         .trim_end_matches('.')
         .to_string();
-    format!("{} ZEC", zec_value)
+    format!("{zec_value} ZEC")
 }
 
 /// Attempts to decrypt the output with the given `ovk`, or (if `None`) directly via the
@@ -129,13 +129,13 @@ pub fn parse_pczt<P: consensus::Parameters>(
                 .map_err(pczt::roles::verifier::OrchardError::Custom)?;
             Ok(())
         })
-        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{:?}", e)))?
+        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{e:?}")))?
         .with_transparent(|bundle| {
             parsed_transparent = parse_transparent(params, seed_fingerprint, bundle)
                 .map_err(pczt::roles::verifier::TransparentError::Custom)?;
             Ok(())
         })
-        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{:?}", e)))?;
+        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{e:?}")))?;
 
     let mut total_input_value = 0;
     let mut total_output_value = 0;

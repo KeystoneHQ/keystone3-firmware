@@ -79,7 +79,7 @@ impl TryInto<bitcoin::TxIn> for TxIn {
 
     fn try_into(self) -> Result<bitcoin::TxIn> {
         let tx_id = bitcoin::Txid::from_str(self.previous_output.as_str())
-            .map_err(|_| BitcoinError::InvalidTransaction(format!("invalid txid")))?;
+            .map_err(|_| BitcoinError::InvalidTransaction("invalid txid".to_string()))?;
         Ok(bitcoin::TxIn {
             previous_output: bitcoin::OutPoint {
                 txid: tx_id,
@@ -130,12 +130,12 @@ impl TryFrom<Input> for TxIn {
     type Error = BitcoinError;
 
     fn try_from(value: protoc::Input) -> Result<Self> {
-        let utxo = value
-            .utxo
-            .ok_or(BitcoinError::InvalidRawTxCryptoBytes(format!("empty utxo")))?;
-        let _ = negative_check!("utxo value".to_string(), utxo.value)?;
+        let utxo = value.utxo.ok_or(BitcoinError::InvalidRawTxCryptoBytes(
+            "empty utxo".to_string(),
+        ))?;
+        negative_check!("utxo value".to_string(), utxo.value)?;
         let utxo_value = utxo.value as u64;
-        let _ = negative_check!("utxo index".to_string(), value.index)?;
+        negative_check!("utxo index".to_string(), value.index)?;
         let index = value.index as u32;
         Ok(Self {
             previous_output: value.hash,

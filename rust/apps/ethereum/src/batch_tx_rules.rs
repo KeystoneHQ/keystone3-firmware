@@ -7,7 +7,7 @@ use crate::{errors::EthereumError, structs::ParsedEthereumTransaction};
 
 pub fn rule_swap(txs: Vec<ParsedEthereumTransaction>) -> Result<(), EthereumError> {
     //
-    if txs.len() < 1 || txs.len() > 3 {
+    if txs.is_empty() || txs.len() > 3 {
         return Err(EthereumError::InvalidSwapTransaction(format!(
             "invalid transaction count: {}",
             txs.len()
@@ -32,8 +32,7 @@ pub fn rule_swap(txs: Vec<ParsedEthereumTransaction>) -> Result<(), EthereumErro
         let amount = approval_0.value;
         if amount != "0" {
             return Err(EthereumError::InvalidSwapTransaction(format!(
-                "invalid revoke amount: {}",
-                amount
+                "invalid revoke amount: {amount}"
             )));
         }
         let _ = parse_erc20_approval(&txs[1].input, 0)

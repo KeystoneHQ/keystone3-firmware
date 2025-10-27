@@ -14,7 +14,7 @@ use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::traits::{IsIdentity, MultiscalarMul};
 use monero_serai::transaction::Input;
-use rand_core::{CryptoRng, RngCore, SeedableRng};
+use rand_core::{CryptoRng, OsRng, RngCore};
 
 pub mod constants;
 pub mod hash;
@@ -60,11 +60,14 @@ pub fn decrypt_data_with_pincode(data: Vec<u8>, pin: [u8; 6]) -> String {
     String::from_utf8(buffer).unwrap()
 }
 
-pub fn encrypt_data_with_pvk(keypair: KeyPair, data: Vec<u8>, magic: &str) -> Vec<u8> {
+pub fn encrypt_data_with_pvk<R: RngCore + CryptoRng>(
+    keypair: KeyPair,
+    data: Vec<u8>,
+    magic: &str,
+    mut rng: R,
+) -> Vec<u8> {
     let pvk_hash = cryptonight_hash_v0(&keypair.view.to_bytes());
     let magic_bytes = magic.as_bytes();
-    let rng_seed = keccak256(&data.clone());
-    let mut rng = rand_chacha::ChaCha20Rng::from_seed(rng_seed);
     let nonce_num = rng.next_u64().to_be_bytes();
 
     let key = GenericArray::from_slice(&pvk_hash);
@@ -89,9 +92,6 @@ pub fn encrypt_data_with_pvk(keypair: KeyPair, data: Vec<u8>, magic: &str) -> Ve
     let mut unsigned_buffer = Vec::new();
     unsigned_buffer.extend_from_slice(&nonce_num.clone());
     unsigned_buffer.extend_from_slice(&buffer.clone());
-
-    let rng_seed = keccak256(&data);
-    let mut rng = rand_chacha::ChaCha20Rng::from_seed(rng_seed);
 
     let signature = generate_signature(
         &keccak256(&unsigned_buffer),
@@ -217,6 +217,7 @@ pub fn fmt_monero_amount(value: u64) -> String {
 mod tests {
     use super::*;
     use hex;
+    use rand_core::SeedableRng;
 
     #[test]
     fn test_verify() {
@@ -351,6 +352,8 @@ mod tests {
 
     #[test]
     fn test_encrypt_data_with_pvk() {
+        let rng_seed = [0; 32];
+        let mut rng = rand_chacha::ChaCha20Rng::from_seed(rng_seed.try_into().unwrap());
         let sec_s_key = PrivateKey::from_bytes(
             &hex::decode("6ae3c3f834b39aa102158b3a54a6e9557f0ff71e196e7b08b89a11be5093ad03")
                 .unwrap(),
@@ -363,7 +366,7 @@ mod tests {
 
         let data = hex::decode("03000707013e8c52245d21b22cbcb90f95270a7937d4974d726209f0a41fdefc7f9df01fde01c8b486383e45d72b841a8b76094dbaa26f9800aac4eaced3bc06122a3380bcf6c666d2281480a0b787e905000000012d58a6378c07f230148c11979cc6e3bec2719f0ec92de21f7fae02029ab025e000f385873857dc102abc6d35c878db7be629646658ae1a418afb27a943f8a2591be4f450e9148094ebdc03000001014ef323a52d2e048594ad73acbe5fb7e588b1859ec9aa02b2670f487660b2700901f485873857dc102abc6d35c878db7be629646658ae1a418afb27a943f8a2591be4f450e914c0b5809ce50500000001cb8ab3c1b4dd10404a4a3c9275a7e2e1e9bf2e4edf1c84f61952bb97965573a300d0c78a38bdd50fdc0367b3141fdc055dec3af5e3ac920dd55816823dfe02f70c3d1816431480c2d72f00000301dd8c2a791056760d903bf06e7930585201e0bd20bcba1e720b85ad0e4d628e4801d1c78a38bdd50fdc0367b3141fdc055dec3af5e3ac920dd55816823dfe02f70c3d18164314a0eec19e03000000019b65ada69049d73e4b049ebd50393410cdc05dad5314690d2b4a36628c4e257600a4909d385d43421399107bd34350b8938f9ff69da18e8f083e6522adf6aa270b3f370ed41480e8eda1ba01000100016311ba60a0a8c636806e232db3e1ad7f79e26df3d24258e264e4351e47f4374d01a5909d385d43421399107bd34350b8938f9ff69da18e8f083e6522adf6aa270b3f370ed414c0c2b383ae0400000063c57cc457a1485fc5f8e6dfc8b70430f41946a7d0cd51e84ef5ac819ff2b2c4bcec6f1e6dd57e7e791d8cca2091169bba53496d72375331f8d56cd33f5e0ca4").unwrap();
         let magic = OUTPUT_EXPORT_MAGIC;
-        let bin_data = encrypt_data_with_pvk(keypair, data.clone(), magic);
+        let bin_data = encrypt_data_with_pvk(keypair, data.clone(), magic, rng);
 
         let keypair = crate::key::KeyPair::new(sec_v_key, sec_s_key);
 

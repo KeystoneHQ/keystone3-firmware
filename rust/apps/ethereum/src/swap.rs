@@ -1,4 +1,3 @@
-use alloc::format;
 use alloc::string::String;
 use alloc::string::ToString;
 use alloc::vec::Vec;
@@ -82,14 +81,14 @@ pub fn parse_swapkit_contract(
     }
 
     if vault.is_none() || swap_in_asset.is_none() || swap_in_amount.is_none() || memo.is_none() {
-        return Err(EthereumError::InvalidSwapTransaction(format!(
-            "Invalid swapkit contract data"
-        )));
+        return Err(EthereumError::InvalidSwapTransaction(
+            "Invalid swapkit contract data".to_string(),
+        ));
     }
 
     let swapkit_memo = parse_swapkit_memo(&memo.unwrap())?;
 
-    return Ok(SwapkitContractData::new(
+    Ok(SwapkitContractData::new(
         vault.unwrap(),
         swap_in_asset.unwrap(),
         swap_in_amount.unwrap(),
@@ -98,7 +97,7 @@ pub fn parse_swapkit_contract(
         swapkit_memo.receive_address,
         expiration,
         contract_data,
-    ));
+    ))
 }
 
 pub struct SwapkitMemo {

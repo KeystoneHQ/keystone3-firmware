@@ -67,7 +67,7 @@ pub fn generate_crypto_multi_accounts(
                         Some(origin),
                         None,
                         None,
-                        Some(format!("Keystone")),
+                        Some("Keystone".to_string()),
                         None,
                     );
                     keys.push(hd_key);

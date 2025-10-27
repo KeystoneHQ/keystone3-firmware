@@ -35,6 +35,7 @@ zcash_vendor = { workspace = true, optional = true }
 ed25519-bip32-core = { workspace = true }
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
+rand_core = { workspace = true }
 sui-types = { git = "https://github.com/KeystoneHQ/sui.git", tag = "0.1.2", package = "sui-types" }
 
 #apps
@@ -128,7 +129,7 @@ simulator-multi-coins = ["simulator", "multi-coins"]
 simulator-btc-only = ["simulator", "btc-only"]
 simulator-cypherpunk = ["simulator", "cypherpunk"]
 # make IDE happy
-default = ["simulator-cypherpunk"]
+default = ["simulator-multi-coins"]
 
 [dev-dependencies]
 keystore = { path = "../keystore" }

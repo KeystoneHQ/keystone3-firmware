@@ -11,7 +11,7 @@ use alloc::{
     vec::Vec,
 };
 use bytes::{Buf, Bytes};
-use core::{convert::TryFrom, fmt};
+use core::convert::TryFrom;
 pub const TX_ID_LEN: usize = 32;
 pub type TxId = [u8; TX_ID_LEN];
 
@@ -169,7 +169,7 @@ enum InputType {
 impl TryFrom<Bytes> for InputType {
     type Error = AvaxError;
 
-    fn try_from(mut bytes: Bytes) -> Result<Self> {
+    fn try_from(bytes: Bytes) -> Result<Self> {
         let mut type_bytes = bytes.clone();
         let type_id = type_bytes.get_u32();
         match TypeId::try_from(type_id)? {
@@ -202,8 +202,6 @@ impl InputTrait for InputType {
 #[cfg(test)]
 mod tests {
     use super::*;
-    extern crate std;
-    use std::println;
 
     #[test]
     fn test_transferable_output() {
@@ -211,10 +209,15 @@ mod tests {
         let binary_data = hex::decode(input_bytes).expect("Failed to decode hex string");
         let mut bytes = Bytes::from(binary_data);
         let output_len = bytes.get_u32();
-        for _ in 0..output_len {
-            let result = TransferableOutput::try_from(bytes.clone()).unwrap();
-        }
-        assert!(false);
+        assert_eq!(output_len, 2);
+        let result = TransferableOutput::try_from(bytes.clone()).unwrap();
+        assert_eq!(result.output.get_amount(), 100000000);
+        assert_eq!(result.output.get_addresses_len(), 1);
+        assert_eq!(
+            result.output.get_addresses(),
+            vec!["avax1saceyycp6klllavjmt5xd9dxzk7mffzp6fzwtu".to_string()]
+        );
+        assert_eq!(result.output.get_transfer_output_len(), 48);
     }
 
     #[test]
@@ -225,21 +228,18 @@ mod tests {
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let input_len = bytes.get_u32();
-            for _ in 0..input_len {
-                let result = TransferableInput::try_from(bytes.clone());
-                match result {
-                    Ok(_) => {}
-                    Err(e) => match e {
-                        AvaxError::InvalidHex(msg) => {
-                            assert_eq!(
-                                msg, "Unsupported input type found in input bytes.",
-                                "Unexpected error message"
-                            );
-                        }
-                        _ => {}
-                    },
-                }
-            }
+            assert_eq!(input_len, 1);
+            let result = TransferableInput::try_from(bytes.clone()).unwrap();
+            assert_eq!(
+                result.tx_id,
+                [
+                    87, 213, 226, 62, 46, 31, 70, 11, 97, 139, 186, 27, 85, 145, 63, 243, 206, 179,
+                    21, 240, 209, 172, 196, 31, 230, 64, 142, 220, 77, 233, 250, 205
+                ]
+            );
+            assert_eq!(result.utxo_index, 0);
+            assert_eq!(result.input.get_amount(), 498951949);
+            assert_eq!(result.input.get_transfer_input_len(), 20);
         }
 
         // x-chain import transferin
@@ -248,24 +248,18 @@ mod tests {
             let mut bytes =
                 Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let input_len = bytes.get_u32();
-            for _ in 0..input_len {
-                let result = TransferableInput::try_from(bytes.clone());
-                match result {
-                    Ok(_) => {
-                        println!("{:?}", result);
-                    }
-                    Err(e) => match e {
-                        AvaxError::InvalidHex(msg) => {
-                            assert_eq!(
-                                msg, "Unsupported output type found in input bytes.",
-                                "Unexpected error message"
-                            );
-                        }
-                        _ => {}
-                    },
-                }
-            }
-            assert!(false);
+            assert_eq!(input_len, 1);
+            let result = TransferableInput::try_from(bytes.clone()).unwrap();
+            assert_eq!(
+                result.tx_id,
+                [
+                    220, 244, 202, 133, 71, 78, 135, 167, 67, 236, 143, 235, 84, 131, 109, 43, 64,
+                    59, 54, 199, 199, 56, 195, 226, 73, 143, 221, 52, 109, 172, 71, 116
+                ]
+            );
+            assert_eq!(result.utxo_index, 1);
+            assert_eq!(result.input.get_amount(), 200000000);
+            assert_eq!(result.input.get_transfer_input_len(), 20);
         }
     }
 }

@@ -158,20 +158,20 @@ mod tests {
         assert_eq!(orchard.get_from().len(), 1);
         assert_eq!(orchard.get_to().len(), 1);
         assert_eq!(
-            transparent.get_to().get(0).unwrap().get_address(),
+            transparent.get_to().first().unwrap().get_address(),
             "t1TMLJ7k2N4Narqk5Fd5uUo82NXSMbKRgCc"
         );
-        assert_eq!(transparent.get_to().get(0).unwrap().get_value(), "0.1 ZEC");
-        assert_eq!(transparent.get_to().get(0).unwrap().get_is_change(), false);
-        assert_eq!(orchard.get_from().get(0).unwrap().get_address(), None);
-        assert_eq!(orchard.get_from().get(0).unwrap().get_value(), "0.12 ZEC");
-        assert_eq!(orchard.get_from().get(0).unwrap().get_is_mine(), true);
+        assert_eq!(transparent.get_to().first().unwrap().get_value(), "0.1 ZEC");
+        assert!(!transparent.get_to().first().unwrap().get_is_change());
+        assert_eq!(orchard.get_from().first().unwrap().get_address(), None);
+        assert_eq!(orchard.get_from().first().unwrap().get_value(), "0.12 ZEC");
+        assert!(orchard.get_from().first().unwrap().get_is_mine());
         assert_eq!(
-            orchard.get_to().get(0).unwrap().get_address(),
+            orchard.get_to().first().unwrap().get_address(),
             "<internal-address>"
         );
-        assert_eq!(orchard.get_to().get(0).unwrap().get_value(), "0.01985 ZEC");
-        assert_eq!(orchard.get_to().get(0).unwrap().get_is_change(), true);
+        assert_eq!(orchard.get_to().first().unwrap().get_value(), "0.01985 ZEC");
+        assert!(orchard.get_to().first().unwrap().get_is_change());
         assert_eq!(parsed_pczt.get_fee_value(), "0.00015 ZEC");
     }
 }

@@ -150,13 +150,13 @@ pub extern "C" fn export_multi_sig_wallet_by_ur_test(
 pub unsafe extern "C" fn export_xpub_info_by_ur(
     ur: PtrUR,
     multi_sig_type: MultiSigFormatType,
-    viewType: ViewType,
+    view_type: ViewType,
 ) -> Ptr<Response<MultiSigXPubInfoItem>> {
-    match viewType {
+    match view_type {
         ViewType::MultisigCryptoImportXpub => {
             let crypto_account = extract_ptr_with_type!(ur, CryptoAccount);
             let result =
-                extract_xpub_info_from_crypto_account(&crypto_account, multi_sig_type.into());
+                extract_xpub_info_from_crypto_account(crypto_account, multi_sig_type.into());
             match result {
                 Ok(wallet) => {
                     Response::success_ptr(MultiSigXPubInfoItem::from(wallet).c_ptr()).c_ptr()

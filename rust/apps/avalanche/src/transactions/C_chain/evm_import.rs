@@ -9,7 +9,6 @@ use crate::transactions::tx_header::Header;
 use crate::transactions::{asset_id::AssetId, type_id::TypeId};
 
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };
@@ -133,8 +132,6 @@ impl TryFrom<Bytes> for ImportTx {
 #[cfg(test)]
 mod tests {
     use super::*;
-    extern crate std;
-    use std::println;
 
     #[test]
     fn test_avax_c_import() {
@@ -147,7 +144,7 @@ mod tests {
         assert_eq!(result.inputs.get_len(), 1);
         assert_eq!(result.outputs.get_len(), 1);
 
-        assert_eq!(result.source_chain, X_BLOCKCHAIN_ID);
+        assert_eq!(result.source_chain, X_TEST_BLOCKCHAIN_ID);
         assert_eq!(result.get_total_output_amount(), 99988770);
         assert_eq!(result.get_total_input_amount(), 100000000);
     }

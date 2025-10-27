@@ -884,9 +884,19 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         // should setup ADA for bip39 wallet;
         if (isBip39) {
             char *mnemonic = NULL;
-            bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
+            ret = bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
+            if (ret != SUCCESS_CODE) {
+                printf("get mnemonic error\r\n");
+                if (mnemonic != NULL) {
+                    memset_s(mnemonic, MNEMONIC_MAX_LEN, 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
+                    SRAM_FREE(mnemonic);
+                }
+                ret = ERR_GENERAL_FAIL;
+                break;
+            }
             cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
             ledger_bitbox02_response = get_ledger_bitbox02_master_key(mnemonic, GetPassphrase(accountIndex));
+            SRAM_FREE(mnemonic);
             CHECK_AND_FREE_XPUB(cip3_response);
             CHECK_AND_FREE_XPUB(ledger_bitbox02_response);
             icarusMasterKey = cip3_response->data;
@@ -1080,9 +1090,18 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         if (!isSlip39) {
             do {
                 char *mnemonic = NULL;
-                bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
+                ret = bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
+                if (ret != SUCCESS_CODE) {
+                    printf("get mnemonic error\r\n");
+                    if (mnemonic != NULL) {
+                        memset_s(mnemonic, MNEMONIC_MAX_LEN, 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
+                        SRAM_FREE(mnemonic);
+                    }
+                    break;
+                }
                 cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(accountIndex));
                 ledger_bitbox02_response = get_ledger_bitbox02_master_key(mnemonic, GetPassphrase(accountIndex));
+                SRAM_FREE(mnemonic);
                 CHECK_AND_FREE_XPUB(cip3_response);
                 CHECK_AND_FREE_XPUB(ledger_bitbox02_response);
                 icarusMasterKey = cip3_response->data;

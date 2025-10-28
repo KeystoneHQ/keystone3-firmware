@@ -34,10 +34,10 @@ fn get_rsa_seed(seed: &[u8]) -> Result<[u8; 32]> {
 
 pub fn get_rsa_secret_from_seed(seed: &[u8]) -> Result<RsaPrivateKey> {
     // bip39 seed length is 64, slip39 seed length is 16 or 32
+    let seed_len = seed.len();
     if !matches!(seed.len(), 16 | 32 | 64) {
         return Err(KeystoreError::GenerateSigningKeyError(format!(
-            "Invalid seed length: {}, expected 16, 32, or 64 bytes",
-            seed.len()
+            "Invalid seed length: {seed_len}, expected 16, 32, or 64 bytes"
         )));
     }
     let mut rsa_seed = get_rsa_seed(seed)?;
@@ -82,19 +82,17 @@ pub fn sign_message(
 }
 
 pub fn build_rsa_private_key_from_primes(p: &[u8], q: &[u8]) -> Result<RsaPrivateKey> {
-    if p.len() != PRIME_LENGTH_IN_BYTE {
+    let p_len = p.len();
+    let q_len = q.len();
+    if p_len != PRIME_LENGTH_IN_BYTE {
         return Err(KeystoreError::GenerateSigningKeyError(format!(
-            "Invalid prime P length: {}, expected {} bytes",
-            p.len(),
-            PRIME_LENGTH_IN_BYTE
+            "Invalid prime P length: {p_len}, expected {PRIME_LENGTH_IN_BYTE} bytes"
         )));
     }
 
-    if q.len() != PRIME_LENGTH_IN_BYTE {
+    if q_len != PRIME_LENGTH_IN_BYTE {
         return Err(KeystoreError::GenerateSigningKeyError(format!(
-            "Invalid prime Q length: {}, expected {} bytes",
-            q.len(),
-            PRIME_LENGTH_IN_BYTE
+            "Invalid prime Q length: {q_len}, expected {PRIME_LENGTH_IN_BYTE} bytes",
         )));
     }
 

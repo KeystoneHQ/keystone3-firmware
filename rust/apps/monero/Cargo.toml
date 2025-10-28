@@ -12,7 +12,7 @@ bitcoin = { workspace = true }
 curve25519-dalek = { version = "4.1.3", default-features = false }
 base58-monero = { version = "2", default-features = false }
 rand_core = { workspace = true }
-zeroize = { version = "^1.5", default-features = false }
+zeroize = { workspace = true }
 app_utils = { path = "../utils" }
 rust_tools = { path = "../../tools" }
 chacha20 = { version = "0.9.1", default-features = false }

@@ -37,6 +37,7 @@ app_utils = { workspace = true }
 rust_tools = { workspace = true }
 rand_core = { workspace = true }
 sui-types = { git = "https://github.com/KeystoneHQ/sui.git", tag = "0.1.2", package = "sui-types" }
+zeroize = { workspace = true }
 
 #apps
 app_wallets = { workspace = true }

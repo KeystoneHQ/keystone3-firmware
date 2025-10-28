@@ -132,7 +132,6 @@ mod tests {
         assert!(result.is_err());
     }
 
-
     #[test]
     fn test_get_tx_hash_invalid_json() {
         let raw_hex = hex::encode(b"invalid json");
@@ -145,7 +144,10 @@ mod tests {
         let raw_hex = "7B225472616E73616374696F6E54797065223A225061796D656E74222C22416D6F756E74223A223130303030303030222C2244657374696E6174696F6E223A22724A6436416D48485A7250756852683377536637696B724D4A516639373646516462222C22466C616773223A323134373438333634382C224163636F756E74223A227247556D6B794C627671474633687758347177474864727A4C6459325170736B756D222C22466565223A223132222C2253657175656E6365223A34323532393130372C224C6173744C656467657253657175656E6365223A34323532393137332C225369676E696E675075624B6579223A22303346354335424231443139454337313044334437464144313939414631304346384243314431313334384535423337363543304230423943304245433332383739227D";
         let parsed = parse(hex::decode(raw_hex).unwrap().as_slice()).unwrap();
         assert_eq!(parsed.network, "XRP Mainnet");
-        assert_eq!(parsed.display_type, parser::structs::XrpTxDisplayType::Payment);
+        assert_eq!(
+            parsed.display_type,
+            parser::structs::XrpTxDisplayType::Payment
+        );
         assert_eq!(
             parsed.signing_pubkey,
             "03F5C5BB1D19EC710D3D7FAD199AF10CF8BC1D11348E5B3765C0B0B9C0BEC32879"
@@ -252,7 +254,10 @@ mod tests {
             "SigningPubKey": "03F5C5BB1D19EC710D3D7FAD199AF10CF8BC1D11348E5B3765C0B0B9C0BEC32879"
         }"#;
         let parsed = parse(tx_str.as_bytes()).unwrap();
-        assert_eq!(parsed.display_type, parser::structs::XrpTxDisplayType::Payment);
+        assert_eq!(
+            parsed.display_type,
+            parser::structs::XrpTxDisplayType::Payment
+        );
     }
 
     #[test]

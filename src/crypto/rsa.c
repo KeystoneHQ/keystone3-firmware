@@ -78,7 +78,6 @@ Rsa_primes_t *FlashReadRsaPrimes(void)
         ASSERT(HasMatchingPrimesHash(primes, hash));
     } while (0);
 
-out:
     if (encData) {
         free_simple_response_u8(encData);
     }

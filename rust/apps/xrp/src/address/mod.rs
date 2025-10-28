@@ -47,14 +47,13 @@ mod tests {
             let address = get_address(path, extended_pub_key, root_path).unwrap();
             assert_eq!("r4Sh61HP7nxB6mQxXSSeN2DCkG3sTrzb2c".to_string(), address);
         }
-        
     }
 
     #[test]
     fn test_invalid_hd_path_prefix() {
         let extended_pub_key = "xpub6CFKyZTfzj3cyeRLUDKwQQ5s1tqTTdVgywKMVkrB2i1taGFbhazkxDzWVsfBHZpv7rg6qpDBGYR5oA8iazEfa44CdQkkknPFHJ7YCzncCS9";
         let root_path = "44'/144'/0'";
-        
+
         // HD path doesn't start with root path
         let path = "44'/144'/1'/0/0";
         let result = get_address(path, extended_pub_key, root_path);
@@ -66,7 +65,7 @@ mod tests {
     fn test_completely_different_path() {
         let extended_pub_key = "xpub6CFKyZTfzj3cyeRLUDKwQQ5s1tqTTdVgywKMVkrB2i1taGFbhazkxDzWVsfBHZpv7rg6qpDBGYR5oA8iazEfa44CdQkkknPFHJ7YCzncCS9";
         let root_path = "44'/144'/0'";
-        
+
         // Completely different path
         let path = "44'/60'/0'/0/0";
         let result = get_address(path, extended_pub_key, root_path);
@@ -78,7 +77,7 @@ mod tests {
     fn test_empty_hd_path() {
         let extended_pub_key = "xpub6CFKyZTfzj3cyeRLUDKwQQ5s1tqTTdVgywKMVkrB2i1taGFbhazkxDzWVsfBHZpv7rg6qpDBGYR5oA8iazEfa44CdQkkknPFHJ7YCzncCS9";
         let root_path = "44'/144'/0'";
-        
+
         // Empty HD path
         let path = "";
         let result = get_address(path, extended_pub_key, root_path);
@@ -88,7 +87,7 @@ mod tests {
     #[test]
     fn test_empty_root_path() {
         let extended_pub_key = "xpub6CFKyZTfzj3cyeRLUDKwQQ5s1tqTTdVgywKMVkrB2i1taGFbhazkxDzWVsfBHZpv7rg6qpDBGYR5oA8iazEfa44CdQkkknPFHJ7YCzncCS9";
-        
+
         // Empty root path should still work if path is also appropriate
         let root_path = "";
         let path = "0/0";
@@ -100,7 +99,7 @@ mod tests {
     fn test_invalid_extended_pub_key() {
         let root_path = "44'/144'/0'";
         let path = "44'/144'/0'/0/0";
-        
+
         // Invalid extended public key format
         let invalid_xpub = "invalid_xpub_key";
         let result = get_address(path, invalid_xpub, root_path);
@@ -111,7 +110,7 @@ mod tests {
     fn test_malformed_extended_pub_key() {
         let root_path = "44'/144'/0'";
         let path = "44'/144'/0'/0/0";
-        
+
         // Malformed extended public key (too short)
         let invalid_xpub = "xpub";
         let result = get_address(path, invalid_xpub, root_path);
@@ -122,7 +121,7 @@ mod tests {
     fn test_path_shorter_than_root() {
         let extended_pub_key = "xpub6CFKyZTfzj3cyeRLUDKwQQ5s1tqTTdVgywKMVkrB2i1taGFbhazkxDzWVsfBHZpv7rg6qpDBGYR5oA8iazEfa44CdQkkknPFHJ7YCzncCS9";
         let root_path = "44'/144'/0'/0/0";
-        
+
         // Path is shorter than root path
         let path = "44'/144'/0'";
         let result = get_address(path, extended_pub_key, root_path);
@@ -134,7 +133,7 @@ mod tests {
     fn test_malformed_hd_path_format() {
         let extended_pub_key = "xpub6CFKyZTfzj3cyeRLUDKwQQ5s1tqTTdVgywKMVkrB2i1taGFbhazkxDzWVsfBHZpv7rg6qpDBGYR5oA8iazEfa44CdQkkknPFHJ7YCzncCS9";
         let root_path = "44'/144'/0'";
-        
+
         // Malformed HD path (invalid characters)
         let path = "44'/144'/0'/0/abc";
         let result = get_address(path, extended_pub_key, root_path);
@@ -144,20 +143,23 @@ mod tests {
     #[test]
     fn test_root_path_with_trailing_slash() {
         let extended_pub_key = "xpub6CFKyZTfzj3cyeRLUDKwQQ5s1tqTTdVgywKMVkrB2i1taGFbhazkxDzWVsfBHZpv7rg6qpDBGYR5oA8iazEfa44CdQkkknPFHJ7YCzncCS9";
-        
+
         // Root path already has trailing slash - should still work
         let root_path = "44'/144'/0'/";
         let path = "44'/144'/0'/0/0";
         let result = get_address(path, extended_pub_key, root_path);
         assert!(result.is_ok());
-        assert_eq!("rHsMGQEkVNJmpGWs8XUBoTBiAAbwxZN5v3".to_string(), result.unwrap());
+        assert_eq!(
+            "rHsMGQEkVNJmpGWs8XUBoTBiAAbwxZN5v3".to_string(),
+            result.unwrap()
+        );
     }
 
     #[test]
     fn test_special_characters_in_path() {
         let extended_pub_key = "xpub6CFKyZTfzj3cyeRLUDKwQQ5s1tqTTdVgywKMVkrB2i1taGFbhazkxDzWVsfBHZpv7rg6qpDBGYR5oA8iazEfa44CdQkkknPFHJ7YCzncCS9";
         let root_path = "44'/144'/0'";
-        
+
         // Path with special characters
         let path = "44'/144'/0'/@#$/!@#";
         let result = get_address(path, extended_pub_key, root_path);

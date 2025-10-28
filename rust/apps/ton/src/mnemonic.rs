@@ -29,7 +29,9 @@ pub fn ton_mnemonic_validate(
     normalized_words: &Vec<String>,
     password: &Option<String>,
 ) -> Result<()> {
-    if normalized_words.len() != TON_MNEMONIC_24_WORDS && normalized_words.len() != TON_MNEMONIC_12_WORDS {
+    if normalized_words.len() != TON_MNEMONIC_24_WORDS
+        && normalized_words.len() != TON_MNEMONIC_12_WORDS
+    {
         return Err(MnemonicError::UnexpectedWordCount(normalized_words.len()).into());
     }
 
@@ -110,7 +112,7 @@ pub fn ton_master_seed_to_public_key(master_seed: [u8; 64]) -> [u8; 32] {
 
 #[cfg(test)]
 mod tests {
-    use alloc::{string::ToString, vec};
+    use alloc::{format, string::ToString, vec};
 
     use hex;
 
@@ -147,18 +149,40 @@ mod tests {
 
     #[test]
     fn test_ton_mnemonic_invalid_mnemonic() {
-        let words = [
-            "dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
-            "gas", "diet", "dune",
-        ]
-        .iter()
-        .map(|v| v.to_lowercase())
-        .collect();
-        let result = ton_mnemonic_to_master_seed(words, None);
-        assert!(result.is_err());
-        assert_eq!(
-            result.err().unwrap().to_string(),
-            "Invalid TON Mnemonic, Invalid mnemonic word count (count: 12)"
-        )
+        {
+            let words: Vec<String> = [
+                "dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
+                "gas", "diet", "dune",
+            ]
+            .iter()
+            .map(|v| v.to_lowercase())
+            .collect();
+            let words_len = words.len();
+            let result = ton_mnemonic_to_master_seed(words, None);
+            assert!(result.is_err());
+            assert_eq!(
+                result.err().unwrap().to_string(),
+                "Invalid TON Mnemonic, Invalid passwordless mnemonic (first byte: 0x0)".to_string()
+            )
+        }
+        {
+            let words: Vec<String> = [
+                "dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
+                "gas", "diet",
+            ]
+            .iter()
+            .map(|v| v.to_lowercase())
+            .collect();
+            let words_len = words.len();
+            let result = ton_mnemonic_to_master_seed(words, None);
+            assert!(result.is_err());
+            assert_eq!(
+                result.err().unwrap().to_string(),
+                format!(
+                    "Invalid TON Mnemonic, Invalid mnemonic word count (count: {})",
+                    words_len
+                )
+            )
+        }
     }
 }

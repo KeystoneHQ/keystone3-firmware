@@ -134,9 +134,9 @@ pub fn sign_message_by_seed(seed: &[u8], path: &String, message: &[u8]) -> Resul
 ///
 fn get_master_key_by_seed(seed: &[u8]) -> Result<[u8; 64]> {
     if seed.len() < 16 {
-        return Err(KeystoreError::SeedError(format!(
-            "seed must be at least 16 bytes"
-        )));
+        return Err(KeystoreError::SeedError(
+            "seed must be at least 16 bytes".to_string(),
+        ));
     }
     Ok(hmac_sha512(b"ed25519 seed", seed))
 }

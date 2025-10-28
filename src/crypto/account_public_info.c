@@ -613,6 +613,9 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
         if (primes == NULL)
             return NULL;
         SimpleResponse_c_char *result = generate_rsa_public_key(primes->p, 256, primes->q, 256);
+        memset_s(primes->p, SPI_FLASH_RSA_PRIME_SIZE, 0, SPI_FLASH_RSA_PRIME_SIZE);
+        memset_s(primes->q, SPI_FLASH_RSA_PRIME_SIZE, 0, SPI_FLASH_RSA_PRIME_SIZE);
+        memset_s(primes, sizeof(Rsa_primes_t), 0, sizeof(Rsa_primes_t));
         SRAM_FREE(primes);
         return result;
     }

@@ -8,8 +8,11 @@ use cryptoxide::hmac::Hmac;
 use cryptoxide::mac::Mac;
 use cryptoxide::pbkdf2::pbkdf2;
 use cryptoxide::sha2::Sha512;
+use zeroize::Zeroize;
 
 const PBKDF_ITERATIONS: u32 = 100000;
+const TON_MNEMONIC_24_WORDS: usize = 24;
+const TON_MNEMONIC_12_WORDS: usize = 12;
 
 pub fn ton_mnemonic_to_entropy(
     normalized_words: &Vec<String>,
@@ -26,12 +29,19 @@ pub fn ton_mnemonic_validate(
     normalized_words: &Vec<String>,
     password: &Option<String>,
 ) -> Result<()> {
+    if normalized_words.len() != TON_MNEMONIC_24_WORDS
+        && normalized_words.len() != TON_MNEMONIC_12_WORDS
+    {
+        return Err(MnemonicError::UnexpectedWordCount(normalized_words.len()).into());
+    }
+
     let entropy = ton_mnemonic_to_entropy(normalized_words, &None);
+    let mut seed: [u8; 64] = [0; 64];
     match password {
         Some(s) if !s.is_empty() => {
-            let mut seed: [u8; 64] = [0; 64];
             pbkdf2_sha512(&entropy, "TON fast seed version".as_bytes(), 1, &mut seed);
             if seed[0] != 1 {
+                seed.zeroize();
                 return Err(MnemonicError::InvalidFirstByte(seed[0]).into());
             }
             let entropy = ton_mnemonic_to_entropy(normalized_words, password);
@@ -42,11 +52,11 @@ pub fn ton_mnemonic_validate(
                 &mut seed,
             );
             if seed[0] == 0 {
+                seed.zeroize();
                 return Err(MnemonicError::InvalidFirstByte(seed[0]).into());
             }
         }
         _ => {
-            let mut seed: [u8; 64] = [0; 64];
             pbkdf2_sha512(
                 &entropy,
                 "TON seed version".as_bytes(),
@@ -54,10 +64,12 @@ pub fn ton_mnemonic_validate(
                 &mut seed,
             );
             if seed[0] != 0 {
+                seed.zeroize();
                 return Err(MnemonicError::InvalidPasswordlessMenmonicFirstByte(seed[0]).into());
             }
         }
     }
+    seed.zeroize();
 
     Ok(())
 }
@@ -77,7 +89,7 @@ pub fn ton_mnemonic_to_master_seed(
     words: Vec<String>,
     password: Option<String>,
 ) -> Result<[u8; 64]> {
-    if words.len() != 24 {
+    if words.len() != TON_MNEMONIC_24_WORDS && words.len() != TON_MNEMONIC_12_WORDS {
         return Err(MnemonicError::UnexpectedWordCount(words.len()).into());
     }
     let normalized_words: Vec<String> = words.iter().map(|w| w.trim().to_lowercase()).collect();
@@ -100,7 +112,7 @@ pub fn ton_master_seed_to_public_key(master_seed: [u8; 64]) -> [u8; 32] {
 
 #[cfg(test)]
 mod tests {
-    use alloc::{string::ToString, vec};
+    use alloc::{format, string::ToString, vec};
 
     use hex;
 
@@ -137,18 +149,40 @@ mod tests {
 
     #[test]
     fn test_ton_mnemonic_invalid_mnemonic() {
-        let words = [
-            "dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
-            "gas", "diet", "dune",
-        ]
-        .iter()
-        .map(|v| v.to_lowercase())
-        .collect();
-        let result = ton_mnemonic_to_master_seed(words, None);
-        assert!(result.is_err());
-        assert_eq!(
-            result.err().unwrap().to_string(),
-            "Invalid TON Mnemonic, Invalid mnemonic word count (count: 12)"
-        )
+        {
+            let words: Vec<String> = [
+                "dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
+                "gas", "diet", "dune",
+            ]
+            .iter()
+            .map(|v| v.to_lowercase())
+            .collect();
+            let words_len = words.len();
+            let result = ton_mnemonic_to_master_seed(words, None);
+            assert!(result.is_err());
+            assert_eq!(
+                result.err().unwrap().to_string(),
+                "Invalid TON Mnemonic, Invalid passwordless mnemonic (first byte: 0x0)".to_string()
+            )
+        }
+        {
+            let words: Vec<String> = [
+                "dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
+                "gas", "diet",
+            ]
+            .iter()
+            .map(|v| v.to_lowercase())
+            .collect();
+            let words_len = words.len();
+            let result = ton_mnemonic_to_master_seed(words, None);
+            assert!(result.is_err());
+            assert_eq!(
+                result.err().unwrap().to_string(),
+                format!(
+                    "Invalid TON Mnemonic, Invalid mnemonic word count (count: {})",
+                    words_len
+                )
+            )
+        }
     }
 }

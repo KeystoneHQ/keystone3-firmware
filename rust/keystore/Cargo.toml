@@ -21,6 +21,7 @@ bitcoin = { workspace = true }
 hex = { workspace = true }
 rsa = { workspace = true }
 zcash_vendor = { workspace = true }
+zeroize = { workspace = true }
 
 [features]
 default = ["std"]

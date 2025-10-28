@@ -30,6 +30,9 @@
 #define SLIP39_DEFAULT_MEMBER_COUNT             (5)
 #define SLIP39_DEFAULT_MEMBER_THRESHOLD         (3)
 #define SLIP39_MNEMONIC_WORDS_MAX               (33)
+#define SLIP39_MNEMONIC_20_WORDS                (20)
+#define SLIP39_MNEMONIC_33_WORDS                (33)
+#define SLIP39_MAX_SLICE_COUNT                  (16)
 
 #define SLIP39_INVALID_MNEMONIC_INDEX           (~0)
 #define PBKDF2_BASE_ITERATION_COUNT             (2500)
@@ -45,10 +48,10 @@
 
 int Slip39OneSliceCheck(char *wordsList, uint8_t wordCnt, uint16_t id, uint8_t eb, uint8_t ie, uint8_t *threshold);
 int Slip39CheckFirstWordList(char *wordsList, uint8_t wordCnt, uint8_t *threshold);
-void GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCnt, uint8_t memberCnt, uint8_t memberThreshold,
-                             char *wordsList[], uint16_t *id, bool *eb, uint8_t *ie);
+int GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCnt, uint8_t memberCnt, uint8_t memberThreshold,
+                            char *wordsList[], uint16_t *id, bool *eb, uint8_t *ie);
 int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, uint8_t *masterSecret,
-                          char *wordsList[], uint16_t *id, uint8_t *eb, uint8_t *ie);
+                          char *wordsList[], uint16_t *id, bool *eb, uint8_t *ie);
 int Slip39GetSeed(uint8_t *ems, uint8_t *seed, uint8_t emsLen, const char *passphrase, uint8_t ie, bool eb, uint16_t id);
 
 #endif /* _SLIP39_H */

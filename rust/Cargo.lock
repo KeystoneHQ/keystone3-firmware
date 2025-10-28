@@ -165,6 +165,7 @@ dependencies = [
  "serde_json",
  "sha2 0.10.9",
  "thiserror-core",
+ "zeroize",
 ]
 
 [[package]]
@@ -3853,6 +3854,7 @@ dependencies = [
  "ur-parse-lib",
  "ur-registry",
  "zcash_vendor",
+ "zeroize",
 ]
 
 [[package]]

@@ -1,8 +1,8 @@
 #ifdef WEB3_VERSION
 #include "rsa.h"
+#include "user_utils.h"
 
 static uint32_t GetRsaAddress();
-static char *GetPassword();
 static void RsaHashWithSalt(const uint8_t *data, uint8_t *hash);
 static bool HasMatchingPrimesHash(Rsa_primes_t *primes, const uint8_t targethash[SPI_FLASH_RSA_HASH_SIZE]);
 
@@ -16,14 +16,8 @@ static uint32_t GetRsaAddress()
     case 2:
         return SPI_FLASH_RSA_USER3_DATA;
     default:
-        return SPI_FLASH_RSA_USER1_DATA;
+        ASSERT(false);
     }
-}
-
-static char *GetPassword()
-{
-    char *password = PassphraseExist(GetCurrentAccountIndex()) ? SecretCacheGetPassphrase() : SecretCacheGetPassword();
-    return password;
 }
 
 static void RsaHashWithSalt(const uint8_t *data, uint8_t *hash)
@@ -48,87 +42,115 @@ static bool HasMatchingPrimesHash(Rsa_primes_t *primes, const uint8_t targethash
     memcpy_s(bytes + SPI_FLASH_RSA_PRIME_SIZE, SPI_FLASH_RSA_PRIME_SIZE, primes->q, SPI_FLASH_RSA_PRIME_SIZE);
     uint8_t *sourceHash = SRAM_MALLOC(SPI_FLASH_RSA_HASH_SIZE);
     RsaHashWithSalt(bytes, sourceHash);
-    int ret = memcmp(sourceHash, targethash, SPI_FLASH_RSA_HASH_SIZE) == 0;
+    memset_s(bytes, SPI_FLASH_RSA_ORIGIN_DATA_SIZE, 0, SPI_FLASH_RSA_ORIGIN_DATA_SIZE);
+    bool ret = memcmp(sourceHash, targethash, SPI_FLASH_RSA_HASH_SIZE) == 0;
     SRAM_FREE(sourceHash);
     return ret;
 }
 
-bool HasGeneratedRsaPrimes()
+
+Rsa_primes_t *FlashReadRsaPrimes(void)
 {
-    Gd25FlashSectorErase(GetRsaAddress());
-    Rsa_primes_t *primes = FlashReadRsaPrimes();
-    bool ret = false;
-    if (primes != NULL) {
-        SRAM_FREE(primes);
-        ret = true;
-    }
-    return ret;
-}
+    int ret = -1;
+    Rsa_primes_t *primes = NULL;
+    SimpleResponse_u8 *encData = NULL;
+    uint8_t fullData[SPI_FLASH_RSA_DATA_FULL_SIZE] = {0};
+    uint8_t cryptData[SPI_FLASH_RSA_DATA_SIZE] = {0};
+    uint8_t hash[SPI_FLASH_RSA_HASH_SIZE] = {0};
+    uint8_t seed[SEED_LEN] = {0};
 
-Rsa_primes_t *FlashReadRsaPrimes()
-{
-    Rsa_primes_t *primes = SRAM_MALLOC(sizeof(Rsa_primes_t));
-    if (!primes) {
-        printf("Failed to allocate memory for RSA primes\n");
-        SRAM_FREE(primes);
-        return NULL;
-    }
+    do {
+        primes = SRAM_MALLOC(sizeof(Rsa_primes_t));
+        ASSERT(Gd25FlashReadBuffer(GetRsaAddress(), fullData, sizeof(fullData)) == sizeof(fullData));
 
-    uint8_t fullData[SPI_FLASH_RSA_DATA_FULL_SIZE];
-    Gd25FlashReadBuffer(GetRsaAddress(), fullData, sizeof(fullData));
-    uint8_t seed[64];
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, GetPassword());
-    if (ret != 0) {
-        printf("Failed to get account seed\n");
-        SRAM_FREE(primes);
-        return NULL;
-    }
-    uint8_t cryptData[SPI_FLASH_RSA_DATA_SIZE];
-    memcpy_s(cryptData, SPI_FLASH_RSA_DATA_SIZE, fullData, SPI_FLASH_RSA_DATA_SIZE);
-    SimpleResponse_u8 *encData = aes256_decrypt_primes(seed, len, cryptData);
-    if (encData->error_code != 0) {
-        PrintArray("Wrong Seed", seed, len);
-        printf("Failed to decrypt RSA primes\n");
-        SRAM_FREE(primes);
-        return NULL;
-    }
-    memcpy_s(primes->p, SPI_FLASH_RSA_PRIME_SIZE, encData->data, SPI_FLASH_RSA_PRIME_SIZE);
-    memcpy_s(primes->q, SPI_FLASH_RSA_PRIME_SIZE, encData->data + SPI_FLASH_RSA_PRIME_SIZE, SPI_FLASH_RSA_PRIME_SIZE);
+        int len = (GetMnemonicType() == MNEMONIC_TYPE_BIP39) ? (int)sizeof(seed) : GetCurrentAccountEntropyLen();
+        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        CHECK_ERRCODE_BREAK("GetAccountSeed", ret);
 
-    uint8_t hash[SPI_FLASH_RSA_HASH_SIZE];
-    memcpy_s(hash, SPI_FLASH_RSA_HASH_SIZE, fullData + SPI_FLASH_RSA_DATA_SIZE, SPI_FLASH_RSA_HASH_SIZE);
-    if (!HasMatchingPrimesHash(primes, hash)) {
-        printf("RSA primes hash mismatch\n");
-        SRAM_FREE(primes);
-        return NULL;
-    }
+        memcpy_s(cryptData, sizeof(cryptData), fullData, sizeof(cryptData));
+        encData = aes256_decrypt_primes(seed, len, cryptData);
+        CHECK_ERRCODE_BREAK("aes256_decrypt_primes", encData->error_code);
 
+        memcpy_s(primes->p, SPI_FLASH_RSA_PRIME_SIZE, encData->data, SPI_FLASH_RSA_PRIME_SIZE);
+        memcpy_s(primes->q, SPI_FLASH_RSA_PRIME_SIZE, encData->data + SPI_FLASH_RSA_PRIME_SIZE, SPI_FLASH_RSA_PRIME_SIZE);
+
+        memcpy_s(hash, sizeof(hash), fullData + SPI_FLASH_RSA_DATA_SIZE, sizeof(hash));
+        ASSERT(HasMatchingPrimesHash(primes, hash));
+    } while (0);
+
+out:
+    if (encData) {
+        free_simple_response_u8(encData);
+    }
+    CLEAR_ARRAY(seed);
+    CLEAR_ARRAY(fullData);
+    CLEAR_ARRAY(cryptData);
+    CLEAR_ARRAY(hash);
+    if (ret != SUCCESS_CODE) {
+        if (primes) {
+            CLEAR_ARRAY(primes->p);
+            CLEAR_ARRAY(primes->q);
+            SRAM_FREE(primes);
+            primes = NULL;
+        }
+    }
     return primes;
 }
 
 int FlashWriteRsaPrimes(const uint8_t *data)
 {
-    uint8_t fullData[SPI_FLASH_RSA_DATA_FULL_SIZE];
-    uint8_t seed[64];
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    int32_t seed_ret = GetAccountSeed(GetCurrentAccountIndex(), seed, GetPassword());
-    ASSERT(seed_ret == 0);
-    SimpleResponse_u8 *cryptData = aes256_encrypt_primes(seed, len, (PtrBytes)data);
+    int ret = -1;
+    SimpleResponse_u8 *cryptData = NULL;
+    uint8_t fullData[SPI_FLASH_RSA_DATA_FULL_SIZE] = {0};
+    uint8_t seed[64] = {0};
+    uint8_t *hash = NULL;
 
-    memcpy_s(fullData, SPI_FLASH_RSA_DATA_SIZE, cryptData->data, SPI_FLASH_RSA_DATA_SIZE);
-    uint8_t *hash = SRAM_MALLOC(SPI_FLASH_RSA_HASH_SIZE);
-    RsaHashWithSalt(data, hash);
-    memcpy_s(fullData + SPI_FLASH_RSA_DATA_SIZE, SPI_FLASH_RSA_HASH_SIZE, hash, SPI_FLASH_RSA_HASH_SIZE);
-    SRAM_FREE(hash);
-    Gd25FlashSectorErase(GetRsaAddress());
-    int32_t ret = Gd25FlashWriteBuffer(GetRsaAddress(), fullData, sizeof(fullData));
+    do {
+        int len = (GetMnemonicType() == MNEMONIC_TYPE_BIP39) ? (int)sizeof(seed) : GetCurrentAccountEntropyLen();
+        if (GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword()) != 0) {
+            printf("Failed to get account seed\n");
+            break;
+        }
 
-    if (ret != SPI_FLASH_RSA_DATA_FULL_SIZE) {
-        printf("Flash write failed with error code: %d\n", ret);
-        return -1;
+        cryptData = aes256_encrypt_primes(seed, len, (PtrBytes)data);
+        if (cryptData == NULL || cryptData->error_code != 0) {
+            printf("Failed to encrypt RSA primes\n");
+            break;
+        }
+
+        memcpy_s(fullData, SPI_FLASH_RSA_DATA_SIZE, cryptData->data, SPI_FLASH_RSA_DATA_SIZE);
+
+        hash = SRAM_MALLOC(SPI_FLASH_RSA_HASH_SIZE);
+        if (!hash) {
+            printf("Failed to alloc hash buffer\n");
+            break;
+        }
+        RsaHashWithSalt(data, hash);
+        memcpy_s(fullData + SPI_FLASH_RSA_DATA_SIZE, SPI_FLASH_RSA_HASH_SIZE, hash, SPI_FLASH_RSA_HASH_SIZE);
+
+        Gd25FlashSectorErase(GetRsaAddress());
+        int32_t wret = Gd25FlashWriteBuffer(GetRsaAddress(), fullData, sizeof(fullData));
+        ASSERT(wret == sizeof(fullData));
+
+        uint8_t verifyBuf[SPI_FLASH_RSA_DATA_FULL_SIZE] = {0};
+        Gd25FlashReadBuffer(GetRsaAddress(), verifyBuf, sizeof(verifyBuf));
+        if (memcmp(verifyBuf, fullData, sizeof(fullData)) != 0) {
+            printf("Flash verify mismatch after write\n");
+            ASSERT(false);
+        }
+        CLEAR_ARRAY(verifyBuf);
+
+        ret = 0;
+    } while (0);
+
+    if (hash) {
+        SRAM_FREE(hash);
     }
-
-    return 0;
+    if (cryptData) {
+        free_simple_response_u8(cryptData);
+    }
+    CLEAR_ARRAY(fullData);
+    CLEAR_ARRAY(seed);
+    return ret;
 }
 #endif

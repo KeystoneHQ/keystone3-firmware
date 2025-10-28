@@ -218,7 +218,7 @@ mod tests {
 
         let signature = sign_message_hash_by_private_key(&message_hash, &test_key_bytes).unwrap();
         let result = verify_signature(&signature, &message_hash, &test_pubkey).unwrap();
-        assert_eq!(result, true);
+        assert!(result);
     }
 
     #[test]

@@ -7,27 +7,22 @@ extern crate core;
 #[macro_use]
 extern crate std;
 
+use crate::{
+    errors::{Result, SuiError},
+    types::intent::IntentScope,
+};
 use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
+use blake2::{
+    digest::{Update, VariableOutput},
+    Blake2bVar,
+};
 use core::str::FromStr;
-
 use serde_derive::{Deserialize, Serialize};
 use sui_types::{message::PersonalMessage, transaction::TransactionData};
-
-use errors::SuiError;
 use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
-use {bcs, hex};
-use {
-    blake2::{
-        digest::{Update, VariableOutput},
-        Blake2bVar,
-    },
-    serde_json,
-};
-
-use crate::{errors::Result, types::intent::IntentScope};
 
 pub mod errors;
 pub mod types;
@@ -40,17 +35,29 @@ pub enum Intent {
 }
 
 pub fn generate_address(pub_key: &str) -> Result<String> {
-    let mut hasher = Blake2bVar::new(32).unwrap();
+    let mut hasher = Blake2bVar::new(32)
+        .map_err(|e| SuiError::InvalidData(format!("blake2b new failed: {e}")))?;
     let mut buf: Vec<u8> = hex::decode(pub_key)?;
+    let buf_len = buf.len();
+    if buf_len != 32 {
+        return Err(SuiError::InvalidData(format!(
+            "invalid public key length: {buf_len}"
+        )));
+    }
     // insert flag, ed25519 is 0, secp256k1 is 1, secp256r1 is 2, multi sign is 3.
     buf.insert(0, 0);
     hasher.update(&buf);
     let mut addr = [0u8; 32];
-    hasher.finalize_variable(&mut addr).unwrap();
+    hasher
+        .finalize_variable(&mut addr)
+        .map_err(|e| SuiError::InvalidData(format!("blake2b finalize failed: {e}")))?;
     Ok(format!("0x{}", hex::encode(addr)))
 }
 
 pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
+    if intent.is_empty() {
+        return Err(SuiError::InvalidData("intent is empty".to_string()));
+    }
     match IntentScope::try_from(intent[0])? {
         IntentScope::TransactionData | IntentScope::TransactionEffects => {
             let tx: IntentMessage<TransactionData> =
@@ -62,11 +69,11 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
                 Ok(msg) => msg,
                 Err(_) => {
                     if intent.len() < 4 {
-                        return Err(SuiError::InvalidData(String::from("message too short")));
+                        return Err(SuiError::InvalidData("message too short".to_string()));
                     }
-                    let intent_bytes = intent[..3].to_vec();
+                    let intent_bytes = &intent[..3];
                     IntentMessage::<PersonalMessage>::new(
-                        types::intent::Intent::from_str(hex::encode(intent_bytes).as_str())?,
+                        types::intent::Intent::from_str(&hex::encode(intent_bytes))?,
                         PersonalMessage {
                             message: intent[3..].to_vec(),
                         },
@@ -84,7 +91,7 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
                 value: PersonalMessageUtf8 { message: m },
             }))
         }
-        _ => Err(SuiError::InvalidData(String::from("unsupported intent"))),
+        _ => Err(SuiError::InvalidData("unsupported intent".to_string())),
     }
 }
 
@@ -92,7 +99,7 @@ pub fn decode_utf8(msg: &[u8]) -> Result<String> {
     match String::from_utf8(msg.to_vec()) {
         Ok(utf8_msg) => {
             if app_utils::is_cjk(&utf8_msg) {
-                Err(errors::SuiError::InvalidData(String::from("contains CJK")))
+                Err(errors::SuiError::InvalidData("contains CJK".to_string()))
             } else {
                 Ok(utf8_msg)
             }
@@ -102,10 +109,13 @@ pub fn decode_utf8(msg: &[u8]) -> Result<String> {
 }
 
 pub fn sign_intent(seed: &[u8], path: &String, intent: &[u8]) -> Result<[u8; 64]> {
-    let mut hasher = Blake2bVar::new(32).unwrap();
+    let mut hasher = Blake2bVar::new(32)
+        .map_err(|e| SuiError::InvalidData(format!("blake2b new failed: {e}")))?;
     hasher.update(intent);
     let mut hash = [0u8; 32];
-    hasher.finalize_variable(&mut hash).unwrap();
+    hasher
+        .finalize_variable(&mut hash)
+        .map_err(|e| SuiError::InvalidData(format!("blake2b finalize failed: {e}")))?;
     let sig =
         keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, &hash)
             .map_err(|e| errors::SuiError::SignFailure(e.to_string()))?;
@@ -121,6 +131,7 @@ pub fn sign_hash(seed: &[u8], path: &String, hash: &[u8]) -> Result<[u8; 64]> {
 mod tests {
     use alloc::string::ToString;
 
+    use core::str::FromStr;
     use serde_json::json;
 
     use super::*;
@@ -184,6 +195,47 @@ mod tests {
     }
 
     #[test]
+    fn test_decode_utf8_cjk_rejected() {
+        // "你好，Sui" in UTF-8
+        let bytes = "e4bda0e5a5bdefbc8cs7569".replace('s', "");
+        let bytes = hex::decode(bytes + "2c20537569").unwrap();
+
+        let msg_str = decode_utf8(&bytes);
+        assert!(msg_str.is_err());
+    }
+
+    #[test]
+    fn test_decode_utf8_allows_emoji() {
+        // "Hello, 😀" in UTF-8, not CJK
+        let bytes = hex::decode("48656c6c6f2c20f09f9880").unwrap();
+        let msg_str = decode_utf8(&bytes);
+        assert_eq!(msg_str.unwrap(), "Hello, 😀");
+    }
+
+    #[test]
+    fn test_personal_message_bcs_roundtrip_and_parse() {
+        // Build a proper BCS-encoded IntentMessage<PersonalMessage>
+        let intent = types::intent::Intent::sui_app(IntentScope::PersonalMessage);
+        let original = IntentMessage::<PersonalMessage> {
+            intent,
+            value: PersonalMessage {
+                message: b"Hello via BCS".to_vec(),
+            },
+        };
+        let bytes = bcs::to_bytes(&original).unwrap();
+        // Ensure parse_intent recognizes it and preserves message
+        let parsed = parse_intent(&bytes).unwrap();
+        match parsed {
+            Intent::PersonalMessage(m) => {
+                assert_eq!(m.intent.app_id as u8, 0);
+                assert!(matches!(m.intent.scope, IntentScope::PersonalMessage));
+                assert_eq!(m.value.message, "Hello via BCS");
+            }
+            _ => panic!("unexpected variant"),
+        }
+    }
+
+    #[test]
     fn test_sign() {
         let seed = hex::decode("a33b2bdc2dc3c53d24081e5ed2273e6e8e0e43f8b26c746fbd1db2b8f1d4d8faa033545d3ec9303d36e743a4574b80b124353d380535532bb69455dc0ee442c4").unwrap();
         let hd_path = "m/44'/784'/0'/0'/0'".to_string();
@@ -206,5 +258,129 @@ mod tests {
         let signature = sign_hash(&seed, &hd_path, &hash).unwrap();
         let expected_signature = hex::decode("f4b79835417490958c72492723409289b444f3af18274ba484a9eeaca9e760520e453776e5975df058b537476932a45239685f694fc6362fe5af6ba714da6505").unwrap();
         assert_eq!(expected_signature, signature);
+    }
+
+    #[test]
+    fn test_generate_address_invalid_length() {
+        let pub_key = "invalid";
+        let result = generate_address(pub_key);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_generate_address_wrong_length() {
+        // 62 hex chars -> 31 bytes (wrong length)
+        let pub_key = "edbe1b9b3b040ff88fbfa4ccda6f5f8d404ae7ffe35f9b220dec08679d5c33";
+        let result = generate_address(pub_key);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_generate_address_non_hex_prefix() {
+        // leading 0x should fail hex decoding
+        let pub_key = "0xedbe1b9b3b040ff88fbfa4ccda6f5f8d404ae7ffe35f9b220dec08679d5c336f";
+        let result = generate_address(pub_key);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_intent_empty() {
+        let result = parse_intent(&[]);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_intent_invalid_scope() {
+        let bytes = hex::decode("ff000000").unwrap();
+        let result = parse_intent(&bytes);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_msg_too_short() {
+        // PersonalMessage scope (0x03) but total length < 4 should error in fallback path
+        let bytes = hex::decode("03").unwrap();
+        let result = parse_intent(&bytes);
+        assert!(result.is_err());
+        let bytes = hex::decode("0300").unwrap();
+        let result = parse_intent(&bytes);
+        assert!(result.is_err());
+        let bytes = hex::decode("030000").unwrap();
+        let result = parse_intent(&bytes);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_intent_constructors() {
+        let itx = types::intent::Intent::sui_transaction();
+        assert!(matches!(itx.scope, IntentScope::TransactionData));
+        assert_eq!(itx.version as u8, 0);
+        assert_eq!(itx.app_id as u8, 0);
+
+        let intent_pm = types::intent::Intent::sui_app(IntentScope::PersonalMessage);
+        assert!(matches!(intent_pm.scope, IntentScope::PersonalMessage));
+        assert_eq!(intent_pm.version as u8, 0);
+        assert_eq!(intent_pm.app_id as u8, 0);
+    }
+
+    #[test]
+    fn test_intent_scope_try_from_values() {
+        // Validate known discriminants 0..=6 map correctly
+        for (val, expect) in [
+            (0u8, IntentScope::TransactionData),
+            (1, IntentScope::TransactionEffects),
+            (2, IntentScope::CheckpointSummary),
+            (3, IntentScope::PersonalMessage),
+            (4, IntentScope::SenderSignedTransaction),
+            (5, IntentScope::ProofOfPossession),
+            (6, IntentScope::HeaderDigest),
+        ] {
+            let parsed = IntentScope::try_from(val).unwrap();
+            assert!(core::mem::discriminant(&parsed) == core::mem::discriminant(&expect));
+        }
+        // Out-of-range should fail
+        assert!(IntentScope::try_from(7u8).is_err());
+        assert!(IntentScope::try_from(255u8).is_err());
+    }
+
+    #[test]
+    fn test_intent_version_try_from_invalid() {
+        // Only V0(0) is valid
+        assert!(types::intent::IntentVersion::try_from(1u8).is_err());
+        assert!(types::intent::IntentVersion::try_from(255u8).is_err());
+    }
+
+    #[test]
+    fn test_intent_from_str_narwhal() {
+        // scope=TransactionData(0), version=V0(0), app=Narwhal(1) => 000001
+        let i = types::intent::Intent::from_str("000001").unwrap();
+        assert_eq!(i.scope as u8, 0);
+        assert_eq!(i.version as u8, 0);
+        assert_eq!(i.app_id as u8, 1);
+    }
+
+    #[test]
+    fn test_sign_intent_deterministic_and_path_isolation() {
+        let seed = hex::decode("a33b2bdc2dc3c53d24081e5ed2273e6e8e0e43f8b26c746fbd1db2b8f1d4d8faa033545d3ec9303d36e743a4574b80b124353d380535532bb69455dc0ee442c4").unwrap();
+        let path1 = "m/44'/784'/0'/0'/0'".to_string();
+        let path2 = "m/44'/784'/0'/0'/1'".to_string();
+        let msg = hex::decode("00000000000200201ff915a5e9e32fdbe0135535b6c69a00a9809aaf7f7c0275d3239ca79db20d6400081027000000000000020200010101000101020000010000ebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec3944093886901a2e3e42930675d9571a467eb5d4b22553c93ccb84e9097972e02c490b4e7a22ab73200000000000020176c4727433105da34209f04ac3f22e192a2573d7948cb2fabde7d13a7f4f149ebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec39440938869e803000000000000640000000000000000").unwrap();
+        let sig1a = sign_intent(&seed, &path1, &msg).unwrap();
+        let sig1b = sign_intent(&seed, &path1, &msg).unwrap();
+        assert_eq!(sig1a, sig1b); // deterministic
+        let sig2 = sign_intent(&seed, &path2, &msg).unwrap();
+        assert_ne!(sig1a, sig2); // different path => different signature
+    }
+
+    #[test]
+    fn test_utils_normalize_path_via_sui() {
+        // Ensure utils behavior is reachable and correct via sui crate dependency
+        let p = "44'/784'/0'".to_string();
+        let normalized = app_utils::normalize_path(&p);
+        assert_eq!(normalized, "m/44'/784'/0'");
+
+        let p2 = "m/44'/784'/0'".to_string();
+        let normalized2 = app_utils::normalize_path(&p2);
+        assert_eq!(normalized2, p2);
     }
 }

@@ -217,4 +217,31 @@ mod tests {
         let expected_signature = hex::decode("f4b79835417490958c72492723409289b444f3af18274ba484a9eeaca9e760520e453776e5975df058b537476932a45239685f694fc6362fe5af6ba714da6505").unwrap();
         assert_eq!(expected_signature, signature);
     }
+
+    #[test]
+    fn test_generate_address_invalid_length() {
+        let pub_key = "invalid";
+        let result = generate_address(pub_key);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_generate_address_wrong_length() {
+        let pub_key = "edbe1b9b3b040ff88fbfa4ccda6f5f8d404ae7ffe35f9b220dec08679d5c336f";
+        let result = generate_address(pub_key);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_intent_empty() {
+        let result = parse_intent(&[]);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_intent_invalid_scope() {
+        let bytes = hex::decode("ff000000").unwrap();
+        let result = parse_intent(&bytes);
+        assert!(result.is_err());
+    }
 }

@@ -499,7 +499,6 @@ macro_rules! extract_array_mut {
     }};
 }
 
-
 #[macro_export]
 macro_rules! impl_response {
     ($name:ident) => {

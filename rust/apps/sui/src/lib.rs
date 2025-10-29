@@ -55,7 +55,7 @@ pub fn generate_address(pub_key: &str) -> Result<String> {
 }
 
 pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
-    if  intent.is_empty() {
+    if intent.is_empty() {
         return Err(SuiError::InvalidData("intent is empty".to_string()));
     }
     match IntentScope::try_from(intent[0])? {

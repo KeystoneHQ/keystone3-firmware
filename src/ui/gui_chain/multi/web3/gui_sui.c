@@ -12,6 +12,7 @@ static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
+static bool g_isSignHashRequest = false;
 
 void GuiSetSuiUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
@@ -21,15 +22,21 @@ void GuiSetSuiUrData(URParseResult *urResult, URParseMultiResult *urMultiResult,
 }
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                   \
-    if (result != NULL)                                                                                                   \
-    {                                                                                                                     \
-        free_TransactionParseResult_DisplaySuiIntentMessage((PtrT_TransactionParseResult_DisplaySuiIntentMessage)result); \
-        result = NULL;                                                                                                    \
-    }
+    do {                                                                                                                  \
+        if (result != NULL) {                                                                                             \
+            if (g_isSignHashRequest) {                                                                                    \
+                free_TransactionParseResult_DisplaySuiSignMessageHash((PtrT_TransactionParseResult_DisplaySuiSignMessageHash)result); \
+            } else {                                                                                                      \
+                free_TransactionParseResult_DisplaySuiIntentMessage((PtrT_TransactionParseResult_DisplaySuiIntentMessage)result); \
+            }                                                                                                             \
+            result = NULL;                                                                                                \
+        }                                                                                                                 \
+    } while (0)
 
 void *GuiGetSuiData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
+    g_isSignHashRequest = false;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
         PtrT_TransactionParseResult_DisplaySuiIntentMessage parseResult = sui_parse_intent(data);
@@ -42,6 +49,7 @@ void *GuiGetSuiData(void)
 void *GuiGetSuiSignMessageHashData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
+    g_isSignHashRequest = true;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
         PtrT_TransactionParseResult_DisplaySuiSignMessageHash parseResult = sui_parse_sign_message_hash(data);
@@ -185,8 +193,6 @@ void GuiShowSuiSignMessageHashOverview(lv_obj_t *parent, void *totalData)
     lv_obj_align_to(message_hash_value, message_hash_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 }
 
-
-
 void GuiShowSuiSignMessageHashDetails(lv_obj_t *parent, void *totalData)
 {
     lv_obj_set_size(parent, 408, 444);
@@ -240,8 +246,6 @@ void GuiShowSuiSignMessageHashDetails(lv_obj_t *parent, void *totalData)
     lv_label_set_long_mode(message_hash_notice_content, LV_LABEL_LONG_WRAP);
 }
 
-
-
 void FreeSuiMemory(void)
 {
     CHECK_FREE_UR_RESULT(g_urResult, false);
@@ -262,38 +266,40 @@ void GetSuiDetail(void *indata, void *param, uint32_t maxLen)
     strcpy((char *)indata, tx->detail);
 }
 
-UREncodeResult *GuiGetSuiSignQrCodeData(void)
+static UREncodeResult *SuiSignInternal(UREncodeResult * (*sign_func)(void *, PtrBytes, uint32_t), void *data)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    UREncodeResult *encodeResult;
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    UREncodeResult *encodeResult = NULL;
+    uint8_t seed[SEED_LEN] = {0};
+    int ret = 0;
+
     do {
-        uint8_t seed[64];
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        if (ret != 0) {
+            break;
+        }
+
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = sui_sign_intent(data, seed, len);
-        ClearSecretCache();
+        encodeResult = sign_func(data, seed, len);
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
+
     return encodeResult;
+}
+
+UREncodeResult *GuiGetSuiSignQrCodeData(void)
+{
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    return SuiSignInternal(sui_sign_intent, data);
 }
 
 UREncodeResult *GuiGetSuiSignHashQrCodeData(void)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    do {
-        uint8_t seed[64];
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = sui_sign_hash(data, seed, len);
-        ClearSecretCache();
-        CHECK_CHAIN_BREAK(encodeResult);
-    } while (0);
-    SetLockScreen(enable);
-    return encodeResult;
+    return SuiSignInternal(sui_sign_hash, data);
 }

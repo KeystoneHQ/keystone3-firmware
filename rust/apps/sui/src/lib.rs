@@ -7,27 +7,22 @@ extern crate core;
 #[macro_use]
 extern crate std;
 
+use crate::{
+    errors::{Result, SuiError},
+    types::intent::IntentScope,
+};
 use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
+use blake2::{
+    digest::{Update, VariableOutput},
+    Blake2bVar,
+};
 use core::str::FromStr;
-
 use serde_derive::{Deserialize, Serialize};
 use sui_types::{message::PersonalMessage, transaction::TransactionData};
-
-use errors::SuiError;
 use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
-use {bcs, hex};
-use {
-    blake2::{
-        digest::{Update, VariableOutput},
-        Blake2bVar,
-    },
-    serde_json,
-};
-
-use crate::{errors::Result, types::intent::IntentScope};
 
 pub mod errors;
 pub mod types;
@@ -40,17 +35,29 @@ pub enum Intent {
 }
 
 pub fn generate_address(pub_key: &str) -> Result<String> {
-    let mut hasher = Blake2bVar::new(32).unwrap();
+    let mut hasher = Blake2bVar::new(32)
+        .map_err(|e| SuiError::InvalidData(format!("blake2b new failed: {e}")))?;
     let mut buf: Vec<u8> = hex::decode(pub_key)?;
+    let buf_len = buf.len();
+    if buf_len != 32 {
+        return Err(SuiError::InvalidData(format!(
+            "invalid public key length: {buf_len}"
+        )));
+    }
     // insert flag, ed25519 is 0, secp256k1 is 1, secp256r1 is 2, multi sign is 3.
     buf.insert(0, 0);
     hasher.update(&buf);
     let mut addr = [0u8; 32];
-    hasher.finalize_variable(&mut addr).unwrap();
+    hasher
+        .finalize_variable(&mut addr)
+        .map_err(|e| SuiError::InvalidData(format!("blake2b finalize failed: {e}")))?;
     Ok(format!("0x{}", hex::encode(addr)))
 }
 
 pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
+    if  intent.is_empty() {
+        return Err(SuiError::InvalidData("intent is empty".to_string()));
+    }
     match IntentScope::try_from(intent[0])? {
         IntentScope::TransactionData | IntentScope::TransactionEffects => {
             let tx: IntentMessage<TransactionData> =
@@ -62,11 +69,11 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
                 Ok(msg) => msg,
                 Err(_) => {
                     if intent.len() < 4 {
-                        return Err(SuiError::InvalidData(String::from("message too short")));
+                        return Err(SuiError::InvalidData("message too short".to_string()));
                     }
-                    let intent_bytes = intent[..3].to_vec();
+                    let intent_bytes = &intent[..3];
                     IntentMessage::<PersonalMessage>::new(
-                        types::intent::Intent::from_str(hex::encode(intent_bytes).as_str())?,
+                        types::intent::Intent::from_str(&hex::encode(intent_bytes))?,
                         PersonalMessage {
                             message: intent[3..].to_vec(),
                         },
@@ -84,7 +91,7 @@ pub fn parse_intent(intent: &[u8]) -> Result<Intent> {
                 value: PersonalMessageUtf8 { message: m },
             }))
         }
-        _ => Err(SuiError::InvalidData(String::from("unsupported intent"))),
+        _ => Err(SuiError::InvalidData("unsupported intent".to_string())),
     }
 }
 
@@ -92,7 +99,7 @@ pub fn decode_utf8(msg: &[u8]) -> Result<String> {
     match String::from_utf8(msg.to_vec()) {
         Ok(utf8_msg) => {
             if app_utils::is_cjk(&utf8_msg) {
-                Err(errors::SuiError::InvalidData(String::from("contains CJK")))
+                Err(errors::SuiError::InvalidData("contains CJK".to_string()))
             } else {
                 Ok(utf8_msg)
             }
@@ -102,10 +109,13 @@ pub fn decode_utf8(msg: &[u8]) -> Result<String> {
 }
 
 pub fn sign_intent(seed: &[u8], path: &String, intent: &[u8]) -> Result<[u8; 64]> {
-    let mut hasher = Blake2bVar::new(32).unwrap();
+    let mut hasher = Blake2bVar::new(32)
+        .map_err(|e| SuiError::InvalidData(format!("blake2b new failed: {e}")))?;
     hasher.update(intent);
     let mut hash = [0u8; 32];
-    hasher.finalize_variable(&mut hash).unwrap();
+    hasher
+        .finalize_variable(&mut hash)
+        .map_err(|e| SuiError::InvalidData(format!("blake2b finalize failed: {e}")))?;
     let sig =
         keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, path, &hash)
             .map_err(|e| errors::SuiError::SignFailure(e.to_string()))?;

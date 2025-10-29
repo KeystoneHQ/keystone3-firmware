@@ -47,12 +47,12 @@ pub unsafe extern "C" fn sui_check_request(
     }
     let mfp = extract_array!(master_fingerprint, u8, 4);
     let sign_request = extract_ptr_with_type!(ptr, SuiSignRequest);
-    
+
     let paths = sign_request.get_derivation_paths();
     if paths.is_empty() {
         return TransactionCheckResult::from(RustCError::InvalidHDPath).c_ptr();
     }
-    
+
     // According to SDK convention, index 0 is the signing path
     let ur_mfp = paths[0].get_source_fingerprint();
 
@@ -81,12 +81,12 @@ pub unsafe extern "C" fn sui_check_sign_hash_request(
     }
     let mfp = extract_array!(master_fingerprint, u8, 4);
     let sign_hash_request = extract_ptr_with_type!(ptr, SuiSignHashRequest);
-    
+
     let paths = sign_hash_request.get_derivation_paths();
     if paths.is_empty() {
         return TransactionCheckResult::from(RustCError::InvalidHDPath).c_ptr();
     }
-    
+
     // According to SDK convention, index 0 is the signing path
     let ur_mfp = paths[0].get_source_fingerprint();
 
@@ -132,14 +132,14 @@ pub unsafe extern "C" fn sui_parse_sign_message_hash(
 ) -> PtrT<TransactionParseResult<DisplaySuiSignMessageHash>> {
     let sign_hash_request = extract_ptr_with_type!(ptr, SuiSignHashRequest);
     let message = sign_hash_request.get_message_hash();
-    
+
     let paths = sign_hash_request.get_derivation_paths();
     let path = if paths.is_empty() {
         "No Path".to_string()
     } else {
         paths[0].get_path().unwrap_or("No Path".to_string())
     };
-    
+
     let network = "Sui".to_string();
     let address = sign_hash_request.get_addresses().unwrap_or(vec![]);
     let address_hex = if address.is_empty() {
@@ -147,15 +147,9 @@ pub unsafe extern "C" fn sui_parse_sign_message_hash(
     } else {
         hex::encode(&address[0])
     };
-    
+
     TransactionParseResult::success(
-        DisplaySuiSignMessageHash::new(
-            network,
-            path,
-            message,
-            address_hex,
-        )
-        .c_ptr(),
+        DisplaySuiSignMessageHash::new(network, path, message, address_hex).c_ptr(),
     )
     .c_ptr()
 }
@@ -188,7 +182,7 @@ unsafe fn build_sui_signature_result(
     pub_key: Vec<u8>,
 ) -> PtrT<UREncodeResult> {
     let sig = SuiSignature::new(request_id, signature.to_vec(), Some(pub_key));
-    
+
     let sig_data: Vec<u8> = match sig.try_into() {
         Ok(v) => v,
         Err(e) => {
@@ -215,7 +209,7 @@ pub unsafe extern "C" fn sui_sign_hash(
 ) -> PtrT<UREncodeResult> {
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let sign_request = extract_ptr_with_type!(ptr, SuiSignHashRequest);
-    
+
     let paths = sign_request.get_derivation_paths();
     if paths.is_empty() {
         seed.zeroize();
@@ -228,7 +222,7 @@ pub unsafe extern "C" fn sui_sign_hash(
             return UREncodeResult::from(SuiError::SignFailure(
                 "invalid derivation path".to_string(),
             ))
-            .c_ptr()
+            .c_ptr();
         }
     };
 
@@ -237,7 +231,7 @@ pub unsafe extern "C" fn sui_sign_hash(
         Ok(bytes) => bytes,
         Err(e) => {
             seed.zeroize();
-            return UREncodeResult::from(RustCError::InvalidHex(e.to_string())).c_ptr()
+            return UREncodeResult::from(RustCError::InvalidHex(e.to_string())).c_ptr();
         }
     };
 
@@ -248,12 +242,7 @@ pub unsafe extern "C" fn sui_sign_hash(
         Err(err) => return err.c_ptr(),
     };
 
-    build_sui_signature_result(
-        seed,
-        sign_request.get_request_id(),
-        signature,
-        pub_key,
-    )
+    build_sui_signature_result(seed, sign_request.get_request_id(), signature, pub_key)
 }
 
 #[no_mangle]
@@ -264,7 +253,7 @@ pub unsafe extern "C" fn sui_sign_intent(
 ) -> PtrT<UREncodeResult> {
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let sign_request = extract_ptr_with_type!(ptr, SuiSignRequest);
-    
+
     let paths = sign_request.get_derivation_paths();
     if paths.is_empty() {
         seed.zeroize();
@@ -277,7 +266,7 @@ pub unsafe extern "C" fn sui_sign_intent(
             return UREncodeResult::from(SuiError::SignFailure(
                 "invalid derivation path".to_string(),
             ))
-            .c_ptr()
+            .c_ptr();
         }
     };
 
@@ -290,10 +279,5 @@ pub unsafe extern "C" fn sui_sign_intent(
         Err(err) => return err.c_ptr(),
     };
 
-    build_sui_signature_result(
-        seed,
-        sign_request.get_request_id(),
-        signature,
-        pub_key,
-    )
+    build_sui_signature_result(seed, sign_request.get_request_id(), signature, pub_key)
 }

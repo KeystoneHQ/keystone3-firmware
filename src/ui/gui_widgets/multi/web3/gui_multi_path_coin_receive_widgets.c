@@ -645,17 +645,17 @@ static void GetChangePathLabelHint(char* hint)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_ETH:
-        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_eth"));
+        snprintf_s(hint, BUFFER_SIZE_128, "%s", _("derivation_path_select_eth"));
         break;
     case HOME_WALLET_CARD_AVAX:
-        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_avax"));
+        snprintf_s(hint, BUFFER_SIZE_128, "%s", _("derivation_path_select_avax"));
         break;
     case HOME_WALLET_CARD_SOL:
     case HOME_WALLET_CARD_HNT:
-        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_sol"));
+        snprintf_s(hint, BUFFER_SIZE_128, "%s", _("derivation_path_select_sol"));
         break;
     case HOME_WALLET_CARD_ADA:
-        snprintf_s(hint, BUFFER_SIZE_128, _("derivation_path_select_ada"));
+        snprintf_s(hint, BUFFER_SIZE_128, "%s", _("derivation_path_select_ada"));
         break;
     default:
         break;

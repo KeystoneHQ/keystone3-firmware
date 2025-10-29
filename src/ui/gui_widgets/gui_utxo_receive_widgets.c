@@ -919,7 +919,7 @@ static void GetChangePathLabelHint(char* hint, uint32_t maxLen)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
-        snprintf_s(hint, maxLen, _("derivation_path_select_btc"));
+        snprintf_s(hint, maxLen, "%s", _("derivation_path_select_btc"));
         return;
     default:
         break;

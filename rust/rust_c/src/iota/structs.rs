@@ -168,11 +168,12 @@ fn extract_transaction_params(
     let (recipient, to) = if method_string.contains("bridge") {
         let to = pure_args
             .iter()
+            // move transaction pure args
             .find(|bytes| bytes.len() == (20 + 1 + 1 + 1))
-            .map(|bytes| {
-                convert_c_char(
-                    checksum_address(&format!("0x{}", hex::encode(&bytes[3..]))).unwrap(),
-                )
+            .and_then(|bytes| {
+                checksum_address(&format!("0x{}", hex::encode(&bytes[3..])))
+                    .ok()
+                    .map(|addr| convert_c_char(addr))
             })
             .unwrap_or(null_mut());
         (null_mut(), to)

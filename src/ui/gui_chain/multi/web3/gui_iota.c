@@ -86,22 +86,32 @@ void FreeIotaMemory(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
 }
 
-UREncodeResult *GuiGetIotaSignQrCodeData(void)
+static UREncodeResult *IotaSignInternal(UREncodeResult * (*sign_func)(void *, PtrBytes, uint32_t), void *data)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    UREncodeResult *encodeResult;
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    UREncodeResult *encodeResult = NULL;
+    uint8_t seed[SEED_LEN] = {0};
+    int ret = 0;
     do {
-        uint8_t seed[64];
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        if (ret != 0) {
+            break;
+        }
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = iota_sign_intent(data, seed, len);
-        ClearSecretCache();
+        encodeResult = sign_func(data, seed, len);
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
     return encodeResult;
+}
+
+UREncodeResult *GuiGetIotaSignQrCodeData(void)
+{
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    return IotaSignInternal(iota_sign_intent, data);
 }
 
 bool GetIotaIsTransaction(void *indata, void *param)
@@ -201,18 +211,6 @@ void GuiIotaTxRawData(lv_obj_t *parent, void *totalData)
 
 UREncodeResult *GuiGetIotaSignHashQrCodeData(void)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    do {
-        uint8_t seed[64];
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = iota_sign_hash(data, seed, len);
-        ClearSecretCache();
-        CHECK_CHAIN_BREAK(encodeResult);
-    } while (0);
-    SetLockScreen(enable);
-    return encodeResult;
+    return IotaSignInternal(iota_sign_hash, data);
 }

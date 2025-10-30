@@ -45,7 +45,34 @@ pub fn get_jetton_amount_text(coins: String, contract_address: String) -> String
         .iter()
         .find_or_first(|v| v.contract_address.eq(&contract_address))
         .unwrap();
-    let value = u64::from_str_radix(&coins, 10).unwrap();
-    let divisor = 10u64.pow(target.decimal as u32) as f64;
-    format!("{} {}", (value as f64) / divisor, target.symbol)
+    let value = coins.parse::<u128>().unwrap();
+    let divisor = 10u128.pow(target.decimal as u32);
+
+    let integer_part = value / divisor;
+    let fractional_part = value % divisor;
+
+    let fractional_str = format!(
+        "{:0width$}",
+        fractional_part,
+        width = target.decimal as usize
+    );
+    let fractional_str = fractional_str.trim_end_matches('0');
+    if fractional_str.is_empty() {
+        format!("{} {}", integer_part, target.symbol)
+    } else {
+        format!("{}.{} {}", integer_part, fractional_str, target.symbol)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_jetton_amount_text() {
+        let coins = "30110292000".to_string();
+        let contract_address = "EQA2kCVNwVsil2EM2mB0SkXytxCqQjS4mttjDpnXmwG9T6bO".to_string();
+        let result = get_jetton_amount_text(coins, contract_address);
+        assert_eq!(result, "30.110292 STON");
+    }
 }

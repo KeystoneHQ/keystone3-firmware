@@ -4,7 +4,10 @@
 #[allow(unused_imports)]
 #[macro_use]
 extern crate alloc;
-use alloc::{string::String, vec::Vec};
+use alloc::{
+    string::ToString,
+    vec::Vec,
+};
 
 pub use address::get_address;
 use bytes::{Buf, Bytes};
@@ -22,10 +25,6 @@ pub mod encode {
 mod address;
 pub mod network;
 mod ripple_keypair;
-pub struct PsbtSignStatus {
-    pub sign_status: Option<String>,
-    pub is_completed: bool,
-}
 
 use transactions::type_id::TypeId;
 
@@ -36,13 +35,17 @@ where
     let bytes = Bytes::from(data);
     match T::try_from(bytes) {
         Ok(data) => Ok(data),
-        Err(e) => Err(AvaxError::InvalidInput),
+        Err(_) => Err(AvaxError::InvalidInput),
     }
 }
 
 pub fn get_avax_tx_type_id(data: Vec<u8>) -> Result<TypeId> {
     let mut bytes = Bytes::from(data);
-    // codec_id 2 bytes
+    if bytes.remaining() < 6 {
+        return Err(AvaxError::InvalidTransaction(
+            "Insufficient data".to_string(),
+        ));
+    }
     bytes.advance(2);
     let type_id = TypeId::try_from(bytes.get_u32())?;
     Ok(type_id)

@@ -59,21 +59,21 @@ pub enum AvaxError {
 
 impl From<io::Error> for AvaxError {
     fn from(value: io::Error) -> Self {
-        Self::TransactionConsensusEncodeError(format!("{}", value))
+        Self::TransactionConsensusEncodeError(format!("{value}"))
     }
 }
 
 impl From<bech32::segwit::DecodeError> for AvaxError {
     fn from(value: bech32::segwit::DecodeError) -> Self {
-        Self::Bech32DecodeError(format!("{}", value))
+        Self::Bech32DecodeError(format!("{value}"))
     }
 }
 
 impl From<KeystoreError> for AvaxError {
     fn from(value: KeystoreError) -> Self {
         match value {
-            KeystoreError::DerivePubKey(data) => Self::KeystoreError(format!("{}", data)),
-            KeystoreError::InvalidDerivationPath(data) => Self::KeystoreError(format!("{}", data)),
+            KeystoreError::DerivePubKey(data) => Self::KeystoreError(data.to_string()),
+            KeystoreError::InvalidDerivationPath(data) => Self::KeystoreError(data.to_string()),
             KeystoreError::XPubError(data) => Self::KeystoreError(data),
             KeystoreError::SeedError(data) => Self::KeystoreError(data),
             KeystoreError::DerivationError(data) => Self::KeystoreError(data),

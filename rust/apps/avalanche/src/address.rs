@@ -18,17 +18,18 @@ pub struct Address {
 
 impl ParsedSizeAble for Address {
     fn parsed_size(&self) -> usize {
-        ADDRESS_LEN as usize
+        ADDRESS_LEN
     }
 }
 
 impl Address {
     pub fn encode(&self) -> String {
-        bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked("avax"), &self.address).unwrap()
+        bech32::encode::<Bech32>(bech32::Hrp::parse_unchecked("avax"), &self.address)
+            .expect("bech32 encode should not fail for constant HRP and 20 bytes")
     }
 
     pub fn to_evm_address(&self) -> String {
-        format!("0x{}", hex::encode(&self.address))
+        format!("0x{}", hex::encode(self.address))
     }
 }
 
@@ -48,17 +49,14 @@ pub fn get_address(
     root_x_pub: &str,
     root_path: &str,
 ) -> Result<String> {
-    let prefix = "avax";
-    match network {
-        Network::AvaxMainNet => {}
+    let hrp = match network {
+        Network::AvaxMainNet => "avax",
         #[cfg(feature = "testnet")]
-        Network::AvaxTestNet => {
-            prefix = "fuji";
-        }
+        Network::AvaxTestNet => "fuji",
         _ => {
-            return Err(AvaxError::UnsupportedNetwork(format!("{:?}", network)));
+            return Err(AvaxError::UnsupportedNetwork(format!("{network:?}")));
         }
-    }
+    };
 
     let root_path = if !root_path.ends_with('/') {
         root_path.to_string() + "/"
@@ -75,19 +73,17 @@ pub fn get_address(
                 .ok_or(AvaxError::InvalidHDPath(hd_path.to_string()))?
         ),
     )
-    .map_err(|e| AvaxError::InvalidHex(format!("derive public key error: {}", e)))?;
+    .map_err(|e| AvaxError::InvalidHex(format!("derive public key error: {e}")))?;
     bech32::encode::<Bech32>(
-        bech32::Hrp::parse_unchecked(prefix),
+        bech32::Hrp::parse_unchecked(hrp),
         &hash160(&public_key.serialize()),
     )
-    .map_err(|e| AvaxError::InvalidHex(format!("bech32 encode error: {}", e)))
+    .map_err(|e| AvaxError::InvalidHex(format!("bech32 encode error: {e}")))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::string::ToString;
-    extern crate std;
 
     #[test]
     fn get_avax_address_test() {
@@ -95,7 +91,7 @@ mod tests {
             let hd_path = "m/44'/9000'/0'/0/0";
             let root_x_pub = "xpub6CPE4bhTujy9CeJJbyskjJsp8FGgyWBsWV2W9GfZwuP9aeDBEoPRBsLk3agq32Gp5gkb9nJSjCn9fgZmuvmV3nPLk5Bc2wfKUQZREp4eG13";
             let root_path = "m/44'/9000'/0'";
-            let address = get_address(Network::AvaxMainNet, &hd_path, &root_x_pub, &root_path);
+            let address = get_address(Network::AvaxMainNet, hd_path, root_x_pub, root_path);
             assert_eq!(
                 address.unwrap(),
                 "avax1fmlmwakmgkezcg95lk97m8p3tgc9anuxemenwh"

@@ -17,7 +17,7 @@ use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
 
 #[derive(Debug)]
-pub struct AddPermissLessionValidatorTx {
+pub struct AddPermissionlessValidatorTx {
     base_tx: BaseTx,
     validator: Validator,
     subnet_id: SubnetId,
@@ -28,7 +28,7 @@ pub struct AddPermissLessionValidatorTx {
     delegator_share: u32,
 }
 
-impl AvaxTxInfo for AddPermissLessionValidatorTx {
+impl AvaxTxInfo for AddPermissionlessValidatorTx {
     fn get_total_input_amount(&self) -> u64 {
         self.base_tx.get_total_input_amount()
     }
@@ -75,14 +75,13 @@ impl AvaxTxInfo for AddPermissLessionValidatorTx {
         Some(
             self.validator_owner
                 .addresses
-                .get(0)
-                .and_then(|addr| Some(addr.encode()))
+                .get(0).map(|addr| addr.encode())
                 .unwrap_or_default(),
         )
     }
 }
 
-impl TryFrom<Bytes> for AddPermissLessionValidatorTx {
+impl TryFrom<Bytes> for AddPermissionlessValidatorTx {
     type Error = AvaxError;
 
     fn try_from(mut bytes: Bytes) -> Result<Self> {
@@ -109,7 +108,7 @@ impl TryFrom<Bytes> for AddPermissLessionValidatorTx {
 
         let delegator_share = bytes.get_u32();
 
-        Ok(AddPermissLessionValidatorTx {
+        Ok(AddPermissionlessValidatorTx {
             base_tx,
             validator,
             subnet_id,
@@ -130,8 +129,8 @@ mod tests {
     fn test_add_permissionless_validator() {
         // 23HbZUQ7ijjrDHfqnjKpd4MTMRY18Gc2JxCz79ZBwZAsCLfntb
         let input_bytes = "000000000019000000050000000000000000000000000000000000000000000000000000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000005e57a370000000000000000000000010000000161cd7d26c72edc631d4114d6eef2c4e069ec9206000000020033b7653ffbf19a2352591e8b6aea8e7c75f38d8e8f5f781cf15aad8425010a000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b9ab9d9000000010000000029ec95b1c9df6cd2598852d78fea7766c1aece1a7b5d24f6cf58adc98107f927000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b8ab46a0000000100000000000000009e843011540909cc62c64dc85a8a1507813777410000000067614160000000006851245000000000713fb30000000000000000000000000000000000000000000000000000000000000000000000001c87c87cef2e92bface778c711c752168a6e858d58ba62463e8bab336f9b05c98c695acf3c7da02b05c667ce5627e63a60ad53ad7da84734084394dedf6b3c4bb6c85922c2b08b09c55508d49d348ad0dcd9678be58197fef69bad862b1d170f4b0c24f189d9d4b6b5103d28b5e8146d305e28d3dcfb3279f089c7152535a24800c7a1a212868a5c76e3559ea9d4a64d9d000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa0000000700000000713fb3000000000000000000000000010000000161cd7d26c72edc631d4114d6eef2c4e069ec92060000000b0000000000000000000000010000000161cd7d26c72edc631d4114d6eef2c4e069ec92060000000b0000000000000000000000010000000161cd7d26c72edc631d4114d6eef2c4e069ec92060000c350";
-        let mut bytes = Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
-        let result = AddPermissLessionValidatorTx::try_from(bytes.clone()).unwrap();
+        let bytes = Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
+        let result = AddPermissionlessValidatorTx::try_from(bytes.clone()).unwrap();
         assert_eq!(
             "avax1v8xh6fk89mwxx82pzntwaukyup57eysx7xzuwa".to_string(),
             result.get_reward_address().unwrap()

@@ -1,5 +1,6 @@
 #include "define.h"
 #include "gui_chain.h"
+#include "keystore.h"
 
 typedef TransactionCheckResult *(*CheckUrResultHandler)(void);
 
@@ -183,4 +184,30 @@ static const ViewHandlerEntry *GetViewHandlerEntry(ViewType viewType)
         }
     }
     return NULL;
+}
+
+UREncodeResult *SignInternal(SignFn sign_func, void *data)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult = NULL;
+    uint8_t seed[SEED_LEN] = {0};
+    int ret = 0;
+
+    do {
+        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        if (ret != 0) {
+            break;
+        }
+
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        encodeResult = sign_func(data, seed, len);
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
+    SetLockScreen(enable);
+
+    return encodeResult;
 }

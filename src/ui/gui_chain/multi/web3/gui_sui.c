@@ -266,40 +266,14 @@ void GetSuiDetail(void *indata, void *param, uint32_t maxLen)
     strcpy((char *)indata, tx->detail);
 }
 
-static UREncodeResult *SuiSignInternal(UREncodeResult * (*sign_func)(void *, PtrBytes, uint32_t), void *data)
-{
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    UREncodeResult *encodeResult = NULL;
-    uint8_t seed[SEED_LEN] = {0};
-    int ret = 0;
-
-    do {
-        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        if (ret != 0) {
-            break;
-        }
-
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = sign_func(data, seed, len);
-        CHECK_CHAIN_BREAK(encodeResult);
-    } while (0);
-
-    memset_s(seed, sizeof(seed), 0, sizeof(seed));
-    ClearSecretCache();
-    SetLockScreen(enable);
-
-    return encodeResult;
-}
-
 UREncodeResult *GuiGetSuiSignQrCodeData(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    return SuiSignInternal(sui_sign_intent, data);
+    return SignInternal(sui_sign_intent, data);
 }
 
 UREncodeResult *GuiGetSuiSignHashQrCodeData(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    return SuiSignInternal(sui_sign_hash, data);
+    return SignInternal(sui_sign_hash, data);
 }

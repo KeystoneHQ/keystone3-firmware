@@ -98,7 +98,7 @@ impl AvaxTxInfo for ExportTx {
                     C_BLOCKCHAIN_ID | C_TEST_BLOCKCHAIN_ID => "C",
                     _ => "Unknown",
                 };
-                format!("C to {} Export", dest)
+                format!("C to {dest} Export")
             }
             _ => "Unknown".to_string(),
         };
@@ -148,7 +148,7 @@ mod tests {
         // f22ATVQT11pSdMwvWLwXgeHNshauTDZxzErFKT5nd64esWXjU
         let input_bytes = "000000000001000000057fc93d85c6d62c5b2ac0b519c87010ea5294012d1e407030d6acd0021cac10d5000000000000000000000000000000000000000000000000000000000000000000000001a9b548da818607e83cbcf6802370691948cbd4160000000005f60cde3d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa0000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000005f5e1000000000000000000000000010000000169bc9b5b6cbbbd490abbd79a37ad6cd643be87ab000000010000000900000001683728d1c682680aa80e702dcc8e349f79b5da8cac4b7fb59b28750f1c4c977014a70f69d5ef97dec616a21d69e3560cf2db78257710af3c03f959a487bcab04000218c13e";
         let binary_data = hex::decode(input_bytes).expect("Failed to decode hex string");
-        let mut bytes = Bytes::from(binary_data);
+        let bytes = Bytes::from(binary_data);
         let result = ExportTx::try_from(bytes.clone()).unwrap();
         assert_eq!(result.codec_id, 0);
         assert_eq!(result.type_id, TypeId::CchainExportTx);

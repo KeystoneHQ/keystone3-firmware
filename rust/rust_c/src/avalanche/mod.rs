@@ -8,18 +8,14 @@ pub mod structs;
 
 use crate::common::{
     errors::RustCError,
-    ffi::{CSliceFFI, VecFFI},
-    structs::{ExtendedPublicKey, SimpleResponse, TransactionCheckResult, TransactionParseResult},
-    types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
+    ffi::CSliceFFI,
+    structs::{ExtendedPublicKey, TransactionCheckResult, TransactionParseResult},
+    types::{PtrBytes, PtrT, PtrUR},
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH},
     utils::{recover_c_array, recover_c_char},
 };
-use crate::{extract_array, extract_ptr_with_type, impl_c_ptr};
-use alloc::{
-    format,
-    string::{String, ToString},
-    vec::Vec,
-};
+use crate::{extract_array, extract_ptr_with_type};
+use alloc::{format, string::ToString, string::String};
 use app_avalanche::{
     constants::{
         C_BLOCKCHAIN_ID, C_CHAIN_PREFIX, C_TEST_BLOCKCHAIN_ID, P_BLOCKCHAIN_ID, X_BLOCKCHAIN_ID,
@@ -29,17 +25,16 @@ use app_avalanche::{
     get_avax_tx_header, get_avax_tx_type_id, parse_avax_tx,
     transactions::{
         base_tx::{avax_base_sign, BaseTx},
+        c_chain::{evm_export::ExportTx as CchainExportTx, evm_import::ImportTx as CchainImportTx},
         export::ExportTx,
         import::ImportTx,
-        type_id::{self, TypeId},
-        C_chain::{evm_export::ExportTx as CchainExportTx, evm_import::ImportTx as CchainImportTx},
-        P_chain::{
-            add_permissionless_delegator::AddPermissLessionDelegatorTx,
-            add_permissionless_validator::AddPermissLessionValidatorTx,
+        p_chain::{
+            add_permissionless_delegator::AddPermissionlessDelegatorTx,
+            add_permissionless_validator::AddPermissionlessValidatorTx,
         },
+        type_id::{self, TypeId},
     },
 };
-use bitcoin::ecdsa::Signature;
 use structs::DisplayAvaxTx;
 use {
     hex,
@@ -48,6 +43,7 @@ use {
         traits::RegistryItem,
     },
 };
+
 #[derive(Debug, Clone)]
 pub struct DerivationPath {
     pub base_path: String,
@@ -69,14 +65,15 @@ unsafe fn parse_transaction_by_type(
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
 ) -> PtrT<TransactionParseResult<DisplayAvaxTx>> {
     let tx_data = sign_request.get_tx_data();
-    let type_id = get_avax_tx_type_id(sign_request.get_tx_data()).unwrap();
-
-    let mut path = get_avax_tx_type_id(sign_request.get_tx_data())
-        .map_err(|_| AvaxError::InvalidInput)
-        .and_then(|type_id| {
-            determine_derivation_path(type_id, sign_request, sign_request.get_wallet_index())
-        })
-        .unwrap();
+    let type_id = match get_avax_tx_type_id(sign_request.get_tx_data()) {
+        Ok(type_id) => type_id,
+        Err(_) => return TransactionParseResult::from(RustCError::InvalidData("invalid avax tx type id".to_string())).c_ptr(),
+    };
+    
+    let mut path = match determine_derivation_path(type_id, sign_request, sign_request.get_wallet_index()) {
+        Ok(path) => path,
+        Err(_) => return TransactionParseResult::from(RustCError::InvalidData("invalid derivation path".to_string())).c_ptr(),
+    };
 
     let mut address = String::new();
     for key in recover_c_array(public_keys).iter() {
@@ -87,18 +84,21 @@ unsafe fn parse_transaction_by_type(
                     &recover_c_char(key.xpub),
                     path.base_path.as_str(),
                 )
-                .unwrap(),
+                .unwrap_or("".to_string()),
                 _ => app_avalanche::get_address(
                     app_avalanche::network::Network::AvaxMainNet,
                     path.full_path.as_str(),
-                    recover_c_char(key.xpub).as_str(),
+                    &recover_c_char(key.xpub),
                     path.base_path.as_str(),
-                )
-                .unwrap(),
+                ).unwrap_or("".to_string()),
             }
         }
     }
 
+    // Helper macro: given a concrete tx type `$tx_type`, parse raw tx bytes (`tx_data`)
+    // into that type with `parse_avax_tx::<$tx_type>`, then convert it to the
+    // UI-friendly `DisplayAvaxTx` and wrap it into `TransactionParseResult` (C pointer).
+    // On parse error, returns a unified `InvalidData` result.
     macro_rules! parse_tx {
         ($tx_type:ty) => {
             parse_avax_tx::<$tx_type>(tx_data)
@@ -116,7 +116,10 @@ unsafe fn parse_transaction_by_type(
                     .c_ptr()
                 })
                 .unwrap_or_else(|_| {
-                    TransactionParseResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
+                    TransactionParseResult::from(RustCError::InvalidData(
+                        "invalid data".to_string(),
+                    ))
+                    .c_ptr()
                 })
         };
     }
@@ -136,8 +139,8 @@ unsafe fn parse_transaction_by_type(
         TypeId::PchainExportTx | TypeId::XchainExportTx => parse_tx!(ExportTx),
         TypeId::XchainImportTx | TypeId::PchainImportTx => parse_tx!(ImportTx),
         TypeId::CchainExportTx => parse_tx!(CchainExportTx),
-        TypeId::AddPermissLessionValidator => parse_tx!(AddPermissLessionValidatorTx),
-        TypeId::AddPermissLessionDelegator => parse_tx!(AddPermissLessionDelegatorTx),
+        TypeId::AddPermissionlessValidator => parse_tx!(AddPermissionlessValidatorTx),
+        TypeId::AddPermissionlessDelegator => parse_tx!(AddPermissionlessDelegatorTx),
         _ => TransactionParseResult::from(RustCError::InvalidData(format!(
             "{type_id:?} not support"
         )))
@@ -173,6 +176,13 @@ unsafe fn avax_sign_dynamic(
         )
 }
 
+/// Derive the HD path used for address/key lookup and signing.
+///
+/// Rationale: raw Avalanche transaction bytes do not contain HD path.
+/// We therefore compute the final path from:
+/// - the transaction type / blockchain_id (to choose the base path prefix, e.g. C vs X/P chain)
+/// - the `wallet_index` provided in `AvaxSignRequest` (appended as `/0/{index}`)
+/// This allows the device to reconstruct the exact address/key path for validation and signing.
 pub fn determine_derivation_path(
     type_id: TypeId,
     sign_request: &AvaxSignRequest,

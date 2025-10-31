@@ -6,7 +6,6 @@ use super::type_id::TypeId;
 use crate::constants::*;
 use crate::errors::{AvaxError, Result};
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };
@@ -54,17 +53,11 @@ impl TryFrom<Bytes> for OutputType {
         let mut type_bytes = bytes.clone();
         let type_id = type_bytes.get_u32();
         match TypeId::try_from(type_id)? {
-            TypeId::CchainExportTx => {
-                todo!()
-            }
             TypeId::Secp256k1TransferOutput => {
                 SECP256K1TransferOutput::try_from(bytes).map(OutputType::SECP256K1)
             }
-            TypeId::XchainImportTx => {
-                todo!()
-            }
             _ => {
-                return Err(AvaxError::InvalidHex(
+                Err(AvaxError::InvalidHex(
                     "Unsupported output type found in input bytes.".to_string(),
                 ))
             }
@@ -101,7 +94,7 @@ impl TransferableOutput {
 
 impl ParsedSizeAble for TransferableOutput {
     fn parsed_size(&self) -> usize {
-        self.output.get_transfer_output_len() + ASSET_ID_LEN as usize
+        self.output.get_transfer_output_len() + ASSET_ID_LEN
     }
 }
 
@@ -142,7 +135,7 @@ impl TryFrom<Bytes> for TransferableInput {
     fn try_from(mut bytes: Bytes) -> Result<Self> {
         let tx_id: [u8; TX_ID_LEN] = bytes.split_to(TX_ID_LEN)[..]
             .try_into()
-            .map_err(|_| AvaxError::InvalidHex(format!("error data to tx_id")))?;
+            .map_err(|_| AvaxError::InvalidHex("error data to tx_id".to_string()))?;
         let utxo_index = bytes.get_u32();
         let asset_id = AssetId::try_from(bytes.split_to(ASSET_ID_LEN))?;
         Ok(TransferableInput {
@@ -156,7 +149,7 @@ impl TryFrom<Bytes> for TransferableInput {
 
 impl ParsedSizeAble for TransferableInput {
     fn parsed_size(&self) -> usize {
-        self.input.get_transfer_input_len() + TX_ID_LEN as usize + ASSET_ID_LEN as usize + 4
+        self.input.get_transfer_input_len() + TX_ID_LEN + ASSET_ID_LEN + 4
     }
 }
 
@@ -177,7 +170,7 @@ impl TryFrom<Bytes> for InputType {
                 SECP256K1TransferInput::try_from(bytes)?,
             )),
             _ => {
-                return Err(AvaxError::InvalidHex(
+                Err(AvaxError::InvalidHex(
                     "Unsupported input type found in input bytes.".to_string(),
                 ))
             }

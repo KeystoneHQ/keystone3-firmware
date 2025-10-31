@@ -56,7 +56,7 @@ mod tests {
     fn test_secp256k1_transfer_input_try_from() {
         let input_bytes = "00000005000000001dbd670d0000000100000000";
         let binary_data = hex::decode(input_bytes).expect("Failed to decode hex string");
-        let mut bytes = Bytes::from(binary_data);
+        let bytes = Bytes::from(binary_data);
         let result = SECP256K1TransferInput::try_from(bytes.clone()).unwrap();
         assert_eq!(result.type_id, 5);
         assert_eq!(result.amount, 498951949);

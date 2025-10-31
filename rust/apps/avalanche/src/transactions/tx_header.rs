@@ -2,6 +2,7 @@ use crate::constants::*;
 use crate::errors::{AvaxError, Result};
 use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
+use alloc::string::ToString;
 
 pub type BlockChainId = [u8; BLOCKCHAIN_ID_LEN];
 
@@ -17,7 +18,7 @@ impl Header {
     }
 
     pub fn get_blockchain_id(&self) -> BlockChainId {
-        self.blockchain_id.clone()
+        self.blockchain_id
     }
 
     pub fn parsed_size(&self) -> usize {
@@ -33,7 +34,7 @@ impl TryFrom<Bytes> for Header {
             network_id: bytes.get_u32(),
             blockchain_id: bytes[..32]
                 .try_into()
-                .map_err(|_| AvaxError::InvalidHex(format!("error data to blockchain_id")))?,
+                .map_err(|_| AvaxError::InvalidHex("error data to blockchain_id".to_string()))?,
         })
     }
 }

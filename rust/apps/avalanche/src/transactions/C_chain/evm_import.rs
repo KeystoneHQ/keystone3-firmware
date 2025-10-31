@@ -137,7 +137,7 @@ mod tests {
     fn test_avax_c_import() {
         let input_bytes = "000000000000000000057fc93d85c6d62c5b2ac0b519c87010ea5294012d1e407030d6acd0021cac10d5ab68eb1ee142a05cfe768c36e11f0b596db5a3c6c77aabe665dad9e638ca94f7000000013f407c793a9a31b5f281623e479bcaee760be3da54969b85f44ffc51a67c1c64000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000050000000005f5e1000000000100000000000000013fe51338992d913b6a999693d7c345646ca3bb4c0000000005f5b5223d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa0000000100000009000000017e79e5f2fba29e48d9d329f23e8e27bf20d79714555bb04a175e57136b95b282528654583b1fd568e7f8322962fb31e4174896a50114511d124bf74a92559c1f0048c457c5";
         let binary_data = hex::decode(input_bytes).expect("Failed to decode hex string");
-        let mut bytes = Bytes::from(binary_data);
+        let bytes = Bytes::from(binary_data);
         let result = ImportTx::try_from(bytes.clone()).unwrap();
         assert_eq!(result.type_id, TypeId::BaseTx);
         assert_eq!(result.codec_id, 0);

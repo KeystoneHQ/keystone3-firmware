@@ -1,5 +1,4 @@
 use alloc::string::String;
-use alloc::string::ToString;
 use bitcoin::base58;
 use cryptoxide::digest::Digest;
 use cryptoxide::sha2::Sha256;
@@ -21,7 +20,7 @@ pub trait Cb58Encodable {
         format!(
             "{}-{}",
             self.get_prefix(),
-            base58::encode(&with_checksum).to_string()
+            base58::encode(&with_checksum)
         )
     }
 }

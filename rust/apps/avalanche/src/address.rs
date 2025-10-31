@@ -109,4 +109,29 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn encode_and_evm_address_test() {
+        // 20-byte payload
+        let data: [u8; ADDRESS_LEN] = [
+            0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x11, 0x22,
+            0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc,
+        ];
+        let addr = Address { address: data };
+        let bech = addr.encode();
+        assert!(bech.starts_with("avax1"));
+        let evm = addr.to_evm_address();
+        assert!(evm.starts_with("0x"));
+        assert_eq!(evm.len(), 2 + 40); // 0x + 40 hex chars
+    }
+
+    #[test]
+    fn get_address_invalid_hd_path() {
+        let hd_path = "m/44'/9000'/0'/0/0";
+        let root_x_pub = "xpub6CPE4bhTujy9CeJJbyskjJsp8FGgyWBsWV2W9GfZwuP9aeDBEoPRBsLk3agq32Gp5gkb9nJSjCn9fgZmuvmV3nPLk5Bc2wfKUQZREp4eG13";
+        // root_path not a prefix of hd_path → should error
+        let root_path = "m/44'/9000'/1'";
+        let err = get_address(Network::AvaxMainNet, hd_path, root_x_pub, root_path).unwrap_err();
+        matches!(err, AvaxError::InvalidHDPath(_));
+    }
 }

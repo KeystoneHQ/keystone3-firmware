@@ -124,7 +124,7 @@ mod tests {
                 let bytes =
                     Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
                 let result = ExportTx::try_from(bytes).unwrap();
-                assert_eq!(result.get_dest_chain(), X_TEST_BLOCKCHAIN_ID);
+                assert_eq!(result.get_dest_chain(), P_BLOCKCHAIN_ID);
             }
 
             // p chain export to x

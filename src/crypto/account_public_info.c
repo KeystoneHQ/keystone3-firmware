@@ -930,7 +930,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
                     char* zcashUfvk = NULL;
                     SimpleResponse_c_char *zcash_ufvk_response = NULL;
-                    zcash_ufvk_response = derive_zcash_ufvk(seed, len, g_chainTable[i].path);
+                    zcash_ufvk_response = derive_zcash_ufvk(seed, len, g_chainTable[i].path, GetNetworkType(HOME_WALLET_CARD_ZEC));
                     CHECK_AND_FREE_XPUB(zcash_ufvk_response)
                     zcashUfvk = zcash_ufvk_response->data;
                     SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);
@@ -1104,7 +1104,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
                 char* zcashUfvk = NULL;
                 SimpleResponse_c_char *zcash_ufvk_response = NULL;
-                zcash_ufvk_response = derive_zcash_ufvk(seed, len, g_chainTable[i].path);
+                zcash_ufvk_response = derive_zcash_ufvk(seed, len, g_chainTable[i].path, GetNetworkType(HOME_WALLET_CARD_ZEC));
                 CHECK_AND_FREE_XPUB(zcash_ufvk_response)
                 zcashUfvk = zcash_ufvk_response->data;
                 SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);

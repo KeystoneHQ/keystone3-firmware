@@ -3,6 +3,7 @@
 #include "user_memory.h"
 #include "account_manager.h"
 #include "gui_chain.h"
+#include "gui_home_widgets.h"
 #include "keystore.h"
 #include "screen_manager.h"
 
@@ -21,6 +22,11 @@ static DisplayPczt *g_zcashData;
         result = NULL;                                                                              \
     }
 
+NetworkType GetZcashNetworkType(void)
+{
+    return GetNetworkType(HOME_WALLET_CARD_ZEC);
+}
+
 void GuiSetZcashUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
     g_urResult = urResult;
@@ -38,7 +44,7 @@ void *GuiGetZcashGUIData(void)
 
     PtrT_TransactionParseResult_DisplayPczt parseResult = NULL;
     do {
-        parseResult = parse_zcash_tx(data, ufvk, sfp);
+        parseResult = parse_zcash_tx(data, ufvk, sfp, GetZcashNetworkType());
         CHECK_CHAIN_BREAK(parseResult);
         g_zcashData = parseResult->data;
         g_parseResult = (void *)parseResult;
@@ -303,7 +309,7 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
     uint32_t zcash_account_index = 0;
     MnemonicType mnemonicType = GetMnemonicType();
-    return check_zcash_tx(data, ufvk, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39);
+    return check_zcash_tx(data, ufvk, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39, GetZcashNetworkType());
 }
 
 UREncodeResult *GuiGetZcashSignQrCodeData(void)

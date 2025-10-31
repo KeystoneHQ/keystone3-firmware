@@ -12,6 +12,22 @@ use app_zcash::pczt::structs::{
     ParsedFrom, ParsedOrchard, ParsedPczt, ParsedTo, ParsedTransparent,
 };
 use cstr_core;
+use zcash_vendor::zcash_protocol::consensus::Network;
+
+#[repr(C)]
+pub enum NetworkType {
+    MainNet,
+    TestNet,
+}
+
+impl From<NetworkType> for Network {
+    fn from(val: NetworkType) -> Self {
+        match val {
+            NetworkType::MainNet => Network::MainNetwork,
+            NetworkType::TestNet => Network::TestNetwork,
+        }
+    }
+}
 
 #[repr(C)]
 pub struct DisplayPczt {

@@ -683,7 +683,7 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
     }
     return result;
 }
- 
+
 void GetPsbtTotalOutAmount(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;

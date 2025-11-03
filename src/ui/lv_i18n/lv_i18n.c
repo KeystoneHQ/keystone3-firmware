@@ -4391,7 +4391,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"password_score_good", "암호에 강함"},
     {"password_score_normal", "비밀번호 중"},
     {"password_score_weak", "비밀번호가 약함"},
-    {"permit_switch_desc", "현재 설정에 따라 기기에서 Permit 서명을 활성화 또는 활성화합니다."},
+    {"permit_switch_desc", "현재 설정에 따라 기기에서 Permit 서명을 활성화 또는 비활성화합니다."},
     {"permit_switch_title", "Permit 서명 업데이트"},
     {"pin_code", "PIN 코드"},
     {"pin_label", "PIN 코드"},

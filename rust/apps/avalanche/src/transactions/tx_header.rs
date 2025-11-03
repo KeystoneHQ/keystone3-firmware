@@ -1,8 +1,8 @@
 use crate::constants::*;
 use crate::errors::{AvaxError, Result};
+use alloc::string::ToString;
 use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
-use alloc::string::ToString;
 
 pub type BlockChainId = [u8; BLOCKCHAIN_ID_LEN];
 

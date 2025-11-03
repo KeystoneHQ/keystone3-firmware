@@ -56,11 +56,9 @@ impl TryFrom<Bytes> for OutputType {
             TypeId::Secp256k1TransferOutput => {
                 SECP256K1TransferOutput::try_from(bytes).map(OutputType::SECP256K1)
             }
-            _ => {
-                Err(AvaxError::InvalidHex(
-                    "Unsupported output type found in input bytes.".to_string(),
-                ))
-            }
+            _ => Err(AvaxError::InvalidHex(
+                "Unsupported output type found in input bytes.".to_string(),
+            )),
         }
     }
 }
@@ -169,11 +167,9 @@ impl TryFrom<Bytes> for InputType {
             TypeId::Secp256k1TransferInput => Ok(InputType::SECP256K1(
                 SECP256K1TransferInput::try_from(bytes)?,
             )),
-            _ => {
-                Err(AvaxError::InvalidHex(
-                    "Unsupported input type found in input bytes.".to_string(),
-                ))
-            }
+            _ => Err(AvaxError::InvalidHex(
+                "Unsupported input type found in input bytes.".to_string(),
+            )),
         }
     }
 }

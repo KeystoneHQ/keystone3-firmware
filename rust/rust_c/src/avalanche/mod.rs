@@ -15,7 +15,7 @@ use crate::common::{
     utils::{recover_c_array, recover_c_char},
 };
 use crate::{extract_array, extract_ptr_with_type};
-use alloc::{format, string::ToString, string::String};
+use alloc::{format, string::String, string::ToString};
 use app_avalanche::{
     constants::{
         C_BLOCKCHAIN_ID, C_CHAIN_PREFIX, C_TEST_BLOCKCHAIN_ID, P_BLOCKCHAIN_ID, X_BLOCKCHAIN_ID,
@@ -67,13 +67,24 @@ unsafe fn parse_transaction_by_type(
     let tx_data = sign_request.get_tx_data();
     let type_id = match get_avax_tx_type_id(sign_request.get_tx_data()) {
         Ok(type_id) => type_id,
-        Err(_) => return TransactionParseResult::from(RustCError::InvalidData("invalid avax tx type id".to_string())).c_ptr(),
+        Err(_) => {
+            return TransactionParseResult::from(RustCError::InvalidData(
+                "invalid avax tx type id".to_string(),
+            ))
+            .c_ptr()
+        }
     };
-    
-    let mut path = match determine_derivation_path(type_id, sign_request, sign_request.get_wallet_index()) {
-        Ok(path) => path,
-        Err(_) => return TransactionParseResult::from(RustCError::InvalidData("invalid derivation path".to_string())).c_ptr(),
-    };
+
+    let mut path =
+        match determine_derivation_path(type_id, sign_request, sign_request.get_wallet_index()) {
+            Ok(path) => path,
+            Err(_) => {
+                return TransactionParseResult::from(RustCError::InvalidData(
+                    "invalid derivation path".to_string(),
+                ))
+                .c_ptr()
+            }
+        };
 
     let mut address = String::new();
     for key in recover_c_array(public_keys).iter() {
@@ -90,7 +101,8 @@ unsafe fn parse_transaction_by_type(
                     path.full_path.as_str(),
                     &recover_c_char(key.xpub),
                     path.base_path.as_str(),
-                ).unwrap_or("".to_string()),
+                )
+                .unwrap_or("".to_string()),
             }
         }
     }

@@ -75,7 +75,8 @@ impl AvaxTxInfo for AddPermissionlessValidatorTx {
         Some(
             self.validator_owner
                 .addresses
-                .get(0).map(|addr| addr.encode())
+                .get(0)
+                .map(|addr| addr.encode())
                 .unwrap_or_default(),
         )
     }

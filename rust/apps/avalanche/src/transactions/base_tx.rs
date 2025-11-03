@@ -152,9 +152,11 @@ mod tests {
             assert_eq!(
                 "avax10j2f4qqnhmay06vjq7rkflmntvv2y66mzhk6s9",
                 result
-                    .get_outputs_addresses().first()
+                    .get_outputs_addresses()
+                    .first()
                     .unwrap()
-                    .address.first()
+                    .address
+                    .first()
                     .unwrap()
             );
             assert_eq!(result.get_inputs_len(), 2);
@@ -181,12 +183,14 @@ mod tests {
                     );
                     assert_eq!(result.get_outputs_len(), 2);
                 }
-                Err(e) => if let AvaxError::InvalidHex(msg) = e {
-                    assert_eq!(
-                        msg, "Unsupported output type found in input bytes.",
-                        "Unexpected error message"
-                    );
-                },
+                Err(e) => {
+                    if let AvaxError::InvalidHex(msg) = e {
+                        assert_eq!(
+                            msg, "Unsupported output type found in input bytes.",
+                            "Unexpected error message"
+                        );
+                    }
+                }
             }
         }
     }

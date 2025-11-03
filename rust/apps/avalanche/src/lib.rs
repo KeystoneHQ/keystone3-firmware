@@ -4,10 +4,7 @@
 #[allow(unused_imports)]
 #[macro_use]
 extern crate alloc;
-use alloc::{
-    string::ToString,
-    vec::Vec,
-};
+use alloc::{string::ToString, vec::Vec};
 
 pub use address::get_address;
 use bytes::{Buf, Bytes};

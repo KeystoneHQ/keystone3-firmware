@@ -86,32 +86,10 @@ void FreeIotaMemory(void)
     CHECK_FREE_PARSE_RESULT(g_parseResult);
 }
 
-static UREncodeResult *IotaSignInternal(UREncodeResult * (*sign_func)(void *, PtrBytes, uint32_t), void *data)
-{
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    UREncodeResult *encodeResult = NULL;
-    uint8_t seed[SEED_LEN] = {0};
-    int ret = 0;
-    do {
-        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        if (ret != 0) {
-            break;
-        }
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = sign_func(data, seed, len);
-        CHECK_CHAIN_BREAK(encodeResult);
-    } while (0);
-    memset_s(seed, sizeof(seed), 0, sizeof(seed));
-    ClearSecretCache();
-    SetLockScreen(enable);
-    return encodeResult;
-}
-
 UREncodeResult *GuiGetIotaSignQrCodeData(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    return IotaSignInternal(iota_sign_intent, data);
+    return SignInternal(iota_sign_intent, data);
 }
 
 bool GetIotaIsTransaction(void *indata, void *param)
@@ -212,5 +190,5 @@ void GuiIotaTxRawData(lv_obj_t *parent, void *totalData)
 UREncodeResult *GuiGetIotaSignHashQrCodeData(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    return IotaSignInternal(iota_sign_hash, data);
+    return SignInternal(iota_sign_hash, data);
 }

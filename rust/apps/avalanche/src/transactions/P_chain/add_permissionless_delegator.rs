@@ -70,7 +70,8 @@ impl AvaxTxInfo for AddPermissionlessDelegatorTx {
         Some(
             self.delegator_owner
                 .addresses
-                .get(0).map(|addr| addr.encode())
+                .get(0)
+                .map(|addr| addr.encode())
                 .unwrap_or_default(),
         )
     }

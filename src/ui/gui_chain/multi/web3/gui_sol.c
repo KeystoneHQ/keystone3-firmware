@@ -11,9 +11,6 @@
 #include "cjson/cJSON.h"
 #include "user_memory.h"
 #include "gui_qr_hintbox.h"
-typedef struct {
-    const char* address;
-} SolanaAddressLearnMoreData;
 
 typedef struct SolanaLearnMoreData {
     PtrString title;
@@ -24,11 +21,6 @@ static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 
-
-#define MAX_ACCOUNTS 252
-
-static SolanaAddressLearnMoreData* g_accountData[MAX_ACCOUNTS];
-static int g_accountCount = 0;
 static ViewType g_viewType = ViewTypeUnKnown;
 #define CHECK_FREE_PARSE_SOL_RESULT(result)                                                                                       \
     if (result != NULL)                                                                                                           \
@@ -131,14 +123,6 @@ void FreeSolMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_SOL_RESULT(g_parseResult);
-    // free account data
-    for (int i = 0; i < g_accountCount; i++) {
-        if (g_accountData[i] != NULL) {
-            SRAM_FREE(g_accountData[i]->address);
-            SRAM_FREE(g_accountData[i]);
-        }
-    }
-    g_accountCount = 0;
 }
 
 void GetSolMessagePos(uint16_t *x, uint16_t *y, void *param)
@@ -325,7 +309,7 @@ lv_obj_t * CreateSolanaSquadsProposalOverviewCard(lv_obj_t *parent, PtrString pr
     return container;
 }
 
-lv_obj_t *  CreateSquadsSolanaTransferOverviewCard(lv_obj_t *parent, PtrString from, PtrString to, PtrString amount, PtrString note)
+lv_obj_t *CreateSquadsSolanaTransferOverviewCard(lv_obj_t *parent, PtrString from, PtrString to, PtrString amount, PtrString note)
 {
     lv_obj_t *container = GuiCreateAutoHeightContainer(parent, 408, 0);
     lv_obj_set_style_bg_opa(container, LV_OPA_TRANSP, LV_PART_MAIN);
@@ -336,7 +320,7 @@ lv_obj_t *  CreateSquadsSolanaTransferOverviewCard(lv_obj_t *parent, PtrString f
     } else if (strcmp(amount, "0.001 SOL") == 0) {
         lv_label_set_text(label, "Account Deposit");
     } else {
-        lv_label_set_text(label, "Ammount");
+        lv_label_set_text(label, "Amount");
     }
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);
     SetTitleLabelStyle(label);
@@ -351,7 +335,6 @@ lv_obj_t *  CreateSquadsSolanaTransferOverviewCard(lv_obj_t *parent, PtrString f
     lv_obj_t * fromlabel = GuiCreateTextLabel(container, "From");
     lv_obj_align_to(fromlabel, amountlabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     SetTitleLabelStyle(fromlabel);
-
 
     lv_obj_t * fromValuelabel = GuiCreateIllustrateLabel(container, from);
     lv_label_set_long_mode(fromValuelabel, LV_LABEL_LONG_WRAP);
@@ -492,10 +475,10 @@ lv_obj_t* GuiCreateSolNoticeCard(lv_obj_t* parent)
 
 void SolanaSplTokenAddressLearnMore(lv_event_t *e)
 {
-    SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)lv_event_get_user_data(e);
-    if (data != NULL) {
+    const char* address = (const char*)lv_event_get_user_data(e);
+    if (address != NULL) {
         char url[512];
-        snprintf(url, sizeof(url), "https://solscan.io/token/%s", data->address);
+        snprintf(url, sizeof(url), "https://solscan.io/token/%s", address);
         GuiQRCodeHintBoxOpenBig(url, "Scan to double-check the Token account", "", url);
     }
 }
@@ -557,9 +540,8 @@ static lv_obj_t * GuiShowSplTokenInfoOverviewCard(lv_obj_t *parent, PtrT_Display
     lv_obj_align_to(checkTokenAccountIcon, checkTokenAccountLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     lv_obj_add_flag(checkTokenAccountIcon, LV_OBJ_FLAG_CLICKABLE);
 
-    static SolanaAddressLearnMoreData learnMoreData;
-    learnMoreData.address = splTokenInfo->token_mint_account;
-    lv_obj_add_event_cb(checkTokenAccountIcon, SolanaSplTokenAddressLearnMore, LV_EVENT_CLICKED, &learnMoreData);
+    const char* tokenAddress = splTokenInfo->token_mint_account;
+    lv_obj_add_event_cb(checkTokenAccountIcon, SolanaSplTokenAddressLearnMore, LV_EVENT_CLICKED, (void*)tokenAddress);
 
     if (strcmp(splTokenInfo->token_name, "Unknown") == 0) {
         lv_obj_t * noticeBar = GuiCreateAutoHeightContainer(container, 408, 8);
@@ -637,9 +619,8 @@ static void GuiShowJupiterV6SwapOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
         lv_obj_t * checkTokenAMintAccountIcon = GuiCreateImg(swapOverviewContainer, &imgQrcodeTurquoise);
 
         lv_obj_add_flag(checkTokenAMintAccountIcon, LV_OBJ_FLAG_CLICKABLE);
-        static SolanaAddressLearnMoreData learnMoreData;
-        learnMoreData.address = jupiterV6SwapOverview->token_a_overview->token_address;
-        lv_obj_add_event_cb(checkTokenAMintAccountIcon, SolanaSplTokenAddressLearnMore, LV_EVENT_CLICKED, &learnMoreData);
+        const char* tokenAAddress = jupiterV6SwapOverview->token_a_overview->token_address;
+        lv_obj_add_event_cb(checkTokenAMintAccountIcon, SolanaSplTokenAddressLearnMore, LV_EVENT_CLICKED, (void*)tokenAAddress);
         lv_obj_align_to(mintAccountLabel, amountValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
         lv_obj_align_to(mintAccountValueLabel, mintAccountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_obj_align_to(checkTokenAMintAccountLabel, mintAccountValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
@@ -684,9 +665,8 @@ static void GuiShowJupiterV6SwapOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
     lv_obj_t * checkTokenBMintAccountIcon = GuiCreateImg(swapOverviewContainer, &imgQrcodeTurquoise);
     lv_obj_align_to(checkTokenBMintAccountIcon, checkTokenBMintAccountLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
     lv_obj_add_flag(checkTokenBMintAccountIcon, LV_OBJ_FLAG_CLICKABLE);
-    static SolanaAddressLearnMoreData tokenBLearnMoreData;
-    tokenBLearnMoreData.address = jupiterV6SwapOverview->token_b_overview->token_address;
-    lv_obj_add_event_cb(checkTokenBMintAccountIcon, SolanaSplTokenAddressLearnMore, LV_EVENT_CLICKED, &tokenBLearnMoreData);
+    const char* tokenBAddress = jupiterV6SwapOverview->token_b_overview->token_address;
+    lv_obj_add_event_cb(checkTokenBMintAccountIcon, SolanaSplTokenAddressLearnMore, LV_EVENT_CLICKED, (void*)tokenBAddress);
     // jupiterv6 platform overview container
     lv_obj_t * platformOverviewContainer = GuiCreateAutoHeightContainer(parent, 408, 16);
     SetContainerDefaultStyle(platformOverviewContainer);
@@ -1004,10 +984,10 @@ static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
 void SolanaAddressLearnMore(lv_event_t *e)
 {
     lv_obj_t* obj = lv_event_get_target(e);
-    SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)lv_obj_get_user_data(obj);
-    if (data != NULL) {
+    const char* address = (const char*)lv_obj_get_user_data(obj);
+    if (address != NULL) {
         char url[512];
-        snprintf(url, sizeof(url), "https://solscan.io/account/ %s#tableEntries", data->address);
+        snprintf(url, sizeof(url), "https://solscan.io/account/ %s#tableEntries", address);
         GuiQRCodeHintBoxOpenBig(url, "Address Lookup Table URL", _("solana_alt_notice"), url);
     }
 }
@@ -1301,128 +1281,67 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
 
         PtrT_VecFFI_PtrString accounts = overview_instructions->data[i].accounts;
         // accounts label
-        lv_obj_t *accounts_label = lv_label_create(container);
+        lv_obj_t *accounts_label = NULL;
         if (accounts->size != 0) {
+            accounts_label = lv_label_create(container);
             lv_label_set_text(accounts_label, "accounts");
             lv_obj_set_style_text_color(accounts_label, WHITE_COLOR, LV_PART_MAIN);
             lv_obj_set_style_text_opa(accounts_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_align(accounts_label, LV_ALIGN_TOP_LEFT, 24, 44);
-        } else {
-            lv_label_set_text(accounts_label, "");
-            lv_obj_align(accounts_label, LV_ALIGN_TOP_LEFT, 24, 10);
         }
-        // Create a flex container for accounts with scrolling
-        lv_obj_t *accounts_cont = lv_obj_create(container);
-        lv_obj_set_width(accounts_cont, lv_pct(88));
-        if (accounts->size == 0) {
-            lv_obj_set_height(accounts_cont, 0);
-        } else if (accounts->size == 2) {
-            lv_obj_set_height(accounts_cont, 150);
-        } else {
-            lv_obj_set_height(accounts_cont, 200);
-        }
-        lv_obj_set_flex_flow(accounts_cont, LV_FLEX_FLOW_COLUMN);
-        lv_obj_set_flex_align(accounts_cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-        lv_obj_align_to(accounts_cont, accounts_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
-        lv_obj_set_style_bg_opa(accounts_cont, LV_OPA_TRANSP, LV_PART_MAIN);
-        lv_obj_set_style_pad_left(accounts_cont, 0, LV_PART_MAIN);  // remove left padding
-        lv_obj_set_style_pad_right(accounts_cont, 0, LV_PART_MAIN);  // remove right padding
-        lv_obj_add_flag(accounts_cont, LV_OBJ_FLAG_SCROLLABLE);
-        lv_obj_set_style_border_width(accounts_cont, 0, LV_PART_MAIN);
 
+        lv_obj_t *accounts_cont = NULL;
         for (int j = 0; j < accounts->size; j++) {
-            lv_obj_t *account_cont = lv_obj_create(accounts_cont);
-            lv_obj_set_style_pad_left(account_cont, 0, LV_PART_MAIN);  // remove left padding
-            lv_obj_set_style_pad_right(account_cont, 0, LV_PART_MAIN);  // remove right padding
-            lv_obj_set_style_border_width(account_cont, 0, LV_PART_MAIN);
-            lv_obj_set_width(account_cont, lv_pct(100));
-            lv_obj_set_height(account_cont, LV_SIZE_CONTENT);
-            lv_obj_set_flex_flow(account_cont, LV_FLEX_FLOW_ROW);
-            lv_obj_set_flex_align(account_cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
-            lv_obj_set_style_bg_opa(account_cont, LV_OPA_TRANSP, LV_PART_MAIN);
-            lv_obj_set_style_pad_ver(account_cont, 2, LV_PART_MAIN); // vertical padding
-
+            if (accounts_cont == NULL) {
+                accounts_cont = lv_obj_create(container);
+                lv_obj_set_width(accounts_cont, lv_pct(88));
+                lv_obj_set_flex_flow(accounts_cont, LV_FLEX_FLOW_COLUMN);
+                lv_obj_set_flex_align(accounts_cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+                lv_obj_align_to(accounts_cont, accounts_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+                lv_obj_set_style_bg_opa(accounts_cont, LV_OPA_TRANSP, LV_PART_MAIN);
+                lv_obj_set_style_pad_left(accounts_cont, 0, LV_PART_MAIN);  // remove left padding
+                lv_obj_set_style_pad_right(accounts_cont, 0, LV_PART_MAIN);  // remove right padding
+                lv_obj_add_flag(accounts_cont, LV_OBJ_FLAG_SCROLLABLE);
+                lv_obj_set_style_border_width(accounts_cont, 0, LV_PART_MAIN);
+                lv_obj_set_height(accounts_cont, accounts->size == 2 ? 150 : 200);
+            }
             char order[BUFFER_SIZE_16] = {0};
-            snprintf_s(order, BUFFER_SIZE_16, "%d ", j + 1);
-            lv_obj_t *orderLabel = lv_label_create(account_cont);
-            lv_label_set_text(orderLabel, order);
-            lv_obj_set_style_text_font(orderLabel, g_defIllustrateFont, LV_PART_MAIN);
-            lv_obj_set_style_text_color(orderLabel, WHITE_COLOR, LV_PART_MAIN);
-            lv_obj_set_style_text_opa(orderLabel, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_t *account_label = lv_label_create(account_cont);
-            lv_obj_set_style_pad_right(account_cont, 0, LV_PART_MAIN);
-            lv_obj_set_width(account_label, lv_pct(80));
-            lv_obj_set_flex_grow(account_label, 1);
-            lv_obj_set_flex_align(orderLabel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
-            // check whether the account is a AddressLookupTable account
+            snprintf_s(order, BUFFER_SIZE_16, "%d", j + 1);
+            lv_obj_t *orderLabel = GuiCreateNoticeLabel(accounts_cont, order);
+            lv_obj_t *account_label = GuiCreateIllustrateLabel(accounts_cont, accounts->data[j]);
             if (CheckIsAddressLookupTableAccount(accounts->data[j])) {
                 lv_label_set_text(account_label, accounts->data[j] + 6);
-                lv_obj_t *info_icon = GuiCreateImg(account_cont, &imgInfoSmall);
+                lv_obj_t *info_icon = GuiCreateImg(accounts_cont, &imgInfoSmall);
                 lv_obj_set_style_pad_right(info_icon, 0, LV_PART_MAIN);
-                // add account click event
                 lv_obj_add_flag(info_icon, LV_OBJ_FLAG_CLICKABLE);
-                // remember free the data
-                SolanaAddressLearnMoreData* data = (SolanaAddressLearnMoreData*)SRAM_MALLOC(sizeof(SolanaAddressLearnMoreData));
-                if (data != NULL) {
-                    const char* address = accounts->data[j];
-                    size_t address_len = strlen(address);
-                    data->address = (char*)SRAM_MALLOC(address_len + 1);
-                    strcpy(data->address, address);
-                    lv_obj_set_user_data(info_icon, data);
-                    SolanaAddressLearnMoreData* retrieved_data = (SolanaAddressLearnMoreData*)lv_obj_get_user_data(info_icon);
-
-                    if (g_accountCount < MAX_ACCOUNTS) {
-                        g_accountData[g_accountCount] = data;
-                        g_accountCount++;
-                    }
-                }
+                lv_obj_set_user_data(info_icon, accounts->data[j]);
                 lv_obj_add_event_cb(info_icon, SolanaAddressLearnMore, LV_EVENT_CLICKED, NULL);
             } else {
                 lv_label_set_text(account_label, accounts->data[j]);
             }
             lv_obj_set_style_text_color(account_label, WHITE_COLOR, LV_PART_MAIN);
             lv_label_set_long_mode(account_label, LV_LABEL_LONG_WRAP);
-
             lv_obj_set_style_border_width(account_label, 0, LV_PART_MAIN);
         }
-        // data label
-        lv_obj_t *data_label = lv_label_create(container);
-        lv_label_set_text(data_label, "data");
-        lv_obj_set_style_text_color(data_label, WHITE_COLOR, LV_PART_MAIN);
-        lv_obj_set_style_text_opa(data_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+        char buff[BUFFER_SIZE_128] = {0};
+        snprintf_s(buff, BUFFER_SIZE_128, "#4b4b4b data# %s", overview_instructions->data[i].data);
+        lv_obj_t *data_label = GuiCreateIllustrateLabel(container, buff);
+        lv_label_set_recolor(data_label, true);
+        // lv_obj_align_to(data_label, orderLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+        lv_obj_align_to(data_label, lv_obj_get_child(lv_obj_get_parent(data_label), 
+        lv_obj_get_child_cnt(lv_obj_get_parent(data_label)) - 2), LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
 
-        lv_obj_align_to(data_label, accounts_cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
-        // data value
-        lv_obj_t *data_value = lv_label_create(container);
-        lv_label_set_text(data_value, overview_instructions->data[i].data);
-        lv_obj_set_style_text_font(data_value, g_defIllustrateFont, LV_PART_MAIN);
-        lv_obj_set_style_text_color(data_value, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-        lv_obj_align_to(data_value, data_label, LV_ALIGN_LEFT_MID, 50, 0);
-        lv_obj_set_width(data_value, lv_pct(70));
-        lv_label_set_long_mode(data_value, LV_LABEL_LONG_WRAP);
         // program address label
-        lv_obj_t *programAddress_label = lv_label_create(container);
-        lv_label_set_text(programAddress_label, "programAddress");
-        lv_obj_set_style_text_color(programAddress_label, WHITE_COLOR, LV_PART_MAIN);
-        lv_obj_set_style_text_opa(programAddress_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
+        snprintf_s(buff, BUFFER_SIZE_128, "#4b4b4b programAddress# %s", overview_instructions->data[i].program_address);
+        lv_obj_t *programAddress_label = GuiCreateIllustrateLabel(container, buff);
+        lv_label_set_recolor(programAddress_label, true);
+        GuiAlignToPrevObj(programAddress_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
 
-
-        lv_obj_align_to(programAddress_label, data_value, LV_ALIGN_OUT_BOTTOM_LEFT, -50, 10);
-        // program address value
-        PtrString program_address = overview_instructions->data[i].program_address;
-        lv_obj_t *program_content_label = lv_label_create(container);
-        lv_label_set_text(program_content_label, program_address);
-        lv_obj_set_style_text_font(program_content_label, g_defIllustrateFont, LV_PART_MAIN);
-        lv_obj_set_style_text_color(program_content_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-        lv_obj_align_to(program_content_label, programAddress_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
-        lv_obj_set_width(program_content_label, lv_pct(90));
-        lv_label_set_long_mode(program_content_label, LV_LABEL_LONG_WRAP);
         // calculate the height of the container
         lv_obj_update_layout(container);
         containerYOffset += lv_obj_get_height(container) + 16; // set padding between containers
     }
 }
-
 
 void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)
 {

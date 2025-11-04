@@ -1187,16 +1187,16 @@ mod tests {
 
         let bip32_signing_key =
         keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_icarus_master_key(
-            &master_key.as_ref(),
+            master_key.as_ref(),
             &"m/1853'/1815'/0'".to_string(),
         )
         .unwrap();
         let xpub = bip32_signing_key.public();
-        assert_eq!("", hex::encode(xpub.as_ref()));
+        assert_eq!("0ef99eea5e305a9a2a8eef5c626f150b29ba4e0e08bc7aa2fdd18a0884d80c99c6301a490ce2c00c273bdd4cda7138de4b8714796fd2adf2c09a425fe8d3acf6", hex::encode(xpub.as_ref()));
 
         let result = app_cardano::transaction::sign_data(
             &"m/1853'/1815'/0'/0'".to_string(),
-            &message_hash,
+            message_hash,
             master_key,
         )
         .unwrap();

@@ -666,4 +666,53 @@ mod tests {
         assert_eq!(result.get_total_transfer_value(), "0.001 ZEC");
         assert_eq!(result.get_fee_value(), "0.0002 ZEC");
     }
+
+    #[test]
+    fn test_decode_memo_with_hex_content() {
+        {
+            let mut memo = [0u8; 512];
+            memo[0] = 0xF6;
+            memo[1] = 0x01;
+            let result = decode_memo(memo);
+            assert!(result.is_some());
+            let hex_str = result.unwrap();
+            assert!(hex_str.starts_with("f6"));
+        }
+        {
+            let mut memo = [0u8; 512];
+            memo[0] = 0xF5;
+            let result = decode_memo(memo);
+            assert!(result.is_some());
+        }
+    }
+
+    #[test]
+    fn test_format_zec_value_with_different_amounts() {
+        let test_cases = vec![
+            (0, "0 ZEC"),
+            (1, "0.00000001 ZEC"),
+            (100_000_000, "1 ZEC"),
+            (150_000_000, "1.5 ZEC"),
+            (10_000, "0.0001 ZEC"),
+            (123_456_789, "1.23456789 ZEC"),
+            (1, "0.00000001 ZEC"),
+            (10, "0.0000001 ZEC"),
+        ];
+
+        for (input, expected) in test_cases {
+            assert_eq!(format_zec_value(input as f64), expected);
+        }
+    }
+
+    #[test]
+    fn test_format_zec_value_rounding() {
+        // Test trailing zero removal
+        let value = 100_000_000; // 1.00000000 ZEC
+        let result = format_zec_value(value as f64);
+        assert_eq!(result, "1 ZEC");
+
+        let value = 150_000_000; // 1.50000000 ZEC
+        let result = format_zec_value(value as f64);
+        assert_eq!(result, "1.5 ZEC");
+    }
 }

@@ -129,7 +129,6 @@ void *GuiGetAdaCatalyst(void)
 
 void *GuiGetAdaSignTxHashData(void)
 {
-    printf("=========== GuiGetAdaSignTxHashData\r\n");
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {

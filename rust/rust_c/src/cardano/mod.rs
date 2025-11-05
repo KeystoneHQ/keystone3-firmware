@@ -26,7 +26,7 @@ use crate::common::{
     errors::{RustCError, R},
     ur::FRAGMENT_UNLIMITED_LENGTH,
 };
-use crate::{extract_array, extract_ptr_with_type};
+use crate::{extract_array, extract_array_mut, extract_ptr_with_type};
 use structs::{DisplayCardanoCatalyst, DisplayCardanoSignData, DisplayCardanoTx};
 use ur_registry::cardano::cardano_sign_data_signature::CardanoSignDataSignature;
 use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
@@ -48,6 +48,8 @@ use ur_registry::{
     cardano::cardano_sign_data_request::CardanoSignDataRequest,
     registry_types::CARDANO_SIGN_CIP8_DATA_SIGNATURE,
 };
+use zeroize::Zeroize;
+
 pub mod cip8_cbor_data_ledger;
 
 pub mod address;
@@ -69,13 +71,16 @@ pub unsafe extern "C" fn cardano_check_catalyst(
     let cardano_catalyst_request =
         extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
     let mfp = extract_array!(master_fingerprint, u8, 4);
-    let ur_mfp = cardano_catalyst_request
+    let ur_mfp = match cardano_catalyst_request
         .get_derivation_path()
         .get_source_fingerprint()
-        .ok_or(RustCError::InvalidMasterFingerprint);
+    {
+        Some(fp) => fp,
+        None => return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr(),
+    };
 
     if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
-        if hex::encode(mfp) != hex::encode(ur_mfp.unwrap()) {
+        if mfp != ur_mfp {
             return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
         }
     }
@@ -120,10 +125,15 @@ pub unsafe extern "C" fn cardano_get_catalyst_root_index(
         extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
     let derviation_path: CryptoKeyPath = cardano_catalyst_request.get_derivation_path();
     match derviation_path.get_components().get(2) {
-        Some(_data) => {
-            let index = _data.get_index().unwrap();
-            SimpleResponse::success(convert_c_char(index.to_string())).simple_c_ptr()
-        }
+        Some(_data) => match _data.get_index() {
+            Some(index) => {
+                SimpleResponse::success(convert_c_char(index.to_string())).simple_c_ptr()
+            }
+            None => SimpleResponse::from(CardanoError::InvalidTransaction(
+                "invalid path index".to_string(),
+            ))
+            .simple_c_ptr(),
+        },
         None => SimpleResponse::from(CardanoError::InvalidTransaction("invalid path".to_string()))
             .simple_c_ptr(),
     }
@@ -136,10 +146,15 @@ pub unsafe extern "C" fn cardano_get_sign_data_root_index(
     let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
     let derviation_path: CryptoKeyPath = cardano_sign_data_reqeust.get_derivation_path();
     match derviation_path.get_components().get(2) {
-        Some(_data) => {
-            let index = _data.get_index().unwrap();
-            SimpleResponse::success(convert_c_char(index.to_string())).simple_c_ptr()
-        }
+        Some(_data) => match _data.get_index() {
+            Some(index) => {
+                SimpleResponse::success(convert_c_char(index.to_string())).simple_c_ptr()
+            }
+            None => SimpleResponse::from(CardanoError::InvalidTransaction(
+                "invalid path index".to_string(),
+            ))
+            .simple_c_ptr(),
+        },
         None => SimpleResponse::from(CardanoError::InvalidTransaction("invalid path".to_string()))
             .simple_c_ptr(),
     }
@@ -152,10 +167,15 @@ pub unsafe extern "C" fn cardano_get_sign_cip8_data_root_index(
     let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignCip8DataRequest);
     let derviation_path: CryptoKeyPath = cardano_sign_data_reqeust.get_derivation_path();
     match derviation_path.get_components().get(2) {
-        Some(_data) => {
-            let index = _data.get_index().unwrap();
-            SimpleResponse::success(convert_c_char(index.to_string())).simple_c_ptr()
-        }
+        Some(_data) => match _data.get_index() {
+            Some(index) => {
+                SimpleResponse::success(convert_c_char(index.to_string())).simple_c_ptr()
+            }
+            None => SimpleResponse::from(CardanoError::InvalidTransaction(
+                "invalid path index".to_string(),
+            ))
+            .simple_c_ptr(),
+        },
         None => SimpleResponse::from(CardanoError::InvalidTransaction("invalid path".to_string()))
             .simple_c_ptr(),
     }
@@ -213,13 +233,16 @@ pub unsafe extern "C" fn cardano_check_sign_data(
 ) -> PtrT<TransactionCheckResult> {
     let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
     let mfp = extract_array!(master_fingerprint, u8, 4);
-    let ur_mfp = cardano_sign_data_reqeust
+    let ur_mfp = match cardano_sign_data_reqeust
         .get_derivation_path()
         .get_source_fingerprint()
-        .ok_or(RustCError::InvalidMasterFingerprint);
+    {
+        Some(fp) => fp,
+        None => return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr(),
+    };
 
     if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
-        if hex::encode(mfp) != hex::encode(ur_mfp.unwrap()) {
+        if mfp != ur_mfp {
             return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
         }
     }
@@ -234,13 +257,16 @@ pub unsafe extern "C" fn cardano_check_sign_cip8_data(
 ) -> PtrT<TransactionCheckResult> {
     let cardano_sign_cip8_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignCip8DataRequest);
     let mfp = extract_array!(master_fingerprint, u8, 4);
-    let ur_mfp = cardano_sign_cip8_data_reqeust
+    let ur_mfp = match cardano_sign_cip8_data_reqeust
         .get_derivation_path()
         .get_source_fingerprint()
-        .ok_or(RustCError::InvalidMasterFingerprint);
+    {
+        Some(fp) => fp,
+        None => return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr(),
+    };
 
     if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
-        if hex::encode(mfp) != hex::encode(ur_mfp.unwrap()) {
+        if mfp != ur_mfp {
             return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
         }
     }
@@ -326,7 +352,7 @@ pub unsafe extern "C" fn cardano_parse_sign_tx_hash(
         .iter()
         .map(|v| v.get_path())
         .collect::<Option<Vec<String>>>()
-        .unwrap_or(vec![]);
+        .unwrap_or_default();
     let address_list = sign_hash_request.get_address_list();
     let network = "Cardano".to_string();
     let result = DisplayCardanoSignTxHash::new(network, paths, message, address_list);
@@ -368,9 +394,12 @@ fn generate_master_key(
     is_slip39: bool,
 ) -> Result<XPrv, CardanoError> {
     if is_slip39 {
-        app_cardano::slip23::from_seed_slip23(entropy).map(|v| v.xprv)
+        app_cardano::slip23::from_seed_slip23(entropy)
     } else {
-        Ok(calc_icarus_master_key(entropy, passphrase.as_bytes()))
+        match calc_icarus_master_key(entropy, passphrase.as_bytes()) {
+            Ok(v) => Ok(v),
+            Err(e) => Err(e),
+        }
     }
 }
 
@@ -395,10 +424,15 @@ pub unsafe extern "C" fn cardano_parse_sign_data(
 ) -> PtrT<TransactionParseResult<DisplayCardanoSignData>> {
     let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
     let sign_data = cardano_sign_data_reqeust.get_sign_data();
-    let derviation_path = cardano_sign_data_reqeust
-        .get_derivation_path()
-        .get_path()
-        .unwrap();
+    let derviation_path = match cardano_sign_data_reqeust.get_derivation_path().get_path() {
+        Some(path) => path,
+        None => {
+            return TransactionParseResult::from(CardanoError::InvalidTransaction(
+                "Invalid derivation path".to_string(),
+            ))
+            .c_ptr()
+        }
+    };
     let xpub = cardano_sign_data_reqeust.get_xpub();
     let parsed_data =
         app_cardano::transaction::parse_sign_data(sign_data, derviation_path, hex::encode(xpub));
@@ -414,10 +448,18 @@ pub unsafe extern "C" fn cardano_parse_sign_cip8_data(
 ) -> PtrT<TransactionParseResult<DisplayCardanoSignData>> {
     let cardano_sign_cip8_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignCip8DataRequest);
     let sign_data = cardano_sign_cip8_data_reqeust.get_sign_data();
-    let derviation_path = cardano_sign_cip8_data_reqeust
+    let derviation_path = match cardano_sign_cip8_data_reqeust
         .get_derivation_path()
         .get_path()
-        .unwrap();
+    {
+        Some(path) => path,
+        None => {
+            return TransactionParseResult::from(CardanoError::InvalidTransaction(
+                "Invalid derivation path".to_string(),
+            ))
+            .c_ptr()
+        }
+    };
     let xpub = cardano_sign_cip8_data_reqeust.get_xpub();
     let parsed_data = app_cardano::transaction::parse_sign_cip8_data(
         sign_data,
@@ -489,12 +531,13 @@ pub unsafe extern "C" fn cardano_sign_catalyst(
     passphrase: PtrString,
     is_slip39: bool,
 ) -> PtrT<UREncodeResult> {
-    let entropy = extract_array!(entropy, u8, entropy_len as usize);
+    let mut entropy: &mut [u8] = extract_array_mut!(entropy, u8, entropy_len as usize);
     let passphrase = recover_c_char(passphrase);
     let master_key = match generate_master_key(entropy, &passphrase, is_slip39) {
         Ok(v) => v,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
+    entropy.zeroize();
     cardano_sign_catalyst_by_icarus(ptr, master_key)
 }
 
@@ -505,11 +548,18 @@ unsafe fn cardano_sign_catalyst_by_icarus(
     let cardano_catalyst_request =
         extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
 
+    let path = match cardano_catalyst_request.get_derivation_path().get_path() {
+        Some(p) => p,
+        None => {
+            return UREncodeResult::from(CardanoError::InvalidTransaction(
+                "Invalid derivation path".to_string(),
+            ))
+            .c_ptr()
+        }
+    };
+
     governance::sign(
-        &cardano_catalyst_request
-            .get_derivation_path()
-            .get_path()
-            .unwrap(),
+        &path,
         cardano_catalyst_request.get_delegations(),
         &cardano_catalyst_request.get_stake_pub(),
         &cardano_catalyst_request.get_payment_address(),
@@ -587,12 +637,13 @@ pub unsafe extern "C" fn cardano_sign_sign_data(
     passphrase: PtrString,
     is_slip39: bool,
 ) -> PtrT<UREncodeResult> {
-    let entropy = extract_array!(entropy, u8, entropy_len as usize);
+    let mut entropy = extract_array_mut!(entropy, u8, entropy_len as usize);
     let passphrase = recover_c_char(passphrase);
     let master_key = match generate_master_key(entropy, &passphrase, is_slip39) {
         Ok(v) => v,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
+    entropy.zeroize();
 
     cardano_sign_sign_data_by_icarus(ptr, master_key)
 }
@@ -604,11 +655,18 @@ unsafe fn cardano_sign_sign_data_by_icarus(
     let cardano_sign_data_reqeust = extract_ptr_with_type!(ptr, CardanoSignDataRequest);
     let sign_data = cardano_sign_data_reqeust.get_sign_data();
 
+    let path = match cardano_sign_data_reqeust.get_derivation_path().get_path() {
+        Some(p) => p,
+        None => {
+            return UREncodeResult::from(CardanoError::InvalidTransaction(
+                "Invalid derivation path".to_string(),
+            ))
+            .c_ptr()
+        }
+    };
+
     let result = app_cardano::transaction::sign_data(
-        &cardano_sign_data_reqeust
-            .get_derivation_path()
-            .get_path()
-            .unwrap(),
+        &path,
         hex::encode(sign_data).as_str(),
         icarus_master_key,
     )
@@ -648,7 +706,7 @@ pub unsafe extern "C" fn cardano_sign_sign_cip8_data(
     passphrase: PtrString,
     is_slip39: bool,
 ) -> PtrT<UREncodeResult> {
-    let entropy = extract_array!(entropy, u8, entropy_len as usize);
+    let mut entropy = extract_array_mut!(entropy, u8, entropy_len as usize);
     let passphrase = recover_c_char(passphrase);
     let master_key = match generate_master_key(entropy, &passphrase, is_slip39) {
         Ok(v) => v,
@@ -721,13 +779,13 @@ pub unsafe extern "C" fn cardano_sign_tx(
     enable_blind_sign: bool,
     is_slip39: bool,
 ) -> PtrT<UREncodeResult> {
-    let entropy = extract_array!(entropy, u8, entropy_len as usize);
+    let mut entropy = extract_array_mut!(entropy, u8, entropy_len as usize);
     let passphrase = recover_c_char(passphrase);
     let master_key = match generate_master_key(entropy, &passphrase, is_slip39) {
         Ok(v) => v,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
-
+    entropy.zeroize();
     if enable_blind_sign {
         cardano_sign_tx_hash_by_icarus(ptr, master_key)
     } else {
@@ -762,12 +820,13 @@ pub unsafe extern "C" fn cardano_sign_tx_unlimited(
     passphrase: PtrString,
     is_slip39: bool,
 ) -> PtrT<UREncodeResult> {
-    let entropy = extract_array!(entropy, u8, entropy_len as usize);
+    let mut entropy = extract_array_mut!(entropy, u8, entropy_len as usize);
     let passphrase = recover_c_char(passphrase);
     let master_key = match generate_master_key(entropy, &passphrase, is_slip39) {
         Ok(v) => v,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
+    entropy.zeroize();
     cardano_sign_tx_by_icarus_unlimited(ptr, master_fingerprint, cardano_xpub, master_key)
 }
 
@@ -783,12 +842,13 @@ pub unsafe extern "C" fn cardano_get_pubkey_by_slip23(
         ))
         .simple_c_ptr();
     }
-    let entropy = extract_array!(entropy, u8, entropy_len as usize);
+    let mut entropy = extract_array_mut!(entropy, u8, entropy_len as usize);
     let path = recover_c_char(path).to_lowercase();
     let xpub = app_cardano::slip23::from_seed_slip23_path(entropy, path.as_str());
+    entropy.zeroize();
     match xpub {
         Ok(xpub) => {
-            SimpleResponse::success(convert_c_char(xpub.xprv.public().to_string())).simple_c_ptr()
+            SimpleResponse::success(convert_c_char(xpub.public().to_string())).simple_c_ptr()
         }
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     }
@@ -870,33 +930,52 @@ unsafe fn cardano_sign_sign_cip8_data_by_icarus(
     if cardano_sign_data_reqeust.get_hash_payload() {
         sign_data = blake2b_224(&sign_data).to_vec();
     }
-    let mut address_field = vec![];
-    let address_type = cardano_sign_data_reqeust.get_address_type();
-    if address_type.as_str() == "ADDRESS" {
-        address_field = bitcoin::bech32::decode(
-            cardano_sign_data_reqeust
-                .get_address_bench32()
-                .unwrap()
-                .as_str(),
-        )
-        .unwrap()
-        .1;
-    } else {
-        let public_key = cardano_sign_data_reqeust.get_xpub();
-        address_field = blake2b_224(&public_key).to_vec();
-    }
+    let address_field = {
+        let address_type = cardano_sign_data_reqeust.get_address_type();
+        if address_type.as_str() == "ADDRESS" {
+            let bech = match cardano_sign_data_reqeust.get_address_bench32() {
+                Some(s) => s,
+                None => {
+                    return UREncodeResult::from(RustCError::InvalidData(
+                        "missing address".to_string(),
+                    ))
+                    .c_ptr()
+                }
+            };
+            match bitcoin::bech32::decode(bech.as_str()) {
+                Ok((_hrp, data)) => data,
+                Err(_) => {
+                    return UREncodeResult::from(RustCError::InvalidData(
+                        "invalid bech32".to_string(),
+                    ))
+                    .c_ptr()
+                }
+            }
+        } else {
+            let public_key = cardano_sign_data_reqeust.get_xpub();
+            blake2b_224(&public_key).to_vec()
+        }
+    };
 
     let cip8_data = CardanoCip8SigStructureLedgerType {
         address_field: address_field.clone(),
         payload: sign_data,
     };
-    let cip8_cbor_data_ledger_type =
-        hex::encode(minicbor::to_vec(&cip8_data).unwrap()).to_uppercase();
+    let cip8_cbor_data_ledger_type = match minicbor::to_vec(&cip8_data) {
+        Ok(v) => hex::encode(v).to_uppercase(),
+        Err(e) => return UREncodeResult::from(RustCError::InvalidData(e.to_string())).c_ptr(),
+    };
+    let path = match cardano_sign_data_reqeust.get_derivation_path().get_path() {
+        Some(p) => p,
+        None => {
+            return UREncodeResult::from(CardanoError::InvalidTransaction(
+                "Invalid derivation path".to_string(),
+            ))
+            .c_ptr()
+        }
+    };
     let result = app_cardano::transaction::sign_data(
-        &cardano_sign_data_reqeust
-            .get_derivation_path()
-            .get_path()
-            .unwrap(),
+        &path,
         cip8_cbor_data_ledger_type.as_str(),
         icarus_master_key,
     )

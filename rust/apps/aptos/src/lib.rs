@@ -25,16 +25,21 @@ pub mod parser;
 
 pub fn generate_address(pub_key: &str) -> Result<String> {
     let mut buf: Vec<u8> = hex::decode(pub_key)?;
+    if buf.len() != 32 {
+        return Err(errors::AptosError::InvalidData(
+            "public key must be 32 bytes".to_string(),
+        ));
+    }
     buf.push(0);
     let addr = Sha3_256::new().update(&buf).finalize();
     Ok(format!("0x{}", hex::encode(addr)))
 }
 
-pub fn parse_tx(data: &Vec<u8>) -> crate::errors::Result<AptosTx> {
+pub fn parse_tx(data: &[u8]) -> Result<AptosTx> {
     Parser::parse_tx(data)
 }
 
-pub fn parse_msg(data: &Vec<u8>) -> crate::errors::Result<String> {
+pub fn parse_msg(data: &[u8]) -> Result<String> {
     Parser::parse_msg(data)
 }
 
@@ -46,9 +51,7 @@ pub fn sign(message: Vec<u8>, hd_path: &String, seed: &[u8]) -> errors::Result<[
 #[cfg(test)]
 mod tests {
     extern crate std;
-
     use super::*;
-
     use hex::FromHex;
     use hex::ToHex;
 
@@ -68,5 +71,39 @@ mod tests {
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
         let signature = sign(tx_hex, &hd_path, seed.as_slice()).unwrap();
         assert_eq!("ff2c5e05557c30d1cddd505b26836747eaf28f25b2816b1e702bd40236be674eaaef10e4bd940b85317bede537cad22365eb7afca7456b90dcc2807cbbdcaa0a", signature.encode_hex::<String>());
+    }
+
+    #[test]
+    fn test_generate_address_ok() {
+        // 32-byte pubkey all zeros
+        let pubkey_hex = "0000000000000000000000000000000000000000000000000000000000000000";
+        let addr = generate_address(pubkey_hex).unwrap();
+
+        // compute expected = sha3_256(pubkey || 0x00)
+        let mut buf = Vec::from_hex(pubkey_hex).unwrap();
+        buf.push(0);
+        let expected = Sha3_256::new().update(&buf).finalize();
+        let expected_addr = format!("0x{}", hex::encode(expected));
+
+        assert_eq!(addr, expected_addr);
+    }
+
+    #[test]
+    fn test_generate_address_invalid_hex() {
+        let res = generate_address("zz");
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_parse_msg_ascii_and_cjk() {
+        // ASCII returns utf8 directly
+        let ascii = b"hello, aptos".to_vec();
+        let ascii_out = parse_msg(&ascii).unwrap();
+        assert_eq!(ascii_out, "hello, aptos");
+
+        // CJK should be hex-encoded output according to parser policy
+        let cjk = "中文".as_bytes().to_vec();
+        let cjk_out = parse_msg(&cjk).unwrap();
+        assert_eq!(cjk_out, hex::encode(&cjk));
     }
 }

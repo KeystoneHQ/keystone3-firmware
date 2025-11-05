@@ -28,20 +28,23 @@ unsafe fn build_sign_result(
 ) -> app_aptos::errors::Result<AptosSignature> {
     let sign_request = extract_ptr_with_type!(ptr, AptosSignRequest);
     let pub_key = recover_c_char(pub_key);
-    let mut path = sign_request.get_authentication_key_derivation_paths()[0]
-        .get_path()
-        .ok_or(AptosError::InvalidData(
-            "invalid derivation path".to_string(),
-        ))?;
+    let paths = sign_request.get_authentication_key_derivation_paths();
+    let mut path = match paths.iter().find_map(|dp| dp.get_path()) {
+        Some(p) => p,
+        None => {
+            return Err(AptosError::InvalidData(
+                "empty or missing derivation path".to_string(),
+            ))
+        }
+    };
     if !path.starts_with("m/") {
         path = format!("m/{path}");
     }
     let signature = app_aptos::sign(sign_request.get_sign_data().to_vec(), &path, seed)?;
-    let buf: Vec<u8> = hex::decode(pub_key)?;
     Ok(AptosSignature::new(
         sign_request.get_request_id(),
         signature.to_vec(),
-        buf,
+        hex::decode(pub_key)?,
     ))
 }
 
@@ -66,17 +69,21 @@ pub unsafe extern "C" fn aptos_check_request(
     }
     let mfp = extract_array!(master_fingerprint, u8, 4);
     let sign_request = extract_ptr_with_type!(ptr, AptosSignRequest);
-    let ur_mfp = sign_request.get_authentication_key_derivation_paths()[0].get_source_fingerprint();
+    let ur_mfp = match sign_request
+        .get_authentication_key_derivation_paths()
+        .iter()
+        .find_map(|dp| dp.get_source_fingerprint())
+    {
+        Some(mfp) => mfp,
+        None => return TransactionCheckResult::from(RustCError::InvalidHDPath).c_ptr(),
+    };
 
     if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
-        if let Some(ur_mfp) = ur_mfp {
-            return if mfp == ur_mfp {
-                TransactionCheckResult::new().c_ptr()
-            } else {
-                TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr()
-            };
-        }
-        TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr()
+        return if mfp == ur_mfp {
+            TransactionCheckResult::new().c_ptr()
+        } else {
+            TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr()
+        };
     } else {
         TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr()
     }
@@ -84,21 +91,14 @@ pub unsafe extern "C" fn aptos_check_request(
 
 #[no_mangle]
 pub unsafe extern "C" fn aptos_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayAptosTx>> {
-    let sign_request = extract_ptr_with_type!(ptr, AptosSignRequest);
+    let sign_request: &mut AptosSignRequest = extract_ptr_with_type!(ptr, AptosSignRequest);
     let sign_data = sign_request.get_sign_data();
     let sign_type = match sign_request.get_sign_type() {
-        SignType::Single => {
-            if is_tx(&sign_data) {
-                SignType::Single
-            } else {
-                SignType::Message
-            }
-        }
-        SignType::Multi => SignType::Multi,
-        SignType::Message => SignType::Message,
+        SignType::Single if !is_tx(sign_data.as_slice()) => SignType::Message,
+        other => other,
     };
     match sign_type {
-        SignType::Single => match app_aptos::parse_tx(&sign_data.to_vec()) {
+        SignType::Single => match app_aptos::parse_tx(sign_data.as_slice()) {
             Ok(v) => TransactionParseResult::success(DisplayAptosTx::from(v).c_ptr()).c_ptr(),
             Err(e) => TransactionParseResult::from(e).c_ptr(),
         },
@@ -106,7 +106,7 @@ pub unsafe extern "C" fn aptos_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<
             TransactionParseResult::from(AptosError::ParseTxError("not support".to_string()))
                 .c_ptr()
         }
-        SignType::Message => match app_aptos::parse_msg(&sign_data.to_vec()) {
+        SignType::Message => match app_aptos::parse_msg(sign_data.as_slice()) {
             Ok(v) => TransactionParseResult::success(DisplayAptosTx::from(v).c_ptr()).c_ptr(),
             Err(e) => TransactionParseResult::from(e).c_ptr(),
         },

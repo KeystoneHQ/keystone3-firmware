@@ -8,6 +8,7 @@
 #include "drv_trng.h"
 #include "log_print.h"
 #include "drv_mpu.h"
+#include "user_memory.h"
 
 #define SALT_DATA_LEN                                   32
 

@@ -871,7 +871,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
     MnemonicType mnemonicType = GetMnemonicType();
     bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
     bool isBip39 = mnemonicType == MNEMONIC_TYPE_BIP39;
-    int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed) ;
+    int seedLen = GetCurrentAccountSeedLen();
     do {
         GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
         char* icarusMasterKey = NULL;
@@ -909,7 +909,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
 #ifdef WEB3_VERSION
         if (mnemonicType == MNEMONIC_TYPE_TON) {
             //store public key for ton wallet;
-            xPubResult = ProcessKeyType(seed, len, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL, NULL);
+            xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL, NULL);
             CHECK_AND_FREE_XPUB(xPubResult)
             ASSERT(xPubResult->data);
             g_accountPublicInfo[XPUB_TYPE_TON_NATIVE].value = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
@@ -943,28 +943,28 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
                     char* zcashUfvk = NULL;
                     SimpleResponse_c_char *zcash_ufvk_response = NULL;
-                    zcash_ufvk_response = derive_zcash_ufvk(seed, len, g_chainTable[i].path);
+                    zcash_ufvk_response = derive_zcash_ufvk(seed, seedLen, g_chainTable[i].path);
                     CHECK_AND_FREE_XPUB(zcash_ufvk_response)
                     zcashUfvk = zcash_ufvk_response->data;
-                    SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);
+                    SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, seedLen);
                     //iv_response won't fail
                     uint8_t iv_bytes[16];
                     memcpy_s(iv_bytes, 16, iv_response->data, 16);
                     free_simple_response_u8(iv_response);
                     xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
                 } else {
-                    xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+                    xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
 #endif
 #ifdef WEB3_VERSION
                 if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
-                    xPubResult = cardano_get_pubkey_by_slip23(seed, len, g_chainTable[i].path);
+                    xPubResult = cardano_get_pubkey_by_slip23(seed, seedLen, g_chainTable[i].path);
                 } else {
-                    xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+                    xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
 #endif
 #ifdef BTC_ONLY
-                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+                xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
 #endif
                 if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                     continue;
@@ -992,12 +992,14 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         SetWalletDataHash(accountIndex, hash);
         CLEAR_ARRAY(hash);
         uint32_t size = strlen(jsonString);
-        len = Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
+        int len = Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
         ASSERT(len == 4);
         len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
         ASSERT(len == size);
         printf("regenerate jsonString=%s\r\n", jsonString);
         if (!isSlip39) {
+            memset_s(cip3_response->data, strlen(cip3_response->data), 0, strlen(cip3_response->data));
+            memset_s(ledger_bitbox02_response->data, strlen(ledger_bitbox02_response->data), 0, strlen(ledger_bitbox02_response->data));
             free_simple_response_c_char(cip3_response);
             free_simple_response_c_char(ledger_bitbox02_response);
         }
@@ -1071,7 +1073,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     if (isTon) {
         ASSERT(false);
     }
-    int len = isSlip39 ? GetCurrentAccountEntropyLen() : sizeof(seed);
+    int seedLen = GetCurrentAccountSeedLen();
 
     char *passphrase = GetPassphrase(accountIndex);
     SetIsTempAccount(passphrase != NULL && passphrase[0] != 0);
@@ -1126,29 +1128,29 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
                 char* zcashUfvk = NULL;
                 SimpleResponse_c_char *zcash_ufvk_response = NULL;
-                zcash_ufvk_response = derive_zcash_ufvk(seed, len, g_chainTable[i].path);
+                zcash_ufvk_response = derive_zcash_ufvk(seed, seedLen, g_chainTable[i].path);
                 CHECK_AND_FREE_XPUB(zcash_ufvk_response)
                 zcashUfvk = zcash_ufvk_response->data;
-                SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);
+                SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, seedLen);
                 //iv_response won't fail
                 uint8_t iv_bytes[16];
                 memcpy_s(iv_bytes, 16, iv_response->data, 16);
                 free_simple_response_u8(iv_response);
                 xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
             } else {
-                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+                xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
             }
 #endif
 #ifdef WEB3_VERSION
             if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
                 // ada slip23
-                xPubResult = cardano_get_pubkey_by_slip23(seed, len, g_chainTable[i].path);
+                xPubResult = cardano_get_pubkey_by_slip23(seed, seedLen, g_chainTable[i].path);
             } else {
-                xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+                xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
             }
 #endif
 #ifdef BTC_ONLY
-            xPubResult = ProcessKeyType(seed, len, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
+            xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
 #endif
             if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
                 continue;

@@ -1,6 +1,6 @@
 use crate::structs::{ParseContext, ParsedCardanoSignData, ParsedCardanoTx, SignDataResult};
 use crate::{
-    errors::{CardanoError, R},
+    errors::{CardanoError, Result},
     structs::ParsedCardanoSignCip8Data,
 };
 use alloc::collections::BTreeMap;
@@ -13,7 +13,7 @@ use ed25519_bip32_core::XPrv;
 use hex;
 use ur_registry::crypto_key_path::CryptoKeyPath;
 
-pub fn parse_tx(tx: Vec<u8>, context: ParseContext) -> R<ParsedCardanoTx> {
+pub fn parse_tx(tx: Vec<u8>, context: ParseContext) -> Result<ParsedCardanoTx> {
     let cardano_tx = cardano_serialization_lib::protocol_types::FixedTransaction::from_bytes(tx)?;
     ParsedCardanoTx::from_cardano_tx(cardano_tx, context)
 }
@@ -22,7 +22,7 @@ pub fn parse_sign_data(
     sign_data: Vec<u8>,
     derviation_path: String,
     xpub: String,
-) -> R<ParsedCardanoSignData> {
+) -> Result<ParsedCardanoSignData> {
     ParsedCardanoSignData::build(sign_data, derviation_path, xpub)
 }
 
@@ -31,31 +31,32 @@ pub fn parse_sign_cip8_data(
     derviation_path: String,
     xpub: String,
     hash_payload: bool,
-) -> R<ParsedCardanoSignCip8Data> {
+) -> Result<ParsedCardanoSignCip8Data> {
     ParsedCardanoSignCip8Data::build(sign_data, derviation_path, xpub, hash_payload)
 }
 
-pub fn check_tx(tx: Vec<u8>, context: ParseContext) -> R<()> {
+pub fn check_tx(tx: Vec<u8>, context: ParseContext) -> Result<()> {
     let cardano_tx = cardano_serialization_lib::protocol_types::FixedTransaction::from_bytes(tx)?;
     ParsedCardanoTx::verify(cardano_tx, context)
 }
 
-pub fn calc_icarus_master_key(entropy: &[u8], passphrase: &[u8]) -> XPrv {
+pub fn calc_icarus_master_key(entropy: &[u8], passphrase: &[u8]) -> Result<XPrv> {
     keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
         entropy, passphrase,
     )
     .map_err(|e| CardanoError::SigningFailed(e.to_string()))
-    .unwrap()
 }
 
-pub fn sign_data(path: &String, payload: &str, icarus_master_key: XPrv) -> R<SignDataResult> {
+pub fn sign_data(path: &String, payload: &str, icarus_master_key: XPrv) -> Result<SignDataResult> {
     let bip32_signing_key =
         keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv(
             &icarus_master_key,
             path,
         )
-        .unwrap();
-    let signed_data = bip32_signing_key.sign::<Vec<u8>>(&hex::decode(payload).unwrap());
+        .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
+    let signed_data = bip32_signing_key.sign::<Vec<u8>>(
+        &hex::decode(payload).map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
+    );
     let pub_key = bip32_signing_key.public().public_key().to_vec();
     Ok(SignDataResult::new(
         pub_key,
@@ -67,14 +68,17 @@ pub fn sign_tx_hash(
     tx_hash: &String,
     paths: &Vec<CryptoKeyPath>,
     icarus_master_key: XPrv,
-) -> R<Vec<u8>> {
-    let tx_hash = hex::decode(tx_hash).unwrap();
+) -> Result<Vec<u8>> {
+    let tx_hash =
+        hex::decode(tx_hash).map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?;
     let mut witness_set = cardano_serialization_lib::TransactionWitnessSet::new();
     let mut vkeys = cardano_serialization_lib::Vkeywitnesses::new();
     for path in paths {
         match keystore::algorithms::ed25519::bip32_ed25519::derive_extended_pubkey_by_xprv(
             &icarus_master_key,
-            &path.get_path().unwrap(),
+            &path
+                .get_path()
+                .ok_or(CardanoError::DerivationError("Path is None".to_string()))?,
         )
         .map(|v| v.public_key())
         .map_err(|e| CardanoError::SigningFailed(e.to_string()))
@@ -83,12 +87,17 @@ pub fn sign_tx_hash(
                 let signature = keystore::algorithms::ed25519::bip32_ed25519::sign_message_by_xprv(
                     &icarus_master_key,
                     &tx_hash,
-                    &path.get_path().unwrap(),
+                    &path
+                        .get_path()
+                        .ok_or(CardanoError::DerivationError("Path is None".to_string()))?,
                 )
                 .map_err(|e| CardanoError::SigningFailed(e.to_string()))?;
                 // construct vkeywitness
                 vkeys.add(&Vkeywitness::new(
-                    Vkey::new(&PublicKey::from_bytes(&pubkey).unwrap()),
+                    Vkey::new(
+                        &PublicKey::from_bytes(&pubkey)
+                            .map_err(|e| CardanoError::SigningFailed(e.to_string()))?,
+                    ),
                     Ed25519Signature::from_bytes(signature.to_vec())
                         .map_err(|e| CardanoError::SigningFailed(e.to_string()))?,
                 ));
@@ -100,7 +109,7 @@ pub fn sign_tx_hash(
     Ok(witness_set.to_bytes())
 }
 
-pub fn sign_tx(tx: Vec<u8>, context: ParseContext, icarus_master_key: XPrv) -> R<Vec<u8>> {
+pub fn sign_tx(tx: Vec<u8>, context: ParseContext, icarus_master_key: XPrv) -> Result<Vec<u8>> {
     let cardano_tx = cardano_serialization_lib::protocol_types::FixedTransaction::from_bytes(tx)?;
     let hash = blake2b_256(cardano_tx.raw_body().as_ref());
     let mut witness_set = cardano_serialization_lib::TransactionWitnessSet::new();
@@ -231,7 +240,7 @@ mod test {
     fn test_sign_data() {
         let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
         let passphrase = b"";
-        let icarus_master_key = calc_icarus_master_key(&entropy, passphrase);
+        let icarus_master_key = calc_icarus_master_key(&entropy, passphrase).unwrap();
         let path = "m/1852'/1815'/0'/0/0".to_string();
         let payload = "846a5369676e6174757265315882a301270458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad676164647265737358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad4043abc123";
         let sign_data_result = sign_data(&path, payload, icarus_master_key).unwrap();
@@ -242,5 +251,229 @@ mod test {
             hex::encode(sign_data_result.get_pub_key()),
             "2ae9d64b6a954febcc848afaa6ca1e9c49559e23fe68d085631ea2a020b695ff"
         );
+    }
+
+    #[test]
+    fn test_parse_sign_data() {
+        let payload = "846a5369676e6174757265315882a301270458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad676164647265737358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad4043abc123";
+        let derivation_path = "m/1852'/1815'/0'/0/0".to_string();
+        let xpub = "ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c".to_string();
+        let result = parse_sign_data(
+            hex::decode(payload).unwrap(),
+            derivation_path.clone(),
+            xpub.clone(),
+        );
+        assert!(result.is_ok());
+        let data = result.unwrap();
+        assert_eq!(data.get_derivation_path(), derivation_path);
+    }
+
+    #[test]
+    fn test_parse_sign_cip8_data() {
+        let payload = "846a5369676e6174757265315882a301270458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad676164647265737358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad4043abc123";
+        let derivation_path = "m/1852'/1815'/0'/0/0".to_string();
+        let xpub = "ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c".to_string();
+
+        // Test with hash_payload = false
+        let result = parse_sign_cip8_data(
+            hex::decode(payload).unwrap(),
+            derivation_path.clone(),
+            xpub.clone(),
+            false,
+        );
+        assert!(result.is_ok());
+        let data = result.unwrap();
+        assert_eq!(data.get_derivation_path(), derivation_path);
+        assert_eq!(data.get_hash_payload(), false);
+
+        // Test with hash_payload = true
+        let result =
+            parse_sign_cip8_data(hex::decode(payload).unwrap(), derivation_path, xpub, true);
+        assert!(result.is_ok());
+        let data = result.unwrap();
+        assert_eq!(data.get_hash_payload(), true);
+    }
+
+    #[test]
+    fn test_calc_icarus_master_key() {
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let master_key = calc_icarus_master_key(&entropy, passphrase);
+        assert!(master_key.is_ok());
+    }
+
+    #[test]
+    fn test_calc_icarus_master_key_with_passphrase() {
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"test_passphrase";
+        let master_key = calc_icarus_master_key(&entropy, passphrase);
+        assert!(master_key.is_ok());
+    }
+
+    #[test]
+    fn test_parse_tx() {
+        let sign_data = hex::decode("84a400828258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99038258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99040182a200581d6179df4c75f7616d7d1fd39cbc1a6ea6b40a0d7b89fea62fc0909b6c370119c350a200581d61c9b0c9761fd1dc0404abd55efc895026628b5035ac623c614fbad0310119c35002198ecb0300a0f5f6").unwrap();
+        let xpub = hex::encode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c");
+        let master_fingerprint = hex::decode("52744703").unwrap();
+        let context = ParseContext::new(vec![], vec![], Some(xpub), master_fingerprint);
+        let result = parse_tx(sign_data, context);
+        assert!(result.is_ok());
+        let parsed_tx = result.unwrap();
+        assert!(!parsed_tx.get_fee().is_empty());
+    }
+
+    #[test]
+    fn test_parse_tx_invalid_bytes() {
+        let invalid_tx = vec![0xff, 0xff, 0xff];
+        let xpub = hex::encode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c");
+        let master_fingerprint = hex::decode("52744703").unwrap();
+        let context = ParseContext::new(vec![], vec![], Some(xpub), master_fingerprint);
+        let result = parse_tx(invalid_tx, context);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_check_tx() {
+        let sign_data = hex::decode("84a400828258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99038258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99040182a200581d6179df4c75f7616d7d1fd39cbc1a6ea6b40a0d7b89fea62fc0909b6c370119c350a200581d61c9b0c9761fd1dc0404abd55efc895026628b5035ac623c614fbad0310119c35002198ecb0300a0f5f6").unwrap();
+        let xpub = hex::encode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c");
+        let master_fingerprint = hex::decode("52744703").unwrap();
+        let context = ParseContext::new(vec![], vec![], Some(xpub), master_fingerprint);
+        let result = check_tx(sign_data, context);
+        // May succeed or fail depending on transaction validation
+        // Just verify it doesn't panic
+        let _ = result;
+    }
+
+    #[test]
+    fn test_check_tx_invalid_bytes() {
+        let invalid_tx = vec![0xff, 0xff, 0xff];
+        let xpub = hex::encode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c");
+        let master_fingerprint = hex::decode("52744703").unwrap();
+        let context = ParseContext::new(vec![], vec![], Some(xpub), master_fingerprint);
+        let result = check_tx(invalid_tx, context);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_sign_data_invalid_hex() {
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let icarus_master_key = calc_icarus_master_key(&entropy, passphrase).unwrap();
+        let path = "m/1852'/1815'/0'/0/0".to_string();
+        let invalid_payload = "invalid_hex";
+        let result = sign_data(&path, invalid_payload, icarus_master_key);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_sign_data_different_paths() {
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let icarus_master_key = calc_icarus_master_key(&entropy, passphrase).unwrap();
+        let payload = "846a5369676e6174757265315882a301270458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad676164647265737358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad4043abc123";
+        let path1 = "m/1852'/1815'/0'/0/0".to_string();
+        let path2 = "m/1852'/1815'/0'/0/1".to_string();
+        let sig1 = sign_data(&path1, payload, icarus_master_key.clone()).unwrap();
+        let sig2 = sign_data(&path2, payload, icarus_master_key).unwrap();
+        assert_ne!(sig1.get_signature(), sig2.get_signature());
+        assert_ne!(sig1.get_pub_key(), sig2.get_pub_key());
+    }
+
+    #[test]
+    fn test_sign_tx_hash_empty_paths() {
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let icarus_master_key = calc_icarus_master_key(&entropy, passphrase).unwrap();
+        let tx_hash = hex::encode([0u8; 32]);
+        let paths = vec![];
+        let result = sign_tx_hash(&tx_hash, &paths, icarus_master_key);
+        assert!(result.is_ok());
+        let witness_bytes = result.unwrap();
+        assert!(!witness_bytes.is_empty());
+    }
+
+    #[test]
+    fn test_sign_tx_hash_with_path() {
+        use ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let icarus_master_key = calc_icarus_master_key(&entropy, passphrase).unwrap();
+        let tx_hash = hex::encode([0u8; 32]);
+        let path_component = PathComponent::new(Some(0), false).unwrap();
+        let source_fingerprint: [u8; 4] = [18, 52, 86, 120];
+        let crypto_key_path =
+            CryptoKeyPath::new(vec![path_component], Some(source_fingerprint), None);
+        let paths = vec![crypto_key_path];
+        let result = sign_tx_hash(&tx_hash, &paths, icarus_master_key);
+        assert!(result.is_ok());
+        let witness_bytes = result.unwrap();
+        assert!(!witness_bytes.is_empty());
+    }
+
+    #[test]
+    fn test_sign_tx_hash_path_none() {
+        use ur_registry::crypto_key_path::CryptoKeyPath;
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let icarus_master_key = calc_icarus_master_key(&entropy, passphrase).unwrap();
+        let tx_hash = hex::encode([0u8; 32]);
+        let source_fingerprint: [u8; 4] = [18, 52, 86, 120];
+        let crypto_key_path = CryptoKeyPath::new(vec![], Some(source_fingerprint), None);
+        let paths = vec![crypto_key_path];
+        let result = sign_tx_hash(&tx_hash, &paths, icarus_master_key);
+        assert!(result.is_err());
+        assert!(matches!(
+            result.unwrap_err(),
+            CardanoError::DerivationError(_)
+        ));
+    }
+
+    #[test]
+    fn test_sign_tx_hash_invalid_hex() {
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let icarus_master_key = calc_icarus_master_key(&entropy, passphrase).unwrap();
+        let invalid_hash = "invalid_hex".to_string();
+        let paths = vec![];
+        let result = sign_tx_hash(&invalid_hash, &paths, icarus_master_key);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_sign_tx_empty_context() {
+        let sign_data = hex::decode("84a400828258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99038258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99040182a200581d6179df4c75f7616d7d1fd39cbc1a6ea6b40a0d7b89fea62fc0909b6c370119c350a200581d61c9b0c9761fd1dc0404abd55efc895026628b5035ac623c614fbad0310119c35002198ecb0300a0f5f6").unwrap();
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let icarus_master_key = calc_icarus_master_key(&entropy, passphrase).unwrap();
+        let xpub = hex::encode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c");
+        let master_fingerprint = hex::decode("52744703").unwrap();
+        let context = ParseContext::new(vec![], vec![], Some(xpub), master_fingerprint);
+        let result = sign_tx(sign_data, context, icarus_master_key);
+        assert!(result.is_ok());
+        let witness_bytes = result.unwrap();
+        assert!(!witness_bytes.is_empty());
+    }
+
+    #[test]
+    fn test_sign_tx_invalid_bytes() {
+        let invalid_tx = vec![0xff, 0xff, 0xff];
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let icarus_master_key = calc_icarus_master_key(&entropy, passphrase).unwrap();
+        let xpub = hex::encode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c");
+        let master_fingerprint = hex::decode("52744703").unwrap();
+        let context = ParseContext::new(vec![], vec![], Some(xpub), master_fingerprint);
+        let result = sign_tx(invalid_tx, context, icarus_master_key);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_sign_data_invalid_hex() {
+        let invalid_payload = vec![0xff, 0xff, 0xff];
+        let derivation_path = "m/1852'/1815'/0'/0/0".to_string();
+        let xpub = "ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c".to_string();
+        let result = parse_sign_data(invalid_payload, derivation_path, xpub);
+        // Should handle invalid CBOR gracefully
+        assert!(result.is_ok());
     }
 }

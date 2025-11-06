@@ -19,7 +19,7 @@ pub mod structs;
 mod utils;
 
 impl ParsedCosmosTx {
-    pub fn build(data: &Vec<u8>, data_type: DataType) -> Result<Self> {
+    pub fn build(data: &[u8], data_type: DataType) -> Result<Self> {
         match data_type {
             DataType::Amino => Self::build_from_amino(data),
             DataType::Direct => Self::build_from_direct(data),
@@ -45,7 +45,7 @@ impl ParsedCosmosTx {
             // _ => CosmosTxDisplayType::Unknown,
         }
     }
-    fn build_overview_from_amino(data: Value) -> Result<CosmosTxOverview> {
+    fn build_overview_from_amino(data: &Value) -> Result<CosmosTxOverview> {
         let chain_id = data["chain_id"].as_str().unwrap_or("");
         let kind = CosmosTxOverview::from_value(&data["msgs"])?;
         let common = CommonOverview {
@@ -58,7 +58,7 @@ impl ParsedCosmosTx {
         })
     }
 
-    fn build_detail_from_amino(data: Value) -> Result<String> {
+    fn build_detail_from_amino(data: &Value) -> Result<String> {
         let chain_id = data["chain_id"].as_str().unwrap_or("");
         let common = CommonDetail {
             network: get_network_by_chain_id(chain_id)?,
@@ -78,24 +78,23 @@ impl ParsedCosmosTx {
         Ok(detail)
     }
 
-    fn build_from_amino(data: &Vec<u8>) -> Result<Self> {
-        let v: Value = from_slice(data.as_slice())?;
-        let overview = Self::build_overview_from_amino(v.clone())?;
+    fn build_from_value(v: &Value) -> Result<Self> {
         Ok(Self {
-            overview,
-            detail: Self::build_detail_from_amino(v.clone())?,
+            overview: Self::build_overview_from_amino(v)?,
+            detail: Self::build_detail_from_amino(v)?,
         })
     }
 
-    fn build_from_direct(data: &Vec<u8>) -> Result<Self> {
+    fn build_from_amino(data: &[u8]) -> Result<Self> {
+        let v: Value = from_slice(data)?;
+        Self::build_from_value(&v)
+    }
+
+    fn build_from_direct(data: &[u8]) -> Result<Self> {
         let sign_doc = SignDoc::parse(data)?;
         let doc_str = serde_json::to_string(&sign_doc)?;
         let v: Value = from_str(doc_str.as_str())?;
-        let overview = Self::build_overview_from_amino(v.clone())?;
-        Ok(Self {
-            overview,
-            detail: Self::build_detail_from_amino(v.clone())?,
-        })
+        Self::build_from_value(&v)
     }
 }
 
@@ -112,8 +111,7 @@ mod tests {
     fn test_parse_cosmos_send_amino_json() {
         //{"account_number": String("1674671"), "chain_id": String("cosmoshub-4"), "fee": Object {"amount": Array [Object {"amount": String("2583"), "denom": String("uatom")}], "gas": String("103301")}, "memo": String(""), "msgs": Array [Object {"type": String("cosmos-sdk/MsgSend"), "value": Object {"amount": Array [Object {"amount": String("12000"), "denom": String("uatom")}], "from_address": String("cosmos17u02f80vkafne9la4wypdx3kxxxxwm6f2qtcj2"), "to_address": String("cosmos1kwml7yt4em4en7guy6het2q3308u73dff983s3")}}], "sequence": String("2")}
         let raw_tx = "7B226163636F756E745F6E756D626572223A2231363734363731222C22636861696E5F6964223A22636F736D6F736875622D34222C22666565223A7B22616D6F756E74223A5B7B22616D6F756E74223A2232353833222C2264656E6F6D223A227561746F6D227D5D2C22676173223A22313033333031227D2C226D656D6F223A22222C226D736773223A5B7B2274797065223A22636F736D6F732D73646B2F4D736753656E64222C2276616C7565223A7B22616D6F756E74223A5B7B22616D6F756E74223A223132303030222C2264656E6F6D223A227561746F6D227D5D2C2266726F6D5F61646472657373223A22636F736D6F733137753032663830766B61666E65396C61347779706478336B78787878776D3666327174636A32222C22746F5F61646472657373223A22636F736D6F73316B776D6C37797434656D34656E37677579366865743271333330387537336466663938337333227D7D5D2C2273657175656E6365223A2232227D";
-        let result =
-            ParsedCosmosTx::build(&hex::decode(raw_tx).unwrap().to_vec(), DataType::Amino).unwrap();
+        let result = ParsedCosmosTx::build(&hex::decode(raw_tx).unwrap(), DataType::Amino).unwrap();
         let overview = result.overview;
         assert_eq!("Cosmos Hub", overview.common.network);
         match overview.kind[0].clone() {
@@ -204,8 +202,7 @@ mod tests {
         //  Object {"account_number": Number(2318430), "Chain ID": String("evmos_9000-4"), "Fee": Object {"amount": Array [Object {"amount": String("8750000000000000"), "denom": String("atevmos")}], "gas": Number(350000), "granter": String(""), "payer": String("")}, "memo": String(""), "msgs": Array [Object {"type": String("/cosmos.staking.v1beta1.MsgDelegate"), "Value": Object {"amount": Object {"amount": String("10000000000000000"), "denom": String("atevmos")}, "delegator_address": String("evmos1tqsdz785sqjnlggee0lwxjwfk6dl36ae2uf9er"), "validator_address": String("evmosvaloper10t6kyy4jncvnevmgq6q2ntcy90gse3yxa7x2p4")}}]}
         let raw_tx = "0AAC010AA9010A232F636F736D6F732E7374616B696E672E763162657461312E4D736744656C65676174651281010A2C65766D6F7331747173647A37383573716A6E6C67676565306C77786A77666B36646C33366165327566396572123365766D6F7376616C6F706572313074366B7979346A6E63766E65766D67713671326E74637939306773653379786137783270341A1C0A07617465766D6F7312113130303030303030303030303030303030127C0A570A4F0A282F65746865726D696E742E63727970746F2E76312E657468736563703235366B312E5075624B657912230A21039F4E693730F116E7AB01DAC46B94AD4FCABC3CA7D91A6B121CC26782A8F2B8B212040A02080112210A1B0A07617465766D6F7312103837353030303030303030303030303010B0AE151A0C65766D6F735F393030302D3420DEC08D01";
         let result =
-            ParsedCosmosTx::build(&hex::decode(raw_tx).unwrap().to_vec(), DataType::Direct)
-                .unwrap();
+            ParsedCosmosTx::build(&hex::decode(raw_tx).unwrap(), DataType::Direct).unwrap();
         let overview = result.overview;
         assert_eq!("Evmos Testnet", overview.common.network);
         assert_eq!(CosmosTxDisplayType::Delegate, overview.display_type);

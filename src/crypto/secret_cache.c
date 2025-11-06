@@ -63,8 +63,9 @@ void SecretCacheSetPassword(char *password)
     if (g_passwordCache) {
         SRAM_FREE(g_passwordCache);
     }
-    g_passwordCache = SRAM_MALLOC(strnlen_s(password, PASSWORD_MAX_LEN) + 1);
-    strcpy_s(g_passwordCache, PASSWORD_MAX_LEN, password);
+    size_t len = strnlen_s(password, PASSWORD_MAX_LEN) + 1;
+    g_passwordCache = SRAM_MALLOC(len);
+    strcpy_s(g_passwordCache, len, password);
 }
 
 char *SecretCacheGetPassword(void)
@@ -77,8 +78,9 @@ void SecretCacheSetPassphrase(const char *passPhrase)
     if (g_passphraseCache) {
         SRAM_FREE(g_passphraseCache);
     }
-    g_passphraseCache = SRAM_MALLOC(strnlen_s(passPhrase, PASSPHRASE_MAX_LEN) + 1);
-    strcpy_s(g_passphraseCache, PASSPHRASE_MAX_LEN, passPhrase);
+    size_t len = strnlen_s(passPhrase, PASSPHRASE_MAX_LEN) + 1;
+    g_passphraseCache = SRAM_MALLOC(len);
+    strcpy_s(g_passphraseCache, len, passPhrase);
 }
 
 char *SecretCacheGetPassphrase(void)
@@ -91,8 +93,9 @@ void SecretCacheSetNewPassword(char *password)
     if (g_newPasswordCache) {
         SRAM_FREE(g_newPasswordCache);
     }
-    g_newPasswordCache = SRAM_MALLOC(strnlen_s(password, PASSWORD_MAX_LEN) + 1);
-    strcpy_s(g_newPasswordCache, PASSWORD_MAX_LEN, password);
+    size_t len = strnlen_s(password, PASSWORD_MAX_LEN) + 1;
+    g_passwordCache = SRAM_MALLOC(len);
+    strcpy_s(g_newPasswordCache, len, password);
 }
 
 char *SecretCacheGetNewPassword(void)

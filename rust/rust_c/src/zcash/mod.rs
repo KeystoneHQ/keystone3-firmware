@@ -51,7 +51,7 @@ pub unsafe extern "C" fn calculate_zcash_seed_fingerprint(
     let result = match sfp {
         Ok(bytes) => {
             SimpleResponse::success(Box::into_raw(Box::new(bytes)) as *mut u8).simple_c_ptr()
-        },
+        }
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     };
     seed.zeroize();

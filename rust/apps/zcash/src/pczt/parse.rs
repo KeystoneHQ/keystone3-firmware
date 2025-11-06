@@ -715,4 +715,199 @@ mod tests {
         let result = format_zec_value(value as f64);
         assert_eq!(result, "1.5 ZEC");
     }
+
+    #[test]
+    fn test_format_zec_value_edge_cases() {
+        // Test very large values
+        let value = u64::MAX as f64;
+        let result = format_zec_value(value);
+        assert!(result.ends_with(" ZEC"));
+        
+        // Test max realistic ZEC value (21 million ZEC = 2.1e15 zatoshis)
+        let max_zec = 2_100_000_000_000_000_u64;
+        let result = format_zec_value(max_zec as f64);
+        assert_eq!(result, "21000000 ZEC");
+    }
+
+    #[test]
+    fn test_decode_memo_empty() {
+        let memo = [0u8; 512];
+        let result = decode_memo(memo);
+        assert!(result.is_some());
+        let decoded = result.unwrap();
+        assert!(decoded.is_empty());
+    }
+
+    #[test]
+    fn test_decode_memo_full_text() {
+        let memo = [b'A'; 512];
+        let result = decode_memo(memo);
+        assert!(result.is_some());
+        let decoded = result.unwrap();
+        assert_eq!(decoded.len(), 512);
+    }
+
+    #[test]
+    fn test_decode_memo_with_padding() {
+        let mut memo = [0u8; 512];
+        let text = b"Hello World";
+        memo[..text.len()].copy_from_slice(text);
+        let result = decode_memo(memo);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), "Hello World");
+    }
+
+    #[test]
+    fn test_decode_memo_utf8_with_multibyte() {
+        let mut memo = [0u8; 512];
+        let text = "测试中文".as_bytes();
+        memo[..text.len()].copy_from_slice(text);
+        let result = decode_memo(memo);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), "测试中文");
+    }
+
+    #[test]
+    fn test_decode_memo_boundary_cases() {
+        // Test with first byte <= 0xF4 (UTF-8 decoding path) - simple ASCII
+        let mut memo = [0u8; 512];
+        memo[0] = b'A';
+        memo[1] = b'B';
+        memo[2] = b'C';
+        let result = decode_memo(memo);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), "ABC");
+
+        // Test with 0xF5 (should use hex encoding)
+        let mut memo = [0u8; 512];
+        memo[0] = 0xF5;
+        let result = decode_memo(memo);
+        assert!(result.is_some());
+        let hex_str = result.unwrap();
+        assert!(hex_str.starts_with("f5"));
+    }
+
+    #[test]
+    fn test_decode_memo_f6_marker_with_zeros() {
+        // Test 0xF6 marker with all zeros after it (should return None)
+        let mut memo = [0u8; 512];
+        memo[0] = 0xF6;
+        let result = decode_memo(memo);
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_decode_memo_f6_marker_with_data() {
+        // Test 0xF6 marker with non-zero data after it
+        let mut memo = [0u8; 512];
+        memo[0] = 0xF6;
+        memo[1] = 0xFF;
+        memo[2] = 0xAB;
+        let result = decode_memo(memo);
+        assert!(result.is_some());
+        let hex_str = result.unwrap();
+        assert!(hex_str.starts_with("f6ff"));
+    }
+
+    #[test]
+    fn test_decode_memo_special_characters() {
+        let mut memo = [0u8; 512];
+        let text = b"Test!@#$%^&*()_+-=[]{}|;:',.<>?/`~";
+        memo[..text.len()].copy_from_slice(text);
+        let result = decode_memo(memo);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), "Test!@#$%^&*()_+-=[]{}|;:',.<>?/`~");
+    }
+
+    #[test]
+    fn test_format_zec_value_precision() {
+        // Test that we maintain proper precision
+        let value = 12345678; // 0.12345678 ZEC
+        let result = format_zec_value(value as f64);
+        assert_eq!(result, "0.12345678 ZEC");
+
+        // Test single zatoshi
+        let value = 1;
+        let result = format_zec_value(value as f64);
+        assert_eq!(result, "0.00000001 ZEC");
+    }
+
+    #[test]
+    fn test_format_zec_value_no_fractional() {
+        // Test whole number amounts
+        let test_cases = vec![
+            (100_000_000u64, "1 ZEC"),
+            (200_000_000u64, "2 ZEC"),
+            (1_000_000_000u64, "10 ZEC"),
+            (10_000_000_000u64, "100 ZEC"),
+        ];
+
+        for (input, expected) in test_cases {
+            assert_eq!(format_zec_value(input as f64), expected);
+        }
+    }
+
+    #[test]
+    fn test_decode_memo_newlines_and_tabs() {
+        let mut memo = [0u8; 512];
+        let text = b"Line1\nLine2\tTabbed";
+        memo[..text.len()].copy_from_slice(text);
+        let result = decode_memo(memo);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), "Line1\nLine2\tTabbed");
+    }
+
+    #[test]
+    fn test_decode_memo_all_printable_ascii() {
+        let mut memo = [0u8; 512];
+        // Test all printable ASCII characters (32-126)
+        for i in 32..=126 {
+            memo[i - 32] = i as u8;
+        }
+        let result = decode_memo(memo);
+        assert!(result.is_some());
+        let decoded = result.unwrap();
+        // Should decode all printable ASCII
+        assert!(decoded.len() <= 512);
+    }
+
+    #[test]
+    fn test_format_zec_value_fractional_cents() {
+        // Test values that should show as fractional cents
+        let value = 1000; // 0.00001 ZEC
+        let result = format_zec_value(value as f64);
+        assert_eq!(result, "0.00001 ZEC");
+
+        let value = 500; // 0.000005 ZEC
+        let result = format_zec_value(value as f64);
+        assert_eq!(result, "0.000005 ZEC");
+    }
+
+    #[test]
+    fn test_decode_memo_mixed_content() {
+        let mut memo = [0u8; 512];
+        let text = b"Test123!@# ZEC Payment";
+        memo[..text.len()].copy_from_slice(text);
+        let result = decode_memo(memo);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), "Test123!@# ZEC Payment");
+    }
+
+    #[test]
+    fn test_format_zec_value_typical_transaction_amounts() {
+        // Test common transaction amounts
+        let test_cases = vec![
+            (10_000_000u64, "0.1 ZEC"),        // 0.1 ZEC
+            (50_000_000u64, "0.5 ZEC"),        // 0.5 ZEC
+            (100_000_000u64, "1 ZEC"),         // 1 ZEC
+            (250_000_000u64, "2.5 ZEC"),       // 2.5 ZEC
+            (1_000_000_000u64, "10 ZEC"),      // 10 ZEC
+            (10_000_000_000u64, "100 ZEC"),    // 100 ZEC
+        ];
+
+        for (input, expected) in test_cases {
+            assert_eq!(format_zec_value(input as f64), expected);
+        }
+    }
+    
 }

@@ -190,3 +190,200 @@ macro_rules! ident_str {
         }
     }};
 }
+
+#[cfg(test)]
+mod tests {
+    extern crate std;
+    use super::*;
+
+    #[test]
+    fn test_is_valid_identifier_char() {
+        assert!(is_valid_identifier_char('a'));
+        assert!(is_valid_identifier_char('Z'));
+        assert!(is_valid_identifier_char('0'));
+        assert!(is_valid_identifier_char('_'));
+        assert!(!is_valid_identifier_char('-'));
+        assert!(!is_valid_identifier_char(' '));
+    }
+
+    #[test]
+    fn test_is_valid() {
+        assert!(is_valid("valid"));
+        assert!(is_valid("Valid123"));
+        assert!(is_valid("_valid"));
+        assert!(is_valid("<SELF>"));
+        assert!(!is_valid("invalid-identifier"));
+        assert!(!is_valid(""));
+        assert!(!is_valid("_"));
+    }
+
+    #[test]
+    fn test_identifier_new() {
+        let ident = Identifier::new("valid").unwrap();
+        assert_eq!(ident.as_str(), "valid");
+
+        let result = Identifier::new("invalid-identifier");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_identifier_is_valid() {
+        assert!(Identifier::is_valid("valid"));
+        assert!(!Identifier::is_valid("invalid-identifier"));
+    }
+
+    #[test]
+    fn test_identifier_is_self() {
+        let ident = Identifier::new("<SELF>").unwrap();
+        assert!(ident.is_self());
+
+        let ident = Identifier::new("notself").unwrap();
+        assert!(!ident.is_self());
+    }
+
+    #[test]
+    fn test_identifier_from_utf8() {
+        let bytes = b"valid".to_vec();
+        let ident = Identifier::from_utf8(bytes).unwrap();
+        assert_eq!(ident.as_str(), "valid");
+    }
+
+    #[test]
+    fn test_identifier_as_ident_str() {
+        let ident = Identifier::new("test").unwrap();
+        let ident_str = ident.as_ident_str();
+        assert_eq!(ident_str.as_str(), "test");
+    }
+
+    #[test]
+    fn test_identifier_into_string() {
+        let ident = Identifier::new("test").unwrap();
+        let s = ident.into_string();
+        assert_eq!(s, "test");
+    }
+
+    #[test]
+    fn test_identifier_into_bytes() {
+        let ident = Identifier::new("test").unwrap();
+        let bytes = ident.into_bytes();
+        assert_eq!(bytes, b"test".to_vec());
+    }
+
+    #[test]
+    fn test_identifier_from_str() {
+        let ident = Identifier::from_str("valid").unwrap();
+        assert_eq!(ident.as_str(), "valid");
+
+        let result = Identifier::from_str("invalid-identifier");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_identifier_from_ident_str() {
+        let ident_str = IdentStr::new("valid").unwrap();
+        let ident: Identifier = ident_str.into();
+        assert_eq!(ident.as_str(), "valid");
+    }
+
+    #[test]
+    fn test_identifier_as_ref_ident_str() {
+        let ident = Identifier::new("test").unwrap();
+        let ident_str: &IdentStr = ident.as_ref();
+        assert_eq!(ident_str.as_str(), "test");
+    }
+
+    #[test]
+    fn test_identifier_deref() {
+        let ident = Identifier::new("test").unwrap();
+        let ident_str: &IdentStr = &*ident;
+        assert_eq!(ident_str.as_str(), "test");
+    }
+
+    #[test]
+    fn test_identifier_display() {
+        let ident = Identifier::new("test").unwrap();
+        let s = format!("{}", ident);
+        assert_eq!(s, "test");
+    }
+
+    #[test]
+    fn test_ident_str_new() {
+        let ident_str = IdentStr::new("valid").unwrap();
+        assert_eq!(ident_str.as_str(), "valid");
+
+        let result = IdentStr::new("invalid-identifier");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_ident_str_is_valid() {
+        assert!(IdentStr::is_valid("valid"));
+        assert!(!IdentStr::is_valid("invalid-identifier"));
+    }
+
+    #[test]
+    fn test_ident_str_len() {
+        let ident_str = IdentStr::new("test").unwrap();
+        assert_eq!(ident_str.len(), 4);
+    }
+
+    #[test]
+    fn test_ident_str_is_empty() {
+        let ident_str = IdentStr::new("test").unwrap();
+        assert!(!ident_str.is_empty());
+    }
+
+    #[test]
+    fn test_ident_str_as_str() {
+        let ident_str = IdentStr::new("test").unwrap();
+        assert_eq!(ident_str.as_str(), "test");
+    }
+
+    #[test]
+    fn test_ident_str_as_bytes() {
+        let ident_str = IdentStr::new("test").unwrap();
+        assert_eq!(ident_str.as_bytes(), b"test");
+    }
+
+    #[test]
+    fn test_identifier_borrow_ident_str() {
+        let ident = Identifier::new("test").unwrap();
+        let ident_str: &IdentStr = ident.borrow();
+        assert_eq!(ident_str.as_str(), "test");
+    }
+
+    #[test]
+    fn test_ident_str_to_owned() {
+        let ident_str = IdentStr::new("test").unwrap();
+        let ident: Identifier = ident_str.to_owned();
+        assert_eq!(ident.as_str(), "test");
+    }
+
+    #[test]
+    fn test_ident_str_display() {
+        let ident_str = IdentStr::new("test").unwrap();
+        let s = format!("{}", ident_str);
+        assert_eq!(s, "test");
+    }
+
+    #[test]
+    fn test_identifier_eq() {
+        let ident1 = Identifier::new("test").unwrap();
+        let ident2 = Identifier::new("test").unwrap();
+        assert_eq!(ident1, ident2);
+    }
+
+    #[test]
+    fn test_identifier_ord() {
+        let ident1 = Identifier::new("a").unwrap();
+        let ident2 = Identifier::new("b").unwrap();
+        assert!(ident1 < ident2);
+    }
+
+    #[test]
+    fn test_identifier_clone() {
+        let ident1 = Identifier::new("test").unwrap();
+        let ident2 = ident1.clone();
+        assert_eq!(ident1, ident2);
+    }
+}

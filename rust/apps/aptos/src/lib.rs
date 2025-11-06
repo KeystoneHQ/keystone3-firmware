@@ -106,4 +106,125 @@ mod tests {
         let cjk_out = parse_msg(&cjk).unwrap();
         assert_eq!(cjk_out, hex::encode(&cjk));
     }
+
+    #[test]
+    fn test_generate_address_invalid_length() {
+        // Test with 31 bytes (too short)
+        let pubkey_31 = "00".repeat(31);
+        let res = generate_address(&pubkey_31);
+        assert!(res.is_err());
+        assert!(matches!(
+            res.unwrap_err(),
+            errors::AptosError::InvalidData(_)
+        ));
+
+        // Test with 33 bytes (too long)
+        let pubkey_33 = "00".repeat(33);
+        let res = generate_address(&pubkey_33);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_generate_address_with_prefix() {
+        // Test with 0x prefix (should fail hex decoding)
+        let pubkey = "0x0000000000000000000000000000000000000000000000000000000000000000";
+        let res = generate_address(pubkey);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_generate_address_different_keys() {
+        let key1 = "0000000000000000000000000000000000000000000000000000000000000000";
+        let key2 = "0000000000000000000000000000000000000000000000000000000000000001";
+        let addr1 = generate_address(key1).unwrap();
+        let addr2 = generate_address(key2).unwrap();
+        assert_ne!(addr1, addr2);
+        assert!(addr1.starts_with("0x"));
+        assert!(addr2.starts_with("0x"));
+    }
+
+    #[test]
+    fn test_parse_tx_with_prefix() {
+        // Test parse_tx with TX_PREFIX
+        let tx_data = hex::decode("8bbbb70ae8b90a8686b2a27f10e21e44f2fb64ffffcaa4bb0242e9f1ea698659010000000000000002000000000000000000000000000000000000000000000000000000000000000104636f696e087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220834f4b75dcaacbd7c549a993cdd3140676e172d1fee0609bf6876c74aaa7116008400d0300000000009a0e0000000000006400000000000000b6b747630000000021").unwrap();
+        let tx_prefix: [u8; 32] = [
+            0xb5, 0xe9, 0x7d, 0xb0, 0x7f, 0xa0, 0xbd, 0x0e, 0x55, 0x98, 0xaa, 0x36, 0x43, 0xa9,
+            0xbc, 0x6f, 0x66, 0x93, 0xbd, 0xdc, 0x1a, 0x9f, 0xec, 0x9e, 0x67, 0x4a, 0x46, 0x1e,
+            0xaa, 0x00, 0xb1, 0x93,
+        ];
+        let mut prefixed_data = tx_prefix.to_vec();
+        prefixed_data.extend_from_slice(&tx_data);
+        let result = parse_tx(&prefixed_data);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_parse_tx_invalid_data() {
+        let invalid_data = vec![0xff, 0xff, 0xff];
+        let result = parse_tx(&invalid_data);
+        assert!(result.is_err());
+        assert!(matches!(
+            result.unwrap_err(),
+            errors::AptosError::ParseTxError(_)
+        ));
+    }
+
+    #[test]
+    fn test_parse_msg_empty() {
+        let empty = vec![];
+        let result = parse_msg(&empty);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "");
+    }
+
+    #[test]
+    fn test_parse_msg_invalid_utf8_fallback() {
+        // Invalid UTF-8 should fallback to hex encoding
+        let invalid_utf8 = vec![0xff, 0xfe, 0xfd];
+        let result = parse_msg(&invalid_utf8);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), hex::encode(&invalid_utf8));
+    }
+
+    #[test]
+    fn test_sign_different_paths() {
+        let hd_path1 = "m/44'/637'/0'/0'/0'".to_string();
+        let hd_path2 = "m/44'/637'/0'/0'/1'".to_string();
+        let tx_hex = Vec::from_hex("b5e97db07fa0bd0e5598aa3643a9bc6f6693bddc1a9fec9e674a461eaa00b193f007dbb60994463db95b80fad4259ec18767a5bb507f9e048da84b75ea793ef500000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e740e7472616e736665725f636f696e73010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220f007dbb60994463db95b80fad4259ec18767a5bb507f9e048da84b75ea793ef50800000000000000000a00000000000000640000000000000061242e650000000002").unwrap();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let sig1 = sign(tx_hex.clone(), &hd_path1, seed.as_slice()).unwrap();
+        let sig2 = sign(tx_hex, &hd_path2, seed.as_slice()).unwrap();
+        assert_ne!(sig1, sig2);
+    }
+
+    #[test]
+    fn test_sign_deterministic() {
+        let hd_path = "m/44'/637'/0'/0'/0'".to_string();
+        let tx_hex = Vec::from_hex("b5e97db07fa0bd0e5598aa3643a9bc6f6693bddc1a9fec9e674a461eaa00b193f007dbb60994463db95b80fad4259ec18767a5bb507f9e048da84b75ea793ef500000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e740e7472616e736665725f636f696e73010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220f007dbb60994463db95b80fad4259ec18767a5bb507f9e048da84b75ea793ef50800000000000000000a00000000000000640000000000000061242e650000000002").unwrap();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let sig1 = sign(tx_hex.clone(), &hd_path, seed.as_slice()).unwrap();
+        let sig2 = sign(tx_hex, &hd_path, seed.as_slice()).unwrap();
+        assert_eq!(sig1, sig2); // Should be deterministic
+    }
+
+    #[test]
+    fn test_aptos_tx_get_raw_json() {
+        let data = "8bbbb70ae8b90a8686b2a27f10e21e44f2fb64ffffcaa4bb0242e9f1ea698659010000000000000002000000000000000000000000000000000000000000000000000000000000000104636f696e087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220834f4b75dcaacbd7c549a993cdd3140676e172d1fee0609bf6876c74aaa7116008400d0300000000009a0e0000000000006400000000000000b6b747630000000021";
+        let buf_message = Vec::from_hex(data).unwrap();
+        let aptos_tx = parse_tx(&buf_message).unwrap();
+        let raw_json = aptos_tx.get_raw_json().unwrap();
+        assert!(raw_json.is_object());
+        assert!(raw_json.get("sender").is_some());
+    }
+
+    #[test]
+    fn test_aptos_tx_get_formatted_json() {
+        let data = "8bbbb70ae8b90a8686b2a27f10e21e44f2fb64ffffcaa4bb0242e9f1ea698659010000000000000002000000000000000000000000000000000000000000000000000000000000000104636f696e087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220834f4b75dcaacbd7c549a993cdd3140676e172d1fee0609bf6876c74aaa7116008400d0300000000009a0e0000000000006400000000000000b6b747630000000021";
+        let buf_message = Vec::from_hex(data).unwrap();
+        let aptos_tx = parse_tx(&buf_message).unwrap();
+        let formatted_json = aptos_tx.get_formatted_json().unwrap();
+        assert!(formatted_json.is_string());
+        let json_str = formatted_json.as_str().unwrap();
+        assert!(json_str.contains("sender"));
+    }
 }

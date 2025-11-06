@@ -5,8 +5,8 @@ use crate::common::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
-use crate::{extract_array, extract_array_mut};
 use crate::extract_ptr_with_type;
+use crate::{extract_array, extract_array_mut};
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;

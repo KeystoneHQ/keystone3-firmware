@@ -5759,7 +5759,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"Quit", "退出"},
     {"Regenerate", "重新生成"},
     {"Reject", "拒绝"},
-    {"Restart", "重新开始"},
+    {"Restart", "重启"},
     {"Restart_now", "立即重新启动"},
     {"Skip", "跳过"},
     {"Start", "开始"},

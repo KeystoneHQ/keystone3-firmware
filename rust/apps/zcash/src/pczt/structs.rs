@@ -241,7 +241,7 @@ mod tests {
     #[test]
     fn test_parsed_transparent_multiple_from() {
         let mut transparent = ParsedTransparent::new(vec![], vec![]);
-        
+
         for i in 0..5 {
             let from = ParsedFrom::new(
                 Some(alloc::format!("addr_{i}")),
@@ -251,7 +251,7 @@ mod tests {
             );
             transparent.add_from(from);
         }
-        
+
         assert_eq!(transparent.get_from().len(), 5);
         assert_eq!(transparent.get_from()[0].get_amount(), 0);
         assert_eq!(transparent.get_from()[4].get_amount(), 400000000);
@@ -262,7 +262,7 @@ mod tests {
     #[test]
     fn test_parsed_transparent_multiple_to() {
         let mut transparent = ParsedTransparent::new(vec![], vec![]);
-        
+
         for i in 0..3 {
             let to = ParsedTo::new(
                 alloc::format!("recipient_{i}"),
@@ -270,11 +270,15 @@ mod tests {
                 (i as u64) * 50000000,
                 i == 2,
                 false,
-                if i == 1 { Some("Memo for recipient 1".to_string()) } else { None },
+                if i == 1 {
+                    Some("Memo for recipient 1".to_string())
+                } else {
+                    None
+                },
             );
             transparent.add_to(to);
         }
-        
+
         assert_eq!(transparent.get_to().len(), 3);
         assert!(!transparent.get_to()[0].get_is_change());
         assert!(transparent.get_to()[2].get_is_change());
@@ -285,7 +289,7 @@ mod tests {
     #[test]
     fn test_parsed_orchard_multiple_from() {
         let mut orchard = ParsedOrchard::new(vec![], vec![]);
-        
+
         for i in 0..4 {
             let from = ParsedFrom::new(
                 None,
@@ -295,7 +299,7 @@ mod tests {
             );
             orchard.add_from(from);
         }
-        
+
         assert_eq!(orchard.get_from().len(), 4);
         assert!(orchard.get_from().iter().all(|f| f.get_address().is_none()));
         assert!(orchard.get_from().iter().all(|f| f.get_is_mine()));
@@ -304,10 +308,14 @@ mod tests {
     #[test]
     fn test_parsed_orchard_multiple_to() {
         let mut orchard = ParsedOrchard::new(vec![], vec![]);
-        
+
         for i in 0..6 {
             let to = ParsedTo::new(
-                if i % 2 == 0 { "<internal>".to_string() } else { "<external>".to_string() },
+                if i % 2 == 0 {
+                    "<internal>".to_string()
+                } else {
+                    "<external>".to_string()
+                },
                 alloc::format!("{}.{} ZEC", i / 2, i * 5),
                 (i as u64) * 25000000,
                 i % 2 == 0,
@@ -316,20 +324,22 @@ mod tests {
             );
             orchard.add_to(to);
         }
-        
+
         assert_eq!(orchard.get_to().len(), 6);
-        assert_eq!(orchard.get_to().iter().filter(|t| t.get_is_change()).count(), 3);
+        assert_eq!(
+            orchard
+                .get_to()
+                .iter()
+                .filter(|t| t.get_is_change())
+                .count(),
+            3
+        );
         assert!(orchard.get_to().iter().all(|t| t.get_memo().is_some()));
     }
 
     #[test]
     fn test_parsed_from_zero_amount() {
-        let from = ParsedFrom::new(
-            Some("zero_addr".to_string()),
-            "0 ZEC".to_string(),
-            0,
-            false,
-        );
+        let from = ParsedFrom::new(Some("zero_addr".to_string()), "0 ZEC".to_string(), 0, false);
         assert_eq!(from.get_amount(), 0);
         assert_eq!(from.get_value(), "0 ZEC");
     }
@@ -392,13 +402,7 @@ mod tests {
 
     #[test]
     fn test_parsed_pczt_empty_values() {
-        let pczt = ParsedPczt::new(
-            None,
-            None,
-            "".to_string(),
-            "".to_string(),
-            false,
-        );
+        let pczt = ParsedPczt::new(None, None, "".to_string(), "".to_string(), false);
         assert_eq!(pczt.get_total_transfer_value(), "");
         assert_eq!(pczt.get_fee_value(), "");
     }
@@ -445,7 +449,7 @@ mod tests {
     #[test]
     fn test_complex_transaction() {
         let mut transparent = ParsedTransparent::new(vec![], vec![]);
-        
+
         transparent.add_from(ParsedFrom::new(
             Some("t1abc123".to_string()),
             "5.0 ZEC".to_string(),
@@ -458,7 +462,7 @@ mod tests {
             350000000,
             true,
         ));
-        
+
         transparent.add_to(ParsedTo::new(
             "t1output1".to_string(),
             "4.0 ZEC".to_string(),
@@ -483,7 +487,7 @@ mod tests {
             false,
             None,
         ));
-        
+
         let mut orchard = ParsedOrchard::new(vec![], vec![]);
         orchard.add_from(ParsedFrom::new(
             None,
@@ -499,7 +503,7 @@ mod tests {
             false,
             Some("Orchard change".to_string()),
         ));
-        
+
         let pczt = ParsedPczt::new(
             Some(transparent),
             Some(orchard),
@@ -507,16 +511,16 @@ mod tests {
             "0.1 ZEC".to_string(),
             true,
         );
-        
+
         assert!(pczt.get_transparent().is_some());
         assert!(pczt.get_orchard().is_some());
         assert!(pczt.get_has_sapling());
-        
+
         let t = pczt.get_transparent().unwrap();
         assert_eq!(t.get_from().len(), 2);
         assert_eq!(t.get_to().len(), 3);
         assert_eq!(t.get_to().iter().filter(|to| to.get_is_change()).count(), 1);
-        
+
         let o = pczt.get_orchard().unwrap();
         assert_eq!(o.get_from().len(), 1);
         assert_eq!(o.get_to().len(), 1);
@@ -548,7 +552,12 @@ mod tests {
     #[test]
     fn test_parsed_pczt_only_orchard() {
         let orchard = ParsedOrchard::new(
-            vec![ParsedFrom::new(None, "2.0 ZEC".to_string(), 200000000, true)],
+            vec![ParsedFrom::new(
+                None,
+                "2.0 ZEC".to_string(),
+                200000000,
+                true,
+            )],
             vec![],
         );
         let pczt = ParsedPczt::new(
@@ -587,6 +596,4 @@ mod tests {
         );
         assert_eq!(to.get_memo().unwrap(), special_memo);
     }
-
-    
 }

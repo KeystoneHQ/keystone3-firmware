@@ -48,28 +48,16 @@ UREncodeResult *GuiGetTonSignQrCodeData(void)
     SetLockScreen(false);
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    uint8_t seed[64];
     do {
-        MnemonicType type = GetMnemonicType();
-        uint8_t seed[64];
-        int len = 64;
-        switch (type) {
-        case MNEMONIC_TYPE_BIP39: {
-            len = sizeof(seed);
-            break;
-
-        }
-        case MNEMONIC_TYPE_SLIP39: {
-            len = GetCurrentAccountEntropyLen();
-            break;
-        }
-        default:
-            break;
-        }
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        int len = GetCurrentAccountSeedLen();
+        int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        CHECK_ERRCODE_BREAK("GetAccountSeed", ret);
         encodeResult = ton_sign_transaction(data, seed, len);
-        ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
     return encodeResult;
 }
@@ -80,28 +68,16 @@ UREncodeResult *GuiGetTonProofSignQrCodeData(void)
     SetLockScreen(false);
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    uint8_t seed[64];
     do {
-        MnemonicType type = GetMnemonicType();
-        uint8_t seed[64];
-        int len = 64;
-        switch (type) {
-        case MNEMONIC_TYPE_BIP39: {
-            len = sizeof(seed);
-            break;
-
-        }
-        case MNEMONIC_TYPE_SLIP39: {
-            len = GetCurrentAccountEntropyLen();
-            break;
-        }
-        default:
-            break;
-        }
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        int len = GetCurrentAccountSeedLen();
+        int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        CHECK_ERRCODE_BREAK("GetAccountSeed", ret);
         encodeResult = ton_sign_proof(data, seed, len);
-        ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
     return encodeResult;
 }

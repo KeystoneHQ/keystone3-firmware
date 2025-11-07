@@ -163,12 +163,9 @@ static void testEthTx(int argc, char *argv[]);
 static void testSolanaTx(int argc, char *argv[]);
 static void testSolanaCheckTx(int argc, char *argv[]);
 static void testSolanaParseTx(int argc, char *argv[]);
-static void testNearParseTx(int argc, char *argv[]);
 static void testXrpParseTx(int argc, char *argv[]);
 static void testNearGetAddress(int argc, char *argv[]);
 static void testCosmosGetAddress(int argc, char *argv[]);
-static void testNearTx(int argc, char *argv[]);
-static void testNearCheckTx(int argc, char *argv[]);
 static void testCardanoTx(int argc, char *argv[]);
 static void RustGetEthAddress(int argc, char *argv[]);
 static void RustParseEthPersonalMessage(int argc, char *argv[]);
@@ -297,12 +294,9 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test get connect xrp toolkit ur", RustGetConnectXrpToolKitUR},
     {"rust test connect metamask", RustGetConnectMetaMaskUR},
     {"rust test solana parse:", testSolanaParseTx},
-    {"rust test near parse:", testNearParseTx},
     {"rust test xrp parse:", testXrpParseTx},
     {"rust test near get address:", testNearGetAddress},
     {"rust test cosmos get address:", testCosmosGetAddress},
-    {"rust test near tx:", testNearTx},
-    {"rust test near check:", testNearCheckTx},
     {"rust test cardano tx:", testCardanoTx},
     {"rust test get eth address", RustGetEthAddress},
     {"rust test parse eth personal message:", RustParseEthPersonalMessage},
@@ -2414,47 +2408,6 @@ static void RustADATest(int argc, char *argv[])
     free_simple_response_c_char(root);
 }
 
-static void testNearParseTx(int argc, char *argv[])
-{
-    printf("RustTestNearParseTx\r\n");
-    URParseResult *ur = test_get_near_sign_request(argv[0]);
-    void *crypto_bytes = ur->data;
-    printf("RustTestNearParseTx crypto_bytes %s\r\n", crypto_bytes);
-    ViewType view_type = ur->t;
-    printf("RustTestNearParseTx view_type %d\r\n", view_type);
-    TransactionParseResult_DisplayNearTx *result = near_parse_tx(crypto_bytes);
-    printf("error_code: %d\r\n", result->error_code);
-    if (result->error_message != NULL) {
-        printf("error_message, %s\r\n", result->error_message);
-    }
-    printf("near parse result overview: \r\n");
-    printf("near parse result overview display_type: %s\r\n", result->data->overview->display_type);
-    if (result->data->overview->transfer_value != NULL) {
-        printf("near parse result overview transfer_value: %s\r\n", result->data->overview->transfer_value);
-    }
-    if (result->data->overview->transfer_from != NULL) {
-        printf("near parse result overview transfer_from: %s\r\n", result->data->overview->transfer_from);
-    }
-    if (result->data->overview->transfer_to != NULL) {
-        printf("near parse result overview transfer_to: %s\r\n", result->data->overview->transfer_to);
-    }
-    if (result->data->overview->main_action != NULL) {
-        printf("near parse result overview main_action: %s\r\n", result->data->overview->main_action);
-    }
-    if (result->data->overview->action_list != NULL) {
-        for (size_t i = 0; i < result->data->overview->action_list->size; i++) {
-            printf("near parse result: overview action #%d\r\n", i);
-            printf("solana parse result: overview action %s\r\n", result->data->overview->action_list->data[i].action);
-        }
-    }
-    printf("near parse result network: %s\r\n", result->data->network);
-    printf("near parse result detail: %s\r\n", result->data->detail);
-    free_ur_parse_result(ur);
-    free_TransactionParseResult_DisplayNearTx(result);
-    PrintRustMemoryStatus();
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
 static void testXrpParseTx(int argc, char *argv[])
 {
     //    #rust test xrp parse: 7B225472616E73616374696F6E54797065223A225061796D656E74222C22416D6F756E74223A223130303030303030222C2244657374696E6174696F6E223A22724478516F597A635172707A56487554345778366261634A5958794754457462766D222C22466C616773223A323134373438333634382C224163636F756E74223A227247556D6B794C627671474633687758347177474864727A4C6459325170736B756D222C22466565223A223132222C2253657175656E6365223A37393939313836352C224C6173744C656467657253657175656E6365223A38303838323630322C225369676E696E675075624B6579223A22303346354335424231443139454337313044334437464144313939414631304346384243314431313334384535423337363543304230423943304245433332383739227D
@@ -2549,50 +2502,6 @@ static void testCosmosGetAddress(int argc, char *argv[])
     }
     free_simple_response_c_char(pubkey);
     free_simple_response_c_char(result);
-    PrintRustMemoryStatus();
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
-static void testNearTx(int argc, char *argv[])
-{
-    // arguments:
-    // argv[0]: wallet index
-    // argv[1]: wallet password
-    // argv[2]: near sign request
-    // Example: #rust test near tx: 0 111111 a301d82550e34bf7bef35e4f68aa8c4b9a509c25d2028159016b40000000333138323466626632343335666231656361346466633339373734313833636232356631336231303335326435643533323736313662353963333565616539660031824fbf2435fb1eca4dfc39774183cb25f13b10352d5d5327616b59c35eae9f442d16f48e3f00003c000000613062383639393163363231386233366331643139643461326539656230636533363036656234382e666163746f72792e6272696467652e6e65617258f2d224d30588f6208387939ace31edea27537c724d57897aed7861f43bd4ab01000000020f00000073746f726167655f6465706f7369746a0000007b226163636f756e745f6964223a2238616562363163396634653431623264666664653965353666343661316639303632316332363730633137343865373339663736383465643963643938386534222c22726567697374726174696f6e5f6f6e6c79223a747275657d00e057eb481b00000000485637193cc3430000000000000003d90130a20186182cf519018df500f5021a707eed6c
-    int32_t index;
-    VALUE_CHECK(argc, 3);
-    sscanf(argv[0], "%d", &index);
-    URParseResult *crypto_bytes = test_get_near_sign_request(argv[2]);
-    // sign result
-    uint8_t seed[64];
-    GetAccountSeed(index, seed, argv[1]);
-    UREncodeResult *sign_result = near_sign_tx(crypto_bytes->data, seed, sizeof(seed));
-    printf("sign result error_code: %d\r\n", sign_result->error_code);
-    printf("sign result data: %s\r\n", sign_result->data);
-    free_ur_parse_result(crypto_bytes);
-    free_ur_encode_result(sign_result);
-    PrintRustMemoryStatus();
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
-static void testNearCheckTx(int argc, char *argv[])
-{
-    // arguments:
-    // argv[0]: near sign request
-    URParseResult *crypto_bytes = test_get_near_sign_request(argv[0]);
-    // check failed
-    uint8_t failed_mfp[4] = {0x73, 0xC5, 0xDA, 0x0A};
-    TransactionCheckResult *failed_result = solana_check(crypto_bytes->data, failed_mfp, sizeof(failed_mfp));
-    printf("transaction check failed result : %d\r\n", failed_result->error_code);
-    printf("transaction check failed error_message, %s\r\n", failed_result->error_message);
-    // check succeed
-    uint8_t succeed_mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-    TransactionCheckResult *succeed_result = solana_check(crypto_bytes->data, succeed_mfp, sizeof(succeed_mfp));
-    printf("transaction check succeed result : %d\r\n", succeed_result->error_code);
-    free_TransactionCheckResult(failed_result);
-    free_TransactionCheckResult(succeed_result);
-    free_ur_parse_result(crypto_bytes);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }

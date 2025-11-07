@@ -192,18 +192,6 @@ pub unsafe extern "C" fn test_get_aptos_sign_request(cbor: *mut c_char) -> *mut 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn test_get_near_sign_request(cbor: *mut c_char) -> *mut URParseResult {
-    let cbor_str = recover_c_char(cbor);
-    let near_sign_request = NearSignRequest::try_from(hex::decode(cbor_str).unwrap()).unwrap();
-    URParseResult::single(
-        ViewType::NearTx,
-        QRCodeType::NearSignRequest,
-        near_sign_request,
-    )
-    .c_ptr()
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn test_get_eth_eip1559_sign_request() -> *mut URParseResult {
     let eth_sign_request = EthSignRequest::try_from(hex::decode("a601d825504f755f57cd6942f2bf7d8f90d2ddb2e702583102ef053f8459682f0085037ca764c782520894d6cbd2038a6653993009c56912cb45117ab930d88761069ce3a68a9e80c00304040505d90130a2018a182cf5183cf500f500f400f4021a707eed6c0654fe040716ac4afbba08ee723f3f47d5d814fc48c1").unwrap());
     URParseResult::single(

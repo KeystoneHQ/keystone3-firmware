@@ -39,7 +39,7 @@ impl TxParser for WrappedTron {
         let from = self.from.to_string();
         let to = self.to.to_string();
         let network = NETWORK.to_string();
-        
+
         let overview = OverviewTx {
             value: value.clone(),
             method: method.clone(),

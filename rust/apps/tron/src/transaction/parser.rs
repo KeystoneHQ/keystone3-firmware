@@ -34,19 +34,25 @@ pub trait TxParser {
 
 impl TxParser for WrappedTron {
     fn parse(&self) -> Result<ParsedTx> {
+        let value = self.format_amount()?;
+        let method = self.format_method()?;
+        let from = self.from.to_string();
+        let to = self.to.to_string();
+        let network = NETWORK.to_string();
+        
         let overview = OverviewTx {
-            value: self.format_amount()?,
-            method: self.format_method()?,
-            from: self.from.to_string(),
-            to: self.to.to_string(),
-            network: NETWORK.to_string(),
+            value: value.clone(),
+            method: method.clone(),
+            from: from.clone(),
+            to: to.clone(),
+            network: network.clone(),
         };
         let detail = DetailTx {
-            value: self.format_amount()?,
-            method: self.format_method()?,
-            from: self.from.to_string(),
-            to: self.to.to_string(),
-            network: NETWORK.to_string(),
+            value,
+            method,
+            from,
+            to,
+            network,
             contract_address: self.contract_address.to_string(),
             token: self.token.to_string(),
         };

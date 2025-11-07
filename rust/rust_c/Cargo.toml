@@ -101,7 +101,7 @@ multi-coins = [
     "ethereum",
     "ltc",
     "doge",
-    "near",
+    # "near",  # Temporarily disabled
     "solana",
     "stellar",
     "sui",

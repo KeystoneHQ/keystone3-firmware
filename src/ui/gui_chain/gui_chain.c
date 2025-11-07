@@ -193,7 +193,7 @@ UREncodeResult *SignInternal(SignFn sign_func, void *data)
     UREncodeResult *encodeResult = NULL;
     uint8_t seed[SEED_LEN] = {0};
     int ret = 0;
-
+    
     do {
         ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         if (ret != 0) {

@@ -68,11 +68,11 @@ UREncodeResult *GuiGetSpecterWalletBtcData(void)
     return urencode;
 }
 
-typedef UREncodeResult *MetamaskUrGetter(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys);
+typedef UREncodeResult *MetamaskUrGetter(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys, PtrString wallet_name);
 
 static UREncodeResult *get_unlimited_connect_metamask_ur(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys)
 {
-    return get_connect_metamask_ur_unlimited(master_fingerprint, master_fingerprint_length, account_type, public_keys);
+    return get_connect_metamask_ur_unlimited(master_fingerprint, master_fingerprint_length, account_type, public_keys, GetWalletName());
 }
 
 static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType accountType, MetamaskUrGetter func)
@@ -114,7 +114,7 @@ static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType account
         return NULL;
     }
 
-    g_urEncode = func(mfp, sizeof(mfp), accountType, public_keys);
+    g_urEncode = func(mfp, sizeof(mfp), accountType, public_keys, GetWalletName());
     if (g_urEncode == NULL) {
         SRAM_FREE(public_keys);
         return NULL;
@@ -142,11 +142,7 @@ UREncodeResult *GuiGetMetamaskData(void)
 
 UREncodeResult *GuiGetImTokenData(void)
 {
-    uint8_t mfp[4] = {0};
-    GetMasterFingerPrint(mfp);
-    g_urEncode = get_connect_imtoken_ur(mfp, sizeof(mfp), GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD), GetWalletName());
-    CHECK_CHAIN_PRINT(g_urEncode);
-    return g_urEncode;
+    return GetMetamaskDataForAccountType(Bip44Standard);
 }
 
 UREncodeResult *GuiGetCoreWalletData(void)
@@ -164,9 +160,6 @@ UREncodeResult *GuiGetCoreWalletData(void)
     keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
 
     g_urEncode = get_core_wallet_ur(mfp, sizeof(mfp), public_keys, "Keystone3");
-    if (g_urEncode->error_code == 0) {
-        printf("g_urEncode: %s\n", g_urEncode->data);
-    }
     CHECK_CHAIN_PRINT(g_urEncode);
     SRAM_FREE(public_keys);
     return g_urEncode;
@@ -184,7 +177,6 @@ UREncodeResult *GuiGetWanderData(void)
     }
     ASSERT(arXpub != NULL);
     g_urEncode = get_connect_arconnect_wallet_ur_from_xpub(mfp, sizeof(mfp), arXpub);
-    printf("\ng_urEncode: %s\n", g_urEncode->data);
     CHECK_CHAIN_PRINT(g_urEncode);
     return g_urEncode;
 }

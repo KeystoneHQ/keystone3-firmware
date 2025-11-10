@@ -116,7 +116,7 @@ void GuiCreateSdCardUpdateHintbox(bool checkSumDone)
         lv_obj_set_size(btn, 250, 50);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -120);
         lv_obj_add_event_cb(btn, FirmwareSdcardCheckSha256HintBoxHandler, LV_EVENT_CLICKED, NULL);
-        lv_label_set_text_fmt(g_calCheckSumLabel, _("firmware_update_sd_checksum_desc"));
+        lv_label_set_text_fmt(g_calCheckSumLabel, "%s", _("firmware_update_sd_checksum_desc"));
     }
 }
 

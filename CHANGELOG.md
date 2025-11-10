@@ -1,3 +1,19 @@
+
+## 2.2.20 (2025-11-10)
+
+**Web3:**
+
+### What's new
+1. Added support for parsing certain ERC20/BEP20 Token transactions
+
+### Improvements
+1. Optimized chain name display for certain EVM chains
+2. Updated the Korean permit signing text
+
+### Bug Fixes
+1. Fixed signing error when signing TON transactions with large data
+2. Fixed an issue when signing SOL transactions on Kamino
+
 ## 2.2.18(2025-10-27)
 
 **Web3:**

@@ -596,7 +596,7 @@ Common,24,OK,OK,Хорошо,확인,好的,OK,OK,OK
 ,24,Skip,Skip,Пропустить,건너뛰기,跳过,Omitir,Überspringen,スキップ
 ,24,Done,Done,Завершено,완료,完毕,Hecho,Erledigt,終わりました
 ,24,wipe_device,Wipe Device,Сброс устройства,장치 초기화,擦除设备,Borrar dispositivo,Gerät löschen,デバイスをWIPEする
-,24,Restart,Restart,Перезагрузка,재시작,重新开始,Reiniciar,Neustart,再起動
+,24,Restart,Restart,Перезагрузка,재시작,重启,Reiniciar,Neustart,再起動
 ,24,Restart_now,Restart now,Перезапустить сейчас,바로 다시 시작,立即重新启动,Reiniciar ahora,Jetzt neu starten,今すぐ再起動してください
 ,20,power_off,Power Off,Выключить,전원 끄기,关机,Apagar,Ausschalten,電源を切る
 ,24,try_again,Try Again,Попробуйте еще раз,재시도,重试,Intentar de nuevo,Wieder versuchen,再試行してみてください

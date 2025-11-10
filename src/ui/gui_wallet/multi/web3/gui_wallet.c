@@ -150,11 +150,11 @@ UREncodeResult *GuiGetSparrowWalletBtcData(void)
     return urEncode;
 }
 
-typedef UREncodeResult *MetamaskUrGetter(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys);
+typedef UREncodeResult *MetamaskUrGetter(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys, PtrString wallet_name);
 
 static UREncodeResult *get_unlimited_connect_metamask_ur(PtrBytes master_fingerprint, uint32_t master_fingerprint_length, enum ETHAccountType account_type, PtrT_CSliceFFI_ExtendedPublicKey public_keys)
 {
-    return get_connect_metamask_ur_unlimited(master_fingerprint, master_fingerprint_length, account_type, public_keys);
+    return get_connect_metamask_ur_unlimited(master_fingerprint, master_fingerprint_length, account_type, public_keys, GetWalletName());
 }
 
 static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType accountType, MetamaskUrGetter func)
@@ -196,7 +196,7 @@ static UREncodeResult *BasicGetMetamaskDataForAccountType(ETHAccountType account
         return NULL;
     }
 
-    UREncodeResult *urEncode = func(mfp, sizeof(mfp), accountType, public_keys);
+    UREncodeResult *urEncode = func(mfp, sizeof(mfp), accountType, public_keys, GetWalletName());
     if (urEncode == NULL) {
         SRAM_FREE(public_keys);
         return NULL;
@@ -224,11 +224,7 @@ UREncodeResult *GuiGetMetamaskData(void)
 
 UREncodeResult *GuiGetImTokenData(void)
 {
-    uint8_t mfp[4] = {0};
-    GetMasterFingerPrint(mfp);
-    UREncodeResult *urEncode = get_connect_imtoken_ur(mfp, sizeof(mfp), GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD), GetWalletName());
-    CHECK_CHAIN_PRINT(urEncode);
-    return urEncode;
+    return GetMetamaskDataForAccountType(Bip44Standard);
 }
 
 UREncodeResult *GuiGetCoreWalletData(void)

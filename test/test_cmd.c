@@ -1905,7 +1905,7 @@ static void RustGetConnectMetaMaskUR(int argc, char *argv[])
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
     public_keys->size = 10;
     public_keys->data = keys;
-    PtrT_UREncodeResult ur = get_connect_metamask_ur(mfp, sizeof(mfp), LedgerLive, public_keys);
+    PtrT_UREncodeResult ur = get_connect_metamask_ur(mfp, sizeof(mfp), LedgerLive, public_keys, GetWalletName());
     printf("encode ur\r\n");
     printf("is_multi_part is %d\r\n", ur->is_multi_part);
     printf("data is %s\r\n", ur->data);

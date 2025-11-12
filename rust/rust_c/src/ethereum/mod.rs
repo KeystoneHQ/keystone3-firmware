@@ -4,7 +4,7 @@ use alloc::{format, slice};
 
 use app_ethereum::address::derive_address;
 use app_ethereum::batch_tx_rules::rule_swap;
-use app_ethereum::erc20::{parse_erc20, parse_erc20_approval};
+use app_ethereum::erc20::{parse_erc20_transfer, parse_erc20_approval};
 use app_ethereum::errors::EthereumError;
 use app_ethereum::{
     parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
@@ -44,6 +44,21 @@ pub mod address;
 pub mod structs;
 pub(crate) mod util;
 
+unsafe fn extract_sign_tx_from_payload(
+    ptr: PtrUR,
+) -> Result<ur_registry::pb::protoc::SignTransaction, KeystoneError> {
+    let payload = build_payload(ptr, QRCodeType::Bytes)?;
+    let content = payload
+        .content
+        .ok_or_else(|| KeystoneError::ProtobufError("empty payload content".to_string()))?;
+    match content {
+        Content::SignTx(sign_tx) => Ok(sign_tx),
+        _ => Err(KeystoneError::ProtobufError(
+            "Cant get sign tx struct data".to_string(),
+        )),
+    }
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn eth_check_ur_bytes(
     ptr: PtrUR,
@@ -58,10 +73,10 @@ pub unsafe extern "C" fn eth_check_ur_bytes(
     match payload {
         Ok(payload) => {
             let mfp = extract_array!(master_fingerprint, u8, 4);
-            let mfp: [u8; 4] = mfp.to_vec().try_into().unwrap();
+            let mfp: [u8; 4] = mfp.to_vec().try_into().unwrap_or_default();
 
             let xfp = payload.xfp;
-            let xfp_vec: [u8; 4] = hex::decode(xfp).unwrap().try_into().unwrap();
+            let xfp_vec: [u8; 4] = hex::decode(xfp).unwrap_or_default().try_into().unwrap_or_default();
             if mfp == xfp_vec {
                 TransactionCheckResult::new().c_ptr()
             } else {
@@ -109,13 +124,9 @@ pub unsafe extern "C" fn eth_check(
 
 #[no_mangle]
 pub unsafe extern "C" fn eth_get_root_path_bytes(ptr: PtrUR) -> PtrString {
-    let payload = build_payload(ptr, QRCodeType::Bytes).unwrap();
-    let content = payload.content.unwrap();
-    let sign_tx = match content {
-        Content::SignTx(sign_tx) => sign_tx,
-        _ => {
-            return convert_c_char("".to_string());
-        }
+    let sign_tx = match extract_sign_tx_from_payload(ptr) {
+        Ok(sign_tx) => sign_tx,
+        Err(_) => return convert_c_char("".to_string()),
     };
     // convert "M/44'/60'/0'/0/0" to "/44'/60'/0'"
     let root_path = sign_tx
@@ -187,15 +198,10 @@ pub unsafe extern "C" fn eth_parse_bytes_data(
     ptr: PtrUR,
     xpub: PtrString,
 ) -> PtrT<TransactionParseResult<DisplayETH>> {
-    let payload = build_payload(ptr, QRCodeType::Bytes).unwrap();
-    let content = payload.content.unwrap();
-    let sign_tx = match content {
-        Content::SignTx(sign_tx) => sign_tx,
-        _ => {
-            return TransactionParseResult::from(RustCError::InvalidData(
-                "Cant get sign tx struct data".to_string(),
-            ))
-            .c_ptr();
+    let sign_tx = match extract_sign_tx_from_payload(ptr) {
+        Ok(sign_tx) => sign_tx,
+        Err(e) => {
+            return TransactionParseResult::from(KeystoneError::ProtobufError(e.to_string())).c_ptr();
         }
     };
     let xpub = recover_c_char(xpub);
@@ -284,7 +290,7 @@ pub unsafe extern "C" fn eth_parse_personal_message(
 
     match transaction_type {
         TransactionType::PersonalMessage => {
-            match parse_personal_message(crypto_eth.get_sign_data(), pubkey) {
+            match parse_personal_message(&crypto_eth.get_sign_data(), pubkey) {
                 Ok(tx) => {
                     TransactionParseResult::success(DisplayETHPersonalMessage::from(tx).c_ptr())
                         .c_ptr()
@@ -454,10 +460,10 @@ pub unsafe extern "C" fn eth_sign_batch_tx(
         let sign_data = request.get_sign_data();
         let signature = match TransactionType::from(request.get_data_type()) {
             TransactionType::Legacy => {
-                app_ethereum::sign_legacy_tx(sign_data.to_vec(), seed, &path)
+                app_ethereum::sign_legacy_tx(&sign_data, seed, &path)
             }
             TransactionType::TypedTransaction => match sign_data.first() {
-                Some(0x02) => app_ethereum::sign_fee_market_tx(sign_data.to_vec(), seed, &path),
+                Some(0x02) => app_ethereum::sign_fee_market_tx(&sign_data, seed, &path),
                 Some(x) => {
                     return UREncodeResult::from(RustCError::UnsupportedTransaction(format!(
                         "ethereum tx type: {x}"
@@ -515,7 +521,7 @@ pub unsafe extern "C" fn eth_parse_typed_data(
 
     match transaction_type {
         TransactionType::TypedData => {
-            let tx = parse_typed_data_message(crypto_eth.get_sign_data(), pubkey);
+            let tx = parse_typed_data_message(&crypto_eth.get_sign_data(), pubkey);
             match tx {
                 Ok(t) => {
                     TransactionParseResult::success(DisplayETHTypedData::from(t).c_ptr()).c_ptr()
@@ -549,9 +555,9 @@ pub unsafe extern "C" fn eth_sign_tx_dynamic(
 
     let sign_data = crypto_eth.get_sign_data();
     let signature = match TransactionType::from(crypto_eth.get_data_type()) {
-        TransactionType::Legacy => app_ethereum::sign_legacy_tx(sign_data.to_vec(), seed, &path),
+        TransactionType::Legacy => app_ethereum::sign_legacy_tx(&sign_data, seed, &path),
         TransactionType::TypedTransaction => match sign_data.first() {
-            Some(0x02) => app_ethereum::sign_fee_market_tx(sign_data.to_vec(), seed, &path),
+            Some(0x02) => app_ethereum::sign_fee_market_tx(&sign_data, seed, &path),
             Some(x) => {
                 return UREncodeResult::from(RustCError::UnsupportedTransaction(format!(
                     "ethereum tx type: {x}"
@@ -563,10 +569,10 @@ pub unsafe extern "C" fn eth_sign_tx_dynamic(
             }
         },
         TransactionType::PersonalMessage => {
-            app_ethereum::sign_personal_message(sign_data.to_vec(), seed, &path)
+            app_ethereum::sign_personal_message(&sign_data, seed, &path)
         }
         TransactionType::TypedData => {
-            app_ethereum::sign_typed_data_message(sign_data.to_vec(), seed, &path)
+            app_ethereum::sign_typed_data_message(&sign_data, seed, &path)
         }
     };
     match signature {
@@ -598,15 +604,10 @@ pub unsafe extern "C" fn eth_sign_tx_bytes(
     mfp: PtrBytes,
     mfp_len: u32,
 ) -> PtrT<UREncodeResult> {
-    let payload = build_payload(ptr, QRCodeType::Bytes).unwrap();
-    let content = payload.content.unwrap();
-    let sign_tx = match content {
-        Content::SignTx(sign_tx) => sign_tx,
-        _ => {
-            return UREncodeResult::from(RustCError::InvalidData(
-                "Cant get sign tx struct data".to_string(),
-            ))
-            .c_ptr();
+    let sign_tx = match extract_sign_tx_from_payload(ptr) {
+        Ok(sign_tx) => sign_tx,
+        Err(e) => {
+            return UREncodeResult::from(KeystoneError::ProtobufError(e.to_string())).c_ptr();
         }
     };
     let tx = sign_tx.transaction.unwrap();
@@ -626,7 +627,7 @@ pub unsafe extern "C" fn eth_sign_tx_bytes(
     let mfp = extract_array!(mfp, u8, mfp_len as usize);
 
     let signature = app_ethereum::sign_legacy_tx_v2(
-        legacy_transaction.encode_raw().to_vec(),
+        &legacy_transaction.encode_raw(),
         seed,
         &sign_tx.hd_path,
     )
@@ -695,7 +696,8 @@ pub unsafe extern "C" fn eth_parse_erc20(
     decimal: u32,
 ) -> PtrT<TransactionParseResult<EthParsedErc20Transaction>> {
     let input = recover_c_char(input);
-    let tx = parse_erc20(&input, decimal);
+    // just support transfer now
+    let tx = parse_erc20_transfer(&input, decimal);
     match tx {
         Ok(t) => {
             TransactionParseResult::success(EthParsedErc20Transaction::from(t).c_ptr()).c_ptr()
@@ -721,29 +723,4 @@ pub unsafe extern "C" fn eth_parse_erc20_approval(
         ))),
     }
     .c_ptr()
-}
-
-#[cfg(test)]
-mod tests {
-    extern crate std;
-
-    use std::println;
-
-    #[test]
-    fn test() {
-        let p = "m/44'/60'/0'/0/0";
-        let prefix = "m/44'/60'/0'/";
-        println!("{:?}", p.strip_prefix(prefix))
-    }
-
-    #[test]
-    fn test_test() {
-        let _path = "44'/60'/1'/0/0";
-        let root_path = "44'/60'/";
-        if let Some(path) = _path.strip_prefix(root_path) {
-            if let Some(index) = path.find('/') {
-                println!("{}", &path[index..]);
-            }
-        };
-    }
 }

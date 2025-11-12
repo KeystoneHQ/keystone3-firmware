@@ -41,7 +41,10 @@ pub fn encode_erc20_transfer_calldata(to: H160, amount: U256) -> String {
 }
 
 // parse erc20 transfer calldata
-pub fn parse_erc20(input: &str, decimal: u32) -> Result<ParsedErc20Transaction, &'static str> {
+pub fn parse_erc20_transfer(
+    input: &str,
+    decimal: u32,
+) -> Result<ParsedErc20Transaction, &'static str> {
     validate_calldata_length(input)?;
     if &input[0..SELECTOR_LEN] != TRANSFER_SELECTOR {
         return Err("Invalid transfer function selector");
@@ -117,7 +120,7 @@ mod tests {
         let decimal = 18;
 
         // Call the function
-        let result = parse_erc20(input, decimal);
+        let result = parse_erc20_transfer(input, decimal);
 
         // Check the result
         match result {
@@ -140,7 +143,7 @@ mod tests {
         let input1 = "a9059cbb0000000000000000000000005df9b87991262f6ba471f09758cde1c0fc1de7340000000000000000000000000000000000000000000000008ac7230489e80000";
         let decimal = 18;
 
-        let result1 = parse_erc20(input1, decimal);
+        let result1 = parse_erc20_transfer(input1, decimal);
 
         match result1 {
             Ok(transaction) => {
@@ -151,7 +154,7 @@ mod tests {
         }
 
         let input2 = "a9059cbb0000000000000000000000005df9b87991262f6ba471f09758cde1c0fc1de7340000000000000000000000000000000000000000000000000000000000000000";
-        let result2 = parse_erc20(input2, decimal);
+        let result2 = parse_erc20_transfer(input2, decimal);
 
         match result2 {
             Ok(transaction) => {
@@ -163,7 +166,7 @@ mod tests {
 
         let input3 = "a9059cbb0000000000000000000000005df9b87991262f6ba471f09758cde1c0fc1de734ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
-        let result3 = parse_erc20(input3, decimal);
+        let result3 = parse_erc20_transfer(input3, decimal);
 
         match result3 {
             Ok(transaction) => {

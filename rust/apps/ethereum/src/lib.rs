@@ -52,11 +52,11 @@ pub fn parse_fee_market_tx(
 }
 
 pub fn parse_personal_message(
-    tx_hex: Vec<u8>,
+    tx_hex: &[u8],
     from_key: Option<PublicKey>,
 ) -> Result<PersonalMessage> {
-    let raw_messge = hex::encode(tx_hex.clone());
-    let utf8_message = match String::from_utf8(tx_hex) {
+    let raw_message = hex::encode(tx_hex);
+    let utf8_message = match String::from_utf8(tx_hex.to_vec()) {
         Ok(utf8_message) => {
             if app_utils::is_cjk(&utf8_message) {
                 "".to_string()
@@ -66,20 +66,20 @@ pub fn parse_personal_message(
         }
         Err(_e) => "".to_string(),
     };
-    PersonalMessage::from(raw_messge, utf8_message, from_key)
+    PersonalMessage::from(raw_message, utf8_message, from_key)
 }
 
-pub fn parse_typed_data_message(tx_hex: Vec<u8>, from_key: Option<PublicKey>) -> Result<TypedData> {
-    let utf8_message =
-        String::from_utf8(tx_hex).map_err(|e| EthereumError::InvalidUtf8Error(e.to_string()))?;
+pub fn parse_typed_data_message(tx_hex: &[u8], from_key: Option<PublicKey>) -> Result<TypedData> {
+    let utf8_message = String::from_utf8(tx_hex.to_vec())
+        .map_err(|e| EthereumError::InvalidUtf8Error(e.to_string()))?;
     let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message)
         .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), utf8_message))?;
     TypedData::from_raw(typed_data, from_key)
 }
 
-pub fn sign_legacy_tx(sign_data: Vec<u8>, seed: &[u8], path: &String) -> Result<EthereumSignature> {
-    let tx = LegacyTransaction::decode_raw(sign_data.as_slice())?;
-    let hash = keccak256(sign_data.as_slice());
+pub fn sign_legacy_tx(sign_data: &[u8], seed: &[u8], path: &String) -> Result<EthereumSignature> {
+    let tx = LegacyTransaction::decode_raw(sign_data)?;
+    let hash = keccak256(sign_data);
     let message = Message::from_digest_slice(&hash).unwrap();
     keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| EthereumError::SignFailure(e.to_string()))
@@ -95,12 +95,12 @@ pub fn sign_legacy_tx(sign_data: Vec<u8>, seed: &[u8], path: &String) -> Result<
 
 /// Only used by hot wallet version2
 pub fn sign_legacy_tx_v2(
-    sign_data: Vec<u8>,
+    sign_data: &[u8],
     seed: &[u8],
     path: &String,
 ) -> Result<EthereumSignature> {
-    let tx = LegacyTransaction::decode_raw(sign_data.as_slice())?;
-    let hash = keccak256(sign_data.as_slice());
+    let tx = LegacyTransaction::decode_raw(sign_data)?;
+    let hash = keccak256(sign_data);
     let message = Message::from_digest_slice(&hash).unwrap();
     keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| EthereumError::SignFailure(e.to_string()))
@@ -114,8 +114,8 @@ pub fn sign_legacy_tx_v2(
         })
 }
 
-pub fn sign_fee_markey_tx(
-    sign_data: Vec<u8>,
+pub fn sign_fee_market_tx(
+    sign_data: &[u8],
     seed: &[u8],
     path: &String,
 ) -> Result<EthereumSignature> {
@@ -125,7 +125,7 @@ pub fn sign_fee_markey_tx(
         return Err(EthereumError::InvalidTransaction);
     }
 
-    let hash = keccak256(sign_data.as_slice());
+    let hash = keccak256(sign_data);
     let message = Message::from_digest_slice(&hash).unwrap();
     keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| EthereumError::SignFailure(e.to_string()))
@@ -135,7 +135,7 @@ pub fn sign_fee_markey_tx(
 const PREFIX_PERSONAL_MESSAGE: &str = "\u{0019}Ethereum Signed Message:\n";
 
 pub fn sign_personal_message(
-    sign_data: Vec<u8>,
+    sign_data: &[u8],
     seed: &[u8],
     path: &String,
 ) -> Result<EthereumSignature> {
@@ -148,19 +148,16 @@ pub fn sign_personal_message(
         Message::from_digest_slice(&hash).map_err(|e| EthereumError::SignFailure(e.to_string()))?;
     keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| EthereumError::SignFailure(e.to_string()))
-        .map(|(rec_id, rs)| {
-            let v = rec_id as u64 + 27;
-            EthereumSignature(v, rs)
-        })
+        .map(|(rec_id, rs)| EthereumSignature(rec_id as u64 + 27, rs))
 }
 
 pub fn sign_typed_data_message(
-    sign_data: Vec<u8>,
+    sign_data: &[u8],
     seed: &[u8],
     path: &String,
 ) -> Result<EthereumSignature> {
-    let utf8_message =
-        String::from_utf8(sign_data).map_err(|e| EthereumError::InvalidUtf8Error(e.to_string()))?;
+    let utf8_message = String::from_utf8(sign_data.to_vec())
+        .map_err(|e| EthereumError::InvalidUtf8Error(e.to_string()))?;
     let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message)
         .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), utf8_message))?;
 
@@ -172,10 +169,7 @@ pub fn sign_typed_data_message(
 
     keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| EthereumError::SignFailure(e.to_string()))
-        .map(|(rec_id, rs)| {
-            let v = rec_id as u64 + 27;
-            EthereumSignature(v, rs)
-        })
+        .map(|(rec_id, rs)| EthereumSignature(rec_id as u64 + 27, rs))
 }
 
 #[cfg(test)]
@@ -188,7 +182,7 @@ mod tests {
     use crate::alloc::string::ToString;
     use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
     use crate::{
-        parse_fee_market_tx, parse_personal_message, parse_typed_data_message,
+        parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
         sign_personal_message, sign_typed_data_message,
     };
 
@@ -200,7 +194,7 @@ mod tests {
         let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
         let sign_data =
             hex::decode("4578616d706c652060706572736f6e616c5f7369676e60206d657373616765").unwrap();
-        let result = parse_personal_message(sign_data, Some(pubkey)).unwrap();
+        let result = parse_personal_message(&sign_data, Some(pubkey)).unwrap();
         assert_eq!(
             "4578616d706c652060706572736f6e616c5f7369676e60206d657373616765",
             result.raw_message
@@ -218,9 +212,36 @@ mod tests {
             hex::decode("4578616d706c652060706572736f6e616c5f7369676e60206d657373616765").unwrap();
         let path = "m/44'/60'/0'/0/0".to_string();
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
-        let message = sign_personal_message(sign_data, &seed, &path).unwrap();
+        let message = sign_personal_message(&sign_data, &seed, &path).unwrap();
         assert_eq!("b836ae2bac525ae9d2799928cf6f52919cb2ed5e5e52ca26e3b3cdbeb136ca2f618da0e6413a6aa3aaa722fbc2bcc87f591b8b427ee6915916f257de8125810e1b",
                    hex::encode(message.serialize()));
+    }
+
+    #[test]
+    fn test_parse_legacy_tx() {
+        // Signed legacy transaction (EIP-155 compatible, chain_id=1)
+        // nonce: 33, gas_price: 15198060006, gas_limit: 46000
+        // to: 0xfe2c232adDF66539BFd5d1Bd4B2cc91D358022a2
+        // value: 200000000000000 wei (0.0002 ETH)
+        let sign_data = hex::decode("f86a21850389dffde682b3b094fe2c232addf66539bfd5d1bd4b2cc91d358022a286b5e620f480008026a035df2b615912b8be79a13c9b0a1540ade55434ab68778a49943442a9e6d3141aa00a6e33134ba47c1f1cda59ec3ef62a59d4da6a9d111eb4e447828574c1c94f66").unwrap();
+        let path = "m/44'/60'/0'/0/0".to_string();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+
+        let result = parse_legacy_tx(&sign_data, Some(pubkey)).unwrap();
+
+        assert_eq!(33, result.nonce);
+        assert_eq!(1, result.chain_id);
+        assert_eq!(
+            "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
+            result.from.unwrap()
+        );
+        assert_eq!("0xfe2c232addf66539bfd5d1bd4b2cc91d358022a2", result.to);
+        assert_eq!("0.0002", result.value);
+        assert_eq!(Some("15.198060006 Gwei".to_string()), result.gas_price);
+        assert_eq!("46000", result.gas_limit);
+        assert_eq!("", result.input);
+        assert_eq!("0.000699110760276", result.max_txn_fee);
     }
 
     #[test]
@@ -258,7 +279,7 @@ mod tests {
 
         let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
         let sign_data = hex::decode(sign_data).unwrap();
-        let result = parse_typed_data_message(sign_data, Some(pubkey)).unwrap();
+        let result = parse_typed_data_message(&sign_data, Some(pubkey)).unwrap();
         assert_eq!("Seaport", &result.name);
         assert_eq!("1.1", &result.version);
         assert_eq!("1", &result.chain_id);
@@ -275,7 +296,7 @@ mod tests {
             hex::decode("7b227479706573223a7b22454950373132446f6d61696e223a5b7b226e616d65223a226e616d65222c2274797065223a22737472696e67227d2c7b226e616d65223a2276657273696f6e222c2274797065223a22737472696e67227d2c7b226e616d65223a22636861696e4964222c2274797065223a2275696e74323536227d2c7b226e616d65223a22766572696679696e67436f6e7472616374222c2274797065223a2261646472657373227d5d2c224f72646572436f6d706f6e656e7473223a5b7b226e616d65223a226f666665726572222c2274797065223a2261646472657373227d2c7b226e616d65223a227a6f6e65222c2274797065223a2261646472657373227d2c7b226e616d65223a226f66666572222c2274797065223a224f666665724974656d5b5d227d2c7b226e616d65223a22737461727454696d65222c2274797065223a2275696e74323536227d2c7b226e616d65223a22656e6454696d65222c2274797065223a2275696e74323536227d2c7b226e616d65223a227a6f6e6548617368222c2274797065223a2262797465733332227d2c7b226e616d65223a2273616c74222c2274797065223a2275696e74323536227d2c7b226e616d65223a22636f6e647569744b6579222c2274797065223a2262797465733332227d2c7b226e616d65223a22636f756e746572222c2274797065223a2275696e74323536227d5d2c224f666665724974656d223a5b7b226e616d65223a22746f6b656e222c2274797065223a2261646472657373227d5d2c22436f6e73696465726174696f6e4974656d223a5b7b226e616d65223a22746f6b656e222c2274797065223a2261646472657373227d2c7b226e616d65223a226964656e7469666965724f724372697465726961222c2274797065223a2275696e74323536227d2c7b226e616d65223a227374617274416d6f756e74222c2274797065223a2275696e74323536227d2c7b226e616d65223a22656e64416d6f756e74222c2274797065223a2275696e74323536227d2c7b226e616d65223a22726563697069656e74222c2274797065223a2261646472657373227d5d7d2c227072696d61727954797065223a224f72646572436f6d706f6e656e7473222c22646f6d61696e223a7b226e616d65223a22536561706f7274222c2276657273696f6e223a22312e31222c22636861696e4964223a2231222c22766572696679696e67436f6e7472616374223a22307830303030303030303030366333383532636245663365303845386446323839313639456445353831227d2c226d657373616765223a7b226f666665726572223a22307866333946643665353161616438384636463463653661423838323732373963666646623932323636222c226f66666572223a5b7b22746f6b656e223a22307841363034303630383930393233466634303065386336663532393034363141383341454441436563227d5d2c22737461727454696d65223a2231363538363435353931222c22656e6454696d65223a2231363539323530333836222c227a6f6e65223a22307830303443303035303030303061443130344437444264303065336165304135433030353630433030222c227a6f6e6548617368223a22307830303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030222c2273616c74223a223136313738323038383937313336363138222c22636f6e647569744b6579223a22307830303030303037623032323330303931613765643031323330303732663730303661303034643630613864346537316435393962383130343235306630303030222c22746f74616c4f726967696e616c436f6e73696465726174696f6e4974656d73223a2232222c22636f756e746572223a2230227d7d").unwrap();
         let path = "m/44'/60'/0'/0/0".to_string();
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
-        let message = sign_typed_data_message(sign_data, &seed, &path).unwrap();
+        let message = sign_typed_data_message(&sign_data, &seed, &path).unwrap();
         assert_eq!("042fd02150738ede751c43803d6d7bbbcf32c9afce40c861df87357639862c6a653d3307aa16aff363e3444cb418b72e9d715a6e8e479cb56f4ce3012eed87531b",
                    hex::encode(message.serialize()));
     }
@@ -672,7 +693,7 @@ mod tests {
         "#;
         let path = "m/44'/60'/0'/0/0".to_string();
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
-        let message = sign_typed_data_message(sign_data.as_bytes().to_vec(), &seed, &path).unwrap();
+        let message = sign_typed_data_message(sign_data.as_bytes(), &seed, &path).unwrap();
         assert_eq!(
             "cbf0b0d6ef4b47e1624267fb41e00de27f5812d5ff324f1817e73791905554844a80df5ead72fec8ac2be5fa9eebbfddb953577ea6f6f9df3c9dbf490035dd3f1c",
             hex::encode(message.serialize())

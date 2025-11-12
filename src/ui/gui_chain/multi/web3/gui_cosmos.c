@@ -432,7 +432,7 @@ void GetCosmosDetailItemValue(void *indata, void *param, uint32_t maxLen)
     if (root == NULL) {
         strcpy_s((char *)indata, maxLen, "");
         return;
-    } 
+    }
     cJSON* value = cJSON_GetObjectItem(root, indata);
     if (value == NULL) {
         strcpy_s((char *)indata, maxLen, "");

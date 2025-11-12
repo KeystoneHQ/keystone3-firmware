@@ -323,6 +323,7 @@ impl TxData {
 mod tests {
     use super::*;
     use crate::test::{prepare_parse_context, prepare_payload};
+    use crate::transactions::legacy::constants::{SIGHASH_ALL, SIGHASH_FORKID};
     use crate::transactions::legacy::tx_data::TxOut;
     use alloc::string::ToString;
 
@@ -390,6 +391,37 @@ mod tests {
     }
 
     #[test]
+    fn test_check_inputs_invalid_xfp() {
+        let hex = "1f8b08000000000000035d90cf6a935110c5632a18be4d633686ac62109442c8ccbdf3dd99bbd3c6d08d420537aee4fe99b1584b9a5a89b8f4415cb8f115dcf4010a7d83be806fe046c14fc58d3067318bc3f99d33e88f769f9d2dd755a78767ebf37559bf995ced0cfaa30103af568fc37276b1d334fbcf972f9fac0e1e2d5f8cee792cb91648f3e20acc095b99c79cfc5ccc2b39c31a939ff4a6d7971fbf7c870703f7b33fb8ba3bfc7c73f6e946f310414128040ce640a56a27884256384b0e2e7224c59c8422e5564939438ad55a32b39a6dd89b1c34fbe035ab1a86a2482187448c1ca16d63086c2495a97a0b46ea29b9e22b082791ecbb9824d9098dbfde99ed3e5d10dd5fc0df5bd01fc0ae4a85d6392c0a05d8aa7122c939f36fc45c09b85b8624f9a089c9aab49ab2380da5ade8e41f60a6d0fd41318ac51858adad013b5b04344dde77b50aa690108d0b1278f444d179d36e19d3f18fdbff03c29e6ff672c1cdf1db0da5f7f1f5e96673f2ee646b47af5a3a3edf1eb9181c7f3016e7797b3afc766bdc9bf5a61787bf001ef38242e5010000";
+        let pubkey_str = "xpub6Ch68rD9nNm8AReQe9VwV6Mi67okew4oiYoNpKAESTvmjoDn5dBUQ9A4oqdxc9VpveH1cxWeH237HLFSmC37gRVwxnL4KvFYxCQqfprRinW";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+        let mut tx_data = TxData::from_payload(payload, &context).unwrap();
+        tx_data.xfp = "00000000".to_string();
+        let err = tx_data.check_inputs(&context).unwrap_err();
+        assert!(matches!(err, BitcoinError::InvalidParseContext(_)));
+    }
+
+    #[test]
+    fn test_check_inputs_without_my_inputs() {
+        let hex = "1f8b08000000000000035d90cf6a935110c5632a18be4d633686ac62109442c8ccbdf3dd99bbd3c6d08d420537aee4fe99b1584b9a5a89b8f4415cb8f115dcf4010a7d83be806fe046c14fc58d3067318bc3f99d33e88f769f9d2dd755a78767ebf37559bf995ced0cfaa30103af568fc37276b1d334fbcf972f9fac0e1e2d5f8cee792cb91648f3e20acc095b99c79cfc5ccc2b39c31a939ff4a6d7971fbf7c870703f7b33fb8ba3bfc7c73f6e946f310414128040ce640a56a27884256384b0e2e7224c59c8422e5564939438ad55a32b39a6dd89b1c34fbe035ab1a86a2482187448c1ca16d63086c2495a97a0b46ea29b9e22b082791ecbb9824d9098dbfde99ed3e5d10dd5fc0df5bd01fc0ae4a85d6392c0a05d8aa7122c939f36fc45c09b85b8624f9a089c9aab49ab2380da5ade8e41f60a6d0fd41318ac51858adad013b5b04344dde77b50aa690108d0b1278f444d179d36e19d3f18fdbff03c29e6ff672c1cdf1db0da5f7f1f5e96673f2ee646b47af5a3a3edf1eb9181c7f3016e7797b3afc766bdc9bf5a61787bf001ef38242e5010000";
+        let pubkey_str = "xpub6Ch68rD9nNm8AReQe9VwV6Mi67okew4oiYoNpKAESTvmjoDn5dBUQ9A4oqdxc9VpveH1cxWeH237HLFSmC37gRVwxnL4KvFYxCQqfprRinW";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+        let mut tx_data = TxData::from_payload(payload, &context).unwrap();
+        tx_data.xfp = hex::encode(context.master_fingerprint).to_uppercase();
+        for input in tx_data.inputs.iter_mut() {
+            let mut wrong_pubkey = input.pubkey.clone();
+            let last_char = wrong_pubkey.pop().unwrap();
+            let replacement = if last_char == '0' { '1' } else { '0' };
+            wrong_pubkey.push(replacement);
+            input.pubkey = wrong_pubkey;
+        }
+        let err = tx_data.check_inputs(&context).unwrap_err();
+        assert_eq!(BitcoinError::NoMyInputs, err);
+    }
+
+    #[test]
     fn test_p2pkh_signature_hash_bch() {
         let hex = "1f8b08000000000000030d8d3b4e025114400336131a81ca580131c14c3299f7eefb77061a4b7507f77d2e062423cc88ba0a57a05bb07709d616962cc0d858183b2739d5494e4ed61d1e5e6ee7554ca38b6dd554a1ba397ee9b6363322a8880c274fdddec16c7e3e3c09c149ed131436c95048f0a94001bc501a95401b48713d7afddebffdb1d3eceab393bd0ffa1ff9e4b9d33bd3367a9242a1f4481645f049f3e0c8a055ca5be1109c16c210779c11a04c29044ac854d2013d3fdaff8e273306de27137d88643d80e64a30b4da4432dc32cf0d3ae6a5053292c008eddb138b828cd24942026ef2c1ba94725a72a9a6256b2959ce7af9e6966a5804ba5f08803a2d564b79dd967772d72c1f77f543b3d1eb7ae518aafed7cff81f4c55a87f34010000";
         let pubkey_str = "xpub6ByHsPNSQXTWZ7PLESMY2FufyYWtLXagSUpMQq7Un96SiThZH2iJB1X7pwviH1WtKVeDP6K8d6xxFzzoaFzF3s8BKCZx8oEDdDkNnp4owAZ";
@@ -401,6 +433,16 @@ mod tests {
             "5049afbbf8b274aae6d7f65cea0d413d1d8c151606a5cead356bb556502f27aa",
             p2pkh_signature_hash.encode_hex::<String>()
         );
+    }
+
+    #[test]
+    fn test_sig_hash_type_for_bitcoin_cash() {
+        let hex = "1f8b08000000000000030d8d3b4e025114400336131a81ca580131c14c3299f7eefb77061a4b7507f77d2e062423cc88ba0a57a05bb07709d616962cc0d858183b2739d5494e4ed61d1e5e6ee7554ca38b6dd554a1ba397ee9b6363322a8880c274fdddec16c7e3e3c09c149ed131436c95048f0a94001bc501a95401b48713d7afddebffdb1d3eceab393bd0ffa1ff9e4b9d33bd3367a9242a1f4481645f049f3e0c8a055ca5be1109c16c210779c11a04c29044ac854d2013d3fdaff8e273306de27137d88643d80e64a30b4da4432dc32cf0d3ae6a5053292c008eddb138b828cd24942026ef2c1ba94725a72a9a6256b2959ce7af9e6966a5804ba5f08803a2d564b79dd967772d72c1f77f543b3d1eb7ae518aafed7cff81f4c55a87f34010000";
+        let pubkey_str = "xpub6ByHsPNSQXTWZ7PLESMY2FufyYWtLXagSUpMQq7Un96SiThZH2iJB1X7pwviH1WtKVeDP6K8d6xxFzzoaFzF3s8BKCZx8oEDdDkNnp4owAZ";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+        let tx_data = TxData::from_payload(payload, &context).unwrap();
+        assert_eq!(SIGHASH_ALL | SIGHASH_FORKID, tx_data.sig_hash_type());
     }
 
     #[test]

@@ -785,21 +785,18 @@ mod tests {
 "#;
 
         let result = extract_xpub_info_from_str(json_str, &MultiSigFormat::P2sh).unwrap();
-        println!("result is {:?}", result);
 
         assert_eq!("m/45'", result.path);
         assert_eq!("EB16731F", result.xfp);
         assert_eq!("xpub69cicR2MFe9QbMVTMHN882fGtXBKQV4g9gqWNZN7aEM9RASi3WmUzgPF9md8fLfUNuF4znQ8937VQrjG2bG8VgU7rjhUR8qCfBL9hJDQogL", result.xpub);
 
         let result = extract_xpub_info_from_str(json_str, &MultiSigFormat::P2wshP2sh).unwrap();
-        println!("result is {:?}", result);
 
         assert_eq!("m/48'/0'/0'/1'", result.path);
         assert_eq!("EB16731F", result.xfp);
         assert_eq!("Ypub6jwcqK3XjbvvGXVFK6ghVrrqctFYJjFPh4ZiQ6ZFfMKxZSe5FWzZX3ib3THzRy2UKsesZwXmXVGsez8pyMuDmdbhnN55RcZbTLj7rFqViqo", result.xpub);
 
         let result = extract_xpub_info_from_str(json_str, &MultiSigFormat::P2wsh).unwrap();
-        println!("result is {:?}", result);
 
         assert_eq!("m/48'/0'/0'/2'", result.path);
         assert_eq!("EB16731F", result.xfp);

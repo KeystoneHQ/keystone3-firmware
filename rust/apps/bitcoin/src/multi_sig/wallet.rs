@@ -567,11 +567,15 @@ mod tests {
 
     use alloc::string::ToString;
 
+    use super::{
+        calculate_multi_sig_verify_code, detect_network, is_valid_multi_sig_policy, is_valid_xfp,
+        verify_wallet_config, MultiSigWalletConfig, MultiSigXPubItem,
+    };
     use crate::multi_sig::wallet::{
         create_wallet, generate_config_data, is_valid_xyzpub, parse_bsms_wallet_config,
         parse_wallet_config, strict_verify_wallet_config,
     };
-    use crate::multi_sig::{MultiSigXPubInfo, Network};
+    use crate::multi_sig::{MultiSigFormat, MultiSigXPubInfo, Network};
 
     use hex;
     use ur_registry::bytes::Bytes;
@@ -749,8 +753,17 @@ mod tests {
 
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
         let config = parse_wallet_config(config, "73c5da0a").unwrap();
+        // Sanity-check derived xpub equals config entry
+        let derivation = "m/48'/0'/0'/1'".to_string();
+        let expected = super::get_extended_public_key_by_seed(&seed, &derivation)
+            .unwrap()
+            .to_string();
+        let config_first =
+            super::xyzpub::convert_version(&config.xpub_items[0].xpub, &super::Version::Xpub)
+                .unwrap();
+        assert_eq!(expected, config_first);
         let result = strict_verify_wallet_config(&seed, &config, "73c5da0a");
-        assert_eq!(true, result.is_ok());
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -923,5 +936,93 @@ BIP39 4".as_bytes().to_vec());
         assert_eq!(wallet.xfp, "73c5da0a");
         assert_eq!(wallet.derivation_path, "m/48'/0'/0'/2'");
         assert_eq!(wallet.extended_pubkey, "xpub6DkFAXWQ2dHxq2vatrt9qyA3bXYU4ToWQwCHbf5XB2mSTexcHZCeKS1VZYcPoBd5X8yVcbXFHJR9R8UCVpt82VX1VhR28mCyxUFL4r6KFrf");
+    }
+
+    #[test]
+    fn test_multisig_wallet_getters() {
+        let mut wallet = MultiSigWalletConfig::default();
+        wallet.network = Network::MainNet;
+        wallet.format = "P2WSH".to_string();
+        wallet.derivations.push("m/48'/0'/0'/2'".to_string());
+        let path = wallet.get_wallet_path().unwrap();
+        assert_eq!(path, super::MULTI_P2WSH_PATH);
+        assert_eq!(wallet.get_network_u32(), 0);
+
+        wallet.derivations = vec!["m/48'/0'/0'/2'".to_string()];
+        let derivation = wallet.get_derivation_by_index(5).unwrap();
+        assert_eq!(derivation, "48'/0'/0'/2'");
+    }
+
+    #[test]
+    fn test_get_wallet_path_invalid_format() {
+        let mut wallet = MultiSigWalletConfig::default();
+        wallet.format = "UNKNOWN".to_string();
+        wallet.network = Network::MainNet;
+        assert!(wallet.get_wallet_path().is_err());
+    }
+
+    #[test]
+    fn test_is_valid_multi_sig_policy() {
+        assert!(is_valid_multi_sig_policy(3, 2));
+        assert!(!is_valid_multi_sig_policy(1, 0));
+    }
+
+    #[test]
+    fn test_is_valid_xfp() {
+        assert!(is_valid_xfp("73C5DA0A"));
+        assert!(!is_valid_xfp("G3C5DA0A"));
+        assert!(!is_valid_xfp("73C5DA0"));
+    }
+
+    #[test]
+    fn test_detect_network_helper() {
+        assert_eq!(detect_network("xpub6F6iZVTmc3KMgAUkV9JRNaouxYYwChRswPN1ut7nTfecn6VPRYLXFgXar1gvPUX27QH1zaVECqVEUoA2qMULZu5TjyKrjcWcLTQ6LkhrZAj"), Network::MainNet);
+        assert_eq!(detect_network("tpubD9hphZzCi9u5Wcbtq3jQYTzbPv6igoaRWDuhxLUDv5VTffE3gEVovYaqwfVMCa6q8VMdwAcPpFgAdajgmLML6XgYrKBquyYEDQg1HnKm3wQ"), Network::TestNet);
+    }
+
+    #[test]
+    fn test_verify_wallet_config_errors() {
+        let mut wallet = MultiSigWalletConfig::default();
+        wallet.total = 2;
+        wallet.threshold = 2;
+        wallet.derivations.push("m/45'".to_string());
+        let err = verify_wallet_config(&wallet, "73C5DA0A").unwrap_err();
+        assert!(matches!(
+            err,
+            crate::BitcoinError::MultiSigWalletParseError(_)
+        ));
+
+        wallet.xpub_items.push(MultiSigXPubItem {
+            xfp: "C45358FA".to_string(),
+            xpub: "tpubD9hphZzCi9u5Wcbtq3jQYTzbPv6igoaRWDuhxLUDv5VTffE3gEVovYaqwfVMCa6q8VMdwAcPpFgAdajgmLML6XgYrKBquyYEDQg1HnKm3wQ"
+                .to_string(),
+        });
+        let err = verify_wallet_config(&wallet, "73C5DA0A").unwrap_err();
+        assert!(matches!(
+            err,
+            crate::BitcoinError::MultiSigWalletParseError(_)
+        ));
+    }
+
+    #[test]
+    fn test_calculate_multi_sig_verify_code() {
+        let xpubs = vec![
+            "xpub6F6iZVTmc3KMgAUkV9JRNaouxYYwChRswPN1ut7nTfecn6VPRYLXFgXar1gvPUX27QH1zaVECqVEUoA2qMULZu5TjyKrjcWcLTQ6LkhrZAj"
+                .to_string(),
+            "xpub6EiTGcKqBQy2uTat1QQPhYQWt8LGmZStNqKDoikedkB72sUqgF9fXLUYEyPthqLSb6VP4akUAsy19MV5LL8SvqdzvcABYUpKw45jA1KZMhm"
+                .to_string(),
+            "xpub6EWksRHwPbDmXWkjQeA6wbCmXZeDPXieMob9hhbtJjmrmk647bWkh7om5rk2eoeDKcKG6NmD8nT7UZAFxXQMjTnhENTwTEovQw3MDQ8jJ16"
+                .to_string(),
+        ];
+        let code = calculate_multi_sig_verify_code(
+            &xpubs,
+            2,
+            3,
+            MultiSigFormat::P2wsh,
+            &Network::MainNet,
+            Some("5271C071"),
+        )
+        .unwrap();
+        assert_eq!(code, "9aa1fcb7");
     }
 }

@@ -44,7 +44,10 @@ pub unsafe extern "C" fn stellar_parse(
         SignType::TransactionHash => {
             let sign_data = sign_request.get_sign_data();
             if sign_data.len() != 32 {
-                return TransactionParseResult::from(RustCError::InvalidData).c_ptr();
+                return TransactionParseResult::from(RustCError::InvalidData(
+                    "Invalid transaction hash length".to_string(),
+                ))
+                .c_ptr();
             }
             hex::encode(sign_data)
         }
@@ -125,7 +128,10 @@ pub unsafe extern "C" fn stellar_sign(
         },
         SignType::TransactionHash => {
             if sign_data.len() != 32 {
-                return UREncodeResult::from(RustCError::InvalidData).c_ptr();
+                return UREncodeResult::from(RustCError::InvalidData(
+                    "Invalid transaction hash length".to_string(),
+                ))
+                .c_ptr();
             }
             match sign_hash(&sign_data, seed, &path) {
                 Ok(signature) => build_signature_data(&signature, sign_request.to_owned()),

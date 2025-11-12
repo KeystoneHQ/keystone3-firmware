@@ -203,7 +203,7 @@ mod tests {
 
     #[test]
     fn test_create_multi_sig_address_for_pubkeys() {
-        let pubkey_str = vec![
+        let pubkey_str = [
             "03a0c95fd48f1a251c744629e19ad154dfe1d7fb992d6955d62c417ae4ac333340",
             "0361769c55b3035962fd3267da5cc4efa03cb400fe1971f5ec1c686d6b301ccd60",
             "021d24a7eda6ccbff4616d9965c9bb2a7871ce048b0161b71e91be83671be514d5",
@@ -221,5 +221,64 @@ mod tests {
         )
         .unwrap();
         assert_eq!(address, "A2nev5Fc7tFZ11oy1Ybz1kJRbebTWff8K6");
+    }
+
+    #[test]
+    fn test_create_multi_sig_address_with_sorted_keys_matches_unsorted() {
+        let pubkey_str = [
+            "0361769c55b3035962fd3267da5cc4efa03cb400fe1971f5ec1c686d6b301ccd60",
+            "021d24a7eda6ccbff4616d9965c9bb2a7871ce048b0161b71e91be83671be514d5",
+            "03a0c95fd48f1a251c744629e19ad154dfe1d7fb992d6955d62c417ae4ac333340",
+        ];
+        let pubkeys = pubkey_str
+            .iter()
+            .map(|s| PublicKey::from_slice(&hex::decode(s).unwrap()).unwrap())
+            .collect::<Vec<_>>();
+        let mut sorted_pubkeys = pubkeys.clone();
+        sorted_pubkeys.sort_by_key(|key| key.to_bytes());
+
+        let expected = create_multi_sig_address_for_pubkeys_with_sorting(
+            2,
+            &sorted_pubkeys,
+            MultiSigFormat::P2wsh,
+            Network::Bitcoin,
+            false,
+        )
+        .unwrap();
+        let result = create_multi_sig_address_for_pubkeys_with_sorting(
+            2,
+            &pubkeys,
+            MultiSigFormat::P2wsh,
+            Network::Bitcoin,
+            true,
+        )
+        .unwrap();
+        assert_eq!(expected, result);
+    }
+
+    #[test]
+    fn test_create_multi_sig_address_testnet_prefix() {
+        let pubkey_str = [
+            "03a0c95fd48f1a251c744629e19ad154dfe1d7fb992d6955d62c417ae4ac333340",
+            "0361769c55b3035962fd3267da5cc4efa03cb400fe1971f5ec1c686d6b301ccd60",
+            "021d24a7eda6ccbff4616d9965c9bb2a7871ce048b0161b71e91be83671be514d5",
+        ];
+        let pubkeys = pubkey_str
+            .iter()
+            .map(|s| PublicKey::from_slice(&hex::decode(s).unwrap()).unwrap())
+            .collect::<Vec<_>>();
+
+        let address = create_multi_sig_address_for_pubkeys_with_sorting(
+            2,
+            &pubkeys,
+            MultiSigFormat::P2sh,
+            Network::BitcoinTestnet,
+            true,
+        )
+        .unwrap();
+        assert!(
+            address.starts_with('2'),
+            "unexpected testnet address prefix: {address}"
+        );
     }
 }

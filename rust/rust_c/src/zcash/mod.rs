@@ -8,7 +8,7 @@ use crate::common::{
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
     utils::{convert_c_char, recover_c_char},
 };
-use crate::extract_array;
+use crate::{extract_array, extract_array_mut};
 use crate::{extract_ptr_with_type, make_free_method};
 use alloc::{boxed::Box, format, string::String, string::ToString};
 use app_zcash::get_address;
@@ -30,7 +30,7 @@ pub unsafe extern "C" fn derive_zcash_ufvk(
     seed_len: u32,
     account_path: PtrString,
 ) -> *mut SimpleResponse<c_char> {
-    let seed = extract_array_mut!(seed, u8, seed_len as usize);
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let account_path = unsafe { recover_c_char(account_path) };
     let ufvk_text = derive_ufvk(&MainNetwork, seed, &account_path);
     let result = match ufvk_text {
@@ -46,7 +46,7 @@ pub unsafe extern "C" fn calculate_zcash_seed_fingerprint(
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut SimpleResponse<u8> {
-    let seed = extract_array_mut!(seed, u8, seed_len as usize);
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let sfp = calculate_seed_fingerprint(seed);
     let result = match sfp {
         Ok(bytes) => {
@@ -123,7 +123,7 @@ pub unsafe extern "C" fn sign_zcash_tx(
     seed_len: u32,
 ) -> *mut UREncodeResult {
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
-    let seed = extract_array_mut!(seed, u8, seed_len as usize);
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let result = match app_zcash::sign_pczt(&pczt.get_data(), seed) {
         Ok(pczt) => match ZcashPczt::new(pczt).try_into() {
             Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -196,11 +196,12 @@ pub unsafe extern "C" fn rust_derive_iv_from_seed(
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut SimpleResponse<u8> {
-    let seed = extract_array!(seed, u8, seed_len as usize);
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let iv_path = "m/44'/1557192335'/0'/2'/0'".to_string();
     let iv = get_private_key_by_seed(seed, &iv_path).unwrap();
     let mut iv_bytes = [0; 16];
     iv_bytes.copy_from_slice(&iv[..16]);
+    seed.zeroize();
     SimpleResponse::success(Box::into_raw(Box::new(iv_bytes)) as *mut u8).simple_c_ptr()
 }
 

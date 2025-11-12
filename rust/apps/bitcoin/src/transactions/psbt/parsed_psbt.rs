@@ -96,7 +96,29 @@ mod tests {
 
     use super::*;
     use crate::parsed_tx::TxParser;
+    use bitcoin::absolute::LockTime;
     use bitcoin::psbt::Psbt;
+    use bitcoin::secp256k1::{PublicKey, Secp256k1, SecretKey};
+    use bitcoin::transaction::Version;
+    use bitcoin::Transaction;
+
+    fn dummy_secp_public_key() -> PublicKey {
+        let secp = Secp256k1::new();
+        let sk =
+            SecretKey::from_str("0000000000000000000000000000000000000000000000000000000000000001")
+                .unwrap();
+        PublicKey::from_secret_key(&secp, &sk)
+    }
+
+    fn empty_psbt() -> Psbt {
+        let tx = Transaction {
+            version: Version::TWO,
+            lock_time: LockTime::ZERO,
+            input: Vec::new(),
+            output: Vec::new(),
+        };
+        Psbt::from_unsigned_tx(tx).unwrap()
+    }
 
     #[test]
     fn test_parse_psbt() {
@@ -337,21 +359,113 @@ mod tests {
 
         assert_eq!("Avalanche BTC", result.overview.network);
 
-        println!("{:?}", result);
-        let first_input = result.detail.from.get(0).unwrap();
+        let first_input = result.detail.from.first().unwrap();
         assert_eq!(
             "bc1q6kj04arn7nasy6vhtjqlg4fzwx6cjrewgdczdt",
             first_input.address.clone().unwrap()
         );
-        assert_eq!(true, first_input.path.is_some());
+        assert!(first_input.path.is_some());
         assert_eq!(47990, first_input.value);
 
-        let first_output = result.detail.to.get(0).unwrap();
+        let first_output = result.detail.to.first().unwrap();
         assert_eq!(
             "bc1q8nur2k3xphnsqa5zxgjl7djtkj3ya0gf6rpqa9",
             first_output.address
         );
-        assert_eq!(false, first_output.path.is_some());
+        assert!(first_output.path.is_none());
         assert_eq!(48000, first_output.value);
+    }
+
+    #[test]
+    fn test_determine_network_from_xpub() {
+        let mut psbt = empty_psbt();
+        let xpub = Xpub::from_str("xpub6Bm9M1SxZdzL3TxdNV8897FgtTLBgehR1wVNnMyJ5VLRK5n3tFqXxrCVnVQj4zooN4eFSkf6Sma84reWc5ZCXMxPbLXQs3BcaBdTd4YQa3B").unwrap();
+        let fingerprint = Fingerprint::from_str("A1B2C3D4").unwrap();
+        let path = DerivationPath::from_str("m/84'/0'/0'").unwrap();
+        psbt.xpub.insert(xpub, (fingerprint, path));
+
+        let wrapped = WrappedPsbt { psbt };
+        let network = wrapped.determine_network().unwrap();
+        assert!(matches!(network, Network::Bitcoin));
+    }
+
+    #[test]
+    fn test_determine_network_from_coin_type() {
+        let mut psbt = empty_psbt();
+        let mut input = bitcoin::psbt::Input::default();
+        let pubkey = dummy_secp_public_key();
+        input.bip32_derivation.insert(
+            pubkey,
+            (
+                Fingerprint::from_str("73c5da0a").unwrap(),
+                DerivationPath::from_str("m/84'/145'/0'/0/0").unwrap(),
+            ),
+        );
+        psbt.inputs.push(input);
+
+        let wrapped = WrappedPsbt { psbt };
+        let network = wrapped.determine_network().unwrap();
+        assert!(matches!(network, Network::BitcoinCash));
+    }
+
+    #[test]
+    fn test_determine_network_unknown_coin_type() {
+        let mut psbt = empty_psbt();
+        let mut input = bitcoin::psbt::Input::default();
+        let pubkey = dummy_secp_public_key();
+        input.bip32_derivation.insert(
+            pubkey,
+            (
+                Fingerprint::from_str("73c5da0a").unwrap(),
+                DerivationPath::from_str("m/84'/999'/0'/0/0").unwrap(),
+            ),
+        );
+        psbt.inputs.push(input);
+
+        let wrapped = WrappedPsbt { psbt };
+        let err = wrapped.determine_network().unwrap_err();
+        assert!(matches!(
+            err,
+            BitcoinError::InvalidTransaction(message) if message.contains("unknown network 999")
+        ));
+    }
+
+    #[test]
+    fn test_determine_network_with_non_hardened_coin_type() {
+        let mut psbt = empty_psbt();
+        let mut input = bitcoin::psbt::Input::default();
+        let pubkey = dummy_secp_public_key();
+        input.bip32_derivation.insert(
+            pubkey,
+            (
+                Fingerprint::from_str("73c5da0a").unwrap(),
+                DerivationPath::from_str("m/84/1/0/0").unwrap(),
+            ),
+        );
+        psbt.inputs.push(input);
+
+        let wrapped = WrappedPsbt { psbt };
+        let err = wrapped.determine_network().unwrap_err();
+        assert!(matches!(
+            err,
+            BitcoinError::InvalidTransaction(message)
+                if message.contains("unsupported derivation path")
+        ));
+    }
+
+    #[test]
+    fn test_parse_without_context() {
+        let mut psbt = empty_psbt();
+        let xpub = Xpub::from_str("tpubDDfvzhdVV4unsoKt5aE6dcsNsfeWbTgmLZPi8LQDYU2xixrYemMfWJ3BaVneH3u7DBQePdTwhpybaKRU95pi6PMUtLPBJLVQRpzEnjfjZzX").unwrap();
+        let fingerprint = Fingerprint::from_str("73c5da0a").unwrap();
+        let path = DerivationPath::from_str("m/84'/1'/0'").unwrap();
+        psbt.xpub.insert(xpub, (fingerprint, path));
+
+        let wrapped = WrappedPsbt { psbt };
+        let err = wrapped.parse(None).unwrap_err();
+        assert!(matches!(
+            err,
+            BitcoinError::InvalidParseContext(message) if message == "empty context"
+        ));
     }
 }

@@ -145,7 +145,7 @@ mod tests {
             gas_limit: U256::from(500000),
             action: crate::structs::TransactionAction::Create,
             value: U256::from_dec_str("5000000000000000000").unwrap(), // 5 ETH
-            input: vec![0x60, 0x80, 0x60, 0x40, 0x52], // Some contract bytecode
+            input: vec![0x60, 0x80, 0x60, 0x40, 0x52],                 // Some contract bytecode
         };
 
         let parsed = ParsedEIP1559Transaction::from(tx);
@@ -157,7 +157,7 @@ mod tests {
         assert_eq!(parsed.value, "5");
         assert_eq!(parsed.input, "6080604052");
         // For Create action, to should be empty or zero address
-        assert_eq!(parsed.to, "0x");
+        assert_eq!(parsed.to, "0x0000000000000000000000000000000000000000");
     }
 
     #[test]
@@ -167,13 +167,13 @@ mod tests {
             chain_id: 137, // Polygon
             nonce: U256::from(10),
             max_priority_fee_per_gas: U256::from(1000000000u64), // 1 Gwei
-            max_fee_per_gas: U256::from(50000000000u64),        // 50 Gwei
+            max_fee_per_gas: U256::from(50000000000u64),         // 50 Gwei
             gas_limit: U256::from(100000),
             action: crate::structs::TransactionAction::Call(
                 H160::from_str("0x49aB56B91fc982Fd6Ec1EC7Bb87d74EFA6dA30ab").unwrap(),
             ),
             value: U256::from_dec_str("2000000000000000000").unwrap(), // 2 ETH
-            input: vec![0xa9, 0x05, 0x9c, 0xbb], // transfer function selector
+            input: vec![0xa9, 0x05, 0x9c, 0xbb],                       // transfer function selector
         };
 
         let parsed = ParsedEIP1559Transaction::from(tx);
@@ -212,7 +212,7 @@ mod tests {
             nonce: U256::from(100),
             max_priority_fee_per_gas: U256::from(2000000000u64), // 2 Gwei
             max_fee_per_gas: U256::from(100000000000u64),        // 100 Gwei
-            gas_limit: U256::from(1000000), // 1M gas
+            gas_limit: U256::from(1000000),                      // 1M gas
             action: crate::structs::TransactionAction::Call(
                 H160::from_str("0x49aB56B91fc982Fd6Ec1EC7Bb87d74EFA6dA30ab").unwrap(),
             ),
@@ -235,8 +235,8 @@ mod tests {
         let tx = EIP1559Transaction {
             chain_id: 1,
             nonce: U256::from(1),
-            max_priority_fee_per_gas: U256::from(1000000u64),    // 0.001 Gwei
-            max_fee_per_gas: U256::from(100000000u64),           // 0.1 Gwei
+            max_priority_fee_per_gas: U256::from(1000000u64), // 0.001 Gwei
+            max_fee_per_gas: U256::from(100000000u64),        // 0.1 Gwei
             gas_limit: U256::from(21000),
             action: crate::structs::TransactionAction::Call(
                 H160::from_str("0x49aB56B91fc982Fd6Ec1EC7Bb87d74EFA6dA30ab").unwrap(),

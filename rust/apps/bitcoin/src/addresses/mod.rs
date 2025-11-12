@@ -54,6 +54,7 @@ pub fn get_address(hd_path: String, extended_pub_key: &String) -> Result<String>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::errors::BitcoinError;
     use alloc::string::String;
     use alloc::string::ToString;
 
@@ -170,5 +171,42 @@ mod tests {
             address,
             "tb1p8wpt9v4frpf3tkn0srd97pksgsxc5hs52lafxwru9kgeephvs7rqlqt9zj"
         );
+    }
+
+    #[test]
+    fn test_get_address_invalid_xpub() {
+        let err =
+            get_address(String::from("M/44'/0'/0'/0/0"), &"invalid_xpub".to_string()).unwrap_err();
+        assert_eq!(
+            err,
+            BitcoinError::AddressError("xpub is not valid".to_string())
+        );
+    }
+
+    #[test]
+    fn test_get_address_network_not_supported() {
+        let extended_pubkey = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
+        let err = get_address(
+            String::from("M/45'/0'/0'/0/0"),
+            &extended_pubkey.to_string(),
+        )
+        .unwrap_err();
+        assert_eq!(
+            err,
+            BitcoinError::AddressError("network is not supported".to_string())
+        );
+    }
+
+    #[test]
+    fn test_get_address_invalid_hd_path_length() {
+        let extended_pubkey = "zpub6rFR7y4Q2AijBEqTUquhVz398htDFrtymD9xYYfG1m4wAcvPhXNfE3EfH1r1ADqtfSdVCToUG868RvUUkgDKf31mGDtKsAYz2oz2AGutZYs";
+        let err =
+            get_address(String::from("M/84'/0'/0'/0"), &extended_pubkey.to_string()).unwrap_err();
+        match err {
+            BitcoinError::SignLegacyTxError(message) => {
+                assert!(message.contains("invalid hd_path"))
+            }
+            other => panic!("unexpected error: {other:?}"),
+        }
     }
 }

@@ -722,7 +722,7 @@ mod tests {
         let value = u64::MAX as f64;
         let result = format_zec_value(value);
         assert!(result.ends_with(" ZEC"));
-        
+
         // Test max realistic ZEC value (21 million ZEC = 2.1e15 zatoshis)
         let max_zec = 2_100_000_000_000_000_u64;
         let result = format_zec_value(max_zec as f64);
@@ -897,17 +897,16 @@ mod tests {
     fn test_format_zec_value_typical_transaction_amounts() {
         // Test common transaction amounts
         let test_cases = vec![
-            (10_000_000u64, "0.1 ZEC"),        // 0.1 ZEC
-            (50_000_000u64, "0.5 ZEC"),        // 0.5 ZEC
-            (100_000_000u64, "1 ZEC"),         // 1 ZEC
-            (250_000_000u64, "2.5 ZEC"),       // 2.5 ZEC
-            (1_000_000_000u64, "10 ZEC"),      // 10 ZEC
-            (10_000_000_000u64, "100 ZEC"),    // 100 ZEC
+            (10_000_000u64, "0.1 ZEC"),     // 0.1 ZEC
+            (50_000_000u64, "0.5 ZEC"),     // 0.5 ZEC
+            (100_000_000u64, "1 ZEC"),      // 1 ZEC
+            (250_000_000u64, "2.5 ZEC"),    // 2.5 ZEC
+            (1_000_000_000u64, "10 ZEC"),   // 10 ZEC
+            (10_000_000_000u64, "100 ZEC"), // 100 ZEC
         ];
 
         for (input, expected) in test_cases {
             assert_eq!(format_zec_value(input as f64), expected);
         }
     }
-    
 }

@@ -35,11 +35,53 @@ pub fn sign_legacy_tx(tx_data: &mut TxData, seed: &[u8]) -> Result<Vec<u8>> {
 
 #[cfg(test)]
 mod tests {
+    use super::sign_legacy_tx;
+    use super::TxData;
+    use crate::errors::BitcoinError;
     use crate::test::{prepare_parse_context, prepare_payload};
+    use crate::transactions::legacy::input::TxIn;
     use crate::{check_raw_tx, sign_raw_tx};
+    use alloc::string::{String, ToString};
     use app_utils::keystone;
+    use bitcoin::absolute::LockTime;
+    use bitcoin::transaction::Version;
+    use bitcoin::{OutPoint, ScriptBuf, Sequence, Transaction, TxIn as BitcoinTxIn, Txid, Witness};
     use core::str::FromStr;
     use hex;
+
+    const TEST_SEED_HEX: &str = "5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4";
+
+    fn build_dummy_tx_data(script_type: &str, pubkey: &str) -> TxData {
+        let prev_txid_str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        let txid = Txid::from_str(prev_txid_str).unwrap();
+        let bitcoin_input = BitcoinTxIn {
+            previous_output: OutPoint { txid, vout: 0 },
+            script_sig: ScriptBuf::new(),
+            sequence: Sequence::ENABLE_RBF_NO_LOCKTIME,
+            witness: Witness::new(),
+        };
+
+        TxData {
+            inputs: vec![TxIn {
+                previous_output: prev_txid_str.to_string(),
+                vout: 0,
+                value: 1_000,
+                pubkey: pubkey.to_string(),
+                hd_path: "m/44'/0'/0'/0/0".to_string(),
+            }],
+            outputs: vec![],
+            script_type: script_type.to_string(),
+            network: "BTC_LEGACY".to_string(),
+            extended_pubkey: String::new(),
+            xfp: String::new(),
+            transaction: Transaction {
+                version: Version(2),
+                lock_time: LockTime::from_consensus(0),
+                input: vec![bitcoin_input],
+                output: vec![],
+            },
+        }
+    }
 
     #[test]
     fn test_sign_ltc_p2sh_transaction() {
@@ -251,5 +293,25 @@ mod tests {
             let check = check_raw_tx(payload, context);
             assert!(check.is_ok());
         }
+    }
+
+    #[test]
+    fn test_sign_legacy_tx_returns_error_for_unknown_script_type() {
+        let pubkey = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
+        let mut tx_data = build_dummy_tx_data("UNKNOWN", pubkey);
+        let seed = hex::decode(TEST_SEED_HEX).unwrap();
+        let err = sign_legacy_tx(&mut tx_data, &seed).unwrap_err();
+        assert!(matches!(
+            err,
+            BitcoinError::UnsupportedScriptType(message) if message.contains("UNKNOWN")
+        ));
+    }
+
+    #[test]
+    fn test_sign_legacy_tx_returns_error_for_invalid_pubkey() {
+        let mut tx_data = build_dummy_tx_data("P2PKH", "zz");
+        let seed = hex::decode(TEST_SEED_HEX).unwrap();
+        let err = sign_legacy_tx(&mut tx_data, &seed).unwrap_err();
+        assert_eq!(BitcoinError::InvalidInput, err);
     }
 }

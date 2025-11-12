@@ -8,7 +8,7 @@ use crate::common::{
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
     utils::{convert_c_char, recover_c_char},
 };
-use crate::{extract_array_mut, extract_array};
+use crate::{extract_array, extract_array_mut};
 use crate::{extract_ptr_with_type, make_free_method};
 use alloc::{boxed::Box, format, string::String, string::ToString};
 use app_zcash::get_address;

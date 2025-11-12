@@ -171,8 +171,7 @@ fn try_get_eth_public_key(
     match eth_sign_request.get_derivation_path().get_path() {
         None => Err(RustCError::InvalidHDPath),
         Some(path) => {
-            let _path = path.clone();
-            if let Some(sub_path) = parse_eth_sub_path(_path) {
+            if let Some(sub_path) = parse_eth_sub_path(path.clone()) {
                 derive_public_key(&xpub, &format!("m/{sub_path}")).map_err(|_e| {
                     RustCError::UnexpectedError("unable to derive pubkey".to_string())
                 })
@@ -234,22 +233,23 @@ pub unsafe extern "C" fn eth_parse(
     xpub: PtrString,
 ) -> PtrT<TransactionParseResult<DisplayETH>> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
+    let unsigned_data = crypto_eth.get_sign_data();
     let xpub = recover_c_char(xpub);
     let pubkey = try_get_eth_public_key(xpub, crypto_eth).ok();
     let transaction_type = TransactionType::from(crypto_eth.get_data_type());
     match transaction_type {
         TransactionType::Legacy => {
-            let tx = parse_legacy_tx(&crypto_eth.get_sign_data(), pubkey);
+            let tx = parse_legacy_tx(&unsigned_data, pubkey);
             match tx {
                 Ok(t) => TransactionParseResult::success(DisplayETH::from(t).c_ptr()).c_ptr(),
                 Err(e) => TransactionParseResult::from(e).c_ptr(),
             }
         }
         TransactionType::TypedTransaction => {
-            match crypto_eth.get_sign_data().first() {
+            match unsigned_data.first() {
                 Some(0x02) => {
                     //remove envelop
-                    let payload = &crypto_eth.get_sign_data()[1..];
+                    let payload = &unsigned_data[1..];
                     let tx = parse_fee_market_tx(payload, pubkey);
                     match tx {
                         Ok(t) => {
@@ -327,9 +327,7 @@ unsafe fn eth_check_batch_tx(
                 return Err(e);
             }
         };
-        if ur_mfp == mfp {
-            continue;
-        } else {
+        if ur_mfp != mfp {
             return Err(RustCError::MasterFingerprintMismatch);
         }
     }
@@ -453,14 +451,13 @@ pub unsafe extern "C" fn eth_sign_batch_tx(
             path = format!("m/{path}");
         }
 
+        let sign_data = request.get_sign_data();
         let signature = match TransactionType::from(request.get_data_type()) {
             TransactionType::Legacy => {
-                app_ethereum::sign_legacy_tx(request.get_sign_data().to_vec(), seed, &path)
+                app_ethereum::sign_legacy_tx(sign_data.to_vec(), seed, &path)
             }
-            TransactionType::TypedTransaction => match request.get_sign_data().first() {
-                Some(0x02) => {
-                    app_ethereum::sign_fee_markey_tx(request.get_sign_data().to_vec(), seed, &path)
-                }
+            TransactionType::TypedTransaction => match sign_data.first() {
+                Some(0x02) => app_ethereum::sign_fee_market_tx(sign_data.to_vec(), seed, &path),
                 Some(x) => {
                     return UREncodeResult::from(RustCError::UnsupportedTransaction(format!(
                         "ethereum tx type: {x}"
@@ -550,14 +547,11 @@ pub unsafe extern "C" fn eth_sign_tx_dynamic(
         path = format!("m/{path}");
     }
 
+    let sign_data = crypto_eth.get_sign_data();
     let signature = match TransactionType::from(crypto_eth.get_data_type()) {
-        TransactionType::Legacy => {
-            app_ethereum::sign_legacy_tx(crypto_eth.get_sign_data().to_vec(), seed, &path)
-        }
-        TransactionType::TypedTransaction => match crypto_eth.get_sign_data().first() {
-            Some(0x02) => {
-                app_ethereum::sign_fee_markey_tx(crypto_eth.get_sign_data().to_vec(), seed, &path)
-            }
+        TransactionType::Legacy => app_ethereum::sign_legacy_tx(sign_data.to_vec(), seed, &path),
+        TransactionType::TypedTransaction => match sign_data.first() {
+            Some(0x02) => app_ethereum::sign_fee_market_tx(sign_data.to_vec(), seed, &path),
             Some(x) => {
                 return UREncodeResult::from(RustCError::UnsupportedTransaction(format!(
                     "ethereum tx type: {x}"
@@ -569,10 +563,10 @@ pub unsafe extern "C" fn eth_sign_tx_dynamic(
             }
         },
         TransactionType::PersonalMessage => {
-            app_ethereum::sign_personal_message(crypto_eth.get_sign_data().to_vec(), seed, &path)
+            app_ethereum::sign_personal_message(sign_data.to_vec(), seed, &path)
         }
         TransactionType::TypedData => {
-            app_ethereum::sign_typed_data_message(crypto_eth.get_sign_data().to_vec(), seed, &path)
+            app_ethereum::sign_typed_data_message(sign_data.to_vec(), seed, &path)
         }
     };
     match signature {
@@ -746,13 +740,10 @@ mod tests {
     fn test_test() {
         let _path = "44'/60'/1'/0/0";
         let root_path = "44'/60'/";
-        match _path.strip_prefix(root_path) {
-            Some(path) => {
-                if let Some(index) = path.find('/') {
-                    println!("{}", &path[index..]);
-                }
+        if let Some(path) = _path.strip_prefix(root_path) {
+            if let Some(index) = path.find('/') {
+                println!("{}", &path[index..]);
             }
-            None => {}
         };
     }
 }

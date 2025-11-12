@@ -39,7 +39,7 @@ mod ur_ext;
 pub mod utils;
 pub mod web_auth;
 
-pub static KEYSTONE: &str = "keystone";
+pub const KEYSTONE: &str = "keystone";
 
 #[no_mangle]
 pub extern "C" fn get_master_fingerprint(seed: PtrBytes, seed_len: u32) -> *mut SimpleResponse<u8> {

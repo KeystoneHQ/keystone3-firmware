@@ -157,8 +157,14 @@ static EAPDUFrame_t *FrameParser(const uint8_t *frame, uint32_t len)
     eapduFrame->p1 = extract_16bit_value(frame, OFFSET_P1);
     eapduFrame->p2 = extract_16bit_value(frame, OFFSET_P2);
     eapduFrame->lc = extract_16bit_value(frame, OFFSET_LC);
-    eapduFrame->data = (uint8_t *)(frame + OFFSET_CDATA);
-    eapduFrame->dataLen = len - OFFSET_CDATA;
+    uint8_t hidTagCrc = (uint8_t)(0xAA + 0xACE0 + frame[OFFSET_DATA_LEN]);
+    if (eapduFrame->lc == 0xACE0 && frame[OFFSET_HID_TAG] == hidTagCrc) {
+        eapduFrame->dataLen = frame[OFFSET_DATA_LEN];
+        eapduFrame->data = (uint8_t *)(frame + OFFSET_HID_DATA);
+    } else {
+        eapduFrame->data = (uint8_t *)(frame + OFFSET_CDATA);
+        eapduFrame->dataLen = len - OFFSET_CDATA;
+    }
     return eapduFrame;
 }
 

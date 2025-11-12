@@ -231,7 +231,7 @@ uint8_t* USBD_USR_InterfaceStrDescriptor(uint8_t speed, uint16_t* length)
     return USBD_StrDesc;
 }
 
-const uint8_t USBD_OS_STRING[8] = {
+const uint8_t USBD_OS_STRING[9] = {
     'M',
     'S',
     'F',
@@ -240,6 +240,7 @@ const uint8_t USBD_OS_STRING[8] = {
     '0',
     '0',
     USB_REQ_MS_VENDOR_CODE,
+    '\0'
 };
 
 #define USB_LEN_OS_FEATURE_DESC 0x28

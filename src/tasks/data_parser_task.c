@@ -24,6 +24,7 @@
 #include "drv_otp.h"
 #include "drv_trng.h"
 #include "librust_c.h"
+#include "usbd_composite.h"
 
 #define ECC_PRV_KEY_SIZE                                24
 #define ECC_PUB_KEY_SIZE                                (2 * ECC_PRV_KEY_SIZE)
@@ -32,7 +33,6 @@
 #define PUB_KEY_SIZE                                    33
 
 static void DataParserTask(void *argument);
-void USBD_cdc_SendBuffer_Cb(const uint8_t *data, uint32_t len);
 
 static uint8_t g_dataParserCache[PARSER_CACHE_LEN] __attribute__((section(".data_parser_section")));
 static cbuf_handle_t g_cBufHandle;
@@ -126,22 +126,26 @@ static void DataParserTask(void *argument)
     memset_s(g_dataParserCache, sizeof(g_dataParserCache), 0, sizeof(g_dataParserCache));
     Message_t rcvMsg;
     osStatus_t ret;
-    uint8_t USB_Rx_Buffer[64 + 1] = {0};
+
     while (1) {
         ret = osMessageQueueGet(g_springQueue, &rcvMsg, NULL, 10000);
         if (ret != osOK) {
             continue;
         }
+
         switch (rcvMsg.id) {
         case SPRING_MSG_GET:
-            for (int i = 0; i < rcvMsg.value; i++) {
-                circular_buf_get(g_cBufHandle, &USB_Rx_Buffer[i]);
-            }
-            ProtocolReceivedData(USB_Rx_Buffer, rcvMsg.value, USBD_cdc_SendBuffer_Cb);
+            ProcessUSBData(rcvMsg.value, USB_TRANSPORT_CDC, g_cBufHandle);
             break;
+            
+        case SPRING_MSG_HID_GET:
+            ProcessUSBData(rcvMsg.value, USB_TRANSPORT_HID, g_cBufHandle);
+            break;
+            
         default:
             break;
         }
+        
         if (rcvMsg.buffer != NULL) {
             SRAM_FREE(rcvMsg.buffer);
         }

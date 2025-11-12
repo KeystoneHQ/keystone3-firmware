@@ -82,9 +82,8 @@ use crate::{
     impl_response,
 };
 
-#[no_mangle]
-pub static FRAGMENT_MAX_LENGTH_DEFAULT: usize = 200;
-pub static FRAGMENT_UNLIMITED_LENGTH: usize = 11000;
+pub const FRAGMENT_MAX_LENGTH_DEFAULT: usize = 200;
+pub const FRAGMENT_UNLIMITED_LENGTH: usize = 11000;
 
 #[repr(C)]
 pub struct UREncodeResult {

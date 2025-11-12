@@ -55,7 +55,7 @@ pub fn parse_personal_message(
     tx_hex: Vec<u8>,
     from_key: Option<PublicKey>,
 ) -> Result<PersonalMessage> {
-    let raw_messge = hex::encode(tx_hex.clone());
+    let raw_message = hex::encode(tx_hex.clone());
     let utf8_message = match String::from_utf8(tx_hex) {
         Ok(utf8_message) => {
             if app_utils::is_cjk(&utf8_message) {
@@ -66,7 +66,7 @@ pub fn parse_personal_message(
         }
         Err(_e) => "".to_string(),
     };
-    PersonalMessage::from(raw_messge, utf8_message, from_key)
+    PersonalMessage::from(raw_message, utf8_message, from_key)
 }
 
 pub fn parse_typed_data_message(tx_hex: Vec<u8>, from_key: Option<PublicKey>) -> Result<TypedData> {
@@ -114,7 +114,7 @@ pub fn sign_legacy_tx_v2(
         })
 }
 
-pub fn sign_fee_markey_tx(
+pub fn sign_fee_market_tx(
     sign_data: Vec<u8>,
     seed: &[u8],
     path: &String,
@@ -148,10 +148,7 @@ pub fn sign_personal_message(
         Message::from_digest_slice(&hash).map_err(|e| EthereumError::SignFailure(e.to_string()))?;
     keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| EthereumError::SignFailure(e.to_string()))
-        .map(|(rec_id, rs)| {
-            let v = rec_id as u64 + 27;
-            EthereumSignature(v, rs)
-        })
+        .map(|(rec_id, rs)| EthereumSignature(rec_id as u64 + 27, rs))
 }
 
 pub fn sign_typed_data_message(
@@ -172,10 +169,7 @@ pub fn sign_typed_data_message(
 
     keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
         .map_err(|e| EthereumError::SignFailure(e.to_string()))
-        .map(|(rec_id, rs)| {
-            let v = rec_id as u64 + 27;
-            EthereumSignature(v, rs)
-        })
+        .map(|(rec_id, rs)| EthereumSignature(rec_id as u64 + 27, rs))
 }
 
 #[cfg(test)]
@@ -188,7 +182,7 @@ mod tests {
     use crate::alloc::string::ToString;
     use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
     use crate::{
-        parse_fee_market_tx, parse_personal_message, parse_typed_data_message,
+        parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
         sign_personal_message, sign_typed_data_message,
     };
 
@@ -221,6 +215,33 @@ mod tests {
         let message = sign_personal_message(sign_data, &seed, &path).unwrap();
         assert_eq!("b836ae2bac525ae9d2799928cf6f52919cb2ed5e5e52ca26e3b3cdbeb136ca2f618da0e6413a6aa3aaa722fbc2bcc87f591b8b427ee6915916f257de8125810e1b",
                    hex::encode(message.serialize()));
+    }
+
+    #[test]
+    fn test_parse_legacy_tx() {
+        // Signed legacy transaction (EIP-155 compatible, chain_id=1)
+        // nonce: 33, gas_price: 15198060006, gas_limit: 46000
+        // to: 0xfe2c232adDF66539BFd5d1Bd4B2cc91D358022a2
+        // value: 200000000000000 wei (0.0002 ETH)
+        let sign_data = hex::decode("f86a21850389dffde682b3b094fe2c232addf66539bfd5d1bd4b2cc91d358022a286b5e620f480008026a035df2b615912b8be79a13c9b0a1540ade55434ab68778a49943442a9e6d3141aa00a6e33134ba47c1f1cda59ec3ef62a59d4da6a9d111eb4e447828574c1c94f66").unwrap();
+        let path = "m/44'/60'/0'/0/0".to_string();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+
+        let result = parse_legacy_tx(&sign_data, Some(pubkey)).unwrap();
+
+        assert_eq!(33, result.nonce);
+        assert_eq!(1, result.chain_id);
+        assert_eq!(
+            "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
+            result.from.unwrap()
+        );
+        assert_eq!("0xfe2c232addf66539bfd5d1bd4b2cc91d358022a2", result.to);
+        assert_eq!("0.0002", result.value);
+        assert_eq!(Some("15.198060006 Gwei".to_string()), result.gas_price);
+        assert_eq!("46000", result.gas_limit);
+        assert_eq!("", result.input);
+        assert_eq!("0.000699110760276", result.max_txn_fee);
     }
 
     #[test]

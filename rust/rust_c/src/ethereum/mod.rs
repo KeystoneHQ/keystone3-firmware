@@ -4,7 +4,7 @@ use alloc::{format, slice};
 
 use app_ethereum::address::derive_address;
 use app_ethereum::batch_tx_rules::rule_swap;
-use app_ethereum::erc20::{parse_erc20_transfer, parse_erc20_approval};
+use app_ethereum::erc20::{parse_erc20_approval, parse_erc20_transfer};
 use app_ethereum::errors::EthereumError;
 use app_ethereum::{
     parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
@@ -76,7 +76,10 @@ pub unsafe extern "C" fn eth_check_ur_bytes(
             let mfp: [u8; 4] = mfp.to_vec().try_into().unwrap_or_default();
 
             let xfp = payload.xfp;
-            let xfp_vec: [u8; 4] = hex::decode(xfp).unwrap_or_default().try_into().unwrap_or_default();
+            let xfp_vec: [u8; 4] = hex::decode(xfp)
+                .unwrap_or_default()
+                .try_into()
+                .unwrap_or_default();
             if mfp == xfp_vec {
                 TransactionCheckResult::new().c_ptr()
             } else {
@@ -201,7 +204,8 @@ pub unsafe extern "C" fn eth_parse_bytes_data(
     let sign_tx = match extract_sign_tx_from_payload(ptr) {
         Ok(sign_tx) => sign_tx,
         Err(e) => {
-            return TransactionParseResult::from(KeystoneError::ProtobufError(e.to_string())).c_ptr();
+            return TransactionParseResult::from(KeystoneError::ProtobufError(e.to_string()))
+                .c_ptr();
         }
     };
     let xpub = recover_c_char(xpub);
@@ -459,9 +463,7 @@ pub unsafe extern "C" fn eth_sign_batch_tx(
 
         let sign_data = request.get_sign_data();
         let signature = match TransactionType::from(request.get_data_type()) {
-            TransactionType::Legacy => {
-                app_ethereum::sign_legacy_tx(&sign_data, seed, &path)
-            }
+            TransactionType::Legacy => app_ethereum::sign_legacy_tx(&sign_data, seed, &path),
             TransactionType::TypedTransaction => match sign_data.first() {
                 Some(0x02) => app_ethereum::sign_fee_market_tx(&sign_data, seed, &path),
                 Some(x) => {
@@ -626,12 +628,9 @@ pub unsafe extern "C" fn eth_sign_tx_bytes(
     let seed = extract_array!(seed, u8, seed_len as usize);
     let mfp = extract_array!(mfp, u8, mfp_len as usize);
 
-    let signature = app_ethereum::sign_legacy_tx_v2(
-        &legacy_transaction.encode_raw(),
-        seed,
-        &sign_tx.hd_path,
-    )
-    .unwrap();
+    let signature =
+        app_ethereum::sign_legacy_tx_v2(&legacy_transaction.encode_raw(), seed, &sign_tx.hd_path)
+            .unwrap();
     let transaction_signature = TransactionSignature::try_from(signature).unwrap();
 
     let legacy_tx_with_signature = legacy_transaction.set_signature(transaction_signature);

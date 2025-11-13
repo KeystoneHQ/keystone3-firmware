@@ -1,6 +1,7 @@
 #include "define.h"
 #include "gui_chain.h"
 #include "keystore.h"
+#include "user_memory.h"
 
 typedef TransactionCheckResult *(*CheckUrResultHandler)(void);
 

@@ -133,7 +133,6 @@ static void RustTestSignLTCKeystone(int argc, char *argv[]);
 static void RustTestSignDASHKeystone(int argc, char *argv[]);
 static void RustTestSignBCHKeystone(int argc, char *argv[]);
 static void RustTestDecodeUr(int argc, char *argv[]);
-static void RustGetConnectBlueWalletUR(int argc, char *argv[]);
 static void RustTestKeyDerivation(int argc, char *argv[]);
 static void RustGetMasterFingerprint(int argc, char *argv[]);
 static void RustTestParseCryptoPSBT(int argc, char *argv[]);
@@ -153,7 +152,6 @@ static void RustTestDecodeMultiCryptoPSBT(int argc, char *argv[]);
 static void RustGetConnectKeplrUR(int argc, char *argv[]);
 static void RustGetConnectXrpToolKitUR(int argc, char *argv[]);
 static void RustTestMemory(int argc, char *argv[]);
-static void RustGetSyncCompanionAppUR(int argc, char *argv[]);
 static void RustGetConnectMetaMaskUR(int argc, char *argv[]);
 static void RustTestGetAddressLTCSucceed(int argc, char *argv[]);
 static void RustTestGetAddressTronSucceed(int argc, char *argv[]);
@@ -175,8 +173,6 @@ static void testXRPSignTx(int argc, char *argv[]);
 static void RustTestCosmosCheckTx(int argc, char *argv[]);
 static void RustTestCosmosSignTx(int argc, char *argv[]);
 static void RustTestCosmosParseTx(int argc, char *argv[]);
-static void RustGetConnectSolanaWalletUR(int argc, char *argv[]);
-static void RustGetConnectAptosWalletUR(int argc, char *argv[]);
 static void RustSolanaMessage(int argc, char *argv[]);
 static void RustTestCosmosEvmSignTx(int argc, char *argv[]);
 static void RustTestK1SignMeessageByKey(int argc, char *argv[]);
@@ -198,7 +194,6 @@ static void RustTestDecodeCryptoPSBT(int argc, char *argv[]);
 static void RustTestDecodeKeystoneBTCSignResult(int argc, char *argv[]);
 static void RustTestDecodeMultiCryptoPSBT(int argc, char *argv[]);
 static void RustTestMemory(int argc, char *argv[]);
-static void RustGetSyncCompanionAppUR(int argc, char *argv[]);
 static void RustTestGetAddressLTCSucceed(int argc, char *argv[]);
 static void RustTestGetAddressTronSucceed(int argc, char *argv[]);
 static void RustTestGetAddressSolanaSucceed(int argc, char *argv[]);
@@ -288,7 +283,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test sign dash:", RustTestSignDASHKeystone},
     {"rust test sign bch:", RustTestSignBCHKeystone},
     {"rust test decode ur", RustTestDecodeUr},
-    {"rust test get connect blue wallet ur", RustGetConnectBlueWalletUR},
     {"rust get mfp:", RustGetMasterFingerprint},
     {"rust test get connect keplr wallet ur", RustGetConnectKeplrUR},
     {"rust test get connect xrp toolkit ur", RustGetConnectXrpToolKitUR},
@@ -306,8 +300,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test cosmos check:", RustTestCosmosCheckTx},
     {"rust test cosmos sign:", RustTestCosmosSignTx},
     {"rust test cosmos parse:", RustTestCosmosParseTx},
-    {"rust test solana sync", RustGetConnectSolanaWalletUR},
-    {"rust test aptos sync", RustGetConnectAptosWalletUR},
     {"rust test solana sign message:", RustSolanaMessage},
     {"rust test cosmos evm sign:", RustTestCosmosEvmSignTx},
     {"rust test sign message by private key:", RustTestK1SignMeessageByKey},
@@ -330,7 +322,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test decode multi psbt", RustTestDecodeMultiCryptoPSBT},
     {"rust test derivation:", RustTestKeyDerivation},
     {"rust test memory", RustTestMemory},
-    {"rust test get connect companion app ur", RustGetSyncCompanionAppUR},
     {"rust test get ltc address succeed", RustTestGetAddressLTCSucceed},
     {"rust test get tron address succeed", RustTestGetAddressTronSucceed},
     {"rust test get solana address succeed:", RustTestGetAddressSolanaSucceed},
@@ -1238,17 +1229,6 @@ static void RustTestDecodeUr(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustGetConnectBlueWalletUR(int argc, char *argv[])
-{
-    printf("RustGetConnectBlueWalletUR\r\n");
-    UREncodeResult *ur = test_connect_blue_wallet();
-    printf("encode ur\r\n");
-    printf("is_multi_part is %d\r\n", ur->is_multi_part);
-    printf("data is %s\r\n", ur->data);
-    printf("error_code is %d\r\n", ur->error_code);
-    printf("error_message is %s\r\n", ur->error_message);
-}
-
 static void RustGetMasterFingerprint(int argc, char *argv[])
 {
     printf("RustGetMasterFingerprint\r\n");
@@ -1594,84 +1574,6 @@ static void RustTestCosmosParseTx(int argc, char *argv[])
     printf("cosmos parse result detail: %s\r\n", result->data->detail);
     free_ur_parse_result(ur);
     free_TransactionParseResult_DisplayCosmosTx(result);
-    PrintRustMemoryStatus();
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
-static void RustGetConnectSolanaWalletUR(int argc, char *argv[])
-{
-    printf("RustGetConnectSolanaWalletUR\r\n");
-    uint8_t mfp[4] = {0x52, 0x74, 0x47, 0x03};
-
-    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    ExtendedPublicKey keys[7];
-    public_keys->data = keys;
-    public_keys->size = 7;
-    keys[0].path = "m/44'/501'/0'/0'";
-    keys[0].xpub = "e671e524ef43ccc5ef0006876f9a2fd66681d5abc5871136b343a3e4b073efde";
-
-    keys[1].path = "m/44'/501'/1'/0'";
-    keys[1].xpub = "dccf89e7b4992967e6b8ac31a03be3f8228d916048571d62d5db7eac6e83f728";
-
-    keys[2].path = "m/44'/501'/2'/0'";
-    keys[2].xpub = "81659cdd1f832de09b65d64d1fc36d62fe5094a35bfdf892c0447f477e75a6eb";
-
-    keys[3].path = "m/44'/501'/7'";
-    keys[3].xpub = "22816e1251a79cdce1ac4c787302df95510bffc3c22a92474a9c1b20d81d9c77";
-
-    keys[4].path = "m/44'/501'/8'";
-    keys[4].xpub = "90232ade711630651ba71f89aac472a26c8ceeb64c493a1e24a7bec1ead89511";
-
-    keys[5].path = "m/44'/501'/9'";
-    keys[5].xpub = "f65e650a5d24cc0fbd1df3d76b4d643a2aab9b169ead90560c8e764a5f11b7ba";
-
-    keys[6].path = "m/44'/501'";
-    keys[6].xpub = "f85c46dbd5652a4143b651dc162ac9a37a03ac015e749b4bae8f0c38bee54c48";
-
-    UREncodeResult *ur = get_connect_solana_wallet_ur(mfp, sizeof(mfp), public_keys);
-    printf("encode ur\r\n");
-    if (ur->error_code == 0) {
-        printf("solana is_multi_part is %d\r\n", ur->is_multi_part);
-        printf("solana data is %s\r\n", ur->data);
-    } else {
-        printf("solana error_code is %s\r\n", ur->error_code);
-        printf("solana error_message is %s\r\n", ur->error_message);
-    }
-    free_ur_encode_result(ur);
-    SRAM_FREE(public_keys);
-    PrintRustMemoryStatus();
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
-static void RustGetConnectAptosWalletUR(int argc, char *argv[])
-{
-    printf("RustGetConnectAptosWalletUR\r\n");
-    uint8_t mfp[4] = {0x52, 0x74, 0x47, 0x03};
-
-    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    ExtendedPublicKey keys[3];
-    public_keys->data = keys;
-    public_keys->size = 3;
-    keys[0].path = "m/44'/637'/0'/0'/0'";
-    keys[0].xpub = "7ed1e1d5656675c2424d2cf9a7d5142d85e0afed3780c5f9c684f69b8f875775";
-
-    keys[1].path = "m/44'/637'/1'/0'/0'";
-    keys[1].xpub = "a40ec03893fd955692221f5512f872e4cfd171a5c0d9822a64d4303779fa62be";
-
-    keys[2].path = "m/44'/637'/2'/0'/0'";
-    keys[2].xpub = "e72182e5e8e9f329d7febd8f17e3bb808ab085c408dcb2a7cd15638bb12821cb";
-
-    UREncodeResult *ur = get_connect_aptos_wallet_ur(mfp, sizeof(mfp), public_keys);
-    printf("encode ur\r\n");
-    if (ur->error_code == 0) {
-        printf("aptos is_multi_part is %d\r\n", ur->is_multi_part);
-        printf("aptos data is %s\r\n", ur->data);
-    } else {
-        printf("aptos error_code is %s\r\n", ur->error_code);
-        printf("aptos error_message is %s\r\n", ur->error_message);
-    }
-    free_ur_encode_result(ur);
-    SRAM_FREE(public_keys);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
@@ -2092,48 +1994,6 @@ static void RustTestKeyDerivation(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
-static void RustGetSyncCompanionAppUR(int argc, char *argv[])
-{
-    printf("RustGetSyncCompanionAppUR\r\n");
-
-    uint8_t mfp[4] = {0x70, 0x7e, 0xed, 0x6c};
-
-    AccountConfig account;
-    account.hd_path = "M/49'/0'/0'";
-    account.x_pub = "xpub6C6nQwHaWbSrzs5tZ1q7m5R9cPK9eYpNMFesiXsYrgc1P8bvLLAet9JfHjYXKjToD8cBRswJXXbbFpXgwsswVPAZzKMa1jUp2kVkGVUaJa7";
-    account.address_length = 20;
-    account.is_multi_sign = false;
-
-    CoinConfig coin;
-    coin.is_active = true;
-    coin.coin_code = "BTC";
-    coin.accounts = &account;
-    coin.accounts_length = 1;
-
-    AccountConfig account1;
-    account1.hd_path = "M/44'/0'/0'";
-    account1.x_pub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
-    account1.address_length = 20;
-    account1.is_multi_sign = false;
-
-    CoinConfig coin1;
-    coin1.is_active = true;
-    coin1.coin_code = "BTC_LEGACY";
-    coin1.accounts = &account1;
-    coin1.accounts_length = 1;
-    CoinConfig coins[2] = {coin, coin1};
-
-    UREncodeResult *result = get_connect_companion_app_ur(mfp, sizeof(mfp), SOFTWARE_VERSION, coins, 2);
-    printf("is_multi_part is %d\r\n", result->is_multi_part);
-    printf("data is %s\r\n", result->data);
-    printf("error_code is %d\r\n", result->error_code);
-    printf("error_message is %s\r\n", result->error_message);
-
-    free_ur_encode_result(result);
-
-    PrintRustMemoryStatus();
-    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
 
 static void testEthTx(int argc, char *argv[])
 {

@@ -18,8 +18,6 @@ use crate::common::ur::{
 };
 use crate::common::utils::convert_c_char;
 
-use crate::wallet::get_connect_blue_wallet_ur;
-
 #[no_mangle]
 pub unsafe extern "C" fn test_get_crypto_psbt() -> *mut URParseResult {
     let psbt = CryptoPSBT::new(hex::decode("70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000").unwrap());
@@ -96,42 +94,4 @@ pub unsafe extern "C" fn test_decode_crypto_psbt_2(decoder: PtrDecoder) -> *mut 
 pub unsafe extern "C" fn test_decode_crypto_psbt_3(decoder: PtrDecoder) -> *mut URParseMultiResult {
     let ur3 = "ur:crypto-psbt/3-3/lpaxaxcfaxiacyvwhdfhndhkadclpklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypknseoskve";
     receive(convert_c_char(ur3.to_string()), decoder)
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn test_connect_blue_wallet() -> *mut UREncodeResult {
-    let mfp: [u8; 4] = [115, 197, 218, 10];
-
-    let mfp = Box::into_raw(Box::new(mfp)) as *mut u8;
-    let length = 4;
-    let legacy_x_pub = "xpub6CatWdiZiodmUeTDp8LT5or8nmbKNcuyvz7WyksVFkKB4RHwCD3XyuvPEbvqAQY3rAPshWcMLoP2fMFMKHPJ4ZeZXYVUhLv1VMrjPC7PW6V";
-    let nested_x_pub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
-    let native_x_pub = "xpub6C6nQwHaWbSrzs5tZ1q7m5R9cPK9eYpNMFesiXsYrgc1P8bvLLAet9JfHjYXKjToD8cBRswJXXbbFpXgwsswVPAZzKMa1jUp2kVkGVUaJa7";
-
-    let legacy_x_pub = convert_c_char(legacy_x_pub.to_string());
-    let nested_x_pub = convert_c_char(nested_x_pub.to_string());
-    let native_x_pub = convert_c_char(native_x_pub.to_string());
-
-    let k1 = ExtendedPublicKey {
-        path: convert_c_char("m/84'/0'/0'".to_string()),
-        xpub: native_x_pub,
-    };
-    let k2 = ExtendedPublicKey {
-        path: convert_c_char("m/49'/0'/0'".to_string()),
-        xpub: nested_x_pub,
-    };
-    let k3 = ExtendedPublicKey {
-        path: convert_c_char("m/44'/0'/0'".to_string()),
-        xpub: legacy_x_pub,
-    };
-
-    let mut keys = [k1, k2, k3];
-    let ptr = keys.as_mut_ptr();
-    let extended_public_keys = CSliceFFI {
-        data: ptr,
-        size: keys.len(),
-    }
-    .c_ptr();
-
-    get_connect_blue_wallet_ur(mfp, length, extended_public_keys)
 }

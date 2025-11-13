@@ -405,7 +405,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetZecData;
         AddZecCoins();
         break;
-    // case WALLET_LIST_CAKE:
     case WALLET_LIST_FEATHER:
         func = GuiGetCakeData;
         AddCakeCoins();

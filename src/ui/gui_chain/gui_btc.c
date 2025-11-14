@@ -154,7 +154,8 @@ UREncodeResult *GuiGetBtcSignUrDataUnlimited(void)
     return GetBtcSignDataDynamic(true);
 }
 
-static UREncodeResult *BtcSignPsbt(void *data, uint8_t *seed, int len, uint8_t *mfp, bool unLimit) {
+static UREncodeResult *BtcSignPsbt(void *data, uint8_t *seed, int len, uint8_t *mfp, bool unLimit)
+{
     UREncodeResult *encodeResult = NULL;
     if (GuiGetCurrentTransactionNeedSign()) {
         if (unLimit) {
@@ -166,7 +167,8 @@ static UREncodeResult *BtcSignPsbt(void *data, uint8_t *seed, int len, uint8_t *
     return encodeResult;
 }
 
-static UREncodeResult *BtcSignPsbtMultisig(void *data, uint8_t *seed, int len, uint8_t *mfp) {
+static UREncodeResult *BtcSignPsbtMultisig(void *data, uint8_t *seed, int len, uint8_t *mfp)
+{
 #ifdef BTC_ONLY
     UREncodeResult *encodeResult = NULL;
     if (!GuiGetCurrentTransactionNeedSign()) {
@@ -183,7 +185,8 @@ static UREncodeResult *BtcSignPsbtMultisig(void *data, uint8_t *seed, int len, u
 #endif
 }
 
-static bool SupportSignPsbtFromSDCard(void) {
+static bool SupportSignPsbtFromSDCard(void)
+{
 #ifdef BTC_ONLY
     return true;
 #else
@@ -191,7 +194,8 @@ static bool SupportSignPsbtFromSDCard(void) {
 #endif
 }
 
-static bool SupportSignLegacyKeystoneTransactions(QRCodeType urType) {
+static bool SupportSignLegacyKeystoneTransactions(QRCodeType urType)
+{
 #ifdef WEB3_VERSION
     return (urType == Bytes || urType == KeystoneSignRequest);
 #else
@@ -199,7 +203,8 @@ static bool SupportSignLegacyKeystoneTransactions(QRCodeType urType) {
 #endif
 }
 
-static bool SupportSignPsbtExtend(QRCodeType urType) {
+static bool SupportSignPsbtExtend(QRCodeType urType)
+{
 #ifdef WEB3_VERSION
     return (urType == CryptoPSBTExtend);
 #else
@@ -241,16 +246,14 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
         } else {
             encodeResult = BtcSignPsbt(data, seed, len, mfp, unLimit);
         }
-    }
-    else if (SupportSignLegacyKeystoneTransactions(urType)) {
+    } else if (SupportSignLegacyKeystoneTransactions(urType)) {
         char *hdPath = NULL;
         char *xPub = NULL;
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
             return NULL;
         }
         encodeResult = utxo_sign_keystone(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
-    }
-    else if (urType == BtcSignRequest) {
+    } else if (urType == BtcSignRequest) {
         encodeResult = btc_sign_msg(data, seed, len, mfp, sizeof(mfp));
     } else if (urType == SeedSignerMessage) {
         encodeResult = sign_seed_signer_message(data, seed, len);
@@ -330,7 +333,8 @@ static void *GuiGetParsedPsbtStrData(void)
 
 #endif
 
-static void PreparePublicKeys(PtrT_CSliceFFI_ExtendedPublicKey public_keys) {
+static void PreparePublicKeys(PtrT_CSliceFFI_ExtendedPublicKey public_keys)
+{
 #ifdef BTC_ONLY
     ExtendedPublicKey keys[14];
     public_keys->data = keys;
@@ -393,7 +397,8 @@ static void PreparePublicKeys(PtrT_CSliceFFI_ExtendedPublicKey public_keys) {
 #endif
 }
 
-static void *ParsePsbt(void *crypto, uint8_t *mfp, PtrT_CSliceFFI_ExtendedPublicKey public_keys) {
+static void *ParsePsbt(void *crypto, uint8_t *mfp, PtrT_CSliceFFI_ExtendedPublicKey public_keys)
+{
     g_parseResult = NULL;
 #ifdef BTC_ONLY
     char *wallet_config = NULL;
@@ -443,8 +448,7 @@ void *GuiGetParsedQrData(void)
             GuiSetCurrentTransactionType(TRANSACTION_TYPE_BTC_MULTISIG);
         }
         return g_parseResult;
-    }
-    else if (SupportSignLegacyKeystoneTransactions(urType)) {
+    } else if (SupportSignLegacyKeystoneTransactions(urType)) {
         char *hdPath = NULL;
         char *xPub = NULL;
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
@@ -519,7 +523,8 @@ static PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
 }
 #endif
 
-static PtrT_TransactionCheckResult CheckPsbt(void *crypto, uint8_t *mfp, PtrT_CSliceFFI_ExtendedPublicKey public_keys) {
+static PtrT_TransactionCheckResult CheckPsbt(void *crypto, uint8_t *mfp, PtrT_CSliceFFI_ExtendedPublicKey public_keys)
+{
     PtrT_TransactionCheckResult result = NULL;
 #ifdef BTC_ONLY
     char *verify_without_mfp = NULL;
@@ -579,16 +584,14 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
         PreparePublicKeys(public_keys);
         result = CheckPsbt(crypto, mfp, public_keys);
         SRAM_FREE(public_keys);
-    }
-    else if (SupportSignLegacyKeystoneTransactions(urType)) {
+    } else if (SupportSignLegacyKeystoneTransactions(urType)) {
         char *hdPath = NULL;
         char *xPub = NULL;
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
             return NULL;
         }
         result = utxo_check_keystone(crypto, urType, mfp, sizeof(mfp), xPub);
-    }
-    else if (urType == BtcSignRequest) {
+    } else if (urType == BtcSignRequest) {
         result = btc_check_msg(crypto, mfp, sizeof(mfp));
     } else if (urType == SeedSignerMessage) {
         result = tx_check_pass();

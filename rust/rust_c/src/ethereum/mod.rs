@@ -32,12 +32,12 @@ use crate::common::ur::{
 };
 use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::common::KEYSTONE;
-use crate::{extract_array, extract_ptr_with_type};
-
+use crate::{extract_array, extract_array_mut, extract_ptr_with_type};
 use structs::{
     DisplayETH, DisplayETHBatchTx, DisplayETHPersonalMessage, DisplayETHTypedData,
     EthParsedErc20Approval, EthParsedErc20Transaction, TransactionType,
 };
+use zeroize::Zeroize;
 
 mod abi;
 pub mod address;
@@ -450,7 +450,7 @@ pub unsafe extern "C" fn eth_sign_batch_tx(
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
     let batch_transaction = extract_ptr_with_type!(ptr, EthBatchSignRequest);
-    let seed = extract_array!(seed, u8, seed_len as usize);
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let mut result = Vec::new();
     for request in batch_transaction.get_requests() {
         let mut path = match request.get_derivation_path().get_path() {
@@ -483,6 +483,8 @@ pub unsafe extern "C" fn eth_sign_batch_tx(
                 .c_ptr()
             }
         };
+
+        seed.zeroize();
         match signature {
             Err(e) => return UREncodeResult::from(e).c_ptr(),
             Ok(sig) => {
@@ -546,7 +548,7 @@ pub unsafe extern "C" fn eth_sign_tx_dynamic(
     fragment_length: usize,
 ) -> PtrT<UREncodeResult> {
     let crypto_eth = extract_ptr_with_type!(ptr, EthSignRequest);
-    let seed = extract_array!(seed, u8, seed_len as usize);
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let mut path = match crypto_eth.get_derivation_path().get_path() {
         Some(v) => v,
         None => return UREncodeResult::from(EthereumError::InvalidTransaction).c_ptr(),
@@ -577,6 +579,7 @@ pub unsafe extern "C" fn eth_sign_tx_dynamic(
             app_ethereum::sign_typed_data_message(&sign_data, seed, &path)
         }
     };
+    seed.zeroize();
     match signature {
         Err(e) => UREncodeResult::from(e).c_ptr(),
         Ok(sig) => {
@@ -612,9 +615,8 @@ pub unsafe extern "C" fn eth_sign_tx_bytes(
             return UREncodeResult::from(KeystoneError::ProtobufError(e.to_string())).c_ptr();
         }
     };
-    let tx = sign_tx.transaction.unwrap();
-    let eth_tx = match tx {
-        EthTx(tx) => tx,
+    let eth_tx = match sign_tx.transaction {
+        Some(EthTx(tx)) => tx,
         _ => {
             return UREncodeResult::from(RustCError::InvalidData(
                 "Cant get eth tx struct data".to_string(),
@@ -623,15 +625,38 @@ pub unsafe extern "C" fn eth_sign_tx_bytes(
         }
     };
 
-    let legacy_transaction = LegacyTransaction::try_from(eth_tx).unwrap();
+    let legacy_transaction = match LegacyTransaction::try_from(eth_tx) {
+        Ok(tx) => tx,
+        Err(_) => {
+            return UREncodeResult::from(RustCError::InvalidData("invalid eth tx".to_string()))
+                .c_ptr();
+        }
+    };
 
-    let seed = extract_array!(seed, u8, seed_len as usize);
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let mfp = extract_array!(mfp, u8, mfp_len as usize);
 
-    let signature =
-        app_ethereum::sign_legacy_tx_v2(&legacy_transaction.encode_raw(), seed, &sign_tx.hd_path)
-            .unwrap();
-    let transaction_signature = TransactionSignature::try_from(signature).unwrap();
+    let signature = match app_ethereum::sign_legacy_tx_v2(
+        &legacy_transaction.encode_raw(),
+        seed,
+        &sign_tx.hd_path,
+    ) {
+        Ok(sig) => sig,
+        Err(e) => {
+            seed.zeroize();
+            return UREncodeResult::from(e).c_ptr();
+        }
+    };
+    seed.zeroize();
+    let transaction_signature = match TransactionSignature::try_from(signature) {
+        Ok(sig) => sig,
+        Err(_) => {
+            return UREncodeResult::from(RustCError::InvalidData(
+                "invalid transaction signature".to_string(),
+            ))
+            .c_ptr();
+        }
+    };
 
     let legacy_tx_with_signature = legacy_transaction.set_signature(transaction_signature);
     // tx_id is transaction hash , you can use this hash to search tx detail on the etherscan.
@@ -660,10 +685,22 @@ pub unsafe extern "C" fn eth_sign_tx_bytes(
     };
     let base_vec = ur_registry::pb::protobuf_parser::serialize_protobuf(base);
     // zip data can reduce the size of the data
-    let zip_data = pb::protobuf_parser::zip(&base_vec).unwrap();
+    let zip_data = match pb::protobuf_parser::zip(&base_vec) {
+        Ok(data) => data,
+        Err(e) => {
+            return UREncodeResult::from(RustCError::InvalidData(e.to_string())).c_ptr();
+        }
+    };
     // data --> protobuf --> zip protobuf data --> cbor bytes data
+    let bytes = match ur_registry::bytes::Bytes::new(zip_data).try_into() {
+        Ok(b) => b,
+        Err(e) => {
+            return UREncodeResult::from(RustCError::InvalidData("invalid bytes".to_string()))
+                .c_ptr();
+        }
+    };
     UREncodeResult::encode(
-        ur_registry::bytes::Bytes::new(zip_data).try_into().unwrap(),
+        bytes,
         ur_registry::bytes::Bytes::get_registry_type().get_type(),
         FRAGMENT_MAX_LENGTH_DEFAULT,
     )

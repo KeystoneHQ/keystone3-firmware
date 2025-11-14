@@ -6,6 +6,7 @@
 #include "keystore.h"
 #include "log_print.h"
 #include "stdio.h"
+#include "account_manager.h"
 
 static char *g_passwordCache = NULL;
 static char *g_newPasswordCache = NULL;
@@ -26,7 +27,7 @@ static bool g_extendable;
 
 void SecretCacheSetChecksum(uint8_t *checksum)
 {
-    memcpy(g_checksumCache, checksum, sizeof(g_checksumCache));
+    memcpy_s(g_checksumCache, sizeof(g_checksumCache), checksum, sizeof(g_checksumCache));
 }
 
 void SecretCacheGetChecksum(char *checksum)
@@ -47,10 +48,12 @@ uint8_t SecretCacheGetWalletIconIndex()
 void SecretCacheSetWalletName(const char* walletName)
 {
     if (g_walletName) {
+        size_t oldLen = strnlen_s(g_walletName, WALLET_NAME_MAX_LEN + 1);
+        memset_s(g_walletName, WALLET_NAME_MAX_LEN + 1, 0, oldLen);
         SRAM_FREE(g_walletName);
     }
-    g_walletName = SRAM_MALLOC(17);
-    strcpy_s(g_walletName, 17, walletName);
+    g_walletName = SRAM_MALLOC(WALLET_NAME_MAX_LEN + 1);
+    strcpy_s(g_walletName, WALLET_NAME_MAX_LEN + 1, walletName);
 }
 
 char *SecretCacheGetWalletName()
@@ -61,6 +64,8 @@ char *SecretCacheGetWalletName()
 void SecretCacheSetPassword(char *password)
 {
     if (g_passwordCache) {
+        size_t oldLen = strnlen_s(g_passwordCache, PASSWORD_MAX_LEN);
+        memset_s(g_passwordCache, PASSWORD_MAX_LEN, 0, oldLen);
         SRAM_FREE(g_passwordCache);
     }
     size_t len = strnlen_s(password, PASSWORD_MAX_LEN) + 1;
@@ -76,6 +81,8 @@ char *SecretCacheGetPassword(void)
 void SecretCacheSetPassphrase(const char *passPhrase)
 {
     if (g_passphraseCache) {
+        size_t oldLen = strnlen_s(g_passphraseCache, PASSPHRASE_MAX_LEN);
+        memset_s(g_passphraseCache, PASSPHRASE_MAX_LEN, 0, oldLen);
         SRAM_FREE(g_passphraseCache);
     }
     size_t len = strnlen_s(passPhrase, PASSPHRASE_MAX_LEN) + 1;
@@ -91,10 +98,12 @@ char *SecretCacheGetPassphrase(void)
 void SecretCacheSetNewPassword(char *password)
 {
     if (g_newPasswordCache) {
+        size_t oldLen = strnlen_s(g_newPasswordCache, PASSWORD_MAX_LEN);
+        memset_s(g_newPasswordCache, PASSWORD_MAX_LEN, 0, oldLen);
         SRAM_FREE(g_newPasswordCache);
     }
     size_t len = strnlen_s(password, PASSWORD_MAX_LEN) + 1;
-    g_passwordCache = SRAM_MALLOC(len);
+    g_newPasswordCache = SRAM_MALLOC(len);
     strcpy_s(g_newPasswordCache, len, password);
 }
 
@@ -136,11 +145,12 @@ bool SecretCacheGetExtendable(void)
 void SecretCacheSetEntropy(uint8_t *entropy, uint32_t len)
 {
     if (g_entropyCache) {
+        memset_s(g_entropyCache, g_entropyLen, 0, g_entropyLen);
         SRAM_FREE(g_entropyCache);
     }
     g_entropyCache = SRAM_MALLOC(len);
     g_entropyLen = len;
-    memcpy(g_entropyCache, entropy, len);
+    memcpy_s(g_entropyCache, len, entropy, len);
 }
 
 uint8_t *SecretCacheGetEntropy(uint32_t *len)
@@ -152,11 +162,12 @@ uint8_t *SecretCacheGetEntropy(uint32_t *len)
 void SecretCacheSetEms(uint8_t *ems, uint32_t len)
 {
     if (g_emsCache) {
+        memset_s(g_emsCache, g_emsLen, 0, g_emsLen);
         SRAM_FREE(g_emsCache);
     }
     g_emsCache = SRAM_MALLOC(len);
     g_emsLen = len;
-    memcpy(g_emsCache, ems, len);
+    memcpy_s(g_emsCache, len, ems, len);
 }
 
 uint8_t *SecretCacheGetEms(uint32_t *len)
@@ -168,6 +179,8 @@ uint8_t *SecretCacheGetEms(uint32_t *len)
 void SecretCacheSetMnemonic(char *mnemonic)
 {
     if (g_mnemonicCache) {
+        size_t oldLen = strnlen_s(g_mnemonicCache, MNEMONIC_MAX_LEN);
+        memset_s(g_mnemonicCache, MNEMONIC_MAX_LEN, 0, oldLen);
         SRAM_FREE(g_mnemonicCache);
     }
     g_mnemonicCache = SRAM_MALLOC(strnlen_s(mnemonic, MNEMONIC_MAX_LEN) + 1);
@@ -181,21 +194,30 @@ char *SecretCacheGetMnemonic(void)
 
 void SecretCacheSetSlip39Mnemonic(char *mnemonic, int index)
 {
+    if (index < 0 || index >= SLIP39_MAX_MEMBER) {
+        return;
+    }
     if (g_slip39MnemonicCache[index] != NULL) {
+        size_t oldLen = strnlen_s(g_slip39MnemonicCache[index], MNEMONIC_MAX_LEN);
+        memset_s(g_slip39MnemonicCache[index], MNEMONIC_MAX_LEN, 0, oldLen);
         EXT_FREE(g_slip39MnemonicCache[index]);
     }
-    g_slip39MnemonicCache[index] = EXT_MALLOC(strnlen_s(mnemonic, MNEMONIC_MAX_LEN) + 1);
-    strcpy(g_slip39MnemonicCache[index], mnemonic);
+    size_t len = strnlen_s(mnemonic, MNEMONIC_MAX_LEN) + 1;
+    g_slip39MnemonicCache[index] = EXT_MALLOC(len);
+    strcpy_s(g_slip39MnemonicCache[index], len, mnemonic);
 }
 
 char *SecretCacheGetSlip39Mnemonic(int index)
 {
+    if (index < 0 || index >= SLIP39_MAX_MEMBER) {
+        return NULL;
+    }
     return g_slip39MnemonicCache[index];
 }
 
 void SecretCacheSetDiceRollHash(uint8_t *hash)
 {
-    memcpy(g_diceRollHashCache, hash, 32);
+    memcpy_s(g_diceRollHashCache, sizeof(g_diceRollHashCache), hash, 32);
 }
 
 uint8_t *SecretCacheGetDiceRollHash()
@@ -253,6 +275,8 @@ void ClearSecretCache(void)
     }
 
     if (g_walletName != NULL) {
+        size_t len = strnlen_s(g_walletName, WALLET_NAME_MAX_LEN + 1);
+        memset_s(g_walletName, WALLET_NAME_MAX_LEN + 1, 0, len);
         SRAM_FREE(g_walletName);
         g_walletName = NULL;
     }

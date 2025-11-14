@@ -14,6 +14,15 @@
 
 //#define ATECC608B_TEST_MODE
 
+// SECURITY: Compile-time check to prevent test mode in production builds
+#if defined(ATECC608B_TEST_MODE) && defined(PRODUCTION_BUILD)
+#error "SECURITY ERROR: ATECC608B_TEST_MODE must be disabled in production builds! Hardcoded test keys pose a critical security risk."
+#endif
+
+#ifdef ATECC608B_TEST_MODE
+#warning "ATECC608B_TEST_MODE is enabled - This should ONLY be used for development/testing!"
+#endif
+
 #define CHECK_ATECC608B_RET(content, ret)   {if (ret != ATCA_SUCCESS) {printf("%s err,0x%X\r\n", content, ret); break; }}
 
 static int32_t Atecc608bBinding(void);

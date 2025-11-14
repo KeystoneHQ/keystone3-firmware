@@ -435,7 +435,7 @@ bool PassphraseExist(uint8_t accountIndex)
 char *GetPassphrase(uint8_t accountIndex)
 {
     if (accountIndex > 2) {
-        return false;
+        return NULL;
     }
 
     return g_passphraseInfo[accountIndex].passphrase;

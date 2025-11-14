@@ -21,6 +21,15 @@
 //#define DS28S60_TEST_MODE
 //#define DS28S60_FORCE_BINDING
 
+// SECURITY: Compile-time check to prevent test mode in production builds
+#if defined(DS28S60_TEST_MODE) && defined(PRODUCTION_BUILD)
+#error "SECURITY ERROR: DS28S60_TEST_MODE must be disabled in production builds! Hardcoded test keys pose a critical security risk."
+#endif
+
+#ifdef DS28S60_TEST_MODE
+#warning "DS28S60_TEST_MODE is enabled - This should ONLY be used for development/testing!"
+#endif
+
 #define DS28S60_HARDWARE_EVB            0
 #define DS28S60_HARDWARE_EVT0           1
 
@@ -117,7 +126,7 @@ static int32_t ConfirmBlockSettings(void);
 static int32_t DS28S60_SendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t paraLen, uint8_t expectedLen, uint8_t *resultArray);
 static int32_t DS28S60_TrySendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t paraLen, uint8_t expectedLen, uint8_t *resultArray);
 static int32_t DS28S60_Binding(void);
-static int32_t DS28S60_SetProctection_From_Index(uint8_t index);
+static int32_t DS28S60_SetProtection_From_Index(uint8_t index);
 static void DS28S60_PrintInfo(void);
 static void GetMasterSecret(uint8_t *masterSecret);
 static void GetBindingPageData(uint8_t *bindingPageData);
@@ -212,7 +221,6 @@ static void DS28S60_GetHmacKey(uint8_t *key, const DS28S60_Info_t *info, uint8_t
 {
     uint8_t msg[76], masterSecret[32], bindingPageData[32], partialSecret[32];
 
-    GetMasterSecret(masterSecret);
     GetBindingPageData(bindingPageData);
     GetPartialSecret(partialSecret);
     memcpy(&msg[0], info->ROMID, 8);
@@ -258,7 +266,7 @@ static int32_t DS28S60_WriteSecret(void)
         blockProtection.Prot.b.WP = 1;
         blockProtection.Prot.b.RP = 1;
         ret = DS28S60_SetBlockProtection(&blockProtection, SECRET_A_BLOCK);
-        CHECK_ERRCODE_BREAK("set serect block wp", ret);
+        CHECK_ERRCODE_BREAK("set secret block wp", ret);
     } while (0);
     CLEAR_ARRAY(sendBuf);
     CLEAR_ARRAY(masterSecret);
@@ -268,7 +276,7 @@ static int32_t DS28S60_WriteSecret(void)
     return ret;
 }
 
-static int32_t DS28S60_SetProctection_From_Index(uint8_t index)
+static int32_t DS28S60_SetProtection_From_Index(uint8_t index)
 {
     int32_t ret;
     uint8_t block;
@@ -293,7 +301,7 @@ static int32_t DS28S60_SetProctection_From_Index(uint8_t index)
 
 static int32_t DS28S60_Setup(void)
 {
-    return DS28S60_SetProctection_From_Index(0);
+    return DS28S60_SetProtection_From_Index(0);
 }
 
 static int32_t ConfirmBlockSettings(void)
@@ -330,7 +338,7 @@ static int32_t ConfirmBlockSettings(void)
                     right = mid;
                 }
             }
-            ret = DS28S60_SetProctection_From_Index(left);
+            ret = DS28S60_SetProtection_From_Index(left);
         }
 
     } while (0);

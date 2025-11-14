@@ -151,6 +151,7 @@ pub fn parse_bsms_wallet_config(bytes: Bytes) -> Result<BsmsWallet, BitcoinError
     Ok(wallet)
 }
 
+// Create a multisig wallet from Keystone is not supported
 pub fn create_wallet(
     creator: &str,
     name: &str,
@@ -161,7 +162,7 @@ pub fn create_wallet(
     network: Network,
     xfp: &str,
 ) -> Result<MultiSigWalletConfig, BitcoinError> {
-    if !is_valid_multi_sig_policy(threshold, total) {
+    if !is_valid_multi_sig_policy(total, threshold) {
         return Err(BitcoinError::MultiSigWalletCrateError(
             "not a valid policy".to_string(),
         ));
@@ -407,7 +408,7 @@ fn process_xpub_and_xfp(
 }
 
 fn is_valid_multi_sig_policy(total: u32, threshold: u32) -> bool {
-    (2..=15).contains(&total) && threshold <= total || threshold >= 1
+    (2..=15).contains(&total) && threshold <= total && threshold >= 1
 }
 
 fn is_valid_xfp(xfp: &str) -> bool {

@@ -12,6 +12,7 @@
 #include "gui_chain_components.h"
 #include "gui_home_widgets.h"
 #include "gui_transaction_detail_widgets.h"
+#include "err_code.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_transaction_signature_widgets.h"
 #endif
@@ -105,10 +106,6 @@ static int32_t GuiGetUtxoPubKeyAndHdPath(ViewType viewType, char **xPub, char **
 }
 #endif
 
-__attribute__((weak)) UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
-{
-    return NULL;
-}
 #ifdef BTC_ONLY
 static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
 {
@@ -128,7 +125,7 @@ static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
         uint8_t seed[64];
         int len = GetCurrentAccountSeedLen();
         int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        CHECK_ERRCODE_RETURN("GetAccountSeed", ret);
+        CHECK_ERRCODE_RETURN(ret);
         MultisigSignResult *result = btc_sign_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen, seed, len, mfp, sizeof(mfp));
         encodeResult = result->ur_result;
         GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
@@ -139,6 +136,11 @@ static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
     ClearSecretCache();
     SetLockScreen(enable);
     return encodeResult;
+}
+#else
+static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
+{
+    return NULL;
 }
 #endif
 
@@ -231,7 +233,7 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
     uint8_t seed[64];
     int len = GetCurrentAccountSeedLen();
     int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-    CHECK_ERRCODE_RETURN("GetAccountSeed", ret);
+    CHECK_ERRCODE_RETURN(ret);
 
     if (urType == CryptoPSBT) {
         if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
@@ -261,12 +263,6 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
     SetLockScreen(enable);
     return encodeResult;
 }
-
-__attribute__((weak)) void *GuiGetParsedPsbtStrData(void)
-{
-    return NULL;
-}
-
 #ifdef BTC_ONLY
 static void *GuiGetParsedPsbtStrData(void)
 {
@@ -326,6 +322,12 @@ static void *GuiGetParsedPsbtStrData(void)
     SRAM_FREE(wallet_config);
     return g_parseResult;
 }
+#else
+static void *GuiGetParsedPsbtStrData(void)
+{
+    return NULL;
+}
+
 #endif
 
 static void PreparePublicKeys(PtrT_CSliceFFI_ExtendedPublicKey public_keys) {
@@ -471,13 +473,8 @@ void *GuiGetParsedQrData(void)
     return NULL;
 }
 
-__attribute__((weak)) PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
-{
-    return NULL;
-}
-
 #ifdef BTC_ONLY
-PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
+static PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
 {
     PtrT_TransactionCheckResult result = NULL;
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
@@ -514,6 +511,11 @@ PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
     SRAM_FREE(verify_without_mfp);
     SRAM_FREE(wallet_config);
     return result;
+}
+#else
+static PtrT_TransactionCheckResult GuiGetPsbtStrCheckResult(void)
+{
+    return NULL;
 }
 #endif
 

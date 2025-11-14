@@ -4,6 +4,7 @@ use alloc::string::ToString;
 
 use crate::common::ffi::VecFFI;
 use crate::common::free::Free;
+use crate::common::structs::Response;
 use crate::common::types::{Ptr, PtrBytes, PtrString, PtrT};
 use crate::common::ur::UREncodeResult;
 use crate::common::utils::{convert_c_char, recover_c_char};
@@ -314,6 +315,7 @@ impl Free for MultiSigWallet {
 impl_c_ptr!(MultiSigWallet);
 
 make_free_method!(MultiSigWallet);
+make_free_method!(Response<MultiSigWallet>);
 
 #[repr(C)]
 pub struct MultisigSignResult {

@@ -36,12 +36,21 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
     }
 
     assert(len <= PROTOCOL_MAX_LENGTH);
+
+    // Clear buffer if parser was reset externally (e.g., timeout)
+    if (global_parser && global_parser->rcvCount == 0) {
+        memset(g_protocolRcvBuffer, 0, PROTOCOL_MAX_LENGTH);
+    }
+
     static uint32_t rcvLen = 0;
     uint32_t i, outLen;
     uint8_t *sendBuf;
+    const uint32_t MIN_FRAME_SIZE = sizeof(FrameHead_t) + 4; // Header + CRC
 
     for (i = 0; i < len; i++) {
         if (global_parser->rcvCount >= PROTOCOL_MAX_LENGTH) {
+            printf("Warning: Buffer overflow, resetting parser\n");
+            memset(g_protocolRcvBuffer, 0, PROTOCOL_MAX_LENGTH);
             global_parser->rcvCount = 0;
             rcvLen = 0;
             continue;
@@ -54,18 +63,41 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
         } else if (global_parser->rcvCount == 9) {
             g_protocolRcvBuffer[global_parser->rcvCount++] = data[i];
             rcvLen = ((uint32_t)g_protocolRcvBuffer[9] << 8) + g_protocolRcvBuffer[8];
+
+            // Runtime validation before assert
+            if (rcvLen == 0 || rcvLen > (PROTOCOL_MAX_LENGTH - MIN_FRAME_SIZE)) {
+                printf("err, invalid length field: %u (max: %u)\n",
+                       rcvLen, PROTOCOL_MAX_LENGTH - MIN_FRAME_SIZE);
+                memset(g_protocolRcvBuffer, 0, PROTOCOL_MAX_LENGTH);
+                global_parser->rcvCount = 0;
+                rcvLen = 0;
+                continue;
+            }
             assert(rcvLen <= (PROTOCOL_MAX_LENGTH - 14));
         } else if (global_parser->rcvCount == rcvLen + 13) {
-            g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
-            sendBuf = ProtocolParse(g_protocolRcvBuffer, rcvLen + 14, &outLen);
+            // Complete frame received
+            if (global_parser->rcvCount < PROTOCOL_MAX_LENGTH) {
+                g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
+            }
+            sendBuf = ProtocolParse(g_protocolRcvBuffer, rcvLen + MIN_FRAME_SIZE, &outLen);
             if (sendBuf) {
                 g_sendFunc(sendBuf, outLen);
                 SRAM_FREE(sendBuf);
             }
+            // Clear buffer after processing to prevent data leakage
+            memset(g_protocolRcvBuffer, 0, PROTOCOL_MAX_LENGTH);
             global_parser->rcvCount = 0;
             rcvLen = 0;
         } else {
-            g_protocolRcvBuffer[global_parser->rcvCount++] = data[i];
+            // Check boundary before writing
+            if (global_parser->rcvCount < PROTOCOL_MAX_LENGTH) {
+                g_protocolRcvBuffer[global_parser->rcvCount++] = data[i];
+            } else {
+                printf("Warning: Buffer boundary exceeded, resetting\n");
+                memset(g_protocolRcvBuffer, 0, PROTOCOL_MAX_LENGTH);
+                global_parser->rcvCount = 0;
+                rcvLen = 0;
+            }
         }
     }
 }
@@ -94,37 +126,50 @@ static uint8_t *ProtocolParse(const uint8_t *inData, uint32_t inLen, uint32_t *o
     uint8_t *outData = NULL;
     FrameHead_t *pHead;
     uint32_t receivedCrc, calculatedCrc;
+    const uint32_t MIN_FRAME_SIZE = sizeof(FrameHead_t) + 4;
 
     do {
         *outLen = 0;
-        if (inData == NULL || inLen < sizeof(FrameHead_t) + 4) {
-            printf("invalid inData\n");
+        if (inData == NULL || inLen < MIN_FRAME_SIZE) {
+            printf("err: invalid inData or length too short (len=%u, min=%u)\n", inLen, MIN_FRAME_SIZE);
             break;
         }
         pHead = (FrameHead_t *)inData;
         if (pHead->head != PROTOCOL_HEADER) {
-            printf("invalid head\n");
+            printf("err: invalid protocol header (0x%02X, expected 0x%02X)\n",
+                   pHead->head, PROTOCOL_HEADER);
             break;
         }
-        if (pHead->protocolVersion != 0) {
-            printf("invalid version\n");
+        if (pHead->protocolVersion != PROTOCOL_VERSION) {
+            printf("err: invalid protocol version (%u, expected %u)\n",
+                   pHead->protocolVersion, PROTOCOL_VERSION);
             break;
         }
-        if (pHead->protocolVersion != 0) {
-            printf("invalid version\n");
+
+        // Validate frame length consistency
+        uint32_t expectedLen = pHead->length + MIN_FRAME_SIZE;
+        if (expectedLen != inLen) {
+            printf("err: frame length mismatch (expected %u, got %u)\n", expectedLen, inLen);
             break;
         }
-        if (pHead->length + sizeof(FrameHead_t) + 4 != inLen) {
-            printf("inLen err\n");
+
+        // Validate length field is reasonable
+        if (pHead->length > (PROTOCOL_MAX_LENGTH - MIN_FRAME_SIZE)) {
+            printf("err: frame length too large (%u, max %u)\n",
+                   pHead->length, PROTOCOL_MAX_LENGTH - MIN_FRAME_SIZE);
             break;
         }
+
         PrintFrameHead(pHead);
+
         memcpy_s(&receivedCrc, sizeof(receivedCrc), inData + inLen - 4, 4);
         calculatedCrc = crc32_ieee(0, inData, inLen - 4);
         if (receivedCrc != calculatedCrc) {
-            printf("crc err,receivedCrc=0x%08X,calculatedCrc=0x%08X\n", receivedCrc, calculatedCrc);
+            printf("err: CRC mismatch (received 0x%08X, calculated 0x%08X)\n",
+                   receivedCrc, calculatedCrc);
             break;
         }
+
         outData = ExecuteService(pHead, inData + sizeof(FrameHead_t), outLen);
     } while (0);
 

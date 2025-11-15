@@ -6,6 +6,7 @@
 #include "err_code.h"
 
 #define PROTOCOL_MAX_LENGTH         4500
+#define MAX_TLV_VALUE_SIZE          2048        // Maximum size for a single TLV value (security limit)
 
 #define PROTOCOL_HEADER             0x6B
 #define PROTOCOL_VERSION            0

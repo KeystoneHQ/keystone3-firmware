@@ -104,9 +104,24 @@ uint32_t GetTlvFromData(Tlv_t tlvArray[], uint32_t maxTlvLen, const uint8_t *dat
             tlvArray[count].length = data[index++];
         }
 
-        if (index + tlvArray[count].length > dataLen || tlvArray[count].length == 0) {
+        // Security: Validate TLV value size to prevent excessive values
+        if (tlvArray[count].length > MAX_TLV_VALUE_SIZE) {
+            printf("Security: TLV value too large: %u (max: %u)\n",
+                   tlvArray[count].length, MAX_TLV_VALUE_SIZE);
             break;
         }
+
+        // Security: Validate boundary and non-zero length
+        if (index + tlvArray[count].length > dataLen) {
+            printf("Warning: TLV extends beyond data boundary\n");
+            break;
+        }
+
+        if (tlvArray[count].length == 0) {
+            printf("Warning: Zero-length TLV detected\n");
+            break;
+        }
+
         tlvArray[count].pValue = (uint8_t *)&data[index];
         index += tlvArray[count].length;
 

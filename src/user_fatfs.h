@@ -29,15 +29,11 @@ int USB_disk_write(
     UINT count          /* Number of sectors to write */
 );
 
-int FatfsMount(void);
 int MountUsbFatfs(void);
 int MountSdFatfs(void);
 int UnMountSdFatfs(void);
 void FatfsShowVolumeStatus(char *ptr);
 void FatfsDirectoryListing(char *ptr);
-void CopyToFlash(void);
-int FatfsCatFile(const TCHAR* path);
-int FatfsFileMd5(const TCHAR* path);
 int FatfsFileWrite(const TCHAR* path, const uint8_t *data, uint32_t len);
 int FatfsFileCreate(const TCHAR* path);
 int FatfsFileAppend(const TCHAR* path, const uint8_t *data, uint32_t len);
@@ -47,7 +43,6 @@ uint32_t FatfsFileGetSize(const TCHAR *path);
 int FormatSdFatfs(void);
 void FatfsError(FRESULT errNum);
 uint32_t FatfsGetSize(const char *path);
-int FatfsFileSha256(const TCHAR* path, uint8_t *sha256);
 bool FatfsFileExist(const char *path);
 char *FatfsFileRead(const TCHAR* path);
 void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain);

@@ -83,14 +83,6 @@ static void Gd25FlashOperateFunc(int argc, char *argv[]);
 static void Sha256TestFunc(int argc, char *argv[]);
 static void Sha256HmacFunc(int argc, char *argv[]);
 static void Ds28s60TestFunc(int argc, char *argv[]);
-static void FatfsLsFunc(int argc, char *argv[]);
-static void FatfsCatFunc(int argc, char *argv[]);
-static void FatfsFileWriteFunc(int argc, char *argv[]);
-static void FatfsFileDeleteFunc(int argc, char *argv[]);
-static void FatfsFileMd5Func(int argc, char *argv[]);
-static void FatfsFileSha256Func(int argc, char *argv[]);
-static void FatfsFileCopyFunc(int argc, char *argv[]);
-static void FatfsCopyFunc(int argc, char *argv[]);
 static void ReadAddrFunc(int argc, char *argv[]);
 static void GetCurrentTimeFunc(int argc, char *argv[]);
 static void SetCurrentTimeFunc(int argc, char *argv[]);
@@ -231,14 +223,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"sha256 test", Sha256TestFunc},
     {"sha256 hmac:", Sha256HmacFunc},
     {"ds28s60 test:", Ds28s60TestFunc},
-    {"ls:", FatfsLsFunc},
-    {"cat:", FatfsCatFunc},
-    {"write:", FatfsFileWriteFunc},
-    {"rm:", FatfsFileDeleteFunc},
-    {"md5:", FatfsFileMd5Func},
-    {"sha256:", FatfsFileSha256Func},
-    {"copy:", FatfsFileCopyFunc},
-    {"copy ota", FatfsCopyFunc},
     {"read addr:", ReadAddrFunc},
     {"get time", GetCurrentTimeFunc},
     {"set time:", SetCurrentTimeFunc},
@@ -720,54 +704,6 @@ static void Sha256HmacFunc(int argc, char *argv[])
 static void Ds28s60TestFunc(int argc, char *argv[])
 {
     DS28S60_Test(argc, argv);
-}
-
-static void FatfsLsFunc(int argc, char *argv[])
-{
-    VALUE_CHECK(argc, 1);
-    FatfsDirectoryListing(argv[0]);
-}
-
-static void FatfsCopyFunc(int argc, char *argv[])
-{
-    CopyToFlash();
-}
-
-static void FatfsCatFunc(int argc, char *argv[])
-{
-    VALUE_CHECK(argc, 1);
-    FatfsCatFile(argv[0]);
-}
-
-static void FatfsFileMd5Func(int argc, char *argv[])
-{
-    VALUE_CHECK(argc, 1);
-    FatfsFileMd5(argv[0]);
-}
-
-static void FatfsFileSha256Func(int argc, char *argv[])
-{
-    VALUE_CHECK(argc, 1);
-    uint8_t sha256[32];
-    FatfsFileSha256(argv[0], sha256);
-}
-
-static void FatfsFileWriteFunc(int argc, char *argv[])
-{
-    VALUE_CHECK(argc, 2);
-    FatfsFileWrite(argv[0], (const uint8_t *)argv[1], strnlen_s(argv[1], DEFAULT_TEST_BUFF_LEN));
-}
-
-static void FatfsFileDeleteFunc(int argc, char *argv[])
-{
-    VALUE_CHECK(argc, 1);
-    FatfsFileDelete(argv[0]);
-}
-
-static void FatfsFileCopyFunc(int argc, char *argv[])
-{
-    VALUE_CHECK(argc, 2);
-    FatfsFileCopy(argv[0], argv[1]);
 }
 
 static void BpkPrintFunc(int argc, char *argv[])

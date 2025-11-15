@@ -64,11 +64,12 @@ static void CloseCurrentParentAndCloseViewHandler(lv_event_t *e);
 
 bool GuiIsForgetPass(void)
 {
-    if (g_isForgetPass) {
-        g_isForgetPass = false;
-        return true;
-    }
-    return false;
+    return g_isForgetPass;
+}
+
+void GuiClearForgetPassFlag(void)
+{
+    g_isForgetPass = false;
 }
 
 static void GuiQuitHandler(lv_event_t *e)
@@ -218,6 +219,7 @@ void GuiForgetPassRepeatPinPass(const char* buf)
         }
     } else {
         GuiEnterPassCodeStatus(g_repeatPassCode, false);
+        memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
     }
 }
 
@@ -416,6 +418,8 @@ void GuiForgetPassDeInit(void)
 {
     GUI_DEL_OBJ(g_noticeWindow)
     g_isTonMnemonic = false;
+    // Clear forget password flag when view is destroyed
+    g_isForgetPass = false;
     GuiMnemonicHintboxClear();
     GuiWalletRecoverySinglePhraseClear();
     g_enterMnemonicCont = NULL;
@@ -437,6 +441,9 @@ void GuiForgetPassDeInit(void)
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+    // Clear sensitive password buffer
+    memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
+    ClearSecretCache();
 }
 
 int8_t GuiForgetPassNextTile(uint8_t tileIndex)

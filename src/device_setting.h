@@ -17,7 +17,7 @@ uint32_t GetSetupStep(void);
 void SetSetupStep(uint32_t setupStep);
 
 uint32_t GetBright(void);
-void SetBright(uint32_t bight);
+void SetBright(uint32_t bright);
 
 uint32_t GetAutoLockScreen(void);
 void SetAutoLockScreen(uint32_t autoLockScreen);

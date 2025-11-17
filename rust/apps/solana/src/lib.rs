@@ -1,5 +1,6 @@
 #![no_std]
 #![allow(dead_code)] // add for solana use a lot of external code
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 extern crate alloc;
 extern crate core;
@@ -24,8 +25,11 @@ mod instruction;
 pub mod message;
 pub mod parser;
 pub mod read;
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod resolvers;
 #[allow(clippy::all)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+#[allow(warnings)]
 mod solana_lib;
 pub mod structs;
 pub mod utils;

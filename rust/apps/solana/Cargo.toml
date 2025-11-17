@@ -31,13 +31,12 @@ borsh = { version = "1.5.1", default-features = false, features = [
 bitcoin = { workspace = true }
 ur-registry = { workspace = true }
 
-
-[dev-dependencies]
-keystore = { path = "../../keystore" }
-
 [features]
 default = ["std"]
 std = []
 
 [lib]
 doctest = false
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

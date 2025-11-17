@@ -127,7 +127,7 @@ void ProcessQr(uint32_t count)
     static bool firstQrFlag = true;
     static PtrDecoder decoder = NULL;
     static UrViewType_t urViewType = {0, 0};
-    static struct URParseResult *urResult;
+    static struct URParseResult *urResult = NULL;
 
     uint32_t retFromRust = 0;
     int32_t ret = QrDecodeProcess(qrString, QR_DECODE_STRING_LEN, testProgress);

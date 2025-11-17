@@ -202,7 +202,6 @@ static uint32_t prepareWalletBySDCard(char *walletConfig)
 static uint32_t processResult(Ptr_Response_MultiSigWallet result)
 {
     if (result->error_code != 0) {
-        printf("%s\r\n", result->error_message);
         return result->error_code;
     }
     g_wallet = result->data;

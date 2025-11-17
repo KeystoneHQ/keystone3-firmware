@@ -11,18 +11,9 @@
 
 #define MAX_FILENAME_LEN 128
 
-bool FileExists(char *filename)
-{
-    char *target = SRAM_MALLOC(MAX_FILENAME_LEN);
-    snprintf_s(target, MAX_FILENAME_LEN, "%s%s", SD_ROOT, filename);
-    return FatfsFileExist(target);
-}
-
 int FileWrite(const char *filename, const uint8_t *content, uint32_t len)
 {
-    char *path = SRAM_MALLOC(MAX_FILENAME_LEN);
+    char path[MAX_FILENAME_LEN] = {0};
     snprintf_s(path, MAX_FILENAME_LEN, "%s%s", SD_ROOT, filename);
-    int ret = FatfsFileWrite(path, content, len);
-    SRAM_FREE(path);
-    return ret;
+    return FatfsFileWrite((const char*)path, content, len);
 }

@@ -143,7 +143,7 @@ void DeviceSettingsInit(void)
     }
 
     if (jsonString != NULL) {
-        EXT_FREE(jsonString);
+        SRAM_FREE(jsonString);
     }
 
     InitBootParam();

@@ -23,7 +23,8 @@ use structs::SimpleResponse;
 use types::{PtrBytes, PtrString};
 use utils::{convert_c_char, recover_c_char};
 
-use crate::extract_array;
+use crate::{extract_array, extract_array_mut};
+use zeroize::Zeroize;
 
 pub mod errors;
 pub mod ffi;
@@ -38,7 +39,7 @@ mod ur_ext;
 pub mod utils;
 pub mod web_auth;
 
-pub static KEYSTONE: &str = "keystone";
+pub const KEYSTONE: &str = "keystone";
 
 #[no_mangle]
 pub extern "C" fn get_master_fingerprint(seed: PtrBytes, seed_len: u32) -> *mut SimpleResponse<u8> {
@@ -200,12 +201,14 @@ pub unsafe extern "C" fn get_icarus_master_key(
     entropy_len: u32,
     passphrase: PtrString,
 ) -> *mut SimpleResponse<c_char> {
-    let entropy = extract_array!(entropy, u8, entropy_len as usize);
+    let mut entropy: &mut [u8] = extract_array_mut!(entropy, u8, entropy_len as usize);
     let passphrase = recover_c_char(passphrase);
     let master_key = keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
         entropy,
         passphrase.as_bytes(),
     );
+    entropy.zeroize();
+
     match master_key {
         Ok(result) => SimpleResponse::success(convert_c_char(result.encode_hex())).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),

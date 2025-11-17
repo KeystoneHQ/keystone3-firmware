@@ -1,4 +1,5 @@
 use crate::errors::{BitcoinError, Result};
+use alloc::collections::{BTreeMap, BTreeSet};
 use alloc::format;
 
 use bitcoin::script::Instruction;
@@ -7,7 +8,6 @@ use itertools::Itertools;
 use crate::addresses::address::Address;
 use crate::network::{self, CustomNewNetwork};
 use crate::transactions::parsed_tx::{ParseContext, ParsedInput, ParsedOutput, TxParser};
-use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ops::Index;
@@ -387,6 +387,9 @@ impl WrappedPsbt {
                 }
             }
         }
+        if self.is_taproot_input(input) {
+            return self.get_taproot_sign_status(input);
+        }
         //there might be a (x, 0) forms of sign status which we don't care;
         (
             input.partial_sigs.len() as u32,
@@ -416,6 +419,8 @@ impl WrappedPsbt {
                 }
             }
             Ok(true)
+        } else if self.is_taproot_input(input) {
+            Ok(!self.has_signed_taproot_input(input, context)?)
         } else {
             Ok(input.partial_sigs.is_empty())
         }
@@ -802,6 +807,56 @@ impl WrappedPsbt {
         None
     }
 
+    fn has_signed_taproot_input(&self, input: &Input, context: &ParseContext) -> Result<bool> {
+        for (pk, (leaf_hashes, (fingerprint, _))) in input.tap_key_origins.iter() {
+            if *fingerprint != context.master_fingerprint {
+                continue;
+            }
+            if leaf_hashes.is_empty() {
+                if input.tap_key_sig.is_some() {
+                    return Ok(true);
+                }
+            } else {
+                for leaf_hash in leaf_hashes {
+                    if input.tap_script_sigs.contains_key(&(*pk, *leaf_hash)) {
+                        return Ok(true);
+                    }
+                }
+            }
+        }
+        Ok(false)
+    }
+
+    fn get_taproot_sign_status(&self, input: &Input) -> (u32, u32) {
+        let mut signed = 0u32;
+        // for key path spend, it requires only 1 signature.
+        let mut required = 1u32;
+
+        if input.tap_key_sig.is_some() {
+            signed += 1;
+        }
+
+        if !input.tap_script_sigs.is_empty() {
+            // every key generates a signature for each leaf script, see https://github.com/rust-bitcoin/rust-bitcoin/blob/master/bitcoin/src/psbt/mod.rs#L461
+            // but the actual requirements depends on the script content.
+            // we don't parse the taproot script content for now, so we use a max required value here.
+            let max_required = input
+                .tap_key_origins
+                .iter()
+                .fold(0, |acc, (_, (leaf_hashes, _))| {
+                    acc + leaf_hashes.len() as u32
+                });
+            let mut unique_signers: BTreeSet<[u8; 32]> = BTreeSet::new();
+            for &(pk, _) in input.tap_script_sigs.keys() {
+                unique_signers.insert(pk.serialize());
+            }
+            signed += unique_signers.len() as u32;
+            // for script path spend, we don't know the required number, so we set it to 0xff.
+            required = max_required;
+        }
+        (signed, required)
+    }
+
     fn is_taproot_input(&self, input: &Input) -> bool {
         if let Some(witness_utxo) = &input.witness_utxo {
             return witness_utxo.script_pubkey.is_p2tr();
@@ -854,10 +909,33 @@ mod tests {
     use core::str::FromStr;
 
     use crate::TxChecker;
+    use bitcoin::absolute::LockTime;
+    use bitcoin::ecdsa::Signature;
+    use bitcoin::psbt::Input;
+    use bitcoin::secp256k1::{Secp256k1, SecretKey};
+    use bitcoin::transaction::Version;
+    use bitcoin::{ScriptBuf, Transaction};
     use either::Left;
     use hex::{self, FromHex, ToHex};
 
     use super::*;
+
+    fn empty_psbt() -> Psbt {
+        let tx = Transaction {
+            version: Version::TWO,
+            lock_time: LockTime::ZERO,
+            input: Vec::new(),
+            output: Vec::new(),
+        };
+        Psbt::from_unsigned_tx(tx).unwrap()
+    }
+
+    fn dummy_pubkey() -> secp256k1::PublicKey {
+        let sk =
+            SecretKey::from_str("0000000000000000000000000000000000000000000000000000000000000001")
+                .unwrap();
+        secp256k1::PublicKey::from_secret_key(&Secp256k1::new(), &sk)
+    }
 
     #[test]
     fn test_new_sign() {
@@ -1016,7 +1094,102 @@ mod tests {
                 verify_code: Some("12345678".to_string()),
                 multisig_wallet_config: None,
             }));
-            assert_eq!(true, reust.is_err());
+            assert!(reust.is_err());
         }
+    }
+
+    #[test]
+    fn test_get_multi_sig_input_threshold_and_total() {
+        let mut pk1 = vec![0x03];
+        pk1.extend([0x11; 32]);
+        let mut pk2 = vec![0x03];
+        pk2.extend([0x22; 32]);
+        let mut pk3 = vec![0x03];
+        pk3.extend([0x33; 32]);
+        let pk1 = bitcoin::script::PushBytesBuf::try_from(pk1).unwrap();
+        let pk2 = bitcoin::script::PushBytesBuf::try_from(pk2).unwrap();
+        let pk3 = bitcoin::script::PushBytesBuf::try_from(pk3).unwrap();
+        let script = ScriptBuf::builder()
+            .push_opcode(bitcoin::opcodes::all::OP_PUSHNUM_2)
+            .push_slice(pk1.clone())
+            .push_slice(pk2.clone())
+            .push_slice(pk3.clone())
+            .push_opcode(bitcoin::opcodes::all::OP_PUSHNUM_3)
+            .push_opcode(bitcoin::opcodes::all::OP_CHECKMULTISIG)
+            .into_script();
+        let wrapper = WrappedPsbt { psbt: empty_psbt() };
+        let (threshold, total) = wrapper
+            .get_multi_sig_input_threshold_and_total(&script)
+            .unwrap();
+        assert_eq!(threshold, 2);
+        assert_eq!(total, 3);
+
+        let invalid_script = ScriptBuf::builder()
+            .push_opcode(bitcoin::opcodes::all::OP_RETURN)
+            .into_script();
+        let err = wrapper
+            .get_multi_sig_input_threshold_and_total(&invalid_script)
+            .unwrap_err();
+        assert!(matches!(
+            err,
+            BitcoinError::MultiSigInputError(message) if message == "it's not a multi sig script"
+        ));
+    }
+
+    #[test]
+    fn test_judge_external_key() {
+        assert!(WrappedPsbt::judge_external_key(
+            "M/84'/0'/0'/0/15".to_string(),
+            "M/84'/0'/0'/".to_string()
+        ));
+        assert!(!WrappedPsbt::judge_external_key(
+            "M/84'/0'/0'/1/3".to_string(),
+            "M/84'/0'/0'/".to_string()
+        ));
+    }
+
+    #[test]
+    fn test_get_overall_sign_status_variants() {
+        let wrapper_empty = WrappedPsbt { psbt: empty_psbt() };
+        assert!(wrapper_empty.get_overall_sign_status().is_none());
+
+        let mut psbt_unsigned = empty_psbt();
+        let mut unsigned_input = Input::default();
+        unsigned_input.bip32_derivation.insert(
+            dummy_pubkey(),
+            (
+                Fingerprint::from_str("73c5da0a").unwrap(),
+                DerivationPath::from_str("m/84'/0'/0'/0/0").unwrap(),
+            ),
+        );
+        psbt_unsigned.inputs.push(unsigned_input);
+        let wrapper_unsigned = WrappedPsbt {
+            psbt: psbt_unsigned,
+        };
+        assert_eq!(
+            wrapper_unsigned.get_overall_sign_status(),
+            Some("Unsigned".to_string())
+        );
+
+        let mut psbt_signed = empty_psbt();
+        let mut signed_input = Input::default();
+        let key = dummy_pubkey();
+        signed_input.bip32_derivation.insert(
+            key,
+            (
+                Fingerprint::from_str("73c5da0a").unwrap(),
+                DerivationPath::from_str("m/84'/0'/0'/0/0").unwrap(),
+            ),
+        );
+        let signature = Signature::from_str("3045022100e2b9a7963bed429203bbd73e5ea000bfe58e3fc46ef8c1939e8cf8d1cf8460810220587ba791fc2a42445db70e2b3373493a19e6d5c47a2af0447d811ff479721b0001").unwrap();
+        signed_input
+            .partial_sigs
+            .insert(bitcoin::PublicKey::new(key), signature);
+        psbt_signed.inputs.push(signed_input);
+        let wrapper_signed = WrappedPsbt { psbt: psbt_signed };
+        assert_eq!(
+            wrapper_signed.get_overall_sign_status(),
+            Some("Completed".to_string())
+        );
     }
 }

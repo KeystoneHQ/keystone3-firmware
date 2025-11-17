@@ -34,7 +34,6 @@ void GuiSetAptosUrData(URParseResult *urResult, URParseMultiResult *urMultiResul
 
 void *GuiGetAptosData(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
@@ -45,30 +44,21 @@ void *GuiGetAptosData(void)
         g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
-#else
-    return NULL;
-#endif
 }
 
 PtrT_TransactionCheckResult GuiGetAptosCheckResult(void)
 {
-#ifndef COMPILE_SIMULATOR
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     return aptos_check_request(data, mfp, sizeof(mfp));
-#else
-    return NULL;
-#endif
 }
 
 void FreeAptosMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-#endif
 }
 
 int GetAptosDetailLen(void *param)
@@ -96,31 +86,26 @@ UREncodeResult *GuiGetAptosSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
-    UREncodeResult *encodeResult;
+    UREncodeResult *encodeResult = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    uint8_t seed[SEED_LEN];
+    int ret = 0;
+
     do {
-        uint8_t seed[64];
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        if (ret != SUCCESS_CODE) {
+            break;
+        }
         char *path = aptos_get_path(data);
-        char pubkeyIndex = GetAptosPublickeyIndex(path);
-        char *pubKey = GetCurrentAccountPublicKey(pubkeyIndex);
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = aptos_sign_tx(data, seed, len, pubKey);
-        ClearSecretCache();
+        char *pubKey = GetCurrentAccountPublicKey(GetAptosPublickeyIndex(path));
+        free_ptr_string(path);
+        encodeResult = aptos_sign_tx(data, seed, GetCurrentAccountSeedLen(), pubKey);
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
     return encodeResult;
-#else
-    UREncodeResult *encodeResult = NULL;
-    encodeResult->is_multi_part = 0;
-    encodeResult->data = "xpub6CZZYZBJ857yVCZXzqMBwuFMogBoDkrWzhsFiUd1SF7RUGaGryBRtpqJU6AGuYGpyabpnKf5SSMeSw9E9DSA8ZLov53FDnofx9wZLCpLNft";
-    encodeResult->encoder = NULL;
-    encodeResult->error_code = 0;
-    encodeResult->error_message = NULL;
-    return encodeResult;
-#endif
 }
 
 static uint8_t GetAptosPublickeyIndex(char* rootPath)

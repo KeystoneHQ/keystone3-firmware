@@ -715,6 +715,7 @@ static bool isErc20Transfer(void *param)
         return false;
     }
     // FIXME: 0xa9059cbb is the method of erc20 transfer
+    // see test_transfer_function_selector_deterministic in erc20.rs for more details
     const char *erc20Method = "a9059cbb";
     if (strncmp(input, erc20Method, 8) == 0) {
         return true;
@@ -1523,7 +1524,9 @@ static void decodeEthContractData(void *parseResult)
     if (!GetEthContractFromInternal(contractAddress, result->data->detail->input)) {
         char selectorId[9] = {0};
         strncpy(selectorId, result->data->detail->input, 8);
-        GetEthContractFromExternal(contractAddress, selectorId, result->data->chain_id, result->data->detail->input);
+        if (SdCardInsert()) {
+            GetEthContractFromExternal(contractAddress, selectorId, result->data->chain_id, result->data->detail->input);
+        }
     }
 }
 
@@ -1533,12 +1536,11 @@ static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t
     if (!isErc20Transfer(result->data)) {
         return;
     }
-    PtrT_TransactionParseResult_EthParsedErc20Transaction contractData = eth_parse_erc20((PtrString)inputdata, decimals);
-    g_erc20ContractData = contractData;
-    // result->data->detail->to = contractData->data->to;
-    // result->data->overview->to = contractData->data->to;
-    // result->data->detail->value = contractData->data->value;
-    // result->data->overview->value = contractData->data->value;
+    if (g_erc20ContractData != NULL) {
+        free_TransactionParseResult_EthParsedErc20Transaction(g_erc20ContractData);
+        g_erc20ContractData = NULL;
+    }
+    g_erc20ContractData = eth_parse_erc20((PtrString)inputdata, decimals);
 }
 
 static bool GetEthErc20ContractData(void *parseResult)
@@ -1547,8 +1549,11 @@ static bool GetEthErc20ContractData(void *parseResult)
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)parseResult;
     Response_DisplayContractData *contractData = eth_parse_contract_data(result->data->detail->input, (char *)ethereum_erc20_json);
     if (contractData->error_code == 0) {
-        g_contractDataExist = true;
+        if (g_contractDataExist && g_contractData != NULL) {
+            free_Response_DisplayContractData(g_contractData);
+        }
         g_contractData = contractData;
+        g_contractDataExist = true;
     } else {
         free_Response_DisplayContractData(contractData);
         return false;

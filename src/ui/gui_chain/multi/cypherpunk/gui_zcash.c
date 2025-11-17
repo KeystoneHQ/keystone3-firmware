@@ -5,6 +5,7 @@
 #include "gui_chain.h"
 #include "keystore.h"
 #include "screen_manager.h"
+#include "gui_chain.h"
 
 #define MAX_MEMO_LENGTH 1024
 
@@ -308,20 +309,8 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
 
 UREncodeResult *GuiGetZcashSignQrCodeData(void)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    do {
-        uint8_t seed[64];
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = sign_zcash_tx(data, seed, len);
-        ClearSecretCache();
-        CHECK_CHAIN_BREAK(encodeResult);
-    } while (0);
-    SetLockScreen(enable);
-    return encodeResult;
+    return SignInternal(sign_zcash_tx, data);
 }
 
 void FreeZcashMemory(void)

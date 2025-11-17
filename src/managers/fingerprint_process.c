@@ -21,7 +21,6 @@
 #include "user_fatfs.h"
 #include "secret_cache.h"
 #include "fingerprint_process.h"
-#include "fingerprint_crc.h"
 #include "fingerprint_task.h"
 #include "event_groups.h"
 #include "user_delay.h"
@@ -68,6 +67,8 @@ static void SearchFpAesKeyState(void);
 static void SearchFpChipId(void);
 bool GuiLockScreenIsTop(void);
 static void DecryptFunc(uint8_t *decryptPasscode, uint8_t *encryptPasscode, uint8_t *passwordAesKey, size_t blocks);
+static void FpRetryCommand(uint32_t cmdIndex);
+static bool FpShouldRetryCommand(uint32_t cmdIndex);
 
 /* STATIC VARIABLES */
 extern osTimerId_t g_fpTimeoutTimer;
@@ -81,10 +82,10 @@ static uint16_t g_delayCmd;
 static uint16_t g_lastCmd;
 static bool g_isAesCbc = false;
 static bool g_devLogSwitch = false;
-static uint8_t g_fpRandomKey[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10};
-static uint8_t g_hostRandomKey[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10};
-static uint8_t g_communicateAesKey[32] = {0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77};
-static uint8_t g_randomAesKey[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10};
+static uint8_t g_fpRandomKey[16] = {0};
+static uint8_t g_hostRandomKey[16] = {0};
+static uint8_t g_communicateAesKey[32] = {0};
+static uint8_t g_randomAesKey[16] = {0};
 static uint8_t g_fpTempAesKey[32] = {0};
 static Recognize_Type g_fingerRecognizeType = RECOGNIZE_UNLOCK;
 static uint8_t g_fpRegCnt = 0;
@@ -101,9 +102,6 @@ static const FingerPrintControl_t g_cmdHandleMap[] = {
     {FINGERPRINT_CMD_GET_REG_NUM,       true,   FpGetNumberSend,    FpGetNumberRecv},
     {FINGERPRINT_CMD_RECOGNIZE,         true,   FpRecognizeSend,    FpRecognizeRecv},
     {FINGERPRINT_CMD_GET_CHIP_ID,       true,   FpGenericSend,      FpGetChipId},
-#ifdef ENABLE_FP_RESET
-    {FINGERPRINT_CMD_SYS_RESET,         true,   FpGenericSend,      FpGenericRecv},
-#endif
     {FINGERPRINT_CMD_GET_UID,           true,   FpGenericSend,      FpGetUid},
     {FINGERPRINT_CMD_GET_VER,           false,  FpGenericSend,      FpGetVersion},
     {FINGERPRINT_CMD_CANCEL_EXECUTE,    true,   FpGenericSend,      FpCancelRecv},
@@ -114,23 +112,21 @@ static const FingerPrintControl_t g_cmdHandleMap[] = {
 };
 
 static FingerPrintTimeout_t g_cmdTimeoutMap[] = {
-    {FINGERPRINT_CMD_GET_RANDOM_NUM,        FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_REG,                   FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_DELETE_SINGLE,         FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_DELETE_ALL,            FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_GET_REG_NUM,           FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_RECOGNIZE,             FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_GET_CHIP_ID,           FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-#ifdef ENABLE_FP_RESET
-    {FINGERPRINT_CMD_SYS_RESET,             FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-#endif
-    {FINGERPRINT_CMD_GET_UID,               FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_GET_VER,               FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_CANCEL_EXECUTE,        FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_GET_INIT_STATE,        FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_SET_AES_KEY,           FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_GET_AES_KEY_STATE,     FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
-    {FINGERPRINT_CMD_LOW_POWER,             FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT},
+    // cmd,                                 cnt,                                   maxRetries
+    {FINGERPRINT_CMD_GET_RANDOM_NUM,        FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_REG,                   FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_DELETE_SINGLE,         FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_DELETE_ALL,            FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_GET_REG_NUM,           FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_RECOGNIZE,             FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_RECOGNIZE_RETRY_THRESHOLD},
+    {FINGERPRINT_CMD_GET_CHIP_ID,           FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_GET_UID,               FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_GET_VER,               FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_CANCEL_EXECUTE,        FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_GET_INIT_STATE,        FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_SET_AES_KEY,           FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_GET_AES_KEY_STATE,     FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
+    {FINGERPRINT_CMD_LOW_POWER,             FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT,  FP_TIMEOUT_MAX_RETRIES},
 };
 
 /* FUNC */
@@ -154,10 +150,12 @@ void FpSendTimerStart(uint16_t cmd)
     for (uint32_t i = 0; i < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); i++) {
         if (g_cmdTimeoutMap[i].cmd == cmd) {
             g_cmdTimeoutMap[i].cnt = 0;
+            break;
         }
     }
+    
     if (osTimerIsRunning(g_fpTimeoutTimer) == 0) {
-        osTimerStart(g_fpTimeoutTimer, 100);
+        osTimerStart(g_fpTimeoutTimer, FP_TIMEOUT_TICK_INTERVAL_MS);
     }
 }
 
@@ -192,7 +190,6 @@ void FpRegRecv(char *indata, uint8_t len)
         printf("finger index = %d\n", indata[i]);
         MotorCtrl(MOTOR_LEVEL_MIDDLE, MOTOR_SHAKE_SHORT_TIME);
         if (len == 38) {
-            printf("save account index = %d\n", GetCurrentAccountIndex());
             memcpy_s(g_fpTempAesKey, sizeof(g_fpTempAesKey), (uint8_t *)&indata[6], sizeof(g_fpTempAesKey));
         }
         GuiApiEmitSignal(SIG_FINGER_REGISTER_STEP_SUCCESS, &cnt, sizeof(cnt));
@@ -847,55 +844,108 @@ void SetFpLowPowerMode(void)
     FpLowerPowerSend(FINGERPRINT_CMD_LOW_POWER, AES_KEY_ENCRYPTION);
 }
 
+static bool FpShouldRetryCommand(uint32_t cmdIndex)
+{
+    if (cmdIndex >= NUMBER_OF_ARRAYS(g_cmdTimeoutMap)) {
+        return false;
+    }
+
+    FingerPrintTimeout_t *timeout = &g_cmdTimeoutMap[cmdIndex];
+    
+    if (timeout->cnt == FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT) {
+        return false;
+    }
+
+    uint8_t maxRetries = timeout->maxRetries;
+    if (maxRetries == 0) {
+        maxRetries = FP_TIMEOUT_MAX_RETRIES;
+    }
+
+    return (timeout->cnt >= maxRetries);
+}
+
+static void FpRetryCommand(uint32_t cmdIndex)
+{
+    if (cmdIndex >= NUMBER_OF_ARRAYS(g_cmdHandleMap)) {
+        return;
+    }
+
+    uint16_t cmd = g_cmdHandleMap[cmdIndex].cmd;
+    
+    switch (cmd) {
+    case FINGERPRINT_CMD_GET_REG_NUM:
+        FpGetNumberSend(FINGERPRINT_CMD_GET_REG_NUM, 0);
+        break;
+        
+    case FINGERPRINT_CMD_DELETE_SINGLE:
+        FpDeleteSend(FINGERPRINT_CMD_DELETE_SINGLE, g_fpIndex);
+        break;
+        
+    case FINGERPRINT_CMD_DELETE_ALL:
+        FpDeleteSend(FINGERPRINT_CMD_DELETE_ALL, 1);
+        break;
+        
+    case FINGERPRINT_CMD_RECOGNIZE:
+        FpRecognize(g_fingerRecognizeType);
+        break;
+        
+    default:
+        FpGenericSend(cmd, g_cmdHandleMap[cmdIndex].isEncrypt);
+        break;
+    }
+}
+
 // check timer
 void FpTimeoutHandle(void *argument)
 {
     bool timerStop = true;
+    
     osMutexAcquire(g_fpResponseMutex, osWaitForever);
-    for (uint32_t i = 1; i < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); i++) {  // random number is not processed
-        if (g_cmdTimeoutMap[i].cnt != FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT) {
-            if (g_cmdHandleMap[i].cmd == FINGERPRINT_CMD_RECOGNIZE) {
-                if (g_cmdTimeoutMap[i].cnt == 10) {
-                    FpRecognize(g_fingerRecognizeType);
-                    g_cmdTimeoutMap[i].cnt = 0;
-                }
-            } else if (g_cmdTimeoutMap[i].cnt == 10) {
-                for (uint32_t i = 0; i < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); i++) {
-                    g_cmdTimeoutMap[i].cnt = FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT;
-                }
-                switch (g_cmdHandleMap[i].cmd) {
-                case FINGERPRINT_CMD_GET_REG_NUM:
-                    FpGetNumberSend(FINGERPRINT_CMD_GET_REG_NUM, 0);
-                    break;
-                case FINGERPRINT_CMD_DELETE_SINGLE:
-                    FpDeleteSend(FINGERPRINT_CMD_DELETE_SINGLE, g_fpIndex);
-                    break;
-                case FINGERPRINT_CMD_DELETE_ALL:
-                    FpDeleteSend(FINGERPRINT_CMD_DELETE_ALL, 1);
-                    break;
-                default:
-                    FpGenericSend(g_cmdHandleMap[i].cmd, g_cmdHandleMap[i].isEncrypt);
-                    break;
-                }
-                // printf("cmd:%04x resend\n", g_cmdHandleMap[i].cmd);
+    
+    for (uint32_t i = 1; i < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); i++) {
+        FingerPrintTimeout_t *timeout = &g_cmdTimeoutMap[i];
+        
+        if (timeout->cnt == FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT) {
+            continue;
+        }
+        
+        timerStop = false;
+        timeout->cnt++;
+        
+        if (g_cmdHandleMap[i].cmd == FINGERPRINT_CMD_RECOGNIZE) {
+            if (timeout->cnt >= FP_RECOGNIZE_RETRY_THRESHOLD) {
+                // Retry recognize command and reset counter
+                FpRecognize(g_fingerRecognizeType);
+                timeout->cnt = 0;
             }
-            timerStop = false;
-            g_cmdTimeoutMap[i].cnt++;
+        } else if (FpShouldRetryCommand(i)) {
+            for (uint32_t j = 0; j < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); j++) {
+                g_cmdTimeoutMap[j].cnt = FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT;
+            }
+            
+            FpRetryCommand(i);
+            
+            if (g_devLogSwitch) {
+                printf("FP timeout retry cmd:0x%04x\n", g_cmdHandleMap[i].cmd);
+            }
         }
     }
-    if (timerStop == true) {
+    
+    if (timerStop) {
         osTimerStop(g_fpTimeoutTimer);
     }
+    
     osMutexRelease(g_fpResponseMutex);
 }
 
-// response handle
 static void FpResponseHandle(uint16_t cmd)
 {
     osMutexAcquire(g_fpResponseMutex, osWaitForever);
+    
     for (uint32_t i = 0; i < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); i++) {
         if (g_cmdTimeoutMap[i].cmd == cmd) {
             g_cmdTimeoutMap[i].cnt = FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT;
+            break;
         }
     }
 
@@ -1061,11 +1111,9 @@ void SendPackFingerMsg(uint16_t cmd, uint8_t *data, uint16_t frameId, uint32_t l
     memcpy_s(&sendData.data.data[0], MAX_MSG_DATA_LENGTH, data, sendData.data.dataLen);
 
     if (isEncrypt != NO_ENCRYPTION) {
-        uint8_t aesKey[32] = {0};
         osDelay(10);
         UpdateHostRandom();
         memcpy_s(sendData.random, 16, GetRandomAesKey(g_hostRandomKey, g_fpRandomKey, g_communicateAesKey), 16);
-        CLEAR_ARRAY(aesKey);
     }
 
     uint32_t protocolCRC = crc32_update_fast((const uint8_t *)&sendData.data.cmd0, sendData.packetLen - 16 - 4 - 4);
@@ -1094,6 +1142,12 @@ void FingerprintInit(void)
 {
     g_fpResponseMutex = osMutexNew(NULL);
     g_fpEventGroup = xEventGroupCreate();
+
+    memset_s(g_fpRandomKey, sizeof(g_fpRandomKey), 0, sizeof(g_fpRandomKey));
+    memset_s(g_hostRandomKey, sizeof(g_hostRandomKey), 0, sizeof(g_hostRandomKey));
+    memset_s(g_communicateAesKey, sizeof(g_communicateAesKey), 0, sizeof(g_communicateAesKey));
+    memset_s(g_randomAesKey, sizeof(g_randomAesKey), 0, sizeof(g_randomAesKey));
+    memset_s(g_fpTempAesKey, sizeof(g_fpTempAesKey), 0, sizeof(g_fpTempAesKey));
 
     Uart2Init(FingerprintIsrRecvProcess);
 }
@@ -1181,11 +1235,6 @@ void FingerTest(int argc, char *argv[])
     } else if (strcmp(argv[0], "fp_reset") == 0) {
         FingerprintRestart();
         printf("finger restart\r\n");
-#ifdef ENABLE_FP_RESET
-    } else if (strcmp(argv[0], "sys_reset") == 0) {
-        FpGenericSend(FINGERPRINT_CMD_SYS_RESET, true);
-        printf("clear done\r\n");
-#endif
     } else if (strcmp(argv[0], "set_aes_key") == 0) {
         FpSetAesKeySend(0, 0);
     } else if (strcmp(argv[0], "aes_state") == 0) {

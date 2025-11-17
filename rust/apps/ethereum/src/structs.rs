@@ -1,7 +1,7 @@
+use crate::address::generate_address;
 use crate::eip1559_transaction::ParsedEIP1559Transaction;
 use crate::eip712::eip712::TypedData as Eip712TypedData;
 use crate::errors::Result;
-use crate::{address::generate_address, eip712::eip712::Eip712};
 use crate::{Bytes, ParsedLegacyTransaction};
 use alloc::string::{String, ToString};
 use alloc::{format, vec};

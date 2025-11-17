@@ -247,6 +247,52 @@ bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue)
     return defaultValue;
 }
 
+uint32_t GetUintValue(const cJSON *obj, const char *key, uint32_t defaultValue)
+{
+    cJSON *numJson = cJSON_GetObjectItem((cJSON *)obj, key);
+    if (numJson != NULL) {
+        return (uint32_t)numJson->valuedouble;
+    }
+    printf("key:%s does not exist\r\n", key);
+    return defaultValue;
+}
+
+void SetUintValue(cJSON *obj, const char *key, uint32_t value)
+{
+    if (obj == NULL) {
+        return;
+    }
+    cJSON *numJson = cJSON_GetObjectItem(obj, key);
+    if (numJson != NULL) {
+        cJSON_SetNumberValue(numJson, value);
+    } else {
+        cJSON_AddNumberToObject(obj, key, value);
+    }
+}
+
+void SetBoolValue(cJSON *obj, const char *key, bool value)
+{
+    if (obj == NULL) {
+        return;
+    }
+    cJSON *boolJson = cJSON_GetObjectItem(obj, key);
+    if (boolJson != NULL) {
+        cJSON_ReplaceItemInObject(obj, key, cJSON_CreateBool(value));
+    } else {
+        cJSON_AddItemToObject(obj, key, cJSON_CreateBool(value));
+    }
+}
+
+cJSON* GetOrCreateObjectItem(cJSON *root, const char *key)
+{
+    cJSON *item = cJSON_GetObjectItem(root, key);
+    if (item == NULL) {
+        item = cJSON_CreateObject();
+        cJSON_AddItemToObject(root, key, item);
+    }
+    return item;
+}
+
 void CutAndFormatFileName(char *out, uint32_t maxLen, const char *fileName, const char *contain)
 {
     if (strlen(fileName) >= 20 + strlen(contain)) {

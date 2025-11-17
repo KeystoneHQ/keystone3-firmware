@@ -6,13 +6,16 @@ pub mod cypherpunk_wallet;
 pub mod multi_coins_wallet;
 mod structs;
 
+use alloc::collections::BTreeMap;
 use alloc::format;
 use alloc::string::String;
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use bitcoin::bip32::DerivationPath;
+use core::slice;
+use core::str::FromStr;
 
-use app_wallets::metamask::ETHAccountTypeApp;
-use app_wallets::DEVICE_TYPE;
+use app_wallets::{generate_crypto_multi_accounts_sync_ur, DEVICE_TYPE};
 use cty::uint32_t;
 use keystore::algorithms::secp256k1::derive_extend_public_key;
 use keystore::errors::KeystoreError;
@@ -30,7 +33,7 @@ use crate::common::errors::RustCError;
 use crate::common::ffi::CSliceFFI;
 use crate::common::structs::{ExtendedPublicKey, Response};
 use crate::common::types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR};
-use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH};
+use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{recover_c_array, recover_c_char};
 use crate::{extract_array, extract_ptr_with_type};
 use structs::QRHardwareCallData;
@@ -216,5 +219,62 @@ pub unsafe extern "C" fn generate_key_derivation_ur(
                 .c_ptr()
         }
         Err(_e) => UREncodeResult::from(_e).c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn generate_common_crypto_multi_accounts_ur(
+    master_fingerprint: PtrBytes,
+    master_fingerprint_length: u32,
+    public_keys: Ptr<CSliceFFI<ExtendedPublicKey>>,
+    account_prefix: PtrString,
+) -> Ptr<UREncodeResult> {
+    if master_fingerprint_length != 4 {
+        return UREncodeResult::from(URError::UrEncodeError(format!(
+            "master fingerprint length must be 4, current is {master_fingerprint_length}"
+        )))
+        .c_ptr();
+    }
+    let account_prefix = recover_c_char(account_prefix);
+    unsafe {
+        let mfp = slice::from_raw_parts(master_fingerprint, master_fingerprint_length as usize);
+        let public_keys = recover_c_array(public_keys);
+        let master_fingerprint = bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
+            .map_err(|_e| RustCError::InvalidMasterFingerprint);
+        match master_fingerprint {
+            Ok(fp) => {
+                let mut keys = BTreeMap::new();
+                for x in public_keys {
+                    let pubkey = recover_c_char(x.xpub);
+                    let path = recover_c_char(x.path);
+                    match DerivationPath::from_str(path.to_lowercase().as_str()) {
+                        Ok(path) => {
+                            keys.insert(path, pubkey);
+                        }
+                        Err(_e) => {
+                            return UREncodeResult::from(RustCError::InvalidHDPath).c_ptr();
+                        }
+                    }
+                }
+                let result = generate_crypto_multi_accounts_sync_ur(
+                    fp.as_ref(),
+                    keys,
+                    account_prefix.as_str(),
+                );
+                match result.map(|v| v.try_into()) {
+                    Ok(v) => match v {
+                        Ok(data) => UREncodeResult::encode(
+                            data,
+                            CryptoMultiAccounts::get_registry_type().get_type(),
+                            FRAGMENT_MAX_LENGTH_DEFAULT,
+                        )
+                        .c_ptr(),
+                        Err(e) => UREncodeResult::from(e).c_ptr(),
+                    },
+                    Err(e) => UREncodeResult::from(e).c_ptr(),
+                }
+            }
+            Err(e) => UREncodeResult::from(e).c_ptr(),
+        }
     }
 }

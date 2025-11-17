@@ -412,8 +412,16 @@ impl FromStr for Address {
 #[cfg(test)]
 mod tests {
     use crate::network::NetworkT;
+    use bitcoin::secp256k1::{PublicKey as SecpPublicKey, SecretKey};
 
     use super::*;
+
+    fn sample_pubkey() -> PublicKey {
+        let secp = Secp256k1::new();
+        let secret_key = SecretKey::from_slice(&[1u8; 32]).unwrap();
+        let public_key = SecpPublicKey::from_secret_key(&secp, &secret_key);
+        PublicKey::new(public_key)
+    }
 
     #[test]
     fn test_address_btc_p2pkh() {
@@ -533,5 +541,82 @@ mod tests {
         let addr = Address::from_str("7qd1hqQqZzMRaJA5drqkpEZL41s3JktRuZ").unwrap();
         assert_eq!(addr.network.get_unit(), "DASH");
         assert_eq!(addr.to_string(), "7qd1hqQqZzMRaJA5drqkpEZL41s3JktRuZ");
+    }
+
+    #[test]
+    fn test_find_bech32_prefix_variants() {
+        assert_eq!(
+            find_bech32_prefix("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"),
+            "bc"
+        );
+        assert_eq!(find_bech32_prefix("nobech32prefix"), "nobech32prefix");
+    }
+
+    #[test]
+    fn test_address_from_script_roundtrip_p2pkh() {
+        let addr = Address::from_str("1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2").unwrap();
+        let expected = addr.to_string();
+        let network = addr.network.clone();
+        let script = addr.script_pubkey();
+
+        let reconstructed = Address::from_script(&script, network).unwrap();
+        assert_eq!(reconstructed.to_string(), expected);
+    }
+
+    #[test]
+    fn test_address_from_script_roundtrip_p2sh() {
+        let addr = Address::from_str("3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy").unwrap();
+        let expected = addr.to_string();
+        let network = addr.network.clone();
+        let script = addr.script_pubkey();
+
+        let reconstructed = Address::from_script(&script, network).unwrap();
+        assert_eq!(reconstructed.to_string(), expected);
+    }
+
+    #[test]
+    fn test_address_from_script_roundtrip_segwit() {
+        let addr = Address::from_str("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4").unwrap();
+        let expected = addr.to_string();
+        let network = addr.network.clone();
+        let script = addr.script_pubkey();
+
+        let reconstructed = Address::from_script(&script, network).unwrap();
+        assert_eq!(reconstructed.to_string(), expected);
+    }
+
+    #[test]
+    fn test_address_from_script_unrecognized() {
+        let script = ScriptBuf::from_bytes(vec![0x51]); // OP_1
+        let err = Address::from_script(&script, Network::Bitcoin).unwrap_err();
+        assert!(matches!(err, BitcoinError::AddressError(_)));
+    }
+
+    #[test]
+    fn test_address_p2pkh_invalid_network() {
+        let pk = sample_pubkey();
+        let result = Address::p2pkh(&pk, Network::AvaxBtcBridge);
+        assert!(matches!(result, Err(BitcoinError::AddressError(_))));
+    }
+
+    #[test]
+    fn test_address_p2wpkh_invalid_network() {
+        let pk = sample_pubkey();
+        let result = Address::p2wpkh(&pk, Network::Litecoin);
+        assert!(matches!(result, Err(BitcoinError::AddressError(_))));
+    }
+
+    #[test]
+    fn test_address_parse_invalid_base58_length() {
+        let long_address = "1".repeat(51);
+        let err = Address::from_str(&long_address);
+        assert!(matches!(err, Err(BitcoinError::AddressError(_))));
+    }
+
+    #[test]
+    fn test_address_p2tr_no_script_invalid_network() {
+        let pk = sample_pubkey();
+        let result = Address::p2tr_no_script(&pk, Network::Litecoin);
+        assert!(matches!(result, Err(BitcoinError::AddressError(_))));
     }
 }

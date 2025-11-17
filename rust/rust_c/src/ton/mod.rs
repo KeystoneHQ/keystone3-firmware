@@ -8,7 +8,7 @@ use crate::{
         ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
         utils::recover_c_char,
     },
-    extract_array,
+    extract_array, extract_array_mut,
 };
 use alloc::{
     boxed::Box,
@@ -30,6 +30,8 @@ use {
         traits::RegistryItem,
     },
 };
+
+use zeroize::Zeroize;
 
 #[repr(C)]
 pub struct DisplayTon {
@@ -107,19 +109,11 @@ fn get_secret_key(tx: &TonSignRequest, seed: &[u8]) -> Result<[u8; 32], RustCErr
                 .get_path()
                 .ok_or(RustCError::InvalidHDPath)?;
             match ed25519::slip10_ed25519::get_private_key_by_seed(seed, &path) {
-                Ok(_sk) => {
-                    for i in 0..32 {
-                        sk[i] = _sk[i]
-                    }
-                }
+                Ok(_sk) => sk.copy_from_slice(&_sk),
                 Err(e) => return Err(RustCError::UnexpectedError(e.to_string())),
             }
         }
-        None => {
-            for i in 0..32 {
-                sk[i] = seed[i]
-            }
-        }
+        None => sk.copy_from_slice(seed),
     };
     Ok(sk)
 }
@@ -131,11 +125,12 @@ pub unsafe extern "C" fn ton_sign_transaction(
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
     let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
-    let seed = extract_array!(seed, u8, seed_len as usize);
+    let seed = extract_array_mut!(seed, u8, seed_len as usize);
     let sk = match get_secret_key(ton_tx, seed) {
         Ok(_sk) => _sk,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
+    seed.zeroize();
     let result = app_ton::transaction::sign_transaction(&ton_tx.get_sign_data(), sk);
     match result {
         Ok(sig) => {
@@ -165,11 +160,12 @@ pub unsafe extern "C" fn ton_sign_proof(
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
     let ton_tx = extract_ptr_with_type!(ptr, TonSignRequest);
-    let seed = extract_array!(seed, u8, seed_len as usize);
+    let seed = extract_array_mut!(seed, u8, seed_len as usize);
     let sk = match get_secret_key(ton_tx, seed) {
         Ok(_sk) => _sk,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
+    seed.zeroize();
     let result = app_ton::transaction::sign_proof(&ton_tx.get_sign_data(), sk);
     match result {
         Ok(sig) => {
@@ -220,7 +216,7 @@ pub unsafe extern "C" fn ton_entropy_to_seed(
 #[no_mangle]
 pub unsafe extern "C" fn ton_mnemonic_to_seed(mnemonic: PtrString) -> *mut SimpleResponse<u8> {
     let mnemonic = recover_c_char(mnemonic);
-    let words: Vec<String> = mnemonic.split(' ').map(|v| v.to_lowercase()).collect();
+    let mut words: Vec<String> = mnemonic.split(' ').map(|v| v.to_lowercase()).collect();
     let seed = app_ton::mnemonic::ton_mnemonic_to_master_seed(words, None);
     match seed {
         Ok(seed) => {

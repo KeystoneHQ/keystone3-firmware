@@ -12,6 +12,7 @@ pub fn generate_address(key: PublicKey) -> Result<String> {
     checksum_address(&hex::encode(&hash[12..]))
 }
 
+// https://eips.ethereum.org/EIPS/eip-55
 pub fn checksum_address(address: &str) -> Result<String> {
     let address = address.trim_start_matches("0x").to_lowercase();
     let address_hash = hex::encode(keccak256(address.as_bytes()));
@@ -75,5 +76,37 @@ mod tests {
         let root_path = "44'/60'/1'";
         let result = derive_address(hd_path, root_x_pub, root_path).unwrap();
         assert_eq!("0x31eA4a0976ceE79AF136B1Cfa914e20E87546156", result);
+    }
+
+    #[test]
+    fn test_checksum_address() {
+        // Test lowercase address
+        let addr = "0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed";
+        let result = checksum_address(addr).unwrap();
+        assert_eq!("0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed", result);
+
+        // Test address without 0x prefix
+        let addr = "5aaeb6053f3e94c9b9a09f33669435e7ef1beaed";
+        let result = checksum_address(addr).unwrap();
+        assert_eq!("0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed", result);
+
+        // Test already checksummed address
+        let addr = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
+        let result = checksum_address(addr).unwrap();
+        assert_eq!("0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed", result);
+
+        // Test another address
+        let addr = "0xfb6916095ca1df60bb79ce92ce3ea74c37c5d359";
+        let result = checksum_address(addr).unwrap();
+        assert_eq!("0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359", result);
+    }
+
+    #[test]
+    fn test_derive_address_invalid_path() {
+        let root_x_pub = "xpub6BtigCpsVJrCGVhsuMuAshHuQctVUKUeumxP4wkUtypFpXatQ44ZCHwZi6w4Gf5kMN3vpfyGnHo5hLvgjs2NnkewYHSdVHX4oUbR1Xzxc7E";
+        let root_path = "44'/60'/0'";
+        let hd_path = "44'/60'/1'/0/0"; // Different root path
+        let result = derive_address(hd_path, root_x_pub, root_path);
+        assert!(result.is_err());
     }
 }

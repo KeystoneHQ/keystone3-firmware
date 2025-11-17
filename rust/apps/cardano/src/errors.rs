@@ -20,7 +20,7 @@ pub enum CardanoError {
     InvalidSeed(String),
 }
 
-pub type R<T> = Result<T, CardanoError>;
+pub type Result<T> = core::result::Result<T, CardanoError>;
 
 impl From<DeserializeError> for CardanoError {
     fn from(value: DeserializeError) -> Self {

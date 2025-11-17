@@ -8,8 +8,6 @@
 
 UREncodeResult *GuiGetBlueWalletBtcData(void);
 UREncodeResult *GuiGetSparrowWalletBtcData(void);
-UREncodeResult *GuiGetSpecterWalletBtcData(void);
-UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index);
 UREncodeResult *GuiGetCompanionAppData(void);
 UREncodeResult *GuiGetBitgetWalletData(void);
 UREncodeResult *GuiGetCakeData(void);

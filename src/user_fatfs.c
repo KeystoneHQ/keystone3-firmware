@@ -15,8 +15,6 @@
 #define MAX_FILE_CONTENT_LEN 1000000
 #define MAX_FILE_SIZE_LIST (1024 * 256)
 
-char* g_fileContent = NULL;
-
 void FatfsError(FRESULT errNum);
 
 typedef struct FatfsMountParam {
@@ -43,133 +41,6 @@ int FatfsTouchFile(const TCHAR* path)
         return RES_ERROR;
     }
     f_close(&fp);
-    return RES_OK;
-}
-
-int FatfsCatFile(const TCHAR* path)
-{
-    FIL fp;
-    uint8_t *fileBuf;
-    uint16_t fileSize = 0;
-    uint32_t readBytes = 0;
-    FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
-    if (res) {
-        FatfsError(res);
-        return RES_ERROR;
-    }
-    fileSize = f_size(&fp);
-    fileBuf = EXT_MALLOC(fileSize);
-    printf("%s size = %d\n", path, fileSize);
-    res = f_read(&fp, (void*)fileBuf, fileSize, &readBytes);
-    if (res) {
-        FatfsError(res);
-        f_close(&fp);
-        EXT_FREE(fileBuf);
-        return RES_ERROR;
-    }
-    EXT_FREE(fileBuf);
-    for (int i = 0; i < fileSize; i++) {
-        printf("%c", fileBuf[i]);
-    }
-    printf("\n");
-    f_close(&fp);
-    return RES_OK;
-}
-
-int FatfsFileMd5(const TCHAR* path)
-{
-    FIL fp;
-    MD5_CTX ctx;
-    uint8_t *fileBuf;
-    uint32_t fileSize = 0;
-    uint32_t readBytes = 0;
-    int len, changePercent = 0, percent;
-    unsigned char md5[16];
-    FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
-    if (res) {
-        FatfsError(res);
-        return RES_ERROR;
-    }
-    fileSize = f_size(&fp);
-    int lastLen = fileSize;
-    len = lastLen > 1024 ? 1024 : lastLen;
-    fileBuf = SRAM_MALLOC(len);
-    printf("reading, please wait.\n");
-    MD5_Init(&ctx);
-    while (lastLen) {
-        len = lastLen > 1024 ? 1024 : lastLen;
-        res = f_read(&fp, (void*)fileBuf, len, &readBytes);
-        if (res) {
-            FatfsError(res);
-            f_close(&fp);
-            SRAM_FREE(fileBuf);
-            return RES_ERROR;
-        }
-        lastLen -= len;
-        MD5_Update(&ctx, fileBuf, len);
-        percent = (fileSize - lastLen) * 100 / fileSize;
-        if (percent != changePercent) {
-            changePercent = percent;
-            printf("md5 update percent = %d\n", (fileSize - lastLen) * 100 / fileSize);
-        }
-    }
-    MD5_Final(md5, &ctx);
-    SRAM_FREE(fileBuf);
-    printf("%s md5: ", path);
-    for (int i = 0; i < sizeof(md5); i++) {
-        printf("%02x", md5[i]);
-    }
-    printf("\r\n");
-
-    return RES_OK;
-}
-
-int FatfsFileSha256(const TCHAR* path, uint8_t *sha256)
-{
-    FIL fp;
-    struct sha256_ctx ctx;
-    sha256_init(&ctx);
-    uint8_t *fileBuf;
-    uint32_t fileSize = 0;
-    uint32_t readBytes = 0;
-    int len, changePercent = 0, percent;
-    unsigned char hash[32];
-    FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
-    if (res) {
-        FatfsError(res);
-        return RES_ERROR;
-    }
-    fileSize = f_size(&fp);
-    int lastLen = fileSize;
-    len = lastLen > 1024 ? 1024 : lastLen;
-    fileBuf = SRAM_MALLOC(len);
-    printf("reading, please wait.\n");
-    while (lastLen) {
-        len = lastLen > 1024 ? 1024 : lastLen;
-        res = f_read(&fp, (void*)fileBuf, len, &readBytes);
-        if (res) {
-            FatfsError(res);
-            f_close(&fp);
-            SRAM_FREE(fileBuf);
-            return RES_ERROR;
-        }
-        lastLen -= len;
-        sha256_update(&ctx, fileBuf, len);
-        percent = (fileSize - lastLen) * 100 / fileSize;
-        if (percent != changePercent) {
-            changePercent = percent;
-            printf("sha256 update percent = %d\n", (fileSize - lastLen) * 100 / fileSize);
-        }
-    }
-    sha256_done(&ctx, (struct sha256 *)hash);
-    SRAM_FREE(fileBuf);
-    printf("%s hash: ", path);
-    memcpy(sha256, hash, sizeof(hash));
-    for (int i = 0; i < sizeof(hash); i++) {
-        printf("%02x", hash[i]);
-    }
-    printf("\r\n");
-
     return RES_OK;
 }
 
@@ -325,6 +196,7 @@ int FatfsFileCopy(const TCHAR* source, const TCHAR* dest)
     return res;
 }
 
+#if 0
 void FatfsShowVolumeStatus(char *ptr)
 {
     FRESULT res;
@@ -404,6 +276,7 @@ void FatfsDirectoryListing(char *ptr)
 #endif
     f_closedir(&Dir);
 }
+#endif
 
 void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain)
 {
@@ -443,43 +316,56 @@ void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint3
 char *FatfsFileRead(const TCHAR* path)
 {
     FIL fp;
-    uint16_t fileSize = 0;
+    uint32_t fileSize = 0;
     uint32_t readBytes = 0;
     FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
     if (res) {
         FatfsError(res);
         return NULL;
     }
-    if (g_fileContent) EXT_FREE(g_fileContent);
     fileSize = f_size(&fp);
-    g_fileContent = EXT_MALLOC(MAX_FILE_CONTENT_LEN);
-    memset_s(g_fileContent, MAX_FILE_CONTENT_LEN, 0, MAX_FILE_CONTENT_LEN);
+
+    // Check file size limit
+    if (fileSize > MAX_FILE_CONTENT_LEN) {
+        printf("File too large: %u > %u\n", fileSize, MAX_FILE_CONTENT_LEN);
+        f_close(&fp);
+        return NULL;
+    }
+
+    char *fileContent = EXT_MALLOC(MAX_FILE_CONTENT_LEN);
+    memset_s(fileContent, MAX_FILE_CONTENT_LEN, 0, MAX_FILE_CONTENT_LEN);
     printf("%s size = %d\n", path, fileSize);
-    res = f_read(&fp, (void*)g_fileContent, fileSize, &readBytes);
+    res = f_read(&fp, (void*)fileContent, fileSize, &readBytes);
     if (res) {
         FatfsError(res);
         f_close(&fp);
-        EXT_FREE(g_fileContent);
+        EXT_FREE(fileContent);
         return NULL;
     }
 
     printf("\n");
     f_close(&fp);
-    return g_fileContent;
+    return fileContent;
 }
 
 uint8_t *FatfsFileReadBytes(const TCHAR* path, uint32_t* readBytes)
 {
     FIL fp;
     uint8_t *fileBuf;
-    uint16_t fileSize = 0;
-    // uint32_t readBytes = 0;
+    uint32_t fileSize = 0;
     FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
     if (res) {
         FatfsError(res);
         return NULL;
     }
     fileSize = f_size(&fp);
+
+    if (fileSize > MAX_FILE_CONTENT_LEN) {
+        printf("File too large: %u > %u\n", fileSize, MAX_FILE_CONTENT_LEN);
+        f_close(&fp);
+        return NULL;
+    }
+
     fileBuf = EXT_MALLOC(fileSize);
     res = f_read(&fp, (void*)fileBuf, fileSize, readBytes);
     printf("%s filesize = %u  readSize = %u\n", path, fileSize, *readBytes);
@@ -582,7 +468,6 @@ int MMC_disk_read(
         }
     }
 
-    // printf("disk readblock state %d\r\n", SD_state);
     return status;
 }
 
@@ -669,41 +554,11 @@ int USB_disk_write(
     return RES_OK;
 }
 
-int FatfsMount(void)
-{
-    FRESULT res;
-    FatfsMountParam_t *fs;
-    for (uint8_t i = 0; i < NUMBER_OF_ARRAYS(g_fsMountParamArray); i++) {
-        fs = &g_fsMountParamArray[i];
-        res = f_mount(fs->fs, fs->volume, fs->opt);
-        // if (res == FR_NO_FILESYSTEM) {
-        //     BYTE work[FF_MAX_SS];
-        //     f_mkfs(fs->volume, 0, work, sizeof work);
-        //     f_mount(NULL, fs->volume, fs->opt);
-        //     res = f_mount(fs->fs, fs->volume, fs->opt);
-        //     printf("%s:", fs->name);
-        //     FatfsError(res);
-        // }
-        printf("%s:", fs->name);
-        FatfsError(res);
-    }
-    return res;
-}
-
 int MountUsbFatfs(void)
 {
     FRESULT res;
     FatfsMountParam_t *fs = &g_fsMountParamArray[DEV_USB];
     res = f_mount(fs->fs, fs->volume, fs->opt);
-    // if (res == FR_NO_FILESYSTEM) {
-    //     BYTE work[FF_MAX_SS];
-    //     f_mkfs(fs->volume, 0, work, sizeof work);
-    //     f_mount(NULL, fs->volume, fs->opt);
-    //     res = f_mount(fs->fs, fs->volume, fs->opt);
-    //     printf("%s:", fs->name);
-    //     FatfsError(res);
-    // }
-    printf("%s:", fs->name);
     FatfsError(res);
     return res;
 }
@@ -716,15 +571,6 @@ int MountSdFatfs(void)
     if (res != FR_OK) {
         res = f_mount(fs->fs, fs->volume, fs->opt);
     }
-    // if (res == FR_NO_FILESYSTEM) {
-    //     BYTE work[FF_MAX_SS];
-    //     f_mkfs(fs->volume, 0, work, sizeof work);
-    //     f_mount(NULL, fs->volume, fs->opt);
-    //     res = f_mount(fs->fs, fs->volume, fs->opt);
-    //     printf("%s:", fs->name);
-    //     FatfsError(res);
-    // }
-    printf("%s:", fs->name);
     FatfsError(res);
     return res;
 }
@@ -741,53 +587,6 @@ int UnMountSdFatfs(void)
     printf("%s:", fs->name);
     FatfsError(res);
     return res;
-}
-
-void CopyToFlash(void)
-{
-#define COPY_TO_FLASH_PAGE_SIZE                   (1024)
-    const char *srcPath = "0:/pillar.bin";
-    const char *destPath = "1:/pillar.bin";
-    FIL srcFp, destFp;
-    uint8_t *fileBuf = SRAM_MALLOC(COPY_TO_FLASH_PAGE_SIZE);
-    uint32_t fileSize = 0;
-    uint32_t readBytes = 0, writeBytes = 0;
-    FRESULT res = f_open(&srcFp, srcPath, FA_OPEN_EXISTING | FA_READ);
-    if (res) {
-        FatfsError(res);
-        return;
-    }
-    fileSize = f_size(&srcFp);
-    printf("%s size = %d\n", srcPath, fileSize);
-    res = f_open(&destFp, destPath, FA_CREATE_ALWAYS | FA_WRITE);
-    if (res) {
-        FatfsError(res);
-        return;
-    }
-    while (1) {
-        uint32_t len = fileSize > COPY_TO_FLASH_PAGE_SIZE ? COPY_TO_FLASH_PAGE_SIZE : fileSize;
-        fileSize -= len;
-        printf("fileSize = %d\n", fileSize);
-        res = f_read(&srcFp, (void*)fileBuf, len, &readBytes);
-        if (res) {
-            FatfsError(res);
-            f_close(&srcFp);
-            EXT_FREE(fileBuf);
-            return;
-        }
-        res = f_write(&destFp, (void*)fileBuf, readBytes, &writeBytes);
-        if (res) {
-            FatfsError(res);
-            return;
-        }
-        memset_s(fileBuf, COPY_TO_FLASH_PAGE_SIZE, 0, COPY_TO_FLASH_PAGE_SIZE);
-        if (fileSize == 0) {
-            break;
-        }
-    }
-    f_close(&srcFp);
-    f_close(&destFp);
-    SRAM_FREE(fileBuf);
 }
 
 int FormatSdFatfs(void)

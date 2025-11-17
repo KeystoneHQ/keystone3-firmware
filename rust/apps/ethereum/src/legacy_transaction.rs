@@ -171,23 +171,25 @@ impl LegacyTransaction {
     }
 
     pub fn decode_rsv(rlp: &Rlp) -> Result<Option<TransactionSignature>, DecoderError> {
-        if rlp.item_count()? == 6 {
-            return Ok(None);
-        } else if rlp.item_count()? == 9 {
-            let v = rlp.val_at(6)?;
-            let r = {
-                let mut rarr = [0_u8; 32];
-                rlp.val_at::<U256>(7)?.to_big_endian(&mut rarr);
-                H256::from(rarr)
-            };
-            let s = {
-                let mut sarr = [0_u8; 32];
-                rlp.val_at::<U256>(8)?.to_big_endian(&mut sarr);
-                H256::from(sarr)
-            };
-            return Ok(Some(TransactionSignature::new(v, r, s)));
+        let item_count = rlp.item_count()?;
+        match item_count {
+            6 => Ok(None),
+            9 => {
+                let v = rlp.val_at(6)?;
+                let r = {
+                    let mut rarr = [0_u8; 32];
+                    rlp.val_at::<U256>(7)?.to_big_endian(&mut rarr);
+                    H256::from(rarr)
+                };
+                let s = {
+                    let mut sarr = [0_u8; 32];
+                    rlp.val_at::<U256>(8)?.to_big_endian(&mut sarr);
+                    H256::from(sarr)
+                };
+                Ok(Some(TransactionSignature::new(v, r, s)))
+            }
+            _ => Err(DecoderError::RlpIncorrectListLen),
         }
-        Err(DecoderError::RlpIncorrectListLen)
     }
 
     pub fn chain_id(&self) -> u64 {
@@ -479,5 +481,97 @@ mod tests {
             "e01dd745d8cc0983f288da28ab288f7d1be809164c83ae477bdb927d31f49a7c".to_string(),
             signed_tx_hash_hex
         )
+    }
+
+    #[test]
+    fn test_transaction_recovery_id_standard() {
+        // Test standard recovery IDs (27, 28)
+        let recovery_id_27 = TransactionRecoveryId(27);
+        assert_eq!(recovery_id_27.standard(), 0);
+
+        let recovery_id_28 = TransactionRecoveryId(28);
+        assert_eq!(recovery_id_28.standard(), 1);
+
+        // Test EIP-155 recovery IDs (> 36)
+        let recovery_id_37 = TransactionRecoveryId(37); // chain_id = 1
+        assert_eq!(recovery_id_37.standard(), 0);
+
+        let recovery_id_38 = TransactionRecoveryId(38); // chain_id = 1
+        assert_eq!(recovery_id_38.standard(), 1);
+
+        let recovery_id_39 = TransactionRecoveryId(39); // chain_id = 2
+        assert_eq!(recovery_id_39.standard(), 0);
+
+        // Test invalid recovery ID (36)
+        let recovery_id_36 = TransactionRecoveryId(36);
+        assert_eq!(recovery_id_36.standard(), 4);
+    }
+
+    #[test]
+    fn test_transaction_recovery_id_chain_id() {
+        // Test non-EIP-155 recovery IDs (27, 28)
+        let recovery_id_27 = TransactionRecoveryId(27);
+        assert_eq!(recovery_id_27.chain_id(), None);
+
+        let recovery_id_28 = TransactionRecoveryId(28);
+        assert_eq!(recovery_id_28.chain_id(), None);
+
+        // Test EIP-155 recovery IDs
+        let recovery_id_37 = TransactionRecoveryId(37); // chain_id = (37-35)/2 = 1
+        assert_eq!(recovery_id_37.chain_id(), Some(1));
+
+        let recovery_id_38 = TransactionRecoveryId(38); // chain_id = (38-35)/2 = 1
+        assert_eq!(recovery_id_38.chain_id(), Some(1));
+
+        let recovery_id_39 = TransactionRecoveryId(39); // chain_id = (39-35)/2 = 2
+        assert_eq!(recovery_id_39.chain_id(), Some(2));
+
+        let recovery_id_41 = TransactionRecoveryId(41); // chain_id = (41-35)/2 = 3
+        assert_eq!(recovery_id_41.chain_id(), Some(3));
+    }
+
+    #[test]
+    fn test_legacy_transaction_chain_id() {
+        // Test unsigned transaction
+        let tx = LegacyTransaction::new(
+            0,
+            1000000000,
+            21000,
+            TransactionAction::Call(
+                H160::from_str("0x0000000000000000000000000000000000000000").unwrap(),
+            ),
+            0,
+            "".to_string(),
+        );
+        assert_eq!(tx.chain_id(), 1); // Default chain_id for unsigned
+
+        // Test EIP-155 compatible transaction (v > 35)
+        // For signed transactions, s should not be zero
+        let r = H256::from([1u8; 32]); // Non-zero r
+        let mut s_arr = [0u8; 32];
+        s_arr[0] = 1; // Non-zero s
+        let s = H256::from(s_arr);
+        let signature = TransactionSignature::new(37, r, s); // chain_id = (37 - 35) / 2 = 1
+        let tx = tx.set_signature(signature);
+        assert_eq!(tx.chain_id(), 1);
+        assert!(tx.is_eip155_compatible());
+
+        // Test unsigned EIP-155 compatible transaction (s is zero)
+        let r = H256::from([0u8; 32]);
+        let s = H256::zero();
+        let signature = TransactionSignature::new(1, r, s); // v = chain_id for unsigned
+        let tx = LegacyTransaction::new(
+            0,
+            1000000000,
+            21000,
+            TransactionAction::Call(
+                H160::from_str("0x0000000000000000000000000000000000000000").unwrap(),
+            ),
+            0,
+            "".to_string(),
+        )
+        .set_signature(signature);
+        assert_eq!(tx.chain_id(), 1);
+        assert!(tx.is_eip155_compatible());
     }
 }

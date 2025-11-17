@@ -25,6 +25,7 @@ serde = { workspace = true }
 rust_tools = { workspace = true }
 itertools = { workspace = true }
 thiserror = { workspace = true }
+zeroize = { workspace = true }
 
 
 [dev-dependencies]

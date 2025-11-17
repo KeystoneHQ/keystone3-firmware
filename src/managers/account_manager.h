@@ -88,6 +88,7 @@ uint8_t GetCurrentPasswordErrorCount(void);
 uint32_t GetLastLockDeviceTime(void);
 void SetLastLockDeviceTime(uint32_t timeStamp);
 uint32_t GetCurrentAccountEntropyLen(void);
+uint32_t GetCurrentAccountSeedLen(void);
 
 uint8_t *GetCurrentAccountMfp(void);
 int32_t GetAccountInfo(uint8_t accountIndex, AccountInfo_t *pInfo);

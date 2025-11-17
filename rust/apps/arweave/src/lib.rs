@@ -15,7 +15,6 @@ use aes::cipher::block_padding::Pkcs7;
 use aes::cipher::{generic_array::GenericArray, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-
 use data_item::DataItem;
 
 use keystore::algorithms::rsa::get_rsa_secret_from_seed;

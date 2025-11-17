@@ -85,7 +85,7 @@ pub fn generate_standard_legacy_hd_key(
 
 pub fn generate_ledger_live_account(
     master_fingerprint: &[u8; 4],
-    extended_public_keys: &Vec<String>,
+    extended_public_keys: &[String],
 ) -> URResult<CryptoAccount> {
     let mut outputs: Vec<CryptoOutput> = Vec::new();
     for (i, x) in extended_public_keys.iter().enumerate() {

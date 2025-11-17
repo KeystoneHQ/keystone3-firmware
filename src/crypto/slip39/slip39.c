@@ -279,8 +279,8 @@ static int _get_salt(uint16_t id, bool eb, uint8_t *salt)
         return 0;
     } else {
         if (salt != NULL) {
-            memset(salt, 0, SHAMIR_SALT_HEAD_LEN);
-            memcpy(salt, SHAMIR_SALT_HEAD, strlen(SHAMIR_SALT_HEAD));
+            memset_s(salt, SHAMIR_SALT_HEAD_LEN, 0, SHAMIR_SALT_HEAD_LEN);
+            memcpy_s(salt, SHAMIR_SALT_HEAD_LEN, SHAMIR_SALT_HEAD, strnlen_s(SHAMIR_SALT_HEAD, SHAMIR_SALT_HEAD_LEN));
             salt[6] = id >> 8;
             salt[7] = id & 0xFF;
         }
@@ -334,7 +334,7 @@ int interpolate(const uint8_t* xi, const uint8_t **yi, uint8_t n, uint8_t* resul
 
     for (i = 0; i < threshold; i++) {
         if (n == xi[i]) {
-            memcpy(result, yi[i], len);
+            memcpy_s(result, len, yi[i], len);
             return SLIP39_OK;
         }
     }
@@ -386,7 +386,7 @@ int SplitSecret(uint8_t count, uint8_t threshold, uint8_t *enMasterSecret, uint8
 
     // If T is 1, then let yi = S for all i, 1 ≤ i ≤ N, and return.
     if (count == 1) {
-        memcpy(groupsBuff, enMasterSecret, enMasterSecretLen);
+        memcpy_s(groupsBuff, enMasterSecretLen, enMasterSecret, enMasterSecretLen);
         return SLIP39_OK;
     }
 
@@ -404,12 +404,12 @@ int SplitSecret(uint8_t count, uint8_t threshold, uint8_t *enMasterSecret, uint8
     tempShare[threshold - 2] = (uint8_t *)(pool + ((threshold - 2) * enMasterSecretLen));
     random_buffer(&tempShare[threshold - 2][4], enMasterSecretLen - 4);
     hmac_sha256(&tempShare[threshold - 2][4], enMasterSecretLen - 4, enMasterSecret, enMasterSecretLen, sha256Hash);
-    memcpy(tempShare[threshold - 2], sha256Hash, 4);
+    memcpy_s(tempShare[threshold - 2], 4, sha256Hash, 4);
 
     // SECRET_INDEX
     xi[threshold - 1] = SECRET_INDEX;
     tempShare[threshold - 1] = (uint8_t *)(pool + ((threshold - 1) * enMasterSecretLen));
-    memcpy(tempShare[threshold - 1], enMasterSecret, enMasterSecretLen);
+    memcpy_s(tempShare[threshold - 1], enMasterSecretLen, enMasterSecret, enMasterSecretLen);
     for (int i = 0; i < count; i++) {
         ret = interpolate(xi, (const uint8_t **)tempShare, i, groupsBuff + i * enMasterSecretLen, enMasterSecretLen, threshold);
         if (ret != SLIP39_OK) {
@@ -453,34 +453,34 @@ int MasterSecretEncrypt(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t 
     uint32_t iterations;
 
     // L = EMS[:len(EMS)/2]
-    memcpy(left, masterSecret, halfLen);
+    memcpy_s(left, halfLen, masterSecret, halfLen);
 
     // R = EMS[len(EMS)/2:]
-    memcpy(right, masterSecret + halfLen, halfLen);
+    memcpy_s(right, halfLen, masterSecret + halfLen, halfLen);
 
     // get salt
     _get_salt(identifier, extendableBackupFlag, salt);
 
-    memset(pass, 0, sizeof(pass));
+    memset_s(pass, passPhraseLen, 0, passPhraseLen);
     if (passPhrase != NULL && passPhraseLen > 1) {
-        memcpy(pass + 1, passPhrase, passPhraseLen - 1);
+        memcpy_s(pass + 1, passPhraseLen - 1, passPhrase, passPhraseLen - 1);
     }
 
     iterations = PBKDF2_BASE_ITERATION_COUNT << iterationExponent;
     for (int i = 0; i < PBKDF2_ROUND_COUNT; i++) {
         pass[0] = i;
-        memcpy(salt + saltLen, right, halfLen);
+        memcpy_s(salt + saltLen, halfLen, right, halfLen);
         pbkdf2_hmac_sha256_slip39(pass, sizeof(pass), salt, sizeof(salt), iterations, key, sizeof(key));
 
         // (L, R) = (R, L xor F(i, R))
         for (int j = 0; j < halfLen; j++) {
             rightTemp[j] = left[j] ^ key[j];
         }
-        memcpy(left, right, sizeof(left));
-        memcpy(right, rightTemp, sizeof(right));
+        memcpy_s(left, halfLen, right, halfLen);
+        memcpy_s(right, halfLen, rightTemp, halfLen);
     }
-    memcpy(enMasterSecret + halfLen, left, halfLen);
-    memcpy(enMasterSecret, right, halfLen);
+    memcpy_s(enMasterSecret + halfLen, halfLen, left, halfLen);
+    memcpy_s(enMasterSecret, halfLen, right, halfLen);
 
     return 0;
 }
@@ -520,7 +520,7 @@ int GenerateMnemonics(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t *e
 
     // identifier = identifier & 0x7FFF; // a 15-bit positive integer
     MasterSecretEncrypt(masterSecret, masterSecretLen, iterationExponent, extendableBackupFlag, identifier, passPhrase, enMasterSecret);
-    memcpy(ems, enMasterSecret, masterSecretLen);
+    memcpy_s(ems, masterSecretLen, enMasterSecret, masterSecretLen);
 
     for (int i = 0; i < groupCount; i++) {
         uint8_t groupsBuff[groups[i].count * masterSecretLen];
@@ -538,12 +538,12 @@ int GenerateMnemonics(uint8_t *masterSecret, uint8_t masterSecretLen, uint8_t *e
             shards[j].memberIndex = j;
             shards[j].memberThreshold = groups[i].threshold;
             shards[j].valueLength = masterSecretLen;
-            memset(shards[j].value, 0, 32);
-            memcpy(shards[j].value, groupsBuff + j * masterSecretLen, masterSecretLen);
+            memset_s(shards[j].value, 32, 0, 32);
+            memcpy_s(shards[j].value, masterSecretLen, groupsBuff + j * masterSecretLen, masterSecretLen);
         }
-        memset(groupsBuff, 0, sizeof(groupsBuff));
+        memset_s(groupsBuff, sizeof(groupsBuff), 0, sizeof(groupsBuff));
     }
-    memset(enMasterSecret, 0, sizeof(enMasterSecret));
+    memset_s(enMasterSecret, sizeof(enMasterSecret), 0, sizeof(enMasterSecret));
 
     uint16_t *mnemonic = sharesBuffer;
     unsigned int word_count = 0;
@@ -608,7 +608,7 @@ static int _recover_secret(uint8_t t, int sl, uint8_t *gsi, const uint8_t **gs, 
     uint8_t hash[SHA256_DIGEST_LENGTH];
 
     if (t == 1) {
-        memcpy(result, gs[0], sl);
+        memcpy_s(result, sl, gs[0], sl);
         return 0;
     }
 
@@ -649,21 +649,21 @@ static int _decrypt(uint8_t *ems, int emsl, uint8_t *ms, int msl,
     if (emsl & 1)
         return -2;
 
-    memcpy(l, ems, hl);
-    memcpy(r, ems + hl, hl);
+    memcpy_s(l, hl, ems, hl);
+    memcpy_s(r, hl, ems + hl, hl);
 
     // salt
     _get_salt(id, eb, salt);
 
     // pass
-    memcpy(pass + 1, pp, ppl);
+    memcpy_s(pass + 1, ppl, pp, ppl);
 
     // iterations
     it = PBKDF2_BASE_ITERATION_COUNT << ie;
 
     for (i = PBKDF2_ROUND_COUNT - 1; i >= 0; i--) {
         // salt
-        memcpy(salt + csl, r, hl);
+        memcpy_s(salt + csl, hl, r, hl);
         // pass
         pass[0] = i;
         // PBKDF2
@@ -672,12 +672,12 @@ static int _decrypt(uint8_t *ems, int emsl, uint8_t *ms, int msl,
         for (j = 0; j < hl; j++)
             _r[j] = l[j] ^ f[j];
 
-        memcpy(l, r, hl);
-        memcpy(r, _r, hl);
+        memcpy_s(l, hl, r, hl);
+        memcpy_s(r, hl, _r, hl);
     }
 
-    memcpy(ms, r, hl);
-    memcpy(ms + hl, l, hl);
+    memcpy_s(ms, hl, r, hl);
+    memcpy_s(ms + hl, hl, l, hl);
 
     memzero(pass, sizeof(pass));
     memzero(salt, sizeof(salt));
@@ -688,16 +688,15 @@ static int _decrypt(uint8_t *ems, int emsl, uint8_t *ms, int msl,
     return 0;
 }
 
-extern void TrngGet(void *buf, uint32_t len);
 #define SHARE_BUFFER_SIZE               4096
-void GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCnt, uint8_t memberCnt, uint8_t memberThreshold,
-                             char *wordsList[], uint16_t *id, bool *eb, uint8_t *ie)
+int GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCnt, uint8_t memberCnt, uint8_t memberThreshold,
+                            char *wordsList[], uint16_t *id, bool *eb, uint8_t *ie)
 {
     uint8_t *passPhrase = (uint8_t *)"";
     uint8_t iterationExponent  = 0;
     bool extendableBackupFlag = true;
     uint16_t identifier = 0;
-    TrngGet(&identifier, 2);
+    random_buffer((uint8_t *)&identifier, sizeof(identifier));
     identifier = identifier & 0x7FFF;
     *ie = iterationExponent;
     *eb = extendableBackupFlag;
@@ -714,13 +713,29 @@ void GetSlip39MnemonicsWords(uint8_t *masterSecret, uint8_t *ems, uint8_t wordCn
     uint16_t shareBufferSize = SHARE_BUFFER_SIZE;
     uint16_t sharesBuff[SHARE_BUFFER_SIZE];
 
-    GenerateMnemonics(masterSecret, masterSecretLen, ems, iterationExponent, extendableBackupFlag, identifier, passPhrase,
-                      groupCnt, groupThereshold, groups, sharesBuff, shareBufferSize);
+    int ret = GenerateMnemonics(masterSecret, masterSecretLen, ems, iterationExponent, extendableBackupFlag, identifier, passPhrase,
+                                groupCnt, groupThereshold, groups, sharesBuff, shareBufferSize);
+
+    if (ret != SLIP39_OK) {
+        return ret;
+    }
 
     for (int i = 0; i < memberCnt; i++) {
         uint16_t* words = sharesBuff + (i * wordCnt);
         wordsList[i] = slip39_strings_for_words(words, wordCnt);
+        if (wordsList[i] == NULL) {
+            for (int j = 0; j < i; j++) {
+                if (wordsList[j] != NULL) {
+                    memset_s(wordsList[j], strlen(wordsList[j]), 0, strlen(wordsList[j]));
+                    SRAM_FREE(wordsList[j]);
+                    wordsList[j] = NULL;
+                }
+            }
+            return SLIP39_INSUFFICIENT_SPACE;
+        }
     }
+
+    return SLIP39_OK;
 }
 
 int Slip39GetSeed(uint8_t *ems, uint8_t *seed, uint8_t emsLen, const char *passphrase, uint8_t ie, bool eb, uint16_t id)
@@ -729,7 +744,7 @@ int Slip39GetSeed(uint8_t *ems, uint8_t *seed, uint8_t emsLen, const char *passp
 }
 
 int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, uint8_t *masterSecret,
-                          char *wordsList[], uint16_t *id, uint8_t *eb, uint8_t *ie)
+                          char *wordsList[], uint16_t *id, bool *eb, uint8_t *ie)
 {
     uint16_t wordsIndexBuf[threshold][wordsCount];
     Slip39Shared_t shards[threshold];
@@ -795,7 +810,7 @@ int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, u
     *ie = iteration;
     groupThreshold = shards[0].groupThreshold;
     valueLength = shards[0].valueLength;
-    memset(groupIndexMember, 0, sizeof(groupIndexMember));
+    memset_s(groupIndexMember, sizeof(groupIndexMember), 0, sizeof(groupIndexMember));
 
     for (int i = 0; i < threshold; i++) {
         groupIndexMember[shards[i].groupIndex]++;
@@ -822,8 +837,8 @@ int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, u
         }
     }
 
-    memset(tempShare, 0, sizeof(tempShare));
-    memset(xi, 0, sizeof(xi));
+    memset_s(tempShare, sizeof(tempShare), 0, sizeof(tempShare));
+    memset_s(xi, sizeof(xi), 0, sizeof(xi));
 
     for (i = 0; i < 16; i++) {
         if (groupIndexMember[i] != 0) {
@@ -846,7 +861,7 @@ int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, u
             ret = _recover_secret(groupMemberThreshold, valueLength, m_share_index, (const uint8_t **)m_share, gsv);
             if (ret == 0) {
                 tempShare[gmic] = (uint8_t *)SRAM_MALLOC(MAX_SAHRE_VALUE_LEN);
-                memcpy(tempShare[gmic], gsv, valueLength);
+                memcpy_s(tempShare[gmic], valueLength, gsv, valueLength);
 
                 xi[gmic] = i;
                 gmic++;
@@ -862,34 +877,24 @@ int Slip39GetMasterSecret(uint8_t threshold, uint8_t wordsCount, uint8_t *ems, u
         }
     }
 
-#if 0
-    if ((ms == NULL) || (*msl < sl)) {
-        ret = -11;
-        goto exit;
-    }
-#endif
-
     ret = _recover_secret(gmic, valueLength, xi, (const uint8_t **)tempShare, gsv);
     if (ret == 0) {
-        memcpy(ems, gsv, valueLength);
+        memcpy_s(ems, valueLength, gsv, valueLength);
         _decrypt(gsv, valueLength, gsv, valueLength, pp, ppl, iteration, extendableBackupFlag, identifier);
-        memcpy(masterSecret, gsv, valueLength);
-//        *msl = sl;
+        memcpy_s(masterSecret, valueLength, gsv, valueLength);
     } else {
         ret = -12;
     }
 
 exit:
-    printf("ret = %d\n", ret);
-
-#if 0
-    if (gs != NULL)
-        free(gs);
-
-    for (i = 0; i < gmic; i++)
-        if (g_share[i] != NULL)
-            free(g_share[i]);
-#endif
+    for (i = 0; i < gmic; i++) {
+        if (tempShare[i] != NULL) {
+            memset_s(tempShare[i], MAX_SAHRE_VALUE_LEN, 0, MAX_SAHRE_VALUE_LEN);
+            SRAM_FREE(tempShare[i]);
+        }
+    }
+    memset_s(gsv, sizeof(gsv), 0, sizeof(gsv));
+    memset_s(m_share_index, sizeof(m_share_index), 0, sizeof(m_share_index));
 
     return ret;
 }

@@ -20,7 +20,7 @@ bool GuiCreateWalletNeedPassphrase(void);
 
 #define WALLET_TYPE_TON             0b00000010
 #define ENTROPY_TYPE_STANDARD       0b00000000
-#define ENTORPY_TYPE_DICE_ROLLS     0b00000001
+#define ENTROPY_TYPE_DICE_ROLLS     0b00000001
 #define WALLET_TYPE_MASK            0b00000010
 #define ENTROPY_TYPE_MASK           0b00000001
 

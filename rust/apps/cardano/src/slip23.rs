@@ -1,31 +1,11 @@
-use crate::errors::{CardanoError, R};
+use crate::errors::{CardanoError, Result};
 use alloc::{format, string::ToString, vec::Vec};
 use cryptoxide::hashing::sha512;
 use ed25519_bip32_core::{DerivationScheme, XPrv};
 use keystore::algorithms::crypto::hmac_sha512;
 
-#[derive(Debug, Clone)]
-pub struct CardanoHDNode {
-    pub xprv: XPrv,
-    pub fingerprint: [u8; 4],
-}
-
-impl CardanoHDNode {
-    pub fn new(xprv: XPrv) -> Self {
-        let fingerprint = Self::calculate_fingerprint(&xprv);
-        Self { xprv, fingerprint }
-    }
-
-    fn calculate_fingerprint(xprv: &XPrv) -> [u8; 4] {
-        let pubkey = xprv.public().public_key();
-        let mut fingerprint = [0u8; 4];
-        fingerprint.copy_from_slice(&pubkey[..4]);
-        fingerprint
-    }
-}
-
 // https://github.com/satoshilabs/slips/blob/master/slip-0023.md
-pub fn from_seed_slip23(seed: &[u8]) -> R<CardanoHDNode> {
+pub fn from_seed_slip23(seed: &[u8]) -> Result<XPrv> {
     if seed.is_empty() {
         return Err(CardanoError::InvalidSeed("seed is empty".to_string()));
     }
@@ -57,28 +37,21 @@ pub fn from_seed_slip23(seed: &[u8]) -> R<CardanoHDNode> {
     // c := IR (root chain code)
     extended_key[64..96].copy_from_slice(ir);
 
-    // Create XPrv using normalize_bytes_force3rd
-    let xprv = XPrv::normalize_bytes_force3rd(extended_key);
-
-    let hd_node = CardanoHDNode::new(xprv);
-
-    Ok(hd_node)
+    Ok(XPrv::normalize_bytes_force3rd(extended_key))
 }
 
-pub fn from_seed_slip23_path(seed: &[u8], path: &str) -> R<CardanoHDNode> {
-    let root_node = from_seed_slip23(seed)?;
-
+pub fn from_seed_slip23_path(seed: &[u8], path: &str) -> Result<XPrv> {
+    let mut current_xprv = from_seed_slip23(seed)?;
     let components = parse_derivation_path(path)?;
-    let mut current_xprv = root_node.xprv;
 
     for component in components {
         current_xprv = current_xprv.derive(DerivationScheme::V2, component);
     }
 
-    Ok(CardanoHDNode::new(current_xprv))
+    Ok(current_xprv)
 }
 
-fn parse_derivation_path(path: &str) -> R<Vec<u32>> {
+fn parse_derivation_path(path: &str) -> Result<Vec<u32>> {
     let mut components = Vec::new();
 
     let path = path.strip_prefix("m/").unwrap_or(path);
@@ -119,7 +92,7 @@ mod tests {
         let result = from_seed_slip23(&seed);
         assert!(result.is_ok());
 
-        let pubkey = result.unwrap().xprv.public().public_key();
+        let pubkey = result.unwrap().public().public_key();
         assert_eq!(pubkey.len(), 32);
         assert_eq!(
             "83e3ecaf57f90f022c45e10d1b8cb78499c30819515ad9a81ad82139fdb12a90",
@@ -144,11 +117,79 @@ mod tests {
         let path = "m/1852'/1815'/0'/0/0";
         let result = from_seed_slip23_path(&seed, path);
         assert!(result.is_ok());
-        let pubkey = result.unwrap().xprv.public().public_key();
+        let pubkey = result.unwrap().public().public_key();
         assert_eq!(pubkey.len(), 32);
         assert_eq!(
             "4510fd55f00653b0dec9153bdc65feba664ccd543a66f5a1438c759a0bc41e1c",
             hex::encode(pubkey)
         );
+    }
+
+    #[test]
+    fn test_from_seed_slip23_empty_seed() {
+        let seed = vec![];
+        let result = from_seed_slip23(&seed);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), CardanoError::InvalidSeed(_)));
+    }
+
+    #[test]
+    fn test_from_seed_slip23_different_seeds() {
+        let seed1 = hex::decode("578d685d20b602683dc5171df411d3e2").unwrap();
+        let seed2 = hex::decode("00000000000000000000000000000000").unwrap();
+
+        let result1 = from_seed_slip23(&seed1).unwrap();
+        let result2 = from_seed_slip23(&seed2).unwrap();
+
+        assert_ne!(result1.public().public_key(), result2.public().public_key());
+    }
+
+    #[test]
+    fn test_parse_derivation_path_without_prefix() {
+        let path = "1852'/1815'/0'/0/0";
+        let result = parse_derivation_path(path);
+        assert!(result.is_ok());
+        assert_eq!(
+            result.unwrap(),
+            vec![2147485500, 2147485463, 2147483648, 0, 0]
+        );
+    }
+
+    #[test]
+    fn test_parse_derivation_path_mixed_hardened() {
+        let path = "m/1852'/1815/0'/0/0";
+        let result = parse_derivation_path(path);
+        assert!(result.is_ok());
+        let components = result.unwrap();
+        assert_eq!(components[0], 2147485500); // hardened
+        assert_eq!(components[1], 1815); // not hardened
+        assert_eq!(components[2], 2147483648); // hardened
+    }
+
+    #[test]
+    fn test_parse_derivation_path_invalid_component() {
+        let path = "m/1852'/invalid/0'";
+        let result = parse_derivation_path(path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_derivation_path_empty() {
+        let path = "";
+        let result = parse_derivation_path(path);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Vec::<u32>::new());
+    }
+
+    #[test]
+    fn test_from_seed_slip23_path_different_paths() {
+        let seed = hex::decode("578d685d20b602683dc5171df411d3e2").unwrap();
+        let path1 = "m/1852'/1815'/0'/0/0";
+        let path2 = "m/1852'/1815'/0'/0/1";
+
+        let result1 = from_seed_slip23_path(&seed, path1).unwrap();
+        let result2 = from_seed_slip23_path(&seed, path2).unwrap();
+
+        assert_ne!(result1.public().public_key(), result2.public().public_key());
     }
 }

@@ -461,6 +461,13 @@ uint32_t GetCurrentAccountEntropyLen(void)
     return g_currentAccountInfo.entropyLen;
 }
 
+// For BIP39, seed length is fixed 64 bytes (derived via PBKDF2 from mnemonic).
+// For SLIP39, the seed is produced by MS flow and we use the current account entropy length.
+uint32_t GetCurrentAccountSeedLen(void)
+{
+    return (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) ? GetCurrentAccountEntropyLen() : SEED_LEN;
+}
+
 /// @brief Save g_currentAccountInfo to SE.
 /// @return err code.
 int32_t SaveCurrentAccountInfo(void)

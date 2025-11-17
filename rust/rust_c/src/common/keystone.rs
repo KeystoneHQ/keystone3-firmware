@@ -10,7 +10,7 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use app_bitcoin::addresses::xyzpub::{convert_version, Version};
 use app_utils;
-use app_wallets::{companion_app::DESCRIPTION, DEVICE_TYPE};
+use app_wallets::{DESCRIPTION, DEVICE_TYPE};
 use core::str::FromStr;
 use hex;
 use ur_registry::bytes::Bytes;

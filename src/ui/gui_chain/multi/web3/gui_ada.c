@@ -18,14 +18,13 @@ static struct URParseResult *g_urResult = NULL;
 static struct URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static char g_adaBaseAddr[ADA_ADD_MAX_LEN];
-static char *xpub = NULL;
+static char *g_xpub = NULL;
 static void Try2FixAdaPathType();
 static bool IsLocalAdaPath(char *path);
 
 AdaXPubType GetAdaXPubType(void)
 {
     return GetAccountReceivePath("ADA");
-    // return g_adaXpubTypes[GetCurrentAccountIndex()];
 }
 
 void SetReceivePageAdaXPubType(AdaXPubType type)
@@ -102,12 +101,12 @@ void *GuiGetAdaData(void)
         CHECK_CHAIN_BREAK(path);
         char *adaPath = path->data;
         if (!IsLocalAdaPath(adaPath)) {
-            xpub = NULL;
+            g_xpub = NULL;
         } else {
             uint8_t xpubIndex = GetXPubIndexByPath(adaPath);
-            xpub = GetCurrentAccountPublicKey(xpubIndex);
+            g_xpub = GetCurrentAccountPublicKey(xpubIndex);
         }
-        TransactionParseResult_DisplayCardanoTx *parseResult = cardano_parse_tx(data, mfp, xpub);
+        TransactionParseResult_DisplayCardanoTx *parseResult = cardano_parse_tx(data, mfp, g_xpub);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
@@ -129,7 +128,6 @@ void *GuiGetAdaCatalyst(void)
 
 void *GuiGetAdaSignTxHashData(void)
 {
-    printf("=========== GuiGetAdaSignTxHashData\r\n");
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
@@ -233,20 +231,20 @@ PtrT_TransactionCheckResult GuiGetAdaCheckResult(void)
     }
     char *adaPath = path->data;
     if (!IsLocalAdaPath(adaPath)) {
-        xpub = NULL;
+        g_xpub = NULL;
     } else {
-        xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
+        g_xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
     }
-    PtrT_TransactionCheckResult result = cardano_check_tx(data, mfp, xpub);
+    PtrT_TransactionCheckResult result = cardano_check_tx(data, mfp, g_xpub);
     if (result->error_code != 0) {
         free_TransactionCheckResult(result);
         Try2FixAdaPathType();
         if (!IsLocalAdaPath(adaPath)) {
-            xpub = NULL;
+            g_xpub = NULL;
         } else {
-            xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
+            g_xpub = GetCurrentAccountPublicKey(GetXPubIndexByPath(adaPath));
         }
-        result = cardano_check_tx(data, mfp, xpub);
+        result = cardano_check_tx(data, mfp, g_xpub);
     }
     free_simple_response_c_char(path);
     return result;
@@ -752,9 +750,9 @@ UREncodeResult *GuiGetAdaSignQrCodeData(void)
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), false);
+            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, g_xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), false);
         } else {
-            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), false, isSlip39);
+            encodeResult = cardano_sign_tx(data, mfp, g_xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), false, isSlip39);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -786,9 +784,9 @@ UREncodeResult *GuiGetAdaSignTxHashQrCodeData(void)
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), true);
+            encodeResult = cardano_sign_tx_with_ledger_bitbox02(data, mfp, g_xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()), true);
         } else {
-            encodeResult = cardano_sign_tx(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), true, isSlip39);
+            encodeResult = cardano_sign_tx(data, mfp, g_xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), true, isSlip39);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -982,9 +980,9 @@ UREncodeResult *GuiGetAdaSignUrDataUnlimited(void)
         if (GetAdaXPubType() == LEDGER_ADA) {
             char *mnemonic = NULL;
             bip39_mnemonic_from_bytes(NULL, entropy, len, &mnemonic);
-            encodeResult = cardano_sign_tx_with_ledger_bitbox02_unlimited(data, mfp, xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
+            encodeResult = cardano_sign_tx_with_ledger_bitbox02_unlimited(data, mfp, g_xpub, mnemonic, GetPassphrase(GetCurrentAccountIndex()));
         } else {
-            encodeResult = cardano_sign_tx_unlimited(data, mfp, xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), isSlip39);
+            encodeResult = cardano_sign_tx_unlimited(data, mfp, g_xpub, entropy, len, GetPassphrase(GetCurrentAccountIndex()), isSlip39);
         }
         ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
@@ -995,58 +993,11 @@ UREncodeResult *GuiGetAdaSignUrDataUnlimited(void)
 
 ChainType GetAdaXPubTypeByIndexAndDerivationType(AdaXPubType type, uint16_t index)
 {
-    switch (index) {
-    case 0:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_0 : XPUB_TYPE_LEDGER_ADA_0;
-    case 1:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_1 : XPUB_TYPE_LEDGER_ADA_1;
-    case 2:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_2 : XPUB_TYPE_LEDGER_ADA_2;
-    case 3:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_3 : XPUB_TYPE_LEDGER_ADA_3;
-    case 4:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_4 : XPUB_TYPE_LEDGER_ADA_4;
-    case 5:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_5 : XPUB_TYPE_LEDGER_ADA_5;
-    case 6:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_6 : XPUB_TYPE_LEDGER_ADA_6;
-    case 7:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_7 : XPUB_TYPE_LEDGER_ADA_7;
-    case 8:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_8 : XPUB_TYPE_LEDGER_ADA_8;
-    case 9:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_9 : XPUB_TYPE_LEDGER_ADA_9;
-    case 10:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_10 : XPUB_TYPE_LEDGER_ADA_10;
-    case 11:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_11 : XPUB_TYPE_LEDGER_ADA_11;
-    case 12:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_12 : XPUB_TYPE_LEDGER_ADA_12;
-    case 13:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_13 : XPUB_TYPE_LEDGER_ADA_13;
-    case 14:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_14 : XPUB_TYPE_LEDGER_ADA_14;
-    case 15:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_15 : XPUB_TYPE_LEDGER_ADA_15;
-    case 16:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_16 : XPUB_TYPE_LEDGER_ADA_16;
-    case 17:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_17 : XPUB_TYPE_LEDGER_ADA_17;
-    case 18:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_18 : XPUB_TYPE_LEDGER_ADA_18;
-    case 19:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_19 : XPUB_TYPE_LEDGER_ADA_19;
-    case 20:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_20 : XPUB_TYPE_LEDGER_ADA_20;
-    case 21:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_21 : XPUB_TYPE_LEDGER_ADA_21;
-    case 22:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_22 : XPUB_TYPE_LEDGER_ADA_22;
-    case 23:
-        return type == STANDARD_ADA ? XPUB_TYPE_ADA_23 : XPUB_TYPE_LEDGER_ADA_23;
-    default:
-        return XPUB_TYPE_ADA_0;
+    if (index > 23) {
+        index = 0;
     }
+    ChainType base = (type == STANDARD_ADA) ? XPUB_TYPE_ADA_0 : XPUB_TYPE_LEDGER_ADA_0;
+    return (ChainType)(base + index);
 }
 
 ChainType GetAdaXPubTypeByIndex(uint16_t index)

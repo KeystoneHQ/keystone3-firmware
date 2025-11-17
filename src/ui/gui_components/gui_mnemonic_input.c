@@ -29,10 +29,13 @@
 extern TrieSTPtr rootTree;
 extern char g_wordBuf[GUI_KEYBOARD_CANDIDATE_WORDS_CNT][GUI_KEYBOARD_CANDIDATE_WORDS_LEN];
 static char g_sliceHeadWords[GUI_KEYBOARD_CANDIDATE_WORDS_LEN];                                           // slip39 head three words
-static uint8_t g_sliceSha256[15][GUI_KEYBOARD_CANDIDATE_WORDS_LEN];                                       // slip39 words hash
+static uint8_t g_sliceSha256[SLIP39_MAX_SLICE_COUNT - 1][GUI_KEYBOARD_CANDIDATE_WORDS_LEN];               // slip39 words hash
 static lv_obj_t *g_noticeHintBox = NULL;
 
 static void HandleInputType(MnemonicKeyBoard_t *mkb);
+static void CompleteSlip39Import(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb);
+static void ShowShareSuccessDialog(void);
+static void UpdateSliceLabels(MnemonicKeyBoard_t *mkb);
 
 char *GuiMnemonicGetTrueWord(const char *word, char *trueWord)
 {
@@ -48,9 +51,32 @@ char *GuiMnemonicGetTrueWord(const char *word, char *trueWord)
     return trueWord;
 }
 
+static void CollectMnemonicWords(MnemonicKeyBoard_t *mkb, char *mnemonic, size_t bufferSize)
+{
+    char *tempMnemonic = SRAM_MALLOC(bufferSize);
+    memset_s(tempMnemonic, bufferSize, 0, bufferSize);
+
+    for (int i = 0, j = 0; i < mkb->wordCnt; j++, i += 3) {
+        for (int k = i; k < i + 3; k++) {
+            char trueBuf[12] = {0};
+            GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, k), trueBuf);
+            strcat_s(tempMnemonic, bufferSize, trueBuf);
+            strcat_s(tempMnemonic, bufferSize, " ");
+        }
+    }
+
+    // Special handling for 20-word layout: 3x7 grid with last column empty
+    if (mkb->wordCnt == SLIP39_MNEMONIC_20_WORDS) {
+        tempMnemonic[strlen(tempMnemonic) - 2] = '\0';
+    } else {
+        tempMnemonic[strlen(tempMnemonic) - 1] = '\0';
+    }
+    memcpy(mnemonic, tempMnemonic, bufferSize);
+    SRAM_FREE(tempMnemonic);
+}
+
 void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 {
-    // todo slice==0 clear
     if (mkb->currentSlice == 0) {
         for (int i = 0; i < 15; i++) {
             memset_s(g_sliceSha256[i], 32, 0, 32);
@@ -59,22 +85,10 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     }
     mkb->currentId = 0;
     bool isSame = false;
-    char *mnemonic = SRAM_MALLOC(10 * mkb->wordCnt + 1);
-    memset_s(mnemonic, 10 * mkb->wordCnt + 1, 0, 10 * mkb->wordCnt + 1);
-
-    for (int i = 0, j = 0; i < mkb->wordCnt; j++, i += 3) {
-        for (int k = i; k < i + 3; k++) {
-            char trueBuf[12] = {0};
-            GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, k), trueBuf);
-            strcat(mnemonic, trueBuf);
-            strcat(mnemonic, " ");
-        }
-    }
-    if (mkb->wordCnt == 20) {
-        mnemonic[strlen(mnemonic) - 2] = '\0';
-    } else {
-        mnemonic[strlen(mnemonic) - 1] = '\0';
-    }
+    size_t bufferSize = 10 * mkb->wordCnt + 1;
+    char *mnemonic = SRAM_MALLOC(bufferSize);
+    memset_s(mnemonic, bufferSize, 0, bufferSize);
+    CollectMnemonicWords(mkb, mnemonic, bufferSize);
 
     uint8_t threShold = 0;
     do {
@@ -102,16 +116,17 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                 mkb->threShold = threShold;
                 for (int i = 0; i < 3; i++) {
                     char trueBuf[12] = {0};
-                    strcat(g_sliceHeadWords, GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, i), trueBuf));
+                    GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, i), trueBuf);
+                    strcat_s(g_sliceHeadWords, sizeof(g_sliceHeadWords), trueBuf);
                     if (i == 2) {
                         break;
                     }
-                    strcat(g_sliceHeadWords, " ");
+                    strcat_s(g_sliceHeadWords, sizeof(g_sliceHeadWords), " ");
                 }
             } else {
                 uint8_t tempHash[32];
                 sha256((struct sha256 *)tempHash, mnemonic, strlen(mnemonic));
-                for (int i = 0; i < mkb->currentSlice; i++) {
+                for (int i = 0; i < mkb->currentSlice && i < SLIP39_MAX_SLICE_COUNT - 1; i++) {
                     if (!memcmp(tempHash, g_sliceSha256[i], 32)) {
                         g_noticeHintBox = GuiCreateResultHintbox(386, &imgFailed, _("import_wallet_ssb_incorrect_title"),
                                           _("import_wallet_ssb_repeat_desc"), NULL, DARK_GRAY_COLOR, _("OK"), DARK_GRAY_COLOR);
@@ -133,69 +148,37 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                     mkb->currentSlice++;
                     lv_label_set_text_fmt(mkb->titleLabel, _("import_wallet_ssb_title_fmt"), mkb->currentSlice + 1);
                     lv_label_set_text_fmt(mkb->descLabel, _("import_wallet_ssb_desc_fmt"), mkb->wordCnt, mkb->currentSlice + 1);
-                    g_noticeHintBox = GuiCreateResultHintbox(386, &imgSuccess, _("shamir_phrase_verify_success_title"),
-                                      _("import_wallet_share_success_desc"), _("Continue"), DARK_GRAY_COLOR, _("Done"), ORANGE_COLOR);
-                    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
-                    lv_obj_add_event_cb(rightBtn, CloseToSubtopViewHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-                    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeHintBox);
-                    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+                    ShowShareSuccessDialog();
                     ClearMnemonicKeyboard(mkb, &mkb->currentId);
                 } else {
                     lv_obj_clear_flag(mkb->stepLabel, LV_OBJ_FLAG_HIDDEN);
                     if (mkb->currentSlice + 1 == mkb->threShold) {
-                        if (mkb->intputType == MNEMONIC_INPUT_FORGET_VIEW) {
-                            GuiForgetAnimContDel(1);
-                            lv_obj_add_flag(letterKb->cont, LV_OBJ_FLAG_HIDDEN);
-                            Slip39Data_t slip39 = {
-                                .threShold = mkb->threShold,
-                                .wordCnt = mkb->wordCnt,
-                            };
-                            GuiModelSlip39ForgetPassword(slip39);
-                        } else {
-                            GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-                        }
+                        CompleteSlip39Import(mkb, letterKb);
                     } else {
                         mkb->currentSlice++;
-                        if (mkb->stepLabel != NULL) {
-                            if (lv_obj_has_flag(mkb->stepLabel, LV_OBJ_FLAG_HIDDEN)) {
-                                lv_obj_clear_flag(mkb->stepLabel, LV_OBJ_FLAG_HIDDEN);
-                            }
-                            lv_label_set_text_fmt(mkb->stepLabel, _("import_wallet_ssb_step_fmt"), mkb->currentSlice + 1, mkb->threShold);
-                        }
-                        if (mkb->titleLabel != NULL) {
-                            lv_label_set_text_fmt(mkb->titleLabel, _("import_wallet_ssb_title_fmt"), mkb->currentSlice + 1);
-                        }
-                        if (mkb->descLabel != NULL) {
-                            lv_label_set_text_fmt(mkb->descLabel, _("import_wallet_ssb_desc_fmt"),
-                                                  mkb->wordCnt, mkb->currentSlice + 1);
-                        }
+                        UpdateSliceLabels(mkb);
                     }
                 }
             }
         }
     } while (0);
     GuiSetLetterBoardConfirm(letterKb, 0);
-    memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
+    memset_s(mnemonic, bufferSize, 0, bufferSize);
     SRAM_FREE(mnemonic);
-}
-
-static void ProceedWithBip39(MnemonicKeyBoard_t *mkb)
-{
-    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
 }
 
 static void HandleInputType(MnemonicKeyBoard_t *mkb)
 {
     switch (mkb->intputType) {
     case MNEMONIC_INPUT_IMPORT_VIEW:
-        ProceedWithBip39(mkb);
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
         break;
     case MNEMONIC_INPUT_SETTING_VIEW:
         GuiModelBip39RecoveryCheck(mkb->wordCnt);
         GuiSettingRecoveryCheck();
         break;
     case MNEMONIC_INPUT_FORGET_VIEW:
-        GuiForgetAnimContDel(1);
+        GuiForgetAnimContDel(false);
         GuiModelBip39ForgetPassword(mkb->wordCnt);
         break;
     }
@@ -219,7 +202,7 @@ static void HandleTonCondition(bool isTon, MnemonicKeyBoard_t *mkb)
             }
             break;
         case MNEMONIC_INPUT_FORGET_VIEW:
-            GuiForgetAnimContDel(1);
+            GuiForgetAnimContDel(false);
             GuiModelTonForgetPassword();
             break;
         }
@@ -231,31 +214,22 @@ static void HandleTonCondition(bool isTon, MnemonicKeyBoard_t *mkb)
 
 void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 {
-    char *mnemonic = SRAM_MALLOC(BIP39_MAX_WORD_LEN * mkb->wordCnt + 1);
-    memset_s(mnemonic, BIP39_MAX_WORD_LEN * mkb->wordCnt + 1, 0, BIP39_MAX_WORD_LEN * mkb->wordCnt + 1);
+    size_t bufferSize = BIP39_MAX_WORD_LEN * mkb->wordCnt + mkb->wordCnt;
+    char *mnemonic = SRAM_MALLOC(bufferSize);
+    memset_s(mnemonic, bufferSize, 0, bufferSize);
 
-    for (int i = 0, j = 0; i < mkb->wordCnt; j++, i += 3) {
-        for (int k = i; k < i + 3; k++) {
-            char trueBuf[12] = {0};
-            GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, k), trueBuf);
-            strcat(mnemonic, trueBuf);
-            strcat(mnemonic, " ");
-        }
-    }
-    mnemonic[strlen(mnemonic) - 1] = '\0';
-
+    CollectMnemonicWords(mkb, mnemonic, bufferSize);
     SecretCacheSetMnemonic(mnemonic);
 
 #ifdef WEB3_VERSION
-    bool isTon = ton_verify_mnemonic(mnemonic);
-    HandleTonCondition(isTon, mkb);
+    HandleTonCondition(ton_verify_mnemonic(mnemonic), mkb);
 #else
     HandleInputType(mkb);
 #endif
     lv_obj_add_flag(letterKb->cont, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_height(mkb->cont, 400);
 
-    memset_s(mnemonic, strlen(mnemonic), 0, strlen(mnemonic));
+    memset_s(mnemonic, bufferSize, 0, bufferSize);
     SRAM_FREE(mnemonic);
 }
 
@@ -275,7 +249,6 @@ bool GuiMnemonicInputCheck(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
         }
     }
     GuiSetLetterBoardConfirm(letterKb, 1);
-    // lv_obj_add_flag(mkb->nextButton, LV_OBJ_FLAG_CLICKABLE);
     return true;
 }
 
@@ -391,7 +364,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
 
         if (mkb->currentId == mkb->wordCnt) {
             GuiSetLetterBoardConfirm(letterKb, 1);
-            if (mkb->wordCnt == 33 || mkb->wordCnt == 20) {
+            if (mkb->wordCnt == SLIP39_MNEMONIC_33_WORDS || mkb->wordCnt == SLIP39_MNEMONIC_20_WORDS) {
                 ImportShareNextSlice(mkb, letterKb);
             } else {
                 ImportSinglePhraseWords(mkb, letterKb);
@@ -431,7 +404,6 @@ void GuiMnemonicInputHandler(lv_event_t *e)
 
         char *word = lv_event_get_param(e);
         if ((strlen(word) == 0 && code == KEY_STONE_KEYBOARD_VALUE_CHANGE)) {
-            // if (isClick || (strlen(word) == 0 && code == KEY_STONE_KEYBOARD_VALUE_CHANGE)) {
             if (isClick > 0) {
                 isClick--;
             }
@@ -505,4 +477,48 @@ lv_keyboard_user_mode_t GuiGetMnemonicKbType(int wordCnt)
     }
 
     return KEY_STONE_MNEMONIC_12;
+}
+
+static void UpdateSliceLabels(MnemonicKeyBoard_t *mkb)
+{
+    if (mkb->titleLabel != NULL) {
+        lv_label_set_text_fmt(mkb->titleLabel, _("import_wallet_ssb_title_fmt"), mkb->currentSlice + 1);
+    }
+    if (mkb->descLabel != NULL) {
+        lv_label_set_text_fmt(mkb->descLabel, _("import_wallet_ssb_desc_fmt"), mkb->wordCnt, mkb->currentSlice + 1);
+    }
+    if (mkb->stepLabel != NULL) {
+        if (lv_obj_has_flag(mkb->stepLabel, LV_OBJ_FLAG_HIDDEN)) {
+            lv_obj_clear_flag(mkb->stepLabel, LV_OBJ_FLAG_HIDDEN);
+        }
+        lv_label_set_text_fmt(mkb->stepLabel, _("import_wallet_ssb_step_fmt"), mkb->currentSlice + 1, mkb->threShold);
+    }
+}
+
+static void ShowShareSuccessDialog(void)
+{
+    g_noticeHintBox = GuiCreateResultHintbox(386, &imgSuccess,
+                      _("shamir_phrase_verify_success_title"),
+                      _("import_wallet_share_success_desc"),
+                      _("Continue"), DARK_GRAY_COLOR,
+                      _("Done"), ORANGE_COLOR);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeHintBox);
+    lv_obj_add_event_cb(rightBtn, CloseToSubtopViewHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeHintBox);
+    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
+}
+
+static void CompleteSlip39Import(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
+{
+    if (mkb->intputType == MNEMONIC_INPUT_FORGET_VIEW) {
+        GuiForgetAnimContDel(false);
+        lv_obj_add_flag(letterKb->cont, LV_OBJ_FLAG_HIDDEN);
+        Slip39Data_t slip39 = {
+            .threShold = mkb->threShold,
+            .wordCnt = mkb->wordCnt,
+        };
+        GuiModelSlip39ForgetPassword(slip39);
+    } else {
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+    }
 }

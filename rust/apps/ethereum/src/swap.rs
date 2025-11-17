@@ -155,3 +155,158 @@ impl SwapkitContractData {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    extern crate std;
+
+    #[test]
+    fn test_swapkit_asset_name_convert_simple() {
+        assert_eq!(
+            swapkit_asset_name_convert("e").unwrap(),
+            ("ETH".to_string(), None)
+        );
+        assert_eq!(
+            swapkit_asset_name_convert("ETH.ETH").unwrap(),
+            ("ETH".to_string(), None)
+        );
+        assert_eq!(
+            swapkit_asset_name_convert("bitcoin").unwrap(),
+            ("BTC".to_string(), None)
+        );
+        assert_eq!(
+            swapkit_asset_name_convert("b").unwrap(),
+            ("BTC".to_string(), None)
+        );
+        assert_eq!(
+            swapkit_asset_name_convert("BTC.BTC").unwrap(),
+            ("BTC".to_string(), None)
+        );
+        assert_eq!(
+            swapkit_asset_name_convert("x").unwrap(),
+            ("XRP".to_string(), None)
+        );
+        assert_eq!(
+            swapkit_asset_name_convert("d").unwrap(),
+            ("DOGE".to_string(), None)
+        );
+        assert_eq!(
+            swapkit_asset_name_convert("DOGE.DOGE").unwrap(),
+            ("DOGE".to_string(), None)
+        );
+        assert_eq!(
+            swapkit_asset_name_convert("s").unwrap(),
+            ("BNB".to_string(), None)
+        );
+        assert_eq!(
+            swapkit_asset_name_convert("BNB.BNB").unwrap(),
+            ("BNB".to_string(), None)
+        );
+    }
+
+    #[test]
+    fn test_swapkit_asset_name_convert_with_contract() {
+        // Test asset with contract address
+        let result =
+            swapkit_asset_name_convert("ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7")
+                .unwrap();
+        assert_eq!(result.0, "eth.usdt");
+        assert_eq!(
+            result.1,
+            Some("0xdac17f958d2ee523a2206206994597c13d831ec7".to_string())
+        );
+
+        let result =
+            swapkit_asset_name_convert("ETH.USDT-0xdac17f958d2ee523a2206206994597c13d831ec7")
+                .unwrap();
+        assert_eq!(result.0, "eth.usdt");
+        assert_eq!(
+            result.1,
+            Some("0xdac17f958d2ee523a2206206994597c13d831ec7".to_string())
+        );
+    }
+
+    #[test]
+    fn test_swapkit_asset_name_convert_case_insensitive() {
+        // Test case insensitivity
+        assert_eq!(
+            swapkit_asset_name_convert("E").unwrap(),
+            ("ETH".to_string(), None)
+        );
+        assert_eq!(
+            swapkit_asset_name_convert("B").unwrap(),
+            ("BTC".to_string(), None)
+        );
+        assert_eq!(
+            swapkit_asset_name_convert("X").unwrap(),
+            ("XRP".to_string(), None)
+        );
+    }
+
+    #[test]
+    fn test_parse_swapkit_memo_valid() {
+        // Test valid memo format: =:e:0x742636d8FBD2C1dD721Db619b49eaD254385D77d:256699:-_/kns:20/0
+        let memo = "=:e:0x742636d8FBD2C1dD721Db619b49eaD254385D77d:256699:-_/kns:20/0";
+        let result = parse_swapkit_memo(memo);
+        assert!(result.is_ok());
+        let swapkit_memo = result.unwrap();
+        assert_eq!(swapkit_memo.asset, "ETH");
+        assert_eq!(
+            swapkit_memo.receive_address,
+            "0x742636d8FBD2C1dD721Db619b49eaD254385D77d"
+        );
+        assert_eq!(swapkit_memo.swap_out_asset_contract_address, None);
+    }
+
+    #[test]
+    fn test_parse_swapkit_memo_with_contract() {
+        // Test memo with contract address
+        let memo = "=:ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7:0x742636d8FBD2C1dD721Db619b49eaD254385D77d:662901600:-_/kns:20/0";
+        let result = parse_swapkit_memo(memo);
+        assert!(result.is_ok());
+        let swapkit_memo = result.unwrap();
+        assert_eq!(swapkit_memo.asset, "eth.usdt");
+        assert_eq!(
+            swapkit_memo.receive_address,
+            "0x742636d8FBD2C1dD721Db619b49eaD254385D77d"
+        );
+        assert_eq!(
+            swapkit_memo.swap_out_asset_contract_address,
+            Some("0xdac17f958d2ee523a2206206994597c13d831ec7".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_swapkit_memo_invalid_empty() {
+        let memo = "";
+        let result = parse_swapkit_memo(memo);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_swapkit_memo_invalid_too_short() {
+        let memo = "=:e";
+        let result = parse_swapkit_memo(memo);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_swapkit_memo_new() {
+        let memo = SwapkitMemo::new(
+            "ETH".to_string(),
+            "0x742636d8FBD2C1dD721Db619b49eaD254385D77d".to_string(),
+            Some("0xDAC17F958D2EE523A2206206994597C13D831EC7".to_string()),
+        );
+        assert_eq!(memo.asset, "ETH");
+        assert_eq!(
+            memo.receive_address,
+            "0x742636d8FBD2C1dD721Db619b49eaD254385D77d"
+        );
+        assert_eq!(
+            memo.swap_out_asset_contract_address,
+            Some("0xDAC17F958D2EE523A2206206994597C13D831EC7".to_string())
+        );
+    }
+}

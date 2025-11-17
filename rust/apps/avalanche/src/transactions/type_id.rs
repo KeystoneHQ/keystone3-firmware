@@ -16,8 +16,8 @@ pub enum TypeId {
     NftTransferOperation = 0x0000000D,
     PchainImportTx = 0x00000011,
     PchainExportTx = 0x00000012,
-    AddPermissLessionValidator = 0x00000019,
-    AddPermissLessionDelegator = 0x0000001A,
+    AddPermissionlessValidator = 0x00000019,
+    AddPermissionlessDelegator = 0x0000001A,
 }
 
 impl TryFrom<u32> for TypeId {
@@ -40,8 +40,8 @@ impl TryFrom<u32> for TypeId {
             0x0000_000D => Ok(TypeId::NftTransferOperation),
             0x0000_0011 => Ok(TypeId::PchainImportTx),
             0x0000_0012 => Ok(TypeId::PchainExportTx),
-            0x0000_0019 => Ok(TypeId::AddPermissLessionValidator),
-            0x0000_001A => Ok(TypeId::AddPermissLessionDelegator),
+            0x0000_0019 => Ok(TypeId::AddPermissionlessValidator),
+            0x0000_001A => Ok(TypeId::AddPermissionlessDelegator),
             _ => Err(AvaxError::UnknownTypeId(value)),
         }
     }

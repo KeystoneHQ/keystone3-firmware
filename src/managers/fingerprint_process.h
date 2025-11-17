@@ -32,10 +32,6 @@
 #define FINGERPRINT_CMD_RECOGNIZE               (0xA7FF)
 
 #define FINGERPRINT_CMD_GET_CHIP_ID             (0xB100)
-#define ENABLE_FP_RESET
-#ifdef ENABLE_FP_RESET
-#define FINGERPRINT_CMD_SYS_RESET               (0xB200)
-#endif
 #define FINGERPRINT_CMD_GET_UID                 (0xB400)
 #define FINGERPRINT_CMD_GET_VER                 (0xB500)
 #define FINGERPRINT_CMD_CANCEL_EXECUTE          (0xB600)
@@ -44,7 +40,6 @@
 #define FINGERPRINT_CMD_GET_INIT_STATE          (0xC200)
 
 #define FINGERPRINT_CMD_SET_AES_KEY             (0xD000)
-// #define FINGERPRINT_CMD_SET_RESET_AES_KEY       (0xD002)
 #define FINGERPRINT_CMD_GET_AES_KEY_STATE       (0xD100)
 #define FINGERPRINT_CMD_GET_RANDOM_NUM          (0xD200)
 #define FINGERPRINT_CMD_SYS_TEST                (0xD300)
@@ -55,6 +50,10 @@
 #define FINGERPRINT_EN_SING_ERR_TIMES           (5)
 #define FINGERPRINT_SING_ERR_TIMES              (3)
 #define FINGERPRINT_SING_DISABLE_ERR_TIMES      (15)
+
+#define FP_TIMEOUT_TICK_INTERVAL_MS             (100)
+#define FP_TIMEOUT_MAX_RETRIES                  (10)
+#define FP_RECOGNIZE_RETRY_THRESHOLD            (10)
 
 typedef enum {
     FP_SUCCESS_CODE = 0,
@@ -137,6 +136,7 @@ typedef struct {
 typedef struct {
     uint16_t cmd;
     uint8_t cnt;
+    uint8_t maxRetries;  // Max retry count for this command (0 = use default)
 } FingerPrintTimeout_t;
 
 typedef enum {

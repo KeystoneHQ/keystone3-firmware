@@ -13,8 +13,6 @@ typedef struct {
     uint16_t hintboxHeight;
 } AttentionHintboxContext;
 
-
-
 typedef struct {
     char *title;
     char *context;
@@ -24,15 +22,11 @@ typedef struct {
     uint16_t hintboxHeight;
 } EnableBlindSigningHintboxContext;
 
-
-
-
 static uint16_t g_confirmSign = SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM;
 
 static AttentionHintboxContext *BuildConfirmationHintboxContext();
 static EnableBlindSigningHintboxContext *BuildEnableBlindSigningHintboxContext();
 static AttentionHintboxContext *BuildLowPowerHintboxContext();
-static AttentionHintboxContext *HardWareCallInvaildPathHintboxContext();
 static void CloseAttentionHandler(lv_event_t *e);
 static void ConfirmAttentionHandler(lv_event_t *e);
 static void EnableBlindSigningHandler(lv_event_t *e);

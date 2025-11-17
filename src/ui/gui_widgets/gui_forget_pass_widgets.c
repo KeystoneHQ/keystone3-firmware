@@ -437,6 +437,8 @@ void GuiForgetPassDeInit(void)
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
     }
+    memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
+    ClearSecretCache();
 }
 
 int8_t GuiForgetPassNextTile(uint8_t tileIndex)

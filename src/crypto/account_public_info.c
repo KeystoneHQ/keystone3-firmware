@@ -579,44 +579,6 @@ static int32_t WritePublicJsonAndHash(uint8_t accountIndex, uint32_t addr, const
     return SUCCESS_CODE;
 }
 
-// enumerate and fill all non-TON chains
-static int32_t FillPublicInfoForAllChains(const uint8_t *seed, int seedLen, const char *password,
-        const char *icarusMasterKey, const char *ledgerBitbox02Key,
-        bool isSlip39)
-{
-    int32_t ret = SUCCESS_CODE;
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-        // skip unsupported for slip39 and non-public entries
-        if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED)) {
-            continue;
-        }
-#ifdef WEB3_VERSION
-        if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
-            continue;
-        }
-#endif
-        SimpleResponse_c_char* xPubResult = DeriveChainXpub(i, seed, seedLen, password, icarusMasterKey, ledgerBitbox02Key, isSlip39);
-        if (g_chainTable[i].cryptoKey == RSA_KEY && xPubResult == NULL) {
-            continue;
-        }
-        ASSERT(xPubResult);
-        if (xPubResult->error_code != 0) {
-            printf("get_extended_pubkey error\r\n");
-            if (xPubResult->error_message != NULL) {
-                printf("error code = %d\r\nerror msg is: %s\r\n", xPubResult->error_code, xPubResult->error_message);
-            }
-            ret = xPubResult->error_code;
-            free_simple_response_c_char(xPubResult);
-            break;
-        }
-        ASSERT(xPubResult->data);
-        g_accountPublicInfo[i].value = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
-        strcpy_s(g_accountPublicInfo[i].value, strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1, xPubResult->data);
-        free_simple_response_c_char(xPubResult);
-    }
-    return ret;
-}
-
 static int32_t DeriveMasterKeysIfNeeded(bool isBip39, uint8_t *entropy, uint8_t entropyLen, uint8_t accountIndex,
                                         SimpleResponse_c_char **outCip3, SimpleResponse_c_char **outLedger)
 {

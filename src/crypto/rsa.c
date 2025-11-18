@@ -64,6 +64,10 @@ Rsa_primes_t *FlashReadRsaPrimes(void)
         ASSERT(Gd25FlashReadBuffer(GetRsaAddress(), fullData, sizeof(fullData)) == sizeof(fullData));
 
         int len = (GetMnemonicType() == MNEMONIC_TYPE_BIP39) ? (int)sizeof(seed) : GetCurrentAccountEntropyLen();
+        if (SecretCacheGetPassword() == NULL) {
+            printf("password is empty\n");
+            break;
+        }
         ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         CHECK_ERRCODE_BREAK("GetAccountSeed", ret);
 

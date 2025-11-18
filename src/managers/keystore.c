@@ -57,7 +57,7 @@ int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *passwo
 {
     uint8_t randomBuffer[ENTROPY_MAX_LEN], inputBuffer[ENTROPY_MAX_LEN], outputBuffer[ENTROPY_MAX_LEN];
     int32_t ret;
-    ASSERT(strnlen_s(password, PASSWORD_MAX_LEN) > MIN_PASSWORD_LEN);
+    ASSERT(strnlen_s(password, PASSWORD_MAX_LEN) >= MIN_PASSWORD_LEN);
 
     do {
         HashWithSalt(inputBuffer, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "generate entropy");

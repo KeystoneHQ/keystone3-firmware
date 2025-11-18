@@ -183,8 +183,9 @@ void SecretCacheSetMnemonic(char *mnemonic)
         memset_s(g_mnemonicCache, MNEMONIC_MAX_LEN, 0, oldLen);
         SRAM_FREE(g_mnemonicCache);
     }
-    g_mnemonicCache = SRAM_MALLOC(strnlen_s(mnemonic, MNEMONIC_MAX_LEN) + 1);
-    strcpy_s(g_mnemonicCache, MNEMONIC_MAX_LEN, mnemonic);
+    size_t len = strnlen_s(mnemonic, MNEMONIC_MAX_LEN) + 1;
+    g_mnemonicCache = SRAM_MALLOC(len);
+    strcpy_s(g_mnemonicCache, len, mnemonic);
 }
 
 char *SecretCacheGetMnemonic(void)

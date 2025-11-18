@@ -821,7 +821,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     ie = SecretCacheGetIteration();
 
     MODEL_WRITE_SE_HEAD
-    if (wordCnt != SLIP39_MNEMONIC_20_WORDS || wordCnt != SLIP39_MNEMONIC_33_WORDS) {
+    if (wordCnt != SLIP39_MNEMONIC_20_WORDS && wordCnt != SLIP39_MNEMONIC_33_WORDS) {
         ret = ERR_KEYSTORE_MNEMONIC_INVALID;
         break;
     }

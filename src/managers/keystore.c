@@ -723,7 +723,6 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
         ret = CheckPasswordExisted(password, 255);
         CHECK_ERRCODE_BREAK("check repeat password", ret);
         VecFFI_u8 *result = ton_mnemonic_to_entropy(mnemonic);
-        CHECK_ERRCODE_BREAK("ton_mnemonic_to_entropy", TON_ENTROPY_LEN == result->size);
         memcpy_s(entropy, sizeof(entropy), result->data, result->size);
         free_VecFFI_u8(result);
         memcpy_s(accountSecret.entropy, sizeof(accountSecret.entropy), entropy, 32);
@@ -731,7 +730,10 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
 
         accountSecret.entropyLen = 32;
         SimpleResponse_u8 *resultSeed = ton_entropy_to_seed(entropy, 64);
-        CHECK_ERRCODE_BREAK("ton_entropy_to_seed", resultSeed->error_code);
+        if (resultSeed->error_code != 0) {
+            ret = resultSeed->error_code;
+            break;
+        }
         memcpy_s(seed, sizeof(seed), resultSeed->data, SEED_LEN);
         free_VecFFI_u8(resultSeed);
         memcpy_s(accountSecret.seed, sizeof(accountSecret.seed), seed, SEED_LEN);

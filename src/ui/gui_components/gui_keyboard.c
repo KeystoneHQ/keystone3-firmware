@@ -1,4 +1,5 @@
 #include <string.h>
+#include "device_setting.h"
 #include "motor_manager.h"
 #include "gui.h"
 #include "gui_obj.h"

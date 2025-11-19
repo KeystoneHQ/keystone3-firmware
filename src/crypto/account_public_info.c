@@ -903,9 +903,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value = SRAM_MALLOC(65);
             char* ptr = g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value;
             memset_s(ptr, 65, 0, 65);
-            for (size_t i = 0; i < 32; i++) {
-                snprintf_s(ptr + i * 2, 65 - i * 2, "%02x", checksum[i]);
-            }
+            ByteArrayToHexStr(checksum, sizeof(checksum), ptr);
         } else {
 #endif
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {

@@ -842,10 +842,9 @@ pub unsafe extern "C" fn cardano_get_pubkey_by_slip23(
         ))
         .simple_c_ptr();
     }
-    let mut entropy = extract_array_mut!(entropy, u8, entropy_len as usize);
+    let entropy = extract_array!(entropy, u8, entropy_len as usize);
     let path = recover_c_char(path).to_lowercase();
     let xpub = app_cardano::slip23::from_seed_slip23_path(entropy, path.as_str());
-    entropy.zeroize();
     match xpub {
         Ok(xpub) => {
             SimpleResponse::success(convert_c_char(xpub.public().to_string())).simple_c_ptr()

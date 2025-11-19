@@ -26,7 +26,6 @@
 #include "hmac.h"
 #include "memzero.h"
 #include "sha2.h"
-#include "user_memory.h"
 
 void hmac_sha256_prepare_slip39(const uint8_t *key, const uint32_t keylen,
                                 uint32_t *opad_digest, uint32_t *ipad_digest)
@@ -60,7 +59,7 @@ void hmac_sha256_prepare_slip39(const uint8_t *key, const uint32_t keylen,
         key_pad[i] = key_pad[i] ^ 0x5c5c5c5c ^ 0x36363636;
     }
     sha256_Transform(sha256_initial_hash_value, key_pad, ipad_digest);
-    memset_s(key_pad, sizeof(key_pad), 0, sizeof(key_pad));
+    memzero(key_pad, sizeof(key_pad));
 }
 
 void pbkdf2_hmac_sha256_Init(PBKDF2_HMAC_SHA256_CTX *pctx, const uint8_t *pass,

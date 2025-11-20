@@ -10,3 +10,6 @@ keystore = { workspace = true, default-features = false }
 hex = { workspace = true }
 cryptoxide = { workspace = true }
 thiserror = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

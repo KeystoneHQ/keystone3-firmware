@@ -1,4 +1,5 @@
 #![no_std]
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 use core::str::FromStr;
 
@@ -19,6 +20,9 @@ pub mod mnemonic;
 pub mod structs;
 pub mod transaction;
 mod utils;
+
+#[cfg_attr(coverage_nightly, coverage(off))]
+#[allow(warnings)]
 mod vendor;
 
 pub fn ton_public_key_to_address(pk: Vec<u8>) -> Result<String> {

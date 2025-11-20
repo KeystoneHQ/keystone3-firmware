@@ -24,4 +24,4 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Run rust/apps/wallets
-        run: cd rust/apps/wallets && cargo +nightly-2025-05-01 llvm-cov --fail-under-regions 39 --fail-under-functions 40 --fail-under-lines 57
+        run: cd rust/apps/wallets && cargo +nightly-2025-05-01 llvm-cov --fail-under-regions 51 --fail-under-functions 54 --fail-under-lines 70 --ignore-filename-regex 'keystore/*|xrp/*'

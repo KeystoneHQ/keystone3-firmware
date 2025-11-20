@@ -24,4 +24,4 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Run rust/apps/solana
-        run: cd rust/apps/solana && cargo +nightly-2025-05-01 llvm-cov --fail-under-regions 21 --fail-under-functions 34 --fail-under-lines 38 
+        run: cd rust/apps/solana && cargo +nightly-2025-05-01 llvm-cov --fail-under-regions 49 --fail-under-functions 65 --fail-under-lines 68 --ignore-filename-regex 'keystore/*|utils/*'

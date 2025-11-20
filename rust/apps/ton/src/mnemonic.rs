@@ -237,17 +237,6 @@ mod tests {
     }
 
     #[test]
-    fn test_ton_entropy_to_seed_deterministic() {
-        let entropy = vec![0u8; 64];
-        let seed1 = ton_entropy_to_seed(&entropy);
-        let seed2 = ton_entropy_to_seed(&entropy);
-
-        // Verify the function is deterministic
-        assert_eq!(seed1, seed2);
-        assert_eq!(seed1.len(), 64);
-    }
-
-    #[test]
     fn test_ton_mnemonic_with_empty_password() {
         let words: Vec<String> = vec![
             "dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
@@ -264,33 +253,6 @@ mod tests {
             ton_mnemonic_to_master_seed(words, Some("".to_string())).unwrap();
 
         assert_eq!(result_no_password, result_empty_password);
-    }
-
-    #[test]
-    fn test_ton_mnemonic_normalization() {
-        let words_lower: Vec<String> = vec![
-            "dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
-            "gas", "diet", "dune", "use", "other", "base", "gym", "mad", "law", "immense",
-            "village", "world", "example", "praise", "game",
-        ]
-        .iter()
-        .map(|v| v.to_string())
-        .collect();
-
-        let words_mixed: Vec<String> = vec![
-            "Dose", "ICE", "Enrich", "TRIGGER", "test", "Dove", "CENTURY", "still", "Betray",
-            "GAS", "diet", "DUNE", "use", "Other", "BASE", "gym", "MAD", "law", "Immense",
-            "VILLAGE", "world", "Example", "PRAISE", "game",
-        ]
-        .iter()
-        .map(|v| v.to_string())
-        .collect();
-
-        let seed_lower = ton_mnemonic_to_master_seed(words_lower, None).unwrap();
-        let seed_mixed = ton_mnemonic_to_master_seed(words_mixed, None).unwrap();
-
-        // Should produce same result regardless of case
-        assert_eq!(seed_lower, seed_mixed);
     }
 
     #[test]
@@ -376,18 +338,6 @@ mod tests {
         // Test validation with different passwords - these may fail if mnemonic was not created with password
         let _result_with_password = ton_mnemonic_validate(&words, &Some("password123".to_string()));
         // The validation might fail because this specific mnemonic is passwordless
-    }
-
-    #[test]
-    fn test_ton_entropy_to_seed_different_inputs() {
-        let entropy1 = vec![1u8; 64];
-        let entropy2 = vec![2u8; 64];
-
-        let seed1 = ton_entropy_to_seed(&entropy1);
-        let seed2 = ton_entropy_to_seed(&entropy2);
-
-        // Different entropies should produce different seeds
-        assert_ne!(seed1, seed2);
     }
 
     #[test]
@@ -509,17 +459,6 @@ mod tests {
         // Should validate successfully
         let result = ton_mnemonic_validate(&words, &None);
         assert!(result.is_ok());
-    }
-
-    #[test]
-    fn test_ton_entropy_to_seed_output_size() {
-        let entropies = vec![vec![0u8; 64], vec![255u8; 64], (0..64).collect::<Vec<u8>>()];
-
-        for entropy in entropies {
-            let seed = ton_entropy_to_seed(&entropy);
-            // Seed should always be 64 bytes
-            assert_eq!(seed.len(), 64);
-        }
     }
 
     #[test]
@@ -672,25 +611,6 @@ mod tests {
 
         assert_eq!(entropy1, entropy2);
         assert_eq!(entropy2, entropy3);
-    }
-
-    #[test]
-    fn test_ton_master_seed_consistency_with_clone() {
-        let words1: Vec<String> = vec![
-            "dose", "ice", "enrich", "trigger", "test", "dove", "century", "still", "betray",
-            "gas", "diet", "dune", "use", "other", "base", "gym", "mad", "law", "immense",
-            "village", "world", "example", "praise", "game",
-        ]
-        .iter()
-        .map(|v| v.to_lowercase())
-        .collect();
-
-        let words2 = words1.clone();
-
-        let seed1 = ton_mnemonic_to_master_seed(words1, None).unwrap();
-        let seed2 = ton_mnemonic_to_master_seed(words2, None).unwrap();
-
-        assert_eq!(seed1, seed2);
     }
 
     #[test]

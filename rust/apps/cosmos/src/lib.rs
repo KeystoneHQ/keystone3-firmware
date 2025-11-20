@@ -1,5 +1,5 @@
 #![no_std]
-#![feature(error_in_core)]
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 #[allow(unused_imports)] //report unused_import in test
 #[macro_use]
@@ -19,6 +19,8 @@ use bitcoin::secp256k1::{Message, PublicKey};
 
 use keystore::algorithms::secp256k1::derive_public_key;
 
+#[cfg_attr(coverage_nightly, coverage(off))]
+#[allow(warnings)]
 mod cosmos_sdk_proto;
 pub mod errors;
 mod proto_wrapper;
@@ -66,7 +68,7 @@ pub fn sign_tx(
         SignMode::EVM => keccak256(message).to_vec(),
     };
 
-    if let Ok(message) = Message::from_slice(hash.as_slice()) {
+    if let Ok(message) = Message::from_digest_slice(hash.as_slice()) {
         let (_, signature) =
             keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
                 .map_err(|e| CosmosError::KeystoreError(format!("sign failed {e}")))?;

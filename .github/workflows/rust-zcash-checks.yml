@@ -24,4 +24,4 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Run rust/apps/zcash
-        run: cd rust/apps/zcash && cargo +nightly-2025-05-01 llvm-cov  --fail-under-regions 48 --fail-under-functions 42 --fail-under-lines 56
+        run: cd rust/apps/zcash && cargo +nightly-2025-05-01 llvm-cov  --fail-under-regions 69 --fail-under-functions 67 --fail-under-lines 74 --ignore-filename-regex 'keystore/*|utils/*|zcash_vendor/*'

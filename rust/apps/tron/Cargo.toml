@@ -27,3 +27,6 @@ prost-build = { version = "0.11.8" }
 
 [features]
 generate_pb = []
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

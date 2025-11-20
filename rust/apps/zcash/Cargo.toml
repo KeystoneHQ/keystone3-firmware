@@ -20,3 +20,6 @@ zcash_note_encryption = "0.4.1"
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

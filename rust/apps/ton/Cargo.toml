@@ -32,3 +32,6 @@ zeroize = { workspace = true }
 keystore = { workspace = true }
 anyhow = "*"
 urlencoding = "2.1.3"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

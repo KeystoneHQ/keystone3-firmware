@@ -22,3 +22,6 @@ keystore = { workspace = true, default-features = false }
 cuprate-cryptonight = { git = "https://github.com/KeystoneHQ/cuprate", default-features = false, features = ["no_std"] }
 monero-serai = { git = "https://github.com/KeystoneHQ/serai", default-features = false }
 monero-wallet = { git = "https://github.com/KeystoneHQ/serai", default-features = false }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

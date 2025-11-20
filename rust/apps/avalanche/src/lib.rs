@@ -1,5 +1,4 @@
 #![no_std]
-#![feature(error_in_core)]
 
 #[allow(unused_imports)]
 #[macro_use]

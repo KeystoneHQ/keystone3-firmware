@@ -663,14 +663,7 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
         CalculateTonChecksum(entropyResult->data, checksum);
         free_VecFFI_u8(entropyResult);
         char value[65] = {0};
-        size_t offset = 0;
-        for (size_t i = 0; i < 32 && offset < 64; i++) {
-            int written = snprintf_s(value + offset, 65 - offset, "%02x", checksum[i]);
-            if (written > 0) {
-                offset += written;
-            }
-        }
-        value[64] = '\0';
+        ByteArrayToHexStr(checksum, sizeof(checksum), value);
         existIndex = SpecifiedXPubExist(value, ton);
         if (index != NULL) {
             *index = existIndex;
@@ -1804,6 +1797,7 @@ static int32_t ModelTonForgetPass(const void *inData, uint32_t inDataLen)
         CHECK_ERRCODE_BREAK("save low power", ret);
         bip39Ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
         tonRet = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, false, 0, NULL);
+        printf("tonRet: %d, bip39Ret: %d\r\n", tonRet, bip39Ret);
         if (tonRet != SUCCESS_CODE && bip39Ret != SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_FORGET_TON_BIP39_SUCCESS, NULL, 0);
         } else if (tonRet != SUCCESS_CODE) {

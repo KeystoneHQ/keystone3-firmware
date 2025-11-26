@@ -484,7 +484,6 @@ pub unsafe extern "C" fn eth_sign_batch_tx(
             }
         };
 
-        seed.zeroize();
         match signature {
             Err(e) => return UREncodeResult::from(e).c_ptr(),
             Ok(sig) => {
@@ -497,6 +496,7 @@ pub unsafe extern "C" fn eth_sign_batch_tx(
             }
         }
     }
+    seed.zeroize();
 
     let ret = EthBatchSignature::new(result);
 

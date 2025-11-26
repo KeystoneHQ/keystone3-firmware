@@ -13,6 +13,7 @@ use zcash_vendor::{
     zip32::{self, fingerprint::SeedFingerprint},
 };
 
+use crate::algorithms::utils::is_all_zero_or_ff;
 use crate::errors::{KeystoreError, Result};
 
 pub fn derive_ufvk<P: consensus::Parameters>(
@@ -20,6 +21,7 @@ pub fn derive_ufvk<P: consensus::Parameters>(
     seed: &[u8],
     account_path: &str,
 ) -> Result<String> {
+    ensure_non_trivial_seed(seed)?;
     let account_path = DerivationPath::from_str(account_path.to_lowercase().as_str())
         .map_err(|e| KeystoreError::DerivationError(e.to_string()))?;
     if account_path.len() != 3 {
@@ -50,7 +52,15 @@ pub fn derive_ufvk<P: consensus::Parameters>(
     }
 }
 
+fn ensure_non_trivial_seed(seed: &[u8]) -> Result<()> {
+    if is_all_zero_or_ff(seed) {
+        return Err(KeystoreError::SeedError("invalid seed".to_string()));
+    }
+    Ok(())
+}
+
 pub fn calculate_seed_fingerprint(seed: &[u8]) -> Result<[u8; 32]> {
+    ensure_non_trivial_seed(seed)?;
     let sfp = SeedFingerprint::from_seed(seed).ok_or(KeystoreError::SeedError(
         "Invalid seed, cannot calculate ZIP-32 Seed Fingerprint".into(),
     ))?;
@@ -64,6 +74,7 @@ pub fn sign_message_orchard<R: RngCore + CryptoRng>(
     path: &[zip32::ChildIndex],
     rng: R,
 ) -> Result<()> {
+    ensure_non_trivial_seed(seed)?;
     let coin_type = 133;
 
     if path.len() == 3
@@ -90,6 +101,7 @@ pub fn sign_message_orchard<R: RngCore + CryptoRng>(
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use zcash_vendor::{
         pasta_curves::Fq,
         zcash_keys::keys::{UnifiedAddressRequest, UnifiedSpendingKey},
@@ -146,6 +158,21 @@ mod tests {
             hex::encode(seed_fingerprint),
             "deff604c246710f7176dead02aa746f2fd8d5389f7072556dcb555fdbe5e3ae3"
         );
+    }
+
+    #[test]
+    fn test_reject_trivial_seed() {
+        // all-zero seed should be rejected
+        let zero_seed = vec![0u8; 32];
+        let result = calculate_seed_fingerprint(&zero_seed);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
+
+        // all-0xFF seed should also be rejected
+        let ff_seed = vec![0xffu8; 32];
+        let result = calculate_seed_fingerprint(&ff_seed);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
     }
 
     #[test]

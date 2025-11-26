@@ -6,8 +6,8 @@ use keystore::algorithms::crypto::hmac_sha512;
 
 // https://github.com/satoshilabs/slips/blob/master/slip-0023.md
 pub fn from_seed_slip23(seed: &[u8]) -> Result<XPrv> {
-    if seed.is_empty() {
-        return Err(CardanoError::InvalidSeed("seed is empty".to_string()));
+    if seed.is_empty() || seed.iter().all(|b| *b == 0x00) || seed.iter().all(|b| *b == 0xFF) {
+        return Err(CardanoError::InvalidSeed("seed is invalid".to_string()));
     }
 
     // Step 2: Calculate I := HMAC-SHA512(Key = "ed25519 cardano seed", Data = S)
@@ -136,7 +136,7 @@ mod tests {
     #[test]
     fn test_from_seed_slip23_different_seeds() {
         let seed1 = hex::decode("578d685d20b602683dc5171df411d3e2").unwrap();
-        let seed2 = hex::decode("00000000000000000000000000000000").unwrap();
+        let seed2 = hex::decode("00000000000000000000000000000001").unwrap();
 
         let result1 = from_seed_slip23(&seed1).unwrap();
         let result2 = from_seed_slip23(&seed2).unwrap();
@@ -164,6 +164,15 @@ mod tests {
         assert_eq!(components[0], 2147485500); // hardened
         assert_eq!(components[1], 1815); // not hardened
         assert_eq!(components[2], 2147483648); // hardened
+    }
+
+    #[test]
+    fn test_from_seed_invalid_seed() {
+        let seed = hex::decode("00000000000000000000000000000000").unwrap();
+        let path = "m/1852'/1815'/0'/0/0";
+        let result = from_seed_slip23_path(&seed, path);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), CardanoError::InvalidSeed(_)));
     }
 
     #[test]

@@ -11,7 +11,7 @@ use bitcoin::secp256k1;
 use bitcoin::Network;
 use secp256k1::Message;
 
-use crate::algorithms::utils::normalize_path;
+use crate::algorithms::utils::{is_all_zero_or_ff, normalize_path};
 
 use crate::errors::{KeystoreError, Result};
 
@@ -39,6 +39,7 @@ pub fn get_public_key_by_seed(seed: &[u8], path: &String) -> Result<PublicKey> {
 }
 
 fn get_extended_private_key_by_seed(seed: &[u8], path: &String) -> Result<Xpriv> {
+    ensure_non_trivial_seed(seed)?;
     let p = normalize_path(path);
     let derivation_path = DerivationPath::from_str(p.as_str())
         .map_err(|e| KeystoreError::InvalidDerivationPath(e.to_string()))?;
@@ -54,9 +55,17 @@ pub fn get_extended_public_key_by_seed(seed: &[u8], path: &String) -> Result<Xpu
 }
 
 pub fn get_master_fingerprint_by_seed(seed: &[u8]) -> Result<Fingerprint> {
+    ensure_non_trivial_seed(seed)?;
     let root = Xpriv::new_master(Network::Bitcoin, seed)
         .map_err(|e| KeystoreError::SeedError(e.to_string()))?;
     Ok(root.fingerprint(&secp256k1::Secp256k1::new()))
+}
+
+fn ensure_non_trivial_seed(seed: &[u8]) -> Result<()> {
+    if is_all_zero_or_ff(seed) {
+        return Err(KeystoreError::SeedError("invalid seed".to_string()));
+    }
+    Ok(())
 }
 
 pub fn sign_message_by_seed(
@@ -64,6 +73,7 @@ pub fn sign_message_by_seed(
     path: &String,
     message: &Message,
 ) -> Result<(i32, [u8; 64])> {
+    ensure_non_trivial_seed(seed)?;
     let key = get_private_key_by_seed(seed, path)?;
     let secp = secp256k1::Secp256k1::new();
     let (rec_id, signature) = secp
@@ -190,6 +200,21 @@ mod tests {
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
         let master_fingerprint = get_master_fingerprint_by_seed(&seed).unwrap();
         assert_eq!("73c5da0a", master_fingerprint.encode_hex::<String>())
+    }
+
+    #[test]
+    fn test_reject_trivial_seed() {
+        // all-zero seed should be rejected
+        let zero_seed = vec![0u8; 32];
+        let result = get_master_fingerprint_by_seed(&zero_seed);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
+
+        // all-0xFF seed should also be rejected
+        let ff_seed = vec![0xffu8; 32];
+        let result = get_master_fingerprint_by_seed(&ff_seed);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
     }
 
     #[test]

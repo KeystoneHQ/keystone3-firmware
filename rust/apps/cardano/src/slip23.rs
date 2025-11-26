@@ -136,7 +136,7 @@ mod tests {
     #[test]
     fn test_from_seed_slip23_different_seeds() {
         let seed1 = hex::decode("578d685d20b602683dc5171df411d3e2").unwrap();
-        let seed2 = hex::decode("00000000000000000000000000000000").unwrap();
+        let seed2 = hex::decode("00000000000000000000000000000001").unwrap();
 
         let result1 = from_seed_slip23(&seed1).unwrap();
         let result2 = from_seed_slip23(&seed2).unwrap();
@@ -164,6 +164,15 @@ mod tests {
         assert_eq!(components[0], 2147485500); // hardened
         assert_eq!(components[1], 1815); // not hardened
         assert_eq!(components[2], 2147483648); // hardened
+    }
+
+    #[test]
+    fn test_from_seed_invalid_seed() {
+        let seed = hex::decode("00000000000000000000000000000000").unwrap();
+        let path = "m/1852'/1815'/0'/0/0";
+        let result = from_seed_slip23_path(&seed, path);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), CardanoError::InvalidSeed(_)));
     }
 
     #[test]

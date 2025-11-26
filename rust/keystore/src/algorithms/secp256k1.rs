@@ -203,6 +203,21 @@ mod tests {
     }
 
     #[test]
+    fn test_reject_trivial_seed() {
+        // all-zero seed should be rejected
+        let zero_seed = vec![0u8; 32];
+        let result = get_master_fingerprint_by_seed(&zero_seed);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
+
+        // all-0xFF seed should also be rejected
+        let ff_seed = vec![0xffu8; 32];
+        let result = get_master_fingerprint_by_seed(&ff_seed);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
+    }
+
+    #[test]
     fn test_derive_extend_public_key() {
         let extended_pubkey_str = "xpub6GPqFm1j3L6SppDC1WSMRcUSB4Rt5oPkiHfTsbRTk9o1pzTFN2SrAvbX8a42j48vNrxRbVG8s7RZcNBWBo89yp7iohDAZAuszvnUo7DvJdx";
         let extended_pubkey =

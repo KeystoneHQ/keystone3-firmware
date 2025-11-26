@@ -508,13 +508,22 @@ mod tests {
             assert_eq!(32, key.unwrap().len());
         }
 
-        // Test with different seed
+        // all-0xFF seed should be rejected
         {
-            let seed2 = hex::decode("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff").unwrap();
             let path = "m/0'".to_string();
-            let key1 = get_private_key_by_seed(&seed, &path).unwrap();
-            let key2 = get_private_key_by_seed(&seed2, &path).unwrap();
-            assert_ne!(key1, key2);
+            let seed2 = hex::decode("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff").unwrap();
+            let key = get_private_key_by_seed(&seed2, &path);
+            assert!(key.is_err());
+            assert!(matches!(key, Err(KeystoreError::SeedError(_))));
+        }
+
+        // all-zero seed should also be rejected
+        {
+            let path = "m/0'".to_string();
+            let zero_seed = vec![0u8; 32];
+            let key = get_private_key_by_seed(&zero_seed, &path);
+            assert!(key.is_err());
+            assert!(matches!(key, Err(KeystoreError::SeedError(_))));
         }
     }
 

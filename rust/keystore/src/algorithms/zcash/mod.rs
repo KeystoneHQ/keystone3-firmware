@@ -101,6 +101,7 @@ pub fn sign_message_orchard<R: RngCore + CryptoRng>(
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use zcash_vendor::{
         pasta_curves::Fq,
         zcash_keys::keys::{UnifiedAddressRequest, UnifiedSpendingKey},
@@ -157,6 +158,21 @@ mod tests {
             hex::encode(seed_fingerprint),
             "deff604c246710f7176dead02aa746f2fd8d5389f7072556dcb555fdbe5e3ae3"
         );
+    }
+
+    #[test]
+    fn test_reject_trivial_seed() {
+        // all-zero seed should be rejected
+        let zero_seed = vec![0u8; 32];
+        let result = calculate_seed_fingerprint(&zero_seed);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
+
+        // all-0xFF seed should also be rejected
+        let ff_seed = vec![0xffu8; 32];
+        let result = calculate_seed_fingerprint(&ff_seed);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
     }
 
     #[test]

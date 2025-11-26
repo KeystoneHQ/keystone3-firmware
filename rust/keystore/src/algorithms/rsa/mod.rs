@@ -1,3 +1,4 @@
+use crate::algorithms::utils::is_all_zero_or_ff;
 use crate::errors::{KeystoreError, Result};
 
 use alloc::string::ToString;
@@ -19,6 +20,15 @@ pub const PRIME_LENGTH_IN_BYTE: usize = MODULUS_LENGTH / 8 / 2;
 pub const MODULUS_LENGTH_IN_BYTE: usize = MODULUS_LENGTH / 8;
 pub const SECRET_LENGTH_IN_BYTE: usize = PRIME_LENGTH_IN_BYTE * 2 + MODULUS_LENGTH_IN_BYTE * 2;
 
+fn ensure_non_trivial_seed(seed: &[u8]) -> Result<()> {
+    if is_all_zero_or_ff(seed) {
+        return Err(KeystoreError::GenerateSigningKeyError(
+            "invalid seed".to_string(),
+        ));
+    }
+    Ok(())
+}
+
 fn get_rsa_seed(seed: &[u8]) -> Result<[u8; 32]> {
     let mut intermediate;
     let mut hash = seed;
@@ -33,6 +43,7 @@ fn get_rsa_seed(seed: &[u8]) -> Result<[u8; 32]> {
 }
 
 pub fn get_rsa_secret_from_seed(seed: &[u8]) -> Result<RsaPrivateKey> {
+    ensure_non_trivial_seed(seed)?;
     // bip39 seed length is 64, slip39 seed length is 16 or 32
     let seed_len = seed.len();
     if !matches!(seed.len(), 16 | 32 | 64) {

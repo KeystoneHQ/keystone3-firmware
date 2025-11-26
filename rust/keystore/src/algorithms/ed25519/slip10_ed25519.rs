@@ -6,8 +6,15 @@ use bitcoin::bip32::{ChildNumber, DerivationPath};
 use zeroize::Zeroize;
 
 use crate::algorithms::crypto::hmac_sha512;
-use crate::algorithms::utils::normalize_path;
+use crate::algorithms::utils::{is_all_zero_or_ff, normalize_path};
 use crate::errors::{KeystoreError, Result};
+
+fn ensure_non_trivial_seed(seed: &[u8]) -> Result<()> {
+    if is_all_zero_or_ff(seed) {
+        return Err(KeystoreError::SeedError("invalid seed".to_string()));
+    }
+    Ok(())
+}
 
 /// Derives an Ed25519 private key from a seed using SLIP-10 derivation.
 ///
@@ -39,6 +46,7 @@ use crate::errors::{KeystoreError, Result};
 /// ```
 
 pub fn get_private_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
+    ensure_non_trivial_seed(seed)?;
     let mut i = get_master_key_by_seed(seed)?;
     let path = normalize_path(path);
     let derivation_path = DerivationPath::from_str(path.as_str())
@@ -112,6 +120,7 @@ pub fn get_public_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
 /// A 64-byte Ed25519 signature
 ///
 pub fn sign_message_by_seed(seed: &[u8], path: &String, message: &[u8]) -> Result<[u8; 64]> {
+    ensure_non_trivial_seed(seed)?;
     let mut secret_key = get_private_key_by_seed(seed, path)?;
     let (mut keypair, _) = cryptoxide::ed25519::keypair(&secret_key);
     let signature = cryptoxide::ed25519::signature(message, &keypair);

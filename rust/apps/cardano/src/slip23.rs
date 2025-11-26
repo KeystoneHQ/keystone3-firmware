@@ -6,8 +6,8 @@ use keystore::algorithms::crypto::hmac_sha512;
 
 // https://github.com/satoshilabs/slips/blob/master/slip-0023.md
 pub fn from_seed_slip23(seed: &[u8]) -> Result<XPrv> {
-    if seed.is_empty() {
-        return Err(CardanoError::InvalidSeed("seed is empty".to_string()));
+    if seed.is_empty() || seed.iter().all(|b| *b == 0x00) || seed.iter().all(|b| *b == 0xFF) {
+        return Err(CardanoError::InvalidSeed("seed is invalid".to_string()));
     }
 
     // Step 2: Calculate I := HMAC-SHA512(Key = "ed25519 cardano seed", Data = S)

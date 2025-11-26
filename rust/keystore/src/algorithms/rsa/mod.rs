@@ -178,16 +178,12 @@ mod tests {
         // all-zero seed with valid length should be rejected by seed check
         let zero_seed = vec![0u8; 16];
         let result = get_rsa_secret_from_seed(zero_seed.as_slice()).unwrap_err();
-        assert!(result
-            .to_string()
-            .contains("invalid seed"));
+        assert!(result.to_string().contains("invalid seed"));
 
         // all-0xFF seed with valid length should also be rejected
         let ff_seed = vec![0xffu8; 32];
         let result = get_rsa_secret_from_seed(ff_seed.as_slice()).unwrap_err();
-        assert!(result
-            .to_string()
-            .contains("invalid seed"));
+        assert!(result.to_string().contains("invalid seed"));
 
         // Test empty seed
         let empty_seed = [];

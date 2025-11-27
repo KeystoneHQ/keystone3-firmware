@@ -172,13 +172,13 @@ static UREncodeResult *BtcSignPsbtMultisig(void *data, uint8_t *seed, int len, u
 {
 #ifdef BTC_ONLY
     UREncodeResult *encodeResult = NULL;
-    if (!GuiGetCurrentTransactionNeedSign()) {
-        MultisigSignResult *result = btc_export_multisig_psbt(data);
+    MultisigSignResult *result = !GuiGetCurrentTransactionNeedSign()
+        ? btc_export_multisig_psbt(data)
+        : btc_sign_multisig_psbt(data, seed, len, mfp, mfpLen);
+    if (result) {
         encodeResult = result->ur_result;
         GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
         free_MultisigSignResult(result);
-    } else {
-        encodeResult = btc_sign_multisig_psbt(data, seed, len, mfp, mfpLen);
     }
     return encodeResult;
 #else
@@ -250,10 +250,12 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
     } else if (SupportSignLegacyKeystoneTransactions(urType)) {
         char *hdPath = NULL;
         char *xPub = NULL;
+#ifdef WEB3_VERSION
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
             return NULL;
         }
         encodeResult = utxo_sign_keystone(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
+#endif
     } else if (urType == BtcSignRequest) {
         encodeResult = btc_sign_msg(data, seed, len, mfp, sizeof(mfp));
     } else if (urType == SeedSignerMessage) {
@@ -420,12 +422,14 @@ void *GuiGetParsedQrData(void)
     } else if (SupportSignLegacyKeystoneTransactions(urType)) {
         char *hdPath = NULL;
         char *xPub = NULL;
+#ifdef WEB3_VERSION
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
             return NULL;
         }
         g_parseResult = utxo_parse_keystone(crypto, urType, mfp, sizeof(mfp), xPub);
         SRAM_FREE(public_keys);
         CHECK_CHAIN_RETURN(g_parseResult);
+#endif
         return g_parseResult;
     } else if (SupportSignPsbtExtend(urType)) {
         g_parseResult = utxo_parse_extend_psbt(crypto, public_keys, mfp, sizeof(mfp));
@@ -558,10 +562,12 @@ PtrT_TransactionCheckResult GuiGetPsbtCheckResult(void)
     } else if (SupportSignLegacyKeystoneTransactions(urType)) {
         char *hdPath = NULL;
         char *xPub = NULL;
+#ifdef WEB3_VERSION
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
             return NULL;
         }
         result = utxo_check_keystone(crypto, urType, mfp, sizeof(mfp), xPub);
+#endif
     } else if (urType == BtcSignRequest) {
         result = btc_check_msg(crypto, mfp, sizeof(mfp));
     } else if (urType == SeedSignerMessage) {

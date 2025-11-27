@@ -1328,8 +1328,8 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
         lv_obj_t *data_label = GuiCreateIllustrateLabel(container, buff);
         lv_label_set_recolor(data_label, true);
         // lv_obj_align_to(data_label, orderLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
-        lv_obj_align_to(data_label, lv_obj_get_child(lv_obj_get_parent(data_label), 
-        lv_obj_get_child_cnt(lv_obj_get_parent(data_label)) - 2), LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+        lv_obj_align_to(data_label, lv_obj_get_child(lv_obj_get_parent(data_label),
+                        lv_obj_get_child_cnt(lv_obj_get_parent(data_label)) - 2), LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
 
         // program address label
         snprintf_s(buff, BUFFER_SIZE_128, "#4b4b4b programAddress# %s", overview_instructions->data[i].program_address);

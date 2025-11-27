@@ -153,7 +153,7 @@ void FpSendTimerStart(uint16_t cmd)
             break;
         }
     }
-    
+
     if (osTimerIsRunning(g_fpTimeoutTimer) == 0) {
         osTimerStart(g_fpTimeoutTimer, FP_TIMEOUT_TICK_INTERVAL_MS);
     }
@@ -851,7 +851,7 @@ static bool FpShouldRetryCommand(uint32_t cmdIndex)
     }
 
     FingerPrintTimeout_t *timeout = &g_cmdTimeoutMap[cmdIndex];
-    
+
     if (timeout->cnt == FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT) {
         return false;
     }
@@ -871,24 +871,24 @@ static void FpRetryCommand(uint32_t cmdIndex)
     }
 
     uint16_t cmd = g_cmdHandleMap[cmdIndex].cmd;
-    
+
     switch (cmd) {
     case FINGERPRINT_CMD_GET_REG_NUM:
         FpGetNumberSend(FINGERPRINT_CMD_GET_REG_NUM, 0);
         break;
-        
+
     case FINGERPRINT_CMD_DELETE_SINGLE:
         FpDeleteSend(FINGERPRINT_CMD_DELETE_SINGLE, g_fpIndex);
         break;
-        
+
     case FINGERPRINT_CMD_DELETE_ALL:
         FpDeleteSend(FINGERPRINT_CMD_DELETE_ALL, 1);
         break;
-        
+
     case FINGERPRINT_CMD_RECOGNIZE:
         FpRecognize(g_fingerRecognizeType);
         break;
-        
+
     default:
         FpGenericSend(cmd, g_cmdHandleMap[cmdIndex].isEncrypt);
         break;
@@ -899,19 +899,19 @@ static void FpRetryCommand(uint32_t cmdIndex)
 void FpTimeoutHandle(void *argument)
 {
     bool timerStop = true;
-    
+
     osMutexAcquire(g_fpResponseMutex, osWaitForever);
-    
+
     for (uint32_t i = 1; i < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); i++) {
         FingerPrintTimeout_t *timeout = &g_cmdTimeoutMap[i];
-        
+
         if (timeout->cnt == FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT) {
             continue;
         }
-        
+
         timerStop = false;
         timeout->cnt++;
-        
+
         if (g_cmdHandleMap[i].cmd == FINGERPRINT_CMD_RECOGNIZE) {
             if (timeout->cnt >= FP_RECOGNIZE_RETRY_THRESHOLD) {
                 // Retry recognize command and reset counter
@@ -922,26 +922,26 @@ void FpTimeoutHandle(void *argument)
             for (uint32_t j = 0; j < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); j++) {
                 g_cmdTimeoutMap[j].cnt = FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT;
             }
-            
+
             FpRetryCommand(i);
-            
+
             if (g_devLogSwitch) {
                 printf("FP timeout retry cmd:0x%04x\n", g_cmdHandleMap[i].cmd);
             }
         }
     }
-    
+
     if (timerStop) {
         osTimerStop(g_fpTimeoutTimer);
     }
-    
+
     osMutexRelease(g_fpResponseMutex);
 }
 
 static void FpResponseHandle(uint16_t cmd)
 {
     osMutexAcquire(g_fpResponseMutex, osWaitForever);
-    
+
     for (uint32_t i = 0; i < NUMBER_OF_ARRAYS(g_cmdTimeoutMap); i++) {
         if (g_cmdTimeoutMap[i].cmd == cmd) {
             g_cmdTimeoutMap[i].cnt = FINGERPRINT_RESPONSE_DEFAULT_TIMEOUT;

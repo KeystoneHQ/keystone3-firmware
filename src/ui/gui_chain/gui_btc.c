@@ -69,6 +69,7 @@ static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
 static bool IsMultiSigTx(DisplayTx *data);
 static UREncodeResult *GetBtcSignDataDynamic(bool unLimit);
+static void PreparePublicKeys(PtrT_CSliceFFI_ExtendedPublicKey public_keys, ExtendedPublicKey *keys);
 
 void GuiSetPsbtUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {

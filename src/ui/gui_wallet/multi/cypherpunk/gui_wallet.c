@@ -13,28 +13,7 @@ void GenerateCakeWalletEncryptPincode(void);
 
 static uint8_t *g_pincode = NULL;
 
-UREncodeResult *GuiGetBlueWalletBtcData(void)
-{
-    uint8_t mfp[4] = {0};
-    GetMasterFingerPrint(mfp);
-    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-    int length = 3;
-    ExtendedPublicKey keys[length];
-    public_keys->data = keys;
-    public_keys->size = length;
-    keys[0].path = "m/84'/0'/0'";
-    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_NATIVE_SEGWIT);
-    keys[1].path = "m/49'/0'/0'";
-    keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
-    keys[2].path = "m/44'/0'/0'";
-    keys[2].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_LEGACY);
-    UREncodeResult *urEncode = generate_btc_crypto_account_ur(mfp, sizeof(mfp), public_keys);
-    CHECK_CHAIN_PRINT(urEncode);
-    SRAM_FREE(public_keys);
-    return urEncode;
-}
-
-UREncodeResult *GuiGetSparrowWalletBtcData(void)
+UREncodeResult *GuiGetStandardBtcData(void)
 {
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);

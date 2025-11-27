@@ -1036,18 +1036,18 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         AddCoinsFromArray(g_okxWalletCoinArray, NUMBER_OF_ARRAYS(g_okxWalletCoinArray), true, 132);
         break;
     case WALLET_LIST_BLUE:
-        func = GuiGetBlueWalletBtcData;
+        func = GuiGetStandardBtcData;
         AddCoinsFromArray(g_blueWalletCoinArray, NUMBER_OF_ARRAYS(g_blueWalletCoinArray), false, 0);
         break;
     // todo  zeus wallet use same ur logic as sparrow wallet (m/49'/0'/0' 、 m/44'/0'/0' 、 m/84'/0'/0' and m/86'/0'/0' )
     case WALLET_LIST_ZEUS:
     case WALLET_LIST_SPARROW:
     case WALLET_LIST_BABYLON:
-        func = GuiGetSparrowWalletBtcData;
+        func = GuiGetStandardBtcData;
         AddCoinsFromArray(g_blueWalletCoinArray, NUMBER_OF_ARRAYS(g_blueWalletCoinArray), false, 0);
         break;
     case WALLET_LIST_UNISAT:
-        func = GuiGetSparrowWalletBtcData;
+        func = GuiGetStandardBtcData;
         AddCoinsFromArray(g_UniSatCoinArray, NUMBER_OF_ARRAYS(g_UniSatCoinArray), true, 32 * 5);
         lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_tokens"));
         break;

@@ -30,14 +30,13 @@ pub unsafe extern "C" fn derive_zcash_ufvk(
     seed_len: u32,
     account_path: PtrString,
 ) -> *mut SimpleResponse<c_char> {
-    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let account_path = unsafe { recover_c_char(account_path) };
     let ufvk_text = derive_ufvk(&MainNetwork, seed, &account_path);
     let result = match ufvk_text {
         Ok(text) => SimpleResponse::success(convert_c_char(text)).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
     };
-    seed.zeroize();
     result
 }
 
@@ -196,12 +195,11 @@ pub unsafe extern "C" fn rust_derive_iv_from_seed(
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut SimpleResponse<u8> {
-    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
+    let seed = extract_array!(seed, u8, seed_len as usize);
     let iv_path = "m/44'/1557192335'/0'/2'/0'".to_string();
     let iv = get_private_key_by_seed(seed, &iv_path).unwrap();
     let mut iv_bytes = [0; 16];
     iv_bytes.copy_from_slice(&iv[..16]);
-    seed.zeroize();
     SimpleResponse::success(Box::into_raw(Box::new(iv_bytes)) as *mut u8).simple_c_ptr()
 }
 

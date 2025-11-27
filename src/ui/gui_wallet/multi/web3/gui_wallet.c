@@ -113,25 +113,7 @@ PtrT_CSliceFFI_ExtendedPublicKey BuildChainPaths(ChainPath_t *chainPaths, Extend
     return public_keys;
 }
 
-UREncodeResult *GuiGetBlueWalletBtcData(void)
-{
-    ChainPath_t chainPaths[] = {
-        {.path = "m/84'/0'/0'", .chainType = XPUB_TYPE_BTC_NATIVE_SEGWIT},
-        {.path = "m/49'/0'/0'", .chainType = XPUB_TYPE_BTC},
-        {.path = "m/44'/0'/0'", .chainType = XPUB_TYPE_BTC_LEGACY},
-    };
-    int length = NUMBER_OF_ARRAYS(chainPaths);
-    ExtendedPublicKey keys[length];
-    uint8_t mfp[4] = {0};
-    GetMasterFingerPrint(mfp);
-    PtrT_CSliceFFI_ExtendedPublicKey public_keys = BuildChainPaths(chainPaths, keys, length);
-    UREncodeResult *urEncode = generate_btc_crypto_account_ur(mfp, sizeof(mfp), public_keys);
-    CHECK_CHAIN_PRINT(urEncode);
-    SRAM_FREE(public_keys);
-    return urEncode;
-}
-
-UREncodeResult *GuiGetSparrowWalletBtcData(void)
+UREncodeResult *GuiGetStandardBtcData(void)
 {
     ChainPath_t chainPaths[] = {
         {.path = "m/84'/0'/0'", .chainType = XPUB_TYPE_BTC_NATIVE_SEGWIT},

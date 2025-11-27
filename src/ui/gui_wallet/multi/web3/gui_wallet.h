@@ -6,8 +6,7 @@
 #include "rsa.h"
 #include "gui_attention_hintbox.h"
 
-UREncodeResult *GuiGetBlueWalletBtcData(void);
-UREncodeResult *GuiGetSparrowWalletBtcData(void);
+UREncodeResult *GuiGetStandardBtcData(void);
 UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index);
 UREncodeResult *GuiGetLeapData(void);
 UREncodeResult *GuiGetWanderData(void);

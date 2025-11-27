@@ -173,8 +173,8 @@ static UREncodeResult *BtcSignPsbtMultisig(void *data, uint8_t *seed, int len, u
 #ifdef BTC_ONLY
     UREncodeResult *encodeResult = NULL;
     MultisigSignResult *result = !GuiGetCurrentTransactionNeedSign()
-        ? btc_export_multisig_psbt(data)
-        : btc_sign_multisig_psbt(data, seed, len, mfp, mfpLen);
+                                 ? btc_export_multisig_psbt(data)
+                                 : btc_sign_multisig_psbt(data, seed, len, mfp, mfpLen);
     if (result) {
         encodeResult = result->ur_result;
         GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);

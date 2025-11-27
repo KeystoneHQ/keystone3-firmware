@@ -313,6 +313,10 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
         titleText = _("firmware_update_sd_failed_access_title");
         descText = _("firmware_update_sd_failed_access_desc");
         break;
+    case ERR_SIGN_MESSAGE_INVALID_CHARACTERS:
+        titleText = _("sign_message_invalid_characters_title");
+        descText = _("sign_message_invalid_characters_desc");
+        break;
     }
 
     lv_obj_t *cont = GuiCreateConfirmHintBox(imgSrc, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);

@@ -1,3 +1,36 @@
+## 2.3.0(2025-12-02)
+
+**Web3:**
+### 新增
+1. 支持通过 BlueWallet 管理 BTC Taproot 地址
+### 优化
+1. 优化固件代码，增强整体稳健性
+2. 优化 BTC Sign Message 流程
+3. 优化 SOL Squads 多签交易解析
+### Bug Fixes
+1. 修复 Passphrase 钱包下 Eternl 地址 path 类型同步问题
+
+
+**BTC-ONLY:**
+### 新增
+1. 支持通过 BlueWallet 管理 BTC Taproot 地址
+### 优化
+1. 优化固件代码，增强整体稳健性
+2. 优化 BTC Sign Message 流程
+
+
+
+**CYPHERPUNK:**
+### 新增
+1. 支持通过 BlueWallet 管理 BTC Taproot 地址
+### 优化
+1. 优化固件代码，增强整体稳健性
+2. 优化 BTC Sign Message 流程 
+
+
+
+
+
 
 ## 2.2.20 (2025-11-10)
 

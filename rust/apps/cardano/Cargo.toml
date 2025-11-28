@@ -23,3 +23,6 @@ bech32 = { workspace = true }
 [dependencies.cardano-serialization-lib]
 git = "https://git@github.com/KeystoneHQ/cardano-serialization-lib.git"
 tag = "keystone-0.1.7"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

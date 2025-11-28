@@ -161,27 +161,34 @@ pub fn parse_data_item(serial: &[u8]) -> Result<DataItem> {
 mod tests {
     use super::*;
     use alloc::borrow::ToOwned;
+    use hex::ToHex;
     use {hex, rsa::PublicKeyParts};
 
     #[test]
     fn test_generate_address() {
-        let seed = hex::decode("cfd803c49799c014c239ff2e6a986575c360269927c715ee275a4f21f336eb342c3e3659ccd65385c3ba9017a3e4aee721ad4310b131fe98eb50e8944acd2ad5").unwrap();
+        let seed = hex::decode("2f1986623bdc5d4f908e5be9d6fa00ec").unwrap();
         let result = generate_secret(seed.as_slice()).unwrap();
         let address = generate_address(result.n().to_bytes_be()).unwrap();
-        assert_eq!(address, "cV_M3Zdqq9_hWOqfSLGezrKz4slXjWYOLn_lrN0ouLE");
+        assert_eq!(address, "ICwtdLdGrJJ5bIe7rTWS1dd2_8tpOv1ZZIKnChvb19Y");
     }
 
     #[test]
     fn test_generate_secret() {
-        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
-        let p = hex::decode("fdec3a1aee520780ca4058402d0422b5cd5950b715728f532499dd4bbcb68e5d44650818b43656782237316c4b0e2faa2b15c245fb82d10cf4f5b420f1f293ba75b2c8d8cef6ad899c34ce9de482cb248cc5ab802fd93094a63577590d812d5dd781846ef7d4f5d9018199c293966371c2349b0f847c818ec99caad800116e02085d35a39a913bc735327705161761ae30a4ec775f127fbb5165418c0fe08e54ae0aff8b2dab2b82d3b4b9c807de5fae116096075cf6d5b77450d743d743e7dcc56e7cafdcc555f228e57b363488e171d099876993e93e37a94983ccc12dba894c58ca84ac154c1343922c6a99008fabd0fa7010d3cc34f69884fec902984771").unwrap();
-        let q = hex::decode("c5b50031ba31ab7c8b76453ce771f048b84fb89a3e4d44c222c3d8c823c683988b0dbf354d8b8cbf65f3db53e1365d3c5e043f0155b41d1ebeca6e20b2d6778600b5c98ffdba33961dae73b018307ef2bce9d217bbdf32964080f8db6f0cf7ef27ac825fcaf98d5143690a5d7e138f4875280ed6de581e66ed17f83371c268a073e4594814bcc88a33cbb4ec8819cc722ea15490312b85fed06e39274c4f73ac91c7f4d1b899729691cce616fb1a5feee1972456addcb51ac830e947fcc1b823468f0eefbaf195ac3b34f0baf96afc6fa77ee2e176081d6d91ce8c93c3d0f3547e48d059c9da447ba05ee3984703bebfd6d704b7f327ffaea7d0f63d0d3c6d65").unwrap();
+        let seed = hex::decode("2f1986623bdc5d4f908e5be9d6fa00ec").unwrap();
+        let p = hex::decode("f1fc92541273845b7b55d125b99839306d6815ccf905ab80daff13794f40616f8653c3356e25ec4fb899e12b3147a66ddb5c2b8daf8eb8a72909709d05e69c39c16742afdcae9899d97d8619bee42342deabc75b30c2673d6f4c981eb17c00e11b2621ed89f46772132ed56907027c8e4b2ae5e3d86702ee0d8060ed7e143c60793fcacd61dc31d3021637e13f0724e66baf92aeb321620136f4357c365cf6a7ec96feaa0428b7bfac7c82d6e35fecaf4b4c0dcd8531e4ac5c1db29296e5dbe557aa1be4b9da853ae4543bc8254bb77fdabc617434f23cae4b08b68c9a5c467ef46198f1cb76702d82cb2a4dd7aa29dcef478f9dc5feb8b43eddb5c5683ca027").unwrap();
+        let q = hex::decode("ed7d44523fa5fe95c1d084261329296ca8e55cb26d9f6742be0ecd9996f1aacaa22b5acd1208a118e1b7da83d9052cc76b67966f616ceb02e33cb0d2d9a4e5b4cf8e0ee68272d528f5a5ad2d75ee275c9cc3cd061c17bc9517606a74d749b9b1156f58647645326130109e1d32c00472026794ce45dd2225c4a93b09b0bf05d0369aff2692038d040553aa7ea059e6610a084e34a20a3b9ebff2bb586b78aae8ebc15621f8e7bcb2fa2cd6b51a63d42aebad67b17c200a7515d89f8fda4380e3815bbae1a4bdda1b6ceddeeeaf68bd27ce38a5ec46ac43c77f0c7392c4196260992df9393965676469ee8c34f2711af6c88e2d96702857eb08f9cc65ca361fa5").unwrap();
         let result = generate_secret(seed.as_slice()).unwrap();
 
         let public_key = generate_public_key_from_primes(p.as_slice(), q.as_slice()).unwrap();
 
-        assert_eq!(result.primes()[0], BigUint::from_bytes_be(&p));
-        assert_eq!(result.primes()[1], BigUint::from_bytes_be(&q));
+        assert_eq!(
+            hex::encode(result.primes()[0].to_bytes_be()),
+            hex::encode(&p)
+        );
+        assert_eq!(
+            hex::encode(result.primes()[1].to_bytes_be()),
+            hex::encode(&q)
+        );
         assert_eq!(
             result.n().to_owned().to_bytes_be(),
             BigUint::from_bytes_be(public_key.as_slice()).to_bytes_be()

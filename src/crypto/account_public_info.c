@@ -523,6 +523,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_TON_BIP39,             ED25519,       "ton_bip39",                "M/44'/607'/0'"    },
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
+    {XPUB_TYPE_ZEC_TRANSPARENT_LEGACY,SECP256K1,     "zec_transparent_legacy",   "M/44'/133'/0'"    },
 #endif
 
 #ifdef CYPHERPUNK_VERSION

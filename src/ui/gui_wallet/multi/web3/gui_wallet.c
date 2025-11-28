@@ -44,7 +44,6 @@ static int AddBTCPathsStandard(ExtendedPublicKey *keys, int startIndex, bool inc
     return index - startIndex;
 }
 
-
 static PathAddResult_t AddETHLedgerLivePaths(ExtendedPublicKey *keys, int startIndex)
 {
     int index = startIndex;
@@ -472,6 +471,8 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
         {.path = GetXPubPath(XPUB_TYPE_XRP), .chainType = XPUB_TYPE_XRP},
         {.path = GetXPubPath(XPUB_TYPE_LTC), .chainType = XPUB_TYPE_LTC},
         {.path = GetXPubPath(XPUB_TYPE_LTC_NATIVE_SEGWIT), .chainType = XPUB_TYPE_LTC_NATIVE_SEGWIT},
+        {.path = GetXpubPath(XPUB_TYPE_ZEC_TRANSPARENT_LEGACY), .chainType = XPUB_TYPE_ZEC_TRANSPARENT_LEGACY}
+
     };
     ExtendedPublicKey keys[NUMBER_OF_ARRAYS(chainPaths)];
     uint8_t mfp[4] = {0};

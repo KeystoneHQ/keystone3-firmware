@@ -34,6 +34,7 @@ const DOGE_LEGACY_PREFIX: &str = "44'/3'/0'";
 const XRP_PREFIX: &str = "44'/144'/0'";
 const LTC_PREFIX: &str = "49'/2'/0'";
 const LTC_NATIVE_SEGWIT_PREFIX: &str = "84'/2'/0'";
+const ZEC_PREFIX: &str = "44'/133'/0'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
@@ -54,8 +55,9 @@ pub fn generate_crypto_multi_accounts(
         XRP_PREFIX.to_string(),
         LTC_PREFIX.to_string(),
         LTC_NATIVE_SEGWIT_PREFIX.to_string(),
+        ZEC_PREFIX.to_string(),
     ];
-    for ele in extended_public_keys {
+    for ele in extended_public_keys {        
         match ele.get_path() {
             _path if k1_keys.contains(&_path.to_string().to_lowercase()) => {
                 keys.push(generate_k1_normal_key(
@@ -171,6 +173,9 @@ fn generate_k1_normal_key(
         Some(mfp),
         Some(xpub.depth as u32),
     );
+
+    rust_tools::debug_print!("generate_k1_normal_key key_path: {:?}", key_path);
+    rust_tools::debug_print!("generate_k1_normal_key xpub chaincode: {:?}", hex::encode(xpub.chain_code.to_bytes()));
 
     let children = CryptoKeyPath::new(
         match is_standard {

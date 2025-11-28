@@ -16,6 +16,7 @@ pub enum Network {
     Dash,
     BitcoinCash,
     AvaxBtcBridge,
+    Zcash,
 }
 
 impl NetworkT for Network {
@@ -27,6 +28,7 @@ impl NetworkT for Network {
             Network::Dogecoin => "DOGE",
             Network::Dash => "DASH",
             Network::BitcoinCash => "BCH",
+            Network::Zcash => "ZEC",
         }
         .to_string()
     }
@@ -40,6 +42,7 @@ impl NetworkT for Network {
             Network::Dash => "Dash",
             Network::BitcoinCash => "Bitcoin Cash",
             Network::AvaxBtcBridge => "Avalanche BTC",
+            Network::Zcash => "Zcash",
         }
         .to_string()
     }
@@ -55,6 +58,7 @@ impl Network {
             Network::Dash => 5,
             Network::BitcoinCash => 145,
             Network::AvaxBtcBridge => 60,
+            Network::Zcash => 133,
         }
         .to_string()
     }

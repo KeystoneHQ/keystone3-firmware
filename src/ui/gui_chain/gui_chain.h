@@ -38,6 +38,7 @@ typedef enum {
     CHAIN_XRP,
     CHAIN_ADA,
     CHAIN_TON,
+    CHAIN_ZEC,
     CHAIN_DOT,
     CHAIN_TRX,
     CHAIN_LTC,

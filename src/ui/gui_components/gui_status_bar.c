@@ -755,6 +755,9 @@ void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const
             break;
         }
     }
+    if (coin == NULL) {
+        return;
+    }
 
     if (name == NULL) {
         char nameBuf[BUFFER_SIZE_64] = {0};

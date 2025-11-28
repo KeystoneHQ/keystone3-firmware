@@ -954,6 +954,11 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
         result = arweave_get_address(xPub);
         break;
+    case HOME_WALLET_CARD_ZEC:
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ZEC_TRANSPARENT_LEGACY);
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/133'/0'/0/%u", index);
+        result = utxo_get_address(hdPath, xPub);
+        break;
     case HOME_WALLET_CARD_XLM:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_STELLAR_0 + index);
         snprintf_s(hdPath, BUFFER_SIZE_64, "m/44'/148'/%u'", index);

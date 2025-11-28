@@ -30,6 +30,12 @@ pub struct BCHAddressEncoding<'a> {
     pub p2pkh_prefix: u8,
 }
 
+pub struct ZECAddressEncoding<'a> {
+    pub payload: &'a Payload,
+    pub p2pkh_prefix_byte0: u8,
+    pub p2pkh_prefix_byte1: u8,
+}
+
 pub struct DOGEAddressEncoding<'a> {
     pub payload: &'a Payload,
     pub p2pkh_prefix: u8,
@@ -148,6 +154,23 @@ impl<'a> fmt::Display for DASHAddressEncoding<'a> {
                 let mut prefixed = [0; 21];
                 prefixed[0] = self.p2sh_prefix;
                 prefixed[1..].copy_from_slice(&script_hash[..]);
+                base58::encode_check_to_fmt(fmt, &prefixed[..])
+            }
+            _ => {
+                write!(fmt, "invalid payload")
+            }
+        }
+    }
+}
+
+impl<'a> fmt::Display for ZECAddressEncoding<'a> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        match self.payload {
+            Payload::P2pkh { pubkey_hash } => {
+                let mut prefixed = [0; 22];
+                prefixed[0] = self.p2pkh_prefix_byte0;
+                prefixed[1] = self.p2pkh_prefix_byte1;
+                prefixed[2..].copy_from_slice(&pubkey_hash[..]);
                 base58::encode_check_to_fmt(fmt, &prefixed[..])
             }
             _ => {

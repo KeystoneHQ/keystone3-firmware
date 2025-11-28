@@ -12,6 +12,8 @@
 #include "user_memory.h"
 #include "gui_qr_hintbox.h"
 
+#define SQUADS_V4_CREATE_MULTISIG_CONTRACT_ADDRESS "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b"
+
 typedef struct SolanaLearnMoreData {
     PtrString title;
     PtrString content;
@@ -205,12 +207,6 @@ static void SetTitleLabelStyle(lv_obj_t *label)
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
-static void SetContentLableStyle(lv_obj_t *label)
-{
-    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
-}
-
 static void SetVotesOnOrderLableStyle(lv_obj_t *label)
 {
     lv_obj_set_style_text_font(label, g_defLittleTitleFont, LV_PART_MAIN);
@@ -314,16 +310,9 @@ lv_obj_t *CreateSquadsSolanaTransferOverviewCard(lv_obj_t *parent, PtrString fro
     lv_obj_t *container = GuiCreateAutoHeightContainer(parent, 408, 0);
     lv_obj_set_style_bg_opa(container, LV_OPA_TRANSP, LV_PART_MAIN);
 
-    lv_obj_t *label = lv_label_create(container);
-    if (strcmp(amount, "0.05 SOL") == 0) {
-        lv_label_set_text(label, "Platform Fee");
-    } else if (strcmp(amount, "0.001 SOL") == 0) {
-        lv_label_set_text(label, "Account Deposit");
-    } else {
-        lv_label_set_text(label, "Amount");
-    }
+    const char *toTitle = strcmp(to, SQUADS_V4_CREATE_MULTISIG_CONTRACT_ADDRESS) == 0 ? "Platform Fee" : "Account Deposit";
+    lv_obj_t *label = GuiCreateNoticeLabel(container, toTitle);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 0);
-    SetTitleLabelStyle(label);
 
     lv_obj_t * amountlabel = lv_label_create(container);
     lv_label_set_text(amountlabel, amount);
@@ -331,63 +320,38 @@ lv_obj_t *CreateSquadsSolanaTransferOverviewCard(lv_obj_t *parent, PtrString fro
     lv_obj_set_style_text_color(amountlabel, lv_color_hex(0xF5870A), LV_PART_MAIN);
     lv_obj_align_to(amountlabel, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
-
     lv_obj_t * fromlabel = GuiCreateTextLabel(container, "From");
     lv_obj_align_to(fromlabel, amountlabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     SetTitleLabelStyle(fromlabel);
 
     lv_obj_t * fromValuelabel = GuiCreateIllustrateLabel(container, from);
-    lv_label_set_long_mode(fromValuelabel, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(fromValuelabel, 306);
-    SetContentLableStyle(fromValuelabel);
     lv_obj_align_to(fromValuelabel, fromlabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
     lv_obj_t * tolabel = lv_label_create(container);
     lv_label_set_text(tolabel, "To");
     SetTitleLabelStyle(tolabel);
     lv_obj_align_to(tolabel, fromValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
-    lv_obj_t * toValuelabel = lv_label_create(container);
-    lv_label_set_text(toValuelabel, to);
-    lv_label_set_long_mode(toValuelabel, LV_LABEL_LONG_WRAP);
+    lv_obj_t * toValuelabel = GuiCreateIllustrateLabel(container, to);
     lv_obj_set_width(toValuelabel, 306);
     lv_obj_align_to(toValuelabel, tolabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    SetContentLableStyle(toValuelabel);
 
     // add label fot to label
-    if (strcmp(to, "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b") == 0 && strcmp(amount, "0.05 SOL") == 0) {
+    if (strcmp(to, SQUADS_V4_CREATE_MULTISIG_CONTRACT_ADDRESS)) {
         lv_obj_t *squadsIcon = GuiCreateImg(container, &imgSquads);
         lv_obj_align_to(squadsIcon, toValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-        lv_obj_t *squadsLabel = lv_label_create(container);
-        lv_label_set_text(squadsLabel, "Squads");
-        lv_obj_set_style_text_font(squadsLabel, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_t *squadsLabel = GuiCreateIllustrateLabel(container, "Squads");
         lv_obj_set_style_text_color(squadsLabel, lv_color_hex(0xA485FF), LV_PART_MAIN);
         lv_obj_align_to(squadsLabel, squadsIcon, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
-
-    } else if (strcmp(to, "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b") == 0 && strcmp(amount, "0.05 SOL") != 0) {
-        lv_obj_t * unkonwnAddressLabel = lv_label_create(container);
-        lv_label_set_text(unkonwnAddressLabel, "Unknown Address");
-        lv_obj_set_style_text_color(unkonwnAddressLabel, lv_color_hex(0xF55831), LV_PART_MAIN);
-        lv_obj_set_style_bg_color(unkonwnAddressLabel, lv_color_hex(0xF5583133), LV_PART_MAIN);
-        lv_obj_set_style_radius(unkonwnAddressLabel, 12, LV_PART_MAIN);
-        lv_obj_set_style_bg_opa(unkonwnAddressLabel, LV_OPA_COVER, LV_PART_MAIN);
-        lv_obj_set_style_pad_left(unkonwnAddressLabel, 12, LV_PART_MAIN);
-        lv_obj_set_style_pad_top(unkonwnAddressLabel, 8, LV_PART_MAIN);
-        lv_obj_set_style_pad_bottom(unkonwnAddressLabel, 8, LV_PART_MAIN);
-        lv_obj_set_size(unkonwnAddressLabel, lv_pct(90), LV_SIZE_CONTENT);
-        lv_obj_align_to(unkonwnAddressLabel, toValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     }
-
-
 
     if (strlen(note) > 0) {
         lv_obj_t * notelabel = GuiCreateTextLabel(container, "Note");
         SetTitleLabelStyle(notelabel);
         lv_obj_align_to(notelabel, toValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
         lv_obj_t * noteValuelabel = GuiCreateIllustrateLabel(container, note);
-        lv_label_set_long_mode(noteValuelabel, LV_LABEL_LONG_WRAP);
         lv_obj_set_width(noteValuelabel, 306);
         lv_obj_align_to(noteValuelabel, notelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-        SetContentLableStyle(noteValuelabel);
     }
 }
 static void GuiShowSolTxTransferOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
@@ -416,10 +380,8 @@ static void GuiShowSolTxTransferOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     SetTitleLabelStyle(label);
 
-    label = lv_label_create(mainActionContainer);
-    lv_label_set_text(label, overviewData->main_action);
+    label = GuiCreateIllustrateLabel(mainActionContainer, overviewData->main_action);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 151, 16);
-    SetContentLableStyle(label);
 
     lv_obj_t *addressContainer = GuiCreateContainerWithParent(parent, 408, 224);
     lv_obj_align_to(addressContainer, mainActionContainer, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
@@ -430,24 +392,18 @@ static void GuiShowSolTxTransferOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     SetTitleLabelStyle(label);
 
-    label = lv_label_create(addressContainer);
-    lv_label_set_text(label, overviewData->transfer_from);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    label = GuiCreateIllustrateLabel(addressContainer, overviewData->transfer_from);
     lv_obj_set_width(label, 306);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
-    SetContentLableStyle(label);
 
     label = lv_label_create(addressContainer);
     lv_label_set_text(label, "To");
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 130);
     SetTitleLabelStyle(label);
 
-    label = lv_label_create(addressContainer);
-    lv_label_set_text(label, overviewData->transfer_to);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    label = GuiCreateIllustrateLabel(addressContainer, overviewData->transfer_to);
     lv_obj_set_width(label, 306);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 168);
-    SetContentLableStyle(label);
 }
 
 
@@ -512,7 +468,8 @@ static lv_obj_t * GuiShowSplTokenInfoOverviewCard(lv_obj_t *parent, PtrT_Display
     lv_label_set_text(tokenNameValueLabel, splTokenInfo->token_name);
 
     if (strcmp(splTokenInfo->token_name, "Unknown") == 0) {
-        SetContentLableStyle(tokenNameValueLabel);
+        lv_obj_set_style_text_font(tokenNameValueLabel, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_set_style_text_color(tokenNameValueLabel, WHITE_COLOR, LV_PART_MAIN);
     } else {
         lv_obj_set_style_text_color(tokenNameValueLabel, lv_color_hex(0xA485FF), LV_PART_MAIN);
     }
@@ -525,13 +482,9 @@ static lv_obj_t * GuiShowSplTokenInfoOverviewCard(lv_obj_t *parent, PtrT_Display
 
     lv_obj_align_to(tokenMintLabel, tokenNameContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
-    lv_obj_t *tokenMintValueLabel = lv_label_create(container);
+    lv_obj_t *tokenMintValueLabel = GuiCreateIllustrateLabel(container, splTokenInfo->token_mint_account);
     lv_obj_set_width(tokenMintValueLabel, 360);
-    lv_label_set_text(tokenMintValueLabel, splTokenInfo->token_mint_account);
-    SetContentLableStyle(tokenMintValueLabel);
-    lv_label_set_long_mode(tokenMintValueLabel, LV_LABEL_LONG_WRAP);
     lv_obj_align_to(tokenMintValueLabel, tokenMintLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-
 
     lv_obj_t * checkTokenAccountLabel = lv_label_create(container);
     lv_label_set_text(checkTokenAccountLabel, "Check Token Account");
@@ -606,11 +559,8 @@ static void GuiShowJupiterV6SwapOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
         lv_label_set_text(mintAccountLabel, "Mint Account");
         SetTitleLabelStyle(mintAccountLabel);
         // mint account value
-        lv_obj_t * mintAccountValueLabel = lv_label_create(swapOverviewContainer);
-        lv_label_set_text(mintAccountValueLabel, jupiterV6SwapOverview->token_a_overview->token_address);
-        lv_label_set_long_mode(mintAccountValueLabel, LV_LABEL_LONG_WRAP);
+        lv_obj_t * mintAccountValueLabel = GuiCreateIllustrateLabel(swapOverviewContainer, jupiterV6SwapOverview->token_a_overview->token_address);
         lv_obj_set_width(mintAccountValueLabel, lv_pct(90));
-        SetContentLableStyle(mintAccountValueLabel);
 
         lv_obj_t * checkTokenAMintAccountLabel = lv_label_create(swapOverviewContainer);
         lv_label_set_text(checkTokenAMintAccountLabel, "Check Token Account");
@@ -650,12 +600,9 @@ static void GuiShowJupiterV6SwapOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
     lv_obj_align_to(tokenBmintAccountLabel, tokenBAmountValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     SetTitleLabelStyle(tokenBmintAccountLabel);
 
-    lv_obj_t * tokenBmintAccountValueLabel = lv_label_create(swapOverviewContainer);
-    lv_label_set_text(tokenBmintAccountValueLabel, jupiterV6SwapOverview->token_b_overview->token_address);
+    lv_obj_t * tokenBmintAccountValueLabel = GuiCreateIllustrateLabel(swapOverviewContainer, jupiterV6SwapOverview->token_b_overview->token_address);
     lv_obj_align_to(tokenBmintAccountValueLabel, tokenBmintAccountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    lv_label_set_long_mode(tokenBmintAccountValueLabel, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(tokenBmintAccountValueLabel, lv_pct(90));
-    SetContentLableStyle(tokenBmintAccountValueLabel);
 
     lv_obj_t * checkTokenBMintAccountLabel = lv_label_create(swapOverviewContainer);
     lv_label_set_text(checkTokenBMintAccountLabel, "Check Token Account");
@@ -684,12 +631,9 @@ static void GuiShowJupiterV6SwapOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
     lv_obj_set_style_text_color(jupiterLabel, lv_color_hex(0xA485FF), LV_PART_MAIN);
     lv_obj_align_to(jupiterLabel, jupiterIcon, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
     // platform address label
-    lv_obj_t * platformAddressLabel = lv_label_create(platformOverviewContainer);
-    lv_label_set_text(platformAddressLabel, jupiterV6SwapOverview->program_address);
+    lv_obj_t * platformAddressLabel = GuiCreateIllustrateLabel(platformOverviewContainer, jupiterV6SwapOverview->program_address);
     lv_obj_align_to(platformAddressLabel, jupiterIcon, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    lv_label_set_long_mode(platformAddressLabel, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(platformAddressLabel, lv_pct(90));
-    SetContentLableStyle(platformAddressLabel);
 
     // Slippage Tolerance label
     lv_obj_t * slippageToleranceLabel = lv_label_create(platformOverviewContainer);
@@ -697,20 +641,16 @@ static void GuiShowJupiterV6SwapOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
     lv_obj_align_to(slippageToleranceLabel, platformAddressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     SetTitleLabelStyle(slippageToleranceLabel);
     // slippage value
-    lv_obj_t * slippageValueLabel = lv_label_create(platformOverviewContainer);
-    lv_label_set_text(slippageValueLabel, jupiterV6SwapOverview->slippage_bps);
+    lv_obj_t * slippageValueLabel = GuiCreateIllustrateLabel(platformOverviewContainer, jupiterV6SwapOverview->slippage_bps);
     lv_obj_align_to(slippageValueLabel, slippageToleranceLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    SetContentLableStyle(slippageValueLabel);
     // Partner Referral Fee
     lv_obj_t * partnerReferralFeeLabel = lv_label_create(platformOverviewContainer);
     lv_label_set_text(partnerReferralFeeLabel, "Partner Referral Fee");
     lv_obj_align_to(partnerReferralFeeLabel, slippageValueLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     SetTitleLabelStyle(partnerReferralFeeLabel);
     // partner referral fee value
-    lv_obj_t * partnerReferralFeeValueLabel = lv_label_create(platformOverviewContainer);
-    lv_label_set_text(partnerReferralFeeValueLabel, jupiterV6SwapOverview->platform_fee_bps);
+    lv_obj_t * partnerReferralFeeValueLabel = GuiCreateIllustrateLabel(platformOverviewContainer, jupiterV6SwapOverview->platform_fee_bps);
     lv_obj_align_to(partnerReferralFeeValueLabel, partnerReferralFeeLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    SetContentLableStyle(partnerReferralFeeValueLabel);
     // platform container align to swap container
     lv_obj_align_to(platformOverviewContainer, swapOverviewContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 }
@@ -750,11 +690,8 @@ static void GuiShowSplTokenTransferOverview(lv_obj_t *parent, PtrT_DisplaySolana
     authLearnMoredata.content = _("solana_auth_account");
     lv_obj_add_event_cb(authInfoSIcon, learn_more_click_event_handler, LV_EVENT_CLICKED, &authLearnMoredata);
 
-    lv_obj_t * authorityValueLabel = lv_label_create(container);
-    lv_label_set_text(authorityValueLabel, splTokenTransfer->authority);
-    lv_label_set_long_mode(authorityValueLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_t * authorityValueLabel = GuiCreateIllustrateLabel(container, splTokenTransfer->authority);
     lv_obj_set_width(authorityValueLabel, 306);
-    SetContentLableStyle(authorityValueLabel);
     lv_obj_align_to(authorityValueLabel, authoritylabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
     lv_obj_t * sourcelabel = lv_label_create(container);
@@ -769,23 +706,17 @@ static void GuiShowSplTokenTransferOverview(lv_obj_t *parent, PtrT_DisplaySolana
     sourceLearnMoredata.content = _("solana_source_ata");
     lv_obj_add_event_cb(sourceInfoSIcon, learn_more_click_event_handler, LV_EVENT_CLICKED, &sourceLearnMoredata);
 
-    lv_obj_t * sourceValuelabel = lv_label_create(container);
-    lv_label_set_text(sourceValuelabel, splTokenTransfer->source);
-    lv_label_set_long_mode(sourceValuelabel, LV_LABEL_LONG_WRAP);
+    lv_obj_t * sourceValuelabel = GuiCreateIllustrateLabel(container, splTokenTransfer->source);
     lv_obj_set_width(sourceValuelabel, 306);
-    SetContentLableStyle(sourceValuelabel);
     lv_obj_align_to(sourceValuelabel, sourcelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
     lv_obj_t * destLabel = lv_label_create(container);
     lv_label_set_text(destLabel, "Destination Account");
     SetTitleLabelStyle(destLabel);
     lv_obj_align_to(destLabel, sourceValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
-    lv_obj_t * destValuelabel = lv_label_create(container);
-    lv_label_set_text(destValuelabel, splTokenTransfer->destination);
-    lv_label_set_long_mode(destValuelabel, LV_LABEL_LONG_WRAP);
+    lv_obj_t * destValuelabel = GuiCreateIllustrateLabel(container, splTokenTransfer->destination);
     lv_obj_set_width(destValuelabel, 306);
     lv_obj_align_to(destValuelabel, destLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    SetContentLableStyle(destValuelabel);
 
     lv_obj_t *destInfoSIcon = GuiCreateImg(container, &imgInfoS);
     lv_obj_align_to(destInfoSIcon, destLabel, LV_ALIGN_OUT_RIGHT_MID, 6, 0);
@@ -882,10 +813,8 @@ static void GuiShowSolTxVoteOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverv
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     SetTitleLabelStyle(label);
 
-    label = lv_label_create(mainActionContainer);
-    lv_label_set_text(label, overviewData->main_action);
+    label = GuiCreateIllustrateLabel(mainActionContainer, overviewData->main_action);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 151, 16);
-    SetContentLableStyle(label);
 
     lv_obj_t *voteAccountContainer = GuiCreateContainerWithParent(parent, 408, 130);
     lv_obj_align_to(voteAccountContainer, mainActionContainer, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
@@ -896,12 +825,9 @@ static void GuiShowSolTxVoteOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverv
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     SetTitleLabelStyle(label);
 
-    label = lv_label_create(voteAccountContainer);
-    lv_label_set_text(label, overviewData->vote_account);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    label = GuiCreateIllustrateLabel(voteAccountContainer, overviewData->vote_account);
     lv_obj_set_width(label, 306);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
-    SetContentLableStyle(label);
 }
 
 static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOverview overviewData)
@@ -929,10 +855,8 @@ static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 62);
         SetTitleLabelStyle(label);
 
-        label = lv_label_create(container);
-        lv_label_set_text(label, program);
+        label = GuiCreateIllustrateLabel(container, program);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 121, 62);
-        SetContentLableStyle(label);
 
         if (0 == strcmp(program, "Unknown")) {
             lv_obj_set_height(container, 108);
@@ -948,10 +872,8 @@ static void GuiShowSolTxGeneralOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxOv
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 100);
         SetTitleLabelStyle(label);
 
-        label = lv_label_create(container);
-        lv_label_set_text(label, method);
+        label = GuiCreateIllustrateLabel(container, method);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 113, 100);
-        SetContentLableStyle(label);
     }
 }
 static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
@@ -979,7 +901,11 @@ static void GuiShowSolTxUnknownOverview(lv_obj_t *parent)
     lv_obj_set_height(container, height);
 }
 
-
+void SquadsLearnMoreHandler(lv_event_t *e)
+{
+    char *url = "https://app.squads.so/create-squad";
+    GuiQRCodeHintBoxOpenBig(url, _("solana_squads_amount_title"), _("solana_squads_amount_desc"), url);
+}
 
 void SolanaAddressLearnMore(lv_event_t *e)
 {
@@ -1052,11 +978,7 @@ static void GuiShowSolTxMultiSigCreateDetail(lv_obj_t *parent, PtrT_DisplaySolan
     lv_obj_add_flag(learnMoreLabel, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_text_color(learnMoreLabel, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
     lv_obj_align_to(learnMoreLabel, descriptionLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    static SolanaLearnMoreData_t solanaLearnMoredata;
-    solanaLearnMoredata.title = "Amount Details";
-    solanaLearnMoredata.content =  _("solana_squads_amount_desc");
-
-    lv_obj_add_event_cb(learnMoreLabel, learn_more_click_event_handler, LV_EVENT_CLICKED, &solanaLearnMoredata);
+    lv_obj_add_event_cb(learnMoreLabel, SquadsLearnMoreHandler, LV_EVENT_CLICKED, NULL);
 
     lv_obj_t *memberContainer = GuiCreateAutoHeightContainer(parent, 408, 16);
     lv_obj_set_style_border_width(memberContainer, 0, LV_PART_MAIN);
@@ -1180,22 +1102,16 @@ static void GuiShowSolTxMultiSigCreateOverview(lv_obj_t *parent, PtrT_DisplaySol
     lv_label_set_text(tolabel, "To");
     SetTitleLabelStyle(tolabel);
     lv_obj_align(tolabel, LV_ALIGN_TOP_LEFT, 24, 0);
-    lv_obj_t * toValuelabel = lv_label_create(firstTransferCardContainer);
-    lv_label_set_text(toValuelabel, transfers->data[1].to);
-    lv_label_set_long_mode(toValuelabel, LV_LABEL_LONG_WRAP);
+    lv_obj_t * toValuelabel = GuiCreateIllustrateLabel(firstTransferCardContainer, transfers->data[1].to);
     lv_obj_set_width(toValuelabel, 306);
     lv_obj_align_to(toValuelabel, tolabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    SetContentLableStyle(toValuelabel);
 
-    if (strcmp(transfers->data[1].to, "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b") == 0) {
+    if (strcmp(transfers->data[1].to, SQUADS_V4_CREATE_MULTISIG_CONTRACT_ADDRESS) == 0) {
         lv_obj_t *squadsIcon = GuiCreateImg(firstTransferCardContainer, &imgSquads);
         lv_obj_align_to(squadsIcon, toValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-        lv_obj_t *squadsLabel = lv_label_create(firstTransferCardContainer);
-        lv_label_set_text(squadsLabel, "Squads");
-        lv_obj_set_style_text_font(squadsLabel, g_defIllustrateFont, LV_PART_MAIN);
+        lv_obj_t *squadsLabel = GuiCreateIllustrateLabel(firstTransferCardContainer, "Squads");
         lv_obj_set_style_text_color(squadsLabel, lv_color_hex(0xA485FF), LV_PART_MAIN);
         lv_obj_align_to(squadsLabel, squadsIcon, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
-
         lv_obj_align(thresholdContainer, LV_ALIGN_TOP_LEFT, 0, 0);
     } else {
         lv_obj_t * waringCard = GuiCreateWarningCard(parent);

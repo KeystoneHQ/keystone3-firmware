@@ -8,7 +8,7 @@ use crate::common::{
     ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
     utils::{convert_c_char, recover_c_char},
 };
-use crate::extract_array;
+use crate::{extract_array, extract_array_mut};
 use crate::{extract_ptr_with_type, make_free_method};
 use alloc::{boxed::Box, format, string::String, string::ToString};
 use app_zcash::get_address;
@@ -22,6 +22,7 @@ use keystore::algorithms::{
 use structs::DisplayPczt;
 use ur_registry::{traits::RegistryItem, zcash::zcash_pczt::ZcashPczt};
 use zcash_vendor::zcash_protocol::consensus::MainNetwork;
+use zeroize::Zeroize;
 
 #[no_mangle]
 pub unsafe extern "C" fn derive_zcash_ufvk(
@@ -32,10 +33,11 @@ pub unsafe extern "C" fn derive_zcash_ufvk(
     let seed = extract_array!(seed, u8, seed_len as usize);
     let account_path = unsafe { recover_c_char(account_path) };
     let ufvk_text = derive_ufvk(&MainNetwork, seed, &account_path);
-    match ufvk_text {
+    let result = match ufvk_text {
         Ok(text) => SimpleResponse::success(convert_c_char(text)).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
-    }
+    };
+    result
 }
 
 #[no_mangle]
@@ -43,14 +45,16 @@ pub unsafe extern "C" fn calculate_zcash_seed_fingerprint(
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut SimpleResponse<u8> {
-    let seed = slice::from_raw_parts(seed, seed_len as usize);
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let sfp = calculate_seed_fingerprint(seed);
-    match sfp {
+    let result = match sfp {
         Ok(bytes) => {
             SimpleResponse::success(Box::into_raw(Box::new(bytes)) as *mut u8).simple_c_ptr()
         }
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
-    }
+    };
+    seed.zeroize();
+    result
 }
 
 #[no_mangle]
@@ -118,8 +122,8 @@ pub unsafe extern "C" fn sign_zcash_tx(
     seed_len: u32,
 ) -> *mut UREncodeResult {
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
-    let seed = extract_array!(seed, u8, seed_len as usize);
-    match app_zcash::sign_pczt(&pczt.get_data(), seed) {
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
+    let result = match app_zcash::sign_pczt(&pczt.get_data(), seed) {
         Ok(pczt) => match ZcashPczt::new(pczt).try_into() {
             Err(e) => UREncodeResult::from(e).c_ptr(),
             Ok(v) => UREncodeResult::encode(
@@ -130,7 +134,9 @@ pub unsafe extern "C" fn sign_zcash_tx(
             .c_ptr(),
         },
         Err(e) => UREncodeResult::from(e).c_ptr(),
-    }
+    };
+    seed.zeroize();
+    result
 }
 
 make_free_method!(TransactionParseResult<DisplayPczt>);

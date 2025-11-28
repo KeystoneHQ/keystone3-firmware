@@ -255,3 +255,264 @@ impl Serialize for AccountAddress {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    extern crate std;
+    use super::*;
+
+    #[test]
+    fn test_account_address_new() {
+        let bytes = [0u8; AccountAddress::LENGTH];
+        let addr = AccountAddress::new(bytes);
+        assert_eq!(addr.into_bytes(), bytes);
+    }
+
+    #[test]
+    fn test_account_address_zero() {
+        let zero = AccountAddress::ZERO;
+        assert_eq!(zero.into_bytes(), [0u8; AccountAddress::LENGTH]);
+    }
+
+    #[test]
+    fn test_account_address_one() {
+        let one = AccountAddress::ONE;
+        let bytes = one.into_bytes();
+        assert_eq!(bytes[AccountAddress::LENGTH - 1], 1);
+        for i in 0..AccountAddress::LENGTH - 1 {
+            assert_eq!(bytes[i], 0);
+        }
+    }
+
+    #[test]
+    fn test_account_address_short_str_lossless() {
+        let addr = AccountAddress::ZERO;
+        assert_eq!(addr.short_str_lossless(), "0");
+
+        let mut bytes = [0u8; AccountAddress::LENGTH];
+        bytes[AccountAddress::LENGTH - 1] = 0x42;
+        let addr = AccountAddress::new(bytes);
+        assert_eq!(addr.short_str_lossless(), "42");
+    }
+
+    #[test]
+    fn test_account_address_to_vec() {
+        let addr = AccountAddress::ONE;
+        let vec = addr.to_vec();
+        assert_eq!(vec.len(), AccountAddress::LENGTH);
+    }
+
+    #[test]
+    fn test_account_address_from_hex_literal() {
+        let addr = AccountAddress::from_hex_literal("0x1").unwrap();
+        assert_eq!(addr, AccountAddress::ONE);
+
+        let addr = AccountAddress::from_hex_literal("0x0").unwrap();
+        assert_eq!(addr, AccountAddress::ZERO);
+    }
+
+    #[test]
+    fn test_account_address_from_hex_literal_no_prefix() {
+        let result = AccountAddress::from_hex_literal("1");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_account_address_from_hex_literal_short() {
+        let addr = AccountAddress::from_hex_literal("0xa").unwrap();
+        let bytes = addr.into_bytes();
+        assert_eq!(bytes[AccountAddress::LENGTH - 1], 0xa);
+    }
+
+    #[test]
+    fn test_account_address_to_hex_literal() {
+        let addr = AccountAddress::ONE;
+        let hex = addr.to_hex_literal();
+        assert!(hex.starts_with("0x"));
+    }
+
+    #[test]
+    fn test_account_address_from_hex() {
+        let hex_str = "00".repeat(AccountAddress::LENGTH);
+        let addr = AccountAddress::from_hex(hex_str).unwrap();
+        assert_eq!(addr, AccountAddress::ZERO);
+    }
+
+    #[test]
+    fn test_account_address_from_hex_invalid() {
+        let result = AccountAddress::from_hex("zz");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_account_address_to_hex() {
+        let addr = AccountAddress::ONE;
+        let hex = addr.to_hex();
+        assert_eq!(hex.len(), AccountAddress::LENGTH * 2);
+    }
+
+    #[test]
+    fn test_account_address_from_bytes() {
+        let bytes = [0u8; AccountAddress::LENGTH];
+        let addr = AccountAddress::from_bytes(bytes).unwrap();
+        assert_eq!(addr.into_bytes(), bytes);
+    }
+
+    #[test]
+    fn test_account_address_from_bytes_invalid_length() {
+        let bytes = vec![0u8; 31];
+        let result = AccountAddress::from_bytes(bytes);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_account_address_as_ref() {
+        let addr = AccountAddress::ONE;
+        let slice: &[u8] = addr.as_ref();
+        assert_eq!(slice.len(), AccountAddress::LENGTH);
+    }
+
+    #[test]
+    fn test_account_address_deref() {
+        let addr = AccountAddress::ONE;
+        let bytes: &[u8; AccountAddress::LENGTH] = &*addr;
+        assert_eq!(bytes[AccountAddress::LENGTH - 1], 1);
+    }
+
+    #[test]
+    fn test_account_address_display() {
+        let addr = AccountAddress::ONE;
+        let s = format!("{}", addr);
+        assert!(!s.is_empty());
+    }
+
+    #[test]
+    fn test_account_address_debug() {
+        let addr = AccountAddress::ONE;
+        let s = format!("{:?}", addr);
+        assert!(!s.is_empty());
+    }
+
+    #[test]
+    fn test_account_address_lower_hex() {
+        let addr = AccountAddress::ONE;
+        let s = format!("{:x}", addr);
+        assert_eq!(s.len(), AccountAddress::LENGTH * 2);
+    }
+
+    #[test]
+    fn test_account_address_lower_hex_alternate() {
+        let addr = AccountAddress::ONE;
+        let s = format!("{:#x}", addr);
+        assert!(s.starts_with("0x"));
+    }
+
+    #[test]
+    fn test_account_address_upper_hex() {
+        let addr = AccountAddress::ONE;
+        let s = format!("{:X}", addr);
+        assert_eq!(s.len(), AccountAddress::LENGTH * 2);
+    }
+
+    #[test]
+    fn test_account_address_upper_hex_alternate() {
+        let addr = AccountAddress::ONE;
+        let s = format!("{:#X}", addr);
+        assert!(s.starts_with("0x"));
+    }
+
+    #[test]
+    fn test_account_address_from_array() {
+        let bytes = [0u8; AccountAddress::LENGTH];
+        let addr: AccountAddress = bytes.into();
+        assert_eq!(addr.into_bytes(), bytes);
+    }
+
+    #[test]
+    fn test_account_address_try_from_slice() {
+        let bytes = vec![0u8; AccountAddress::LENGTH];
+        let addr = AccountAddress::try_from(bytes.as_slice()).unwrap();
+        let expected: [u8; AccountAddress::LENGTH] = bytes.try_into().unwrap();
+        assert_eq!(addr.into_bytes(), expected);
+    }
+
+    #[test]
+    fn test_account_address_try_from_vec() {
+        let bytes = vec![0u8; AccountAddress::LENGTH];
+        let addr = AccountAddress::try_from(bytes).unwrap();
+        assert_eq!(addr.into_bytes(), [0u8; AccountAddress::LENGTH]);
+    }
+
+    #[test]
+    fn test_account_address_into_vec() {
+        let addr = AccountAddress::ONE;
+        let vec: Vec<u8> = addr.into();
+        assert_eq!(vec.len(), AccountAddress::LENGTH);
+    }
+
+    #[test]
+    fn test_account_address_ref_into_vec() {
+        let addr = AccountAddress::ONE;
+        let vec: Vec<u8> = (&addr).into();
+        assert_eq!(vec.len(), AccountAddress::LENGTH);
+    }
+
+    #[test]
+    fn test_account_address_into_array() {
+        let addr = AccountAddress::ONE;
+        let arr: [u8; AccountAddress::LENGTH] = addr.into();
+        assert_eq!(arr[AccountAddress::LENGTH - 1], 1);
+    }
+
+    #[test]
+    fn test_account_address_ref_into_array() {
+        let addr = AccountAddress::ONE;
+        let arr: [u8; AccountAddress::LENGTH] = (&addr).into();
+        assert_eq!(arr[AccountAddress::LENGTH - 1], 1);
+    }
+
+    #[test]
+    fn test_account_address_ref_into_string() {
+        let addr = AccountAddress::ONE;
+        let s: String = (&addr).into();
+        assert_eq!(s.len(), AccountAddress::LENGTH * 2);
+    }
+
+    #[test]
+    fn test_account_address_try_from_string() {
+        let hex_str = "00".repeat(AccountAddress::LENGTH);
+        let addr = AccountAddress::try_from(hex_str).unwrap();
+        assert_eq!(addr, AccountAddress::ZERO);
+    }
+
+    #[test]
+    fn test_account_address_from_str() {
+        let addr = AccountAddress::from_str("0x1").unwrap();
+        assert_eq!(addr, AccountAddress::ONE);
+
+        let hex_str = "00".repeat(AccountAddress::LENGTH);
+        let addr = AccountAddress::from_str(&hex_str).unwrap();
+        assert_eq!(addr, AccountAddress::ZERO);
+    }
+
+    #[test]
+    fn test_account_address_ord() {
+        let addr1 = AccountAddress::ZERO;
+        let addr2 = AccountAddress::ONE;
+        assert!(addr1 < addr2);
+    }
+
+    #[test]
+    fn test_account_address_eq() {
+        let addr1 = AccountAddress::ONE;
+        let addr2 = AccountAddress::ONE;
+        assert_eq!(addr1, addr2);
+    }
+
+    #[test]
+    fn test_account_address_clone() {
+        let addr1 = AccountAddress::ONE;
+        let addr2 = addr1.clone();
+        assert_eq!(addr1, addr2);
+    }
+}

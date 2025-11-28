@@ -57,6 +57,7 @@ int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *passwo
 {
     uint8_t randomBuffer[ENTROPY_MAX_LEN], inputBuffer[ENTROPY_MAX_LEN], outputBuffer[ENTROPY_MAX_LEN];
     int32_t ret;
+    ASSERT(strnlen_s(password, PASSWORD_MAX_LEN) >= MIN_PASSWORD_LEN);
 
     do {
         HashWithSalt(inputBuffer, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "generate entropy");
@@ -87,6 +88,7 @@ int32_t GenerateEntropy(uint8_t *entropy, uint8_t entropyLen, const char *passwo
     CLEAR_ARRAY(outputBuffer);
     CLEAR_ARRAY(inputBuffer);
     CLEAR_ARRAY(randomBuffer);
+    ASSERT(ret == SUCCESS_CODE);
     return ret;
 }
 
@@ -114,7 +116,9 @@ int32_t SaveNewBip39Entropy(uint8_t accountIndex, const uint8_t *entropy, uint8_
         CHECK_ERRCODE_BREAK("bip39_mnemonic_from_bytes", ret);
         ret = bip39_mnemonic_to_seed(mnemonic, NULL, accountSecret.seed, SEED_LEN, NULL);
         CHECK_ERRCODE_BREAK("bip39_mnemonic_to_seed", ret);
+        memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
         SRAM_FREE(mnemonic);
+        mnemonic = NULL;
 
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
@@ -124,8 +128,14 @@ int32_t SaveNewBip39Entropy(uint8_t accountIndex, const uint8_t *entropy, uint8_
 
     } while (0);
 
+    if (mnemonic != NULL) {
+        memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
+        SRAM_FREE(mnemonic);
+    }
+
     CLEAR_ARRAY(passwordHash);
     CLEAR_OBJECT(accountSecret);
+    ASSERT(ret == SUCCESS_CODE);
     return ret;
 }
 
@@ -163,6 +173,7 @@ int32_t SaveNewSlip39Entropy(uint8_t accountIndex, const uint8_t *ems, const uin
 
     CLEAR_ARRAY(passwordHash);
     CLEAR_OBJECT(accountSecret);
+    ASSERT(ret == SUCCESS_CODE);
     return ret;
 }
 
@@ -417,14 +428,14 @@ bool PassphraseExist(uint8_t accountIndex)
         return false;
     }
 
-    assert(g_passphraseInfo[accountIndex].passphraseExist == (strnlen_s(g_passphraseInfo[accountIndex].passphrase, PASSPHRASE_MAX_LEN) > 0));
+    ASSERT(g_passphraseInfo[accountIndex].passphraseExist == (strnlen_s(g_passphraseInfo[accountIndex].passphrase, PASSPHRASE_MAX_LEN) > 0));
     return (strnlen_s(g_passphraseInfo[accountIndex].passphrase, PASSPHRASE_MAX_LEN) > 0);
 }
 
 char *GetPassphrase(uint8_t accountIndex)
 {
     if (accountIndex > 2) {
-        return false;
+        return NULL;
     }
 
     return g_passphraseInfo[accountIndex].passphrase;
@@ -663,8 +674,10 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
         switch (mnemonicType) {
         case MNEMONIC_TYPE_SLIP39: {
             uint8_t slip39Ems[SLIP39_EMS_LEN];
-            GetAccountSlip39Ems(accountIndex, slip39Ems, password);
+            ret = GetAccountSlip39Ems(accountIndex, slip39Ems, password);
+            CHECK_ERRCODE_BREAK("GetAccountSlip39Ems", ret);
             ret = Slip39GetSeed(slip39Ems, seed, GetCurrentAccountEntropyLen(), passphrase, GetSlip39Ie(), GetSlip39Eb(), GetSlip39Id());
+            CLEAR_ARRAY(slip39Ems);
             CHECK_ERRCODE_BREAK("slip39_mnemonic_to_seed", ret);
             break;
         }
@@ -675,11 +688,18 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
             CHECK_ERRCODE_BREAK("bip39_mnemonic_from_bytes", ret);
             ret = bip39_mnemonic_to_seed(mnemonic, passphrase, seed, SEED_LEN, NULL);
             CHECK_ERRCODE_BREAK("bip39_mnemonic_to_seed", ret);
+            memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
             SRAM_FREE(mnemonic);
+            mnemonic = NULL;
             break;
         }
     } while (0);
 
+    if (mnemonic != NULL) {
+        memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
+        SRAM_FREE(mnemonic);
+    }
+    CLEAR_ARRAY(entropy);
     return ret;
 }
 
@@ -695,15 +715,15 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
     int32_t ret;
     AccountSecret_t accountSecret = {0};
     uint8_t passwordHash[32];
-    uint8_t entropy[64] = {0};
-    uint8_t seed[64] = {0};
+    uint8_t entropy[TON_ENTROPY_LEN] = {0};
+    uint8_t seed[SEED_LEN] = {0};
 
     ASSERT(accountIndex <= 2);
     do {
         ret = CheckPasswordExisted(password, 255);
         CHECK_ERRCODE_BREAK("check repeat password", ret);
         VecFFI_u8 *result = ton_mnemonic_to_entropy(mnemonic);
-        memcpy_s(entropy, 64, result->data, 64);
+        memcpy_s(entropy, sizeof(entropy), result->data, result->size);
         free_VecFFI_u8(result);
         memcpy_s(accountSecret.entropy, sizeof(accountSecret.entropy), entropy, 32);
         memcpy_s(accountSecret.slip39EmsOrTonEntropyL32, sizeof(accountSecret.slip39EmsOrTonEntropyL32), entropy + 32, 32);
@@ -711,11 +731,12 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
         accountSecret.entropyLen = 32;
         SimpleResponse_u8 *resultSeed = ton_entropy_to_seed(entropy, 64);
         if (resultSeed->error_code != 0) {
+            ret = resultSeed->error_code;
             break;
         }
-        memcpy_s(seed, 64, resultSeed->data, 64);
+        memcpy_s(seed, sizeof(seed), resultSeed->data, SEED_LEN);
         free_VecFFI_u8(resultSeed);
-        memcpy_s(accountSecret.seed, sizeof(accountSecret.seed), seed, 64);
+        memcpy_s(accountSecret.seed, sizeof(accountSecret.seed), seed, SEED_LEN);
 
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
@@ -727,6 +748,9 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
 
     CLEAR_ARRAY(passwordHash);
     CLEAR_OBJECT(accountSecret);
+    CLEAR_ARRAY(entropy);
+    CLEAR_ARRAY(seed);
+    ASSERT(ret == SUCCESS_CODE);
     return ret;
 }
 
@@ -740,16 +764,16 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
 int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
 {
     uint8_t randomBuffer[TON_ENTROPY_LEN], inputBuffer[TON_ENTROPY_LEN], outputBuffer[TON_ENTROPY_LEN];
-    int32_t ret;
+    int32_t ret = ERR_GENERAL_FAIL;
     char temp_mnemonic[MNEMONIC_MAX_LEN] = {'\0'};
-    int32_t count = 0;
-    //generate the randomness by se;
+    if (mnemonic == NULL || password == NULL || strnlen_s(password, PASSWORD_MAX_LEN) < MIN_PASSWORD_LEN) {
+        return ERR_GENERAL_FAIL;
+    }
     do {
         HashWithSalt512(inputBuffer, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "generate entropy");
 
         SE_GetTRng(randomBuffer, TON_ENTROPY_LEN);
         KEYSTORE_PRINT_ARRAY("trng", randomBuffer, TON_ENTROPY_LEN);
-        // set the initial value
         memcpy_s(outputBuffer, sizeof(outputBuffer), randomBuffer, TON_ENTROPY_LEN);
         hkdf64(inputBuffer, randomBuffer, outputBuffer, ITERATION_TIME);
 
@@ -771,27 +795,52 @@ int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
         KEYSTORE_PRINT_ARRAY("finalEntropy", outputBuffer, TON_ENTROPY_LEN);
     } while (0);
 
-    //use randomness to generate the mnemonic
-    //if the mnemonic is not valid, hash the randomness and try again
     while (true) {
-        printf("ton mnemonic generation, count: %d\r\n", count++);
-        for (size_t i = 0; i < 24; i++) {
+        for (size_t i = 0; i < TON_MNEMONIC_WORDS_COUNT; i++) {
             uint32_t index = ((uint32_t)outputBuffer[i * 2] << 8 | outputBuffer[i * 2 + 1]) & 0x07ff;
-            char *word;
-            bip39_get_word(NULL, index, &word);
-            if (i != 0) {
-                strcat(temp_mnemonic, " ");
+            char *word = NULL;
+            errno_t rc;
+            ret = bip39_get_word(NULL, index, &word);
+            CHECK_ERRCODE_BREAK("bip39_get_word", ret);
+            if (word == NULL) {
+                ret = ERR_KEYSTORE_MNEMONIC_INVALID;
+                break;
             }
-            strcat(temp_mnemonic, word);
+            if (i != 0) {
+                rc = strcat_s(temp_mnemonic, MNEMONIC_MAX_LEN, " ");
+                if (rc != 0) {
+                    SRAM_FREE(word);
+                    memset_s(temp_mnemonic, sizeof(temp_mnemonic), 0, sizeof(temp_mnemonic));
+                    ret = ERR_KEYSTORE_MNEMONIC_INVALID;
+                    break;
+                }
+            }
+            rc = strcat_s(temp_mnemonic, MNEMONIC_MAX_LEN, word);
             SRAM_FREE(word);
+            if (rc != 0) {
+                memset_s(temp_mnemonic, sizeof(temp_mnemonic), 0, sizeof(temp_mnemonic));
+                ret = ERR_KEYSTORE_MNEMONIC_INVALID;
+                break;
+            }
         }
-        if (ton_verify_mnemonic(temp_mnemonic)) {
-            break;
+
+        if (ret == SUCCESS_CODE || ret == ERR_GENERAL_FAIL) {
+            if (ton_verify_mnemonic(temp_mnemonic)) {
+                ret = SUCCESS_CODE;
+                break;
+            } else {
+                memset_s(temp_mnemonic, sizeof(temp_mnemonic), 0, sizeof(temp_mnemonic));
+                uint8_t hash[64];
+                memcpy_s(hash, 64, outputBuffer, 64);
+                sha512((struct sha512 *)outputBuffer, hash, sizeof(hash));
+                continue;
+            }
         } else {
             memset_s(temp_mnemonic, sizeof(temp_mnemonic), 0, sizeof(temp_mnemonic));
             uint8_t hash[64];
             memcpy_s(hash, 64, outputBuffer, 64);
             sha512((struct sha512 *)outputBuffer, hash, sizeof(hash));
+            ret = ERR_GENERAL_FAIL;
         }
     }
 
@@ -799,7 +848,15 @@ int32_t GenerateTonMnemonic(char *mnemonic, const char *password)
     CLEAR_ARRAY(inputBuffer);
     CLEAR_ARRAY(randomBuffer);
 
-    strcpy_s(mnemonic, MNEMONIC_MAX_LEN, temp_mnemonic);
+    if (ret == SUCCESS_CODE) {
+        errno_t rc = strcpy_s(mnemonic, MNEMONIC_MAX_LEN, temp_mnemonic);
+        if (rc != 0) {
+            memset_s(mnemonic, MNEMONIC_MAX_LEN, 0, MNEMONIC_MAX_LEN);
+            ret = ERR_KEYSTORE_MNEMONIC_INVALID;
+        }
+        memset_s(temp_mnemonic, sizeof(temp_mnemonic), 0, sizeof(temp_mnemonic));
+    }
+    ASSERT(ret == SUCCESS_CODE);
     return ret;
 }
 #endif
@@ -810,18 +867,20 @@ void random_buffer(uint8_t *buf, size_t len)
     uint8_t *tempBuf1 = SRAM_MALLOC(len);
     uint8_t *tempBuf2 = SRAM_MALLOC(len);
 
-    if (tempBuf1 && tempBuf2) {
-        TrngGet(buf, len);
-        assert(SE_GetDS28S60Rng(tempBuf1, len) == 0);
-        assert(SE_GetAtecc608bRng(tempBuf2, len) == 0);
+    ASSERT(tempBuf1 != NULL && tempBuf2 != NULL);
 
-        for (size_t i = 0; i < len; i++) {
-            buf[i] ^= tempBuf1[i] ^ tempBuf2[i];
-        }
+    TrngGet(buf, len);
+    ASSERT(SE_GetDS28S60Rng(tempBuf1, len) == 0);
+    ASSERT(SE_GetAtecc608bRng(tempBuf2, len) == 0);
 
-        SRAM_FREE(tempBuf1);
-        SRAM_FREE(tempBuf2);
+    for (size_t i = 0; i < len; i++) {
+        buf[i] ^= tempBuf1[i] ^ tempBuf2[i];
     }
+
+    memzero(tempBuf1, len);
+    memzero(tempBuf2, len);
+    SRAM_FREE(tempBuf1);
+    SRAM_FREE(tempBuf2);
 }
 #endif
 

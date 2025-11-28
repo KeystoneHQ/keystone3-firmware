@@ -5,6 +5,7 @@
 #include "secret_cache.h"
 #include "gui_chain.h"
 #include "gui_chain_components.h"
+#include "keystore.h"
 
 #define CHECK_FREE_PARSE_RESULT(result)                                     \
     if (result != NULL)                                                     \
@@ -35,34 +36,14 @@ void GuiSetAvaxUrData(URParseResult *urResult, URParseMultiResult *urMultiResult
 
 UREncodeResult *GuiGetAvaxSignQrCodeData(void)
 {
-    return GetAvaxSignDataDynamic(false);
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    return SignInternal(avax_sign, data);
 }
 
 UREncodeResult *GuiGetAvaxSignUrDataUnlimited(void)
 {
-    return GetAvaxSignDataDynamic(true);
-}
-
-UREncodeResult *GetAvaxSignDataDynamic(bool isUnlimited)
-{
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    do {
-        uint8_t seed[64];
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        if (isUnlimited) {
-            encodeResult = avax_sign_unlimited(data, seed, len);
-        } else {
-            encodeResult = avax_sign(data, seed, len);
-        }
-        ClearSecretCache();
-        CHECK_CHAIN_BREAK(encodeResult);
-    } while (0);
-    SetLockScreen(enable);
-    return encodeResult;
+    return SignInternal(avax_sign_unlimited, data);
 }
 
 PtrT_TransactionCheckResult GuiGetAvaxCheckResult(void)

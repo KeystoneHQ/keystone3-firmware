@@ -196,20 +196,20 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_BLUE:
     case WALLET_LIST_NUNCHUK:
         // 84 49 44
-        func = GuiGetBlueWalletBtcData;
+        func = GuiGetStandardBtcData;
         break;
     case WALLET_LIST_ZEUS:
     case WALLET_LIST_SPARROW:
     case WALLET_LIST_BITCOIN_SAFE:
         // 84 49 44 86
-        func = GuiGetSparrowWalletBtcData;
+        func = GuiGetStandardBtcData;
         break;
     case WALLET_LIST_SPECTER:
         // 84 49
         func = GuiGetSpecterWalletBtcData;
         break;
     case WALLET_LIST_UNISAT:
-        func = GuiGetSparrowWalletBtcData;
+        func = GuiGetStandardBtcData;
         break;
     default:
         return;

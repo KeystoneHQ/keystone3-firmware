@@ -5,11 +5,10 @@ use super::type_id::TypeId;
 use crate::constants::*;
 use crate::errors::{AvaxError, Result};
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };
-use bitcoin::secp256k1::{Message, Secp256k1};
+use bitcoin::secp256k1::Message;
 use bytes::{Buf, Bytes};
 use core::convert::TryFrom;
 use cryptoxide::hashing::sha256;
@@ -46,16 +45,13 @@ impl BaseTx {
 pub fn avax_base_sign(seed: &[u8], path: String, unsigned_data: Vec<u8>) -> Result<[u8; 65]> {
     let mut bytes: [u8; 65] = [0; 65];
 
-    let sig = Secp256k1::new()
-        .sign_ecdsa_recoverable(
-            &Message::from_slice(&sha256(unsigned_data.as_slice())).expect("Invalid hash length"),
-            &keystore::algorithms::secp256k1::get_private_key_by_seed(&seed, &path.to_string())
-                .map_err(|_| AvaxError::InvalidHex(format!("get private key error")))?,
-        )
-        .serialize_compact();
+    let msg = Message::from_digest_slice(&sha256(unsigned_data.as_slice()))
+        .map_err(|_| AvaxError::InvalidHex("invalid sha256 length".to_string()))?;
 
-    bytes[..64].copy_from_slice(&sig.1);
-    bytes[64] = sig.0.to_i32() as u8;
+    let (rec_id, sig64) = keystore::algorithms::secp256k1::sign_message_by_seed(seed, &path, &msg)?;
+
+    bytes[..64].copy_from_slice(&sig64);
+    bytes[64] = rec_id as u8;
     Ok(bytes)
 }
 
@@ -119,6 +115,11 @@ impl TryFrom<Bytes> for BaseTx {
         bytes.advance(inputs.parsed_size());
 
         let memo_len = bytes.get_u32();
+        if bytes.remaining() < memo_len as usize {
+            return Err(AvaxError::InvalidHex(
+                "Insufficient data for memo".to_string(),
+            ));
+        }
         let memo = bytes.split_to(memo_len as usize).to_vec();
         let tx_size = initial_len - bytes.len();
 
@@ -142,14 +143,9 @@ mod tests {
     #[test]
     fn test_avax_base_transaction() {
         {
-            // x-chain fuji test case
-            let input_bytes = "00000000000000000005ab68eb1ee142a05cfe768c36e11f0b596db5a3c6c77aabe665dad9e638ca94f7000000023d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000000bbdfb400000000000000000000000010000000169bc9b5b6cbbbd490abbd79a37ad6cd643be87ab3d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000002faf08000000000000000000000000010000000132336f8715dd313a426155cccc15ba27c3033dae0000000163c5b29498bf6a9f1e2a5d20f8eeddaf92096c0ce1c9c2cf6b93fd9a0d12f725000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b7c4580000000010000000000000000";
-            let input_bytes = "00000000000000000005ab68eb1ee142a05cfe768c36e11f0b596db5a3c6c77aabe665dad9e638ca94f7000000023d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000000bbdfb400000000000000000000000010000000169bc9b5b6cbbbd490abbd79a37ad6cd643be87ab3d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000002faf0800000000000000000000000001000000016498cb45e255f5937b816a59c34a7559a2d437b10000000163c5b29498bf6a9f1e2a5d20f8eeddaf92096c0ce1c9c2cf6b93fd9a0d12f725000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b7c4580000000010000000000000000";
-
             // x-chain mainnet test case
             let input_bytes = "00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000000070000000218711a00000000000000000000000001000000017c949a8013befa47e992078764ff735b18a26b5b21e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000003cf87a80c00000000000000000000000100000001d5ae9a7d5b31660f08c0aefc1547fb195fbfc85d000000021ddbc2d7d67f14df1e36111bbeef2adae97067c4ceb9db94b73e8883a5a6dd640000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000000050000000395e95a000000000100000000885eea33e82eff5130de90152c0ebb98f5cfdc7c7529596fe2473a35654aac830000000021e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000500000002522030ec00000001000000000000000400000000000000020000000900000001a6810c96af6f4e4281031b795f78c37f3395b6d35806179d37b40603d547e2f262969f5363e168c064712607679b01ed13a76daab84addc94a3745b0549a53e5000000000900000001cefe480034588db7b5e0993410b6dbdd2e37e3ec94e75b450dd4c56c32f3b4c61cd9dab507232eb1211a846165336a7d7d975b39612df8d88174e1a92c27535f004a454d1e";
-            let mut bytes =
-                Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
+            let bytes = Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             let result = BaseTx::try_from(bytes).unwrap();
 
             assert_eq!(result.get_blockchain_id(), X_BLOCKCHAIN_ID);
@@ -157,10 +153,10 @@ mod tests {
                 "avax10j2f4qqnhmay06vjq7rkflmntvv2y66mzhk6s9",
                 result
                     .get_outputs_addresses()
-                    .get(0)
+                    .first()
                     .unwrap()
                     .address
-                    .get(0)
+                    .first()
                     .unwrap()
             );
             assert_eq!(result.get_inputs_len(), 2);
@@ -170,8 +166,7 @@ mod tests {
         // x chain base tx
         {
             let input_bytes = "00000000000000000005ab68eb1ee142a05cfe768c36e11f0b596db5a3c6c77aabe665dad9e638ca94f7000000023d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000001312d00000000000000000000000001000000018771921301d5bffff592dae86695a615bdb4a4413d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000004b571c0000000000000000000000001000000010969ea62e2bb30e66d82e82fe267edf6871ea5f7000000019eae34633c2103aaee5253bb3ca3046c2ab4718a109ffcdb77b51d0427be6bb7000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000050000000005f5e100000000010000000000000000";
-            let mut bytes =
-                Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
+            let bytes = Bytes::from(hex::decode(input_bytes).expect("Failed to decode hex string"));
             match BaseTx::try_from(bytes) {
                 Ok(result) => {
                     assert_eq!(
@@ -188,15 +183,14 @@ mod tests {
                     );
                     assert_eq!(result.get_outputs_len(), 2);
                 }
-                Err(e) => match e {
-                    AvaxError::InvalidHex(msg) => {
+                Err(e) => {
+                    if let AvaxError::InvalidHex(msg) = e {
                         assert_eq!(
                             msg, "Unsupported output type found in input bytes.",
                             "Unexpected error message"
                         );
                     }
-                    _ => {}
-                },
+                }
             }
         }
     }

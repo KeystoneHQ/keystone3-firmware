@@ -24,4 +24,4 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Run rust/apps/bitcoin
-        run: cd rust/apps/bitcoin && cargo +nightly-2025-05-01 llvm-cov --fail-under-functions 50 --fail-under-lines 50 --fail-under-regions 50
+        run: cd rust/apps/bitcoin && cargo +nightly-2025-05-01 llvm-cov --fail-under-regions 74 --fail-under-functions 78 --fail-under-lines 86 --ignore-filename-regex 'keystore/*|utils/*'

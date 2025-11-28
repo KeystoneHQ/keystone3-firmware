@@ -59,7 +59,7 @@ impl FromStr for Network {
             "avax" => Ok(Network::AvaxMainNet),
             #[cfg(feature = "testnet")]
             "fuji" => Ok(Network::AvaxTestNet),
-            _ => Err(AvaxError::UnsupportedNetwork(format!("{:?}", network))),
+            _ => Err(AvaxError::UnsupportedNetwork(format!("{network:?}"))),
         }
     }
 }

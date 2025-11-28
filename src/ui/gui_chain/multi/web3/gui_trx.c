@@ -45,7 +45,6 @@ void *GuiGetTrxData(void)
 
 PtrT_TransactionCheckResult GuiGetTrxCheckResult(void)
 {
-    printf("GuiGetTrxCheckResult\r\n");
     uint8_t mfp[4];
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
@@ -112,20 +111,23 @@ UREncodeResult *GuiGetTrxSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    UREncodeResult *encodeResult;
+    UREncodeResult *encodeResult = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    uint8_t seed[SEED_LEN];
     do {
-        uint8_t mfp[4];
-        GetMasterFingerPrint(mfp);
-        uint8_t seed[64];
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = tron_sign_keystone(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
-        ClearSecretCache();
+        int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        if (ret != 0) {
+            break;
+        }
+        encodeResult = tron_sign_keystone(data, urType, mfp, sizeof(mfp), GetCurrentAccountPublicKey(XPUB_TYPE_TRX),
+                                          SOFTWARE_VERSION, seed, GetCurrentAccountSeedLen());
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
     return encodeResult;
 }

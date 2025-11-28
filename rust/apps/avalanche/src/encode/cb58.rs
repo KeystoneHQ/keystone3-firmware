@@ -1,5 +1,4 @@
 use alloc::string::String;
-use alloc::string::ToString;
 use bitcoin::base58;
 use cryptoxide::digest::Digest;
 use cryptoxide::sha2::Sha256;
@@ -18,10 +17,6 @@ pub trait Cb58Encodable {
         let mut with_checksum = data.to_vec();
         with_checksum.extend_from_slice(&checksum[checksum.len() - 4..]);
 
-        format!(
-            "{}-{}",
-            self.get_prefix(),
-            base58::encode(&with_checksum).to_string()
-        )
+        format!("{}-{}", self.get_prefix(), base58::encode(&with_checksum))
     }
 }

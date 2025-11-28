@@ -1,18 +1,12 @@
-pub mod aptos;
 pub mod arconnect;
 pub mod backpack;
 pub mod bitget;
-mod imtoken;
 pub mod keplr;
-pub mod keystone;
 pub mod keystone_connect;
 pub mod okx;
-pub mod solana;
 pub mod structs;
-pub mod sui;
 pub mod tonkeeper;
 mod utils;
-pub mod xbull;
 pub mod xrp_toolkit;
 
 pub mod core_wallet;
@@ -70,6 +64,7 @@ pub unsafe extern "C" fn get_connect_metamask_ur_dynamic(
     master_fingerprint_length: uint32_t,
     account_type: ETHAccountType,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
+    wallet_name: PtrString,
     fragment_max_length_default: usize,
     fragment_max_length_other: usize,
 ) -> *mut UREncodeResult {
@@ -83,6 +78,11 @@ pub unsafe extern "C" fn get_connect_metamask_ur_dynamic(
     let mfp = match <&[u8; 4]>::try_from(mfp) {
         Ok(mfp) => mfp,
         Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
+    };
+    let wallet_name = if wallet_name.is_null() {
+        None
+    } else {
+        Some(recover_c_char(wallet_name))
     };
 
     let keys = recover_c_array(public_keys);
@@ -123,7 +123,7 @@ pub unsafe extern "C" fn get_connect_metamask_ur_dynamic(
                         mfp,
                         &recover_c_char(k.xpub),
                         account_type.into(),
-                        None,
+                        wallet_name,
                     );
                     match result.map(|v| v.try_into()) {
                         Ok(v) => match v {
@@ -150,12 +150,14 @@ pub unsafe extern "C" fn get_connect_metamask_ur_unlimited(
     master_fingerprint_length: uint32_t,
     account_type: ETHAccountType,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
+    wallet_name: PtrString,
 ) -> *mut UREncodeResult {
     get_connect_metamask_ur_dynamic(
         master_fingerprint,
         master_fingerprint_length,
         account_type,
         public_keys,
+        wallet_name,
         FRAGMENT_UNLIMITED_LENGTH,
         FRAGMENT_UNLIMITED_LENGTH,
     )
@@ -167,12 +169,14 @@ pub unsafe extern "C" fn get_connect_metamask_ur(
     master_fingerprint_length: uint32_t,
     account_type: ETHAccountType,
     public_keys: PtrT<CSliceFFI<ExtendedPublicKey>>,
+    wallet_name: PtrString,
 ) -> *mut UREncodeResult {
     get_connect_metamask_ur_dynamic(
         master_fingerprint,
         master_fingerprint_length,
         account_type,
         public_keys,
+        wallet_name,
         FRAGMENT_MAX_LENGTH_DEFAULT,
         240,
     )

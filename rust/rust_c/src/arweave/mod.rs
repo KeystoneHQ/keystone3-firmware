@@ -28,26 +28,40 @@ use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen, Si
 use ur_registry::arweave::arweave_signature::ArweaveSignature;
 use ur_registry::traits::RegistryItem;
 
-fn generate_aes_key_iv(seed: &[u8]) -> ([u8; 32], [u8; 16]) {
+fn generate_aes_key_iv(seed: &[u8]) -> Result<([u8; 32], [u8; 16]), RustCError> {
     // The number 1557192335 is derived from the ASCII representation of "keystone" hashed with SHA-256, taking the first 32 bits with the highest bit set to 0.
-    let key_path = "m/44'/1557192335'/0'/0'/0'".to_string();
-    let iv_path = "m/44'/1557192335'/0'/1'/0'".to_string();
-    let key = get_private_key_by_seed(seed, &key_path).unwrap();
+    const KEY_PATH: &str = "m/44'/1557192335'/0'/0'/0'";
+    const IV_PATH: &str = "m/44'/1557192335'/0'/1'/0'";
+
+    let key = get_private_key_by_seed(seed, &KEY_PATH.to_string())
+        .map_err(|_| RustCError::InvalidData("get private key error".to_string()))?;
     let (_, key_bytes) = cryptoxide::ed25519::keypair(&key);
-    let iv = get_private_key_by_seed(seed, &iv_path).unwrap();
-    let (_, iv) = cryptoxide::ed25519::keypair(&iv);
-    let mut iv_bytes: [u8; 16] = [0; 16];
-    iv_bytes.copy_from_slice(&iv[..16]);
-    (key_bytes, iv_bytes)
+
+    let ivk = get_private_key_by_seed(seed, &IV_PATH.to_string())
+        .map_err(|_| RustCError::InvalidData("get private key error".to_string()))?;
+    let (_, iv_pub) = cryptoxide::ed25519::keypair(&ivk);
+    if iv_pub.len() < 16 {
+        return Err(RustCError::InvalidData("invalid iv pub key".to_string()));
+    }
+
+    let mut iv = [0u8; 16];
+    iv.copy_from_slice(&iv_pub[..16]);
+    Ok((key_bytes, iv))
 }
 
 #[no_mangle]
-pub extern "C" fn generate_arweave_secret(
+pub unsafe extern "C" fn generate_arweave_secret(
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut SimpleResponse<u8> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    let secret = generate_secret(seed).unwrap();
+    let seed = extract_array!(seed, u8, seed_len as usize);
+    let secret = match generate_secret(seed) {
+        Ok(s) => s,
+        Err(_) => {
+            return SimpleResponse::from(RustCError::InvalidData("get secret error".to_string()))
+                .simple_c_ptr()
+        }
+    };
     let mut secret_bytes: [u8; 512] = [0; 512];
     secret_bytes[..256].copy_from_slice(&secret.primes()[0].to_bytes_be());
     secret_bytes[256..].copy_from_slice(&secret.primes()[1].to_bytes_be());
@@ -56,55 +70,76 @@ pub extern "C" fn generate_arweave_secret(
 }
 
 #[no_mangle]
-pub extern "C" fn generate_arweave_public_key_from_primes(
+pub unsafe extern "C" fn generate_arweave_public_key_from_primes(
     p: PtrBytes,
     p_len: u32,
     q: PtrBytes,
     q_len: u32,
 ) -> *mut SimpleResponse<u8> {
-    let p = unsafe { slice::from_raw_parts(p, p_len as usize) };
-    let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
-    let public = generate_public_key_from_primes(p, q).unwrap();
-    SimpleResponse::success(Box::into_raw(Box::new(public)) as *mut u8).simple_c_ptr()
+    let p = extract_array!(p, u8, p_len as usize);
+    let q = extract_array!(q, u8, q_len as usize);
+    match generate_public_key_from_primes(p, q) {
+        Ok(public) => {
+            SimpleResponse::success(Box::into_raw(Box::new(public)) as *mut u8).simple_c_ptr()
+        }
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
 }
 
 #[no_mangle]
-pub extern "C" fn generate_rsa_public_key(
+pub unsafe extern "C" fn generate_rsa_public_key(
     p: PtrBytes,
     p_len: u32,
     q: PtrBytes,
     q_len: u32,
 ) -> *mut SimpleResponse<c_char> {
-    let p = unsafe { slice::from_raw_parts(p, p_len as usize) };
-    let q = unsafe { slice::from_raw_parts(q, q_len as usize) };
-    let public = generate_public_key_from_primes(p, q).unwrap();
-    SimpleResponse::success(convert_c_char(hex::encode(public))).simple_c_ptr()
+    let p = extract_array!(p, u8, p_len as usize);
+    let q = extract_array!(q, u8, q_len as usize);
+    match generate_public_key_from_primes(p, q) {
+        Ok(public) => SimpleResponse::success(convert_c_char(hex::encode(public))).simple_c_ptr(),
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
 }
 
 #[no_mangle]
-pub extern "C" fn aes256_encrypt_primes(
+pub unsafe extern "C" fn aes256_encrypt_primes(
     seed: PtrBytes,
     seed_len: u32,
     data: PtrBytes,
 ) -> *mut SimpleResponse<u8> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    let data = unsafe { slice::from_raw_parts(data, 512) };
-    let (key, iv) = generate_aes_key_iv(seed);
-    let encrypted_data = aes256_encrypt(&key, &iv, data).unwrap();
+    let seed = extract_array!(seed, u8, seed_len as usize);
+    let data = extract_array!(data, u8, 512);
+    let (key, iv) = match generate_aes_key_iv(seed) {
+        Ok(v) => v,
+        Err(_) => {
+            return SimpleResponse::from(RustCError::InvalidData("get aes key error".to_string()))
+                .simple_c_ptr()
+        }
+    };
+    let encrypted_data = match aes256_encrypt(&key, &iv, data) {
+        Ok(v) => v,
+        Err(e) => return SimpleResponse::from(e).simple_c_ptr(),
+    };
     let mut result_bytes: [u8; 528] = [0; 528];
     result_bytes.copy_from_slice(&encrypted_data);
     SimpleResponse::success(Box::into_raw(Box::new(result_bytes)) as *mut u8).simple_c_ptr()
 }
 
 #[no_mangle]
-pub extern "C" fn aes256_decrypt_primes(
+pub unsafe extern "C" fn aes256_decrypt_primes(
     seed: PtrBytes,
     seed_len: u32,
     data: PtrBytes,
 ) -> *mut SimpleResponse<u8> {
-    let seed = unsafe { slice::from_raw_parts(seed, seed_len as usize) };
-    let data = unsafe { slice::from_raw_parts(data, 528) };
-    let (key, iv) = generate_aes_key_iv(seed);
+    let seed = extract_array!(seed, u8, seed_len as usize);
+    let data = extract_array!(data, u8, 528);
+    let (key, iv) = match generate_aes_key_iv(seed) {
+        Ok(v) => v,
+        Err(_) => {
+            return SimpleResponse::from(RustCError::InvalidData("get aes key error".to_string()))
+                .simple_c_ptr()
+        }
+    };
     match aes256_decrypt(&key, &iv, data) {
         Ok(decrypted_data) => {
             if decrypted_data.len() != 512 {
@@ -122,8 +157,17 @@ pub extern "C" fn aes256_decrypt_primes(
 #[no_mangle]
 pub unsafe extern "C" fn arweave_get_address(xpub: PtrString) -> *mut SimpleResponse<c_char> {
     let xpub = recover_c_char(xpub);
-    let address = app_arweave::generate_address(hex::decode(xpub).unwrap()).unwrap();
-    SimpleResponse::success(convert_c_char(address)).simple_c_ptr()
+    let bytes = match hex::decode(xpub) {
+        Ok(v) => v,
+        Err(_) => {
+            return SimpleResponse::from(RustCError::InvalidData("invalid hex".to_string()))
+                .simple_c_ptr()
+        }
+    };
+    match app_arweave::generate_address(bytes) {
+        Ok(address) => SimpleResponse::success(convert_c_char(address)).simple_c_ptr(),
+        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
 }
 
 #[no_mangle]
@@ -188,9 +232,9 @@ pub unsafe extern "C" fn ar_message_parse(
 }
 
 fn get_value(raw_json: &Value, key: &str) -> String {
-    raw_json["formatted_json"][key.to_string()]
+    raw_json["formatted_json"][key]
         .as_str()
-        .unwrap()
+        .unwrap_or("")
         .to_string()
 }
 
@@ -198,8 +242,16 @@ fn get_value(raw_json: &Value, key: &str) -> String {
 pub unsafe extern "C" fn ar_parse(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayArweaveTx>> {
     let sign_request = extract_ptr_with_type!(ptr, ArweaveSignRequest);
     let sign_data = sign_request.get_sign_data();
-    let raw_tx = parse(&sign_data).unwrap();
-    let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
+    let raw_tx = match parse(&sign_data) {
+        Ok(v) => v,
+        Err(e) => return TransactionParseResult::from(e).c_ptr(),
+    };
+    let raw_json: Value = match serde_json::from_str(&raw_tx) {
+        Ok(v) => v,
+        Err(e) => {
+            return TransactionParseResult::from(RustCError::InvalidData(e.to_string())).c_ptr()
+        }
+    };
     let value = get_value(&raw_json, "quantity");
     let fee = get_value(&raw_json, "reward");
     let from = get_value(&raw_json, "from");
@@ -222,11 +274,22 @@ unsafe fn parse_sign_data(ptr: PtrUR) -> Result<Vec<u8>, ArweaveError> {
     match sign_request.get_sign_type() {
         SignType::Transaction => {
             let raw_tx = parse(&sign_data)?;
-            let raw_json: Value = serde_json::from_str(&raw_tx).unwrap();
-            let signature_data = raw_json["formatted_json"]["signature_data"]
-                .as_str()
-                .unwrap();
-            let signature_data = hex::decode(signature_data).unwrap();
+            let raw_json: Value = match serde_json::from_str(&raw_tx) {
+                Ok(v) => v,
+                Err(e) => return Err(ArweaveError::KeystoreError(e.to_string())),
+            };
+            let signature_data = match raw_json["formatted_json"]["signature_data"].as_str() {
+                Some(s) => s,
+                None => {
+                    return Err(ArweaveError::KeystoreError(
+                        "missing signature_data".to_string(),
+                    ))
+                }
+            };
+            let signature_data = match hex::decode(signature_data) {
+                Ok(v) => v,
+                Err(e) => return Err(ArweaveError::KeystoreError(e.to_string())),
+            };
             Ok(signature_data)
         }
         SignType::DataItem => {
@@ -317,7 +380,7 @@ mod tests {
         let data = hex::decode("cfbe18586b3ed63813e05ba65f606a6bf936c358285162dae3c123fb657f3327284ceacada59cf64c1bf9b8f55a96575815b6904dda565a786a7222d563f3e70729a3cc6d46a3916083b6dd4c97ab67a599a8d5b382a6d7d4ea04bedb37fa8856bdcc871ca1a6ed0916de02eb6b200ca150ed730cbb73ce31eac3f84a3e10e208195df9c33d933bebb64a42ccec3744dd9a9fbde484a993ac17cb027acbc0c2948af4a3c3cce1f64ed724fbcc9360cadfa3bbcc73f2798ea95ed6994a7c9c76ae112a96f75040dcceabf49b6546a0ca869a08a58a9befcc82fc7d973cb8e8a0c8f9659c66b3de614d5ff531a130a1d4e3e06a3c4f8957b612913d9597f6a12a5f794c6cd8a066b819c537fd9cc2a79de7d39069d9fd1ad79652e199845ae4cea68350c06e0af43bd71b302a1d578a9df7c9a351d5d23d5104deef986f326cac564628f4e8fbc2b83be05b288434eb99cfdf0e57b755714b93b16ee1eab7ae2cb4cdec24ec350fa8a2d20a71feb3a7b1ceaecda03479cbd1a1614c64bc2e4d09586204dde7525a077a00632c71fa1771a8f8164beed3d02bb4f47a53733a9540b4a1cd0e7aabe09b1d3b1d331004533aaac75e48e12ba3b1bc2f6e5fec9fb6942da3d113eeb8ac3b67f6ca67fc4f5be98d19f8551ab25af29ac0c0ba5790d930515a76878bf2dbd34653b3311ce2fdcd4ea74ffe1cea687bf45ee7baab1987aaf").unwrap();
         let encoded_data_test = hex::decode("85113aedb4f44eb56cf113557fecf91afe908a9869cca1ab4c22b50eb01fcb7081e6d687533617d9451c062f15ab32fac5558fe4f56e4fd66415cb2904e82fd207f206fd2067c4c553b05bdd663523209e1940e8ffdee3621c2c79ae0e3c1eece83824f22565eb8112063dc23d0f0609ef4669c59ae117c0c4fb2136bc74d98f29e7903d59e520106f4d0281025afeba9ea2ebfdde99d7ac8bdb22eedc569e867f18629a5639fd51d46b0caa798ee6b84c20e4c15a112bc7005a433bc8850d83df2ca10588930b8151200fe68c43183b16a64d76bd4b46c429bf3e45f954efa28040e3edfaf942f7ddcdf573c10f0952ca0f7b8d932f5ddf6f5ce4d0092e399dfa485cfdd19fcd118bb814d6d321bd114a1e8c2314926c41b1d0fcaec33222c53b02b24081dce8cbe25154f9d9ad195955ab7dada82ca3642afc39a746dcb0fa2647334533272d2abe6d99f400451a2b1f1dfc6341b45fedf0d68abaa210c0203233fb0aa7e6503d3c6e385c64299277005316f8bca38fc1bc8d82b2575ff80d24d8ed2efd07179219143c3acba5a2df1778228aaeb2f44d5f03b25cdc51c08e76039dae0b33f1aa23f48a27a6a5342259e5b90ee3927d07e9982ac46ebe66fe416d7745a3ba15931aa7f1ce0a2ef0a1aee9f2f6d3bf1b7485889d55305e7ccbbc5b0fc33a8843f4c1a3518c659275009c47fb2d3cd53bd4c9feba630816bc9f96101d9cd94087d7392674b735d379c2").unwrap();
         assert_eq!(encoded_data_test.len(), 528);
-        let (key, iv) = generate_aes_key_iv(&seed);
+        let (key, iv) = generate_aes_key_iv(&seed).unwrap();
         let encrypted_data = aes256_encrypt(&key, &iv, &data).unwrap();
         let decrypted_data = aes256_decrypt(&key, &iv, &encrypted_data).unwrap();
         assert_eq!(data, decrypted_data);

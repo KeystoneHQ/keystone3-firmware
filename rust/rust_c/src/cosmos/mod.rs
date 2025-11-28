@@ -5,8 +5,8 @@ use crate::common::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
-use crate::extract_array;
 use crate::extract_ptr_with_type;
+use crate::{extract_array, extract_array_mut};
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -21,6 +21,7 @@ use ur_registry::cosmos::cosmos_signature::CosmosSignature;
 use ur_registry::cosmos::evm_sign_request::{EvmSignRequest, SignDataType};
 use ur_registry::cosmos::evm_signature::EvmSignature;
 use ur_registry::traits::RegistryItem;
+use zeroize::Zeroize;
 
 fn get_public_key(seed: &[u8], path: &String) -> Result<Vec<u8>, CosmosError> {
     let path = normalize_path(path);
@@ -49,7 +50,7 @@ unsafe fn build_sign_result(
                 CosmosError::SignFailure("invalid derivation path".to_string()),
             )?;
             let signature = app_cosmos::sign_tx(
-                sign_request.get_sign_data().to_vec(),
+                sign_request.get_sign_data().as_slice(),
                 &path,
                 SignMode::COSMOS,
                 seed,
@@ -70,7 +71,7 @@ unsafe fn build_sign_result(
                         "invalid derivation path".to_string(),
                     ))?;
             let signature = app_cosmos::sign_tx(
-                sign_request.get_sign_data().to_vec(),
+                sign_request.get_sign_data().as_slice(),
                 &path,
                 SignMode::EVM,
                 seed,
@@ -157,7 +158,7 @@ pub unsafe extern "C" fn cosmos_sign_tx(
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
-    let seed = extract_array!(seed, u8, seed_len as usize);
+    let mut seed: &mut [u8] = extract_array_mut!(seed, u8, seed_len as usize);
     let ur_tag = match ur_type {
         QRCodeType::CosmosSignRequest => CosmosSignature::get_registry_type().get_type(),
         QRCodeType::EvmSignRequest => EvmSignature::get_registry_type().get_type(),
@@ -168,7 +169,7 @@ pub unsafe extern "C" fn cosmos_sign_tx(
             .c_ptr()
         }
     };
-    build_sign_result(ptr, ur_type, seed)
+    let result = build_sign_result(ptr, ur_type, seed)
         .map(|v| match v {
             Either::Left(sig) => sig.try_into(),
             Either::Right(sig) => sig.try_into(),
@@ -183,7 +184,9 @@ pub unsafe extern "C" fn cosmos_sign_tx(
                     },
                 )
             },
-        )
+        );
+    seed.zeroize();
+    result
 }
 
 #[no_mangle]

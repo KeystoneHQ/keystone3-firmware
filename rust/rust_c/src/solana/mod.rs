@@ -46,16 +46,6 @@ pub unsafe extern "C" fn solana_get_address(pubkey: PtrString) -> *mut SimpleRes
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn iota_get_address(pubkey: PtrString) -> *mut SimpleResponse<c_char> {
-    let x_pub = recover_c_char(pubkey);
-    let address = app_solana::get_address(&x_pub);
-    match address {
-        Ok(result) => SimpleResponse::success(convert_c_char(result) as *mut c_char).simple_c_ptr(),
-        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
-    }
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn solana_check(
     ptr: PtrUR,
     master_fingerprint: PtrBytes,
@@ -94,6 +84,7 @@ pub unsafe extern "C" fn solana_parse_tx(
 }
 
 #[no_mangle]
+// this function is used to sign the tx and message
 pub unsafe extern "C" fn solana_sign_tx(
     ptr: PtrUR,
     seed: PtrBytes,
@@ -127,6 +118,7 @@ pub unsafe extern "C" fn solana_parse_message(
 ) -> PtrT<TransactionParseResult<DisplaySolanaMessage>> {
     let sol_sign_request = extract_ptr_with_type!(ptr, SolSignRequest);
     let pubkey = recover_c_char(pubkey);
+    // verify whether the UR is message to prevent using the tx as message
     if app_solana::validate_tx(&mut sol_sign_request.get_sign_data()) {
         return TransactionParseResult::from(RustCError::UnsupportedTransaction(
             "Transaction".to_string(),

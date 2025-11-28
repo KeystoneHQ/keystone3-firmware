@@ -138,7 +138,6 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
     {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
     {WALLET_LIST_MEDUSA, "Medusa", &walletMedusa},
-    // {WALLET_LIST_YOROI, "Yoroi Wallet", &walletYoroi},
     {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
@@ -755,6 +754,9 @@ void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const
             coin = &g_walletBtn[i];
             break;
         }
+    }
+    if (coin == NULL) {
+        return;
     }
 
     if (name == NULL) {

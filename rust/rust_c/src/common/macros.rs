@@ -491,6 +491,15 @@ macro_rules! extract_array {
 }
 
 #[macro_export]
+macro_rules! extract_array_mut {
+    ($x: expr, $name: ident, $length: expr) => {{
+        let ptr = $x as *mut $name;
+        let result: &mut [$name] = core::slice::from_raw_parts_mut(ptr, $length as usize);
+        result
+    }};
+}
+
+#[macro_export]
 macro_rules! impl_response {
     ($name:ident) => {
         impl_c_ptr!($name);

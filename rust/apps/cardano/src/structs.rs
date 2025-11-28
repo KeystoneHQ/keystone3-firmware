@@ -1,5 +1,5 @@
 use crate::address::derive_pubkey_hash;
-use crate::errors::{CardanoError, R};
+use crate::errors::{CardanoError, Result};
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec;
@@ -161,13 +161,15 @@ impl_public_struct!(ParsedCardanoMultiAsset {
 });
 
 impl ParsedCardanoSignData {
-    pub fn build(sign_data: Vec<u8>, derivation_path: String, xpub: String) -> R<Self> {
+    pub fn build(sign_data: Vec<u8>, derivation_path: String, xpub: String) -> Result<Self> {
         let sign_structure = CardanoSignStructure::from_cbor(sign_data.clone());
         match sign_structure {
             Ok(sign_structure) => {
                 let raw_payload = sign_structure.get_payload();
-                let payload = String::from_utf8(hex::decode(raw_payload.clone()).unwrap())
-                    .unwrap_or_else(|_| raw_payload.clone());
+                let payload = hex::decode(raw_payload.clone())
+                    .ok()
+                    .and_then(|bytes| String::from_utf8(bytes).ok())
+                    .unwrap_or_else(|| raw_payload.clone());
                 Ok(Self {
                     payload,
                     derivation_path,
@@ -191,13 +193,15 @@ impl ParsedCardanoSignCip8Data {
         derivation_path: String,
         xpub: String,
         hash_payload: bool,
-    ) -> R<Self> {
+    ) -> Result<Self> {
         let sign_structure = CardanoSignStructure::from_cbor(sign_data.clone());
         match sign_structure {
             Ok(sign_structure) => {
                 let raw_payload = sign_structure.get_payload();
-                let payload = String::from_utf8(hex::decode(raw_payload.clone()).unwrap())
-                    .unwrap_or_else(|_| raw_payload.clone());
+                let payload = hex::decode(raw_payload.clone())
+                    .ok()
+                    .and_then(|bytes| String::from_utf8(bytes).ok())
+                    .unwrap_or_else(|| raw_payload.clone());
                 let mut message_hash = hex::encode(raw_payload);
                 if hash_payload {
                     let hash = blake2b_224(payload.as_bytes());
@@ -211,7 +215,7 @@ impl ParsedCardanoSignCip8Data {
                     hash_payload,
                 })
             }
-            Err(e) => Ok(Self {
+            Err(_e) => Ok(Self {
                 payload: hex::encode(sign_data.clone()),
                 derivation_path,
                 message_hash: hex::encode(sign_data),
@@ -223,7 +227,7 @@ impl ParsedCardanoSignCip8Data {
 }
 
 impl ParsedCardanoTx {
-    pub fn from_cardano_tx(tx: Transaction, context: ParseContext) -> R<Self> {
+    pub fn from_cardano_tx(tx: Transaction, context: ParseContext) -> Result<Self> {
         let network_id = Self::judge_network_id(&tx);
         let network = match network_id {
             1 => "Cardano Mainnet".to_string(),
@@ -286,18 +290,31 @@ impl ParsedCardanoTx {
                 let voters = v.get_voters();
                 let mut voting_procedures = vec![];
                 for voter_index in 0..voters.len() {
-                    let voter = voters.get(voter_index).unwrap();
+                    let voter = match voters.get(voter_index) {
+                        Some(v) => v,
+                        None => continue,
+                    };
                     let actions = v.get_governance_action_ids_by_voter(&voter);
                     for i in 0..actions.len() {
-                        let action = actions.get(i).unwrap();
-                        let procedure = v.get(&voter, &action);
-                        let vote = match procedure.unwrap().vote_kind() {
+                        let action = match actions.get(i) {
+                            Some(a) => a,
+                            None => continue,
+                        };
+                        let procedure = match v.get(&voter, &action) {
+                            Some(p) => p,
+                            None => continue,
+                        };
+                        let vote = match procedure.vote_kind() {
                             VoteKind::No => "No".to_string(),
                             VoteKind::Yes => "Yes".to_string(),
                             VoteKind::Abstain => "Abstain".to_string(),
                         };
+                        let voter_hash = match voter.to_key_hash() {
+                            Some(h) => h.to_string(),
+                            None => continue,
+                        };
                         voting_procedures.push(VotingProcedure {
-                            voter: voter.to_key_hash().unwrap().to_string(),
+                            voter: voter_hash,
                             transaction_id: action.transaction_id().to_string(),
                             index: action.index().to_string(),
                             vote,
@@ -357,7 +374,7 @@ impl ParsedCardanoTx {
         }
     }
 
-    fn parse_auxiliary_data(tx: &Transaction) -> R<Option<String>> {
+    fn parse_auxiliary_data(tx: &Transaction) -> Result<Option<String>> {
         tx.auxiliary_data()
             .map(|v| {
                 v.to_json()
@@ -366,7 +383,7 @@ impl ParsedCardanoTx {
             .transpose()
     }
 
-    fn parse_certificates(tx: &Transaction, network_id: u8) -> R<Vec<CardanoCertificate>> {
+    fn parse_certificates(tx: &Transaction, network_id: u8) -> Result<Vec<CardanoCertificate>> {
         let mut certs = vec![];
         if let Some(_certs) = tx.body().certs() {
             let len = _certs.len();
@@ -442,7 +459,11 @@ impl ParsedCardanoTx {
                             _cert
                                 .drep()
                                 .to_key_hash()
-                                .unwrap()
+                                .ok_or_else(|| {
+                                    CardanoError::InvalidTransaction(
+                                        "Invalid DRep key hash".to_string(),
+                                    )
+                                })?
                                 .to_bech32("drep")
                                 .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                             LABEL_DREP.to_string(),
@@ -451,7 +472,11 @@ impl ParsedCardanoTx {
                             _cert
                                 .drep()
                                 .to_script_hash()
-                                .unwrap()
+                                .ok_or_else(|| {
+                                    CardanoError::InvalidTransaction(
+                                        "Invalid DRep script hash".to_string(),
+                                    )
+                                })?
                                 .to_bech32("")
                                 .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?,
                             LABEL_DREP.to_string(),
@@ -531,12 +556,20 @@ impl ParsedCardanoTx {
                                 CredKind::Key => _cert
                                     .committee_hot_credential()
                                     .to_keyhash()
-                                    .unwrap()
+                                    .ok_or_else(|| {
+                                        CardanoError::InvalidTransaction(
+                                            "Invalid committee hot key hash".to_string(),
+                                        )
+                                    })?
                                     .to_string(),
                                 CredKind::Script => _cert
                                     .committee_hot_credential()
                                     .to_scripthash()
-                                    .unwrap()
+                                    .ok_or_else(|| {
+                                        CardanoError::InvalidTransaction(
+                                            "Invalid committee hot script hash".to_string(),
+                                        )
+                                    })?
                                     .to_string(),
                             },
                         },
@@ -546,12 +579,20 @@ impl ParsedCardanoTx {
                                 CredKind::Key => _cert
                                     .committee_cold_credential()
                                     .to_keyhash()
-                                    .unwrap()
+                                    .ok_or_else(|| {
+                                        CardanoError::InvalidTransaction(
+                                            "Invalid committee cold key hash".to_string(),
+                                        )
+                                    })?
                                     .to_string(),
                                 CredKind::Script => _cert
                                     .committee_cold_credential()
                                     .to_scripthash()
-                                    .unwrap()
+                                    .ok_or_else(|| {
+                                        CardanoError::InvalidTransaction(
+                                            "Invalid committee cold script hash".to_string(),
+                                        )
+                                    })?
                                     .to_string(),
                             },
                         },
@@ -568,12 +609,20 @@ impl ParsedCardanoTx {
                             CredKind::Key => _cert
                                 .committee_cold_credential()
                                 .to_keyhash()
-                                .unwrap()
+                                .ok_or_else(|| {
+                                    CardanoError::InvalidTransaction(
+                                        "Invalid committee cold key hash".to_string(),
+                                    )
+                                })?
                                 .to_string(),
                             CredKind::Script => _cert
                                 .committee_cold_credential()
                                 .to_scripthash()
-                                .unwrap()
+                                .ok_or_else(|| {
+                                    CardanoError::InvalidTransaction(
+                                        "Invalid committee cold script hash".to_string(),
+                                    )
+                                })?
                                 .to_string(),
                         },
                     }];
@@ -908,7 +957,7 @@ impl ParsedCardanoTx {
         Ok(certs)
     }
 
-    fn parse_withdrawals(tx: &Transaction) -> R<Vec<CardanoWithdrawal>> {
+    fn parse_withdrawals(tx: &Transaction) -> Result<Vec<CardanoWithdrawal>> {
         let mut withdrawals = vec![];
         if let Some(_withdrawals) = tx.body().withdrawals() {
             let keys = _withdrawals.keys();
@@ -1019,7 +1068,7 @@ impl ParsedCardanoTx {
         map
     }
 
-    pub fn verify(tx: Transaction, context: ParseContext) -> R<()> {
+    pub fn verify(tx: Transaction, context: ParseContext) -> Result<()> {
         let network_id = Self::judge_network_id(&tx);
         let parsed_inputs = Self::parse_inputs(&tx, &context, network_id)?;
 
@@ -1052,7 +1101,7 @@ impl ParsedCardanoTx {
         tx: &Transaction,
         context: &ParseContext,
         _network_id: u8,
-    ) -> R<Vec<ParsedCardanoInput>> {
+    ) -> Result<Vec<ParsedCardanoInput>> {
         let inputs_len = tx.body().inputs().len();
         let mut parsed_inputs: Vec<ParsedCardanoInput> = vec![];
         for i in 0..inputs_len {
@@ -1168,7 +1217,7 @@ impl ParsedCardanoTx {
         Ok(parsed_inputs)
     }
 
-    fn parse_outputs(tx: &Transaction) -> R<Vec<ParsedCardanoOutput>> {
+    fn parse_outputs(tx: &Transaction) -> Result<Vec<ParsedCardanoOutput>> {
         let outputs_len = tx.body().outputs().len();
         let mut parsed_outputs = vec![];
         for i in 0..outputs_len {
@@ -1220,7 +1269,7 @@ impl ParsedCardanoTx {
     }
 }
 
-static DIVIDER: f64 = 1_000_000f64;
+const DIVIDER: f64 = 1_000_000f64;
 
 fn normalize_coin(value: u64) -> String {
     format!("{} ADA", (value as f64).div(DIVIDER))
@@ -1233,6 +1282,8 @@ fn normalize_value(value: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bitcoin::bip32::DerivationPath;
+    use core::str::FromStr;
     use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 
     #[test]
@@ -1250,6 +1301,41 @@ mod tests {
     }
 
     #[test]
+    fn test_normalize_coin_zero() {
+        let value = 0u64;
+        let result = normalize_coin(value);
+        assert_eq!(result, "0 ADA");
+    }
+
+    #[test]
+    fn test_normalize_coin_fractional() {
+        let value = 500_000u64; // 0.5 ADA
+        let result = normalize_coin(value);
+        assert_eq!(result, "0.5 ADA");
+    }
+
+    #[test]
+    fn test_normalize_coin_large() {
+        let value = 1_000_000_000_000u64; // 1,000,000 ADA
+        let result = normalize_coin(value);
+        assert!(result.contains("ADA"));
+    }
+
+    #[test]
+    fn test_normalize_value_zero() {
+        let value = 0u64;
+        let result = normalize_value(value);
+        assert_eq!(result, "0");
+    }
+
+    #[test]
+    fn test_normalize_value_fractional() {
+        let value = 500_000u64; // 0.5
+        let result = normalize_value(value);
+        assert_eq!(result, "0.5");
+    }
+
+    #[test]
     fn test_parse_sign_data() {
         let payload = "846a5369676e6174757265315882a301270458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad676164647265737358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad4043abc123";
         let xpub = "ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c";
@@ -1261,6 +1347,55 @@ mod tests {
         .unwrap();
         assert_eq!(data.get_derivation_path(), "m/1852'/1815'/0'/0/0");
         assert_eq!(hex::encode(data.get_payload()), "616263313233");
+    }
+
+    #[test]
+    fn test_parse_sign_data_invalid_cbor_fallback() {
+        // Invalid CBOR should fallback to hex encoding
+        let invalid_cbor = vec![0xff, 0xff, 0xff]; // Invalid CBOR
+        let xpub = "ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c";
+        let data = ParsedCardanoSignData::build(
+            invalid_cbor.clone(),
+            "m/1852'/1815'/0'/0/0".to_string(),
+            xpub.to_string(),
+        )
+        .unwrap();
+        assert_eq!(data.get_derivation_path(), "m/1852'/1815'/0'/0/0");
+        assert_eq!(data.get_message_hash(), hex::encode(&invalid_cbor));
+    }
+
+    #[test]
+    fn test_parse_sign_cip8_data_without_hash() {
+        let payload = "846a5369676e6174757265315882a301270458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad676164647265737358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad4043abc123";
+        let xpub = "ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c";
+        let data = ParsedCardanoSignCip8Data::build(
+            hex::decode(payload).unwrap(),
+            "m/1852'/1815'/0'/0/0".to_string(),
+            xpub.to_string(),
+            false, // hash_payload = false
+        )
+        .unwrap();
+        assert_eq!(data.get_derivation_path(), "m/1852'/1815'/0'/0/0");
+        assert_eq!(data.get_hash_payload(), false);
+        assert!(!data.get_message_hash().is_empty());
+    }
+
+    #[test]
+    fn test_parse_sign_cip8_data_with_hash() {
+        let payload = "846a5369676e6174757265315882a301270458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad676164647265737358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad4043abc123";
+        let xpub = "ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c";
+        let data = ParsedCardanoSignCip8Data::build(
+            hex::decode(payload).unwrap(),
+            "m/1852'/1815'/0'/0/0".to_string(),
+            xpub.to_string(),
+            true, // hash_payload = true
+        )
+        .unwrap();
+        assert_eq!(data.get_derivation_path(), "m/1852'/1815'/0'/0/0");
+        assert_eq!(data.get_hash_payload(), true);
+        // When hash_payload is true, message_hash should be blake2b_224 hash of payload
+        assert!(!data.get_message_hash().is_empty());
+        assert_eq!(data.get_message_hash().len(), 56); // blake2b_224 produces 28 bytes = 56 hex chars
     }
 
     #[test]
@@ -1297,5 +1432,305 @@ mod tests {
 
         let cardano_tx = ParsedCardanoTx::from_cardano_tx(tx, context);
         assert!(cardano_tx.is_ok());
+    }
+
+    #[test]
+    fn test_judge_network_id_with_network_id() {
+        // Test with explicit network_id in transaction body
+        let sign_data = hex::decode("84a400828258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99038258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99040182a200581d6179df4c75f7616d7d1fd39cbc1a6ea6b40a0d7b89fea62fc0909b6c370119c350a200581d61c9b0c9761fd1dc0404abd55efc895026628b5035ac623c614fbad0310119c35002198ecb0300a0f5f6").unwrap();
+        let tx = Transaction::from_hex(&hex::encode(sign_data)).unwrap();
+        let network_id = ParsedCardanoTx::judge_network_id(&tx);
+        // Should return network_id based on outputs address
+        assert!(network_id == 0 || network_id == 1);
+    }
+
+    #[test]
+    fn test_parse_auxiliary_data_none() {
+        let sign_data = hex::decode("84a400828258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99038258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99040182a200581d6179df4c75f7616d7d1fd39cbc1a6ea6b40a0d7b89fea62fc0909b6c370119c350a200581d61c9b0c9761fd1dc0404abd55efc895026628b5035ac623c614fbad0310119c35002198ecb0300a0f5f6").unwrap();
+        let tx = Transaction::from_hex(&hex::encode(sign_data)).unwrap();
+        let aux_data = ParsedCardanoTx::parse_auxiliary_data(&tx);
+        assert!(aux_data.is_ok());
+        // This transaction likely doesn't have auxiliary data
+        assert_eq!(aux_data.unwrap(), None);
+    }
+
+    #[test]
+    fn test_parse_certificates_empty() {
+        let sign_data = hex::decode("84a400828258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99038258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99040182a200581d6179df4c75f7616d7d1fd39cbc1a6ea6b40a0d7b89fea62fc0909b6c370119c350a200581d61c9b0c9761fd1dc0404abd55efc895026628b5035ac623c614fbad0310119c35002198ecb0300a0f5f6").unwrap();
+        let tx = Transaction::from_hex(&hex::encode(sign_data)).unwrap();
+        let network_id = ParsedCardanoTx::judge_network_id(&tx);
+        let certs = ParsedCardanoTx::parse_certificates(&tx, network_id);
+        assert!(certs.is_ok());
+        assert_eq!(certs.unwrap().len(), 0);
+    }
+
+    #[test]
+    fn test_parse_withdrawals_empty() {
+        let sign_data = hex::decode("84a400828258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99038258204e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99040182a200581d6179df4c75f7616d7d1fd39cbc1a6ea6b40a0d7b89fea62fc0909b6c370119c350a200581d61c9b0c9761fd1dc0404abd55efc895026628b5035ac623c614fbad0310119c35002198ecb0300a0f5f6").unwrap();
+        let tx = Transaction::from_hex(&hex::encode(sign_data)).unwrap();
+        let withdrawals = ParsedCardanoTx::parse_withdrawals(&tx);
+        assert!(withdrawals.is_ok());
+        assert_eq!(withdrawals.unwrap().len(), 0);
+    }
+
+    #[test]
+    fn test_parse_context_new() {
+        let utxos = vec![];
+        let cert_keys = vec![];
+        let xpub = Some("test_xpub".to_string());
+        let master_fingerprint = vec![0x52, 0x74, 0x47, 0x03];
+        let context = ParseContext::new(
+            utxos.clone(),
+            cert_keys.clone(),
+            xpub.clone(),
+            master_fingerprint.clone(),
+        );
+        assert_eq!(context.get_utxos().len(), 0);
+        assert_eq!(context.get_cert_keys().len(), 0);
+        assert_eq!(context.get_cardano_xpub(), xpub);
+        assert_eq!(context.get_master_fingerprint(), master_fingerprint);
+    }
+
+    #[test]
+    fn test_voting_procedure_new() {
+        let procedure = VotingProcedure {
+            voter: "voter_hash".to_string(),
+            transaction_id: "tx_id".to_string(),
+            index: "0".to_string(),
+            vote: "Yes".to_string(),
+        };
+        assert_eq!(procedure.get_voter(), "voter_hash");
+        assert_eq!(procedure.get_transaction_id(), "tx_id");
+        assert_eq!(procedure.get_index(), "0");
+        assert_eq!(procedure.get_vote(), "Yes");
+    }
+
+    #[test]
+    fn test_voting_proposal_new() {
+        let proposal = VotingProposal {
+            anchor: "anchor_hash".to_string(),
+        };
+        assert_eq!(proposal.get_anchor(), "anchor_hash");
+    }
+
+    #[test]
+    fn test_cardano_certificate_new() {
+        let fields = vec![CertField {
+            label: "Address".to_string(),
+            value: "addr1...".to_string(),
+        }];
+        let cert = CardanoCertificate::new("Stake Pool Delegation".to_string(), fields.clone());
+        assert_eq!(cert.get_cert_type(), "Stake Pool Delegation");
+        assert_eq!(cert.get_fields().len(), 1);
+    }
+
+    #[test]
+    fn test_cardano_withdrawal_new() {
+        let withdrawal = CardanoWithdrawal {
+            address: "addr1...".to_string(),
+            amount: "1 ADA".to_string(),
+        };
+        assert_eq!(withdrawal.get_address(), "addr1...");
+        assert_eq!(withdrawal.get_amount(), "1 ADA");
+    }
+
+    #[test]
+    fn test_cert_field_new() {
+        let field = CertField {
+            label: "Address".to_string(),
+            value: "addr1...".to_string(),
+        };
+        assert_eq!(field.get_label(), "Address");
+        assert_eq!(field.get_value(), "addr1...");
+    }
+
+    #[test]
+    fn test_cardano_utxo_new() {
+        let mfp = vec![0x52, 0x74, 0x47, 0x03];
+        let path = DerivationPath::from_str("m/1852'/1815'/0'/0/0").unwrap();
+        let tx_hash = vec![0x01, 0x02, 0x03];
+        let utxo = CardanoUtxo::new(
+            mfp.clone(),
+            "addr1...".to_string(),
+            path.clone(),
+            1000000,
+            tx_hash.clone(),
+            0,
+        );
+        assert_eq!(utxo.get_master_fingerprint(), mfp);
+        assert_eq!(utxo.get_address(), "addr1...");
+        assert_eq!(utxo.get_value(), 1000000);
+        assert_eq!(utxo.get_index(), 0);
+    }
+
+    #[test]
+    fn test_cardano_cert_key_new() {
+        let mfp = vec![0x52, 0x74, 0x47, 0x03];
+        let key_hash = vec![0x01, 0x02, 0x03];
+        let path = DerivationPath::from_str("m/1852'/1815'/0'/2/0").unwrap();
+        let cert_key = CardanoCertKey::new(mfp.clone(), key_hash.clone(), path.clone());
+        assert_eq!(cert_key.get_master_fingerprint(), mfp);
+        assert_eq!(cert_key.get_key_hash(), key_hash);
+    }
+
+    #[test]
+    fn test_sign_data_result_new() {
+        let pub_key = vec![0x01, 0x02, 0x03];
+        let signature = vec![0x04, 0x05, 0x06];
+        let result = SignDataResult::new(pub_key.clone(), signature.clone());
+        assert_eq!(result.get_pub_key(), pub_key);
+        assert_eq!(result.get_signature(), signature);
+    }
+
+    #[test]
+    fn test_sign_voting_registration_result_new() {
+        let signature = vec![0x01, 0x02, 0x03];
+        let result = SignVotingRegistrationResult::new(signature.clone());
+        assert_eq!(result.get_signature(), signature);
+    }
+
+    #[test]
+    fn test_cardano_from_new() {
+        let from = CardanoFrom {
+            address: "addr1...".to_string(),
+            amount: "1 ADA".to_string(),
+            path: Some("m/1852'/1815'/0'/0/0".to_string()),
+            value: 1000000,
+        };
+        assert_eq!(from.get_address(), "addr1...");
+        assert_eq!(from.get_amount(), "1 ADA");
+        assert_eq!(from.get_path(), Some("m/1852'/1815'/0'/0/0".to_string()));
+        assert_eq!(from.get_value(), 1000000);
+    }
+
+    #[test]
+    fn test_cardano_to_new() {
+        let to = CardanoTo {
+            address: "addr1...".to_string(),
+            amount: "2 ADA".to_string(),
+            assets: BTreeMap::new(),
+            assets_text: Some("assets".to_string()),
+            value: 2000000,
+        };
+        assert_eq!(to.get_address(), "addr1...");
+        assert_eq!(to.get_amount(), "2 ADA");
+        assert_eq!(to.get_value(), 2000000);
+    }
+
+    #[test]
+    fn test_cardano_certificate_multiple_fields() {
+        let fields = vec![
+            CertField {
+                label: "Address".to_string(),
+                value: "addr1...".to_string(),
+            },
+            CertField {
+                label: "Pool".to_string(),
+                value: "pool1...".to_string(),
+            },
+        ];
+        let cert = CardanoCertificate::new("Stake Pool Delegation".to_string(), fields.clone());
+        assert_eq!(cert.get_cert_type(), "Stake Pool Delegation");
+        assert_eq!(cert.get_fields().len(), 2);
+    }
+
+    #[test]
+    fn test_parse_context_with_data() {
+        let utxo = CardanoUtxo::new(
+            vec![0x52, 0x74, 0x47, 0x03],
+            "addr1...".to_string(),
+            DerivationPath::from_str("m/1852'/1815'/0'/0/0").unwrap(),
+            1000000,
+            vec![0x01],
+            0,
+        );
+        let utxos = vec![utxo];
+        let cert_key = CardanoCertKey::new(
+            vec![0x52, 0x74, 0x47, 0x03],
+            vec![0x01],
+            DerivationPath::from_str("m/1852'/1815'/0'/2/0").unwrap(),
+        );
+        let cert_keys = vec![cert_key];
+        let xpub = Some("test_xpub".to_string());
+        let master_fingerprint = vec![0x52, 0x74, 0x47, 0x03];
+        let context = ParseContext::new(
+            utxos.clone(),
+            cert_keys.clone(),
+            xpub.clone(),
+            master_fingerprint.clone(),
+        );
+        assert_eq!(context.get_utxos().len(), 1);
+        assert_eq!(context.get_cert_keys().len(), 1);
+    }
+
+    #[test]
+    fn test_normalize_coin_small_fractional() {
+        let value = 1u64; // 0.000001 ADA
+        let result = normalize_coin(value);
+        assert!(result.contains("ADA"));
+    }
+
+    #[test]
+    fn test_normalize_value_small_fractional() {
+        let value = 1u64; // 0.000001
+        let result = normalize_value(value);
+        assert!(!result.is_empty());
+    }
+
+    #[test]
+    fn test_parse_sign_cip8_data_invalid_cbor_fallback() {
+        let invalid_cbor = vec![0xff, 0xff, 0xff];
+        let xpub = "ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c";
+        let data = ParsedCardanoSignCip8Data::build(
+            invalid_cbor.clone(),
+            "m/1852'/1815'/0'/0/0".to_string(),
+            xpub.to_string(),
+            false,
+        )
+        .unwrap();
+        assert_eq!(data.get_derivation_path(), "m/1852'/1815'/0'/0/0");
+        assert_eq!(data.get_hash_payload(), false);
+    }
+
+    #[test]
+    fn test_voting_procedure_different_votes() {
+        let yes_vote = VotingProcedure {
+            voter: "voter".to_string(),
+            transaction_id: "tx".to_string(),
+            index: "0".to_string(),
+            vote: "Yes".to_string(),
+        };
+        let no_vote = VotingProcedure {
+            voter: "voter".to_string(),
+            transaction_id: "tx".to_string(),
+            index: "0".to_string(),
+            vote: "No".to_string(),
+        };
+        assert_ne!(yes_vote.get_vote(), no_vote.get_vote());
+    }
+
+    #[test]
+    fn test_cardano_withdrawal_different_amounts() {
+        let w1 = CardanoWithdrawal {
+            address: "addr1...".to_string(),
+            amount: "1 ADA".to_string(),
+        };
+        let w2 = CardanoWithdrawal {
+            address: "addr1...".to_string(),
+            amount: "2 ADA".to_string(),
+        };
+        assert_eq!(w1.get_address(), w2.get_address());
+        assert_ne!(w1.get_amount(), w2.get_amount());
+    }
+
+    #[test]
+    fn test_cardano_from_without_path() {
+        let from = CardanoFrom {
+            address: "addr1...".to_string(),
+            amount: "1 ADA".to_string(),
+            path: None,
+            value: 1000000,
+        };
+        assert_eq!(from.get_path(), None);
     }
 }

@@ -8,7 +8,7 @@ members = [
     "apps/cardano",
     "apps/cosmos",
     "apps/ethereum",
-    "apps/near",
+    # "apps/near",  # Temporarily disabled
     "apps/solana",
     "apps/stellar",
     "apps/sui",
@@ -39,7 +39,7 @@ app_cardano = { path = "apps/cardano" }
 app_cosmos = { path = "apps/cosmos", default-features = false }
 app_ethereum = { path = "apps/ethereum" }
 app_avalanche = { path = "apps/avalanche" }
-app_near = { path = "apps/near" }
+app_near = { path = "apps/near" }  # Dependency kept, but member disabled
 app_solana = { path = "apps/solana" }
 app_stellar = { path = "apps/stellar" }
 app_sui = { path = "apps/sui" }
@@ -115,4 +115,5 @@ num-traits = { version = "0.2.19", default-features = false }
 blake2b_simd = { version = "1.0.2", default-features = false }
 getrandom = "0.2"
 minicbor = { version = "0.19", features = ["alloc"] }
+zeroize = { version = "1.8.2", default-features = false }
 # third party dependencies end

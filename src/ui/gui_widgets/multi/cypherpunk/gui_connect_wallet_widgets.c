@@ -387,17 +387,17 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     switch (index) {
     case WALLET_LIST_BLUE:
-        func = GuiGetBlueWalletBtcData;
+        func = GuiGetStandardBtcData;
         AddBlueWalletCoins();
         break;
     // todo  zeus wallet use same ur logic as sparrow wallet (m/49'/0'/0' 、 m/44'/0'/0' 、 m/84'/0'/0' and m/86'/0'/0' )
     case WALLET_LIST_ZEUS:
     case WALLET_LIST_SPARROW:
-        func = GuiGetSparrowWalletBtcData;
+        func = GuiGetStandardBtcData;
         AddBlueWalletCoins();
         break;
     case WALLET_LIST_UNISAT:
-        func = GuiGetSparrowWalletBtcData;
+        func = GuiGetStandardBtcData;
         AddUniSatWalletCoins();
         lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_tokens"));
         break;
@@ -405,7 +405,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetZecData;
         AddZecCoins();
         break;
-    // case WALLET_LIST_CAKE:
     case WALLET_LIST_FEATHER:
         func = GuiGetCakeData;
         AddCakeCoins();

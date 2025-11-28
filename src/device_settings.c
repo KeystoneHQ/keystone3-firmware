@@ -90,7 +90,7 @@ typedef struct {
 
 static BootParam_t g_bootParam;
 static const char g_deviceSettingsVersion[] = "1.0.0";
-DeviceSettings_t g_deviceSettings;
+static DeviceSettings_t g_deviceSettings;
 static const uint8_t g_integrityFlag[16] = {
     0x01, 0x09, 0x00, 0x03,
     0x01, 0x09, 0x00, 0x03,
@@ -142,7 +142,10 @@ void DeviceSettingsInit(void)
         SaveDeviceSettingsSync();
     }
 
-    // init boot param
+    if (jsonString != NULL) {
+        SRAM_FREE(jsonString);
+    }
+
     InitBootParam();
 }
 
@@ -159,8 +162,6 @@ void InitBootParam(void)
     if (CheckAllFF(bootParam.bootCheckFlag, sizeof(bootParam.bootCheckFlag))) {
         memcpy(g_bootParam.bootCheckFlag, g_integrityFlag, sizeof(bootParam.bootCheckFlag));
         needSave = true;
-    }
-    if (CheckAllFF(bootParam.recoveryModeSwitch, sizeof(bootParam.recoveryModeSwitch))) {
     }
     if (needSave) {
         SaveBootParam();
@@ -241,10 +242,13 @@ uint32_t GetBright(void)
     return g_deviceSettings.bright;
 }
 
-void SetBright(uint32_t bight)
+void SetBright(uint32_t bright)
 {
-    SetLcdBright(bight);
-    g_deviceSettings.bright = bight;
+    if (bright > MAX_BRIGHT) {
+        bright = MAX_BRIGHT;
+    }
+    SetLcdBright(bright);
+    g_deviceSettings.bright = bright;
 }
 
 uint32_t GetAutoLockScreen(void)

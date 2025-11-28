@@ -7,7 +7,7 @@ use super::{
     errors::RustCError,
     types::{Ptr, PtrString},
     ur::URParseResult,
-    utils::recover_c_char,
+    utils::check_recover_c_char_lossy,
 };
 
 #[repr(C)]
@@ -18,7 +18,7 @@ pub enum QRProtocol {
 
 #[no_mangle]
 pub unsafe extern "C" fn infer_qrcode_type(qrcode: PtrString) -> QRProtocol {
-    let value = recover_c_char(qrcode);
+    let (_, value) = check_recover_c_char_lossy(qrcode);
     if value.to_uppercase().starts_with("UR:") {
         QRProtocol::QRCodeTypeUR
     } else {
@@ -28,14 +28,14 @@ pub unsafe extern "C" fn infer_qrcode_type(qrcode: PtrString) -> QRProtocol {
 
 #[no_mangle]
 pub unsafe extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
-    let value = recover_c_char(qr);
+    let (is_ok, value) = check_recover_c_char_lossy(qr);
+    if !is_ok {
+        return URParseResult::from(RustCError::InvalidMessage).c_ptr();
+    }
     if value.to_lowercase().starts_with("signmessage") {
         if let Some((headers, message)) = value.split_once(':') {
             if message.is_empty() {
-                return URParseResult::from(RustCError::UnsupportedTransaction(
-                    "Invalid seed signer message format".to_string(),
-                ))
-                .c_ptr();
+                return URParseResult::from(RustCError::InvalidMessage).c_ptr();
             }
             let mut pieces = headers.split_ascii_whitespace();
             let _ = pieces.next(); //drop "signmessage"
@@ -56,19 +56,11 @@ pub unsafe extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> 
                         )
                         .c_ptr();
                     }
-                    _ => {
-                        return URParseResult::from(RustCError::UnsupportedTransaction(format!(
-                            "message encode not supported: {encode}"
-                        )))
-                        .c_ptr()
-                    }
+                    _ => return URParseResult::from(RustCError::InvalidMessage).c_ptr(),
                 }
             }
         }
-        return URParseResult::from(RustCError::UnsupportedTransaction(
-            "Invalid seed signer message format".to_string(),
-        ))
-        .c_ptr();
+        return URParseResult::from(RustCError::InvalidMessage).c_ptr();
     }
-    URParseResult::from(RustCError::UnsupportedTransaction("plain text".to_string())).c_ptr()
+    URParseResult::from(RustCError::InvalidMessage).c_ptr()
 }

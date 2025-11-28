@@ -16,12 +16,12 @@ pub mod outputs {
     pub mod secp256k1_transfer_output;
 }
 
-pub mod C_chain {
+pub mod c_chain {
     pub mod evm_export;
     pub mod evm_import;
 }
 
-pub mod P_chain {
+pub mod p_chain {
     pub mod add_permissionless_delegator;
     pub mod add_permissionless_validator;
     pub mod node_id;

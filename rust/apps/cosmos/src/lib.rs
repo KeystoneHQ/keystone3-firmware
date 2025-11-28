@@ -1,5 +1,5 @@
 #![no_std]
-#![feature(error_in_core)]
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 #[allow(unused_imports)] //report unused_import in test
 #[macro_use]
@@ -10,7 +10,6 @@ extern crate core;
 extern crate std;
 
 use alloc::string::{String, ToString};
-use alloc::vec::Vec;
 
 use crate::errors::{CosmosError, Result};
 use crate::transaction::structs::{ParsedCosmosTx, SignMode};
@@ -20,6 +19,8 @@ use bitcoin::secp256k1::{Message, PublicKey};
 
 use keystore::algorithms::secp256k1::derive_public_key;
 
+#[cfg_attr(coverage_nightly, coverage(off))]
+#[allow(warnings)]
 mod cosmos_sdk_proto;
 pub mod errors;
 mod proto_wrapper;
@@ -30,7 +31,9 @@ fn generate_evmos_address(key: PublicKey, prefix: &str) -> Result<String> {
     let keccak: [u8; 32] = keccak256(&key.serialize_uncompressed()[1..]);
     let keccak160: [u8; 20] = keccak[keccak.len() - 20..keccak.len()]
         .try_into()
-        .map_err(|_e| CosmosError::InvalidAddressError("keccak160 failed failed".to_string()))?;
+        .map_err(|_e| {
+            CosmosError::InvalidAddressError("keccak160 conversion failed".to_string())
+        })?;
     let hrp = Hrp::parse_unchecked(prefix);
     let address = bech32::encode::<Bech32>(hrp, &keccak160)?;
     Ok(address)
@@ -50,35 +53,25 @@ fn generate_address(key: PublicKey, prefix: &str) -> Result<String> {
     }
 }
 
-// pub fn parse_raw_tx(raw_tx: &Vec<u8>) -> Result<String> {
-//     SignDoc::parse(raw_tx).map(|doc| {
-//         serde_json::to_string(&doc).map_err(|err| CosmosError::ParseTxError(err.to_string()))
-//     })?
-// }
-
-pub fn parse(
-    raw_tx: &Vec<u8>,
-    data_type: transaction::structs::DataType,
-) -> Result<ParsedCosmosTx> {
+pub fn parse(raw_tx: &[u8], data_type: transaction::structs::DataType) -> Result<ParsedCosmosTx> {
     ParsedCosmosTx::build(raw_tx, data_type)
 }
 
 pub fn sign_tx(
-    message: Vec<u8>,
+    message: &[u8],
     path: &String,
     sign_mode: SignMode,
     seed: &[u8],
 ) -> Result<[u8; 64]> {
     let hash = match sign_mode {
-        SignMode::COSMOS => sha256_digest(message.as_slice()),
-        SignMode::EVM => keccak256(message.as_slice()).to_vec(),
+        SignMode::COSMOS => sha256_digest(message),
+        SignMode::EVM => keccak256(message).to_vec(),
     };
 
-    if let Ok(message) = Message::from_slice(&hash) {
-        let (_, signature) = keystore::algorithms::secp256k1::sign_message_by_seed(
-            seed, path, &message,
-        )
-        .map_err(|e| CosmosError::KeystoreError(format!("sign failed {:?}", e.to_string())))?;
+    if let Ok(message) = Message::from_digest_slice(hash.as_slice()) {
+        let (_, signature) =
+            keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
+                .map_err(|e| CosmosError::KeystoreError(format!("sign failed {e}")))?;
         return Ok(signature);
     }
     Err(CosmosError::SignFailure("invalid message".to_string()))
@@ -91,7 +84,7 @@ pub fn derive_address(
     prefix: &str,
 ) -> Result<String> {
     let root_path = if !root_path.ends_with('/') {
-        root_path.to_string() + "/"
+        format!("{root_path}/")
     } else {
         root_path.to_string()
     };

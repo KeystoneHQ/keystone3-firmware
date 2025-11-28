@@ -8,14 +8,15 @@
 #include "user_memory.h"
 #include "account_manager.h"
 #include "gui_chain.h"
-#define MAX_COSMOS_ADDR_LEN 61
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static int8_t g_cosmosListIndex = -1;
-static char g_cosmosAddr[MAX_COSMOS_ADDR_LEN];
+static const char *g_cosmosLastDetailPtr = NULL;
+static cJSON *g_cosmosLastRoot = NULL;
+static cJSON *g_cosmosLastCommon = NULL;
 static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_BABYLON, HOME_WALLET_CARD_BABYLON, 118, "bbn", XPUB_TYPE_COSMOS, "baby_3535-1"},
     {CHAIN_NEUTARO, HOME_WALLET_CARD_NEUTARO, 118, "neutaro", XPUB_TYPE_COSMOS, "Neutaro-1"},
@@ -55,6 +56,18 @@ static const CosmosChain_t g_cosmosChains[COSMOS_CHAINS_LEN] = {
     {CHAIN_LUNC, HOME_WALLET_CARD_LUNC, 330, "terra", XPUB_TYPE_TERRA, "columbus-5"}
 };
 
+static void ClearCosmosDetailCache(void);
+
+static inline void* GetCosmosUrData(void)
+{
+    return g_isMulti ? g_urMultiResult->data : g_urResult->data;
+}
+
+static inline QRCodeType GetCosmosUrType(void)
+{
+    return g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
+}
+
 char *GetCosmosChainAddressByCoinTypeAndIndex(uint8_t chainType,  uint32_t address_index)
 {
     char *xPub;
@@ -65,17 +78,6 @@ char *GetCosmosChainAddressByCoinTypeAndIndex(uint8_t chainType,  uint32_t addre
     snprintf_s(hdPath, BUFFER_SIZE_32, "%s/0/%u", rootPath, address_index);
     xPub = GetCurrentAccountPublicKey(chain->xpubType);
     return (char *) cosmos_get_address(hdPath, xPub, rootPath, (char*)chain->prefix);
-}
-
-char *GetKeplrConnectionDisplayAddressByIndex(uint32_t index)
-{
-    SimpleResponse_c_char *result;
-    result = (SimpleResponse_c_char *) GetCosmosChainAddressByCoinTypeAndIndex(CHAIN_ATOM, index);
-    if (result->error_code == 0) {
-        snprintf_s(g_cosmosAddr, MAX_COSMOS_ADDR_LEN, "%s", result->data);
-    }
-    free_simple_response_c_char(result);
-    return g_cosmosAddr;
 }
 
 const CosmosChain_t *GuiGetCosmosChain(uint8_t index)
@@ -137,11 +139,9 @@ void *GuiGetCosmosData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     uint8_t mfp[4];
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
     do {
-        QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
-        PtrT_TransactionParseResult_DisplayCosmosTx parseResult = cosmos_parse_tx(data, urType);
+        PtrT_TransactionParseResult_DisplayCosmosTx parseResult = cosmos_parse_tx(GetCosmosUrData(), GetCosmosUrType());
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
@@ -151,19 +151,16 @@ void *GuiGetCosmosData(void)
 PtrT_TransactionCheckResult GuiGetCosmosCheckResult(void)
 {
     uint8_t mfp[4];
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     GetMasterFingerPrint(mfp);
-    QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
-    return cosmos_check_tx(data, urType, mfp, sizeof(mfp));
+    return cosmos_check_tx(GetCosmosUrData(), GetCosmosUrType(), mfp, sizeof(mfp));
 }
 
 void FreeCosmosMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-#endif
+    ClearCosmosDetailCache();
 }
 
 void GuiGetCosmosTmpType(void *indata, void *param, uint32_t maxLen)
@@ -185,6 +182,33 @@ bool IsCosmosMsg(ViewType viewType)
     }
     DisplayCosmosTx *data = ((PtrT_TransactionParseResult_DisplayCosmosTx)g_parseResult)->data;
     return strcmp(data->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_MESSAGE)) == 0;
+}
+
+static void ClearCosmosDetailCache(void)
+{
+    if (g_cosmosLastRoot != NULL) {
+        cJSON_Delete(g_cosmosLastRoot);
+        g_cosmosLastRoot = NULL;
+    }
+    g_cosmosLastCommon = NULL;
+    g_cosmosLastDetailPtr = NULL;
+}
+
+static cJSON *GetCosmosParsedDetailRoot(DisplayCosmosTx *tx)
+{
+    if (tx == NULL || tx->detail == NULL) {
+        return NULL;
+    }
+    if (g_cosmosLastDetailPtr == tx->detail && g_cosmosLastRoot != NULL) {
+        return g_cosmosLastRoot;
+    }
+    ClearCosmosDetailCache();
+    g_cosmosLastRoot = cJSON_Parse((const char *)tx->detail);
+    g_cosmosLastDetailPtr = tx->detail;
+    if (g_cosmosLastRoot != NULL) {
+        g_cosmosLastCommon = cJSON_GetObjectItem(g_cosmosLastRoot, "common");
+    }
+    return g_cosmosLastRoot;
 }
 
 void GetCosmosValue(void *indata, void *param, uint32_t maxLen)
@@ -302,8 +326,12 @@ void GetCosmosAddress2Label(void *indata, void *param, uint32_t maxLen)
 void GetCosmosDetailCommon(void *indata, void *param, const char* key, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
-    cJSON* root = cJSON_Parse((const char *)tx->detail);
-    cJSON* common = cJSON_GetObjectItem(root, "common");
+    cJSON* root = GetCosmosParsedDetailRoot(tx);
+    if (root == NULL) {
+        strcpy_s((char *)indata, maxLen, "");
+        return;
+    }
+    cJSON* common = g_cosmosLastCommon;
     if (common == NULL) {
         strcpy_s((char *)indata, maxLen, "");
         return;
@@ -344,7 +372,11 @@ void GetCosmosChainId(void *indata, void *param, uint32_t maxLen)
 static void GetCosmosDetailNthKind(void *indata, void *param, int n, const char* key, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
-    cJSON* root = cJSON_Parse((const char *)tx->detail);
+    cJSON* root = GetCosmosParsedDetailRoot(tx);
+    if (root == NULL) {
+        strcpy_s((char *)indata, maxLen, "");
+        return;
+    }
     cJSON* kind = cJSON_GetObjectItem(root, "kind");
     cJSON* item = cJSON_GetArrayItem(kind, n);
     cJSON* value = cJSON_GetObjectItem(item, key);
@@ -365,7 +397,12 @@ void GetCosmosOldValidator(void *indata, void *param, uint32_t maxLen)
 void GetCosmosMsgLen(uint8_t *len, void *param)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
-    cJSON* root = cJSON_Parse((const char *)tx->detail);
+    cJSON* root = GetCosmosParsedDetailRoot(tx);
+    if (root == NULL) {
+        *len = 0;
+        g_cosmosListIndex = -1;
+        return;
+    }
     cJSON* kind = cJSON_GetObjectItem(root, "kind");
     *len = (uint8_t)cJSON_GetArraySize(kind);
     g_cosmosListIndex = -1;
@@ -391,8 +428,12 @@ void GetCosmosTextOfKind(void *indata, void *param, uint32_t maxLen)
 void GetCosmosDetailItemValue(void *indata, void *param, uint32_t maxLen)
 {
     DisplayCosmosTx *tx = (DisplayCosmosTx *)param;
-    cJSON* detail = cJSON_Parse((const char *)tx->detail);
-    cJSON* value = cJSON_GetObjectItem(detail, indata);
+    cJSON* root = GetCosmosParsedDetailRoot(tx);
+    if (root == NULL) {
+        strcpy_s((char *)indata, maxLen, "");
+        return;
+    }
+    cJSON* value = cJSON_GetObjectItem(root, indata);
     if (value == NULL) {
         strcpy_s((char *)indata, maxLen, "");
     } else {
@@ -565,26 +606,25 @@ uint8_t GuiGetCosmosTxChain(void)
     if (parseResult == NULL) {
         return CHAIN_ATOM;
     }
-    char* chain_id = SRAM_MALLOC(BUFFER_SIZE_64);
+    char chain_id[BUFFER_SIZE_64] = {0};
     if (strcmp(parseResult->data->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_MESSAGE)) == 0 || strcmp(parseResult->data->overview->display_type, GuiGetCosmosTxTypeName(COSMOS_TX_UNKNOWN)) == 0) {
-        cJSON* detail = cJSON_Parse(parseResult->data->detail);
-        cJSON* value = cJSON_GetObjectItem(detail, "Chain ID");
+        cJSON* root = GetCosmosParsedDetailRoot(parseResult->data);
+        cJSON* value = root == NULL ? NULL : cJSON_GetObjectItem(root, "Chain ID");
+        if (value == NULL) {
+            return CHAIN_ATOM;
+        }
         snprintf_s(chain_id, BUFFER_SIZE_64, "%s", value->valuestring);
     } else {
         GetCosmosDetailCommon(chain_id, parseResult->data, "Chain ID", BUFFER_SIZE_64);
     }
-    printf("chain_id: %s\n", chain_id);
-    if (chain_id != NULL) {
-        for (uint8_t i = 0; i < COSMOS_CHAINS_LEN; i++) {
-            if (strcmp(chain_id, g_cosmosChains[i].chainId) == 0) {
-                return g_cosmosChains[i].index;
-            }
-        }
-        if (strcmp(chain_id, "evmos_9000-4") == 0) {
-            return CHAIN_EVMOS;
+    for (uint8_t i = 0; i < COSMOS_CHAINS_LEN; i++) {
+        if (strcmp(chain_id, g_cosmosChains[i].chainId) == 0) {
+            return g_cosmosChains[i].index;
         }
     }
-    SRAM_FREE(chain_id);
+    if (strcmp(chain_id, "evmos_9000-4") == 0) {
+        return CHAIN_EVMOS;
+    }
     return CHAIN_ATOM;
 }
 
@@ -593,16 +633,17 @@ UREncodeResult *GuiGetCosmosSignQrCodeData(void)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     UREncodeResult *encodeResult;
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
+    uint8_t seed[SEED_LEN];
     do {
-        uint8_t seed[64];
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        encodeResult = cosmos_sign_tx(data, urType, seed, len);
-        ClearSecretCache();
+        int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        if (ret != SUCCESS_CODE) {
+            break;
+        }
+        encodeResult = cosmos_sign_tx(GetCosmosUrData(), GetCosmosUrType(), seed, GetCurrentAccountSeedLen());
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
     return encodeResult;
 }

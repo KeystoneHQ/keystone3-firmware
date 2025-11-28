@@ -49,7 +49,7 @@ typedef enum HardwareCallV1AdaDerivationAlgo {
 } ADA_DERIVATION_ALGO;
 
 // global variable to save the selected derivation path
-static ADA_DERIVATION_ALGO selected_ada_derivation_algo = HD_STANDARD_ADA;
+static ADA_DERIVATION_ALGO g_adaDerivationAlgo = HD_STANDARD_ADA;
 
 static void *g_data;
 static URParseResult *g_urResult = NULL;
@@ -132,6 +132,9 @@ void FreeKeyDerivationRequestMemory(void)
         free_Response_QRHardwareCallData(g_response);
         g_response = NULL;
     }
+#ifdef WEB3_VERSION
+    g_adaDerivationAlgo = HD_STANDARD_ADA;
+#endif
 }
 
 static char *GetChangeDerivationPathDesc(void)
@@ -176,6 +179,13 @@ void GuiKeyDerivationRequestInit(bool isUsb)
     RecalcCurrentWalletIndex(g_response->data->origin);
     SetWallet(g_keyDerivationTileView.pageWidget->navBarWidget, g_walletIndex, NULL);
     SetNavBarRightBtn(g_keyDerivationTileView.pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
+#ifdef WEB3_VERSION
+    if (IsCardano()) {
+        g_adaDerivationAlgo = GetAccountType();
+    } else {
+        g_adaDerivationAlgo = HD_STANDARD_ADA;
+    }
+#endif
     tile = lv_tileview_add_tile(tileView, TILE_QRCODE, 0, LV_DIR_HOR);
     // choose different animate qr widget by hardware call  version
     if (strcmp("1", g_callData->version) == 0) {
@@ -539,7 +549,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                 pubkey[i] = get_ed25519_pubkey_by_seed(seed, seedLen, path);
                 break;
             case BIP32_ED25519:
-                if (selected_ada_derivation_algo == HD_STANDARD_ADA && !g_isUsb) {
+                if (g_adaDerivationAlgo == HD_STANDARD_ADA && !g_isUsb) {
 #ifdef WEB3_VERSION
                     if (isSlip39) {
                         pubkey[i] = cardano_get_pubkey_by_slip23(seed, seedLen, path);
@@ -560,7 +570,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                     char* icarusMasterKey = cip3_response->data;
                     pubkey[i] = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
 #endif
-                } else if (selected_ada_derivation_algo == HD_LEDGER_BITBOX_ADA || g_isUsb) {
+                } else if (g_adaDerivationAlgo == HD_LEDGER_BITBOX_ADA || g_isUsb) {
                     // seed -> mnemonic --> master key(m) -> derive key
                     uint8_t entropyLen = 0;
                     uint8_t entropy[64];
@@ -1235,9 +1245,9 @@ static AdaXPubType GetAccountType(void)
 
 static void SaveHardwareCallVersion1AdaDerivationAlgo(lv_event_t *e)
 {
-    selected_ada_derivation_algo = GetCurrentSelectedIndex();
+    g_adaDerivationAlgo = GetCurrentSelectedIndex();
     // save the derivation path type to the json file that be saved in flash
-    SetAccountType(selected_ada_derivation_algo);
+    SetAccountType(g_adaDerivationAlgo);
     CloseDerivationHandler(e);
 }
 

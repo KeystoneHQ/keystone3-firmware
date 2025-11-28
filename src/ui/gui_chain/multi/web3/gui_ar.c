@@ -1,5 +1,6 @@
 #include "gui_ar.h"
 #include "gui_chain_components.h"
+#include "rsa.h"
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
@@ -135,7 +136,13 @@ int GetArweaveMessageLength(void *param)
 void GetArweaveMessageAddress(void *indata, void *param, uint32_t maxLen)
 {
     char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+    ASSERT(xPub != NULL);
+
     SimpleResponse_c_char *result = arweave_get_address(xPub);
+    if (result == NULL) {
+        return;
+    }
+
     if (result->error_code == 0) {
         SimpleResponse_c_char *fixedAddress = fix_arweave_address(result->data);
         if (fixedAddress->error_code == 0) {
@@ -243,6 +250,7 @@ void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData)
     if (txDetail == NULL) {
         shouldShowContainer = false;
     } else {
+        // Parse JSON from Rust internal construction - should be valid by design
         root = cJSON_Parse((const char *)txDetail);
         size = cJSON_GetArraySize(root);
         if (size <= 0) {
@@ -269,6 +277,7 @@ void GuiShowArweaveTxDetail(lv_obj_t *parent, void *totalData)
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
 
     TagsRender(root, size, parent);
+    cJSON_Delete(root);
 }
 
 UREncodeResult *GuiGetArweaveSignQrCodeData(void)
@@ -276,17 +285,25 @@ UREncodeResult *GuiGetArweaveSignQrCodeData(void)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     UREncodeResult *encodeResult = NULL;
+    Rsa_primes_t *primes = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
-        Rsa_primes_t *primes = FlashReadRsaPrimes();
+        primes = FlashReadRsaPrimes();
         if (primes == NULL) {
-            encodeResult = NULL;
-            break;
+            printf("Failed to read RSA primes\n");
+            ASSERT(false);
         }
-        encodeResult = ar_sign_tx(data, primes->p, 256, primes->q, 256);
-        ClearSecretCache();
+        encodeResult = ar_sign_tx(data, primes->p, SPI_FLASH_RSA_PRIME_SIZE, primes->q, SPI_FLASH_RSA_PRIME_SIZE);
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+
+    if (primes) {
+        memset_s(primes->p, SPI_FLASH_RSA_PRIME_SIZE, 0, SPI_FLASH_RSA_PRIME_SIZE);
+        memset_s(primes->q, SPI_FLASH_RSA_PRIME_SIZE, 0, SPI_FLASH_RSA_PRIME_SIZE);
+        memset_s(primes, sizeof(Rsa_primes_t), 0, sizeof(Rsa_primes_t));
+        SRAM_FREE(primes);
+    }
+    ClearSecretCache();
     SetLockScreen(enable);
     return encodeResult;
 }

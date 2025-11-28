@@ -886,7 +886,9 @@ void random_buffer(uint8_t *buf, size_t len)
 
 int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len)
 {
+#ifndef COMPILE_SIMULATOR
     random_buffer(randomness, len);
+#endif
     return SUCCESS_CODE;
 }
 

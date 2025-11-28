@@ -337,7 +337,7 @@ lv_obj_t *CreateSquadsSolanaTransferOverviewCard(lv_obj_t *parent, PtrString fro
     lv_obj_align_to(toValuelabel, tolabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
     // add label fot to label
-    if (strcmp(to, SQUADS_V4_CREATE_MULTISIG_CONTRACT_ADDRESS)) {
+    if (strcmp(to, SQUADS_V4_CREATE_MULTISIG_CONTRACT_ADDRESS) == 0) {
         lv_obj_t *squadsIcon = GuiCreateImg(container, &imgSquads);
         lv_obj_align_to(squadsIcon, toValuelabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
         lv_obj_t *squadsLabel = GuiCreateIllustrateLabel(container, "Squads");

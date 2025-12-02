@@ -63,6 +63,8 @@ use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 #[cfg(feature = "ton")]
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
+#[cfg(feature = "xrp")]
+use ur_registry::xrp::xrp_batch_sign_request::XrpBatchSignRequest;
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
 
@@ -204,6 +206,13 @@ impl InferViewType for TonSignRequest {
             DataType::Transaction => Ok(ViewType::TonTx),
             DataType::SignProof => Ok(ViewType::TonSignProof),
         }
+    }
+}
+
+#[cfg(feature = "xrp")]
+impl InferViewType for XrpBatchSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::XRPTx)
     }
 }
 

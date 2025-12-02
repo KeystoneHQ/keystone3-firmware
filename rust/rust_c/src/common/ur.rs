@@ -69,6 +69,8 @@ use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 #[cfg(feature = "ton")]
 use ur_registry::ton::ton_sign_request::TonSignRequest;
+#[cfg(feature = "xrp")]
+use ur_registry::xrp::xrp_batch_sign_request::XrpBatchSignRequest;
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
 
@@ -356,6 +358,8 @@ pub enum QRCodeType {
     AvaxSignRequest,
     #[cfg(feature = "zcash")]
     ZcashPczt,
+    #[cfg(feature = "xrp")]
+    XrpBatchSignRequest,
     #[cfg(feature = "monero")]
     XmrOutputSignRequest,
     #[cfg(feature = "monero")]
@@ -420,6 +424,8 @@ impl QRCodeType {
             }
             #[cfg(feature = "ton")]
             InnerURType::TonSignRequest(_) => Ok(QRCodeType::TonSignRequest),
+            #[cfg(feature = "xrp")]
+            InnerURType::XrpBatchSignRequest(_) => Ok(QRCodeType::XrpBatchSignRequest),
             #[cfg(feature = "zcash")]
             InnerURType::ZcashPczt(_) => Ok(QRCodeType::ZcashPczt),
             #[cfg(feature = "monero")]
@@ -590,6 +596,10 @@ unsafe fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
         #[cfg(feature = "cardano")]
         QRCodeType::CardanoCatalystVotingRegistrationRequest => {
             free_ptr_with_type!(data, CardanoCatalystVotingRegistrationRequest);
+        }
+        #[cfg(feature = "xrp")]
+        QRCodeType::XrpBatchSignRequest => {
+            free_ptr_with_type!(data, XrpBatchSignRequest);
         }
         #[cfg(feature = "monero")]
         QRCodeType::XmrOutputSignRequest => {
@@ -775,6 +785,8 @@ pub fn decode_ur(ur: String) -> URParseResult {
         QRCodeType::AptosSignRequest => _decode_ur::<AptosSignRequest>(ur, ur_type),
         #[cfg(feature = "ton")]
         QRCodeType::TonSignRequest => _decode_ur::<TonSignRequest>(ur, ur_type),
+        #[cfg(feature = "xrp")]
+        QRCodeType::XrpBatchSignRequest => _decode_ur::<XrpBatchSignRequest>(ur, ur_type),
         #[cfg(feature = "zcash")]
         QRCodeType::ZcashPczt => _decode_ur::<ZcashPczt>(ur, ur_type),
         #[cfg(feature = "monero")]
@@ -885,6 +897,8 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         QRCodeType::QRHardwareCall => _receive_ur::<QRHardwareCall>(ur, ur_type, decoder),
         #[cfg(feature = "ton")]
         QRCodeType::TonSignRequest => _receive_ur::<TonSignRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "xrp")]
+        QRCodeType::XrpBatchSignRequest => _receive_ur::<XrpBatchSignRequest>(ur, ur_type, decoder),
         #[cfg(feature = "zcash")]
         QRCodeType::ZcashPczt => _receive_ur::<ZcashPczt>(ur, ur_type, decoder),
         #[cfg(feature = "monero")]

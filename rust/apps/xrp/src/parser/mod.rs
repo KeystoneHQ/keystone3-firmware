@@ -1,6 +1,7 @@
 use alloc::format;
 use alloc::string::{String, ToString};
 use core::ops::Div;
+use core::ptr::null_mut;
 
 use serde_json;
 use serde_json::Value;
@@ -15,6 +16,21 @@ pub mod structs;
 pub const DIVIDER: f64 = 1_000_000f64;
 
 impl ParsedXrpTx {
+    pub fn build_batch(tx: &Value, service_fee: &Value) -> R<Self> {
+        let display_type = Self::detect_display_type(&tx)?;
+        let parsed_overview = Self::build_overview(&display_type, &tx)?;
+        let parsed_detail = Self::build_detail(&tx)?;
+        let parsed_service_fee_detail = Self::build_detail(&service_fee)?;
+        Ok(Self {
+            display_type,
+            overview: parsed_overview,
+            detail: parsed_detail,
+            service_fee_detail: Some(parsed_service_fee_detail),
+            network: "XRP Mainnet".to_string(),
+            signing_pubkey: Self::format_field(&tx["SigningPubKey"])?,
+        })
+    }
+
     pub fn build(tx: Value) -> R<Self> {
         let display_type = Self::detect_display_type(&tx)?;
         let parsed_overview = Self::build_overview(&display_type, &tx)?;
@@ -25,6 +41,7 @@ impl ParsedXrpTx {
             detail: parsed_detail,
             network: "XRP Mainnet".to_string(),
             signing_pubkey: Self::format_field(&tx["SigningPubKey"])?,
+            service_fee_detail: None,
         })
     }
 

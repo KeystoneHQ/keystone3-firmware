@@ -411,6 +411,7 @@ UREncodeResult *GuiGetLeapData()
 UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
 {
     uint8_t mfp[4] = {0};
+    printf("%s %d..\n", __func__, __LINE__);
     GetMasterFingerPrint(mfp);
     char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
     char *rootPath = "m/44'/144'/0'";

@@ -113,7 +113,7 @@
     },\
     {\
         REMAPVIEW_XRP,\
-        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Transaction Raw Data\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetXrpDetail\",\"text_len_func\":\"GetXrpDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",\
+        "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"label\",\"text\":\"Transaction Raw Data\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,0],\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,38],\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetXrpDetail\",\"text_len_func\":\"GetXrpDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]},{\"type\":\"label\",\"exist_func\":\"GetXrpServiceFeeExist\",\"text\":\"Service Fee Raw Data\",\"text_width\":360,\"text_opa\":144,\"pos\":[0,12],\"align_to\":-2,\"align\":13,\"font\":\"openSansEnIllustrate\"},{\"type\":\"container\",\"pos\":[0,12],\"exist_func\":\"GetXrpServiceFeeExist\",\"align_to\":-2,\"align\":13,\"size\":[408,488],\"bg_opa\":31,\"radius\":24,\"children\":[{\"type\":\"label\",\"text_func\":\"GetXrpServiceFeeDetail\",\"text_len_func\":\"GetXrpServiceFeeDetailLen\",\"text_width\":360,\"pos\":[24,24],\"font\":\"openSansEnIllustrate\"}]}]}",\
         GuiGetXrpData,\
         NULL,\
         FreeXrpMemory,\

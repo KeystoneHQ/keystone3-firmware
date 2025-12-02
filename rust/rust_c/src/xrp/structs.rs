@@ -42,6 +42,7 @@ pub struct DisplayXrpTx {
     pub overview: PtrT<DisplayXrpTxOverview>,
     pub detail: PtrString,
     pub signing_pubkey: PtrString,
+    pub service_fee_detail: PtrString,
 }
 
 impl TryFrom<XrpTx> for DisplayXrpTx {
@@ -62,6 +63,7 @@ impl TryFrom<XrpTx> for DisplayXrpTx {
             overview: display_overview.c_ptr(),
             detail: convert_c_char(detail),
             signing_pubkey: convert_c_char("signing_pubkey".to_string()),
+            service_fee_detail: null_mut(),
         };
         Ok(display_xrp_tx)
     }
@@ -145,6 +147,11 @@ impl From<ParsedXrpTx> for DisplayXrpTx {
             overview: DisplayXrpTxOverview::from(&value).c_ptr(),
             detail: convert_c_char(value.detail),
             signing_pubkey: convert_c_char(value.signing_pubkey),
+            service_fee_detail: if value.service_fee_detail.is_some() {
+                convert_c_char(value.service_fee_detail.unwrap())
+            } else {
+                null_mut()
+            },
         }
     }
 }

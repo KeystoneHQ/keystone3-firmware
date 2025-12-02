@@ -51,6 +51,10 @@ pub fn parse(raw_hex: &[u8]) -> R<parser::structs::ParsedXrpTx> {
     parser::structs::ParsedXrpTx::build(v)
 }
 
+pub fn parse_batch(raw_hex: &[u8], service_fee: &[u8]) -> R<parser::structs::ParsedXrpTx> {
+    parser::structs::ParsedXrpTx::build_batch(&from_slice(raw_hex)?, &from_slice(service_fee)?)
+}
+
 pub fn get_pubkey_path(root_xpub: &str, pubkey: &str, max_i: u32) -> R<String> {
     let xpub = Xpub::from_str(root_xpub)?;
     let k1 = secp256k1::Secp256k1::new();

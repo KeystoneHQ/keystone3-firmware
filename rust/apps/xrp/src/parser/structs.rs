@@ -8,6 +8,7 @@ pub struct ParsedXrpTx {
     pub detail: String,
     pub network: String,
     pub signing_pubkey: String,
+    pub service_fee_detail: Option<String>,
 }
 
 // method label on ui

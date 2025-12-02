@@ -3,6 +3,7 @@
 
 
 **Web3:**
+
 ### What's new
 1. Support managing BTC Taproot addresses via BlueWallet
 ### Improvements
@@ -13,7 +14,9 @@
 1. Fixed address path type synchronization issue for Eternl under Passphrase wallets
 
 
-**BTC-ONLY:**
+
+**BTC Only:**
+
 ### What's new
 1. Support managing BTC Taproot addresses via BlueWallet
 ### Improvements
@@ -21,7 +24,8 @@
 2. Optimized BTC Sign Message workflow
 
 
-**CYPHERPUNK:**
+**Cypherpunk:**
+
 ### What's new
 1. Support managing BTC Taproot addresses via BlueWallet
 ### Improvements

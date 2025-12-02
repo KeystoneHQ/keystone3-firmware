@@ -1,3 +1,38 @@
+## 2.3.0(2025-12-02)
+
+
+
+**Web3:**
+
+### What's new
+1. Support managing BTC Taproot addresses via BlueWallet
+### Improvements
+1. Optimized firmware code, enhancing overall stability
+2. Optimized BTC Sign Message workflow
+3. Optimized SOL Squads multisig transaction parsing
+### Bug Fixes
+1. Fixed address path type synchronization issue for Eternl under Passphrase wallets
+
+
+
+**BTC Only:**
+
+### What's new
+1. Support managing BTC Taproot addresses via BlueWallet
+### Improvements
+1. Optimized firmware code to enhance overall robustness
+2. Optimized BTC Sign Message workflow
+
+
+**Cypherpunk:**
+
+### What's new
+1. Support managing BTC Taproot addresses via BlueWallet
+### Improvements
+1. Optimized firmware code to enhance overall robustness
+2. Optimized BTC Sign Message workflow
+
+
 
 ## 2.2.20 (2025-11-10)
 

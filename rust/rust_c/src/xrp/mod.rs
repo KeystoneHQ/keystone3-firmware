@@ -16,6 +16,8 @@ use ur_registry::pb::protoc::base::Content::ColdVersion;
 use ur_registry::pb::protoc::payload::Content;
 use ur_registry::pb::protoc::sign_transaction::Transaction::XrpTx;
 use ur_registry::traits::RegistryItem;
+use ur_registry::xrp::xrp_batch_sign_request::XrpBatchSignRequest;
+use ur_registry::xrp::xrp_batch_signature::XrpBatchSignature;
 
 use crate::common::errors::{ErrorCodes, KeystoneError, RustCError};
 use crate::common::keystone::build_payload;
@@ -52,20 +54,29 @@ pub unsafe extern "C" fn xrp_get_address(
     }
 }
 
-unsafe fn build_sign_result(
-    ptr: PtrUR,
-    hd_path: PtrString,
-    seed: &[u8],
-) -> Result<Vec<u8>, XRPError> {
-    let crypto_bytes = extract_ptr_with_type!(ptr, Bytes);
-    let hd_path = recover_c_char(hd_path);
-    app_xrp::sign_tx(crypto_bytes.get_bytes().as_slice(), &hd_path, seed)
-}
-
 #[no_mangle]
 pub unsafe extern "C" fn xrp_parse_tx(ptr: PtrUR) -> PtrT<TransactionParseResult<DisplayXrpTx>> {
     let crypto_bytes = extract_ptr_with_type!(ptr, Bytes);
     match app_xrp::parse(crypto_bytes.get_bytes().as_slice()) {
+        Ok(v) => TransactionParseResult::success(DisplayXrpTx::from(v).c_ptr()).c_ptr(),
+        Err(e) => TransactionParseResult::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn xrp_parse_batch_tx(
+    ptr: PtrUR,
+) -> PtrT<TransactionParseResult<DisplayXrpTx>> {
+    let crypto_bytes = extract_ptr_with_type!(ptr, XrpBatchSignRequest);
+    let requests = crypto_bytes.get_sign_data();
+    if requests.len() != 2 {
+        return TransactionParseResult::from(RustCError::InvalidData(
+            "xaman format batch transaction is not 2 requests".to_string(),
+        ))
+        .c_ptr();
+    }
+
+    match app_xrp::parse_batch(requests[0].as_slice(), requests[1].as_slice()) {
         Ok(v) => TransactionParseResult::success(DisplayXrpTx::from(v).c_ptr()).c_ptr(),
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
@@ -185,7 +196,9 @@ pub unsafe extern "C" fn xrp_sign_tx(
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
     let seed = extract_array!(seed, u8, seed_len);
-    let result = build_sign_result(ptr, hd_path, seed);
+    let transaction = extract_ptr_with_type!(ptr, Bytes);
+    let hd_path = recover_c_char(hd_path);
+    let result = app_xrp::sign_tx(transaction.get_bytes().as_slice(), &hd_path, seed);
     match result.map(|v| Bytes::new(v).try_into()) {
         Ok(v) => match v {
             Ok(data) => UREncodeResult::encode(
@@ -201,6 +214,66 @@ pub unsafe extern "C" fn xrp_sign_tx(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn xrp_sign_batch_tx(
+    ptr: PtrUR,
+    hd_path: PtrString,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> PtrT<UREncodeResult> {
+    let seed = extract_array!(seed, u8, seed_len);
+    let batch_transaction = extract_ptr_with_type!(ptr, XrpBatchSignRequest);
+    let hd_path = recover_c_char(hd_path);
+
+    let signatures: Result<Vec<Vec<u8>>, XRPError> = batch_transaction
+        .get_sign_data()
+        .iter()
+        .map(|data| app_xrp::sign_tx(data.as_slice(), &hd_path, seed))
+        .collect();
+    match signatures {
+        Ok(signatures) => {
+            let signature = XrpBatchSignature::new(signatures);
+            match signature.try_into() {
+                Ok(signature_bytes) => UREncodeResult::encode(
+                    signature_bytes,
+                    XrpBatchSignature::get_registry_type().get_type(),
+                    FRAGMENT_MAX_LENGTH_DEFAULT,
+                )
+                .c_ptr(),
+                Err(e) => UREncodeResult::from(RustCError::InvalidData(
+                    format!("Failed to convert signature: {}", e),
+                ))
+                .c_ptr(),
+            }
+        }
+        Err(e) => UREncodeResult::from(RustCError::InvalidData(
+            format!("Failed to sign transaction: {}", e),
+        ))
+        .c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn xrp_check_batch_tx(
+    ptr: PtrUR,
+    root_xpub: PtrString,
+    cached_pubkey: PtrString,
+) -> PtrT<TransactionCheckResult> {
+    let batch_transaction = extract_ptr_with_type!(ptr, XrpBatchSignRequest);
+    let crypto_bytes = batch_transaction.get_sign_data();
+    let root_xpub = recover_c_char(root_xpub);
+    let cached_pubkey = recover_c_char(cached_pubkey);
+    // xaman format batch transaction is 2 requests
+    if crypto_bytes.len() != 2 {
+        return TransactionCheckResult::from(RustCError::InvalidData(
+            "xaman format batch transaction is not 2 requests".to_string(),
+        ))
+        .c_ptr();
+    }
+    // The length has already been measured.
+    xrp_check_raw_tx(crypto_bytes[0].as_slice(), &root_xpub, &cached_pubkey)
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn xrp_check_tx(
     ptr: PtrUR,
     root_xpub: PtrString,
@@ -209,11 +282,19 @@ pub unsafe extern "C" fn xrp_check_tx(
     let crypto_bytes = extract_ptr_with_type!(ptr, Bytes);
     let root_xpub = recover_c_char(root_xpub);
     let cached_pubkey = recover_c_char(cached_pubkey);
-    match app_xrp::check_tx(
+    xrp_check_raw_tx(
         crypto_bytes.get_bytes().as_slice(),
         &root_xpub,
         &cached_pubkey,
-    ) {
+    )
+}
+
+unsafe fn xrp_check_raw_tx(
+    raw_tx: &[u8],
+    root_xpub: &str,
+    cached_pubkey: &str,
+) -> PtrT<TransactionCheckResult> {
+    match app_xrp::check_tx(raw_tx, &root_xpub, &cached_pubkey) {
         Ok(p) => TransactionCheckResult::error(ErrorCodes::Success, p).c_ptr(),
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
     }

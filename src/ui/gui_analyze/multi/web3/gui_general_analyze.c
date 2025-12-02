@@ -201,6 +201,8 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetSolMessageFromExist;
     } else if (!strcmp(type, "GetSolMessageFromNotExist")) {
         return GetSolMessageFromNotExist;
+    } else if (!strcmp(type, "GetXrpServiceFeeExist")) {
+        return GetXrpServiceFeeExist;
     }
     return NULL;
 }
@@ -522,6 +524,8 @@ static GetLabelDataFunc GuiXrpTextFuncGet(char *type)
 {
     if (!strcmp(type, "GetXrpDetail")) {
         return GetXrpDetail;
+    } else if (!strcmp(type, "GetXrpServiceFeeDetail")) {
+        return GetXrpServiceFeeDetail;
     }
     return NULL;
 }

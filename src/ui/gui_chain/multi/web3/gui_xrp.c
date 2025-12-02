@@ -16,8 +16,8 @@ static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
-static char *g_cachedPubkey[3] = {NULL};
-static char *g_cachedPath[3] = {NULL};
+static char *g_cachedPubkey[3] = {NULL, NULL, NULL};
+static char *g_cachedPath[3] = {NULL, NULL, NULL};
 static char g_xrpAddr[XRP_ADD_MAX_LEN];
 static char g_hdPath[HD_PATH_MAX_LEN];
 
@@ -62,10 +62,13 @@ void *GuiGetXrpData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    enum QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
 
     PtrT_TransactionParseResult_DisplayXrpTx parseResult = NULL;
     do {
-        if (is_keystone_xrp_tx(data)) {
+        if (urType == XrpBatchSignRequest) {
+            parseResult = xrp_parse_batch_tx(data);
+        } else if (is_keystone_xrp_tx(data)) {
             parseResult = xrp_parse_bytes_tx(data);
         } else {
             parseResult = xrp_parse_tx(data);
@@ -94,8 +97,10 @@ PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
     // keystone hot wallet use urType Bytes
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    if (is_keystone_xrp_tx(data)) {
-        result =  xrp_check_tx_bytes(data, mfp, sizeof(mfp), urType);
+    if (urType == XrpBatchSignRequest) {
+        result = xrp_check_batch_tx(data, GetCurrentAccountPublicKey(XPUB_TYPE_XRP), pubkey);
+    } else if (is_keystone_xrp_tx(data)) {
+        result = xrp_check_tx_bytes(data, mfp, sizeof(mfp), urType);
         return result;
     } else {
         result = xrp_check_tx(data, GetCurrentAccountPublicKey(XPUB_TYPE_XRP), pubkey);
@@ -126,18 +131,18 @@ PtrT_TransactionCheckResult GuiGetXrpCheckResult(void)
         g_cachedPath[GetCurrentAccountIndex()] = SRAM_MALLOC(len);
         strcpy_s(g_cachedPath[GetCurrentAccountIndex()], len, g_hdPath);
     } else {
-        strcpy_s(g_hdPath, HD_PATH_MAX_LEN, g_cachedPath[GetCurrentAccountIndex()]);
+        if (g_cachedPath[GetCurrentAccountIndex()] != NULL) {
+            strcpy_s(g_hdPath, HD_PATH_MAX_LEN, g_cachedPath[GetCurrentAccountIndex()]);
+        }
     }
     return result;
 }
 
 void FreeXrpMemory(void)
 {
-#ifndef COMPILE_SIMULATOR
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-#endif
 }
 
 int GetXrpDetailLen(void *param)
@@ -152,24 +157,40 @@ void GetXrpDetail(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata, maxLen, tx->detail);
 }
 
+bool GetXrpServiceFeeExist(void *indata, void *param)
+{
+    DisplayXrpTx *tx = (DisplayXrpTx *)param;
+    return tx->service_fee_detail != NULL;
+}
+
+int GetXrpServiceFeeDetailLen(void *param)
+{
+    DisplayXrpTx *tx = (DisplayXrpTx *)param;
+    return strlen(tx->detail);
+}
+
+void GetXrpServiceFeeDetail(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayXrpTx *tx = (DisplayXrpTx *)param;
+    strcpy_s((char *)indata, maxLen, tx->detail);
+}
+
 UREncodeResult *GuiGetXrpSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     UREncodeResult *encodeResult = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    enum QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     do {
         uint8_t seed[64];
         GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        if (is_keystone_xrp_tx(data)) {
+        if (urType == XrpBatchSignRequest) {
+            encodeResult = xrp_sign_batch_tx(data, g_hdPath, seed, len);
+        } else if (is_keystone_xrp_tx(data)) {
             uint8_t mfp[4] = {0};
             GetMasterFingerPrint(mfp);
-            // sign the bytes from keystone hot wallet
-            char pubkey[XPUB_KEY_LEN] = {0};
-            if (g_cachedPubkey[GetCurrentAccountIndex()] != NULL) {
-                strcpy_s(pubkey, XPUB_KEY_LEN, g_cachedPubkey[GetCurrentAccountIndex()]);
-            }
             encodeResult = xrp_sign_tx_bytes(data, seed, len, mfp, sizeof(mfp), GetCurrentAccountPublicKey(XPUB_TYPE_XRP));
         } else {
             encodeResult = xrp_sign_tx(data, g_hdPath, seed, len);

@@ -8,7 +8,7 @@
 1. 优化固件代码，增强整体稳健性
 2. 优化 BTC Sign Message 流程
 3. 优化 SOL Squads 多签交易解析
-### Bug Fixes
+### Bug 修复
 1. 修复 Passphrase 钱包下 Eternl 地址 path 类型同步问题
 
 **BTC Only:**

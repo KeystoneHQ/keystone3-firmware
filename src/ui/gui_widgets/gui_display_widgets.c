@@ -673,6 +673,4 @@ static void BatteryPercentageSwitchHandler(lv_event_t *e)
     }
 #endif
     GuiApiEmitSignal(SIG_INIT_BATTERY, &battState, sizeof(battState));
-    // Also refresh status bar for USB/SD icons
-    GuiApiEmitSignal(SIG_STATUS_BAR_REFRESH, NULL, 0);
 }

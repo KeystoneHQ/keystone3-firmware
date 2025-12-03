@@ -254,7 +254,6 @@ void GuiStatusBarInit(void)
     lv_obj_set_style_opa(g_guiStatusBar.batteryCharging, LV_OPA_COVER,
                          LV_PART_MAIN);
 
-    // Battery percentage label - positioned between battery icon and charging icon
     g_guiStatusBar.batteryPercentLabel = GuiCreateIllustrateLabel(cont, "");
     lv_obj_set_style_text_font(g_guiStatusBar.batteryPercentLabel, g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_add_flag(g_guiStatusBar.batteryPercentLabel, LV_OBJ_FLAG_HIDDEN);
@@ -295,7 +294,6 @@ void GuiStatusBarInit(void)
     RefreshStatusBar();
 #ifdef COMPILE_SIMULATOR
     GuiStatusBarSetBattery(20, true);
-    GuiStatusBarSetUsb();  // Show USB icon in simulator
     lv_obj_t *btn = GuiCreateTextBtn(cont, "switch");
     lv_obj_set_style_bg_opa(btn, LV_OPA_0, 0);
     lv_obj_add_event_cb(btn, SwitchWalletHandler, LV_EVENT_CLICKED, NULL);
@@ -401,9 +399,6 @@ const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
 
 uint8_t GetCurrentDisplayPercent(void)
 {
-#ifdef COMPILE_SIMULATOR
-    return 100;
-#endif
     return g_currentDisplayPercent;
 }
 
@@ -452,10 +447,10 @@ static int GetDisplayPercent(int actualPercent, bool charging)
 
 void GuiStatusBarSetBattery(uint8_t percent, bool charging)
 {
-    // Update battery percentage label
+    int displayPercent = GetDisplayPercent(percent, charging);
     if (GetShowBatteryPercentage()) {
         char percentStr[8];
-        snprintf(percentStr, sizeof(percentStr), "%d%%", percent);
+        snprintf(percentStr, sizeof(percentStr), "%d%%", displayPercent);
         lv_label_set_text(g_guiStatusBar.batteryPercentLabel, percentStr);
         lv_obj_clear_flag(g_guiStatusBar.batteryPercentLabel, LV_OBJ_FLAG_HIDDEN);
     } else {
@@ -484,7 +479,6 @@ void GuiStatusBarSetBattery(uint8_t percent, bool charging)
         return;
     }
 
-    int displayPercent = GetDisplayPercent(percent, charging);
     if (displayPercent <= 20) {
         lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
         lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower20);

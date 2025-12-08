@@ -333,7 +333,16 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_XRP,                   SECP256K1,    "xrp",                      "M/44'/144'/0'"     },
     {XPUB_TYPE_THOR,                  SECP256K1,    "thor",                     "M/44'/931'/0'"     },
     {XPUB_TYPE_AVAX_BIP44_STANDARD,   SECP256K1,    "avax_c",                   "M/44'/60'/0'"      },
-    {XPUB_TYPE_AVAX_X_P,              SECP256K1,    "avax_x_p",                 "M/44'/9000'/0'"    },
+    {XPUB_TYPE_AVAX_X_P_0,            SECP256K1,    "avax_x_p_0",               "M/44'/9000'/0'"    },
+    {XPUB_TYPE_AVAX_X_P_1,            SECP256K1,    "avax_x_p_1",               "M/44'/9000'/1'"    },
+    {XPUB_TYPE_AVAX_X_P_2,            SECP256K1,    "avax_x_p_2",               "M/44'/9000'/2'"    },
+    {XPUB_TYPE_AVAX_X_P_3,            SECP256K1,    "avax_x_p_3",               "M/44'/9000'/3'"    },
+    {XPUB_TYPE_AVAX_X_P_4,            SECP256K1,    "avax_x_p_4",               "M/44'/9000'/4'"    },
+    {XPUB_TYPE_AVAX_X_P_5,            SECP256K1,    "avax_x_p_5",               "M/44'/9000'/5'"    },
+    {XPUB_TYPE_AVAX_X_P_6,            SECP256K1,    "avax_x_p_6",               "M/44'/9000'/6'"    },
+    {XPUB_TYPE_AVAX_X_P_7,            SECP256K1,    "avax_x_p_7",               "M/44'/9000'/7'"    },
+    {XPUB_TYPE_AVAX_X_P_8,            SECP256K1,    "avax_x_p_8",               "M/44'/9000'/8'"    },
+    {XPUB_TYPE_AVAX_X_P_9,            SECP256K1,    "avax_x_p_9",               "M/44'/9000'/9'"    },
     {XPUB_TYPE_IOTA_0,                ED25519,      "iota_0",                   "M/44'/4218'/0'/0'/0'"},
     {XPUB_TYPE_IOTA_1,                ED25519,      "iota_1",                   "M/44'/4218'/1'/0'/0'"},
     {XPUB_TYPE_IOTA_2,                ED25519,      "iota_2",                   "M/44'/4218'/2'/0'/0'"},
@@ -1174,6 +1183,11 @@ void DeleteAccountPublicInfo(uint8_t accountIndex)
     }
     //remove current publickey info to avoid accident reading.
     FreePublicKeyRam();
+}
+
+char *GetCurrentAccountPath(ChainType chain)
+{
+    return g_chainTable[chain].path;
 }
 
 char *GetCurrentAccountPublicKey(ChainType chain)

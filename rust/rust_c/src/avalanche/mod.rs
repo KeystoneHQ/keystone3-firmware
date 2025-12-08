@@ -44,12 +44,6 @@ use {
     },
 };
 
-#[derive(Debug, Clone)]
-pub struct DerivationPath {
-    pub base_path: String,
-    pub full_path: String,
-}
-
 #[no_mangle]
 pub unsafe extern "C" fn avax_parse_transaction(
     ptr: PtrUR,
@@ -75,35 +69,39 @@ unsafe fn parse_transaction_by_type(
         }
     };
 
-    let mut path =
-        match determine_derivation_path(type_id, sign_request, sign_request.get_wallet_index()) {
-            Ok(path) => path,
-            Err(_) => {
-                return TransactionParseResult::from(RustCError::InvalidData(
-                    "invalid derivation path".to_string(),
-                ))
-                .c_ptr()
-            }
-        };
+    // Get derivation path from sign_request
+    let derivation_path = sign_request.get_derivation_path();
+    let full_path = match derivation_path.get_path() {
+        Some(p) => format!("m/{}", p),
+        None => {
+            return TransactionParseResult::from(RustCError::InvalidData(
+                "invalid derivation path".to_string(),
+            ))
+            .c_ptr()
+        }
+    };
 
+    // Derive address by matching full_path with available keys
     let mut address = String::new();
     for key in recover_c_array(public_keys).iter() {
-        if recover_c_char(key.path) == path.base_path {
-            address = match (type_id, path.base_path.as_str()) {
-                (TypeId::CchainExportTx, "m/44'/60'/0'") => app_ethereum::address::derive_address(
-                    path.full_path.as_str(),
+        let key_path = recover_c_char(key.path).to_lowercase();
+        if full_path.starts_with(&key_path) {
+            address = match key_path.as_str() {
+                "m/44'/60'/0'" => app_ethereum::address::derive_address(
+                    full_path.as_str(),
                     &recover_c_char(key.xpub),
-                    path.base_path.as_str(),
+                    &key_path,
                 )
-                .unwrap_or("".to_string()),
+                .unwrap_or("no address".to_string()),
                 _ => app_avalanche::get_address(
                     app_avalanche::network::Network::AvaxMainNet,
-                    path.full_path.as_str(),
+                    full_path.as_str(),
                     &recover_c_char(key.xpub),
-                    path.base_path.as_str(),
+                    &key_path,
                 )
-                .unwrap_or("".to_string()),
-            }
+                .unwrap_or("no address".to_string()),
+            };
+            break;
         }
     }
 
@@ -118,9 +116,8 @@ unsafe fn parse_transaction_by_type(
                     TransactionParseResult::success(
                         DisplayAvaxTx::from_tx_info(
                             parse_data,
-                            path.full_path,
-                            address,
-                            sign_request.get_wallet_index(),
+                            full_path.clone(),
+                            address.clone(),
                             type_id,
                         )
                         .c_ptr(),
@@ -142,8 +139,26 @@ unsafe fn parse_transaction_by_type(
             if header.get_blockchain_id() == C_BLOCKCHAIN_ID
                 || header.get_blockchain_id() == C_TEST_BLOCKCHAIN_ID
             {
-                path.full_path = "".to_string();
-                parse_tx!(CchainImportTx)
+                // For C-chain import, use empty path
+                parse_avax_tx::<CchainImportTx>(tx_data)
+                    .map(|parse_data| {
+                        TransactionParseResult::success(
+                            DisplayAvaxTx::from_tx_info(
+                                parse_data,
+                                "".to_string(),
+                                address.clone(),
+                                type_id,
+                            )
+                            .c_ptr(),
+                        )
+                        .c_ptr()
+                    })
+                    .unwrap_or_else(|_| {
+                        TransactionParseResult::from(RustCError::InvalidData(
+                            "invalid data".to_string(),
+                        ))
+                        .c_ptr()
+                    })
             } else {
                 parse_tx!(BaseTx)
             }
@@ -188,57 +203,15 @@ unsafe fn avax_sign_dynamic(
         )
 }
 
-/// Derive the HD path used for address/key lookup and signing.
-///
-/// Rationale: raw Avalanche transaction bytes do not contain HD path.
-/// We therefore compute the final path from:
-/// - the transaction type / blockchain_id (to choose the base path prefix, e.g. C vs X/P chain)
-/// - the `wallet_index` provided in `AvaxSignRequest` (appended as `/0/{index}`)
-/// This allows the device to reconstruct the exact address/key path for validation and signing.
-pub fn determine_derivation_path(
-    type_id: TypeId,
-    sign_request: &AvaxSignRequest,
-    wallet_index: u64,
-) -> Result<DerivationPath, AvaxError> {
-    let wallet_suffix = format!("/0/{wallet_index}");
-    let blockchain_id = get_avax_tx_header(sign_request.get_tx_data())?.get_blockchain_id();
-    let is_c_chain = |id: &[u8; 32]| *id == C_BLOCKCHAIN_ID || *id == C_TEST_BLOCKCHAIN_ID;
-
-    let (base_path, full_path) = match type_id {
-        TypeId::CchainExportTx => (C_CHAIN_PREFIX, format!("{C_CHAIN_PREFIX}{wallet_suffix}")),
-        TypeId::XchainImportTx | TypeId::PchainImportTx => {
-            let source_chain_id =
-                parse_avax_tx::<ImportTx>(sign_request.get_tx_data())?.get_source_chain_id();
-            (
-                X_P_CHAIN_PREFIX,
-                format!("{X_P_CHAIN_PREFIX}{wallet_suffix}"),
-            )
-        }
-        _ => {
-            let prefix = if is_c_chain(&blockchain_id) {
-                C_CHAIN_PREFIX
-            } else {
-                X_P_CHAIN_PREFIX
-            };
-            (prefix, format!("{prefix}{wallet_suffix}"))
-        }
-    };
-
-    Ok(DerivationPath {
-        base_path: base_path.to_string(),
-        full_path,
-    })
-}
-
 unsafe fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError> {
     let sign_request = extract_ptr_with_type!(ptr, AvaxSignRequest);
 
-    let path = get_avax_tx_type_id(sign_request.get_tx_data())
-        .map_err(|_| AvaxError::InvalidInput)
-        .and_then(|type_id| {
-            determine_derivation_path(type_id, sign_request, sign_request.get_wallet_index())
-        })?
-        .full_path;
+    // Get full path from derivation_path
+    let derivation_path = sign_request.get_derivation_path();
+    let path = match derivation_path.get_path() {
+        Some(p) => format!("m/{}", p),
+        None => return Err(AvaxError::InvalidInput),
+    };
 
     avax_base_sign(seed, path, sign_request.get_tx_data())
         .map(|signature| AvaxSignature::new(sign_request.get_request_id(), signature.to_vec()))
@@ -275,9 +248,9 @@ pub unsafe extern "C" fn avax_check_transaction(
             return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
         }
     };
-    if avax_tx.get_master_fingerprint() == mfp {
-        TransactionCheckResult::new().c_ptr()
-    } else {
-        TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr()
+
+    match avax_tx.get_derivation_path().get_source_fingerprint() {
+        Some(fingerprint) if fingerprint == mfp => TransactionCheckResult::new().c_ptr(),
+        _ => TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr(),
     }
 }

@@ -247,7 +247,14 @@ extern bool g_reboot;
         GuiGetAvaxGUIData, \
         NULL, \
         FreeAvaxMemory, \
-    },
+    },\
+    { \
+        REMAPVIEW_ZCASH, \
+        PC_SIMULATOR_PATH "/page_zcash.json", \
+        GuiGetZcashGUIData, \
+        NULL, \
+        FreeZcashMemory, \
+    }
 #endif
 
 #endif

@@ -13,6 +13,7 @@ use alloc::{
 use pczt::structs::ParsedPczt;
 use zcash_vendor::{
     pczt::Pczt,
+    transparent::keys::{NonHardenedChildIndex, TransparentKeyScope},
     zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
     zcash_protocol::consensus::{self},
     zip32,

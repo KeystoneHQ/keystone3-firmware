@@ -482,7 +482,11 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
     GetSerialNumber(serialNumber);
     char firmwareVersion[12];
     GetSoftWareVersionNumber(firmwareVersion);
-    UREncodeResult *urEncode = get_keystone_connect_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
+
+    uint8_t sfp[32];
+    GetZcashSFP(GetCurrentAccountIndex(), sfp);
+
+    UREncodeResult *urEncode = get_keystone_connect_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion, sfp, sizeof(sfp));
     CHECK_CHAIN_PRINT(urEncode);
     SRAM_FREE(public_keys);
     return urEncode;

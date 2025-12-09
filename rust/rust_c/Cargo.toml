@@ -110,6 +110,7 @@ multi-coins = [
     "xrp",
     "avalanche",
     "iota",
+    "zcash"
 ]
 
 btc-only = ["bitcoin"]

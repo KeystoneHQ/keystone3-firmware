@@ -101,8 +101,9 @@ uint8_t GetSlip39Eb(void);
 
 void AccountsDataCheck(void);
 
-#ifdef CYPHERPUNK_VERSION
-int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP);
-int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password);
+#ifndef BTC_ONLY
+int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK);
+int32_t GetZcashSFP(uint8_t accountIndex, uint8_t* outSFP);
+int32_t SetupZcashCache(uint8_t accountIndex, const char* password);
 #endif
 #endif

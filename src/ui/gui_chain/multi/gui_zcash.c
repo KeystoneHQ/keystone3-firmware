@@ -35,7 +35,8 @@ void *GuiGetZcashGUIData(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
     uint8_t sfp[32];
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+    GetZcashSFP(GetCurrentAccountIndex(), sfp);
 
     PtrT_TransactionParseResult_DisplayPczt parseResult = NULL;
     do {
@@ -301,7 +302,8 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
     uint8_t sfp[32];
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+    GetZcashSFP(GetCurrentAccountIndex(), sfp);
     uint32_t zcash_account_index = 0;
     MnemonicType mnemonicType = GetMnemonicType();
     return check_zcash_tx(data, ufvk, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39);

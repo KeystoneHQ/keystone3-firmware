@@ -918,8 +918,8 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 #ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_ZEC) {
         char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
-        uint8_t sfp[32];
-        GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+        GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+
         result = generate_zcash_default_address(ufvk);
     }
 #endif
@@ -1083,8 +1083,6 @@ void GuiResetAllStandardAddressIndex(void)
     memset_s(g_tgdChainSelectIndex, sizeof(g_tgdChainSelectIndex), 0, sizeof(g_tgdChainSelectIndex));
     memset_s(g_thorChainSelectIndex, sizeof(g_thorChainSelectIndex), 0, sizeof(g_thorChainSelectIndex));
 }
-
-
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
 {

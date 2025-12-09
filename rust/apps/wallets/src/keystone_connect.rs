@@ -3,6 +3,7 @@ use alloc::{
     vec::Vec,
 };
 use core::str::FromStr;
+use serde_json::json;
 
 use {
     bitcoin::bip32::{ChildNumber, DerivationPath},
@@ -42,10 +43,11 @@ pub fn generate_crypto_multi_accounts(
     extended_public_keys: Vec<ExtendedPublicKey>,
     device_type: &str,
     device_version: &str,
+    zcash_seed_fingerprint: Option<[u8; 32]>,
 ) -> URResult<CryptoMultiAccounts> {
     let device_id = get_device_id(serial_number);
     let mut keys = vec![];
-    let k1_keys = [
+    let k1_normal_keys = [
         BTC_LEGACY_PREFIX.to_string(),
         BTC_SEGWIT_PREFIX.to_string(),
         BTC_NATIVE_SEGWIT_PREFIX.to_string(),
@@ -57,9 +59,27 @@ pub fn generate_crypto_multi_accounts(
         LTC_NATIVE_SEGWIT_PREFIX.to_string(),
         ZEC_PREFIX.to_string(),
     ];
-    for ele in extended_public_keys {        
+    for ele in extended_public_keys {
         match ele.get_path() {
-            _path if k1_keys.contains(&_path.to_string().to_lowercase()) => {
+            _path if _path.to_string().to_lowercase().eq(ZEC_PREFIX) => {
+                let json = if let Some(fingerprint) = zcash_seed_fingerprint {
+                    Some(
+                        json!({
+                            "seed_fingerprint": hex::encode(fingerprint)
+                        })
+                        .to_string(),
+                    )
+                } else {
+                    None
+                };
+                keys.push(generate_k1_normal_key(
+                    master_fingerprint,
+                    ele.clone(),
+                    json,
+                    false,
+                )?);
+            }
+            _path if k1_normal_keys.contains(&_path.to_string().to_lowercase()) => {
                 keys.push(generate_k1_normal_key(
                     master_fingerprint,
                     ele.clone(),
@@ -173,9 +193,6 @@ fn generate_k1_normal_key(
         Some(mfp),
         Some(xpub.depth as u32),
     );
-
-    rust_tools::debug_print!("generate_k1_normal_key key_path: {:?}", key_path);
-    rust_tools::debug_print!("generate_k1_normal_key xpub chaincode: {:?}", hex::encode(xpub.chain_code.to_bytes()));
 
     let children = CryptoKeyPath::new(
         match is_standard {
@@ -396,6 +413,7 @@ mod tests {
             ],
             DEVICE_TYPE,
             "1.1.0",
+            None,
         )
         .unwrap();
         let cbor: Vec<u8> = account.try_into().unwrap();
@@ -428,9 +446,15 @@ mod tests {
             ExtendedPublicKey::new(DerivationPath::from_str("m/86'/0'/0'").unwrap(), hex::decode("0488b21e030484004d80000000a75805b89c5079ba74e9002c3e587f7c97ea8018ab1d5245638a45de3c845e0b03e0db6ca7c71e72a40091141b9dc4596ab3a9192ac41eebe1f2b048c654423ecb").unwrap()),
         ];
 
-        let account =
-            generate_crypto_multi_accounts(mfp, serial_number, keys, device_type, device_version)
-                .unwrap();
+        let account = generate_crypto_multi_accounts(
+            mfp,
+            serial_number,
+            keys,
+            device_type,
+            device_version,
+            None,
+        )
+        .unwrap();
         let cbor: Vec<u8> = account.try_into().unwrap();
         assert_eq!(hex::encode(cbor), "a5011a1250b6bc0290d9012fa802f403582103c4ad25226a98764f7b753b6c763be112c940182e0b6698944c9def253cec4676045820bf103cfabcab325a7463ab5c432a4042109279d6c3531c8c5ea712684cf31f3706d90130a30186182cf5183cf500f5021a1250b6bc030307d90130a2018400f480f40300081a63c5ea6709684b657973746f6e650a706163636f756e742e7374616e64617264d9012fa602f403582103346d8362d8b3c348cc821abe96e79bbc005af54567d0742c9052215322eaa08a06d90130a30188182cf5183cf500f500f4021a1250b6bc0303081a6e7c9e1809684b657973746f6e650a756163636f756e742e6c65646765725f6c6567616379d9012fa602f403582103de2f443b5070e839d6a209ed1afaadfd43daf7bc610a1fefef201a3aca5350ee06d90130a3018a182cf5183cf500f500f400f4021a1250b6bc0303081a769cd41a09684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa602f403582103a96bae34b46e82eee9c5beae52e446693b5c2e365714b223adea7caae47e1b7f06d90130a3018a182cf5183cf501f500f400f4021a1250b6bc0303081a998dec6209684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa602f4035821029299ea371a1c6cdcc75b91d26322a2dbdfedb58285e33760a2af82cfee1a7a6e06d90130a3018a182cf5183cf502f500f400f4021a1250b6bc0303081ac49452d709684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa602f4035821030f1808f972aed2b8e01d92b09b9c0d55b994592fb5599557e0d4828705204a4106d90130a3018a182cf5183cf503f500f400f4021a1250b6bc0303081a0823c44c09684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa602f4035821021c885e79f19ba2658755952801366f00f5304db8597eb72a78a6886d8175037d06d90130a3018a182cf5183cf504f500f400f4021a1250b6bc0303081aef4e5bae09684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa602f4035821037653d3a64a3d1fce16d5693e044e9aea644082371f4d31f6eb83096b5b84d97b06d90130a3018a182cf5183cf505f500f400f4021a1250b6bc0303081a364c571b09684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa602f403582103ded46d3bc515112c1c99b5f5b5f6c4abc76cc40d98ba4c1808c97038fe976ff606d90130a3018a182cf5183cf506f500f400f4021a1250b6bc0303081a456759fc09684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa602f403582102447d94e1937819a79a0ef56cd7b7a29de7c80a45b34480ef0b593083e418557906d90130a3018a182cf5183cf507f500f400f4021a1250b6bc0303081a09f362d709684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa602f403582103d94fb59028252ab9353ee376e868cfd59e9d0bc24ef35fe1b06310cd0e4e908b06d90130a3018a182cf5183cf508f500f400f4021a1250b6bc0303081a4e09767009684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa602f4035821034d53b1c2630e12b853b96d70fb671363d5d4ec9406f722b4deea1f2a9eb6e76406d90130a3018a182cf5183cf509f500f400f4021a1250b6bc0303081ac418564209684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa702f40358210246696468fa5c46647bdd186f568983e2a26773dc5b4c174790fee7ef9b9a7c9904582051872c7bb8270a7655ae15d738bb21379962ff11fb048b55630395afcfef442806d90130a30186182cf500f500f5021a1250b6bc030307d90130a2018280f40300081ab5d6f45009684b657973746f6e65d9012fa702f403582103ab6a1908b437179b914dc3cf4b829d7387adf60fdee483e9c748d5ee79ba4be4045820bad8f929afd65c4b3ff78db1a386062374f2d2e6552e9fdc59aa7dd9b5db6e2c06d90130a301861831f500f500f5021a1250b6bc030307d90130a2018280f40300081a197077c809684b657973746f6e65d9012fa702f40358210262ba42544acc4223c74511b37bae54de22565f25f8034f5af8aa10a04c3621b9045820de47dd17679605b84abf439bdf5477c6cb94ff5a541d3cb1734afebfa3d3fdb906d90130a301861854f500f500f5021a1250b6bc030307d90130a2018280f40300081a9f6b7e4b09684b657973746f6e65d9012fa702f403582103e0db6ca7c71e72a40091141b9dc4596ab3a9192ac41eebe1f2b048c654423ecb045820a75805b89c5079ba74e9002c3e587f7c97ea8018ab1d5245638a45de3c845e0b06d90130a301861856f500f500f5021a1250b6bc030307d90130a2018280f40300081a0484004d09684b657973746f6e65036e4b657973746f6e6520332050726f047828626339633466373135376165363937643433346163383536323332306564353335653737373638300565312e372e30");
     }

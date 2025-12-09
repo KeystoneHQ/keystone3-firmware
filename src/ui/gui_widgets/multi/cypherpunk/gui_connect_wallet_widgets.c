@@ -353,15 +353,14 @@ void GuiConnectWalletInit(void)
 
 UREncodeResult *GuiGetZecData(void)
 {
-    uint8_t mfp[4];
-    GetMasterFingerPrint(mfp);
     CSliceFFI_ZcashKey *keys = SRAM_MALLOC(sizeof(CSliceFFI_ZcashKey));
     ZcashKey data[1];
     keys->data = data;
     keys->size = 1;
     char ufvk[384] = {'\0'};
     uint8_t sfp[32];
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+    GetZcashSFP(GetCurrentAccountIndex(), sfp);
     data[0].key_text = ufvk;
     data[0].key_name = GetWalletName();
     data[0].index = 0;

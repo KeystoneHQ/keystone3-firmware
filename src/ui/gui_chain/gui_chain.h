@@ -4,6 +4,7 @@
 #include "gui_animating_qrcode.h"
 #include "gui_btc.h"
 #ifndef BTC_ONLY
+#include "gui_zcash.h"
 #ifdef WEB3_VERSION
 #include "gui_eth.h"
 #include "gui_eth_batch_tx_widgets.h"
@@ -20,7 +21,6 @@
 #include "gui_avax.h"
 #include "gui_iota.h"
 #else
-#include "gui_zcash.h"
 #include "gui_monero.h"
 #endif
 #endif
@@ -92,8 +92,11 @@ typedef enum {
     // cosmos end
 #endif
 
-#ifdef CYPHERPUNK_VERSION
+#ifndef BTC_ONLY
     CHAIN_ZCASH,
+#endif
+
+#ifdef CYPHERPUNK_VERSION
     CHAIN_XMR,
 #endif
     CHAIN_BUTT,
@@ -130,6 +133,7 @@ typedef enum {
     REMAPVIEW_TON,
     REMAPVIEW_TON_SIGNPROOF,
     REMAPVIEW_AVAX,
+    REMAPVIEW_ZCASH,
 #endif
 
 #ifdef CYPHERPUNK_VERSION

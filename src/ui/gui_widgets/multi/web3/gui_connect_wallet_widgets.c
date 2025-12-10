@@ -9,6 +9,7 @@
 #include "gui_wallet.h"
 #include "rust.h"
 #include "user_memory.h"
+#include "gui_qr_hintbox.h"
 #ifdef WEB3_VERSION
 #include "gui_multi_path_coin_receive_widgets.h"
 #include "gui_connect_ada_widgets.h"
@@ -28,6 +29,7 @@
 typedef enum {
     CONNECT_WALLET_SELECT_WALLET = 0,
     CONNECT_WALLET_QRCODE,
+    CONNECT_WALLET_BTC_WALLET_TUTORIAL,
 
     CONNECT_WALLET_BUTT,
 } CONNECT_WALLET_ENUM;
@@ -57,10 +59,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_NUFI, &walletListNufi, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_ADA},
     {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_HELIUM, &walletListHelium, true, WALLET_FILTER_SOL},
-    {WALLET_LIST_BLUE, &walletListBlue, true, WALLET_FILTER_BTC},
-    {WALLET_LIST_ZEUS, &walletListZeus, true, WALLET_FILTER_BTC},
-    {WALLET_LIST_BABYLON, &walletListBabylon, true, WALLET_FILTER_BTC},
-    {WALLET_LIST_SPARROW, &walletListSparrow, true, WALLET_FILTER_BTC},
+    {WALLET_LIST_BTC_WALLET, &walletListBtc, true, WALLET_FILTER_BTC},
     {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false, WALLET_FILTER_OTHER},
     {WALLET_LIST_RABBY, &walletListRabby, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BITGET, &walletListBitget, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
@@ -136,10 +135,6 @@ static const lv_img_dsc_t *g_backpackWalletCoinArray[3] = {
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
     &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinDoge
-};
-
-static const lv_img_dsc_t *g_blueWalletCoinArray[4] = {
-    &coinBtc,
 };
 
 static const lv_img_dsc_t *g_UniSatCoinArray[5] = {
@@ -755,6 +750,50 @@ static void GuiCreateSupportedNetworks(uint8_t index)
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
 }
 
+static void OpenWalletTutorialLearnMore(lv_event_t *e)
+{
+    lv_obj_t *obj = lv_event_get_target(e);
+    const char *label = lv_label_get_text(lv_obj_get_child(obj, 0));
+    const char *url = lv_label_get_text(lv_obj_get_child(obj, 1));
+    GuiQRCodeHintBoxOpen(url, label, url);
+}
+
+static lv_obj_t *GuiCreateWalletTutorialWidget(lv_obj_t *parent, const char *labelText, const char *url)
+{
+    lv_obj_t *cont = GuiCreateContainerWithParent(parent, 408, 102);
+    lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(cont, LV_OPA_12, LV_PART_MAIN);
+    lv_obj_set_style_radius(cont, 16, 0);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_t *label = GuiCreateTextLabel(cont, labelText);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
+    label = GuiCreateNoticeLabel(cont, url);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 56);
+
+    lv_obj_t *img = GuiCreateImg(cont, &imgQrcodeTurquoise);
+    lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, -24, -33);
+    lv_obj_add_event_cb(cont, OpenWalletTutorialLearnMore, LV_EVENT_CLICKED, NULL);
+    return cont;
+}
+
+static void GuiCreateBtcWalletTutorialWidget(lv_obj_t *parent)
+{
+    lv_obj_t *label = GuiCreateNoticeLabel(parent, _("connect_wallet_desc"));
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 12);
+
+    lv_obj_t *tutorial = GuiCreateWalletTutorialWidget(parent, _("connect_bw_title"), _("connect_bw_link"));
+    lv_obj_align(tutorial, LV_ALIGN_TOP_MID, 0, 126);
+
+    tutorial = GuiCreateWalletTutorialWidget(parent, _("connect_sparrow_title"), _("connect_sparrow_link"));
+    lv_obj_align(tutorial, LV_ALIGN_TOP_MID, 0, 252);
+
+    tutorial = GuiCreateWalletTutorialWidget(parent, _("connect_zeus_title"), _("connect_zeus_link"));;
+    lv_obj_align(tutorial, LV_ALIGN_TOP_MID, 0, 378);
+
+    tutorial = GuiCreateWalletTutorialWidget(parent, _("connect_babylon_title"), _("connect_babylon_link"));;
+    lv_obj_align(tutorial, LV_ALIGN_TOP_MID, 0, 504);
+}
+
 static void GuiCreateQrCodeWidget(lv_obj_t *parent)
 {
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_scan"));
@@ -912,6 +951,35 @@ static void AddKeplrCoinsAndAddressUI(void)
     lv_obj_align(label, LV_ALIGN_CENTER, 150, 30);
 }
 
+static void AddStandardBtcIcoin(void)
+{
+    const struct {
+        const char *name;
+        const lv_img_dsc_t *img;
+    } btcStandardArray[4] = {
+        { "BlueWallet", &walletBluewallet },
+        { "Sparraw", &walletSparrow },
+        { "ZEUS", &walletZeus },
+        { "Babylon", &walletBabylon },
+    };
+    if (lv_obj_get_child_cnt(g_bottomCont) > 0 && g_bottomCont != NULL) {
+        lv_obj_clean(g_bottomCont);
+        g_manageImg = NULL;
+        g_coinCont = NULL;
+    }
+
+    lv_obj_t *label = GuiCreateNoticeLabel(g_bottomCont, _("connect_wallet_supported_wallet"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
+    for (int i = 0; i < NUMBER_OF_ARRAYS(btcStandardArray); i++) {
+        lv_obj_t *img = GuiCreateImg(g_bottomCont, btcStandardArray[i].img);
+        lv_img_set_zoom(img, 128);
+        lv_img_set_pivot(img, 0, 0);
+        lv_obj_refr_size(img);
+        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 36 + 186 * (i % 2), 42 + (i / 2) * 40);
+        lv_obj_t *label = GuiCreateNoticeLabel(g_bottomCont, btcStandardArray[i].name);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36 + 186 * (i % 2) + 44, 42 + (i / 2) * 40);
+    }
+}
 
 void GuiConnectWalletInit(void)
 {
@@ -927,6 +995,9 @@ void GuiConnectWalletInit(void)
 
     tile = lv_tileview_add_tile(tileView, CONNECT_WALLET_QRCODE, 0, LV_DIR_HOR);
     GuiCreateQrCodeWidget(tile);
+
+    tile = lv_tileview_add_tile(tileView, CONNECT_WALLET_BTC_WALLET_TUTORIAL, 0, LV_DIR_HOR);
+    GuiCreateBtcWalletTutorialWidget(tile);
 
     g_connectWalletTileView.currentTile = CONNECT_WALLET_SELECT_WALLET;
     g_connectWalletTileView.tileView = tileView;
@@ -1035,16 +1106,9 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetOkxWalletData;
         AddCoinsFromArray(g_okxWalletCoinArray, NUMBER_OF_ARRAYS(g_okxWalletCoinArray), true, 132);
         break;
-    case WALLET_LIST_BLUE:
+    case WALLET_LIST_BTC_WALLET:
         func = GuiGetStandardBtcData;
-        AddCoinsFromArray(g_blueWalletCoinArray, NUMBER_OF_ARRAYS(g_blueWalletCoinArray), false, 0);
-        break;
-    // todo  zeus wallet use same ur logic as sparrow wallet (m/49'/0'/0' 、 m/44'/0'/0' 、 m/84'/0'/0' and m/86'/0'/0' )
-    case WALLET_LIST_ZEUS:
-    case WALLET_LIST_SPARROW:
-    case WALLET_LIST_BABYLON:
-        func = GuiGetStandardBtcData;
-        AddCoinsFromArray(g_blueWalletCoinArray, NUMBER_OF_ARRAYS(g_blueWalletCoinArray), false, 0);
+        AddStandardBtcIcoin();
         break;
     case WALLET_LIST_UNISAT:
         func = GuiGetStandardBtcData;
@@ -1721,6 +1785,13 @@ static void ChangeDerivationPathHandler(lv_event_t *e)
     QRCodePause(true);
 }
 
+static void OpenBtcWalletTutorialHandler(lv_event_t *e)
+{
+    QRCodePause(true);
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+    GUI_DEL_OBJ(g_openMoreHintBox)
+}
+
 static void OpenMoreHandler(lv_event_t *e)
 {
     int hintboxHeight = 132;
@@ -1734,8 +1805,13 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0),
                         CloseHintBoxHandler, LV_EVENT_CLICKED,
                         &g_openMoreHintBox);
-    btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
-                                OpenTutorialHandler, wallet, true);
+    if (*wallet = WALLET_LIST_BTC_WALLET) {
+        btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
+                                    OpenBtcWalletTutorialHandler, wallet, true);
+    } else {
+        btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
+                                    OpenTutorialHandler, wallet, true);
+    }
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     if (isSpeciaWallet) {
         hintboxHeight = 228;
@@ -1755,7 +1831,15 @@ int8_t GuiConnectWalletNextTile(void)
         GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         break;
     case CONNECT_WALLET_QRCODE:
-        return 0;
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE,
+                         ConnectWalletReturnHandler, NULL);
+        SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL,
+                       _("Tutorial"));
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL,
+                          NULL);
+        break;
+    case CONNECT_WALLET_BTC_WALLET_TUTORIAL:
+        break;
     }
 
     g_connectWalletTileView.currentTile++;
@@ -1779,6 +1863,13 @@ int8_t GuiConnectWalletPrevTile(void)
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL,
                           NULL);
         GuiAnimatingQRCodeDestroyTimer();
+        break;
+    case CONNECT_WALLET_BTC_WALLET_TUTORIAL:
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN,
+                         ConnectWalletReturnHandler, NULL);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO,
+                          OpenMoreHandler, &g_connectWalletTileView.walletIndex);
+        GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
         break;
     }
     g_connectWalletTileView.currentTile--;

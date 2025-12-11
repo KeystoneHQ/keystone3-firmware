@@ -113,7 +113,12 @@ fn get_secret_key(tx: &TonSignRequest, seed: &[u8]) -> Result<[u8; 32], RustCErr
                 Err(e) => return Err(RustCError::UnexpectedError(e.to_string())),
             }
         }
-        None => sk.copy_from_slice(seed),
+        None => {
+            if seed.len() < 32 {
+                return Err(RustCError::InvalidData("Seed too short".to_string()));
+            }
+            sk.copy_from_slice(&seed[0..32]);
+        }
     };
     Ok(sk)
 }

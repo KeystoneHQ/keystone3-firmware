@@ -215,13 +215,6 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             break;
         }
         printf("verify signature ok\n");
-        uint8_t walletAmount;
-        GetExistAccountNum(&walletAmount);
-        if (GetCurrentAccountIndex() == ACCOUNT_INDEX_LOGOUT && walletAmount != 0) {
-            GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_UPDATE_DENY, 1);
-            sendTlvArray[0].value = 2;
-            break;
-        }
         if (GetCurrentDisplayPercent() < LOW_BATTERY_PERCENT) {
             GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 1);
             sendTlvArray[0].value = 1;

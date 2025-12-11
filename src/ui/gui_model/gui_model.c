@@ -10,8 +10,8 @@
 #include "secret_cache.h"
 #include "background_task.h"
 #include "fetch_sensitive_data_task.h"
-#include "bip39.h"
-#include "slip39.h"
+// #include "bip39.h"
+// #include "slip39.h"
 #include "gui_setting_widgets.h"
 #include "account_public_info.h"
 #include "user_utils.h"
@@ -317,48 +317,11 @@ void GuiModelParseTransaction(ReturnVoidPointerFunc func)
 // bip39 generate
 static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t retData;
-    char *mnemonic = NULL;
-    uint8_t entropy[32];
-    uint32_t mnemonicNum, entropyLen;
-    mnemonicNum = *((uint32_t *)inData);
-    entropyLen = (mnemonicNum == 24) ? 32 : 16;
-    GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
-    SecretCacheSetEntropy(entropy, entropyLen);
-    bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
-    SecretCacheSetMnemonic(mnemonic);
-    retData = SUCCESS_CODE;
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-    memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
-    SRAM_FREE(mnemonic);
-    SetLockScreen(enable);
     return SUCCESS_CODE;
 }
 
 static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t retData;
-    char *mnemonic = NULL;
-    uint8_t entropy[32];
-    uint8_t *hash;
-    uint32_t mnemonicNum, entropyLen;
-    mnemonicNum = *((uint32_t *)inData);
-    entropyLen = (mnemonicNum == 24) ? 32 : 16;
-    // GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
-    hash = SecretCacheGetDiceRollHash();
-    memcpy_s(entropy, sizeof(entropy), hash, entropyLen);
-    SecretCacheSetEntropy(entropy, entropyLen);
-    bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
-    SecretCacheSetMnemonic(mnemonic);
-    retData = SUCCESS_CODE;
-    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-    memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
-    SRAM_FREE(mnemonic);
-    SetLockScreen(enable);
     return SUCCESS_CODE;
 }
 
@@ -376,153 +339,25 @@ static int32_t ModelTransactionParseRawDataDelay(const void *inData, uint32_t in
 // Generate bip39 wallet writes
 static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t ret;
-    uint8_t *entropy, *entropyCheck;
-    uint32_t entropyLen;
-    uint8_t newAccount;
-    uint8_t accountCnt;
-    size_t entropyOutLen;
-
-    entropy = SecretCacheGetEntropy(&entropyLen);
-    entropyCheck = SRAM_MALLOC(entropyLen);
-    ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), entropyCheck, entropyLen, &entropyOutLen);
-    if (memcmp(entropyCheck, entropy, entropyLen) != 0) {
-        memset_s(entropyCheck, entropyLen, 0, entropyLen);
-        SRAM_FREE(entropyCheck);
-        SetLockScreen(enable);
-        return 0;
-    }
-    memset_s(entropyCheck, entropyLen, 0, entropyLen);
-    SRAM_FREE(entropyCheck);
-    MODEL_WRITE_SE_HEAD
-    ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
-    CHECK_ERRCODE_BREAK("duplicated entropy", ret);
-    ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
-    ClearAccountPassphrase(newAccount);
-    CHECK_ERRCODE_BREAK("save entropy error", ret);
-    MODEL_WRITE_SE_END
-    SetLockScreen(enable);
     return 0;
 }
 
 // Import of mnemonic words for bip39
 static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t ret;
-    uint8_t *entropy;
-    size_t entropyInLen;
-    size_t entropyOutLen;
-    Bip39Data_t *bip39Data = (Bip39Data_t *)inData;
-    uint8_t newAccount;
-    uint8_t accountCnt;
-    AccountInfo_t accountInfo;
-
-    entropyInLen = bip39Data->wordCnt * 16 / 12;
-
-    entropy = SRAM_MALLOC(entropyInLen);
-
-    MODEL_WRITE_SE_HEAD
-    ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), entropy, entropyInLen, &entropyOutLen);
-    CHECK_ERRCODE_BREAK("mnemonic error", ret);
-    if (bip39Data->forget) {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, &newAccount);
-        CHECK_ERRCODE_BREAK("mnemonic not match", !ret);
-    } else {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
-        CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
-    }
-    if (bip39Data->forget) {
-        GetAccountInfo(newAccount, &accountInfo);
-    }
-    ret = CreateNewAccount(newAccount, entropy, (uint8_t)entropyOutLen, SecretCacheGetNewPassword());
-    CHECK_ERRCODE_BREAK("save entropy error", ret);
-    ClearAccountPassphrase(newAccount);
-    ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
-    CHECK_ERRCODE_BREAK("login error", ret);
-    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
-    if (bip39Data->forget) {
-        SetWalletName(accountInfo.walletName);
-        SetWalletIconIndex(accountInfo.iconIndex);
-        LogoutCurrentAccount();
-        CloseUsb();
-    }
-    GetExistAccountNum(&accountCnt);
-    printf("after accountCnt = %d\n", accountCnt);
-}
-while (0);
-if (ret == SUCCESS_CODE)
-{
-    ClearSecretCache();
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
-} else
-{
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
-}
-memset_s(entropy, entropyInLen, 0, entropyInLen);
-SRAM_FREE(entropy);
-SetLockScreen(enable);
-return 0;
+    return 0;
 }
 
 // Auxiliary word verification for bip39
 static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t ret = SUCCESS_CODE;
-    SimpleResponse_c_char *xPubResult;
-    uint8_t seed[64];
-
-    do {
-        ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
-        xPubResult = get_extended_pubkey_by_seed(seed, 64, "M/49'/0'/0'");
-        if (xPubResult->error_code != 0) {
-            free_simple_response_c_char(xPubResult);
-            break;
-        }
-        CLEAR_ARRAY(seed);
-        char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
-        if (!strcmp(xpub, xPubResult->data)) {
-            ret = SUCCESS_CODE;
-        } else {
-            ret = ERR_GENERAL_FAIL;
-        }
-        free_simple_response_c_char(xPubResult);
-    } while (0);
-    ClearSecretCache();
-    if (ret != SUCCESS_CODE) {
-        GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_FAIL, NULL, 0);
-    } else {
-        GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_PASS, NULL, 0);
-    }
-    SetLockScreen(enable);
     return 0;
 }
 
 // Auxiliary word verification for bip39
 static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t ret = SUCCESS_CODE;
-    do {
-        ret = CHECK_BATTERY_LOW_POWER();
-        CHECK_ERRCODE_BREAK("save low power", ret);
-        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
-        if (ret != SUCCESS_CODE) {
-            GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
-            SetLockScreen(enable);
-            return ret;
-        }
-        ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
-    } while (0);
-    GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
-    SetLockScreen(enable);
-    return ret;
+    return 0;
 }
 
 static UREncodeResult *g_urResult = NULL;
@@ -739,14 +574,6 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
 // save wallet desc
 static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    WalletDesc_t *wallet = (WalletDesc_t *)inData;
-    SetWalletName(wallet->name);
-    SetWalletIconIndex(wallet->iconIndex);
-
-    GuiApiEmitSignal(SIG_SETTING_CHANGE_WALLET_DESC_PASS, NULL, 0);
-    SetLockScreen(enable);
     return SUCCESS_CODE;
 }
 
@@ -796,31 +623,6 @@ static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
 // reset wallet password
 static int32_t ModelChangeAccountPass(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
-    int32_t ret;
-
-    ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
-    ret = ChangePassword(GetCurrentAccountIndex(), SecretCacheGetNewPassword(), SecretCacheGetPassword());
-    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
-    if (ret == SUCCESS_CODE) {
-        GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, NULL, 0);
-    } else {
-        GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, NULL, 0);
-    }
-
-    ClearSecretCache();
-#else
-    uint8_t *entropy;
-    uint8_t entropyLen;
-    int32_t ret;
-    uint8_t *accountIndex = (uint8_t *)inData;
-
-    // GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, &ret, sizeof(ret));
-    GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, &ret, sizeof(ret));
-#endif
-    SetLockScreen(enable);
     return SUCCESS_CODE;
 }
 
@@ -851,149 +653,15 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
 
 static void ModelVerifyPassSuccess(uint16_t *param)
 {
-    int32_t ret = SUCCESS_CODE;
-    uint8_t walletAmount;
-    switch (*param) {
-    case DEVICE_SETTING_ADD_WALLET:
-        GetExistAccountNum(&walletAmount);
-        if (walletAmount == 3) {
-            GuiApiEmitSignal(SIG_SETTING_ADD_WALLET_AMOUNT_LIMIT, NULL, 0);
-        } else {
-            GuiEmitSignal(SIG_INIT_GET_ACCOUNT_NUMBER, &walletAmount, sizeof(walletAmount));
-            GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-        }
-        break;
-    case SIG_INIT_SD_CARD_OTA_COPY:
-        GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-        GuiApiEmitSignal(SIG_INIT_SD_CARD_OTA_COPY, param, sizeof(*param));
-        ModelCopySdCardOta(NULL, 0);
-        break;
-    case SIG_SETTING_WRITE_PASSPHRASE:
-        GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_VERIFY_PASS, param, sizeof(*param));
-        SetPageLockScreen(false);
-        if (SecretCacheGetPassphrase() == NULL) {
-            SecretCacheSetPassphrase("");
-        }
-        ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
-#ifdef BTC_ONLY
-        if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) == 0) {
-            AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), false);
-        }
-#endif
-        SetPageLockScreen(true);
-        if (ret == SUCCESS_CODE) {
-            GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
-            ClearSecretCache();
-        } else {
-            GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_FAIL, NULL, 0);
-        }
-        break;
-    case SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE:
-        GuiApiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_PASSPHRASE_PASS, param, sizeof(*param));
-        break;
-    case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD:
-        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-        break;
-    default:
-        GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
-        break;
-    }
 }
 
 static void ModelVerifyPassFailed(uint16_t *param)
 {
-    uint16_t signal = SIG_VERIFY_PASSWORD_FAIL;
-    switch (*param) {
-    case SIG_LOCK_VIEW_VERIFY_PIN:
-    case SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS:
-        g_passwordVerifyResult.errorCount = GetLoginPasswordErrorCount();
-        printf("gui model get login error count %d \n", g_passwordVerifyResult.errorCount);
-        assert(g_passwordVerifyResult.errorCount <= MAX_LOGIN_PASSWORD_ERROR_COUNT);
-        if (g_passwordVerifyResult.errorCount == MAX_LOGIN_PASSWORD_ERROR_COUNT) {
-            UnlimitedVibrate(SUPER_LONG);
-        } else {
-            UnlimitedVibrate(LONG);
-        }
-        break;
-    case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD:
-        signal = SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_FAIL;
-        g_passwordVerifyResult.errorCount = GetCurrentPasswordErrorCount();
-        printf("gui model get current error count %d \n", g_passwordVerifyResult.errorCount);
-        assert(g_passwordVerifyResult.errorCount <= MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX);
-        if (g_passwordVerifyResult.errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
-            UnlimitedVibrate(SUPER_LONG);
-        } else {
-            UnlimitedVibrate(LONG);
-        }
-        break;
-    case SIG_INIT_SD_CARD_OTA_COPY:
-        signal = SIG_FIRMWARE_VERIFY_PASSWORD_FAIL;
-    default:
-        g_passwordVerifyResult.errorCount = GetCurrentPasswordErrorCount();
-        printf("gui model get current error count %d \n", g_passwordVerifyResult.errorCount);
-        assert(g_passwordVerifyResult.errorCount <= MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX);
-        if (g_passwordVerifyResult.errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
-            UnlimitedVibrate(SUPER_LONG);
-        } else {
-            UnlimitedVibrate(LONG);
-        }
-        break;
-    }
-    g_passwordVerifyResult.signal = param;
-    GuiApiEmitSignal(signal, (void *)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
 }
 
 // verify wallet password
 static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    static bool firstVerify = true;
-    SetLockScreen(false);
-    uint8_t accountIndex;
-    int32_t ret;
-    uint16_t *param = (uint16_t *)inData;
-
-    // Unlock screen
-    if (SIG_LOCK_VIEW_VERIFY_PIN == *param || SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS == *param) {
-        ret = VerifyPasswordAndLogin(&accountIndex, SecretCacheGetPassword());
-        if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
-            GuiApiEmitSignal(SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH, NULL, 0);
-            return ret;
-        } else if (ret == SUCCESS_CODE) {
-            ModeGetWalletDesc(NULL, 0);
-        }
-    } else {
-        ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
-    }
-
-    if (SIG_LOCK_VIEW_VERIFY_PIN == *param && firstVerify && ModelGetPassphraseQuickAccess()) {
-        *param = SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE;
-        firstVerify = false;
-    }
-
-    // some scene would need clear secret after check
-    if (*param != SIG_SETTING_CHANGE_PASSWORD &&
-            *param != SIG_SETTING_WRITE_PASSPHRASE &&
-            *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
-            *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
-            *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
-            *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
-            *param != SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD &&
-            *param != SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD &&
-            *param != SIG_MULTISIG_WALLET_DELETE_VERIFY_PASSWORD &&
-            *param != SIG_HARDWARE_CALL_DERIVE_PUBKEY &&
-            *param != SIG_INIT_CONNECT_USB &&
-            !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
-            !GuiCheckIfViewOpened(&g_createWalletView) &&
-            !ModelGetPassphraseQuickAccess()) {
-        ClearSecretCache();
-    }
-    SetLockScreen(enable);
-    if (ret == SUCCESS_CODE) {
-        ModelVerifyPassSuccess(param);
-    } else {
-        ModelVerifyPassFailed(param);
-    }
     return SUCCESS_CODE;
 }
 
@@ -1006,6 +674,7 @@ static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen)
     int32_t ret;
 
     ret = GetExistAccountNum(&walletAmount);
+    // assert(walletAmount == 0);
     if (ret != SUCCESS_CODE) {
         walletAmount = 0xFF;
     }
@@ -1017,17 +686,6 @@ static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen)
 // get wallet desc
 static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    static WalletDesc_t wallet;
-    if (GetCurrentAccountIndex() > 2) {
-        SetLockScreen(enable);
-        return SUCCESS_CODE;
-    }
-    wallet.iconIndex = GetWalletIconIndex();
-    strcpy_s(wallet.name, WALLET_NAME_MAX_LEN + 1, GetWalletName());
-    GuiApiEmitSignal(SIG_INIT_GET_CURRENT_WALLET_DESC, &wallet, sizeof(wallet));
-    SetLockScreen(enable);
     return SUCCESS_CODE;
 }
 
@@ -1059,7 +717,7 @@ static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataL
     SetLockScreen(false);
 
     uint32_t time = *(uint32_t*)inData;
-    SetLastLockDeviceTime(time);
+    // SetLastLockDeviceTime(time);
 
     SetLockScreen(enable);
     return SUCCESS_CODE;
@@ -1289,15 +947,7 @@ static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
 
 bool ModelGetPassphraseQuickAccess(void)
 {
-#ifdef COMPILE_SIMULATOR
     return false;
-#else
-    if (PassphraseExist(GetCurrentAccountIndex()) == false && GetPassphraseQuickAccess() == true && GetPassphraseMark() == true) {
-        return true;
-    } else {
-        return false;
-    }
-#endif
 }
 
 static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)

@@ -26,6 +26,7 @@
 #include "usb_task.h"
 #include "ui_display_task.h"
 #include "version.h"
+#include "assert.h"
 
 static int32_t GuiInitViewInit(void *param)
 {
@@ -68,13 +69,9 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         walletNum = *(uint8_t *)param;
         if (walletNum == 0) {
             GuiFrameOpenView(&g_setupView);
-            if (IsUpdateSuccess()) {
-                GuiFrameOpenView(&g_updateSuccessView);
-            }
             break;
-        } else {
-            return GuiFrameOpenViewWithParam(&g_lockView, &lockParam, sizeof(lockParam));
         }
+        ASSERT(walletNum > 0);
         break;
     case SIG_INIT_BATTERY:
         battState = *(uint16_t *)param;

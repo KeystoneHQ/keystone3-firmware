@@ -6,13 +6,11 @@
 
 static int32_t GuiPurposeViewInit(void)
 {
-    GuiPurposeAreaInit();
     return SUCCESS_CODE;
 }
 
 static int32_t GuiPurposeViewDeInit(void)
 {
-    GuiPurposeAreaDeInit();
     return SUCCESS_CODE;
 }
 
@@ -21,18 +19,6 @@ int32_t GuiPurposeViewEventProcess(void *self, uint16_t usEvent, void *param, ui
     GUI_ASSERT(g_purposeView.isActive);
 
     switch (usEvent) {
-    case GUI_EVENT_OBJ_INIT:
-        return GuiPurposeViewInit();
-    case GUI_EVENT_OBJ_DEINIT:
-        return GuiPurposeViewDeInit();
-    case SIG_INIT_SDCARD_CHANGE:
-        break;
-    case GUI_EVENT_REFRESH:
-        GuiPurposeAreaRefresh();
-        break;
-    case GUI_EVENT_RESTART:
-        GuiPurposeAreaRestart();
-        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

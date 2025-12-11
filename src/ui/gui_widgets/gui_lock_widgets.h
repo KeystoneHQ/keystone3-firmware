@@ -1,6 +1,8 @@
 #ifndef _GUI_LOCK_WIDGETS_H
 #define _GUI_LOCK_WIDGETS_H
 
+#include "lvgl.h"
+
 typedef enum {
     LOCK_SCREEN_PURPOSE_UNLOCK,
     LOCK_SCREEN_PURPOSE_VERIFY,

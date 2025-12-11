@@ -15,7 +15,7 @@
 #include "gui_setting_widgets.h"
 #include "account_public_info.h"
 #include "user_utils.h"
-#include "gui_chain.h"
+// #include "gui_chain.h"
 #include "device_setting.h"
 #include "user_memory.h"
 #include "presetting.h"
@@ -584,100 +584,12 @@ static int32_t ModelURClear(const void *inData, uint32_t inDataLen)
 // Compare the generated extended public key
 static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8_t emsLen, uint16_t id, bool eb, uint8_t ie, uint8_t *index)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    bool bip39 = mnemonicType == MNEMONIC_TYPE_BIP39;
-    bool slip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
-#ifndef BTC_ONLY
-    bool ton = mnemonicType == MNEMONIC_TYPE_TON;
-#else
-    bool ton = false;
-#endif
-    uint8_t seed[64] = {0};
     int ret = 0;
-    uint8_t existIndex = 0;
-    if (ton) {
-#ifdef WEB3_VERSION
-        VecFFI_u8 *entropyResult = ton_mnemonic_to_entropy(SecretCacheGetMnemonic());
-        uint8_t checksum[32] = {0};
-        CalculateTonChecksum(entropyResult->data, checksum);
-        free_VecFFI_u8(entropyResult);
-        char value[65] = {0};
-        for (size_t i = 0; i < 32; i++) {
-            snprintf_s(value, 65, "%s%02x", value, checksum[i]);
-        }
-        existIndex = SpecifiedXPubExist(value, ton);
-        if (index != NULL) {
-            *index = existIndex;
-        }
-        if (existIndex != 0xFF) {
-            ret = ERR_KEYSTORE_MNEMONIC_REPEAT;
-        } else {
-            ret = SUCCESS_CODE;
-        }
-#endif
-    } else {
-        do {
-            SimpleResponse_c_char *xPubResult;
-            if (bip39) {
-                ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
-                xPubResult = get_extended_pubkey_by_seed(seed, 64, "M/49'/0'/0'");
-            }
-            if (slip39) {
-                ret = Slip39GetSeed(ems, seed, emsLen, "", ie, eb, id);
-                xPubResult = get_extended_pubkey_by_seed(seed, emsLen, "M/49'/0'/0'");
-            }
-
-            CHECK_CHAIN_BREAK(xPubResult);
-            CLEAR_ARRAY(seed);
-            existIndex = SpecifiedXPubExist(xPubResult->data, ton);
-            if (index != NULL) {
-                *index = existIndex;
-            }
-            if (existIndex != 0xFF) {
-                ret = ERR_KEYSTORE_MNEMONIC_REPEAT;
-            } else {
-                ret = SUCCESS_CODE;
-            }
-            free_simple_response_c_char(xPubResult);
-        } while (0);
-    }
-    SetLockScreen(enable);
     return ret;
 }
 
 static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    uint8_t entropy[32], ems[32];
-    uint32_t entropyLen;
-    uint16_t id;
-    uint8_t ie;
-    bool eb;
-    entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
-    char *wordsList[slip39->memberCnt];
-    if (isDiceRoll) {
-        memcpy_s(entropy, sizeof(entropy), SecretCacheGetDiceRollHash(), entropyLen);
-    } else {
-        GenerateEntropy(entropy, entropyLen, SecretCacheGetNewPassword());
-    }
-    SecretCacheSetEntropy(entropy, entropyLen);
-    GetSlip39MnemonicsWords(entropy, ems, slip39->wordCnt, slip39->memberCnt, slip39->threShold, wordsList, &id, &eb, &ie);
-    SecretCacheSetEms(ems, entropyLen);
-    SecretCacheSetIdentifier(id);
-    SecretCacheSetIteration(ie);
-    SecretCacheSetExtendable(eb);
-    for (int i = 0; i < slip39->memberCnt; i++) {
-        SecretCacheSetSlip39Mnemonic(wordsList[i], i);
-    }
-
-    for (int i = 0; i < slip39->memberCnt; i++) {
-        memset_s(wordsList[i], strlen(wordsList[i]), 0, strlen(wordsList[i]));
-        SRAM_FREE(wordsList[i]);
-    }
-    GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC, NULL, 0);
-    SetLockScreen(enable);
     return SUCCESS_CODE;
 }
 
@@ -696,48 +608,6 @@ static int32_t ModelGenerateSlip39EntropyWithDiceRolls(const void *inData, uint3
 // Generate slip39 wallet writes
 static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    uint8_t *entropy;
-    uint8_t *ems;
-    uint32_t entropyLen;
-    uint8_t newAccount;
-    uint8_t accountCnt;
-    uint16_t id;
-    uint8_t ie;
-    bool eb;
-    uint8_t msCheck[32], emsCheck[32];
-    uint8_t threShold;
-    uint8_t wordCnt = *(uint8_t *)inData;
-    int ret;
-
-    ems = SecretCacheGetEms(&entropyLen);
-    entropy = SecretCacheGetEntropy(&entropyLen);
-    id = SecretCacheGetIdentifier();
-    eb = SecretCacheGetExtendable();
-    ie = SecretCacheGetIteration();
-
-    MODEL_WRITE_SE_HEAD
-    ret = Slip39CheckFirstWordList(SecretCacheGetSlip39Mnemonic(0), wordCnt, &threShold);
-    char *words[threShold];
-    for (int i = 0; i < threShold; i++) {
-        words[i] = SecretCacheGetSlip39Mnemonic(i);
-    }
-    ret = Slip39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &eb, &ie);
-    if ((ret != SUCCESS_CODE) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
-        ret = ERR_KEYSTORE_MNEMONIC_INVALID;
-        break;
-    }
-    CLEAR_ARRAY(emsCheck);
-    CLEAR_ARRAY(msCheck);
-    ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, NULL);
-    CHECK_ERRCODE_BREAK("duplicated entropy", ret);
-    ret = CreateNewSlip39Account(newAccount, ems, entropy, entropyLen, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetExtendable(), SecretCacheGetIteration());
-    CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
-    ClearAccountPassphrase(newAccount);
-    MODEL_WRITE_SE_END
-
-    SetLockScreen(enable);
     return SUCCESS_CODE;
 }
 
@@ -747,73 +617,73 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
 
-    uint8_t *entropy;
-    uint8_t entropyLen;
-    int32_t ret;
-    uint16_t id;
-    uint8_t ie;
-    bool eb;
-    uint8_t newAccount;
-    uint8_t accountCnt;
-    Slip39Data_t *slip39 = (Slip39Data_t *)inData;
-    AccountInfo_t accountInfo;
+//     uint8_t *entropy;
+//     uint8_t entropyLen;
+//     int32_t ret;
+//     uint16_t id;
+//     uint8_t ie;
+//     bool eb;
+//     uint8_t newAccount;
+//     uint8_t accountCnt;
+//     Slip39Data_t *slip39 = (Slip39Data_t *)inData;
+//     AccountInfo_t accountInfo;
 
-    entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
-    entropy = SRAM_MALLOC(entropyLen);
-    uint8_t ems[32] = {0};
-    uint8_t emsBak[32] = {0};
+//     entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
+//     entropy = SRAM_MALLOC(entropyLen);
+//     uint8_t ems[32] = {0};
+//     uint8_t emsBak[32] = {0};
 
-    char *words[slip39->threShold];
-    for (int i = 0; i < slip39->threShold; i++) {
-        words[i] = SecretCacheGetSlip39Mnemonic(i);
-    }
+//     char *words[slip39->threShold];
+//     for (int i = 0; i < slip39->threShold; i++) {
+//         words[i] = SecretCacheGetSlip39Mnemonic(i);
+//     }
 
-    MODEL_WRITE_SE_HEAD
-    ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &eb, &ie);
-    if (ret != SUCCESS_CODE) {
-        printf("get master secret error\n");
-        break;
-    }
-    memcpy_s(emsBak, sizeof(emsBak), ems, entropyLen);
+//     MODEL_WRITE_SE_HEAD
+//     ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &eb, &ie);
+//     if (ret != SUCCESS_CODE) {
+//         printf("get master secret error\n");
+//         break;
+//     }
+//     memcpy_s(emsBak, sizeof(emsBak), ems, entropyLen);
 
-    if (slip39->forget) {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, &newAccount);
-        CHECK_ERRCODE_BREAK("mnemonic not match", !ret);
-    } else {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, NULL);
-        CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
-    }
-    printf("before accountCnt = %d\n", accountCnt);
-    if (slip39->forget) {
-        GetAccountInfo(newAccount, &accountInfo);
-    }
-    ret = CreateNewSlip39Account(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, eb, ie);
-    CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
-    ClearAccountPassphrase(newAccount);
-    ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
-    CHECK_ERRCODE_BREAK("login error", ret);
-    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
-    if (slip39->forget) {
-        SetWalletName(accountInfo.walletName);
-        SetWalletIconIndex(accountInfo.iconIndex);
-        LogoutCurrentAccount();
-        CloseUsb();
-    }
-    CLEAR_ARRAY(ems);
-    CLEAR_ARRAY(emsBak);
-    GetExistAccountNum(&accountCnt);
-    printf("after accountCnt = %d\n", accountCnt);
-}
-while (0);
-if (ret == SUCCESS_CODE)
-{
-    ClearSecretCache();
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
-} else
-{
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
-}
-SRAM_FREE(entropy);
+//     if (slip39->forget) {
+//         ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, &newAccount);
+//         CHECK_ERRCODE_BREAK("mnemonic not match", !ret);
+//     } else {
+//         ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, NULL);
+//         CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
+//     }
+//     printf("before accountCnt = %d\n", accountCnt);
+//     if (slip39->forget) {
+//         GetAccountInfo(newAccount, &accountInfo);
+//     }
+//     ret = CreateNewSlip39Account(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, eb, ie);
+//     CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
+//     ClearAccountPassphrase(newAccount);
+//     ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
+//     CHECK_ERRCODE_BREAK("login error", ret);
+//     UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
+//     if (slip39->forget) {
+//         SetWalletName(accountInfo.walletName);
+//         SetWalletIconIndex(accountInfo.iconIndex);
+//         LogoutCurrentAccount();
+//         CloseUsb();
+//     }
+//     CLEAR_ARRAY(ems);
+//     CLEAR_ARRAY(emsBak);
+//     GetExistAccountNum(&accountCnt);
+//     printf("after accountCnt = %d\n", accountCnt);
+// }
+// while (0);
+// if (ret == SUCCESS_CODE)
+// {
+//     ClearSecretCache();
+//     GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
+// } else
+// {
+//     GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
+// }
+// SRAM_FREE(entropy);
 SetLockScreen(enable);
 return SUCCESS_CODE;
 }
@@ -823,45 +693,45 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret = SUCCESS_CODE;
-#ifndef COMPILE_SIMULATOR
-    uint8_t *entropy;
-    uint8_t entropyLen;
-    uint16_t id;
-    uint8_t ie;
-    bool eb;
-    Slip39Data_t *slip39 = (Slip39Data_t *)inData;
+// #ifndef COMPILE_SIMULATOR
+//     uint8_t *entropy;
+//     uint8_t entropyLen;
+//     uint16_t id;
+//     uint8_t ie;
+//     bool eb;
+//     Slip39Data_t *slip39 = (Slip39Data_t *)inData;
 
-    entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
-    entropy = SRAM_MALLOC(entropyLen);
-    uint8_t ems[32] = {0};
+//     entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
+//     entropy = SRAM_MALLOC(entropyLen);
+//     uint8_t ems[32] = {0};
 
-    char *words[slip39->threShold];
-    for (int i = 0; i < slip39->threShold; i++) {
-        words[i] = SecretCacheGetSlip39Mnemonic(i);
-    }
+//     char *words[slip39->threShold];
+//     for (int i = 0; i < slip39->threShold; i++) {
+//         words[i] = SecretCacheGetSlip39Mnemonic(i);
+//     }
 
-    do {
-        ret = CHECK_BATTERY_LOW_POWER();
-        CHECK_ERRCODE_BREAK("save low power", ret);
-        ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &eb, &ie);
-        if (ret != SUCCESS_CODE) {
-            printf("get master secret error\n");
-            break;
-        }
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, NULL);
-        if (ret != SUCCESS_CODE) {
-            GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
-            SetLockScreen(enable);
-            return ret;
-        }
-        ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
-    } while (0);
-    GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
+//     do {
+//         ret = CHECK_BATTERY_LOW_POWER();
+//         CHECK_ERRCODE_BREAK("save low power", ret);
+//         ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &eb, &ie);
+//         if (ret != SUCCESS_CODE) {
+//             printf("get master secret error\n");
+//             break;
+//         }
+//         ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, NULL);
+//         if (ret != SUCCESS_CODE) {
+//             GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
+//             SetLockScreen(enable);
+//             return ret;
+//         }
+//         ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
+//     } while (0);
+//     GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
 
-    SRAM_FREE(entropy);
-#else
-    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
-#endif
+//     SRAM_FREE(entropy);
+// #else
+//     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
+// #endif
     SetLockScreen(enable);
     return ret;
 }
@@ -883,44 +753,6 @@ static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen)
 // del wallet
 static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t ret;
-    uint8_t accountIndex = GetCurrentAccountIndex();
-    UpdateFingerSignFlag(accountIndex, false);
-    CloseUsb();
-    ret = DestroyAccount(accountIndex);
-    if (ret == SUCCESS_CODE) {
-        // reset address index in receive page
-        {
-            void GuiResetCurrentUtxoAddressIndex(uint8_t index);
-            GuiResetCurrentUtxoAddressIndex(accountIndex);
-#ifdef WEB3_VERSION
-            void GuiResetCurrentEthAddressIndex(uint8_t index);
-            void GuiResetCurrentStandardAddressIndex(uint8_t index);
-            void GuiResetCurrentMultiAccountsCache(uint8_t index);
-            GuiResetCurrentEthAddressIndex(accountIndex);
-            GuiResetCurrentStandardAddressIndex(accountIndex);
-            GuiResetCurrentMultiAccountsCache(accountIndex);
-#endif
-        }
-
-        uint8_t accountNum;
-        GetExistAccountNum(&accountNum);
-        if (accountNum == 0) {
-            FpWipeManageInfo();
-            SetSetupStep(0);
-            SaveDeviceSettings();
-            ResetBootParam();
-            g_reboot = true;
-            GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_PASS_SETUP, NULL, 0);
-        } else {
-            GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
-        }
-    } else {
-        GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_FAIL, &ret, sizeof(ret));
-    }
-    SetLockScreen(enable);
     return SUCCESS_CODE;
 }
 
@@ -1273,7 +1105,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
         UserDelay(100);
     }
 #endif
-    g_checkResult = CheckUrResult(viewType);
+    // g_checkResult = CheckUrResult(viewType);
     if (g_checkResult != NULL && g_checkResult->error_code == 0) {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
     } else {
@@ -1480,239 +1312,3 @@ static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
 
     return SUCCESS_CODE;
 }
-
-
-#ifdef WEB3_VERSION
-static int32_t ModelTonCalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);
-static int32_t ModelTonVerifyMnemonic(const void *inData, uint32_t inDataLen);
-static int32_t ModelTonWriteEntropyAndSeed(const void *inData, uint32_t inDataLen);
-static int32_t ModelGenerateTonMnemonic(const void *inData, uint32_t inDataLen);
-static int32_t ModelTonForgetPass(const void *inData, uint32_t inDataLen);
-static int32_t ModelRsaGenerateKeyPair();
-
-void GuiModelRsaGenerateKeyPair(void)
-{
-    AsyncExecute(ModelRsaGenerateKeyPair, NULL, 0);
-}
-
-void GuiModelTonUpdateMnemonic(void)
-{
-    AsyncExecute(ModelGenerateTonMnemonic, NULL, 0);
-}
-
-void GuiModelTonCalWriteSe(TonData_t ton)
-{
-    AsyncExecute(ModelTonCalWriteEntropyAndSeed, &ton, sizeof(ton));
-}
-
-void GuiModelTonWriteSe(void)
-{
-    GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
-    AsyncExecute(ModelTonWriteEntropyAndSeed, NULL, 0);
-}
-
-void GuiModelTonRecoveryCheck()
-{
-    AsyncExecute(ModelTonVerifyMnemonic, NULL, 0);
-}
-
-void GuiModelTonForgetPassword()
-{
-    AsyncExecute(ModelTonForgetPass, NULL, 0);
-}
-
-static int32_t ModelRsaGenerateKeyPair()
-{
-    return RsaGenerateKeyPair(true);
-}
-
-// ton generate
-static int32_t ModelGenerateTonMnemonic(const void *inData, uint32_t inDataLen)
-{
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t retData;
-    char *mnemonic = SRAM_MALLOC(MNEMONIC_MAX_LEN);
-    memset_s(mnemonic, MNEMONIC_MAX_LEN, 0, MNEMONIC_MAX_LEN);
-    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_TON_GENERATION_START, NULL, 0);
-    GenerateTonMnemonic(mnemonic, SecretCacheGetNewPassword());
-    SecretCacheSetMnemonic(mnemonic);
-    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_TON_GENERATION_END, NULL, 0);
-    retData = SUCCESS_CODE;
-    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &retData, sizeof(retData));
-    memset_s(mnemonic, strnlen_s(mnemonic, MNEMONIC_MAX_LEN), 0, strnlen_s(mnemonic, MNEMONIC_MAX_LEN));
-    SRAM_FREE(mnemonic);
-    SetLockScreen(enable);
-    ClearLockScreenTime();
-    return SUCCESS_CODE;
-}
-
-// ton generate
-static int32_t ModelTonWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
-{
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t ret;
-    uint8_t newAccount;
-    uint8_t accountCnt;
-    char *mnemonic;
-    mnemonic = SecretCacheGetMnemonic();
-    MODEL_WRITE_SE_HEAD
-    ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, false, 0, NULL);
-    CHECK_ERRCODE_BREAK("duplicated entropy", ret);
-    ret = CreateNewTonAccount(newAccount, mnemonic, SecretCacheGetNewPassword());
-    ClearAccountPassphrase(newAccount);
-    CHECK_ERRCODE_BREAK("save entropy error", ret);
-    MODEL_WRITE_SE_END
-    SetLockScreen(enable);
-    ClearLockScreenTime();
-    return 0;
-}
-
-// Import of mnemonic words for ton
-static int32_t ModelTonCalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
-{
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t ret;
-    TonData_t *tonData = (TonData_t *)inData;
-    uint8_t newAccount;
-    uint8_t accountCnt;
-    AccountInfo_t accountInfo;
-
-    MODEL_WRITE_SE_HEAD
-    bool isValid = ton_verify_mnemonic(SecretCacheGetMnemonic());
-    if (!isValid) {
-        printf("invalid ton mnemonic , line=%d\r\n", __LINE__);
-        break;
-    }
-    if (tonData->forget) {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, false, 0, &newAccount);
-        CHECK_ERRCODE_BREAK("mnemonic not match", !ret);
-    } else {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, false, 0, NULL);
-        CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
-    }
-    if (tonData->forget) {
-        GetAccountInfo(newAccount, &accountInfo);
-    }
-    ret = CreateNewTonAccount(newAccount, SecretCacheGetMnemonic(), SecretCacheGetNewPassword());
-    CHECK_ERRCODE_BREAK("save entropy error", ret);
-    ClearAccountPassphrase(newAccount);
-    ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
-    CHECK_ERRCODE_BREAK("login error", ret);
-    if (tonData->forget) {
-        SetWalletName(accountInfo.walletName);
-        SetWalletIconIndex(accountInfo.iconIndex);
-        LogoutCurrentAccount();
-        CloseUsb();
-    }
-    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
-    GetExistAccountNum(&accountCnt);
-    printf("after accountCnt = %d\n", accountCnt);
-}
-while (0);
-if (ret == SUCCESS_CODE)
-{
-    ClearSecretCache();
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
-} else
-{
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
-}
-SetLockScreen(enable);
-ClearLockScreenTime();
-return 0;
-}
-
-// Auxiliary word verification for ton
-static int32_t ModelTonVerifyMnemonic(const void *inData, uint32_t inDataLen)
-{
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t ret = SUCCESS_CODE;
-    SimpleResponse_c_char *xPubResult;
-    uint8_t seed[64];
-
-    do {
-        SimpleResponse_u8 *seedResponse = ton_mnemonic_to_seed(SecretCacheGetMnemonic());
-        ret = seedResponse->error_code;
-        if (seedResponse->error_code != 0) {
-            break;
-        }
-        memcpy_s(seed, 64, seedResponse->data, 64);
-        xPubResult = ton_seed_to_publickey(seed, 64);
-        if (xPubResult->error_code != 0) {
-            free_simple_response_c_char(xPubResult);
-            break;
-        }
-        CLEAR_ARRAY(seed);
-        char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
-        if (!strcmp(xpub, xPubResult->data)) {
-            ret = SUCCESS_CODE;
-        } else {
-            ret = ERR_GENERAL_FAIL;
-        }
-        free_simple_response_c_char(xPubResult);
-    } while (0);
-    ClearSecretCache();
-    if (ret != SUCCESS_CODE) {
-        GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_FAIL, NULL, 0);
-    } else {
-        GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_PASS, NULL, 0);
-    }
-    SetLockScreen(enable);
-    ClearLockScreenTime();
-    return 0;
-}
-
-// Auxiliary word verification for ton
-static int32_t ModelTonForgetPass(const void *inData, uint32_t inDataLen)
-{
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    int32_t ret = SUCCESS_CODE;
-    do {
-        ret = CHECK_BATTERY_LOW_POWER();
-        CHECK_ERRCODE_BREAK("save low power", ret);
-        ret = ModelComparePubkey(MNEMONIC_TYPE_TON, NULL, 0, 0, false, 0, NULL);
-        if (ret != SUCCESS_CODE) {
-            GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
-            SetLockScreen(enable);
-            return ret;
-        }
-        ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
-    } while (0);
-    GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
-    SetLockScreen(enable);
-    return ret;
-}
-
-int32_t RsaGenerateKeyPair(bool needEmitSignal)
-{
-    printf("RsaGenerate RsaGenerate RsaGenerate");
-    bool lockState = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    if (needEmitSignal) {
-        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_START, NULL, 0);
-    }
-    uint8_t seed[64];
-    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    int32_t ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-    ASSERT(ret == 0);
-    SimpleResponse_u8 *secret = generate_arweave_secret(seed, len);
-    ASSERT(secret != NULL && secret->error_code == 0);
-    FlashWriteRsaPrimes(secret->data);
-    free_simple_response_u8(secret);
-    GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS, NULL, 0);
-    AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), true);
-    RecalculateManageWalletState();
-    ClearLockScreenTime();
-    SetLockScreen(lockState);
-    if (needEmitSignal) {
-        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, NULL, 0);
-        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_HIDE_LOADING, NULL, 0);
-    }
-    return SUCCESS_CODE;
-}
-#endif

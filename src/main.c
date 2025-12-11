@@ -58,7 +58,6 @@ int main(void)
     SystemClockInit();
     SensorInit();
     Uart0Init(CmdIsrRcvByte);
-    FingerprintInit();
     cm_backtrace_init("mh1903", GetHardwareVersionString(), GetSoftwareVersionString());
     TrngInit();
     TamperInit(TamperStartup);
@@ -92,7 +91,6 @@ int main(void)
 
     PrintSystemInfo();
     osKernelInitialize();
-    CreateFingerprintTask();
 #ifndef BUILD_PRODUCTION
     CreateCmdTask();
 #endif
@@ -102,7 +100,6 @@ int main(void)
     CreateQrDecodeTask();
     CreateTouchPadTask();
     CreateBackgroundTask();
-    CreateLogTask();
     CreateUsbTask();
 
     printf("start FreeRTOS scheduler\r\n");

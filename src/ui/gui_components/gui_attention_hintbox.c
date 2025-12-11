@@ -43,7 +43,7 @@ static AttentionHintboxContext *BuildConfirmationHintboxContext()
     AttentionHintboxContext *context = SRAM_MALLOC(sizeof(AttentionHintboxContext));
     context->title =  _("rsa_confirm_hintbox_title");
     context->context = _("rsa_confirm_hintbox_context");
-    context->icon = &imgAttentionLock;
+    // context->icon = &imgAttentionLock;
     context->hintboxHeight = 476;
     context->okBtnText = _("rsa_confirm_hintbox_ok");
     context->cancelBtnText = _("rsa_confirm_hintbox_cancel");
@@ -138,7 +138,7 @@ void GuiCloseAttentionHintbox()
 void GuiCreateHardwareCallInvaildParamHintbox(char *title, char *content)
 {
     AttentionHintboxContext *context = SRAM_MALLOC(sizeof(AttentionHintboxContext));
-    context->icon = &imgUnknown;
+    // context->icon = &imgUnknown;
     context->hintboxHeight = 416;
     context->cancelBtnText = _("power_requirements_hintbox_cancel");
     g_attentionCont = GuiCreateHintBox(context->hintboxHeight);

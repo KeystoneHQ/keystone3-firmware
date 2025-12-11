@@ -2,7 +2,7 @@
 #include <string.h>
 #include "gui_views.h"
 #include "gui_setup_widgets.h"
-#include "gui_qr_code.h"
+// #include "gui_qr_code.h"
 #include "gui_model.h"
 #include "gui_hintbox.h"
 #include "gui_lock_widgets.h"
@@ -54,13 +54,13 @@ void OpenViewHandler(lv_event_t *e)
 
 void CloseTimerCurrentViewHandler(lv_event_t *e)
 {
-    CloseQRTimer();
+    // CloseQRTimer();
     GuiCloseCurrentWorkingView();
 }
 
 void GoToHomeViewHandler(lv_event_t *e)
 {
-    CloseQRTimer();
+    // CloseQRTimer();
     GuiCloseToTargetView(&g_homeView);
 }
 
@@ -196,46 +196,46 @@ void GuiSDCardExportHandler(lv_event_t *e)
 
 void GuiWriteSeResult(bool en, int32_t errCode)
 {
-    GuiStopCircleAroundAnimation();
-    if (en) {
-        WalletDesc_t wallet = {
-            .iconIndex = GuiGetEmojiIconIndex(),
-        };
-        GuiSetupKeyboardWidgetMode();
-        SetStatusBarEmojiIndex(wallet.iconIndex);
-        strcpy_s(wallet.name, WALLET_NAME_MAX_LEN + 1, GetCurrentKbWalletName());
-        GuiNvsBarSetWalletName(GetCurrentKbWalletName());
-        GuiNvsBarSetWalletIcon(GuiGetEmojiIconImg());
-        GuiCloseToTargetView(&g_initView);
-        GuiFrameOpenViewWithParam(&g_lockView, NULL, 0);
-        GuiLockScreenHidden();
-        GuiFrameOpenView(&g_homeView);
-        GuiUpdateOldAccountIndex();
-        GuiEmitSignal(SIG_CLEAR_HOME_PAGE_INDEX, NULL, 0);
-        GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
-    } else {
-        lv_event_cb_t cb = CloseCurrentUserDataHandler;
-        const char *titleText = _("error_box_invalid_seed_phrase");
-        const char *descText = _("error_box_invalid_seed_phrase_desc");
-        switch (errCode) {
-        case ERR_KEYSTORE_MNEMONIC_REPEAT:
-            titleText = _("error_box_duplicated_seed_phrase");
-            descText = _("error_box_duplicated_seed_phrase_desc");
-            cb = DuplicateShareHandler;
-            break;
-        case ERR_KEYSTORE_MNEMONIC_INVALID:
-            break;
-        case ERR_KEYSTORE_SAVE_LOW_POWER:
-            titleText = _("error_box_low_power");
-            descText = _("error_box_low_power_desc");
-            break;
-        }
+    // GuiStopCircleAroundAnimation();
+    // if (en) {
+    //     WalletDesc_t wallet = {
+    //         .iconIndex = GuiGetEmojiIconIndex(),
+    //     };
+    //     GuiSetupKeyboardWidgetMode();
+    //     SetStatusBarEmojiIndex(wallet.iconIndex);
+    //     strcpy_s(wallet.name, WALLET_NAME_MAX_LEN + 1, GetCurrentKbWalletName());
+    //     GuiNvsBarSetWalletName(GetCurrentKbWalletName());
+    //     GuiNvsBarSetWalletIcon(GuiGetEmojiIconImg());
+    //     GuiCloseToTargetView(&g_initView);
+    //     GuiFrameOpenViewWithParam(&g_lockView, NULL, 0);
+    //     GuiLockScreenHidden();
+    //     GuiFrameOpenView(&g_homeView);
+    //     GuiUpdateOldAccountIndex();
+    //     GuiEmitSignal(SIG_CLEAR_HOME_PAGE_INDEX, NULL, 0);
+    //     GuiEmitSignal(GUI_EVENT_REFRESH, NULL, 0);
+    // } else {
+    //     lv_event_cb_t cb = CloseCurrentUserDataHandler;
+    //     const char *titleText = _("error_box_invalid_seed_phrase");
+    //     const char *descText = _("error_box_invalid_seed_phrase_desc");
+    //     switch (errCode) {
+    //     case ERR_KEYSTORE_MNEMONIC_REPEAT:
+    //         titleText = _("error_box_duplicated_seed_phrase");
+    //         descText = _("error_box_duplicated_seed_phrase_desc");
+    //         cb = DuplicateShareHandler;
+    //         break;
+    //     case ERR_KEYSTORE_MNEMONIC_INVALID:
+    //         break;
+    //     case ERR_KEYSTORE_SAVE_LOW_POWER:
+    //         titleText = _("error_box_low_power");
+    //         descText = _("error_box_low_power_desc");
+    //         break;
+    //     }
 
-        GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
-        g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
-        lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
-        lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
-    }
+    //     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
+    //     g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);
+    //     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    //     lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
+    // }
 }
 
 void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCallback cb)
@@ -359,22 +359,22 @@ static void CreateOrImportWalletHandler(lv_event_t *e)
 
 static void CreateWalletNotice(bool isCreate)
 {
-    static uint8_t walletMethod[] = {WALLET_METHOD_IMPORT, WALLET_METHOD_CREATE};
-    g_pageViewWidget = CreatePageWidget();
-    SetNavBarLeftBtn(g_pageViewWidget->navBarWidget, NVS_BAR_RETURN, DestroyPageWidgetHandler, g_pageViewWidget);
+    // static uint8_t walletMethod[] = {WALLET_METHOD_IMPORT, WALLET_METHOD_CREATE};
+    // g_pageViewWidget = CreatePageWidget();
+    // SetNavBarLeftBtn(g_pageViewWidget->navBarWidget, NVS_BAR_RETURN, DestroyPageWidgetHandler, g_pageViewWidget);
 
-    lv_obj_t *img = GuiCreateImg(g_pageViewWidget->contentZone, &imgInformation);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 36);
-    lv_obj_t *label = GuiCreateTitleLabel(g_pageViewWidget->contentZone, _("wallet_settings_add_info_title"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 130);
-    label = GuiCreateIllustrateLabel(g_pageViewWidget->contentZone, _("wallet_setting_add_wallet_notice"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 200);
+    // lv_obj_t *img = GuiCreateImg(g_pageViewWidget->contentZone, &imgInformation);
+    // lv_obj_align(img, LV_ALIGN_DEFAULT, 36, 36);
+    // lv_obj_t *label = GuiCreateTitleLabel(g_pageViewWidget->contentZone, _("wallet_settings_add_info_title"));
+    // lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 130);
+    // label = GuiCreateIllustrateLabel(g_pageViewWidget->contentZone, _("wallet_setting_add_wallet_notice"));
+    // lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 200);
 
-    lv_obj_t *btn = GuiCreateTextBtn(g_pageViewWidget->contentZone, _("wallet_setting_add_wallet_confirm"));
-    lv_obj_set_size(btn, 408, 66);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    // lv_obj_t *btn = GuiCreateTextBtn(g_pageViewWidget->contentZone, _("wallet_setting_add_wallet_confirm"));
+    // lv_obj_set_size(btn, 408, 66);
+    // lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 
-    lv_obj_add_event_cb(btn, CreateOrImportWalletHandler, LV_EVENT_CLICKED, &walletMethod[isCreate]);
+    // lv_obj_add_event_cb(btn, CreateOrImportWalletHandler, LV_EVENT_CLICKED, &walletMethod[isCreate]);
 }
 
 void CreateBetaNotice(void)

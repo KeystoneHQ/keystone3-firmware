@@ -33,24 +33,19 @@ static int32_t GuiInitViewInit(void *param)
     if (param != NULL) {
         isTamper = *(bool *)param;
     }
-    GuiEnterPassLabelRefresh();
+    // GuiEnterPassLabelRefresh();
     GuiStyleInit();
     GuiStatusBarInit();
-    GlobalResourcesInit();
+    // GlobalResourcesInit();
     if (GetFactoryResult() == false) {
         GuiFrameOpenView(&g_inactiveView);
         return SUCCESS_CODE;
     }
 
-    if (isTamper) {
-        GuiFrameOpenView(&g_selfDestructView);
-        return SUCCESS_CODE;
-    }
-
-    if (IsBootVersionMatch() == false) {
-        GuiBootVersionNotMatchWidget();
-        return SUCCESS_CODE;
-    }
+    // if (IsBootVersionMatch() == false) {
+    //     GuiBootVersionNotMatchWidget();
+    //     return SUCCESS_CODE;
+    // }
     GuiModeGetAccount();
     return SUCCESS_CODE;
 }
@@ -103,17 +98,10 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         }
         break;
     case SIG_INIT_TRANSFER_NFT_SCREEN:
-        rcvValue = *(uint32_t *)param;
-        printf("rcvValue=%d\r\n", rcvValue);
-        if (rcvValue != 0) {
-            OpenMsgBox(&g_guiMsgBoxNftScreen);
-        } else {
-            CloseMsgBox(&g_guiMsgBoxNftScreen);
-        }
         break;
     case SIG_INIT_USB_CONNECTION:
         rcvValue = *(uint32_t *)param;
-        if (rcvValue != 0 && !GuiLockScreenIsTop() && GetUsbDetectState() && ((GetCurrentAccountIndex() != 0xFF) || GuiIsSetup())) {
+        if (rcvValue != 0 && GetUsbDetectState()) {
             if (GetUsbState() == false) {
                 OpenMsgBox(&g_guiMsgBoxUsbConnection);
             }
@@ -127,9 +115,6 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_POWER_OPTION:
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0) {
-#ifdef WEB3_VERSION
-            NftLockQuit();
-#endif
             OpenMsgBox(&g_guiMsgBoxPowerOption);
         } else {
             CloseMsgBox(&g_guiMsgBoxPowerOption);
@@ -185,24 +170,6 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_STATUS_BAR_REFRESH:
         GuiStatusBarSetUsb();
         break;
-#ifdef BTC_ONLY
-    case SIG_STATUS_BAR_TEST_NET:
-        GuiStatusBarSetTestNet();
-        break;
-#endif
-#ifdef WEB3_VERSION
-    case SIG_INIT_NFT_BIN:
-        rcvValue = *(uint32_t *)param;
-        if (rcvValue != 0) {
-            OpenMsgBox(&g_guiMsgBoxTransNftProcess);
-        } else {
-            CloseMsgBox(&g_guiMsgBoxTransNftProcess);
-        }
-        break;
-    case SIG_INIT_NFT_BIN_TRANS_FAIL:
-        GuiNftTransferFailed();
-        break;
-#endif
     default:
         return ERR_GUI_UNHANDLED;
     }

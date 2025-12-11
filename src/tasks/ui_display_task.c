@@ -10,7 +10,7 @@
 #include "gui_views.h"
 #include "gui_framework.h"
 #include "user_memory.h"
-#include "gui_chain.h"
+// #include "gui_chain.h"
 #include "drv_lcd_bright.h"
 #include "drv_mpu.h"
 #include "device_setting.h"
@@ -191,7 +191,6 @@ static void UiDisplayTask(void *argument)
         }
         if (g_lvglHandlerEnable) {
             lv_timer_handler();
-            GuiLetterKbStatusError();
         }
     }
 }

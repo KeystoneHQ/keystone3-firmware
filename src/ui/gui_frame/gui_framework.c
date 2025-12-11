@@ -30,12 +30,12 @@ bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t 
     int32_t ret;
     bool handled = false;
     if (NULL != view->pEvtHandler) {
-        if (GuiLockScreenIsTop()) {
-            if (usEvent == GUI_EVENT_REFRESH || usEvent == SIG_INIT_SDCARD_CHANGE) {
-                g_lockView.pEvtHandler(&g_lockView, usEvent, param, usLen);
-                return SUCCESS_CODE;
-            }
-        }
+        // if (GuiLockScreenIsTop()) {
+        //     if (usEvent == GUI_EVENT_REFRESH || usEvent == SIG_INIT_SDCARD_CHANGE) {
+        //         g_lockView.pEvtHandler(&g_lockView, usEvent, param, usLen);
+        //         return SUCCESS_CODE;
+        //     }
+        // }
 
         ret = view->pEvtHandler(view, usEvent, param, usLen);
         if (ERR_GUI_UNHANDLED != ret) {
@@ -53,21 +53,21 @@ int32_t GuiEmitSignal(uint16_t usEvent, void *param, uint16_t usLen)
     bool sigHandled;
     GUI_VIEW *pView = g_workingView;
     uint32_t loopCnt = 0;
-    if (GuiLockScreenIsTop()) {
-        //verify failed
-        if (usEvent == SIG_VERIFY_PASSWORD_FAIL) {
-            PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-            if (SIG_LOCK_VIEW_VERIFY_PIN == *(uint16_t *)passwordVerifyResult->signal) {
-                sigHandled = GuiViewHandleEvent(&g_lockView, usEvent, param, usLen);
-                return SUCCESS_CODE;
-            }
-        }
-        //verify success
-        if (param != NULL && (*(uint16_t *)param == SIG_LOCK_VIEW_VERIFY_PIN)) {
-            sigHandled = GuiViewHandleEvent(&g_lockView, usEvent, param, usLen);
-            return SUCCESS_CODE;
-        }
-    }
+    // if (GuiLockScreenIsTop()) {
+    //     //verify failed
+    //     if (usEvent == SIG_VERIFY_PASSWORD_FAIL) {
+    //         PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+    //         if (SIG_LOCK_VIEW_VERIFY_PIN == *(uint16_t *)passwordVerifyResult->signal) {
+    //             sigHandled = GuiViewHandleEvent(&g_lockView, usEvent, param, usLen);
+    //             return SUCCESS_CODE;
+    //         }
+    //     }
+    //     //verify success
+    //     if (param != NULL && (*(uint16_t *)param == SIG_LOCK_VIEW_VERIFY_PIN)) {
+    //         sigHandled = GuiViewHandleEvent(&g_lockView, usEvent, param, usLen);
+    //         return SUCCESS_CODE;
+    //     }
+    // }
     do {
         sigHandled = GuiViewHandleEvent(pView, usEvent, param, usLen);
         if (sigHandled) {

@@ -5,7 +5,7 @@
 #include "librust_c.h"
 #include "gui_attention_hintbox.h"
 #ifdef WEB3_VERSION
-#include "gui_ar.h"
+// #include "gui_ar.h"
 #endif
 
 typedef enum {

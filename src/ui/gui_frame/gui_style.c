@@ -17,17 +17,17 @@ lv_font_t *g_defTextFont = (lv_font_t *)&openSansEnText;                    //24
 lv_font_t *g_defIllustrateFont = (lv_font_t *)&openSansEnIllustrate;        //20
 lv_font_t *g_defBoldIllustratFont = (lv_font_t *)&openSansEnIllustrate;     //20 bold
 
-static const GuiFontDesc_t g_langFontArr[] = {
-    {LANG_EN, &openSansEnTitle, &openSansEnLittleTitle, &openSansEnText, &openSansEnIllustrate, &openSansEnIllustrate},
-    {LANG_RU, &ruTitle, &ruLittleTitle, &ruText, &ruIllustrate, &ruIllustrate},
-    {LANG_ZH_CN, &cnTitle, &cnLittleTitle, &cnText, &cnIllustrate, &cnIllustrate},
-    {LANG_KO, &koTitle, &koLittleTitle, &koText, &koIllustrate, &koIllustrate},
-#ifndef BTC_ONLY
-    {LANG_ES, &esTitle, &esLittleTitle, &esText, &esIllustrate, &esIllustrate},
-    {LANG_DE, &deTitle, &deLittleTitle, &deText, &deIllustrate, &deIllustrate},
-    {LANG_JA, &jaTitle, &jaLittleTitle, &jaText, &jaIllustrate, &jaIllustrate},
-#endif
-};
+// static const GuiFontDesc_t g_langFontArr[] = {
+//     {LANG_EN, &openSansEnTitle, &openSansEnLittleTitle, &openSansEnText, &openSansEnIllustrate, &openSansEnIllustrate},
+//     {LANG_RU, &ruTitle, &ruLittleTitle, &ruText, &ruIllustrate, &ruIllustrate},
+//     {LANG_ZH_CN, &cnTitle, &cnLittleTitle, &cnText, &cnIllustrate, &cnIllustrate},
+//     {LANG_KO, &koTitle, &koLittleTitle, &koText, &koIllustrate, &koIllustrate},
+// #ifndef BTC_ONLY
+//     {LANG_ES, &esTitle, &esLittleTitle, &esText, &esIllustrate, &esIllustrate},
+//     {LANG_DE, &deTitle, &deLittleTitle, &deText, &deIllustrate, &deIllustrate},
+//     {LANG_JA, &jaTitle, &jaLittleTitle, &jaText, &jaIllustrate, &jaIllustrate},
+// #endif
+// };
 
 static void GuiBtnmStyleInit(void)
 {
@@ -101,11 +101,11 @@ static void GuiDividLineInit(void)
 
 void GuiSetLanguageFont(uint8_t langIndex)
 {
-    g_defTitleFont = (lv_font_t *)g_langFontArr[langIndex].title;
-    g_defLittleTitleFont = (lv_font_t *)g_langFontArr[langIndex].littleTitle;
-    g_defTextFont = (lv_font_t *)g_langFontArr[langIndex].text;
-    g_defIllustrateFont = (lv_font_t *)g_langFontArr[langIndex].illustrate;
-    g_defBoldIllustratFont = (lv_font_t *)g_langFontArr[langIndex].boldIllustrate;
+    // g_defTitleFont = (lv_font_t *)g_langFontArr[langIndex].title;
+    // g_defLittleTitleFont = (lv_font_t *)g_langFontArr[langIndex].littleTitle;
+    // g_defTextFont = (lv_font_t *)g_langFontArr[langIndex].text;
+    // g_defIllustrateFont = (lv_font_t *)g_langFontArr[langIndex].illustrate;
+    // g_defBoldIllustratFont = (lv_font_t *)g_langFontArr[langIndex].boldIllustrate;
 }
 
 void GuiStyleInit(void)

@@ -118,40 +118,40 @@ void GuiOpenWebAuthHandler(lv_event_t *e)
 
 void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
 {
-    uint8_t lang = LanguageGetIndex();
-    static lv_point_t linePoints[2] = {{36, 0}, {444, 0}};
-    lv_obj_t *label;
-    for (int i = SETUP_ENGLISH; i <= SUPPORT_WALLET_INDEX; i++) {
-        lv_obj_t *checkBox = GuiCreateSingleCheckBox(parent, "");
-        g_languageCheck[i] = checkBox;
-        if (i == SETUP_CHINESE) {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &cnText);
-        } else if (i == SETUP_RUSSIAN) {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &ruText);
-        } else if (i == SETUP_KOREAN) {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &koText);
-        } else if (i == SETUP_SPANISH) {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &esText);
-        } else if (i == SETUP_GERMAN) {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &deText);
-        } else if (i == SETUP_JAPANESE) {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &jaText);
-        } else {
-            label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansEnText);
-        }
-        if (i == lang) {
-            lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-        }
-        GuiButton_t table[] = {
-            {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {24, 0}},
-            {.obj = checkBox, .align = LV_ALIGN_TOP_MID, .position = {0, 24}}
-        };
-        lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                                           SelectLanguageHandler, g_languageCheck[i]);
-        lv_obj_align(button, LV_ALIGN_TOP_MID, 0, i * 84 + offset);
-        lv_obj_t *line = GuiCreateLine(parent, linePoints, 2);
-        lv_obj_align(line, LV_ALIGN_DEFAULT, 0, i * 84 + offset + 84);
-    }
+    // uint8_t lang = LanguageGetIndex();
+    // static lv_point_t linePoints[2] = {{36, 0}, {444, 0}};
+    // lv_obj_t *label;
+    // for (int i = SETUP_ENGLISH; i <= SUPPORT_WALLET_INDEX; i++) {
+    //     lv_obj_t *checkBox = GuiCreateSingleCheckBox(parent, "");
+    //     g_languageCheck[i] = checkBox;
+    //     if (i == SETUP_CHINESE) {
+    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &cnText);
+    //     } else if (i == SETUP_RUSSIAN) {
+    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &ruText);
+    //     } else if (i == SETUP_KOREAN) {
+    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &koText);
+    //     } else if (i == SETUP_SPANISH) {
+    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &esText);
+    //     } else if (i == SETUP_GERMAN) {
+    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &deText);
+    //     } else if (i == SETUP_JAPANESE) {
+    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &jaText);
+    //     } else {
+    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansEnText);
+    //     }
+    //     if (i == lang) {
+    //         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
+    //     }
+    //     GuiButton_t table[] = {
+    //         {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {24, 0}},
+    //         {.obj = checkBox, .align = LV_ALIGN_TOP_MID, .position = {0, 24}}
+    //     };
+    //     lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
+    //                                        SelectLanguageHandler, g_languageCheck[i]);
+    //     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, i * 84 + offset);
+    //     lv_obj_t *line = GuiCreateLine(parent, linePoints, 2);
+    //     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, i * 84 + offset + 84);
+    // }
 }
 
 static void GuiSetLanguageWidget(lv_obj_t *parent)

@@ -31,8 +31,8 @@ void GuiWipeDeviceWidgetsInit()
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
     g_cont = cont;
-    lv_obj_t *img = GuiCreateImg(cont, &imgWipeDevice);
-    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 36);
+    // lv_obj_t *img = GuiCreateImg(cont, &imgWipeDevice);
+    // lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 36);
 
     GuiWipeDeviceEntranceWidget(cont);
 }

@@ -1,10 +1,10 @@
 #include "service_resolve_ur.h"
 #include "user_delay.h"
-#include "gui_chain.h"
+// #include "gui_chain.h"
 #include "user_msg.h"
 #include "qrdecode_task.h"
 #include "gui_lock_widgets.h"
-#include "gui_resolve_ur.h"
+// #include "gui_resolve_ur.h"
 #include "gui_views.h"
 #include "general_msg.h"
 #include "gui_home_widgets.h"
@@ -78,22 +78,6 @@ static bool CheckURAcceptable(void);
 
 static bool CheckURAcceptable(void)
 {
-    if (GuiLockScreenIsTop()) {
-        const char *data = "Device is locked";
-        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
-        return false;
-    }
-    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
-        const char *data = "Ton wallet is not supported";
-        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
-        return false;
-    }
-    // Only allow URL parsing on specific pages
-    if (GuiIsSetup()) {
-        const char *data = "Export address is just allowed on specific pages";
-        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
-        return false;
-    }
     return true;
 }
 
@@ -123,25 +107,8 @@ static bool IsRequestAllowed(uint32_t requestID)
     return true;
 }
 
-static void HandleHardwareCall(struct URParseResult *urResult)
-{
-    if (GuiCheckIfTopView(&g_keyDerivationRequestView) || GuiHomePageIsTop()) {
-        GuiSetKeyDerivationRequestData(urResult, NULL, false);
-        PubValueMsg(UI_MSG_USB_HARDWARE_VIEW, 0);
-        return;
-    }
-
-    const char *data = "Export address is just allowed on specific pages";
-    HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
-    g_requestID = REQUEST_ID_IDLE;
-}
-
 static bool HandleNormalCall(void)
 {
-    if (GuiHomePageIsTop()) {
-        return true;
-    }
-
     if (GuiCheckIfTopView(&g_USBTransportView)) {
         PubValueMsg(UI_MSG_USB_TRANSPORT_NEXT_VIEW, 0);
         UserDelay(200);
@@ -190,22 +157,12 @@ void ProcessURService(EAPDURequestPayload_t *payload)
             .urType = urResult->ur_type
         };
 
-        if (urResult->ur_type == QRHardwareCall) {
-            HandleHardwareCall(urResult);
-            break;
-        }
         if (!HandleNormalCall()) {
             break;
         }
 
-        if (!CheckViewTypeIsAllow(urViewType.viewType)) {
-            const char *data = "this view type is not supported";
-            HandleURResultViaUSBFunc(data, strlen(data), g_requestID, RSP_FAILURE_CODE);
-            break;
-        }
-
-        HandleDefaultViewType(urResult, NULL, urViewType, false);
-        checkResult = CheckUrResult(urViewType.viewType);
+        // HandleDefaultViewType(urResult, NULL, urViewType, false);
+        // checkResult = CheckUrResult(urViewType.viewType);
         HandleCheckResult(checkResult, urViewType);
     } while (0);
 

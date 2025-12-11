@@ -31,38 +31,6 @@ int32_t GuiConnectWalletViewEventProcess(void* self, uint16_t usEvent, void* par
     case SIG_BACKGROUND_UR_UPDATE:
         GuiConnectWalletHandleURUpdate((char*)param, usLen);
         break;
-#ifdef WEB3_VERSION
-    case SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM:
-        GuiConnectShowRsaSetupasswordHintbox();
-        break;
-    case SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_FAIL:
-        if (param != NULL) {
-            PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-            uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
-            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
-                GuiLockScreenPassCode(false);
-                GuiConnectWalletPasswordErrorCount(param);
-                return SUCCESS_CODE;
-            }
-        }
-        GuiLockScreenPassCode(false);
-        GuiConnectWalletPasswordErrorCount(param);
-        break;
-    case SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_PASS:
-        printf("SIG_VERIFY_PASSWORD_PASS\n");
-        if (param != NULL) {
-            uint16_t sig = *(uint16_t *)param;
-            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
-                GuiLockScreenToHome();
-                return SUCCESS_CODE;
-            }
-        }
-        GuiPrepareArConnectWalletView();
-        break;
-    case SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS:
-        GuiUpdatePendingHintBoxSubtitle(_("GeneratingRsaAddress"));
-        break;
-#endif
     default:
         return ERR_GUI_UNHANDLED;
     }

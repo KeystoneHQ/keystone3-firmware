@@ -139,19 +139,6 @@ void GuiFirmwareUpdateInit(void *param)
     tileView = GuiCreateTileView(g_firmwareUpdateWidgets.cont);
     g_firmwareUpdateWidgets.tileView = tileView;
 
-    g_firmwareUpdateWidgets.tileSelect = lv_tileview_add_tile(tileView, FIRMWARE_UPDATE_SELECT, 0, LV_DIR_HOR);
-    GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
-
-    g_firmwareUpdateWidgets.tileUsbInstruction = lv_tileview_add_tile(tileView, FIRMWARE_UPDATE_USB_INSTRUCTION, 0, LV_DIR_HOR);
-    GuiCreateUsbInstructionTile(g_firmwareUpdateWidgets.tileUsbInstruction);
-
-    g_firmwareUpdateWidgets.tileSdInstruction = lv_tileview_add_tile(tileView, FIRMWARE_UPDATE_SD_INSTRUCTION, 0, LV_DIR_HOR);
-    GuiCreateSdCardnstructionTile(g_firmwareUpdateWidgets.tileSdInstruction);
-#ifndef BTC_ONLY
-    g_firmwareUpdateWidgets.tileMultiToBtcWarning = lv_tileview_add_tile(tileView, FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING, 0, LV_DIR_HOR);
-    GuiCreateMultiToBtcWarningTile(g_firmwareUpdateWidgets.tileMultiToBtcWarning);
-#endif
-
     g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_SELECT;
 }
 
@@ -178,7 +165,7 @@ void GuiFirmwareSdCardCopyResult(bool en)
         printf("copy success\n");
     } else {
         printf("copy failed\n");
-        GuiDeleteKeyboardWidget(g_keyboardWidget);
+        // GuiDeleteKeyboardWidget(g_keyboardWidget);
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeWindow, NULL);
     }
 }
@@ -196,7 +183,7 @@ void GuiFirmwareUpdateDeInit(void)
         g_knownWarningCountDownTimer = NULL;
     }
 #endif
-    GuiDeleteKeyboardWidget(g_keyboardWidget);
+    // GuiDeleteKeyboardWidget(g_keyboardWidget);
     g_param = NULL;
     printf("GuiFirmwareUpdateDeInit\n");
     GUI_DEL_OBJ(g_noticeWindow)
@@ -241,13 +228,13 @@ void GuiFirmwareUpdateRefresh(void)
             }
         }
     }
-    GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
-    PassWordPinHintRefresh(g_keyboardWidget);
+    // GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
+    // PassWordPinHintRefresh(g_keyboardWidget);
 }
 
 void GuiFirmwareUpdateWidgetRefresh(void)
 {
-    PassWordPinHintRefresh(g_keyboardWidget);
+    // PassWordPinHintRefresh(g_keyboardWidget);
 }
 
 void GuiFirmwareUpdatePrevTile(void)
@@ -272,7 +259,7 @@ void GuiFirmwareUpdatePrevTile(void)
     printf("g_firmwareUpdateWidgets.currentTile=%d\n", g_firmwareUpdateWidgets.currentTile);
     lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
     if (g_firmwareUpdateWidgets.tileView == FIRMWARE_UPDATE_SELECT) {
-        GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
+        // GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
     }
     GuiFirmwareUpdateRefresh();
 }
@@ -290,57 +277,6 @@ void GuiFirmwareUpdateSha256Percent(uint8_t percent)
     } else {
         GuiFirmwareUpdateViewSha256(percent);
     }
-}
-
-static void GuiCreateSelectTile(lv_obj_t *parent)
-{
-    lv_obj_clean(parent);
-    uint8_t memberCnt = 3;
-    lv_obj_t *label, *img, *button, *imgArrow, *line;
-    label = GuiCreateScrollTitleLabel(parent, _("firmware_update_title"));
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
-    label = GuiCreateNoticeLabel(parent, _("firmware_update_desc"));
-    lv_obj_set_width(label, 408);
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
-
-    img = GuiCreateImg(parent, &imgMicroSd);
-    label = GuiCreateScrollLittleTitleLabel(parent, _("firmware_update_via_sd"), 280);
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    GuiButton_t table1[4] = {
-        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 40},},
-        {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {76, 40},},
-        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40},},
-    };
-
-    if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
-        lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, _("firmware_update_title"));
-        lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
-        table1[3].align = LV_ALIGN_DEFAULT;
-        table1[3].position.x = 76;
-        table1[3].position.y = 81;
-        table1[3].obj = versionLabel;
-        memberCnt = 4;
-    }
-
-    button = GuiCreateButton(parent, 408, 120, table1, memberCnt, GuiViaSdCardHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 210);
-
-    img = GuiCreateImg(parent, &imgUsbConnection);
-    label = GuiCreateLittleTitleLabel(parent, _("firmware_update_via_usb"));
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    GuiButton_t table2[] = {
-        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 40},},
-        {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {76, 40},},
-        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40},},
-    };
-    button = GuiCreateButton(parent, 408, 120, table2, NUMBER_OF_ARRAYS(table2), GuiViaUsbHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 330);
-    line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 210);
-    line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 330);
-    line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 450);
 }
 
 static void GuiViaSdCardHandler(lv_event_t *e)
@@ -416,10 +352,10 @@ static void ConfirmSdCardUpdate(void)
         GuiFirmwareSdCardCopy();
         GuiModelCopySdCardOta();
     } else {
-        GuiDeleteKeyboardWidget(g_keyboardWidget);
-        g_keyboardWidget = GuiCreateKeyboardWidget(g_firmwareUpdateWidgets.cont);
-        SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
-        SetKeyboardWidgetSig(g_keyboardWidget, &walletSetIndex);
+        // GuiDeleteKeyboardWidget(g_keyboardWidget);
+        // g_keyboardWidget = GuiCreateKeyboardWidget(g_firmwareUpdateWidgets.cont);
+        // SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
+        // SetKeyboardWidgetSig(g_keyboardWidget, &walletSetIndex);
     }
 }
 
@@ -565,62 +501,6 @@ static void GuiCreateSdCardnstructionTile(lv_obj_t *parent)
     GuiAlignToPrevObj(spacer, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 }
 
-#ifndef BTC_ONLY
-static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent)
-{
-    lv_obj_t *label, *img, *btn;
-
-    img = GuiCreateImg(parent, &imgMultiCoin);
-    lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 134, -548);
-    img = GuiCreateImg(parent, &imgArrowNextRed);
-    lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 222, -566);
-    img = GuiCreateImg(parent, &imgBtcOnly);
-    lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 274, -548);
-
-    label = GuiCreateLittleTitleLabel(parent, _("Warning"));
-    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -476);
-    label = GuiCreateIllustrateLabel(parent, _("firmware_update_btc_only_warning_desc"));
-    lv_obj_set_style_text_color(label, WHITE_COLOR_OPA64, LV_PART_MAIN);
-    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_obj_set_width(label, 408);
-    lv_label_set_recolor(label, true);
-    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -224);
-
-    btn = GuiCreateTextBtn(parent, _("Cancel"));
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-    lv_obj_set_size(btn, 192, 66);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
-    lv_obj_add_event_cb(btn, KnownWarningCancelHandler, LV_EVENT_CLICKED, NULL);
-
-    btn = GuiCreateTextBtn(parent, _("firmware_update_btc_only_button_i_know"));
-    lv_obj_set_size(btn, 192, 66);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_add_event_cb(btn, KnownWarningHandler, LV_EVENT_CLICKED, NULL);
-    g_knownWarningBtn = btn;
-}
-
-static void KnownWarningHandler(lv_event_t *e)
-{
-    if (g_noticeWindow != NULL) {
-        GUI_DEL_OBJ(g_noticeWindow);
-        g_knownWarningBtn = NULL;
-    }
-    ConfirmSdCardUpdate();
-}
-
-static void KnownWarningCancelHandler(lv_event_t *e)
-{
-    if (g_noticeWindow == NULL) {
-        ReturnHandler(e);
-    } else {
-        GUI_DEL_OBJ(g_noticeWindow);
-        g_knownWarningBtn = NULL;
-    }
-}
-
-#endif
-
 static void GuiQrcodeHandler(lv_event_t *e)
 {
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
@@ -674,7 +554,7 @@ void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
     if (g_keyboardWidget != NULL) {
-        GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
+        // GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
     }
 }
 

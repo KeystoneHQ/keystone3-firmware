@@ -5,13 +5,11 @@
 
 static int32_t GuiSelfDestructViewInit(void)
 {
-    GuiSelfDestructInit();
     return SUCCESS_CODE;
 }
 
 static int32_t GuiSelfDestructViewDeInit(void)
 {
-    GuiSelfDestructDeInit();
     return SUCCESS_CODE;
 }
 

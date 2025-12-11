@@ -208,30 +208,30 @@ static void GuiExportXPubViewInit()
 
 static WalletInfo_t GetConnectWalletInfo()
 {
-    uint8_t wallet = GetExportWallet();
+    // uint8_t wallet = GetExportWallet();
     WalletInfo_t walletInfo = {
-        .img = &imgConnectWithWallet,
+        // .img = &imgConnectWithWallet,
         .title = _("usb_transport_connect_wallet"),
     };
-    switch (wallet) {
-    case Rabby:
-        walletInfo.img = &imgConnectWithRabby;
-        walletInfo.title = _("usb_transport_connect_rabby");
-        return walletInfo;
-    default:
-        return walletInfo;
-    }
+    // switch (wallet) {
+    // case Rabby:
+    //     // walletInfo.img = &imgConnectWithRabby;
+    //     walletInfo.title = _("usb_transport_connect_rabby");
+    //     return walletInfo;
+    // default:
+    //     return walletInfo;
+    // }
 }
 
 static void ApproveButtonHandler(lv_event_t *e)
 {
-    ExportAddressApprove();
+    // ExportAddressApprove();
     GuiCloseCurrentWorkingView();
 }
 
 static void RejectButtonHandler(lv_event_t *e)
 {
-    ExportAddressReject();
+    // ExportAddressReject();
     GuiCloseCurrentWorkingView();
 }
 #endif

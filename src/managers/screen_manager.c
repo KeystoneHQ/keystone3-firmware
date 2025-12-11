@@ -124,8 +124,8 @@ static void LockScreen(void)
     GuiApiEmitSignal(SIG_INIT_CLOSE_CURRENT_MSG_BOX, NULL, 0);
     GetExistAccountNum(&accountNum);
     if (accountNum > 0 && !g_lockTimeState) {
-        LogoutCurrentAccount();
-        GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
+        // LogoutCurrentAccount();
+        // GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_UNLOCK);
         GuiEmitSignal(SIG_LOCK_VIEW_SCREEN_ON_VERIFY, &single, sizeof(single));
     }
 #ifdef BTC_ONLY

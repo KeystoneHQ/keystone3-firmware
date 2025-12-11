@@ -440,12 +440,12 @@ void WipeDevice(void)
     // reset all account address index in receive page
     {
         void GuiResetAllUtxoAddressIndex(void);
-        GuiResetAllUtxoAddressIndex();
+        // GuiResetAllUtxoAddressIndex();
 #ifdef WEB3_VERSION
         void GuiResetAllEthAddressIndex(void);
         void GuiResetAllStandardAddressIndex(void);
-        GuiResetAllEthAddressIndex();
-        GuiResetAllStandardAddressIndex();
+        // GuiResetAllEthAddressIndex();
+        // GuiResetAllStandardAddressIndex();
 #endif
     }
 

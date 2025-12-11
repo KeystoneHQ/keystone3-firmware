@@ -6,11 +6,6 @@
 int32_t GuiUpdateSuccessViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     switch (usEvent) {
-    case GUI_EVENT_OBJ_INIT:
-        GuiUpdateSuccessInit();
-        break;
-    case GUI_EVENT_OBJ_DEINIT:
-        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

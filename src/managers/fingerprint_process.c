@@ -328,22 +328,22 @@ static void FpRecognizeRecv(char *indata, uint8_t len)
             }
         }
 
-        if (GuiLockScreenIsTop()) {
-            if (g_fpManager.unlockFlag) {
-                GuiApiEmitSignal(SIG_VERIFY_FINGER_PASS, NULL, 0);
-            }
-        } else {
-            GuiApiEmitSignal(SIG_FINGER_RECOGNIZE_RESPONSE, &result, sizeof(result));
-        }
+        // if (GuiLockScreenIsTop()) {
+        //     if (g_fpManager.unlockFlag) {
+        //         GuiApiEmitSignal(SIG_VERIFY_FINGER_PASS, NULL, 0);
+        //     }
+        // } else {
+        //     GuiApiEmitSignal(SIG_FINGER_RECOGNIZE_RESPONSE, &result, sizeof(result));
+        // }
     } else {
         MotorCtrl(MOTOR_LEVEL_MIDDLE, MOTOR_SHAKE_LONG_TIME);
         GetFpErrorMessage(result);
         printf("recognize failed\n");
-        if (GuiLockScreenIsTop() && g_fpManager.unlockFlag) {
-            GuiApiEmitSignal(SIG_VERIFY_FINGER_FAIL, NULL, 0);
-        } else {
-            GuiApiEmitSignal(SIG_FINGER_RECOGNIZE_RESPONSE, &result, sizeof(result));
-        }
+        // if (GuiLockScreenIsTop() && g_fpManager.unlockFlag) {
+        //     GuiApiEmitSignal(SIG_VERIFY_FINGER_FAIL, NULL, 0);
+        // } else {
+        //     GuiApiEmitSignal(SIG_FINGER_RECOGNIZE_RESPONSE, &result, sizeof(result));
+        // }
     }
 }
 

@@ -33,23 +33,23 @@ int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *pa
         if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
-                GuiLockScreenToHome();
+                // GuiLockScreenToHome();
                 return SUCCESS_CODE;
             }
         }
         GuiFirmwareSdCardCopy();
         break;
     case SIG_FIRMWARE_VERIFY_PASSWORD_FAIL:
-        if (param != NULL) {
-            PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-            uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
-            if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
-                GuiLockScreenPassCode(false);
-                GuiLockScreenErrorCount(param);
-                return SUCCESS_CODE;
-            }
-        }
-        GuiFirmwareUpdateVerifyPasswordErrorCount(param);
+        // if (param != NULL) {
+        //     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
+        //     uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
+        //     if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
+        //         GuiLockScreenPassCode(false);
+        //         GuiLockScreenErrorCount(param);
+        //         return SUCCESS_CODE;
+        //     }
+        // }
+        // GuiFirmwareUpdateVerifyPasswordErrorCount(param);
         break;
     case SIG_INIT_SD_CARD_OTA_COPY_SUCCESS:
         GuiFirmwareSdCardCopyResult(true);

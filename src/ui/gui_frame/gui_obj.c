@@ -175,17 +175,17 @@ void *GuiCreateCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single,
                               LV_PART_MAIN | LV_PART_INDICATOR);
 
     // check
-    if (single) {
-        lv_obj_set_style_bg_color(checkBox, ORANGE_COLOR,
-                                  LV_PART_INDICATOR | LV_STATE_CHECKED);
-        lv_obj_set_style_bg_img_src(checkBox, &imgMessageRight,
-                                    LV_PART_INDICATOR | LV_STATE_CHECKED);
-    } else {
-        lv_obj_set_style_bg_color(checkBox, ORANGE_COLOR,
-                                  LV_PART_INDICATOR | LV_STATE_CHECKED);
-        lv_obj_set_style_bg_img_src(checkBox, &imgMessageRight,
-                                    LV_PART_INDICATOR | LV_STATE_CHECKED);
-    }
+    // if (single) {
+    //     lv_obj_set_style_bg_color(checkBox, ORANGE_COLOR,
+    //                               LV_PART_INDICATOR | LV_STATE_CHECKED);
+    //     lv_obj_set_style_bg_img_src(checkBox, &imgMessageRight,
+    //                                 LV_PART_INDICATOR | LV_STATE_CHECKED);
+    // } else {
+    //     lv_obj_set_style_bg_color(checkBox, ORANGE_COLOR,
+    //                               LV_PART_INDICATOR | LV_STATE_CHECKED);
+    //     lv_obj_set_style_bg_img_src(checkBox, &imgMessageRight,
+    //                                 LV_PART_INDICATOR | LV_STATE_CHECKED);
+    // }
     lv_obj_set_style_border_opa(checkBox, LV_OPA_0,
                                 LV_PART_INDICATOR | LV_STATE_CHECKED);
     return checkBox;
@@ -208,8 +208,8 @@ void *GuiCreateBlindSigningCheckBoxWithFont(lv_obj_t *parent, const char *text, 
     lv_obj_set_style_bg_color(checkBox, DARK_BG_COLOR,
                               LV_PART_MAIN | LV_PART_INDICATOR);
     // update checkbox ux
-    lv_obj_set_style_bg_img_src(checkBox, &imgEllipse,
-                                LV_PART_INDICATOR | LV_STATE_CHECKED);
+    // lv_obj_set_style_bg_img_src(checkBox, &imgEllipse,
+    //                             LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(checkBox, DARK_BG_COLOR,
                               LV_PART_MAIN | LV_PART_INDICATOR | LV_STATE_CHECKED);
     return checkBox;

@@ -1,7 +1,7 @@
 #include "gui_status_bar.h"
 #include "account_manager.h"
 #include "gui_button.h"
-#include "gui_chain.h"
+// #include "gui_chain.h"
 #include "gui_connect_wallet_widgets.h"
 #include "gui_firmware_update_widgets.h"
 #include "gui_home_widgets.h"
@@ -49,11 +49,11 @@ typedef struct StatusBar {
 } StatusBar_t;
 static StatusBar_t g_guiStatusBar;
 
-typedef struct {
-    GuiChainCoinType index;
-    const char *name;
-    const lv_img_dsc_t *icon;
-} CoinWalletInfo_t;
+// typedef struct {
+//     GuiChainCoinType index;
+//     const char *name;
+//     const lv_img_dsc_t *icon;
+// } CoinWalletInfo_t;
 
 typedef struct {
     WALLET_LIST_INDEX_ENUM index;
@@ -65,129 +65,129 @@ bool GetLvglHandlerStatus(void);
 
 static void RefreshStatusBar(void);
 
-const static CoinWalletInfo_t g_coinWalletBtn[] = {
-    {CHAIN_BTC, "", &coinBtc},
-#ifdef WEB3_VERSION
-    {CHAIN_ETH, "", &coinEth},
-    {CHAIN_SOL, "", &coinSol},
-    {CHAIN_BNB, "", &coinBnb},
-    {CHAIN_HNT, "", &coinHelium},
-    {CHAIN_XRP, "", &coinXrp},
-    {CHAIN_ADA, "", &coinAda},
-    {CHAIN_TON, "", &coinTon},
-    {CHAIN_TRX, "", &coinTrx},
-    {CHAIN_LTC, "", &coinLtc},
-    {CHAIN_DOGE, "", &coinDoge},
-    {CHAIN_AVAX, "", &coinAva},
-    {CHAIN_BCH, "", &coinBch},
-    {CHAIN_APT, "", &coinApt},
-    {CHAIN_SUI, "", &coinSui},
-    {CHAIN_IOTA, "", &coinIota},
-    {CHAIN_DASH, "", &coinDash},
-    {CHAIN_ARWEAVE, "", &coinAr},
-    {CHAIN_STELLAR, "", &coinXlm},
-    {CHAIN_BABYLON, "", &coinBabylon},
-    {CHAIN_NEUTARO, "", &coinNeutaro},
-    {CHAIN_TIA, "", &coinTia},
-    {CHAIN_NTRN, "", &coinNtrn},
-    {CHAIN_DYM, "", &coinDym},
-    {CHAIN_OSMO, "", &coinOsmo},
-    {CHAIN_INJ, "", &coinInj},
-    {CHAIN_ATOM, "", &coinAtom},
-    {CHAIN_CRO, "", &coinCro},
-    {CHAIN_RUNE, "", &coinRune},
-    {CHAIN_KAVA, "", &coinKava},
-    {CHAIN_LUNC, "", &coinLunc},
-    {CHAIN_AXL, "", &coinAxl},
-    {CHAIN_LUNA, "", &coinLuna},
-    {CHAIN_AKT, "", &coinAkt},
-    {CHAIN_STRD, "", &coinStrd},
-    {CHAIN_SCRT, "", &coinScrt},
-    {CHAIN_BLD, "", &coinBld},
-    {CHAIN_CTK, "", &coinCtk},
-    {CHAIN_EVMOS, "", &coinEvmos},
-    {CHAIN_STARS, "", &coinStars},
-    {CHAIN_XPRT, "", &coinXprt},
-    {CHAIN_SOMM, "", &coinSomm},
-    {CHAIN_JUNO, "", &coinJuno},
-    {CHAIN_IRIS, "", &coinIris},
-    {CHAIN_DVPN, "", &coinDvpn},
-    {CHAIN_ROWAN, "", &coinRowan},
-    {CHAIN_REGEN, "", &coinRegen},
-    {CHAIN_BOOT, "", &coinBoot},
-    {CHAIN_GRAV, "", &coinGrav},
-    {CHAIN_IXO, "", &coinIxo},
-    {CHAIN_NGM, "", &coinNgm},
-    {CHAIN_IOV, "", &coinIov},
-    {CHAIN_UMEE, "", &coinUmee},
-    {CHAIN_QCK, "", &coinQck},
-    {CHAIN_TGD, "", &coinTgd},
-    {CHAIN_DOT, "", &coinDot},
-#endif
+// const static CoinWalletInfo_t g_coinWalletBtn[] = {
+//     {CHAIN_BTC, "", &coinBtc},
+// #ifdef WEB3_VERSION
+//     {CHAIN_ETH, "", &coinEth},
+//     {CHAIN_SOL, "", &coinSol},
+//     {CHAIN_BNB, "", &coinBnb},
+//     {CHAIN_HNT, "", &coinHelium},
+//     {CHAIN_XRP, "", &coinXrp},
+//     {CHAIN_ADA, "", &coinAda},
+//     {CHAIN_TON, "", &coinTon},
+//     {CHAIN_TRX, "", &coinTrx},
+//     {CHAIN_LTC, "", &coinLtc},
+//     {CHAIN_DOGE, "", &coinDoge},
+//     {CHAIN_AVAX, "", &coinAva},
+//     {CHAIN_BCH, "", &coinBch},
+//     {CHAIN_APT, "", &coinApt},
+//     {CHAIN_SUI, "", &coinSui},
+//     {CHAIN_IOTA, "", &coinIota},
+//     {CHAIN_DASH, "", &coinDash},
+//     {CHAIN_ARWEAVE, "", &coinAr},
+//     {CHAIN_STELLAR, "", &coinXlm},
+//     {CHAIN_BABYLON, "", &coinBabylon},
+//     {CHAIN_NEUTARO, "", &coinNeutaro},
+//     {CHAIN_TIA, "", &coinTia},
+//     {CHAIN_NTRN, "", &coinNtrn},
+//     {CHAIN_DYM, "", &coinDym},
+//     {CHAIN_OSMO, "", &coinOsmo},
+//     {CHAIN_INJ, "", &coinInj},
+//     {CHAIN_ATOM, "", &coinAtom},
+//     {CHAIN_CRO, "", &coinCro},
+//     {CHAIN_RUNE, "", &coinRune},
+//     {CHAIN_KAVA, "", &coinKava},
+//     {CHAIN_LUNC, "", &coinLunc},
+//     {CHAIN_AXL, "", &coinAxl},
+//     {CHAIN_LUNA, "", &coinLuna},
+//     {CHAIN_AKT, "", &coinAkt},
+//     {CHAIN_STRD, "", &coinStrd},
+//     {CHAIN_SCRT, "", &coinScrt},
+//     {CHAIN_BLD, "", &coinBld},
+//     {CHAIN_CTK, "", &coinCtk},
+//     {CHAIN_EVMOS, "", &coinEvmos},
+//     {CHAIN_STARS, "", &coinStars},
+//     {CHAIN_XPRT, "", &coinXprt},
+//     {CHAIN_SOMM, "", &coinSomm},
+//     {CHAIN_JUNO, "", &coinJuno},
+//     {CHAIN_IRIS, "", &coinIris},
+//     {CHAIN_DVPN, "", &coinDvpn},
+//     {CHAIN_ROWAN, "", &coinRowan},
+//     {CHAIN_REGEN, "", &coinRegen},
+//     {CHAIN_BOOT, "", &coinBoot},
+//     {CHAIN_GRAV, "", &coinGrav},
+//     {CHAIN_IXO, "", &coinIxo},
+//     {CHAIN_NGM, "", &coinNgm},
+//     {CHAIN_IOV, "", &coinIov},
+//     {CHAIN_UMEE, "", &coinUmee},
+//     {CHAIN_QCK, "", &coinQck},
+//     {CHAIN_TGD, "", &coinTgd},
+//     {CHAIN_DOT, "", &coinDot},
+// #endif
 
-#ifdef CYPHERPUNK_VERSION
-    {CHAIN_ZCASH, "", &coinZec},
-    {CHAIN_XMR, "", &coinXmr},
-#endif
-};
+// #ifdef CYPHERPUNK_VERSION
+//     {CHAIN_ZCASH, "", &coinZec},
+//     {CHAIN_XMR, "", &coinXmr},
+// #endif
+// };
 
-const static WalletInfo_t g_walletBtn[] = {
-#ifndef BTC_ONLY
-    {WALLET_LIST_KEYSTONE, "Keystone Nexus", &walletKeystone},
-    {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
-    {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
-    {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
-    {WALLET_LIST_MEDUSA, "Medusa", &walletMedusa},
-    // {WALLET_LIST_YOROI, "Yoroi Wallet", &walletYoroi},
-    {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
-    {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
-    {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
-    {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
-    {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
-    {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
-    {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
-    {WALLET_LIST_NUFI, "NuFi", &walletNufi},
-    {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
-    {WALLET_LIST_RABBY, "Rabby", &walletRabby},
-    {WALLET_LIST_BITGET, "Bitget Wallet", &walletBitget},
-    {WALLET_LIST_SAFE, "Safe", &walletSafe},
-    {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
-    {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
-    {WALLET_LIST_IMTOKEN, "imToken", &walletImToken},
-    {WALLET_LIST_BLOCK_WALLET, "Block Wallet", &walletBlockWallet},
-    {WALLET_LIST_ZAPPER, "Zapper", &walletZapper},
-    {WALLET_LIST_HELIUM, "Helium Wallet", &walletHelium},
-    {WALLET_LIST_YEARN_FINANCE, "Yearn Finance", &walletYearn},
-    {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
-    {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
-    {WALLET_LIST_MINT_SCAN, "Mintscan", &walletMintScan},
-    {WALLET_LIST_WANDER, "Wander", &walletWander},
-    {WALLET_LIST_BEACON, "Beacon Wallet", &walletBeacon},
-    {WALLET_LIST_VESPR, "Vespr", &walletVespr},
-    {WALLET_LIST_XBULL, "xBull", &walletXBull},
-    {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
-    {WALLET_LIST_PETRA, "Petra", &walletPetra},
-    {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
-    {WALLET_LIST_THORWALLET, "THORWallet", &walletThorWallet},
-    {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
-    {WALLET_LIST_BEGIN, "Begin", &walletBegin},
-    {WALLET_LIST_LEAP, "Leap", &walletLeap},
-    {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
-    {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
-    // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
-    {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
-    {WALLET_LIST_CORE, "Core Wallet", &walletCore},
-#else
-    {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
-    {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
-    {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
-    {WALLET_LIST_NUNCHUK, "Nunchuk", &walletNunchuk},
-    {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
-    {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
-    {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
-    {WALLET_LIST_BITCOIN_SAFE, "Bitcoin Safe", &walletBtcSafe},
-#endif
-};
+// const static WalletInfo_t g_walletBtn[] = {
+// #ifndef BTC_ONLY
+//     {WALLET_LIST_KEYSTONE, "Keystone Nexus", &walletKeystone},
+//     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
+//     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
+//     {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
+//     {WALLET_LIST_MEDUSA, "Medusa", &walletMedusa},
+//     // {WALLET_LIST_YOROI, "Yoroi Wallet", &walletYoroi},
+//     {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
+//     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
+//     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
+//     {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
+//     {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
+//     {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
+//     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
+//     {WALLET_LIST_NUFI, "NuFi", &walletNufi},
+//     {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
+//     {WALLET_LIST_RABBY, "Rabby", &walletRabby},
+//     {WALLET_LIST_BITGET, "Bitget Wallet", &walletBitget},
+//     {WALLET_LIST_SAFE, "Safe", &walletSafe},
+//     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
+//     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
+//     {WALLET_LIST_IMTOKEN, "imToken", &walletImToken},
+//     {WALLET_LIST_BLOCK_WALLET, "Block Wallet", &walletBlockWallet},
+//     {WALLET_LIST_ZAPPER, "Zapper", &walletZapper},
+//     {WALLET_LIST_HELIUM, "Helium Wallet", &walletHelium},
+//     {WALLET_LIST_YEARN_FINANCE, "Yearn Finance", &walletYearn},
+//     {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
+//     {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
+//     {WALLET_LIST_MINT_SCAN, "Mintscan", &walletMintScan},
+//     {WALLET_LIST_WANDER, "Wander", &walletWander},
+//     {WALLET_LIST_BEACON, "Beacon Wallet", &walletBeacon},
+//     {WALLET_LIST_VESPR, "Vespr", &walletVespr},
+//     {WALLET_LIST_XBULL, "xBull", &walletXBull},
+//     {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
+//     {WALLET_LIST_PETRA, "Petra", &walletPetra},
+//     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
+//     {WALLET_LIST_THORWALLET, "THORWallet", &walletThorWallet},
+//     {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
+//     {WALLET_LIST_BEGIN, "Begin", &walletBegin},
+//     {WALLET_LIST_LEAP, "Leap", &walletLeap},
+//     {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
+//     {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
+//     // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
+//     {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
+//     {WALLET_LIST_CORE, "Core Wallet", &walletCore},
+// #else
+//     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
+//     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
+//     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
+//     {WALLET_LIST_NUNCHUK, "Nunchuk", &walletNunchuk},
+//     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
+//     {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
+//     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
+//     {WALLET_LIST_BITCOIN_SAFE, "Bitcoin Safe", &walletBtcSafe},
+// #endif
+// };
 
 void GuiNvsBarSetWalletName(const char *name)
 {
@@ -276,10 +276,10 @@ void GuiStatusBarInit(void)
     g_guiStatusBar.usbImg = img;
     lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
 
-    if (SOFTWARE_VERSION_BUILD % 2) {
-        img = GuiCreateImg(cont, &imgBeta);
-        g_guiStatusBar.betaImg = img;
-    }
+    // if (SOFTWARE_VERSION_BUILD % 2) {
+    //     img = GuiCreateImg(cont, &imgBeta);
+    //     g_guiStatusBar.betaImg = img;
+    // }
 #ifdef BTC_ONLY
     img = GuiCreateImg(cont, &imgTestNet);
     g_guiStatusBar.testNetImg = img;
@@ -336,7 +336,8 @@ void GuiStatusBarSetSdCard(bool connected, bool onlyImg)
         if (!onlyImg) {
             uint8_t accountCnt = 0;
             GetExistAccountNum(&accountCnt);
-            if (!GuiLockScreenIsTop() && accountCnt > 0 && FatfsFileExist(SD_CARD_OTA_BIN_PATH) && !GuiCheckIfTopView(&g_forgetPassView)) {
+            // if (!GuiLockScreenIsTop() && accountCnt > 0 && FatfsFileExist(SD_CARD_OTA_BIN_PATH) && !GuiCheckIfTopView(&g_forgetPassView)) {
+            if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
                 GuiCreateSdCardUpdateHintbox(false);
             }
         }
@@ -356,40 +357,40 @@ void GuiStatusBarSetUsb(void)
     RefreshStatusBar();
 }
 
-#ifdef BTC_ONLY
-void GuiStatusBarSetTestNet(void)
-{
-    if ((GetIsTestNet() == true) && (GetCurrentWalletIndex() == SINGLE_WALLET) &&
-            GetCurrentAccountIndex() < 3) {
-        lv_obj_clear_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        lv_obj_add_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
-    }
-    RefreshStatusBar();
-}
-#else
-const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
-{
-    if (index == WALLET_LIST_ETERNL) {
-        return "Eternl";
-    } else if (index == WALLET_LIST_TYPHON) {
-        return "Typhon";
-    } else if (index == WALLET_LIST_BEGIN) {
-        return "Begin";
-    } else if (index == WALLET_LIST_HELIUM) {
-        return "Helium";
-    } else if (index == WALLET_LIST_MEDUSA) {
-        return "Medusa";
-    }
+// #ifdef BTC_ONLY
+// void GuiStatusBarSetTestNet(void)
+// {
+//     if ((GetIsTestNet() == true) && (GetCurrentWalletIndex() == SINGLE_WALLET) &&
+//             GetCurrentAccountIndex() < 3) {
+//         lv_obj_clear_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
+//     } else {
+//         lv_obj_add_flag(g_guiStatusBar.testNetImg, LV_OBJ_FLAG_HIDDEN);
+//     }
+//     RefreshStatusBar();
+// }
+// #else
+// const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
+// {
+//     if (index == WALLET_LIST_ETERNL) {
+//         return "Eternl";
+//     } else if (index == WALLET_LIST_TYPHON) {
+//         return "Typhon";
+//     } else if (index == WALLET_LIST_BEGIN) {
+//         return "Begin";
+//     } else if (index == WALLET_LIST_HELIUM) {
+//         return "Helium";
+//     } else if (index == WALLET_LIST_MEDUSA) {
+//         return "Medusa";
+//     }
 
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
-        if (g_walletBtn[i].index == index) {
-            return g_walletBtn[i].name;
-        }
-    }
-    return NULL;
-}
-#endif
+//     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
+//         if (g_walletBtn[i].index == index) {
+//             return g_walletBtn[i].name;
+//         }
+//     }
+//     return NULL;
+// }
+// #endif
 
 uint8_t GetCurrentDisplayPercent(void)
 {
@@ -500,116 +501,116 @@ static void RefreshStatusBar(void)
     }
 }
 
-static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)
-{
-    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgArrowLeft, 64, NULL, NULL);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
+// static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)
+// {
+//     lv_obj_t *btn = GuiCreateImgButton(navBar, &imgArrowLeft, 64, NULL, NULL);
+//     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
 
-    return btn;
-}
+//     return btn;
+// }
 
-static lv_obj_t *CreateCloseBtn(lv_obj_t *navBar)
-{
-    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgClose, 64, NULL, NULL);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
+// static lv_obj_t *CreateCloseBtn(lv_obj_t *navBar)
+// {
+//     lv_obj_t *btn = GuiCreateImgButton(navBar, &imgClose, 64, NULL, NULL);
+//     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
 
-    return btn;
-}
+//     return btn;
+// }
 
-static lv_obj_t *CreateManageBtn(lv_obj_t *navBar)
-{
-#ifdef BTC_ONLY
-    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgWallet2, 64, NULL, NULL);
-#else
-    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgManage, 64, NULL, NULL);
-#endif
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
+// static lv_obj_t *CreateManageBtn(lv_obj_t *navBar)
+// {
+// #ifdef BTC_ONLY
+//     lv_obj_t *btn = GuiCreateImgButton(navBar, &imgWallet2, 64, NULL, NULL);
+// #else
+//     lv_obj_t *btn = GuiCreateImgButton(navBar, &imgManage, 64, NULL, NULL);
+// #endif
+//     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
 
-    return btn;
-}
+//     return btn;
+// }
 
-static lv_obj_t *CreateMidLabel(lv_obj_t *navBar)
-{
-    lv_obj_t *label = GuiCreateTextLabel(navBar, "");
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+// static lv_obj_t *CreateMidLabel(lv_obj_t *navBar)
+// {
+//     lv_obj_t *label = GuiCreateTextLabel(navBar, "");
+//     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 
-    return label;
-}
+//     return label;
+// }
 
-static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
-{
-    lv_obj_t *btn = GuiCreateBtnWithFont(navBar, "20    " USR_SYMBOL_DOWN,
-                                         g_defIllustrateFont);
-    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 268, 0);
-    lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
-    lv_obj_set_size(btn, 69, 42);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+// static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
+// {
+//     lv_obj_t *btn = GuiCreateBtnWithFont(navBar, "20    " USR_SYMBOL_DOWN,
+//                                          g_defIllustrateFont);
+//     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 268, 0);
+//     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
+//     lv_obj_set_size(btn, 69, 42);
+//     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
 
-    return btn;
-}
+//     return btn;
+// }
 
-static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
-{
-    lv_obj_t *btn = GuiCreateStatusCoinButton(navBar, _(""), &walletBluewallet);
-    lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
+// static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
+// {
+//     lv_obj_t *btn = GuiCreateStatusCoinButton(navBar, _(""), &walletBluewallet);
+//     lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
 
-    return btn;
-}
+//     return btn;
+// }
 
-static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
-{
-    lv_obj_t *btn = GuiCreateLabelImgAdaptButton(navBar, _("24"), &imgArrowDownS, NULL, NULL);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_100, 0);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
-    lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
-    lv_obj_set_size(btn, 69, 42);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+// static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
+// {
+//     lv_obj_t *btn = GuiCreateLabelImgAdaptButton(navBar, _("24"), &imgArrowDownS, NULL, NULL);
+//     lv_obj_set_style_bg_opa(btn, LV_OPA_100, 0);
+//     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
+//     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
+//     lv_obj_set_size(btn, 69, 42);
+//     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
 
-    return btn;
-}
+//     return btn;
+// }
 
-static lv_obj_t *CreateResetButton(lv_obj_t *navBar)
-{
-    lv_obj_t *btn = GuiCreateImgLabelAdaptButton(navBar, _("single_phrase_reset"),
-                    &imgReset, NULL, NULL);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
-    lv_obj_set_size(btn, 106, 42);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
-    lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
+// static lv_obj_t *CreateResetButton(lv_obj_t *navBar)
+// {
+//     lv_obj_t *btn = GuiCreateImgLabelAdaptButton(navBar, _("single_phrase_reset"),
+//                     &imgReset, NULL, NULL);
+//     lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN);
+//     lv_obj_set_size(btn, 106, 42);
+//     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
+//     lv_obj_set_style_bg_color(btn, DARK_BG_COLOR, LV_PART_MAIN);
+//     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED);
+//     lv_obj_set_style_bg_opa(btn, LV_OPA_12, LV_STATE_PRESSED);
 
-    return btn;
-}
+//     return btn;
+// }
 
-static lv_obj_t *CreateQuestion(lv_obj_t *navBar)
-{
-    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgQuestion, 64, NULL, NULL);
-    lv_obj_set_size(btn, 106, 42);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
-    return btn;
-}
+// static lv_obj_t *CreateQuestion(lv_obj_t *navBar)
+// {
+//     lv_obj_t *btn = GuiCreateImgButton(navBar, &imgQuestion, 64, NULL, NULL);
+//     lv_obj_set_size(btn, 106, 42);
+//     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
+//     return btn;
+// }
 
-static lv_obj_t *CreateMoreInfo(lv_obj_t *navBar)
-{
-    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgMore, 64, NULL, NULL);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    return btn;
-}
+// static lv_obj_t *CreateMoreInfo(lv_obj_t *navBar)
+// {
+//     lv_obj_t *btn = GuiCreateImgButton(navBar, &imgMore, 64, NULL, NULL);
+//     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+//     return btn;
+// }
 
-static lv_obj_t *CreateSkip(lv_obj_t *navBar)
-{
-    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSkip, 64, NULL, NULL);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    return btn;
-}
+// static lv_obj_t *CreateSkip(lv_obj_t *navBar)
+// {
+//     lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSkip, 64, NULL, NULL);
+//     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+//     return btn;
+// }
 
-static lv_obj_t *CreateSearch(lv_obj_t *navBar)
-{
-    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSearch, 64, NULL, NULL);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
-    return btn;
-}
+// static lv_obj_t *CreateSearch(lv_obj_t *navBar)
+// {
+//     lv_obj_t *btn = GuiCreateImgButton(navBar, &imgSearch, 64, NULL, NULL);
+//     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -10, 0);
+//     return btn;
+// }
 
 static lv_obj_t *CreateNewSkip(lv_obj_t *navBar)
 {
@@ -620,19 +621,19 @@ static lv_obj_t *CreateNewSkip(lv_obj_t *navBar)
     return btn;
 }
 
-static lv_obj_t *CreateUndo(lv_obj_t *navBar)
-{
-    lv_obj_t *btn = GuiCreateImgLabelAdaptButton(navBar, _("Undo"), &imgUndo, NULL, NULL);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_100, 0);
-    lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED | LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_10 + LV_OPA_2, LV_STATE_PRESSED | LV_PART_MAIN);
-    return btn;
-}
+// static lv_obj_t *CreateUndo(lv_obj_t *navBar)
+// {
+//     lv_obj_t *btn = GuiCreateImgLabelAdaptButton(navBar, _("Undo"), &imgUndo, NULL, NULL);
+//     lv_obj_set_style_bg_opa(btn, LV_OPA_100, 0);
+//     lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
+//     lv_obj_set_style_bg_color(btn, GRAY_COLOR, 0);
+//     lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+//     lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
+//     lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -24, 0);
+//     lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_STATE_PRESSED | LV_PART_MAIN);
+//     lv_obj_set_style_bg_opa(btn, LV_OPA_10 + LV_OPA_2, LV_STATE_PRESSED | LV_PART_MAIN);
+//     return btn;
+// }
 
 static lv_obj_t *CreateSDCard(lv_obj_t *navBar)
 {
@@ -668,142 +669,142 @@ void DestoryNavBarWidget(NavBarWidget_t *navBarWidget)
 void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button,
                       lv_event_cb_t eventCb, void *param)
 {
-    if (navBarWidget->leftBtn != NULL && lv_obj_is_valid(navBarWidget->leftBtn)) {
-        lv_obj_del(navBarWidget->leftBtn);
-        navBarWidget->leftBtn = NULL;
-    }
-    lv_event_cb_t leftButtonCb = NULL;
-    switch (button) {
-    case NVS_BAR_RETURN:
-        navBarWidget->leftBtn = CreateReturnBtn(navBarWidget->navBar);
-        leftButtonCb = eventCb;
-        break;
-    case NVS_BAR_CLOSE:
-        navBarWidget->leftBtn = CreateCloseBtn(navBarWidget->navBar);
-        leftButtonCb = eventCb;
-        break;
-    case NVS_BAR_MANAGE:
-        navBarWidget->leftBtn = CreateManageBtn(navBarWidget->navBar);
-        leftButtonCb = eventCb;
-        break;
-    default:
-        return;
-    }
-    lv_obj_clear_flag(navBarWidget->leftBtn, LV_OBJ_FLAG_HIDDEN);
-    if (leftButtonCb != NULL) {
-        if (button != NVS_BAR_MANAGE) {
-            lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_CLICKED,
-                                param);
-        } else {
-            lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_CLICKED,
-                                param);
-        }
-    }
+    // if (navBarWidget->leftBtn != NULL && lv_obj_is_valid(navBarWidget->leftBtn)) {
+    //     lv_obj_del(navBarWidget->leftBtn);
+    //     navBarWidget->leftBtn = NULL;
+    // }
+    // lv_event_cb_t leftButtonCb = NULL;
+    // switch (button) {
+    // case NVS_BAR_RETURN:
+    //     navBarWidget->leftBtn = CreateReturnBtn(navBarWidget->navBar);
+    //     leftButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_CLOSE:
+    //     navBarWidget->leftBtn = CreateCloseBtn(navBarWidget->navBar);
+    //     leftButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_MANAGE:
+    //     navBarWidget->leftBtn = CreateManageBtn(navBarWidget->navBar);
+    //     leftButtonCb = eventCb;
+    //     break;
+    // default:
+    //     return;
+    // }
+    // lv_obj_clear_flag(navBarWidget->leftBtn, LV_OBJ_FLAG_HIDDEN);
+    // if (leftButtonCb != NULL) {
+    //     if (button != NVS_BAR_MANAGE) {
+    //         lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_CLICKED,
+    //                             param);
+    //     } else {
+    //         lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_CLICKED,
+    //                             param);
+    //     }
+    // }
 }
 
 void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
                      lv_event_cb_t eventCb, void *param)
 {
-    if (navBarWidget->midBtn != NULL && lv_obj_is_valid(navBarWidget->midBtn)) {
-        lv_obj_del(navBarWidget->midBtn);
-        navBarWidget->midBtn = NULL;
-    }
-    lv_event_cb_t midButtonCb = NULL;
-    switch (button) {
-    case NVS_BAR_MID_WORD_SELECT:
-        navBarWidget->midBtn = CreateMidWordCntSelect(navBarWidget->navBar);
-        midButtonCb = eventCb;
-        break;
-    case NVS_BAR_MID_LABEL:
-        navBarWidget->midBtn = CreateMidLabel(navBarWidget->navBar);
-        midButtonCb = eventCb;
-        break;
-    case NVS_BAR_MID_COIN:
-        navBarWidget->midBtn = CreateCoinBtn(navBarWidget->navBar);
-        return;
-    default:
-        return;
-    }
-    lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
-    if (midButtonCb != NULL) {
-        lv_obj_add_event_cb(navBarWidget->midBtn, midButtonCb, LV_EVENT_CLICKED, param);
-    }
+    // if (navBarWidget->midBtn != NULL && lv_obj_is_valid(navBarWidget->midBtn)) {
+    //     lv_obj_del(navBarWidget->midBtn);
+    //     navBarWidget->midBtn = NULL;
+    // }
+    // lv_event_cb_t midButtonCb = NULL;
+    // switch (button) {
+    // case NVS_BAR_MID_WORD_SELECT:
+    //     navBarWidget->midBtn = CreateMidWordCntSelect(navBarWidget->navBar);
+    //     midButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_MID_LABEL:
+    //     navBarWidget->midBtn = CreateMidLabel(navBarWidget->navBar);
+    //     midButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_MID_COIN:
+    //     navBarWidget->midBtn = CreateCoinBtn(navBarWidget->navBar);
+    //     return;
+    // default:
+    //     return;
+    // }
+    // lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
+    // if (midButtonCb != NULL) {
+    //     lv_obj_add_event_cb(navBarWidget->midBtn, midButtonCb, LV_EVENT_CLICKED, param);
+    // }
 }
 
-void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
-                   const char *name)
-{
-    SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
-    CoinWalletInfo_t *coin = (CoinWalletInfo_t *)g_coinWalletBtn;
-    for (size_t i = 0; i < CHAIN_BUTT; i++) {
-        if (g_coinWalletBtn[i].index == index) {
-            coin = &g_coinWalletBtn[i];
-            break;
-        }
-    }
-    // tx parse page: Confrim Transaction
-    GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : _("confirm_transaction"), coin->icon);
-}
+// void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
+//                    const char *name)
+// {
+//     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
+//     CoinWalletInfo_t *coin = (CoinWalletInfo_t *)g_coinWalletBtn;
+//     for (size_t i = 0; i < CHAIN_BUTT; i++) {
+//         if (g_coinWalletBtn[i].index == index) {
+//             coin = &g_coinWalletBtn[i];
+//             break;
+//         }
+//     }
+//     // tx parse page: Confrim Transaction
+//     GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : _("confirm_transaction"), coin->icon);
+// }
 
-void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)
-{
-    SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
-    WalletInfo_t *coin = NULL;
-    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
-        if (g_walletBtn[i].index == index) {
-            coin = &g_walletBtn[i];
-            break;
-        }
-    }
+// void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)
+// {
+//     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
+//     WalletInfo_t *coin = NULL;
+//     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
+//         if (g_walletBtn[i].index == index) {
+//             coin = &g_walletBtn[i];
+//             break;
+//         }
+//     }
 
-    if (name == NULL) {
-        char nameBuf[BUFFER_SIZE_64] = {0};
-        snprintf_s(nameBuf, BUFFER_SIZE_64, "%s %s", _("connect_head"), coin->name);
-        GuiUpdateStatusCoinButton(navBarWidget->midBtn, nameBuf, coin->icon);
-    } else {
-        GuiUpdateStatusCoinButton(navBarWidget->midBtn, name, coin->icon);
-    }
-}
+//     if (name == NULL) {
+//         char nameBuf[BUFFER_SIZE_64] = {0};
+//         snprintf_s(nameBuf, BUFFER_SIZE_64, "%s %s", _("connect_head"), coin->name);
+//         GuiUpdateStatusCoinButton(navBarWidget->midBtn, nameBuf, coin->icon);
+//     } else {
+//         GuiUpdateStatusCoinButton(navBarWidget->midBtn, name, coin->icon);
+//     }
+// }
 
 void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
                     const char *text)
 {
-    SetNavBarMidBtn(navBarWidget, button, NULL, NULL);
-    switch (button) {
-    case NVS_BAR_MID_WORD_SELECT:
-        lv_label_set_text(lv_obj_get_child(navBarWidget->midBtn, 0), text);
-        break;
-    case NVS_BAR_MID_LABEL:
-        lv_label_set_text(navBarWidget->midBtn, text);
-        lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_refr_size(navBarWidget->midBtn);
-        if (lv_obj_get_self_width(navBarWidget->midBtn) > 300) {
-            lv_label_set_long_mode(navBarWidget->midBtn, LV_LABEL_LONG_SCROLL_CIRCULAR);
-            lv_obj_set_width(navBarWidget->midBtn, 300);
-        }
+    // SetNavBarMidBtn(navBarWidget, button, NULL, NULL);
+    // switch (button) {
+    // case NVS_BAR_MID_WORD_SELECT:
+    //     lv_label_set_text(lv_obj_get_child(navBarWidget->midBtn, 0), text);
+    //     break;
+    // case NVS_BAR_MID_LABEL:
+    //     lv_label_set_text(navBarWidget->midBtn, text);
+    //     lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
+    //     lv_obj_refr_size(navBarWidget->midBtn);
+    //     if (lv_obj_get_self_width(navBarWidget->midBtn) > 300) {
+    //         lv_label_set_long_mode(navBarWidget->midBtn, LV_LABEL_LONG_SCROLL_CIRCULAR);
+    //         lv_obj_set_width(navBarWidget->midBtn, 300);
+    //     }
 
-        // GuiNvsBarSetMidCb(NVS_BAR_MID_LABEL, NULL, NULL);
-        break;
-    default:
-        return;
-    }
+    //     // GuiNvsBarSetMidCb(NVS_BAR_MID_LABEL, NULL, NULL);
+    //     break;
+    // default:
+    //     return;
+    // }
 }
 
 void SetRightBtnLabel(NavBarWidget_t *navBarWidget,
                       NVS_RIGHT_BUTTON_ENUM button, const char *text)
 {
-    SetNavBarRightBtn(navBarWidget, button, NULL, NULL);
-    switch (button) {
-    case NVS_BAR_WORD_SELECT:
-        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), text);
-        break;
-    case NVS_BAR_WORD_RESET:
-        lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 1), text);
-        GuiImgLabelAdaptButtonResize(navBarWidget->rightBtn);
-        break;
-    default:
-        return;
-    }
+    // SetNavBarRightBtn(navBarWidget, button, NULL, NULL);
+    // switch (button) {
+    // case NVS_BAR_WORD_SELECT:
+    //     lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 0), text);
+    //     break;
+    // case NVS_BAR_WORD_RESET:
+    //     lv_label_set_text(lv_obj_get_child(navBarWidget->rightBtn, 1), text);
+    //     GuiImgLabelAdaptButtonResize(navBarWidget->rightBtn);
+    //     break;
+    // default:
+    //     return;
+    // }
 }
 
 void SetRightBtnCb(NavBarWidget_t *navBarWidget, lv_event_cb_t eventCb,
@@ -816,55 +817,55 @@ void SetNavBarRightBtn(NavBarWidget_t *navBarWidget,
                        NVS_RIGHT_BUTTON_ENUM button, lv_event_cb_t eventCb,
                        void *param)
 {
-    if (navBarWidget->rightBtn != NULL &&
-            lv_obj_is_valid(navBarWidget->rightBtn)) {
-        lv_obj_del(navBarWidget->rightBtn);
-        navBarWidget->rightBtn = NULL;
-    }
-    lv_event_cb_t rightButtonCb = NULL;
-    switch (button) {
-    case NVS_BAR_WORD_SELECT:
-        navBarWidget->rightBtn = CreateWordCntSelect(navBarWidget->navBar);
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_WORD_RESET:
-        navBarWidget->rightBtn = CreateResetButton(navBarWidget->navBar);
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_QUESTION_MARK:
-        navBarWidget->rightBtn = CreateQuestion(navBarWidget->navBar);
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_MORE_INFO:
-        navBarWidget->rightBtn = CreateMoreInfo(navBarWidget->navBar);
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_SKIP:
-        navBarWidget->rightBtn = CreateSkip(navBarWidget->navBar);
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_SEARCH:
-        navBarWidget->rightBtn = CreateSearch(navBarWidget->navBar);
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_NEW_SKIP:
-        navBarWidget->rightBtn = CreateNewSkip(navBarWidget->navBar);
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_UNDO:
-        navBarWidget->rightBtn = CreateUndo(navBarWidget->navBar);
-        rightButtonCb = eventCb;
-        break;
-    case NVS_BAR_SDCARD:
-        navBarWidget->rightBtn = CreateSDCard(navBarWidget->navBar);
-        rightButtonCb = eventCb;
-        break;
-    default:
-        return;
-    }
-    lv_obj_clear_flag(navBarWidget->rightBtn, LV_OBJ_FLAG_HIDDEN);
-    if (rightButtonCb != NULL) {
-        lv_obj_add_event_cb(navBarWidget->rightBtn, rightButtonCb, LV_EVENT_CLICKED,
-                            param);
-    }
+    // if (navBarWidget->rightBtn != NULL &&
+    //         lv_obj_is_valid(navBarWidget->rightBtn)) {
+    //     lv_obj_del(navBarWidget->rightBtn);
+    //     navBarWidget->rightBtn = NULL;
+    // }
+    // lv_event_cb_t rightButtonCb = NULL;
+    // switch (button) {
+    // case NVS_BAR_WORD_SELECT:
+    //     navBarWidget->rightBtn = CreateWordCntSelect(navBarWidget->navBar);
+    //     rightButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_WORD_RESET:
+    //     navBarWidget->rightBtn = CreateResetButton(navBarWidget->navBar);
+    //     rightButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_QUESTION_MARK:
+    //     navBarWidget->rightBtn = CreateQuestion(navBarWidget->navBar);
+    //     rightButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_MORE_INFO:
+    //     navBarWidget->rightBtn = CreateMoreInfo(navBarWidget->navBar);
+    //     rightButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_SKIP:
+    //     navBarWidget->rightBtn = CreateSkip(navBarWidget->navBar);
+    //     rightButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_SEARCH:
+    //     navBarWidget->rightBtn = CreateSearch(navBarWidget->navBar);
+    //     rightButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_NEW_SKIP:
+    //     navBarWidget->rightBtn = CreateNewSkip(navBarWidget->navBar);
+    //     rightButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_UNDO:
+    //     navBarWidget->rightBtn = CreateUndo(navBarWidget->navBar);
+    //     rightButtonCb = eventCb;
+    //     break;
+    // case NVS_BAR_SDCARD:
+    //     navBarWidget->rightBtn = CreateSDCard(navBarWidget->navBar);
+    //     rightButtonCb = eventCb;
+    //     break;
+    // default:
+    //     return;
+    // }
+    // lv_obj_clear_flag(navBarWidget->rightBtn, LV_OBJ_FLAG_HIDDEN);
+    // if (rightButtonCb != NULL) {
+    //     lv_obj_add_event_cb(navBarWidget->rightBtn, rightButtonCb, LV_EVENT_CLICKED,
+    //                         param);
+    // }
 }

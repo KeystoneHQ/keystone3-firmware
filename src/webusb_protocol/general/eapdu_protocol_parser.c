@@ -106,13 +106,8 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
         ProcessURService(request);
         break;
     case CMD_CHECK_LOCK_STATUS:
-        CheckDeviceLockStatusService(request);
+        // CheckDeviceLockStatusService(request);
         break;
-#ifdef WEB3_VERSION
-    case CMD_EXPORT_ADDRESS:
-        ExportAddressService(request);
-        break;
-#endif
     case CMD_GET_DEVICE_INFO:
         GetDeviceInfoService(request);
         break;

@@ -41,9 +41,9 @@ void FpGetAesStateHandle(void *argument)
 
 void FpRecognizeHandle(void *argument)
 {
-    if (GuiNeedFpRecognize()) {
-        FpRecognize(RECOGNIZE_UNLOCK);
-    }
+    // if (GuiNeedFpRecognize()) {
+    //     FpRecognize(RECOGNIZE_UNLOCK);
+    // }
 }
 
 static void FingerprintTask(void *pvParameter)

@@ -7,12 +7,11 @@
 #include "gui_scan_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_hintbox.h"
-#include "gui_analyze.h"
 #include "gui_button.h"
-#include "gui_qr_code.h"
+// #include "gui_qr_code.h"
 #include "secret_cache.h"
 #include "qrdecode_task.h"
-#include "gui_chain.h"
+// #include "gui_chain.h"
 #include "assert.h"
 #include "gui_web_auth_widgets.h"
 #include "gui_qr_hintbox.h"
@@ -24,7 +23,7 @@
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
 #include "account_manager.h"
-#include "gui_btc.h"
+// #include "gui_btc.h"
 #include "gui_pending_hintbox.h"
 #ifdef BTC_ONLY
 #include "gui_multisig_read_sdcard_widgets.h"
@@ -49,18 +48,10 @@ static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, siz
 }
 #endif
 
-#ifdef WEB3_VERSION
-#define IsSlip39WalletNotSupported(viewType) (viewType == CHAIN_ADA)
-#endif
-
-#ifdef CYPHERPUNK_VERSION
-#define IsSlip39WalletNotSupported(viewType) (viewType == CHAIN_XMR)
-#endif
 
 static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_scanErrorHintBox = NULL;
 static ViewType g_qrcodeViewType;
-static uint8_t g_chainType = CHAIN_BUTT;
 static ViewType g_viewTypeFilter[2];
 
 void GuiScanInit(void *param, uint16_t len)
@@ -105,71 +96,10 @@ void GuiScanRefresh()
 void GuiScanResult(bool result, void *param)
 {
     if (result) {
-        UrViewType_t urViewType = *(UrViewType_t *)param;
-        g_qrcodeViewType = urViewType.viewType;
-#ifdef BTC_ONLY
-        if (g_viewTypeFilter[0] != 0xFF) {
-            if (!IsViewTypeSupported(g_qrcodeViewType, g_viewTypeFilter, NUMBER_OF_ARRAYS(g_viewTypeFilter))) {
-                g_scanErrorHintBox = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_scanErrorHintBox, GuiScanStart);
-                return;
-            }
+        if (g_qrcodeViewType == WebAuthResult) {
+            GuiCloseCurrentWorkingView();
+            GuiFrameOpenView(&g_webAuthResultView);
         }
-#endif
-        g_chainType = ViewTypeToChainTypeSwitch(g_qrcodeViewType);
-#ifndef BTC_ONLY
-        // Not a chain based transaction, e.g. WebAuth
-        if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
-            //we don't support ADA & XMR in Slip39 Wallet;
-            if (IsSlip39WalletNotSupported(g_chainType)) {
-                ThrowError(ERR_INVALID_QRCODE);
-                return;
-            }
-        }
-#endif
-        if (g_chainType == CHAIN_BUTT) {
-            if (g_qrcodeViewType == WebAuthResult) {
-                GuiCloseCurrentWorkingView();
-                GuiFrameOpenView(&g_webAuthResultView);
-            }
-#ifdef WEB3_VERSION
-            if (g_qrcodeViewType == KeyDerivationRequest) {
-                if (!GuiCheckIfTopView(&g_homeView)) {
-                    GuiCloseCurrentWorkingView();
-                }
-                GuiFrameOpenViewWithParam(&g_keyDerivationRequestView, NULL, 0);
-            }
-#endif
-
-#ifdef BTC_ONLY
-            if (g_qrcodeViewType == MultisigWalletImport) {
-                GuiCloseCurrentWorkingView();
-                GuiFrameOpenView(&g_importMultisigWalletInfoView);
-            }
-
-            if (g_qrcodeViewType == MultisigCryptoImportXpub ||
-                    g_qrcodeViewType ==  MultisigBytesImportXpub) {
-                GuiCloseCurrentWorkingView();
-            }
-#endif
-            return;
-        }
-#ifdef WEB3_VERSION
-        if (g_qrcodeViewType == EthBatchTx) {
-            printf("g_qrcodeViewType == EthBatchTx\n");
-            if (!GuiCheckIfTopView(&g_homeView)) {
-                GuiCloseCurrentWorkingView();
-            }
-            GuiFrameOpenView(&g_ethBatchTxView);
-            return;
-        }
-#endif
-        uint8_t accountNum = 0;
-        GetExistAccountNum(&accountNum);
-        if (accountNum <= 0) {
-            ThrowError(ERR_INVALID_QRCODE);
-            return;
-        }
-        GuiModelCheckTransaction(g_qrcodeViewType);
     } else {
         ThrowError(ERR_INVALID_QRCODE);
     }
@@ -180,21 +110,6 @@ void GuiTransactionCheckPass(void)
     GuiModelTransactionCheckResultClear();
     SetPageLockScreen(true);
     GuiCloseCurrentWorkingView();
-#ifdef WEB3_VERSION
-    if (g_chainType == CHAIN_ARWEAVE) {
-        if (GetIsTempAccount()) {
-            ThrowError(ERR_INVALID_QRCODE);
-            return;
-        }
-        bool hasArXpub = IsArweaveSetupComplete();
-        if (!hasArXpub) {
-            GuiPendingHintBoxRemove();
-            GoToHomeViewHandler(NULL);
-            GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM);
-            return;
-        }
-    }
-#endif
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
 }
 

@@ -13,14 +13,12 @@
 #include "librust_c.h"
 #include "gui_api.h"
 #include "gui_views.h"
-#include "gui_chain.h"
 #include "user_delay.h"
 #include "touchpad_task.h"
-#include "gui_analyze.h"
 #include "gui_web_auth_result_widgets.h"
 #include "assert.h"
 #include "qrdecode_task.h"
-#include "gui_resolve_ur.h"
+// #include "gui_resolve_ur.h"
 #ifdef WEB3_VERSION
 #include "gui_key_derivation_request_widgets.h"
 #endif
@@ -149,7 +147,7 @@ void ProcessQr(uint32_t count)
                     firstQrFlag = true;
                     urViewType.viewType = urResult->t;
                     urViewType.urType = urResult->ur_type;
-                    handleURResult(urResult, NULL, urViewType, false);
+                    // handleURResult(urResult, NULL, urViewType, false);
                     testProgress = 0;
                 } else {
                     // first qr code
@@ -174,7 +172,7 @@ void ProcessQr(uint32_t count)
                         free_ur_parse_result(urResult);
                         urResult = NULL;
                     }
-                    handleURResult(NULL, MultiurResult, urViewType, true);
+                    // handleURResult(NULL, MultiurResult, urViewType, true);
                     testProgress = 0;
                 }
             } else {

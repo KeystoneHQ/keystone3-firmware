@@ -1805,7 +1805,7 @@ static void OpenMoreHandler(lv_event_t *e)
     lv_obj_add_event_cb(lv_obj_get_child(g_openMoreHintBox, 0),
                         CloseHintBoxHandler, LV_EVENT_CLICKED,
                         &g_openMoreHintBox);
-    if (*wallet = WALLET_LIST_BTC_WALLET) {
+    if (*wallet == WALLET_LIST_BTC_WALLET) {
         btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
                                     OpenBtcWalletTutorialHandler, wallet, true);
     } else {

@@ -65,6 +65,8 @@ typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param,
     add(SCREEN_CONNECT_USB)                     \
     add(SCREEN_CHECK_DELETE_WALLET)             \
     add(SCREEN_ETH_BATCH_TX)                    \
+    add(SCREEN_PREPARE_KEY_PAIR)                \
+    add(SCREEN_SETUP_DONE)                      \
 
 typedef enum {
     SCREEN_INVALID = -1,

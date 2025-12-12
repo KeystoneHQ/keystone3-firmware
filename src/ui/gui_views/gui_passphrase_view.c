@@ -6,23 +6,6 @@
 static int32_t GuiPassphraseViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     switch (usEvent) {
-    case GUI_EVENT_OBJ_INIT:
-        GuiPassphraseInit();
-        break;
-    case GUI_EVENT_OBJ_DEINIT:
-        GuiPassphraseDeInit();
-        break;
-    case GUI_EVENT_DISACTIVE:
-        break;
-    case GUI_EVENT_REFRESH:
-        GuiPassphraseRefresh();
-        break;
-    case SIG_SETUP_VIEW_TILE_PREV:
-        GuiPassphrasePrevTile();
-        break;
-    case SIG_SETTING_WRITE_PASSPHRASE_PASS:
-        GuiPassphraseDone();
-        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

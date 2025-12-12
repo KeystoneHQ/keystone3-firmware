@@ -161,7 +161,9 @@ void RecoverFromLowPower(void)
         OpenUsb();
     }
 #else
+    printf("%s %d..\n", __func__, __LINE__);
     AsyncExecute(GetWalletAmountAfterWakeup, NULL, 0);
+    printf("%s %d..\n", __func__, __LINE__);
 #endif
 }
 
@@ -345,9 +347,6 @@ int32_t InitSdCardAfterWakeup(const void *inData, uint32_t inDataLen)
 
 int32_t GetWalletAmountAfterWakeup(const void *inData, uint32_t inDataLen)
 {
-    if (GuiIsSetup()) {
-        UserDelay(200);
-        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
-    }
+    GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
     return 0;
 }

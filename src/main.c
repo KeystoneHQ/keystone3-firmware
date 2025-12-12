@@ -58,6 +58,7 @@ int main(void)
     SystemClockInit();
     SensorInit();
     Uart0Init(CmdIsrRcvByte);
+    FingerprintInit();
     cm_backtrace_init("mh1903", GetHardwareVersionString(), GetSoftwareVersionString());
     TrngInit();
     TamperInit(TamperStartup);
@@ -90,6 +91,7 @@ int main(void)
 
     PrintSystemInfo();
     osKernelInitialize();
+    CreateFingerprintTask();
 #ifndef BUILD_PRODUCTION
     CreateCmdTask();
 #endif
@@ -111,7 +113,8 @@ int _write(int fd, char *pBuffer, int size)
     for (int i = 0; i < size; i++) {
         while (!UART_IsTXEmpty(UART0));
 #ifdef BUILD_PRODUCTION
-        UART_SendData(UART0, '-');
+        // UART_SendData(UART0, '-');
+        UART_SendData(UART0, (uint8_t) pBuffer[i]);
 #else
         UART_SendData(UART0, (uint8_t) pBuffer[i]);
 #endif

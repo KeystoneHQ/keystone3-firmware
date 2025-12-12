@@ -11,36 +11,7 @@
 #include "ui_display_task.h"
 
 typedef enum {
-    SETUP_ENGLISH = 0,
-    SETUP_RUSSIAN,
-    SETUP_CHINESE,
-    SETUP_KOREAN,
-    SETUP_SPANISH,
-    SETUP_GERMAN,
-    SETUP_JAPANESE,
-
-    SETUP_LANGUAGE_BUTT,
-} SETUP_LANGUAGE_ENUM;
-
-#ifdef BTC_ONLY
-#define SUPPORT_WALLET_INDEX SETUP_KOREAN
-#else
-#define SUPPORT_WALLET_INDEX SETUP_JAPANESE
-#endif
-
-static const char *g_languageList[] = {
-    "English",
-    "Русский язык",
-    "简体中文",
-    "한국어",
-    "Español",
-    "Deutsch",
-    "日本語",
-};
-
-typedef enum {
     SETUP_WELCOME = 0,
-    SETUP_SET_LANGUAGE,
 
     SETUP_BUTT,
 } SETUP_ENUM;
@@ -52,8 +23,6 @@ typedef struct SetupWidget {
     lv_obj_t *setLanguage;
 } SetupWidget_t;
 static SetupWidget_t g_setupTileView;
-static lv_obj_t *g_languageCheck[SETUP_LANGUAGE_BUTT];
-static lv_obj_t *g_selectLanguageCont;
 static bool g_setup = false;
 static uint32_t g_clickLogoCount = 0;
 static void GoToDeviceUIDPage(lv_event_t *e);
@@ -63,11 +32,50 @@ static void DestroyTimer(void);
 
 SETUP_PHASE_ENUM lastShutDownPage;
 static PageWidget_t *g_pageWidget;
+static lv_obj_t *g_noticeWindow = NULL;
+static lv_timer_t *g_countDownTimer;
 
+static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer)
+{
+    lv_obj_t *obj = (lv_obj_t *)timer->user_data;
+    lv_obj_t *label = lv_obj_get_child(obj, 0);
+    char buff[32] = {0};
+    static int8_t g_countDown = 5;
+    --g_countDown;
+
+    if (g_countDown == 0) {
+        lv_label_set_text(label, "Got it");
+        lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
+        if (g_countDownTimer != NULL) {
+            g_countDown = 0;
+            lv_timer_del(g_countDownTimer);
+            g_countDownTimer = NULL;
+            UNUSED(g_countDownTimer);
+        }
+    } else {
+        snprintf_s(buff, sizeof(buff), "Got it (%d)", g_countDown);
+        lv_label_set_text(label, buff);
+    }
+}
+
+static void StartSetupHandler(lv_event_t *e)
+{
+    g_noticeWindow = GuiCreateConfirmHintBox(&imgWarn, "Setup Your Device",
+                     "Your device is running the official setup firmware. To install custom firmware, you must excute the upcoming instructions.", NULL, "Got it (5)",  ORANGE_COLOR);
+
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    // lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, NULL);
+
+    g_countDownTimer = lv_timer_create(CountDownTimerChangeLabelTextHandler, 1000, btn);
+}
 
 static void GuiWelcomeWidget(lv_obj_t *parent)
 {
-    lv_obj_t *img = GuiCreateImg(parent, &imgLogoGraphL);
+    // lv_obj_t *img = GuiCreateImg(parent, &imgLogoGraphL);
+    lv_obj_t *img = GuiCreateImg(parent, &imgDevLogo);
     lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 84 - GUI_NAV_BAR_HEIGHT);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, GoToDeviceUIDPage, LV_EVENT_CLICKED, NULL);
@@ -82,99 +90,14 @@ static void GuiWelcomeWidget(lv_obj_t *parent)
     lv_obj_set_size(btn, 96, 96);
     lv_obj_set_style_radius(btn, LV_RADIUS_CIRCLE, LV_PART_MAIN);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -96);
-    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(btn, StartSetupHandler, LV_EVENT_CLICKED, NULL);
 }
 
-static void SelectLanguageHandler(lv_event_t *e)
-{
-    static uint8_t newCheckIndex = 0;
-    lv_obj_t *newCheckBox = lv_event_get_user_data(e);
-    for (uint8_t i = SETUP_ENGLISH; i <= SUPPORT_WALLET_INDEX; i++) {
-        if (newCheckBox == g_languageCheck[i]) {
-            newCheckIndex = i;
-            lv_obj_add_state(g_languageCheck[i], LV_STATE_CHECKED);
-        } else {
-            lv_obj_clear_state(g_languageCheck[i], LV_STATE_CHECKED);
-        }
-    }
-
-    if (LanguageGetIndex() == newCheckIndex) {
-        return;
-    }
-
-    if (g_pageWidget != NULL) {
-        LanguageSwitch(newCheckIndex);
-        GuiEmitSignal(GUI_EVENT_CHANGE_LANGUAGE, NULL, 0);
-    } else {
-        GuiEmitSignal(GUI_EVENT_UPDATE_LANGUAGE, &newCheckIndex, sizeof(newCheckIndex));
-    }
-}
 
 void GuiOpenWebAuthHandler(lv_event_t *e)
 {
     GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETUP);
     GuiFrameOpenView(&g_webAuthView);
-}
-
-void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset)
-{
-    // uint8_t lang = LanguageGetIndex();
-    // static lv_point_t linePoints[2] = {{36, 0}, {444, 0}};
-    // lv_obj_t *label;
-    // for (int i = SETUP_ENGLISH; i <= SUPPORT_WALLET_INDEX; i++) {
-    //     lv_obj_t *checkBox = GuiCreateSingleCheckBox(parent, "");
-    //     g_languageCheck[i] = checkBox;
-    //     if (i == SETUP_CHINESE) {
-    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &cnText);
-    //     } else if (i == SETUP_RUSSIAN) {
-    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &ruText);
-    //     } else if (i == SETUP_KOREAN) {
-    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &koText);
-    //     } else if (i == SETUP_SPANISH) {
-    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &esText);
-    //     } else if (i == SETUP_GERMAN) {
-    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &deText);
-    //     } else if (i == SETUP_JAPANESE) {
-    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &jaText);
-    //     } else {
-    //         label = GuiCreateLabelWithFont(parent, g_languageList[i], &openSansEnText);
-    //     }
-    //     if (i == lang) {
-    //         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
-    //     }
-    //     GuiButton_t table[] = {
-    //         {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {24, 0}},
-    //         {.obj = checkBox, .align = LV_ALIGN_TOP_MID, .position = {0, 24}}
-    //     };
-    //     lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-    //                                        SelectLanguageHandler, g_languageCheck[i]);
-    //     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, i * 84 + offset);
-    //     lv_obj_t *line = GuiCreateLine(parent, linePoints, 2);
-    //     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, i * 84 + offset + 84);
-    // }
-}
-
-static void GuiSetLanguageWidget(lv_obj_t *parent)
-{
-    lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
-    lv_obj_set_height(parent, 800 - GUI_MAIN_AREA_OFFSET - 114);
-    lv_obj_t *label = GuiCreateTitleLabel(parent, _("language_title"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
-
-    label = GuiCreateIllustrateLabel(parent, _("language_desc"));
-    lv_obj_set_style_text_opa(label, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
-
-    GuiCreateLanguageWidget(parent, 270 - GUI_MAIN_AREA_OFFSET);
-
-    lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
-    lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
-    lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_ARROW_NEXT);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
-    lv_obj_add_event_cb(btn, GuiOpenWebAuthHandler, LV_EVENT_CLICKED, NULL);
-    g_selectLanguageCont = cont;
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_HIDDEN);
 }
 
 void GuiSetupAreaInit(void)
@@ -186,10 +109,6 @@ void GuiSetupAreaInit(void)
     g_setupTileView.welcome = tile;
     GuiWelcomeWidget(tile);
 
-    tile = lv_tileview_add_tile(tileView, SETUP_SET_LANGUAGE, 0, LV_DIR_HOR);
-    g_setupTileView.setLanguage = tile;
-    GuiSetLanguageWidget(tile);
-
     g_setupTileView.currentTile = SETUP_WELCOME;
     g_setupTileView.tileView = tileView;
 
@@ -200,24 +119,9 @@ uint8_t GuiSetupNextTile(void)
 {
     switch (g_setupTileView.currentTile) {
     case SETUP_WELCOME:
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-        lv_obj_clear_flag(g_selectLanguageCont, LV_OBJ_FLAG_HIDDEN);
+        GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETUP);
+        GuiFrameOpenView(&g_webAuthView);
         break;
-    case SETUP_SET_LANGUAGE:
-        return SUCCESS_CODE;
-    }
-    g_setupTileView.currentTile++;
-    lv_obj_set_tile_id(g_setupTileView.tileView, g_setupTileView.currentTile, 0, LV_ANIM_OFF);
-    if (g_setupTileView.currentTile == SETUP_SET_LANGUAGE) {
-        GuiSetSetupPhase(SETUP_PAHSE_LANGUAGE);
-        if (g_reboot) {
-            if (!GuiJudgeCurrentPahse(SETUP_PAHSE_LANGUAGE)) {
-                GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETUP);
-                GuiFrameOpenView(&g_webAuthView);
-            } else {
-                g_reboot = false;
-            }
-        }
     }
 
     return SUCCESS_CODE;
@@ -228,10 +132,6 @@ uint8_t GuiSetupPrevTile(void)
     switch (g_setupTileView.currentTile) {
     case SETUP_WELCOME:
         return SUCCESS_CODE;
-    case SETUP_SET_LANGUAGE:
-        lv_obj_add_flag(g_selectLanguageCont, LV_OBJ_FLAG_HIDDEN);
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
-        break;
     }
     g_setupTileView.currentTile--;
     lv_obj_set_tile_id(g_setupTileView.tileView, g_setupTileView.currentTile, 0, LV_ANIM_OFF);
@@ -256,27 +156,6 @@ void GuiSetupAreaRefresh(void)
 {
     GuiNvsBarSetWalletIcon(NULL);
     GuiNvsBarSetWalletName("");
-    if (g_setupTileView.currentTile == SETUP_WELCOME) {
-        lv_obj_add_flag(g_selectLanguageCont, LV_OBJ_FLAG_HIDDEN);
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
-        SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
-        if (g_reboot) {
-            lastShutDownPage = GetSetupStep();
-        }
-        GuiSetSetupPhase(SETUP_PAHSE_WELCOME);
-        if (g_reboot) {
-            if (!GuiJudgeCurrentPahse(SETUP_PAHSE_WELCOME) && !GuiJudgeCurrentPahse(SETUP_PAHSE_LANGUAGE)) {
-                GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
-            } else {
-                g_reboot = false;
-            }
-        }
-    } else {
-        lv_obj_clear_flag(g_selectLanguageCont, LV_OBJ_FLAG_HIDDEN);
-        GuiSetSetupPhase(SETUP_PAHSE_LANGUAGE);
-        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-    }
 }
 
 void GuiSetupAreaRestart(void)

@@ -8,15 +8,11 @@
 
 static int32_t GuiHomeViewInit(void)
 {
-    GuiHomeAreaInit();
-    GuiModeGetWalletDesc();
     return SUCCESS_CODE;
 }
 
 static int32_t GuiHomeViewDeInit(void)
 {
-    GuiHomeDeInit();
-    GuiPendingHintBoxMoveToTargetParent(lv_scr_act());
     return SUCCESS_CODE;
 }
 

@@ -8,25 +8,6 @@ int32_t GuiReceiveViewEventProcess(void *self, uint16_t usEvent, void *param, ui
 {
     uint8_t chain = 0;
     switch (usEvent) {
-    case GUI_EVENT_OBJ_INIT:
-        if (param != NULL) {
-            chain = *(uint8_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
-        GlobalResourcesInit();
-        GuiReceiveInit(chain);
-        break;
-    case GUI_EVENT_OBJ_DEINIT:
-        GuiReceiveDeInit();
-        break;
-    case GUI_EVENT_DISACTIVE:
-        //GuiBitcoinReceiveDisActive();
-        break;
-    case GUI_EVENT_REFRESH:
-        break;
-    case SIG_SETUP_VIEW_TILE_PREV:
-        GuiReceivePrevTile();
         break;
     default:
         return ERR_GUI_UNHANDLED;

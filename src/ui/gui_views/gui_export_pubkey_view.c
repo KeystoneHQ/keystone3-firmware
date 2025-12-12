@@ -8,25 +8,6 @@ int32_t GuiExportPubkeyViewEventProcess(void *self, uint16_t usEvent, void *para
 {
     uint8_t chain = 0;
     switch (usEvent) {
-    case GUI_EVENT_OBJ_INIT:
-        if (param != NULL) {
-            chain = *(uint8_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
-        GuiExportPubkeyInit(chain);
-        break;
-    case GUI_EVENT_REFRESH:
-        break;
-    case GUI_EVENT_OBJ_DEINIT:
-        GuiExportPubkeyDeInit();
-        break;
-    case SIG_BACKGROUND_UR_GENERATE_SUCCESS:
-        GuiAnimantingQRCodeFirstUpdate((char*)param, usLen);
-        break;
-    case SIG_BACKGROUND_UR_UPDATE:
-        GuiAnimatingQRCodeUpdate((char*)param, usLen);
-        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

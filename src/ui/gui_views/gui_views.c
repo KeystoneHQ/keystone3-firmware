@@ -382,3 +382,10 @@ void CreateBetaNotice(void)
     g_noticeWindow = GuiCreateConfirmHintBox(&imgWarn, _("beta_version_notice_title"), _("beta_version_notice_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
     lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
+
+void OpenCliConfigurationHandler(lv_event_t *e)
+{
+    const char *label = "CLI configuration";
+    const char *url = "https://github.com/keystonehq/devkit";
+    GuiQRCodeHintBoxOpen(url, label, url);
+}

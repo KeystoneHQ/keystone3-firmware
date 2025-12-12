@@ -5,13 +5,11 @@
 
 static int32_t GuiDiceRollsViewInit(uint8_t seed_type)
 {
-    GuiDiceRollsWidgetsInit(seed_type);
     return SUCCESS_CODE;
 }
 
 static int32_t GuiDiceRollsViewDeInit(void)
 {
-    GuiDiceRollsWidgetsDeInit();
     return SUCCESS_CODE;
 }
 
@@ -19,16 +17,6 @@ int32_t GuiDiceRollsViewEventProcess(void *self, uint16_t usEvent, void *param, 
 {
     uint8_t seed_type;
     switch (usEvent) {
-    case GUI_EVENT_OBJ_INIT:
-        if (param != NULL) {
-            seed_type = *(uint8_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
-        return GuiDiceRollsViewInit(seed_type);
-    case GUI_EVENT_OBJ_DEINIT:
-        return GuiDiceRollsViewDeInit();
-        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

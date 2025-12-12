@@ -519,8 +519,8 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
 //     GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
 // }
 // SRAM_FREE(entropy);
-SetLockScreen(enable);
-return SUCCESS_CODE;
+    SetLockScreen(enable);
+    return SUCCESS_CODE;
 }
 
 static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)

@@ -5,13 +5,11 @@
 
 static int32_t GuiMultiPathCoinReceiveViewInit(uint8_t chain)
 {
-    GuiMultiPathCoinReceiveInit(chain);
     return SUCCESS_CODE;
 }
 
 static int32_t GuiMultiPathCoinReceiveViewDeInit(void)
 {
-    GuiMultiPathCoinReceiveDeInit();
     return SUCCESS_CODE;
 }
 
@@ -19,23 +17,6 @@ int32_t GuiMultiPathCoinReceiveViewEventProcess(void *self, uint16_t usEvent, vo
 {
     uint8_t chain = 0;
     switch (usEvent) {
-    case GUI_EVENT_OBJ_INIT:
-        if (param != NULL) {
-            chain = *(uint8_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
-        return GuiMultiPathCoinReceiveViewInit(chain);
-    case GUI_EVENT_OBJ_DEINIT:
-        return GuiMultiPathCoinReceiveViewDeInit();
-    case GUI_EVENT_DISACTIVE:
-        break;
-    case GUI_EVENT_REFRESH:
-        // GuiMultiPathCoinReceiveRefresh();
-        break;
-    case SIG_SETUP_VIEW_TILE_PREV:
-        GuiMultiPathCoinReceivePrevTile();
-        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

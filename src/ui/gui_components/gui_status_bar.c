@@ -501,13 +501,13 @@ static void RefreshStatusBar(void)
     }
 }
 
-// static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)
-// {
-//     lv_obj_t *btn = GuiCreateImgButton(navBar, &imgArrowLeft, 64, NULL, NULL);
-//     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
+static lv_obj_t *CreateReturnBtn(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateImgButton(navBar, &imgArrowLeft, 64, NULL, NULL);
+    lv_obj_align(btn, LV_ALIGN_LEFT_MID, 10, 0);
 
-//     return btn;
-// }
+    return btn;
+}
 
 // static lv_obj_t *CreateCloseBtn(lv_obj_t *navBar)
 // {
@@ -529,13 +529,13 @@ static void RefreshStatusBar(void)
 //     return btn;
 // }
 
-// static lv_obj_t *CreateMidLabel(lv_obj_t *navBar)
-// {
-//     lv_obj_t *label = GuiCreateTextLabel(navBar, "");
-//     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+static lv_obj_t *CreateMidLabel(lv_obj_t *navBar)
+{
+    lv_obj_t *label = GuiCreateTextLabel(navBar, "");
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 
-//     return label;
-// }
+    return label;
+}
 
 // static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
 // {
@@ -549,13 +549,13 @@ static void RefreshStatusBar(void)
 //     return btn;
 // }
 
-// static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
-// {
-//     lv_obj_t *btn = GuiCreateStatusCoinButton(navBar, _(""), &walletBluewallet);
-//     lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
+static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
+{
+    lv_obj_t *btn = GuiCreateStatusCoinButton(navBar, _(""), &imgDevLogo);
+    lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
 
-//     return btn;
-// }
+    return btn;
+}
 
 // static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
 // {
@@ -669,16 +669,16 @@ void DestoryNavBarWidget(NavBarWidget_t *navBarWidget)
 void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button,
                       lv_event_cb_t eventCb, void *param)
 {
-    // if (navBarWidget->leftBtn != NULL && lv_obj_is_valid(navBarWidget->leftBtn)) {
-    //     lv_obj_del(navBarWidget->leftBtn);
-    //     navBarWidget->leftBtn = NULL;
-    // }
-    // lv_event_cb_t leftButtonCb = NULL;
-    // switch (button) {
-    // case NVS_BAR_RETURN:
-    //     navBarWidget->leftBtn = CreateReturnBtn(navBarWidget->navBar);
-    //     leftButtonCb = eventCb;
-    //     break;
+    if (navBarWidget->leftBtn != NULL && lv_obj_is_valid(navBarWidget->leftBtn)) {
+        lv_obj_del(navBarWidget->leftBtn);
+        navBarWidget->leftBtn = NULL;
+    }
+    lv_event_cb_t leftButtonCb = NULL;
+    switch (button) {
+    case NVS_BAR_RETURN:
+        navBarWidget->leftBtn = CreateReturnBtn(navBarWidget->navBar);
+        leftButtonCb = eventCb;
+        break;
     // case NVS_BAR_CLOSE:
     //     navBarWidget->leftBtn = CreateCloseBtn(navBarWidget->navBar);
     //     leftButtonCb = eventCb;
@@ -687,48 +687,48 @@ void SetNavBarLeftBtn(NavBarWidget_t *navBarWidget, NVS_LEFT_BUTTON_ENUM button,
     //     navBarWidget->leftBtn = CreateManageBtn(navBarWidget->navBar);
     //     leftButtonCb = eventCb;
     //     break;
-    // default:
-    //     return;
-    // }
-    // lv_obj_clear_flag(navBarWidget->leftBtn, LV_OBJ_FLAG_HIDDEN);
-    // if (leftButtonCb != NULL) {
-    //     if (button != NVS_BAR_MANAGE) {
-    //         lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_CLICKED,
-    //                             param);
-    //     } else {
-    //         lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_CLICKED,
-    //                             param);
-    //     }
-    // }
+    default:
+        return;
+    }
+    lv_obj_clear_flag(navBarWidget->leftBtn, LV_OBJ_FLAG_HIDDEN);
+    if (leftButtonCb != NULL) {
+        if (button != NVS_BAR_MANAGE) {
+            lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_CLICKED,
+                                param);
+        } else {
+            lv_obj_add_event_cb(navBarWidget->leftBtn, leftButtonCb, LV_EVENT_CLICKED,
+                                param);
+        }
+    }
 }
 
 void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
                      lv_event_cb_t eventCb, void *param)
 {
-    // if (navBarWidget->midBtn != NULL && lv_obj_is_valid(navBarWidget->midBtn)) {
-    //     lv_obj_del(navBarWidget->midBtn);
-    //     navBarWidget->midBtn = NULL;
-    // }
-    // lv_event_cb_t midButtonCb = NULL;
-    // switch (button) {
+    if (navBarWidget->midBtn != NULL && lv_obj_is_valid(navBarWidget->midBtn)) {
+        lv_obj_del(navBarWidget->midBtn);
+        navBarWidget->midBtn = NULL;
+    }
+    lv_event_cb_t midButtonCb = NULL;
+    switch (button) {
     // case NVS_BAR_MID_WORD_SELECT:
     //     navBarWidget->midBtn = CreateMidWordCntSelect(navBarWidget->navBar);
     //     midButtonCb = eventCb;
     //     break;
-    // case NVS_BAR_MID_LABEL:
-    //     navBarWidget->midBtn = CreateMidLabel(navBarWidget->navBar);
-    //     midButtonCb = eventCb;
-    //     break;
-    // case NVS_BAR_MID_COIN:
-    //     navBarWidget->midBtn = CreateCoinBtn(navBarWidget->navBar);
-    //     return;
-    // default:
-    //     return;
-    // }
-    // lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
-    // if (midButtonCb != NULL) {
-    //     lv_obj_add_event_cb(navBarWidget->midBtn, midButtonCb, LV_EVENT_CLICKED, param);
-    // }
+    case NVS_BAR_MID_LABEL:
+        navBarWidget->midBtn = CreateMidLabel(navBarWidget->navBar);
+        midButtonCb = eventCb;
+        break;
+    case NVS_BAR_MID_COIN:
+        navBarWidget->midBtn = CreateCoinBtn(navBarWidget->navBar);
+        return;
+    default:
+        return;
+    }
+    lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
+    if (midButtonCb != NULL) {
+        lv_obj_add_event_cb(navBarWidget->midBtn, midButtonCb, LV_EVENT_CLICKED, param);
+    }
 }
 
 // void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
@@ -769,25 +769,25 @@ void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
 void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
                     const char *text)
 {
-    // SetNavBarMidBtn(navBarWidget, button, NULL, NULL);
-    // switch (button) {
+    SetNavBarMidBtn(navBarWidget, button, NULL, NULL);
+    switch (button) {
     // case NVS_BAR_MID_WORD_SELECT:
     //     lv_label_set_text(lv_obj_get_child(navBarWidget->midBtn, 0), text);
     //     break;
-    // case NVS_BAR_MID_LABEL:
-    //     lv_label_set_text(navBarWidget->midBtn, text);
-    //     lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
-    //     lv_obj_refr_size(navBarWidget->midBtn);
-    //     if (lv_obj_get_self_width(navBarWidget->midBtn) > 300) {
-    //         lv_label_set_long_mode(navBarWidget->midBtn, LV_LABEL_LONG_SCROLL_CIRCULAR);
-    //         lv_obj_set_width(navBarWidget->midBtn, 300);
-    //     }
+    case NVS_BAR_MID_LABEL:
+        lv_label_set_text(navBarWidget->midBtn, text);
+        lv_obj_clear_flag(navBarWidget->midBtn, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_refr_size(navBarWidget->midBtn);
+        if (lv_obj_get_self_width(navBarWidget->midBtn) > 300) {
+            lv_label_set_long_mode(navBarWidget->midBtn, LV_LABEL_LONG_SCROLL_CIRCULAR);
+            lv_obj_set_width(navBarWidget->midBtn, 300);
+        }
 
-    //     // GuiNvsBarSetMidCb(NVS_BAR_MID_LABEL, NULL, NULL);
-    //     break;
-    // default:
-    //     return;
-    // }
+        // GuiNvsBarSetMidCb(NVS_BAR_MID_LABEL, NULL, NULL);
+        break;
+    default:
+        return;
+    }
 }
 
 void SetRightBtnLabel(NavBarWidget_t *navBarWidget,
@@ -817,13 +817,13 @@ void SetNavBarRightBtn(NavBarWidget_t *navBarWidget,
                        NVS_RIGHT_BUTTON_ENUM button, lv_event_cb_t eventCb,
                        void *param)
 {
-    // if (navBarWidget->rightBtn != NULL &&
-    //         lv_obj_is_valid(navBarWidget->rightBtn)) {
-    //     lv_obj_del(navBarWidget->rightBtn);
-    //     navBarWidget->rightBtn = NULL;
-    // }
-    // lv_event_cb_t rightButtonCb = NULL;
-    // switch (button) {
+    if (navBarWidget->rightBtn != NULL &&
+            lv_obj_is_valid(navBarWidget->rightBtn)) {
+        lv_obj_del(navBarWidget->rightBtn);
+        navBarWidget->rightBtn = NULL;
+    }
+    lv_event_cb_t rightButtonCb = NULL;
+    switch (button) {
     // case NVS_BAR_WORD_SELECT:
     //     navBarWidget->rightBtn = CreateWordCntSelect(navBarWidget->navBar);
     //     rightButtonCb = eventCb;
@@ -848,10 +848,10 @@ void SetNavBarRightBtn(NavBarWidget_t *navBarWidget,
     //     navBarWidget->rightBtn = CreateSearch(navBarWidget->navBar);
     //     rightButtonCb = eventCb;
     //     break;
-    // case NVS_BAR_NEW_SKIP:
-    //     navBarWidget->rightBtn = CreateNewSkip(navBarWidget->navBar);
-    //     rightButtonCb = eventCb;
-    //     break;
+    case NVS_BAR_NEW_SKIP:
+        navBarWidget->rightBtn = CreateNewSkip(navBarWidget->navBar);
+        rightButtonCb = eventCb;
+        break;
     // case NVS_BAR_UNDO:
     //     navBarWidget->rightBtn = CreateUndo(navBarWidget->navBar);
     //     rightButtonCb = eventCb;
@@ -860,12 +860,12 @@ void SetNavBarRightBtn(NavBarWidget_t *navBarWidget,
     //     navBarWidget->rightBtn = CreateSDCard(navBarWidget->navBar);
     //     rightButtonCb = eventCb;
     //     break;
-    // default:
-    //     return;
-    // }
-    // lv_obj_clear_flag(navBarWidget->rightBtn, LV_OBJ_FLAG_HIDDEN);
-    // if (rightButtonCb != NULL) {
-    //     lv_obj_add_event_cb(navBarWidget->rightBtn, rightButtonCb, LV_EVENT_CLICKED,
-    //                         param);
-    // }
+    default:
+        return;
+    }
+    lv_obj_clear_flag(navBarWidget->rightBtn, LV_OBJ_FLAG_HIDDEN);
+    if (rightButtonCb != NULL) {
+        lv_obj_add_event_cb(navBarWidget->rightBtn, rightButtonCb, LV_EVENT_CLICKED,
+                            param);
+    }
 }

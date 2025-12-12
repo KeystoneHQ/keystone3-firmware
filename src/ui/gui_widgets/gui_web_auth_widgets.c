@@ -138,6 +138,7 @@ void GuiWebAuthAreaDeInit()
 // Unlock, Return from QRCode, Return from Purpose(in setup)
 void GuiWebAuthAreaRefresh()
 {
+    printf("%s %d..\n", __func__, __LINE__);
     GuiWebAuthInitNVSBar();
     if (g_webAuthEntry == WEB_AUTH_ENTRY_SETUP) {
         GuiSetSetupPhase(SETUP_PAHSE_WEB_AUTH);
@@ -169,7 +170,7 @@ void GuiWebAuthInitNVSBar()
 
 static void GuiGoToFirmwareUpdateViewHandler(lv_event_t *e)
 {
-    GuiFrameOpenViewWithParam(&g_firmwareUpdateView, &g_firmwareWareEntry, sizeof(g_firmwareWareEntry));
+    GuiFrameOpenView(&g_prepareKeyPairView);
 }
 
 static void GuiOpenQRCodeHintBox()

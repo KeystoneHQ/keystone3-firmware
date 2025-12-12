@@ -6,13 +6,11 @@
 
 static int32_t GuiTonMnemonicHintViewInit()
 {
-    GuiTonMnemonicHintWidgetsInit();
     return SUCCESS_CODE;
 }
 
 static int32_t GuiTonMnemonicHintViewDeInit(void)
 {
-    GuiTonMnemonicHintWidgetsDeInit();
     return SUCCESS_CODE;
 }
 

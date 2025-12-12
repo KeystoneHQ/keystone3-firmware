@@ -67,11 +67,14 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         break;
     case SIG_INIT_GET_ACCOUNT_NUMBER:
         walletNum = *(uint8_t *)param;
-        if (walletNum == 0) {
-            GuiFrameOpenView(&g_setupView);
-            break;
-        }
-        ASSERT(walletNum > 0);
+        // GuiFrameOpenView(&g_setupView);
+        // GuiFrameOpenView(&g_prepareKeyPairView);
+        GuiFrameOpenView(&g_setupDoneView);
+        // if (walletNum == 0) {
+        //     GuiFrameOpenView(&g_setupView);
+        //     break;
+        // }
+        // ASSERT(walletNum != 0);
         break;
     case SIG_INIT_BATTERY:
         battState = *(uint16_t *)param;
@@ -96,13 +99,17 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         break;
     case SIG_INIT_TRANSFER_NFT_SCREEN:
         break;
-    case SIG_INIT_USB_CONNECTION:
+case SIG_INIT_USB_CONNECTION:
+        printf("%s %d..\n", __func__, __LINE__);
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0 && GetUsbDetectState()) {
+        printf("%s %d..\n", __func__, __LINE__);
             if (GetUsbState() == false) {
+        printf("%s %d..\n", __func__, __LINE__);
                 OpenMsgBox(&g_guiMsgBoxUsbConnection);
             }
         } else {
+        printf("%s %d..\n", __func__, __LINE__);
             CloseMsgBox(&g_guiMsgBoxUsbConnection);
         }
         break;

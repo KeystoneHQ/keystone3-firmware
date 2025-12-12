@@ -27,7 +27,7 @@ LV_IMG_DECLARE(imgLogoGraphL);
 // LV_IMG_DECLARE(imgSwitch);
 // LV_IMG_DECLARE(imgConversion);
 // LV_IMG_DECLARE(imgArrowDownS);
-// LV_IMG_DECLARE(imgArrowLeft);
+LV_IMG_DECLARE(imgArrowLeft);
 // LV_IMG_DECLARE(imgWalletSetting);
 // LV_IMG_DECLARE(imgSystemSetting);
 // LV_IMG_DECLARE(imgConnection);
@@ -152,6 +152,8 @@ LV_IMG_DECLARE(imgRing);
 // LV_IMG_DECLARE(imgSoftwareWallet);
 // LV_IMG_DECLARE(imgJupiter);
 // LV_IMG_DECLARE(imgEllipse);
+LV_IMG_DECLARE(imgDevLogo);
+
 // emoji
 // LV_IMG_DECLARE(emojiAlien);
 // LV_IMG_DECLARE(emojiAt);

@@ -4,7 +4,7 @@
 #include "gui_home_widgets.h"
 #include "cjson/cJSON.h"
 #include "stdint.h"
-#include "gui_resolve_ur.h"
+// #include "gui_resolve_ur.h"
 #include <time.h>
 
 #ifndef BTC_ONLY
@@ -560,51 +560,51 @@ static void reset_qr_state()
 
 static bool on_qr_detected(const char *qrString)
 {
-    printf("qrString: %s\r\n", qrString);
-    if (firstQrFlag) {
-        QRProtocol t = infer_qrcode_type(qrString);
-        switch (t) {
-        case QRCodeTypeText:
-            urResult = parse_qrcode_text(qrString);
-            break;
-        default:
-            urResult = parse_ur(qrString);
-            break;
-        }
-        if (urResult->error_code == 0) {
-            if (urResult->is_multi_part == 0) {
-                // single qr code
-                firstQrFlag = true;
-                viewType.viewType = urResult->t;
-                viewType.urType = urResult->ur_type;
-                handleURResult(urResult, NULL, viewType, false);
-                return true;
-            } else {
-                // first qr code
-                firstQrFlag = false;
-                decoder = urResult->decoder;
-            }
-        }
-    } else {
-        struct URParseMultiResult *MultiurResult = receive(qrString, decoder);
-        if (MultiurResult->error_code == 0) {
-            if (MultiurResult->is_complete) {
-                firstQrFlag = true;
-                viewType.viewType = MultiurResult->t;
-                viewType.urType = MultiurResult->ur_type;
-                printf("MultiurResult->t: %u\n", MultiurResult->t);
-                handleURResult(NULL, MultiurResult, viewType, true);
-                return true;
-            }
-        } else {
-            printf("error code: %d\r\n", MultiurResult->error_code);
-            printf("error message: %s\r\n", MultiurResult->error_message);
-            return true;
-        }
-        if (!(MultiurResult->is_complete)) {
-            free_ur_parse_multi_result(MultiurResult);
-        }
-    }
+    // printf("qrString: %s\r\n", qrString);
+    // if (firstQrFlag) {
+    //     QRProtocol t = infer_qrcode_type(qrString);
+    //     switch (t) {
+    //     case QRCodeTypeText:
+    //         urResult = parse_qrcode_text(qrString);
+    //         break;
+    //     default:
+    //         urResult = parse_ur(qrString);
+    //         break;
+    //     }
+    //     if (urResult->error_code == 0) {
+    //         if (urResult->is_multi_part == 0) {
+    //             // single qr code
+    //             firstQrFlag = true;
+    //             viewType.viewType = urResult->t;
+    //             viewType.urType = urResult->ur_type;
+    //             handleURResult(urResult, NULL, viewType, false);
+    //             return true;
+    //         } else {
+    //             // first qr code
+    //             firstQrFlag = false;
+    //             decoder = urResult->decoder;
+    //         }
+    //     }
+    // } else {
+    //     struct URParseMultiResult *MultiurResult = receive(qrString, decoder);
+    //     if (MultiurResult->error_code == 0) {
+    //         if (MultiurResult->is_complete) {
+    //             firstQrFlag = true;
+    //             viewType.viewType = MultiurResult->t;
+    //             viewType.urType = MultiurResult->ur_type;
+    //             printf("MultiurResult->t: %u\n", MultiurResult->t);
+    //             handleURResult(NULL, MultiurResult, viewType, true);
+    //             return true;
+    //         }
+    //     } else {
+    //         printf("error code: %d\r\n", MultiurResult->error_code);
+    //         printf("error message: %s\r\n", MultiurResult->error_message);
+    //         return true;
+    //     }
+    //     if (!(MultiurResult->is_complete)) {
+    //         free_ur_parse_multi_result(MultiurResult);
+    //     }
+    // }
 
     return false;
 }

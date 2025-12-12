@@ -7,18 +7,6 @@
 int32_t GuiDisplayViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     switch (usEvent) {
-    case GUI_EVENT_OBJ_INIT:
-        GuiDisplayWidgetsInit();
-        break;
-    case GUI_EVENT_OBJ_DEINIT:
-        GuiDisplayWidgetsDeInit();
-        break;
-    case GUI_EVENT_REFRESH:
-        GuiDisplayWidgetsRefresh();
-        break;
-    case GUI_EVENT_RESTART:
-        GuiDisplayWidgetsRestart();
-        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

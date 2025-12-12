@@ -239,6 +239,8 @@ extern GUI_VIEW g_multisigReadSdcardView;
 extern GUI_VIEW g_createMultisigWalletView;
 extern GUI_VIEW g_manageMultisigWalletView;
 #endif
+extern GUI_VIEW g_prepareKeyPairView;
+extern GUI_VIEW g_setupDoneView;
 
 typedef void (*ErrorWindowCallback)(void);
 
@@ -268,5 +270,6 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
 void GuiSDCardExportHandler(lv_event_t *e);
 void CreateBetaNotice(void);
 void GuiUpdateTonWriteSeWidget(lv_obj_t *parent);
+void OpenCliConfigurationHandler(lv_event_t *e);
 
 #endif /* _GUI_VIEWS_H */

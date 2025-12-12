@@ -490,250 +490,250 @@ int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len)
     return GenerateEntropy(randomness, len, "generate trng randomness");
 }
 
-#ifndef BUILD_PRODUCTION
+// #ifndef BUILD_PRODUCTION
 
-/// @brief
-/// @param argc Test arg count.
-/// @param argv Test arg values.
-void KeyStoreTest(int argc, char *argv[])
-{
-    uint8_t entropy[ENTROPY_MAX_LEN], seed[SEED_LEN], accountIndex, entropyLen, key[32], slip39Ems[SLIP39_EMS_LEN];
-    int32_t index, ret, tempI32;
-    uint8_t byte32[BUFFER_SIZE_32] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
-    char tempStr[BUFFER_SIZE_32];
-    uint8_t ems[BUFFER_SIZE_32];
-    if (strcmp(argv[0], "new_entropy") == 0) {
-        VALUE_CHECK(argc, 4);
-        sscanf(argv[1], "%d", &index);
-        sscanf(argv[2], "%d", &tempI32);
-        entropyLen = tempI32;
-        GenerateEntropy(entropy, entropyLen, argv[3]);
-        PrintArray("entropy", entropy, entropyLen);
-        ret = CreateNewAccount(index, entropy, entropyLen, argv[3]);
-        printf("CreateNewAccount=%d\r\n", ret);
-    } else if (strcmp(argv[0], "new_slip39_entropy") == 0) {
-        VALUE_CHECK(argc, 4);
-        sscanf(argv[1], "%d", &index);
-        sscanf(argv[2], "%d", &tempI32);
-        entropyLen = tempI32;
-        GenerateEntropy(entropy, entropyLen, argv[3]);
-        PrintArray("entropy", entropy, entropyLen);
-        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[3], 4543, false, 0);
-        printf("CreateNewSlip39Account=%d\r\n", ret);
-    } else if (strcmp(argv[0], "save_slip39_entropy") == 0) {
-        VALUE_CHECK(argc, 5);
-        sscanf(argv[1], "%d", &index);
-        sscanf(argv[2], "%d", &tempI32);
-        entropyLen = tempI32;
-        printf("entropylen = %d\n", entropyLen);
-        if (StrToHex(entropy, argv[3]) != entropyLen) {
-            printf("input length err\r\n");
-        }
-        PrintArray("entropy", entropy, entropyLen);
-        uint8_t ems[32] = {0};
-        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[4], 1234, false, 0);
-        printf("CreateNewSlip39Account=%d\r\n", ret);
-    } else if (strcmp(argv[0], "get_entropy") == 0) {
-        VALUE_CHECK(argc, 3);
-        sscanf(argv[1], "%d", &index);
-        ret = GetAccountEntropy(index, entropy, &entropyLen, argv[2]);
-        printf("GetAccountEntropy=%d\r\n", ret);
-        if (ret == SUCCESS_CODE) {
-            PrintArray("entropy", entropy, entropyLen);
-        }
-    } else if (strcmp(argv[0], "save_new_entropy") == 0) {
-        VALUE_CHECK(argc, 5);
-        sscanf(argv[1], "%d", &index);
-        sscanf(argv[2], "%d", &tempI32);
-        entropyLen = tempI32;
-        printf("entropylen = %d\n", entropyLen);
-        if (StrToHex(entropy, argv[3]) != entropyLen) {
-            printf("input length err\r\n");
-        }
-        PrintArray("entropy", entropy, 32);
-        ret = CreateNewAccount(index, entropy, entropyLen, argv[4]);
-        printf("CreateNewAccount=%d\r\n", ret);
-    } else if (strcmp(argv[0], "get_seed") == 0) {
-        VALUE_CHECK(argc, 3);
-        sscanf(argv[1], "%d", &index);
-        ret = GetAccountSeed(index, seed, argv[2]);
-        printf("GetAccountSeed=%d\r\n", ret);
-        if (ret == SUCCESS_CODE) {
-            PrintArray("seed", seed, SEED_LEN);
-        }
-    } else if (strcmp(argv[0], "get_slip39_ems") == 0) {
-        VALUE_CHECK(argc, 3);
-        sscanf(argv[1], "%d", &index);
-        ret = GetAccountSlip39Ems(index, slip39Ems, argv[2]);
-        printf("GetAccountSlip39Ems=%d\r\n", ret);
-        if (ret == SUCCESS_CODE) {
-            PrintArray("slip39Ems", slip39Ems, SLIP39_EMS_LEN);
-        }
-    } else if (strcmp(argv[0], "verify_password") == 0) {
-        VALUE_CHECK(argc, 2);
-        ret = VerifyCurrentAccountPassword(argv[1]);
-        if (ret == SUCCESS_CODE) {
-            printf("VerifyCurrentAccountPassword ok\r\n");
-        } else {
-            printf("VerifyCurrentAccountPassword err=%d\r\n", ret);
-        }
-        ret = VerifyPassword(&accountIndex, argv[1]);
-        if (ret == SUCCESS_CODE) {
-            printf("password verify ok,accountIndex=%d\r\n", accountIndex);
-        } else {
-            printf("password verify err\r\n");
-        }
-    } else if (strcmp(argv[0], "login") == 0) {
-        VALUE_CHECK(argc, 2);
-        ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
-        if (ret == SUCCESS_CODE) {
-            printf("login ok,accountIndex=%d\r\n", accountIndex);
-        } else {
-            printf("login err=%d\r\n", ret);
-        }
-    } else if (strcmp(argv[0], "change_password") == 0) {
-        VALUE_CHECK(argc, 4);
-        sscanf(argv[1], "%d", &index);
-        ret = ChangePassword(index, argv[2], argv[3]);
-        printf("ChangePassword=%d\r\n", ret);
-    } else if (strcmp(argv[0], "get_account") == 0) {
-        ret = GetBlankAccountIndex(&accountIndex);
-        if (ret == SUCCESS_CODE) {
-            printf("next blank account=%d\r\n", accountIndex);
-        } else {
-            printf("get blank account err\r\n");
-        }
-        ret = GetExistAccountNum(&accountIndex);
-        if (ret == SUCCESS_CODE) {
-            printf("existing account num=%d\r\n", accountIndex);
-        } else {
-            printf("get exist account err\r\n");
-        }
-    } else if (strcmp(argv[0], "destroy_account") == 0) {
-        VALUE_CHECK(argc, 2);
-        sscanf(argv[1], "%d", &index);
-        ret = DestroyAccount(index);
-        printf("DestroyAccount=%d\r\n", ret);
-    } else if (strcmp(argv[0], "get_info") == 0) {
-        uint8_t mfp[4];
-        AccountInfo_t accountInfo;
-        printf("current account index=%d\r\n", GetCurrentAccountIndex());
-        printf("GetPasscodeType=%d,GetPassphraseQuickAccess=%d,GetWalletIconIndex=%d\r\n", GetPasscodeType(), GetPassphraseQuickAccess(), GetWalletIconIndex());
-        printf("GetMnemonicType=%d,slip39_ID=%d,slip39_IE=%d\r\n", GetMnemonicType(), GetSlip39Id(), GetSlip39Ie());
-        printf("wallet name=%s\r\n", GetWalletName());
-        GetMasterFingerPrint(mfp);
-        PrintArray("mfp", mfp, 4);
-        for (accountIndex = 0; accountIndex < 3; accountIndex++) {
-            GetAccountInfo(accountIndex, &accountInfo);
-            PrintArray("accountInfo", (uint8_t *)&accountInfo, sizeof(AccountInfo_t));
-        }
-    } else if (strcmp(argv[0], "set_info") == 0) {
-        PasscodeType passcodeType;
-        MnemonicType mnemonicType;
-        VALUE_CHECK(argc, 3);
-        if (strcmp(argv[1], "passcode") == 0) {
-            sscanf(argv[2], "%d", &tempI32);
-            passcodeType = tempI32 ? PASSCODE_TYPE_PASSWORD : PASSCODE_TYPE_PIN;
-            SetPasscodeType(passcodeType);
-            printf("set passcode type %d\r\n", passcodeType);
-        } else if (strcmp(argv[1], "mnemonic") == 0) {
-            sscanf(argv[2], "%d", &tempI32);
-            mnemonicType = tempI32 ? MNEMONIC_TYPE_SLIP39 : MNEMONIC_TYPE_BIP39;
-            SetMnemonicType(mnemonicType);
-            printf("set mnemonic type %d\r\n", mnemonicType);
-        } else if (strcmp(argv[1], "passphrase") == 0) {
-            sscanf(argv[2], "%d", &tempI32);
-            SetPassphraseQuickAccess(tempI32 != 0);
-            printf("set passphrase exist %d\r\n", tempI32 != 0);
-        } else if (strcmp(argv[1], "icon") == 0) {
-            sscanf(argv[2], "%d", &tempI32);
-            SetWalletIconIndex(tempI32);
-            printf("set icon %d\r\n", tempI32);
-        } else if (strcmp(argv[1], "name") == 0) {
-            SetWalletName(argv[2]);
-            printf("set name %s\r\n", argv[2]);
-        } else {
-            printf("set_info input err\r\n");
-        }
-    } else if (strcmp(argv[0], "public_info") == 0) {
-        printf("login password err count=%d\r\n", GetLoginPasswordErrorCount());
-        printf("current password err count=%d\r\n", GetCurrentPasswordErrorCount());
-        printf("last lock device time=%d\r\n", GetLastLockDeviceTime());
-    } else if (strcmp(argv[0], "set_last_lock_device_time") == 0) {
-        SetLastLockDeviceTime(GetCurrentStampTime());
-        printf("set last lock device time done\n");
-    } else if (strcmp(argv[0], "set_passphrase") == 0) {
-        VALUE_CHECK(argc, 3);
-        ret = SetPassphrase(GetCurrentAccountIndex(), argv[1], argv[2]);
-        printf("SetPassphrase=%d\r\n", ret);
-    } else if (strcmp(argv[0], "get_passphrase") == 0) {
-        for (accountIndex = 0; accountIndex < 3; accountIndex++) {
-            printf("accountIndex %d:\r\n", accountIndex);
-            printf("passphrase=%s\r\n", g_passphraseInfo[accountIndex].passphrase);
-            printf("mfp=0x%08X\r\n", *((uint32_t *)(g_passphraseInfo[accountIndex].mfp)));
-        }
-    } else if (strcmp(argv[0], "set_fp_info") == 0) {
-        printf("set fp info test\r\n");
-        TrngGet(key, 32);
-        PrintArray("fp aes key", key, 32);
-        SetFpCommAesKey(key);
-        TrngGet(key, 32);
-        PrintArray("fp rest key", key, 32);
-        SetFpResetKey(key);
-        for (index = 0; index < 10; index++) {
-            memset_s(key, 32, index + 1, 32);
-            SetFpEncryptedPassword(index, key);
-        }
-        SetFpStateInfo(byte32);
-        printf("set done\r\n");
-    } else if (strcmp(argv[0], "get_fp_info") == 0) {
-        printf("get fp info test\r\n");
-        if (FpAesKeyExist()) {
-            GetFpCommAesKey(key);
-            PrintArray("fp aes key", key, 16);
-        } else {
-            printf("fp aes does not exist\r\n");
-        }
-        // if (FpResetKeyExist()) {
-        //     GetFpResetKey(key);
-        //     PrintArray("fp reset key", key, 16);
-        // } else {
-        //     printf("fp reset does not exist\r\n");
-        // }
-        for (index = 0; index < 10; index++) {
-            GetFpEncryptedPassword(index, key);
-            snprintf_s(tempStr, BUFFER_SIZE_32, "encrypted password %d", index);
-            PrintArray(tempStr, key, 32);
-        }
-        GetFpStateInfo(byte32);
-        PrintArray("fp state info", byte32, 32);
-    } else if (strcmp(argv[0], "clear_fp_info") == 0) {
-        printf("clear fp info test\r\n");
-        memset_s(key, 32, 0, 32);
-        SetFpCommAesKey(key);
-        SetFpResetKey(key);
-        for (index = 0; index < 10; index++) {
-            SetFpEncryptedPassword(index, key);
-        }
-        uint8_t tempByte32[32] = {0};
-        SetFpStateInfo(tempByte32);
-        printf("clear done\r\n");
-    } else if (strcmp(argv[0], "device_pub_key") == 0) {
-        printf("get device pubkey test\r\n");
-        uint8_t pubkey[65] = {0};
-        GetDevicePublicKey(pubkey);
-        PrintArray("device pubkey", pubkey, 65);
-        printf("get device pubkey clear done\r\n");
-    } else if (strcmp(argv[0], "sign_device_key") == 0) {
-        printf("sign with device pubkey test\r\n");
-        uint8_t message[32] = {0};
-        uint8_t signature[64] = {0};
-        SignMessageWithDeviceKey(message, signature);
-        PrintArray("signature is using device key", signature, 64);
-        printf("signature with device key done\r\n");
-    } else {
-        printf("keystore cmd err\r\n");
-    }
-}
+// /// @brief
+// /// @param argc Test arg count.
+// /// @param argv Test arg values.
+// void KeyStoreTest(int argc, char *argv[])
+// {
+//     uint8_t entropy[ENTROPY_MAX_LEN], seed[SEED_LEN], accountIndex, entropyLen, key[32], slip39Ems[SLIP39_EMS_LEN];
+//     int32_t index, ret, tempI32;
+//     uint8_t byte32[BUFFER_SIZE_32] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+//     char tempStr[BUFFER_SIZE_32];
+//     uint8_t ems[BUFFER_SIZE_32];
+//     if (strcmp(argv[0], "new_entropy") == 0) {
+//         VALUE_CHECK(argc, 4);
+//         sscanf(argv[1], "%d", &index);
+//         sscanf(argv[2], "%d", &tempI32);
+//         entropyLen = tempI32;
+//         GenerateEntropy(entropy, entropyLen, argv[3]);
+//         PrintArray("entropy", entropy, entropyLen);
+//         ret = CreateNewAccount(index, entropy, entropyLen, argv[3]);
+//         printf("CreateNewAccount=%d\r\n", ret);
+//     } else if (strcmp(argv[0], "new_slip39_entropy") == 0) {
+//         VALUE_CHECK(argc, 4);
+//         sscanf(argv[1], "%d", &index);
+//         sscanf(argv[2], "%d", &tempI32);
+//         entropyLen = tempI32;
+//         GenerateEntropy(entropy, entropyLen, argv[3]);
+//         PrintArray("entropy", entropy, entropyLen);
+//         ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[3], 4543, false, 0);
+//         printf("CreateNewSlip39Account=%d\r\n", ret);
+//     } else if (strcmp(argv[0], "save_slip39_entropy") == 0) {
+//         VALUE_CHECK(argc, 5);
+//         sscanf(argv[1], "%d", &index);
+//         sscanf(argv[2], "%d", &tempI32);
+//         entropyLen = tempI32;
+//         printf("entropylen = %d\n", entropyLen);
+//         if (StrToHex(entropy, argv[3]) != entropyLen) {
+//             printf("input length err\r\n");
+//         }
+//         PrintArray("entropy", entropy, entropyLen);
+//         uint8_t ems[32] = {0};
+//         ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[4], 1234, false, 0);
+//         printf("CreateNewSlip39Account=%d\r\n", ret);
+//     } else if (strcmp(argv[0], "get_entropy") == 0) {
+//         VALUE_CHECK(argc, 3);
+//         sscanf(argv[1], "%d", &index);
+//         ret = GetAccountEntropy(index, entropy, &entropyLen, argv[2]);
+//         printf("GetAccountEntropy=%d\r\n", ret);
+//         if (ret == SUCCESS_CODE) {
+//             PrintArray("entropy", entropy, entropyLen);
+//         }
+//     } else if (strcmp(argv[0], "save_new_entropy") == 0) {
+//         VALUE_CHECK(argc, 5);
+//         sscanf(argv[1], "%d", &index);
+//         sscanf(argv[2], "%d", &tempI32);
+//         entropyLen = tempI32;
+//         printf("entropylen = %d\n", entropyLen);
+//         if (StrToHex(entropy, argv[3]) != entropyLen) {
+//             printf("input length err\r\n");
+//         }
+//         PrintArray("entropy", entropy, 32);
+//         ret = CreateNewAccount(index, entropy, entropyLen, argv[4]);
+//         printf("CreateNewAccount=%d\r\n", ret);
+//     } else if (strcmp(argv[0], "get_seed") == 0) {
+//         VALUE_CHECK(argc, 3);
+//         sscanf(argv[1], "%d", &index);
+//         ret = GetAccountSeed(index, seed, argv[2]);
+//         printf("GetAccountSeed=%d\r\n", ret);
+//         if (ret == SUCCESS_CODE) {
+//             PrintArray("seed", seed, SEED_LEN);
+//         }
+//     } else if (strcmp(argv[0], "get_slip39_ems") == 0) {
+//         VALUE_CHECK(argc, 3);
+//         sscanf(argv[1], "%d", &index);
+//         ret = GetAccountSlip39Ems(index, slip39Ems, argv[2]);
+//         printf("GetAccountSlip39Ems=%d\r\n", ret);
+//         if (ret == SUCCESS_CODE) {
+//             PrintArray("slip39Ems", slip39Ems, SLIP39_EMS_LEN);
+//         }
+//     } else if (strcmp(argv[0], "verify_password") == 0) {
+//         VALUE_CHECK(argc, 2);
+//         ret = VerifyCurrentAccountPassword(argv[1]);
+//         if (ret == SUCCESS_CODE) {
+//             printf("VerifyCurrentAccountPassword ok\r\n");
+//         } else {
+//             printf("VerifyCurrentAccountPassword err=%d\r\n", ret);
+//         }
+//         ret = VerifyPassword(&accountIndex, argv[1]);
+//         if (ret == SUCCESS_CODE) {
+//             printf("password verify ok,accountIndex=%d\r\n", accountIndex);
+//         } else {
+//             printf("password verify err\r\n");
+//         }
+//     } else if (strcmp(argv[0], "login") == 0) {
+//         VALUE_CHECK(argc, 2);
+//         ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
+//         if (ret == SUCCESS_CODE) {
+//             printf("login ok,accountIndex=%d\r\n", accountIndex);
+//         } else {
+//             printf("login err=%d\r\n", ret);
+//         }
+//     } else if (strcmp(argv[0], "change_password") == 0) {
+//         VALUE_CHECK(argc, 4);
+//         sscanf(argv[1], "%d", &index);
+//         ret = ChangePassword(index, argv[2], argv[3]);
+//         printf("ChangePassword=%d\r\n", ret);
+//     } else if (strcmp(argv[0], "get_account") == 0) {
+//         ret = GetBlankAccountIndex(&accountIndex);
+//         if (ret == SUCCESS_CODE) {
+//             printf("next blank account=%d\r\n", accountIndex);
+//         } else {
+//             printf("get blank account err\r\n");
+//         }
+//         ret = GetExistAccountNum(&accountIndex);
+//         if (ret == SUCCESS_CODE) {
+//             printf("existing account num=%d\r\n", accountIndex);
+//         } else {
+//             printf("get exist account err\r\n");
+//         }
+//     } else if (strcmp(argv[0], "destroy_account") == 0) {
+//         VALUE_CHECK(argc, 2);
+//         sscanf(argv[1], "%d", &index);
+//         ret = DestroyAccount(index);
+//         printf("DestroyAccount=%d\r\n", ret);
+//     } else if (strcmp(argv[0], "get_info") == 0) {
+//         uint8_t mfp[4];
+//         AccountInfo_t accountInfo;
+//         printf("current account index=%d\r\n", GetCurrentAccountIndex());
+//         printf("GetPasscodeType=%d,GetPassphraseQuickAccess=%d,GetWalletIconIndex=%d\r\n", GetPasscodeType(), GetPassphraseQuickAccess(), GetWalletIconIndex());
+//         printf("GetMnemonicType=%d,slip39_ID=%d,slip39_IE=%d\r\n", GetMnemonicType(), GetSlip39Id(), GetSlip39Ie());
+//         printf("wallet name=%s\r\n", GetWalletName());
+//         GetMasterFingerPrint(mfp);
+//         PrintArray("mfp", mfp, 4);
+//         for (accountIndex = 0; accountIndex < 3; accountIndex++) {
+//             GetAccountInfo(accountIndex, &accountInfo);
+//             PrintArray("accountInfo", (uint8_t *)&accountInfo, sizeof(AccountInfo_t));
+//         }
+//     } else if (strcmp(argv[0], "set_info") == 0) {
+//         PasscodeType passcodeType;
+//         MnemonicType mnemonicType;
+//         VALUE_CHECK(argc, 3);
+//         if (strcmp(argv[1], "passcode") == 0) {
+//             sscanf(argv[2], "%d", &tempI32);
+//             passcodeType = tempI32 ? PASSCODE_TYPE_PASSWORD : PASSCODE_TYPE_PIN;
+//             SetPasscodeType(passcodeType);
+//             printf("set passcode type %d\r\n", passcodeType);
+//         } else if (strcmp(argv[1], "mnemonic") == 0) {
+//             sscanf(argv[2], "%d", &tempI32);
+//             mnemonicType = tempI32 ? MNEMONIC_TYPE_SLIP39 : MNEMONIC_TYPE_BIP39;
+//             SetMnemonicType(mnemonicType);
+//             printf("set mnemonic type %d\r\n", mnemonicType);
+//         } else if (strcmp(argv[1], "passphrase") == 0) {
+//             sscanf(argv[2], "%d", &tempI32);
+//             SetPassphraseQuickAccess(tempI32 != 0);
+//             printf("set passphrase exist %d\r\n", tempI32 != 0);
+//         } else if (strcmp(argv[1], "icon") == 0) {
+//             sscanf(argv[2], "%d", &tempI32);
+//             SetWalletIconIndex(tempI32);
+//             printf("set icon %d\r\n", tempI32);
+//         } else if (strcmp(argv[1], "name") == 0) {
+//             SetWalletName(argv[2]);
+//             printf("set name %s\r\n", argv[2]);
+//         } else {
+//             printf("set_info input err\r\n");
+//         }
+//     } else if (strcmp(argv[0], "public_info") == 0) {
+//         printf("login password err count=%d\r\n", GetLoginPasswordErrorCount());
+//         printf("current password err count=%d\r\n", GetCurrentPasswordErrorCount());
+//         printf("last lock device time=%d\r\n", GetLastLockDeviceTime());
+//     } else if (strcmp(argv[0], "set_last_lock_device_time") == 0) {
+//         // SetLastLockDeviceTime(GetCurrentStampTime());
+//         printf("set last lock device time done\n");
+//     } else if (strcmp(argv[0], "set_passphrase") == 0) {
+//         VALUE_CHECK(argc, 3);
+//         ret = SetPassphrase(GetCurrentAccountIndex(), argv[1], argv[2]);
+//         printf("SetPassphrase=%d\r\n", ret);
+//     } else if (strcmp(argv[0], "get_passphrase") == 0) {
+//         for (accountIndex = 0; accountIndex < 3; accountIndex++) {
+//             printf("accountIndex %d:\r\n", accountIndex);
+//             printf("passphrase=%s\r\n", g_passphraseInfo[accountIndex].passphrase);
+//             printf("mfp=0x%08X\r\n", *((uint32_t *)(g_passphraseInfo[accountIndex].mfp)));
+//         }
+//     } else if (strcmp(argv[0], "set_fp_info") == 0) {
+//         printf("set fp info test\r\n");
+//         TrngGet(key, 32);
+//         PrintArray("fp aes key", key, 32);
+//         SetFpCommAesKey(key);
+//         TrngGet(key, 32);
+//         PrintArray("fp rest key", key, 32);
+//         SetFpResetKey(key);
+//         for (index = 0; index < 10; index++) {
+//             memset_s(key, 32, index + 1, 32);
+//             SetFpEncryptedPassword(index, key);
+//         }
+//         SetFpStateInfo(byte32);
+//         printf("set done\r\n");
+//     } else if (strcmp(argv[0], "get_fp_info") == 0) {
+//         printf("get fp info test\r\n");
+//         if (FpAesKeyExist()) {
+//             GetFpCommAesKey(key);
+//             PrintArray("fp aes key", key, 16);
+//         } else {
+//             printf("fp aes does not exist\r\n");
+//         }
+//         // if (FpResetKeyExist()) {
+//         //     GetFpResetKey(key);
+//         //     PrintArray("fp reset key", key, 16);
+//         // } else {
+//         //     printf("fp reset does not exist\r\n");
+//         // }
+//         for (index = 0; index < 10; index++) {
+//             GetFpEncryptedPassword(index, key);
+//             snprintf_s(tempStr, BUFFER_SIZE_32, "encrypted password %d", index);
+//             PrintArray(tempStr, key, 32);
+//         }
+//         GetFpStateInfo(byte32);
+//         PrintArray("fp state info", byte32, 32);
+//     } else if (strcmp(argv[0], "clear_fp_info") == 0) {
+//         printf("clear fp info test\r\n");
+//         memset_s(key, 32, 0, 32);
+//         SetFpCommAesKey(key);
+//         SetFpResetKey(key);
+//         for (index = 0; index < 10; index++) {
+//             SetFpEncryptedPassword(index, key);
+//         }
+//         uint8_t tempByte32[32] = {0};
+//         SetFpStateInfo(tempByte32);
+//         printf("clear done\r\n");
+//     } else if (strcmp(argv[0], "device_pub_key") == 0) {
+//         printf("get device pubkey test\r\n");
+//         uint8_t pubkey[65] = {0};
+//         GetDevicePublicKey(pubkey);
+//         PrintArray("device pubkey", pubkey, 65);
+//         printf("get device pubkey clear done\r\n");
+//     } else if (strcmp(argv[0], "sign_device_key") == 0) {
+//         printf("sign with device pubkey test\r\n");
+//         uint8_t message[32] = {0};
+//         uint8_t signature[64] = {0};
+//         SignMessageWithDeviceKey(message, signature);
+//         PrintArray("signature is using device key", signature, 64);
+//         printf("signature with device key done\r\n");
+//     } else {
+//         printf("keystore cmd err\r\n");
+//     }
+// }
 
-#endif
+// #endif

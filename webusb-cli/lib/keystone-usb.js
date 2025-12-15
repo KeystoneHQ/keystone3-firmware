@@ -1,5 +1,6 @@
 import usb from 'usb';
 import { SERVICE_ID, DEVICE_INFO_CMD, TLV_TYPE, buildPacket, parseResponse, validatePublicKey, PROTOCOL } from './protocol.js';
+import { buildPublicKeyRequest, parseEAPDUResponse } from './eapdu-protocol.js';
 import { DEFAULT_VENDOR_ID, DEFAULT_PRODUCT_ID } from './constants.js';
 
 /**
@@ -129,7 +130,7 @@ export class KeystoneUSB {
   }
 
   /**
-   * 发送 K1 公钥到设备
+   * 发送 K1 公钥到设备（使用 EAPDU 协议）
    * @param {string} publicKey - 公钥的十六进制字符串
    */
   async sendPublicKey(publicKey) {
@@ -146,24 +147,78 @@ export class KeystoneUSB {
       throw new Error(validation.error);
     }
 
-    // 转换为 Buffer
-    const keyBuffer = Buffer.from(cleanKey, 'hex');
+    // 构建 EAPDU 协议包
+    const packets = buildPublicKeyRequest(cleanKey);
     
-    // 构建协议包 - 使用设备信息服务
-    // 注意：这里需要根据实际固件确定正确的 serviceId 和 commandId
-    // 暂时使用 DEVICE_INFO 服务，实际可能需要专门的服务
-    const tlvArray = [
-      {
-        type: TLV_TYPE.UPDATE_PUB_KEY,
-        value: keyBuffer
+    console.log(`\nSending ${packets.length} EAPDU packet(s)...`);
+    
+    // 发送所有数据包
+    for (let i = 0; i < packets.length; i++) {
+      console.log(`  Packet ${i + 1}/${packets.length}: ${packets[i].length} bytes`);
+      console.log(`    Hex: ${packets[i].toString('hex')}`);
+      await this.sendRaw(packets[i]);
+      
+      // 在包之间添加小延迟
+      if (i < packets.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 10));
       }
-    ];
+    }
     
-    const packet = buildPacket(SERVICE_ID.DEVICE_INFO, DEVICE_INFO_CMD.BASIC, tlvArray);
+    // 读取响应（可能是多包）
+    return await this.readEAPDUResponse();
+  }
 
-    // 发送数据并读取响应
-    await this.sendRaw(packet);
-    return await this.readResponse();
+  /**
+   * 读取 EAPDU 响应
+   */
+  async readEAPDUResponse(timeout = PROTOCOL.DEFAULT_TIMEOUT) {
+    if (!this.endpointIn) {
+      throw new Error('Device not connected');
+    }
+
+    // 读取第一个包以确定总包数
+    const firstPacket = await this.readRaw(64, timeout);
+    const firstResponse = parseEAPDUResponse(firstPacket);
+    
+    console.log(`\nReceived EAPDU response:`);
+    console.log(`  Total packets: ${firstResponse.totalPackets}`);
+    console.log(`  Status: ${firstResponse.statusMessage} (0x${firstResponse.status.toString(16)})`);
+    
+    // 如果只有一个包，直接返回
+    if (firstResponse.totalPackets === 1) {
+      return {
+        success: firstResponse.success,
+        status: firstResponse.status,
+        statusMessage: firstResponse.statusMessage,
+        commandType: firstResponse.commandType,
+        requestId: firstResponse.requestId,
+        payload: firstResponse.payload,
+        payloadHex: firstResponse.payload.toString('hex'),
+      };
+    }
+    
+    // 读取剩余的包
+    const allPackets = [firstPacket];
+    for (let i = 1; i < firstResponse.totalPackets; i++) {
+      const packet = await this.readRaw(64, timeout);
+      allPackets.push(packet);
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    
+    // 合并所有包的payload
+    const allResponses = allPackets.map(packet => parseEAPDUResponse(packet));
+    const combinedPayload = Buffer.concat(allResponses.map(r => r.payload));
+    
+    return {
+      success: firstResponse.success,
+      status: firstResponse.status,
+      statusMessage: firstResponse.statusMessage,
+      commandType: firstResponse.commandType,
+      requestId: firstResponse.requestId,
+      payload: combinedPayload,
+      payloadHex: combinedPayload.toString('hex'),
+      totalPackets: firstResponse.totalPackets,
+    };
   }
 
   /**
@@ -206,7 +261,7 @@ export class KeystoneUSB {
       throw new Error('Device not connected');
     }
 
-    const packet = buildPacket(SERVICE_ID.DEVICE_INFO, DEVICE_INFO_CMD.RUNNING, []);
+    const packet = buildPacket(SERVICE_ID.DEVICE_INFO, DEVICE_INFO_CMD.BASIC, []);
     await this.sendRaw(packet);
     return await this.readResponse();
   }
@@ -312,10 +367,14 @@ export class KeystoneUSB {
   async disconnect() {
     if (this.interface) {
       try {
-        this.interface.release(true, (error) => {
-          if (error) {
-            console.error('Error releasing interface:', error);
-          }
+        // 等待 interface release 完成后再关闭设备
+        await new Promise((resolve) => {
+          this.interface.release(true, (error) => {
+            if (error) {
+              console.error('Error releasing interface:', error);
+            }
+            resolve();
+          });
         });
       } catch (error) {
         console.error('Error during disconnect:', error);

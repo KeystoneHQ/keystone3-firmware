@@ -76,13 +76,26 @@ program
       console.log(chalk.green('\n✓ Response from device:'));
       console.log(chalk.gray(`  Status: ${response.success ? 'Success' : 'Failed'}`));
       console.log(chalk.gray(`  Message: ${response.statusMessage}`));
-      console.log(chalk.gray(`  Service ID: ${response.serviceId}`));
-      console.log(chalk.gray(`  Command ID: ${response.commandId}`));
-      if (response.tlvArray && response.tlvArray.length > 0) {
-        console.log(chalk.gray(`  TLV Count: ${response.tlvArray.length}`));
-        response.tlvArray.forEach((tlv, i) => {
-          console.log(chalk.gray(`    TLV[${i}]: Type=${tlv.type}, Length=${tlv.length}, Value=${tlv.value.toString('hex')}`));
-        });
+      console.log(chalk.gray(`  Command Type: 0x${response.commandType?.toString(16) || 'N/A'}`));
+      console.log(chalk.gray(`  Request ID: ${response.requestId || 'N/A'}`));
+      if (response.totalPackets) {
+        console.log(chalk.gray(`  Total Packets: ${response.totalPackets}`));
+      }
+      if (response.payload && response.payload.length > 0) {
+        console.log(chalk.gray(`  Payload Length: ${response.payload.length} bytes`));
+        console.log(chalk.gray(`  Payload (hex): ${response.payloadHex || response.payload.toString('hex')}`));
+        
+        // Try to parse as UTF-8 string (might be JSON)
+        try {
+          const payloadStr = response.payload.toString('utf8');
+          if (payloadStr.includes('{') || payloadStr.includes('[')) {
+            console.log(chalk.gray(`  Payload (JSON): ${payloadStr}`));
+          } else if (payloadStr.match(/^[\x20-\x7E\s]*$/)) {
+            console.log(chalk.gray(`  Payload (text): ${payloadStr}`));
+          }
+        } catch (e) {
+          // Not valid UTF-8, ignore
+        }
       }
       
       // 断开连接
@@ -123,43 +136,43 @@ program
   });
 
 // 获取设备版本
-program
-  .command('version')
-  .description('Get Keystone device firmware version')
-  .option('-v, --vendor-id <id>', `USB Vendor ID (default: ${CLI_DEFAULTS.vendorId})`, CLI_DEFAULTS.vendorId)
-  .option('-p, --product-id <id>', `USB Product ID (default: ${CLI_DEFAULTS.productId})`, CLI_DEFAULTS.productId)
-  .action(async (options) => {
-    try {
-      const keystone = new KeystoneUSB();
-      const spinner = ora('Connecting to device...').start();
-      
-      const vendorId = parseInt(options.vendorId);
-      const productId = parseInt(options.productId);
-      
-      await keystone.connect(vendorId, productId);
-      spinner.succeed('Device connected');
-      
-      spinner.start('Getting version...');
-      const version = await keystone.getVersion();
-      spinner.succeed('Version retrieved');
-      
-      if (version) {
-        console.log(chalk.green('\n✓ Device Version:'));
-        console.log(chalk.gray(`  Firmware: v${version.version}`));
-        console.log(chalk.gray(`  Major: ${version.major}`));
-        console.log(chalk.gray(`  Minor: ${version.minor}`));
-        console.log(chalk.gray(`  Patch: ${version.patch}\n`));
-      } else {
-        console.log(chalk.yellow('\n⚠ Could not retrieve version\n'));
-      }
-      
-      await keystone.disconnect();
-      
-    } catch (error) {
-      console.error(chalk.red('\n✗ Error:'), error.message);
-      process.exit(1);
-    }
-  });
+// program
+//   .command('version')
+//   .description('Get Keystone device firmware version')
+//   .option('-v, --vendor-id <id>', `USB Vendor ID (default: ${CLI_DEFAULTS.vendorId})`, CLI_DEFAULTS.vendorId)
+//   .option('-p, --product-id <id>', `USB Product ID (default: ${CLI_DEFAULTS.productId})`, CLI_DEFAULTS.productId)
+//   .action(async (options) => {
+//     try {
+//       const keystone = new KeystoneUSB();
+//       const spinner = ora('Connecting to device...').start();
+//       
+//       const vendorId = parseInt(options.vendorId);
+//       const productId = parseInt(options.productId);
+//       
+//       await keystone.connect(vendorId, productId);
+//       spinner.succeed('Device connected');
+//       
+//       spinner.start('Getting version...');
+//       const version = await keystone.getVersion();
+//       spinner.succeed('Version retrieved');
+//       
+//       if (version) {
+//         console.log(chalk.green('\n✓ Device Version:'));
+//         console.log(chalk.gray(`  Firmware: v${version.version}`));
+//         console.log(chalk.gray(`  Major: ${version.major}`));
+//         console.log(chalk.gray(`  Minor: ${version.minor}`));
+//         console.log(chalk.gray(`  Patch: ${version.patch}\n`));
+//       } else {
+//         console.log(chalk.yellow('\n⚠ Could not retrieve version\n'));
+//       }
+//       
+//       await keystone.disconnect();
+//       
+//     } catch (error) {
+//       console.error(chalk.red('\n✗ Error:'), error.message);
+//       process.exit(1);
+//     }
+//   });
 
 // 获取设备状态
 program
@@ -182,17 +195,29 @@ program
       const status = await keystone.getStatus();
       spinner.succeed('Status retrieved');
       
-      console.log(chalk.green('\n✓ Device Status:'));
-      console.log(chalk.gray(`  Success: ${status.success}`));
-      console.log(chalk.gray(`  Service ID: ${status.serviceId}`));
-      console.log(chalk.gray(`  Command ID: ${status.commandId}`));
-      console.log(chalk.gray(`  Message: ${status.statusMessage}`));
+      console.log(chalk.green('\n✓ Device Information:'));
+      
       if (status.tlvArray && status.tlvArray.length > 0) {
-        console.log(chalk.gray(`  TLV Count: ${status.tlvArray.length}`));
-        status.tlvArray.forEach((tlv, i) => {
-          console.log(chalk.gray(`    TLV[${i}]: Type=${tlv.type}, Length=${tlv.length}`));
+        status.tlvArray.forEach((tlv) => {
+          let label = 'Unknown';
+          let value = tlv.value ? tlv.value.toString('utf8').replace(/\0/g, '') : '';
+          
+          switch(tlv.type) {
+            case 1: label = 'Model'; break;
+            case 2: label = 'Serial Number'; break;
+            case 3: label = 'Hardware Version'; break;
+            case 4: label = 'Firmware Version'; break;
+            case 5: label = 'Boot Version'; break;
+            default: label = `Type ${tlv.type}`;
+          }
+          
+          console.log(chalk.gray(`  ${label}: ${chalk.white(value)}`));
         });
+      } else {
+        console.log(chalk.yellow('  No device information available'));
       }
+      
+      console.log(chalk.gray(`\n  Protocol Status: ${status.statusMessage}`));
       
       await keystone.disconnect();
       

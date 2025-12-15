@@ -15,23 +15,46 @@ program
 // 发送 K1 公钥命令
 program
   .command('send-pubkey')
-  .description('Send K1 public key to Keystone device')
+  .description('Send K1 public key with signature to Keystone device')
   .option('-k, --key <publicKey>', 'K1 public key (hex format, 65 bytes uncompressed or 33 bytes compressed)')
+  .option('-s, --secret <privateKey>', 'Private key for signing (hex format, 32 bytes)')
   .option('-v, --vendor-id <id>', `USB Vendor ID (default: ${CLI_DEFAULTS.vendorId})`, CLI_DEFAULTS.vendorId)
   .option('-p, --product-id <id>', `USB Product ID (default: ${CLI_DEFAULTS.productId})`, CLI_DEFAULTS.productId)
   .action(async (options) => {
     try {
       const keystone = new KeystoneUSB();
       
-      // 如果没有提供公钥，交互式输入
+      // 如果没有提供公钥和私钥，交互式输入
       let publicKey = options.key;
-      if (!publicKey) {
+      let privateKey = options.secret;
+      
+      if (!publicKey || !privateKey) {
         const answers = await inquirer.prompt([
           {
             type: 'input',
-            name: 'publicKey',
-            message: 'Enter K1 public key (hex format):',
+            name: 'privateKey',
+            message: 'Enter private key (hex format, 32 bytes):',
+            when: !privateKey,
             validate: (input) => {
+              const cleaned = input.replace(/^0x/, '').replace(/\s/g, '');
+              if (cleaned.length !== 64) {
+                return 'Private key must be 32 bytes (64 hex characters)';
+              }
+              if (!/^[0-9a-fA-F]+$/.test(cleaned)) {
+                return 'Private key must be valid hex string';
+              }
+              return true;
+            }
+          },
+          {
+            type: 'input',
+            name: 'publicKey',
+            message: 'Enter K1 public key (hex format, or leave empty to derive from private key):',
+            when: !publicKey,
+            validate: (input) => {
+              if (!input || input.trim() === '') {
+                return true; // Allow empty, will derive from private key
+              }
               const cleaned = input.replace(/^0x/, '').replace(/\s/g, '');
               if (cleaned.length !== 66 && cleaned.length !== 130) {
                 return 'Public key must be 33 bytes (compressed) or 65 bytes (uncompressed) in hex format';
@@ -43,11 +66,24 @@ program
             }
           }
         ]);
-        publicKey = answers.publicKey;
+        
+        privateKey = privateKey || answers.privateKey;
+        publicKey = publicKey || answers.publicKey;
       }
 
-      // 清理公钥格式
-      publicKey = publicKey.replace(/^0x/, '').replace(/\s/g, '');
+      // 清理格式
+      privateKey = privateKey.replace(/^0x/, '').replace(/\s/g, '');
+      
+      // 如果没有提供公钥，从私钥派生
+      if (!publicKey || publicKey.trim() === '') {
+        const { getPublicKey } = await import('./lib/crypto.js');
+        const privKeyBuffer = Buffer.from(privateKey, 'hex');
+        const pubKeyBuffer = getPublicKey(privKeyBuffer, true); // 使用压缩格式
+        publicKey = pubKeyBuffer.toString('hex');
+        console.log(chalk.blue('\n✓ Public key derived from private key'));
+      } else {
+        publicKey = publicKey.replace(/^0x/, '').replace(/\s/g, '');
+      }
       
       console.log(chalk.blue('\n🔌 Connecting to Keystone device...\n'));
       
@@ -68,34 +104,25 @@ program
       console.log(chalk.gray(`  Manufacturer: ${deviceInfo.manufacturer}`));
       console.log(chalk.gray(`  Product: ${deviceInfo.product}\n`));
       
-      // 发送公钥
-      spinner.start('Sending K1 public key...');
-      const response = await keystone.sendPublicKey(publicKey);
-      spinner.succeed('Public key sent successfully');
+      // 发送公钥（带签名）
+      spinner.start('Sending K1 public key with signature...');
+      const response = await keystone.sendPublicKey(publicKey, privateKey);
+      spinner.succeed('Public key exchange completed');
       
-      console.log(chalk.green('\n✓ Response from device:'));
-      console.log(chalk.gray(`  Status: ${response.success ? 'Success' : 'Failed'}`));
+      console.log(chalk.green('\n✓ Public Key Exchange Result:'));
+      console.log(chalk.gray(`  Status: ${response.success ? '✓ Success' : '✗ Failed'}`));
       console.log(chalk.gray(`  Message: ${response.statusMessage}`));
-      console.log(chalk.gray(`  Command Type: 0x${response.commandType?.toString(16) || 'N/A'}`));
-      console.log(chalk.gray(`  Request ID: ${response.requestId || 'N/A'}`));
-      if (response.totalPackets) {
-        console.log(chalk.gray(`  Total Packets: ${response.totalPackets}`));
-      }
-      if (response.payload && response.payload.length > 0) {
-        console.log(chalk.gray(`  Payload Length: ${response.payload.length} bytes`));
-        console.log(chalk.gray(`  Payload (hex): ${response.payloadHex || response.payload.toString('hex')}`));
+      
+      if (response.success && response.payload && response.payload.length > 0) {
+        console.log(chalk.green('\n✓ Device Public Key Received:'));
+        console.log(chalk.gray(`  Length: ${response.payload.length} bytes`));
+        console.log(chalk.gray(`  Format: ${response.payload.length === 33 ? 'Compressed (33 bytes)' : response.payload.length === 65 ? 'Uncompressed (65 bytes)' : 'Unknown'}`));
+        console.log(chalk.white(`  Public Key: ${response.payload.toString('hex')}`));
         
-        // Try to parse as UTF-8 string (might be JSON)
-        try {
-          const payloadStr = response.payload.toString('utf8');
-          if (payloadStr.includes('{') || payloadStr.includes('[')) {
-            console.log(chalk.gray(`  Payload (JSON): ${payloadStr}`));
-          } else if (payloadStr.match(/^[\x20-\x7E\s]*$/)) {
-            console.log(chalk.gray(`  Payload (text): ${payloadStr}`));
-          }
-        } catch (e) {
-          // Not valid UTF-8, ignore
-        }
+        console.log(chalk.blue('\n✓ ECDH key exchange successful. Secure channel established.'));
+      } else if (!response.success) {
+        console.log(chalk.yellow('\n⚠ Device did not return a public key. Key exchange may have failed.'));
+        console.log(chalk.yellow('    This might be due to signature verification failure.'));
       }
       
       // 断开连接

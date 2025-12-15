@@ -173,15 +173,44 @@ export function getStatusMessage(status) {
 }
 
 /**
- * Build public key transfer request
- * @param {string} publicKey - Public key in hex format
+ * Build public key transfer request with signature
+ * @param {string} publicKey - Public key in hex format (33 or 65 bytes)
+ * @param {string} signature - Signature in hex format (64 bytes)
  * @returns {Array<Buffer>} Array of EAPDU packets
  */
-export function buildPublicKeyRequest(publicKey) {
-  // Clean the public key
+export function buildPublicKeyRequest(publicKey, signature) {
+  // Clean the inputs
   const cleanKey = publicKey.replace(/^0x/, '').replace(/\s/g, '');
+  const cleanSig = signature.replace(/^0x/, '').replace(/\s/g, '');
+  
   const keyBuffer = Buffer.from(cleanKey, 'hex');
+  const sigBuffer = Buffer.from(cleanSig, 'hex');
+  
+  if (keyBuffer.length !== 33 && keyBuffer.length !== 65) {
+    throw new Error('Public key must be 33 (compressed) or 65 (uncompressed) bytes');
+  }
+  
+  if (sigBuffer.length !== 64) {
+    throw new Error('Signature must be 64 bytes');
+  }
+  
+  // Combine public key and signature
+  // Format: [pubkey_length(1byte)] + [pubkey] + [signature(64bytes)]
+  const dataLen = 1 + keyBuffer.length + sigBuffer.length;
+  const combinedData = Buffer.alloc(dataLen);
+  let offset = 0;
+  
+  // Write public key length
+  combinedData.writeUInt8(keyBuffer.length, offset);
+  offset += 1;
+  
+  // Write public key
+  keyBuffer.copy(combinedData, offset);
+  offset += keyBuffer.length;
+  
+  // Write signature
+  sigBuffer.copy(combinedData, offset);
   
   // Build EAPDU packets with CMD_GET_DEVICE_USB_PUBKEY command
-  return buildEAPDUPackets(CMD_TYPE.GET_DEVICE_USB_PUBKEY, keyBuffer);
+  return buildEAPDUPackets(CMD_TYPE.GET_DEVICE_USB_PUBKEY, combinedData);
 }

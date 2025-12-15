@@ -2,6 +2,7 @@ import usb from 'usb';
 import { SERVICE_ID, DEVICE_INFO_CMD, TLV_TYPE, buildPacket, parseResponse, validatePublicKey, PROTOCOL } from './protocol.js';
 import { buildPublicKeyRequest, parseEAPDUResponse } from './eapdu-protocol.js';
 import { DEFAULT_VENDOR_ID, DEFAULT_PRODUCT_ID } from './constants.js';
+import { sha256, signData, getPublicKey } from './crypto.js';
 
 /**
  * Keystone USB Communication Library
@@ -131,31 +132,61 @@ export class KeystoneUSB {
 
   /**
    * 发送 K1 公钥到设备（使用 EAPDU 协议）
-   * @param {string} publicKey - 公钥的十六进制字符串
+   * @param {string|Buffer} publicKey - 公钥的十六进制字符串或 Buffer
+   * @param {string|Buffer} privateKey - 私钥用于签名（十六进制字符串或 Buffer）
    */
-  async sendPublicKey(publicKey) {
+  async sendPublicKey(publicKey, privateKey) {
     if (!this.device || !this.endpointOut) {
       throw new Error('Device not connected');
     }
 
-    // 清理公钥字符串
-    const cleanKey = publicKey.replace(/^0x/, '').replace(/\s/g, '');
-    
-    // 验证公钥格式
-    const validation = validatePublicKey(cleanKey);
-    if (!validation.valid) {
-      throw new Error(validation.error);
+    // 处理公钥
+    let pubKeyBuffer;
+    if (typeof publicKey === 'string') {
+      const cleanKey = publicKey.replace(/^0x/, '').replace(/\s/g, '');
+      const validation = validatePublicKey(cleanKey);
+      if (!validation.valid) {
+        throw new Error(validation.error);
+      }
+      pubKeyBuffer = Buffer.from(cleanKey, 'hex');
+    } else {
+      pubKeyBuffer = publicKey;
     }
 
+    // 处理私钥
+    let privKeyBuffer;
+    if (typeof privateKey === 'string') {
+      const cleanPriv = privateKey.replace(/^0x/, '').replace(/\s/g, '');
+      if (cleanPriv.length !== 64) {
+        throw new Error('Private key must be 32 bytes (64 hex characters)');
+      }
+      privKeyBuffer = Buffer.from(cleanPriv, 'hex');
+    } else {
+      privKeyBuffer = privateKey;
+    }
+
+    // 验证公钥和私钥匹配
+    const derivedPubKey = getPublicKey(privKeyBuffer, pubKeyBuffer.length === 33);
+    if (!derivedPubKey.equals(pubKeyBuffer)) {
+      throw new Error('Public key does not match private key');
+    }
+
+    // 对公钥进行签名（签名公钥的 SHA256 哈希）
+    const pubKeyHash = sha256(pubKeyBuffer);
+    const signature = signData(pubKeyHash, privKeyBuffer);
+
+    console.log(`\nPreparing to send public key with signature...`);
+    console.log(`  Public key: ${pubKeyBuffer.toString('hex')}`);
+    console.log(`  Signature: ${signature.toString('hex')}`);
+
     // 构建 EAPDU 协议包
-    const packets = buildPublicKeyRequest(cleanKey);
+    const packets = buildPublicKeyRequest(pubKeyBuffer.toString('hex'), signature.toString('hex'));
     
     console.log(`\nSending ${packets.length} EAPDU packet(s)...`);
     
     // 发送所有数据包
     for (let i = 0; i < packets.length; i++) {
       console.log(`  Packet ${i + 1}/${packets.length}: ${packets[i].length} bytes`);
-      console.log(`    Hex: ${packets[i].toString('hex')}`);
       await this.sendRaw(packets[i]);
       
       // 在包之间添加小延迟

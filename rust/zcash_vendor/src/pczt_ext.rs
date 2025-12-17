@@ -92,6 +92,7 @@ pub type TransparentSignatureDER = Vec<u8>;
 
 pub trait PcztSigner {
     type Error;
+    #[cfg(feature = "multi_coins")]
     fn sign_transparent<F>(
         &self,
         index: usize,
@@ -100,6 +101,7 @@ pub trait PcztSigner {
     ) -> Result<(), Self::Error>
     where
         F: FnOnce(SignableInput) -> [u8; 32];
+    #[cfg(feature = "cypherpunk")]
     fn sign_orchard(
         &self,
         action: &mut orchard::pczt::Action,
@@ -387,10 +389,49 @@ fn transparent_sig_digest(pczt: &Pczt, input_info: Option<SignableInput>) -> Has
     }
 }
 
+#[cfg(feature = "multi_coins")]
 pub fn sign<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,
-    T::Error: From<orchard::pczt::ParseError>,
+    T::Error: From<transparent::pczt::ParseError>,
+{
+    llsigner.sign_transparent_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
+        let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
+            .ok_or(transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
+        signable
+            .inputs_mut()
+            .iter_mut()
+            .enumerate()
+            .try_for_each(|(i, input)| {
+                signer.sign_transparent(i, input, |signable_input| {
+                    sheilded_sig_commitment(pczt, lock_time, Some(signable_input))
+                        .as_bytes()
+                        .try_into()
+                        .expect("correct length")
+                })?;
+
+                if input.sighash_type().encode() & SIGHASH_ANYONECANPAY == 0 {
+                    *tx_modifiable &= !FLAG_TRANSPARENT_INPUTS_MODIFIABLE;
+                }
+
+                if (input.sighash_type().encode() & !SIGHASH_ANYONECANPAY) != SIGHASH_NONE {
+                    *tx_modifiable &= !FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE;
+                }
+
+                if (input.sighash_type().encode() & !SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE {
+                    *tx_modifiable |= FLAG_HAS_SIGHASH_SINGLE;
+                }
+
+                *tx_modifiable &= !FLAG_SHIELDED_MODIFIABLE;
+                Ok(())
+            })
+    })
+}
+
+#[cfg(feature = "cypherpunk")]
+pub fn sign<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
+where
+    T: PcztSigner,
     T::Error: From<transparent::pczt::ParseError>,
 {
     llsigner
@@ -427,7 +468,7 @@ where
         })?
         .sign_orchard_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
             let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
-                .expect("didn't fail earlier");
+                .ok_or(transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
             signable.actions_mut().iter_mut().try_for_each(|action| {
                 match action.spend().value().map(|v| v.inner()) {
                     //dummy spend maybe
@@ -447,6 +488,7 @@ where
         })
 }
 
+#[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
     use pczt::Pczt;

@@ -4,16 +4,19 @@ use alloc::string::{String, ToString};
 use bitcoin::bip32::{ChildNumber, DerivationPath};
 use rand_core::{CryptoRng, RngCore};
 use zcash_vendor::{
-    orchard::{
-        self,
-        keys::{SpendAuthorizingKey, SpendingKey},
-    },
     zcash_keys::keys::UnifiedSpendingKey,
     zcash_protocol::consensus,
     zip32::{self, fingerprint::SeedFingerprint},
 };
 
 use crate::algorithms::utils::is_all_zero_or_ff;
+
+#[cfg(feature = "cypherpunk")]
+use zcash_vendor::orchard::{
+    self,
+    keys::{SpendAuthorizingKey, SpendingKey},
+};
+
 use crate::errors::{KeystoreError, Result};
 
 pub fn derive_ufvk<P: consensus::Parameters>(
@@ -67,6 +70,7 @@ pub fn calculate_seed_fingerprint(seed: &[u8]) -> Result<[u8; 32]> {
     Ok(sfp.to_bytes())
 }
 
+#[cfg(feature = "cypherpunk")]
 pub fn sign_message_orchard<R: RngCore + CryptoRng>(
     action: &mut orchard::pczt::Action,
     seed: &[u8],

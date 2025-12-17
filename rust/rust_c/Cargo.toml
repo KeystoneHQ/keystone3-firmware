@@ -28,7 +28,7 @@ cipher = { workspace = true }
 minicbor = { workspace = true }
 #keystone owned
 sim_qr_reader = { workspace = true, optional = true }
-keystore = { workspace = true }
+keystore = { workspace = true, default-features = false}
 ur-registry = { workspace = true }
 ur-parse-lib = { workspace = true }
 zcash_vendor = { workspace = true, optional = true }
@@ -82,7 +82,8 @@ sui = ["dep:app_sui"]
 ton = ["dep:app_ton"]
 tron = ["dep:app_tron"]
 xrp = ["dep:app_xrp"]
-zcash = ["dep:app_zcash", "dep:zcash_vendor"]
+zcash = ["dep:app_zcash", "dep:zcash_vendor", "app_zcash/multi_coins", "zcash_vendor/multi_coins"]
+zcash_cypherpunk = ["dep:app_zcash", "dep:zcash_vendor", "app_zcash/cypherpunk", "zcash_vendor/cypherpunk"]
 monero = ["dep:app_monero"]
 avalanche = ["dep:app_avalanche"]
 iota = ["dep:app_iota"]
@@ -110,12 +111,13 @@ multi-coins = [
     "xrp",
     "avalanche",
     "iota",
-    "zcash"
+    "zcash",
+    "keystore/multi_coins",
 ]
 
 btc-only = ["bitcoin"]
 
-cypherpunk = ["bitcoin", "zcash", "monero"]
+cypherpunk = ["bitcoin", "zcash_cypherpunk", "monero", "keystore/cypherpunk"]
 
 # build variants
 # production

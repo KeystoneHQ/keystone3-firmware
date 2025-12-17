@@ -13,7 +13,7 @@ bitcoin = { workspace = true }
 thiserror = { workspace = true }
 zcash_vendor = { workspace = true }
 hex = { workspace = true }
-bitvec = {version = "1.0.1", default-features = false, features = ["alloc"]}
+bitvec = { version = "1.0.1", default-features = false, features = ["alloc"] }
 blake2b_simd = { workspace = true }
 rand_core = { workspace = true, features = ["getrandom"] }
 zcash_note_encryption = "0.4.1"
@@ -23,3 +23,8 @@ keystore = { path = "../../keystore" }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[features]
+default = ["multi_coins"]
+multi_coins = ["zcash_vendor/multi_coins"]
+cypherpunk = ["zcash_vendor/cypherpunk"]

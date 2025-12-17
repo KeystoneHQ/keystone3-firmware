@@ -75,6 +75,7 @@ impl PcztSigner for SeedSigner<'_> {
         Ok(())
     }
 
+    #[cfg(feature = "orchard")]
     fn sign_orchard(
         &self,
         action: &mut orchard::pczt::Action,

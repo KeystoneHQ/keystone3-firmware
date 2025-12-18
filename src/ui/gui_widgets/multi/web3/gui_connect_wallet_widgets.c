@@ -62,6 +62,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_BTC_WALLET, &walletListBtc, true, WALLET_FILTER_BTC},
     {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false, WALLET_FILTER_OTHER},
     {WALLET_LIST_RABBY, &walletListRabby, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_NABOX, &walletListNabox, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BITGET, &walletListBitget, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_ETERNL, &walletListEternl, true, WALLET_FILTER_ADA},
     {WALLET_LIST_VESPR, &walletListVespr, true, WALLET_FILTER_ADA},
@@ -333,6 +334,7 @@ static bool IsEVMChain(int walletIndex)
     switch (walletIndex) {
     case WALLET_LIST_METAMASK:
     case WALLET_LIST_RABBY:
+    case WALLET_LIST_NABOX:
     case WALLET_LIST_SAFE:
     case WALLET_LIST_BLOCK_WALLET:
     case WALLET_LIST_ZAPPER:
@@ -1087,6 +1089,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_ZAPPER:
     case WALLET_LIST_YEARN_FINANCE:
     case WALLET_LIST_SUSHISWAP:
+    case WALLET_LIST_NABOX:
         func = GuiGetMetamaskData;
         AddCoinsFromArray(g_ethWalletCoinArray, NUMBER_OF_ARRAYS(g_ethWalletCoinArray), true, 132);
         break;

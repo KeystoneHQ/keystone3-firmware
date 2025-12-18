@@ -43,13 +43,13 @@ typedef struct ConnectWalletWidget {
 } ConnectWalletWidget_t;
 
 WalletListItem_t g_walletListArray[] = {
-    {WALLET_LIST_BLUE, &walletListBtcBlue, true, false},
-    {WALLET_LIST_SPARROW, &walletListBtcSparrow, true, false},
-    {WALLET_LIST_NUNCHUK, &walletListBtcNunchuk, true, false},
-    {WALLET_LIST_ZEUS, &walletListBtcZeus, true, false},
-    {WALLET_LIST_BITCOIN_SAFE, &walletListBtcSafe, true, false},
-    // {WALLET_LIST_SPECTER,   &walletListBtcSpecter,  true,   true},
-    // {WALLET_LIST_UNISAT,    &walletListBtcUniSat,      true,   true},
+    {WALLET_LIST_BLUE, &walletBluewallet, "Blue Wallet", NULL, 1, true, false},
+    {WALLET_LIST_SPARROW, &walletSparrow, "Sparrow", NULL, 1, true, false},
+    {WALLET_LIST_NUNCHUK, &walletNunchuk, "Nunchuk", NULL, 1, true, false},
+    {WALLET_LIST_ZEUS, &walletZeus, "Zeus", NULL, 1, true, false},
+    {WALLET_LIST_BITCOIN_SAFE, &walletBtcSafe, "Bitcoin Safe", NULL, 1, true, false},
+    // {WALLET_LIST_SPECTER, &walletSpecter, "Specter", NULL, 1, true, true},
+    // {WALLET_LIST_UNISAT, &walletUniSat, "UniSat", NULL, 5, true, true},
 };
 
 static lv_obj_t *g_noticeWindow = NULL;
@@ -59,6 +59,7 @@ static PageWidget_t *g_pageWidget;
 static void OpenQRCodeHandler(lv_event_t *e);
 void ConnectWalletReturnHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
+static lv_obj_t *GuiCreateWalletListItem(lv_obj_t *parent, WalletListItem_t *item, lv_coord_t yPos);
 
 static lv_obj_t *g_coinCont = NULL;
 static lv_obj_t *g_coinTitleLabel = NULL;
@@ -101,11 +102,12 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
 
-    lv_obj_t *img, *line, *alphaImg;
+    lv_obj_t *line;
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     line = GuiCreateLine(parent, points, 2);
     lv_obj_align(line, LV_ALIGN_TOP_MID, 0, 0);
-    lv_obj_t *baseView = NULL;
+
+    lv_coord_t yOffset = 9;
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         if (!g_walletListArray[i].enable) {
             continue;
@@ -116,22 +118,12 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
                 g_walletListArray[i].index == WALLET_LIST_BLUE) {
             continue;
         }
-        img = GuiCreateImg(parent, g_walletListArray[i].img);
-        if (baseView == NULL) {
-            lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 9);
-        } else {
-            lv_obj_align_to(img, baseView, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
-        }
-        baseView = img;
-        lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
-                            &g_walletListArray[i]);
-        if (g_walletListArray[i].alpha) {
-            alphaImg = GuiCreateImg(img, &imgAlpha);
-            lv_obj_align(alphaImg, LV_ALIGN_RIGHT_MID, -219, 0);
-        }
+
+        lv_obj_t *item = GuiCreateWalletListItem(parent, &g_walletListArray[i], yOffset);
+        yOffset += 90;
+
         line = GuiCreateLine(parent, points, 2);
-        lv_obj_align_to(line, baseView, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+        lv_obj_align_to(line, item, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
     }
 }
 
@@ -347,4 +339,22 @@ void GuiConnectWalletDeInit(void)
 uint8_t GuiConnectWalletGetWalletIndex(void)
 {
     return g_connectWalletTileView.walletIndex;
+}
+
+static lv_obj_t *GuiCreateWalletListItem(lv_obj_t *parent, WalletListItem_t *item, lv_coord_t yPos)
+{
+    GuiButton_t table[] = {
+        {.obj = GuiCreateImg(parent, item->walletIcon), .align = LV_ALIGN_LEFT_MID, .position = {20, 0},},
+        {.obj = GuiCreateTextLabel(parent, item->walletName), .align = LV_ALIGN_LEFT_MID, .position = {88, 0},},
+        {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_RIGHT_MID, .position = {-24, 0},},
+    };
+    lv_obj_t *button = GuiCreateButton(parent, 456, 82, table, NUMBER_OF_ARRAYS(table),
+                                       OpenQRCodeHandler, item);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, yPos);
+    lv_obj_set_style_bg_opa(button, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(button, 0, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(button, 0, LV_PART_MAIN);
+    lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE);
+
+    return button;
 }

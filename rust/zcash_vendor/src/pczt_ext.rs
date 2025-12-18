@@ -390,7 +390,7 @@ fn transparent_sig_digest(pczt: &Pczt, input_info: Option<SignableInput>) -> Has
 }
 
 #[cfg(feature = "multi_coins")]
-pub fn sign<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
+pub fn sign_transparent<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,
     T::Error: From<transparent::pczt::ParseError>,
@@ -429,7 +429,7 @@ where
 }
 
 #[cfg(feature = "cypherpunk")]
-pub fn sign<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
+pub fn sign_full<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,
     T::Error: From<transparent::pczt::ParseError>,

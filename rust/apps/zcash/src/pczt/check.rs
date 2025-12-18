@@ -2,6 +2,7 @@
 
 use super::*;
 
+use alloc::collections::BTreeMap;
 #[cfg(feature = "cypherpunk")]
 use orchard::{keys::FullViewingKey, value::ValueSum};
 
@@ -12,6 +13,7 @@ use zcash_vendor::{
     transparent::{self, address::TransparentAddress, keys::AccountPubKey},
     zcash_address::{ToAddress, ZcashAddress},
     zcash_protocol::consensus::{self, NetworkConstants},
+    zcash_script::script::Evaluable,
     zip32,
 };
 
@@ -89,6 +91,41 @@ fn check_transparent<P: consensus::Parameters>(
     Ok(())
 }
 
+fn find_my_derivation<'a>(
+    seed_fingerprint: &'a [u8; 32],
+    // If there was some common trait between `transparent::pczt::Input` and
+    // `transparent::pczt::Output` to attach `bip32_derivation()` to, this would have a simpler
+    // type.
+    derivations: &'a BTreeMap<[u8; 33], transparent::pczt::Bip32Derivation>,
+) -> Option<(&'a [u8; 33], &'a transparent::pczt::Bip32Derivation)> {
+    derivations
+        .iter()
+        .find(|(_pubkey, derivation)| seed_fingerprint == derivation.seed_fingerprint())
+}
+
+fn check_my_pubkey<P: consensus::Parameters>(
+    params: &P,
+    account_index: zip32::AccountId,
+    xpub: &AccountPubKey,
+    pubkey: &[u8; 33],
+    derivation: &transparent::pczt::Bip32Derivation,
+) -> Result<(), ZcashError> {
+    // 2: derive my pubkey
+    let target = xpub
+        .derive_pubkey_at_bip32_path(params, account_index, derivation.derivation_path())
+        .map_err(|_| {
+            ZcashError::InvalidPczt("transparent input bip32 derivation path invalid".to_string())
+        })?;
+    // 3: check my pubkey
+    if &target.serialize() != pubkey {
+        Err(ZcashError::InvalidPczt(
+            "transparent input script pubkey mismatch".to_string(),
+        ))
+    } else {
+        Ok(())
+    }
+}
+
 fn check_transparent_input<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],
@@ -97,38 +134,16 @@ fn check_transparent_input<P: consensus::Parameters>(
     input: &transparent::pczt::Input,
 ) -> Result<bool, ZcashError> {
     let script = input.script_pubkey().clone();
-    //p2sh transparent input is not supported yet
-    match script.address() {
+    match TransparentAddress::from_script_from_chain(&script) {
         Some(TransparentAddress::PublicKeyHash(hash)) => {
             // 1: find my derivation
-            let my_derivation = input
-                .bip32_derivation()
-                .iter()
-                .find(|(_pubkey, derivation)| seed_fingerprint == derivation.seed_fingerprint());
-            match my_derivation {
+            match find_my_derivation(seed_fingerprint, input.bip32_derivation()) {
                 None => {
                     //not my input, pass
                     Ok(false)
                 }
                 Some((pubkey, derivation)) => {
-                    // 2: derive my pubkey
-                    let target = xpub
-                        .derive_pubkey_at_bip32_path(
-                            params,
-                            account_index,
-                            derivation.derivation_path(),
-                        )
-                        .map_err(|_| {
-                            ZcashError::InvalidPczt(
-                                "transparent input bip32 derivation path invalid".to_string(),
-                            )
-                        })?;
-                    // 3: check my pubkey
-                    if &target.serialize() != pubkey {
-                        return Err(ZcashError::InvalidPczt(
-                            "transparent input script pubkey mismatch".to_string(),
-                        ));
-                    }
+                    check_my_pubkey(params, account_index, xpub, pubkey, derivation)?;
                     // 4: check script pubkey
                     if hash[..] != Ripemd160::digest(Sha256::digest(pubkey))[..] {
                         return Err(ZcashError::InvalidPczt(
@@ -139,8 +154,31 @@ fn check_transparent_input<P: consensus::Parameters>(
                 }
             }
         }
-        _ => Err(ZcashError::InvalidPczt(
-            "transparent input script pubkey is not a public key hash".to_string(),
+        Some(TransparentAddress::ScriptHash(hash)) => {
+            match find_my_derivation(seed_fingerprint, input.bip32_derivation()) {
+                None => {
+                    //not my output, pass
+                    Ok(false)
+                }
+                Some((pubkey, derivation)) => {
+                    check_my_pubkey(params, account_index, xpub, pubkey, derivation)?;
+                    // 4: check script hash
+                    if let Some(redeem_script) = input.redeem_script() {
+                        if hash[..]
+                            != Ripemd160::digest(Sha256::digest(&redeem_script.clone().to_bytes()))
+                                [..]
+                        {
+                            return Err(ZcashError::InvalidPczt(
+                                "transparent input P2SH script hash mismatch".to_string(),
+                            ));
+                        }
+                    }
+                    Ok(true)
+                }
+            }
+        }
+        None => Err(ZcashError::InvalidPczt(
+            "transparent input script pubkey does not exist".to_string(),
         )),
     }
 }
@@ -153,7 +191,7 @@ fn check_transparent_output<P: consensus::Parameters>(
     output: &transparent::pczt::Output,
 ) -> Result<(), ZcashError> {
     let script = output.script_pubkey().clone();
-    match script.address() {
+    match TransparentAddress::from_script_pubkey(&script) {
         Some(TransparentAddress::PublicKeyHash(hash)) => {
             //check user_address and script_pubkey
             match output.user_address() {
@@ -173,34 +211,24 @@ fn check_transparent_output<P: consensus::Parameters>(
                 }
             }
 
-            let pubkey = output
-                .bip32_derivation()
+            let derivations = output.bip32_derivation();
+
+            let pubkey = derivations
                 .keys()
                 .find(|pubkey| hash[..] == Ripemd160::digest(Sha256::digest(pubkey))[..]);
             match pubkey {
                 Some(pubkey) => {
-                    match output.bip32_derivation().get(pubkey) {
+                    match derivations.get(pubkey) {
                         Some(bip32_derivation) => {
                             if seed_fingerprint == bip32_derivation.seed_fingerprint() {
                                 //verify public key
-                                let target = xpub
-                                    .derive_pubkey_at_bip32_path(
-                                        params,
-                                        account_index,
-                                        bip32_derivation.derivation_path(),
-                                    )
-                                    .map_err(|_| {
-                                        ZcashError::InvalidPczt(
-                                            "transparent input bip32 derivation path invalid"
-                                                .to_string(),
-                                        )
-                                    })?;
-                                if &target.serialize() != pubkey {
-                                    return Err(ZcashError::InvalidPczt(
-                                        "transparent output script pubkey mismatch".to_string(),
-                                    ));
-                                }
-                                Ok(())
+                                check_my_pubkey(
+                                    params,
+                                    account_index,
+                                    xpub,
+                                    pubkey,
+                                    bip32_derivation,
+                                )
                             } else {
                                 //not my output, pass
                                 Ok(())
@@ -233,41 +261,18 @@ fn check_transparent_output<P: consensus::Parameters>(
                 }
             }
             // 1: find my derivation
-            let my_derivation = output
-                .bip32_derivation()
-                .iter()
-                .find(|(_pubkey, derivation)| seed_fingerprint == derivation.seed_fingerprint());
-            match my_derivation {
+            match find_my_derivation(seed_fingerprint, output.bip32_derivation()) {
                 None => {
                     //not my output, pass
                     Ok(())
                 }
                 Some((pubkey, derivation)) => {
-                    // 2: derive my pubkey
-                    let target = xpub
-                        .derive_pubkey_at_bip32_path(
-                            params,
-                            account_index,
-                            derivation.derivation_path(),
-                        )
-                        .map_err(|_| {
-                            ZcashError::InvalidPczt(
-                                "transparent input bip32 derivation path invalid".to_string(),
-                            )
-                        })?;
-                    // 3: check my pubkey
-                    if &target.serialize() != pubkey {
-                        return Err(ZcashError::InvalidPczt(
-                            "transparent input script pubkey mismatch".to_string(),
-                        ));
-                    }
-                    // TODO: find a proper way to check script pubkey
-                    Ok(())
+                    check_my_pubkey(params, account_index, xpub, pubkey, derivation)
                 }
             }
         }
-        _ => Err(ZcashError::InvalidPczt(
-            "transparent output script pubkey is not a public key hash".to_string(),
+        None => Err(ZcashError::InvalidPczt(
+            "transparent output script pubkey does not exist".to_string(),
         )),
     }
 }

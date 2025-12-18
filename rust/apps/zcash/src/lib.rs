@@ -1,7 +1,9 @@
 #![no_std]
+#[macro_use]
 extern crate alloc;
 
 pub mod errors;
+pub mod multi_sig;
 pub mod pczt;
 
 use errors::{Result, ZcashError};
@@ -13,7 +15,6 @@ use alloc::{
 use pczt::structs::ParsedPczt;
 use zcash_vendor::{
     pczt::Pczt,
-    transparent::keys::{NonHardenedChildIndex, TransparentKeyScope},
     zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
     zcash_protocol::consensus::{self},
     zip32,
@@ -193,7 +194,7 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
 ///
 /// # Parameters
 /// * `pczt` - The binary representation of the PCZT to sign
-/// * `seed` - The seed to sign the PCZT with   
+/// * `seed` - The seed to sign the PCZT with
 ///
 /// # Returns
 /// * `Result<Vec<u8>>` - The signed PCZT if successful, or an error otherwise

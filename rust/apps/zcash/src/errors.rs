@@ -4,7 +4,7 @@ use thiserror::Error;
 use zcash_vendor::transparent;
 
 #[cfg(feature = "cypherpunk")]
-use zcash_vendor::orchard;
+use zcash_vendor::{orchard, zcash_script::descriptor};
 
 pub type Result<T> = core::result::Result<T, ZcashError>;
 
@@ -20,6 +20,22 @@ pub enum ZcashError {
     InvalidPczt(String),
     #[error("None of inputs belong to the provided account")]
     PcztNoMyInputs,
+    #[error("invalid input")]
+    InvalidInput,
+    #[error("multi sig wallet parse error: {0}")]
+    MultiSigWalletParseError(String),
+    #[error("This wallet doesn't belong to this seed")]
+    MultiSigWalletNotMyWallet,
+    #[error("multi sig wallet address calculate error: {0}")]
+    MultiSigWalletAddressCalError(String),
+    #[error("multi sig wallet import xpub error: {0}")]
+    MultiSigWalletImportXpubError(String),
+    #[error("create multi sig wallet error: {0}")]
+    MultiSigWalletCreateError(descriptor::Error),
+    #[error("Zcash doesn’t support the {0} multi sig format")]
+    MultiSigUnsupportedWalletFormat(String),
+    #[error("convert network error: {0}")]
+    MultiSigNetworkError(String),
 }
 
 #[cfg(feature = "cypherpunk")]

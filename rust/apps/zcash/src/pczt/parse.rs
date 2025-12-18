@@ -314,7 +314,7 @@ fn parse_transparent_input<P: consensus::Parameters>(
 ) -> Result<ParsedFrom, ZcashError> {
     let script = input.script_pubkey().clone();
     //P2SH address is not supported by Zashi yet, we only consider P2PKH address at the moment.
-    match script.address() {
+    match TransparentAddress::from_script_from_chain(&script) {
         Some(TransparentAddress::PublicKeyHash(hash)) => {
             //find the pubkey in the derivation path
             let pubkey = input
@@ -353,7 +353,7 @@ fn parse_transparent_output(
     output: &transparent::pczt::Output,
 ) -> Result<ParsedTo, ZcashError> {
     let script = output.script_pubkey().clone();
-    match script.address() {
+    match TransparentAddress::from_script_pubkey(&script) {
         Some(TransparentAddress::PublicKeyHash(hash)) => {
             let pubkey = output
                 .bip32_derivation()

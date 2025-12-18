@@ -213,6 +213,14 @@ pub enum ErrorCodes {
     ZcashGenerateAddressError = 1500,
     ZcashSigningError,
     ZcashInvalidPczt,
+    ZcashInvalidInput,
+    ZcashMulitiSigWalletParseError,
+    ZcashMultiSigWalletNotMyWallet,
+    ZcashMultiSigWalletAddressCalError,
+    ZcashMultiSigWalletImportXpubError,
+    ZcashMultiSigWalletCreateError,
+    ZcashMultiSigWalletFormatError,
+    ZcashMultiSigNetworkError,
 
     // Monero
     MoneroUnknownError = 1600,
@@ -584,6 +592,18 @@ impl From<&ZcashError> for ErrorCodes {
             ZcashError::SigningError(_) => Self::ZcashSigningError,
             ZcashError::InvalidPczt(_) => Self::ZcashInvalidPczt,
             ZcashError::PcztNoMyInputs => Self::MasterFingerprintMismatch,
+            ZcashError::InvalidInput => Self::ZcashInvalidInput,
+            ZcashError::MultiSigWalletParseError(_) => Self::ZcashMulitiSigWalletParseError,
+            ZcashError::MultiSigWalletNotMyWallet => Self::ZcashMultiSigWalletNotMyWallet,
+            ZcashError::MultiSigWalletAddressCalError(_) => {
+                Self::ZcashMultiSigWalletAddressCalError
+            }
+            ZcashError::MultiSigWalletImportXpubError(_) => {
+                Self::ZcashMultiSigWalletImportXpubError
+            }
+            ZcashError::MultiSigWalletCreateError(_) => Self::ZcashMultiSigWalletCreateError,
+            ZcashError::MultiSigUnsupportedWalletFormat(_) => Self::ZcashMultiSigWalletFormatError,
+            ZcashError::MultiSigNetworkError(_) => Self::ZcashMultiSigNetworkError,
         }
     }
 }

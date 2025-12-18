@@ -14,6 +14,7 @@ use pczt::{
 };
 use transparent::sighash::SignableInput;
 use zcash_protocol::value::ZatBalance;
+use zcash_script::script::Evaluable;
 
 /// TxId tree root personalization
 const ZCASH_TX_PERSONALIZATION_PREFIX: &[u8; 12] = b"ZcashTxHash_";
@@ -371,9 +372,9 @@ fn transparent_sig_digest(pczt: &Pczt, input_info: Option<SignableInput>) -> Has
             ch.update(input.prevout_txid());
             ch.update(&input.prevout_index().to_le_bytes());
             ch.update(&signable_input.value().to_i64_le_bytes());
-            let len = signable_input.script_pubkey().0.len();
+            let len = signable_input.script_pubkey().0.byte_len();
             ch.update(&[len as u8]);
-            ch.update(&signable_input.script_pubkey().0);
+            ch.update(&signable_input.script_pubkey().0.to_bytes());
             ch.update(&input.sequence().unwrap_or(0xffffffff).to_le_bytes());
         }
         let txin_sig_digest = ch.finalize();
@@ -463,6 +464,7 @@ mod tests {
     use pczt::Pczt;
     use transparent::{address::Script, sighash::SighashType};
     use zcash_protocol::value::Zatoshis;
+    use zcash_script::script;
 
     use super::*;
 
@@ -542,7 +544,9 @@ mod tests {
             "fea284c0b63a4de21c2f660587b2e04461f7089d6c9f8c2e60a3caed77c037ae"
         );
 
-        let script_code = Script(pczt.transparent().inputs()[0].script_pubkey().clone());
+        let script_code = Script(script::Code(
+            pczt.transparent().inputs()[0].script_pubkey().clone(),
+        ));
 
         let signable_input = SignableInput::from_parts(
             SighashType::parse(SIGHASH_ALL).unwrap(),
@@ -555,7 +559,9 @@ mod tests {
             hex::encode(shielded_sig_commitment(&pczt, 0, Some(signable_input)).as_bytes()),
             "a2865e1c7f3de700eee25fe233da6bbdab267d524bc788998485359441ad3140"
         );
-        let script_code = Script(pczt.transparent().inputs()[1].script_pubkey().clone());
+        let script_code = Script(script::Code(
+            pczt.transparent().inputs()[1].script_pubkey().clone(),
+        ));
         let signable_input2 = SignableInput::from_parts(
             SighashType::parse(SIGHASH_ALL).unwrap(),
             1,

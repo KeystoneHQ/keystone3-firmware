@@ -145,6 +145,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_NUFI, "NuFi", &walletNufi},
     {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
     {WALLET_LIST_RABBY, "Rabby", &walletRabby},
+    {WALLET_LIST_NABOX, "Nabox", &walletNabox},
     {WALLET_LIST_BITGET, "Bitget Wallet", &walletBitget},
     {WALLET_LIST_SAFE, "Safe", &walletSafe},
     {WALLET_LIST_BTC_WALLET, "BTC Wallets", &coinBtc},

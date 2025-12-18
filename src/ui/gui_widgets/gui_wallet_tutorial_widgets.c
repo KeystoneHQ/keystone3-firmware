@@ -144,6 +144,13 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_RABBY].items[0].qrTitle = _("connect_rabby_title");
     g_tutorials[WALLET_LIST_RABBY].items[0].qrUrl = _("connect_rabby_link");
 
+    g_tutorials[WALLET_LIST_NABOX].len = 1;
+    g_tutorials[WALLET_LIST_NABOX].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_NABOX].items[0].walletName = "Nabox";
+    g_tutorials[WALLET_LIST_NABOX].items[0].url = "https://keyst.one/t/3rd/nabox";
+    g_tutorials[WALLET_LIST_NABOX].items[0].qrTitle = "Nabox";
+    g_tutorials[WALLET_LIST_NABOX].items[0].qrUrl = "https://keyst.one/t/3rd/nabox";
+
     // WALLET_LIST_BLOCK_WALLET
     g_tutorials[WALLET_LIST_BLOCK_WALLET].len = 1;
     g_tutorials[WALLET_LIST_BLOCK_WALLET].desc = _("connect_wallet_desc");

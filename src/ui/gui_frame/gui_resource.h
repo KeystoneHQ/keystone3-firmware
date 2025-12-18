@@ -293,6 +293,7 @@ LV_IMG_DECLARE(walletBeacon);
 LV_IMG_DECLARE(walletBtcSafe);
 LV_IMG_DECLARE(walletMedusa);
 LV_IMG_DECLARE(walletIota);
+LV_IMG_DECLARE(walletNabox);
 
 // wallet list
 LV_IMG_DECLARE(walletListKeyStone);
@@ -343,6 +344,7 @@ LV_IMG_DECLARE(walletListBtcSafe);
 LV_IMG_DECLARE(walletListMedusa);
 LV_IMG_DECLARE(walletListIota);
 LV_IMG_DECLARE(walletListBtc);
+LV_IMG_DECLARE(walletListNabox);
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

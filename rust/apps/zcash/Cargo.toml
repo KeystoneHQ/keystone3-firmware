@@ -11,7 +11,7 @@ rust_tools = { workspace = true }
 app_utils = { workspace = true }
 bitcoin = { workspace = true }
 thiserror = { workspace = true }
-zcash_vendor = { workspace = true }
+zcash_vendor = { workspace = true, default-features = false}
 hex = { workspace = true }
 bitvec = { version = "1.0.1", default-features = false, features = ["alloc"] }
 blake2b_simd = { workspace = true }

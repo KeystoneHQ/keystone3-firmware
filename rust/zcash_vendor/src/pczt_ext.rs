@@ -101,6 +101,7 @@ pub trait PcztSigner {
     ) -> Result<(), Self::Error>
     where
         F: FnOnce(SignableInput) -> [u8; 32];
+
     #[cfg(feature = "cypherpunk")]
     fn sign_orchard(
         &self,
@@ -293,7 +294,7 @@ fn hash_orchard_txid_empty() -> Hash {
     hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION).finalize()
 }
 
-fn sheilded_sig_commitment(pczt: &Pczt, lock_time: u32, input_info: Option<SignableInput>) -> Hash {
+fn shielded_sig_commitment(pczt: &Pczt, lock_time: u32, input_info: Option<SignableInput>) -> Hash {
     let mut personal = [0; 16];
     personal[..12].copy_from_slice(ZCASH_TX_PERSONALIZATION_PREFIX);
     personal[12..].copy_from_slice(&pczt.global().consensus_branch_id().to_le_bytes());
@@ -404,7 +405,7 @@ where
             .enumerate()
             .try_for_each(|(i, input)| {
                 signer.sign_transparent(i, input, |signable_input| {
-                    sheilded_sig_commitment(pczt, lock_time, Some(signable_input))
+                    shielded_sig_commitment(pczt, lock_time, Some(signable_input))
                         .as_bytes()
                         .try_into()
                         .expect("correct length")
@@ -429,43 +430,12 @@ where
 }
 
 #[cfg(feature = "cypherpunk")]
-pub fn sign_full<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
+pub fn sign_orchard<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,
-    T::Error: From<transparent::pczt::ParseError>,
+    T::Error: From<orchard::pczt::ParseError>,
 {
     llsigner
-        .sign_transparent_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
-            let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
-                .ok_or(transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
-            signable
-                .inputs_mut()
-                .iter_mut()
-                .enumerate()
-                .try_for_each(|(i, input)| {
-                    signer.sign_transparent(i, input, |signable_input| {
-                        sheilded_sig_commitment(pczt, lock_time, Some(signable_input))
-                            .as_bytes()
-                            .try_into()
-                            .expect("correct length")
-                    })?;
-
-                    if input.sighash_type().encode() & SIGHASH_ANYONECANPAY == 0 {
-                        *tx_modifiable &= !FLAG_TRANSPARENT_INPUTS_MODIFIABLE;
-                    }
-
-                    if (input.sighash_type().encode() & !SIGHASH_ANYONECANPAY) != SIGHASH_NONE {
-                        *tx_modifiable &= !FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE;
-                    }
-
-                    if (input.sighash_type().encode() & !SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE {
-                        *tx_modifiable |= FLAG_HAS_SIGHASH_SINGLE;
-                    }
-
-                    *tx_modifiable &= !FLAG_SHIELDED_MODIFIABLE;
-                    Ok(())
-                })
-        })?
         .sign_orchard_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
             let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
                 .ok_or(transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
@@ -477,7 +447,7 @@ where
                     }
                     Some(_) => {
                         signer
-                            .sign_orchard(action, sheilded_sig_commitment(pczt, lock_time, None))?;
+                            .sign_orchard(action, shielded_sig_commitment(pczt, lock_time, None))?;
                         *tx_modifiable &= !(FLAG_TRANSPARENT_INPUTS_MODIFIABLE
                             | FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE
                             | FLAG_SHIELDED_MODIFIABLE);

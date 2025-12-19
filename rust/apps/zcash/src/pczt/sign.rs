@@ -109,7 +109,7 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
     let signer = pczt_ext::sign_transparent(signer, &SeedSigner { seed })
         .map_err(|e| ZcashError::SigningError(e.to_string()))?;
     #[cfg(feature = "cypherpunk")]
-    let signer = pczt_ext::sign_full(signer, &SeedSigner { seed })
+    let signer = pczt_ext::sign_orchard(signer, &SeedSigner { seed })
         .map_err(|e| ZcashError::SigningError(e.to_string()))?;
 
     // Now that we've created the signature, remove the other optional fields from the

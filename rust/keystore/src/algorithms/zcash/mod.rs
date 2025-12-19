@@ -103,8 +103,9 @@ pub fn sign_message_orchard<R: RngCore + CryptoRng>(
     }
 }
 
+#[cfg(feature = "cypherpunk")]
 #[cfg(test)]
-mod tests {
+mod orchard_tests {
     use super::*;
     use zcash_vendor::{
         pasta_curves::Fq,
@@ -165,21 +166,6 @@ mod tests {
     }
 
     #[test]
-    fn test_reject_trivial_seed() {
-        // all-zero seed should be rejected
-        let zero_seed = vec![0u8; 32];
-        let result = calculate_seed_fingerprint(&zero_seed);
-        assert!(result.is_err());
-        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
-
-        // all-0xFF seed should also be rejected
-        let ff_seed = vec![0xffu8; 32];
-        let result = calculate_seed_fingerprint(&ff_seed);
-        assert!(result.is_err());
-        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
-    }
-
-    #[test]
     fn test_orchard_signing() {
         let rng_seed = [0u8; 32];
         let rng: ChaCha8Rng = ChaCha8Rng::from_seed(rng_seed);
@@ -204,5 +190,24 @@ mod tests {
         let sig = osak.randomize(&randm).sign(rng, &msg);
         let bytes = <[u8; 64]>::from(&sig);
         assert_eq!(hex::encode(bytes), "065ef82c33af0ed487e8932112e3359e93c5955d3eac6c3a1f9cb6dd24e19d8a2bba454a4274154dd4ad0c6bdb2022a646950ed521f3de18e99015f4821cbb10");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_reject_trivial_seed() {
+        // all-zero seed should be rejected
+        let zero_seed = vec![0u8; 32];
+        let result = calculate_seed_fingerprint(&zero_seed);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
+
+        // all-0xFF seed should also be rejected
+        let ff_seed = vec![0xffu8; 32];
+        let result = calculate_seed_fingerprint(&ff_seed);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(KeystoreError::SeedError(_))));
     }
 }

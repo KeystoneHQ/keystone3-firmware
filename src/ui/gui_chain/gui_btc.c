@@ -239,7 +239,7 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
     uint8_t seed[64];
     int len = GetCurrentAccountSeedLen();
     int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-    CHECK_ERRCODE_RETURN(ret);
+    CHECK_ERRCODE_RETURN_NULL(ret);
 
     if (urType == CryptoPSBT) {
         if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {

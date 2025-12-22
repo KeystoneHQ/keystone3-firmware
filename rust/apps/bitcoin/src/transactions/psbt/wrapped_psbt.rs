@@ -11,7 +11,7 @@ use crate::transactions::parsed_tx::{ParseContext, ParsedInput, ParsedOutput, Tx
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::ops::Index;
-use core::str::Chars;
+use core::str::{Chars, FromStr};
 use keystore::algorithms::secp256k1::derive_public_key;
 
 use crate::multi_sig::address::calculate_multi_address;
@@ -557,6 +557,42 @@ impl WrappedPsbt {
         false
     }
 
+    fn calculate_address_by_pubkey_and_path(
+        &self,
+        pubkey: &secp256k1::PublicKey,
+        path: &DerivationPath,
+        network: &network::Network,
+    ) -> Result<Option<String>> {
+        match path.index(0) {
+            ChildNumber::Hardened { index: _i } => match _i {
+                44 => match path.index(1) {
+                    ChildNumber::Hardened { index: _i } => match _i {
+                        0 | 3 => Ok(Some(
+                            Address::p2pkh(&bitcoin::PublicKey::new(*pubkey), network.clone())?
+                                .to_string(),
+                        )),
+                        60 => Ok(Some(
+                            Address::p2wpkh(&bitcoin::PublicKey::new(*pubkey), network.clone())?
+                                .to_string(),
+                        )),
+                        _ => Ok(None),
+                    },
+                    _ => Ok(None),
+                },
+                49 => Ok(Some(
+                    Address::p2shp2wpkh(&bitcoin::PublicKey::new(*pubkey), network.clone())?
+                        .to_string(),
+                )),
+                84 => Ok(Some(
+                    Address::p2wpkh(&bitcoin::PublicKey::new(*pubkey), network.clone())?
+                        .to_string(),
+                )),
+                _ => Ok(None),
+            },
+            _ => Ok(None),
+        }
+    }
+
     pub fn calculate_address_for_input(
         &self,
         input: &Input,
@@ -573,44 +609,7 @@ impl WrappedPsbt {
 
         match input.bip32_derivation.first_key_value() {
             Some((pubkey, (_, derivation_path))) => {
-                //call generate address here
-                match derivation_path.index(0) {
-                    ChildNumber::Hardened { index: _i } => match _i {
-                        44 => match derivation_path.index(1) {
-                            ChildNumber::Hardened { index: _i } => match _i {
-                                0 | 3 => Ok(Some(
-                                    Address::p2pkh(
-                                        &bitcoin::PublicKey::new(*pubkey),
-                                        network.clone(),
-                                    )?
-                                    .to_string(),
-                                )),
-                                60 => Ok(Some(
-                                    Address::p2wpkh(
-                                        &bitcoin::PublicKey::new(*pubkey),
-                                        network.clone(),
-                                    )?
-                                    .to_string(),
-                                )),
-                                _ => Ok(None),
-                            },
-                            _ => Ok(None),
-                        },
-                        49 => Ok(Some(
-                            Address::p2shp2wpkh(
-                                &bitcoin::PublicKey::new(*pubkey),
-                                network.clone(),
-                            )?
-                            .to_string(),
-                        )),
-                        84 => Ok(Some(
-                            Address::p2wpkh(&bitcoin::PublicKey::new(*pubkey), network.clone())?
-                                .to_string(),
-                        )),
-                        _ => Ok(None),
-                    },
-                    _ => Ok(None),
-                }
+                self.calculate_address_by_pubkey_and_path(pubkey, derivation_path, network)
             }
             _ => Ok(None),
         }
@@ -628,7 +627,7 @@ impl WrappedPsbt {
             .output
             .get(index)
             .ok_or(BitcoinError::InvalidOutput)?;
-        let path = self.get_my_output_path(output, index, context)?;
+        let path = self.parse_my_output(&output.bip32_derivation, tx_out, context)?;
         Ok(ParsedOutput {
             address: self.calculate_address_for_output(tx_out, network)?,
             amount: Self::format_amount(tx_out.value.to_sat(), network),
@@ -678,6 +677,167 @@ impl WrappedPsbt {
             return Ok(path);
         }
         self.get_my_key_path_for_taproot(&output.tap_key_origins, index, "output", context)
+    }
+
+    // copy and modify from get_my_key_path
+    // TODO: refactor multisig and singlesig to different workflows
+    pub fn parse_my_output(
+        &self,
+        bip32_derivation: &BTreeMap<secp256k1::PublicKey, KeySource>,
+        tx_out: &TxOut,
+        context: &ParseContext,
+    ) -> Result<Option<(String, bool)>> {
+        if let Some(config) = &context.multisig_wallet_config {
+            let total = config.total;
+            // not my key
+            if bip32_derivation.keys().len() as u32 != total {
+                return Ok(None);
+            }
+
+            let wallet_xfps = config
+                .xpub_items
+                .iter()
+                .map(|v| v.xfp.clone())
+                .sorted()
+                .fold("".to_string(), |acc, cur| format!("{acc}{cur}"));
+            let xfps = bip32_derivation
+                .values()
+                .map(|(fp, _)| fp.to_string())
+                .sorted()
+                .fold("".to_string(), |acc, cur| format!("{acc}{cur}"));
+            // not my multisig key
+            if !wallet_xfps.eq_ignore_ascii_case(&xfps) {
+                return Ok(None);
+            }
+
+            let mut child_path = None;
+            let mut matched_parent_path = None;
+            for key in bip32_derivation.keys() {
+                let (fingerprint, path) = bip32_derivation.get(key).unwrap();
+                for (i, item) in config.xpub_items.iter().enumerate() {
+                    if item.xfp.eq_ignore_ascii_case(&fingerprint.to_string()) {
+                        if let Some(parent_path) = config.get_derivation_by_index(i) {
+                            let path_str = path.to_string();
+                            if path_str.starts_with(&parent_path) {
+                                child_path = Some(path_str);
+                                matched_parent_path = Some(parent_path);
+                                break;
+                            }
+                        }
+                    }
+                }
+                if child_path.is_some() {
+                    break;
+                }
+            }
+
+            if let Some(child) = child_path {
+                let parent = matched_parent_path.unwrap();
+                let suffix = child[parent.len()..].to_string();
+                let mut pubkeys = Vec::new();
+                for item in config.xpub_items.iter() {
+                    let derived_pk = keystore::algorithms::secp256k1::derive_public_key(
+                        &item.xpub,
+                        &format!("m{suffix}"),
+                    )
+                    .map_err(|e| BitcoinError::DerivePublicKeyError(e.to_string()))?;
+                    pubkeys.push(bitcoin::PublicKey::new(derived_pk));
+                }
+                pubkeys.sort();
+                let pubkeys_len = pubkeys.len();
+                let mut builder = bitcoin::script::Builder::new().push_int(config.threshold as i64);
+                for key in pubkeys {
+                    builder = builder.push_key(&key);
+                }
+                let p2ms = builder
+                    .push_int(pubkeys_len as i64)
+                    .push_opcode(bitcoin::opcodes::all::OP_CHECKMULTISIG)
+                    .into_script();
+
+                let format = MultiSigFormat::from(&config.format)?;
+                let expected_script = match format {
+                    MultiSigFormat::P2sh => ScriptBuf::new_p2sh(&p2ms.script_hash()),
+                    MultiSigFormat::P2wshP2sh => {
+                        let p2wsh = ScriptBuf::new_p2wsh(&p2ms.wscript_hash());
+                        ScriptBuf::new_p2sh(&p2wsh.script_hash())
+                    }
+                    MultiSigFormat::P2wsh => ScriptBuf::new_p2wsh(&p2ms.wscript_hash()),
+                };
+
+                if expected_script != tx_out.script_pubkey {
+                    return Ok(None);
+                } else {
+                    return Ok(Some((
+                        child.to_uppercase(),
+                        Self::judge_external_key(child, parent),
+                    )));
+                }
+            }
+        }
+
+        for key in bip32_derivation.keys() {
+            let (fingerprint, path) = bip32_derivation
+                .get(key)
+                .ok_or(BitcoinError::InvalidInput)?;
+            if fingerprint.eq(&context.master_fingerprint) {
+                let child = path.to_string();
+
+                for (_i, (parent_path, xpub)) in context.extended_public_keys.iter().enumerate() {
+                    if child.starts_with(&parent_path.to_string()) {
+                        let _child_path = match DerivationPath::from_str(&child) {
+                            Ok(p) => p,
+                            Err(_) => {
+                                return Err(BitcoinError::InvalidTransaction(format!(
+                                    "invalid output, cannot parse child derivation path"
+                                )));
+                            }
+                        };
+                        let public_key =
+                            match derive_public_key_by_path(xpub, parent_path, &_child_path) {
+                                Ok(pk) => pk,
+                                Err(_) => {
+                                    return Err(BitcoinError::InvalidTransaction(format!(
+                                        "invalid output, cannot derive associated public key"
+                                    )));
+                                }
+                            };
+
+                        let expected_script = match parent_path.into_iter().next() {
+                            Some(ChildNumber::Hardened { index: 44 }) => ScriptBuf::new_p2pkh(
+                                &bitcoin::PublicKey::new(public_key).pubkey_hash(),
+                            ),
+                            Some(ChildNumber::Hardened { index: 49 }) => {
+                                let p2wpkh = ScriptBuf::new_p2wpkh(
+                                    &bitcoin::PublicKey::new(public_key).wpubkey_hash().map_err(
+                                        |e| BitcoinError::DerivePublicKeyError(e.to_string()),
+                                    )?,
+                                );
+                                ScriptBuf::new_p2sh(&p2wpkh.script_hash())
+                            }
+                            Some(ChildNumber::Hardened { index: 84 }) => ScriptBuf::new_p2wpkh(
+                                &bitcoin::PublicKey::new(public_key).wpubkey_hash().map_err(
+                                    |e| BitcoinError::DerivePublicKeyError(e.to_string()),
+                                )?,
+                            ),
+                            _ => return Ok(None),
+                        };
+
+                        if expected_script != tx_out.script_pubkey {
+                            return Ok(None);
+                        }
+
+                        return Ok(Some((
+                            child.to_uppercase(),
+                            Self::judge_external_key(child, parent_path.to_string()),
+                        )));
+                    }
+                }
+                return Err(BitcoinError::InvalidTransaction(format!(
+                    "invalid output, fingerprint matched but cannot derive associated public key"
+                )));
+            }
+        }
+        Ok(None)
     }
 
     pub fn get_my_key_path(
@@ -736,8 +896,30 @@ impl WrappedPsbt {
                         )));
                     }
                     None => {
-                        for parent_path in context.extended_public_keys.keys() {
+                        for (_i, (parent_path, xpub)) in
+                            context.extended_public_keys.iter().enumerate()
+                        {
                             if child.starts_with(&parent_path.to_string()) {
+                                let _child_path = match DerivationPath::from_str(&child) {
+                                    Ok(p) => p,
+                                    Err(_) => {
+                                        return Err(BitcoinError::InvalidTransaction(format!(
+                                            "invalid {purpose} #{index}, cannot parse child derivation path"
+                                        )));
+                                    }
+                                };
+                                let public_key = match derive_public_key_by_path(
+                                    xpub,
+                                    parent_path,
+                                    &_child_path,
+                                ) {
+                                    Ok(pk) => pk,
+                                    Err(_) => {
+                                        return Err(BitcoinError::InvalidTransaction(format!(
+                                                "invalid {purpose} #{index}, cannot derive associated public key"
+                                            )));
+                                    }
+                                };
                                 return Ok(Some((
                                     child.to_uppercase(),
                                     Self::judge_external_key(child, parent_path.to_string()),

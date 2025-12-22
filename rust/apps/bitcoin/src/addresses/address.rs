@@ -56,7 +56,10 @@ impl Address {
 
     pub fn p2wpkh(pk: &PublicKey, network: Network) -> Result<Address, BitcoinError> {
         match network {
-            Network::Bitcoin | Network::BitcoinTestnet | Network::AvaxBtcBridge => {
+            Network::Bitcoin
+            | Network::BitcoinTestnet
+            | Network::AvaxBtcBridge
+            | Network::Litecoin => {
                 let payload = Payload::Segwit {
                     witness_program: WitnessProgram::p2wpkh(
                         &CompressedPublicKey::try_from(*pk).map_err(|e| {

@@ -1,36 +1,26 @@
 # Keystone DevKit Hello World
 
-## 项目简介
+## Overview
 
-这是一个 Keystone DevKit 的 Hello World 示例程序，基于 MH1903 芯片开发。该项目演示了如何在 Keystone 硬件钱包开发套件上运行最基础的固件程序。
+This is a Hello World example program for the Keystone DevKit, developed based on the MH1903 chip. This project demonstrates how to run the most basic firmware program on the Keystone hardware wallet development kit.
 
-本项目从完整的 Keystone3 固件项目精简而来，专门用于 Keystone DevKit 开发套件的学习和演示。
+This project is streamlined from the complete Keystone3 firmware project, specifically designed for learning and demonstration purposes on the Keystone DevKit.
 
-## 功能特性
+## Features
 
-- 初始化系统时钟
-- 初始化 LCD 屏幕
-- 使用 LVGL 在屏幕中央显示 "Hello World" 文本
-- 基于 FreeRTOS 的任务调度
-
-## Description
-
-The Keystone3 Firmware is an advanced, highly secure software specifically crafted for the Keystone3 product, a state-of-the-art crypto hardware wallet. This project is laser-focused on delivering an exceptionally secure and intuitive user experience. It boasts cutting-edge features like PCI level anti-tamper protection, ensuring the highest security against physical and digital threats. Additionally, it supports Multi Seed Phrase functionality, which enhances security and recovery options, and includes safeguards against blind signing to protect against unauthorized transactions. The firmware also offers extensive support for a wide range of cryptocurrencies, catering to the diverse needs of crypto users.
-
-Its standout features include:
-
-1. Triple-layer security with Three Secure Element Chips, ensuring top-notch protection of your digital assets.
-2. Advanced PCI level anti-tamper features, providing robust defense against physical tampering and hacking attempts.
-3. A user-friendly interface offering an intuitive user experience, making it accessible even for those new to crypto hardware wallets.
+- System clock initialization
+- LCD screen initialization
+- Display "Hello World" text in the center of the screen using LVGL
+- FreeRTOS-based task scheduling
 
 ## Getting Started
 
-### 构建要求
+### Build Requirements
 
-- ARM GCC 工具链 (arm-none-eabi-gcc)
-- CMake 3.10 或更高版本
+- ARM GCC Toolchain (arm-none-eabi-gcc)
+- CMake 3.10 or higher
 
-### 构建步骤
+### Build Instructions
 
 #### Windows
 
@@ -50,50 +40,42 @@ cmake ..
 make
 ```
 
-### 清理项目
 
-运行 `cleanup.bat` 可以删除所有原始项目中不必要的文件和文件夹，进一步精简项目。
-
-```bash
-cleanup.bat
-```
-
-### 项目结构
+### Project Structure
 
 ```
 .
 ├── src/
-│   ├── main.c                      # 主入口文件
+│   ├── main.c                      # Main entry file
 │   ├── tasks/
-│   │   ├── helloworld_task.c       # Hello World 显示任务
+│   │   ├── helloworld_task.c       # Hello World display task
 │   │   └── helloworld_task.h
-│   ├── driver/                     # 硬件驱动
-│   └── config/                     # 配置文件
+│   ├── driver/                     # Hardware drivers
+│   └── config/                     # Configuration files
 ├── external/
-│   ├── FreeRTOS/                   # FreeRTOS 源代码
-│   ├── lvgl/                       # LVGL 图形库
-│   └── mh1903_lib/                 # MH1903 芯片库
-├── CMakeLists.txt                  # CMake 配置
-├── firmware.cmake                  # 固件编译配置
-└── mh1903b.ld                      # 链接脚本
-```
+│   ├── FreeRTOS/                   # FreeRTOS source code
+│   ├── lvgl/                       # LVGL graphics library
+│   └── mh1903_lib/                 # MH1903 chip library
+├── CMakeLists.txt                  # CMake configuration
+├── firmware.cmake                  # Firmware build configuration
+└── mh1903b.ld                      # Linker script
 
-### 输出文件
+### Output Files
 
-编译成功后会在 `build` 目录生成：
-- `mh1903.elf` - ELF 格式固件
-- `mh1903.bin` - 二进制固件（用于烧录）
-- `mh1903.hex` - HEX 格式固件
+After successful compilation, the following files will be generated in the `build` directory:
+- `mh1903.elf` - ELF format firmware
+- `mh1903.bin` - Binary firmware (for flashing)
+- `mh1903.hex` - HEX format firmware
 
-### 烧录
+### Flashing
 
-使用支持的烧录工具将 `mh1903.bin` 烧录到设备中。
+Use a supported flashing tool to flash `mh1903.bin` to your device.
 
 ---
 
-## 原完整固件项目信息
+## Original Full Firmware Project Information
 
-以下是原 Keystone3 完整固件项目的构建说明（已精简为 Hello World 示例）：
+Below is the build instructions for the original Keystone3 complete firmware project (now simplified to Hello World example):
 
 ### Installation
 
@@ -132,42 +114,11 @@ docker build -t keystone3-baker:local .
 
 Here's how to build the Keystone3 Firmware:
 
-#### Building multi-coins firmware
+#### Building firmware
 
 ```bash
 # Run the build script at the root of the project.
 python3 build.py
-```
-
-#### Building btc-only firmware
-
-```bash
-# Run the build script at the root of the project.
-python build.py -t btc_only
-```
-
-#### Building img to C file
-
-Please move the "img" file to the corresponding directory under the "images" directory.
-
-The program will convert underscores in the file names to camel case, and add the appropriate prefix to the files.
-
-Here are two ways to run it.
-
-The first way is to execute the command below.
-
-```bash
-# Run the build script at the root of the project.
-python img_converter.py
-```
-
-The second way is already integrated in the "build.py" file, so you can simply use it.
-
-```bash
-python3 build.py
-
-# or
-python build.py -t btc_only
 ```
 
 ## Code Structure
@@ -194,17 +145,13 @@ Please follow this [Doc](docs/SIMULATOR.md).
 We welcome contributions! Here's how you can contribute:
 
 -   Fork the repository.
--   Create your feature branch: `git checkout -b feature/AmazingFeature`.
--   Commit your changes: `git commit -m 'Add some AmazingFeature'`.
--   Push to the branch: `git push origin feature/AmazingFeature`.
+-   Create your feature branch: `git checkout -b feature/xxx`.
+-   Commit your changes: `git commit -m 'Add some xxx'`.
+-   Push to the branch: `git push origin feature/xxx`.
 -   Submit a pull request.
 
 Before submitting, ensure your code follows our formatting standards:
 
-```bash
-brew install astyle
-cd tools && astyle -A3nrUpHcQ --exclude=../src/cm_backtrace/Languages --exclude=../src/ui/gui_assets "../src/*.c" "../src/*.h" && cd ..
-```
 
 ## FAQ
 

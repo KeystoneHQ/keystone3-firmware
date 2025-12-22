@@ -2,11 +2,8 @@
 #include "define.h"
 #include "assert.h"
 #include "stdio.h"
-#include "presetting.h"
-#include "log_print.h"
 #include "drv_gd25qxx.h"
 #include "flash_address.h"
-#include "safe_str_lib.h"
 
 #ifdef COMPILE_SIMULATOR
 #include "stdio.h"
@@ -17,17 +14,18 @@ void ShowAssert(const char* file, uint32_t len)
 }
 #else
 
-#include "draw_on_lcd.h"
+// #include "draw_on_lcd.h"
 
 LV_FONT_DECLARE(openSans_20);
 
 void ShowAssert(const char *file, uint32_t len)
 {
     char assertStr[BUFFER_SIZE_256];
-    PrintOnLcd(&openSans_20, 0xFFFF, "assert,file=%s\nline=%d\n\n", file, len);
-    PrintErrorInfoOnLcd();
-    snprintf_s(assertStr, BUFFER_SIZE_256, "assert,file=%s,line=%d", file, len);
-    Gd25FlashWriteBufferNoMutex(SPI_FLASH_ADDR_ERR_INFO, (uint8_t *)assertStr, strnlen_s(assertStr, sizeof(assertStr) - 1) + 1);
+    printf("assert,file=%s\r\nline=%d\r\n", file, len);
+    // PrintOnLcd(&openSans_20, 0xFFFF, "assert,file=%s\nline=%d\n\n", file, len);
+    // PrintErrorInfoOnLcd();
+    // snprintf_s(assertStr, BUFFER_SIZE_256, "assert,file=%s,line=%d", file, len);
+    // Gd25FlashWriteBufferNoMutex(SPI_FLASH_ADDR_ERR_INFO, (uint8_t *)assertStr, strnlen_s(assertStr, sizeof(assertStr) - 1) + 1);
     while (1);
 }
 

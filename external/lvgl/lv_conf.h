@@ -223,7 +223,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #ifdef COMPILE_SIMULATOR
 #define LV_USE_LOG 1
 #else
-#define LV_USE_LOG 0
+#define LV_USE_LOG 1
 #endif
 #if LV_USE_LOG
 

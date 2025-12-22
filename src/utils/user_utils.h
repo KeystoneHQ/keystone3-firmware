@@ -5,10 +5,6 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "string.h"
-#include "cjson/cJSON.h"
-#ifndef COMPILE_SIMULATOR
-#include "safe_mem_lib.h"
-#endif
 
 #define CLEAR_ARRAY(array)                      memset_s(array, sizeof(array), 0, sizeof(array))
 #define CLEAR_OBJECT(obj)                       memset_s(&obj, sizeof(obj), 0, sizeof(obj))
@@ -24,9 +20,6 @@ void ArrayRandom(char *words, char *out, int count);
 int WordsListSlice(char *words, char wordsList[][10], uint8_t wordsCount);
 void ConvertToLowerCase(char *str);
 int FindStringCharPosition(const char *str, const char destChar, int index);
-int32_t GetIntValue(const cJSON *obj, const char *key, int32_t defaultValue);
-void GetStringValue(const cJSON *obj, const char *key, char *value, uint32_t maxLen);
-bool GetBoolValue(const cJSON *obj, const char *key, bool defaultValue);
 void CutAndFormatString(char *out, uint32_t maxLen, const char *string, uint32_t targetLen);
 void CutAndFormatFileName(char *out, uint32_t maxLen, const char *fileName, const char *contain);
 uint16_t extract_16bit_value(const uint8_t *frame, int offset);

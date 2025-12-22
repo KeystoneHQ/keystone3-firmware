@@ -1,17 +1,4 @@
-# Keystone DevKit Hello World
-
-## 项目简介
-
-这是一个 Keystone DevKit 的 Hello World 示例程序，基于 MH1903 芯片开发。该项目演示了如何在 Keystone 硬件钱包开发套件上运行最基础的固件程序。
-
-本项目从完整的 Keystone3 固件项目精简而来，专门用于 Keystone DevKit 开发套件的学习和演示。
-
-## 功能特性
-
-- 初始化系统时钟
-- 初始化 LCD 屏幕
-- 使用 LVGL 在屏幕中央显示 "Hello World" 文本
-- 基于 FreeRTOS 的任务调度
+# Keystone3 Firmware
 
 ## Description
 
@@ -24,76 +11,6 @@ Its standout features include:
 3. A user-friendly interface offering an intuitive user experience, making it accessible even for those new to crypto hardware wallets.
 
 ## Getting Started
-
-### 构建要求
-
-- ARM GCC 工具链 (arm-none-eabi-gcc)
-- CMake 3.10 或更高版本
-
-### 构建步骤
-
-#### Windows
-
-```bash
-mkdir build
-cd build
-cmake .. -G "Unix Makefiles"
-make
-```
-
-#### Linux / Mac
-
-```bash
-mkdir build
-cd build
-cmake ..
-make
-```
-
-### 清理项目
-
-运行 `cleanup.bat` 可以删除所有原始项目中不必要的文件和文件夹，进一步精简项目。
-
-```bash
-cleanup.bat
-```
-
-### 项目结构
-
-```
-.
-├── src/
-│   ├── main.c                      # 主入口文件
-│   ├── tasks/
-│   │   ├── helloworld_task.c       # Hello World 显示任务
-│   │   └── helloworld_task.h
-│   ├── driver/                     # 硬件驱动
-│   └── config/                     # 配置文件
-├── external/
-│   ├── FreeRTOS/                   # FreeRTOS 源代码
-│   ├── lvgl/                       # LVGL 图形库
-│   └── mh1903_lib/                 # MH1903 芯片库
-├── CMakeLists.txt                  # CMake 配置
-├── firmware.cmake                  # 固件编译配置
-└── mh1903b.ld                      # 链接脚本
-```
-
-### 输出文件
-
-编译成功后会在 `build` 目录生成：
-- `mh1903.elf` - ELF 格式固件
-- `mh1903.bin` - 二进制固件（用于烧录）
-- `mh1903.hex` - HEX 格式固件
-
-### 烧录
-
-使用支持的烧录工具将 `mh1903.bin` 烧录到设备中。
-
----
-
-## 原完整固件项目信息
-
-以下是原 Keystone3 完整固件项目的构建说明（已精简为 Hello World 示例）：
 
 ### Installation
 

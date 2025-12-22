@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
-#include "gui.h"
+#include <stdbool.h>
+#include <stdint.h>
 #include "version.h"
 
 #define BOOT_VERSION_ADDR                   0x01002000
@@ -37,17 +38,7 @@ void GetSoftWareVersion(char *version)
 
 void GetUpdateVersionNumber(char *version)
 {
-#ifdef BTC_ONLY
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-B", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-#endif
-
-#ifdef CYPHERPUNK_VERSION
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d-C", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-#endif
-
-#ifdef WEB3_VERSION
     snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-#endif
 }
 
 void GetSoftWareVersionNumber(char *version)

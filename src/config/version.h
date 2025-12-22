@@ -10,17 +10,7 @@
 #define SOFTWARE_VERSION_BUILD              10
 #define SOFTWARE_VERSION_BETA               1
 #define SOFTWARE_VERSION                    (SOFTWARE_VERSION_MAJOR * 10000 + SOFTWARE_VERSION_MINOR * 100 + SOFTWARE_VERSION_BUILD)
-#ifdef WEB3_VERSION
 #define SOFTWARE_VERSION_SUFFIX             ""
-#endif
-
-#ifdef CYPHERPUNK_VERSION
-#define SOFTWARE_VERSION_SUFFIX             " - Cypherpunk"
-#endif
-
-#ifdef BTC_ONLY
-#define SOFTWARE_VERSION_SUFFIX             " - BTC"
-#endif
 
 #if SOFTWARE_VERSION_MAJOR > 99 || SOFTWARE_VERSION_MINOR > 99 || SOFTWARE_VERSION_BUILD > 99
 #error "Invalid software version"

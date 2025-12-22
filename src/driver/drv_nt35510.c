@@ -2,8 +2,6 @@
 #include "stdio.h"
 #include "mhscpu.h"
 #include "cmsis_os.h"
-//#include "test_image_480_800.h"
-//#include "test_image.h"
 #include "user_memory.h"
 #include "drv_parallel8080.h"
 #include "user_delay.h"

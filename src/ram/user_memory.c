@@ -11,6 +11,8 @@
 static uint32_t g_sramHeapCount = 0;
 static uint32_t g_extHeapCount = 0;
 
+#define ASSERT(x)                       assert(x)
+
 void *SramMallocTrack(size_t size, const char *file, int line, const char *func)
 {
     void *p = pvPortMalloc(size);

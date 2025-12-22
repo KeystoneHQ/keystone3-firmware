@@ -3,7 +3,6 @@
 
 #include "stdint.h"
 #include "stdbool.h"
-#include "err_code.h"
 
 void ShowAssert(const char *file, uint32_t len);
 

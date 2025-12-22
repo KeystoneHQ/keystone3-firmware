@@ -11,21 +11,15 @@ HalLcdOpt_t g_lcdOpt;
 
 void LcdCheck(void)
 {
-    if (GetHardwareVersion() == VERSION_EVT0) {
-        g_lcdOpt.Init = Nt35510Init;
-        g_lcdOpt.Clear = Nt35510Clear;
-        g_lcdOpt.Draw = Nt35510Draw;
-    } else {
-        g_lcdOpt.Init = Ili9806Init;
-        g_lcdOpt.Clear = Ili9806Clear;
-        g_lcdOpt.Draw = Ili9806Draw;
-    }
+    g_lcdOpt.Init = Ili9806Init;
+    g_lcdOpt.Clear = Ili9806Clear;
+    g_lcdOpt.Draw = Ili9806Draw;
 }
 
 void LcdInit(void)
 {
     g_lcdOpt.Init();
-    LcdFullScreen(0);
+    LcdFullScreen(0x0);
 }
 
 bool LcdBusy(void)

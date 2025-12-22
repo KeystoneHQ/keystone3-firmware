@@ -1,109 +1,63 @@
 #include <string.h>
 #include <stdio.h>
 #include "mhscpu.h"
-#include "cm_backtrace.h"
 #include "drv_sys.h"
 #include "drv_uart.h"
-#include "drv_spi.h"
 #include "drv_psram.h"
-#include "drv_trng.h"
-#include "drv_ds28s60.h"
-#include "drv_gd25qxx.h"
-#include "drv_sensor.h"
-#include "drv_rtc.h"
-#include "drv_usb.h"
-#include "drv_battery.h"
 #include "drv_lcd_bright.h"
-#include "drv_i2c_io.h"
-#include "drv_atecc608b.h"
-#include "drv_power.h"
-#include "drv_aw32001.h"
-#include "drv_button.h"
-#include "drv_tamper.h"
-#include "drv_exti.h"
-#include "drv_motor.h"
 #include "hal_lcd.h"
 #include "cmsis_os.h"
-#include "user_msg.h"
-#include "cmd_task.h"
-#include "ui_display_task.h"
-#include "qrdecode_task.h"
-#include "touchpad_task.h"
-#include "background_task.h"
-#include "fetch_sensitive_data_task.h"
-#include "data_parser_task.h"
-#include "log_task.h"
-#include "usb_task.h"
-#include "user_fatfs.h"
-#include "user_sqlite3.h"
-#include "screen_manager.h"
-#include "keystore.h"
-#include "log.h"
-#include "fingerprint_process.h"
-#include "fingerprint_task.h"
-#include "low_power.h"
-#include "draw_on_lcd.h"
-#include "device_setting.h"
-#include "anti_tamper.h"
-#include "power_on_self_check.h"
-#include "account_manager.h"
-#include "version.h"
-#include "hardware_version.h"
-#include "librust_c.h"
+#include "helloworld_task.h"
+#include "cmsis_os.h"
+
+#define TEST_CMD_MAX_LENGTH     3072
+uint8_t g_testCmdRcvBuffer[TEST_CMD_MAX_LENGTH];
+uint32_t g_testCmdRcvCount = 0;
+
+void CmdIsrRcvByte(uint8_t byte)
+{
+    static uint32_t lastTick = 0;
+    uint32_t tick;
+    static uint32_t rxF8Count = 0;
+
+    if (osKernelGetState() < osKernelRunning) {
+        return;
+    }
+    tick = osKernelGetTickCount();
+    if (g_testCmdRcvCount != 0) {
+        if (tick - lastTick > 200) {
+            g_testCmdRcvCount = 0;
+            rxF8Count = 0;
+        }
+    }
+    lastTick = tick;
+    if (byte == 0xF8) {
+        if (rxF8Count++ > 10) {
+            NVIC_SystemReset();
+        }
+    } else {
+        rxF8Count = 0;
+    }
+}
+
 
 int main(void)
 {
     __enable_irq();
-    SetAllGpioLow();
     SystemClockInit();
-    SensorInit();
     Uart0Init(CmdIsrRcvByte);
-    FingerprintInit();
-    cm_backtrace_init("mh1903", GetHardwareVersionString(), GetSoftwareVersionString());
-    TrngInit();
-    TamperInit(TamperStartup);
     PowerInit();
     LcdBrightInit();
     LcdCheck();
+    SetLcdBright(100);
     LcdInit();
-    DrawBootLogoOnLcd();
-    Gd25FlashInit();
     NvicInit();
     PsramInit();
-    LogInit();
-    DeviceSettingsInit();
-    UserMsgInit();
-    DS28S60_Init();
-    Atecc608bInit();
-    AccountsDataCheck();
-    MountUsbFatfs();
-    UsbInit();
-    RtcInit();
-    MotorInit();
-    BatteryInit();
-    Aw32001Init();
-    ButtonInit();
-    ExtInterruptInit();
-    MountSdFatfs();
-    UserSqlite3Init();
-    ScreenManagerInit();
-    AccountManagerInit();
-    PowerOnSelfCheck();
 
-    PrintSystemInfo();
+    printf("Starting Hello World Application\r\n");
+    
     osKernelInitialize();
-    CreateFingerprintTask();
-#ifndef BUILD_PRODUCTION
-    CreateCmdTask();
-#endif
-    CreateFetchSensitiveDataTask();
-    CreateDataParserTask();
-    CreateUiDisplayTask();
-    CreateQrDecodeTask();
-    CreateTouchPadTask();
-    CreateBackgroundTask();
-    CreateLogTask();
-    CreateUsbTask();
+    CreateHelloWorldTask();
 
     printf("start FreeRTOS scheduler\r\n");
     osKernelStart();

@@ -45,5 +45,5 @@ void PrintSystemInfo(void)
     printf("PCLK_Frequency:%dHz\r\n", ClocksStructure.PCLK_Frequency);
     printf("SYSCTRL->FREQ_SEL=0x%08X\r\n", SYSCTRL->FREQ_SEL);
     printf("SYSCTRL->FREQ_SEL=0x%08X\r\n", SYSCTRL->HCLK_1MS_VAL);
-    printf("%s\n", GetSoftwareVersionString());
+    // printf("%s\n", GetSoftwareVersionString());
 }

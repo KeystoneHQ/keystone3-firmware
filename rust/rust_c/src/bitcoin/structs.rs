@@ -100,6 +100,8 @@ pub struct DisplayTxDetailInput {
 #[repr(C)]
 pub struct DisplayTxOverviewOutput {
     address: PtrString,
+    is_mine: bool,
+    is_external: bool,
 }
 
 #[repr(C)]
@@ -143,7 +145,9 @@ impl From<OverviewTx> for DisplayTxOverview {
                     .to
                     .iter()
                     .map(|v| DisplayTxOverviewOutput {
-                        address: convert_c_char(v.clone()),
+                        address: convert_c_char(v.address.clone()),
+                        is_external: v.is_external,
+                        is_mine: v.is_mine,
                     })
                     .collect::<Vec<DisplayTxOverviewOutput>>(),
             )
@@ -213,7 +217,7 @@ impl From<ParsedOutput> for DisplayTxDetailOutput {
         DisplayTxDetailOutput {
             address: convert_c_char(value.address),
             amount: convert_c_char(value.amount),
-            is_mine: value.path.is_some(),
+            is_mine: value.is_mine,
             path: value.path.map(convert_c_char).unwrap_or(null_mut()),
             is_external: value.is_external,
         }

@@ -633,6 +633,7 @@ impl WrappedPsbt {
             amount: Self::format_amount(tx_out.value.to_sat(), network),
             value: tx_out.value.to_sat(),
             path: path.clone().map(|v| v.0),
+            is_mine: path.is_some(),
             is_external: path.clone().is_some_and(|v| v.1),
         })
     }

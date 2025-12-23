@@ -139,7 +139,7 @@ mod test {
     use crate::addresses::xyzpub::{convert_version, Version};
     use crate::alloc::string::ToString;
     use crate::transactions::parsed_tx::{
-        DetailTx, OverviewTx, ParsedInput, ParsedOutput, ParsedTx,
+        DetailTx, OverviewTo, OverviewTx, ParsedInput, ParsedOutput, ParsedTx,
     };
     use crate::{parse_raw_tx, sign_msg};
 
@@ -151,7 +151,14 @@ mod test {
                 total_output_sat: $total_output_sat.to_string(),
                 fee_sat: $fee_sat.to_string(),
                 from: $from.iter().map(|i| i.to_string()).collect(),
-                to: $to.iter().map(|i| i.to_string()).collect(),
+                to: $to
+                    .iter()
+                    .map(|i| OverviewTo {
+                        address: i.to_string(),
+                        is_mine: false,
+                        is_external: false,
+                    })
+                    .collect(),
                 network: $network.to_string(),
                 fee_larger_than_amount: $fee_larger_than_amount,
                 sign_status: Some("Unsigned".to_string()),
@@ -184,6 +191,7 @@ mod test {
                 amount: $amount.to_string(),
                 value: $value,
                 path: Some($path.to_string()),
+                is_mine: true,
                 is_external: false,
             }
         };

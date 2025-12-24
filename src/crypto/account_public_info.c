@@ -524,7 +524,6 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
     {XPUB_TYPE_ZEC_TRANSPARENT_LEGACY,SECP256K1,     "zec_transparent_legacy",   "M/44'/133'/0'"    },
-    {ZCASH_UFVK_ENCRYPTED_0,          ZCASH_UFVK_ENCRYPTED, "zcash_ufvk_0",      "M/32'/133'/0'"    },
 #endif
 
 #ifdef CYPHERPUNK_VERSION
@@ -605,6 +604,7 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
 
 #ifdef WEB3_VERSION
     case RSA_KEY: {
+        printf("here, RSA_KEY\n");
         Rsa_primes_t *primes = FlashReadRsaPrimes();
         if (primes == NULL)
             return NULL;

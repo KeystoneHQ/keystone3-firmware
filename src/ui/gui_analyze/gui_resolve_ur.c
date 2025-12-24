@@ -56,6 +56,7 @@ static SetChainData_t g_chainViewArray[] = {
     {REMAPVIEW_AVAX, (SetChainDataFunc)GuiSetAvaxUrData},
     {REMAPVIEW_IOTA, (SetChainDataFunc)GuiSetIotaUrData},
     {REMAPVIEW_IOTA_SIGN_MESSAGE_HASH, (SetChainDataFunc)GuiSetIotaUrData},
+    {REMAPVIEW_ZCASH, (SetChainDataFunc)GuiSetZcashUrData},
 #endif
 };
 

@@ -44,7 +44,6 @@ static int AddBTCPathsStandard(ExtendedPublicKey *keys, int startIndex, bool inc
     return index - startIndex;
 }
 
-
 static PathAddResult_t AddETHLedgerLivePaths(ExtendedPublicKey *keys, int startIndex)
 {
     int index = startIndex;
@@ -195,7 +194,7 @@ UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
 
 UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType)
 {
-    return BasicGetMetamaskDataForAccountType(accountType, get_unlimited_connect_metamask_ur);
+    return BasicGetMetamaskDataForAccountType(accountType, get_connect_metamask_ur_unlimited);
 }
 
 UREncodeResult *GuiGetMetamaskData(void)
@@ -470,6 +469,7 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
         {.path = GetXPubPath(XPUB_TYPE_TRX), .chainType = XPUB_TYPE_TRX},
         {.path = GetXPubPath(XPUB_TYPE_DOGE), .chainType = XPUB_TYPE_DOGE},
         {.path = GetXPubPath(XPUB_TYPE_XRP), .chainType = XPUB_TYPE_XRP},
+        {.path = GetXPubPath(XPUB_TYPE_ZEC_TRANSPARENT_LEGACY), .chainType = XPUB_TYPE_ZEC_TRANSPARENT_LEGACY},
     };
     ExtendedPublicKey keys[NUMBER_OF_ARRAYS(chainPaths)];
     uint8_t mfp[4] = {0};
@@ -479,7 +479,11 @@ UREncodeResult *GuiGetKeystoneConnectWalletData(void)
     GetSerialNumber(serialNumber);
     char firmwareVersion[12];
     GetSoftWareVersionNumber(firmwareVersion);
-    UREncodeResult *urEncode = get_keystone_connect_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
+
+    uint8_t sfp[32];
+    GetZcashSFP(GetCurrentAccountIndex(), sfp);
+
+    UREncodeResult *urEncode = get_keystone_connect_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion, sfp, sizeof(sfp));
     CHECK_CHAIN_PRINT(urEncode);
     SRAM_FREE(public_keys);
     return urEncode;

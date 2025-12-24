@@ -2,6 +2,9 @@
 #include "gui_chain.h"
 #include "keystore.h"
 #include "user_memory.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_model.h"
+#endif
 
 typedef TransactionCheckResult *(*CheckUrResultHandler)(void);
 
@@ -97,6 +100,7 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
 
     {TonTx, GuiGetTonSignQrCodeData, NULL, GuiGetTonCheckResult, CHAIN_TON, REMAPVIEW_TON},
     {TonSignProof, GuiGetTonProofSignQrCodeData, NULL, GuiGetTonCheckResult, CHAIN_TON, REMAPVIEW_TON_SIGNPROOF},
+    {ZcashTx, GuiGetZcashSignQrCodeData, NULL, GuiGetZcashCheckResult, CHAIN_ZCASH, REMAPVIEW_ZCASH},
 #endif
 
 #ifdef CYPHERPUNK_VERSION

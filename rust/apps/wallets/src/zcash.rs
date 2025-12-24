@@ -33,3 +33,34 @@ pub fn generate_sync_ur(
     let accounts = ZcashAccounts::new(seed_fingerprint.to_vec(), keys);
     Ok(accounts)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloc::string::ToString;
+    use alloc::vec;
+
+    #[test]
+    fn test_generate_sync_ur() {
+        let seed_fingerprint = [1u8; 32];
+        let key_infos = vec![
+            UFVKInfo {
+                key_text: "uview1vmle95235860km865468566554".to_string(),
+                key_name: "Account 0".to_string(),
+                index: 0,
+            },
+            UFVKInfo {
+                key_text: "uview1vmle95235860km865468566555".to_string(),
+                key_name: "Account 1".to_string(),
+                index: 1,
+            },
+        ];
+
+        let result = generate_sync_ur(key_infos, seed_fingerprint);
+        assert!(result.is_ok());
+
+        let accounts = result.unwrap();
+        let cbor: Vec<u8> = accounts.try_into().unwrap();
+        assert!(!cbor.is_empty());
+    }
+}

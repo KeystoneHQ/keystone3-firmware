@@ -126,7 +126,7 @@ static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
         uint8_t seed[64];
         int len = GetCurrentAccountSeedLen();
         int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        CHECK_ERRCODE_RETURN(ret);
+        CHECK_ERRCODE_RETURN_NULL(ret);
         MultisigSignResult *result = btc_sign_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen, seed, len, mfp, sizeof(mfp));
         encodeResult = result->ur_result;
         GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);
@@ -239,7 +239,7 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
     uint8_t seed[64];
     int len = GetCurrentAccountSeedLen();
     int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-    CHECK_ERRCODE_RETURN(ret);
+    CHECK_ERRCODE_RETURN_NULL(ret);
 
     if (urType == CryptoPSBT) {
         if (GuiGetCurrentTransactionType() == TRANSACTION_TYPE_BTC_MULTISIG) {
@@ -1040,12 +1040,40 @@ static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overv
         }
 
         int addressLabelHeight = lv_obj_get_y2(addressLabel);
+        toContainerHeight += (addressLabelHeight);
 
         lv_obj_set_height(toInnerContainer, addressLabelHeight);
+        if(to->data[i].is_mine) {
+            lv_obj_t *changeContainer = GuiCreateContainerWithParent(toInnerContainer, 87, 30);
+            lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(changeContainer, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_t *changeLabel = lv_label_create(changeContainer);
+            // show change or receive label in the detail page view
+            if (to->data[i].is_external) {
+                lv_label_set_text(changeLabel, "Receive");
+            } else {
+                lv_label_set_text(changeLabel, "Change");
+            }
+            lv_obj_set_style_text_font(changeLabel, g_defIllustrateFont, LV_PART_MAIN);
+            lv_obj_set_style_text_color(changeLabel, WHITE_COLOR, LV_PART_MAIN);
+            lv_obj_set_style_text_opa(changeLabel, 163, LV_PART_MAIN);
+            lv_obj_align(changeLabel, LV_ALIGN_CENTER, 0, 0);
+            lv_obj_update_layout(changeContainer);
+            int changeContainerHeight = lv_obj_get_y2(changeContainer);
+            toContainerHeight += changeContainerHeight;
+
+            lv_obj_set_height(toInnerContainer, addressLabelHeight + changeContainerHeight);
+
+            lv_obj_update_layout(toInnerContainer);
+
+            lv_obj_align(changeContainer, LV_ALIGN_BOTTOM_LEFT, 24, 0);
+        }
+
+        toContainerHeight += 8;
 
         lv_obj_align_to(toInnerContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
-        toContainerHeight += (addressLabelHeight + 8);
         lastView = toInnerContainer;
     }
 

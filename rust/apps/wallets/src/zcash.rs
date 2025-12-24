@@ -37,8 +37,8 @@ pub fn generate_sync_ur(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::vec;
     use alloc::string::ToString;
+    use alloc::vec;
 
     #[test]
     fn test_generate_sync_ur() {
@@ -64,4 +64,3 @@ mod tests {
         assert!(!cbor.is_empty());
     }
 }
-

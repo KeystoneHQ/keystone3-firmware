@@ -92,7 +92,7 @@ pub type TransparentSignatureDER = Vec<u8>;
 
 pub trait PcztSigner {
     type Error;
-    #[cfg(feature = "multi_coins")]
+    #[cfg(feature = "transparent")]
     fn sign_transparent<F>(
         &self,
         index: usize,
@@ -102,7 +102,7 @@ pub trait PcztSigner {
     where
         F: FnOnce(SignableInput) -> [u8; 32];
 
-    #[cfg(feature = "cypherpunk")]
+    #[cfg(feature = "orchard")]
     fn sign_orchard(
         &self,
         action: &mut orchard::pczt::Action,
@@ -390,7 +390,7 @@ fn transparent_sig_digest(pczt: &Pczt, input_info: Option<SignableInput>) -> Has
     }
 }
 
-#[cfg(feature = "multi_coins")]
+#[cfg(feature = "transparent")]
 pub fn sign_transparent<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,
@@ -429,33 +429,32 @@ where
     })
 }
 
-#[cfg(feature = "cypherpunk")]
+#[cfg(feature = "orchard")]
 pub fn sign_orchard<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,
     T::Error: From<orchard::pczt::ParseError>,
+    T::Error: From<transparent::pczt::ParseError>,
 {
-    llsigner
-        .sign_orchard_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
-            let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
-                .ok_or(transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
-            signable.actions_mut().iter_mut().try_for_each(|action| {
-                match action.spend().value().map(|v| v.inner()) {
-                    //dummy spend maybe
-                    Some(0) | None => {
-                        return Ok(());
-                    }
-                    Some(_) => {
-                        signer
-                            .sign_orchard(action, shielded_sig_commitment(pczt, lock_time, None))?;
-                        *tx_modifiable &= !(FLAG_TRANSPARENT_INPUTS_MODIFIABLE
-                            | FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE
-                            | FLAG_SHIELDED_MODIFIABLE);
-                    }
+    llsigner.sign_orchard_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
+        let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
+            .ok_or(transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
+        signable.actions_mut().iter_mut().try_for_each(|action| {
+            match action.spend().value().map(|v| v.inner()) {
+                //dummy spend maybe
+                Some(0) | None => {
+                    return Ok(());
                 }
-                Ok(())
-            })
+                Some(_) => {
+                    signer.sign_orchard(action, shielded_sig_commitment(pczt, lock_time, None))?;
+                    *tx_modifiable &= !(FLAG_TRANSPARENT_INPUTS_MODIFIABLE
+                        | FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE
+                        | FLAG_SHIELDED_MODIFIABLE);
+                }
+            }
+            Ok(())
         })
+    })
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -501,7 +500,7 @@ mod tests {
             "0ee1912a92e13f43e2511d9c0a12ab26c165391eefc7311e382d752806e6cb8a"
         );
         assert_eq!(
-            hex::encode(sheilded_sig_commitment(&pczt, 0, None).as_bytes()),
+            hex::encode(shielded_sig_commitment(&pczt, 0, None).as_bytes()),
             "bd0488e0117fe59e2b58fe9897ce803200ad72f74a9a94594217a6a79050f66f"
         );
     }
@@ -539,7 +538,7 @@ mod tests {
             "56dd210c9d1813eda55d7e2abea55091759b53deec092a4eda9e6f1b536b527a"
         );
         assert_eq!(
-            hex::encode(sheilded_sig_commitment(&pczt, 0, None).as_bytes()),
+            hex::encode(shielded_sig_commitment(&pczt, 0, None).as_bytes()),
             "fea284c0b63a4de21c2f660587b2e04461f7089d6c9f8c2e60a3caed77c037ae"
         );
 
@@ -553,7 +552,7 @@ mod tests {
             Zatoshis::from_u64(*pczt.transparent().inputs()[0].value()).unwrap(),
         );
         assert_eq!(
-            hex::encode(sheilded_sig_commitment(&pczt, 0, Some(signable_input)).as_bytes()),
+            hex::encode(shielded_sig_commitment(&pczt, 0, Some(signable_input)).as_bytes()),
             "a2865e1c7f3de700eee25fe233da6bbdab267d524bc788998485359441ad3140"
         );
         let script_code = Script(pczt.transparent().inputs()[1].script_pubkey().clone());
@@ -565,7 +564,7 @@ mod tests {
             Zatoshis::from_u64(*pczt.transparent().inputs()[1].value()).unwrap(),
         );
         assert_eq!(
-            hex::encode(sheilded_sig_commitment(&pczt, 0, Some(signable_input2)).as_bytes()),
+            hex::encode(shielded_sig_commitment(&pczt, 0, Some(signable_input2)).as_bytes()),
             "9c10678495dfdb1f29beb6583d652bc66cb4e3d27d24d75fb6922f230e9953e8"
         );
     }
@@ -603,7 +602,7 @@ mod tests {
             "90dc4739bdcae8f81c162213e9742d988b6abd29beecf1203e1a59a794e8cb4b"
         );
         assert_eq!(
-            hex::encode(sheilded_sig_commitment(&pczt, 0, None).as_bytes()),
+            hex::encode(shielded_sig_commitment(&pczt, 0, None).as_bytes()),
             "d9b80aac7a7e0f9cd525572877656bd923ff0c557be9a1ff16ff6e8e389ccc81"
         );
     }

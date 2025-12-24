@@ -139,8 +139,11 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
     ret = SaveCurrentAccountInfo();
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
-#ifndef BTC_ONLY
+#ifdef CYPHERPUNK_VERSION
     SetupZcashCache(accountIndex, password);
+#endif
+#ifdef WEB3_VERSION
+    SetupZcashSFP(accountIndex, password);
 #endif
     CHECK_ERRCODE_RETURN_INT(ret);
     return ret;
@@ -244,8 +247,11 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
             printf("passphrase not exist, info switch\r\n");
             ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
         }
-#ifndef BTC_ONLY
-        SetupZcashCache(g_currentAccountIndex, password);
+#ifdef CYPHERPUNK_VERSION
+        SetupZcashCache(*accountIndex, password);
+#endif
+#ifdef WEB3_VERSION
+        SetupZcashSFP(*accountIndex, password);
 #endif
     } else {
         g_publicInfo.loginPasswordErrorCount++;
@@ -629,6 +635,33 @@ int32_t GetZcashSFP(uint8_t accountIndex, uint8_t* outSFP)
     return ERR_ZCASH_INVALID_ACCOUNT_INDEX;
 }
 
+int32_t SetupZcashSFP(uint8_t accountIndex, const char* password)
+{
+    ASSERT(accountIndex <= 2);
+
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39 || GetMnemonicType() == MNEMONIC_TYPE_TON) {
+        return SUCCESS_CODE;
+    }
+
+    uint8_t seed[SEED_LEN];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    int32_t ret = GetAccountSeed(accountIndex, seed, password);
+    SimpleResponse_u8 *responseSFP = calculate_zcash_seed_fingerprint(seed, len);
+    if (responseSFP->error_code != 0) {
+        ret = responseSFP->error_code;
+        printf("error: %s\r\n", responseSFP->error_message);
+        return ret;
+    }
+
+    uint8_t sfp[32];
+    memcpy_s(sfp, 32, responseSFP->data, 32);
+    free_simple_response_u8(responseSFP);
+
+    SetZcashSFP(accountIndex, sfp);
+    return ret;
+}
+
+#ifdef CYPHERPUNK_VERSION
 int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
 {
     ASSERT(accountIndex <= 2);
@@ -671,4 +704,5 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
     SetZcashSFP(accountIndex, sfp);
     return ret;
 }
+#endif
 #endif

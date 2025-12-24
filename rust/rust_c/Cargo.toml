@@ -28,7 +28,7 @@ cipher = { workspace = true }
 minicbor = { workspace = true }
 #keystone owned
 sim_qr_reader = { workspace = true, optional = true }
-keystore = { workspace = true, default-features = false}
+keystore = { workspace = true, default-features = false }
 ur-registry = { workspace = true }
 ur-parse-lib = { workspace = true }
 zcash_vendor = { workspace = true, optional = true }
@@ -82,8 +82,18 @@ sui = ["dep:app_sui"]
 ton = ["dep:app_ton"]
 tron = ["dep:app_tron"]
 xrp = ["dep:app_xrp"]
-zcash = ["dep:app_zcash", "dep:zcash_vendor", "app_zcash/multi_coins", "zcash_vendor/multi_coins"]
-zcash_cypherpunk = ["dep:app_zcash", "dep:zcash_vendor", "app_zcash/cypherpunk", "zcash_vendor/cypherpunk"]
+zcash = [
+    "dep:app_zcash",
+    "dep:zcash_vendor",
+]
+zcash_multi_coins = [
+    "zcash",
+    "app_zcash/multi_coins",
+]
+zcash_cypherpunk = [
+    "zcash",
+    "app_zcash/cypherpunk",
+]
 monero = ["dep:app_monero"]
 avalanche = ["dep:app_avalanche"]
 iota = ["dep:app_iota"]
@@ -111,11 +121,11 @@ multi-coins = [
     "xrp",
     "avalanche",
     "iota",
-    "zcash",
+    "zcash_multi_coins",
     "keystore/multi_coins",
 ]
 
-btc-only = ["bitcoin"]
+btc-only = ["bitcoin", "keystore/multi_coins"]
 
 cypherpunk = ["bitcoin", "zcash_cypherpunk", "monero", "keystore/cypherpunk"]
 
@@ -133,7 +143,7 @@ simulator-multi-coins = ["simulator", "multi-coins"]
 simulator-btc-only = ["simulator", "btc-only"]
 simulator-cypherpunk = ["simulator", "cypherpunk"]
 # make IDE happy
-default = ["simulator-multi-coins"]
+default = ["simulator-cypherpunk"]
 
 [dev-dependencies]
 keystore = { path = "../keystore" }

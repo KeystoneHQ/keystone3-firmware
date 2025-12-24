@@ -56,20 +56,66 @@ pub fn get_address<P: consensus::Parameters>(params: &P, ufvk_text: &str) -> Res
 /// * `ZcashError::InvalidDataError` - If the UFVK cannot be decoded or the account index is invalid
 /// * `ZcashError::InvalidPczt` - If the PCZT data is malformed or cannot be parsed
 /// * Other errors from the underlying validation process
-pub fn check_pczt<P: consensus::Parameters>(
+#[cfg(feature = "cypherpunk")]
+pub fn check_pczt_cypherpunk<P: consensus::Parameters>(
     params: &P,
     pczt: &[u8],
     ufvk_text: &str,
     seed_fingerprint: &[u8; 32],
     account_index: u32,
 ) -> Result<()> {
-    let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
-        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
     let pczt =
         Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt("invalid pczt data".to_string()))?;
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
-    pczt::check::check_pczt(params, seed_fingerprint, account_index, &ufvk, &pczt)
+    let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
+        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
+    let xpub = ufvk.transparent().ok_or(ZcashError::InvalidDataError(
+        "transparent xpub is not present".to_string(),
+    ))?;
+    pczt::check::check_pczt_orchard(params, seed_fingerprint, account_index, &ufvk, &pczt)?;
+    pczt::check::check_pczt_transparent(params, seed_fingerprint, account_index, xpub, &pczt)
+}
+
+#[cfg(feature = "multi_coins")]
+pub fn check_pczt_multi_coins<P: consensus::Parameters>(
+    params: &P,
+    pczt: &[u8],
+    xpub: &str,
+    seed_fingerprint: &[u8; 32],
+    account_index: u32,
+) -> Result<()> {
+    use core::str::FromStr;
+    use zcash_vendor::{bip32, transparent};
+
+    let xpub: bip32::ExtendedPublicKey<bitcoin::secp256k1::PublicKey> =
+        bip32::ExtendedPublicKey::from_str(xpub)
+            .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
+
+    let key = {
+        let chain_code = xpub.attrs().chain_code;
+        let pubkey = xpub.public_key().serialize();
+        let mut bytes = [0u8; 65];
+        bytes[..32].copy_from_slice(&chain_code);
+        bytes[32..].copy_from_slice(&pubkey);
+        bytes
+    };
+
+    let account_pubkey = transparent::keys::AccountPubKey::deserialize(&key)
+        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
+
+    let pczt =
+        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt("invalid pczt data".to_string()))?;
+    let account_index = zip32::AccountId::try_from(account_index)
+        .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
+
+    pczt::check::check_pczt_transparent(
+        params,
+        seed_fingerprint,
+        account_index,
+        &account_pubkey,
+        &pczt,
+    )
 }
 
 /// Parses a Partially Created Zcash Transaction (PCZT) and extracts its details.
@@ -90,7 +136,8 @@ pub fn check_pczt<P: consensus::Parameters>(
 /// * `ZcashError::InvalidDataError` - If the UFVK cannot be decoded
 /// * `ZcashError::InvalidPczt` - If the PCZT data is malformed or cannot be parsed
 /// * Other errors from the underlying parsing process
-pub fn parse_pczt<P: consensus::Parameters>(
+#[cfg(feature = "cypherpunk")]
+pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
     params: &P,
     pczt: &[u8],
     ufvk_text: &str,
@@ -100,7 +147,19 @@ pub fn parse_pczt<P: consensus::Parameters>(
         .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
     let pczt =
         Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt("invalid pczt data".to_string()))?;
-    pczt::parse::parse_pczt(params, seed_fingerprint, &ufvk, &pczt)
+    pczt::parse::parse_pczt_cypherpunk(params, seed_fingerprint, &ufvk, &pczt)
+}
+
+#[cfg(feature = "multi_coins")]
+pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
+    params: &P,
+    pczt: &[u8],
+    seed_fingerprint: &[u8; 32],
+) -> Result<ParsedPczt> {
+    let pczt =
+        Pczt::parse(pczt).map_err(|_e| ZcashError::InvalidPczt("invalid pczt data".to_string()))?;
+
+    pczt::parse::parse_pczt_multi_coins(params, seed_fingerprint, &pczt)
 }
 
 /// Signs a Partially Created Zcash Transaction (PCZT) using a seed.
@@ -124,6 +183,7 @@ pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
     pczt::sign::sign_pczt(pczt, seed)
 }
 
+#[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
     use consensus::MainNetwork;

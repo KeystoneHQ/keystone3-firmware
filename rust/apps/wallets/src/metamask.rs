@@ -155,7 +155,9 @@ fn get_path_component(index: Option<u32>, hardened: bool) -> URResult<PathCompon
 mod tests {
     extern crate std;
 
-    use crate::metamask::{generate_ledger_live_account, generate_standard_legacy_hd_key, ETHAccountTypeApp};
+    use crate::metamask::{
+        generate_ledger_live_account, generate_standard_legacy_hd_key, ETHAccountTypeApp,
+    };
     use alloc::string::ToString;
     use alloc::vec;
     use alloc::vec::Vec;
@@ -206,12 +208,16 @@ mod tests {
         let x_pub = "xpub6C8zKiZZ8V75XynjThhvdjy7hbnJHAFkhW7jL9EvBCsRFSRov4sXUJATU6CqUF9BxAbryiU3eghdHDLbwgF8ASE4AwHTzkLHaHsbwiCnkHc";
 
         // Test Bip44Standard
-        let result = generate_standard_legacy_hd_key(&mfp, x_pub, ETHAccountTypeApp::Bip44Standard, None).unwrap();
+        let result =
+            generate_standard_legacy_hd_key(&mfp, x_pub, ETHAccountTypeApp::Bip44Standard, None)
+                .unwrap();
         let cbor: Vec<u8> = result.try_into().unwrap();
         assert!(!cbor.is_empty());
 
         // Test LedgerLegacy
-        let result = generate_standard_legacy_hd_key(&mfp, x_pub, ETHAccountTypeApp::LedgerLegacy, None).unwrap();
+        let result =
+            generate_standard_legacy_hd_key(&mfp, x_pub, ETHAccountTypeApp::LedgerLegacy, None)
+                .unwrap();
         let cbor: Vec<u8> = result.try_into().unwrap();
         assert!(!cbor.is_empty());
     }

@@ -73,11 +73,11 @@ incrementalmerkletree-testing = { version = "0.3" }
 
 
 [features]
-default = ["multi_coins"]
-multi_coins = ["pczt/transparent", "zcash_keys/transparent-inputs"]
-cypherpunk = [
-    "pczt/transparent",
-    "zcash_keys/transparent-inputs",
+default = ["cypherpunk"]
+multi_coins = ["transparent"]
+cypherpunk = ["transparent", "orchard"]
+transparent = ["pczt/transparent", "zcash_keys/transparent-inputs"]
+orchard = [
     "pczt/orchard",
     "zcash_keys/orchard",
     "dep:orchard",

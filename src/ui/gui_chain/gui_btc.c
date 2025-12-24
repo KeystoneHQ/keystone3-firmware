@@ -126,7 +126,7 @@ static UREncodeResult *GuiGetSignPsbtBytesCodeData(void)
         uint8_t seed[64];
         int len = GetCurrentAccountSeedLen();
         int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        CHECK_ERRCODE_RETURN(ret);
+        CHECK_ERRCODE_RETURN_NULL(ret);
         MultisigSignResult *result = btc_sign_multisig_psbt_bytes(g_psbtBytes, g_psbtBytesLen, seed, len, mfp, sizeof(mfp));
         encodeResult = result->ur_result;
         GuiMultisigTransactionSignatureSetSignStatus(result->sign_status, result->is_completed, result->psbt_hex, result->psbt_len);

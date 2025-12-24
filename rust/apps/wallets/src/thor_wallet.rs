@@ -198,7 +198,7 @@ mod tests {
         let eth_xpub_str = "xpub6C8zKiZZ8V75XynjThhvdjy7hbnJHAFkhW7jL9EvBCsRFSRov4sXUJATU6CqUF9BxAbryiU3eghdHDLbwgF8ASE4AwHTzkLHaHsbwiCnkHc";
         let eth_xpub = Xpub::from_str(eth_xpub_str).unwrap();
         let eth_xpub_bytes = serialize_xpub(&eth_xpub);
-        
+
         let eth_path = DerivationPath::from_str("m/44'/60'/0'").unwrap();
         let eth_key = ExtendedPublicKey {
             path: eth_path,
@@ -231,15 +231,18 @@ mod tests {
 
         let result = generate_crypto_multi_accounts(mfp, serial, keys, device_type, device_version);
         assert!(result.is_ok());
-        
+
         let multi_accounts = result.unwrap();
         let cbor: Vec<u8> = multi_accounts.clone().try_into().unwrap();
         assert!(!cbor.is_empty());
-        
+
         // Verify device info
         assert_eq!(multi_accounts.get_device(), Some(device_type.to_string()));
-        assert_eq!(multi_accounts.get_device_version(), Some(device_version.to_string()));
-        
+        assert_eq!(
+            multi_accounts.get_device_version(),
+            Some(device_version.to_string())
+        );
+
         // Verify keys count
         // ETH generates 2 keys (standard + ledger live), BTC generates 1 key, Thorchain generates 1 key. Total 4.
         assert_eq!(multi_accounts.get_keys().len(), 4);

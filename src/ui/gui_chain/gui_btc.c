@@ -995,6 +995,17 @@ static lv_obj_t *CreateOverviewFromView(lv_obj_t *parent, DisplayTxOverview *ove
 
 static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overviewData, lv_obj_t *lastView)
 {
+    bool showChange = true;
+#ifndef BTC_ONLY
+    enum QRCodeType urType = URTypeUnKnown;
+    if (g_isMulti) {
+        urType = g_urMultiResult->ur_type;
+    } else {
+        urType = g_urResult->ur_type;
+    }
+
+    showChange = !CHECK_UR_TYPE();
+#endif
     lv_obj_t *toContainer = GuiCreateContainerWithParent(parent, 408, 62);
     SetContainerDefaultStyle(toContainer);
     lv_obj_align_to(toContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -1043,7 +1054,7 @@ static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overv
         toContainerHeight += (addressLabelHeight);
 
         lv_obj_set_height(toInnerContainer, addressLabelHeight);
-        if(to->data[i].is_mine) {
+        if(to->data[i].is_mine && showChange) {
             lv_obj_t *changeContainer = GuiCreateContainerWithParent(toInnerContainer, 87, 30);
             lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);

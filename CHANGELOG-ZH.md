@@ -1,3 +1,27 @@
+
+## 2.3.2(2025-12-24)
+
+
+**Web3:**
+### 新增
+1. 支持通过 Nabox 钱包管理 EVM 资产
+### 优化
+1. 优化 BTC 钱包连接入口 UI
+2. 优化 BTC change output 展示逻辑
+### Bug 修复
+1. 修复 TON-only 消息签名问题
+
+
+**BTC Only:**
+### 优化
+1. 优化 BTC change output 展示逻辑
+
+
+**Cypherpunk:**
+### 优化
+1. 优化 BTC change output 展示逻辑
+
+
 ## 2.3.0(2025-12-02)
 
 **Web3:**

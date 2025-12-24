@@ -25,6 +25,6 @@ keystore = { path = "../../keystore" }
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [features]
-default = ["multi_coins"]
-multi_coins = ["zcash_vendor/multi_coins"]
-cypherpunk = ["zcash_vendor/cypherpunk"]
+default = ["cypherpunk"]
+multi_coins = ["zcash_vendor/multi_coins", "keystore/multi_coins"]
+cypherpunk = ["zcash_vendor/cypherpunk", "keystore/cypherpunk"]

@@ -738,7 +738,7 @@ mod tests {
         let fingerprint = fingerprint.try_into().unwrap();
         let unified_fvk = UnifiedFullViewingKey::decode(&MAIN_NETWORK, ufvk).unwrap();
 
-        let result = parse_pczt(&MAIN_NETWORK, &fingerprint, &unified_fvk, &pczt);
+        let result = parse_pczt_cypherpunk(&MAIN_NETWORK, &fingerprint, &unified_fvk, &pczt);
         assert!(result.is_ok());
         let result = result.unwrap();
         assert!(result.get_has_sapling());

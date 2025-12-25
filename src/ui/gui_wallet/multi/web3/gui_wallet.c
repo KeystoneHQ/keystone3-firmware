@@ -195,7 +195,7 @@ UREncodeResult *GetMetamaskDataForAccountType(ETHAccountType accountType)
 
 UREncodeResult *GetUnlimitedMetamaskDataForAccountType(ETHAccountType accountType)
 {
-    return BasicGetMetamaskDataForAccountType(accountType, get_unlimited_connect_metamask_ur);
+    return BasicGetMetamaskDataForAccountType(accountType, get_connect_metamask_ur_unlimited);
 }
 
 UREncodeResult *GuiGetMetamaskData(void)

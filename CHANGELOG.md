@@ -1,5 +1,29 @@
-## 2.3.0(2025-12-02)
 
+## 2.3.2(2025-12-24)
+
+
+**Web3:**
+### What's new
+1. Supported managing EVM assets using Nabox Wallet
+### Improvements
+1. Optimized the BTC wallet connection UI
+2. Optimized the BTC change output display logic
+### Bug Fixes
+1. Fixed message signing issue for TON-only wallets
+
+
+**BTC Only:**
+### Improvements
+1. Optimized the BTC change output display logic
+
+
+**Cypherpunk:**
+### Improvements
+1. Optimized the BTC change output display logic
+
+
+
+## 2.3.0(2025-12-02)
 
 
 **Web3:**

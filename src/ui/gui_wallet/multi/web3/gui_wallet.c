@@ -471,6 +471,7 @@ UREncodeResult *GuiGetKeystoneConnectWalletDataSlip39(void)
         {.path = GetXPubPath(XPUB_TYPE_XRP), .chainType = XPUB_TYPE_XRP},
         {.path = GetXPubPath(XPUB_TYPE_LTC), .chainType = XPUB_TYPE_LTC},
         {.path = GetXPubPath(XPUB_TYPE_LTC_NATIVE_SEGWIT), .chainType = XPUB_TYPE_LTC_NATIVE_SEGWIT},
+        {.path = GetXPubPath(XPUB_TYPE_ADA_0), .chainType = XPUB_TYPE_ADA_0},
     };
     ExtendedPublicKey keys[NUMBER_OF_ARRAYS(chainPaths)];
     uint8_t mfp[4] = {0};

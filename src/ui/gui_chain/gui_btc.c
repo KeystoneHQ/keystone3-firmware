@@ -1056,7 +1056,7 @@ static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overv
         toContainerHeight += (addressLabelHeight);
 
         lv_obj_set_height(toInnerContainer, addressLabelHeight);
-        if(to->data[i].is_mine && showChange) {
+        if (to->data[i].is_mine && showChange) {
             lv_obj_t *changeContainer = GuiCreateContainerWithParent(toInnerContainer, 87, 30);
             lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);

@@ -34,8 +34,8 @@ typedef enum {
 } BTC_PATH_TYPE;
 
 typedef enum {
-    LTC_NESTED_SEGWIT,
     LTC_NATIVE_SEGWIT,
+    LTC_NESTED_SEGWIT,
 } LTC_PATH_TYPE;
 
 typedef enum {

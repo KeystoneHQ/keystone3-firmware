@@ -62,8 +62,8 @@ void DerivationPathDescsInit(void)
     if (g_ltcDerivationPathDesc == NULL) {
         g_ltcDerivationPathDesc = SRAM_MALLOC(4 * ETH_DERIVATION_PATH_MAX_LEN);
     }
-    g_ltcDerivationPathDesc[LTC_NESTED_SEGWIT] = (char *)_("derivation_path_ltc_nested_desc");
     g_ltcDerivationPathDesc[LTC_NATIVE_SEGWIT] = (char *)_("derivation_path_ltc_native_desc");
+    g_ltcDerivationPathDesc[LTC_NESTED_SEGWIT] = (char *)_("derivation_path_ltc_nested_desc");
 }
 
 char **GetDerivationPathDescs(uint8_t index)

@@ -155,8 +155,8 @@ static const AddressSettingsItem_t g_mainNetAddressSettings[] = {
 };
 
 static const AddressSettingsItem_t g_ltcAddressSettings[] = {
-    {"Nested SegWit",   "P2SH-P2WPKH",      "m/49'/2'/0'"},
     {"Native SegWit",   "P2WPKH",           "m/84'/2'/0'"},
+    {"Nested SegWit",   "P2SH-P2WPKH",      "m/49'/2'/0'"},
 };
 static const AddressSettingsItem_t *g_addressSettings = g_mainNetAddressSettings;
 static uint32_t g_addressSettingsNum = 0;
@@ -947,8 +947,10 @@ static void GetChangePathLabelHint(char* hint, uint32_t maxLen)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_BTC:
-    case HOME_WALLET_CARD_LTC:
         snprintf_s(hint, maxLen, "%s", _("derivation_path_select_btc"));
+        break;
+    case HOME_WALLET_CARD_LTC:
+        snprintf_s(hint, maxLen, "%s", _("derivation_path_select_ltc"));
         return;
     default:
         break;
@@ -1468,9 +1470,9 @@ static ChainType GetChainTypeByIndex(uint32_t index)
 #ifdef WEB3_VERSION
     case HOME_WALLET_CARD_LTC:
         if (index == 0) {
-            return XPUB_TYPE_LTC;
-        } else {
             return XPUB_TYPE_LTC_NATIVE_SEGWIT;
+        } else {
+            return XPUB_TYPE_LTC;
         }
         break;
     case HOME_WALLET_CARD_DASH:

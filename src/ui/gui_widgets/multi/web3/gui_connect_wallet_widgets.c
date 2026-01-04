@@ -90,6 +90,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZAPPER, &walletListZapper, true, WALLET_FILTER_ETH},
     {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true, WALLET_FILTER_ETH},
     {WALLET_LIST_SUSHISWAP, &walletListSushi, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_BLUEBERRY, &walletListBlueberry, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH},
 };
 
 typedef struct {
@@ -211,6 +212,11 @@ static const lv_img_dsc_t *g_ThorWalletCoinArray[3] = {
     // &coinBtc,
     &coinEth,
     &coinRune,
+};
+
+static const lv_img_dsc_t *g_blueberryCoinArray[2] = {
+    &coinBtc,
+    &coinEth,
 };
 
 static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
@@ -1208,6 +1214,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         // todo  add keystone ur logic
         func = GuiGetKeystoneConnectWalletData;
         AddCoinsFromArray(g_keystoneWalletCoinArray, NUMBER_OF_ARRAYS(g_keystoneWalletCoinArray), false, 0);
+        break;
+    case WALLET_LIST_BLUEBERRY:
+        func = GuiGetOkxWalletData;
+        AddCoinsFromArray(g_blueberryCoinArray, NUMBER_OF_ARRAYS(g_blueberryCoinArray), false, 0);
         break;
     default:
         return;

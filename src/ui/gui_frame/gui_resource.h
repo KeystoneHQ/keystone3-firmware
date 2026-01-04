@@ -345,7 +345,11 @@ LV_IMG_DECLARE(walletListMedusa);
 LV_IMG_DECLARE(walletListIota);
 LV_IMG_DECLARE(walletListBtc);
 LV_IMG_DECLARE(walletListNabox);
+
 LV_IMG_DECLARE(walletListJupiter);
+
+LV_IMG_DECLARE(walletListBlueberry);
+
 
 LV_IMG_DECLARE(walletListBtcBlue);
 LV_IMG_DECLARE(walletListBtcSpecter);

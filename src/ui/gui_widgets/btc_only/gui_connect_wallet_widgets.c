@@ -43,7 +43,7 @@ typedef struct ConnectWalletWidget {
 } ConnectWalletWidget_t;
 
 WalletListItem_t g_walletListArray[] = {
-    {WALLET_LIST_BLUE, &walletBluewallet, "Blue Wallet", NULL, 1, true, false},
+    {WALLET_LIST_BLUE, &walletBluewallet, "BlueWallet", NULL, 1, true, false},
     {WALLET_LIST_SPARROW, &walletSparrow, "Sparrow", NULL, 1, true, false},
     {WALLET_LIST_NUNCHUK, &walletNunchuk, "Nunchuk", NULL, 1, true, false},
     {WALLET_LIST_ZEUS, &walletZeus, "Zeus", NULL, 1, true, false},

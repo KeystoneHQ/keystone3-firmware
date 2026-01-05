@@ -1,3 +1,14 @@
+## 2.3.4(2026-1-6)
+
+**Web3:**
+
+### What's new
+1. Supported LTC Native SegWit addresses
+2. Supported managing LTC via Keystone Nexus
+3. Supported managing SOL assets via USB connection with Jupiter Wallet extension
+
+
+
 
 ## 2.3.2(2025-12-24)
 

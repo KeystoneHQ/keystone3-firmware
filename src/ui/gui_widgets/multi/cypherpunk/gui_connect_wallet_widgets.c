@@ -76,12 +76,12 @@ static const lv_img_dsc_t *g_zashiCoinArray[1] = {
 };
 
 WalletListItem_t g_walletListArray[] = {
-    {WALLET_LIST_BLUE, &walletBluewallet, "Blue Wallet", g_blueWalletCoinArray, 1, true},
+    {WALLET_LIST_BLUE, &walletBluewallet, "BlueWallet", g_blueWalletCoinArray, 1, true},
     {WALLET_LIST_SPARROW, &walletSparrow, "Sparrow", g_blueWalletCoinArray, 1, true},
     {WALLET_LIST_UNISAT, &walletUniSat, "UniSat", g_UniSatCoinArray, 5, true},
     {WALLET_LIST_ZEUS, &walletZeus, "Zeus", g_blueWalletCoinArray, 1, true},
     // {WALLET_LIST_CAKE, &walletCake, "Cake Wallet", g_cakeCoinArray, 1, true},
-    {WALLET_LIST_FEATHER, &walletFeather, "Feather Wallet", g_cakeCoinArray, 1, true},
+    {WALLET_LIST_FEATHER, &walletFeather, "Feather", g_cakeCoinArray, 1, true},
     {WALLET_LIST_ZASHI, &walletZashi, "Zashi", g_zashiCoinArray, 1, true},
 };
 

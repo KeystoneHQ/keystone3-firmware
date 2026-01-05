@@ -198,15 +198,15 @@ static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
 };
 
 WalletListItem_t g_walletListArray[] = {
-    {WALLET_LIST_KEYSTONE, &walletKeystone, "Keystone", g_keystoneWalletCoinArray, 6, false, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
+    {WALLET_LIST_KEYSTONE, &walletKeystone, "Keystone Nexus", g_keystoneWalletCoinArray, 6, false, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_OKX, &walletOkx, "OKX Wallet", g_okxWalletCoinArray, 7, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_METAMASK, &walletMetamask, "MetaMask", g_metaMaskCoinArray, 5, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BACKPACK, &walletBackpack, "Backpack", g_backpackWalletCoinArray, 3, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_OTHER},
     {WALLET_LIST_SOLFARE, &walletSolflare, "Solflare", g_solfareCoinArray, 1, true, WALLET_FILTER_SOL},
     {WALLET_LIST_NUFI, &walletNufi, "NuFi", g_nufiCoinArray, 4, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_ADA},
-    {WALLET_LIST_CORE, &walletCore, "Core", g_coreCoinArray, 3, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
-    {WALLET_LIST_HELIUM, &walletHelium, "Helium", g_heliumCoinArray, 2, true, WALLET_FILTER_SOL},
-    {WALLET_LIST_BTC_WALLET, &coinBtc, "Bitcoin Wallet", g_btcWalletCoinArray, 4, true, WALLET_FILTER_BTC},
+    {WALLET_LIST_CORE, &walletCore, "Core Wallet", g_coreCoinArray, 3, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
+    {WALLET_LIST_HELIUM, &walletHelium, "Helium Wallet", g_heliumCoinArray, 2, true, WALLET_FILTER_SOL},
+    {WALLET_LIST_BTC_WALLET, &coinBtc, "Bitcoin Wallets", g_btcWalletCoinArray, 4, true, WALLET_FILTER_BTC},
     {WALLET_LIST_TONKEEPER, &walletTonkeeper, "Tonkeeper", g_tonKeeperCoinArray, 1, false, WALLET_FILTER_OTHER},
     {WALLET_LIST_RABBY, &walletRabby, "Rabby", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BITGET, &walletBitget, "Bitget Wallet", g_bitgetWalletCoinArray, 3, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
@@ -215,7 +215,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_BEGIN, &walletBegin, "Begin", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
     {WALLET_LIST_UNISAT, &walletUniSat, "UniSat", g_UniSatCoinArray, 5, true, WALLET_FILTER_BTC},
     {WALLET_LIST_SUIET, &walletSuiet, "Suiet", g_suiWalletCoinArray, 1, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_IOTA, &walletIota, "IOTA", g_iotaCoinArray, 1, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_IOTA, &walletIota, "IOTA Wallet", g_iotaCoinArray, 1, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_NIGHTLY, &walletNightly, "Nightly", g_nightlyCoinArray, 3, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_TYPHON, &walletTyphon, "Typhon", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
     {WALLET_LIST_MEDUSA, &walletMedusa, "Medusa", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
@@ -233,7 +233,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_IMTOKEN, &walletImToken, "imToken", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_FEWCHA, &walletFewcha, "Fewcha", g_fewchaCoinArray, 2, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_ZAPPER, &walletZapper, "Zapper", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_YEARN_FINANCE, &walletYearn, "Yearn Finance", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_YEARN_FINANCE, &walletYearn, "Yearn", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_SUSHISWAP, &walletSushi, "SushiSwap", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
 };
 
@@ -674,7 +674,7 @@ static lv_obj_t *GuiCreateWalletListItem(lv_obj_t *parent, WalletListItem_t *ite
         lv_obj_align(coinImg, LV_ALIGN_TOP_LEFT, 32 * endIndex + 88, 54);
     }
 
-    if (item->coinCount >= 4) {
+    if (item->coinCount >= 4 && (item->index != WALLET_LIST_BTC_WALLET && item->index != WALLET_LIST_NUFI)) {
         lv_obj_t *moreImg = GuiCreateImg(button, &imgMore);
         lv_img_set_zoom(moreImg, 150);
         lv_img_set_pivot(moreImg, 0, 0);

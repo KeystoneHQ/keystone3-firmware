@@ -39,6 +39,7 @@ pub fn get_address(hd_path: String, extended_pub_key: &String) -> Result<String>
         "m/84'/0'/0'" => Address::p2wpkh(&compressed_ecdsa_pubkey, Network::Bitcoin),
         "m/84'/1'/0'" => Address::p2wpkh(&compressed_ecdsa_pubkey, Network::BitcoinTestnet),
         "m/49'/2'/0'" => Address::p2shp2wpkh(&compressed_ecdsa_pubkey, Network::Litecoin),
+        "m/84'/2'/0'" => Address::p2wpkh(&compressed_ecdsa_pubkey, Network::Litecoin),
         "m/44'/3'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::Dogecoin),
         "m/44'/5'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::Dash),
         "m/44'/145'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::BitcoinCash),
@@ -149,6 +150,17 @@ mod tests {
         )
         .unwrap();
         assert_eq!(address, "M7wtsL7wSHDBJVMWWhtQfTMSYYkyooAAXM")
+    }
+
+    #[test]
+    fn test_ltc_p2wpkh_address() {
+        let extended_pubkey = "zpub6rPo5mF47z5coVm5rvWv7fv181awb7Vckn5Cf3xQXBVKu18kuBHDhNi1Jrb4br6vVD3ZbrnXemEsWJoR18mZwkUdzwD8TQnHDUCGxqZ6swA";
+        let address = get_address(
+            String::from("m/84'/2'/0'/0/0"),
+            &extended_pubkey.to_string(),
+        )
+        .unwrap();
+        assert_eq!(address, "ltc1qjmxnz78nmc8nq77wuxh25n2es7rzm5c2rkk4wh")
     }
 
     #[test]

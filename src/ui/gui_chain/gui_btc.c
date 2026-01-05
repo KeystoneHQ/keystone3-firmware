@@ -359,10 +359,12 @@ static void PreparePublicKeys(PtrT_CSliceFFI_ExtendedPublicKey public_keys, Exte
     // ltc、dash、bch
     keys[6].path = "m/49'/2'/0'";
     keys[6].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_LTC);
-    keys[7].path = "m/44'/5'/0'";
-    keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
-    keys[8].path = "m/44'/145'/0'";
-    keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
+    keys[7].path = "m/84'/2'/0'";
+    keys[7].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_LTC_NATIVE_SEGWIT);
+    keys[8].path = "m/44'/5'/0'";
+    keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
+    keys[9].path = "m/44'/145'/0'";
+    keys[9].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
 #endif
 #endif
 }
@@ -1054,7 +1056,7 @@ static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overv
         toContainerHeight += (addressLabelHeight);
 
         lv_obj_set_height(toInnerContainer, addressLabelHeight);
-        if(to->data[i].is_mine && showChange) {
+        if (to->data[i].is_mine && showChange) {
             lv_obj_t *changeContainer = GuiCreateContainerWithParent(toInnerContainer, 87, 30);
             lv_obj_set_style_radius(changeContainer, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(changeContainer, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);

@@ -909,18 +909,6 @@ impl WrappedPsbt {
                                         )));
                                     }
                                 };
-                                let public_key = match derive_public_key_by_path(
-                                    xpub,
-                                    parent_path,
-                                    &_child_path,
-                                ) {
-                                    Ok(pk) => pk,
-                                    Err(_) => {
-                                        return Err(BitcoinError::InvalidTransaction(format!(
-                                                "invalid {purpose} #{index}, cannot derive associated public key"
-                                            )));
-                                    }
-                                };
                                 return Ok(Some((
                                     child.to_uppercase(),
                                     Self::judge_external_key(child, parent_path.to_string()),

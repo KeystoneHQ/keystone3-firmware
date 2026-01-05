@@ -56,6 +56,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_METAMASK, &walletListMetaMask, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_OTHER},
     {WALLET_LIST_SOLFARE, &walletListSolfare, true, WALLET_FILTER_SOL},
+    {WALLET_LIST_JUPITER, &walletListJupiter, true, WALLET_FILTER_SOL},
     {WALLET_LIST_NUFI, &walletListNufi, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_ADA},
     {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_HELIUM, &walletListHelium, true, WALLET_FILTER_SOL},
@@ -135,7 +136,7 @@ static const lv_img_dsc_t *g_backpackWalletCoinArray[3] = {
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinDoge
+    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinLtc, &coinDoge
 };
 
 static const lv_img_dsc_t *g_UniSatCoinArray[5] = {
@@ -351,6 +352,7 @@ static bool IsSOL(int walletIndex)
 {
     switch (walletIndex) {
     case WALLET_LIST_SOLFARE:
+    case WALLET_LIST_JUPITER:
     case WALLET_LIST_HELIUM:
     case WALLET_LIST_NUFI:
         return true;
@@ -402,9 +404,15 @@ static void GuiOpenARAddressNoticeWindow()
 }
 
 
-static void GuiOpenNufiNoticeWindow()
+static void GuiOpenUsbNoticeWindow(WALLET_LIST_INDEX_ENUM walletIndex)
 {
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("nufi_connection_notice"), _("nufi_connection_notice_desc"), NULL, NULL, WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
+    char connectionDesc[128];
+    if (walletIndex == WALLET_LIST_NUFI) {
+        snprintf_s(connectionDesc, sizeof(connectionDesc), _("usb_connection_notice_desc"), "Nufi");
+    } else if (walletIndex == WALLET_LIST_JUPITER) {
+        snprintf_s(connectionDesc, sizeof(connectionDesc), _("usb_connection_notice_desc"), "Jupiter");
+    }
+    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("usb_connection_notice"), connectionDesc, NULL, NULL, WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
     lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 
     // understand button
@@ -433,8 +441,8 @@ static void OpenQRCodeHandler(lv_event_t *e)
         return;
     }
 
-    if (g_connectWalletTileView.walletIndex == WALLET_LIST_NUFI) {
-        GuiOpenNufiNoticeWindow();
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_NUFI || g_connectWalletTileView.walletIndex == WALLET_LIST_JUPITER) {
+        GuiOpenUsbNoticeWindow(g_connectWalletTileView.walletIndex);
         return;
     }
     bool skipGenerateArweaveKey = IsArweaveSetupComplete();

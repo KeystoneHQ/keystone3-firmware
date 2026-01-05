@@ -142,6 +142,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
     {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
+    {WALLET_LIST_JUPITER, "Jupiter", &walletNufi},
     {WALLET_LIST_NUFI, "NuFi", &walletNufi},
     {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
     {WALLET_LIST_RABBY, "Rabby", &walletRabby},

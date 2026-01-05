@@ -2,6 +2,9 @@
 #include "gui_chain.h"
 #include "keystore.h"
 #include "user_memory.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_model.h"
+#endif
 
 typedef TransactionCheckResult *(*CheckUrResultHandler)(void);
 

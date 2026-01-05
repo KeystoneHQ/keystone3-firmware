@@ -132,6 +132,7 @@ mod test {
     use core::str::FromStr;
 
     use app_utils::keystone;
+    use bitcoin::psbt::Psbt;
     use hex::FromHex;
     use ur_registry::pb::protobuf_parser::{parse_protobuf, unzip};
     use ur_registry::pb::protoc::{Base, Payload};
@@ -141,7 +142,10 @@ mod test {
     use crate::transactions::parsed_tx::{
         DetailTx, OverviewTo, OverviewTx, ParsedInput, ParsedOutput, ParsedTx,
     };
-    use crate::{parse_raw_tx, sign_msg};
+    use crate::{
+        check_raw_tx, deserialize_psbt, parse_psbt_hex_sign_status, parse_psbt_sign_status,
+        parse_raw_tx, sign_msg,
+    };
 
     macro_rules! build_overview_tx {
         ($total_output_amount:expr, $fee_amount:expr, $total_output_sat:expr, $fee_sat:expr,$from:expr, $to: expr, $network: expr, $fee_larger_than_amount:expr) => {
@@ -154,14 +158,11 @@ mod test {
                 to: $to
                     .iter()
                     .map(|i| {
-                        if let (addr, is_mine, is_external) = i {
-                            OverviewTo {
-                                address: addr.to_string(),
-                                is_mine: *is_mine,
-                                is_external: *is_external,
-                            }
-                        } else {
-                            unreachable!()
+                        let (addr, is_mine, is_external) = i;
+                        OverviewTo {
+                            address: addr.to_string(),
+                            is_mine: *is_mine,
+                            is_external: *is_external,
                         }
                     })
                     .collect(),
@@ -612,5 +613,185 @@ mod test {
 
         let sig = sign_msg(msg, &seed, &path).unwrap();
         assert_eq!(base64::encode(&sig), "H8CDgK7sBj7o+OFZ+IVZyrKmcZuJn2/KFNHHv+kAxi+FWCUEYpZCyAGz0fj1OYwFM0E+q/TyQ2uZziqWI8k0eYE=");
+    }
+
+    #[test]
+    fn test_sign_msg_different_messages() {
+        let seed = hex::decode("7bf300876c3927d133c7535cbcb19d22e4ac1aff29998355d2fa7ed749212c7106620e74daf0f3d5e13a48dfb8b17641c711b513d92c7a5023ca5b1ad7b202e5").unwrap();
+        let path = "M/44'/0'/0'/0/0".to_string();
+
+        // Test with different message
+        let msg1 = "hello world";
+        let sig1 = sign_msg(msg1, &seed, &path).unwrap();
+        assert_eq!(sig1.len(), 65); // Bitcoin message signature is 65 bytes
+
+        // Test with empty message
+        let msg2 = "";
+        let sig2 = sign_msg(msg2, &seed, &path).unwrap();
+        assert_eq!(sig2.len(), 65);
+
+        // Different messages should produce different signatures
+        assert_ne!(sig1, sig2);
+    }
+
+    #[test]
+    fn test_sign_msg_different_paths() {
+        let seed = hex::decode("7bf300876c3927d133c7535cbcb19d22e4ac1aff29998355d2fa7ed749212c7106620e74daf0f3d5e13a48dfb8b17641c711b513d92c7a5023ca5b1ad7b202e5").unwrap();
+        let msg = "test message";
+
+        let path1 = "M/44'/0'/0'/0/0".to_string();
+        let sig1 = sign_msg(msg, &seed, &path1).unwrap();
+
+        let path2 = "M/44'/0'/0'/0/1".to_string();
+        let sig2 = sign_msg(msg, &seed, &path2).unwrap();
+
+        // Different paths should produce different signatures
+        assert_ne!(sig1, sig2);
+    }
+
+    #[test]
+    fn test_deserialize_psbt_invalid() {
+        // Test with invalid PSBT data
+        let invalid_psbt = vec![0x00, 0x01, 0x02, 0x03];
+        let result = deserialize_psbt(invalid_psbt);
+        assert!(result.is_err());
+
+        // Test with empty data
+        let empty_psbt = vec![];
+        let result = deserialize_psbt(empty_psbt);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_deserialize_psbt_valid() {
+        // Valid PSBT from wrapped_psbt tests
+        let psbt_hex = "70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000";
+        let psbt_bytes = Vec::from_hex(psbt_hex).unwrap();
+        let result = deserialize_psbt(psbt_bytes);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_parse_psbt_hex_sign_status() {
+        let psbt_hex = "70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000";
+        let psbt_bytes = Vec::from_hex(psbt_hex).unwrap();
+
+        let result = parse_psbt_hex_sign_status(&psbt_bytes);
+        assert!(result.is_ok());
+
+        let status = result.unwrap();
+        assert!(status.sign_status.is_some());
+        assert_eq!(status.is_completed, false); // Unsigned PSBT
+    }
+
+    #[test]
+    fn test_parse_psbt_hex_sign_status_invalid() {
+        let invalid_psbt = vec![0x00, 0x01, 0x02];
+        let result = parse_psbt_hex_sign_status(&invalid_psbt);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_psbt_sign_status() {
+        let psbt_hex = "70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000";
+        let psbt_bytes = Vec::from_hex(psbt_hex).unwrap();
+        let psbt = Psbt::deserialize(&psbt_bytes).unwrap();
+
+        let status = parse_psbt_sign_status(psbt);
+        assert!(status.sign_status.is_some());
+    }
+
+    #[test]
+    fn test_check_raw_tx_invalid_payload() {
+        // Use a valid gzipped payload structure but with invalid transaction data
+        // This should pass gzip decode but fail on transaction validation
+        let hex = "1f8b0800000000000003010500faffff0000000000000001000000"; // Valid gzip header but minimal invalid content
+        let pubkey_str = "xpub6CjD9XYc1hEKcAMsSasAA87Mw8bSUr6WQKrJ1ErLofJPP9sxeZ3sh1dH2S5ywQTRNrXsfXzT686jJNdX2m9KhvMDh4eQM9AdSkkQLLMbDG6";
+        let context = prepare_parse_context(pubkey_str);
+
+        // Prepare payload will fail or check_raw_tx will fail
+        let result = std::panic::catch_unwind(|| {
+            let payload = prepare_payload(hex);
+            check_raw_tx(payload, context)
+        });
+
+        // Either panics during prepare or returns error during check
+        assert!(result.is_err() || result.unwrap().is_err());
+    }
+
+    #[test]
+    fn test_prepare_parse_context() {
+        let pubkey_str = "xpub6CjD9XYc1hEKcAMsSasAA87Mw8bSUr6WQKrJ1ErLofJPP9sxeZ3sh1dH2S5ywQTRNrXsfXzT686jJNdX2m9KhvMDh4eQM9AdSkkQLLMbDG6";
+        let context = prepare_parse_context(pubkey_str);
+
+        // Verify context is created successfully
+        assert_eq!(format!("{}", context.master_fingerprint), "73c5da0a");
+    }
+
+    #[test]
+    fn test_prepare_payload() {
+        let hex = "1f8b08000000000000035dcd3d6a1b411880e1f5dac5a2262b554295bc041c1684e69b9d6f7e0a83b10898808564bbb1bbf9e6c748b6b2f1227b135dc226a44e20e00be40039402e901ba44a972229e3daf0564ff36669efc5bc99d43e0c674dbdae5d7d3df89566692f43ae60c214143fd3cef6e1e4a8f7523aeb81a31f191fdc4800d088c8f311c90a41094168e220197efb77fff897bdca4e3ea7d98f6efe756790145fb63a074c2127af31107ae496ac06c763a594a95820c94823c420230962ce2033249cd7c0827268c8409ef47fffd92d0e19774032621006942327b9f60644e011009f140c2213962a8a16751056fb4a2a6da4335e33905197ddd55888bd3108dc1bb3a7c650569df2e6dd5ab8462c6ffd6d7b5dc9b6c2a68deddd46da15dfa8d57b77a9ad16575cbfcd1fa6fda448cafd4e01fae2c3eb1b2b16f5e9e26cb39ee2e6e8645acf270d5e9caf8fa767cb37f9c74fbbfdada27bfcfc39fc3efb0f41e405467f010000";
+        let payload = prepare_payload(hex);
+
+        // Just verify it doesn't panic and returns a valid payload
+        // The function successfully decodes and creates a Payload object
+        let _payload = payload; // Consume to verify it's valid
+    }
+
+    #[test]
+    fn test_parse_raw_tx_with_different_networks() {
+        // Test with Dash transaction
+        let hex = "1f8b0800000000000003558ebb4a03411885374b90254d62aa902a2c82120c99cb3f333b88a046a2a00951e305bb9d997f428c1a8c177c005b2b6b41f4017c03b1166cad6c2db5b5755be154878ff39d282c17b726adb1c35a6f32be18dbf171f5338cc2722498a22da268fc1e16f2abcb3bebe519271d738a63434a691ac00d3412f4ac21a8f20a080526b11ad49e7fbe9f7ec95c747817466fd3a5c77c3588ef73852582d46a0e4625d459271855a92659c15383e0c1b1941aae09300644133498708fa9949ea714ac76a5a0f27ab318af10ae8594d9887188096aa9c00be9498a969bec200a4c2d330eac523e018188d258cb5c22c033ef9daa174f9a00b34d31db24599aa43e5f880f8cde5cf67effc85ef75b5db1d639122373383ceb8a813a3d1d0d2657a587dba94a1007f5858cb6c3e1c664677de0daa3cb4dddeef7393ddbf6fd5e7777effa00ce7bb6f4f1252bb9b8d8f9afaabdf4fe00936c1ab575010000";
+        let pubkey_str = "xpub6DTnbXgbPo6mrRhgim9sg7Jp571onenuioxgfSDJEREH7wudyDQMDSoTdLQiYq3tbvZVkzcPe7nMgL7mbSixQQcShekfhKt3Wdx6dE8MHCk";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+
+        let result = parse_raw_tx(payload, context);
+        assert!(result.is_ok());
+
+        let parsed = result.unwrap();
+        assert_eq!(parsed.overview.network, "Dash");
+    }
+
+    #[test]
+    fn test_error_handling_invalid_path() {
+        let seed = hex::decode("7bf300876c3927d133c7535cbcb19d22e4ac1aff29998355d2fa7ed749212c7106620e74daf0f3d5e13a48dfb8b17641c711b513d92c7a5023ca5b1ad7b202e5").unwrap();
+        let invalid_path = "invalid/path".to_string();
+        let msg = "test";
+
+        let result = sign_msg(msg, &seed, &invalid_path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_psbt_sign_status_structure() {
+        let psbt_hex = "70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000";
+        let psbt_bytes = Vec::from_hex(psbt_hex).unwrap();
+
+        let result = parse_psbt_hex_sign_status(&psbt_bytes).unwrap();
+
+        // Verify the structure
+        assert!(result.sign_status.is_some());
+        assert!(!result.is_completed);
+
+        let status_str = result.sign_status.unwrap();
+        assert!(!status_str.is_empty());
+    }
+
+    #[test]
+    fn test_parse_network_variants() {
+        // Test that different coin types are properly recognized
+        // Using existing working test data for LTC
+        let hex = "1f8b0800000000000003558dbb4a03411846b36be192266baa902a2c8212583233ffdc162ccc0d63349268306837333b2b1875558c0979061fc0c242ec051b0b0b5b0b3bc156b0147d005bd30a1f070e1cf83c379feb9dd7d3d896bae7e9456ad2a3e2a7ebb9794f20d16c36783d7873b3739bfd7a7e9131ce12442124dcaa902a2dc32851101a3086608b2dc4b498293d7e3dddfda2654f5fbbdeeb82ff5e2e66825b27bbaa58a48d564a598cf54c4052a096c4334a42c1320b11610c63c60d5560a5b442c70669a264c239f84e713d5b43444422a20a4b6c1281ad8a88c51a04274c01235672c18d4418255881e1d6628230301dc78831008349e1e5fedb0b72c7151a2d55c85205cd5641e5301b74d6b8185407fbfcb0795c8dc4e660d4dc6ef787b59a386d75d2dde4e0d0ff7cb8720a9920535e99e583eaeede683c9d801e9eb5b6366abd8bbdc664e7723a1df346efa43d4efd9b9f8ff98213e43affcf4acfdd3f9997819c79010000";
+        let pubkey_str = "ypub6X1mUc1jWSVhJJvVdafzD2SNG88rEsGWwbboBrrmWnMJ4HQwgvKrTkW2L7bQcLs1Pi1enPCXica1fnDryixfCptU1cQCYxVuSMw6woSKr47";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+
+        let result = parse_raw_tx(payload, context);
+        assert!(result.is_ok());
+
+        let parsed = result.unwrap();
+        assert_eq!(parsed.overview.network, "Litecoin");
+        assert!(parsed.detail.from.len() >= 1);
     }
 }

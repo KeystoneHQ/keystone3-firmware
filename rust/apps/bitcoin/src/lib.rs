@@ -153,10 +153,16 @@ mod test {
                 from: $from.iter().map(|i| i.to_string()).collect(),
                 to: $to
                     .iter()
-                    .map(|i| OverviewTo {
-                        address: i.to_string(),
-                        is_mine: false,
-                        is_external: false,
+                    .map(|i| {
+                        if let (addr, is_mine, is_external) = i {
+                            OverviewTo {
+                                address: addr.to_string(),
+                                is_mine: *is_mine,
+                                is_external: *is_external,
+                            }
+                        } else {
+                            unreachable!()
+                        }
                     })
                     .collect(),
                 network: $network.to_string(),
@@ -191,7 +197,7 @@ mod test {
                 amount: $amount.to_string(),
                 value: $value,
                 path: Some($path.to_string()),
-                is_mine: true,
+                is_mine: !$path.is_empty(),
                 is_external: false,
             }
         };
@@ -255,8 +261,8 @@ mod test {
             "2250 sats",
             vec!("MWAVYuwzx3bkqHNKBQtYDxSvzzw6DQnJwo"),
             vec![
-                "MG67WAWZ6jEmA97LWuERJTkBB7pHMoVfgj",
-                "MWAVYuwzx3bkqHNKBQtYDxSvzzw6DQnJwo"
+                ("MG67WAWZ6jEmA97LWuERJTkBB7pHMoVfgj", false, true),
+                ("MWAVYuwzx3bkqHNKBQtYDxSvzzw6DQnJwo", true, false)
             ],
             "Litecoin",
             false
@@ -316,8 +322,8 @@ mod test {
             "2250 sats",
             vec!["XciiKrSHgdFkuL9FTT31qRfTPNUVxX4sPc"],
             vec![
-                "Xb9LAffWjcxTCN5GMj5kbZiqN5g7nnkgrv",
-                "XciiKrSHgdFkuL9FTT31qRfTPNUVxX4sPc"
+                ("Xb9LAffWjcxTCN5GMj5kbZiqN5g7nnkgrv", false, true),
+                ("XciiKrSHgdFkuL9FTT31qRfTPNUVxX4sPc", true, false)
             ],
             "Dash",
             false
@@ -376,8 +382,8 @@ mod test {
             "2250 sats",
             vec!["qpfs2gcfwg322segkj4h30du4vtjyvsxtq6msk90a5"],
             vec![
-                "qpfs2gcfwg322segkj4h30du4vtjyvsxtq6msk90a5",
-                "qpt4cr4juduwl36w35rwfwvz6am2z7mxcg8a84k28n",
+                ("qpfs2gcfwg322segkj4h30du4vtjyvsxtq6msk90a5", true, false),
+                ("qpt4cr4juduwl36w35rwfwvz6am2z7mxcg8a84k28n", false, true),
             ],
             "Bitcoin Cash",
             false
@@ -437,8 +443,8 @@ mod test {
             "3150 sats",
             vec!["bc1qaukjm4glwmt8ghx5fmp92rgw3xa40xdmp2t8lr"],
             vec![
-                "bc1qksq4ax9jpqqmumwfhg54ktwh29627zf78237wp",
-                "bc1qx9yy32cq623qyr88ygkjgvjglu0kz665d0m9f9"
+                ("bc1qksq4ax9jpqqmumwfhg54ktwh29627zf78237wp", false, true),
+                ("bc1qx9yy32cq623qyr88ygkjgvjglu0kz665d0m9f9", true, false)
             ],
             "Bitcoin Mainnet",
             false
@@ -500,7 +506,7 @@ mod test {
                 "36kTQjs54H29LRhL9WiBSFbNtUyNMNCpEv",
                 "3G8X84wtGDtiENAYagDSBcofp7NkjqHJFS"
             ],
-            vec!["3NNSqAz3LajNv6eSQtn237CtPaHdJdYPVR"],
+            vec![("3NNSqAz3LajNv6eSQtn237CtPaHdJdYPVR", false, true)],
             "Bitcoin Mainnet",
             false
         );
@@ -561,7 +567,7 @@ mod test {
                 "1NVWpSCxyzpPgSeGRs4zqFciZ7N1UEQtEc",
                 "1PCUEmiFARh3FSLJXgzDGDeKtKqg8eMMPm",
             ],
-            vec!["bc1qksq4ax9jpqqmumwfhg54ktwh29627zf78237wp"],
+            vec![("bc1qksq4ax9jpqqmumwfhg54ktwh29627zf78237wp", false, true)],
             "Bitcoin Mainnet",
             true
         );

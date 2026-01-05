@@ -605,7 +605,7 @@ mod tests {
     #[test]
     fn test_address_p2wpkh_invalid_network() {
         let pk = sample_pubkey();
-        let result = Address::p2wpkh(&pk, Network::Litecoin);
+        let result = Address::p2wpkh(&pk, Network::BitcoinCash);
         assert!(matches!(result, Err(BitcoinError::AddressError(_))));
     }
 

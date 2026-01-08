@@ -218,11 +218,13 @@ static void InitDerivationPathDesc(uint8_t chain)
     case HOME_WALLET_CARD_BTC:
         g_derivationPathDescs = GetDerivationPathDescs(BTC_DERIVATION_PATH_DESC);
         g_addressSettingsNum = NUMBER_OF_ARRAYS(g_mainNetAddressSettings);
+#ifdef WEB3_VERSION
         break;
     case HOME_WALLET_CARD_LTC:
         g_derivationPathDescs = GetDerivationPathDescs(LTC_DERIVATION_PATH_DESC);
         g_addressSettingsNum = NUMBER_OF_ARRAYS(g_ltcAddressSettings);
         break;
+#endif
 #ifdef BTC_ONLY
         g_testNetderivationPathDescs = GetDerivationPathDescs(BTC_TEST_NET_DERIVATION_PATH_DESC);
 #endif
@@ -428,8 +430,10 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
     int height = 132;
     if (g_chainCard == HOME_WALLET_CARD_BTC) {
         height = 324;
+#ifdef WEB3_VERSION
     } else if (g_chainCard == HOME_WALLET_CARD_LTC) {
         height = 208;
+#endif
     }
 #endif
     g_utxoReceiveWidgets.moreCont = GuiCreateHintBox(height);
@@ -457,10 +461,12 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
                                         ExportXpubHandler, NULL, true);
             lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 476);
             break;
+#ifdef WEB3_VERSION
         case HOME_WALLET_CARD_LTC:
             btn = GuiCreateSelectButton(cont, _("receive_btc_more_address_settings"), &imgAddressType,
                                         AddressSettingsHandler, NULL, true);
             lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 476);
+#endif
         default:
             break;
         }
@@ -949,9 +955,11 @@ static void GetChangePathLabelHint(char* hint, uint32_t maxLen)
     case HOME_WALLET_CARD_BTC:
         snprintf_s(hint, maxLen, "%s", _("derivation_path_select_btc"));
         break;
+#ifdef WEB3_VERSION
     case HOME_WALLET_CARD_LTC:
         snprintf_s(hint, maxLen, "%s", _("derivation_path_select_ltc"));
         return;
+#endif
     default:
         break;
     }
@@ -965,13 +973,15 @@ static void GuiCreateAddressSettingsWidget(lv_obj_t *parent)
     uint16_t contHeight = 411;
 #ifdef BTC_ONLY
     g_addressSettings = GetIsTestNet() ? g_testNetAddressSettings : g_mainNetAddressSettings;
-#else
+#elif WEB3_VERSION
     if (g_chainCard == HOME_WALLET_CARD_LTC) {
         contHeight = 208;
         g_addressSettings = g_ltcAddressSettings;
     } else {
         g_addressSettings = g_mainNetAddressSettings;
     }
+#else
+    g_addressSettings = g_mainNetAddressSettings;
 #endif
     lv_obj_t *cont, *line, *label;
     static lv_point_t points[2] = {{0, 0}, {360, 0}};
@@ -1203,9 +1213,11 @@ static void TutorialHandler(lv_event_t *e)
     if (g_chainCard == HOME_WALLET_CARD_BTC) {
         TUTORIAL_LIST_INDEX_ENUM tIndex = TUTORIAL_BTC_RECEIVE;
         GuiFrameOpenViewWithParam(&g_tutorialView, &tIndex, sizeof(tIndex));
+#ifdef WEB3_VERSION
     } else if (g_chainCard == HOME_WALLET_CARD_LTC) {
         TUTORIAL_LIST_INDEX_ENUM tIndex = TUTORIAL_LTC_RECEIVE;
         GuiFrameOpenViewWithParam(&g_tutorialView, &tIndex, sizeof(tIndex));
+#endif
     }
 }
 
@@ -1253,7 +1265,7 @@ static void AddressSettingsCheckHandler(lv_event_t *e)
     lv_obj_t *checkBox = lv_event_get_target(e);
 #ifdef BTC_ONLY
     g_addressSettings = GetIsTestNet() ? g_testNetAddressSettings : g_mainNetAddressSettings;
-#else
+#elif WEB3_VERSION
     g_addressSettings = g_chainCard == HOME_WALLET_CARD_LTC ? g_ltcAddressSettings : g_addressSettings;
 #endif
     for (uint32_t i = 0; i < g_addressSettingsNum; i++) {
@@ -1514,7 +1526,7 @@ static void GetRootHdPath(char *hdPath, uint32_t maxLen)
             return;
         }
         g_addressSettings = GetIsTestNet() ? g_testNetAddressSettings : g_mainNetAddressSettings;
-#else
+#elif WEB3_VERSION
         g_addressSettings = g_chainCard == HOME_WALLET_CARD_LTC ? g_ltcAddressSettings : g_mainNetAddressSettings;
 #endif
         strcpy_s(hdPath, maxLen, g_addressSettings[addrType].path);

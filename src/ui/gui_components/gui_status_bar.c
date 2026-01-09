@@ -763,6 +763,7 @@ void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
         if (g_walletBtn[i].index == index) {
             coin = &g_walletBtn[i];
+            printf("wallet name: %s\n", coin->name);
             break;
         }
     }

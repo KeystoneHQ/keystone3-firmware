@@ -8,6 +8,7 @@
 #include "gui_views.h"
 #include "gui_wallet.h"
 #include "rust.h"
+#include "gui_chain.h"
 #include "user_memory.h"
 #include "gui_qr_hintbox.h"
 #ifdef WEB3_VERSION
@@ -50,48 +51,6 @@ typedef struct ConnectWalletWidget {
     lv_obj_t *qrCode;
 } ConnectWalletWidget_t;
 
-WalletListItem_t g_walletListArray[] = {
-    {WALLET_LIST_KEYSTONE, &walletListKeystone, false, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
-    {WALLET_LIST_OKX, &walletListOkx, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
-    {WALLET_LIST_METAMASK, &walletListMetaMask, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_BACKPACK, &walletListBackpack, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_OTHER},
-    {WALLET_LIST_SOLFARE, &walletListSolfare, true, WALLET_FILTER_SOL},
-    {WALLET_LIST_JUPITER, &walletListJupiter, true, WALLET_FILTER_SOL},
-    {WALLET_LIST_NUFI, &walletListNufi, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_ADA},
-    {WALLET_LIST_CORE, &walletListCore, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
-    {WALLET_LIST_HELIUM, &walletListHelium, true, WALLET_FILTER_SOL},
-    {WALLET_LIST_BTC_WALLET, &walletListBtc, true, WALLET_FILTER_BTC},
-    {WALLET_LIST_TONKEEPER, &walletListTonkeeper, false, WALLET_FILTER_OTHER},
-    {WALLET_LIST_RABBY, &walletListRabby, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_NABOX, &walletListNabox, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_BITGET, &walletListBitget, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
-    {WALLET_LIST_ETERNL, &walletListEternl, true, WALLET_FILTER_ADA},
-    {WALLET_LIST_VESPR, &walletListVespr, true, WALLET_FILTER_ADA},
-    {WALLET_LIST_BEGIN, &walletListBegin, true, WALLET_FILTER_ADA},
-    {WALLET_LIST_UNISAT, &walletListUniSat, true, WALLET_FILTER_BTC},
-    {WALLET_LIST_SUIET, &walletListSuiet, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_IOTA, &walletListIota, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_NIGHTLY, &walletListNightly, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_TYPHON, &walletListTyphon, true, WALLET_FILTER_ADA},
-    {WALLET_LIST_MEDUSA, &walletListMedusa, true, WALLET_FILTER_ADA},
-    {WALLET_LIST_SAFE, &walletListSafe, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_BLOCK_WALLET, &walletListBlockWallet, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_XRP_TOOLKIT, &walletListXRPToolkit, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_THORWALLET, &walletListThorWallet, true, WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
-    {WALLET_LIST_PETRA, &walletListPetra, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_KEPLR, &walletListKeplr, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_LEAP, &walletListLeap, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_MINT_SCAN, &walletListMintScan, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_WANDER, &walletListWander, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_BEACON, &walletListBeacon, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_XBULL, &walletListXBull, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_IMTOKEN, &walletListImToken, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_FEWCHA, &walletListFewcha, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_ZAPPER, &walletListZapper, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_YEARN_FINANCE, &walletListYearn, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_SUSHISWAP, &walletListSushi, true, WALLET_FILTER_ETH},
-};
-
 typedef struct {
     int8_t index;
     const char *coin;
@@ -123,8 +82,8 @@ static const lv_img_dsc_t *g_ethWalletCoinArray[4] = {
 };
 
 static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinBnb, &coinMatic, &coinOkb,
-    &coinTrx, &coinLtc, &coinBch, &coinDash,
+    &coinBtc, &coinEth, &coinOkb, &coinTrx,
+    &coinBch, &coinLtc, &coinDash
 };
 
 static const lv_img_dsc_t *g_bitgetWalletCoinArray[] = {
@@ -149,7 +108,8 @@ static const lv_img_dsc_t *g_keplrCoinArray[8] = {
 };
 
 static const lv_img_dsc_t *g_leapCoinArray[8] = {
-    &coinAtom, &coinOsmo, &coinInj, &coinStrd, &coinStars, &coinJuno, &coinScrt, &coinDym
+    &coinAtom, &coinOsmo, &coinInj, &coinStrd,
+    &coinStars, &coinJuno, &coinScrt, &coinDym
 };
 
 static const lv_img_dsc_t *g_wanderCoinArray[1] = {
@@ -197,6 +157,13 @@ static const lv_img_dsc_t *g_solfareCoinArray[1] = {
     &coinSol,
 };
 
+static const lv_img_dsc_t *g_nufiCoinArray[4] = {
+    &coinSol,
+    &coinEth,
+    &coinBtc,
+    &coinAda,
+};
+
 static const lv_img_dsc_t *g_heliumCoinArray[2] = {
     &coinSol,
     &coinHelium,
@@ -213,10 +180,65 @@ static const lv_img_dsc_t *g_ThorWalletCoinArray[3] = {
     &coinRune,
 };
 
+static const lv_img_dsc_t *g_btcWalletCoinArray[] = {
+    &walletBluewallet, &walletSparrow, &walletZeus, &walletBabylon
+};
+
+static const lv_img_dsc_t *g_adaCoinArray[1] = {
+    &coinAda,
+};
+
+static const lv_img_dsc_t *g_xrpCoinArray[1] = {
+    &coinXrp,
+};
+
 static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
     {APT, true},
     {SUI, false},
 };
+
+WalletListItem_t g_walletListArray[] = {
+    {WALLET_LIST_KEYSTONE, &walletKeystone, "Keystone Nexus", g_keystoneWalletCoinArray, 6, false, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
+    {WALLET_LIST_OKX, &walletOkx, "OKX Wallet", g_okxWalletCoinArray, 7, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
+    {WALLET_LIST_METAMASK, &walletMetamask, "MetaMask", g_metaMaskCoinArray, 5, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_BACKPACK, &walletBackpack, "Backpack", g_backpackWalletCoinArray, 3, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_OTHER},
+    {WALLET_LIST_SOLFARE, &walletSolflare, "Solflare", g_solfareCoinArray, 1, true, WALLET_FILTER_SOL},
+    {WALLET_LIST_JUPITER, &walletJupiter, "Jupiter", g_solfareCoinArray, 1, true, WALLET_FILTER_SOL},
+    {WALLET_LIST_NUFI, &walletNufi, "NuFi", g_nufiCoinArray, 4, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_ADA},
+    {WALLET_LIST_CORE, &walletCore, "Core Wallet", g_coreCoinArray, 3, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
+    {WALLET_LIST_HELIUM, &walletHelium, "Helium Wallet", g_heliumCoinArray, 2, true, WALLET_FILTER_SOL},
+    {WALLET_LIST_BTC_WALLET, &coinBtc, "Bitcoin Wallets", g_btcWalletCoinArray, 4, true, WALLET_FILTER_BTC},
+    {WALLET_LIST_TONKEEPER, &walletTonkeeper, "Tonkeeper", g_tonKeeperCoinArray, 1, false, WALLET_FILTER_OTHER},
+    {WALLET_LIST_RABBY, &walletRabby, "Rabby", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_NABOX, &walletNabox, "Nabox", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_BITGET, &walletBitget, "Bitget Wallet", g_bitgetWalletCoinArray, 3, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
+    {WALLET_LIST_ETERNL, &walletEternl, "Eternl", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
+    {WALLET_LIST_VESPR, &walletVespr, "Vespr", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
+    {WALLET_LIST_BEGIN, &walletBegin, "Begin", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
+    {WALLET_LIST_UNISAT, &walletUniSat, "UniSat", g_UniSatCoinArray, 5, true, WALLET_FILTER_BTC},
+    {WALLET_LIST_SUIET, &walletSuiet, "Suiet", g_suiWalletCoinArray, 1, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_IOTA, &walletIota, "IOTA Wallet", g_iotaCoinArray, 1, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_NIGHTLY, &walletNightly, "Nightly", g_nightlyCoinArray, 3, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_TYPHON, &walletTyphon, "Typhon", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
+    {WALLET_LIST_MEDUSA, &walletMedusa, "Medusa", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
+    {WALLET_LIST_SAFE, &walletSafe, "Safe", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_BLOCK_WALLET, &walletBlockWallet, "BlockWallet", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_XRP_TOOLKIT, &walletXRPToolkit, "XRP Toolkit", g_xrpCoinArray, 1, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_THORWALLET, &walletThorWallet, "THORWallet", g_ThorWalletCoinArray, 2, true, WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
+    {WALLET_LIST_PETRA, &walletPetra, "Petra", g_petraCoinArray, 1, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_KEPLR, &walletKeplr, "Keplr", g_keplrCoinArray, 8, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_LEAP, &walletLeap, "Leap", g_leapCoinArray, 8, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_MINT_SCAN, &walletMintScan, "Mintscan", g_keplrCoinArray, 8, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_WANDER, &walletWander, "Wander", g_wanderCoinArray, 1, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_BEACON, &walletBeacon, "Beacon", g_beaconCoinArray, 2, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_XBULL, &walletXBull, "xBull", g_xbullCoinArray, 1, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_IMTOKEN, &walletImToken, "imToken", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_FEWCHA, &walletFewcha, "Fewcha", g_fewchaCoinArray, 2, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_ZAPPER, &walletZapper, "Zapper", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_YEARN_FINANCE, &walletYearn, "Yearn", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_SUSHISWAP, &walletSushi, "SushiSwap", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+};
+
 
 typedef struct {
     const char *accountType;
@@ -638,6 +660,41 @@ static void GuiCreateSelectFewchaCoinWidget()
                       NULL);
 }
 
+static lv_obj_t *GuiCreateWalletListItem(lv_obj_t *parent, WalletListItem_t *item, lv_coord_t yPos)
+{
+    GuiButton_t table[] = {
+        {.obj = GuiCreateImg(parent, item->walletIcon), .align = LV_ALIGN_LEFT_MID, .position = {20, 0},},
+        {.obj = GuiCreateTextLabel(parent, item->walletName), .align = LV_ALIGN_DEFAULT, .position = {88, 13},},
+        {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_RIGHT_MID, .position = {-24, 0},},
+    };
+    lv_obj_t *button = GuiCreateButton(parent, 456, 90, table, NUMBER_OF_ARRAYS(table),
+                                       OpenQRCodeHandler, item);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, yPos);
+    lv_obj_set_style_bg_opa(button, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(button, 0, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(button, 0, LV_PART_MAIN);
+    lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE);
+
+    uint8_t displayCount = item->coinCount > 9 ? 9 : item->coinCount;
+    uint8_t endIndex = 0;
+    for (endIndex = 0; endIndex < displayCount; endIndex++) {
+        lv_obj_t *coinImg = GuiCreateImg(button, item->coinIcons[endIndex]);
+        lv_img_set_zoom(coinImg, 110);
+        lv_img_set_pivot(coinImg, 0, 0);
+        lv_obj_align(coinImg, LV_ALIGN_TOP_LEFT, 32 * endIndex + 88, 54);
+    }
+
+    if (item->coinCount >= 4 && (item->index != WALLET_LIST_BTC_WALLET && item->index != WALLET_LIST_NUFI)) {
+        lv_obj_t *moreImg = GuiCreateImg(button, &imgMore);
+        lv_img_set_zoom(moreImg, 150);
+        lv_img_set_pivot(moreImg, 0, 0);
+        lv_obj_set_style_img_opa(moreImg, LV_OPA_30, LV_PART_MAIN);
+        lv_obj_align(moreImg, LV_ALIGN_TOP_LEFT, 32 * endIndex + 88, 54);
+    }
+
+    return button;
+}
+
 static void GuiUpdateWalletListWidget(void)
 {
     lv_obj_clean(g_walletListCont);
@@ -646,11 +703,7 @@ static void GuiUpdateWalletListWidget(void)
         if (!g_walletListArray[i].enable) {
             continue;
         }
-        lv_obj_t *img = GuiCreateImg(g_walletListCont, g_walletListArray[i].img);
-        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, offsetY);
-        lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
-                            &g_walletListArray[i]);
+        GuiCreateWalletListItem(g_walletListCont, &g_walletListArray[i], offsetY);
         j++;
         offsetY = j * 107;
     }
@@ -702,11 +755,7 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
             }
         }
         ASSERT(t != NULL);
-        lv_obj_t *img = GuiCreateImg(parent, t->img);
-        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
-        lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
-                            t);
+        GuiCreateWalletListItem(parent, t, 0);
     } else {
         lv_obj_t *filterBar = GuiCreateContainerWithParent(parent, 408, 64);
         lv_obj_align(filterBar, LV_ALIGN_TOP_MID, 0, 0);

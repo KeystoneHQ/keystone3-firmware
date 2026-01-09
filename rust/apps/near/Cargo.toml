@@ -21,7 +21,7 @@ base64 = { workspace = true }
 bitcoin = { workspace = true }
 
 [dev-dependencies]
-keystore = { workspace = true }
+keystore = { workspace = true, features = ["multi_coins"] }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

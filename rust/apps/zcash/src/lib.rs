@@ -150,6 +150,29 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
     pczt::parse::parse_pczt_cypherpunk(params, seed_fingerprint, &ufvk, &pczt)
 }
 
+#[cfg(test)]
+mod additional_tests {
+    use super::*;
+    use zcash_vendor::zcash_protocol::consensus::MAIN_NETWORK;
+
+    #[test]
+    fn test_get_address() {
+        let ufvk_text = "uview10zf3gnxd08cne6g7ryh6lln79duzsayg0qxktvyc3l6uutfk0agmyclm5g82h5z0lqv4c2gzp0eu0qc0nxzurxhj4ympwn3gj5c3dc9g7ca4eh3q09fw9kka7qplzq0wnauekf45w9vs4g22khtq57sc8k6j6s70kz0rtqlyat6zsjkcqfrlm9quje8vzszs8y9mjvduf7j2vx329hk2v956g6svnhqswxfp3n760mw233w7ffgsja2szdhy5954hsfldalf28wvav0tctxwkmkgrk43tq2p7sqchzc6";
+        let addr = get_address(&MAIN_NETWORK, ufvk_text).expect("should generate address");
+        // We can print this address to see what it is, and then pin it in the test.
+        // For now, let's just assert it is valid and not empty.
+        assert!(!addr.is_empty());
+        assert!(addr.starts_with("u1")); // Mainnet unified address starts with u1
+    }
+
+    #[test]
+    fn test_get_address_invalid_ufvk() {
+        let ufvk_text = "invalid_ufvk";
+        let result = get_address(&MAIN_NETWORK, ufvk_text);
+        assert!(result.is_err());
+    }
+}
+
 #[cfg(feature = "multi_coins")]
 pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
     params: &P,

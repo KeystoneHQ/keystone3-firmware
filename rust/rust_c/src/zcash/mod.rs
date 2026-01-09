@@ -70,7 +70,8 @@ pub unsafe extern "C" fn generate_zcash_default_address(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn check_zcash_tx(
+#[cfg(feature = "cypherpunk")]
+pub unsafe extern "C" fn check_zcash_tx_cypherpunk(
     tx: PtrUR,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
@@ -87,7 +88,7 @@ pub unsafe extern "C" fn check_zcash_tx(
     let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::check_pczt(
+    match app_zcash::check_pczt_cypherpunk(
         &MainNetwork,
         &pczt.get_data(),
         &ufvk_text,
@@ -99,8 +100,40 @@ pub unsafe extern "C" fn check_zcash_tx(
     }
 }
 
+#[cfg(feature = "multi-coins")]
 #[no_mangle]
-pub unsafe extern "C" fn parse_zcash_tx(
+pub unsafe extern "C" fn check_zcash_tx_multi_coins(
+    tx: PtrUR,
+    xpub: PtrString,
+    seed_fingerprint: PtrBytes,
+    account_index: u32,
+    disabled: bool,
+) -> *mut TransactionCheckResult {
+    if disabled {
+        return TransactionCheckResult::from(RustCError::UnsupportedTransaction(
+            "zcash is not supported for slip39 and passphrase wallet now".to_string(),
+        ))
+        .c_ptr();
+    }
+    let pczt = extract_ptr_with_type!(tx, ZcashPczt);
+    let xpub_text = unsafe { recover_c_char(xpub) };
+    let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
+    let seed_fingerprint = seed_fingerprint.try_into().unwrap();
+    match app_zcash::check_pczt_multi_coins(
+        &MainNetwork,
+        &pczt.get_data(),
+        &xpub_text,
+        seed_fingerprint,
+        account_index,
+    ) {
+        Ok(_) => TransactionCheckResult::new().c_ptr(),
+        Err(e) => TransactionCheckResult::from(e).c_ptr(),
+    }
+}
+
+#[cfg(feature = "cypherpunk")]
+#[no_mangle]
+pub unsafe extern "C" fn parse_zcash_tx_cypherpunk(
     tx: PtrUR,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
@@ -109,7 +142,27 @@ pub unsafe extern "C" fn parse_zcash_tx(
     let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::parse_pczt(&MainNetwork, &pczt.get_data(), &ufvk_text, seed_fingerprint) {
+    match app_zcash::parse_pczt_cypherpunk(
+        &MainNetwork,
+        &pczt.get_data(),
+        &ufvk_text,
+        seed_fingerprint,
+    ) {
+        Ok(pczt) => TransactionParseResult::success(DisplayPczt::from(&pczt).c_ptr()).c_ptr(),
+        Err(e) => TransactionParseResult::from(e).c_ptr(),
+    }
+}
+
+#[cfg(feature = "multi-coins")]
+#[no_mangle]
+pub unsafe extern "C" fn parse_zcash_tx_multi_coins(
+    tx: PtrUR,
+    seed_fingerprint: PtrBytes,
+) -> Ptr<TransactionParseResult<DisplayPczt>> {
+    let pczt = extract_ptr_with_type!(tx, ZcashPczt);
+    let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
+    let seed_fingerprint = seed_fingerprint.try_into().unwrap();
+    match app_zcash::parse_pczt_multi_coins(&MainNetwork, &pczt.get_data(), seed_fingerprint) {
         Ok(pczt) => TransactionParseResult::success(DisplayPczt::from(&pczt).c_ptr()).c_ptr(),
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }

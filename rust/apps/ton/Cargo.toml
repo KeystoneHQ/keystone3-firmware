@@ -29,7 +29,7 @@ zeroize = { workspace = true }
 
 
 [dev-dependencies]
-keystore = { workspace = true }
+keystore = { workspace = true, features = ["multi_coins"] }
 anyhow = "*"
 urlencoding = "2.1.3"
 

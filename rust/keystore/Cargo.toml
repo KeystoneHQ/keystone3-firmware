@@ -24,9 +24,12 @@ zcash_vendor = { workspace = true }
 zeroize = { workspace = true }
 
 [features]
-default = ["std"]
+default = ["std", "multi_coins"]
 std = []
 rsa = []
+multi_coins = ["zcash_vendor/multi_coins"]
+cypherpunk = ["zcash_vendor/cypherpunk"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+

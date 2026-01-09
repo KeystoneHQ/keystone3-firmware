@@ -158,7 +158,7 @@
         {                                      \
             .index = HOME_WALLET_CARD_TON,     \
             .coin = "TON",                     \
-            .chain = "TON-TON",                \
+            .chain = "TON Network",            \
             .icon = &coinTon,                  \
         },                                     \
         {                                      \

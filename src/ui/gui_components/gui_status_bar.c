@@ -179,7 +179,7 @@ const static WalletInfo_t g_walletBtn[] = {
 #endif
 
 #ifdef CYPHERPUNK_VERSION
-    {WALLET_LIST_BLUE, "Blue Wallet", &walletBluewallet},
+    {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
     {WALLET_LIST_ZEUS, "Zeus Wallet", &walletZeus},

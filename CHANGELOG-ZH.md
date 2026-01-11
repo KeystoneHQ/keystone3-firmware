@@ -1,3 +1,14 @@
+## 2.3.4(2026-1-6)
+
+
+**Web3:**
+
+### 新增
+1. 支持 LTC Native SegWit 地址
+2. 支持通过 Keystone Nexus 管理 LTC
+3. 支持通过 USB 连接 Jupiter 钱包插件端管理 SOL
+
+
 
 ## 2.3.2(2025-12-24)
 

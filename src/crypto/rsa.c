@@ -61,7 +61,10 @@ Rsa_primes_t *FlashReadRsaPrimes(void)
 
     do {
         primes = SRAM_MALLOC(sizeof(Rsa_primes_t));
-        ASSERT(Gd25FlashReadBuffer(GetRsaAddress(), fullData, sizeof(fullData)) == sizeof(fullData));
+        int readLen = Gd25FlashReadBuffer(GetRsaAddress(), fullData, sizeof(fullData));
+#ifndef COMPILE_SIMULATOR
+        ASSERT(readLen == sizeof(fullData));
+#endif
 
         int len = (GetMnemonicType() == MNEMONIC_TYPE_BIP39) ? (int)sizeof(seed) : GetCurrentAccountEntropyLen();
         if (SecretCacheGetPassword() == NULL) {

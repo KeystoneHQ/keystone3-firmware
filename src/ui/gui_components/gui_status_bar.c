@@ -132,7 +132,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 };
 
 const static WalletInfo_t g_walletBtn[] = {
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     {WALLET_LIST_KEYSTONE, "Keystone Nexus", &walletKeystone},
     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
@@ -176,7 +176,19 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
     {WALLET_LIST_CORE, "Core Wallet", &walletCore},
     {WALLET_LIST_IOTA, "IOTA Wallet", &walletIota},
-#else
+#endif
+
+#ifdef CYPHERPUNK_VERSION
+    {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
+    {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
+    {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
+    {WALLET_LIST_ZEUS, "Zeus Wallet", &walletZeus},
+    // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
+    {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
+    {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
+#endif
+
+#ifdef BTC_ONLY
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
@@ -751,6 +763,7 @@ void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
         if (g_walletBtn[i].index == index) {
             coin = &g_walletBtn[i];
+            printf("wallet name: %s\n", coin->name);
             break;
         }
     }

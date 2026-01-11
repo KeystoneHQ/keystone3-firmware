@@ -192,6 +192,11 @@ static const lv_img_dsc_t *g_xrpCoinArray[1] = {
     &coinXrp,
 };
 
+static const lv_img_dsc_t *g_blueberryCoinArray[2] = {
+    &coinBtc,
+    &coinEth,
+};
+
 static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
     {APT, true},
     {SUI, false},
@@ -237,6 +242,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZAPPER, &walletZapper, "Zapper", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_YEARN_FINANCE, &walletYearn, "Yearn", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_SUSHISWAP, &walletSushi, "SushiSwap", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_BLUEBERRY, &walletBlueberry, "Blueberry", g_blueberryCoinArray, 2, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH},
 };
 
 
@@ -1257,6 +1263,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         // todo  add keystone ur logic
         func = GuiGetKeystoneConnectWalletData;
         AddCoinsFromArray(g_keystoneWalletCoinArray, NUMBER_OF_ARRAYS(g_keystoneWalletCoinArray), false, 0);
+        break;
+    case WALLET_LIST_BLUEBERRY:
+        func = GuiGetOkxWalletData;
+        AddCoinsFromArray(g_blueberryCoinArray, NUMBER_OF_ARRAYS(g_blueberryCoinArray), false, 0);
         break;
     default:
         return;

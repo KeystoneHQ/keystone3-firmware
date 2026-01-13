@@ -124,6 +124,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_QCK, "", &coinQck},
     {CHAIN_TGD, "", &coinTgd},
     {CHAIN_DOT, "", &coinDot},
+    {CHAIN_ZCASH, "", &coinZec},
 #endif
 
 #ifdef CYPHERPUNK_VERSION

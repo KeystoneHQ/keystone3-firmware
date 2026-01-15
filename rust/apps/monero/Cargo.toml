@@ -23,5 +23,8 @@ cuprate-cryptonight = { git = "https://github.com/KeystoneHQ/cuprate", default-f
 monero-serai = { git = "https://github.com/KeystoneHQ/serai", default-features = false }
 monero-wallet = { git = "https://github.com/KeystoneHQ/serai", default-features = false }
 
+[dev-dependencies]
+keystore = { workspace = true, features = ["cypherpunk"] }
+
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

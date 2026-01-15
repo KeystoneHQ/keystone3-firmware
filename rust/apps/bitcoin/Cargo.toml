@@ -29,7 +29,7 @@ default = ["std"]
 std = []
 
 [dev-dependencies]
-keystore = { workspace = true }
+keystore = { workspace = true, features = ["multi_coins"] }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

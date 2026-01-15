@@ -11,5 +11,8 @@ hex = { workspace = true }
 cryptoxide = { workspace = true }
 thiserror = { workspace = true }
 
+[dev-dependencies]
+keystore = { workspace = true, features = ["multi_coins"] }
+
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

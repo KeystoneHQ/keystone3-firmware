@@ -19,7 +19,7 @@ bitcoin = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
-keystore = { path = "../../keystore" }
+keystore = { workspace = true, features = ["multi_coins"] }
 
 [features]
 default = ["std"]

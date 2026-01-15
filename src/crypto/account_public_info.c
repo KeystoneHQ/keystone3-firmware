@@ -523,6 +523,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_TON_BIP39,             ED25519,       "ton_bip39",                "M/44'/607'/0'"    },
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
+    {XPUB_TYPE_ZEC_TRANSPARENT_LEGACY,SECP256K1,     "zec_transparent_legacy",   "M/44'/133'/0'"    },
 #endif
 
 #ifdef CYPHERPUNK_VERSION
@@ -603,6 +604,7 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
 
 #ifdef WEB3_VERSION
     case RSA_KEY: {
+        printf("here, RSA_KEY\n");
         Rsa_primes_t *primes = FlashReadRsaPrimes();
         if (primes == NULL)
             return NULL;
@@ -918,7 +920,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
                     continue;
                 }
-#ifdef CYPHERPUNK_VERSION
+#ifndef BTC_ONLY
                 //encrypt zcash ufvk
                 if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
                     char* zcashUfvk = NULL;
@@ -932,14 +934,12 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                     memcpy_s(iv_bytes, 16, iv_response->data, 16);
                     free_simple_response_u8(iv_response);
                     xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
-                } else {
-                    xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
-                }
-#endif
-#ifdef WEB3_VERSION
-                if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
+#ifdef WEB3_VERSION                    
+                } else if (g_chainTable[i].cryptoKey == BIP32_ED25519 && isSlip39) {
                     xPubResult = cardano_get_pubkey_by_slip23(seed, seedLen, g_chainTable[i].path);
-                } else {
+#endif
+                }
+                else {
                     xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
                 }
 #endif
@@ -1085,7 +1085,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
                 continue;
             }
-#ifdef CYPHERPUNK_VERSION
+#ifndef BTC_ONLY
             //encrypt zcash ufvk
             if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
                 char* zcashUfvk = NULL;

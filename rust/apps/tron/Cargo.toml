@@ -20,7 +20,7 @@ ur-registry = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
-keystore = { workspace = true }
+keystore = { workspace = true, features = ["multi_coins"] }
 
 [build-dependencies]
 prost-build = { version = "0.11.8" }

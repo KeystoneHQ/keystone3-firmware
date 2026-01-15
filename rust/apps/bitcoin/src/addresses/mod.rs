@@ -42,6 +42,7 @@ pub fn get_address(hd_path: String, extended_pub_key: &String) -> Result<String>
         "m/84'/2'/0'" => Address::p2wpkh(&compressed_ecdsa_pubkey, Network::Litecoin),
         "m/44'/3'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::Dogecoin),
         "m/44'/5'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::Dash),
+        "m/44'/133'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::Zcash),
         "m/44'/145'/0'" => Address::p2pkh(&compressed_ecdsa_pubkey, Network::BitcoinCash),
         "m/86'/1'/0'" => Address::p2tr_no_script(&compressed_ecdsa_pubkey, Network::BitcoinTestnet),
         "m/86'/0'/0'" => Address::p2tr_no_script(&compressed_ecdsa_pubkey, Network::Bitcoin),

@@ -2,7 +2,9 @@
 
 use super::*;
 
+#[cfg(feature = "cypherpunk")]
 use orchard::{keys::FullViewingKey, value::ValueSum};
+
 use zcash_vendor::{
     pczt::{self, roles::verifier::Verifier, Pczt},
     ripemd::Ripemd160,
@@ -13,17 +15,15 @@ use zcash_vendor::{
     zip32,
 };
 
-pub fn check_pczt<P: consensus::Parameters>(
+#[cfg(feature = "cypherpunk")]
+pub fn check_pczt_orchard<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],
     account_index: zip32::AccountId,
     ufvk: &UnifiedFullViewingKey,
     pczt: &Pczt,
 ) -> Result<(), ZcashError> {
-    // checking xpub and orchard keys.
-    let xpub = ufvk.transparent().ok_or(ZcashError::InvalidDataError(
-        "transparent xpub is not present".to_string(),
-    ))?;
+    // checking orchard keys.
     let orchard = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
     ))?;
@@ -32,7 +32,18 @@ pub fn check_pczt<P: consensus::Parameters>(
             check_orchard(params, seed_fingerprint, account_index, orchard, bundle)
                 .map_err(pczt::roles::verifier::OrchardError::Custom)
         })
-        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{e:?}")))?
+        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{e:?}")))?;
+    Ok(())
+}
+
+pub fn check_pczt_transparent<P: consensus::Parameters>(
+    params: &P,
+    seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
+    xpub: &AccountPubKey,
+    pczt: &Pczt,
+) -> Result<(), ZcashError> {
+    Verifier::new(pczt.clone())
         .with_transparent(|bundle| {
             check_transparent(params, seed_fingerprint, account_index, xpub, bundle)
                 .map_err(pczt::roles::verifier::TransparentError::Custom)
@@ -242,6 +253,7 @@ fn check_transparent_output<P: consensus::Parameters>(
     }
 }
 
+#[cfg(feature = "cypherpunk")]
 // check orchard bundle
 fn check_orchard<P: consensus::Parameters>(
     params: &P,
@@ -273,6 +285,7 @@ fn check_orchard<P: consensus::Parameters>(
     }
 }
 
+#[cfg(feature = "cypherpunk")]
 // check orchard action
 fn check_action<P: consensus::Parameters>(
     params: &P,
@@ -291,6 +304,7 @@ fn check_action<P: consensus::Parameters>(
     check_action_output(action)
 }
 
+#[cfg(feature = "cypherpunk")]
 // check spend nullifier
 fn check_action_spend<P: consensus::Parameters>(
     params: &P,
@@ -332,6 +346,7 @@ fn check_action_spend<P: consensus::Parameters>(
     Ok(())
 }
 
+#[cfg(feature = "cypherpunk")]
 //check output cmx
 fn check_action_output(action: &orchard::pczt::Action) -> Result<(), ZcashError> {
     action
@@ -348,6 +363,7 @@ fn check_action_output(action: &orchard::pczt::Action) -> Result<(), ZcashError>
     Ok(())
 }
 
+#[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -370,7 +386,7 @@ mod tests {
 
             let fingerprint = fingerprint.try_into().unwrap();
 
-            let result = check_pczt(
+            let result = check_pczt_orchard(
                 &MAIN_NETWORK,
                 &fingerprint,
                 zip32::AccountId::ZERO,

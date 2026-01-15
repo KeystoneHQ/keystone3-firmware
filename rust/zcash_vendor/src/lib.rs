@@ -4,6 +4,7 @@ pub mod pczt_ext;
 extern crate alloc;
 
 pub use bip32;
+#[cfg(feature = "cypherpunk")]
 pub use orchard;
 pub use pasta_curves;
 pub use pczt;

@@ -65,7 +65,6 @@ Rsa_primes_t *FlashReadRsaPrimes(void)
 #ifndef COMPILE_SIMULATOR
         ASSERT(readLen == sizeof(fullData));
 #endif
-
         int len = (GetMnemonicType() == MNEMONIC_TYPE_BIP39) ? (int)sizeof(seed) : GetCurrentAccountEntropyLen();
         if (SecretCacheGetPassword() == NULL) {
             printf("password is empty\n");

@@ -31,6 +31,9 @@ borsh = { version = "1.5.1", default-features = false, features = [
 bitcoin = { workspace = true }
 ur-registry = { workspace = true }
 
+[dev-dependencies]
+keystore = { workspace = true, features = ["multi_coins"] }
+
 [features]
 default = ["std"]
 std = []

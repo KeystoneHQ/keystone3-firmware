@@ -165,3 +165,86 @@ fn generate_eth_ledger_live_key(
         note,
     ))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloc::vec;
+    use bitcoin::bip32::{DerivationPath, Xpub};
+    use core::str::FromStr;
+
+    fn serialize_xpub(xpub: &Xpub) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Version: xpub (Mainnet) = 0x0488B21E
+        bytes.extend_from_slice(&[0x04, 0x88, 0xB2, 0x1E]);
+        bytes.push(xpub.depth);
+        bytes.extend_from_slice(xpub.parent_fingerprint.as_bytes());
+        // ChildNumber to u32
+        let child_num: u32 = xpub.child_number.into();
+        bytes.extend_from_slice(&child_num.to_be_bytes());
+        bytes.extend_from_slice(xpub.chain_code.as_bytes());
+        bytes.extend_from_slice(&xpub.public_key.serialize());
+        bytes
+    }
+
+    #[test]
+    fn test_generate_crypto_multi_accounts() {
+        let mfp = [0x75, 0x7e, 0x6f, 0xc9];
+        let serial = "123456";
+        let device_type = "Keystone 3 Pro";
+        let device_version = "1.0.0";
+
+        // ETH Standard xpub
+        let eth_xpub_str = "xpub6C8zKiZZ8V75XynjThhvdjy7hbnJHAFkhW7jL9EvBCsRFSRov4sXUJATU6CqUF9BxAbryiU3eghdHDLbwgF8ASE4AwHTzkLHaHsbwiCnkHc";
+        let eth_xpub = Xpub::from_str(eth_xpub_str).unwrap();
+        let eth_xpub_bytes = serialize_xpub(&eth_xpub);
+
+        let eth_path = DerivationPath::from_str("m/44'/60'/0'").unwrap();
+        let eth_key = ExtendedPublicKey {
+            path: eth_path,
+            key: eth_xpub_bytes,
+        };
+
+        // BTC Native Segwit xpub
+        let btc_xpub_str = "xpub6C8zKiZZ8V75aXTgYAswqCgYUHeBYg1663a4Ri6zdJ4GW58r67Kmj4Fr8pbBK9usq45o8iQ8dBM75o67ct1M38yeb6RhFTWBxiYeq8Kg84Z";
+        let btc_xpub = Xpub::from_str(btc_xpub_str).unwrap();
+        let btc_xpub_bytes = serialize_xpub(&btc_xpub);
+
+        let btc_path = DerivationPath::from_str("m/84'/0'/0'").unwrap();
+        let btc_key = ExtendedPublicKey {
+            path: btc_path,
+            key: btc_xpub_bytes,
+        };
+
+        // Thorchain xpub
+        let thor_xpub_str = "xpub6C8zKiZZ8V75tgxbNbnWfAbC63k1s6tQvfpYLNLaEzq3aUhhZu798JUyMJVL3fNK2CcF2vKauyBdF73TxjLyfU9Cfb4SLKxLDr3SUVVSAQL";
+        let thor_xpub = Xpub::from_str(thor_xpub_str).unwrap();
+        let thor_xpub_bytes = serialize_xpub(&thor_xpub);
+
+        let thor_path = DerivationPath::from_str("m/44'/931'/0'").unwrap();
+        let thor_key = ExtendedPublicKey {
+            path: thor_path,
+            key: thor_xpub_bytes,
+        };
+
+        let keys = vec![eth_key, btc_key, thor_key];
+
+        let result = generate_crypto_multi_accounts(mfp, serial, keys, device_type, device_version);
+        assert!(result.is_ok());
+
+        let multi_accounts = result.unwrap();
+        let cbor: Vec<u8> = multi_accounts.clone().try_into().unwrap();
+        assert!(!cbor.is_empty());
+
+        // Verify device info
+        assert_eq!(multi_accounts.get_device(), Some(device_type.to_string()));
+        assert_eq!(
+            multi_accounts.get_device_version(),
+            Some(device_version.to_string())
+        );
+
+        // Verify keys count
+        // ETH generates 2 keys (standard + ledger live), BTC generates 1 key, Thorchain generates 1 key. Total 4.
+        assert_eq!(multi_accounts.get_keys().len(), 4);
+    }
+}

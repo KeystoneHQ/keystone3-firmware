@@ -17,7 +17,7 @@ thiserror = { workspace = true }
 bitcoin = { workspace = true }
 
 [dev-dependencies]
-keystore = { workspace = true }
+keystore = { workspace = true, features = ["multi_coins"] }
 bech32 = { workspace = true }
 
 [dependencies.cardano-serialization-lib]

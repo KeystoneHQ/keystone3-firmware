@@ -605,6 +605,7 @@ static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk)
 static void SetZcashSFP(uint8_t accountIndex, const uint8_t* seedFingerprint)
 {
     ASSERT(accountIndex <= 2);
+    g_zcashUFVKcache.accountIndex = accountIndex;
     memcpy_s(g_zcashUFVKcache.seedFingerprint, 32, seedFingerprint, 32);
     printf("SetZcashSFP\r\n");
 }

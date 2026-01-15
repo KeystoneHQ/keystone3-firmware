@@ -41,7 +41,7 @@ void *GuiGetZcashGUIData(void)
 #ifdef WEB3_VERSION
         parseResult = parse_zcash_tx_multi_coins(data, sfp);
 #endif
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
         char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
         GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
         parseResult = parse_zcash_tx_cypherpunk(data, ufvk, sfp);
@@ -309,12 +309,13 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
     uint32_t zcash_account_index = 0;
     MnemonicType mnemonicType = GetMnemonicType();
+    printf("mnemonicType: %d\n", mnemonicType);
 
 #ifdef WEB3_VERSION
     char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ZEC_TRANSPARENT_LEGACY);
     return check_zcash_tx_multi_coins(data, xpub, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39);
 #endif
-#ifdef CYBERPUNK_VERSION
+#ifdef CYPHERPUNK_VERSION
     char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
     return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39);

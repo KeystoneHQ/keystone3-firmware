@@ -15,7 +15,7 @@ use crate::common::{
     utils::{recover_c_array, recover_c_char},
 };
 use crate::{extract_array, extract_ptr_with_type};
-use alloc::{format, string::String, string::ToString};
+use alloc::{format, string::String, string::ToString, vec::Vec};
 use app_avalanche::{
     constants::{
         C_BLOCKCHAIN_ID, C_CHAIN_PREFIX, C_TEST_BLOCKCHAIN_ID, P_BLOCKCHAIN_ID, X_BLOCKCHAIN_ID,
@@ -69,8 +69,15 @@ unsafe fn parse_transaction_by_type(
         }
     };
 
-    // Get derivation path from sign_request
-    let derivation_path = sign_request.get_derivation_path();
+    // Get derivation path from sign_request (avoid borrowing from a temporary)
+    let derivation_paths_vec = sign_request.get_derivation_path();
+    if derivation_paths_vec.is_empty() {
+        return TransactionParseResult::from(RustCError::InvalidData(
+            "invalid derivation path".to_string(),
+        ))
+        .c_ptr();
+    }
+    let derivation_path = &derivation_paths_vec[0];
     let full_path = match derivation_path.get_path() {
         Some(p) => format!("m/{}", p),
         None => {
@@ -206,15 +213,22 @@ unsafe fn avax_sign_dynamic(
 unsafe fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<AvaxSignature, AvaxError> {
     let sign_request = extract_ptr_with_type!(ptr, AvaxSignRequest);
 
-    // Get full path from derivation_path
-    let derivation_path = sign_request.get_derivation_path();
-    let path = match derivation_path.get_path() {
-        Some(p) => format!("m/{}", p),
-        None => return Err(AvaxError::InvalidInput),
-    };
+    let derivation_keypaths = sign_request.get_derivation_path();
+    if derivation_keypaths.is_empty() {
+        return Err(AvaxError::InvalidInput);
+    }
+    let mut paths: Vec<String> = Vec::new();
+    for kp in derivation_keypaths.iter() {
+        match kp.get_path() {
+            Some(p) => paths.push(format!("m/{}", p)),
+            None => return Err(AvaxError::InvalidInput),
+        }
+    }
 
-    avax_base_sign(seed, path, sign_request.get_tx_data())
-        .map(|signature| AvaxSignature::new(sign_request.get_request_id(), signature.to_vec()))
+    avax_base_sign(seed, paths, sign_request.get_tx_data()).map(|signature| {
+        let signatures: Vec<Vec<u8>> = signature.into_iter().map(|arr| arr.to_vec()).collect();
+        AvaxSignature::new(sign_request.get_request_id(), signatures)
+    })
 }
 
 #[no_mangle]
@@ -249,7 +263,7 @@ pub unsafe extern "C" fn avax_check_transaction(
         }
     };
 
-    match avax_tx.get_derivation_path().get_source_fingerprint() {
+    match avax_tx.get_derivation_path()[0].get_source_fingerprint() {
         Some(fingerprint) if fingerprint == mfp => TransactionCheckResult::new().c_ptr(),
         _ => TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr(),
     }

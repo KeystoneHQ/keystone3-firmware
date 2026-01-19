@@ -20,10 +20,6 @@ static void *g_parseResult = NULL;
 static bool g_isMulti = false;
 static ViewType g_viewType = ViewTypeUnKnown;
 
-static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
-static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
-static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
-static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
 UREncodeResult *GetAvaxSignDataDynamic(bool isUnlimited);
 
 void GuiSetAvaxUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)

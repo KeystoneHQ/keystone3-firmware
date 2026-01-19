@@ -136,7 +136,7 @@ static const lv_img_dsc_t *g_backpackWalletCoinArray[3] = {
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinLtc, &coinDoge
+    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinLtc, &coinDoge, &coinZec
 };
 
 static const lv_img_dsc_t *g_UniSatCoinArray[5] = {
@@ -158,7 +158,6 @@ static const lv_img_dsc_t *g_wanderCoinArray[1] = {
 
 static const lv_img_dsc_t *g_beaconCoinArray[2] = {
     &coinAr,
-    // todo add ao
     &coinAo,
 };
 
@@ -403,7 +402,6 @@ static void GuiOpenARAddressNoticeWindow()
     lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
 }
 
-
 static void GuiOpenUsbNoticeWindow(WALLET_LIST_INDEX_ENUM walletIndex)
 {
     char connectionDesc[128];
@@ -420,7 +418,6 @@ static void GuiOpenUsbNoticeWindow(WALLET_LIST_INDEX_ENUM walletIndex)
     lv_obj_set_width(btn, 408);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
-
 
 static void OpenQRCodeHandler(lv_event_t *e)
 {
@@ -831,7 +828,6 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     // GuiCreateSupportedNetworks(g_connectWalletTileView.walletIndex);
 }
 
-
 static void AddFewchaCoins()
 {
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
@@ -851,7 +847,6 @@ static void AddFewchaCoins()
         }
     }
 }
-
 
 static void AddCoinsFromArray(const lv_img_dsc_t *coinArray[], uint32_t arraySize,
                               bool showMore, int moreOffsetX)

@@ -334,7 +334,6 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_XRP,                   SECP256K1,    "xrp",                      "M/44'/144'/0'"     },
     {XPUB_TYPE_THOR,                  SECP256K1,    "thor",                     "M/44'/931'/0'"     },
     {XPUB_TYPE_AVAX_BIP44_STANDARD,   SECP256K1,    "avax_c",                   "M/44'/60'/0'"      },
-    {XPUB_TYPE_AVAX_X_P,              SECP256K1,    "avax_x_p",                 "M/44'/9000'/0'"    },
     {XPUB_TYPE_AVAX_X_P_0,            SECP256K1,    "avax_x_p_0",               "M/44'/9000'/0'"    },
     {XPUB_TYPE_AVAX_X_P_1,            SECP256K1,    "avax_x_p_1",               "M/44'/9000'/1'"    },
     {XPUB_TYPE_AVAX_X_P_2,            SECP256K1,    "avax_x_p_2",               "M/44'/9000'/2'"    },

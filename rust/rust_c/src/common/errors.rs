@@ -583,6 +583,7 @@ impl From<&ZcashError> for ErrorCodes {
             ZcashError::InvalidDataError(_) => Self::InvalidData,
             ZcashError::SigningError(_) => Self::ZcashSigningError,
             ZcashError::InvalidPczt(_) => Self::ZcashInvalidPczt,
+            ZcashError::PcztNoMyInputs => Self::MasterFingerprintMismatch,
         }
     }
 }

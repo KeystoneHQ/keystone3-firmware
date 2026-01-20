@@ -42,13 +42,24 @@ pub fn check_pczt_transparent<P: consensus::Parameters>(
     account_index: zip32::AccountId,
     xpub: &AccountPubKey,
     pczt: &Pczt,
+    check_sfp: bool,
 ) -> Result<(), ZcashError> {
     Verifier::new(pczt.clone())
         .with_transparent(|bundle| {
-            check_transparent(params, seed_fingerprint, account_index, xpub, bundle)
-                .map_err(pczt::roles::verifier::TransparentError::Custom)
+            check_transparent(
+                params,
+                seed_fingerprint,
+                account_index,
+                xpub,
+                bundle,
+                check_sfp,
+            )
+            .map_err(pczt::roles::verifier::TransparentError::Custom)
         })
-        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{e:?}")))?;
+        .map_err(|e| match e {
+            pczt::roles::verifier::TransparentError::Custom(e) => e,
+            _e => ZcashError::InvalidDataError(alloc::format!("{:?}", _e)),
+        })?;
     Ok(())
 }
 
@@ -58,15 +69,23 @@ fn check_transparent<P: consensus::Parameters>(
     account_index: zip32::AccountId,
     xpub: &AccountPubKey,
     bundle: &transparent::pczt::Bundle,
+    check_sfp: bool,
 ) -> Result<(), ZcashError> {
+    let mut has_my_input = false;
     bundle.inputs().iter().try_for_each(|input| {
-        check_transparent_input(params, seed_fingerprint, account_index, xpub, input)?;
+        let _has = check_transparent_input(params, seed_fingerprint, account_index, xpub, input)?;
+        if _has {
+            has_my_input = true;
+        }
         Ok::<_, ZcashError>(())
     })?;
     bundle.outputs().iter().try_for_each(|output| {
         check_transparent_output(params, seed_fingerprint, account_index, xpub, output)?;
         Ok::<_, ZcashError>(())
     })?;
+    if check_sfp && !has_my_input {
+        return Err(ZcashError::PcztNoMyInputs);
+    }
     Ok(())
 }
 
@@ -76,7 +95,7 @@ fn check_transparent_input<P: consensus::Parameters>(
     account_index: zip32::AccountId,
     xpub: &AccountPubKey,
     input: &transparent::pczt::Input,
-) -> Result<(), ZcashError> {
+) -> Result<bool, ZcashError> {
     let script = input.script_pubkey().clone();
     //p2sh transparent input is not supported yet
     match script.address() {
@@ -89,7 +108,7 @@ fn check_transparent_input<P: consensus::Parameters>(
             match my_derivation {
                 None => {
                     //not my input, pass
-                    Ok(())
+                    Ok(false)
                 }
                 Some((pubkey, derivation)) => {
                     // 2: derive my pubkey
@@ -116,7 +135,7 @@ fn check_transparent_input<P: consensus::Parameters>(
                             "transparent input script pubkey mismatch".to_string(),
                         ));
                     }
-                    Ok(())
+                    Ok(true)
                 }
             }
         }

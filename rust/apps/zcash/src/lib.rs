@@ -74,7 +74,7 @@ pub fn check_pczt_cypherpunk<P: consensus::Parameters>(
         "transparent xpub is not present".to_string(),
     ))?;
     pczt::check::check_pczt_orchard(params, seed_fingerprint, account_index, &ufvk, &pczt)?;
-    pczt::check::check_pczt_transparent(params, seed_fingerprint, account_index, xpub, &pczt)
+    pczt::check::check_pczt_transparent(params, seed_fingerprint, account_index, xpub, &pczt, false)
 }
 
 #[cfg(feature = "multi_coins")]
@@ -115,6 +115,7 @@ pub fn check_pczt_multi_coins<P: consensus::Parameters>(
         account_index,
         &account_pubkey,
         &pczt,
+        true,
     )
 }
 

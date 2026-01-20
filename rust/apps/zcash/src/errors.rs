@@ -18,6 +18,8 @@ pub enum ZcashError {
     SigningError(String),
     #[error("invalid pczt, {0}")]
     InvalidPczt(String),
+    #[error("None of inputs belong to the provided account")]
+    PcztNoMyInputs,
 }
 
 #[cfg(feature = "cypherpunk")]

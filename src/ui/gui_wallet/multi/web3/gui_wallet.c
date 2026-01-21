@@ -458,7 +458,36 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
     return urEncode;
 }
 
-UREncodeResult *GuiGetKeystoneConnectWalletData(void)
+UREncodeResult *GuiGetKeystoneConnectWalletDataSlip39(void)
+{
+    ChainPath_t chainPaths[] = {
+        {.path = "m/44'/60'/0'", .chainType = XPUB_TYPE_ETH_BIP44_STANDARD},
+        {.path = "m/84'/0'/0'", .chainType = XPUB_TYPE_BTC_NATIVE_SEGWIT},
+        {.path = "m/49'/0'/0'", .chainType = XPUB_TYPE_BTC},
+        {.path = "m/44'/0'/0'", .chainType = XPUB_TYPE_BTC_LEGACY},
+        {.path = "m/86'/0'/0'", .chainType = XPUB_TYPE_BTC_TAPROOT},
+        {.path = GetXPubPath(XPUB_TYPE_TRX), .chainType = XPUB_TYPE_TRX},
+        {.path = GetXPubPath(XPUB_TYPE_DOGE), .chainType = XPUB_TYPE_DOGE},
+        {.path = GetXPubPath(XPUB_TYPE_XRP), .chainType = XPUB_TYPE_XRP},
+        {.path = GetXPubPath(XPUB_TYPE_LTC), .chainType = XPUB_TYPE_LTC},
+        {.path = GetXPubPath(XPUB_TYPE_LTC_NATIVE_SEGWIT), .chainType = XPUB_TYPE_LTC_NATIVE_SEGWIT},
+    };
+    ExtendedPublicKey keys[NUMBER_OF_ARRAYS(chainPaths)];
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = BuildChainPaths(chainPaths, keys, NUMBER_OF_ARRAYS(chainPaths));
+    char serialNumber[256];
+    GetSerialNumber(serialNumber);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+
+    UREncodeResult *urEncode = get_keystone_connect_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion, NULL, 0);
+    CHECK_CHAIN_PRINT(urEncode);
+    SRAM_FREE(public_keys);
+    return urEncode;
+}
+
+UREncodeResult *GuiGetKeystoneConnectWalletDataBip39(void)
 {
     ChainPath_t chainPaths[] = {
         {.path = "m/44'/60'/0'", .chainType = XPUB_TYPE_ETH_BIP44_STANDARD},

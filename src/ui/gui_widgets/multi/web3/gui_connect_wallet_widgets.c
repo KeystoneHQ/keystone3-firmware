@@ -98,6 +98,10 @@ static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
     &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinLtc, &coinDoge, &coinZec
 };
 
+static const lv_img_dsc_t *g_keystoneWalletCoinArraySlip39[] = {
+    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinLtc, &coinDoge
+};
+
 static const lv_img_dsc_t *g_UniSatCoinArray[5] = {
     &coinBtc, &coinOrdi, &coinSats, &coinMubi, &coinTrac,
 };
@@ -1250,8 +1254,15 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
     case WALLET_LIST_KEYSTONE:
         // todo  add keystone ur logic
-        func = GuiGetKeystoneConnectWalletData;
-        AddCoinsFromArray(g_keystoneWalletCoinArray, NUMBER_OF_ARRAYS(g_keystoneWalletCoinArray), false, 0);
+        bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
+        if (isSlip39) {
+            func = GuiGetKeystoneConnectWalletDataSlip39;
+            AddCoinsFromArray(g_keystoneWalletCoinArraySlip39, NUMBER_OF_ARRAYS(g_keystoneWalletCoinArraySlip39), false, 0);
+        }
+        else {
+            func = GuiGetKeystoneConnectWalletDataBip39;
+            AddCoinsFromArray(g_keystoneWalletCoinArray, NUMBER_OF_ARRAYS(g_keystoneWalletCoinArray), false, 0);
+        }
         break;
     default:
         return;

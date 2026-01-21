@@ -104,7 +104,10 @@ fn check_transparent_input<P: consensus::Parameters>(
             let my_derivation = input
                 .bip32_derivation()
                 .iter()
-                .find(|(_pubkey, derivation)| seed_fingerprint == derivation.seed_fingerprint());
+                .find(|(_pubkey, derivation)| {
+                    rust_tools::debug_print!("Checking transparent input bip32 derivation seed fingerprint: {} vs {}", hex::encode(seed_fingerprint), hex::encode(derivation.seed_fingerprint()));
+                    return seed_fingerprint == derivation.seed_fingerprint();
+                });
             match my_derivation {
                 None => {
                     //not my input, pass

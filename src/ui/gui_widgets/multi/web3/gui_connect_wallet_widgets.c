@@ -201,7 +201,7 @@ static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
 };
 
 WalletListItem_t g_walletListArray[] = {
-    {WALLET_LIST_KEYSTONE, &walletKeystone, "Keystone Nexus", g_keystoneWalletCoinArray, 6, false, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
+    {WALLET_LIST_KEYSTONE, &walletKeystone, "Keystone Nexus", g_keystoneWalletCoinArray, 8, false, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_OKX, &walletOkx, "OKX Wallet", g_okxWalletCoinArray, 7, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_METAMASK, &walletMetamask, "MetaMask", g_metaMaskCoinArray, 5, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BACKPACK, &walletBackpack, "Backpack", g_backpackWalletCoinArray, 3, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_OTHER},
@@ -241,7 +241,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_YEARN_FINANCE, &walletYearn, "Yearn", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_SUSHISWAP, &walletSushi, "SushiSwap", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
 };
-
 
 typedef struct {
     const char *accountType;
@@ -338,6 +337,12 @@ static void GuiInitWalletListArray()
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         bool enable = true;
         int index = g_walletListArray[i].index;
+        if (isSLIP39) {
+            if (index == WALLET_LIST_KEYSTONE) {
+                g_walletListArray[i].coinIcons = g_keystoneWalletCoinArraySlip39;
+                g_walletListArray[i].coinCount = 7;
+            }
+        }
 
         if (isTON) {
             enable = (index == WALLET_LIST_TONKEEPER);

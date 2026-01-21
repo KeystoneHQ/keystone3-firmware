@@ -107,7 +107,14 @@ pub unsafe extern "C" fn check_zcash_tx_multi_coins(
     xpub: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
+    disabled: bool,
 ) -> *mut TransactionCheckResult {
+    if disabled {
+        return TransactionCheckResult::from(RustCError::UnsupportedTransaction(
+            "zcash is not supported for slip39 and passphrase wallet now".to_string(),
+        ))
+        .c_ptr();
+    }
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
     let xpub_text = unsafe { recover_c_char(xpub) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);

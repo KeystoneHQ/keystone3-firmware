@@ -34,10 +34,23 @@ pub unsafe extern "C" fn get_keystone_connect_wallet_ur(
         Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
     };
 
-    let sfp = extract_array!(zcash_sfp, u8, zcash_sfp_length);
-    let _sfp = match <[u8; 32]>::try_from(sfp) {
-        Ok(sfp) => sfp,
-        Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
+    let sfp = match zcash_sfp_length {
+        0 => None,
+        32 => {
+            let _sfp = extract_array!(zcash_sfp, u8, zcash_sfp_length);
+            match <[u8; 32]>::try_from(_sfp) {
+                Ok(sfp) => Some(sfp),
+                Err(e) => {
+                    return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr()
+                }
+            }
+        }
+        _ => {
+            return UREncodeResult::from(URError::UrEncodeError(format!(
+                "zcash seed fingerprint length must be 0 or 32, current is {zcash_sfp_length}"
+            )))
+            .c_ptr();
+        }
     };
 
     let keys = recover_c_array(public_keys);
@@ -52,7 +65,7 @@ pub unsafe extern "C" fn get_keystone_connect_wallet_ur(
                 _keys,
                 &device_type,
                 &device_version,
-                Some(_sfp),
+                sfp,
             ) {
                 Ok(data) => match data.try_into() {
                     Ok(_v) => UREncodeResult::encode(

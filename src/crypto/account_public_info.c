@@ -913,7 +913,11 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 // slip39 wallet does not support:
                 // ADA
                 // Zcash
-                if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY)) {
+                if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED
+#ifdef WEB3_VERSION
+                                 || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY
+#endif
+                                )) {
                     continue;
                 }
                 // do not generate public keys for ton-only wallet;
@@ -1081,7 +1085,11 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         }
 
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-            if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY)) {
+            if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED
+#ifdef WEB3_VERSION
+                             || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY
+#endif
+                            )) {
                 continue;
             }
             if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {

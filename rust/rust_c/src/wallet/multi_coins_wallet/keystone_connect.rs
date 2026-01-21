@@ -35,14 +35,14 @@ pub unsafe extern "C" fn get_keystone_connect_wallet_ur(
     };
 
     let sfp = match zcash_sfp_length {
-        0 => {
-            None
-        }
+        0 => None,
         32 => {
             let _sfp = extract_array!(zcash_sfp, u8, zcash_sfp_length);
             match <[u8; 32]>::try_from(_sfp) {
                 Ok(sfp) => Some(sfp),
-                Err(e) => return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr(),
+                Err(e) => {
+                    return UREncodeResult::from(URError::UrEncodeError(e.to_string())).c_ptr()
+                }
             }
         }
         _ => {

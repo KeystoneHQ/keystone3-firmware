@@ -23,7 +23,7 @@ cryptoxide = { workspace = true }
 rust_tools = { workspace = true }
 
 [dev-dependencies]
-keystore = { workspace = true }
+keystore = { workspace = true, features = ["multi_coins"] }
 
 [features]
 default = ["std"]

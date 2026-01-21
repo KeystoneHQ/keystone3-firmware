@@ -75,6 +75,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_XRP, "", &coinXrp},
     {CHAIN_ADA, "", &coinAda},
     {CHAIN_TON, "", &coinTon},
+    {CHAIN_ZEC, "", &coinZec},
     {CHAIN_TRX, "", &coinTrx},
     {CHAIN_LTC, "", &coinLtc},
     {CHAIN_DOGE, "", &coinDoge},
@@ -123,6 +124,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_QCK, "", &coinQck},
     {CHAIN_TGD, "", &coinTgd},
     {CHAIN_DOT, "", &coinDot},
+    {CHAIN_ZCASH, "", &coinZec},
 #endif
 
 #ifdef CYPHERPUNK_VERSION
@@ -179,7 +181,7 @@ const static WalletInfo_t g_walletBtn[] = {
 #endif
 
 #ifdef CYPHERPUNK_VERSION
-    {WALLET_LIST_BLUE, "Blue Wallet", &walletBluewallet},
+    {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
     {WALLET_LIST_ZEUS, "Zeus Wallet", &walletZeus},
@@ -763,6 +765,7 @@ void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
         if (g_walletBtn[i].index == index) {
             coin = &g_walletBtn[i];
+            printf("wallet name: %s\n", coin->name);
             break;
         }
     }

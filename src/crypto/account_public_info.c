@@ -523,6 +523,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_TON_BIP39,             ED25519,       "ton_bip39",                "M/44'/607'/0'"    },
     {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
     {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
+    {XPUB_TYPE_ZEC_TRANSPARENT_LEGACY,SECP256K1,     "zec_transparent_legacy",   "M/44'/133'/0'"    },
 #endif
 
 #ifdef CYPHERPUNK_VERSION
@@ -603,6 +604,7 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
 
 #ifdef WEB3_VERSION
     case RSA_KEY: {
+        printf("here, RSA_KEY\n");
         Rsa_primes_t *primes = FlashReadRsaPrimes();
         if (primes == NULL)
             return NULL;
@@ -911,7 +913,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 // slip39 wallet does not support:
                 // ADA
                 // Zcash
-                if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED)) {
+                if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY)) {
                     continue;
                 }
                 // do not generate public keys for ton-only wallet;
@@ -1079,7 +1081,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         }
 
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-            if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED)) {
+            if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY)) {
                 continue;
             }
             if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {

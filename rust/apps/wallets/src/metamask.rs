@@ -155,7 +155,9 @@ fn get_path_component(index: Option<u32>, hardened: bool) -> URResult<PathCompon
 mod tests {
     extern crate std;
 
-    use crate::metamask::generate_ledger_live_account;
+    use crate::metamask::{
+        generate_ledger_live_account, generate_standard_legacy_hd_key, ETHAccountTypeApp,
+    };
     use alloc::string::ToString;
     use alloc::vec;
     use alloc::vec::Vec;
@@ -189,5 +191,34 @@ mod tests {
 
         assert_eq!(hex::encode(cbor).to_lowercase(),
                    "a2011a757e6fc9028ad9012fa502f40358210326bd25d39a5eeb0217c4508bc5c50d28087121372daa5d2e48b30a8f3345998606d90130a3018a182cf5183cf500f500f400f4021a757e6fc9030309684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa502f4035821030b235be63214e20961295fb82ff3fe365c21e3c5c203bc7a995b5f31fa10a86506d90130a3018a182cf5183cf501f500f400f4021a757e6fc9030309684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa502f4035821020a48e423f5991eba82dc251aa4b7191bb4bf72838ff61e761fe1e08f374968e706d90130a3018a182cf5183cf502f500f400f4021a757e6fc9030309684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa502f403582103c2d7cb8f289f4211064258c63c86a57d22eb4e2565fa1c9b203797251a1fad9d06d90130a3018a182cf5183cf503f500f400f4021a757e6fc9030309684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa502f403582103435a76cc11055f740187fbfe68a7a1f0180fe43f6835bd52797bb50c6e567a2506d90130a3018a182cf5183cf504f500f400f4021a757e6fc9030309684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa502f403582102f41789edb56ce2786392d4fb040565ac767be3e43355610a91853e65212a02a106d90130a3018a182cf5183cf505f500f400f4021a757e6fc9030309684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa502f4035821038f4e60d5035d28a76d1b9a64dd7867b11fb652a56605a0e51923b4f49e23522a06d90130a3018a182cf5183cf506f500f400f4021a757e6fc9030309684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa502f403582102765303723f047bac13ff1a9617c0891fd23ebcf7c7053d4c2d1dc49f24c9e0d906d90130a3018a182cf5183cf507f500f400f4021a757e6fc9030309684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa502f403582103ac7982290292097e2d072b5520911a4c94af713ae49cdd8ab6fcd1895c194ef306d90130a3018a182cf5183cf508f500f400f4021a757e6fc9030309684b657973746f6e650a736163636f756e742e6c65646765725f6c697665d9012fa502f4035821039fcc0a270027ee3d8ad2b41f172d03aa8f5353a9876301e0799f845bda6f1f3506d90130a3018a182cf5183cf509f500f400f4021a757e6fc9030309684b657973746f6e650a736163636f756e742e6c65646765725f6c697665");
+    }
+
+    #[test]
+    fn test_eth_account_type_app_to_i32() {
+        assert_eq!(ETHAccountTypeApp::Bip44Standard.to_i32(), 0);
+        assert_eq!(ETHAccountTypeApp::LedgerLive.to_i32(), 1);
+        assert_eq!(ETHAccountTypeApp::LedgerLegacy.to_i32(), 2);
+    }
+
+    #[test]
+    fn test_generate_standard_legacy_hd_key() {
+        let mfp = "757E6FC9";
+        let mfp = Vec::from_hex(mfp).unwrap();
+        let mfp: [u8; 4] = mfp.try_into().unwrap();
+        let x_pub = "xpub6C8zKiZZ8V75XynjThhvdjy7hbnJHAFkhW7jL9EvBCsRFSRov4sXUJATU6CqUF9BxAbryiU3eghdHDLbwgF8ASE4AwHTzkLHaHsbwiCnkHc";
+
+        // Test Bip44Standard
+        let result =
+            generate_standard_legacy_hd_key(&mfp, x_pub, ETHAccountTypeApp::Bip44Standard, None)
+                .unwrap();
+        let cbor: Vec<u8> = result.try_into().unwrap();
+        assert!(!cbor.is_empty());
+
+        // Test LedgerLegacy
+        let result =
+            generate_standard_legacy_hd_key(&mfp, x_pub, ETHAccountTypeApp::LedgerLegacy, None)
+                .unwrap();
+        let cbor: Vec<u8> = result.try_into().unwrap();
+        assert!(!cbor.is_empty());
     }
 }

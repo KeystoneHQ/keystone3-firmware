@@ -220,7 +220,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_BTC_WALLET, &coinBtc, "Bitcoin Wallets", g_btcWalletCoinArray, 4, true, WALLET_FILTER_BTC},
     {WALLET_LIST_TONKEEPER, &walletTonkeeper, "Tonkeeper", g_tonKeeperCoinArray, 1, false, WALLET_FILTER_OTHER},
     {WALLET_LIST_RABBY, &walletRabby, "Rabby", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
-    {WALLET_LIST_NABOX, &walletNabox, "Nabox", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_NABOX, &walletNabox, "Nabox", g_naboxWalletCoinArray, 7, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_BITGET, &walletBitget, "Bitget Wallet", g_bitgetWalletCoinArray, 3, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_ETERNL, &walletEternl, "Eternl", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
     {WALLET_LIST_VESPR, &walletVespr, "Vespr", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},

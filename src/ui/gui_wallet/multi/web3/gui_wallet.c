@@ -233,8 +233,12 @@ UREncodeResult *GuiGetNaboxData(void)
     ExtendedPublicKey keys[chainNum];
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
+    char serialNumber[256];
+    GetSerialNumber(serialNumber);
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = BuildChainPaths(chainPaths, keys, chainNum);
-    UREncodeResult *urEncode = generate_common_crypto_multi_accounts_ur(mfp, sizeof(mfp), public_keys, "Keystone3");
+    UREncodeResult *urEncode = get_keystone_connect_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
     for (int i = 9; i < chainNum; i++) {
         if (chainPaths[i].path != NULL) {
             SRAM_FREE(chainPaths[i].path);

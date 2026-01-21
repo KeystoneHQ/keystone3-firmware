@@ -81,6 +81,16 @@ static const lv_img_dsc_t *g_ethWalletCoinArray[4] = {
     &coinMatic,
 };
 
+static const lv_img_dsc_t *g_naboxWalletCoinArray[7] = {
+    &coinBtc,
+    &coinEth,
+    &coinTrx,
+    &coinSol,
+    &coinLtc,
+    &coinDoge,
+    &coinBch,
+};
+
 static const lv_img_dsc_t *g_okxWalletCoinArray[] = {
     &coinBtc, &coinEth, &coinOkb, &coinTrx,
     &coinBch, &coinLtc, &coinDash
@@ -1146,9 +1156,12 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_ZAPPER:
     case WALLET_LIST_YEARN_FINANCE:
     case WALLET_LIST_SUSHISWAP:
-    case WALLET_LIST_NABOX:
         func = GuiGetMetamaskData;
         AddCoinsFromArray(g_ethWalletCoinArray, NUMBER_OF_ARRAYS(g_ethWalletCoinArray), true, 132);
+        break;
+    case WALLET_LIST_NABOX:
+        func = GuiGetNaboxData;
+        AddCoinsFromArray(g_naboxWalletCoinArray, NUMBER_OF_ARRAYS(g_naboxWalletCoinArray), true, 132);
         break;
     case WALLET_LIST_IMTOKEN:
         func = GuiGetImTokenData;

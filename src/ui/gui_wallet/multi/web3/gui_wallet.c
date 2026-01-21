@@ -209,6 +209,42 @@ UREncodeResult *GuiGetImTokenData(void)
     return GetMetamaskDataForAccountType(Bip44Standard);
 }
 
+UREncodeResult *GuiGetNaboxData(void)
+{
+    // 19 = 9 + sol 10
+    ChainPath_t chainPaths[19] = {
+        {.path = "m/44'/60'/0'", .chainType = XPUB_TYPE_ETH_BIP44_STANDARD},
+        {.path = "m/84'/0'/0'", .chainType = XPUB_TYPE_BTC_NATIVE_SEGWIT},
+        {.path = "m/49'/0'/0'", .chainType = XPUB_TYPE_BTC},
+        {.path = "m/44'/0'/0'", .chainType = XPUB_TYPE_BTC_LEGACY},
+        {.path = "m/86'/0'/0'", .chainType = XPUB_TYPE_BTC_TAPROOT},
+        {.path = "m/44'/195'/0'", .chainType = XPUB_TYPE_TRX},
+        {.path = "m/49'/2'/0'", .chainType = XPUB_TYPE_LTC},
+        {.path = "m/44'/3'/0'", .chainType = XPUB_TYPE_DOGE},
+        {.path = "m/44'/145'/0'", .chainType = XPUB_TYPE_BCH},
+    };
+    int chainNum = NUMBER_OF_ARRAYS(chainPaths);
+    for (int i = 0; i < 10; i++) {
+        char *path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(path, BUFFER_SIZE_32, "m/44'/501'/%d'", i);
+        chainPaths[i + 9].path = path;
+        chainPaths[i + 9].chainType = XPUB_TYPE_SOL_BIP44_0 + i;
+    }
+    ExtendedPublicKey keys[chainNum];
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = BuildChainPaths(chainPaths, keys, chainNum);
+    UREncodeResult *urEncode = generate_common_crypto_multi_accounts_ur(mfp, sizeof(mfp), public_keys, "Keystone3");
+    for (int i = 9; i < chainNum; i++) {
+        if (chainPaths[i].path != NULL) {
+            SRAM_FREE(chainPaths[i].path);
+        }
+    }
+    CHECK_CHAIN_PRINT(urEncode);
+    SRAM_FREE(public_keys);
+    return urEncode;
+}
+
 UREncodeResult *GuiGetCoreWalletData(void)
 {
     ChainPath_t chainPaths[] = {

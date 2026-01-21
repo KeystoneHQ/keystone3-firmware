@@ -1139,6 +1139,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_networks"));
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
+    bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
     switch (index) {
     case WALLET_LIST_METAMASK:
         func = GuiGetMetamaskData;
@@ -1259,7 +1260,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
     case WALLET_LIST_KEYSTONE:
         // todo  add keystone ur logic
-        bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
         if (isSlip39) {
             func = GuiGetKeystoneConnectWalletDataSlip39;
             AddCoinsFromArray(g_keystoneWalletCoinArraySlip39, NUMBER_OF_ARRAYS(g_keystoneWalletCoinArraySlip39), false, 0);

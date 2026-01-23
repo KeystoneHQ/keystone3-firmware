@@ -9,6 +9,7 @@
                                        HOME_WALLET_CARD_XRP,     \
                                        HOME_WALLET_CARD_ADA,     \
                                        HOME_WALLET_CARD_TON,     \
+                                       HOME_WALLET_CARD_ZEC,     \
                                        HOME_WALLET_CARD_DOT,     \
                                        HOME_WALLET_CARD_TRX,     \
                                        HOME_WALLET_CARD_LTC,     \
@@ -66,6 +67,7 @@
         {HOME_WALLET_CARD_XRP, false, "XRP", true},       \
         {HOME_WALLET_CARD_ADA, false, "ADA", true},       \
         {HOME_WALLET_CARD_TON, false, "TON", false},      \
+        {HOME_WALLET_CARD_ZEC, false, "ZEC", false},      \
         {HOME_WALLET_CARD_DOT, false, "DOT", false},      \
         {HOME_WALLET_CARD_TRX, false, "TRX", true},       \
         {HOME_WALLET_CARD_LTC, false, "LTC", true},       \
@@ -160,6 +162,12 @@
             .coin = "TON",                     \
             .chain = "TON-TON",                \
             .icon = &coinTon,                  \
+        },                                     \
+        {                                      \
+            .index = HOME_WALLET_CARD_ZEC,     \
+            .coin = "ZEC",                     \
+            .chain = "Zcash",                  \
+            .icon = &coinZec,                  \
         },                                     \
         {                                      \
             .index = HOME_WALLET_CARD_DOT,     \

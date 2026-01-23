@@ -11,9 +11,9 @@ rust_tools = { workspace = true }
 app_utils = { workspace = true }
 bitcoin = { workspace = true }
 thiserror = { workspace = true }
-zcash_vendor = { workspace = true }
+zcash_vendor = { workspace = true, default-features = false}
 hex = { workspace = true }
-bitvec = {version = "1.0.1", default-features = false, features = ["alloc"]}
+bitvec = { version = "1.0.1", default-features = false, features = ["alloc"] }
 blake2b_simd = { workspace = true }
 rand_core = { workspace = true, features = ["getrandom"] }
 zcash_note_encryption = "0.4.1"
@@ -23,3 +23,8 @@ keystore = { path = "../../keystore" }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[features]
+default = ["cypherpunk"]
+multi_coins = ["zcash_vendor/multi_coins", "keystore/multi_coins"]
+cypherpunk = ["zcash_vendor/cypherpunk", "keystore/cypherpunk"]

@@ -1,3 +1,16 @@
+## 2.3.6(2026-1-22)
+
+**Web3:**
+
+### What's new
+1. Supported ZEC transparent address
+2. Supported managing ZEC transparent address via Keystone Nexus
+### Improvements
+1. Improved wallet connection stability
+
+
+
+
 ## 2.3.4(2026-1-6)
 
 **Web3:**

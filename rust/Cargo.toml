@@ -48,14 +48,14 @@ app_tron = { path = "apps/tron" }
 app_utils = { path = "apps/utils" }
 app_wallets = { path = "apps/wallets" }
 app_xrp = { path = "apps/xrp" }
-app_zcash = { path = "apps/zcash" }
+app_zcash = { path = "apps/zcash", default-features = false}
 app_monero = { path = "apps/monero" }
 app_iota = { path = "apps/iota" }
 keystore = { path = "keystore", default-features = false }
 tools = { path = "tools" }
 sim_qr_reader = { path = "sim_qr_reader" }
 rust_tools = { path = "tools" }
-zcash_vendor = { path = "zcash_vendor" }
+zcash_vendor = { path = "zcash_vendor", default-features = false}
 
 # third party dependencies
 cty = "0.2.0"

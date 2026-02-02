@@ -241,7 +241,7 @@ static void GuiCreateBackupWidget(lv_obj_t *parent, bool enablePassphrase)
         {.obj = labelNotice, .align = LV_ALIGN_DEFAULT, .position = {24, 62}},
         {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_DEFAULT, .position = {372, 16}},
     };
-    lv_obj_t *importButton = GuiCreateButton(parent, 432, 136, importTable, 3, OpenSecretShareHandler, NULL);
+    lv_obj_t *importButton = GuiCreateButton(parent, 432, 146, importTable, 3, OpenSecretShareHandler, NULL);
     lv_obj_align_to(importButton, button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
 
     lv_obj_t *obj = GuiCreateContainerWithParent(parent, 222, 30);
@@ -596,7 +596,7 @@ static void CreateChangeEntropyView(void)
     }
 
     // System Desc Container
-    lv_obj_t *descCont = GuiCreateContainerWithParent(cont, 408, 114);
+    lv_obj_t *descCont = GuiCreateContainerWithParent(cont, 408, 144);
     g_entropyMethods[0].descCont = descCont;
     lv_obj_align_to(descCont, method_cont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
     lv_obj_set_style_radius(descCont, 24, LV_PART_MAIN);

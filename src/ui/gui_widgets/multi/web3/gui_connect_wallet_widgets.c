@@ -95,11 +95,11 @@ static const lv_img_dsc_t *g_backpackWalletCoinArray[3] = {
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
-    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinLtc, &coinDoge, &coinZec
+    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinLtc, &coinDoge, &coinZec, &coinAda
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArraySlip39[] = {
-    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinLtc, &coinDoge
+    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinLtc, &coinDoge, &coinAda,
 };
 
 static const lv_img_dsc_t *g_UniSatCoinArray[5] = {

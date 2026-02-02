@@ -115,7 +115,9 @@ void GuiUpdateStatusCoinButton(lv_obj_t *button, const char *text, const void *s
     lv_obj_t *img = lv_obj_get_child(button, 0);
     lv_img_set_src(img, src);
     lv_img_set_pivot(img, lv_obj_get_self_width(img) / 2, 0);
-    lv_img_set_zoom(img, 128);
+
+    // 57 = 256 * 36 / 160
+    lv_img_set_zoom(img,  57);
     lv_label_set_text(label, text);
 }
 

@@ -119,6 +119,7 @@ uint8_t GuiSetupNextTile(void)
 {
     switch (g_setupTileView.currentTile) {
     case SETUP_WELCOME:
+        printf("%s  %d..\n", __func__, __LINE__);
         GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETUP);
         GuiFrameOpenView(&g_webAuthView);
         break;
@@ -129,12 +130,6 @@ uint8_t GuiSetupNextTile(void)
 
 uint8_t GuiSetupPrevTile(void)
 {
-    switch (g_setupTileView.currentTile) {
-    case SETUP_WELCOME:
-        return SUCCESS_CODE;
-    }
-    g_setupTileView.currentTile--;
-    lv_obj_set_tile_id(g_setupTileView.tileView, g_setupTileView.currentTile, 0, LV_ANIM_OFF);
     return SUCCESS_CODE;
 }
 
@@ -154,6 +149,7 @@ bool GuiIsSetup(void)
 
 void GuiSetupAreaRefresh(void)
 {
+    printf("%s %d..\n", __func__, __LINE__);
     GuiNvsBarSetWalletIcon(NULL);
     GuiNvsBarSetWalletName("");
 }
@@ -170,10 +166,6 @@ void GuiSetupAreaRestart(void)
 
 uint8_t GuiSetSetupPhase(SETUP_PHASE_ENUM pahaseEnum)
 {
-    if (GetSetupStep() != pahaseEnum) {
-        SetSetupStep(pahaseEnum);
-        SaveDeviceSettings();
-    }
     return 0;
 }
 

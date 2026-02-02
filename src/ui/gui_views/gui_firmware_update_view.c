@@ -30,6 +30,8 @@ int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *pa
         GuiFirmwareUpdatePrevTile();
         break;
     case SIG_VERIFY_PASSWORD_PASS:
+    case SIG_SETUP_DONE_START_UPDATE:
+        printf("%s %d..\n", __func__, __LINE__);
         if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
@@ -37,6 +39,7 @@ int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *pa
                 return SUCCESS_CODE;
             }
         }
+        printf("%s %d..\n", __func__, __LINE__);
         GuiFirmwareSdCardCopy();
         break;
     case SIG_FIRMWARE_VERIFY_PASSWORD_FAIL:

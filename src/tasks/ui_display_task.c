@@ -174,6 +174,15 @@ static void UiDisplayTask(void *argument)
                 GuiFrameOpenViewWithParam(&g_transactionDetailView, &rcvMsg.value, sizeof(rcvMsg.value));
             }
             break;
+            case UI_MSG_NEXT_VIEW: {
+                printf("%s %d..\n", __func__, __LINE__);
+                if (GuiCheckIfTopView(&g_prepareKeyPairView)) {
+                    printf("%s %d..\n", __func__, __LINE__);
+                    GuiApiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+                }
+                printf("%s %d..\n", __func__, __LINE__);
+            }
+            break;
             case UI_MSG_OPEN_VIEW: {
                 GUI_VIEW *view = (GUI_VIEW *)rcvMsg.value;
                 GuiFrameOpenView(view);

@@ -108,6 +108,7 @@ void GuiWebAuthIntroWidget(lv_obj_t *parent)
 
 void GuiWebAuthAreaInit()
 {
+    printf("%s  %d..\n", __func__, __LINE__);
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
     if (GuiDarkMode()) {
@@ -141,14 +142,8 @@ void GuiWebAuthAreaRefresh()
     printf("%s %d..\n", __func__, __LINE__);
     GuiWebAuthInitNVSBar();
     if (g_webAuthEntry == WEB_AUTH_ENTRY_SETUP) {
-        GuiSetSetupPhase(SETUP_PAHSE_WEB_AUTH);
-        if (g_reboot) {
-            if (!GuiJudgeCurrentPahse(SETUP_PAHSE_WEB_AUTH)) {
-                GuiFrameOpenViewWithParam(&g_firmwareUpdateView, &g_firmwareWareEntry, sizeof(g_firmwareWareEntry));
-            } else {
-                g_reboot = false;
-            }
-        }
+        printf("%s  %d..\n", __func__, __LINE__);
+                // GuiFrameOpenViewWithParam(&g_firmwareUpdateView, &g_firmwareWareEntry, sizeof(g_firmwareWareEntry));
     }
 }
 

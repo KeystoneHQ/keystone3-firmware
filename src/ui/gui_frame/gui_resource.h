@@ -103,7 +103,7 @@ LV_IMG_DECLARE(imgUsb);
 // LV_IMG_DECLARE(imgTestNet);
 // LV_IMG_DECLARE(imgUnknown);
 // LV_IMG_DECLARE(imgNextStep);
-// LV_IMG_DECLARE(imgNotice);
+LV_IMG_DECLARE(imgNotice);
 // LV_IMG_DECLARE(imgInfo);
 // LV_IMG_DECLARE(imgInfoOrange);
 // LV_IMG_DECLARE(imgDice);

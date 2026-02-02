@@ -49,12 +49,6 @@ typedef struct StatusBar {
 } StatusBar_t;
 static StatusBar_t g_guiStatusBar;
 
-// typedef struct {
-//     GuiChainCoinType index;
-//     const char *name;
-//     const lv_img_dsc_t *icon;
-// } CoinWalletInfo_t;
-
 typedef struct {
     WALLET_LIST_INDEX_ENUM index;
     const char *name;
@@ -65,129 +59,7 @@ bool GetLvglHandlerStatus(void);
 
 static void RefreshStatusBar(void);
 
-// const static CoinWalletInfo_t g_coinWalletBtn[] = {
-//     {CHAIN_BTC, "", &coinBtc},
-// #ifdef WEB3_VERSION
-//     {CHAIN_ETH, "", &coinEth},
-//     {CHAIN_SOL, "", &coinSol},
-//     {CHAIN_BNB, "", &coinBnb},
-//     {CHAIN_HNT, "", &coinHelium},
-//     {CHAIN_XRP, "", &coinXrp},
-//     {CHAIN_ADA, "", &coinAda},
-//     {CHAIN_TON, "", &coinTon},
-//     {CHAIN_TRX, "", &coinTrx},
-//     {CHAIN_LTC, "", &coinLtc},
-//     {CHAIN_DOGE, "", &coinDoge},
-//     {CHAIN_AVAX, "", &coinAva},
-//     {CHAIN_BCH, "", &coinBch},
-//     {CHAIN_APT, "", &coinApt},
-//     {CHAIN_SUI, "", &coinSui},
-//     {CHAIN_IOTA, "", &coinIota},
-//     {CHAIN_DASH, "", &coinDash},
-//     {CHAIN_ARWEAVE, "", &coinAr},
-//     {CHAIN_STELLAR, "", &coinXlm},
-//     {CHAIN_BABYLON, "", &coinBabylon},
-//     {CHAIN_NEUTARO, "", &coinNeutaro},
-//     {CHAIN_TIA, "", &coinTia},
-//     {CHAIN_NTRN, "", &coinNtrn},
-//     {CHAIN_DYM, "", &coinDym},
-//     {CHAIN_OSMO, "", &coinOsmo},
-//     {CHAIN_INJ, "", &coinInj},
-//     {CHAIN_ATOM, "", &coinAtom},
-//     {CHAIN_CRO, "", &coinCro},
-//     {CHAIN_RUNE, "", &coinRune},
-//     {CHAIN_KAVA, "", &coinKava},
-//     {CHAIN_LUNC, "", &coinLunc},
-//     {CHAIN_AXL, "", &coinAxl},
-//     {CHAIN_LUNA, "", &coinLuna},
-//     {CHAIN_AKT, "", &coinAkt},
-//     {CHAIN_STRD, "", &coinStrd},
-//     {CHAIN_SCRT, "", &coinScrt},
-//     {CHAIN_BLD, "", &coinBld},
-//     {CHAIN_CTK, "", &coinCtk},
-//     {CHAIN_EVMOS, "", &coinEvmos},
-//     {CHAIN_STARS, "", &coinStars},
-//     {CHAIN_XPRT, "", &coinXprt},
-//     {CHAIN_SOMM, "", &coinSomm},
-//     {CHAIN_JUNO, "", &coinJuno},
-//     {CHAIN_IRIS, "", &coinIris},
-//     {CHAIN_DVPN, "", &coinDvpn},
-//     {CHAIN_ROWAN, "", &coinRowan},
-//     {CHAIN_REGEN, "", &coinRegen},
-//     {CHAIN_BOOT, "", &coinBoot},
-//     {CHAIN_GRAV, "", &coinGrav},
-//     {CHAIN_IXO, "", &coinIxo},
-//     {CHAIN_NGM, "", &coinNgm},
-//     {CHAIN_IOV, "", &coinIov},
-//     {CHAIN_UMEE, "", &coinUmee},
-//     {CHAIN_QCK, "", &coinQck},
-//     {CHAIN_TGD, "", &coinTgd},
-//     {CHAIN_DOT, "", &coinDot},
-// #endif
-
-// #ifdef CYPHERPUNK_VERSION
-//     {CHAIN_ZCASH, "", &coinZec},
-//     {CHAIN_XMR, "", &coinXmr},
-// #endif
-// };
-
-// const static WalletInfo_t g_walletBtn[] = {
-// #ifndef BTC_ONLY
-//     {WALLET_LIST_KEYSTONE, "Keystone Nexus", &walletKeystone},
-//     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
-//     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
-//     {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
-//     {WALLET_LIST_MEDUSA, "Medusa", &walletMedusa},
-//     // {WALLET_LIST_YOROI, "Yoroi Wallet", &walletYoroi},
-//     {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
-//     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
-//     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
-//     {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
-//     {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
-//     {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
-//     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
-//     {WALLET_LIST_NUFI, "NuFi", &walletNufi},
-//     {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
-//     {WALLET_LIST_RABBY, "Rabby", &walletRabby},
-//     {WALLET_LIST_BITGET, "Bitget Wallet", &walletBitget},
-//     {WALLET_LIST_SAFE, "Safe", &walletSafe},
-//     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
-//     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
-//     {WALLET_LIST_IMTOKEN, "imToken", &walletImToken},
-//     {WALLET_LIST_BLOCK_WALLET, "Block Wallet", &walletBlockWallet},
-//     {WALLET_LIST_ZAPPER, "Zapper", &walletZapper},
-//     {WALLET_LIST_HELIUM, "Helium Wallet", &walletHelium},
-//     {WALLET_LIST_YEARN_FINANCE, "Yearn Finance", &walletYearn},
-//     {WALLET_LIST_SUSHISWAP, "SushiSwap", &walletSushi},
-//     {WALLET_LIST_KEPLR, "Keplr", &walletKeplr},
-//     {WALLET_LIST_MINT_SCAN, "Mintscan", &walletMintScan},
-//     {WALLET_LIST_WANDER, "Wander", &walletWander},
-//     {WALLET_LIST_BEACON, "Beacon Wallet", &walletBeacon},
-//     {WALLET_LIST_VESPR, "Vespr", &walletVespr},
-//     {WALLET_LIST_XBULL, "xBull", &walletXBull},
-//     {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
-//     {WALLET_LIST_PETRA, "Petra", &walletPetra},
-//     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
-//     {WALLET_LIST_THORWALLET, "THORWallet", &walletThorWallet},
-//     {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
-//     {WALLET_LIST_BEGIN, "Begin", &walletBegin},
-//     {WALLET_LIST_LEAP, "Leap", &walletLeap},
-//     {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
-//     {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
-//     // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
-//     {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
-//     {WALLET_LIST_CORE, "Core Wallet", &walletCore},
-// #else
-//     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
-//     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
-//     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
-//     {WALLET_LIST_NUNCHUK, "Nunchuk", &walletNunchuk},
-//     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
-//     {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
-//     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
-//     {WALLET_LIST_BITCOIN_SAFE, "Bitcoin Safe", &walletBtcSafe},
-// #endif
-// };
+bool AllowDeviceUpdateViaSdCard(void);
 
 void GuiNvsBarSetWalletName(const char *name)
 {
@@ -326,18 +198,10 @@ void GuiStatusBarSetSdCard(bool connected, bool onlyImg)
     if (!GetLvglHandlerStatus()) {
         return;
     }
-    static int32_t sdStatus = -1;
-    if (sdStatus == (connected ? 1 : 0)) {
-        return;
-    }
-    sdStatus = connected;
     if (connected) {
-        lv_obj_clear_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
+       lv_obj_clear_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
         if (!onlyImg) {
-            uint8_t accountCnt = 0;
-            GetExistAccountNum(&accountCnt);
-            // if (!GuiLockScreenIsTop() && accountCnt > 0 && FatfsFileExist(SD_CARD_OTA_BIN_PATH) && !GuiCheckIfTopView(&g_forgetPassView)) {
-            if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
+            if (AllowDeviceUpdateViaSdCard() && FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
                 GuiCreateSdCardUpdateHintbox(false);
             }
         }
@@ -731,20 +595,11 @@ void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
     }
 }
 
-// void SetCoinWallet(NavBarWidget_t *navBarWidget, GuiChainCoinType index,
-//                    const char *name)
-// {
-//     SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
-//     CoinWalletInfo_t *coin = (CoinWalletInfo_t *)g_coinWalletBtn;
-//     for (size_t i = 0; i < CHAIN_BUTT; i++) {
-//         if (g_coinWalletBtn[i].index == index) {
-//             coin = &g_coinWalletBtn[i];
-//             break;
-//         }
-//     }
-//     // tx parse page: Confrim Transaction
-//     GuiUpdateStatusCoinButton(navBarWidget->midBtn, (name != NULL) ? name : _("confirm_transaction"), coin->icon);
-// }
+void SetConfigWalletPubkey(NavBarWidget_t *navBarWidget, const char *title)
+{
+    SetNavBarMidBtn(navBarWidget, NVS_BAR_MID_COIN, NULL, NULL);
+    GuiUpdateStatusCoinButton(navBarWidget->midBtn, (title != NULL) ? title : "Confirm Pubkey", &imgDevLogo);
+}
 
 // void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const char *name)
 // {

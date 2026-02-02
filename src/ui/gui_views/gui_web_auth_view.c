@@ -10,6 +10,7 @@ int32_t GuiWebAuthViewEventProcess(void *self, uint16_t usEvent, void *param, ui
     GUI_ASSERT(g_webAuthView.isActive);
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
+        printf("%s  %d..\n", __func__, __LINE__);
         GuiWebAuthAreaInit();
         break;
     case GUI_EVENT_OBJ_DEINIT:

@@ -67,7 +67,7 @@ void GuiWebAuthResultSuccessHandler(lv_event_t *e)
     if (g_webAuthSuccessCb != NULL) {
         g_webAuthSuccessCb();
     }
-    GuiFrameCLoseView(&g_webAuthResultView);
+    GuiFrameOpenView(&g_prepareKeyPairView);
 }
 
 void GuiWebAuthResultCodeWidget(lv_obj_t *parent)
@@ -257,6 +257,7 @@ void GuiWebAuthResultAreaDeInit()
 // Unlock, Return from QRCode, Return from Purpose(in setup)
 void GuiWebAuthResultAreaRefresh()
 {
+        printf("%s %d..\n", __func__, __LINE__);
     GuiWebAuthResultInitNVSBar();
 }
 

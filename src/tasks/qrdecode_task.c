@@ -147,7 +147,7 @@ void ProcessQr(uint32_t count)
                     firstQrFlag = true;
                     urViewType.viewType = urResult->t;
                     urViewType.urType = urResult->ur_type;
-                    // handleURResult(urResult, NULL, urViewType, false);
+                    handleURResult(urResult, NULL, urViewType, false);
                     testProgress = 0;
                 } else {
                     // first qr code
@@ -172,7 +172,7 @@ void ProcessQr(uint32_t count)
                         free_ur_parse_result(urResult);
                         urResult = NULL;
                     }
-                    // handleURResult(NULL, MultiurResult, urViewType, true);
+                    handleURResult(NULL, MultiurResult, urViewType, true);
                     testProgress = 0;
                 }
             } else {
@@ -251,5 +251,23 @@ void QrDecodeTouchQuit(void)
             }
             quitArea = false;
         }
+    }
+}
+
+
+void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, UrViewType_t urViewType, bool is_multi)
+{
+    switch (urViewType.viewType) {
+    case WebAuthResult:
+        GuiSetWebAuthResultData(urResult, urMultiResult, is_multi);
+        break;
+    }
+
+    if (urViewType.viewType == WebAuthResult) {
+        StopQrDecode();
+        UserDelay(500);
+        GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &urViewType, sizeof(urViewType));
+    } else {
+        printf("unhandled viewType=%d\r\n", urViewType.viewType);
     }
 }

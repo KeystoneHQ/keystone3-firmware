@@ -109,20 +109,23 @@ program
       const response = await keystone.sendPublicKey(publicKey, privateKey);
       spinner.succeed('Public key exchange completed');
       
-      console.log(chalk.green('\n✓ Public Key Exchange Result:'));
-      console.log(chalk.gray(`  Status: ${response.success ? '✓ Success' : '✗ Failed'}`));
+      // Check if response is a success status code
+      // Success codes: 0 (RSP_SUCCESS_CODE), 0x16 (PRS_SET_PUBKEY_VERIFY_SUCCESS), 0x17 (PRS_SET_PUBKEY_SET_SUCCESS)
+      const isSuccess = response.status === 0x00000000 || response.status === 0x00000016 || response.status === 0x00000017;
+      
+      console.log(chalk.green('\n✓ Signature Verification Result:'));
+      console.log(chalk.gray(`  Status: ${isSuccess ? '✓ Success' : '✗ Failed'}`));
       console.log(chalk.gray(`  Message: ${response.statusMessage}`));
       
-      if (response.success && response.payload && response.payload.length > 0) {
-        console.log(chalk.green('\n✓ Device Public Key Received:'));
-        console.log(chalk.gray(`  Length: ${response.payload.length} bytes`));
-        console.log(chalk.gray(`  Format: ${response.payload.length === 33 ? 'Compressed (33 bytes)' : response.payload.length === 65 ? 'Uncompressed (65 bytes)' : 'Unknown'}`));
-        console.log(chalk.white(`  Public Key: ${response.payload.toString('hex')}`));
-        
-        console.log(chalk.blue('\n✓ ECDH key exchange successful. Secure channel established.'));
-      } else if (!response.success) {
-        console.log(chalk.yellow('\n⚠ Device did not return a public key. Key exchange may have failed.'));
-        console.log(chalk.yellow('    This might be due to signature verification failure.'));
+      if (isSuccess) {
+        console.log(chalk.blue('\n✓ Public key signature verified successfully!'));
+        console.log(chalk.gray('  The device confirmed that you own the private key.'));
+      } else {
+        console.log(chalk.yellow('\n⚠ Signature verification failed.'));
+        console.log(chalk.yellow('  Possible reasons:'));
+        console.log(chalk.yellow('    - Public key and private key do not match'));
+        console.log(chalk.yellow('    - Invalid signature format'));
+        console.log(chalk.yellow('    - Data packet corruption'));
       }
       
       // 断开连接

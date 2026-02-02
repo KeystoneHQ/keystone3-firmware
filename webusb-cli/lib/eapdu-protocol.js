@@ -35,17 +35,17 @@ export const EAPDU = {
 };
 
 /**
- * Insert 16-bit value into buffer (little-endian)
+ * Insert 16-bit value into buffer (big-endian)
  */
 function insert16BitValue(buffer, offset, value) {
-  buffer.writeUInt16LE(value, offset);
+  buffer.writeUInt16BE(value, offset);
 }
 
 /**
- * Extract 16-bit value from buffer (little-endian)
+ * Extract 16-bit value from buffer (big-endian)
  */
 function extract16BitValue(buffer, offset) {
-  return buffer.readUInt16LE(offset);
+  return buffer.readUInt16BE(offset);
 }
 
 /**
@@ -112,6 +112,11 @@ export function parseEAPDUResponse(data) {
   // Extract status from last 2 bytes
   const status = extract16BitValue(data, data.length - EAPDU.RESPONSE_STATUS_LENGTH);
   
+  // Check if status indicates success (include SET_PUBKEY success codes)
+  const isSuccess = status === STATUS.SUCCESS || 
+                    status === 0x16 ||  // PRS_SET_PUBKEY_VERIFY_SUCCESS
+                    status === 0x17;   // PRS_SET_PUBKEY_SET_SUCCESS
+  
   return {
     cla,
     commandType,
@@ -120,7 +125,7 @@ export function parseEAPDUResponse(data) {
     requestId,
     payload,
     status,
-    success: status === STATUS.SUCCESS,
+    success: isSuccess,
     statusMessage: getStatusMessage(status),
   };
 }
@@ -158,18 +163,36 @@ export function parseEAPDUMultiPacketResponse(packets) {
  * @returns {string} Status message
  */
 export function getStatusMessage(status) {
-  switch (status) {
-    case STATUS.SUCCESS:
-      return 'Success';
-    case STATUS.FAILURE:
-      return 'Failure';
-    case STATUS.INVALID_TOTAL_PACKETS:
-      return 'Invalid total packets';
-    case STATUS.INVALID_INDEX:
-      return 'Invalid packet index';
-    default:
-      return `Unknown status: 0x${status.toString(16)}`;
-  }
+  // Status code enum from eapdu_protocol_parser.h
+  const statusMap = {
+    0x00000000: 'Success',
+    0x00000001: 'Failure',
+    0x00000002: 'Invalid total packets',
+    0x00000003: 'Invalid packet index',
+    0x00000004: 'Parsing rejected',
+    0x00000005: 'Parsing error',
+    0x00000006: 'Parsing disallowed',
+    0x00000007: 'Parsing unmatched',
+    0x00000008: 'Parsing mismatched wallet',
+    0x00000009: 'Parsing verify password error',
+    0x0000000A: 'Export address unsupported chain',
+    0x0000000B: 'Export address invalid params',
+    0x0000000C: 'Export address error',
+    0x0000000D: 'Export address disallowed',
+    0x0000000E: 'Export address rejected',
+    0x0000000F: 'Export address busy',
+    0x00000010: 'Hardware call success',
+    // PRS_SET_PUBKEY_* codes (17-23)
+    0x00000011: 'Set pubkey error',
+    0x00000012: 'Set pubkey rejected',
+    0x00000013: 'Set pubkey busy',
+    0x00000014: 'Set pubkey invalid params',
+    0x00000015: 'Set pubkey verify failed',
+    0x00000016: 'Set pubkey verify success',
+    0x00000017: 'Set pubkey set success',
+  };
+  
+  return statusMap[status] || `Unknown status: 0x${status.toString(16)}`;
 }
 
 /**

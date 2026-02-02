@@ -45,6 +45,7 @@ void SendEApduResponse(EAPDUResponsePayload_t *payload)
     uint16_t totalPackets = (payload->dataLen + MAX_EAPDU_RESPONSE_DATA_SIZE - 1) / MAX_EAPDU_RESPONSE_DATA_SIZE;
     uint16_t packetIndex = 0;
     uint32_t offset = 0;
+    printf("%s %d.\n", __func__, __LINE__);
 
     while (payload->dataLen > 0) {
         uint16_t packetDataSize = payload->dataLen > MAX_EAPDU_RESPONSE_DATA_SIZE ? MAX_EAPDU_RESPONSE_DATA_SIZE : payload->dataLen;
@@ -56,6 +57,7 @@ void SendEApduResponse(EAPDUResponsePayload_t *payload)
         insert_16bit_value(packet, OFFSET_LC, payload->requestID);
         memcpy_s(packet + OFFSET_CDATA, MAX_PACKETS_LENGTH - OFFSET_CDATA, payload->data + offset, packetDataSize);
         insert_16bit_value(packet, OFFSET_CDATA + packetDataSize, payload->status);
+        PrintArray("packet", packet, OFFSET_CDATA + packetDataSize + EAPDU_RESPONSE_STATUS_LENGTH);
         g_sendFunc(packet, OFFSET_CDATA + packetDataSize + EAPDU_RESPONSE_STATUS_LENGTH);
         offset += packetDataSize;
         payload->dataLen -= packetDataSize;

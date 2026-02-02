@@ -187,16 +187,19 @@ export class KeystoneUSB {
     // 发送所有数据包
     for (let i = 0; i < packets.length; i++) {
       console.log(`  Packet ${i + 1}/${packets.length}: ${packets[i].length} bytes`);
+      console.log(`  Packet data: ${packets[i].slice(0, 20).toString('hex')}...`);
       await this.sendRaw(packets[i]);
       
       // 在包之间添加小延迟
       if (i < packets.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50)); // 增加延迟到50ms
       }
     }
     
+    console.log(`\nAll packets sent, waiting for device response...`);
+    
     // 读取响应（可能是多包）
-    return await this.readEAPDUResponse();
+    return await this.readEAPDUResponse(10000); // 增加超时到10秒
   }
 
   /**
@@ -207,8 +210,13 @@ export class KeystoneUSB {
       throw new Error('Device not connected');
     }
 
+    console.log(`\nReading device response (timeout: ${timeout}ms)...`);
+    
     // 读取第一个包以确定总包数
     const firstPacket = await this.readRaw(64, timeout);
+    console.log(`  First packet received: ${firstPacket.length} bytes`);
+    console.log(`  First packet data: ${firstPacket.slice(0, 20).toString('hex')}...`);
+    
     const firstResponse = parseEAPDUResponse(firstPacket);
     
     console.log(`\nReceived EAPDU response:`);

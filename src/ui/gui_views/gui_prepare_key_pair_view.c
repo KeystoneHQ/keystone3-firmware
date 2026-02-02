@@ -27,10 +27,15 @@ int32_t GuiPrepareKeyPairViewEventProcess(void *self, uint16_t usEvent, void *pa
         GuiPrepareKeyPairRefresh();
         break;
     case SIG_SETUP_VIEW_TILE_PREV:
+        printf("%s %d..\n", __func__, __LINE__);
         GuiPrepareKeyPairPrevTile();
         break;
     case SIG_SETUP_VIEW_TILE_NEXT:
         GuiPrepareKeyPairNextTile();
+        break;
+    case SIG_SET_PUBKEY_VERIFY_SUCCESS:
+        GuiPrepareKeyPairOnPubkeyVerifySuccess(param, usLen);
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

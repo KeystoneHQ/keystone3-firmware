@@ -7,9 +7,12 @@
 #include "gui_qr_hintbox.h"
 #include "gui_page.h"
 #include "gui_button.h"
+#include "drv_sdcard.h"
+#include "gui_api.h"
 
 static lv_obj_t *g_setupDoneTileView = NULL;
-
+static bool g_setupDone = false;
+static void StartUpdateHandler(lv_event_t *e);
 
 int32_t FormatPublicKeyHexStr(char *pubkey, uint32_t maxLen, char *pubKeyStr, uint32_t pubKeyStrLen)
 {
@@ -46,6 +49,7 @@ int32_t FormatPublicKeyHexStr(char *pubkey, uint32_t maxLen, char *pubKeyStr, ui
 
 void GuiSetupDoneInit(void)
 {
+    g_setupDone = true;
     g_setupDoneTileView = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET_NEW);
     lv_obj_align(g_setupDoneTileView, LV_ALIGN_TOP_MID, 0, GUI_MAIN_AREA_OFFSET_NEW);
     lv_obj_t *parent = g_setupDoneTileView;
@@ -90,7 +94,16 @@ void GuiSetupDoneInit(void)
     lv_obj_t *btn = GuiCreateBtn(parent, "Update");
     lv_obj_set_size(btn, 408, 66);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
-    lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(btn, StartUpdateHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void StartUpdateHandler(lv_event_t *e)
+{
+    printf("StartUpdateHandler\n");
+    bool sdCardState = SdCardInsert();
+    printf("sd card state = %d\n", sdCardState);
+    GuiApiEmitSignalWithValue(SIG_INIT_SDCARD_CHANGE, !sdCardState);
+    // GuiEmitSignal(SIG_SETUP_DONE_START_UPDATE, NULL, 0);
 }
 
 void GuiSetupDoneDeInit(void)
@@ -99,4 +112,9 @@ void GuiSetupDoneDeInit(void)
 
 void GuiSetupDoneRefresh(void)
 {
+}
+
+bool AllowDeviceUpdateViaSdCard(void)
+{
+    return g_setupDone;
 }

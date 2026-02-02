@@ -3,6 +3,12 @@
 
 #include "eapdu_protocol_parser.h"
 
+typedef struct {
+    uint8_t pubkeyLen;
+    char pubkey[65];
+    char signature[64];
+} PubkeySignatureVerifyParam_t;
+
 void GetDeviceUsbPubkeyService(EAPDURequestPayload_t *payload);
 
 #endif

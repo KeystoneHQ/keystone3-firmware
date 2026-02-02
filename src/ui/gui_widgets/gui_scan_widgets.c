@@ -95,7 +95,11 @@ void GuiScanRefresh()
 
 void GuiScanResult(bool result, void *param)
 {
+    printf("result %d %s %d..\n", result, __func__, __LINE__);
     if (result) {
+        UrViewType_t urViewType = *(UrViewType_t *)param;
+        g_qrcodeViewType = urViewType.viewType;
+        printf("%s %d..\n", __func__, __LINE__);
         if (g_qrcodeViewType == WebAuthResult) {
             GuiCloseCurrentWorkingView();
             GuiFrameOpenView(&g_webAuthResultView);

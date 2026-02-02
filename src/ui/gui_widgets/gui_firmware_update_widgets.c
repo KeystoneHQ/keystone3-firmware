@@ -219,13 +219,8 @@ void GuiFirmwareUpdateRefresh(void)
     }
 
     if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP) {
-        GuiSetSetupPhase(SETUP_PAHSE_FIRMWARE_UPDATE);
         if (g_reboot) {
-            if (!GuiJudgeCurrentPahse(SETUP_PAHSE_FIRMWARE_UPDATE)) {
-                GuiFrameOpenView(&g_purposeView);
-            } else {
-                g_reboot = false;
-            }
+            GuiFrameOpenView(&g_purposeView);
         }
     }
     // GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
@@ -345,54 +340,21 @@ static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
 
 static void ConfirmSdCardUpdate(void)
 {
-    static uint16_t walletSetIndex = SIG_INIT_SD_CARD_OTA_COPY;
-    uint8_t accountCnt = 0;
-    GetExistAccountNum(&accountCnt);
-    if (accountCnt == 0) {
-        GuiFirmwareSdCardCopy();
-        GuiModelCopySdCardOta();
-    } else {
-        // GuiDeleteKeyboardWidget(g_keyboardWidget);
-        // g_keyboardWidget = GuiCreateKeyboardWidget(g_firmwareUpdateWidgets.cont);
-        // SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
-        // SetKeyboardWidgetSig(g_keyboardWidget, &walletSetIndex);
-    }
+    GuiFirmwareSdCardCopy();
+    GuiModelCopySdCardOta();
 }
 
 static void FirmwareSdcardUpdateHandler(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_noticeWindow)
     GuiModelStopCalculateCheckSum();
-    if (CHECK_BATTERY_LOW_POWER()) {
+    if (0) {
+    // if (CHECK_BATTERY_LOW_POWER()) {
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_KEYSTORE_SAVE_LOW_POWER, &g_noticeWindow, NULL);
     } else if (!SdCardInsert()) {
-        //firmware_update_sd_failed_access_title
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_SDCARD_NOT_DETECTED, &g_noticeWindow, NULL);
     } else if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
-#ifndef BTC_ONLY
-        // todo firmware from MultiCoin to BTC
         ConfirmSdCardUpdate();
-#if 0
-        if (strstr(fileVersion, "BTC") == NULL) {
-            ConfirmSdCardUpdate();
-        } else {
-            printf("firmware from MultiCoin to BTC\n");
-            if (g_firmwareUpdateWidgets.tileView == NULL) {
-                g_noticeWindow = GuiCreateContainerWithParent(lv_scr_act(), lv_obj_get_width(lv_scr_act()), lv_obj_get_height(lv_scr_act()) - GUI_MAIN_AREA_OFFSET_NEW);
-                lv_obj_align(g_noticeWindow, LV_ALIGN_DEFAULT, 0, GUI_MAIN_AREA_OFFSET_NEW);
-                lv_obj_add_flag(g_noticeWindow, LV_OBJ_FLAG_CLICKABLE);
-                GuiCreateMultiToBtcWarningTile(g_noticeWindow);
-            } else {
-                g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING;
-                lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
-                GuiFirmwareUpdateRefresh();
-            }
-            StartKnownWarningCountDownTimer();
-        }
-#endif
-#else
-        ConfirmSdCardUpdate();
-#endif
     } else {
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeWindow, NULL);
     }

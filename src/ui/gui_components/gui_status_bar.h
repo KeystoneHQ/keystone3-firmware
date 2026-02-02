@@ -74,6 +74,7 @@ void SetMidBtnLabel(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button, co
 void SetNavBarRightBtn(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, lv_event_cb_t eventCb, void *param);
 void SetRightBtnLabel(NavBarWidget_t *navBarWidget, NVS_RIGHT_BUTTON_ENUM button, const char *text);
 void SetRightBtnCb(NavBarWidget_t *navBarWidget, lv_event_cb_t eventCb, void *param);
+void SetConfigWalletPubkey(NavBarWidget_t *navBarWidget, const char *title);
 
 #endif /* _GUI_STATUS_BAR_H */
 

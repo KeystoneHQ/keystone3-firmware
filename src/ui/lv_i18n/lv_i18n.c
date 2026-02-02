@@ -572,6 +572,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"nft_trans_title", "Transferring..."},
     {"nft_trans_updating_desc", "Takes around 1 mins"},
     {"nft_trans_updating_hint", "Do not disconnect the USB cable during the transfer process."},
+    {"battery_percentage", "Battery Percentage"},
     {"nft_transfer_failed_desc", "Due to a transfer interruption, the NFTs on the device have been erased. Please retransfer them."},
     {"nft_transfer_failed_title", "Transfer Failed"},
     {"not_now", "Not Now"},

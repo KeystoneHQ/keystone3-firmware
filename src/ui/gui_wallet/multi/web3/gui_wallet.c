@@ -237,7 +237,7 @@ UREncodeResult *GuiGetNaboxData(void)
     char firmwareVersion[12];
     GetSoftWareVersionNumber(firmwareVersion);
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = BuildChainPaths(chainPaths, keys, chainNum);
-    UREncodeResult *urEncode = get_keystone_connect_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion);
+    UREncodeResult *urEncode = get_keystone_connect_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion, NULL, 0);
     for (int i = 9; i < chainNum; i++) {
         if (chainPaths[i].path != NULL) {
             SRAM_FREE(chainPaths[i].path);

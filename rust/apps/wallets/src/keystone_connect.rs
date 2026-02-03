@@ -108,8 +108,17 @@ pub fn generate_crypto_multi_accounts(
                     Some("account.ledger_live".to_string()),
                 )?);
             }
-            _path if _path.to_string().to_lowercase().starts_with(SOL_BIP44_PREFIX) => {
-                keys.push(crate::backpack::generate_ed25519_key(master_fingerprint, ele.clone(), None)?);
+            _path
+                if _path
+                    .to_string()
+                    .to_lowercase()
+                    .starts_with(SOL_BIP44_PREFIX) =>
+            {
+                keys.push(crate::backpack::generate_ed25519_key(
+                    master_fingerprint,
+                    ele.clone(),
+                    None,
+                )?);
             }
             _path
                 if _path

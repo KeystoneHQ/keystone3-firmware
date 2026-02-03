@@ -144,6 +144,7 @@ void GuiPrepareArConnectWalletView(void);
 void GuiSetupArConnectWallet(void);
 void GuiConnectWalletPasswordErrorCount(void *param);
 void GuiConnectShowRsaSetupasswordHintbox(void);
+UREncodeResult *GuiGetNaboxData(void);
 #endif
 #endif /* _GUI_CONNECT_WALLET_WIDGETS_H */
 

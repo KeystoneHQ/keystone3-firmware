@@ -35,6 +35,8 @@ const DOGE_LEGACY_PREFIX: &str = "44'/3'/0'";
 const XRP_PREFIX: &str = "44'/144'/0'";
 const LTC_PREFIX: &str = "49'/2'/0'";
 const LTC_NATIVE_SEGWIT_PREFIX: &str = "84'/2'/0'";
+const SOL_BIP44_PREFIX: &str = "44'/501'";
+const BCH_PREFIX: &str = "44'/145'/0'";
 const ZEC_PREFIX: &str = "44'/133'/0'";
 
 pub fn generate_crypto_multi_accounts(
@@ -57,6 +59,7 @@ pub fn generate_crypto_multi_accounts(
         XRP_PREFIX.to_string(),
         LTC_PREFIX.to_string(),
         LTC_NATIVE_SEGWIT_PREFIX.to_string(),
+        BCH_PREFIX.to_string(),
         ZEC_PREFIX.to_string(),
     ];
     for ele in extended_public_keys {
@@ -103,6 +106,18 @@ pub fn generate_crypto_multi_accounts(
                     master_fingerprint,
                     ele,
                     Some("account.ledger_live".to_string()),
+                )?);
+            }
+            _path
+                if _path
+                    .to_string()
+                    .to_lowercase()
+                    .starts_with(SOL_BIP44_PREFIX) =>
+            {
+                keys.push(crate::backpack::generate_ed25519_key(
+                    master_fingerprint,
+                    ele.clone(),
+                    None,
                 )?);
             }
             _path

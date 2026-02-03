@@ -15,7 +15,20 @@ use {
 use crate::{common::get_path_component, ExtendedPublicKey};
 
 const AVAX_STANDARD_PREFIX: &str = "44'/60'/0'";
-const AVAX_X_P_PREFIX: &str = "44'/9000'/0'";
+
+fn is_avax_x_p_path(path: &[ChildNumber]) -> bool {
+    if path.len() < 3 {
+        return false;
+    }
+    matches!(
+        (&path[0], &path[1], &path[2]),
+        (
+            ChildNumber::Hardened { index: i0 },
+            ChildNumber::Hardened { index: i1 },
+            ChildNumber::Hardened { index: i2 }
+        ) if *i0 == 44 && *i1 == 9000 && *i2 <= 9
+    )
+}
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
@@ -32,11 +45,7 @@ pub fn generate_crypto_multi_accounts(
                     Some("account.standard".to_string()),
                 )?);
             }
-            _path
-                if _path
-                    .to_string()
-                    .to_lowercase()
-                    .starts_with(AVAX_X_P_PREFIX) =>
+            _path if is_avax_x_p_path(_path.as_ref()) =>
             {
                 keys.push(generate_k1_normal_key(
                     master_fingerprint,

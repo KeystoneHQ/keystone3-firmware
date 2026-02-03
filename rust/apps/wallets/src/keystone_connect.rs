@@ -36,7 +36,6 @@ const XRP_PREFIX: &str = "44'/144'/0'";
 const LTC_PREFIX: &str = "49'/2'/0'";
 const LTC_NATIVE_SEGWIT_PREFIX: &str = "84'/2'/0'";
 const SOL_BIP44_PREFIX: &str = "44'/501'";
-const SOL_BIP44_PREFIX: &str = "44'/501'";
 const BCH_PREFIX: &str = "44'/145'/0'";
 const ZEC_PREFIX: &str = "44'/133'/0'";
 

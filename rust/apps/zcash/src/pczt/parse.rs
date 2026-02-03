@@ -3,13 +3,8 @@ use alloc::{
     string::{String, ToString},
     vec,
 };
-use zcash_note_encryption::{
-    try_output_recovery_with_ovk, try_output_recovery_with_pkd_esk, Domain,
-};
+use zcash_note_encryption::{try_output_recovery_with_ovk, try_output_recovery_with_pkd_esk};
 use zcash_vendor::{
-    orchard::{
-        self, keys::OutgoingViewingKey, note::Note, note_encryption::OrchardDomain, Address,
-    },
     pczt::{self, roles::verifier::Verifier, Pczt},
     ripemd::{Digest, Ripemd160},
     sha2::Sha256,
@@ -23,6 +18,13 @@ use zcash_vendor::{
         consensus::{self},
         value::ZatBalance,
     },
+};
+
+#[cfg(feature = "cypherpunk")]
+use zcash_note_encryption::Domain;
+#[cfg(feature = "cypherpunk")]
+use zcash_vendor::orchard::{
+    self, keys::OutgoingViewingKey, note::Note, note_encryption::OrchardDomain, Address,
 };
 
 use crate::errors::ZcashError;
@@ -48,6 +50,7 @@ fn format_zec_value(value: f64) -> String {
 /// - `Ok(None)` if the output cannot be decrypted.
 /// - `Err(_)` if `ovk` is `None` and the PCZT is missing fields needed to directly
 ///   decrypt the output.
+#[cfg(feature = "cypherpunk")]
 pub fn decode_output_enc_ciphertext(
     action: &orchard::pczt::Action,
     ovk: Option<&OutgoingViewingKey>,
@@ -114,7 +117,8 @@ pub fn decode_output_enc_ciphertext(
 /// 3. Handles Sapling pool interactions (though full Sapling decoding is not supported)
 /// 4. Computes transfer values and fees
 /// 5. Returns a structured representation of the transaction
-pub fn parse_pczt<P: consensus::Parameters>(
+#[cfg(feature = "cypherpunk")]
+pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],
     ufvk: &UnifiedFullViewingKey,
@@ -203,6 +207,77 @@ pub fn parse_pczt<P: consensus::Parameters>(
     Ok(ParsedPczt::new(
         parsed_transparent,
         parsed_orchard,
+        total_transfer_value,
+        fee_value,
+        has_sapling,
+    ))
+}
+#[cfg(feature = "multi_coins")]
+pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
+    params: &P,
+    seed_fingerprint: &[u8; 32],
+    pczt: &Pczt,
+) -> Result<ParsedPczt, ZcashError> {
+    let mut parsed_transparent = None;
+
+    Verifier::new(pczt.clone())
+        .with_transparent(|bundle| {
+            parsed_transparent = parse_transparent(params, seed_fingerprint, bundle)
+                .map_err(pczt::roles::verifier::TransparentError::Custom)?;
+            Ok(())
+        })
+        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{e:?}")))?;
+
+    let mut total_input_value = 0;
+    let mut total_output_value = 0;
+    let mut total_change_value = 0;
+    //total_input_value = total_output_value + fee_value
+    //total_output_value = total_transfer_value + total_change_value
+
+    if let Some(transparent) = &parsed_transparent {
+        total_change_value += transparent
+            .get_to()
+            .iter()
+            .filter(|v| v.get_is_change())
+            .fold(0, |acc, to| acc + to.get_amount());
+        total_input_value += transparent
+            .get_from()
+            .iter()
+            .fold(0, |acc, from| acc + from.get_amount());
+        total_output_value += transparent
+            .get_to()
+            .iter()
+            .fold(0, |acc, to| acc + to.get_amount());
+    }
+
+    //treat all sapling output as output value since we don't support sapling decoding yet
+    //sapling value_sum can be trusted
+
+    let value_balance = (*pczt.sapling().value_sum())
+        .try_into()
+        .ok()
+        .and_then(|v| ZatBalance::from_i64(v).ok())
+        .ok_or(ZcashError::InvalidPczt(
+            "sapling value_sum is invalid".to_string(),
+        ))?;
+    let sapling_value_sum: i64 = value_balance.into();
+    if sapling_value_sum < 0 {
+        //value transfered to sapling pool
+        total_output_value = total_output_value.saturating_add(sapling_value_sum.unsigned_abs())
+    } else {
+        //value transfered from sapling pool
+        //this should not happen with Zashi.
+        total_input_value = total_input_value.saturating_add(sapling_value_sum as u64)
+    };
+
+    let total_transfer_value = format_zec_value((total_output_value - total_change_value) as f64);
+    let fee_value = format_zec_value((total_input_value - total_output_value) as f64);
+
+    let has_sapling = !pczt.sapling().spends().is_empty() || !pczt.sapling().outputs().is_empty();
+
+    Ok(ParsedPczt::new(
+        parsed_transparent,
+        None,
         total_transfer_value,
         fee_value,
         has_sapling,
@@ -335,6 +410,7 @@ fn parse_transparent_output(
     }
 }
 
+#[cfg(feature = "cypherpunk")]
 fn parse_orchard<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],
@@ -367,6 +443,7 @@ fn parse_orchard<P: consensus::Parameters>(
     }
 }
 
+#[cfg(feature = "cypherpunk")]
 fn parse_orchard_spend(
     seed_fingerprint: &[u8; 32],
     spend: &orchard::pczt::Spend,
@@ -387,6 +464,7 @@ fn parse_orchard_spend(
     Ok(ParsedFrom::new(None, zec_value, value, is_mine))
 }
 
+#[cfg(feature = "cypherpunk")]
 fn parse_orchard_output<P: consensus::Parameters>(
     params: &P,
     ufvk: &UnifiedFullViewingKey,
@@ -569,6 +647,7 @@ fn decode_memo(memo_bytes: [u8; 512]) -> Option<String> {
     Some(hex::encode(memo_bytes))
 }
 
+#[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -611,7 +690,7 @@ mod tests {
         let fingerprint = fingerprint.try_into().unwrap();
         let unified_fvk = UnifiedFullViewingKey::decode(&MAIN_NETWORK, ufvk).unwrap();
 
-        let result = parse_pczt(&MAIN_NETWORK, &fingerprint, &unified_fvk, &pczt);
+        let result = parse_pczt_cypherpunk(&MAIN_NETWORK, &fingerprint, &unified_fvk, &pczt);
         assert!(result.is_ok());
         let result = result.unwrap();
         assert!(!result.get_has_sapling());
@@ -659,7 +738,7 @@ mod tests {
         let fingerprint = fingerprint.try_into().unwrap();
         let unified_fvk = UnifiedFullViewingKey::decode(&MAIN_NETWORK, ufvk).unwrap();
 
-        let result = parse_pczt(&MAIN_NETWORK, &fingerprint, &unified_fvk, &pczt);
+        let result = parse_pczt_cypherpunk(&MAIN_NETWORK, &fingerprint, &unified_fvk, &pczt);
         assert!(result.is_ok());
         let result = result.unwrap();
         assert!(result.get_has_sapling());

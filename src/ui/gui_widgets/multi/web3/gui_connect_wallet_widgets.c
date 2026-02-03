@@ -105,6 +105,10 @@ static const lv_img_dsc_t *g_backpackWalletCoinArray[3] = {
 };
 
 static const lv_img_dsc_t *g_keystoneWalletCoinArray[] = {
+    &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinLtc, &coinDoge, &coinZec
+};
+
+static const lv_img_dsc_t *g_keystoneWalletCoinArraySlip39[] = {
     &coinBtc, &coinEth, &coinTrx, &coinXrp, &coinBnb, &coinLtc, &coinDoge
 };
 
@@ -128,7 +132,6 @@ static const lv_img_dsc_t *g_wanderCoinArray[1] = {
 
 static const lv_img_dsc_t *g_beaconCoinArray[2] = {
     &coinAr,
-    // todo add ao
     &coinAo,
 };
 
@@ -208,7 +211,7 @@ static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
 };
 
 WalletListItem_t g_walletListArray[] = {
-    {WALLET_LIST_KEYSTONE, &walletKeystone, "Keystone Nexus", g_keystoneWalletCoinArray, 6, false, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
+    {WALLET_LIST_KEYSTONE, &walletKeystone, "Keystone Nexus", g_keystoneWalletCoinArray, 8, false, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_OKX, &walletOkx, "OKX Wallet", g_okxWalletCoinArray, 7, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_METAMASK, &walletMetamask, "MetaMask", g_metaMaskCoinArray, 5, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BACKPACK, &walletBackpack, "Backpack", g_backpackWalletCoinArray, 3, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_OTHER},
@@ -248,7 +251,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_YEARN_FINANCE, &walletYearn, "Yearn", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_SUSHISWAP, &walletSushi, "SushiSwap", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
 };
-
 
 typedef struct {
     const char *accountType;
@@ -345,6 +347,12 @@ static void GuiInitWalletListArray()
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         bool enable = true;
         int index = g_walletListArray[i].index;
+        if (isSLIP39) {
+            if (index == WALLET_LIST_KEYSTONE) {
+                g_walletListArray[i].coinIcons = g_keystoneWalletCoinArraySlip39;
+                g_walletListArray[i].coinCount = 7;
+            }
+        }
 
         if (isTON) {
             enable = (index == WALLET_LIST_TONKEEPER);
@@ -435,7 +443,6 @@ static void GuiOpenARAddressNoticeWindow()
     lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
 }
 
-
 static void GuiOpenUsbNoticeWindow(WALLET_LIST_INDEX_ENUM walletIndex)
 {
     char connectionDesc[128];
@@ -452,7 +459,6 @@ static void GuiOpenUsbNoticeWindow(WALLET_LIST_INDEX_ENUM walletIndex)
     lv_obj_set_width(btn, 408);
     lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
-
 
 static void OpenQRCodeHandler(lv_event_t *e)
 {
@@ -890,7 +896,6 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     // GuiCreateSupportedNetworks(g_connectWalletTileView.walletIndex);
 }
 
-
 static void AddFewchaCoins()
 {
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
@@ -910,7 +915,6 @@ static void AddFewchaCoins()
         }
     }
 }
-
 
 static void AddCoinsFromArray(const lv_img_dsc_t *coinArray[], uint32_t arraySize,
                               bool showMore, int moreOffsetX)
@@ -1145,6 +1149,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_networks"));
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(g_manageImg, LV_OBJ_FLAG_HIDDEN);
+    bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
     switch (index) {
     case WALLET_LIST_METAMASK:
         func = GuiGetMetamaskData;
@@ -1268,8 +1273,14 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         break;
     case WALLET_LIST_KEYSTONE:
         // todo  add keystone ur logic
-        func = GuiGetKeystoneConnectWalletData;
-        AddCoinsFromArray(g_keystoneWalletCoinArray, NUMBER_OF_ARRAYS(g_keystoneWalletCoinArray), false, 0);
+        if (isSlip39) {
+            func = GuiGetKeystoneConnectWalletDataSlip39;
+            AddCoinsFromArray(g_keystoneWalletCoinArraySlip39, NUMBER_OF_ARRAYS(g_keystoneWalletCoinArraySlip39), false, 0);
+        }
+        else {
+            func = GuiGetKeystoneConnectWalletDataBip39;
+            AddCoinsFromArray(g_keystoneWalletCoinArray, NUMBER_OF_ARRAYS(g_keystoneWalletCoinArray), false, 0);
+        }
         break;
     default:
         return;

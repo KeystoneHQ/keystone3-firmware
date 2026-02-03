@@ -33,13 +33,19 @@ void *GuiGetZcashGUIData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
     uint8_t sfp[32];
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+    GetZcashSFP(GetCurrentAccountIndex(), sfp);
 
     PtrT_TransactionParseResult_DisplayPczt parseResult = NULL;
     do {
-        parseResult = parse_zcash_tx(data, ufvk, sfp);
+#ifdef WEB3_VERSION
+        parseResult = parse_zcash_tx_multi_coins(data, sfp);
+#endif
+#ifdef CYPHERPUNK_VERSION
+        char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
+        GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+        parseResult = parse_zcash_tx_cypherpunk(data, ufvk, sfp);
+#endif
         CHECK_CHAIN_BREAK(parseResult);
         g_zcashData = parseResult->data;
         g_parseResult = (void *)parseResult;
@@ -299,12 +305,21 @@ static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_o
 PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
     uint8_t sfp[32];
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+    GetZcashSFP(GetCurrentAccountIndex(), sfp);
     uint32_t zcash_account_index = 0;
     MnemonicType mnemonicType = GetMnemonicType();
-    return check_zcash_tx(data, ufvk, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39);
+    printf("mnemonicType: %d\n", mnemonicType);
+
+#ifdef WEB3_VERSION
+    char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ZEC_TRANSPARENT_LEGACY);
+    return check_zcash_tx_multi_coins(data, xpub, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39);
+#endif
+#ifdef CYPHERPUNK_VERSION
+    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+    return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39);
+#endif
 }
 
 UREncodeResult *GuiGetZcashSignQrCodeData(void)

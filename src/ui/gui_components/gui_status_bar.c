@@ -75,6 +75,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_XRP, "", &coinXrp},
     {CHAIN_ADA, "", &coinAda},
     {CHAIN_TON, "", &coinTon},
+    {CHAIN_ZEC, "", &coinZec},
     {CHAIN_TRX, "", &coinTrx},
     {CHAIN_LTC, "", &coinLtc},
     {CHAIN_DOGE, "", &coinDoge},
@@ -123,6 +124,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_QCK, "", &coinQck},
     {CHAIN_TGD, "", &coinTgd},
     {CHAIN_DOT, "", &coinDot},
+    {CHAIN_ZCASH, "", &coinZec},
 #endif
 
 #ifdef CYPHERPUNK_VERSION

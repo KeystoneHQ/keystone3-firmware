@@ -376,7 +376,6 @@ static bool IsEVMChain(int walletIndex)
     switch (walletIndex) {
     case WALLET_LIST_METAMASK:
     case WALLET_LIST_RABBY:
-    case WALLET_LIST_NABOX:
     case WALLET_LIST_SAFE:
     case WALLET_LIST_BLOCK_WALLET:
     case WALLET_LIST_ZAPPER:

@@ -83,6 +83,7 @@ WalletListItem_t g_walletListArray[] = {
     // {WALLET_LIST_CAKE, &walletCake, "Cake Wallet", g_cakeCoinArray, 1, true},
     {WALLET_LIST_FEATHER, &walletFeather, "Feather", g_cakeCoinArray, 1, true},
     {WALLET_LIST_ZASHI, &walletZashi, "Zashi", g_zashiCoinArray, 1, true},
+    {WALLET_LIST_BULL, &walletBull, "BULL", g_blueWalletCoinArray, 1, true},
 };
 
 typedef struct {
@@ -381,22 +382,8 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     GuiCreateSupportedNetworks(index);
     lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_networks"));
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
+
     switch (index) {
-    case WALLET_LIST_BLUE:
-        func = GuiGetStandardBtcData;
-        AddBlueWalletCoins();
-        break;
-    // todo  zeus wallet use same ur logic as sparrow wallet (m/49'/0'/0' 、 m/44'/0'/0' 、 m/84'/0'/0' and m/86'/0'/0' )
-    case WALLET_LIST_ZEUS:
-    case WALLET_LIST_SPARROW:
-        func = GuiGetStandardBtcData;
-        AddBlueWalletCoins();
-        break;
-    case WALLET_LIST_UNISAT:
-        func = GuiGetStandardBtcData;
-        AddUniSatWalletCoins();
-        lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_tokens"));
-        break;
     case WALLET_LIST_ZASHI:
         func = GuiGetZecData;
         AddZecCoins();
@@ -405,16 +392,25 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetCakeData;
         AddCakeCoins();
         break;
+    case WALLET_LIST_UNISAT:
+        func = GuiGetStandardBtcData;
+        AddUniSatWalletCoins();
+        lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_tokens"));
+        break;
+    case WALLET_LIST_BLUE:
+    case WALLET_LIST_ZEUS:
+    case WALLET_LIST_SPARROW:
+    case WALLET_LIST_BULL:
+        func = GuiGetStandardBtcData;
+        AddBlueWalletCoins();
+        break;
     default:
         return;
     }
-    if (func) {
-        lv_obj_t *qrcode = g_connectWalletTileView.qrCode;
-        if (IsPrivateQrMode()) {
-            qrcode = g_connectWalletTileView.privateModeQrCode;
-        }
-        GuiAnimatingQRCodeInit(qrcode, func, true);
-    }
+
+    lv_obj_t *qrcode = IsPrivateQrMode() ? g_connectWalletTileView.privateModeQrCode
+                       : g_connectWalletTileView.qrCode;
+    GuiAnimatingQRCodeInit(qrcode, func, true);
 }
 
 static void QRCodePause(bool pause)

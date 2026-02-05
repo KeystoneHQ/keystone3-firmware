@@ -296,6 +296,7 @@ LV_IMG_DECLARE(walletMedusa);
 LV_IMG_DECLARE(walletIota);
 LV_IMG_DECLARE(walletNabox);
 LV_IMG_DECLARE(walletJupiter);
+LV_IMG_DECLARE(walletBlueberry);
 
 // font
 LV_FONT_DECLARE(openSans_20);

@@ -460,6 +460,13 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_BABYLON].items[0].qrTitle = "Babylon";
     g_tutorials[WALLET_LIST_BABYLON].items[0].qrUrl = "https://keyst.one/t/3rd/babylon";
 
+    g_tutorials[WALLET_LIST_BULL].len = 1;
+    g_tutorials[WALLET_LIST_BULL].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_BULL].items[0].walletName = BULL_WALLET_TITLE;
+    g_tutorials[WALLET_LIST_BULL].items[0].url = BULL_WALLET_LINK;
+    g_tutorials[WALLET_LIST_BULL].items[0].qrTitle = BULL_WALLET_TITLE;
+    g_tutorials[WALLET_LIST_BULL].items[0].qrUrl = BULL_WALLET_LINK;
+
     g_tutorials[WALLET_LIST_BITCOIN_SAFE].len = 1;
     g_tutorials[WALLET_LIST_BITCOIN_SAFE].desc = _("connect_wallet_desc");
     g_tutorials[WALLET_LIST_BITCOIN_SAFE].items[0].walletName = "Bitcoin Safe";

@@ -195,7 +195,7 @@ static const lv_img_dsc_t *g_ThorWalletCoinArray[3] = {
 };
 
 static const lv_img_dsc_t *g_btcWalletCoinArray[] = {
-    &walletBluewallet, &walletSparrow, &walletZeus, &walletBabylon, &walletXBull,
+    &walletBluewallet, &walletSparrow, &walletZeus, &walletBabylon, &walletBull,
 };
 
 static const lv_img_dsc_t *g_adaCoinArray[1] = {

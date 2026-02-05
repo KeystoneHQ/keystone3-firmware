@@ -288,6 +288,7 @@ LV_IMG_DECLARE(walletZashi);
 LV_IMG_DECLARE(walletFeather);
 LV_IMG_DECLARE(walletCore);
 LV_IMG_DECLARE(walletBabylon);
+LV_IMG_DECLARE(walletBull);
 LV_IMG_DECLARE(walletNufi);
 LV_IMG_DECLARE(walletBeacon);
 LV_IMG_DECLARE(walletBtcSafe);

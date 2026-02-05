@@ -48,6 +48,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_NUNCHUK, &walletNunchuk, "Nunchuk", NULL, 1, true, false},
     {WALLET_LIST_ZEUS, &walletZeus, "Zeus", NULL, 1, true, false},
     {WALLET_LIST_BITCOIN_SAFE, &walletBtcSafe, "Bitcoin Safe", NULL, 1, true, false},
+    {WALLET_LIST_BULL, &walletBull, "BULL", NULL, 1, true, false},
     // {WALLET_LIST_SPECTER, &walletSpecter, "Specter", NULL, 1, true, true},
     // {WALLET_LIST_UNISAT, &walletUniSat, "UniSat", NULL, 5, true, true},
 };
@@ -79,7 +80,8 @@ static void GuiInitWalletListArray()
         if (currentWalletIndex != SINGLE_WALLET) {
             if (index == WALLET_LIST_SPECTER ||
                     index == WALLET_LIST_UNISAT ||
-                    index == WALLET_LIST_ZEUS) {
+                    index == WALLET_LIST_ZEUS ||
+                    index == WALLET_LIST_BULL) {
                 enable = false;
             }
         }
@@ -184,31 +186,25 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
 {
     GenerateUR func = NULL;
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
+
     switch (index) {
-    case WALLET_LIST_BLUE:
-    case WALLET_LIST_NUNCHUK:
-        // 84 49 44
-        func = GuiGetStandardBtcData;
-        break;
-    case WALLET_LIST_ZEUS:
-    case WALLET_LIST_SPARROW:
-    case WALLET_LIST_BITCOIN_SAFE:
-        // 84 49 44 86
-        func = GuiGetStandardBtcData;
-        break;
     case WALLET_LIST_SPECTER:
-        // 84 49
         func = GuiGetSpecterWalletBtcData;
         break;
+    case WALLET_LIST_BLUE:
+    case WALLET_LIST_NUNCHUK:
+    case WALLET_LIST_ZEUS:
+    case WALLET_LIST_SPARROW:
+    case WALLET_LIST_BULL:
+    case WALLET_LIST_BITCOIN_SAFE:
     case WALLET_LIST_UNISAT:
         func = GuiGetStandardBtcData;
         break;
     default:
         return;
     }
-    if (func) {
-        GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
-    }
+
+    GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
 }
 
 static void QRCodePause(bool pause)

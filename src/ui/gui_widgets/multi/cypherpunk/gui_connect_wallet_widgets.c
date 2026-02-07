@@ -453,6 +453,7 @@ static bool HasSelectAddressWidget()
 {
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_XRP_TOOLKIT:
+    case WALLET_LIST_DEXRP:
     case WALLET_LIST_KEPLR:
     case WALLET_LIST_VESPR:
     case WALLET_LIST_MINT_SCAN:

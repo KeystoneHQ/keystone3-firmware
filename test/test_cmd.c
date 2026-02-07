@@ -143,6 +143,7 @@ static void RustTestDecodeCryptoPSBT(int argc, char *argv[]);
 static void RustTestDecodeMultiCryptoPSBT(int argc, char *argv[]);
 static void RustGetConnectKeplrUR(int argc, char *argv[]);
 static void RustGetConnectXrpToolKitUR(int argc, char *argv[]);
+static void RustGetConnectDexrpUR(int argc, char *argv[]);
 static void RustTestMemory(int argc, char *argv[]);
 static void RustGetConnectMetaMaskUR(int argc, char *argv[]);
 static void RustTestGetAddressLTCSucceed(int argc, char *argv[]);
@@ -270,6 +271,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust get mfp:", RustGetMasterFingerprint},
     {"rust test get connect keplr wallet ur", RustGetConnectKeplrUR},
     {"rust test get connect xrp toolkit ur", RustGetConnectXrpToolKitUR},
+    {"rust test get connect dexrp ur", RustGetConnectDexrpUR},
     {"rust test connect metamask", RustGetConnectMetaMaskUR},
     {"rust test solana parse:", testSolanaParseTx},
     {"rust test xrp parse:", testXrpParseTx},
@@ -1882,6 +1884,26 @@ static void RustGetConnectXrpToolKitUR(int argc, char *argv[])
     } else {
         printf("XrpToolkit error_code is %s\r\n", ur->error_code);
         printf("XrpToolkit error_message is %s\r\n", ur->error_message);
+    }
+    free_ur_encode_result(ur);
+    PrintRustMemoryStatus();
+    printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
+}
+
+static void RustGetConnectDexrpUR(int argc, char *argv[])
+{
+    printf("RustGetConnectDexrpUR\r\n");
+    char *hd_path = "44'/144'/0'/0/0";
+    char *root_x_pub = "xpub6CFKyZTfzj3cyeRLUDKwQQ5s1tqTTdVgywKMVkrB2i1taGFbhazkxDzWVsfBHZpv7rg6qpDBGYR5oA8iazEfa44CdQkkknPFHJ7YCzncCS9";
+    char *root_path = "44'/144'/0'";
+    UREncodeResult *ur = get_connect_dexrp_ur(hd_path, root_x_pub, root_path);
+    printf("encode ur\r\n");
+    if (ur->error_code == 0) {
+        printf("Dexrp is_multi_part is %d\r\n", ur->is_multi_part);
+        printf("Dexrp data is %s\r\n", ur->data);
+    } else {
+        printf("Dexrp error_code is %s\r\n", ur->error_code);
+        printf("Dexrp error_message is %s\r\n", ur->error_message);
     }
     free_ur_encode_result(ur);
     PrintRustMemoryStatus();

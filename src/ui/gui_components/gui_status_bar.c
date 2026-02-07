@@ -168,6 +168,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_FEWCHA, "Fewcha", &walletFewcha},
     {WALLET_LIST_PETRA, "Petra", &walletPetra},
     {WALLET_LIST_XRP_TOOLKIT, "XRP Toolkit", &walletXRPToolkit},
+    {WALLET_LIST_DEXRP, "DEXrp", &walletDEXrp},
     {WALLET_LIST_THORWALLET, "THORWallet", &walletThorWallet},
     {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
     {WALLET_LIST_BEGIN, "Begin", &walletBegin},

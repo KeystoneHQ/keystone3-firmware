@@ -1,3 +1,29 @@
+
+## 2.3.8(2026-2-9)
+
+**Web3:**
+
+
+### What's new
+1. Supported managing BTC, LTC, BCH, DOGE, and TRON via Nabox
+2. Supported managing BTC via BULL
+
+**BTC Only:**
+
+
+### What's new
+1. Supported managing BTC via BULL
+2. Added support for Spanish, Japanese, and German languages
+
+**Cypherpunk:**
+
+
+### What's new
+1. Supported managing BTC via BULL
+
+
+
+
 ## 2.3.6(2026-1-22)
 
 **Web3:**

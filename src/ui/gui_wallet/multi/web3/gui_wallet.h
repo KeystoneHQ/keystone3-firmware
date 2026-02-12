@@ -30,6 +30,7 @@ UREncodeResult *GuiGetADADataByIndex(char *walletName);
 UREncodeResult *GuiGetImTokenData(void);
 UREncodeResult *GuiGetCoreWalletData(void);
 UREncodeResult *GuiGetThorWalletData(void);
+UREncodeResult *GuiGetKaspiumData(void);
 UREncodeResult *GuiGetKeystoneConnectWalletDataBip39(void);
 UREncodeResult *GuiGetKeystoneConnectWalletDataSlip39(void);
 #endif

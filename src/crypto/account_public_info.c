@@ -529,6 +529,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_STELLAR_4,             ED25519,       "stellar_4",                "M/44'/148'/4'"    },
     {XPUB_TYPE_TON_BIP39,             ED25519,       "ton_bip39",                "M/44'/607'/0'"    },
     {XPUB_TYPE_ZEC_TRANSPARENT_LEGACY, SECP256K1,     "zec_transparent_legacy",   "M/44'/133'/0'"    },
+    {XPUB_TYPE_KASPA_0,               SECP256K1,     "kaspa_0",                  "M/44'/111111'/0'" },
 #endif
 
 #ifdef CYPHERPUNK_VERSION

@@ -192,6 +192,7 @@ static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_DASH, "m/44'/5'/0'"},
     {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"},
     {HOME_WALLET_CARD_DOGE, "m/44'/3'/0'"},
+    {HOME_WALLET_CARD_KASPA, "m/44'/111111'/0'"},
 };
 #endif
 
@@ -223,6 +224,10 @@ static void InitDerivationPathDesc(uint8_t chain)
     case HOME_WALLET_CARD_LTC:
         g_derivationPathDescs = GetDerivationPathDescs(LTC_DERIVATION_PATH_DESC);
         g_addressSettingsNum = NUMBER_OF_ARRAYS(g_ltcAddressSettings);
+        break;
+    case HOME_WALLET_CARD_KASPA:
+        g_derivationPathDescs = NULL;
+        g_addressSettingsNum = 0;
         break;
 #endif
 #ifdef BTC_ONLY
@@ -325,6 +330,7 @@ static bool HasMoreBtn()
     case HOME_WALLET_CARD_BCH:
     case HOME_WALLET_CARD_DASH:
     case HOME_WALLET_CARD_DOGE:
+    case HOME_WALLET_CARD_KASPA:
         return false;
 #endif
     default:
@@ -411,6 +417,10 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
     case HOME_WALLET_CARD_DOGE:
         titleItem->type = CHAIN_DOGE;
         snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "DOGE");
+        break;
+    case HOME_WALLET_CARD_KASPA:
+        titleItem->type = CHAIN_KASPA;
+        snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "KAS");
         break;
 #endif
     default:
@@ -512,6 +522,9 @@ static void GuiCreateQrCodeWidget(lv_obj_t *parent)
     yOffset += 16;
     g_utxoReceiveWidgets.addressLabel = GuiCreateNoticeLabel(g_utxoReceiveWidgets.qrCodeCont, "");
     lv_obj_set_width(g_utxoReceiveWidgets.addressLabel, 336);
+    // lv_obj_set_height(g_utxoReceiveWidgets.addressLabel, 120);
+    // lv_obj_set_style_text_font(g_utxoReceiveWidgets.addressLabel, &lv_font_montserrat_14, 0);
+
     lv_obj_align(g_utxoReceiveWidgets.addressLabel, LV_ALIGN_TOP_MID, 0, yOffset);
     yOffset += 60;
 
@@ -590,6 +603,9 @@ static void GetHint(char *hint)
         break;
     case HOME_WALLET_CARD_DOGE:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "DOGE");
+        break;
+    case HOME_WALLET_CARD_KASPA:
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "KAS");
         break;
 #endif
     default:
@@ -843,6 +859,9 @@ static void RefreshDefaultAddress(void)
     case XPUB_TYPE_LTC_NATIVE_SEGWIT:
 #endif
         highlightEnd = 4;
+        break;
+    case XPUB_TYPE_KASPA_0:
+        highlightEnd = 6;
         break;
     default:
         highlightEnd = 1;
@@ -1117,21 +1136,48 @@ static void RefreshQrCode(void)
     if (fullscreen_qrcode) {
         lv_qrcode_update(fullscreen_qrcode, addressDataItem.address, strnlen_s(addressDataItem.address, ADDRESS_MAX_LEN));
     }
-    lv_label_set_text(g_utxoReceiveWidgets.addressLabel, addressDataItem.address);
+    // lv_label_set_text(g_utxoReceiveWidgets.addressLabel, addressDataItem.address);
+    
+    char displayBuf[256];
+    const char* rawAddr = addressDataItem.address;
+
+    if (strcmp(GetCoinCardByIndex(g_chainCard)->coin, "KAS") == 0 && strncmp(rawAddr, "kaspa:", 6) == 0) {
+        char addrPart1[21];
+        strncpy(addrPart1, rawAddr + 6, 20);
+        addrPart1[20] = '\0';
+
+        snprintf(displayBuf, sizeof(displayBuf), "kaspa:%s %s", addrPart1, rawAddr + 6 + 20);
+    } else {
+        strncpy(displayBuf, rawAddr, sizeof(displayBuf) - 1);
+    }
+    lv_label_set_text(g_utxoReceiveWidgets.addressLabel, displayBuf);
+
     lv_label_set_text_fmt(g_utxoReceiveWidgets.addressCountLabel, "%s-%u", _("Address"), addressDataItem.index);
     lv_obj_align_to(g_utxoReceiveWidgets.addressCountLabel, g_utxoReceiveWidgets.addressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
+if (strcmp(GetCoinCardByIndex(g_chainCard)->coin, "KAS") == 0)
+    {
+        lv_obj_add_flag(g_utxoReceiveWidgets.pathLabel, LV_OBJ_FLAG_HIDDEN);
+    }
+    else
+    {
+        lv_obj_clear_flag(g_utxoReceiveWidgets.pathLabel, LV_OBJ_FLAG_HIDDEN);
+
 #if BTC_ONLY
-    if (GetCurrentWalletIndex() == SINGLE_WALLET) {
+        if (GetCurrentWalletIndex() == SINGLE_WALLET)
+        {
+            lv_label_set_text(g_utxoReceiveWidgets.pathLabel, addressDataItem.path);
+            lv_obj_align_to(g_utxoReceiveWidgets.pathLabel, g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        }
+        else
+        {
+            lv_obj_align(g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_TOP_LEFT, 36, 480);
+        }
+#else
         lv_label_set_text(g_utxoReceiveWidgets.pathLabel, addressDataItem.path);
         lv_obj_align_to(g_utxoReceiveWidgets.pathLabel, g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
-    } else {
-        lv_obj_align(g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_TOP_LEFT, 36, 480);
-    }
-#else
-    lv_label_set_text(g_utxoReceiveWidgets.pathLabel, addressDataItem.path);
-    lv_obj_align_to(g_utxoReceiveWidgets.pathLabel, g_utxoReceiveWidgets.addressCountLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
 #endif
+    }
 }
 
 static void RefreshSwitchAccount(void)
@@ -1493,6 +1539,8 @@ static ChainType GetChainTypeByIndex(uint32_t index)
         return XPUB_TYPE_BCH;
     case HOME_WALLET_CARD_DOGE:
         return XPUB_TYPE_DOGE;
+    case HOME_WALLET_CARD_KASPA:
+        return XPUB_TYPE_KASPA_0;
 #endif
     default:
         break;
@@ -1544,6 +1592,9 @@ static void GetRootHdPath(char *hdPath, uint32_t maxLen)
     case HOME_WALLET_CARD_DOGE:
         strcpy_s(hdPath, maxLen, g_chainPathItems[4].path);
         break;
+    case HOME_WALLET_CARD_KASPA:
+        strcpy_s(hdPath, maxLen, g_chainPathItems[5].path);
+        break;
 #endif
     default:
         break;
@@ -1566,20 +1617,40 @@ static void ModelGetUtxoAddress(uint32_t index, AddressDataItem_t *item)
     }
 #endif
     ChainType chainType;
-    uint8_t addrType = g_addressType[g_currentAccountIndex];
-    if (g_utxoReceiveTileNow == UTXO_RECEIVE_TILE_ADDRESS_SETTINGS) {
-        addrType = g_selectType;
+    if (g_chainCard == HOME_WALLET_CARD_KASPA) {
+        chainType = XPUB_TYPE_KASPA_0;
+    } else {
+        uint8_t addrType = g_addressType[g_currentAccountIndex];
+        chainType = GetChainTypeByIndex(addrType);
     }
-    chainType = GetChainTypeByIndex(addrType);
+
     xPub = GetCurrentAccountPublicKey(chainType);
+    if (xPub == NULL) {
+        strcpy_s(item->address, ADDRESS_MAX_LEN, "xPub Error");
+        return;
+    }
     ASSERT(xPub);
-    SimpleResponse_c_char *result;
-    do {
+    SimpleResponse_c_char *result = NULL;
+
+    if (g_chainCard == HOME_WALLET_CARD_KASPA) {
+        char relativePath[32];
+        snprintf_s(relativePath, sizeof(relativePath), "0/%u", index);
+        result = kaspa_get_address(xPub, relativePath);
+    } else {
         result = utxo_get_address(hdPath, xPub);
-        CHECK_CHAIN_BREAK(result);
-    } while (0);
-    strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
-    free_simple_response_c_char(result);
+    }
+
+    if (result != NULL) {
+        if (result->error_code == 0 && result->data != NULL) {
+            strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
+        } else {
+            snprintf_s(item->address, ADDRESS_MAX_LEN, "Err: %s", 
+                      result->error_message ? result->error_message : "Unknown");
+        }
+        free_simple_response_c_char(result);
+    } else {
+        strcpy_s(item->address, ADDRESS_MAX_LEN, "Rust Logic Error");
+    }
 }
 
 void GuiResetCurrentUtxoAddressIndex(uint8_t index)

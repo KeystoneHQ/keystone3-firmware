@@ -203,6 +203,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "kaspa")]
+        impl From<app_kaspa::errors::KaspaError> for $name {
+            fn from(value: app_kaspa::errors::KaspaError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 
     ($name:ident<$t:ident>) => {
@@ -336,6 +342,12 @@ macro_rules! impl_new_error {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }
+        #[cfg(feature = "kaspa")]
+        impl<$t: Free> From<app_kaspa::errors::KaspaError> for $name<$t> {
+            fn from(value: app_kaspa::errors::KaspaError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
     };
 }
 
@@ -461,6 +473,12 @@ macro_rules! impl_simple_new_error {
         #[cfg(feature = "monero")]
         impl<$t> From<app_monero::errors::MoneroError> for $name<$t> {
             fn from(value: app_monero::errors::MoneroError) -> Self {
+                Self::error(ErrorCodes::from(&value), value.to_string())
+            }
+        }
+        #[cfg(feature = "kaspa")]
+        impl<$t> From<app_kaspa::errors::KaspaError> for $name<$t> {
+            fn from(value: app_kaspa::errors::KaspaError) -> Self {
                 Self::error(ErrorCodes::from(&value), value.to_string())
             }
         }

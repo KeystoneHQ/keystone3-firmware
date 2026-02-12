@@ -67,6 +67,8 @@ use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 use ur_registry::tron::tron_sign_request::TronSignRequest;
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
+#[cfg(feature = "kaspa")]
+use ur_registry::kaspa::kaspa_pskt::KaspaPskt;
 
 use super::ur::ViewType;
 
@@ -422,6 +424,13 @@ impl InferViewType for QRHardwareCall {
         match self.get_call_type() {
             CallType::KeyDerivation => Ok(ViewType::KeyDerivationRequest),
         }
+    }
+}
+
+#[cfg(feature = "kaspa")]
+impl InferViewType for KaspaPskt {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::KaspaTx) 
     }
 }
 

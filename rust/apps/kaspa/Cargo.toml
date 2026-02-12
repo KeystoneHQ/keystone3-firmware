@@ -1,0 +1,25 @@
+[package]
+name = "app_kaspa"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+keystore = { workspace = true, default-features = false }
+app_utils = { workspace = true }
+rust_tools = { workspace = true }
+either = { workspace = true, default-features = false }
+itertools = { workspace = true }
+bitcoin = { workspace = true }
+thiserror = { workspace = true }
+core2 = { workspace = true }
+bitcoin_hashes = { workspace = true }
+hex = { workspace = true }
+ur-registry = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+blake2b_simd = { workspace = true }
+
+[features]
+no_std = []
+default = ["std"]
+std = []

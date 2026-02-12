@@ -58,6 +58,7 @@ app_zcash = { workspace = true, optional = true }
 app_monero = { workspace = true, optional = true }
 app_avalanche = { workspace = true, optional = true }
 app_iota = { workspace = true, optional = true }
+app_kaspa = { workspace = true, optional = true }
 [lib]
 crate-type = ["staticlib"]
 
@@ -97,6 +98,7 @@ zcash_cypherpunk = [
 monero = ["dep:app_monero"]
 avalanche = ["dep:app_avalanche"]
 iota = ["dep:app_iota"]
+kaspa = ["dep:app_kaspa"]
 test_cmd = []
 
 debug-memory = ["multi-coins"]
@@ -121,6 +123,7 @@ multi-coins = [
     "xrp",
     "avalanche",
     "iota",
+    "kaspa",
     "zcash_multi_coins",
     "keystore/multi_coins",
 ]

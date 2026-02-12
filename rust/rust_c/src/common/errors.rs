@@ -238,6 +238,9 @@ pub enum ErrorCodes {
     // Iota
     IotaError = 1800,
     IotaInvalidData,
+
+    // Kaspa
+    KaspaError = 1900,
     IotaProgramError,
     IotaAccountNotFound,
     IotaParseTxError,
@@ -592,6 +595,13 @@ impl From<&ZcashError> for ErrorCodes {
 impl From<&MoneroError> for ErrorCodes {
     fn from(value: &MoneroError) -> Self {
         Self::MoneroUnknownError
+    }
+}
+
+#[cfg(feature = "kaspa")]
+impl From<&app_kaspa::errors::KaspaError> for ErrorCodes {
+    fn from(_value: &app_kaspa::errors::KaspaError) -> Self {
+        Self::KaspaError
     }
 }
 

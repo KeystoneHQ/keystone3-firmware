@@ -242,6 +242,8 @@ LV_IMG_DECLARE(coinBabylon);
 LV_IMG_DECLARE(coinNeutaro)
 LV_IMG_DECLARE(coinAo);
 LV_IMG_DECLARE(coinIota);
+LV_IMG_DECLARE(coinKaspa);
+
 
 // wallet
 LV_IMG_DECLARE(walletKeystone);
@@ -295,6 +297,7 @@ LV_IMG_DECLARE(walletMedusa);
 LV_IMG_DECLARE(walletIota);
 LV_IMG_DECLARE(walletNabox);
 LV_IMG_DECLARE(walletJupiter);
+LV_IMG_DECLARE(walletKaspium);
 
 // font
 LV_FONT_DECLARE(openSans_20);

@@ -660,6 +660,8 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiBtcTxDetail;
     } else if (!strcmp(funcName, "GuiBtcMsg")) {
         return GuiBtcMsg;
+    } else if (!strcmp(funcName, "GuiCreateKaspaTemplate")) {
+        return GuiCreateKaspaTemplate;
     }
 
     return GetOtherChainCustomFunc(funcName);

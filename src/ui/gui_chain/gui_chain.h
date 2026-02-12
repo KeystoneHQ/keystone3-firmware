@@ -20,6 +20,7 @@
 #include "gui_ton.h"
 #include "gui_avax.h"
 #include "gui_iota.h"
+#include "gui_kaspa.h"
 #else
 #include "gui_monero.h"
 #endif
@@ -51,6 +52,7 @@ typedef enum {
     CHAIN_DASH,
     CHAIN_ARWEAVE,
     CHAIN_STELLAR,
+    CHAIN_KASPA,
 
     // cosmos start
     CHAIN_BABYLON,
@@ -134,6 +136,7 @@ typedef enum {
     REMAPVIEW_TON_SIGNPROOF,
     REMAPVIEW_AVAX,
     REMAPVIEW_ZCASH,
+    REMAPVIEW_KASPA,
 #endif
 
 #ifdef CYPHERPUNK_VERSION

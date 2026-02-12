@@ -41,6 +41,9 @@ mod bitcoin;
 #[cfg(feature = "cardano")]
 #[allow(unused)]
 mod cardano;
+#[cfg(feature = "kaspa")]
+#[allow(unused)]
+mod kaspa;
 #[cfg(feature = "cosmos")]
 #[allow(unused)]
 mod cosmos;

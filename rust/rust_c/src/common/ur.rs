@@ -71,6 +71,8 @@ use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use ur_registry::ton::ton_sign_request::TonSignRequest;
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
+#[cfg(feature = "kaspa")]
+use ur_registry::kaspa::kaspa_pskt::KaspaPskt;
 
 use super::errors::{ErrorCodes, RustCError};
 use super::free::Free;
@@ -279,6 +281,8 @@ pub enum ViewType {
     XmrTxUnsigned,
     #[cfg(feature = "avalanche")]
     AvaxTx,
+    #[cfg(feature = "kaspa")]
+    KaspaTx,
     WebAuthResult,
     #[cfg(not(feature = "btc-only"))]
     KeyDerivationRequest,
@@ -359,6 +363,8 @@ pub enum QRCodeType {
     XmrOutputSignRequest,
     #[cfg(feature = "monero")]
     XmrTxUnsignedRequest,
+    #[cfg(feature = "kaspa")]
+    KaspaPskt,
     URTypeUnKnown,
 }
 
@@ -427,6 +433,8 @@ impl QRCodeType {
             InnerURType::XmrOutput(_) => Ok(QRCodeType::XmrOutputSignRequest),
             #[cfg(feature = "avalanche")]
             InnerURType::AvaxSignRequest(_) => Ok(QRCodeType::AvaxSignRequest),
+            #[cfg(feature = "kaspa")]
+            InnerURType::KaspaPskt(_) => Ok(QRCodeType::KaspaPskt),
             #[cfg(not(feature = "btc-only"))]
             InnerURType::QRHardwareCall(_) => Ok(QRCodeType::QRHardwareCall),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
@@ -602,6 +610,11 @@ unsafe fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
         // todo
         QRCodeType::AvaxSignRequest => {
             free_ptr_with_type!(data, AvaxSignRequest);
+        }
+        // TODO: Uncomment when ur-registry adds Kaspa types
+        #[cfg(feature = "kaspa")]
+        QRCodeType::KaspaPskt => {
+            free_ptr_with_type!(data, KaspaPskt);
         }
         #[cfg(not(feature = "btc-only"))]
         QRCodeType::QRHardwareCall => {
@@ -782,6 +795,9 @@ pub fn decode_ur(ur: String) -> URParseResult {
         QRCodeType::XmrTxUnsignedRequest => _decode_ur::<XmrTxUnsigned>(ur, ur_type),
         #[cfg(feature = "avalanche")]
         QRCodeType::AvaxSignRequest => _decode_ur::<AvaxSignRequest>(ur, ur_type),
+        // TODO: Uncomment when ur-registry adds Kaspa types
+        #[cfg(feature = "kaspa")]
+        QRCodeType::KaspaPskt => _decode_ur::<KaspaPskt>(ur, ur_type),
         #[cfg(not(feature = "btc-only"))]
         QRCodeType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseResult::from(
@@ -892,6 +908,9 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         QRCodeType::XmrTxUnsignedRequest => _receive_ur::<XmrTxUnsigned>(ur, ur_type, decoder),
         #[cfg(feature = "avalanche")]
         QRCodeType::AvaxSignRequest => _receive_ur::<AvaxSignRequest>(ur, ur_type, decoder),
+        // TODO: Uncomment when ur-registry adds Kaspa types
+        #[cfg(feature = "kaspa")]
+        QRCodeType::KaspaPskt => _receive_ur::<KaspaPskt>(ur, ur_type, decoder),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseMultiResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),
         ),

@@ -176,6 +176,10 @@ static const lv_img_dsc_t *g_tonKeeperCoinArray[1] = {
     &coinTon,
 };
 
+static const lv_img_dsc_t *g_kaspiumCoinArray[1] = {
+    &coinKaspa,
+};
+
 static const lv_img_dsc_t *g_ThorWalletCoinArray[3] = {
     // todo thorchain will support bitcoin later
     // &coinBtc,
@@ -212,6 +216,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_HELIUM, &walletHelium, "Helium Wallet", g_heliumCoinArray, 2, true, WALLET_FILTER_SOL},
     {WALLET_LIST_BTC_WALLET, &coinBtc, "Bitcoin Wallets", g_btcWalletCoinArray, 4, true, WALLET_FILTER_BTC},
     {WALLET_LIST_TONKEEPER, &walletTonkeeper, "Tonkeeper", g_tonKeeperCoinArray, 1, false, WALLET_FILTER_OTHER},
+    {WALLET_LIST_KASPIUM, &walletKaspium, "Kaspium", g_kaspiumCoinArray, 1, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_RABBY, &walletRabby, "Rabby", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_NABOX, &walletNabox, "Nabox", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BITGET, &walletBitget, "Bitget Wallet", g_bitgetWalletCoinArray, 3, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
@@ -1257,6 +1262,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_TONKEEPER:
         func = GuiGetTonData;
         AddCoinsFromArray(g_tonKeeperCoinArray, NUMBER_OF_ARRAYS(g_tonKeeperCoinArray), false, 0);
+        break;
+    case WALLET_LIST_KASPIUM:
+        func = GuiGetKaspiumData;
+        AddCoinsFromArray(g_kaspiumCoinArray, NUMBER_OF_ARRAYS(g_kaspiumCoinArray), false, 0);
         break;
     case WALLET_LIST_KEYSTONE:
         // todo  add keystone ur logic

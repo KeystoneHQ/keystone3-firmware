@@ -26,6 +26,8 @@ pub mod tonkeeper;
 mod utils;
 pub mod xrp_toolkit;
 pub mod zcash;
+pub mod kaspium;
+
 //TODO: get these value from device
 pub const DEVICE_TYPE: &str = "Keystone 3 Pro";
 pub const DESCRIPTION: &str = "keystone qrcode";

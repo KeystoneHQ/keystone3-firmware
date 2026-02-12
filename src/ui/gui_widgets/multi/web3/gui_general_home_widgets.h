@@ -14,6 +14,7 @@
                                        HOME_WALLET_CARD_TRX,     \
                                        HOME_WALLET_CARD_LTC,     \
                                        HOME_WALLET_CARD_DOGE,    \
+                                       HOME_WALLET_CARD_KASPA,   \
                                        HOME_WALLET_CARD_AVAX,    \
                                        HOME_WALLET_CARD_BCH,     \
                                        HOME_WALLET_CARD_APT,     \
@@ -72,6 +73,7 @@
         {HOME_WALLET_CARD_TRX, false, "TRX", true},       \
         {HOME_WALLET_CARD_LTC, false, "LTC", true},       \
         {HOME_WALLET_CARD_DOGE, false, "DOGE", true},     \
+        {HOME_WALLET_CARD_KASPA, false, "KAS", true},     \
         {HOME_WALLET_CARD_AVAX, false, "AVAX", true},     \
         {HOME_WALLET_CARD_BCH, false, "BCH", true},       \
         {HOME_WALLET_CARD_APT, false, "APT", true},       \
@@ -198,6 +200,12 @@
             .coin = "DOGE",                    \
             .chain = "Dogecoin",               \
             .icon = &coinDoge,                 \
+        },                                     \
+        {                                      \
+            .index = HOME_WALLET_CARD_KASPA,   \
+            .coin = "KAS",                     \
+            .chain = "Kaspa",                  \
+            .icon = &coinKaspa,                \
         },                                     \
         {                                      \
             .index = HOME_WALLET_CARD_AVAX,    \

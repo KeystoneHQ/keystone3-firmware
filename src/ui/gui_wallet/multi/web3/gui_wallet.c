@@ -744,3 +744,22 @@ UREncodeResult *GuiGetThorWalletData(void)
     SRAM_FREE(public_keys);
     return urEncode;
 }
+
+UREncodeResult *GuiGetKaspiumData(void)
+{
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+
+    ExtendedPublicKey keys[1];
+    keys[0].path = "m/44'/111111'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_KASPA_0);
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    public_keys->data = keys;
+    public_keys->size = 1;
+    char firmwareVersion[12];
+    GetSoftWareVersionNumber(firmwareVersion);
+    UREncodeResult *urEncode = get_connect_kaspa_ur(mfp, sizeof(mfp), public_keys);
+    CHECK_CHAIN_PRINT(urEncode);
+    SRAM_FREE(public_keys);
+    return urEncode;
+}

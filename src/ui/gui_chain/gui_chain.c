@@ -36,6 +36,7 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_ADA_CATALYST:
     case REMAPVIEW_APT:
     case REMAPVIEW_AVAX:
+    case REMAPVIEW_KASPA:
         return true;
     default:
         return false;
@@ -101,6 +102,8 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
     {TonTx, GuiGetTonSignQrCodeData, NULL, GuiGetTonCheckResult, CHAIN_TON, REMAPVIEW_TON},
     {TonSignProof, GuiGetTonProofSignQrCodeData, NULL, GuiGetTonCheckResult, CHAIN_TON, REMAPVIEW_TON_SIGNPROOF},
     {ZcashTx, GuiGetZcashSignQrCodeData, NULL, GuiGetZcashCheckResult, CHAIN_ZCASH, REMAPVIEW_ZCASH},
+    
+    {KaspaTx, GuiGetKaspaSignQrCodeData, NULL, GuiGetKaspaCheckResult, CHAIN_KASPA, REMAPVIEW_KASPA},
 #endif
 
 #ifdef CYPHERPUNK_VERSION

@@ -180,6 +180,13 @@
         GuiGetZcashGUIData, \
         NULL, \
         FreeZcashMemory, \
+    },\
+    { \
+        REMAPVIEW_KASPA, \
+        "{\"type\":\"custom_container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiCreateKaspaTemplate\"}]}", \
+        GuiGetParsedKaspaTx, \
+        NULL, \
+        GuiClearKaspaData, \
     }
 #endif
 #endif

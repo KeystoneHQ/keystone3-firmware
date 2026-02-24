@@ -271,6 +271,13 @@ extern bool g_reboot;
         GuiGetZcashGUIData, \
         NULL, \
         FreeZcashMemory, \
+    }, \
+    { \
+        REMAPVIEW_KASPA, \
+        PC_SIMULATOR_PATH "/page_kaspa.json", \
+        GuiGetParsedKaspaTx, \
+        NULL, \
+        GuiClearKaspaData, \
     }
 #endif
 

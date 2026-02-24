@@ -3,11 +3,11 @@ use core::str::FromStr;
 use alloc::string::{String, ToString};
 use bitcoin::bip32::{ChildNumber, DerivationPath};
 use rand_core::{CryptoRng, RngCore};
-use zcash_vendor::{
-    zcash_keys::keys::UnifiedSpendingKey,
-    zcash_protocol::consensus,
-    zip32::{self, fingerprint::SeedFingerprint},
-};
+use zcash_vendor::zcash_protocol::consensus;
+use zcash_vendor::zip32::{self, fingerprint::SeedFingerprint};
+
+#[cfg(feature = "multi_coins")]
+use zcash_vendor::zcash_keys::keys::UnifiedSpendingKey;
 
 use crate::algorithms::utils::is_all_zero_or_ff;
 
@@ -19,6 +19,7 @@ use zcash_vendor::orchard::{
 
 use crate::errors::{KeystoreError, Result};
 
+#[cfg(feature = "multi_coins")]
 pub fn derive_ufvk<P: consensus::Parameters>(
     params: &P,
     seed: &[u8],
@@ -53,6 +54,14 @@ pub fn derive_ufvk<P: consensus::Parameters>(
             "invalid account path: {account_path}"
         ))),
     }
+}
+
+// When `multi_coins` feature is disabled, expose a stub that returns an explicit error
+#[cfg(not(feature = "multi_coins"))]
+pub fn derive_ufvk<P: consensus::Parameters>(_params: &P, _seed: &[u8], _account_path: &str) -> Result<String> {
+    Err(KeystoreError::DerivationError(
+        "zcash support disabled: enable `keystore/multi_coins` feature to use derive_ufvk".into(),
+    ))
 }
 
 fn ensure_non_trivial_seed(seed: &[u8]) -> Result<()> {

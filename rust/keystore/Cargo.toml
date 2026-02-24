@@ -27,7 +27,7 @@ zeroize = { workspace = true }
 default = ["std", "multi_coins"]
 std = []
 rsa = []
-multi_coins = ["zcash_vendor/multi_coins"]
+multi_coins = ["zcash_vendor/multi_coins", "zcash_vendor/transparent"]
 cypherpunk = ["zcash_vendor/cypherpunk"]
 
 [lints.rust]

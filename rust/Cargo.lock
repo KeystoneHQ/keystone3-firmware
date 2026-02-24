@@ -277,6 +277,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "app_kaspa"
+version = "0.1.0"
+dependencies = [
+ "app_utils",
+ "bitcoin",
+ "bitcoin_hashes 0.14.0",
+ "blake2b_simd",
+ "core2",
+ "either",
+ "hex",
+ "itertools 0.13.0",
+ "keystore",
+ "rust_tools",
+ "serde",
+ "serde_json",
+ "thiserror-core",
+ "ur-registry",
+]
+
+[[package]]
 name = "app_monero"
 version = "0.1.0"
 dependencies = [
@@ -2490,7 +2510,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
- "windows-targets 0.53.2",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -3766,6 +3786,7 @@ dependencies = [
  "app_cosmos",
  "app_ethereum",
  "app_iota",
+ "app_kaspa",
  "app_monero",
  "app_near",
  "app_solana",
@@ -4725,7 +4746,6 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.1"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.56#c526d9ccd9b47b978797a038d77ddd406ac91ec5"
 dependencies = [
  "bs58",
  "core2",

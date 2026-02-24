@@ -92,7 +92,7 @@ void *GuiGetParsedKaspaTx(void)
         free_TransactionParseResult_DisplayKaspaTx(g_parseResult);
         g_parseResult = NULL;
     }
-    void *ur_ptr = g_isMulti ? (void*)g_urMultiResult : (void*)g_urResult;
+    void *ur_ptr = g_isMulti ? g_urMultiResult->data : g_urResult->data;
 
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
@@ -154,7 +154,7 @@ UREncodeResult *GuiGetKaspaSignQrCodeData(void)
 TransactionCheckResult *GuiGetKaspaCheckResult(void)
 {
     // Parse transaction
-    void *ur_ptr = g_isMulti ? (void*)g_urMultiResult : (void*)g_urResult;
+    void *ur_ptr = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     if (ur_ptr == NULL) return NULL;
 
     uint8_t mfp[4];
@@ -175,212 +175,254 @@ void GuiClearKaspaData(void)
 }
 
 // ============ UI Component Creation Functions ============
-
-// Create Kaspa input item
-static void CreateKaspaInputItem(lv_obj_t *parent, DisplayKaspaInput *input, int index)
+static void SetContainerDefaultStyle(lv_obj_t *container)
 {
-    char title[32];
-    snprintf(title, sizeof(title), "Input #%d", index + 1);
-    
-    // Create input container
-    lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
-    lv_obj_set_style_bg_color(container, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_radius(container, 24, LV_PART_MAIN);
-    lv_obj_set_style_pad_all(container, 24, LV_PART_MAIN);
-    
-    // Title
-    lv_obj_t *label = GuiCreateNoticeLabel(container, title);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
-    
-    // Address
-    label = GuiCreateNoticeLabel(container, "Address:");
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 36);
-    
-    label = GuiCreateIllustrateLabel(container, input->address);
-    lv_obj_set_width(label, 360);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 64);
-    
-    // Amount
-    label = GuiCreateNoticeLabel(container, "Amount:");
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 128);
-    
-    label = GuiCreateIllustrateLabel(container, input->amount);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 156);
+    lv_obj_set_style_radius(container, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(container, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(container, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
-// Create Kaspa inputs list
-static void GuiCreateKaspaInputsList(lv_obj_t *parent, DisplayKaspaTx *tx)
+static void SetTitleLabelStyle(lv_obj_t *label)
 {
-    lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
-    
-    // Title
-    lv_obj_t *label = GuiCreateTitleLabel(container, "Inputs");
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
-    
-    // Total count
-    char countStr[64];
-    snprintf(countStr, sizeof(countStr), "Total: %d input(s)", tx->inputs.size);
-    label = GuiCreateNoticeLabel(container, countStr);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 40);
-    
-    // Create each input item
-    int yOffset = 80;
-    for (int i = 0; i < tx->inputs.size; i++) {
-        lv_obj_t *inputItem = lv_obj_create(container);
-        lv_obj_set_pos(inputItem, 0, yOffset);
-        CreateKaspaInputItem(inputItem, &tx->inputs.data[i], i);
-        yOffset += 220; // Adjust based on actual height
-    }
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
-// Create Kaspa output item
-static void CreateKaspaOutputItem(lv_obj_t *parent, DisplayKaspaOutput *output, int index)
+static void SetContentLabelStyle(lv_obj_t *label)
 {
-    char title[64];
-    if (output->is_external) {
-        snprintf(title, sizeof(title), "Output #%d (Change)", index + 1);
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
+}
+
+static lv_obj_t *CreateKaspaDetailAmountView(lv_obj_t *parent, DisplayKaspaTx *tx, lv_obj_t *lastView)
+{
+    lv_obj_t *amountContainer = GuiCreateContainerWithParent(parent, 408, 138);
+    lv_obj_align_to(amountContainer, lastView, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
+    SetContainerDefaultStyle(amountContainer);
+
+    // --- Input Value ---
+    lv_obj_t *label = lv_label_create(amountContainer);
+    lv_label_set_text(label, "Input Value");
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
+    SetTitleLabelStyle(label);
+
+    lv_obj_t *inputValue = lv_label_create(amountContainer);
+    lv_label_set_text(inputValue, tx->total_spend); 
+    lv_obj_align_to(inputValue, label, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    SetContentLabelStyle(inputValue);
+
+    // --- Output Value ---
+    lastView = label;
+    label = lv_label_create(amountContainer);
+    lv_label_set_text(label, "Output Value");
+    lv_obj_align_to(label, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    SetTitleLabelStyle(label);
+
+    lv_obj_t *outputValue = lv_label_create(amountContainer);
+    // Output Value = Total - Fee
+    lv_label_set_text(outputValue, tx->total_spend); 
+    lv_obj_align_to(outputValue, label, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    SetContentLabelStyle(outputValue);
+
+    // --- Fee ---
+    lastView = label;
+    label = lv_label_create(amountContainer);
+    lv_label_set_text(label, "Fee");
+    lv_obj_align_to(label, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    SetTitleLabelStyle(label);
+
+    lv_obj_t *feeValue = lv_label_create(amountContainer);
+    char fee_buf[64];
+    snprintf(fee_buf, sizeof(fee_buf), "%llu KAS", (unsigned long long)tx->fee);
+    lv_label_set_text(feeValue, fee_buf);
+    lv_obj_align_to(feeValue, label, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    SetContentLabelStyle(feeValue);
+
+    return amountContainer;
+}
+
+static lv_obj_t *CreateKaspaOverviewAmountView(lv_obj_t *parent, DisplayKaspaTx *tx, lv_obj_t *lastView)
+{
+    lv_obj_t *amountContainer = GuiCreateContainerWithParent(parent, 408, 144);
+    if (lastView == NULL) {
+        lv_obj_align(amountContainer, LV_ALIGN_TOP_MID, 0, 0);
     } else {
-        snprintf(title, sizeof(title), "Output #%d", index + 1);
+        lv_obj_align_to(amountContainer, lastView, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
     }
-    
-    // Create output container
-    lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
-    lv_obj_set_style_bg_color(container, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_radius(container, 24, LV_PART_MAIN);
-    lv_obj_set_style_pad_all(container, 24, LV_PART_MAIN);
-    
-    // Title (mark if it's change output)
-    lv_obj_t *label = GuiCreateNoticeLabel(container, title);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
-    if (output->is_external) {
-        lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN); // Cyan color indicates change
-    }
-    
-    // Address
-    label = GuiCreateNoticeLabel(container, "Address:");
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 36);
-    
-    label = GuiCreateIllustrateLabel(container, output->address);
-    lv_obj_set_width(label, 360);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 64);
-    
-    // Amount
-    label = GuiCreateNoticeLabel(container, "Amount:");
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 128);
-    
-    label = GuiCreateIllustrateLabel(container, output->amount);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 156);
+    SetContainerDefaultStyle(amountContainer);
+
+    lv_obj_t *label = lv_label_create(amountContainer);
+    lv_label_set_text(label, "Amount");
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
+    SetTitleLabelStyle(label);
+
+    lv_obj_t *amountValue = lv_label_create(amountContainer);
+    lv_label_set_text(amountValue, tx->total_spend);
+    lv_obj_align_to(amountValue, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+    lv_obj_set_style_text_font(amountValue, &openSansEnLittleTitle, LV_PART_MAIN);
+    lv_obj_set_style_text_color(amountValue, lv_color_hex(0xF5870A), LV_PART_MAIN);
+
+    lv_obj_t *feeLabel = lv_label_create(amountContainer);
+    lv_label_set_text(feeLabel, "Fee");
+    lv_obj_align_to(feeLabel, amountValue, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    SetTitleLabelStyle(feeLabel);
+
+    lv_obj_t *feeValue = lv_label_create(amountContainer);
+    char fee_buf[64];
+    snprintf(fee_buf, sizeof(fee_buf), "%llu KAS", (unsigned long long)tx->fee);
+    lv_label_set_text(feeValue, fee_buf);
+    lv_obj_align_to(feeValue, feeLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    SetContentLabelStyle(feeValue);
+
+    return amountContainer;
 }
 
-// Create Kaspa outputs list
-static void GuiCreateKaspaOutputsList(lv_obj_t *parent, DisplayKaspaTx *tx)
+static lv_obj_t *CreateKaspaDetailListView(lv_obj_t *parent, DisplayKaspaTx *tx, bool isInput, lv_obj_t *lastView)
 {
-    lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
-    
-    // Title
-    lv_obj_t *label = GuiCreateTitleLabel(container, "Outputs");
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
-    
-    // Total count
-    char countStr[64];
-    snprintf(countStr, sizeof(countStr), "Total: %d output(s)", tx->outputs.size);
-    label = GuiCreateNoticeLabel(container, countStr);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 40);
-    
-    // Create each output item
-    int yOffset = 80;
-    for (int i = 0; i < tx->outputs.size; i++) {
-        lv_obj_t *outputItem = lv_obj_create(container);
-        lv_obj_set_pos(outputItem, 0, yOffset);
-        CreateKaspaOutputItem(outputItem, &tx->outputs.data[i], i);
-        yOffset += 220; // Adjust based on actual height
+    lv_obj_t *mainContainer = GuiCreateContainerWithParent(parent, 408, 0);
+    SetContainerDefaultStyle(mainContainer);
+    lv_obj_align_to(mainContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+
+    lv_obj_t *titleLabel = lv_label_create(mainContainer);
+    lv_label_set_text(titleLabel, isInput ? "From" : "To");
+    lv_obj_align(titleLabel, LV_ALIGN_DEFAULT, 24, 16);
+    SetTitleLabelStyle(titleLabel);
+
+    lv_obj_t *currLastView = titleLabel;
+    int totalHeight = 56;
+    int count = isInput ? tx->inputs.size : tx->outputs.size;
+
+    for (int i = 0; i < count; i++) {
+        lv_obj_t *itemCont = GuiCreateContainerWithParent(mainContainer, 360, 0);
+        lv_obj_set_style_bg_opa(itemCont, 0, LV_PART_MAIN);
+
+        lv_obj_t *order = lv_label_create(itemCont);
+        lv_label_set_text_fmt(order, "%d", i + 1);
+        lv_obj_align(order, LV_ALIGN_DEFAULT, 0, 0);
+        SetTitleLabelStyle(order);
+
+        lv_obj_t *amount = lv_label_create(itemCont);
+        lv_label_set_text(amount, isInput ? tx->inputs.data[i].amount : tx->outputs.data[i].amount);
+        lv_obj_set_style_text_color(amount, lv_color_hex(0xf5870a), LV_PART_MAIN);
+        lv_obj_align_to(amount, order, LV_ALIGN_OUT_RIGHT_TOP, 16, 0);
+
+        lv_obj_t *addr = lv_label_create(itemCont);
+        lv_obj_set_width(addr, 332);
+        lv_label_set_long_mode(addr, LV_LABEL_LONG_WRAP);
+        lv_label_set_text(addr, isInput ? tx->inputs.data[i].address : tx->outputs.data[i].address);
+        SetContentLabelStyle(addr);
+        lv_obj_align_to(addr, order, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+        lv_obj_update_layout(addr);
+
+        int itemHeight = lv_obj_get_y2(addr);
+        lv_obj_set_height(itemCont, itemHeight);
+        lv_obj_align_to(itemCont, currLastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+
+        totalHeight += (itemHeight + 8);
+        currLastView = itemCont;
     }
+
+    lv_obj_set_height(mainContainer, totalHeight + 16);
+    return mainContainer;
 }
 
-// Create Kaspa transaction summary
-static void GuiCreateKaspaTransactionSummary(lv_obj_t *parent, DisplayKaspaTx *tx)
+static lv_obj_t *CreateNetworkView(lv_obj_t *parent, char *network, lv_obj_t *lastView)
 {
-    lv_obj_t *container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
-    lv_obj_set_style_bg_color(container, DARK_BG_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_radius(container, 24, LV_PART_MAIN);
-    lv_obj_set_style_pad_all(container, 24, LV_PART_MAIN);
-    
-    // Title
-    lv_obj_t *label = GuiCreateTitleLabel(container, "Transaction Summary");
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
-    
-    int yOffset = 50;
-    
-    // Network
-    label = GuiCreateNoticeLabel(container, "Network:");
-    lv_obj_set_pos(label, 0, yOffset);
-    
-    label = GuiCreateIllustrateLabel(container, tx->network);
-    lv_obj_set_pos(label, 0, yOffset + 28);
-    
-    yOffset += 80;
-    
-    // Total spend
-    label = GuiCreateNoticeLabel(container, "Total Spend:");
-    lv_obj_set_pos(label, 0, yOffset);
-    
-    char totalSpendStr[128];
-    snprintf(totalSpendStr, sizeof(totalSpendStr), "%s KAS", tx->total_spend);
-    label = GuiCreateIllustrateLabel(container, totalSpendStr);
-    lv_obj_set_style_text_color(label, lv_color_hex(0xFF9500), LV_PART_MAIN); // Orange color
-    lv_obj_set_pos(label, 0, yOffset + 28);
-    
-    yOffset += 80;
-    
-    // Network fee
-    label = GuiCreateNoticeLabel(container, "Network Fee:");
-    lv_obj_set_pos(label, 0, yOffset);
-    
-    char feeStr[128];
-    snprintf(feeStr, sizeof(feeStr), "%s KAS", tx->fee);
-    label = GuiCreateIllustrateLabel(container, feeStr);
-    lv_obj_set_pos(label, 0, yOffset + 28);
+    lv_obj_t *networkContainer = GuiCreateContainerWithParent(parent, 408, 62);
+    if (lastView == NULL) {
+        lv_obj_align(networkContainer, LV_ALIGN_DEFAULT, 0, 0);
+    } else {
+        lv_obj_align_to(networkContainer, lastView, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
+    }
+    SetContainerDefaultStyle(networkContainer);
+
+    lv_obj_t *label = lv_label_create(networkContainer);
+    lv_label_set_text(label, "Network");
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
+    SetTitleLabelStyle(label);
+
+    lv_obj_t *networkValue = lv_label_create(networkContainer);
+    lv_label_set_text(networkValue, network);
+    lv_obj_align_to(networkValue, label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
+    SetContentLabelStyle(networkValue);
+    return networkContainer;
 }
 
-// Create Kaspa transaction details view
-static void GuiCreateKaspaTransactionView(lv_obj_t *parent, DisplayKaspaTx *tx)
-{
-    // Create summary (at top, most important)
-    GuiCreateKaspaTransactionSummary(parent, tx);
-    
-    // Create outputs list
-    GuiCreateKaspaOutputsList(parent, tx);
-    
-    // Create inputs list
-    GuiCreateKaspaInputsList(parent, tx);
-}
-
-// Create Kaspa transaction template (main entry point)
-void GuiCreateKaspaTemplate(lv_obj_t *parent, void *data)
-{
-    (void)data;
-    // Get parsed transaction data
-    if (g_parseResult == NULL) {
-        printf("Error: No parsed Kaspa transaction data\n");
-        return;
-    }
-    
-    if (g_parseResult->error_code != 0) {
-        printf("Error: Kaspa transaction parse error: %s\n", g_parseResult->error_message);
-        GuiTransactionParseFailed();
-        return;
-    }
-    
+void GuiKaspaTxOverview(lv_obj_t *parent, void *data)
+{   
+    if (g_parseResult == NULL || g_parseResult->data == NULL) return;
     DisplayKaspaTx *tx = g_parseResult->data;
-    if (tx == NULL) {
-        printf("Error: Kaspa transaction data is NULL\n");
-        GuiTransactionParseFailed();
-        return;
+
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_t *last_view = NULL;
+
+    // --- 1. Amount Card ---
+    last_view = CreateKaspaOverviewAmountView(parent, tx, last_view);
+
+    // --- 2. Network Card ---
+    last_view = CreateNetworkView(parent, tx->network, last_view);
+
+    // --- 3. Address Card ---
+    lv_obj_t *addr_card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    SetContainerDefaultStyle(addr_card);
+    lv_obj_align_to(addr_card, last_view, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
+
+    // From
+    lv_obj_t *label = lv_label_create(addr_card);
+    lv_label_set_text(label, "From");
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    SetTitleLabelStyle(label);
+
+    lv_obj_t *from_addr = lv_label_create(addr_card);
+    lv_label_set_text(from_addr, tx->inputs.data[0].address);
+    lv_obj_set_width(from_addr, 360);
+    lv_label_set_long_mode(from_addr, LV_LABEL_LONG_WRAP);
+    SetContentLabelStyle(from_addr);
+    lv_obj_align_to(from_addr, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+
+    // To
+    label = lv_label_create(addr_card);
+    lv_label_set_text(label, "To");
+    lv_obj_align_to(label, from_addr, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    SetTitleLabelStyle(label);
+
+    const char* to_addr = "Unknown";
+    for(int i=0; i<tx->outputs.size; i++) {
+        if(!tx->outputs.data[i].is_external) {
+            to_addr = tx->outputs.data[i].address;
+            break;
+        }
     }
-    
-    // Create Kaspa transaction view
-    GuiCreateKaspaTransactionView(parent, tx);
+    lv_obj_t *dest_addr = lv_label_create(addr_card);
+    lv_label_set_text(dest_addr, to_addr);
+    lv_obj_set_width(dest_addr, 360);
+    lv_label_set_long_mode(dest_addr, LV_LABEL_LONG_WRAP);
+    SetContentLabelStyle(dest_addr);
+    lv_obj_align_to(dest_addr, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
+
+    // Dynamically adjust address card height
+    lv_obj_update_layout(dest_addr);
+    lv_obj_set_height(addr_card, lv_obj_get_y2(dest_addr) + 16);
+}
+
+void GuiKaspaTxDetail(lv_obj_t *parent, void *data)
+{
+    if (g_parseResult == NULL || g_parseResult->data == NULL) return;
+    DisplayKaspaTx *tx = g_parseResult->data;
+
+    lv_obj_set_size(parent, 408, 444);
+    lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_t *lastView = NULL;
+
+    lastView = CreateNetworkView(parent, tx->network, NULL);
+
+    lastView = CreateKaspaDetailAmountView(parent, tx, lastView);
+
+    lastView = CreateKaspaDetailListView(parent, tx, true, lastView);
+    CreateKaspaDetailListView(parent, tx, false, lastView);
 }
 

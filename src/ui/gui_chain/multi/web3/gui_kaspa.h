@@ -16,6 +16,8 @@ TransactionCheckResult *GuiGetKaspaCheckResult(void);
 
 void GuiClearKaspaData(void);
 
-void GuiCreateKaspaTemplate(lv_obj_t *parent, void *data);
+void GuiKaspaTxOverview(lv_obj_t *parent, void *data);
+
+void GuiKaspaTxDetail(lv_obj_t *parent, void *data);
 
 #endif

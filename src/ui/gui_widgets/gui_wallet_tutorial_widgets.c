@@ -406,6 +406,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_CORE].items[0].qrTitle = _("connect_core_title");
     g_tutorials[WALLET_LIST_CORE].items[0].qrUrl = _("connect_core_link");
 
+    // WALLET_LIST_KASPIUM
+    g_tutorials[WALLET_LIST_KASPIUM].len = 1;
+    g_tutorials[WALLET_LIST_KASPIUM].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_KASPIUM].items[0].walletName = _("connect_kaspium_title");
+    g_tutorials[WALLET_LIST_KASPIUM].items[0].url = _("connect_kaspium_link");
+    g_tutorials[WALLET_LIST_KASPIUM].items[0].qrTitle = _("connect_kaspium_title");
+    g_tutorials[WALLET_LIST_KASPIUM].items[0].qrUrl = _("connect_kaspium_link");
+
 #else
     g_tutorials[WALLET_LIST_BLUE].len = 1;
     g_tutorials[WALLET_LIST_BLUE].desc = _("connect_wallet_desc");

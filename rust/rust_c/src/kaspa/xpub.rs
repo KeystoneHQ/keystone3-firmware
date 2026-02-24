@@ -109,19 +109,23 @@ mod tests {
     use super::*;
     
     #[test]
-    fn test_kaspa_get_account_xpub() {
+    fn test_kaspa_get_extended_pubkey() {
         let seed = hex::decode(
             "5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4"
         ).unwrap();
-
+        
+        let path = "m/44'/111111'/0'";
+        let path_cstr = std::ffi::CString::new(path).unwrap();
+        
         unsafe {
-            let result = kaspa_get_account_xpub(
+            let result = kaspa_get_extended_pubkey(
                 seed.as_ptr(),
                 seed.len() as u32,
-                0u32,
+                path_cstr.as_ptr(),
             );
-
+            
             assert!(!result.is_null());
+            // Cleanup
             let _ = Box::from_raw(result);
         }
     }

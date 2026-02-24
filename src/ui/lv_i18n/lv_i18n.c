@@ -194,6 +194,8 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"connect_arconnect_title", "Wander"},
     {"connect_babylon_link", "https://keyst.one/t/3rd/babylon"},
     {"connect_babylon_title", "Babylon"},
+    {"connect_kaspium_title", "Kaspium"},
+    {"connect_kaspium_link", "https://keyst.one/t/3rd/kaspium"},
     {"connect_backpack_link", "https://keyst.one/t/3rd/backpack"},
     {"connect_backpack_link2", "https://keyst.one/t/3rd/backpackm"},
     {"connect_backpack_title", "Backpack (Extension)"},

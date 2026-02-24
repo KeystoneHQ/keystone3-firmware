@@ -29,6 +29,7 @@ members = [
     "sim_qr_reader",
     "tools",
     "zcash_vendor",
+    "apps/kaspa",
 ]
 
 [workspace.dependencies]
@@ -56,6 +57,7 @@ tools = { path = "tools" }
 sim_qr_reader = { path = "sim_qr_reader" }
 rust_tools = { path = "tools" }
 zcash_vendor = { path = "zcash_vendor", default-features = false}
+app_kaspa = { path = "apps/kaspa" }
 
 # third party dependencies
 cty = "0.2.0"
@@ -117,3 +119,10 @@ getrandom = "0.2"
 minicbor = { version = "0.19", features = ["alloc"] }
 zeroize = { version = "1.8.2", default-features = false }
 # third party dependencies end
+
+[patch.crates-io]
+ur-registry = { path = "/Users/xuqin/Documents/projects/keystone-sdk-rust/libs/ur-registry" }
+
+[patch."https://git@github.com/KeystoneHQ/keystone-sdk-rust.git"]
+ur-registry = { path = "/Users/xuqin/Documents/projects/keystone-sdk-rust/libs/ur-registry" }
+# 注意：如果你的 workspace 定义里带了 git@，这里也要保持一致

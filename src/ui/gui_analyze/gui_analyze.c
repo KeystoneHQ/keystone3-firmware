@@ -660,8 +660,6 @@ GetCustomContainerFunc GuiTemplateCustomFunc(char *funcName)
         return GuiBtcTxDetail;
     } else if (!strcmp(funcName, "GuiBtcMsg")) {
         return GuiBtcMsg;
-    } else if (!strcmp(funcName, "GuiCreateKaspaTemplate")) {
-        return GuiCreateKaspaTemplate;
     }
 
     return GetOtherChainCustomFunc(funcName);
@@ -943,6 +941,8 @@ static lv_obj_t *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         }
     }
     const char *type = item->valuestring;
+    printf("Creating widget of type: %s\n", type);
+    
     if (!type) {
         return NULL;
     }

@@ -250,16 +250,35 @@ UREncodeResult *GuiGetNaboxData(void)
 
 UREncodeResult *GuiGetCoreWalletData(void)
 {
-    ChainPath_t chainPaths[] = {
-        {.path = "m/44'/60'/0'", .chainType = XPUB_TYPE_ETH_BIP44_STANDARD},
-        {.path = "m/44'/9000'/0'", .chainType = XPUB_TYPE_AVAX_X_P},
-    };
-    ExtendedPublicKey keys[NUMBER_OF_ARRAYS(chainPaths)];
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
-    PtrT_CSliceFFI_ExtendedPublicKey public_keys = BuildChainPaths(chainPaths, keys, NUMBER_OF_ARRAYS(chainPaths));
+
+    PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    ExtendedPublicKey keys[11] = {0};  // 1 EVM + 10 X/P accounts
+    public_keys->data = keys;
+    public_keys->size = 11;
+
+    // EVM key
+    keys[0].path = "m/44'/60'/0'";
+    keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ETH_BIP44_STANDARD);
+
+    // Avalanche X/P keys (accounts 0-9)
+    for (int i = XPUB_TYPE_AVAX_X_P_0; i <= XPUB_TYPE_AVAX_X_P_9; i++) {
+        int index = i - XPUB_TYPE_AVAX_X_P_0 + 1;
+        keys[index].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[index].path, BUFFER_SIZE_32, "m/44'/9000'/%d'", i - XPUB_TYPE_AVAX_X_P_0);
+        keys[index].xpub = GetCurrentAccountPublicKey(i);
+    }
+
     UREncodeResult *urEncode = get_core_wallet_ur(mfp, sizeof(mfp), public_keys, "Keystone3");
     CHECK_CHAIN_PRINT(urEncode);
+
+    // Free allocated paths
+    for (int i = 1; i <= 10; i++) {
+        if (keys[i].path != NULL) {
+            SRAM_FREE(keys[i].path);
+        }
+    }
     SRAM_FREE(public_keys);
     return urEncode;
 }

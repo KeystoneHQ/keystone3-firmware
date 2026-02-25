@@ -1406,7 +1406,7 @@ static void ModelGetAvaxAddress(uint32_t index, AddressDataItem_t *item)
         free_simple_response_c_char(result);
     } else {
         // x p chain address
-        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P_0);
         ASSERT(xPub);
         snprintf_s(hdPath, sizeof(hdPath), "%s/0/%u", "m/44'/9000'/0'", index);
         strcpy_s(rootPath, sizeof(rootPath), "m/44'/9000'/0'");

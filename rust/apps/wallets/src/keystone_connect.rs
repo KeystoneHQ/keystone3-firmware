@@ -38,6 +38,7 @@ const LTC_NATIVE_SEGWIT_PREFIX: &str = "84'/2'/0'";
 const SOL_BIP44_PREFIX: &str = "44'/501'";
 const BCH_PREFIX: &str = "44'/145'/0'";
 const ZEC_PREFIX: &str = "44'/133'/0'";
+const ADA_PREFIX: &str = "1852'/1815'/0'";
 
 pub fn generate_crypto_multi_accounts(
     master_fingerprint: [u8; 4],
@@ -62,6 +63,7 @@ pub fn generate_crypto_multi_accounts(
         BCH_PREFIX.to_string(),
         ZEC_PREFIX.to_string(),
     ];
+    let ada_keys = [ADA_PREFIX.to_string()];
     for ele in extended_public_keys {
         match ele.get_path() {
             _path if _path.to_string().to_lowercase().eq(ZEC_PREFIX) => {
@@ -89,6 +91,9 @@ pub fn generate_crypto_multi_accounts(
                     None,
                     false,
                 )?);
+            }
+            _path if ada_keys.contains(&_path.to_string().to_lowercase()) => {
+                keys.push(generate_ada_key(master_fingerprint, ele)?);
             }
             _path if _path.to_string().to_lowercase().eq(ETH_STANDARD_PREFIX) => {
                 keys.push(generate_k1_normal_key(
@@ -232,6 +237,36 @@ fn generate_k1_normal_key(
         Some(xpub.parent_fingerprint.to_bytes()),
         Some("Keystone".to_string()),
         note,
+    ))
+}
+
+fn generate_ada_key(mfp: [u8; 4], key: ExtendedPublicKey) -> URResult<CryptoHDKey> {
+    if key.get_key().len() != 64 {
+        return Err(URError::UrEncodeError("Invalid ADA key length".to_string()));
+    }
+    let chain_code = key.get_key()[..32].to_vec();
+    let public_key = key.get_key()[32..].to_vec();
+    let path = key.get_path();
+    let key_path = CryptoKeyPath::new(
+        path.into_iter()
+            .map(|v| match v {
+                ChildNumber::Normal { index } => get_path_component(Some(*index), false),
+                ChildNumber::Hardened { index } => get_path_component(Some(*index), true),
+            })
+            .collect::<URResult<Vec<PathComponent>>>()?,
+        Some(mfp),
+        Some(3),
+    );
+    Ok(CryptoHDKey::new_extended_key(
+        Some(false),
+        public_key,
+        Some(chain_code),
+        None,
+        Some(key_path),
+        None,
+        None,
+        Some("Keystone".to_string()),
+        None,
     ))
 }
 

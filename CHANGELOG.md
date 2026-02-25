@@ -1,4 +1,13 @@
 
+## 2.3.10(2026-2-26)
+
+**Web3:**
+
+### What's new
+1. Supported managing ADA via Keystone Nexus
+2. Supported managing ADA via Gero Extension
+
+
 ## 2.3.8(2026-2-9)
 
 **Web3:**

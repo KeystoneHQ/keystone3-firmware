@@ -132,6 +132,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_MEDUSA].items[0].qrTitle = _("connect_medusa_title");
     g_tutorials[WALLET_LIST_MEDUSA].items[0].qrUrl = _("connect_medusa_link");
 
+    // WALLET_LIST_GERO
+    g_tutorials[WALLET_LIST_GERO].len = 1;
+    g_tutorials[WALLET_LIST_GERO].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_GERO].items[0].walletName = GERO_WALLET_TITLE;
+    g_tutorials[WALLET_LIST_GERO].items[0].url = GERO_WALLET_LINK;
+    g_tutorials[WALLET_LIST_GERO].items[0].qrTitle = GERO_WALLET_TITLE;
+    g_tutorials[WALLET_LIST_GERO].items[0].qrUrl = GERO_WALLET_LINK;
+
     // WALLET_LIST_Typhon
     g_tutorials[WALLET_LIST_TYPHON].len = 1;
     g_tutorials[WALLET_LIST_TYPHON].desc = _("connect_wallet_desc");

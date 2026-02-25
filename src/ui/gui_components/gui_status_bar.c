@@ -140,14 +140,14 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
     {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
     {WALLET_LIST_MEDUSA, "Medusa", &walletMedusa},
+    {WALLET_LIST_GERO, "Gero Wallet", &walletGero},
     {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
     {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
     {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
     {WALLET_LIST_JUPITER, "Jupiter", &walletNufi},
     {WALLET_LIST_NUFI, "NuFi", &walletNufi},
-    {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
-    {WALLET_LIST_RABBY, "Rabby", &walletRabby},
+    {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack}, {WALLET_LIST_RABBY, "Rabby", &walletRabby},
     {WALLET_LIST_NABOX, "Nabox", &walletNabox},
     {WALLET_LIST_BITGET, "Bitget Wallet", &walletBitget},
     {WALLET_LIST_SAFE, "Safe", &walletSafe},
@@ -395,6 +395,8 @@ const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
         return "Helium";
     } else if (index == WALLET_LIST_MEDUSA) {
         return "Medusa";
+    } else if (index == WALLET_LIST_GERO) {
+        return "Gero";
     }
 
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {

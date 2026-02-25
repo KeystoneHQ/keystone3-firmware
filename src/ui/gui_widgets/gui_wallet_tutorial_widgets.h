@@ -10,4 +10,7 @@ void GuiWalletTutorialDeInit();
 #define BULL_WALLET_TITLE                   "BULL"
 #define BULL_WALLET_LINK                    "https://keyst.one/t/3rd/bull"
 
+#define GERO_WALLET_TITLE                   "Gero"
+#define GERO_WALLET_LINK                    "https://keyst.one/t/3rd/gero"
+
 #endif

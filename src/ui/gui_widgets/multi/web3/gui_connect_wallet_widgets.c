@@ -235,6 +235,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_NIGHTLY, &walletNightly, "Nightly", g_nightlyCoinArray, 3, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_TYPHON, &walletTyphon, "Typhon", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
     {WALLET_LIST_MEDUSA, &walletMedusa, "Medusa", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
+    {WALLET_LIST_GERO, &walletGero, "Gero", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
     {WALLET_LIST_SAFE, &walletSafe, "Safe", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BLOCK_WALLET, &walletBlockWallet, "BlockWallet", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_XRP_TOOLKIT, &walletXRPToolkit, "XRP Toolkit", g_xrpCoinArray, 1, true, WALLET_FILTER_OTHER},
@@ -410,6 +411,7 @@ static bool IsAda(int walletIndex)
     case WALLET_LIST_VESPR:
     case WALLET_LIST_ETERNL:
     case WALLET_LIST_MEDUSA:
+    case WALLET_LIST_GERO:
     case WALLET_LIST_TYPHON:
     case WALLET_LIST_BEGIN:
         return true;
@@ -474,7 +476,9 @@ static void OpenQRCodeHandler(lv_event_t *e)
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL ||
             g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON ||
             g_connectWalletTileView.walletIndex == WALLET_LIST_BEGIN ||
-            g_connectWalletTileView.walletIndex == WALLET_LIST_MEDUSA) {
+            g_connectWalletTileView.walletIndex == WALLET_LIST_MEDUSA ||
+            g_connectWalletTileView.walletIndex == WALLET_LIST_GERO
+       ) {
         GuiCreateConnectADAWalletWidget(g_connectWalletTileView.walletIndex);
         return;
     }

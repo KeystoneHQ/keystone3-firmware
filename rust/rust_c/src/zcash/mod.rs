@@ -80,7 +80,7 @@ pub unsafe extern "C" fn check_zcash_tx_cypherpunk(
 ) -> *mut TransactionCheckResult {
     if disabled {
         return TransactionCheckResult::from(RustCError::UnsupportedTransaction(
-            "zcash is not supported for slip39 and passphrase wallet now".to_string(),
+            "zcash requires at least 256-bit entropy (use 33-word shamir shares)".to_string(),
         ))
         .c_ptr();
     }
@@ -111,7 +111,7 @@ pub unsafe extern "C" fn check_zcash_tx_multi_coins(
 ) -> *mut TransactionCheckResult {
     if disabled {
         return TransactionCheckResult::from(RustCError::UnsupportedTransaction(
-            "zcash is not supported for slip39 and passphrase wallet now".to_string(),
+            "zcash requires at least 256-bit entropy (use 33-word shamir shares)".to_string(),
         ))
         .c_ptr();
     }

@@ -1,0 +1,3 @@
+*.bin
+*.csv
+!event log table.csv

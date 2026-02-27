@@ -1,0 +1,16 @@
+/personal
+/build
+/.vscode
+/.vs
+.DS_Store
+**/.idea
+**/.cache
+**/.vscode
+/src/ui/lv_i18n/*.yml
+**/__pycache__
+**/build_simulator
+pyenv
+!/rust/apps/target/
+!/rust/apps/Cargo.lock
+*.rustfmt.toml
+/tools/boot.sig

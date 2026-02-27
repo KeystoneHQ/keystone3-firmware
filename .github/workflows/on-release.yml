@@ -1,0 +1,110 @@
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+name: On Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout Merge Branch
+        run: |
+          git fetch origin release/v${{ github.ref_name }}
+          git checkout origin/release/v${{ github.ref_name }}
+          git checkout -b merge/v${{ github.ref_name }}
+          git push origin merge/v${{ github.ref_name }}
+
+      - name: Create Pull Request
+        id: create_pr
+        run: |
+          PR_RESPONSE=$(curl -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/keystonehq/keystone3-firmware/pulls \
+          -d '{
+            "title": "Merge release v${{ github.ref_name }}",
+            "body": "Release v${{ github.ref_name }}",
+            "head": "merge/v${{ github.ref_name }}",
+            "base": "master"
+          }')
+
+          PR_URL=$(echo "$PR_RESPONSE" | jq -r '.html_url')
+          PR_NUMBER=$(echo "$PR_RESPONSE" | jq -r '.number')
+          
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+
+          echo "Created PR: $PR_URL"
+
+      - name: Check PR status
+        id: check_mergeable
+        run: |
+          PR_URL=${{ steps.create_pr.outputs.pr_url }}
+          PR_NUMBER=${{ steps.create_pr.outputs.pr_number }}
+
+          sleep 10
+
+          MERGEABLE_RESPONSE=$(curl -X GET \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          "https://api.github.com/repos/keystonehq/keystone3-firmware/pulls/$PR_NUMBER")
+
+
+          MERGEABLE=$(echo "$MERGEABLE_RESPONSE" | jq -r '.mergeable')
+          MERGEABLE_STATE=$(echo "$MERGEABLE_RESPONSE" | jq -r '.mergeable_state')
+
+          echo "Mergeable: $MERGEABLE"
+          echo "Mergeable State: $MERGEABLE_STATE"
+
+          if [ "$MERGEABLE" = "true" ] && [ "$MERGEABLE_STATE" = "clean" ]; then
+            echo "can_merge=true" >> $GITHUB_OUTPUT
+            echo "✅ PR can be merged automatically"
+          else
+            echo "can_merge=false" >> $GITHUB_OUTPUT
+            echo "❌ PR cannot be merged automatically"
+            echo "Mergeable: $MERGEABLE"
+            echo "Mergeable State: $MERGEABLE_STATE"
+          fi
+
+      - name: Auto Merge PR
+        if: steps.check_mergeable.outputs.can_merge == 'true'
+        run: |
+          PR_NUMBER=${{ steps.create_pr.outputs.pr_number }}
+          
+          # MERGE_RESPONSE=$(curl -s -X PUT \
+          # -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          # -H "Accept: application/vnd.github.v3+json" \
+          # "https://api.github.com/repos/keystonehq/keystone3-firmware/pulls/$PR_NUMBER/merge" \
+          # -d '{
+          #   "merge_method": "merge"
+          # }')
+          
+          # MERGED=$(echo "$MERGE_RESPONSE" | jq -r '.merged')
+          
+          if [ "$MERGED" = "true" ]; then
+            echo "✅ PR merged successfully!"
+          else
+            echo "❌ Failed to merge PR"
+            echo "Response: $MERGE_RESPONSE"
+            exit 1
+          fi
+          
+      - name: Notify Slack - Manual Review Required
+        if: steps.check_mergeable.outputs.can_merge == 'false'
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{
+            "text": "🚀 New Release: v${{ github.ref_name }} - <@${{ secrets.SLACK_USER1 }}> <@${{ secrets.SLACK_USER2 }}> MERGE NOW"
+          }' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}

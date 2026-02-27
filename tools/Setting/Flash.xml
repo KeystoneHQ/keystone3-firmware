@@ -1,0 +1,383 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Flashes>
+  <Flash Name="GD25Q128C" Manu="C8" FlashID="4018" FlashSize="128">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="31" Option="70" Data="0002" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="GD25Q64C" Manu="C8" FlashID="4017" FlashSize="64">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="31" Option="70" Data="0002" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="GD25Q32C" Manu="C8" FlashID="4016" FlashSize="32">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="31" Option="70" Data="0002" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="GD25Q80C" Manu="C8" FlashID="4014" FlashSize="8">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="31" Option="70" Data="0002" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="GD25Q41B" Manu="C8" FlashID="4013" FlashSize="4">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="31" Option="70" Data="0002" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="GD25Q21B" Manu="C8" FlashID="4012" FlashSize="2">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="31" Option="70" Data="0002" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="W25Q40" Manu="EF" FlashID="4013" FlashSize="8">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="W25Q80" Manu="EF" FlashID="4014" FlashSize="8">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="W25Q16" Manu="EF" FlashID="4015" FlashSize="16">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="W25Q32" Manu="EF" FlashID="4016" FlashSize="32">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="W25Q64" Manu="EF" FlashID="4017" FlashSize="64">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="W25Q128" Manu="EF" FlashID="4018" FlashSize="128">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="T25S40" Manu="1C" FlashID="3113" FlashSize="4">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="00" Option="80" Data="0200" />
+    <burst Cmd="00" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="P25Q40H" Manu="85" FlashID="6013" FlashSize="4">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="P25Q80H" Manu="85" FlashID="6014" FlashSize="8">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="P25Q32H" Manu="85" FlashID="6016" FlashSize="32">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="P25Q64H" Manu="85" FlashID="6017" FlashSize="64">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="31" Option="70" Data="0002" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="ZB25VQ40" Manu="5E" FlashID="6013" FlashSize="4">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="ZB25VQ80" Manu="5E" FlashID="6014" FlashSize="8">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="ZB25VQ16" Manu="5E" FlashID="6015" FlashSize="16">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="ZB25VQ16C" Manu="5E" FlashID="4015" FlashSize="16">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="31" Option="70" Data="02" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>  
+  <Flash Name="ZB25VQ32" Manu="5E" FlashID="4016" FlashSize="32">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="ZB25VQ64" Manu="5E" FlashID="4017" FlashSize="64">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="ZB25VQ128" Manu="5E" FlashID="4018" FlashSize="128">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>  
+  <Flash Name="EN25Q128A" Manu="1C" FlashID="7018" FlashSize="128">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="XM25QH64" Manu="20" FlashID="7017" FlashSize="64">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="00" Option="00" Data="0000" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="XM25QE32C" Manu="20" FlashID="4016" FlashSize="32">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>    
+  <Flash Name="XM25QH64C" Manu="20" FlashID="4017" FlashSize="64">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>  
+  <Flash Name="W25Q32FV" Manu="EF" FlashID="4016" FlashSize="32">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="W25Q40BV" Manu="EF" FlashID="4013" FlashSize="8">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="W25Q64FV" Manu="EF" FlashID="4017" FlashSize="64">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="W25Q80BV" Manu="EF" FlashID="4014" FlashSize="8">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="W25Q128BV" Manu="EF" FlashID="4018" FlashSize="128">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="XM25QH128" Manu="20" FlashID="7018" FlashSize="128">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="00" Option="00" Data="0000" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="UC25HQ32" Manu="B3" FlashID="6016" FlashSize="32">
+    <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>  
+  <Flash Name="BY25Q32" Manu="68" FlashID="4016" FlashSize="32">
+   <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>  
+  <Flash Name="PY25Q32HB" Manu="85" FlashID="2016" FlashSize="32">
+   <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+  <Flash Name="PY25Q128HB" Manu="85" FlashID="2018" FlashSize="128">
+   <Id Cmd="9F" Option="30" Data="0000" />
+    <QE Cmd="01" Option="80" Data="0200" />
+    <burst Cmd="77" Option="42" Data="0040" />
+    <prg Cmd="32" Option="D1" Data="0000" />
+    <se Cmd="20" Option="90" Data="0000" />
+    <ce Cmd="C7" Option="00" Data="0000" />
+    <Wakeup Cmd="AB" Option="00" Data="0000" />
+    <Cacheread Cmd="EB" Option="B2" Data="0000" />
+  </Flash>
+</Flashes>

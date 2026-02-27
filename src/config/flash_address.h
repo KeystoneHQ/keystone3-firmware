@@ -1,0 +1,80 @@
+#ifndef _FLASH_ADDRESS_H
+#define _FLASH_ADDRESS_H
+
+//SPI FLASH ADDR
+
+//USB FATFS, 8MB
+#define SPI_FLASH_ADDR_USB_FATFS                0x00000000
+#define SPI_FLASH_SIZE_USB_FATFS                0x800000
+
+//LOG, 500KB
+#define SPI_FLASH_ADDR_LOG                      0x00800000
+#define SPI_FLASH_SIZE_LOG                      0x80000
+
+#define SPI_FLASH_ADDR_ERR_INFO                 0x00880000
+#define SPI_FLASH_SIZE_ERR_INFO                 0x1000
+
+#define SPI_FLASH_ADDR_NFT_BIN                  0x00EB2000
+#define SPI_FLASH_SIZE_NFT_BIN                  (480 * 800 * 2) // 0xBB800
+
+#define BOOT_SECURE_PARAM_FLAG                  0x00F6D800
+#define BOOT_SECURE_PARAM_FLAG_SIZE             0x1000
+
+#define SPI_FLASH_ADDR_EACH_SIZE                0x19000
+
+//USER1 DATA, 100KB
+
+#define SPI_FLASH_ADDR_USER1_DATA               0x00FB2000
+#define SPI_FLASH_SIZE_USER1_DATA               0x00010000
+
+#define SPI_FLASH_RSA_USER1_DATA                0x00FC2000
+#define SPI_FLASH_RSA_SIZE_USER1_DATA           0x2000
+
+//multi sig wallet storage zone
+#define SPI_FLASH_ADDR_USER1_MULTI_SIG_DATA     0x00FC4000
+#define SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA     0x2000
+
+#define SPI_FLASH_ADDR_USER1_MUTABLE_DATA       0x00FC6000
+#define SPI_FLASH_SIZE_USER1_MUTABLE_DATA       0x5000
+
+//USER2 DATA, 100KB
+#define SPI_FLASH_ADDR_USER2_DATA               0x00FCB000
+#define SPI_FLASH_SIZE_USER2_DATA               0x10000
+
+#define SPI_FLASH_RSA_USER2_DATA                0x00FDB000
+#define SPI_FLASH_RSA_SIZE_USER2_DATA           0x2000
+
+//multi sig wallet storage zone
+#define SPI_FLASH_ADDR_USER2_MULTI_SIG_DATA     0x00FDD000
+#define SPI_FLASH_SIZE_USER2_MULTI_SIG_DATA     0x2000
+
+#define SPI_FLASH_ADDR_USER2_MUTABLE_DATA       0x00FDF000
+#define SPI_FLASH_SIZE_USER2_MUTABLE_DATA       0x5000
+
+//USER3 DATA, 100KB
+#define SPI_FLASH_ADDR_USER3_DATA               0x00FE4000
+#define SPI_FLASH_SIZE_USER3_DATA               0x10000
+
+#define SPI_FLASH_RSA_USER3_DATA                0x00FF4000
+#define SPI_FLASH_RSA_SIZE_USER3_DATA           0x2000
+
+//multi sig wallet storage zone
+#define SPI_FLASH_ADDR_USER3_MULTI_SIG_DATA     0x00FF6000
+#define SPI_FLASH_SIZE_USER3_MULTI_SIG_DATA     0x2000
+
+#define SPI_FLASH_ADDR_USER3_MUTABLE_DATA       0x00FF8000
+#define SPI_FLASH_SIZE_USER3_MUTABLE_DATA       0x5000
+
+//BATTERY INFO, 4KB
+#define SPI_FLASH_ADDR_BATTERY_INFO             0x00FFD000
+#define SPI_FLASH_SIZE_BATTERY_INFO             0x1000
+
+//NORMAL PARAM, 4KB
+#define SPI_FLASH_ADDR_NORMAL_PARAM             0x00FFE000
+#define SPI_FLASH_SIZE_NORMAL_PARAM             0x1000
+
+//PROTECT PARAM, 4KB
+#define SPI_FLASH_ADDR_PROTECT_PARAM            0x00FFF000
+#define SPI_FLASH_SIZE_PROTECT_PARAM            0x1000
+
+#endif

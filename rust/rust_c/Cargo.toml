@@ -1,0 +1,64 @@
+[package]
+name = "rust_c"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+#external
+cty = { workspace = true }
+cstr_core = { workspace = true }
+getrandom = { workspace = true, features = ["custom"] }
+serde_json = { workspace = true }
+hex = { workspace = true }
+bitcoin = { workspace = true }
+cryptoxide = { workspace = true }
+base64 = { workspace = true }
+itertools = { workspace = true }
+either = { workspace = true }
+core2 = { workspace = true }
+thiserror = { workspace = true }
+bitcoin_hashes = { workspace = true }
+rsa = { workspace = true }
+sha1 = { workspace = true }
+aes = { workspace = true }
+cbc = { workspace = true }
+cipher = { workspace = true }
+minicbor = { workspace = true }
+paste = "1.0"
+#keystone owned
+sim_qr_reader = { workspace = true, optional = true }
+keystore = { workspace = true }
+ur-registry = { workspace = true }
+ur-parse-lib = { workspace = true }
+zcash_vendor = { workspace = true, optional = true }
+ed25519-bip32-core = { workspace = true }
+rust_tools = { workspace = true }
+sui-types = { git = "https://github.com/KeystoneHQ/sui.git", tag = "0.1.2", package = "sui-types" }
+[lib]
+crate-type = ["staticlib"]
+
+[features]
+# feature toggles
+use-allocator = []
+simulator = ["dep:sim_qr_reader"]
+test_cmd = []
+
+debug-memory = []
+
+# build variants
+# production
+production-multi-coins = ["use-allocator"]
+# debug
+debug-multi-coins = ["test_cmd", "use-allocator"]
+# simulator
+simulator-multi-coins = ["simulator"]
+# make IDE happy
+default = []
+
+[dev-dependencies]
+keystore = { path = "../keystore" }
+
+[build-dependencies]
+cbindgen = "0.27.0"

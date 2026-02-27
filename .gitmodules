@@ -1,0 +1,10 @@
+[submodule "rust-crypto-core"]
+	path = rust-crypto-core
+	url = git@github.com:KeystoneHQ/rust-crypto-core.git
+[submodule "external/ctaes"]
+	path = external/ctaes
+	url = https://github.com/bitcoin-core/ctaes
+[submodule "keystone3-firmware-release"]
+	path = keystone3-firmware-release
+	url = git@github.com:KeystoneHQ/keystone3-firmware-release.git
+	branch = fix-build-monero

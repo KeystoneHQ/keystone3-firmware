@@ -98,7 +98,8 @@ pub fn get_chain_id_by_address(address: &str) -> String {
     map.insert("inj", "injective-1");
     map.insert("kava", "kava_2222-10");
     map.insert("quick", "quicksilver-1");
-    map.insert("terra", "phoenix-1");
+    map.insert("terra2", "phoenix-1");
+    map.insert("terra", "columbus-5");
     map.insert("thor", "thorchain");
     map.insert("neutron", "neutron");
     map.insert("bbn", "baby_3535-1");

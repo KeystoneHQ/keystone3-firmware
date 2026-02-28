@@ -44,6 +44,7 @@
 #define KEY_NFT_SCREEN                  "nftEnable"
 #define KEY_NFT_VALID                   "nftValid"
 #define KEY_ENABLE_BLIND_SIGNING        "enableBlindSigning"
+#define KEY_SHOW_BATTERY_PERCENTAGE     "showBatteryPercentage"
 #define DEFAULT_SETUP_STEP              0
 #define DEFAULT_BRIGHT                  15
 #define DEFAULT_AUTO_LOCK_SCREEN        60
@@ -70,6 +71,7 @@ typedef struct {
     bool nftEnable;
     bool nftValid;
     bool enableBlindSigning;
+    bool showBatteryPercentage;
 } DeviceSettings_t;
 
 static int32_t SaveDeviceSettingsAsyncFunc(const void *inData, uint32_t inDataLen);
@@ -139,6 +141,7 @@ void DeviceSettingsInit(void)
         g_deviceSettings.nftEnable = false;
         g_deviceSettings.nftValid = false;
         g_deviceSettings.enableBlindSigning = false;
+        g_deviceSettings.showBatteryPercentage = false;
         SaveDeviceSettingsSync();
     }
 
@@ -437,6 +440,16 @@ void SetEnableBlindSigning(bool enable)
     g_deviceSettings.enableBlindSigning = enable;
 }
 
+bool GetShowBatteryPercentage(void)
+{
+    return g_deviceSettings.showBatteryPercentage;
+}
+
+void SetShowBatteryPercentage(bool enable)
+{
+    g_deviceSettings.showBatteryPercentage = enable;
+}
+
 uint32_t GetLanguage(void)
 {
     return g_deviceSettings.language;
@@ -569,6 +582,7 @@ static bool GetDeviceSettingsFromJsonString(const char *string)
         g_deviceSettings.nftEnable = GetBoolValue(rootJson, KEY_NFT_SCREEN, false);
         g_deviceSettings.nftValid = GetBoolValue(rootJson, KEY_NFT_VALID, false);
         g_deviceSettings.enableBlindSigning = GetBoolValue(rootJson, KEY_ENABLE_BLIND_SIGNING, false);
+        g_deviceSettings.showBatteryPercentage = GetBoolValue(rootJson, KEY_SHOW_BATTERY_PERCENTAGE, false);
     } while (0);
     cJSON_Delete(rootJson);
 
@@ -596,6 +610,7 @@ static char *GetJsonStringFromDeviceSettings(void)
     cJSON_AddItemToObject(rootJson, KEY_NFT_SCREEN, cJSON_CreateBool(g_deviceSettings.nftEnable));
     cJSON_AddItemToObject(rootJson, KEY_NFT_VALID, cJSON_CreateBool(g_deviceSettings.nftValid));
     cJSON_AddItemToObject(rootJson, KEY_ENABLE_BLIND_SIGNING, cJSON_CreateBool(g_deviceSettings.enableBlindSigning));
+    cJSON_AddItemToObject(rootJson, KEY_SHOW_BATTERY_PERCENTAGE, cJSON_CreateBool(g_deviceSettings.showBatteryPercentage));
     retStr = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_NORMAL_PARAM - 4, false);
     RemoveFormatChar(retStr);
     cJSON_Delete(rootJson);

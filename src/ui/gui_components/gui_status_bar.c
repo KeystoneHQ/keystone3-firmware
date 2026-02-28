@@ -14,6 +14,7 @@
 #include "user_memory.h"
 #include "version.h"
 #include "gui_firmware_update_widgets.h"
+#include "device_setting.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "drv_usb.h"
@@ -42,6 +43,7 @@ typedef struct StatusBar {
     lv_obj_t *batteryPad;
     lv_obj_t *batteryCharging;
     lv_obj_t *batteryPadImg;
+    lv_obj_t *batteryPercentLabel;
     lv_obj_t *betaImg;
 #ifdef BTC_ONLY
     lv_obj_t *testNetImg;
@@ -267,6 +269,10 @@ void GuiStatusBarInit(void)
     lv_obj_set_style_opa(g_guiStatusBar.batteryCharging, LV_OPA_COVER,
                          LV_PART_MAIN);
 
+    g_guiStatusBar.batteryPercentLabel = GuiCreateIllustrateLabel(cont, "");
+    lv_obj_set_style_text_font(g_guiStatusBar.batteryPercentLabel, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_add_flag(g_guiStatusBar.batteryPercentLabel, LV_OBJ_FLAG_HIDDEN);
+
     g_guiStatusBar.batteryPad = lv_obj_create(g_guiStatusBar.batteryImg);
     lv_obj_align(g_guiStatusBar.batteryPad, LV_ALIGN_TOP_LEFT, 6, 7);
     // lv_obj_set_pos(g_guiStatusBar.batteryPad, 6, 7);
@@ -410,9 +416,6 @@ const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
 
 uint8_t GetCurrentDisplayPercent(void)
 {
-#ifdef COMPILE_SIMULATOR
-    return 100;
-#endif
     return g_currentDisplayPercent;
 }
 
@@ -461,6 +464,16 @@ static int GetDisplayPercent(int actualPercent, bool charging)
 
 void GuiStatusBarSetBattery(uint8_t percent, bool charging)
 {
+    int displayPercent = GetDisplayPercent(percent, charging);
+    if (GetShowBatteryPercentage()) {
+        char percentStr[8];
+        snprintf(percentStr, sizeof(percentStr), "%d%%", displayPercent);
+        lv_label_set_text(g_guiStatusBar.batteryPercentLabel, percentStr);
+        lv_obj_clear_flag(g_guiStatusBar.batteryPercentLabel, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(g_guiStatusBar.batteryPercentLabel, LV_OBJ_FLAG_HIDDEN);
+    }
+
     if (charging) {
         lv_obj_align_to(g_guiStatusBar.batteryImg, g_guiStatusBar.batteryCharging, LV_ALIGN_OUT_LEFT_MID, -5, 0);
         lv_obj_clear_flag(g_guiStatusBar.batteryCharging, LV_OBJ_FLAG_HIDDEN);
@@ -483,7 +496,6 @@ void GuiStatusBarSetBattery(uint8_t percent, bool charging)
         return;
     }
 
-    int displayPercent = GetDisplayPercent(percent, charging);
     if (displayPercent <= 20) {
         lv_obj_add_flag(g_guiStatusBar.batteryPad, LV_OBJ_FLAG_HIDDEN);
         lv_img_set_src(g_guiStatusBar.batteryPadImg, &imgBatteryPower20);
@@ -499,7 +511,15 @@ void GuiStatusBarSetBattery(uint8_t percent, bool charging)
 static void RefreshStatusBar(void)
 {
     lv_obj_t *next;
-    next = g_guiStatusBar.batteryImg;
+
+    // Position battery percentage label to the left of battery icon
+    if (!lv_obj_has_flag(g_guiStatusBar.batteryPercentLabel, LV_OBJ_FLAG_HIDDEN)) {
+        lv_obj_align_to(g_guiStatusBar.batteryPercentLabel, g_guiStatusBar.batteryImg, LV_ALIGN_OUT_LEFT_MID, -5, 0);
+        next = g_guiStatusBar.batteryPercentLabel;
+    } else {
+        next = g_guiStatusBar.batteryImg;
+    }
+
     lv_obj_align_to(g_guiStatusBar.sdCardImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
     if (!lv_obj_has_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN)) {
         next = g_guiStatusBar.sdCardImg;

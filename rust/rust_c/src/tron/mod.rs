@@ -1,16 +1,118 @@
 pub mod structs;
 
-use crate::common::errors::RustCError;
+use crate::common::errors::{KeystoneError, RustCError};
 use crate::common::keystone;
 use crate::common::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use crate::common::ur::{QRCodeType, UREncodeResult};
+use crate::common::ur::{QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::extract_array;
 use alloc::boxed::Box;
 use alloc::slice;
 use cty::c_char;
 use structs::DisplayTron;
+use alloc::vec::Vec;
+use alloc::string::{ToString, String};
+
+use crate::extract_ptr_with_type;
+use ur_registry::traits::{RegistryItem, To};
+use ur_registry::tron::tron_sign_request::TronSignRequest;
+use ur_registry::tron::tron_signature::TronSignature;
+
+use app_tron::TxParser;
+
+const TRON_DEFAULT_PATH: &str = "m/44'/195'/0'/0/0";
+
+#[no_mangle]
+pub unsafe extern "C" fn tron_check_sign_request(
+    ptr: PtrUR,
+    x_pub: PtrString,
+    master_fingerprint: PtrBytes,
+    length: u32,
+) -> PtrT<TransactionCheckResult> {
+    if length != 4 {
+        return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
+    }
+
+    let req = extract_ptr_with_type!(ptr, TronSignRequest);
+    let json_bytes = req.get_sign_data();
+    let path = req
+        .get_derivation_path()
+        .get_path()
+        .unwrap_or_else(|| String::from(TRON_DEFAULT_PATH));
+    
+    let xpub = recover_c_char(x_pub);
+
+    let xfp_bytes = extract_array!(master_fingerprint, u8, 4);
+    let mut array = [0u8; 4];
+    array.copy_from_slice(&xfp_bytes);
+    let xfp = bitcoin::bip32::Fingerprint::from(array);
+
+    match app_tron::check_tx_request(&json_bytes, &path, xfp, &xpub) {
+        Ok(_) => TransactionCheckResult::new().c_ptr(), 
+        Err(e) => TransactionCheckResult::from(e).c_ptr(),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn tron_parse_sign_request(
+    ptr: PtrUR,
+) -> *mut TransactionParseResult<DisplayTron> {
+    let req = extract_ptr_with_type!(ptr, TronSignRequest);
+    let json_bytes = req.get_sign_data();
+    let path = req
+        .get_derivation_path()
+        .get_path()
+        .unwrap_or_else(|| String::from(TRON_DEFAULT_PATH));
+
+    app_tron::parse_tx_request(&json_bytes, &path).map_or_else(
+        |e| TransactionParseResult::from(e).c_ptr(),
+        |parsed_tx| {
+            let display_tx = DisplayTron::from(parsed_tx);
+
+            TransactionParseResult::success(Box::into_raw(Box::new(display_tx))).c_ptr()
+        },
+    )
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn tron_sign_request(
+    ptr: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> *mut UREncodeResult {
+    let req = extract_ptr_with_type!(ptr, TronSignRequest);
+    let seed_slice = extract_array!(seed, u8, seed_len as usize);
+
+    let sign_res = (|| -> Result<Vec<u8>, KeystoneError> {
+        let json_bytes = req.get_sign_data();
+        let request_id = req.get_request_id();
+        let path = req
+            .get_derivation_path()
+            .get_path()
+           .unwrap_or_else(|| String::from(TRON_DEFAULT_PATH));
+
+        let signed_tx_hex = app_tron::sign_tx_request(&json_bytes, &path, seed_slice)
+            .map_err(|e| KeystoneError::SignTxFailed(e.to_string()))?;
+
+        let signed_tx_bytes = hex::decode(signed_tx_hex)
+            .map_err(|_| KeystoneError::SignTxFailed("Invalid Hex output".to_string()))?;
+        let sig_obj = TronSignature::new(request_id, signed_tx_bytes);
+        sig_obj
+            .to_bytes()
+            .map_err(|e| KeystoneError::SignTxFailed(e.to_string()))
+    })();
+
+    match sign_res {
+        Ok(data) => UREncodeResult::encode(
+            data,
+            TronSignature::get_registry_type().get_type(),
+            FRAGMENT_MAX_LENGTH_DEFAULT,
+        )
+        .c_ptr(),
+        Err(e) => UREncodeResult::from(e).c_ptr(),
+    }
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn tron_check_keystone(

@@ -6,8 +6,10 @@ extern crate core;
 #[macro_use]
 extern crate std;
 
-use crate::errors::Result;
+use crate::errors::{Result, TronError};
+use crate::utils::base58check_to_u8_slice;
 use alloc::string::String;
+use alloc::vec;
 
 use ur_registry::pb::protoc;
 
@@ -20,7 +22,11 @@ mod utils;
 pub use crate::address::get_address;
 pub use crate::transaction::parser::{DetailTx, OverviewTx, ParsedTx, TxParser};
 use crate::transaction::wrapped_tron::WrappedTron;
+use crate::utils::keccak256;
+use alloc::string::ToString;
 use app_utils::keystone;
+use core::str::FromStr;
+use keystore::algorithms::secp256k1;
 use transaction::checker::TxChecker;
 use transaction::signer::Signer;
 
@@ -40,6 +46,55 @@ pub fn parse_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) ->
 
 pub fn check_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) -> Result<()> {
     let tx_data = WrappedTron::from_payload(raw_tx, &context)?;
+    tx_data.check(&context)
+}
+
+pub fn sign_tx_request(json_bytes: &[u8], hd_path: &String, seed: &[u8]) -> errors::Result<String> {
+    let tx = WrappedTron::from_json_bytes(json_bytes, hd_path.clone())?;
+
+    let pubkey = secp256k1::get_public_key_by_seed(seed, hd_path)
+        .map_err(|e| TronError::KeystoreError(e.to_string()))?;
+
+    let derived_raw_address = {
+        // Get uncompressed public key (65 bytes), remove 0x04 prefix, keep 64 bytes
+        let uncompressed = pubkey.serialize_uncompressed();
+        let pubkey_hash_input = &uncompressed[1..65];
+
+        let digest = keccak256(pubkey_hash_input);
+
+        // Construct TRON address bytes: 0x41 + last 20 bytes of Keccak256 hash
+        let mut raw = vec![0x41u8];
+        raw.extend_from_slice(&digest[12..]);
+        raw
+    };
+    let json_from_bytes = base58check_to_u8_slice(tx.from.clone())?;
+
+    if derived_raw_address != json_from_bytes {
+        return Err(TronError::NoMyInputs);
+    }
+
+    let (signed_hex, _) = tx.sign(seed)?;
+    Ok(signed_hex)
+}
+
+pub fn parse_tx_request(json_bytes: &[u8], path: &String) -> errors::Result<ParsedTx> {
+    let tx = WrappedTron::from_json_bytes(json_bytes, path.clone())?;
+    let parsed_tx = tx.parse()?;
+    Ok(parsed_tx)
+}
+
+pub fn check_tx_request(
+    sign_data: &[u8],
+    path: &str,
+    master_fingerprint: bitcoin::bip32::Fingerprint,
+    xpub: &str,
+) -> Result<()> {
+    let mut tx_data = WrappedTron::from_json_bytes(sign_data, path.to_string())?;
+    tx_data.extended_pubkey = xpub.to_string();
+
+    let extended_pubkey = bitcoin::bip32::Xpub::from_str(xpub)
+        .map_err(|_| errors::TronError::InvalidParseContext(String::from("invalid xpub")))?;
+    let context = keystone::ParseContext::new(master_fingerprint, extended_pubkey);
     tx_data.check(&context)
 }
 
@@ -99,5 +154,149 @@ mod test {
         let context = prepare_parse_context(pubkey_str);
         let result = check_raw_tx(payload, context);
         assert!(result.is_ok());
+    }
+
+    // Helper function: compute TRON address from seed and path, used for test data construction
+    fn compute_address_from_seed(seed: &[u8], path: &String) -> String {
+        let pubkey = secp256k1::get_public_key_by_seed(seed, path).unwrap();
+        let uncompressed = pubkey.serialize_uncompressed();
+        let hash = keccak256(&uncompressed[1..65]);
+        let mut address_bytes = [0u8; 21];
+        address_bytes[0] = 0x41;
+        address_bytes[1..].copy_from_slice(&hash[12..]);
+        bitcoin::base58::encode_check(&address_bytes)
+    }
+
+    #[test]
+    fn test_sign_tx_request_success() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        let pubkey = secp256k1::get_public_key_by_seed(&seed, &path).unwrap();
+        let uncompressed = pubkey.serialize_uncompressed();
+        let digest = keccak256(&uncompressed[1..65]);
+        let mut raw = vec![0x41u8];
+        raw.extend_from_slice(&digest[12..]);
+        let correct_address = compute_address_from_seed(&seed, &path);
+
+        let json_str = format!(
+            r#"{{
+              "token": "TRX",
+              "contract_address": "",
+              "from": "{}",
+              "to": "{}",
+              "memo": "Test Transaction",
+              "value": "1000000",
+              "latest_block": {{
+                "hash": "000000000001e240dec2860d5e1687299b8f269d09ceea82e7b96408dab58bd2",
+                "number": 123456,
+                "timestamp": 1670000000
+              }},
+              "override": {{
+                "token_short_name": "TRX",
+                "token_full_name": "tron",
+                "decimals": 6
+              }},
+              "fee": 1000000
+            }}"#,
+            correct_address, correct_address
+        );
+
+        let result = sign_tx_request(json_str.as_bytes(), &path, &seed);
+        if let Err(ref e) = result {
+            std::println!("Sign Error Details: {:?}", e);
+        }
+
+        assert!(
+            result.is_ok(),
+            "Sign should succeed when address matches: {:?}",
+            result.err()
+        );
+    }
+
+    #[test]
+    fn test_sign_tx_request_address_mismatch() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        let json_str = r#"{"to":"TKCsXtfKfH2d6aEaQCctybDC9uaA3MSj2h","from":"TWrongAddressHash12345678901234567890","value":"1000000"}"#;
+
+        let result = sign_tx_request(json_str.as_bytes(), &path, &seed);
+
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), TronError::NoMyInputs));
+    }
+
+    #[test]
+    fn test_parse_tx_request() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let json_str = r#"{
+    "token": "TRX",
+    "contract_address": "",
+    "from": "TXhtYr8nmgiSp3dY3cSfiKBjed3zN8teHS",
+    "to": "TKCsXtfKfH2d6aEaQCctybDC9uaA3MSj2h",
+    "memo": "Test Transaction",
+    "value": "1000000",
+    "latest_block": {
+        "hash": "000000000001e240dec2860d5e1687299b8f269d09ceea82e7b96408dab58bd2",
+        "number": 123456,
+        "timestamp": 1670000000
+    },
+    "override": {
+        "token_short_name": "TRX",
+        "token_full_name": "tron",
+        "decimals": 6
+    },
+    "fee": 1000000
+}"#;
+
+        let result = parse_tx_request(json_str.as_bytes(), &path);
+        match result {
+            Ok(_) => (),
+            Err(e) => panic!("Transaction parse Failed with error: {:?}", e),
+        }
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert_eq!(parsed.overview.value, "1 TRX");
+    }
+
+    #[test]
+    fn test_check_tx_request() {
+        let path = "m/44'/195'/0'/0/0";
+        let xpub = "xpub6C3ndD75jvoARyqUBTvrsMZaprs2ZRF84kRTt5r9oxKQXn5oFChRRgrP2J8QhykhKACBLF2HxwAh4wccFqFsuJUBBcwyvkyqfzJU5gfn5pY";
+        let master_fingerprint = bitcoin::bip32::Fingerprint::from_str("73c5da0a").unwrap();
+
+        let correct_address = get_address(path.to_string(), &xpub.to_string()).unwrap();
+
+        let json_str = format!(
+            r#"{{
+            "token": "TRX",
+            "contract_address": "",
+            "xfp": "73c5da0a",
+            "memo": "Test Transaction",
+            "from": "{}",
+            "to": "TKCsXtfKfH2d6aEaQCctybDC9uaA3MSj2h",
+            "value": "1000000",
+            "latest_block": {{
+                "hash": "000000000001e240dec2860d5e1687299b8f269d09ceea82e7b96408dab58bd2",
+                "number": 123456,
+                "timestamp": 1670000000
+              }},
+              "override": {{
+                "token_short_name": "TRX",
+                "token_full_name": "tron",
+                "decimals": 6
+              }},
+              "fee": 1000000
+        }}"#,
+            correct_address
+        );
+
+        let result = check_tx_request(json_str.as_bytes(), path, master_fingerprint, xpub);
+
+        match result {
+            Ok(_) => (),
+            Err(e) => panic!("Transaction Check Failed with error: {:?}", e),
+        }
     }
 }

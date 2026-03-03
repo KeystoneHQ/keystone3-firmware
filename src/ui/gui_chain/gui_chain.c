@@ -36,6 +36,7 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_ADA_CATALYST:
     case REMAPVIEW_APT:
     case REMAPVIEW_AVAX:
+    case REMAPVIEW_TRX:
         return true;
     default:
         return false;

@@ -414,6 +414,8 @@ dependencies = [
  "prost",
  "prost-build",
  "prost-types",
+ "serde",
+ "serde_json",
  "thiserror-core",
  "ur-registry",
 ]
@@ -4771,7 +4773,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.52#12c4d08dad2e0fb7b7dd05c4c11540dccc2f63bc"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.53#c8da876418bd0f1bf31a9e7bc34a4b5e85890096"
 dependencies = [
  "hex",
  "ur",
@@ -4781,7 +4783,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.1"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.52#12c4d08dad2e0fb7b7dd05c4c11540dccc2f63bc"
+source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.53#c8da876418bd0f1bf31a9e7bc34a4b5e85890096"
 dependencies = [
  "bs58 0.5.1",
  "core2",

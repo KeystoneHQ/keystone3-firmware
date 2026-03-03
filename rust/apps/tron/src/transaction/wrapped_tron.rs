@@ -55,6 +55,47 @@ macro_rules! derivation_account_path {
 }
 
 impl WrappedTron {
+    pub fn from_json_bytes(json_bytes: &[u8], path: String) -> Result<Self> {
+        let json_str = core::str::from_utf8(json_bytes)
+            .map_err(|_| TronError::InvalidRawTxCryptoBytes("Invalid UTF-8".to_string()))?;
+
+        let temp_val: serde_json::Value = serde_json::from_str(json_str)
+            .map_err(|e| TronError::InvalidRawTxCryptoBytes(e.to_string()))?;
+    
+        let xfp = temp_val["xfp"].as_str().unwrap_or("").to_string();
+
+        let tx_data: protoc::TronTx = serde_json::from_str(json_str)
+            .map_err(|e| TronError::InvalidRawTxCryptoBytes(e.to_string()))?;
+
+        let mut token_short_name = None;
+        let mut divider = DIVIDER;
+        if let Some(ov) = &tx_data.r#override {
+            token_short_name = Some(ov.token_short_name.clone());
+            divider = 10u64.pow(ov.decimals as u32) as f64;
+        }
+
+        // use the existing transaction construction logic
+        let tron_tx: Transaction = if tx_data.contract_address.is_empty() {
+            Self::build_transfer_tx(&tx_data)?
+        } else {
+            Self::generate_trc20_tx(&tx_data)?
+        };
+
+        Ok(Self {
+            hd_path: path,
+            extended_pubkey: "".to_string(), // leave empty when no context
+            tron_tx,
+            xfp,
+            token: tx_data.token,
+            contract_address: tx_data.contract_address,
+            from: tx_data.from,
+            to: tx_data.to,
+            value: tx_data.value,
+            divider,
+            token_short_name,
+        })
+    }
+
     pub fn check_input(&self, context: &keystone::ParseContext) -> Result<()> {
         // check master fingerprint
         if self.xfp.to_uppercase() != hex::encode(context.master_fingerprint).to_uppercase() {
@@ -345,6 +386,60 @@ mod tests {
     use alloc::string::ToString;
     use bitcoin::bip32::Fingerprint;
     use core::str::FromStr;
+    use serde_json::json;
+
+    #[test]
+    fn test_from_json_bytes_success() {
+        let tron_tx_json = json!({
+          "token": "TRX",
+          "contract_address": "",
+          "from": "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH",
+          "to": "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH",
+          "memo": "Test Transaction",
+          "value": "1000000",
+          "latest_block": {
+            "hash": "000000000001e240dec2860d5e1687299b8f269d09ceea82e7b96408dab58bd2",
+            "number": 123456,
+            "timestamp": 1670000000
+          },
+          "override": {
+            "token_short_name": "TRX",
+            "token_full_name": "tron",
+            "decimals": 6
+          },
+          "fee": 1000000
+        });
+        let json_bytes = serde_json::to_vec(&tron_tx_json).unwrap();
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let result = WrappedTron::from_json_bytes(&json_bytes, path.clone());
+        // println!("RAW ADDRESS FROM JSON: [{}]", result.as_ref().map(|tx| tx.from.clone()).unwrap_or("None".to_string()));
+        if let Err(e) = &result {
+            std::eprintln!("Error detail: {:?}", e);
+        }
+        assert!(result.is_ok());
+        let tx = result.unwrap();
+        assert_eq!(tx.hd_path, path);
+        assert_eq!(tx.token, "TRX");
+        assert_eq!(tx.value, "1000000");
+        assert_eq!(tx.from, "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH");
+        assert_eq!(tx.to, "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH");
+    }
+
+    #[test]
+    fn test_from_json_bytes_invalid_utf8() {
+        let invalid_bytes = vec![0xFF, 0xFF, 0xFF];
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let result = WrappedTron::from_json_bytes(&invalid_bytes, path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_from_json_bytes_invalid_json() {
+        let invalid_json = b"not a json";
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let result = WrappedTron::from_json_bytes(invalid_json, path);
+        assert!(result.is_err());
+    }
 
     #[test]
     fn test_signature_hash() {
@@ -353,6 +448,7 @@ mod tests {
         let payload = prepare_payload(hex);
         let context = prepare_parse_context(pubkey_str);
         let tx = WrappedTron::from_payload(payload, &context).unwrap();
+        println!("Valid Address from Payload: {}", tx.from);
         let hash = tx.signature_hash().unwrap();
         assert_eq!(32, hash.len());
     }

@@ -55,6 +55,8 @@ use ur_registry::pb::protoc;
 use ur_registry::pb::protoc::Base;
 #[cfg(feature = "solana")]
 use ur_registry::solana::sol_sign_request::SolSignRequest;
+#[cfg(feature = "tron")]
+use ur_registry::tron::tron_sign_request::TronSignRequest;
 #[cfg(feature = "stellar")]
 use ur_registry::stellar::stellar_sign_request::{SignType as StellarSignType, StellarSignRequest};
 #[cfg(feature = "sui")]
@@ -225,6 +227,13 @@ impl InferViewType for ZcashPczt {
 impl InferViewType for AvaxSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::AvaxTx)
+    }
+}
+
+#[cfg(feature = "tron")]
+impl InferViewType for TronSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::TronTx)
     }
 }
 

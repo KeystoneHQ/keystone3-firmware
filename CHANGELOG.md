@@ -1,11 +1,17 @@
 
-## 2.3.10(2026-2-26)
+## 2.3.10(2026-3-4)
 
 **Web3:**
+
 
 ### What's new
 1. Supported managing ADA via Keystone Nexus
 2. Supported managing ADA via Gero Extension
+
+
+**Cypherpunk:**
+### Bug Fixes
+1. Fixed the signing issue for shielding transparent ZEC transactions.
 
 
 ## 2.3.8(2026-2-9)

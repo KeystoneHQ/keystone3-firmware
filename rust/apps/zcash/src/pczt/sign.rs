@@ -105,7 +105,7 @@ impl PcztSigner for SeedSigner<'_> {
 pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
     let signer = low_level_signer::Signer::new(pczt);
 
-    #[cfg(feature = "multi_coins")]
+    #[cfg(any(feature = "multi_coins", feature = "cypherpunk"))]
     let signer = pczt_ext::sign_transparent(signer, &SeedSigner { seed })
         .map_err(|e| ZcashError::SigningError(e.to_string()))?;
     #[cfg(feature = "cypherpunk")]

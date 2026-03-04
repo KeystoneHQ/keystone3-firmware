@@ -10,6 +10,7 @@
 
 
 **Cypherpunk:**
+
 ### Bug Fixes
 1. Fixed the signing issue for shielding transparent ZEC transactions.
 

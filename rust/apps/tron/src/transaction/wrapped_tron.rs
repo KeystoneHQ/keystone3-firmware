@@ -10,7 +10,6 @@ use alloc::vec::Vec;
 use alloc::{format, vec};
 use app_utils::keystone;
 use ascii::AsciiStr;
-use core::ops::Div;
 use core::str::FromStr;
 use cryptoxide::hashing;
 use ethabi::{
@@ -54,46 +53,104 @@ macro_rules! derivation_account_path {
     }};
 }
 
+const KNOWN_TOKENS: [(&str, &str, f64); 1] =
+    [("TR7NHqjeKQxGChmqiAkX65phN6kkXNGA2h", "USDT", DIVIDER)];
+
 impl WrappedTron {
-    pub fn from_json_bytes(json_bytes: &[u8], path: String) -> Result<Self> {
-        let json_str = core::str::from_utf8(json_bytes)
-            .map_err(|_| TronError::InvalidRawTxCryptoBytes("Invalid UTF-8".to_string()))?;
-
-        let temp_val: serde_json::Value = serde_json::from_str(json_str)
-            .map_err(|e| TronError::InvalidRawTxCryptoBytes(e.to_string()))?;
-    
-        let xfp = temp_val["xfp"].as_str().unwrap_or("").to_string();
-
-        let tx_data: protoc::TronTx = serde_json::from_str(json_str)
-            .map_err(|e| TronError::InvalidRawTxCryptoBytes(e.to_string()))?;
-
-        let mut token_short_name = None;
-        let mut divider = DIVIDER;
-        if let Some(ov) = &tx_data.r#override {
-            token_short_name = Some(ov.token_short_name.clone());
-            divider = 10u64.pow(ov.decimals as u32) as f64;
-        }
-
-        // use the existing transaction construction logic
-        let tron_tx: Transaction = if tx_data.contract_address.is_empty() {
-            Self::build_transfer_tx(&tx_data)?
-        } else {
-            Self::generate_trc20_tx(&tx_data)?
+    pub fn from_raw_transaction(raw_tx: Transaction, path: String) -> Result<Self> {
+        let mut instance = Self {
+            tron_tx: raw_tx,
+            hd_path: path,
+            extended_pubkey: String::new(),
+            xfp: String::new(),
+            token: "TRX".to_string(),
+            contract_address: String::new(),
+            from: String::new(),
+            to: String::new(),
+            value: "0".to_string(),
+            divider: DIVIDER,
+            token_short_name: None,
         };
 
-        Ok(Self {
-            hd_path: path,
-            extended_pubkey: "".to_string(), // leave empty when no context
-            tron_tx,
-            xfp,
-            token: tx_data.token,
-            contract_address: tx_data.contract_address,
-            from: tx_data.from,
-            to: tx_data.to,
-            value: tx_data.value,
-            divider,
-            token_short_name,
-        })
+        if let Some(raw) = &instance.tron_tx.raw_data {
+            if let Some(contract) = raw.contract.get(0) {
+                use crate::pb::protocol::transaction::contract::ContractType;
+                let c_type = ContractType::from_i32(contract.r#type)
+                    .unwrap_or(ContractType::TransferContract);
+
+                if let Some(param) = &contract.parameter {
+                    match c_type {
+                        // A. TRX Transfer
+                        ContractType::TransferContract => {
+                            let ct =
+                                TransferContract::decode(param.value.as_slice()).map_err(|_| {
+                                    TronError::InvalidRawTxCryptoBytes(
+                                        "TransferContract decode failed".to_string(),
+                                    )
+                                })?;
+                            instance.from = bitcoin::base58::encode_check(&ct.owner_address);
+                            instance.to = bitcoin::base58::encode_check(&ct.to_address);
+                            instance.value = ct.amount.to_string();
+                            instance.token = "TRX".to_string();
+                            instance.divider = DIVIDER;
+                        }
+
+                        // B. TRC-20 Transfer
+                        ContractType::TriggerSmartContract => {
+                            let ct = TriggerSmartContract::decode(param.value.as_slice()).map_err(
+                                |_| {
+                                    TronError::InvalidRawTxCryptoBytes(
+                                        "TriggerSmartContract decode failed".to_string(),
+                                    )
+                                },
+                            )?;
+                            instance.from = bitcoin::base58::encode_check(&ct.owner_address);
+                            instance.contract_address =
+                                bitcoin::base58::encode_check(&ct.contract_address);
+
+                            if ct.data.len() >= 68 && &ct.data[0..4] == &[0xa9, 0x05, 0x9c, 0xbb] {
+                                let mut to_addr_bytes = vec![0x41u8];
+                                to_addr_bytes.extend_from_slice(&ct.data[16..36]);
+                                instance.to = bitcoin::base58::encode_check(&to_addr_bytes);
+
+                                let amount_bytes = &ct.data[36..68];
+                                instance.value =
+                                    ethabi::ethereum_types::U256::from_big_endian(amount_bytes)
+                                        .to_string();
+
+                                if let Some(token_info) = KNOWN_TOKENS
+                                    .iter()
+                                    .find(|t| t.0 == instance.contract_address)
+                                {
+                                    instance.token = token_info.1.to_string();
+                                    instance.divider = token_info.2;
+                                } else {
+                                    instance.token = "TRC20".to_string();
+                                    instance.divider = 10u64.pow(18) as f64;
+                                }
+                            }
+                        }
+
+                        // C. TRC-10 Transfer
+                        ContractType::TransferAssetContract => {
+                            let ct = TransferAssetContract::decode(param.value.as_slice())
+                                .map_err(|_| {
+                                    TronError::InvalidRawTxCryptoBytes(
+                                        "TransferAssetContract decode failed".to_string(),
+                                    )
+                                })?;
+                            instance.from = bitcoin::base58::encode_check(&ct.owner_address);
+                            instance.to = bitcoin::base58::encode_check(&ct.to_address);
+                            instance.value = ct.amount.to_string();
+                            instance.token = String::from_utf8_lossy(&ct.asset_name).to_string();
+                            instance.divider = DIVIDER;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+        Ok(instance)
     }
 
     pub fn check_input(&self, context: &keystone::ParseContext) -> Result<()> {
@@ -353,24 +410,59 @@ impl WrappedTron {
     }
 
     pub fn format_amount(&self) -> Result<String> {
-        let value = f64::from_str(self.value.as_str())?;
+        let raw_val = f64::from_str(self.value.as_str())?;
+        let amount = raw_val / self.divider;
         let unit = self.format_unit()?;
-        Ok(format!("{} {}", value.div(self.divider), unit))
+        let precision = match self.divider as u64 {
+            1 => 0,
+            1_000_000 => 6,
+            1_000_000_000_000_000_000 => 18,
+            _ => {
+                let mut count = 0;
+                let mut d = self.divider as u64;
+                while d >= 10 {
+                    d /= 10;
+                    count += 1;
+                }
+                count as usize
+            }
+        };
+        let formatted = format!("{:.*}", precision, amount);
+        let trimmed = if formatted.contains('.') {
+            formatted
+                .trim_end_matches('0')
+                .trim_end_matches('.')
+                .to_string()
+        } else {
+            formatted
+        };
+
+        let final_value = if trimmed == "0" && raw_val > 0.0 {
+            format!("{:.*}", precision, amount)
+        } else {
+            trimmed
+        };
+
+        Ok(format!("{} {}", final_value, unit))
     }
 
     pub fn format_method(&self) -> Result<String> {
         if !self.contract_address.is_empty() {
             Ok("TRC-20 Transfer".to_string())
-        } else if !self.token.is_empty() && self.token.to_uppercase() != "TRX" {
+        } else if !self.token.is_empty() && self.token != "TRX" {
             Ok("TRC-10 Transfer".to_string())
         } else {
             Ok("TRX Transfer".to_string())
         }
     }
     pub fn format_unit(&self) -> Result<String> {
-        match self.token_short_name.to_owned() {
-            Some(name) => Ok(name),
-            _ => Ok("TRX".to_string()),
+        if let Some(ref name) = self.token_short_name {
+            return Ok(name.clone());
+        }
+        if !self.token.is_empty() {
+            Ok(self.token.clone())
+        } else {
+            Ok("TRX".to_string())
         }
     }
 }
@@ -386,60 +478,6 @@ mod tests {
     use alloc::string::ToString;
     use bitcoin::bip32::Fingerprint;
     use core::str::FromStr;
-    use serde_json::json;
-
-    #[test]
-    fn test_from_json_bytes_success() {
-        let tron_tx_json = json!({
-          "token": "TRX",
-          "contract_address": "",
-          "from": "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH",
-          "to": "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH",
-          "memo": "Test Transaction",
-          "value": "1000000",
-          "latest_block": {
-            "hash": "000000000001e240dec2860d5e1687299b8f269d09ceea82e7b96408dab58bd2",
-            "number": 123456,
-            "timestamp": 1670000000
-          },
-          "override": {
-            "token_short_name": "TRX",
-            "token_full_name": "tron",
-            "decimals": 6
-          },
-          "fee": 1000000
-        });
-        let json_bytes = serde_json::to_vec(&tron_tx_json).unwrap();
-        let path = "m/44'/195'/0'/0/0".to_string();
-        let result = WrappedTron::from_json_bytes(&json_bytes, path.clone());
-        // println!("RAW ADDRESS FROM JSON: [{}]", result.as_ref().map(|tx| tx.from.clone()).unwrap_or("None".to_string()));
-        if let Err(e) = &result {
-            std::eprintln!("Error detail: {:?}", e);
-        }
-        assert!(result.is_ok());
-        let tx = result.unwrap();
-        assert_eq!(tx.hd_path, path);
-        assert_eq!(tx.token, "TRX");
-        assert_eq!(tx.value, "1000000");
-        assert_eq!(tx.from, "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH");
-        assert_eq!(tx.to, "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH");
-    }
-
-    #[test]
-    fn test_from_json_bytes_invalid_utf8() {
-        let invalid_bytes = vec![0xFF, 0xFF, 0xFF];
-        let path = "m/44'/195'/0'/0/0".to_string();
-        let result = WrappedTron::from_json_bytes(&invalid_bytes, path);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_from_json_bytes_invalid_json() {
-        let invalid_json = b"not a json";
-        let path = "m/44'/195'/0'/0/0".to_string();
-        let result = WrappedTron::from_json_bytes(invalid_json, path);
-        assert!(result.is_err());
-    }
 
     #[test]
     fn test_signature_hash() {

@@ -30,26 +30,31 @@ pub unsafe extern "C" fn tron_check_sign_request(
     master_fingerprint: PtrBytes,
     length: u32,
 ) -> PtrT<TransactionCheckResult> {
-    if length != 4 {
+   if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-
     let req = extract_ptr_with_type!(ptr, TronSignRequest);
-    let json_bytes = req.get_sign_data();
-    let path = req
-        .get_derivation_path()
-        .get_path()
-        .unwrap_or_else(|| String::from(TRON_DEFAULT_PATH));
+    let mfp = extract_array!(master_fingerprint, u8, 4);
+    if let Ok(mfp) = (mfp.try_into() as Result<[u8; 4], _>) {
+        let derivation_path = req.get_derivation_path();
+        if let Some(ur_mfp) = derivation_path.get_source_fingerprint() {
+            if mfp != ur_mfp {
+                return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+            }
+        } else {
+            return TransactionCheckResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+        }
+    } else {
+        return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
+    }
     
-    let xpub = recover_c_char(x_pub);
+    let x_pub_recovered = recover_c_char(x_pub); 
+    let xpub_str = x_pub_recovered.as_str();
+    let sign_data = req.get_sign_data();
+    let path = req.get_derivation_path().get_path().unwrap_or_default();
 
-    let xfp_bytes = extract_array!(master_fingerprint, u8, 4);
-    let mut array = [0u8; 4];
-    array.copy_from_slice(&xfp_bytes);
-    let xfp = bitcoin::bip32::Fingerprint::from(array);
-
-    match app_tron::check_tx_request(&json_bytes, &path, xfp, &xpub) {
-        Ok(_) => TransactionCheckResult::new().c_ptr(), 
+    match app_tron::check_tx_request(&sign_data, &path, xpub_str) {
+        Ok(_) => TransactionCheckResult::new().c_ptr(),
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
     }
 }

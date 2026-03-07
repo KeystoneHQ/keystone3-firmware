@@ -176,7 +176,7 @@ void InitBootParam(void)
     if (needSave) {
         SaveBootParam();
     } else {
-        AesDecryptBuffer(&g_bootParam, sizeof(g_bootParam), &bootParam);
+        AesDecryptBuffer((uint8_t *)&g_bootParam, sizeof(g_bootParam), (uint8_t *)&bootParam);
         PrintArray("bootParam.bootCheckFlag", g_bootParam.bootCheckFlag, sizeof(g_bootParam.bootCheckFlag));
         PrintArray("bootParam.recoveryModeSwitch", g_bootParam.recoveryModeSwitch, sizeof(g_bootParam.recoveryModeSwitch));
         if (memcmp(g_bootParam.recoveryModeSwitch, g_recoveryModeFlag, sizeof(g_bootParam.recoveryModeSwitch)) == 0) {

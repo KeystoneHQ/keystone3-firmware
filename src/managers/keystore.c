@@ -26,6 +26,7 @@
 #include "librust_c.h"
 #include "assert.h"
 #include "secret_cache.h"
+#include "memzero.h"
 #include "drv_mpu.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"

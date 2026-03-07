@@ -15,6 +15,7 @@
 #include "device_setting.h"
 #include "cjson/cJSON.h"
 #include "gui_hintbox.h"
+#include "gui_pending_hintbox.h"
 #include "gui_views.h"
 
 static void decodeEthContractData(void *parseResult);

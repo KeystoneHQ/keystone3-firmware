@@ -676,7 +676,7 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
 #ifdef CYPHERPUNK_VERSION
             } else if (!strcmp(walletList[i].name, "ZEC")) {
-                if (GetMnemonicType() == MNEMONIC_TYPE_BIP39) {
+                if (IsZcashSupported()) {
                     cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
                 }
             } else if (!strcmp(walletList[i].name, "XMR")) {
@@ -912,8 +912,11 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
                 // slip39 wallet does not support:
                 // ADA
-                // Zcash
-                if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED
+                // Zcash (when entropy < 32 bytes, i.e. 20-word shares)
+                if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02
+#ifndef BTC_ONLY
+                                 || (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED && !IsZcashSupported())
+#endif
 #ifdef WEB3_VERSION
                                  || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY
 #endif
@@ -1085,7 +1088,10 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
         }
 
         for (i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
-            if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED
+            if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02
+#ifndef BTC_ONLY
+                             || (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED && !IsZcashSupported())
+#endif
 #ifdef WEB3_VERSION
                              || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY
 #endif

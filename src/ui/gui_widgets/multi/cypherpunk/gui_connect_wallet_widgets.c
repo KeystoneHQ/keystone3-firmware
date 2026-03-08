@@ -158,16 +158,13 @@ static void GuiInitWalletListArray()
         bool enable = true;
         int index = g_walletListArray[i].index;
 
-        MnemonicType mnemonicType = GetMnemonicType();
-        bool isSlip39 = (mnemonicType == MNEMONIC_TYPE_SLIP39);
-
         switch (index) {
         // case WALLET_LIST_CAKE:
         case WALLET_LIST_FEATHER:
             enable = !isSLIP39;
             break;
         case WALLET_LIST_ZASHI:
-            enable = !isSlip39;
+            enable = IsZcashSupported();
             break;
         default:
             break;

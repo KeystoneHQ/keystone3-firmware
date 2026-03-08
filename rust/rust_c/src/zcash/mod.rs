@@ -266,14 +266,15 @@ mod tests {
     fn test_aes256_cbc_encrypt() {
         let mut data = convert_c_char("hello world".to_string());
         let mut password = convert_c_char("password".to_string());
-        let mut seed = hex::decode("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000").unwrap();
+        let mut seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
         let iv = unsafe { rust_derive_iv_from_seed(seed.as_mut_ptr(), 64) };
         let mut iv = unsafe { slice::from_raw_parts_mut((*iv).data, 16) };
         let iv_len = 16;
         let ct = unsafe { rust_aes256_cbc_encrypt(data, password, iv.as_mut_ptr(), iv_len as u32) };
+        assert!(!ct.is_null());
         let ct_vec = unsafe { (*ct).data };
         let value = unsafe { recover_c_char(ct_vec) };
-        assert_eq!(value, "639194f4bf964e15d8ea9c9bd9d96918");
+        assert_eq!(value, "4989eed8515d7d3fcc16b009d8cdff9e");
     }
 
     #[test]
@@ -281,9 +282,20 @@ mod tests {
         //8dd387c3b2656d9f24ace7c3daf6fc26a1c161098460f8dddd37545fc951f9cd7da6c75c71ae52f32ceb8827eca2169ef4a643d2ccb9f01389d281a85850e2ddd100630ab1ca51310c3e6ccdd3029d0c48db18cdc971dba8f0daff9ad281b56221ffefc7d32333ea310a1f74f99dea444f8a089002cf1f0cd6a4ddf608a7b5388dc09f9417612657b9bf335a466f951547f9707dd129b3c24c900a26010f51c543eba10e9aabef7062845dc6969206b25577a352cb4d984db67c54c7615fe60769726bffa59fd8bd0b66fe29ee3c358af13cf0796c2c062bc79b73271eb0366f0536e425f8e42307ead4c695804fd3281aca5577d9a621e3a8047b14128c280c45343b5bbb783a065d94764e90ad6820fe81a200637401c256b1fb8f58a9d412d303b89c647411662907cdc55ed93adb
         //73e6ca87d5cd5622cdc747367905efe7
         //68487dc295052aa79c530e283ce698b8c6bb1b42ff0944252e1910dbecdc5425
-        let data = convert_c_char("639194f4bf964e15d8ea9c9bd9d96918".to_string());
+        let mut seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        // First encrypt to get ciphertext
+        let enc_data = convert_c_char("hello world".to_string());
+        let enc_password = convert_c_char("password".to_string());
+        let iv_resp = unsafe { rust_derive_iv_from_seed(seed.as_mut_ptr(), 64) };
+        let mut iv_enc = unsafe { slice::from_raw_parts_mut((*iv_resp).data, 16) };
+        let ct =
+            unsafe { rust_aes256_cbc_encrypt(enc_data, enc_password, iv_enc.as_mut_ptr(), 16) };
+        let ct_hex = unsafe { recover_c_char((*ct).data) };
+        assert_eq!(ct_hex, "4989eed8515d7d3fcc16b009d8cdff9e");
+
+        // Now decrypt
+        let data = convert_c_char(ct_hex);
         let password = convert_c_char("password".to_string());
-        let mut seed = hex::decode("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000").unwrap();
         let iv = unsafe { rust_derive_iv_from_seed(seed.as_mut_ptr(), 64) };
         let iv = unsafe { slice::from_raw_parts_mut((*iv).data, 16) };
         let iv_len = 16;
@@ -297,7 +309,7 @@ mod tests {
     #[test]
     fn test_dep_aes256() {
         let mut data = b"hello world";
-        let seed = hex::decode("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000").unwrap();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
         let iv_path = "m/44'/1557192335'/0'/2'/0'".to_string();
         let iv = get_private_key_by_seed(&seed, &iv_path).unwrap();
         let mut iv_bytes = [0; 16];

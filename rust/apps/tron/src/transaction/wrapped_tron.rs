@@ -36,6 +36,7 @@ pub struct WrappedTron {
     pub(crate) value: String,
     pub(crate) token_short_name: Option<String>,
     pub(crate) divider: f64,
+    pub(crate) fee_limit: u64,
 }
 
 #[macro_export]
@@ -70,9 +71,11 @@ impl WrappedTron {
             value: "0".to_string(),
             divider: DIVIDER,
             token_short_name: None,
+            fee_limit: 0,
         };
 
         if let Some(raw) = &instance.tron_tx.raw_data {
+            instance.fee_limit = raw.fee_limit as u64;
             if let Some(contract) = raw.contract.get(0) {
                 use crate::pb::protocol::transaction::contract::ContractType;
                 let c_type = ContractType::from_i32(contract.r#type)
@@ -125,8 +128,8 @@ impl WrappedTron {
                                     instance.token = token_info.1.to_string();
                                     instance.divider = token_info.2;
                                 } else {
-                                    instance.token = "TRC20".to_string();
-                                    instance.divider = 10u64.pow(18) as f64;
+                                    instance.token = "Unknown-TRC20".to_string();
+                                    instance.divider = 10u64.pow(6) as f64;
                                 }
                             }
                         }
@@ -389,6 +392,11 @@ impl WrappedTron {
                 } else {
                     Self::generate_trc20_tx(tx)
                 }?;
+                let fee_limit = if let Some(raw) = &tron_tx.raw_data {
+                    raw.fee_limit as u64
+                } else {
+                    0
+                };
                 Ok(Self {
                     hd_path: content.hd_path,
                     extended_pubkey: context.extended_public_key.to_string(),
@@ -401,6 +409,7 @@ impl WrappedTron {
                     value: tx.value.to_string(),
                     divider,
                     token_short_name,
+                    fee_limit,
                 })
             }
             _ => Err(TronError::InvalidRawTxCryptoBytes(

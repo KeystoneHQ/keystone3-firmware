@@ -25,6 +25,7 @@ static const GuiFontDesc_t g_langFontArr[] = {
     {LANG_ES, &esTitle, &esLittleTitle, &esText, &esIllustrate, &esIllustrate},
     {LANG_DE, &deTitle, &deLittleTitle, &deText, &deIllustrate, &deIllustrate},
     {LANG_JA, &jaTitle, &jaLittleTitle, &jaText, &jaIllustrate, &jaIllustrate},
+    {LANG_PL, &plTitle, &plLittleTitle, &plText, &plIllustrate, &plIllustrate},
 };
 
 static void GuiBtnmStyleInit(void)

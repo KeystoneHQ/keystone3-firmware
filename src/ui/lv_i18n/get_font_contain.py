@@ -69,6 +69,7 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
             'es': 'NotoSans-Regular.ttf',
             'de': 'NotoSans-Regular.ttf',
             'ja': 'NotoSansJP-Regular.ttf',
+            'pl': 'NotoSans-Regular.ttf',
         }
         if os.environ.get('SHELL') == '/bin/zsh':
             unique_characters = '\"' + '\\\"' + unique_characters + " " + "\""
@@ -101,7 +102,7 @@ def extract_unique_characters(df, font_size, column):
     return text
 
 def main():
-    for language in ['cn', 'ko', 'ru', 'es', 'de', 'ja']:
+    for language in ['cn', 'ko', 'ru', 'es', 'de', 'ja', 'pl']:
         try:
             df = pd.read_csv('data.csv')
             font_labels = {

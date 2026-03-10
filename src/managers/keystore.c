@@ -735,7 +735,7 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
             break;
         }
         memcpy_s(seed, sizeof(seed), resultSeed->data, SEED_LEN);
-        free_VecFFI_u8(resultSeed);
+        // free_VecFFI_u8(resultSeed);
         memcpy_s(accountSecret.seed, sizeof(accountSecret.seed), seed, SEED_LEN);
 
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);

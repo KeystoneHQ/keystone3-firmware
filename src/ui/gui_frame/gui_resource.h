@@ -331,5 +331,9 @@ LV_FONT_DECLARE(jaTitle);
 LV_FONT_DECLARE(jaLittleTitle);
 LV_FONT_DECLARE(jaText);
 LV_FONT_DECLARE(jaIllustrate);
+LV_FONT_DECLARE(plTitle);
+LV_FONT_DECLARE(plLittleTitle);
+LV_FONT_DECLARE(plText);
+LV_FONT_DECLARE(plIllustrate);
 
 #endif /* _GUI_RESOURCE_H */

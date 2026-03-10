@@ -69,10 +69,10 @@ void *GuiGetAvaxGUIData(void)
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
         keys[1].path = "m/44'/9000'/0'";
         keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
-        PtrT_TransactionParseResult_DisplayTonTransaction parseResult = avax_parse_transaction(data, mfp, sizeof(mfp), public_keys);
+        // PtrT_TransactionParseResult_DisplayTonTransaction parseResult = avax_parse_transaction(data, mfp, sizeof(mfp), public_keys);
         SRAM_FREE(public_keys);
-        CHECK_CHAIN_BREAK(parseResult);
-        g_parseResult = (void *)parseResult;
+        // CHECK_CHAIN_BREAK(parseResult);
+        // g_parseResult = (void *)parseResult;
     } while (0);
     return g_parseResult;
 }

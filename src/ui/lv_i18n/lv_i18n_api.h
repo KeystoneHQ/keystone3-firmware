@@ -11,6 +11,7 @@ typedef enum {
     LANG_ES,
     LANG_DE,
     LANG_JA,
+    LANG_PL,
     LANG_TYPE_BUTT,
 } LANG_TYPE_ENUM;
 

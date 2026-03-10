@@ -280,6 +280,8 @@ fn parse_pskt_to_display(
         } else {
             "Owned Input".to_string()
         };
+        println!("DEBUG: address:{}", address);
+
 
         inputs.push(DisplayKaspaInput {
             address: convert_c_char(address),
@@ -330,20 +332,21 @@ fn parse_pskt_to_display(
         total_output += output.amount;
     }
 
+    if outputs.is_empty() {
+        outputs.push(DisplayKaspaOutput {
+            address: convert_c_char("DEBUG_EMPTY_ADDRESS".to_string()),
+            amount: convert_c_char("10 KAS".to_string()),
+            value: 10,
+            path: core::ptr::null_mut(),
+            is_mine: false,
+            is_external: true,
+        });
+    }
+
+
     // 3. fee
     let fee = total_input.saturating_sub(total_output);
-    println!("DEBUG: inputs len: {}, outputs len: {}", inputs.len(), outputs.len());
-    if outputs.is_empty() {
-    outputs.push(DisplayKaspaOutput {
-        address: convert_c_char("DEBUG_EMPTY_ADDRESS".to_string()),
-        amount: convert_c_char("0 KAS".to_string()),
-        value: 0,
-        path: core::ptr::null_mut(),
-        is_mine: false,
-        is_external: true,
-    });
-}
-    println!("DEBUG: inputs len: {}, outputs len: {}", inputs.len(), outputs.len());
+    println!("DEBUG: inputs len: {}, outputs len: {}", inputs.len(), outputs.len());  
 
 
     Ok(DisplayKaspaTx {
@@ -361,12 +364,12 @@ fn parse_pskt_to_display(
 pub fn script_to_address(script_hex: &str) -> app_kaspa::errors::Result<String> {
     let script_bytes = hex::decode(script_hex).map_err(|_| KaspaError::InvalidScript)?;
 
-    if script_bytes.len() == 22 && script_bytes[0] == 0xaa && script_bytes[21] == 0x87 {
-        return encode_kaspa_address(&script_bytes[1..21]);
+    if script_bytes.len() == 34 && script_bytes[0] == 0x20 && script_bytes[33] == 0xac {
+        return encode_kaspa_address(&script_bytes[1..33]);
     }
 
     Err(KaspaError::Unsupported(
-        "Only P2PKH scripts are supported".into(),
+        "Only P2PK scripts are supported".into(),
     ))
 }
 
@@ -423,7 +426,7 @@ mod tests {
         {
             "utxoEntry": {
                 "amount": 12793000000000,
-                "scriptPublicKey": "0000aa2064fc0dd5620294747e5d9523178964e27a3578f687f5b1b1b26abd024ca538df87",
+                "scriptPublicKey": "2046bc38c7f9984920268f7004f1a265691e92d2719630c8227b4010a390098f48ac",
                 "blockDaaScore": 36151168,
                 "isCoinbase": false
             },
@@ -450,7 +453,7 @@ mod tests {
     "outputs": [
         {
             "amount": 1000000000000,
-            "scriptPublicKey": "0000aa2064fc0dd5620294747e5d9523178964e27a3578f687f5b1b1b26abd024ca538df87",
+            "scriptPublicKey": "2046bc38c7f9984920268f7004f1a265691e92d2719630c8227b4010a390098f48ac",
             "bip32Derivations": {}
         }
     ]
@@ -459,7 +462,8 @@ mod tests {
         let mut pskt: Pskt = serde_json::from_str(pskt_json).expect("parse pskt json");
         let hex_str = pskt.to_hex().expect("pskt to hex");
 
-        let kaspa_ur = KaspaPskt::new(hex_str.into_bytes());
+        let mut kaspa_ur = KaspaPskt::new(hex_str.into_bytes());
+        let ur_ptr = &mut kaspa_ur as *mut KaspaPskt as PtrUR;
         // Print UR fragments for manual QR rendering
         if let Ok(data) = kaspa_ur.to_bytes() {
             if let Ok(enc) =
@@ -491,7 +495,7 @@ mod tests {
         let pskt_len = pskt_raw_bytes.len() as u32;
         let mut mfp = [0xdeu8, 0xadu8, 0xbeu8, 0xefu8];
 
-        let res_ptr = unsafe { kaspa_parse_pskt(pskt_ptr, pskt_len, mfp.as_mut_ptr(), 4) };
+        let res_ptr = unsafe { kaspa_parse_pskt(ur_ptr, mfp.as_mut_ptr(), 4) };
         assert!(!res_ptr.is_null(), "result pointer is null");
 
         let data_ptr_raw: *mut *mut DisplayKaspaTx = res_ptr as *mut *mut DisplayKaspaTx;
@@ -506,7 +510,7 @@ mod tests {
 
         // totals (match mock data)
         assert_eq!(display.total_input, 12793000000000u64);
-        assert_eq!(display.total_output, u64);
+        assert_eq!(display.total_output, 1000000000000u64);
 
         // inputs array
         let inputs_len = display.inputs.size as usize;

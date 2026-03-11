@@ -73,11 +73,7 @@ pub fn parse_tx_request(sign_data: &[u8], path: &String) -> Result<ParsedTx> {
     tx.parse()
 }
 
-pub fn check_tx_request(
-    sign_data: &[u8], 
-    path: &str,
-    xpub: &str
-    ) -> errors::Result<()> {
+pub fn check_tx_request(sign_data: &[u8], path: &str, xpub: &str) -> errors::Result<()> {
     let derived_address = get_address(path.to_string(), &xpub.to_string())?;
     let tx = decode_to_wrapped(sign_data, path.to_string())?;
 

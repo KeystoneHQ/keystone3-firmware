@@ -85,6 +85,7 @@ pub unsafe extern "C" fn tron_sign_request(
     ptr: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
+    fragment_len: usize,
 ) -> *mut UREncodeResult {
     let req = extract_ptr_with_type!(ptr, TronSignRequest);
     let seed_slice = extract_array!(seed, u8, seed_len as usize);
@@ -112,12 +113,13 @@ pub unsafe extern "C" fn tron_sign_request(
         Ok(data) => UREncodeResult::encode(
             data,
             TronSignature::get_registry_type().get_type(),
-            FRAGMENT_MAX_LENGTH_DEFAULT,
+            fragment_len,
         )
         .c_ptr(),
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }
+
 
 #[no_mangle]
 pub unsafe extern "C" fn tron_check_keystone(

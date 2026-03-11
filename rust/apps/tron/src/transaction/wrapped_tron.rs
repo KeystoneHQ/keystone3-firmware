@@ -554,7 +554,10 @@ mod tests {
         let mut tx = WrappedTron::from_payload(payload, &context).unwrap();
 
         tx.from = "TAddressNotMine".to_string();
-        assert!(matches!(tx.check_input(&context), Err(TronError::NoMyInputs)));
+        assert!(matches!(
+            tx.check_input(&context),
+            Err(TronError::NoMyInputs)
+        ));
     }
 
     #[test]
@@ -565,12 +568,12 @@ mod tests {
         let context = prepare_parse_context(pubkey_str);
         let mut tx = WrappedTron::from_payload(payload, &context).unwrap();
 
-        tx.xfp = hex::encode(context.master_fingerprint); 
-        
+        tx.xfp = hex::encode(context.master_fingerprint);
+
         tx.from = "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdX".to_string();
-        
+
         let result = tx.check_input(&context);
-        
+
         assert!(matches!(result, Err(TronError::NoMyInputs)));
     }
 

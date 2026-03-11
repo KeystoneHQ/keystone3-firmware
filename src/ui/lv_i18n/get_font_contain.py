@@ -69,7 +69,7 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
             'es': 'NotoSans-Regular.ttf',
             'de': 'NotoSans-Regular.ttf',
             'ja': 'NotoSansJP-Regular.ttf',
-            'pl': 'NotoSans-Regular.ttf',
+            'pl': 'Lato-Regular.ttf',
         }
         if os.environ.get('SHELL') == '/bin/zsh':
             unique_characters = '\"' + '\\\"' + unique_characters + " " + "\""
@@ -92,8 +92,13 @@ def extract_unique_characters(df, font_size, column):
         28: "·QWERTYUIOPASDFGHJKLZXCVBNM,/:\";'[]<>~!@#$%^&*()_+=0987654321·qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM[]{}#%^*+=_\\|~<>€£¥·-/:;()$&`.?!'@",
         36: "·QWERTYUIOPASDFGHJKLZXCVBNM,/:\";'[]<>~!@#$%^&*()_+=0987654321·qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM[]{}#%^*+=_\\|~<>€£¥·-/:;()$&`.?!'@",
     }
+    language_required_chars = {
+        'pl': "ąćęłńóśźżĄĆĘŁŃÓŚŹŻ",
+    }
     unique_chars = set(additional_chars.get(font_size, additional_chars[28]))
-    subset = df[df['font'] == font_size][column].dropna()
+    unique_chars.update(language_required_chars.get(column, ""))
+    font_series = df['font'].astype(str).str.strip()
+    subset = df[font_series == str(font_size)][column].dropna()
     subset.apply(lambda x: unique_chars.update(set(x)))
     text = ''.join(sorted(unique_chars))
     text = text.replace('\"', '')

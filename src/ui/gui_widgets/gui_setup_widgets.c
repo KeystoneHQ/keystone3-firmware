@@ -33,7 +33,7 @@ static const char *g_languageList[] = {
     "Español",
     "Deutsch",
     "日本語",
-    "Português",
+    "Polski",
 };
 
 typedef enum {

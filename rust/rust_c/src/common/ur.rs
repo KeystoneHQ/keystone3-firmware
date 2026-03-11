@@ -69,12 +69,12 @@ use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 #[cfg(feature = "ton")]
 use ur_registry::ton::ton_sign_request::TonSignRequest;
-#[cfg(feature = "zcash")]
-use ur_registry::zcash::zcash_pczt::ZcashPczt;
 #[cfg(feature = "tron")]
 use ur_registry::tron::tron_sign_request::TronSignRequest;
 #[cfg(feature = "tron")]
 use ur_registry::tron::tron_signature::TronSignature;
+#[cfg(feature = "zcash")]
+use ur_registry::zcash::zcash_pczt::ZcashPczt;
 
 use super::errors::{ErrorCodes, RustCError};
 use super::free::Free;

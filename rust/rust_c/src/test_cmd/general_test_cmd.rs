@@ -65,14 +65,10 @@ pub unsafe extern "C" fn test_get_tron_keystone_bytes() -> *mut URParseResult {
 #[no_mangle]
 pub unsafe extern "C" fn test_get_tron_standard_request_bytes() -> *mut URParseResult {
     let hex_str = "a30258d47b2266726f6d223a22545868745972386e6d6769537033645933635366694b426a6564337a4e3874654853222c22746f223a22544b43735874664b6648326436614561514363747962444339756141334d536a3268222c2276616c7565223a2231303030303030227d03d90130a1018a182cf518c3f51800f51800f51800f5";
-    
+
     let bytes = Bytes::new(hex::decode(hex_str).unwrap());
-    
-    URParseResult::single(
-        ViewType::TronTx, 
-        QRCodeType::TronSignRequest, 
-        bytes
-    ).c_ptr()
+
+    URParseResult::single(ViewType::TronTx, QRCodeType::TronSignRequest, bytes).c_ptr()
 }
 
 #[no_mangle]

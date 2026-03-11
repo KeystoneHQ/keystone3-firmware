@@ -487,6 +487,112 @@ mod tests {
     use alloc::string::ToString;
     use bitcoin::bip32::Fingerprint;
     use core::str::FromStr;
+    use ur_registry::pb::protoc::{payload, Payload, SignMessage};
+
+    #[test]
+    fn test_from_raw_transaction_decode_failures() {
+        let mut tron_tx = Transaction::default();
+        let mut raw = transaction::Raw::default();
+        let mut contract = transaction::Contract::default();
+        contract.r#type = 1;
+        contract.parameter = Some(prost_types::Any {
+            type_url: "type.googleapis.com/protocol.TransferContract".to_string(),
+            value: vec![0xff, 0xff],
+        });
+        raw.contract = vec![contract];
+        tron_tx.raw_data = Some(raw);
+
+        let result = WrappedTron::from_raw_transaction(tron_tx, "m/44'/195'/0'/0/0".to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_from_payload_invalid_content() {
+        let context = prepare_parse_context("xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd");
+        let payload_empty = Payload {
+            r#type: payload::Type::SignTx as i32,
+            xfp: "12345678".to_string(),
+            content: None,
+        };
+        let result = WrappedTron::from_payload(payload_empty, &context);
+        assert!(result.is_err());
+
+        let payload_wrong = Payload {
+            r#type: payload::Type::SignMsg as i32,
+            xfp: "12345678".to_string(),
+            content: Some(payload::Content::SignMsg(SignMessage::default())),
+        };
+        let result = WrappedTron::from_payload(payload_wrong, &context);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_signature_hash_error_cases() {
+        let tx_no_raw = WrappedTron {
+            tron_tx: Transaction::default(),
+            hd_path: "".to_string(),
+            extended_pubkey: "".to_string(),
+            xfp: "".to_string(),
+            token: "".to_string(),
+            contract_address: "".to_string(),
+            from: "".to_string(),
+            to: "".to_string(),
+            value: "".to_string(),
+            token_short_name: None,
+            divider: 1.0,
+            fee_limit: 0,
+        };
+        assert!(tx_no_raw.signature_hash().is_err());
+    }
+
+    #[test]
+    fn test_check_input_failure_paths() {
+        let hex = "1f8b08000000000000030dcfbd4ac34000c071220ea58bdaa9742a41a84bc87d27270e9ab61890c4268d54bb5dee2e26607b508b4a9fa26fe01bf8b128f812be82b383b8161703ffe9bffd1a5bad9d64d1374a77470bb334d2dc7436567d1b1e96540920ec6fabb99da5e7716b5f4a4e58ae91e36b221d8272ed088ca04399a058f8b2a09075f62297909e0b39edb9a0ce05dde79faf8f0d3868048f56c7ce2e86d3b13abb35833089f4f4be2a97ca04554cd8eaa13c9d5ca9d0b6b3315d8d4c9f5c0e83597837884fe6f309ba0e719494328d5995ce90050fe3e671c17c0ab9d2bc904011a031a502f202e414032e19c60c78be209e409aab1cfa9041e603c204821ad588ddd7f5baddfefd7c7aff03e1cbdbd13f2aab0f710f010000";
+        let pubkey_str = "xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+        let mut tx = WrappedTron::from_payload(payload, &context).unwrap();
+
+        tx.from = "TAddressNotMine".to_string();
+        assert!(matches!(tx.check_input(&context), Err(TronError::NoMyInputs)));
+    }
+
+    #[test]
+    fn test_check_input_address_mismatch() {
+        let hex = "1f8b08000000000000030dcfbd4ac34000c071220ea58bdaa9742a41a84bc87d27270e9ab61890c4268d54bb5dee2e26607b508b4a9fa26fe01bf8b128f812be82b383b8161703ffe9bffd1a5bad9d64d1374a77470bb334d2dc7436567d1b1e96540920ec6fabb99da5e7716b5f4a4e58ae91e36b221d8272ed088ca04399a058f8b2a09075f62297909e0b39edb9a0ce05dde79faf8f0d3868048f56c7ce2e86d3b13abb35833089f4f4be2a97ca04554cd8eaa13c9d5ca9d0b6b3315d8d4c9f5c0e83597837884fe6f309ba0e719494328d5995ce90050fe3e671c17c0ab9d2bc904011a031a502f202e414032e19c60c78be209e409aab1cfa9041e603c204821ad588ddd7f5baddfefd7c7aff03e1cbdbd13f2aab0f710f010000";
+        let pubkey_str = "xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+        let mut tx = WrappedTron::from_payload(payload, &context).unwrap();
+
+        tx.xfp = hex::encode(context.master_fingerprint); 
+        
+        tx.from = "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdX".to_string();
+        
+        let result = tx.check_input(&context);
+        
+        assert!(matches!(result, Err(TronError::NoMyInputs)));
+    }
+
+    #[test]
+    fn test_signature_hash_empty_raw() {
+        let mut tx = WrappedTron {
+            tron_tx: Transaction::default(),
+            hd_path: "".to_string(),
+            extended_pubkey: "".to_string(),
+            xfp: "".to_string(),
+            token: "".to_string(),
+            contract_address: "".to_string(),
+            from: "".to_string(),
+            to: "".to_string(),
+            value: "".to_string(),
+            token_short_name: None,
+            divider: 1.0,
+            fee_limit: 0,
+        };
+        let result = tx.signature_hash();
+        assert!(result.is_err());
+    }
 
     #[test]
     fn test_signature_hash() {

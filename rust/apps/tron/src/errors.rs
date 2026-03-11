@@ -55,3 +55,24 @@ impl From<core::num::ParseFloatError> for TronError {
         TronError::ParseNumberError(value.to_string())
     }
 }
+
+#[cfg(test)]
+mod error_tests {
+    use super::*;
+    use keystore::errors::KeystoreError;
+
+    #[test]
+    fn test_tron_errors() {
+        let errs = vec![
+            TronError::InvalidHDPath("path".to_string()),
+            TronError::NoMyInputs,
+            TronError::SignFailure("reason".to_string()),
+        ];
+        for e in errs {
+            let _ = format!("{}", e);
+        }
+
+        let _: TronError = KeystoreError::RSASignError.into();
+        let _: TronError = KeystoreError::XPubError("err".to_string()).into();
+    }
+}

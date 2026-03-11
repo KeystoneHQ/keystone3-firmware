@@ -15,9 +15,12 @@ macro_rules! check_hd_path {
         } else {
             let coin_type_idx = if $t.len() == 6 { 2 } else { 1 };
             let coin_type = $t[coin_type_idx];
-            
+
             if coin_type != "194'" && coin_type != "195'" {
-                result = Err(TronError::InvalidHDPath(format!("Coin type mismatch: {}", coin_type)));
+                result = Err(TronError::InvalidHDPath(format!(
+                    "Coin type mismatch: {}",
+                    coin_type
+                )));
             }
         }
         result

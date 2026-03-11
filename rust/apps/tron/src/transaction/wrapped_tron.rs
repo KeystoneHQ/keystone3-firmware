@@ -579,7 +579,7 @@ mod tests {
 
     #[test]
     fn test_signature_hash_empty_raw() {
-        let mut tx = WrappedTron {
+        let tx = WrappedTron {
             tron_tx: Transaction::default(),
             hd_path: "".to_string(),
             extended_pubkey: "".to_string(),

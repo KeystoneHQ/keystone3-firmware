@@ -57,22 +57,39 @@ impl From<core::num::ParseFloatError> for TronError {
 }
 
 #[cfg(test)]
-mod error_tests {
+mod tests {
     use super::*;
+    use bitcoin::base58;
     use keystore::errors::KeystoreError;
 
     #[test]
-    fn test_tron_errors() {
-        let errs = vec![
-            TronError::InvalidHDPath("path".to_string()),
-            TronError::NoMyInputs,
-            TronError::SignFailure("reason".to_string()),
+    fn test_comprehensive_error_conversions() {
+        let ks_cases = vec![
+            KeystoreError::RSASignError,
+            KeystoreError::XPubError("xpub".to_string()),
         ];
-        for e in errs {
-            let _ = format!("{}", e);
+        for ks_err in ks_cases {
+            let tr_err: TronError = ks_err.into();
+            assert!(format!("{}", tr_err).contains("keystore"));
         }
 
-        let _: TronError = KeystoreError::RSASignError.into();
-        let _: TronError = KeystoreError::XPubError("err".to_string()).into();
+        let base58_err = base58::decode_check("123").unwrap_err();
+        let tr_base58_err = TronError::from(base58_err);
+        assert!(format!("{}", tr_base58_err).contains("base58"));
+
+        let float_err = "not_a_number".parse::<f64>().unwrap_err();
+        let tr_float_err: TronError = float_err.into();
+        assert!(matches!(tr_float_err, TronError::ParseNumberError(_)));
+
+        let all_variants = vec![
+            TronError::InvalidHDPath("path".to_string()),
+            TronError::NoMyInputs,
+            TronError::Base58Error("b58".to_string()),
+        ];
+
+        for err in all_variants {
+            let _ = format!("{}", err);
+            assert_eq!(err, err);
+        }
     }
 }

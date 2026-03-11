@@ -75,7 +75,6 @@ static void UsbTask(void *argument)
         if (ret == osOK) {
             switch (rcvMsg.id) {
             case USB_MSG_ISR_HANDLER: {
-                ClearLockScreenTime();
                 USBD_OTG_ISR_Handler((USB_OTG_CORE_HANDLE *)rcvMsg.value);
                 NVIC_ClearPendingIRQ(USB_IRQn);
                 NVIC_EnableIRQ(USB_IRQn);
@@ -87,6 +86,7 @@ static void UsbTask(void *argument)
             break;
             case USB_MSG_INIT: {
                 g_usbState = true;
+                ClearLockScreenTime();
                 UsbInit();
                 SetUsbState(true);
             }
@@ -120,4 +120,3 @@ void UsbTest(int argc, char *argv[])
         CloseUsb();
     }
 }
-

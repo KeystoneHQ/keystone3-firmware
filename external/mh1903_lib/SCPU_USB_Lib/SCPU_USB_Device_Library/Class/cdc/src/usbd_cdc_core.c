@@ -57,6 +57,7 @@ static uint8_t usbd_cdc_EP0_RxReady(void* pdev);
 static uint8_t usbd_cdc_DataIn(void* pdev, uint8_t epnum);
 static uint8_t usbd_cdc_DataOut(void* pdev, uint8_t epnum);
 static uint8_t usbd_cdc_SOF(void* pdev);
+static uint8_t usbd_cdc_StallControl(void* pdev);
 
 
 static uint8_t* USBD_cdc_GetCfgDesc(uint8_t speed, uint16_t* length);
@@ -88,11 +89,12 @@ extern USB_OTG_CORE_HANDLE g_usbDev;
 
 #define CDC_TX_MAX_LENGTH               1024
 #define CDC_PACKET_SIZE                 64
+#define CDC_LINE_CODING_LEN             7U
 
 static uint8_t g_cdcSendBuffer[CDC_TX_MAX_LENGTH];
 static uint32_t g_cdcSendIndex = 0;
 
-static uint32_t cdcCmd = 0xFF;
+static uint32_t cdcCmd = NO_CMD;
 static uint32_t cdcLen = 0;
 
 CDC_Data_TypeDef CDCData = {
@@ -290,28 +292,34 @@ static uint8_t usbd_cdc_Setup(void* pdev, USB_SETUP_REQ* req)
     switch (req->bmRequest & USB_REQ_TYPE_MASK) {
     /* CDC Class Requests -------------------------------*/
     case USB_REQ_TYPE_CLASS:
-        /* Check if the request is a data setup packet */
-        if (req->wLength) {
-            /* Check if the request is Device-to-Host */
-            if (req->bmRequest & 0x80) {
-                /* Get the data to be sent to Host from interface layer */
-                APP_FOPS.pIf_Ctrl(req->bRequest, CmdBuff, req->wLength);
-
-                /* Send the data to the host */
-                USBD_CtlSendData(pdev, CmdBuff, req->wLength);
-            } else { /* Host-to-Device requeset */
-                /* Set the value of the current command to be processed */
-                cdcCmd = req->bRequest;
-                cdcLen = req->wLength;
-
-                /* Prepare the reception of the buffer over EP0
-                Next step: the received data will be managed in usbd_cdc_EP0_TxSent()
-                function. */
-                USBD_CtlPrepareRx(pdev, CmdBuff, req->wLength);
+        switch (req->bRequest) {
+        case GET_LINE_CODING:
+            if (((req->bmRequest & 0x80U) == 0U) || (req->wLength != CDC_LINE_CODING_LEN)) {
+                return usbd_cdc_StallControl(pdev);
             }
-        } else { /* No Data request */
-            /* Transfer the command to the interface layer */
+            APP_FOPS.pIf_Ctrl(GET_LINE_CODING, CmdBuff, CDC_LINE_CODING_LEN);
+            USBD_CtlSendData(pdev, CmdBuff, CDC_LINE_CODING_LEN);
+            break;
+
+        case SET_LINE_CODING:
+            if (((req->bmRequest & 0x80U) != 0U) || (req->wLength != CDC_LINE_CODING_LEN)) {
+                return usbd_cdc_StallControl(pdev);
+            }
+            cdcCmd = SET_LINE_CODING;
+            cdcLen = CDC_LINE_CODING_LEN;
+            USBD_CtlPrepareRx(pdev, CmdBuff, CDC_LINE_CODING_LEN);
+            break;
+
+        case SET_CONTROL_LINE_STATE:
+        case SEND_BREAK:
+            if (((req->bmRequest & 0x80U) != 0U) || (req->wLength != 0U)) {
+                return usbd_cdc_StallControl(pdev);
+            }
             APP_FOPS.pIf_Ctrl(req->bRequest, NULL, 0);
+            break;
+
+        default:
+            return usbd_cdc_StallControl(pdev);
         }
         return USBD_OK;
 
@@ -355,19 +363,35 @@ static uint8_t usbd_cdc_Setup(void* pdev, USB_SETUP_REQ* req)
 static uint8_t usbd_cdc_EP0_RxReady(void* pdev)
 {
     USB_OTG_EP* ep = &((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[0];
-    if (ep->xfer_buff != CmdBuff)
+    if (cdcCmd == NO_CMD)
         return USBD_OK;
 
-    // Will fired when CDC Set Cmd request callback
-    if (cdcCmd != NO_CMD) {
-        /* Process the data */
-        APP_FOPS.pIf_Ctrl(cdcCmd, CmdBuff, cdcLen);
-
-        /* Reset the command variable to default value */
+    if ((((USB_OTG_CORE_HANDLE*)pdev)->dev.device_state != USB_OTG_EP0_DATA_OUT) ||
+        (cdcCmd != SET_LINE_CODING) ||
+        (cdcLen != CDC_LINE_CODING_LEN) ||
+        (ep->xfer_buff != CmdBuff) ||
+        (ep->xfer_len != cdcLen) ||
+        (ep->xfer_count != cdcLen)) {
         cdcCmd = NO_CMD;
+        cdcLen = 0;
+        return usbd_cdc_StallControl(pdev);
     }
 
+    APP_FOPS.pIf_Ctrl(cdcCmd, CmdBuff, cdcLen);
+    cdcCmd = NO_CMD;
+    cdcLen = 0;
+
     return USBD_OK;
+}
+
+static uint8_t usbd_cdc_StallControl(void* pdev)
+{
+    cdcCmd = NO_CMD;
+    cdcLen = 0;
+    DCD_EP_Stall(pdev, 0x80);
+    DCD_EP_Stall(pdev, 0x00);
+    USB_OTG_EP0_OutStart(pdev);
+    return USBD_FAIL;
 }
 
 /**
@@ -478,4 +502,3 @@ static void USBD_cdc_SendCallback(void)
 {
     printf("USBD_cdc_SendCallback usb send over\n");
 }
-

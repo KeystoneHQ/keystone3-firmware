@@ -21,6 +21,8 @@
 #include "user_memory.h"
 #include "drv_gd25qxx.h"
 #include "data_parser_task.h"
+#include "screen_manager.h"
+#include "power_manager.h"
 
 #define TYPE_FILE_INFO_FILE_NAME    1
 #define TYPE_FILE_INFO_FILE_SIZE    2
@@ -244,6 +246,8 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             g_fileTransTimeOutTimer = osTimerNew(FileTransTimeOutTimerFunc, osTimerOnce, NULL, NULL);
         }
 
+        ClearLockScreenTime();
+        ClearShutdownTime();
         g_isReceivingFile = true;
         osTimerStart(g_fileTransTimeOutTimer, FILE_TRANS_TIME_OUT);
     } while (0);
@@ -274,6 +278,8 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
 
     CHECK_POINTER(g_fileTransTimeOutTimer);
     osTimerStart(g_fileTransTimeOutTimer, FILE_TRANS_TIME_OUT);
+    ClearLockScreenTime();
+    ClearShutdownTime();
 
     tlvNumber = GetTlvFromData(tlvArray, 2, tlvData, head->length);
 

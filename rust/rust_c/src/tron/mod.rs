@@ -9,10 +9,10 @@ use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::extract_array;
 use alloc::boxed::Box;
 use alloc::slice;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use cty::c_char;
 use structs::DisplayTron;
-use alloc::vec::Vec;
-use alloc::string::{ToString, String};
 
 use crate::extract_ptr_with_type;
 use ur_registry::traits::{RegistryItem, To};
@@ -30,7 +30,7 @@ pub unsafe extern "C" fn tron_check_sign_request(
     master_fingerprint: PtrBytes,
     length: u32,
 ) -> PtrT<TransactionCheckResult> {
-   if length != 4 {
+    if length != 4 {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
     let req = extract_ptr_with_type!(ptr, TronSignRequest);
@@ -47,8 +47,8 @@ pub unsafe extern "C" fn tron_check_sign_request(
     } else {
         return TransactionCheckResult::from(RustCError::InvalidMasterFingerprint).c_ptr();
     }
-    
-    let x_pub_recovered = recover_c_char(x_pub); 
+
+    let x_pub_recovered = recover_c_char(x_pub);
     let xpub_str = x_pub_recovered.as_str();
     let sign_data = req.get_sign_data();
     let path = req.get_derivation_path().get_path().unwrap_or_default();
@@ -96,7 +96,7 @@ pub unsafe extern "C" fn tron_sign_request(
         let path = req
             .get_derivation_path()
             .get_path()
-           .unwrap_or_else(|| String::from(TRON_DEFAULT_PATH));
+            .unwrap_or_else(|| String::from(TRON_DEFAULT_PATH));
 
         let signed_tx_hex = app_tron::sign_tx_request(&json_bytes, &path, seed_slice)
             .map_err(|e| KeystoneError::SignTxFailed(e.to_string()))?;
@@ -119,7 +119,6 @@ pub unsafe extern "C" fn tron_sign_request(
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }
-
 
 #[no_mangle]
 pub unsafe extern "C" fn tron_check_keystone(

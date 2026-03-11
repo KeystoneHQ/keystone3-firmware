@@ -55,8 +55,6 @@ use ur_registry::pb::protoc;
 use ur_registry::pb::protoc::Base;
 #[cfg(feature = "solana")]
 use ur_registry::solana::sol_sign_request::SolSignRequest;
-#[cfg(feature = "tron")]
-use ur_registry::tron::tron_sign_request::TronSignRequest;
 #[cfg(feature = "stellar")]
 use ur_registry::stellar::stellar_sign_request::{SignType as StellarSignType, StellarSignRequest};
 #[cfg(feature = "sui")]
@@ -65,6 +63,8 @@ use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 #[cfg(feature = "ton")]
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
+#[cfg(feature = "tron")]
+use ur_registry::tron::tron_sign_request::TronSignRequest;
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
 

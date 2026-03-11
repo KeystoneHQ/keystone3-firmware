@@ -13,3 +13,4 @@ void GetTrxContract(void *indata, void *param, uint32_t maxLen);
 bool GetTrxTokenExist(void *indata, void *param);
 void GetTrxToken(void *indata, void *param, uint32_t maxLen);
 UREncodeResult *GuiGetTrxSignQrCodeData(void);
+UREncodeResult *GuiGetTrxSignUrDataUnlimited(void);

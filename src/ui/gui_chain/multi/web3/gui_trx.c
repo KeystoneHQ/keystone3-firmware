@@ -119,7 +119,7 @@ void GetTrxToken(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata,  maxLen, trx->detail->token);
 }
 
-UREncodeResult *GuiGetTrxSignQrCodeData(void)
+static UREncodeResult *GuiGetTrxSignUrDataDynamic(bool unLimit)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
@@ -130,6 +130,7 @@ UREncodeResult *GuiGetTrxSignQrCodeData(void)
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     uint8_t seed[64];
+    uint32_t fragmentLen = unLimit ? FRAGMENT_UNLIMITED_LENGTH : FRAGMENT_MAX_LENGTH_DEFAULT;
     
     do {
         int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
@@ -140,7 +141,7 @@ UREncodeResult *GuiGetTrxSignQrCodeData(void)
             encodeResult = tron_sign_keystone(data, urType, mfp, sizeof(mfp), GetCurrentAccountPublicKey(XPUB_TYPE_TRX),
                                           SOFTWARE_VERSION, seed, GetCurrentAccountSeedLen());
         } else {
-            encodeResult = tron_sign_request(data, seed, GetCurrentAccountSeedLen());
+            encodeResult = tron_sign_request(data, seed, GetCurrentAccountSeedLen(), fragmentLen);
         }
         
         CHECK_CHAIN_BREAK(encodeResult);
@@ -151,4 +152,14 @@ UREncodeResult *GuiGetTrxSignQrCodeData(void)
     SetLockScreen(enable);
     
     return encodeResult;
+}
+
+UREncodeResult *GuiGetTrxSignQrCodeData(void)
+{
+    return GuiGetTrxSignUrDataDynamic(false);
+}
+
+UREncodeResult *GuiGetTrxSignUrDataUnlimited(void)
+{
+    return GuiGetTrxSignUrDataDynamic(true);
 }

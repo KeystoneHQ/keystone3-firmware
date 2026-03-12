@@ -12,11 +12,10 @@
 #include "eapdu_services/service_check_lock.h"
 #include "eapdu_services/service_echo_test.h"
 #include "eapdu_services/service_export_address.h"
-#include "eapdu_services/service_trans_usb_pubkey.h"
 #include "eapdu_services/service_get_device_info.h"
 
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
-static struct ProtocolParser *global_parser = NULL;
+static uint32_t g_eapduRcvCount = 0;
 
 #define EAPDU_RESPONSE_STATUS_LENGTH 2
 #define MAX_PACKETS 200
@@ -28,6 +27,8 @@ static uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH] __attribute_
 static uint8_t g_packetLengths[MAX_PACKETS];
 static uint8_t g_receivedPackets[MAX_PACKETS];
 static uint8_t g_totalPackets = 0;
+static uint32_t GetRcvCount(void);
+static void ResetRcvCount(void);
 
 typedef enum {
     FRAME_INVALID_LENGTH,
@@ -85,10 +86,11 @@ void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, St
 static void free_parser()
 {
     g_totalPackets = 0;
+    g_eapduRcvCount = 0;
     memset_s(g_receivedPackets, sizeof(g_receivedPackets), 0, sizeof(g_receivedPackets));
     memset_s(g_packetLengths, sizeof(g_packetLengths), 0, sizeof(g_packetLengths));
     for (int i = 0; i < MAX_PACKETS; i++) {
-        memset_s(g_protocolRcvBuffer, sizeof(g_protocolRcvBuffer[i]), 0, sizeof(g_protocolRcvBuffer[i]));
+        memset_s(g_protocolRcvBuffer[i], sizeof(g_protocolRcvBuffer[i]), 0, sizeof(g_protocolRcvBuffer[i]));
     }
 }
 
@@ -115,9 +117,6 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
 #endif
     case CMD_GET_DEVICE_INFO:
         GetDeviceInfoService(request);
-        break;
-    case CMD_GET_DEVICE_USB_PUBKEY:
-        GetDeviceUsbPubkeyService(request);
         break;
     default:
         printf("Invalid command: %u\n", request->commandType);
@@ -164,6 +163,7 @@ static EAPDUFrame_t *FrameParser(const uint8_t *frame, uint32_t len)
 
 void EApduProtocolParse(const uint8_t *frame, uint32_t len)
 {
+    g_eapduRcvCount++;
     if (len < 4) { // Ensure frame has minimum length
         printf("Invalid EAPDU data: too short\n");
         free_parser();
@@ -223,16 +223,26 @@ static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)
     }
 }
 
-struct ProtocolParser *NewEApduProtocolParser()
+static uint32_t GetRcvCount(void)
 {
-    if (!global_parser) {
-        global_parser = (struct ProtocolParser *)SRAM_MALLOC(sizeof(struct ProtocolParser));
-        global_parser->name = EAPDU_PROTOCOL_PARSER_NAME;
-        global_parser->parse = EApduProtocolParse;
-        global_parser->registerSendFunc = RegisterSendFunc;
-        global_parser->rcvCount = 0;
-    }
-    return global_parser;
+    return g_eapduRcvCount;
+}
+
+static void ResetRcvCount(void)
+{
+    free_parser();
+}
+
+const struct ProtocolParser *NewEApduProtocolParser()
+{
+    static const struct ProtocolParser g_eapduParser = {
+        .name = EAPDU_PROTOCOL_PARSER_NAME,
+        .parse = EApduProtocolParse,
+        .registerSendFunc = RegisterSendFunc,
+        .getRcvCount = GetRcvCount,
+        .resetRcvCount = ResetRcvCount,
+    };
+    return &g_eapduParser;
 }
 
 void GotoResultPage(EAPDUResultPage_t *resultPageParams)

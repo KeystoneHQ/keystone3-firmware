@@ -79,7 +79,7 @@ typedef struct {
     PtrString error_message;
 } EAPDUResultPage_t;
 
-struct ProtocolParser* NewEApduProtocolParser();
+const struct ProtocolParser* NewEApduProtocolParser();
 void SendEApduResponse(EAPDUResponsePayload_t *payload);
 void GotoResultPage(EAPDUResultPage_t *resultPageParams);
 void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, StatusEnum status, char *error);

@@ -12,9 +12,6 @@
 #include "usbd_msc_mem.h"
 #include "usbd_msc_data.h"
 #include "stdio.h"
-#include "background_task.h"
-#include "user_fatfs.h"
-#include "fingerprint_task.h"
 
 /** @defgroup MSC_SCSI
   * @brief Mass storage SCSI layer module
@@ -98,8 +95,6 @@ static int8_t SCSI_ProcessWrite(uint8_t lun);
   * @{
   */
 
-#define AUTO_REBOOT_AFTER_COPY_FILE
-
 /**
 * @brief  SCSI_ProcessCmd
 *         Process SCSI commands
@@ -113,28 +108,6 @@ int8_t SCSI_ProcessCmd(USB_OTG_CORE_HANDLE  *pdev,
                        uint8_t *params)
 {
     cdev = pdev;
-#ifdef AUTO_REBOOT_AFTER_COPY_FILE
-    static uint8_t lastParam[2] = {0};
-    //printf("%X\r\n", params[0]);
-    if (params[0] == SCSI_TEST_UNIT_READY && lastParam[0] == SCSI_TEST_UNIT_READY && lastParam[1] == SCSI_WRITE10) {
-        printf("file copy over\r\n");
-        MountUsbFatfs();
-        FIL fp;
-        uint32_t fileSize;
-        FRESULT res = f_open(&fp, "1:pillar.bin", FA_OPEN_EXISTING | FA_READ);
-        if (res) {
-            printf("open error\r\n");
-        } else {
-            fileSize = f_size(&fp);
-            printf("file size=%d\r\n", fileSize);
-            if (fileSize > 0) {
-                SystemReboot();
-            }
-        }
-    }
-    lastParam[1] = lastParam[0];
-    lastParam[0] = params[0];
-#endif
     switch (params[0]) {
     case SCSI_TEST_UNIT_READY:
         return SCSI_TestUnitReady(lun, params);

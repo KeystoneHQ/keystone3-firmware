@@ -19,7 +19,6 @@ void GetDeviceInfoService(EAPDURequestPayload_t *payload)
     snprintf_s(buffer, sizeof(buffer), "%02x%02x%02x%02x", mfp[0], mfp[1], mfp[2], mfp[3]);
     cJSON_AddStringToObject(root, "walletMFP", buffer);
     char *json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024, false);
-    printf("json_str = %s\n", json_str);
     cJSON_Delete(root);
     result->data = (uint8_t *)json_str;
     result->dataLen = strlen((char *)result->data);

@@ -345,9 +345,16 @@ static uint8_t usbd_cdc_Setup(void* pdev, USB_SETUP_REQ* req)
             } else {
                 /* Call the error management function (command will be nacked */
                 USBD_CtlError(pdev, req);
+                return USBD_FAIL;
             }
             break;
+
+        default:
+            USBD_CtlError(pdev, req);
+            return USBD_FAIL;
         }
+        return USBD_OK;
+
     default:
         USBD_CtlError(pdev, req);
         return USBD_FAIL;

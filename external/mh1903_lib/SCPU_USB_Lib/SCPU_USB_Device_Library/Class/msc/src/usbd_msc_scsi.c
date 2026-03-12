@@ -420,13 +420,13 @@ static int8_t SCSI_Read10(uint8_t lun, uint8_t *params)
             return -1;
         }
 
-        SCSI_blk_addr = (params[2] << 24) | \
-                        (params[3] << 16) | \
-                        (params[4] <<  8) | \
-                        params[5];
+        SCSI_blk_addr = ((uint32_t)params[2] << 24) | \
+                        ((uint32_t)params[3] << 16) | \
+                        ((uint32_t)params[4] <<  8) | \
+                        (uint32_t)params[5];
 
-        SCSI_blk_len = (params[7] <<  8) | \
-                       params[8];
+        SCSI_blk_len = ((uint32_t)params[7] <<  8) | \
+                       (uint32_t)params[8];
 
 
 
@@ -489,12 +489,12 @@ static int8_t SCSI_Write10(uint8_t lun, uint8_t *params)
         }
 
 
-        SCSI_blk_addr = (params[2] << 24) | \
-                        (params[3] << 16) | \
-                        (params[4] <<  8) | \
-                        params[5];
-        SCSI_blk_len = (params[7] <<  8) | \
-                       params[8];
+        SCSI_blk_addr = ((uint32_t)params[2] << 24) | \
+                        ((uint32_t)params[3] << 16) | \
+                        ((uint32_t)params[4] <<  8) | \
+                        (uint32_t)params[5];
+        SCSI_blk_len = ((uint32_t)params[7] <<  8) | \
+                       (uint32_t)params[8];
 
         /* check if LBA address is in the right range */
         if (SCSI_CheckAddressRange(lun, SCSI_blk_addr, SCSI_blk_len) < 0) {
@@ -540,12 +540,12 @@ static int8_t SCSI_Verify10(uint8_t lun, uint8_t *params)
         return -1; /* Error, Verify Mode Not supported*/
     }
 
-    SCSI_blk_addr = (params[2] << 24) | \
-                    (params[3] << 16) | \
-                    (params[4] <<  8) | \
-                    params[5];
-    SCSI_blk_len = (params[7] <<  8) | \
-                   params[8];
+    SCSI_blk_addr = ((uint32_t)params[2] << 24) | \
+                    ((uint32_t)params[3] << 16) | \
+                    ((uint32_t)params[4] <<  8) | \
+                    (uint32_t)params[5];
+    SCSI_blk_len = ((uint32_t)params[7] <<  8) | \
+                   (uint32_t)params[8];
 
     if (SCSI_CheckAddressRange(lun, SCSI_blk_addr, SCSI_blk_len) < 0) {
         return -1; /* error */

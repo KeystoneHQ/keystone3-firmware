@@ -146,7 +146,7 @@ uint8_t* USBD_USR_LangIDStrDescriptor(uint8_t speed, uint16_t* length)
  */
 uint8_t* USBD_USR_ProductStrDescriptor(uint8_t speed, uint16_t* length)
 {
-    USBD_GetString((uint8_t*)USBD_PRODUCT_STRING, USBD_StrDesc, length);
+    USBD_GetString((uint8_t*)USBD_PRODUCT_STRING, sizeof(USBD_PRODUCT_STRING) - 1U, USBD_StrDesc, length);
     return USBD_StrDesc;
 }
 
@@ -159,7 +159,7 @@ uint8_t* USBD_USR_ProductStrDescriptor(uint8_t speed, uint16_t* length)
  */
 uint8_t* USBD_USR_ManufacturerStrDescriptor(uint8_t speed, uint16_t* length)
 {
-    USBD_GetString((uint8_t*)USBD_MANUFACTURER_STRING, USBD_StrDesc, length);
+    USBD_GetString((uint8_t*)USBD_MANUFACTURER_STRING, sizeof(USBD_MANUFACTURER_STRING) - 1U, USBD_StrDesc, length);
     return USBD_StrDesc;
 }
 
@@ -201,7 +201,7 @@ uint8_t* USBD_USR_SerialStrDescriptor(uint8_t speed, uint16_t* length)
         usbSN[i] += usbSN[i] < 0x0A ? '0' : '7';
     }
 
-    USBD_GetString(usbSN, USBD_StrDesc, length);
+    USBD_GetString(usbSN, *length, USBD_StrDesc, length);
     return USBD_StrDesc;
 }
 
@@ -214,7 +214,7 @@ uint8_t* USBD_USR_SerialStrDescriptor(uint8_t speed, uint16_t* length)
  */
 uint8_t* USBD_USR_ConfigStrDescriptor(uint8_t speed, uint16_t* length)
 {
-    USBD_GetString((uint8_t*)USBD_CONFIGURATION_STRING, USBD_StrDesc, length);
+    USBD_GetString((uint8_t*)USBD_CONFIGURATION_STRING, sizeof(USBD_CONFIGURATION_STRING) - 1U, USBD_StrDesc, length);
     return USBD_StrDesc;
 }
 
@@ -227,7 +227,7 @@ uint8_t* USBD_USR_ConfigStrDescriptor(uint8_t speed, uint16_t* length)
  */
 uint8_t* USBD_USR_InterfaceStrDescriptor(uint8_t speed, uint16_t* length)
 {
-    USBD_GetString((uint8_t*)USBD_INTERFACE_STRING, USBD_StrDesc, length);
+    USBD_GetString((uint8_t*)USBD_INTERFACE_STRING, sizeof(USBD_INTERFACE_STRING) - 1U, USBD_StrDesc, length);
     return USBD_StrDesc;
 }
 
@@ -340,7 +340,7 @@ __ALIGN_BEGIN uint8_t USBD_WINUSB_OSPropertyDesc[USB_LEN_OS_PROPERTY_DESC] __ALI
 uint8_t *USBD_WinUSBOSStrDescriptor(uint16_t *length)
 {
     //printf("USBD_WinUSBOSStrDescriptor!\r\n");
-    USBD_GetString((uint8_t *)USBD_OS_STRING, USBD_StrDesc, length);
+    USBD_GetString((uint8_t *)USBD_OS_STRING, sizeof(USBD_OS_STRING), USBD_StrDesc, length);
     return USBD_StrDesc;
 }
 

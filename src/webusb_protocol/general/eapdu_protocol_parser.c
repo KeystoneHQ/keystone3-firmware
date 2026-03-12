@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "assert.h"
+#include "cmsis_os.h"
 #include "eapdu_protocol_parser.h"
 #include "keystore.h"
 #include "data_parser_task.h"
@@ -22,11 +23,13 @@ static uint32_t g_eapduRcvCount = 0;
 #define MAX_PACKETS_LENGTH 64
 #define MAX_EAPDU_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA)
 #define MAX_EAPDU_RESPONSE_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA - EAPDU_RESPONSE_STATUS_LENGTH)
+#define EAPDU_REASSEMBLY_TIMEOUT_MS 5000
 
 static uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH] __attribute__((section(".data_parser_section")));
 static uint8_t g_packetLengths[MAX_PACKETS];
 static uint8_t g_receivedPackets[MAX_PACKETS];
 static uint8_t g_totalPackets = 0;
+static uint32_t g_lastPacketTick = 0;
 static uint32_t GetRcvCount(void);
 static void ResetRcvCount(void);
 
@@ -87,6 +90,7 @@ static void free_parser()
 {
     g_totalPackets = 0;
     g_eapduRcvCount = 0;
+    g_lastPacketTick = 0;
     memset_s(g_receivedPackets, sizeof(g_receivedPackets), 0, sizeof(g_receivedPackets));
     memset_s(g_packetLengths, sizeof(g_packetLengths), 0, sizeof(g_packetLengths));
     for (int i = 0; i < MAX_PACKETS; i++) {
@@ -163,6 +167,12 @@ static EAPDUFrame_t *FrameParser(const uint8_t *frame, uint32_t len)
 
 void EApduProtocolParse(const uint8_t *frame, uint32_t len)
 {
+    uint32_t tick = osKernelGetTickCount();
+    if (g_totalPackets != 0 && g_lastPacketTick != 0 && (tick - g_lastPacketTick > EAPDU_REASSEMBLY_TIMEOUT_MS)) {
+        printf("EAPDU reassembly timeout\n");
+        free_parser();
+    }
+
     g_eapduRcvCount++;
     if (len < 4) { // Ensure frame has minimum length
         printf("Invalid EAPDU data: too short\n");
@@ -179,6 +189,7 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
         assert(g_totalPackets <= MAX_PACKETS);
         memset_s(g_receivedPackets, sizeof(g_receivedPackets), 0, sizeof(g_receivedPackets));
     }
+    g_lastPacketTick = tick;
     assert(eapduFrame->dataLen <= MAX_PACKETS_LENGTH && eapduFrame->p2 < MAX_PACKETS);
     memcpy_s(g_protocolRcvBuffer[eapduFrame->p2], sizeof(g_protocolRcvBuffer[eapduFrame->p2]), eapduFrame->data, eapduFrame->dataLen);
     g_packetLengths[eapduFrame->p2] = eapduFrame->dataLen;

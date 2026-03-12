@@ -110,8 +110,20 @@ int8_t STORAGE_Read(uint8_t lun, uint8_t* buffer, uint32_t block_number, uint16_
  */
 int8_t STORAGE_Write(uint8_t lun, uint8_t* buffer, uint32_t block_number, uint16_t count)
 {
-    Gd25FlashSectorErase(block_number * MSC_MEDIA_PACKET);
-    Gd25FlashWriteBuffer(block_number * MSC_MEDIA_PACKET, buffer, count * MSC_MEDIA_PACKET);
+    uint32_t start_addr = block_number * MSC_MEDIA_PACKET;
+    uint32_t total_size = (uint32_t)count * MSC_MEDIA_PACKET;
+
+    if (total_size == 0U) {
+        return 0;
+    }
+
+    uint32_t first_sector = start_addr / GD25QXX_SECTOR_SIZE;
+    uint32_t last_sector = (start_addr + total_size - 1U) / GD25QXX_SECTOR_SIZE;
+    for (uint32_t sector = first_sector; sector <= last_sector; sector++) {
+        Gd25FlashSectorErase(sector * GD25QXX_SECTOR_SIZE);
+    }
+
+    Gd25FlashWriteBuffer(start_addr, buffer, total_size);
     return 0;
 }
 

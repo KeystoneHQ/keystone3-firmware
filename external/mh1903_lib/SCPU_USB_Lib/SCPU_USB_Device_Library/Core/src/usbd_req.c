@@ -44,7 +44,6 @@ static void USBD_SetFeature(USB_OTG_CORE_HANDLE* pdev, USB_SETUP_REQ* req);
 
 static void USBD_ClrFeature(USB_OTG_CORE_HANDLE* pdev, USB_SETUP_REQ* req);
 
-static uint8_t USBD_GetLen(uint8_t* buf);
 /**
  * @}
  */
@@ -201,19 +200,31 @@ USBD_Status USBD_StdEPReq(USB_OTG_CORE_HANDLE* pdev, USB_SETUP_REQ* req)
             break;
 
         case USB_OTG_CONFIGURED:
+            if ((ep_addr & 0x70) != 0) {
+                USBD_CtlError(pdev, req);
+                break;
+            }
 
             if ((ep_addr & 0x80) == 0x80) {
-                if (pdev->dev.in_ep[ep_addr & 0x7F].is_stall) {
+                uint8_t ep_num = ep_addr & 0x7F;
+                if (ep_num >= USB_OTG_MAX_EP_COUNT) {
+                    USBD_CtlError(pdev, req);
+                    break;
+                }
+                if (pdev->dev.in_ep[ep_num].is_stall) {
                     USBD_ep_status = 0x0001;
                 } else {
                     USBD_ep_status = 0x0000;
                 }
             } else if ((ep_addr & 0x80) == 0x00) {
-                if (pdev->dev.out_ep[ep_addr].is_stall) {
-                    USBD_ep_status = 0x0001;
+                uint8_t ep_num = ep_addr & 0x7F;
+                if (ep_num >= USB_OTG_MAX_EP_COUNT) {
+                    USBD_CtlError(pdev, req);
+                    break;
                 }
-
-                else {
+                if (pdev->dev.out_ep[ep_num].is_stall) {
+                    USBD_ep_status = 0x0001;
+                } else {
                     USBD_ep_status = 0x0000;
                 }
             }
@@ -622,38 +633,39 @@ void USBD_CtlError(USB_OTG_CORE_HANDLE* pdev, USB_SETUP_REQ* req)
  * @param  len : descriptor length
  * @retval None
  */
-void USBD_GetString(uint8_t* desc, uint8_t* unicode, uint16_t* len)
+void USBD_GetString(uint8_t* desc, uint16_t descLen, uint8_t* unicode, uint16_t* len)
 {
-    uint8_t idx = 0;
+    uint16_t idx = 0;
+    uint16_t asciiLen = 0;
+    uint16_t maxAsciiLen = 0;
 
-    if (desc != NULL) {
-        *len           = USBD_GetLen(desc) * 2 + 2;
-        unicode[idx++] = *len;
-        unicode[idx++] = USB_DESC_TYPE_STRING;
-
-        while (*desc != '\0') {
-            unicode[idx++] = *desc++;
-            unicode[idx++] = 0x00;
-        }
+    if (len == NULL) {
+        return;
     }
-}
+    *len = 0;
 
-/**
- * @brief  USBD_GetLen
- *         return the string length
- * @param  buf : pointer to the ascii string buffer
- * @retval string length
- */
-static uint8_t USBD_GetLen(uint8_t* buf)
-{
-    uint8_t len = 0;
-
-    while (*buf != '\0') {
-        len++;
-        buf++;
+    if (desc == NULL || unicode == NULL || descLen == 0U) {
+        return;
     }
 
-    return len;
+    /* Reserve 2 bytes for descriptor header [len, type]. */
+    maxAsciiLen = (USB_MAX_STR_DESC_SIZ - 2U) / 2U;
+    if (descLen < maxAsciiLen) {
+        maxAsciiLen = descLen;
+    }
+
+    while (asciiLen < maxAsciiLen && desc[asciiLen] != '\0') {
+        asciiLen++;
+    }
+
+    *len = (uint16_t)(asciiLen * 2U + 2U);
+    unicode[idx++] = (uint8_t)(*len);
+    unicode[idx++] = USB_DESC_TYPE_STRING;
+
+    for (uint16_t i = 0; i < asciiLen; i++) {
+        unicode[idx++] = desc[i];
+        unicode[idx++] = 0x00;
+    }
 }
 
 /************************ (C) COPYRIGHT 2014 Megahuntmicro ****END OF FILE****/

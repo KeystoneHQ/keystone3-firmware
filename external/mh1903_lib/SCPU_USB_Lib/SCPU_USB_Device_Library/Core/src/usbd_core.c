@@ -116,9 +116,8 @@ void USBD_Init(USB_OTG_CORE_HANDLE* pdev, USB_OTG_CORE_ID_TypeDef coreID, USBD_D
         nvicSet = true;
         /* Enable USB Interrupt */
         NVIC_InitTypeDef   NVIC_InitStructure;
-        NVIC_SetPriorityGrouping(NVIC_PriorityGroup_0);
         NVIC_InitStructure.NVIC_IRQChannel                   = USB_IRQn;
-        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
         NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 1;
         NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;
         NVIC_Init(&NVIC_InitStructure);

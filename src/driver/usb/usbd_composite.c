@@ -1,9 +1,11 @@
 #include "usbd_composite.h"
 #include "stdio.h"
+#include "string.h"
 #include "usb_core.h"
 #include "usbd_msc_core.h"
 #include "usbd_cdc_core.h"
 #include "usbd_desc.h"
+#include "usbd_req.h"
 #include "log_print.h"
 #include "usb_task.h"
 
@@ -20,6 +22,8 @@ static uint8_t CompositeSOF(void *pdev);
 static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length);
 static uint8_t *USBD_Composite_GetDeviceQualifierDescriptor(uint16_t *length);
 static uint8_t *USBD_Composite_WinUSBOSStrDescriptor(uint16_t *length);
+static uint8_t AppendClassDescriptor(uint8_t *outDesc, uint16_t *length, uint8_t *descriptor, uint16_t descriptorSize, uint8_t interfaceIndex);
+static uint8_t CompositeSelectClass(USB_SETUP_REQ *req, uint8_t *isMsc);
 
 __ALIGN_BEGIN static uint8_t CompositeConfigDescriptor[USB_COMPOSITE_CONFIG_DESC_MAX_SIZE] __ALIGN_END = {
     0x09,                              /* bLength: Configuration Descriptor size */
@@ -44,6 +48,8 @@ __ALIGN_BEGIN static uint8_t CompositeConfigDescriptor[USB_COMPOSITE_CONFIG_DESC
 };
 
 static uint8_t g_interfaceCount = 0;
+static uint8_t g_mscInterfaceNo = 0xFF;
+static uint8_t g_cdcInterfaceNo = 0xFF;
 
 USBD_Class_cb_TypeDef USBCompositeCb = {
     CompositeInit,
@@ -84,13 +90,18 @@ static uint8_t CompositeDeInit(void *pdev, uint8_t cfgidx)
 
 static uint8_t CompositeSetup(void *pdev, USB_SETUP_REQ *req)
 {
-    uint8_t index = LOBYTE(req->wIndex);
-
-    if (index == 0) {
-        return USBD_MSC_cb.Setup(pdev, req);
-    } else {
-        return USBD_CDC_cb.Setup(pdev, req);
+    uint8_t isMsc = 0;
+    if (CompositeSelectClass(req, &isMsc) != USBD_OK) {
+        USBD_CtlError(pdev, req);
+        return USBD_FAIL;
     }
+
+#ifdef USBD_ENABLE_MSC
+    if (isMsc != 0U) {
+        return USBD_MSC_cb.Setup(pdev, req);
+    }
+#endif
+    return USBD_CDC_cb.Setup(pdev, req);
 }
 
 static uint8_t CompositeEP0_TxSent(void *pdev)
@@ -128,39 +139,109 @@ static uint8_t CompositeSOF(void* pdev)
     return USBD_CDC_cb.SOF(pdev);
 }
 
+static uint8_t AppendClassDescriptor(uint8_t *outDesc, uint16_t *length, uint8_t *descriptor, uint16_t descriptorSize, uint8_t interfaceIndex)
+{
+    if (outDesc == NULL || length == NULL || descriptor == NULL || descriptorSize < 9U) {
+        return 0U;
+    }
+
+    descriptorSize -= 9U;
+    if ((uint32_t)(*length) + descriptorSize > USB_COMPOSITE_CONFIG_DESC_MAX_SIZE) {
+        return 0U;
+    }
+
+    descriptor[9 + 2] = interfaceIndex;
+    memcpy(outDesc + *length, descriptor + 9U, descriptorSize);
+    *length += descriptorSize;
+    return 1U;
+}
+
 static uint8_t *GetCompositeConfigDescriptor(uint8_t speed, uint16_t *length)
 {
     uint16_t descriptorSize = 0;
     uint8_t *descriptor;
     uint8_t interfaceIndex = 0;
+    uint8_t appendOk = 0;
 
     g_interfaceCount = 0;
+    g_mscInterfaceNo = 0xFF;
+    g_cdcInterfaceNo = 0xFF;
     *length = 9;
 
 #ifdef USBD_ENABLE_MSC
     //MSC
     descriptor = USBD_MSC_cb.GetConfigDescriptor(speed, &descriptorSize);
-    descriptorSize -= 9;
-    descriptor[9 + 2] = interfaceIndex;
+    appendOk = AppendClassDescriptor(CompositeConfigDescriptor, length, descriptor, descriptorSize, interfaceIndex);
+    if (!appendOk) {
+        *length = 9;
+        return CompositeConfigDescriptor;
+    }
+    g_mscInterfaceNo = interfaceIndex;
     interfaceIndex++;
-    memcpy(CompositeConfigDescriptor + *length, descriptor + 9, descriptorSize);
-    *length += descriptorSize;
     g_interfaceCount++;
 #endif
 
     //CDC
     descriptor = USBD_CDC_cb.GetConfigDescriptor(speed, &descriptorSize);
-    descriptorSize -= 9;
-    descriptor[9 + 2] = interfaceIndex;
-    memcpy(CompositeConfigDescriptor + *length, descriptor + 9, descriptorSize);
-    *length += descriptorSize;
+    appendOk = AppendClassDescriptor(CompositeConfigDescriptor, length, descriptor, descriptorSize, interfaceIndex);
+    if (!appendOk) {
+        *length = 9;
+        return CompositeConfigDescriptor;
+    }
+    g_cdcInterfaceNo = interfaceIndex;
     g_interfaceCount++;
 
-    CompositeConfigDescriptor[2] = *length;
+    CompositeConfigDescriptor[2] = (uint8_t)(*length & 0xFFU);
+    CompositeConfigDescriptor[3] = (uint8_t)((*length >> 8) & 0xFFU);
     CompositeConfigDescriptor[4] = g_interfaceCount;
     //printf("length=%d\r\n", *length);
     //PrintArray("Descriptor", CompositeConfigDescriptor, *length);
     return CompositeConfigDescriptor;
+}
+
+static uint8_t CompositeSelectClass(USB_SETUP_REQ *req, uint8_t *isMsc)
+{
+    uint8_t recipient;
+    uint8_t index;
+    uint8_t epNum;
+
+    if (req == NULL || isMsc == NULL) {
+        return USBD_FAIL;
+    }
+
+    *isMsc = 0U;
+    recipient = req->bmRequest & USB_REQ_RECIPIENT_MASK;
+    index = LOBYTE(req->wIndex);
+
+    switch (recipient) {
+    case USB_REQ_RECIPIENT_INTERFACE:
+#ifdef USBD_ENABLE_MSC
+        if (index == g_mscInterfaceNo) {
+            *isMsc = 1U;
+            return USBD_OK;
+        }
+#endif
+        if (index == g_cdcInterfaceNo) {
+            return USBD_OK;
+        }
+        return USBD_FAIL;
+
+    case USB_REQ_RECIPIENT_ENDPOINT:
+        epNum = index & 0x7FU;
+#ifdef USBD_ENABLE_MSC
+        if ((epNum == (MSC_IN_EP & 0x7FU)) || (epNum == (MSC_OUT_EP & 0x7FU))) {
+            *isMsc = 1U;
+            return USBD_OK;
+        }
+#endif
+        if ((epNum == (CDC_IN_EP & 0x7FU)) || (epNum == (CDC_OUT_EP & 0x7FU))) {
+            return USBD_OK;
+        }
+        return USBD_FAIL;
+
+    default:
+        return USBD_FAIL;
+    }
 }
 
 __ALIGN_BEGIN static uint8_t USBD_Composite_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALIGN_END = {

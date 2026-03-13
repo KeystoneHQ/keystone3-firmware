@@ -16,6 +16,7 @@
 #include "user_msg.h"
 #include "drv_usb.h"
 #include "user_delay.h"
+#include "data_parser_task.h"
 
 /** @defgroup usbd_cdc
  * @brief usbd core module
@@ -58,6 +59,7 @@ static uint8_t usbd_cdc_DataIn(void* pdev, uint8_t epnum);
 static uint8_t usbd_cdc_DataOut(void* pdev, uint8_t epnum);
 static uint8_t usbd_cdc_SOF(void* pdev);
 static uint8_t usbd_cdc_StallControl(void* pdev);
+static uint8_t* usbd_cdc_FindDescriptor(uint8_t descType, uint16_t *len);
 
 
 static uint8_t* USBD_cdc_GetCfgDesc(uint8_t speed, uint16_t* length);
@@ -328,8 +330,13 @@ static uint8_t usbd_cdc_Setup(void* pdev, USB_SETUP_REQ* req)
         switch (req->bRequest) {
         case USB_REQ_GET_DESCRIPTOR:
             if ((req->wValue >> 8) == CDC_DESCRIPTOR_TYPE) {
-                pbuf = usbd_cdc_CfgDesc + 9 + (9 * USBD_ITF_MAX_NUM);
-                len  = MIN(USB_CDC_DESC_SIZ, req->wLength);
+                pbuf = usbd_cdc_FindDescriptor(CDC_DESCRIPTOR_TYPE, &len);
+                if (pbuf == NULL || len == 0U) {
+                    return usbd_cdc_StallControl(pdev);
+                }
+                len  = MIN(len, req->wLength);
+            } else {
+                return usbd_cdc_StallControl(pdev);
             }
 
             USBD_CtlSendData(pdev, pbuf, len);
@@ -424,14 +431,68 @@ static uint8_t usbd_cdc_DataIn(void* pdev, uint8_t epnum)
  */
 static uint8_t usbd_cdc_DataOut(void* pdev, uint8_t epnum)
 {
-void PushDataToField(uint8_t *data, uint16_t len);
-    USB_OTG_EP* ep = &((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum];
+    uint8_t ep_idx = epnum & 0x7F;
+    if (ep_idx >= USB_OTG_MAX_EP_COUNT) {
+        return USBD_FAIL;
+    }
+    USB_OTG_EP* ep = &((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[ep_idx];
     uint16_t rxCount  = ep->xfer_count;
     PrintArray("WEBUSB rx", USB_Rx_Buffer, rxCount);
-    PushDataToField(USB_Rx_Buffer, rxCount);
-    PubValueMsg(SPRING_MSG_GET, rxCount);
+    if (rxCount != 0U) {
+        if (!CanPushDataToField(rxCount)) {
+            printf("WEBUSB RX drop: parser buffer full len=%u\n", rxCount);
+            DCD_EP_PrepareRx(pdev, CDC_OUT_EP, (uint8_t*)(USB_Rx_Buffer), CDC_DATA_OUT_PACKET_SIZE);
+            return USBD_OK;
+        }
+
+        if (PushDataToField(USB_Rx_Buffer, rxCount) != rxCount) {
+            printf("WEBUSB RX drop: push mismatch len=%u\n", rxCount);
+            ResetDataField();
+            DCD_EP_PrepareRx(pdev, CDC_OUT_EP, (uint8_t*)(USB_Rx_Buffer), CDC_DATA_OUT_PACKET_SIZE);
+            return USBD_OK;
+        }
+
+        if (PubValueMsg(SPRING_MSG_GET, rxCount) != MSG_SUCCESS) {
+            printf("WEBUSB RX drop: queue full len=%u\n", rxCount);
+            ResetDataField();
+        }
+    }
     DCD_EP_PrepareRx(pdev, CDC_OUT_EP, (uint8_t*)(USB_Rx_Buffer), CDC_DATA_OUT_PACKET_SIZE);
     return USBD_OK;
+}
+
+static uint8_t* usbd_cdc_FindDescriptor(uint8_t descType, uint16_t *len)
+{
+    uint8_t *desc = NULL;
+    uint16_t totalLen = 0;
+    uint16_t idx = 0;
+
+    if (len == NULL) {
+        return NULL;
+    }
+    *len = 0;
+
+#ifdef USBD_ENABLE_MSC
+    desc = usbd_cdc_CfgDesc;
+    totalLen = sizeof(usbd_cdc_CfgDesc);
+#else
+    desc = USBD_CDC_CfgHSDesc;
+    totalLen = sizeof(USBD_CDC_CfgHSDesc);
+#endif
+
+    while ((idx + 1U) < totalLen) {
+        uint8_t blen = desc[idx];
+        if ((blen < 2U) || ((uint16_t)(idx + blen) > totalLen)) {
+            break;
+        }
+        if (desc[idx + 1U] == descType) {
+            *len = blen;
+            return &desc[idx];
+        }
+        idx = (uint16_t)(idx + blen);
+    }
+
+    return NULL;
 }
 
 static uint8_t usbd_cdc_SOF(void* pdev)

@@ -10,6 +10,18 @@
 #include "usb_dcd.h"
 #include "usb_bsp.h"
 
+static uint8_t DCD_IsValidEpAddr(uint8_t ep_addr)
+{
+    uint8_t ep_num = ep_addr & 0x7F;
+    if ((ep_addr & 0x70U) != 0U) {
+        return 0U;
+    }
+    if (ep_num >= USB_OTG_MAX_EP_COUNT) {
+        return 0U;
+    }
+    return 1U;
+}
+
 void DCD_Init(USB_OTG_CORE_HANDLE* pdev, USB_OTG_CORE_ID_TypeDef coreID)
 {
     /* Set Register Address */
@@ -45,6 +57,9 @@ uint32_t DCD_EP_Open(USB_OTG_CORE_HANDLE *pdev,
                      uint8_t ep_type)
 {
     USB_OTG_EP *ep;
+    if (!DCD_IsValidEpAddr(ep_addr)) {
+        return 1U;
+    }
 
     if ((ep_addr & 0x80) == 0x80) {
         ep = &pdev->dev.in_ep[ep_addr & 0x7F];
@@ -80,6 +95,9 @@ uint32_t DCD_EP_Open(USB_OTG_CORE_HANDLE *pdev,
 uint32_t DCD_EP_Close(USB_OTG_CORE_HANDLE *pdev, uint8_t  ep_addr)
 {
     USB_OTG_EP *ep;
+    if (!DCD_IsValidEpAddr(ep_addr)) {
+        return 1U;
+    }
 
     if ((ep_addr & 0x80) == 0x80) {
         ep = &pdev->dev.in_ep[ep_addr & 0x7F];
@@ -106,6 +124,9 @@ uint32_t   DCD_EP_PrepareRx(USB_OTG_CORE_HANDLE *pdev,
                             uint16_t  buf_len)
 {
     USB_OTG_EP *ep;
+    if (!DCD_IsValidEpAddr(ep_addr)) {
+        return 1U;
+    }
 
     ep = &pdev->dev.out_ep[ep_addr & 0x7F];
 
@@ -138,6 +159,9 @@ uint32_t  DCD_EP_Tx(USB_OTG_CORE_HANDLE *pdev,
                     uint32_t   buf_len)
 {
     USB_OTG_EP *ep;
+    if (!DCD_IsValidEpAddr(ep_addr)) {
+        return 1U;
+    }
 
     ep = &pdev->dev.in_ep[ep_addr & 0x7F];
 
@@ -170,15 +194,19 @@ uint32_t  DCD_EP_Tx(USB_OTG_CORE_HANDLE *pdev,
 
 uint32_t  DCD_EP_Stall(USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
 {
+    uint8_t ep_idx = epnum & 0x7F;
     USB_OTG_EP *ep;
+    if (ep_idx >= USB_OTG_MAX_EP_COUNT) {
+        return 1;
+    }
     if ((0x80 & epnum) == 0x80) {
-        ep = &pdev->dev.in_ep[epnum & 0x7F];
+        ep = &pdev->dev.in_ep[ep_idx];
     } else {
-        ep = &pdev->dev.out_ep[epnum];
+        ep = &pdev->dev.out_ep[ep_idx];
     }
 
     ep->is_stall = 1;
-    ep->num   = epnum & 0x7F;
+    ep->num   = ep_idx;
     ep->is_in = ((epnum & 0x80) == 0x80);
 
     USB_OTG_EPSetStall(pdev, ep);
@@ -193,15 +221,19 @@ uint32_t  DCD_EP_Stall(USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
 */
 uint32_t  DCD_EP_ClrStall(USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
 {
+    uint8_t ep_idx = epnum & 0x7F;
     USB_OTG_EP *ep;
+    if (ep_idx >= USB_OTG_MAX_EP_COUNT) {
+        return 1;
+    }
     if ((0x80 & epnum) == 0x80) {
-        ep = &pdev->dev.in_ep[epnum & 0x7F];
+        ep = &pdev->dev.in_ep[ep_idx];
     } else {
-        ep = &pdev->dev.out_ep[epnum];
+        ep = &pdev->dev.out_ep[ep_idx];
     }
 
     ep->is_stall = 0;
-    ep->num   = epnum & 0x7F;
+    ep->num   = ep_idx;
     ep->is_in = ((epnum & 0x80) == 0x80);
 
     USB_OTG_EPClearStall(pdev, ep);
@@ -216,10 +248,13 @@ uint32_t  DCD_EP_ClrStall(USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
 */
 uint32_t DCD_EP_Flush(USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
 {
+    if (!DCD_IsValidEpAddr(epnum)) {
+        return 1U;
+    }
     if ((epnum & 0x80) == 0x80) {
         USB_OTG_FlushTxFifo(pdev, epnum & 0x7F);
     } else {
-        USB_OTG_FlushRxFifo(pdev, epnum);
+        USB_OTG_FlushRxFifo(pdev, epnum & 0x7F);
     }
 
     return (0);
@@ -290,11 +325,14 @@ uint32_t DCD_GetEPStatus(USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
 {
     USB_OTG_EP *ep;
     uint32_t Status = 0;
+    if (!DCD_IsValidEpAddr(epnum)) {
+        return 0U;
+    }
 
     if ((0x80 & epnum) == 0x80) {
         ep = &pdev->dev.in_ep[epnum & 0x7F];
     } else {
-        ep = &pdev->dev.out_ep[epnum];
+        ep = &pdev->dev.out_ep[epnum & 0x7F];
     }
 
     Status = USB_OTG_GetEPStatus(pdev, ep);
@@ -313,11 +351,14 @@ uint32_t DCD_GetEPStatus(USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
 void DCD_SetEPStatus(USB_OTG_CORE_HANDLE *pdev, uint8_t epnum, uint32_t Status)
 {
     USB_OTG_EP *ep;
+    if (!DCD_IsValidEpAddr(epnum)) {
+        return;
+    }
 
     if ((0x80 & epnum) == 0x80) {
         ep = &pdev->dev.in_ep[epnum & 0x7F];
     } else {
-        ep = &pdev->dev.out_ep[epnum];
+        ep = &pdev->dev.out_ep[epnum & 0x7F];
     }
 
     USB_OTG_SetEPStatus(pdev, ep, Status);

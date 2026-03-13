@@ -20,6 +20,10 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
     uint32_t tick;
     static const struct ProtocolParser *currentParser = NULL;
 
+    if (data == NULL || len == 0) {
+        return;
+    }
+
     tick = osKernelGetTickCount();
     currentParser = NewInternalProtocolParser();
 #ifndef BTC_ONLY

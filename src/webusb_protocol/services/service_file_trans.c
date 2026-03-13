@@ -477,11 +477,11 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
         uint8_t hash[32] = {0};
         sha256((struct sha256 *)hash, pubKey, 33);
         if (k1_verify_signature(pubKeySign, hash, (uint8_t *)g_webUsbUpdatePubKey) == false) {
-            printf("verify signature fail\n");
+            printf("verify pubkey signature fail\n");
             tlvArray[0].length = 4;
             tlvArray[0].value = 3;
         } else {
-            printf("verify signature success\n");
+            printf("verify pubkey signature success\n");
             tlvArray[0].length = 33;
             tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey) - 1);
         }

@@ -96,7 +96,21 @@ int8_t STORAGE_IsWriteProtected(uint8_t lun)
 
 int8_t STORAGE_Read(uint8_t lun, uint8_t* buffer, uint32_t block_number, uint16_t count)
 {
-    Gd25FlashReadBuffer(block_number * MSC_MEDIA_PACKET, buffer, MSC_MEDIA_PACKET * count);
+    uint64_t startAddr = (uint64_t)block_number * MSC_MEDIA_PACKET;
+    uint64_t totalSize = (uint64_t)count * MSC_MEDIA_PACKET;
+    uint64_t mediaSize = ((uint64_t)GD25QXX_SECTOR_NUM / 2U) * MSC_MEDIA_PACKET;
+
+    if (buffer == NULL) {
+        return -1;
+    }
+    if (totalSize == 0U) {
+        return 0;
+    }
+    if (startAddr >= mediaSize || totalSize > (mediaSize - startAddr)) {
+        return -1;
+    }
+
+    Gd25FlashReadBuffer((uint32_t)startAddr, buffer, (uint32_t)totalSize);
     return 0;
 }
 
@@ -110,12 +124,24 @@ int8_t STORAGE_Read(uint8_t lun, uint8_t* buffer, uint32_t block_number, uint16_
  */
 int8_t STORAGE_Write(uint8_t lun, uint8_t* buffer, uint32_t block_number, uint16_t count)
 {
-    uint32_t start_addr = block_number * MSC_MEDIA_PACKET;
-    uint32_t total_size = (uint32_t)count * MSC_MEDIA_PACKET;
+    uint64_t startAddr = (uint64_t)block_number * MSC_MEDIA_PACKET;
+    uint64_t totalSize = (uint64_t)count * MSC_MEDIA_PACKET;
+    uint64_t mediaSize = ((uint64_t)GD25QXX_SECTOR_NUM / 2U) * MSC_MEDIA_PACKET;
+    uint32_t start_addr;
+    uint32_t total_size;
 
-    if (total_size == 0U) {
+    if (buffer == NULL) {
+        return -1;
+    }
+    if (totalSize == 0U) {
         return 0;
     }
+    if (startAddr >= mediaSize || totalSize > (mediaSize - startAddr)) {
+        return -1;
+    }
+
+    start_addr = (uint32_t)startAddr;
+    total_size = (uint32_t)totalSize;
 
     uint32_t first_sector = start_addr / GD25QXX_SECTOR_SIZE;
     uint32_t last_sector = (start_addr + total_size - 1U) / GD25QXX_SECTOR_SIZE;

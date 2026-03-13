@@ -11,6 +11,8 @@
 #define EAPDU_PROTOCOL_PARSER_NAME        "eapdu_protocol_parser"
 
 enum { OFFSET_CLA = 0, OFFSET_INS = 1, OFFSET_P1 = 3, OFFSET_P2 = 5, OFFSET_LC = 7, OFFSET_CDATA = 9 };
+#define MAX_EAPDU_PACKET_SIZE 64
+#define MAX_EAPDU_DATA_SIZE (MAX_EAPDU_PACKET_SIZE - OFFSET_CDATA)
 
 typedef enum {
     CMD_ECHO_TEST = 0x00000001,    // Command to test echo

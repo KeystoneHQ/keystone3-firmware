@@ -244,6 +244,9 @@ static uint32_t DCD_HandleInEP_ISR(USB_OTG_CORE_HANDLE *pdev, uint16_t ep_intr)
     USB_OTG_TXCSRL_IN_PERIPHERAL_TypeDef txcsrl;
     uint16_t epnum = 0;
     while (ep_intr) {
+        if (epnum >= USB_OTG_MAX_EP_COUNT) {
+            break;
+        }
         if (ep_intr & 0x01) { /* In ITR */
             txcsrl.d8 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[epnum]->TXCSRL);
             if (!txcsrl.b.tx_pkt_rdy) {
@@ -286,6 +289,9 @@ static uint32_t DCD_HandleOutEP_ISR(USB_OTG_CORE_HANDLE *pdev, uint16_t ep_intr)
 
     ep_intr >>= 1;
     while (ep_intr) {
+        if (epnum >= USB_OTG_MAX_EP_COUNT) {
+            break;
+        }
         if (ep_intr & 0x1) {
             ep = &pdev->dev.out_ep[epnum];
             rxcsrl.d8 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[epnum]->RXCSRL);

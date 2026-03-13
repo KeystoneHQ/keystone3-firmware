@@ -564,8 +564,7 @@ static int8_t SCSI_Verify10(uint8_t lun, uint8_t *params)
 */
 static int8_t SCSI_CheckAddressRange(uint8_t lun, uint32_t blk_offset, uint16_t blk_nbr)
 {
-
-    if ((blk_offset + blk_nbr) > SCSI_blk_nbr) {
+    if ((blk_offset >= SCSI_blk_nbr) || (blk_nbr > (SCSI_blk_nbr - blk_offset))) {
         SCSI_SenseCode(lun, ILLEGAL_REQUEST, ADDRESS_OUT_OF_RANGE);
         return -1;
     }

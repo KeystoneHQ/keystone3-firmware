@@ -892,6 +892,9 @@ mod tests {
         let payload = prepare_payload(hex);
         let context = prepare_parse_context(pubkey_str);
         let tx = WrappedTron::from_payload(payload, &context).unwrap();
-        assert_eq!("=:ETH.USDT:0x742636d8FBD2C1dD721Db619b49eaD254385D77d:3816100/3/0:-_/nc:20/0", tx.memo);
+        assert_eq!(
+            "=:ETH.USDT:0x742636d8FBD2C1dD721Db619b49eaD254385D77d:3816100/3/0:-_/nc:20/0",
+            tx.memo
+        );
     }
 }

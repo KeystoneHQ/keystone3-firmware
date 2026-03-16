@@ -884,4 +884,14 @@ mod tests {
         let formatted = tx.format_amount().unwrap();
         assert!(formatted.contains("100"));
     }
+
+    #[test]
+    fn test_payload_with_memo() {
+        let hex = "1f8b080000000000000365ce3f4fc2400005f0508d121695c93091c60463527bff7ad76b6222b4481310150e81c9f47a2501954b8988f11b39b93b38b96af8087e020775711357fce54def2d2f6be437ce26be5649f174a26f74acaf0aaf46d6c8671de824d82591f96ce45645eba499dfe112aa44126561c9944564a42c2e95b290048a49ac62495561ebda26a46443ee946cb0880d8a8f1fef4f3f6077adf295c9ad8856af608ad630ad77e96567380b6f1b32ad55d376ea87a1821d3e9d0d6aba6c9ae27caccb7d41fab3a847184cfc6697dc4f477d5e81ba4ebaf120dc6b1c785511ee77da81f0c01d238862aadca34a807ca80286602029e492f0240a9043b0eb048c290fbb9042006c6c03cfbab0c7b1871637d1faa2fbe31de70ec1321e0f8044903246204ee27ffb92cdefcfccf67cfef2f0867f012b09fb6163010000";
+        let pubkey_str = "xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+        let tx = WrappedTron::from_payload(payload, &context).unwrap();
+        assert_eq!("=:ETH.USDT:0x742636d8FBD2C1dD721Db619b49eaD254385D77d:3816100/3/0:-_/nc:20/0", tx.memo);
+    }
 }

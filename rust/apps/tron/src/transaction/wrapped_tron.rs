@@ -896,5 +896,7 @@ mod tests {
             "=:ETH.USDT:0x742636d8FBD2C1dD721Db619b49eaD254385D77d:3816100/3/0:-_/nc:20/0",
             tx.memo
         );
+        let raw_data = tx.tron_tx.raw_data.as_ref().expect("raw_data should exist");
+        assert_eq!(tx.memo.as_bytes().to_vec(), raw_data.data);
     }
 }

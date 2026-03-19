@@ -6,6 +6,9 @@ use crate::common::structs::TransactionParseResult;
 use crate::common::types::{PtrString, PtrT};
 use crate::common::utils::convert_c_char;
 use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
+use ur_registry::tron::tron_sign_request::DataType;
+use app_tron::structs::{PersonalMessage};
+use core::ptr::null_mut;
 
 #[repr(C)]
 pub struct DisplayTron {
@@ -102,4 +105,51 @@ impl Free for DisplayTron {
     }
 }
 
+#[derive(Debug)]
+pub enum TransactionType {
+    Transaction,
+    PersonalMessage,
+}
+
+impl From<DataType> for TransactionType {
+    fn from(value: DataType) -> Self {
+        match value {
+            DataType::Transaction => TransactionType::Transaction,
+            DataType::PersonalMessage => TransactionType::PersonalMessage,
+        }
+    }
+}
+
+#[repr(C)]
+pub struct DisplayTRONPersonalMessage {
+    raw_message: PtrString,
+    utf8_message: PtrString,
+    from: PtrString,
+}
+
+impl From<PersonalMessage> for DisplayTRONPersonalMessage {
+    fn from(message: PersonalMessage) -> Self {
+        Self {
+            raw_message: convert_c_char(message.raw_message),
+            utf8_message: if message.utf8_message.is_empty() {
+                null_mut()
+            } else {
+                convert_c_char(message.utf8_message)
+            },
+            from: message.from.map(convert_c_char).unwrap_or(null_mut()),
+        }
+    }
+}
+
+impl_c_ptr!(DisplayTRONPersonalMessage);
+
+impl Free for DisplayTRONPersonalMessage {
+    unsafe fn free(&self) {
+        free_str_ptr!(self.raw_message);
+        free_str_ptr!(self.utf8_message);
+        free_str_ptr!(self.from);
+    }
+}
+
 make_free_method!(TransactionParseResult<DisplayTron>);
+make_free_method!(TransactionParseResult<DisplayTRONPersonalMessage>);

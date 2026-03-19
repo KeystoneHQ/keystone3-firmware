@@ -12,12 +12,16 @@ use alloc::slice;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use cty::c_char;
-use structs::DisplayTron;
+use structs::{DisplayTron, TransactionType};
 
 use crate::extract_ptr_with_type;
 use ur_registry::traits::{RegistryItem, To};
 use ur_registry::tron::tron_sign_request::TronSignRequest;
 use ur_registry::tron::tron_signature::TronSignature;
+use structs::{DisplayTRONPersonalMessage,};
+use app_tron::structs::{PersonalMessage};
+use keystore::algorithms::secp256k1::derive_public_key;
+use alloc::{format};
 
 use app_tron::TxParser;
 
@@ -53,9 +57,20 @@ pub unsafe extern "C" fn tron_check_sign_request(
     let sign_data = req.get_sign_data();
     let path = req.get_derivation_path().get_path().unwrap_or_default();
 
-    match app_tron::check_tx_request(&sign_data, &path, xpub_str) {
-        Ok(_) => TransactionCheckResult::new().c_ptr(),
-        Err(e) => TransactionCheckResult::from(e).c_ptr(),
+    let transaction_type = TransactionType::from(req.get_data_type());
+    match transaction_type {
+        TransactionType::Transaction => {
+            match app_tron::check_tx_request(&sign_data, &path, xpub_str) {
+                Ok(_) => TransactionCheckResult::new().c_ptr(),
+                Err(e) => TransactionCheckResult::from(e).c_ptr(),
+            }
+        }
+        TransactionType::PersonalMessage => {
+            TransactionCheckResult::new().c_ptr()
+        }
+        _ => TransactionCheckResult::from(RustCError::UnsupportedTransaction(
+            "Unsupported Transaction Type".to_string(),
+        )).c_ptr(),
     }
 }
 
@@ -91,15 +106,26 @@ pub unsafe extern "C" fn tron_sign_request(
     let seed_slice = extract_array!(seed, u8, seed_len as usize);
 
     let sign_res = (|| -> Result<Vec<u8>, KeystoneError> {
-        let json_bytes = req.get_sign_data();
+        let sign_data = req.get_sign_data();
         let request_id = req.get_request_id();
         let path = req
             .get_derivation_path()
             .get_path()
             .unwrap_or_else(|| String::from(TRON_DEFAULT_PATH));
 
-        let signed_tx_hex = app_tron::sign_tx_request(&json_bytes, &path, seed_slice)
-            .map_err(|e| KeystoneError::SignTxFailed(e.to_string()))?;
+        let signed_tx_hex = match TransactionType::from(req.get_data_type()) {
+            TransactionType::Transaction => {
+                app_tron::sign_tx_request(&sign_data, &path, seed_slice,)
+                    .map_err(|e| KeystoneError::SignTxFailed(e.to_string()))?
+            }
+            TransactionType::PersonalMessage => {
+                app_tron::sign_personal_message(&sign_data, &path, seed_slice)
+                    .map_err(|e| KeystoneError::SignTxFailed(e.to_string()))?
+            }
+            _ => {
+                return Err(KeystoneError::SignTxFailed("Unsupported Transaction Type".to_string()));
+            }
+        };
 
         let signed_tx_bytes = hex::decode(signed_tx_hex)
             .map_err(|_| KeystoneError::SignTxFailed("Invalid Hex output".to_string()))?;
@@ -197,5 +223,59 @@ pub unsafe extern "C" fn tron_get_address(
     match address {
         Ok(result) => SimpleResponse::success(convert_c_char(result) as *mut c_char).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
+    }
+}
+
+fn parse_trx_sub_path(path: String) -> Option<String> {
+    let root_path = "44'/195'/";
+    match path.strip_prefix(root_path) {
+        Some(path) => path.find('/').map(|index| path[index + 1..].to_string()),
+        None => None,
+    }
+}
+
+fn try_get_trx_public_key(
+    xpub: String,
+    trx_sign_request: &TronSignRequest,
+) -> Result<bitcoin::secp256k1::PublicKey, RustCError> {
+    match trx_sign_request.get_derivation_path().get_path() {
+        None => Err(RustCError::InvalidHDPath),
+        Some(path) => {
+            if let Some(sub_path) = parse_trx_sub_path(path.clone()) {
+                derive_public_key(&xpub, &format!("m/{sub_path}")).map_err(|_e| {
+                    RustCError::UnexpectedError("unable to derive TRX pubkey".to_string())
+                })
+            } else {
+                Err(RustCError::InvalidHDPath)
+            }
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn tron_parse_personal_message(
+    ptr: PtrUR,
+    xpub: PtrString,
+) -> PtrT<TransactionParseResult<DisplayTRONPersonalMessage>> {
+    let crypto_trx = extract_ptr_with_type!(ptr, TronSignRequest);
+    let xpub = recover_c_char(xpub);
+    
+    let pubkey = try_get_trx_public_key(xpub, crypto_trx).ok();
+    let transaction_type = TransactionType::from(crypto_trx.get_data_type());
+
+    match transaction_type {
+        TransactionType::PersonalMessage => {
+            match app_tron::parse_personal_message(&crypto_trx.get_sign_data(), pubkey) {
+                Ok(tx) => {
+                    TransactionParseResult::success(DisplayTRONPersonalMessage::from(tx).c_ptr())
+                        .c_ptr()
+                }
+                Err(e) => TransactionParseResult::from(e).c_ptr(),
+            }
+        }
+        _ => TransactionParseResult::from(RustCError::UnsupportedTransaction(
+            "TypedTransaction or TypedData".to_string(),
+        ))
+        .c_ptr(),
     }
 }

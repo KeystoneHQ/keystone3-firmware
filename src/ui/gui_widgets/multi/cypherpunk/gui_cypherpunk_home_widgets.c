@@ -63,7 +63,7 @@ static void GuiInitWalletState(void)
         for (size_t i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
             g_walletState[i].enable = true;
         }
-        g_walletState[HOME_WALLET_CARD_ZEC].enable = false;
+        g_walletState[HOME_WALLET_CARD_ZEC].enable = IsZcashSupportedForCurrentMnemonic();
         g_walletState[HOME_WALLET_CARD_MONERO].enable = false;
         break;
     case MNEMONIC_TYPE_BIP39:
@@ -318,6 +318,11 @@ static void OpenManageAssetsHandler(lv_event_t *e)
         lv_obj_set_width(label, 416);
         lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 32, 144);
+    } else if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39 && !IsZcashSupportedForCurrentMnemonic()) {
+        lv_obj_t *label = GuiCreateIllustrateLabel(checkBoxCont, _("shamir_20word_coin_notice"));
+        lv_obj_set_width(label, 416);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 32, -12);
     }
 
     lv_obj_t *btn = GuiCreateBtn(g_manageCont, USR_SYMBOL_CHECK);

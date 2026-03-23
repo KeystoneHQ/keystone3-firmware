@@ -1,6 +1,6 @@
 use crate::address::public_key_to_address;
 use crate::errors::Result;
-use alloc::string::{String};
+use alloc::string::String;
 
 use bitcoin::secp256k1::PublicKey;
 
@@ -24,4 +24,3 @@ impl PersonalMessage {
         })
     }
 }
-

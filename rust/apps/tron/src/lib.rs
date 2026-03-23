@@ -15,21 +15,20 @@ use ur_registry::pb::protoc;
 mod address;
 pub mod errors;
 mod pb;
+pub mod structs;
 mod transaction;
 mod utils;
-pub mod structs;
 
 pub use crate::address::get_address;
+use crate::structs::PersonalMessage;
 pub use crate::transaction::parser::{DetailTx, OverviewTx, ParsedTx, TxParser};
 use crate::transaction::wrapped_tron::WrappedTron;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use app_utils::keystone;
+use bitcoin::secp256k1::PublicKey;
 use transaction::checker::TxChecker;
 use transaction::signer::Signer;
-use bitcoin::secp256k1::{PublicKey};
-use crate::structs::{PersonalMessage};
-
 
 pub fn sign_raw_tx(
     raw_tx: protoc::Payload,
@@ -90,13 +89,13 @@ pub fn check_tx_request(sign_data: &[u8], path: &str, xpub: &str) -> errors::Res
 }
 
 pub fn sign_personal_message(
-    sign_data: &[u8], 
-    path: &String, 
-    seed: &[u8]
+    sign_data: &[u8],
+    path: &String,
+    seed: &[u8],
 ) -> errors::Result<String> {
     let prefix = b"\x19TRON Signed Message:\n";
     let len_str = sign_data.len().to_string();
-    
+
     let mut message_to_hash = Vec::with_capacity(prefix.len() + len_str.len() + sign_data.len());
     message_to_hash.extend_from_slice(prefix);
     message_to_hash.extend_from_slice(len_str.as_bytes());
@@ -121,7 +120,6 @@ pub fn parse_personal_message(
     tx_hex: &[u8],
     from_key: Option<PublicKey>,
 ) -> Result<PersonalMessage> {
-    
     let raw_message = hex::encode(tx_hex);
     let utf8_message = match String::from_utf8(tx_hex.to_vec()) {
         Ok(utf8_message) => {

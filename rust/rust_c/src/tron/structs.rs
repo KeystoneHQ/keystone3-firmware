@@ -98,6 +98,7 @@ impl Free for DisplayTronDetail {
         free_str_ptr!(self.contract_address);
         free_str_ptr!(self.memo);
         free_str_ptr!(self.expiration);
+        free_str_ptr!(self.raw_value);
     }
 }
 

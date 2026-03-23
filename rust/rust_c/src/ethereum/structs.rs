@@ -538,6 +538,7 @@ impl Free for DisplaySwapkitContractData {
         free_str_ptr!(self.swap_out_asset);
         free_str_ptr!(self.receive_address);
         free_str_ptr!(self.expiration);
+        free_str_ptr!(self.raw_value);
     }
 }
 

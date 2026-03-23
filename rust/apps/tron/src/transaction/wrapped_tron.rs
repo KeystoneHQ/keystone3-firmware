@@ -455,7 +455,7 @@ impl WrappedTron {
                     token_short_name,
                     fee_limit,
                     memo: tx.memo.clone(),
-                    expiration: expiration.clone(),
+                    expiration,
                 })
             }
             _ => Err(TronError::InvalidRawTxCryptoBytes(

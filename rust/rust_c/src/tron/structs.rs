@@ -6,9 +6,9 @@ use crate::common::structs::TransactionParseResult;
 use crate::common::types::{PtrString, PtrT};
 use crate::common::utils::convert_c_char;
 use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
-use ur_registry::tron::tron_sign_request::DataType;
-use app_tron::structs::{PersonalMessage};
+use app_tron::structs::PersonalMessage;
 use core::ptr::null_mut;
+use ur_registry::tron::tron_sign_request::DataType;
 
 #[repr(C)]
 pub struct DisplayTron {

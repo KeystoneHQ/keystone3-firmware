@@ -235,7 +235,9 @@ impl InferViewType for TronSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         match self.get_data_type() {
             ur_registry::tron::tron_sign_request::DataType::Transaction => Ok(ViewType::TronTx),
-            ur_registry::tron::tron_sign_request::DataType::PersonalMessage=> Ok(ViewType::TronPersonalMessage),
+            ur_registry::tron::tron_sign_request::DataType::PersonalMessage => {
+                Ok(ViewType::TronPersonalMessage)
+            }
         }
     }
 }

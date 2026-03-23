@@ -112,6 +112,13 @@ extern bool g_reboot;
         FreeTrxMemory, \
     }, \
     { \
+        REMAPVIEW_TRX_SWAP, \
+        PC_SIMULATOR_PATH "/page_trx_swap.json", \
+        GuiGetTrxData, \
+        NULL, \
+        FreeTrxMemory, \
+    }, \
+    { \
         REMAPVIEW_COSMOS, \
         PC_SIMULATOR_PATH "/page_cosmos.json", \
         GuiGetCosmosData, \

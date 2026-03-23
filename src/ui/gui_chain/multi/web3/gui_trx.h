@@ -12,6 +12,14 @@ bool GetTrxContractExist(void *indata, void *param);
 void GetTrxContract(void *indata, void *param, uint32_t maxLen);
 bool GetTrxTokenExist(void *indata, void *param);
 void GetTrxToken(void *indata, void *param, uint32_t maxLen);
+void GetTrxSwapDstAsset(void *indata, void *param, uint32_t maxLen);
+void GetTrxSwapDstAddress(void *indata, void *param, uint32_t maxLen);
+void GetTrxNetwork(void *indata, void *param, uint32_t maxLen);
+void TrxCheckVault(lv_event_t *e);
+void GetTrxExpiration(void *indata, void *param, uint32_t maxLen);
+void GetTrxValueRaw(void *indata, void *param, uint32_t maxLen);
+void GetTrxMemo(void *indata, void *param, uint32_t maxLen);
+
 UREncodeResult *GuiGetTrxSignQrCodeData(void);
 UREncodeResult *GuiGetTrxSignUrDataUnlimited(void);
 

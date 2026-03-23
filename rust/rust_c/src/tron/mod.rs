@@ -15,13 +15,13 @@ use cty::c_char;
 use structs::{DisplayTron, TransactionType};
 
 use crate::extract_ptr_with_type;
+use alloc::format;
+use app_tron::structs::PersonalMessage;
+use keystore::algorithms::secp256k1::derive_public_key;
+use structs::DisplayTRONPersonalMessage;
 use ur_registry::traits::{RegistryItem, To};
 use ur_registry::tron::tron_sign_request::TronSignRequest;
 use ur_registry::tron::tron_signature::TronSignature;
-use structs::{DisplayTRONPersonalMessage,};
-use app_tron::structs::{PersonalMessage};
-use keystore::algorithms::secp256k1::derive_public_key;
-use alloc::{format};
 
 use app_tron::TxParser;
 
@@ -65,12 +65,11 @@ pub unsafe extern "C" fn tron_check_sign_request(
                 Err(e) => TransactionCheckResult::from(e).c_ptr(),
             }
         }
-        TransactionType::PersonalMessage => {
-            TransactionCheckResult::new().c_ptr()
-        }
+        TransactionType::PersonalMessage => TransactionCheckResult::new().c_ptr(),
         _ => TransactionCheckResult::from(RustCError::UnsupportedTransaction(
             "Unsupported Transaction Type".to_string(),
-        )).c_ptr(),
+        ))
+        .c_ptr(),
     }
 }
 
@@ -115,7 +114,7 @@ pub unsafe extern "C" fn tron_sign_request(
 
         let signed_tx_hex = match TransactionType::from(req.get_data_type()) {
             TransactionType::Transaction => {
-                app_tron::sign_tx_request(&sign_data, &path, seed_slice,)
+                app_tron::sign_tx_request(&sign_data, &path, seed_slice)
                     .map_err(|e| KeystoneError::SignTxFailed(e.to_string()))?
             }
             TransactionType::PersonalMessage => {
@@ -123,7 +122,9 @@ pub unsafe extern "C" fn tron_sign_request(
                     .map_err(|e| KeystoneError::SignTxFailed(e.to_string()))?
             }
             _ => {
-                return Err(KeystoneError::SignTxFailed("Unsupported Transaction Type".to_string()));
+                return Err(KeystoneError::SignTxFailed(
+                    "Unsupported Transaction Type".to_string(),
+                ));
             }
         };
 
@@ -259,7 +260,7 @@ pub unsafe extern "C" fn tron_parse_personal_message(
 ) -> PtrT<TransactionParseResult<DisplayTRONPersonalMessage>> {
     let crypto_trx = extract_ptr_with_type!(ptr, TronSignRequest);
     let xpub = recover_c_char(xpub);
-    
+
     let pubkey = try_get_trx_public_key(xpub, crypto_trx).ok();
     let transaction_type = TransactionType::from(crypto_trx.get_data_type());
 

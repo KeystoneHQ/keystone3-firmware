@@ -58,11 +58,11 @@ pub fn get_address(path: String, extended_pub_key: &String) -> Result<String> {
 pub fn public_key_to_address(public_key: &PublicKey) -> String {
     let pubkey_bytes = public_key.serialize_uncompressed();
     let hash = keccak256(&pubkey_bytes[1..]);
-    
+
     let mut address_bytes = [0u8; 21];
     address_bytes[0] = 0x41;
     address_bytes[1..].copy_from_slice(&hash[hash.len() - 20..]);
-    
+
     base58::encode_check(&address_bytes)
 }
 

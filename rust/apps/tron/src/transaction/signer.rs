@@ -17,20 +17,16 @@ pub trait Signer {
 impl WrappedTron {
     fn do_sign_digest(&self, seed: &[u8]) -> Result<[u8; 65]> {
         let sig_hash = self.signature_hash()?;
-        
+
         let message = bitcoin::secp256k1::Message::from_digest_slice(sig_hash.as_slice())
             .map_err(|e| TronError::SignFailure(e.to_string()))?;
-            
-        let (rec_id, signature) = secp256k1::sign_message_by_seed(
-            seed, 
-            &self.hd_path, 
-            &message
-        )?;
-        
+
+        let (rec_id, signature) = secp256k1::sign_message_by_seed(seed, &self.hd_path, &message)?;
+
         let mut sig_bytes = [0u8; 65];
         sig_bytes[..64].copy_from_slice(&signature);
         sig_bytes[64..].copy_from_slice(&rec_id.to_le_bytes()[..1]);
-        
+
         Ok(sig_bytes)
     }
 }
@@ -39,13 +35,15 @@ impl Signer for WrappedTron {
     fn sign(&self, seed: &[u8]) -> Result<(String, String)> {
         let sig_hash = self.signature_hash()?;
         let sig_bytes = self.do_sign_digest(seed)?;
-        
+
         let mut tx = self.tron_tx.to_owned();
-        let count: usize = tx.raw_data.as_ref()
+        let count: usize = tx
+            .raw_data
+            .as_ref()
             .map_or(0, |raw_data| raw_data.contract.len());
-            
+
         tx.signature = vec![sig_bytes.to_vec(); count];
-        
+
         let tx_hex = tx.encode_to_vec();
         Ok((hex::encode(tx_hex), hex::encode(sig_hash)))
     }

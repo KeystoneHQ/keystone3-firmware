@@ -37,6 +37,7 @@ pub struct WrappedTron {
     pub(crate) token_short_name: Option<String>,
     pub(crate) divider: f64,
     pub(crate) fee_limit: u64,
+    pub(crate) memo: String,
 }
 
 #[macro_export]
@@ -72,10 +73,12 @@ impl WrappedTron {
             divider: DIVIDER,
             token_short_name: None,
             fee_limit: 0,
+            memo: String::new(),
         };
 
         if let Some(raw) = &instance.tron_tx.raw_data {
             instance.fee_limit = raw.fee_limit as u64;
+            instance.memo = String::from_utf8_lossy(&raw.data).to_string();
             if let Some(contract) = raw.contract.get(0) {
                 use crate::pb::protocol::transaction::contract::ContractType;
                 let c_type = ContractType::from_i32(contract.r#type)
@@ -387,7 +390,7 @@ impl WrappedTron {
                     token_short_name = Some(value.token_short_name);
                     divider = 10u64.pow(value.decimals as u32) as f64;
                 }
-                let tron_tx = if tx.contract_address.is_empty() {
+                let mut tron_tx = if tx.contract_address.is_empty() {
                     Self::build_transfer_tx(tx)
                 } else {
                     Self::generate_trc20_tx(tx)
@@ -397,6 +400,13 @@ impl WrappedTron {
                 } else {
                     0
                 };
+
+                if !tx.memo.is_empty() {
+                    if let Some(ref mut raw) = tron_tx.raw_data {
+                        raw.data = tx.memo.as_bytes().to_vec();
+                    }
+                }
+
                 Ok(Self {
                     hd_path: content.hd_path,
                     extended_pubkey: context.extended_public_key.to_string(),
@@ -410,6 +420,7 @@ impl WrappedTron {
                     divider,
                     token_short_name,
                     fee_limit,
+                    memo: tx.memo.clone(),
                 })
             }
             _ => Err(TronError::InvalidRawTxCryptoBytes(
@@ -541,6 +552,7 @@ mod tests {
             token_short_name: None,
             divider: 1.0,
             fee_limit: 0,
+            memo: String::new(),
         };
         assert!(tx_no_raw.signature_hash().is_err());
     }
@@ -592,6 +604,7 @@ mod tests {
             token_short_name: None,
             divider: 1.0,
             fee_limit: 0,
+            memo: String::new(),
         };
         let result = tx.signature_hash();
         assert!(result.is_err());

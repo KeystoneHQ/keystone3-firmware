@@ -233,7 +233,12 @@ impl InferViewType for AvaxSignRequest {
 #[cfg(feature = "tron")]
 impl InferViewType for TronSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
-        Ok(ViewType::TronTx)
+        match self.get_data_type() {
+            ur_registry::tron::tron_sign_request::DataType::Transaction => Ok(ViewType::TronTx),
+            ur_registry::tron::tron_sign_request::DataType::PersonalMessage => {
+                Ok(ViewType::TronPersonalMessage)
+            }
+        }
     }
 }
 

@@ -11,26 +11,46 @@ use prost::Message;
 
 pub trait Signer {
     fn sign(&self, seed: &[u8]) -> Result<(String, String)>;
+    fn sign_signature_only(&self, seed: &[u8]) -> Result<String>;
+}
+
+impl WrappedTron {
+    fn do_sign_digest(&self, seed: &[u8]) -> Result<[u8; 65]> {
+        let sig_hash = self.signature_hash()?;
+
+        let message = bitcoin::secp256k1::Message::from_digest_slice(sig_hash.as_slice())
+            .map_err(|e| TronError::SignFailure(e.to_string()))?;
+
+        let (rec_id, signature) = secp256k1::sign_message_by_seed(seed, &self.hd_path, &message)?;
+
+        let mut sig_bytes = [0u8; 65];
+        sig_bytes[..64].copy_from_slice(&signature);
+        sig_bytes[64..].copy_from_slice(&rec_id.to_le_bytes()[..1]);
+
+        Ok(sig_bytes)
+    }
 }
 
 impl Signer for WrappedTron {
     fn sign(&self, seed: &[u8]) -> Result<(String, String)> {
         let sig_hash = self.signature_hash()?;
+        let sig_bytes = self.do_sign_digest(seed)?;
+
         let mut tx = self.tron_tx.to_owned();
-        let message = bitcoin::secp256k1::Message::from_digest_slice(sig_hash.as_slice())
-            .map_err(|e| TronError::SignFailure(e.to_string()))?;
-        let (rec_id, signature) =
-            &secp256k1::sign_message_by_seed(seed, &self.hd_path.to_owned(), &message)?;
-        let mut sig_bytes = [0u8; 65];
-        sig_bytes[..64].copy_from_slice(signature);
-        sig_bytes[64..].copy_from_slice(&rec_id.to_le_bytes()[..1]);
         let count: usize = tx
             .raw_data
-            .to_owned()
+            .as_ref()
             .map_or(0, |raw_data| raw_data.contract.len());
+
         tx.signature = vec![sig_bytes.to_vec(); count];
+
         let tx_hex = tx.encode_to_vec();
         Ok((hex::encode(tx_hex), hex::encode(sig_hash)))
+    }
+
+    fn sign_signature_only(&self, seed: &[u8]) -> Result<String> {
+        let sig_bytes = self.do_sign_digest(seed)?;
+        Ok(hex::encode(sig_bytes))
     }
 }
 
@@ -42,6 +62,20 @@ mod tests {
     use crate::test::{prepare_parse_context, prepare_payload};
     use crate::transaction::signer::Signer;
     use crate::transaction::wrapped_tron::WrappedTron;
+
+    #[test]
+    fn test_sign_signature_only_trc20() {
+        let hex = "1f8b08000000000000031590bf4ac3501c46359452bba871299d4a102a42c8bffbbbf7c6499b1403b6b14d52b42e92e426b5c53636462979029d7d01477707279f40147c0007df41707130856f3870a6f355387ebd9f1a098b1abd34c99230b9acbf70158eaf1099b4db26368427ae5af29c639bdf0e98a652d50fc4500922110121a21efb548c028010142d8814bdbed995106a4a8a0e4d492e26c98defb78ffb3f79a7dcfa5ae505cf21b6359f4447fdc5a1678ce99c9e0dd1558726999b8f269d09ceea82e7b96408dab58bd23c358deccc1fdf38f97cc114ec6746a40e1c41f05cc87b89814edbada9756bda07b3d9893ab2b46eff22746c3c76a6bb2b6a49d129d9b3abfb3e8be3400335f4090d3506818c303042402f0c669851888160504286502c2b408b001d01f5fd40d6286c3c7f3ed46a773fef45486bab5a1ab8a6c7af2d6f395f62ad6c3dfee2c66bef1f257dc3fe50010000";
+        let pubkey_str = "xpub6C3ndD75jvoARyqUBTvrsMZaprs2ZRF84kRTt5r9oxKQXn5oFChRRgrP2J8QhykhKACBLF2HxwAh4wccFqFsuJUBBcwyvkyqfzJU5gfn5pY";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+        let tx = WrappedTron::from_payload(payload, &context).unwrap();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let sig = tx.sign_signature_only(&seed).unwrap();
+        assert_eq!("d01233804064a481a7e50cfa81007b6a5de8c933e0c08e09fd9bf045c7b70b7f20e262098f42a121cd3de494962215a835e38d220d25eeeefb7df1376bf74b8600", sig);
+        assert_eq!(sig.len(), 130);
+        assert!(sig.chars().all(|c| c.is_ascii_hexdigit()));
+    }
 
     #[test]
     fn test_sign_trx_transfer() {

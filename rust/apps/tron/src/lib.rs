@@ -9,20 +9,24 @@ extern crate std;
 use crate::errors::{Result, TronError};
 use alloc::string::String;
 
+use cryptoxide::hashing;
 use ur_registry::pb::protoc;
 
 mod address;
 pub mod errors;
 mod pb;
+pub mod structs;
 mod transaction;
 mod utils;
 
 pub use crate::address::get_address;
+use crate::structs::PersonalMessage;
 pub use crate::transaction::parser::{DetailTx, OverviewTx, ParsedTx, TxParser};
 use crate::transaction::wrapped_tron::WrappedTron;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use app_utils::keystone;
+use bitcoin::secp256k1::PublicKey;
 use transaction::checker::TxChecker;
 use transaction::signer::Signer;
 
@@ -64,8 +68,8 @@ fn decode_to_wrapped(sign_data: &[u8], path: String) -> Result<WrappedTron> {
 pub fn sign_tx_request(sign_data: &[u8], hd_path: &String, seed: &[u8]) -> errors::Result<String> {
     let tx = decode_to_wrapped(sign_data, hd_path.clone())?;
 
-    let (signed_hex, _) = tx.sign(seed)?;
-    Ok(signed_hex)
+    let sig = tx.sign_signature_only(seed)?;
+    Ok(sig)
 }
 
 pub fn parse_tx_request(sign_data: &[u8], path: &String) -> Result<ParsedTx> {
@@ -82,6 +86,52 @@ pub fn check_tx_request(sign_data: &[u8], path: &str, xpub: &str) -> errors::Res
     }
 
     Ok(())
+}
+
+pub fn sign_personal_message(
+    sign_data: &[u8],
+    path: &String,
+    seed: &[u8],
+) -> errors::Result<String> {
+    let prefix = b"\x19TRON Signed Message:\n";
+    let len_str = sign_data.len().to_string();
+
+    let mut message_to_hash = Vec::with_capacity(prefix.len() + len_str.len() + sign_data.len());
+    message_to_hash.extend_from_slice(prefix);
+    message_to_hash.extend_from_slice(len_str.as_bytes());
+    message_to_hash.extend_from_slice(sign_data);
+
+    let hash = hashing::keccak256(&message_to_hash);
+
+    let message = bitcoin::secp256k1::Message::from_digest_slice(&hash)
+        .map_err(|e| TronError::SignFailure(e.to_string()))?;
+
+    let (rec_id, rs) = keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
+        .map_err(|e| TronError::SignFailure(e.to_string()))?;
+
+    let mut sig_bytes = [0u8; 65];
+    sig_bytes[..64].copy_from_slice(&rs);
+    sig_bytes[64] = (rec_id as u8) + 27;
+
+    Ok(hex::encode(sig_bytes))
+}
+
+pub fn parse_personal_message(
+    tx_hex: &[u8],
+    from_key: Option<PublicKey>,
+) -> Result<PersonalMessage> {
+    let raw_message = hex::encode(tx_hex);
+    let utf8_message = match String::from_utf8(tx_hex.to_vec()) {
+        Ok(utf8_message) => {
+            if app_utils::is_cjk(&utf8_message) {
+                "".to_string()
+            } else {
+                utf8_message
+            }
+        }
+        Err(_e) => "".to_string(),
+    };
+    PersonalMessage::from(raw_message, utf8_message, from_key)
 }
 
 #[cfg(test)]

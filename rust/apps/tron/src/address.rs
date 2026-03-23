@@ -3,6 +3,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use bitcoin::base58;
+use bitcoin::secp256k1::PublicKey;
 use cryptoxide::hashing::keccak256;
 use keystore::algorithms::secp256k1::derive_public_key;
 
@@ -52,6 +53,17 @@ pub fn get_address(path: String, extended_pub_key: &String) -> Result<String> {
     address_bytes[1..].copy_from_slice(&hash[hash.len() - 20..]);
     let address = base58::encode_check(&address_bytes);
     Ok(address.to_string())
+}
+
+pub fn public_key_to_address(public_key: &PublicKey) -> String {
+    let pubkey_bytes = public_key.serialize_uncompressed();
+    let hash = keccak256(&pubkey_bytes[1..]);
+
+    let mut address_bytes = [0u8; 21];
+    address_bytes[0] = 0x41;
+    address_bytes[1..].copy_from_slice(&hash[hash.len() - 20..]);
+
+    base58::encode_check(&address_bytes)
 }
 
 #[cfg(test)]

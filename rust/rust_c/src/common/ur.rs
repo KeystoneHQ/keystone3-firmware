@@ -224,6 +224,8 @@ pub enum ViewType {
     EthTypedData,
     #[cfg(feature = "tron")]
     TronTx,
+    #[cfg(feature = "tron")]
+    TronSwapTx,
     #[cfg(feature = "solana")]
     SolanaTx,
     #[cfg(feature = "solana")]

@@ -38,6 +38,7 @@ pub struct WrappedTron {
     pub(crate) token_short_name: Option<String>,
     pub(crate) divider: f64,
     pub(crate) memo: String,
+    pub(crate) expiration: String,
 }
 
 #[macro_export]
@@ -292,10 +293,12 @@ impl WrappedTron {
                 } else {
                     Self::generate_trc20_tx(tx)
                 }?;
+                let mut expiration = "".to_string();
 
                 if !tx.memo.is_empty() {
                     if let Some(ref mut raw) = tron_tx.raw_data {
                         raw.data = tx.memo.as_bytes().to_vec();
+                        expiration = (raw.expiration).to_string();
                     }
                 }
 
@@ -312,6 +315,7 @@ impl WrappedTron {
                     divider,
                     token_short_name,
                     memo: tx.memo.clone(),
+                    expiration: expiration.clone(),
                 })
             }
             _ => Err(TronError::InvalidRawTxCryptoBytes(
@@ -344,7 +348,7 @@ impl WrappedTron {
 }
 
 pub const DIVIDER: f64 = 1000000_f64;
-pub const NETWORK: &str = "TRON";
+pub const NETWORK: &str = "Tron Mainnet";
 
 #[cfg(test)]
 mod tests {

@@ -107,6 +107,108 @@ void GetTrxToken(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata,  maxLen, trx->detail->token);
 }
 
+void GetTrxSwapDstAsset(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    const char *memo = trx->detail->memo;
+    char *out = (char *)indata;
+
+    if (memo == NULL || strlen(memo) == 0) {
+        strcpy_s(out, maxLen, "Unknown");
+        return;
+    }
+
+    const char *first_colon = strchr(memo, ':');
+    if (!first_colon) {
+        strcpy_s(out, maxLen, "");
+        return;
+    }
+
+    const char *start = first_colon + 1;
+    const char *second_colon = strchr(start, ':');
+
+    if (second_colon) {
+        size_t len = second_colon - start;
+        if (len >= maxLen) len = maxLen - 1;
+        strncpy_s(out, maxLen, start, len);
+    } else {
+        strcpy_s(out, maxLen, start);
+    }
+}
+
+void GetTrxSwapDstAddress(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    const char *memo = trx->detail->memo;
+    char *out = (char *)indata;
+
+    const char *first_colon = strchr(memo, ':');
+    if (first_colon) {
+        const char *second_colon = strchr(first_colon + 1, ':');
+        if (second_colon) {
+            const char *start = second_colon + 1;
+            const char *third_colon = strchr(start, ':');
+            
+            if (third_colon) {
+                size_t len = third_colon - start;
+                if (len >= maxLen) len = maxLen - 1;
+                strncpy_s(out, maxLen, start, len);
+                return;
+            } else {
+                strcpy_s(out, maxLen, start);
+                return;
+            }
+        }
+    }
+    strcpy_s(out, maxLen, "");
+}
+
+void GetTrxMemo(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    strcpy_s((char *)indata, maxLen, trx->detail->memo);
+}
+
+void GetTrxNetwork(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    strcpy_s((char *)indata, maxLen, trx->detail->network);
+}
+
+void GetTrxExpiration(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    strcpy_s((char *)indata, maxLen, trx->detail->expiration);
+}
+
+void GetTrxValueRaw(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    strcpy_s((char *)indata, maxLen, trx->detail->raw_value);
+}
+
+void TrxCheckVault(lv_event_t *e)
+{
+    if (lv_event_get_code(e) == LV_EVENT_CLICKED) {
+        lv_obj_t *v_btn = lv_event_get_current_target(e); 
+        
+        lv_obj_t *address_card = lv_obj_get_parent(v_btn);
+        if (!address_card) return;
+
+        lv_obj_t *t_val_obj = lv_obj_get_child(address_card, 3);
+        
+        if (t_val_obj) {
+            const char *address = lv_label_get_text(t_val_obj);
+            if (address && strlen(address) > 10) {
+                char url[256] = {0};
+                snprintf(url, sizeof(url), "https://tronscan.org/#/address/%s", address);
+                GuiQRCodeHintBoxOpen(url, _("SwapKit Tron Vault"), url);
+            }
+        }
+    }
+}
+
+
 UREncodeResult *GuiGetTrxSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();

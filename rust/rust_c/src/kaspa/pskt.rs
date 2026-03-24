@@ -20,6 +20,7 @@ use bitcoin::bip32::Fingerprint;
 use core::ffi::c_void;
 use ur_registry::kaspa::kaspa_pskt::KaspaPskt;
 use ur_registry::traits::To;
+use core::convert::TryInto;
 
 /// Parse PSKT from hex string and display transaction details
 ///
@@ -151,7 +152,7 @@ pub unsafe extern "C" fn kaspa_sign_pskt(
     match pskt.to_hex() {
         Ok(hex_str) => {
             let kaspa_ur = ur_registry::kaspa::kaspa_pskt::KaspaPskt::new(hex_str.into_bytes());
-            match kaspa_ur.to_bytes() {
+            match kaspa_ur.try_into() {
                 Ok(pskt_bytes) => UREncodeResult::encode(
                     pskt_bytes,
                     "kaspa-pskt".to_string(),
@@ -332,18 +333,6 @@ fn parse_pskt_to_display(
         total_output += output.amount;
     }
 
-    if outputs.is_empty() {
-        outputs.push(DisplayKaspaOutput {
-            address: convert_c_char("DEBUG_EMPTY_ADDRESS".to_string()),
-            amount: convert_c_char("10 KAS".to_string()),
-            value: 10,
-            path: core::ptr::null_mut(),
-            is_mine: false,
-            is_external: true,
-        });
-    }
-
-
     // 3. fee
     let fee = total_input.saturating_sub(total_output);
     println!("DEBUG: inputs len: {}, outputs len: {}", inputs.len(), outputs.len());  
@@ -416,7 +405,7 @@ mod tests {
         "inputsModifiable": true,
         "outputsModifiable": true,
         "inputCount": 1,
-        "outputCount": 0,
+        "outputCount": 1,
         "xpubs": {},
         "id": null,
         "proprietaries": {},
@@ -452,9 +441,14 @@ mod tests {
     ],
     "outputs": [
         {
-            "amount": 1000000000000,
+            "amount": 11793000000000,
             "scriptPublicKey": "2046bc38c7f9984920268f7004f1a265691e92d2719630c8227b4010a390098f48ac",
-            "bip32Derivations": {}
+            "bip32Derivations": {
+            "pubkey_placeholder": {
+                    "keyFingerprint": "deadbeef",
+                    "derivationPath": "m/44'/111111'/0'/0/0"
+                }
+            }
         }
     ]
 }"#;
@@ -463,10 +457,20 @@ mod tests {
         let hex_str = pskt.to_hex().expect("pskt to hex");
 
         let mut kaspa_ur = KaspaPskt::new(hex_str.into_bytes());
-        let ur_ptr = &mut kaspa_ur as *mut KaspaPskt as PtrUR;
+        // let ur_ptr = &mut kaspa_ur as *mut KaspaPskt as PtrUR;
+        let cbor_data = minicbor::to_vec(&kaspa_ur).expect("Encode 失败");
+
+        // 3. 手动触发 Decode (测试你的 cbor_map 逻辑)
+        // 如果这里报错，说明你的 cbor_map 逻辑和 encode 不匹配
+        let mut decoded_obj: KaspaPskt = minicbor::decode(&cbor_data).expect("Decode 失败: expected map!");
+
+        // 4. 将解出来的对象转为指针传给 FFI
+        let ur_ptr = &mut decoded_obj as *mut KaspaPskt as PtrUR;
+
         // Print UR fragments for manual QR rendering
-        if let Ok(data) = kaspa_ur.to_bytes() {
-            if let Ok(enc) =
+        let data = minicbor::to_vec(&kaspa_ur).expect("Manual Encode Failed");
+        println!("DEBUG: CBOR HEX: {:02X?}", &data[..4.min(data.len())]);
+        if let Ok(enc) =
                 probe_encode(&data, FRAGMENT_MAX_LENGTH_DEFAULT, "kaspa-pskt".to_string())
             {
                 if enc.is_multi_part {
@@ -486,7 +490,31 @@ mod tests {
                     println!("UR single: {}", enc.data.to_uppercase());
                 }
             }
-        }
+        
+        // let ur_result: Result<Vec<u8>, _> = kaspa_ur.try_into();
+        
+        // if let Ok(data) = ur_result {
+        //     if let Ok(enc) =
+        //         probe_encode(&data, FRAGMENT_MAX_LENGTH_DEFAULT, "kaspa-pskt".to_string())
+        //     {
+        //         if enc.is_multi_part {
+        //             println!("UR multi first: {}", enc.data.to_uppercase());
+        //             if let Some(mut encoder) = enc.encoder {
+        //                 for i in 0..10 {
+        //                     match encoder.next_part() {
+        //                         Ok(p) => println!("part {}: {}", i + 1, p.to_uppercase()),
+        //                         Err(e) => {
+        //                             println!("encoder.next_part error: {:?}", e);
+        //                             break;
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         } else {
+        //             println!("UR single: {}", enc.data.to_uppercase());
+        //         }
+        //     }
+        // }
         let hex_str = pskt.to_hex().expect("pskt to hex");
 
         // --- 核心修改：将数据转换为字节数组并准备长度 ---

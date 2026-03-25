@@ -107,6 +107,28 @@ void GetTrxToken(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata,  maxLen, trx->detail->token);
 }
 
+static const char* map_thor_asset_name(const char* raw) {
+    if (strcmp(raw, "b") == 0)  return "BTC";
+    if (strcmp(raw, "e") == 0)  return "ETH";
+    if (strcmp(raw, "r") == 0 || strcmp(raw, "rune") == 0) return "RUNE";
+    if (strcmp(raw, "a") == 0)  return "AVAX";
+    if (strcmp(raw, "s") == 0)  return "BSC";
+    if (strcmp(raw, "f") == 0)  return "BASE.ETH";
+    if (strcmp(raw, "g") == 0)  return "ATOM";
+    if (strcmp(raw, "l") == 0)  return "LTC";
+    if (strcmp(raw, "c") == 0)  return "BCH";
+    if (strcmp(raw, "d") == 0)  return "DOGE";
+    if (strcmp(raw, "p") == 0)  return "POL";
+    if (strcmp(raw, "x") == 0)  return "XRP";
+    if (strcmp(raw, "o") == 0)  return "SOL";
+    if (strcmp(raw, "z") == 0)  return "ZEC";
+    if (strcmp(raw, "u") == 0)  return "SUI";
+    if (strcmp(raw, "tr") == 0) return "TRX";
+    if (strcmp(raw, "ad") == 0) return "ADA";
+
+    return raw;
+}
+
 void GetTrxSwapDstAsset(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTron *trx = (DisplayTron *)param;
@@ -127,17 +149,47 @@ void GetTrxSwapDstAsset(void *indata, void *param, uint32_t maxLen)
     const char *start = first_colon + 1;
     const char *second_colon = strchr(start, ':');
 
+    char temp[64] = {0};
+    size_t len = 0;
+
     if (second_colon) {
-        size_t len = second_colon - start;
-        if (len >= maxLen) len = maxLen - 1;
-        strncpy_s(out, maxLen, start, len);
+        len = second_colon - start;
     } else {
-        strcpy_s(out, maxLen, start);
+        len = strlen(start);
+    }
+
+    if (len >= sizeof(temp)) len = sizeof(temp) - 1;
+    strncpy_s(temp, sizeof(temp), start, len);
+    temp[len] = '\0';
+
+    char *dash = strchr(temp, '-');
+    if (dash) {
+        *dash = '\0';
+    }
+
+    ConvertToLowerCase(temp);
+    const char *final_name = map_thor_asset_name(temp);
+
+    if (final_name != temp) {
+        strcpy_s(out, maxLen, final_name);
+    } else {
+        ConvertToUpperCase(temp);
+        char *separator = strpbrk(temp, "./~-"); 
+        if (separator) {
+            size_t chainLen = separator - temp;
+            const char *assetPart = separator + 1;
+
+            if (strncmp(temp, assetPart, chainLen) == 0 && assetPart[chainLen] == '\0') {
+                *separator = '\0'; 
+            }
+        }
+        strcpy_s(out, maxLen, temp);
     }
 }
 
 void GetTrxSwapDstAddress(void *indata, void *param, uint32_t maxLen)
 {
+    //do a mapping
     DisplayTron *trx = (DisplayTron *)param;
     const char *memo = trx->detail->memo;
     char *out = (char *)indata;

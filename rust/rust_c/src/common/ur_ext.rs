@@ -272,7 +272,8 @@ fn get_view_type_from_keystone(bytes: Vec<u8>) -> Result<ViewType, URError> {
                     if let Some(protoc::sign_transaction::Transaction::TronTx(tx)) =
                         sign_tx_content.transaction
                     {
-                        if tx.memo.starts_with("=:") {
+                        if tx.memo.starts_with("=:") || tx.memo.to_uppercase().starts_with("SWAP:")
+                        {
                             ViewType::TronSwapTx
                         } else {
                             ViewType::TronTx

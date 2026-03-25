@@ -165,6 +165,15 @@ void ConvertToLowerCase(char *str)
     }
 }
 
+void ConvertToUpperCase(char *str)
+{
+    if (str == NULL) return;
+    while (*str) {
+        *str = (char)toupper((unsigned char)*str);
+        str++;
+    }
+}
+
 inline bool CheckContainsNull(const char *str, size_t maxLen)
 {
     for (size_t len = 0; len < maxLen; ++len) {

@@ -33,6 +33,9 @@ pub struct DisplayTronDetail {
     network: PtrString,
     token: PtrString,
     contract_address: PtrString,
+    pub memo: PtrString,
+    pub expiration: PtrString,
+    pub raw_value: PtrString,
 }
 
 impl_c_ptr!(DisplayTronDetail);
@@ -59,6 +62,9 @@ impl From<DetailTx> for DisplayTronDetail {
             network: convert_c_char(value.network),
             token: convert_c_char(value.token),
             contract_address: convert_c_char(value.contract_address),
+            memo: convert_c_char(value.memo),
+            expiration: convert_c_char(value.expiration),
+            raw_value: convert_c_char(value.raw_value),
         }
     }
 }
@@ -90,6 +96,9 @@ impl Free for DisplayTronDetail {
         free_str_ptr!(self.network);
         free_str_ptr!(self.token);
         free_str_ptr!(self.contract_address);
+        free_str_ptr!(self.memo);
+        free_str_ptr!(self.expiration);
+        free_str_ptr!(self.raw_value);
     }
 }
 

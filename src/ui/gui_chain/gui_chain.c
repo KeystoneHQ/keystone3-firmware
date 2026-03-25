@@ -64,6 +64,7 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
     {EthTypedData, GuiGetEthSignQrCodeData, GuiGetEthSignUrDataUnlimited, GuiGetEthCheckResult, CHAIN_ETH, REMAPVIEW_ETH_TYPEDDATA},
     {EthBatchTx, GuiGetEthBatchTxSignQrCodeData, NULL, NULL, CHAIN_ETH, REMAPVIEW_ETH_BATCH_TX},
     {TronTx, GuiGetTrxSignQrCodeData, NULL, GuiGetTrxCheckResult, CHAIN_TRX, REMAPVIEW_TRX},
+    {TronSwapTx, GuiGetTrxSignQrCodeData, NULL, GuiGetTrxCheckResult, CHAIN_TRX, REMAPVIEW_TRX_SWAP},
 
     // avax
     {AvaxTx, GuiGetAvaxSignQrCodeData, GuiGetAvaxSignUrDataUnlimited, GuiGetAvaxCheckResult, CHAIN_AVAX, REMAPVIEW_AVAX},

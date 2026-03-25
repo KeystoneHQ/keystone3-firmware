@@ -107,6 +107,160 @@ void GetTrxToken(void *indata, void *param, uint32_t maxLen)
     strcpy_s((char *)indata,  maxLen, trx->detail->token);
 }
 
+static const char* map_thor_asset_name(const char* raw) {
+    if (strcmp(raw, "b") == 0)  return "BTC";
+    if (strcmp(raw, "e") == 0)  return "ETH";
+    if (strcmp(raw, "r") == 0 || strcmp(raw, "rune") == 0) return "RUNE";
+    if (strcmp(raw, "a") == 0)  return "AVAX";
+    if (strcmp(raw, "s") == 0)  return "BSC";
+    if (strcmp(raw, "f") == 0)  return "BASE.ETH";
+    if (strcmp(raw, "g") == 0)  return "ATOM";
+    if (strcmp(raw, "l") == 0)  return "LTC";
+    if (strcmp(raw, "c") == 0)  return "BCH";
+    if (strcmp(raw, "d") == 0)  return "DOGE";
+    if (strcmp(raw, "p") == 0)  return "POL";
+    if (strcmp(raw, "x") == 0)  return "XRP";
+    if (strcmp(raw, "o") == 0)  return "SOL";
+    if (strcmp(raw, "z") == 0)  return "ZEC";
+    if (strcmp(raw, "u") == 0)  return "SUI";
+    if (strcmp(raw, "tr") == 0) return "TRX";
+    if (strcmp(raw, "ad") == 0) return "ADA";
+
+    return raw;
+}
+
+void GetTrxSwapDstAsset(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    const char *memo = trx->detail->memo;
+    char *out = (char *)indata;
+
+    if (memo == NULL || strlen(memo) == 0) {
+        strcpy_s(out, maxLen, "Unknown");
+        return;
+    }
+
+    const char *first_colon = strchr(memo, ':');
+    if (!first_colon) {
+        strcpy_s(out, maxLen, "");
+        return;
+    }
+
+    const char *start = first_colon + 1;
+    const char *second_colon = strchr(start, ':');
+
+    char temp[64] = {0};
+    size_t len = 0;
+
+    if (second_colon) {
+        len = second_colon - start;
+    } else {
+        len = strlen(start);
+    }
+
+    if (len >= sizeof(temp)) len = sizeof(temp) - 1;
+    strncpy_s(temp, sizeof(temp), start, len);
+    temp[len] = '\0';
+
+    char *dash = strchr(temp, '-');
+    if (dash) {
+        *dash = '\0';
+    }
+
+    ConvertToLowerCase(temp);
+    const char *final_name = map_thor_asset_name(temp);
+
+    if (final_name != temp) {
+        strcpy_s(out, maxLen, final_name);
+    } else {
+        ConvertToUpperCase(temp);
+        char *separator = strpbrk(temp, "./~-"); 
+        if (separator) {
+            size_t chainLen = separator - temp;
+            const char *assetPart = separator + 1;
+
+            if (strncmp(temp, assetPart, chainLen) == 0 && assetPart[chainLen] == '\0') {
+                *separator = '\0'; 
+            }
+        }
+        strcpy_s(out, maxLen, temp);
+    }
+}
+
+void GetTrxSwapDstAddress(void *indata, void *param, uint32_t maxLen)
+{
+    //do a mapping
+    DisplayTron *trx = (DisplayTron *)param;
+    const char *memo = trx->detail->memo;
+    char *out = (char *)indata;
+
+    const char *first_colon = strchr(memo, ':');
+    if (first_colon) {
+        const char *second_colon = strchr(first_colon + 1, ':');
+        if (second_colon) {
+            const char *start = second_colon + 1;
+            const char *third_colon = strchr(start, ':');
+            
+            if (third_colon) {
+                size_t len = third_colon - start;
+                if (len >= maxLen) len = maxLen - 1;
+                strncpy_s(out, maxLen, start, len);
+                return;
+            } else {
+                strcpy_s(out, maxLen, start);
+                return;
+            }
+        }
+    }
+    strcpy_s(out, maxLen, "");
+}
+
+void GetTrxMemo(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    strcpy_s((char *)indata, maxLen, trx->detail->memo);
+}
+
+void GetTrxNetwork(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    strcpy_s((char *)indata, maxLen, trx->detail->network);
+}
+
+void GetTrxExpiration(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    strcpy_s((char *)indata, maxLen, trx->detail->expiration);
+}
+
+void GetTrxValueRaw(void *indata, void *param, uint32_t maxLen)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    strcpy_s((char *)indata, maxLen, trx->detail->raw_value);
+}
+
+void TrxCheckVault(lv_event_t *e)
+{
+    if (lv_event_get_code(e) == LV_EVENT_CLICKED) {
+        lv_obj_t *v_btn = lv_event_get_current_target(e); 
+        
+        lv_obj_t *address_card = lv_obj_get_parent(v_btn);
+        if (!address_card) return;
+
+        lv_obj_t *t_val_obj = lv_obj_get_child(address_card, 3);
+        
+        if (t_val_obj) {
+            const char *address = lv_label_get_text(t_val_obj);
+            if (address && strlen(address) > 10) {
+                char url[256] = {0};
+                snprintf(url, sizeof(url), "https://tronscan.org/#/address/%s", address);
+                GuiQRCodeHintBoxOpen(url, _("SwapKit Tron Vault"), url);
+            }
+        }
+    }
+}
+
+
 UREncodeResult *GuiGetTrxSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();

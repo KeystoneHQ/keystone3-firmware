@@ -124,6 +124,8 @@ lv_event_cb_t GuiOtherChainEventCbGet(char *type)
         return EthContractLearnMore;
     } else if (!strcmp(type, "EthContractCheckRawData")) {
         return EthContractCheckRawData;
+    } else if (!strcmp(type, "TrxCheckVault")) {
+        return TrxCheckVault;
     }
 
     return NULL;
@@ -231,6 +233,7 @@ GetLabelDataFunc GuiOtherChainTextFuncGet(char *type, GuiRemapViewType remapInde
     case REMAPVIEW_ETH_TYPEDDATA:
         return GuiEthTypedDataTextFuncGet(type);
     case REMAPVIEW_TRX:
+    case REMAPVIEW_TRX_SWAP:
         return GuiTrxTextFuncGet(type);
     case REMAPVIEW_COSMOS:
         return GuiCosmosTextFuncGet(type);
@@ -442,6 +445,18 @@ static GetLabelDataFunc GuiTrxTextFuncGet(char *type)
         return GetTrxContract;
     } else if (!strcmp(type, "GetTrxToken")) {
         return GetTrxToken;
+    } else if (!strcmp(type, "GetTrxSwapDstAsset")) {
+        return GetTrxSwapDstAsset;
+    } else if (!strcmp(type, "GetTrxSwapDstAddress")) {
+        return GetTrxSwapDstAddress;
+    } else if (!strcmp(type, "GetTrxNetwork")) {
+        return GetTrxNetwork;
+    } else if (!strcmp(type, "GetTrxExpiration")) {
+        return GetTrxExpiration;
+    } else if (!strcmp(type, "GetTrxValueRaw")) {
+        return GetTrxValueRaw;
+    } else if (!strcmp(type, "GetTrxMemo")) {
+        return GetTrxMemo;
     }
     return NULL;
 }

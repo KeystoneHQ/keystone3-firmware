@@ -205,7 +205,6 @@ static void GuiOpenPassphraseLearnMoreHandler(void)
     cont = GuiCreateContainerWithParent(cont, 144, 30);
     lv_obj_align_to(cont, newLed, LV_ALIGN_TOP_LEFT, 0, height);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(cont, cont, LV_EVENT_CLICKED, NULL);
 
     label = GuiCreateIllustrateLabel(cont, _("learn_more"));
     lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);

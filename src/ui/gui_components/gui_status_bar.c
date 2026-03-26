@@ -143,7 +143,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_GERO, "Gero Wallet", &walletGero},
     {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
     {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
-    {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
+    {WALLET_LIST_ZODL, "Zodl", &walletZodl},
     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
     {WALLET_LIST_JUPITER, "Jupiter", &walletNufi},
     {WALLET_LIST_NUFI, "NuFi", &walletNufi},
@@ -188,7 +188,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_BULL, "BULL", &walletBull},
     // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
     {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
-    {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
+    {WALLET_LIST_ZODL, "Zodl", &walletZodl},
 #endif
 
 #ifdef BTC_ONLY

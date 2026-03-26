@@ -12,13 +12,11 @@
 #include "user_memory.h"
 #include "gui_chain.h"
 #include "drv_lcd_bright.h"
-#include "drv_mpu.h"
 #include "device_setting.h"
 #include "anti_tamper.h"
 #include "screenshot.h"
 #include "lv_i18n_api.h"
 #include "gui_api.h"
-#include "drv_mpu.h"
 #include "drv_gd25qxx.h"
 
 #define LVGL_FAST_TICK_MS                   5
@@ -102,8 +100,6 @@ static void UiDisplayTask(void *argument)
     }
     GuiFrameOpenView(&g_initView);
     SetLcdBright(GetBright());
-    MpuInit();
-
     while (1) {
         RefreshLvglTickMode();
         ret = osMessageQueueGet(g_uiQueue, &rcvMsg, NULL, g_dynamicTick);

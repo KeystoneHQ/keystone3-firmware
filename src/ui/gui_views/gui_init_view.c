@@ -47,10 +47,11 @@ static int32_t GuiInitViewInit(void *param)
         return SUCCESS_CODE;
     }
 
-    if (IsBootVersionMatch() == false) {
-        GuiBootVersionNotMatchWidget();
-        return SUCCESS_CODE;
-    }
+    // should not show boot version this version
+    // if (IsBootVersionMatch() == false) {
+    //     GuiBootVersionNotMatchWidget();
+    //     return SUCCESS_CODE;
+    // }
     GuiModeGetAccount();
     return SUCCESS_CODE;
 }
@@ -75,6 +76,9 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
             GuiFrameOpenView(&g_setupView);
             if (IsUpdateSuccess()) {
                 GuiFrameOpenView(&g_updateSuccessView);
+            }
+            if (NeedUpdateBoot()) {
+                GuiFrameOpenView(&g_bootUpdateView);
             }
             break;
         } else {

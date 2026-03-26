@@ -13,4 +13,7 @@ void GuiWalletTutorialDeInit();
 #define GERO_WALLET_TITLE                   "Gero"
 #define GERO_WALLET_LINK                    "https://keyst.one/t/3rd/gero"
 
+#define ZODL_WALLET_TITLE                   "Zodl"
+#define ZODL_WALLET_LINK                    "https://keyst.one/t/3rd/zodl"
+
 #endif

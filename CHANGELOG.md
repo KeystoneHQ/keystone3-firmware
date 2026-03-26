@@ -1,3 +1,26 @@
+## 2.4.0(2026-3-30)
+
+**Web3:**
+
+### What's new
+1. Enhanced firmware upgrade security mechanisms
+2. Supported X Layer transactions
+
+
+**BTC Only:**
+
+### What's new
+1. Enhanced firmware upgrade security mechanisms
+
+
+**Cypherpunk:**
+
+### What's new
+1. Enhanced firmware upgrade security mechanisms
+### Improvements
+1. Updated Zodl Wallet icon
+
+
 
 ## 2.3.10(2026-3-4)
 

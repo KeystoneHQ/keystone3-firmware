@@ -8,6 +8,10 @@ __ALIGN_BEGIN USB_OTG_CORE_HANDLE g_usbDev __ALIGN_END;
 
 static volatile bool g_usbInit = false;
 
+#ifndef USB_IRQ_RTOS_SAFE_PRIO
+#define USB_IRQ_RTOS_SAFE_PRIO 1
+#endif
+
 void UsbInit(void)
 {
     USBPHY_CR1_TypeDef usbphy_cr1;
@@ -27,6 +31,7 @@ void UsbInit(void)
         memset_s(&g_usbDev, sizeof(g_usbDev), 0x00, sizeof(g_usbDev));
 
         USBD_Init(&g_usbDev, USB_OTG_FS_CORE_ID, &USR_desc, DeviceCallback, &USRD_cb);
+        NVIC_SetPriority(USB_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), USB_IRQ_RTOS_SAFE_PRIO, 0));
         g_usbInit = true;
     }
 }
@@ -63,5 +68,4 @@ bool UsbInitState(void)
 {
     return g_usbInit;
 }
-
 

@@ -146,6 +146,9 @@ USBD_Status  USBD_CtlReceiveStatus(USB_OTG_CORE_HANDLE  *pdev)
 */
 uint16_t  USBD_GetRxCount(USB_OTG_CORE_HANDLE  *pdev, uint8_t epnum)
 {
+    if (epnum >= USB_OTG_MAX_EP_COUNT) {
+        return 0;
+    }
     return pdev->dev.out_ep[epnum].xfer_count;
 }
 

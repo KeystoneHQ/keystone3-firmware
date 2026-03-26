@@ -98,7 +98,10 @@ static uint16_t VCP_Ctrl(uint32_t Cmd, uint8_t* Buf, uint32_t Len)
         break;
 
     case SET_LINE_CODING:
-        linecoding.bitrate    = (uint32_t)(Buf[0] | (Buf[1] << 8) | (Buf[2] << 16) | (Buf[3] << 24));
+        if (Buf == NULL || Len < 7U) {
+            return USBD_FAIL;
+        }
+        linecoding.bitrate    = (uint32_t)((uint32_t)Buf[0] | ((uint32_t)Buf[1] << 8) | ((uint32_t)Buf[2] << 16) | ((uint32_t)Buf[3] << 24));
         linecoding.format     = Buf[4];
         linecoding.paritytype = Buf[5];
         linecoding.datatype   = Buf[6];
@@ -109,6 +112,9 @@ static uint16_t VCP_Ctrl(uint32_t Cmd, uint8_t* Buf, uint32_t Len)
         break;
 
     case GET_LINE_CODING:
+        if (Buf == NULL || Len < 7U) {
+            return USBD_FAIL;
+        }
         Buf[0] = (uint8_t)(linecoding.bitrate);
         Buf[1] = (uint8_t)(linecoding.bitrate >> 8);
         Buf[2] = (uint8_t)(linecoding.bitrate >> 16);
@@ -179,7 +185,7 @@ uint32_t VCP_GetTxBuflen(void)
  */
 uint8_t* VCP_GetTxBufrsaddr(void)
 {
-    return CDCData.SendBuffer->Buffer + CDCData.ReadBuffer->PushOffset;
+    return CDCData.SendBuffer->Buffer + CDCData.SendBuffer->PopOffset;
 }
 
 /**

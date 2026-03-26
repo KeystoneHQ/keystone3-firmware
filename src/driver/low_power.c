@@ -152,11 +152,11 @@ void RecoverFromLowPower(void)
     DS28S60_Open();
     LcdInit();
     LcdClear(0x0000);
+    LcdBacklightOn();
     PubValueMsg(BACKGROUND_MSG_BATTERY_INTERVAL, 1);
     SetLvglHandlerAndSnapShot(true);
     g_lowPowerState = LOW_POWER_STATE_WORKING;
     PubValueMsg(BACKGROUND_MSG_SD_CARD_CHANGE, 0);
-    LcdBacklightOn();
 #if (USB_POP_WINDOW_ENABLE == 0)
     if (GetUSBSwitch() && GetUsbDetectState()) {
         OpenUsb();

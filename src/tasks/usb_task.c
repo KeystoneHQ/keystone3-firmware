@@ -62,20 +62,11 @@ static void UsbTask(void *argument)
     Message_t rcvMsg;
     osStatus_t ret;
 
-    osDelay(1000);
-#if (USB_POP_WINDOW_ENABLE == 1)
-    CloseUsb();
-#else
-    if (GetUSBSwitch() && GetUsbDetectState()) {
-        OpenUsb();
-    }
-#endif
     while (1) {
         ret = osMessageQueueGet(g_usbQueue, &rcvMsg, NULL, 10000);
         if (ret == osOK) {
             switch (rcvMsg.id) {
             case USB_MSG_ISR_HANDLER: {
-                ClearLockScreenTime();
                 USBD_OTG_ISR_Handler((USB_OTG_CORE_HANDLE *)rcvMsg.value);
                 NVIC_ClearPendingIRQ(USB_IRQn);
                 NVIC_EnableIRQ(USB_IRQn);
@@ -87,6 +78,7 @@ static void UsbTask(void *argument)
             break;
             case USB_MSG_INIT: {
                 g_usbState = true;
+                ClearLockScreenTime();
                 UsbInit();
                 SetUsbState(true);
             }
@@ -120,4 +112,3 @@ void UsbTest(int argc, char *argv[])
         CloseUsb();
     }
 }
-

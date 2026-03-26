@@ -1299,6 +1299,8 @@ USB_OTG_STS USB_OTG_EPStartXfer(USB_OTG_CORE_HANDLE* pdev, USB_OTG_EP* ep)
     USB_OTG_TXCSRL_IN_PERIPHERAL_TypeDef tx_csrl;
     USB_OTG_RXCSRL_IN_PERIPHERAL_TypeDef rx_csrl;
     USB_OTG_RXCOUNT_TypeDef              rx_count;
+    uint32_t rx_len = 0;
+    uint32_t rx_remain = 0;
 
     /* IN endpoint */
     if (ep->is_in) {
@@ -1323,14 +1325,28 @@ USB_OTG_STS USB_OTG_EPStartXfer(USB_OTG_CORE_HANDLE* pdev, USB_OTG_EP* ep)
             USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL, rx_csrl.d8);
         } else {
             rx_count.d16 = USB_OTG_READ_REG16(&pdev->regs.CSRREGS[ep->num]->RXCOUNT);
-            USB_OTG_ReadPacket(pdev, ep->xfer_buff + ep->xfer_count, ep->num, rx_count.d16);
-            ep->xfer_count += rx_count.d16;
-            if (ep->xfer_len >= ep->xfer_count) {
-                ep->rem_data_len = ep->xfer_len - ep->xfer_count;
-            } else {
-                ep->rem_data_len = 0;
-                ep->xfer_count   = ep->xfer_len;
+            rx_len = rx_count.d16;
+
+            if ((ep->xfer_buff == NULL) || (ep->xfer_count > ep->xfer_len)) {
+                ep->is_stall = 1;
+                USB_OTG_EPSetStall(pdev, ep);
+                rx_csrl.b.rx_pkt_rdy = 0;
+                USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL, rx_csrl.d8);
+                return USB_OTG_FAIL;
             }
+
+            rx_remain = ep->xfer_len - ep->xfer_count;
+            if ((rx_len > ep->maxpacket) || (rx_len > rx_remain)) {
+                ep->is_stall = 1;
+                USB_OTG_EPSetStall(pdev, ep);
+                rx_csrl.b.rx_pkt_rdy = 0;
+                USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL, rx_csrl.d8);
+                return USB_OTG_FAIL;
+            }
+
+            USB_OTG_ReadPacket(pdev, ep->xfer_buff + ep->xfer_count, ep->num, (uint16_t)rx_len);
+            ep->xfer_count += rx_len;
+            ep->rem_data_len = ep->xfer_len - ep->xfer_count;
             rx_csrl.b.rx_pkt_rdy = 0;
             USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL, rx_csrl.d8);
         }

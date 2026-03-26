@@ -10,5 +10,8 @@ uint8_t *GetDeviceParserPubKey(uint8_t *webPub, uint16_t len);
 void DataEncrypt(uint8_t *data, uint16_t len);
 void DataDecrypt(uint8_t *data, uint8_t *plain, uint16_t len);
 void SetDeviceParserIv(uint8_t *iv);
+bool CanPushDataToField(uint16_t len);
+uint16_t PushDataToField(const uint8_t *data, uint16_t len);
+void ResetDataField(void);
 
 #endif

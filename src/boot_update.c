@@ -19,7 +19,7 @@ LV_FONT_DECLARE(openSans_24);
 #define APP_END_ADDR                        (0x2000000)
 static const uint8_t MAGIC_NUMBER[] = {'m', 'h', '1', '9', '0', '3', 'b', 'o', 'o', 't', 'u', 'p', 'd', 'a', 't', 'e'};
 
-static uint8_t g_fileUnit[4096] = {0};
+static uint8_t g_fileUnit[SECTOR_SIZE] = {0};
 
 static uint32_t BinarySearchBootHead(void)
 {
@@ -32,6 +32,7 @@ static uint32_t BinarySearchBootHead(void)
         memcpy_s(buffer, SECTOR_SIZE, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), SECTOR_SIZE);
         if (memcmp(buffer, MAGIC_NUMBER, MAGIC_NUMBER_SIZE) == 0) {
             printf("find magic number\n");
+            SRAM_FREE(buffer);
             return i;
         }
     }
@@ -59,7 +60,7 @@ int32_t UpdateBootFromFlash(void)
     printf("num = %d\n", num);
     if (num <= 0) {
         osKernelUnlock();
-        return false;
+        return -1;
     }
     uint32_t len, offset, crcCalc, readCrc, writeAddr = 0x1001000;
     uint32_t baseAddr = APP_ADDR + num * SECTOR_SIZE;
@@ -81,7 +82,7 @@ int32_t UpdateBootFromFlash(void)
 
     memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
     memcpy(g_fileUnit, (uint32_t *)(baseAddr + 4 + 32 + 0x30 + MAGIC_NUMBER_SIZE), BOOT_HEAD_SIZE);
-    QspiFlashEraseAndWrite(0x01000000, g_fileUnit, 4096);
+    QspiFlashEraseAndWrite(0x01000000, g_fileUnit, SECTOR_SIZE);
 
     sha256_update(&ctx, (uint32_t *)(baseAddr + 4 + 32 + MAGIC_NUMBER_SIZE), 0x134);
     crcCalc = crc32_ieee(0, (uint32_t *)(baseAddr + 4 + 32 + MAGIC_NUMBER_SIZE), 0x134);
@@ -113,7 +114,7 @@ int32_t UpdateBootFromFlash(void)
     if (memcmp(hash, calHash, 32) == 0) {
         printf("update success\n");
         memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
-        QspiFlashEraseAndWrite((uint32_t *)(APP_END_ADDR - 4096), g_fileUnit, 4096);
+        QspiFlashEraseAndWrite((uint32_t *)(APP_END_ADDR - SECTOR_SIZE), g_fileUnit, SECTOR_SIZE);
         memset(g_fileUnit, 0, sizeof(g_fileUnit));
         return 0;
     } else {

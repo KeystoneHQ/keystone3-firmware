@@ -26,6 +26,7 @@
 #include "librust_c.h"
 #include "assert.h"
 #include "secret_cache.h"
+#include "memzero.h"
 #include "drv_mpu.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
@@ -722,7 +723,7 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
     do {
         ret = CheckPasswordExisted(password, 255);
         CHECK_ERRCODE_BREAK("check repeat password", ret);
-        VecFFI_u8 *result = ton_mnemonic_to_entropy(mnemonic);
+        VecFFI_u8 *result = ton_mnemonic_to_entropy((PtrString)mnemonic);
         memcpy_s(entropy, sizeof(entropy), result->data, result->size);
         free_VecFFI_u8(result);
         memcpy_s(accountSecret.entropy, sizeof(accountSecret.entropy), entropy, 32);
@@ -735,7 +736,7 @@ int32_t SaveNewTonMnemonic(uint8_t accountIndex, const char *mnemonic, const cha
             break;
         }
         memcpy_s(seed, sizeof(seed), resultSeed->data, SEED_LEN);
-        free_VecFFI_u8(resultSeed);
+        free_simple_response_u8(resultSeed);
         memcpy_s(accountSecret.seed, sizeof(accountSecret.seed), seed, SEED_LEN);
 
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);

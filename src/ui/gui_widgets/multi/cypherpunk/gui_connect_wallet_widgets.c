@@ -71,7 +71,7 @@ static const lv_img_dsc_t *g_cakeCoinArray[1] = {
     &coinXmr,
 };
 
-static const lv_img_dsc_t *g_zashiCoinArray[1] = {
+static const lv_img_dsc_t *g_zodlCoinArray[1] = {
     &coinZec,
 };
 
@@ -82,7 +82,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZEUS, &walletZeus, "Zeus", g_blueWalletCoinArray, 1, true},
     // {WALLET_LIST_CAKE, &walletCake, "Cake Wallet", g_cakeCoinArray, 1, true},
     {WALLET_LIST_FEATHER, &walletFeather, "Feather", g_cakeCoinArray, 1, true},
-    {WALLET_LIST_ZASHI, &walletZashi, "Zashi", g_zashiCoinArray, 1, true},
+    {WALLET_LIST_ZODL, &walletZodl, "Zodl", g_zodlCoinArray, 1, true},
     {WALLET_LIST_BULL, &walletBull, "BULL", g_blueWalletCoinArray, 1, true},
 };
 
@@ -166,7 +166,7 @@ static void GuiInitWalletListArray()
         case WALLET_LIST_FEATHER:
             enable = !isSLIP39;
             break;
-        case WALLET_LIST_ZASHI:
+        case WALLET_LIST_ZODL:
             enable = !isSlip39;
             break;
         default:
@@ -308,7 +308,7 @@ static void AddZecCoins(void)
         lv_obj_clean(g_coinCont);
     }
     for (int i = 0; i < 1; i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_zashiCoinArray[i]);
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_zodlCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
         lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
@@ -384,7 +384,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
 
     switch (index) {
-    case WALLET_LIST_ZASHI:
+    case WALLET_LIST_ZODL:
         func = GuiGetZecData;
         AddZecCoins();
         break;

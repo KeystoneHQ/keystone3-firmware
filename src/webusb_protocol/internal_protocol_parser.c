@@ -7,12 +7,15 @@
 #include "user_memory.h"
 #include "assert.h"
 
-static struct ProtocolParser *global_parser = NULL;
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
 static uint8_t g_protocolRcvBuffer[PROTOCOL_MAX_LENGTH];
+static uint32_t g_internalRcvCount = 0;
+static uint32_t g_internalRcvLen = 0;
 
 static uint8_t *ExecuteService(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ProtocolParse(const uint8_t *inData, uint32_t inLen, uint32_t *outLen);
+static uint32_t GetRcvCount(void);
+static void ResetRcvCount(void);
 
 typedef struct {
     uint8_t serviceId;
@@ -36,36 +39,33 @@ void InternalProtocol_Parse(const uint8_t *data, uint32_t len)
     }
 
     assert(len <= PROTOCOL_MAX_LENGTH);
-    static uint32_t rcvLen = 0;
     uint32_t i, outLen;
     uint8_t *sendBuf;
 
     for (i = 0; i < len; i++) {
-        if (global_parser->rcvCount >= PROTOCOL_MAX_LENGTH) {
-            global_parser->rcvCount = 0;
-            rcvLen = 0;
+        if (g_internalRcvCount >= PROTOCOL_MAX_LENGTH) {
+            ResetRcvCount();
             continue;
         }
 
-        if (global_parser->rcvCount == 0) {
+        if (g_internalRcvCount == 0) {
             if (data[i] == PROTOCOL_HEADER) {
-                g_protocolRcvBuffer[global_parser->rcvCount++] = data[i];
+                g_protocolRcvBuffer[g_internalRcvCount++] = data[i];
             }
-        } else if (global_parser->rcvCount == 9) {
-            g_protocolRcvBuffer[global_parser->rcvCount++] = data[i];
-            rcvLen = ((uint32_t)g_protocolRcvBuffer[9] << 8) + g_protocolRcvBuffer[8];
-            assert(rcvLen <= (PROTOCOL_MAX_LENGTH - 14));
-        } else if (global_parser->rcvCount == rcvLen + 13) {
-            g_protocolRcvBuffer[global_parser->rcvCount] = data[i];
-            sendBuf = ProtocolParse(g_protocolRcvBuffer, rcvLen + 14, &outLen);
+        } else if (g_internalRcvCount == 9) {
+            g_protocolRcvBuffer[g_internalRcvCount++] = data[i];
+            g_internalRcvLen = ((uint32_t)g_protocolRcvBuffer[9] << 8) + g_protocolRcvBuffer[8];
+            assert(g_internalRcvLen <= (PROTOCOL_MAX_LENGTH - 14));
+        } else if (g_internalRcvCount == g_internalRcvLen + 13) {
+            g_protocolRcvBuffer[g_internalRcvCount] = data[i];
+            sendBuf = ProtocolParse(g_protocolRcvBuffer, g_internalRcvLen + 14, &outLen);
             if (sendBuf) {
                 g_sendFunc(sendBuf, outLen);
                 SRAM_FREE(sendBuf);
             }
-            global_parser->rcvCount = 0;
-            rcvLen = 0;
+            ResetRcvCount();
         } else {
-            g_protocolRcvBuffer[global_parser->rcvCount++] = data[i];
+            g_protocolRcvBuffer[g_internalRcvCount++] = data[i];
         }
     }
 }
@@ -77,16 +77,27 @@ static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)
     }
 }
 
-struct ProtocolParser *NewInternalProtocolParser()
+static uint32_t GetRcvCount(void)
 {
-    if (!global_parser) {
-        global_parser = (struct ProtocolParser *)SRAM_MALLOC(sizeof(struct ProtocolParser));
-        global_parser->name = INTERNAL_PROTOCOL_PARSER_NAME;
-        global_parser->parse = InternalProtocol_Parse;
-        global_parser->registerSendFunc = RegisterSendFunc;
-        global_parser->rcvCount = 0;
-    }
-    return global_parser;
+    return g_internalRcvCount;
+}
+
+static void ResetRcvCount(void)
+{
+    g_internalRcvCount = 0;
+    g_internalRcvLen = 0;
+}
+
+const struct ProtocolParser *NewInternalProtocolParser()
+{
+    static const struct ProtocolParser g_internalParser = {
+        .name = INTERNAL_PROTOCOL_PARSER_NAME,
+        .parse = InternalProtocol_Parse,
+        .registerSendFunc = RegisterSendFunc,
+        .getRcvCount = GetRcvCount,
+        .resetRcvCount = ResetRcvCount,
+    };
+    return &g_internalParser;
 }
 
 static uint8_t *ProtocolParse(const uint8_t *inData, uint32_t inLen, uint32_t *outLen)

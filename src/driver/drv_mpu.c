@@ -5,6 +5,33 @@ static bool g_otpProtect = false;
 extern uint32_t _sbss;
 extern uint32_t _ebss;
 
+static uint8_t MpuRegionSizeField(uint32_t regionSize)
+{
+    if (regionSize <= MPU_REGION_SIZE_4G) {
+        return (uint8_t)regionSize;
+    }
+
+    uint32_t sizeBytes = 32U;
+    uint8_t sizeField = MPU_REGION_SIZE_32B;
+    while ((sizeBytes < regionSize) && (sizeField < MPU_REGION_SIZE_4G)) {
+        sizeBytes <<= 1U;
+        sizeField++;
+    }
+    return sizeField;
+}
+
+static void ConfigureMPUForSramNoExec(void)
+{
+    MpuSetProtection(MHSCPU_SRAM_BASE,
+                     MHSCPU_SRAM_SIZE,
+                     MPU_REGION_NUMBER7,
+                     MPU_INSTRUCTION_ACCESS_DISABLE,
+                     MPU_REGION_FULL_ACCESS,
+                     MPU_ACCESS_NOT_SHAREABLE,
+                     MPU_ACCESS_CACHEABLE,
+                     MPU_ACCESS_BUFFERABLE);
+}
+
 void MpuDisable(void)
 {
     __DMB();
@@ -51,7 +78,7 @@ void MpuSetProtection(uint32_t baseAddress, uint32_t regionSize, uint32_t region
     mpu.Enable = MPU_REGION_ENABLE;
     mpu.Number = regionNum;
     mpu.BaseAddress = baseAddress;
-    mpu.Size = regionSize;
+    mpu.Size = MpuRegionSizeField(regionSize);
     mpu.SubRegionDisable = 0x00;
     mpu.TypeExtField = MPU_TEX_LEVEL0;
     mpu.AccessPermission = accessPermission;
@@ -90,7 +117,7 @@ void ConfigureMPUForBSS(void)
 
 void MpuInit(void)
 {
-    ConfigureMPUForBSS();
+    ConfigureMPUForSramNoExec();
     MpuSetOtpProtection(true);
 }
 
@@ -111,4 +138,3 @@ void MpuSetOtpProtection(bool noAccess)
                      MPU_ACCESS_CACHEABLE,
                      MPU_ACCESS_BUFFERABLE);
 }
-

@@ -98,10 +98,38 @@ void CreateDataParserTask(void)
     g_dataParserHandle = osThreadNew(DataParserTask, NULL, &dataParserTask_attributes);
 }
 
-void PushDataToField(uint8_t *data, uint16_t len)
+bool CanPushDataToField(uint16_t len)
 {
-    for (int i = 0; i < len; i++) {
-        circular_buf_put(g_cBufHandle, data[i]);
+    if (g_cBufHandle == NULL) {
+        return false;
+    }
+
+    size_t capacity = circular_buf_capacity(g_cBufHandle);
+    size_t used = circular_buf_size(g_cBufHandle);
+    return (capacity >= used) && ((capacity - used) >= len);
+}
+
+uint16_t PushDataToField(const uint8_t *data, uint16_t len)
+{
+    if (data == NULL || len == 0 || !CanPushDataToField(len)) {
+        return 0;
+    }
+
+    uint16_t pushed = 0;
+    for (uint16_t i = 0; i < len; i++) {
+        if (circular_buf_try_put(g_cBufHandle, data[i]) != 0) {
+            break;
+        }
+        pushed++;
+    }
+
+    return pushed;
+}
+
+void ResetDataField(void)
+{
+    if (g_cBufHandle != NULL) {
+        circular_buf_reset(g_cBufHandle);
     }
 }
 
@@ -133,12 +161,23 @@ static void DataParserTask(void *argument)
             continue;
         }
         switch (rcvMsg.id) {
-        case SPRING_MSG_GET:
-            for (int i = 0; i < rcvMsg.value; i++) {
-                circular_buf_get(g_cBufHandle, &USB_Rx_Buffer[i]);
+        case SPRING_MSG_GET: {
+            uint32_t targetLen = rcvMsg.value;
+            if (targetLen > sizeof(USB_Rx_Buffer) - 1U) {
+                targetLen = sizeof(USB_Rx_Buffer) - 1U;
             }
-            ProtocolReceivedData(USB_Rx_Buffer, rcvMsg.value, USBD_cdc_SendBuffer_Cb);
+            uint32_t actualLen = 0;
+            for (uint32_t i = 0; i < targetLen; i++) {
+                if (circular_buf_get(g_cBufHandle, &USB_Rx_Buffer[i]) != 0) {
+                    break;
+                }
+                actualLen++;
+            }
+            if (actualLen > 0U) {
+                ProtocolReceivedData(USB_Rx_Buffer, actualLen, USBD_cdc_SendBuffer_Cb);
+            }
             break;
+        }
         default:
             break;
         }

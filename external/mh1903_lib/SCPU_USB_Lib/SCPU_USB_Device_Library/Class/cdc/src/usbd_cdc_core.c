@@ -16,6 +16,7 @@
 #include "user_msg.h"
 #include "drv_usb.h"
 #include "user_delay.h"
+#include "data_parser_task.h"
 
 /** @defgroup usbd_cdc
  * @brief usbd core module
@@ -57,6 +58,8 @@ static uint8_t usbd_cdc_EP0_RxReady(void* pdev);
 static uint8_t usbd_cdc_DataIn(void* pdev, uint8_t epnum);
 static uint8_t usbd_cdc_DataOut(void* pdev, uint8_t epnum);
 static uint8_t usbd_cdc_SOF(void* pdev);
+static uint8_t usbd_cdc_StallControl(void* pdev);
+static uint8_t* usbd_cdc_FindDescriptor(uint8_t descType, uint16_t *len);
 
 
 static uint8_t* USBD_cdc_GetCfgDesc(uint8_t speed, uint16_t* length);
@@ -88,11 +91,12 @@ extern USB_OTG_CORE_HANDLE g_usbDev;
 
 #define CDC_TX_MAX_LENGTH               1024
 #define CDC_PACKET_SIZE                 64
+#define CDC_LINE_CODING_LEN             7U
 
 static uint8_t g_cdcSendBuffer[CDC_TX_MAX_LENGTH];
 static uint32_t g_cdcSendIndex = 0;
 
-static uint32_t cdcCmd = 0xFF;
+static uint32_t cdcCmd = NO_CMD;
 static uint32_t cdcLen = 0;
 
 CDC_Data_TypeDef CDCData = {
@@ -290,28 +294,34 @@ static uint8_t usbd_cdc_Setup(void* pdev, USB_SETUP_REQ* req)
     switch (req->bmRequest & USB_REQ_TYPE_MASK) {
     /* CDC Class Requests -------------------------------*/
     case USB_REQ_TYPE_CLASS:
-        /* Check if the request is a data setup packet */
-        if (req->wLength) {
-            /* Check if the request is Device-to-Host */
-            if (req->bmRequest & 0x80) {
-                /* Get the data to be sent to Host from interface layer */
-                APP_FOPS.pIf_Ctrl(req->bRequest, CmdBuff, req->wLength);
-
-                /* Send the data to the host */
-                USBD_CtlSendData(pdev, CmdBuff, req->wLength);
-            } else { /* Host-to-Device requeset */
-                /* Set the value of the current command to be processed */
-                cdcCmd = req->bRequest;
-                cdcLen = req->wLength;
-
-                /* Prepare the reception of the buffer over EP0
-                Next step: the received data will be managed in usbd_cdc_EP0_TxSent()
-                function. */
-                USBD_CtlPrepareRx(pdev, CmdBuff, req->wLength);
+        switch (req->bRequest) {
+        case GET_LINE_CODING:
+            if (((req->bmRequest & 0x80U) == 0U) || (req->wLength != CDC_LINE_CODING_LEN)) {
+                return usbd_cdc_StallControl(pdev);
             }
-        } else { /* No Data request */
-            /* Transfer the command to the interface layer */
+            APP_FOPS.pIf_Ctrl(GET_LINE_CODING, CmdBuff, CDC_LINE_CODING_LEN);
+            USBD_CtlSendData(pdev, CmdBuff, CDC_LINE_CODING_LEN);
+            break;
+
+        case SET_LINE_CODING:
+            if (((req->bmRequest & 0x80U) != 0U) || (req->wLength != CDC_LINE_CODING_LEN)) {
+                return usbd_cdc_StallControl(pdev);
+            }
+            cdcCmd = SET_LINE_CODING;
+            cdcLen = CDC_LINE_CODING_LEN;
+            USBD_CtlPrepareRx(pdev, CmdBuff, CDC_LINE_CODING_LEN);
+            break;
+
+        case SET_CONTROL_LINE_STATE:
+        case SEND_BREAK:
+            if (((req->bmRequest & 0x80U) != 0U) || (req->wLength != 0U)) {
+                return usbd_cdc_StallControl(pdev);
+            }
             APP_FOPS.pIf_Ctrl(req->bRequest, NULL, 0);
+            break;
+
+        default:
+            return usbd_cdc_StallControl(pdev);
         }
         return USBD_OK;
 
@@ -320,8 +330,13 @@ static uint8_t usbd_cdc_Setup(void* pdev, USB_SETUP_REQ* req)
         switch (req->bRequest) {
         case USB_REQ_GET_DESCRIPTOR:
             if ((req->wValue >> 8) == CDC_DESCRIPTOR_TYPE) {
-                pbuf = usbd_cdc_CfgDesc + 9 + (9 * USBD_ITF_MAX_NUM);
-                len  = MIN(USB_CDC_DESC_SIZ, req->wLength);
+                pbuf = usbd_cdc_FindDescriptor(CDC_DESCRIPTOR_TYPE, &len);
+                if (pbuf == NULL || len == 0U) {
+                    return usbd_cdc_StallControl(pdev);
+                }
+                len  = MIN(len, req->wLength);
+            } else {
+                return usbd_cdc_StallControl(pdev);
             }
 
             USBD_CtlSendData(pdev, pbuf, len);
@@ -337,9 +352,16 @@ static uint8_t usbd_cdc_Setup(void* pdev, USB_SETUP_REQ* req)
             } else {
                 /* Call the error management function (command will be nacked */
                 USBD_CtlError(pdev, req);
+                return USBD_FAIL;
             }
             break;
+
+        default:
+            USBD_CtlError(pdev, req);
+            return USBD_FAIL;
         }
+        return USBD_OK;
+
     default:
         USBD_CtlError(pdev, req);
         return USBD_FAIL;
@@ -355,19 +377,35 @@ static uint8_t usbd_cdc_Setup(void* pdev, USB_SETUP_REQ* req)
 static uint8_t usbd_cdc_EP0_RxReady(void* pdev)
 {
     USB_OTG_EP* ep = &((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[0];
-    if (ep->xfer_buff != CmdBuff)
+    if (cdcCmd == NO_CMD)
         return USBD_OK;
 
-    // Will fired when CDC Set Cmd request callback
-    if (cdcCmd != NO_CMD) {
-        /* Process the data */
-        APP_FOPS.pIf_Ctrl(cdcCmd, CmdBuff, cdcLen);
-
-        /* Reset the command variable to default value */
+    if ((((USB_OTG_CORE_HANDLE*)pdev)->dev.device_state != USB_OTG_EP0_DATA_OUT) ||
+        (cdcCmd != SET_LINE_CODING) ||
+        (cdcLen != CDC_LINE_CODING_LEN) ||
+        (ep->xfer_buff != CmdBuff) ||
+        (ep->xfer_len != cdcLen) ||
+        (ep->xfer_count != cdcLen)) {
         cdcCmd = NO_CMD;
+        cdcLen = 0;
+        return usbd_cdc_StallControl(pdev);
     }
 
+    APP_FOPS.pIf_Ctrl(cdcCmd, CmdBuff, cdcLen);
+    cdcCmd = NO_CMD;
+    cdcLen = 0;
+
     return USBD_OK;
+}
+
+static uint8_t usbd_cdc_StallControl(void* pdev)
+{
+    cdcCmd = NO_CMD;
+    cdcLen = 0;
+    DCD_EP_Stall(pdev, 0x80);
+    DCD_EP_Stall(pdev, 0x00);
+    USB_OTG_EP0_OutStart(pdev);
+    return USBD_FAIL;
 }
 
 /**
@@ -393,14 +431,68 @@ static uint8_t usbd_cdc_DataIn(void* pdev, uint8_t epnum)
  */
 static uint8_t usbd_cdc_DataOut(void* pdev, uint8_t epnum)
 {
-void PushDataToField(uint8_t *data, uint16_t len);
-    USB_OTG_EP* ep = &((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum];
+    uint8_t ep_idx = epnum & 0x7F;
+    if (ep_idx >= USB_OTG_MAX_EP_COUNT) {
+        return USBD_FAIL;
+    }
+    USB_OTG_EP* ep = &((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[ep_idx];
     uint16_t rxCount  = ep->xfer_count;
     PrintArray("WEBUSB rx", USB_Rx_Buffer, rxCount);
-    PushDataToField(USB_Rx_Buffer, rxCount);
-    PubValueMsg(SPRING_MSG_GET, rxCount);
+    if (rxCount != 0U) {
+        if (!CanPushDataToField(rxCount)) {
+            printf("WEBUSB RX drop: parser buffer full len=%u\n", rxCount);
+            DCD_EP_PrepareRx(pdev, CDC_OUT_EP, (uint8_t*)(USB_Rx_Buffer), CDC_DATA_OUT_PACKET_SIZE);
+            return USBD_OK;
+        }
+
+        if (PushDataToField(USB_Rx_Buffer, rxCount) != rxCount) {
+            printf("WEBUSB RX drop: push mismatch len=%u\n", rxCount);
+            ResetDataField();
+            DCD_EP_PrepareRx(pdev, CDC_OUT_EP, (uint8_t*)(USB_Rx_Buffer), CDC_DATA_OUT_PACKET_SIZE);
+            return USBD_OK;
+        }
+
+        if (PubValueMsg(SPRING_MSG_GET, rxCount) != MSG_SUCCESS) {
+            printf("WEBUSB RX drop: queue full len=%u\n", rxCount);
+            ResetDataField();
+        }
+    }
     DCD_EP_PrepareRx(pdev, CDC_OUT_EP, (uint8_t*)(USB_Rx_Buffer), CDC_DATA_OUT_PACKET_SIZE);
     return USBD_OK;
+}
+
+static uint8_t* usbd_cdc_FindDescriptor(uint8_t descType, uint16_t *len)
+{
+    uint8_t *desc = NULL;
+    uint16_t totalLen = 0;
+    uint16_t idx = 0;
+
+    if (len == NULL) {
+        return NULL;
+    }
+    *len = 0;
+
+#ifdef USBD_ENABLE_MSC
+    desc = usbd_cdc_CfgDesc;
+    totalLen = sizeof(usbd_cdc_CfgDesc);
+#else
+    desc = USBD_CDC_CfgHSDesc;
+    totalLen = sizeof(USBD_CDC_CfgHSDesc);
+#endif
+
+    while ((idx + 1U) < totalLen) {
+        uint8_t blen = desc[idx];
+        if ((blen < 2U) || ((uint16_t)(idx + blen) > totalLen)) {
+            break;
+        }
+        if (desc[idx + 1U] == descType) {
+            *len = blen;
+            return &desc[idx];
+        }
+        idx = (uint16_t)(idx + blen);
+    }
+
+    return NULL;
 }
 
 static uint8_t usbd_cdc_SOF(void* pdev)
@@ -478,4 +570,3 @@ static void USBD_cdc_SendCallback(void)
 {
     printf("USBD_cdc_SendCallback usb send over\n");
 }
-

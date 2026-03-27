@@ -4,7 +4,6 @@
 #include "drv_sys.h"
 #include "log_print.h"
 #include "user_memory.h"
-#include "md5.h"
 #include "diskio.h"
 #include "drv_gd25qxx.h"
 #include "drv_sdcard.h"

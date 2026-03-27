@@ -153,7 +153,7 @@ void InitBootParam(void)
 {
 #ifdef COMPILE_SIMULATOR
     return;
-#endif
+#else
     BootParam_t bootParam;
     bool needSave = false;
     Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, (uint8_t *)&bootParam, sizeof(bootParam));
@@ -170,6 +170,7 @@ void InitBootParam(void)
         PrintArray("bootParam.bootCheckFlag", g_bootParam.bootCheckFlag, sizeof(g_bootParam.bootCheckFlag));
         PrintArray("bootParam.recoveryModeSwitch", g_bootParam.recoveryModeSwitch, sizeof(g_bootParam.recoveryModeSwitch));
     }
+#endif
 }
 
 void ResetBootParam(void)

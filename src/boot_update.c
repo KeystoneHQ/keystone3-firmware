@@ -114,8 +114,6 @@ int32_t UpdateBootFromFlash(void)
     if (memcmp(hash, calHash, 32) == 0) {
         printf("update success\n");
         memset(g_fileUnit, 0xFF, sizeof(g_fileUnit));
-        QspiFlashEraseAndWrite((uint32_t *)(APP_END_ADDR - SECTOR_SIZE), g_fileUnit, SECTOR_SIZE);
-        memset(g_fileUnit, 0, sizeof(g_fileUnit));
         return 0;
     } else {
         printf("update failed\n");

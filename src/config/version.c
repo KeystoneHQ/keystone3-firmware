@@ -84,6 +84,18 @@ void GetBootVersionNumber(char *version)
     snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", major, minor, build);
 }
 
+bool NeedUpdateBoot(void)
+{
+    uint32_t major, minor, build;
+    if (GetBootSoftwareVersion(&major, &minor, &build) == false) {
+        return true;
+    }
+    if (major == 0 && minor == 3 && build == 0) {
+        return false;
+    }
+    return true;
+}
+
 bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build)
 {
 #ifdef COMPILE_SIMULATOR

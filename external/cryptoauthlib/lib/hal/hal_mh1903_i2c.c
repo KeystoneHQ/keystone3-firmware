@@ -64,7 +64,10 @@ ATCA_STATUS hal_i2c_post_init(ATCAIface iface)
  */
 ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t address, uint8_t *txdata, int txlength)
 {
-    I2CIO_SendData(&g_i2cIoCfg, address >> 1, txdata, txlength);
+    int32_t ret = I2CIO_SendData(&g_i2cIoCfg, address >> 1, txdata, txlength);
+    if (ret != 0) {
+        return ATCA_COMM_FAIL;
+    }
     return ATCA_SUCCESS;
 }
 
@@ -79,7 +82,10 @@ ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t address, uint8_t *txdata, int 
  */
 ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t address, uint8_t *rxdata, uint16_t *rxlength)
 {
-    I2CIO_ReceiveData(&g_i2cIoCfg, address >> 1, rxdata, *rxlength);
+    int32_t ret = I2CIO_ReceiveData(&g_i2cIoCfg, address >> 1, rxdata, *rxlength);
+    if (ret != 0) {
+        return ATCA_COMM_FAIL;
+    }
     return ATCA_SUCCESS;
 }
 

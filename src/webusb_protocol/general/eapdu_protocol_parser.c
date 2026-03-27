@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "assert.h"
+#include "cmsis_os.h"
 #include "eapdu_protocol_parser.h"
 #include "keystore.h"
 #include "data_parser_task.h"
@@ -12,22 +13,24 @@
 #include "eapdu_services/service_check_lock.h"
 #include "eapdu_services/service_echo_test.h"
 #include "eapdu_services/service_export_address.h"
-#include "eapdu_services/service_trans_usb_pubkey.h"
 #include "eapdu_services/service_get_device_info.h"
 
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
-static struct ProtocolParser *global_parser = NULL;
+static uint32_t g_eapduRcvCount = 0;
 
 #define EAPDU_RESPONSE_STATUS_LENGTH 2
 #define MAX_PACKETS 200
-#define MAX_PACKETS_LENGTH 64
-#define MAX_EAPDU_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA)
+#define MAX_PACKETS_LENGTH MAX_EAPDU_PACKET_SIZE
 #define MAX_EAPDU_RESPONSE_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA - EAPDU_RESPONSE_STATUS_LENGTH)
+#define EAPDU_REASSEMBLY_TIMEOUT_MS 5000
 
 static uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH] __attribute__((section(".data_parser_section")));
 static uint8_t g_packetLengths[MAX_PACKETS];
 static uint8_t g_receivedPackets[MAX_PACKETS];
 static uint8_t g_totalPackets = 0;
+static uint32_t g_lastPacketTick = 0;
+static uint32_t GetRcvCount(void);
+static void ResetRcvCount(void);
 
 typedef enum {
     FRAME_INVALID_LENGTH,
@@ -41,36 +44,63 @@ typedef enum {
 void SendEApduResponse(EAPDUResponsePayload_t *payload)
 {
     assert(payload != NULL);
+    if (payload == NULL || g_sendFunc == NULL) {
+        return;
+    }
+    if (payload->data == NULL && payload->dataLen != 0U) {
+        return;
+    }
+
     uint8_t packet[MAX_PACKETS_LENGTH];
     uint16_t totalPackets = (payload->dataLen + MAX_EAPDU_RESPONSE_DATA_SIZE - 1) / MAX_EAPDU_RESPONSE_DATA_SIZE;
     uint16_t packetIndex = 0;
     uint32_t offset = 0;
+    uint32_t remaining = payload->dataLen;
+    if (totalPackets == 0U) {
+        totalPackets = 1U;
+    }
 
-    while (payload->dataLen > 0) {
-        uint16_t packetDataSize = payload->dataLen > MAX_EAPDU_RESPONSE_DATA_SIZE ? MAX_EAPDU_RESPONSE_DATA_SIZE : payload->dataLen;
+    do {
+        uint16_t packetDataSize = remaining > MAX_EAPDU_RESPONSE_DATA_SIZE ? MAX_EAPDU_RESPONSE_DATA_SIZE : (uint16_t)remaining;
 
         packet[OFFSET_CLA] = payload->cla;
         insert_16bit_value(packet, OFFSET_INS, payload->commandType);
         insert_16bit_value(packet, OFFSET_P1, totalPackets);
         insert_16bit_value(packet, OFFSET_P2, packetIndex);
         insert_16bit_value(packet, OFFSET_LC, payload->requestID);
-        memcpy_s(packet + OFFSET_CDATA, MAX_PACKETS_LENGTH - OFFSET_CDATA, payload->data + offset, packetDataSize);
+        if (packetDataSize > 0U) {
+            memcpy_s(packet + OFFSET_CDATA, MAX_PACKETS_LENGTH - OFFSET_CDATA, payload->data + offset, packetDataSize);
+        }
         insert_16bit_value(packet, OFFSET_CDATA + packetDataSize, payload->status);
         g_sendFunc(packet, OFFSET_CDATA + packetDataSize + EAPDU_RESPONSE_STATUS_LENGTH);
         offset += packetDataSize;
-        payload->dataLen -= packetDataSize;
+        remaining -= packetDataSize;
         packetIndex++;
         UserDelay(10);
-    }
+    } while (remaining > 0U);
 }
 
 void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, StatusEnum status, char *error)
 {
+    if (error == NULL) {
+        error = "unknown error";
+    }
     EAPDUResponsePayload_t *result = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
+    if (result == NULL) {
+        return;
+    }
     cJSON *root = cJSON_CreateObject();
+    if (root == NULL) {
+        SRAM_FREE(result);
+        return;
+    }
     cJSON_AddStringToObject(root, "payload", error);
     char *json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024, false);
     cJSON_Delete(root);
+    if (json_str == NULL) {
+        SRAM_FREE(result);
+        return;
+    }
     result->data = (uint8_t *)json_str;
     result->dataLen = strlen((char *)result->data);
     result->status = status;
@@ -85,10 +115,12 @@ void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, St
 static void free_parser()
 {
     g_totalPackets = 0;
+    g_eapduRcvCount = 0;
+    g_lastPacketTick = 0;
     memset_s(g_receivedPackets, sizeof(g_receivedPackets), 0, sizeof(g_receivedPackets));
     memset_s(g_packetLengths, sizeof(g_packetLengths), 0, sizeof(g_packetLengths));
     for (int i = 0; i < MAX_PACKETS; i++) {
-        memset_s(g_protocolRcvBuffer, sizeof(g_protocolRcvBuffer[i]), 0, sizeof(g_protocolRcvBuffer[i]));
+        memset_s(g_protocolRcvBuffer[i], sizeof(g_protocolRcvBuffer[i]), 0, sizeof(g_protocolRcvBuffer[i]));
     }
 }
 
@@ -115,9 +147,6 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
 #endif
     case CMD_GET_DEVICE_INFO:
         GetDeviceInfoService(request);
-        break;
-    case CMD_GET_DEVICE_USB_PUBKEY:
-        GetDeviceUsbPubkeyService(request);
         break;
     default:
         printf("Invalid command: %u\n", request->commandType);
@@ -152,6 +181,9 @@ static EAPDUFrame_t *FrameParser(const uint8_t *frame, uint32_t len)
         return NULL;
     }
     EAPDUFrame_t *eapduFrame = (EAPDUFrame_t *)SRAM_MALLOC(sizeof(EAPDUFrame_t));
+    if (eapduFrame == NULL) {
+        return NULL;
+    }
     eapduFrame->cla = frame[OFFSET_CLA];
     eapduFrame->ins = extract_16bit_value(frame, OFFSET_INS);
     eapduFrame->p1 = extract_16bit_value(frame, OFFSET_P1);
@@ -164,7 +196,14 @@ static EAPDUFrame_t *FrameParser(const uint8_t *frame, uint32_t len)
 
 void EApduProtocolParse(const uint8_t *frame, uint32_t len)
 {
-    if (len < 4) { // Ensure frame has minimum length
+    uint32_t tick = osKernelGetTickCount();
+    if (g_totalPackets != 0 && g_lastPacketTick != 0 && (tick - g_lastPacketTick > EAPDU_REASSEMBLY_TIMEOUT_MS)) {
+        printf("EAPDU reassembly timeout\n");
+        free_parser();
+    }
+
+    g_eapduRcvCount++;
+    if (len < OFFSET_CDATA) {
         printf("Invalid EAPDU data: too short\n");
         free_parser();
         return;
@@ -174,12 +213,24 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
         SRAM_FREE(eapduFrame);
         return;
     }
-    if (eapduFrame->p2 == 0 && g_totalPackets == 0) {
+    if (g_totalPackets == 0) {
         g_totalPackets = eapduFrame->p1;
         assert(g_totalPackets <= MAX_PACKETS);
         memset_s(g_receivedPackets, sizeof(g_receivedPackets), 0, sizeof(g_receivedPackets));
+    } else if (g_totalPackets != eapduFrame->p1) {
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, eapduFrame->lc, PRS_INVALID_TOTAL_PACKETS, "Mismatched total packets");
+        free_parser();
+        SRAM_FREE(eapduFrame);
+        return;
     }
-    assert(eapduFrame->dataLen <= MAX_PACKETS_LENGTH && eapduFrame->p2 < MAX_PACKETS);
+    g_lastPacketTick = tick;
+    if (eapduFrame->dataLen > MAX_EAPDU_DATA_SIZE || eapduFrame->p2 >= MAX_PACKETS) {
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, eapduFrame->lc, PRS_INVALID_INDEX, "Invalid packet length/index");
+        free_parser();
+        SRAM_FREE(eapduFrame);
+        return;
+    }
+    assert(eapduFrame->dataLen <= MAX_EAPDU_DATA_SIZE && eapduFrame->p2 < MAX_PACKETS);
     memcpy_s(g_protocolRcvBuffer[eapduFrame->p2], sizeof(g_protocolRcvBuffer[eapduFrame->p2]), eapduFrame->data, eapduFrame->dataLen);
     g_packetLengths[eapduFrame->p2] = eapduFrame->dataLen;
     g_receivedPackets[eapduFrame->p2] = 1;
@@ -196,14 +247,30 @@ void EApduProtocolParse(const uint8_t *frame, uint32_t len)
     for (uint16_t i = 0; i < g_totalPackets; i++) {
         fullDataLen += g_packetLengths[i];
     }
+    if (fullDataLen > (MAX_PACKETS * MAX_EAPDU_DATA_SIZE)) {
+        free_parser();
+        SRAM_FREE(eapduFrame);
+        return;
+    }
 
     fullData = (uint8_t *)SRAM_MALLOC(fullDataLen + 1);
+    if (fullData == NULL) {
+        free_parser();
+        SRAM_FREE(eapduFrame);
+        return;
+    }
     for (uint32_t i = 0; i < g_totalPackets; i++) {
         memcpy_s(fullData + offset, fullDataLen - offset, g_protocolRcvBuffer[i], g_packetLengths[i]);
         offset += g_packetLengths[i];
     }
     fullData[fullDataLen] = '\0';
     EAPDURequestPayload_t *request = (EAPDURequestPayload_t *)SRAM_MALLOC(sizeof(EAPDURequestPayload_t));
+    if (request == NULL) {
+        SRAM_FREE(fullData);
+        free_parser();
+        SRAM_FREE(eapduFrame);
+        return;
+    }
     request->data = fullData;
     request->dataLen = fullDataLen;
     request->requestID = eapduFrame->lc;
@@ -223,16 +290,26 @@ static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)
     }
 }
 
-struct ProtocolParser *NewEApduProtocolParser()
+static uint32_t GetRcvCount(void)
 {
-    if (!global_parser) {
-        global_parser = (struct ProtocolParser *)SRAM_MALLOC(sizeof(struct ProtocolParser));
-        global_parser->name = EAPDU_PROTOCOL_PARSER_NAME;
-        global_parser->parse = EApduProtocolParse;
-        global_parser->registerSendFunc = RegisterSendFunc;
-        global_parser->rcvCount = 0;
-    }
-    return global_parser;
+    return g_eapduRcvCount;
+}
+
+static void ResetRcvCount(void)
+{
+    free_parser();
+}
+
+const struct ProtocolParser *NewEApduProtocolParser()
+{
+    static const struct ProtocolParser g_eapduParser = {
+        .name = EAPDU_PROTOCOL_PARSER_NAME,
+        .parse = EApduProtocolParse,
+        .registerSendFunc = RegisterSendFunc,
+        .getRcvCount = GetRcvCount,
+        .resetRcvCount = ResetRcvCount,
+    };
+    return &g_eapduParser;
 }
 
 void GotoResultPage(EAPDUResultPage_t *resultPageParams)

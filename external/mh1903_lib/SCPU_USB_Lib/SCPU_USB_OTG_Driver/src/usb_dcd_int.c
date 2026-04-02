@@ -59,6 +59,7 @@ uint32_t USBD_OTG_ISR_Handler(USB_OTG_CORE_HANDLE *pdev)
     uint32_t retval = 0;
     USB_OTG_EP* ep;
     uint32_t rxLength = 0;
+    uint32_t rxRemain = 0;
 
     if (USB_OTG_IsDeviceMode(pdev)) { /* ensure that we are in device mode */
         gintr_status.d8 = USB_OTG_ReadCoreItr(pdev);
@@ -104,6 +105,31 @@ uint32_t USBD_OTG_ISR_Handler(USB_OTG_CORE_HANDLE *pdev)
                 ep = &pdev->dev.out_ep[0];
                 /* Read Packet */
                 rxLength = USB_OTG_READ_REG8(&pdev->regs.INDEXREGS->COUNT.COUNT0);
+                if ((ep->xfer_buff == NULL) || (ep->xfer_count > ep->xfer_len)) {
+                    DCD_EP_Stall(pdev, 0x80);
+                    DCD_EP_Stall(pdev, 0x00);
+                    csr0l.b.data_end = 1;
+                    csr0l.b.serviced_rxpktrdy = 1;
+                    USB_OTG_WRITE_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L, csr0l.d8);
+                    ep->xfer_buff = pdev->dev.setup_packet;
+                    ep->xfer_count = 0;
+                    ep->xfer_len = 8;
+                    USB_OTG_EP0_OutStart(pdev);
+                    return retval;
+                }
+                rxRemain = ep->xfer_len - ep->xfer_count;
+                if (rxLength > rxRemain) {
+                    DCD_EP_Stall(pdev, 0x80);
+                    DCD_EP_Stall(pdev, 0x00);
+                    csr0l.b.data_end = 1;
+                    csr0l.b.serviced_rxpktrdy = 1;
+                    USB_OTG_WRITE_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L, csr0l.d8);
+                    ep->xfer_buff = pdev->dev.setup_packet;
+                    ep->xfer_count = 0;
+                    ep->xfer_len = 8;
+                    USB_OTG_EP0_OutStart(pdev);
+                    return retval;
+                }
                 /* Copy the setup packet received in FIFO into the setup buffer in RAM */
                 USB_OTG_ReadPacket(pdev, ep->xfer_buff + ep->xfer_count, 0, rxLength);
                 ep->xfer_count += rxLength;
@@ -218,6 +244,9 @@ static uint32_t DCD_HandleInEP_ISR(USB_OTG_CORE_HANDLE *pdev, uint16_t ep_intr)
     USB_OTG_TXCSRL_IN_PERIPHERAL_TypeDef txcsrl;
     uint16_t epnum = 0;
     while (ep_intr) {
+        if (epnum >= USB_OTG_MAX_EP_COUNT) {
+            break;
+        }
         if (ep_intr & 0x01) { /* In ITR */
             txcsrl.d8 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[epnum]->TXCSRL);
             if (!txcsrl.b.tx_pkt_rdy) {
@@ -253,24 +282,46 @@ static uint32_t DCD_HandleOutEP_ISR(USB_OTG_CORE_HANDLE *pdev, uint16_t ep_intr)
 {
     USB_OTG_RXCSRL_IN_PERIPHERAL_TypeDef  rxcsrl;
     USB_OTG_RXCOUNT_TypeDef  rx_count;
+    USB_OTG_EP *ep;
     uint32_t epnum = 1;
-    uint32_t rx_fifo_len = 0;
+    uint32_t rx_len = 0;
+    uint32_t rx_remain = 0;
 
     ep_intr >>= 1;
     while (ep_intr) {
+        if (epnum >= USB_OTG_MAX_EP_COUNT) {
+            break;
+        }
         if (ep_intr & 0x1) {
+            ep = &pdev->dev.out_ep[epnum];
             rxcsrl.d8 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[epnum]->RXCSRL);
             /* Transfer complete */
             if (rxcsrl.b.rx_pkt_rdy) {
                 /* Inform upper layer: data ready */
-                rx_count.d16 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[epnum]->RXCOUNT);
-                rx_fifo_len = MIN(rx_count.d16, pdev->dev.out_ep[epnum].maxpacket);
-                USB_OTG_ReadPacket(pdev,
-                                   pdev->dev.out_ep[epnum].xfer_buff + pdev->dev.out_ep[epnum].xfer_count,
-                                   epnum,
-                                   rx_count.d16);
-                pdev->dev.out_ep[epnum].xfer_count += rx_fifo_len;
-                /* RX COMPLETE */
+                rx_count.d16 = USB_OTG_READ_REG16(&pdev->regs.CSRREGS[epnum]->RXCOUNT);
+                rx_len = rx_count.d16;
+
+                if ((ep->xfer_buff == NULL) || (ep->xfer_count > ep->xfer_len)) {
+                    DCD_EP_Stall(pdev, (uint8_t)epnum);
+                    rxcsrl.b.rx_pkt_rdy = 0;
+                    USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[epnum]->RXCSRL, rxcsrl.d8);
+                    ep_intr >>= 1;
+                    epnum++;
+                    continue;
+                }
+
+                rx_remain = ep->xfer_len - ep->xfer_count;
+                if ((rx_len > ep->maxpacket) || (rx_len > rx_remain)) {
+                    DCD_EP_Stall(pdev, (uint8_t)epnum);
+                    rxcsrl.b.rx_pkt_rdy = 0;
+                    USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[epnum]->RXCSRL, rxcsrl.d8);
+                    ep_intr >>= 1;
+                    epnum++;
+                    continue;
+                }
+
+                USB_OTG_ReadPacket(pdev, ep->xfer_buff + ep->xfer_count, epnum, (uint16_t)rx_len);
+                ep->xfer_count += rx_len;
                 USBD_DCD_INT_fops->DataOutStage(pdev, epnum);
             }
             /* Endpoint disable  */

@@ -519,7 +519,6 @@ static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint
         if (cJSON_IsObject(item)) {
             DisplayJsonRecursive(parent, item->child, indent + 1, yOffset);
         } else if (cJSON_IsArray(item)) {
-            int size = cJSON_GetArraySize(item);
             for (int i = 0; i < 1; i++) {
                 cJSON* subitem = cJSON_GetArrayItem(item, i);
                 DisplayJsonRecursive(parent, subitem, indent, yOffset);

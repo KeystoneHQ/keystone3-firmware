@@ -399,13 +399,13 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_HELIUM].items[0].qrTitle = _("connect_helium_title");
     g_tutorials[WALLET_LIST_HELIUM].items[0].qrUrl = _("connect_helium_link");
 
-    // WALLET_LIST_ZASHI
-    g_tutorials[WALLET_LIST_ZASHI].len = 1;
-    g_tutorials[WALLET_LIST_ZASHI].desc = _("connect_wallet_desc");
-    g_tutorials[WALLET_LIST_ZASHI].items[0].walletName = _("connect_zashi_title");
-    g_tutorials[WALLET_LIST_ZASHI].items[0].url = _("connect_zashi_link");
-    g_tutorials[WALLET_LIST_ZASHI].items[0].qrTitle = _("connect_zashi_title");
-    g_tutorials[WALLET_LIST_ZASHI].items[0].qrUrl = _("connect_zashi_link");
+    // WALLET_LIST_ZODL
+    g_tutorials[WALLET_LIST_ZODL].len = 1;
+    g_tutorials[WALLET_LIST_ZODL].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_ZODL].items[0].walletName = ZODL_WALLET_TITLE;
+    g_tutorials[WALLET_LIST_ZODL].items[0].url = ZODL_WALLET_LINK;
+    g_tutorials[WALLET_LIST_ZODL].items[0].qrTitle = ZODL_WALLET_TITLE;
+    g_tutorials[WALLET_LIST_ZODL].items[0].qrUrl = ZODL_WALLET_LINK;
 
     // WALLET_LIST_CORE
     g_tutorials[WALLET_LIST_CORE].len = 1;

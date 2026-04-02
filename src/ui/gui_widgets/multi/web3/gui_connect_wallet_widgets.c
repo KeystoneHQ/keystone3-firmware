@@ -925,7 +925,7 @@ static void AddCoinsFromArray(const lv_img_dsc_t *coinArray[], uint32_t arraySiz
     }
 }
 
-static void AddWalletCoins(const char *coinArray[], uint32_t arraySize)
+static void AddWalletCoins(const lv_img_dsc_t *coinArray[], uint32_t arraySize)
 {
     if (lv_obj_get_child_cnt(g_coinCont) > 0) {
         lv_obj_clean(g_coinCont);

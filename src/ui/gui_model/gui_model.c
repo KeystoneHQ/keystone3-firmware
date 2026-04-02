@@ -50,6 +50,8 @@
 #define APP_ADDR                            (0x1001000 + 0x80000)   //108 1000
 #define APP_CHECK_START_ADDR                (0x1400000)
 #define APP_END_ADDR                        (0x2000000)
+#define SD_CARD_OTA_FILE_PATH               "0:/keystone3.bin"
+#define INTERNAL_STORAGE_OTA_FILE_PATH      "1:/keystone3.bin"
 
 #define MODEL_WRITE_SE_HEAD                 do {                                \
         ret = CHECK_BATTERY_LOW_POWER();                                        \
@@ -108,6 +110,7 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
 static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen);
 static int32_t ModelParseTransactionRawData(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionParseRawDataDelay(const void *inData, uint32_t inDataLen);
+static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen);
 
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
@@ -282,6 +285,11 @@ void GuiModelWriteLastLockDeviceTime(uint32_t time)
 void GuiModelCopySdCardOta(void)
 {
     AsyncExecute(ModelCopySdCardOta, NULL, 0);
+}
+
+void GuiModelUpdateBoot(void)
+{
+    AsyncExecute(ModelUpdateBoot, NULL, 0);
 }
 
 void GuiModelURGenerateQRCode(GenerateUR func)
@@ -1324,7 +1332,7 @@ static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
 #ifndef COMPILE_SIMULATOR
     static uint8_t walletAmount;
     SetPageLockScreen(false);
-    int32_t ret = FatfsFileCopy("0:/keystone3.bin", "1:/pillar.bin");
+    int32_t ret = FatfsFileCopy(SD_CARD_OTA_FILE_PATH, INTERNAL_STORAGE_OTA_FILE_PATH);
     if (ret == SUCCESS_CODE) {
         GetExistAccountNum(&walletAmount);
         if (walletAmount == 0) {
@@ -1348,6 +1356,26 @@ static bool CheckNeedDelay(ViewType viewType)
     return viewType == ZcashTx;
 }
 #endif
+
+static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen)
+{
+#ifdef BUILD_PRODUCTION
+    osDelay(1000);
+    static uint8_t walletAmount;
+    SetPageLockScreen(false);
+    int32_t ret = UpdateBootFromFlash();
+    SetPageLockScreen(true);
+    if (ret == SUCCESS_CODE) {
+        NVIC_SystemReset();
+        GuiApiEmitSignal(SIG_BOOT_UPDATE_SUCCESS, NULL, 0);
+    } else {
+        GuiApiEmitSignal(SIG_BOOT_UPDATE_FAIL, NULL, 0);
+    }
+#else
+    GuiApiEmitSignal(SIG_BOOT_UPDATE_SUCCESS, NULL, 0);
+#endif
+    return SUCCESS_CODE;
+}
 
 static PtrT_TransactionCheckResult g_checkResult = NULL;
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)

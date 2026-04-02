@@ -18,7 +18,11 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
 {
     static uint32_t lastTick = 0;
     uint32_t tick;
-    static struct ProtocolParser *currentParser = NULL;
+    static const struct ProtocolParser *currentParser = NULL;
+
+    if (data == NULL || len == 0) {
+        return;
+    }
 
     tick = osKernelGetTickCount();
     currentParser = NewInternalProtocolParser();
@@ -28,9 +32,9 @@ void ProtocolReceivedData(const uint8_t *data, uint32_t len, ProtocolSendCallbac
     }
 #endif
 
-    if (currentParser->rcvCount != 0) {
+    if (currentParser->getRcvCount() != 0) {
         if (tick - lastTick > PROTOCOL_PARSE_OVERTIME) {
-            currentParser->rcvCount = 0;
+            currentParser->resetRcvCount();
         }
     }
     lastTick = tick;

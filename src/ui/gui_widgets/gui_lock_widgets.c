@@ -246,7 +246,9 @@ void GuiLockScreenTurnOff(void)
     if ((GetCurrentAccountIndex() != g_oldWalletIndex) ||
             GuiIsForgetPass()) {
         g_oldWalletIndex = GetCurrentAccountIndex();
-        GuiCloseToTargetView(&g_homeView);
+        if (!NeedUpdateBoot()) {
+            GuiCloseToTargetView(&g_homeView);
+        }
     } else {
         GuiEmitSignal(GUI_EVENT_REFRESH, &single, sizeof(single));
         GuiFirmwareUpdateWidgetRefresh();
@@ -289,6 +291,9 @@ void GuiLockScreenPassCode(bool en)
             GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_homeView);
             GuiFrameOpenView(&g_updateSuccessView);
+            if (NeedUpdateBoot()) {
+                GuiFrameOpenView(&g_bootUpdateView);
+            }
         } else if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiEnterPassCodeStatus(g_verifyLock, true);
@@ -301,6 +306,9 @@ void GuiLockScreenPassCode(bool en)
             GuiModeGetWalletDesc();
             GuiEnterPassCodeStatus(g_verifyLock, true);
             GuiFrameOpenView(&g_passphraseView);
+            if (NeedUpdateBoot()) {
+                GuiFrameOpenView(&g_bootUpdateView);
+            }
         } else if (g_homeView.isActive) {
             GuiLockScreenTurnOff();
         } else if (g_forgetPassView.isActive) {
@@ -309,6 +317,9 @@ void GuiLockScreenPassCode(bool en)
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
             GuiFrameOpenView(&g_homeView);
+            if (NeedUpdateBoot()) {
+                GuiFrameOpenView(&g_bootUpdateView);
+            }
             HardwareInitAfterWake();
         }
         // Close the loading page after closing the lock screen page

@@ -5,7 +5,6 @@
 #include "log_print.h"
 #include "user_utils.h"
 #include "assert.h"
-#include "md5.h"
 #include "cmsis_os.h"
 #include "user_fatfs.h"
 #include "ff.h"
@@ -21,10 +20,12 @@
 #include "user_memory.h"
 #include "drv_gd25qxx.h"
 #include "data_parser_task.h"
+#include "screen_manager.h"
+#include "power_manager.h"
 
 #define TYPE_FILE_INFO_FILE_NAME    1
 #define TYPE_FILE_INFO_FILE_SIZE    2
-#define TYPE_FILE_INFO_FILE_MD5     3
+#define TYPE_FILE_INFO_FILE_SHA256  3
 #define TYPE_FILE_INFO_FILE_SIGN    4
 #define TYPE_FILE_INFO_FILE_IV      5
 
@@ -57,7 +58,7 @@
 typedef struct {
     char fileName[MAX_FILE_NAME_LENGTH + 4];
     uint32_t fileSize;
-    uint8_t md5[16];
+    uint8_t sha256[32];
     uint8_t iv[16];
     uint8_t signature[64];
 } FileTransInfo_t;
@@ -68,7 +69,7 @@ typedef struct {
     uint32_t offset;
 } FileTransCtrl_t;
 
-static MD5_CTX g_md5Ctx;
+static struct sha256_ctx g_sha256Ctx;
 
 static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
 static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen);
@@ -112,8 +113,11 @@ static const uint8_t g_webUsbPubKey[] = {
 };
 
 static const uint8_t g_webUsbUpdatePubKey[] = {
-    4, 63, 231, 127, 215, 161, 146, 39, 178, 99, 72, 5, 235, 237, 64, 202, 34, 106, 164, 5, 185, 127, 141, 97, 212, 234, 38, 101, 157, 218, 241, 31, 235, 233, 251,
-    53, 233, 51, 65, 68, 24, 39, 255, 68, 23, 134, 161, 100, 23, 215, 79, 56, 199, 34, 47, 163, 145, 255, 39, 93, 87, 55, 19, 239, 153
+    0x04, 0x3F, 0xE7, 0x7F, 0xD7, 0xA1, 0x92, 0x27, 0xB2, 0x63, 0x48, 0x05, 0xEB, 0xED, 0x40, 0xCA, 
+    0x22, 0x6A, 0xA4, 0x05, 0xB9, 0x7F, 0x8D, 0x61, 0xD4, 0xEA, 0x26, 0x65, 0x9D, 0xDA, 0xF1, 0x1F, 
+    0xEB, 0xE9, 0xFB, 0x35, 0xE9, 0x33, 0x41, 0x44, 0x18, 0x27, 0xFF, 0x44, 0x17, 0x86, 0xA1, 0x64, 
+    0x17, 0xD7, 0x4F, 0x38, 0xC7, 0x22, 0x2F, 0xA3, 0x91, 0xFF, 0x27, 0x5D, 0x57, 0x37, 0x13, 0xEF, 
+    0x99
 };
 
 const ProtocolServiceCallbackFunc_t g_fileTransInfoServiceFunc[] = {
@@ -161,7 +165,6 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     Tlv_t sendTlvArray[1] = {0};
     uint32_t tlvNumber;
     FrameHead_t sendHead = {0};
-    uint8_t hash[32];
     printf("ServiceFileTransInfo\n");
 
     tlvNumber = GetTlvFromData(tlvArray, 5, tlvData, head->length);
@@ -179,9 +182,9 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             CHECK_LENGTH(tlvArray[i].length, 4);
             g_fileTransInfo.fileSize = *(uint32_t *)tlvArray[i].pValue;
             break;
-        case TYPE_FILE_INFO_FILE_MD5:
-            CHECK_LENGTH(tlvArray[i].length, 16);
-            memcpy_s(g_fileTransInfo.md5, sizeof(g_fileTransInfo.md5), tlvArray[i].pValue, 16);
+        case TYPE_FILE_INFO_FILE_SHA256:
+            CHECK_LENGTH(tlvArray[i].length, 32);
+            memcpy_s(g_fileTransInfo.sha256, sizeof(g_fileTransInfo.sha256), tlvArray[i].pValue, 32);
             break;
         case TYPE_FILE_INFO_FILE_SIGN:
             CHECK_LENGTH(tlvArray[i].length, 64);
@@ -198,7 +201,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
 
     printf("file name=%s\n", g_fileTransInfo.fileName);
     printf("file size=%d\n", g_fileTransInfo.fileSize);
-    PrintArray("md5", g_fileTransInfo.md5, 16);
+    PrintArray("sha256", g_fileTransInfo.sha256, 32);
     PrintArray("signature", g_fileTransInfo.signature, 64);
     PrintArray("iv", g_fileTransInfo.iv, 16);
     SetDeviceParserIv(g_fileTransInfo.iv);
@@ -208,8 +211,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             sendTlvArray[0].value = 4;
             break;
         }
-        sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
-        if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
+        if (k1_verify_signature(g_fileTransInfo.signature, g_fileTransInfo.sha256, (uint8_t *)g_webUsbPubKey) == false) {
             printf("verify signature fail\n");
             sendTlvArray[0].value = 3;
             break;
@@ -228,7 +230,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             break;
         }
         g_fileTransCtrl.startTick = osKernelGetTickCount();
-        MD5_Init(&g_md5Ctx);
+        sha256_init(&g_sha256Ctx);
 
         if (FatfsFileCreate(g_fileTransInfo.fileName) != RES_OK) {
             printf("create file %s err\n", g_fileTransInfo.fileName);
@@ -244,6 +246,8 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             g_fileTransTimeOutTimer = osTimerNew(FileTransTimeOutTimerFunc, osTimerOnce, NULL, NULL);
         }
 
+        ClearLockScreenTime();
+        ClearShutdownTime();
         g_isReceivingFile = true;
         osTimerStart(g_fileTransTimeOutTimer, FILE_TRANS_TIME_OUT);
     } while (0);
@@ -274,6 +278,8 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
 
     CHECK_POINTER(g_fileTransTimeOutTimer);
     osTimerStart(g_fileTransTimeOutTimer, FILE_TRANS_TIME_OUT);
+    ClearLockScreenTime();
+    ClearShutdownTime();
 
     tlvNumber = GetTlvFromData(tlvArray, 2, tlvData, head->length);
 
@@ -336,7 +342,7 @@ static uint8_t *ServiceFileTransContent(FrameHead_t *head, const uint8_t *tlvDat
         return NULL;
     }
 
-    MD5_Update(&g_md5Ctx, fileData, fileDataSize);
+    sha256_update(&g_sha256Ctx, fileData, fileDataSize);
     return GetFileContent(head, g_fileTransCtrl.offset, outLen);
 }
 
@@ -367,8 +373,7 @@ static uint8_t *GetFileContent(const FrameHead_t *head, uint32_t offset, uint32_
 static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     FrameHead_t sendHead = {0};
-    uint8_t md5Result[16];
-    uint8_t hash[32];
+    struct sha256 sha256Result;
     int ret = 0;
 
     if (!g_isReceivingFile) {
@@ -380,16 +385,15 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
     osTimerStop(g_fileTransTimeOutTimer);
     g_fileTransCtrl.endTick = osKernelGetTickCount();
     PrintArray("tlvData", tlvData, head->length);
-    MD5_Final(md5Result, &g_md5Ctx);
+    sha256_done(&g_sha256Ctx, &sha256Result);
     do {
-        PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
-        PrintArray("md5Result", md5Result, 16);
-        sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
-        if (memcmp(md5Result, g_fileTransInfo.md5, 16) != 0) {
+        PrintArray("g_fileTransInfo.sha256", g_fileTransInfo.sha256, 32);
+        PrintArray("sha256Result", sha256Result.u.u8, 32);
+        if (memcmp(sha256Result.u.u8, g_fileTransInfo.sha256, 32) != 0) {
             ret = ERR_INVALID_FILE;
             break;
         }
-        if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
+        if (k1_verify_signature(g_fileTransInfo.signature, g_fileTransInfo.sha256, (uint8_t *)g_webUsbPubKey) == false) {
             printf("verify signature fail\n");
             ret = ERR_INVALID_FILE;
             break;
@@ -473,11 +477,11 @@ static uint8_t *ServiceFileTransGetPubkey(FrameHead_t *head, const uint8_t *tlvD
         uint8_t hash[32] = {0};
         sha256((struct sha256 *)hash, pubKey, 33);
         if (k1_verify_signature(pubKeySign, hash, (uint8_t *)g_webUsbUpdatePubKey) == false) {
-            printf("verify signature fail\n");
+            printf("verify pubkey signature fail\n");
             tlvArray[0].length = 4;
             tlvArray[0].value = 3;
         } else {
-            printf("verify signature success\n");
+            printf("verify pubkey signature success\n");
             tlvArray[0].length = 33;
             tlvArray[0].pValue = GetDeviceParserPubKey(pubKey, sizeof(pubKey) - 1);
         }
@@ -545,8 +549,7 @@ static void WriteNftToFlash(void)
 static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tlvData, uint32_t *outLen)
 {
     FrameHead_t sendHead = {0};
-    uint8_t md5Result[16];
-    uint8_t hash[32];
+    struct sha256 sha256Result;
     int ret = 0;
 
     if (!g_isReceivingFile) {
@@ -559,18 +562,17 @@ static uint8_t *ServiceNftFileTransComplete(FrameHead_t *head, const uint8_t *tl
     osTimerStop(g_fileTransTimeOutTimer);
     g_fileTransCtrl.endTick = osKernelGetTickCount();
     PrintArray("tlvData", tlvData, head->length);
-    PrintArray("g_fileTransInfo.md5", g_fileTransInfo.md5, 16);
-    MD5_Final(md5Result, &g_md5Ctx);
-    PrintArray("md5Result", md5Result, 16);
+    PrintArray("g_fileTransInfo.sha256", g_fileTransInfo.sha256, 32);
+    sha256_done(&g_sha256Ctx, &sha256Result);
+    PrintArray("sha256Result", sha256Result.u.u8, 32);
     printf("total tick=%d\n", g_fileTransCtrl.endTick - g_fileTransCtrl.startTick);
 
     do {
-        sha256((struct sha256 *)hash, g_fileTransInfo.md5, 16);
-        if (memcmp(md5Result, g_fileTransInfo.md5, 16) != 0) {
+        if (memcmp(sha256Result.u.u8, g_fileTransInfo.sha256, 32) != 0) {
             ret = ERR_INVALID_FILE;
             break;
         }
-        if (k1_verify_signature(g_fileTransInfo.signature, hash, (uint8_t *)g_webUsbPubKey) == false) {
+        if (k1_verify_signature(g_fileTransInfo.signature, g_fileTransInfo.sha256, (uint8_t *)g_webUsbPubKey) == false) {
             printf("verify signature fail\n");
             ret = ERR_INVALID_FILE;
             break;

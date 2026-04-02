@@ -50,12 +50,14 @@
 #include "version.h"
 #include "hardware_version.h"
 #include "librust_c.h"
+#include "drv_mpu.h"
 
 int main(void)
 {
     __enable_irq();
     SetAllGpioLow();
     SystemClockInit();
+    MpuInit();
     SensorInit();
     Uart0Init(CmdIsrRcvByte);
     FingerprintInit();
@@ -77,7 +79,6 @@ int main(void)
     Atecc608bInit();
     AccountsDataCheck();
     MountUsbFatfs();
-    UsbInit();
     RtcInit();
     MotorInit();
     BatteryInit();

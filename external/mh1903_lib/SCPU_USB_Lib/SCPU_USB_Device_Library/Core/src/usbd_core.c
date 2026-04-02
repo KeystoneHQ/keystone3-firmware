@@ -116,9 +116,8 @@ void USBD_Init(USB_OTG_CORE_HANDLE* pdev, USB_OTG_CORE_ID_TypeDef coreID, USBD_D
         nvicSet = true;
         /* Enable USB Interrupt */
         NVIC_InitTypeDef   NVIC_InitStructure;
-        NVIC_SetPriorityGrouping(NVIC_PriorityGroup_0);
         NVIC_InitStructure.NVIC_IRQChannel                   = USB_IRQn;
-        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
         NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 1;
         NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;
         NVIC_Init(&NVIC_InitStructure);
@@ -199,8 +198,12 @@ static uint8_t USBD_SetupStage(USB_OTG_CORE_HANDLE* pdev)
  */
 static uint8_t USBD_DataOutStage(USB_OTG_CORE_HANDLE* pdev, uint8_t epnum)
 {
+    uint8_t ep_idx = epnum & 0x7F;
     USB_OTG_EP* ep;
-    ep = &pdev->dev.out_ep[epnum & 0x7F];
+    if (ep_idx >= USB_OTG_MAX_EP_COUNT) {
+        return USBD_FAIL;
+    }
+    ep = &pdev->dev.out_ep[ep_idx];
     if (epnum == 0) {
         if (pdev->dev.device_state == USB_OTG_EP0_DATA_OUT) {
             if ((pdev->dev.class_cb->EP0_RxReady != NULL) && (pdev->dev.device_status == USB_OTG_CONFIGURED)) {
@@ -216,7 +219,7 @@ static uint8_t USBD_DataOutStage(USB_OTG_CORE_HANDLE* pdev, uint8_t epnum)
             USB_OTG_EPStartXfer(pdev, ep);
         } else {
             if ((pdev->dev.class_cb->DataOut != NULL) && (pdev->dev.device_status == USB_OTG_CONFIGURED)) {
-                pdev->dev.class_cb->DataOut(pdev, epnum);
+                pdev->dev.class_cb->DataOut(pdev, ep_idx);
             }
         }
     }
@@ -232,8 +235,12 @@ static uint8_t USBD_DataOutStage(USB_OTG_CORE_HANDLE* pdev, uint8_t epnum)
  */
 static uint8_t USBD_DataInStage(USB_OTG_CORE_HANDLE* pdev, uint8_t epnum)
 {
+    uint8_t ep_idx = epnum & 0x7F;
     USB_OTG_EP* ep;
-    ep = &pdev->dev.in_ep[epnum];
+    if (ep_idx >= USB_OTG_MAX_EP_COUNT) {
+        return USBD_FAIL;
+    }
+    ep = &pdev->dev.in_ep[ep_idx];
     if (epnum == 0) {
         if (ep->xfer_count > 1) {
             USB_OTG_EP0StartXfer(pdev, ep);
@@ -255,7 +262,7 @@ static uint8_t USBD_DataInStage(USB_OTG_CORE_HANDLE* pdev, uint8_t epnum)
         } else if (ep->xfer_count == 1 || ep->total_data_len == 0) {
             ep->xfer_count = 0;
             if ((pdev->dev.class_cb->DataIn != NULL) && (pdev->dev.device_status == USB_OTG_CONFIGURED)) {
-                pdev->dev.class_cb->DataIn(pdev, epnum);
+                pdev->dev.class_cb->DataIn(pdev, ep_idx);
             }
         }
     }

@@ -284,7 +284,7 @@ LV_IMG_DECLARE(walletMintScan);
 LV_IMG_DECLARE(walletHelium);
 LV_IMG_DECLARE(walletSuiet);
 LV_IMG_DECLARE(walletZeus);
-LV_IMG_DECLARE(walletZashi);
+LV_IMG_DECLARE(walletZodl);
 LV_IMG_DECLARE(walletFeather);
 LV_IMG_DECLARE(walletCore);
 LV_IMG_DECLARE(walletBabylon);

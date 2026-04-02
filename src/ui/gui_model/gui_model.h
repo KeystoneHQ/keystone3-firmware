@@ -95,6 +95,7 @@ void GuiModelStopCalculateCheckSum(void);
 void GuiModelSettingWritePassphrase(void);
 void GuiModelCalculateBinSha256(void);
 void GuiModelFormatMicroSd(void);
+void GuiModelUpdateBoot(void);
 uint32_t BinarySearchLastNonFFSector(void);
 void GuiModelParseTransactionRawData(void);
 void GuiModelTransactionParseRawDataDelay(void);

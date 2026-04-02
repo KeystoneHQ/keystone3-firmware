@@ -17,6 +17,7 @@
 #include "power_manager.h"
 #include "account_manager.h"
 #include "version.h"
+#include "legacy_web_update_pad.h"
 #include "lv_i18n_api.h"
 #include "fetch_sensitive_data_task.h"
 #include "ctaes.h"
@@ -147,6 +148,8 @@ void DeviceSettingsInit(void)
     }
 
     InitBootParam();
+
+    LegacyWebUpdatePadTouch();
 }
 
 void InitBootParam(void)

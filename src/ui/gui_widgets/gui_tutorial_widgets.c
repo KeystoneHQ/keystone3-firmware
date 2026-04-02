@@ -133,6 +133,15 @@ static void TutorialsInit()
     g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].qrTitle = _("tutorial_ton_mnemonic_title");
     g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].qrSubtitle = _("tutorial_ton_mnemonic_url");
     g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].qrCode = _("tutorial_ton_mnemonic_url");
+
+    //TUTORIAL_LTC_RECEIVE
+    g_tutorials[TUTORIAL_LTC_RECEIVE].len = 1;
+    g_tutorials[TUTORIAL_LTC_RECEIVE].tutorials[0].title = _("receive_ltc_more_t_title1");
+    g_tutorials[TUTORIAL_LTC_RECEIVE].tutorials[0].desc = _("receive_ltc_more_t_desc1");
+    g_tutorials[TUTORIAL_LTC_RECEIVE].tutorials[0].link = _("learn_more");
+    g_tutorials[TUTORIAL_LTC_RECEIVE].tutorials[0].qrTitle = _("receive_ltc_more_t_title1");
+    g_tutorials[TUTORIAL_LTC_RECEIVE].tutorials[0].qrSubtitle = _("receive_more_t_qr_link");
+    g_tutorials[TUTORIAL_LTC_RECEIVE].tutorials[0].qrCode = _("receive_more_t_qr_link");
 }
 
 static void GuiOpenQRHintBox(Tutorial_t *tutorial)
@@ -196,7 +205,6 @@ static void GuiOpenPassphraseLearnMoreHandler(void)
     cont = GuiCreateContainerWithParent(cont, 144, 30);
     lv_obj_align_to(cont, newLed, LV_ALIGN_TOP_LEFT, 0, height);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(cont, cont, LV_EVENT_CLICKED, NULL);
 
     label = GuiCreateIllustrateLabel(cont, _("learn_more"));
     lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);

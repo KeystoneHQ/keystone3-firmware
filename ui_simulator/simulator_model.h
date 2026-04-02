@@ -41,6 +41,9 @@ uint8_t GetFingerSignFlag(void);
 bool IsPreviousLockScreenEnable(void);
 void SetLockScreen(bool enable);
 void OTP_PowerOn(void);
+void random_buffer(uint8_t *buf, size_t len);
+bool IsPreviousLockScreenEnable(void);
+void SetLockScreen(bool enable);
 
 extern bool g_reboot;
 
@@ -246,7 +249,14 @@ extern bool g_reboot;
         GuiGetAvaxGUIData, \
         NULL, \
         FreeAvaxMemory, \
-    },
+    },\
+    { \
+        REMAPVIEW_ZCASH, \
+        PC_SIMULATOR_PATH "/page_zcash.json", \
+        GuiGetZcashGUIData, \
+        NULL, \
+        FreeZcashMemory, \
+    }
 #endif
 
 #endif

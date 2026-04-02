@@ -49,14 +49,17 @@ impl TryFrom<DataItem> for AOTransferTransaction {
 
             let token_info = find_token(&token_id);
             if let Some(token_info) = token_info {
-                if let Ok(amount) = token_info.convert_quantity(&quantity) {
-                    return Ok(Self {
-                        from,
-                        to,
-                        quantity: amount,
-                        token_id: token_info.get_name(),
-                        other_info: tags,
-                    });
+                match token_info.convert_quantity(&quantity) {
+                    Ok(amount) => {
+                        return Ok(Self {
+                            from,
+                            to,
+                            quantity: amount,
+                            token_id: token_info.get_name(),
+                            other_info: tags,
+                        });
+                    }
+                    Err(e) => return Err(e),
                 }
             }
 

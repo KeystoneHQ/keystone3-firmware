@@ -349,6 +349,10 @@ mod tests {
 
     use hex::ToHex;
 
+    fn sample_cashaddr() -> &'static str {
+        "qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a"
+    }
+
     #[test]
     fn test_decode_cash_addr() {
         let addr_str = "qz65ywjm92m27wshfnew2w3us5vsgxqkxc55t9lqcw";
@@ -358,5 +362,74 @@ mod tests {
             script.encode_hex::<String>(),
             "76a914b5423a5b2ab6af3a174cf2e53a3c85190418163688ac"
         );
+    }
+
+    #[test]
+    fn test_cashaddr_encode_roundtrip() {
+        let address = CashAddrCodec::decode(sample_cashaddr()).unwrap();
+        let pubkey_hash = match address.payload {
+            Payload::P2pkh { pubkey_hash } => pubkey_hash,
+            _ => panic!("expected p2pkh payload"),
+        };
+        let encoded = CashAddrCodec::encode(pubkey_hash.to_byte_array().to_vec()).unwrap();
+        assert_eq!(encoded, sample_cashaddr());
+    }
+
+    #[test]
+    fn test_cashaddr_decode_mixed_case_error() {
+        let err = CashAddrCodec::decode("qPm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a");
+        assert!(matches!(err, Err(BitcoinError::AddressError(_))));
+    }
+
+    #[test]
+    fn test_cashaddr_decode_invalid_checksum() {
+        let mut addr = sample_cashaddr().to_string();
+        addr.pop();
+        addr.push('z');
+        let err = CashAddrCodec::decode(&addr);
+        assert!(matches!(err, Err(BitcoinError::AddressError(_))));
+    }
+
+    #[test]
+    fn test_expand_prefix_appends_separator() {
+        let expanded = expand_prefix("bitcoincash");
+        assert_eq!(expanded.last(), Some(&0));
+        let expected: Vec<u8> = "bitcoincash".chars().map(|c| (c as u8) & 0x1f).collect();
+        assert_eq!(&expanded[..expected.len()], expected.as_slice());
+    }
+
+    #[test]
+    fn test_convert_bits_padding_behavior() {
+        let data = [0xff];
+        let padded = convert_bits(&data, 8, 5, true);
+        assert_eq!(padded, vec![31, 28]);
+
+        let unpadded = convert_bits(&data, 8, 5, false);
+        assert_eq!(unpadded, vec![31]);
+    }
+
+    #[test]
+    fn test_polymod_known_sequence() {
+        let checksum = polymod(&[1, 2, 3, 4, 5]);
+        assert_eq!(checksum, 34671748);
+    }
+
+    #[test]
+    fn test_base58_decode_success() {
+        // Legacy BCH address in base58 format
+        let body = Base58Codec::decode("1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu").unwrap();
+        assert_eq!(body.len(), 20);
+    }
+
+    #[test]
+    fn test_base58_decode_invalid_char() {
+        let err = Base58Codec::decode("1BpEi6DfDAUFd7GtittLSdBeYJvcoaVgg!");
+        assert!(matches!(err, Err(BitcoinError::AddressError(_))));
+    }
+
+    #[test]
+    fn test_from_base58_str_leading_zeroes() {
+        let decoded = from_base58_str("1111").unwrap();
+        assert_eq!(decoded, vec![0, 0, 0, 0]);
     }
 }

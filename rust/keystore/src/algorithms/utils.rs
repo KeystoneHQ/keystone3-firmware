@@ -7,3 +7,10 @@ pub fn normalize_path(path: &str) -> String {
     }
     p
 }
+
+pub fn is_all_zero_or_ff(bytes: &[u8]) -> bool {
+    if bytes.is_empty() {
+        return false;
+    }
+    bytes.iter().all(|b| *b == 0x00) || bytes.iter().all(|b| *b == 0xFF)
+}

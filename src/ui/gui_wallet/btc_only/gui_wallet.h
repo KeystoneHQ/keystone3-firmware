@@ -4,8 +4,7 @@
 #include "rust.h"
 #include "gui_chain.h"
 
-UREncodeResult *GuiGetBlueWalletBtcData(void);
-UREncodeResult *GuiGetSparrowWalletBtcData(void);
+UREncodeResult *GuiGetStandardBtcData(void);
 UREncodeResult *GuiGetSpecterWalletBtcData(void);
 
 #endif

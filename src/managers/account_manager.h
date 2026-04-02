@@ -88,6 +88,7 @@ uint8_t GetCurrentPasswordErrorCount(void);
 uint32_t GetLastLockDeviceTime(void);
 void SetLastLockDeviceTime(uint32_t timeStamp);
 uint32_t GetCurrentAccountEntropyLen(void);
+uint32_t GetCurrentAccountSeedLen(void);
 
 uint8_t *GetCurrentAccountMfp(void);
 int32_t GetAccountInfo(uint8_t accountIndex, AccountInfo_t *pInfo);
@@ -100,8 +101,12 @@ uint8_t GetSlip39Eb(void);
 
 void AccountsDataCheck(void);
 
+#ifndef BTC_ONLY
+int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK);
+int32_t GetZcashSFP(uint8_t accountIndex, uint8_t* outSFP);
+int32_t SetupZcashSFP(uint8_t accountIndex, const char* password);
 #ifdef CYPHERPUNK_VERSION
-int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK, uint8_t* outSFP);
-int32_t CalculateZcashUFVK(uint8_t accountIndex, const char* password);
+int32_t SetupZcashCache(uint8_t accountIndex, const char* password);
+#endif
 #endif
 #endif

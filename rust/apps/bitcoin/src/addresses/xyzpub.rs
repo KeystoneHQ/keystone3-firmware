@@ -304,4 +304,45 @@ mod tests {
 
         assert_eq!(result, expected_dgub);
     }
+
+    fn sample_xpub_bytes() -> Vec<u8> {
+        base58::decode_check(
+            "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj",
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn replace_version_bytes_success() {
+        let bytes = sample_xpub_bytes();
+        let replaced = replace_version_bytes(bytes, &Version::Zpub).unwrap();
+        assert_eq!(&replaced[..4], VERSION_ZPUB);
+    }
+
+    #[test]
+    fn convert_version_roundtrip() {
+        let original = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
+        let converted = convert_version(original, &Version::Zpub).unwrap();
+        let back = convert_version(&converted, &Version::Xpub).unwrap();
+        assert_eq!(back, original);
+    }
+
+    #[test]
+    fn version_from_str_cases() {
+        assert_eq!(Version::from_str("xpub").unwrap(), Version::Xpub);
+        assert_eq!(Version::from_str("Zpub").unwrap(), Version::ZpubMultisig);
+        assert!(Version::from_str("unknown").is_err());
+    }
+
+    #[test]
+    fn replace_version_bytes_too_short_slice() {
+        let result = replace_version_bytes([0u8; 2], &Version::Xpub);
+        assert!(matches!(result, Err(BitcoinError::Base58Error(_))));
+    }
+
+    #[test]
+    fn convert_version_invalid_base58() {
+        let err = convert_version("invalid", &Version::Xpub);
+        assert!(matches!(err, Err(BitcoinError::Base58Error(_))));
+    }
 }

@@ -53,16 +53,6 @@ typedef struct ConnectWalletWidget {
     lv_obj_t *privateModePincodeBtn;
 } ConnectWalletWidget_t;
 
-
-WalletListItem_t g_walletListArray[] = {
-    {WALLET_LIST_BLUE, &walletListBlue, true},
-    {WALLET_LIST_SPARROW, &walletListSparrow, true},
-    {WALLET_LIST_UNISAT, &walletListUniSat, true},
-    {WALLET_LIST_ZEUS, &walletListZeus, true},
-    // {WALLET_LIST_CAKE, &walletListCake, true},
-    {WALLET_LIST_FEATHER, &walletListFeather, true},
-    {WALLET_LIST_ZASHI, &walletListZashi, true},
-};
 typedef struct {
     int8_t index;
     const char *coin;
@@ -81,8 +71,19 @@ static const lv_img_dsc_t *g_cakeCoinArray[1] = {
     &coinXmr,
 };
 
-static const lv_img_dsc_t *g_zashiCoinArray[1] = {
+static const lv_img_dsc_t *g_zodlCoinArray[1] = {
     &coinZec,
+};
+
+WalletListItem_t g_walletListArray[] = {
+    {WALLET_LIST_BLUE, &walletBluewallet, "BlueWallet", g_blueWalletCoinArray, 1, true},
+    {WALLET_LIST_SPARROW, &walletSparrow, "Sparrow", g_blueWalletCoinArray, 1, true},
+    {WALLET_LIST_UNISAT, &walletUniSat, "UniSat", g_UniSatCoinArray, 5, true},
+    {WALLET_LIST_ZEUS, &walletZeus, "Zeus", g_blueWalletCoinArray, 1, true},
+    // {WALLET_LIST_CAKE, &walletCake, "Cake Wallet", g_cakeCoinArray, 1, true},
+    {WALLET_LIST_FEATHER, &walletFeather, "Feather", g_cakeCoinArray, 1, true},
+    {WALLET_LIST_ZODL, &walletZodl, "Zodl", g_zodlCoinArray, 1, true},
+    {WALLET_LIST_BULL, &walletBull, "BULL", g_blueWalletCoinArray, 1, true},
 };
 
 typedef struct {
@@ -129,6 +130,7 @@ static bool HasSelectAddressWidget();
 static void ShowEgAddressCont(lv_obj_t *egCont);
 static uint32_t GetDerivedPathTypeCount();
 static int GetAccountType(void);
+static lv_obj_t *GuiCreateWalletListItem(lv_obj_t *parent, WalletListItem_t *item, lv_coord_t yPos);
 
 static lv_obj_t *g_derivationCheck[3];
 static lv_obj_t *g_egAddress[DERIVATION_PATH_EG_LEN];
@@ -164,7 +166,7 @@ static void GuiInitWalletListArray()
         case WALLET_LIST_FEATHER:
             enable = !isSLIP39;
             break;
-        case WALLET_LIST_ZASHI:
+        case WALLET_LIST_ZODL:
             enable = !isSlip39;
             break;
         default:
@@ -215,18 +217,14 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 {
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
-    int offsetY = 0;
-    for (int i = 0, j = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
+
+    lv_coord_t yOffset = 9;
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         if (!g_walletListArray[i].enable) {
             continue;
         }
-        lv_obj_t *img = GuiCreateImg(parent, g_walletListArray[i].img);
-        lv_obj_align(img, LV_ALIGN_TOP_MID, 0, offsetY);
-        lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_add_event_cb(img, OpenQRCodeHandler, LV_EVENT_CLICKED,
-                            &g_walletListArray[i]);
-        j++;
-        offsetY = j  * 107;
+        lv_obj_t *item = GuiCreateWalletListItem(parent, &g_walletListArray[i], yOffset);
+        yOffset += 107;
     }
 }
 
@@ -310,7 +308,7 @@ static void AddZecCoins(void)
         lv_obj_clean(g_coinCont);
     }
     for (int i = 0; i < 1; i++) {
-        lv_obj_t *img = GuiCreateImg(g_coinCont, g_zashiCoinArray[i]);
+        lv_obj_t *img = GuiCreateImg(g_coinCont, g_zodlCoinArray[i]);
         lv_img_set_zoom(img, 110);
         lv_img_set_pivot(img, 0, 0);
         lv_obj_align(img, LV_ALIGN_TOP_LEFT, 32 * i, 0);
@@ -356,15 +354,14 @@ void GuiConnectWalletInit(void)
 
 UREncodeResult *GuiGetZecData(void)
 {
-    uint8_t mfp[4];
-    GetMasterFingerPrint(mfp);
     CSliceFFI_ZcashKey *keys = SRAM_MALLOC(sizeof(CSliceFFI_ZcashKey));
     ZcashKey data[1];
     keys->data = data;
     keys->size = 1;
     char ufvk[384] = {'\0'};
     uint8_t sfp[32];
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk, sfp);
+    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+    GetZcashSFP(GetCurrentAccountIndex(), sfp);
     data[0].key_text = ufvk;
     data[0].key_name = GetWalletName();
     data[0].index = 0;
@@ -385,41 +382,35 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     GuiCreateSupportedNetworks(index);
     lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_networks"));
     lv_obj_clear_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
+
     switch (index) {
-    case WALLET_LIST_BLUE:
-        func = GuiGetBlueWalletBtcData;
-        AddBlueWalletCoins();
-        break;
-    // todo  zeus wallet use same ur logic as sparrow wallet (m/49'/0'/0' 、 m/44'/0'/0' 、 m/84'/0'/0' and m/86'/0'/0' )
-    case WALLET_LIST_ZEUS:
-    case WALLET_LIST_SPARROW:
-        func = GuiGetSparrowWalletBtcData;
-        AddBlueWalletCoins();
-        break;
-    case WALLET_LIST_UNISAT:
-        func = GuiGetSparrowWalletBtcData;
-        AddUniSatWalletCoins();
-        lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_tokens"));
-        break;
-    case WALLET_LIST_ZASHI:
+    case WALLET_LIST_ZODL:
         func = GuiGetZecData;
         AddZecCoins();
         break;
-    // case WALLET_LIST_CAKE:
     case WALLET_LIST_FEATHER:
         func = GuiGetCakeData;
         AddCakeCoins();
         break;
+    case WALLET_LIST_UNISAT:
+        func = GuiGetStandardBtcData;
+        AddUniSatWalletCoins();
+        lv_label_set_text(g_coinTitleLabel, _("connect_wallet_supported_tokens"));
+        break;
+    case WALLET_LIST_BLUE:
+    case WALLET_LIST_ZEUS:
+    case WALLET_LIST_SPARROW:
+    case WALLET_LIST_BULL:
+        func = GuiGetStandardBtcData;
+        AddBlueWalletCoins();
+        break;
     default:
         return;
     }
-    if (func) {
-        lv_obj_t *qrcode = g_connectWalletTileView.qrCode;
-        if (IsPrivateQrMode()) {
-            qrcode = g_connectWalletTileView.privateModeQrCode;
-        }
-        GuiAnimatingQRCodeInit(qrcode, func, true);
-    }
+
+    lv_obj_t *qrcode = IsPrivateQrMode() ? g_connectWalletTileView.privateModeQrCode
+                       : g_connectWalletTileView.qrCode;
+    GuiAnimatingQRCodeInit(qrcode, func, true);
 }
 
 static void QRCodePause(bool pause)
@@ -1047,4 +1038,39 @@ static void GuiCreateQrCodePrivateModeWidget(lv_obj_t *parent)
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("connect_wallet_private_mode_hint"));
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 550);
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
+}
+
+static lv_obj_t *GuiCreateWalletListItem(lv_obj_t *parent, WalletListItem_t *item, lv_coord_t yPos)
+{
+    GuiButton_t table[] = {
+        {.obj = GuiCreateImg(parent, item->walletIcon), .align = LV_ALIGN_LEFT_MID, .position = {20, 0},},
+        {.obj = GuiCreateTextLabel(parent, item->walletName), .align = LV_ALIGN_DEFAULT, .position = {88, 13},},
+        {.obj = GuiCreateImg(parent, &imgArrowRight), .align = LV_ALIGN_RIGHT_MID, .position = {-24, 0},},
+    };
+    lv_obj_t *button = GuiCreateButton(parent, 456, 90, table, NUMBER_OF_ARRAYS(table),
+                                       OpenQRCodeHandler, item);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, yPos);
+    lv_obj_set_style_bg_opa(button, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(button, 0, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(button, 0, LV_PART_MAIN);
+    lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE);
+
+    uint8_t displayCount = item->coinCount > 9 ? 9 : item->coinCount;
+    uint8_t endIndex = 0;
+    for (endIndex = 0; endIndex < displayCount; endIndex++) {
+        lv_obj_t *coinImg = GuiCreateImg(button, item->coinIcons[endIndex]);
+        lv_img_set_zoom(coinImg, 110);
+        lv_img_set_pivot(coinImg, 0, 0);
+        lv_obj_align(coinImg, LV_ALIGN_TOP_LEFT, 32 * endIndex + 88, 54);
+    }
+
+    if (item->coinCount >= 4) {
+        lv_obj_t *moreImg = GuiCreateImg(button, &imgMore);
+        lv_img_set_zoom(moreImg, 150);
+        lv_img_set_pivot(moreImg, 0, 0);
+        lv_obj_set_style_img_opa(moreImg, LV_OPA_30, LV_PART_MAIN);
+        lv_obj_align(moreImg, LV_ALIGN_TOP_LEFT, 32 * endIndex + 88, 54);
+    }
+
+    return button;
 }

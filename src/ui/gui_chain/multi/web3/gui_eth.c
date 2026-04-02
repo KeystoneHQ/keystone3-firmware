@@ -166,6 +166,7 @@ const static EvmNetwork_t NETWORKS[] = {
     {1286, "Moonrock", "ROC"},
     {1287, "Moonbase Alpha", "DEV"},
     {1288, "Moonshadow", "MSHD"},
+    {1329, "Sei Network", "SEI"},
     {1618, "Catecoin Chain Mainnet", "CATE"},
     {1620, "Atheios", "ATH"},
     {1657, "Btachain", "BTA"},
@@ -193,6 +194,7 @@ const static EvmNetwork_t NETWORKS[] = {
     {8995, "bloxberg", "U+25B3"},
     {9000, "Evmos Testnet", "PHOTON"},
     {9001, "Evmos", "EVMOS"},
+    {9745, "Plasma Mainnet", "XPL"},
     {10000, "Smart Bitcoin Cash", "BCH"},
     {10001, "Smart Bitcoin Cash Testnet", "BCHT"},
     {10101, "Blockchain Genesis Mainnet", "GEN"},
@@ -275,6 +277,7 @@ const static EvmNetwork_t NETWORKS[] = {
     {210425, "PlatON Mainnet", "LAT"},
     {2206132, "PlatON Testnet", "LAT"},
     {324, "zkSync Mainnet", "ETH"},
+    {196, "X Layer", "OKB"},
 };
 
 const static Erc20Contract_t ERC20_CONTRACTS[] = {
@@ -434,6 +437,11 @@ const static Erc20Contract_t ERC20_CONTRACTS[] = {
     {"bCFX", "0x045c4324039dA91c52C55DF5D785385Aab073DcF", 18},
     {"FRAX", "0x29ced01c447166958605519f10dcf8b0255fb379", 18},
     {"FRAX", "0x90c97f71e18723b0cf0dfa30ee176ab653e89f40", 18},
+    {"AURORA", "0xAaAAAA20D9E0e2461697782ef11675f668207961", 18},
+    {"KNC", "0xdeFA4e8a7bcBA345F687a2f1456F5Edd9CE97202", 18},
+    {"TURBO", "0xA35923162C49cF95e6BF26623385eb431ad920D3", 18},
+    {"USD1", "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d", 18},
+    {"ASTER", "0x000Ae314E2A2172a039B26378814C252734f556A", 18},
     // Polygon
     {"USDT", "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", 6},
     {"USDC", "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", 6},
@@ -619,6 +627,18 @@ const static Erc20Contract_t ERC20_CONTRACTS[] = {
     {"WAVAX", "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7", 18},
     {"JOE", "0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd", 18},
     {"WETH.e", "0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB", 18},
+
+    // X Layer
+    {"WOKB", "0xe538905cf8410324e03A5A23C1c177a474D59b2b", 18},
+    {"WETH", "0x5A77f1443D16ee5761d310e38b62f77f726bC71c", 18},
+    {"USDT", "0x1E4a5963aBFD975d8c9021ce480b42188849D41d", 6},
+    {"USDT0", "0x779Ded0c9e1022225f8E0630b35a9b54bE713736", 6},
+    {"USDC", "0x74b7F16337b8972027F6196A17a631aC6dE26d22", 6},
+    {"USDC.e", "0xA8CE8aee21bC2A48a5EF670afCc9274C7bbbC035", 6},
+    {"WBTC", "0xEA034fb02eB1808C2cc3adbC15f447B93CbE08e1", 8},
+    {"DAI", "0xC5015b9d9161Dca7e18e32f6f25C4aD850731Fd4", 18},
+    {"xBTC", "0xb7C00000bcDEeF966b20B3D884B98E64d2b06b4f", 8},
+    {"USDG", "0x4ae46a509F6b1D9056937BA4500cb143933D2dc8", 6}
 };
 #include "abi_ethereum.h"
 #include "gui_constants.h"
@@ -708,6 +728,7 @@ static bool isErc20Transfer(void *param)
         return false;
     }
     // FIXME: 0xa9059cbb is the method of erc20 transfer
+    // see test_transfer_function_selector_deterministic in erc20.rs for more details
     const char *erc20Method = "a9059cbb";
     if (strncmp(input, erc20Method, 8) == 0) {
         return true;
@@ -1516,7 +1537,9 @@ static void decodeEthContractData(void *parseResult)
     if (!GetEthContractFromInternal(contractAddress, result->data->detail->input)) {
         char selectorId[9] = {0};
         strncpy(selectorId, result->data->detail->input, 8);
-        GetEthContractFromExternal(contractAddress, selectorId, result->data->chain_id, result->data->detail->input);
+        if (SdCardInsert()) {
+            GetEthContractFromExternal(contractAddress, selectorId, result->data->chain_id, result->data->detail->input);
+        }
     }
 }
 
@@ -1526,12 +1549,11 @@ static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t
     if (!isErc20Transfer(result->data)) {
         return;
     }
-    PtrT_TransactionParseResult_EthParsedErc20Transaction contractData = eth_parse_erc20((PtrString)inputdata, decimals);
-    g_erc20ContractData = contractData;
-    // result->data->detail->to = contractData->data->to;
-    // result->data->overview->to = contractData->data->to;
-    // result->data->detail->value = contractData->data->value;
-    // result->data->overview->value = contractData->data->value;
+    if (g_erc20ContractData != NULL) {
+        free_TransactionParseResult_EthParsedErc20Transaction(g_erc20ContractData);
+        g_erc20ContractData = NULL;
+    }
+    g_erc20ContractData = eth_parse_erc20((PtrString)inputdata, decimals);
 }
 
 static bool GetEthErc20ContractData(void *parseResult)
@@ -1540,8 +1562,11 @@ static bool GetEthErc20ContractData(void *parseResult)
     TransactionParseResult_DisplayETH *result = (TransactionParseResult_DisplayETH *)parseResult;
     Response_DisplayContractData *contractData = eth_parse_contract_data(result->data->detail->input, (char *)ethereum_erc20_json);
     if (contractData->error_code == 0) {
-        g_contractDataExist = true;
+        if (g_contractDataExist && g_contractData != NULL) {
+            free_Response_DisplayContractData(g_contractData);
+        }
         g_contractData = contractData;
+        g_contractDataExist = true;
     } else {
         free_Response_DisplayContractData(contractData);
         return false;

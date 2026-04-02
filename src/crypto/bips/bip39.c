@@ -22,17 +22,6 @@ static const struct {
     { "en", &en_words},
 };
 
-int bip39_get_languages(char **output)
-{
-    if (!output)
-        return -2;
-
-    *output = SRAM_MALLOC(strlen("en") + 1);
-    strcpy(*output, "en");
-//#endif
-    return *output ? SUCCESS_CODE : -1;
-}
-
 int bip39_get_wordlist(const char *lang, struct words **output)
 {
     size_t i;

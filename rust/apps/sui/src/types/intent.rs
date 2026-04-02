@@ -162,3 +162,43 @@ pub(crate) mod private {
     pub trait SealedIntent {}
     impl<T> SealedIntent for IntentMessage<T> {}
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_intent_from_str_valid() {
+        // scope=TransactionData(0), version=V0(0), app=Sui(0) => 000000
+        let intent = Intent::from_str("000000").unwrap();
+        assert_eq!(intent.scope as u8, 0);
+        assert_eq!(intent.version as u8, 0);
+        assert_eq!(intent.app_id as u8, 0);
+    }
+
+    #[test]
+    fn test_intent_from_str_invalid_len() {
+        let res = Intent::from_str("00");
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_intent_from_str_invalid_scope() {
+        let res = Intent::from_str("ff0000");
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_intent_from_str_invalid_app_id() {
+        // scope=0, version=0, app_id=2 (invalid)
+        let res = Intent::from_str("000002");
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_intent_from_str_invalid_version() {
+        // scope=0, version=1 (invalid), app_id=0
+        let res = Intent::from_str("000100");
+        assert!(res.is_err());
+    }
+}

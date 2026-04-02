@@ -16,3 +16,9 @@ bitcoin = { workspace = true }
 cryptoxide = { workspace = true }
 serde_json = { workspace = true }
 zcash_vendor = { workspace = true }
+
+[dev-dependencies]
+keystore ={ workspace = true, features = ["multi_coins"]}
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

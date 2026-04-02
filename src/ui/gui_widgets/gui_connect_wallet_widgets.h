@@ -15,17 +15,20 @@ typedef enum {
     WALLET_LIST_OKX,
     WALLET_LIST_ETERNL,
     WALLET_LIST_MEDUSA,
-    // WALLET_LIST_YOROI,
+    WALLET_LIST_GERO,
     WALLET_LIST_TYPHON,
     WALLET_LIST_BLUE,
     WALLET_LIST_ZEUS,
     WALLET_LIST_BABYLON,
+    WALLET_LIST_BULL,
     WALLET_LIST_SUB,
-    WALLET_LIST_ZASHI,
+    WALLET_LIST_ZODL,
     WALLET_LIST_SOLFARE,
+    WALLET_LIST_JUPITER,
     WALLET_LIST_NUFI,
     WALLET_LIST_BACKPACK,
     WALLET_LIST_RABBY,
+    WALLET_LIST_NABOX,
     WALLET_LIST_BITGET,
     WALLET_LIST_SAFE,
     WALLET_LIST_SPARROW,
@@ -55,6 +58,7 @@ typedef enum {
     WALLET_LIST_SUIET,
     WALLET_LIST_CAKE,
     WALLET_LIST_FEATHER,
+    WALLET_LIST_BTC_WALLET,
 #else
     WALLET_LIST_BLUE,
     WALLET_LIST_SPECTER,
@@ -62,6 +66,7 @@ typedef enum {
     WALLET_LIST_NUNCHUK,
     WALLET_LIST_ZEUS,
     WALLET_LIST_BABYLON,
+    WALLET_LIST_BULL,
     WALLET_LIST_BITCOIN_SAFE,
     WALLET_LIST_UNISAT,
 #endif
@@ -82,7 +87,10 @@ typedef enum {
 
 typedef struct {
     WALLET_LIST_INDEX_ENUM index;
-    const lv_img_dsc_t *img;
+    const lv_img_dsc_t *walletIcon;
+    const char *walletName;
+    const lv_img_dsc_t **coinIcons;
+    uint8_t coinCount;
     bool enable;
 #ifdef BTC_ONLY
     bool alpha;
@@ -139,6 +147,7 @@ void GuiPrepareArConnectWalletView(void);
 void GuiSetupArConnectWallet(void);
 void GuiConnectWalletPasswordErrorCount(void *param);
 void GuiConnectShowRsaSetupasswordHintbox(void);
+UREncodeResult *GuiGetNaboxData(void);
 #endif
 #endif /* _GUI_CONNECT_WALLET_WIDGETS_H */
 

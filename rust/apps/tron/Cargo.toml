@@ -20,10 +20,13 @@ ur-registry = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
-keystore = { workspace = true }
+keystore = { workspace = true, features = ["multi_coins"] }
 
 [build-dependencies]
 prost-build = { version = "0.11.8" }
 
 [features]
 generate_pb = []
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

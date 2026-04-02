@@ -344,6 +344,7 @@ static uint32_t FindLogOffsetAddr(void)
         addr = addr + LOG_DATA_HEAD_SIZE + logData.length * 4;
     }
     //err, need erase the whole log flash zone.
+    EXT_FREE(originalData);
     LogEraseSync();
     return SPI_FLASH_ADDR_LOG;
 }

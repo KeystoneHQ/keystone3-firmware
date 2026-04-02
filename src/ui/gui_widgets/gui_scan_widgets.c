@@ -167,7 +167,12 @@ void GuiScanResult(bool result, void *param)
         }
         GuiModelCheckTransaction(g_qrcodeViewType);
     } else {
-        ThrowError(ERR_INVALID_QRCODE);
+        UrViewType_t *urViewType = (UrViewType_t *)param;
+        if (urViewType->viewType == InvalidMessage) {
+            ThrowError(ERR_SIGN_MESSAGE_INVALID_CHARACTERS);
+        } else {
+            ThrowError(ERR_INVALID_QRCODE);
+        }
     }
 }
 

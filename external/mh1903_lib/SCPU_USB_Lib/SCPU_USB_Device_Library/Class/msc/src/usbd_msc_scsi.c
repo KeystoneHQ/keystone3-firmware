@@ -12,9 +12,6 @@
 #include "usbd_msc_mem.h"
 #include "usbd_msc_data.h"
 #include "stdio.h"
-#include "background_task.h"
-#include "user_fatfs.h"
-#include "fingerprint_task.h"
 
 /** @defgroup MSC_SCSI
   * @brief Mass storage SCSI layer module
@@ -98,8 +95,6 @@ static int8_t SCSI_ProcessWrite(uint8_t lun);
   * @{
   */
 
-#define AUTO_REBOOT_AFTER_COPY_FILE
-
 /**
 * @brief  SCSI_ProcessCmd
 *         Process SCSI commands
@@ -113,28 +108,6 @@ int8_t SCSI_ProcessCmd(USB_OTG_CORE_HANDLE  *pdev,
                        uint8_t *params)
 {
     cdev = pdev;
-#ifdef AUTO_REBOOT_AFTER_COPY_FILE
-    static uint8_t lastParam[2] = {0};
-    //printf("%X\r\n", params[0]);
-    if (params[0] == SCSI_TEST_UNIT_READY && lastParam[0] == SCSI_TEST_UNIT_READY && lastParam[1] == SCSI_WRITE10) {
-        printf("file copy over\r\n");
-        MountUsbFatfs();
-        FIL fp;
-        uint32_t fileSize;
-        FRESULT res = f_open(&fp, "1:pillar.bin", FA_OPEN_EXISTING | FA_READ);
-        if (res) {
-            printf("open error\r\n");
-        } else {
-            fileSize = f_size(&fp);
-            printf("file size=%d\r\n", fileSize);
-            if (fileSize > 0) {
-                SystemReboot();
-            }
-        }
-    }
-    lastParam[1] = lastParam[0];
-    lastParam[0] = params[0];
-#endif
     switch (params[0]) {
     case SCSI_TEST_UNIT_READY:
         return SCSI_TestUnitReady(lun, params);
@@ -447,13 +420,13 @@ static int8_t SCSI_Read10(uint8_t lun, uint8_t *params)
             return -1;
         }
 
-        SCSI_blk_addr = (params[2] << 24) | \
-                        (params[3] << 16) | \
-                        (params[4] <<  8) | \
-                        params[5];
+        SCSI_blk_addr = ((uint32_t)params[2] << 24) | \
+                        ((uint32_t)params[3] << 16) | \
+                        ((uint32_t)params[4] <<  8) | \
+                        (uint32_t)params[5];
 
-        SCSI_blk_len = (params[7] <<  8) | \
-                       params[8];
+        SCSI_blk_len = ((uint32_t)params[7] <<  8) | \
+                       (uint32_t)params[8];
 
 
 
@@ -516,12 +489,12 @@ static int8_t SCSI_Write10(uint8_t lun, uint8_t *params)
         }
 
 
-        SCSI_blk_addr = (params[2] << 24) | \
-                        (params[3] << 16) | \
-                        (params[4] <<  8) | \
-                        params[5];
-        SCSI_blk_len = (params[7] <<  8) | \
-                       params[8];
+        SCSI_blk_addr = ((uint32_t)params[2] << 24) | \
+                        ((uint32_t)params[3] << 16) | \
+                        ((uint32_t)params[4] <<  8) | \
+                        (uint32_t)params[5];
+        SCSI_blk_len = ((uint32_t)params[7] <<  8) | \
+                       (uint32_t)params[8];
 
         /* check if LBA address is in the right range */
         if (SCSI_CheckAddressRange(lun, SCSI_blk_addr, SCSI_blk_len) < 0) {
@@ -567,12 +540,12 @@ static int8_t SCSI_Verify10(uint8_t lun, uint8_t *params)
         return -1; /* Error, Verify Mode Not supported*/
     }
 
-    SCSI_blk_addr = (params[2] << 24) | \
-                    (params[3] << 16) | \
-                    (params[4] <<  8) | \
-                    params[5];
-    SCSI_blk_len = (params[7] <<  8) | \
-                   params[8];
+    SCSI_blk_addr = ((uint32_t)params[2] << 24) | \
+                    ((uint32_t)params[3] << 16) | \
+                    ((uint32_t)params[4] <<  8) | \
+                    (uint32_t)params[5];
+    SCSI_blk_len = ((uint32_t)params[7] <<  8) | \
+                   (uint32_t)params[8];
 
     if (SCSI_CheckAddressRange(lun, SCSI_blk_addr, SCSI_blk_len) < 0) {
         return -1; /* error */
@@ -591,8 +564,7 @@ static int8_t SCSI_Verify10(uint8_t lun, uint8_t *params)
 */
 static int8_t SCSI_CheckAddressRange(uint8_t lun, uint32_t blk_offset, uint16_t blk_nbr)
 {
-
-    if ((blk_offset + blk_nbr) > SCSI_blk_nbr) {
+    if ((blk_offset >= SCSI_blk_nbr) || (blk_nbr > (SCSI_blk_nbr - blk_offset))) {
         SCSI_SenseCode(lun, ILLEGAL_REQUEST, ADDRESS_OUT_OF_RANGE);
         return -1;
     }

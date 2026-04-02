@@ -57,12 +57,13 @@ int32_t GetWebAuthRsaKey(uint8_t *key)
     data = SRAM_MALLOC(WEB_AUTH_RSA_KEY_LEN);
     memcpy(data, (uint8_t *)OTP_ADDR_WEB_AUTH_RSA_KEY, WEB_AUTH_RSA_KEY_LEN);
     if (CheckEntropy(data, WEB_AUTH_RSA_KEY_LEN) == false) {
+        MpuSetOtpProtection(true);
         SRAM_FREE(data);
         return ERR_WEB_AUTH_KEY_NOT_EXIST;
     }
-    SRAM_FREE(data);
-    memcpy(key, data, WEB_AUTH_RSA_KEY_LEN);
     MpuSetOtpProtection(true);
+    memcpy(key, data, WEB_AUTH_RSA_KEY_LEN);
+    SRAM_FREE(data);
     return SUCCESS_CODE;
 }
 

@@ -49,6 +49,7 @@ pub enum ErrorCodes {
     MasterFingerprintMismatch,
     InvalidHDPath,
     UnsupportedTransaction,
+    InvalidMessage,
     InvalidXPub,
     SignFailure,
     UnexpectedError,
@@ -335,6 +336,7 @@ impl From<&RustCError> for ErrorCodes {
             RustCError::InvalidHex(_) => Self::InvalidHex,
             RustCError::WebAuthFailed(_) => Self::WebAuthFailed,
             RustCError::InvalidData(_) => Self::InvalidData,
+            RustCError::InvalidMessage => Self::InvalidMessage,
         }
     }
 }
@@ -581,6 +583,7 @@ impl From<&ZcashError> for ErrorCodes {
             ZcashError::InvalidDataError(_) => Self::InvalidData,
             ZcashError::SigningError(_) => Self::ZcashSigningError,
             ZcashError::InvalidPczt(_) => Self::ZcashInvalidPczt,
+            ZcashError::PcztNoMyInputs => Self::MasterFingerprintMismatch,
         }
     }
 }
@@ -606,6 +609,8 @@ pub enum RustCError {
     InvalidXPub,
     #[error("this kind of transaction is not supported yet, {0}")]
     UnsupportedTransaction(String),
+    #[error("sign message has invalid characters")]
+    InvalidMessage,
     #[error("Unexpected error: {0}")]
     UnexpectedError(String),
     #[error("invalid hex value: {0}")]

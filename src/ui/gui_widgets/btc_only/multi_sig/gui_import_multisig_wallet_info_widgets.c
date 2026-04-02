@@ -144,25 +144,30 @@ void GuiImportMultisigWalletInfoWidgetsRestart()
 void GuiImportMultisigWalletInfoVerifyPasswordSuccess(void)
 {
     uint8_t seed[64] = {0};
-    int len = (GetMnemonicType() == MNEMONIC_TYPE_BIP39) ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    int len = GetCurrentAccountSeedLen();
     GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     Response_MultiSigWallet *response = parse_and_verify_multisig_config(seed, len, g_wallet->config_text, mfp, 4);
     if (response->error_code != 0) {
-        printf("errorMessage: %s\r\n", response->error_message);
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_MULTISIG_WALLET_CONFIG_INVALID, &g_noticeWindow, GuiCloseWarnningDialog);
-        free_MultiSigWallet(response->data);
+        free_Response_MultiSigWallet(response);
+        memset_s(seed, sizeof(seed), 0, sizeof(seed));
+        ClearSecretCache();
         return;
     }
+    free_Response_MultiSigWallet(response);
     MultiSigWalletItem_t *wallet = AddMultisigWalletToCurrentAccount(g_wallet, SecretCacheGetPassword());
     if (wallet == NULL) {
-        printf("multi sigwallet not found\n");
+        memset_s(seed, sizeof(seed), 0, sizeof(seed));
+        ClearSecretCache();
         return;
     }
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     char *verifyCode = SRAM_MALLOC(MAX_VERIFY_CODE_LEN);
     strcpy_s(verifyCode, MAX_VERIFY_CODE_LEN, wallet->verifyCode);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     GuiCloseCurrentWorkingView();
     GuiFrameOpenViewWithParam(&g_multisigWalletExportView, verifyCode, strnlen_s(verifyCode, MAX_VERIFY_CODE_LEN));
 }
@@ -197,7 +202,6 @@ static uint32_t prepareWalletBySDCard(char *walletConfig)
 static uint32_t processResult(Ptr_Response_MultiSigWallet result)
 {
     if (result->error_code != 0) {
-        printf("%s\r\n", result->error_message);
         return result->error_code;
     }
     g_wallet = result->data;

@@ -5,25 +5,15 @@
 #include "gui_multisig_transaction_signature_widgets.h"
 #include "gui_lock_widgets.h"
 
-static int32_t GuiMultisigTransactionSignatureViewInit(void)
-{
-    GuiMultisigTransactionSignaureWidgetsInit();
-    return SUCCESS_CODE;
-}
-
-static int32_t GuiMultisigTransactionSignatureViewDeInit(void)
-{
-    GuiMultisigTransactionSignaureWidgetsDeInit();
-    return SUCCESS_CODE;
-}
-
 int32_t GuiMultisigTransactionSignatureViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     switch (usEvent) {
     case GUI_EVENT_OBJ_INIT:
-        return GuiMultisigTransactionSignatureViewInit();
+        GuiMultisigTransactionSignaureWidgetsInit();
+        break;
     case GUI_EVENT_OBJ_DEINIT:
-        return GuiMultisigTransactionSignatureViewDeInit();
+        GuiMultisigTransactionSignaureWidgetsDeInit();
+        break;
     case GUI_EVENT_REFRESH:
         GuiMultisigTransactionSignaureWidgetsRefresh();
         break;

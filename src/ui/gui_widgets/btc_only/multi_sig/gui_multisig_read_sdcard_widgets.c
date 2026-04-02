@@ -79,19 +79,12 @@ static void GuiSelectFileHandler(lv_event_t *e)
             g_noticeWindow = GuiCreateErrorCodeWindow(ERR_INVALID_FILE, &g_noticeWindow, NULL);
             break;
         }
+        EXT_FREE(walletConfig);
     }
     break;
     case ONLY_PSBT: {
         uint32_t readBytes = 0;
         uint8_t *psbtBytes = FatfsFileReadBytes(path, &readBytes);
-
-        // for debug
-        char *psbtStr = EXT_MALLOC(readBytes * 2 + 1);
-        psbtStr[readBytes * 2] = 0;
-        ByteArrayToHexStr(psbtBytes, readBytes, psbtStr);
-        printf("psbt is %s\n", psbtStr);
-        EXT_FREE(psbtStr);
-
         GuiSetPsbtStrData(psbtBytes, readBytes);
         g_viewType = BtcTx;
         GuiModelCheckTransaction(g_viewType);

@@ -47,3 +47,47 @@ impl From<bcs::Error> for AptosError {
         Self::InvalidData(format!("bsc operation failed {value}"))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    extern crate std;
+    use super::*;
+    use hex;
+
+    #[test]
+    fn test_from_keystore_error() {
+        let keystore_err = KeystoreError::InvalidDerivationPath("test".to_string());
+        let aptos_err: AptosError = keystore_err.into();
+        assert!(matches!(aptos_err, AptosError::KeystoreError(_)));
+    }
+
+    #[test]
+    fn test_from_hex_error() {
+        let hex_err = hex::FromHexError::InvalidHexCharacter { c: 'z', index: 0 };
+        let aptos_err: AptosError = hex_err.into();
+        assert!(matches!(aptos_err, AptosError::InvalidData(_)));
+    }
+
+    #[test]
+    fn test_from_utf8_error() {
+        let invalid_utf8 = vec![0xff, 0xfe];
+        let utf8_err = String::from_utf8(invalid_utf8).unwrap_err();
+        let aptos_err: AptosError = utf8_err.into();
+        assert!(matches!(aptos_err, AptosError::InvalidData(_)));
+    }
+
+    #[test]
+    fn test_from_parse_int_error() {
+        let parse_err = "abc".parse::<u32>().unwrap_err();
+        let aptos_err: AptosError = parse_err.into();
+        assert!(matches!(aptos_err, AptosError::InvalidData(_)));
+    }
+
+    #[test]
+    fn test_from_bcs_error() {
+        let invalid_bcs = vec![0xff, 0xff, 0xff];
+        let bcs_err = bcs::from_bytes::<u32>(&invalid_bcs).unwrap_err();
+        let aptos_err: AptosError = bcs_err.into();
+        assert!(matches!(aptos_err, AptosError::InvalidData(_)));
+    }
+}

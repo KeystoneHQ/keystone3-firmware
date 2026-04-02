@@ -13,12 +13,12 @@ use crate::common::structs::{SimpleResponse, TransactionCheckResult, Transaction
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
-use crate::extract_array;
-use crate::extract_ptr_with_type;
+use crate::{extract_array, extract_array_mut, extract_ptr_with_type};
 use app_sui::errors::SuiError;
 use app_utils::normalize_path;
 use structs::DisplaySuiIntentMessage;
 use structs::DisplaySuiSignMessageHash;
+use zeroize::Zeroize;
 
 pub mod structs;
 
@@ -47,7 +47,14 @@ pub unsafe extern "C" fn sui_check_request(
     }
     let mfp = extract_array!(master_fingerprint, u8, 4);
     let sign_request = extract_ptr_with_type!(ptr, SuiSignRequest);
-    let ur_mfp = sign_request.get_derivation_paths()[0].get_source_fingerprint();
+
+    let paths = sign_request.get_derivation_paths();
+    if paths.is_empty() {
+        return TransactionCheckResult::from(RustCError::InvalidHDPath).c_ptr();
+    }
+
+    // According to SDK convention, index 0 is the signing path
+    let ur_mfp = paths[0].get_source_fingerprint();
 
     if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
         if let Some(ur_mfp) = ur_mfp {
@@ -74,7 +81,14 @@ pub unsafe extern "C" fn sui_check_sign_hash_request(
     }
     let mfp = extract_array!(master_fingerprint, u8, 4);
     let sign_hash_request = extract_ptr_with_type!(ptr, SuiSignHashRequest);
-    let ur_mfp = sign_hash_request.get_derivation_paths()[0].get_source_fingerprint();
+
+    let paths = sign_hash_request.get_derivation_paths();
+    if paths.is_empty() {
+        return TransactionCheckResult::from(RustCError::InvalidHDPath).c_ptr();
+    }
+
+    // According to SDK convention, index 0 is the signing path
+    let ur_mfp = paths[0].get_source_fingerprint();
 
     if let Ok(mfp) = mfp.try_into() as Result<[u8; 4], _> {
         if let Some(ur_mfp) = ur_mfp {
@@ -111,23 +125,78 @@ pub unsafe extern "C" fn sui_parse_intent(
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
 }
+
 #[no_mangle]
 pub unsafe extern "C" fn sui_parse_sign_message_hash(
     ptr: PtrUR,
 ) -> PtrT<TransactionParseResult<DisplaySuiSignMessageHash>> {
     let sign_hash_request = extract_ptr_with_type!(ptr, SuiSignHashRequest);
     let message = sign_hash_request.get_message_hash();
-    let path = sign_hash_request.get_derivation_paths()[0].get_path();
+
+    let paths = sign_hash_request.get_derivation_paths();
+    let path = if paths.is_empty() {
+        "No Path".to_string()
+    } else {
+        paths[0].get_path().unwrap_or("No Path".to_string())
+    };
+
     let network = "Sui".to_string();
     let address = sign_hash_request.get_addresses().unwrap_or(vec![]);
+    let address_hex = if address.is_empty() {
+        "".to_string()
+    } else {
+        hex::encode(&address[0])
+    };
+
     TransactionParseResult::success(
-        DisplaySuiSignMessageHash::new(
-            network,
-            path.unwrap_or("No Path".to_string()),
-            message,
-            hex::encode(address[0].clone()),
-        )
-        .c_ptr(),
+        DisplaySuiSignMessageHash::new(network, path, message, address_hex).c_ptr(),
+    )
+    .c_ptr()
+}
+
+unsafe fn sui_sign_internal<F>(
+    seed: &mut [u8],
+    path: &str,
+    sign_fn: F,
+) -> Result<([u8; 64], Vec<u8>), UREncodeResult>
+where
+    F: FnOnce(&[u8], &str) -> Result<[u8; 64], SuiError>,
+{
+    let signature = sign_fn(seed, path).map_err(|e| {
+        seed.zeroize();
+        UREncodeResult::from(e)
+    })?;
+
+    let pub_key = get_public_key(seed, &path.to_string()).map_err(|e| {
+        seed.zeroize();
+        UREncodeResult::from(e)
+    })?;
+
+    Ok((signature, pub_key))
+}
+
+unsafe fn build_sui_signature_result(
+    seed: &mut [u8],
+    request_id: Option<Vec<u8>>,
+    signature: [u8; 64],
+    pub_key: Vec<u8>,
+) -> PtrT<UREncodeResult> {
+    let sig = SuiSignature::new(request_id, signature.to_vec(), Some(pub_key));
+
+    let sig_data: Vec<u8> = match sig.try_into() {
+        Ok(v) => v,
+        Err(e) => {
+            seed.zeroize();
+            return UREncodeResult::from(e).c_ptr();
+        }
+    };
+
+    seed.zeroize();
+
+    UREncodeResult::encode(
+        sig_data,
+        SuiSignature::get_registry_type().get_type(),
+        FRAGMENT_MAX_LENGTH_DEFAULT,
     )
     .c_ptr()
 }
@@ -138,41 +207,42 @@ pub unsafe extern "C" fn sui_sign_hash(
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
-    let seed = extract_array!(seed, u8, seed_len as usize);
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let sign_request = extract_ptr_with_type!(ptr, SuiSignHashRequest);
-    let hash = sign_request.get_message_hash();
-    let path = match sign_request.get_derivation_paths()[0].get_path() {
+
+    let paths = sign_request.get_derivation_paths();
+    if paths.is_empty() {
+        seed.zeroize();
+        return UREncodeResult::from(RustCError::InvalidHDPath).c_ptr();
+    }
+    let path = match paths[0].get_path() {
         Some(p) => p,
         None => {
+            seed.zeroize();
             return UREncodeResult::from(SuiError::SignFailure(
                 "invalid derivation path".to_string(),
             ))
-            .c_ptr()
+            .c_ptr();
         }
     };
-    let signature = match app_sui::sign_hash(seed, &path, &hex::decode(hash).unwrap()) {
-        Ok(v) => v,
-        Err(e) => return UREncodeResult::from(e).c_ptr(),
+
+    let hash = sign_request.get_message_hash();
+    let hash_bytes = match hex::decode(hash) {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            seed.zeroize();
+            return UREncodeResult::from(RustCError::InvalidHex(e.to_string())).c_ptr();
+        }
     };
-    let pub_key = match get_public_key(seed, &path) {
-        Ok(v) => v,
-        Err(e) => return UREncodeResult::from(e).c_ptr(),
+
+    let (signature, pub_key) = match sui_sign_internal(seed, &path, |s, p| {
+        app_sui::sign_hash(s, &p.to_string(), &hash_bytes)
+    }) {
+        Ok(result) => result,
+        Err(err) => return err.c_ptr(),
     };
-    let sig = SuiSignature::new(
-        sign_request.get_request_id(),
-        signature.to_vec(),
-        Some(pub_key),
-    );
-    let sig_data: Vec<u8> = match sig.try_into() {
-        Ok(v) => v,
-        Err(e) => return UREncodeResult::from(e).c_ptr(),
-    };
-    UREncodeResult::encode(
-        sig_data,
-        SuiSignature::get_registry_type().get_type(),
-        FRAGMENT_MAX_LENGTH_DEFAULT,
-    )
-    .c_ptr()
+
+    build_sui_signature_result(seed, sign_request.get_request_id(), signature, pub_key)
 }
 
 #[no_mangle]
@@ -181,39 +251,33 @@ pub unsafe extern "C" fn sui_sign_intent(
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
-    let seed = extract_array!(seed, u8, seed_len as usize);
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
     let sign_request = extract_ptr_with_type!(ptr, SuiSignRequest);
-    let sign_data = sign_request.get_intent_message();
-    let path = match sign_request.get_derivation_paths()[0].get_path() {
+
+    let paths = sign_request.get_derivation_paths();
+    if paths.is_empty() {
+        seed.zeroize();
+        return UREncodeResult::from(RustCError::InvalidHDPath).c_ptr();
+    }
+    let path = match paths[0].get_path() {
         Some(p) => p,
         None => {
+            seed.zeroize();
             return UREncodeResult::from(SuiError::SignFailure(
                 "invalid derivation path".to_string(),
             ))
-            .c_ptr()
+            .c_ptr();
         }
     };
-    let signature = match app_sui::sign_intent(seed, &path, &sign_data.to_vec()) {
-        Ok(v) => v,
-        Err(e) => return UREncodeResult::from(e).c_ptr(),
+
+    let sign_data = sign_request.get_intent_message();
+
+    let (signature, pub_key) = match sui_sign_internal(seed, &path, |s, p| {
+        app_sui::sign_intent(s, &p.to_string(), &sign_data.to_vec())
+    }) {
+        Ok(result) => result,
+        Err(err) => return err.c_ptr(),
     };
-    let pub_key = match get_public_key(seed, &path) {
-        Ok(v) => v,
-        Err(e) => return UREncodeResult::from(e).c_ptr(),
-    };
-    let sig = SuiSignature::new(
-        sign_request.get_request_id(),
-        signature.to_vec(),
-        Some(pub_key),
-    );
-    let sig_data: Vec<u8> = match sig.try_into() {
-        Ok(v) => v,
-        Err(e) => return UREncodeResult::from(e).c_ptr(),
-    };
-    UREncodeResult::encode(
-        sig_data,
-        SuiSignature::get_registry_type().get_type(),
-        FRAGMENT_MAX_LENGTH_DEFAULT,
-    )
-    .c_ptr()
+
+    build_sui_signature_result(seed, sign_request.get_request_id(), signature, pub_key)
 }

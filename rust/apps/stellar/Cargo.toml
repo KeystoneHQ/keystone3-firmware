@@ -12,3 +12,9 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 cryptoxide = { workspace = true }
 base64 = { workspace = true }
+
+[dev-dependencies]
+keystore = { workspace = true, features = ["multi_coins"] }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

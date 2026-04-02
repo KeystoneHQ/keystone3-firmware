@@ -85,6 +85,7 @@ typedef enum {
     ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED,
     ERR_EXPORT_XPUB_SDCARD_NOT_DETECTED,
     ERR_EXPORT_FILE_TO_MICRO_CARD_FAILED,
+    ERR_SIGN_MESSAGE_INVALID_CHARACTERS,
 
     ERR_ZCASH_INVALID_ACCOUNT_INDEX,
 
@@ -100,6 +101,7 @@ const char *GetErrorMessage(Error_Code errCode);
 
 #define CHECK_ERRCODE_BREAK(content, ret)       {if (ret != SUCCESS_CODE) {printf("%s err,0x%X,line=%d\r\n", content, ret, __LINE__); break; }}
 #define CHECK_ERRCODE_RETURN(ret)               {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); return; }}
+#define CHECK_ERRCODE_RETURN_NULL(ret)          {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); return NULL; }}
 #define CHECK_ERRCODE_RETURN_INT(ret)           {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); return ret; }}
 #define PRINT_ERRCODE(ret)                      {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); }}
 

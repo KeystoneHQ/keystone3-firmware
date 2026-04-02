@@ -1,3 +1,167 @@
+## 2.4.0(2026-3-30)
+
+**Web3:**
+
+### What's new
+1. Enhanced firmware upgrade security mechanisms
+2. Supported X Layer transactions
+
+
+**BTC Only:**
+
+### What's new
+1. Enhanced firmware upgrade security mechanisms
+
+
+**Cypherpunk:**
+
+### What's new
+1. Enhanced firmware upgrade security mechanisms
+### Improvements
+1. Updated Zodl Wallet icon
+
+
+
+## 2.3.10(2026-3-4)
+
+**Web3:**
+
+
+### What's new
+1. Supported managing ADA via Keystone Nexus
+2. Supported managing ADA via Gero Extension
+
+
+**Cypherpunk:**
+
+### Bug Fixes
+1. Fixed the signing issue for shielding transparent ZEC transactions.
+
+
+## 2.3.8(2026-2-9)
+
+**Web3:**
+
+
+### What's new
+1. Supported managing BTC, LTC, BCH, DOGE, and TRON via Nabox
+2. Supported managing BTC via BULL
+
+**BTC Only:**
+
+
+### What's new
+1. Supported managing BTC via BULL
+2. Added support for Spanish, Japanese, and German languages
+
+**Cypherpunk:**
+
+
+### What's new
+1. Supported managing BTC via BULL
+
+
+
+
+## 2.3.6(2026-1-22)
+
+**Web3:**
+
+### What's new
+1. Supported ZEC transparent address
+2. Supported managing ZEC transparent address via Keystone Nexus
+### Improvements
+1. Improved wallet connection stability
+
+
+
+
+## 2.3.4(2026-1-6)
+
+**Web3:**
+
+### What's new
+1. Supported LTC Native SegWit addresses
+2. Supported managing LTC via Keystone Nexus
+3. Supported managing SOL assets via USB connection with Jupiter Wallet extension
+
+
+
+
+## 2.3.2(2025-12-24)
+
+
+**Web3:**
+### What's new
+1. Supported managing EVM assets using Nabox Wallet
+### Improvements
+1. Optimized the BTC wallet connection UI
+2. Optimized the BTC change output display logic
+### Bug Fixes
+1. Fixed message signing issue for TON-only wallets
+
+
+**BTC Only:**
+### Improvements
+1. Optimized the BTC change output display logic
+
+
+**Cypherpunk:**
+### Improvements
+1. Optimized the BTC change output display logic
+
+
+
+## 2.3.0(2025-12-02)
+
+
+**Web3:**
+
+### What's new
+1. Support managing BTC Taproot addresses via BlueWallet
+### Improvements
+1. Optimized firmware code, enhancing overall stability
+2. Optimized BTC Sign Message workflow
+3. Optimized SOL Squads multisig transaction parsing
+### Bug Fixes
+1. Fixed address path type synchronization issue for Eternl under Passphrase wallets
+
+
+
+**BTC Only:**
+
+### What's new
+1. Support managing BTC Taproot addresses via BlueWallet
+### Improvements
+1. Optimized firmware code to enhance overall robustness
+2. Optimized BTC Sign Message workflow
+
+
+**Cypherpunk:**
+
+### What's new
+1. Support managing BTC Taproot addresses via BlueWallet
+### Improvements
+1. Optimized firmware code to enhance overall robustness
+2. Optimized BTC Sign Message workflow
+
+
+
+## 2.2.20 (2025-11-10)
+
+**Web3:**
+
+### What's new
+1. Added support for parsing certain ERC20/BEP20 Token transactions
+
+### Improvements
+1. Optimized chain name display for certain EVM chains
+2. Updated the Korean permit signing text
+
+### Bug Fixes
+1. Fixed signing error when signing TON transactions with large data
+2. Fixed an issue when signing SOL transactions on Kamino
+
 ## 2.2.18(2025-10-27)
 
 **Web3:**

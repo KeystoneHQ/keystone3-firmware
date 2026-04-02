@@ -3,13 +3,51 @@ use alloc::vec::Vec;
 use core::str::FromStr;
 
 use bitcoin::bip32::{ChildNumber, DerivationPath};
+use zeroize::Zeroize;
 
 use crate::algorithms::crypto::hmac_sha512;
-use crate::algorithms::utils::normalize_path;
+use crate::algorithms::utils::{is_all_zero_or_ff, normalize_path};
 use crate::errors::{KeystoreError, Result};
 
+fn ensure_non_trivial_seed(seed: &[u8]) -> Result<()> {
+    if is_all_zero_or_ff(seed) {
+        return Err(KeystoreError::SeedError("invalid seed".to_string()));
+    }
+    Ok(())
+}
+
+/// Derives an Ed25519 private key from a seed using SLIP-10 derivation.
+///
+/// This function implements the SLIP-10 specification for Ed25519 key derivation,
+/// which only supports hardened derivation paths. All sensitive material is
+/// zeroized after use to prevent memory disclosure and timing attacks.
+///
+/// # Arguments
+/// * `seed` - The master seed (typically 32 or 64 bytes from BIP39 mnemonic)
+/// * `path` - BIP32 derivation path string (e.g., "m/44'/501'/0'")
+///
+/// # Returns
+/// A 32-byte Ed25519 private key
+///
+/// # Errors
+/// Returns `KeystoreError::InvalidDerivationPath` if:
+/// - The path contains non-hardened indices
+/// - The path format is invalid
+///
+/// # Security
+/// - Uses constant-time HMAC-SHA512 operations
+/// - Zeroizes all intermediate key material
+/// - Stack-allocated buffers to prevent heap leaks
+///
+/// # Example
+/// ```ignore
+/// let seed = hex::decode("000102...").unwrap();
+/// let key = get_private_key_by_seed(&seed, &"m/44'/501'/0'".to_string())?;
+/// ```
+
 pub fn get_private_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
-    let i = get_master_key_by_seed(seed);
+    ensure_non_trivial_seed(seed)?;
+    let mut i = get_master_key_by_seed(seed)?;
     let path = normalize_path(path);
     let derivation_path = DerivationPath::from_str(path.as_str())
         .map_err(|e| KeystoreError::InvalidDerivationPath(format!("{e}")))?;
@@ -28,36 +66,88 @@ pub fn get_private_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
         e => e,
     })?;
 
-    let final_i = indexes.iter().fold(i, |acc, cur| {
+    let mut final_i = indexes.iter().fold(i, |acc, cur| {
         let il = &acc[0..32];
         let ir = &acc[32..];
 
-        let mut data = vec![00u8];
-        data.extend_from_slice(il);
-        data.extend_from_slice(&cur.to_be_bytes());
+        let mut data = [0u8; 37];
+        data[0] = 0x00;
+        data[1..33].copy_from_slice(il);
+        data[33..37].copy_from_slice(&cur.to_be_bytes());
 
-        hmac_sha512(ir, &data)
+        let result = hmac_sha512(ir, &data);
+
+        data.zeroize();
+
+        result
     });
 
     let mut result = [0u8; 32];
     result.clone_from_slice(&final_i[..32]);
+    i.zeroize();
+    final_i.zeroize();
     Ok(result)
 }
 
+/// Derives an Ed25519 public key from a seed using SLIP-10 derivation.
+///
+/// # Arguments
+/// * `seed` - The master seed
+/// * `path` - BIP32 derivation path (hardened only)
+///
+/// # Returns
+/// A 32-byte Ed25519 public key
+///
+/// # Security
+/// The private key is securely zeroized after deriving the public key.
 pub fn get_public_key_by_seed(seed: &[u8], path: &String) -> Result<[u8; 32]> {
-    let secret_key = get_private_key_by_seed(seed, path)?;
+    let mut secret_key = get_private_key_by_seed(seed, path)?;
     let (_, public_key) = cryptoxide::ed25519::keypair(&secret_key);
+
+    secret_key.zeroize();
+
     Ok(public_key)
 }
 
+/// Signs a message using Ed25519 with a key derived via SLIP-10.
+///
+/// # Arguments
+/// * `seed` - The master seed
+/// * `path` - BIP32 derivation path (hardened only)
+/// * `message` - The message to sign
+///
+/// # Returns
+/// A 64-byte Ed25519 signature
+///
 pub fn sign_message_by_seed(seed: &[u8], path: &String, message: &[u8]) -> Result<[u8; 64]> {
-    let secret_key = get_private_key_by_seed(seed, path)?;
-    let (keypair, _) = cryptoxide::ed25519::keypair(&secret_key);
-    Ok(cryptoxide::ed25519::signature(message, &keypair))
+    ensure_non_trivial_seed(seed)?;
+    let mut secret_key = get_private_key_by_seed(seed, path)?;
+    let (mut keypair, _) = cryptoxide::ed25519::keypair(&secret_key);
+    let signature = cryptoxide::ed25519::signature(message, &keypair);
+
+    secret_key.zeroize();
+    keypair.zeroize();
+
+    Ok(signature)
 }
 
-pub fn get_master_key_by_seed(seed: &[u8]) -> [u8; 64] {
-    hmac_sha512(b"ed25519 seed", seed)
+/// Generates the master key from a seed using SLIP-10 specification.
+///
+/// # Arguments
+/// * `seed` - The master seed (typically from BIP39 mnemonic)
+///
+/// # Returns
+/// A 64-byte array where:
+/// - First 32 bytes: master private key (IL)
+/// - Last 32 bytes: master chain code (IR)
+///
+fn get_master_key_by_seed(seed: &[u8]) -> Result<[u8; 64]> {
+    if seed.len() < 16 {
+        return Err(KeystoreError::SeedError(
+            "seed must be at least 16 bytes".to_string(),
+        ));
+    }
+    Ok(hmac_sha512(b"ed25519 seed", seed))
 }
 
 #[cfg(test)]
@@ -97,6 +187,12 @@ mod tests {
                 "e8ad866785e4152c7e7533454cf69a5c30761002f18ac268d20860e5ecdba44a",
                 hex::encode(key)
             );
+            let path_missing_m = "0'/1'".to_string();
+            let key_missing_m = get_private_key_by_seed(&seed, &path_missing_m).unwrap();
+            assert_eq!(
+                "e8ad866785e4152c7e7533454cf69a5c30761002f18ac268d20860e5ecdba44a",
+                hex::encode(key_missing_m)
+            );
         }
         {
             let path = "m/0'/1'/2'".to_string();
@@ -107,6 +203,24 @@ mod tests {
                 hex::encode(key)
             );
         }
+        {
+            let wrong_path = "x/y'/z'/1'".to_string();
+            let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+            let result = get_private_key_by_seed(&seed, &wrong_path);
+            assert!(result.is_err());
+            assert!(matches!(
+                result,
+                Err(KeystoreError::InvalidDerivationPath(_))
+            ));
+
+            let none_harden_path = "m/0'/1'/2".to_string();
+            let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+            let result = get_private_key_by_seed(&seed, &none_harden_path);
+            assert!(result.is_err());
+            assert!(
+                matches!(result, Err(KeystoreError::InvalidDerivationPath(e)) if e == "non hardened derivation is not supported for slip10-ed25519")
+            );
+        };
     }
 
     #[test]
@@ -130,6 +244,316 @@ mod tests {
                 "e96b1c6b8769fdb0b34fbecfdf85c33b053cecad9517e1ab88cba614335775c1",
                 hex::encode(key)
             );
+        }
+    }
+
+    #[test]
+    fn test_get_master_key_by_seed() {
+        // Test with standard seed
+        {
+            let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+            let master_key = get_master_key_by_seed(&seed).unwrap();
+            assert_eq!(64, master_key.len());
+            // First 32 bytes should match the master private key at path "m"
+            assert_eq!(
+                "560f9f3c94558b6551928bb781cf6092c6b8800b4fc544af2c9444ed126d51aa",
+                hex::encode(&master_key[..32])
+            );
+        }
+
+        // Test with different seed
+        {
+            let seed =
+                hex::decode("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
+                    .unwrap();
+            let master_key = get_master_key_by_seed(&seed).unwrap();
+            assert_eq!(64, master_key.len());
+            // Verify it produces different result
+            assert_ne!(
+                "560f9f3c94558b6551928bb781cf6092c6b8800b4fc544af2c9444ed126d51aa",
+                hex::encode(&master_key[..32])
+            );
+        }
+
+        // Test with minimal seed
+        {
+            let seed = vec![0u8; 16];
+            let master_key = get_master_key_by_seed(&seed).unwrap();
+            assert_eq!(64, master_key.len());
+        }
+
+        // Test with empty seed (edge case)
+        {
+            let seed = vec![];
+            let master_key = get_master_key_by_seed(&seed);
+            assert!(master_key.is_err());
+            assert!(matches!(master_key, Err(KeystoreError::SeedError(_))));
+        }
+    }
+
+    #[test]
+    fn test_get_public_key_by_seed_multiple_paths() {
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        // Test m/0'
+        {
+            let path = "m/0'".to_string();
+            let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+            assert_eq!(32, pubkey.len());
+            assert_eq!(
+                "b26871edccf7db469c5812977df531ad2f6174dd435f381e6ed2a0556f896fa7",
+                hex::encode(pubkey)
+            );
+        }
+
+        // Test m/0'/1'
+        {
+            let path = "m/0'/1'".to_string();
+            let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+            assert_eq!(32, pubkey.len());
+            assert_eq!(
+                "73f99d07ffd7ddbbd61f3b12b8391aa441a8e26b79d8dba7ee3a7c7f9608415b",
+                hex::encode(pubkey)
+            );
+        }
+
+        // Test m/0'/1'/2'
+        {
+            let path = "m/0'/1'/2'".to_string();
+            let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+            assert_eq!(32, pubkey.len());
+        }
+
+        // Test deep derivation path
+        {
+            let path = "m/44'/501'/0'/0'/0'".to_string();
+            let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+            assert_eq!(32, pubkey.len());
+        }
+
+        // Test without 'm' prefix
+        {
+            let path = "0'/1'".to_string();
+            let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+            assert_eq!(32, pubkey.len());
+        }
+    }
+
+    #[test]
+    fn test_get_public_key_invalid_paths() {
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        // Non-hardened path should fail
+        {
+            let path = "m/0'/1".to_string();
+            let result = get_public_key_by_seed(&seed, &path);
+            assert!(result.is_err());
+            assert!(matches!(
+                result,
+                Err(KeystoreError::InvalidDerivationPath(_))
+            ));
+        }
+
+        // Invalid path format
+        {
+            let path = "invalid/path".to_string();
+            let result = get_public_key_by_seed(&seed, &path);
+            assert!(result.is_err());
+        }
+    }
+
+    #[test]
+    fn test_sign_message_by_seed() {
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        // Test signing with master key
+        {
+            let path = "m".to_string();
+            let message = b"Hello, SLIP-10!";
+            let signature = sign_message_by_seed(&seed, &path, message).unwrap();
+
+            assert_eq!(64, signature.len());
+
+            // Verify signature is valid
+            let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+            let is_valid = cryptoxide::ed25519::verify(message, &pubkey, &signature);
+            assert!(is_valid);
+        }
+
+        // Test signing with derived key
+        {
+            let path = "m/44'/501'/0'".to_string();
+            let message = b"Test message for Solana";
+            let signature = sign_message_by_seed(&seed, &path, message).unwrap();
+
+            assert_eq!(64, signature.len());
+
+            // Verify signature
+            let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+            let is_valid = cryptoxide::ed25519::verify(message, &pubkey, &signature);
+            assert!(is_valid);
+        }
+
+        // Test with empty message
+        {
+            let path = "m/0'".to_string();
+            let message = b"";
+            let signature = sign_message_by_seed(&seed, &path, message).unwrap();
+
+            assert_eq!(64, signature.len());
+
+            let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+            let is_valid = cryptoxide::ed25519::verify(message, &pubkey, &signature);
+            assert!(is_valid);
+        }
+
+        // Test with long message
+        {
+            let path = "m/0'/1'".to_string();
+            let message = vec![0x42u8; 1000];
+            let signature = sign_message_by_seed(&seed, &path, &message).unwrap();
+
+            assert_eq!(64, signature.len());
+
+            let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+            let is_valid = cryptoxide::ed25519::verify(&message, &pubkey, &signature);
+            assert!(is_valid);
+        }
+
+        // Test that different messages produce different signatures
+        {
+            let path = "m/0'".to_string();
+            let message1 = b"message1";
+            let message2 = b"message2";
+
+            let sig1 = sign_message_by_seed(&seed, &path, message1).unwrap();
+            let sig2 = sign_message_by_seed(&seed, &path, message2).unwrap();
+
+            assert_ne!(sig1, sig2);
+        }
+
+        // Test that different paths produce different signatures for same message
+        {
+            let message = b"same message";
+            let sig1 = sign_message_by_seed(&seed, &"m/0'".to_string(), message).unwrap();
+            let sig2 = sign_message_by_seed(&seed, &"m/1'".to_string(), message).unwrap();
+
+            assert_ne!(sig1, sig2);
+        }
+    }
+
+    #[test]
+    fn test_sign_message_invalid_signature() {
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        // Sign a message
+        let path = "m/0'".to_string();
+        let message = b"Original message";
+        let signature = sign_message_by_seed(&seed, &path, message).unwrap();
+        let pubkey = get_public_key_by_seed(&seed, &path).unwrap();
+
+        // Verify with tampered message should fail
+        let tampered_message = b"Tampered message";
+        let is_valid = cryptoxide::ed25519::verify(tampered_message, &pubkey, &signature);
+        assert!(!is_valid);
+
+        // Verify with wrong public key should fail
+        let wrong_pubkey = get_public_key_by_seed(&seed, &"m/1'".to_string()).unwrap();
+        let is_valid = cryptoxide::ed25519::verify(message, &wrong_pubkey, &signature);
+        assert!(!is_valid);
+    }
+
+    #[test]
+    fn test_sign_with_invalid_path() {
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        // Non-hardened path should fail
+        {
+            let path = "m/0".to_string();
+            let message = b"test";
+            let result = sign_message_by_seed(&seed, &path, message);
+            assert!(result.is_err());
+            assert!(matches!(
+                result,
+                Err(KeystoreError::InvalidDerivationPath(_))
+            ));
+        }
+
+        // Invalid path format
+        {
+            let path = "not/a/valid/path".to_string();
+            let message = b"test";
+            let result = sign_message_by_seed(&seed, &path, message);
+            assert!(result.is_err());
+        }
+    }
+
+    #[test]
+    fn test_private_key_edge_cases() {
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        // Test maximum hardened index (2^31 - 1)
+        {
+            let path = "m/2147483647'".to_string();
+            let key = get_private_key_by_seed(&seed, &path);
+            assert!(key.is_ok());
+            assert_eq!(32, key.unwrap().len());
+        }
+
+        // Test very deep derivation path
+        {
+            let path = "m/0'/1'/2'/3'/4'/5'/6'/7'/8'/9'".to_string();
+            let key = get_private_key_by_seed(&seed, &path);
+            assert!(key.is_ok());
+            assert_eq!(32, key.unwrap().len());
+        }
+
+        // all-0xFF seed should be rejected
+        {
+            let path = "m/0'".to_string();
+            let seed2 = hex::decode("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff").unwrap();
+            let key = get_private_key_by_seed(&seed2, &path);
+            assert!(key.is_err());
+            assert!(matches!(key, Err(KeystoreError::SeedError(_))));
+        }
+
+        // all-zero seed should also be rejected
+        {
+            let path = "m/0'".to_string();
+            let zero_seed = vec![0u8; 32];
+            let key = get_private_key_by_seed(&zero_seed, &path);
+            assert!(key.is_err());
+            assert!(matches!(key, Err(KeystoreError::SeedError(_))));
+        }
+    }
+
+    #[test]
+    fn test_deterministic_derivation() {
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        // Same path should always produce same key
+        {
+            let path = "m/44'/501'/0'".to_string();
+            let key1 = get_private_key_by_seed(&seed, &path).unwrap();
+            let key2 = get_private_key_by_seed(&seed, &path).unwrap();
+            assert_eq!(key1, key2);
+        }
+
+        // Same path should always produce same public key
+        {
+            let path = "m/44'/501'/0'".to_string();
+            let pubkey1 = get_public_key_by_seed(&seed, &path).unwrap();
+            let pubkey2 = get_public_key_by_seed(&seed, &path).unwrap();
+            assert_eq!(pubkey1, pubkey2);
+        }
+
+        // Same message should always produce same signature (Ed25519 is deterministic)
+        {
+            let path = "m/0'".to_string();
+            let message = b"deterministic test";
+            let sig1 = sign_message_by_seed(&seed, &path, message).unwrap();
+            let sig2 = sign_message_by_seed(&seed, &path, message).unwrap();
+            assert_eq!(sig1, sig2);
         }
     }
 }

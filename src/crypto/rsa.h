@@ -30,8 +30,7 @@ typedef struct {
     uint8_t q[SPI_FLASH_RSA_PRIME_SIZE];
 } Rsa_primes_t;
 
-Rsa_primes_t *FlashReadRsaPrimes();
+Rsa_primes_t *FlashReadRsaPrimes(void);
 int FlashWriteRsaPrimes(const uint8_t *data);
-bool HasGeneratedRsaPrimes();
 
 #endif

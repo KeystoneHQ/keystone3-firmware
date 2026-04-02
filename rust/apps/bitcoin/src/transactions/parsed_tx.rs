@@ -33,8 +33,21 @@ pub struct ParsedOutput {
     pub value: u64,
     pub path: Option<String>,
     pub is_external: bool,
+    pub is_mine: bool,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, PartialOrd)]
+pub struct OverviewTo {
+    pub address: String,
+    pub is_mine: bool,
+    pub is_external: bool,
+}
+
+impl Ord for OverviewTo {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        self.address.cmp(&other.address)
+    }
+}
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct OverviewTx {
     pub total_output_amount: String,
@@ -42,7 +55,7 @@ pub struct OverviewTx {
     pub total_output_sat: String,
     pub fee_sat: String,
     pub from: Vec<String>,
-    pub to: Vec<String>,
+    pub to: Vec<OverviewTo>,
     pub network: String,
     pub fee_larger_than_amount: bool,
     pub is_multisig: bool,
@@ -182,8 +195,12 @@ pub trait TxParser {
         overview_from.dedup();
         let mut overview_to = outputs
             .iter()
-            .map(|v| v.address.clone())
-            .collect::<Vec<String>>();
+            .map(|v| OverviewTo {
+                address: v.address.clone(),
+                is_mine: v.is_mine,
+                is_external: v.is_external,
+            })
+            .collect::<Vec<OverviewTo>>();
         overview_to.sort();
         overview_to.dedup();
         let overview = OverviewTx {

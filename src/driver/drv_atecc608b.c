@@ -14,6 +14,15 @@
 
 //#define ATECC608B_TEST_MODE
 
+// SECURITY: Compile-time check to prevent test mode in production builds
+#if defined(ATECC608B_TEST_MODE) && defined(PRODUCTION_BUILD)
+#error "SECURITY ERROR: ATECC608B_TEST_MODE must be disabled in production builds! Hardcoded test keys pose a critical security risk."
+#endif
+
+#ifdef ATECC608B_TEST_MODE
+#warning "ATECC608B_TEST_MODE is enabled - This should ONLY be used for development/testing!"
+#endif
+
 #define CHECK_ATECC608B_RET(content, ret)   {if (ret != ATCA_SUCCESS) {printf("%s err,0x%X\r\n", content, ret); break; }}
 
 static int32_t Atecc608bBinding(void);
@@ -149,6 +158,7 @@ int32_t Atecc608bKdf(uint8_t slot, const uint8_t *authKey, const uint8_t *inData
     uint8_t nonce[32];
     uint8_t ioProtectKey[32];
     uint8_t authSlot;
+    uint32_t retry;
 
     do {
         authSlot = GetAuthSlot(slot);
@@ -156,24 +166,29 @@ int32_t Atecc608bKdf(uint8_t slot, const uint8_t *authKey, const uint8_t *inData
             ret = ERR_ATECC608B_SLOT_NUM_ERR;
             break;
         }
-        ret = Atecc608bAuthorize(authSlot, authKey);
-        CHECK_ATECC608B_RET("auth", ret);
-        ret = atcab_kdf(KDF_MODE_SOURCE_SLOT | KDF_MODE_TARGET_OUTPUT_ENC | KDF_MODE_ALG_HKDF,
-                        slot, KDF_DETAILS_HKDF_MSG_LOC_INPUT | (inLen << 24), inData, outData, nonce);
+        for (retry = 0; retry < 3; retry++) {
+            ret = Atecc608bAuthorize(authSlot, authKey);
+            if (ret != ATCA_SUCCESS) {
+                continue;
+            }
+            ret = atcab_kdf(KDF_MODE_SOURCE_SLOT | KDF_MODE_TARGET_OUTPUT_ENC | KDF_MODE_ALG_HKDF,
+                            slot, KDF_DETAILS_HKDF_MSG_LOC_INPUT | (inLen << 24), inData, outData, nonce);
+            if (ret != ATCA_SUCCESS) {
+                continue;
+            }
+            GetIoProtectKey(ioProtectKey);
+            atca_io_decrypt_in_out_t io_dec_params = {
+                .io_key = ioProtectKey,
+                .out_nonce = nonce,
+                .data = outData,
+                .data_size = 32,
+            };
+            ret = atcah_io_decrypt(&io_dec_params);
+            if (ret == ATCA_SUCCESS) {
+                break;
+            }
+        }
         CHECK_ATECC608B_RET("kdf", ret);
-        //PrintArray("outData", outData, 32);
-        //PrintArray("nonce", nonce, 32);
-        GetIoProtectKey(ioProtectKey);
-        atca_io_decrypt_in_out_t io_dec_params = {
-            .io_key = ioProtectKey,
-            .out_nonce = nonce,
-            .data = outData,
-            .data_size = 32,
-        };
-        ret = atcah_io_decrypt(&io_dec_params);
-        CHECK_ATECC608B_RET("atcah_io_decrypt", ret);
-        //PrintArray("outData", outData, 32);
-        //PrintArray("nonce", nonce, 32);
     } while (0);
     CLEAR_ARRAY(nonce);
     CLEAR_ARRAY(ioProtectKey);

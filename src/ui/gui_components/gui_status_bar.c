@@ -75,6 +75,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_XRP, "", &coinXrp},
     {CHAIN_ADA, "", &coinAda},
     {CHAIN_TON, "", &coinTon},
+    {CHAIN_ZEC, "", &coinZec},
     {CHAIN_TRX, "", &coinTrx},
     {CHAIN_LTC, "", &coinLtc},
     {CHAIN_DOGE, "", &coinDoge},
@@ -123,6 +124,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_QCK, "", &coinQck},
     {CHAIN_TGD, "", &coinTgd},
     {CHAIN_DOT, "", &coinDot},
+    {CHAIN_ZCASH, "", &coinZec},
 #endif
 
 #ifdef CYPHERPUNK_VERSION
@@ -132,26 +134,24 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
 };
 
 const static WalletInfo_t g_walletBtn[] = {
-#ifndef BTC_ONLY
+#ifdef WEB3_VERSION
     {WALLET_LIST_KEYSTONE, "Keystone Nexus", &walletKeystone},
     {WALLET_LIST_METAMASK, "MetaMask", &walletMetamask},
     {WALLET_LIST_OKX, "OKX Wallet", &walletOkx},
     {WALLET_LIST_ETERNL, "Eternl Wallet", &walletEternl},
     {WALLET_LIST_MEDUSA, "Medusa", &walletMedusa},
-    // {WALLET_LIST_YOROI, "Yoroi Wallet", &walletYoroi},
+    {WALLET_LIST_GERO, "Gero Wallet", &walletGero},
     {WALLET_LIST_TYPHON, "Typhon Wallet", &walletTyphon},
-    {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
-    {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
-    {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
     {WALLET_LIST_SUB, "SubWallet", &walletSubwallet},
-    {WALLET_LIST_ZASHI, "Zashi", &walletZashi},
+    {WALLET_LIST_ZODL, "Zodl", &walletZodl},
     {WALLET_LIST_SOLFARE, "Solflare", &walletSolflare},
+    {WALLET_LIST_JUPITER, "Jupiter", &walletNufi},
     {WALLET_LIST_NUFI, "NuFi", &walletNufi},
-    {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack},
-    {WALLET_LIST_RABBY, "Rabby", &walletRabby},
+    {WALLET_LIST_BACKPACK, "Backpack", &walletBackpack}, {WALLET_LIST_RABBY, "Rabby", &walletRabby},
+    {WALLET_LIST_NABOX, "Nabox", &walletNabox},
     {WALLET_LIST_BITGET, "Bitget Wallet", &walletBitget},
     {WALLET_LIST_SAFE, "Safe", &walletSafe},
-    {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
+    {WALLET_LIST_BTC_WALLET, "BTC Wallets", &coinBtc},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
     {WALLET_LIST_IMTOKEN, "imToken", &walletImToken},
     {WALLET_LIST_BLOCK_WALLET, "Block Wallet", &walletBlockWallet},
@@ -172,19 +172,33 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
     {WALLET_LIST_BEGIN, "Begin", &walletBegin},
     {WALLET_LIST_LEAP, "Leap", &walletLeap},
-    {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly}, 
+    {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
     {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
     // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
     {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
     {WALLET_LIST_CORE, "Core Wallet", &walletCore},
     {WALLET_LIST_IOTA, "IOTA Wallet", &walletIota},
-#else
+#endif
+
+#ifdef CYPHERPUNK_VERSION
+    {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
+    {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
+    {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
+    {WALLET_LIST_ZEUS, "Zeus Wallet", &walletZeus},
+    {WALLET_LIST_BULL, "BULL", &walletBull},
+    // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
+    {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
+    {WALLET_LIST_ZODL, "Zodl", &walletZodl},
+#endif
+
+#ifdef BTC_ONLY
     {WALLET_LIST_BLUE, "BlueWallet", &walletBluewallet},
     {WALLET_LIST_SPECTER, "Specter", &walletSpecter},
     {WALLET_LIST_SPARROW, "Sparrow", &walletSparrow},
     {WALLET_LIST_NUNCHUK, "Nunchuk", &walletNunchuk},
     {WALLET_LIST_ZEUS, "ZEUS Wallet", &walletZeus},
     {WALLET_LIST_BABYLON, "Babylon", &walletBabylon},
+    {WALLET_LIST_BULL, "BULL", &walletBull},
     {WALLET_LIST_UNISAT, "UniSat", &walletUniSat},
     {WALLET_LIST_BITCOIN_SAFE, "Bitcoin Safe", &walletBtcSafe},
 #endif
@@ -381,6 +395,8 @@ const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
         return "Helium";
     } else if (index == WALLET_LIST_MEDUSA) {
         return "Medusa";
+    } else if (index == WALLET_LIST_GERO) {
+        return "Gero";
     }
 
     for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletBtn); i++) {
@@ -755,6 +771,9 @@ void SetWallet(NavBarWidget_t *navBarWidget, WALLET_LIST_INDEX_ENUM index, const
             coin = &g_walletBtn[i];
             break;
         }
+    }
+    if (coin == NULL) {
+        return;
     }
 
     if (name == NULL) {

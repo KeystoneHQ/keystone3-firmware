@@ -132,14 +132,16 @@ UREncodeResult *GuiGetMoneroKeyimagesQrCodeData(void)
     SetLockScreen(false);
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    uint8_t seed[64];
     do {
-        uint8_t seed[64];
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        int len = GetCurrentAccountSeedLen();
+        int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        CHECK_ERRCODE_BREAK("GetAccountSeed", ret);
         encodeResult = monero_generate_keyimage(data, seed, len, 0);
-        ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
     return encodeResult;
 }
@@ -150,14 +152,16 @@ UREncodeResult *GuiGetMoneroSignedTransactionQrCodeData(void)
     SetLockScreen(false);
     UREncodeResult *encodeResult;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    uint8_t seed[64];
     do {
-        uint8_t seed[64];
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        int len = GetCurrentAccountSeedLen();
+        int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        CHECK_ERRCODE_BREAK("GetAccountSeed", ret);
         encodeResult = monero_generate_signature(data, seed, len, 0);
-        ClearSecretCache();
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
     return encodeResult;
 }

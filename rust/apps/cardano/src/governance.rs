@@ -1,5 +1,5 @@
 use crate::address;
-use crate::errors::{CardanoError, R};
+use crate::errors::{CardanoError, Result};
 use crate::structs::SignVotingRegistrationResult;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -16,7 +16,7 @@ pub fn build_metadata_cbor(
     payment_address: &[u8],
     nonce: u64,
     voting_purpose: u8,
-) -> R<Vec<u8>> {
+) -> Result<Vec<u8>> {
     match build_delegations(delegations) {
         Ok(delegations_vec) => {
             let voting_registration = CardanoVotingRegistration::new(
@@ -36,7 +36,7 @@ pub fn build_metadata_cbor(
     }
 }
 
-pub fn build_delegations(delegations: Vec<CardanoDelegation>) -> R<Vec<(String, u8)>> {
+pub fn build_delegations(delegations: Vec<CardanoDelegation>) -> Result<Vec<(String, u8)>> {
     let mut delegations_vec = Vec::new();
     for delegation in delegations {
         let vote_key = hex::encode(delegation.get_pub_key());
@@ -53,7 +53,7 @@ pub fn sign(
     nonce: u64,
     voting_purpose: u8,
     icarus_master_key: XPrv,
-) -> R<SignVotingRegistrationResult> {
+) -> Result<SignVotingRegistrationResult> {
     let cbor = build_metadata_cbor(
         delegations,
         stake_pub,
@@ -68,28 +68,34 @@ pub fn sign_voting_registration(
     path: &String,
     unsigned: &[u8],
     icarus_master_key: XPrv,
-) -> R<SignVotingRegistrationResult> {
+) -> Result<SignVotingRegistrationResult> {
     let bip32_signing_key =
         keystore::algorithms::ed25519::bip32_ed25519::derive_extended_privkey_by_xprv(
             &icarus_master_key,
             path,
         )
-        .unwrap();
+        .map_err(|e| CardanoError::DerivationError(e.to_string()))?;
     let signed_data = bip32_signing_key.sign::<Vec<u8>>(&blake2b_256(unsigned));
     Ok(SignVotingRegistrationResult::new(
         signed_data.to_bytes().to_vec(),
     ))
 }
 
-pub fn parse_stake_address(stake_pub: Vec<u8>) -> R<String> {
+pub fn parse_stake_address(stake_pub: Vec<u8>) -> Result<String> {
     let stake_address =
-        address::calc_stake_address_from_xpub(stake_pub.try_into().unwrap()).unwrap();
+        address::calc_stake_address_from_xpub(stake_pub.try_into().map_err(|_| {
+            CardanoError::InvalidTransaction("Invalid stake public key length".to_string())
+        })?)
+        .map_err(|e| CardanoError::AddressEncodingError(e.to_string()))?;
     Ok(stake_address)
 }
 
-pub fn parse_payment_address(payment_address: Vec<u8>) -> R<String> {
-    let payment_address = Address::from_bytes(payment_address).unwrap();
-    let addr = payment_address.to_bech32(None).unwrap();
+pub fn parse_payment_address(payment_address: Vec<u8>) -> Result<String> {
+    let payment_address = Address::from_bytes(payment_address)
+        .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?;
+    let addr = payment_address
+        .to_bech32(None)
+        .map_err(|e| CardanoError::AddressEncodingError(e.to_string()))?;
     Ok(addr)
 }
 
@@ -245,5 +251,103 @@ mod tests {
         let payment_address_bytes = hex::decode("0069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad").unwrap();
         let payment_address = parse_payment_address(payment_address_bytes).unwrap();
         assert_eq!(payment_address, "addr_test1qp5l5x7exwzhgupzs0v0ku0censcx8p75jz52cl4uszr463n5nclg6z9gazt9lekgje2k7w53em2xxrljqh73gdul2ksx5mjej".to_string());
+    }
+
+    #[test]
+    fn test_build_delegations_empty() {
+        let delegations = vec![];
+        let result = build_delegations(delegations).unwrap();
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_build_delegations_single() {
+        let vote_pub_key =
+            hex::decode("a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663")
+                .unwrap();
+        let delegations = vec![CardanoDelegation::new(vote_pub_key, 5)];
+        let delegations_vec = build_delegations(delegations).unwrap();
+        assert_eq!(delegations_vec.len(), 1);
+        assert_eq!(delegations_vec[0].1, 5);
+    }
+
+    #[test]
+    fn test_build_metadata_cbor_with_zero_nonce() {
+        let vote_pub_key =
+            hex::decode("a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663")
+                .unwrap();
+        let delegations = vec![CardanoDelegation::new(vote_pub_key, 1)];
+        let stake_pub =
+            hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c")
+                .unwrap();
+        let payment_address = hex::decode("0069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad").unwrap();
+        let cbor = build_metadata_cbor(
+            delegations,
+            &stake_pub,
+            &payment_address,
+            0, // zero nonce
+            0,
+        )
+        .unwrap();
+        assert!(!cbor.is_empty());
+    }
+
+    #[test]
+    fn test_build_metadata_cbor_different_voting_purpose() {
+        let vote_pub_key =
+            hex::decode("a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663")
+                .unwrap();
+        let delegations = vec![CardanoDelegation::new(vote_pub_key, 1)];
+        let stake_pub =
+            hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c")
+                .unwrap();
+        let payment_address = hex::decode("0069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad").unwrap();
+        let cbor1 =
+            build_metadata_cbor(delegations.clone(), &stake_pub, &payment_address, 100, 0).unwrap();
+        let cbor2 = build_metadata_cbor(
+            delegations,
+            &stake_pub,
+            &payment_address,
+            100,
+            1, // different voting purpose
+        )
+        .unwrap();
+        assert_ne!(cbor1, cbor2);
+    }
+
+    #[test]
+    fn test_parse_stake_address_invalid_length() {
+        let invalid_stake_pub = vec![0u8; 31]; // wrong length
+        let result = parse_stake_address(invalid_stake_pub);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_payment_address_invalid() {
+        let invalid_address = vec![0xff; 10]; // invalid address bytes
+        let result = parse_payment_address(invalid_address);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_sign_voting_registration_different_paths() {
+        let entropy = hex::decode("7a4362fd9792e60d97ee258f43fd21af").unwrap();
+        let passphrase = b"";
+        let icarus_master_key =
+            keystore::algorithms::ed25519::bip32_ed25519::get_icarus_master_key_by_entropy(
+                &entropy, passphrase,
+            )
+            .map_err(|e| CardanoError::SigningFailed(e.to_string()))
+            .unwrap();
+
+        let cbor = hex::decode("a119ef64a50181825820248aba8dce1e4b0a5e53509d07c42ac34f970ec452293a84763bb77359b5263f01025820ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c0358390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad0418640500").unwrap();
+
+        let path1 = "m/1852'/1815'/0'/2/0".to_string();
+        let path2 = "m/1852'/1815'/0'/2/1".to_string();
+
+        let sig1 = sign_voting_registration(&path1, &cbor, icarus_master_key.clone()).unwrap();
+        let sig2 = sign_voting_registration(&path2, &cbor, icarus_master_key).unwrap();
+
+        assert_ne!(sig1.get_signature(), sig2.get_signature());
     }
 }

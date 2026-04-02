@@ -5,6 +5,7 @@
 #include "gui_lock_widgets.h"
 #include "gui_home_widgets.h"
 #include "gui_wallet.h"
+#include "cmsis_os.h"
 
 /* DEFINES */
 
@@ -42,6 +43,23 @@ static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
 
 /* STATIC VARIABLES */
 static ExportAddressParams_t *g_exportAddressParams = NULL;
+static osMutexId_t g_exportAddressMutex = NULL;
+
+static void ExportAddressLock(void)
+{
+    if (g_exportAddressMutex == NULL) {
+        g_exportAddressMutex = osMutexNew(NULL);
+        ASSERT(g_exportAddressMutex != NULL);
+    }
+    osMutexAcquire(g_exportAddressMutex, osWaitForever);
+}
+
+static void ExportAddressUnlock(void)
+{
+    if (g_exportAddressMutex != NULL) {
+        osMutexRelease(g_exportAddressMutex);
+    }
+}
 
 static struct EthParams *NewParams()
 {
@@ -82,24 +100,53 @@ static struct EthParams *ParseParams(const char *data, size_t dataLength)
 
 uint8_t GetExportWallet()
 {
-    if (g_exportAddressParams == NULL) {
-        return DEFAULT;
+    uint8_t wallet = DEFAULT;
+    ExportAddressLock();
+    if (g_exportAddressParams != NULL) {
+        wallet = g_exportAddressParams->wallet;
     }
-    return g_exportAddressParams->wallet;
+    ExportAddressUnlock();
+    return wallet;
 }
 
 void ExportAddressApprove()
 {
-    ExportEthAddress(g_exportAddressParams->requestID, g_exportAddressParams->n, g_exportAddressParams->type);
-    SRAM_FREE(g_exportAddressParams);
-    g_exportAddressParams = NULL;
+    ExportAddressParams_t params = {0};
+    bool hasPending = false;
+
+    ExportAddressLock();
+    if (g_exportAddressParams != NULL) {
+        params = *g_exportAddressParams;
+        SRAM_FREE(g_exportAddressParams);
+        g_exportAddressParams = NULL;
+        hasPending = true;
+    }
+    ExportAddressUnlock();
+
+    if (!hasPending) {
+        return;
+    }
+    ExportEthAddress(params.requestID, params.n, params.type);
 }
 
 void ExportAddressReject()
 {
-    SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, g_exportAddressParams->requestID, PRS_EXPORT_ADDRESS_REJECTED, "Export address is rejected");
-    SRAM_FREE(g_exportAddressParams);
-    g_exportAddressParams = NULL;
+    uint16_t requestID = 0;
+    bool hasPending = false;
+
+    ExportAddressLock();
+    if (g_exportAddressParams != NULL) {
+        requestID = g_exportAddressParams->requestID;
+        SRAM_FREE(g_exportAddressParams);
+        g_exportAddressParams = NULL;
+        hasPending = true;
+    }
+    ExportAddressUnlock();
+
+    if (!hasPending) {
+        return;
+    }
+    SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, requestID, PRS_EXPORT_ADDRESS_REJECTED, "Export address is rejected");
 }
 
 static void ExportEthAddress(uint16_t requestID, uint8_t n, ETHAccountType type)
@@ -149,29 +196,51 @@ static bool CheckExportAcceptable(EAPDURequestPayload_t *payload)
 
 void ExportAddressService(EAPDURequestPayload_t *payload)
 {
+    bool isBusy = false;
+    bool paramsStored = false;
+
     if (!CheckExportAcceptable(payload)) {
         return;
     }
 
+    ExportAddressLock();
     if (g_exportAddressParams != NULL) {
+        isBusy = true;
+    }
+    ExportAddressUnlock();
+    if (isBusy) {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload->requestID, PRS_EXPORT_ADDRESS_BUSY, "Export address is busy, please try again later");
-        SRAM_FREE(g_exportAddressParams);
-        g_exportAddressParams = NULL;
         return;
     }
 
     struct EthParams *params = ParseParams((char *)payload->data, payload->dataLen);
     if (!IsValidParams(params)) {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload->requestID, PRS_EXPORT_ADDRESS_INVALID_PARAMS, "Invalid params");
+        SRAM_FREE(params);
         return;
     }
 
     if (params->chain == ETH) {
-        g_exportAddressParams = (ExportAddressParams_t *)SRAM_MALLOC(sizeof(ExportAddressParams_t));
-        g_exportAddressParams->requestID = payload->requestID;
-        g_exportAddressParams->n = params->n;
-        g_exportAddressParams->type = params->type;
-        g_exportAddressParams->wallet = params->wallet;
+        ExportAddressLock();
+        if (g_exportAddressParams != NULL) {
+            isBusy = true;
+        } else {
+            g_exportAddressParams = (ExportAddressParams_t *)SRAM_MALLOC(sizeof(ExportAddressParams_t));
+            if (g_exportAddressParams != NULL) {
+                g_exportAddressParams->requestID = payload->requestID;
+                g_exportAddressParams->n = params->n;
+                g_exportAddressParams->type = params->type;
+                g_exportAddressParams->wallet = params->wallet;
+                paramsStored = true;
+            }
+        }
+        ExportAddressUnlock();
+
+        if (isBusy || !paramsStored) {
+            SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload->requestID, PRS_EXPORT_ADDRESS_BUSY, "Export address is busy, please try again later");
+            SRAM_FREE(params);
+            return;
+        }
 
         EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
         resultPage->command = CMD_EXPORT_ADDRESS;

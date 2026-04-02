@@ -184,3 +184,156 @@ impl ChainId {
         ChainId::new(NamedChain::MAINNET.id())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    extern crate std;
+    use super::*;
+
+    #[test]
+    fn test_named_chain_id() {
+        assert_eq!(NamedChain::MAINNET.id(), 1);
+        assert_eq!(NamedChain::TESTNET.id(), 2);
+        assert_eq!(NamedChain::DEVNET.id(), 3);
+        assert_eq!(NamedChain::TESTING.id(), 4);
+        assert_eq!(NamedChain::PREMAINNET.id(), 5);
+    }
+
+    #[test]
+    fn test_named_chain_from_chain_id() {
+        let chain_id = ChainId::new(1);
+        let named = NamedChain::from_chain_id(&chain_id).unwrap();
+        assert_eq!(named as u8, NamedChain::MAINNET as u8);
+
+        let chain_id = ChainId::new(2);
+        let named = NamedChain::from_chain_id(&chain_id).unwrap();
+        assert_eq!(named as u8, NamedChain::TESTNET as u8);
+    }
+
+    #[test]
+    fn test_named_chain_from_chain_id_invalid() {
+        let chain_id = ChainId::new(99);
+        let result = NamedChain::from_chain_id(&chain_id);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_named_chain_display() {
+        assert_eq!(format!("{}", NamedChain::MAINNET), "mainnet");
+        assert_eq!(format!("{}", NamedChain::TESTNET), "testnet");
+        assert_eq!(format!("{}", NamedChain::DEVNET), "devnet");
+        assert_eq!(format!("{}", NamedChain::TESTING), "testing");
+        assert_eq!(format!("{}", NamedChain::PREMAINNET), "premainnet");
+    }
+
+    #[test]
+    fn test_chain_id_new() {
+        let chain_id = ChainId::new(1);
+        assert_eq!(chain_id.id(), 1);
+    }
+
+    #[test]
+    #[should_panic(expected = "cannot have chain ID with 0")]
+    fn test_chain_id_new_zero() {
+        ChainId::new(0);
+    }
+
+    #[test]
+    fn test_chain_id_id() {
+        let chain_id = ChainId::new(42);
+        assert_eq!(chain_id.id(), 42);
+    }
+
+    #[test]
+    fn test_chain_id_test() {
+        let chain_id = ChainId::test();
+        assert_eq!(chain_id.id(), NamedChain::TESTING.id());
+    }
+
+    #[test]
+    fn test_chain_id_mainnet() {
+        let chain_id = ChainId::mainnet();
+        assert_eq!(chain_id.id(), NamedChain::MAINNET.id());
+    }
+
+    #[test]
+    fn test_chain_id_default() {
+        let chain_id = ChainId::default();
+        assert_eq!(chain_id.id(), NamedChain::TESTING.id());
+    }
+
+    #[test]
+    fn test_chain_id_display_named() {
+        let chain_id = ChainId::mainnet();
+        let s = format!("{}", chain_id);
+        assert_eq!(s, "mainnet");
+    }
+
+    #[test]
+    fn test_chain_id_display_numeric() {
+        let chain_id = ChainId::new(99);
+        let s = format!("{}", chain_id);
+        assert_eq!(s, "99");
+    }
+
+    #[test]
+    fn test_chain_id_debug() {
+        let chain_id = ChainId::mainnet();
+        let s = format!("{:?}", chain_id);
+        assert!(!s.is_empty());
+    }
+
+    #[test]
+    fn test_chain_id_from_str_named() {
+        let chain_id = ChainId::from_str("mainnet").unwrap();
+        assert_eq!(chain_id.id(), 1);
+
+        let chain_id = ChainId::from_str("TESTNET").unwrap();
+        assert_eq!(chain_id.id(), 2);
+    }
+
+    #[test]
+    fn test_chain_id_from_str_numeric() {
+        let chain_id = ChainId::from_str("42").unwrap();
+        assert_eq!(chain_id.id(), 42);
+    }
+
+    #[test]
+    fn test_chain_id_from_str_empty() {
+        let result = ChainId::from_str("");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_chain_id_from_str_zero() {
+        let result = ChainId::from_str("0");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_chain_id_from_str_invalid() {
+        let result = ChainId::from_str("invalid");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_chain_id_eq() {
+        let chain_id1 = ChainId::new(1);
+        let chain_id2 = ChainId::new(1);
+        assert_eq!(chain_id1, chain_id2);
+    }
+
+    #[test]
+    fn test_chain_id_ne() {
+        let chain_id1 = ChainId::new(1);
+        let chain_id2 = ChainId::new(2);
+        assert_ne!(chain_id1, chain_id2);
+    }
+
+    #[test]
+    fn test_chain_id_clone() {
+        let chain_id1 = ChainId::new(1);
+        let chain_id2 = chain_id1.clone();
+        assert_eq!(chain_id1, chain_id2);
+    }
+}

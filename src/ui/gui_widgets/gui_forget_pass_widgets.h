@@ -1,7 +1,7 @@
 #ifndef _GUI_FORGET_PASS_WIDGETS_H
 #define _GUI_FORGET_PASS_WIDGETS_H
 
-void GuiForgetAnimContDel(int errCode);
+void GuiForgetAnimContDel(bool isReset);
 void GuiForgetPassInit(void *param);
 void GuiForgetPassRefresh(void);
 int8_t GuiForgetPassNextTile(uint8_t tileIndex);

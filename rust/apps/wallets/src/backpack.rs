@@ -91,7 +91,7 @@ pub fn generate_crypto_multi_accounts(
     ))
 }
 
-fn generate_ed25519_key(
+pub fn generate_ed25519_key(
     mfp: [u8; 4],
     key: ExtendedPublicKey,
     note: Option<String>,

@@ -1,3 +1,171 @@
+## 2.4.0 (2026-3-30)
+
+
+**Web3:**
+
+### 新增
+1. 升级固件更新安全机制
+2. 支持 X Layer 交易
+
+
+**BTC Only:**
+
+### 新增
+1. 升级固件更新安全机制
+
+
+**Cypherpunk:**
+
+### 新增
+1. 升级固件更新安全机制
+### 优化
+1. 更新 Zodl 钱包图标
+
+
+
+
+## 2.3.10(2026-3-4)
+
+**Web3:**
+
+### 新增
+1. 支持通过 Keystone Nexus 管理 ADA
+2. 支持通过 Gero 插件端管理 ADA
+
+
+**Cypherpunk:**
+
+### Bug 修复
+1. 修复了隐藏透明 ZEC 交易的签名问题
+
+
+
+## 2.3.8(2026-2-9)
+
+**Web3:**
+
+
+### 新增
+1. 支持通过 Nabox 管理 BTC、LTC、BCH、DOGE 和 TRON
+2. 支持通过 BULL 管理 BTC
+
+**BTC Only:**
+
+
+### 新增
+1. 支持通过 BULL 管理 BTC
+2. 新增西班牙语、日语和德语支持
+
+**Cypherpunk:**
+
+
+### 新增
+1. 支持通过 BULL 管理 BTC
+
+
+
+## 2.3.6(2026-1-22)
+
+**Web3:**
+
+### 新增
+1. 支持 ZEC 透明地址
+2. 支持通过 Keystone Nexus 管理 ZEC 透明地址
+
+### 优化
+1. 提升连接钱包的稳定性
+
+
+
+
+## 2.3.4(2026-1-6)
+
+
+**Web3:**
+
+### 新增
+1. 支持 LTC Native SegWit 地址
+2. 支持通过 Keystone Nexus 管理 LTC
+3. 支持通过 USB 连接 Jupiter 钱包插件端管理 SOL
+
+
+
+## 2.3.2(2025-12-24)
+
+
+**Web3:**
+### 新增
+1. 支持通过 Nabox 钱包管理 EVM 资产
+### 优化
+1. 优化 BTC 钱包连接入口 UI
+2. 优化 BTC change output 展示逻辑
+### Bug 修复
+1. 修复 TON-only 消息签名问题
+
+
+**BTC Only:**
+### 优化
+1. 优化 BTC change output 展示逻辑
+
+
+**Cypherpunk:**
+### 优化
+1. 优化 BTC change output 展示逻辑
+
+
+## 2.3.0(2025-12-02)
+
+**Web3:**
+
+### 新增
+1. 支持通过 BlueWallet 管理 BTC Taproot 地址
+### 优化
+1. 优化固件代码，增强整体稳健性
+2. 优化 BTC Sign Message 流程
+3. 优化 SOL Squads 多签交易解析
+### Bug 修复
+1. 修复 Passphrase 钱包下 Eternl 地址 path 类型同步问题
+
+**BTC Only:**
+
+### 新增
+1. 支持通过 BlueWallet 管理 BTC Taproot 地址
+### 优化
+1. 优化固件代码，增强整体稳健性
+2. 优化 BTC Sign Message 流程
+
+
+
+**Cypherpunk:**
+
+### 新增
+1. 支持通过 BlueWallet 管理 BTC Taproot 地址
+### 优化
+1. 优化固件代码，增强整体稳健性
+2. 优化 BTC Sign Message 流程 
+
+
+
+
+
+
+## 2.2.20 (2025-11-10)
+
+**Web3:**
+
+### 新增
+1. 新增部分 ERC20/BEP20  Token 交易解析支持
+
+### 优化
+1. 优化部分 EVM 链 Chain Name 展示
+2. 优化韩语 Permit Signing 文案
+
+### Bug 修复
+1. 修复 SOL 链在 Kamino 交易的报错问题
+2. 修复 TON 链部分交易数据过大导致的报错问题
+
+
+
 ## 2.2.18(2025-10-27)
 
 **Web3:**

@@ -26,6 +26,9 @@
 #define ACCOUNT_TOTAL_LEN                       (AES_IV_LEN + ENTROPY_MAX_LEN + SEED_LEN + SLIP39_EMS_LEN + SE_DATA_RESERVED_LEN + HMAC_LEN)
 #define PARAM_LEN                               32
 
+#define MIN_PASSWORD_LEN                        6
+#define TON_MNEMONIC_WORDS_COUNT                24
+
 #define ITERATION_TIME                          700
 
 typedef struct {

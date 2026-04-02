@@ -45,6 +45,8 @@ DecodeConfigTypeDef g_decodeCfg = {0};
 LV_FONT_DECLARE(openSans_20);
 LV_FONT_DECLARE(openSans_24);
 
+static uint16_t *g_qrDecodeImageBuffer = NULL;
+
 /**
  * @brief       QR decode init, malloc QRDECODE_BUFF_SIZE byte mem.
  * @retval      none.
@@ -73,6 +75,11 @@ int32_t QrDecodeInit(uint8_t *pool)
     ret = DecodeInit(&DecodeInitStruct);
     DecodeConfigInit(&g_decodeCfg);
     DCMI_NVICConfig();
+
+    if (g_qrDecodeImageBuffer != NULL) {
+        SRAM_FREE(g_qrDecodeImageBuffer);
+        g_qrDecodeImageBuffer = NULL;
+    }
 
     return ret;
 }
@@ -155,13 +162,11 @@ int32_t QrDecodeProcess(char *result, uint32_t maxLen, uint8_t progress)
     tick = osKernelGetTickCount();
     resnum = DecodeStart(&g_decodeCfg, &res);
     if (resnum > 0) {
-        // printf("ID:%d\tAIMID:%s\n", res.id, res.AIM);
         CleanDecodeBuffFlag();
     }
     g_decodeTick += osKernelGetTickCount() - tick;
 
     return resnum;
-    //return 0;
 }
 
 #ifdef VIEW_IMAGE_ENABLE
@@ -179,12 +184,11 @@ static void ViewImageOnLcd(void)
 {
     uint8_t *imgAddr;
 
-    static uint16_t *buffer1 = NULL;
     uint8_t *u8Addr;
     uint16_t R, G, B;
 
-    if (buffer1 == NULL) {
-        buffer1 = SRAM_MALLOC(320 * VIEW_IMAGE_LINE * 2);
+    if (g_qrDecodeImageBuffer == NULL) {
+        g_qrDecodeImageBuffer = SRAM_MALLOC(320 * VIEW_IMAGE_LINE * 2);
     }
 
     imgAddr = (uint8_t *)GetImageBuffAddr();
@@ -207,9 +211,7 @@ static void ViewImageOnLcd(void)
         }
         for (i = 0; i < 320 * VIEW_IMAGE_LINE; i++) {
             camPixelIndex = ((320 - y) * 3 / 2 + 80) + (x * 3 / 2) * 640;
-            u8Addr = (uint8_t *)&buffer1[i];
-            // *u8Addr = (imgAddr[camPixelIndex] & 0xF1) | (imgAddr[camPixelIndex] >> 5);
-            // *(u8Addr + 1) = ((imgAddr[camPixelIndex] << 3) & 0xE0) | (imgAddr[camPixelIndex] >> 3);
+            u8Addr = (uint8_t *)&g_qrDecodeImageBuffer[i];
             G = imgAddr[camPixelIndex] >> 2;
             R = G >> 1;
             B = R;
@@ -220,7 +222,7 @@ static void ViewImageOnLcd(void)
                 y++;
             }
         }
-        LcdDraw(START_SCAN_COL, line, START_SCAN_COL + 320 - 1, line + VIEW_IMAGE_LINE - 1, (uint16_t *)buffer1);
+        LcdDraw(START_SCAN_COL, line, START_SCAN_COL + 320 - 1, line + VIEW_IMAGE_LINE - 1, (uint16_t *)g_qrDecodeImageBuffer);
     }
 }
 

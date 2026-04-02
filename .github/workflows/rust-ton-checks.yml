@@ -24,4 +24,4 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Run rust/apps/ton
-        run: cd rust/apps/ton && cargo +nightly-2025-05-01 llvm-cov --fail-under-regions 41 --fail-under-functions 48 --fail-under-lines 47
+        run: cd rust/apps/ton && cargo +nightly-2025-05-01 llvm-cov --fail-under-regions 80 --fail-under-functions 92 --fail-under-lines 91 --ignore-filename-regex 'keystore/*'

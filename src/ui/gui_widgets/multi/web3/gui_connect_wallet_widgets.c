@@ -176,6 +176,7 @@ static const lv_img_dsc_t *g_nufiCoinArray[4] = {
     &coinEth,
     &coinBtc,
     &coinAda,
+    &coinTrx,
 };
 
 static const lv_img_dsc_t *g_heliumCoinArray[2] = {
@@ -218,7 +219,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_BACKPACK, &walletBackpack, "Backpack", g_backpackWalletCoinArray, 3, true, WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_OTHER},
     {WALLET_LIST_SOLFARE, &walletSolflare, "Solflare", g_solfareCoinArray, 1, true, WALLET_FILTER_SOL},
     {WALLET_LIST_JUPITER, &walletJupiter, "Jupiter", g_solfareCoinArray, 1, true, WALLET_FILTER_SOL},
-    {WALLET_LIST_NUFI, &walletNufi, "NuFi", g_nufiCoinArray, 4, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_ADA},
+    {WALLET_LIST_NUFI, &walletNufi, "NuFi", g_nufiCoinArray, 5, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_ADA},
     {WALLET_LIST_CORE, &walletCore, "Core Wallet", g_coreCoinArray, 3, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_HELIUM, &walletHelium, "Helium Wallet", g_heliumCoinArray, 2, true, WALLET_FILTER_SOL},
     {WALLET_LIST_BTC_WALLET, &coinBtc, "Bitcoin Wallets", g_btcWalletCoinArray, 5, true, WALLET_FILTER_BTC},

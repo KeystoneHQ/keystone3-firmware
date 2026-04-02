@@ -159,14 +159,6 @@ void GuiWriteSeWidget(lv_obj_t *parent)
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 }
 
-void GuiUpdateTonWriteSeWidget(lv_obj_t *parent)
-{
-    lv_obj_t *label = GuiCreateNoticeLabel(parent, _("ton_write_se_predict_text"));
-    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_MID, 0, 18);
-    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-}
-
 void DuplicateShareHandler(lv_event_t *e)
 {
     GuiCloseCurrentWorkingView();

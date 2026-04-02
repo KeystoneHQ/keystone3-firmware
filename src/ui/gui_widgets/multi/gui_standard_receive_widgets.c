@@ -965,12 +965,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         result = stellar_get_address(xPub);
         break;
     case HOME_WALLET_CARD_TON: {
-        bool isTonNative = GetMnemonicType() == MNEMONIC_TYPE_TON;
-        if (isTonNative) {
-            xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
-        } else {
-            xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
-        }
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
         result = ton_get_address(xPub);
         break;
     }

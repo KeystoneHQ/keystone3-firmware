@@ -492,12 +492,6 @@ static void GuiUpdateCoinListWidget(HomeGesture_t gesture)
         }
     }
 
-    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
-        lv_obj_t *label = GuiCreateIllustrateLabel(coinListCont, _("ton_assets_manage_notice"));
-        lv_obj_set_width(label, 416);
-        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 32, 144);
-    }
     UpdateManageWalletState(false);
 }
 

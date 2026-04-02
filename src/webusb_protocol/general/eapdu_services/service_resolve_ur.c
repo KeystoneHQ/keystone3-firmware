@@ -83,11 +83,6 @@ static bool CheckURAcceptable(void)
         HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
         return false;
     }
-    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
-        const char *data = "Ton wallet is not supported";
-        HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
-        return false;
-    }
     // Only allow URL parsing on specific pages
     if (GuiIsSetup()) {
         const char *data = "Export address is just allowed on specific pages";

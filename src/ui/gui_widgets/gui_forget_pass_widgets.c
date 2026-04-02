@@ -58,7 +58,6 @@ static ForgetPassWidget_t g_forgetPassTileView;
 static lv_obj_t *g_waitAnimCont;
 static GUI_VIEW *g_prevView;
 static bool g_isForgetPass = false;
-static bool g_isTonMnemonic = false;
 
 static void CloseCurrentParentAndCloseViewHandler(lv_event_t *e);
 
@@ -134,36 +133,6 @@ void GuiForgetPassVerifyResult(bool en, int errCode)
     }
 }
 
-#ifdef WEB3_VERSION
-void GuiForgetPassTonSuccess(void)
-{
-    g_isTonMnemonic = true;
-    GuiForgetPassVerifyResult(true, 0);
-}
-
-static void GuiForgetPassTonMnemonicHandler(lv_event_t *e)
-{
-    GUI_DEL_OBJ(g_noticeWindow)
-    GuiForgetPassTonSuccess();
-}
-
-static void GuiForgetPassMultiCoinMnemonicHandler(lv_event_t *e)
-{
-    g_isTonMnemonic = false;
-    GUI_DEL_OBJ(g_noticeWindow)
-    GuiForgetPassVerifyResult(true, 0);
-}
-
-void GuiForgetPassTonBip39Success(void)
-{
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgInformation, _("import_ton_mnemonic_title"), _("import_ton_mnemonic_desc"), NULL, _("Multi-Coin"), WHITE_COLOR_OPA20, _("TON-Only"), ORANGE_COLOR);
-    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
-    lv_obj_add_event_cb(btn, GuiForgetPassTonMnemonicHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_add_event_cb(btn, GuiForgetPassMultiCoinMnemonicHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-}
-#endif
 
 void GuiForgetPassResetPass(bool en, int errCode)
 {
@@ -199,17 +168,6 @@ void GuiForgetPassRepeatPinPass(const char* buf)
             };
             GuiModelSlip39CalWriteSe(slip39);
         } else {
-#ifdef WEB3_VERSION
-            char *mnemonic = SecretCacheGetMnemonic();
-            bool isTon = ton_verify_mnemonic(mnemonic);
-            if (isTon && g_isTonMnemonic) {
-                TonData_t ton = {
-                    .forget = true,
-                };
-                GuiModelTonCalWriteSe(ton);
-                return;
-            }
-#endif
             Bip39Data_t bip39 = {
                 .wordCnt = g_forgetMkb->wordCnt,
                 .forget = true,
@@ -415,7 +373,6 @@ void GuiForgetPassInit(void *param)
 void GuiForgetPassDeInit(void)
 {
     GUI_DEL_OBJ(g_noticeWindow)
-    g_isTonMnemonic = false;
     GuiMnemonicHintboxClear();
     GuiWalletRecoverySinglePhraseClear();
     g_enterMnemonicCont = NULL;

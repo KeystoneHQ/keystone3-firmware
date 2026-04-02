@@ -1,4 +1,3 @@
-#ifndef WEB3_VERSION
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_views.h"
@@ -33,5 +32,3 @@ GUI_VIEW g_checkDeleteWalletView = {
     .optimization = false,
     .pEvtHandler = GuiCheckDeleteWalletViewEventProcess,
 };
-
-#endif

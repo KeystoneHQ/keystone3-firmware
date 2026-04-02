@@ -43,11 +43,6 @@ int32_t GuiImportPhraseViewEventProcess(void *self, uint16_t usEvent, void *para
     case SIG_SETTING_WRITE_PASSPHRASE:
         GuiImportPhraseNextTile((const char *)param);
         break;
-#ifdef WEB3_VERSION
-    case SIG_SETUP_SHOW_TON_MNEMONIC_HINT:
-        GuiShowTonMnemonicHint();
-        break;
-#endif
     case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS:
         GuiImportPhraseWriteSe(true, 0);
         break;

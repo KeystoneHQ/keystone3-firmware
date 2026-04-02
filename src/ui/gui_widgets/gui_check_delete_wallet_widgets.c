@@ -1,4 +1,3 @@
-#ifndef WEB3_VERSION
 #include "gui.h"
 #include "gui_obj.h"
 #include "gui_model.h"
@@ -75,5 +74,3 @@ void GuiCheckDeleteWalletInit(void)
         lv_obj_add_event_cb(btn, DeleteWalletNextStepHandler, LV_EVENT_CLICKED, NULL);
     }
 }
-#endif
-

@@ -336,12 +336,10 @@ static lv_obj_t *g_egCont = NULL;
 static void QRCodePause(bool);
 static void GuiInitWalletListArray()
 {
-    bool isTON = false;
     bool isSLIP39 = false;
     bool isTempAccount = false;
     bool isRussian = false;
 
-    isTON = (GetMnemonicType() == MNEMONIC_TYPE_TON);
     isSLIP39 = (GetMnemonicType() == MNEMONIC_TYPE_SLIP39);
     isTempAccount = GetIsTempAccount();
     isRussian = (LanguageGetIndex() == LANG_RU);
@@ -356,17 +354,13 @@ static void GuiInitWalletListArray()
             }
         }
 
-        if (isTON) {
-            enable = (index == WALLET_LIST_TONKEEPER);
-        } else {
-            switch (index) {
-            case WALLET_LIST_WANDER:
-            case WALLET_LIST_BEACON:
-                enable = !isTempAccount;
-                break;
-            default:
-                break;
-            }
+        switch (index) {
+        case WALLET_LIST_WANDER:
+        case WALLET_LIST_BEACON:
+            enable = !isTempAccount;
+            break;
+        default:
+            break;
         }
         g_walletListArray[i].enable = enable && (g_currentFilter & g_walletListArray[i].filter);
     }
@@ -764,46 +758,33 @@ static void GuiCreateSelectWalletWidget(lv_obj_t *parent)
 {
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
-    bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
     bool isSlip39 = GetMnemonicType() == MNEMONIC_TYPE_SLIP39;
-    if (isTon) {
-        WalletListItem_t *t = NULL;
-        for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
-            if (g_walletListArray[i].index == WALLET_LIST_TONKEEPER) {
-                t = &g_walletListArray[i];
-                break;
-            }
-        }
-        ASSERT(t != NULL);
-        GuiCreateWalletListItem(parent, t, 0);
-    } else {
-        lv_obj_t *filterBar = GuiCreateContainerWithParent(parent, 408, 64);
-        lv_obj_align(filterBar, LV_ALIGN_TOP_MID, 0, 0);
-        lv_obj_set_flex_flow(filterBar, LV_FLEX_FLOW_ROW);
+    lv_obj_t *filterBar = GuiCreateContainerWithParent(parent, 408, 64);
+    lv_obj_align(filterBar, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_set_flex_flow(filterBar, LV_FLEX_FLOW_ROW);
 
-        for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletFilter); i++) {
-            lv_obj_t *btn = GuiCreateBtnWithFont(filterBar, g_walletFilter[i], &openSansEnIllustrate);
-            lv_obj_set_size(btn, 40, 64);
-            lv_obj_set_style_radius(btn, 0, 0);
-            lv_obj_set_style_bg_color(btn, BLACK_COLOR, 0);
-            lv_obj_set_flex_grow(btn, 1);
-            lv_obj_set_style_border_color(btn, ORANGE_COLOR, 0);
-            lv_obj_set_style_border_side(btn, LV_BORDER_SIDE_BOTTOM, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_border_width(btn, i == 0 ? 2 : 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_add_event_cb(btn, GuiUpdateConnectWalletHandler, LV_EVENT_CLICKED, g_walletFilter[i]);
-        }
-
-        lv_obj_t *line = GuiCreateDividerLine(parent);
-        lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 64);
-
-        lv_obj_t *walletListCont = GuiCreateContainerWithParent(parent, 480, 656 - 64 - 1);
-        g_walletListCont = walletListCont;
-        lv_obj_align(walletListCont, LV_ALIGN_TOP_MID, 0, 65);
-        lv_obj_add_flag(walletListCont, LV_OBJ_FLAG_SCROLLABLE);
-        lv_obj_clear_flag(walletListCont, LV_OBJ_FLAG_SCROLL_ELASTIC);
-        lv_obj_set_scrollbar_mode(walletListCont, LV_SCROLLBAR_MODE_OFF);
-        GuiUpdateWalletListWidget();
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_walletFilter); i++) {
+        lv_obj_t *btn = GuiCreateBtnWithFont(filterBar, g_walletFilter[i], &openSansEnIllustrate);
+        lv_obj_set_size(btn, 40, 64);
+        lv_obj_set_style_radius(btn, 0, 0);
+        lv_obj_set_style_bg_color(btn, BLACK_COLOR, 0);
+        lv_obj_set_flex_grow(btn, 1);
+        lv_obj_set_style_border_color(btn, ORANGE_COLOR, 0);
+        lv_obj_set_style_border_side(btn, LV_BORDER_SIDE_BOTTOM, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_border_width(btn, i == 0 ? 2 : 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_add_event_cb(btn, GuiUpdateConnectWalletHandler, LV_EVENT_CLICKED, g_walletFilter[i]);
     }
+
+    lv_obj_t *line = GuiCreateDividerLine(parent);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 64);
+
+    lv_obj_t *walletListCont = GuiCreateContainerWithParent(parent, 480, 656 - 64 - 1);
+    g_walletListCont = walletListCont;
+    lv_obj_align(walletListCont, LV_ALIGN_TOP_MID, 0, 65);
+    lv_obj_add_flag(walletListCont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_clear_flag(walletListCont, LV_OBJ_FLAG_SCROLL_ELASTIC);
+    lv_obj_set_scrollbar_mode(walletListCont, LV_SCROLLBAR_MODE_OFF);
+    GuiUpdateWalletListWidget();
 }
 
 static void GuiCreateSupportedNetworks(uint8_t index)
@@ -1141,18 +1122,12 @@ UREncodeResult *GuiGetADAData(void)
 
 UREncodeResult *GuiGetTonData(void)
 {
-    bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
     uint8_t mfp[4] = {0};
     char* path = NULL;
-    char* xpub;
-    if (isTon) {
-        xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_NATIVE);
-    } else {
-        GetMasterFingerPrint(mfp);
-        xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
-        path = GetXPubPath(XPUB_TYPE_TON_BIP39);
-    }
-    return get_tonkeeper_wallet_ur(xpub, GetWalletName(), mfp, isTon ? 0 : sizeof(mfp), path);
+    GetMasterFingerPrint(mfp);
+    char* xpub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
+    path = GetXPubPath(XPUB_TYPE_TON_BIP39);
+    return get_tonkeeper_wallet_ur(xpub, GetWalletName(), mfp, sizeof(mfp), path);
 }
 
 void GuiPrepareArConnectWalletView(void)

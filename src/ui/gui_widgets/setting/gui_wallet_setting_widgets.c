@@ -418,7 +418,6 @@ void GuiWalletSettingSetIconLabel(const lv_img_dsc_t *src, const char *name)
 // wallet setting
 void GuiWalletSetWidget(lv_obj_t *parent)
 {
-    bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
     lv_event_cb_t passphraseCb = WalletSettingHandler;
     static uint32_t walletSetting[5] = {
         DEVICE_SETTING_CHANGE_WALLET_DESC,
@@ -433,17 +432,15 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     lv_obj_t *label = GuiCreateTextLabel(parent, GuiNvsBarGetWalletName());
     lv_obj_set_style_text_font(label, &buttonFont, LV_PART_MAIN);
 
-    if (!isTon) {
-        char tempBuf[BUFFER_SIZE_16] = "MFP: ";
-        uint8_t mfp[4];
-        GetMasterFingerPrint(mfp);
-        for (int i = 0; i < sizeof(mfp); i++) {
-            snprintf_s(&tempBuf[5 + i * 2], BUFFER_SIZE_16, "%02X", mfp[i]);
-        }
-        memset_s(mfp, sizeof(mfp), 0, sizeof(mfp));
-        lv_obj_t *mfpLabel = GuiCreateNoticeLabel(parent, tempBuf);
-        g_mfpLabel = mfpLabel;
+    char tempBuf[BUFFER_SIZE_16] = "MFP: ";
+    uint8_t mfp[4];
+    GetMasterFingerPrint(mfp);
+    for (int i = 0; i < sizeof(mfp); i++) {
+        snprintf_s(&tempBuf[5 + i * 2], BUFFER_SIZE_16, "%02X", mfp[i]);
     }
+    memset_s(mfp, sizeof(mfp), 0, sizeof(mfp));
+    lv_obj_t *mfpLabel = GuiCreateNoticeLabel(parent, tempBuf);
+    g_mfpLabel = mfpLabel;
     g_walletSetLabel = label;
     lv_obj_t *img = GuiCreateImg(parent, GuiGetEmojiIconImg());
     g_walletSetIcon = img;
@@ -491,15 +488,13 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, nextY);
     nextY = nextY + 96;
 
-    if (!isTon) {
-        label = GuiCreateTextLabel(parent, _("Passphrase"));
-        imgArrow = GuiCreateImg(parent, &imgArrowRight);
-        table[0].obj = label;
-        table[1].obj = imgArrow;
-        button = GuiCreateButton(parent, 456, 84, table, 2, passphraseCb, &walletSetting[2]);
-        lv_obj_align(button, LV_ALIGN_DEFAULT, 12, nextY);
-        nextY = nextY + 96;
-    }
+    label = GuiCreateTextLabel(parent, _("Passphrase"));
+    imgArrow = GuiCreateImg(parent, &imgArrowRight);
+    table[0].obj = label;
+    table[1].obj = imgArrow;
+    button = GuiCreateButton(parent, 456, 84, table, 2, passphraseCb, &walletSetting[2]);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, nextY);
+    nextY = nextY + 96;
 
     label = GuiCreateTextLabel(parent, _("wallet_setting_seed_phrase"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);

@@ -190,7 +190,7 @@ void *GuiCreateGeneralHintBox(const void *src, const char *titleText,
                               const char *rightBtnText, lv_color_t rightColor)
 {
     lv_obj_t *img = NULL, *title = NULL, *desc1 = NULL, *desc2 = NULL,
-              *leftBtn = NULL, *rightBtn = NULL;
+                                                         *leftBtn = NULL, *rightBtn = NULL;
     lv_obj_t *cont = GuiCreateHintBox(800);
     if (desc2Text != NULL) {
         desc2 = GuiCreateIllustrateLabel(cont, desc2Text);

@@ -184,34 +184,6 @@ static void HandleInputType(MnemonicKeyBoard_t *mkb)
     }
 }
 
-#ifdef WEB3_VERSION
-static void HandleTonCondition(bool isTon, MnemonicKeyBoard_t *mkb)
-{
-    if (isTon) {
-        switch (mkb->intputType) {
-        case MNEMONIC_INPUT_IMPORT_VIEW:
-            GuiEmitSignal(SIG_SETUP_SHOW_TON_MNEMONIC_HINT, NULL, 0);
-            break;
-        case MNEMONIC_INPUT_SETTING_VIEW:
-            if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
-                GuiModelTonRecoveryCheck();
-                GuiSettingRecoveryCheck();
-            } else {
-                GuiModelBip39RecoveryCheck(mkb->wordCnt);
-                GuiSettingRecoveryCheck();
-            }
-            break;
-        case MNEMONIC_INPUT_FORGET_VIEW:
-            GuiForgetAnimContDel(false);
-            GuiModelTonForgetPassword();
-            break;
-        }
-    } else {
-        HandleInputType(mkb);
-    }
-}
-#endif
-
 void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
 {
     size_t bufferSize = BIP39_MAX_WORD_LEN * mkb->wordCnt + mkb->wordCnt;
@@ -221,11 +193,7 @@ void ImportSinglePhraseWords(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     CollectMnemonicWords(mkb, mnemonic, bufferSize);
     SecretCacheSetMnemonic(mnemonic);
 
-#ifdef WEB3_VERSION
-    HandleTonCondition(ton_verify_mnemonic(mnemonic), mkb);
-#else
     HandleInputType(mkb);
-#endif
     lv_obj_add_flag(letterKb->cont, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_height(mkb->cont, 400);
 

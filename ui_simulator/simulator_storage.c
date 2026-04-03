@@ -407,7 +407,6 @@ int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
         // printf("pAccountInfo->isSlip39 = %u\n", pAccountInfo->isSlip39);
         // printf("pAccountInfo->passphraseQuickAccess = %d\n", pAccountInfo->passphraseQuickAccess);
         // printf("pAccountInfo->passphraseMark = %d\n", pAccountInfo->passphraseMark);
-        // printf("pAccountInfo->isTon = %u\n", pAccountInfo->isTon);
         // printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id[0] * 256 + pAccountInfo->slip39Id[1]);
         // PrintArray("mfp", pAccountInfo->mfp, 4);
         // printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie[0]);
@@ -466,7 +465,6 @@ int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
         // printf("pAccountInfo->isSlip39 = %u\n", pAccountInfo->isSlip39);
         // printf("pAccountInfo->passphraseQuickAccess = %d\n", pAccountInfo->passphraseQuickAccess);
         // printf("pAccountInfo->passphraseMark = %d\n", pAccountInfo->passphraseMark);
-        // printf("pAccountInfo->isTon = %u\n", pAccountInfo->isTon);
         // printf("pAccountInfo->slip39Id = %d\n", pAccountInfo->slip39Id[0] * 256 + pAccountInfo->slip39Id[1]);
         // PrintArray("mfp", pAccountInfo->mfp, 4);
         // printf("pAccountInfo->slip39Ie = %d\n", pAccountInfo->slip39Ie[0]);

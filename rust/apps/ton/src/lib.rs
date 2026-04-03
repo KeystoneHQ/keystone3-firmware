@@ -16,7 +16,6 @@ use vendor::{address::TonAddress, wallet::TonWallet};
 pub mod errors;
 mod jettons;
 mod messages;
-pub mod mnemonic;
 pub mod structs;
 pub mod transaction;
 mod utils;

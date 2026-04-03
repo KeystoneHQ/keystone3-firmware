@@ -100,13 +100,6 @@ uint32_t BinarySearchLastNonFFSector(void);
 void GuiModelParseTransactionRawData(void);
 void GuiModelTransactionParseRawDataDelay(void);
 
-#ifndef BTC_ONLY
-void GuiModelTonWriteSe(void);
-void GuiModelTonCalWriteSe(TonData_t ton);
-void GuiModelTonUpdateMnemonic(void);
-void GuiModelTonRecoveryCheck();
-void GuiModelTonForgetPassword();
-#endif
 
 #endif /* _GUI_MODEL_H */
 

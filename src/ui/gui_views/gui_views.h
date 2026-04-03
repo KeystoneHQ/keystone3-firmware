@@ -61,7 +61,6 @@ typedef enum {
     SIG_SETUP_VIEW_TILE_NEXT,
     SIG_SETUP_VIEW_TILE_UP,
     SIG_SETUP_VIEW_TILE_DOWN,
-    SIG_SETUP_SHOW_TON_MNEMONIC_HINT,
     SIG_SETUP_VIEW_BUTT,
 
     SIG_CREATE_SHARE_VIEW_NEXT_SLICE = SIG_SETUP_VIEW_BUTT + 50,
@@ -76,8 +75,6 @@ typedef enum {
     SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC_FAIL,
     SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS,
     SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL,
-    SIG_CREAT_SINGLE_PHRASE_TON_GENERATION_START,
-    SIG_CREAT_SINGLE_PHRASE_TON_GENERATION_END,
 
     SIG_CREATE_SINGLE_PHRASE_WRITESE_PASS,
     SIG_CREATE_SINGLE_PHRASE_WRITESE_FAIL,
@@ -140,8 +137,6 @@ typedef enum {
 
     SIG_FORGET_PASSWORD_SUCCESS = SIG_FINGER_SET_BUTT + 50,
     SIG_FORGET_PASSWORD_FAIL,
-    SIG_FORGET_TON_BIP39_SUCCESS,
-    SIG_FORGET_TON_SUCCESS,
     SIG_FORGET_PASSWORD_BUTT,
 
     SIG_WEB_AUTH_CODE_SUCCESS = SIG_FORGET_PASSWORD_BUTT + 50,
@@ -225,14 +220,9 @@ extern GUI_VIEW g_DevicePublicKeyView;
 #ifndef BTC_ONLY
 extern GUI_VIEW g_multiAccountsReceiveView;
 extern GUI_VIEW g_keyDerivationRequestView;
-extern GUI_VIEW g_tonMnemonicHintView;
 extern GUI_VIEW g_ethBatchTxView;
 #endif
-
-#ifndef WEB3_VERSION
 extern GUI_VIEW g_checkDeleteWalletView;
-#endif
-
 extern GUI_VIEW g_scanView;
 extern GUI_VIEW g_transactionDetailView;
 extern GUI_VIEW g_transactionSignatureView;
@@ -278,6 +268,5 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
 void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t **param, ErrorWindowCallback cb);
 void GuiSDCardExportHandler(lv_event_t *e);
 void CreateBetaNotice(void);
-void GuiUpdateTonWriteSeWidget(lv_obj_t *parent);
 
 #endif /* _GUI_VIEWS_H */

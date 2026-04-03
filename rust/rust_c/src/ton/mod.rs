@@ -16,7 +16,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use app_ton::{mnemonic::ton_mnemonic_validate, ton_compare_address_and_public_key};
+use app_ton::ton_compare_address_and_public_key;
 
 use crate::{extract_ptr_with_type, impl_c_ptr};
 use cty::c_char;
@@ -190,62 +190,6 @@ pub unsafe extern "C" fn ton_sign_proof(
             }
         }
         Err(e) => UREncodeResult::from(e).c_ptr(),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ton_verify_mnemonic(mnemonic: PtrString) -> bool {
-    let mnemonic = recover_c_char(mnemonic);
-    let words: Vec<String> = mnemonic.split(' ').map(|v| v.to_lowercase()).collect();
-    ton_mnemonic_validate(&words, &None).is_ok()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ton_mnemonic_to_entropy(mnemonic: PtrString) -> Ptr<VecFFI<u8>> {
-    let mnemonic = recover_c_char(mnemonic);
-    let words: Vec<String> = mnemonic.split(' ').map(|v| v.to_lowercase()).collect();
-    let entropy = app_ton::mnemonic::ton_mnemonic_to_entropy(&words, &None);
-    VecFFI::from(entropy).c_ptr()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ton_entropy_to_seed(
-    entropy: PtrBytes,
-    entropy_len: u32,
-) -> *mut SimpleResponse<u8> {
-    let entropy = extract_array!(entropy, u8, entropy_len as usize);
-    let seed = app_ton::mnemonic::ton_entropy_to_seed(entropy);
-    SimpleResponse::success(Box::into_raw(Box::new(seed)) as *mut u8).simple_c_ptr()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ton_mnemonic_to_seed(mnemonic: PtrString) -> *mut SimpleResponse<u8> {
-    let mnemonic = recover_c_char(mnemonic);
-    let mut words: Vec<String> = mnemonic.split(' ').map(|v| v.to_lowercase()).collect();
-    let seed = app_ton::mnemonic::ton_mnemonic_to_master_seed(words, None);
-    match seed {
-        Ok(seed) => {
-            SimpleResponse::success(Box::into_raw(Box::new(seed)) as *mut u8).simple_c_ptr()
-        }
-        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ton_seed_to_publickey(
-    seed: PtrBytes,
-    seed_len: u32,
-) -> *mut SimpleResponse<c_char> {
-    let seed = extract_array!(seed, u8, seed_len as usize);
-    match seed.try_into() {
-        Ok(_seed) => {
-            let public_key = app_ton::mnemonic::ton_master_seed_to_public_key(_seed);
-            SimpleResponse::success(convert_c_char(hex::encode(public_key))).simple_c_ptr()
-        }
-        Err(_e) => SimpleResponse::from(crate::common::errors::RustCError::InvalidData(
-            "seed length should be 64".to_string(),
-        ))
-        .simple_c_ptr(),
     }
 }
 

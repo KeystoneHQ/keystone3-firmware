@@ -572,28 +572,6 @@ void AccountsDataCheck(void)
     }
 }
 
-#ifdef WEB3_VERSION
-int32_t CreateNewTonAccount(uint8_t accountIndex, const char *mnemonic, const char *password)
-{
-    ASSERT(accountIndex <= 2);
-    DestroyAccount(accountIndex);
-    CLEAR_OBJECT(g_currentAccountInfo);
-    g_currentAccountIndex = accountIndex;
-    g_currentAccountInfo.isTon = true;
-    SetWalletName(SecretCacheGetWalletName());
-    SetWalletIconIndex(SecretCacheGetWalletIconIndex());
-
-    int32_t ret = SaveNewTonMnemonic(accountIndex, mnemonic, password);
-    CHECK_ERRCODE_RETURN_INT(ret);
-
-    ret = SaveCurrentAccountInfo();
-    CHECK_ERRCODE_RETURN_INT(ret);
-    ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
-    CHECK_ERRCODE_RETURN_INT(ret);
-    return ret;
-}
-#endif
-
 #ifndef BTC_ONLY
 static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk)
 {
@@ -667,7 +645,7 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
 {
     ASSERT(accountIndex <= 2);
 
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39 || GetMnemonicType() == MNEMONIC_TYPE_TON) {
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
         return SUCCESS_CODE;
     }
 

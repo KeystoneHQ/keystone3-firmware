@@ -312,8 +312,6 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_THORWALLET].items[0].qrTitle = _("connect_thorwallet_title");
     g_tutorials[WALLET_LIST_THORWALLET].items[0].qrUrl = _("connect_thorwallet_link");
 
-
-
     //WALLET_LIST_TONKEEPER
     g_tutorials[WALLET_LIST_TONKEEPER].len = 1;
     g_tutorials[WALLET_LIST_TONKEEPER].desc = _("connect_wallet_desc");
@@ -321,7 +319,6 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_TONKEEPER].items[0].url = _("connect_tonkeeper_link");
     g_tutorials[WALLET_LIST_TONKEEPER].items[0].qrTitle = _("connect_tonkeeper_title");
     g_tutorials[WALLET_LIST_TONKEEPER].items[0].qrUrl = _("connect_tonkeeper_link");
-
 
     //WALLET_LIST_KEYSTONE
     g_tutorials[WALLET_LIST_KEYSTONE].len = 1;

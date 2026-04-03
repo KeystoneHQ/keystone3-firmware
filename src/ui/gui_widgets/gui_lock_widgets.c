@@ -294,7 +294,6 @@ void GuiLockScreenPassCode(bool en)
             if (NeedUpdateBoot()) {
                 GuiFrameOpenView(&g_bootUpdateView);
             }
-#ifndef WEB3_VERSION
         } else if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiEnterPassCodeStatus(g_verifyLock, true);
@@ -302,7 +301,6 @@ void GuiLockScreenPassCode(bool en)
         } else if (GetMnemonicType() != MNEMONIC_TYPE_TON && g_checkDeleteWalletView.isActive) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiFrameCLoseView(&g_checkDeleteWalletView);
-#endif
         } else if (ModelGetPassphraseQuickAccess()) {
             lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
             GuiModeGetWalletDesc();

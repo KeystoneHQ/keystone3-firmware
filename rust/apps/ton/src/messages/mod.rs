@@ -223,3 +223,129 @@ impl ParseCell for Comment {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    extern crate std;
+
+    use anyhow::Result;
+
+    use super::nft::NFT_TRANSFER;
+    use super::traits::ParseCell;
+    use super::{infer_action, Comment, InternalMessage, Operation};
+    use crate::vendor::cell::{ArcCell, CellBuilder, TonCellError};
+    use crate::vendor::message::JETTON_TRANSFER;
+
+    fn build_utf8_cell(payload: &str, child: Option<&ArcCell>) -> Result<ArcCell, TonCellError> {
+        let mut builder = CellBuilder::new();
+        builder.store_string(payload)?;
+        if let Some(child) = child {
+            builder.store_reference(child)?;
+        }
+        Ok(builder.build()?.to_arc())
+    }
+
+    fn build_internal_comment_cell(
+        payload: &str,
+        child: Option<&ArcCell>,
+    ) -> Result<ArcCell, TonCellError> {
+        let mut builder = CellBuilder::new();
+        builder.store_u32(32, 0)?;
+        builder.store_string(payload)?;
+        if let Some(child) = child {
+            builder.store_reference(child)?;
+        }
+        Ok(builder.build()?.to_arc())
+    }
+
+    fn assert_invalid_comment_error(cell: &ArcCell) {
+        let err = Comment::parse(cell).unwrap_err();
+        assert!(
+            matches!(err, TonCellError::CellParserError(ref message) if message == "payload is not a comment")
+                || matches!(err, TonCellError::NonEmptyReader(_))
+        );
+    }
+
+    #[test]
+    fn test_infer_action_known_and_unknown() {
+        assert_eq!(
+            infer_action(JETTON_TRANSFER).as_deref(),
+            Some("Jetton Transfer")
+        );
+        assert_eq!(infer_action(NFT_TRANSFER).as_deref(), Some("NFT Transfer"));
+        assert_eq!(infer_action(0xDEADBEEF), None);
+    }
+
+    #[test]
+    fn test_parse_internal_comment_with_child_chain() -> Result<()> {
+        let tail = build_utf8_cell("world", None)?;
+        let mid = build_utf8_cell(" ", Some(&tail))?;
+        let root = build_internal_comment_cell("hello", Some(&mid))?;
+
+        let parsed = InternalMessage::parse(&root)?;
+        assert_eq!(parsed.op_code, "0");
+        assert_eq!(parsed.action, None);
+
+        match parsed.operation {
+            Operation::Comment(comment) => assert_eq!(comment, "hello world"),
+            _ => panic!("expected comment operation"),
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_internal_other_message() -> Result<()> {
+        let mut builder = CellBuilder::new();
+        builder.store_u32(32, 0x12345678)?;
+        builder.store_slice(&[0xAA, 0xBB, 0xCC])?;
+        let cell = builder.build()?.to_arc();
+
+        let parsed = InternalMessage::parse(&cell)?;
+        assert_eq!(parsed.op_code, "12345678");
+        assert_eq!(parsed.action, None);
+
+        match parsed.operation {
+            Operation::OtherMessage(other) => assert_eq!(other.payload, "aabbcc"),
+            _ => panic!("expected other message operation"),
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_comment_success() -> Result<()> {
+        let cell = build_internal_comment_cell("memo", None)?;
+        let comment = Comment::parse(&cell)?;
+        assert_eq!(comment, "memo");
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_comment_rejects_short_payload() -> Result<()> {
+        let mut builder = CellBuilder::new();
+        builder.store_u8(8, 0xFF)?;
+        let cell = builder.build()?.to_arc();
+        assert_invalid_comment_error(&cell);
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_comment_rejects_non_zero_opcode() -> Result<()> {
+        let mut builder = CellBuilder::new();
+        builder.store_u32(32, 1)?;
+        let cell = builder.build()?.to_arc();
+        assert_invalid_comment_error(&cell);
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_comment_rejects_invalid_utf8() -> Result<()> {
+        let mut builder = CellBuilder::new();
+        builder.store_u32(32, 0)?;
+        builder.store_byte(0xFF)?;
+        let cell = builder.build()?.to_arc();
+        assert_invalid_comment_error(&cell);
+        Ok(())
+    }
+}

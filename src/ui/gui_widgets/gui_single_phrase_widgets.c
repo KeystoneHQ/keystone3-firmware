@@ -55,43 +55,19 @@ static lv_obj_t *g_noticeHintBox = NULL;
 static PageWidget_t *g_pageWidget;
 static uint8_t g_entropyMethod = 0;
 static lv_obj_t *g_noticeWindow;
-static bool g_isTon = false;
 static bool g_isDiceRolls = false;
 
 static void ResetConfirmInput(void);
 static void SelectPhraseCntHandler(lv_event_t *e);
 
-#ifdef WEB3_VERSION
-static void TonRegenrateConfirm();
-#endif
-
 static void UpdatePhraseHandler(lv_event_t *e)
 {
-#ifdef WEB3_VERSION
-    if (g_isTon) {
-        TonRegenrateConfirm();
-        return;
-    }
-#endif
     GuiModelBip39UpdateMnemonic(g_phraseCnt);
 }
 
 static void WriteSE()
 {
-#ifdef WEB3_VERSION
-    if (g_isTon) {
-        GuiUpdateTonWriteSeWidget(g_singlePhraseTileView.writeSe);
-        GuiModelTonWriteSe();
-        return;
-    }
-#endif
     GuiModelWriteSe();
-}
-
-static void OpenTonTutorial(lv_event_t *e)
-{
-    uint8_t index = TUTORIAL_TON_MNEMONIC;
-    GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
 }
 
 static void GuiRandomPhraseWidget(lv_obj_t *parent)
@@ -126,19 +102,9 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_t *btn = GuiCreateBtn(cont, USR_SYMBOL_KB_NEXT);
     lv_obj_align(btn, LV_ALIGN_DEFAULT, 348, 24);
     lv_obj_add_event_cb(btn, NextTileHandler, LV_EVENT_CLICKED, cont);
-    if (!g_isTon) {
-        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
-        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
-    } else {
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
-    }
+    SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
+    SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
     if (!g_isDiceRolls) {
-#ifdef WEB3_VERSION
-        if (g_isTon) {
-            GuiModelTonUpdateMnemonic();
-            return;
-        }
-#endif
         GuiModelBip39UpdateMnemonic(g_phraseCnt);
     } else {
         GuiModelBip39UpdateMnemonicWithDiceRolls(g_phraseCnt);
@@ -250,7 +216,6 @@ static void GuiConfirmPhraseWidget(lv_obj_t *parent)
 void GuiSinglePhraseInit(uint8_t entropyMethod)
 {
     g_entropyMethod = entropyMethod;
-    g_isTon = g_entropyMethod & WALLET_TYPE_MASK;
     g_isDiceRolls = g_entropyMethod & ENTROPY_TYPE_MASK;
     CLEAR_OBJECT(g_singlePhraseTileView);
     g_pageWidget = CreatePageWidget();
@@ -279,11 +244,7 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
 
     lv_obj_set_tile_id(g_singlePhraseTileView.tileView, g_singlePhraseTileView.currentTile, 0, LV_ANIM_OFF);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
-    if (!g_isTon) {
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, SelectPhraseCntHandler, NULL);
-    } else {
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
-    }
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, SelectPhraseCntHandler, NULL);
 }
 
 void GuiSinglePhraseUpdateMnemonic(void *signalParam, uint16_t paramLen)
@@ -291,15 +252,6 @@ void GuiSinglePhraseUpdateMnemonic(void *signalParam, uint16_t paramLen)
     g_randomPhraseKb->wordCnt = g_phraseCnt;
     GuiUpdateMnemonicKeyBoard(g_randomPhraseKb, SecretCacheGetMnemonic(), false);
     lv_obj_set_size(g_randomPhraseKb->cont, 408, 360);
-}
-
-void GuiShowTonGeneratingModal(bool enable)
-{
-    if (enable) {
-        GuiPendingHintBoxOpen(_("ton_mnemonic_generating_title"), _("ton_mnemonic_generating_desc"));
-    } else {
-        GuiPendingHintBoxRemove();
-    }
 }
 
 static void SelectCheckBoxHandler(lv_event_t* e)
@@ -401,7 +353,7 @@ int8_t GuiSinglePhraseNextTile(const char *passphrase)
         GuiUpdateMnemonicKeyBoard(g_confirmPhraseKb, g_randomBuff, true);
         break;
     case SINGLE_PHRASE_CONFIRM_PHRASE:
-        if (!g_isTon && GuiCreateWalletNeedPassphrase()) {
+        if (GuiCreateWalletNeedPassphrase()) {
             SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseTutorialHandler, NULL);
         } else {
@@ -434,12 +386,8 @@ int8_t GuiSinglePhrasePrevTile(void)
         ResetConfirmInput();
         lv_obj_clear_flag(g_changeCont, LV_OBJ_FLAG_HIDDEN);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
-        if (!g_isTon) {
-            SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
-            SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
-        } else {
-            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
-        }
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         break;
     case SINGLE_PHRASE_PASSPHRASE:
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
@@ -481,12 +429,8 @@ void GuiSinglePhraseRefresh(void)
 {
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_RANDOM_PHRASE) {
-        if (!g_isTon) {
-            SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
-            SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
-        } else {
-            SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenTonTutorial, NULL);
-        }
+        SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, g_phraseCnt == 12 ? "12" : "24");
+        SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
     } else if (g_singlePhraseTileView.currentTile == SINGLE_PHRASE_CONFIRM_PHRASE) {
@@ -498,24 +442,3 @@ void GuiSinglePhraseRefresh(void)
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
     }
 }
-
-#ifdef WEB3_VERSION
-static void TonUpdateMnemonicHandler(lv_event_t *e);
-static void TonRegenrateConfirm()
-{
-    GUI_DEL_OBJ(g_noticeWindow);
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgBlueInformation, _("ton_mnemonic_regenerate"), NULL, NULL, _("Cancel"), WHITE_COLOR_OPA20, _("Regenerate"), ORANGE_COLOR);
-
-    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
-    lv_obj_add_event_cb(btn, TonUpdateMnemonicHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-}
-
-static void TonUpdateMnemonicHandler(lv_event_t *e)
-{
-    GUI_DEL_OBJ(g_noticeWindow);
-    GuiModelTonUpdateMnemonic();
-}
-#endif

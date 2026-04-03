@@ -37,8 +37,6 @@ typedef enum {
     SECP256K1,
     BIP32_ED25519,
     RSA_KEY,
-    TON_NATIVE,
-    TON_CHECKSUM,
     LEDGER_BITBOX02,
     ZCASH_UFVK_ENCRYPTED,
     EDWARDS_25519,
@@ -521,8 +519,6 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_STELLAR_3,             ED25519,       "stellar_3",                "M/44'/148'/3'"    },
     {XPUB_TYPE_STELLAR_4,             ED25519,       "stellar_4",                "M/44'/148'/4'"    },
     {XPUB_TYPE_TON_BIP39,             ED25519,       "ton_bip39",                "M/44'/607'/0'"    },
-    {XPUB_TYPE_TON_NATIVE,            TON_NATIVE,    "ton",                      ""                 },
-    {PUBLIC_INFO_TON_CHECKSUM,        TON_CHECKSUM,  "ton_checksum",             ""                 },
     {XPUB_TYPE_ZEC_TRANSPARENT_LEGACY, SECP256K1,     "zec_transparent_legacy",   "M/44'/133'/0'"    },
 #endif
 
@@ -615,22 +611,10 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
         SRAM_FREE(primes);
         return result;
     }
-    case TON_NATIVE:
-        return ton_seed_to_publickey(seed, len);
-    case TON_CHECKSUM:
-        // should not be here.
-        ASSERT(0);
 #endif
     default:
         return NULL;
     }
-}
-
-void CalculateTonChecksum(uint8_t *entropy, char* output)
-{
-    uint8_t checksum[32];
-    sha256((struct sha256 *)checksum, entropy, 64);
-    memcpy_s(output, 32, checksum, 32);
 }
 
 char *GetXPubPath(uint8_t index)
@@ -645,8 +629,6 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
     uint32_t addr, size, eraseAddr;
     bool needSet = false;
     char *jsonString = NULL;
-
-    bool isTon = GetMnemonicType() == MNEMONIC_TYPE_TON;
 
     uint8_t account = GetCurrentAccountIndex();
     ASSERT(account < 3);
@@ -670,9 +652,9 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
             cJSON_AddItemToObject(jsonItem, "recvIndex", cJSON_CreateNumber(0));
             cJSON_AddItemToObject(jsonItem, "recvPath", cJSON_CreateNumber(0));
             cJSON_AddItemToObject(jsonItem, "firstRecv", cJSON_CreateBool(false));
-            if (!strcmp(walletList[i].name, "TON") && isTon) {
+            if (!strcmp(walletList[i].name, "TON")) {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
-            } else if ((!strcmp(walletList[i].name, "BTC") || !strcmp(walletList[i].name, "ETH")) && !isTon) {
+            } else if ((!strcmp(walletList[i].name, "BTC") || !strcmp(walletList[i].name, "ETH"))) {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
 #ifdef CYPHERPUNK_VERSION
             } else if (!strcmp(walletList[i].name, "ZEC")) {
@@ -893,20 +875,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
 
 #ifdef WEB3_VERSION
         if (mnemonicType == MNEMONIC_TYPE_TON) {
-            //store public key for ton wallet;
-            xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[XPUB_TYPE_TON_NATIVE].cryptoKey, g_chainTable[XPUB_TYPE_TON_NATIVE].path, NULL, NULL);
-            CHECK_AND_FREE_XPUB(xPubResult)
-            ASSERT(xPubResult->data);
-            g_accountPublicInfo[XPUB_TYPE_TON_NATIVE].value = SRAM_MALLOC(strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
-            strcpy_s(g_accountPublicInfo[XPUB_TYPE_TON_NATIVE].value, strnlen_s(xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1, xPubResult->data);
-            free_simple_response_c_char(xPubResult);
-            //store a checksum of entropy for quick compare;
-            uint8_t checksum[32] = {'\0'};
-            CalculateTonChecksum(entropy, (char *)checksum);
-            g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value = SRAM_MALLOC(65);
-            char* ptr = g_accountPublicInfo[PUBLIC_INFO_TON_CHECKSUM].value;
-            memset_s(ptr, 65, 0, 65);
-            ByteArrayToHexStr(checksum, sizeof(checksum), ptr);
         } else {
 #endif
             for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
@@ -918,10 +886,6 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                                  || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY
 #endif
                                 )) {
-                    continue;
-                }
-                // do not generate public keys for ton-only wallet;
-                if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
                     continue;
                 }
 #ifdef CYPHERPUNK_VERSION
@@ -1046,12 +1010,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     uint8_t entropyLen;
     MnemonicType mnemonicType = GetMnemonicType();
     bool isSlip39 = mnemonicType == MNEMONIC_TYPE_SLIP39;
-    bool isTon = mnemonicType == MNEMONIC_TYPE_TON;
 
-    //TON Wallet doesn't support passphrase so we dont need to consider it.
-    if (isTon) {
-        ASSERT(false);
-    }
     int seedLen = GetCurrentAccountSeedLen();
 
     char *passphrase = GetPassphrase(accountIndex);
@@ -1090,9 +1049,6 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
                              || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY
 #endif
                             )) {
-                continue;
-            }
-            if (g_chainTable[i].cryptoKey == TON_CHECKSUM || g_chainTable[i].cryptoKey == TON_NATIVE) {
                 continue;
             }
 #ifdef CYPHERPUNK_VERSION
@@ -1201,7 +1157,7 @@ char *GetCurrentAccountPublicKey(ChainType chain)
 /// @brief Get if the xPub already Exists.
 /// @param[in] xPub
 /// @return accountIndex, if not exists, return 255.
-uint8_t SpecifiedXPubExist(const char *value, bool isTon)
+uint8_t SpecifiedXPubExist(const char *value)
 {
     uint32_t addr, index, size;
     int32_t ret;
@@ -1230,11 +1186,7 @@ uint8_t SpecifiedXPubExist(const char *value, bool isTon)
             if (keyJson == NULL) {
                 break;
             }
-#ifdef WEB3_VERSION
-            chainJson = cJSON_GetObjectItem(keyJson, isTon ? g_chainTable[PUBLIC_INFO_TON_CHECKSUM].name : g_chainTable[0].name);
-#else
             chainJson = cJSON_GetObjectItem(keyJson, g_chainTable[0].name);
-#endif
             if (chainJson == NULL) {
                 break;
             }
@@ -1281,7 +1233,7 @@ void AccountPublicInfoTest(int argc, char *argv[])
         }
     } else if (strcmp(argv[0], "xpub_exist") == 0) {
         VALUE_CHECK(argc, 2);
-        accountIndex = SpecifiedXPubExist(argv[1], false);
+        accountIndex = SpecifiedXPubExist(argv[1]);
         printf("SpecifiedXPubExist=%d\r\n", accountIndex);
     } else if (strcmp(argv[0], "erase_coin") == 0) {
         addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + GetCurrentAccountIndex() * SPI_FLASH_ADDR_EACH_SIZE;

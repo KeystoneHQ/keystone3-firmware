@@ -125,16 +125,6 @@ static void TutorialsInit()
     g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrSubtitle = NULL;
     g_tutorials[TUTORIAL_CHANGE_ENTROPY].tutorials[1].qrCode = NULL;
 
-    //TUTORIAL_TON_MNEMONIC
-    g_tutorials[TUTORIAL_TON_MNEMONIC].len = 1;
-    g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].title = _("tutorial_ton_mnemonic_title");
-    g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].desc = _("tutorial_ton_mnemonic_desc");
-    g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].link = _("learn_more");
-    g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].qrTitle = _("tutorial_ton_mnemonic_title");
-    g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].qrSubtitle = _("tutorial_ton_mnemonic_url");
-    g_tutorials[TUTORIAL_TON_MNEMONIC].tutorials[0].qrCode = _("tutorial_ton_mnemonic_url");
-
-    //TUTORIAL_LTC_RECEIVE
     g_tutorials[TUTORIAL_LTC_RECEIVE].len = 1;
     g_tutorials[TUTORIAL_LTC_RECEIVE].tutorials[0].title = _("receive_ltc_more_t_title1");
     g_tutorials[TUTORIAL_LTC_RECEIVE].tutorials[0].desc = _("receive_ltc_more_t_desc1");

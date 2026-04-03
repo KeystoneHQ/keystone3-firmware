@@ -224,7 +224,9 @@ mod tests {
         let cell = builder.build()?.to_arc();
 
         let err = JettonMessage::parse(&cell).unwrap_err();
-        assert!(matches!(err, TonCellError::InternalError(message) if message.contains("Invalid Op Code")));
+        assert!(
+            matches!(err, TonCellError::InternalError(message) if message.contains("Invalid Op Code"))
+        );
 
         Ok(())
     }

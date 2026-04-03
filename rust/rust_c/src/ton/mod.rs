@@ -16,7 +16,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use app_ton::{ton_compare_address_and_public_key};
+use app_ton::ton_compare_address_and_public_key;
 
 use crate::{extract_ptr_with_type, impl_c_ptr};
 use cty::c_char;
@@ -192,7 +192,6 @@ pub unsafe extern "C" fn ton_sign_proof(
         Err(e) => UREncodeResult::from(e).c_ptr(),
     }
 }
-
 
 #[no_mangle]
 pub unsafe extern "C" fn ton_get_address(public_key: PtrString) -> *mut SimpleResponse<c_char> {

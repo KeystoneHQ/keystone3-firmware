@@ -268,7 +268,10 @@ mod tests {
 
     #[test]
     fn test_infer_action_known_and_unknown() {
-        assert_eq!(infer_action(JETTON_TRANSFER).as_deref(), Some("Jetton Transfer"));
+        assert_eq!(
+            infer_action(JETTON_TRANSFER).as_deref(),
+            Some("Jetton Transfer")
+        );
         assert_eq!(infer_action(NFT_TRANSFER).as_deref(), Some("NFT Transfer"));
         assert_eq!(infer_action(0xDEADBEEF), None);
     }
@@ -346,5 +349,3 @@ mod tests {
         Ok(())
     }
 }
-
-

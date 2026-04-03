@@ -49,9 +49,9 @@ impl From<MnemonicError> for TonError {
 mod tests {
     extern crate std;
 
-    use alloc::string::ToString;
     use super::{MnemonicError, TonError};
     use crate::vendor::cell::TonCellError;
+    use alloc::string::ToString;
 
     #[test]
     fn test_mnemonic_error_conversion_preserves_context() {
@@ -94,4 +94,3 @@ mod tests {
         }
     }
 }
-

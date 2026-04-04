@@ -348,7 +348,7 @@ static void GuiInitWalletListArray()
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         bool enable = true;
         int index = g_walletListArray[i].index;
-        if (isSLIP39) {
+        if (isSLIP39 && !IsZcashSupportedForCurrentMnemonic()) {
             if (index == WALLET_LIST_KEYSTONE) {
                 g_walletListArray[i].coinIcons = g_keystoneWalletCoinArraySlip39;
                 g_walletListArray[i].coinCount = 7;

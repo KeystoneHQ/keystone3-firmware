@@ -170,6 +170,14 @@ int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const u
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
     CHECK_ERRCODE_RETURN_INT(ret);
+#ifdef CYPHERPUNK_VERSION
+    ret = SetupZcashCache(accountIndex, password);
+    CHECK_ERRCODE_RETURN_INT(ret);
+#endif
+#ifdef WEB3_VERSION
+    ret = SetupZcashSFP(accountIndex, password);
+    CHECK_ERRCODE_RETURN_INT(ret);
+#endif
     return ret;
 }
 
@@ -578,6 +586,14 @@ void AccountsDataCheck(void)
 }
 
 #ifndef BTC_ONLY
+bool IsZcashSupportedForCurrentMnemonic(void)
+{
+    MnemonicType type = GetMnemonicType();
+    if (type == MNEMONIC_TYPE_BIP39) return true;
+    if (type == MNEMONIC_TYPE_SLIP39) return GetCurrentAccountEntropyLen() >= 32;
+    return false;
+}
+
 static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk)
 {
     ASSERT(accountIndex <= 2);
@@ -623,7 +639,7 @@ int32_t SetupZcashSFP(uint8_t accountIndex, const char* password)
 {
     ASSERT(accountIndex <= 2);
 
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39 || GetMnemonicType() == MNEMONIC_TYPE_TON) {
+    if (!IsZcashSupportedForCurrentMnemonic()) {
         return SUCCESS_CODE;
     }
 
@@ -657,7 +673,7 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
 {
     ASSERT(accountIndex <= 2);
 
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+    if (!IsZcashSupportedForCurrentMnemonic()) {
         return SUCCESS_CODE;
     }
 

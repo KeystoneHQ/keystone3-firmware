@@ -594,6 +594,11 @@ bool IsZcashSupportedForCurrentMnemonic(void)
     return false;
 }
 
+bool IsMoneroSupportedForCurrentMnemonic(void)
+{
+    return GetMnemonicType() == MNEMONIC_TYPE_BIP39;
+}
+
 static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk)
 {
     ASSERT(accountIndex <= 2);

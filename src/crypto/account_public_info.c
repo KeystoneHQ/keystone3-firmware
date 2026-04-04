@@ -661,9 +661,8 @@ void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count)
                 cJSON_AddItemToObject(jsonItem, "manage",
                                       cJSON_CreateBool(IsZcashSupportedForCurrentMnemonic()));
             } else if (!strcmp(walletList[i].name, "XMR")) {
-                if (GetMnemonicType() == MNEMONIC_TYPE_BIP39) {
-                    cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(true));
-                }
+                cJSON_AddItemToObject(jsonItem, "manage",
+                                      cJSON_CreateBool(IsMoneroSupportedForCurrentMnemonic()));
 #endif
             } else {
                 cJSON_AddItemToObject(jsonItem, "manage", cJSON_CreateBool(false));

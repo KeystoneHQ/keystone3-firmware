@@ -139,13 +139,15 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
     ret = SaveCurrentAccountInfo();
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
+    CHECK_ERRCODE_RETURN_INT(ret);
 #ifdef CYPHERPUNK_VERSION
-    SetupZcashCache(accountIndex, password);
+    ret = SetupZcashCache(accountIndex, password);
+    CHECK_ERRCODE_RETURN_INT(ret);
 #endif
 #ifdef WEB3_VERSION
-    SetupZcashSFP(accountIndex, password);
-#endif
+    ret = SetupZcashSFP(accountIndex, password);
     CHECK_ERRCODE_RETURN_INT(ret);
+#endif
     return ret;
 }
 
@@ -168,6 +170,14 @@ int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const u
     CHECK_ERRCODE_RETURN_INT(ret);
     ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, true);
     CHECK_ERRCODE_RETURN_INT(ret);
+#ifdef CYPHERPUNK_VERSION
+    ret = SetupZcashCache(accountIndex, password);
+    CHECK_ERRCODE_RETURN_INT(ret);
+#endif
+#ifdef WEB3_VERSION
+    ret = SetupZcashSFP(accountIndex, password);
+    CHECK_ERRCODE_RETURN_INT(ret);
+#endif
     return ret;
 }
 
@@ -247,11 +257,14 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
             printf("passphrase not exist, info switch\r\n");
             ret = AccountPublicInfoSwitch(g_currentAccountIndex, password, false);
         }
+        CHECK_ERRCODE_RETURN_INT(ret);
 #ifdef CYPHERPUNK_VERSION
-        SetupZcashCache(*accountIndex, password);
+        ret = SetupZcashCache(*accountIndex, password);
+        CHECK_ERRCODE_RETURN_INT(ret);
 #endif
 #ifdef WEB3_VERSION
-        SetupZcashSFP(*accountIndex, password);
+        ret = SetupZcashSFP(*accountIndex, password);
+        CHECK_ERRCODE_RETURN_INT(ret);
 #endif
     } else {
         g_publicInfo.loginPasswordErrorCount++;
@@ -573,6 +586,19 @@ void AccountsDataCheck(void)
 }
 
 #ifndef BTC_ONLY
+bool IsZcashSupportedForCurrentMnemonic(void)
+{
+    MnemonicType type = GetMnemonicType();
+    if (type == MNEMONIC_TYPE_BIP39) return true;
+    if (type == MNEMONIC_TYPE_SLIP39) return GetCurrentAccountEntropyLen() >= 32;
+    return false;
+}
+
+bool IsMoneroSupportedForCurrentMnemonic(void)
+{
+    return GetMnemonicType() == MNEMONIC_TYPE_BIP39;
+}
+
 static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk)
 {
     ASSERT(accountIndex <= 2);
@@ -618,17 +644,24 @@ int32_t SetupZcashSFP(uint8_t accountIndex, const char* password)
 {
     ASSERT(accountIndex <= 2);
 
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39 || GetMnemonicType() == MNEMONIC_TYPE_TON) {
+    if (!IsZcashSupportedForCurrentMnemonic()) {
         return SUCCESS_CODE;
     }
 
     uint8_t seed[SEED_LEN];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     int32_t ret = GetAccountSeed(accountIndex, seed, password);
+    if (ret != SUCCESS_CODE) {
+        CLEAR_ARRAY(seed);
+        return ret;
+    }
+
     SimpleResponse_u8 *responseSFP = calculate_zcash_seed_fingerprint(seed, len);
+    CLEAR_ARRAY(seed);
     if (responseSFP->error_code != 0) {
         ret = responseSFP->error_code;
         printf("error: %s\r\n", responseSFP->error_message);
+        free_simple_response_u8(responseSFP);
         return ret;
     }
 
@@ -645,7 +678,7 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
 {
     ASSERT(accountIndex <= 2);
 
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+    if (!IsZcashSupportedForCurrentMnemonic()) {
         return SUCCESS_CODE;
     }
 
@@ -654,25 +687,53 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
     uint8_t seed[SEED_LEN];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
     int32_t ret = GetAccountSeed(accountIndex, seed, password);
+    if (ret != SUCCESS_CODE) {
+        CLEAR_ARRAY(seed);
+        return ret;
+    }
 
     SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, len);
+    if (iv_response->error_code != 0) {
+        ret = iv_response->error_code;
+        CLEAR_ARRAY(seed);
+        printf("error: %s\r\n", iv_response->error_message);
+        free_simple_response_u8(iv_response);
+        return ret;
+    }
 
     uint8_t iv_bytes[16];
     memcpy_s(iv_bytes, 16, iv_response->data, 16);
     free_simple_response_u8(iv_response);
 
     char *zcashEncrypted = GetCurrentAccountPublicKey(ZCASH_UFVK_ENCRYPTED_0);
+    if (zcashEncrypted == NULL) {
+        CLEAR_ARRAY(seed);
+        CLEAR_ARRAY(iv_bytes);
+        return ERR_GENERAL_FAIL;
+    }
+
     SimpleResponse_c_char *response = rust_aes256_cbc_decrypt(zcashEncrypted, password, iv_bytes, 16);
+    CLEAR_ARRAY(iv_bytes);
+    if (response->error_code != 0) {
+        ret = response->error_code;
+        CLEAR_ARRAY(seed);
+        printf("error: %s\r\n", response->error_message);
+        free_simple_response_c_char(response);
+        return ret;
+    }
 
     char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
     strcpy_s(ufvk, ZCASH_UFVK_MAX_LEN, response->data);
     free_simple_response_c_char(response);
     SetZcashUFVK(accountIndex, ufvk);
+    CLEAR_ARRAY(ufvk);
 
     SimpleResponse_u8 *responseSFP = calculate_zcash_seed_fingerprint(seed, len);
+    CLEAR_ARRAY(seed);
     if (responseSFP->error_code != 0) {
-        ret = response->error_code;
-        printf("error: %s\r\n", response->error_message);
+        ret = responseSFP->error_code;
+        printf("error: %s\r\n", responseSFP->error_message);
+        free_simple_response_u8(responseSFP);
         return ret;
     }
 

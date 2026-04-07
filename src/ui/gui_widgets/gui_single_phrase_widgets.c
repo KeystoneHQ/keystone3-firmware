@@ -260,7 +260,7 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     lv_obj_t *actCb = lv_event_get_target(e);
     lv_obj_t *oldCb = lv_obj_get_child(g_noticeHintBox, *active_id);
 
-    if (actCb == g_noticeHintBox) {
+    if (actCb == g_noticeHintBox || oldCb == NULL || !lv_obj_check_type(actCb, &lv_checkbox_class)) {
         return;
     }
     Vibrate(SLIGHT);

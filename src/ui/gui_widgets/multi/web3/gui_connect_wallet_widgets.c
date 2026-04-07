@@ -171,7 +171,7 @@ static const lv_img_dsc_t *g_solfareCoinArray[1] = {
     &coinSol,
 };
 
-static const lv_img_dsc_t *g_nufiCoinArray[4] = {
+static const lv_img_dsc_t *g_nufiCoinArray[5] = {
     &coinSol,
     &coinEth,
     &coinBtc,

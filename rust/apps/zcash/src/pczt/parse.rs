@@ -28,7 +28,6 @@ use zcash_vendor::orchard::{
 };
 
 use crate::errors::ZcashError;
-
 use super::structs::{ParsedFrom, ParsedOrchard, ParsedPczt, ParsedTo, ParsedTransparent};
 
 const ZEC_DIVIDER: u32 = 100_000_000;
@@ -389,17 +388,11 @@ fn parse_transparent_output(
                 ZcashError::InvalidPczt("missing user address for transparent output".into())
             })?;
             let zec_value = format_zec_value(output.value().into_u64() as f64);
-            // we only consider the simple p2sh script at the moment. multisig is not considered;
-            let is_change = output
-                .bip32_derivation()
-                .first_key_value()
-                .map(|(_, derivation)| seed_fingerprint == derivation.seed_fingerprint())
-                .unwrap_or(false);
             Ok(ParsedTo::new(
                 address,
                 zec_value,
                 output.value().into_u64(),
-                is_change,
+                false,
                 false,
                 None,
             ))
@@ -465,6 +458,34 @@ fn parse_orchard_spend(
 }
 
 #[cfg(feature = "cypherpunk")]
+fn is_wallet_orchard_address(
+    ufvk: &UnifiedFullViewingKey,
+    address: &Address,
+) -> Result<bool, ZcashError> {
+    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
+        "orchard is not present in ufvk".to_string(),
+    ))?;
+    let external_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::External);
+    let internal_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::Internal);
+
+    Ok(external_ivk.diversifier_index(address).is_some()
+        || internal_ivk.diversifier_index(address).is_some())
+}
+
+#[cfg(feature = "cypherpunk")]
+fn is_internal_orchard_address(
+    ufvk: &UnifiedFullViewingKey,
+    address: &Address,
+) -> Result<bool, ZcashError> {
+    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
+        "orchard is not present in ufvk".to_string(),
+    ))?;
+    let internal_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::Internal);
+
+    Ok(internal_ivk.diversifier_index(address).is_some())
+}
+
+#[cfg(feature = "cypherpunk")]
 fn parse_orchard_output<P: consensus::Parameters>(
     params: &P,
     ufvk: &UnifiedFullViewingKey,
@@ -488,11 +509,10 @@ fn parse_orchard_output<P: consensus::Parameters>(
         .ok_or(ZcashError::InvalidPczt("value is not present".to_string()))?
         .inner();
 
-    let decode_output =
-        |vk: Option<OutgoingViewingKey>, is_internal: bool| match decode_output_enc_ciphertext(
-            action,
-            vk.as_ref(),
-        )? {
+    let decode_output = |vk: Option<OutgoingViewingKey>, is_internal_ovk: bool| match decode_output_enc_ciphertext(
+        action,
+        vk.as_ref(),
+    )? {
             Some((note, address, memo)) => {
                 let zec_value = format_zec_value(note.value().inner() as f64);
                 let memo = decode_memo(memo);
@@ -523,6 +543,13 @@ fn parse_orchard_output<P: consensus::Parameters>(
                     }
                 }
 
+                let belongs_to_wallet = is_wallet_orchard_address(ufvk, &address)?;
+                let is_internal = is_internal_orchard_address(ufvk, &address)?;
+                if is_internal_ovk && !belongs_to_wallet {
+                    return Err(ZcashError::InvalidPczt(
+                        "Orchard output was recoverable with an internal OVK but does not belong to this wallet".into(),
+                    ));
+                }
                 let is_dummy = match vk {
                     Some(_) => false,
                     None => matches!((action.output().user_address(), value), (None, 0)),
@@ -650,10 +677,44 @@ fn decode_memo(memo_bytes: [u8; 512]) -> Option<String> {
 #[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
+    use alloc::collections::BTreeMap;
     use super::*;
-    use zcash_vendor::zcash_protocol::consensus::MAIN_NETWORK;
+    use zcash_vendor::{
+        transparent::pczt,
+        zcash_address::ZcashAddress,
+        zcash_protocol::consensus::{Parameters, MAIN_NETWORK},
+    };
 
     extern crate std;
+
+    fn p2sh_output_with_matching_seed_fingerprint(
+        seed_fingerprint: [u8; 32],
+    ) -> transparent::pczt::Output {
+        let hash = [0x11; 20];
+        let script_pubkey = {
+            let mut script = vec![0xa9, 0x14];
+            script.extend_from_slice(&hash);
+            script.push(0x87);
+            script
+        };
+        let user_address =
+            ZcashAddress::from_transparent_p2sh(MAIN_NETWORK.network_type(), hash).encode();
+        let mut bip32_derivation = BTreeMap::new();
+        bip32_derivation.insert(
+            [0x02; 33],
+            pczt::Bip32Derivation::parse(seed_fingerprint, vec![0]).unwrap(),
+        );
+
+        pczt::Output::parse(
+            42_000,
+            script_pubkey,
+            Some(vec![0x51]),
+            bip32_derivation,
+            Some(user_address),
+            BTreeMap::new(),
+        )
+        .unwrap()
+    }
 
     #[test]
     fn test_format_zec_value() {
@@ -744,6 +805,16 @@ mod tests {
         assert!(result.get_has_sapling());
         assert_eq!(result.get_total_transfer_value(), "0.001 ZEC");
         assert_eq!(result.get_fee_value(), "0.0002 ZEC");
+    }
+
+    #[test]
+    fn test_parse_p2sh_output_is_never_marked_as_change() {
+        let seed_fingerprint = [0x22; 32];
+        let output = p2sh_output_with_matching_seed_fingerprint(seed_fingerprint);
+
+        let parsed = parse_transparent_output(&seed_fingerprint, &output).unwrap();
+
+        assert!(!parsed.get_is_change());
     }
 
     #[test]

@@ -44,6 +44,7 @@ void OTP_PowerOn(void);
 void random_buffer(uint8_t *buf, size_t len);
 bool IsPreviousLockScreenEnable(void);
 void SetLockScreen(bool enable);
+bool NeedUpdateBoot(void);
 
 extern bool g_reboot;
 

@@ -17,6 +17,7 @@ blake2 = { workspace = true }
 serde_json = { workspace = true }
 bitcoin = { workspace = true }
 thiserror = { workspace = true }
+rust_tools = { workspace = true }
 
 [dev-dependencies]
 keystore = { workspace = true, features = ["multi_coins"] }

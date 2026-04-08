@@ -27,6 +27,11 @@ void OTP_PowerOn(void)
 {
 }
 
+bool NeedUpdateBoot(void)
+{
+    return false;
+}
+
 void StampTimeToUtcTime(int64_t timeStamp, char *utcTime, int maxLen)
 {
     struct tm *utc_time = gmtime(&timeStamp);

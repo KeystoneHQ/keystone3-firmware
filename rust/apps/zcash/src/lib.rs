@@ -210,11 +210,72 @@ pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
 #[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
+    use alloc::vec::Vec;
+
     use consensus::MainNetwork;
     use keystore::algorithms::zcash::{calculate_seed_fingerprint, derive_ufvk};
+    use ::pczt::roles::creator::Creator;
+    use rand_core::OsRng;
+    use serde::{Deserialize, Serialize};
+    use zcash_primitives::transaction::{
+        builder::{BuildConfig, Builder, PcztResult},
+        fees::zip317,
+    };
+    use zcash_vendor::{
+        orchard,
+        transparent::{bundle as transparent, keys::IncomingViewingKey},
+        zcash_protocol::{
+            consensus::{BranchId, NetworkConstants},
+            memo::MemoBytes,
+            value::Zatoshis,
+        },
+        zip32,
+    };
 
     use super::*;
     extern crate std;
+
+    const EMPTY_SAPLING_BUNDLE_ERROR: &str =
+        "sapling value_sum must be zero when Sapling bundle is empty";
+
+    #[derive(Serialize, Deserialize)]
+    struct PcztMirror {
+        global: ::pczt::common::Global,
+        transparent: ::pczt::transparent::Bundle,
+        sapling: SaplingBundleMirror,
+        orchard: ::pczt::orchard::Bundle,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct SaplingBundleMirror {
+        spends: Vec<::pczt::sapling::Spend>,
+        outputs: Vec<::pczt::sapling::Output>,
+        value_sum: i128,
+        anchor: [u8; 32],
+        bsk: Option<[u8; 32]>,
+    }
+
+    fn malformed_pczt_with_empty_sapling_bundle_and_nonzero_value_sum() -> Vec<u8> {
+        let mut bytes = Creator::new(BranchId::Nu6.into(), 10, MainNetwork.coin_type(), [0; 32], [0; 32])
+            .build()
+            .serialize();
+        let mut pczt: PcztMirror = postcard::from_bytes(&bytes[8..]).unwrap();
+        assert!(pczt.sapling.spends.is_empty());
+        assert!(pczt.sapling.outputs.is_empty());
+
+        pczt.sapling.value_sum = 1;
+
+        bytes.truncate(8);
+        postcard::to_extend(&pczt, bytes).unwrap()
+    }
+
+    fn assert_empty_sapling_bundle_error<T: core::fmt::Debug>(result: Result<T>) {
+        assert_eq!(
+            result.unwrap_err(),
+            ZcashError::InvalidPczt(EMPTY_SAPLING_BUNDLE_ERROR.to_string())
+        );
+    }
+
     #[test]
     fn test_get_address() {
         let address = get_address(&MainNetwork, "uview1s2e0495jzhdarezq4h4xsunfk4jrq7gzg22tjjmkzpd28wgse4ejm6k7yfg8weanaghmwsvc69clwxz9f9z2hwaz4gegmna0plqrf05zkeue0nevnxzm557rwdkjzl4pl4hp4q9ywyszyjca8jl54730aymaprt8t0kxj8ays4fs682kf7prj9p24dnlcgqtnd2vnskkm7u8cwz8n0ce7yrwx967cyp6dhkc2wqprt84q0jmwzwnufyxe3j0758a9zgk9ssrrnywzkwfhu6ap6cgx3jkxs3un53n75s3");
@@ -258,6 +319,112 @@ mod tests {
         assert_eq!(orchard.get_to().first().unwrap().get_value(), "0.01985 ZEC");
         assert!(orchard.get_to().first().unwrap().get_is_change());
         assert_eq!(parsed_pczt.get_fee_value(), "0.00015 ZEC");
+    }
+
+    #[test]
+    fn test_parse_pczt_rejects_orchard_internal_ovk_change_spoofing() {
+        let params = MainNetwork;
+        let rng = OsRng;
+
+        let victim_seed = [7u8; 32];
+        let ufvk_text = derive_ufvk(&params, &victim_seed, "m/32'/133'/0'").unwrap();
+        let ufvk = UnifiedFullViewingKey::decode(&params, &ufvk_text).unwrap();
+        let victim_fvk = ufvk.orchard().unwrap().clone();
+        let victim_account =
+            zcash_vendor::transparent::keys::AccountPrivKey::from_seed(
+                &params,
+                &victim_seed,
+                zip32::AccountId::ZERO,
+            )
+            .unwrap();
+        let (victim_addr, address_index) = victim_account
+            .to_account_pubkey()
+            .derive_external_ivk()
+            .unwrap()
+            .default_address();
+        let victim_sk = victim_account
+            .derive_external_secret_key(address_index)
+            .unwrap();
+        let secp = bitcoin::secp256k1::Secp256k1::signing_only();
+        let victim_pubkey = victim_sk.public_key(&secp);
+
+        let attacker_orchard_sk = orchard::keys::SpendingKey::from_bytes([2; 32]).unwrap();
+        let attacker_fvk = orchard::keys::FullViewingKey::from(&attacker_orchard_sk);
+        let attacker_recipient = attacker_fvk.address_at(0u32, orchard::keys::Scope::External);
+        let victim_change = victim_fvk.address_at(0u32, orchard::keys::Scope::Internal);
+
+        let utxo = transparent::OutPoint::fake();
+        let coin = transparent::TxOut {
+            value: Zatoshis::const_from_u64(1_000_000),
+            script_pubkey: victim_addr.script(),
+        };
+
+        let mut builder = Builder::new(
+            &params,
+            10_000_000.into(),
+            BuildConfig::Standard {
+                sapling_anchor: None,
+                orchard_anchor: Some(orchard::Anchor::empty_tree()),
+            },
+        );
+        builder
+            .add_transparent_input(victim_pubkey, utxo, coin)
+            .unwrap();
+        builder
+            .add_orchard_output::<zip317::FeeRule>(
+                Some(victim_fvk.to_ovk(orchard::keys::Scope::Internal)),
+                attacker_recipient,
+                100_000,
+                MemoBytes::empty(),
+            )
+            .unwrap();
+        builder
+            .add_orchard_output::<zip317::FeeRule>(
+                Some(victim_fvk.to_ovk(orchard::keys::Scope::Internal)),
+                victim_change,
+                885_000,
+                MemoBytes::empty(),
+            )
+            .unwrap();
+
+        let PcztResult { pczt_parts, .. } = builder
+            .build_for_pczt(rng, &zip317::FeeRule::standard())
+            .unwrap();
+        let pczt = Creator::build_from_parts(pczt_parts).unwrap();
+        let pczt_bytes = pczt.serialize();
+
+        let seed_fingerprint = calculate_seed_fingerprint(&victim_seed).unwrap();
+
+        let result =
+            parse_pczt_cypherpunk(&params, &pczt_bytes, &ufvk_text, &seed_fingerprint);
+        match result {
+            Err(ZcashError::InvalidPczt(_)) => {}
+            Err(ZcashError::InvalidDataError(msg))
+                if msg.contains("Orchard output was recoverable with an internal OVK but does not belong to this wallet") => {}
+            Err(e) => panic!("unexpected error: {e:?}"),
+            Ok(parsed) => {
+                let orchard = parsed.get_orchard();
+                panic!("unexpected success: orchard={orchard:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn test_check_pczt_rejects_empty_sapling_bundle_with_nonzero_value_sum() {
+        let seed = [9u8; 32];
+        let malformed_pczt = malformed_pczt_with_empty_sapling_bundle_and_nonzero_value_sum();
+        let ufvk = derive_ufvk(&MainNetwork, &seed, "m/32'/133'/0'").unwrap();
+        let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();
+
+        let result = check_pczt_cypherpunk(
+            &MainNetwork,
+            &malformed_pczt,
+            &ufvk.to_string(),
+            &seed_fingerprint,
+            0,
+        );
+
+        assert_empty_sapling_bundle_error(result);
     }
 
     #[test]

@@ -1138,7 +1138,7 @@ static void GetAvaxPathItemSubTittle(char* subTitle, int index, uint32_t maxLen)
         strcpy_s(subTitle, maxLen, "m/44'/60'/0'/0/#F5870A X#");
         break;
     case 1:
-        strcpy_s(subTitle, maxLen, "m/44'/9000'/#F5870A X#/0/0");
+        strcpy_s(subTitle, maxLen, "m/44'/9000'/#F5870A X'#/0/0");
         break;
     default:
         break;

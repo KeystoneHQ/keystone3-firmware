@@ -55,8 +55,39 @@ macro_rules! derivation_account_path {
     }};
 }
 
-const KNOWN_TOKENS: [(&str, &str, f64); 1] =
-    [("TR7NHqjeKQxGChmqiAkX65phN6kkXNGA2h", "USDT", DIVIDER)];
+const KNOWN_TOKENS: &[(&str, &str, f64)] = &[
+    ("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", "USDT", 1_000_000.0), // 6 decimals
+    ("TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8", "USDC", 1_000_000.0), // 6 decimals
+    (
+        "TUpMhErZL2fhh4sVNULAbNKLokS4GjC1F4",
+        "TUSD",
+        1_000_000_000_000_000_000.0,
+    ), // 18 decimals
+    (
+        "TAFjULxiVgT4qWk6UZwjqwZXTSaGaqnVp4",
+        "BTT",
+        1_000_000_000_000_000_000.0,
+    ), // 18 decimals
+    (
+        "TCFLL5dx5ZJdKnWuesXxi1VPwjLVmWZZy9",
+        "JST",
+        1_000_000_000_000_000_000.0,
+    ), // 18 decimals
+    ("TFczxzPhnThNSqr5by8tvxsdCFRRz6cPNq", "NFT", 1_000_000.0),  // 6 decimals
+    (
+        "TSSMHYeV2uE9qYH95DqyoCuNCzEL1NvU3S",
+        "SUN",
+        1_000_000_000_000_000_000.0,
+    ), // 18 decimals
+    ("TYhWwKpw43ENFWBTGpzLHn3882f2au7SMi", "WBTC", 100_000_000.0), // 8 decimals
+    ("TNUC9Qb1rRpS5CbWLmNMxXBjyFoydXjWFR", "WTRX", 1_000_000.0), // 6 decimals
+    ("TLa2f6VPqDgRE67v1736s7bJ8Ray5wYjU7", "WIN", 1_000_000.0),  // 6 decimals
+    (
+        "TXDk8mbtRbXeYuMNS83CfKPaYYT8XWv9Hz",
+        "USDD",
+        1_000_000_000_000_000_000.0,
+    ), // 18 decimals
+];
 
 impl WrappedTron {
     pub fn from_raw_transaction(raw_tx: Transaction, path: String) -> Result<Self> {
@@ -131,7 +162,7 @@ impl WrappedTron {
                                     instance.token = token_info.1.to_string();
                                     instance.divider = token_info.2;
                                 } else {
-                                    instance.token = "Unknown-TRC20".to_string();
+                                    instance.token = "TRC20 Token".to_string();
                                     instance.divider = 10u64.pow(6) as f64;
                                 }
                             }

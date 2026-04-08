@@ -132,8 +132,6 @@ static void RustTestParseBTCKeystone(int argc, char *argv[]);
 static void RustTestCheckFailedBTCKeystone(int argc, char *argv[]);
 static void RustTestCheckSucceedBCHKeystone(int argc, char *argv[]);
 static void RustTestParseLTCKeystone(int argc, char *argv[]);
-static void RustTestParseTronStandard(int argc, char *argv[]);
-static void RustTestSignTronStandard(int argc, char *argv[]);
 static void RustTestParseTronKeystone(int argc, char *argv[]);
 static void RustTestCheckTronKeystoneSucceed(int argc, char *argv[]);
 static void RustTestCheckTronKeystoneFailed(int argc, char *argv[]);
@@ -178,8 +176,6 @@ static void RustTestCheckFailedBTCKeystone(int argc, char *argv[]);
 static void RustTestCheckSucceedBCHKeystone(int argc, char *argv[]);
 static void RustTestParseLTCKeystone(int argc, char *argv[]);
 static void RustTestParseTronKeystone(int argc, char *argv[]);
-static void RustTestParseTronStandard(int argc, char *argv[]);
-static void RustTestSignTronStandard(int argc, char *argv[]);
 static void RustTestCheckTronKeystoneSucceed(int argc, char *argv[]);
 static void RustTestCheckTronKeystoneFailed(int argc, char *argv[]);
 static void RustTestSignTronKeystone(int argc, char *argv[]);
@@ -299,8 +295,6 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test check bch succeed", RustTestCheckSucceedBCHKeystone},
     {"rust test parse ltc", RustTestParseLTCKeystone},
     {"rust test parse tron keystone", RustTestParseTronKeystone},
-    {"rust test parse tron standard request", RustTestParseTronStandard},
-    {"rust test sign tron standard request", RustTestSignTronStandard},
     {"rust test check tron keystone succeed:", RustTestCheckTronKeystoneSucceed},
     {"rust test check tron keystone failed", RustTestCheckTronKeystoneFailed},
     {"rust test sign tron keystone:", RustTestSignTronKeystone},
@@ -1319,54 +1313,6 @@ static void RustTestParseLTCKeystone(int argc, char *argv[])
     free_TransactionParseResult_DisplayTx(result);
     PrintRustMemoryStatus();
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
-}
-
-void RustTestParseTronStandard(int argc, char *argv[])
-{
-    printf("--- Test Tron Standard Parse Start ---\r\n");
-    
-    URParseResult *ur = test_get_tron_standard_request_bytes(); 
-    void *ur_ptr = ur->data;
-
-    TransactionParseResult_DisplayTron *result = tron_parse_sign_request(ur_ptr);
-
-    printf("Error Code: %d\r\n", result->error_code);
-    if (result->error_code == 0) {
-        printf("From: %s\r\n", result->data->overview->from);
-        printf("To: %s\r\n", result->data->overview->to);
-        printf("Value: %s\r\n", result->data->overview->value);
-        printf("Method: %s\r\n", result->data->overview->method);
-    } else {
-        printf("Error Message: %s\r\n", result->error_message);
-    }
-
-    free_ur_parse_result(ur);
-    free_TransactionParseResult_DisplayTron(result);
-    printf("--- Test Tron Standard Parse End ---\r\n");
-}
-
-void RustTestSignTronStandard(int argc, char *argv[])
-{
-    printf("--- Test Tron Standard Sign Start ---\r\n");
-    int32_t index = 0;
-    
-    URParseResult *ur = test_get_tron_standard_request_bytes();
-    void *ur_ptr = ur->data;
-
-    uint8_t seed[64];
-    GetAccountSeed(index, seed, "123456");
-
-    UREncodeResult *result = tron_sign_request(ur_ptr, seed, sizeof(seed));
-
-    if (result->error_code == 0) {
-        printf("Signature UR: %s\r\n", result->data);
-    } else {
-        printf("Sign Failed: %s\r\n", result->error_message);
-    }
-
-    free_ur_parse_result(ur);
-    free_ur_encode_result(result);
-    printf("--- Test Tron Standard Sign End ---\r\n");
 }
 
 static void RustTestParseTronKeystone(int argc, char *argv[])

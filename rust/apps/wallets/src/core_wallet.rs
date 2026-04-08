@@ -45,8 +45,7 @@ pub fn generate_crypto_multi_accounts(
                     Some("account.standard".to_string()),
                 )?);
             }
-            _path if is_avax_x_p_path(_path.as_ref()) =>
-            {
+            _path if is_avax_x_p_path(_path.as_ref()) => {
                 keys.push(generate_k1_normal_key(
                     master_fingerprint,
                     ele,

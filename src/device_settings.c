@@ -98,6 +98,13 @@ static const uint8_t g_integrityFlag[16] = {
     0x01, 0x09, 0x00, 0x03,
     0x01, 0x09, 0x00, 0x03,
 };
+
+static const uint8_t g_recoveryModeFlag[16] = {
+    'r', 'e', 'c', 'o',
+    'v', 'e', 'r', 'y',
+    'm', 'o', 'd', 'e',
+    'f', 'l', 'a', 'g',
+};
 void DeviceSettingsInit(void)
 {
     int32_t ret;
@@ -172,6 +179,10 @@ void InitBootParam(void)
         AesDecryptBuffer(&g_bootParam, sizeof(g_bootParam), &bootParam);
         PrintArray("bootParam.bootCheckFlag", g_bootParam.bootCheckFlag, sizeof(g_bootParam.bootCheckFlag));
         PrintArray("bootParam.recoveryModeSwitch", g_bootParam.recoveryModeSwitch, sizeof(g_bootParam.recoveryModeSwitch));
+        if (memcmp(g_bootParam.recoveryModeSwitch, g_recoveryModeFlag, sizeof(g_bootParam.recoveryModeSwitch)) == 0) {
+            memset(g_bootParam.recoveryModeSwitch, 0, sizeof(g_bootParam.recoveryModeSwitch));
+            SaveBootParam();
+        }
     }
 #endif
 }

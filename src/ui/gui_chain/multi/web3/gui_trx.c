@@ -48,7 +48,7 @@ void *GuiGetTrxData(void)
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
     do {
         PtrT_TransactionParseResult_DisplayTron parseResult = NULL;
-        if( urType == 7) {
+        if( urType == KeystoneSignRequest) {
             parseResult = tron_parse_keystone(data, urType, mfp, sizeof(mfp), trxXpub);
         }else{
             parseResult = tron_parse_sign_request(data);
@@ -67,10 +67,8 @@ PtrT_TransactionCheckResult GuiGetTrxCheckResult(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
     QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
-    printf("GuiGetTrxCheckResult, urType: %d\n", urType);
     GetMasterFingerPrint(mfp);
-    printf("Trx check sign request, mfp: %02x%02x%02x%02x, xpub: %s\n", mfp[0], mfp[1], mfp[2], mfp[3], trxXpub);
-    if( urType == 7) {
+    if( urType == KeystoneSignRequest) {
         return tron_check_keystone(data, urType, mfp, sizeof(mfp), trxXpub);
     }
     return tron_check_sign_request(data, trxXpub, mfp, sizeof(mfp));
@@ -149,7 +147,7 @@ static UREncodeResult *GuiGetTrxSignUrDataDynamic(bool unLimit)
         if (ret != 0) {
             break;
         }
-        if( urType == 7) {
+        if( urType == KeystoneSignRequest) {
             encodeResult = tron_sign_keystone(data, urType, mfp, sizeof(mfp), GetCurrentAccountPublicKey(XPUB_TYPE_TRX),
                                           SOFTWARE_VERSION, seed, GetCurrentAccountSeedLen());
         } else {
@@ -203,7 +201,6 @@ void *GuiGetTrxPersonalMessage(void)
 
 void GetTrxPersonalMessageType(void *indata, void *param, uint32_t maxLen)
 {   
-    printf("DEBUG: GetTrxPersonalMessageType param: %p\n", param);
     if (param == NULL) {
         strcpy_s((char *)indata, maxLen, "raw_message");
         return;

@@ -1,6 +1,5 @@
-#ifndef WEB3_VERSION
-#ifndef _GUI_UPDATE_SUCCESS_WIDGETS_H
-#define _GUI_UPDATE_SUCCESS_WIDGETS_H
+#ifndef _GUI_CHECK_DELETE_WALLET_WIDGETS_H
+#define _GUI_CHECK_DELETE_WALLET_WIDGETS_H
 
 #include "stdint.h"
 #include "stdbool.h"
@@ -8,7 +7,5 @@
 void GuiCheckDeleteWalletInit(void);
 void GuiCheckDeleteWalletDeInit(void);
 void GuiDelWalletToSetup(void);
-
-#endif
 
 #endif

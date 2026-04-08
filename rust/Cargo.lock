@@ -367,6 +367,7 @@ dependencies = [
  "blake2",
  "hex",
  "keystore",
+ "rust_tools",
  "serde",
  "serde_derive",
  "serde_json",

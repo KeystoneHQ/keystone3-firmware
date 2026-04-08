@@ -47,7 +47,16 @@ typedef enum {
     XPUB_TYPE_XRP,
     XPUB_TYPE_THOR,
     XPUB_TYPE_AVAX_BIP44_STANDARD,
-    XPUB_TYPE_AVAX_X_P,
+    XPUB_TYPE_AVAX_X_P_0,
+    XPUB_TYPE_AVAX_X_P_1,
+    XPUB_TYPE_AVAX_X_P_2,
+    XPUB_TYPE_AVAX_X_P_3,
+    XPUB_TYPE_AVAX_X_P_4,
+    XPUB_TYPE_AVAX_X_P_5,
+    XPUB_TYPE_AVAX_X_P_6,
+    XPUB_TYPE_AVAX_X_P_7,
+    XPUB_TYPE_AVAX_X_P_8,
+    XPUB_TYPE_AVAX_X_P_9,
     XPUB_TYPE_IOTA_0,
     XPUB_TYPE_IOTA_1,
     XPUB_TYPE_IOTA_2,
@@ -266,6 +275,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
 void DeleteAccountPublicInfo(uint8_t accountIndex);
 char *GetCurrentAccountPublicKey(ChainType chain);
 uint8_t SpecifiedXPubExist(const char *xPub);
+char *GetCurrentAccountPath(ChainType chain);
 void AccountPublicInfoTest(int argc, char *argv[]);
 bool GetFirstReceive(const char* chainName);
 void SetFirstReceive(const char* chainName, bool isFirst);

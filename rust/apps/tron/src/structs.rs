@@ -32,12 +32,8 @@ mod tests {
 
     #[test]
     fn test_personal_message_without_from() {
-        let msg = PersonalMessage::from(
-            "0x48656c6c6f".to_string(),
-            "Hello".to_string(),
-            None,
-        )
-        .unwrap();
+        let msg =
+            PersonalMessage::from("0x48656c6c6f".to_string(), "Hello".to_string(), None).unwrap();
 
         assert_eq!(msg.raw_message, "0x48656c6c6f");
         assert_eq!(msg.utf8_message, "Hello");

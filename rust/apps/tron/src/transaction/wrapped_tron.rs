@@ -741,4 +741,147 @@ mod tests {
             TronError::InvalidParseContext(_)
         ));
     }
+
+    #[test]
+    fn test_format_amount_small_values() {
+        let hex = "1f8b08000000000000030dcfbd4ac34000c071220ea58bdaa9742a41a84bc87d27270e9ab61890c4268d54bb5dee2e26607b508b4a9fa26fe01bf8b128f812be82b383b8161703ffe9bffd1a5bad9d64d1374a77470bb334d2dc7436567d1b1e96540920ec6fabb99da5e7716b5f4a4e58ae91e36b221d8272ed088ca04399a058f8b2a09075f62297909e0b39edb9a0ce05dde79faf8f0d3868048f56c7ce2e86d3b13abb35833089f4f4be2a97ca04554cd8eaa13c9d5ca9d0b6b3315d8d4c9f5c0e83597837884fe6f309ba0e719494328d5995ce90050fe3e671c17c0ab9d2bc904011a031a502f202e414032e19c60c78be209e409aab1cfa9041e603c204821ad588ddd7f5baddfefd7c7aff03e1cbdbd13f2aab0f710f010000";
+        let pubkey_str = "xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+        let mut tx = WrappedTron::from_payload(payload, &context).unwrap();
+
+        // Test with value 1 (smallest non-zero)
+        tx.value = "1".to_string();
+        let formatted = tx.format_amount().unwrap();
+        assert!(formatted.contains("0.000001"));
+
+        // Test with zero value
+        tx.value = "0".to_string();
+        let formatted = tx.format_amount().unwrap();
+        assert!(formatted.starts_with("0"));
+    }
+
+    #[test]
+    fn test_format_amount_various_decimals() {
+        let hex = "1f8b08000000000000031590bf4ac3501c46359452bba871299d4a102a42c8bffbbbf7c6499b1403b6b14d52b42e92e426b5c53636462979029d7d01477707279f40147c0007df41707130856f3870a6f355387ebd9f1a098b1abd34c99230b9acbf70158eaf1099b4db26368427ae5af29c639bdf0e98a652d50fc4500922110121a21efb548c028010142d8814bdbed995106a4a8a0e4d492e26c98defb78ffb3f79a7dcfa5ae505cf21b6359f4447fdc5a1678ce99c9e0dd1558726999b8f269d09ceea82e7b96408dab58bd23c358deccc1fdf38f97cc114ec6746a40e1c41f05cc87b89814edbada9756bda07b3d9893ab2b46eff22746c3c76a6bb2b6a49d129d9b3abfb3e8be3400335f4090d3506818c303042402f0c669851888160504286502c2b408b001d01f5fd40d6286c3c7f3ed46a773fef45486bab5a1ab8a6c7af2d6f395f62ad6c3dfee2c66bef1f257dc3fe50010000";
+        let pubkey_str = "xpub6C3ndD75jvoARyqUBTvrsMZaprs2ZRF84kRTt5r9oxKQXn5oFChRRgrP2J8QhykhKACBLF2HxwAh4wccFqFsuJUBBcwyvkyqfzJU5gfn5pY";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+        let mut tx = WrappedTron::from_payload(payload, &context).unwrap();
+
+        // Test 18 decimals (like TUSD)
+        tx.divider = 1_000_000_000_000_000_000.0;
+        tx.value = "1000000000000000000".to_string();
+        let formatted = tx.format_amount().unwrap();
+        assert!(formatted.contains("1"));
+
+        // Test 8 decimals (like WBTC)
+        tx.divider = 100_000_000.0;
+        tx.value = "100000000".to_string();
+        let formatted = tx.format_amount().unwrap();
+        assert!(formatted.contains("1"));
+    }
+
+    #[test]
+    fn test_from_raw_transaction_unknown_contract_type() {
+        let mut tron_tx = Transaction::default();
+        let mut raw = transaction::Raw::default();
+        let mut contract = transaction::Contract::default();
+        contract.r#type = 99; // Unknown contract type
+        contract.parameter = None; // No parameter for unknown type
+        raw.contract = vec![contract];
+        tron_tx.raw_data = Some(raw);
+
+        let result = WrappedTron::from_raw_transaction(tron_tx, "m/44'/195'/0'/0/0".to_string());
+        assert!(result.is_ok());
+        let wrapped = result.unwrap();
+        assert_eq!(wrapped.from, "");
+        assert_eq!(wrapped.to, "");
+    }
+
+    #[test]
+    fn test_from_raw_transaction_trc20_short_data() {
+        let mut tron_tx = Transaction::default();
+        let mut raw = transaction::Raw::default();
+        let mut contract = transaction::Contract::default();
+        contract.r#type = 31; // TriggerSmartContract
+
+        let mut trigger_contract = TriggerSmartContract::default();
+        trigger_contract.owner_address = vec![0x41; 21];
+        trigger_contract.contract_address = vec![0x41; 21];
+        trigger_contract.data = vec![0xa9, 0x05, 0x9c, 0xbb]; // transfer selector but data too short
+
+        contract.parameter = Some(prost_types::Any {
+            type_url: "type.googleapis.com/protocol.TriggerSmartContract".to_string(),
+            value: trigger_contract.encode_to_vec(),
+        });
+        raw.contract = vec![contract];
+        tron_tx.raw_data = Some(raw);
+
+        let result = WrappedTron::from_raw_transaction(tron_tx, "m/44'/195'/0'/0/0".to_string());
+        assert!(result.is_ok());
+        let wrapped = result.unwrap();
+        // Should not parse TRC-20 data if it's too short
+        assert_eq!(wrapped.value, "0");
+    }
+
+    #[test]
+    fn test_from_raw_transaction_trc20_wrong_selector() {
+        let mut tron_tx = Transaction::default();
+        let mut raw = transaction::Raw::default();
+        let mut contract = transaction::Contract::default();
+        contract.r#type = 31;
+
+        let mut trigger_contract = TriggerSmartContract::default();
+        trigger_contract.owner_address = vec![0x41; 21];
+        trigger_contract.contract_address = vec![0x41; 21];
+        trigger_contract.data = vec![0xff; 68]; // Wrong selector, but correct length
+
+        contract.parameter = Some(prost_types::Any {
+            type_url: "type.googleapis.com/protocol.TriggerSmartContract".to_string(),
+            value: trigger_contract.encode_to_vec(),
+        });
+        raw.contract = vec![contract];
+        tron_tx.raw_data = Some(raw);
+
+        let result = WrappedTron::from_raw_transaction(tron_tx, "m/44'/195'/0'/0/0".to_string());
+        assert!(result.is_ok());
+        let wrapped = result.unwrap();
+        assert_eq!(wrapped.value, "0");
+    }
+
+    #[test]
+    fn test_from_raw_transaction_no_contract() {
+        let mut tron_tx = Transaction::default();
+        let mut raw = transaction::Raw::default();
+        raw.contract = vec![]; // No contracts
+        tron_tx.raw_data = Some(raw);
+
+        let result = WrappedTron::from_raw_transaction(tron_tx, "m/44'/195'/0'/0/0".to_string());
+        assert!(result.is_ok());
+        let wrapped = result.unwrap();
+        assert_eq!(wrapped.from, "");
+        assert_eq!(wrapped.value, "0");
+    }
+
+    #[test]
+    fn test_format_amount_edge_cases() {
+        let hex = "1f8b08000000000000030dcfbd4ac34000c071220ea58bdaa9742a41a84bc87d27270e9ab61890c4268d54bb5dee2e26607b508b4a9fa26fe01bf8b128f812be82b383b8161703ffe9bffd1a5bad9d64d1374a77470bb334d2dc7436567d1b1e96540920ec6fabb99da5e7716b5f4a4e58ae91e36b221d8272ed088ca04399a058f8b2a09075f62297909e0b39edb9a0ce05dde79faf8f0d3868048f56c7ce2e86d3b13abb35833089f4f4be2a97ca04554cd8eaa13c9d5ca9d0b6b3315d8d4c9f5c0e83597837884fe6f309ba0e719494328d5995ce90050fe3e671c17c0ab9d2bc904011a031a502f202e414032e19c60c78be209e409aab1cfa9041e603c204821ad588ddd7f5baddfefd7c7aff03e1cbdbd13f2aab0f710f010000";
+        let pubkey_str = "xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+        let mut tx = WrappedTron::from_payload(payload, &context).unwrap();
+
+        // Test with custom divider (not 6 or 18)
+        tx.divider = 1_000.0; // 3 decimals
+        tx.value = "1000".to_string();
+        let formatted = tx.format_amount().unwrap();
+        assert!(formatted.contains("1"));
+
+        // Test with divider = 1 (no decimals)
+        tx.divider = 1.0;
+        tx.value = "100".to_string();
+        let formatted = tx.format_amount().unwrap();
+        assert!(formatted.contains("100"));
+    }
 }

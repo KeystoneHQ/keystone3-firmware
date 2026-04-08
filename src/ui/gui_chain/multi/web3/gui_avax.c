@@ -20,10 +20,6 @@ static void *g_parseResult = NULL;
 static bool g_isMulti = false;
 static ViewType g_viewType = ViewTypeUnKnown;
 
-static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
-static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
-static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
-static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayAvaxTx *data, lv_obj_t *lastView);
 UREncodeResult *GetAvaxSignDataDynamic(bool isUnlimited);
 
 void GuiSetAvaxUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
@@ -62,13 +58,15 @@ void *GuiGetAvaxGUIData(void)
         uint8_t mfp[4] = {0};
         GetMasterFingerPrint(mfp);
         PtrT_CSliceFFI_ExtendedPublicKey public_keys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
-        ExtendedPublicKey keys[2];
+        ExtendedPublicKey keys[11];
         public_keys->data = keys;
         public_keys->size = NUMBER_OF_ARRAYS(keys);
         keys[0].path = "m/44'/60'/0'";
         keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
-        keys[1].path = "m/44'/9000'/0'";
-        keys[1].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
+        for (int i = 0; i < 10; i++) {
+            keys[1 + i].path = GetCurrentAccountPath(XPUB_TYPE_AVAX_X_P_0 + i);
+            keys[1 + i].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P_0 + i);
+        }
         PtrT_TransactionParseResult_DisplayTonTransaction parseResult = avax_parse_transaction(data, mfp, sizeof(mfp), public_keys);
         SRAM_FREE(public_keys);
         CHECK_CHAIN_BREAK(parseResult);

@@ -210,10 +210,13 @@ pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
 #[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
+    use alloc::vec::Vec;
+
     use consensus::MainNetwork;
     use keystore::algorithms::zcash::{calculate_seed_fingerprint, derive_ufvk};
     use ::pczt::roles::creator::Creator;
     use rand_core::OsRng;
+    use serde::{Deserialize, Serialize};
     use zcash_primitives::transaction::{
         builder::{BuildConfig, Builder, PcztResult},
         fees::zip317,
@@ -221,12 +224,58 @@ mod tests {
     use zcash_vendor::{
         orchard,
         transparent::{bundle as transparent, keys::IncomingViewingKey},
-        zcash_protocol::{memo::MemoBytes, value::Zatoshis},
+        zcash_protocol::{
+            consensus::{BranchId, NetworkConstants},
+            memo::MemoBytes,
+            value::Zatoshis,
+        },
         zip32,
     };
 
     use super::*;
     extern crate std;
+
+    const EMPTY_SAPLING_BUNDLE_ERROR: &str =
+        "sapling value_sum must be zero when Sapling bundle is empty";
+
+    #[derive(Serialize, Deserialize)]
+    struct PcztMirror {
+        global: ::pczt::common::Global,
+        transparent: ::pczt::transparent::Bundle,
+        sapling: SaplingBundleMirror,
+        orchard: ::pczt::orchard::Bundle,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct SaplingBundleMirror {
+        spends: Vec<::pczt::sapling::Spend>,
+        outputs: Vec<::pczt::sapling::Output>,
+        value_sum: i128,
+        anchor: [u8; 32],
+        bsk: Option<[u8; 32]>,
+    }
+
+    fn malformed_pczt_with_empty_sapling_bundle_and_nonzero_value_sum() -> Vec<u8> {
+        let mut bytes = Creator::new(BranchId::Nu6.into(), 10, MainNetwork.coin_type(), [0; 32], [0; 32])
+            .build()
+            .serialize();
+        let mut pczt: PcztMirror = postcard::from_bytes(&bytes[8..]).unwrap();
+        assert!(pczt.sapling.spends.is_empty());
+        assert!(pczt.sapling.outputs.is_empty());
+
+        pczt.sapling.value_sum = 1;
+
+        bytes.truncate(8);
+        postcard::to_extend(&pczt, bytes).unwrap()
+    }
+
+    fn assert_empty_sapling_bundle_error<T: core::fmt::Debug>(result: Result<T>) {
+        assert_eq!(
+            result.unwrap_err(),
+            ZcashError::InvalidPczt(EMPTY_SAPLING_BUNDLE_ERROR.to_string())
+        );
+    }
+
     #[test]
     fn test_get_address() {
         let address = get_address(&MainNetwork, "uview1s2e0495jzhdarezq4h4xsunfk4jrq7gzg22tjjmkzpd28wgse4ejm6k7yfg8weanaghmwsvc69clwxz9f9z2hwaz4gegmna0plqrf05zkeue0nevnxzm557rwdkjzl4pl4hp4q9ywyszyjca8jl54730aymaprt8t0kxj8ays4fs682kf7prj9p24dnlcgqtnd2vnskkm7u8cwz8n0ce7yrwx967cyp6dhkc2wqprt84q0jmwzwnufyxe3j0758a9zgk9ssrrnywzkwfhu6ap6cgx3jkxs3un53n75s3");
@@ -358,6 +407,24 @@ mod tests {
                 panic!("unexpected success: orchard={orchard:?}");
             }
         }
+    }
+
+    #[test]
+    fn test_check_pczt_rejects_empty_sapling_bundle_with_nonzero_value_sum() {
+        let seed = [9u8; 32];
+        let malformed_pczt = malformed_pczt_with_empty_sapling_bundle_and_nonzero_value_sum();
+        let ufvk = derive_ufvk(&MainNetwork, &seed, "m/32'/133'/0'").unwrap();
+        let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();
+
+        let result = check_pczt_cypherpunk(
+            &MainNetwork,
+            &malformed_pczt,
+            &ufvk.to_string(),
+            &seed_fingerprint,
+            0,
+        );
+
+        assert_empty_sapling_bundle_error(result);
     }
 
     #[test]

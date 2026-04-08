@@ -28,7 +28,6 @@ use zcash_vendor::orchard::{
 };
 
 use crate::errors::ZcashError;
-
 use super::structs::{ParsedFrom, ParsedOrchard, ParsedPczt, ParsedTo, ParsedTransparent};
 
 const ZEC_DIVIDER: u32 = 100_000_000;

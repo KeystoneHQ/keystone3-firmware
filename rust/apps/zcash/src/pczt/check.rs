@@ -1,5 +1,7 @@
 // checking logic for PCZT
 
+use alloc::string::ToString;
+
 use super::*;
 
 #[cfg(feature = "cypherpunk")]
@@ -11,9 +13,33 @@ use zcash_vendor::{
     sha2::{Digest, Sha256},
     transparent::{self, address::TransparentAddress, keys::AccountPubKey},
     zcash_address::{ToAddress, ZcashAddress},
-    zcash_protocol::consensus::{self, NetworkConstants},
+    zcash_protocol::{
+        consensus::{self, NetworkConstants},
+        value::ZatBalance,
+    },
     zip32,
 };
+
+fn validate_sapling_bundle_consistency(pczt: &Pczt) -> Result<(), ZcashError> {
+    let value_balance = (*pczt.sapling().value_sum())
+        .try_into()
+        .ok()
+        .and_then(|v| ZatBalance::from_i64(v).ok())
+        .ok_or(ZcashError::InvalidPczt(
+            "sapling value_sum is invalid".to_string(),
+        ))?;
+    let sapling_value_sum: i64 = value_balance.into();
+    let has_sapling_bundle =
+        !pczt.sapling().spends().is_empty() || !pczt.sapling().outputs().is_empty();
+
+    if !has_sapling_bundle && sapling_value_sum != 0 {
+        return Err(ZcashError::InvalidPczt(
+            "sapling value_sum must be zero when Sapling bundle is empty".to_string(),
+        ));
+    }
+
+    Ok(())
+}
 
 #[cfg(feature = "cypherpunk")]
 pub fn check_pczt_orchard<P: consensus::Parameters>(
@@ -23,6 +49,7 @@ pub fn check_pczt_orchard<P: consensus::Parameters>(
     ufvk: &UnifiedFullViewingKey,
     pczt: &Pczt,
 ) -> Result<(), ZcashError> {
+    validate_sapling_bundle_consistency(pczt)?;
     // checking orchard keys.
     let orchard = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
@@ -44,6 +71,7 @@ pub fn check_pczt_transparent<P: consensus::Parameters>(
     pczt: &Pczt,
     check_sfp: bool,
 ) -> Result<(), ZcashError> {
+    validate_sapling_bundle_consistency(pczt)?;
     Verifier::new(pczt.clone())
         .with_transparent(|bundle| {
             check_transparent(

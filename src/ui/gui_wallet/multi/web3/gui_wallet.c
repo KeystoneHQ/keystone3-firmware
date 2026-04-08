@@ -213,7 +213,16 @@ UREncodeResult *GuiGetCoreWalletData(void)
 {
     ChainPath_t chainPaths[] = {
         {.path = "m/44'/60'/0'", .chainType = XPUB_TYPE_ETH_BIP44_STANDARD},
-        {.path = "m/44'/9000'/0'", .chainType = XPUB_TYPE_AVAX_X_P},
+        {.path = "m/44'/9000'/0'", .chainType = XPUB_TYPE_AVAX_X_P_0},
+        {.path = "m/44'/9000'/1'", .chainType = XPUB_TYPE_AVAX_X_P_1},
+        {.path = "m/44'/9000'/2'", .chainType = XPUB_TYPE_AVAX_X_P_2},
+        {.path = "m/44'/9000'/3'", .chainType = XPUB_TYPE_AVAX_X_P_3},
+        {.path = "m/44'/9000'/4'", .chainType = XPUB_TYPE_AVAX_X_P_4},
+        {.path = "m/44'/9000'/5'", .chainType = XPUB_TYPE_AVAX_X_P_5},
+        {.path = "m/44'/9000'/6'", .chainType = XPUB_TYPE_AVAX_X_P_6},
+        {.path = "m/44'/9000'/7'", .chainType = XPUB_TYPE_AVAX_X_P_7},
+        {.path = "m/44'/9000'/8'", .chainType = XPUB_TYPE_AVAX_X_P_8},
+        {.path = "m/44'/9000'/9'", .chainType = XPUB_TYPE_AVAX_X_P_9},
     };
     ExtendedPublicKey keys[NUMBER_OF_ARRAYS(chainPaths)];
     uint8_t mfp[4] = {0};

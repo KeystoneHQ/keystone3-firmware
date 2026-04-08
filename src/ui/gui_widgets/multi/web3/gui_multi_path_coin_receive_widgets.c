@@ -1138,7 +1138,7 @@ static void GetAvaxPathItemSubTittle(char* subTitle, int index, uint32_t maxLen)
         strcpy_s(subTitle, maxLen, "m/44'/60'/0'/0/#F5870A X#");
         break;
     case 1:
-        strcpy_s(subTitle, maxLen, "m/44'/9000'/0'/0/#F5870A X#");
+        strcpy_s(subTitle, maxLen, "m/44'/9000'/#F5870A X#/0/0");
         break;
     default:
         break;
@@ -1406,10 +1406,10 @@ static void ModelGetAvaxAddress(uint32_t index, AddressDataItem_t *item)
         free_simple_response_c_char(result);
     } else {
         // x p chain address
-        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P);
+        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P_0 + index);
         ASSERT(xPub);
-        snprintf_s(hdPath, sizeof(hdPath), "%s/0/%u", "m/44'/9000'/0'", index);
-        strcpy_s(rootPath, sizeof(rootPath), "m/44'/9000'/0'");
+        snprintf_s(hdPath, sizeof(hdPath), "m/44'/9000'/%u'/0/0", index);
+        snprintf_s(rootPath, sizeof(rootPath), "m/44'/9000'/%u'", index);
         SimpleResponse_c_char *result = avalanche_get_x_p_address(hdPath, xPub, rootPath);
         if (result->error_code == 0) {
             item->index = index;

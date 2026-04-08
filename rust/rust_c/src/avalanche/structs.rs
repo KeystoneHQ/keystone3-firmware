@@ -72,7 +72,7 @@ impl_c_ptr!(DisplayAvaxFromToInfo);
 impl DisplayAvaxFromToInfo {
     fn from_index(
         value: &AvaxFromToInfo,
-        wallet_index: u64,
+        from_path: &str,
         from_address: String,
         type_id: TypeId,
     ) -> Self {
@@ -87,7 +87,7 @@ impl DisplayAvaxFromToInfo {
         let path = if !is_change {
             null_mut()
         } else {
-            convert_c_char(format!("{}/0/{}", value.path_prefix, wallet_index))
+            convert_c_char(from_path.to_string())
         };
         DisplayAvaxFromToInfo {
             address: convert_c_char(address.clone()),
@@ -134,18 +134,10 @@ impl DisplayAvaxTx {
         value: T,
         from_path: String,
         from_address: String,
-        wallet_index: u64,
         type_id: TypeId,
     ) -> Self {
         DisplayAvaxTx {
-            data: DisplayTxAvaxData::from_tx_info(
-                value,
-                from_path,
-                from_address,
-                wallet_index,
-                type_id,
-            )
-            .c_ptr(),
+            data: DisplayTxAvaxData::from_tx_info(value, from_path, from_address, type_id).c_ptr(),
         }
     }
 }
@@ -155,7 +147,6 @@ impl DisplayTxAvaxData {
         value: T,
         from_path: String,
         from_address: String,
-        wallet_index: u64,
         type_id: TypeId,
     ) -> Self {
         DisplayTxAvaxData {
@@ -165,7 +156,7 @@ impl DisplayTxAvaxData {
                     "{} AVAX",
                     value.get_total_input_amount() as f64 / NAVAX_TO_AVAX_RATIO
                 )),
-                path: convert_c_char(from_path),
+                path: convert_c_char(from_path.clone()),
                 is_change: false,
             }
             .c_ptr(),
@@ -193,7 +184,7 @@ impl DisplayTxAvaxData {
                     .map(|v| {
                         DisplayAvaxFromToInfo::from_index(
                             v,
-                            wallet_index,
+                            &from_path,
                             from_address.clone(),
                             type_id,
                         )

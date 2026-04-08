@@ -20,6 +20,8 @@ zcash_note_encryption = "0.4.1"
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }
+pczt = { version = "0.2.1", default-features = false, features = ["orchard", "sapling", "transparent", "zcp-builder"] }
+zcash_primitives = { version = "0.22", default-features = false, features = ["circuits", "test-dependencies", "transparent-inputs"] }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

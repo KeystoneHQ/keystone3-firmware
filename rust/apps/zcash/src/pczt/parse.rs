@@ -465,6 +465,34 @@ fn parse_orchard_spend(
 }
 
 #[cfg(feature = "cypherpunk")]
+fn is_wallet_orchard_address(
+    ufvk: &UnifiedFullViewingKey,
+    address: &Address,
+) -> Result<bool, ZcashError> {
+    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
+        "orchard is not present in ufvk".to_string(),
+    ))?;
+    let external_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::External);
+    let internal_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::Internal);
+
+    Ok(external_ivk.diversifier_index(address).is_some()
+        || internal_ivk.diversifier_index(address).is_some())
+}
+
+#[cfg(feature = "cypherpunk")]
+fn is_internal_orchard_address(
+    ufvk: &UnifiedFullViewingKey,
+    address: &Address,
+) -> Result<bool, ZcashError> {
+    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
+        "orchard is not present in ufvk".to_string(),
+    ))?;
+    let internal_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::Internal);
+
+    Ok(internal_ivk.diversifier_index(address).is_some())
+}
+
+#[cfg(feature = "cypherpunk")]
 fn parse_orchard_output<P: consensus::Parameters>(
     params: &P,
     ufvk: &UnifiedFullViewingKey,
@@ -488,11 +516,10 @@ fn parse_orchard_output<P: consensus::Parameters>(
         .ok_or(ZcashError::InvalidPczt("value is not present".to_string()))?
         .inner();
 
-    let decode_output =
-        |vk: Option<OutgoingViewingKey>, is_internal: bool| match decode_output_enc_ciphertext(
-            action,
-            vk.as_ref(),
-        )? {
+    let decode_output = |vk: Option<OutgoingViewingKey>, is_internal_ovk: bool| match decode_output_enc_ciphertext(
+        action,
+        vk.as_ref(),
+    )? {
             Some((note, address, memo)) => {
                 let zec_value = format_zec_value(note.value().inner() as f64);
                 let memo = decode_memo(memo);
@@ -523,6 +550,13 @@ fn parse_orchard_output<P: consensus::Parameters>(
                     }
                 }
 
+                let belongs_to_wallet = is_wallet_orchard_address(ufvk, &address)?;
+                let is_internal = is_internal_orchard_address(ufvk, &address)?;
+                if is_internal_ovk && !belongs_to_wallet {
+                    return Err(ZcashError::InvalidPczt(
+                        "Orchard output was recoverable with an internal OVK but does not belong to this wallet".into(),
+                    ));
+                }
                 let is_dummy = match vk {
                     Some(_) => false,
                     None => matches!((action.output().user_address(), value), (None, 0)),

@@ -212,6 +212,18 @@ pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
 mod tests {
     use consensus::MainNetwork;
     use keystore::algorithms::zcash::{calculate_seed_fingerprint, derive_ufvk};
+    use ::pczt::roles::creator::Creator;
+    use rand_core::OsRng;
+    use zcash_primitives::transaction::{
+        builder::{BuildConfig, Builder, PcztResult},
+        fees::zip317,
+    };
+    use zcash_vendor::{
+        orchard,
+        transparent::{bundle as transparent, keys::IncomingViewingKey},
+        zcash_protocol::{memo::MemoBytes, value::Zatoshis},
+        zip32,
+    };
 
     use super::*;
     extern crate std;
@@ -258,6 +270,94 @@ mod tests {
         assert_eq!(orchard.get_to().first().unwrap().get_value(), "0.01985 ZEC");
         assert!(orchard.get_to().first().unwrap().get_is_change());
         assert_eq!(parsed_pczt.get_fee_value(), "0.00015 ZEC");
+    }
+
+    #[test]
+    fn test_parse_pczt_rejects_orchard_internal_ovk_change_spoofing() {
+        let params = MainNetwork;
+        let rng = OsRng;
+
+        let victim_seed = [7u8; 32];
+        let ufvk_text = derive_ufvk(&params, &victim_seed, "m/32'/133'/0'").unwrap();
+        let ufvk = UnifiedFullViewingKey::decode(&params, &ufvk_text).unwrap();
+        let victim_fvk = ufvk.orchard().unwrap().clone();
+        let victim_account =
+            zcash_vendor::transparent::keys::AccountPrivKey::from_seed(
+                &params,
+                &victim_seed,
+                zip32::AccountId::ZERO,
+            )
+            .unwrap();
+        let (victim_addr, address_index) = victim_account
+            .to_account_pubkey()
+            .derive_external_ivk()
+            .unwrap()
+            .default_address();
+        let victim_sk = victim_account
+            .derive_external_secret_key(address_index)
+            .unwrap();
+        let secp = bitcoin::secp256k1::Secp256k1::signing_only();
+        let victim_pubkey = victim_sk.public_key(&secp);
+
+        let attacker_orchard_sk = orchard::keys::SpendingKey::from_bytes([2; 32]).unwrap();
+        let attacker_fvk = orchard::keys::FullViewingKey::from(&attacker_orchard_sk);
+        let attacker_recipient = attacker_fvk.address_at(0u32, orchard::keys::Scope::External);
+        let victim_change = victim_fvk.address_at(0u32, orchard::keys::Scope::Internal);
+
+        let utxo = transparent::OutPoint::fake();
+        let coin = transparent::TxOut {
+            value: Zatoshis::const_from_u64(1_000_000),
+            script_pubkey: victim_addr.script(),
+        };
+
+        let mut builder = Builder::new(
+            &params,
+            10_000_000.into(),
+            BuildConfig::Standard {
+                sapling_anchor: None,
+                orchard_anchor: Some(orchard::Anchor::empty_tree()),
+            },
+        );
+        builder
+            .add_transparent_input(victim_pubkey, utxo, coin)
+            .unwrap();
+        builder
+            .add_orchard_output::<zip317::FeeRule>(
+                Some(victim_fvk.to_ovk(orchard::keys::Scope::Internal)),
+                attacker_recipient,
+                100_000,
+                MemoBytes::empty(),
+            )
+            .unwrap();
+        builder
+            .add_orchard_output::<zip317::FeeRule>(
+                Some(victim_fvk.to_ovk(orchard::keys::Scope::Internal)),
+                victim_change,
+                885_000,
+                MemoBytes::empty(),
+            )
+            .unwrap();
+
+        let PcztResult { pczt_parts, .. } = builder
+            .build_for_pczt(rng, &zip317::FeeRule::standard())
+            .unwrap();
+        let pczt = Creator::build_from_parts(pczt_parts).unwrap();
+        let pczt_bytes = pczt.serialize();
+
+        let seed_fingerprint = calculate_seed_fingerprint(&victim_seed).unwrap();
+
+        let result =
+            parse_pczt_cypherpunk(&params, &pczt_bytes, &ufvk_text, &seed_fingerprint);
+        match result {
+            Err(ZcashError::InvalidPczt(_)) => {}
+            Err(ZcashError::InvalidDataError(msg))
+                if msg.contains("Orchard output was recoverable with an internal OVK but does not belong to this wallet") => {}
+            Err(e) => panic!("unexpected error: {e:?}"),
+            Ok(parsed) => {
+                let orchard = parsed.get_orchard();
+                panic!("unexpected success: orchard={orchard:?}");
+            }
+        }
     }
 
     #[test]

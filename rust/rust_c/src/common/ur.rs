@@ -71,8 +71,6 @@ use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use ur_registry::ton::ton_sign_request::TonSignRequest;
 #[cfg(feature = "tron")]
 use ur_registry::tron::tron_sign_request::TronSignRequest;
-#[cfg(feature = "tron")]
-use ur_registry::tron::tron_signature::TronSignature;
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
 

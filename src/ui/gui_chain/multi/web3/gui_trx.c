@@ -46,6 +46,7 @@ void *GuiGetTrxData(void)
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
+    GetMasterFingerPrint(mfp);
     do {
         PtrT_TransactionParseResult_DisplayTron parseResult = NULL;
         if( urType == KeystoneSignRequest) {
@@ -139,7 +140,7 @@ static UREncodeResult *GuiGetTrxSignUrDataDynamic(bool unLimit)
     QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
-    uint8_t seed[64];
+    uint8_t seed[SEED_LEN];
     uint32_t fragmentLen = unLimit ? FRAGMENT_UNLIMITED_LENGTH : FRAGMENT_MAX_LENGTH_DEFAULT;
     
     do {
@@ -213,40 +214,56 @@ void GetTrxPersonalMessageType(void *indata, void *param, uint32_t maxLen)
     }
 }
 
+static void CopyTrxMessageWithEllipsis(char *dest, uint32_t maxLen, const char *src)
+{
+    if (dest == NULL || maxLen == 0) {
+        return;
+    }
+    if (src == NULL) {
+        dest[0] = '\0';
+        return;
+    }
+    size_t src_len = strlen(src);
+    if (src_len < maxLen) {
+        snprintf(dest, maxLen, "%s", src);
+        return;
+    }
+    if (maxLen <= 4) {
+        snprintf(dest, maxLen, "%.*s", (int)(maxLen - 1), "...");
+        return;
+    }
+    snprintf(dest, maxLen, "%.*s...", (int)(maxLen - 4), src);
+}
+
 void GetTrxMessageFrom(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTRONPersonalMessage *message = (DisplayTRONPersonalMessage *)param;
-    if (message->from == NULL) {
-        strcpy_s((char *)indata, maxLen, "");
-        return;
-    }
-    if (strlen(message->from) >= maxLen) {
-        snprintf((char *)indata, maxLen - 3, "%s", message->from);
-        strcat((char *)indata, "...");
-    } else {
-        strcpy_s((char *)indata, maxLen, message->from);
-    }
+    CopyTrxMessageWithEllipsis((char *)indata, maxLen, message ? message->from : NULL);
 }
+
 void GetTrxMessageUtf8(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTRONPersonalMessage *message = (DisplayTRONPersonalMessage *)param;
-    if (strlen(message->utf8_message) >= maxLen) {
-        snprintf((char *)indata, maxLen - 3, "%s", message->utf8_message);
-        strcat((char *)indata, "...");
-    } else {
-        snprintf((char *)indata, maxLen, "%s", message->utf8_message);
-    }
+    CopyTrxMessageWithEllipsis((char *)indata, maxLen, message ? message->utf8_message : NULL);
 }
 
 void GetTrxMessageRaw(void *indata, void *param, uint32_t maxLen)
 {
-    int len = strlen("\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
+    const char *warning = "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#";
+    size_t warningLen = strlen(warning);
     DisplayTRONPersonalMessage *message = (DisplayTRONPersonalMessage *)param;
-    if (strlen(message->raw_message) >= maxLen - len) {
-        snprintf((char *)indata, maxLen - 3 - len, "%s", message->raw_message);
-        strcat((char *)indata, "...");
+    size_t rawLen = message && message->raw_message ? strlen(message->raw_message) : 0;
+    if (maxLen == 0) {
+        return;
+    }
+    if (rawLen + warningLen >= (size_t)maxLen) {
+        if (maxLen <= 4) {
+            snprintf((char *)indata, maxLen, "%s", "");
+            return;
+        }
+        snprintf((char *)indata, maxLen, "%.*s...", (int)(maxLen - 4), message && message->raw_message ? message->raw_message : "");
     } else {
-        snprintf((char *)indata, maxLen, "%s%s", message->raw_message, "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#");
+        snprintf((char *)indata, maxLen, "%s%s", message && message->raw_message ? message->raw_message : "", warning);
     }
 }
 

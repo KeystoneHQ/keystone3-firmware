@@ -66,10 +66,6 @@ pub unsafe extern "C" fn tron_check_sign_request(
             }
         }
         TransactionType::PersonalMessage => TransactionCheckResult::new().c_ptr(),
-        _ => TransactionCheckResult::from(RustCError::UnsupportedTransaction(
-            "Unsupported Transaction Type".to_string(),
-        ))
-        .c_ptr(),
     }
 }
 

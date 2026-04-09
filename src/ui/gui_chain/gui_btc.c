@@ -10,6 +10,7 @@
 #include "screen_manager.h"
 #include "account_manager.h"
 #include "gui_chain_components.h"
+#include "gui_qr_hintbox.h"
 #include "gui_home_widgets.h"
 #include "gui_transaction_detail_widgets.h"
 #include "err_code.h"
@@ -67,7 +68,10 @@ static uint8_t *g_psbtBytes = NULL;
 static uint32_t g_psbtBytesLen = 0;
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
+static const char *g_checkInputValueHintText = "Please confirm each input value is correct.";
 static bool IsMultiSigTx(DisplayTx *data);
+static bool NeedShowCheckInputValueHint(DisplayTx *data);
+static void OpenInputRefQrCode(lv_event_t *e);
 static UREncodeResult *GetBtcSignDataDynamic(bool unLimit);
 static void PreparePublicKeys(PtrT_CSliceFFI_ExtendedPublicKey public_keys, ExtendedPublicKey *keys);
 
@@ -763,6 +767,27 @@ static bool IsMultiSigTx(DisplayTx *data)
     return data->overview->is_multisig;
 }
 
+static bool NeedShowCheckInputValueHint(DisplayTx *data)
+{
+    return data->overview->has_witness_only_inputs;
+}
+
+static void OpenInputRefQrCode(lv_event_t *e)
+{
+    DisplayTxDetailInput *inputData = (DisplayTxDetailInput *)lv_event_get_user_data(e);
+    if (inputData == NULL || inputData->input_txid == NULL) {
+        return;
+    }
+
+    char url[128] = {0};
+    char outpoint[160] = {0};
+    snprintf_s(url, sizeof(url), "https://mempool.space/tx/%s", inputData->input_txid);
+    snprintf_s(outpoint, sizeof(outpoint), "Outpoint:\n%s:%u", inputData->input_txid,
+               inputData->input_vout);
+
+    GuiQRCodeHintBoxOpen(url, "Input Reference", outpoint);
+}
+
 static bool IsAvalancheTx(DisplayTx *data)
 {
     return strcmp(data->overview->network, "Avalanche BTC") == 0;
@@ -838,7 +863,7 @@ static lv_obj_t *CreateAvalancheNoticeView(lv_obj_t *parent, lv_obj_t *lastView)
     if (lastView == NULL) {
         lv_obj_align(noticeContainer, LV_ALIGN_DEFAULT, 0, 0);
     } else {
-        lv_obj_align_to(noticeContainer, lastView, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
+        lv_obj_align_to(noticeContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
     SetContainerDefaultStyle(noticeContainer);
 
@@ -856,13 +881,48 @@ static lv_obj_t *CreateAvalancheNoticeView(lv_obj_t *parent, lv_obj_t *lastView)
     return noticeContainer;
 }
 
+static lv_obj_t *CreateCheckInputValueHintView(lv_obj_t *parent, lv_obj_t *lastView)
+{
+    lv_obj_t *hintView = CreateNoticeCard(parent, g_checkInputValueHintText);
+    if (lastView == NULL) {
+        lv_obj_align(hintView, LV_ALIGN_DEFAULT, 0, 0);
+    } else {
+        lv_obj_align_to(hintView, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
+
+    return hintView;
+}
+
+static lv_obj_t *CreateInputRefView(lv_obj_t *parent, lv_obj_t *lastView, DisplayTxDetailInput *inputData)
+{
+    lv_obj_t *inputRefContainer = GuiCreateContainerWithParent(parent, 160, 30);
+    lv_obj_set_style_bg_opa(inputRefContainer, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(inputRefContainer, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(inputRefContainer, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_clear_flag(inputRefContainer, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(inputRefContainer, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_align_to(inputRefContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    lv_obj_add_event_cb(inputRefContainer, OpenInputRefQrCode, LV_EVENT_CLICKED, inputData);
+
+    lv_obj_t *inputRefLabel = GuiCreateIllustrateLabel(inputRefContainer, "Input Ref");
+    lv_obj_set_style_text_color(inputRefLabel, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
+    lv_obj_align(inputRefLabel, LV_ALIGN_LEFT_MID, 0, 0);
+    lv_obj_clear_flag(inputRefLabel, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t *inputRefIcon = GuiCreateImg(inputRefContainer, &imgQrcodeTurquoise);
+    lv_obj_align_to(inputRefIcon, inputRefLabel, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    lv_obj_clear_flag(inputRefIcon, LV_OBJ_FLAG_CLICKABLE);
+
+    return inputRefContainer;
+}
+
 static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *overviewData, lv_obj_t *lastView)
 {
     lv_obj_t *amountContainer = GuiCreateContainerWithParent(parent, 408, 144);
     if (lastView == NULL) {
         lv_obj_align(amountContainer, LV_ALIGN_DEFAULT, 0, 0);
     } else {
-        lv_obj_align_to(amountContainer, lastView, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
+        lv_obj_align_to(amountContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
     SetContainerDefaultStyle(amountContainer);
 
@@ -919,7 +979,7 @@ static lv_obj_t *CreateNetworkView(lv_obj_t *parent, char *network, lv_obj_t *la
     if (lastView == NULL) {
         lv_obj_align(networkContainer, LV_ALIGN_DEFAULT, 0, 0);
     } else {
-        lv_obj_align_to(networkContainer, lastView, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
+        lv_obj_align_to(networkContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
     SetContainerDefaultStyle(networkContainer);
 
@@ -1098,7 +1158,7 @@ static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overv
 static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
     lv_obj_t *amountContainer = GuiCreateContainerWithParent(parent, 408, 138);
-    lv_obj_align_to(amountContainer, lastView, LV_ALIGN_OUT_BOTTOM_MID, 0, 16);
+    lv_obj_align_to(amountContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     SetContainerDefaultStyle(amountContainer);
 
     lv_obj_t *label = lv_label_create(amountContainer);
@@ -1218,7 +1278,8 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         lv_obj_align_to(pathLabel, addressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_obj_update_layout(pathLabel);
 
-        int pathLabelBottom = lv_obj_get_y2(pathLabel);
+        lv_obj_t *inputRefLabel = CreateInputRefView(formInnerContainer, pathLabel, &from->data[i]);
+        int pathLabelBottom = lv_obj_get_y2(inputRefLabel);
 
         lv_obj_set_height(formInnerContainer, pathLabelBottom);
 
@@ -1321,6 +1382,10 @@ void GuiBtcTxOverview(lv_obj_t *parent, void *totalData)
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t *lastView = NULL;
+
+    if (NeedShowCheckInputValueHint(txData)) {
+        lastView = CreateCheckInputValueHintView(parent, lastView);
+    }
 
     if (IsMultiSigTx(txData)) {
         lastView = CreateSignStatusView(parent, overviewData->sign_status);

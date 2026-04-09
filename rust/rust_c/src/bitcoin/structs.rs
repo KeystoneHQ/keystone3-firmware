@@ -62,6 +62,7 @@ pub struct DisplayTxOverview {
     fee_larger_than_amount: bool,
     sign_status: PtrString,
     need_sign: bool,
+    has_witness_only_inputs: bool,
 }
 
 impl_c_ptr!(DisplayTxOverview);
@@ -92,6 +93,8 @@ pub struct DisplayTxDetailInput {
     has_address: bool,
     address: PtrString,
     amount: PtrString,
+    input_txid: PtrString,
+    input_vout: u32,
     is_mine: bool,
     path: PtrString,
     is_external: bool,
@@ -160,6 +163,7 @@ impl From<OverviewTx> for DisplayTxOverview {
                 null_mut()
             },
             need_sign: value.need_sign,
+            has_witness_only_inputs: value.has_witness_only_inputs,
         }
     }
 }
@@ -205,6 +209,8 @@ impl From<ParsedInput> for DisplayTxDetailInput {
             has_address: value.address.is_some(),
             address: value.address.map(convert_c_char).unwrap_or(null_mut()),
             amount: convert_c_char(value.amount),
+            input_txid: convert_c_char(value.input_txid),
+            input_vout: value.input_vout,
             is_mine: value.path.is_some(),
             path: value.path.map(convert_c_char).unwrap_or(null_mut()),
             is_external: value.is_external,
@@ -289,6 +295,7 @@ impl Free for DisplayTxDetailInput {
     unsafe fn free(&self) {
         let _ = Box::from_raw(self.address);
         let _ = Box::from_raw(self.amount);
+        let _ = Box::from_raw(self.input_txid);
         let _ = Box::from_raw(self.path);
     }
 }

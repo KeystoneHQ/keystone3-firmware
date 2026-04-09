@@ -171,16 +171,19 @@ mod test {
                 sign_status: Some("Unsigned".to_string()),
                 is_multisig: false,
                 need_sign: true,
+                has_witness_only_inputs: false,
             }
         };
     }
 
     macro_rules! build_parsed_input {
-        ($address:expr, $amount:expr, $value:expr, $path:expr) => {
+        ($address:expr, $amount:expr, $value:expr, $path:expr, $txid:expr, $vout:expr) => {
             ParsedInput {
                 address: Some($address.to_string()),
                 amount: $amount.to_string(),
                 value: $value,
+                input_txid: $txid.to_string(),
+                input_vout: $vout,
                 path: Some($path.to_string()),
                 is_multisig: false,
                 is_external: false,
@@ -209,7 +212,7 @@ mod test {
             DetailTx {
                 from: $from
                     .iter()
-                    .map(|i| build_parsed_input!(i.0, i.1, i.2, i.3))
+                    .map(|i| build_parsed_input!(i.0, i.1, i.2, i.3, i.4, i.5))
                     .collect(),
                 to: $to
                     .iter()
@@ -249,6 +252,7 @@ mod test {
         let payload = prepare_payload(hex);
         let context = prepare_parse_context(pubkey_str);
         let mut parsed_tx = parse_raw_tx(payload, context).unwrap();
+        assert!(!parsed_tx.overview.has_witness_only_inputs);
         // set output is_external always false to pass the test
         parsed_tx
             .detail
@@ -273,6 +277,8 @@ mod test {
             "0.1851975 LTC",
             18519750,
             "m/49'/2'/0'/0/0",
+            "a59bcbaaae11ba5938434e2d4348243e5e392551156c4a3e88e7bdc0b2a8f663",
+            1,
         );
         let output1 = (
             "MG67WAWZ6jEmA97LWuERJTkBB7pHMoVfgj",
@@ -334,6 +340,8 @@ mod test {
             "0.01 DASH",
             1000000,
             "m/44'/5'/0'/0/0",
+            "0e1c934b781dcd5217a909343abe4f4d2a1b3904224090ebe83fea66f3a14c9d",
+            0,
         );
         let output1 = (
             "Xb9LAffWjcxTCN5GMj5kbZiqN5g7nnkgrv",
@@ -394,6 +402,8 @@ mod test {
             "0.005555 BCH",
             555500,
             "m/44'/145'/0'/0/1",
+            "0752bd85eb5d52aba81c2f377930eb60b851fe6fb4b0c9509b4cd810e7c59b91",
+            0,
         );
         let output1 = (
             "qpt4cr4juduwl36w35rwfwvz6am2z7mxcg8a84k28n",
@@ -455,6 +465,8 @@ mod test {
             "0.00298739 BTC",
             298739,
             "M/84'/0'/0'/1/32",
+            "6ca0ec211a165a8d86b1708a1eb576121efca6b95993afd303400b300688d322",
+            1,
         );
         let output1 = (
             "bc1qksq4ax9jpqqmumwfhg54ktwh29627zf78237wp",
@@ -516,12 +528,16 @@ mod test {
             "0.0000055 BTC",
             550,
             "M/49'/0'/0'/0/0",
+            "6757786cb8e64f42cf3e5cb86949468426f803c61beee31035989259b9910ba8",
+            0,
         );
         let input2 = (
             "3G8X84wtGDtiENAYagDSBcofp7NkjqHJFS",
             "0.00001 BTC",
             1000,
             "M/49'/0'/0'/0/1",
+            "43e0fbd9aedddb6cce3a04081209e136eb7bb56622b2a10d93170ce8b720096a",
+            0,
         );
         let output1 = (
             "3NNSqAz3LajNv6eSQtn237CtPaHdJdYPVR",
@@ -577,12 +593,16 @@ mod test {
             "0.00003 BTC",
             3000,
             "M/44'/0'/0'/0/4",
+            "10e0846616f20e8dee8d0984fc7b8b629794e1ba8494b5e4e7b0a9df54fffdbf",
+            0,
         );
         let input2 = (
             "1NVWpSCxyzpPgSeGRs4zqFciZ7N1UEQtEc",
             "0.000023 BTC",
             2300,
             "M/44'/0'/0'/0/0",
+            "9bad05221ce0c07fdf7a48bbb7fc7bbd40770748a36ea74fd85eab82e6c5d128",
+            0,
         );
         let output1 = (
             "bc1qksq4ax9jpqqmumwfhg54ktwh29627zf78237wp",

@@ -18,6 +18,8 @@ pub struct ParsedInput {
     pub address: Option<String>,
     pub amount: String,
     pub value: u64,
+    pub input_txid: String,
+    pub input_vout: u32,
     pub path: Option<String>,
     pub sign_status: (u32, u32),
     pub is_multisig: bool,
@@ -61,6 +63,7 @@ pub struct OverviewTx {
     pub is_multisig: bool,
     pub sign_status: Option<String>,
     pub need_sign: bool,
+    pub has_witness_only_inputs: bool,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -160,6 +163,7 @@ pub trait TxParser {
         inputs: Vec<ParsedInput>,
         outputs: Vec<ParsedOutput>,
         network: &dyn NetworkT,
+        has_witness_only_inputs: bool,
     ) -> Result<ParsedTx> {
         let total_input_value = inputs.iter().fold(0, |acc, cur| acc + cur.value);
         let total_output_value = outputs.iter().fold(0, |acc, cur| acc + cur.value);
@@ -204,6 +208,7 @@ pub trait TxParser {
         overview_to.sort();
         overview_to.dedup();
         let overview = OverviewTx {
+            has_witness_only_inputs,
             sign_status: Self::get_sign_status_text(&inputs),
             total_output_amount: Self::format_amount(overview_amount, network),
             fee_amount: Self::format_amount(fee, network),

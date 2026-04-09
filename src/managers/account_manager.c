@@ -645,7 +645,7 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
 {
     ASSERT(accountIndex <= 2);
 
-    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39 || GetMnemonicType() == MNEMONIC_TYPE_TON) {
         return SUCCESS_CODE;
     }
 

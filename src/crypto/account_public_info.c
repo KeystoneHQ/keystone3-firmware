@@ -963,11 +963,9 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     bool regeneratePubKey = newKey;
 
     ASSERT(accountIndex < 3);
-#ifdef WEB3_VERSION
     if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
         return ret;
     }
-#endif
 
     FreePublicKeyRam();
     //Load Multisig wallet Manager

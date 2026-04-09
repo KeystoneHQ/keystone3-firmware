@@ -63,15 +63,6 @@ pub unsafe extern "C" fn test_get_tron_keystone_bytes() -> *mut URParseResult {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn test_get_tron_standard_request_bytes() -> *mut URParseResult {
-    let hex_str = "a30258d47b2266726f6d223a22545868745972386e6d6769537033645933635366694b426a6564337a4e3874654853222c22746f223a22544b43735874664b6648326436614561514363747962444339756141334d536a3268222c2276616c7565223a2231303030303030227d03d90130a1018a182cf518c3f51800f51800f51800f5";
-
-    let bytes = Bytes::new(hex::decode(hex_str).unwrap());
-
-    URParseResult::single(ViewType::TronTx, QRCodeType::TronSignRequest, bytes).c_ptr()
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn test_get_tron_check_failed_keystone_bytes() -> *mut URParseResult {
     let bytes = Bytes::new(hex::decode("1f8b08000000000000030dcfbd4ac34000c071220ea58bdaa9742a41a84bc87d27270e9ab61890c4268d54bb5dee2e26607b508b4a9fa26fe01bf8b128f812be82b383b8161703ffe9bffd1a5bad9d64d1374a77470bb334d2dc7436567d1b1e96540920ec6fabb99da5e7716b5f4a4e58ae91e36b221d8272ed088ca04399a058f8b2a09075f62297909e0b39edb9a0ce05dde79faf8f0d3868048f56c7ce2e86d3b13abb35833089f4f4be2a97ca04554cd8eaa13c9d5ca9d0b6b3315d8d4c9f5c0e83597837884fe6f309ba0e719494328d5995ce90050fe3e671c17c0ab9d2bc904011a031a502f202e414032e19c60c78be209e409aab1cfa9041e603c204821ad588ddd7f5baddfefd7c7aff03e1cbdbd13f2aab0f710f010000").unwrap());
     URParseResult::single(ViewType::TronTx, QRCodeType::Bytes, bytes).c_ptr()

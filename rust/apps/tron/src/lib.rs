@@ -229,7 +229,6 @@ mod test {
         let sign_data = hex::decode(mock_pb_hex).unwrap();
 
         let result = check_tx_request(&sign_data, &path, xpub);
-        // This should fail because xfp doesn't match but we're testing the decoding works
         assert!(result.is_err());
     }
 

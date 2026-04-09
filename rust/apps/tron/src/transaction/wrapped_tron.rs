@@ -464,13 +464,20 @@ impl WrappedTron {
         let raw_val = f64::from_str(self.value.as_str())?;
         let amount = raw_val / self.divider;
         let unit = self.format_unit()?;
-        let precision = if self.divider == 1.0 {
+        
+        // Calculate precision from divider (power of 10)
+        let precision = if self.divider <= 1.0 {
             0
-        } else if self.divider.is_sign_positive() && self.divider.is_finite() {
-            self.divider.log10().round() as usize
         } else {
-            0
+            let mut count = 0;
+            let mut d = self.divider;
+            while d >= 9.99999 {  // Account for float precision
+                d /= 10.0;
+                count += 1;
+            }
+            count
         };
+        
         let formatted = format!("{:.*}", precision, amount);
         let trimmed = if formatted.contains('.') {
             formatted
@@ -641,7 +648,6 @@ mod tests {
         let payload = prepare_payload(hex);
         let context = prepare_parse_context(pubkey_str);
         let tx = WrappedTron::from_payload(payload, &context).unwrap();
-        println!("Valid Address from Payload: {}", tx.from);
         let hash = tx.signature_hash().unwrap();
         assert_eq!(32, hash.len());
     }

@@ -49,10 +49,10 @@ void *GuiGetTrxData(void)
     GetMasterFingerPrint(mfp);
     do {
         PtrT_TransactionParseResult_DisplayTron parseResult = NULL;
-        if( urType == KeystoneSignRequest) {
-            parseResult = tron_parse_keystone(data, urType, mfp, sizeof(mfp), trxXpub);
-        }else{
+        if (urType == TronSignRequest) {
             parseResult = tron_parse_sign_request(data);
+        } else {
+            parseResult = tron_parse_keystone(data, urType, mfp, sizeof(mfp), trxXpub);
         }
         
         CHECK_CHAIN_BREAK(parseResult);
@@ -69,10 +69,10 @@ PtrT_TransactionCheckResult GuiGetTrxCheckResult(void)
     char *trxXpub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
     QRCodeType urType = g_isMulti ? g_urMultiResult->ur_type : g_urResult->ur_type;
     GetMasterFingerPrint(mfp);
-    if( urType == KeystoneSignRequest) {
-        return tron_check_keystone(data, urType, mfp, sizeof(mfp), trxXpub);
+    if (urType == TronSignRequest) {
+        return tron_check_sign_request(data, trxXpub, mfp, sizeof(mfp));
     }
-    return tron_check_sign_request(data, trxXpub, mfp, sizeof(mfp));
+    return tron_check_keystone(data, urType, mfp, sizeof(mfp), trxXpub);
 }
 
 void FreeTrxMemory(void)
@@ -148,11 +148,11 @@ static UREncodeResult *GuiGetTrxSignUrDataDynamic(bool unLimit)
         if (ret != 0) {
             break;
         }
-        if( urType == KeystoneSignRequest) {
+        if (urType == TronSignRequest) {
+            encodeResult = tron_sign_request(data, seed, GetCurrentAccountSeedLen(), fragmentLen);
+        } else {
             encodeResult = tron_sign_keystone(data, urType, mfp, sizeof(mfp), GetCurrentAccountPublicKey(XPUB_TYPE_TRX),
                                           SOFTWARE_VERSION, seed, GetCurrentAccountSeedLen());
-        } else {
-            encodeResult = tron_sign_request(data, seed, GetCurrentAccountSeedLen(), fragmentLen);
         }
         
         CHECK_CHAIN_BREAK(encodeResult);
@@ -249,7 +249,7 @@ void GetTrxMessageUtf8(void *indata, void *param, uint32_t maxLen)
 
 void GetTrxMessageRaw(void *indata, void *param, uint32_t maxLen)
 {
-    const char *warning = "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#";
+    const char *warning = "\n#F5C131 The data cannot be processed in its#\n#F5C131 current format. Please use your software #\n#F5C131 wallet interface to access and view the#\n#F5C131 data.#";
     size_t warningLen = strlen(warning);
     DisplayTRONPersonalMessage *message = (DisplayTRONPersonalMessage *)param;
     size_t rawLen = message && message->raw_message ? strlen(message->raw_message) : 0;

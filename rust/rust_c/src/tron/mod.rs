@@ -52,7 +52,10 @@ pub unsafe extern "C" fn tron_check_sign_request(
     let x_pub_recovered = recover_c_char(x_pub);
     let xpub_str = x_pub_recovered.as_str();
     let sign_data = req.get_sign_data();
-    let path = req.get_derivation_path().get_path().unwrap_or_default();
+    let path = match req.get_derivation_path().get_path() {
+        Some(p) => p,
+        None => return TransactionCheckResult::from(RustCError::InvalidHDPath).c_ptr(),
+    };
 
     let transaction_type = TransactionType::from(req.get_data_type());
     match transaction_type {

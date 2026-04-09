@@ -20,6 +20,7 @@
 #include "gui_global_resources.h"
 
 #define GENERAL_ADDRESS_INDEX_MAX                       (999999999)
+#define AVAX_X_P_ADDRESS_INDEX_MAX                      (9)
 #define ETH_LEDGER_LIVE_ADDRESS_INDEX_MAX               (9)
 #define SOL_BIP44_ADDRESS_INDEX_MAX                     (49)
 #define SOL_BIP44_ROOT_ADDRESS_INDEX_MAX                (0)
@@ -944,6 +945,19 @@ static int GetEthMaxAddressIndex(void)
     return GENERAL_ADDRESS_INDEX_MAX;
 }
 
+static int GetAvaxMaxAddressIndex(void)
+{
+    switch (GetPathIndex()) {
+    case 0:
+        return GENERAL_ADDRESS_INDEX_MAX;
+    case 1:
+        return AVAX_X_P_ADDRESS_INDEX_MAX;
+    default:
+        break;
+    }
+    return GENERAL_ADDRESS_INDEX_MAX;
+}
+
 static int GetSOLMaxAddressIndex(void)
 {
     switch (GetPathIndex()) {
@@ -967,7 +981,7 @@ static int GetMaxAddressIndex(void)
 {
     switch (g_chainCard) {
     case HOME_WALLET_CARD_AVAX:
-        return GENERAL_ADDRESS_INDEX_MAX;
+        return GetAvaxMaxAddressIndex();
     case HOME_WALLET_CARD_ETH:
         return GetEthMaxAddressIndex();
     case HOME_WALLET_CARD_SOL:

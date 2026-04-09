@@ -105,6 +105,13 @@ extern bool g_reboot;
         FreeTrxMemory, \
     }, \
     { \
+        REMAPVIEW_TRX_PERSONAL_MESSAGE, \
+        PC_SIMULATOR_PATH "/page_trx_person.json", \
+        GuiGetTrxPersonalMessage, \
+        GetTrxPersonalMessageType, \
+        FreeTrxMemory, \
+    }, \
+    { \
         REMAPVIEW_COSMOS, \
         PC_SIMULATOR_PATH "/page_cosmos.json", \
         GuiGetCosmosData, \

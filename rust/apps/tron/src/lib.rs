@@ -6,21 +6,27 @@ extern crate core;
 #[macro_use]
 extern crate std;
 
-use crate::errors::Result;
+use crate::errors::{Result, TronError};
 use alloc::string::String;
 
+use cryptoxide::hashing;
 use ur_registry::pb::protoc;
 
 mod address;
 pub mod errors;
 mod pb;
+pub mod structs;
 mod transaction;
 mod utils;
 
 pub use crate::address::get_address;
+use crate::structs::PersonalMessage;
 pub use crate::transaction::parser::{DetailTx, OverviewTx, ParsedTx, TxParser};
 use crate::transaction::wrapped_tron::WrappedTron;
+use alloc::string::ToString;
+use alloc::vec::Vec;
 use app_utils::keystone;
+use bitcoin::secp256k1::PublicKey;
 use transaction::checker::TxChecker;
 use transaction::signer::Signer;
 
@@ -41,6 +47,91 @@ pub fn parse_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) ->
 pub fn check_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) -> Result<()> {
     let tx_data = WrappedTron::from_payload(raw_tx, &context)?;
     tx_data.check(&context)
+}
+
+fn decode_to_wrapped(sign_data: &[u8], path: String) -> Result<WrappedTron> {
+    use crate::pb::protocol::transaction::Raw as RawData;
+    use crate::pb::protocol::Transaction;
+    use prost::Message;
+
+    let raw_content = RawData::decode(sign_data)
+        .map_err(|_| TronError::InvalidRawTxCryptoBytes("RawData decode failed".to_string()))?;
+
+    let raw_tx = Transaction {
+        raw_data: Some(raw_content),
+        signature: Vec::new(),
+    };
+
+    WrappedTron::from_raw_transaction(raw_tx, path)
+}
+
+pub fn sign_tx_request(sign_data: &[u8], hd_path: &String, seed: &[u8]) -> errors::Result<String> {
+    let tx = decode_to_wrapped(sign_data, hd_path.clone())?;
+
+    let sig = tx.sign_signature_only(seed)?;
+    Ok(sig)
+}
+
+pub fn parse_tx_request(sign_data: &[u8], path: &String) -> Result<ParsedTx> {
+    let tx = decode_to_wrapped(sign_data, path.clone())?;
+    tx.parse()
+}
+
+pub fn check_tx_request(sign_data: &[u8], path: &str, xpub: &str) -> errors::Result<()> {
+    let derived_address = get_address(path.to_string(), &xpub.to_string())?;
+    let tx = decode_to_wrapped(sign_data, path.to_string())?;
+
+    if derived_address != tx.from {
+        return Err(TronError::NoMyInputs);
+    }
+
+    Ok(())
+}
+
+pub fn sign_personal_message(
+    sign_data: &[u8],
+    path: &String,
+    seed: &[u8],
+) -> errors::Result<String> {
+    let prefix = b"\x19TRON Signed Message:\n";
+    let len_str = sign_data.len().to_string();
+
+    let mut message_to_hash = Vec::with_capacity(prefix.len() + len_str.len() + sign_data.len());
+    message_to_hash.extend_from_slice(prefix);
+    message_to_hash.extend_from_slice(len_str.as_bytes());
+    message_to_hash.extend_from_slice(sign_data);
+
+    let hash = hashing::keccak256(&message_to_hash);
+
+    let message = bitcoin::secp256k1::Message::from_digest_slice(&hash)
+        .map_err(|e| TronError::SignFailure(e.to_string()))?;
+
+    let (rec_id, rs) = keystore::algorithms::secp256k1::sign_message_by_seed(seed, path, &message)
+        .map_err(|e| TronError::SignFailure(e.to_string()))?;
+
+    let mut sig_bytes = [0u8; 65];
+    sig_bytes[..64].copy_from_slice(&rs);
+    sig_bytes[64] = (rec_id as u8) + 27;
+
+    Ok(hex::encode(sig_bytes))
+}
+
+pub fn parse_personal_message(
+    tx_hex: &[u8],
+    from_key: Option<PublicKey>,
+) -> Result<PersonalMessage> {
+    let raw_message = hex::encode(tx_hex);
+    let utf8_message = match String::from_utf8(tx_hex.to_vec()) {
+        Ok(utf8_message) => {
+            if app_utils::is_cjk(&utf8_message) {
+                "".to_string()
+            } else {
+                utf8_message
+            }
+        }
+        Err(_e) => "".to_string(),
+    };
+    PersonalMessage::from(raw_message, utf8_message, from_key)
 }
 
 #[cfg(test)]
@@ -98,6 +189,272 @@ mod test {
         let payload = prepare_payload(hex);
         let context = prepare_parse_context(pubkey_str);
         let result = check_raw_tx(payload, context);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_parse_tx_request() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let mock_pb_hex = "0a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541ad8593979840130d222238380b080808080808081215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc03";
+        let sign_data = hex::decode(mock_pb_hex).unwrap();
+
+        let result = parse_tx_request(&sign_data, &path);
+
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+
+        std::println!("Parsed Value: {}", parsed.overview.value);
+    }
+
+    #[test]
+    fn test_sign_tx_request() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let mock_pb_hex = "0a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541ad8593979840130d222238380b080808080808081215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc03";
+        let sign_data = hex::decode(mock_pb_hex).unwrap();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        let result = sign_tx_request(&sign_data, &path, &seed);
+        assert!(result.is_ok());
+        let sig = result.unwrap();
+        assert!(!sig.is_empty());
+        assert_eq!(sig.len(), 130); // 65 bytes in hex = 130 chars
+    }
+
+    #[test]
+    fn test_check_tx_request_valid() {
+        // Use valid protobuf data from parse_tx_request test
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let xpub = "xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd";
+        let mock_pb_hex = "0a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541ad8593979840130d222238380b080808080808081215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc03";
+        let sign_data = hex::decode(mock_pb_hex).unwrap();
+
+        let result = check_tx_request(&sign_data, &path, xpub);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_check_tx_request_invalid_address() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let xpub = "xpub6C3ndD75jvoARyqUBTvrsMZaprs2ZRF84kRTt5r9oxKQXn5oFChRRgrP2J8QhykhKACBLF2HxwAh4wccFqFsuJUBBcwyvkyqfzJU5gfn5pY";
+        let mock_pb_hex = "0a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541ad8593979840130d222238380b080808080808081215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc03";
+        let sign_data = hex::decode(mock_pb_hex).unwrap();
+
+        let result = check_tx_request(&sign_data, &path, xpub);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), TronError::NoMyInputs));
+    }
+
+    #[test]
+    fn test_sign_personal_message() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let message = b"Hello TRON";
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        let result = sign_personal_message(message, &path, &seed);
+        assert!(result.is_ok());
+        let sig = result.unwrap();
+        assert_eq!(sig.len(), 130); // 65 bytes * 2 hex chars
+    }
+
+    #[test]
+    fn test_parse_personal_message_utf8() {
+        let message = b"Hello TRON";
+        let result = parse_personal_message(message, None);
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert_eq!(parsed.utf8_message, "Hello TRON");
+        assert_eq!(parsed.raw_message, hex::encode(message));
+    }
+
+    #[test]
+    fn test_parse_personal_message_non_utf8() {
+        let message = &[0xff, 0xfe, 0xfd];
+        let result = parse_personal_message(message, None);
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert_eq!(parsed.utf8_message, "");
+        assert_eq!(parsed.raw_message, hex::encode(message));
+    }
+
+    #[test]
+    fn test_parse_personal_message_cjk() {
+        let message = "你好世界".as_bytes();
+        let result = parse_personal_message(message, None);
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert_eq!(parsed.utf8_message, ""); // CJK should be empty
+        assert_eq!(parsed.raw_message, hex::encode(message));
+    }
+
+    #[test]
+    fn test_parse_personal_message_with_pubkey() {
+        let message = b"Test";
+        let pubkey = PublicKey::from_str(
+            "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+        )
+        .unwrap();
+        let result = parse_personal_message(message, Some(pubkey));
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert!(parsed.from.is_some());
+    }
+
+    #[test]
+    fn test_decode_to_wrapped_invalid_data() {
+        let invalid_data = &[0xff, 0xfe, 0xfd];
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let result = decode_to_wrapped(invalid_data, path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_raw_tx_error_handling() {
+        let hex = "1f8b08000000000000030dcebb4ac3501c807153444a17b553e95482501142ce39f99f4b8b83362d74696cd38897eddca205db60ac22d95db49b4fe0e6e8e4e65bf80a6e3e80a083816ffb965fb552df9ce461666c6b9c67cb4c6757cd5fa75aa95739e283419f85eeb7535b4fe2a3a8bea3710a42748cc729621e60a43cc1c17801a2c03166444bd4dc1ef9006d1f7768db47653e6aad5e578f7f6877a3f7e234dd2499f2331adc4c212ff27eb83c97b3dbb8b8be3798c96568c971ecbac99416e32c84d3416f3ebceb47878bc509b91806a3c9a58e23368be77b6bc4c1dda8760046714cb148b154982949b400ad4a8f92960bc23ae5e20a510bda12c9d2006b0bd2d8148ca582045b0f9fcf8dc6cfd753291cbebdefb73ec6ff42b912d514010000";
+        let pubkey_str = "xpub6C3ndD75jvoARyqUBTvrsMZaprs2ZRF84kRTt5r9oxKQXn5oFChRRgrP2J8QhykhKACBLF2HxwAh4wccFqFsuJUBBcwyvkyqfzJU5gfn5pY";
+        let payload = prepare_payload(hex);
+        let context = prepare_parse_context(pubkey_str);
+
+        // Should succeed for normal payload
+        let result = parse_raw_tx(payload, context);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_check_raw_tx_error_paths() {
+        // Test with mismatched fingerprint
+        let hex = "1f8b08000000000000030dcfbd4ac34000c071220ea58bdaa9742a41a84bc87d27270e9ab61890c4268d54bb5dee2e26607b508b4a9fa26fe01bf8b128f812be82b383b8161703ffe9bffd1a5bad9d64d1374a77470bb334d2dc7436567d1b1e96540920ec6fabb99da5e7716b5f4a4e58ae91e36b221d8272ed088ca04399a058f8b2a09075f62297909e0b39edb9a0ce05dde79faf8f0d3868048f56c7ce2e86d3b13abb35833089f4f4be2a97ca04554cd8eaa13c9d5ca9d0b6b3315d8d4c9f5c0e83597837884fe6f309ba0e719494328d5995ce90050fe3e671c17c0ab9d2bc904011a031a502f202e414032e19c60c78be209e409aab1cfa9041e603c204821ad588ddd7f5baddfefd7c7aff03e1cbdbd13f2aab0f710f010000";
+        let pubkey_str = "xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd";
+        let payload = prepare_payload(hex);
+
+        // Wrong fingerprint
+        let wrong_fp = bitcoin::bip32::Fingerprint::from_str("00000000").unwrap();
+        let xpub = bitcoin::bip32::Xpub::from_str(pubkey_str).unwrap();
+        let wrong_context = keystone::ParseContext::new(wrong_fp, xpub);
+
+        let result = check_raw_tx(payload, wrong_context);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_sign_tx_request_error_paths() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+
+        // Invalid protobuf data
+        let invalid_data = vec![0xff, 0xfe, 0xfd];
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        let result = sign_tx_request(&invalid_data, &path, &seed);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_tx_request_error_paths() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+
+        // Invalid protobuf data
+        let invalid_data = vec![0xff, 0xfe, 0xfd];
+
+        let result = parse_tx_request(&invalid_data, &path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_check_tx_request_error_paths() {
+        let path = "m/44'/195'/0'/0/0";
+        let xpub = "xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd";
+
+        // Invalid protobuf data
+        let invalid_data = vec![0xff, 0xfe, 0xfd];
+
+        let result = check_tx_request(&invalid_data, path, xpub);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_sign_personal_message_empty() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let message = b"";
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        let result = sign_personal_message(message, &path, &seed);
+        assert!(result.is_ok());
+        let sig = result.unwrap();
+        assert_eq!(sig.len(), 130);
+    }
+
+    #[test]
+    fn test_sign_personal_message_long() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let message = b"This is a very long message that contains a lot of text to test the signing functionality with longer input data. It should still work correctly and produce a valid signature.";
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+
+        let result = sign_personal_message(message, &path, &seed);
+        assert!(result.is_ok());
+        let sig = result.unwrap();
+        assert_eq!(sig.len(), 130);
+    }
+
+    #[test]
+    fn test_parse_personal_message_empty() {
+        let message = b"";
+        let result = parse_personal_message(message, None);
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert_eq!(parsed.utf8_message, "");
+        assert_eq!(parsed.raw_message, "");
+    }
+
+    #[test]
+    fn test_parse_personal_message_mixed_content() {
+        // Mix of ASCII and special characters
+        let message = b"Hello@#$%^&*()_+{}[]|";
+        let result = parse_personal_message(message, None);
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert!(!parsed.raw_message.is_empty());
+    }
+
+    #[test]
+    fn test_get_address_integration() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let xpub = "xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd";
+
+        let result = get_address(path, &xpub.to_string());
+        assert!(result.is_ok());
+        let address = result.unwrap();
+        assert!(address.starts_with("T"));
+        assert!(address.len() == 34); // TRON addresses are 34 chars
+    }
+
+    #[test]
+    fn test_get_address_invalid_path() {
+        let invalid_path = "invalid/path".to_string();
+        let xpub = "xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd";
+
+        let result = get_address(invalid_path, &xpub.to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_get_address_invalid_xpub() {
+        let path = "m/44'/195'/0'/0/0".to_string();
+        let invalid_xpub = "invalid_xpub";
+
+        let result = get_address(path, &invalid_xpub.to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_decode_to_wrapped_empty_raw_data() {
+        use crate::pb::protocol::transaction::Raw as RawData;
+        use prost::Message;
+
+        // Create valid but minimal protobuf data
+        let raw = RawData::default();
+        let encoded = raw.encode_to_vec();
+        let path = "m/44'/195'/0'/0/0".to_string();
+
+        let result = decode_to_wrapped(&encoded, path);
         assert!(result.is_ok());
     }
 }

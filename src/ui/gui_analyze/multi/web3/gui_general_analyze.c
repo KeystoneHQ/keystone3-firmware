@@ -11,6 +11,7 @@ static GetLabelDataLenFunc GuiArTextLenFuncGet(char *type);
 static GetTableDataFunc GuiEthTableFuncGet(char *type);
 static GetTableDataFunc GuiAdaTabelFuncGet(char *type);
 static GetLabelDataFunc GuiTrxTextFuncGet(char *type);
+static GetLabelDataFunc GuiTrxPersonalMessageTextFuncGet(char *type);
 static GetLabelDataFunc GuiCosmosTextFuncGet(char *type);
 static GetLabelDataFunc GuiSuiTextFuncGet(char *type);
 static GetLabelDataLenFunc GuiSuiTextLenFuncGet(char *type);
@@ -24,6 +25,7 @@ static GetLabelDataFunc GuiEthTypedDataTextFuncGet(char *type);
 static GetLabelDataFunc GuiEthPersonalMessageTextFuncGet(char *type);
 static GetLabelDataFunc GuiEthTextFuncGet(char *type);
 static GetContSizeFunc GetEthObjPos(char *type);
+static GetContSizeFunc GetTrxPersonalMessageObjPos(char *type);
 static GetContSizeFunc GetCosmosObjPos(char *type);
 static GetListItemKeyFunc GetCosmosListItemKey(char *type);
 static GetListLenFunc GetCosmosListLen(char *type);
@@ -61,6 +63,8 @@ GetContSizeFunc GetOtherChainPos(char *type, GuiRemapViewType remapIndex)
         return GetCosmosObjPos(type);
     case REMAPVIEW_SOL_MESSAGE:
         return GetSolObjPos(type);
+    case REMAPVIEW_TRX_PERSONAL_MESSAGE:
+        return GetTrxPersonalMessageObjPos(type);
     default:
         break;
     }
@@ -161,6 +165,10 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetTrxContractExist;
     } else if (!strcmp(type, "GetTrxTokenExist")) {
         return GetTrxTokenExist;
+    } else if (!strcmp(type, "GetTrxMessageFromExist")) {
+        return GetTrxMessageFromExist;
+    } else if (!strcmp(type, "GetTrxMessageFromNotExist")) {
+        return GetTrxMessageFromNotExist;
     } else if (!strcmp(type, "GetCosmosChannelExist")) {
         return GetCosmosChannelExist;
     } else if (!strcmp(type, "GetCosmosOldValidatorExist")) {
@@ -232,6 +240,8 @@ GetLabelDataFunc GuiOtherChainTextFuncGet(char *type, GuiRemapViewType remapInde
         return GuiEthTypedDataTextFuncGet(type);
     case REMAPVIEW_TRX:
         return GuiTrxTextFuncGet(type);
+    case REMAPVIEW_TRX_PERSONAL_MESSAGE:
+        return GuiTrxPersonalMessageTextFuncGet(type);
     case REMAPVIEW_COSMOS:
         return GuiCosmosTextFuncGet(type);
     case REMAPVIEW_SUI:
@@ -442,6 +452,18 @@ static GetLabelDataFunc GuiTrxTextFuncGet(char *type)
         return GetTrxContract;
     } else if (!strcmp(type, "GetTrxToken")) {
         return GetTrxToken;
+    }
+    return NULL;
+}
+
+static GetLabelDataFunc GuiTrxPersonalMessageTextFuncGet(char *type)
+{
+    if (!strcmp(type, "GetTrxMessageFrom")) {
+        return GetTrxMessageFrom;
+    } else if (!strcmp(type, "GetTrxMessageUtf8")) {
+        return GetTrxMessageUtf8;
+    } else if (!strcmp(type, "GetTrxMessageRaw")) {
+        return GetTrxMessageRaw;
     }
     return NULL;
 }
@@ -668,6 +690,14 @@ static GetContSizeFunc GetEthObjPos(char *type)
         return GetEthTypeDomainPos;
     } else if (!strcmp(type, "GetEthMessagePos")) {
         return GetEthMessagePos;
+    }
+    return NULL;
+}
+
+static GetContSizeFunc GetTrxPersonalMessageObjPos(char *type)
+{
+    if (!strcmp(type, "GetTrxMessagePos")) {
+        return GetTrxMessagePos;
     }
     return NULL;
 }

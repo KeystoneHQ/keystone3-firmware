@@ -63,6 +63,8 @@ use ur_registry::sui::sui_sign_hash_request::SuiSignHashRequest;
 use ur_registry::sui::sui_sign_request::SuiSignRequest;
 #[cfg(feature = "ton")]
 use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
+#[cfg(feature = "tron")]
+use ur_registry::tron::tron_sign_request::TronSignRequest;
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
 
@@ -225,6 +227,18 @@ impl InferViewType for ZcashPczt {
 impl InferViewType for AvaxSignRequest {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::AvaxTx)
+    }
+}
+
+#[cfg(feature = "tron")]
+impl InferViewType for TronSignRequest {
+    fn infer(&self) -> Result<ViewType, URError> {
+        match self.get_data_type() {
+            ur_registry::tron::tron_sign_request::DataType::Transaction => Ok(ViewType::TronTx),
+            ur_registry::tron::tron_sign_request::DataType::PersonalMessage => {
+                Ok(ViewType::TronPersonalMessage)
+            }
+        }
     }
 }
 

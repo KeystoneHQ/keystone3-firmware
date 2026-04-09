@@ -4,7 +4,7 @@ use crate::common::errors::{KeystoneError, RustCError};
 use crate::common::keystone;
 use crate::common::structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult};
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
-use crate::common::ur::{QRCodeType, UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
+use crate::common::ur::{QRCodeType, UREncodeResult};
 use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::extract_array;
 use alloc::boxed::Box;
@@ -16,14 +16,11 @@ use structs::{DisplayTron, TransactionType};
 
 use crate::extract_ptr_with_type;
 use alloc::format;
-use app_tron::structs::PersonalMessage;
 use keystore::algorithms::secp256k1::derive_public_key;
 use structs::DisplayTRONPersonalMessage;
 use ur_registry::traits::{RegistryItem, To};
 use ur_registry::tron::tron_sign_request::TronSignRequest;
 use ur_registry::tron::tron_signature::TronSignature;
-
-use app_tron::TxParser;
 
 const TRON_DEFAULT_PATH: &str = "m/44'/195'/0'/0/0";
 
@@ -116,11 +113,6 @@ pub unsafe extern "C" fn tron_sign_request(
             TransactionType::PersonalMessage => {
                 app_tron::sign_personal_message(&sign_data, &path, seed_slice)
                     .map_err(|e| KeystoneError::SignTxFailed(e.to_string()))?
-            }
-            _ => {
-                return Err(KeystoneError::SignTxFailed(
-                    "Unsupported Transaction Type".to_string(),
-                ));
             }
         };
 
@@ -224,11 +216,15 @@ pub unsafe extern "C" fn tron_get_address(
 }
 
 fn parse_trx_sub_path(path: String) -> Option<String> {
-    let root_path = "44'/195'/";
-    match path.strip_prefix(root_path) {
-        Some(path) => path.find('/').map(|index| path[index + 1..].to_string()),
-        None => None,
-    }
+    let root_paths = ["m/44'/195'/", "44'/195'/", "m/44'/194'/", "44'/194'/"];
+
+    root_paths.iter().find_map(|root| {
+        path.strip_prefix(root).and_then(|remaining| {
+            remaining
+                .find('/')
+                .map(|index| remaining[index + 1..].to_string())
+        })
+    })
 }
 
 fn try_get_trx_public_key(

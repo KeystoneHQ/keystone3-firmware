@@ -464,20 +464,21 @@ impl WrappedTron {
         let raw_val = f64::from_str(self.value.as_str())?;
         let amount = raw_val / self.divider;
         let unit = self.format_unit()?;
-        
+
         // Calculate precision from divider (power of 10)
         let precision = if self.divider <= 1.0 {
             0
         } else {
             let mut count = 0;
             let mut d = self.divider;
-            while d >= 9.99999 {  // Account for float precision
+            while d >= 9.99999 {
+                // Account for float precision
                 d /= 10.0;
                 count += 1;
             }
             count
         };
-        
+
         let formatted = format!("{:.*}", precision, amount);
         let trimmed = if formatted.contains('.') {
             formatted

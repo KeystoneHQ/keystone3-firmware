@@ -13,9 +13,12 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v2
 
+      - name: Read Rust toolchain
+        run: echo "RUST_TOOLCHAIN=$(cat rust-toolchain)" >> $GITHUB_ENV
+
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2025-05-01
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           override: true
           components: rustfmt
           target: x86_64-apple-darwin
@@ -24,4 +27,4 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Run rust/apps/utils
-        run: cd rust/apps/utils && cargo +nightly-2025-05-01 llvm-cov --fail-under-regions 91 --fail-under-functions 80 --fail-under-lines 84 --ignore-filename-regex 'keystore/*'
+        run: cd rust/apps/utils && cargo +$RUST_TOOLCHAIN llvm-cov --fail-under-regions 91 --fail-under-functions 80 --fail-under-lines 84 --ignore-filename-regex 'keystore/*'

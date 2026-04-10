@@ -16,8 +16,9 @@ RUN apt-get install -y \
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly -y
 ENV PATH=/root/.cargo/bin:$PATH
 
-RUN rustup default nightly-2025-05-01
-RUN rustup target add thumbv7em-none-eabihf --toolchain nightly-2025-05-01
+COPY rust-toolchain /tmp/rust-toolchain
+RUN rustup default $(cat /tmp/rust-toolchain)
+RUN rustup target add thumbv7em-none-eabihf --toolchain $(cat /tmp/rust-toolchain)
 RUN cargo install cbindgen bindgen-cli
 
 RUN pip3 install PyYaml

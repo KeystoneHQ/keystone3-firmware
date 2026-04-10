@@ -68,10 +68,13 @@ static uint8_t *g_psbtBytes = NULL;
 static uint32_t g_psbtBytesLen = 0;
 static TransactionParseResult_DisplayTx *g_parseResult = NULL;
 static TransactionParseResult_DisplayBtcMsg *g_parseMsgResult = NULL;
-static const char *g_checkInputValueHintText = "Please confirm each input value is correct.";
 static bool IsMultiSigTx(DisplayTx *data);
 static bool NeedShowCheckInputValueHint(DisplayTx *data);
+static bool NeedShowSighashWarning(DisplayTx *data);
+static const char *GetSighashWarningText(DisplayTx *data);
+static const char *GetSighashDisplayText(const char *sighashType);
 static void OpenInputRefQrCode(lv_event_t *e);
+static void FormatFeeText(char *out, size_t outLen, const char *feeText, bool isLowerBound, bool isUnknown);
 static UREncodeResult *GetBtcSignDataDynamic(bool unLimit);
 static void PreparePublicKeys(PtrT_CSliceFFI_ExtendedPublicKey public_keys, ExtendedPublicKey *keys);
 
@@ -597,10 +600,13 @@ void GetPsbtTotalOutAmount(void *indata, void *param, uint32_t maxLen)
 void GetPsbtFeeAmount(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
+    char feeText[BUFFER_SIZE_64] = {0};
+    FormatFeeText(feeText, sizeof(feeText), psbt->overview->fee_amount,
+                  psbt->overview->fee_is_lower_bound, psbt->overview->fee_is_unknown);
     if (psbt->overview->fee_larger_than_amount) {
-        snprintf_s((char *)indata, maxLen, "#F55831 %s#", psbt->overview->fee_amount);
+        snprintf_s((char *)indata, maxLen, "#F55831 %s#", feeText);
     } else {
-        strcpy_s((char *)indata, maxLen, psbt->overview->fee_amount);
+        strcpy_s((char *)indata, maxLen, feeText);
     }
 }
 
@@ -613,10 +619,13 @@ void GetPsbtTotalOutSat(void *indata, void *param, uint32_t maxLen)
 void GetPsbtFeeSat(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
+    char feeText[BUFFER_SIZE_64] = {0};
+    FormatFeeText(feeText, sizeof(feeText), psbt->overview->fee_sat,
+                  psbt->overview->fee_is_lower_bound, psbt->overview->fee_is_unknown);
     if (psbt->overview->fee_larger_than_amount) {
-        snprintf_s((char *)indata, maxLen, "#F55831 %s#", psbt->overview->fee_sat);
+        snprintf_s((char *)indata, maxLen, "#F55831 %s#", feeText);
     } else {
-        strcpy_s((char *)indata, maxLen, psbt->overview->fee_sat);
+        strcpy_s((char *)indata, maxLen, feeText);
     }
 }
 
@@ -641,7 +650,8 @@ void GetPsbtDetailOutputValue(void *indata, void *param, uint32_t maxLen)
 void GetPsbtDetailFee(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTx *psbt = (DisplayTx *)param;
-    strcpy_s((char *)indata, maxLen, psbt->detail->fee_amount);
+    FormatFeeText((char *)indata, maxLen, psbt->detail->fee_amount, psbt->detail->fee_is_lower_bound,
+                  psbt->detail->fee_is_unknown);
 }
 
 void *GetPsbtInputData(uint8_t *row, uint8_t *col, void *param)
@@ -782,10 +792,10 @@ static void OpenInputRefQrCode(lv_event_t *e)
     char url[128] = {0};
     char outpoint[160] = {0};
     snprintf_s(url, sizeof(url), "https://mempool.space/tx/%s", inputData->input_txid);
-    snprintf_s(outpoint, sizeof(outpoint), "Outpoint:\n%s:%u", inputData->input_txid,
+    snprintf_s(outpoint, sizeof(outpoint), "%s:\n%s:%u", _("btc_outpoint"), inputData->input_txid,
                inputData->input_vout);
 
-    GuiQRCodeHintBoxOpen(url, "Input Reference", outpoint);
+    GuiQRCodeHintBoxOpen(url, _("btc_input_reference"), outpoint);
 }
 
 static bool IsAvalancheTx(DisplayTx *data)
@@ -824,12 +834,17 @@ static void SwitchValueUnit(lv_event_t *e)
 {
     ClickParamItem_t *item = (ClickParamItem_t *)lv_event_get_user_data(e);
     if (item != NULL) {
+        char feeText[BUFFER_SIZE_64] = {0};
         if (*(item->isSat) == true) {
             lv_label_set_text(item->amountValue, item->overviewData->total_output_amount);
-            lv_label_set_text(item->feeValue, item->overviewData->fee_amount);
+            FormatFeeText(feeText, sizeof(feeText), item->overviewData->fee_amount,
+                          item->overviewData->fee_is_lower_bound, item->overviewData->fee_is_unknown);
+            lv_label_set_text(item->feeValue, feeText);
         } else {
             lv_label_set_text(item->amountValue, item->overviewData->total_output_sat);
-            lv_label_set_text(item->feeValue, item->overviewData->fee_sat);
+            FormatFeeText(feeText, sizeof(feeText), item->overviewData->fee_sat,
+                          item->overviewData->fee_is_lower_bound, item->overviewData->fee_is_unknown);
+            lv_label_set_text(item->feeValue, feeText);
         }
         *item->isSat = !(*item->isSat);
     }
@@ -837,6 +852,17 @@ static void SwitchValueUnit(lv_event_t *e)
 
 static ClickParamItem_t clickParam;
 static bool isSat = false;
+
+static void FormatFeeText(char *out, size_t outLen, const char *feeText, bool isLowerBound, bool isUnknown)
+{
+    if (isUnknown) {
+        strcpy_s(out, outLen, _("btc_fee_unknown"));
+    } else if (isLowerBound) {
+        snprintf_s(out, outLen, ">= %s", feeText);
+    } else {
+        strcpy_s(out, outLen, feeText);
+    }
+}
 
 static lv_obj_t *CreateSignStatusView(lv_obj_t *parent, char *multi_sig_status)
 {
@@ -883,7 +909,7 @@ static lv_obj_t *CreateAvalancheNoticeView(lv_obj_t *parent, lv_obj_t *lastView)
 
 static lv_obj_t *CreateCheckInputValueHintView(lv_obj_t *parent, lv_obj_t *lastView)
 {
-    lv_obj_t *hintView = CreateNoticeCard(parent, g_checkInputValueHintText);
+    lv_obj_t *hintView = CreateNoticeCard(parent, _("btc_check_input_value_hint"));
     if (lastView == NULL) {
         lv_obj_align(hintView, LV_ALIGN_DEFAULT, 0, 0);
     } else {
@@ -891,6 +917,38 @@ static lv_obj_t *CreateCheckInputValueHintView(lv_obj_t *parent, lv_obj_t *lastV
     }
 
     return hintView;
+}
+
+static lv_obj_t *CreateSighashWarningView(lv_obj_t *parent, lv_obj_t *lastView, const char *warningText)
+{
+    uint16_t height = 24 + 36 + 8 + 24;
+    lv_obj_t *warningView = GuiCreateContainerWithParent(parent, 408, 24);
+    lv_obj_set_style_radius(warningView, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(warningView, RED_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(warningView, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    if (lastView == NULL) {
+        lv_obj_align(warningView, LV_ALIGN_DEFAULT, 0, 0);
+    } else {
+        lv_obj_align_to(warningView, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
+
+    lv_obj_t *warningIcon = GuiCreateImg(warningView, &imgWarningRed);
+    lv_obj_align(warningIcon, LV_ALIGN_TOP_LEFT, 24, 24);
+
+    lv_obj_t *titleLabel = GuiCreateTextLabel(warningView, _("Warning"));
+    lv_obj_set_style_text_color(titleLabel, lv_color_hex(0xF55831), LV_PART_MAIN);
+    lv_obj_align_to(titleLabel, warningIcon, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
+
+    lv_obj_t *contentLabel = GuiCreateIllustrateLabel(warningView, warningText);
+    lv_obj_set_width(contentLabel, 360);
+    lv_label_set_long_mode(contentLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_update_layout(contentLabel);
+    height += lv_obj_get_self_height(contentLabel);
+    lv_obj_set_height(warningView, height);
+    lv_obj_align(contentLabel, LV_ALIGN_TOP_LEFT, 24, 68);
+
+    return warningView;
 }
 
 static lv_obj_t *CreateInputRefView(lv_obj_t *parent, lv_obj_t *lastView, DisplayTxDetailInput *inputData)
@@ -904,7 +962,7 @@ static lv_obj_t *CreateInputRefView(lv_obj_t *parent, lv_obj_t *lastView, Displa
     lv_obj_align_to(inputRefContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     lv_obj_add_event_cb(inputRefContainer, OpenInputRefQrCode, LV_EVENT_CLICKED, inputData);
 
-    lv_obj_t *inputRefLabel = GuiCreateIllustrateLabel(inputRefContainer, "Input Ref");
+    lv_obj_t *inputRefLabel = GuiCreateIllustrateLabel(inputRefContainer, _("btc_input_ref"));
     lv_obj_set_style_text_color(inputRefLabel, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
     lv_obj_align(inputRefLabel, LV_ALIGN_LEFT_MID, 0, 0);
     lv_obj_clear_flag(inputRefLabel, LV_OBJ_FLAG_CLICKABLE);
@@ -944,7 +1002,10 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
     SetTitleLabelStyle(label);
 
     lv_obj_t *feeValue = lv_label_create(amountContainer);
-    lv_label_set_text(feeValue, overviewData->fee_amount);
+    char feeText[BUFFER_SIZE_64] = {0};
+    FormatFeeText(feeText, sizeof(feeText), overviewData->fee_amount,
+                  overviewData->fee_is_lower_bound, overviewData->fee_is_unknown);
+    lv_label_set_text(feeValue, feeText);
     lv_obj_align_to(feeValue, label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
 
     lv_obj_set_style_text_font(feeValue, &openSansEnIllustrate, LV_PART_MAIN);
@@ -993,6 +1054,16 @@ static lv_obj_t *CreateNetworkView(lv_obj_t *parent, char *network, lv_obj_t *la
     lv_obj_align_to(networkValue, label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
     SetContentLableStyle(networkValue);
     return networkContainer;
+}
+
+static lv_obj_t *CreateSighashView(lv_obj_t *parent, char *sighashType, lv_obj_t *lastView)
+{
+    if (sighashType == NULL) {
+        return lastView;
+    }
+
+    char *displayText = (char *)GetSighashDisplayText(sighashType);
+    return CreateTransactionItemView(parent, _("btc_sighash"), displayText, lastView);
 }
 
 static lv_obj_t *CreateOverviewFromView(lv_obj_t *parent, DisplayTxOverview *overviewData, lv_obj_t *lastView)
@@ -1189,7 +1260,10 @@ static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detai
     SetTitleLabelStyle(label);
 
     lv_obj_t *feeValue = lv_label_create(amountContainer);
-    lv_label_set_text(feeValue, detailData->fee_amount);
+    char feeText[BUFFER_SIZE_64] = {0};
+    FormatFeeText(feeText, sizeof(feeText), detailData->fee_amount,
+                  detailData->fee_is_lower_bound, detailData->fee_is_unknown);
+    lv_label_set_text(feeValue, feeText);
     lv_obj_align_to(feeValue, label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
     SetContentLableStyle(feeValue);
 
@@ -1383,6 +1457,10 @@ void GuiBtcTxOverview(lv_obj_t *parent, void *totalData)
 
     lv_obj_t *lastView = NULL;
 
+    if (NeedShowSighashWarning(txData)) {
+        lastView = CreateSighashWarningView(parent, lastView, GetSighashWarningText(txData));
+    }
+
     if (NeedShowCheckInputValueHint(txData)) {
         lastView = CreateCheckInputValueHintView(parent, lastView);
     }
@@ -1415,9 +1493,64 @@ void GuiBtcTxDetail(lv_obj_t *parent, void *totalData)
         lastView = CreateSignStatusView(parent, detailData->sign_status);
     }
     lastView = CreateNetworkView(parent, detailData->network, lastView);
+    lastView = CreateSighashView(parent, txData->overview->sighash_type, lastView);
     lastView = CreateDetailAmountView(parent, detailData, lastView);
     lastView = CreateDetailFromView(parent, detailData, lastView);
     CreateDetailToView(parent, detailData, lastView);
+}
+
+static bool NeedShowSighashWarning(DisplayTx *data)
+{
+    if (data == NULL || data->overview == NULL) {
+        return false;
+    }
+
+    return data->overview->is_sighash_single || data->overview->is_sighash_none;
+}
+
+static const char *GetSighashWarningText(DisplayTx *data)
+{
+    if (data == NULL || data->overview == NULL) {
+        return NULL;
+    }
+
+    if (data->overview->is_sighash_single) {
+        return _("btc_sighash_single_warning");
+    }
+
+    if (data->overview->is_sighash_none) {
+        return _("btc_sighash_none_warning");
+    }
+
+    return NULL;
+}
+
+static const char *GetSighashDisplayText(const char *sighashType)
+{
+    if (sighashType == NULL) {
+        return "";
+    }
+
+    if (!strcmp(sighashType, "ALL")) {
+        return "All";
+    }
+    if (!strcmp(sighashType, "NONE")) {
+        return "None";
+    }
+    if (!strcmp(sighashType, "SINGLE")) {
+        return "Single";
+    }
+    if (!strcmp(sighashType, "ALL|ANYONE_CAN_PAY")) {
+        return "All | Anyone Can Pay";
+    }
+    if (!strcmp(sighashType, "NONE|ANYONE_CAN_PAY")) {
+        return "None | Anyone Can Pay";
+    }
+    if (!strcmp(sighashType, "SINGLE|ANYONE_CAN_PAY")) {
+        return "Single | Anyone Can Pay";
+    }
+
+    return sighashType;
 }
 
 void GuiBtcMsg(lv_obj_t *parent, void *totalData)

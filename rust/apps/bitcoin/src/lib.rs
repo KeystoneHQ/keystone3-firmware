@@ -172,6 +172,11 @@ mod test {
                 is_multisig: false,
                 need_sign: true,
                 has_witness_only_inputs: false,
+                fee_is_lower_bound: false,
+                fee_is_unknown: false,
+                sighash_type: Some("ALL".to_string()),
+                is_sighash_single: false,
+                is_sighash_none: false,
             }
         };
     }
@@ -224,6 +229,8 @@ mod test {
                 total_input_sat: $total_input_sat.to_string(),
                 total_output_sat: $total_output_sat.to_string(),
                 fee_sat: $fee_sat.to_string(),
+                fee_is_lower_bound: false,
+                fee_is_unknown: false,
                 network: $network.to_string(),
                 sign_status: Some("Unsigned".to_string()),
             }

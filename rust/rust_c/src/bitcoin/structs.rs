@@ -63,6 +63,11 @@ pub struct DisplayTxOverview {
     sign_status: PtrString,
     need_sign: bool,
     has_witness_only_inputs: bool,
+    fee_is_lower_bound: bool,
+    fee_is_unknown: bool,
+    sighash_type: PtrString,
+    is_sighash_single: bool,
+    is_sighash_none: bool,
 }
 
 impl_c_ptr!(DisplayTxOverview);
@@ -78,6 +83,8 @@ pub struct DisplayTxDetail {
     total_input_sat: PtrString,
     total_output_sat: PtrString,
     fee_sat: PtrString,
+    fee_is_lower_bound: bool,
+    fee_is_unknown: bool,
     sign_status: PtrString,
 }
 
@@ -164,6 +171,11 @@ impl From<OverviewTx> for DisplayTxOverview {
             },
             need_sign: value.need_sign,
             has_witness_only_inputs: value.has_witness_only_inputs,
+            fee_is_lower_bound: value.fee_is_lower_bound,
+            fee_is_unknown: value.fee_is_unknown,
+            sighash_type: value.sighash_type.map(convert_c_char).unwrap_or(null_mut()),
+            is_sighash_single: value.is_sighash_single,
+            is_sighash_none: value.is_sighash_none,
         }
     }
 }
@@ -194,6 +206,8 @@ impl From<DetailTx> for DisplayTxDetail {
             total_output_sat: convert_c_char(value.total_output_sat),
             total_input_sat: convert_c_char(value.total_input_sat),
             fee_sat: convert_c_char(value.fee_sat),
+            fee_is_lower_bound: value.fee_is_lower_bound,
+            fee_is_unknown: value.fee_is_unknown,
             sign_status: if let Some(sign_status) = value.sign_status {
                 convert_c_char(sign_status)
             } else {

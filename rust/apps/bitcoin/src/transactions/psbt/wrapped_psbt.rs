@@ -98,12 +98,12 @@ impl WrappedPsbt {
             self.calculate_address_for_input(input, network)?
         };
         let unsigned_tx = &self.psbt.unsigned_tx;
+        let tx_in = unsigned_tx
+            .input
+            .get(index)
+            .ok_or(BitcoinError::InvalidInput)?;
         let mut value = 0u64;
         if let Some(prev_tx) = &input.non_witness_utxo {
-            let tx_in = unsigned_tx
-                .input
-                .get(index)
-                .ok_or(BitcoinError::InvalidInput)?;
             if !tx_in.previous_output.txid.eq(&prev_tx.compute_txid()) {
                 return Err(BitcoinError::InvalidInput);
             }
@@ -126,6 +126,8 @@ impl WrappedPsbt {
             address,
             amount: Self::format_amount(value, network),
             value,
+            input_txid: tx_in.previous_output.txid.to_string(),
+            input_vout: tx_in.previous_output.vout,
             path: path.clone().map(|v| v.0),
             sign_status,
             is_multisig,

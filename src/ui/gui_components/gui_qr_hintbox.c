@@ -42,7 +42,6 @@ bool GuiQRHintBoxIsActive()
     return g_qrHintBox != NULL;
 }
 
-
 void GuiQRCodeHintBoxOpenBig(const char *qrdata, const char *title, const char *content, const char *url)
 {
     lv_obj_t *button, *qrCodeCont, *qrCode;

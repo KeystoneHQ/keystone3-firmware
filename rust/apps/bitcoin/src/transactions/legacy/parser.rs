@@ -24,7 +24,7 @@ impl TxParser for TxData {
             .map(|each| self.parse_raw_tx_output(each))
             .collect();
         let network = Network::from_str(&self.network)?;
-        self.normalize(mapped_inputs?, mapped_outputs?, &network)
+        self.normalize(mapped_inputs?, mapped_outputs?, &network, false)
     }
     fn determine_network(&self) -> Result<Network> {
         Network::from_str(&self.network)
@@ -41,6 +41,8 @@ impl TxData {
             address,
             amount: Self::format_amount(input.value, &Network::from_str(network)?),
             value: input.value,
+            input_txid: input.previous_output.clone(),
+            input_vout: input.vout,
             path: Some(path.to_string()),
             is_multisig: false,
             is_external: false,

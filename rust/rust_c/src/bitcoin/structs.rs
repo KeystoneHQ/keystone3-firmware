@@ -62,6 +62,12 @@ pub struct DisplayTxOverview {
     fee_larger_than_amount: bool,
     sign_status: PtrString,
     need_sign: bool,
+    has_witness_only_inputs: bool,
+    fee_is_lower_bound: bool,
+    fee_is_unknown: bool,
+    sighash_type: PtrString,
+    is_sighash_single: bool,
+    is_sighash_none: bool,
 }
 
 impl_c_ptr!(DisplayTxOverview);
@@ -77,6 +83,8 @@ pub struct DisplayTxDetail {
     total_input_sat: PtrString,
     total_output_sat: PtrString,
     fee_sat: PtrString,
+    fee_is_lower_bound: bool,
+    fee_is_unknown: bool,
     sign_status: PtrString,
 }
 
@@ -92,6 +100,8 @@ pub struct DisplayTxDetailInput {
     has_address: bool,
     address: PtrString,
     amount: PtrString,
+    input_txid: PtrString,
+    input_vout: u32,
     is_mine: bool,
     path: PtrString,
     is_external: bool,
@@ -160,6 +170,12 @@ impl From<OverviewTx> for DisplayTxOverview {
                 null_mut()
             },
             need_sign: value.need_sign,
+            has_witness_only_inputs: value.has_witness_only_inputs,
+            fee_is_lower_bound: value.fee_is_lower_bound,
+            fee_is_unknown: value.fee_is_unknown,
+            sighash_type: value.sighash_type.map(convert_c_char).unwrap_or(null_mut()),
+            is_sighash_single: value.is_sighash_single,
+            is_sighash_none: value.is_sighash_none,
         }
     }
 }
@@ -190,6 +206,8 @@ impl From<DetailTx> for DisplayTxDetail {
             total_output_sat: convert_c_char(value.total_output_sat),
             total_input_sat: convert_c_char(value.total_input_sat),
             fee_sat: convert_c_char(value.fee_sat),
+            fee_is_lower_bound: value.fee_is_lower_bound,
+            fee_is_unknown: value.fee_is_unknown,
             sign_status: if let Some(sign_status) = value.sign_status {
                 convert_c_char(sign_status)
             } else {
@@ -205,6 +223,8 @@ impl From<ParsedInput> for DisplayTxDetailInput {
             has_address: value.address.is_some(),
             address: value.address.map(convert_c_char).unwrap_or(null_mut()),
             amount: convert_c_char(value.amount),
+            input_txid: convert_c_char(value.input_txid),
+            input_vout: value.input_vout,
             is_mine: value.path.is_some(),
             path: value.path.map(convert_c_char).unwrap_or(null_mut()),
             is_external: value.is_external,
@@ -289,6 +309,7 @@ impl Free for DisplayTxDetailInput {
     unsafe fn free(&self) {
         let _ = Box::from_raw(self.address);
         let _ = Box::from_raw(self.amount);
+        let _ = Box::from_raw(self.input_txid);
         let _ = Box::from_raw(self.path);
     }
 }

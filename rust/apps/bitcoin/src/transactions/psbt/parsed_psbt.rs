@@ -28,10 +28,17 @@ impl TxParser for WrappedPsbt {
             .enumerate()
             .map(|(i, output)| self.parse_output(output, i, context, &network))
             .collect::<Result<Vec<ParsedOutput>>>()?;
+        let has_witness_only_inputs = self
+            .psbt
+            .inputs
+            .iter()
+            .any(|input| input.witness_utxo.is_some() && input.non_witness_utxo.is_none());
 
         match self.identify_fractal_bitcoin_tx() {
-            Some(custom_net) => self.normalize(inputs, outputs, &custom_net),
-            None => self.normalize(inputs, outputs, &network),
+            Some(custom_net) => {
+                self.normalize(inputs, outputs, &custom_net, has_witness_only_inputs)
+            }
+            None => self.normalize(inputs, outputs, &network, has_witness_only_inputs),
         }
     }
 
@@ -120,6 +127,11 @@ mod tests {
         Psbt::from_unsigned_tx(tx).unwrap()
     }
 
+    fn assert_witness_only_input(input: &bitcoin::psbt::Input) {
+        assert!(input.witness_utxo.is_some());
+        assert!(input.non_witness_utxo.is_none());
+    }
+
     #[test]
     fn test_parse_psbt() {
         let psbt_hex = "70736274ff01005202000000016d41e6873468f85aff76d7709a93b47180ea0784edaac748228d2c474396ca550000000000fdffffff01a00f0000000000001600146623828c1f87be7841a9b1cc360d38ae0a8b6ed0000000000001011f6817000000000000160014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1220602e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c3191873c5da0a54000080010000800000008000000000000000000000";
@@ -139,6 +151,15 @@ mod tests {
                 multisig_wallet_config: None,
             }))
             .unwrap();
+        let first_psbt_input = wpsbt.psbt.inputs.first().unwrap();
+        assert_witness_only_input(first_psbt_input);
+        assert!(first_psbt_input
+            .witness_utxo
+            .as_ref()
+            .unwrap()
+            .script_pubkey
+            .is_p2wpkh());
+        assert!(result.overview.has_witness_only_inputs);
         assert_eq!("0.00005992 tBTC", result.detail.total_input_amount);
         assert_eq!("0.00004 tBTC", result.detail.total_output_amount);
         assert_eq!("0.00001992 tBTC", result.detail.fee_amount);
@@ -184,6 +205,15 @@ mod tests {
                 multisig_wallet_config: None,
             }))
             .unwrap();
+        let first_psbt_input = wpsbt.psbt.inputs.first().unwrap();
+        assert_witness_only_input(first_psbt_input);
+        assert!(first_psbt_input
+            .witness_utxo
+            .as_ref()
+            .unwrap()
+            .script_pubkey
+            .is_p2wpkh());
+        assert!(result.overview.has_witness_only_inputs);
         assert_eq!("0.00005992 tFB", result.detail.total_input_amount);
         assert_eq!("0.00004 tFB", result.detail.total_output_amount);
         assert_eq!("0.00001992 tFB", result.detail.fee_amount);
@@ -230,6 +260,15 @@ mod tests {
             }))
             .unwrap();
 
+        let first_psbt_input = wpsbt.psbt.inputs.first().unwrap();
+        assert_witness_only_input(first_psbt_input);
+        assert!(first_psbt_input
+            .witness_utxo
+            .as_ref()
+            .unwrap()
+            .script_pubkey
+            .is_p2wsh());
+        assert!(result.overview.has_witness_only_inputs);
         assert_eq!("0.000142 BTC", result.detail.total_input_amount);
         assert_eq!("0.00012797 BTC", result.detail.total_output_amount);
         assert_eq!("Unsigned", result.detail.sign_status.unwrap());
@@ -256,6 +295,15 @@ mod tests {
             }))
             .unwrap();
 
+        let first_psbt_input = wpsbt.psbt.inputs.first().unwrap();
+        assert_witness_only_input(first_psbt_input);
+        assert!(first_psbt_input
+            .witness_utxo
+            .as_ref()
+            .unwrap()
+            .script_pubkey
+            .is_p2tr());
+        assert!(result.overview.has_witness_only_inputs);
         assert_eq!("0.00006588 tBTC", result.detail.total_input_amount);
         assert_eq!("0.000064 tBTC", result.detail.total_output_amount);
         assert_eq!("0.00000188 tBTC", result.detail.fee_amount);

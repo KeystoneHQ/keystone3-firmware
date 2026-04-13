@@ -11,6 +11,14 @@ find_program(CBINDGEN_EXE cbindgen)
 
 set(RUST_DIR ${CMAKE_SOURCE_DIR}/rust)
 set(RUST_C_DIR ${RUST_DIR}/rust_c)
+set(RUST_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/rust-toolchain)
+
+if(EXISTS ${RUST_TOOLCHAIN_FILE})
+    file(READ ${RUST_TOOLCHAIN_FILE} RUST_TOOLCHAIN)
+    string(STRIP ${RUST_TOOLCHAIN} RUST_TOOLCHAIN)
+else()
+    set(RUST_TOOLCHAIN "nightly-2025-07-01")
+endif()
 
 if(BUILD_ENVIRONMENT STREQUAL "SIMULATOR")
     set(FEATURE_ENVIRONMENT "simulator")
@@ -61,7 +69,7 @@ message(STATUS "cargo build command: " ${CARGO_FLAG})
 
 #run build
 add_custom_target(rust_c ALL
-    COMMAND rustup run nightly-2025-05-01 ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
+    COMMAND rustup run ${RUST_TOOLCHAIN} ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
     COMMAND ${COPY_BUILD_TARGET}
     COMMAND ${COPY_BINDINGS_TARGET}
     WORKING_DIRECTORY ${RUST_DIR}

@@ -21,8 +21,11 @@ use blake2::{
 };
 use core::str::FromStr;
 use serde_derive::{Deserialize, Serialize};
-use sui_types::{message::PersonalMessage, transaction::TransactionData};
-use types::{intent::IntentMessage, msg::PersonalMessageUtf8};
+use sui_transaction_types_core::TransactionData;
+use types::{
+    intent::{IntentMessage, PersonalMessage},
+    msg::PersonalMessageUtf8,
+};
 
 pub mod errors;
 pub mod types;
@@ -159,7 +162,7 @@ mod tests {
         let bytes = hex::decode("0000000000020100d833a8eabc697a0b2e23740aca7be9b0b9e1560a39d2f390cf2534e94429f91ced0c00000000000020190ca0d64215ac63f50dbffa47563404182304e0c10ea30b5e4d671b7173a34c00090140420f000000000001000000000000000000000000000000000000000000000000000000000000000002037061790973706c69745f76656301070000000000000000000000000000000000000000000000000000000000000002037375690353554900020100000101000e4d9313fb5b3f166bb6f2aea587edbe21fb1c094472ccd002f34b9d0633c71901280f4809b93ed87cc06f3397cd42a800a1034316e80d05443bce08e810817a96f50c0000000000002051c8eb5d437fb66c8d296e1cdf446c91be29fbc89f8430a2407acb0179a503880e4d9313fb5b3f166bb6f2aea587edbe21fb1c094472ccd002f34b9d0633c719e803000000000000e80300000000000000").unwrap();
 
         let intent = parse_intent(&bytes);
-        assert_eq!(json!(intent.unwrap()).to_string(), "{\"TransactionData\":{\"intent\":{\"app_id\":\"Sui\",\"scope\":\"TransactionData\",\"version\":\"V0\"},\"value\":{\"V1\":{\"expiration\":\"None\",\"gas_data\":{\"budget\":1000,\"owner\":\"0x0e4d9313fb5b3f166bb6f2aea587edbe21fb1c094472ccd002f34b9d0633c719\",\"payment\":[[\"0x280f4809b93ed87cc06f3397cd42a800a1034316e80d05443bce08e810817a96\",3317,\"6WFidAcGkUzUEPvSChbMXg9AZUHj3gzJL4U7HkxJA43H\"]],\"price\":1000},\"kind\":{\"ProgrammableTransaction\":{\"commands\":[{\"MoveCall\":{\"arguments\":[{\"Input\":0},{\"Input\":1}],\"function\":\"split_vec\",\"module\":\"pay\",\"package\":\"0x0000000000000000000000000000000000000000000000000000000000000002\",\"type_arguments\":[{\"struct\":{\"address\":\"0000000000000000000000000000000000000000000000000000000000000002\",\"module\":\"sui\",\"name\":\"SUI\",\"type_args\":[]}}]}}],\"inputs\":[{\"Object\":{\"ImmOrOwnedObject\":[\"0xd833a8eabc697a0b2e23740aca7be9b0b9e1560a39d2f390cf2534e94429f91c\",3309,\"2gnMwEZqfMY1Q2Ree5iW3cAt7rhauevfBDY74SH3Ef1D\"]}},{\"Pure\":[1,64,66,15,0,0,0,0,0]}]}},\"sender\":\"0x0e4d9313fb5b3f166bb6f2aea587edbe21fb1c094472ccd002f34b9d0633c719\"}}}}");
+        assert_eq!(json!(intent.unwrap()).to_string(), "{\"TransactionData\":{\"intent\":{\"app_id\":\"Sui\",\"scope\":\"TransactionData\",\"version\":\"V0\"},\"value\":{\"V1\":{\"expiration\":\"None\",\"gas_data\":{\"budget\":1000,\"owner\":\"0x0e4d9313fb5b3f166bb6f2aea587edbe21fb1c094472ccd002f34b9d0633c719\",\"payment\":[[\"0x280f4809b93ed87cc06f3397cd42a800a1034316e80d05443bce08e810817a96\",3317,\"6WFidAcGkUzUEPvSChbMXg9AZUHj3gzJL4U7HkxJA43H\"]],\"price\":1000},\"kind\":{\"ProgrammableTransaction\":{\"commands\":[{\"MoveCall\":{\"arguments\":[{\"Input\":0},{\"Input\":1}],\"function\":\"split_vec\",\"module\":\"pay\",\"package\":\"0x0000000000000000000000000000000000000000000000000000000000000002\",\"type_arguments\":[{\"struct\":{\"address\":\"0x0000000000000000000000000000000000000000000000000000000000000002\",\"module\":\"sui\",\"name\":\"SUI\",\"type_args\":[]}}]}}],\"inputs\":[{\"Object\":{\"ImmOrOwnedObject\":[\"0xd833a8eabc697a0b2e23740aca7be9b0b9e1560a39d2f390cf2534e94429f91c\",3309,\"2gnMwEZqfMY1Q2Ree5iW3cAt7rhauevfBDY74SH3Ef1D\"]}},{\"Pure\":[1,64,66,15,0,0,0,0,0]}]}},\"sender\":\"0x0e4d9313fb5b3f166bb6f2aea587edbe21fb1c094472ccd002f34b9d0633c719\"}}}}");
     }
 
     #[test]
@@ -168,6 +171,21 @@ mod tests {
 
         let intent = parse_intent(&bytes);
         assert_eq!(json!(intent.unwrap()).to_string(), "{\"TransactionData\":{\"intent\":{\"app_id\":\"Sui\",\"scope\":\"TransactionData\",\"version\":\"V0\"},\"value\":{\"V1\":{\"expiration\":\"None\",\"gas_data\":{\"budget\":100,\"owner\":\"0xebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec39440938869\",\"payment\":[[\"0xa2e3e42930675d9571a467eb5d4b22553c93ccb84e9097972e02c490b4e7a22a\",12983,\"2aS93HVFS54TNKfAFunntFgoRMbMCzp1bDfqSTRPRYpg\"]],\"price\":1000},\"kind\":{\"ProgrammableTransaction\":{\"commands\":[{\"SplitCoins\":[\"GasCoin\",[{\"Input\":1}]]},{\"TransferObjects\":[[{\"Result\":0}],{\"Input\":0}]}],\"inputs\":[{\"Pure\":[31,249,21,165,233,227,47,219,224,19,85,53,182,198,154,0,169,128,154,175,127,124,2,117,211,35,156,167,157,178,13,100]},{\"Pure\":[16,39,0,0,0,0,0,0]}]}},\"sender\":\"0xebe623e33b7307f1350f8934beb3fb16baef0fc1b3f1b92868eec39440938869\"}}}}");
+    }
+
+    #[test]
+    fn test_parse_tx_valid_during() {
+        let bytes = hex::decode("00000000000100203834b40abc2ec8d6822a7bcc1bba08c9a05f071a80603a1dde978c2aeafe2dad010101000100002bfcba587d296b747dca3e7e42a2ed6686cfe435b4e399bc2f4b96eb8b1c78ba028c6b3ae412eaae7326b259f1a2b53b6def4d3316a4381ccbfa47c5ff21f801a0f1c188230000000020c0d2ab0e7c117370305783826bbdd4460e47268cf9f48fadb4e6bcb26f5b28b7328d5e9ff8ebad9574f6aa65aa6e60a469efd2c8bc0525e1f272418a164bb836f2c188230000000020ff4799b923f01f5fa1a2add3827e72df9b02cff1344881f4a1de90437a6895d12bfcba587d296b747dca3e7e42a2ed6686cfe435b4e399bc2f4b96eb8b1c78ba2d02000000000000f0122000000000000201420400000000000001430400000000000000002035834a8ac17ca48fb14ac8f99c17c98747e95dd07294ae41a46b382246a4499bc520ad24").unwrap();
+
+        let intent = parse_intent(&bytes).unwrap();
+        match &intent {
+            Intent::TransactionData(msg) => {
+                let json_str = serde_json::to_string(&msg.value).unwrap();
+                assert!(json_str.contains("ValidDuring"));
+                assert!(json_str.contains("ProgrammableTransaction"));
+            }
+            _ => panic!("expected TransactionData"),
+        }
     }
 
     #[test]

@@ -18,10 +18,7 @@ use crate::common::utils::convert_c_char;
 use crate::{free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs, make_free_method};
 use app_ethereum::address::checksum_address;
 use app_sui::Intent;
-use sui_types::{
-    message::PersonalMessage,
-    transaction::{CallArg, Command, TransactionData, TransactionDataV1, TransactionKind},
-};
+use sui_transaction_types_core::{Argument, CallArg, Command, TransactionData, TransactionKind};
 
 #[repr(C)]
 pub struct DisplayIotaSignData {
@@ -57,9 +54,7 @@ impl From<Intent> for DisplayIotaIntentData {
     fn from(value: Intent) -> Self {
         match value {
             Intent::TransactionData(transaction_data) => {
-                let TransactionData::V1(data) = transaction_data.value else {
-                    unreachable!("Only V1 transactions are supported")
-                };
+                let TransactionData::V1(data) = transaction_data.value;
                 let details = serde_json::to_string(&data)
                     .unwrap_or_else(|_| "Failed to serialize transaction data".to_string());
 
@@ -83,7 +78,7 @@ impl From<Intent> for DisplayIotaIntentData {
                     amount,
                     recipient,
                     network: convert_c_char("IOTA Mainnet".to_string()),
-                    sender: convert_c_char(data.sender.to_string()),
+                    sender: convert_c_char(format!("0x{}", hex::encode(data.sender.as_slice()))),
                     details: convert_c_char(details),
                     transaction_type: convert_c_char("Programmable Transaction".to_string()),
                     method,
@@ -152,8 +147,8 @@ fn extract_transaction_params(
         let has_transfer_gas_coin = commands.iter().any(|command| {
             if let Command::TransferObjects(objects, target) = command {
                 objects.len() == 1
-                    && matches!(objects[0], sui_types::transaction::Argument::GasCoin)
-                    && matches!(target, sui_types::transaction::Argument::Input(0))
+                    && matches!(objects[0], Argument::GasCoin)
+                    && matches!(target, Argument::Input(0))
             } else {
                 false
             }

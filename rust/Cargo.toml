@@ -76,6 +76,7 @@ rsa = { version = "0.8.2", default-features = false }
 sha1 = { version = "0.10.5", default-features = false }
 ur-registry = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.56" }
 ur-parse-lib = { git = "https://git@github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.56" }
+sui-transaction-types-core = { git = "https://github.com/KeystoneHQ/sui.git", tag = "mainnet-nostd-v1.69.2.1", default-features = false, features = ["alloc"] }
 ed25519-bip32-core = { version = "0.1.1", default-features = false }
 cryptoxide = "0.4"
 arrayref = "0.3.6"
@@ -84,14 +85,14 @@ base64 = { version = "0.11.0", default-features = false, features = ["alloc"] }
 unicode-blocks = "0.1.6"
 bcs = { git = "https://github.com/KeystoneHQ/bcs.git", tag = "0.1.1" }
 blake2 = { version = "0.10.6", default-features = false }
-serde_json = { version = "1.0.95", default-features = false, features = [
+serde_json = { version = "1.0.145", default-features = false, features = [
     'alloc',
 ] }
-serde = { version = "1.0.139", default-features = false, features = [
+serde = { version = "1.0.228", default-features = false, features = [
     'derive',
     'alloc',
 ] }
-serde_derive = { version = "1.0.159" }
+serde_derive = { version = "1.0.228" }
 serde_bytes = { version = "0.11.5", default-features = false, features = [
     "alloc",
 ] }

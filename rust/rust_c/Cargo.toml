@@ -36,6 +36,7 @@ ed25519-bip32-core = { workspace = true }
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
 rand_core = { workspace = true }
+sui-transaction-types-core = { workspace = true }
 zeroize = { workspace = true }
 
 #apps
@@ -81,18 +82,9 @@ sui = ["dep:app_sui"]
 ton = ["dep:app_ton"]
 tron = ["dep:app_tron"]
 xrp = ["dep:app_xrp"]
-zcash = [
-    "dep:app_zcash",
-    "dep:zcash_vendor",
-]
-zcash_multi_coins = [
-    "zcash",
-    "app_zcash/multi_coins",
-]
-zcash_cypherpunk = [
-    "zcash",
-    "app_zcash/cypherpunk",
-]
+zcash = ["dep:app_zcash", "dep:zcash_vendor"]
+zcash_multi_coins = ["zcash", "app_zcash/multi_coins"]
+zcash_cypherpunk = ["zcash", "app_zcash/cypherpunk"]
 monero = ["dep:app_monero"]
 avalanche = ["dep:app_avalanche"]
 iota = ["dep:app_iota"]

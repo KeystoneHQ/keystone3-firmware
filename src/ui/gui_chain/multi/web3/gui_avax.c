@@ -67,7 +67,7 @@ void *GuiGetAvaxGUIData(void)
             keys[1 + i].path = GetCurrentAccountPath(XPUB_TYPE_AVAX_X_P_0 + i);
             keys[1 + i].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P_0 + i);
         }
-        PtrT_TransactionParseResult_DisplayTonTransaction parseResult = avax_parse_transaction(data, mfp, sizeof(mfp), public_keys);
+        PtrT_TransactionParseResult_DisplayAvaxTx parseResult = avax_parse_transaction(data, mfp, sizeof(mfp), public_keys);
         SRAM_FREE(public_keys);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;

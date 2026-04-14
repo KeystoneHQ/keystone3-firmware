@@ -106,6 +106,7 @@ impl WrappedTron {
             token_short_name: None,
             fee_limit: 0,
             memo: String::new(),
+            expiration: String::new(),
         };
 
         if let Some(raw) = &instance.tron_tx.raw_data {
@@ -589,6 +590,7 @@ mod tests {
             divider: 1.0,
             fee_limit: 0,
             memo: String::new(),
+            expiration: String::new(),
         };
         assert!(tx_no_raw.signature_hash().is_err());
     }
@@ -641,6 +643,7 @@ mod tests {
             divider: 1.0,
             fee_limit: 0,
             memo: String::new(),
+            expiration: String::new(),
         };
         let result = tx.signature_hash();
         assert!(result.is_err());

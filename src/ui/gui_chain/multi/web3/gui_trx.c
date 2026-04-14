@@ -249,7 +249,7 @@ void GetTrxMessageUtf8(void *indata, void *param, uint32_t maxLen)
 
 void GetTrxMessageRaw(void *indata, void *param, uint32_t maxLen)
 {
-    const char *warning = "\n#F5C131 The data cannot be processed in its#\n#F5C131 current format. Please use your software #\n#F5C131 wallet interface to access and view the#\n#F5C131 data.#";
+    const char *warning = "\n#F5C131 The data is not parseable. Please#\n#F5C131 refer to the software wallet interface#\n#F5C131 for viewing.#";
     size_t warningLen = strlen(warning);
     DisplayTRONPersonalMessage *message = (DisplayTRONPersonalMessage *)param;
     size_t rawLen = message && message->raw_message ? strlen(message->raw_message) : 0;

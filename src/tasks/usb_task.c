@@ -16,6 +16,7 @@
 #include "gui_setup_widgets.h"
 #include "low_power.h"
 #include "account_manager.h"
+#include "general/eapdu_services/service_resolve_ur.h"
 
 static void UsbTask(void *argument);
 void ClearUSBRequestId(void);
@@ -87,6 +88,24 @@ static void UsbTask(void *argument)
                 g_usbState = false;
                 UsbDeInit();
                 SetUsbState(false);
+            }
+            break;
+            case USB_MSG_HANDLE_UR_RESULT: {
+                if ((rcvMsg.buffer != NULL) && (rcvMsg.length >= sizeof(USBURResultMsg_t))) {
+                    USBURResultMsg_t *msg = (USBURResultMsg_t *)rcvMsg.buffer;
+                    uint32_t payloadLen = rcvMsg.length - sizeof(USBURResultMsg_t);
+                    uint32_t dataLen = msg->dataLen;
+
+                    if (payloadLen == 0) {
+                        break;
+                    }
+                    msg->data[payloadLen - 1] = '\0';
+                    if (dataLen >= payloadLen) {
+                        dataLen = payloadLen - 1;
+                    }
+
+                    HandleURResultViaUSBFunc(msg->data, dataLen, msg->requestID, msg->status);
+                }
             }
             break;
             default:

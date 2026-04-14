@@ -67,6 +67,7 @@ void UserMsgInit(void)
     SubMessageID(USB_MSG_SET_STATE, g_usbQueue);
     SubMessageID(USB_MSG_INIT, g_usbQueue);
     SubMessageID(USB_MSG_DEINIT, g_usbQueue);
+    SubMessageID(USB_MSG_HANDLE_UR_RESULT, g_usbQueue);
 
     SubMessageID(LOW_POWER_ENTER, g_lowPowerQueue);
     SubMessageID(LOW_POWER_QUIT, g_lowPowerQueue);

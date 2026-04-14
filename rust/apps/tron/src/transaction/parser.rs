@@ -20,12 +20,15 @@ pub struct OverviewTx {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DetailTx {
     pub value: String,
+    pub raw_value: String,
     pub method: String,
     pub from: String,
     pub to: String,
     pub network: String,
     pub token: String,
     pub contract_address: String,
+    pub memo: String,
+    pub expiration: String,
 }
 
 pub trait TxParser {
@@ -49,12 +52,15 @@ impl TxParser for WrappedTron {
         };
         let detail = DetailTx {
             value,
+            raw_value: self.value.clone(),
             method,
             from,
             to,
             network,
             contract_address: self.contract_address.to_string(),
             token: self.token.to_string(),
+            memo: self.memo.clone(),
+            expiration: self.expiration.clone(),
         };
         Ok(ParsedTx { overview, detail })
     }
@@ -91,8 +97,8 @@ mod tests {
             "TS5zPoC4XEBmHvDNAnnW2gH3MQhcRN6iRm".to_string(),
             parsed_tx.detail.to
         );
-        assert_eq!("TRON".to_string(), parsed_tx.overview.network);
-        assert_eq!("TRON".to_string(), parsed_tx.detail.network);
+        assert_eq!("Tron Mainnet".to_string(), parsed_tx.overview.network);
+        assert_eq!("Tron Mainnet".to_string(), parsed_tx.detail.network);
         assert_eq!("0.000001 TRX".to_string(), parsed_tx.overview.value);
         assert_eq!("0.000001 TRX".to_string(), parsed_tx.detail.value);
         assert_eq!("TRX Transfer".to_string(), parsed_tx.detail.method);
@@ -125,8 +131,8 @@ mod tests {
             "TS5zPoC4XEBmHvDNAnnW2gH3MQhcRN6iRm".to_string(),
             parsed_tx.detail.to
         );
-        assert_eq!("TRON".to_string(), parsed_tx.overview.network);
-        assert_eq!("TRON".to_string(), parsed_tx.detail.network);
+        assert_eq!("Tron Mainnet".to_string(), parsed_tx.overview.network);
+        assert_eq!("Tron Mainnet".to_string(), parsed_tx.detail.network);
         assert_eq!("0.001 BTT".to_string(), parsed_tx.overview.value);
         assert_eq!("0.001 BTT".to_string(), parsed_tx.detail.value);
         assert_eq!("TRC-10 Transfer".to_string(), parsed_tx.detail.method);
@@ -160,8 +166,8 @@ mod tests {
                 "TS5zPoC4XEBmHvDNAnnW2gH3MQhcRN6iRm".to_string(),
                 parsed_tx.detail.to
             );
-            assert_eq!("TRON".to_string(), parsed_tx.overview.network);
-            assert_eq!("TRON".to_string(), parsed_tx.detail.network);
+            assert_eq!("Tron Mainnet".to_string(), parsed_tx.overview.network);
+            assert_eq!("Tron Mainnet".to_string(), parsed_tx.detail.network);
             assert_eq!("0.001987 USDT".to_string(), parsed_tx.overview.value);
             assert_eq!("0.001987 USDT".to_string(), parsed_tx.detail.value);
             assert_eq!("TRC-20 Transfer".to_string(), parsed_tx.detail.method);

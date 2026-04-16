@@ -795,7 +795,7 @@ static void OpenInputRefQrCode(lv_event_t *e)
     snprintf_s(outpoint, sizeof(outpoint), "%s:\n%s:%u", _("btc_outpoint"), inputData->input_txid,
                inputData->input_vout);
 
-    GuiQRCodeHintBoxOpen(url, _("btc_input_reference"), outpoint);
+    GuiQRCodeHintBoxOpenCompact(url, _("btc_input_reference"), outpoint);
 }
 
 static bool IsAvalancheTx(DisplayTx *data)
@@ -1007,8 +1007,7 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
                   overviewData->fee_is_lower_bound, overviewData->fee_is_unknown);
     lv_label_set_text(feeValue, feeText);
     lv_obj_align_to(feeValue, label, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
-
-    lv_obj_set_style_text_font(feeValue, &openSansEnIllustrate, LV_PART_MAIN);
+    SetContentLableStyle(feeValue);
 
     if (overviewData->fee_larger_than_amount) {
         lv_obj_set_style_text_color(feeValue, lv_color_hex(0xf55831), LV_PART_MAIN);

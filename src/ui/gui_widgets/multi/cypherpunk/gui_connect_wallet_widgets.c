@@ -367,7 +367,8 @@ UREncodeResult *GuiGetZecData(void)
     data[0].key_name = GetWalletName();
     data[0].index = 0;
     char firmwareVersion[32];
-    GetSoftWareVersionNumber(firmwareVersion);
+    snprintf(firmwareVersion, sizeof(firmwareVersion), "%d.%d.%d",
+             SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
     return get_connect_zcash_wallet_ur(sfp, 32, keys, firmwareVersion);
 }
 

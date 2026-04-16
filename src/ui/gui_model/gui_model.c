@@ -116,15 +116,110 @@ static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
 
 #ifdef COMPILE_SIMULATOR
+// On the real device, AsyncExecute posts to a FreeRTOS background task
+// (FIFO). On the simulator we approximate this with a FIFO queue drained
+// by a 1ms lv_timer — model functions run on the next main-loop tick,
+// after the current event chain unwinds. Using lv_async_call directly
+// doesn't work because lv_timer_create inserts at the list head (LIFO).
+// inData is deep-copied because callers often pass stack buffers.
+#include "lvgl.h"
+
+typedef enum {
+    ASYNC_KIND_FUNC,
+    ASYNC_KIND_FUNC_WITH_RUNNABLE,
+} AsyncKind_t;
+
+typedef struct AsyncQueueNode {
+    AsyncKind_t kind;
+    union {
+        BackgroundAsyncFunc_t func;
+        BackgroundAsyncFuncWithRunnable_t funcWithRunnable;
+    } u;
+    BackgroundAsyncRunnable_t runnable;
+    uint32_t dataLen;
+    struct AsyncQueueNode *next;
+    uint8_t data[];
+} AsyncQueueNode_t;
+
+static AsyncQueueNode_t *g_asyncQueueHead = NULL;
+static AsyncQueueNode_t *g_asyncQueueTail = NULL;
+static lv_timer_t *g_asyncDrainTimer = NULL;
+
+static void AsyncDrainTimerCb(lv_timer_t *timer)
+{
+    (void)timer;
+    // Snapshot the head so that any new enqueues from inside the callbacks
+    // (e.g. a model function that schedules another AsyncExecute) go at the
+    // tail and run on the next drain, not inside this one. This keeps each
+    // drain iteration bounded and mirrors the real device's "process the
+    // current batch, let signals unwind, handle next batch" semantics.
+    AsyncQueueNode_t *current = g_asyncQueueHead;
+    g_asyncQueueHead = NULL;
+    g_asyncQueueTail = NULL;
+    while (current != NULL) {
+        AsyncQueueNode_t *node = current;
+        current = current->next;
+        const void *data = node->dataLen > 0 ? node->data : NULL;
+        if (node->kind == ASYNC_KIND_FUNC) {
+            node->u.func(data, node->dataLen);
+        } else {
+            node->u.funcWithRunnable(data, node->dataLen, node->runnable);
+        }
+        free(node);
+    }
+}
+
+static void EnsureAsyncDrainTimer(void)
+{
+    if (g_asyncDrainTimer == NULL) {
+        // Period 1ms: effectively "run every lv_timer_handler iteration".
+        g_asyncDrainTimer = lv_timer_create(AsyncDrainTimerCb, 1, NULL);
+    }
+}
+
+static void EnqueueAsync(AsyncQueueNode_t *node)
+{
+    node->next = NULL;
+    if (g_asyncQueueTail != NULL) {
+        g_asyncQueueTail->next = node;
+    } else {
+        g_asyncQueueHead = node;
+    }
+    g_asyncQueueTail = node;
+    EnsureAsyncDrainTimer();
+}
+
 int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t inDataLen)
 {
-    func(inData, inDataLen);
+    AsyncQueueNode_t *node = malloc(sizeof(*node) + inDataLen);
+    if (node == NULL) {
+        return ERR_GENERAL_FAIL;
+    }
+    node->kind = ASYNC_KIND_FUNC;
+    node->u.func = func;
+    node->runnable = NULL;
+    node->dataLen = inDataLen;
+    if (inData != NULL && inDataLen > 0) {
+        memcpy(node->data, inData, inDataLen);
+    }
+    EnqueueAsync(node);
     return SUCCESS_CODE;
 }
 
 int32_t AsyncExecuteRunnable(BackgroundAsyncFuncWithRunnable_t func, const void *inData, uint32_t inDataLen, BackgroundAsyncRunnable_t runnable)
 {
-    func(inData, inDataLen, runnable);
+    AsyncQueueNode_t *node = malloc(sizeof(*node) + inDataLen);
+    if (node == NULL) {
+        return ERR_GENERAL_FAIL;
+    }
+    node->kind = ASYNC_KIND_FUNC_WITH_RUNNABLE;
+    node->u.funcWithRunnable = func;
+    node->runnable = runnable;
+    node->dataLen = inDataLen;
+    if (inData != NULL && inDataLen > 0) {
+        memcpy(node->data, inData, inDataLen);
+    }
+    EnqueueAsync(node);
     return SUCCESS_CODE;
 }
 #endif

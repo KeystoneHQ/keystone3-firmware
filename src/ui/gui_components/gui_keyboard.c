@@ -1200,6 +1200,13 @@ char *GuiGetTrueWord(const lv_obj_t *obj, uint16_t btn_id)
 void KbTextAreaHandler(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
+#ifdef COMPILE_SIMULATOR
+    // Skip events this handler doesn't process. During view teardown the
+    // text area may already be freed, and the strlen below would crash.
+    if (code != LV_EVENT_VALUE_CHANGED && code != LV_EVENT_READY && code != LV_EVENT_CANCEL) {
+        return;
+    }
+#endif
     lv_obj_t *ta = lv_event_get_target(e);
     uint8_t taLen = strlen(lv_textarea_get_text(ta));
     KeyBoard_t *keyBoard = lv_event_get_user_data(e);

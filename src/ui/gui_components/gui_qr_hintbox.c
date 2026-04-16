@@ -10,6 +10,39 @@ static lv_obj_t *g_qrHintBox = NULL;
 static lv_obj_t *g_qrHintBoxTitle = NULL;
 static lv_obj_t *g_qrHintBoxQR = NULL;
 static lv_obj_t *g_qrHintBoxSubTitle = NULL;
+static uint8_t g_qrHintBoxLayout = 0xFF;
+
+typedef struct {
+    uint16_t hintBoxHeight;
+    uint16_t qrContainerSize;
+    uint16_t qrCodeSize;
+    lv_coord_t qrBottomOffset;
+    lv_coord_t titleBottomOffset;
+    lv_coord_t subtitleYOffset;
+} GuiQrHintBoxLayoutParam_t;
+
+enum {
+    QR_HINTBOX_LAYOUT_DEFAULT = 0,
+    QR_HINTBOX_LAYOUT_COMPACT,
+};
+
+static const GuiQrHintBoxLayoutParam_t g_qrHintBoxLayoutDefault = {
+    .hintBoxHeight = 656,
+    .qrContainerSize = 408,
+    .qrCodeSize = 360,
+    .qrBottomOffset = -220,
+    .titleBottomOffset = -156,
+    .subtitleYOffset = 40,
+};
+
+static const GuiQrHintBoxLayoutParam_t g_qrHintBoxLayoutCompact = {
+    .hintBoxHeight = 656,
+    .qrContainerSize = 344,
+    .qrCodeSize = 304,
+    .qrBottomOffset = -284,
+    .titleBottomOffset = -220,
+    .subtitleYOffset = 40,
+};
 
 void GuiQRHintBoxRemove();
 
@@ -35,6 +68,10 @@ static void GuiQRHintBoxCloseHandler(lv_event_t *e)
 void GuiQRHintBoxRemove()
 {
     GUI_DEL_OBJ(g_qrHintBox);
+    g_qrHintBoxTitle = NULL;
+    g_qrHintBoxQR = NULL;
+    g_qrHintBoxSubTitle = NULL;
+    g_qrHintBoxLayout = 0xFF;
 }
 
 bool GuiQRHintBoxIsActive()
@@ -150,16 +187,21 @@ void GuiNormalHitBoxOpen(const char *title, const char *content)
     }
 }
 
-void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *subtitle)
+static void GuiQRCodeHintBoxOpenByLayout(const char *qrdata, const char *title, const char *subtitle,
+                                         const GuiQrHintBoxLayoutParam_t *layout, uint8_t layoutType)
 {
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
+    if (g_qrHintBox != NULL && g_qrHintBoxLayout != layoutType) {
+        GuiQRHintBoxRemove();
+    }
 
     if (g_qrHintBox == NULL) {
-        g_qrHintBox = GuiCreateHintBox(656);
+        g_qrHintBox = GuiCreateHintBox(layout->hintBoxHeight);
         parent = g_qrHintBox;
+        g_qrHintBoxLayout = layoutType;
 
         qrCodeCont = lv_obj_create(parent);
-        lv_obj_set_size(qrCodeCont, 408, 408);
+        lv_obj_set_size(qrCodeCont, layout->qrContainerSize, layout->qrContainerSize);
         lv_obj_set_style_border_width(qrCodeCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_clip_corner(qrCodeCont, 0, 0);
         lv_obj_set_style_pad_all(qrCodeCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -167,21 +209,21 @@ void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *sub
         lv_obj_clear_flag(qrCodeCont, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_clear_flag(qrCodeCont, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_bg_color(qrCodeCont, WHITE_COLOR, LV_PART_MAIN);
-        lv_obj_align(qrCodeCont, LV_ALIGN_BOTTOM_MID, 0, -220);
+        lv_obj_align(qrCodeCont, LV_ALIGN_BOTTOM_MID, 0, layout->qrBottomOffset);
 
-        qrCode = lv_qrcode_create(qrCodeCont, 360, BLACK_COLOR, WHITE_COLOR);
+        qrCode = lv_qrcode_create(qrCodeCont, layout->qrCodeSize, BLACK_COLOR, WHITE_COLOR);
         lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
         lv_qrcode_update(qrCode, qrdata, (uint32_t)strlen(qrdata));
         g_qrHintBoxQR = qrCode;
 
         label = GuiCreateTextLabel(parent, title);
         lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
-        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -156);
+        lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, layout->titleBottomOffset);
         g_qrHintBoxTitle = label;
 
         label = GuiCreateIllustrateLabel(parent, subtitle);
         lv_obj_set_style_text_color(label, BLUE_GREEN_COLOR, LV_PART_MAIN);
-        GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 0, 40);
+        GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 0, layout->subtitleYOffset);
         g_qrHintBoxSubTitle = label;
 
         button = GuiCreateTextBtn(parent, _("OK"));
@@ -195,4 +237,14 @@ void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *sub
         lv_label_set_text(g_qrHintBoxTitle, title);
         lv_label_set_text(g_qrHintBoxSubTitle, subtitle);
     }
+}
+
+void GuiQRCodeHintBoxOpen(const char *qrdata, const char *title, const char *subtitle)
+{
+    GuiQRCodeHintBoxOpenByLayout(qrdata, title, subtitle, &g_qrHintBoxLayoutDefault, QR_HINTBOX_LAYOUT_DEFAULT);
+}
+
+void GuiQRCodeHintBoxOpenCompact(const char *qrdata, const char *title, const char *subtitle)
+{
+    GuiQRCodeHintBoxOpenByLayout(qrdata, title, subtitle, &g_qrHintBoxLayoutCompact, QR_HINTBOX_LAYOUT_COMPACT);
 }

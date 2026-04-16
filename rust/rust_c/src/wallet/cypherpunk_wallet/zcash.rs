@@ -18,6 +18,7 @@ pub unsafe extern "C" fn get_connect_zcash_wallet_ur(
     seed_fingerprint: PtrBytes,
     seed_fingerprint_len: u32,
     zcash_keys: Ptr<CSliceFFI<ZcashKey>>,
+    device_version: PtrString,
 ) -> *mut UREncodeResult {
     if seed_fingerprint_len != 32 {
         return UREncodeResult::from(URError::UrEncodeError(format!(
@@ -41,7 +42,12 @@ pub unsafe extern "C" fn get_connect_zcash_wallet_ur(
             )
         })
         .collect();
-    let result = generate_sync_ur(ufvks, seed_fingerprint);
+    let version = if device_version.is_null() {
+        None
+    } else {
+        Some(recover_c_char(device_version))
+    };
+    let result = generate_sync_ur(ufvks, seed_fingerprint, version.as_deref());
     match result.map(|v| v.try_into()) {
         Ok(v) => match v {
             Ok(data) => UREncodeResult::encode(

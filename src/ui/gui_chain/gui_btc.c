@@ -792,10 +792,10 @@ static void OpenInputRefQrCode(lv_event_t *e)
     char url[128] = {0};
     char outpoint[160] = {0};
     snprintf_s(url, sizeof(url), "https://mempool.space/tx/%s", inputData->input_txid);
-    snprintf_s(outpoint, sizeof(outpoint), "%s:\n%s:%u", _("btc_outpoint"), inputData->input_txid,
+    snprintf_s(outpoint, sizeof(outpoint), "%s:\n%s:%u", "Outpoint", inputData->input_txid,
                inputData->input_vout);
 
-    GuiQRCodeHintBoxOpenCompact(url, _("btc_input_reference"), outpoint);
+    GuiQRCodeHintBoxOpenCompact(url, "Input Reference", outpoint);
 }
 
 static bool IsAvalancheTx(DisplayTx *data)
@@ -856,7 +856,7 @@ static bool isSat = false;
 static void FormatFeeText(char *out, size_t outLen, const char *feeText, bool isLowerBound, bool isUnknown)
 {
     if (isUnknown) {
-        strcpy_s(out, outLen, _("btc_fee_unknown"));
+        strcpy_s(out, outLen, "Unknown");
     } else if (isLowerBound) {
         snprintf_s(out, outLen, ">= %s", feeText);
     } else {
@@ -936,7 +936,7 @@ static lv_obj_t *CreateSighashWarningView(lv_obj_t *parent, lv_obj_t *lastView, 
     lv_obj_t *warningIcon = GuiCreateImg(warningView, &imgWarningRed);
     lv_obj_align(warningIcon, LV_ALIGN_TOP_LEFT, 24, 24);
 
-    lv_obj_t *titleLabel = GuiCreateTextLabel(warningView, _("Warning"));
+    lv_obj_t *titleLabel = GuiCreateTextLabel(warningView, "Warning");
     lv_obj_set_style_text_color(titleLabel, lv_color_hex(0xF55831), LV_PART_MAIN);
     lv_obj_align_to(titleLabel, warningIcon, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
 
@@ -962,7 +962,7 @@ static lv_obj_t *CreateInputRefView(lv_obj_t *parent, lv_obj_t *lastView, Displa
     lv_obj_align_to(inputRefContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     lv_obj_add_event_cb(inputRefContainer, OpenInputRefQrCode, LV_EVENT_CLICKED, inputData);
 
-    lv_obj_t *inputRefLabel = GuiCreateIllustrateLabel(inputRefContainer, _("btc_input_ref"));
+    lv_obj_t *inputRefLabel = GuiCreateIllustrateLabel(inputRefContainer, "Input Ref");
     lv_obj_set_style_text_color(inputRefLabel, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
     lv_obj_align(inputRefLabel, LV_ALIGN_LEFT_MID, 0, 0);
     lv_obj_clear_flag(inputRefLabel, LV_OBJ_FLAG_CLICKABLE);
@@ -1062,7 +1062,7 @@ static lv_obj_t *CreateSighashView(lv_obj_t *parent, char *sighashType, lv_obj_t
     }
 
     char *displayText = (char *)GetSighashDisplayText(sighashType);
-    return CreateTransactionItemView(parent, _("btc_sighash"), displayText, lastView);
+    return CreateTransactionItemView(parent, "Sighash", displayText, lastView);
 }
 
 static lv_obj_t *CreateOverviewFromView(lv_obj_t *parent, DisplayTxOverview *overviewData, lv_obj_t *lastView)

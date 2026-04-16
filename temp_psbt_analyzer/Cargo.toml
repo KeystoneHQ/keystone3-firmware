@@ -1,0 +1,13 @@
+[package]
+name = "psbt_analyzer"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "analyze"
+path = "src/main.rs"
+
+[dependencies]
+bitcoin = "0.32"
+ur-registry = { git = "https://github.com/KeystoneHQ/keystone-sdk-rust.git", tag = "0.0.56" }
+ur = "0.3"

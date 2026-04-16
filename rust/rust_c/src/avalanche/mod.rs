@@ -69,47 +69,70 @@ unsafe fn parse_transaction_by_type(
         }
     };
 
-    // Get derivation path from sign_request (avoid borrowing from a temporary)
-    let derivation_paths_vec = sign_request.get_derivation_path();
-    if derivation_paths_vec.is_empty() {
+    // Build full derivation paths from sign_request.
+    let derivation_keypaths = sign_request.get_derivation_path();
+    if derivation_keypaths.is_empty() {
         return TransactionParseResult::from(RustCError::InvalidData(
             "invalid derivation path".to_string(),
         ))
         .c_ptr();
     }
-    let derivation_path = &derivation_paths_vec[0];
-    let full_path = match derivation_path.get_path() {
-        Some(p) => format!("m/{}", p),
-        None => {
-            return TransactionParseResult::from(RustCError::InvalidData(
-                "invalid derivation path".to_string(),
-            ))
-            .c_ptr()
-        }
-    };
 
-    // Derive address by matching full_path with available keys
-    let mut address = String::new();
-    for key in recover_c_array(public_keys).iter() {
-        let key_path = recover_c_char(key.path).to_lowercase();
-        if full_path.starts_with(&key_path) {
-            address = match key_path.as_str() {
-                "m/44'/60'/0'" => app_ethereum::address::derive_address(
-                    full_path.as_str(),
-                    &recover_c_char(key.xpub),
-                    &key_path,
-                )
-                .unwrap_or("no address".to_string()),
-                _ => app_avalanche::get_address(
-                    app_avalanche::network::Network::AvaxMainNet,
-                    full_path.as_str(),
-                    &recover_c_char(key.xpub),
-                    &key_path,
-                )
-                .unwrap_or("no address".to_string()),
-            };
-            break;
+    let mut paths: Vec<String> = Vec::new();
+    for kp in derivation_keypaths.iter() {
+        match kp.get_path() {
+            Some(p) => paths.push(format!("m/{}", p)),
+            None => {
+                return TransactionParseResult::from(RustCError::InvalidData(
+                    "invalid derivation path".to_string(),
+                ))
+                .c_ptr()
+            }
         }
+    }
+
+    // Derive addresses by matching every full path with available keys.
+    let mut from_infos: Vec<(String, String)> = Vec::new();
+    let mut address = String::new();
+    for full_path in paths.iter() {
+        let mut derived_address = "no address".to_string();
+        for key in recover_c_array(public_keys).iter() {
+            let key_path = recover_c_char(key.path).to_lowercase();
+            if full_path.starts_with(&key_path) {
+                derived_address = match key_path.as_str() {
+                    "m/44'/60'/0'" => app_ethereum::address::derive_address(
+                        full_path.as_str(),
+                        &recover_c_char(key.xpub),
+                        &key_path,
+                    )
+                    .unwrap_or("no address".to_string()),
+                    _ => app_avalanche::get_address(
+                        app_avalanche::network::Network::AvaxMainNet,
+                        full_path.as_str(),
+                        &recover_c_char(key.xpub),
+                        &key_path,
+                    )
+                    .unwrap_or("no address".to_string()),
+                };
+
+                if derived_address != "no address" && address.is_empty() {
+                    address = derived_address.clone();
+                }
+                break;
+            }
+        }
+        from_infos.push((full_path.clone(), derived_address));
+    }
+
+    if address.is_empty() {
+        address = "no address".to_string();
+    }
+
+    if from_infos.is_empty() {
+        return TransactionParseResult::from(RustCError::InvalidData(
+            "invalid derivation path".to_string(),
+        ))
+        .c_ptr();
     }
 
     // Helper macro: given a concrete tx type `$tx_type`, parse raw tx bytes (`tx_data`)
@@ -123,7 +146,7 @@ unsafe fn parse_transaction_by_type(
                     TransactionParseResult::success(
                         DisplayAvaxTx::from_tx_info(
                             parse_data,
-                            full_path.clone(),
+                            from_infos.clone(),
                             address.clone(),
                             type_id,
                         )
@@ -139,7 +162,6 @@ unsafe fn parse_transaction_by_type(
                 })
         };
     }
-
     match type_id {
         TypeId::BaseTx => {
             let header = get_avax_tx_header(tx_data.clone()).unwrap();
@@ -152,7 +174,7 @@ unsafe fn parse_transaction_by_type(
                         TransactionParseResult::success(
                             DisplayAvaxTx::from_tx_info(
                                 parse_data,
-                                "".to_string(),
+                                from_infos.clone(),
                                 address.clone(),
                                 type_id,
                             )

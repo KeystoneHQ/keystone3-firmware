@@ -92,7 +92,7 @@ lv_obj_t *CreateTxOverviewFromTo(lv_obj_t *parent, void *from, int fromLen, void
     for (int i = 0; i < fromLen; i++) {
         lv_obj_t *label = GuiCreateIllustrateLabel(container, ptr[i].address);
         lv_obj_set_width(label, 360);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54 + 60 * i);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54 + 65 * i);
     }
 
     ptr = (DisplayUtxoFromTo *)to;
@@ -174,7 +174,7 @@ void GuiAvaxTxOverview(lv_obj_t *parent, void *totalData)
         GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
 
-    container = CreateTxOverviewFromTo(parent, txData->data->from, 1, txData->data->to->data, txData->data->to->size);
+    container = CreateTxOverviewFromTo(parent, txData->data->from->data, txData->data->to->size, txData->data->to->data, txData->data->to->size);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     lv_obj_update_layout(parent);
 }
@@ -216,7 +216,7 @@ void GuiAvaxTxRawData(lv_obj_t *parent, void *totalData)
         GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
 
-    container = CreateTxDetailsFromTo(parent, "From", txData->data->from, 1);
+    container = CreateTxDetailsFromTo(parent, "From", txData->data->from->data, txData->data->from->size);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
     container = CreateTxDetailsFromTo(parent, "To", txData->data->to->data, txData->data->to->size);

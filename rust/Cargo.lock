@@ -4365,11 +4365,7 @@ dependencies = [
 
 [[package]]
 name = "sui-transaction-types-core"
-version = "0.1.0"
-source = "git+https://github.com/KeystoneHQ/sui.git?tag=mainnet-nostd-v1.69.2.1#4e533b128e51dab9d3c3512f1855633921f359e1"
-dependencies = [
- "serde",
-]
+version = "0.0.1"
 
 [[package]]
 name = "syn"
@@ -4715,7 +4711,7 @@ dependencies = [
 [[package]]
 name = "ur-parse-lib"
 version = "0.2.0"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.56#c526d9ccd9b47b978797a038d77ddd406ac91ec5"
+source = "git+https://github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.56#c526d9ccd9b47b978797a038d77ddd406ac91ec5"
 dependencies = [
  "hex",
  "ur",
@@ -4725,7 +4721,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "0.1.1"
-source = "git+https://git@github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.56#c526d9ccd9b47b978797a038d77ddd406ac91ec5"
+source = "git+https://github.com/KeystoneHQ/keystone-sdk-rust.git?tag=0.0.56#c526d9ccd9b47b978797a038d77ddd406ac91ec5"
 dependencies = [
  "bs58",
  "core2",

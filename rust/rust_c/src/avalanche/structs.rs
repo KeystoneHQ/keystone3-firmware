@@ -46,7 +46,7 @@ pub struct DisplayTxAvaxData {
     amount: PtrString,
     method: PtrT<DisplayAvaxMethodInfo>,
     to: PtrT<VecFFI<DisplayAvaxFromToInfo>>,
-    from: PtrT<DisplayAvaxFromToInfo>,
+    from: PtrT<VecFFI<DisplayAvaxFromToInfo>>,
 }
 
 impl_c_ptr!(DisplayTxAvaxData);
@@ -72,22 +72,25 @@ impl_c_ptr!(DisplayAvaxFromToInfo);
 impl DisplayAvaxFromToInfo {
     fn from_index(
         value: &AvaxFromToInfo,
-        from_path: &str,
-        from_address: String,
+        from_infos: &[(String, String)],
         type_id: TypeId,
     ) -> Self {
         let address = value.address.first().unwrap().clone();
+        let matched_path = from_infos
+            .iter()
+            .find(|(_, from_address)| *from_address == address)
+            .map(|(from_path, _)| from_path.clone());
         let is_change = match type_id {
             TypeId::XchainImportTx
             | TypeId::PchainImportTx
             | TypeId::XchainExportTx
             | TypeId::PchainExportTx => false,
-            _ => address == from_address,
+            _ => matched_path.is_some(),
         };
         let path = if !is_change {
             null_mut()
         } else {
-            convert_c_char(from_path.to_string())
+            matched_path.map_or(null_mut(), convert_c_char)
         };
         DisplayAvaxFromToInfo {
             address: convert_c_char(address.clone()),
@@ -132,12 +135,12 @@ impl From<AvaxMethodInfo> for DisplayAvaxMethodInfo {
 impl DisplayAvaxTx {
     pub fn from_tx_info<T: AvaxTxInfo>(
         value: T,
-        from_path: String,
+        from_infos: Vec<(String, String)>,
         from_address: String,
         type_id: TypeId,
     ) -> Self {
         DisplayAvaxTx {
-            data: DisplayTxAvaxData::from_tx_info(value, from_path, from_address, type_id).c_ptr(),
+            data: DisplayTxAvaxData::from_tx_info(value, from_infos, from_address, type_id).c_ptr(),
         }
     }
 }
@@ -145,21 +148,34 @@ impl DisplayAvaxTx {
 impl DisplayTxAvaxData {
     fn from_tx_info<T: AvaxTxInfo>(
         value: T,
-        from_path: String,
+        from_infos: Vec<(String, String)>,
         from_address: String,
         type_id: TypeId,
     ) -> Self {
+        let total_input_amount = format!(
+            "{} AVAX",
+            value.get_total_input_amount() as f64 / NAVAX_TO_AVAX_RATIO
+        );
+
+        let from = VecFFI::from(
+            from_infos
+                .iter()
+                .map(|(from_path, from_addr)| DisplayAvaxFromToInfo {
+                    address: convert_c_char(from_addr.clone()),
+                    amount: convert_c_char(total_input_amount.clone()),
+                    path: if from_path.is_empty() {
+                        null_mut()
+                    } else {
+                        convert_c_char(from_path.clone())
+                    },
+                    is_change: false,
+                })
+                .collect::<Vec<DisplayAvaxFromToInfo>>(),
+        )
+        .c_ptr();
+
         DisplayTxAvaxData {
-            from: DisplayAvaxFromToInfo {
-                address: convert_c_char(from_address.clone()),
-                amount: convert_c_char(format!(
-                    "{} AVAX",
-                    value.get_total_input_amount() as f64 / NAVAX_TO_AVAX_RATIO
-                )),
-                path: convert_c_char(from_path.clone()),
-                is_change: false,
-            }
-            .c_ptr(),
+            from,
             amount: convert_c_char(format!(
                 "{} AVAX",
                 value.get_output_amount(from_address.clone(), type_id) as f64 / NAVAX_TO_AVAX_RATIO
@@ -181,14 +197,7 @@ impl DisplayTxAvaxData {
                 value
                     .get_outputs_addresses()
                     .iter()
-                    .map(|v| {
-                        DisplayAvaxFromToInfo::from_index(
-                            v,
-                            &from_path,
-                            from_address.clone(),
-                            type_id,
-                        )
-                    })
+                    .map(|v| DisplayAvaxFromToInfo::from_index(v, &from_infos, type_id))
                     .collect::<Vec<DisplayAvaxFromToInfo>>(),
             )
             .c_ptr(),
@@ -211,11 +220,12 @@ impl DisplayTxAvaxData {
 
 impl Free for DisplayTxAvaxData {
     unsafe fn free(&self) {
-        // let x = Box::from_raw(self.from);
-        // let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
-        // ve.iter().for_each(|v| {
-        //     v.free();
-        // });
+        let x = Box::from_raw(self.from);
+        let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
+        ve.iter().for_each(|v| {
+            v.free();
+        });
+
         let x = Box::from_raw(self.to);
         let ve = Vec::from_raw_parts(x.data, x.size, x.cap);
         ve.iter().for_each(|v| {

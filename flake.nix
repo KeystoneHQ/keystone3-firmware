@@ -29,6 +29,9 @@
         ps.pyyaml
         ps.pillow
       ]);
+      buildScript = name: args: pkgs.writeShellScriptBin name ''
+        exec ${python}/bin/python3 build.py ${args}
+      '';
     in
     {
       devShells.${system}.default = pkgs.mkShell {
@@ -42,6 +45,9 @@
           pkgs.pkg-config
           pkgs.libclang.lib
           pkgs.zlib
+          (buildScript "build-multi" "")
+          (buildScript "build-btc-only" "-t btc_only")
+          (buildScript "build-cypherpunk" "-t cypherpunk")
         ];
 
         shellHook = ''
@@ -49,27 +55,6 @@
           export LD_LIBRARY_PATH="${pkgs.zlib}/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           export CARGO_NET_GIT_FETCH_WITH_CLI=true
         '';
-      };
-
-      apps.${system} = {
-        build-multi = {
-          type = "app";
-          program = toString (pkgs.writeShellScript "build-multi" ''
-            ${python}/bin/python3 build.py
-          '');
-        };
-        build-btc-only = {
-          type = "app";
-          program = toString (pkgs.writeShellScript "build-btc-only" ''
-            ${python}/bin/python3 build.py -t btc_only
-          '');
-        };
-        build-cypherpunk = {
-          type = "app";
-          program = toString (pkgs.writeShellScript "build-cypherpunk" ''
-            ${python}/bin/python3 build.py -t cypherpunk
-          '');
-        };
       };
     };
 }

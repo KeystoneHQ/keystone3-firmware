@@ -43,7 +43,12 @@
         buildInputs = [
           rustToolchain
           python
-          pkgs.rustup
+          (pkgs.writeShellScriptBin "rustup" ''
+            if [ "$1" = "run" ]; then
+              shift; shift; exec "$@"
+            fi
+            echo "rustup shimmed by nix devShell"
+          '')
           pkgs.gcc-arm-embedded
           pkgs.cmake
           pkgs.gnumake

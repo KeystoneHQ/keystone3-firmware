@@ -97,6 +97,8 @@
           export LIBCLANG_PATH="${pkgs.libclang.lib}/lib"
           export LD_LIBRARY_PATH="${pkgs.zlib}/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           export CARGO_NET_GIT_FETCH_WITH_CLI=true
+          export CC_thumbv7em_none_eabihf=arm-none-eabi-gcc
+          export AR_thumbv7em_none_eabihf=arm-none-eabi-ar
           export RUSTUP_TOOLCHAIN=nightly-2025-07-01
         '';
       };

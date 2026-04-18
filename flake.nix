@@ -99,6 +99,10 @@
             "$fmm" --source build/mh1903_full.bin --destination build/keystone3.bin
             echo "Created build/keystone3.bin"
           '')
+          (pkgs.writeShellScriptBin "run-tests" ''
+            cd rust
+            exec cargo test "$@"
+          '')
           (pkgs.writeShellScriptBin "verify-firmware" ''
             set -e
             fmc_dir="tools/code/firmware-checker"

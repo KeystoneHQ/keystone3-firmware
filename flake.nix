@@ -43,6 +43,7 @@
         buildInputs = [
           rustToolchain
           python
+          pkgs.rustup
           pkgs.gcc-arm-embedded
           pkgs.cmake
           pkgs.gnumake

@@ -23,21 +23,27 @@
       };
       rustToolchain = pkgs.rust-bin.nightly."2025-07-01".default.override {
         targets = [ "thumbv7em-none-eabihf" ];
-        extensions = [ "rust-src" "rust-analyzer" ];
+        extensions = [
+          "rust-src"
+          "rust-analyzer"
+        ];
       };
       python = pkgs.python314.withPackages (ps: [
         ps.pyyaml
         ps.pillow
       ]);
-      buildScript = name: args: pkgs.writeShellScriptBin name ''
-        exec ${python}/bin/python3 build.py ${args}
-      '';
+      buildScript =
+        name: args:
+        pkgs.writeShellScriptBin name ''
+          exec ${python}/bin/python3 build.py ${args}
+        '';
     in
     {
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = [
           rustToolchain
           python
+          pkgs.rustup
           pkgs.gcc-arm-embedded
           pkgs.cmake
           pkgs.gnumake

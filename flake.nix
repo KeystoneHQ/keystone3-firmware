@@ -56,6 +56,9 @@
           pkgs.pkg-config
           pkgs.libclang.lib
           pkgs.zlib
+          (pkgs.writeShellScriptBin "update-submodules" ''
+            exec git submodule update --init --recursive
+          '')
           (buildScript "build-multi" "")
           (buildScript "build-btc-only" "-t btc_only")
           (buildScript "build-cypherpunk" "-t cypherpunk")

@@ -55,21 +55,18 @@
         build-multi = {
           type = "app";
           program = toString (pkgs.writeShellScript "build-multi" ''
-            cd ${toString ./.}
             ${python}/bin/python3 build.py
           '');
         };
         build-btc-only = {
           type = "app";
           program = toString (pkgs.writeShellScript "build-btc-only" ''
-            cd ${toString ./.}
             ${python}/bin/python3 build.py -t btc_only
           '');
         };
         build-cypherpunk = {
           type = "app";
           program = toString (pkgs.writeShellScript "build-cypherpunk" ''
-            cd ${toString ./.}
             ${python}/bin/python3 build.py -t cypherpunk
           '');
         };

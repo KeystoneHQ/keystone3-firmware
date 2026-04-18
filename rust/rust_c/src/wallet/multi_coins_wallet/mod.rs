@@ -11,6 +11,8 @@ pub mod xrp_toolkit;
 
 pub mod core_wallet;
 pub mod thor_wallet;
+#[cfg(feature = "zcash")]
+pub mod zcash;
 
 use alloc::format;
 use alloc::string::String;

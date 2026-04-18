@@ -28,6 +28,22 @@
           "rust-analyzer"
         ];
       };
+      gccCompatFlags = "-Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=incompatible-pointer-types";
+      arm-gcc-wrapped = pkgs.runCommand "arm-gcc-wrapped" { } ''
+        mkdir -p $out/bin
+        for tool in ${pkgs.gcc-arm-embedded}/bin/*; do
+          name=$(basename "$tool")
+          if [ "$name" = "arm-none-eabi-gcc" ] || [ "$name" = "arm-none-eabi-cc" ]; then
+            cat > "$out/bin/$name" <<WRAPPER
+        #!/bin/sh
+        exec "$tool" ${gccCompatFlags} "\$@"
+        WRAPPER
+            chmod +x "$out/bin/$name"
+          else
+            ln -s "$tool" "$out/bin/$name"
+          fi
+        done
+      '';
       python = pkgs.python314.withPackages (ps: [
         ps.pyyaml
         ps.pillow
@@ -49,7 +65,7 @@
             fi
             echo "rustup shimmed by nix devShell"
           '')
-          pkgs.gcc-arm-embedded
+          arm-gcc-wrapped
           pkgs.cmake
           pkgs.gnumake
           pkgs.clang
@@ -103,7 +119,6 @@
           export CC_thumbv7em_none_eabihf=arm-none-eabi-gcc
           export AR_thumbv7em_none_eabihf=arm-none-eabi-ar
           export RUSTUP_TOOLCHAIN=nightly-2025-07-01
-          export NIX_CFLAGS_COMPILE="-Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=incompatible-pointer-types ''${NIX_CFLAGS_COMPILE:-}"
         '';
       };
     };

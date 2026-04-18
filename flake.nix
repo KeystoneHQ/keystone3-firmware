@@ -103,6 +103,7 @@
           export CC_thumbv7em_none_eabihf=arm-none-eabi-gcc
           export AR_thumbv7em_none_eabihf=arm-none-eabi-ar
           export RUSTUP_TOOLCHAIN=nightly-2025-07-01
+          export CFLAGS="-Wno-error=implicit-function-declaration -Wno-error=implicit-int $CFLAGS"
         '';
       };
     };

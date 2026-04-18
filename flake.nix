@@ -28,7 +28,7 @@
           "rust-analyzer"
         ];
       };
-      gccCompatFlags = "-Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=incompatible-pointer-types -Wno-error=conflicting-types";
+      gccCompatFlags = "-std=gnu17 -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=incompatible-pointer-types";
       arm-gcc-wrapped = pkgs.runCommand "arm-gcc-wrapped" { } ''
         mkdir -p $out/bin
         for tool in ${pkgs.gcc-arm-embedded}/bin/*; do

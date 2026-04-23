@@ -14,6 +14,7 @@
 #include "gui_keyboard_hintbox.h"
 #include "gui_lock_widgets.h"
 #include "account_public_info.h"
+#include "account_manager.h"
 #include "gui_key_derivation_request_widgets.h"
 
 typedef struct KeyDerivationWidget {
@@ -156,6 +157,8 @@ static void RecalcCurrentWalletIndex(char *origin)
         g_walletIndex = WALLET_LIST_MEDUSA;
     } else if (strcmp("gerowallet", origin) == 0) {
         g_walletIndex = WALLET_LIST_GERO;
+    } else if (strcmp("zodl", origin) == 0) {
+        g_walletIndex = WALLET_LIST_ZODL;
     } else {
         g_walletIndex = WALLET_LIST_ETERNL;
     }
@@ -525,6 +528,22 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
 
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
+#ifdef CYPHERPUNK_VERSION
+    if (strcmp("zodl", g_callData->origin) == 0) {
+        CSliceFFI_ZcashKey *zcashKeys = SRAM_MALLOC(sizeof(CSliceFFI_ZcashKey));
+        ZcashKey zcashKeyData[1];
+        zcashKeys->data = zcashKeyData;
+        zcashKeys->size = 1;
+        char ufvk[384] = {'\0'};
+        uint8_t sfp[32];
+        GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+        GetZcashSFP(GetCurrentAccountIndex(), sfp);
+        zcashKeyData[0].key_text = ufvk;
+        zcashKeyData[0].key_name = GetWalletName();
+        zcashKeyData[0].index = 0;
+        return get_connect_zcash_wallet_ur(sfp, 32, zcashKeys);
+    }
+#endif
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     CSliceFFI_ExtendedPublicKey keys;

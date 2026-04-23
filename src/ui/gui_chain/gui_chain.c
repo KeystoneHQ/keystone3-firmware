@@ -38,13 +38,14 @@ bool CheckViewTypeIsAllow(uint8_t viewType)
     case REMAPVIEW_AVAX:
     case REMAPVIEW_TRX:
     case REMAPVIEW_TRX_PERSONAL_MESSAGE:
+    case REMAPVIEW_ZCASH:
         return true;
     default:
         return false;
     }
 #endif
 #ifdef CYPHERPUNK_VERSION
-    return ViewTypeReMap(viewType) == REMAPVIEW_BTC || ViewTypeReMap(viewType) == REMAPVIEW_BTC_MESSAGE;
+    return ViewTypeReMap(viewType) == REMAPVIEW_BTC || ViewTypeReMap(viewType) == REMAPVIEW_BTC_MESSAGE || ViewTypeReMap(viewType) == REMAPVIEW_ZCASH;
 #endif
     return false;
 }
@@ -104,11 +105,11 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
 
     {TonTx, GuiGetTonSignQrCodeData, NULL, GuiGetTonCheckResult, CHAIN_TON, REMAPVIEW_TON},
     {TonSignProof, GuiGetTonProofSignQrCodeData, NULL, GuiGetTonCheckResult, CHAIN_TON, REMAPVIEW_TON_SIGNPROOF},
-    {ZcashTx, GuiGetZcashSignQrCodeData, NULL, GuiGetZcashCheckResult, CHAIN_ZCASH, REMAPVIEW_ZCASH},
+    {ZcashTx, GuiGetZcashSignQrCodeData, GuiGetZcashSignUrDataUnlimited, GuiGetZcashCheckResult, CHAIN_ZCASH, REMAPVIEW_ZCASH},
 #endif
 
 #ifdef CYPHERPUNK_VERSION
-    {ZcashTx, GuiGetZcashSignQrCodeData, NULL, GuiGetZcashCheckResult, CHAIN_ZCASH, REMAPVIEW_ZCASH},
+    {ZcashTx, GuiGetZcashSignQrCodeData, GuiGetZcashSignUrDataUnlimited, GuiGetZcashCheckResult, CHAIN_ZCASH, REMAPVIEW_ZCASH},
     {XmrOutput, GuiGetMoneroKeyimagesQrCodeData, NULL, GuiGetMoneroOutputCheckResult, CHAIN_XMR, REMAPVIEW_XMR_OUTPUT},
     {XmrTxUnsigned, GuiGetMoneroSignedTransactionQrCodeData, NULL, GuiGetMoneroUnsignedTxCheckResult, CHAIN_XMR, REMAPVIEW_XMR_UNSIGNED},
 #endif

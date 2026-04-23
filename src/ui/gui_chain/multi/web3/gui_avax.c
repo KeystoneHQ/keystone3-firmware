@@ -174,7 +174,7 @@ void GuiAvaxTxOverview(lv_obj_t *parent, void *totalData)
         GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
 
-    container = CreateTxOverviewFromTo(parent, txData->data->from->data, txData->data->to->size, txData->data->to->data, txData->data->to->size);
+    container = CreateTxOverviewFromTo(parent, txData->data->from->data, txData->data->from->size, txData->data->to->data, txData->data->to->size);
     GuiAlignToPrevObj(container, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     lv_obj_update_layout(parent);
 }

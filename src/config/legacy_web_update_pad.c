@@ -1,8 +1,22 @@
 #include <stdint.h>
 #include "legacy_web_update_pad.h"
 
+#ifdef WEB3_VERSION
 #ifndef LEGACY_USB_PAD_LEN
 #define LEGACY_USB_PAD_LEN 2U
+#endif
+#endif
+
+#ifdef BTC_ONLY
+#ifndef LEGACY_USB_PAD_LEN
+#define LEGACY_USB_PAD_LEN 1U
+#endif
+#endif
+
+#ifdef CYPHERPUNK_VERSION
+#ifndef LEGACY_USB_PAD_LEN
+#define LEGACY_USB_PAD_LEN 2U
+#endif
 #endif
 
 #if (LEGACY_USB_PAD_LEN < 1) || (LEGACY_USB_PAD_LEN > 15)

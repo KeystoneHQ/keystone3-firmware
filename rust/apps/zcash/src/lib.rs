@@ -3,6 +3,7 @@ extern crate alloc;
 
 pub mod errors;
 pub mod pczt;
+pub mod version;
 
 use errors::{Result, ZcashError};
 
@@ -13,7 +14,6 @@ use alloc::{
 use pczt::structs::ParsedPczt;
 use zcash_vendor::{
     pczt::Pczt,
-    transparent::keys::{NonHardenedChildIndex, TransparentKeyScope},
     zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
     zcash_protocol::consensus::{self},
     zip32,
@@ -212,9 +212,9 @@ pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
 mod tests {
     use alloc::vec::Vec;
 
+    use ::pczt::roles::creator::Creator;
     use consensus::MainNetwork;
     use keystore::algorithms::zcash::{calculate_seed_fingerprint, derive_ufvk};
-    use ::pczt::roles::creator::Creator;
     use rand_core::OsRng;
     use serde::{Deserialize, Serialize};
     use zcash_primitives::transaction::{
@@ -256,9 +256,15 @@ mod tests {
     }
 
     fn malformed_pczt_with_empty_sapling_bundle_and_nonzero_value_sum() -> Vec<u8> {
-        let mut bytes = Creator::new(BranchId::Nu6.into(), 10, MainNetwork.coin_type(), [0; 32], [0; 32])
-            .build()
-            .serialize();
+        let mut bytes = Creator::new(
+            BranchId::Nu6.into(),
+            10,
+            MainNetwork.coin_type(),
+            [0; 32],
+            [0; 32],
+        )
+        .build()
+        .serialize();
         let mut pczt: PcztMirror = postcard::from_bytes(&bytes[8..]).unwrap();
         assert!(pczt.sapling.spends.is_empty());
         assert!(pczt.sapling.outputs.is_empty());
@@ -330,13 +336,12 @@ mod tests {
         let ufvk_text = derive_ufvk(&params, &victim_seed, "m/32'/133'/0'").unwrap();
         let ufvk = UnifiedFullViewingKey::decode(&params, &ufvk_text).unwrap();
         let victim_fvk = ufvk.orchard().unwrap().clone();
-        let victim_account =
-            zcash_vendor::transparent::keys::AccountPrivKey::from_seed(
-                &params,
-                &victim_seed,
-                zip32::AccountId::ZERO,
-            )
-            .unwrap();
+        let victim_account = zcash_vendor::transparent::keys::AccountPrivKey::from_seed(
+            &params,
+            &victim_seed,
+            zip32::AccountId::ZERO,
+        )
+        .unwrap();
         let (victim_addr, address_index) = victim_account
             .to_account_pubkey()
             .derive_external_ivk()
@@ -395,8 +400,7 @@ mod tests {
 
         let seed_fingerprint = calculate_seed_fingerprint(&victim_seed).unwrap();
 
-        let result =
-            parse_pczt_cypherpunk(&params, &pczt_bytes, &ufvk_text, &seed_fingerprint);
+        let result = parse_pczt_cypherpunk(&params, &pczt_bytes, &ufvk_text, &seed_fingerprint);
         match result {
             Err(ZcashError::InvalidPczt(_)) => {}
             Err(ZcashError::InvalidDataError(msg))

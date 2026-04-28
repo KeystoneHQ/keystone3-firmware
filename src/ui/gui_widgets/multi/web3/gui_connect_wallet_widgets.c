@@ -207,6 +207,10 @@ static const lv_img_dsc_t *g_xrpCoinArray[1] = {
     &coinXrp,
 };
 
+static const lv_img_dsc_t *g_zodlCoinArray[1] = {
+    &coinZec,
+};
+
 static CoinState_t g_defaultFewchaState[FEWCHA_COINS_BUTT] = {
     {APT, true},
     {SUI, false},
@@ -253,6 +257,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ZAPPER, &walletZapper, "Zapper", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_YEARN_FINANCE, &walletYearn, "Yearn", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_SUSHISWAP, &walletSushi, "SushiSwap", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
+    {WALLET_LIST_ZODL, &walletZodl, "Zodl", g_zodlCoinArray, 1, true, WALLET_FILTER_OTHER},
 };
 
 typedef struct {
@@ -415,6 +420,16 @@ static bool IsAda(int walletIndex)
     }
 }
 
+static bool IsZcash(int walletIndex)
+{
+    switch (walletIndex) {
+        case WALLET_LIST_ZODL:
+            return true;
+        default:
+            return false;
+    }
+}
+
 static void GuiARAddressCheckConfirmHandler(lv_event_t *event)
 {
     GUI_DEL_OBJ(g_noticeWindow);
@@ -467,6 +482,9 @@ static void OpenQRCodeHandler(lv_event_t *e)
         g_derivationPathDescs = GetDerivationPathDescs(SOL_DERIVATION_PATH_DESC);
     } else if (IsAda(g_connectWalletTileView.walletIndex)) {
         g_derivationPathDescs = GetDerivationPathDescs(ADA_DERIVATION_PATH_DESC);
+    }
+    else if (IsZcash(g_connectWalletTileView.walletIndex)) {
+        // Zcash does not use derivation path descriptions
     }
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL ||
             g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON ||
@@ -1131,6 +1149,22 @@ UREncodeResult *GuiGetTonData(void)
     return get_tonkeeper_wallet_ur(xpub, GetWalletName(), mfp, sizeof(mfp), path);
 }
 
+UREncodeResult *GuiGetZecData(void)
+{
+    CSliceFFI_ZcashKey *keys = SRAM_MALLOC(sizeof(CSliceFFI_ZcashKey));
+    ZcashKey data[1];
+    keys->data = data;
+    keys->size = 1;
+    char ufvk[384] = {'\0'};
+    uint8_t sfp[32];
+    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+    GetZcashSFP(GetCurrentAccountIndex(), sfp);
+    data[0].key_text = ufvk;
+    data[0].key_name = GetWalletName();
+    data[0].index = 0;
+    return get_connect_zcash_wallet_ur(sfp, 32, keys);
+}
+
 void GuiPrepareArConnectWalletView(void)
 {
     GuiDeleteKeyboardWidget(g_keyboardWidget);
@@ -1281,6 +1315,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
             func = GuiGetKeystoneConnectWalletDataBip39;
             AddCoinsFromArray(g_keystoneWalletCoinArray, NUMBER_OF_ARRAYS(g_keystoneWalletCoinArray), false, 0);
         }
+        break;
+    case WALLET_LIST_ZODL:
+        func = GuiGetZecData;
+        AddCoinsFromArray(g_zodlCoinArray, NUMBER_OF_ARRAYS(g_zodlCoinArray), false, 0);
         break;
     default:
         return;

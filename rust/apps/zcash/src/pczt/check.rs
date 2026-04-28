@@ -1,11 +1,11 @@
 // checking logic for PCZT
 
-use alloc::string::ToString;
+use alloc::{string::ToString, vec};
 
 use super::*;
 
 #[cfg(feature = "cypherpunk")]
-use orchard::{keys::FullViewingKey, value::ValueSum};
+use orchard::{keys::FullViewingKey, value::ValueSum, Address};
 
 use zcash_vendor::{
     pczt::{self, roles::verifier::Verifier, Pczt},
@@ -50,13 +50,9 @@ pub fn check_pczt_orchard<P: consensus::Parameters>(
     pczt: &Pczt,
 ) -> Result<(), ZcashError> {
     validate_sapling_bundle_consistency(pczt)?;
-    // checking orchard keys.
-    let orchard = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
-        "orchard fvk is not present".to_string(),
-    ))?;
     Verifier::new(pczt.clone())
         .with_orchard(|bundle| {
-            check_orchard(params, seed_fingerprint, account_index, orchard, bundle)
+            check_orchard(params, seed_fingerprint, account_index, ufvk, bundle)
                 .map_err(pczt::roles::verifier::OrchardError::Custom)
         })
         .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{e:?}")))?;
@@ -306,11 +302,11 @@ fn check_orchard<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],
     account_index: zip32::AccountId,
-    fvk: &FullViewingKey,
+    ufvk: &UnifiedFullViewingKey,
     bundle: &orchard::pczt::Bundle,
 ) -> Result<(), ZcashError> {
     bundle.actions().iter().try_for_each(|action| {
-        check_action(params, seed_fingerprint, account_index, fvk, action)?;
+        check_action(params, seed_fingerprint, account_index, ufvk, action)?;
         Ok::<_, ZcashError>(())
     })?;
 
@@ -338,7 +334,7 @@ fn check_action<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],
     account_index: zip32::AccountId,
-    fvk: &FullViewingKey,
+    ufvk: &UnifiedFullViewingKey,
     action: &orchard::pczt::Action,
 ) -> Result<(), ZcashError> {
     // Check `cv_net` first so we know that the `value` fields for both the spend and the
@@ -347,8 +343,11 @@ fn check_action<P: consensus::Parameters>(
         ZcashError::InvalidPczt(alloc::format!("invalid cv_net in Orchard action: {e:?}"))
     })?;
 
+    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
+        "orchard fvk is not present".to_string(),
+    ))?;
     check_action_spend(params, seed_fingerprint, account_index, fvk, action.spend())?;
-    check_action_output(action)
+    check_action_output(ufvk, action)
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -394,8 +393,20 @@ fn check_action_spend<P: consensus::Parameters>(
 }
 
 #[cfg(feature = "cypherpunk")]
-//check output cmx
-fn check_action_output(action: &orchard::pczt::Action) -> Result<(), ZcashError> {
+fn is_wallet_orchard_address(fvk: &FullViewingKey, address: &Address) -> bool {
+    let external_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::External);
+    let internal_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::Internal);
+
+    external_ivk.diversifier_index(address).is_some()
+        || internal_ivk.diversifier_index(address).is_some()
+}
+
+#[cfg(feature = "cypherpunk")]
+// check output cmx and internal-ovk output ownership constraints
+fn check_action_output(
+    ufvk: &UnifiedFullViewingKey,
+    action: &orchard::pczt::Action,
+) -> Result<(), ZcashError> {
     action
         .output()
         .verify_note_commitment(action.spend())
@@ -403,9 +414,31 @@ fn check_action_output(action: &orchard::pczt::Action) -> Result<(), ZcashError>
             ZcashError::InvalidPczt(alloc::format!("invalid Orchard action cmx: {e:?}"))
         })?;
 
-    // TODO: Currently the "can decrypt output" check is performed implicitly by
-    // `parse_orchard_output`. If desired, that code could be called from here and
-    // checked; then in `parse_orchard_output` it would never error if reached.
+    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
+        "orchard fvk is not present".to_string(),
+    ))?;
+    let external_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::External).clone();
+    let internal_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::Internal).clone();
+    let transparent_internal_ovk = ufvk
+        .transparent()
+        .map(|k| orchard::keys::OutgoingViewingKey::from(k.internal_ovk().as_bytes()));
+
+    let mut keys = vec![(Some(external_ovk), false), (Some(internal_ovk), true)];
+    if let Some(ovk) = transparent_internal_ovk {
+        keys.push((Some(ovk), true));
+    }
+
+    for (vk, is_internal_ovk) in keys {
+        if let Some((_, address, _)) = super::parse::decode_output_enc_ciphertext(action, vk.as_ref())?
+        {
+            if is_internal_ovk && !is_wallet_orchard_address(fvk, &address) {
+                return Err(ZcashError::InvalidPczt(
+                    "Orchard output was recoverable with an internal OVK but does not belong to this wallet".into(),
+                ));
+            }
+            break;
+        }
+    }
 
     Ok(())
 }

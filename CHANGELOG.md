@@ -1,3 +1,48 @@
+## 2.4.2(2026-4-23)
+
+**Web3:**
+
+### What's new
+
+1.  Supported managing TRON via NuFi
+
+2. Supported managing Native SOL via Keystone Nexus
+
+### Improvements
+
+1. Removed TON-only wallet support. (Please ensure all assets in your TON-only wallet are transferred to the default multi-coin wallet address before updating.)
+
+2. Improved BTC transaction parsing
+
+3. Improved SUI transaction parsing
+
+4. Improved TRON swap transaction parsing
+
+5. Improved Core wallet transaction parsing
+
+6. Updated Keplr wallet icon
+
+
+
+**BTC Only:**
+
+### Improvements
+
+1. Improved BTC transaction parsing
+
+
+
+**Cypherpunk:**
+
+### Improvements
+
+1. Improved BTC transaction parsing
+
+2. Improved ZEC transaction parsing
+
+
+
+
 ## 2.4.0(2026-3-30)
 
 **Web3:**

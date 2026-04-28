@@ -392,7 +392,6 @@ mod tests {
             .unwrap();
         let pczt = Creator::build_from_parts(pczt_parts).unwrap();
         let pczt_bytes = pczt.serialize();
-
         let seed_fingerprint = calculate_seed_fingerprint(&victim_seed).unwrap();
 
         let result =
@@ -406,6 +405,16 @@ mod tests {
                 let orchard = parsed.get_orchard();
                 panic!("unexpected success: orchard={orchard:?}");
             }
+        }
+
+        let check_result =
+            check_pczt_cypherpunk(&params, &pczt_bytes, &ufvk_text, &seed_fingerprint, 0);
+        match check_result {
+            Err(ZcashError::InvalidPczt(_)) => {}
+            Err(ZcashError::InvalidDataError(msg))
+                if msg.contains("Orchard output was recoverable with an internal OVK but does not belong to this wallet") => {}
+            Err(e) => panic!("unexpected check error: {e:?}"),
+            Ok(()) => panic!("unexpected check success"),
         }
     }
 

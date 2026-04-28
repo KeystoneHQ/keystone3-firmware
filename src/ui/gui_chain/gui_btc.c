@@ -864,10 +864,14 @@ static void FormatFeeText(char *out, size_t outLen, const char *feeText, bool is
     }
 }
 
-static lv_obj_t *CreateSignStatusView(lv_obj_t *parent, char *multi_sig_status)
+static lv_obj_t *CreateSignStatusView(lv_obj_t *parent, char *multi_sig_status, lv_obj_t *lastView)
 {
     lv_obj_t *signStatusContainer = GuiCreateContainerWithParent(parent, 408, 62);
-    lv_obj_align(signStatusContainer, LV_ALIGN_DEFAULT, 0, 0);
+    if (lastView == NULL) {
+        lv_obj_align(signStatusContainer, LV_ALIGN_DEFAULT, 0, 0);
+    } else {
+        lv_obj_align_to(signStatusContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
     SetContainerDefaultStyle(signStatusContainer);
 
     lv_obj_t *label = lv_label_create(signStatusContainer);
@@ -1465,7 +1469,7 @@ void GuiBtcTxOverview(lv_obj_t *parent, void *totalData)
     }
 
     if (IsMultiSigTx(txData)) {
-        lastView = CreateSignStatusView(parent, overviewData->sign_status);
+        lastView = CreateSignStatusView(parent, overviewData->sign_status, lastView);
     }
 
     if (IsAvalancheTx(txData)) {
@@ -1489,7 +1493,7 @@ void GuiBtcTxDetail(lv_obj_t *parent, void *totalData)
 
     lv_obj_t *lastView = NULL;
     if (IsMultiSigTx(txData)) {
-        lastView = CreateSignStatusView(parent, detailData->sign_status);
+        lastView = CreateSignStatusView(parent, detailData->sign_status, lastView);
     }
     lastView = CreateNetworkView(parent, detailData->network, lastView);
     lastView = CreateSighashView(parent, txData->overview->sighash_type, lastView);

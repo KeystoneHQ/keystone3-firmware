@@ -507,6 +507,19 @@ UREncodeResult *GuiGetXrpToolkitDataByIndex(uint16_t index)
     return urEncode;
 }
 
+UREncodeResult *GuiGetDexrpDataByIndex(uint16_t index)
+{
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+    char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
+    char *rootPath = "m/44'/144'/0'";
+    char hdPath[BUFFER_SIZE_32] = {0};
+    snprintf_s(hdPath, BUFFER_SIZE_32, "%s/0/%u", rootPath, index);
+    UREncodeResult *urEncode = get_connect_dexrp_ur(hdPath, xpub, rootPath);
+    CHECK_CHAIN_PRINT(urEncode);
+    return urEncode;
+}
+
 UREncodeResult *GuiGetKeystoneConnectWalletDataSlip39(void)
 {
     ChainPath_t chainPaths[] = {

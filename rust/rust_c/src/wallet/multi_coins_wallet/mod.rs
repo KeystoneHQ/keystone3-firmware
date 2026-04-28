@@ -8,6 +8,7 @@ pub mod structs;
 pub mod tonkeeper;
 mod utils;
 pub mod xrp_toolkit;
+pub mod dexrp;
 
 pub mod core_wallet;
 pub mod thor_wallet;

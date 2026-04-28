@@ -240,6 +240,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SAFE, &walletSafe, "Safe", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_BLOCK_WALLET, &walletBlockWallet, "BlockWallet", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_XRP_TOOLKIT, &walletXRPToolkit, "XRP Toolkit", g_xrpCoinArray, 1, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_DEXRP, &walletDEXrp, "DEXrp", g_xrpCoinArray, 1, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_THORWALLET, &walletThorWallet, "THORWallet", g_ThorWalletCoinArray, 2, true, WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_PETRA, &walletPetra, "Petra", g_petraCoinArray, 1, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_KEPLR, &walletKeplr, "Keplr", g_keplrCoinArray, 8, true, WALLET_FILTER_OTHER},
@@ -574,7 +575,7 @@ static void JumpSelectCoinPageHandler(lv_event_t *e)
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_FEWCHA) {
         GuiCreateSelectFewchaCoinWidget();
     } else if (HasSelectAddressWidget()) {
-        if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
+        if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT || g_connectWalletTileView.walletIndex == WALLET_LIST_DEXRP) {
             g_coinListCont = GuiCreateSelectAddressWidget(
                                  CHAIN_XRP, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
                                  RefreshAddressIndex);
@@ -954,7 +955,7 @@ static void AddChainAddress(void)
     lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
-    if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT || g_connectWalletTileView.walletIndex == WALLET_LIST_DEXRP) {
         char addr[BUFFER_SIZE_256] = {0};
         CutAndFormatString(
             addr, sizeof(addr),
@@ -1111,6 +1112,11 @@ UREncodeResult *GuiGetXrpToolkitData(void)
     return GuiGetXrpToolkitDataByIndex(
                GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
 }
+UREncodeResult *GuiGetDexrpData(void)
+{
+    return GuiGetDexrpDataByIndex(
+               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
+}
 UREncodeResult *GuiGetKeplrData(void)
 {
     return GuiGetKeplrDataByIndex(GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
@@ -1264,6 +1270,10 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         func = GuiGetXrpToolkitData;
         AddChainAddress();
         break;
+    case WALLET_LIST_DEXRP:
+        func = GuiGetDexrpData;
+        AddChainAddress();
+        break;
     case WALLET_LIST_THORWALLET:
         func = GuiGetThorWalletData;
         AddCoinsFromArray(g_ThorWalletCoinArray, NUMBER_OF_ARRAYS(g_ThorWalletCoinArray), false, 0);
@@ -1384,6 +1394,7 @@ static bool HasSelectAddressWidget()
 {
     switch (g_connectWalletTileView.walletIndex) {
     case WALLET_LIST_XRP_TOOLKIT:
+    case WALLET_LIST_DEXRP:
     case WALLET_LIST_KEPLR:
     case WALLET_LIST_VESPR:
     case WALLET_LIST_MINT_SCAN:
@@ -1987,7 +1998,7 @@ void GuiConnectWalletRefresh(void)
                 GuiCreateSelectFewchaCoinWidget();
             } else if (HasSelectAddressWidget()) {
                 GuiDestroySelectAddressWidget();
-                if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT) {
+                if (g_connectWalletTileView.walletIndex == WALLET_LIST_XRP_TOOLKIT || g_connectWalletTileView.walletIndex == WALLET_LIST_DEXRP) {
                     g_coinListCont = GuiCreateSelectAddressWidget(
                                          CHAIN_XRP, GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)),
                                          RefreshAddressIndex);

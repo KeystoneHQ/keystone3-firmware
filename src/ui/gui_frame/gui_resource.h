@@ -267,6 +267,7 @@ LV_IMG_DECLARE(walletVespr);
 LV_IMG_DECLARE(walletFewcha);
 LV_IMG_DECLARE(walletPetra);
 LV_IMG_DECLARE(walletXRPToolkit);
+LV_IMG_DECLARE(walletDEXrp);
 LV_IMG_DECLARE(walletSparrow);
 LV_IMG_DECLARE(walletImToken);
 LV_IMG_DECLARE(walletSpecter);

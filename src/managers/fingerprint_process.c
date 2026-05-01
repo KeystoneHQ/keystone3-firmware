@@ -12,6 +12,7 @@
 #include "log_print.h"
 #include "ctaes.h"
 #include "keystore.h"
+#include "crc.h"
 #include "account_manager.h"
 #include "gui_views.h"
 #include "gui_api.h"

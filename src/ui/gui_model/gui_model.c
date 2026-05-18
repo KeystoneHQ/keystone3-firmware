@@ -1093,10 +1093,32 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
     uint8_t *key = SRAM_MALLOC(WEB_AUTH_RSA_KEY_LEN);
-    GetWebAuthRsaKey(key);
+    if (key == NULL) {
+        char *authCode = "";
+        GuiApiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode) + 1);
+        SetLockScreen(enable);
+        return SUCCESS_CODE;
+    }
+    int32_t ret = GetWebAuthRsaKey(key);
+    if (ret != SUCCESS_CODE) {
+        memset_s(key, WEB_AUTH_RSA_KEY_LEN, 0, WEB_AUTH_RSA_KEY_LEN);
+        SRAM_FREE(key);
+        char *authCode = "";
+        GuiApiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode) + 1);
+        SetLockScreen(enable);
+        return SUCCESS_CODE;
+    }
     char *authCode = calculate_auth_code(inData, key, 512, &key[512], 512);
+    bool shouldFreeAuthCode = authCode != NULL;
+    memset_s(key, WEB_AUTH_RSA_KEY_LEN, 0, WEB_AUTH_RSA_KEY_LEN);
     SRAM_FREE(key);
-    GuiApiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode));
+    if (authCode == NULL) {
+        authCode = "";
+    }
+    GuiApiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode) + 1);
+    if (shouldFreeAuthCode) {
+        free_ptr_string(authCode);
+    }
 #else
     uint8_t *entropy;
     uint8_t entropyLen;
@@ -1105,7 +1127,7 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
 
     // GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, &ret, sizeof(ret));
     char *authCode = "12345Yyq";
-    GuiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode));
+    GuiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode) + 1);
 #endif
     SetLockScreen(enable);
     return SUCCESS_CODE;

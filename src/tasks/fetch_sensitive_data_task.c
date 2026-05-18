@@ -48,6 +48,7 @@ int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t in
         async.inData = SRAM_MALLOC(inDataLen);
         memcpy(async.inData, inData, inDataLen);
         async.inDataLen = inDataLen;
+        async.shouldFree = true;
     }
     PubBufferMsg(SENSITIVE_MSG_EXECUTE, &async, sizeof(BackgroundAsync_t));
     return SUCCESS_CODE;
@@ -59,6 +60,7 @@ int32_t AsyncExecuteWithPtr(BackgroundAsyncFunc_t func, const void *inData)
     async.func = func;
     async.inData = (void *)inData;
     async.inDataLen = 4;
+    async.shouldFree = false;
     PubBufferMsg(SENSITIVE_MSG_EXECUTE, &async, sizeof(BackgroundAsync_t));
     return SUCCESS_CODE;
 }
@@ -78,6 +80,7 @@ int32_t AsyncDelayExecute(BackgroundAsyncFunc_t func, const void *inData, uint32
         async.inData = SRAM_MALLOC(inDataLen);
         memcpy(async.inData, inData, inDataLen);
         async.inDataLen = inDataLen;
+        async.shouldFree = true;
     }
     PubBufferMsg(SENSITIVE_MSG_EXECUTE, &async, sizeof(BackgroundAsync_t));
     return SUCCESS_CODE;
@@ -120,7 +123,7 @@ static void FetchSensitiveDataTask(void *argument)
             if (async->func) {
                 async->func(async->inData, async->inDataLen);
             }
-            if (async->inData) {
+            if (async->shouldFree && async->inData) {
                 SRAM_FREE(async->inData);
             }
         }

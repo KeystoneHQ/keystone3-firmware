@@ -237,12 +237,8 @@ void GuiWebAuthResultAreaDeInit()
     GuiWebAuthResultHidePending();
     if (g_urResult != NULL) {
         if (g_isMulti) {
-            // has already free
-            g_urMultiResult->data = NULL;
             free_ur_parse_multi_result(g_urMultiResult);
         } else {
-            // has already free
-            g_urResult->data = NULL;
             free_ur_parse_result(g_urResult);
         }
         g_urResult = NULL;

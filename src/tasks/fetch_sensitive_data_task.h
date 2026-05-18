@@ -13,6 +13,7 @@ typedef struct {
     void *inData;
     uint32_t inDataLen;
     uint32_t delay;
+    bool shouldFree;
 } BackgroundAsync_t;
 
 typedef struct {

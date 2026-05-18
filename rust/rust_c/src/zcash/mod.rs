@@ -5,7 +5,7 @@ use crate::common::{
     free::Free,
     structs::{SimpleResponse, TransactionCheckResult, TransactionParseResult},
     types::{Ptr, PtrBytes, PtrString, PtrT, PtrUR},
-    ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT},
+    ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT, FRAGMENT_UNLIMITED_LENGTH},
     utils::{convert_c_char, recover_c_char},
 };
 use crate::{extract_array, extract_array_mut};
@@ -183,6 +183,30 @@ pub unsafe extern "C" fn sign_zcash_tx(
                 v,
                 ZcashPczt::get_registry_type().get_type(),
                 FRAGMENT_MAX_LENGTH_DEFAULT,
+            )
+            .c_ptr(),
+        },
+        Err(e) => UREncodeResult::from(e).c_ptr(),
+    };
+    seed.zeroize();
+    result
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn sign_zcash_tx_unlimited(
+    tx: PtrUR,
+    seed: PtrBytes,
+    seed_len: u32,
+) -> *mut UREncodeResult {
+    let pczt = extract_ptr_with_type!(tx, ZcashPczt);
+    let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
+    let result = match app_zcash::sign_pczt(&pczt.get_data(), seed) {
+        Ok(pczt) => match ZcashPczt::new(pczt).try_into() {
+            Err(e) => UREncodeResult::from(e).c_ptr(),
+            Ok(v) => UREncodeResult::encode(
+                v,
+                ZcashPczt::get_registry_type().get_type(),
+                FRAGMENT_UNLIMITED_LENGTH,
             )
             .c_ptr(),
         },

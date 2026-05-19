@@ -101,6 +101,8 @@ uint8_t GetSlip39Eb(void);
 void AccountsDataCheck(void);
 
 #ifndef BTC_ONLY
+bool IsZcashSupportedForCurrentMnemonic(void);
+bool IsMoneroSupportedForCurrentMnemonic(void);
 int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK);
 int32_t GetZcashSFP(uint8_t accountIndex, uint8_t* outSFP);
 int32_t SetupZcashSFP(uint8_t accountIndex, const char* password);

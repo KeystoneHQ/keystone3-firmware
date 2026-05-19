@@ -150,24 +150,17 @@ static void QRCodePause(bool);
 
 static void GuiInitWalletListArray()
 {
-    bool isSLIP39 = false;
-
-    isSLIP39 = (GetMnemonicType() == MNEMONIC_TYPE_SLIP39);
-
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_walletListArray); i++) {
         bool enable = true;
         int index = g_walletListArray[i].index;
 
-        MnemonicType mnemonicType = GetMnemonicType();
-        bool isSlip39 = (mnemonicType == MNEMONIC_TYPE_SLIP39);
-
         switch (index) {
         // case WALLET_LIST_CAKE:
         case WALLET_LIST_FEATHER:
-            enable = !isSLIP39;
+            enable = GetMnemonicType() != MNEMONIC_TYPE_SLIP39;
             break;
         case WALLET_LIST_ZODL:
-            enable = !isSlip39;
+            enable = IsZcashSupportedForCurrentMnemonic();
             break;
         default:
             break;

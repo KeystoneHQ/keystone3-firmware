@@ -590,7 +590,9 @@ bool IsZcashSupportedForCurrentMnemonic(void)
 {
     MnemonicType type = GetMnemonicType();
     if (type == MNEMONIC_TYPE_BIP39) return true;
+#ifdef CYPHERPUNK_VERSION
     if (type == MNEMONIC_TYPE_SLIP39) return GetCurrentAccountEntropyLen() >= 32;
+#endif
     return false;
 }
 

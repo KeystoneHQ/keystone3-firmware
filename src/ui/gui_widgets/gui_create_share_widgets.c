@@ -73,7 +73,6 @@ static uint8_t g_pressedBtnFlag[SLIP39_MNEMONIC_WORDS_MAX + 1];
 static uint8_t g_currId = 0;
 static char g_randomBuff[BUFFER_SIZE_512];
 static lv_obj_t *g_noticeWindow = NULL;
-static lv_obj_t *g_noticeHintBox = NULL;
 static uint8_t g_entropyMethod;
 static PageWidget_t *g_pageWidget;
 static void SelectParseCntHandler(lv_event_t *e);
@@ -539,7 +538,6 @@ int8_t GuiCreateSharePrevTile(void)
 void GuiCreateShareDeInit(void)
 {
     GUI_DEL_OBJ(g_noticeWindow)
-    GUI_DEL_OBJ(g_noticeHintBox)
     for (int i = 0; i < SLIP39_MNEMONIC_WORDS_MAX + 1; i++) {
         g_pressedBtn[i] = 0;
         g_pressedBtnFlag[i] = 0;
@@ -589,47 +587,32 @@ static void SelectParseCntHandler(lv_event_t *e)
     static uint32_t currentIndex = 0;
     lv_obj_t *checkBox = NULL;
     lv_obj_t *checkedCheckBox = NULL;
-    lv_obj_t *desc = NULL;
-
-    GUI_DEL_OBJ(g_noticeHintBox)
-    g_noticeHintBox = GuiCreateHintBox(350);
-    lv_obj_add_event_cb(lv_obj_get_child(g_noticeHintBox, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
-    lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeHintBox, _("single_phrase_word_amount_select"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 492);
+    g_noticeWindow = GuiCreateHintBox(282);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_t *label = GuiCreateIllustrateLabel(g_noticeWindow, _("single_phrase_word_amount_select"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 560);
     lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
-    lv_obj_t *button = GuiCreateImgButton(g_noticeHintBox, &imgClose, 36, CloseHintBoxHandler, &g_noticeHintBox);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 482);
+    lv_obj_t *button = GuiCreateImgButton(g_noticeWindow, &imgClose, 36, CloseHintBoxHandler, &g_noticeWindow);
+    lv_obj_align(button, LV_ALIGN_DEFAULT, 407, 550);
 
-    if (g_selectCnt == SLIP39_MNEMONIC_33_WORDS) {
-        checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_20words"));
-        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 562);
-        desc = GuiCreateIllustrateLabel(g_noticeHintBox, _("shamir_20words_desc"));
-        lv_obj_set_style_text_opa(desc, LV_OPA_60, LV_PART_MAIN);
-        lv_obj_align(desc, LV_ALIGN_DEFAULT, 66, 600);
-        checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_33words"));
-        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 636);
+    if (g_selectCnt == 33) {
+        checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_20words"));
+        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
+        checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_33words"));
+        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         checkedCheckBox = checkBox;
-        desc = GuiCreateIllustrateLabel(g_noticeHintBox, _("shamir_33words_desc"));
-        lv_obj_set_style_text_opa(desc, LV_OPA_60, LV_PART_MAIN);
-        lv_obj_align(desc, LV_ALIGN_DEFAULT, 66, 674);
     } else {
-        checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_20words"));
-        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 562);
+        checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_20words"));
+        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 630);
         lv_obj_add_state(checkBox, LV_STATE_CHECKED);
         checkedCheckBox = checkBox;
-        desc = GuiCreateIllustrateLabel(g_noticeHintBox, _("shamir_20words_desc"));
-        lv_obj_set_style_text_opa(desc, LV_OPA_60, LV_PART_MAIN);
-        lv_obj_align(desc, LV_ALIGN_DEFAULT, 66, 600);
-        checkBox = GuiCreateSingleCheckBox(g_noticeHintBox, _("wallet_phrase_33words"));
-        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 636);
-        desc = GuiCreateIllustrateLabel(g_noticeHintBox, _("shamir_33words_desc"));
-        lv_obj_set_style_text_opa(desc, LV_OPA_60, LV_PART_MAIN);
-        lv_obj_align(desc, LV_ALIGN_DEFAULT, 66, 674);
+        checkBox = GuiCreateSingleCheckBox(g_noticeWindow, _("wallet_phrase_33words"));
+        lv_obj_align(checkBox, LV_ALIGN_DEFAULT, 30, 618 + 100);
     }
 
     currentIndex = lv_obj_get_index(checkedCheckBox);
-    lv_obj_add_event_cb(g_noticeHintBox, SelectCheckBoxHandler, LV_EVENT_CLICKED, &currentIndex);
+    lv_obj_add_event_cb(g_noticeWindow, SelectCheckBoxHandler, LV_EVENT_CLICKED, &currentIndex);
 }
 
 static void SelectCheckBoxHandler(lv_event_t* e)
@@ -638,11 +621,11 @@ static void SelectCheckBoxHandler(lv_event_t* e)
         .threShold = g_selectSliceTile.memberThreshold,
         .memberCnt = g_selectSliceTile.memberCnt,
     };
-    uint32_t *active_id = lv_event_get_user_data(e);
+    uint32_t* active_id = lv_event_get_user_data(e);
     lv_obj_t *actCb = lv_event_get_target(e);
-    lv_obj_t *oldCb = lv_obj_get_child(g_noticeHintBox, *active_id);
+    lv_obj_t *oldCb = lv_obj_get_child(g_noticeWindow, *active_id);
 
-    if (actCb == g_noticeHintBox || oldCb == NULL || !lv_obj_check_type(actCb, &lv_checkbox_class)) {
+    if (actCb == g_noticeWindow || oldCb == NULL || !lv_obj_check_type(actCb, &lv_checkbox_class)) {
         return;
     }
     Vibrate(SLIGHT);
@@ -654,7 +637,6 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     const char *currText = lv_checkbox_get_text(actCb);
     if (!strcmp(currText, _("wallet_phrase_20words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "20");
-        SetRightBtnCb(g_pageWidget->navBarWidget, SelectParseCntHandler, NULL);
         if (g_selectCnt != 20) {
             g_selectCnt = 20;
             slip39.wordCnt = g_selectCnt;
@@ -666,7 +648,6 @@ static void SelectCheckBoxHandler(lv_event_t* e)
         }
     } else if (!strcmp(currText, _("wallet_phrase_33words"))) {
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "33");
-        SetRightBtnCb(g_pageWidget->navBarWidget, SelectParseCntHandler, NULL);
         if (g_selectCnt != 33) {
             g_selectCnt = 33;
             slip39.wordCnt = g_selectCnt;
@@ -679,5 +660,5 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     }
     lv_obj_clear_flag(g_pageWidget->navBarWidget->rightBtn, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_scroll_to_y(g_shareBackupTile.keyBoard->cont, 0, LV_ANIM_ON);
-    GUI_DEL_OBJ(g_noticeHintBox)
+    GUI_DEL_OBJ(g_noticeWindow)
 }

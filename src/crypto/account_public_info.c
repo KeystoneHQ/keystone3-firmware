@@ -58,6 +58,7 @@ static uint32_t GetTemplateWalletValue(const char* walletName, const char* key);
 static void SetTemplateWalletValue(const char* walletName, const char* key, uint32_t value);
 static void CleanupJson(cJSON* json);
 static void FreePublicKeyRam(void);
+static bool IsHexString(const char *value);
 static void PrintInfo(void);
 static void SetIsTempAccount(bool isTemp);
 
@@ -978,6 +979,14 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
         } else if (ret == ERR_GENERAL_FAIL) {
             regeneratePubKey = true;
         }
+#ifdef CYPHERPUNK_VERSION
+        if (!regeneratePubKey && IsZcashSupportedForCurrentMnemonic()) {
+            char *zcashEncrypted = GetCurrentAccountPublicKey(ZCASH_UFVK_ENCRYPTED_0);
+            if (!IsHexString(zcashEncrypted)) {
+                regeneratePubKey = true;
+            }
+        }
+#endif
     }
 
     if (regeneratePubKey) {
@@ -993,6 +1002,26 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     printf("acount public key info sitch over\r\n");
     //PrintInfo();
     return ret;
+}
+
+static bool IsHexString(const char *value)
+{
+    if (value == NULL) {
+        return false;
+    }
+    size_t len = strnlen_s(value, PUB_KEY_MAX_LENGTH);
+    if (len == 0 || (len % 2) != 0) {
+        return false;
+    }
+    for (size_t i = 0; i < len; i++) {
+        char c = value[i];
+        if (!((c >= '0' && c <= '9') ||
+              (c >= 'a' && c <= 'f') ||
+              (c >= 'A' && c <= 'F'))) {
+            return false;
+        }
+    }
+    return true;
 }
 
 static void SetIsTempAccount(bool isTemp)

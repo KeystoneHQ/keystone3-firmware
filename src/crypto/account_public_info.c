@@ -886,7 +886,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             // Zcash
             if (isSlip39 && (g_chainTable[i].cryptoKey == LEDGER_BITBOX02 || g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED
 #ifdef WEB3_VERSION
-                                || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY
+                             || g_chainTable[i].chain == XPUB_TYPE_ZEC_TRANSPARENT_LEGACY
 #endif
                             )) {
                 continue;

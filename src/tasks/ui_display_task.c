@@ -139,6 +139,8 @@ static void UiDisplayTask(void *argument)
             case UI_MSG_USB_TRANSPORT_NEXT_VIEW: {
                 if (GuiCheckIfTopView(&g_USBTransportView)) {
                     GuiEmitSignal(SIG_CLOSE_USB_TRANSPORT, NULL, 0);
+                } else if (GuiCheckIfTopView(&g_keyDerivationRequestView)) {
+                    GuiEmitSignal(SIG_CLOSE_KEY_DERIVATION_REQUEST, NULL, 0);
                 }
             }
             break;

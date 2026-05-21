@@ -73,6 +73,7 @@ enum {
     USB_MSG_SET_STATE,
     USB_MSG_INIT,
     USB_MSG_DEINIT,
+    USB_MSG_HANDLE_UR_RESULT,
 };
 
 enum {

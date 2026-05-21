@@ -1,4 +1,5 @@
 #include "service_resolve_ur.h"
+#include <string.h>
 #include "user_delay.h"
 #include "gui_chain.h"
 #include "user_msg.h"
@@ -62,6 +63,31 @@ void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requ
     GotoResultPage(resultPage);
     SRAM_FREE(resultPage);
 };
+
+void HandleURResultViaUSBAsyncFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
+{
+    if (data == NULL) {
+        return;
+    }
+
+    uint32_t msgLen = sizeof(USBURResultMsg_t) + data_len + 1;
+    USBURResultMsg_t *msg = (USBURResultMsg_t *)SRAM_MALLOC(msgLen);
+    if (msg == NULL) {
+        HandleURResultViaUSBFunc(data, data_len, requestID, status);
+        return;
+    }
+
+    msg->dataLen = data_len;
+    msg->requestID = requestID;
+    msg->status = status;
+    memcpy(msg->data, data, data_len);
+    msg->data[data_len] = '\0';
+
+    if (PubBufferMsg(USB_MSG_HANDLE_UR_RESULT, msg, msgLen) != MSG_SUCCESS) {
+        HandleURResultViaUSBFunc(data, data_len, requestID, status);
+    }
+    SRAM_FREE(msg);
+}
 
 uint16_t GetCurrentUSParsingRequestID()
 {
@@ -137,7 +163,7 @@ static bool HandleNormalCall(void)
         return true;
     }
 
-    if (GuiCheckIfTopView(&g_USBTransportView)) {
+    if (GuiCheckIfTopView(&g_USBTransportView) || GuiCheckIfTopView(&g_keyDerivationRequestView)) {
         PubValueMsg(UI_MSG_USB_TRANSPORT_NEXT_VIEW, 0);
         UserDelay(200);
         return true;

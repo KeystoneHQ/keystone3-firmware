@@ -6,5 +6,13 @@
 
 void ProcessURService(EAPDURequestPayload_t *payload);
 void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
+void HandleURResultViaUSBAsyncFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status);
 uint16_t GetCurrentUSParsingRequestID();
 void ClearUSBRequestId(void);
+
+typedef struct {
+    uint32_t dataLen;
+    uint16_t requestID;
+    StatusEnum status;
+    uint8_t data[];
+} USBURResultMsg_t;

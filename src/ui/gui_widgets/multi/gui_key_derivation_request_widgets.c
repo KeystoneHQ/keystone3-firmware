@@ -842,7 +842,7 @@ static void GuiShowKeyBoardDialog(lv_obj_t *parent)
 static void OnApproveHandler(lv_event_t *e)
 {
     // click approve button and check the hardware call params
-    HardwareCallResult_t res =  g_hardwareCallParamsCheckResult;
+    HardwareCallResult_t res = g_hardwareCallParamsCheckResult;
     if (!res.isLegal) {
         GuiCreateHardwareCallInvaildParamHintbox(res.title, res.message);
         return;
@@ -894,6 +894,14 @@ void HiddenKeyboardAndShowAnimateQR()
         }
         g_isUsbPassWordCheck = true;
         UREncodeResult *urResult = ModelGenerateSyncUR();
+        if (urResult == NULL || urResult->data == NULL) {
+            const char *data = "Generate sync ur failed";
+            HandleURResultViaUSBAsyncFunc(data, strlen(data), GetCurrentUSParsingRequestID(), RSP_FAILURE_CODE);
+            if (urResult != NULL) {
+                free_ur_encode_result(urResult);
+            }
+            return;
+        }
         HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), PRS_EXPORT_HARDWARE_CALL_SUCCESS);
         free_ur_encode_result(urResult);
     } else {
@@ -1230,7 +1238,7 @@ static void ApproveButtonHandler(lv_event_t *e)
 static void RejectButtonHandler(lv_event_t *e)
 {
     const char *data = "UR parsing rejected";
-    HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
+    HandleURResultViaUSBAsyncFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_REJECTED);
     GuiCloseCurrentWorkingView();
 }
 

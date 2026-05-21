@@ -55,6 +55,9 @@ int32_t GuiKeyDerivationRequestViewEventProcess(void *self, uint16_t usEvent, vo
     case SIG_INIT_PULLOUT_USB:
         GuiKeyDeriveUsbPullout();
         break;
+    case SIG_CLOSE_KEY_DERIVATION_REQUEST:
+        UsbGoToHomeView();
+        break;
     default:
         return ERR_GUI_UNHANDLED;
     }

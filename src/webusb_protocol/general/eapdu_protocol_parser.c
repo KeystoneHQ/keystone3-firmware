@@ -14,6 +14,7 @@
 #include "eapdu_services/service_echo_test.h"
 #include "eapdu_services/service_export_address.h"
 #include "eapdu_services/service_get_device_info.h"
+#include "eapdu_services/service_trans_usb_pubkey.h"
 
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
 static uint32_t g_eapduRcvCount = 0;
@@ -147,6 +148,9 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
 #endif
     case CMD_GET_DEVICE_INFO:
         GetDeviceInfoService(request);
+        break;
+    case CMD_GET_DEVICE_USB_PUBKEY:
+        GetDeviceUsbPubkeyService(request);
         break;
     default:
         printf("Invalid command: %u\n", request->commandType);

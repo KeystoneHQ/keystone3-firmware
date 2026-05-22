@@ -187,9 +187,14 @@ static void UpdateManageWalletState(bool needUpdate)
             continue;
         }
 
-        if (g_walletState[i].enable) {
-            total++;
+        if (!g_walletState[i].enable) {
+            if (g_walletState[i].checkBox != NULL) {
+                lv_obj_clear_state(g_walletState[i].checkBox, LV_STATE_CHECKED);
+            }
+            continue;
         }
+
+        total++;
         if (g_walletBakState[i].state == true) {
             selectCnt++;
             if (g_walletState[i].checkBox != NULL) {

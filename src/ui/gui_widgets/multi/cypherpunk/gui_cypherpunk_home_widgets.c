@@ -112,9 +112,14 @@ static void UpdateManageWalletState(bool needUpdate)
     g_isManageOpen = false;
     int total = 0;
     for (int i = 0; i < HOME_WALLET_CARD_BUTT; i++) {
-        if (g_walletState[i].enable) {
-            total++;
+        if (!g_walletState[i].enable) {
+            if (g_walletState[i].checkBox != NULL) {
+                lv_obj_clear_state(g_walletState[i].checkBox, LV_STATE_CHECKED);
+            }
+            continue;
         }
+
+        total++;
         if (g_walletBakState[i].state == true) {
             selectCnt++;
             lv_obj_add_state(g_walletState[i].checkBox, LV_STATE_CHECKED);

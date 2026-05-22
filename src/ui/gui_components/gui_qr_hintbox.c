@@ -188,7 +188,7 @@ void GuiNormalHitBoxOpen(const char *title, const char *content)
 }
 
 static void GuiQRCodeHintBoxOpenByLayout(const char *qrdata, const char *title, const char *subtitle,
-                                         const GuiQrHintBoxLayoutParam_t *layout, uint8_t layoutType)
+        const GuiQrHintBoxLayoutParam_t *layout, uint8_t layoutType)
 {
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
     if (g_qrHintBox != NULL && g_qrHintBoxLayout != layoutType) {

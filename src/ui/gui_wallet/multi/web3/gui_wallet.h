@@ -8,7 +8,6 @@
 
 UREncodeResult *GuiGetStandardBtcData(void);
 UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index);
-UREncodeResult *GuiGetLeapData(void);
 UREncodeResult *GuiGetWanderData(void);
 UREncodeResult *GuiGetCompanionAppData(void);
 UREncodeResult *GuiGetOkxWalletData(void);

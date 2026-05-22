@@ -328,14 +328,6 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrTitle = _("connect_keystone_title");
     g_tutorials[WALLET_LIST_KEYSTONE].items[0].qrUrl = _("connect_keystone_link");
 
-    // WALLET_LIST_LEAP_WALLET
-    g_tutorials[WALLET_LIST_LEAP].len = 1;
-    g_tutorials[WALLET_LIST_LEAP].desc = _("connect_wallet_desc");
-    g_tutorials[WALLET_LIST_LEAP].items[0].walletName =  _("connect_leap_title");
-    g_tutorials[WALLET_LIST_LEAP].items[0].url = _("connect_leap_link");
-    g_tutorials[WALLET_LIST_LEAP].items[0].qrTitle = _("connect_leap_title");
-    g_tutorials[WALLET_LIST_LEAP].items[0].qrUrl =  _("connect_leap_link");
-
     // WALLET_LIST_CAKE
     g_tutorials[WALLET_LIST_CAKE].len = 1;
     g_tutorials[WALLET_LIST_CAKE].desc = _("connect_wallet_desc");

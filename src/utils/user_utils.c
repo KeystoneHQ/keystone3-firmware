@@ -169,7 +169,7 @@ void ConvertToUpperCase(char *str)
 {
     if (str == NULL) return;
     while (*str) {
-        *str = (char)toupper((unsigned char)*str);
+        *str = (char)toupper((unsigned char) * str);
         str++;
     }
 }

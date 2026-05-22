@@ -122,11 +122,6 @@ static const lv_img_dsc_t *g_keplrCoinArray[8] = {
     &coinXprt, &coinAxl, &coinBoot, &coinCro,
 };
 
-static const lv_img_dsc_t *g_leapCoinArray[8] = {
-    &coinAtom, &coinOsmo, &coinInj, &coinStrd,
-    &coinStars, &coinJuno, &coinScrt, &coinDym
-};
-
 static const lv_img_dsc_t *g_wanderCoinArray[1] = {
     &coinAr,
 };
@@ -243,7 +238,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_THORWALLET, &walletThorWallet, "THORWallet", g_ThorWalletCoinArray, 2, true, WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_PETRA, &walletPetra, "Petra", g_petraCoinArray, 1, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_KEPLR, &walletKeplr, "Keplr", g_keplrCoinArray, 8, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_LEAP, &walletLeap, "Leap", g_leapCoinArray, 8, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_MINT_SCAN, &walletMintScan, "Mintscan", g_keplrCoinArray, 8, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_WANDER, &walletWander, "Wander", g_wanderCoinArray, 1, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_BEACON, &walletBeacon, "Beacon", g_beaconCoinArray, 2, true, WALLET_FILTER_OTHER},
@@ -1212,10 +1206,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_KEPLR:
         func = GuiGetKeplrData;
         AddKeplrCoinsAndAddressUI();
-        break;
-    case WALLET_LIST_LEAP:
-        func = GuiGetLeapData;
-        AddCoinsFromArray(g_leapCoinArray, NUMBER_OF_ARRAYS(g_leapCoinArray), true, 32 * 8);
         break;
     case WALLET_LIST_WANDER:
         func = GuiGetWanderData;

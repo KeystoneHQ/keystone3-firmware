@@ -2,9 +2,18 @@ message(STATUS "compile rust")
 set(LIB_NAME librust_c.a)
 
 # set variables
-find_program(RUST_CARGO_EXECUTABLE cargo)
+find_program(RUST_CARGO_EXECUTABLE cargo HINTS "$ENV{HOME}/.cargo/bin")
+find_program(RUSTUP_EXECUTABLE rustup HINTS "$ENV{HOME}/.cargo/bin")
 find_program(BINDGEN_EXE bindgen)
 find_program(CBINDGEN_EXE cbindgen)
+
+if(NOT RUST_CARGO_EXECUTABLE)
+    message(FATAL_ERROR "cargo not found. Install Rust and ensure cargo is on PATH.")
+endif()
+
+if(NOT RUSTUP_EXECUTABLE)
+    message(FATAL_ERROR "rustup not found. Install Rustup or add $HOME/.cargo/bin to PATH.")
+endif()
 
 # BUILD_ENVIRONMENT: PRODUCTION, DEBUG, SIMULATOR
 # BUILD_VARIANT: BTC_ONLY, MULTI_COINS, CYPHERPUNK
@@ -69,7 +78,7 @@ message(STATUS "cargo build command: " ${CARGO_FLAG})
 
 #run build
 add_custom_target(rust_c ALL
-    COMMAND rustup run ${RUST_TOOLCHAIN} ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
+    COMMAND ${RUSTUP_EXECUTABLE} run ${RUST_TOOLCHAIN} ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
     COMMAND ${COPY_BUILD_TARGET}
     COMMAND ${COPY_BINDINGS_TARGET}
     WORKING_DIRECTORY ${RUST_DIR}

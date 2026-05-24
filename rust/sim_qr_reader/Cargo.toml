@@ -13,6 +13,7 @@ anyhow = "1.0.75"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 cocoa = "0.24.1"
+objc = "0.2.7"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows = { version = "0.58.0", features = [

@@ -19,23 +19,22 @@ Its standout features include:
 Follow these steps to set up your development environment on MacOS:
 
 ```bash
-# Install GCC
-brew install armmbed/formulae/arm-none-eabi-gcc
-# If you encounter issues with Brew when installing GCC, switch to manual installation:
-# Visit https://developer.arm.com/downloads/-/gnu-rm, and select the `9-2020-q2-update`
+# Install ARM GCC toolchain
+brew install --cask gcc-arm-embedded
 
-# Install Rust
-# For instructions, visit https://www.rust-lang.org/tools/install
+# Install Rust (https://www.rust-lang.org/tools/install)
 rustup install $(cat rust-toolchain)
 rustup target add thumbv7em-none-eabihf
 cargo install bindgen-cli
-cargo install cbindgen
+rustup run stable cargo install cbindgen
 
 # Clone the repository
 git clone https://github.com/KeystoneHQ/keystone3-firmware
 cd keystone3-firmware
 git -c submodule.keystone3-firmware-release.update=none submodule update --init --recursive
 ```
+
+The current Homebrew ARM GCC is stricter than the GCC version this project originally used. The checked-in `firmware.cmake` relaxes the warning classes that currently break firmware builds with GCC 15.
 
 #### Docker
 
@@ -49,18 +48,22 @@ docker build -t keystone3-baker:local .
 
 Here's how to build the Keystone3 Firmware:
 
-#### Building multi-coins firmware
+#### Building multi-coins firmware (default)
 
 ```bash
-# Run the build script at the root of the project.
 python3 build.py
+```
+
+#### Building cypherpunk firmware
+
+```bash
+python3 build.py -t cypherpunk
 ```
 
 #### Building btc-only firmware
 
 ```bash
-# Run the build script at the root of the project.
-python build.py -t btc_only
+python3 build.py -t btc_only
 ```
 
 #### Building img to C file
@@ -104,7 +107,37 @@ The Keystone3 firmware is built with Rust and C and uses FreeRTOS as the underly
 
 ## Simulator
 
-Please follow this [Doc](docs/SIMULATOR.md).
+For full details, see [docs/SIMULATOR.md](docs/SIMULATOR.md).
+
+### Quick Start (macOS)
+
+```bash
+# Install SDL2
+brew install sdl2
+
+# Create a Python virtual environment.
+# Python 3.12 is known to work; Python 3.14 currently has dependency issues.
+uv venv --python python3.12
+source .venv/bin/activate
+uv pip install -r requirements.txt
+
+# Build and run the cypherpunk simulator.
+./simulator.sh
+
+# Run the existing build without rebuilding.
+./simulator.sh --no-build
+```
+
+### QR Code Scanning (macOS)
+
+The simulator scans QR codes directly from the screen.
+
+One-time setup:
+
+1. Grant Terminal.app screen recording permission in System Settings > Privacy & Security > Screen Recording.
+2. Run `./simulator.sh`; it reopens itself in Terminal.app so macOS grants screen capture to the expected process.
+
+For mobile-wallet QR flows, mirror the phone display to the Mac and keep the QR code visible while clicking `Scan` in the simulator.
 
 ## Contributing
 

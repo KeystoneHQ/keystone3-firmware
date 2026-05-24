@@ -9,7 +9,7 @@ set(MCU cortex-m4)
 set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/mh1903b.ld)
 set(ARCH_FLAGS "-mcpu=${MCU} -mthumb -mlittle-endian")
 set(MCU_FLAGS "${ARCH_FLAGS} -Os -mfloat-abi=hard -mfpu=fpv4-sp-d16")
-set(CMAKE_C_FLAGS "${MCU_FLAGS} -Wall -Wno-unknown-pragmas -Wno-format -g")
+set(CMAKE_C_FLAGS "${MCU_FLAGS} -Wall -Wno-unknown-pragmas -Wno-format -g -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=discarded-qualifiers -Wno-error=int-conversion")
 set(CMAKE_CXX_FLAGS "${MCU_FLAGS} -Wall -Wno-unknown-pragmas -Wno-format -g")
 
 if(NOT BUILD_PRODUCTION)

@@ -4303,6 +4303,7 @@ dependencies = [
  "anyhow",
  "cocoa",
  "image",
+ "objc",
  "quircs",
  "screenshots",
  "windows 0.58.0",

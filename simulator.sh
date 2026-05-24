@@ -9,12 +9,19 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 if [ "$TERM_PROGRAM" != "Apple_Terminal" ]; then
     echo "Reopening in Terminal.app for QR scanning support..."
-    QUOTED_SCRIPT_DIR="$(printf '%q' "$SCRIPT_DIR")"
-    QUOTED_ARGS=()
-    for ARG in "$@"; do
-        QUOTED_ARGS+=("$(printf '%q' "$ARG")")
-    done
-    osascript -e "tell application \"Terminal\" to do script \"cd $QUOTED_SCRIPT_DIR && ./simulator.sh ${QUOTED_ARGS[*]}\""
+    LAUNCHER_DIR="$(mktemp -d -t keystone-simulator.XXXXXX)"
+    LAUNCHER="$LAUNCHER_DIR/keystone-simulator.command"
+    {
+        printf '#!/bin/bash\n'
+        printf 'cd %q\n' "$SCRIPT_DIR"
+        printf './simulator.sh'
+        for ARG in "$@"; do
+            printf ' %q' "$ARG"
+        done
+        printf '\n'
+    } > "$LAUNCHER"
+    chmod +x "$LAUNCHER"
+    open -a Terminal "$LAUNCHER"
     exit 0
 fi
 
@@ -30,6 +37,12 @@ elif [ -d "$HOME/.cargo/bin" ]; then
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
+if command -v python3.12 >/dev/null 2>&1; then
+    PYTHON_BIN=python3.12
+else
+    PYTHON_BIN=python3
+fi
+
 BUILD=true
 if [ "$1" = "--no-build" ] || [ "$1" = "-n" ]; then
     BUILD=false
@@ -38,7 +51,7 @@ fi
 
 if [ "$BUILD" = true ]; then
     echo "=== Building Cypherpunk Simulator ==="
-    python3 build.py -t cypherpunk -o simulator
+    "$PYTHON_BIN" build.py -t cypherpunk -o simulator -s
     echo ""
 fi
 

@@ -115,8 +115,8 @@ For full details, see [docs/SIMULATOR.md](docs/SIMULATOR.md).
 # Install SDL2
 brew install sdl2
 
-# Create a Python virtual environment.
-# Python 3.12 is known to work; Python 3.14 currently has dependency issues.
+# Optional: create a Python virtual environment.
+# Python 3.12 is known to work for image regeneration dependencies.
 uv venv --python python3.12
 source .venv/bin/activate
 uv pip install -r requirements.txt
@@ -127,6 +127,8 @@ uv pip install -r requirements.txt
 # Run the existing build without rebuilding.
 ./simulator.sh --no-build
 ```
+
+`simulator.sh` skips image regeneration, so Pillow/PyYAML are not required for the normal simulator build. Install `requirements.txt` when you need to regenerate image assets.
 
 ### QR Code Scanning (macOS)
 

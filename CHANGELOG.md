@@ -1,3 +1,27 @@
+## 2.4.4 (2026-5-27)
+
+**Web3:**
+
+### Improvements
+
+1. Removed the Leap Wallet connection entry
+
+
+**Cypherpunk:**
+
+
+### What's new
+
+1. Added support for Zcash using SLIP39 33-word Shamir Backup
+
+### Bug Fixes
+
+1. Fixed loading issue on the device verification screen
+
+
+
+
+
 ## 2.4.2(2026-4-23)
 
 **Web3:**

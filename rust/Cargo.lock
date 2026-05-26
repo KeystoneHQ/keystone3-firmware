@@ -4747,9 +4747,9 @@ checksum = "6d49784317cd0d1ee7ec5c716dd598ec5b4483ea832a2dced265471cc0f690ae"
 
 [[package]]
 name = "ur-parse-lib"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f88434c87d748dfb765bc5debbbab61d020392d23b568fe73eb44eaca46daa04"
+checksum = "0cb78039ff8b5bf065b43348aaa231d5909bc8d1f5c09541c25ea259d2048c1f"
 dependencies = [
  "hex",
  "keystone-ur",
@@ -4758,9 +4758,9 @@ dependencies = [
 
 [[package]]
 name = "ur-registry"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf91aff789fea1c05116a47b11fbe0bea32ef66e0c1f77b46550e1407efc4c6e"
+checksum = "c9b75e98b4ddfd7140efcf02b4e5d420e91f14cb7a30623c7aa83dccac1c7f64"
 dependencies = [
  "bs58",
  "hex",

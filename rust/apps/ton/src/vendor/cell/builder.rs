@@ -43,42 +43,42 @@ impl CellBuilder {
 
     pub fn store_u8(&mut self, bit_len: usize, val: u8) -> Result<&mut Self, TonCellError> {
         self.bit_writer
-            .write(bit_len as u32, val)
+            .write_var(bit_len as u32, val)
             .map_cell_builder_error()?;
         Ok(self)
     }
 
     pub fn store_i8(&mut self, bit_len: usize, val: i8) -> Result<&mut Self, TonCellError> {
         self.bit_writer
-            .write(bit_len as u32, val)
+            .write_signed_var(bit_len as u32, val)
             .map_cell_builder_error()?;
         Ok(self)
     }
 
     pub fn store_u32(&mut self, bit_len: usize, val: u32) -> Result<&mut Self, TonCellError> {
         self.bit_writer
-            .write(bit_len as u32, val)
+            .write_var(bit_len as u32, val)
             .map_cell_builder_error()?;
         Ok(self)
     }
 
     pub fn store_i32(&mut self, bit_len: usize, val: i32) -> Result<&mut Self, TonCellError> {
         self.bit_writer
-            .write(bit_len as u32, val)
+            .write_signed_var(bit_len as u32, val)
             .map_cell_builder_error()?;
         Ok(self)
     }
 
     pub fn store_u64(&mut self, bit_len: usize, val: u64) -> Result<&mut Self, TonCellError> {
         self.bit_writer
-            .write(bit_len as u32, val)
+            .write_var(bit_len as u32, val)
             .map_cell_builder_error()?;
         Ok(self)
     }
 
     pub fn store_i64(&mut self, bit_len: usize, val: i64) -> Result<&mut Self, TonCellError> {
         self.bit_writer
-            .write(bit_len as u32, val)
+            .write_signed_var(bit_len as u32, val)
             .map_cell_builder_error()?;
         Ok(self)
     }

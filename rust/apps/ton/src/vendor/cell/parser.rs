@@ -32,49 +32,49 @@ impl CellParser<'_> {
 
     pub fn load_u8(&mut self, bit_len: usize) -> Result<u8, TonCellError> {
         self.bit_reader
-            .read::<u8>(bit_len as u32)
+            .read_var::<u8>(bit_len as u32)
             .map_cell_parser_error()
     }
 
     pub fn load_i8(&mut self, bit_len: usize) -> Result<i8, TonCellError> {
         self.bit_reader
-            .read::<i8>(bit_len as u32)
+            .read_signed_var::<i8>(bit_len as u32)
             .map_cell_parser_error()
     }
 
     pub fn load_u16(&mut self, bit_len: usize) -> Result<u16, TonCellError> {
         self.bit_reader
-            .read::<u16>(bit_len as u32)
+            .read_var::<u16>(bit_len as u32)
             .map_cell_parser_error()
     }
 
     pub fn load_i16(&mut self, bit_len: usize) -> Result<i16, TonCellError> {
         self.bit_reader
-            .read::<i16>(bit_len as u32)
+            .read_signed_var::<i16>(bit_len as u32)
             .map_cell_parser_error()
     }
 
     pub fn load_u32(&mut self, bit_len: usize) -> Result<u32, TonCellError> {
         self.bit_reader
-            .read::<u32>(bit_len as u32)
+            .read_var::<u32>(bit_len as u32)
             .map_cell_parser_error()
     }
 
     pub fn load_i32(&mut self, bit_len: usize) -> Result<i32, TonCellError> {
         self.bit_reader
-            .read::<i32>(bit_len as u32)
+            .read_signed_var::<i32>(bit_len as u32)
             .map_cell_parser_error()
     }
 
     pub fn load_u64(&mut self, bit_len: usize) -> Result<u64, TonCellError> {
         self.bit_reader
-            .read::<u64>(bit_len as u32)
+            .read_var::<u64>(bit_len as u32)
             .map_cell_parser_error()
     }
 
     pub fn load_i64(&mut self, bit_len: usize) -> Result<i64, TonCellError> {
         self.bit_reader
-            .read::<i64>(bit_len as u32)
+            .read_signed_var::<i64>(bit_len as u32)
             .map_cell_parser_error()
     }
 
@@ -161,12 +161,12 @@ impl CellParser<'_> {
     }
 
     pub fn load_address(&mut self) -> Result<TonAddress, TonCellError> {
-        let tp = self.bit_reader.read::<u8>(2).map_cell_parser_error()?;
+        let tp = self.bit_reader.read_var::<u8>(2).map_cell_parser_error()?;
         match tp {
             0 => Ok(TonAddress::null()),
             2 => {
-                let _res1 = self.bit_reader.read::<u8>(1).map_cell_parser_error()?;
-                let wc = self.bit_reader.read::<u8>(8).map_cell_parser_error()?;
+                let _res1 = self.bit_reader.read_var::<u8>(1).map_cell_parser_error()?;
+                let wc = self.bit_reader.read_var::<u8>(8).map_cell_parser_error()?;
                 let mut hash_part = [0_u8; 32];
                 self.bit_reader
                     .read_bytes(&mut hash_part)

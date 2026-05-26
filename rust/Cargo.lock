@@ -177,12 +177,12 @@ dependencies = [
  "bech32 0.11.0",
  "bitcoin",
  "bytes",
- "core2",
  "cryptoxide",
  "either",
  "hex",
  "itertools 0.13.0",
  "keystore",
+ "no_std_io2",
  "rust_tools",
  "serde",
  "serde_json",
@@ -199,12 +199,12 @@ dependencies = [
  "bech32 0.11.0",
  "bitcoin",
  "bitcoin_hashes 0.14.0",
- "core2",
  "cryptoxide",
  "either",
  "hex",
  "itertools 0.13.0",
  "keystore",
+ "no_std_io2",
  "rust_tools",
  "serde",
  "serde_json",
@@ -382,13 +382,13 @@ dependencies = [
  "anyhow",
  "base64 0.22.1",
  "bitstream-io",
- "core2",
  "crc",
  "cryptoxide",
  "hex",
  "itertools 0.13.0",
  "keystore",
  "lazy_static",
+ "no_std_io2",
  "num-bigint",
  "num-integer",
  "num-traits",
@@ -718,10 +718,11 @@ checksum = "1b8e56985ec62d17e9c1001dc89c88ecd7dc08e47eba5ec7c29c7b5eeecde967"
 
 [[package]]
 name = "bitstream-io"
-version = "2.2.0"
-source = "git+https://github.com/KeystoneHQ/bitstream-io?tag=no_std%400.1.2#cc3159377ebd4e8f521aa9f3a9bc876e3b3336c1"
+version = "4.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7eff00be299a18769011411c9def0d827e8f2d7bf0c3dbf53633147a8867fd1f"
 dependencies = [
- "core2",
+ "no_std_io2",
 ]
 
 [[package]]
@@ -3828,7 +3829,6 @@ dependencies = [
  "cbc",
  "cbindgen",
  "cipher",
- "core2",
  "cryptoxide",
  "cstr_core",
  "cty",
@@ -3839,6 +3839,7 @@ dependencies = [
  "itertools 0.13.0",
  "keystore",
  "minicbor",
+ "no_std_io2",
  "rand_core 0.6.4",
  "rsa",
  "rust_tools",
@@ -5518,7 +5519,6 @@ dependencies = [
  "bs58",
  "byteorder",
  "chacha20poly1305",
- "core2",
  "f4jumble",
  "ff",
  "fpe",
@@ -5526,6 +5526,7 @@ dependencies = [
  "group",
  "hex",
  "incrementalmerkletree-testing",
+ "no_std_io2",
  "orchard",
  "pasta_curves",
  "pczt",

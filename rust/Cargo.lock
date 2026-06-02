@@ -191,6 +191,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "app_babylon"
+version = "0.1.0"
+dependencies = [
+ "cryptoxide",
+ "hex",
+ "keystore",
+ "thiserror-core",
+ "zeroize",
+]
+
+[[package]]
 name = "app_bitcoin"
 version = "0.1.0"
 dependencies = [

@@ -1,13 +1,8 @@
-//! FFI layer for Babylon `deriveContextHash` (Phase 2).
+//! FFI layer for Babylon `deriveContextHash` (Phases 2 + 4).
 //!
-//! The cryptographic core lives in `app_babylon`. This module wires it to C:
-//! parse a request into display data, derive the connected address, and produce
-//! the 32-byte result as a `Bytes` UR.
-//!
-//! NOTE: the request type [`DeriveContextHashRequest`] is a *mock* stand-in for the
-//! decoded `qr-hardware-call` params. Phase 4 replaces the mock constructor with a
-//! real `ur_registry` decode (`CallParams::DeriveContextHash`); the rest of this
-//! module is unaffected.
+//! Crypto core lives in `app_babylon`. Transport is the `qr-hardware-call` UR with
+//! `CallParams::DeriveContextHash`. This module decodes the request, derives the
+//! connected address for display, and produces the 32-byte result as a `Bytes` UR.
 
 use alloc::string::{String, ToString};
 
@@ -22,16 +17,17 @@ use bitcoin::{Address, CompressedPublicKey, Network as BitcoinNetwork, PublicKey
 use cty::c_char;
 use keystore::algorithms::secp256k1::{get_private_key_by_seed, get_public_key_by_seed};
 use ur_registry::bytes::Bytes;
+use ur_registry::extend::qr_hardware_call::{CallParams, QRHardwareCall};
 use ur_registry::traits::RegistryItem;
 use zeroize::Zeroize;
 
 use crate::common::errors::RustCError;
 use crate::common::free::Free;
 use crate::common::structs::{Response, SimpleResponse};
-use crate::common::types::{PtrBytes, PtrString, PtrT};
+use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use crate::common::utils::{convert_c_char, recover_c_char};
-use crate::{free_str_ptr, impl_c_ptr, make_free_method};
+use crate::common::utils::convert_c_char;
+use crate::{extract_ptr_with_type, free_str_ptr, impl_c_ptr, make_free_method};
 
 impl From<BabylonError> for RustCError {
     fn from(value: BabylonError) -> Self {
@@ -39,8 +35,8 @@ impl From<BabylonError> for RustCError {
     }
 }
 
-/// Decoded derive-context-hash request (mock stand-in for the UR params).
-pub struct DeriveContextHashRequest {
+/// Fields decoded from a `derive-context-hash` qr-hardware-call.
+struct DecodedRequest {
     app_name: String,
     network: String,
     key_path: String,
@@ -48,13 +44,29 @@ pub struct DeriveContextHashRequest {
     origin: Option<String>,
 }
 
-impl_c_ptr!(DeriveContextHashRequest);
-
-impl Free for DeriveContextHashRequest {
-    unsafe fn free(&self) {}
+/// # Safety
+/// `ur` must point to a valid `QRHardwareCall`.
+unsafe fn decode_request(ur: PtrUR) -> Result<DecodedRequest, RustCError> {
+    let call = extract_ptr_with_type!(ur, QRHardwareCall);
+    match call.get_params() {
+        CallParams::DeriveContextHash(d) => {
+            let key_path = d
+                .get_key_path()
+                .get_path()
+                .ok_or(RustCError::InvalidData("missing key path".to_string()))?;
+            Ok(DecodedRequest {
+                app_name: d.get_app_name(),
+                network: d.get_network(),
+                key_path,
+                context: d.get_context(),
+                origin: call.get_origin(),
+            })
+        }
+        _ => Err(RustCError::InvalidData(
+            "not a derive-context-hash call".to_string(),
+        )),
+    }
 }
-
-make_free_method!(DeriveContextHashRequest);
 
 /// Display data shown on the approval screen (no secret material).
 #[repr(C)]
@@ -82,63 +94,41 @@ impl Free for DeriveContextHashCallData {
 
 make_free_method!(Response<DeriveContextHashCallData>);
 
-/// Construct a mock decoded request from C strings.
-///
-/// This stands in for `QRHardwareCall` → `CallParams::DeriveContextHash` decoding
-/// until the `ur_registry` extension lands (Phase 4). `origin` may be NULL.
-#[no_mangle]
-pub extern "C" fn derive_context_hash_new_mock_request(
-    app_name: PtrString,
-    network: PtrString,
-    key_path: PtrString,
-    context: PtrString,
-    origin: PtrString,
-) -> PtrT<DeriveContextHashRequest> {
-    unsafe {
-        DeriveContextHashRequest {
-            app_name: recover_c_char(app_name),
-            network: recover_c_char(network),
-            key_path: recover_c_char(key_path),
-            context: recover_c_char(context),
-            origin: if origin.is_null() {
-                None
-            } else {
-                Some(recover_c_char(origin))
-            },
-        }
-        .c_ptr()
-    }
-}
-
-/// Validate the request and produce display data for the approval screen.
+/// Decode + validate the request and produce display data for the approval screen.
 ///
 /// Rejects disallowed appNames and unsupported networks *before* the screen is
 /// shown. The connected `address` is left NULL here and filled in by
-/// [`derive_context_hash_address`] once the device can derive the key.
+/// [`derive_context_hash_address`].
+///
+/// # Safety
+/// `ur` must point to a valid `QRHardwareCall`.
 #[no_mangle]
-pub extern "C" fn parse_derive_context_hash(
-    request: PtrT<DeriveContextHashRequest>,
+pub unsafe extern "C" fn parse_derive_context_hash(
+    ur: PtrUR,
 ) -> PtrT<Response<DeriveContextHashCallData>> {
-    let request = unsafe { &*request };
+    let req = match decode_request(ur) {
+        Ok(v) => v,
+        Err(e) => return Response::from(e).c_ptr(),
+    };
 
-    if let Err(e) = validate_app_name(&request.app_name) {
+    if let Err(e) = validate_app_name(&req.app_name) {
         return Response::from(RustCError::from(e)).c_ptr();
     }
-    if let Err(e) = BabylonNetwork::from_name(&request.network) {
+    if let Err(e) = BabylonNetwork::from_name(&req.network) {
         return Response::from(RustCError::from(e)).c_ptr();
     }
-    if let Err(e) = validate_context_hex(&request.context) {
+    if let Err(e) = validate_context_hex(&req.context) {
         return Response::from(RustCError::from(e)).c_ptr();
     }
 
     let data = DeriveContextHashCallData {
-        app_name: convert_c_char(request.app_name.clone()),
-        network: convert_c_char(request.network.clone()),
-        key_path: convert_c_char(request.key_path.clone()),
+        app_name: convert_c_char(req.app_name),
+        network: convert_c_char(req.network),
+        key_path: convert_c_char(req.key_path),
         address: core::ptr::null_mut(),
-        context: convert_c_char(request.context.clone()),
-        origin: match &request.origin {
-            Some(o) => convert_c_char(o.clone()),
+        context: convert_c_char(req.context),
+        origin: match req.origin {
+            Some(o) => convert_c_char(o),
             None => core::ptr::null_mut(),
         },
     };
@@ -149,16 +139,22 @@ pub extern "C" fn parse_derive_context_hash(
 ///
 /// Uses the seed to derive the pubkey at `key_path`, then renders an address whose
 /// script type is inferred from the path purpose (44/49/84/86).
+///
+/// # Safety
+/// `ur` must point to a valid `QRHardwareCall`; `seed` must be valid for `seed_len` bytes.
 #[no_mangle]
-pub extern "C" fn derive_context_hash_address(
-    request: PtrT<DeriveContextHashRequest>,
+pub unsafe extern "C" fn derive_context_hash_address(
+    ur: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<SimpleResponse<c_char>> {
-    let request = unsafe { &*request };
-    let seed = unsafe { core::slice::from_raw_parts(seed, seed_len as usize) };
+    let req = match decode_request(ur) {
+        Ok(v) => v,
+        Err(e) => return SimpleResponse::from(e).simple_c_ptr(),
+    };
+    let seed = core::slice::from_raw_parts(seed, seed_len as usize);
 
-    match derive_connected_address(seed, &request.network, &request.key_path) {
+    match derive_connected_address(seed, &req.network, &req.key_path) {
         Ok(address) => {
             SimpleResponse::success(convert_c_char(address) as *mut c_char).simple_c_ptr()
         }
@@ -167,21 +163,27 @@ pub extern "C" fn derive_context_hash_address(
 }
 
 /// Run the full derivation and return the 32-byte result as a hex `Bytes` UR.
+///
+/// # Safety
+/// `ur` must point to a valid `QRHardwareCall`; `seed` must be valid for `seed_len` bytes.
 #[no_mangle]
-pub extern "C" fn generate_derive_context_hash_ur(
-    request: PtrT<DeriveContextHashRequest>,
+pub unsafe extern "C" fn generate_derive_context_hash_ur(
+    ur: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
 ) -> PtrT<UREncodeResult> {
-    let request = unsafe { &*request };
-    let mut seed = unsafe { core::slice::from_raw_parts(seed, seed_len as usize).to_vec() };
+    let req = match decode_request(ur) {
+        Ok(v) => v,
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
+    };
+    let mut seed = core::slice::from_raw_parts(seed, seed_len as usize).to_vec();
 
     let result = compute_context_hash_hex(
         &seed,
-        &request.app_name,
-        &request.network,
-        &request.key_path,
-        &request.context,
+        &req.app_name,
+        &req.network,
+        &req.key_path,
+        &req.context,
     );
     seed.zeroize();
 
@@ -270,8 +272,7 @@ fn path_purpose(key_path: &str) -> Result<u32, RustCError> {
         .trim_start_matches('m')
         .trim_start_matches('/');
     let first = trimmed.split('/').next().unwrap_or("");
-    let digits = first
-        .trim_end_matches(|c| c == '\'' || c == 'h' || c == 'H');
+    let digits = first.trim_end_matches(|c| c == '\'' || c == 'h' || c == 'H');
     digits.parse::<u32>().map_err(|_| RustCError::InvalidHDPath)
 }
 
@@ -363,5 +364,45 @@ mod tests {
         let seed = hex::decode(TEST_SEED_HEX).unwrap();
         let addr = derive_connected_address(&seed, "bitcoin-mainnet", "m/86'/0'/0'/0/0").unwrap();
         assert!(addr.starts_with("bc1p"), "expected p2tr mainnet, got {addr}");
+    }
+
+    // `qr-hardware-call` CBOR produced by the JS lib (@keystonehq/bc-ur-registry) and
+    // pinned identically in the ur-registry Rust tests. Exercises the real decode path.
+    const JS_CBOR_HEX: &str = "a4010102d90517a40171626162796c6f6e2d6274632d7661756c74026f626974636f696e2d6d61696e6e657403d90130a1018a182cf500f500f500f400f4046864656164626565660367626162796c6f6e0401";
+
+    #[test]
+    fn test_decode_request_from_js_cbor() {
+        let bytes = hex::decode(JS_CBOR_HEX).unwrap();
+        let mut call = QRHardwareCall::try_from(bytes).unwrap();
+        let req = unsafe { decode_request(&mut call as *mut QRHardwareCall as PtrUR) }.unwrap();
+
+        assert_eq!(req.app_name, "babylon-btc-vault");
+        assert_eq!(req.network, "bitcoin-mainnet");
+        assert_eq!(req.key_path, "44'/0'/0'/0/0");
+        assert_eq!(req.context, "deadbeef");
+        assert_eq!(req.origin, Some("babylon".to_string()));
+    }
+
+    #[test]
+    fn test_compute_from_js_cbor_end_to_end() {
+        let bytes = hex::decode(JS_CBOR_HEX).unwrap();
+        let mut call = QRHardwareCall::try_from(bytes).unwrap();
+        let req = unsafe { decode_request(&mut call as *mut QRHardwareCall as PtrUR) }.unwrap();
+
+        let seed = hex::decode(TEST_SEED_HEX).unwrap();
+        let hash = compute_context_hash_hex(
+            &seed,
+            &req.app_name,
+            &req.network,
+            &req.key_path,
+            &req.context,
+        )
+        .unwrap();
+        // Deterministic result for (babylon-btc-vault, bitcoin-mainnet, 44'/0'/0'/0/0,
+        // deadbeef) over the standard abandon..about seed.
+        assert_eq!(
+            hash,
+            "564906234635460f327d8c7d87a5a49054b672b725d5b8f0bc4a239956f32ba2"
+        );
     }
 }

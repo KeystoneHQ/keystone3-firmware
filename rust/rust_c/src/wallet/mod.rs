@@ -4,6 +4,8 @@ pub use btc_only_wallet::*;
 pub mod cypherpunk_wallet;
 #[cfg(feature = "multi-coins")]
 pub mod multi_coins_wallet;
+#[cfg(feature = "multi-coins")]
+pub mod babylon;
 mod structs;
 
 use alloc::collections::BTreeMap;

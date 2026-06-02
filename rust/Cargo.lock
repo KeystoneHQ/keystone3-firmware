@@ -3818,6 +3818,7 @@ dependencies = [
  "app_aptos",
  "app_arweave",
  "app_avalanche",
+ "app_babylon",
  "app_bitcoin",
  "app_cardano",
  "app_cosmos",

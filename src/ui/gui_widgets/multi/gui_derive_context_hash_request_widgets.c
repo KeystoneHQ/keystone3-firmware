@@ -14,6 +14,7 @@
 #include "gui_keyboard_hintbox.h"
 #include "gui_lock_widgets.h"
 #include "gui_animating_qrcode.h"
+#include "gui_attention_hintbox.h"
 #include "gui_derive_context_hash_request_widgets.h"
 
 typedef struct {
@@ -132,6 +133,16 @@ void GuiDeriveContextHashRequestInit(bool isUsb)
     SetMidBtnLabel(g_widget.pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Derive Context Hash"));
 
     ModelParse();
+    // Rust validated the request (appName allow-list, network, context, key path).
+    // On failure `g_callData` is NULL, so show the error and skip the confirm UI
+    // instead of dereferencing it. The nav-bar back button returns to the scanner.
+    if (g_response->error_code != 0 || g_callData == NULL) {
+        char *message = g_response->error_message != NULL
+                        ? g_response->error_message
+                        : (char *)_("Invalid derive-context-hash request");
+        GuiCreateHardwareCallInvaildParamHintbox((char *)_("Invalid Request"), message);
+        return;
+    }
     DeriveConnectedAddress();
 
     lv_obj_t *tileView = GuiCreateTileView(g_widget.pageWidget->contentZone);
@@ -149,6 +160,7 @@ void GuiDeriveContextHashRequestInit(bool isUsb)
 void GuiDeriveContextHashRequestDeInit(void)
 {
     GuiDeleteKeyboardWidget(g_keyboardWidget);
+    GuiCloseAttentionHintbox();
     GUI_PAGE_DEL(g_widget.pageWidget);
     GuiAnimatingQRCodeDestroyTimer();
     FreeDeriveContextHashMemory();

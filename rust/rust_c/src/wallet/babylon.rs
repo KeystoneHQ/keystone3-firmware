@@ -14,7 +14,6 @@ use app_babylon::{
 use bitcoin::key::UntweakedPublicKey;
 use bitcoin::secp256k1::Secp256k1;
 use bitcoin::{Address, CompressedPublicKey, Network as BitcoinNetwork, PublicKey};
-use cty::c_char;
 use keystore::algorithms::secp256k1::{get_private_key_by_seed, get_public_key_by_seed};
 use ur_registry::bytes::Bytes;
 use ur_registry::extend::qr_hardware_call::{CallParams, QRHardwareCall};
@@ -23,10 +22,10 @@ use zeroize::Zeroize;
 
 use crate::common::errors::RustCError;
 use crate::common::free::Free;
-use crate::common::structs::{Response, SimpleResponse};
+use crate::common::structs::Response;
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
-use crate::common::utils::convert_c_char;
+use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::{extract_ptr_with_type, free_str_ptr, impl_c_ptr, make_free_method};
 
 impl From<BabylonError> for RustCError {
@@ -74,7 +73,6 @@ pub struct DeriveContextHashCallData {
     pub app_name: PtrString,
     pub network: PtrString,
     pub key_path: PtrString,
-    pub address: PtrString,
     pub context: PtrString,
     pub origin: PtrString,
 }
@@ -86,7 +84,6 @@ impl Free for DeriveContextHashCallData {
         free_str_ptr!(self.app_name);
         free_str_ptr!(self.network);
         free_str_ptr!(self.key_path);
-        free_str_ptr!(self.address);
         free_str_ptr!(self.context);
         free_str_ptr!(self.origin);
     }
@@ -97,8 +94,8 @@ make_free_method!(Response<DeriveContextHashCallData>);
 /// Decode + validate the request and produce display data for the approval screen.
 ///
 /// Rejects disallowed appNames and unsupported networks *before* the screen is
-/// shown. The connected `address` is left NULL here and filled in by
-/// [`derive_context_hash_address`].
+/// shown. The UI derives the display address from the cached account xpub after
+/// this validation, using the same validated network and key path.
 ///
 /// # Safety
 /// `ur` must point to a valid `QRHardwareCall`.
@@ -128,7 +125,6 @@ pub unsafe extern "C" fn parse_derive_context_hash(
         app_name: convert_c_char(req.app_name),
         network: convert_c_char(req.network),
         key_path: convert_c_char(req.key_path),
-        address: core::ptr::null_mut(),
         context: convert_c_char(req.context),
         origin: match req.origin {
             Some(o) => convert_c_char(o),
@@ -138,42 +134,17 @@ pub unsafe extern "C" fn parse_derive_context_hash(
     Response::success(data).c_ptr()
 }
 
-/// Derive the Bitcoin address for the connected key (for the confirmation screen).
-///
-/// Uses the seed to derive the pubkey at `key_path`, then renders an address whose
-/// script type is inferred from the path purpose (44/49/84/86).
-///
-/// # Safety
-/// `ur` must point to a valid `QRHardwareCall`; `seed` must be valid for `seed_len` bytes.
-#[no_mangle]
-pub unsafe extern "C" fn derive_context_hash_address(
-    ur: PtrUR,
-    seed: PtrBytes,
-    seed_len: u32,
-) -> PtrT<SimpleResponse<c_char>> {
-    let req = match decode_request(ur) {
-        Ok(v) => v,
-        Err(e) => return SimpleResponse::from(e).simple_c_ptr(),
-    };
-    let seed = core::slice::from_raw_parts(seed, seed_len as usize);
-
-    match derive_connected_address(seed, &req.network, &req.key_path) {
-        Ok(address) => {
-            SimpleResponse::success(convert_c_char(address) as *mut c_char).simple_c_ptr()
-        }
-        Err(e) => SimpleResponse::from(e).simple_c_ptr(),
-    }
-}
-
 /// Run the full derivation and return the 32-byte result as a hex `Bytes` UR.
 ///
 /// # Safety
-/// `ur` must point to a valid `QRHardwareCall`; `seed` must be valid for `seed_len` bytes.
+/// `ur` must point to a valid `QRHardwareCall`; `seed` must be valid for `seed_len` bytes;
+/// `displayed_address` must point to the address shown to the user on the approval screen.
 #[no_mangle]
 pub unsafe extern "C" fn generate_derive_context_hash_ur(
     ur: PtrUR,
     seed: PtrBytes,
     seed_len: u32,
+    displayed_address: PtrString,
 ) -> PtrT<UREncodeResult> {
     let req = match decode_request(ur) {
         Ok(v) => v,
@@ -183,19 +154,32 @@ pub unsafe extern "C" fn generate_derive_context_hash_ur(
         return UREncodeResult::from(e).c_ptr();
     }
     let mut seed = core::slice::from_raw_parts(seed, seed_len as usize).to_vec();
+    if displayed_address.is_null() {
+        seed.zeroize();
+        return UREncodeResult::from(RustCError::InvalidData(
+            "missing displayed address".to_string(),
+        ))
+        .c_ptr();
+    }
+    let displayed_address = recover_c_char(displayed_address);
 
-    let result = compute_context_hash_hex(
-        &seed,
-        &req.app_name,
-        &req.network,
-        &req.key_path,
-        &req.context,
-    );
+    let result =
+        match verify_displayed_address(&seed, &req.network, &req.key_path, &displayed_address) {
+            Ok(()) => compute_context_hash_hex(
+                &seed,
+                &req.app_name,
+                &req.network,
+                &req.key_path,
+                &req.context,
+            )
+            .map_err(RustCError::from),
+            Err(e) => Err(e),
+        };
     seed.zeroize();
 
     let hash_hex = match result {
         Ok(v) => v,
-        Err(e) => return UREncodeResult::from(RustCError::from(e)).c_ptr(),
+        Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
 
     let bytes = Bytes::new(hash_hex.into_bytes());
@@ -240,8 +224,22 @@ fn compute_context_hash_hex(
     Ok(hex::encode(out))
 }
 
-/// Derive the displayable Bitcoin address for the connected key.
-fn derive_connected_address(
+fn verify_displayed_address(
+    seed: &[u8],
+    network: &str,
+    key_path: &str,
+    displayed_address: &str,
+) -> Result<(), RustCError> {
+    let expected = derive_connected_address_from_seed(seed, network, key_path)?;
+    if expected == displayed_address {
+        return Ok(());
+    }
+    Err(RustCError::InvalidData(
+        "displayed address does not match seed-derived key path".to_string(),
+    ))
+}
+
+fn derive_connected_address_from_seed(
     seed: &[u8],
     network: &str,
     key_path: &str,
@@ -252,9 +250,9 @@ fn derive_connected_address(
 
     let btc_network = match network {
         BabylonNetwork::Mainnet => BitcoinNetwork::Bitcoin,
-        BabylonNetwork::Testnet => BitcoinNetwork::Testnet,
-        BabylonNetwork::Signet => BitcoinNetwork::Signet,
-        BabylonNetwork::Regtest => BitcoinNetwork::Regtest,
+        BabylonNetwork::Testnet | BabylonNetwork::Signet | BabylonNetwork::Regtest => {
+            BitcoinNetwork::Testnet
+        }
     };
 
     let address = match path_purpose(key_path)? {
@@ -308,11 +306,7 @@ fn validate_cached_xpub_path(network: &str, key_path: &str) -> Result<(), RustCE
     // The current multi-coins UI displays the connected address from cached BTC
     // account xpubs. Only accept paths that are under those cached account xpubs.
     const MAX_DISPLAY_HD_PATH_LEN: usize = 64;
-    if network != BabylonNetwork::Mainnet.canonical_name() {
-        return Err(RustCError::InvalidData(
-            "key path is not available from cached xpub for this network".to_string(),
-        ));
-    }
+    BabylonNetwork::from_name(network).map_err(RustCError::from)?;
 
     const CACHED_XPUB_ACCOUNT_PATHS: [&str; 4] =
         ["M/44'/0'/0'", "M/49'/0'/0'", "M/84'/0'/0'", "M/86'/0'/0'"];
@@ -432,8 +426,14 @@ mod tests {
     }
 
     #[test]
+    fn test_validate_cached_xpub_path_accepts_cached_paths_for_supported_networks() {
+        for network in ["bitcoin-testnet", "bitcoin-signet", "bitcoin-regtest"] {
+            validate_cached_xpub_path(network, "m/84'/0'/0'/0/0").unwrap();
+        }
+    }
+
+    #[test]
     fn test_validate_cached_xpub_path_rejects_non_cached_paths() {
-        assert!(validate_cached_xpub_path("bitcoin-testnet", "m/44'/1'/0'/0/0").is_err());
         assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/44'/1'/0'/0/0").is_err());
         assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/48'/0'/0'/0/0").is_err());
         assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/44'/0'/1'/0/0").is_err());
@@ -446,13 +446,21 @@ mod tests {
     }
 
     #[test]
-    fn test_derive_connected_address_taproot_mainnet() {
+    fn test_verify_displayed_address_matches_seed_path() {
         let seed = hex::decode(TEST_SEED_HEX).unwrap();
-        let addr = derive_connected_address(&seed, "bitcoin-mainnet", "m/86'/0'/0'/0/0").unwrap();
-        assert!(
-            addr.starts_with("bc1p"),
-            "expected p2tr mainnet, got {addr}"
-        );
+        let key_path = "m/84'/0'/0'/0/0";
+        let address =
+            derive_connected_address_from_seed(&seed, "bitcoin-testnet", key_path).unwrap();
+        verify_displayed_address(&seed, "bitcoin-testnet", key_path, &address).unwrap();
+    }
+
+    #[test]
+    fn test_verify_displayed_address_rejects_mismatch() {
+        let seed = hex::decode(TEST_SEED_HEX).unwrap();
+        let err =
+            verify_displayed_address(&seed, "bitcoin-mainnet", "m/84'/0'/0'/0/0", "bc1qmismatch")
+                .unwrap_err();
+        assert!(matches!(err, RustCError::InvalidData(_)));
     }
 
     // `qr-hardware-call` CBOR produced by the JS lib (@keystonehq/bc-ur-registry) and

@@ -12,6 +12,7 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
 pub use addresses::get_address;
+pub use addresses::get_address_with_network;
 use app_utils::keystone;
 use bitcoin::bip32::Fingerprint;
 use bitcoin::hashes::Hash;

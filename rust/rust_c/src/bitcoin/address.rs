@@ -1,3 +1,5 @@
+use alloc::string::{String, ToString};
+
 use crate::common::structs::SimpleResponse;
 use crate::common::types::PtrString;
 use crate::common::utils::{convert_c_char, recover_c_char};
@@ -63,8 +65,9 @@ pub unsafe extern "C" fn xpub_convert_version(
 fn bitcoin_address_network(network: &str) -> Result<Network, app_bitcoin::errors::BitcoinError> {
     match network {
         "bitcoin-mainnet" | "BTC" | "mainnet" => Ok(Network::Bitcoin),
-        "bitcoin-testnet" | "bitcoin-signet" | "bitcoin-regtest" | "tBTC" | "testnet"
-        | "signet" => Ok(Network::BitcoinTestnet),
+        "bitcoin-testnet" | "bitcoin-signet" | "tBTC" | "testnet" | "signet" => {
+            Ok(Network::BitcoinTestnet)
+        }
         other => Err(app_bitcoin::errors::BitcoinError::UnsupportedNetwork(
             other.to_string(),
         )),

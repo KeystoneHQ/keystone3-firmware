@@ -306,7 +306,12 @@ fn validate_cached_xpub_path(network: &str, key_path: &str) -> Result<(), RustCE
     // The current multi-coins UI displays the connected address from cached BTC
     // account xpubs. Only accept paths that are under those cached account xpubs.
     const MAX_DISPLAY_HD_PATH_LEN: usize = 64;
-    BabylonNetwork::from_name(network).map_err(RustCError::from)?;
+    let network = BabylonNetwork::from_name(network).map_err(RustCError::from)?;
+    if network == BabylonNetwork::Regtest {
+        return Err(RustCError::InvalidData(
+            "regtest address display is not supported from cached xpub".to_string(),
+        ));
+    }
 
     const CACHED_XPUB_ACCOUNT_PATHS: [&str; 4] =
         ["M/44'/0'/0'", "M/49'/0'/0'", "M/84'/0'/0'", "M/86'/0'/0'"];
@@ -427,7 +432,7 @@ mod tests {
 
     #[test]
     fn test_validate_cached_xpub_path_accepts_cached_paths_for_supported_networks() {
-        for network in ["bitcoin-testnet", "bitcoin-signet", "bitcoin-regtest"] {
+        for network in ["bitcoin-testnet", "bitcoin-signet"] {
             validate_cached_xpub_path(network, "m/84'/0'/0'/0/0").unwrap();
         }
     }
@@ -443,6 +448,7 @@ mod tests {
             "m/44'/0'/0'/0/000000000000000000000000000000000000000000000000000"
         )
         .is_err());
+        assert!(validate_cached_xpub_path("bitcoin-regtest", "m/84'/0'/0'/0/0").is_err());
     }
 
     #[test]

@@ -120,6 +120,9 @@ pub unsafe extern "C" fn parse_derive_context_hash(
     if let Err(e) = validate_context_hex(&req.context) {
         return Response::from(RustCError::from(e)).c_ptr();
     }
+    if let Err(e) = validate_cached_xpub_path(&req.network, &req.key_path) {
+        return Response::from(e).c_ptr();
+    }
 
     let data = DeriveContextHashCallData {
         app_name: convert_c_char(req.app_name),
@@ -176,6 +179,9 @@ pub unsafe extern "C" fn generate_derive_context_hash_ur(
         Ok(v) => v,
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
+    if let Err(e) = validate_cached_xpub_path(&req.network, &req.key_path) {
+        return UREncodeResult::from(e).c_ptr();
+    }
     let mut seed = core::slice::from_raw_parts(seed, seed_len as usize).to_vec();
 
     let result = compute_context_hash_hex(
@@ -220,7 +226,7 @@ fn compute_context_hash_hex(
     let ikm = get_private_key_by_seed(seed, &IKM_DERIVATION_PATH.to_string())
         .map_err(|e| BabylonError::DeriveError(e.to_string()))?
         .secret_bytes();
-    let connected_pubkey = get_public_key_by_seed(seed, &key_path.to_string())
+    let connected_pubkey = get_public_key_by_seed(seed, &normalized_derivation_key_path(key_path))
         .map_err(|e| BabylonError::DeriveError(e.to_string()))?
         .serialize();
 
@@ -241,7 +247,7 @@ fn derive_connected_address(
     key_path: &str,
 ) -> Result<String, RustCError> {
     let network = BabylonNetwork::from_name(network).map_err(RustCError::from)?;
-    let pubkey = get_public_key_by_seed(seed, &key_path.to_string())
+    let pubkey = get_public_key_by_seed(seed, &normalized_derivation_key_path(key_path))
         .map_err(|e| RustCError::InvalidData(e.to_string()))?;
 
     let btc_network = match network {
@@ -269,11 +275,64 @@ fn derive_connected_address(
 fn path_purpose(key_path: &str) -> Result<u32, RustCError> {
     let trimmed = key_path
         .trim_start_matches("m/")
+        .trim_start_matches("M/")
         .trim_start_matches('m')
+        .trim_start_matches('M')
         .trim_start_matches('/');
     let first = trimmed.split('/').next().unwrap_or("");
     let digits = first.trim_end_matches(|c| c == '\'' || c == 'h' || c == 'H');
     digits.parse::<u32>().map_err(|_| RustCError::InvalidHDPath)
+}
+
+fn normalized_derivation_key_path(key_path: &str) -> String {
+    if key_path.starts_with("M/") {
+        let mut path = key_path.to_string();
+        path.replace_range(0..1, "m");
+        path
+    } else {
+        key_path.to_string()
+    }
+}
+
+fn normalized_key_path(key_path: &str) -> String {
+    if key_path.starts_with("m/") || key_path.starts_with("M/") {
+        let mut path = key_path.to_string();
+        path.replace_range(0..1, "M");
+        path
+    } else {
+        alloc::format!("M/{key_path}")
+    }
+}
+
+fn validate_cached_xpub_path(network: &str, key_path: &str) -> Result<(), RustCError> {
+    // The current multi-coins UI displays the connected address from cached BTC
+    // account xpubs. Only accept paths that are under those cached account xpubs.
+    const MAX_DISPLAY_HD_PATH_LEN: usize = 64;
+    if network != BabylonNetwork::Mainnet.canonical_name() {
+        return Err(RustCError::InvalidData(
+            "key path is not available from cached xpub for this network".to_string(),
+        ));
+    }
+
+    const CACHED_XPUB_ACCOUNT_PATHS: [&str; 4] =
+        ["M/44'/0'/0'", "M/49'/0'/0'", "M/84'/0'/0'", "M/86'/0'/0'"];
+    let path = normalized_key_path(key_path);
+    if path.len() >= MAX_DISPLAY_HD_PATH_LEN {
+        return Err(RustCError::InvalidData(
+            "key path is too long for address display".to_string(),
+        ));
+    }
+    if CACHED_XPUB_ACCOUNT_PATHS.iter().any(|account_path| {
+        path.strip_prefix(account_path)
+            .map(|rest| rest.starts_with('/'))
+            .unwrap_or(false)
+    }) {
+        return Ok(());
+    }
+
+    Err(RustCError::InvalidData(
+        "key path is not available from cached xpub".to_string(),
+    ))
 }
 
 #[cfg(test)]
@@ -354,16 +413,46 @@ mod tests {
     #[test]
     fn test_path_purpose() {
         assert_eq!(path_purpose("m/44'/0'/0'/0/0").unwrap(), 44);
+        assert_eq!(path_purpose("M/49'/0'/0'/0/0").unwrap(), 49);
         assert_eq!(path_purpose("86'/0'/0'/0/0").unwrap(), 86);
         assert_eq!(path_purpose("m/84h/0h/0h/0/0").unwrap(), 84);
         assert!(path_purpose("m/x/0").is_err());
     }
 
     #[test]
+    fn test_validate_cached_xpub_path_accepts_cached_mainnet_paths() {
+        for path in [
+            "44'/0'/0'/0/0",
+            "m/49'/0'/0'/0/0",
+            "M/84'/0'/0'/0/0",
+            "86'/0'/0'/0/0",
+        ] {
+            validate_cached_xpub_path("bitcoin-mainnet", path).unwrap();
+        }
+    }
+
+    #[test]
+    fn test_validate_cached_xpub_path_rejects_non_cached_paths() {
+        assert!(validate_cached_xpub_path("bitcoin-testnet", "m/44'/1'/0'/0/0").is_err());
+        assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/44'/1'/0'/0/0").is_err());
+        assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/48'/0'/0'/0/0").is_err());
+        assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/44'/0'/1'/0/0").is_err());
+        assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/44'/0'/0'").is_err());
+        assert!(validate_cached_xpub_path(
+            "bitcoin-mainnet",
+            "m/44'/0'/0'/0/000000000000000000000000000000000000000000000000000"
+        )
+        .is_err());
+    }
+
+    #[test]
     fn test_derive_connected_address_taproot_mainnet() {
         let seed = hex::decode(TEST_SEED_HEX).unwrap();
         let addr = derive_connected_address(&seed, "bitcoin-mainnet", "m/86'/0'/0'/0/0").unwrap();
-        assert!(addr.starts_with("bc1p"), "expected p2tr mainnet, got {addr}");
+        assert!(
+            addr.starts_with("bc1p"),
+            "expected p2tr mainnet, got {addr}"
+        );
     }
 
     // `qr-hardware-call` CBOR produced by the JS lib (@keystonehq/bc-ur-registry) and

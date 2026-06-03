@@ -47,7 +47,7 @@ static KeyboardWidget_t *g_keyboardWidget = NULL;
 
 static void FreeDeriveContextHashMemory(void);
 static void ModelParse(void);
-static void DeriveConnectedAddress(void);
+static bool DeriveConnectedAddress(void);
 static UREncodeResult *ModelGenerateSyncUR(void);
 static void GuiCreateApproveWidget(lv_obj_t *parent);
 static void GuiCreateQRCodeWidget(lv_obj_t *parent);
@@ -89,12 +89,17 @@ static void ModelParse(void)
 
 // Derive the connected key's address (seedless, from the cached account xpub) so the
 // user can confirm it on the approval screen.
-static void DeriveConnectedAddress(void)
+static bool DeriveConnectedAddress(void)
 {
     if (g_callData == NULL || g_callData->key_path == NULL) {
-        return;
+        return false;
     }
-    int purpose = atoi(g_callData->key_path);
+
+    const char *keyPath = g_callData->key_path;
+    if (strncmp(keyPath, "m/", 2) == 0 || strncmp(keyPath, "M/", 2) == 0) {
+        keyPath += 2;
+    }
+    int purpose = atoi(keyPath);
     ChainType xpubType;
     switch (purpose) {
     case 44:
@@ -110,20 +115,28 @@ static void DeriveConnectedAddress(void)
         xpubType = XPUB_TYPE_BTC_TAPROOT;
         break;
     default:
-        return;
+        return false;
     }
     char *xpub = GetCurrentAccountPublicKey(xpubType);
     if (xpub == NULL) {
-        return;
+        return false;
     }
     char hdPath[BUFFER_SIZE_64] = {0};
-    snprintf_s(hdPath, BUFFER_SIZE_64, "M/%s", g_callData->key_path);
+    if (strncmp(g_callData->key_path, "m/", 2) == 0 || strncmp(g_callData->key_path, "M/", 2) == 0) {
+        snprintf_s(hdPath, sizeof(hdPath), "%s", g_callData->key_path);
+        hdPath[0] = 'M';
+    } else {
+        snprintf_s(hdPath, sizeof(hdPath), "M/%s", g_callData->key_path);
+    }
     SimpleResponse_c_char *result = utxo_get_address(hdPath, xpub);
     if (result->error_code == 0 && result->data != NULL) {
         g_address = SRAM_MALLOC(strnlen_s(result->data, BUFFER_SIZE_128) + 1);
         strcpy(g_address, result->data);
+        free_simple_response_c_char(result);
+        return true;
     }
     free_simple_response_c_char(result);
+    return false;
 }
 
 void GuiDeriveContextHashRequestInit(bool isUsb)
@@ -145,7 +158,12 @@ void GuiDeriveContextHashRequestInit(bool isUsb)
             (char *)_("Invalid Request"), message, CloseInvalidRequestHandler);
         return;
     }
-    DeriveConnectedAddress();
+    if (!DeriveConnectedAddress()) {
+        GuiCreateHardwareCallInvaildParamHintboxWithHandler(
+            (char *)_("Invalid Request"), (char *)_("Invalid derive-context-hash key path"),
+            CloseInvalidRequestHandler);
+        return;
+    }
 
     lv_obj_t *tileView = GuiCreateTileView(g_widget.pageWidget->contentZone);
     lv_obj_t *tile = lv_tileview_add_tile(tileView, TILE_APPROVE, 0, LV_DIR_HOR);

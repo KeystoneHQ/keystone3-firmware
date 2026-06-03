@@ -52,6 +52,7 @@ static UREncodeResult *ModelGenerateSyncUR(void);
 static void GuiCreateApproveWidget(lv_obj_t *parent);
 static void GuiCreateQRCodeWidget(lv_obj_t *parent);
 static void ConfirmSliderHandler(lv_event_t *e);
+static void CloseInvalidRequestHandler(lv_event_t *e);
 static void OnReturnHandler(lv_event_t *e);
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 static void NextTile(void);
@@ -140,7 +141,8 @@ void GuiDeriveContextHashRequestInit(bool isUsb)
         char *message = g_response->error_message != NULL
                         ? g_response->error_message
                         : (char *)_("Invalid derive-context-hash request");
-        GuiCreateHardwareCallInvaildParamHintbox((char *)_("Invalid Request"), message);
+        GuiCreateHardwareCallInvaildParamHintboxWithHandler(
+            (char *)_("Invalid Request"), message, CloseInvalidRequestHandler);
         return;
     }
     DeriveConnectedAddress();
@@ -269,6 +271,12 @@ static void ConfirmSliderHandler(lv_event_t *e)
     } else {
         lv_slider_set_value(slider, 0, LV_ANIM_ON);
     }
+}
+
+static void CloseInvalidRequestHandler(lv_event_t *e)
+{
+    GuiCloseAttentionHintbox();
+    CloseCurrentViewHandler(e);
 }
 
 static void OnReturnHandler(lv_event_t *e)

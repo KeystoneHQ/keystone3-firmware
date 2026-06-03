@@ -9,6 +9,7 @@ void GuiDeriveContextHashRequestInit(bool isUsb);
 void GuiDeriveContextHashRequestDeInit(void);
 void GuiDeriveContextHashRequestRefresh(void);
 void GuiDeriveContextHashWidgetHandleURGenerate(char *data, uint16_t len);
+void GuiDeriveContextHashWidgetHandleURGenerateFail(char *message);
 void GuiDeriveContextHashWidgetHandleURUpdate(char *data, uint16_t len);
 void GuiSetDeriveContextHashRequestData(void *urResult, void *multiResult, bool is_multi);
 void GuiDeriveContextHashPasswordErrorCount(void *param);

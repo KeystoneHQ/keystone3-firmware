@@ -15,6 +15,7 @@
 #include "gui_lock_widgets.h"
 #include "gui_animating_qrcode.h"
 #include "gui_attention_hintbox.h"
+#include "gui_pending_hintbox.h"
 #include "gui_derive_context_hash_request_widgets.h"
 
 typedef struct {
@@ -344,6 +345,16 @@ void DeriveContextHashHiddenKeyboardAndShowAnimateQR(void)
 void GuiDeriveContextHashWidgetHandleURGenerate(char *data, uint16_t len)
 {
     GuiAnimantingQRCodeFirstUpdate(data, len);
+}
+
+void GuiDeriveContextHashWidgetHandleURGenerateFail(char *message)
+{
+    GuiPendingHintBoxRemove();
+    GuiAnimatingQRCodeDestroyTimer();
+    GuiCreateHardwareCallInvaildParamHintboxWithHandler(
+        (char *)_("Invalid Request"),
+        message != NULL ? message : (char *)_("Invalid derive-context-hash request"),
+        CloseInvalidRequestHandler);
 }
 
 void GuiDeriveContextHashWidgetHandleURUpdate(char *data, uint16_t len)

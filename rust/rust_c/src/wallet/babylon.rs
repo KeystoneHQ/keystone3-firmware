@@ -323,7 +323,7 @@ fn validate_cached_xpub_path(network: &str, key_path: &str) -> Result<(), RustCE
     }
     if CACHED_XPUB_ACCOUNT_PATHS.iter().any(|account_path| {
         path.strip_prefix(account_path)
-            .map(|rest| rest.starts_with('/'))
+            .map(is_valid_cached_xpub_address_suffix)
             .unwrap_or(false)
     }) {
         return Ok(());
@@ -332,6 +332,32 @@ fn validate_cached_xpub_path(network: &str, key_path: &str) -> Result<(), RustCE
     Err(RustCError::InvalidData(
         "key path is not available from cached xpub".to_string(),
     ))
+}
+
+fn is_valid_cached_xpub_address_suffix(rest: &str) -> bool {
+    let Some(suffix) = rest.strip_prefix('/') else {
+        return false;
+    };
+    let mut parts = suffix.split('/');
+    let Some(change) = parts.next() else {
+        return false;
+    };
+    let Some(index) = parts.next() else {
+        return false;
+    };
+    parts.next().is_none()
+        && is_non_hardened_child_index(change)
+        && is_non_hardened_child_index(index)
+}
+
+fn is_non_hardened_child_index(component: &str) -> bool {
+    if component.is_empty() || !component.bytes().all(|b| b.is_ascii_digit()) {
+        return false;
+    }
+    component
+        .parse::<u32>()
+        .map(|index| index < 0x8000_0000)
+        .unwrap_or(false)
 }
 
 #[cfg(test)]
@@ -443,6 +469,12 @@ mod tests {
         assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/48'/0'/0'/0/0").is_err());
         assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/44'/0'/1'/0/0").is_err());
         assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/44'/0'/0'").is_err());
+        assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/84'/0'/0'/").is_err());
+        assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/84'/0'/0'/0'").is_err());
+        assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/84'/0'/0'/0'/0").is_err());
+        assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/84'/0'/0'/0/0'").is_err());
+        assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/84'/0'/0'/0/0/1").is_err());
+        assert!(validate_cached_xpub_path("bitcoin-mainnet", "m/84'/0'/0'/0/2147483648").is_err());
         assert!(validate_cached_xpub_path(
             "bitcoin-mainnet",
             "m/44'/0'/0'/0/000000000000000000000000000000000000000000000000000"

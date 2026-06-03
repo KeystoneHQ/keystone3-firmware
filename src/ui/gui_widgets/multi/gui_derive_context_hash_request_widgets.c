@@ -54,6 +54,7 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent);
 static void ConfirmSliderHandler(lv_event_t *e);
 static void CloseInvalidRequestHandler(lv_event_t *e);
 static void OnReturnHandler(lv_event_t *e);
+static void NormalizeDisplayKeyPath(char *out, uint32_t outSize, const char *keyPath);
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 static void NextTile(void);
 static void PrevTile(void);
@@ -122,11 +123,9 @@ static bool DeriveConnectedAddress(void)
         return false;
     }
     char hdPath[BUFFER_SIZE_64] = {0};
-    if (strncmp(g_callData->key_path, "m/", 2) == 0 || strncmp(g_callData->key_path, "M/", 2) == 0) {
-        snprintf_s(hdPath, sizeof(hdPath), "%s", g_callData->key_path);
-        hdPath[0] = 'M';
-    } else {
-        snprintf_s(hdPath, sizeof(hdPath), "M/%s", g_callData->key_path);
+    NormalizeDisplayKeyPath(hdPath, sizeof(hdPath), g_callData->key_path);
+    if (hdPath[0] == '\0') {
+        return false;
     }
     SimpleResponse_c_char *result = btcoin_get_address_with_network(hdPath, xpub, g_callData->network);
     if (result->error_code == 0 && result->data != NULL) {
@@ -201,6 +200,23 @@ static void CreateInfoRow(lv_obj_t *parent, const char *title, const char *value
     lv_label_set_long_mode(valueLabel, LV_LABEL_LONG_WRAP);
 }
 
+static void NormalizeDisplayKeyPath(char *out, uint32_t outSize, const char *keyPath)
+{
+    if (out == NULL || outSize == 0) {
+        return;
+    }
+    out[0] = '\0';
+    if (keyPath == NULL) {
+        return;
+    }
+    if (strncmp(keyPath, "m/", 2) == 0 || strncmp(keyPath, "M/", 2) == 0) {
+        snprintf_s(out, outSize, "%s", keyPath);
+        out[0] = 'M';
+    } else {
+        snprintf_s(out, outSize, "M/%s", keyPath);
+    }
+}
+
 static void GuiCreateApproveWidget(lv_obj_t *parent)
 {
     g_approveTile = parent;
@@ -233,7 +249,7 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     lv_obj_clear_flag(inner, LV_OBJ_FLAG_SCROLLABLE);
 
     char path[BUFFER_SIZE_64] = {0};
-    snprintf_s(path, BUFFER_SIZE_64, "M/%s", g_callData->key_path);
+    NormalizeDisplayKeyPath(path, sizeof(path), g_callData->key_path);
     CreateInfoRow(inner, _("App Name"), g_callData->app_name);
     CreateInfoRow(inner, _("From"), g_callData->origin);
     CreateInfoRow(inner, _("Network"), g_callData->network);

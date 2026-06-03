@@ -30,6 +30,9 @@ typedef enum {
     TILE_BUTT,
 } PAGE_TILE;
 
+// Slider value (0-100) at which the confirm action triggers, matching the sign-tx UI.
+#define DCH_CONFIRM_SLIDE_PROCESS 66
+
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static bool g_isMulti = false;
@@ -38,6 +41,7 @@ static DeriveContextHashWidget_t g_widget;
 static DeriveContextHashCallData *g_callData = NULL;
 static Response_DeriveContextHashCallData *g_response = NULL;
 static char *g_address = NULL;
+static lv_obj_t *g_approveTile = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 
 static void FreeDeriveContextHashMemory(void);
@@ -46,7 +50,7 @@ static void DeriveConnectedAddress(void);
 static UREncodeResult *ModelGenerateSyncUR(void);
 static void GuiCreateApproveWidget(lv_obj_t *parent);
 static void GuiCreateQRCodeWidget(lv_obj_t *parent);
-static void OnApproveHandler(lv_event_t *e);
+static void ConfirmSliderHandler(lv_event_t *e);
 static void OnReturnHandler(lv_event_t *e);
 static void GuiShowKeyBoardDialog(lv_obj_t *parent);
 static void NextTile(void);
@@ -148,6 +152,7 @@ void GuiDeriveContextHashRequestDeInit(void)
     GUI_PAGE_DEL(g_widget.pageWidget);
     GuiAnimatingQRCodeDestroyTimer();
     FreeDeriveContextHashMemory();
+    g_approveTile = NULL;
     SetPageLockScreen(true);
 }
 
@@ -166,6 +171,7 @@ static void CreateInfoRow(lv_obj_t *parent, const char *title, const char *value
 
 static void GuiCreateApproveWidget(lv_obj_t *parent)
 {
+    g_approveTile = parent;
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, _("Derive Context Hash Request"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 8);
 
@@ -205,20 +211,9 @@ static void GuiCreateApproveWidget(lv_obj_t *parent)
     }
     CreateInfoRow(inner, _("Context"), g_callData->context);
 
-    lv_obj_t *btnCont = GuiCreateContainerWithParent(parent, 480, 114);
-    lv_obj_align(btnCont, LV_ALIGN_BOTTOM_LEFT, 0, 0);
-
-    lv_obj_t *btn = GuiCreateTextBtn(btnCont, _("Cancel"));
-    lv_obj_set_size(btn, 192, 66);
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 36, 24);
-    lv_obj_add_event_cb(btn, CloseCurrentViewHandler, LV_EVENT_CLICKED, NULL);
-
-    btn = GuiCreateTextBtn(btnCont, _("Approve"));
-    lv_obj_set_size(btn, 192, 66);
-    lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 252, 24);
-    lv_obj_add_event_cb(btn, OnApproveHandler, LV_EVENT_CLICKED, NULL);
+    // Reuse the sign-tx "slide to confirm" component for a consistent approval UX.
+    // (Reject is handled by the nav-bar back button.)
+    GuiCreateConfirmSlider(parent, ConfirmSliderHandler);
 }
 
 static void GuiCreateQRCodeWidget(lv_obj_t *parent)
@@ -250,10 +245,18 @@ static void GuiShowKeyBoardDialog(lv_obj_t *parent)
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
-static void OnApproveHandler(lv_event_t *e)
+static void ConfirmSliderHandler(lv_event_t *e)
 {
-    lv_obj_t *parent = lv_obj_get_parent(lv_event_get_target(e));
-    GuiShowKeyBoardDialog(parent);
+    if (lv_event_get_code(e) != LV_EVENT_RELEASED) {
+        return;
+    }
+    lv_obj_t *slider = lv_event_get_target(e);
+    if (lv_slider_get_value(slider) >= DCH_CONFIRM_SLIDE_PROCESS) {
+        lv_slider_set_value(slider, 0, LV_ANIM_OFF);
+        GuiShowKeyBoardDialog(g_approveTile);
+    } else {
+        lv_slider_set_value(slider, 0, LV_ANIM_ON);
+    }
 }
 
 static void OnReturnHandler(lv_event_t *e)

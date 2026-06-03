@@ -220,6 +220,7 @@ extern GUI_VIEW g_DevicePublicKeyView;
 #ifndef BTC_ONLY
 extern GUI_VIEW g_multiAccountsReceiveView;
 extern GUI_VIEW g_keyDerivationRequestView;
+extern GUI_VIEW g_deriveContextHashRequestView;
 extern GUI_VIEW g_ethBatchTxView;
 #endif
 extern GUI_VIEW g_checkDeleteWalletView;

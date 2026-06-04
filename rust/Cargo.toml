@@ -76,7 +76,7 @@ core2 = { version = "0.9.4", package = "no_std_io2", default-features = false }
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
 rsa = { version = "0.8.2", default-features = false }
 sha1 = { version = "0.10.5", default-features = false }
-ur-registry = "1.0.4"
+ur-registry = "1.0.5"
 ur-parse-lib = "1.0.4"
 sui-transaction-types-core = { git = "https://github.com/KeystoneHQ/sui.git", tag = "mainnet-nostd-v1.69.2.1", default-features = false, features = ["alloc"] }
 ed25519-bip32-core = { version = "0.1.1", default-features = false }

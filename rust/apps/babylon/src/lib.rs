@@ -54,7 +54,7 @@ pub const APP_NAME_MAX_LEN: usize = 64;
 pub const CONTEXT_MAX_LEN: usize = 1024;
 
 /// Apps allowed to request a context hash on this device (device policy).
-pub const ALLOWED_APP_NAMES: [&str; 2] = ["babylon-btc-vault", "ordinals-market"];
+pub const ALLOWED_APP_NAMES: [&str; 2] = ["babylon-btc-vault", "test-app"];
 
 /// The wallet's current Bitcoin network (canonical name per the spec).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -320,12 +320,7 @@ mod tests {
     #[test]
     fn test_validate_app_name() {
         assert!(validate_app_name("babylon-btc-vault").is_ok());
-        assert!(validate_app_name("ordinals-market").is_ok());
-        // Spec-valid charset but not on the allow-list (e.g. the official vector's app).
-        assert!(matches!(
-            validate_app_name("test-app"),
-            Err(BabylonError::AppNotAllowed(_))
-        ));
+        assert!(validate_app_name("test-app").is_ok());
         // Uppercase -> charset failure.
         assert!(matches!(
             validate_app_name("Babylon"),

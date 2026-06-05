@@ -182,17 +182,19 @@ pub unsafe extern "C" fn generate_derive_context_hash_ur(
         Err(e) => return UREncodeResult::from(e).c_ptr(),
     };
 
-    let bytes = Bytes::new(hash_hex.into_bytes());
-    let cbor: alloc::vec::Vec<u8> = match bytes.try_into() {
+    let hash_bytes = match hex::decode(hash_hex) {
         Ok(v) => v,
-        Err(e) => return UREncodeResult::from(e).c_ptr(),
+        Err(e) => return UREncodeResult::from(RustCError::InvalidHex(e.to_string())).c_ptr(),
     };
-    UREncodeResult::encode(
-        cbor,
-        Bytes::get_registry_type().get_type(),
-        FRAGMENT_MAX_LENGTH_DEFAULT,
-    )
-    .c_ptr()
+    match Bytes::new(hash_bytes).try_into() {
+        Ok(cbor) => UREncodeResult::encode(
+            cbor,
+            Bytes::get_registry_type().get_type(),
+            FRAGMENT_MAX_LENGTH_DEFAULT,
+        )
+        .c_ptr(),
+        Err(e) => UREncodeResult::from(e).c_ptr(),
+    }
 }
 
 /// Core (testable) derivation: seed + request fields -> lowercase hex hash string.
@@ -371,8 +373,7 @@ mod tests {
     #[test]
     fn test_compute_context_hash_hex_official_vector() {
         let seed = hex::decode(TEST_SEED_HEX).unwrap();
-        // "test-app" is NOT on the allow-list, so go below validation to prove the
-        // crypto path; allow-list enforcement is covered separately below.
+        // Exercise the crypto path directly; allow-list enforcement is covered separately below.
         let ikm = get_private_key_by_seed(&seed, &IKM_DERIVATION_PATH.to_string())
             .unwrap()
             .secret_bytes();
@@ -398,7 +399,7 @@ mod tests {
         let seed = hex::decode(TEST_SEED_HEX).unwrap();
         let err = compute_context_hash_hex(
             &seed,
-            "test-app",
+            "not-allowed-app",
             "bitcoin-mainnet",
             "m/44'/0'/0'/0/0",
             "deadbeef",
@@ -539,5 +540,17 @@ mod tests {
             hash,
             "564906234635460f327d8c7d87a5a49054b672b725d5b8f0bc4a239956f32ba2"
         );
+    }
+
+    #[test]
+    fn test_context_hash_bytes_payload_uses_raw_hash_bytes() {
+        let hash_hex = "564906234635460f327d8c7d87a5a49054b672b725d5b8f0bc4a239956f32ba2";
+        let hash_bytes = hex::decode(hash_hex).unwrap();
+        let cbor: alloc::vec::Vec<u8> = Bytes::new(hash_bytes.clone()).try_into().unwrap();
+
+        assert_eq!(hash_bytes.len(), 32);
+        assert_eq!(cbor.len(), 34);
+        assert_eq!(hex::encode(&cbor[..2]), "5820");
+        assert_eq!(Bytes::try_from(cbor).unwrap().get_bytes(), hash_bytes);
     }
 }

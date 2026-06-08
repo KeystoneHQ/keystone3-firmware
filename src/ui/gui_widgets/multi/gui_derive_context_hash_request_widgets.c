@@ -284,6 +284,11 @@ static void GuiCreateQRCodeWidget(lv_obj_t *parent)
     lv_obj_t *qrcode = GuiCreateContainerWithParent(qrBgCont, 294, 294);
     lv_obj_align(qrcode, LV_ALIGN_TOP_MID, 0, 21);
     g_widget.qrCode = qrcode;
+
+    lv_obj_t *btn = GuiCreateTextBtn(parent, _("Done"));
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_set_size(btn, 408, 66);
+    lv_obj_add_event_cb(btn, GoToHomeViewHandler, LV_EVENT_CLICKED, NULL);
 }
 
 static void GuiShowKeyBoardDialog(lv_obj_t *parent)

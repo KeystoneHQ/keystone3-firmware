@@ -1,3 +1,14 @@
+## 2.4.6 (2026-6-12)
+
+**Web3:**
+
+### What's new
+
+1. Support babylon derive context hash call
+
+
+
+
 ## 2.4.4 (2026-5-27)
 
 **Web3:**

@@ -53,6 +53,11 @@ impl TryFrom<&mut QRHardwareCall> for QRHardwareCallData {
                 Ok(Self {
                     call_type: convert_c_char(match value.get_call_type() {
                         CallType::KeyDerivation => "key_derivation".to_string(),
+                        CallType::DeriveContextHash => {
+                            return Err(RustCError::InvalidData(
+                                "unexpected derive-context-hash params".to_string(),
+                            ))
+                        }
                     }),
                     origin: convert_c_char(value.get_origin().unwrap_or("unknown".to_string())),
                     key_derivation: KeyDerivationRequestData {
@@ -63,6 +68,10 @@ impl TryFrom<&mut QRHardwareCall> for QRHardwareCallData {
                     version: convert_c_char(value.get_version().to_string()),
                 })
             }
+            // derive-context-hash uses its own parser (wallet::babylon); reject here.
+            CallParams::DeriveContextHash(_) => Err(RustCError::InvalidData(
+                "use parse_derive_context_hash for derive-context-hash calls".to_string(),
+            )),
         }
     }
 }

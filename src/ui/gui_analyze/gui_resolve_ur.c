@@ -17,6 +17,7 @@
 
 #ifdef WEB3_VERSION
 #include "gui_key_derivation_request_widgets.h"
+#include "gui_derive_context_hash_request_widgets.h"
 #include "gui_eth_batch_tx_widgets.h"
 #endif
 
@@ -84,6 +85,9 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
     case KeyDerivationRequest:
         GuiSetKeyDerivationRequestData(urResult, urMultiResult, is_multi);
         break;
+    case DeriveContextHashRequest:
+        GuiSetDeriveContextHashRequestData(urResult, urMultiResult, is_multi);
+        break;
     case EthBatchTx:
         GuiSetEthBatchTxData(urResult, urMultiResult, is_multi);
         break;
@@ -105,6 +109,7 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
     if (urViewType.viewType == WebAuthResult
 #ifdef WEB3_VERSION
             || urViewType.viewType == KeyDerivationRequest
+            || urViewType.viewType == DeriveContextHashRequest
             || urViewType.viewType == EthBatchTx
 #endif
 #ifdef BTC_ONLY

@@ -289,6 +289,8 @@ pub enum ViewType {
     #[cfg(not(feature = "btc-only"))]
     KeyDerivationRequest,
     #[cfg(feature = "multi-coins")]
+    DeriveContextHashRequest,
+    #[cfg(feature = "multi-coins")]
     BatchCall,
     #[cfg(feature = "btc-only")]
     MultisigWalletImport,

@@ -191,6 +191,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "app_babylon"
+version = "0.1.0"
+dependencies = [
+ "cryptoxide",
+ "hex",
+ "keystore",
+ "thiserror-core",
+ "zeroize",
+]
+
+[[package]]
 name = "app_bitcoin"
 version = "0.1.0"
 dependencies = [
@@ -2527,7 +2538,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
- "windows-targets 0.53.2",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -3807,6 +3818,7 @@ dependencies = [
  "app_aptos",
  "app_arweave",
  "app_avalanche",
+ "app_babylon",
  "app_bitcoin",
  "app_cardano",
  "app_cosmos",
@@ -4759,9 +4771,9 @@ dependencies = [
 
 [[package]]
 name = "ur-registry"
-version = "1.0.4"
+version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9b75e98b4ddfd7140efcf02b4e5d420e91f14cb7a30623c7aa83dccac1c7f64"
+checksum = "1c09637b609337d361420befd9a218a0ebf6923c10a56b8d3c895419973cd71c"
 dependencies = [
  "bs58",
  "hex",

@@ -177,6 +177,7 @@ LV_IMG_DECLARE(coinApt);
 LV_IMG_DECLARE(coinAva);
 LV_IMG_DECLARE(coinBnb);
 LV_IMG_DECLARE(coinBtc);
+LV_IMG_DECLARE(coinBtcTestnet);
 LV_IMG_DECLARE(coinAda);
 LV_IMG_DECLARE(coinDot);
 LV_IMG_DECLARE(coinEth);

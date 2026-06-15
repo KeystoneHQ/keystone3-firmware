@@ -141,6 +141,7 @@ typedef enum {
 
     SIG_WEB_AUTH_CODE_SUCCESS = SIG_FORGET_PASSWORD_BUTT + 50,
     SIG_BACKGROUND_UR_GENERATE_SUCCESS,
+    SIG_BACKGROUND_UR_GENERATE_FAIL,
     SIG_BACKGROUND_UR_UPDATE,
     SIG_BACKGROUND_UR_BUTT,
 
@@ -220,6 +221,7 @@ extern GUI_VIEW g_DevicePublicKeyView;
 #ifndef BTC_ONLY
 extern GUI_VIEW g_multiAccountsReceiveView;
 extern GUI_VIEW g_keyDerivationRequestView;
+extern GUI_VIEW g_deriveContextHashRequestView;
 extern GUI_VIEW g_ethBatchTxView;
 #endif
 extern GUI_VIEW g_checkDeleteWalletView;

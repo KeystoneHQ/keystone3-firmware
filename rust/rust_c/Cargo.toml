@@ -41,6 +41,7 @@ zeroize = { workspace = true }
 
 #apps
 app_wallets = { workspace = true }
+app_babylon = { workspace = true, optional = true }
 app_bitcoin = { workspace = true, optional = true }
 app_ethereum = { workspace = true, optional = true }
 app_cardano = { workspace = true, optional = true }
@@ -113,6 +114,7 @@ multi-coins = [
     "avalanche",
     "iota",
     "zcash_multi_coins",
+    "dep:app_babylon",
     "keystore/multi_coins",
 ]
 

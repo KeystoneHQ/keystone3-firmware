@@ -698,8 +698,9 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, Bac
         // printf("%s\r\n", g_urResult->data);
         GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strnlen_s(g_urResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
     } else {
-        printf("error message: %s\r\n", g_urResult->error_message);
-        //TODO: deal with error
+        char *message = g_urResult->error_message != NULL ? g_urResult->error_message : "";
+        printf("error message: %s\r\n", message);
+        GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_FAIL, message, strnlen_s(message, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
     }
     return SUCCESS_CODE;
 }

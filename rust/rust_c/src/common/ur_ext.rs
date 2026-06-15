@@ -421,6 +421,12 @@ impl InferViewType for QRHardwareCall {
     fn infer(&self) -> Result<ViewType, URError> {
         match self.get_call_type() {
             CallType::KeyDerivation => Ok(ViewType::KeyDerivationRequest),
+            #[cfg(feature = "multi-coins")]
+            CallType::DeriveContextHash => Ok(ViewType::DeriveContextHashRequest),
+            #[cfg(not(feature = "multi-coins"))]
+            CallType::DeriveContextHash => Err(URError::NotSupportURTypeError(
+                "derive-context-hash is only supported on multi-coins".to_string(),
+            )),
         }
     }
 }

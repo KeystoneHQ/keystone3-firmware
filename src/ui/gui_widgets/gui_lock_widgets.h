@@ -31,6 +31,8 @@ void GuiLockScreenSetFirstUnlock(void);
 void GuiLockViewRefreshLanguage(void);
 void GuiLockScreenSetNumKeyBoardMapDefault(void);
 void GuiLockScreenShuffleNumKeyBoardMap(void);
+void GuiLockScreenShowVerifyLoading(void *param);
+void GuiLockScreenHideVerifyLoading(void);
 
 void GuiLockScreenErrorCount(void *param);
 void GuiLockScreenToHome(void);
@@ -42,5 +44,4 @@ void GuiShowGenerateXPubLoading(void);
 void GuiHideGenerateXPubLoading(void);
 void GuiLockViewRefreshLanguage(void);
 #endif /* _GUI_LOCK_WIDGETS_H */
-
 

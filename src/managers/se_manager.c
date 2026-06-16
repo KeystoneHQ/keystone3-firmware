@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "stdlib.h"
+#include "string.h"
 #include "se_manager.h"
 #include "se_interface.h"
 #include "user_utils.h"
@@ -9,20 +10,22 @@
 #include "err_code.h"
 #include "drv_trng.h"
 #include "drv_atecc608b.h"
+#include "cryptoauthlib.h"
 #include "log_print.h"
 #include "hash_and_salt.h"
 #include "secret_cache.h"
-#ifndef COMPILE_SIMULATOR
-#include "drv_mpu.h"
-#endif
 
 #define SHA256_COUNT                            3
 
 static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password);
 static int32_t SetNewKeyPieceToDs28s60(uint8_t accountIndex, uint8_t *piece, const char *password);
-
 static int32_t GetKeyPieceFromAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password);
 static int32_t GetKeyPieceFromDs28s60(uint8_t accountIndex, uint8_t *piece, const char *password);
+
+static int32_t NormalizeAteccAuthError(int32_t ret)
+{
+    return (ret == ATCA_CHECKMAC_VERIFY_FAILED) ? ERR_KEYSTORE_AUTH : ret;
+}
 
 static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password)
 {
@@ -34,7 +37,6 @@ static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, c
     do {
         HashWithSalt(authKey, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "auth_key");
         GetAccountSlot(&accountSlot, accountIndex);
-        //new kdf
         ret = SE_EncryptWrite(accountSlot.auth, 0, authKey);
         CHECK_ERRCODE_BREAK("write auth", ret);
         ret = SE_DeriveKey(accountSlot.rollKdf, authKey);
@@ -89,7 +91,7 @@ static int32_t SetNewKeyPieceToDs28s60(uint8_t accountIndex, uint8_t *piece, con
 
 static int32_t GetKeyPieceFromAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password)
 {
-    uint8_t authKey[32], hostRandom[32], inData[32], outData[32];
+    uint8_t authKey[32], inData[32], outData[32];
     int32_t ret;
     AccountSlot_t accountSlot;
 
@@ -101,9 +103,11 @@ static int32_t GetKeyPieceFromAtecc608b(uint8_t accountIndex, uint8_t *piece, co
 
         GetAccountSlot(&accountSlot, accountIndex);
         ret = SE_Kdf(accountSlot.rollKdf, authKey, inData, 32, outData);
+        ret = NormalizeAteccAuthError(ret);
         CHECK_ERRCODE_BREAK("kdf", ret);
         memcpy(inData, outData, 32);
         ret = SE_Kdf(accountSlot.hostKdf, authKey, inData, 32, outData);
+        ret = NormalizeAteccAuthError(ret);
         CHECK_ERRCODE_BREAK("kdf", ret);
         for (uint32_t i = 0; i < SHA256_COUNT; i++) {
             memcpy(inData, outData, 32);
@@ -112,7 +116,6 @@ static int32_t GetKeyPieceFromAtecc608b(uint8_t accountIndex, uint8_t *piece, co
         memcpy(piece, outData, 32);
     } while (0);
     CLEAR_ARRAY(authKey);
-    CLEAR_ARRAY(hostRandom);
     CLEAR_ARRAY(inData);
     CLEAR_ARRAY(outData);
 
@@ -125,10 +128,10 @@ static int32_t GetKeyPieceFromDs28s60(uint8_t accountIndex, uint8_t *piece, cons
     int32_t ret;
 
     ASSERT(accountIndex <= 2);
-    HashWithSalt(passwordHash, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "ds28s60 digest");
     do {
+        HashWithSalt(passwordHash, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "ds28s60 digest");
         ret = SE_HmacEncryptRead(xData, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE);
-        CHECK_ERRCODE_BREAK("write xData", ret);
+        CHECK_ERRCODE_BREAK("read xData", ret);
         for (uint32_t i = 0; i < 32; i++) {
             piece[i] = passwordHash[i] ^ xData[i];
         }
@@ -168,12 +171,17 @@ void GetAccountSlot(AccountSlot_t *accountSlot, uint8_t accountIndex)
 
 int32_t GetKeyPieceFromSE(uint8_t accountIndex, uint8_t *pieces, const char *password)
 {
-    int32_t ret = GetKeyPieceFromAtecc608b(accountIndex, pieces, password);
-    CHECK_ERRCODE_RETURN_INT(ret);
-    // KEYSTORE_PRINT_ARRAY("608 piece", pieces, 32);
-    ret = GetKeyPieceFromDs28s60(accountIndex, pieces + KEY_PIECE_LEN, password);
-    CHECK_ERRCODE_RETURN_INT(ret);
-    // KEYSTORE_PRINT_ARRAY("ds28s60 piece", pieces + KEY_PIECE_LEN, 32);
+    int32_t ret;
+
+    do {
+        ret = GetKeyPieceFromAtecc608b(accountIndex, pieces, password);
+        CHECK_ERRCODE_BREAK("atecc piece", ret);
+        // KEYSTORE_PRINT_ARRAY("608 piece", pieces, 32);
+        ret = GetKeyPieceFromDs28s60(accountIndex, pieces + KEY_PIECE_LEN, password);
+        CHECK_ERRCODE_BREAK("ds28s60 piece", ret);
+        // KEYSTORE_PRINT_ARRAY("ds28s60 piece", pieces + KEY_PIECE_LEN, 32);
+    } while (0);
+
     return ret;
 }
 

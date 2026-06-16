@@ -11,22 +11,19 @@
 int32_t SE_EncryptWrite(uint8_t slot, uint8_t block, const uint8_t *data)
 {
     int32_t ret = Atecc608bEncryptWrite(slot, block, data);
-    ASSERT(ret == ATCA_SUCCESS);
-    return SUCCESS_CODE;
+    return ret;
 }
 
 int32_t SE_Kdf(uint8_t slot, const uint8_t *authKey, const uint8_t *inData, uint32_t inLen, uint8_t *outData)
 {
     int32_t ret = Atecc608bKdf(slot, authKey, inData, inLen, outData);
-    ASSERT(ret == ATCA_SUCCESS);
-    return SUCCESS_CODE;
+    return ret;
 }
 
 int32_t SE_DeriveKey(uint8_t slot, const uint8_t *authKey)
 {
     int32_t ret = Atecc608bDeriveKey(slot, authKey);
-    ASSERT(ret == ATCA_SUCCESS);
-    return SUCCESS_CODE;
+    return ret;
 }
 //END
 
@@ -34,8 +31,7 @@ int32_t SE_DeriveKey(uint8_t slot, const uint8_t *authKey)
 int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
 {
     int32_t ret = DS28S60_HmacEncryptRead(data, page);
-    ASSERT(ret == DS28S60_SUCCESS);
-    return SUCCESS_CODE;
+    return ret;
 }
 
 int32_t SE_GetDS28S60Rng(uint8_t *rngArray, uint32_t num)
@@ -60,8 +56,7 @@ int32_t SE_GetAtecc608bRng(uint8_t *rngArray, uint32_t num)
 int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
 {
     int32_t ret = DS28S60_HmacEncryptWrite(data, page);
-    ASSERT(ret == DS28S60_SUCCESS);
-    return SUCCESS_CODE;
+    return ret;
 }
 
 //END

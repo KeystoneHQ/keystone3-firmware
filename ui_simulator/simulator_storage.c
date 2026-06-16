@@ -396,7 +396,7 @@ int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
         GetJsonArrayData(rootJson, data, 32, "hmac");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE) {
         GetJsonArrayData(rootJson, data, 32, "key_piece");
-    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH) {
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_LEGACY_PASSWORD_HASH) {
         GetJsonArrayData(rootJson, data, 32, "password_hash");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM) {
         GetJsonArrayData(rootJson, data, sizeof(AccountInfo_t), "param");
@@ -454,7 +454,7 @@ int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
         // ModifyJsonArrayData(rootJson, data, 32, "hmac");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE) {
         // ModifyJsonArrayData(rootJson, data, 32, "key_piece");
-    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH) {
+    } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_LEGACY_PASSWORD_HASH) {
         // ModifyJsonArrayData(rootJson, data, 32, "password_hash");
     } else if (page == account *  PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM) {
         ModifyJsonArrayData(rootJson, data, sizeof(AccountInfo_t), "param");

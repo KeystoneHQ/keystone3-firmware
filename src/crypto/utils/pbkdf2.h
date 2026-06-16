@@ -5,6 +5,19 @@
 #include "stdint.h"
 
 /**
+ * Derive a pseudorandom key from inputs using HMAC SHA-256.
+ */
+int pbkdf2_hmac_sha256(
+    const unsigned char *pass,
+    size_t pass_len,
+    const unsigned char *salt,
+    size_t salt_len,
+    uint32_t flags,
+    uint32_t cost,
+    unsigned char *bytes_out,
+    size_t len);
+
+/**
  * Derive a pseudorandom key from inputs using HMAC SHA-512.
  *
  * :param pass: Password to derive from.

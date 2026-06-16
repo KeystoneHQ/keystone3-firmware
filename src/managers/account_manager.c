@@ -6,7 +6,6 @@
 #include "user_utils.h"
 #include "account_public_info.h"
 #include "assert.h"
-#include "hash_and_salt.h"
 #include "secret_cache.h"
 #include "log_print.h"
 #include "user_memory.h"
@@ -19,12 +18,15 @@
 #include "safe_str_lib.h"
 #endif
 
+#define PIN_HASH_WIPED_MAGIC            0xA5
+
 typedef struct {
     uint8_t loginPasswordErrorCount;
     uint8_t currentPasswordErrorCount;
     uint8_t reserved1[2];
     uint32_t lastLockDeviceTime;
-    uint8_t reserved2[24];               //byte 1~31 reserved.
+    uint8_t pinHashWiped;                //byte 8, PIN_HASH_WIPED_MAGIC when legacy hash pages are wiped.
+    uint8_t reserved2[23];               //byte 9~31 reserved.
 } PublicInfo_t;
 
 static uint8_t g_currentAccountIndex = ACCOUNT_INDEX_LOGOUT;
@@ -36,6 +38,27 @@ static PublicInfo_t g_publicInfo = {0};
 static ZcashUFVKCache_t g_zcashUFVKcache = {0};
 static void ClearZcashUFVK();
 #endif
+
+static int32_t WipeLegacyPasswordHashPages(void)
+{
+    uint8_t data[32] = {0};
+    int32_t ret = SUCCESS_CODE;
+
+    if (IsPinHashWiped()) {
+        return SUCCESS_CODE;
+    }
+
+    // Erase old PIN verifiers. Do not add normal read/write users for this page.
+    for (uint8_t accountIndex = 0; accountIndex < 3; accountIndex++) {
+        ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_LEGACY_PASSWORD_HASH);
+        CHECK_ERRCODE_BREAK("wipe legacy password hash", ret);
+    }
+    if (ret == SUCCESS_CODE) {
+        ret = SetPinHashWiped(true);
+    }
+    CLEAR_ARRAY(data);
+    return ret;
+}
 
 /// @brief Get current account info from SE, and copy info to g_currentAccountInfo.
 /// @return err code.
@@ -62,6 +85,8 @@ int32_t AccountManagerInit(void)
     ASSERT(sizeof(AccountInfo_t) == 32);
     ASSERT(sizeof(PublicInfo_t) == 32);
     ret = SE_HmacEncryptRead((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+    CHECK_ERRCODE_RETURN_INT(ret);
+    ret = WipeLegacyPasswordHashPages();
     return ret;
 }
 
@@ -186,7 +211,7 @@ int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const u
 /// @return err code.
 int32_t VerifyCurrentAccountPassword(const char *password)
 {
-    uint8_t accountIndex, passwordHashClac[32], passwordHashStore[32];
+    uint8_t accountIndex;
     int32_t ret;
 
     do {
@@ -195,26 +220,22 @@ int32_t VerifyCurrentAccountPassword(const char *password)
             ret = ERR_KEYSTORE_NOT_LOGIN;
             break;
         }
-#ifdef COMPILE_SIMULATOR
+    #ifdef COMPILE_SIMULATOR
         ret = SimulatorVerifyCurrentPassword(accountIndex, password);
-#else
-        ret = SE_HmacEncryptRead(passwordHashStore, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("read password hash", ret);
-        HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
-        ret = memcmp(passwordHashStore, passwordHashClac, 32);
-#endif
+    #else
+        ret = VerifyAccountPassword(accountIndex, password);
+    #endif
         if (ret == SUCCESS_CODE) {
             g_publicInfo.currentPasswordErrorCount = 0;
-        } else {
+        } else if (ret == ERR_KEYSTORE_PASSWORD_ERR) {
             g_publicInfo.currentPasswordErrorCount++;
             printf("password error count=%d\r\n", g_publicInfo.currentPasswordErrorCount);
-            ret = ERR_KEYSTORE_PASSWORD_ERR;
+        } else {
+            break;
         }
         SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
     } while (0);
 
-    CLEAR_ARRAY(passwordHashStore);
-    CLEAR_ARRAY(passwordHashClac);
     return ret;
 }
 
@@ -227,8 +248,8 @@ int32_t ClearCurrentPasswordErrorCount(void)
     return SUCCESS_CODE;
 }
 
-/// @brief Verify password, if password verify success, set current account id. PasswordErrorCount++ if err.
-/// @param[out] accountIndex If password verify success, account index would be set here. Can be NULL if not needed.
+/// @brief Find account by password, if success set current account id. PasswordErrorCount++ if err.
+/// @param[out] accountIndex If password verify success, matched account index would be set here. Can be NULL if not needed.
 /// @param password Password string.
 /// @return err code.
 int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
@@ -236,7 +257,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
     int32_t ret;
     uint8_t tempIndex;
 
-    ret = VerifyPassword(&tempIndex, password);
+    ret = FindAccountByPassword(&tempIndex, password);
     if (ret == SUCCESS_CODE) {
         g_currentAccountIndex = tempIndex;
         g_lastAccountIndex = tempIndex;
@@ -279,6 +300,11 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
 uint8_t GetCurrentAccountIndex(void)
 {
     return g_currentAccountIndex;
+}
+
+uint8_t GetLastAccountIndex(void)
+{
+    return g_lastAccountIndex;
 }
 
 /// @brief Set last account index.
@@ -337,10 +363,8 @@ void LogoutCurrentAccount(void)
 /// @return err code.
 int32_t GetAccountInfo(uint8_t accountIndex, AccountInfo_t *pInfo)
 {
-    int32_t ret;
     ASSERT(accountIndex <= 2);
-    ret = SE_HmacEncryptRead((uint8_t *)pInfo, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
-    return ret;
+    return SE_HmacEncryptRead((uint8_t *)pInfo, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
 }
 
 /// @brief Erase public info in SE.
@@ -349,6 +373,24 @@ int32_t ErasePublicInfo(void)
 {
     CLEAR_OBJECT(g_publicInfo);
     return SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+}
+
+bool IsPinHashWiped(void)
+{
+    return g_publicInfo.pinHashWiped == PIN_HASH_WIPED_MAGIC;
+}
+
+int32_t SetPinHashWiped(bool wiped)
+{
+    uint8_t oldPinHashWiped = g_publicInfo.pinHashWiped;
+    int32_t ret;
+
+    g_publicInfo.pinHashWiped = wiped ? PIN_HASH_WIPED_MAGIC : 0;
+    ret = SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+    if (ret != SUCCESS_CODE) {
+        g_publicInfo.pinHashWiped = oldPinHashWiped;
+    }
+    return ret;
 }
 
 /// @brief Get slip39 idrandom identifier of the current account.
@@ -559,30 +601,13 @@ int32_t DestroyAccount(uint8_t accountIndex)
 void AccountsDataCheck(void)
 {
     int32_t ret;
-    uint8_t data[32], accountIndex, validCount, i;
+    uint8_t data[32], accountIndex;
 
     for (accountIndex = 0; accountIndex < 3; accountIndex++) {
-        validCount = 0;
         ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
-        if (CheckEntropy(data, 32)) {
-            validCount++;
-        }
-        ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("read pwd hash", ret);
-        if (CheckEntropy(data, 32)) {
-            validCount++;
-        }
-        if (validCount == 1) {
-            printf("illegal data:%d\n", accountIndex);
-            memset_s(data, sizeof(data), 0, sizeof(data));
-            for (i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
-                printf("erase index=%d\n", i);
-                ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
-                CHECK_ERRCODE_BREAK("ds28s60 write", ret);
-            }
-        }
     }
+    CLEAR_ARRAY(data);
 }
 
 #ifndef BTC_ONLY

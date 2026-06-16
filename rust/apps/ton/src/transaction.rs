@@ -80,12 +80,17 @@ mod tests {
         let serial = STANDARD.decode(body).unwrap();
         let tx = parse_transaction(&serial).unwrap();
 
-        assert_eq!(tx.to, "UQBWLOZeOAv7adGnTx-iG7vefsDP5iN8pyYncUiUoJqbRdx9");
-        assert_eq!(tx.amount, "1 Ton");
-        assert_eq!(tx.action, "Ton Transfer");
-        assert!(tx.comment.is_none());
-        assert!(tx.data_view.is_none());
-        assert!(tx.contract_data.is_none());
+        assert_eq!(tx.messages.len(), 1);
+        let message = &tx.messages[0];
+        assert_eq!(
+            message.to,
+            "UQBWLOZeOAv7adGnTx-iG7vefsDP5iN8pyYncUiUoJqbRdx9"
+        );
+        assert_eq!(message.amount, "1 Ton");
+        assert_eq!(message.action, "Ton Transfer");
+        assert!(message.comment.is_none());
+        assert!(message.data_view.is_none());
+        assert!(message.contract_data.is_none());
 
         let tx_json = tx.to_json().unwrap();
         let tx_json_str = tx_json.to_string();
@@ -122,21 +127,26 @@ mod tests {
         let tx = parse_transaction(&serial).unwrap();
 
         // true destination UQBWLOZeOAv7adGnTx-iG7vefsDP5iN8pyYncUiUoJqbRdx9
-        assert_eq!(tx.to, "UQBWLOZeOAv7adGnTx-iG7vefsDP5iN8pyYncUiUoJqbRdx9");
-        assert_eq!(tx.amount, "10000000 Unit");
-        assert_eq!(tx.action, "Jetton Transfer");
-        assert!(tx.comment.is_none());
+        assert_eq!(tx.messages.len(), 1);
+        let message = &tx.messages[0];
+        assert_eq!(
+            message.to,
+            "UQBWLOZeOAv7adGnTx-iG7vefsDP5iN8pyYncUiUoJqbRdx9"
+        );
+        assert_eq!(message.amount, "10000000 Unit");
+        assert_eq!(message.action, "Jetton Transfer");
+        assert!(message.comment.is_none());
 
-        assert!(tx.data_view.is_some());
-        let data_view = tx.data_view.unwrap();
+        assert!(message.data_view.is_some());
+        let data_view = message.data_view.as_ref().unwrap();
         assert!(data_view.contains("\"amount\":\"10000000\""));
         assert!(data_view
             .contains("\"destination\":\"UQBWLOZeOAv7adGnTx-iG7vefsDP5iN8pyYncUiUoJqbRdx9\""));
         assert!(data_view.contains("\"forward_ton_amount\":\"1\""));
 
         // transaction to: EQASODeyhIBbcGlrLvpUJiYjOHRwAZHCBGf1HV5tjKvZVsJb
-        assert!(tx.contract_data.is_some());
-        let contract_data = tx.contract_data.unwrap();
+        assert!(message.contract_data.is_some());
+        let contract_data = message.contract_data.as_ref().unwrap();
         assert!(contract_data.contains("Jetton Wallet Address"));
         assert!(contract_data.contains("EQASODeyhIBbcGlrLvpUJiYjOHRwAZHCBGf1HV5tjKvZVsJb"));
     }
@@ -147,12 +157,17 @@ mod tests {
         let serial = hex::decode(serial).unwrap();
         let tx = parse_transaction(&serial).unwrap();
 
-        assert_eq!(tx.to, "UQAmsPmeM4c2OUo4U-BKdZMaB3HLmfjJh1heQ4s4Qd0Wy7Nc");
-        assert_eq!(tx.amount, "0.001 Ton");
-        assert_eq!(tx.action, "Ton Transfer");
-        assert!(tx.comment.is_some());
+        assert_eq!(tx.messages.len(), 1);
+        let message = &tx.messages[0];
+        assert_eq!(
+            message.to,
+            "UQAmsPmeM4c2OUo4U-BKdZMaB3HLmfjJh1heQ4s4Qd0Wy7Nc"
+        );
+        assert_eq!(message.amount, "0.001 Ton");
+        assert_eq!(message.action, "Ton Transfer");
+        assert!(message.comment.is_some());
 
-        let comment = tx.comment.unwrap();
+        let comment = message.comment.as_ref().unwrap();
         assert!(comment.contains("Keystone hardware wallet"));
         assert!(comment.contains("3 PCI security chips"));
         assert!(comment.contains("Bitcoin and other crypto assets offline"));

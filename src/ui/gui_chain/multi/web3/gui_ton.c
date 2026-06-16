@@ -16,7 +16,7 @@
     if (result != NULL)                                                     \
     {                                                                       \
         free_TransactionParseResult_DisplayTonProof(g_proofParseResult);   \
-        g_parseResult = NULL;                                               \
+        g_proofParseResult = NULL;                                          \
     }
 
 static URParseResult *g_urResult = NULL;
@@ -26,12 +26,13 @@ static void *g_proofParseResult = NULL;
 static bool g_isMulti = false;
 static ViewType g_viewType = ViewTypeUnKnown;
 
-static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
-static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
-static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
-static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
-static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
-static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
+static lv_obj_t *CreateOverviewMessageTitleView(lv_obj_t *parent, size_t index, lv_obj_t *lastView);
+static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonMessage *data, lv_obj_t *lastView);
+static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonMessage *data, lv_obj_t *lastView);
+static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonMessage *data, lv_obj_t *lastView);
+static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonMessage *data, lv_obj_t *lastView);
+static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonMessage *data, lv_obj_t *lastView);
+static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonMessage *data, size_t index, bool showTitle, lv_obj_t *lastView);
 static lv_obj_t *CreateDetailsRawDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView);
 
 void GuiSetTonUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
@@ -122,14 +123,25 @@ void GuiTonTxOverview(lv_obj_t *parent, void *totalData)
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
 
-    lv_obj_t *lastView = CreateOverviewAmountView(parent, txData, NULL);
-    lastView = CreateOverviewActionView(parent, txData, lastView);
-    lastView = CreateOverviewDestinationView(parent, txData, lastView);
-    if (txData->comment != NULL) {
-        lastView = CreateOverviewCommentView(parent, txData, lastView);
-    }
-    if (txData->contract_data != NULL) {
-        lastView = CreateOverviewContractDataView(parent, txData, lastView);
+    lv_obj_t *lastView = NULL;
+    VecFFI_DisplayTonMessage *messages = txData->messages;
+    if (messages != NULL && messages->size > 0) {
+        bool showTitle = messages->size > 1;
+        for (size_t i = 0; i < messages->size; i++) {
+            DisplayTonMessage *message = &messages->data[i];
+            if (showTitle) {
+                lastView = CreateOverviewMessageTitleView(parent, i, lastView);
+            }
+            lastView = CreateOverviewAmountView(parent, message, lastView);
+            lastView = CreateOverviewActionView(parent, message, lastView);
+            lastView = CreateOverviewDestinationView(parent, message, lastView);
+            if (message->comment != NULL) {
+                lastView = CreateOverviewCommentView(parent, message, lastView);
+            }
+            if (message->contract_data != NULL) {
+                lastView = CreateOverviewContractDataView(parent, message, lastView);
+            }
+        }
     }
     lv_obj_update_layout(parent);
 }
@@ -141,16 +153,42 @@ void GuiTonTxRawData(lv_obj_t *parent, void *totalData)
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_t *lastView = NULL;
-    if (txData->data_view != NULL) {
-        lastView = CreateDetailsDataViewView(parent, txData, NULL);
+    VecFFI_DisplayTonMessage *messages = txData->messages;
+    if (messages != NULL && messages->size > 0) {
+        bool showTitle = messages->size > 1;
+        for (size_t i = 0; i < messages->size; i++) {
+            DisplayTonMessage *message = &messages->data[i];
+            if (message->data_view != NULL) {
+                lastView = CreateDetailsDataViewView(parent, message, i, showTitle, lastView);
+            }
+        }
     }
     lastView = CreateDetailsRawDataView(parent, txData, lastView);
 }
 
+static lv_obj_t *CreateOverviewMessageTitleView(lv_obj_t *parent, size_t index, lv_obj_t *lastView)
+{
+    lv_obj_t *container = CreateContentContainer(parent, 408, 62);
+    if (lastView != NULL) {
+        lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
 
-static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+    char title[32] = {0};
+    snprintf_s(title, sizeof(title), "Message %zu", index + 1);
+
+    lv_obj_t *label = GuiCreateTextLabel(container, title);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
+    lv_label_set_recolor(label, true);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    return container;
+}
+
+static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonMessage *data, lv_obj_t *lastView)
 {
     lv_obj_t *container = CreateContentContainer(parent, 408, 106);
+    if (lastView != NULL) {
+        lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("Amount"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
@@ -163,7 +201,7 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTonTransactio
     return container;
 }
 
-static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonMessage *data, lv_obj_t *lastView)
 {
     lv_obj_t *container = CreateContentContainer(parent, 408, 64);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -177,7 +215,7 @@ static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonTransactio
     return container;
 }
 
-static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonMessage *data, lv_obj_t *lastView)
 {
     lv_obj_t *container = CreateContentContainer(parent, 408, 244);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -212,7 +250,7 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonTrans
     return container;
 }
 
-static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonMessage *data, lv_obj_t *lastView)
 {
     lv_obj_t *container = CreateContentContainer(parent, 408, 62);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -245,22 +283,25 @@ static lv_obj_t *CreateOverviewCommentView(lv_obj_t *parent, DisplayTonTransacti
     return container;
 }
 
-static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonMessage *data, lv_obj_t *lastView)
 {
     cJSON *contractData = cJSON_Parse(data->contract_data);
+    if (contractData == NULL) {
+        return lastView;
+    }
     int size = cJSON_GetArraySize(contractData);
     printf("size: %d\n", size);
 
     lv_obj_t *tempLastView = NULL;
 
     for (size_t i = 0; i < size; i++) {
-        cJSON *data = cJSON_GetArrayItem(contractData, i);
-        char* title = cJSON_GetObjectItem(data, "title")->valuestring;
-        char* value = cJSON_GetObjectItem(data, "value")->valuestring;
+        cJSON *item = cJSON_GetArrayItem(contractData, i);
+        char* title = cJSON_GetObjectItem(item, "title")->valuestring;
+        char* value = cJSON_GetObjectItem(item, "value")->valuestring;
 
         //100 = 16(padding top) + 16(padding bottom) + 30(title) + 8(margin) + 30(value one line)
         lv_obj_t *container = CreateContentContainer(parent, 408, 100);
-        lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+        lv_obj_align_to(container, tempLastView == NULL ? lastView : tempLastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
         lv_obj_t *label = GuiCreateIllustrateLabel(container, title);
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
@@ -280,16 +321,25 @@ static lv_obj_t *CreateOverviewContractDataView(lv_obj_t *parent, DisplayTonTran
         tempLastView = container;
     }
 
-    return tempLastView;
+    cJSON_Delete(contractData);
+    return tempLastView == NULL ? lastView : tempLastView;
 }
 
-static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonTransaction *data, lv_obj_t *lastView)
+static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonMessage *data, size_t index, bool showTitle, lv_obj_t *lastView)
 {
     lv_obj_t *container = CreateContentContainer(parent, 408, 244);
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
+    if (lastView != NULL) {
+        lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
+    }
 
-    lv_obj_t *label = GuiCreateTextLabel(container, _("Data View"));
+    char title[32] = {0};
+    if (showTitle) {
+        snprintf_s(title, sizeof(title), "Data View %zu", index + 1);
+    }
+
+    lv_obj_t *label = GuiCreateTextLabel(container, showTitle ? title : _("Data View"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_label_set_recolor(label, true);
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);

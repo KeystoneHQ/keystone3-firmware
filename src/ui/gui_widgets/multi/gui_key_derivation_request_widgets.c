@@ -370,10 +370,17 @@ void GuiKeyDerivationRequestPrevTile()
     lv_obj_set_tile_id(g_keyDerivationTileView.tileView, g_keyDerivationTileView.currentTile, 0, LV_ANIM_OFF);
 }
 
+bool GuiKeyDerivationRequestIsUsbPasswordReady(void)
+{
+    char *password = SecretCacheGetPassword();
+    return g_isUsb && g_isUsbPassWordCheck && password != NULL &&
+           strnlen_s(password, PASSWORD_MAX_LEN) != 0;
+}
+
 void UpdateAndParseHardwareCall(void)
 {
     GuiModelURClear();
-    if (strnlen_s(SecretCacheGetPassword(), PASSWORD_MAX_LEN) != 0 && g_isUsbPassWordCheck) {
+    if (GuiKeyDerivationRequestIsUsbPasswordReady()) {
         if (g_response != NULL) {
             free_Response_QRHardwareCallData(g_response);
             g_response = NULL;
@@ -902,7 +909,7 @@ void HiddenKeyboardAndShowAnimateQR()
             }
             return;
         }
-        HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), PRS_EXPORT_HARDWARE_CALL_SUCCESS);
+        HandleURResultViaUSBAsyncFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), PRS_EXPORT_HARDWARE_CALL_SUCCESS);
         free_ur_encode_result(urResult);
     } else {
         GuiDeleteKeyboardWidget(g_keyboardWidget);

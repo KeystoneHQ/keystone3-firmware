@@ -14,6 +14,7 @@ void GuiSetKeyDerivationRequestData(void *data, void *multiResult, bool is_multi
 void GuiKeyDerivePasswordErrorCount(void *param);
 void UpdateAndParseHardwareCall(void);
 void GuiKeyDeriveUsbPullout(void);
+bool GuiKeyDerivationRequestIsUsbPasswordReady(void);
 
 void HiddenKeyboardAndShowAnimateQR();
 #endif

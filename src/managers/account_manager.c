@@ -597,15 +597,37 @@ int32_t DestroyAccount(uint8_t accountIndex)
 
     return ret;
 }
-
+// wipe device may power lose, check the account status.
+// check whether the account data is valid, if not, erase the account data.
 void AccountsDataCheck(void)
 {
     int32_t ret;
     uint8_t data[32], accountIndex;
 
     for (accountIndex = 0; accountIndex < 3; accountIndex++) {
+        // for se gen1, check each account start
         ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
+         if (CheckEntropy(data, 32)) {
+            validCount++;
+        }
+
+        // for se gen1, check each account key to check validity
+        ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE);
+        CHECK_ERRCODE_BREAK("read key piece", ret);
+        if (CheckEntropy(data, 32)) {
+            validCount++;
+        }
+        // if start disconsistent with keypieces, consider the account data is illegal, erase the account data.
+        if (validCount == 1) {
+            printf("illegal data:%d\n", accountIndex);
+            memset_s(data, sizeof(data), 0, sizeof(data));
+            for (i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
+                printf("erase index=%d\n", i);
+                ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
+                CHECK_ERRCODE_BREAK("ds28s60 write", ret);
+            }
+        }
     }
     CLEAR_ARRAY(data);
 }

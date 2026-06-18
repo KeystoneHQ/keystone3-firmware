@@ -16,6 +16,8 @@
 #include "gui_page.h"
 #include "gui_setting_widgets.h"
 
+#define DICE_ROLLS_256_BIT_MIN_LEN      100
+
 typedef enum {
     CREATE_SHARE_SELECT_SLICE = 0,
     CREATE_SHARE_CUSTODIAN,
@@ -77,6 +79,28 @@ static uint8_t g_entropyMethod;
 static PageWidget_t *g_pageWidget;
 static void SelectParseCntHandler(lv_event_t *e);
 static void SelectCheckBoxHandler(lv_event_t* e);
+
+static bool DiceRollsNotEnoughForWordCnt(uint8_t wordCnt)
+{
+    return (g_entropyMethod & ENTROPY_TYPE_MASK) &&
+           wordCnt == SLIP39_MNEMONIC_33_WORDS &&
+           SecretCacheGetDiceRollsLen() < DICE_ROLLS_256_BIT_MIN_LEN;
+}
+
+static void ReturnToDiceRollsHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_noticeWindow)
+    GuiCloseCurrentWorkingView();
+}
+
+static void ShowDiceRollsNotEnoughHint(void)
+{
+    GUI_DEL_OBJ(g_noticeWindow)
+    g_noticeWindow = GuiCreateConfirmHintBox(&imgWarn, _("dice_roll_100_required_title"),
+                    _("dice_roll_100_required_desc"), NULL, _("OK"), ORANGE_COLOR);
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
+    lv_obj_add_event_cb(btn, ReturnToDiceRollsHandler, LV_EVENT_CLICKED, NULL);
+}
 
 static void ShareUpdateTileHandler(lv_event_t *e)
 {
@@ -386,6 +410,9 @@ static void GuiShareConfirmWidget(lv_obj_t *parent)
 void GuiCreateShareInit(uint8_t entropyMethod)
 {
     g_entropyMethod = entropyMethod;
+    if (DiceRollsNotEnoughForWordCnt(g_selectCnt)) {
+        g_selectCnt = SLIP39_MNEMONIC_20_WORDS;
+    }
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
     lv_obj_t *tileView = GuiCreateTileView(cont);
@@ -647,6 +674,10 @@ static void SelectCheckBoxHandler(lv_event_t* e)
             }
         }
     } else if (!strcmp(currText, _("wallet_phrase_33words"))) {
+        if (DiceRollsNotEnoughForWordCnt(SLIP39_MNEMONIC_33_WORDS)) {
+            ShowDiceRollsNotEnoughHint();
+            return;
+        }
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "33");
         if (g_selectCnt != 33) {
             g_selectCnt = 33;

@@ -20,6 +20,7 @@
 #include "gui_setting_widgets.h"
 
 #define SINGLE_PHRASE_MAX_WORDS         24
+#define DICE_ROLLS_256_BIT_MIN_LEN      100
 typedef enum {
     SINGLE_PHRASE_RANDOM_PHRASE = 0,
     SINGLE_PHRASE_CONFIRM_PHRASE,
@@ -59,6 +60,26 @@ static bool g_isDiceRolls = false;
 
 static void ResetConfirmInput(void);
 static void SelectPhraseCntHandler(lv_event_t *e);
+
+static bool DiceRollsNotEnoughForWordCnt(uint8_t wordCnt)
+{
+    return g_isDiceRolls && wordCnt == 24 && SecretCacheGetDiceRollsLen() < DICE_ROLLS_256_BIT_MIN_LEN;
+}
+
+static void ReturnToDiceRollsHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_noticeHintBox)
+    GuiCloseCurrentWorkingView();
+}
+
+static void ShowDiceRollsNotEnoughHint(void)
+{
+    GUI_DEL_OBJ(g_noticeHintBox)
+    g_noticeHintBox = GuiCreateConfirmHintBox(&imgWarn, _("dice_roll_100_required_title"),
+                      _("dice_roll_100_required_desc"), NULL, _("OK"), ORANGE_COLOR);
+    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeHintBox);
+    lv_obj_add_event_cb(btn, ReturnToDiceRollsHandler, LV_EVENT_CLICKED, NULL);
+}
 
 static void UpdatePhraseHandler(lv_event_t *e)
 {
@@ -217,6 +238,9 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
 {
     g_entropyMethod = entropyMethod;
     g_isDiceRolls = g_entropyMethod & ENTROPY_TYPE_MASK;
+    if (DiceRollsNotEnoughForWordCnt(g_phraseCnt)) {
+        g_phraseCnt = 12;
+    }
     CLEAR_OBJECT(g_singlePhraseTileView);
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
@@ -282,6 +306,10 @@ static void SelectCheckBoxHandler(lv_event_t* e)
             }
         }
     } else if (!strcmp(currText, _("wallet_phrase_24words"))) {
+        if (DiceRollsNotEnoughForWordCnt(24)) {
+            ShowDiceRollsNotEnoughHint();
+            return;
+        }
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, "24");
         SetRightBtnCb(g_pageWidget->navBarWidget, SelectPhraseCntHandler, NULL);
         if (g_phraseCnt != 24) {

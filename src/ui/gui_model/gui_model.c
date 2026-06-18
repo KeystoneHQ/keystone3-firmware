@@ -488,6 +488,10 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
             ret = ERR_GENERAL_FAIL;
             break;
         }
+        if (mnemonicNum == 24 && SecretCacheGetDiceRollsLen() < 100) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
         entropyLen = (mnemonicNum == 24) ? 32 : 16;
         hash = SecretCacheGetDiceRollHash();
         memcpy_s(entropy, sizeof(entropy), hash, entropyLen);
@@ -813,6 +817,9 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     if (isDiceRoll) {
         const uint8_t *dice = SecretCacheGetDiceRollHash();
         if (dice == NULL) goto cleanup;
+        if (slip39->wordCnt == SLIP39_MNEMONIC_33_WORDS && SecretCacheGetDiceRollsLen() < 100) {
+            goto cleanup;
+        }
         memcpy_s(entropy, sizeof(entropy), dice, entropyLen);
     } else {
         const char *pwd = SecretCacheGetNewPassword();

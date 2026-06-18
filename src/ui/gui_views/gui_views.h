@@ -137,6 +137,8 @@ typedef enum {
 
     SIG_FORGET_PASSWORD_SUCCESS = SIG_FINGER_SET_BUTT + 50,
     SIG_FORGET_PASSWORD_FAIL,
+    SIG_FORGET_PASSWORD_PROVE_OWNERSHIP,        // passcode-verify param: prove device ownership (gen-2 multi-wallet forget-pass)
+    SIG_FORGET_PASSWORD_PROVE_OWNERSHIP_PASS,   // result: ownership proven -> advance to set new PIN
     SIG_FORGET_PASSWORD_BUTT,
 
     SIG_WEB_AUTH_CODE_SUCCESS = SIG_FORGET_PASSWORD_BUTT + 50,

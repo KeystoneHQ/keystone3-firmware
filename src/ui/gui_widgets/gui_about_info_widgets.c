@@ -14,6 +14,7 @@
 #include "err_code.h"
 #include "secret_cache.h"
 #include "fingerprint_process.h"
+#include "se_manager.h"
 #include "log.h"
 #ifndef COMPILE_SIMULATOR
 #include "drv_battery.h"
@@ -146,6 +147,9 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     titleLabel = GuiCreateTextLabel(parent, _("about_info_firmware_version"));
     contentLabel = GuiCreateNoticeLabel(parent, versionStr);
     GuiGetFpVersion(&fpVersion[1], sizeof(fpVersion) - 1);
+    // Append the SE generation so the row shows FP firmware + SE version together (e.g. "v1.0.0.0&V2.0").
+    strncat(fpVersion, (GetSeGen() == SE_GEN_2) ? "&v2.0" : "&v1.0",
+            sizeof(fpVersion) - strlen(fpVersion) - 1);
 
     GuiButton_t table[] = {
         {.obj = titleLabel, .align = LV_ALIGN_DEFAULT, .position = {24, 24}},

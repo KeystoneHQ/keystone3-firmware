@@ -7,6 +7,7 @@
 #include "log_print.h"
 #include "stdio.h"
 #include "account_manager.h"
+#include "se_manager.h"
 
 static char *g_passwordCache = NULL;
 static char *g_newPasswordCache = NULL;
@@ -305,4 +306,7 @@ void ClearSecretCache(void)
     memset_s(g_checksumCache, 32, 0, 32);
     memset_s(g_diceRollHashCache, 32, 0, 32);
     g_diceRollsLen = 0;
+
+    // SE-side transient session secrets share the passcode cache's lifetime (gen-2). No-op on gen-1.
+    SE_ClearSessionSecrets();
 }

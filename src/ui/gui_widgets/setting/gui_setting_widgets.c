@@ -75,6 +75,7 @@ void WalletSettingHandler(lv_event_t *e)
 static void CloseToFingerAndPassView(lv_event_t *e)
 {
     GUI_DEL_OBJ(g_noticeWindow)
+    SetPageLockScreen(true);   // change-password flow returned to the sub-menu: re-arm the auto-lock
     for (int i = g_deviceSetTileView.currentTile; i > 2; i--) {
         GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
     }
@@ -392,12 +393,20 @@ void GuiDevSettingPassCode(bool result, uint16_t tileIndex)
         }
         break;
     case SIG_SETTING_CHANGE_PASSWORD:
+        // Hold the auto-lock off across the change-password flow (verify old PIN -> set new -> re-wrap), so an
+        // inactivity lock mid-flow can't tear the view down and interrupt the gen-2 re-wrap. Re-enabled on the
+        // success return (CloseToFingerAndPassView) and as a catch-all in GuiSettingDeInit.
+        SetPageLockScreen(false);
+        GuiResetCheckPasswordCounter();     // fresh per-flow CheckPasswordExisted budget
         walletIndex = DEVICE_SETTING_RESET_PASSCODE_VERIFY;
         break;
     case DEVICE_SETTING_PASSPHRASE_VERIFY:
         walletIndex = DEVICE_SETTING_PASSPHRASE_ENTER;
         break;
     case DEVICE_SETTING_ADD_WALLET:
+        // Limit already gated at the button (GuiAddWalletEntryHandler); PIN verified here. Land on the notice,
+        // which is the add-wallet operation entry: it disables the auto-lock and disarms the gen-2 R-recovery
+        // holder on back. The arm fired during this verify is consumed later by the create-wallet provision.
         ClearSecretCache();
         walletIndex = DEVICE_SETTING_ADD_WALLET_NOTICE;
         break;
@@ -450,6 +459,7 @@ void GuiSettingInit(void)
 
 void GuiSettingDeInit(void)
 {
+    SetPageLockScreen(true);   // catch-all: leaving settings always re-arms the auto-lock (change-password flow)
     GuiShowKeyboardDestruct();
     GUI_DEL_OBJ(g_noticeWindow)
     GUI_DEL_OBJ(g_selectAmountHintbox)

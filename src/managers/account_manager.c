@@ -602,16 +602,16 @@ int32_t DestroyAccount(uint8_t accountIndex)
 void AccountsDataCheck(void)
 {
     int32_t ret;
-    uint8_t data[32], accountIndex;
+    uint8_t data[32], accountIndex, validCount, i;
 
     for (accountIndex = 0; accountIndex < 3; accountIndex++) {
+        validCount = 0;
         // for se gen1, check each account start
         ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
-         if (CheckEntropy(data, 32)) {
+        if (CheckEntropy(data, 32)) {
             validCount++;
         }
-
         // for se gen1, check each account key to check validity
         ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE);
         CHECK_ERRCODE_BREAK("read key piece", ret);

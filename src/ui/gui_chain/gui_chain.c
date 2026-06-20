@@ -1,6 +1,7 @@
 #include "define.h"
 #include "gui_chain.h"
 #include "keystore.h"
+#include "screen_manager.h"
 #include "user_memory.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"

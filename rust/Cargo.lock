@@ -4811,8 +4811,7 @@ dependencies = [
 [[package]]
 name = "ur-registry"
 version = "1.0.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c09637b609337d361420befd9a218a0ebf6923c10a56b8d3c895419973cd71c"
+source = "git+https://github.com/valargroup/keystone-sdk-rust.git?rev=630b7cd4c92a3473b472ecbe8a7030fed16ce2c4#630b7cd4c92a3473b472ecbe8a7030fed16ce2c4"
 dependencies = [
  "bs58",
  "hex",

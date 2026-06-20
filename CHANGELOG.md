@@ -1,3 +1,16 @@
+## Unreleased
+
+**Cypherpunk:**
+
+### What's new
+
+1. Added support for Zcash batch PCZT signing
+
+### Bug Fixes
+
+1. Fixed stalled Zcash signing when response QR generation fails
+
+
 ## 2.4.6 (2026-6-12)
 
 **Web3:**

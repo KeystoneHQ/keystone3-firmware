@@ -352,14 +352,20 @@ void GuiDeriveContextHashWidgetHandleURGenerate(char *data, uint16_t len)
     GuiAnimantingQRCodeFirstUpdate(data, len);
 }
 
-void GuiDeriveContextHashWidgetHandleURGenerateFail(char *message)
+void GuiDeriveContextHashWidgetHandleURGenerateFail(void *param)
 {
     GuiPendingHintBoxRemove();
     GuiAnimatingQRCodeDestroyTimer();
+    UREncodeResult *result = NULL;
+    if (param != NULL) {
+        result = *(UREncodeResult **)param;
+    }
+    char *message = result != NULL && result->error_message != NULL
+                    ? result->error_message
+                    : (char *)_("Invalid derive-context-hash request");
     GuiCreateHardwareCallInvaildParamHintboxWithHandler(
         (char *)_("Invalid Request"),
-        message != NULL ? message : (char *)_("Invalid derive-context-hash request"),
-        CloseInvalidRequestHandler);
+        message, CloseInvalidRequestHandler);
 }
 
 void GuiDeriveContextHashWidgetHandleURUpdate(char *data, uint16_t len)

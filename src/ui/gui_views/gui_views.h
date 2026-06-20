@@ -143,6 +143,7 @@ typedef enum {
     SIG_BACKGROUND_UR_GENERATE_SUCCESS,
     SIG_BACKGROUND_UR_GENERATE_FAIL,
     SIG_BACKGROUND_UR_UPDATE,
+    SIG_BACKGROUND_UR_GENERATE_FAIL,
     SIG_BACKGROUND_UR_BUTT,
 
     SIG_TRANSACTION_CHECK_PASS = SIG_BACKGROUND_UR_BUTT + 50,
@@ -223,6 +224,9 @@ extern GUI_VIEW g_multiAccountsReceiveView;
 extern GUI_VIEW g_keyDerivationRequestView;
 extern GUI_VIEW g_deriveContextHashRequestView;
 extern GUI_VIEW g_ethBatchTxView;
+#ifdef CYPHERPUNK_VERSION
+extern GUI_VIEW g_zcashBatchView;
+#endif
 #endif
 extern GUI_VIEW g_checkDeleteWalletView;
 extern GUI_VIEW g_scanView;

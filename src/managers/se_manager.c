@@ -17,12 +17,15 @@
 #endif
 
 #define SHA256_COUNT                            3
+#define SE_HASH_LEN                             32
 
 static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password);
 static int32_t SetNewKeyPieceToDs28s60(uint8_t accountIndex, uint8_t *piece, const char *password);
 
 static int32_t GetKeyPieceFromAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password);
 static int32_t GetKeyPieceFromDs28s60(uint8_t accountIndex, uint8_t *piece, const char *password);
+static int32_t SetSeHash(uint8_t page, const uint8_t *info);
+static bool VerifySeHash(uint8_t page, uint8_t *info, bool writeExpectedIfEmpty);
 
 static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password)
 {
@@ -228,20 +231,44 @@ int32_t GetFpStateInfo(uint8_t *info)
     return ret;
 }
 
+static int32_t SetSeHash(uint8_t page, const uint8_t *info)
+{
+    uint8_t data[SE_HASH_LEN] = {0};
+    int32_t ret;
+
+    memcpy(data, info, SE_HASH_LEN);
+    ret = SE_HmacEncryptWrite(data, page);
+    CLEAR_ARRAY(data);
+    return ret;
+}
+
+static bool VerifySeHash(uint8_t page, uint8_t *info, bool writeExpectedIfEmpty)
+{
+    uint8_t data[SE_HASH_LEN] = {0};
+    int32_t ret;
+
+    ret = SE_HmacEncryptRead(data, page);
+    if (ret != SUCCESS_CODE) {
+        return false;
+    }
+    if (!memcmp(data, info, SE_HASH_LEN)) {
+        return true;
+    }
+    if (CheckAllFF(data, SE_HASH_LEN) || CheckAllZero(data, SE_HASH_LEN)) {
+        SetSeHash(page, writeExpectedIfEmpty ? info : data);
+        return true;
+    }
+    return false;
+}
+
 /// @brief Set the wallet data hash.
 /// @param[in] index
 /// @param[in] info 32 byte info.
 /// @return err code.
 int32_t SetWalletDataHash(uint8_t index, uint8_t *info)
 {
-    uint8_t data[32] = {0};
-    int32_t ret;
-
     ASSERT(index <= 2);
-
-    memcpy(data, info, 32);
-    ret = SE_HmacEncryptWrite(data, PAGE_WALLET1_PUB_KEY_HASH + index);
-    return ret;
+    return SetSeHash(PAGE_WALLET1_PUB_KEY_HASH + index, info);
 }
 
 /// @brief verify the wallet data hash.
@@ -250,54 +277,32 @@ int32_t SetWalletDataHash(uint8_t index, uint8_t *info)
 /// @return result of verify.
 bool VerifyWalletDataHash(uint8_t index, uint8_t *info)
 {
-    uint8_t data[32];
-    int32_t ret;
-
     ASSERT(index <= 2);
+    return VerifySeHash(PAGE_WALLET1_PUB_KEY_HASH + index, info, false);
+}
 
-    ret = SE_HmacEncryptRead(data, PAGE_WALLET1_PUB_KEY_HASH + index);
-    if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
-        return true;
-    } else {
-        if (CheckAllFF(data, 32) || CheckAllZero(data, 32)) {
-            SetWalletDataHash(index, data);
-            return true;
-        } else {
-            return false;
-        }
-    }
+int32_t SetRsaPrimesHash(uint8_t index, uint8_t *info)
+{
+    ASSERT(index <= 2);
+    return SetSeHash(PAGE_WALLET1_RSA_PRIMES_HASH + index, info);
+}
+
+bool VerifyRsaPrimesHash(uint8_t index, uint8_t *info)
+{
+    ASSERT(index <= 2);
+    return VerifySeHash(PAGE_WALLET1_RSA_PRIMES_HASH + index, info, true);
 }
 
 int32_t SetMultisigDataHash(uint8_t index, uint8_t *info)
 {
-    uint8_t data[32] = {0};
-    int32_t ret;
-
     ASSERT(index <= 2);
-
-    memcpy(data, info, 32);
-    ret = SE_HmacEncryptWrite(data, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_CONFIG_HASH);
-    return ret;
+    return SetSeHash(index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_CONFIG_HASH, info);
 }
 
 bool VerifyMultisigWalletDataHash(uint8_t index, uint8_t *info)
 {
-    uint8_t data[32];
-    int32_t ret;
-
     ASSERT(index <= 2);
-
-    ret = SE_HmacEncryptRead(data, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_CONFIG_HASH);
-    if (ret == SUCCESS_CODE && !memcmp(data, info, 32)) {
-        return true;
-    } else {
-        if (CheckAllFF(data, 32) || CheckAllZero(data, 32)) {
-            SetMultisigDataHash(index, data);
-            return true;
-        } else {
-            return false;
-        }
-    }
+    return VerifySeHash(index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_MULTISIG_CONFIG_HASH, info, false);
 }
 
 /// @brief Get the fingerprint encrypted password which stored in SE.

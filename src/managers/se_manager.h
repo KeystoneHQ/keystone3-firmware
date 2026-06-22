@@ -28,6 +28,7 @@
 #define PAGE_WALLET1_PUB_KEY_HASH                   85
 #define PAGE_WALLET2_PUB_KEY_HASH                   86
 #define PAGE_WALLET3_PUB_KEY_HASH                   87
+#define PAGE_WALLET1_RSA_PRIMES_HASH                36
 
 #define PAGE_PUBLIC_INFO                        88
 
@@ -53,6 +54,8 @@ int32_t SignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signaure);
 int32_t GetDevicePublicKey(uint8_t *pubkey);
 int32_t SetWalletDataHash(uint8_t index, uint8_t *info);
 bool VerifyWalletDataHash(uint8_t index, uint8_t *info);
+int32_t SetRsaPrimesHash(uint8_t index, uint8_t *info);
+bool VerifyRsaPrimesHash(uint8_t index, uint8_t *info);
 int32_t SetMultisigDataHash(uint8_t index, uint8_t *info);
 bool VerifyMultisigWalletDataHash(uint8_t index, uint8_t *info);
 

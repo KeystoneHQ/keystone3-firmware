@@ -1,6 +1,5 @@
 #include "gui_connect_wallet_widgets.h"
 #include "account_public_info.h"
-#include "version.h"
 #include "gui.h"
 #include "gui_button.h"
 #include "gui_hintbox.h"
@@ -359,10 +358,7 @@ UREncodeResult *GuiGetZecData(void)
     data[0].key_text = ufvk;
     data[0].key_name = GetWalletName();
     data[0].index = 0;
-    char firmwareVersion[32];
-    snprintf(firmwareVersion, sizeof(firmwareVersion), "%d.%d.%d",
-             SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-    return get_connect_zcash_wallet_ur(sfp, 32, keys, firmwareVersion);
+    return get_connect_zcash_wallet_ur(sfp, 32, keys);
 }
 
 void GuiPrepareArConnectWalletView(void)

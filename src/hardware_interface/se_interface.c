@@ -18,6 +18,9 @@ int32_t SE_EncryptWrite(uint8_t slot, uint8_t block, const uint8_t *data)
 int32_t SE_Kdf(uint8_t slot, const uint8_t *authKey, const uint8_t *inData, uint32_t inLen, uint8_t *outData)
 {
     int32_t ret = Atecc608bKdf(slot, authKey, inData, inLen, outData);
+    if (ret == ATCA_CHECKMAC_VERIFY_FAILED) {
+        return ret;
+    }
     ASSERT(ret == ATCA_SUCCESS);
     return SUCCESS_CODE;
 }

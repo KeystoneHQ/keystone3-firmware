@@ -55,6 +55,7 @@ static uint8_t g_fpErrorCount = 0;
 static LOCK_SCREEN_PURPOSE_ENUM g_purpose = LOCK_SCREEN_PURPOSE_UNLOCK;
 static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_LoadingView = NULL;
+static lv_obj_t *g_verifyLoadingCont = NULL;
 static lv_timer_t *g_countDownTimer;
 static int8_t g_countDown = 0;
 static bool g_canDismissLoading = false;
@@ -190,8 +191,41 @@ bool GuiLockScreenIsTop(void)
     return false;
 }
 
+static bool GuiLockScreenIsVerifyLoadingParam(void *param)
+{
+    if (param == NULL) {
+        return false;
+    }
+    uint16_t signal = *(uint16_t *)param;
+    return signal == SIG_LOCK_VIEW_VERIFY_PIN || signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS;
+}
+
+void GuiLockScreenShowVerifyLoading(void *param)
+{
+    if (!GuiLockScreenIsVerifyLoadingParam(param) || !GuiLockScreenIsTop()) {
+        return;
+    }
+    if (g_verifyLoadingCont != NULL && lv_obj_is_valid(g_verifyLoadingCont)) {
+        return;
+    }
+
+    g_verifyLoadingCont = GuiCreateAnimHintBox(480, 278, 82);
+    lv_obj_t *title = GuiCreateTextLabel(g_verifyLoadingCont, _("seed_check_wait_verify"));
+    lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -76);
+    lv_obj_add_flag(g_verifyLoadingCont, LV_OBJ_FLAG_CLICKABLE);
+}
+
+void GuiLockScreenHideVerifyLoading(void)
+{
+    if (g_verifyLoadingCont != NULL && lv_obj_is_valid(g_verifyLoadingCont)) {
+        GuiDeleteAnimHintBox();
+    }
+    g_verifyLoadingCont = NULL;
+}
+
 void GuiLockScreenHidden(void)
 {
+    GuiLockScreenHideVerifyLoading();
     if (g_pageWidget->page != NULL) {
         lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     }
@@ -207,6 +241,7 @@ void OpenForgetPasswordHandler(lv_event_t *e)
 
 void GuiLockScreenTurnOn(void *param)
 {
+    GuiLockScreenHideVerifyLoading();
     uint16_t *single = param;
     if (*single == SIG_LOCK_VIEW_VERIFY_PIN || *single == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
         GuiNvsBarSetWalletIcon(NULL);
@@ -236,6 +271,7 @@ void GuiLockScreenShuffleNumKeyBoardMap(void)
 void GuiLockScreenTurnOff(void)
 {
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
+    GuiLockScreenHideVerifyLoading();
     lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     GuiEnterPassCodeStatus(g_verifyLock, true);
 
@@ -263,6 +299,7 @@ void GuiUpdateOldAccountIndex(void)
 
 void GuiLockScreenToHome(void)
 {
+    GuiLockScreenHideVerifyLoading();
     lv_obj_add_flag(g_pageWidget->page, LV_OBJ_FLAG_HIDDEN);
     GuiModeGetWalletDesc();
     GuiEnterPassCodeStatus(g_verifyLock, true);
@@ -277,6 +314,7 @@ void GuiLockScreenTurnOffHandler(lv_event_t *e)
 
 void GuiLockScreenPassCode(bool en)
 {
+    GuiLockScreenHideVerifyLoading();
     GuiEnterPassCodeStatus(g_verifyLock, en);
     if (en) {
         g_fpErrorCount = 0;

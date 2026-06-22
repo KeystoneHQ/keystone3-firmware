@@ -39,6 +39,7 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiLockScreenInit(param);
         break;
     case GUI_EVENT_OBJ_DEINIT:
+        GuiLockScreenHideVerifyLoading();
         break;
     case SIG_INIT_SDCARD_CHANGE:
         rcvValue = *(uint32_t *)param;
@@ -97,6 +98,7 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
         GuiLockScreenPasscodeSwitch(false);
         break;
     case SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH:
+        GuiLockScreenHideVerifyLoading();
         GuiLockScreenWipeDevice();
         break;
     case SIG_START_GENERATE_XPUB:
@@ -127,4 +129,3 @@ GUI_VIEW g_lockView = {
     .optimization = false,
     .pEvtHandler = GuiLockViewEventProcess,
 };
-

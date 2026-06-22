@@ -52,7 +52,8 @@ int32_t GetAccountEntropy(uint8_t accountIndex, uint8_t *entropy, uint8_t *entro
 int32_t GetAccountSeed(uint8_t accountIndex, uint8_t *seed, const char *password);
 int32_t GetAccountSlip39Ems(uint8_t accountIndex, uint8_t *slip39Ems, const char *password);
 int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char *password);
-int32_t VerifyPassword(uint8_t *accountIndex, const char *password);
+int32_t FindAccountByPassword(uint8_t *matchedAccountIndex, const char *password);
+int32_t VerifyAccountPassword(uint8_t accountIndex, const char *password);
 int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len);
 bool CheckPassphraseSame(uint8_t accountIndex, const char *passphrase);
 char* GetPassphrase(uint8_t accountIndex);

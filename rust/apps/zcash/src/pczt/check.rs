@@ -145,43 +145,38 @@ fn check_transparent_input<P: consensus::Parameters>(
     input: &transparent::pczt::Input,
 ) -> Result<bool, ZcashError> {
     let script = input.script_pubkey().clone();
-    //p2sh transparent input is not supported yet
-    match TransparentAddress::from_script_from_chain(&script) {
-        Some(TransparentAddress::PublicKeyHash(hash)) => {
-            // 1: find my derivation
-            let my_derivation = input
-                .bip32_derivation()
-                .iter()
-                .find(|(_pubkey, derivation)| seed_fingerprint == derivation.seed_fingerprint());
-            match my_derivation {
-                None => {
-                    //not my input, pass
-                    Ok(false)
-                }
-                Some((pubkey, derivation)) => {
-                    // 2: derive my pubkey
-                    super::check_transparent_derivation(
-                        params,
-                        account_index,
-                        xpub,
-                        pubkey,
-                        derivation,
-                        "input",
-                    )?;
-                    // 3: check script pubkey
-                    if hash[..] != Ripemd160::digest(Sha256::digest(pubkey))[..] {
-                        return Err(ZcashError::InvalidPczt(
-                            "transparent input script pubkey mismatch".to_string(),
-                        ));
-                    }
-                    Ok(true)
-                }
-            }
-        }
-        _ => Err(ZcashError::InvalidPczt(
+    // p2sh transparent input is not supported yet
+    let Some(TransparentAddress::PublicKeyHash(hash)) =
+        TransparentAddress::from_script_from_chain(&script)
+    else {
+        return Err(ZcashError::InvalidPczt(
             "transparent input script pubkey is not a public key hash".to_string(),
-        )),
-    }
+        ));
+    };
+
+    // 1: find my derivation (none means the input isn't ours, pass)
+    input
+        .bip32_derivation()
+        .iter()
+        .find(|(_pubkey, derivation)| seed_fingerprint == derivation.seed_fingerprint())
+        .map_or(Ok(false), |(pubkey, derivation)| {
+            // 2: derive my pubkey
+            super::check_transparent_derivation(
+                params,
+                account_index,
+                xpub,
+                pubkey,
+                derivation,
+                "input",
+            )?;
+            // 3: check script pubkey
+            if hash[..] != Ripemd160::digest(Sha256::digest(pubkey))[..] {
+                return Err(ZcashError::InvalidPczt(
+                    "transparent input script pubkey mismatch".to_string(),
+                ));
+            }
+            Ok(true)
+        })
 }
 
 fn check_transparent_output<P: consensus::Parameters>(

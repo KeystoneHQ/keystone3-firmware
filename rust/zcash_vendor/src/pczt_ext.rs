@@ -190,6 +190,7 @@ fn hash_transparent_tx_id(t_digests: Option<TransparentDigests>) -> Hash {
 
 fn digest_orchard(pczt: &Pczt) -> Hash {
     let mut h = hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION);
+
     let mut ch = hasher(ZCASH_ORCHARD_ACTIONS_COMPACT_HASH_PERSONALIZATION);
     let mut mh = hasher(ZCASH_ORCHARD_ACTIONS_MEMOS_HASH_PERSONALIZATION);
     let mut nh = hasher(ZCASH_ORCHARD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION);
@@ -221,6 +222,7 @@ fn digest_orchard(pczt: &Pczt) -> Hash {
     h.update(&value_balance.to_le_bytes());
 
     h.update(pczt.orchard().anchor());
+
     h.finalize()
 }
 
@@ -371,9 +373,10 @@ fn transparent_sig_digest(pczt: &Pczt, input_info: Option<SignableInput>) -> Has
             ch.update(input.prevout_txid());
             ch.update(&input.prevout_index().to_le_bytes());
             ch.update(&signable_input.value().to_i64_le_bytes());
-            let len = signable_input.script_pubkey().0.len();
+            let script_pubkey = &signable_input.script_pubkey().0 .0;
+            let len = script_pubkey.len();
             ch.update(&[len as u8]);
-            ch.update(&signable_input.script_pubkey().0);
+            ch.update(script_pubkey);
             ch.update(&input.sequence().unwrap_or(0xffffffff).to_le_bytes());
         }
         let txin_sig_digest = ch.finalize();
@@ -433,6 +436,7 @@ where
 pub fn sign_orchard<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,
+    T::Error: From<pczt::orchard::BundleParseError>,
     T::Error: From<orchard::pczt::ParseError>,
     T::Error: From<transparent::pczt::ParseError>,
 {
@@ -460,11 +464,42 @@ where
 #[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
+    use alloc::vec;
+
     use pczt::Pczt;
-    use transparent::{address::Script, sighash::SighashType};
+    use transparent::{
+        address::Script,
+        bundle::{Authorized, Bundle, OutPoint, TxIn},
+        sighash::SighashType,
+    };
     use zcash_protocol::value::Zatoshis;
 
     use super::*;
+
+    fn script_from_bytes(script_pubkey: &[u8]) -> Script {
+        let mut encoded = vec![script_pubkey.len() as u8];
+        encoded.extend_from_slice(script_pubkey);
+        Script::read(&encoded[..]).unwrap()
+    }
+
+    fn transparent_bundle_for_signable_inputs(pczt: &Pczt) -> Bundle<Authorized> {
+        Bundle {
+            vin: pczt
+                .transparent()
+                .inputs()
+                .iter()
+                .map(|input| {
+                    TxIn::from_parts(
+                        OutPoint::new(*input.prevout_txid(), *input.prevout_index()),
+                        Script::default(),
+                        input.sequence().unwrap_or(0xffffffff),
+                    )
+                })
+                .collect(),
+            vout: vec![],
+            authorization: Authorized,
+        }
+    }
 
     #[test]
     fn test_basic_functions_orchard2orchard() {
@@ -542,27 +577,32 @@ mod tests {
             "fea284c0b63a4de21c2f660587b2e04461f7089d6c9f8c2e60a3caed77c037ae"
         );
 
-        let script_code = Script(pczt.transparent().inputs()[0].script_pubkey().clone());
+        let transparent_bundle = transparent_bundle_for_signable_inputs(&pczt);
+        let script_code = script_from_bytes(pczt.transparent().inputs()[0].script_pubkey());
 
         let signable_input = SignableInput::from_parts(
+            &transparent_bundle,
             SighashType::parse(SIGHASH_ALL).unwrap(),
             0,
             &script_code,
             &script_code,
             Zatoshis::from_u64(*pczt.transparent().inputs()[0].value()).unwrap(),
-        );
+        )
+        .unwrap();
         assert_eq!(
             hex::encode(shielded_sig_commitment(&pczt, 0, Some(signable_input)).as_bytes()),
             "a2865e1c7f3de700eee25fe233da6bbdab267d524bc788998485359441ad3140"
         );
-        let script_code = Script(pczt.transparent().inputs()[1].script_pubkey().clone());
+        let script_code = script_from_bytes(pczt.transparent().inputs()[1].script_pubkey());
         let signable_input2 = SignableInput::from_parts(
+            &transparent_bundle,
             SighashType::parse(SIGHASH_ALL).unwrap(),
             1,
             &script_code,
             &script_code,
             Zatoshis::from_u64(*pczt.transparent().inputs()[1].value()).unwrap(),
-        );
+        )
+        .unwrap();
         assert_eq!(
             hex::encode(shielded_sig_commitment(&pczt, 0, Some(signable_input2)).as_bytes()),
             "9c10678495dfdb1f29beb6583d652bc66cb4e3d27d24d75fb6922f230e9953e8"

@@ -23,12 +23,24 @@ fn main() {
         let line = line.trim();
         if let Some(val) = line.strip_prefix("#define SOFTWARE_VERSION_MAJOR ") {
             if !val.starts_with('(') {
-                major = Some(val.trim().parse().expect("SOFTWARE_VERSION_MAJOR is not a valid u8"));
+                major = Some(
+                    val.trim()
+                        .parse()
+                        .expect("SOFTWARE_VERSION_MAJOR is not a valid u8"),
+                );
             }
         } else if let Some(val) = line.strip_prefix("#define SOFTWARE_VERSION_MINOR ") {
-            minor = Some(val.trim().parse().expect("SOFTWARE_VERSION_MINOR is not a valid u8"));
+            minor = Some(
+                val.trim()
+                    .parse()
+                    .expect("SOFTWARE_VERSION_MINOR is not a valid u8"),
+            );
         } else if let Some(val) = line.strip_prefix("#define SOFTWARE_VERSION_BUILD ") {
-            build = Some(val.trim().parse().expect("SOFTWARE_VERSION_BUILD is not a valid u8"));
+            build = Some(
+                val.trim()
+                    .parse()
+                    .expect("SOFTWARE_VERSION_BUILD is not a valid u8"),
+            );
         }
     }
 

@@ -3,21 +3,13 @@ pub mod parse;
 pub mod sign;
 pub mod structs;
 
-use alloc::{format, string::ToString, vec::Vec};
-// Shared imports consumed by the not-yet-refactored `parse`/`sign` submodules via `use super::*`.
-// These move into those modules when they are refactored in a later commit.
-use keystore::algorithms::secp256k1::get_public_key_by_seed;
-use keystore::algorithms::zcash::calculate_seed_fingerprint;
-#[cfg(feature = "cypherpunk")]
-use keystore::algorithms::zcash::sign_message_orchard;
+use alloc::{format, string::ToString};
 use zcash_vendor::{
     pczt::Pczt,
     transparent,
     zcash_protocol::value::ZatBalance,
     zip32,
 };
-#[cfg(feature = "cypherpunk")]
-use zcash_vendor::orchard;
 
 use crate::errors::ZcashError;
 

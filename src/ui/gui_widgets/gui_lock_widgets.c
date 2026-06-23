@@ -220,7 +220,6 @@ void GuiLockScreenShowVerifyLoading(void *param)
         return;
     }
 
-    FpCancelCurOperate();
     g_verifyLoadingCont = GuiCreateAnimHintBox(480, 278, 82);
     lv_obj_t *title = GuiCreateTextLabel(g_verifyLoadingCont, _("seed_check_wait_verify"));
     lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -76);

@@ -1,6 +1,6 @@
 // checking logic for PCZT
 
-use alloc::string::ToString;
+use alloc::{format, string::ToString, vec};
 
 use crate::errors::ZcashError;
 
@@ -32,7 +32,7 @@ fn map_orchard_verifier_error(
 ) -> ZcashError {
     match error {
         pczt::roles::verifier::OrchardError::Custom(error) => error,
-        error => ZcashError::InvalidDataError(alloc::format!("{error:?}")),
+        error => ZcashError::InvalidDataError(format!("{error:?}")),
     }
 }
 
@@ -106,7 +106,7 @@ pub fn check_pczt_transparent<P: consensus::Parameters>(
         })
         .map_err(|e| match e {
             pczt::roles::verifier::TransparentError::Custom(e) => e,
-            _e => ZcashError::InvalidDataError(alloc::format!("{:?}", _e)),
+            _e => ZcashError::InvalidDataError(format!("{:?}", _e)),
         })?;
     Ok(has_my_input)
 }
@@ -326,7 +326,7 @@ fn check_shielded_bundle<P: consensus::Parameters>(
 
     match calculated_value_balance {
         Ok(value_balance) if &value_balance == bundle.value_sum() => Ok(()),
-        _ => Err(ZcashError::InvalidPczt(alloc::format!(
+        _ => Err(ZcashError::InvalidPczt(format!(
             "invalid {pool_label} bundle value balance"
         ))),
     }
@@ -346,7 +346,7 @@ fn check_action<P: consensus::Parameters>(
     // Check `cv_net` first so we know that the `value` fields for both the spend and the
     // output are present and correct.
     action.verify_cv_net().map_err(|e| {
-        ZcashError::InvalidPczt(alloc::format!(
+        ZcashError::InvalidPczt(format!(
             "invalid cv_net in {pool_label} action: {e:?}"
         ))
     })?;
@@ -401,12 +401,12 @@ fn check_action_spend<P: consensus::Parameters>(
 
     if let Some(expected_fvk) = can_verify_nf_rk {
         spend.verify_nullifier(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(alloc::format!(
+            ZcashError::InvalidPczt(format!(
                 "invalid {pool_label} action nullifier: {e:?}"
             ))
         })?;
         spend.verify_rk(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(alloc::format!("invalid {pool_label} action rk: {e:?}"))
+            ZcashError::InvalidPczt(format!("invalid {pool_label} action rk: {e:?}"))
         })?;
     }
 
@@ -435,7 +435,7 @@ fn check_action_output<P: consensus::Parameters>(
         .output()
         .verify_note_commitment(action.spend())
         .map_err(|e| {
-            ZcashError::InvalidPczt(alloc::format!("invalid {pool_label} action cmx: {e:?}"))
+            ZcashError::InvalidPczt(format!("invalid {pool_label} action cmx: {e:?}"))
         })?;
 
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
@@ -447,7 +447,7 @@ fn check_action_output<P: consensus::Parameters>(
         .transparent()
         .map(|k| orchard::keys::OutgoingViewingKey::from(k.internal_ovk().as_bytes()));
 
-    let mut keys = alloc::vec![(Some(external_ovk), false), (Some(internal_ovk), true)];
+    let mut keys = vec![(Some(external_ovk), false), (Some(internal_ovk), true)];
     if let Some(ovk) = transparent_internal_ovk {
         keys.push((Some(ovk), true));
     }
@@ -460,7 +460,7 @@ fn check_action_output<P: consensus::Parameters>(
                 super::parse::validate_orchard_user_address(params, user_address, &address)?;
             }
             if is_internal_ovk && !is_wallet_orchard_address(fvk, &address) {
-                return Err(ZcashError::InvalidPczt(alloc::format!(
+                return Err(ZcashError::InvalidPczt(format!(
                     "{pool_label} output was recoverable with an internal OVK but does not belong to this wallet"
                 )));
             }

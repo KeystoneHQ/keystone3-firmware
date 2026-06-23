@@ -42,7 +42,9 @@ pub fn check_pczt_orchard<P: consensus::Parameters>(
     pczt: &Pczt,
 ) -> Result<(), ZcashError> {
     super::validate_supported_pczt(pczt)?;
-    Verifier::new(pczt.clone())
+    #[cfg(zcash_unstable = "nu6.3")]
+    let should_process_ironwood = super::pczt_should_process_ironwood(pczt);
+    let verifier = Verifier::new(pczt.clone())
         .with_orchard(|bundle| {
             check_orchard(
                 params,
@@ -56,6 +58,23 @@ pub fn check_pczt_orchard<P: consensus::Parameters>(
             Ok(())
         })
         .map_err(map_orchard_verifier_error)?;
+    #[cfg(zcash_unstable = "nu6.3")]
+    if should_process_ironwood {
+        verifier
+            .with_ironwood(|bundle| {
+                check_orchard(
+                    params,
+                    seed_fingerprint,
+                    account_index,
+                    ufvk,
+                    bundle,
+                    "Ironwood",
+                )
+                .map_err(pczt::roles::verifier::OrchardError::Custom)?;
+                Ok(())
+            })
+            .map_err(map_orchard_verifier_error)?;
+    }
     Ok(())
 }
 
@@ -358,9 +377,13 @@ fn check_action_spend<P: consensus::Parameters>(
 ) -> Result<(), ZcashError> {
     // We can only verify the `nullifier` and `rk` fields of a spend if we know its FVK.
     let can_verify_nf_rk = match (spend.value(), spend.fvk(), spend.zip32_derivation()) {
-        // If the spend is marked as matching the accounts's FVK, verify with it.
-        (_, _, Some(zip32_derivation))
-            if zip32_derivation.seed_fingerprint() == seed_fingerprint
+        // Dummy notes use randomly-generated FVKs, so if one is already present then
+        // don't validate using the account's FVK.
+        (Some(value), Some(_), _) if value.inner() == 0 => Some(None),
+        // If the spend is marked as matching the selected account's FVK, verify with it.
+        (Some(value), _, Some(zip32_derivation))
+            if value.inner() != 0
+                && zip32_derivation.seed_fingerprint() == seed_fingerprint
                 && zip32_derivation.derivation_path()
                     == &[
                         zip32::ChildIndex::hardened(32),
@@ -370,10 +393,7 @@ fn check_action_spend<P: consensus::Parameters>(
         {
             Some(Some(fvk))
         }
-        // Dummy notes use randomly-generated FVKs, so if one is already present then
-        // don't validate using the account's FVK.
-        (Some(value), Some(_), _) if value.inner() == 0 => Some(None),
-        // Don't verify `nullifier` or `rk` for any other spends.
+        // Don't verify `nullifier` or `rk` for spends that lack value data.
         _ => None,
     };
 
@@ -433,6 +453,9 @@ fn check_action_output<P: consensus::Parameters>(
         if let Some((_, address, _)) =
             super::parse::decode_output_enc_ciphertext(action, vk.as_ref())?
         {
+            if let Some(user_address) = action.output().user_address() {
+                super::parse::validate_orchard_user_address(params, user_address, &address)?;
+            }
             if is_internal_ovk && !is_wallet_orchard_address(fvk, &address) {
                 return Err(ZcashError::InvalidPczt(alloc::format!(
                     "{pool_label} output was recoverable with an internal OVK but does not belong to this wallet"
@@ -440,6 +463,12 @@ fn check_action_output<P: consensus::Parameters>(
             }
             break;
         }
+    }
+
+    if let (Some(user_address), Some(recipient)) =
+        (action.output().user_address(), action.output().recipient())
+    {
+        super::parse::validate_orchard_user_address(params, user_address, recipient)?;
     }
 
     Ok(())

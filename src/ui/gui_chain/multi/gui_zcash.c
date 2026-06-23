@@ -85,6 +85,10 @@ void GuiZcashOverview(lv_obj_t *parent, void *totalData)
     if (g_zcashData->orchard != NULL) {
         last_view = GuiZcashOverviewShielded(container, last_view, g_zcashData->orchard, _("Orchard"));
     }
+
+    if (g_zcashData->ironwood != NULL) {
+        last_view = GuiZcashOverviewShielded(container, last_view, g_zcashData->ironwood, _("Ironwood"));
+    }
 }
 
 static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_view)

@@ -139,11 +139,12 @@ fn transparent_account_pubkey_from_xpub(
 fn reject_legacy_check_unsupported_pczt(pczt: &Pczt) -> Result<()> {
     #[cfg(zcash_unstable = "nu6.3")]
     {
-        // The legacy multi-coins check path only verifies transparent data.
-        // Reject V6/Ironwood PCZTs so check, parse, and sign enforce the same boundary.
+        // The legacy multi-coins check path only verifies transparent data. Reject any
+        // shielded (Sapling/Orchard/Ironwood) or V6 PCZT so check, parse, and sign
+        // enforce the same transparent-only boundary.
         if pczt::pczt_requires_cypherpunk_support(pczt) {
             return Err(ZcashError::InvalidPczt(
-                "V6 or Ironwood PCZTs require cypherpunk checking support".to_string(),
+                "Shielded or V6 PCZTs require cypherpunk checking support".to_string(),
             ));
         }
     }
@@ -318,7 +319,7 @@ mod legacy_tests {
         assert!(matches!(
             result,
             Err(ZcashError::InvalidPczt(msg))
-                if msg == "V6 or Ironwood PCZTs require cypherpunk checking support"
+                if msg == "Shielded or V6 PCZTs require cypherpunk checking support"
         ));
     }
 }

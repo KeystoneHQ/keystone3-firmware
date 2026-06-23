@@ -145,10 +145,10 @@ fn reject_legacy_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     #[cfg(zcash_unstable = "nu6.3")]
     {
         // The legacy helper below carries the pre-NU6.3 transparent sighash implementation.
-        // It must not be used for V6/Ironwood PCZTs.
+        // It must not be used for shielded (Sapling/Orchard/Ironwood) or V6 PCZTs.
         if super::pczt_requires_cypherpunk_support(pczt) {
             return Err(ZcashError::SigningError(
-                "V6 or Ironwood PCZTs require cypherpunk signing support".to_string(),
+                "Shielded or V6 PCZTs require cypherpunk signing support".to_string(),
             ));
         }
     }
@@ -699,7 +699,7 @@ mod legacy_tests {
         assert!(matches!(
             result,
             Err(ZcashError::SigningError(msg))
-                if msg == "V6 or Ironwood PCZTs require cypherpunk signing support"
+                if msg == "Shielded or V6 PCZTs require cypherpunk signing support"
         ));
     }
 }

@@ -380,11 +380,12 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
 fn reject_legacy_parse_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     #[cfg(zcash_unstable = "nu6.3")]
     {
-        // The legacy multi-coins parser only displays transparent data. Reject
-        // V6/Ironwood PCZTs instead of showing an incomplete transaction review.
+        // The legacy multi-coins parser only displays transparent data. Reject any
+        // shielded (Sapling/Orchard/Ironwood) or V6 PCZT instead of showing an
+        // incomplete transaction review.
         if super::pczt_requires_cypherpunk_support(pczt) {
             return Err(ZcashError::InvalidPczt(
-                "V6 or Ironwood PCZTs require cypherpunk parsing support".to_string(),
+                "Shielded or V6 PCZTs require cypherpunk parsing support".to_string(),
             ));
         }
     }
@@ -793,7 +794,7 @@ mod legacy_tests {
         assert!(matches!(
             result,
             Err(ZcashError::InvalidPczt(msg))
-                if msg == "V6 or Ironwood PCZTs require cypherpunk parsing support"
+                if msg == "Shielded or V6 PCZTs require cypherpunk parsing support"
         ));
     }
 }

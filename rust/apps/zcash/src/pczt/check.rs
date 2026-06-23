@@ -1,11 +1,14 @@
 // checking logic for PCZT
 
-use alloc::{string::ToString, vec};
+use alloc::string::ToString;
 
-use super::*;
+use crate::errors::ZcashError;
 
 #[cfg(feature = "cypherpunk")]
-use orchard::{keys::FullViewingKey, value::ValueSum, Address};
+use zcash_vendor::{
+    orchard::{self, keys::FullViewingKey, value::ValueSum, Address},
+    zcash_keys::keys::UnifiedFullViewingKey,
+};
 
 use zcash_vendor::{
     pczt::{self, roles::verifier::Verifier, Pczt},
@@ -13,32 +16,21 @@ use zcash_vendor::{
     sha2::{Digest, Sha256},
     transparent::{self, address::TransparentAddress, keys::AccountPubKey},
     zcash_address::{ToAddress, ZcashAddress},
-    zcash_protocol::{
-        consensus::{self, NetworkConstants},
-        value::ZatBalance,
-    },
+    zcash_protocol::consensus::{self},
     zip32,
 };
 
-fn validate_sapling_bundle_consistency(pczt: &Pczt) -> Result<(), ZcashError> {
-    let value_balance = (*pczt.sapling().value_sum())
-        .try_into()
-        .ok()
-        .and_then(|v| ZatBalance::from_i64(v).ok())
-        .ok_or(ZcashError::InvalidPczt(
-            "sapling value_sum is invalid".to_string(),
-        ))?;
-    let sapling_value_sum: i64 = value_balance.into();
-    let has_sapling_bundle =
-        !pczt.sapling().spends().is_empty() || !pczt.sapling().outputs().is_empty();
+#[cfg(feature = "cypherpunk")]
+use zcash_vendor::zcash_protocol::consensus::NetworkConstants;
 
-    if !has_sapling_bundle && sapling_value_sum != 0 {
-        return Err(ZcashError::InvalidPczt(
-            "sapling value_sum must be zero when Sapling bundle is empty".to_string(),
-        ));
+#[cfg(feature = "cypherpunk")]
+fn map_orchard_verifier_error(
+    error: pczt::roles::verifier::OrchardError<ZcashError>,
+) -> ZcashError {
+    match error {
+        pczt::roles::verifier::OrchardError::Custom(error) => error,
+        error => ZcashError::InvalidDataError(alloc::format!("{error:?}")),
     }
-
-    Ok(())
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -49,13 +41,21 @@ pub fn check_pczt_orchard<P: consensus::Parameters>(
     ufvk: &UnifiedFullViewingKey,
     pczt: &Pczt,
 ) -> Result<(), ZcashError> {
-    validate_sapling_bundle_consistency(pczt)?;
+    super::validate_supported_pczt(pczt)?;
     Verifier::new(pczt.clone())
         .with_orchard(|bundle| {
-            check_orchard(params, seed_fingerprint, account_index, ufvk, bundle)
-                .map_err(pczt::roles::verifier::OrchardError::Custom)
+            check_orchard(
+                params,
+                seed_fingerprint,
+                account_index,
+                ufvk,
+                bundle,
+                "Orchard",
+            )
+            .map_err(pczt::roles::verifier::OrchardError::Custom)?;
+            Ok(())
         })
-        .map_err(|e| ZcashError::InvalidDataError(alloc::format!("{e:?}")))?;
+        .map_err(map_orchard_verifier_error)?;
     Ok(())
 }
 
@@ -66,11 +66,12 @@ pub fn check_pczt_transparent<P: consensus::Parameters>(
     xpub: &AccountPubKey,
     pczt: &Pczt,
     check_sfp: bool,
-) -> Result<(), ZcashError> {
-    validate_sapling_bundle_consistency(pczt)?;
+) -> Result<bool, ZcashError> {
+    super::validate_supported_pczt(pczt)?;
+    let mut has_my_input = false;
     Verifier::new(pczt.clone())
         .with_transparent(|bundle| {
-            check_transparent(
+            has_my_input = check_transparent(
                 params,
                 seed_fingerprint,
                 account_index,
@@ -78,13 +79,14 @@ pub fn check_pczt_transparent<P: consensus::Parameters>(
                 bundle,
                 check_sfp,
             )
-            .map_err(pczt::roles::verifier::TransparentError::Custom)
+            .map_err(pczt::roles::verifier::TransparentError::Custom)?;
+            Ok(())
         })
         .map_err(|e| match e {
             pczt::roles::verifier::TransparentError::Custom(e) => e,
             _e => ZcashError::InvalidDataError(alloc::format!("{:?}", _e)),
         })?;
-    Ok(())
+    Ok(has_my_input)
 }
 
 fn check_transparent<P: consensus::Parameters>(
@@ -94,7 +96,7 @@ fn check_transparent<P: consensus::Parameters>(
     xpub: &AccountPubKey,
     bundle: &transparent::pczt::Bundle,
     check_sfp: bool,
-) -> Result<(), ZcashError> {
+) -> Result<bool, ZcashError> {
     let mut has_my_input = false;
     bundle.inputs().iter().try_for_each(|input| {
         let _has = check_transparent_input(params, seed_fingerprint, account_index, xpub, input)?;
@@ -110,7 +112,7 @@ fn check_transparent<P: consensus::Parameters>(
     if check_sfp && !has_my_input {
         return Err(ZcashError::PcztNoMyInputs);
     }
-    Ok(())
+    Ok(has_my_input)
 }
 
 fn check_transparent_input<P: consensus::Parameters>(
@@ -136,30 +138,23 @@ fn check_transparent_input<P: consensus::Parameters>(
                 }
                 Some((pubkey, derivation)) => {
                     // 2: derive my pubkey
-                    let target = xpub
-                        .derive_pubkey_at_bip32_path(
+                    let belongs_to_selected_account =
+                        super::transparent_derivation_matches_selected_account(
                             params,
+                            seed_fingerprint,
                             account_index,
-                            derivation.derivation_path(),
-                        )
-                        .map_err(|_| {
-                            ZcashError::InvalidPczt(
-                                "transparent input bip32 derivation path invalid".to_string(),
-                            )
-                        })?;
-                    // 3: check my pubkey
-                    if &target.serialize() != pubkey {
-                        return Err(ZcashError::InvalidPczt(
-                            "transparent input script pubkey mismatch".to_string(),
-                        ));
-                    }
-                    // 4: check script pubkey
+                            xpub,
+                            pubkey,
+                            derivation,
+                            "input",
+                        )?;
+                    // 3: check script pubkey
                     if hash[..] != Ripemd160::digest(Sha256::digest(pubkey))[..] {
                         return Err(ZcashError::InvalidPczt(
                             "transparent input script pubkey mismatch".to_string(),
                         ));
                     }
-                    Ok(true)
+                    Ok(belongs_to_selected_account)
                 }
             }
         }
@@ -206,24 +201,15 @@ fn check_transparent_output<P: consensus::Parameters>(
                     match output.bip32_derivation().get(pubkey) {
                         Some(bip32_derivation) => {
                             if seed_fingerprint == bip32_derivation.seed_fingerprint() {
-                                //verify public key
-                                let target = xpub
-                                    .derive_pubkey_at_bip32_path(
-                                        params,
-                                        account_index,
-                                        bip32_derivation.derivation_path(),
-                                    )
-                                    .map_err(|_| {
-                                        ZcashError::InvalidPczt(
-                                            "transparent input bip32 derivation path invalid"
-                                                .to_string(),
-                                        )
-                                    })?;
-                                if &target.serialize() != pubkey {
-                                    return Err(ZcashError::InvalidPczt(
-                                        "transparent output script pubkey mismatch".to_string(),
-                                    ));
-                                }
+                                super::transparent_derivation_matches_selected_account(
+                                    params,
+                                    seed_fingerprint,
+                                    account_index,
+                                    xpub,
+                                    pubkey,
+                                    bip32_derivation,
+                                    "output",
+                                )?;
                                 Ok(())
                             } else {
                                 //not my output, pass
@@ -267,24 +253,15 @@ fn check_transparent_output<P: consensus::Parameters>(
                     Ok(())
                 }
                 Some((pubkey, derivation)) => {
-                    // 2: derive my pubkey
-                    let target = xpub
-                        .derive_pubkey_at_bip32_path(
-                            params,
-                            account_index,
-                            derivation.derivation_path(),
-                        )
-                        .map_err(|_| {
-                            ZcashError::InvalidPczt(
-                                "transparent input bip32 derivation path invalid".to_string(),
-                            )
-                        })?;
-                    // 3: check my pubkey
-                    if &target.serialize() != pubkey {
-                        return Err(ZcashError::InvalidPczt(
-                            "transparent input script pubkey mismatch".to_string(),
-                        ));
-                    }
+                    super::transparent_derivation_matches_selected_account(
+                        params,
+                        seed_fingerprint,
+                        account_index,
+                        xpub,
+                        pubkey,
+                        derivation,
+                        "output",
+                    )?;
                     // TODO: find a proper way to check script pubkey
                     Ok(())
                 }
@@ -304,9 +281,17 @@ fn check_orchard<P: consensus::Parameters>(
     account_index: zip32::AccountId,
     ufvk: &UnifiedFullViewingKey,
     bundle: &orchard::pczt::Bundle,
+    pool_label: &str,
 ) -> Result<(), ZcashError> {
     bundle.actions().iter().try_for_each(|action| {
-        check_action(params, seed_fingerprint, account_index, ufvk, action)?;
+        check_action(
+            params,
+            seed_fingerprint,
+            account_index,
+            ufvk,
+            action,
+            pool_label,
+        )?;
         Ok::<_, ZcashError>(())
     })?;
 
@@ -322,9 +307,9 @@ fn check_orchard<P: consensus::Parameters>(
 
     match calculated_value_balance {
         Ok(value_balance) if &value_balance == bundle.value_sum() => Ok(()),
-        _ => Err(ZcashError::InvalidPczt(
-            "invalid Orchard bundle value balance".into(),
-        )),
+        _ => Err(ZcashError::InvalidPczt(alloc::format!(
+            "invalid {pool_label} bundle value balance"
+        ))),
     }
 }
 
@@ -336,18 +321,29 @@ fn check_action<P: consensus::Parameters>(
     account_index: zip32::AccountId,
     ufvk: &UnifiedFullViewingKey,
     action: &orchard::pczt::Action,
+    pool_label: &str,
 ) -> Result<(), ZcashError> {
     // Check `cv_net` first so we know that the `value` fields for both the spend and the
     // output are present and correct.
     action.verify_cv_net().map_err(|e| {
-        ZcashError::InvalidPczt(alloc::format!("invalid cv_net in Orchard action: {e:?}"))
+        ZcashError::InvalidPczt(alloc::format!(
+            "invalid cv_net in {pool_label} action: {e:?}"
+        ))
     })?;
 
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
     ))?;
-    check_action_spend(params, seed_fingerprint, account_index, fvk, action.spend())?;
-    check_action_output(ufvk, action)
+    check_action_spend(
+        params,
+        seed_fingerprint,
+        account_index,
+        fvk,
+        action.spend(),
+        pool_label,
+    )?;
+    check_action_output(params, ufvk, action, pool_label)?;
+    Ok(())
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -358,6 +354,7 @@ fn check_action_spend<P: consensus::Parameters>(
     account_index: zip32::AccountId,
     fvk: &FullViewingKey,
     spend: &orchard::pczt::Spend,
+    pool_label: &str,
 ) -> Result<(), ZcashError> {
     // We can only verify the `nullifier` and `rk` fields of a spend if we know its FVK.
     let can_verify_nf_rk = match (spend.value(), spend.fvk(), spend.zip32_derivation()) {
@@ -382,10 +379,12 @@ fn check_action_spend<P: consensus::Parameters>(
 
     if let Some(expected_fvk) = can_verify_nf_rk {
         spend.verify_nullifier(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action nullifier: {e:?}"))
+            ZcashError::InvalidPczt(alloc::format!(
+                "invalid {pool_label} action nullifier: {e:?}"
+            ))
         })?;
         spend.verify_rk(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action rk: {e:?}"))
+            ZcashError::InvalidPczt(alloc::format!("invalid {pool_label} action rk: {e:?}"))
         })?;
     }
 
@@ -403,15 +402,17 @@ fn is_wallet_orchard_address(fvk: &FullViewingKey, address: &Address) -> bool {
 
 #[cfg(feature = "cypherpunk")]
 // check output cmx and internal-ovk output ownership constraints
-fn check_action_output(
+fn check_action_output<P: consensus::Parameters>(
+    _params: &P,
     ufvk: &UnifiedFullViewingKey,
     action: &orchard::pczt::Action,
+    pool_label: &str,
 ) -> Result<(), ZcashError> {
     action
         .output()
         .verify_note_commitment(action.spend())
         .map_err(|e| {
-            ZcashError::InvalidPczt(alloc::format!("invalid Orchard action cmx: {e:?}"))
+            ZcashError::InvalidPczt(alloc::format!("invalid {pool_label} action cmx: {e:?}"))
         })?;
 
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
@@ -423,18 +424,19 @@ fn check_action_output(
         .transparent()
         .map(|k| orchard::keys::OutgoingViewingKey::from(k.internal_ovk().as_bytes()));
 
-    let mut keys = vec![(Some(external_ovk), false), (Some(internal_ovk), true)];
+    let mut keys = alloc::vec![(Some(external_ovk), false), (Some(internal_ovk), true)];
     if let Some(ovk) = transparent_internal_ovk {
         keys.push((Some(ovk), true));
     }
 
     for (vk, is_internal_ovk) in keys {
-        if let Some((_, address, _)) = super::parse::decode_output_enc_ciphertext(action, vk.as_ref())?
+        if let Some((_, address, _)) =
+            super::parse::decode_output_enc_ciphertext(action, vk.as_ref())?
         {
             if is_internal_ovk && !is_wallet_orchard_address(fvk, &address) {
-                return Err(ZcashError::InvalidPczt(
-                    "Orchard output was recoverable with an internal OVK but does not belong to this wallet".into(),
-                ));
+                return Err(ZcashError::InvalidPczt(alloc::format!(
+                    "{pool_label} output was recoverable with an internal OVK but does not belong to this wallet"
+                )));
             }
             break;
         }

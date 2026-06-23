@@ -84,6 +84,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_FEATHER, &walletFeather, "Feather", g_cakeCoinArray, 1, true},
     {WALLET_LIST_ZODL, &walletZodl, "Zodl", g_zodlCoinArray, 1, true},
     {WALLET_LIST_BULL, &walletBull, "BULL", g_blueWalletCoinArray, 1, true},
+    {WALLET_LIST_VIZOR, &walletVizor, "Vizor", g_zodlCoinArray, 1, true},
 };
 
 typedef struct {
@@ -160,6 +161,7 @@ static void GuiInitWalletListArray()
             enable = GetMnemonicType() != MNEMONIC_TYPE_SLIP39;
             break;
         case WALLET_LIST_ZODL:
+        case WALLET_LIST_VIZOR:
             enable = IsZcashSupportedForCurrentMnemonic();
             break;
         default:
@@ -378,6 +380,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
 
     switch (index) {
     case WALLET_LIST_ZODL:
+    case WALLET_LIST_VIZOR:
         func = GuiGetZecData;
         AddZecCoins();
         break;

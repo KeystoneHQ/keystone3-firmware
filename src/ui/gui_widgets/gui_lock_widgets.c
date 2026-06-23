@@ -67,8 +67,16 @@ void GuiLockScreenUpdatePurpose(LOCK_SCREEN_PURPOSE_ENUM purpose)
     g_purpose = purpose;
 }
 
+bool GuiLockScreenIsVerifyLoading(void)
+{
+    return g_verifyLoadingCont != NULL && lv_obj_is_valid(g_verifyLoadingCont);
+}
+
 bool GuiNeedFpRecognize(void)
 {
+    if (GuiLockScreenIsVerifyLoading()) {
+        return false;
+    }
     if (g_fpErrorCount < FINGERPRINT_EN_SING_ERR_TIMES) {
         return true;
     } else {
@@ -107,6 +115,9 @@ void GuiFpRecognizeResult(bool en)
 
 void GuiLockScreenFpRecognize(void)
 {
+    if (GuiLockScreenIsVerifyLoading()) {
+        return;
+    }
     if (g_fpErrorCount < FINGERPRINT_EN_SING_ERR_TIMES) {
         FpRecognize(RECOGNIZE_UNLOCK);
     }
@@ -209,6 +220,7 @@ void GuiLockScreenShowVerifyLoading(void *param)
         return;
     }
 
+    FpCancelCurOperate();
     g_verifyLoadingCont = GuiCreateAnimHintBox(480, 278, 82);
     lv_obj_t *title = GuiCreateTextLabel(g_verifyLoadingCont, _("seed_check_wait_verify"));
     lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -76);

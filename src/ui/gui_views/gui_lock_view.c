@@ -51,7 +51,7 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
     case GUI_EVENT_DISACTIVE:
         break;
     case SIG_VERIFY_FINGER_PASS:
-        if (GuiLockScreenIsFirstUnlock() || g_lockDeviceView.isActive) {
+        if (GuiLockScreenIsVerifyLoading() || GuiLockScreenIsFirstUnlock() || g_lockDeviceView.isActive) {
             break;
         }
         SetCurrentAccountIndex();
@@ -71,7 +71,7 @@ int32_t GuiLockViewEventProcess(void *self, uint16_t usEvent, void *param, uint1
 #endif
         break;
     case SIG_VERIFY_FINGER_FAIL:
-        if (GuiLockScreenIsFirstUnlock() || g_lockDeviceView.isActive) {
+        if (GuiLockScreenIsVerifyLoading() || GuiLockScreenIsFirstUnlock() || g_lockDeviceView.isActive) {
             break;
         }
         GuiFpRecognizeResult(false);

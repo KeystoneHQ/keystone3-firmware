@@ -298,7 +298,8 @@ UREncodeResult *GuiGetWalletDataByCoin(bool onlySui)
 #define SUI_XPUB_COUNT 10
 #define IOTA_XPUB_COUNT 10
 #define APT_XPUB_COUNT 10
-#define NIGHTLY_XPUB_COUNT (SUI_XPUB_COUNT + IOTA_XPUB_COUNT + APT_XPUB_COUNT)
+#define SOL_XPUB_COUNT 10
+#define NIGHTLY_XPUB_COUNT (SUI_XPUB_COUNT + IOTA_XPUB_COUNT + APT_XPUB_COUNT + SOL_XPUB_COUNT)
     ExtendedPublicKey keys[NIGHTLY_XPUB_COUNT];
     publicKeys->data = keys;
     uint8_t xpubIndex = 0;
@@ -317,6 +318,11 @@ UREncodeResult *GuiGetWalletDataByCoin(bool onlySui)
             keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
             snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/637'/%u'/0'/0'", startIndex);
             keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + startIndex);
+        }
+        for (uint8_t startIndex = 0; startIndex < SOL_XPUB_COUNT; xpubIndex++, startIndex++) {
+            keys[xpubIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
+            snprintf_s(keys[xpubIndex].path, BUFFER_SIZE_32, "m/44'/501'/%d'", startIndex);
+            keys[xpubIndex].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_0 + startIndex);
         }
         publicKeys->size = NIGHTLY_XPUB_COUNT;
     } else {

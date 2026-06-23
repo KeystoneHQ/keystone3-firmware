@@ -35,6 +35,9 @@ use zcash_vendor::{
 #[cfg(feature = "cypherpunk")]
 use super::structs::ParsedOrchard;
 use super::structs::{ParsedFrom, ParsedPczt, ParsedTo, ParsedTransparent};
+
+#[cfg(feature = "cypherpunk")]
+use super::ShieldedPool;
 use crate::errors::ZcashError;
 
 const ZEC_DIVIDER: u32 = 100_000_000;
@@ -179,7 +182,7 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
 
     let verifier = Verifier::new(pczt.clone())
         .with_orchard(|bundle| {
-            parsed_orchard = parse_orchard(params, seed_fingerprint, ufvk, bundle, "Orchard")
+            parsed_orchard = parse_orchard(params, seed_fingerprint, ufvk, bundle, ShieldedPool::Orchard)
                 .map_err(pczt::roles::verifier::OrchardError::Custom)?;
             Ok(())
         })
@@ -188,7 +191,7 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
     let verifier = if should_process_ironwood {
         verifier
             .with_ironwood(|bundle| {
-                parsed_ironwood = parse_orchard(params, seed_fingerprint, ufvk, bundle, "Ironwood")
+                parsed_ironwood = parse_orchard(params, seed_fingerprint, ufvk, bundle, ShieldedPool::Ironwood)
                     .map_err(pczt::roles::verifier::OrchardError::Custom)?;
                 Ok(())
             })
@@ -514,7 +517,7 @@ fn parse_orchard<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     ufvk: &UnifiedFullViewingKey,
     orchard: &orchard::pczt::Bundle,
-    pool_label: &str,
+    pool: ShieldedPool,
 ) -> Result<Option<ParsedOrchard>, ZcashError> {
     let mut parsed_orchard = ParsedOrchard::new(vec![], vec![]);
     orchard.actions().iter().try_for_each(|action| {
@@ -527,7 +530,7 @@ fn parse_orchard<P: consensus::Parameters>(
                 parsed_orchard.add_from(parsed_from);
             }
         }
-        let parsed_to = parse_orchard_output(params, ufvk, action, pool_label)?;
+        let parsed_to = parse_orchard_output(params, ufvk, action, pool)?;
         if !parsed_to.get_is_dummy() {
             parsed_orchard.add_to(parsed_to);
         }
@@ -616,8 +619,9 @@ fn parse_orchard_output<P: consensus::Parameters>(
     params: &P,
     ufvk: &UnifiedFullViewingKey,
     action: &orchard::pczt::Action,
-    pool_label: &str,
+    pool: ShieldedPool,
 ) -> Result<ParsedTo, ZcashError> {
+    let pool_label = pool.label();
     let output = action.output();
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard is not present in ufvk".to_string(),

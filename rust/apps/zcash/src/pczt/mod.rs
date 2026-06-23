@@ -100,6 +100,28 @@ pub(crate) fn transparent_derivation_matches_selected_account<
     Ok(true)
 }
 
+/// Which shielded pool a bundle belongs to. Orchard and Ironwood share the same
+/// `orchard::pczt::Bundle` representation, so this distinguishes them (e.g. in
+/// error messages) without a free-form string.
+#[cfg(feature = "cypherpunk")]
+#[derive(Clone, Copy)]
+pub(crate) enum ShieldedPool {
+    Orchard,
+    #[cfg(zcash_unstable = "nu6.3")]
+    Ironwood,
+}
+
+#[cfg(feature = "cypherpunk")]
+impl ShieldedPool {
+    pub(crate) fn label(self) -> &'static str {
+        match self {
+            ShieldedPool::Orchard => "Orchard",
+            #[cfg(zcash_unstable = "nu6.3")]
+            ShieldedPool::Ironwood => "Ironwood",
+        }
+    }
+}
+
 /// Returns the supported account declared by a shielded spend derivation that
 /// belongs to this seed. Missing or different seed fingerprints are not ours
 /// and return `None`; matching fingerprints with paths outside
@@ -109,8 +131,9 @@ pub(crate) fn matching_seed_supported_orchard_account(
     seed_fingerprint: &[u8; 32],
     derivation: Option<&zcash_vendor::orchard::pczt::Zip32Derivation>,
     coin_type: u32,
-    pool_label: &str,
+    pool: ShieldedPool,
 ) -> Result<Option<zcash_vendor::zip32::AccountId>, crate::errors::ZcashError> {
+    let pool_label = pool.label();
     let Some(derivation) = derivation else {
         return Ok(None);
     };

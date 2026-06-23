@@ -24,6 +24,9 @@ use zcash_vendor::{
 use zcash_vendor::zcash_protocol::consensus::NetworkConstants;
 
 #[cfg(feature = "cypherpunk")]
+use super::ShieldedPool;
+
+#[cfg(feature = "cypherpunk")]
 fn map_orchard_verifier_error(
     error: pczt::roles::verifier::OrchardError<ZcashError>,
 ) -> ZcashError {
@@ -46,13 +49,13 @@ pub fn check_pczt_orchard<P: consensus::Parameters>(
     let should_process_ironwood = super::pczt_should_process_ironwood(pczt);
     let verifier = Verifier::new(pczt.clone())
         .with_orchard(|bundle| {
-            check_orchard(
+            check_shielded_bundle(
                 params,
                 seed_fingerprint,
                 account_index,
                 ufvk,
                 bundle,
-                "Orchard",
+                ShieldedPool::Orchard,
             )
             .map_err(pczt::roles::verifier::OrchardError::Custom)?;
             Ok(())
@@ -62,13 +65,13 @@ pub fn check_pczt_orchard<P: consensus::Parameters>(
     if should_process_ironwood {
         verifier
             .with_ironwood(|bundle| {
-                check_orchard(
+                check_shielded_bundle(
                     params,
                     seed_fingerprint,
                     account_index,
                     ufvk,
                     bundle,
-                    "Ironwood",
+                    ShieldedPool::Ironwood,
                 )
                 .map_err(pczt::roles::verifier::OrchardError::Custom)?;
                 Ok(())
@@ -294,14 +297,15 @@ fn check_transparent_output<P: consensus::Parameters>(
 
 #[cfg(feature = "cypherpunk")]
 // check orchard bundle
-fn check_orchard<P: consensus::Parameters>(
+fn check_shielded_bundle<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],
     account_index: zip32::AccountId,
     ufvk: &UnifiedFullViewingKey,
     bundle: &orchard::pczt::Bundle,
-    pool_label: &str,
+    pool: ShieldedPool,
 ) -> Result<(), ZcashError> {
+    let pool_label = pool.label();
     bundle.actions().iter().try_for_each(|action| {
         check_action(
             params,
@@ -309,7 +313,7 @@ fn check_orchard<P: consensus::Parameters>(
             account_index,
             ufvk,
             action,
-            pool_label,
+            pool,
         )?;
         Ok::<_, ZcashError>(())
     })?;
@@ -340,8 +344,9 @@ fn check_action<P: consensus::Parameters>(
     account_index: zip32::AccountId,
     ufvk: &UnifiedFullViewingKey,
     action: &orchard::pczt::Action,
-    pool_label: &str,
+    pool: ShieldedPool,
 ) -> Result<(), ZcashError> {
+    let pool_label = pool.label();
     // Check `cv_net` first so we know that the `value` fields for both the spend and the
     // output are present and correct.
     action.verify_cv_net().map_err(|e| {
@@ -359,9 +364,9 @@ fn check_action<P: consensus::Parameters>(
         account_index,
         fvk,
         action.spend(),
-        pool_label,
+        pool,
     )?;
-    check_action_output(params, ufvk, action, pool_label)?;
+    check_action_output(params, ufvk, action, pool)?;
     Ok(())
 }
 
@@ -373,8 +378,9 @@ fn check_action_spend<P: consensus::Parameters>(
     account_index: zip32::AccountId,
     fvk: &FullViewingKey,
     spend: &orchard::pczt::Spend,
-    pool_label: &str,
+    pool: ShieldedPool,
 ) -> Result<(), ZcashError> {
+    let pool_label = pool.label();
     // We can only verify the `nullifier` and `rk` fields of a spend if we know its FVK.
     let can_verify_nf_rk = match (spend.value(), spend.fvk(), spend.zip32_derivation()) {
         // Dummy notes use randomly-generated FVKs, so if one is already present then
@@ -426,8 +432,9 @@ fn check_action_output<P: consensus::Parameters>(
     params: &P,
     ufvk: &UnifiedFullViewingKey,
     action: &orchard::pczt::Action,
-    pool_label: &str,
+    pool: ShieldedPool,
 ) -> Result<(), ZcashError> {
+    let pool_label = pool.label();
     action
         .output()
         .verify_note_commitment(action.spend())

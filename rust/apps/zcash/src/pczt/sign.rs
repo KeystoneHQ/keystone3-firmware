@@ -350,23 +350,7 @@ fn collect_transparent_signing_keys(
 }
 
 #[cfg(feature = "cypherpunk")]
-#[derive(Clone, Copy)]
-enum ShieldedPool {
-    Orchard,
-    #[cfg(zcash_unstable = "nu6.3")]
-    Ironwood,
-}
-
-#[cfg(feature = "cypherpunk")]
-impl ShieldedPool {
-    fn label(self) -> &'static str {
-        match self {
-            ShieldedPool::Orchard => "Orchard",
-            #[cfg(zcash_unstable = "nu6.3")]
-            ShieldedPool::Ironwood => "Ironwood",
-        }
-    }
-}
+use super::ShieldedPool;
 
 #[cfg(feature = "cypherpunk")]
 fn collect_orchard_signing_keys(
@@ -426,7 +410,7 @@ fn collect_orchard_bundle_signing_keys(
         if action.spend().value().is_none() {
             continue;
         }
-        if let Some(ask) = spend_authorizing_key_for_action(seed, action, pool_label)? {
+        if let Some(ask) = spend_authorizing_key_for_action(seed, action, pool)? {
             keys.push((index, ask));
         }
     }
@@ -437,15 +421,16 @@ fn collect_orchard_bundle_signing_keys(
 fn spend_authorizing_key_for_action(
     seed: &[u8],
     action: &orchard::pczt::Action,
-    pool_label: &str,
+    pool: ShieldedPool,
 ) -> Result<Option<orchard::keys::SpendAuthorizingKey>, ZcashError> {
+    let pool_label = pool.label();
     let fingerprint =
         calculate_seed_fingerprint(seed).map_err(|e| ZcashError::SigningError(e.to_string()))?;
     let Some(account_index) = super::matching_seed_supported_orchard_account(
         &fingerprint,
         action.spend().zip32_derivation().as_ref(),
         133,
-        pool_label,
+        pool,
     )?
     else {
         return Ok(None);

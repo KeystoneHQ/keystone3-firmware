@@ -66,6 +66,7 @@ static void FpDelayMsgSend(void);
 static void SearchFpAesKeyState(void);
 static void SearchFpChipId(void);
 bool GuiLockScreenIsTop(void);
+bool GuiLockScreenIsVerifyLoading(void);
 static void DecryptFunc(uint8_t *decryptPasscode, uint8_t *encryptPasscode, uint8_t *passwordAesKey, size_t blocks);
 static void FpRetryCommand(uint32_t cmdIndex);
 static bool FpShouldRetryCommand(uint32_t cmdIndex);
@@ -302,6 +303,9 @@ static void FpRecognizeRecv(char *indata, uint8_t len)
 {
     int i = 0;
     uint8_t result = indata[i++];
+    if (g_fingerRecognizeType == RECOGNIZE_UNLOCK && GuiLockScreenIsVerifyLoading()) {
+        return;
+    }
     ClearLockScreenTime();
     if (result == FP_SUCCESS_CODE) {
         MotorCtrl(MOTOR_LEVEL_MIDDLE, MOTOR_SHAKE_SHORT_TIME);
@@ -761,6 +765,9 @@ void SearchFpNum(void)
 void FpRecognize(Recognize_Type type)
 {
     uint8_t accountNum = 0;
+    if (type == RECOGNIZE_UNLOCK && GuiLockScreenIsVerifyLoading()) {
+        return;
+    }
     GetExistAccountNum(&accountNum);
     if (accountNum <= 0) {
         return;

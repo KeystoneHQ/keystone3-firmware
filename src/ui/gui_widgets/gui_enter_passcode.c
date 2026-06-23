@@ -129,6 +129,7 @@ static void SetPinEventHandler(lv_event_t *e)
                 switch (item->mode) {
                 case ENTER_PASSCODE_VERIFY_PIN:
                     SecretCacheSetPassword(g_pinBuf);
+                    GuiLockScreenShowVerifyLoading(g_userParam);
                     GuiModelVerifyAccountPassWord(g_userParam);
                     break;
                 case ENTER_PASSCODE_SET_PIN:
@@ -196,10 +197,11 @@ static void SetPassWordHandler(lv_event_t *e)
                 }
             } else if (item->mode == ENTER_PASSCODE_REPEAT_PASSWORD) {
                 GuiEmitSignal(SIG_SETTING_REPEAT_PIN, (char *)currText, strnlen_s(currText, CREATE_PIN_NUM));
-            } else if ((item->mode == ENTER_PASSCODE_VERIFY_PASSWORD)) {
+            } else if (item->mode == ENTER_PASSCODE_VERIFY_PASSWORD) {
                 g_userParam = g_passParam.userParam;
                 if (strnlen_s(currText, PASSWORD_MAX_LEN) > 0) {
                     SecretCacheSetPassword((char *)currText);
+                    GuiLockScreenShowVerifyLoading(g_userParam);
                     GuiModelVerifyAccountPassWord(g_userParam);
                 }
             }

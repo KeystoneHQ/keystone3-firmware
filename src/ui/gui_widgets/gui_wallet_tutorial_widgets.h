@@ -16,4 +16,7 @@ void GuiWalletTutorialDeInit();
 #define ZODL_WALLET_TITLE                   "Zodl"
 #define ZODL_WALLET_LINK                    "https://keyst.one/t/3rd/zodl"
 
+#define VIZOR_WALLET_TITLE                  "Vizor"
+#define VIZOR_WALLET_LINK                   "https://keyst.one/t/3rd/vizor"
+
 #endif

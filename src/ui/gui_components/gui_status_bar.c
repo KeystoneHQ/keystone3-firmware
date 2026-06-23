@@ -188,6 +188,7 @@ const static WalletInfo_t g_walletBtn[] = {
     // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
     {WALLET_LIST_FEATHER, "Feather Wallet", &walletFeather},
     {WALLET_LIST_ZODL, "Zodl", &walletZodl},
+    {WALLET_LIST_VIZOR, "Vizor", &walletVizor},
 #endif
 
 #ifdef BTC_ONLY

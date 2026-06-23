@@ -19,6 +19,7 @@ void GuiLockScreenTurnOffHandler(lv_event_t *e);
 void GuiLockScreenTurnOff(void);
 void GuiLockScreenTurnOn(void *param);
 bool GuiLockScreenIsTop(void);
+bool GuiLockScreenIsVerifyLoading(void);
 void GuiLockScreenUpdatePassCode(void);
 void OpenForgetPasswordHandler(lv_event_t *e);
 void GuiLockScreenHidden(void);
@@ -31,6 +32,8 @@ void GuiLockScreenSetFirstUnlock(void);
 void GuiLockViewRefreshLanguage(void);
 void GuiLockScreenSetNumKeyBoardMapDefault(void);
 void GuiLockScreenShuffleNumKeyBoardMap(void);
+void GuiLockScreenShowVerifyLoading(void *param);
+void GuiLockScreenHideVerifyLoading(void);
 
 void GuiLockScreenErrorCount(void *param);
 void GuiLockScreenToHome(void);
@@ -42,5 +45,3 @@ void GuiShowGenerateXPubLoading(void);
 void GuiHideGenerateXPubLoading(void);
 void GuiLockViewRefreshLanguage(void);
 #endif /* _GUI_LOCK_WIDGETS_H */
-
-

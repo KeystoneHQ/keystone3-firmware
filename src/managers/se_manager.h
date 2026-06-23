@@ -17,7 +17,8 @@
 #define PAGE_INDEX_RESERVED                         5
 #define PAGE_INDEX_HMAC                             6
 #define PAGE_INDEX_KEY_PIECE                        7
-#define PAGE_INDEX_PASSWORD_HASH                    8
+// Don't use this page in the future usage, it is only for legacy password hash
+#define PAGE_INDEX_LEGACY_PASSWORD_HASH             8
 #define PAGE_INDEX_PARAM                            9
 #define PAGE_INDEX_MULTISIG_CONFIG_HASH             10
 //page 76~85 encrypted password

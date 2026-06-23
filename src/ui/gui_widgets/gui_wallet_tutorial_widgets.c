@@ -399,6 +399,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_ZODL].items[0].qrTitle = ZODL_WALLET_TITLE;
     g_tutorials[WALLET_LIST_ZODL].items[0].qrUrl = ZODL_WALLET_LINK;
 
+    // WALLET_LIST_VIZOR
+    g_tutorials[WALLET_LIST_VIZOR].len = 1;
+    g_tutorials[WALLET_LIST_VIZOR].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_VIZOR].items[0].walletName = VIZOR_WALLET_TITLE;
+    g_tutorials[WALLET_LIST_VIZOR].items[0].url = VIZOR_WALLET_LINK;
+    g_tutorials[WALLET_LIST_VIZOR].items[0].qrTitle = VIZOR_WALLET_TITLE;
+    g_tutorials[WALLET_LIST_VIZOR].items[0].qrUrl = VIZOR_WALLET_LINK;
+
     // WALLET_LIST_CORE
     g_tutorials[WALLET_LIST_CORE].len = 1;
     g_tutorials[WALLET_LIST_CORE].desc = _("connect_wallet_desc");

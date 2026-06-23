@@ -220,11 +220,11 @@ int32_t VerifyCurrentAccountPassword(const char *password)
             ret = ERR_KEYSTORE_NOT_LOGIN;
             break;
         }
-    #ifdef COMPILE_SIMULATOR
+#ifdef COMPILE_SIMULATOR
         ret = SimulatorVerifyCurrentPassword(accountIndex, password);
-    #else
+#else
         ret = VerifyAccountPassword(accountIndex, password);
-    #endif
+#endif
         if (ret == SUCCESS_CODE) {
             g_publicInfo.currentPasswordErrorCount = 0;
         } else if (ret == ERR_KEYSTORE_PASSWORD_ERR) {

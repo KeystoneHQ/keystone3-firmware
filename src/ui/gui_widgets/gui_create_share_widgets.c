@@ -97,7 +97,7 @@ static void ShowDiceRollsNotEnoughHint(void)
 {
     GUI_DEL_OBJ(g_noticeWindow)
     g_noticeWindow = GuiCreateConfirmHintBox(&imgWarn, _("dice_roll_100_required_title"),
-                    _("dice_roll_100_required_desc"), NULL, _("OK"), ORANGE_COLOR);
+                     _("dice_roll_100_required_desc"), NULL, _("OK"), ORANGE_COLOR);
     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_add_event_cb(btn, ReturnToDiceRollsHandler, LV_EVENT_CLICKED, NULL);
 }

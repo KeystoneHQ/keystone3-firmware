@@ -924,6 +924,43 @@ mod tests {
         assert!(!parsed.get_is_change());
     }
 
+    fn p2pkh_output_to_external_recipient(value: u64) -> transparent::pczt::Output {
+        let hash = [0x11; 20];
+        let script_pubkey = {
+            // OP_DUP OP_HASH160 <20-byte push> OP_EQUALVERIFY OP_CHECKSIG
+            let mut script = vec![0x76, 0xa9, 0x14];
+            script.extend_from_slice(&hash);
+            script.push(0x88);
+            script.push(0xac);
+            script
+        };
+        let user_address =
+            ZcashAddress::from_transparent_p2pkh(MAIN_NETWORK.network_type(), hash).encode();
+        // No bip32_derivation: this output goes to an address we don't control.
+        pczt::Output::parse(
+            value,
+            script_pubkey,
+            None,
+            BTreeMap::new(),
+            Some(user_address),
+            BTreeMap::new(),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn test_parse_p2pkh_output_decodes_recipient_address_and_value() {
+        let seed_fingerprint = [0x22; 32];
+        let output = p2pkh_output_to_external_recipient(100_000);
+
+        let parsed = parse_transparent_output(&MAIN_NETWORK, &seed_fingerprint, &output).unwrap();
+
+        assert!(parsed.get_address().starts_with("t1"));
+        assert_eq!(parsed.get_value(), "0.001 ZEC");
+        // A p2pkh output to an address we don't control is a recipient, not change.
+        assert!(!parsed.get_is_change());
+    }
+
     #[test]
     fn test_decode_memo_with_hex_content() {
         {

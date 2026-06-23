@@ -69,21 +69,16 @@ fn validate_sapling_bundle_consistency(pczt: &Pczt) -> Result<(), ZcashError> {
     Ok(())
 }
 
-pub(crate) fn transparent_derivation_matches_selected_account<
+pub(crate) fn check_transparent_derivation<
     P: zcash_vendor::zcash_protocol::consensus::Parameters,
 >(
     params: &P,
-    seed_fingerprint: &[u8; 32],
     account_index: zip32::AccountId,
     xpub: &transparent::keys::AccountPubKey,
     pubkey: &[u8; 33],
     derivation: &transparent::pczt::Bip32Derivation,
     field_label: &str,
-) -> Result<bool, ZcashError> {
-    if seed_fingerprint != derivation.seed_fingerprint() {
-        return Ok(false);
-    }
-
+) -> Result<(), ZcashError> {
     let target = xpub
         .derive_pubkey_at_bip32_path(params, account_index, derivation.derivation_path())
         .map_err(|_| {
@@ -97,7 +92,7 @@ pub(crate) fn transparent_derivation_matches_selected_account<
         )));
     }
 
-    Ok(true)
+    Ok(())
 }
 
 /// Which shielded pool a bundle belongs to. Orchard and Ironwood share the same

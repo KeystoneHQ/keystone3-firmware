@@ -160,23 +160,21 @@ fn check_transparent_input<P: consensus::Parameters>(
                 }
                 Some((pubkey, derivation)) => {
                     // 2: derive my pubkey
-                    let belongs_to_selected_account =
-                        super::transparent_derivation_matches_selected_account(
-                            params,
-                            seed_fingerprint,
-                            account_index,
-                            xpub,
-                            pubkey,
-                            derivation,
-                            "input",
-                        )?;
+                    super::check_transparent_derivation(
+                        params,
+                        account_index,
+                        xpub,
+                        pubkey,
+                        derivation,
+                        "input",
+                    )?;
                     // 3: check script pubkey
                     if hash[..] != Ripemd160::digest(Sha256::digest(pubkey))[..] {
                         return Err(ZcashError::InvalidPczt(
                             "transparent input script pubkey mismatch".to_string(),
                         ));
                     }
-                    Ok(belongs_to_selected_account)
+                    Ok(true)
                 }
             }
         }
@@ -223,9 +221,8 @@ fn check_transparent_output<P: consensus::Parameters>(
                     match output.bip32_derivation().get(pubkey) {
                         Some(bip32_derivation) => {
                             if seed_fingerprint == bip32_derivation.seed_fingerprint() {
-                                super::transparent_derivation_matches_selected_account(
+                                super::check_transparent_derivation(
                                     params,
-                                    seed_fingerprint,
                                     account_index,
                                     xpub,
                                     pubkey,
@@ -275,9 +272,8 @@ fn check_transparent_output<P: consensus::Parameters>(
                     Ok(())
                 }
                 Some((pubkey, derivation)) => {
-                    super::transparent_derivation_matches_selected_account(
+                    super::check_transparent_derivation(
                         params,
-                        seed_fingerprint,
                         account_index,
                         xpub,
                         pubkey,

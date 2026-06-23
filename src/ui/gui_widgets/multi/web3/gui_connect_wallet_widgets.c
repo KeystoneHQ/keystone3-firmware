@@ -228,7 +228,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_UNISAT, &walletUniSat, "UniSat", g_UniSatCoinArray, 5, true, WALLET_FILTER_BTC},
     {WALLET_LIST_SUIET, &walletSuiet, "Suiet", g_suiWalletCoinArray, 1, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_IOTA, &walletIota, "IOTA Wallet", g_iotaCoinArray, 1, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_NIGHTLY, &walletNightly, "Nightly", g_nightlyCoinArray, 4, true, WALLET_FILTER_OTHER},
+    {WALLET_LIST_NIGHTLY, &walletNightly, "Nightly", g_nightlyCoinArray, 4, true, WALLET_FILTER_SOL | WALLET_FILTER_OTHER},
     {WALLET_LIST_TYPHON, &walletTyphon, "Typhon", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
     {WALLET_LIST_MEDUSA, &walletMedusa, "Medusa", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
     {WALLET_LIST_GERO, &walletGero, "Gero", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},

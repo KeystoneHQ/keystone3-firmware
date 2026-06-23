@@ -1,6 +1,5 @@
 #include "gui_connect_wallet_widgets.h"
 #include "account_public_info.h"
-#include "version.h"
 #include "gui.h"
 #include "gui_button.h"
 #include "gui_hintbox.h"
@@ -85,6 +84,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_FEATHER, &walletFeather, "Feather", g_cakeCoinArray, 1, true},
     {WALLET_LIST_ZODL, &walletZodl, "Zodl", g_zodlCoinArray, 1, true},
     {WALLET_LIST_BULL, &walletBull, "BULL", g_blueWalletCoinArray, 1, true},
+    {WALLET_LIST_VIZOR, &walletVizor, "Vizor", g_zodlCoinArray, 1, true},
 };
 
 typedef struct {
@@ -161,6 +161,7 @@ static void GuiInitWalletListArray()
             enable = GetMnemonicType() != MNEMONIC_TYPE_SLIP39;
             break;
         case WALLET_LIST_ZODL:
+        case WALLET_LIST_VIZOR:
             enable = IsZcashSupportedForCurrentMnemonic();
             break;
         default:
@@ -359,10 +360,7 @@ UREncodeResult *GuiGetZecData(void)
     data[0].key_text = ufvk;
     data[0].key_name = GetWalletName();
     data[0].index = 0;
-    char firmwareVersion[32];
-    snprintf(firmwareVersion, sizeof(firmwareVersion), "%d.%d.%d",
-             SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-    return get_connect_zcash_wallet_ur(sfp, 32, keys, firmwareVersion);
+    return get_connect_zcash_wallet_ur(sfp, 32, keys);
 }
 
 void GuiPrepareArConnectWalletView(void)
@@ -382,6 +380,7 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
 
     switch (index) {
     case WALLET_LIST_ZODL:
+    case WALLET_LIST_VIZOR:
         func = GuiGetZecData;
         AddZecCoins();
         break;

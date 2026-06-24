@@ -130,5 +130,5 @@ zcash_keys = { git = "https://github.com/valargroup/librustzcash", rev = "dc95dc
 zcash_primitives = { git = "https://github.com/valargroup/librustzcash", rev = "dc95dcef33a081b925db551eac8bf6533fff22ed" }
 zcash_protocol = { git = "https://github.com/valargroup/librustzcash", rev = "dc95dcef33a081b925db551eac8bf6533fff22ed" }
 zcash_transparent = { git = "https://github.com/valargroup/librustzcash", rev = "dc95dcef33a081b925db551eac8bf6533fff22ed" }
-# Use the SDK fork for Zcash batch registry types until they are available from the published crate.
-ur-registry = { git = "https://github.com/valargroup/keystone-sdk-rust.git", rev = "630b7cd4c92a3473b472ecbe8a7030fed16ce2c4" }
+# Use the upstream SDK rev with the Zcash batch registry types until they are published as a crate.
+ur-registry = { git = "https://github.com/KeystoneHQ/keystone-sdk-rust.git", rev = "0884de4b2e927bc3f95a98dff62045e0d492e574" }

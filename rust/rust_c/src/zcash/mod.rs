@@ -10,7 +10,7 @@ use crate::common::{
 };
 use crate::{extract_array, extract_array_mut};
 use crate::{extract_ptr_with_type, make_free_method};
-use alloc::{boxed::Box, format, string::String, string::ToString};
+use alloc::{boxed::Box, format, string::String, string::ToString, vec::Vec};
 use app_zcash::get_address;
 use core::slice;
 use cryptoxide::hashing::sha256;

@@ -144,11 +144,12 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
 fn reject_legacy_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     #[cfg(zcash_unstable = "nu6.3")]
     {
-        // The legacy helper below carries the pre-NU6.3 transparent sighash implementation.
-        // It must not be used for shielded (Sapling/Orchard/Ironwood) or V6 PCZTs.
+        // The legacy signing path computes a version-aware transparent sighash (v4/v5/v6)
+        // but cannot sign shielded bundles. Reject any shielded (Sapling/Orchard/Ironwood)
+        // PCZT.
         if super::pczt_requires_cypherpunk_support(pczt) {
             return Err(ZcashError::SigningError(
-                "Shielded or V6 PCZTs require cypherpunk signing support".to_string(),
+                "Shielded PCZTs require cypherpunk signing support".to_string(),
             ));
         }
     }
@@ -683,7 +684,11 @@ mod legacy_tests {
 
     #[cfg(zcash_unstable = "nu6.3")]
     #[test]
-    fn legacy_signing_rejects_v6_pczt() {
+    fn legacy_signing_allows_v6_transparent_pczt() {
+        // A v6 transparent-only PCZT is no longer rejected for being v6. This fixture
+        // is empty, so it only asserts the relaxed gate accepts a v6 PCZT; it does not
+        // exercise the per-input v6 sighash (whose v6 delta is pinned byte-exact against
+        // the orchard crate by `v6_empty_bundle_digests_match_orchard_crate`).
         let pczt = Creator::new_v6(
             BranchId::Nu6_3.into(),
             10,
@@ -696,10 +701,6 @@ mod legacy_tests {
 
         let result = sign_pczt(pczt, &[7u8; 32]);
 
-        assert!(matches!(
-            result,
-            Err(ZcashError::SigningError(msg))
-                if msg == "Shielded or V6 PCZTs require cypherpunk signing support"
-        ));
+        assert!(result.is_ok(), "v6 transparent sign should succeed: {result:?}");
     }
 }

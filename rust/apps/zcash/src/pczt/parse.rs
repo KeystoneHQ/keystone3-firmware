@@ -381,11 +381,11 @@ fn reject_legacy_parse_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     #[cfg(zcash_unstable = "nu6.3")]
     {
         // The legacy multi-coins parser only displays transparent data. Reject any
-        // shielded (Sapling/Orchard/Ironwood) or V6 PCZT instead of showing an
-        // incomplete transaction review.
+        // shielded (Sapling/Orchard/Ironwood) PCZT instead of showing an incomplete
+        // transaction review. V6 transparent transactions are displayed normally.
         if super::pczt_requires_cypherpunk_support(pczt) {
             return Err(ZcashError::InvalidPczt(
-                "Shielded or V6 PCZTs require cypherpunk parsing support".to_string(),
+                "Shielded PCZTs require cypherpunk parsing support".to_string(),
             ));
         }
     }
@@ -778,7 +778,9 @@ mod legacy_tests {
 
     #[cfg(zcash_unstable = "nu6.3")]
     #[test]
-    fn legacy_parse_rejects_v6_pczt() {
+    fn legacy_parse_allows_v6_transparent_pczt() {
+        // A v6 transparent-only PCZT parses normally; it is no longer rejected for
+        // being v6.
         let pczt = Creator::new_v6(
             BranchId::Nu6_3.into(),
             10,
@@ -791,11 +793,7 @@ mod legacy_tests {
 
         let result = parse_pczt_multi_coins(&MainNetwork, &[7u8; 32], &pczt);
 
-        assert!(matches!(
-            result,
-            Err(ZcashError::InvalidPczt(msg))
-                if msg == "Shielded or V6 PCZTs require cypherpunk parsing support"
-        ));
+        assert!(result.is_ok(), "v6 transparent parse should succeed: {result:?}");
     }
 }
 

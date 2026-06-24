@@ -62,6 +62,15 @@ const ZCASH_ORCHARD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxId
 #[allow(unused)]
 const ZCASH_ORCHARD_SIGS_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxAuthOrchaHash";
 
+// V6 (NU6.3) txid tree personalizations. The transparent-only legacy path only
+// ever needs the *empty* bundle digests for these pools (shielded content is
+// rejected upstream), and an empty-bundle digest is a plain blake2b of the
+// bundle personalization string (see `orchard::commitments`).
+#[cfg(zcash_unstable = "nu6.3")]
+const ZCASH_ORCHARD_V6_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdOrchardH_v6";
+#[cfg(zcash_unstable = "nu6.3")]
+const ZCASH_IRONWOOD_V6_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdIronwd_H_v6";
+
 const ZCASH_TRANSPARENT_INPUT_HASH_PERSONALIZATION: &[u8; 16] = b"Zcash___TxInHash";
 const ZCASH_TRANSPARENT_AMOUNTS_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxTrAmountsHash";
 const ZCASH_TRANSPARENT_SCRIPTS_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxTrScriptsHash";
@@ -296,6 +305,31 @@ fn hash_orchard_txid_empty() -> Hash {
     hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION).finalize()
 }
 
+#[cfg(zcash_unstable = "nu6.3")]
+fn hash_orchard_v6_txid_empty() -> Hash {
+    hasher(ZCASH_ORCHARD_V6_HASH_PERSONALIZATION).finalize()
+}
+
+#[cfg(zcash_unstable = "nu6.3")]
+fn hash_ironwood_v6_txid_empty() -> Hash {
+    hasher(ZCASH_IRONWOOD_V6_HASH_PERSONALIZATION).finalize()
+}
+
+/// Selects the Orchard node of the txid tree for the transaction version: v6
+/// uses a distinct empty-bundle personalization from pre-v6. The non-empty
+/// branch is only reached by pre-v6 fixtures, because the legacy signing path
+/// rejects shielded content before a sighash is ever computed.
+fn orchard_txid_node(pczt: &Pczt) -> Hash {
+    if has_orchard(pczt) {
+        return digest_orchard(pczt);
+    }
+    #[cfg(zcash_unstable = "nu6.3")]
+    if *pczt.global().tx_version() >= 6 {
+        return hash_orchard_v6_txid_empty();
+    }
+    hash_orchard_txid_empty()
+}
+
 fn shielded_sig_commitment(pczt: &Pczt, lock_time: u32, input_info: Option<SignableInput>) -> Hash {
     let mut personal = [0; 16];
     personal[..12].copy_from_slice(ZCASH_TX_PERSONALIZATION_PREFIX);
@@ -313,14 +347,13 @@ fn shielded_sig_commitment(pczt: &Pczt, lock_time: u32, input_info: Option<Signa
         }
         .as_bytes(),
     );
-    h.update(
-        if has_orchard(pczt) {
-            digest_orchard(pczt)
-        } else {
-            hash_orchard_txid_empty()
-        }
-        .as_bytes(),
-    );
+    h.update(orchard_txid_node(pczt).as_bytes());
+    // V6 transactions append an Ironwood bundle node to the txid tree. The
+    // legacy path rejects shielded content, so it is always the empty digest.
+    #[cfg(zcash_unstable = "nu6.3")]
+    if *pczt.global().tx_version() >= 6 {
+        h.update(hash_ironwood_v6_txid_empty().as_bytes());
+    }
     h.finalize()
 }
 
@@ -644,6 +677,25 @@ mod tests {
         assert_eq!(
             hex::encode(shielded_sig_commitment(&pczt, 0, None).as_bytes()),
             "d9b80aac7a7e0f9cd525572877656bd923ff0c557be9a1ff16ff6e8e389ccc81"
+        );
+    }
+
+    /// The v6 empty-bundle txid digests must match the authoritative orchard-crate
+    /// definitions for the ORCHARD_V6 and IRONWOOD_V6 commitment domains. This pins
+    /// the personalization strings the v6 transparent sighash relies on.
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn v6_empty_bundle_digests_match_orchard_crate() {
+        use orchard::bundle::commitments::{
+            hash_bundle_txid_empty_with_domain, BundleCommitmentDomain,
+        };
+        assert_eq!(
+            hash_orchard_v6_txid_empty().as_bytes(),
+            hash_bundle_txid_empty_with_domain(BundleCommitmentDomain::ORCHARD_V6).as_bytes(),
+        );
+        assert_eq!(
+            hash_ironwood_v6_txid_empty().as_bytes(),
+            hash_bundle_txid_empty_with_domain(BundleCommitmentDomain::IRONWOOD_V6).as_bytes(),
         );
     }
 }

@@ -161,16 +161,16 @@ pub(crate) fn matching_seed_supported_orchard_account(
         .map_err(|_| unsupported_path())
 }
 
-/// Returns whether a PCZT carries anything the transparent-only legacy path
-/// cannot handle: a v6+ transaction, or any shielded (Sapling/Orchard/Ironwood)
-/// content. These must be checked, parsed, and signed by the cypherpunk build.
+/// Returns whether a PCZT carries shielded (Sapling/Orchard/Ironwood) content
+/// that the transparent-only legacy path cannot display or sign. The transparent
+/// sighash is version-aware (it handles v6), so the transaction version alone
+/// does not require cypherpunk support: only shielded bundles do.
 #[cfg(all(
     zcash_unstable = "nu6.3",
     any(feature = "multi_coins", not(feature = "cypherpunk"))
 ))]
 pub(crate) fn pczt_requires_cypherpunk_support(pczt: &zcash_vendor::pczt::Pczt) -> bool {
-    *pczt.global().tx_version() >= 6
-        || !pczt.sapling().spends().is_empty()
+    !pczt.sapling().spends().is_empty()
         || !pczt.sapling().outputs().is_empty()
         || !pczt.orchard().actions().is_empty()
         || !pczt.ironwood().actions().is_empty()

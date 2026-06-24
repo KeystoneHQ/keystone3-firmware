@@ -139,12 +139,12 @@ fn transparent_account_pubkey_from_xpub(
 fn reject_legacy_check_unsupported_pczt(pczt: &Pczt) -> Result<()> {
     #[cfg(zcash_unstable = "nu6.3")]
     {
-        // The legacy multi-coins check path only verifies transparent data. Reject any
-        // shielded (Sapling/Orchard/Ironwood) or V6 PCZT so check, parse, and sign
-        // enforce the same transparent-only boundary.
+        // The legacy multi-coins check path only verifies transparent data, but the
+        // transparent sighash is version-aware (v6 included). Reject only shielded
+        // (Sapling/Orchard/Ironwood) PCZTs, which it cannot display or validate.
         if pczt::pczt_requires_cypherpunk_support(pczt) {
             return Err(ZcashError::InvalidPczt(
-                "Shielded or V6 PCZTs require cypherpunk checking support".to_string(),
+                "Shielded PCZTs require cypherpunk checking support".to_string(),
             ));
         }
     }
@@ -297,7 +297,10 @@ mod legacy_tests {
 
     #[cfg(zcash_unstable = "nu6.3")]
     #[test]
-    fn legacy_check_rejects_v6_pczt() {
+    fn legacy_check_allows_v6_transparent_pczt() {
+        // A v6 transparent-only PCZT is no longer rejected for being v6. With a
+        // deliberately invalid xpub it now fails on the xpub instead of the shielded
+        // gate, proving it got past that gate.
         let pczt = Creator::new_v6(
             BranchId::Nu6_3.into(),
             10,
@@ -316,11 +319,14 @@ mod legacy_tests {
             0,
         );
 
-        assert!(matches!(
-            result,
-            Err(ZcashError::InvalidPczt(msg))
-                if msg == "Shielded or V6 PCZTs require cypherpunk checking support"
-        ));
+        assert!(
+            !matches!(
+                &result,
+                Err(ZcashError::InvalidPczt(msg))
+                    if msg == "Shielded PCZTs require cypherpunk checking support"
+            ),
+            "v6 transparent should not be rejected at the shielded gate: {result:?}"
+        );
     }
 }
 

@@ -22,6 +22,7 @@
 #include "fingerprint_process.h"
 #include "gui_fullscreen_mode.h"
 #include "gui_keyboard_hintbox.h"
+#include "gui_pending_hintbox.h"
 #include "gui_page.h"
 #include "account_manager.h"
 #include "gui_animating_qrcode.h"
@@ -64,6 +65,20 @@ void GuiTransactionSignatureHandleURGenerate(char *data, uint16_t len)
 void GuiTransactionSignatureHandleURUpdate(char *data, uint16_t len)
 {
     GuiAnimatingQRCodeUpdate(data, len);
+}
+
+void GuiTransactionSignatureHandleURGenerateFail(void *param)
+{
+    GuiPendingHintBoxRemove();
+    UREncodeResult *result = NULL;
+    if (param != NULL) {
+        result = *(UREncodeResult **)param;
+    }
+    if (result != NULL) {
+        GuiCreateRustErrorWindow(result->error_code, result->error_message, NULL, (ErrorWindowCallback)GuiCloseCurrentWorkingView);
+    } else {
+        GuiCreateErrorCodeWindow(ERR_INVALID_QRCODE, NULL, (ErrorWindowCallback)GuiCloseCurrentWorkingView);
+    }
 }
 
 static void GuiTransactionSignatureNVSBarInit()

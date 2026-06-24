@@ -6,4 +6,5 @@ void GuiTransactionSignatureDeInit(void);
 void GuiTransactionSignatureRefresh(void);
 void GuiTransactionSignatureHandleURGenerate(char *data, uint16_t len);
 void GuiTransactionSignatureHandleURUpdate(char *data, uint16_t len);
+void GuiTransactionSignatureHandleURGenerateFail(void *param);
 #endif /* _GUI_TRANSACTION_WIDGETS_H */

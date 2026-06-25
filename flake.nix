@@ -1,0 +1,129 @@
+{
+  description = "Keystone3 firmware flake";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs =
+    {
+      self,
+      nixpkgs,
+      rust-overlay,
+    }:
+    let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ rust-overlay.overlays.default ];
+      };
+      rustToolchain = pkgs.rust-bin.nightly."2025-07-01".default.override {
+        targets = [ "thumbv7em-none-eabihf" ];
+        extensions = [
+          "rust-src"
+          "rust-analyzer"
+        ];
+      };
+      gccCompatFlags = "-std=gnu17 -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=incompatible-pointer-types";
+      arm-gcc-wrapped = pkgs.runCommand "arm-gcc-wrapped" { } ''
+        mkdir -p $out/bin
+        for tool in ${pkgs.gcc-arm-embedded}/bin/*; do
+          name=$(basename "$tool")
+          if [ "$name" = "arm-none-eabi-gcc" ] || [ "$name" = "arm-none-eabi-cc" ]; then
+            cat > "$out/bin/$name" <<WRAPPER
+        #!/bin/sh
+        exec "$tool" ${gccCompatFlags} "\$@"
+        WRAPPER
+            chmod +x "$out/bin/$name"
+          else
+            ln -s "$tool" "$out/bin/$name"
+          fi
+        done
+      '';
+      python = pkgs.python314.withPackages (ps: [
+        ps.pyyaml
+        ps.pillow
+      ]);
+      buildScript =
+        name: args:
+        pkgs.writeShellScriptBin name ''
+          exec ${python}/bin/python3 build.py ${args}
+        '';
+    in
+    {
+      devShells.${system}.default = pkgs.mkShell {
+        buildInputs = [
+          rustToolchain
+          python
+          (pkgs.writeShellScriptBin "rustup" ''
+            if [ "$1" = "run" ]; then
+              shift; shift; exec "$@"
+            fi
+            echo "rustup shimmed by nix devShell"
+          '')
+          arm-gcc-wrapped
+          pkgs.cmake
+          pkgs.gnumake
+          pkgs.clang
+          pkgs.pkg-config
+          pkgs.libclang.lib
+          pkgs.zlib
+          (pkgs.writeShellScriptBin "update-submodules" ''
+            exec git submodule update --init --recursive
+          '')
+          (buildScript "build-multi" "")
+          (buildScript "build-btc-only" "-t btc_only")
+          (buildScript "build-cypherpunk" "-t cypherpunk")
+          (buildScript "build-multi-production" "-e production")
+          (buildScript "build-btc-only-production" "-e production -t btc_only")
+          (buildScript "build-cypherpunk-production" "-e production -t cypherpunk")
+          (pkgs.writeShellScriptBin "build-firmware-maker" ''
+            cd tools/code/firmware-maker
+            cargo build --release
+          '')
+          (pkgs.writeShellScriptBin "make-keystone3-bin" ''
+            set -e
+            fmm="tools/code/firmware-maker/target/release/fmm"
+            if [ ! -f "$fmm" ]; then
+              echo "firmware-maker not built yet, run: build-firmware-maker"
+              exit 1
+            fi
+            if [ ! -f "build/mh1903_full.bin" ]; then
+              echo "build/mh1903_full.bin not found, run a production build first"
+              exit 1
+            fi
+            "$fmm" --source build/mh1903_full.bin --destination build/keystone3.bin
+            echo "Created build/keystone3.bin"
+          '')
+          (pkgs.writeShellScriptBin "run-tests" ''
+            cd rust
+            exec cargo test "$@"
+          '')
+          (pkgs.writeShellScriptBin "verify-firmware" ''
+            set -e
+            fmc_dir="tools/code/firmware-checker"
+            if [ ! -f "$fmc_dir/target/release/fmc" ]; then
+              echo "Building firmware-checker..."
+              cd "$fmc_dir"
+              cargo build --release
+              cd -
+            fi
+            "$fmc_dir/target/release/fmc" --source build/keystone3.bin
+          '')
+        ];
+
+        shellHook = ''
+          export LIBCLANG_PATH="${pkgs.libclang.lib}/lib"
+          export LD_LIBRARY_PATH="${pkgs.zlib}/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          export CARGO_NET_GIT_FETCH_WITH_CLI=true
+          export CC_thumbv7em_none_eabihf=arm-none-eabi-gcc
+          export AR_thumbv7em_none_eabihf=arm-none-eabi-ar
+          export RUSTUP_TOOLCHAIN=nightly-2025-07-01
+        '';
+      };
+    };
+}

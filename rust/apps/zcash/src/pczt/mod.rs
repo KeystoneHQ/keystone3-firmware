@@ -27,6 +27,20 @@ pub(crate) fn validate_supported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
                 "Ironwood actions require a v6 PCZT".to_string(),
             ));
         }
+
+        // The lean v6 shielded sighash (`pczt_ext::shielded_sig_commitment`) implements
+        // the Orchard and Ironwood v6 commitment domains, but NOT the v6 Sapling-spend
+        // domain (which uses a distinct noncompact personalization and omits the
+        // per-spend anchor; ZIP-244). Keystone's cypherpunk signing never produces
+        // Sapling spend authorizations, so reject any v6 PCZT carrying a Sapling spend
+        // rather than committing our Orchard/Ironwood signature to a v5-rules (wrong)
+        // Sapling digest. Sapling OUTPUTS are version-independent in ZIP-244 and remain
+        // supported; v5 transactions are unaffected (the lean v5 Sapling digest matches).
+        if pczt_is_v6(pczt) && !pczt.sapling().spends().is_empty() {
+            return Err(ZcashError::InvalidPczt(
+                "Sapling spends are not supported in v6 transactions".to_string(),
+            ));
+        }
     }
 
     Ok(())
@@ -408,6 +422,116 @@ pub(crate) mod test_support {
         .unwrap();
         let pczt = Updater::new(Creator::build_from_parts(pczt_parts).unwrap())
             .update_ironwood_with(|mut bundle| {
+                bundle.update_action_with(spend_action_index, |mut action| {
+                    action.set_spend_zip32_derivation(derivation);
+                    Ok(())
+                })
+            })
+            .unwrap()
+            .finish();
+
+        SamplePczt {
+            bytes: pczt.serialize(),
+            seed: seed.to_vec(),
+            ufvk_text,
+            seed_fingerprint,
+        }
+    }
+
+    // Orchard spend -> Ironwood output: a cross-pool migration, the message type
+    // the real batch uses (and the one never exercised on-device). Mirrors
+    // sample_ironwood_pczt but the *spent* note is an Orchard note.
+    #[cfg(zcash_unstable = "nu6.3")]
+    pub(crate) fn sample_migration_pczt() -> SamplePczt {
+        let params = Nu6_3Network;
+        let seed = [7u8; 32];
+        let ufvk_text = derive_ufvk(&params, &seed, "m/32'/133'/0'").unwrap();
+        let ufvk = UnifiedFullViewingKey::decode(&params, &ufvk_text).unwrap();
+        let orchard_fvk = ufvk.orchard().unwrap().clone();
+        let orchard_ivk = orchard_fvk.to_ivk(orchard::keys::Scope::External);
+        let orchard_ovk = orchard_fvk.to_ovk(orchard::keys::Scope::External);
+        let recipient = orchard_fvk.address_at(0u32, orchard::keys::Scope::External);
+
+        // The Orchard note being migrated: output (990_000) + cross-pool fee (20_000),
+        // so there is no change output.
+        let value = orchard::value::NoteValue::from_raw(1_010_000);
+        let note = {
+            let mut orchard_builder = orchard::builder::Builder::new(
+                orchard::BundleProtocol::OrchardPostNu6_3,
+                orchard::builder::BundleType::Coinbase,
+                orchard::Anchor::empty_tree(),
+            );
+            orchard_builder
+                .add_output(None, recipient, value, Memo::Empty.encode().into_bytes())
+                .unwrap();
+            let (bundle, meta) = orchard_builder.build::<i64>(&mut OsRng).unwrap().unwrap();
+            let action = bundle
+                .actions()
+                .get(meta.output_action_index(0).unwrap())
+                .unwrap();
+            let domain = orchard::note_encryption::OrchardDomain::for_action(action);
+            let (note, _, _) =
+                try_note_decryption(&domain, &orchard_ivk.prepare(), action).unwrap();
+            note
+        };
+
+        let (anchor, merkle_path) = {
+            let cmx: orchard::note::ExtractedNoteCommitment = note.commitment().into();
+            let leaf = orchard::tree::MerkleHashOrchard::from_cmx(&cmx);
+            let mut tree = ShardTree::<_, 32, 16>::new(
+                MemoryShardStore::<orchard::tree::MerkleHashOrchard, u32>::empty(),
+                100,
+            );
+            tree.append(leaf, Retention::Marked).unwrap();
+            tree.checkpoint(9_999_999).unwrap();
+            let merkle_path = tree
+                .witness_at_checkpoint_depth(0.into(), 0)
+                .unwrap()
+                .unwrap();
+            let anchor = merkle_path.root(leaf);
+            (anchor.into(), merkle_path.into())
+        };
+
+        let mut builder = Builder::new(
+            &params,
+            10_000_000.into(),
+            BuildConfig::Standard {
+                sapling_anchor: None,
+                orchard_anchor: Some(anchor),
+                ironwood_anchor: Some(orchard::Anchor::empty_tree()),
+            },
+        );
+        builder
+            .add_orchard_spend::<zip317::FeeRule>(orchard_fvk.clone(), note, merkle_path)
+            .unwrap();
+        builder
+            .add_ironwood_output::<zip317::FeeRule>(
+                Some(orchard_ovk),
+                recipient,
+                Zatoshis::const_from_u64(990_000),
+                MemoBytes::empty(),
+            )
+            .unwrap();
+        let PcztResult {
+            pczt_parts,
+            orchard_meta,
+            ..
+        } = builder
+            .build_for_pczt(OsRng, &zip317::FeeRule::standard())
+            .unwrap();
+        let spend_action_index = orchard_meta.spend_action_index(0).unwrap();
+        let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();
+        let derivation = orchard::pczt::Zip32Derivation::parse(
+            seed_fingerprint,
+            vec![
+                zip32::ChildIndex::hardened(32).index(),
+                zip32::ChildIndex::hardened(133).index(),
+                zip32::ChildIndex::hardened(0).index(),
+            ],
+        )
+        .unwrap();
+        let pczt = Updater::new(Creator::build_from_parts(pczt_parts).unwrap())
+            .update_orchard_with(|mut bundle| {
                 bundle.update_action_with(spend_action_index, |mut action| {
                     action.set_spend_zip32_derivation(derivation);
                     Ok(())

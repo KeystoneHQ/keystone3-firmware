@@ -22,13 +22,16 @@ use zcash_vendor::{
 };
 
 #[cfg(feature = "cypherpunk")]
-use zcash_vendor::{orchard, pczt::roles::signer::Signer as RoleSigner};
+use zcash_vendor::orchard;
 
-#[cfg(all(feature = "multi_coins", not(feature = "cypherpunk")))]
+#[cfg(any(feature = "cypherpunk", feature = "multi_coins"))]
 use zcash_vendor::{
-    pczt_ext::{self, PcztSigner as LegacyPcztSigner},
+    pczt_ext::{self, PcztSigner},
     transparent::sighash::SignableInput,
 };
+
+#[cfg(feature = "cypherpunk")]
+use {blake2b_simd::Hash, core::cell::Cell, core::cell::RefCell, rand_core::OsRng};
 
 use crate::{errors::ZcashError, version::KEYSTONE_FW_VERSION};
 
@@ -37,70 +40,13 @@ use crate::{errors::ZcashError, version::KEYSTONE_FW_VERSION};
 /// whether the device meets their minimum version requirements.
 const PROP_KEY_FW_VERSION: &str = "keystone:fw_version";
 
-#[derive(Debug)]
-#[cfg(feature = "cypherpunk")]
-enum SigningKeyCollectionError {
-    Zcash(ZcashError),
-    TransparentParse(transparent::pczt::ParseError),
-    #[cfg(feature = "cypherpunk")]
-    OrchardParse(orchard::pczt::ParseError),
-    OrchardBundleParse(zcash_vendor::pczt::orchard::BundleParseError),
-}
-
-#[cfg(feature = "cypherpunk")]
-impl SigningKeyCollectionError {
-    fn into_zcash(self) -> ZcashError {
-        match self {
-            SigningKeyCollectionError::Zcash(e) => e,
-            SigningKeyCollectionError::TransparentParse(e) => {
-                ZcashError::SigningError(format!("failed to parse transparent bundle: {e:?}"))
-            }
-            #[cfg(feature = "cypherpunk")]
-            SigningKeyCollectionError::OrchardParse(e) => {
-                ZcashError::SigningError(format!("failed to parse shielded bundle: {e:?}"))
-            }
-            SigningKeyCollectionError::OrchardBundleParse(e) => {
-                ZcashError::SigningError(format!("failed to parse shielded bundle: {e:?}"))
-            }
-        }
-    }
-}
-
-#[cfg(feature = "cypherpunk")]
-impl From<ZcashError> for SigningKeyCollectionError {
-    fn from(e: ZcashError) -> Self {
-        SigningKeyCollectionError::Zcash(e)
-    }
-}
-
-#[cfg(feature = "cypherpunk")]
-impl From<transparent::pczt::ParseError> for SigningKeyCollectionError {
-    fn from(e: transparent::pczt::ParseError) -> Self {
-        SigningKeyCollectionError::TransparentParse(e)
-    }
-}
-
-#[cfg(feature = "cypherpunk")]
-impl From<orchard::pczt::ParseError> for SigningKeyCollectionError {
-    fn from(e: orchard::pczt::ParseError) -> Self {
-        SigningKeyCollectionError::OrchardParse(e)
-    }
-}
-
-#[cfg(feature = "cypherpunk")]
-impl From<zcash_vendor::pczt::orchard::BundleParseError> for SigningKeyCollectionError {
-    fn from(e: zcash_vendor::pczt::orchard::BundleParseError) -> Self {
-        SigningKeyCollectionError::OrchardBundleParse(e)
-    }
-}
-
 #[cfg(all(feature = "multi_coins", not(feature = "cypherpunk")))]
 struct SeedSigner<'a> {
     seed: &'a [u8],
 }
 
 #[cfg(all(feature = "multi_coins", not(feature = "cypherpunk")))]
-impl LegacyPcztSigner for SeedSigner<'_> {
+impl PcztSigner for SeedSigner<'_> {
     type Error = ZcashError;
 
     fn sign_transparent<F>(
@@ -155,45 +101,180 @@ fn reject_legacy_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     Ok(())
 }
 
+/// Lean signer for the cypherpunk path. Drives the shallow `low_level_signer` and
+/// derives keys / signs each action in place, instead of materializing a full
+/// `RoleSigner` (which reconstructs the whole transaction to compute the sighash and
+/// blows the task stack). The sighash itself is the byte-level
+/// `pczt_ext::shielded_sig_commitment`, proven bit-exact against `RoleSigner` by the
+/// `test_lean_sighash_*` oracle tests.
+#[cfg(feature = "cypherpunk")]
+struct SeedSigner<'a> {
+    seed: &'a [u8],
+    seed_fingerprint: [u8; 32],
+    pool: ShieldedPool,
+    /// Per-account spend authorizing key cache. The seed fingerprint and the account
+    /// key depend only on (seed, account), not on the action, so a bundle with many
+    /// actions for one account derives once. Interior mutability because the
+    /// `PcztSigner` trait signs through `&self`.
+    ask_cache: RefCell<Vec<(zcash_vendor::zip32::AccountId, orchard::keys::SpendAuthorizingKey)>>,
+    /// Number of authorizations produced, so `sign_pczt` can distinguish "nothing of
+    /// ours to sign" (`PcztNoMyInputs`) from a successful signing.
+    signed: Cell<usize>,
+}
+
+#[cfg(feature = "cypherpunk")]
+impl<'a> SeedSigner<'a> {
+    fn new(seed: &'a [u8], seed_fingerprint: [u8; 32], pool: ShieldedPool) -> Self {
+        Self {
+            seed,
+            seed_fingerprint,
+            pool,
+            ask_cache: RefCell::new(Vec::new()),
+            signed: Cell::new(0),
+        }
+    }
+
+    fn spend_authorizing_key(
+        &self,
+        account_index: zcash_vendor::zip32::AccountId,
+    ) -> Result<orchard::keys::SpendAuthorizingKey, ZcashError> {
+        if let Some((_, ask)) = self
+            .ask_cache
+            .borrow()
+            .iter()
+            .find(|(cached, _)| *cached == account_index)
+        {
+            return Ok(ask.clone());
+        }
+        let osk = orchard::keys::SpendingKey::from_zip32_seed(self.seed, 133, account_index)
+            .map_err(|e| {
+                ZcashError::SigningError(format!(
+                    "failed to derive {} spending key: {e:?}",
+                    self.pool.label()
+                ))
+            })?;
+        let ask = orchard::keys::SpendAuthorizingKey::from(&osk);
+        self.ask_cache
+            .borrow_mut()
+            .push((account_index, ask.clone()));
+        Ok(ask)
+    }
+}
+
+#[cfg(feature = "cypherpunk")]
+impl PcztSigner for SeedSigner<'_> {
+    type Error = ZcashError;
+
+    fn sign_transparent<F>(
+        &self,
+        index: usize,
+        input: &mut transparent::pczt::Input,
+        hash: F,
+    ) -> Result<(), Self::Error>
+    where
+        F: FnOnce(SignableInput) -> [u8; 32],
+    {
+        if let Some(path) = transparent_key_path_for_input(self.seed, input)? {
+            let sk = get_private_key_by_seed(self.seed, &path).map_err(|e| {
+                ZcashError::SigningError(format!("failed to get private key: {e:?}"))
+            })?;
+            let secp = secp256k1::Secp256k1::new();
+            input
+                .sign(index, hash, &sk, &secp)
+                .map_err(|e| ZcashError::SigningError(format!("failed to sign input: {e:?}")))?;
+            self.signed.set(self.signed.get() + 1);
+        }
+        Ok(())
+    }
+
+    fn sign_orchard(
+        &self,
+        action: &mut orchard::pczt::Action,
+        hash: Hash,
+    ) -> Result<(), Self::Error> {
+        // Strict per-action validation, ported verbatim from the previous
+        // collect_orchard_bundle_signing_keys so the lean signer keeps identical
+        // skip/reject semantics to the RoleSigner path.
+        let pool_label = self.pool.label();
+        if action.spend().spend_auth_sig().is_some() {
+            return Ok(());
+        }
+        if action.spend().dummy_sk().is_some() {
+            match action.spend().value().map(|value| value.inner()) {
+                Some(0) | None => return Ok(()),
+                Some(_) => {
+                    return Err(ZcashError::InvalidPczt(format!(
+                        "{pool_label} spend dummy_sk is only valid for dummy spends"
+                    )));
+                }
+            }
+        }
+        if action.spend().value().is_none() {
+            return Ok(());
+        }
+        let Some(account_index) = super::matching_seed_supported_orchard_account(
+            &self.seed_fingerprint,
+            action.spend().zip32_derivation().as_ref(),
+            133,
+            self.pool,
+        )?
+        else {
+            // Not derivable from this seed; not ours to sign.
+            return Ok(());
+        };
+
+        let ask = self.spend_authorizing_key(account_index)?;
+        action
+            .sign(
+                hash.as_bytes().try_into().expect("sighash is 32 bytes"),
+                &ask,
+                OsRng,
+            )
+            .map_err(|e| {
+                ZcashError::SigningError(format!("failed to sign {pool_label} action: {e:?}"))
+            })?;
+        self.signed.set(self.signed.get() + 1);
+        Ok(())
+    }
+}
+
 #[cfg(feature = "cypherpunk")]
 pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
     super::validate_supported_pczt(&pczt)?;
-    let transparent_keys = collect_transparent_signing_keys(&pczt, seed)?;
-    let orchard_keys = collect_orchard_signing_keys(&pczt, seed, ShieldedPool::Orchard)?;
+
+    let seed_fingerprint =
+        calculate_seed_fingerprint(seed).map_err(|e| ZcashError::SigningError(e.to_string()))?;
+
     #[cfg(zcash_unstable = "nu6.3")]
-    let ironwood_keys = if super::pczt_should_process_ironwood(&pczt) {
-        collect_orchard_signing_keys(&pczt, seed, ShieldedPool::Ironwood)?
+    let process_ironwood = super::pczt_should_process_ironwood(&pczt);
+
+    // The orchard signer handles both the transparent inputs and the Orchard bundle
+    // (the pool only changes error labels for shielded actions). Ironwood gets its own.
+    let orchard_signer = SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Orchard);
+
+    // Propagate the signer error directly (it is already a ZcashError): the strict
+    // validation in SeedSigner::sign_orchard returns ZcashError::InvalidPczt for bad
+    // ZIP 32 paths, which callers/tests distinguish from generic SigningError.
+    let signer = low_level_signer::Signer::new(pczt);
+    let signer = pczt_ext::sign_transparent(signer, &orchard_signer)?;
+    let signer = pczt_ext::sign_orchard(signer, &orchard_signer)?;
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    let ironwood_signer = SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Ironwood);
+    #[cfg(zcash_unstable = "nu6.3")]
+    let signer = if process_ironwood {
+        pczt_ext::sign_ironwood(signer, &ironwood_signer)?
     } else {
-        Vec::new()
+        signer
     };
 
-    let signature_count = transparent_keys.len() + orchard_keys.len();
+    let mut signed = orchard_signer.signed.get();
     #[cfg(zcash_unstable = "nu6.3")]
-    let signature_count = signature_count + ironwood_keys.len();
-    if signature_count == 0 {
+    {
+        signed += ironwood_signer.signed.get();
+    }
+    if signed == 0 {
         return Err(ZcashError::PcztNoMyInputs);
-    }
-
-    let mut signer = RoleSigner::new(pczt)
-        .map_err(|e| ZcashError::SigningError(format!("failed to prepare PCZT signer: {e:?}")))?;
-
-    for (index, sk) in transparent_keys {
-        signer
-            .sign_transparent(index, &sk)
-            .map_err(|e| ZcashError::SigningError(format!("failed to sign input: {e:?}")))?;
-    }
-
-    for (index, ask) in orchard_keys {
-        signer.sign_orchard(index, &ask).map_err(|e| {
-            ZcashError::SigningError(format!("failed to sign Orchard action: {e:?}"))
-        })?;
-    }
-
-    #[cfg(zcash_unstable = "nu6.3")]
-    for (index, ask) in ironwood_keys {
-        signer.sign_ironwood(index, &ask).map_err(|e| {
-            ZcashError::SigningError(format!("failed to sign Ironwood action: {e:?}"))
-        })?;
     }
 
     Ok(stamp_and_redact(signer.finish()).serialize())
@@ -328,124 +409,14 @@ fn transparent_key_path_for_input(
 }
 
 #[cfg(feature = "cypherpunk")]
-fn collect_transparent_signing_keys(
-    pczt: &Pczt,
-    seed: &[u8],
-) -> Result<Vec<(usize, secp256k1::SecretKey)>, ZcashError> {
-    let mut keys = Vec::new();
-    low_level_signer::Signer::new(pczt.clone())
-        .sign_transparent_with(|_pczt, bundle, _tx_modifiable| {
-            for (index, input) in bundle.inputs_mut().iter().enumerate() {
-                if let Some(path) = transparent_key_path_for_input(seed, input)? {
-                    let sk = get_private_key_by_seed(seed, &path).map_err(|e| {
-                        ZcashError::SigningError(format!("failed to get private key: {e:?}"))
-                    })?;
-                    keys.push((index, sk));
-                }
-            }
-            Ok::<_, SigningKeyCollectionError>(())
-        })
-        .map_err(SigningKeyCollectionError::into_zcash)?;
-    Ok(keys)
-}
-
-#[cfg(feature = "cypherpunk")]
 use super::ShieldedPool;
-
-#[cfg(feature = "cypherpunk")]
-fn collect_orchard_signing_keys(
-    pczt: &Pczt,
-    seed: &[u8],
-    pool: ShieldedPool,
-) -> Result<Vec<(usize, orchard::keys::SpendAuthorizingKey)>, ZcashError> {
-    let mut keys = Vec::new();
-
-    match pool {
-        ShieldedPool::Orchard => {
-            low_level_signer::Signer::new(pczt.clone())
-                .sign_orchard_with(|_pczt, bundle, _tx_modifiable| {
-                    collect_orchard_bundle_signing_keys(&mut keys, seed, pool, bundle)
-                })
-                .map_err(SigningKeyCollectionError::into_zcash)?;
-        }
-        #[cfg(zcash_unstable = "nu6.3")]
-        ShieldedPool::Ironwood => {
-            if !super::pczt_should_process_ironwood(pczt) {
-                return Ok(keys);
-            }
-            low_level_signer::Signer::new(pczt.clone())
-                .sign_ironwood_with(|_pczt, bundle, _tx_modifiable| {
-                    collect_orchard_bundle_signing_keys(&mut keys, seed, pool, bundle)
-                })
-                .map_err(SigningKeyCollectionError::into_zcash)?;
-        }
-    }
-
-    Ok(keys)
-}
-
-#[cfg(feature = "cypherpunk")]
-fn collect_orchard_bundle_signing_keys(
-    keys: &mut Vec<(usize, orchard::keys::SpendAuthorizingKey)>,
-    seed: &[u8],
-    pool: ShieldedPool,
-    bundle: &mut orchard::pczt::Bundle,
-) -> Result<(), SigningKeyCollectionError> {
-    for (index, action) in bundle.actions().iter().enumerate() {
-        let pool_label = pool.label();
-        if action.spend().spend_auth_sig().is_some() {
-            continue;
-        }
-        if action.spend().dummy_sk().is_some() {
-            match action.spend().value().map(|value| value.inner()) {
-                Some(0) | None => continue,
-                Some(_) => {
-                    return Err(ZcashError::InvalidPczt(format!(
-                        "{pool_label} spend dummy_sk is only valid for dummy spends"
-                    ))
-                    .into());
-                }
-            }
-        }
-        if action.spend().value().is_none() {
-            continue;
-        }
-        if let Some(ask) = spend_authorizing_key_for_action(seed, action, pool)? {
-            keys.push((index, ask));
-        }
-    }
-    Ok(())
-}
-
-#[cfg(feature = "cypherpunk")]
-fn spend_authorizing_key_for_action(
-    seed: &[u8],
-    action: &orchard::pczt::Action,
-    pool: ShieldedPool,
-) -> Result<Option<orchard::keys::SpendAuthorizingKey>, ZcashError> {
-    let pool_label = pool.label();
-    let fingerprint =
-        calculate_seed_fingerprint(seed).map_err(|e| ZcashError::SigningError(e.to_string()))?;
-    let Some(account_index) = super::matching_seed_supported_orchard_account(
-        &fingerprint,
-        action.spend().zip32_derivation().as_ref(),
-        133,
-        pool,
-    )?
-    else {
-        return Ok(None);
-    };
-
-    let osk =
-        orchard::keys::SpendingKey::from_zip32_seed(seed, 133, account_index).map_err(|e| {
-            ZcashError::SigningError(format!("failed to derive {pool_label} spending key: {e:?}"))
-        })?;
-    Ok(Some(orchard::keys::SpendAuthorizingKey::from(&osk)))
-}
 
 #[cfg(all(test, feature = "cypherpunk"))]
 mod tests {
     use super::*;
+    // RoleSigner is the upstream reference signer; tests use its sighash as the
+    // bit-exact oracle for the lean pczt_ext::shielded_sig_commitment.
+    use zcash_vendor::pczt::roles::signer::Signer as RoleSigner;
 
     fn assert_invalid_pczt_message<T: core::fmt::Debug>(result: crate::Result<T>, expected: &str) {
         match result {
@@ -468,6 +439,87 @@ mod tests {
 
         let result = sign_pczt(pczt, &mismatched_seed);
         assert!(matches!(result, Err(ZcashError::PcztNoMyInputs)));
+    }
+
+    // Consensus guard: the lean byte-level sighash (pczt_ext::shielded_sig_commitment) MUST
+    // equal the upstream RoleSigner sighash for every shielded shape we sign. These assert it
+    // bit-exact for an Orchard-only tx, a dual-pool Orchard->Ironwood migration, and an
+    // Ironwood spend, so any upstream sighash change turns CI red instead of silently
+    // producing wrong signatures on-device.
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_lean_sighash_control_orchard_only() {
+        let sample = crate::pczt::test_support::sample_orchard_change_pczt();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
+        let oracle = RoleSigner::new(pczt.clone()).unwrap().shielded_sighash();
+        let lean: [u8; 32] = zcash_vendor::pczt_ext::shielded_sig_commitment(&pczt, 0, None)
+            .as_bytes()
+            .try_into()
+            .unwrap();
+        assert_eq!(
+            lean, oracle,
+            "orchard-only: lean 4-node sighash should already equal RoleSigner"
+        );
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_lean_sighash_migration_dualpool() {
+        let sample = crate::pczt::test_support::sample_migration_pczt();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
+        let oracle = RoleSigner::new(pczt.clone()).unwrap().shielded_sighash();
+        let lean: [u8; 32] = zcash_vendor::pczt_ext::shielded_sig_commitment(&pczt, 0, None)
+            .as_bytes()
+            .try_into()
+            .unwrap();
+        assert_eq!(
+            lean, oracle,
+            "migration: lean sighash must match RoleSigner v6 (Ironwood) sighash"
+        );
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_lean_sighash_ironwood_spend() {
+        // Exercises a populated Ironwood bundle with a real spend action.
+        let sample = crate::pczt::test_support::sample_ironwood_pczt();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
+        let oracle = RoleSigner::new(pczt.clone()).unwrap().shielded_sighash();
+        let lean: [u8; 32] = zcash_vendor::pczt_ext::shielded_sig_commitment(&pczt, 0, None)
+            .as_bytes()
+            .try_into()
+            .unwrap();
+        assert_eq!(
+            lean, oracle,
+            "ironwood-spend: lean sighash must match RoleSigner v6 sighash"
+        );
+    }
+
+    // End-to-end: an Orchard->Ironwood migration signs the Orchard spend and leaves the
+    // output-only Ironwood bundle unsigned.
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_sign_pczt_migration_signs_orchard_only() {
+        let sample = crate::pczt::test_support::sample_migration_pczt();
+        let signed = sign_pczt(Pczt::parse(&sample.bytes).unwrap(), &sample.seed)
+            .expect("migration PCZT should sign");
+        let parsed = Pczt::parse(&signed).expect("signed migration PCZT must parse");
+        assert!(
+            parsed
+                .orchard()
+                .actions()
+                .iter()
+                .any(|a| a.spend().spend_auth_sig().is_some()),
+            "migration Orchard spend must be authorized",
+        );
+        assert!(
+            parsed
+                .ironwood()
+                .actions()
+                .iter()
+                .all(|a| a.spend().spend_auth_sig().is_none()),
+            "output-only Ironwood bundle must not be authorized",
+        );
     }
 
     #[cfg(zcash_unstable = "nu6.3")]
@@ -671,6 +723,7 @@ mod tests {
             .expect("wallet-set min key must survive round trip");
         assert_eq!(request_min.as_slice(), &[1u8, 2][..]);
     }
+
 }
 
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]

@@ -190,6 +190,13 @@ void GuiTransactionDetailDeInit()
 //should get error cod here
 void GuiTransactionParseFailed()
 {
+#ifndef BTC_ONLY
+    if (GetCurrentTransactionMode() == TRANSACTION_MODE_USB) {
+        const char *data = "UR parsing failed";
+        HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_ERROR);
+        return;
+    }
+#endif
     ThrowError(ERR_INVALID_QRCODE);
 }
 
@@ -234,11 +241,17 @@ void GuiTransactionDetailVerifyPasswordSuccess(void)
             return;
         }
         UREncodeResult *urResult = func();
+        if (urResult == NULL) {
+            const char *data = "Signing failed";
+            HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_ERROR);
+            return;
+        }
         if (urResult->error_code == 0) {
             HandleURResultViaUSBFunc(urResult->data, strlen(urResult->data), GetCurrentUSParsingRequestID(), RSP_SUCCESS_CODE);
         } else {
             HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), GetCurrentUSParsingRequestID(), PRS_PARSING_ERROR);
         }
+        free_ur_encode_result(urResult);
         return;
     }
 #endif

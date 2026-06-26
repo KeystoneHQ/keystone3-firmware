@@ -5,6 +5,9 @@
 #include "gui_btc.h"
 #ifndef BTC_ONLY
 #include "gui_zcash.h"
+#ifdef CYPHERPUNK_VERSION
+#include "gui_zcash_batch_widgets.h"
+#endif
 #ifdef WEB3_VERSION
 #include "gui_eth.h"
 #include "gui_eth_batch_tx_widgets.h"
@@ -140,6 +143,7 @@ typedef enum {
 
 #ifdef CYPHERPUNK_VERSION
     REMAPVIEW_ZCASH,
+    REMAPVIEW_ZCASH_BATCH_TX,
     REMAPVIEW_XMR_OUTPUT,
     REMAPVIEW_XMR_UNSIGNED,
 #endif

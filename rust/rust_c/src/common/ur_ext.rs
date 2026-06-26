@@ -67,6 +67,8 @@ use ur_registry::ton::ton_sign_request::{DataType, TonSignRequest};
 use ur_registry::tron::tron_sign_request::TronSignRequest;
 #[cfg(feature = "zcash")]
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
+#[cfg(feature = "zcash_cypherpunk")]
+use ur_registry::zcash::zcash_sign_batch::ZcashSignBatch;
 
 use super::ur::ViewType;
 
@@ -220,6 +222,13 @@ impl InferViewType for AptosSignRequest {
 impl InferViewType for ZcashPczt {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::ZcashTx)
+    }
+}
+
+#[cfg(feature = "zcash_cypherpunk")]
+impl InferViewType for ZcashSignBatch {
+    fn infer(&self) -> Result<ViewType, URError> {
+        Ok(ViewType::ZcashBatchTx)
     }
 }
 

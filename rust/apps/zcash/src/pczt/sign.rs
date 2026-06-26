@@ -1,23 +1,54 @@
-use super::*;
-use bitcoin::secp256k1;
-use blake2b_simd::Hash;
-use keystore::algorithms::secp256k1::get_private_key_by_seed;
-use rand_core::OsRng;
-use zcash_vendor::{
-    pczt::{
-        roles::{low_level_signer, redactor::Redactor},
-        Pczt,
-    },
-    pczt_ext::{self, PcztSigner},
-    transparent::{self, sighash::SignableInput},
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec::Vec,
 };
 
+use bitcoin::secp256k1;
+use keystore::algorithms::{
+    secp256k1::{get_private_key_by_seed, get_public_key_by_seed},
+    zcash::calculate_seed_fingerprint,
+};
+use zcash_vendor::{
+    pczt::{
+        roles::{
+            low_level_signer,
+            redactor::{orchard::OrchardRedactor, Redactor},
+            updater::Updater,
+        },
+        Pczt,
+    },
+    transparent,
+};
+
+#[cfg(feature = "cypherpunk")]
+use zcash_vendor::orchard;
+
+#[cfg(any(feature = "cypherpunk", feature = "multi_coins"))]
+use zcash_vendor::{
+    pczt_ext::{self, PcztSigner},
+    transparent::sighash::SignableInput,
+};
+
+#[cfg(feature = "cypherpunk")]
+use {blake2b_simd::Hash, core::cell::Cell, core::cell::RefCell, rand_core::OsRng};
+
+use crate::{errors::ZcashError, version::KEYSTONE_FW_VERSION};
+
+/// `global.proprietary` key stamped into every signed PCZT response.
+/// Value is 3 bytes `[major, minor, build]`. Wallets read this to check
+/// whether the device meets their minimum version requirements.
+const PROP_KEY_FW_VERSION: &str = "keystone:fw_version";
+
+#[cfg(all(feature = "multi_coins", not(feature = "cypherpunk")))]
 struct SeedSigner<'a> {
     seed: &'a [u8],
 }
 
+#[cfg(all(feature = "multi_coins", not(feature = "cypherpunk")))]
 impl PcztSigner for SeedSigner<'_> {
     type Error = ZcashError;
+
     fn sign_transparent<F>(
         &self,
         index: usize,
@@ -27,118 +58,250 @@ impl PcztSigner for SeedSigner<'_> {
     where
         F: FnOnce(SignableInput) -> [u8; 32],
     {
-        let fingerprint = calculate_seed_fingerprint(self.seed)
-            .map_err(|e| ZcashError::SigningError(e.to_string()))?;
-
-        let key_path = input.bip32_derivation();
-
-        let path = key_path
-            .iter()
-            .find_map(|(pubkey, path)| {
-                let path_fingerprint = *path.seed_fingerprint();
-                if fingerprint == path_fingerprint {
-                    let path = {
-                        let mut ret = "m".to_string();
-                        for i in path.derivation_path().iter() {
-                            if i.is_hardened() {
-                                ret.push_str(&alloc::format!("/{}'", i.index()));
-                            } else {
-                                ret.push_str(&alloc::format!("/{}", i.index()));
-                            }
-                        }
-                        ret
-                    };
-                    match get_public_key_by_seed(self.seed, &path) {
-                        Ok(my_pubkey) if my_pubkey.serialize().to_vec().eq(pubkey) => {
-                            Some(Ok(path))
-                        }
-                        Err(e) => Some(Err(e)),
-                        _ => None,
-                    }
-                } else {
-                    None
-                }
-            })
-            .transpose()
-            .map_err(|e| ZcashError::SigningError(e.to_string()))?;
-
-        if let Some(path) = path {
+        if let Some(path) = transparent_key_path_for_input(self.seed, input)? {
             let sk = get_private_key_by_seed(self.seed, &path).map_err(|e| {
-                ZcashError::SigningError(alloc::format!("failed to get private key: {e:?}"))
+                ZcashError::SigningError(format!("failed to get private key: {e:?}"))
             })?;
             let secp = secp256k1::Secp256k1::new();
-            input.sign(index, hash, &sk, &secp).map_err(|e| {
-                ZcashError::SigningError(alloc::format!("failed to sign input: {e:?}"))
-            })?;
+            input
+                .sign(index, hash, &sk, &secp)
+                .map_err(|e| ZcashError::SigningError(format!("failed to sign input: {e:?}")))?;
         }
 
         Ok(())
     }
+}
 
-    #[cfg(feature = "cypherpunk")]
+#[cfg(not(feature = "cypherpunk"))]
+pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
+    super::validate_supported_pczt(&pczt)?;
+    reject_legacy_unsupported_pczt(&pczt)?;
+
+    let signer = low_level_signer::Signer::new(pczt);
+
+    #[cfg(feature = "multi_coins")]
+    let signer = pczt_ext::sign_transparent(signer, &SeedSigner { seed })
+        .map_err(|e| ZcashError::SigningError(e.to_string()))?;
+
+    Ok(stamp_and_redact(signer.finish()).serialize())
+}
+
+#[cfg(not(feature = "cypherpunk"))]
+fn reject_legacy_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
+    #[cfg(zcash_unstable = "nu6.3")]
+    {
+        // The legacy helper below carries the pre-NU6.3 transparent sighash implementation.
+        // It must not be used for shielded (Sapling/Orchard/Ironwood) or V6 PCZTs.
+        if super::pczt_requires_cypherpunk_support(pczt) {
+            return Err(ZcashError::SigningError(
+                "Shielded or V6 PCZTs require cypherpunk signing support".to_string(),
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// Lean signer for the cypherpunk path. Drives the shallow `low_level_signer` and
+/// derives keys / signs each action in place, instead of materializing a full
+/// `RoleSigner` (which reconstructs the whole transaction to compute the sighash and
+/// blows the task stack). The sighash itself is the byte-level
+/// `pczt_ext::shielded_sig_commitment`, proven bit-exact against `RoleSigner` by the
+/// `test_lean_sighash_*` oracle tests.
+#[cfg(feature = "cypherpunk")]
+struct SeedSigner<'a> {
+    seed: &'a [u8],
+    seed_fingerprint: [u8; 32],
+    pool: ShieldedPool,
+    /// Per-account spend authorizing key cache. The seed fingerprint and the account
+    /// key depend only on (seed, account), not on the action, so a bundle with many
+    /// actions for one account derives once. Interior mutability because the
+    /// `PcztSigner` trait signs through `&self`.
+    ask_cache: RefCell<Vec<(zcash_vendor::zip32::AccountId, orchard::keys::SpendAuthorizingKey)>>,
+    /// Number of authorizations produced, so `sign_pczt` can distinguish "nothing of
+    /// ours to sign" (`PcztNoMyInputs`) from a successful signing.
+    signed: Cell<usize>,
+}
+
+#[cfg(feature = "cypherpunk")]
+impl<'a> SeedSigner<'a> {
+    fn new(seed: &'a [u8], seed_fingerprint: [u8; 32], pool: ShieldedPool) -> Self {
+        Self {
+            seed,
+            seed_fingerprint,
+            pool,
+            ask_cache: RefCell::new(Vec::new()),
+            signed: Cell::new(0),
+        }
+    }
+
+    fn spend_authorizing_key(
+        &self,
+        account_index: zcash_vendor::zip32::AccountId,
+    ) -> Result<orchard::keys::SpendAuthorizingKey, ZcashError> {
+        if let Some((_, ask)) = self
+            .ask_cache
+            .borrow()
+            .iter()
+            .find(|(cached, _)| *cached == account_index)
+        {
+            return Ok(ask.clone());
+        }
+        let osk = orchard::keys::SpendingKey::from_zip32_seed(self.seed, 133, account_index)
+            .map_err(|e| {
+                ZcashError::SigningError(format!(
+                    "failed to derive {} spending key: {e:?}",
+                    self.pool.label()
+                ))
+            })?;
+        let ask = orchard::keys::SpendAuthorizingKey::from(&osk);
+        self.ask_cache
+            .borrow_mut()
+            .push((account_index, ask.clone()));
+        Ok(ask)
+    }
+}
+
+#[cfg(feature = "cypherpunk")]
+impl PcztSigner for SeedSigner<'_> {
+    type Error = ZcashError;
+
+    fn sign_transparent<F>(
+        &self,
+        index: usize,
+        input: &mut transparent::pczt::Input,
+        hash: F,
+    ) -> Result<(), Self::Error>
+    where
+        F: FnOnce(SignableInput) -> [u8; 32],
+    {
+        if let Some(path) = transparent_key_path_for_input(self.seed, input)? {
+            let sk = get_private_key_by_seed(self.seed, &path).map_err(|e| {
+                ZcashError::SigningError(format!("failed to get private key: {e:?}"))
+            })?;
+            let secp = secp256k1::Secp256k1::new();
+            input
+                .sign(index, hash, &sk, &secp)
+                .map_err(|e| ZcashError::SigningError(format!("failed to sign input: {e:?}")))?;
+            self.signed.set(self.signed.get() + 1);
+        }
+        Ok(())
+    }
+
     fn sign_orchard(
         &self,
         action: &mut orchard::pczt::Action,
         hash: Hash,
     ) -> Result<(), Self::Error> {
-        let fingerprint = calculate_seed_fingerprint(self.seed)
-            .map_err(|e| ZcashError::SigningError(e.to_string()))?;
+        // Strict per-action validation, ported verbatim from the previous
+        // collect_orchard_bundle_signing_keys so the lean signer keeps identical
+        // skip/reject semantics to the RoleSigner path.
+        let pool_label = self.pool.label();
+        if action.spend().spend_auth_sig().is_some() {
+            return Ok(());
+        }
+        if action.spend().dummy_sk().is_some() {
+            match action.spend().value().map(|value| value.inner()) {
+                Some(0) | None => return Ok(()),
+                Some(_) => {
+                    return Err(ZcashError::InvalidPczt(format!(
+                        "{pool_label} spend dummy_sk is only valid for dummy spends"
+                    )));
+                }
+            }
+        }
+        if action.spend().value().is_none() {
+            return Ok(());
+        }
+        let Some(account_index) = super::matching_seed_supported_orchard_account(
+            &self.seed_fingerprint,
+            action.spend().zip32_derivation().as_ref(),
+            133,
+            self.pool,
+        )?
+        else {
+            // Not derivable from this seed; not ours to sign.
+            return Ok(());
+        };
 
-        let derivation = action.spend().zip32_derivation().as_ref().ok_or_else(|| {
-            ZcashError::SigningError("missing ZIP 32 derivation for Orchard action".into())
-        })?;
-
-        if &fingerprint == derivation.seed_fingerprint() {
-            sign_message_orchard(
-                action,
-                self.seed,
-                hash.as_bytes().try_into().expect("correct length"),
-                &derivation.derivation_path().clone(),
+        let ask = self.spend_authorizing_key(account_index)?;
+        action
+            .sign(
+                hash.as_bytes().try_into().expect("sighash is 32 bytes"),
+                &ask,
                 OsRng,
             )
-            .map_err(|e| ZcashError::SigningError(e.to_string()))
-        } else {
-            Ok(())
-        }
+            .map_err(|e| {
+                ZcashError::SigningError(format!("failed to sign {pool_label} action: {e:?}"))
+            })?;
+        self.signed.set(self.signed.get() + 1);
+        Ok(())
     }
 }
+
+#[cfg(feature = "cypherpunk")]
 pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
+    super::validate_supported_pczt(&pczt)?;
+
+    let seed_fingerprint =
+        calculate_seed_fingerprint(seed).map_err(|e| ZcashError::SigningError(e.to_string()))?;
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    let process_ironwood = super::pczt_should_process_ironwood(&pczt);
+
+    // The orchard signer handles both the transparent inputs and the Orchard bundle
+    // (the pool only changes error labels for shielded actions). Ironwood gets its own.
+    let orchard_signer = SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Orchard);
+
+    // Propagate the signer error directly (it is already a ZcashError): the strict
+    // validation in SeedSigner::sign_orchard returns ZcashError::InvalidPczt for bad
+    // ZIP 32 paths, which callers/tests distinguish from generic SigningError.
     let signer = low_level_signer::Signer::new(pczt);
+    let signer = pczt_ext::sign_transparent(signer, &orchard_signer)?;
+    let signer = pczt_ext::sign_orchard(signer, &orchard_signer)?;
 
-    #[cfg(any(feature = "multi_coins", feature = "cypherpunk"))]
-    let signer = pczt_ext::sign_transparent(signer, &SeedSigner { seed })
-        .map_err(|e| ZcashError::SigningError(e.to_string()))?;
-    #[cfg(feature = "cypherpunk")]
-    let signer = pczt_ext::sign_orchard(signer, &SeedSigner { seed })
-        .map_err(|e| ZcashError::SigningError(e.to_string()))?;
+    #[cfg(zcash_unstable = "nu6.3")]
+    let ironwood_signer = SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Ironwood);
+    #[cfg(zcash_unstable = "nu6.3")]
+    let signer = if process_ironwood {
+        pczt_ext::sign_ironwood(signer, &ironwood_signer)?
+    } else {
+        signer
+    };
 
-    // Now that we've created the signature, remove the other optional fields from the
-    // PCZT, to reduce its size for the return trip and make the QR code scanning more
-    // reliable. The wallet that provided the unsigned PCZT can retain it for combining if
-    // these fields are needed.
-    let signed_pczt = Redactor::new(signer.finish())
-        .redact_orchard_with(|mut r| {
-            r.redact_actions(|mut ar| {
-                ar.clear_spend_recipient();
-                ar.clear_spend_value();
-                ar.clear_spend_rho();
-                ar.clear_spend_rseed();
-                ar.clear_spend_fvk();
-                ar.clear_spend_witness();
-                ar.clear_spend_alpha();
-                ar.clear_spend_zip32_derivation();
-                ar.clear_spend_dummy_sk();
-                ar.clear_output_recipient();
-                ar.clear_output_value();
-                ar.clear_output_rseed();
-                ar.clear_output_ock();
-                ar.clear_output_zip32_derivation();
-                ar.clear_output_user_address();
-                ar.clear_rcv();
-            });
-            r.clear_zkproof();
-            r.clear_bsk();
+    let mut signed = orchard_signer.signed.get();
+    #[cfg(zcash_unstable = "nu6.3")]
+    {
+        signed += ironwood_signer.signed.get();
+    }
+    if signed == 0 {
+        return Err(ZcashError::PcztNoMyInputs);
+    }
+
+    Ok(stamp_and_redact(signer.finish()).serialize())
+}
+
+fn stamp_and_redact(pczt: Pczt) -> Pczt {
+    // Stamp the firmware version into `global.proprietary` so the wallet can
+    // tell exactly which version of Keystone firmware produced this signature.
+    // The Redactor below intentionally does not touch `global`, so this value
+    // survives the redaction pass into the returned bytes.
+    let stamped_pczt = Updater::new(pczt)
+        .update_global_with(|mut g| {
+            g.set_proprietary(
+                PROP_KEY_FW_VERSION.into(),
+                KEYSTONE_FW_VERSION.encode().to_vec(),
+            );
         })
+        .finish();
+
+    // Now that we've created the signature, remove optional fields that the
+    // signing response does not need. This keeps the QR round trip small while
+    // preserving signatures and global proprietary fields for the wallet.
+    let redactor = Redactor::new(stamped_pczt).redact_orchard_with(redact_orchard_bundle);
+    #[cfg(zcash_unstable = "nu6.3")]
+    let redactor = redactor.redact_ironwood_with(redact_orchard_bundle);
+
+    redactor
         .redact_sapling_with(|mut r| {
             r.redact_spends(|mut sr| {
                 sr.clear_zkproof();
@@ -180,35 +343,416 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
                 or.clear_user_address();
             });
         })
-        .finish();
-
-    Ok(signed_pczt.serialize())
+        .finish()
 }
 
-#[cfg(test)]
+fn redact_orchard_bundle(mut r: OrchardRedactor<'_>) {
+    r.redact_actions(|mut ar| {
+        ar.clear_spend_recipient();
+        ar.clear_spend_value();
+        ar.clear_spend_rho();
+        ar.clear_spend_rseed();
+        ar.clear_spend_fvk();
+        ar.clear_spend_witness();
+        ar.clear_spend_alpha();
+        ar.clear_spend_zip32_derivation();
+        ar.clear_spend_dummy_sk();
+        ar.clear_output_recipient();
+        ar.clear_output_value();
+        ar.clear_output_rseed();
+        ar.clear_output_ock();
+        ar.clear_output_zip32_derivation();
+        ar.clear_output_user_address();
+        ar.clear_rcv();
+    });
+    r.clear_zkproof();
+    r.clear_bsk();
+}
+
+#[cfg(any(
+    feature = "cypherpunk",
+    all(feature = "multi_coins", not(feature = "cypherpunk"))
+))]
+fn transparent_key_path_for_input(
+    seed: &[u8],
+    input: &transparent::pczt::Input,
+) -> Result<Option<String>, ZcashError> {
+    let fingerprint =
+        calculate_seed_fingerprint(seed).map_err(|e| ZcashError::SigningError(e.to_string()))?;
+
+    for (pubkey, path) in input.bip32_derivation().iter() {
+        let path_fingerprint = *path.seed_fingerprint();
+        if fingerprint != path_fingerprint {
+            continue;
+        }
+
+        let path = {
+            let mut ret = "m".to_string();
+            for i in path.derivation_path().iter() {
+                if i.is_hardened() {
+                    ret.push_str(&format!("/{}'", i.index()));
+                } else {
+                    ret.push_str(&format!("/{}", i.index()));
+                }
+            }
+            ret
+        };
+
+        match get_public_key_by_seed(seed, &path) {
+            Ok(my_pubkey) if my_pubkey.serialize().to_vec().eq(pubkey) => return Ok(Some(path)),
+            Err(e) => return Err(ZcashError::SigningError(e.to_string())),
+            _ => {}
+        }
+    }
+
+    Ok(None)
+}
+
+#[cfg(feature = "cypherpunk")]
+use super::ShieldedPool;
+
+#[cfg(all(test, feature = "cypherpunk"))]
 mod tests {
     use super::*;
+    // RoleSigner is the upstream reference signer; tests use its sighash as the
+    // bit-exact oracle for the lean pczt_ext::shielded_sig_commitment.
+    use zcash_vendor::pczt::roles::signer::Signer as RoleSigner;
 
+    fn assert_invalid_pczt_message<T: core::fmt::Debug>(result: crate::Result<T>, expected: &str) {
+        match result {
+            Err(ZcashError::InvalidPczt(message)) if message == expected => {}
+            other => panic!("unexpected InvalidPczt result: {other:?}"),
+        }
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    fn signable_sample_pczt() -> crate::pczt::test_support::SamplePczt {
+        crate::pczt::test_support::sample_ironwood_pczt()
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_sign_pczt_invalid_seed_fingerprint() {
-        // A valid PCZT hex string found in the codebase
-        let pczt_hex = "50435a5401000000058ace9cb502d5a09cc70c0100f083ae0185010000000180ade2041976a91467f7aa14f177a7e0058c66c7242e086488bd3d1088ac000001237431544d4c4a376b324e344e6172716b3546643575556f38324e58534d624b5267436300000000fbc2f4300c01f0b7820d00e3347c8da4ee614674376cbc45359daa54f9b5493e010000000000000000000000000000000000000000000000000000000000000000024d2eeb083d7c168f64239c3186d53c72e2b1a3a5140f5250f0963689c08cd61c0999baea13f0be05dc6a2554bb2f8f093f4d20911202567a5ab9fd17bce5142b3f79838a71d14757fcff03ba16486a3efb26c9773ec9596821d1e5f32039fe220001d5d3506f152f62c45198446223abf29e06da700990a779fb60a460712fb666a0ff1fab61e2b2b3566b263d0180b6dc05014b2225d5521d6dbb55ae03d22567ce98b242ba5520bc4e2493ec36fb9211c6350194215c2aa089dfa317c61bab4b9747f4e45abca855e45e00710a3dc5caa40a570186f6f9e818f6674c2df92918a55d20f340944de5c67c1c4a9ee347c2c2d6d71d4753d765f2859a3157f7b05cc3bc7089e3f2c9d5abb3fcb1708e74c790985d3dd90cfe2ed03276dfda527c6e8c08d9a1fdeedcb6aef59d9e5bf0ae5d9477ed030001872727f23f40a96896b66d04de905791bae2bc7ee9dc1f4e4ec5ae493dc2fc1001afb475105f1f5b477c52aa3c32ccf131b0c556b80f55ac555460e6b5148bf85303a0808080088581808008808080800800002585b32c42aa5a12b2763953f09aafed13450eda0c416e32d0978260c4171c375413b91e25fa826399623b6716ae8bbb0b4a1099de22478944627af7e5969aa0c404ffab4d35664c1dafd2d2c0cecf4fb3c8b054179f84b2d35d207077b3d256b429acdee34963c573b55ae20fffce73e0e3e575c8fde9d115e7ffab50b3bee60d2436b72c17677e1d7db141fafa72c7f89002908a7a8de3320e5ad3d1ed0bb545235e136904c5c5e4adfa5a100420ceb2196e5e197e919aeaeefa7cb2a1d98e011539af52d618bfb3ba1dfc2d2c01e9bd67523bb6787eb5a0d28e30ad483c6303efd4796795082cc67ea94ba8548a33da1a5ec7c56174bd6b260f548e83a924b7cdd32980ca489b44e981aa1d81cefe2581eebf3a585fb80542aea4a27862f593203b560a412ba4e737c8f678f239f3d1d07c5a82367435f0a0921c46600eb4f6f7387b3cb5984af98b1337f5148ad6388b62dab7cdc48c66ff81685894c2d1d0fe41716b7cb457fb5bd6ff13e321d2f91c15d431f942d7869955dfeadfff61638266ba38d7ba4db7ffe5ee03550d345715cebd9b378181b5769c22e1b20328165da02eeb5d246c70c008ac0c7f7b1bba2cf8270f013eb99cbc5d534270180f34892fdf08d8c16c518d8b7f62d832d676c65fcae34c640ff30d5bd9d65afeab509117a98374b4b9b016228a65bdd803d6c601d2ad6a654c2fe4487d9c7b088d886c36a6afe63d33f8c474f096500acabbb63968e7408c620cc8139331cf7227e9bdbf4b7bae292e15d310e66186b730f28d0515ac5bb71fcc5de09995fe89d005cc2c7afd0fb8f01b315815d38366ebeb6de9ed565b5d1f2ce14b7795b9ad784851f357beacc454be41aaec506f0148461ba5907043ab8618114bbbede979d7f0e0e0af914750df648079e3625e4f309d13ff74d4ada783203bb3652137abd8327cdd06b9332591c9abdcc0cc16f7fec2e0afd849bef8927b3b0ceeca2b90af7611875b78cf525852ee83e10c8f4cb2c80045cbf33c0801a55eeb15c9dca6e53b3dde8a12daf820f1f76624ee48e3128aaa0ef6f6fb32a0303d89e88be288be1b92a301e893790179ec07711e275f48de2f5f8e0ee7b000091c9d96159746d46f353e67463d7052000000000118c5796d39cd2bc56b0a062c20ebd32feb0b57cc231c262d6703520f8de603211edcf51f6084e3288cbdb02957a02cd68fb84973a6a98260fb60f30951dedb2e1240275687c0bd82a2653a2c212bd3c0ea75cd294f5a4d31dcf507c15461402760282899f6b560858c0b6bd95c708f62d1e856480a52401d0d7d6a642fa1c2a10176072c6147735b785ea4ad9276378885704a44c6246f4630ef1df59438562e055bba6c1411a790727ab27421e6c418df8b65cb636d6786ce9e5b632659f5d32401caffe6271e2d77d8634e67a116926d7566b5eb2f2aadba6498d7a1e120f27f52379bb3f8781090ae47e30b0100011a78b2abbab21b29d79141fdff8a389c2eacde5be75c69ae4c4fabc175aec10a0142b202630def2df1f7cd23fcf362c68194829282c57b0c4d5f0ca023b51a571f01bd466676b53cfc27ba4a94bb4ab3ed19d8db336042e09e1e756b560b5ce7fc05d5dc3269236828f541662db5bfd4ab6e07c4dac2682906ee85eca2d12b6522013dd286fc499141cfebfb53175ea4321e08e8a504604bbc2e9d3e59706a1fa439000130febcd5d0c57c6e3780d6fe1f6c07f01a9d5d7a053ac5562f29304418d33a20000000f7fa16a612e422c34d61c44ae692b255c921239547172fcd26519928a3abb10d22548d840b466f1fed5ccb4c442d97b4b59d1a728455ee1598bae8e316f819bac404c9112693c57e0733d550ddc984d82ecc9047721e7e7bc6f283ba00852e49a4d3cda4dad343a366650b1d75b26025eadc5200113ebcc2a4a7db9ac2291083d76e7a8c04831764caf35e4c18bfc58e58699b4a651ca3686a95a6db7133611b5ce80a14225cdac643311869ea0c4a6d760379f285fa9c396c435361044da7e077f236d589a3eb962129988ea6ccde694cb72fa986748fc106981320f478a1c5402fe75a26dee31ec9fad4240aa19932fa8361c43798aa381c63b0c0b17657ccf37792a28456cfe6562e15d9e4aa26ed2660b6c8fc8a92cd352a6025dabcbed5eba82d88b9df3ba73270ff2f9c44fca8b0c1df8ed4cbfa2a4ebe7d0bcc6e5ce73e43b51e054860d7939ca13d77813b372070fd24cdd9c0e2fad7567471c0279bba19a76f0cdbd3107220821dd676c1df6524c15b87c1318eda418d65f8c66d2a77a65f6894199d44611e60c0291c330d1692bd521aef0e316e2b3f8c377b0d6873b3b645196ba74a79c6e0509869ac66276c3e2dfefd54a12365b5945406e7b673321ed36e89a14a194ae8b864e9ac4684655bae7fcd3123a226f282ac6ac82ca88d6a383d8be90f87f4cb85225f697932abfb4c05cda3b6dadb003621fee663f3fcb8f1c96320a3f148bc106ec231961a8f5142dd614317eef16b81492668a8b8795b85d7b0f737fa8d79e9dc3d78840d158a73dc6d1700ce3a8de2a9f93ff1bc8108703b94fd5bd230a19dd0fd821b832d3508b335e07bac28e95c3ab0eb637334bf166fa2a440ea35c0372bb5a745ee86c727a80f0d0d080fef6642ae7aae1407d6a25c3050c498a52ae300105bded1f19829b10df00e7ba301a9aef2c99ad7c5338b0e259ab97ea852630606b8d59709ca067d32698c8761e0f7d5b76ac07d4860b0fe2992010ba88827bb37cf4e3436488580e79101b366d454f29aa2bdf76725130baa08b38af3a71c251521809c84fe3d086943f39f01d760884b6342fac60c010001c54930d4f4f9946dfe91ac3e94cf5b513871c4a5c0c21137959482da796d2d280000000001c4666732084baff2e402ed7d3e457303c73b77dbd4aa5bc943ac7ca96f3779070398a2e304004aed48232c44dbd0b0b5404063ecc4679436f28c6251cbba91e29388fcd98d0e0001dc2be19f4118dbb7500df3a95e304733b247cea7f8c681f6aaafceb8fc1d7d28";
-        let pczt_bytes = hex::decode(pczt_hex).unwrap();
-        let pczt = Pczt::parse(&pczt_bytes).unwrap();
+        let sample = signable_sample_pczt();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
+        let mismatched_seed = [9u8; 32];
 
-        // Random seed, should mismatch the seed fingerprint in PCZT
-        let seed = hex::decode("d561f5aba9db8b100a9a84197322e522f952171a388ad74eaab1ab9db815be3335c3099a0a2bb0fee57e630db5ed7251412b6bd4b905cf518627411fee3f32dd").unwrap();
+        let result = sign_pczt(pczt, &mismatched_seed);
+        assert!(matches!(result, Err(ZcashError::PcztNoMyInputs)));
+    }
 
-        // Should return a successfull result but with redacted information
-        // In the current logic, if keys don't match, it returns Ok and does not sign, but redactor still runs.
-        let result = sign_pczt(pczt, &seed);
-        assert!(result.is_ok());
+    // Consensus guard: the lean byte-level sighash (pczt_ext::shielded_sig_commitment) MUST
+    // equal the upstream RoleSigner sighash for every shielded shape we sign. These assert it
+    // bit-exact for an Orchard-only tx, a dual-pool Orchard->Ironwood migration, and an
+    // Ironwood spend, so any upstream sighash change turns CI red instead of silently
+    // producing wrong signatures on-device.
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_lean_sighash_control_orchard_only() {
+        let sample = crate::pczt::test_support::sample_orchard_change_pczt();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
+        let oracle = RoleSigner::new(pczt.clone()).unwrap().shielded_sighash();
+        let lean: [u8; 32] = zcash_vendor::pczt_ext::shielded_sig_commitment(&pczt, 0, None)
+            .as_bytes()
+            .try_into()
+            .unwrap();
+        assert_eq!(
+            lean, oracle,
+            "orchard-only: lean 4-node sighash should already equal RoleSigner"
+        );
+    }
 
-        let signed_pczt = result.unwrap();
-        // Verify result is a valid PCZT
-        assert!(Pczt::parse(&signed_pczt).is_ok());
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_lean_sighash_migration_dualpool() {
+        let sample = crate::pczt::test_support::sample_migration_pczt();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
+        let oracle = RoleSigner::new(pczt.clone()).unwrap().shielded_sighash();
+        let lean: [u8; 32] = zcash_vendor::pczt_ext::shielded_sig_commitment(&pczt, 0, None)
+            .as_bytes()
+            .try_into()
+            .unwrap();
+        assert_eq!(
+            lean, oracle,
+            "migration: lean sighash must match RoleSigner v6 (Ironwood) sighash"
+        );
+    }
 
-        // Verify redaction occurred (size should be smaller as witness data is removed)
-        assert!(signed_pczt.len() < pczt_bytes.len());
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_lean_sighash_ironwood_spend() {
+        // Exercises a populated Ironwood bundle with a real spend action.
+        let sample = crate::pczt::test_support::sample_ironwood_pczt();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
+        let oracle = RoleSigner::new(pczt.clone()).unwrap().shielded_sighash();
+        let lean: [u8; 32] = zcash_vendor::pczt_ext::shielded_sig_commitment(&pczt, 0, None)
+            .as_bytes()
+            .try_into()
+            .unwrap();
+        assert_eq!(
+            lean, oracle,
+            "ironwood-spend: lean sighash must match RoleSigner v6 sighash"
+        );
+    }
+
+    // End-to-end: an Orchard->Ironwood migration signs the Orchard spend and leaves the
+    // output-only Ironwood bundle unsigned.
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_sign_pczt_migration_signs_orchard_only() {
+        let sample = crate::pczt::test_support::sample_migration_pczt();
+        let signed = sign_pczt(Pczt::parse(&sample.bytes).unwrap(), &sample.seed)
+            .expect("migration PCZT should sign");
+        let parsed = Pczt::parse(&signed).expect("signed migration PCZT must parse");
+        assert!(
+            parsed
+                .orchard()
+                .actions()
+                .iter()
+                .any(|a| a.spend().spend_auth_sig().is_some()),
+            "migration Orchard spend must be authorized",
+        );
+        assert!(
+            parsed
+                .ironwood()
+                .actions()
+                .iter()
+                .all(|a| a.spend().spend_auth_sig().is_none()),
+            "output-only Ironwood bundle must not be authorized",
+        );
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_sign_pczt_ironwood_spend() {
+        let sample = crate::pczt::test_support::sample_ironwood_pczt();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
+
+        let base_sighash = RoleSigner::new(pczt.clone())
+            .expect("Ironwood PCZT signer should initialize")
+            .shielded_sighash();
+        let updated_anchor = orchard::Anchor::from_bytes([6u8; 32]).unwrap();
+        let updated_anchor_pczt = Updater::new(pczt.clone())
+            .set_v6_ironwood_anchor(updated_anchor)
+            .expect("v6 Ironwood anchor should be replaceable before proving")
+            .finish();
+        assert_ne!(
+            pczt.ironwood().anchor(),
+            updated_anchor_pczt.ironwood().anchor()
+        );
+        assert_eq!(
+            base_sighash,
+            RoleSigner::new(updated_anchor_pczt)
+                .expect("anchor-updated Ironwood PCZT signer should initialize")
+                .shielded_sighash(),
+            "v6 Ironwood spend signatures must not commit to the anchor"
+        );
+
+        let signed_pczt_bytes = sign_pczt(pczt, &sample.seed).expect("Ironwood PCZT should sign");
+        let parsed = Pczt::parse(&signed_pczt_bytes).expect("signed PCZT must parse");
+
+        let stamp = parsed
+            .global()
+            .proprietary()
+            .get(PROP_KEY_FW_VERSION)
+            .expect("firmware version stamp must be present");
+        assert_eq!(stamp, &KEYSTONE_FW_VERSION.encode().to_vec());
+        assert!(
+            parsed
+                .ironwood()
+                .actions()
+                .iter()
+                .any(|action| action.spend().spend_auth_sig().is_some()),
+            "Ironwood spend authorization signature must be present",
+        );
+        for action in parsed.ironwood().actions().iter() {
+            if let Some(sig) = action.spend().spend_auth_sig() {
+                let rk = orchard::primitives::redpallas::VerificationKey::<
+                    orchard::primitives::redpallas::SpendAuth,
+                >::try_from(*action.spend().rk())
+                .expect("Ironwood randomized validating key must parse");
+                let sig: orchard::primitives::redpallas::Signature<
+                    orchard::primitives::redpallas::SpendAuth,
+                > = (*sig).into();
+
+                rk.verify(&base_sighash, &sig)
+                    .expect("Ironwood spend authorization signature must match v6 sighash");
+            }
+        }
+        assert!(
+            signed_pczt_bytes.len() < sample.bytes.len(),
+            "signed response should be redacted",
+        );
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_sign_pczt_ironwood_spend_rejects_unsupported_zip32_path() {
+        let sample = crate::pczt::test_support::sample_ironwood_pczt();
+        for path in crate::pczt::test_support::unsupported_orchard_spend_paths() {
+            let pczt = crate::pczt::test_support::ironwood_pczt_with_spend_derivation(
+                &sample.bytes,
+                sample.seed_fingerprint,
+                path,
+            );
+
+            assert_invalid_pczt_message(
+                sign_pczt(Pczt::parse(&pczt).unwrap(), &sample.seed),
+                "unsupported Ironwood spend ZIP 32 derivation path",
+            );
+        }
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_sign_pczt_ironwood_spend_ignores_dummy_zip32_metadata() {
+        let sample = crate::pczt::test_support::sample_ironwood_pczt();
+        let pczt = crate::pczt::test_support::ironwood_pczt_with_dummy_spend_derivation(
+            &sample.bytes,
+            sample.seed_fingerprint,
+            crate::pczt::test_support::orchard_spend_path_for_account(1),
+        );
+
+        let signed = sign_pczt(Pczt::parse(&pczt).unwrap(), &sample.seed)
+            .expect("dummy spend ZIP 32 metadata must not block signing real spends");
+        let parsed = Pczt::parse(&signed).expect("signed PCZT must parse");
+        assert!(
+            parsed
+                .ironwood()
+                .actions()
+                .iter()
+                .any(|action| action.spend().spend_auth_sig().is_some()),
+            "Ironwood spend authorization signature must be present",
+        );
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_sign_pczt_orchard_change_output_spend() {
+        let sample = crate::pczt::test_support::sample_orchard_change_pczt();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
+
+        let signed =
+            sign_pczt(pczt, &sample.seed).expect("Orchard change output spend should sign");
+        let parsed = Pczt::parse(&signed).expect("signed PCZT must parse");
+        let signed_actions = parsed
+            .orchard()
+            .actions()
+            .iter()
+            .filter(|action| action.spend().spend_auth_sig().is_some())
+            .count();
+        assert_eq!(
+            signed_actions, 2,
+            "real spend and wallet controlled zero value spend must be signed",
+        );
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    fn pczt_with_min_version(min_version: &[u8]) -> Pczt {
+        let sample = signable_sample_pczt();
+        let base = Pczt::parse(&sample.bytes).unwrap();
+        let min_version = min_version.to_vec();
+        Updater::new(base)
+            .update_global_with(|mut g| {
+                g.set_proprietary("test:min_fw_version".to_string(), min_version);
+            })
+            .finish()
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    fn test_seed() -> Vec<u8> {
+        [7u8; 32].to_vec()
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn firmware_equal_version_stamps_response() {
+        let pczt = pczt_with_min_version(&KEYSTONE_FW_VERSION.encode());
+        let signed = sign_pczt(pczt, &test_seed()).expect("equal-version PCZT should sign");
+        let parsed = Pczt::parse(&signed).expect("signed PCZT must parse");
+
+        let stamp = parsed
+            .global()
+            .proprietary()
+            .get(PROP_KEY_FW_VERSION)
+            .expect("firmware version stamp must be present");
+        assert_eq!(stamp, &KEYSTONE_FW_VERSION.encode().to_vec());
+
+        let request_min = parsed
+            .global()
+            .proprietary()
+            .get("test:min_fw_version")
+            .expect("request min-version should round-trip");
+        assert_eq!(request_min, &KEYSTONE_FW_VERSION.encode().to_vec());
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn firmware_older_min_version_still_stamps_response() {
+        let pczt = pczt_with_min_version(&[1, 0, 0]);
+        let signed = sign_pczt(pczt, &test_seed()).expect("older-min PCZT should sign");
+        let parsed = Pczt::parse(&signed).expect("signed PCZT must parse");
+
+        let stamp = parsed
+            .global()
+            .proprietary()
+            .get(PROP_KEY_FW_VERSION)
+            .expect("firmware version stamp must be present");
+        assert_eq!(stamp, &KEYSTONE_FW_VERSION.encode().to_vec());
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn malformed_min_version_round_trips_and_stamps() {
+        let pczt = pczt_with_min_version(&[1, 2]);
+        let signed =
+            sign_pczt(pczt, &test_seed()).expect("malformed min bytes must not block signing");
+        let parsed = Pczt::parse(&signed).expect("signed PCZT must parse");
+
+        let stamp = parsed
+            .global()
+            .proprietary()
+            .get(PROP_KEY_FW_VERSION)
+            .expect("firmware version stamp must be present");
+        assert_eq!(stamp, &KEYSTONE_FW_VERSION.encode().to_vec());
+
+        let request_min = parsed
+            .global()
+            .proprietary()
+            .get("test:min_fw_version")
+            .expect("wallet-set min key must survive round trip");
+        assert_eq!(request_min.as_slice(), &[1u8, 2][..]);
+    }
+
+}
+
+#[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]
+mod legacy_tests {
+    use super::*;
+    use zcash_vendor::{
+        pczt::roles::creator::Creator,
+        zcash_protocol::consensus::{BranchId, MainNetwork, NetworkConstants},
+    };
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn legacy_signing_rejects_v6_pczt() {
+        let pczt = Creator::new_v6(
+            BranchId::Nu6_3.into(),
+            10,
+            MainNetwork.coin_type(),
+            [0; 32],
+            [0; 32],
+            [1; 32],
+        )
+        .build();
+
+        let result = sign_pczt(pczt, &[7u8; 32]);
+
+        assert!(matches!(
+            result,
+            Err(ZcashError::SigningError(msg))
+                if msg == "Shielded or V6 PCZTs require cypherpunk signing support"
+        ));
     }
 }

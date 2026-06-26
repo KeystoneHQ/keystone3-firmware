@@ -17,16 +17,25 @@ bitvec = { version = "1.0.1", default-features = false, features = ["alloc"] }
 blake2b_simd = { workspace = true }
 rand_core = { workspace = true, features = ["getrandom"] }
 zcash_note_encryption = "0.4.1"
+postcard = { version = "1.0.3", features = ["alloc"] }
+serde = { workspace = true }
+serde_with = { version = "3.11.0", features = [
+    "alloc",
+    "macros",
+], default-features = false }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }
-pczt = { version = "0.2.1", default-features = false, features = ["orchard", "sapling", "transparent", "zcp-builder"] }
-zcash_primitives = { version = "0.22", default-features = false, features = ["circuits", "test-dependencies", "transparent-inputs"] }
-postcard = { version = "1.0.3", features = ["alloc"] }
-serde = { workspace = true }
+pczt = { version = "0.7", default-features = false, features = ["orchard", "sapling", "transparent", "zcp-builder"] }
+zcash_primitives = { version = "0.28", default-features = false, features = ["circuits", "test-dependencies", "transparent-inputs"] }
+incrementalmerkletree = { version = "0.8.2", default-features = false }
+shardtree = "0.6.2"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(coverage_nightly)',
+    'cfg(zcash_unstable, values("nu6.3"))',
+] }
 
 [features]
 default = ["cypherpunk"]

@@ -6,7 +6,7 @@ use crate::common::{
     types::{Ptr, PtrString},
     utils::convert_c_char,
 };
-use crate::{free_ptr_with_type, free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs};
+use crate::{free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs};
 use alloc::vec::Vec;
 use app_zcash::pczt::structs::{
     ParsedFrom, ParsedOrchard, ParsedPczt, ParsedTo, ParsedTransparent,
@@ -17,6 +17,7 @@ use cstr_core;
 pub struct DisplayPczt {
     pub transparent: Ptr<DisplayTransparent>,
     pub orchard: Ptr<DisplayOrchard>,
+    pub ironwood: Ptr<DisplayOrchard>,
     pub total_transfer_value: PtrString,
     pub fee_value: PtrString,
     pub has_sapling: bool,
@@ -33,6 +34,10 @@ impl From<&ParsedPczt> for DisplayPczt {
                 .get_orchard()
                 .map(|o| DisplayOrchard::from(&o).c_ptr())
                 .unwrap_or(null_mut()),
+            ironwood: pczt
+                .get_ironwood()
+                .map(|o| DisplayOrchard::from(&o).c_ptr())
+                .unwrap_or(null_mut()),
             total_transfer_value: convert_c_char(pczt.get_total_transfer_value()),
             fee_value: convert_c_char(pczt.get_fee_value()),
             has_sapling: pczt.get_has_sapling(),
@@ -43,9 +48,39 @@ impl From<&ParsedPczt> for DisplayPczt {
 impl Free for DisplayPczt {
     unsafe fn free(&self) {
         free_str_ptr!(self.total_transfer_value);
-        free_ptr_with_type!(self.transparent, DisplayTransparent);
-        free_ptr_with_type!(self.orchard, DisplayOrchard);
+        free_str_ptr!(self.fee_value);
+        free_display_ptr(self.transparent);
+        free_display_ptr(self.orchard);
+        free_display_ptr(self.ironwood);
     }
+}
+
+#[repr(C)]
+pub struct DisplayZcashBatch {
+    pub txs: Ptr<VecFFI<DisplayPczt>>,
+}
+
+impl From<Vec<DisplayPczt>> for DisplayZcashBatch {
+    fn from(txs: Vec<DisplayPczt>) -> Self {
+        Self {
+            txs: VecFFI::from(txs).c_ptr(),
+        }
+    }
+}
+
+impl Free for DisplayZcashBatch {
+    unsafe fn free(&self) {
+        free_vec!(self.txs);
+    }
+}
+
+unsafe fn free_display_ptr<T: Free>(ptr: Ptr<T>) {
+    if ptr.is_null() {
+        return;
+    }
+
+    let boxed = alloc::boxed::Box::from_raw(ptr);
+    boxed.free();
 }
 
 #[repr(C)]
@@ -173,6 +208,7 @@ impl Free for DisplayOrchard {
 
 impl_c_ptrs!(
     DisplayPczt,
+    DisplayZcashBatch,
     DisplayTransparent,
     DisplayFrom,
     DisplayTo,

@@ -55,7 +55,7 @@ void *GuiGetZcashGUIData(void)
 }
 
 static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_view);
-static lv_obj_t* GuiZcashOverviewOrchard(lv_obj_t *parent, lv_obj_t *last_view);
+static lv_obj_t* GuiZcashOverviewShielded(lv_obj_t *parent, lv_obj_t *last_view, DisplayOrchard *pool, const char *labelText);
 static lv_obj_t* GuiZcashOverviewFrom(lv_obj_t *parent, VecFFI_DisplayFrom *from, lv_obj_t *last_view);
 static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_obj_t *last_view);
 
@@ -83,7 +83,11 @@ void GuiZcashOverview(lv_obj_t *parent, void *totalData)
     }
 
     if (g_zcashData->orchard != NULL) {
-        last_view = GuiZcashOverviewOrchard(container, last_view);
+        last_view = GuiZcashOverviewShielded(container, last_view, g_zcashData->orchard, _("Orchard"));
+    }
+
+    if (g_zcashData->ironwood != NULL) {
+        last_view = GuiZcashOverviewShielded(container, last_view, g_zcashData->ironwood, _("Ironwood"));
     }
 }
 
@@ -108,21 +112,21 @@ static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_vi
     return inner_last_view;
 }
 
-static lv_obj_t* GuiZcashOverviewOrchard(lv_obj_t* parent, lv_obj_t *last_view)
+static lv_obj_t* GuiZcashOverviewShielded(lv_obj_t* parent, lv_obj_t *last_view, DisplayOrchard *pool, const char *labelText)
 {
     lv_obj_t* inner_last_view;
-    lv_obj_t* label = GuiCreateIllustrateLabel(parent, _("Orchard"));
+    lv_obj_t* label = GuiCreateIllustrateLabel(parent, labelText);
     lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
 
     inner_last_view = label;
 
-    if (g_zcashData->orchard->from->size > 0) {
-        lv_obj_t* from_view = GuiZcashOverviewFrom(parent, g_zcashData->orchard->from, inner_last_view);
+    if (pool->from->size > 0) {
+        lv_obj_t* from_view = GuiZcashOverviewFrom(parent, pool->from, inner_last_view);
         inner_last_view = from_view;
     }
 
-    if (g_zcashData->orchard->to->size > 0) {
-        lv_obj_t* to_view = GuiZcashOverviewTo(parent, g_zcashData->orchard->to, inner_last_view);
+    if (pool->to->size > 0) {
+        lv_obj_t* to_view = GuiZcashOverviewTo(parent, pool->to, inner_last_view);
         inner_last_view = to_view;
     }
 

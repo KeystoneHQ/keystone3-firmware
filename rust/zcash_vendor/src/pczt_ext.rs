@@ -62,6 +62,15 @@ const ZCASH_ORCHARD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxId
 #[allow(unused)]
 const ZCASH_ORCHARD_SIGS_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxAuthOrchaHash";
 
+// V6 (NU6.3) txid tree personalizations. The transparent-only legacy path only
+// ever needs the *empty* bundle digests for these pools (shielded content is
+// rejected upstream), and an empty-bundle digest is a plain blake2b of the
+// bundle personalization string (see `orchard::commitments`).
+#[cfg(zcash_unstable = "nu6.3")]
+const ZCASH_ORCHARD_V6_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdOrchardH_v6";
+#[cfg(zcash_unstable = "nu6.3")]
+const ZCASH_IRONWOOD_V6_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdIronwd_H_v6";
+
 const ZCASH_TRANSPARENT_INPUT_HASH_PERSONALIZATION: &[u8; 16] = b"Zcash___TxInHash";
 const ZCASH_TRANSPARENT_AMOUNTS_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxTrAmountsHash";
 const ZCASH_TRANSPARENT_SCRIPTS_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxTrScriptsHash";
@@ -190,6 +199,7 @@ fn hash_transparent_tx_id(t_digests: Option<TransparentDigests>) -> Hash {
 
 fn digest_orchard(pczt: &Pczt) -> Hash {
     let mut h = hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION);
+
     let mut ch = hasher(ZCASH_ORCHARD_ACTIONS_COMPACT_HASH_PERSONALIZATION);
     let mut mh = hasher(ZCASH_ORCHARD_ACTIONS_MEMOS_HASH_PERSONALIZATION);
     let mut nh = hasher(ZCASH_ORCHARD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION);
@@ -221,6 +231,7 @@ fn digest_orchard(pczt: &Pczt) -> Hash {
     h.update(&value_balance.to_le_bytes());
 
     h.update(pczt.orchard().anchor());
+
     h.finalize()
 }
 
@@ -294,6 +305,31 @@ fn hash_orchard_txid_empty() -> Hash {
     hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION).finalize()
 }
 
+#[cfg(zcash_unstable = "nu6.3")]
+fn hash_orchard_v6_txid_empty() -> Hash {
+    hasher(ZCASH_ORCHARD_V6_HASH_PERSONALIZATION).finalize()
+}
+
+#[cfg(zcash_unstable = "nu6.3")]
+fn hash_ironwood_v6_txid_empty() -> Hash {
+    hasher(ZCASH_IRONWOOD_V6_HASH_PERSONALIZATION).finalize()
+}
+
+/// Selects the Orchard node of the txid tree for the transaction version: v6
+/// uses a distinct empty-bundle personalization from pre-v6. The non-empty
+/// branch is only reached by pre-v6 fixtures, because the legacy signing path
+/// rejects shielded content before a sighash is ever computed.
+fn orchard_txid_node(pczt: &Pczt) -> Hash {
+    if has_orchard(pczt) {
+        return digest_orchard(pczt);
+    }
+    #[cfg(zcash_unstable = "nu6.3")]
+    if *pczt.global().tx_version() >= 6 {
+        return hash_orchard_v6_txid_empty();
+    }
+    hash_orchard_txid_empty()
+}
+
 fn shielded_sig_commitment(pczt: &Pczt, lock_time: u32, input_info: Option<SignableInput>) -> Hash {
     let mut personal = [0; 16];
     personal[..12].copy_from_slice(ZCASH_TX_PERSONALIZATION_PREFIX);
@@ -311,14 +347,13 @@ fn shielded_sig_commitment(pczt: &Pczt, lock_time: u32, input_info: Option<Signa
         }
         .as_bytes(),
     );
-    h.update(
-        if has_orchard(pczt) {
-            digest_orchard(pczt)
-        } else {
-            hash_orchard_txid_empty()
-        }
-        .as_bytes(),
-    );
+    h.update(orchard_txid_node(pczt).as_bytes());
+    // V6 transactions append an Ironwood bundle node to the txid tree. The
+    // legacy path rejects shielded content, so it is always the empty digest.
+    #[cfg(zcash_unstable = "nu6.3")]
+    if *pczt.global().tx_version() >= 6 {
+        h.update(hash_ironwood_v6_txid_empty().as_bytes());
+    }
     h.finalize()
 }
 
@@ -371,9 +406,10 @@ fn transparent_sig_digest(pczt: &Pczt, input_info: Option<SignableInput>) -> Has
             ch.update(input.prevout_txid());
             ch.update(&input.prevout_index().to_le_bytes());
             ch.update(&signable_input.value().to_i64_le_bytes());
-            let len = signable_input.script_pubkey().0.len();
+            let script_pubkey = &signable_input.script_pubkey().0 .0;
+            let len = script_pubkey.len();
             ch.update(&[len as u8]);
-            ch.update(&signable_input.script_pubkey().0);
+            ch.update(script_pubkey);
             ch.update(&input.sequence().unwrap_or(0xffffffff).to_le_bytes());
         }
         let txin_sig_digest = ch.finalize();
@@ -433,6 +469,7 @@ where
 pub fn sign_orchard<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,
+    T::Error: From<pczt::orchard::BundleParseError>,
     T::Error: From<orchard::pczt::ParseError>,
     T::Error: From<transparent::pczt::ParseError>,
 {
@@ -460,11 +497,42 @@ where
 #[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
+    use alloc::vec;
+
     use pczt::Pczt;
-    use transparent::{address::Script, sighash::SighashType};
+    use transparent::{
+        address::Script,
+        bundle::{Authorized, Bundle, OutPoint, TxIn},
+        sighash::SighashType,
+    };
     use zcash_protocol::value::Zatoshis;
 
     use super::*;
+
+    fn script_from_bytes(script_pubkey: &[u8]) -> Script {
+        let mut encoded = vec![script_pubkey.len() as u8];
+        encoded.extend_from_slice(script_pubkey);
+        Script::read(&encoded[..]).unwrap()
+    }
+
+    fn transparent_bundle_for_signable_inputs(pczt: &Pczt) -> Bundle<Authorized> {
+        Bundle {
+            vin: pczt
+                .transparent()
+                .inputs()
+                .iter()
+                .map(|input| {
+                    TxIn::from_parts(
+                        OutPoint::new(*input.prevout_txid(), *input.prevout_index()),
+                        Script::default(),
+                        input.sequence().unwrap_or(0xffffffff),
+                    )
+                })
+                .collect(),
+            vout: vec![],
+            authorization: Authorized,
+        }
+    }
 
     #[test]
     fn test_basic_functions_orchard2orchard() {
@@ -542,27 +610,32 @@ mod tests {
             "fea284c0b63a4de21c2f660587b2e04461f7089d6c9f8c2e60a3caed77c037ae"
         );
 
-        let script_code = Script(pczt.transparent().inputs()[0].script_pubkey().clone());
+        let transparent_bundle = transparent_bundle_for_signable_inputs(&pczt);
+        let script_code = script_from_bytes(pczt.transparent().inputs()[0].script_pubkey());
 
         let signable_input = SignableInput::from_parts(
+            &transparent_bundle,
             SighashType::parse(SIGHASH_ALL).unwrap(),
             0,
             &script_code,
             &script_code,
             Zatoshis::from_u64(*pczt.transparent().inputs()[0].value()).unwrap(),
-        );
+        )
+        .unwrap();
         assert_eq!(
             hex::encode(shielded_sig_commitment(&pczt, 0, Some(signable_input)).as_bytes()),
             "a2865e1c7f3de700eee25fe233da6bbdab267d524bc788998485359441ad3140"
         );
-        let script_code = Script(pczt.transparent().inputs()[1].script_pubkey().clone());
+        let script_code = script_from_bytes(pczt.transparent().inputs()[1].script_pubkey());
         let signable_input2 = SignableInput::from_parts(
+            &transparent_bundle,
             SighashType::parse(SIGHASH_ALL).unwrap(),
             1,
             &script_code,
             &script_code,
             Zatoshis::from_u64(*pczt.transparent().inputs()[1].value()).unwrap(),
-        );
+        )
+        .unwrap();
         assert_eq!(
             hex::encode(shielded_sig_commitment(&pczt, 0, Some(signable_input2)).as_bytes()),
             "9c10678495dfdb1f29beb6583d652bc66cb4e3d27d24d75fb6922f230e9953e8"
@@ -604,6 +677,25 @@ mod tests {
         assert_eq!(
             hex::encode(shielded_sig_commitment(&pczt, 0, None).as_bytes()),
             "d9b80aac7a7e0f9cd525572877656bd923ff0c557be9a1ff16ff6e8e389ccc81"
+        );
+    }
+
+    /// The v6 empty-bundle txid digests must match the authoritative orchard-crate
+    /// definitions for the ORCHARD_V6 and IRONWOOD_V6 commitment domains. This pins
+    /// the personalization strings the v6 transparent sighash relies on.
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn v6_empty_bundle_digests_match_orchard_crate() {
+        use orchard::bundle::commitments::{
+            hash_bundle_txid_empty_with_domain, BundleCommitmentDomain,
+        };
+        assert_eq!(
+            hash_orchard_v6_txid_empty().as_bytes(),
+            hash_bundle_txid_empty_with_domain(BundleCommitmentDomain::ORCHARD_V6).as_bytes(),
+        );
+        assert_eq!(
+            hash_ironwood_v6_txid_empty().as_bytes(),
+            hash_bundle_txid_empty_with_domain(BundleCommitmentDomain::IRONWOOD_V6).as_bytes(),
         );
     }
 }

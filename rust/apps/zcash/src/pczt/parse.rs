@@ -21,7 +21,11 @@ use zcash_vendor::{
 use zcash_note_encryption::Domain;
 #[cfg(feature = "cypherpunk")]
 use zcash_vendor::orchard::{
-    self, keys::OutgoingViewingKey, note::Note, note_encryption::OrchardDomain, Address,
+    self,
+    keys::OutgoingViewingKey,
+    note::Note,
+    note_encryption::{IronwoodDomain, OrchardDomain},
+    Address,
 };
 #[cfg(feature = "cypherpunk")]
 use zcash_vendor::{
@@ -99,16 +103,31 @@ pub fn decode_output_enc_ciphertext(
     action: &orchard::pczt::Action,
     ovk: Option<&OutgoingViewingKey>,
 ) -> Result<Option<(Note, Address, [u8; 512])>, ZcashError> {
-    let domain = OrchardDomain::for_pczt_action(action);
+    // orchard 0.15.0-pre.1 splits note encryption by version: Ironwood actions carry V3
+    // note plaintexts and must be trial-decrypted with `IronwoodDomain`, while Orchard
+    // actions use the V2 `OrchardDomain`. Select the domain from the action's note version
+    // so both pools decrypt correctly.
+    let is_ironwood = matches!(*action.output().note_version(), orchard::NoteVersion::V3);
 
     if let Some(ovk) = ovk {
-        Ok(try_output_recovery_with_ovk(
-            &domain,
-            ovk,
-            action,
-            action.cv_net(),
-            &action.output().encrypted_note().out_ciphertext,
-        ))
+        let out_ciphertext = &action.output().encrypted_note().out_ciphertext;
+        Ok(if is_ironwood {
+            try_output_recovery_with_ovk(
+                &IronwoodDomain::for_pczt_action(action),
+                ovk,
+                action,
+                action.cv_net(),
+                out_ciphertext,
+            )
+        } else {
+            try_output_recovery_with_ovk(
+                &OrchardDomain::for_pczt_action(action),
+                ovk,
+                action,
+                action.cv_net(),
+                out_ciphertext,
+            )
+        })
     } else {
         // If we reached here, none of our OVKs matched; recover directly as the fallback.
 
@@ -132,15 +151,30 @@ pub fn decode_output_enc_ciphertext(
             value,
             rho,
             rseed,
-            (*action.output().note_version()).into(),
+            *action.output().note_version(),
         )
         .into_option()
         .ok_or_else(|| ZcashError::InvalidPczt("Orchard action contains invalid note".into()))?;
 
-        let pk_d = OrchardDomain::get_pk_d(&note);
-        let esk = OrchardDomain::derive_esk(&note).expect("Orchard notes are post-ZIP 212");
-
-        Ok(try_output_recovery_with_pkd_esk(&domain, pk_d, esk, action))
+        Ok(if is_ironwood {
+            let pk_d = IronwoodDomain::get_pk_d(&note);
+            let esk = IronwoodDomain::derive_esk(&note).expect("Orchard notes are post-ZIP 212");
+            try_output_recovery_with_pkd_esk(
+                &IronwoodDomain::for_pczt_action(action),
+                pk_d,
+                esk,
+                action,
+            )
+        } else {
+            let pk_d = OrchardDomain::get_pk_d(&note);
+            let esk = OrchardDomain::derive_esk(&note).expect("Orchard notes are post-ZIP 212");
+            try_output_recovery_with_pkd_esk(
+                &OrchardDomain::for_pczt_action(action),
+                pk_d,
+                esk,
+                action,
+            )
+        })
     }
 }
 

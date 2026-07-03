@@ -382,6 +382,7 @@ static void *GuiParseZcashBatchData(void)
 
 void GuiZcashBatchWidgetsTransactionParseSuccess(void)
 {
+    ClearLockScreenTime();
     g_displayZcashBatch = g_parseResult->data;
     g_txCount = g_displayZcashBatch->txs->size;
     g_currentTxIndex = 0;
@@ -390,6 +391,7 @@ void GuiZcashBatchWidgetsTransactionParseSuccess(void)
 
 void GuiZcashBatchWidgetsTransactionParseFail(void)
 {
+    ClearLockScreenTime();
     printf("GuiZcashBatchWidgetsTransactionParseFail\n");
     if (g_parseResult != NULL) {
         printf("error: %s\n", g_parseResult->error_message);

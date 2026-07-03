@@ -22,12 +22,14 @@ use keystore::algorithms::{
 use structs::DisplayPczt;
 use structs::DisplayZcashBatch;
 use ur_registry::traits::RegistryItem;
+use ur_registry::zcash::zcash_batch_sig_result::{
+    ZcashActionSig, ZcashBatchSigResult, ZcashMsgSig, ZCASH_BATCH_SIG_RESULT_VERSION,
+};
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
 use ur_registry::zcash::zcash_sign_batch::{
     ZcashSignBatch, ZcashSignMessage, ZCASH_SIGN_BATCH_NETWORK_MAINNET, ZCASH_SIGN_BATCH_VERSION,
     ZCASH_SIGN_MESSAGE_KIND_PCZT_V1,
 };
-use ur_registry::zcash::zcash_sign_result::{ZcashSignMessageResult, ZcashSignResult};
 use zcash_vendor::zcash_protocol::consensus::MainNetwork;
 use zeroize::Zeroize;
 
@@ -36,6 +38,41 @@ use zeroize::Zeroize;
 // about 35% of RAM on target hardware. Revisit this if new message kinds or
 // substantially larger payload encodings are added.
 const ZCASH_BATCH_MAX_MESSAGES: usize = 35;
+
+/// Fingerprint of the last Zcash batch that completed the review path
+/// (`parse_zcash_batch_tx_cypherpunk`), which verifies every message before
+/// the user approves what is displayed. The batch signer signs without
+/// re-running those checks, so it refuses any batch whose fingerprint differs
+/// from the reviewed one — making "the device signs exactly the bytes the user
+/// reviewed" an enforced invariant rather than a GUI control-flow assumption.
+///
+/// The fingerprint is cleared when a review starts (so a failed parse cannot
+/// leave a previous batch armed) and recorded on review success. It
+/// intentionally survives signing so the signature QR can be regenerated for
+/// the same reviewed batch. Recording at parse success rather than at user
+/// approval is sound because the GUI cannot start a new review while an
+/// approval screen is open: USB resolve-UR requests are refused outside the
+/// home/transport views, and reaching the QR scanner tears the review view
+/// down.
+///
+/// Locking discipline: the review path (the only writer) runs on the
+/// background task and locks unconditionally; the signer — which the USB flow
+/// runs on the higher-priority UI task — only `try_lock`s and refuses to sign
+/// on contention, so a higher-priority task can never spin-wait on a
+/// preempted lock holder (fail closed instead of livelock).
+#[cfg(feature = "cypherpunk")]
+static REVIEWED_BATCH_FINGERPRINT: spin::Mutex<Option<[u8; 32]>> = spin::Mutex::new(None);
+
+/// Confirms that `batch_fingerprint` is the reviewed batch's fingerprint.
+/// `try_lock` so the (possibly higher-priority) signing task never spin-waits
+/// on a preempted lock holder — an unobtainable lock means the reviewed
+/// fingerprint cannot be confirmed, so this reports unreviewed (fail closed).
+#[cfg(feature = "cypherpunk")]
+fn confirm_batch_reviewed(batch_fingerprint: &[u8; 32]) -> bool {
+    REVIEWED_BATCH_FINGERPRINT
+        .try_lock()
+        .is_some_and(|reviewed| reviewed.as_ref() == Some(batch_fingerprint))
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn derive_zcash_ufvk(
@@ -181,7 +218,12 @@ pub unsafe extern "C" fn parse_zcash_tx_multi_coins(
     }
 }
 
-fn validate_zcash_batch(batch: &ZcashSignBatch) -> Result<(), RustCError> {
+/// Validates the batch container and returns its fingerprint: one hash over
+/// the header fields plus a fixed-width (id digest, payload digest) pair per
+/// message, so any change to what the signer would consume changes the
+/// fingerprint. The per-payload digests are already needed for duplicate
+/// detection, so this adds no extra payload hashing.
+fn validate_zcash_batch(batch: &ZcashSignBatch) -> Result<[u8; 32], RustCError> {
     let messages = batch.get_messages();
     if batch.get_version() != ZCASH_SIGN_BATCH_VERSION {
         return Err(RustCError::UnsupportedTransaction(format!(
@@ -215,6 +257,12 @@ fn validate_zcash_batch(batch: &ZcashSignBatch) -> Result<(), RustCError> {
         )));
     }
 
+    let mut fingerprint_data = Vec::with_capacity(8 + 32 + messages.len() * 64);
+    fingerprint_data.extend_from_slice(&batch.get_version().to_le_bytes());
+    fingerprint_data.extend_from_slice(&batch.get_network().to_le_bytes());
+    fingerprint_data.extend_from_slice(&sha256(batch.get_request_id()));
+
+    let mut seen_messages: Vec<(&[u8], [u8; 32])> = Vec::new();
     for (index, message) in messages.iter().enumerate() {
         if message.get_kind() != ZCASH_SIGN_MESSAGE_KIND_PCZT_V1 {
             return Err(RustCError::UnsupportedTransaction(format!(
@@ -242,21 +290,24 @@ fn validate_zcash_batch(batch: &ZcashSignBatch) -> Result<(), RustCError> {
             }
         }
 
-        for previous in &messages[..index] {
-            if sha256(previous.get_payload()) == digest {
+        for (previous_id, previous_digest) in &seen_messages {
+            if previous_digest == &digest {
                 return Err(RustCError::InvalidData(
                     "Zcash batch contains duplicate payloads".to_string(),
                 ));
             }
-            if previous.get_id() == message.get_id() {
+            if *previous_id == message.get_id().as_slice() {
                 return Err(RustCError::InvalidData(
                     "Zcash batch contains duplicate message ids".to_string(),
                 ));
             }
         }
+        seen_messages.push((message.get_id().as_slice(), digest));
+        fingerprint_data.extend_from_slice(&sha256(message.get_id()));
+        fingerprint_data.extend_from_slice(&digest);
     }
 
-    Ok(())
+    Ok(sha256(&fingerprint_data))
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -344,6 +395,9 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
     account_index: u32,
     disabled: bool,
 ) -> Ptr<TransactionParseResult<DisplayZcashBatch>> {
+    // Starting a new review disarms any previously reviewed batch — before
+    // any early return, so no parse attempt can leave an older batch armed.
+    *REVIEWED_BATCH_FINGERPRINT.lock() = None;
     if disabled {
         return TransactionParseResult::from(RustCError::UnsupportedTransaction(
             "Zcash requires at least 256-bit entropy (use 33-word Shamir shares)".to_string(),
@@ -355,38 +409,92 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
 
-    if let Err(e) = validate_zcash_batch(batch) {
-        return TransactionParseResult::from(e).c_ptr();
-    }
+    let batch_fingerprint = match validate_zcash_batch(batch) {
+        Ok(fingerprint) => fingerprint,
+        Err(e) => return TransactionParseResult::from(e).c_ptr(),
+    };
 
-    let mut display_items = Vec::new();
-    for message in batch.get_messages() {
-        if let Err(e) = check_zcash_batch_message_cypherpunk(
-            message,
+    #[cfg(zcash_unstable = "nu6.3")]
+    if batch.get_messages().len() > 1 {
+        match parse_zcash_batch_as_split_plus_migrations(
+            batch,
             &ufvk_text,
             seed_fingerprint,
             account_index,
         ) {
-            return TransactionParseResult::from(e).c_ptr();
+            Ok(display_items) => {
+                *REVIEWED_BATCH_FINGERPRINT.lock() = Some(batch_fingerprint);
+                return TransactionParseResult::success(
+                    DisplayZcashBatch::from(display_items).c_ptr(),
+                )
+                .c_ptr();
+            }
+            Err(_) => {}
         }
-        match app_zcash::parse_pczt_cypherpunk(
+    }
+
+    let mut display_items = Vec::new();
+    for message in batch.get_messages() {
+        match app_zcash::check_and_parse_batch_pczt_cypherpunk(
             &MainNetwork,
             message.get_payload(),
             &ufvk_text,
-            seed_fingerprint,
+            &seed_fingerprint,
+            account_index,
         ) {
             Ok(pczt) => display_items.push(DisplayPczt::from(&pczt)),
             Err(e) => return TransactionParseResult::from(e).c_ptr(),
         }
     }
 
+    *REVIEWED_BATCH_FINGERPRINT.lock() = Some(batch_fingerprint);
     TransactionParseResult::success(DisplayZcashBatch::from(display_items).c_ptr()).c_ptr()
 }
 
+#[cfg(all(feature = "cypherpunk", zcash_unstable = "nu6.3"))]
+fn parse_zcash_batch_as_split_plus_migrations(
+    batch: &ZcashSignBatch,
+    ufvk_text: &str,
+    seed_fingerprint: [u8; 32],
+    account_index: u32,
+) -> app_zcash::errors::Result<Vec<DisplayPczt>> {
+    let messages = batch.get_messages();
+    let mut display_items = Vec::new();
+
+    let split_message = &messages[0];
+    let split_pczt = app_zcash::check_and_parse_batch_pczt_cypherpunk(
+        &MainNetwork,
+        split_message.get_payload(),
+        ufvk_text,
+        &seed_fingerprint,
+        account_index,
+    )?;
+    display_items.push(DisplayPczt::from(&split_pczt));
+
+    let mut summary = app_zcash::BatchMigrationSummary::default();
+    for message in messages.iter().skip(1) {
+        let child = app_zcash::summarize_batch_migration_pczt_cypherpunk(
+            &MainNetwork,
+            message.get_payload(),
+            ufvk_text,
+            &seed_fingerprint,
+            account_index,
+        )?;
+        summary.add_child(&child)?;
+    }
+
+    let summary_pczt = summary.to_parsed_pczt();
+    display_items.push(DisplayPczt::from(&summary_pczt));
+
+    Ok(display_items)
+}
+
 #[cfg(feature = "cypherpunk")]
+// `_ufvk` stays in the FFI signature for C-side call compatibility, but batch
+// signing consumes only the PCZT bytes, seed material, and selected account.
 unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
     tx: PtrUR,
-    ufvk: PtrString,
+    _ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
@@ -402,13 +510,23 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
         .c_ptr();
     }
     let batch = extract_ptr_with_type!(tx, ZcashSignBatch);
-    let ufvk_text = unsafe { recover_c_char(ufvk) };
     let expected_seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let expected_seed_fingerprint: &[u8; 32] = expected_seed_fingerprint.try_into().unwrap();
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
 
     let result = match validate_zcash_batch(batch) {
-        Ok(()) => {
+        Ok(batch_fingerprint) => {
+            // Only sign the exact batch the user reviewed and approved: the
+            // review path verified every message and recorded this
+            // fingerprint, and this signer intentionally re-runs only cheap
+            // structural checks.
+            if !confirm_batch_reviewed(&batch_fingerprint) {
+                seed.zeroize();
+                return UREncodeResult::from(RustCError::InvalidData(
+                    "Zcash batch does not match the reviewed batch".to_string(),
+                ))
+                .c_ptr();
+            }
             let seed_fingerprint = calculate_seed_fingerprint(seed);
             match seed_fingerprint {
                 Ok(seed_fingerprint) => {
@@ -419,38 +537,35 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
 
                     let mut results = Vec::new();
                     for message in batch.get_messages() {
-                        if let Err(e) = check_zcash_batch_message_cypherpunk(
-                            message,
-                            &ufvk_text,
+                        match app_zcash::sign_batch_pczt_cypherpunk(
+                            message.get_payload(),
+                            seed,
                             &seed_fingerprint,
                             account_index,
                         ) {
-                            seed.zeroize();
-                            return UREncodeResult::from(e).c_ptr();
-                        }
-
-                        match app_zcash::sign_pczt(message.get_payload(), seed) {
                             Ok(payload) => {
-                                if let Err(e) =
-                                    app_zcash::ensure_signable_shielded_actions_are_signed(
-                                        &MainNetwork,
-                                        message.get_payload(),
-                                        &payload,
-                                        &seed_fingerprint,
-                                        account_index,
-                                    )
-                                {
-                                    seed.zeroize();
-                                    return UREncodeResult::from(e).c_ptr();
+                                match app_zcash::extract_compact_sigs_from_signed_pczt(&payload) {
+                                    Ok(compact_sigs) => {
+                                        let action_sigs = compact_sigs
+                                            .into_iter()
+                                            .map(|sig| {
+                                                ZcashActionSig::new(
+                                                    sig.pool,
+                                                    sig.action_index,
+                                                    sig.sig,
+                                                )
+                                            })
+                                            .collect();
+                                        results.push(ZcashMsgSig::new(
+                                            message.get_id().clone(),
+                                            action_sigs,
+                                        ));
+                                    }
+                                    Err(e) => {
+                                        seed.zeroize();
+                                        return UREncodeResult::from(e).c_ptr();
+                                    }
                                 }
-
-                                let payload_digest = sha256(&payload).to_vec();
-                                results.push(ZcashSignMessageResult::signed(
-                                    message.get_id().clone(),
-                                    message.get_kind(),
-                                    payload,
-                                    payload_digest,
-                                ));
                             }
                             Err(e) => {
                                 seed.zeroize();
@@ -459,20 +574,20 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
                         }
                     }
 
-                    let result = ZcashSignResult::new(
-                        ZCASH_SIGN_BATCH_VERSION,
+                    let result = ZcashBatchSigResult::new(
+                        ZCASH_BATCH_SIG_RESULT_VERSION,
                         batch.get_request_id().clone(),
                         results,
                     );
                     match TryInto::<Vec<u8>>::try_into(result) {
                         Ok(bytes) => {
-                            let registry_type = ZcashSignResult::get_registry_type().get_type();
-                            let encode_result = if allow_multipart {
+                            let registry_type = ZcashBatchSigResult::get_registry_type().get_type();
+                            if allow_multipart {
                                 UREncodeResult::encode(bytes, registry_type, max_fragment_length)
                             } else {
                                 UREncodeResult::encode_full_response(bytes, registry_type)
-                            };
-                            encode_result.c_ptr()
+                            }
+                            .c_ptr()
                         }
                         Err(e) => UREncodeResult::from(e).c_ptr(),
                     }
@@ -797,6 +912,100 @@ mod tests {
         ]);
 
         validate_zcash_batch(&batch).unwrap();
+    }
+
+    #[test]
+    fn test_validate_zcash_batch_fingerprint_binds_reviewed_bytes() {
+        let batch = test_zcash_batch(vec![
+            test_zcash_message(b"one", b"pczt-one"),
+            test_zcash_message(b"two", b"pczt-two"),
+        ]);
+        let fingerprint = validate_zcash_batch(&batch).unwrap();
+
+        assert_eq!(
+            validate_zcash_batch(&batch).unwrap(),
+            fingerprint,
+            "identical batch bytes must produce the reviewed fingerprint"
+        );
+
+        // The signing gate itself: refuse with nothing reviewed, sign only the
+        // reviewed batch, follow re-reviews, and disarm on clear. One test
+        // exercises the whole lifecycle because the static is shared state.
+        let other = validate_zcash_batch(&test_zcash_batch(vec![test_zcash_message(
+            b"one",
+            b"pczt-other",
+        )]))
+        .unwrap();
+        *REVIEWED_BATCH_FINGERPRINT.lock() = None;
+        assert!(
+            !confirm_batch_reviewed(&fingerprint),
+            "no review armed: refuse"
+        );
+        *REVIEWED_BATCH_FINGERPRINT.lock() = Some(fingerprint);
+        assert!(
+            confirm_batch_reviewed(&fingerprint),
+            "the reviewed batch signs"
+        );
+        assert!(
+            !confirm_batch_reviewed(&other),
+            "a different batch is refused while another is armed"
+        );
+        *REVIEWED_BATCH_FINGERPRINT.lock() = Some(other);
+        assert!(
+            !confirm_batch_reviewed(&fingerprint),
+            "a new review replaces the armed fingerprint"
+        );
+        *REVIEWED_BATCH_FINGERPRINT.lock() = None;
+        assert!(
+            !confirm_batch_reviewed(&other),
+            "a cleared review disarms signing"
+        );
+
+        let changed_payload = test_zcash_batch(vec![
+            test_zcash_message(b"one", b"pczt-one"),
+            test_zcash_message(b"two", b"pczt-2wo"),
+        ]);
+        assert_ne!(
+            validate_zcash_batch(&changed_payload).unwrap(),
+            fingerprint,
+            "a changed payload is a different batch"
+        );
+
+        let changed_id = test_zcash_batch(vec![
+            test_zcash_message(b"one", b"pczt-one"),
+            test_zcash_message(b"2wo", b"pczt-two"),
+        ]);
+        assert_ne!(
+            validate_zcash_batch(&changed_id).unwrap(),
+            fingerprint,
+            "a changed message id is a different batch"
+        );
+
+        let reordered = test_zcash_batch(vec![
+            test_zcash_message(b"two", b"pczt-two"),
+            test_zcash_message(b"one", b"pczt-one"),
+        ]);
+        assert_ne!(
+            validate_zcash_batch(&reordered).unwrap(),
+            fingerprint,
+            "reordered messages are a different batch"
+        );
+
+        let changed_request_id = ZcashSignBatch::new(
+            ZCASH_SIGN_BATCH_VERSION,
+            b"other-request".to_vec(),
+            ZCASH_SIGN_BATCH_NETWORK_MAINNET,
+            vec![
+                test_zcash_message(b"one", b"pczt-one"),
+                test_zcash_message(b"two", b"pczt-two"),
+            ],
+            Some(true),
+        );
+        assert_ne!(
+            validate_zcash_batch(&changed_request_id).unwrap(),
+            fingerprint,
+            "a changed request id is a different batch"
+        );
     }
 
     #[test]

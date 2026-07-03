@@ -347,10 +347,12 @@ pub(crate) mod test_support {
         let value = orchard::value::NoteValue::from_raw(1_000_000);
         let note = {
             let mut orchard_builder = orchard::builder::Builder::new(
-                orchard::BundleProtocol::IronwoodPostNu6_3,
                 orchard::builder::BundleType::DEFAULT,
+                orchard::bundle::BundleVersion::ironwood_v3(),
+                orchard::bundle::BundleVersion::ironwood_v3().default_flags(),
                 orchard::Anchor::empty_tree(),
-            );
+            )
+            .expect("default flags are representable under the bundle version");
             orchard_builder
                 .add_output(None, recipient, value, Memo::Empty.encode().into_bytes())
                 .unwrap();
@@ -359,7 +361,7 @@ pub(crate) mod test_support {
                 .actions()
                 .get(meta.output_action_index(0).unwrap())
                 .unwrap();
-            let domain = orchard::note_encryption::OrchardDomain::for_action(action);
+            let domain = orchard::note_encryption::IronwoodDomain::for_action(action);
             let (note, _, _) =
                 try_note_decryption(&domain, &orchard_ivk.prepare(), action).unwrap();
             note
@@ -457,10 +459,12 @@ pub(crate) mod test_support {
         let value = orchard::value::NoteValue::from_raw(1_010_000);
         let note = {
             let mut orchard_builder = orchard::builder::Builder::new(
-                orchard::BundleProtocol::OrchardPostNu6_3,
                 orchard::builder::BundleType::Coinbase,
+                orchard::bundle::BundleVersion::orchard_v2(),
+                orchard::bundle::Flags::SPENDS_DISABLED,
                 orchard::Anchor::empty_tree(),
-            );
+            )
+            .expect("spends-disabled flags are valid for a coinbase bundle");
             orchard_builder
                 .add_output(None, recipient, value, Memo::Empty.encode().into_bytes())
                 .unwrap();
@@ -563,10 +567,12 @@ pub(crate) mod test_support {
         let value = orchard::value::NoteValue::from_raw(1_000_000);
         let note = {
             let mut orchard_builder = orchard::builder::Builder::new(
-                orchard::BundleProtocol::OrchardPostNu6_3,
                 orchard::builder::BundleType::Coinbase,
+                orchard::bundle::BundleVersion::orchard_v2(),
+                orchard::bundle::Flags::SPENDS_DISABLED,
                 orchard::Anchor::empty_tree(),
-            );
+            )
+            .expect("spends-disabled flags are valid for a coinbase bundle");
             orchard_builder
                 .add_output(None, recipient, value, Memo::Empty.encode().into_bytes())
                 .unwrap();
@@ -599,10 +605,12 @@ pub(crate) mod test_support {
         };
 
         let mut builder = orchard::builder::Builder::new(
-            orchard::BundleProtocol::OrchardPostNu6_3,
             orchard::builder::BundleType::DEFAULT,
+            orchard::bundle::BundleVersion::orchard_v3(),
+            orchard::bundle::BundleVersion::orchard_v3().default_flags(),
             anchor,
-        );
+        )
+        .expect("default flags are representable under the bundle version");
         builder
             .add_spend(orchard_fvk.clone(), note, merkle_path)
             .unwrap();

@@ -21,7 +21,11 @@ use zcash_vendor::{
 use zcash_note_encryption::Domain;
 #[cfg(feature = "cypherpunk")]
 use zcash_vendor::orchard::{
-    self, keys::OutgoingViewingKey, note::Note, note_encryption::OrchardDomain, Address,
+    self,
+    keys::OutgoingViewingKey,
+    note::Note,
+    note_encryption::{IronwoodDomain, OrchardDomain},
+    Address,
 };
 #[cfg(feature = "cypherpunk")]
 use zcash_vendor::{
@@ -77,7 +81,7 @@ fn map_transparent_verifier_error(
     }
 }
 
-fn format_zec_value(value: f64) -> String {
+pub(crate) fn format_zec_value(value: f64) -> String {
     let zec_value = format!("{:.8}", value / ZEC_DIVIDER as f64);
     let zec_value = zec_value
         .trim_end_matches('0')
@@ -94,53 +98,77 @@ fn format_zec_value(value: f64) -> String {
 /// - `Ok(None)` if the output cannot be decrypted.
 /// - `Err(_)` if `ovk` is `None` and the PCZT is missing fields needed to directly
 ///   decrypt the output.
+///
+/// `pool` only selects the note-encryption domain — `OrchardDomain` for Orchard,
+/// `IronwoodDomain` for Ironwood. The recovery logic is identical for both, so
+/// the body is written once in the `decode_with_domain!` macro and instantiated
+/// per domain; this is why the diff looks larger than a plain "match on pool".
 #[cfg(feature = "cypherpunk")]
-pub fn decode_output_enc_ciphertext(
+pub(crate) fn decode_output_enc_ciphertext(
     action: &orchard::pczt::Action,
     ovk: Option<&OutgoingViewingKey>,
+    pool: ShieldedPool,
 ) -> Result<Option<(Note, Address, [u8; 512])>, ZcashError> {
-    let domain = OrchardDomain::for_pczt_action(action);
+    macro_rules! decode_with_domain {
+        ($domain_ty:ty) => {{
+            let domain = <$domain_ty>::for_pczt_action(action);
 
-    if let Some(ovk) = ovk {
-        Ok(try_output_recovery_with_ovk(
-            &domain,
-            ovk,
-            action,
-            action.cv_net(),
-            &action.output().encrypted_note().out_ciphertext,
-        ))
-    } else {
-        // If we reached here, none of our OVKs matched; recover directly as the fallback.
+            if let Some(ovk) = ovk {
+                Ok(try_output_recovery_with_ovk(
+                    &domain,
+                    ovk,
+                    action,
+                    action.cv_net(),
+                    &action.output().encrypted_note().out_ciphertext,
+                ))
+            } else {
+                // If we reached here, none of our OVKs matched; recover directly as the fallback.
+                let pool_label = pool.label();
 
-        let recipient = action.output().recipient().ok_or_else(|| {
-            ZcashError::InvalidPczt("Missing recipient field for Orchard action".into())
-        })?;
-        let value = action.output().value().ok_or_else(|| {
-            ZcashError::InvalidPczt("Missing value field for Orchard action".into())
-        })?;
-        let rho = orchard::note::Rho::from_bytes(&action.spend().nullifier().to_bytes())
-            .into_option()
-            .ok_or_else(|| {
-                ZcashError::InvalidPczt("Missing rho field for Orchard action".into())
-            })?;
-        let rseed = action.output().rseed().ok_or_else(|| {
-            ZcashError::InvalidPczt("Missing rseed field for Orchard action".into())
-        })?;
+                let recipient = action.output().recipient().ok_or_else(|| {
+                    ZcashError::InvalidPczt(format!(
+                        "Missing recipient field for {pool_label} action"
+                    ))
+                })?;
+                let value = action.output().value().ok_or_else(|| {
+                    ZcashError::InvalidPczt(format!("Missing value field for {pool_label} action"))
+                })?;
+                let rho = orchard::note::Rho::from_bytes(&action.spend().nullifier().to_bytes())
+                    .into_option()
+                    .ok_or_else(|| {
+                        ZcashError::InvalidPczt(format!(
+                            "Missing rho field for {pool_label} action"
+                        ))
+                    })?;
+                let rseed = action.output().rseed().ok_or_else(|| {
+                    ZcashError::InvalidPczt(format!("Missing rseed field for {pool_label} action"))
+                })?;
 
-        let note = orchard::Note::from_parts(
-            recipient,
-            value,
-            rho,
-            rseed,
-            (*action.output().note_version()).into(),
-        )
-        .into_option()
-        .ok_or_else(|| ZcashError::InvalidPczt("Orchard action contains invalid note".into()))?;
+                let note = orchard::Note::from_parts(
+                    recipient,
+                    value,
+                    rho,
+                    rseed,
+                    (*action.output().note_version()).into(),
+                )
+                .into_option()
+                .ok_or_else(|| {
+                    ZcashError::InvalidPczt(format!("{pool_label} action contains invalid note"))
+                })?;
 
-        let pk_d = OrchardDomain::get_pk_d(&note);
-        let esk = OrchardDomain::derive_esk(&note).expect("Orchard notes are post-ZIP 212");
+                let pk_d = <$domain_ty>::get_pk_d(&note);
+                let esk =
+                    <$domain_ty>::derive_esk(&note).expect("Orchard-shaped notes are post-ZIP 212");
 
-        Ok(try_output_recovery_with_pkd_esk(&domain, pk_d, esk, action))
+                Ok(try_output_recovery_with_pkd_esk(&domain, pk_d, esk, action))
+            }
+        }};
+    }
+
+    match pool {
+        ShieldedPool::Orchard => decode_with_domain!(OrchardDomain),
+        #[cfg(zcash_unstable = "nu6.3")]
+        ShieldedPool::Ironwood => decode_with_domain!(IronwoodDomain),
     }
 }
 
@@ -182,8 +210,14 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
 
     let verifier = Verifier::new(pczt.clone())
         .with_orchard(|bundle| {
-            parsed_orchard = parse_orchard(params, seed_fingerprint, ufvk, bundle, ShieldedPool::Orchard)
-                .map_err(pczt::roles::verifier::OrchardError::Custom)?;
+            parsed_orchard = parse_orchard(
+                params,
+                seed_fingerprint,
+                ufvk,
+                bundle,
+                ShieldedPool::Orchard,
+            )
+            .map_err(pczt::roles::verifier::OrchardError::Custom)?;
             Ok(())
         })
         .map_err(map_orchard_verifier_error)?;
@@ -191,8 +225,14 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
     let verifier = if should_process_ironwood {
         verifier
             .with_ironwood(|bundle| {
-                parsed_ironwood = parse_orchard(params, seed_fingerprint, ufvk, bundle, ShieldedPool::Ironwood)
-                    .map_err(pczt::roles::verifier::OrchardError::Custom)?;
+                parsed_ironwood = parse_orchard(
+                    params,
+                    seed_fingerprint,
+                    ufvk,
+                    bundle,
+                    ShieldedPool::Ironwood,
+                )
+                .map_err(pczt::roles::verifier::OrchardError::Custom)?;
                 Ok(())
             })
             .map_err(map_orchard_verifier_error)?
@@ -207,6 +247,48 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
         })
         .map_err(map_transparent_verifier_error)?;
 
+    #[cfg(not(zcash_unstable = "nu6.3"))]
+    let parsed_ironwood = None;
+
+    assemble_parsed_pczt(pczt, parsed_transparent, parsed_orchard, parsed_ironwood)
+}
+
+/// Finishes a parse whose shielded pools were ALREADY checked-and-parsed in one
+/// pass (`parsed_orchard`/`parsed_ironwood` come from
+/// [`super::check::check_and_parse_pczt_shielded`]). It only parses the
+/// transparent bundle and assembles the totals, reusing the shielded work rather
+/// than decrypting the outputs again. The full-from-scratch variant that decodes
+/// everything itself is [`parse_pczt_cypherpunk`]; both funnel into
+/// [`assemble_parsed_pczt`].
+#[cfg(feature = "cypherpunk")]
+pub(crate) fn parse_pczt_cypherpunk_with_checked_shielded<P: consensus::Parameters>(
+    params: &P,
+    seed_fingerprint: &[u8; 32],
+    pczt: &Pczt,
+    parsed_orchard: Option<ParsedOrchard>,
+    parsed_ironwood: Option<ParsedOrchard>,
+) -> Result<ParsedPczt, ZcashError> {
+    super::validate_supported_pczt(pczt)?;
+    let mut parsed_transparent = None;
+
+    Verifier::new(pczt.clone())
+        .with_transparent(|bundle| {
+            parsed_transparent = parse_transparent(params, seed_fingerprint, bundle)
+                .map_err(pczt::roles::verifier::TransparentError::Custom)?;
+            Ok(())
+        })
+        .map_err(map_transparent_verifier_error)?;
+
+    assemble_parsed_pczt(pczt, parsed_transparent, parsed_orchard, parsed_ironwood)
+}
+
+#[cfg(feature = "cypherpunk")]
+fn assemble_parsed_pczt(
+    pczt: &Pczt,
+    parsed_transparent: Option<ParsedTransparent>,
+    parsed_orchard: Option<ParsedOrchard>,
+    parsed_ironwood: Option<ParsedOrchard>,
+) -> Result<ParsedPczt, ZcashError> {
     let mut total_input_value = 0;
     let mut total_output_value = 0;
     let mut total_change_value = 0;
@@ -285,11 +367,6 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
     let fee_value = format_zec_value((total_input_value - total_output_value) as f64);
 
     let has_sapling = !pczt.sapling().spends().is_empty() || !pczt.sapling().outputs().is_empty();
-
-    #[cfg(zcash_unstable = "nu6.3")]
-    let parsed_ironwood = parsed_ironwood;
-    #[cfg(not(zcash_unstable = "nu6.3"))]
-    let parsed_ironwood = None;
 
     Ok(ParsedPczt::new(
         parsed_transparent,
@@ -547,7 +624,7 @@ fn parse_orchard<P: consensus::Parameters>(
 }
 
 #[cfg(feature = "cypherpunk")]
-fn parse_orchard_spend(
+pub(crate) fn parse_orchard_spend(
     seed_fingerprint: &[u8; 32],
     spend: &orchard::pczt::Spend,
 ) -> Result<ParsedFrom, ZcashError> {
@@ -568,7 +645,7 @@ fn parse_orchard_spend(
 }
 
 #[cfg(feature = "cypherpunk")]
-fn is_wallet_orchard_address(
+pub(crate) fn is_wallet_orchard_address(
     ufvk: &UnifiedFullViewingKey,
     address: &Address,
 ) -> Result<bool, ZcashError> {
@@ -616,7 +693,7 @@ pub(crate) fn validate_orchard_user_address<P: consensus::Parameters>(
 }
 
 #[cfg(feature = "cypherpunk")]
-fn parse_orchard_output<P: consensus::Parameters>(
+pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
     params: &P,
     ufvk: &UnifiedFullViewingKey,
     action: &orchard::pczt::Action,
@@ -642,7 +719,7 @@ fn parse_orchard_output<P: consensus::Parameters>(
         .inner();
 
     let decode_output = |vk: Option<OutgoingViewingKey>, is_internal_ovk: bool| {
-        match decode_output_enc_ciphertext(action, vk.as_ref())? {
+        match decode_output_enc_ciphertext(action, vk.as_ref(), pool)? {
             Some((note, address, memo)) => {
                 let zec_value = format_zec_value(note.value().inner() as f64);
                 let memo = decode_memo(memo);

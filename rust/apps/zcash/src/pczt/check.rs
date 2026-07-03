@@ -24,6 +24,8 @@ use zcash_vendor::{
 use zcash_vendor::zcash_protocol::consensus::NetworkConstants;
 
 #[cfg(feature = "cypherpunk")]
+use super::structs::ParsedOrchard;
+#[cfg(feature = "cypherpunk")]
 use super::ShieldedPool;
 
 #[cfg(feature = "cypherpunk")]
@@ -79,6 +81,80 @@ pub fn check_pczt_orchard<P: consensus::Parameters>(
             .map_err(map_orchard_verifier_error)?;
     }
     Ok(())
+}
+
+/// The shielded display data (`orchard` / `ironwood`) produced as a side effect
+/// of the check pass, so the parse step does not have to decrypt every output a
+/// second time. Populated by [`check_and_parse_pczt_shielded`] and consumed by
+/// [`super::parse::parse_pczt_cypherpunk_with_checked_shielded`]. `None` for a
+/// pool means it had nothing to display (e.g. all-dummy bundle).
+#[cfg(feature = "cypherpunk")]
+pub(crate) struct CheckedShieldedParse {
+    pub(crate) orchard: Option<ParsedOrchard>,
+    pub(crate) ironwood: Option<ParsedOrchard>,
+}
+
+/// Runs the shielded validation and builds the display data in a SINGLE pass.
+///
+/// Previously the device validated a PCZT with `check_*` and then re-ran the
+/// Verifier in `parse_*` to build the display rows, decrypting every output
+/// twice. This checks and parses at once: it runs the Verifier once, and for
+/// each action both validates it and records its [`ParsedOrchard`] row. The
+/// result feeds [`super::parse::parse_pczt_cypherpunk_with_checked_shielded`],
+/// which only has to assemble the transparent bundle and totals. Behaviour is
+/// identical to the old check-then-reparse, minus the second decryption. Used by
+/// the batch review path (`check_and_parse_batch_pczt_cypherpunk`).
+#[cfg(feature = "cypherpunk")]
+pub(crate) fn check_and_parse_pczt_shielded<P: consensus::Parameters>(
+    params: &P,
+    seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
+    ufvk: &UnifiedFullViewingKey,
+    pczt: &Pczt,
+) -> Result<CheckedShieldedParse, ZcashError> {
+    super::validate_supported_pczt(pczt)?;
+    let mut parsed_orchard = None;
+    let mut parsed_ironwood = None;
+    #[cfg(zcash_unstable = "nu6.3")]
+    let should_process_ironwood = super::pczt_should_process_ironwood(pczt);
+
+    let verifier = Verifier::new(pczt.clone())
+        .with_orchard(|bundle| {
+            parsed_orchard = check_and_parse_shielded_bundle(
+                params,
+                seed_fingerprint,
+                account_index,
+                ufvk,
+                bundle,
+                ShieldedPool::Orchard,
+            )
+            .map_err(pczt::roles::verifier::OrchardError::Custom)?;
+            Ok(())
+        })
+        .map_err(map_orchard_verifier_error)?;
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    if should_process_ironwood {
+        verifier
+            .with_ironwood(|bundle| {
+                parsed_ironwood = check_and_parse_shielded_bundle(
+                    params,
+                    seed_fingerprint,
+                    account_index,
+                    ufvk,
+                    bundle,
+                    ShieldedPool::Ironwood,
+                )
+                .map_err(pczt::roles::verifier::OrchardError::Custom)?;
+                Ok(())
+            })
+            .map_err(map_orchard_verifier_error)?;
+    }
+
+    Ok(CheckedShieldedParse {
+        orchard: parsed_orchard,
+        ironwood: parsed_ironwood,
+    })
 }
 
 pub fn check_pczt_transparent<P: consensus::Parameters>(
@@ -298,14 +374,7 @@ fn check_shielded_bundle<P: consensus::Parameters>(
 ) -> Result<(), ZcashError> {
     let pool_label = pool.label();
     bundle.actions().iter().try_for_each(|action| {
-        check_action(
-            params,
-            seed_fingerprint,
-            account_index,
-            ufvk,
-            action,
-            pool,
-        )?;
+        check_action(params, seed_fingerprint, account_index, ufvk, action, pool)?;
         Ok::<_, ZcashError>(())
     })?;
 
@@ -327,6 +396,86 @@ fn check_shielded_bundle<P: consensus::Parameters>(
     }
 }
 
+/// The check-and-parse twin of [`check_shielded_bundle`]: it runs the same
+/// per-action validation but also decodes each action into a [`ParsedOrchard`]
+/// display row. Returns `Ok(None)` when the bundle has nothing to show the user
+/// (all dummies), `Ok(Some(_))` otherwise. `check_shielded_bundle` stays as the
+/// check-only variant for paths that don't need display data; keep the two in
+/// sync. (GitHub renders these two similar functions as one mangled diff — they
+/// are separate: check-only vs check+parse.)
+#[cfg(feature = "cypherpunk")]
+fn check_and_parse_shielded_bundle<P: consensus::Parameters>(
+    params: &P,
+    seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
+    ufvk: &UnifiedFullViewingKey,
+    bundle: &orchard::pczt::Bundle,
+    pool: ShieldedPool,
+) -> Result<Option<ParsedOrchard>, ZcashError> {
+    let pool_label = pool.label();
+    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
+        "orchard fvk is not present".to_string(),
+    ))?;
+
+    let mut parsed_orchard = ParsedOrchard::new(vec![], vec![]);
+    bundle.actions().iter().try_for_each(|action| {
+        action.verify_cv_net().map_err(|e| {
+            ZcashError::InvalidPczt(format!("invalid cv_net in {pool_label} action: {e:?}"))
+        })?;
+
+        check_action_spend(
+            params,
+            seed_fingerprint,
+            account_index,
+            fvk,
+            action.spend(),
+            pool,
+        )?;
+        action
+            .output()
+            .verify_note_commitment(action.spend())
+            .map_err(|e| {
+                ZcashError::InvalidPczt(format!("invalid {pool_label} action cmx: {e:?}"))
+            })?;
+
+        if let Some(value) = action.spend().value() {
+            if value.inner() != 0 {
+                let parsed_from =
+                    super::parse::parse_orchard_spend(seed_fingerprint, action.spend())?;
+                parsed_orchard.add_from(parsed_from);
+            }
+        }
+
+        let parsed_to = super::parse::parse_orchard_output(params, ufvk, action, pool)?;
+        if !parsed_to.get_is_dummy() {
+            parsed_orchard.add_to(parsed_to);
+        }
+
+        Ok::<_, ZcashError>(())
+    })?;
+
+    let calculated_value_balance = bundle
+        .actions()
+        .iter()
+        .map(|action| {
+            action.spend().value().expect("present") - action.output().value().expect("present")
+        })
+        .sum::<Result<ValueSum, _>>();
+
+    match calculated_value_balance {
+        Ok(value_balance) if &value_balance == bundle.value_sum() => {
+            if parsed_orchard.get_from().is_empty() && parsed_orchard.get_to().is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(parsed_orchard))
+            }
+        }
+        _ => Err(ZcashError::InvalidPczt(format!(
+            "invalid {pool_label} bundle value balance"
+        ))),
+    }
+}
+
 #[cfg(feature = "cypherpunk")]
 // check orchard action
 fn check_action<P: consensus::Parameters>(
@@ -341,9 +490,7 @@ fn check_action<P: consensus::Parameters>(
     // Check `cv_net` first so we know that the `value` fields for both the spend and the
     // output are present and correct.
     action.verify_cv_net().map_err(|e| {
-        ZcashError::InvalidPczt(format!(
-            "invalid cv_net in {pool_label} action: {e:?}"
-        ))
+        ZcashError::InvalidPczt(format!("invalid cv_net in {pool_label} action: {e:?}"))
     })?;
 
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
@@ -396,9 +543,7 @@ fn check_action_spend<P: consensus::Parameters>(
 
     if let Some(expected_fvk) = can_verify_nf_rk {
         spend.verify_nullifier(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(format!(
-                "invalid {pool_label} action nullifier: {e:?}"
-            ))
+            ZcashError::InvalidPczt(format!("invalid {pool_label} action nullifier: {e:?}"))
         })?;
         spend.verify_rk(expected_fvk).map_err(|e| {
             ZcashError::InvalidPczt(format!("invalid {pool_label} action rk: {e:?}"))
@@ -429,9 +574,7 @@ fn check_action_output<P: consensus::Parameters>(
     action
         .output()
         .verify_note_commitment(action.spend())
-        .map_err(|e| {
-            ZcashError::InvalidPczt(format!("invalid {pool_label} action cmx: {e:?}"))
-        })?;
+        .map_err(|e| ZcashError::InvalidPczt(format!("invalid {pool_label} action cmx: {e:?}")))?;
 
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
@@ -449,7 +592,7 @@ fn check_action_output<P: consensus::Parameters>(
 
     for (vk, is_internal_ovk) in keys {
         if let Some((_, address, _)) =
-            super::parse::decode_output_enc_ciphertext(action, vk.as_ref())?
+            super::parse::decode_output_enc_ciphertext(action, vk.as_ref(), pool)?
         {
             if let Some(user_address) = action.output().user_address() {
                 super::parse::validate_orchard_user_address(params, user_address, &address)?;

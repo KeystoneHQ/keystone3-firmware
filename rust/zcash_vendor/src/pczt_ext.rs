@@ -188,6 +188,17 @@ fn hash_transparent_tx_id(t_digests: Option<TransparentDigests>) -> Hash {
     h.finalize()
 }
 
+/// Byte layout of a Sapling/Orchard `enc_ciphertext` as the ZIP-244 digests
+/// consume it: the first [`ENC_CIPHERTEXT_COMPACT_LEN`] bytes are the compact
+/// note ciphertext (the `*CHash` digests), bytes up to
+/// [`ENC_CIPHERTEXT_MEMO_END`] are the encrypted memo (the `*MHash` digests),
+/// and the remainder is hashed with the non-compact fields. Any signing
+/// precondition that keeps these slices panic-free must use the same
+/// constants (see `app_zcash`'s `require_signature_hash_fields`).
+pub const ENC_CIPHERTEXT_COMPACT_LEN: usize = 52;
+/// See [`ENC_CIPHERTEXT_COMPACT_LEN`]: 52 compact bytes + 512 memo bytes.
+pub const ENC_CIPHERTEXT_MEMO_END: usize = ENC_CIPHERTEXT_COMPACT_LEN + 512;
+
 fn digest_orchard(pczt: &Pczt) -> Hash {
     let mut h = hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION);
 
@@ -196,16 +207,18 @@ fn digest_orchard(pczt: &Pczt) -> Hash {
     let mut nh = hasher(ZCASH_ORCHARD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION);
 
     for action in pczt.orchard().actions().iter() {
+        let enc_ciphertext = action.output().enc_ciphertext();
+
         ch.update(action.spend().nullifier());
         ch.update(action.output().cmx());
         ch.update(action.output().ephemeral_key());
-        ch.update(&action.output().enc_ciphertext()[..52]);
+        ch.update(&enc_ciphertext[..ENC_CIPHERTEXT_COMPACT_LEN]);
 
-        mh.update(&action.output().enc_ciphertext()[52..564]);
+        mh.update(&enc_ciphertext[ENC_CIPHERTEXT_COMPACT_LEN..ENC_CIPHERTEXT_MEMO_END]);
 
         nh.update(action.cv_net());
         nh.update(action.spend().rk());
-        nh.update(&action.output().enc_ciphertext()[564..]);
+        nh.update(&enc_ciphertext[ENC_CIPHERTEXT_MEMO_END..]);
         nh.update(action.output().out_ciphertext());
     }
 
@@ -257,12 +270,12 @@ fn hash_sapling_outputs(pczt: &Pczt) -> Hash {
         for s_out in pczt.sapling().outputs() {
             ch.update(s_out.cmu());
             ch.update(s_out.ephemeral_key());
-            ch.update(&s_out.enc_ciphertext()[..52]);
+            ch.update(&s_out.enc_ciphertext()[..ENC_CIPHERTEXT_COMPACT_LEN]);
 
-            mh.update(&s_out.enc_ciphertext()[52..564]);
+            mh.update(&s_out.enc_ciphertext()[ENC_CIPHERTEXT_COMPACT_LEN..ENC_CIPHERTEXT_MEMO_END]);
 
             nh.update(s_out.cv());
-            nh.update(&s_out.enc_ciphertext()[564..]);
+            nh.update(&s_out.enc_ciphertext()[ENC_CIPHERTEXT_MEMO_END..]);
             nh.update(s_out.out_ciphertext());
         }
 
@@ -351,16 +364,18 @@ fn digest_orchard_shaped_v6(
     let mut nh = hasher(noncompact_personalization);
 
     for action in bundle.actions().iter() {
+        let enc_ciphertext = action.output().enc_ciphertext();
+
         ch.update(action.spend().nullifier());
         ch.update(action.output().cmx());
         ch.update(action.output().ephemeral_key());
-        ch.update(&action.output().enc_ciphertext()[..52]);
+        ch.update(&enc_ciphertext[..ENC_CIPHERTEXT_COMPACT_LEN]);
 
-        mh.update(&action.output().enc_ciphertext()[52..564]);
+        mh.update(&enc_ciphertext[ENC_CIPHERTEXT_COMPACT_LEN..ENC_CIPHERTEXT_MEMO_END]);
 
         nh.update(action.cv_net());
         nh.update(action.spend().rk());
-        nh.update(&action.output().enc_ciphertext()[564..]);
+        nh.update(&enc_ciphertext[ENC_CIPHERTEXT_MEMO_END..]);
         nh.update(action.output().out_ciphertext());
     }
 
@@ -460,7 +475,11 @@ fn shielded_sig_commitment_v6(
 /// `pub` so the `app_zcash` consensus oracle tests can assert it stays bit-exact against
 /// the upstream RoleSigner sighash (any divergence turns CI red rather than producing
 /// wrong on-device signatures).
-pub fn shielded_sig_commitment(pczt: &Pczt, lock_time: u32, input_info: Option<SignableInput>) -> Hash {
+pub fn shielded_sig_commitment(
+    pczt: &Pczt,
+    lock_time: u32,
+    input_info: Option<SignableInput>,
+) -> Hash {
     #[cfg(zcash_unstable = "nu6.3")]
     if is_v6(pczt) {
         return shielded_sig_commitment_v6(pczt, lock_time, input_info);
@@ -611,8 +630,9 @@ where
     llsigner.sign_orchard_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
         let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
             .ok_or(transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
+        let shielded_hash = shielded_sig_commitment(pczt, lock_time, None);
         signable.actions_mut().iter_mut().try_for_each(|action| {
-            sign_orchard_action(pczt, lock_time, signer, action, tx_modifiable)
+            sign_orchard_action(signer, action, &shielded_hash, tx_modifiable)
         })
     })
 }
@@ -622,12 +642,17 @@ where
 /// derivation and signs wallet-controlled spends, including zero-value ones), so we
 /// must NOT pre-filter by value here — that would drop a wallet-controlled zero-value
 /// spend. `tx_modifiable` is cleared only when this call adds a new signature.
+///
+/// Takes the precomputed `shielded_hash` rather than `(pczt, lock_time)`: the
+/// Orchard sighash is transaction-wide (the same for every action in the bundle
+/// and unaffected by the signatures being added), so the caller computes it ONCE
+/// before the action loop instead of re-deriving it per action. This is a large
+/// part of the signing speedup and is behaviour-preserving.
 #[cfg(feature = "orchard")]
 fn sign_orchard_action<T>(
-    pczt: &Pczt,
-    lock_time: u32,
     signer: &T,
     action: &mut orchard::pczt::Action,
+    shielded_hash: &Hash,
     tx_modifiable: &mut u8,
 ) -> Result<(), T::Error>
 where
@@ -638,7 +663,7 @@ where
         return Ok(());
     }
     let had_sig = action.spend().spend_auth_sig().is_some();
-    signer.sign_orchard(action, shielded_sig_commitment(pczt, lock_time, None))?;
+    signer.sign_orchard(action, shielded_hash.clone())?;
     if !had_sig && action.spend().spend_auth_sig().is_some() {
         *tx_modifiable &= !(FLAG_TRANSPARENT_INPUTS_MODIFIABLE
             | FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE
@@ -664,8 +689,9 @@ where
     llsigner.sign_ironwood_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
         let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
             .ok_or(transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
+        let shielded_hash = shielded_sig_commitment(pczt, lock_time, None);
         signable.actions_mut().iter_mut().try_for_each(|action| {
-            sign_orchard_action(pczt, lock_time, signer, action, tx_modifiable)
+            sign_orchard_action(signer, action, &shielded_hash, tx_modifiable)
         })
     })
 }

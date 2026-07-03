@@ -5,10 +5,14 @@
 ### What's new
 
 1. Added support for Zcash batch PCZT signing
+2. Zcash migration batches review as one split transaction plus a single migration summary instead of one page per child
+3. Zcash batch signing returns a compact signatures-only QR (far fewer frames) and only signs the exact batch that was reviewed
+4. The device no longer auto-locks while a long Zcash batch review is loading
 
 ### Bug Fixes
 
 1. Fixed stalled Zcash signing when response QR generation fails
+2. Fixed Zcash batch signing skipping wallet-controlled zero-value change spends, which made signed batches unextractable
 
 
 ## 2.4.6 (2026-6-12)

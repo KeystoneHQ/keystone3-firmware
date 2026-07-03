@@ -112,11 +112,21 @@ struct SeedSigner<'a> {
     seed: &'a [u8],
     seed_fingerprint: [u8; 32],
     pool: ShieldedPool,
+    /// Batch mode restricts signing to a single account. `Some(account)`
+    /// (`for_batch_account`): only spends tagged for that account are signed;
+    /// spends tagged for a different account of the same seed are refused. `None`
+    /// (`new`): ordinary signing — any account derivable from the seed.
+    selected_account: Option<zcash_vendor::zip32::AccountId>,
     /// Per-account spend authorizing key cache. The seed fingerprint and the account
     /// key depend only on (seed, account), not on the action, so a bundle with many
     /// actions for one account derives once. Interior mutability because the
     /// `PcztSigner` trait signs through `&self`.
-    ask_cache: RefCell<Vec<(zcash_vendor::zip32::AccountId, orchard::keys::SpendAuthorizingKey)>>,
+    ask_cache: RefCell<
+        Vec<(
+            zcash_vendor::zip32::AccountId,
+            orchard::keys::SpendAuthorizingKey,
+        )>,
+    >,
     /// Number of authorizations produced, so `sign_pczt` can distinguish "nothing of
     /// ours to sign" (`PcztNoMyInputs`) from a successful signing.
     signed: Cell<usize>,
@@ -129,6 +139,23 @@ impl<'a> SeedSigner<'a> {
             seed,
             seed_fingerprint,
             pool,
+            selected_account: None,
+            ask_cache: RefCell::new(Vec::new()),
+            signed: Cell::new(0),
+        }
+    }
+
+    fn for_batch_account(
+        seed: &'a [u8],
+        seed_fingerprint: [u8; 32],
+        pool: ShieldedPool,
+        selected_account: zcash_vendor::zip32::AccountId,
+    ) -> Self {
+        Self {
+            seed,
+            seed_fingerprint,
+            pool,
+            selected_account: Some(selected_account),
             ask_cache: RefCell::new(Vec::new()),
             signed: Cell::new(0),
         }
@@ -209,9 +236,19 @@ impl PcztSigner for SeedSigner<'_> {
                 }
             }
         }
-        if action.spend().value().is_none() {
-            return Ok(());
-        }
+        let Some(value) = action.spend().value() else {
+            return if self.selected_account.is_some() {
+                Err(ZcashError::InvalidPczt(format!(
+                    "missing {pool_label} spend value"
+                )))
+            } else {
+                Ok(())
+            };
+        };
+        // Ownership decides signing, never the value: post-NU6.3 restricted bundles
+        // pair each change output with a fabricated wallet-controlled zero-value spend
+        // that must be signed by the account spend authorizing key (see
+        // pczt_ext::sign_orchard_action: we "must NOT pre-filter by value").
         let Some(account_index) = super::matching_seed_supported_orchard_account(
             &self.seed_fingerprint,
             action.spend().zip32_derivation().as_ref(),
@@ -219,9 +256,21 @@ impl PcztSigner for SeedSigner<'_> {
             self.pool,
         )?
         else {
-            // Not derivable from this seed; not ours to sign.
-            return Ok(());
+            // Not derivable from this seed. Ordinary PCZT signing ignores it. A
+            // reviewed batch tolerates untagged zero-value spends (IO Finalizer-signed
+            // dummies whose signatures the wallet strips for the QR round trip) but
+            // must otherwise contain only selected-account spends.
+            return if self.selected_account.is_some() && value.inner() != 0 {
+                Err(ZcashError::PcztNoMyInputs)
+            } else {
+                Ok(())
+            };
         };
+        if let Some(selected_account) = self.selected_account {
+            if account_index != selected_account {
+                return Err(ZcashError::PcztNoMyInputs);
+            }
+        }
 
         let ask = self.spend_authorizing_key(account_index)?;
         action
@@ -238,19 +287,68 @@ impl PcztSigner for SeedSigner<'_> {
     }
 }
 
+// Ordinary and batch signing share one core, `sign_pczt_with_seed_fingerprint_inner`,
+// which threads an optional selected account (None = ordinary, Some = batch/restricted).
+// The three wrappers exist so callers can enter at the right level:
+//   sign_pczt                          -> public ordinary entry; computes the seed fingerprint
+//   sign_pczt_with_seed_fingerprint    -> ordinary, fingerprint already known (avoids recomputing)
+//   sign_batch_pczt_with_seed_fingerprint -> batch; restricts signing to `account_index`
+// The batch path already holds the fingerprint (validated during review), so it skips recomputing it.
+
+/// Public ordinary (non-batch) signing entry: signs every action derivable from
+/// the seed. Computes the seed fingerprint, then delegates to the shared core.
 #[cfg(feature = "cypherpunk")]
 pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
-    super::validate_supported_pczt(&pczt)?;
-
     let seed_fingerprint =
         calculate_seed_fingerprint(seed).map_err(|e| ZcashError::SigningError(e.to_string()))?;
+
+    sign_pczt_with_seed_fingerprint(pczt, seed, seed_fingerprint)
+}
+
+/// Ordinary signing with a precomputed seed fingerprint (no account restriction).
+#[cfg(feature = "cypherpunk")]
+pub(crate) fn sign_pczt_with_seed_fingerprint(
+    pczt: Pczt,
+    seed: &[u8],
+    seed_fingerprint: [u8; 32],
+) -> crate::Result<Vec<u8>> {
+    sign_pczt_with_seed_fingerprint_inner(pczt, seed, seed_fingerprint, None)
+}
+
+/// Batch signing: restricts signing to `account_index` (the device-selected
+/// account); spends tagged for another account of the same seed are refused.
+#[cfg(feature = "cypherpunk")]
+pub(crate) fn sign_batch_pczt_with_seed_fingerprint(
+    pczt: Pczt,
+    seed: &[u8],
+    seed_fingerprint: [u8; 32],
+    account_index: zcash_vendor::zip32::AccountId,
+) -> crate::Result<Vec<u8>> {
+    sign_pczt_with_seed_fingerprint_inner(pczt, seed, seed_fingerprint, Some(account_index))
+}
+
+/// Shared signing core for both ordinary and batch paths. `selected_account`
+/// distinguishes them: `None` signs any of the seed's accounts, `Some` restricts
+/// to that one.
+#[cfg(feature = "cypherpunk")]
+fn sign_pczt_with_seed_fingerprint_inner(
+    pczt: Pczt,
+    seed: &[u8],
+    seed_fingerprint: [u8; 32],
+    selected_account: Option<zcash_vendor::zip32::AccountId>,
+) -> crate::Result<Vec<u8>> {
+    super::validate_supported_pczt(&pczt)?;
 
     #[cfg(zcash_unstable = "nu6.3")]
     let process_ironwood = super::pczt_should_process_ironwood(&pczt);
 
     // The orchard signer handles both the transparent inputs and the Orchard bundle
     // (the pool only changes error labels for shielded actions). Ironwood gets its own.
-    let orchard_signer = SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Orchard);
+    let orchard_signer = if let Some(account_index) = selected_account {
+        SeedSigner::for_batch_account(seed, seed_fingerprint, ShieldedPool::Orchard, account_index)
+    } else {
+        SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Orchard)
+    };
 
     // Propagate the signer error directly (it is already a ZcashError): the strict
     // validation in SeedSigner::sign_orchard returns ZcashError::InvalidPczt for bad
@@ -260,7 +358,16 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
     let signer = pczt_ext::sign_orchard(signer, &orchard_signer)?;
 
     #[cfg(zcash_unstable = "nu6.3")]
-    let ironwood_signer = SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Ironwood);
+    let ironwood_signer = if let Some(account_index) = selected_account {
+        SeedSigner::for_batch_account(
+            seed,
+            seed_fingerprint,
+            ShieldedPool::Ironwood,
+            account_index,
+        )
+    } else {
+        SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Ironwood)
+    };
     #[cfg(zcash_unstable = "nu6.3")]
     let signer = if process_ironwood {
         pczt_ext::sign_ironwood(signer, &ironwood_signer)?
@@ -723,7 +830,6 @@ mod tests {
             .expect("wallet-set min key must survive round trip");
         assert_eq!(request_min.as_slice(), &[1u8, 2][..]);
     }
-
 }
 
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]

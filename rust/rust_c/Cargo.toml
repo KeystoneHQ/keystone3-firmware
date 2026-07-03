@@ -26,6 +26,7 @@ aes = { workspace = true }
 cbc = { workspace = true }
 cipher = { workspace = true }
 minicbor = { workspace = true }
+spin = { workspace = true, optional = true }
 #keystone owned
 sim_qr_reader = { workspace = true, optional = true }
 keystore = { workspace = true, default-features = false }
@@ -120,7 +121,7 @@ multi-coins = [
 
 btc-only = ["bitcoin", "keystore/multi_coins"]
 
-cypherpunk = ["bitcoin", "zcash_cypherpunk", "monero", "keystore/cypherpunk"]
+cypherpunk = ["bitcoin", "zcash_cypherpunk", "monero", "keystore/cypherpunk", "dep:spin"]
 
 # build variants
 # production

@@ -6,7 +6,7 @@ use crate::errors::ZcashError;
 
 #[cfg(feature = "cypherpunk")]
 use zcash_vendor::{
-    orchard::{self, keys::FullViewingKey, value::ValueSum, Address},
+    orchard::{self, keys::FullViewingKey, value::ValueSum},
     zcash_keys::keys::UnifiedFullViewingKey,
 };
 
@@ -554,16 +554,7 @@ fn check_action_spend<P: consensus::Parameters>(
 }
 
 #[cfg(feature = "cypherpunk")]
-fn is_wallet_orchard_address(fvk: &FullViewingKey, address: &Address) -> bool {
-    let external_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::External);
-    let internal_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::Internal);
-
-    external_ivk.diversifier_index(address).is_some()
-        || internal_ivk.diversifier_index(address).is_some()
-}
-
-#[cfg(feature = "cypherpunk")]
-// check output cmx and internal-ovk output ownership constraints
+// check output cmx, then share the parse path's output validation
 fn check_action_output<P: consensus::Parameters>(
     params: &P,
     ufvk: &UnifiedFullViewingKey,
@@ -576,41 +567,20 @@ fn check_action_output<P: consensus::Parameters>(
         .verify_note_commitment(action.spend())
         .map_err(|e| ZcashError::InvalidPczt(format!("invalid {pool_label} action cmx: {e:?}")))?;
 
-    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
-        "orchard fvk is not present".to_string(),
-    ))?;
-    let external_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::External).clone();
-    let internal_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::Internal).clone();
-    let transparent_internal_ovk = ufvk
-        .transparent()
-        .map(|k| orchard::keys::OutgoingViewingKey::from(k.internal_ovk().as_bytes()));
-
-    let mut keys = vec![(Some(external_ovk), false), (Some(internal_ovk), true)];
-    if let Some(ovk) = transparent_internal_ovk {
-        keys.push((Some(ovk), true));
-    }
-
-    for (vk, is_internal_ovk) in keys {
-        if let Some((_, address, _)) =
-            super::parse::decode_output_enc_ciphertext(action, vk.as_ref(), pool)?
-        {
-            if let Some(user_address) = action.output().user_address() {
-                super::parse::validate_orchard_user_address(params, user_address, &address)?;
-            }
-            if is_internal_ovk && !is_wallet_orchard_address(fvk, &address) {
-                return Err(ZcashError::InvalidPczt(format!(
-                    "{pool_label} output was recoverable with an internal OVK but does not belong to this wallet"
-                )));
-            }
-            break;
-        }
-    }
-
-    if let (Some(user_address), Some(recipient)) =
-        (action.output().user_address(), action.output().recipient())
-    {
-        super::parse::validate_orchard_user_address(params, user_address, recipient)?;
-    }
+    // Delegate the rest of output validation to `parse_orchard_output`, the
+    // single routine the parse/display path already uses, so this check path can
+    // never be weaker than it. The bespoke loop that used to live here tried only
+    // the wallet OVKs and *silently accepted* any output that no OVK could
+    // decrypt, skipping the direct-decryption "every non-zero output must be
+    // device-visible" requirement `parse_orchard_output` enforces (it returns
+    // `enc_ciphertext ... is undecryptable` for a non-zero output no key can
+    // recover). The Zcash migration-summary review reaches outputs through here
+    // (`check_pczt_orchard` -> `check_action_output`) instead of the parse path,
+    // so that gap let a malicious host arm the reviewed-batch fingerprint for a
+    // migration whose Ironwood output is committed to a wallet address but whose
+    // ciphertext the wallet can never rescan. The recovered display value is
+    // discarded here; this function only validates.
+    super::parse::parse_orchard_output(params, ufvk, action, pool)?;
 
     Ok(())
 }

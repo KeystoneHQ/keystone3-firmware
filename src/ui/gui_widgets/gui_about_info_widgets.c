@@ -127,17 +127,19 @@ static void GuiAboutNVSBarInit()
 
 void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 {
-    char version[BUFFER_SIZE_32] = {0};
+    char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     GetSoftWareVersion(version);
     const char *versionPrefix = "Firmware ";
     char *startPointer = strstr(version, versionPrefix);
-    char versionStr[BUFFER_SIZE_32] = {0};
+    char versionStr[SOFTWARE_VERSION_MAX_LEN + 4] = {0};
     char fpVersion[BUFFER_SIZE_32] = "v";
     if (startPointer) {
-        strncpy(versionStr, version + strlen(versionPrefix), strnlen_s(version, BUFFER_SIZE_32));
+        strncpy(versionStr, version + strlen(versionPrefix), strnlen_s(version, sizeof(version)));
     } else {
-        strncpy(versionStr, version, strnlen_s(version, BUFFER_SIZE_32));
+        strncpy(versionStr, version, strnlen_s(version, sizeof(version)));
     }
+    uint32_t versionStrLen = strnlen_s(versionStr, sizeof(versionStr));
+    snprintf_s(versionStr + versionStrLen, sizeof(versionStr) - versionStrLen, "(%d)", (int)GetSeGen());
 
     char serialNumber[64] = {0};
     GetSerialNumber(serialNumber);

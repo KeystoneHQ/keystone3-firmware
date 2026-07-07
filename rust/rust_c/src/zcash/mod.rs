@@ -408,7 +408,6 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
 #[cfg(feature = "cypherpunk")]
 unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
     checked_batch: Ptr<ZcashCheckedPczt>,
-    ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
@@ -417,8 +416,6 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
     max_fragment_length: usize,
     allow_multipart: bool,
 ) -> *mut UREncodeResult {
-    // ufvk is consumed by preflight now; dropped in the final cleanup task.
-    let _ = ufvk;
     if disabled {
         return UREncodeResult::from(RustCError::UnsupportedTransaction(
             "Zcash requires at least 256-bit entropy (use 33-word Shamir shares)".to_string(),
@@ -514,7 +511,6 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
 #[no_mangle]
 pub unsafe extern "C" fn sign_zcash_batch_tx_cypherpunk(
     checked_batch: Ptr<ZcashCheckedPczt>,
-    ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
@@ -523,7 +519,6 @@ pub unsafe extern "C" fn sign_zcash_batch_tx_cypherpunk(
 ) -> *mut UREncodeResult {
     sign_zcash_batch_tx_cypherpunk_dynamic(
         checked_batch,
-        ufvk,
         seed_fingerprint,
         account_index,
         disabled,
@@ -538,7 +533,6 @@ pub unsafe extern "C" fn sign_zcash_batch_tx_cypherpunk(
 #[no_mangle]
 pub unsafe extern "C" fn sign_zcash_batch_tx_cypherpunk_unlimited(
     checked_batch: Ptr<ZcashCheckedPczt>,
-    ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
@@ -547,7 +541,6 @@ pub unsafe extern "C" fn sign_zcash_batch_tx_cypherpunk_unlimited(
 ) -> *mut UREncodeResult {
     sign_zcash_batch_tx_cypherpunk_dynamic(
         checked_batch,
-        ufvk,
         seed_fingerprint,
         account_index,
         disabled,
@@ -612,7 +605,6 @@ unsafe fn sign_zcash_tx_dynamic(
 #[cfg(feature = "cypherpunk")]
 unsafe fn sign_zcash_tx_cypherpunk_dynamic(
     checked_pczt: Ptr<ZcashCheckedPczt>,
-    ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
@@ -620,9 +612,6 @@ unsafe fn sign_zcash_tx_cypherpunk_dynamic(
     seed_len: u32,
     max_fragment_length: usize,
 ) -> *mut UREncodeResult {
-    // ufvk is consumed by preflight now; the parameter is dropped together with
-    // the batch signature in the final cleanup task.
-    let _ = ufvk;
     if disabled {
         return UREncodeResult::from(RustCError::UnsupportedTransaction(
             "Zcash requires at least 256-bit entropy (use 33-word Shamir shares)".to_string(),
@@ -678,7 +667,6 @@ unsafe fn sign_zcash_tx_cypherpunk_dynamic(
 #[no_mangle]
 pub unsafe extern "C" fn sign_zcash_tx_cypherpunk(
     checked_pczt: Ptr<ZcashCheckedPczt>,
-    ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
@@ -687,7 +675,6 @@ pub unsafe extern "C" fn sign_zcash_tx_cypherpunk(
 ) -> *mut UREncodeResult {
     sign_zcash_tx_cypherpunk_dynamic(
         checked_pczt,
-        ufvk,
         seed_fingerprint,
         account_index,
         disabled,
@@ -701,7 +688,6 @@ pub unsafe extern "C" fn sign_zcash_tx_cypherpunk(
 #[no_mangle]
 pub unsafe extern "C" fn sign_zcash_tx_cypherpunk_unlimited(
     checked_pczt: Ptr<ZcashCheckedPczt>,
-    ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
@@ -710,7 +696,6 @@ pub unsafe extern "C" fn sign_zcash_tx_cypherpunk_unlimited(
 ) -> *mut UREncodeResult {
     sign_zcash_tx_cypherpunk_dynamic(
         checked_pczt,
-        ufvk,
         seed_fingerprint,
         account_index,
         disabled,

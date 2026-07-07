@@ -362,14 +362,13 @@ UREncodeResult *GuiSignZcashCypherpunkWithSeed(void *data,
     uint8_t seed[SEED_LEN] = {0};
     uint8_t sfp[32] = {0};
     uint32_t zcashAccountIndex = 0;
-    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
     bool disabled = !IsZcashSupportedForCurrentMnemonic();
     int ret = 0;
 
     do {
         ZcashCypherpunkSignFunc selectedSignFunc = unlimited ? unlimitedSignFunc : signFunc;
         if (disabled) {
-            encodeResult = selectedSignFunc(data, ufvk, sfp, zcashAccountIndex, true, seed, 0);
+            encodeResult = selectedSignFunc(data, sfp, zcashAccountIndex, true, seed, 0);
             CHECK_CHAIN_BREAK(encodeResult);
             break;
         }
@@ -382,13 +381,9 @@ UREncodeResult *GuiSignZcashCypherpunkWithSeed(void *data,
         if (ret != 0) {
             break;
         }
-        ret = GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-        if (ret != 0) {
-            break;
-        }
 
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = selectedSignFunc(data, ufvk, sfp, zcashAccountIndex, false, seed, len);
+        encodeResult = selectedSignFunc(data, sfp, zcashAccountIndex, false, seed, len);
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
 

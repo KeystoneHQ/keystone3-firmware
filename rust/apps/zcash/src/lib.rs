@@ -116,7 +116,7 @@ pub fn preflight_pczt_cypherpunk<P: consensus::Parameters>(
     account_index: u32,
 ) -> Result<Vec<u8>> {
     let pczt = pczt::parse_pczt(pczt_bytes)?;
-    // FUTURE(qr-v2-omitted-fields): recompute-or-check omitted fields here,
+    // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
     // mutating `pczt` so the normalized bytes carry the verified values forward.
     check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)?;
     Ok(pczt.serialize())
@@ -135,8 +135,8 @@ pub fn preflight_batch_pczt_cypherpunk<P: consensus::Parameters>(
     account_index: u32,
 ) -> Result<Vec<u8>> {
     let pczt = pczt::parse_pczt(pczt_bytes)?;
-    // FUTURE(qr-v2-omitted-fields): recompute-or-check omitted fields here, as
-    // in preflight_pczt_cypherpunk.
+    // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
+    // as in preflight_pczt_cypherpunk.
     check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)?;
     let account_id = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
@@ -205,7 +205,7 @@ pub fn preflight_pczt_multi_coins<P: consensus::Parameters>(
     account_index: u32,
 ) -> Result<Vec<u8>> {
     let pczt = pczt::parse_pczt(pczt_bytes)?;
-    // FUTURE(qr-v2-omitted-fields): recompute-or-check omitted fields here,
+    // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
     // mutating `pczt` so the normalized bytes carry the verified values forward.
     check_parsed_pczt_multi_coins(params, &pczt, xpub, seed_fingerprint, account_index)?;
     Ok(pczt.serialize())

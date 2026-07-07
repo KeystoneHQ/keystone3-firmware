@@ -556,7 +556,7 @@ fn signable_shielded_actions<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: zip32::AccountId,
     policy: ShieldedActionPolicy,
-) -> Result<Vec<SignableShieldedAction>> {
+) -> Result<(Vec<SignableShieldedAction>, Pczt)> {
     use zcash_vendor::pczt::roles::verifier::Verifier;
 
     if policy == ShieldedActionPolicy::Batch {
@@ -598,16 +598,16 @@ fn signable_shielded_actions<P: consensus::Parameters>(
     } else {
         verifier
     };
-    drop(verifier);
+    let pczt = verifier.finish();
 
-    Ok(actions)
+    Ok((actions, pczt))
 }
 
 #[cfg(feature = "cypherpunk")]
 fn ensure_shielded_actions_are_signed(
     signed_pczt: Pczt,
     signable_actions: &[SignableShieldedAction],
-) -> Result<()> {
+) -> Result<Pczt> {
     use zcash_vendor::pczt::roles::verifier::Verifier;
 
     #[cfg(zcash_unstable = "nu6.3")]
@@ -628,9 +628,8 @@ fn ensure_shielded_actions_are_signed(
     } else {
         verifier
     };
-    drop(verifier);
 
-    Ok(())
+    Ok(verifier.finish())
 }
 
 /// Checks whether the PCZT contains at least one non-dummy supported shielded
@@ -651,15 +650,14 @@ pub fn ensure_pczt_has_signable_shielded_action<P: consensus::Parameters>(
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
 
-    if signable_shielded_actions(
+    let (signable_actions, _pczt) = signable_shielded_actions(
         params,
         pczt,
         seed_fingerprint,
         account_index,
         ShieldedActionPolicy::Batch,
-    )?
-    .is_empty()
-    {
+    )?;
+    if signable_actions.is_empty() {
         Err(ZcashError::PcztNoMyInputs)
     } else {
         Ok(())
@@ -679,7 +677,7 @@ pub fn ensure_signable_shielded_actions_are_signed<P: consensus::Parameters>(
     let unsigned_pczt = pczt::parse_pczt(unsigned_pczt)?;
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
-    let signable_actions = signable_shielded_actions(
+    let (signable_actions, _pczt) = signable_shielded_actions(
         params,
         unsigned_pczt,
         seed_fingerprint,
@@ -691,7 +689,8 @@ pub fn ensure_signable_shielded_actions_are_signed<P: consensus::Parameters>(
     } else {
         let signed_pczt = pczt::parse_pczt(signed_pczt)
             .map_err(|_| ZcashError::InvalidPczt("invalid signed pczt data".to_string()))?;
-        ensure_shielded_actions_are_signed(signed_pczt, &signable_actions)
+        ensure_shielded_actions_are_signed(signed_pczt, &signable_actions)?;
+        Ok(())
     }
 }
 
@@ -708,7 +707,7 @@ pub fn ensure_owned_supported_shielded_actions_are_signed<P: consensus::Paramete
     let unsigned_pczt = pczt::parse_pczt(unsigned_pczt)?;
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
-    let signable_actions = signable_shielded_actions(
+    let (signable_actions, _pczt) = signable_shielded_actions(
         params,
         unsigned_pczt,
         seed_fingerprint,
@@ -720,8 +719,83 @@ pub fn ensure_owned_supported_shielded_actions_are_signed<P: consensus::Paramete
     } else {
         let signed_pczt = pczt::parse_pczt(signed_pczt)
             .map_err(|_| ZcashError::InvalidPczt("invalid signed pczt data".to_string()))?;
-        ensure_shielded_actions_are_signed(signed_pczt, &signable_actions)
+        ensure_shielded_actions_are_signed(signed_pczt, &signable_actions)?;
+        Ok(())
     }
+}
+
+/// Signs a preflight-checked, normalized PCZT and confirms in memory that every
+/// supported shielded action owned by (`seed_fingerprint`, `account_index`)
+/// received a spend authorization signature. Single-transaction policy: a PCZT
+/// with no owned shielded action still signs if any action matched the seed.
+/// Parses `checked_pczt` exactly once and returns the redacted, version-stamped
+/// response bytes.
+#[cfg(feature = "cypherpunk")]
+pub fn sign_checked_pczt<P: consensus::Parameters>(
+    params: &P,
+    checked_pczt: &[u8],
+    seed: &[u8],
+    seed_fingerprint: &[u8; 32],
+    account_index: u32,
+) -> Result<Vec<u8>> {
+    sign_checked_pczt_with_policy(
+        params,
+        checked_pczt,
+        seed,
+        seed_fingerprint,
+        account_index,
+        ShieldedActionPolicy::Single,
+    )
+}
+
+/// Signs a preflight-checked, normalized PCZT and confirms in memory that every
+/// supported shielded action owned by (`seed_fingerprint`, `account_index`)
+/// received a spend authorization signature. Batch policy: additionally rejects
+/// PCZT shapes the batch flow does not support and requires at least one owned
+/// signable shielded action. Parses `checked_pczt` exactly once and returns the
+/// redacted, version-stamped response bytes.
+#[cfg(feature = "cypherpunk")]
+pub fn sign_checked_batch_pczt<P: consensus::Parameters>(
+    params: &P,
+    checked_pczt: &[u8],
+    seed: &[u8],
+    seed_fingerprint: &[u8; 32],
+    account_index: u32,
+) -> Result<Vec<u8>> {
+    sign_checked_pczt_with_policy(
+        params,
+        checked_pczt,
+        seed,
+        seed_fingerprint,
+        account_index,
+        ShieldedActionPolicy::Batch,
+    )
+}
+
+#[cfg(feature = "cypherpunk")]
+fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
+    params: &P,
+    checked_pczt: &[u8],
+    seed: &[u8],
+    seed_fingerprint: &[u8; 32],
+    account_index: u32,
+    policy: ShieldedActionPolicy,
+) -> Result<Vec<u8>> {
+    let pczt = pczt::parse_pczt(checked_pczt)?;
+    let account_index = zip32::AccountId::try_from(account_index)
+        .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
+    let (signable_actions, pczt) =
+        signable_shielded_actions(params, pczt, seed_fingerprint, account_index, policy)?;
+    if policy == ShieldedActionPolicy::Batch && signable_actions.is_empty() {
+        return Err(ZcashError::PcztNoMyInputs);
+    }
+    let signed = pczt::sign::sign_pczt_to_pczt(pczt, seed)?;
+    let signed = if signable_actions.is_empty() {
+        signed
+    } else {
+        ensure_shielded_actions_are_signed(signed, &signable_actions)?
+    };
+    Ok(signed.serialize())
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -1443,5 +1517,104 @@ mod tests {
             0,
         )
         .unwrap();
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_sign_checked_pczt_signs_owned_orchard_actions() {
+        let sample = pczt::test_support::sample_orchard_change_pczt();
+        let normalized = preflight_pczt_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .unwrap();
+
+        let signed = sign_checked_pczt(
+            &pczt::test_support::Nu6_3Network,
+            &normalized,
+            &sample.seed,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .unwrap();
+
+        let parsed = Pczt::parse(&signed).expect("signed PCZT must parse");
+        let signed_actions = parsed
+            .orchard()
+            .actions()
+            .iter()
+            .filter(|action| action.spend().spend_auth_sig().is_some())
+            .count();
+        assert_eq!(signed_actions, 2);
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_sign_checked_pczt_rejects_foreign_seed() {
+        let sample = pczt::test_support::sample_orchard_change_pczt();
+        let normalized = preflight_pczt_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .unwrap();
+        let foreign_seed = [9u8; 32];
+        let foreign_fingerprint = calculate_seed_fingerprint(&foreign_seed).unwrap();
+
+        let result = sign_checked_pczt(
+            &pczt::test_support::Nu6_3Network,
+            &normalized,
+            &foreign_seed,
+            &foreign_fingerprint,
+            0,
+        );
+        assert!(matches!(result, Err(ZcashError::PcztNoMyInputs)));
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_sign_checked_batch_pczt_signs_and_rejects_sapling() {
+        let sample = pczt::test_support::sample_orchard_change_pczt();
+        let signed = sign_checked_batch_pczt(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &sample.seed,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .unwrap();
+        assert!(Pczt::parse(&signed)
+            .unwrap()
+            .orchard()
+            .actions()
+            .iter()
+            .any(|action| action.spend().spend_auth_sig().is_some()));
+
+        // Batch policy: account 1 owns nothing in this PCZT.
+        assert_eq!(
+            sign_checked_batch_pczt(
+                &pczt::test_support::Nu6_3Network,
+                &sample.bytes,
+                &sample.seed,
+                &sample.seed_fingerprint,
+                1,
+            )
+            .unwrap_err(),
+            ZcashError::PcztNoMyInputs
+        );
+
+        let sapling_sample = pczt_with_sapling_output();
+        assert_batch_unsupported_sapling_error(sign_checked_batch_pczt(
+            &pczt::test_support::Nu6_3Network,
+            &sapling_sample.bytes,
+            &sapling_sample.seed,
+            &sapling_sample.seed_fingerprint,
+            0,
+        ));
     }
 }

@@ -381,8 +381,7 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
     let batch = match ZcashSignBatch::try_from(bytes.to_vec()) {
         Ok(batch) => batch,
         Err(e) => {
-            return TransactionParseResult::from(RustCError::InvalidData(format!("{e:?}")))
-                .c_ptr()
+            return TransactionParseResult::from(RustCError::InvalidData(format!("{e:?}"))).c_ptr()
         }
     };
     let ufvk_text = unsafe { recover_c_char(ufvk) };
@@ -439,8 +438,7 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
                 Ok(seed_fingerprint) => {
                     if &seed_fingerprint != expected_seed_fingerprint {
                         seed.zeroize();
-                        return UREncodeResult::from(RustCError::MasterFingerprintMismatch)
-                            .c_ptr();
+                        return UREncodeResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
                     }
 
                     let mut results = Vec::new();
@@ -479,8 +477,7 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
                         );
                         match TryInto::<Vec<u8>>::try_into(result) {
                             Ok(bytes) => {
-                                let registry_type =
-                                    ZcashSignResult::get_registry_type().get_type();
+                                let registry_type = ZcashSignResult::get_registry_type().get_type();
                                 if allow_multipart {
                                     UREncodeResult::encode(
                                         bytes,

@@ -381,7 +381,9 @@ mod legacy_tests {
             0,
         )
         .expect("selected account PCZT should preflight");
-        assert!(parse_pczt_multi_coins(&MainNetwork, &normalized, &sample.seed_fingerprint).is_ok());
+        assert!(
+            parse_pczt_multi_coins(&MainNetwork, &normalized, &sample.seed_fingerprint).is_ok()
+        );
 
         let account_one_pczt =
             pczt::legacy_test_support::legacy_transparent_pczt_with_input_derivation(

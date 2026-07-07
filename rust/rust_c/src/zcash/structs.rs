@@ -1,16 +1,18 @@
-use core::ptr::null_mut;
+use core::{ptr::null_mut, slice};
 
 use crate::common::{
+    errors::RustCError,
     ffi::VecFFI,
     free::Free,
     types::{Ptr, PtrString},
     utils::convert_c_char,
 };
 use crate::{free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs};
-use alloc::vec::Vec;
+use alloc::{string::ToString, vec::Vec};
 use app_zcash::pczt::structs::{
     ParsedFrom, ParsedOrchard, ParsedPczt, ParsedTo, ParsedTransparent,
 };
+use cryptoxide::hashing::sha256;
 use cstr_core;
 
 #[repr(C)]
@@ -214,3 +216,80 @@ impl_c_ptrs!(
     DisplayTo,
     DisplayOrchard
 );
+
+/// Preflight-verified, normalized transaction bytes retained by C between the
+/// check, display, and sign stages (`checked_PCZT` on the C side).
+///
+/// `data` is opaque to C: the normalized PCZT encoding in the single-transaction
+/// flow, or the normalized `ZcashSignBatch` CBOR in the batch flow. `digest` is
+/// the SHA-256 of those bytes, stamped at preflight; `verified_bytes` recomputes
+/// and compares it so parse/sign only operate on bytes produced by a successful
+/// preflight. Construct exclusively from preflight results.
+#[repr(C)]
+pub struct ZcashCheckedPczt {
+    pub data: Ptr<VecFFI<u8>>,
+    pub digest: [u8; 32],
+}
+
+impl ZcashCheckedPczt {
+    /// Wraps preflight-verified bytes and stamps their digest.
+    pub fn new(data: Vec<u8>) -> Self {
+        let digest = sha256(&data);
+        Self {
+            data: VecFFI::from(data).c_ptr(),
+            digest,
+        }
+    }
+
+    /// Borrows the checked bytes after re-verifying the digest stamped at
+    /// preflight, guarding against C handing back a different or corrupted
+    /// buffer than the one that was checked and displayed.
+    pub unsafe fn verified_bytes(&self) -> Result<&[u8], RustCError> {
+        if self.data.is_null() {
+            return Err(RustCError::InvalidData(
+                "checked PCZT has no data".to_string(),
+            ));
+        }
+        let vec = &*self.data;
+        let bytes = slice::from_raw_parts(vec.data, vec.size);
+        if sha256(bytes) != self.digest {
+            return Err(RustCError::InvalidData(
+                "checked PCZT digest mismatch".to_string(),
+            ));
+        }
+        Ok(bytes)
+    }
+}
+
+impl_c_ptr!(ZcashCheckedPczt);
+
+impl Free for ZcashCheckedPczt {
+    unsafe fn free(&self) {
+        if !self.data.is_null() {
+            let vec_ffi = alloc::boxed::Box::from_raw(self.data);
+            drop(Vec::from_raw_parts(vec_ffi.data, vec_ffi.size, vec_ffi.cap));
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloc::vec::Vec;
+
+    #[test]
+    fn test_checked_pczt_digest_round_trip() {
+        let checked = ZcashCheckedPczt::new(b"normalized-bytes".to_vec());
+        let bytes = unsafe { checked.verified_bytes() }.unwrap();
+        assert_eq!(bytes, b"normalized-bytes");
+        unsafe { checked.free() };
+    }
+
+    #[test]
+    fn test_checked_pczt_digest_mismatch_is_rejected() {
+        let mut checked = ZcashCheckedPczt::new(b"normalized-bytes".to_vec());
+        checked.digest[0] ^= 0xff;
+        assert!(unsafe { checked.verified_bytes() }.is_err());
+        unsafe { checked.free() };
+    }
+}

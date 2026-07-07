@@ -21,6 +21,7 @@ use keystore::algorithms::{
 };
 use structs::DisplayPczt;
 use structs::DisplayZcashBatch;
+use structs::ZcashCheckedPczt;
 use ur_registry::traits::RegistryItem;
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
 use ur_registry::zcash::zcash_sign_batch::{
@@ -701,6 +702,16 @@ pub unsafe extern "C" fn sign_zcash_tx_cypherpunk_unlimited(
 
 make_free_method!(TransactionParseResult<DisplayPczt>);
 make_free_method!(TransactionParseResult<DisplayZcashBatch>);
+
+/// Frees a `ZcashCheckedPczt` previously returned through a check FFI out-param.
+#[no_mangle]
+pub unsafe extern "C" fn free_zcash_checked_pczt(ptr: PtrT<ZcashCheckedPczt>) {
+    if ptr.is_null() {
+        return;
+    }
+    let checked = alloc::boxed::Box::from_raw(ptr);
+    checked.free();
+}
 
 use aes::cipher::block_padding::Pkcs7;
 use aes::cipher::generic_array::GenericArray;

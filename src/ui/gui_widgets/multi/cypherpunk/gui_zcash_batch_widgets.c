@@ -32,6 +32,7 @@ static uint32_t g_txCount = 0;
 static TransactionParseResult_DisplayZcashBatch *g_parseResult = NULL;
 static DisplayZcashBatch *g_displayZcashBatch = NULL;
 static DisplayPczt *g_currentTransaction = NULL;
+static ZcashCheckedPczt *g_checkedBatch = NULL;
 
 static PageWidget_t *g_pageWidget = NULL;
 static lv_obj_t *g_cont = NULL;
@@ -54,12 +55,22 @@ static bool IsZcashBatchUsbMode(void);
 static void RejectZcashBatchUsbRequest(void);
 static void RespondZcashBatchUsbParseError(const char *errorMessage);
 
+static void FreeCheckedBatch(void)
+{
+    if (g_checkedBatch != NULL) {
+        free_zcash_checked_pczt(g_checkedBatch);
+        g_checkedBatch = NULL;
+    }
+}
+
 static void ClearPageData(void)
 {
     g_currentTxIndex = 0;
     g_txCount = 0;
     g_currentTransaction = NULL;
     g_displayZcashBatch = NULL;
+
+    FreeCheckedBatch();
 
     if (g_parseResult != NULL) {
         free_TransactionParseResult_DisplayZcashBatch(g_parseResult);
@@ -82,14 +93,12 @@ void GuiSetZcashBatchUrData(URParseResult *urResult, URParseMultiResult *urMulti
 
 UREncodeResult *GuiGetZcashBatchSignQrCodeData(void)
 {
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    return SignZcashBatchInternal(data, false);
+    return SignZcashBatchInternal(g_checkedBatch, false);
 }
 
 UREncodeResult *GuiGetZcashBatchSignUrDataUnlimited(void)
 {
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    return SignZcashBatchInternal(data, true);
+    return SignZcashBatchInternal(g_checkedBatch, true);
 }
 
 static bool IsZcashBatchUsbMode(void)
@@ -124,8 +133,8 @@ static UREncodeResult *SignZcashBatchInternal(void *data, bool unlimited)
     return GuiSignZcashCypherpunkWithSeed(
                data,
                unlimited,
-               sign_zcash_batch_tx_cypherpunk,
-               sign_zcash_batch_tx_cypherpunk_unlimited);
+               (ZcashCypherpunkSignFunc)sign_zcash_batch_tx_cypherpunk,
+               (ZcashCypherpunkSignFunc)sign_zcash_batch_tx_cypherpunk_unlimited);
 }
 
 #ifdef CYPHERPUNK_VERSION
@@ -137,9 +146,11 @@ PtrT_TransactionCheckResult GuiGetZcashBatchCheckResult(void)
     uint8_t accountNum = 0;
     char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
 
+    FreeCheckedBatch();
+
     GetExistAccountNum(&accountNum);
     if (accountNum <= 0) {
-        return check_zcash_batch_tx_cypherpunk(data, ufvk, sfp, zcashAccountIndex, true);
+        return check_zcash_batch_tx_cypherpunk(data, ufvk, sfp, zcashAccountIndex, true, &g_checkedBatch);
     }
 
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
@@ -149,7 +160,8 @@ PtrT_TransactionCheckResult GuiGetZcashBatchCheckResult(void)
                ufvk,
                sfp,
                zcashAccountIndex,
-               !IsZcashSupportedForCurrentMnemonic());
+               !IsZcashSupportedForCurrentMnemonic(),
+               &g_checkedBatch);
 }
 #endif
 
@@ -363,18 +375,15 @@ void GuiZcashBatchWidgetsRefresh(void)
 
 static void *GuiParseZcashBatchData(void)
 {
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t sfp[32];
-    uint32_t zcashAccountIndex = 0;
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
 
     char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
     g_parseResult = parse_zcash_batch_tx_cypherpunk(
-        data,
+        g_checkedBatch,
         ufvk,
         sfp,
-        zcashAccountIndex,
         !IsZcashSupportedForCurrentMnemonic());
 
     return g_parseResult;

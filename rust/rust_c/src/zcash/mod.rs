@@ -286,28 +286,6 @@ fn validate_zcash_batch(batch: &ZcashSignBatch) -> Result<(), RustCError> {
 }
 
 #[cfg(feature = "cypherpunk")]
-fn check_zcash_batch_message_cypherpunk(
-    message: &ZcashSignMessage,
-    ufvk_text: &str,
-    seed_fingerprint: &[u8; 32],
-    account_index: u32,
-) -> app_zcash::errors::Result<()> {
-    app_zcash::check_pczt_cypherpunk(
-        &MainNetwork,
-        message.get_payload(),
-        ufvk_text,
-        seed_fingerprint,
-        account_index,
-    )?;
-    app_zcash::ensure_pczt_has_signable_shielded_action(
-        &MainNetwork,
-        message.get_payload(),
-        seed_fingerprint,
-        account_index,
-    )
-}
-
-#[cfg(feature = "cypherpunk")]
 #[no_mangle]
 pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
     tx: PtrUR,
@@ -315,7 +293,9 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
+    checked_batch: Ptr<Ptr<ZcashCheckedPczt>>,
 ) -> *mut TransactionCheckResult {
+    *checked_batch = core::ptr::null_mut();
     if disabled {
         return TransactionCheckResult::from(RustCError::UnsupportedTransaction(
             "Zcash requires at least 256-bit entropy (use 33-word Shamir shares)".to_string(),
@@ -331,27 +311,54 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
         return TransactionCheckResult::from(e).c_ptr();
     }
 
+    let mut checked_messages = Vec::with_capacity(batch.get_messages().len());
     for message in batch.get_messages() {
-        if let Err(e) = check_zcash_batch_message_cypherpunk(
-            message,
+        match app_zcash::preflight_batch_pczt_cypherpunk(
+            &MainNetwork,
+            message.get_payload(),
             &ufvk_text,
             seed_fingerprint,
             account_index,
         ) {
-            return TransactionCheckResult::from(e).c_ptr();
+            Ok(normalized) => {
+                let digest = sha256(&normalized).to_vec();
+                checked_messages.push(ZcashSignMessage::new(
+                    message.get_id().clone(),
+                    message.get_kind(),
+                    normalized,
+                    Some(digest),
+                ));
+            }
+            Err(e) => return TransactionCheckResult::from(e).c_ptr(),
         }
     }
 
-    TransactionCheckResult::new().c_ptr()
+    // Rebuild the envelope around the normalized payloads (with re-stamped
+    // per-message digests) so parse/sign consume exactly what was checked.
+    let normalized_batch = ZcashSignBatch::new(
+        batch.get_version(),
+        batch.get_request_id().clone(),
+        batch.get_network(),
+        checked_messages,
+        Some(true),
+    );
+    match TryInto::<Vec<u8>>::try_into(normalized_batch) {
+        Ok(bytes) => {
+            *checked_batch = ZcashCheckedPczt::new(bytes).c_ptr();
+            TransactionCheckResult::new().c_ptr()
+        }
+        // The encode error is a ur-registry error type; TransactionCheckResult
+        // has no From impl for it, so map explicitly.
+        Err(e) => TransactionCheckResult::from(RustCError::InvalidData(format!("{e:?}"))).c_ptr(),
+    }
 }
 
 #[cfg(feature = "cypherpunk")]
 #[no_mangle]
 pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
-    tx: PtrUR,
+    checked_batch: Ptr<ZcashCheckedPczt>,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
-    account_index: u32,
     disabled: bool,
 ) -> Ptr<TransactionParseResult<DisplayZcashBatch>> {
     if disabled {
@@ -360,25 +367,30 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
         ))
         .c_ptr();
     }
-    let batch = extract_ptr_with_type!(tx, ZcashSignBatch);
+    if checked_batch.is_null() {
+        return TransactionParseResult::from(RustCError::InvalidData(
+            "no checked Zcash batch available".to_string(),
+        ))
+        .c_ptr();
+    }
+    let checked = extract_ptr_with_type!(checked_batch, ZcashCheckedPczt);
+    let bytes = match checked.verified_bytes() {
+        Ok(bytes) => bytes,
+        Err(e) => return TransactionParseResult::from(e).c_ptr(),
+    };
+    let batch = match ZcashSignBatch::try_from(bytes.to_vec()) {
+        Ok(batch) => batch,
+        Err(e) => {
+            return TransactionParseResult::from(RustCError::InvalidData(format!("{e:?}")))
+                .c_ptr()
+        }
+    };
     let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
 
-    if let Err(e) = validate_zcash_batch(batch) {
-        return TransactionParseResult::from(e).c_ptr();
-    }
-
     let mut display_items = Vec::new();
     for message in batch.get_messages() {
-        if let Err(e) = check_zcash_batch_message_cypherpunk(
-            message,
-            &ufvk_text,
-            seed_fingerprint,
-            account_index,
-        ) {
-            return TransactionParseResult::from(e).c_ptr();
-        }
         match app_zcash::parse_pczt_cypherpunk(
             &MainNetwork,
             message.get_payload(),
@@ -395,7 +407,7 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
 
 #[cfg(feature = "cypherpunk")]
 unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
-    tx: PtrUR,
+    checked_batch: Ptr<ZcashCheckedPczt>,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
@@ -405,55 +417,46 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
     max_fragment_length: usize,
     allow_multipart: bool,
 ) -> *mut UREncodeResult {
+    // ufvk is consumed by preflight now; dropped in the final cleanup task.
+    let _ = ufvk;
     if disabled {
         return UREncodeResult::from(RustCError::UnsupportedTransaction(
             "Zcash requires at least 256-bit entropy (use 33-word Shamir shares)".to_string(),
         ))
         .c_ptr();
     }
-    let batch = extract_ptr_with_type!(tx, ZcashSignBatch);
-    let ufvk_text = unsafe { recover_c_char(ufvk) };
+    if checked_batch.is_null() {
+        return UREncodeResult::from(RustCError::InvalidData(
+            "no checked Zcash batch available for signing".to_string(),
+        ))
+        .c_ptr();
+    }
+    let checked = extract_ptr_with_type!(checked_batch, ZcashCheckedPczt);
     let expected_seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let expected_seed_fingerprint: &[u8; 32] = expected_seed_fingerprint.try_into().unwrap();
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
 
-    let result = match validate_zcash_batch(batch) {
-        Ok(()) => {
-            let seed_fingerprint = calculate_seed_fingerprint(seed);
-            match seed_fingerprint {
+    let result = match checked.verified_bytes() {
+        Ok(bytes) => match ZcashSignBatch::try_from(bytes.to_vec()) {
+            Ok(batch) => match calculate_seed_fingerprint(seed) {
                 Ok(seed_fingerprint) => {
                     if &seed_fingerprint != expected_seed_fingerprint {
                         seed.zeroize();
-                        return UREncodeResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
+                        return UREncodeResult::from(RustCError::MasterFingerprintMismatch)
+                            .c_ptr();
                     }
 
                     let mut results = Vec::new();
+                    let mut error = None;
                     for message in batch.get_messages() {
-                        if let Err(e) = check_zcash_batch_message_cypherpunk(
-                            message,
-                            &ufvk_text,
+                        match app_zcash::sign_checked_batch_pczt(
+                            &MainNetwork,
+                            message.get_payload(),
+                            seed,
                             &seed_fingerprint,
                             account_index,
                         ) {
-                            seed.zeroize();
-                            return UREncodeResult::from(e).c_ptr();
-                        }
-
-                        match app_zcash::sign_pczt(message.get_payload(), seed) {
                             Ok(payload) => {
-                                if let Err(e) =
-                                    app_zcash::ensure_signable_shielded_actions_are_signed(
-                                        &MainNetwork,
-                                        message.get_payload(),
-                                        &payload,
-                                        &seed_fingerprint,
-                                        account_index,
-                                    )
-                                {
-                                    seed.zeroize();
-                                    return UREncodeResult::from(e).c_ptr();
-                                }
-
                                 let payload_digest = sha256(&payload).to_vec();
                                 results.push(ZcashSignMessageResult::signed(
                                     message.get_id().clone(),
@@ -463,33 +466,44 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
                                 ));
                             }
                             Err(e) => {
-                                seed.zeroize();
-                                return UREncodeResult::from(e).c_ptr();
+                                error = Some(UREncodeResult::from(e).c_ptr());
+                                break;
                             }
                         }
                     }
 
-                    let result = ZcashSignResult::new(
-                        ZCASH_SIGN_BATCH_VERSION,
-                        batch.get_request_id().clone(),
-                        results,
-                    );
-                    match TryInto::<Vec<u8>>::try_into(result) {
-                        Ok(bytes) => {
-                            let registry_type = ZcashSignResult::get_registry_type().get_type();
-                            let encode_result = if allow_multipart {
-                                UREncodeResult::encode(bytes, registry_type, max_fragment_length)
-                            } else {
-                                UREncodeResult::encode_full_response(bytes, registry_type)
-                            };
-                            encode_result.c_ptr()
+                    if let Some(error) = error {
+                        error
+                    } else {
+                        let result = ZcashSignResult::new(
+                            ZCASH_SIGN_BATCH_VERSION,
+                            batch.get_request_id().clone(),
+                            results,
+                        );
+                        match TryInto::<Vec<u8>>::try_into(result) {
+                            Ok(bytes) => {
+                                let registry_type =
+                                    ZcashSignResult::get_registry_type().get_type();
+                                if allow_multipart {
+                                    UREncodeResult::encode(
+                                        bytes,
+                                        registry_type,
+                                        max_fragment_length,
+                                    )
+                                    .c_ptr()
+                                } else {
+                                    UREncodeResult::encode_full_response(bytes, registry_type)
+                                        .c_ptr()
+                                }
+                            }
+                            Err(e) => UREncodeResult::from(e).c_ptr(),
                         }
-                        Err(e) => UREncodeResult::from(e).c_ptr(),
                     }
                 }
                 Err(e) => UREncodeResult::from(e).c_ptr(),
-            }
-        }
+            },
+            Err(e) => UREncodeResult::from(RustCError::InvalidData(format!("{e:?}"))).c_ptr(),
+        },
         Err(e) => UREncodeResult::from(e).c_ptr(),
     };
     seed.zeroize();
@@ -499,7 +513,7 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
 #[cfg(feature = "cypherpunk")]
 #[no_mangle]
 pub unsafe extern "C" fn sign_zcash_batch_tx_cypherpunk(
-    tx: PtrUR,
+    checked_batch: Ptr<ZcashCheckedPczt>,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
@@ -508,7 +522,7 @@ pub unsafe extern "C" fn sign_zcash_batch_tx_cypherpunk(
     seed_len: u32,
 ) -> *mut UREncodeResult {
     sign_zcash_batch_tx_cypherpunk_dynamic(
-        tx,
+        checked_batch,
         ufvk,
         seed_fingerprint,
         account_index,
@@ -523,7 +537,7 @@ pub unsafe extern "C" fn sign_zcash_batch_tx_cypherpunk(
 #[cfg(feature = "cypherpunk")]
 #[no_mangle]
 pub unsafe extern "C" fn sign_zcash_batch_tx_cypherpunk_unlimited(
-    tx: PtrUR,
+    checked_batch: Ptr<ZcashCheckedPczt>,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
@@ -532,7 +546,7 @@ pub unsafe extern "C" fn sign_zcash_batch_tx_cypherpunk_unlimited(
     seed_len: u32,
 ) -> *mut UREncodeResult {
     sign_zcash_batch_tx_cypherpunk_dynamic(
-        tx,
+        checked_batch,
         ufvk,
         seed_fingerprint,
         account_index,

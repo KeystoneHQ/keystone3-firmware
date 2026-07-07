@@ -122,6 +122,37 @@ pub fn preflight_pczt_cypherpunk<P: consensus::Parameters>(
     Ok(pczt.serialize())
 }
 
+/// Batch preflight for one `ZcashSignBatch` message: parses once, runs the full
+/// policy checks, enforces the batch shielded-action policy (the PCZT must be
+/// batch-signable by this account), and returns the normalized encoding. See
+/// `preflight_pczt_cypherpunk` for the normalization contract.
+#[cfg(feature = "cypherpunk")]
+pub fn preflight_batch_pczt_cypherpunk<P: consensus::Parameters>(
+    params: &P,
+    pczt_bytes: &[u8],
+    ufvk_text: &str,
+    seed_fingerprint: &[u8; 32],
+    account_index: u32,
+) -> Result<Vec<u8>> {
+    let pczt = pczt::parse_pczt(pczt_bytes)?;
+    // FUTURE(qr-v2-omitted-fields): recompute-or-check omitted fields here, as
+    // in preflight_pczt_cypherpunk.
+    check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)?;
+    let account_id = zip32::AccountId::try_from(account_index)
+        .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
+    let (actions, pczt) = signable_shielded_actions(
+        params,
+        pczt,
+        seed_fingerprint,
+        account_id,
+        ShieldedActionPolicy::Batch,
+    )?;
+    if actions.is_empty() {
+        return Err(ZcashError::PcztNoMyInputs);
+    }
+    Ok(pczt.serialize())
+}
+
 #[cfg(feature = "multi_coins")]
 pub fn check_pczt_multi_coins<P: consensus::Parameters>(
     params: &P,
@@ -1614,6 +1645,51 @@ mod tests {
             &sapling_sample.bytes,
             &sapling_sample.seed,
             &sapling_sample.seed_fingerprint,
+            0,
+        ));
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_preflight_batch_pczt_accepts_orchard_and_ironwood_spends() {
+        for sample in [
+            pczt::test_support::sample_orchard_change_pczt(),
+            pczt::test_support::sample_ironwood_pczt(),
+        ] {
+            let normalized = preflight_batch_pczt_cypherpunk(
+                &pczt::test_support::Nu6_3Network,
+                &sample.bytes,
+                &sample.ufvk_text,
+                &sample.seed_fingerprint,
+                0,
+            )
+            .unwrap();
+            assert!(Pczt::parse(&normalized).is_ok());
+
+            // Account 1 owns nothing in these PCZTs: batch policy rejects.
+            assert_eq!(
+                preflight_batch_pczt_cypherpunk(
+                    &pczt::test_support::Nu6_3Network,
+                    &sample.bytes,
+                    &sample.ufvk_text,
+                    &sample.seed_fingerprint,
+                    1,
+                )
+                .unwrap_err(),
+                ZcashError::PcztNoMyInputs
+            );
+        }
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_preflight_batch_pczt_rejects_sapling_outputs() {
+        let sample = pczt_with_sapling_output();
+        assert_batch_unsupported_sapling_error(preflight_batch_pczt_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
             0,
         ));
     }

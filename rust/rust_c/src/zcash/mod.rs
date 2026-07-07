@@ -91,7 +91,9 @@ pub unsafe extern "C" fn check_zcash_tx_cypherpunk(
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
+    checked_pczt: Ptr<Ptr<ZcashCheckedPczt>>,
 ) -> *mut TransactionCheckResult {
+    *checked_pczt = core::ptr::null_mut();
     if disabled {
         return TransactionCheckResult::from(RustCError::UnsupportedTransaction(
             "Zcash requires at least 256-bit entropy (use 33-word Shamir shares)".to_string(),
@@ -102,14 +104,17 @@ pub unsafe extern "C" fn check_zcash_tx_cypherpunk(
     let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::check_pczt_cypherpunk(
+    match app_zcash::preflight_pczt_cypherpunk(
         &MainNetwork,
         &pczt.get_data(),
         &ufvk_text,
         seed_fingerprint,
         account_index,
     ) {
-        Ok(_) => TransactionCheckResult::new().c_ptr(),
+        Ok(normalized) => {
+            *checked_pczt = ZcashCheckedPczt::new(normalized).c_ptr();
+            TransactionCheckResult::new().c_ptr()
+        }
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
     }
 }
@@ -122,7 +127,9 @@ pub unsafe extern "C" fn check_zcash_tx_multi_coins(
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
+    checked_pczt: Ptr<Ptr<ZcashCheckedPczt>>,
 ) -> *mut TransactionCheckResult {
+    *checked_pczt = core::ptr::null_mut();
     if disabled {
         return TransactionCheckResult::from(RustCError::UnsupportedTransaction(
             "Zcash requires at least 256-bit entropy (use 33-word Shamir shares)".to_string(),
@@ -133,14 +140,17 @@ pub unsafe extern "C" fn check_zcash_tx_multi_coins(
     let xpub_text = unsafe { recover_c_char(xpub) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::check_pczt_multi_coins(
+    match app_zcash::preflight_pczt_multi_coins(
         &MainNetwork,
         &pczt.get_data(),
         &xpub_text,
         seed_fingerprint,
         account_index,
     ) {
-        Ok(_) => TransactionCheckResult::new().c_ptr(),
+        Ok(normalized) => {
+            *checked_pczt = ZcashCheckedPczt::new(normalized).c_ptr();
+            TransactionCheckResult::new().c_ptr()
+        }
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
     }
 }
@@ -148,20 +158,25 @@ pub unsafe extern "C" fn check_zcash_tx_multi_coins(
 #[cfg(feature = "cypherpunk")]
 #[no_mangle]
 pub unsafe extern "C" fn parse_zcash_tx_cypherpunk(
-    tx: PtrUR,
+    checked_pczt: Ptr<ZcashCheckedPczt>,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
 ) -> Ptr<TransactionParseResult<DisplayPczt>> {
-    let pczt = extract_ptr_with_type!(tx, ZcashPczt);
+    if checked_pczt.is_null() {
+        return TransactionParseResult::from(RustCError::InvalidData(
+            "no checked PCZT available".to_string(),
+        ))
+        .c_ptr();
+    }
+    let checked = extract_ptr_with_type!(checked_pczt, ZcashCheckedPczt);
+    let bytes = match checked.verified_bytes() {
+        Ok(bytes) => bytes,
+        Err(e) => return TransactionParseResult::from(e).c_ptr(),
+    };
     let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::parse_pczt_cypherpunk(
-        &MainNetwork,
-        &pczt.get_data(),
-        &ufvk_text,
-        seed_fingerprint,
-    ) {
+    match app_zcash::parse_pczt_cypherpunk(&MainNetwork, bytes, &ufvk_text, seed_fingerprint) {
         Ok(pczt) => TransactionParseResult::success(DisplayPczt::from(&pczt).c_ptr()).c_ptr(),
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
@@ -170,13 +185,23 @@ pub unsafe extern "C" fn parse_zcash_tx_cypherpunk(
 #[cfg(feature = "multi-coins")]
 #[no_mangle]
 pub unsafe extern "C" fn parse_zcash_tx_multi_coins(
-    tx: PtrUR,
+    checked_pczt: Ptr<ZcashCheckedPczt>,
     seed_fingerprint: PtrBytes,
 ) -> Ptr<TransactionParseResult<DisplayPczt>> {
-    let pczt = extract_ptr_with_type!(tx, ZcashPczt);
+    if checked_pczt.is_null() {
+        return TransactionParseResult::from(RustCError::InvalidData(
+            "no checked PCZT available".to_string(),
+        ))
+        .c_ptr();
+    }
+    let checked = extract_ptr_with_type!(checked_pczt, ZcashCheckedPczt);
+    let bytes = match checked.verified_bytes() {
+        Ok(bytes) => bytes,
+        Err(e) => return TransactionParseResult::from(e).c_ptr(),
+    };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::parse_pczt_multi_coins(&MainNetwork, &pczt.get_data(), seed_fingerprint) {
+    match app_zcash::parse_pczt_multi_coins(&MainNetwork, bytes, seed_fingerprint) {
         Ok(pczt) => TransactionParseResult::success(DisplayPczt::from(&pczt).c_ptr()).c_ptr(),
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
@@ -277,22 +302,6 @@ fn check_zcash_batch_message_cypherpunk(
     app_zcash::ensure_pczt_has_signable_shielded_action(
         &MainNetwork,
         message.get_payload(),
-        seed_fingerprint,
-        account_index,
-    )
-}
-
-#[cfg(feature = "cypherpunk")]
-fn check_zcash_pczt_message_cypherpunk(
-    payload: &[u8],
-    ufvk_text: &str,
-    seed_fingerprint: &[u8; 32],
-    account_index: u32,
-) -> app_zcash::errors::Result<()> {
-    app_zcash::check_pczt_cypherpunk(
-        &MainNetwork,
-        payload,
-        ufvk_text,
         seed_fingerprint,
         account_index,
     )
@@ -537,39 +546,48 @@ pub unsafe extern "C" fn sign_zcash_batch_tx_cypherpunk_unlimited(
 
 #[no_mangle]
 pub unsafe extern "C" fn sign_zcash_tx(
-    tx: PtrUR,
+    checked_pczt: Ptr<ZcashCheckedPczt>,
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut UREncodeResult {
-    sign_zcash_tx_dynamic(tx, seed, seed_len, FRAGMENT_MAX_LENGTH_DEFAULT)
+    sign_zcash_tx_dynamic(checked_pczt, seed, seed_len, FRAGMENT_MAX_LENGTH_DEFAULT)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn sign_zcash_tx_unlimited(
-    tx: PtrUR,
+    checked_pczt: Ptr<ZcashCheckedPczt>,
     seed: PtrBytes,
     seed_len: u32,
 ) -> *mut UREncodeResult {
-    sign_zcash_tx_dynamic(tx, seed, seed_len, FRAGMENT_UNLIMITED_LENGTH)
+    sign_zcash_tx_dynamic(checked_pczt, seed, seed_len, FRAGMENT_UNLIMITED_LENGTH)
 }
 
 unsafe fn sign_zcash_tx_dynamic(
-    tx: PtrUR,
+    checked_pczt: Ptr<ZcashCheckedPczt>,
     seed: PtrBytes,
     seed_len: u32,
     max_fragment_length: usize,
 ) -> *mut UREncodeResult {
-    let pczt = extract_ptr_with_type!(tx, ZcashPczt);
+    if checked_pczt.is_null() {
+        return UREncodeResult::from(RustCError::InvalidData(
+            "no checked PCZT available for signing".to_string(),
+        ))
+        .c_ptr();
+    }
+    let checked = extract_ptr_with_type!(checked_pczt, ZcashCheckedPczt);
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
-    let result = match app_zcash::sign_pczt(&pczt.get_data(), seed) {
-        Ok(pczt) => match ZcashPczt::new(pczt).try_into() {
+    let result = match checked.verified_bytes() {
+        Ok(bytes) => match app_zcash::sign_pczt(bytes, seed) {
+            Ok(pczt) => match ZcashPczt::new(pczt).try_into() {
+                Err(e) => UREncodeResult::from(e).c_ptr(),
+                Ok(v) => UREncodeResult::encode(
+                    v,
+                    ZcashPczt::get_registry_type().get_type(),
+                    max_fragment_length,
+                )
+                .c_ptr(),
+            },
             Err(e) => UREncodeResult::from(e).c_ptr(),
-            Ok(v) => UREncodeResult::encode(
-                v,
-                ZcashPczt::get_registry_type().get_type(),
-                max_fragment_length,
-            )
-            .c_ptr(),
         },
         Err(e) => UREncodeResult::from(e).c_ptr(),
     };
@@ -579,7 +597,7 @@ unsafe fn sign_zcash_tx_dynamic(
 
 #[cfg(feature = "cypherpunk")]
 unsafe fn sign_zcash_tx_cypherpunk_dynamic(
-    tx: PtrUR,
+    checked_pczt: Ptr<ZcashCheckedPczt>,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
@@ -588,66 +606,54 @@ unsafe fn sign_zcash_tx_cypherpunk_dynamic(
     seed_len: u32,
     max_fragment_length: usize,
 ) -> *mut UREncodeResult {
+    // ufvk is consumed by preflight now; the parameter is dropped together with
+    // the batch signature in the final cleanup task.
+    let _ = ufvk;
     if disabled {
         return UREncodeResult::from(RustCError::UnsupportedTransaction(
             "Zcash requires at least 256-bit entropy (use 33-word Shamir shares)".to_string(),
         ))
         .c_ptr();
     }
-
-    let pczt = extract_ptr_with_type!(tx, ZcashPczt);
-    let ufvk_text = unsafe { recover_c_char(ufvk) };
+    if checked_pczt.is_null() {
+        return UREncodeResult::from(RustCError::InvalidData(
+            "no checked PCZT available for signing".to_string(),
+        ))
+        .c_ptr();
+    }
+    let checked = extract_ptr_with_type!(checked_pczt, ZcashCheckedPczt);
     let expected_seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let expected_seed_fingerprint: &[u8; 32] = expected_seed_fingerprint.try_into().unwrap();
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
-    let pczt_data = pczt.get_data();
 
-    let result = match check_zcash_pczt_message_cypherpunk(
-        &pczt_data,
-        &ufvk_text,
-        expected_seed_fingerprint,
-        account_index,
-    ) {
-        Ok(()) => {
-            let seed_fingerprint = calculate_seed_fingerprint(seed);
-            match seed_fingerprint {
-                Ok(seed_fingerprint) => {
-                    if &seed_fingerprint != expected_seed_fingerprint {
-                        seed.zeroize();
-                        return UREncodeResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
-                    }
-
-                    match app_zcash::sign_pczt(&pczt_data, seed) {
-                        Ok(signed_pczt) => {
-                            if let Err(e) =
-                                app_zcash::ensure_owned_supported_shielded_actions_are_signed(
-                                    &MainNetwork,
-                                    &pczt_data,
-                                    &signed_pczt,
-                                    &seed_fingerprint,
-                                    account_index,
-                                )
-                            {
-                                seed.zeroize();
-                                return UREncodeResult::from(e).c_ptr();
-                            }
-
-                            match ZcashPczt::new(signed_pczt).try_into() {
-                                Err(e) => UREncodeResult::from(e).c_ptr(),
-                                Ok(v) => UREncodeResult::encode(
-                                    v,
-                                    ZcashPczt::get_registry_type().get_type(),
-                                    max_fragment_length,
-                                )
-                                .c_ptr(),
-                            }
-                        }
-                        Err(e) => UREncodeResult::from(e).c_ptr(),
-                    }
+    let result = match checked.verified_bytes() {
+        Ok(pczt_bytes) => match calculate_seed_fingerprint(seed) {
+            Ok(seed_fingerprint) => {
+                if &seed_fingerprint != expected_seed_fingerprint {
+                    seed.zeroize();
+                    return UREncodeResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
                 }
-                Err(e) => UREncodeResult::from(e).c_ptr(),
+                match app_zcash::sign_checked_pczt(
+                    &MainNetwork,
+                    pczt_bytes,
+                    seed,
+                    &seed_fingerprint,
+                    account_index,
+                ) {
+                    Ok(signed_pczt) => match ZcashPczt::new(signed_pczt).try_into() {
+                        Err(e) => UREncodeResult::from(e).c_ptr(),
+                        Ok(v) => UREncodeResult::encode(
+                            v,
+                            ZcashPczt::get_registry_type().get_type(),
+                            max_fragment_length,
+                        )
+                        .c_ptr(),
+                    },
+                    Err(e) => UREncodeResult::from(e).c_ptr(),
+                }
             }
-        }
+            Err(e) => UREncodeResult::from(e).c_ptr(),
+        },
         Err(e) => UREncodeResult::from(e).c_ptr(),
     };
     seed.zeroize();
@@ -657,7 +663,7 @@ unsafe fn sign_zcash_tx_cypherpunk_dynamic(
 #[cfg(feature = "cypherpunk")]
 #[no_mangle]
 pub unsafe extern "C" fn sign_zcash_tx_cypherpunk(
-    tx: PtrUR,
+    checked_pczt: Ptr<ZcashCheckedPczt>,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
@@ -666,7 +672,7 @@ pub unsafe extern "C" fn sign_zcash_tx_cypherpunk(
     seed_len: u32,
 ) -> *mut UREncodeResult {
     sign_zcash_tx_cypherpunk_dynamic(
-        tx,
+        checked_pczt,
         ufvk,
         seed_fingerprint,
         account_index,
@@ -680,7 +686,7 @@ pub unsafe extern "C" fn sign_zcash_tx_cypherpunk(
 #[cfg(feature = "cypherpunk")]
 #[no_mangle]
 pub unsafe extern "C" fn sign_zcash_tx_cypherpunk_unlimited(
-    tx: PtrUR,
+    checked_pczt: Ptr<ZcashCheckedPczt>,
     ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
@@ -689,7 +695,7 @@ pub unsafe extern "C" fn sign_zcash_tx_cypherpunk_unlimited(
     seed_len: u32,
 ) -> *mut UREncodeResult {
     sign_zcash_tx_cypherpunk_dynamic(
-        tx,
+        checked_pczt,
         ufvk,
         seed_fingerprint,
         account_index,

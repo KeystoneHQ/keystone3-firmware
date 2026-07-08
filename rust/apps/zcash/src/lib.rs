@@ -72,9 +72,14 @@ pub fn check_pczt_cypherpunk<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: u32,
 ) -> Result<Vec<u8>> {
-    let pczt = pczt::parse_pczt(pczt_bytes)?;
-    // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
-    // mutating `pczt` so the normalized bytes carry the verified values forward.
+    let mut pczt = pczt::parse_pczt(pczt_bytes)?;
+    // Resolve compact field representations (memo-plaintext ciphertexts,
+    // omitted cv_net) once, up front: the checks below then see complete
+    // actions, and `serialize()` bakes the resolved values into the
+    // normalized bytes so display and signing never re-resolve.
+    pczt.resolve_fields().map_err(|e| {
+        ZcashError::InvalidPczt(alloc::format!("resolve compact PCZT fields: {e:?}"))
+    })?;
     check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)?;
     pczt.serialize()
         .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
@@ -121,9 +126,14 @@ pub fn preflight_batch_pczt_cypherpunk<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: u32,
 ) -> Result<Vec<u8>> {
-    let pczt = pczt::parse_pczt(pczt_bytes)?;
-    // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
-    // as in check_pczt_cypherpunk.
+    let mut pczt = pczt::parse_pczt(pczt_bytes)?;
+    // Resolve compact field representations (memo-plaintext ciphertexts,
+    // omitted cv_net) once, up front: the checks below then see complete
+    // actions, and `serialize()` bakes the resolved values into the
+    // normalized bytes so display and signing never re-resolve.
+    pczt.resolve_fields().map_err(|e| {
+        ZcashError::InvalidPczt(alloc::format!("resolve compact PCZT fields: {e:?}"))
+    })?;
     check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)?;
     let account_id = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
@@ -158,6 +168,7 @@ pub fn check_pczt_multi_coins<P: consensus::Parameters>(
     let pczt = pczt::parse_pczt(pczt_bytes)?;
     // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
     // mutating `pczt` so the normalized bytes carry the verified values forward.
+    // transparent-only build: pczt's orchard feature (and resolve_fields) is not compiled here.
     check_parsed_pczt_multi_coins(params, &pczt, xpub, seed_fingerprint, account_index)?;
     pczt.serialize()
         .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
@@ -1495,6 +1506,83 @@ mod tests {
                 ZcashError::PcztNoMyInputs
             );
         }
+    }
+
+    #[cfg(zcash_unstable = "nu6.3")]
+    #[test]
+    fn test_preflight_resolves_compact_pczt_and_signs() {
+        use zcash_vendor::pczt::roles::redactor::Redactor;
+
+        let sample = pczt::test_support::sample_migration_pczt();
+        // Compact the sample the way the wallet's batch redaction will: drop cv_net and
+        // the v6 anchors, and swap each Ironwood output's ciphertext down to its memo
+        // plaintext. `resolve_fields` in the preflight must undo all of it.
+        let compact = {
+            let parsed = Pczt::parse(&sample.bytes).unwrap();
+            let redacted = Redactor::new(parsed)
+                .redact_orchard_with(|mut r| {
+                    r.redact_actions(|mut ar| ar.clear_cv_net());
+                    r.clear_anchor();
+                })
+                .redact_ironwood_with(|mut r| {
+                    r.redact_actions(|mut ar| {
+                        ar.clear_cv_net();
+                        ar.replace_enc_ciphertext_with_decrypted_memo_plaintext(
+                            orchard::note::NoteVersion::V3,
+                        );
+                    });
+                    r.clear_anchor();
+                })
+                .finish();
+            redacted.serialize().unwrap()
+        };
+        assert!(compact.len() < sample.bytes.len());
+        // Confirm the swap actually compacted an Ironwood output (otherwise the
+        // ciphertext round-trip below would be vacuous).
+        assert!(Pczt::parse(&compact)
+            .unwrap()
+            .ironwood()
+            .actions()
+            .iter()
+            .any(|action| matches!(
+                action.output().enc_ciphertext(),
+                ::pczt::orchard::EncCiphertext::MemoPlaintext(_)
+            )));
+
+        let normalized = check_pczt_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            &compact,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .expect("preflight must resolve compact fields before checking");
+
+        let reparsed = Pczt::parse(&normalized).expect("normalized bytes must parse");
+        assert!(reparsed
+            .orchard()
+            .actions()
+            .iter()
+            .all(|action| action.cv_net().is_some()));
+        // resolve_fields recomputed every Ironwood output's full ciphertext.
+        assert!(reparsed.ironwood().actions().iter().all(|action| matches!(
+            action.output().enc_ciphertext(),
+            ::pczt::orchard::EncCiphertext::Encrypted(_)
+        )));
+        let signed = sign_checked_pczt(
+            &pczt::test_support::Nu6_3Network,
+            &normalized,
+            &sample.seed,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .expect("resolved normalized PCZT must sign");
+        assert!(Pczt::parse(&signed)
+            .unwrap()
+            .orchard()
+            .actions()
+            .iter()
+            .any(|action| action.spend().spend_auth_sig().is_some()));
     }
 
     #[cfg(zcash_unstable = "nu6.3")]

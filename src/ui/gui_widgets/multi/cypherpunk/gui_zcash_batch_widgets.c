@@ -33,6 +33,10 @@ static TransactionParseResult_DisplayZcashBatch *g_parseResult = NULL;
 static DisplayZcashBatch *g_displayZcashBatch = NULL;
 static DisplayPczt *g_currentTransaction = NULL;
 static ZcashCheckedPczt *g_checkedBatch = NULL;
+// Holds a batch preflight failure message when the QR display path runs the
+// check itself (see GuiParseZcashBatchData), so the parse-fail handler can
+// surface it instead of a generic "invalid QR" window.
+static char g_batchPreflightError[128] = {0};
 
 static PageWidget_t *g_pageWidget = NULL;
 static lv_obj_t *g_cont = NULL;
@@ -375,6 +379,29 @@ void GuiZcashBatchWidgetsRefresh(void)
 
 static void *GuiParseZcashBatchData(void)
 {
+    g_batchPreflightError[0] = '\0';
+
+    // The QR scan path opens this view directly (gui_scan_widgets.c), bypassing
+    // the model check step that the USB path runs, so the preflight that
+    // populates g_checkedBatch has not run yet. g_checkedBatch is the normalized,
+    // checked bytes that this parse and later signing consume, so run the
+    // preflight here when it is missing. On failure, stash the real message for
+    // the parse-fail handler; only after it passes can parse succeed.
+    if (g_checkedBatch == NULL) {
+        PtrT_TransactionCheckResult checkResult = GuiGetZcashBatchCheckResult();
+        if (checkResult == NULL || checkResult->error_code != 0) {
+            if (checkResult != NULL) {
+                if (checkResult->error_message != NULL) {
+                    snprintf_s(g_batchPreflightError, sizeof(g_batchPreflightError), "%s",
+                               checkResult->error_message);
+                }
+                free_TransactionCheckResult(checkResult);
+            }
+            return NULL;
+        }
+        free_TransactionCheckResult(checkResult);
+    }
+
     uint8_t sfp[32];
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
 
@@ -400,13 +427,18 @@ void GuiZcashBatchWidgetsTransactionParseSuccess(void)
 void GuiZcashBatchWidgetsTransactionParseFail(void)
 {
     printf("GuiZcashBatchWidgetsTransactionParseFail\n");
-    if (g_parseResult != NULL) {
-        printf("error: %s\n", g_parseResult->error_message);
+    // A failed preflight leaves g_parseResult NULL but records its message in
+    // g_batchPreflightError; prefer whichever carries the real reason.
+    const char *errorMessage = (g_parseResult != NULL)
+                               ? g_parseResult->error_message
+                               : (g_batchPreflightError[0] != '\0' ? g_batchPreflightError : NULL);
+    if (errorMessage != NULL) {
+        printf("error: %s\n", errorMessage);
         if (IsZcashBatchUsbMode()) {
-            RespondZcashBatchUsbParseError(g_parseResult->error_message);
+            RespondZcashBatchUsbParseError(errorMessage);
             return;
         }
-        g_parseErrorHintBox = GuiCreateZcashBatchParseErrorWindow(g_parseResult->error_message);
+        g_parseErrorHintBox = GuiCreateZcashBatchParseErrorWindow(errorMessage);
         return;
     }
     if (IsZcashBatchUsbMode()) {

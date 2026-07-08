@@ -217,14 +217,14 @@ impl_c_ptrs!(
     DisplayOrchard
 );
 
-/// Preflight-verified, normalized transaction bytes retained by C between the
-/// check, display, and sign stages (`checked_PCZT` on the C side).
+/// Normalized transaction bytes verified during check and retained by C between
+/// the check, display, and sign stages (`checked_PCZT` on the C side).
 ///
 /// `data` is opaque to C: the normalized PCZT encoding in the single-transaction
 /// flow, or the normalized `ZcashSignBatch` CBOR in the batch flow. `digest` is
-/// the SHA-256 of those bytes, stamped at preflight; `verified_bytes` recomputes
+/// the SHA-256 of those bytes, stamped during check; `verified_bytes` recomputes
 /// and compares it so parse/sign only operate on bytes produced by a successful
-/// preflight. Construct exclusively from preflight results.
+/// check. Construct exclusively from check results.
 #[repr(C)]
 pub struct ZcashCheckedPczt {
     pub data: Ptr<VecFFI<u8>>,
@@ -232,7 +232,7 @@ pub struct ZcashCheckedPczt {
 }
 
 impl ZcashCheckedPczt {
-    /// Wraps preflight-verified bytes and stamps their digest.
+    /// Wraps bytes verified during check and stamps their digest.
     pub fn new(data: Vec<u8>) -> Self {
         let digest = sha256(&data);
         Self {
@@ -241,8 +241,8 @@ impl ZcashCheckedPczt {
         }
     }
 
-    /// Borrows the checked bytes after re-verifying the digest stamped at
-    /// preflight, guarding against C handing back a different or corrupted
+    /// Borrows the checked bytes after rechecking the digest stamped during
+    /// check, guarding against C handing back a different or corrupted
     /// buffer than the one that was checked and displayed.
     pub unsafe fn verified_bytes(&self) -> Result<&[u8], RustCError> {
         if self.data.is_null() {

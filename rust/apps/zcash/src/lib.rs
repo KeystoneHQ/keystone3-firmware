@@ -45,36 +45,42 @@ pub fn get_address<P: consensus::Parameters>(params: &P, ufvk_text: &str) -> Res
     Ok(address.encode(params))
 }
 
-/// Validates a Partially Created Zcash Transaction (PCZT) against a Unified Full Viewing Key.
+/// Parses a PCZT, checks policy, and serializes it again in one pass.
 ///
 /// # Parameters
 /// * `params` - The consensus parameters for the Zcash network (mainnet or testnet)
-/// * `pczt` - The binary representation of the PCZT to validate
+/// * `pczt_bytes` - The binary representation of the PCZT to validate
 /// * `ufvk_text` - The string representation of the Unified Full Viewing Key
 /// * `seed_fingerprint` - A 32-byte fingerprint of the seed used to derive keys
 /// * `account_index` - The account index for the keys to check against
 ///
 /// # Returns
-/// * `Result<()>` - Ok if the PCZT is valid for the given UFVK, or an error otherwise
+/// * `Result<Vec<u8>>` - The normalized encoding of the checked PCZT
 ///
 /// # Errors
 /// * `ZcashError::InvalidDataError` - If the UFVK cannot be decoded or the account index is invalid
 /// * `ZcashError::InvalidPczt` - If the PCZT data is malformed or cannot be parsed
 /// * Other errors from the underlying validation process
+///
+/// The returned bytes are what C retains as the `checked_PCZT`, which display
+/// and signing consume without re-running these checks.
 #[cfg(feature = "cypherpunk")]
 pub fn check_pczt_cypherpunk<P: consensus::Parameters>(
     params: &P,
-    pczt: &[u8],
+    pczt_bytes: &[u8],
     ufvk_text: &str,
     seed_fingerprint: &[u8; 32],
     account_index: u32,
-) -> Result<()> {
-    let pczt = pczt::parse_pczt(pczt)?;
-    check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)
+) -> Result<Vec<u8>> {
+    let pczt = pczt::parse_pczt(pczt_bytes)?;
+    // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
+    // mutating `pczt` so the normalized bytes carry the verified values forward.
+    check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)?;
+    Ok(pczt.serialize())
 }
 
-/// `check_pczt_cypherpunk` against an already-parsed PCZT, so preflight can
-/// parse once and reuse the parsed value for normalization.
+/// `check_pczt_cypherpunk` against an already-parsed PCZT, so callers can parse
+/// once and reuse the parsed value for normalization.
 #[cfg(feature = "cypherpunk")]
 fn check_parsed_pczt_cypherpunk<P: consensus::Parameters>(
     params: &P,
@@ -102,30 +108,10 @@ fn check_parsed_pczt_cypherpunk<P: consensus::Parameters>(
     Ok(())
 }
 
-/// Parses, policy-checks, and re-serializes a PCZT in one pass.
-///
-/// Returns the normalized (current-version) encoding of the checked PCZT: the
-/// bytes C retains as the `checked_PCZT`, which display and signing consume
-/// without re-running these checks.
-#[cfg(feature = "cypherpunk")]
-pub fn preflight_pczt_cypherpunk<P: consensus::Parameters>(
-    params: &P,
-    pczt_bytes: &[u8],
-    ufvk_text: &str,
-    seed_fingerprint: &[u8; 32],
-    account_index: u32,
-) -> Result<Vec<u8>> {
-    let pczt = pczt::parse_pczt(pczt_bytes)?;
-    // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
-    // mutating `pczt` so the normalized bytes carry the verified values forward.
-    check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)?;
-    Ok(pczt.serialize())
-}
-
 /// Batch preflight for one `ZcashSignBatch` message: parses once, runs the full
 /// policy checks, enforces the batch shielded-action policy (the PCZT must be
 /// batch-signable by this account), and returns the normalized encoding. See
-/// `preflight_pczt_cypherpunk` for the normalization contract.
+/// `check_pczt_cypherpunk` for the normalization contract.
 #[cfg(feature = "cypherpunk")]
 pub fn preflight_batch_pczt_cypherpunk<P: consensus::Parameters>(
     params: &P,
@@ -136,7 +122,7 @@ pub fn preflight_batch_pczt_cypherpunk<P: consensus::Parameters>(
 ) -> Result<Vec<u8>> {
     let pczt = pczt::parse_pczt(pczt_bytes)?;
     // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
-    // as in preflight_pczt_cypherpunk.
+    // as in check_pczt_cypherpunk.
     check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)?;
     let account_id = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
@@ -153,19 +139,28 @@ pub fn preflight_batch_pczt_cypherpunk<P: consensus::Parameters>(
     Ok(pczt.serialize())
 }
 
+/// Parses a multi-coins PCZT, checks policy, and serializes it again in one
+/// pass.
+///
+/// Returns the normalized encoding of the checked PCZT. The returned bytes are
+/// what C retains as the `checked_PCZT`, which display and signing consume
+/// without re-running these checks.
 #[cfg(feature = "multi_coins")]
 pub fn check_pczt_multi_coins<P: consensus::Parameters>(
     params: &P,
-    pczt: &[u8],
+    pczt_bytes: &[u8],
     xpub: &str,
     seed_fingerprint: &[u8; 32],
     account_index: u32,
-) -> Result<()> {
-    let pczt = pczt::parse_pczt(pczt)?;
-    check_parsed_pczt_multi_coins(params, &pczt, xpub, seed_fingerprint, account_index)
+) -> Result<Vec<u8>> {
+    let pczt = pczt::parse_pczt(pczt_bytes)?;
+    // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
+    // mutating `pczt` so the normalized bytes carry the verified values forward.
+    check_parsed_pczt_multi_coins(params, &pczt, xpub, seed_fingerprint, account_index)?;
+    Ok(pczt.serialize())
 }
 
-/// `check_pczt_multi_coins` against an already-parsed PCZT, so preflight can
+/// `check_pczt_multi_coins` against an already-parsed PCZT, so callers can
 /// parse once and reuse the parsed value for normalization.
 #[cfg(feature = "multi_coins")]
 fn check_parsed_pczt_multi_coins<P: consensus::Parameters>(
@@ -189,26 +184,6 @@ fn check_parsed_pczt_multi_coins<P: consensus::Parameters>(
         true,
     )?;
     Ok(())
-}
-
-/// Parses, policy-checks, and re-serializes a PCZT in one pass.
-///
-/// Returns the normalized (current-version) encoding of the checked PCZT: the
-/// bytes C retains as the `checked_PCZT`, which display and signing consume
-/// without re-running these checks.
-#[cfg(feature = "multi_coins")]
-pub fn preflight_pczt_multi_coins<P: consensus::Parameters>(
-    params: &P,
-    pczt_bytes: &[u8],
-    xpub: &str,
-    seed_fingerprint: &[u8; 32],
-    account_index: u32,
-) -> Result<Vec<u8>> {
-    let pczt = pczt::parse_pczt(pczt_bytes)?;
-    // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
-    // mutating `pczt` so the normalized bytes carry the verified values forward.
-    check_parsed_pczt_multi_coins(params, &pczt, xpub, seed_fingerprint, account_index)?;
-    Ok(pczt.serialize())
 }
 
 #[cfg(feature = "multi_coins")]
@@ -373,7 +348,7 @@ mod legacy_tests {
         )
         .expect("selected account PCZT should check");
 
-        let normalized = preflight_pczt_multi_coins(
+        let normalized = check_pczt_multi_coins(
             &MainNetwork,
             &sample.bytes,
             &sample.xpub,
@@ -866,7 +841,8 @@ mod tests {
         let ufvk = derive_ufvk(&MainNetwork, &seed, "m/32'/133'/0'").unwrap();
         let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();
 
-        let result = check_pczt_cypherpunk(&MainNetwork, &malformed_pczt, &ufvk, &seed_fingerprint, 0);
+        let result =
+            check_pczt_cypherpunk(&MainNetwork, &malformed_pczt, &ufvk, &seed_fingerprint, 0);
 
         assert_invalid_pczt_message(
             result,
@@ -981,11 +957,6 @@ mod tests {
         match check_pczt_cypherpunk(&params, &pczt_bytes, &ufvk_text, &seed_fingerprint, 0) {
             Err(ZcashError::InvalidPczt(msg)) if msg.contains(expected) => {}
             other => panic!("check must reject internal-OVK change spoofing, got: {other:?}"),
-        }
-
-        match preflight_pczt_cypherpunk(&params, &pczt_bytes, &ufvk_text, &seed_fingerprint, 0) {
-            Err(ZcashError::InvalidPczt(msg)) if msg.contains(expected) => {}
-            other => panic!("preflight must reject internal-OVK change spoofing, got: {other:?}"),
         }
     }
 
@@ -1221,9 +1192,9 @@ mod tests {
 
     #[cfg(zcash_unstable = "nu6.3")]
     #[test]
-    fn test_preflight_pczt_normalizes_and_is_idempotent() {
+    fn test_check_pczt_normalizes_and_is_idempotent() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
-        let normalized = preflight_pczt_cypherpunk(
+        let normalized = check_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
             &sample.ufvk_text,
@@ -1232,9 +1203,9 @@ mod tests {
         )
         .unwrap();
 
-        // Normalized bytes are a valid PCZT that passes the same preflight and
+        // Normalized bytes are a valid PCZT that passes the same check and
         // re-normalizes to identical bytes.
-        let renormalized = preflight_pczt_cypherpunk(
+        let renormalized = check_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &normalized,
             &sample.ufvk_text,
@@ -1246,12 +1217,12 @@ mod tests {
     }
 
     #[test]
-    fn test_preflight_pczt_rejects_invalid_data() {
+    fn test_check_pczt_rejects_invalid_data() {
         let seed = [7u8; 32];
         let ufvk = derive_ufvk(&MainNetwork, &seed, "m/32'/133'/0'").unwrap();
         let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();
 
-        let result = preflight_pczt_cypherpunk(
+        let result = check_pczt_cypherpunk(
             &MainNetwork,
             b"invalid_pczt_data",
             &ufvk,
@@ -1357,7 +1328,7 @@ mod tests {
     #[test]
     fn test_sign_checked_pczt_signs_owned_orchard_actions() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
-        let normalized = preflight_pczt_cypherpunk(
+        let normalized = check_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
             &sample.ufvk_text,
@@ -1389,7 +1360,7 @@ mod tests {
     #[test]
     fn test_sign_checked_pczt_rejects_foreign_seed() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
-        let normalized = preflight_pczt_cypherpunk(
+        let normalized = check_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
             &sample.ufvk_text,

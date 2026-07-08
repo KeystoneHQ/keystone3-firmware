@@ -104,7 +104,7 @@ pub unsafe extern "C" fn check_zcash_tx_cypherpunk(
     let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::preflight_pczt_cypherpunk(
+    match app_zcash::check_pczt_cypherpunk(
         &MainNetwork,
         &pczt.get_data(),
         &ufvk_text,
@@ -140,7 +140,7 @@ pub unsafe extern "C" fn check_zcash_tx_multi_coins(
     let xpub_text = unsafe { recover_c_char(xpub) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::preflight_pczt_multi_coins(
+    match app_zcash::check_pczt_multi_coins(
         &MainNetwork,
         &pczt.get_data(),
         &xpub_text,

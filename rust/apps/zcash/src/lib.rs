@@ -76,7 +76,8 @@ pub fn check_pczt_cypherpunk<P: consensus::Parameters>(
     // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
     // mutating `pczt` so the normalized bytes carry the verified values forward.
     check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)?;
-    Ok(pczt.serialize())
+    pczt.serialize()
+        .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
 }
 
 /// `check_pczt_cypherpunk` against an already-parsed PCZT, so callers can parse
@@ -136,7 +137,8 @@ pub fn preflight_batch_pczt_cypherpunk<P: consensus::Parameters>(
     if actions.is_empty() {
         return Err(ZcashError::PcztNoMyInputs);
     }
-    Ok(pczt.serialize())
+    pczt.serialize()
+        .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
 }
 
 /// Parses a multi-coins PCZT, checks policy, and serializes it again in one
@@ -157,7 +159,8 @@ pub fn check_pczt_multi_coins<P: consensus::Parameters>(
     // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
     // mutating `pczt` so the normalized bytes carry the verified values forward.
     check_parsed_pczt_multi_coins(params, &pczt, xpub, seed_fingerprint, account_index)?;
-    Ok(pczt.serialize())
+    pczt.serialize()
+        .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
 }
 
 /// `check_pczt_multi_coins` against an already-parsed PCZT, so callers can
@@ -385,19 +388,22 @@ mod legacy_tests {
     #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn legacy_check_rejects_v6_pczt() {
-        let pczt = Creator::new_v6(
+        // `Creator::new(Nu6_3, ..)` alone yields a V6 PCZT (tx_version V6); the legacy
+        // path rejects it on version, so no Ironwood anchor is needed (and
+        // `with_ironwood_anchor` is orchard-feature-gated, unavailable in this build).
+        let pczt = Creator::new(
             BranchId::Nu6_3.into(),
             10,
             MainNetwork.coin_type(),
             [0; 32],
             [0; 32],
-            [1; 32],
         )
+        .unwrap()
         .build();
 
         let result = check_pczt_multi_coins(
             &MainNetwork,
-            &pczt.serialize(),
+            &pczt.serialize().unwrap(),
             "not-an-xpub",
             &[7u8; 32],
             0,
@@ -711,7 +717,9 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
     } else {
         ensure_shielded_actions_are_signed(signed, &signable_actions)?
     };
-    Ok(signed.serialize())
+    signed
+        .serialize()
+        .map_err(|e| ZcashError::SigningError(alloc::format!("serialize signed PCZT: {e:?}")))
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -727,14 +735,16 @@ mod tests {
     use super::*;
     extern crate std;
 
+    // Head of the v2 PCZT wire layout (`pczt::Pczt`'s v2 encoding), up to and including
+    // the Sapling bundle; empty bundles are omitted (`None`). The trailing Orchard and
+    // Ironwood bundles are captured as raw bytes via `postcard::take_from_bytes` and
+    // re-appended unchanged, so these fixtures only decode the fields at/before the one
+    // they mutate and never need the crate-private `orchard::v2::Bundle` layout.
     #[derive(Serialize, Deserialize)]
-    struct PcztMirror {
+    struct PcztHead {
         global: GlobalMirror,
-        transparent: ::pczt::transparent::Bundle,
-        sapling: SaplingBundleMirror,
-        orchard: ::pczt::orchard::Bundle,
-        #[cfg(zcash_unstable = "nu6.3")]
-        ironwood: ::pczt::orchard::Bundle,
+        transparent: Option<::pczt::transparent::Bundle>,
+        sapling: Option<SaplingBundleMirror>,
     }
 
     #[derive(Serialize, Deserialize)]
@@ -791,15 +801,21 @@ mod tests {
     #[cfg(zcash_unstable = "nu6.3")]
     fn v5_pczt_with_ironwood_actions() -> Vec<u8> {
         let sample = pczt::test_support::sample_ironwood_pczt();
-        let mut bytes = sample.bytes;
-        let mut pczt: PcztMirror = postcard::from_bytes(&bytes[8..]).unwrap();
-        assert!(!pczt.ironwood.actions().is_empty());
+        let bytes = sample.bytes;
+        assert!(!::pczt::Pczt::parse(&bytes)
+            .unwrap()
+            .ironwood()
+            .actions()
+            .is_empty());
+        let (mut head, rest) = postcard::take_from_bytes::<PcztHead>(&bytes[8..]).unwrap();
 
-        pczt.global.tx_version = constants::V5_TX_VERSION;
-        pczt.global.version_group_id = constants::V5_VERSION_GROUP_ID;
+        head.global.tx_version = constants::V5_TX_VERSION;
+        head.global.version_group_id = constants::V5_VERSION_GROUP_ID;
 
-        bytes.truncate(8);
-        postcard::to_extend(&pczt, bytes).unwrap()
+        let mut out = bytes[..8].to_vec();
+        out = postcard::to_extend(&head, out).unwrap();
+        out.extend_from_slice(rest);
+        out
     }
 
     fn assert_invalid_pczt_message<T: core::fmt::Debug>(result: Result<T>, expected: &str) {
@@ -813,23 +829,33 @@ mod tests {
         use ::pczt::roles::creator::Creator;
         use zcash_vendor::zcash_protocol::consensus::{BranchId, NetworkConstants};
 
-        let mut bytes = Creator::new(
+        let bytes = Creator::new(
             BranchId::Nu6.into(),
             10,
             MainNetwork.coin_type(),
             [0; 32],
             [0; 32],
         )
+        .unwrap()
         .build()
-        .serialize();
-        let mut pczt: PcztMirror = postcard::from_bytes(&bytes[8..]).unwrap();
-        assert!(pczt.sapling.spends.is_empty());
-        assert!(pczt.sapling.outputs.is_empty());
+        .serialize()
+        .unwrap();
+        let (mut head, rest) = postcard::take_from_bytes::<PcztHead>(&bytes[8..]).unwrap();
+        // v2 omits empty bundles, so the freshly created PCZT has no Sapling bundle.
+        // Attach one that is empty except for a non-zero value sum, which `check` rejects.
+        assert!(head.sapling.is_none());
+        head.sapling = Some(SaplingBundleMirror {
+            spends: Vec::new(),
+            outputs: Vec::new(),
+            value_sum: 1,
+            anchor: [0u8; 32],
+            bsk: None,
+        });
 
-        pczt.sapling.value_sum = 1;
-
-        bytes.truncate(8);
-        postcard::to_extend(&pczt, bytes).unwrap()
+        let mut out = bytes[..8].to_vec();
+        out = postcard::to_extend(&head, out).unwrap();
+        out.extend_from_slice(rest);
+        out
     }
 
     /// A PCZT whose Sapling bundle is empty but declares a non-zero value sum is malformed
@@ -912,6 +938,7 @@ mod tests {
                 sapling_anchor: None,
                 orchard_anchor: Some(orchard::Anchor::empty_tree()),
                 ironwood_anchor: None,
+                orchard_pool_bundle_type: orchard::builder::BundleType::DEFAULT,
             },
         );
         builder
@@ -943,7 +970,10 @@ mod tests {
         let PcztResult { pczt_parts, .. } = builder
             .build_for_pczt(OsRng, &zip317::FeeRule::standard())
             .unwrap();
-        let pczt_bytes = Creator::build_from_parts(pczt_parts).unwrap().serialize();
+        let pczt_bytes = Creator::build_from_parts(pczt_parts)
+            .unwrap()
+            .serialize()
+            .unwrap();
         let seed_fingerprint = calculate_seed_fingerprint(&victim_seed).unwrap();
 
         let expected =
@@ -1265,8 +1295,17 @@ mod tests {
     #[cfg(zcash_unstable = "nu6.3")]
     fn pczt_with_sapling_output() -> pczt::test_support::SamplePczt {
         let mut sample = pczt::test_support::sample_orchard_change_pczt();
-        let mut pczt: PcztMirror = postcard::from_bytes(&sample.bytes[8..]).unwrap();
-        pczt.sapling.outputs.push(SaplingOutputMirror {
+        let (mut head, rest) = postcard::take_from_bytes::<PcztHead>(&sample.bytes[8..]).unwrap();
+        // The orchard-change sample carries no Sapling bundle (v2 omits it); synthesize one
+        // with a single output and negative value sum so the batch check rejects it.
+        let mut sapling = head.sapling.take().unwrap_or(SaplingBundleMirror {
+            spends: Vec::new(),
+            outputs: Vec::new(),
+            value_sum: 0,
+            anchor: [0u8; 32],
+            bsk: None,
+        });
+        sapling.outputs.push(SaplingOutputMirror {
             cv: [0; 32],
             cmu: [0; 32],
             ephemeral_key: [0; 32],
@@ -1282,10 +1321,13 @@ mod tests {
             user_address: None,
             proprietary: BTreeMap::new(),
         });
-        pczt.sapling.value_sum = -1;
+        sapling.value_sum = -1;
+        head.sapling = Some(sapling);
 
-        sample.bytes.truncate(8);
-        sample.bytes = postcard::to_extend(&pczt, sample.bytes).unwrap();
+        let mut out = sample.bytes[..8].to_vec();
+        out = postcard::to_extend(&head, out).unwrap();
+        out.extend_from_slice(rest);
+        sample.bytes = out;
         sample
     }
 

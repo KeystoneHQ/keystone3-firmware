@@ -813,14 +813,17 @@ mod legacy_tests {
     #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn legacy_parse_rejects_v6_pczt() {
-        let pczt = Creator::new_v6(
+        // `Creator::new(Nu6_3, ..)` alone yields a V6 PCZT (tx_version V6); the legacy
+        // path rejects it on version, so no Ironwood anchor is needed (and
+        // `with_ironwood_anchor` is orchard-feature-gated, unavailable in this build).
+        let pczt = Creator::new(
             BranchId::Nu6_3.into(),
             10,
             MainNetwork.coin_type(),
             [0; 32],
             [0; 32],
-            [1; 32],
         )
+        .unwrap()
         .build();
 
         let result = parse_pczt_multi_coins(&MainNetwork, &[7u8; 32], &pczt);

@@ -83,7 +83,9 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
     let signer = pczt_ext::sign_transparent(signer, &SeedSigner { seed })
         .map_err(|e| ZcashError::SigningError(e.to_string()))?;
 
-    Ok(stamp_and_redact(signer.finish()).serialize())
+    stamp_and_redact(signer.finish())
+        .serialize()
+        .map_err(|e| ZcashError::SigningError(format!("serialize signed PCZT: {e:?}")))
 }
 
 #[cfg(not(feature = "cypherpunk"))]
@@ -243,7 +245,9 @@ impl PcztSigner for SeedSigner<'_> {
 /// Thin wrapper over `sign_pczt_to_pczt`; see it for the full contract.
 #[cfg(feature = "cypherpunk")]
 pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
-    Ok(sign_pczt_to_pczt(pczt, seed)?.serialize())
+    sign_pczt_to_pczt(pczt, seed)?
+        .serialize()
+        .map_err(|e| ZcashError::SigningError(format!("serialize signed PCZT: {e:?}")))
 }
 
 /// `sign_pczt`, but returns the stamped, redacted PCZT without serializing it,
@@ -427,6 +431,7 @@ mod tests {
     use super::*;
     // RoleSigner is the upstream reference signer; tests use its sighash as the
     // bit-exact oracle for the lean pczt_ext::shielded_sig_commitment.
+    use zcash_vendor::pczt::roles::redactor::Redactor;
     use zcash_vendor::pczt::roles::signer::Signer as RoleSigner;
 
     fn assert_invalid_pczt_message<T: core::fmt::Debug>(result: crate::Result<T>, expected: &str) {
@@ -542,19 +547,20 @@ mod tests {
         let base_sighash = RoleSigner::new(pczt.clone())
             .expect("Ironwood PCZT signer should initialize")
             .shielded_sighash();
-        let updated_anchor = orchard::Anchor::from_bytes([6u8; 32]).unwrap();
-        let updated_anchor_pczt = Updater::new(pczt.clone())
-            .set_v6_ironwood_anchor(updated_anchor)
-            .expect("v6 Ironwood anchor should be replaceable before proving")
+        // The v6 Ironwood sighash must not commit the anchor. The new stack has no
+        // post-parse anchor setter, so redact the anchor instead: parse substitutes a
+        // version-gated placeholder, and the shielded sighash must be unchanged.
+        let cleared_anchor_pczt = Redactor::new(pczt.clone())
+            .redact_ironwood_with(|mut r| r.clear_anchor())
             .finish();
         assert_ne!(
             pczt.ironwood().anchor(),
-            updated_anchor_pczt.ironwood().anchor()
+            cleared_anchor_pczt.ironwood().anchor()
         );
         assert_eq!(
             base_sighash,
-            RoleSigner::new(updated_anchor_pczt)
-                .expect("anchor-updated Ironwood PCZT signer should initialize")
+            RoleSigner::new(cleared_anchor_pczt)
+                .expect("anchor-cleared Ironwood PCZT signer should initialize")
                 .shielded_sighash(),
             "v6 Ironwood spend signatures must not commit to the anchor"
         );
@@ -748,14 +754,17 @@ mod legacy_tests {
     #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn legacy_signing_rejects_v6_pczt() {
-        let pczt = Creator::new_v6(
+        // `Creator::new(Nu6_3, ..)` alone yields a V6 PCZT (tx_version V6); the legacy
+        // path rejects it on version, so no Ironwood anchor is needed (and
+        // `with_ironwood_anchor` is orchard-feature-gated, unavailable in this build).
+        let pczt = Creator::new(
             BranchId::Nu6_3.into(),
             10,
             MainNetwork.coin_type(),
             [0; 32],
             [0; 32],
-            [1; 32],
         )
+        .unwrap()
         .build();
 
         let result = sign_pczt(pczt, &[7u8; 32]);

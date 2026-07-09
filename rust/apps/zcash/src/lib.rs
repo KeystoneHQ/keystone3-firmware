@@ -114,12 +114,12 @@ fn check_parsed_pczt_cypherpunk<P: consensus::Parameters>(
     Ok(())
 }
 
-/// Batch preflight for one `ZcashSignBatch` message: parses once, runs the full
+/// Batch check for one `ZcashSignBatch` message: parses once, runs the full
 /// policy checks, enforces the batch shielded-action policy (the PCZT must be
 /// batch-signable by this account), and returns the normalized encoding. See
 /// `check_pczt_cypherpunk` for the normalization contract.
 #[cfg(feature = "cypherpunk")]
-pub fn preflight_batch_pczt_cypherpunk<P: consensus::Parameters>(
+pub fn check_batch_pczt_cypherpunk<P: consensus::Parameters>(
     params: &P,
     pczt_bytes: &[u8],
     ufvk_text: &str,
@@ -369,7 +369,7 @@ mod legacy_tests {
             &sample.seed_fingerprint,
             0,
         )
-        .expect("selected account PCZT should preflight");
+        .expect("selected account PCZT should pass the check");
         assert!(
             parse_pczt_multi_coins(&MainNetwork, &normalized, &sample.seed_fingerprint).is_ok()
         );
@@ -657,7 +657,7 @@ fn ensure_shielded_actions_are_signed(
     Ok(verifier.finish())
 }
 
-/// Signs a preflight-checked, normalized PCZT and confirms in memory that every
+/// Signs a checked, normalized PCZT and confirms in memory that every
 /// supported shielded action owned by (`seed_fingerprint`, `account_index`)
 /// received a spend authorization signature. Single-transaction policy: a PCZT
 /// with no owned shielded action still signs if any action matched the seed.
@@ -681,7 +681,7 @@ pub fn sign_checked_pczt<P: consensus::Parameters>(
     )
 }
 
-/// Signs a preflight-checked, normalized PCZT and confirms in memory that every
+/// Signs a checked, normalized PCZT and confirms in memory that every
 /// supported shielded action owned by (`seed_fingerprint`, `account_index`)
 /// received a spend authorization signature. Batch policy: additionally rejects
 /// PCZT shapes the batch flow does not support and requires at least one owned
@@ -1353,7 +1353,7 @@ mod tests {
     #[test]
     fn test_sign_checked_batch_pczt_signs_ironwood_spend() {
         let sample = pczt::test_support::sample_ironwood_pczt();
-        let normalized = preflight_batch_pczt_cypherpunk(
+        let normalized = check_batch_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
             &sample.ufvk_text,
@@ -1478,12 +1478,12 @@ mod tests {
 
     #[cfg(zcash_unstable = "nu6.3")]
     #[test]
-    fn test_preflight_batch_pczt_accepts_orchard_and_ironwood_spends() {
+    fn test_check_batch_pczt_accepts_orchard_and_ironwood_spends() {
         for sample in [
             pczt::test_support::sample_orchard_change_pczt(),
             pczt::test_support::sample_ironwood_pczt(),
         ] {
-            let normalized = preflight_batch_pczt_cypherpunk(
+            let normalized = check_batch_pczt_cypherpunk(
                 &pczt::test_support::Nu6_3Network,
                 &sample.bytes,
                 &sample.ufvk_text,
@@ -1495,7 +1495,7 @@ mod tests {
 
             // Account 1 owns nothing in these PCZTs: batch policy rejects.
             assert_eq!(
-                preflight_batch_pczt_cypherpunk(
+                check_batch_pczt_cypherpunk(
                     &pczt::test_support::Nu6_3Network,
                     &sample.bytes,
                     &sample.ufvk_text,
@@ -1510,13 +1510,13 @@ mod tests {
 
     #[cfg(zcash_unstable = "nu6.3")]
     #[test]
-    fn test_preflight_resolves_compact_pczt_and_signs() {
+    fn test_check_resolves_compact_pczt_and_signs() {
         use zcash_vendor::pczt::roles::redactor::Redactor;
 
         let sample = pczt::test_support::sample_migration_pczt();
         // Compact the sample the way the wallet's batch redaction will: drop cv_net and
         // the v6 anchors, and swap each Ironwood output's ciphertext down to its memo
-        // plaintext. `resolve_fields` in the preflight must undo all of it.
+        // plaintext. `resolve_fields` in the check must undo all of it.
         let compact = {
             let parsed = Pczt::parse(&sample.bytes).unwrap();
             let redacted = Redactor::new(parsed)
@@ -1556,7 +1556,7 @@ mod tests {
             &sample.seed_fingerprint,
             0,
         )
-        .expect("preflight must resolve compact fields before checking");
+        .expect("the check must resolve compact fields first");
 
         let reparsed = Pczt::parse(&normalized).expect("normalized bytes must parse");
         assert!(reparsed
@@ -1587,9 +1587,9 @@ mod tests {
 
     #[cfg(zcash_unstable = "nu6.3")]
     #[test]
-    fn test_preflight_batch_pczt_rejects_sapling_outputs() {
+    fn test_check_batch_pczt_rejects_sapling_outputs() {
         let sample = pczt_with_sapling_output();
-        assert_batch_unsupported_sapling_error(preflight_batch_pczt_cypherpunk(
+        assert_batch_unsupported_sapling_error(check_batch_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
             &sample.ufvk_text,

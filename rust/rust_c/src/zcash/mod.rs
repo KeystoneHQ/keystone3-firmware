@@ -313,7 +313,7 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
 
     let mut checked_messages = Vec::with_capacity(batch.get_messages().len());
     for message in batch.get_messages() {
-        match app_zcash::preflight_batch_pczt_cypherpunk(
+        match app_zcash::check_batch_pczt_cypherpunk(
             &MainNetwork,
             message.get_payload(),
             &ufvk_text,

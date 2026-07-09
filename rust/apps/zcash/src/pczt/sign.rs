@@ -547,10 +547,11 @@ mod tests {
         let base_sighash = RoleSigner::new(pczt.clone())
             .expect("Ironwood PCZT signer should initialize")
             .shielded_sighash();
-        // The v6 Ironwood sighash must not commit the anchor, so clearing it
-        // (the elided wire form batch children use) must leave the shielded
-        // sighash unchanged; a client-provided anchor may equally stay on the
-        // wire.
+        // Mirror the wallet's batch redaction: clearing the anchor rebuilds the
+        // anchor-elided request the wallet sends for batch children, with the
+        // full-anchor PCZT as its own oracle. The v6 Ironwood sighash does not
+        // commit the anchor, so the elided form must leave the shielded sighash
+        // unchanged; a client-provided anchor may equally stay on the wire.
         let cleared_anchor_pczt = Redactor::new(pczt.clone())
             .redact_ironwood_with(|mut r| r.clear_anchor())
             .finish();

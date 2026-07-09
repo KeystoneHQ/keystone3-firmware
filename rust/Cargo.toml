@@ -129,9 +129,7 @@ zcash_keys = { git = "https://github.com/valargroup/librustzcash", rev = "94d6e7
 zcash_primitives = { git = "https://github.com/valargroup/librustzcash", rev = "94d6e7fd8c76abb1d909390e10254a22f587981f" }
 zcash_protocol = { git = "https://github.com/valargroup/librustzcash", rev = "94d6e7fd8c76abb1d909390e10254a22f587981f" }
 zcash_transparent = { git = "https://github.com/valargroup/librustzcash", rev = "94d6e7fd8c76abb1d909390e10254a22f587981f" }
-# Redirect every crates.io `orchard` requirement onto the merged
-# unpadded-bundles head so the graph resolves to a single orchard node,
-# matching the pczt pin.
+# Keep `orchard` aligned with the pinned PCZT/librustzcash revision.
 orchard = { git = "https://github.com/zcash/orchard", rev = "475ef0ff77d45aebff93cb039d639250d82518a3" }
 # Use the upstream SDK rev with the Zcash batch registry types until they are published as a crate.
 ur-registry = { git = "https://github.com/KeystoneHQ/keystone-sdk-rust.git", rev = "0884de4b2e927bc3f95a98dff62045e0d492e574" }

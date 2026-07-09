@@ -813,9 +813,6 @@ mod legacy_tests {
     #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn legacy_parse_rejects_v6_pczt() {
-        // `Creator::new(Nu6_3, ..)` alone yields a V6 PCZT (tx_version V6); the legacy
-        // path rejects it on version, so no Ironwood anchor is needed (and
-        // `with_ironwood_anchor` is orchard-feature-gated, unavailable in this build).
         let pczt = Creator::new(
             BranchId::Nu6_3.into(),
             10,

@@ -169,7 +169,7 @@ pub unsafe extern "C" fn parse_zcash_tx_cypherpunk(
         .c_ptr();
     }
     let checked = extract_ptr_with_type!(checked_pczt, ZcashCheckedPczt);
-    let bytes = match checked.verified_bytes() {
+    let bytes = match checked.checked_bytes() {
         Ok(bytes) => bytes,
         Err(e) => return TransactionParseResult::from(e).c_ptr(),
     };
@@ -195,7 +195,7 @@ pub unsafe extern "C" fn parse_zcash_tx_multi_coins(
         .c_ptr();
     }
     let checked = extract_ptr_with_type!(checked_pczt, ZcashCheckedPczt);
-    let bytes = match checked.verified_bytes() {
+    let bytes = match checked.checked_bytes() {
         Ok(bytes) => bytes,
         Err(e) => return TransactionParseResult::from(e).c_ptr(),
     };
@@ -374,7 +374,7 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
         .c_ptr();
     }
     let checked = extract_ptr_with_type!(checked_batch, ZcashCheckedPczt);
-    let bytes = match checked.verified_bytes() {
+    let bytes = match checked.checked_bytes() {
         Ok(bytes) => bytes,
         Err(e) => return TransactionParseResult::from(e).c_ptr(),
     };
@@ -432,7 +432,7 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
     let expected_seed_fingerprint: &[u8; 32] = expected_seed_fingerprint.try_into().unwrap();
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
 
-    let result = match checked.verified_bytes() {
+    let result = match checked.checked_bytes() {
         Ok(bytes) => match ZcashSignBatch::try_from(bytes.to_vec()) {
             Ok(batch) => match calculate_seed_fingerprint(seed) {
                 Ok(seed_fingerprint) => {
@@ -580,7 +580,7 @@ unsafe fn sign_zcash_tx_dynamic(
     }
     let checked = extract_ptr_with_type!(checked_pczt, ZcashCheckedPczt);
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
-    let result = match checked.verified_bytes() {
+    let result = match checked.checked_bytes() {
         Ok(bytes) => match app_zcash::sign_pczt(bytes, seed) {
             Ok(pczt) => match ZcashPczt::new(pczt).try_into() {
                 Err(e) => UREncodeResult::from(e).c_ptr(),
@@ -626,7 +626,7 @@ unsafe fn sign_zcash_tx_cypherpunk_dynamic(
     let expected_seed_fingerprint: &[u8; 32] = expected_seed_fingerprint.try_into().unwrap();
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
 
-    let result = match checked.verified_bytes() {
+    let result = match checked.checked_bytes() {
         Ok(pczt_bytes) => match calculate_seed_fingerprint(seed) {
             Ok(seed_fingerprint) => {
                 if &seed_fingerprint != expected_seed_fingerprint {

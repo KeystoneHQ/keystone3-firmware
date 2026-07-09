@@ -722,7 +722,7 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
     if policy == ShieldedActionPolicy::Batch && signable_actions.is_empty() {
         return Err(ZcashError::PcztNoMyInputs);
     }
-    let signed = pczt::sign::sign_pczt_to_pczt(pczt, seed)?;
+    let signed = pczt::sign::sign_and_redact_pczt(pczt, seed)?;
     let signed = if signable_actions.is_empty() {
         signed
     } else {

@@ -242,10 +242,10 @@ impl PcztSigner for SeedSigner<'_> {
 
 /// Signs `pczt` and serializes the stamped, redacted response.
 ///
-/// Thin wrapper over `sign_pczt_to_pczt`; see it for the full contract.
+/// Thin wrapper over `sign_and_redact_pczt`; see it for the full contract.
 #[cfg(feature = "cypherpunk")]
 pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
-    sign_pczt_to_pczt(pczt, seed)?
+    sign_and_redact_pczt(pczt, seed)?
         .serialize()
         .map_err(|e| ZcashError::SigningError(format!("serialize signed PCZT: {e:?}")))
 }
@@ -254,7 +254,7 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
 /// so callers that still need the parsed value (in-memory post-sign
 /// verification) avoid a byte round trip.
 #[cfg(feature = "cypherpunk")]
-pub fn sign_pczt_to_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Pczt> {
+pub fn sign_and_redact_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Pczt> {
     super::validate_supported_pczt(&pczt)?;
 
     let seed_fingerprint =

@@ -72,46 +72,14 @@ pub fn check_pczt_cypherpunk<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: u32,
 ) -> Result<Vec<u8>> {
-    let mut pczt = pczt::parse_pczt(pczt_bytes)?;
-    // Resolve compact field representations (memo-plaintext ciphertexts,
-    // omitted cv_net) once, up front: the checks below then see complete
-    // actions, and `serialize()` bakes the resolved values into the
-    // normalized bytes so display and signing never re-resolve.
-    pczt.resolve_fields().map_err(|e| {
-        ZcashError::InvalidPczt(alloc::format!("resolve compact PCZT fields: {e:?}"))
-    })?;
-    check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)?;
-    pczt.serialize()
-        .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
-}
-
-/// `check_pczt_cypherpunk` against an already-parsed PCZT, so callers can parse
-/// once and reuse the parsed value for normalization.
-#[cfg(feature = "cypherpunk")]
-fn check_parsed_pczt_cypherpunk<P: consensus::Parameters>(
-    params: &P,
-    pczt: &Pczt,
-    ufvk_text: &str,
-    seed_fingerprint: &[u8; 32],
-    account_index: u32,
-) -> Result<()> {
-    let account_index = zip32::AccountId::try_from(account_index)
-        .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
-    let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
-        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
-    let xpub = ufvk.transparent().ok_or(ZcashError::InvalidDataError(
-        "transparent xpub is not present".to_string(),
-    ))?;
-    pczt::check::check_pczt_orchard(params, seed_fingerprint, account_index, &ufvk, pczt)?;
-    pczt::check::check_pczt_transparent(
+    check_pczt_cypherpunk_with_policy(
         params,
+        pczt_bytes,
+        ufvk_text,
         seed_fingerprint,
         account_index,
-        xpub,
-        pczt,
-        false,
-    )?;
-    Ok(())
+        ShieldedActionPolicy::Single,
+    )
 }
 
 /// Batch check for one `ZcashSignBatch` message: parses once, runs the full
@@ -126,6 +94,25 @@ pub fn check_batch_pczt_cypherpunk<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: u32,
 ) -> Result<Vec<u8>> {
+    check_pczt_cypherpunk_with_policy(
+        params,
+        pczt_bytes,
+        ufvk_text,
+        seed_fingerprint,
+        account_index,
+        ShieldedActionPolicy::Batch,
+    )
+}
+
+#[cfg(feature = "cypherpunk")]
+fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
+    params: &P,
+    pczt_bytes: &[u8],
+    ufvk_text: &str,
+    seed_fingerprint: &[u8; 32],
+    account_index: u32,
+    policy: ShieldedActionPolicy,
+) -> Result<Vec<u8>> {
     let mut pczt = pczt::parse_pczt(pczt_bytes)?;
     // Resolve compact field representations (memo-plaintext ciphertexts,
     // omitted cv_net) once, up front: the checks below then see complete
@@ -134,19 +121,36 @@ pub fn check_batch_pczt_cypherpunk<P: consensus::Parameters>(
     pczt.resolve_fields().map_err(|e| {
         ZcashError::InvalidPczt(alloc::format!("resolve compact PCZT fields: {e:?}"))
     })?;
-    check_parsed_pczt_cypherpunk(params, &pczt, ufvk_text, seed_fingerprint, account_index)?;
-    let account_id = zip32::AccountId::try_from(account_index)
+
+    let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
-    let (actions, pczt) = signable_shielded_actions(
+    let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
+        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
+    let xpub = ufvk.transparent().ok_or(ZcashError::InvalidDataError(
+        "transparent xpub is not present".to_string(),
+    ))?;
+    pczt::check::check_pczt_orchard(params, seed_fingerprint, account_index, &ufvk, &pczt)?;
+    pczt::check::check_pczt_transparent(
         params,
-        pczt,
         seed_fingerprint,
-        account_id,
-        ShieldedActionPolicy::Batch,
+        account_index,
+        xpub,
+        &pczt,
+        false,
     )?;
-    if actions.is_empty() {
-        return Err(ZcashError::PcztNoMyInputs);
-    }
+
+    let pczt = match policy {
+        ShieldedActionPolicy::Single => pczt,
+        ShieldedActionPolicy::Batch => {
+            let (actions, pczt) =
+                signable_shielded_actions(params, pczt, seed_fingerprint, account_index, policy)?;
+            if actions.is_empty() {
+                return Err(ZcashError::PcztNoMyInputs);
+            }
+            pczt
+        }
+    };
+
     pczt.serialize()
         .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
 }
@@ -169,22 +173,7 @@ pub fn check_pczt_multi_coins<P: consensus::Parameters>(
     // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
     // mutating `pczt` so the normalized bytes carry the verified values forward.
     // transparent-only build: pczt's orchard feature (and resolve_fields) is not compiled here.
-    check_parsed_pczt_multi_coins(params, &pczt, xpub, seed_fingerprint, account_index)?;
-    pczt.serialize()
-        .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
-}
-
-/// `check_pczt_multi_coins` against an already-parsed PCZT, so callers can
-/// parse once and reuse the parsed value for normalization.
-#[cfg(feature = "multi_coins")]
-fn check_parsed_pczt_multi_coins<P: consensus::Parameters>(
-    params: &P,
-    pczt: &Pczt,
-    xpub: &str,
-    seed_fingerprint: &[u8; 32],
-    account_index: u32,
-) -> Result<()> {
-    reject_legacy_check_unsupported_pczt(pczt)?;
+    reject_legacy_check_unsupported_pczt(&pczt)?;
     let account_pubkey = transparent_account_pubkey_from_xpub(xpub)?;
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
@@ -194,10 +183,11 @@ fn check_parsed_pczt_multi_coins<P: consensus::Parameters>(
         seed_fingerprint,
         account_index,
         &account_pubkey,
-        pczt,
+        &pczt,
         true,
     )?;
-    Ok(())
+    pczt.serialize()
+        .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
 }
 
 #[cfg(feature = "multi_coins")]

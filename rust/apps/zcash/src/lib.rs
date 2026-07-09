@@ -1293,8 +1293,8 @@ mod tests {
         let mut sample = pczt::test_support::sample_orchard_change_pczt();
         let (mut prefix, rest) =
             postcard::take_from_bytes::<PcztWirePrefix>(&sample.bytes[8..]).unwrap();
-        // The orchard-change sample carries no Sapling bundle (v2 omits it); synthesize one
-        // with a single output and negative value sum so the batch check rejects it.
+        // The orchard-change sample has an empty Sapling bundle, which v2 omits on the wire;
+        // synthesize one with a single output so the batch check rejects it.
         let mut sapling = prefix.sapling.take().unwrap_or(SaplingBundleMirror {
             spends: Vec::new(),
             outputs: Vec::new(),

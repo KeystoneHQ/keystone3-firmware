@@ -547,9 +547,10 @@ mod tests {
         let base_sighash = RoleSigner::new(pczt.clone())
             .expect("Ironwood PCZT signer should initialize")
             .shielded_sighash();
-        // The v6 Ironwood sighash must not commit the anchor. The new stack has no
-        // post-parse anchor setter, so redact the anchor instead: parse substitutes a
-        // version-gated placeholder, and the shielded sighash must be unchanged.
+        // The v6 Ironwood sighash must not commit the anchor, so clearing it
+        // (the elided wire form batch children use) must leave the shielded
+        // sighash unchanged; a client-provided anchor may equally stay on the
+        // wire.
         let cleared_anchor_pczt = Redactor::new(pczt.clone())
             .redact_ironwood_with(|mut r| r.clear_anchor())
             .finish();

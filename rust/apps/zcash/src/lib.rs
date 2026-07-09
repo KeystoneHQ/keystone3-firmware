@@ -733,13 +733,11 @@ mod tests {
     use super::*;
     extern crate std;
 
-    // Head of the v2 PCZT wire layout (`pczt::Pczt`'s v2 encoding), up to and including
-    // the Sapling bundle; empty bundles are omitted (`None`). The trailing Orchard and
-    // Ironwood bundles are captured as raw bytes via `postcard::take_from_bytes` and
-    // re-appended unchanged, so these fixtures only decode the fields at/before the one
-    // they mutate and never need the crate-private `orchard::v2::Bundle` layout.
+    // Test-only decoder for the v2 postcard prefix these fixtures mutate. The
+    // trailing Orchard and Ironwood bundles use private wire types, so callers
+    // preserve those bytes unchanged via `postcard::take_from_bytes`.
     #[derive(Serialize, Deserialize)]
-    struct PcztHead {
+    struct PcztWirePrefix {
         global: GlobalMirror,
         transparent: Option<::pczt::transparent::Bundle>,
         sapling: Option<SaplingBundleMirror>,
@@ -805,13 +803,13 @@ mod tests {
             .ironwood()
             .actions()
             .is_empty());
-        let (mut head, rest) = postcard::take_from_bytes::<PcztHead>(&bytes[8..]).unwrap();
+        let (mut prefix, rest) = postcard::take_from_bytes::<PcztWirePrefix>(&bytes[8..]).unwrap();
 
-        head.global.tx_version = constants::V5_TX_VERSION;
-        head.global.version_group_id = constants::V5_VERSION_GROUP_ID;
+        prefix.global.tx_version = constants::V5_TX_VERSION;
+        prefix.global.version_group_id = constants::V5_VERSION_GROUP_ID;
 
         let mut out = bytes[..8].to_vec();
-        out = postcard::to_extend(&head, out).unwrap();
+        out = postcard::to_extend(&prefix, out).unwrap();
         out.extend_from_slice(rest);
         out
     }
@@ -838,11 +836,11 @@ mod tests {
         .build()
         .serialize()
         .unwrap();
-        let (mut head, rest) = postcard::take_from_bytes::<PcztHead>(&bytes[8..]).unwrap();
+        let (mut prefix, rest) = postcard::take_from_bytes::<PcztWirePrefix>(&bytes[8..]).unwrap();
         // v2 omits empty bundles, so the freshly created PCZT has no Sapling bundle.
         // Attach one that is empty except for a non-zero value sum, which `check` rejects.
-        assert!(head.sapling.is_none());
-        head.sapling = Some(SaplingBundleMirror {
+        assert!(prefix.sapling.is_none());
+        prefix.sapling = Some(SaplingBundleMirror {
             spends: Vec::new(),
             outputs: Vec::new(),
             value_sum: 1,
@@ -851,7 +849,7 @@ mod tests {
         });
 
         let mut out = bytes[..8].to_vec();
-        out = postcard::to_extend(&head, out).unwrap();
+        out = postcard::to_extend(&prefix, out).unwrap();
         out.extend_from_slice(rest);
         out
     }
@@ -1293,10 +1291,11 @@ mod tests {
     #[cfg(zcash_unstable = "nu6.3")]
     fn pczt_with_sapling_output() -> pczt::test_support::SamplePczt {
         let mut sample = pczt::test_support::sample_orchard_change_pczt();
-        let (mut head, rest) = postcard::take_from_bytes::<PcztHead>(&sample.bytes[8..]).unwrap();
+        let (mut prefix, rest) =
+            postcard::take_from_bytes::<PcztWirePrefix>(&sample.bytes[8..]).unwrap();
         // The orchard-change sample carries no Sapling bundle (v2 omits it); synthesize one
         // with a single output and negative value sum so the batch check rejects it.
-        let mut sapling = head.sapling.take().unwrap_or(SaplingBundleMirror {
+        let mut sapling = prefix.sapling.take().unwrap_or(SaplingBundleMirror {
             spends: Vec::new(),
             outputs: Vec::new(),
             value_sum: 0,
@@ -1320,10 +1319,10 @@ mod tests {
             proprietary: BTreeMap::new(),
         });
         sapling.value_sum = -1;
-        head.sapling = Some(sapling);
+        prefix.sapling = Some(sapling);
 
         let mut out = sample.bytes[..8].to_vec();
-        out = postcard::to_extend(&head, out).unwrap();
+        out = postcard::to_extend(&prefix, out).unwrap();
         out.extend_from_slice(rest);
         sample.bytes = out;
         sample

@@ -15,6 +15,15 @@ static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static DisplayPczt *g_zcashData;
+static ZcashCheckedPczt *g_checkedPczt = NULL;
+
+static void FreeCheckedPczt(void)
+{
+    if (g_checkedPczt != NULL) {
+        free_zcash_checked_pczt(g_checkedPczt);
+        g_checkedPczt = NULL;
+    }
+}
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                             \
     if (result != NULL)                                                                             \
@@ -33,19 +42,21 @@ void GuiSetZcashUrData(URParseResult *urResult, URParseMultiResult *urMultiResul
 void *GuiGetZcashGUIData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    if (g_checkedPczt == NULL) {
+        return NULL;
+    }
     uint8_t sfp[32];
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
 
     PtrT_TransactionParseResult_DisplayPczt parseResult = NULL;
     do {
 #ifdef WEB3_VERSION
-        parseResult = parse_zcash_tx_multi_coins(data, sfp);
+        parseResult = parse_zcash_tx_multi_coins(g_checkedPczt, sfp);
 #endif
 #ifdef CYPHERPUNK_VERSION
         char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
         GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-        parseResult = parse_zcash_tx_cypherpunk(data, ufvk, sfp);
+        parseResult = parse_zcash_tx_cypherpunk(g_checkedPczt, ufvk, sfp);
 #endif
         CHECK_CHAIN_BREAK(parseResult);
         g_zcashData = parseResult->data;
@@ -327,14 +338,15 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
     MnemonicType mnemonicType = GetMnemonicType();
     printf("mnemonicType: %d\n", mnemonicType);
 
+    FreeCheckedPczt();
 #ifdef WEB3_VERSION
     char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ZEC_TRANSPARENT_LEGACY);
-    return check_zcash_tx_multi_coins(data, xpub, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39);
+    return check_zcash_tx_multi_coins(data, xpub, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39, &g_checkedPczt);
 #endif
 #ifdef CYPHERPUNK_VERSION
     char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-    return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, !IsZcashSupportedForCurrentMnemonic());
+    return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, !IsZcashSupportedForCurrentMnemonic(), &g_checkedPczt);
 #endif
 }
 
@@ -350,14 +362,13 @@ UREncodeResult *GuiSignZcashCypherpunkWithSeed(void *data,
     uint8_t seed[SEED_LEN] = {0};
     uint8_t sfp[32] = {0};
     uint32_t zcashAccountIndex = 0;
-    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
     bool disabled = !IsZcashSupportedForCurrentMnemonic();
     int ret = 0;
 
     do {
         ZcashCypherpunkSignFunc selectedSignFunc = unlimited ? unlimitedSignFunc : signFunc;
         if (disabled) {
-            encodeResult = selectedSignFunc(data, ufvk, sfp, zcashAccountIndex, true, seed, 0);
+            encodeResult = selectedSignFunc(data, sfp, zcashAccountIndex, true, seed, 0);
             CHECK_CHAIN_BREAK(encodeResult);
             break;
         }
@@ -370,13 +381,9 @@ UREncodeResult *GuiSignZcashCypherpunkWithSeed(void *data,
         if (ret != 0) {
             break;
         }
-        ret = GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-        if (ret != 0) {
-            break;
-        }
 
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = selectedSignFunc(data, ufvk, sfp, zcashAccountIndex, false, seed, len);
+        encodeResult = selectedSignFunc(data, sfp, zcashAccountIndex, false, seed, len);
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
 
@@ -391,28 +398,26 @@ static UREncodeResult *SignZcashCypherpunkInternal(void *data, bool unlimited)
     return GuiSignZcashCypherpunkWithSeed(
                data,
                unlimited,
-               sign_zcash_tx_cypherpunk,
-               sign_zcash_tx_cypherpunk_unlimited);
+               (ZcashCypherpunkSignFunc)sign_zcash_tx_cypherpunk,
+               (ZcashCypherpunkSignFunc)sign_zcash_tx_cypherpunk_unlimited);
 }
 #endif
 
 UREncodeResult *GuiGetZcashSignQrCodeData(void)
 {
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
 #ifdef CYPHERPUNK_VERSION
-    return SignZcashCypherpunkInternal(data, false);
+    return SignZcashCypherpunkInternal(g_checkedPczt, false);
 #else
-    return SignInternal(sign_zcash_tx, data);
+    return SignInternal((SignFn)sign_zcash_tx, g_checkedPczt);
 #endif
 }
 
 UREncodeResult *GuiGetZcashSignUrDataUnlimited(void)
 {
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
 #ifdef CYPHERPUNK_VERSION
-    return SignZcashCypherpunkInternal(data, true);
+    return SignZcashCypherpunkInternal(g_checkedPczt, true);
 #else
-    return SignInternal(sign_zcash_tx_unlimited, data);
+    return SignInternal((SignFn)sign_zcash_tx_unlimited, g_checkedPczt);
 #endif
 }
 
@@ -421,4 +426,5 @@ void FreeZcashMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
+    FreeCheckedPczt();
 }

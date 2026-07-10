@@ -1,13 +1,14 @@
-use core::ptr::null_mut;
+use core::{ptr::null_mut, slice};
 
 use crate::common::{
+    errors::RustCError,
     ffi::VecFFI,
     free::Free,
     types::{Ptr, PtrString},
     utils::convert_c_char,
 };
 use crate::{free_str_ptr, free_vec, impl_c_ptr, impl_c_ptrs};
-use alloc::vec::Vec;
+use alloc::{string::ToString, vec::Vec};
 use app_zcash::pczt::structs::{
     ParsedFrom, ParsedOrchard, ParsedPczt, ParsedTo, ParsedTransparent,
 };
@@ -214,3 +215,59 @@ impl_c_ptrs!(
     DisplayTo,
     DisplayOrchard
 );
+
+/// Normalized transaction bytes verified during check and retained by C between
+/// the check, display, and sign stages (`checked_PCZT` on the C side).
+///
+/// `data` is opaque to C: the normalized PCZT encoding in the single-transaction
+/// flow, or the normalized `ZcashSignBatch` CBOR in the batch flow. Construct
+/// exclusively from check results.
+#[repr(C)]
+pub struct ZcashCheckedPczt {
+    pub data: Ptr<VecFFI<u8>>,
+}
+
+impl ZcashCheckedPczt {
+    /// Wraps bytes verified during check.
+    pub fn new(data: Vec<u8>) -> Self {
+        Self {
+            data: VecFFI::from(data).c_ptr(),
+        }
+    }
+
+    /// Borrows the bytes produced by a successful check.
+    pub unsafe fn checked_bytes(&self) -> Result<&[u8], RustCError> {
+        if self.data.is_null() {
+            return Err(RustCError::InvalidData(
+                "checked PCZT has no data".to_string(),
+            ));
+        }
+        let vec = &*self.data;
+        Ok(slice::from_raw_parts(vec.data, vec.size))
+    }
+}
+
+impl_c_ptr!(ZcashCheckedPczt);
+
+impl Free for ZcashCheckedPczt {
+    unsafe fn free(&self) {
+        if !self.data.is_null() {
+            let vec_ffi = alloc::boxed::Box::from_raw(self.data);
+            drop(Vec::from_raw_parts(vec_ffi.data, vec_ffi.size, vec_ffi.cap));
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloc::vec::Vec;
+
+    #[test]
+    fn test_checked_pczt_bytes_round_trip() {
+        let checked = ZcashCheckedPczt::new(b"normalized-bytes".to_vec());
+        let bytes = unsafe { checked.checked_bytes() }.unwrap();
+        assert_eq!(bytes, b"normalized-bytes");
+        unsafe { checked.free() };
+    }
+}

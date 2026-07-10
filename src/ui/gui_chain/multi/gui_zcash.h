@@ -10,7 +10,6 @@ void GuiZcashOverview(lv_obj_t *parent, void *totalData);
 PtrT_TransactionCheckResult GuiGetZcashCheckResult(void);
 #ifdef CYPHERPUNK_VERSION
 typedef UREncodeResult *(*ZcashCypherpunkSignFunc)(void *data,
-        PtrString ufvk,
         PtrBytes seedFingerprint,
         uint32_t accountIndex,
         bool disabled,

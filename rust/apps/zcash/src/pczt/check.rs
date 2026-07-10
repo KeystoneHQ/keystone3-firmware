@@ -298,14 +298,7 @@ fn check_shielded_bundle<P: consensus::Parameters>(
 ) -> Result<(), ZcashError> {
     let pool_label = pool.label();
     bundle.actions().iter().try_for_each(|action| {
-        check_action(
-            params,
-            seed_fingerprint,
-            account_index,
-            ufvk,
-            action,
-            pool,
-        )?;
+        check_action(params, seed_fingerprint, account_index, ufvk, action, pool)?;
         Ok::<_, ZcashError>(())
     })?;
 
@@ -341,9 +334,7 @@ fn check_action<P: consensus::Parameters>(
     // Check `cv_net` first so we know that the `value` fields for both the spend and the
     // output are present and correct.
     action.verify_cv_net().map_err(|e| {
-        ZcashError::InvalidPczt(format!(
-            "invalid cv_net in {pool_label} action: {e:?}"
-        ))
+        ZcashError::InvalidPczt(format!("invalid cv_net in {pool_label} action: {e:?}"))
     })?;
 
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
@@ -396,9 +387,7 @@ fn check_action_spend<P: consensus::Parameters>(
 
     if let Some(expected_fvk) = can_verify_nf_rk {
         spend.verify_nullifier(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(format!(
-                "invalid {pool_label} action nullifier: {e:?}"
-            ))
+            ZcashError::InvalidPczt(format!("invalid {pool_label} action nullifier: {e:?}"))
         })?;
         spend.verify_rk(expected_fvk).map_err(|e| {
             ZcashError::InvalidPczt(format!("invalid {pool_label} action rk: {e:?}"))
@@ -429,9 +418,7 @@ fn check_action_output<P: consensus::Parameters>(
     action
         .output()
         .verify_note_commitment(action.spend())
-        .map_err(|e| {
-            ZcashError::InvalidPczt(format!("invalid {pool_label} action cmx: {e:?}"))
-        })?;
+        .map_err(|e| ZcashError::InvalidPczt(format!("invalid {pool_label} action cmx: {e:?}")))?;
 
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),

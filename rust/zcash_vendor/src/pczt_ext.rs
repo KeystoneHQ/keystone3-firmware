@@ -188,6 +188,31 @@ fn hash_transparent_tx_id(t_digests: Option<TransparentDigests>) -> Hash {
     h.finalize()
 }
 
+/// Orchard/Ironwood note ciphertext length; the ZIP-244 action digests slice it as
+/// 52 (compact) | 512 (memo) | 16 (non-compact).
+const ORCHARD_ENC_CIPHERTEXT_SIZE: usize = 580;
+
+/// The action's value-commitment bytes for the sighash. `cv_net` is `Option` in the v2
+/// PCZT wire model; the checked-PCZT preflight resolves it and `check::verify_cv_net`
+/// rejects any still-missing value before signing, so it is always present here. The zero
+/// fallback only keeps this infallible digest panic-free — a malformed PCZT then yields a
+/// non-matching sighash (an invalid signature), never a silent-but-valid one.
+fn action_cv_net(action: &pczt::orchard::Action) -> &[u8; 32] {
+    static ZERO: [u8; 32] = [0; 32];
+    action.cv_net().as_ref().unwrap_or(&ZERO)
+}
+
+/// The output's encrypted note ciphertext for the sighash. `resolve_fields` restores the
+/// full ciphertext from a memo-plaintext-only (`EncCiphertext::MemoPlaintext`) output; see
+/// [`action_cv_net`] for why the zero fallback is unreachable in the signing path.
+fn action_enc_ciphertext(output: &pczt::orchard::Output) -> &[u8] {
+    static ZERO: [u8; ORCHARD_ENC_CIPHERTEXT_SIZE] = [0; ORCHARD_ENC_CIPHERTEXT_SIZE];
+    match output.enc_ciphertext() {
+        pczt::orchard::EncCiphertext::Encrypted(c) if c.len() == ORCHARD_ENC_CIPHERTEXT_SIZE => c,
+        _ => &ZERO,
+    }
+}
+
 fn digest_orchard(pczt: &Pczt) -> Hash {
     let mut h = hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION);
 
@@ -199,13 +224,13 @@ fn digest_orchard(pczt: &Pczt) -> Hash {
         ch.update(action.spend().nullifier());
         ch.update(action.output().cmx());
         ch.update(action.output().ephemeral_key());
-        ch.update(&action.output().enc_ciphertext()[..52]);
+        ch.update(&action_enc_ciphertext(action.output())[..52]);
 
-        mh.update(&action.output().enc_ciphertext()[52..564]);
+        mh.update(&action_enc_ciphertext(action.output())[52..564]);
 
-        nh.update(action.cv_net());
+        nh.update(action_cv_net(action));
         nh.update(action.spend().rk());
-        nh.update(&action.output().enc_ciphertext()[564..]);
+        nh.update(&action_enc_ciphertext(action.output())[564..]);
         nh.update(action.output().out_ciphertext());
     }
 
@@ -221,7 +246,9 @@ fn digest_orchard(pczt: &Pczt) -> Hash {
     };
     h.update(&value_balance.to_le_bytes());
 
-    h.update(pczt.orchard().anchor());
+    // v5 commits the anchor (v6 omits it). Present for well-formed v5 bundles; the empty
+    // fallback keeps this infallible — see `action_cv_net`.
+    h.update(pczt.orchard().anchor().as_ref().unwrap_or(&[0u8; 32]));
 
     h.finalize()
 }
@@ -354,13 +381,13 @@ fn digest_orchard_shaped_v6(
         ch.update(action.spend().nullifier());
         ch.update(action.output().cmx());
         ch.update(action.output().ephemeral_key());
-        ch.update(&action.output().enc_ciphertext()[..52]);
+        ch.update(&action_enc_ciphertext(action.output())[..52]);
 
-        mh.update(&action.output().enc_ciphertext()[52..564]);
+        mh.update(&action_enc_ciphertext(action.output())[52..564]);
 
-        nh.update(action.cv_net());
+        nh.update(action_cv_net(action));
         nh.update(action.spend().rk());
-        nh.update(&action.output().enc_ciphertext()[564..]);
+        nh.update(&action_enc_ciphertext(action.output())[564..]);
         nh.update(action.output().out_ciphertext());
     }
 
@@ -604,7 +631,7 @@ where
 pub fn sign_orchard<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,
-    T::Error: From<pczt::orchard::BundleParseError>,
+    T::Error: From<pczt::roles::low_level_signer::OrchardParseError>,
     T::Error: From<orchard::pczt::ParseError>,
     T::Error: From<transparent::pczt::ParseError>,
 {
@@ -657,7 +684,7 @@ where
 pub fn sign_ironwood<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,
-    T::Error: From<pczt::orchard::BundleParseError>,
+    T::Error: From<pczt::roles::low_level_signer::OrchardParseError>,
     T::Error: From<orchard::pczt::ParseError>,
     T::Error: From<transparent::pczt::ParseError>,
 {

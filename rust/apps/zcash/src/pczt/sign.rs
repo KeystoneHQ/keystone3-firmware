@@ -118,7 +118,12 @@ struct SeedSigner<'a> {
     /// key depend only on (seed, account), not on the action, so a bundle with many
     /// actions for one account derives once. Interior mutability because the
     /// `PcztSigner` trait signs through `&self`.
-    ask_cache: RefCell<Vec<(zcash_vendor::zip32::AccountId, orchard::keys::SpendAuthorizingKey)>>,
+    ask_cache: RefCell<
+        Vec<(
+            zcash_vendor::zip32::AccountId,
+            orchard::keys::SpendAuthorizingKey,
+        )>,
+    >,
     /// Number of authorizations produced, so `sign_pczt` can distinguish "nothing of
     /// ours to sign" (`PcztNoMyInputs`) from a successful signing.
     signed: Cell<usize>,
@@ -742,7 +747,6 @@ mod tests {
             .expect("wallet-set min key must survive round trip");
         assert_eq!(request_min.as_slice(), &[1u8, 2][..]);
     }
-
 }
 
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]

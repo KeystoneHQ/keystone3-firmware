@@ -216,8 +216,14 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
 
     let verifier = Verifier::new(pczt.clone())
         .with_orchard(|bundle| {
-            parsed_orchard = parse_orchard(params, seed_fingerprint, ufvk, bundle, ShieldedPool::Orchard)
-                .map_err(pczt::roles::verifier::OrchardError::Custom)?;
+            parsed_orchard = parse_orchard(
+                params,
+                seed_fingerprint,
+                ufvk,
+                bundle,
+                ShieldedPool::Orchard,
+            )
+            .map_err(pczt::roles::verifier::OrchardError::Custom)?;
             Ok(())
         })
         .map_err(map_orchard_verifier_error)?;
@@ -225,8 +231,14 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
     let verifier = if should_process_ironwood {
         verifier
             .with_ironwood(|bundle| {
-                parsed_ironwood = parse_orchard(params, seed_fingerprint, ufvk, bundle, ShieldedPool::Ironwood)
-                    .map_err(pczt::roles::verifier::OrchardError::Custom)?;
+                parsed_ironwood = parse_orchard(
+                    params,
+                    seed_fingerprint,
+                    ufvk,
+                    bundle,
+                    ShieldedPool::Ironwood,
+                )
+                .map_err(pczt::roles::verifier::OrchardError::Custom)?;
                 Ok(())
             })
             .map_err(map_orchard_verifier_error)?

@@ -208,9 +208,7 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
 ) -> Result<ParsedPczt, ZcashError> {
     super::validate_supported_pczt(pczt)?;
     let mut parsed_orchard = None;
-    #[cfg(zcash_unstable = "nu6.3")]
     let mut parsed_ironwood = None;
-    #[cfg(zcash_unstable = "nu6.3")]
     let should_process_ironwood = super::pczt_should_process_ironwood(pczt);
     let mut parsed_transparent = None;
 
@@ -227,7 +225,6 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
             Ok(())
         })
         .map_err(map_orchard_verifier_error)?;
-    #[cfg(zcash_unstable = "nu6.3")]
     let verifier = if should_process_ironwood {
         verifier
             .with_ironwood(|bundle| {
@@ -274,7 +271,6 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
             .iter()
             .fold(0, |acc, to| acc + to.get_amount());
     }
-    #[cfg(zcash_unstable = "nu6.3")]
     if let Some(ironwood) = &parsed_ironwood {
         total_change_value += ironwood
             .get_to()
@@ -331,11 +327,6 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
     let fee_value = format_zec_value((total_input_value - total_output_value) as f64);
 
     let has_sapling = !pczt.sapling().spends().is_empty() || !pczt.sapling().outputs().is_empty();
-
-    #[cfg(zcash_unstable = "nu6.3")]
-    let parsed_ironwood = parsed_ironwood;
-    #[cfg(not(zcash_unstable = "nu6.3"))]
-    let parsed_ironwood = None;
 
     Ok(ParsedPczt::new(
         parsed_transparent,
@@ -424,7 +415,6 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
 
 #[cfg(feature = "multi_coins")]
 fn reject_legacy_parse_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
-    #[cfg(zcash_unstable = "nu6.3")]
     {
         // The legacy multi-coins parser only displays transparent data. Reject any
         // shielded (Sapling/Orchard/Ironwood) or V6 PCZT instead of showing an
@@ -822,7 +812,6 @@ mod legacy_tests {
         zcash_protocol::consensus::{BranchId, MainNetwork, NetworkConstants},
     };
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn legacy_parse_rejects_v6_pczt() {
         let pczt = Creator::new(

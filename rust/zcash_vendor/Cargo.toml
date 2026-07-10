@@ -61,7 +61,7 @@ rust_tools = { workspace = true }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
-    'cfg(zcash_unstable, values("nu6.3", "zfuture"))',
+    'cfg(zcash_unstable, values("zfuture"))',
 ] }
 
 [dev-dependencies]

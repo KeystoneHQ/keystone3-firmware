@@ -20,7 +20,6 @@ pub(crate) fn parse_pczt(bytes: &[u8]) -> Result<Pczt, ZcashError> {
 pub(crate) fn validate_supported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     validate_sapling_bundle_consistency(pczt)?;
 
-    #[cfg(zcash_unstable = "nu6.3")]
     {
         if pczt_has_ironwood_actions(pczt) && !pczt_is_v6(pczt) {
             return Err(ZcashError::InvalidPczt(
@@ -46,18 +45,15 @@ pub(crate) fn validate_supported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     Ok(())
 }
 
-#[cfg(zcash_unstable = "nu6.3")]
 pub(crate) fn pczt_has_ironwood_actions(pczt: &Pczt) -> bool {
     !pczt.ironwood().actions().is_empty()
 }
 
-#[cfg(zcash_unstable = "nu6.3")]
 pub(crate) fn pczt_is_v6(pczt: &Pczt) -> bool {
     *pczt.global().tx_version() == constants::V6_TX_VERSION
         && *pczt.global().version_group_id() == constants::V6_VERSION_GROUP_ID
 }
 
-#[cfg(zcash_unstable = "nu6.3")]
 pub(crate) fn pczt_should_process_ironwood(pczt: &Pczt) -> bool {
     pczt_is_v6(pczt) || pczt_has_ironwood_actions(pczt)
 }
@@ -116,7 +112,6 @@ pub(crate) fn check_transparent_derivation<
 #[derive(Clone, Copy)]
 pub(crate) enum ShieldedPool {
     Orchard,
-    #[cfg(zcash_unstable = "nu6.3")]
     Ironwood,
 }
 
@@ -125,7 +120,6 @@ impl ShieldedPool {
     pub(crate) fn label(self) -> &'static str {
         match self {
             ShieldedPool::Orchard => "Orchard",
-            #[cfg(zcash_unstable = "nu6.3")]
             ShieldedPool::Ironwood => "Ironwood",
         }
     }
@@ -178,10 +172,7 @@ pub(crate) fn matching_seed_supported_orchard_account(
 /// Returns whether a PCZT carries anything the transparent-only legacy path
 /// cannot handle: a v6+ transaction, or any shielded (Sapling/Orchard/Ironwood)
 /// content. These must be checked, parsed, and signed by the cypherpunk build.
-#[cfg(all(
-    zcash_unstable = "nu6.3",
-    any(feature = "multi_coins", not(feature = "cypherpunk"))
-))]
+#[cfg(any(feature = "multi_coins", not(feature = "cypherpunk")))]
 pub(crate) fn pczt_requires_cypherpunk_support(pczt: &zcash_vendor::pczt::Pczt) -> bool {
     *pczt.global().tx_version() >= 6
         || !pczt.sapling().spends().is_empty()
@@ -195,20 +186,16 @@ pub(crate) mod test_support {
     use alloc::{string::String, vec, vec::Vec};
 
     use ::pczt::roles::{creator::Creator, updater::Updater};
-    #[cfg(zcash_unstable = "nu6.3")]
     use incrementalmerkletree::Retention;
     use keystore::algorithms::zcash::{calculate_seed_fingerprint, derive_ufvk};
     use rand_core::OsRng;
-    #[cfg(zcash_unstable = "nu6.3")]
     use shardtree::{store::memory::MemoryShardStore, ShardTree};
-    #[cfg(zcash_unstable = "nu6.3")]
     use zcash_note_encryption::try_note_decryption;
     use zcash_primitives::transaction::{
         builder::{BuildConfig, Builder, PcztParts, PcztResult},
         fees::zip317,
         TxVersion,
     };
-    #[cfg(zcash_unstable = "nu6.3")]
     use zcash_vendor::zcash_protocol::consensus::{BlockHeight, NetworkType, NetworkUpgrade};
     use zcash_vendor::{
         orchard,
@@ -229,11 +216,9 @@ pub(crate) mod test_support {
         pub(crate) seed_fingerprint: [u8; 32],
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[derive(Clone, Copy, Debug)]
     pub(crate) struct Nu6_3Network;
 
-    #[cfg(zcash_unstable = "nu6.3")]
     impl Parameters for Nu6_3Network {
         fn network_type(&self) -> NetworkType {
             NetworkType::Main
@@ -247,7 +232,6 @@ pub(crate) mod test_support {
         }
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     pub(crate) fn unsupported_orchard_spend_paths() -> Vec<Vec<u32>> {
         vec![
             vec![
@@ -264,7 +248,6 @@ pub(crate) mod test_support {
         ]
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     pub(crate) fn orchard_spend_path_for_account(account_index: u32) -> Vec<u32> {
         vec![
             zip32::ChildIndex::hardened(32).index(),
@@ -273,7 +256,6 @@ pub(crate) mod test_support {
         ]
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     pub(crate) fn ironwood_pczt_with_spend_derivation(
         bytes: &[u8],
         seed_fingerprint: [u8; 32],
@@ -298,7 +280,6 @@ pub(crate) mod test_support {
             .unwrap()
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     pub(crate) fn ironwood_pczt_with_dummy_spend_derivation(
         bytes: &[u8],
         seed_fingerprint: [u8; 32],
@@ -335,7 +316,6 @@ pub(crate) mod test_support {
             .unwrap()
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     pub(crate) fn sample_ironwood_pczt() -> SamplePczt {
         let params = Nu6_3Network;
         let seed = [7u8; 32];
@@ -446,7 +426,6 @@ pub(crate) mod test_support {
     // Orchard spend -> Ironwood output: a cross-pool migration, the message type
     // the real batch uses (and the one never exercised on-device). Mirrors
     // sample_ironwood_pczt but the *spent* note is an Orchard note.
-    #[cfg(zcash_unstable = "nu6.3")]
     pub(crate) fn sample_migration_pczt() -> SamplePczt {
         let params = Nu6_3Network;
         let seed = [7u8; 32];
@@ -556,7 +535,6 @@ pub(crate) mod test_support {
         }
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     pub(crate) fn sample_orchard_change_pczt() -> SamplePczt {
         let params = MainNetwork;
         let seed = [7u8; 32];

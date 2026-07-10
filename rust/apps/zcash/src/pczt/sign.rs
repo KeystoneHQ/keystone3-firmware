@@ -90,7 +90,6 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
 
 #[cfg(not(feature = "cypherpunk"))]
 fn reject_legacy_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
-    #[cfg(zcash_unstable = "nu6.3")]
     {
         // The legacy helper below carries the pre-NU6.3 transparent sighash implementation.
         // It must not be used for shielded (Sapling/Orchard/Ironwood) or V6 PCZTs.
@@ -265,7 +264,6 @@ pub fn sign_and_redact_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Pczt> {
     let seed_fingerprint =
         calculate_seed_fingerprint(seed).map_err(|e| ZcashError::SigningError(e.to_string()))?;
 
-    #[cfg(zcash_unstable = "nu6.3")]
     let process_ironwood = super::pczt_should_process_ironwood(&pczt);
 
     // The orchard signer handles both the transparent inputs and the Orchard bundle
@@ -279,9 +277,7 @@ pub fn sign_and_redact_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Pczt> {
     let signer = pczt_ext::sign_transparent(signer, &orchard_signer)?;
     let signer = pczt_ext::sign_orchard(signer, &orchard_signer)?;
 
-    #[cfg(zcash_unstable = "nu6.3")]
     let ironwood_signer = SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Ironwood);
-    #[cfg(zcash_unstable = "nu6.3")]
     let signer = if process_ironwood {
         pczt_ext::sign_ironwood(signer, &ironwood_signer)?
     } else {
@@ -289,7 +285,6 @@ pub fn sign_and_redact_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Pczt> {
     };
 
     let mut signed = orchard_signer.signed.get();
-    #[cfg(zcash_unstable = "nu6.3")]
     {
         signed += ironwood_signer.signed.get();
     }
@@ -318,7 +313,6 @@ fn stamp_and_redact(pczt: Pczt) -> Pczt {
     // signing response does not need. This keeps the QR round trip small while
     // preserving signatures and global proprietary fields for the wallet.
     let redactor = Redactor::new(stamped_pczt).redact_orchard_with(redact_orchard_bundle);
-    #[cfg(zcash_unstable = "nu6.3")]
     let redactor = redactor.redact_ironwood_with(redact_orchard_bundle);
 
     redactor
@@ -446,12 +440,10 @@ mod tests {
         }
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     fn signable_sample_pczt() -> crate::pczt::test_support::SamplePczt {
         crate::pczt::test_support::sample_ironwood_pczt()
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_sign_pczt_invalid_seed_fingerprint() {
         let sample = signable_sample_pczt();
@@ -467,7 +459,6 @@ mod tests {
     // bit-exact for an Orchard-only tx, a dual-pool Orchard->Ironwood migration, and an
     // Ironwood spend, so any upstream sighash change turns CI red instead of silently
     // producing wrong signatures on-device.
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_lean_sighash_control_orchard_only() {
         let sample = crate::pczt::test_support::sample_orchard_change_pczt();
@@ -483,7 +474,6 @@ mod tests {
         );
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_lean_sighash_migration_dualpool() {
         let sample = crate::pczt::test_support::sample_migration_pczt();
@@ -499,7 +489,6 @@ mod tests {
         );
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_lean_sighash_ironwood_spend() {
         // Exercises a populated Ironwood bundle with a real spend action.
@@ -518,7 +507,6 @@ mod tests {
 
     // End-to-end: an Orchard->Ironwood migration signs the Orchard spend and leaves the
     // output-only Ironwood bundle unsigned.
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_sign_pczt_migration_signs_orchard_only() {
         let sample = crate::pczt::test_support::sample_migration_pczt();
@@ -543,7 +531,6 @@ mod tests {
         );
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_sign_pczt_ironwood_spend() {
         let sample = crate::pczt::test_support::sample_ironwood_pczt();
@@ -609,7 +596,6 @@ mod tests {
         );
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_sign_pczt_ironwood_spend_rejects_unsupported_zip32_path() {
         let sample = crate::pczt::test_support::sample_ironwood_pczt();
@@ -627,7 +613,6 @@ mod tests {
         }
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_sign_pczt_ironwood_spend_ignores_dummy_zip32_metadata() {
         let sample = crate::pczt::test_support::sample_ironwood_pczt();
@@ -650,7 +635,6 @@ mod tests {
         );
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_sign_pczt_orchard_change_output_spend() {
         let sample = crate::pczt::test_support::sample_orchard_change_pczt();
@@ -671,7 +655,6 @@ mod tests {
         );
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     fn pczt_with_min_version(min_version: &[u8]) -> Pczt {
         let sample = signable_sample_pczt();
         let base = Pczt::parse(&sample.bytes).unwrap();
@@ -683,12 +666,10 @@ mod tests {
             .finish()
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     fn test_seed() -> Vec<u8> {
         [7u8; 32].to_vec()
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn firmware_equal_version_stamps_response() {
         let pczt = pczt_with_min_version(&KEYSTONE_FW_VERSION.encode());
@@ -710,7 +691,6 @@ mod tests {
         assert_eq!(request_min, &KEYSTONE_FW_VERSION.encode().to_vec());
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn firmware_older_min_version_still_stamps_response() {
         let pczt = pczt_with_min_version(&[1, 0, 0]);
@@ -725,7 +705,6 @@ mod tests {
         assert_eq!(stamp, &KEYSTONE_FW_VERSION.encode().to_vec());
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn malformed_min_version_round_trips_and_stamps() {
         let pczt = pczt_with_min_version(&[1, 2]);
@@ -757,7 +736,6 @@ mod legacy_tests {
         zcash_protocol::consensus::{BranchId, MainNetwork, NetworkConstants},
     };
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn legacy_signing_rejects_v6_pczt() {
         let pczt = Creator::new(

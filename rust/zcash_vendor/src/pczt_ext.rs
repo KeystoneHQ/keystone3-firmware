@@ -337,24 +337,17 @@ fn hash_orchard_txid_empty() -> Hash {
 // This is consensus-critical and must stay bit-exact with upstream. The
 // `shielded_sig_commitment == RoleSigner::shielded_sighash` oracle tests in
 // apps/zcash/src/pczt/sign.rs guard it (red CI on any upstream drift).
-#[cfg(zcash_unstable = "nu6.3")]
 const ZCASH_ORCHARD_V6_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdOrchardH_v6";
-#[cfg(zcash_unstable = "nu6.3")]
 const ZCASH_IRONWOOD_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdIronwd_H_v6";
-#[cfg(zcash_unstable = "nu6.3")]
 const ZCASH_IRONWOOD_ACTIONS_COMPACT_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdIrnActCH_v6";
-#[cfg(zcash_unstable = "nu6.3")]
 const ZCASH_IRONWOOD_ACTIONS_MEMOS_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdIrnActMH_v6";
-#[cfg(zcash_unstable = "nu6.3")]
 const ZCASH_IRONWOOD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdIrnActNH_v6";
 
-#[cfg(zcash_unstable = "nu6.3")]
 fn is_v6(pczt: &Pczt) -> bool {
     *pczt.global().tx_version() == zcash_protocol::constants::V6_TX_VERSION
         && *pczt.global().version_group_id() == zcash_protocol::constants::V6_VERSION_GROUP_ID
 }
 
-#[cfg(zcash_unstable = "nu6.3")]
 fn has_ironwood(pczt: &Pczt) -> bool {
     !pczt.ironwood().actions().is_empty()
 }
@@ -363,7 +356,6 @@ fn has_ironwood(pczt: &Pczt) -> bool {
 /// upstream `orchard::bundle::commitments::hash_bundle_txid_data_with_domain` for the
 /// `ORCHARD_V6` / `IRONWOOD_V6` domains: the three ZIP-244 action sub-hashes, the flag
 /// byte, the value balance, and — unlike v5 — NO anchor (`effects_anchor = Omit`).
-#[cfg(zcash_unstable = "nu6.3")]
 fn digest_orchard_shaped_v6(
     bundle: &pczt::orchard::Bundle,
     bundle_personalization: &[u8; 16],
@@ -406,7 +398,6 @@ fn digest_orchard_shaped_v6(
     h.finalize()
 }
 
-#[cfg(zcash_unstable = "nu6.3")]
 fn digest_orchard_v6(pczt: &Pczt) -> Hash {
     digest_orchard_shaped_v6(
         pczt.orchard(),
@@ -417,7 +408,6 @@ fn digest_orchard_v6(pczt: &Pczt) -> Hash {
     )
 }
 
-#[cfg(zcash_unstable = "nu6.3")]
 fn digest_ironwood_v6(pczt: &Pczt) -> Hash {
     digest_orchard_shaped_v6(
         pczt.ironwood(),
@@ -428,17 +418,14 @@ fn digest_ironwood_v6(pczt: &Pczt) -> Hash {
     )
 }
 
-#[cfg(zcash_unstable = "nu6.3")]
 fn hash_orchard_v6_txid_empty() -> Hash {
     hasher(ZCASH_ORCHARD_V6_HASH_PERSONALIZATION).finalize()
 }
 
-#[cfg(zcash_unstable = "nu6.3")]
 fn hash_ironwood_v6_txid_empty() -> Hash {
     hasher(ZCASH_IRONWOOD_HASH_PERSONALIZATION).finalize()
 }
 
-#[cfg(zcash_unstable = "nu6.3")]
 fn shielded_sig_commitment_v6(
     pczt: &Pczt,
     lock_time: u32,
@@ -487,8 +474,11 @@ fn shielded_sig_commitment_v6(
 /// `pub` so the `app_zcash` consensus oracle tests can assert it stays bit-exact against
 /// the upstream RoleSigner sighash (any divergence turns CI red rather than producing
 /// wrong on-device signatures).
-pub fn shielded_sig_commitment(pczt: &Pczt, lock_time: u32, input_info: Option<SignableInput>) -> Hash {
-    #[cfg(zcash_unstable = "nu6.3")]
+pub fn shielded_sig_commitment(
+    pczt: &Pczt,
+    lock_time: u32,
+    input_info: Option<SignableInput>,
+) -> Hash {
     if is_v6(pczt) {
         return shielded_sig_commitment_v6(pczt, lock_time, input_info);
     }
@@ -680,7 +670,7 @@ where
 /// is the one parsed and mutated. Dummy/output-only actions (value 0 or absent) are
 /// skipped, so an Orchard→Ironwood migration (Ironwood output-only) produces no
 /// Ironwood signature here.
-#[cfg(all(feature = "orchard", zcash_unstable = "nu6.3"))]
+#[cfg(feature = "orchard")]
 pub fn sign_ironwood<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,

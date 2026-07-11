@@ -24,6 +24,8 @@ use zcash_vendor::{
     zip32,
 };
 
+#[cfg(feature = "cypherpunk")]
+use zcash_vendor::pczt::roles::signer::SpendAuthSignature;
 #[cfg(any(test, feature = "multi_coins", feature = "cypherpunk"))]
 use zcash_vendor::pczt::Pczt;
 
@@ -88,10 +90,9 @@ pub fn check_pczt_cypherpunk<P: consensus::Parameters>(
     )
 }
 
-/// Batch check for one `ZcashSignBatch` message: parses once, runs the full
-/// policy checks, enforces the batch shielded-action policy (the PCZT must be
-/// batch-signable by this account), and returns the normalized encoding. See
-/// `check_pczt_cypherpunk` for the normalization contract.
+/// Checks one PCZT from a batch request, enforcing the batch shielded-action
+/// policy, and returns its normalized encoding. See `check_pczt_cypherpunk`
+/// for the normalization contract.
 #[cfg(feature = "cypherpunk")]
 pub fn check_batch_pczt_cypherpunk<P: consensus::Parameters>(
     params: &P,
@@ -127,7 +128,6 @@ fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
     pczt.resolve_fields().map_err(|e| {
         ZcashError::InvalidPczt(alloc::format!("resolve compact PCZT fields: {e:?}"))
     })?;
-
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
     let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
@@ -501,10 +501,10 @@ fn compact_batch_migration_review(items: Vec<ParsedBatchItem>) -> Vec<ParsedPczt
 }
 
 /// Parses checked batch PCZTs and compacts eligible Orchard-to-Ironwood
-/// self-transfers without relying on message position.
+/// self-transfers without relying on PCZT position.
 ///
 /// Every input must be normalized bytes produced by the batch check. A batch
-/// with more than one ordinary transaction uses full per-message review.
+/// with more than one ordinary transaction uses full review for each PCZT.
 #[cfg(feature = "cypherpunk")]
 pub fn parse_batch_with_migration_summary_cypherpunk<'a, P: consensus::Parameters>(
     params: &P,
@@ -663,11 +663,12 @@ mod legacy_tests {
             BranchId::Nu6_3.into(),
             10,
             MainNetwork.coin_type(),
-            [0; 32],
-            [0; 32],
+            None,
+            None,
         )
         .unwrap()
-        .build();
+        .build()
+        .unwrap();
 
         let result = check_pczt_multi_coins(
             &MainNetwork,
@@ -983,6 +984,26 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
         .map_err(|e| ZcashError::SigningError(alloc::format!("serialize signed PCZT: {e:?}")))
 }
 
+/// Extracts every Orchard-protocol spend authorization signature from a signed
+/// PCZT. Errors if the PCZT is unparseable or carries no such signature.
+#[cfg(feature = "cypherpunk")]
+pub fn extract_compact_sigs_from_signed_pczt(
+    signed_pczt: &[u8],
+) -> Result<Vec<SpendAuthSignature>> {
+    let signed_pczt = pczt::parse_pczt(signed_pczt)
+        .map_err(|_| ZcashError::InvalidPczt("invalid signed pczt data".to_string()))?;
+    let sigs =
+        zcash_vendor::pczt::roles::signer::extract_orchard_spend_auth_signatures(&signed_pczt);
+
+    if sigs.is_empty() {
+        return Err(ZcashError::SigningError(
+            "signed PCZT has no spend authorization signatures".to_string(),
+        ));
+    }
+
+    Ok(sigs)
+}
+
 #[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
@@ -1091,11 +1112,12 @@ mod tests {
             BranchId::Nu6.into(),
             10,
             MainNetwork.coin_type(),
-            [0; 32],
-            [0; 32],
+            Some([0; 32]),
+            Some([0; 32]),
         )
         .unwrap()
         .build()
+        .unwrap()
         .serialize()
         .unwrap();
         let (mut prefix, rest) = postcard::take_from_bytes::<PcztWirePrefix>(&bytes[8..]).unwrap();
@@ -1191,7 +1213,9 @@ mod tests {
         );
         let mut builder = Builder::new(
             &params,
-            10_000_000.into(),
+            // Exercise the legacy cross-address-enabled Orchard format. NU6.3
+            // rejects this spoof at construction before the wallet check runs.
+            2_000_000.into(),
             BuildConfig::Standard {
                 sapling_anchor: None,
                 orchard_anchor: Some(orchard::Anchor::empty_tree()),
@@ -1646,6 +1670,12 @@ mod tests {
             .actions()
             .iter()
             .any(|action| action.spend().spend_auth_sig().is_some()));
+
+        let compact_sigs =
+            extract_compact_sigs_from_signed_pczt(&signed).expect("compact sigs should extract");
+        assert!(compact_sigs
+            .iter()
+            .any(|sig| sig.value_pool() == zcash_vendor::orchard::ValuePool::Ironwood));
     }
 
     #[test]
@@ -2078,7 +2108,7 @@ mod tests {
                 &ufvk_text,
                 &seed_fingerprint,
             )
-            .expect("message order must not affect migration classification");
+            .expect("PCZT order must not affect migration classification");
 
             assert_eq!(parsed.len(), 2);
             let summary = &parsed[1];
@@ -2089,7 +2119,7 @@ mod tests {
     }
 
     #[test]
-    fn test_batch_migration_summary_keeps_single_message_uncompacted() {
+    fn test_batch_migration_summary_keeps_single_pczt_uncompacted() {
         let sample = pczt::test_support::sample_migration_pczt();
         let checked = check_batch_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
@@ -2180,7 +2210,7 @@ mod tests {
             &sample.seed_fingerprint,
             0,
         )
-        .expect("per-message review must accept the memo-carrying transfer");
+        .expect("review for each PCZT must accept the memo-carrying transfer");
         let shown_memo = parsed
             .get_ironwood()
             .expect("migration must show Ironwood outputs")
@@ -2427,7 +2457,7 @@ mod tests {
                 ),
                 Err(ZcashError::InvalidPczt(message)) if message.contains("undecryptable")
             ),
-            "ordinary per-message review must also reject the undecryptable output"
+            "ordinary review for each PCZT must also reject the undecryptable output"
         );
     }
 

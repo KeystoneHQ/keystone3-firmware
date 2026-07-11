@@ -2,7 +2,6 @@ use core::str::FromStr;
 
 use alloc::string::{String, ToString};
 use bitcoin::bip32::{ChildNumber, DerivationPath};
-use rand_core::{CryptoRng, RngCore};
 use zcash_vendor::{
     zcash_keys::keys::UnifiedSpendingKey,
     zcash_protocol::consensus,
@@ -10,12 +9,6 @@ use zcash_vendor::{
 };
 
 use crate::algorithms::utils::is_all_zero_or_ff;
-
-#[cfg(feature = "cypherpunk")]
-use zcash_vendor::orchard::{
-    self,
-    keys::{SpendAuthorizingKey, SpendingKey},
-};
 
 use crate::errors::{KeystoreError, Result};
 
@@ -68,39 +61,6 @@ pub fn calculate_seed_fingerprint(seed: &[u8]) -> Result<[u8; 32]> {
         "Invalid seed, cannot calculate ZIP-32 Seed Fingerprint".into(),
     ))?;
     Ok(sfp.to_bytes())
-}
-
-#[cfg(feature = "cypherpunk")]
-pub fn sign_message_orchard<R: RngCore + CryptoRng>(
-    action: &mut orchard::pczt::Action,
-    seed: &[u8],
-    sighash: [u8; 32],
-    path: &[zip32::ChildIndex],
-    rng: R,
-) -> Result<()> {
-    ensure_non_trivial_seed(seed)?;
-    let coin_type = 133;
-
-    if path.len() == 3
-        && path[0] == zip32::ChildIndex::hardened(32)
-        && path[1] == zip32::ChildIndex::hardened(coin_type)
-    {
-        let account_id = zip32::AccountId::try_from(path[2].index() - (1 << 31)).expect("valid");
-
-        let osk = SpendingKey::from_zip32_seed(seed, coin_type, account_id).unwrap();
-
-        let osak = SpendAuthorizingKey::from(&osk);
-
-        action
-            .sign(sighash, &osak, rng)
-            .map_err(|e| KeystoreError::ZcashOrchardSign(format!("{e:?}")))
-    } else {
-        // Keystone only generates UFVKs at the above path; ignore all other signature
-        // requests.
-        Err(KeystoreError::ZcashOrchardSign(format!(
-            "invalid orchard account path: {path:?}"
-        )))
-    }
 }
 
 #[cfg(feature = "cypherpunk")]

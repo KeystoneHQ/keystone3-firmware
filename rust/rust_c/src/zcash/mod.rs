@@ -402,8 +402,9 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
         Ok(items) => items,
         Err(e) => return TransactionParseResult::from(e).c_ptr(),
     };
-    // FFI display structs leak if dropped (freed via free_TransactionParseResult_*,
-    // not Drop), so build them only after every message has parsed.
+    // Convert only after every message has parsed. These FFI values own heap
+    // allocations freed by `free_TransactionParseResult_DisplayZcashBatch`, not
+    // Rust `Drop`; an early return after partial conversion would leak memory.
     let display_items: Vec<DisplayPczt> = parsed_items.iter().map(DisplayPczt::from).collect();
 
     TransactionParseResult::success(DisplayZcashBatch::from(display_items).c_ptr()).c_ptr()

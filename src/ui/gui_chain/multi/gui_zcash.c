@@ -389,6 +389,8 @@ UREncodeResult *GuiSignZcashCypherpunkWithSeed(void *data,
 
     memset_s(seed, sizeof(seed), 0, sizeof(seed));
     ClearSecretCache();
+    // Signing can exceed the lock timeout; restart it before restoring auto-lock.
+    ClearLockScreenTime();
     SetLockScreen(enable);
     return encodeResult;
 }

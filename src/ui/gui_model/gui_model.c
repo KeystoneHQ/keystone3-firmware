@@ -1456,6 +1456,8 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
         GuiApiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
     }
     GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
+    // Parsing can exceed the lock timeout, so restart it before re-enabling auto-lock.
+    ClearLockScreenTime();
     SetPageLockScreen(true);
     return SUCCESS_CODE;
 }

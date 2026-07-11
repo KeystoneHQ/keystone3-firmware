@@ -5,6 +5,7 @@
 ### What's new
 
 1. Added support for Zcash batch PCZT signing
+2. The device no longer auto-locks while a long Zcash batch review is loading
 
 ### Bug Fixes
 

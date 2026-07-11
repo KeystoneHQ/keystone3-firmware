@@ -60,6 +60,7 @@ void GuiTransactionSignatureRefresh(void)
 void GuiTransactionSignatureHandleURGenerate(char *data, uint16_t len)
 {
     GuiAnimantingQRCodeFirstUpdate(data, len);
+    ClearLockScreenTime();
 }
 
 void GuiTransactionSignatureHandleURUpdate(char *data, uint16_t len)
@@ -70,6 +71,7 @@ void GuiTransactionSignatureHandleURUpdate(char *data, uint16_t len)
 void GuiTransactionSignatureHandleURGenerateFail(void *param)
 {
     GuiPendingHintBoxRemove();
+    ClearLockScreenTime();
     UREncodeResult *result = NULL;
     if (param != NULL) {
         result = *(UREncodeResult **)param;

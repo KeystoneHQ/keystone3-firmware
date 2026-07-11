@@ -388,7 +388,18 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
 
-    let mut display_items = Vec::new();
+    if batch.get_messages().len() > 1 {
+        // The normalized bytes already passed the batch check. Try the compact
+        // review; if it cannot be built, use the ordinary per-message review below.
+        if let Ok(display_items) =
+            parse_zcash_batch_as_first_plus_migrations(&batch, &ufvk_text, seed_fingerprint)
+        {
+            return TransactionParseResult::success(DisplayZcashBatch::from(display_items).c_ptr())
+                .c_ptr();
+        }
+    }
+
+    let mut parsed_items = Vec::new();
     for message in batch.get_messages() {
         match app_zcash::parse_pczt_cypherpunk(
             &MainNetwork,
@@ -396,12 +407,45 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
             &ufvk_text,
             seed_fingerprint,
         ) {
-            Ok(pczt) => display_items.push(DisplayPczt::from(&pczt)),
+            Ok(pczt) => parsed_items.push(pczt),
             Err(e) => return TransactionParseResult::from(e).c_ptr(),
         }
     }
+    // FFI display structs leak if dropped (freed via free_TransactionParseResult_*,
+    // not Drop), so build them only after every message has parsed.
+    let display_items: Vec<DisplayPczt> = parsed_items.iter().map(DisplayPczt::from).collect();
 
     TransactionParseResult::success(DisplayZcashBatch::from(display_items).c_ptr()).c_ptr()
+}
+
+/// Parses message 0 normally and folds later migration children into one summary.
+/// The caller uses errors to select the ordinary per-message review.
+#[cfg(feature = "cypherpunk")]
+fn parse_zcash_batch_as_first_plus_migrations(
+    batch: &ZcashSignBatch,
+    ufvk_text: &str,
+    seed_fingerprint: &[u8; 32],
+) -> app_zcash::errors::Result<Vec<DisplayPczt>> {
+    let messages = batch.get_messages();
+    // The caller requires at least two messages, so message 0 is present.
+    debug_assert!(messages.len() > 1);
+    let first_message = &messages[0];
+    let parsed_items = app_zcash::parse_batch_with_migration_summary_cypherpunk(
+        &MainNetwork,
+        first_message.get_payload(),
+        messages
+            .iter()
+            .skip(1)
+            .map(|message| message.get_payload().as_slice()),
+        ufvk_text,
+        seed_fingerprint,
+    )?;
+
+    // Materialize the FFI display structs only after every fallible step: their
+    // nested FFI-owned allocations are freed through free_TransactionParseResult_*,
+    // not Drop, so building one before an Err (which sends the caller down the
+    // per-message fallback) would leak it on every non-migration batch review.
+    Ok(parsed_items.iter().map(DisplayPczt::from).collect())
 }
 
 #[cfg(feature = "cypherpunk")]

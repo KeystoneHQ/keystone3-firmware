@@ -31,7 +31,15 @@ use zcash_vendor::{
 };
 
 #[cfg(feature = "cypherpunk")]
-use {blake2b_simd::Hash, core::cell::Cell, core::cell::RefCell, rand_core::OsRng};
+use {
+    blake2b_simd::Hash,
+    core::{
+        cell::{Cell, RefCell},
+        mem::MaybeUninit,
+    },
+    rand_core::OsRng,
+    zeroize::Zeroize,
+};
 
 use crate::{errors::ZcashError, version::KEYSTONE_FW_VERSION};
 
@@ -102,6 +110,85 @@ fn reject_legacy_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     Ok(())
 }
 
+/// One cached spend authorizing key slot, scrubbed on replacement and drop.
+///
+/// `SpendAuthorizingKey` bottoms out in reddsa's `Copy` `SigningKey`, which
+/// holds the secret ask scalar and has no `Zeroize` or `Drop` of its own, so a
+/// plainly-dropped cache would leave the scalar bytes behind in memory.
+#[cfg(feature = "cypherpunk")]
+struct AskCacheSlot {
+    account: Option<zcash_vendor::zip32::AccountId>,
+    // `MaybeUninit` makes every post-scrub bit pattern valid without depending
+    // on private Orchard/reddsa layout invariants. The slot invariant is that
+    // this field is initialized exactly when `account` is `Some`.
+    ask: MaybeUninit<orchard::keys::SpendAuthorizingKey>,
+}
+
+// `MaybeUninit` deliberately suppresses the wrapped value's destructor. Fail
+// the build if a dependency bump gives either secret type drop glue; any change
+// to an indirect or owning representation requires a fresh zeroization audit
+// rather than silently retaining this type-specific strategy.
+#[cfg(feature = "cypherpunk")]
+const _: () = assert!(!core::mem::needs_drop::<orchard::keys::SpendAuthorizingKey>());
+#[cfg(feature = "cypherpunk")]
+const _: () = assert!(!core::mem::needs_drop::<orchard::keys::SpendingKey>());
+
+#[cfg(feature = "cypherpunk")]
+impl AskCacheSlot {
+    fn empty() -> Self {
+        Self {
+            account: None,
+            ask: MaybeUninit::uninit(),
+        }
+    }
+
+    fn get(
+        &self,
+        account: zcash_vendor::zip32::AccountId,
+    ) -> Option<&orchard::keys::SpendAuthorizingKey> {
+        if self.account == Some(account) {
+            // SAFETY: `account` is only set to `Some` after `ask` is written.
+            Some(unsafe { self.ask.assume_init_ref() })
+        } else {
+            None
+        }
+    }
+
+    fn replace(
+        &mut self,
+        account: zcash_vendor::zip32::AccountId,
+        ask: orchard::keys::SpendAuthorizingKey,
+    ) -> &orchard::keys::SpendAuthorizingKey {
+        self.account = None;
+        self.ask.zeroize();
+        self.ask.write(ask);
+        self.account = Some(account);
+
+        // SAFETY: the value was written immediately above, before `account`
+        // was set to `Some`.
+        unsafe { self.ask.assume_init_ref() }
+    }
+}
+
+#[cfg(feature = "cypherpunk")]
+impl Drop for AskCacheSlot {
+    fn drop(&mut self) {
+        self.account = None;
+        self.ask.zeroize();
+    }
+}
+
+/// One scrubbed spend authorizing key slot shared by the pool signing passes.
+#[cfg(feature = "cypherpunk")]
+struct SpendAuthCache(RefCell<AskCacheSlot>);
+
+#[cfg(feature = "cypherpunk")]
+impl SpendAuthCache {
+    fn new() -> Self {
+        Self(RefCell::new(AskCacheSlot::empty()))
+    }
+}
+
 /// Lean signer for the cypherpunk path. Drives the shallow `low_level_signer` and
 /// derives keys / signs each action in place, instead of materializing a full
 /// `RoleSigner` (which reconstructs the whole transaction to compute the sighash and
@@ -113,16 +200,13 @@ struct SeedSigner<'a> {
     seed: &'a [u8],
     seed_fingerprint: [u8; 32],
     pool: ShieldedPool,
-    /// Per-account spend authorizing key cache. The seed fingerprint and the account
-    /// key depend only on (seed, account), not on the action, so a bundle with many
-    /// actions for one account derives once. Interior mutability because the
-    /// `PcztSigner` trait signs through `&self`.
-    ask_cache: RefCell<
-        Vec<(
-            zcash_vendor::zip32::AccountId,
-            orchard::keys::SpendAuthorizingKey,
-        )>,
-    >,
+    /// Single-slot cache for the spend authorizing key. The key depends only on
+    /// (seed, account), not on the action or pool, so consecutive actions for one
+    /// account derive once and the Orchard and Ironwood passes can share it. A
+    /// change of account replaces and scrubs the old key. Interior mutability is
+    /// needed because `PcztSigner` signs through `&self`; the slot lives inline
+    /// in the signing call and never touches the heap.
+    ask_cache: &'a SpendAuthCache,
     /// Number of authorizations produced, so `sign_pczt` can distinguish "nothing of
     /// ours to sign" (`PcztNoMyInputs`) from a successful signing.
     signed: Cell<usize>,
@@ -130,40 +214,63 @@ struct SeedSigner<'a> {
 
 #[cfg(feature = "cypherpunk")]
 impl<'a> SeedSigner<'a> {
-    fn new(seed: &'a [u8], seed_fingerprint: [u8; 32], pool: ShieldedPool) -> Self {
+    fn new(
+        seed: &'a [u8],
+        seed_fingerprint: [u8; 32],
+        pool: ShieldedPool,
+        ask_cache: &'a SpendAuthCache,
+    ) -> Self {
         Self {
             seed,
             seed_fingerprint,
             pool,
-            ask_cache: RefCell::new(Vec::new()),
+            ask_cache,
             signed: Cell::new(0),
         }
     }
 
-    fn spend_authorizing_key(
+    /// Derives the spend authorizing key for `account_index` from the seed,
+    /// scrubbing the intermediate spending key before returning.
+    fn derive_spend_authorizing_key(
         &self,
         account_index: zcash_vendor::zip32::AccountId,
     ) -> Result<orchard::keys::SpendAuthorizingKey, ZcashError> {
-        if let Some((_, ask)) = self
-            .ask_cache
-            .borrow()
-            .iter()
-            .find(|(cached, _)| *cached == account_index)
-        {
-            return Ok(ask.clone());
-        }
-        let osk = orchard::keys::SpendingKey::from_zip32_seed(self.seed, 133, account_index)
-            .map_err(|e| {
-                ZcashError::SigningError(format!(
-                    "failed to derive {} spending key: {e:?}",
-                    self.pool.label()
-                ))
-            })?;
-        let ask = orchard::keys::SpendAuthorizingKey::from(&osk);
-        self.ask_cache
-            .borrow_mut()
-            .push((account_index, ask.clone()));
+        let mut osk = MaybeUninit::new(
+            orchard::keys::SpendingKey::from_zip32_seed(self.seed, 133, account_index).map_err(
+                |e| {
+                    ZcashError::SigningError(format!(
+                        "failed to derive {} spending key: {e:?}",
+                        self.pool.label()
+                    ))
+                },
+            )?,
+        );
+        // SAFETY: `osk` was initialized immediately above and is only scrubbed
+        // after this borrow ends.
+        let ask = orchard::keys::SpendAuthorizingKey::from(unsafe { osk.assume_init_ref() });
+        osk.zeroize();
         Ok(ask)
+    }
+
+    /// Looks up (or derives and caches) the spend authorizing key for
+    /// `account_index` and runs `f` against it in place, so no unscrubbed
+    /// copies of the key are handed out. On an account change, the slot scrubs
+    /// the old key in place before storing the replacement.
+    fn with_spend_authorizing_key<R>(
+        &self,
+        account_index: zcash_vendor::zip32::AccountId,
+        f: impl FnOnce(&orchard::keys::SpendAuthorizingKey) -> Result<R, ZcashError>,
+    ) -> Result<R, ZcashError> {
+        // Mutably borrowed across `f`, which is fine: `f` only signs and never
+        // re-enters the cache.
+        let mut cache = self.ask_cache.0.borrow_mut();
+        if cache.get(account_index).is_none() {
+            let ask = self.derive_spend_authorizing_key(account_index)?;
+            cache.replace(account_index, ask);
+        }
+        f(cache
+            .get(account_index)
+            .expect("cache contains the requested account"))
     }
 }
 
@@ -229,16 +336,17 @@ impl PcztSigner for SeedSigner<'_> {
             return Ok(());
         };
 
-        let ask = self.spend_authorizing_key(account_index)?;
-        action
-            .sign(
-                hash.as_bytes().try_into().expect("sighash is 32 bytes"),
-                &ask,
-                OsRng,
-            )
-            .map_err(|e| {
-                ZcashError::SigningError(format!("failed to sign {pool_label} action: {e:?}"))
-            })?;
+        self.with_spend_authorizing_key(account_index, |ask| {
+            action
+                .sign(
+                    hash.as_bytes().try_into().expect("sighash is 32 bytes"),
+                    ask,
+                    OsRng,
+                )
+                .map_err(|e| {
+                    ZcashError::SigningError(format!("failed to sign {pool_label} action: {e:?}"))
+                })
+        })?;
         self.signed.set(self.signed.get() + 1);
         Ok(())
     }
@@ -266,32 +374,33 @@ pub fn sign_and_redact_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Pczt> {
 
     let process_ironwood = super::pczt_should_process_ironwood(&pczt);
 
-    // The orchard signer handles both the transparent inputs and the Orchard bundle
-    // (the pool only changes error labels for shielded actions). Ironwood gets its own.
-    let orchard_signer = SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Orchard);
+    // Keep one scrubbed key slot and one lean signer for both pool passes.
+    let ask_cache = SpendAuthCache::new();
+    let mut seed_signer =
+        SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Orchard, &ask_cache);
 
-    // Propagate the signer error directly (it is already a ZcashError): the strict
-    // validation in SeedSigner::sign_orchard returns ZcashError::InvalidPczt for bad
-    // ZIP 32 paths, which callers/tests distinguish from generic SigningError.
+    // The Orchard pass also handles transparent inputs; the pool only changes
+    // error labels and ZIP 32 matching for shielded actions. Propagate signer
+    // errors directly so strict path validation remains `InvalidPczt`.
     let signer = low_level_signer::Signer::new(pczt);
-    let signer = pczt_ext::sign_transparent(signer, &orchard_signer)?;
-    let signer = pczt_ext::sign_orchard(signer, &orchard_signer)?;
+    let signer = pczt_ext::sign_transparent(signer, &seed_signer)?;
+    let signer = pczt_ext::sign_orchard(signer, &seed_signer)?;
 
-    let ironwood_signer = SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Ironwood);
     let signer = if process_ironwood {
-        pczt_ext::sign_ironwood(signer, &ironwood_signer)?
+        seed_signer.pool = ShieldedPool::Ironwood;
+        pczt_ext::sign_ironwood(signer, &seed_signer)?
     } else {
         signer
     };
 
-    let mut signed = orchard_signer.signed.get();
-    {
-        signed += ironwood_signer.signed.get();
-    }
-    if signed == 0 {
+    if seed_signer.signed.get() == 0 {
         return Err(ZcashError::PcztNoMyInputs);
     }
 
+    // The low-level signer does not borrow the cache, so scrub the cached key
+    // before finishing and redacting the response.
+    drop(seed_signer);
+    drop(ask_cache);
     Ok(stamp_and_redact(signer.finish()))
 }
 
@@ -438,6 +547,88 @@ mod tests {
             Err(ZcashError::InvalidPczt(message)) if message == expected => {}
             other => panic!("unexpected InvalidPczt result: {other:?}"),
         }
+    }
+
+    use zcash_vendor::{
+        pasta_curves::{group::ff::Field, Fq},
+        zip32,
+    };
+
+    /// Extracts the ask scalar bytes via public API only: randomizing by zero
+    /// returns `rsk = ask + 0 = ask`.
+    fn ask_scalar_bytes(ask: &orchard::keys::SpendAuthorizingKey) -> [u8; 32] {
+        (&ask.randomize(&Fq::ZERO)).into()
+    }
+
+    #[test]
+    fn test_ask_cache_slot_zeroizes_on_drop() {
+        let seed = [7u8; 32];
+        let osk = orchard::keys::SpendingKey::from_zip32_seed(&seed, 133, zip32::AccountId::ZERO)
+            .unwrap();
+        let mut storage = MaybeUninit::<AskCacheSlot>::uninit();
+        let slot = storage.write(AskCacheSlot::empty());
+        slot.replace(
+            zip32::AccountId::ZERO,
+            orchard::keys::SpendAuthorizingKey::from(&osk),
+        );
+        assert_ne!(
+            ask_scalar_bytes(slot.get(zip32::AccountId::ZERO).unwrap()),
+            [0u8; 32],
+            "a real ask must not start out zero"
+        );
+
+        // The outer `MaybeUninit` keeps the backing storage alive after the
+        // slot itself is dropped.
+        unsafe { core::ptr::drop_in_place(storage.as_mut_ptr()) };
+
+        // SAFETY: `Drop` initialized every byte of the still-allocated
+        // `MaybeUninit<SpendAuthorizingKey>` storage to zero. `addr_of!`
+        // projects the dropped slot without reading it.
+        let bytes = unsafe {
+            let ask_storage = core::ptr::addr_of!((*storage.as_ptr()).ask);
+            core::slice::from_raw_parts(
+                ask_storage.cast::<u8>(),
+                core::mem::size_of::<MaybeUninit<orchard::keys::SpendAuthorizingKey>>(),
+            )
+        };
+        assert!(
+            bytes.iter().all(|b| *b == 0),
+            "cached ask storage must be fully scrubbed"
+        );
+    }
+
+    #[test]
+    fn test_ask_cache_shared_single_slot_consistent() {
+        let seed = [7u8; 32];
+        let fingerprint = calculate_seed_fingerprint(&seed).unwrap();
+        let cache = SpendAuthCache::new();
+        let mut signer = SeedSigner::new(&seed, fingerprint, ShieldedPool::Orchard, &cache);
+        let account = |i: u32| zip32::AccountId::try_from(i).unwrap();
+        let fresh = |i: u32| {
+            let osk = orchard::keys::SpendingKey::from_zip32_seed(&seed, 133, account(i)).unwrap();
+            ask_scalar_bytes(&orchard::keys::SpendAuthorizingKey::from(&osk))
+        };
+
+        // Empty-slot miss, hit, replace-on-miss, hit-after-replace, and
+        // cross-pool reuse all hand out exactly the key a fresh derivation
+        // produces. The same signer and slot are reused across pool passes.
+        for (pool, i) in [
+            (ShieldedPool::Orchard, 0u32),
+            (ShieldedPool::Orchard, 0),
+            (ShieldedPool::Ironwood, 1),
+            (ShieldedPool::Ironwood, 1),
+            (ShieldedPool::Orchard, 0),
+            (ShieldedPool::Ironwood, 2),
+        ] {
+            signer.pool = pool;
+            let bytes = signer
+                .with_spend_authorizing_key(account(i), |ask| Ok(ask_scalar_bytes(ask)))
+                .unwrap();
+            assert_eq!(bytes, fresh(i), "account {i} must match a fresh derivation");
+        }
+
+        // The slot holds exactly the most recently used account's key.
+        assert_eq!(cache.0.borrow().account, Some(account(2)));
     }
 
     fn signable_sample_pczt() -> crate::pczt::test_support::SamplePczt {

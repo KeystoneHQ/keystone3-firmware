@@ -1042,6 +1042,37 @@ mod tests {
     }
 
     #[test]
+    fn test_check_rejects_foreign_restricted_orchard_output() {
+        let sample = pczt::test_support::sample_orchard_foreign_change_pczt();
+        let expected =
+            "funded Orchard output paired with a zero-value spend does not belong to the selected account";
+
+        for result in [
+            check_pczt_cypherpunk(
+                &pczt::test_support::Nu6_3Network,
+                &sample.bytes,
+                &sample.ufvk_text,
+                &sample.seed_fingerprint,
+                0,
+            )
+            .map(|_| ()),
+            check_and_parse_batch_pczt_cypherpunk(
+                &pczt::test_support::Nu6_3Network,
+                &sample.bytes,
+                &sample.ufvk_text,
+                &sample.seed_fingerprint,
+                0,
+            )
+            .map(|_| ()),
+        ] {
+            match result {
+                Err(ZcashError::InvalidPczt(message)) if message == expected => {}
+                other => panic!("check must reject foreign restricted output, got: {other:?}"),
+            }
+        }
+    }
+
+    #[test]
     fn test_get_address() {
         let address = get_address(&MainNetwork, "uview1s2e0495jzhdarezq4h4xsunfk4jrq7gzg22tjjmkzpd28wgse4ejm6k7yfg8weanaghmwsvc69clwxz9f9z2hwaz4gegmna0plqrf05zkeue0nevnxzm557rwdkjzl4pl4hp4q9ywyszyjca8jl54730aymaprt8t0kxj8ays4fs682kf7prj9p24dnlcgqtnd2vnskkm7u8cwz8n0ce7yrwx967cyp6dhkc2wqprt84q0jmwzwnufyxe3j0758a9zgk9ssrrnywzkwfhu6ap6cgx3jkxs3un53n75s3");
         assert_eq!(address.unwrap(), "u1tqdskj32l9udfp0rysmca6gpz73fdqc2rmeenyhh0nfrq4vgak284ehkxefw5cf9495rdur0tparuntevp6nnetzjkyzv08m524e4swwk94asas7hm2ad5w5c64zz00hmr7nux0yhaz");
@@ -1598,6 +1629,83 @@ mod tests {
             )
             .unwrap_err(),
             ZcashError::PcztNoMyInputs
+        );
+    }
+
+    #[test]
+    fn test_check_rejects_undecryptable_ironwood_output() {
+        use zcash_vendor::pczt::Pczt;
+
+        /// Flips a byte inside the first verbatim occurrence of `needle`.
+        fn corrupt_first_occurrence(haystack: &mut [u8], needle: &[u8]) -> bool {
+            if needle.is_empty() || needle.len() > haystack.len() {
+                return false;
+            }
+            for start in 0..=haystack.len() - needle.len() {
+                if &haystack[start..start + needle.len()] == needle {
+                    haystack[start + needle.len() / 2] ^= 0xff;
+                    return true;
+                }
+            }
+            false
+        }
+
+        let sample = pczt::test_support::sample_migration_pczt();
+
+        // Extract the non-zero Ironwood output's ciphertext bytes.
+        let enc_ciphertext = {
+            let pczt = Pczt::parse(&sample.bytes).expect("sample PCZT should parse");
+            pczt.ironwood()
+                .actions()
+                .iter()
+                .find(|action| matches!(action.output().value(), Some(value) if *value != 0))
+                .expect("migration child must contain a non-zero Ironwood output")
+                .output()
+                .enc_ciphertext()
+                .clone()
+                .into_encrypted()
+                .expect("the sample's Ironwood output carries a full enc_ciphertext")
+        };
+
+        // Corrupt only the ciphertext: cmx, cv_net, the value balance, and the
+        // plaintext recipient are all untouched, so every other check still
+        // passes and only decryption/recoverability fails.
+        let mut corrupted = sample.bytes.clone();
+        assert!(
+            corrupt_first_occurrence(&mut corrupted, &enc_ciphertext),
+            "sample must embed the Ironwood output enc_ciphertext verbatim"
+        );
+        assert!(
+            Pczt::parse(&corrupted).is_ok(),
+            "corruption must keep the PCZT structurally well-formed"
+        );
+
+        let check_err = check_pczt_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            &corrupted,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .expect_err("check must reject a PCZT with an undecryptable output");
+        assert!(
+            matches!(&check_err, ZcashError::InvalidPczt(message) if message.contains("undecryptable")),
+            "expected an undecryptable-output rejection, got {check_err:?}"
+        );
+
+        // Both review paths enforce the same output-recoverability contract.
+        assert!(
+            matches!(
+                check_and_parse_batch_pczt_cypherpunk(
+                    &pczt::test_support::Nu6_3Network,
+                    &corrupted,
+                    &sample.ufvk_text,
+                    &sample.seed_fingerprint,
+                    0,
+                ),
+                Err(ZcashError::InvalidPczt(message)) if message.contains("undecryptable")
+            ),
+            "single-pass batch review must also reject the undecryptable output"
         );
     }
 

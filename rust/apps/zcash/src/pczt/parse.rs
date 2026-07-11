@@ -98,52 +98,49 @@ fn format_zec_value(value: f64) -> String {
 /// - `Ok(None)` if the output cannot be decrypted.
 /// - `Err(_)` if `ovk` is `None` and the PCZT is missing fields needed to directly
 ///   decrypt the output.
+///
+/// `pool` selects the note-encryption domain used for recovery.
 #[cfg(feature = "cypherpunk")]
-pub fn decode_output_enc_ciphertext(
+pub(crate) fn decode_output_enc_ciphertext(
     action: &orchard::pczt::Action,
     ovk: Option<&OutgoingViewingKey>,
+    pool: ShieldedPool,
 ) -> Result<Option<(Note, Address, [u8; 512])>, ZcashError> {
-    // orchard 0.15.0-pre.1 splits note encryption by version: Ironwood actions carry V3
-    // note plaintexts and must be trial-decrypted with `IronwoodDomain`, while Orchard
-    // actions use the V2 `OrchardDomain`. Select the domain from the action's note version
-    // so both pools decrypt correctly.
-    let is_ironwood = matches!(*action.output().note_version(), orchard::NoteVersion::V3);
-
     if let Some(ovk) = ovk {
         let out_ciphertext = &action.output().encrypted_note().out_ciphertext;
-        Ok(if is_ironwood {
-            try_output_recovery_with_ovk(
-                &IronwoodDomain::for_pczt_action(action),
-                ovk,
-                action,
-                action.cv_net(),
-                out_ciphertext,
-            )
-        } else {
-            try_output_recovery_with_ovk(
+        Ok(match pool {
+            ShieldedPool::Orchard => try_output_recovery_with_ovk(
                 &OrchardDomain::for_pczt_action(action),
                 ovk,
                 action,
                 action.cv_net(),
                 out_ciphertext,
-            )
+            ),
+            ShieldedPool::Ironwood => try_output_recovery_with_ovk(
+                &IronwoodDomain::for_pczt_action(action),
+                ovk,
+                action,
+                action.cv_net(),
+                out_ciphertext,
+            ),
         })
     } else {
         // If we reached here, none of our OVKs matched; recover directly as the fallback.
+        let pool_label = pool.label();
 
         let recipient = action.output().recipient().ok_or_else(|| {
-            ZcashError::InvalidPczt("Missing recipient field for Orchard action".into())
+            ZcashError::InvalidPczt(format!("Missing recipient field for {pool_label} action"))
         })?;
         let value = action.output().value().ok_or_else(|| {
-            ZcashError::InvalidPczt("Missing value field for Orchard action".into())
+            ZcashError::InvalidPczt(format!("Missing value field for {pool_label} action"))
         })?;
         let rho = orchard::note::Rho::from_bytes(&action.spend().nullifier().to_bytes())
             .into_option()
             .ok_or_else(|| {
-                ZcashError::InvalidPczt("Missing rho field for Orchard action".into())
+                ZcashError::InvalidPczt(format!("Missing rho field for {pool_label} action"))
             })?;
         let rseed = action.output().rseed().ok_or_else(|| {
-            ZcashError::InvalidPczt("Missing rseed field for Orchard action".into())
+            ZcashError::InvalidPczt(format!("Missing rseed field for {pool_label} action"))
         })?;
 
         let note = orchard::Note::from_parts(
@@ -151,29 +148,36 @@ pub fn decode_output_enc_ciphertext(
             value,
             rho,
             rseed,
-            *action.output().note_version(),
+            (*action.output().note_version()).into(),
         )
         .into_option()
-        .ok_or_else(|| ZcashError::InvalidPczt("Orchard action contains invalid note".into()))?;
+        .ok_or_else(|| {
+            ZcashError::InvalidPczt(format!("{pool_label} action contains invalid note"))
+        })?;
 
-        Ok(if is_ironwood {
-            let pk_d = IronwoodDomain::get_pk_d(&note);
-            let esk = IronwoodDomain::derive_esk(&note).expect("Orchard notes are post-ZIP 212");
-            try_output_recovery_with_pkd_esk(
-                &IronwoodDomain::for_pczt_action(action),
-                pk_d,
-                esk,
-                action,
-            )
-        } else {
-            let pk_d = OrchardDomain::get_pk_d(&note);
-            let esk = OrchardDomain::derive_esk(&note).expect("Orchard notes are post-ZIP 212");
-            try_output_recovery_with_pkd_esk(
-                &OrchardDomain::for_pczt_action(action),
-                pk_d,
-                esk,
-                action,
-            )
+        Ok(match pool {
+            ShieldedPool::Orchard => {
+                let pk_d = OrchardDomain::get_pk_d(&note);
+                let esk = OrchardDomain::derive_esk(&note)
+                    .expect("Orchard-shaped notes are post-ZIP 212");
+                try_output_recovery_with_pkd_esk(
+                    &OrchardDomain::for_pczt_action(action),
+                    pk_d,
+                    esk,
+                    action,
+                )
+            }
+            ShieldedPool::Ironwood => {
+                let pk_d = IronwoodDomain::get_pk_d(&note);
+                let esk = IronwoodDomain::derive_esk(&note)
+                    .expect("Orchard-shaped notes are post-ZIP 212");
+                try_output_recovery_with_pkd_esk(
+                    &IronwoodDomain::for_pczt_action(action),
+                    pk_d,
+                    esk,
+                    action,
+                )
+            }
         })
     }
 }
@@ -644,7 +648,7 @@ pub(crate) fn parse_orchard_spend(
 }
 
 #[cfg(feature = "cypherpunk")]
-fn is_wallet_orchard_address(
+pub(crate) fn is_wallet_orchard_address(
     ufvk: &UnifiedFullViewingKey,
     address: &Address,
 ) -> Result<bool, ZcashError> {
@@ -721,10 +725,10 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
         .inner();
 
     let decode_output = |vk: Option<OutgoingViewingKey>, is_internal_ovk: bool| {
-        match decode_output_enc_ciphertext(action, vk.as_ref())? {
+        match decode_output_enc_ciphertext(action, vk.as_ref(), pool)? {
             Some((note, address, memo)) => {
                 let zec_value = format_zec_value(note.value().inner() as f64);
-                let memo = decode_memo(memo);
+                let memo = decode_memo(memo)?;
 
                 // Check output recipient with decoded address here to save CPU
                 // if the address is not match, return error
@@ -878,7 +882,7 @@ mod legacy_tests {
 }
 
 #[cfg(feature = "cypherpunk")]
-fn decode_memo(memo_bytes: [u8; 512]) -> Option<String> {
+fn decode_memo(memo_bytes: [u8; 512]) -> Result<Option<String>, ZcashError> {
     let first = memo_bytes[0];
 
     //decode as utf8.
@@ -897,21 +901,24 @@ fn decode_memo(memo_bytes: [u8; 512]) -> Option<String> {
         }
         result.reverse();
 
-        return Some(String::from_utf8(result).unwrap());
+        // ZIP 302 requires text-tagged memos to contain valid UTF-8.
+        return String::from_utf8(result)
+            .map(Some)
+            .map_err(|_| ZcashError::InvalidPczt("text memo is not valid UTF-8".to_string()));
     }
 
     if first == 0xF6 {
         let temp_memo = memo_bytes.to_vec();
         let result = temp_memo[1..].iter().find(|&&v| v != 0);
         match result {
-            Some(_v) => return Some(hex::encode(memo_bytes)),
+            Some(_v) => return Ok(Some(hex::encode(memo_bytes))),
             None => {
-                return None;
+                return Ok(None);
             }
         }
     }
 
-    Some(hex::encode(memo_bytes))
+    Ok(Some(hex::encode(memo_bytes)))
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -926,6 +933,18 @@ mod tests {
     };
 
     extern crate std;
+
+    #[test]
+    fn test_decode_memo_rejects_invalid_utf8() {
+        let mut memo = [0u8; 512];
+        memo[0] = 0xC3; // start of a 2-byte UTF-8 sequence...
+        memo[1] = 0x28; // ...followed by an invalid continuation byte
+
+        assert!(matches!(
+            decode_memo(memo),
+            Err(ZcashError::InvalidPczt(msg)) if msg == "text memo is not valid UTF-8"
+        ));
+    }
 
     fn p2sh_output_with_matching_seed_fingerprint(
         seed_fingerprint: [u8; 32],
@@ -968,12 +987,12 @@ mod tests {
         {
             let mut memo = [0u8; 512];
             memo[0] = 0xF6;
-            let result = decode_memo(memo);
+            let result = decode_memo(memo).unwrap();
             assert_eq!(result, None);
         }
         {
             let memo = hex::decode("74657374206b657973746f6e65206d656d6f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000").unwrap().try_into().unwrap();
-            let result = decode_memo(memo);
+            let result = decode_memo(memo).unwrap();
             assert!(result.is_some());
             assert_eq!(result.unwrap(), "test keystone memo");
         }
@@ -1046,7 +1065,7 @@ mod tests {
             let mut memo = [0u8; 512];
             memo[0] = 0xF6;
             memo[1] = 0x01;
-            let result = decode_memo(memo);
+            let result = decode_memo(memo).unwrap();
             assert!(result.is_some());
             let hex_str = result.unwrap();
             assert!(hex_str.starts_with("f6"));
@@ -1054,7 +1073,7 @@ mod tests {
         {
             let mut memo = [0u8; 512];
             memo[0] = 0xF5;
-            let result = decode_memo(memo);
+            let result = decode_memo(memo).unwrap();
             assert!(result.is_some());
         }
     }
@@ -1105,7 +1124,7 @@ mod tests {
     #[test]
     fn test_decode_memo_empty() {
         let memo = [0u8; 512];
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert!(result.is_some());
         let decoded = result.unwrap();
         assert!(decoded.is_empty());
@@ -1114,7 +1133,7 @@ mod tests {
     #[test]
     fn test_decode_memo_full_text() {
         let memo = [b'A'; 512];
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert!(result.is_some());
         let decoded = result.unwrap();
         assert_eq!(decoded.len(), 512);
@@ -1125,7 +1144,7 @@ mod tests {
         let mut memo = [0u8; 512];
         let text = b"Hello World";
         memo[..text.len()].copy_from_slice(text);
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert!(result.is_some());
         assert_eq!(result.unwrap(), "Hello World");
     }
@@ -1135,7 +1154,7 @@ mod tests {
         let mut memo = [0u8; 512];
         let text = "测试中文".as_bytes();
         memo[..text.len()].copy_from_slice(text);
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert!(result.is_some());
         assert_eq!(result.unwrap(), "测试中文");
     }
@@ -1147,14 +1166,14 @@ mod tests {
         memo[0] = b'A';
         memo[1] = b'B';
         memo[2] = b'C';
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert!(result.is_some());
         assert_eq!(result.unwrap(), "ABC");
 
         // Test with 0xF5 (should use hex encoding)
         let mut memo = [0u8; 512];
         memo[0] = 0xF5;
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert!(result.is_some());
         let hex_str = result.unwrap();
         assert!(hex_str.starts_with("f5"));
@@ -1165,7 +1184,7 @@ mod tests {
         // Test 0xF6 marker with all zeros after it (should return None)
         let mut memo = [0u8; 512];
         memo[0] = 0xF6;
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert_eq!(result, None);
     }
 
@@ -1176,7 +1195,7 @@ mod tests {
         memo[0] = 0xF6;
         memo[1] = 0xFF;
         memo[2] = 0xAB;
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert!(result.is_some());
         let hex_str = result.unwrap();
         assert!(hex_str.starts_with("f6ff"));
@@ -1187,7 +1206,7 @@ mod tests {
         let mut memo = [0u8; 512];
         let text = b"Test!@#$%^&*()_+-=[]{}|;:',.<>?/`~";
         memo[..text.len()].copy_from_slice(text);
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert!(result.is_some());
         assert_eq!(result.unwrap(), "Test!@#$%^&*()_+-=[]{}|;:',.<>?/`~");
     }
@@ -1225,7 +1244,7 @@ mod tests {
         let mut memo = [0u8; 512];
         let text = b"Line1\nLine2\tTabbed";
         memo[..text.len()].copy_from_slice(text);
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert!(result.is_some());
         assert_eq!(result.unwrap(), "Line1\nLine2\tTabbed");
     }
@@ -1237,7 +1256,7 @@ mod tests {
         for i in 32..=126 {
             memo[i - 32] = i as u8;
         }
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert!(result.is_some());
         let decoded = result.unwrap();
         // Should decode all printable ASCII
@@ -1261,7 +1280,7 @@ mod tests {
         let mut memo = [0u8; 512];
         let text = b"Test123!@# ZEC Payment";
         memo[..text.len()].copy_from_slice(text);
-        let result = decode_memo(memo);
+        let result = decode_memo(memo).unwrap();
         assert!(result.is_some());
         assert_eq!(result.unwrap(), "Test123!@# ZEC Payment");
     }

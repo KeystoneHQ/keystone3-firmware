@@ -536,15 +536,33 @@ pub(crate) mod test_support {
     }
 
     pub(crate) fn sample_orchard_change_pczt() -> SamplePczt {
+        sample_orchard_change_pczt_for_account(0)
+    }
+
+    pub(crate) fn sample_orchard_foreign_change_pczt() -> SamplePczt {
+        sample_orchard_change_pczt_for_account(1)
+    }
+
+    fn sample_orchard_change_pczt_for_account(output_account: u32) -> SamplePczt {
         let params = MainNetwork;
         let seed = [7u8; 32];
         let ufvk_text = derive_ufvk(&params, &seed, "m/32'/133'/0'").unwrap();
         let ufvk = UnifiedFullViewingKey::decode(&params, &ufvk_text).unwrap();
         let orchard_fvk = ufvk.orchard().unwrap().clone();
         let orchard_ivk = orchard_fvk.to_ivk(orchard::keys::Scope::External);
+
+        let output_ufvk_text = derive_ufvk(
+            &params,
+            &seed,
+            &alloc::format!("m/32'/133'/{output_account}'"),
+        )
+        .unwrap();
+        let output_ufvk = UnifiedFullViewingKey::decode(&params, &output_ufvk_text).unwrap();
+        let output_fvk = output_ufvk.orchard().unwrap().clone();
         let recipient_scope = orchard::keys::Scope::External;
-        let recipient = orchard_fvk.address_at(0u32, recipient_scope);
-        let orchard_ovk = orchard_fvk.to_ovk(recipient_scope);
+        let spend_recipient = orchard_fvk.address_at(0u32, recipient_scope);
+        let output_recipient = output_fvk.address_at(0u32, recipient_scope);
+        let orchard_ovk = output_fvk.to_ovk(recipient_scope);
 
         let value = orchard::value::NoteValue::from_raw(1_000_000);
         let note = {
@@ -556,7 +574,12 @@ pub(crate) mod test_support {
             )
             .expect("spends-disabled flags are valid for a coinbase bundle");
             orchard_builder
-                .add_output(None, recipient, value, Memo::Empty.encode().into_bytes())
+                .add_output(
+                    None,
+                    spend_recipient,
+                    value,
+                    Memo::Empty.encode().into_bytes(),
+                )
                 .unwrap();
             let (bundle, meta) = orchard_builder.build::<i64>(&mut OsRng).unwrap().unwrap();
             let action = bundle
@@ -598,9 +621,9 @@ pub(crate) mod test_support {
             .unwrap();
         builder
             .add_change_output(
-                orchard_fvk,
+                output_fvk,
                 Some(orchard_ovk),
-                recipient,
+                output_recipient,
                 orchard::value::NoteValue::from_raw(990_000),
                 Memo::Empty.encode().into_bytes(),
             )
@@ -621,21 +644,28 @@ pub(crate) mod test_support {
         .unwrap();
         let pczt = Updater::new(pczt)
             .update_orchard_with(|mut bundle| {
-                let signing_action_indices = bundle
+                let signing_action_accounts = bundle
                     .bundle()
                     .actions()
                     .iter()
                     .enumerate()
                     .filter_map(|(index, action)| {
-                        action.spend().dummy_sk().is_none().then_some(index)
+                        action.spend().dummy_sk().is_none().then(|| {
+                            let account = if action.spend().value().unwrap().inner() == 0 {
+                                output_account
+                            } else {
+                                0
+                            };
+                            (index, account)
+                        })
                     })
                     .collect::<Vec<_>>();
-                assert_eq!(signing_action_indices.len(), 2);
+                assert_eq!(signing_action_accounts.len(), 2);
 
-                for action_index in signing_action_indices {
+                for (action_index, account) in signing_action_accounts {
                     let derivation = orchard::pczt::Zip32Derivation::parse(
                         seed_fingerprint,
-                        orchard_spend_path_for_account(0),
+                        orchard_spend_path_for_account(account),
                     )
                     .unwrap();
                     bundle.update_action_with(action_index, |mut action| {

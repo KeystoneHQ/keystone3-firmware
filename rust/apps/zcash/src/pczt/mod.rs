@@ -423,7 +423,7 @@ pub(crate) mod test_support {
         }
     }
 
-    // Orchard spend -> Ironwood output, matching one migration child in a batch.
+    // Orchard spend -> Ironwood output, matching one compact-eligible transfer.
     pub(crate) fn sample_migration_pczt() -> SamplePczt {
         sample_migration_pczt_with_options(0, MemoBytes::empty(), None)
     }
@@ -458,7 +458,6 @@ pub(crate) mod test_support {
         let ufvk = UnifiedFullViewingKey::decode(&params, &ufvk_text).unwrap();
         let orchard_fvk = ufvk.orchard().unwrap().clone();
         let orchard_ivk = orchard_fvk.to_ivk(orchard::keys::Scope::External);
-        let orchard_ovk = orchard_fvk.to_ovk(orchard::keys::Scope::External);
         let spend_recipient = orchard_fvk.address_at(0u32, orchard::keys::Scope::External);
         let output_ufvk_text = derive_ufvk(
             &params,
@@ -468,7 +467,16 @@ pub(crate) mod test_support {
         .unwrap();
         let output_ufvk = UnifiedFullViewingKey::decode(&params, &output_ufvk_text).unwrap();
         let output_fvk = output_ufvk.orchard().unwrap();
-        let recipient = output_fvk.address_at(0u32, orchard::keys::Scope::External);
+        // The compact-review fixture uses an internal Ironwood receiver. Keep
+        // the foreign-account variant decryptable for its ordinary-review test
+        // by using the selected account's external OVK.
+        let recipient = output_fvk.address_at(0u32, orchard::keys::Scope::Internal);
+        let orchard_ovk = orchard_fvk.to_ovk(if output_account == 0 {
+            orchard::keys::Scope::Internal
+        } else {
+            orchard::keys::Scope::External
+        });
+        let zero_recipient = output_fvk.address_at(0u32, orchard::keys::Scope::External);
         let output_user_address = output_ufvk
             .default_address(UnifiedAddressRequest::AllAvailableKeys)
             .unwrap()
@@ -547,7 +555,7 @@ pub(crate) mod test_support {
             builder
                 .add_ironwood_output::<zip317::FeeRule>(
                     None,
-                    recipient,
+                    zero_recipient,
                     Zatoshis::ZERO,
                     memo.clone(),
                 )

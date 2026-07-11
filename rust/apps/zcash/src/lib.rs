@@ -14,7 +14,7 @@ use alloc::{
 // The aggregate migration review is the only consumer of these; keep them off
 // the non-cypherpunk build so it stays warning-free.
 #[cfg(feature = "cypherpunk")]
-use alloc::{format, vec};
+use alloc::format;
 use pczt::structs::ParsedPczt;
 #[cfg(feature = "cypherpunk")]
 use pczt::structs::{ParsedFrom, ParsedOrchard, ParsedTo};
@@ -330,82 +330,56 @@ pub fn check_and_parse_batch_pczt_cypherpunk<P: consensus::Parameters>(
     }
 }
 
-/// Values for one checked migration child, in zatoshis.
+/// Values for one compact-eligible Orchard-to-Ironwood transfer, in zatoshis.
 #[cfg(feature = "cypherpunk")]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct BatchMigrationChildSummary {
+struct BatchMigrationTransferSummary {
     input: u64,
     output: u64,
     fee: u64,
 }
 
-/// Totals and per-child rows for the compact migration review.
+/// Totals and per-transfer rows for the compact migration review.
 #[cfg(feature = "cypherpunk")]
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 struct BatchMigrationSummary {
-    migrations: u32,
-    total_input: u64,
     total_output: u64,
     total_fee: u64,
-    children: Vec<BatchMigrationChildSummary>,
+    transfers: Vec<BatchMigrationTransferSummary>,
 }
 
 #[cfg(feature = "cypherpunk")]
 impl BatchMigrationSummary {
-    /// Adds a checked child summary using checked arithmetic.
-    fn add_child(&mut self, child: &BatchMigrationSummary) -> Result<()> {
-        self.migrations = self
-            .migrations
-            .checked_add(child.migrations)
-            .ok_or_else(|| ZcashError::InvalidPczt("migration count overflow".to_string()))?;
-        self.total_input = self
-            .total_input
-            .checked_add(child.total_input)
-            .ok_or_else(|| ZcashError::InvalidPczt("migration input overflow".to_string()))?;
+    /// Adds a compact-eligible transfer using checked arithmetic.
+    fn add_transfer(&mut self, transfer: BatchMigrationTransferSummary) -> Result<()> {
         self.total_output = self
             .total_output
-            .checked_add(child.total_output)
+            .checked_add(transfer.output)
             .ok_or_else(|| ZcashError::InvalidPczt("migration output overflow".to_string()))?;
         self.total_fee = self
             .total_fee
-            .checked_add(child.total_fee)
+            .checked_add(transfer.fee)
             .ok_or_else(|| ZcashError::InvalidPczt("migration fee overflow".to_string()))?;
-        if child.children.is_empty() {
-            self.children.push(BatchMigrationChildSummary {
-                input: child.total_input,
-                output: child.total_output,
-                fee: child.total_fee,
-            });
-        } else {
-            self.children.extend(child.children.iter().copied());
-        }
+        self.transfers.push(transfer);
         Ok(())
     }
 
     /// Builds the display model for the compact migration review.
     fn to_parsed_pczt(&self) -> ParsedPczt {
-        let children = if self.children.is_empty() {
-            vec![BatchMigrationChildSummary {
-                input: self.total_input,
-                output: self.total_output,
-                fee: self.total_fee,
-            }]
-        } else {
-            self.children.clone()
-        };
+        debug_assert!(!self.transfers.is_empty());
 
         let orchard = ParsedOrchard::new(
-            children
+            self.transfers
                 .iter()
                 .enumerate()
-                .map(|(index, child)| {
+                .map(|(index, transfer)| {
                     ParsedFrom::new(
                         Some(format!(
                             "Migration #{} Orchard note from selected account",
                             index + 1
                         )),
-                        pczt::parse::format_zec_value(child.input as f64),
-                        child.input,
+                        pczt::parse::format_zec_value(transfer.input as f64),
+                        transfer.input,
                         true,
                     )
                 })
@@ -414,14 +388,14 @@ impl BatchMigrationSummary {
         );
         let ironwood = ParsedOrchard::new(
             Vec::new(),
-            children
+            self.transfers
                 .iter()
                 .enumerate()
-                .map(|(index, child)| {
+                .map(|(index, transfer)| {
                     ParsedTo::new(
                         format!("Migration #{} wallet Ironwood output", index + 1),
-                        pczt::parse::format_zec_value(child.output as f64),
-                        child.output,
+                        pczt::parse::format_zec_value(transfer.output as f64),
+                        transfer.output,
                         true,
                         false,
                         None,
@@ -441,243 +415,25 @@ impl BatchMigrationSummary {
     }
 }
 
-/// Requires an action value to be present, returning it (zero is a valid
-/// value; callers classify zero themselves).
+/// One parsed batch item and its optional compact migration representation.
 #[cfg(feature = "cypherpunk")]
-fn require_action_value(value: Option<u64>, label: &str) -> Result<u64> {
-    value.ok_or_else(|| ZcashError::InvalidPczt(format!("missing {label} value")))
+struct ParsedBatchItem {
+    parsed: ParsedPczt,
+    migration: Option<BatchMigrationTransferSummary>,
 }
 
-/// Validates the funded migration shape and computes its totals.
-#[cfg(feature = "cypherpunk")]
-fn summarize_migration_actions(
-    ufvk: &UnifiedFullViewingKey,
-    pczt: &Pczt,
-) -> Result<BatchMigrationSummary> {
-    use zcash_vendor::pczt::roles::verifier::{OrchardError, Verifier};
-
-    // Reject transparent components at the wire level so their values cannot be
-    // omitted from the fee.
-    if !pczt.transparent().inputs().is_empty() {
-        return Err(ZcashError::InvalidPczt(
-            "migration summary does not support transparent inputs".to_string(),
-        ));
-    }
-    if !pczt.transparent().outputs().is_empty() {
-        return Err(ZcashError::InvalidPczt(
-            "migration summary does not support transparent outputs".to_string(),
-        ));
-    }
-
-    let mut orchard_spends = 0u32;
-    let mut orchard_outputs = 0u32;
-    let mut ironwood_spends = 0u32;
-    let mut ironwood_outputs = 0u32;
-    let mut total_input = 0u64;
-    let mut total_output = 0u64;
-
-    let map_verifier_error = |error: OrchardError<ZcashError>| match error {
-        OrchardError::Custom(error) => error,
-        error => ZcashError::InvalidDataError(format!("{error:?}")),
-    };
-
-    // Values are read through the Verifier's parsed view; the wire structs of
-    // the pinned pczt revision expose no spend-value getter.
-    let verifier = Verifier::new(pczt.clone())
-        .with_orchard(|bundle| {
-            for action in bundle.actions().iter() {
-                let spend_value = require_action_value(
-                    action.spend().value().map(|v| v.inner()),
-                    "Orchard spend",
-                )
-                .map_err(OrchardError::Custom)?;
-                if spend_value != 0 {
-                    orchard_spends = orchard_spends.checked_add(1).ok_or_else(|| {
-                        OrchardError::Custom(ZcashError::InvalidPczt(
-                            "Orchard spend count overflow".to_string(),
-                        ))
-                    })?;
-                    total_input = total_input.checked_add(spend_value).ok_or_else(|| {
-                        OrchardError::Custom(ZcashError::InvalidPczt(
-                            "migration input overflow".to_string(),
-                        ))
-                    })?;
-                }
-
-                let output_value = require_action_value(
-                    action.output().value().map(|v| v.inner()),
-                    "Orchard output",
-                )
-                .map_err(OrchardError::Custom)?;
-                if output_value != 0 {
-                    orchard_outputs = orchard_outputs.checked_add(1).ok_or_else(|| {
-                        OrchardError::Custom(ZcashError::InvalidPczt(
-                            "Orchard output count overflow".to_string(),
-                        ))
-                    })?;
-                }
-            }
-            Ok(())
-        })
-        .map_err(map_verifier_error)?;
-
-    verifier
-        .with_ironwood(|bundle| {
-            for action in bundle.actions().iter() {
-                let spend_value = require_action_value(
-                    action.spend().value().map(|v| v.inner()),
-                    "Ironwood spend",
-                )
-                .map_err(OrchardError::Custom)?;
-                if spend_value != 0 {
-                    ironwood_spends = ironwood_spends.checked_add(1).ok_or_else(|| {
-                        OrchardError::Custom(ZcashError::InvalidPczt(
-                            "Ironwood spend count overflow".to_string(),
-                        ))
-                    })?;
-                }
-
-                let output_value = require_action_value(
-                    action.output().value().map(|v| v.inner()),
-                    "Ironwood output",
-                )
-                .map_err(OrchardError::Custom)?;
-                if output_value == 0 {
-                    continue;
-                }
-
-                let recipient = action.output().recipient().ok_or_else(|| {
-                    OrchardError::Custom(ZcashError::InvalidPczt(
-                        "missing Ironwood output recipient".to_string(),
-                    ))
-                })?;
-                if !pczt::parse::is_wallet_orchard_address(ufvk, &recipient)
-                    .map_err(OrchardError::Custom)?
-                {
-                    return Err(OrchardError::Custom(ZcashError::InvalidPczt(
-                        "migration Ironwood output is not wallet-owned".to_string(),
-                    )));
-                }
-
-                ironwood_outputs = ironwood_outputs.checked_add(1).ok_or_else(|| {
-                    OrchardError::Custom(ZcashError::InvalidPczt(
-                        "Ironwood output count overflow".to_string(),
-                    ))
-                })?;
-                total_output = total_output.checked_add(output_value).ok_or_else(|| {
-                    OrchardError::Custom(ZcashError::InvalidPczt(
-                        "migration output overflow".to_string(),
-                    ))
-                })?;
-            }
-            Ok(())
-        })
-        .map_err(map_verifier_error)?;
-
-    if orchard_spends != 1 || orchard_outputs != 0 || ironwood_spends != 0 || ironwood_outputs != 1
-    {
-        return Err(ZcashError::InvalidPczt(format!(
-            "unsupported migration summary shape orchard_spends={orchard_spends} orchard_outputs={orchard_outputs} ironwood_spends={ironwood_spends} ironwood_outputs={ironwood_outputs}"
-        )));
-    }
-
-    let total_fee = total_input
-        .checked_sub(total_output)
-        .ok_or_else(|| ZcashError::InvalidPczt("migration output exceeds input".to_string()))?;
-
-    Ok(BatchMigrationSummary {
-        migrations: 1,
-        total_input,
-        total_output,
-        total_fee,
-        children: vec![BatchMigrationChildSummary {
-            input: total_input,
-            output: total_output,
-            fee: total_fee,
-        }],
-    })
-}
-
-/// Summarizes one checked Orchard-to-Ironwood migration child.
+/// Returns the compact representation only when the ordinary review contains
+/// exactly the details represented by a migration row.
 ///
-/// The caller must pass normalized bytes produced by the batch check. This
-/// rejects any detail the compact review cannot display, including funded
-/// Orchard outputs, funded Ironwood spends, and memos on the funded output.
+/// This classifier is valid only after the batch check has bound every funded
+/// spend to the selected account. `is_mine` is display metadata and is used
+/// here as an additional shape check, not as authorization.
 #[cfg(feature = "cypherpunk")]
-fn summarize_batch_migration_pczt_cypherpunk<P: consensus::Parameters>(
-    params: &P,
-    pczt: &[u8],
-    ufvk_text: &str,
-    seed_fingerprint: &[u8; 32],
-) -> Result<BatchMigrationSummary> {
-    let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
-        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
-    let pczt = pczt::parse_pczt(pczt)?;
-    // Reuse ordinary parsing so the summary has the same recovery and display checks.
-    let parsed = pczt::parse::parse_pczt_cypherpunk(params, seed_fingerprint, &ufvk, &pczt)?;
-    require_migration_display_shape(&parsed)?;
-    summarize_migration_actions(&ufvk, &pczt)
-}
-
-/// Parses the first PCZT normally and aggregates later migration children.
-///
-/// All inputs must be normalized bytes produced by the batch check. Returns an
-/// error when the compact representation cannot be built.
-#[cfg(feature = "cypherpunk")]
-pub fn parse_batch_with_migration_summary_cypherpunk<'a, P: consensus::Parameters>(
-    params: &P,
-    first_pczt: &[u8],
-    migration_pczts: impl IntoIterator<Item = &'a [u8]>,
-    ufvk_text: &str,
-    seed_fingerprint: &[u8; 32],
-) -> Result<Vec<ParsedPczt>> {
-    let first = parse_pczt_cypherpunk(params, first_pczt, ufvk_text, seed_fingerprint)?;
-    let mut summary = BatchMigrationSummary::default();
-    let mut has_migrations = false;
-    for child_pczt in migration_pczts {
-        has_migrations = true;
-        let child = summarize_batch_migration_pczt_cypherpunk(
-            params,
-            child_pczt,
-            ufvk_text,
-            seed_fingerprint,
-        )?;
-        summary.add_child(&child)?;
+fn migration_transfer_summary(parsed: &ParsedPczt) -> Option<BatchMigrationTransferSummary> {
+    if parsed.get_transparent().is_some() || parsed.get_has_sapling() {
+        return None;
     }
-    if !has_migrations {
-        return Err(ZcashError::InvalidPczt(
-            "migration review has no child transactions".to_string(),
-        ));
-    }
-
-    Ok(vec![first, summary.to_parsed_pczt()])
-}
-
-/// Rejects children whose ordinary review contains details the compact review
-/// would hide. The accepted shape has one Orchard spend row, one funded
-/// Ironwood output without a memo, and no transparent or Sapling components.
-#[cfg(feature = "cypherpunk")]
-fn require_migration_display_shape(parsed: &ParsedPczt) -> Result<()> {
-    let reject = |what: &str| {
-        Err(ZcashError::InvalidPczt(format!(
-            "migration summary cannot represent {what}; use the per-message review"
-        )))
-    };
-
-    // A migration child must be shielded-only Orchard→Ironwood. A transparent
-    // bundle or any Sapling component is invisible in the amounts-only summary
-    // (a transparent input would additionally understate the displayed fee), so
-    // fall back to the per-message review, which displays them. `get_transparent`
-    // is `Some` only for a non-empty bundle, so shielded-only children pass.
-    if parsed.get_transparent().is_some() {
-        return reject("transparent components");
-    }
-    if parsed.get_has_sapling() {
-        return reject("Sapling components");
-    }
-
     let no_memo = |to: &ParsedTo| matches!(to.get_memo().as_deref(), None | Some(""));
-
     let orchard = parsed.get_orchard();
     let ironwood = parsed.get_ironwood();
     let orchard_from = orchard
@@ -697,20 +453,82 @@ fn require_migration_display_shape(parsed: &ParsedPczt) -> Result<()> {
         .map(|rows| rows.get_to())
         .unwrap_or_default();
 
-    if orchard_from.len() != 1 || !ironwood_from.is_empty() {
-        return reject("this spend shape");
+    match (orchard_from.as_slice(), ironwood_to.as_slice()) {
+        ([from], [to])
+            if from.get_is_mine()
+                && orchard_to.is_empty()
+                && ironwood_from.is_empty()
+                && to.get_amount() != 0
+                && to.get_is_change()
+                && no_memo(to) =>
+        {
+            Some(BatchMigrationTransferSummary {
+                input: from.get_amount(),
+                output: to.get_amount(),
+                fee: from.get_amount().checked_sub(to.get_amount())?,
+            })
+        }
+        _ => None,
     }
-    // The migrated note is the only Orchard row; a displayable Orchard output
-    // (beyond builder dummies, which the row pass already drops) means the
-    // per-message review had something to show.
-    if !orchard_to.is_empty() {
-        return reject("Orchard outputs");
+}
+
+/// Replaces compact-eligible transfers with one summary when the batch contains
+/// at most one other transaction. Ambiguous batches retain full review pages.
+#[cfg(feature = "cypherpunk")]
+fn compact_batch_migration_review(items: Vec<ParsedBatchItem>) -> Vec<ParsedPczt> {
+    let migration_count = items.iter().filter(|item| item.migration.is_some()).count();
+    if items.len() <= 1 || migration_count == 0 || items.len() - migration_count > 1 {
+        return items.into_iter().map(|item| item.parsed).collect();
     }
-    match ironwood_to.as_slice() {
-        [only] if only.get_amount() != 0 && no_memo(only) => Ok(()),
-        [only] if only.get_amount() != 0 => reject("an output memo"),
-        _ => reject("this output shape"),
+
+    let mut summary = BatchMigrationSummary::default();
+    for transfer in items.iter().filter_map(|item| item.migration) {
+        // Overflow is not expected for a valid transaction batch. Full review
+        // remains safe and complete if the compact totals cannot be represented.
+        if summary.add_transfer(transfer).is_err() {
+            return items.into_iter().map(|item| item.parsed).collect();
+        }
     }
+
+    let mut compact = Vec::with_capacity(items.len() - migration_count + 1);
+    for item in items {
+        if item.migration.is_none() {
+            compact.push(item.parsed);
+        }
+    }
+    compact.push(summary.to_parsed_pczt());
+    compact
+}
+
+/// Parses checked batch PCZTs and compacts eligible Orchard-to-Ironwood
+/// self-transfers without relying on message position.
+///
+/// Every input must be normalized bytes produced by the batch check. A batch
+/// with more than one ordinary transaction uses full per-message review.
+#[cfg(feature = "cypherpunk")]
+pub fn parse_batch_with_migration_summary_cypherpunk<'a, P: consensus::Parameters>(
+    params: &P,
+    pczts: impl IntoIterator<Item = &'a [u8]>,
+    ufvk_text: &str,
+    seed_fingerprint: &[u8; 32],
+) -> Result<Vec<ParsedPczt>> {
+    let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
+        .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
+    let mut items = Vec::new();
+    for pczt_bytes in pczts {
+        let pczt = pczt::parse_pczt(pczt_bytes)?;
+        // Parse once. The same complete display model determines whether a
+        // transaction can be represented by a compact migration row.
+        let parsed = pczt::parse::parse_pczt_cypherpunk(params, seed_fingerprint, &ufvk, &pczt)?;
+        let migration = migration_transfer_summary(&parsed);
+        items.push(ParsedBatchItem { parsed, migration });
+    }
+    if items.is_empty() {
+        return Err(ZcashError::InvalidPczt(
+            "batch review has no transactions".to_string(),
+        ));
+    }
+    Ok(compact_batch_migration_review(items))
 }
 
 #[cfg(test)]
@@ -1168,7 +986,7 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
 #[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
-    use alloc::{collections::BTreeMap, string::String, vec::Vec};
+    use alloc::{collections::BTreeMap, string::String, vec, vec::Vec};
 
     use consensus::MainNetwork;
     use keystore::algorithms::zcash::{calculate_seed_fingerprint, derive_ufvk};
@@ -2048,7 +1866,7 @@ mod tests {
                 .actions()
                 .iter()
                 .find(|action| matches!(action.output().value(), Some(value) if *value != 0))
-                .expect("migration child must contain a non-zero Ironwood output")
+                .expect("migration transfer must contain a non-zero Ironwood output")
                 .output()
                 .enc_ciphertext()
                 .clone()
@@ -2099,29 +1917,36 @@ mod tests {
     }
 
     #[test]
-    fn test_batch_migration_summary_accepts_orchard_to_ironwood_child() {
+    fn test_batch_migration_summary_accepts_orchard_to_ironwood_transfer() {
         let sample = pczt::test_support::sample_migration_pczt();
-
-        let summary = summarize_batch_migration_pczt_cypherpunk(
+        let parsed = check_and_parse_batch_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
             &sample.ufvk_text,
             &sample.seed_fingerprint,
+            0,
         )
-        .expect("migration child should summarize");
+        .expect("migration transfer should pass batch review");
+        let transfer =
+            migration_transfer_summary(&parsed).expect("migration transfer should summarize");
+        assert_eq!(
+            transfer,
+            BatchMigrationTransferSummary {
+                input: 1_010_000,
+                output: 990_000,
+                fee: 20_000,
+            }
+        );
+
+        let mut summary = BatchMigrationSummary::default();
+        summary.add_transfer(transfer).unwrap();
 
         assert_eq!(
             summary,
             BatchMigrationSummary {
-                migrations: 1,
-                total_input: 1_010_000,
                 total_output: 990_000,
                 total_fee: 20_000,
-                children: vec![BatchMigrationChildSummary {
-                    input: 1_010_000,
-                    output: 990_000,
-                    fee: 20_000,
-                }],
+                transfers: vec![transfer],
             }
         );
 
@@ -2169,46 +1994,174 @@ mod tests {
     }
 
     #[test]
-    fn test_batch_migration_summary_aggregates_multiple_children() {
+    fn test_batch_migration_summary_aggregates_all_migration_only_batch() {
         let samples = [
             pczt::test_support::sample_migration_pczt(),
             pczt::test_support::sample_migration_pczt(),
             pczt::test_support::sample_migration_pczt(),
         ];
+        let checked = samples
+            .iter()
+            .map(|sample| {
+                check_batch_pczt_cypherpunk(
+                    &pczt::test_support::Nu6_3Network,
+                    &sample.bytes,
+                    &sample.ufvk_text,
+                    &sample.seed_fingerprint,
+                    0,
+                )
+                .unwrap()
+            })
+            .collect::<Vec<_>>();
         let parsed = parse_batch_with_migration_summary_cypherpunk(
             &pczt::test_support::Nu6_3Network,
-            &samples[0].bytes,
-            samples[1..].iter().map(|sample| sample.bytes.as_slice()),
+            checked.iter().map(Vec::as_slice),
             &samples[0].ufvk_text,
             &samples[0].seed_fingerprint,
         )
-        .expect("two migration children should aggregate");
+        .expect("all migration transfers should aggregate");
 
-        assert_eq!(parsed.len(), 2);
-        let summary = &parsed[1];
-        assert_eq!(summary.get_total_transfer_value(), "0.0198 ZEC");
-        assert_eq!(summary.get_fee_value(), "0.0004 ZEC");
+        assert_eq!(parsed.len(), 1);
+        let summary = &parsed[0];
+        assert_eq!(summary.get_total_transfer_value(), "0.0297 ZEC");
+        assert_eq!(summary.get_fee_value(), "0.0006 ZEC");
         let inputs = summary.get_orchard().unwrap().get_from();
         let outputs = summary.get_ironwood().unwrap().get_to();
-        assert_eq!(inputs.len(), 2);
+        assert_eq!(inputs.len(), 3);
         assert!(inputs.iter().all(|input| input.get_amount() == 1_010_000));
-        assert_eq!(outputs.len(), 2);
+        assert_eq!(outputs.len(), 3);
         assert!(outputs.iter().all(|output| output.get_amount() == 990_000));
     }
 
     #[test]
-    fn test_batch_migration_summary_requires_a_child() {
-        let first = pczt::test_support::sample_migration_pczt();
+    fn test_batch_migration_summary_is_order_independent() {
+        let split = pczt::test_support::sample_orchard_change_pczt();
+        let migration_1 = pczt::test_support::sample_migration_pczt();
+        let migration_2 = pczt::test_support::sample_migration_pczt();
+        let ufvk_text = split.ufvk_text.clone();
+        let seed_fingerprint = split.seed_fingerprint;
+        let check = |bytes: &[u8]| {
+            check_batch_pczt_cypherpunk(
+                &pczt::test_support::Nu6_3Network,
+                bytes,
+                &ufvk_text,
+                &seed_fingerprint,
+                0,
+            )
+            .unwrap()
+        };
+        let split = check(&split.bytes);
+        let migration_1 = check(&migration_1.bytes);
+        let migration_2 = check(&migration_2.bytes);
+        let orders = [
+            [
+                split.as_slice(),
+                migration_1.as_slice(),
+                migration_2.as_slice(),
+            ],
+            [
+                migration_1.as_slice(),
+                split.as_slice(),
+                migration_2.as_slice(),
+            ],
+            [
+                migration_1.as_slice(),
+                migration_2.as_slice(),
+                split.as_slice(),
+            ],
+        ];
+
+        for order in orders {
+            let parsed = parse_batch_with_migration_summary_cypherpunk(
+                &pczt::test_support::Nu6_3Network,
+                order,
+                &ufvk_text,
+                &seed_fingerprint,
+            )
+            .expect("message order must not affect migration classification");
+
+            assert_eq!(parsed.len(), 2);
+            let summary = &parsed[1];
+            assert_eq!(summary.get_ironwood().unwrap().get_to().len(), 2);
+            assert_eq!(summary.get_total_transfer_value(), "0.0198 ZEC");
+            assert_eq!(summary.get_fee_value(), "0.0004 ZEC");
+        }
+    }
+
+    #[test]
+    fn test_batch_migration_summary_keeps_single_message_uncompacted() {
+        let sample = pczt::test_support::sample_migration_pczt();
+        let checked = check_batch_pczt_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .unwrap();
+        let parsed = parse_batch_with_migration_summary_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            core::iter::once(checked.as_slice()),
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+        )
+        .unwrap();
+
+        assert_eq!(parsed.len(), 1);
+        assert_eq!(
+            parsed[0].get_ironwood().unwrap().get_to()[0].get_address(),
+            "<internal-address>"
+        );
+    }
+
+    #[test]
+    fn test_batch_migration_summary_rejects_empty_batch() {
+        let sample = pczt::test_support::sample_migration_pczt();
         assert_invalid_pczt_message(
             parse_batch_with_migration_summary_cypherpunk(
                 &pczt::test_support::Nu6_3Network,
-                &first.bytes,
                 core::iter::empty(),
-                &first.ufvk_text,
-                &first.seed_fingerprint,
+                &sample.ufvk_text,
+                &sample.seed_fingerprint,
             ),
-            "migration review has no child transactions",
+            "batch review has no transactions",
         );
+    }
+
+    #[test]
+    fn test_batch_migration_summary_keeps_ambiguous_batch_full() {
+        let ordinary_1 = pczt::test_support::sample_orchard_change_pczt();
+        let ordinary_2 = pczt::test_support::sample_orchard_change_pczt();
+        let migration = pczt::test_support::sample_migration_pczt();
+        let checked = [&ordinary_1, &migration, &ordinary_2]
+            .into_iter()
+            .map(|sample| {
+                check_batch_pczt_cypherpunk(
+                    &pczt::test_support::Nu6_3Network,
+                    &sample.bytes,
+                    &sample.ufvk_text,
+                    &sample.seed_fingerprint,
+                    0,
+                )
+                .unwrap()
+            })
+            .collect::<Vec<_>>();
+        let parsed = parse_batch_with_migration_summary_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            checked.iter().map(Vec::as_slice),
+            &migration.ufvk_text,
+            &migration.seed_fingerprint,
+        )
+        .unwrap();
+
+        assert_eq!(parsed.len(), 3);
+        assert!(parsed.iter().all(|item| {
+            item.get_orchard()
+                .unwrap()
+                .get_from()
+                .iter()
+                .all(|from| from.get_address().is_none())
+        }));
     }
 
     // A memo on the funded output forces fallback to the review that displays it.
@@ -2220,19 +2173,6 @@ mod tests {
             MemoBytes::from_bytes(b"covert note").expect("memo text fits"),
         );
 
-        let summary_err = summarize_batch_migration_pczt_cypherpunk(
-            &pczt::test_support::Nu6_3Network,
-            &sample.bytes,
-            &sample.ufvk_text,
-            &sample.seed_fingerprint,
-        )
-        .expect_err("summary must refuse a memo it cannot render");
-        assert!(
-            matches!(&summary_err, ZcashError::InvalidPczt(message) if message.contains("per-message review")),
-            "expected a display-shape rejection, got {summary_err:?}"
-        );
-
-        // Parity: the fallback per-message review shows the memo.
         let parsed = check_and_parse_batch_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
@@ -2240,7 +2180,7 @@ mod tests {
             &sample.seed_fingerprint,
             0,
         )
-        .expect("per-message review must accept the memo-carrying child");
+        .expect("per-message review must accept the memo-carrying transfer");
         let shown_memo = parsed
             .get_ironwood()
             .expect("migration must show Ironwood outputs")
@@ -2249,33 +2189,44 @@ mod tests {
             .expect("migration must show the real output")
             .get_memo();
         assert_eq!(shown_memo.as_deref(), Some("covert note"));
+        assert!(migration_transfer_summary(&parsed).is_none());
 
-        let first = pczt::test_support::sample_migration_pczt();
-        assert!(parse_batch_with_migration_summary_cypherpunk(
+        let migration = pczt::test_support::sample_migration_pczt();
+        let checked = [&migration, &sample]
+            .into_iter()
+            .map(|item| {
+                check_batch_pczt_cypherpunk(
+                    &pczt::test_support::Nu6_3Network,
+                    &item.bytes,
+                    &item.ufvk_text,
+                    &item.seed_fingerprint,
+                    0,
+                )
+                .unwrap()
+            })
+            .collect::<Vec<_>>();
+        let batch = parse_batch_with_migration_summary_cypherpunk(
             &pczt::test_support::Nu6_3Network,
-            &first.bytes,
-            core::iter::once(sample.bytes.as_slice()),
+            checked.iter().map(Vec::as_slice),
             &sample.ufvk_text,
             &sample.seed_fingerprint,
         )
-        .is_err());
+        .unwrap();
+        assert_eq!(batch.len(), 2);
+        assert!(batch.iter().any(|item| {
+            item.get_ironwood()
+                .map(|pool| {
+                    pool.get_to()
+                        .iter()
+                        .any(|to| to.get_memo().as_deref() == Some("covert note"))
+                })
+                .unwrap_or(false)
+        }));
     }
 
     #[test]
     fn test_batch_migration_summary_rejects_foreign_funded_output() {
         let sample = pczt::test_support::sample_migration_pczt_to_account(1);
-
-        let summary_err = summarize_batch_migration_pczt_cypherpunk(
-            &pczt::test_support::Nu6_3Network,
-            &sample.bytes,
-            &sample.ufvk_text,
-            &sample.seed_fingerprint,
-        )
-        .expect_err("summary must refuse a foreign funded output");
-        assert!(matches!(
-            &summary_err,
-            ZcashError::InvalidPczt(message) if message.contains("not wallet-owned")
-        ));
 
         let parsed = check_and_parse_batch_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
@@ -2289,6 +2240,7 @@ mod tests {
         let output = &outputs[0];
         assert_eq!(output.get_amount(), 990_000);
         assert!(!output.get_is_change());
+        assert!(migration_transfer_summary(&parsed).is_none());
     }
 
     #[test]
@@ -2299,16 +2251,6 @@ mod tests {
             MemoBytes::from_bytes(b"hidden dummy memo").unwrap(),
             false,
         );
-        let summary = summarize_batch_migration_pczt_cypherpunk(
-            &pczt::test_support::Nu6_3Network,
-            &sample.bytes,
-            &sample.ufvk_text,
-            &sample.seed_fingerprint,
-        )
-        .expect("dummy-equivalent zero output should not block the summary");
-        assert_eq!(summary.total_output, 990_000);
-        assert_eq!(summary.total_fee, 20_000);
-
         let parsed = check_and_parse_batch_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
@@ -2317,6 +2259,10 @@ mod tests {
             0,
         )
         .expect("ordinary review should accept the zero output");
+        let transfer = migration_transfer_summary(&parsed)
+            .expect("dummy-equivalent zero output should not block the summary");
+        assert_eq!(transfer.output, 990_000);
+        assert_eq!(transfer.fee, 20_000);
         let outputs = parsed.get_ironwood().unwrap().get_to();
         assert_eq!(outputs.len(), 1);
         assert_eq!(outputs[0].get_amount(), 990_000);
@@ -2331,18 +2277,6 @@ mod tests {
             MemoBytes::from_bytes(b"visible zero memo").unwrap(),
             true,
         );
-        let summary_err = summarize_batch_migration_pczt_cypherpunk(
-            &pczt::test_support::Nu6_3Network,
-            &sample.bytes,
-            &sample.ufvk_text,
-            &sample.seed_fingerprint,
-        )
-        .expect_err("displayable zero output should force ordinary review");
-        assert!(matches!(
-            &summary_err,
-            ZcashError::InvalidPczt(message) if message.contains("output shape")
-        ));
-
         let parsed = check_and_parse_batch_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
@@ -2358,12 +2292,13 @@ mod tests {
             .find(|output| output.get_amount() == 0)
             .expect("zero output should be displayed");
         assert_eq!(zero.get_memo().as_deref(), Some("visible zero memo"));
+        assert!(migration_transfer_summary(&parsed).is_none());
     }
 
     // Transparent or Sapling components force fallback because the compact summary
     // cannot display them or include transparent values in its fee.
     #[test]
-    fn test_migration_display_shape_rejects_transparent_and_sapling() {
+    fn test_migration_classifier_rejects_transparent_and_sapling() {
         use crate::pczt::structs::ParsedTransparent;
 
         // The shielded-only shape the summary can represent.
@@ -2399,8 +2334,8 @@ mod tests {
         };
 
         // Control: the pure shielded migration folds into the summary.
-        require_migration_display_shape(&build(None, false))
-            .expect("a shielded-only Orchard->Ironwood child must still summarize");
+        migration_transfer_summary(&build(None, false))
+            .expect("a shielded-only Orchard-to-Ironwood transfer must still summarize");
 
         // A wallet-owned transparent input the amounts-only summary would hide
         // (its value silently dropped from the fee) must force fallback.
@@ -2413,22 +2348,10 @@ mod tests {
             )],
             vec![],
         );
-        assert!(
-            matches!(
-                require_migration_display_shape(&build(Some(transparent), false)),
-                Err(ZcashError::InvalidPczt(message)) if message.contains("transparent components")
-            ),
-            "a transparent component must fall back to the per-message review",
-        );
+        assert!(migration_transfer_summary(&build(Some(transparent), false)).is_none());
 
         // A Sapling component must likewise force fallback.
-        assert!(
-            matches!(
-                require_migration_display_shape(&build(None, true)),
-                Err(ZcashError::InvalidPczt(message)) if message.contains("Sapling components")
-            ),
-            "a Sapling component must fall back to the per-message review",
-        );
+        assert!(migration_transfer_summary(&build(None, true)).is_none());
     }
 
     // An undecryptable funded output must fail both compact and ordinary review.
@@ -2459,7 +2382,7 @@ mod tests {
                 .actions()
                 .iter()
                 .find(|action| matches!(action.output().value(), Some(value) if *value != 0))
-                .expect("migration child must contain a non-zero Ironwood output")
+                .expect("migration transfer must contain a non-zero Ironwood output")
                 .output()
                 .enc_ciphertext()
                 .clone()
@@ -2480,13 +2403,13 @@ mod tests {
             "corruption must keep the PCZT structurally well-formed"
         );
 
-        let summary_err = summarize_batch_migration_pczt_cypherpunk(
+        let summary_err = parse_batch_with_migration_summary_cypherpunk(
             &pczt::test_support::Nu6_3Network,
-            &corrupted,
+            core::iter::once(corrupted.as_slice()),
             &sample.ufvk_text,
             &sample.seed_fingerprint,
         )
-        .expect_err("summary must reject a migration child with an undecryptable output");
+        .expect_err("summary must reject a migration transfer with an undecryptable output");
         assert!(
             matches!(&summary_err, ZcashError::InvalidPczt(message) if message.contains("undecryptable")),
             "expected an undecryptable-output rejection, got {summary_err:?}"
@@ -2529,18 +2452,20 @@ mod tests {
             .serialize()
             .expect("redacted PCZT should serialize");
 
-        let summary = summarize_batch_migration_pczt_cypherpunk(
+        let parsed = check_and_parse_batch_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &redacted,
             &sample.ufvk_text,
             &sample.seed_fingerprint,
+            0,
         )
-        .expect("redacted migration child should summarize");
+        .expect("redacted migration transfer should pass batch review");
+        let transfer = migration_transfer_summary(&parsed)
+            .expect("redacted migration transfer should summarize");
 
-        assert_eq!(summary.migrations, 1);
-        assert_eq!(summary.total_input, 1_010_000);
-        assert_eq!(summary.total_output, 990_000);
-        assert_eq!(summary.total_fee, 20_000);
+        assert_eq!(transfer.input, 1_010_000);
+        assert_eq!(transfer.output, 990_000);
+        assert_eq!(transfer.fee, 20_000);
 
         let signed = sign_checked_batch_pczt(
             &pczt::test_support::Nu6_3Network,

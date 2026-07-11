@@ -250,12 +250,51 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
         })
         .map_err(map_transparent_verifier_error)?;
 
+    assemble_parsed_pczt(pczt, parsed_transparent, parsed_orchard, parsed_ironwood)
+}
+
+/// Parses the transparent bundle and combines it with the supplied shielded
+/// display rows.
+#[cfg(feature = "cypherpunk")]
+pub(crate) fn parse_pczt_cypherpunk_with_checked_shielded<P: consensus::Parameters>(
+    params: &P,
+    seed_fingerprint: &[u8; 32],
+    pczt: &Pczt,
+    parsed_orchard: Option<ParsedOrchard>,
+    parsed_ironwood: Option<ParsedOrchard>,
+) -> Result<ParsedPczt, ZcashError> {
+    super::validate_supported_pczt(pczt)?;
+    let mut parsed_transparent = None;
+
+    // Parse the remaining transparent rows.
+    Verifier::new(pczt.clone())
+        .with_transparent(|bundle| {
+            parsed_transparent = parse_transparent(params, seed_fingerprint, bundle)
+                .map_err(pczt::roles::verifier::TransparentError::Custom)?;
+            Ok(())
+        })
+        .map_err(map_transparent_verifier_error)?;
+
+    // Combine all checked rows and calculate the display totals.
+    assemble_parsed_pczt(pczt, parsed_transparent, parsed_orchard, parsed_ironwood)
+}
+
+/// Assembles the per-pool parse results into the final [`ParsedPczt`],
+/// computing the transfer, change, and fee totals.
+#[cfg(feature = "cypherpunk")]
+fn assemble_parsed_pczt(
+    pczt: &Pczt,
+    parsed_transparent: Option<ParsedTransparent>,
+    parsed_orchard: Option<ParsedOrchard>,
+    parsed_ironwood: Option<ParsedOrchard>,
+) -> Result<ParsedPczt, ZcashError> {
     let mut total_input_value = 0;
     let mut total_output_value = 0;
     let mut total_change_value = 0;
     //total_input_value = total_output_value + fee_value
     //total_output_value = total_transfer_value + total_change_value
 
+    // Fold each decoded pool into the display totals.
     if let Some(orchard) = &parsed_orchard {
         total_change_value += orchard
             .get_to()
@@ -323,6 +362,7 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
         total_input_value = total_input_value.saturating_add(sapling_value_sum as u64)
     };
 
+    // Derive the transfer and fee values shown during confirmation.
     let total_transfer_value = format_zec_value((total_output_value - total_change_value) as f64);
     let fee_value = format_zec_value((total_input_value - total_output_value) as f64);
 
@@ -583,7 +623,7 @@ fn parse_orchard<P: consensus::Parameters>(
 }
 
 #[cfg(feature = "cypherpunk")]
-fn parse_orchard_spend(
+pub(crate) fn parse_orchard_spend(
     seed_fingerprint: &[u8; 32],
     spend: &orchard::pczt::Spend,
 ) -> Result<ParsedFrom, ZcashError> {
@@ -651,8 +691,11 @@ pub(crate) fn validate_orchard_user_address<P: consensus::Parameters>(
     Ok(())
 }
 
+/// Decodes one action's output into its [`ParsedTo`] display row, trying the
+/// wallet OVKs and then direct decryption. Every non-zero output must be
+/// recoverable.
 #[cfg(feature = "cypherpunk")]
-fn parse_orchard_output<P: consensus::Parameters>(
+pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
     params: &P,
     ufvk: &UnifiedFullViewingKey,
     action: &orchard::pczt::Action,

@@ -24,6 +24,8 @@ use zcash_vendor::{
 use zcash_vendor::zcash_protocol::consensus::NetworkConstants;
 
 #[cfg(feature = "cypherpunk")]
+use super::structs::ParsedOrchard;
+#[cfg(feature = "cypherpunk")]
 use super::ShieldedPool;
 
 #[cfg(feature = "cypherpunk")]
@@ -77,6 +79,75 @@ pub fn check_pczt_orchard<P: consensus::Parameters>(
             .map_err(map_orchard_verifier_error)?;
     }
     Ok(())
+}
+
+/// Orchard and Ironwood display rows collected during shielded validation.
+/// A pool is `None` when it contains no displayable actions.
+#[cfg(feature = "cypherpunk")]
+pub(crate) struct CheckedShieldedParse {
+    pub(crate) orchard: Option<ParsedOrchard>,
+    pub(crate) ironwood: Option<ParsedOrchard>,
+}
+
+/// Validates the supported shielded bundles and collects their display rows.
+/// Returns the collected Orchard and Ironwood rows together with the PCZT.
+#[cfg(feature = "cypherpunk")]
+pub(crate) fn check_and_parse_pczt_shielded<P: consensus::Parameters>(
+    params: &P,
+    seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
+    ufvk: &UnifiedFullViewingKey,
+    pczt: Pczt,
+) -> Result<(CheckedShieldedParse, Pczt), ZcashError> {
+    super::validate_supported_pczt(&pczt)?;
+    let mut parsed_orchard = None;
+    let mut parsed_ironwood = None;
+    let should_process_ironwood = super::pczt_should_process_ironwood(&pczt);
+
+    // Validate Orchard while collecting the rows shown during review.
+    let verifier = Verifier::new(pczt)
+        .with_orchard(|bundle| {
+            parsed_orchard = check_and_parse_shielded_bundle(
+                params,
+                seed_fingerprint,
+                account_index,
+                ufvk,
+                bundle,
+                ShieldedPool::Orchard,
+            )
+            .map_err(pczt::roles::verifier::OrchardError::Custom)?;
+            Ok(())
+        })
+        .map_err(map_orchard_verifier_error)?;
+
+    // Continue through Ironwood when this transaction version enables it.
+    let verifier = if should_process_ironwood {
+        verifier
+            .with_ironwood(|bundle| {
+                parsed_ironwood = check_and_parse_shielded_bundle(
+                    params,
+                    seed_fingerprint,
+                    account_index,
+                    ufvk,
+                    bundle,
+                    ShieldedPool::Ironwood,
+                )
+                .map_err(pczt::roles::verifier::OrchardError::Custom)?;
+                Ok(())
+            })
+            .map_err(map_orchard_verifier_error)?
+    } else {
+        verifier
+    };
+
+    // Return the verifier-owned PCZT for the remaining checks.
+    Ok((
+        CheckedShieldedParse {
+            orchard: parsed_orchard,
+            ironwood: parsed_ironwood,
+        },
+        verifier.finish(),
+    ))
 }
 
 pub fn check_pczt_transparent<P: consensus::Parameters>(
@@ -312,6 +383,85 @@ fn check_shielded_bundle<P: consensus::Parameters>(
 
     match calculated_value_balance {
         Ok(value_balance) if &value_balance == bundle.value_sum() => Ok(()),
+        _ => Err(ZcashError::InvalidPczt(format!(
+            "invalid {pool_label} bundle value balance"
+        ))),
+    }
+}
+
+/// Validates a shielded bundle while collecting its non-dummy display rows.
+/// Returns `None` when the bundle contains no displayable actions.
+#[cfg(feature = "cypherpunk")]
+fn check_and_parse_shielded_bundle<P: consensus::Parameters>(
+    params: &P,
+    seed_fingerprint: &[u8; 32],
+    account_index: zip32::AccountId,
+    ufvk: &UnifiedFullViewingKey,
+    bundle: &orchard::pczt::Bundle,
+    pool: ShieldedPool,
+) -> Result<Option<ParsedOrchard>, ZcashError> {
+    let pool_label = pool.label();
+    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
+        "orchard fvk is not present".to_string(),
+    ))?;
+
+    let mut parsed_orchard = ParsedOrchard::new(vec![], vec![]);
+    // Validate and decode each action in the canonical order.
+    bundle.actions().iter().try_for_each(|action| {
+        action.verify_cv_net().map_err(|e| {
+            ZcashError::InvalidPczt(format!("invalid cv_net in {pool_label} action: {e:?}"))
+        })?;
+
+        check_action_spend(
+            params,
+            seed_fingerprint,
+            account_index,
+            fvk,
+            action.spend(),
+            pool,
+        )?;
+        action
+            .output()
+            .verify_note_commitment(action.spend())
+            .map_err(|e| {
+                ZcashError::InvalidPczt(format!("invalid {pool_label} action cmx: {e:?}"))
+            })?;
+
+        // Add only real spends to the review.
+        if let Some(value) = action.spend().value() {
+            if value.inner() != 0 {
+                let parsed_from =
+                    super::parse::parse_orchard_spend(seed_fingerprint, action.spend())?;
+                parsed_orchard.add_from(parsed_from);
+            }
+        }
+
+        // Decode real outputs once and add them to the review.
+        let parsed_to = super::parse::parse_orchard_output(params, ufvk, action, pool)?;
+        if !parsed_to.get_is_dummy() {
+            parsed_orchard.add_to(parsed_to);
+        }
+
+        Ok::<_, ZcashError>(())
+    })?;
+
+    // Recompute the bundle balance from the values just reviewed.
+    let calculated_value_balance = bundle
+        .actions()
+        .iter()
+        .map(|action| {
+            action.spend().value().expect("present") - action.output().value().expect("present")
+        })
+        .sum::<Result<ValueSum, _>>();
+
+    match calculated_value_balance {
+        Ok(value_balance) if &value_balance == bundle.value_sum() => {
+            if parsed_orchard.get_from().is_empty() && parsed_orchard.get_to().is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(parsed_orchard))
+            }
+        }
         _ => Err(ZcashError::InvalidPczt(format!(
             "invalid {pool_label} bundle value balance"
         ))),

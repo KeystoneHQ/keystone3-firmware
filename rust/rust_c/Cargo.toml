@@ -26,6 +26,7 @@ aes = { workspace = true }
 cbc = { workspace = true }
 cipher = { workspace = true }
 minicbor = { workspace = true }
+postcard = { version = "1.0.3", default-features = false, optional = true }
 #keystone owned
 sim_qr_reader = { workspace = true, optional = true }
 keystore = { workspace = true, default-features = false }
@@ -83,7 +84,7 @@ sui = ["dep:app_sui"]
 ton = ["dep:app_ton"]
 tron = ["dep:app_tron"]
 xrp = ["dep:app_xrp"]
-zcash = ["dep:app_zcash", "dep:zcash_vendor"]
+zcash = ["dep:app_zcash", "dep:postcard", "dep:zcash_vendor"]
 zcash_multi_coins = ["zcash", "app_zcash/multi_coins"]
 zcash_cypherpunk = ["zcash", "app_zcash/cypherpunk"]
 monero = ["dep:app_monero"]

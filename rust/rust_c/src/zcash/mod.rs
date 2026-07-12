@@ -37,6 +37,8 @@ use zeroize::Zeroize;
 const ZCASH_BATCH_MAX_PCZTS: usize = 50;
 #[cfg(feature = "cypherpunk")]
 const ZCASH_BATCH_MAX_TOTAL_BYTES: usize = 512 * 1024;
+#[cfg(feature = "cypherpunk")]
+const ZCASH_BATCH_REQUEST_HEADER_LEN: usize = 12;
 
 #[no_mangle]
 pub unsafe extern "C" fn derive_zcash_ufvk(
@@ -284,10 +286,41 @@ fn validate_zcash_batch_envelope(request_id: &[u8], data: &[u8]) -> Result<(), R
     Ok(())
 }
 
+/// Rejects an oversized top-level count before Postcard allocates the PCZT vector.
+#[cfg(feature = "cypherpunk")]
+fn validate_zcash_batch_request_count(data: &[u8]) -> Result<(), RustCError> {
+    let Some(header) = data.get(..ZCASH_BATCH_REQUEST_HEADER_LEN) else {
+        return Ok(());
+    };
+
+    // Leave malformed or unknown headers to the canonical parser so it retains
+    // its existing error. The pinned parser recognizes PCZT versions 1 and 2.
+    let pczt_version = u32::from_le_bytes(header[8..12].try_into().unwrap());
+    if &header[..8] != b"PCZB\x01\0\0\0" || !matches!(pczt_version, 1 | 2) {
+        return Ok(());
+    }
+
+    // Decode only the sequence length; malformed bodies remain the canonical
+    // parser's responsibility.
+    let Ok((pczt_count, _)) =
+        postcard::take_from_bytes::<usize>(&data[ZCASH_BATCH_REQUEST_HEADER_LEN..])
+    else {
+        return Ok(());
+    };
+    if pczt_count > ZCASH_BATCH_MAX_PCZTS {
+        return Err(RustCError::UnsupportedTransaction(format!(
+            "Zcash batch supports at most {ZCASH_BATCH_MAX_PCZTS} PCZTs"
+        )));
+    }
+
+    Ok(())
+}
+
 /// Parses the bounded outer registry into the PCZT crate's batch request.
 #[cfg(feature = "cypherpunk")]
 fn parse_zcash_batch_registry(registry: &ZcashSignBatch) -> Result<BatchSignRequest, RustCError> {
     validate_zcash_batch_envelope(registry.get_request_id(), registry.get_data())?;
+    validate_zcash_batch_request_count(registry.get_data())?;
     BatchSignRequest::parse(registry.get_data())
         .map_err(|e| RustCError::InvalidData(format!("invalid PCZT batch request: {e:?}")))
 }
@@ -968,6 +1001,30 @@ mod tests {
             Err(RustCError::UnsupportedTransaction(message))
                 if message.contains("batch request exceeds")
         ));
+    }
+
+    #[cfg(feature = "cypherpunk")]
+    #[test]
+    fn test_zcash_batch_rejects_count_before_parse() {
+        let mut request = empty_batch_request();
+        request[ZCASH_BATCH_REQUEST_HEADER_LEN] = ZCASH_BATCH_MAX_PCZTS as u8;
+        validate_zcash_batch_request_count(&request).unwrap();
+
+        let mut overlong_small_count = empty_batch_request();
+        overlong_small_count[ZCASH_BATCH_REQUEST_HEADER_LEN] = 0x81;
+        overlong_small_count.push(0);
+        validate_zcash_batch_request_count(&overlong_small_count).unwrap();
+
+        // The body declares 51 PCZTs but omits them. Reaching the count error
+        // proves the limit is enforced before the full request is parsed.
+        request[ZCASH_BATCH_REQUEST_HEADER_LEN] += 1;
+        let registry = ZcashSignBatch::new(vec![0xaa], request);
+        assert_eq!(
+            parse_zcash_batch_registry(&registry).unwrap_err(),
+            RustCError::UnsupportedTransaction(format!(
+                "Zcash batch supports at most {ZCASH_BATCH_MAX_PCZTS} PCZTs"
+            ))
+        );
     }
 
     #[cfg(feature = "cypherpunk")]

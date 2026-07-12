@@ -3881,6 +3881,7 @@ dependencies = [
  "keystore",
  "minicbor",
  "no_std_io2",
+ "postcard",
  "rand_core 0.6.4",
  "rsa",
  "rust_tools",

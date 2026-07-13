@@ -10,6 +10,8 @@
 
 1. Fixed stalled Zcash signing when response QR generation fails
 
+2. Fixed Zcash batch signing with finalized zero-value dummy spends
+
 
 ## 2.5.0(2026-6-29)
 

@@ -8,8 +8,12 @@
 //! The firmware does not interpret it as a minimum requirement; it only reports
 //! its own version.
 //!
-//! Version encoding is three raw bytes `[major, minor, build]`, matching the
-//! `SOFTWARE_VERSION_MAJOR / MINOR / BUILD` triple in `src/config/version.h`.
+//! Version encoding is three raw bytes `[major, minor, build]`, generated from
+//! the `SOFTWARE_VERSION_MAJOR / MINOR / BUILD` triple in
+//! `src/config/version.h`. The device UI subtracts
+//! `SOFTWARE_VERSION_MAJOR_OFFSET` only when formatting the displayed version;
+//! this wire value keeps the canonical raw build version used for updates and
+//! comparisons.
 //!
 //! `KEYSTONE_FW_VERSION` is generated at compile time by `build.rs` from
 //! `src/config/version.h` — no manual sync needed.

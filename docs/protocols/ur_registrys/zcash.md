@@ -76,8 +76,10 @@ are rejected.
 Both registry types use definite-length CBOR maps. Firmware requires
 `request-id` to be non-empty. Key `1` follows `zcash-pczt` by carrying opaque
 transaction data, and key `2` follows `zcash-sign-result` by carrying the
-request id. The result's required key `3` is the three-byte firmware version
-`[major, minor, build]` that produced the signatures.
+request id. The result's required key `3` is the raw three-byte firmware build
+version `[major, minor, build]` that produced the signatures. It comes from the
+same compile-time version constants used by firmware updates; UI-only display
+offsets are not applied to the wire value.
 
 ```cddl
 zcash-sign-batch = {
@@ -88,7 +90,7 @@ zcash-sign-batch = {
 zcash-batch-sig-result = {
     1: bytes, ; BatchSignResponse::serialize output
     2: bytes, ; echoed request-id
-    3: bytes, ; firmware version [major, minor, build]
+    3: bytes, ; raw firmware build version [major, minor, build]
 }
 ```
 

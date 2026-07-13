@@ -265,6 +265,8 @@ fn get_view_type_from_keystone(bytes: Vec<u8>) -> Result<ViewType, URError> {
                 "DASH" => ViewType::DashTx,
                 #[cfg(feature = "bch")]
                 "BCH" => ViewType::BchTx,
+                #[cfg(feature = "bch")]
+                "BCH2" => ViewType::Bch2Tx,
                 #[cfg(feature = "ethereum")]
                 "ETH" => ViewType::EthTx,
                 #[cfg(feature = "tron")]

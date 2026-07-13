@@ -310,6 +310,7 @@ static const ChainItem_t g_chainTable[] = {
     {XPUB_TYPE_DOGE,                  SECP256K1,    "doge",                     "M/44'/3'/0'"       },
     {XPUB_TYPE_DASH,                  SECP256K1,    "dash",                     "M/44'/5'/0'"       },
     {XPUB_TYPE_BCH,                   SECP256K1,    "bch",                      "M/44'/145'/0'"     },
+    {XPUB_TYPE_BCH2,                  SECP256K1,    "bch2",                     "M/44'/20145'/0'"   },
     {XPUB_TYPE_ETH_BIP44_STANDARD,    SECP256K1,    "eth_bip44_standard",       "M/44'/60'/0'"      },
     {XPUB_TYPE_ETH_LEDGER_LEGACY,     SECP256K1,    "eth_ledger_legacy",        "M/44'/60'/0'"      },
     {XPUB_TYPE_ETH_LEDGER_LIVE_0,     SECP256K1,    "eth_ledger_live_0",        "M/44'/60'/0'"      },

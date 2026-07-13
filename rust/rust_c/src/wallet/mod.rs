@@ -70,6 +70,7 @@ pub unsafe extern "C" fn check_hardware_call_path(
         "TRX" => "m/44'/195'",
         "LTC" => "m/49'/2'",
         "BCH" => "m/44'/145'",
+        "BCH2" => "m/44'/20145'",
         "APT" => "m/44'/637'",
         "SUI" => "m/44'/784'",
         "DASH" => "m/44'/5'",

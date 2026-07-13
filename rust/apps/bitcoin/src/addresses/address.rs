@@ -43,6 +43,7 @@ impl Address {
             | Network::Litecoin
             | Network::Dogecoin
             | Network::BitcoinCash
+            | Network::BitcoinCashII
             | Network::Zcash
             | Network::Dash => Ok(Address {
                 network,
@@ -234,6 +235,15 @@ impl fmt::Display for Address {
                 let encoding = BCHAddressEncoding {
                     payload: &self.payload,
                     p2pkh_prefix: PUBKEY_ADDRESS_PREFIX_BCH,
+                    cash_prefix: "bitcoincash",
+                };
+                encoding.fmt(fmt)
+            }
+            Network::BitcoinCashII => {
+                let encoding = BCHAddressEncoding {
+                    payload: &self.payload,
+                    p2pkh_prefix: PUBKEY_ADDRESS_PREFIX_BCH,
+                    cash_prefix: "bitcoincashii",
                 };
                 encoding.fmt(fmt)
             }

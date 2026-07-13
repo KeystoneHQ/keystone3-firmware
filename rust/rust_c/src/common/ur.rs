@@ -216,6 +216,8 @@ pub enum ViewType {
     DashTx,
     #[cfg(feature = "bch")]
     BchTx,
+    #[cfg(feature = "bch")]
+    Bch2Tx,
     #[cfg(feature = "ethereum")]
     EthTx,
     #[cfg(feature = "ethereum")]

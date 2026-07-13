@@ -192,6 +192,7 @@ static const ChainPathItem_t g_chainPathItems[] = {
     {HOME_WALLET_CARD_DASH, "m/44'/5'/0'"},
     {HOME_WALLET_CARD_BCH, "m/44'/145'/0'"},
     {HOME_WALLET_CARD_DOGE, "m/44'/3'/0'"},
+    {HOME_WALLET_CARD_BCH2, "m/44'/20145'/0'"},
 };
 #endif
 
@@ -205,6 +206,7 @@ static uint32_t g_btcSelectIndex[3] = {0};
 static uint32_t g_ltcSelectIndex[3] = {0};
 static uint32_t g_dashSelectIndex[3] = {0};
 static uint32_t g_bchSelectIndex[3] = {0};
+static uint32_t g_bch2SelectIndex[3] = {0};
 static uint8_t g_currentAccountIndex = 0;
 
 static HOME_WALLET_CARD_ENUM g_chainCard;
@@ -341,6 +343,7 @@ static bool HasMoreBtn()
     case HOME_WALLET_CARD_LTC:
         return true;
     case HOME_WALLET_CARD_BCH:
+    case HOME_WALLET_CARD_BCH2:
     case HOME_WALLET_CARD_DASH:
     case HOME_WALLET_CARD_DOGE:
         return false;
@@ -481,6 +484,10 @@ static void GetCurrentTitle(TitleItem_t *titleItem)
     case HOME_WALLET_CARD_BCH:
         titleItem->type = CHAIN_BCH;
         snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "BCH");
+        break;
+    case HOME_WALLET_CARD_BCH2:
+        titleItem->type = CHAIN_BCH2;
+        snprintf_s(titleItem->title, PATH_ITEM_MAX_LEN, _("receive_coin_fmt"), "BCH2");
         break;
     case HOME_WALLET_CARD_DOGE:
         titleItem->type = CHAIN_DOGE;
@@ -677,6 +684,9 @@ static void GetHint(char *hint)
     case HOME_WALLET_CARD_BCH:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "BCH");
         break;
+    case HOME_WALLET_CARD_BCH2:
+        snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "BCH2");
+        break;
     case HOME_WALLET_CARD_DOGE:
         snprintf_s(hint, BUFFER_SIZE_256, _("receive_coin_hint_fmt"), "DOGE");
         break;
@@ -712,6 +722,8 @@ static uint32_t GetCurrentSelectIndex()
         return g_dashSelectIndex[g_currentAccountIndex];
     case HOME_WALLET_CARD_BCH:
         return g_bchSelectIndex[g_currentAccountIndex];
+    case HOME_WALLET_CARD_BCH2:
+        return g_bch2SelectIndex[g_currentAccountIndex];
 #endif
     default:
         break;
@@ -734,6 +746,9 @@ static void SetCurrentSelectIndex(uint32_t selectIndex)
         break;
     case HOME_WALLET_CARD_BCH:
         g_bchSelectIndex[g_currentAccountIndex] = selectIndex;
+        break;
+    case HOME_WALLET_CARD_BCH2:
+        g_bch2SelectIndex[g_currentAccountIndex] = selectIndex;
         break;
 #endif
     default:
@@ -1657,6 +1672,8 @@ static ChainType GetChainTypeByIndex(uint32_t index)
         return XPUB_TYPE_DASH;
     case HOME_WALLET_CARD_BCH:
         return XPUB_TYPE_BCH;
+    case HOME_WALLET_CARD_BCH2:
+        return XPUB_TYPE_BCH2;
     case HOME_WALLET_CARD_DOGE:
         return XPUB_TYPE_DOGE;
 #endif
@@ -1706,6 +1723,9 @@ static void GetRootHdPath(char *hdPath, uint32_t maxLen)
         break;
     case HOME_WALLET_CARD_BCH:
         strcpy_s(hdPath, maxLen, g_chainPathItems[3].path);
+        break;
+    case HOME_WALLET_CARD_BCH2:
+        strcpy_s(hdPath, maxLen, g_chainPathItems[5].path);
         break;
     case HOME_WALLET_CARD_DOGE:
         strcpy_s(hdPath, maxLen, g_chainPathItems[4].path);
@@ -1765,6 +1785,7 @@ void GuiResetCurrentUtxoAddressIndex(uint8_t index)
     g_ltcSelectIndex[index] = 0;
     g_dashSelectIndex[index] = 0;
     g_bchSelectIndex[index] = 0;
+    g_bch2SelectIndex[index] = 0;
     g_addressType[index] = 0;
 }
 
@@ -1774,6 +1795,7 @@ void GuiResetAllUtxoAddressIndex(void)
     memset_s(g_ltcSelectIndex, sizeof(g_ltcSelectIndex), 0, sizeof(g_ltcSelectIndex));
     memset_s(g_dashSelectIndex, sizeof(g_dashSelectIndex), 0, sizeof(g_dashSelectIndex));
     memset_s(g_bchSelectIndex, sizeof(g_bchSelectIndex), 0, sizeof(g_bchSelectIndex));
+    memset_s(g_bch2SelectIndex, sizeof(g_bch2SelectIndex), 0, sizeof(g_bch2SelectIndex));
     memset_s(g_addressType, sizeof(g_addressType), 0, sizeof(g_addressType));
 }
 static int GetMaxAccountIndex(void)

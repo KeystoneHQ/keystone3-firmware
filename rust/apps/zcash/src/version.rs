@@ -29,7 +29,7 @@ include!(concat!(env!("OUT_DIR"), "/version_generated.rs"));
 pub struct Version(pub u8, pub u8, pub u8);
 
 impl Version {
-    /// Raw 3-byte encoding used in `global.proprietary` values.
+    /// Raw 3-byte wire encoding used by Zcash signing responses.
     pub fn encode(&self) -> [u8; 3] {
         [self.0, self.1, self.2]
     }

@@ -1,30 +1,30 @@
-#include "gui_obj.h"
-#include "gui_views.h"
-#include "gui_style.h"
-#include "gui_status_bar.h"
-#include "gui_model.h"
-#include "gui_enter_passcode.h"
-#include "gui_pop_message_box.h"
-#include "gui_power_option_widgets.h"
-#include "gui_init_widgets.h"
-#include "gui_firmware_process_widgets.h"
-#include "gui_usb_connection_widgets.h"
-#include "gui_low_battery_widgets.h"
-#include "gui_nft_screen_widgets.h"
-#include "gui_firmware_update_deny_widgets.h"
-#include "gui_trans_nft_process_widgets.h"
-#include "gui_firmware_update_widgets.h"
-#include "gui_lock_widgets.h"
-#include "presetting.h"
-#include "anti_tamper.h"
-#include "gui_global_resources.h"
-#include "gui_about_info_widgets.h"
 #include "account_manager.h"
-#include "gui_setup_widgets.h"
+#include "anti_tamper.h"
 #include "device_setting.h"
 #include "drv_aw32001.h"
-#include "usb_task.h"
+#include "gui_about_info_widgets.h"
+#include "gui_enter_passcode.h"
+#include "gui_firmware_process_widgets.h"
+#include "gui_firmware_update_deny_widgets.h"
+#include "gui_firmware_update_widgets.h"
+#include "gui_global_resources.h"
+#include "gui_init_widgets.h"
+#include "gui_lock_widgets.h"
+#include "gui_low_battery_widgets.h"
+#include "gui_model.h"
+#include "gui_nft_screen_widgets.h"
+#include "gui_obj.h"
+#include "gui_pop_message_box.h"
+#include "gui_power_option_widgets.h"
+#include "gui_setup_widgets.h"
+#include "gui_status_bar.h"
+#include "gui_style.h"
+#include "gui_trans_nft_process_widgets.h"
+#include "gui_usb_connection_widgets.h"
+#include "gui_views.h"
+#include "presetting.h"
 #include "ui_display_task.h"
+#include "usb_task.h"
 #include "version.h"
 
 static int32_t GuiInitViewInit(void *param)
@@ -37,6 +37,11 @@ static int32_t GuiInitViewInit(void *param)
     GuiStyleInit();
     GuiStatusBarInit();
     GlobalResourcesInit();
+
+    if (GetFactoryResult() != true) {
+        SetFactoryResult();
+    }
+
     if (GetFactoryResult() == false) {
         GuiFrameOpenView(&g_inactiveView);
         return SUCCESS_CODE;
@@ -87,7 +92,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         break;
     case SIG_INIT_BATTERY:
         battState = *(uint16_t *)param;
-        //printf("rcv battState=0x%04X\r\n", battState);
+        // printf("rcv battState=0x%04X\r\n", battState);
         GuiStatusBarSetBattery(battState & 0xFF, (battState & 0x8000) != 0);
         break;
     case SIG_INIT_FIRMWARE_UPDATE_DENY:
@@ -220,4 +225,3 @@ GUI_VIEW g_initView = {
     .optimization = false,
     .pEvtHandler = GUI_InitViewEventProcess,
 };
-

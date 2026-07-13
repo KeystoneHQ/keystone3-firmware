@@ -6,15 +6,9 @@
 
 1. Added support for Zcash batch PCZT signing
 
-### Improvements
-
-1. Reduced repeated processing during Zcash batch signing
-
 ### Bug Fixes
 
 1. Fixed stalled Zcash signing when response QR generation fails
-
-2. Fixed Zcash batch signing with finalized zero-value dummy spends
 
 
 ## 2.5.0(2026-6-29)

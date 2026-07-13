@@ -916,11 +916,13 @@ fn signable_action_decision<P: consensus::Parameters>(
         params.network_type().coin_type(),
         pool.shielded_pool(),
     )?;
-    if matched_account != Some(account_index) {
-        if policy == ShieldedActionPolicy::Batch {
+    match matched_account {
+        Some(matched_account) if matched_account == account_index => {}
+        Some(_) => return Err(ZcashError::PcztNoMyInputs),
+        None if policy == ShieldedActionPolicy::Batch => {
             return Err(ZcashError::PcztNoMyInputs);
         }
-        return Ok(None);
+        None => return Ok(None),
     }
 
     Ok(Some(SignableShieldedAction { pool, index }))
@@ -1208,7 +1210,8 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
     if policy == ShieldedActionPolicy::Batch && signable_actions.is_empty() {
         return Err(ZcashError::PcztNoMyInputs);
     }
-    let signed = pczt::sign::sign_and_redact_pczt_with_cache(pczt, seed, ask_cache)?;
+    let signed =
+        pczt::sign::sign_and_redact_pczt_with_cache(pczt, seed, Some(account_index), ask_cache)?;
     let signed = if signable_actions.is_empty() {
         signed
     } else {
@@ -1625,7 +1628,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_and_check_ignore_unsupported_ironwood_spend_zip32_path() {
+    fn test_parse_ignores_and_check_rejects_unsupported_ironwood_spend_zip32_path() {
         let sample = pczt::test_support::sample_ironwood_pczt();
         let parsed_pczt = parse_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
@@ -1656,14 +1659,16 @@ mod tests {
                 &sample.seed_fingerprint,
             )
             .expect("parse uses seed fingerprint ownership only");
-            check_pczt_cypherpunk(
-                &pczt::test_support::Nu6_3Network,
-                &pczt,
-                &sample.ufvk_text,
-                &sample.seed_fingerprint,
-                0,
-            )
-            .expect("check ignores non-selected shielded spend paths");
+            assert_invalid_pczt_message(
+                check_pczt_cypherpunk(
+                    &pczt::test_support::Nu6_3Network,
+                    &pczt,
+                    &sample.ufvk_text,
+                    &sample.seed_fingerprint,
+                    0,
+                ),
+                "unsupported Ironwood spend ZIP 32 derivation path",
+            );
         }
     }
 
@@ -1943,6 +1948,28 @@ mod tests {
             .filter(|action| action.spend().spend_auth_sig().is_some())
             .count();
         assert_eq!(signed_actions, 2);
+    }
+
+    #[test]
+    fn test_check_and_sign_reject_unselected_account_spend() {
+        let sample = pczt::test_support::sample_migration_pczt_from_account(1);
+        let check_result = check_pczt_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+            0,
+        );
+        assert!(matches!(check_result, Err(ZcashError::PcztNoMyInputs)));
+
+        let sign_result = sign_checked_pczt(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &sample.seed,
+            &sample.seed_fingerprint,
+            0,
+        );
+        assert!(matches!(sign_result, Err(ZcashError::PcztNoMyInputs)));
     }
 
     #[test]

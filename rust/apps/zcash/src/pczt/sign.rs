@@ -214,6 +214,9 @@ impl Default for SpendAuthCache {
 struct SeedSigner<'a> {
     seed: &'a [u8],
     seed_fingerprint: [u8; 32],
+    /// Restricts checked production signing to the account the user reviewed.
+    /// The raw `sign_pczt` helper passes `None` to preserve its unscoped API.
+    selected_account: Option<zcash_vendor::zip32::AccountId>,
     pool: ShieldedPool,
     /// Borrowed so every PCZT and both pool passes can share one scrubbed
     /// slot. See [`SpendAuthCache`] for the request-scoping contract.
@@ -228,12 +231,14 @@ impl<'a> SeedSigner<'a> {
     fn new(
         seed: &'a [u8],
         seed_fingerprint: [u8; 32],
+        selected_account: Option<zcash_vendor::zip32::AccountId>,
         pool: ShieldedPool,
         ask_cache: &'a SpendAuthCache,
     ) -> Self {
         Self {
             seed,
             seed_fingerprint,
+            selected_account,
             pool,
             ask_cache,
             signed: Cell::new(0),
@@ -346,6 +351,12 @@ impl PcztSigner for SeedSigner<'_> {
             // Not derivable from this seed; not ours to sign.
             return Ok(());
         };
+        if self
+            .selected_account
+            .is_some_and(|selected_account| selected_account != account_index)
+        {
+            return Err(ZcashError::PcztNoMyInputs);
+        }
 
         self.with_spend_authorizing_key(account_index, |ask| {
             action
@@ -380,17 +391,20 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
 /// cache so PCZTs for the selected account share one derivation.
 #[cfg(feature = "cypherpunk")]
 pub fn sign_and_redact_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Pczt> {
-    sign_and_redact_pczt_with_cache(pczt, seed, &SpendAuthCache::new())
+    sign_and_redact_pczt_with_cache(pczt, seed, None, &SpendAuthCache::new())
 }
 
-/// [`sign_and_redact_pczt`] with a caller-provided [`SpendAuthCache`]. The normal
-/// batch path derives its selected account key once and reuses it across PCZTs
-/// and pools. An account change scrubs and replaces the slot. The cache must not
-/// be reused with another seed.
+/// [`sign_and_redact_pczt`] with a caller-provided [`SpendAuthCache`]. When
+/// `selected_account` is `Some`, every same-seed shielded authorization is
+/// restricted to that reviewed account. `None` is reserved for the raw,
+/// unscoped [`sign_pczt`] path. The normal batch path derives its selected
+/// account key once and reuses it across PCZTs and pools. An account change
+/// scrubs and replaces the slot. The cache must not be reused with another seed.
 #[cfg(feature = "cypherpunk")]
 pub(crate) fn sign_and_redact_pczt_with_cache(
     pczt: Pczt,
     seed: &[u8],
+    selected_account: Option<zcash_vendor::zip32::AccountId>,
     ask_cache: &SpendAuthCache,
 ) -> crate::Result<Pczt> {
     super::validate_supported_pczt(&pczt)?;
@@ -402,7 +416,13 @@ pub(crate) fn sign_and_redact_pczt_with_cache(
 
     // The orchard signer handles both the transparent inputs and the Orchard bundle
     // (the pool only changes error labels for shielded actions). Ironwood gets its own.
-    let orchard_signer = SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Orchard, ask_cache);
+    let orchard_signer = SeedSigner::new(
+        seed,
+        seed_fingerprint,
+        selected_account,
+        ShieldedPool::Orchard,
+        ask_cache,
+    );
 
     // Propagate signer errors directly so strict path validation remains
     // `InvalidPczt`.
@@ -410,8 +430,13 @@ pub(crate) fn sign_and_redact_pczt_with_cache(
     let signer = pczt_ext::sign_transparent(signer, &orchard_signer)?;
     let signer = pczt_ext::sign_orchard(signer, &orchard_signer)?;
 
-    let ironwood_signer =
-        SeedSigner::new(seed, seed_fingerprint, ShieldedPool::Ironwood, ask_cache);
+    let ironwood_signer = SeedSigner::new(
+        seed,
+        seed_fingerprint,
+        selected_account,
+        ShieldedPool::Ironwood,
+        ask_cache,
+    );
     let signer = if process_ironwood {
         pczt_ext::sign_ironwood(signer, &ironwood_signer)?
     } else {
@@ -639,7 +664,7 @@ mod tests {
             (ShieldedPool::Orchard, 1),
             (ShieldedPool::Orchard, 0),
         ] {
-            let signer = SeedSigner::new(&seed, fingerprint, pool, &cache);
+            let signer = SeedSigner::new(&seed, fingerprint, None, pool, &cache);
             let bytes = signer
                 .with_spend_authorizing_key(account(i), |ask| Ok(ask_scalar_bytes(ask)))
                 .unwrap();
@@ -659,12 +684,67 @@ mod tests {
             sign_and_redact_pczt_with_cache(
                 Pczt::parse(&sample.bytes).unwrap(),
                 &sample.seed,
+                None,
                 &cache,
             )
             .expect("shared-cache PCZT should sign");
         }
 
         assert_eq!(cache.0.borrow().account, Some(zip32::AccountId::ZERO));
+    }
+
+    #[test]
+    fn test_scoped_signer_only_signs_selected_account() {
+        let sample = crate::pczt::test_support::sample_migration_pczt_from_account(1);
+        let account_one = zip32::AccountId::try_from(1).unwrap();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
+        let sighash = RoleSigner::new(pczt.clone())
+            .expect("account-1 PCZT signer should initialize")
+            .shielded_sighash();
+        let signed = sign_and_redact_pczt_with_cache(
+            pczt,
+            &sample.seed,
+            Some(account_one),
+            &SpendAuthCache::new(),
+        )
+        .expect("account-1 spend should sign when account 1 is selected");
+        let action = signed
+            .orchard()
+            .actions()
+            .iter()
+            .find(|action| action.spend().spend_auth_sig().is_some())
+            .expect("account-1 spend must be signed");
+        let sig: orchard::primitives::redpallas::Signature<
+            orchard::primitives::redpallas::SpendAuth,
+        > = action.spend().spend_auth_sig().unwrap().into();
+        let rk = orchard::primitives::redpallas::VerificationKey::<
+            orchard::primitives::redpallas::SpendAuth,
+        >::try_from(*action.spend().rk())
+        .expect("randomized validating key must parse");
+        rk.verify(&sighash, &sig)
+            .expect("account-1 signature must match its randomized key");
+
+        let result = sign_and_redact_pczt_with_cache(
+            Pczt::parse(&sample.bytes).unwrap(),
+            &sample.seed,
+            Some(zip32::AccountId::ZERO),
+            &SpendAuthCache::new(),
+        );
+
+        assert!(matches!(result, Err(ZcashError::PcztNoMyInputs)));
+    }
+
+    #[test]
+    fn test_scoped_ironwood_signer_rejects_unselected_account() {
+        let sample = crate::pczt::test_support::sample_ironwood_pczt();
+        let result = sign_and_redact_pczt_with_cache(
+            Pczt::parse(&sample.bytes).unwrap(),
+            &sample.seed,
+            Some(zip32::AccountId::try_from(1).unwrap()),
+            &SpendAuthCache::new(),
+        );
+
+        assert!(matches!(result, Err(ZcashError::PcztNoMyInputs)));
     }
 
     fn signable_sample_pczt() -> crate::pczt::test_support::SamplePczt {

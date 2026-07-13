@@ -136,11 +136,34 @@ pub(crate) fn matching_seed_supported_orchard_account(
     coin_type: u32,
     pool: ShieldedPool,
 ) -> Result<Option<zcash_vendor::zip32::AccountId>, crate::errors::ZcashError> {
+    matching_seed_supported_orchard_account_parts(
+        seed_fingerprint,
+        derivation.map(|derivation| {
+            (
+                derivation.seed_fingerprint(),
+                derivation.derivation_path().as_slice(),
+            )
+        }),
+        coin_type,
+        pool,
+    )
+}
+
+/// [`matching_seed_supported_orchard_account`] over the derivation's raw
+/// (fingerprint, path) parts, for callers holding derivation parts recorded
+/// during the batch check instead of a `Zip32Derivation` borrow.
+#[cfg(feature = "cypherpunk")]
+pub(crate) fn matching_seed_supported_orchard_account_parts(
+    seed_fingerprint: &[u8; 32],
+    derivation: Option<(&[u8; 32], &[zcash_vendor::zip32::ChildIndex])>,
+    coin_type: u32,
+    pool: ShieldedPool,
+) -> Result<Option<zcash_vendor::zip32::AccountId>, crate::errors::ZcashError> {
     let pool_label = pool.label();
-    let Some(derivation) = derivation else {
+    let Some((derivation_seed_fingerprint, derivation_path)) = derivation else {
         return Ok(None);
     };
-    if derivation.seed_fingerprint() != seed_fingerprint {
+    if derivation_seed_fingerprint != seed_fingerprint {
         return Ok(None);
     }
 
@@ -150,7 +173,7 @@ pub(crate) fn matching_seed_supported_orchard_account(
         ))
     };
 
-    let [purpose, path_coin_type, account_index] = &derivation.derivation_path()[..] else {
+    let [purpose, path_coin_type, account_index] = derivation_path else {
         return Err(unsupported_path());
     };
 

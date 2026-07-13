@@ -211,6 +211,7 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
     pczt: &Pczt,
 ) -> Result<ParsedPczt, ZcashError> {
     super::validate_supported_pczt(pczt)?;
+    let keys = WalletKeys::derive(ufvk)?;
     let mut parsed_orchard = None;
     let mut parsed_ironwood = None;
     let should_process_ironwood = super::pczt_should_process_ironwood(pczt);
@@ -221,7 +222,7 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
             parsed_orchard = parse_orchard(
                 params,
                 seed_fingerprint,
-                ufvk,
+                &keys,
                 bundle,
                 ShieldedPool::Orchard,
             )
@@ -235,7 +236,7 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
                 parsed_ironwood = parse_orchard(
                     params,
                     seed_fingerprint,
-                    ufvk,
+                    &keys,
                     bundle,
                     ShieldedPool::Ironwood,
                 )
@@ -596,7 +597,7 @@ fn parse_transparent_output<P: consensus::Parameters>(
 fn parse_orchard<P: consensus::Parameters>(
     params: &P,
     seed_fingerprint: &[u8; 32],
-    ufvk: &UnifiedFullViewingKey,
+    keys: &WalletKeys,
     orchard: &orchard::pczt::Bundle,
     pool: ShieldedPool,
 ) -> Result<Option<ParsedOrchard>, ZcashError> {
@@ -611,7 +612,7 @@ fn parse_orchard<P: consensus::Parameters>(
                 parsed_orchard.add_from(parsed_from);
             }
         }
-        let parsed_to = parse_orchard_output(params, ufvk, action, pool)?;
+        let parsed_to = parse_orchard_output(params, keys, action, pool)?;
         if !parsed_to.get_is_dummy() {
             parsed_orchard.add_to(parsed_to);
         }
@@ -649,30 +650,58 @@ pub(crate) fn parse_orchard_spend(
 
 #[cfg(feature = "cypherpunk")]
 pub(crate) fn is_wallet_orchard_address(
-    ufvk: &UnifiedFullViewingKey,
+    keys: &WalletKeys,
     address: &Address,
 ) -> Result<bool, ZcashError> {
-    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
-        "orchard is not present in ufvk".to_string(),
-    ))?;
-    let external_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::External);
-    let internal_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::Internal);
+    let (external, internal) = keys.address_scope_flags(address);
+    Ok(external || internal)
+}
 
-    Ok(external_ivk.diversifier_index(address).is_some()
-        || internal_ivk.diversifier_index(address).is_some())
+/// Wallet viewing material derived once per check/parse entry and reused across
+/// Orchard and Ironwood actions. Deriving the incoming viewing keys requires
+/// Sinsemilla commitments; the derived fields are invariant for a given UFVK.
+#[cfg(feature = "cypherpunk")]
+pub(crate) struct WalletKeys {
+    external_ivk: orchard::keys::IncomingViewingKey,
+    internal_ivk: orchard::keys::IncomingViewingKey,
+    external_ovk: OutgoingViewingKey,
+    internal_ovk: OutgoingViewingKey,
+    transparent_internal_ovk: Option<OutgoingViewingKey>,
 }
 
 #[cfg(feature = "cypherpunk")]
-fn is_internal_orchard_address(
-    ufvk: &UnifiedFullViewingKey,
-    address: &Address,
-) -> Result<bool, ZcashError> {
-    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
-        "orchard is not present in ufvk".to_string(),
-    ))?;
-    let internal_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::Internal);
+impl WalletKeys {
+    /// Derives every per-UFVK viewing key needed by the parse/check paths, once.
+    /// Produces the "orchard is not present in ufvk" error for a UFVK without
+    /// an Orchard component (the same error the per-call helpers used to raise).
+    pub(crate) fn derive(ufvk: &UnifiedFullViewingKey) -> Result<Self, ZcashError> {
+        let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
+            "orchard is not present in ufvk".to_string(),
+        ))?;
+        let external_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::External);
+        let internal_ivk = fvk.to_ivk(zcash_vendor::zip32::Scope::Internal);
+        let external_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::External).clone();
+        let internal_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::Internal).clone();
+        let transparent_internal_ovk = ufvk
+            .transparent()
+            .map(|k| orchard::keys::OutgoingViewingKey::from(k.internal_ovk().as_bytes()));
+        Ok(Self {
+            external_ivk,
+            internal_ivk,
+            external_ovk,
+            internal_ovk,
+            transparent_internal_ovk,
+        })
+    }
 
-    Ok(internal_ivk.diversifier_index(address).is_some())
+    /// Returns whether `address` belongs to the wallet's external and internal
+    /// IVK scopes.
+    fn address_scope_flags(&self, address: &Address) -> (bool, bool) {
+        (
+            self.external_ivk.diversifier_index(address).is_some(),
+            self.internal_ivk.diversifier_index(address).is_some(),
+        )
+    }
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -701,21 +730,12 @@ pub(crate) fn validate_orchard_user_address<P: consensus::Parameters>(
 #[cfg(feature = "cypherpunk")]
 pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
     params: &P,
-    ufvk: &UnifiedFullViewingKey,
+    keys: &WalletKeys,
     action: &orchard::pczt::Action,
     pool: ShieldedPool,
 ) -> Result<ParsedTo, ZcashError> {
     let pool_label = pool.label();
     let output = action.output();
-    let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
-        "orchard is not present in ufvk".to_string(),
-    ))?;
-
-    let external_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::External).clone();
-    let internal_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::Internal).clone();
-    let transparent_internal_ovk = ufvk
-        .transparent()
-        .map(|k| orchard::keys::OutgoingViewingKey::from(k.internal_ovk().as_bytes()));
 
     // we should verify the cv_net in checking phrase, the transaction checking should failed if the net value is not correct
     // so the value should be trustable
@@ -750,8 +770,8 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
                     validate_orchard_user_address(params, user_address, &address)?;
                 }
 
-                let belongs_to_wallet = is_wallet_orchard_address(ufvk, &address)?;
-                let is_internal = is_internal_orchard_address(ufvk, &address)?;
+                let (is_external, is_internal) = keys.address_scope_flags(&address);
+                let belongs_to_wallet = is_external || is_internal;
                 if is_internal_ovk && !belongs_to_wallet {
                     return Err(ZcashError::InvalidPczt(alloc::format!(
                         "{pool_label} output was recoverable with an internal OVK but does not belong to this wallet"
@@ -795,19 +815,22 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
         }
     };
 
-    let mut keys = vec![(Some(external_ovk), false), (Some(internal_ovk), true)];
+    let mut trial_ovks = vec![
+        (Some(keys.external_ovk.clone()), false),
+        (Some(keys.internal_ovk.clone()), true),
+    ];
 
-    if let Some(ovk) = transparent_internal_ovk {
-        keys.push((Some(ovk), true));
+    if let Some(ovk) = &keys.transparent_internal_ovk {
+        trial_ovks.push((Some(ovk.clone()), true));
     }
 
     // Require that we can view all non-zero-valued outputs by falling back on direct
     // decryption.
-    keys.push((None, false));
+    trial_ovks.push((None, false));
 
     let mut parsed_to = None;
 
-    for key in keys {
+    for key in trial_ovks {
         // TODO: Should this be a soft error ("catch" the decryption failure error here
         // and store it in `ParsedTo` to inform the user that an output of their
         // transaction is unreadable, but still give them the option to sign), or a hard

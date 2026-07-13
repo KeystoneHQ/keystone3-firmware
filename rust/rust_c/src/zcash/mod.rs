@@ -12,6 +12,8 @@ use crate::{extract_array, extract_array_mut};
 use crate::{extract_ptr_with_type, make_free_method};
 use alloc::{boxed::Box, format, string::String, string::ToString, vec::Vec};
 use app_zcash::get_address;
+#[cfg(feature = "cypherpunk")]
+use app_zcash::pczt::{sign::SpendAuthCache, structs::ParsedPczt};
 use core::slice;
 use cryptoxide::hashing::sha256;
 use cty::c_char;
@@ -19,6 +21,8 @@ use keystore::algorithms::{
     ed25519::slip10_ed25519::get_private_key_by_seed,
     zcash::{calculate_seed_fingerprint, derive_ufvk},
 };
+#[cfg(feature = "cypherpunk")]
+use structs::BatchDisplayCache;
 use structs::DisplayPczt;
 use structs::DisplayZcashBatch;
 use structs::ZcashCheckedPczt;
@@ -209,7 +213,7 @@ pub unsafe extern "C" fn parse_zcash_tx_multi_coins(
     }
 }
 
-/// Enforces the count, canonical byte, and exact payload uniqueness limits.
+/// Enforces the count, canonical byte total, and duplicate payload limits.
 #[cfg(feature = "cypherpunk")]
 fn validate_zcash_batch_payloads(payloads: &[Vec<u8>]) -> Result<(), RustCError> {
     if payloads.is_empty() {
@@ -389,16 +393,25 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
         Err(e) => return TransactionCheckResult::from(e).c_ptr(),
     };
 
+    // Each check returns normalized bytes, display rows, and an optional compact
+    // migration classification from one trial-decrypt pass. Parse later converts
+    // the cached rows.
     let mut checked_pczts = Vec::with_capacity(payloads.len());
+    let mut rows: Vec<ParsedPczt> = Vec::with_capacity(payloads.len());
+    let mut migration_summaries = Vec::with_capacity(payloads.len());
+    // One check context for the whole batch: the UFVK decode and the wallet
+    // Orchard key derivation depend only on the device UFVK, so they run once
+    // here instead of once per PCZT (see BatchCheckContext).
+    let check_ctx = app_zcash::BatchCheckContext::new(&ufvk_text);
     for payload in payloads {
-        match app_zcash::check_batch_pczt_cypherpunk(
+        match app_zcash::check_batch_pczt_with_display(
             &MainNetwork,
             &payload,
-            &ufvk_text,
+            &check_ctx,
             seed_fingerprint,
             account_index,
         ) {
-            Ok(normalized) => {
+            Ok((normalized, parsed, migration_summary)) => {
                 let pczt = match Pczt::parse(&normalized) {
                     Ok(pczt) => pczt,
                     Err(e) => {
@@ -409,10 +422,19 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
                     }
                 };
                 checked_pczts.push(pczt);
+                rows.push(parsed);
+                migration_summaries.push(migration_summary);
             }
             Err(e) => return TransactionCheckResult::from(e).c_ptr(),
         }
     }
+
+    // Compact eligible Orchard-to-Ironwood transfers by content, independent of
+    // their PCZT positions. Ambiguous batches retain every ordinary row.
+    let display_rows = app_zcash::compact_checked_batch_migration_review(
+        rows.into_iter().zip(migration_summaries),
+    );
+    let display = BatchDisplayCache::new(display_rows);
 
     // Rebuild the Postcard request around the normalized PCZTs so parse/sign
     // consume exactly what was checked, then preserve the outer request id for
@@ -430,7 +452,7 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
         Ok(bytes) => bytes,
         Err(e) => return TransactionCheckResult::from(e).c_ptr(),
     };
-    *checked_batch = ZcashCheckedPczt::new(normalized_batch).c_ptr();
+    *checked_batch = ZcashCheckedPczt::new_with_display(normalized_batch, display).c_ptr();
     TransactionCheckResult::new().c_ptr()
 }
 
@@ -454,46 +476,35 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
         ))
         .c_ptr();
     }
+    // `ufvk` and `seed_fingerprint` are retained for ABI/signature stability but
+    // unused now that parse converts the display rows the check pass cached
+    // instead of re-decrypting every output.
+    let _ = (ufvk, seed_fingerprint);
     let checked = extract_ptr_with_type!(checked_batch, ZcashCheckedPczt);
-    let bytes = match checked.checked_bytes() {
-        Ok(bytes) => bytes,
-        Err(e) => return TransactionParseResult::from(e).c_ptr(),
-    };
-    let batch = match parse_checked_zcash_batch(bytes) {
-        Ok((_, batch)) => batch,
-        Err(e) => return TransactionParseResult::from(e).c_ptr(),
-    };
-    let ufvk_text = unsafe { recover_c_char(ufvk) };
-    let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
-    let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-
-    // Serialize the normalized PCZTs once, then parse each into a complete
-    // display model. Eligible Orchard-to-Ironwood transfers are folded by
-    // content; ambiguous batches keep their ordinary review pages.
-    let payloads = match batch
-        .pczts()
-        .iter()
-        .map(serialize_batch_pczt)
-        .collect::<Result<Vec<_>, _>>()
-    {
-        Ok(payloads) => payloads,
-        Err(e) => return TransactionParseResult::from(e).c_ptr(),
-    };
-    let parsed_items = match app_zcash::parse_batch_with_migration_summary_cypherpunk(
-        &MainNetwork,
-        payloads.iter().map(Vec::as_slice),
-        &ufvk_text,
-        seed_fingerprint,
-    ) {
-        Ok(items) => items,
-        Err(e) => return TransactionParseResult::from(e).c_ptr(),
-    };
-    // Convert only after every PCZT has parsed. These FFI values own heap
-    // allocations freed by `free_TransactionParseResult_DisplayZcashBatch`, not
-    // Rust `Drop`; an early return after partial conversion would leak memory.
-    let display_items: Vec<DisplayPczt> = parsed_items.iter().map(DisplayPczt::from).collect();
+    if let Err(e) = checked.checked_bytes() {
+        return TransactionParseResult::from(e).c_ptr();
+    }
+    if checked.display.is_null() {
+        // Can't happen for a batch checked container (the batch check always
+        // stores a cache), but fail closed rather than silently re-deriving.
+        return TransactionParseResult::from(RustCError::InvalidData(
+            "no checked Zcash batch display available".to_string(),
+        ))
+        .c_ptr();
+    }
+    // Convert the cached rows into fresh owned FFI structs. There is no fallible
+    // step after the first `DisplayPczt` is built, so the "materialize only after
+    // all fallible steps" leak-safety is trivially preserved.
+    let display_items = batch_display_items(&*checked.display);
 
     TransactionParseResult::success(DisplayZcashBatch::from(display_items).c_ptr()).c_ptr()
+}
+
+/// Converts the cached review rows into fresh FFI display structs. The cache
+/// already contains either the compacted review or all ordinary PCZT rows.
+#[cfg(feature = "cypherpunk")]
+fn batch_display_items(cache: &BatchDisplayCache) -> Vec<DisplayPczt> {
+    cache.rows().iter().map(DisplayPczt::from).collect()
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -535,6 +546,9 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
 
                     let mut results = Vec::new();
                     let mut error = None;
+                    // One scrubbed spend-auth slot for the whole request. The
+                    // selected account key stays cached across every batch PCZT.
+                    let ask_cache = SpendAuthCache::new();
                     // Preserve request order and emit nothing unless every PCZT signs.
                     for pczt in batch.pczts() {
                         let payload = match serialize_batch_pczt(pczt) {
@@ -544,12 +558,13 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
                                 break;
                             }
                         };
-                        match app_zcash::sign_checked_batch_pczt(
+                        match app_zcash::sign_checked_batch_pczt_with_cache(
                             &MainNetwork,
                             &payload,
                             seed,
                             &seed_fingerprint,
                             account_index,
+                            &ask_cache,
                         ) {
                             Ok(payload) => {
                                 match app_zcash::extract_compact_sigs_from_signed_pczt(&payload) {
@@ -568,6 +583,9 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
                             }
                         }
                     }
+                    // End the secret's lifetime before response serialization
+                    // and UR encoding, while retaining it across every PCZT.
+                    drop(ask_cache);
 
                     if let Some(error) = error {
                         error
@@ -1158,5 +1176,73 @@ mod tests {
         let pt = decrypter.decrypt_padded_vec_mut::<Pkcs7>(&ct).unwrap();
 
         assert_eq!(String::from_utf8(pt).unwrap(), "hello world");
+    }
+
+    /// A minimal display row; the real content parity is covered by the app-level
+    /// tests, so this only exercises the rust_c cache plumbing.
+    #[cfg(feature = "cypherpunk")]
+    fn sample_parsed_pczt() -> ParsedPczt {
+        ParsedPczt::new(
+            None,
+            None,
+            None,
+            "1 ZEC".to_string(),
+            "0.0001 ZEC".to_string(),
+            false,
+        )
+    }
+
+    /// The batch parse FFI reads the display cache the check stored and returns one
+    /// display per cached row without re-deriving anything. The item count is
+    /// asserted through the conversion helper (`TransactionParseResult::data` is
+    /// private), then the full FFI is driven end-to-end for the no-crash path.
+    #[cfg(feature = "cypherpunk")]
+    #[test]
+    fn test_parse_zcash_batch_reads_display_cache() {
+        let items = batch_display_items(&BatchDisplayCache::new(vec![
+            sample_parsed_pczt(),
+            sample_parsed_pczt(),
+            sample_parsed_pczt(),
+        ]));
+        assert_eq!(
+            items.len(),
+            3,
+            "the cache must yield one display per review row"
+        );
+        for item in &items {
+            unsafe { item.free() };
+        }
+
+        let cache = BatchDisplayCache::new(vec![sample_parsed_pczt(), sample_parsed_pczt()]);
+        let checked_ptr =
+            ZcashCheckedPczt::new_with_display(b"normalized-batch-bytes".to_vec(), cache).c_ptr();
+        let result = unsafe {
+            parse_zcash_batch_tx_cypherpunk(
+                checked_ptr,
+                core::ptr::null_mut(),
+                core::ptr::null_mut(),
+                false,
+            )
+        };
+        assert!(
+            !result.is_null(),
+            "parse must produce a result for a cache-bearing container"
+        );
+        unsafe {
+            Box::from_raw(result).free();
+            free_zcash_checked_pczt(checked_ptr);
+        }
+    }
+
+    /// Freeing a checked container that carries a display cache must free both the
+    /// bytes and the cache exactly once (reaching the end without an allocator
+    /// abort is the assertion).
+    #[cfg(feature = "cypherpunk")]
+    #[test]
+    fn test_free_cache_bearing_container_is_clean() {
+        let cache = BatchDisplayCache::new(vec![sample_parsed_pczt(), sample_parsed_pczt()]);
+        let checked_ptr =
+            ZcashCheckedPczt::new_with_display(b"normalized-batch-bytes".to_vec(), cache).c_ptr();
+        unsafe { free_zcash_checked_pczt(checked_ptr) };
     }
 }

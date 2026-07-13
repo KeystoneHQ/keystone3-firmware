@@ -216,23 +216,69 @@ impl_c_ptrs!(
     DisplayOrchard
 );
 
+/// The batch display rows produced by the check pass and converted to FFI
+/// structs by the batch parse FFI, so parse no longer re-decrypts every output.
+///
+/// Opaque to C: this is a plain Rust struct (deliberately not `#[repr(C)]`), and C
+/// only ever holds it behind the [`ZcashCheckedPczt::display`] pointer without
+/// dereferencing it. The batch check FFI builds it; the batch parse FFI reads it
+/// Rust-side and turns each [`ParsedPczt`] into a [`DisplayPczt`].
+#[cfg(feature = "cypherpunk")]
+pub struct BatchDisplayCache {
+    rows: Vec<ParsedPczt>,
+}
+
+#[cfg(feature = "cypherpunk")]
+impl BatchDisplayCache {
+    /// Stores the final review rows after any migration compaction.
+    pub fn new(rows: Vec<ParsedPczt>) -> Self {
+        Self { rows }
+    }
+
+    /// Returns the final review rows that batch parse converts for the C UI.
+    pub fn rows(&self) -> &[ParsedPczt] {
+        &self.rows
+    }
+}
+
 /// Normalized transaction bytes verified during check and retained by C between
 /// the check, display, and sign stages (`checked_PCZT` on the C side).
 ///
 /// `data` is opaque to C: the normalized PCZT encoding in the single-transaction
-/// flow, or the normalized `ZcashSignBatch` CBOR in the batch flow. Construct
-/// exclusively from check results.
+/// flow, or the normalized `ZcashSignBatch` CBOR in the batch flow. `display`
+/// (cypherpunk only) is the opaque [`BatchDisplayCache`] the batch check builds
+/// so parse converts stored rows instead of re-decrypting; it is null for the
+/// single-transaction and multi-coins flows. Construct exclusively from check
+/// results.
 #[repr(C)]
 pub struct ZcashCheckedPczt {
     pub data: Ptr<VecFFI<u8>>,
+    /// Opaque batch display cache (null for the single-tx / multi-coins flows).
+    /// C never dereferences this.
+    #[cfg(feature = "cypherpunk")]
+    pub display: Ptr<BatchDisplayCache>,
 }
 
 impl ZcashCheckedPczt {
-    /// Wraps bytes verified during check.
+    /// Wraps bytes verified during check. The display cache is null; the batch
+    /// flow uses [`Self::new_with_display`] instead.
     pub fn new(data: Vec<u8>) -> Self {
         Self {
             data: VecFFI::from(data).c_ptr(),
+            #[cfg(feature = "cypherpunk")]
+            display: null_mut(),
         }
+    }
+
+    /// Wraps checked batch bytes together with the display cache the check
+    /// produced, so the batch parse FFI converts the stored rows instead of
+    /// re-decrypting every output. The cache is freed with the container in
+    /// [`Free::free`].
+    #[cfg(feature = "cypherpunk")]
+    pub fn new_with_display(data: Vec<u8>, display: BatchDisplayCache) -> Self {
+        let mut checked = Self::new(data);
+        checked.display = alloc::boxed::Box::into_raw(alloc::boxed::Box::new(display));
+        checked
     }
 
     /// Borrows the bytes produced by a successful check.
@@ -254,6 +300,12 @@ impl Free for ZcashCheckedPczt {
         if !self.data.is_null() {
             let vec_ffi = alloc::boxed::Box::from_raw(self.data);
             drop(Vec::from_raw_parts(vec_ffi.data, vec_ffi.size, vec_ffi.cap));
+        }
+        // Free the batch display cache exactly once when present (the single-tx
+        // and multi-coins flows leave it null).
+        #[cfg(feature = "cypherpunk")]
+        if !self.display.is_null() {
+            drop(alloc::boxed::Box::from_raw(self.display));
         }
     }
 }

@@ -6,9 +6,11 @@ static lv_obj_t *g_pendingHintBox = NULL;
 static bool g_hasSubtitle = false;
 static lv_obj_t *g_subTitleLabel = NULL;
 
-void GuiNoPendingHintBoxOpen(const char *title)
+// Builds the static loading sheet with an optional explanatory line.
+static void GuiNoPendingHintBoxOpenInternal(const char *title, const char *subtitle)
 {
-    uint16_t h = 140;
+    bool hasSubtitle = subtitle != NULL;
+    uint16_t h = hasSubtitle ? 188 : 140;
     uint16_t w = 480;
     lv_obj_t *bgCont = GuiCreateContainer(w, 800);
     lv_obj_set_style_bg_opa(bgCont, 0, 0);
@@ -36,9 +38,26 @@ void GuiNoPendingHintBoxOpen(const char *title)
     lv_obj_set_style_border_width(downCont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t *label = GuiCreateTextLabel(bgCont, title);
-    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -50);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, hasSubtitle ? -96 : -50);
+
+    if (hasSubtitle) {
+        label = GuiCreateNoticeLabel(bgCont, subtitle);
+        lv_obj_set_width(label, 408);
+        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -48);
+    }
 
     g_pendingHintBox = bgCont;
+}
+
+void GuiNoPendingHintBoxOpen(const char *title)
+{
+    GuiNoPendingHintBoxOpenInternal(title, NULL);
+}
+
+void GuiNoPendingHintBoxOpenWithSubtitle(const char *title, const char *subtitle)
+{
+    GuiNoPendingHintBoxOpenInternal(title, subtitle);
 }
 
 void GuiPendingHintBoxOpen(const char *title, const char *subtitle)

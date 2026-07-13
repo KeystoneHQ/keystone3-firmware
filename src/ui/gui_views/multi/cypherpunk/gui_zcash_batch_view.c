@@ -64,7 +64,7 @@ int32_t GuiZcashBatchViewEventProcess(void *self, uint16_t usEvent, void *param,
         GuiPendingHintBoxRemove();
         break;
     case SIG_SHOW_TRANSACTION_LOADING:
-        GuiNoPendingHintBoxOpen(_("Loading"));
+        GuiNoPendingHintBoxOpenWithSubtitle(_("Loading"), _("zcash_batch_loading_hint"));
         break;
     default:
         return ERR_GUI_UNHANDLED;

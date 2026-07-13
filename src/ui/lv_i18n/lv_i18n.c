@@ -968,6 +968,7 @@ const static lv_i18n_phrase_t en_singulars[] = {
     {"xmr_txo_total_amount_desc", "This amount represents the total balance of the TXOs included in this QR code for signing. It may not reflect the full balance in your software wallet or the exact transaction amount."},
     {"xmr_txo_total_amount_link", "https://keyst.one/t/3rd/cake"},
     {"xmr_txo_total_amount_title", "TXO Total Amount"},
+    {"zcash_batch_loading_hint", "This may take a few minutes."},
     {NULL, NULL} // End mark
 };
 
@@ -1922,6 +1923,7 @@ const static lv_i18n_phrase_t de_singulars[] = {
     {"xmr_txo_total_amount_desc", "Dieser Betrag repräsentiert das Gesamtsaldo der TXOs, die in diesem QR-Code zum Signieren enthalten sind. Er spiegelt möglicherweise nicht den vollständigen Saldo in Ihrer Software-Wallet oder den genauen Transaktionsbetrag wider."},
     {"xmr_txo_total_amount_link", "https://keyst.one/t/3rd/cake"},
     {"xmr_txo_total_amount_title", "Gesamtbetrag der TXO"},
+    {"zcash_batch_loading_hint", "Dies kann einige Minuten dauern."},
     {NULL, NULL} // End mark
 };
 
@@ -2876,6 +2878,7 @@ const static lv_i18n_phrase_t es_singulars[] = {
     {"xmr_txo_total_amount_desc", "Esta cantidad representa el saldo total de los TXO incluidos en este código QR para firmar. Puede no reflejar el saldo completo en su cartera de software o el monto exacto de la transacción."},
     {"xmr_txo_total_amount_link", "https://keyst.one/t/3rd/cake"},
     {"xmr_txo_total_amount_title", "Cantidad total de TXO"},
+    {"zcash_batch_loading_hint", "Esto puede tardar unos minutos."},
     {NULL, NULL} // End mark
 };
 
@@ -3827,6 +3830,7 @@ const static lv_i18n_phrase_t ja_singulars[] = {
     {"xmr_txo_total_amount_desc", "この金額は、署名用のこのQRコードに含まれるTXOの合計残高を表しています。これは、ソフトウェアウォレットの全残高や正確な取引額を反映していない可能性があります。"},
     {"xmr_txo_total_amount_link", "https://keyst.one/t/3rd/cake"},
     {"xmr_txo_total_amount_title", "TXO 合計額"},
+    {"zcash_batch_loading_hint", "数分かかる場合があります。"},
     {NULL, NULL} // End mark
 };
 
@@ -4776,6 +4780,7 @@ const static lv_i18n_phrase_t ko_singulars[] = {
     {"xmr_txo_total_amount_desc", "이 금액은 서명을 위해 이 QR 코드에 포함된 TXO의 총 잔액을 나타냅니다. 이는 소프트웨어 지갑의 전체 잔액이나 정확한 거래 금액을 반영하지 않을 수 있습니다."},
     {"xmr_txo_total_amount_link", "https://keyst.one/t/3rd/cake"},
     {"xmr_txo_total_amount_title", "TXO 총액"},
+    {"zcash_batch_loading_hint", "몇 분 정도 걸릴 수 있습니다."},
     {NULL, NULL} // End mark
 };
 
@@ -5729,6 +5734,7 @@ const static lv_i18n_phrase_t pl_singulars[] = {
     {"xmr_txo_total_amount_desc", "Kwota ta reprezentuje całkowite saldo TXO ujęte w tym kodzie QR do podpisania. Może nie odzwierciedlać pełnego salda w portfelu oprogramowania lub dokładnej kwoty transakcji."},
     {"xmr_txo_total_amount_link", "https://keyst.one/t/3rd/cake"},
     {"xmr_txo_total_amount_title", "Łączna kwota TXO"},
+    {"zcash_batch_loading_hint", "Może to potrwać kilka minut."},
     {NULL, NULL} // End mark
 };
 
@@ -6686,6 +6692,7 @@ const static lv_i18n_phrase_t ru_singulars[] = {
     {"xmr_txo_total_amount_desc", "Эта сумма представляет собой общий баланс TXO, включенных в этот QR-код для подписи. Она может не отражать полный баланс вашего программного кошелька или точную сумму транзакции."},
     {"xmr_txo_total_amount_link", "https://keyst.one/xmr/account"},
     {"xmr_txo_total_amount_title", "Общая сумма TXO"},
+    {"zcash_batch_loading_hint", "Это может занять несколько минут."},
     {NULL, NULL} // End mark
 };
 
@@ -7643,6 +7650,7 @@ const static lv_i18n_phrase_t zh_cn_singulars[] = {
     {"xmr_txo_total_amount_desc", "此金额代表此二维码中包含用于签署的TXO的总余额。它可能不反映您的软件钱包中的全额余额或交易的确切金额。"},
     {"xmr_txo_total_amount_link", "https://keyst.one/t/3rd/cake"},
     {"xmr_txo_total_amount_title", "TXO 总金额"},
+    {"zcash_batch_loading_hint", "这可能需要数分钟。"},
     {NULL, NULL} // End mark
 };
 

@@ -200,7 +200,7 @@ pub(crate) mod test_support {
     use zcash_vendor::{
         orchard,
         pczt::Pczt,
-        zcash_keys::keys::UnifiedFullViewingKey,
+        zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
         zcash_protocol::{
             consensus::{BranchId, MainNetwork, Parameters},
             memo::{Memo, MemoBytes},
@@ -423,18 +423,65 @@ pub(crate) mod test_support {
         }
     }
 
-    // Orchard spend -> Ironwood output: a cross-pool migration, the message type
-    // the real batch uses (and the one never exercised on-device). Mirrors
-    // sample_ironwood_pczt but the *spent* note is an Orchard note.
+    // Orchard spend -> Ironwood output, matching one compact-eligible transfer.
     pub(crate) fn sample_migration_pczt() -> SamplePczt {
+        sample_migration_pczt_with_options(0, MemoBytes::empty(), None)
+    }
+
+    /// Builds a migration whose funded output carries the given memo.
+    pub(crate) fn sample_migration_pczt_with_output_memo(output_memo: MemoBytes) -> SamplePczt {
+        sample_migration_pczt_with_options(0, output_memo, None)
+    }
+
+    /// Builds a migration whose funded output belongs to the given account.
+    pub(crate) fn sample_migration_pczt_to_account(output_account: u32) -> SamplePczt {
+        sample_migration_pczt_with_options(output_account, MemoBytes::empty(), None)
+    }
+
+    /// Adds a zero-value output, optionally marked for ordinary display.
+    pub(crate) fn sample_migration_pczt_with_zero_output(
+        memo: MemoBytes,
+        displayable: bool,
+    ) -> SamplePczt {
+        sample_migration_pczt_with_options(0, MemoBytes::empty(), Some((memo, displayable)))
+    }
+
+    /// Builds a migration sample with a configurable funded recipient and optional zero output.
+    fn sample_migration_pczt_with_options(
+        output_account: u32,
+        output_memo: MemoBytes,
+        zero_output: Option<(MemoBytes, bool)>,
+    ) -> SamplePczt {
         let params = Nu6_3Network;
         let seed = [7u8; 32];
         let ufvk_text = derive_ufvk(&params, &seed, "m/32'/133'/0'").unwrap();
         let ufvk = UnifiedFullViewingKey::decode(&params, &ufvk_text).unwrap();
         let orchard_fvk = ufvk.orchard().unwrap().clone();
         let orchard_ivk = orchard_fvk.to_ivk(orchard::keys::Scope::External);
-        let orchard_ovk = orchard_fvk.to_ovk(orchard::keys::Scope::External);
-        let recipient = orchard_fvk.address_at(0u32, orchard::keys::Scope::External);
+        let spend_recipient = orchard_fvk.address_at(0u32, orchard::keys::Scope::External);
+        let output_ufvk_text = derive_ufvk(
+            &params,
+            &seed,
+            &alloc::format!("m/32'/133'/{output_account}'"),
+        )
+        .unwrap();
+        let output_ufvk = UnifiedFullViewingKey::decode(&params, &output_ufvk_text).unwrap();
+        let output_fvk = output_ufvk.orchard().unwrap();
+        // The compact-review fixture uses an internal Ironwood receiver. Keep
+        // the foreign-account variant decryptable for its ordinary-review test
+        // by using the selected account's external OVK.
+        let recipient = output_fvk.address_at(0u32, orchard::keys::Scope::Internal);
+        let orchard_ovk = orchard_fvk.to_ovk(if output_account == 0 {
+            orchard::keys::Scope::Internal
+        } else {
+            orchard::keys::Scope::External
+        });
+        let zero_recipient = output_fvk.address_at(0u32, orchard::keys::Scope::External);
+        let output_user_address = output_ufvk
+            .default_address(UnifiedAddressRequest::AllAvailableKeys)
+            .unwrap()
+            .0
+            .encode(&params);
 
         // The Orchard note being migrated: output (990_000) + cross-pool fee (20_000),
         // so there is no change output.
@@ -448,7 +495,12 @@ pub(crate) mod test_support {
             )
             .expect("spends-disabled flags are valid for a coinbase bundle");
             orchard_builder
-                .add_output(None, recipient, value, Memo::Empty.encode().into_bytes())
+                .add_output(
+                    None,
+                    spend_recipient,
+                    value,
+                    Memo::Empty.encode().into_bytes(),
+                )
                 .unwrap();
             let (bundle, meta) = orchard_builder.build::<i64>(&mut OsRng).unwrap().unwrap();
             let action = bundle
@@ -496,17 +548,32 @@ pub(crate) mod test_support {
                 Some(orchard_ovk),
                 recipient,
                 Zatoshis::const_from_u64(990_000),
-                MemoBytes::empty(),
+                output_memo,
             )
             .unwrap();
+        if let Some((memo, _)) = zero_output.as_ref() {
+            builder
+                .add_ironwood_output::<zip317::FeeRule>(
+                    None,
+                    zero_recipient,
+                    Zatoshis::ZERO,
+                    memo.clone(),
+                )
+                .unwrap();
+        }
         let PcztResult {
             pczt_parts,
             orchard_meta,
+            ironwood_meta,
             ..
         } = builder
             .build_for_pczt(OsRng, &zip317::FeeRule::standard())
             .unwrap();
         let spend_action_index = orchard_meta.spend_action_index(0).unwrap();
+        let displayable_zero_action = match zero_output.as_ref() {
+            Some((_, true)) => Some(ironwood_meta.output_action_index(1).unwrap()),
+            _ => None,
+        };
         let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();
         let derivation = orchard::pczt::Zip32Derivation::parse(
             seed_fingerprint,
@@ -526,6 +593,19 @@ pub(crate) mod test_support {
             })
             .unwrap()
             .finish();
+        let pczt = if let Some(action_index) = displayable_zero_action {
+            Updater::new(pczt)
+                .update_ironwood_with(|mut bundle| {
+                    bundle.update_action_with(action_index, |mut action| {
+                        action.set_output_user_address(output_user_address);
+                        Ok(())
+                    })
+                })
+                .unwrap()
+                .finish()
+        } else {
+            pczt
+        };
 
         SamplePczt {
             bytes: pczt.serialize().unwrap(),

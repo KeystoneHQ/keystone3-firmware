@@ -388,18 +388,24 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
 
-    let mut display_items = Vec::new();
-    for message in batch.get_messages() {
-        match app_zcash::parse_pczt_cypherpunk(
-            &MainNetwork,
-            message.get_payload(),
-            &ufvk_text,
-            seed_fingerprint,
-        ) {
-            Ok(pczt) => display_items.push(DisplayPczt::from(&pczt)),
-            Err(e) => return TransactionParseResult::from(e).c_ptr(),
-        }
-    }
+    // The checked bytes are parsed once. Eligible Orchard-to-Ironwood transfers
+    // are folded by content; ambiguous batches keep their ordinary review pages.
+    let parsed_items = match app_zcash::parse_batch_with_migration_summary_cypherpunk(
+        &MainNetwork,
+        batch
+            .get_messages()
+            .iter()
+            .map(|message| message.get_payload().as_slice()),
+        &ufvk_text,
+        seed_fingerprint,
+    ) {
+        Ok(items) => items,
+        Err(e) => return TransactionParseResult::from(e).c_ptr(),
+    };
+    // Convert only after every message has parsed. These FFI values own heap
+    // allocations freed by `free_TransactionParseResult_DisplayZcashBatch`, not
+    // Rust `Drop`; an early return after partial conversion would leak memory.
+    let display_items: Vec<DisplayPczt> = parsed_items.iter().map(DisplayPczt::from).collect();
 
     TransactionParseResult::success(DisplayZcashBatch::from(display_items).c_ptr()).c_ptr()
 }

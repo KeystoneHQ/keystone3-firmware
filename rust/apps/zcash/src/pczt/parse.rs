@@ -81,7 +81,7 @@ fn map_transparent_verifier_error(
     }
 }
 
-fn format_zec_value(value: f64) -> String {
+pub(crate) fn format_zec_value(value: f64) -> String {
     let zec_value = format!("{:.8}", value / ZEC_DIVIDER as f64);
     let zec_value = zec_value
         .trim_end_matches('0')

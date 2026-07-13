@@ -23,6 +23,7 @@ serde_with = { version = "3.11.0", features = [
     "alloc",
     "macros",
 ], default-features = false }
+zeroize = { workspace = true }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }

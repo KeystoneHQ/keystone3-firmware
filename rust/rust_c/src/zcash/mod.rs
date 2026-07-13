@@ -359,7 +359,7 @@ fn encode_zcash_batch_sig_result(
     request_id: Vec<u8>,
     data: Vec<u8>,
 ) -> Result<Vec<u8>, RustCError> {
-    ZcashBatchSigResult::new(request_id, data, KEYSTONE_FW_VERSION.encode().to_vec())
+    ZcashBatchSigResult::new(request_id, data, KEYSTONE_FW_VERSION.encode())
         .try_into()
         .map_err(|e| RustCError::InvalidData(format!("encode Zcash batch result envelope: {e:?}")))
 }
@@ -1074,7 +1074,10 @@ mod tests {
 
         assert_eq!(decoded.get_request_id(), request_id);
         assert_eq!(decoded.get_data(), response_bytes);
-        assert_eq!(decoded.get_firmware_version(), KEYSTONE_FW_VERSION.encode());
+        assert_eq!(
+            decoded.get_firmware_version(),
+            &KEYSTONE_FW_VERSION.encode()
+        );
         assert_eq!(
             BatchSignResponse::parse(decoded.get_data()).unwrap(),
             response

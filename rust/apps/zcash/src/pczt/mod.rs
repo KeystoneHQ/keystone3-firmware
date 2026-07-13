@@ -42,6 +42,37 @@ pub(crate) fn validate_supported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
         }
     }
 
+    #[cfg(feature = "cypherpunk")]
+    validate_distinct_orchard_protocol_rks(pczt)?;
+
+    Ok(())
+}
+
+/// Ensures every Orchard protocol action has a distinct randomized validating key.
+///
+/// Orchard and Ironwood spend authorization signatures cover the same transaction-wide
+/// shielded sighash. If two actions share an `rk`, a signature for either action can be
+/// copied to the other.
+#[cfg(feature = "cypherpunk")]
+fn validate_distinct_orchard_protocol_rks(pczt: &Pczt) -> Result<(), ZcashError> {
+    let actions = pczt
+        .orchard()
+        .actions()
+        .iter()
+        .chain(pczt.ironwood().actions().iter());
+
+    for (index, action) in actions.clone().enumerate() {
+        if actions
+            .clone()
+            .skip(index + 1)
+            .any(|other| other.spend().rk() == action.spend().rk())
+        {
+            return Err(ZcashError::InvalidPczt(
+                "duplicate Orchard or Ironwood action rk".to_string(),
+            ));
+        }
+    }
+
     Ok(())
 }
 

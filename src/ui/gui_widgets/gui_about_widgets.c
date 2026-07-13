@@ -9,6 +9,7 @@
 #include "presetting.h"
 #include "gui_about_widgets.h"
 #include "version.h"
+#include "se_manager.h"
 #include "err_code.h"
 #include "gui_page.h"
 #include "user_fatfs.h"
@@ -109,8 +110,10 @@ void GuiAboutEntranceWidget(lv_obj_t *parent)
     lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 499);
 
     //firmware
-    char version[32] = {0};
+    char version[SOFTWARE_VERSION_MAX_LEN + 4] = {0};
     GetSoftWareVersion(version);
+    uint32_t versionLen = strnlen_s(version, sizeof(version));
+    snprintf_s(version + versionLen, sizeof(version) - versionLen, "(%d)", (int)GetSeGen());
 
     label = GuiCreateTextLabel(parent, version);
     imgArrow = GuiCreateImg(parent, &imgArrowRight);

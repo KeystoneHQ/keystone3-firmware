@@ -15,6 +15,8 @@ static lv_obj_t *g_cont;
 static lv_obj_t *g_wipeDeviceHintBox = NULL;
 static lv_timer_t *g_countDownTimer;
 static PageWidget_t *g_pageWidget;
+static bool g_forceWipeDevice = false;
+static bool g_wipeDeviceRunning = false;
 
 static void GuiWipeDeviceNVSBarInit();
 static void GuiWipeDeviceEntranceWidget(lv_obj_t *parent);
@@ -26,8 +28,19 @@ static void WipeDeviceDeal(void);
 static void CountDownTimerHandler(lv_timer_t *timer);
 static void GuiCountDownDestruct(void *obj, void* param);
 
+void GuiWipeDeviceSetForced(bool forced)
+{
+    g_forceWipeDevice = forced;
+    printf("wipe-device forced mode set forced=%d\r\n", g_forceWipeDevice);
+}
+
 void GuiWipeDeviceWidgetsInit()
 {
+    g_wipeDeviceRunning = false;
+    if (g_forceWipeDevice) {
+        printf("wipe-device forced mode init: disable page lock\r\n");
+        SetPageLockScreen(false);
+    }
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
     g_cont = cont;
@@ -39,6 +52,7 @@ void GuiWipeDeviceWidgetsInit()
 
 void GuiWipeDeviceWidgetsDeInit()
 {
+    GuiCountDownDestruct(NULL, NULL);
     GUI_DEL_OBJ(g_wipeDeviceHintBox);
     if (g_cont != NULL) {
         lv_obj_del(g_cont);
@@ -47,6 +61,11 @@ void GuiWipeDeviceWidgetsDeInit()
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
+    }
+    if (g_forceWipeDevice && !g_wipeDeviceRunning) {
+        printf("wipe-device forced mode deinit before wipe: restore page lock\r\n");
+        SetPageLockScreen(true);
+        g_forceWipeDevice = false;
     }
 }
 
@@ -60,7 +79,11 @@ void GuiWipeDeviceWidgetsRestart()
 
 static void GuiWipeDeviceNVSBarInit()
 {
-    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    if (g_forceWipeDevice) {
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+    } else {
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    }
 }
 
 void GuiWipeDeviceEntranceWidget(lv_obj_t *parent)
@@ -93,7 +116,13 @@ static void GuiShowWipeDeviceHintBox(void)
         g_wipeDeviceHintBox = GuiCreateGeneralHintBox(&imgWarn, _("wipe_device"), _("system_settings_wipe_device_wipe_alert_desc"), NULL,
                               _("not_now"), WHITE_COLOR_OPA20, _("system_settings_wipe_device_wipe_start_text"), ORANGE_COLOR);
         lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_wipeDeviceHintBox);
-        lv_obj_add_event_cb(leftBtn, NotNowHandler, LV_EVENT_CLICKED, NULL);
+        if (g_forceWipeDevice) {
+            printf("wipe-device forced mode: hide not-now button\r\n");
+            lv_obj_add_flag(leftBtn, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(leftBtn, LV_OBJ_FLAG_CLICKABLE);
+        } else {
+            lv_obj_add_event_cb(leftBtn, NotNowHandler, LV_EVENT_CLICKED, NULL);
+        }
         lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_wipeDeviceHintBox);
         lv_obj_add_event_cb(rightBtn, ExecWipeDeviceHandler, LV_EVENT_CLICKED, NULL);
         lv_obj_clear_flag(rightBtn, LV_OBJ_FLAG_CLICKABLE);
@@ -116,6 +145,8 @@ static void ExecWipeDeviceHandler(lv_event_t *e)
 
 static void WipeDeviceDeal(void)
 {
+    g_wipeDeviceRunning = true;
+    printf("wipe-device start wipe forced=%d\r\n", g_forceWipeDevice);
     if (g_cont != NULL) {
         lv_obj_del(g_cont);
         g_cont = NULL;

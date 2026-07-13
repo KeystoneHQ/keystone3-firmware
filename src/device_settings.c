@@ -16,6 +16,7 @@
 #include "screen_manager.h"
 #include "power_manager.h"
 #include "account_manager.h"
+#include "se_manager.h"
 #include "version.h"
 #include "legacy_web_update_pad.h"
 #include "lv_i18n_api.h"
@@ -482,9 +483,17 @@ void WipeDevice(void)
     SetShowPowerOffPage(false);
     FpWipeManageInfo();
     ErasePublicInfo();
+    // gen-2: also wipe the SE-side secrets (gen-1 no-op). Best-effort — the blobs are already wiped + flash
+    // erased below.
+    SE_WipeAll();
     DestroyAccount(0);
     DestroyAccount(1);
     DestroyAccount(2);
+    // Clear the external per-account status pages (36/37/38). DestroyAccount above already clears each, but do
+    // it explicitly so the in-app wipe sweeps them like the bootloader's full-range wipe does.
+    SE_SetAccountStatus(0, ACCOUNT_STATUS_UNKNOWN);
+    SE_SetAccountStatus(1, ACCOUNT_STATUS_UNKNOWN);
+    SE_SetAccountStatus(2, ACCOUNT_STATUS_UNKNOWN);
     for (uint32_t addr = 0; addr < GD25QXX_FLASH_SIZE; addr += 1024 * 64) {
         Gd25FlashBlockErase(addr);
         printf("flash erase address: %#x\n", addr);

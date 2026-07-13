@@ -9,6 +9,7 @@
 #include "gui_hintbox.h"
 #include "gui_api.h"
 #include "keystore.h"
+#include "se_manager.h"
 #include "gui_lock_device_widgets.h"
 #include "fingerprint_process.h"
 #include "device_setting.h"

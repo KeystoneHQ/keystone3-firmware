@@ -16,6 +16,8 @@ typedef struct KeyboardWidget {
     lv_obj_t *led[6];
     lv_obj_t *btnm;
     lv_obj_t *errLabel;
+    lv_obj_t *titleLabel;
+    lv_obj_t *noticeLabel;
     lv_obj_t *eyeImg;
     lv_obj_t *switchLabel;
     uint8_t currentNum;
@@ -30,6 +32,7 @@ typedef struct KeyboardWidget {
 KeyboardWidget_t *GuiCreateKeyboardWidget(lv_obj_t *parent);
 KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t buttonCb, uint16_t *signal);
 void SetKeyboardWidgetSig(KeyboardWidget_t *keyboardWidget, uint16_t *sig);
+void SetKeyboardWidgetTitle(KeyboardWidget_t *keyboardWidget, const char *title, const char *desc);
 void SetKeyboardWidgetSelf(KeyboardWidget_t *keyboardWidget, KeyboardWidget_t **self);
 void SetKeyboardWidgetMode(uint8_t mode);
 uint8_t GetKeyboardWidgetMode(void);

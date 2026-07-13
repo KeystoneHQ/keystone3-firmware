@@ -12,6 +12,7 @@ void GuiForgetPassRepeatPinPass(const char* buf);
 void GuiForgetPassDeInit(void);
 void GuiForgetPassResetPass(bool en, int errCode);
 void GuiForgetPassVerifyResult(bool en, int errCode);
+void GuiForgetProveOwnershipResult(bool pass, void *param);
 void GuiForgetPassUpdateKeyboard(void);
 bool GuiIsForgetPass(void);
 

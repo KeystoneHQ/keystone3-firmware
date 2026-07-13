@@ -46,6 +46,9 @@ void GuiEnterPassCodeStatus(GuiEnterPasscodeItem_t *item, bool en);
 void GuiEnterPassLabelRefresh(void);
 void SwitchPasswordModeHandler(lv_event_t *e);
 void GuiUpdateEnterPasscodeParam(GuiEnterPasscodeItem_t *item, void *param);
+// Reset the per-flow CheckPasswordExisted budget; call at each set-new-passcode flow entry
+// (create/add wallet, change password, forget-pass reset).
+void GuiResetCheckPasswordCounter(void);
 uint8_t GetPassWordStrength(const char *password, uint8_t len);
 void GuiFingerPrintStatus(GuiEnterPasscodeItem_t *item, bool en, uint8_t errCnt);
 void PassWordPinSwitch(GuiEnterPasscodeItem_t *item);

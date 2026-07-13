@@ -10,7 +10,7 @@ Keystone's QR workflow involves two main steps: linking the wallet and signing d
 2. **Transaction Creation:** The Watch-Only wallet creates a transaction and generates a QR code for Keystone to scan, parse, and display.
 3. **Signing Authorization:** Keystone signs the transaction, displays the result as a QR code for the Watch-Only wallet to scan and broadcast.
 
-Two UR Registries are needed for these steps, utilizing the Partially Created Zcash Transaction structure.
+The following UR registries support these steps and use the Partially Created Zcash Transaction structure.
 
 ### Zcash Accounts
 

@@ -34,7 +34,7 @@ shardtree = "0.6.2"
 # Nameable only so the transparent-only `legacy_test_support` can spell the
 # `BuildConfig::orchard_pool_bundle_type` value; orchard is already built transitively
 # via the `zcash_primitives` dev-dependency.
-orchard = { version = "0.15.0-pre.2", default-features = false }
+orchard = { version = "0.15.0", default-features = false }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

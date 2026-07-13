@@ -122,14 +122,15 @@ zeroize = { version = "1.8.2", default-features = false }
 # third party dependencies end
 
 [patch.crates-io]
-pczt = { git = "https://github.com/valargroup/librustzcash", rev = "94d6e7fd8c76abb1d909390e10254a22f587981f" }
-zcash_address = { git = "https://github.com/valargroup/librustzcash", rev = "94d6e7fd8c76abb1d909390e10254a22f587981f" }
-zcash_encoding = { git = "https://github.com/valargroup/librustzcash", rev = "94d6e7fd8c76abb1d909390e10254a22f587981f" }
-zcash_keys = { git = "https://github.com/valargroup/librustzcash", rev = "94d6e7fd8c76abb1d909390e10254a22f587981f" }
-zcash_primitives = { git = "https://github.com/valargroup/librustzcash", rev = "94d6e7fd8c76abb1d909390e10254a22f587981f" }
-zcash_protocol = { git = "https://github.com/valargroup/librustzcash", rev = "94d6e7fd8c76abb1d909390e10254a22f587981f" }
-zcash_transparent = { git = "https://github.com/valargroup/librustzcash", rev = "94d6e7fd8c76abb1d909390e10254a22f587981f" }
+pczt = { git = "https://github.com/zcash/librustzcash", rev = "878db2074ae8ac2682d3e6c61c00f7018b6adc0c" }
+zcash_address = { git = "https://github.com/zcash/librustzcash", rev = "878db2074ae8ac2682d3e6c61c00f7018b6adc0c" }
+zcash_encoding = { git = "https://github.com/zcash/librustzcash", rev = "878db2074ae8ac2682d3e6c61c00f7018b6adc0c" }
+zcash_keys = { git = "https://github.com/zcash/librustzcash", rev = "878db2074ae8ac2682d3e6c61c00f7018b6adc0c" }
+zcash_primitives = { git = "https://github.com/zcash/librustzcash", rev = "878db2074ae8ac2682d3e6c61c00f7018b6adc0c" }
+zcash_protocol = { git = "https://github.com/zcash/librustzcash", rev = "878db2074ae8ac2682d3e6c61c00f7018b6adc0c" }
+zcash_transparent = { git = "https://github.com/zcash/librustzcash", rev = "878db2074ae8ac2682d3e6c61c00f7018b6adc0c" }
 # Keep `orchard` aligned with the pinned PCZT/librustzcash revision.
-orchard = { git = "https://github.com/zcash/orchard", rev = "475ef0ff77d45aebff93cb039d639250d82518a3" }
-# Use the upstream SDK rev with the Zcash batch registry types until they are published as a crate.
-ur-registry = { git = "https://github.com/KeystoneHQ/keystone-sdk-rust.git", rev = "0884de4b2e927bc3f95a98dff62045e0d492e574" }
+orchard = { git = "https://github.com/zcash/orchard", rev = "8995ee7e26f8b654a5457d05c95ee5b3132b3edd" }
+# Use the SDK rev that wraps PCZT-owned Postcard messages as opaque UR data and
+# correlates each request and result through the outer registry envelope.
+ur-registry = { git = "https://github.com/valargroup/keystone-sdk-rust.git", rev = "bf5b6e4b5c533e8934c4611837db2b6567ae837e" }

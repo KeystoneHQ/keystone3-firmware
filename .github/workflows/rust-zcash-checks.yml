@@ -33,10 +33,10 @@ jobs:
       - name: Run rust/apps/zcash
         run: cd rust/apps/zcash && cargo +$RUST_TOOLCHAIN llvm-cov  --fail-under-regions 69 --fail-under-functions 71 --fail-under-lines 76 --ignore-filename-regex 'keystore/*|utils/*|zcash_vendor/*'
 
-  # The rust_c Zcash FFI tests (batch validation, reviewed-batch fingerprint)
-  # only build under the simulator feature set (the device feature set has no
-  # host panic handler), and the simulator's screen-capture dependency needs
-  # macOS on CI.
+  # The rust_c Zcash FFI tests (batch validation, compact signatures-only
+  # response) only build under the simulator feature set (the device feature
+  # set has no host panic handler), and the simulator's screen-capture
+  # dependency needs macOS on CI.
   RustCZcashTest:
     name: rust_c Zcash FFI tests
     runs-on: macos-latest

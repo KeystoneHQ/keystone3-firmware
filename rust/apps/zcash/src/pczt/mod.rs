@@ -792,7 +792,7 @@ pub(crate) mod legacy_test_support {
             keys::{AccountPrivKey, IncomingViewingKey},
         },
         zcash_protocol::{
-            consensus::{MainNetwork, Parameters},
+            consensus::{MainNetwork, NetworkUpgrade, Parameters},
             value::Zatoshis,
         },
         zip32,
@@ -868,7 +868,7 @@ pub(crate) mod legacy_test_support {
         );
         let mut builder = Builder::new(
             &params,
-            10_000_000.into(),
+            params.activation_height(NetworkUpgrade::Nu5).unwrap(),
             BuildConfig::Standard {
                 sapling_anchor: None,
                 orchard_anchor: None,

@@ -23,20 +23,22 @@ use structs::DisplayPczt;
 use structs::DisplayZcashBatch;
 use structs::ZcashCheckedPczt;
 use ur_registry::traits::RegistryItem;
+use ur_registry::zcash::zcash_batch_sig_result::ZcashBatchSigResult;
 use ur_registry::zcash::zcash_pczt::ZcashPczt;
-use ur_registry::zcash::zcash_sign_batch::{
-    ZcashSignBatch, ZcashSignMessage, ZCASH_SIGN_BATCH_NETWORK_MAINNET, ZCASH_SIGN_BATCH_VERSION,
-    ZCASH_SIGN_MESSAGE_KIND_PCZT_V1,
-};
-use ur_registry::zcash::zcash_sign_result::{ZcashSignMessageResult, ZcashSignResult};
-use zcash_vendor::zcash_protocol::consensus::MainNetwork;
+use ur_registry::zcash::zcash_sign_batch::ZcashSignBatch;
+#[cfg(feature = "cypherpunk")]
+use zcash_vendor::pczt::roles::signer::batch::{BatchSignRequest, BatchSignResponse};
+use zcash_vendor::{pczt::Pczt, zcash_protocol::consensus::MainNetwork};
 use zeroize::Zeroize;
 
-// Batch memory is intentionally bounded by message count rather than separate
-// byte caps. With the supported pczt-v1 messages, a full 35-message batch used
-// about 35% of RAM on target hardware. Revisit this if new message kinds or
-// substantially larger payload encodings are added.
-const ZCASH_BATCH_MAX_MESSAGES: usize = 35;
+// Cap both per-PCZT overhead and variable-size payload data to leave headroom
+// in shared device memory while processing a batch.
+#[cfg(feature = "cypherpunk")]
+const ZCASH_BATCH_MAX_PCZTS: usize = 50;
+#[cfg(feature = "cypherpunk")]
+const ZCASH_BATCH_MAX_TOTAL_BYTES: usize = 512 * 1024;
+#[cfg(feature = "cypherpunk")]
+const ZCASH_BATCH_REQUEST_HEADER_LEN: usize = 12;
 
 #[no_mangle]
 pub unsafe extern "C" fn derive_zcash_ufvk(
@@ -207,82 +209,152 @@ pub unsafe extern "C" fn parse_zcash_tx_multi_coins(
     }
 }
 
-fn validate_zcash_batch(batch: &ZcashSignBatch) -> Result<(), RustCError> {
-    let messages = batch.get_messages();
-    if batch.get_version() != ZCASH_SIGN_BATCH_VERSION {
-        return Err(RustCError::UnsupportedTransaction(format!(
-            "unsupported Zcash batch version {}",
-            batch.get_version()
-        )));
-    }
-    if batch.get_network() != ZCASH_SIGN_BATCH_NETWORK_MAINNET {
-        return Err(RustCError::UnsupportedTransaction(
-            "only Zcash mainnet batch signing is supported".to_string(),
-        ));
-    }
-    if batch.get_request_id().is_empty() {
+/// Enforces the count, canonical byte, and exact payload uniqueness limits.
+#[cfg(feature = "cypherpunk")]
+fn validate_zcash_batch_payloads(payloads: &[Vec<u8>]) -> Result<(), RustCError> {
+    if payloads.is_empty() {
         return Err(RustCError::InvalidData(
-            "Zcash batch has no request id".to_string(),
+            "Zcash batch has no PCZTs".to_string(),
         ));
     }
-    if !batch.get_atomic() {
-        return Err(RustCError::UnsupportedTransaction(
-            "Zcash batch signing requires atomic=true".to_string(),
-        ));
-    }
-    if messages.is_empty() {
-        return Err(RustCError::InvalidData(
-            "Zcash batch has no messages".to_string(),
-        ));
-    }
-    if messages.len() > ZCASH_BATCH_MAX_MESSAGES {
+    if payloads.len() > ZCASH_BATCH_MAX_PCZTS {
         return Err(RustCError::UnsupportedTransaction(format!(
-            "Zcash batch supports at most {ZCASH_BATCH_MAX_MESSAGES} messages"
+            "Zcash batch supports at most {ZCASH_BATCH_MAX_PCZTS} PCZTs"
         )));
     }
 
-    for (index, message) in messages.iter().enumerate() {
-        if message.get_kind() != ZCASH_SIGN_MESSAGE_KIND_PCZT_V1 {
+    let mut total_payload_bytes = 0usize;
+    let mut payload_digests = Vec::with_capacity(payloads.len());
+    for (index, payload) in payloads.iter().enumerate() {
+        if payload.is_empty() {
+            return Err(RustCError::InvalidData(format!(
+                "Zcash batch PCZT {index} has no payload"
+            )));
+        }
+        total_payload_bytes = total_payload_bytes.saturating_add(payload.len());
+        if total_payload_bytes > ZCASH_BATCH_MAX_TOTAL_BYTES {
             return Err(RustCError::UnsupportedTransaction(format!(
-                "unsupported Zcash batch message kind {}",
-                message.get_kind()
-            )));
-        }
-        if message.get_id().is_empty() {
-            return Err(RustCError::InvalidData(format!(
-                "Zcash batch message {index} has no id"
-            )));
-        }
-        if message.get_payload().is_empty() {
-            return Err(RustCError::InvalidData(format!(
-                "Zcash batch message {index} has no payload"
+                "Zcash batch PCZTs exceed {ZCASH_BATCH_MAX_TOTAL_BYTES} bytes"
             )));
         }
 
-        let digest = sha256(message.get_payload());
-        if let Some(expected_digest) = message.get_payload_digest() {
-            if expected_digest.as_slice() != digest.as_slice() {
-                return Err(RustCError::InvalidData(format!(
-                    "Zcash batch message {index} payload digest mismatch"
-                )));
-            }
+        let digest = sha256(payload);
+        if payload_digests.contains(&digest) {
+            return Err(RustCError::InvalidData(
+                "Zcash batch contains duplicate PCZTs".to_string(),
+            ));
         }
-
-        for previous in &messages[..index] {
-            if sha256(previous.get_payload()) == digest {
-                return Err(RustCError::InvalidData(
-                    "Zcash batch contains duplicate payloads".to_string(),
-                ));
-            }
-            if previous.get_id() == message.get_id() {
-                return Err(RustCError::InvalidData(
-                    "Zcash batch contains duplicate message ids".to_string(),
-                ));
-            }
-        }
+        payload_digests.push(digest);
     }
 
     Ok(())
+}
+
+/// Serializes one logical batch PCZT into its canonical standalone encoding.
+#[cfg(feature = "cypherpunk")]
+fn serialize_batch_pczt(pczt: &Pczt) -> Result<Vec<u8>, RustCError> {
+    pczt.clone()
+        .serialize()
+        .map_err(|e| RustCError::InvalidData(format!("encode PCZT in batch request: {e:?}")))
+}
+
+/// Applies firmware batch limits to the request body owned by the PCZT crate.
+#[cfg(feature = "cypherpunk")]
+fn validate_zcash_batch(batch: &BatchSignRequest) -> Result<Vec<Vec<u8>>, RustCError> {
+    let payloads = batch
+        .pczts()
+        .iter()
+        .map(serialize_batch_pczt)
+        .collect::<Result<Vec<_>, _>>()?;
+    validate_zcash_batch_payloads(&payloads)?;
+    Ok(payloads)
+}
+
+/// Bounds the outer request before parsing or retaining its checked state.
+#[cfg(feature = "cypherpunk")]
+fn validate_zcash_batch_envelope(request_id: &[u8], data: &[u8]) -> Result<(), RustCError> {
+    if request_id.is_empty() {
+        return Err(RustCError::InvalidData(
+            "Zcash batch request id must not be empty".to_string(),
+        ));
+    }
+    if request_id.len().saturating_add(data.len()) > ZCASH_BATCH_MAX_TOTAL_BYTES {
+        return Err(RustCError::UnsupportedTransaction(format!(
+            "Zcash batch request exceeds {ZCASH_BATCH_MAX_TOTAL_BYTES} bytes"
+        )));
+    }
+    Ok(())
+}
+
+/// Rejects an oversized top-level count before Postcard allocates the PCZT vector.
+#[cfg(feature = "cypherpunk")]
+fn validate_zcash_batch_request_count(data: &[u8]) -> Result<(), RustCError> {
+    let Some(header) = data.get(..ZCASH_BATCH_REQUEST_HEADER_LEN) else {
+        return Ok(());
+    };
+
+    // Leave malformed or unknown headers to the canonical parser so it retains
+    // its existing error. The pinned parser recognizes PCZT versions 1 and 2.
+    let pczt_version = u32::from_le_bytes(header[8..12].try_into().unwrap());
+    if &header[..8] != b"PCZB\x01\0\0\0" || !matches!(pczt_version, 1 | 2) {
+        return Ok(());
+    }
+
+    // Decode only the sequence length; malformed bodies remain the canonical
+    // parser's responsibility.
+    let Ok((pczt_count, _)) =
+        postcard::take_from_bytes::<usize>(&data[ZCASH_BATCH_REQUEST_HEADER_LEN..])
+    else {
+        return Ok(());
+    };
+    if pczt_count > ZCASH_BATCH_MAX_PCZTS {
+        return Err(RustCError::UnsupportedTransaction(format!(
+            "Zcash batch supports at most {ZCASH_BATCH_MAX_PCZTS} PCZTs"
+        )));
+    }
+
+    Ok(())
+}
+
+/// Parses the bounded outer registry into the PCZT crate's batch request.
+#[cfg(feature = "cypherpunk")]
+fn parse_zcash_batch_registry(registry: &ZcashSignBatch) -> Result<BatchSignRequest, RustCError> {
+    validate_zcash_batch_envelope(registry.get_request_id(), registry.get_data())?;
+    validate_zcash_batch_request_count(registry.get_data())?;
+    BatchSignRequest::parse(registry.get_data())
+        .map_err(|e| RustCError::InvalidData(format!("invalid PCZT batch request: {e:?}")))
+}
+
+/// Reopens the exact normalized envelope retained by the check step.
+#[cfg(feature = "cypherpunk")]
+fn parse_checked_zcash_batch(data: &[u8]) -> Result<(Vec<u8>, BatchSignRequest), RustCError> {
+    let registry = ZcashSignBatch::try_from(data.to_vec()).map_err(|e| {
+        RustCError::InvalidData(format!("decode checked Zcash batch envelope: {e:?}"))
+    })?;
+    let batch = parse_zcash_batch_registry(&registry)?;
+    Ok((registry.get_request_id().to_vec(), batch))
+}
+
+/// Retains normalized PCZTs and their request id as checked firmware state.
+#[cfg(feature = "cypherpunk")]
+fn encode_checked_zcash_batch(request_id: &[u8], data: Vec<u8>) -> Result<Vec<u8>, RustCError> {
+    validate_zcash_batch_envelope(request_id, &data)?;
+    ZcashSignBatch::new(request_id.to_vec(), data)
+        .try_into()
+        .map_err(|e| {
+            RustCError::InvalidData(format!("encode normalized Zcash batch envelope: {e:?}"))
+        })
+}
+
+/// Wraps the PCZT crate's signature response with its echoed request id.
+#[cfg(feature = "cypherpunk")]
+fn encode_zcash_batch_sig_result(
+    request_id: Vec<u8>,
+    data: Vec<u8>,
+) -> Result<Vec<u8>, RustCError> {
+    ZcashBatchSigResult::new(request_id, data)
+        .try_into()
+        .map_err(|e| RustCError::InvalidData(format!("encode Zcash batch result envelope: {e:?}")))
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -302,55 +374,64 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
         ))
         .c_ptr();
     }
-    let batch = extract_ptr_with_type!(tx, ZcashSignBatch);
+    let registry = extract_ptr_with_type!(tx, ZcashSignBatch);
+    let batch = match parse_zcash_batch_registry(registry) {
+        Ok(batch) => batch,
+        Err(e) => return TransactionCheckResult::from(e).c_ptr(),
+    };
+    let request_id = registry.get_request_id().to_vec();
     let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
 
-    if let Err(e) = validate_zcash_batch(batch) {
-        return TransactionCheckResult::from(e).c_ptr();
-    }
+    let payloads = match validate_zcash_batch(&batch) {
+        Ok(payloads) => payloads,
+        Err(e) => return TransactionCheckResult::from(e).c_ptr(),
+    };
 
-    let mut checked_messages = Vec::with_capacity(batch.get_messages().len());
-    for message in batch.get_messages() {
+    let mut checked_pczts = Vec::with_capacity(payloads.len());
+    for payload in payloads {
         match app_zcash::check_batch_pczt_cypherpunk(
             &MainNetwork,
-            message.get_payload(),
+            &payload,
             &ufvk_text,
             seed_fingerprint,
             account_index,
         ) {
             Ok(normalized) => {
-                let digest = sha256(&normalized).to_vec();
-                checked_messages.push(ZcashSignMessage::new(
-                    message.get_id().clone(),
-                    message.get_kind(),
-                    normalized,
-                    Some(digest),
-                ));
+                let pczt = match Pczt::parse(&normalized) {
+                    Ok(pczt) => pczt,
+                    Err(e) => {
+                        return TransactionCheckResult::from(RustCError::InvalidData(format!(
+                            "parse normalized PCZT in batch request: {e:?}"
+                        )))
+                        .c_ptr();
+                    }
+                };
+                checked_pczts.push(pczt);
             }
             Err(e) => return TransactionCheckResult::from(e).c_ptr(),
         }
     }
 
-    // Rebuild the envelope around the normalized payloads (with re-stamped
-    // per-message digests) so parse/sign consume exactly what was checked.
-    let normalized_batch = ZcashSignBatch::new(
-        batch.get_version(),
-        batch.get_request_id().clone(),
-        batch.get_network(),
-        checked_messages,
-        Some(true),
-    );
-    match TryInto::<Vec<u8>>::try_into(normalized_batch) {
-        Ok(bytes) => {
-            *checked_batch = ZcashCheckedPczt::new(bytes).c_ptr();
-            TransactionCheckResult::new().c_ptr()
+    // Rebuild the Postcard request around the normalized PCZTs so parse/sign
+    // consume exactly what was checked, then preserve the outer request id for
+    // the eventual batch result.
+    let normalized_request = match BatchSignRequest::new(checked_pczts).serialize() {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            return TransactionCheckResult::from(RustCError::InvalidData(format!(
+                "encode normalized PCZT batch request: {e:?}"
+            )))
+            .c_ptr();
         }
-        // The encode error is a ur-registry error type; TransactionCheckResult
-        // has no From impl for it, so map explicitly.
-        Err(e) => TransactionCheckResult::from(RustCError::InvalidData(format!("{e:?}"))).c_ptr(),
-    }
+    };
+    let normalized_batch = match encode_checked_zcash_batch(&request_id, normalized_request) {
+        Ok(bytes) => bytes,
+        Err(e) => return TransactionCheckResult::from(e).c_ptr(),
+    };
+    *checked_batch = ZcashCheckedPczt::new(normalized_batch).c_ptr();
+    TransactionCheckResult::new().c_ptr()
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -378,31 +459,36 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
         Ok(bytes) => bytes,
         Err(e) => return TransactionParseResult::from(e).c_ptr(),
     };
-    let batch = match ZcashSignBatch::try_from(bytes.to_vec()) {
-        Ok(batch) => batch,
-        Err(e) => {
-            return TransactionParseResult::from(RustCError::InvalidData(format!("{e:?}"))).c_ptr()
-        }
+    let batch = match parse_checked_zcash_batch(bytes) {
+        Ok((_, batch)) => batch,
+        Err(e) => return TransactionParseResult::from(e).c_ptr(),
     };
     let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
 
-    // The checked bytes are parsed once. Eligible Orchard-to-Ironwood transfers
-    // are folded by content; ambiguous batches keep their ordinary review pages.
+    // Serialize the normalized PCZTs once, then parse each into a complete
+    // display model. Eligible Orchard-to-Ironwood transfers are folded by
+    // content; ambiguous batches keep their ordinary review pages.
+    let payloads = match batch
+        .pczts()
+        .iter()
+        .map(serialize_batch_pczt)
+        .collect::<Result<Vec<_>, _>>()
+    {
+        Ok(payloads) => payloads,
+        Err(e) => return TransactionParseResult::from(e).c_ptr(),
+    };
     let parsed_items = match app_zcash::parse_batch_with_migration_summary_cypherpunk(
         &MainNetwork,
-        batch
-            .get_messages()
-            .iter()
-            .map(|message| message.get_payload().as_slice()),
+        payloads.iter().map(Vec::as_slice),
         &ufvk_text,
         seed_fingerprint,
     ) {
         Ok(items) => items,
         Err(e) => return TransactionParseResult::from(e).c_ptr(),
     };
-    // Convert only after every message has parsed. These FFI values own heap
+    // Convert only after every PCZT has parsed. These FFI values own heap
     // allocations freed by `free_TransactionParseResult_DisplayZcashBatch`, not
     // Rust `Drop`; an early return after partial conversion would leak memory.
     let display_items: Vec<DisplayPczt> = parsed_items.iter().map(DisplayPczt::from).collect();
@@ -439,8 +525,8 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
 
     let result = match checked.checked_bytes() {
-        Ok(bytes) => match ZcashSignBatch::try_from(bytes.to_vec()) {
-            Ok(batch) => match calculate_seed_fingerprint(seed) {
+        Ok(bytes) => match parse_checked_zcash_batch(bytes) {
+            Ok((request_id, batch)) => match calculate_seed_fingerprint(seed) {
                 Ok(seed_fingerprint) => {
                     if &seed_fingerprint != expected_seed_fingerprint {
                         seed.zeroize();
@@ -449,22 +535,32 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
 
                     let mut results = Vec::new();
                     let mut error = None;
-                    for message in batch.get_messages() {
+                    // Preserve request order and emit nothing unless every PCZT signs.
+                    for pczt in batch.pczts() {
+                        let payload = match serialize_batch_pczt(pczt) {
+                            Ok(payload) => payload,
+                            Err(e) => {
+                                error = Some(UREncodeResult::from(e).c_ptr());
+                                break;
+                            }
+                        };
                         match app_zcash::sign_checked_batch_pczt(
                             &MainNetwork,
-                            message.get_payload(),
+                            &payload,
                             seed,
                             &seed_fingerprint,
                             account_index,
                         ) {
                             Ok(payload) => {
-                                let payload_digest = sha256(&payload).to_vec();
-                                results.push(ZcashSignMessageResult::signed(
-                                    message.get_id().clone(),
-                                    message.get_kind(),
-                                    payload,
-                                    payload_digest,
-                                ));
+                                match app_zcash::extract_compact_sigs_from_signed_pczt(&payload) {
+                                    Ok(compact_sigs) => {
+                                        results.push(compact_sigs);
+                                    }
+                                    Err(e) => {
+                                        error = Some(UREncodeResult::from(e).c_ptr());
+                                        break;
+                                    }
+                                }
                             }
                             Err(e) => {
                                 error = Some(UREncodeResult::from(e).c_ptr());
@@ -476,33 +572,41 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
                     if let Some(error) = error {
                         error
                     } else {
-                        let result = ZcashSignResult::new(
-                            ZCASH_SIGN_BATCH_VERSION,
-                            batch.get_request_id().clone(),
-                            results,
-                        );
-                        match TryInto::<Vec<u8>>::try_into(result) {
+                        let response = BatchSignResponse::new(results);
+                        match response.serialize() {
                             Ok(bytes) => {
-                                let registry_type = ZcashSignResult::get_registry_type().get_type();
-                                if allow_multipart {
-                                    UREncodeResult::encode(
-                                        bytes,
-                                        registry_type,
-                                        max_fragment_length,
-                                    )
-                                    .c_ptr()
-                                } else {
-                                    UREncodeResult::encode_full_response(bytes, registry_type)
-                                        .c_ptr()
+                                let registry_type =
+                                    ZcashBatchSigResult::get_registry_type().get_type();
+                                match encode_zcash_batch_sig_result(request_id, bytes) {
+                                    Ok(cbor) => {
+                                        if allow_multipart {
+                                            UREncodeResult::encode(
+                                                cbor,
+                                                registry_type,
+                                                max_fragment_length,
+                                            )
+                                            .c_ptr()
+                                        } else {
+                                            UREncodeResult::encode_full_response(
+                                                cbor,
+                                                registry_type,
+                                            )
+                                            .c_ptr()
+                                        }
+                                    }
+                                    Err(e) => UREncodeResult::from(e).c_ptr(),
                                 }
                             }
-                            Err(e) => UREncodeResult::from(e).c_ptr(),
+                            Err(e) => UREncodeResult::from(RustCError::InvalidData(format!(
+                                "encode PCZT batch response: {e:?}"
+                            )))
+                            .c_ptr(),
                         }
                     }
                 }
                 Err(e) => UREncodeResult::from(e).c_ptr(),
             },
-            Err(e) => UREncodeResult::from(RustCError::InvalidData(format!("{e:?}"))).c_ptr(),
+            Err(e) => UREncodeResult::from(e).c_ptr(),
         },
         Err(e) => UREncodeResult::from(e).c_ptr(),
     };
@@ -789,211 +893,206 @@ mod tests {
 
     use super::*;
 
-    fn test_zcash_batch(messages: Vec<ZcashSignMessage>) -> ZcashSignBatch {
-        ZcashSignBatch::new(
-            ZCASH_SIGN_BATCH_VERSION,
-            b"test-request".to_vec(),
-            ZCASH_SIGN_BATCH_NETWORK_MAINNET,
-            messages,
-            Some(true),
-        )
+    #[cfg(feature = "cypherpunk")]
+    fn test_zcash_payloads(count: usize) -> Vec<Vec<u8>> {
+        (0..count)
+            .map(|index| format!("pczt-{index}").into_bytes())
+            .collect()
     }
 
-    fn test_zcash_message(id: &[u8], payload: &[u8]) -> ZcashSignMessage {
-        ZcashSignMessage::new(
-            id.to_vec(),
-            ZCASH_SIGN_MESSAGE_KIND_PCZT_V1,
-            payload.to_vec(),
-            Some(sha256(payload).to_vec()),
-        )
-    }
-
+    #[cfg(feature = "cypherpunk")]
     #[test]
-    fn test_validate_zcash_batch_accepts_valid_envelope() {
-        let batch = test_zcash_batch(vec![
-            test_zcash_message(b"one", b"pczt-one"),
-            test_zcash_message(b"two", b"pczt-two"),
-        ]);
+    fn test_validate_zcash_batch_accepts_valid_payloads() {
+        let payloads = test_zcash_payloads(2);
 
-        validate_zcash_batch(&batch).unwrap();
+        validate_zcash_batch_payloads(&payloads).unwrap();
     }
 
+    #[cfg(feature = "cypherpunk")]
     #[test]
-    fn test_validate_zcash_batch_accepts_missing_atomic_as_default() {
-        let batch = ZcashSignBatch::new(
-            ZCASH_SIGN_BATCH_VERSION,
-            b"test-request".to_vec(),
-            ZCASH_SIGN_BATCH_NETWORK_MAINNET,
-            vec![test_zcash_message(b"one", b"pczt-one")],
-            None,
-        );
+    fn test_validate_zcash_batch_accepts_max_pczts() {
+        let payloads = test_zcash_payloads(ZCASH_BATCH_MAX_PCZTS);
 
-        validate_zcash_batch(&batch).unwrap();
+        validate_zcash_batch_payloads(&payloads).unwrap();
     }
 
+    #[cfg(feature = "cypherpunk")]
     #[test]
-    fn test_validate_zcash_batch_accepts_max_messages() {
-        let batch = test_zcash_batch(
-            (0..ZCASH_BATCH_MAX_MESSAGES)
-                .map(|index| {
-                    test_zcash_message(
-                        format!("id-{index}").as_bytes(),
-                        format!("pczt-{index}").as_bytes(),
-                    )
-                })
-                .collect(),
-        );
+    fn test_validate_zcash_batch_rejects_oversized_total_payload() {
+        // Three PCZTs whose summed payloads cross the byte bound: the count cap
+        // alone no longer bounds RAM, so the byte bound must reject this.
+        let big = vec![0xAB; ZCASH_BATCH_MAX_TOTAL_BYTES / 2];
+        let payloads = vec![big.clone(), [big.as_slice(), &[0x01]].concat(), vec![0x02]];
 
-        validate_zcash_batch(&batch).unwrap();
-    }
-
-    #[test]
-    fn test_validate_zcash_batch_rejects_version_network_and_atomic_policy() {
-        let message = test_zcash_message(b"one", b"pczt-one");
-
-        let wrong_version = ZcashSignBatch::new(
-            ZCASH_SIGN_BATCH_VERSION + 1,
-            b"test-request".to_vec(),
-            ZCASH_SIGN_BATCH_NETWORK_MAINNET,
-            vec![message.clone()],
-            Some(true),
-        );
+        let error = validate_zcash_batch_payloads(&payloads).unwrap_err();
         assert!(matches!(
-            validate_zcash_batch(&wrong_version),
-            Err(RustCError::UnsupportedTransaction(message))
-                if message.contains("unsupported Zcash batch version")
-        ));
-
-        let wrong_network = ZcashSignBatch::new(
-            ZCASH_SIGN_BATCH_VERSION,
-            b"test-request".to_vec(),
-            ZCASH_SIGN_BATCH_NETWORK_MAINNET + 1,
-            vec![message.clone()],
-            Some(true),
-        );
-        assert!(matches!(
-            validate_zcash_batch(&wrong_network),
-            Err(RustCError::UnsupportedTransaction(message))
-                if message.contains("only Zcash mainnet")
-        ));
-
-        let non_atomic = ZcashSignBatch::new(
-            ZCASH_SIGN_BATCH_VERSION,
-            b"test-request".to_vec(),
-            ZCASH_SIGN_BATCH_NETWORK_MAINNET,
-            vec![message],
-            Some(false),
-        );
-        assert!(matches!(
-            validate_zcash_batch(&non_atomic),
-            Err(RustCError::UnsupportedTransaction(message))
-                if message.contains("atomic=true")
+            error,
+            RustCError::UnsupportedTransaction(message)
+                if message.contains("PCZTs exceed")
         ));
     }
 
+    #[cfg(feature = "cypherpunk")]
     #[test]
-    fn test_validate_zcash_batch_rejects_empty_request_id_and_messages() {
-        let empty_request_id = ZcashSignBatch::new(
-            ZCASH_SIGN_BATCH_VERSION,
-            vec![],
-            ZCASH_SIGN_BATCH_NETWORK_MAINNET,
-            vec![test_zcash_message(b"one", b"pczt-one")],
-            Some(true),
-        );
+    fn test_validate_zcash_batch_rejects_empty_batch_and_payload() {
         assert_eq!(
-            validate_zcash_batch(&empty_request_id).unwrap_err(),
-            RustCError::InvalidData("Zcash batch has no request id".to_string())
+            validate_zcash_batch_payloads(&[]).unwrap_err(),
+            RustCError::InvalidData("Zcash batch has no PCZTs".to_string())
         );
 
-        let empty_messages = test_zcash_batch(vec![]);
         assert_eq!(
-            validate_zcash_batch(&empty_messages).unwrap_err(),
-            RustCError::InvalidData("Zcash batch has no messages".to_string())
+            validate_zcash_batch_payloads(&[vec![]]).unwrap_err(),
+            RustCError::InvalidData("Zcash batch PCZT 0 has no payload".to_string())
         );
     }
 
+    #[cfg(feature = "cypherpunk")]
     #[test]
-    fn test_validate_zcash_batch_rejects_invalid_message_fields() {
-        let unsupported_kind = ZcashSignMessage::new(
-            b"one".to_vec(),
-            ZCASH_SIGN_MESSAGE_KIND_PCZT_V1 + 1,
-            b"pczt-one".to_vec(),
-            Some(sha256(b"pczt-one").to_vec()),
-        );
-        assert!(matches!(
-            validate_zcash_batch(&test_zcash_batch(vec![unsupported_kind])),
-            Err(RustCError::UnsupportedTransaction(message))
-                if message.contains("unsupported Zcash batch message kind")
-        ));
-
-        let empty_message_id = test_zcash_message(b"", b"pczt-one");
-        assert_eq!(
-            validate_zcash_batch(&test_zcash_batch(vec![empty_message_id])).unwrap_err(),
-            RustCError::InvalidData("Zcash batch message 0 has no id".to_string())
-        );
-
-        let empty_payload = test_zcash_message(b"one", b"");
-        assert_eq!(
-            validate_zcash_batch(&test_zcash_batch(vec![empty_payload])).unwrap_err(),
-            RustCError::InvalidData("Zcash batch message 0 has no payload".to_string())
-        );
-    }
-
-    #[test]
-    fn test_validate_zcash_batch_rejects_too_many_messages() {
-        let batch = test_zcash_batch(
-            (0..=ZCASH_BATCH_MAX_MESSAGES)
-                .map(|index| {
-                    test_zcash_message(
-                        format!("id-{index}").as_bytes(),
-                        format!("pczt-{index}").as_bytes(),
-                    )
-                })
-                .collect(),
-        );
+    fn test_validate_zcash_batch_rejects_too_many_pczts() {
+        let payloads = test_zcash_payloads(ZCASH_BATCH_MAX_PCZTS + 1);
 
         assert!(matches!(
-            validate_zcash_batch(&batch),
+            validate_zcash_batch_payloads(&payloads),
             Err(RustCError::UnsupportedTransaction(message))
                 if message.contains("supports at most")
         ));
     }
 
+    #[cfg(feature = "cypherpunk")]
     #[test]
-    fn test_validate_zcash_batch_rejects_duplicate_ids_and_payloads() {
-        let duplicate_ids = test_zcash_batch(vec![
-            test_zcash_message(b"same", b"pczt-one"),
-            test_zcash_message(b"same", b"pczt-two"),
-        ]);
+    fn test_validate_zcash_batch_rejects_duplicate_pczts() {
+        let duplicate_payloads = vec![b"pczt".to_vec(), b"pczt".to_vec()];
         assert_eq!(
-            validate_zcash_batch(&duplicate_ids).unwrap_err(),
-            RustCError::InvalidData("Zcash batch contains duplicate message ids".to_string())
-        );
-
-        let duplicate_payloads = test_zcash_batch(vec![
-            test_zcash_message(b"one", b"pczt"),
-            test_zcash_message(b"two", b"pczt"),
-        ]);
-        assert_eq!(
-            validate_zcash_batch(&duplicate_payloads).unwrap_err(),
-            RustCError::InvalidData("Zcash batch contains duplicate payloads".to_string())
+            validate_zcash_batch_payloads(&duplicate_payloads).unwrap_err(),
+            RustCError::InvalidData("Zcash batch contains duplicate PCZTs".to_string())
         );
     }
 
+    #[cfg(feature = "cypherpunk")]
+    fn empty_batch_request() -> Vec<u8> {
+        BatchSignRequest::new(vec![]).serialize().unwrap()
+    }
+
+    #[cfg(feature = "cypherpunk")]
     #[test]
-    fn test_validate_zcash_batch_rejects_payload_digest_mismatch() {
-        let message = ZcashSignMessage::new(
-            b"one".to_vec(),
-            ZCASH_SIGN_MESSAGE_KIND_PCZT_V1,
-            b"pczt-one".to_vec(),
-            Some(sha256(b"different-payload").to_vec()),
-        );
-        let batch = test_zcash_batch(vec![message]);
+    fn test_checked_zcash_batch_preserves_request_id() {
+        let request_id = vec![0xaa, 0xbb];
+        let checked = encode_checked_zcash_batch(&request_id, empty_batch_request()).unwrap();
+
+        let (decoded_request_id, batch) = parse_checked_zcash_batch(&checked).unwrap();
+
+        assert_eq!(decoded_request_id, request_id);
+        assert!(batch.pczts().is_empty());
+    }
+
+    #[cfg(feature = "cypherpunk")]
+    #[test]
+    fn test_zcash_batch_rejects_invalid_envelope_bounds() {
+        let registry = ZcashSignBatch::new(vec![], empty_batch_request());
 
         assert_eq!(
-            validate_zcash_batch(&batch).unwrap_err(),
-            RustCError::InvalidData("Zcash batch message 0 payload digest mismatch".to_string())
+            parse_zcash_batch_registry(&registry).unwrap_err(),
+            RustCError::InvalidData("Zcash batch request id must not be empty".to_string())
         );
+
+        let oversized = ZcashSignBatch::new(vec![0xaa], vec![0; ZCASH_BATCH_MAX_TOTAL_BYTES]);
+        assert!(matches!(
+            parse_zcash_batch_registry(&oversized),
+            Err(RustCError::UnsupportedTransaction(message))
+                if message.contains("batch request exceeds")
+        ));
+    }
+
+    #[cfg(feature = "cypherpunk")]
+    #[test]
+    fn test_zcash_batch_rejects_count_before_parse() {
+        let mut request = empty_batch_request();
+        request[ZCASH_BATCH_REQUEST_HEADER_LEN] = ZCASH_BATCH_MAX_PCZTS as u8;
+        validate_zcash_batch_request_count(&request).unwrap();
+
+        let mut overlong_small_count = empty_batch_request();
+        overlong_small_count[ZCASH_BATCH_REQUEST_HEADER_LEN] = 0x81;
+        overlong_small_count.push(0);
+        validate_zcash_batch_request_count(&overlong_small_count).unwrap();
+
+        // The body declares 51 PCZTs but omits them. Reaching the count error
+        // proves the limit is enforced before the full request is parsed.
+        request[ZCASH_BATCH_REQUEST_HEADER_LEN] += 1;
+        let registry = ZcashSignBatch::new(vec![0xaa], request);
+        assert_eq!(
+            parse_zcash_batch_registry(&registry).unwrap_err(),
+            RustCError::UnsupportedTransaction(format!(
+                "Zcash batch supports at most {ZCASH_BATCH_MAX_PCZTS} PCZTs"
+            ))
+        );
+    }
+
+    #[cfg(feature = "cypherpunk")]
+    #[test]
+    fn test_encode_zcash_batch_sig_result_wraps_pczt_response() {
+        use zcash_vendor::{orchard::ValuePool, pczt::roles::signer::SpendAuthSignature};
+
+        let request_id = vec![0xaa, 0xbb];
+        let response = BatchSignResponse::new(vec![
+            vec![SpendAuthSignature::from_parts(
+                ValuePool::Orchard,
+                0,
+                [0x11; 64],
+            )],
+            vec![SpendAuthSignature::from_parts(
+                ValuePool::Ironwood,
+                3,
+                [0x22; 64],
+            )],
+        ]);
+        let response_bytes = response.serialize().unwrap();
+
+        let cbor =
+            encode_zcash_batch_sig_result(request_id.clone(), response_bytes.clone()).unwrap();
+        let decoded = ZcashBatchSigResult::try_from(cbor).unwrap();
+
+        assert_eq!(decoded.get_request_id(), request_id);
+        assert_eq!(decoded.get_data(), response_bytes);
+        assert_eq!(
+            BatchSignResponse::parse(decoded.get_data()).unwrap(),
+            response
+        );
+    }
+
+    /// The batch signer fails closed: with no checked batch stored (a null
+    /// container) it refuses and produces no signature UR.
+    #[cfg(feature = "cypherpunk")]
+    #[test]
+    fn test_sign_zcash_batch_refuses_without_checked_batch() {
+        for unlimited in [false, true] {
+            let result = unsafe {
+                if unlimited {
+                    sign_zcash_batch_tx_cypherpunk_unlimited(
+                        core::ptr::null_mut(),
+                        core::ptr::null_mut(),
+                        0,
+                        false,
+                        core::ptr::null_mut(),
+                        0,
+                    )
+                } else {
+                    sign_zcash_batch_tx_cypherpunk(
+                        core::ptr::null_mut(),
+                        core::ptr::null_mut(),
+                        0,
+                        false,
+                        core::ptr::null_mut(),
+                        0,
+                    )
+                }
+            };
+            assert!(!result.is_null());
+            assert!(
+                unsafe { (*result).data.is_null() },
+                "signing without a checked batch must not produce a signature UR"
+            );
+            unsafe { Box::from_raw(result).free() };
+        }
     }
 
     #[test]

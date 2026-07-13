@@ -933,11 +933,12 @@ mod legacy_tests {
             BranchId::Nu6_3.into(),
             10,
             MainNetwork.coin_type(),
-            [0; 32],
-            [0; 32],
+            None,
+            None,
         )
         .unwrap()
-        .build();
+        .build()
+        .unwrap();
 
         let result = sign_pczt(pczt, &[7u8; 32]);
 

@@ -214,6 +214,13 @@ fn action_cv_net(action: &pczt::orchard::Action) -> &[u8; 32] {
     action.cv_net().as_ref().unwrap_or(&ZERO)
 }
 
+/// The action's note commitment bytes for the sighash. Like `cv_net`, `cmx` is
+/// optional in the v2 PCZT wire model and is resolved and checked before signing.
+fn action_cmx(action: &pczt::orchard::Action) -> &[u8; 32] {
+    static ZERO: [u8; 32] = [0; 32];
+    action.output().cmx().as_ref().unwrap_or(&ZERO)
+}
+
 /// The output's encrypted note ciphertext for the sighash. `resolve_fields` restores the
 /// full ciphertext from a memo-plaintext-only (`EncCiphertext::MemoPlaintext`) output; see
 /// [`action_cv_net`] for why the zero fallback is unreachable in the signing path.
@@ -236,7 +243,7 @@ fn digest_orchard(pczt: &Pczt) -> Hash {
         let enc_ciphertext = action_enc_ciphertext(action.output());
 
         ch.update(action.spend().nullifier());
-        ch.update(action.output().cmx());
+        ch.update(action_cmx(action));
         ch.update(action.output().ephemeral_key());
         ch.update(&enc_ciphertext[..ENC_CIPHERTEXT_COMPACT_LEN]);
 
@@ -277,7 +284,9 @@ fn hash_sapling_spends(pczt: &Pczt) -> Hash {
             ch.update(s_spend.nullifier());
 
             nh.update(s_spend.cv());
-            nh.update(pczt.sapling().anchor());
+            // Checked v5 spends require an anchor. Zero only keeps digesting
+            // malformed unchecked data infallible; it cannot yield a valid transaction.
+            nh.update(pczt.sapling().anchor().as_ref().unwrap_or(&[0u8; 32]));
             nh.update(s_spend.rk());
         }
 
@@ -387,7 +396,7 @@ fn digest_orchard_shaped_v6(
         let enc_ciphertext = action_enc_ciphertext(action.output());
 
         ch.update(action.spend().nullifier());
-        ch.update(action.output().cmx());
+        ch.update(action_cmx(action));
         ch.update(action.output().ephemeral_key());
         ch.update(&enc_ciphertext[..ENC_CIPHERTEXT_COMPACT_LEN]);
 

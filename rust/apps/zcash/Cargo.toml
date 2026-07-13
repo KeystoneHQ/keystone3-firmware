@@ -38,7 +38,6 @@ orchard = { version = "0.15.0-pre.2", default-features = false }
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
     'cfg(coverage_nightly)',
-    'cfg(zcash_unstable, values("nu6.3"))',
 ] }
 
 [features]

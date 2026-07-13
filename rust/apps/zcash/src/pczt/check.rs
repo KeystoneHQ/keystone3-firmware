@@ -45,7 +45,6 @@ pub fn check_pczt_orchard<P: consensus::Parameters>(
     pczt: &Pczt,
 ) -> Result<(), ZcashError> {
     super::validate_supported_pczt(pczt)?;
-    #[cfg(zcash_unstable = "nu6.3")]
     let should_process_ironwood = super::pczt_should_process_ironwood(pczt);
     let verifier = Verifier::new(pczt.clone())
         .with_orchard(|bundle| {
@@ -61,7 +60,6 @@ pub fn check_pczt_orchard<P: consensus::Parameters>(
             Ok(())
         })
         .map_err(map_orchard_verifier_error)?;
-    #[cfg(zcash_unstable = "nu6.3")]
     if should_process_ironwood {
         verifier
             .with_ironwood(|bundle| {

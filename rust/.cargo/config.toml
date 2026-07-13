@@ -2,4 +2,3 @@
 ## This path is hardcoded into the Makefiles, so make sure a contributor’s
 ## config hasn’t overridden it.
 target-dir = "target"
-rustflags = ["--cfg", "zcash_unstable=\"nu6.3\""]

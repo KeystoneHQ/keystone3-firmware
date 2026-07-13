@@ -216,7 +216,6 @@ fn transparent_account_pubkey_from_xpub(
 
 #[cfg(feature = "multi_coins")]
 fn reject_legacy_check_unsupported_pczt(pczt: &Pczt) -> Result<()> {
-    #[cfg(zcash_unstable = "nu6.3")]
     {
         // The legacy multi-coins check path only verifies transparent data. Reject any
         // shielded (Sapling/Orchard/Ironwood) or V6 PCZT so check, parse, and sign
@@ -386,7 +385,6 @@ mod legacy_tests {
         );
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn legacy_check_rejects_v6_pczt() {
         let pczt = Creator::new(
@@ -431,7 +429,6 @@ fn map_shielded_verifier_error(
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum SignableShieldedPool {
     Orchard,
-    #[cfg(zcash_unstable = "nu6.3")]
     Ironwood,
 }
 
@@ -440,7 +437,6 @@ impl SignableShieldedPool {
     fn label(self) -> &'static str {
         match self {
             SignableShieldedPool::Orchard => "Orchard",
-            #[cfg(zcash_unstable = "nu6.3")]
             SignableShieldedPool::Ironwood => "Ironwood",
         }
     }
@@ -448,7 +444,6 @@ impl SignableShieldedPool {
     fn shielded_pool(self) -> pczt::ShieldedPool {
         match self {
             SignableShieldedPool::Orchard => pczt::ShieldedPool::Orchard,
-            #[cfg(zcash_unstable = "nu6.3")]
             SignableShieldedPool::Ironwood => pczt::ShieldedPool::Ironwood,
         }
     }
@@ -575,7 +570,6 @@ fn signable_shielded_actions<P: consensus::Parameters>(
         reject_unsupported_batch_pczt(&pczt)?;
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     let should_process_ironwood = pczt::pczt_should_process_ironwood(&pczt);
     let mut actions = Vec::new();
     let verifier = Verifier::new(pczt)
@@ -592,7 +586,6 @@ fn signable_shielded_actions<P: consensus::Parameters>(
         })
         .map_err(map_shielded_verifier_error)?;
 
-    #[cfg(zcash_unstable = "nu6.3")]
     let verifier = if should_process_ironwood {
         verifier
             .with_ironwood::<ZcashError, _>(|bundle| {
@@ -622,7 +615,6 @@ fn ensure_shielded_actions_are_signed(
 ) -> Result<Pczt> {
     use zcash_vendor::pczt::roles::verifier::Verifier;
 
-    #[cfg(zcash_unstable = "nu6.3")]
     let should_process_ironwood = pczt::pczt_should_process_ironwood(&signed_pczt);
     let verifier = Verifier::new(signed_pczt)
         .with_orchard::<ZcashError, _>(|bundle| {
@@ -630,7 +622,6 @@ fn ensure_shielded_actions_are_signed(
         })
         .map_err(map_shielded_verifier_error)?;
 
-    #[cfg(zcash_unstable = "nu6.3")]
     let verifier = if should_process_ironwood {
         verifier
             .with_ironwood::<ZcashError, _>(|bundle| {
@@ -794,7 +785,6 @@ mod tests {
         derivation_path: Vec<u32>,
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     fn v5_pczt_with_ironwood_actions() -> Vec<u8> {
         let sample = pczt::test_support::sample_ironwood_pczt();
         let bytes = sample.bytes;
@@ -992,7 +982,6 @@ mod tests {
         assert_eq!(address.unwrap(), "u1tqdskj32l9udfp0rysmca6gpz73fdqc2rmeenyhh0nfrq4vgak284ehkxefw5cf9495rdur0tparuntevp6nnetzjkyzv08m524e4swwk94asas7hm2ad5w5c64zz00hmr7nux0yhaz");
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_pczt_ironwood_to_ironwood() {
         let sample = pczt::test_support::sample_ironwood_pczt();
@@ -1030,7 +1019,6 @@ mod tests {
         );
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_parse_pczt_orchard_decodes_spend_and_change() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
@@ -1073,7 +1061,6 @@ mod tests {
         .unwrap();
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_parse_and_check_ignore_unsupported_ironwood_spend_zip32_path() {
         let sample = pczt::test_support::sample_ironwood_pczt();
@@ -1117,7 +1104,6 @@ mod tests {
         }
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_parse_and_check_ignore_dummy_ironwood_spend_zip32_metadata() {
         let sample = pczt::test_support::sample_ironwood_pczt();
@@ -1156,7 +1142,6 @@ mod tests {
         }
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_parse_check_and_sign_reject_v5_pczt_with_ironwood_actions() {
         let sample = pczt::test_support::sample_ironwood_pczt();
@@ -1216,7 +1201,6 @@ mod tests {
         assert!(matches!(result.unwrap_err(), ZcashError::InvalidPczt(_)));
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_check_pczt_normalizes_and_is_idempotent() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
@@ -1288,7 +1272,6 @@ mod tests {
     const BATCH_UNSUPPORTED_SAPLING_ERROR: &str =
         "Zcash batch PCZT must not contain Sapling spends or outputs";
 
-    #[cfg(zcash_unstable = "nu6.3")]
     fn pczt_with_sapling_output() -> pczt::test_support::SamplePczt {
         let mut sample = pczt::test_support::sample_orchard_change_pczt();
         let (mut prefix, rest) =
@@ -1335,7 +1318,6 @@ mod tests {
         );
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_sign_checked_batch_pczt_signs_ironwood_spend() {
         let sample = pczt::test_support::sample_ironwood_pczt();
@@ -1363,7 +1345,6 @@ mod tests {
             .any(|action| action.spend().spend_auth_sig().is_some()));
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_sign_checked_pczt_signs_owned_orchard_actions() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
@@ -1395,7 +1376,6 @@ mod tests {
         assert_eq!(signed_actions, 2);
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_sign_checked_pczt_rejects_foreign_seed() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
@@ -1420,7 +1400,6 @@ mod tests {
         assert!(matches!(result, Err(ZcashError::PcztNoMyInputs)));
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_sign_checked_batch_pczt_signs_and_rejects_sapling() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
@@ -1462,7 +1441,6 @@ mod tests {
         ));
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_check_batch_pczt_accepts_orchard_and_ironwood_spends() {
         for sample in [
@@ -1494,7 +1472,6 @@ mod tests {
         }
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_check_resolves_compact_pczt_and_signs() {
         use zcash_vendor::pczt::roles::redactor::Redactor;
@@ -1571,7 +1548,6 @@ mod tests {
             .any(|action| action.spend().spend_auth_sig().is_some()));
     }
 
-    #[cfg(zcash_unstable = "nu6.3")]
     #[test]
     fn test_check_batch_pczt_rejects_sapling_outputs() {
         let sample = pczt_with_sapling_output();

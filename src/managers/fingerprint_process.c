@@ -1173,10 +1173,18 @@ void __inline FingerprintIsrRecvProcess(uint8_t byte)
     if (rcvByteCount != 0) {
         if (tick - lastTick > 200) {
             rcvByteCount = 0;
-            memset_s(g_intrRecvBuffer, RCV_MSG_MAX_LEN, 0, RCV_MSG_MAX_LEN);
+            memset_s(intrRecvBuffer, RCV_MSG_MAX_LEN, 0, RCV_MSG_MAX_LEN);
         }
     }
     lastTick = tick;
+
+    // Defensive bound: never index past the buffer, whatever the length field claims.
+    if (rcvByteCount < 0 || rcvByteCount >= RCV_MSG_MAX_LEN) {
+        memset_s(intrRecvBuffer, RCV_MSG_MAX_LEN, 0, RCV_MSG_MAX_LEN);
+        rcvByteCount = 0;
+        totalLen = 0;
+        return;
+    }
 
     if (rcvByteCount == 0) {   // frame head
         if (byte == 0xAA) {
@@ -1187,12 +1195,17 @@ void __inline FingerprintIsrRecvProcess(uint8_t byte)
         }
     } else if (rcvByteCount == 1 || rcvByteCount == 2) {       //frame len
         intrRecvBuffer[rcvByteCount++] = byte;
-        if (rcvByteCount == 2) {
+        if (rcvByteCount == 3) {   // both length bytes are now present
             totalLen = (intrRecvBuffer[2] << 8) + intrRecvBuffer[1] + 3;
+            if (totalLen <= 3 || totalLen > RCV_MSG_MAX_LEN) {   // reject junk lengths
+                memset_s(intrRecvBuffer, RCV_MSG_MAX_LEN, 0, RCV_MSG_MAX_LEN);
+                rcvByteCount = 0;
+                totalLen = 0;
+            }
         }
     } else {
         intrRecvBuffer[rcvByteCount++] = byte;
-        if (rcvByteCount == totalLen) {
+        if (rcvByteCount >= totalLen) {
             if (g_delayCmd == FINGERPRINT_CMD_LOW_POWER && totalLen == 0x27) {
                 uint8_t passwd = 0;
                 memcpy_s(g_fpRandomKey, sizeof(g_fpRandomKey), &intrRecvBuffer[15], 16);

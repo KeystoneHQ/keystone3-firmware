@@ -133,4 +133,4 @@ zcash_transparent = { git = "https://github.com/zcash/librustzcash", rev = "878d
 orchard = { git = "https://github.com/zcash/orchard", rev = "8995ee7e26f8b654a5457d05c95ee5b3132b3edd" }
 # Use the SDK rev that wraps PCZT-owned Postcard messages as opaque UR data and
 # correlates each request and result through the outer registry envelope.
-ur-registry = { git = "https://github.com/valargroup/keystone-sdk-rust.git", rev = "bf5b6e4b5c533e8934c4611837db2b6567ae837e" }
+ur-registry = { git = "https://github.com/KeystoneHQ/keystone-sdk-rust.git", rev = "bf5b6e4b5c533e8934c4611837db2b6567ae837e" }

@@ -131,6 +131,6 @@ zcash_protocol = { git = "https://github.com/zcash/librustzcash", rev = "878db20
 zcash_transparent = { git = "https://github.com/zcash/librustzcash", rev = "878db2074ae8ac2682d3e6c61c00f7018b6adc0c" }
 # Keep `orchard` aligned with the pinned PCZT/librustzcash revision.
 orchard = { git = "https://github.com/zcash/orchard", rev = "8995ee7e26f8b654a5457d05c95ee5b3132b3edd" }
-# Use the SDK rev that wraps PCZT-owned Postcard messages as opaque UR data and
-# correlates each request and result through the outer registry envelope.
-ur-registry = { git = "https://github.com/KeystoneHQ/keystone-sdk-rust.git", rev = "bf5b6e4b5c533e8934c4611837db2b6567ae837e" }
+# Use the SDK rev that wraps PCZT-owned Postcard messages as opaque UR data,
+# correlates requests and results, and reports one firmware version per batch result.
+ur-registry = { git = "https://github.com/KeystoneHQ/keystone-sdk-rust.git", rev = "f6b688eb9b6eb928f400b4cd7d2d623fdbc3b34d" }

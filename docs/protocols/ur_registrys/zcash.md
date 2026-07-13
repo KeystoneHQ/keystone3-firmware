@@ -59,7 +59,8 @@ zcash-pczt {
 The outer UR registry envelope carries a request id for response correlation and
 an opaque `data` field containing the PCZT-owned batch request. The matching
 compact response uses `zcash-batch-sig-result`, echoes the request id, and
-carries the PCZT-owned response in its own opaque `data` field.
+carries the PCZT-owned response in its own opaque `data` field. It also reports
+the signing firmware version once for the entire response.
 
 Batch version 1 is supported by cypherpunk firmware and currently accepts up to
 50 PCZTs. The encoded batch data and request id together, and the canonical PCZT
@@ -72,10 +73,11 @@ are rejected.
 
 #### Outer UR/CBOR envelopes
 
-Both registry types use definite-length CBOR maps with the same integer keys.
-Firmware requires `request-id` to be non-empty. Key `1` follows `zcash-pczt` by
-carrying opaque transaction data, and key `2` follows `zcash-sign-result` by
-carrying the request id.
+Both registry types use definite-length CBOR maps. Firmware requires
+`request-id` to be non-empty. Key `1` follows `zcash-pczt` by carrying opaque
+transaction data, and key `2` follows `zcash-sign-result` by carrying the
+request id. The result's required key `3` is the three-byte firmware version
+`[major, minor, build]` that produced the signatures.
 
 ```cddl
 zcash-sign-batch = {
@@ -86,6 +88,7 @@ zcash-sign-batch = {
 zcash-batch-sig-result = {
     1: bytes, ; BatchSignResponse::serialize output
     2: bytes, ; echoed request-id
+    3: bytes, ; firmware version [major, minor, build]
 }
 ```
 

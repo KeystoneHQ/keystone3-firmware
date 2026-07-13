@@ -1,9 +1,12 @@
-//! Firmware version stamped into every signed PCZT response via
-//! `global.proprietary["keystone:fw_version"]`.
+//! Firmware version reported by Zcash signing responses.
 //!
-//! Wallets read this stamp to decide whether the device meets their
-//! minimum version requirements. The firmware itself does not enforce
-//! any minimum, it just reports its own version.
+//! Single-PCZT responses stamp it into
+//! `global.proprietary["keystone:fw_version"]`. Compact batch responses carry
+//! the same encoding once in the outer `zcash-batch-sig-result` envelope.
+//!
+//! Wallets read this stamp to identify the firmware that produced a signature.
+//! The firmware does not interpret it as a minimum requirement; it only reports
+//! its own version.
 //!
 //! Version encoding is three raw bytes `[major, minor, build]`, matching the
 //! `SOFTWARE_VERSION_MAJOR / MINOR / BUILD` triple in `src/config/version.h`.

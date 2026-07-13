@@ -4,7 +4,8 @@
 
 ### What's new
 
-1. Added support for Zcash batch PCZT signing
+1. Added support for Zcash batch PCZT signing with compact signature results
+   that report the signing firmware version
 
 ### Bug Fixes
 

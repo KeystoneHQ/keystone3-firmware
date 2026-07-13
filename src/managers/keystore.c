@@ -15,6 +15,7 @@
 #include "log_print.h"
 #include "bip39.h"
 #include "slip39.h"
+#include "memzero.h"
 #include "user_memory.h"
 #include "drv_otp.h"
 #include "librust_c.h"
@@ -44,9 +45,27 @@ static PassphraseInfo_t g_passphraseInfo[3] = {0};
 
 static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password, bool newAccount);
 static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password);
+#ifndef COMPILE_SIMULATOR
+static int32_t LoadAccountSecretFromSE(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password);
+#endif
+static int32_t AccountExists(uint8_t accountIndex, bool *exists);
 
 static void CombineInnerAesKey(uint8_t *aesKey);
 static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char *passphrase, const char *password);
+
+static int32_t AccountExists(uint8_t accountIndex, bool *exists)
+{
+    uint8_t iv[32];
+    int32_t ret;
+
+    ASSERT(accountIndex <= 2);
+    ret = SE_HmacEncryptRead(iv, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
+    if (ret == SUCCESS_CODE) {
+        *exists = CheckEntropy(iv, sizeof(iv));
+    }
+    CLEAR_ARRAY(iv);
+    return ret;
+}
 
 /// @brief Generate 32 byte entropy from SE and mcu TRNG.
 /// @param[out] entropy
@@ -103,7 +122,6 @@ int32_t SaveNewBip39Entropy(uint8_t accountIndex, const uint8_t *entropy, uint8_
     int32_t ret;
     AccountSecret_t accountSecret = {0};
     char *mnemonic = NULL;
-    uint8_t passwordHash[32];
 
     ASSERT(accountIndex <= 2);
     do {
@@ -122,9 +140,6 @@ int32_t SaveNewBip39Entropy(uint8_t accountIndex, const uint8_t *entropy, uint8_
 
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
-        HashWithSalt(passwordHash, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
-        ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("write password hash", ret);
 
     } while (0);
 
@@ -133,7 +148,6 @@ int32_t SaveNewBip39Entropy(uint8_t accountIndex, const uint8_t *entropy, uint8_
         SRAM_FREE(mnemonic);
     }
 
-    CLEAR_ARRAY(passwordHash);
     CLEAR_OBJECT(accountSecret);
     ASSERT(ret == SUCCESS_CODE);
     return ret;
@@ -151,7 +165,6 @@ int32_t SaveNewSlip39Entropy(uint8_t accountIndex, const uint8_t *ems, const uin
 {
     int32_t ret;
     AccountSecret_t accountSecret = {0};
-    uint8_t passwordHash[32];
 
     ASSERT(accountIndex <= 2);
     do {
@@ -165,13 +178,9 @@ int32_t SaveNewSlip39Entropy(uint8_t accountIndex, const uint8_t *ems, const uin
         memcpy_s(accountSecret.slip39EmsOrTonEntropyL32, sizeof(accountSecret.slip39EmsOrTonEntropyL32), ems, entropyLen);
         ret = SaveAccountSecret(accountIndex, &accountSecret, password, true);
         CHECK_ERRCODE_BREAK("SaveAccountSecret", ret);
-        HashWithSalt(passwordHash, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
-        ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("write password hash", ret);
 
     } while (0);
 
-    CLEAR_ARRAY(passwordHash);
     CLEAR_OBJECT(accountSecret);
     ASSERT(ret == SUCCESS_CODE);
     return ret;
@@ -266,54 +275,94 @@ int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char
 {
     int32_t ret;
     AccountSecret_t accountSecret;
-    uint8_t passwordHash[32];
 
     ASSERT(accountIndex <= 2);
     do {
         ret = CheckPasswordExisted(newPassword, accountIndex);
         CHECK_ERRCODE_BREAK("check repeat password", ret);
-        ret = LoadAccountSecret(accountIndex, &accountSecret, password);
+        ret = LoadAccountSecret(accountIndex, &accountSecret, password);   // decrypt seed under PIN_old (reads only)
         CHECK_ERRCODE_BREAK("load account secret", ret);
+        // Change-PIN re-provisions the SAME index under PIN_new. Bracket the re-wrap with CHANGING_PIN so an
+        // interrupted change (power loss / failure) is erased and restored at boot. The backend hook
+        // handles generation-specific prep (gen-1 no-op).
+        ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CHANGING_PIN);
+        CHECK_ERRCODE_BREAK("set changing pin status", ret);
+        ret = SE_PrepareChangePin(accountIndex, password);   // password = PIN_old
+        CHECK_ERRCODE_BREAK("prepare change pin", ret);
         ret = SaveAccountSecret(accountIndex, &accountSecret, newPassword, false);
-        CHECK_ERRCODE_BREAK("save account secret", ret);
-        HashWithSalt(passwordHash, (const uint8_t *)newPassword, strnlen_s(newPassword, PASSWORD_MAX_LEN), "password hash");
-        ret = SE_HmacEncryptWrite(passwordHash, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("write password hash", ret);
+        CHECK_ERRCODE_BREAK("save account secret", ret);   // on failure: status stays CHANGING_PIN -> boot erases
+        ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATED);   // re-wrap committed
+        CHECK_ERRCODE_BREAK("set created status", ret);
     } while (0);
+    // SetNewKeyPieceToSE consumes the arm on the normal path; disarm here too so a change-PIN never
+    // leaves it armed (e.g. if SaveAccountSecret returned before SetNewKeyPieceToSE).
+    SE_DisarmProvisionRecovery();
     CLEAR_OBJECT(accountSecret);
     return ret;
 }
 
-/// @brief Verify password.
-/// @param[out] accountIndex If password verify success, account index would be set here. Can be NULL if not needed.
+/// @brief Find the existing account that can be unlocked by password.
+/// @param[out] matchedAccountIndex If password verify success, matched account index would be set here. Can be NULL if not needed.
 /// @param password Password string.
 /// @return err code.
-int32_t VerifyPassword(uint8_t *accountIndex, const char *password)
+int32_t FindAccountByPassword(uint8_t *matchedAccountIndex, const char *password)
 {
-    uint8_t passwordHashClac[32], passwordHashStore[32];
-    int32_t ret, i;
+    AccountSecret_t accountSecret;
+    uint8_t tryOrder[3];
+    uint8_t lastAccountIndex;
+    bool exists;
+    int32_t ret = ERR_KEYSTORE_PASSWORD_ERR;
+    uint8_t tryCount = 0;
 #ifdef COMPILE_SIMULATOR
-    return SimulatorVerifyPassword(accountIndex, password);
+    return SimulatorVerifyPassword(matchedAccountIndex, password);
 #endif
 
-    for (i = 0; i < 3; i++) {
-        ret = SE_HmacEncryptRead(passwordHashStore, i * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("read password hash", ret);
-        HashWithSalt(passwordHashClac, (const uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password hash");
-        if (memcmp(passwordHashStore, passwordHashClac, 32) == 0) {
-            if (accountIndex != NULL) {
-                *accountIndex = i;
-            }
-            ret = SUCCESS_CODE;
-            break;
-        } else {
-            ret = ERR_KEYSTORE_PASSWORD_ERR;
+    lastAccountIndex = GetLastAccountIndex();
+    if (lastAccountIndex <= 2) {
+        tryOrder[tryCount++] = lastAccountIndex;
+    }
+    for (uint8_t i = 0; i < 3; i++) {
+        if (i != lastAccountIndex) {
+            tryOrder[tryCount++] = i;
         }
     }
 
-    CLEAR_ARRAY(passwordHashStore);
-    CLEAR_ARRAY(passwordHashClac);
+    for (uint8_t i = 0; i < tryCount; i++) {
+        exists = false;
+        ret = AccountExists(tryOrder[i], &exists);
+        CHECK_ERRCODE_BREAK("check account exists", ret);
+        if (!exists) {
+            ret = ERR_KEYSTORE_PASSWORD_ERR;
+            continue;
+        }
+
+        ret = LoadAccountSecret(tryOrder[i], &accountSecret, password);
+        CLEAR_OBJECT(accountSecret);
+        if (ret == SUCCESS_CODE) {
+            if (matchedAccountIndex != NULL) {
+                *matchedAccountIndex = tryOrder[i];
+            }
+            break;
+        }
+        if (ret == ERR_KEYSTORE_AUTH) {
+            ret = ERR_KEYSTORE_PASSWORD_ERR;
+            continue;
+        }
+        break;
+    }
+
     return ret;
+}
+
+int32_t VerifyAccountPassword(uint8_t accountIndex, const char *password)
+{
+    AccountSecret_t accountSecret;
+    int32_t ret;
+
+    ASSERT(accountIndex <= 2);
+    ret = LoadAccountSecret(accountIndex, &accountSecret, password);
+    CLEAR_OBJECT(accountSecret);
+    return (ret == ERR_KEYSTORE_AUTH) ? ERR_KEYSTORE_PASSWORD_ERR : ret;
 }
 
 /// @brief Check if password repeat with existing others.
@@ -322,15 +371,31 @@ int32_t VerifyPassword(uint8_t *accountIndex, const char *password)
 /// @return err code.
 int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex)
 {
-    int32_t ret;
-    uint8_t accountIndex;
+    int32_t ret = SUCCESS_CODE;
+    bool exists;
 
-    ret = VerifyPassword(&accountIndex, password);
-    if (ret == SUCCESS_CODE && excludeIndex != accountIndex) {
-        // password existed
-        ret = ERR_KEYSTORE_REPEAT_PASSWORD;
-    } else if (ret == ERR_KEYSTORE_PASSWORD_ERR) {
-        ret = SUCCESS_CODE;
+    for (uint8_t accountIndex = 0; accountIndex < 3; accountIndex++) {
+        if (excludeIndex == accountIndex) {
+            continue;
+        }
+
+        exists = false;
+        ret = AccountExists(accountIndex, &exists);
+        CHECK_ERRCODE_BREAK("check account exists", ret);
+        if (!exists) {
+            continue;
+        }
+
+        ret = VerifyAccountPassword(accountIndex, password);
+        if (ret == SUCCESS_CODE) {
+            ret = ERR_KEYSTORE_REPEAT_PASSWORD;
+            break;
+        }
+        if (ret == ERR_KEYSTORE_PASSWORD_ERR) {
+            ret = SUCCESS_CODE;
+            continue;
+        }
+        break;
     }
     return ret;
 }
@@ -470,6 +535,15 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
 #ifdef COMPILE_SIMULATOR
         ret = SimulatorSaveAccountSecret(accountIndex, accountSecret, password);
 #else
+        if (newAccount) {
+            // Account-create bracket: mark CREATING before any SE write, so an
+            // interrupted create (power loss / auto-lock mid-provision) is caught at the next boot
+            // (AccountsDataCheck erases the partial account) instead of leaving a half-written, HMAC-failing
+            // slot. Flipped to CREATED only after the full blob + account info commit below. (Change-PIN's
+            // CHANGING_PIN bracket lives in ChangePassword; it calls here with newAccount == false.)
+            ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATING);
+            CHECK_ERRCODE_BREAK("set creating status", ret);
+        }
         ret = SetNewKeyPieceToSE(accountIndex, pieces, password);
         CHECK_ERRCODE_BREAK("set key to se", ret);
         HashWithSalt(hash, pieces, sizeof(pieces), "combine two pieces");
@@ -518,6 +592,7 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
                 SimpleResponse_u8 *simpleResponse = get_master_fingerprint((PtrBytes)accountSecret->seed, seedLen);
                 if (simpleResponse == NULL) {
                     printf("get_master_fingerprint return NULL\r\n");
+                    ret = ERR_GENERAL_FAIL;   // a bare break only exits the switch -> set ret, propagated below
                     break;
                 }
                 if (simpleResponse->error_code != 0) {
@@ -525,8 +600,10 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
                     if (simpleResponse->error_message != NULL) {
                         printf("error code = %d\r\nerror msg is: %s\r\n", simpleResponse->error_code, simpleResponse->error_message);
                     }
+                    ret = simpleResponse->error_code;
+                    free_simple_response_u8(simpleResponse);   // was leaked on the error path
+                    break;
                 }
-                CHECK_ERRCODE_BREAK("get_master_fingerprint", simpleResponse->error_code);
                 uint8_t *masterFingerprint = simpleResponse->data;
                 PrintArray("masterFingerprint", masterFingerprint, 4);
                 SetCurrentAccountMfp(masterFingerprint);
@@ -537,8 +614,14 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
                 // mfp is 0x00000000;
                 break;
             }
-            SaveCurrentAccountInfo();
+            // The breaks inside the switch above terminate the switch, NOT this do/while, so a fingerprint
+            // failure (NULL response or non-zero error_code) must be propagated here before the account is
+            // committed — otherwise execution falls through and marks a bad account CREATED.
+            CHECK_ERRCODE_BREAK("get_master_fingerprint", ret);
+            ret = SaveCurrentAccountInfo();   // capture the param-page write result (was discarded)
             CHECK_ERRCODE_BREAK("write param", ret);
+            ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATED);   // create fully committed
+            CHECK_ERRCODE_BREAK("set created status", ret);
         }
     } while (0);
 
@@ -550,22 +633,19 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
     return ret;
 }
 
-/// @brief Load account secret, including entropy/seed/reservedData.
+/// @brief Load account secret with the SE PIN gate.
 /// @param[in] accountIndex Account index, 0~2.
 /// @param[out] accountSecret Account secret data.
 /// @param[in] password Password string.
 /// @return err code.
-static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password)
+#ifndef COMPILE_SIMULATOR
+static int32_t LoadAccountSecretFromSE(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password)
 {
-#ifdef COMPILE_SIMULATOR
-    return SimulatorLoadAccountSecret(accountIndex, accountSecret, password);
-#endif
     uint8_t pieces[KEY_PIECE_LEN * 2], hash[32], sha512Hash[64], hmacCalc[32];
     uint8_t *enKey, *authKey;
     uint8_t *iv, *encryptEntropy, *encryptSeed, *slip39EmsOrTonEntropyL32, *encryptReservedData, *hmac;
     uint8_t accountEncryptData[ACCOUNT_TOTAL_LEN], param[32];
     AccountInfo_t *pAccountInfo = (AccountInfo_t *)param;
-    GetAccountInfo(accountIndex, pAccountInfo);
     int32_t ret;
     AES256_CBC_ctx ctx;
 
@@ -580,6 +660,7 @@ static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountS
     hmac = encryptReservedData + SE_DATA_RESERVED_LEN;
     do {
         ret = GetKeyPieceFromSE(accountIndex, pieces, password);
+        CHECK_ERRCODE_BREAK("get key piece", ret);
         HashWithSalt(hash, pieces, sizeof(pieces), "combine two pieces");
         KEYSTORE_PRINT_ARRAY("pieces hash", hash, sizeof(hash));
         sha512((struct sha512 *)sha512Hash, hash, sizeof(hash));
@@ -606,6 +687,9 @@ static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountS
         KEYSTORE_PRINT_ARRAY("authKey", authKey, AUTH_KEY_LEN);
         ret = ((memcmp(hmacCalc, hmac, HMAC_LEN) == 0) ? SUCCESS_CODE : ERR_KEYSTORE_AUTH);
         CHECK_ERRCODE_BREAK("check hmac", ret);
+        // PIN proven correct here -> notify the SE backend of a successful unlock (gen-1: no-op).
+        ret = SE_OnUnlockSuccess(accountIndex);
+        CHECK_ERRCODE_BREAK("on unlock success", ret);
         accountSecret->entropyLen = (pAccountInfo->entropyLen == 0) ? 32 : pAccountInfo->entropyLen; // 32 bytes as default.
         CombineInnerAesKey(enKey);
         AES256_CBC_init(&ctx, enKey, iv);
@@ -628,6 +712,22 @@ static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountS
     CLEAR_ARRAY(accountEncryptData);
     CLEAR_ARRAY(hmacCalc);
     return ret;
+}
+#endif
+
+/// @brief Load account secret, including entropy/seed/reservedData.
+/// @param[in] accountIndex Account index, 0~2.
+/// @param[out] accountSecret Account secret data.
+/// @param[in] password Password string.
+/// @return err code.
+static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password)
+{
+#ifdef COMPILE_SIMULATOR
+    return SimulatorLoadAccountSecret(accountIndex, accountSecret, password);
+#else
+    ASSERT(accountIndex <= 2);
+    return LoadAccountSecretFromSE(accountIndex, accountSecret, password);
+#endif
 }
 
 /// @brief Combine with the internal AES KEY of MCU.
@@ -821,7 +921,7 @@ void KeyStoreTest(int argc, char *argv[])
         } else {
             printf("VerifyCurrentAccountPassword err=%d\r\n", ret);
         }
-        ret = VerifyPassword(&accountIndex, argv[1]);
+        ret = FindAccountByPassword(&accountIndex, argv[1]);
         if (ret == SUCCESS_CODE) {
             printf("password verify ok,accountIndex=%d\r\n", accountIndex);
         } else {

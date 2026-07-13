@@ -25,6 +25,11 @@
 #define SLOT_DEVICE_KEY                 14
 #define SLOT_DEVICE_TAMPER_FLAG         15
 
+// gen-2 factory: the two freed slots take jobs (must match firmware GetSeGen() manifest).
+#define SLOT_MATCH_COUNT                8    // count-match slot (WriteKey = slot 13)
+#define SLOT_RESET_KEY                  13   // shared reset key slot
+#define SE_GEN2_MATCH_COUNT_INIT        192  // initial match-count, written in the clear before lock_data
+
 #pragma pack(1)
 typedef struct __Atecc608bConfig_t {
     uint8_t sn1[4];
@@ -63,6 +68,13 @@ int32_t Atecc608bEncryptWrite(uint8_t slot, uint8_t block, const uint8_t *data);
 int32_t Atecc608bEncryptRead(uint8_t slot, uint8_t block, uint8_t *data);
 int32_t Atecc608bKdf(uint8_t slot, const uint8_t *authKey, const uint8_t *inData, uint32_t inLen, uint8_t *outData);
 int32_t Atecc608bDeriveKey(uint8_t slot, const uint8_t *authKey);
+// No Authorize/CheckMac — for gen-2 slots without ReqAuth.
+// GEN2 required
+int32_t Atecc608bKdfNoAuth(uint8_t slot, const uint8_t *inData, uint32_t inLen, uint8_t *outData);
+int32_t Atecc608bDeriveKeyNoAuth(uint8_t slot);
+// gen-2 config manifest writer + blank-chip bootstrap — run on a BLANK chip only.
+int32_t Atecc608bWriteConfigGen2(void);
+// **********
 int32_t Atecc608bGenDevicePubkey(uint8_t* pubkey);
 int32_t Atecc608bSignMessageWithDeviceKey(uint8_t *messageHash, uint8_t *signature);
 void Atecc608bTest(int argc, char *argv[]);

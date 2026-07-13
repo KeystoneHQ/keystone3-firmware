@@ -46,6 +46,7 @@ typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param,
     add(SCREEN_CONNECTION)      \
     add(SCREEN_MULTI_ACCOUNTS_RECEIVE)          \
     add(SCREEN_KEY_DERIVATION_REQUEST)          \
+    add(SCREEN_DERIVE_CONTEXT_HASH_REQUEST)     \
     add(SCREEN_SCAN)                            \
     add(SCREEN_TRANSACTION_DETAIL)              \
     add(SCREEN_TRANSACTION_SIGNATURE)           \

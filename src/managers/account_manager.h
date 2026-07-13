@@ -64,9 +64,12 @@ int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t e
 int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const uint8_t *entropy, uint8_t entropyLen, const char *password, uint16_t id, bool eb, uint8_t ie);
 int32_t ClearCurrentPasswordErrorCount(void);
 int32_t VerifyCurrentAccountPassword(const char *password);
+uint8_t RecordCurrentPasswordError(uint8_t maxCount);
+int32_t VerifyOwnershipPasswordTryAll(uint8_t *accountIndex, const char *password, uint8_t maxCount);
 int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password);
 void LogoutCurrentAccount(void);
 uint8_t GetCurrentAccountIndex(void);
+uint8_t GetLastAccountIndex(void);
 void SetCurrentAccountIndex(void);
 int32_t GetExistAccountNum(uint8_t *accountNum);
 int32_t GetBlankAccountIndex(uint8_t *accountIndex);
@@ -88,6 +91,8 @@ uint32_t GetLastLockDeviceTime(void);
 void SetLastLockDeviceTime(uint32_t timeStamp);
 uint32_t GetCurrentAccountEntropyLen(void);
 uint32_t GetCurrentAccountSeedLen(void);
+bool IsPinHashWiped(void);
+int32_t SetPinHashWiped(bool wiped);
 
 uint8_t *GetCurrentAccountMfp(void);
 int32_t GetAccountInfo(uint8_t accountIndex, AccountInfo_t *pInfo);

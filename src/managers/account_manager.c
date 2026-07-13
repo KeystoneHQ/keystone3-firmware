@@ -6,7 +6,6 @@
 #include "user_utils.h"
 #include "account_public_info.h"
 #include "assert.h"
-#include "hash_and_salt.h"
 #include "secret_cache.h"
 #include "log_print.h"
 #include "user_memory.h"
@@ -19,12 +18,15 @@
 #include "safe_str_lib.h"
 #endif
 
+#define PIN_HASH_WIPED_MAGIC            0xA5
+
 typedef struct {
     uint8_t loginPasswordErrorCount;
     uint8_t currentPasswordErrorCount;
     uint8_t reserved1[2];
     uint32_t lastLockDeviceTime;
-    uint8_t reserved2[24];               //byte 1~31 reserved.
+    uint8_t pinHashWiped;                //byte 8, PIN_HASH_WIPED_MAGIC when legacy hash pages are wiped.
+    uint8_t reserved2[23];               //byte 9~31 reserved.
 } PublicInfo_t;
 
 static uint8_t g_currentAccountIndex = ACCOUNT_INDEX_LOGOUT;
@@ -36,6 +38,9 @@ static PublicInfo_t g_publicInfo = {0};
 static ZcashUFVKCache_t g_zcashUFVKcache = {0};
 static void ClearZcashUFVK();
 #endif
+
+// The legacy page-8 PIN-hash wipe (gen-1 only) lives in se_backend_gen1.c's boot_migrate, dispatched
+// below via SE_BootMigrate(). The gen-2 backend has no such wipe.
 
 /// @brief Get current account info from SE, and copy info to g_currentAccountInfo.
 /// @return err code.
@@ -62,6 +67,10 @@ int32_t AccountManagerInit(void)
     ASSERT(sizeof(AccountInfo_t) == 32);
     ASSERT(sizeof(PublicInfo_t) == 32);
     ret = SE_HmacEncryptRead((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+    CHECK_ERRCODE_RETURN_INT(ret);
+    // One-time boot migration, dispatched to the generation backend: gen-1 wipes the legacy page-8 PIN
+    // hash; gen-2 and UNPROVISIONED/INVALID are no-ops. The wipe lives only in se_backend_gen1.c.
+    ret = SE_BootMigrate();
     return ret;
 }
 
@@ -186,7 +195,7 @@ int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const u
 /// @return err code.
 int32_t VerifyCurrentAccountPassword(const char *password)
 {
-    uint8_t accountIndex, passwordHashClac[32], passwordHashStore[32];
+    uint8_t accountIndex;
     int32_t ret;
 
     do {
@@ -198,23 +207,59 @@ int32_t VerifyCurrentAccountPassword(const char *password)
 #ifdef COMPILE_SIMULATOR
         ret = SimulatorVerifyCurrentPassword(accountIndex, password);
 #else
-        ret = SE_HmacEncryptRead(passwordHashStore, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("read password hash", ret);
-        HashWithSalt(passwordHashClac, (const uint8_t *)password, strlen(password), "password hash");
-        ret = memcmp(passwordHashStore, passwordHashClac, 32);
+        ret = VerifyAccountPassword(accountIndex, password);
 #endif
         if (ret == SUCCESS_CODE) {
             g_publicInfo.currentPasswordErrorCount = 0;
-        } else {
+        } else if (ret == ERR_KEYSTORE_PASSWORD_ERR) {
             g_publicInfo.currentPasswordErrorCount++;
             printf("password error count=%d\r\n", g_publicInfo.currentPasswordErrorCount);
-            ret = ERR_KEYSTORE_PASSWORD_ERR;
+        } else {
+            break;
         }
         SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
     } while (0);
 
-    CLEAR_ARRAY(passwordHashStore);
-    CLEAR_ARRAY(passwordHashClac);
+    return ret;
+}
+
+uint8_t RecordCurrentPasswordError(uint8_t maxCount)
+{
+    if (g_publicInfo.currentPasswordErrorCount < maxCount) {
+        g_publicInfo.currentPasswordErrorCount++;
+    } else {
+        g_publicInfo.currentPasswordErrorCount = maxCount;
+    }
+    printf("current password error count=%d\r\n", g_publicInfo.currentPasswordErrorCount);
+    SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+    return g_publicInfo.currentPasswordErrorCount;
+}
+
+/// @brief Verify ownership against any wallet and tick the LOGIN error counter WITHOUT logging in.
+/// Used by forget-pass "Prove Device Ownership" so wrong attempts count toward the device wipe
+/// (loginPasswordErrorCount). The count is clamped at maxCount (= MAX_LOGIN_PASSWORD_ERROR_COUNT)
+/// because the modal is escapable and the count persists.
+/// @param[out] accountIndex matched account index on success (may be NULL).
+/// @param[in] password Password string.
+/// @param[in] maxCount clamp ceiling for the login error counter (= MAX_LOGIN_PASSWORD_ERROR_COUNT).
+/// @return err code.
+int32_t VerifyOwnershipPasswordTryAll(uint8_t *accountIndex, const char *password, uint8_t maxCount)
+{
+    int32_t ret = FindAccountByPassword(accountIndex, password);
+    if (ret == SUCCESS_CODE) {
+        g_publicInfo.loginPasswordErrorCount = 0;
+    } else if (ret == ERR_KEYSTORE_PASSWORD_ERR) {
+        if (g_publicInfo.loginPasswordErrorCount < maxCount) {
+            g_publicInfo.loginPasswordErrorCount++;
+        } else {
+            // pin at the wipe threshold (heals a stale over-cap value too).
+            g_publicInfo.loginPasswordErrorCount = maxCount;
+        }
+        printf("prove-ownership login error count=%d\r\n", g_publicInfo.loginPasswordErrorCount);
+    } else {
+        return ret;   // transient SE error: don't touch the counter
+    }
+    SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
     return ret;
 }
 
@@ -227,8 +272,8 @@ int32_t ClearCurrentPasswordErrorCount(void)
     return SUCCESS_CODE;
 }
 
-/// @brief Verify password, if password verify success, set current account id. PasswordErrorCount++ if err.
-/// @param[out] accountIndex If password verify success, account index would be set here. Can be NULL if not needed.
+/// @brief Find account by password, if success set current account id. PasswordErrorCount++ if err.
+/// @param[out] accountIndex If password verify success, matched account index would be set here. Can be NULL if not needed.
 /// @param password Password string.
 /// @return err code.
 int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
@@ -236,7 +281,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
     int32_t ret;
     uint8_t tempIndex;
 
-    ret = VerifyPassword(&tempIndex, password);
+    ret = FindAccountByPassword(&tempIndex, password);
     if (ret == SUCCESS_CODE) {
         g_currentAccountIndex = tempIndex;
         g_lastAccountIndex = tempIndex;
@@ -279,6 +324,11 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
 uint8_t GetCurrentAccountIndex(void)
 {
     return g_currentAccountIndex;
+}
+
+uint8_t GetLastAccountIndex(void)
+{
+    return g_lastAccountIndex;
 }
 
 /// @brief Set last account index.
@@ -337,10 +387,8 @@ void LogoutCurrentAccount(void)
 /// @return err code.
 int32_t GetAccountInfo(uint8_t accountIndex, AccountInfo_t *pInfo)
 {
-    int32_t ret;
     ASSERT(accountIndex <= 2);
-    ret = SE_HmacEncryptRead((uint8_t *)pInfo, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
-    return ret;
+    return SE_HmacEncryptRead((uint8_t *)pInfo, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
 }
 
 /// @brief Erase public info in SE.
@@ -349,6 +397,24 @@ int32_t ErasePublicInfo(void)
 {
     CLEAR_OBJECT(g_publicInfo);
     return SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+}
+
+bool IsPinHashWiped(void)
+{
+    return g_publicInfo.pinHashWiped == PIN_HASH_WIPED_MAGIC;
+}
+
+int32_t SetPinHashWiped(bool wiped)
+{
+    uint8_t oldPinHashWiped = g_publicInfo.pinHashWiped;
+    int32_t ret;
+
+    g_publicInfo.pinHashWiped = wiped ? PIN_HASH_WIPED_MAGIC : 0;
+    ret = SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+    if (ret != SUCCESS_CODE) {
+        g_publicInfo.pinHashWiped = oldPinHashWiped;
+    }
+    return ret;
 }
 
 /// @brief Get slip39 idrandom identifier of the current account.
@@ -540,10 +606,39 @@ int32_t DestroyAccount(uint8_t accountIndex)
     uint8_t data[32] = {0};
 
     ASSERT(accountIndex <= 2);
+    // Mark the account DELETING (external status page, survives the zero-loop below). If power dies mid-erase,
+    // the boot check sees DELETING and finishes the deletion. Cleared to UNKNOWN once the data is gone.
+    printf("destroy account %d\n", accountIndex);
+    ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_DELETING);
+    if (ret != SUCCESS_CODE) {
+        printf("destroy account:set deleting status err,0x%X\n", ret);
+        CLEAR_ARRAY(data);
+        return ret;
+    }
+    printf("destroy account:set account flag in se %d\n", accountIndex);
     for (uint8_t i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
         printf("erase index=%d\n", i);
         ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
         CHECK_ERRCODE_BREAK("ds28s60 write", ret);
+    }
+    // Only declare the deletion complete if the page-erase loop actually finished. If a write failed partway,
+    // leave the status at DELETING (do NOT roll to UNKNOWN) so the next boot's AccountsDataCheck finishes the
+    // deletion — exactly as it would after a power-loss. Clearing the marker on a write error would lose that
+    // resume guarantee and could resurrect a half-erased account via the coarse 2-sentinel boot check.
+    if (ret == SUCCESS_CODE) {
+        // gen-2: erase this account's SE-side key material, not just the pages zeroed above (gen-1/simulator
+        // no-op). Only clear DELETING after this succeeds; otherwise boot retries cleanup.
+        ret = SE_EraseAccount(accountIndex);
+        if (ret != SUCCESS_CODE) {
+            printf("destroy account:erase se account err,0x%X\n", ret);
+        } else {
+            ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_UNKNOWN);  // deletion complete -> blank
+            if (ret != SUCCESS_CODE) {
+                printf("destroy account:clear deleting status err,0x%X\n", ret);
+            } else {
+                printf("destroy account:clear se done %d\n", accountIndex);
+            }
+        }
     }
     DeleteAccountPublicInfo(accountIndex);
     ClearAccountPassphrase(accountIndex);
@@ -552,27 +647,73 @@ int32_t DestroyAccount(uint8_t accountIndex)
 
     CLEAR_OBJECT(g_currentAccountInfo);
     CLEAR_ARRAY(data);
-
+    if (ret == SUCCESS_CODE) {
+        printf("destroy account %d all set\n", accountIndex);
+    } else {
+        printf("destroy account %d finished with err,0x%X\n", accountIndex, ret);
+    }
     return ret;
 }
-
+// wipe device may power lose, check the account status.
+// check whether the account data is valid, if not, erase the account data.
 void AccountsDataCheck(void)
 {
     int32_t ret;
     uint8_t data[32], accountIndex, validCount, i;
 
     for (accountIndex = 0; accountIndex < 3; accountIndex++) {
+        // gen-2 lifecycle status (external page): an account caught mid-create / mid-change-PIN / mid-delete is
+        // inconsistent -> erase it. delete -> finishes the deletion; change-PIN -> user restores from seed;
+        // create -> drops the partial wallet. A valid CREATED account skips the coarse heuristic below.
+        AccountStatus_t status = ACCOUNT_STATUS_UNKNOWN;
+        if (SE_GetAccountStatus(accountIndex, &status) == SUCCESS_CODE) {
+            if (status == ACCOUNT_STATUS_CREATING || status == ACCOUNT_STATUS_CHANGING_PIN ||
+                    status == ACCOUNT_STATUS_DELETING) {
+                printf("incomplete op on account %d (status=%d) -> erase\n", accountIndex, status);
+                memset_s(data, sizeof(data), 0, sizeof(data));
+                ret = SUCCESS_CODE;
+                for (i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
+                    ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
+                    if (ret != SUCCESS_CODE) {
+                        printf("incomplete op erase page err,account=%d,page=%d,err=0x%X\n", accountIndex, i, ret);
+                        break;
+                    }
+                }
+                if (ret == SUCCESS_CODE) {
+                    // gen-2: erase this account's SE-side key material, mirroring DestroyAccount's cleanup (the
+                    // page-zeroing above only clears the blob). Gen-1/simulator no-op; clear status only after
+                    // it succeeds.
+                    ret = SE_EraseAccount(accountIndex);
+                    if (ret != SUCCESS_CODE) {
+                        printf("incomplete op erase se account err,account=%d,err=0x%X\n", accountIndex, ret);
+                    } else {
+                        ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_UNKNOWN);   // account now blank
+                        if (ret != SUCCESS_CODE) {
+                            printf("incomplete op clear status err,account=%d,err=0x%X\n", accountIndex, ret);
+                        }
+                    }
+                }
+                continue;
+            }
+            if (status == ACCOUNT_STATUS_CREATED) {
+                continue;   // explicitly valid
+            }
+        }
+        // status UNKNOWN (legacy / pre-status accounts) -> original coarse 2-sentinel check.
         validCount = 0;
+        // for se gen1, check each account start
         ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("read iv", ret);
         if (CheckEntropy(data, 32)) {
             validCount++;
         }
-        ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("read pwd hash", ret);
+        // for se gen1, check each account key to check validity
+        ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_KEY_PIECE);
+        CHECK_ERRCODE_BREAK("read key piece", ret);
         if (CheckEntropy(data, 32)) {
             validCount++;
         }
+        // if start disconsistent with keypieces, consider the account data is illegal, erase the account data.
         if (validCount == 1) {
             printf("illegal data:%d\n", accountIndex);
             memset_s(data, sizeof(data), 0, sizeof(data));
@@ -583,6 +724,7 @@ void AccountsDataCheck(void)
             }
         }
     }
+    CLEAR_ARRAY(data);
 }
 
 #ifndef BTC_ONLY

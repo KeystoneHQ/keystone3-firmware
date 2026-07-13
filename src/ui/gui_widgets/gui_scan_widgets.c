@@ -134,6 +134,12 @@ void GuiScanResult(bool result, void *param)
                 }
                 GuiFrameOpenViewWithParam(&g_keyDerivationRequestView, NULL, 0);
             }
+            if (g_qrcodeViewType == DeriveContextHashRequest) {
+                if (!GuiCheckIfTopView(&g_homeView)) {
+                    GuiCloseCurrentWorkingView();
+                }
+                GuiFrameOpenViewWithParam(&g_deriveContextHashRequestView, NULL, 0);
+            }
 #endif
 
 #ifdef BTC_ONLY

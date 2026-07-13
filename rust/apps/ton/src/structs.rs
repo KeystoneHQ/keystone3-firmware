@@ -3,25 +3,33 @@ use crate::jettons;
 use crate::messages::jetton::JettonMessage;
 use crate::messages::nft::NFTMessage;
 use crate::messages::traits::ParseCell;
-use crate::messages::{Operation, SigningMessage};
+use crate::messages::{Operation, SigningMessage, TransferMessage};
 use crate::utils::shorten_string;
 use crate::vendor::address::TonAddress;
 use crate::vendor::cell::BagOfCells;
-use alloc::string::{String, ToString};
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 
 use hex;
 use serde::Serialize;
 use serde_json::{self, json, Value};
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct TonTransaction {
+pub struct TonMessage {
     pub to: String,
     pub amount: String,
     pub action: String,
     pub comment: Option<String>,
     pub data_view: Option<String>,
-    pub raw_data: String,
     pub contract_data: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct TonTransaction {
+    pub raw_data: String,
+    pub messages: Vec<TonMessage>,
 }
 
 impl TonTransaction {
@@ -45,19 +53,13 @@ impl TonTransaction {
     }
 }
 
-impl TryFrom<&SigningMessage> for TonTransaction {
+impl TryFrom<&TransferMessage> for TonMessage {
     type Error = TonError;
 
-    fn try_from(signing_message: &SigningMessage) -> Result<Self> {
-        if signing_message.messages.is_empty() {
-            return Err(TonError::InvalidTransaction(
-                "transaction does not contain transfer info".to_string(),
-            ));
-        };
-        let message = signing_message.messages[0].clone();
+    fn try_from(message: &TransferMessage) -> Result<Self> {
         let to = message.dest_addr.clone();
         let amount = message.value.clone();
-        match message.data {
+        match &message.data {
             None => Ok(Self {
                 to,
                 amount,
@@ -66,12 +68,12 @@ impl TryFrom<&SigningMessage> for TonTransaction {
             }),
             Some(data) => {
                 let action = data.action.clone().unwrap_or("Ton Transfer".to_string());
-                match data.operation {
+                match &data.operation {
                     Operation::Comment(comment) => Ok(Self {
                         to,
                         amount,
                         action,
-                        comment: Some(comment),
+                        comment: Some(comment.clone()),
                         ..Default::default()
                     }),
                     Operation::JettonMessage(jetton_message) => match jetton_message {
@@ -100,9 +102,6 @@ impl TryFrom<&SigningMessage> for TonTransaction {
                                 ..Default::default()
                             })
                         }
-                        _ => Err(TonError::InvalidTransaction(
-                            "invalid jetton message".to_string(),
-                        )),
                     },
                     Operation::NFTMessage(nft_message) => match nft_message {
                         NFTMessage::NFTTransferMessage(nft_transfer_message) => {
@@ -125,9 +124,6 @@ impl TryFrom<&SigningMessage> for TonTransaction {
                                 ..Default::default()
                             })
                         }
-                        _ => Err(TonError::InvalidTransaction(
-                            "invalid nft message".to_string(),
-                        )),
                     },
                     Operation::OtherMessage(_other_message) => Ok(Self {
                         to,
@@ -138,6 +134,27 @@ impl TryFrom<&SigningMessage> for TonTransaction {
                 }
             }
         }
+    }
+}
+
+impl TryFrom<&SigningMessage> for TonTransaction {
+    type Error = TonError;
+
+    fn try_from(signing_message: &SigningMessage) -> Result<Self> {
+        if signing_message.messages.is_empty() {
+            return Err(TonError::InvalidTransaction(
+                "transaction does not contain transfer info".to_string(),
+            ));
+        };
+        let messages = signing_message
+            .messages
+            .iter()
+            .map(TonMessage::try_from)
+            .collect::<Result<Vec<_>>>()?;
+        Ok(Self {
+            messages,
+            ..Default::default()
+        })
     }
 }
 
@@ -218,7 +235,73 @@ mod tests {
     extern crate std;
     use alloc::vec;
     use base64::{engine::general_purpose::STANDARD, Engine};
+    use num_bigint::BigUint;
     use std::println;
+
+    #[test]
+    fn test_build_multi_message_fixture() {
+        use crate::vendor::cell::CellBuilder;
+
+        fn build_transfer_message(
+            dest: &TonAddress,
+            value: u64,
+            data: Option<crate::vendor::cell::Cell>,
+        ) -> crate::vendor::cell::Cell {
+            let mut builder = CellBuilder::new();
+            builder.store_bit(false).unwrap();
+            builder.store_bit(true).unwrap();
+            builder.store_bit(true).unwrap();
+            builder.store_bit(false).unwrap();
+            builder.store_address(&TonAddress::NULL).unwrap();
+            builder.store_address(dest).unwrap();
+            builder.store_coins(&BigUint::from(value)).unwrap();
+            builder.store_bit(false).unwrap();
+            builder.store_coins(&BigUint::from(0u64)).unwrap();
+            builder.store_coins(&BigUint::from(0u64)).unwrap();
+            builder.store_u64(64, 0).unwrap();
+            builder.store_u32(32, 0).unwrap();
+            builder.store_bit(false).unwrap();
+            builder.store_bit(data.is_some()).unwrap();
+            if let Some(data) = data {
+                builder.store_child(data).unwrap();
+            }
+            builder.build().unwrap()
+        }
+
+        let address1 = TonAddress::new(0, &[0x11; 32]);
+        let address2 = TonAddress::new(0, &[0x22; 32]);
+
+        let message1 = build_transfer_message(&address1, 100_000_000, None);
+
+        let mut comment = CellBuilder::new();
+        comment.store_u32(32, 0).unwrap();
+        comment.store_string("multi message fixture").unwrap();
+        let comment = comment.build().unwrap();
+        let message2 = build_transfer_message(&address2, 250_000_000, Some(comment));
+
+        let mut root = CellBuilder::new();
+        root.store_u32(32, 0x29a9a317).unwrap();
+        root.store_u32(32, 0x66778899).unwrap();
+        root.store_u32(32, 1).unwrap();
+        root.store_u8(8, 3).unwrap();
+        root.store_u8(8, 0).unwrap();
+        root.store_child(message1).unwrap();
+        root.store_child(message2).unwrap();
+
+        let boc = BagOfCells::from_root(root.build().unwrap());
+        let serial = boc.serialize(true).unwrap();
+        let tx = TonTransaction::parse_hex(&serial).unwrap();
+
+        println!("multi message fixture body={}", STANDARD.encode(&serial));
+        println!("multi message fixture hex={}", hex::encode(&serial));
+        assert_eq!(tx.messages.len(), 2);
+        assert_eq!(tx.messages[0].amount, "0.1 Ton");
+        assert_eq!(tx.messages[1].amount, "0.25 Ton");
+        assert_eq!(
+            tx.messages[1].comment.as_deref(),
+            Some("multi message fixture")
+        );
+    }
 
     #[test]
     fn test_parse_simple_ton_transfer() {
@@ -228,12 +311,14 @@ mod tests {
 
         let tx = TonTransaction::parse_hex(&serial).unwrap();
 
-        assert_eq!(tx.action, "Ton Transfer");
-        assert!(tx.comment.is_none());
-        assert!(tx.data_view.is_none());
-        assert!(tx.contract_data.is_none());
-        assert!(!tx.to.is_empty());
-        assert!(!tx.amount.is_empty());
+        assert_eq!(tx.messages.len(), 1);
+        let message = &tx.messages[0];
+        assert_eq!(message.action, "Ton Transfer");
+        assert!(message.comment.is_none());
+        assert!(message.data_view.is_none());
+        assert!(message.contract_data.is_none());
+        assert!(!message.to.is_empty());
+        assert!(!message.amount.is_empty());
         assert!(!tx.raw_data.is_empty());
     }
 
@@ -245,12 +330,14 @@ mod tests {
 
         let tx = TonTransaction::parse_hex(&serial).unwrap();
 
-        assert_eq!(tx.action, "Ton Transfer");
-        assert!(tx.comment.is_some());
-        let comment = tx.comment.as_ref().unwrap();
+        assert_eq!(tx.messages.len(), 1);
+        let message = &tx.messages[0];
+        assert_eq!(message.action, "Ton Transfer");
+        assert!(message.comment.is_some());
+        let comment = message.comment.as_ref().unwrap();
         assert!(comment.contains("Keystone"));
-        assert!(!tx.to.is_empty());
-        assert!(!tx.amount.is_empty());
+        assert!(!message.to.is_empty());
+        assert!(!message.amount.is_empty());
     }
 
     #[test]
@@ -261,13 +348,15 @@ mod tests {
 
         let tx = TonTransaction::parse_hex(&serial).unwrap();
 
-        assert_eq!(tx.action, "Jetton Transfer");
-        assert!(tx.data_view.is_some());
-        assert!(tx.contract_data.is_some());
-        assert!(!tx.to.is_empty());
+        assert_eq!(tx.messages.len(), 1);
+        let message = &tx.messages[0];
+        assert_eq!(message.action, "Jetton Transfer");
+        assert!(message.data_view.is_some());
+        assert!(message.contract_data.is_some());
+        assert!(!message.to.is_empty());
 
         // Contract data should contain Jetton Wallet Address
-        let contract_data = tx.contract_data.as_ref().unwrap();
+        let contract_data = message.contract_data.as_ref().unwrap();
         assert!(contract_data.contains("Jetton Wallet Address"));
     }
 
@@ -279,9 +368,10 @@ mod tests {
 
         let tx = TonTransaction::parse(boc).unwrap();
 
-        assert_eq!(tx.action, "Ton Transfer");
-        assert!(!tx.to.is_empty());
-        assert!(!tx.amount.is_empty());
+        assert_eq!(tx.messages.len(), 1);
+        assert_eq!(tx.messages[0].action, "Ton Transfer");
+        assert!(!tx.messages[0].to.is_empty());
+        assert!(!tx.messages[0].amount.is_empty());
     }
 
     #[test]
@@ -293,9 +383,11 @@ mod tests {
         let json = tx.to_json().unwrap();
 
         assert!(json.is_object());
-        assert!(json.get("to").is_some());
-        assert!(json.get("amount").is_some());
-        assert!(json.get("action").is_some());
+        assert!(json.get("raw_data").is_some());
+        assert!(json.get("messages").is_some());
+        let messages = json.get("messages").unwrap().as_array().unwrap();
+        assert_eq!(messages.len(), 1);
+        assert_eq!(messages[0].get("action").unwrap(), "Ton Transfer");
     }
 
     #[test]
@@ -383,13 +475,8 @@ mod tests {
     fn test_ton_transaction_default() {
         let tx = TonTransaction::default();
 
-        assert_eq!(tx.to, "");
-        assert_eq!(tx.amount, "");
-        assert_eq!(tx.action, "");
-        assert!(tx.comment.is_none());
-        assert!(tx.data_view.is_none());
         assert_eq!(tx.raw_data, "");
-        assert!(tx.contract_data.is_none());
+        assert!(tx.messages.is_empty());
     }
 
     #[test]
@@ -410,9 +497,10 @@ mod tests {
         let tx1 = TonTransaction::parse_hex(&serial).unwrap();
         let tx2 = tx1.clone();
 
-        assert_eq!(tx1.to, tx2.to);
-        assert_eq!(tx1.amount, tx2.amount);
-        assert_eq!(tx1.action, tx2.action);
+        assert_eq!(tx1.messages.len(), tx2.messages.len());
+        assert_eq!(tx1.messages[0].to, tx2.messages[0].to);
+        assert_eq!(tx1.messages[0].amount, tx2.messages[0].amount);
+        assert_eq!(tx1.messages[0].action, tx2.messages[0].action);
     }
 
     #[test]

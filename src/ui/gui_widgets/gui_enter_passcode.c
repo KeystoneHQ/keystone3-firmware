@@ -2,6 +2,7 @@
 #include "gui_obj.h"
 #include "gui_led.h"
 #include "gui_views.h"
+#include "gui_framework.h"
 #include "gui_button.h"
 #include "user_memory.h"
 #include "secret_cache.h"
@@ -12,8 +13,10 @@
 #include "motor_manager.h"
 #include "account_manager.h"
 #include "gui_keyboard_hintbox.h"
+#include "gui_hintbox.h"
 #include "drv_mpu.h"
 #include "device_setting.h"
+#include "screen_manager.h"
 
 typedef enum {
     PASSWORD_STRENGTH_LEN,
@@ -36,6 +39,7 @@ static EnterPassCodeParam_t g_passParam;
 static bool g_isHandle = true;
 #define SET_HANDLE_FLAG() (g_isHandle = true)
 #define CLEAR_HANDLE_FLAG() (g_isHandle = false)
+#define MAX_CHECK_PASSWORD_COUNTER 10
 
 typedef struct EnterPassLabel {
     const char *title;
@@ -43,6 +47,271 @@ typedef struct EnterPassLabel {
     const char *passSwitch;
 } EnterPassLabel_t;
 static EnterPassLabel_t g_enterPassLabel[ENTER_PASSCODE_BUTT];
+static lv_obj_t *g_weakPasscodeHintBox = NULL;
+static GuiEnterPasscodeItem_t *g_weakPasscodeItem = NULL;
+static char g_weakPasscodeBuf[PASSWORD_MAX_LEN + 1] = {0};
+static uint8_t g_checkPasswordCounter = 0;
+
+static uint8_t GetPasswordCheckExcludeIndex(void)
+{
+    void *userParam = g_passParam.userParam;
+    if (userParam != NULL && *(uint16_t *)userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
+        return GetCurrentAccountIndex();
+    }
+    return 0xff;
+}
+
+// Reset the per-flow duplicate-check counter. Called once at each set-new-passcode flow ENTRY
+// (create/add wallet, change password, forget-pass reset) and when a flow is dropped. Must NOT
+// be called from GuiCreateEnterPasscode: the SET_PIN widget is rebuilt on every retry within a flow, which
+// would reset the counter on each input.
+void GuiResetCheckPasswordCounter(void)
+{
+    if (g_checkPasswordCounter != 0) {
+        printf("reset check password counter=%d\r\n", g_checkPasswordCounter);
+    }
+    g_checkPasswordCounter = 0;
+}
+
+static int32_t CheckPasswordExistedWithCounter(const char *password, uint8_t excludeIndex, bool *limitReached)
+{
+    int32_t ret;
+
+    *limitReached = false;
+    if (g_checkPasswordCounter < MAX_CHECK_PASSWORD_COUNTER) {
+        g_checkPasswordCounter++;
+    }
+    printf("check password counter=%d\r\n", g_checkPasswordCounter);
+    ret = CheckPasswordExisted(password, excludeIndex);
+    if (g_checkPasswordCounter >= MAX_CHECK_PASSWORD_COUNTER) {
+        *limitReached = true;
+    }
+    return ret;
+}
+
+static bool RecordDupPasswordIntentLimitReached(void)
+{
+    return RecordCurrentPasswordError(MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) >=
+           MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX;
+}
+
+static void GuiAbortSetPasscodeFlow(void)
+{
+    if (g_homeView.isActive) {
+        GuiCloseToTargetView(&g_homeView);
+        return;
+    }
+
+    if (g_createWalletView.isActive) {
+        GuiFrameCLoseView(&g_createWalletView);
+    }
+    if (g_settingView.isActive) {
+        GuiFrameCLoseView(&g_settingView);
+    }
+    if (g_forgetPassView.isActive) {
+        GuiFrameCLoseView(&g_forgetPassView);
+    }
+}
+
+static void DropSetPasscodeFlowAsyncCb(void *userData)
+{
+    (void)userData;
+    // The duplicate-check limit for this flow is reached. Drop the set-passcode flow (create/add
+    // wallet, change password, forget-pass reset) back to its parent and reset the counter — no lock view /
+    // re-verify is needed. Avoiding the lock view also avoids the cross-task LVGL / deep-sleep hazards that
+    // came with forcing a lock from here.
+    GuiResetCheckPasswordCounter();
+    GuiAbortSetPasscodeFlow();
+}
+
+static void GuiDropSetPasscodeFlow(void)
+{
+    // Deferred out of the current LVGL event callback. Every caller runs inside a keypad/keyboard/modal event
+    // handler (LV_EVENT_RELEASED / READY / CLICKED), and DropSetPasscodeFlowAsyncCb() tears down the
+    // create-wallet/setting view stack — including the button matrix whose handler is on the stack. Doing that
+    // synchronously frees the widget mid-dispatch; LVGL keeps touching it after the handler returns and corrupts
+    // the heap. Run it on the next lv_timer_handler tick, once the event chain has fully unwound.
+    lv_async_call(DropSetPasscodeFlowAsyncCb, NULL);
+}
+
+static void GuiClearSetPinInput(GuiEnterPasscodeItem_t *item)
+{
+    if (item == NULL) {
+        return;
+    }
+    for (int i = 0; i < CREATE_PIN_NUM; i++) {
+        GuiSetLedStatus(item->numLed[i], PASSCODE_LED_OFF);
+    }
+    item->currentNum = 0;
+    memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
+}
+
+static void GuiClearSetPasswordInput(GuiEnterPasscodeItem_t *item)
+{
+    if (item == NULL || item->kb == NULL || item->kb->ta == NULL) {
+        return;
+    }
+    lv_textarea_set_text(item->kb->ta, "");
+    if (item->scoreBar != NULL && !lv_obj_has_flag(item->scoreBar, LV_OBJ_FLAG_HIDDEN)) {
+        lv_obj_add_flag(item->scoreBar, LV_OBJ_FLAG_HIDDEN);
+    }
+    if (item->scoreLevel != NULL && !lv_obj_has_flag(item->scoreLevel, LV_OBJ_FLAG_HIDDEN)) {
+        lv_obj_add_flag(item->scoreLevel, LV_OBJ_FLAG_HIDDEN);
+    }
+    if (item->lenOverLabel != NULL && !lv_obj_has_flag(item->lenOverLabel, LV_OBJ_FLAG_HIDDEN)) {
+        lv_obj_add_flag(item->lenOverLabel, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+static void GuiClearWeakPasscodeInput(GuiEnterPasscodeItem_t *item)
+{
+    if (item == NULL) {
+        return;
+    }
+    if (item->mode == ENTER_PASSCODE_SET_PIN) {
+        GuiClearSetPinInput(item);
+    } else if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
+        GuiClearSetPasswordInput(item);
+    }
+    if (item->errLabel != NULL && !lv_obj_has_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN)) {
+        lv_obj_add_flag(item->errLabel, LV_OBJ_FLAG_HIDDEN);
+    }
+    if (item->repeatLabel != NULL && !lv_obj_has_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN)) {
+        lv_obj_add_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+static bool IsSameDigitPin(const char *pin)
+{
+    for (int i = 1; i < CREATE_PIN_NUM; i++) {
+        if (pin[i] != pin[0]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool IsSequentialPin(const char *pin, int8_t step)
+{
+    for (int i = 1; i < CREATE_PIN_NUM; i++) {
+        if ((pin[i] - pin[i - 1]) != step) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool IsWeakPin(const char *pin)
+{
+    if (pin == NULL || strnlen_s(pin, PASSWORD_MAX_LEN) != CREATE_PIN_NUM) {
+        return false;
+    }
+
+    const char *commonPins[] = {
+        "000000", "111111", "112233", "123123", "123456", "654321"
+    };
+    for (uint8_t i = 0; i < sizeof(commonPins) / sizeof(commonPins[0]); i++) {
+        if (strcmp(pin, commonPins[i]) == 0) {
+            return true;
+        }
+    }
+
+    if (IsSameDigitPin(pin) || IsSequentialPin(pin, 1) || IsSequentialPin(pin, -1)) {
+        return true;
+    }
+
+    if (pin[0] == pin[1] && pin[1] == pin[2] && pin[3] == pin[4] && pin[4] == pin[5]) {
+        return true;
+    }
+
+    if (pin[0] == pin[3] && pin[1] == pin[4] && pin[2] == pin[5]) {
+        return true;
+    }
+
+    if (pin[0] == pin[2] && pin[2] == pin[4] && pin[1] == pin[3] && pin[3] == pin[5]) {
+        return true;
+    }
+
+    if (pin[0] == pin[1] && pin[2] == pin[3] && pin[4] == pin[5]) {
+        return true;
+    }
+
+    return false;
+}
+
+static bool IsWeakPassword(const char *password)
+{
+    uint8_t passwordLen = strnlen_s(password, PASSWORD_MAX_LEN);
+    return GetPassWordStrength(password, passwordLen) <= 40;
+}
+
+static void WeakPasscodeModalClose(void)
+{
+    if (g_weakPasscodeHintBox != NULL && lv_obj_is_valid(g_weakPasscodeHintBox)) {
+        lv_obj_del(g_weakPasscodeHintBox);
+    }
+    g_weakPasscodeHintBox = NULL;
+}
+
+static void WeakPasscodeContinueHandler(lv_event_t *e)
+{
+    char passcode[PASSWORD_MAX_LEN + 1] = {0};
+    strcpy_s(passcode, sizeof(passcode), g_weakPasscodeBuf);
+    GuiEnterPasscodeItem_t *item = g_weakPasscodeItem;
+
+    WeakPasscodeModalClose();
+    g_weakPasscodeItem = NULL;
+    memset_s(g_weakPasscodeBuf, sizeof(g_weakPasscodeBuf), 0, sizeof(g_weakPasscodeBuf));
+
+    bool limitReached = false;
+    int32_t ret = CheckPasswordExistedWithCounter(passcode, GetPasswordCheckExcludeIndex(), &limitReached);
+    if (limitReached) {
+        GuiClearWeakPasscodeInput(item);
+        UnlimitedVibrate(SUPER_LONG);
+        GuiDropSetPasscodeFlow();
+        return;
+    }
+    if (ret != SUCCESS_CODE) {
+        GuiClearWeakPasscodeInput(item);
+        if (ret == ERR_KEYSTORE_REPEAT_PASSWORD && RecordDupPasswordIntentLimitReached()) {
+            UnlimitedVibrate(SUPER_LONG);
+            GuiDropSetPasscodeFlow();
+        } else {
+            UnlimitedVibrate(LONG);
+            if (item != NULL && item->repeatLabel != NULL) {
+                lv_obj_clear_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
+            }
+        }
+        return;
+    }
+    GuiClearWeakPasscodeInput(item);
+    GuiEmitSignal(SIG_SETTING_SET_PIN, passcode, strnlen_s(passcode, PASSWORD_MAX_LEN));
+}
+
+static void WeakPasscodeChangeHandler(lv_event_t *e)
+{
+    WeakPasscodeModalClose();
+    GuiClearWeakPasscodeInput(g_weakPasscodeItem);
+    g_weakPasscodeItem = NULL;
+    memset_s(g_weakPasscodeBuf, sizeof(g_weakPasscodeBuf), 0, sizeof(g_weakPasscodeBuf));
+}
+
+static void GuiShowWeakPasscodeHintBox(GuiEnterPasscodeItem_t *item, const char *passcode)
+{
+    WeakPasscodeModalClose();
+    g_weakPasscodeItem = item;
+    memset_s(g_weakPasscodeBuf, sizeof(g_weakPasscodeBuf), 0, sizeof(g_weakPasscodeBuf));
+    strcpy_s(g_weakPasscodeBuf, sizeof(g_weakPasscodeBuf), passcode);
+
+    g_weakPasscodeHintBox = GuiCreateGeneralHintBox(&imgWarn, _("weak_passcode_warning_title"),
+                            _("weak_passcode_warning_desc"), NULL,
+                            _("Continue"), DARK_GRAY_COLOR,
+                            _("weak_passcode_warning_change"), DEEP_ORANGE_COLOR);
+    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_weakPasscodeHintBox);
+    lv_obj_add_event_cb(leftBtn, WeakPasscodeContinueHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_weakPasscodeHintBox);
+    lv_obj_add_event_cb(rightBtn, WeakPasscodeChangeHandler, LV_EVENT_CLICKED, NULL);
+}
 
 void GuiEnterPassLabelRefresh(void)
 {
@@ -116,38 +385,56 @@ static void SetPinEventHandler(lv_event_t *e)
             }
 
             if (item->currentNum == CREATE_PIN_NUM) {
-                for (int i = 0; i < CREATE_PIN_NUM; i++) {
-                    GuiSetLedStatus(item->numLed[i], PASSCODE_LED_OFF);
+                g_userParam = g_passParam.userParam;
+                if (item->mode == ENTER_PASSCODE_SET_PIN) {
+                    // Check weakness first; it is local and avoids an unnecessary duplicate check.
+                    if (IsWeakPin(g_pinBuf)) {
+                        GuiShowWeakPasscodeHintBox(item, g_pinBuf);
+                        return;
+                    }
+                    bool limitReached = false;
+                    int32_t ret = CheckPasswordExistedWithCounter(g_pinBuf, GetPasswordCheckExcludeIndex(), &limitReached);
+                    if (limitReached) {
+                        GuiClearSetPinInput(item);
+                        UnlimitedVibrate(SUPER_LONG);
+                        GuiDropSetPasscodeFlow();
+                        return;
+                    }
+                    if (ret != SUCCESS_CODE) {
+                        GuiClearSetPinInput(item);
+                        if (ret == ERR_KEYSTORE_REPEAT_PASSWORD && RecordDupPasswordIntentLimitReached()) {
+                            UnlimitedVibrate(SUPER_LONG);
+                            GuiDropSetPasscodeFlow();
+                            return;
+                        } else {
+                            UnlimitedVibrate(LONG);
+                            lv_obj_clear_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
+                        }
+                        item->setPassCb = NULL;
+                        return;
+                    }
                 }
 
-                g_userParam = g_passParam.userParam;
-                uint8_t index = 0xff;
-                if (g_userParam != NULL && *(uint16_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
-                    index = GetCurrentAccountIndex();
-                }
+                char completedPin[PASSWORD_MAX_LEN + 1] = {0};
+                strcpy_s(completedPin, sizeof(completedPin), g_pinBuf);
+                GuiClearSetPinInput(item);
 
                 switch (item->mode) {
                 case ENTER_PASSCODE_VERIFY_PIN:
-                    SecretCacheSetPassword(g_pinBuf);
+                    SecretCacheSetPassword(completedPin);
+                    GuiLockScreenShowVerifyLoading(g_userParam);
                     GuiModelVerifyAccountPassWord(g_userParam);
                     break;
                 case ENTER_PASSCODE_SET_PIN:
-                    if (CheckPasswordExisted(g_pinBuf, index)) {
-                        UnlimitedVibrate(LONG);
-                        lv_obj_clear_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
-                    } else {
-                        GuiEmitSignal(SIG_SETTING_SET_PIN, g_pinBuf, strnlen_s(g_pinBuf, PASSWORD_MAX_LEN));
-                    }
+                    GuiEmitSignal(SIG_SETTING_SET_PIN, completedPin, strnlen_s(completedPin, PASSWORD_MAX_LEN));
                     break;
                 case ENTER_PASSCODE_REPEAT_PIN:
-                    GuiEmitSignal(SIG_SETTING_REPEAT_PIN, g_pinBuf, strnlen_s(g_pinBuf, PASSWORD_MAX_LEN));
+                    GuiEmitSignal(SIG_SETTING_REPEAT_PIN, completedPin, strnlen_s(completedPin, PASSWORD_MAX_LEN));
                     break;
                 default:
                     break;
                 }
                 CLEAR_HANDLE_FLAG();
-                item->currentNum = 0;
-                memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
                 item->setPassCb = NULL;
             }
         }
@@ -182,24 +469,40 @@ static void SetPassWordHandler(lv_event_t *e)
         } else {
             g_userParam = g_passParam.userParam;
             if (item->mode == ENTER_PASSCODE_SET_PASSWORD) {
-                uint8_t index = 0xff;
-
-                if (g_userParam != NULL && *(uint16_t *)g_userParam == DEVICE_SETTING_RESET_PASSCODE_VERIFY) {
-                    index = GetCurrentAccountIndex();
+                if (IsWeakPassword(currText)) {
+                    // Check weakness first; it is local and avoids an unnecessary duplicate check.
+                    GuiShowWeakPasscodeHintBox(item, currText);
+                    return;
                 }
-                if (CheckPasswordExisted(currText, index)) {
-                    UnlimitedVibrate(LONG);
-                    lv_obj_clear_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
-                    delayFlag = true;
+                bool limitReached = false;
+                int32_t ret = CheckPasswordExistedWithCounter(currText, GetPasswordCheckExcludeIndex(), &limitReached);
+                if (limitReached) {
+                    UnlimitedVibrate(SUPER_LONG);
+                    lv_textarea_set_text(ta, "");
+                    GuiDropSetPasscodeFlow();
+                    return;
+                }
+                if (ret != SUCCESS_CODE) {
+                    if (ret == ERR_KEYSTORE_REPEAT_PASSWORD && RecordDupPasswordIntentLimitReached()) {
+                        UnlimitedVibrate(SUPER_LONG);
+                        lv_textarea_set_text(ta, "");
+                        GuiDropSetPasscodeFlow();
+                        return;
+                    } else {
+                        UnlimitedVibrate(LONG);
+                        lv_obj_clear_flag(item->repeatLabel, LV_OBJ_FLAG_HIDDEN);
+                        delayFlag = true;
+                    }
                 } else {
                     GuiEmitSignal(SIG_SETTING_SET_PIN, (char *)currText, strnlen_s(currText, CREATE_PIN_NUM));
                 }
             } else if (item->mode == ENTER_PASSCODE_REPEAT_PASSWORD) {
                 GuiEmitSignal(SIG_SETTING_REPEAT_PIN, (char *)currText, strnlen_s(currText, CREATE_PIN_NUM));
-            } else if ((item->mode == ENTER_PASSCODE_VERIFY_PASSWORD)) {
+            } else if (item->mode == ENTER_PASSCODE_VERIFY_PASSWORD) {
                 g_userParam = g_passParam.userParam;
                 if (strnlen_s(currText, PASSWORD_MAX_LEN) > 0) {
                     SecretCacheSetPassword((char *)currText);
+                    GuiLockScreenShowVerifyLoading(g_userParam);
                     GuiModelVerifyAccountPassWord(g_userParam);
                 }
             }
@@ -680,10 +983,30 @@ void GuiDelEnterPasscode(void *obj, void *param)
 {
     GuiEnterPasscodeItem_t *item = obj;
     if (item != NULL) {
-        // lv_obj_del(item->pinCont);
-        // item->pinCont = NULL;
-        // lv_obj_del(item->passWdCont);
-        // item->pinCont = NULL;
+        // The weak-passcode warning modal is parented to lv_scr_act() (GuiCreateHintBox), so it outlives this
+        // view's teardown, and its Continue/Change handlers dereference g_weakPasscodeItem. Freeing the item
+        // without closing the modal first leaves a dangling pointer -> use-after-free on the next tap. Tie the
+        // modal's lifetime to the item: if it still references the item being freed, close it and clear the
+        // statics (also wipes the plaintext passcode lingering in g_weakPasscodeBuf).
+        if (g_weakPasscodeItem == item) {
+            WeakPasscodeModalClose();
+            g_weakPasscodeItem = NULL;
+            memset_s(g_weakPasscodeBuf, sizeof(g_weakPasscodeBuf), 0, sizeof(g_weakPasscodeBuf));
+        }
+        // Free the LVGL objects this item created (pinCont / passWdCont are its only two top containers on the
+        // parent; the button matrix, LEDs, err/repeat labels all live inside them and cascade-delete). Without
+        // this, an in-place rebuild on a persistent tile (GuiCreateWalletPrevTile: delete item + recreate on the
+        // same g_setPinTile) orphans a full keypad (~12.7 KB) every set->repeat->back bounce, and leaves dangling
+        // input-device/group references to the orphaned button matrix. lv_obj_is_valid keeps the normal close
+        // path safe (there the page/tile may already be gone by the time this runs).
+        if (item->pinCont != NULL && lv_obj_is_valid(item->pinCont)) {
+            lv_obj_del(item->pinCont);
+        }
+        item->pinCont = NULL;
+        if (item->passWdCont != NULL && lv_obj_is_valid(item->passWdCont)) {
+            lv_obj_del(item->passWdCont);
+        }
+        item->passWdCont = NULL;
         SRAM_FREE(item);
     }
 }

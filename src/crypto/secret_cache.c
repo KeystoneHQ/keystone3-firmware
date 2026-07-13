@@ -7,6 +7,7 @@
 #include "log_print.h"
 #include "stdio.h"
 #include "account_manager.h"
+#include "se_manager.h"
 
 static char *g_passwordCache = NULL;
 static char *g_newPasswordCache = NULL;
@@ -21,6 +22,7 @@ static char *g_slip39MnemonicCache[SLIP39_MAX_MEMBER];
 static uint8_t g_walletIconIndex = 0;
 static char *g_walletName = NULL;
 static uint8_t g_diceRollHashCache[32] = {0};
+static uint32_t g_diceRollsLen = 0;
 static uint16_t g_identifier;
 static uint16_t g_iteration;
 static bool g_extendable;
@@ -226,6 +228,16 @@ uint8_t *SecretCacheGetDiceRollHash()
     return g_diceRollHashCache;
 }
 
+void SecretCacheSetDiceRollsLen(uint32_t len)
+{
+    g_diceRollsLen = len;
+}
+
+uint32_t SecretCacheGetDiceRollsLen(void)
+{
+    return g_diceRollsLen;
+}
+
 void ClearSecretCache(void)
 {
     uint32_t len;
@@ -293,4 +305,8 @@ void ClearSecretCache(void)
 
     memset_s(g_checksumCache, 32, 0, 32);
     memset_s(g_diceRollHashCache, 32, 0, 32);
+    g_diceRollsLen = 0;
+
+    // SE-side transient session secrets share the passcode cache's lifetime (gen-2). No-op on gen-1.
+    SE_ClearSessionSecrets();
 }

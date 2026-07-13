@@ -1,3 +1,41 @@
+## 2.5.0(2026-6-29)
+
+**Web3:**
+
+### Improvements
+1. Improved Dice Roll Entropy Validation
+2. Improved Unlock Passcode Verification
+3. Improved TON transaction UI
+
+**BTC Only:**
+
+
+### Improvements
+1. Improved Dice Roll Entropy Validation
+2. Improved Unlock Passcode Verification
+
+**Cypherpunk:**
+
+### What's new
+1. Supported managing ZEC via Vizor
+
+### Improvements
+1. Improved Dice Roll Entropy Validation
+2. Improved Unlock Passcode Verification
+
+
+
+## 2.4.6 (2026-6-12)
+
+**Web3:**
+
+### What's new
+
+1. Support babylon derive context hash call
+
+
+
+
 ## 2.4.4 (2026-5-27)
 
 **Web3:**

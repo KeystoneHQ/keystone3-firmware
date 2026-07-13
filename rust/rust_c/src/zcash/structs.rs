@@ -12,6 +12,8 @@ use alloc::{string::ToString, vec::Vec};
 use app_zcash::pczt::structs::{
     ParsedFrom, ParsedOrchard, ParsedPczt, ParsedTo, ParsedTransparent,
 };
+#[cfg(feature = "cypherpunk")]
+use app_zcash::CheckedBatchPcztSignability;
 use cstr_core;
 
 #[repr(C)]
@@ -216,8 +218,9 @@ impl_c_ptrs!(
     DisplayOrchard
 );
 
-/// The batch display rows produced by the check pass and converted to FFI
-/// structs by the batch parse FFI, so parse no longer re-decrypts every output.
+/// The batch display rows and per-PCZT signability decisions produced by the
+/// check pass. Parse converts the rows without re-decrypting outputs; signing
+/// reuses the bound decisions without reclassifying shielded actions.
 ///
 /// Opaque to C: this is a plain Rust struct (deliberately not `#[repr(C)]`), and C
 /// only ever holds it behind the [`ZcashCheckedPczt::display`] pointer without
@@ -226,18 +229,42 @@ impl_c_ptrs!(
 #[cfg(feature = "cypherpunk")]
 pub struct BatchDisplayCache {
     rows: Vec<ParsedPczt>,
+    signability: Vec<CheckedBatchPcztSignability>,
+    seed_fingerprint: [u8; 32],
+    account_index: u32,
 }
 
 #[cfg(feature = "cypherpunk")]
 impl BatchDisplayCache {
-    /// Stores the final review rows after any migration compaction.
-    pub fn new(rows: Vec<ParsedPczt>) -> Self {
-        Self { rows }
+    /// Stores final review rows and one bound signability decision for every
+    /// checked PCZT, in request order.
+    pub fn new(
+        rows: Vec<ParsedPczt>,
+        signability: Vec<CheckedBatchPcztSignability>,
+        seed_fingerprint: [u8; 32],
+        account_index: u32,
+    ) -> Self {
+        Self {
+            rows,
+            signability,
+            seed_fingerprint,
+            account_index,
+        }
     }
 
     /// Returns the final review rows that batch parse converts for the C UI.
     pub fn rows(&self) -> &[ParsedPczt] {
         &self.rows
+    }
+
+    /// Returns the decisions only for the wallet context used at check.
+    pub fn signability(
+        &self,
+        seed_fingerprint: &[u8; 32],
+        account_index: u32,
+    ) -> Option<&[CheckedBatchPcztSignability]> {
+        (self.seed_fingerprint == *seed_fingerprint && self.account_index == account_index)
+            .then_some(&self.signability)
     }
 }
 
@@ -321,5 +348,14 @@ mod tests {
         let bytes = unsafe { checked.checked_bytes() }.unwrap();
         assert_eq!(bytes, b"normalized-bytes");
         unsafe { checked.free() };
+    }
+
+    #[cfg(feature = "cypherpunk")]
+    #[test]
+    fn test_batch_cache_binds_signing_context() {
+        let cache = BatchDisplayCache::new(Vec::new(), Vec::new(), [7; 32], 3);
+        assert!(cache.signability(&[7; 32], 3).is_some());
+        assert!(cache.signability(&[8; 32], 3).is_none());
+        assert!(cache.signability(&[7; 32], 4).is_none());
     }
 }

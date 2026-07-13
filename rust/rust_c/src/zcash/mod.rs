@@ -393,12 +393,13 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
         Err(e) => return TransactionCheckResult::from(e).c_ptr(),
     };
 
-    // Each check returns normalized bytes, display rows, and an optional compact
-    // migration classification from one trial-decrypt pass. Parse later converts
-    // the cached rows.
+    // Each check returns normalized bytes, display rows, an optional compact
+    // migration classification, and the bound signability decision from the
+    // same shielded action pass.
     let mut checked_pczts = Vec::with_capacity(payloads.len());
     let mut rows: Vec<ParsedPczt> = Vec::with_capacity(payloads.len());
     let mut migration_summaries = Vec::with_capacity(payloads.len());
+    let mut signability = Vec::with_capacity(payloads.len());
     // One check context for the whole batch: the UFVK decode and the wallet
     // Orchard key derivation depend only on the device UFVK, so they run once
     // here instead of once per PCZT (see BatchCheckContext).
@@ -411,7 +412,7 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
             seed_fingerprint,
             account_index,
         ) {
-            Ok((normalized, parsed, migration_summary)) => {
+            Ok((normalized, parsed, migration_summary, checked_signability)) => {
                 let pczt = match Pczt::parse(&normalized) {
                     Ok(pczt) => pczt,
                     Err(e) => {
@@ -424,6 +425,7 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
                 checked_pczts.push(pczt);
                 rows.push(parsed);
                 migration_summaries.push(migration_summary);
+                signability.push(checked_signability);
             }
             Err(e) => return TransactionCheckResult::from(e).c_ptr(),
         }
@@ -434,7 +436,8 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
     let display_rows = app_zcash::compact_checked_batch_migration_review(
         rows.into_iter().zip(migration_summaries),
     );
-    let display = BatchDisplayCache::new(display_rows);
+    let display =
+        BatchDisplayCache::new(display_rows, signability, *seed_fingerprint, account_index);
 
     // Rebuild the Postcard request around the normalized PCZTs so parse/sign
     // consume exactly what was checked, then preserve the outer request id for
@@ -531,8 +534,24 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
         .c_ptr();
     }
     let checked = extract_ptr_with_type!(checked_batch, ZcashCheckedPczt);
+    if checked.display.is_null() {
+        return UREncodeResult::from(RustCError::InvalidData(
+            "no checked Zcash batch signability available".to_string(),
+        ))
+        .c_ptr();
+    }
     let expected_seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let expected_seed_fingerprint: &[u8; 32] = expected_seed_fingerprint.try_into().unwrap();
+    let checked_signability =
+        match (&*checked.display).signability(expected_seed_fingerprint, account_index) {
+            Some(signability) => signability,
+            None => {
+                return UREncodeResult::from(RustCError::InvalidData(
+                    "checked Zcash batch signing context mismatch".to_string(),
+                ))
+                .c_ptr();
+            }
+        };
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
 
     let result = match checked.checked_bytes() {
@@ -543,6 +562,13 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
                         seed.zeroize();
                         return UREncodeResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
                     }
+                    if checked_signability.len() != batch.pczts().len() {
+                        seed.zeroize();
+                        return UREncodeResult::from(RustCError::InvalidData(
+                            "checked Zcash batch signability count mismatch".to_string(),
+                        ))
+                        .c_ptr();
+                    }
 
                     let mut results = Vec::new();
                     let mut error = None;
@@ -550,7 +576,8 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
                     // selected account key stays cached across every batch PCZT.
                     let ask_cache = SpendAuthCache::new();
                     // Preserve request order and emit nothing unless every PCZT signs.
-                    for pczt in batch.pczts() {
+                    for (pczt, checked_signability) in batch.pczts().iter().zip(checked_signability)
+                    {
                         let payload = match serialize_batch_pczt(pczt) {
                             Ok(payload) => payload,
                             Err(e) => {
@@ -558,12 +585,10 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
                                 break;
                             }
                         };
-                        match app_zcash::sign_checked_batch_pczt_with_cache(
-                            &MainNetwork,
+                        match app_zcash::sign_checked_batch_pczt_with_cached_signability(
                             &payload,
+                            checked_signability,
                             seed,
-                            &seed_fingerprint,
-                            account_index,
                             &ask_cache,
                         ) {
                             Ok(payload) => {
@@ -1199,11 +1224,16 @@ mod tests {
     #[cfg(feature = "cypherpunk")]
     #[test]
     fn test_parse_zcash_batch_reads_display_cache() {
-        let items = batch_display_items(&BatchDisplayCache::new(vec![
-            sample_parsed_pczt(),
-            sample_parsed_pczt(),
-            sample_parsed_pczt(),
-        ]));
+        let items = batch_display_items(&BatchDisplayCache::new(
+            vec![
+                sample_parsed_pczt(),
+                sample_parsed_pczt(),
+                sample_parsed_pczt(),
+            ],
+            Vec::new(),
+            [0; 32],
+            0,
+        ));
         assert_eq!(
             items.len(),
             3,
@@ -1213,7 +1243,12 @@ mod tests {
             unsafe { item.free() };
         }
 
-        let cache = BatchDisplayCache::new(vec![sample_parsed_pczt(), sample_parsed_pczt()]);
+        let cache = BatchDisplayCache::new(
+            vec![sample_parsed_pczt(), sample_parsed_pczt()],
+            Vec::new(),
+            [0; 32],
+            0,
+        );
         let checked_ptr =
             ZcashCheckedPczt::new_with_display(b"normalized-batch-bytes".to_vec(), cache).c_ptr();
         let result = unsafe {
@@ -1240,7 +1275,12 @@ mod tests {
     #[cfg(feature = "cypherpunk")]
     #[test]
     fn test_free_cache_bearing_container_is_clean() {
-        let cache = BatchDisplayCache::new(vec![sample_parsed_pczt(), sample_parsed_pczt()]);
+        let cache = BatchDisplayCache::new(
+            vec![sample_parsed_pczt(), sample_parsed_pczt()],
+            Vec::new(),
+            [0; 32],
+            0,
+        );
         let checked_ptr =
             ZcashCheckedPczt::new_with_display(b"normalized-batch-bytes".to_vec(), cache).c_ptr();
         unsafe { free_zcash_checked_pczt(checked_ptr) };

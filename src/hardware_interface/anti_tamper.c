@@ -16,6 +16,7 @@
 #include "drv_sensor.h"
 #include "drv_bpk.h"
 #include "drv_otp.h"
+#include "se_manager.h"
 
 #define TAMPER_MARK                 0x5A
 // #define TAMPER_OTP_FLAG
@@ -126,7 +127,7 @@ static void TamperEraseInfo(void)
     Atecc608bEncryptWrite(15, 0, pageData);
     DS28S60_Init();
     CLEAR_ARRAY(pageData);
-    for (uint32_t i = 0; i < 36; i++) {
+    for (uint32_t i = 0; i < PAGE_WALLET1_RSA_PRIMES_HASH + 3; i++) {
         printf("erase index=%d\n", i);
         DS28S60_HmacEncryptWrite(pageData, i);
     }

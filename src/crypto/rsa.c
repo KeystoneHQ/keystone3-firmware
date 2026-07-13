@@ -1,6 +1,8 @@
 #ifdef WEB3_VERSION
 #include "rsa.h"
 #include "user_utils.h"
+#include "se_manager.h"
+#include "err_code.h"
 
 static uint32_t GetRsaAddress();
 static void RsaHashWithSalt(const uint8_t *data, uint8_t *hash);
@@ -41,6 +43,10 @@ static bool HasMatchingPrimesHash(Rsa_primes_t *primes, const uint8_t targethash
     memcpy_s(bytes, SPI_FLASH_RSA_PRIME_SIZE, primes->p, SPI_FLASH_RSA_PRIME_SIZE);
     memcpy_s(bytes + SPI_FLASH_RSA_PRIME_SIZE, SPI_FLASH_RSA_PRIME_SIZE, primes->q, SPI_FLASH_RSA_PRIME_SIZE);
     uint8_t *sourceHash = SRAM_MALLOC(SPI_FLASH_RSA_HASH_SIZE);
+    if (sourceHash == NULL) {
+        memset_s(bytes, SPI_FLASH_RSA_ORIGIN_DATA_SIZE, 0, SPI_FLASH_RSA_ORIGIN_DATA_SIZE);
+        return false;
+    }
     RsaHashWithSalt(bytes, sourceHash);
     memset_s(bytes, SPI_FLASH_RSA_ORIGIN_DATA_SIZE, 0, SPI_FLASH_RSA_ORIGIN_DATA_SIZE);
     bool ret = memcmp(sourceHash, targethash, SPI_FLASH_RSA_HASH_SIZE) == 0;
@@ -61,13 +67,22 @@ Rsa_primes_t *FlashReadRsaPrimes(void)
 
     do {
         primes = SRAM_MALLOC(sizeof(Rsa_primes_t));
+        if (primes == NULL) {
+            printf("Failed to alloc rsa primes\n");
+            break;
+        }
         int readLen = Gd25FlashReadBuffer(GetRsaAddress(), fullData, sizeof(fullData));
 #ifndef COMPILE_SIMULATOR
         ASSERT(readLen == sizeof(fullData));
 #endif
+        if (readLen != sizeof(fullData)) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
         int len = (GetMnemonicType() == MNEMONIC_TYPE_BIP39) ? (int)sizeof(seed) : GetCurrentAccountEntropyLen();
         if (SecretCacheGetPassword() == NULL) {
             printf("password is empty\n");
+            ret = ERR_GENERAL_FAIL;
             break;
         }
         ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
@@ -75,13 +90,39 @@ Rsa_primes_t *FlashReadRsaPrimes(void)
 
         memcpy_s(cryptData, sizeof(cryptData), fullData, sizeof(cryptData));
         encData = aes256_decrypt_primes(seed, len, cryptData);
-        CHECK_ERRCODE_BREAK("aes256_decrypt_primes", encData->error_code);
+        if (encData == NULL) {
+            printf("aes256_decrypt_primes response is null\n");
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
+        if (encData->error_code != SUCCESS_CODE) {
+            printf("aes256_decrypt_primes err,%d\n", encData->error_code);
+            ret = encData->error_code;
+            break;
+        }
+        if (encData->data == NULL) {
+            printf("aes256_decrypt_primes data is null\n");
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
 
         memcpy_s(primes->p, SPI_FLASH_RSA_PRIME_SIZE, encData->data, SPI_FLASH_RSA_PRIME_SIZE);
         memcpy_s(primes->q, SPI_FLASH_RSA_PRIME_SIZE, encData->data + SPI_FLASH_RSA_PRIME_SIZE, SPI_FLASH_RSA_PRIME_SIZE);
 
         memcpy_s(hash, sizeof(hash), fullData + SPI_FLASH_RSA_DATA_SIZE, sizeof(hash));
-        ASSERT(HasMatchingPrimesHash(primes, hash));
+        bool flashHashMatched = HasMatchingPrimesHash(primes, hash);
+        ASSERT(flashHashMatched);
+        if (!flashHashMatched) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
+        bool seHashMatched = VerifyRsaPrimesHash(GetCurrentAccountIndex(), hash);
+        ASSERT(seHashMatched);
+        if (!seHashMatched) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
+        ret = SUCCESS_CODE;
     } while (0);
 
     if (encData) {
@@ -144,6 +185,9 @@ int FlashWriteRsaPrimes(const uint8_t *data)
             ASSERT(false);
         }
         CLEAR_ARRAY(verifyBuf);
+
+        ret = SetRsaPrimesHash(GetCurrentAccountIndex(), hash);
+        CHECK_ERRCODE_BREAK("set rsa primes hash", ret);
 
         ret = 0;
     } while (0);

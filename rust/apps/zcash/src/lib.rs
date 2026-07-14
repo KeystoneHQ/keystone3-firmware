@@ -589,12 +589,12 @@ fn migration_transfer_summary(parsed: &ParsedPczt) -> Option<BatchMigrationTrans
     }
 }
 
-/// Replaces compact-eligible transfers with one summary when the batch contains
-/// at most one other transaction. Ambiguous batches retain full review pages.
+/// Replaces compact-eligible transfers with one summary while retaining every
+/// ordinary transaction as its own full review page.
 #[cfg(feature = "cypherpunk")]
 fn compact_batch_migration_review(items: Vec<ParsedBatchItem>) -> Vec<ParsedPczt> {
     let migration_count = items.iter().filter(|item| item.migration.is_some()).count();
-    if items.len() <= 1 || migration_count == 0 || items.len() - migration_count > 1 {
+    if items.len() <= 1 || migration_count == 0 {
         return items.into_iter().map(|item| item.parsed).collect();
     }
 
@@ -634,8 +634,8 @@ pub fn compact_checked_batch_migration_review(
 /// Parses checked batch PCZTs and compacts eligible Orchard-to-Ironwood
 /// self-transfers without relying on PCZT position.
 ///
-/// Every input must be normalized bytes produced by the batch check. A batch
-/// with more than one ordinary transaction uses full review for each PCZT.
+/// Every input must be normalized bytes produced by the batch check. Ordinary
+/// transactions retain full review pages regardless of how many are present.
 #[cfg(feature = "cypherpunk")]
 pub fn parse_batch_with_migration_summary_cypherpunk<'a, P: consensus::Parameters>(
     params: &P,
@@ -2504,39 +2504,54 @@ mod tests {
     }
 
     #[test]
-    fn test_batch_migration_summary_keeps_ambiguous_batch_full() {
-        let ordinary_1 = pczt::test_support::sample_orchard_change_pczt();
-        let ordinary_2 = pczt::test_support::sample_orchard_change_pczt();
+    fn test_batch_migration_summary_compacts_three_splits_and_thirty_migrations() {
+        let ordinary = pczt::test_support::sample_orchard_change_pczt();
         let migration = pczt::test_support::sample_migration_pczt();
-        let checked = [&ordinary_1, &migration, &ordinary_2]
-            .into_iter()
-            .map(|sample| {
-                check_batch_pczt_cypherpunk(
-                    &pczt::test_support::Nu6_3Network,
-                    &sample.bytes,
-                    &sample.ufvk_text,
-                    &sample.seed_fingerprint,
-                    0,
-                )
-                .unwrap()
-            })
-            .collect::<Vec<_>>();
-        let parsed = parse_batch_with_migration_summary_cypherpunk(
+        let context = BatchCheckContext::new(&ordinary.ufvk_text);
+        let (_, ordinary, ordinary_migration) = check_batch_pczt_with_display(
             &pczt::test_support::Nu6_3Network,
-            checked.iter().map(Vec::as_slice),
-            &migration.ufvk_text,
-            &migration.seed_fingerprint,
+            &ordinary.bytes,
+            &context,
+            &ordinary.seed_fingerprint,
+            0,
         )
         .unwrap();
+        let (_, migration, migration_summary) = check_batch_pczt_with_display(
+            &pczt::test_support::Nu6_3Network,
+            &migration.bytes,
+            &context,
+            &migration.seed_fingerprint,
+            0,
+        )
+        .unwrap();
+        assert!(ordinary_migration.is_none());
+        assert!(migration_summary.is_some());
 
-        assert_eq!(parsed.len(), 3);
-        assert!(parsed.iter().all(|item| {
-            item.get_orchard()
-                .unwrap()
-                .get_from()
-                .iter()
-                .all(|from| from.get_address().is_none())
-        }));
+        let mut checked = Vec::with_capacity(33);
+        for index in 1..=3 {
+            let mut split = ordinary.clone();
+            split.set_total_transfer_value(format!("split-{index}"));
+            checked.push((split, None));
+        }
+        checked.extend(core::iter::repeat_with(|| (migration.clone(), migration_summary)).take(30));
+
+        let parsed = compact_checked_batch_migration_review(checked);
+
+        assert_eq!(parsed.len(), 4);
+        assert_eq!(parsed[0].get_total_transfer_value(), "split-1");
+        assert_eq!(parsed[1].get_total_transfer_value(), "split-2");
+        assert_eq!(parsed[2].get_total_transfer_value(), "split-3");
+        assert!(parsed[..3].iter().all(|item| item.get_ironwood().is_none()));
+
+        let summary = &parsed[3];
+        assert_eq!(summary.get_total_transfer_value(), "0.297 ZEC");
+        assert_eq!(summary.get_fee_value(), "0.006 ZEC");
+        assert_eq!(summary.get_orchard().unwrap().get_from().len(), 30);
+        assert_eq!(summary.get_ironwood().unwrap().get_to().len(), 30);
+        assert_eq!(
+            summary.get_ironwood().unwrap().get_to()[29].get_address(),
+            "Migration #30 wallet Ironwood output"
+        );
     }
 
     // A memo on the funded output forces fallback to the review that displays it.

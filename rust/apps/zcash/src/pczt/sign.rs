@@ -333,6 +333,15 @@ impl PcztSigner for SeedSigner<'_> {
                 }
             }
         }
+        // Batch transport clears `dummy_sk`, the finalized dummy signature, and
+        // `alpha`; the wallet retains that signature for extraction. A zero-value
+        // spend with no `alpha` cannot be signed here and authorizes no value, so
+        // skip it. Wallet-controlled zero-value spends retain `alpha` and sign.
+        if matches!(action.spend().value(), Some(value) if value.inner() == 0)
+            && action.spend().alpha().is_none()
+        {
+            return Ok(());
+        }
         if action.spend().value().is_none() {
             return Ok(());
         }
@@ -860,6 +869,75 @@ mod tests {
                 .any(|action| action.spend().spend_auth_sig().is_some()),
             "Ironwood spend authorization signature must be present",
         );
+    }
+
+    #[test]
+    fn test_sign_pczt_skips_finalized_redacted_dummy_spend() {
+        let sample = crate::pczt::test_support::sample_ironwood_pczt();
+        let pczt = crate::pczt::test_support::ironwood_pczt_with_dummy_spend_derivation(
+            &sample.bytes,
+            sample.seed_fingerprint,
+            crate::pczt::test_support::orchard_spend_path_for_account(0),
+        );
+        let pczt = Pczt::parse(&pczt).unwrap();
+        let mut dummy_indices = Vec::new();
+        let pczt = zcash_vendor::pczt::roles::verifier::Verifier::new(pczt)
+            .with_ironwood::<(), _>(|bundle| {
+                dummy_indices.extend(bundle.actions().iter().enumerate().filter_map(
+                    |(index, action)| {
+                        matches!(action.spend().value().map(|value| value.inner()), Some(0))
+                            .then_some(index)
+                    },
+                ));
+                Ok(())
+            })
+            .unwrap()
+            .finish();
+        assert!(!dummy_indices.is_empty());
+        let pczt = zcash_vendor::pczt::roles::io_finalizer::IoFinalizer::new(pczt)
+            .finalize_io()
+            .unwrap();
+        let pczt = zcash_vendor::pczt::roles::verifier::Verifier::new(pczt)
+            .with_ironwood::<(), _>(|bundle| {
+                for index in &dummy_indices {
+                    let spend = bundle.actions()[*index].spend();
+                    assert!(spend.dummy_sk().is_none());
+                    assert!(spend.spend_auth_sig().is_some());
+                    assert!(spend.alpha().is_some());
+                    assert!(spend.zip32_derivation().is_some());
+                }
+                Ok(())
+            })
+            .unwrap()
+            .finish();
+
+        // Match Vizor's batch transport after IO finalization: the finalizer
+        // consumed dummy_sk, then redaction removed the dummy signature and
+        // alpha while retaining the output action's spend derivation.
+        let pczt = Redactor::new(pczt)
+            .redact_ironwood_with(|mut bundle| {
+                bundle.redact_actions(|mut action| {
+                    action.clear_spend_fvk();
+                    action.clear_spend_auth_sig();
+                });
+                for index in dummy_indices {
+                    bundle.redact_action(index, |mut action| {
+                        action.clear_spend_alpha();
+                    });
+                }
+            })
+            .finish();
+
+        let signed = sign_pczt(pczt, &sample.seed)
+            .expect("finalized redacted dummy spend must not block the real signature");
+        let signed_count = Pczt::parse(&signed)
+            .unwrap()
+            .ironwood()
+            .actions()
+            .iter()
+            .filter(|action| action.spend().spend_auth_sig().is_some())
+            .count();
+        assert_eq!(signed_count, 1, "only the real spend should be signed");
     }
 
     #[test]

@@ -30,6 +30,8 @@ use zcash_vendor::{
 use zcash_vendor::pczt::roles::signer::SpendAuthSignature;
 #[cfg(any(test, feature = "multi_coins", feature = "cypherpunk"))]
 use zcash_vendor::pczt::Pczt;
+#[cfg(feature = "cypherpunk")]
+use zcash_vendor::sha2::{Digest, Sha256};
 
 #[cfg(feature = "cypherpunk")]
 use zcash_vendor::zcash_protocol::consensus::NetworkConstants;
@@ -322,7 +324,7 @@ fn check_and_parse_batch_pczt_internal<P: consensus::Parameters>(
     ctx: &BatchCheckContext<'_>,
     seed_fingerprint: &[u8; 32],
     account_index: u32,
-) -> Result<(Pczt, ParsedPczt)> {
+) -> Result<(Pczt, ParsedPczt, Vec<SignableShieldedAction>)> {
     let mut pczt = pczt::parse_pczt(pczt_bytes)?;
     // Resolve compact field representations before the single-pass validation.
     pczt.resolve_fields().map_err(|e| {
@@ -388,13 +390,14 @@ fn check_and_parse_batch_pczt_internal<P: consensus::Parameters>(
         checked_orchard,
         checked_ironwood,
     )?;
-    Ok((pczt, parsed))
+    Ok((pczt, parsed, signable_actions))
 }
 
-/// Checks one batch PCZT and returns normalized bytes, display rows, and an
-/// optional compact migration classification. Validation and display share one
-/// shielded action pass, while the context reuses viewing keys across the batch.
-/// `None` means the caller must retain the ordinary display for this PCZT.
+/// Checks one batch PCZT and returns normalized bytes, display rows, an optional
+/// compact migration classification, and an opaque signability decision bound
+/// to the normalized bytes and check context. Validation, display, and
+/// signability share one shielded action pass; signing reuses that decision
+/// instead of rebuilding the shielded bundles.
 #[cfg(feature = "cypherpunk")]
 pub fn check_batch_pczt_with_display<P: consensus::Parameters>(
     params: &P,
@@ -402,23 +405,27 @@ pub fn check_batch_pczt_with_display<P: consensus::Parameters>(
     ctx: &BatchCheckContext<'_>,
     seed_fingerprint: &[u8; 32],
     account_index: u32,
-) -> Result<(Vec<u8>, ParsedPczt, Option<BatchMigrationTransferSummary>)> {
-    let (pczt, parsed) = check_and_parse_batch_pczt_internal(
+) -> Result<(
+    Vec<u8>,
+    ParsedPczt,
+    Option<BatchMigrationTransferSummary>,
+    CheckedBatchPcztSignability,
+)> {
+    let (pczt, parsed, actions) = check_and_parse_batch_pczt_internal(
         params,
         pczt_bytes,
         ctx,
         seed_fingerprint,
         account_index,
     )?;
-
     // Classify from the complete display model produced by this check pass.
     // The check already bound every funded spend to the selected account.
     let migration_summary = migration_transfer_summary(&parsed);
-
     let normalized = pczt
         .serialize()
         .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))?;
-    Ok((normalized, parsed, migration_summary))
+    let signability = CheckedBatchPcztSignability::new(&normalized, actions);
+    Ok((normalized, parsed, migration_summary, signability))
 }
 
 /// Checks and parses one batch PCZT using the shared check-time display path.
@@ -430,7 +437,7 @@ pub fn check_and_parse_batch_pczt_cypherpunk<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: u32,
 ) -> Result<ParsedPczt> {
-    let (_, parsed, _) = check_batch_pczt_with_display(
+    let (_, parsed, _, _) = check_batch_pczt_with_display(
         params,
         pczt_bytes,
         &BatchCheckContext::new(ufvk_text),
@@ -853,6 +860,38 @@ struct SignableShieldedAction {
     index: usize,
 }
 
+/// Opaque signability result produced by the full batch check and bound to the
+/// exact normalized PCZT bytes that produced it.
+#[cfg(feature = "cypherpunk")]
+#[derive(Debug)]
+pub struct CheckedBatchPcztSignability {
+    pczt_digest: [u8; 32],
+    required_actions: Vec<SignableShieldedAction>,
+}
+
+#[cfg(feature = "cypherpunk")]
+impl CheckedBatchPcztSignability {
+    fn new(checked_pczt: &[u8], required_actions: Vec<SignableShieldedAction>) -> Self {
+        Self {
+            pczt_digest: Sha256::digest(checked_pczt).into(),
+            required_actions,
+        }
+    }
+
+    fn required_actions(&self, checked_pczt: &[u8]) -> Result<&[SignableShieldedAction]> {
+        let pczt_digest: [u8; 32] = Sha256::digest(checked_pczt).into();
+        if self.pczt_digest != pczt_digest {
+            return Err(ZcashError::InvalidDataError(
+                "checked batch signability does not match the PCZT".to_string(),
+            ));
+        }
+        if self.required_actions.is_empty() {
+            return Err(ZcashError::PcztNoMyInputs);
+        }
+        Ok(&self.required_actions)
+    }
+}
+
 #[cfg(feature = "cypherpunk")]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum ShieldedActionPolicy {
@@ -1189,6 +1228,23 @@ pub fn sign_checked_batch_pczt_with_cache<P: consensus::Parameters>(
     )
 }
 
+/// Signs one firmware-owned checked batch PCZT using the signability decision
+/// retained by [`check_batch_pczt_with_display`]. The decision is accepted only
+/// for those exact normalized bytes. The low-level signer still independently
+/// matches each action's derivation and `rk` to the seed-derived signing key.
+#[cfg(feature = "cypherpunk")]
+pub fn sign_checked_batch_pczt_with_cached_signability(
+    checked_pczt: &[u8],
+    checked_signability: &CheckedBatchPcztSignability,
+    seed: &[u8],
+    ask_cache: &SpendAuthCache,
+) -> Result<Vec<u8>> {
+    let required_actions = checked_signability.required_actions(checked_pczt)?;
+    let pczt = pczt::parse_pczt(checked_pczt)?;
+    reject_unsupported_batch_pczt(&pczt)?;
+    sign_pczt_with_required_actions(pczt, seed, required_actions, ask_cache)
+}
+
 #[cfg(feature = "cypherpunk")]
 #[allow(clippy::too_many_arguments)]
 fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
@@ -1208,11 +1264,21 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
     if policy == ShieldedActionPolicy::Batch && signable_actions.is_empty() {
         return Err(ZcashError::PcztNoMyInputs);
     }
+    sign_pczt_with_required_actions(pczt, seed, &signable_actions, ask_cache)
+}
+
+#[cfg(feature = "cypherpunk")]
+fn sign_pczt_with_required_actions(
+    pczt: Pczt,
+    seed: &[u8],
+    required_actions: &[SignableShieldedAction],
+    ask_cache: &SpendAuthCache,
+) -> Result<Vec<u8>> {
     let signed = pczt::sign::sign_and_redact_pczt_with_cache(pczt, seed, ask_cache)?;
-    let signed = if signable_actions.is_empty() {
+    let signed = if required_actions.is_empty() {
         signed
     } else {
-        ensure_shielded_actions_are_signed(signed, &signable_actions)?
+        ensure_shielded_actions_are_signed(signed, required_actions)?
     };
     signed
         .serialize()
@@ -1915,6 +1981,48 @@ mod tests {
     }
 
     #[test]
+    fn test_cached_batch_signability_signs_canonical_checked_pczt() {
+        let sample = pczt::test_support::sample_orchard_change_pczt();
+        let (normalized, _, _, signability) = check_batch_pczt_with_display(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &BatchCheckContext::new(&sample.ufvk_text),
+            &sample.seed_fingerprint,
+            0,
+        )
+        .unwrap();
+        // The C bridge performs this canonical round trip when rebuilding the
+        // checked batch envelope.
+        let canonical = Pczt::parse(&normalized).unwrap().serialize().unwrap();
+        let signed = sign_checked_batch_pczt_with_cached_signability(
+            &canonical,
+            &signability,
+            &sample.seed,
+            &SpendAuthCache::new(),
+        )
+        .unwrap();
+        assert_eq!(
+            extract_compact_sigs_from_signed_pczt(&signed)
+                .unwrap()
+                .len(),
+            2,
+            "the signer must still sign the wallet-controlled zero-value action"
+        );
+
+        let mut different_pczt = canonical;
+        different_pczt[0] ^= 1;
+        assert!(matches!(
+            sign_checked_batch_pczt_with_cached_signability(
+                &different_pczt,
+                &signability,
+                &sample.seed,
+                &SpendAuthCache::new(),
+            ),
+            Err(ZcashError::InvalidDataError(_))
+        ));
+    }
+
+    #[test]
     fn test_sign_checked_pczt_signs_owned_orchard_actions() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
         let normalized = check_pczt_cypherpunk(
@@ -2045,7 +2153,7 @@ mod tests {
     fn test_batch_check_and_parse_accepts_ironwood_spend() {
         let sample = pczt::test_support::sample_ironwood_pczt();
 
-        let (_, parsed, _) = check_batch_pczt_with_display(
+        let (_, parsed, _, _) = check_batch_pczt_with_display(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
             &BatchCheckContext::new(&sample.ufvk_text),
@@ -2072,7 +2180,7 @@ mod tests {
     fn test_batch_check_and_parse_accepts_orchard_to_ironwood_migration() {
         let sample = pczt::test_support::sample_migration_pczt();
 
-        let (_, parsed, _) = check_batch_pczt_with_display(
+        let (_, parsed, _, _) = check_batch_pczt_with_display(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
             &BatchCheckContext::new(&sample.ufvk_text),
@@ -2868,7 +2976,7 @@ mod tests {
                 0,
             )
             .unwrap();
-            let (bytes, _parsed, _summary) = check_batch_pczt_with_display(
+            let (bytes, _parsed, _summary, _) = check_batch_pczt_with_display(
                 &pczt::test_support::Nu6_3Network,
                 &sample.bytes,
                 &ctx,
@@ -2894,7 +3002,7 @@ mod tests {
             pczt::test_support::sample_ironwood_pczt(),
             pczt::test_support::sample_migration_pczt(),
         ] {
-            let (bytes, parsed, _summary) = check_batch_pczt_with_display(
+            let (bytes, parsed, _summary, _) = check_batch_pczt_with_display(
                 &pczt::test_support::Nu6_3Network,
                 &sample.bytes,
                 &BatchCheckContext::new(&sample.ufvk_text),
@@ -2921,7 +3029,7 @@ mod tests {
     #[test]
     fn test_check_batch_with_display_caches_migration_classification() {
         let sample = pczt::test_support::sample_migration_pczt();
-        let (_bytes, _parsed, summary) = check_batch_pczt_with_display(
+        let (_bytes, _parsed, summary, _) = check_batch_pczt_with_display(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
             &BatchCheckContext::new(&sample.ufvk_text),
@@ -2946,7 +3054,7 @@ mod tests {
         let sample = pczt::test_support::sample_migration_pczt_with_output_memo(
             MemoBytes::from_bytes(b"covert note").expect("memo text fits"),
         );
-        let (_bytes, parsed, summary) = check_batch_pczt_with_display(
+        let (_bytes, parsed, summary, _) = check_batch_pczt_with_display(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
             &BatchCheckContext::new(&sample.ufvk_text),

@@ -3,7 +3,7 @@ pub mod parse;
 pub mod sign;
 pub mod structs;
 
-use alloc::{format, string::ToString};
+use alloc::{format, string::ToString, vec::Vec};
 use zcash_vendor::{
     pczt::Pczt,
     transparent,
@@ -59,17 +59,16 @@ fn validate_distinct_orchard_protocol_rks(pczt: &Pczt) -> Result<(), ZcashError>
         .orchard()
         .actions()
         .iter()
-        .chain(pczt.ironwood().actions().iter());
+        .chain(pczt.ironwood().actions().iter())
+        .collect::<Vec<_>>();
 
-    for (index, action) in actions.clone().enumerate() {
-        if actions
-            .clone()
-            .skip(index + 1)
-            .any(|other| other.spend().rk() == action.spend().rk())
-        {
-            return Err(ZcashError::InvalidPczt(
-                "duplicate Orchard or Ironwood action rk".to_string(),
-            ));
+    for i in 0..actions.len() {
+        for j in (i + 1)..actions.len() {
+            if actions[i].spend().rk() == actions[j].spend().rk() {
+                return Err(ZcashError::InvalidPczt(
+                    "duplicate Orchard or Ironwood action rk".to_string(),
+                ));
+            }
         }
     }
 

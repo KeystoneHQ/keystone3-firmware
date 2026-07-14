@@ -33,6 +33,12 @@
 #define PAGE_ACCOUNT_STATUS_0                        36
 #define PAGE_ACCOUNT_STATUS_1                        37
 #define PAGE_ACCOUNT_STATUS_2                        38
+// RSA hash page, 39 -> PAGE_WALLET1_RSA_PRIMES_HASH, 40 -> PAGE_WALLET2_RSA_PRIMES_HASH, 41 -> PAGE_WALLET3_RSA_PRIMES_HASH
+// clearly defined the 3 pages for RSA hash, so the page 39~41 is not used for other purpose.
+// PAGE_WALLET2_RSA_PRIMES_HASH, PAGE_WALLET3_RSA_PRIMES_HASH are not used in the code.
+#define PAGE_WALLET1_RSA_PRIMES_HASH                 39
+#define PAGE_WALLET2_RSA_PRIMES_HASH                 40
+#define PAGE_WALLET3_RSA_PRIMES_HASH                 41
 
 // Status page layout: a 4-byte magic + a 1-byte state (rest zero). The magic lets a blank/legacy/wiped page
 // (all-zero, or random) be told apart from a real state — without it we fall back to the coarse CheckEntropy
@@ -55,7 +61,7 @@ typedef enum {
 #define PAGE_WALLET1_PUB_KEY_HASH                   85
 #define PAGE_WALLET2_PUB_KEY_HASH                   86
 #define PAGE_WALLET3_PUB_KEY_HASH                   87
-#define PAGE_WALLET1_RSA_PRIMES_HASH                36
+
 
 #define PAGE_PUBLIC_INFO                        88
 

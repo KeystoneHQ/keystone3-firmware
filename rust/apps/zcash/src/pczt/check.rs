@@ -566,6 +566,20 @@ fn check_action_spend<P: consensus::Parameters>(
     pool: ShieldedPool,
 ) -> Result<(), ZcashError> {
     let pool_label = pool.label();
+    if let (Some(value), Some(zip32_derivation)) = (spend.value(), spend.zip32_derivation()) {
+        if value.inner() != 0 && zip32_derivation.seed_fingerprint() == seed_fingerprint {
+            let matched_account = super::matching_seed_supported_orchard_account(
+                seed_fingerprint,
+                Some(zip32_derivation),
+                params.network_type().coin_type(),
+                pool,
+            )?;
+            if matched_account != Some(account_index) {
+                return Err(ZcashError::PcztNoMyInputs);
+            }
+        }
+    }
+
     // We can only verify the `nullifier` and `rk` fields of a spend if we know its FVK.
     let can_verify_nf_rk = match (spend.value(), spend.fvk(), spend.zip32_derivation()) {
         // Dummy notes use randomly-generated FVKs, so if one is already present then

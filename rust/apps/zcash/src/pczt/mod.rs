@@ -478,17 +478,22 @@ pub(crate) mod test_support {
 
     // Orchard spend -> Ironwood output, matching one compact-eligible transfer.
     pub(crate) fn sample_migration_pczt() -> SamplePczt {
-        sample_migration_pczt_with_options(0, MemoBytes::empty(), None)
+        sample_migration_pczt_with_options(0, 0, MemoBytes::empty(), None)
     }
 
     /// Builds a migration whose funded output carries the given memo.
     pub(crate) fn sample_migration_pczt_with_output_memo(output_memo: MemoBytes) -> SamplePczt {
-        sample_migration_pczt_with_options(0, output_memo, None)
+        sample_migration_pczt_with_options(0, 0, output_memo, None)
     }
 
     /// Builds a migration whose funded output belongs to the given account.
     pub(crate) fn sample_migration_pczt_to_account(output_account: u32) -> SamplePczt {
-        sample_migration_pczt_with_options(output_account, MemoBytes::empty(), None)
+        sample_migration_pczt_with_options(0, output_account, MemoBytes::empty(), None)
+    }
+
+    /// Builds a migration whose spend belongs to the given account while account 0 is selected.
+    pub(crate) fn sample_migration_pczt_from_account(spend_account: u32) -> SamplePczt {
+        sample_migration_pczt_with_options(spend_account, 0, MemoBytes::empty(), None)
     }
 
     /// Adds a zero-value output, optionally marked for ordinary display.
@@ -496,11 +501,12 @@ pub(crate) mod test_support {
         memo: MemoBytes,
         displayable: bool,
     ) -> SamplePczt {
-        sample_migration_pczt_with_options(0, MemoBytes::empty(), Some((memo, displayable)))
+        sample_migration_pczt_with_options(0, 0, MemoBytes::empty(), Some((memo, displayable)))
     }
 
     /// Builds a migration sample with a configurable funded recipient and optional zero output.
     fn sample_migration_pczt_with_options(
+        spend_account: u32,
         output_account: u32,
         output_memo: MemoBytes,
         zero_output: Option<(MemoBytes, bool)>,
@@ -509,7 +515,15 @@ pub(crate) mod test_support {
         let seed = [7u8; 32];
         let ufvk_text = derive_ufvk(&params, &seed, "m/32'/133'/0'").unwrap();
         let ufvk = UnifiedFullViewingKey::decode(&params, &ufvk_text).unwrap();
-        let orchard_fvk = ufvk.orchard().unwrap().clone();
+        let selected_fvk = ufvk.orchard().unwrap().clone();
+        let spend_ufvk_text = derive_ufvk(
+            &params,
+            &seed,
+            &alloc::format!("m/32'/133'/{spend_account}'"),
+        )
+        .unwrap();
+        let spend_ufvk = UnifiedFullViewingKey::decode(&params, &spend_ufvk_text).unwrap();
+        let orchard_fvk = spend_ufvk.orchard().unwrap().clone();
         let orchard_ivk = orchard_fvk.to_ivk(orchard::keys::Scope::External);
         let spend_recipient = orchard_fvk.address_at(0u32, orchard::keys::Scope::External);
         let output_ufvk_text = derive_ufvk(
@@ -524,7 +538,7 @@ pub(crate) mod test_support {
         // the foreign-account variant decryptable for its ordinary-review test
         // by using the selected account's external OVK.
         let recipient = output_fvk.address_at(0u32, orchard::keys::Scope::Internal);
-        let orchard_ovk = orchard_fvk.to_ovk(if output_account == 0 {
+        let orchard_ovk = selected_fvk.to_ovk(if spend_account == 0 && output_account == 0 {
             orchard::keys::Scope::Internal
         } else {
             orchard::keys::Scope::External
@@ -633,7 +647,7 @@ pub(crate) mod test_support {
             vec![
                 zip32::ChildIndex::hardened(32).index(),
                 zip32::ChildIndex::hardened(133).index(),
-                zip32::ChildIndex::hardened(0).index(),
+                zip32::ChildIndex::hardened(spend_account).index(),
             ],
         )
         .unwrap();

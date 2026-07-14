@@ -316,7 +316,8 @@ impl<'a> BatchCheckContext<'a> {
     }
 }
 
-/// Validates one batch PCZT and returns its normalized transaction and display.
+/// Validates one batch PCZT and returns its normalized transaction, display,
+/// signable actions, and selected account.
 #[cfg(feature = "cypherpunk")]
 fn check_and_parse_batch_pczt_internal<P: consensus::Parameters>(
     params: &P,
@@ -324,7 +325,12 @@ fn check_and_parse_batch_pczt_internal<P: consensus::Parameters>(
     ctx: &BatchCheckContext<'_>,
     seed_fingerprint: &[u8; 32],
     account_index: u32,
-) -> Result<(Pczt, ParsedPczt, Vec<SignableShieldedAction>)> {
+) -> Result<(
+    Pczt,
+    ParsedPczt,
+    Vec<SignableShieldedAction>,
+    zip32::AccountId,
+)> {
     let mut pczt = pczt::parse_pczt(pczt_bytes)?;
     // Resolve compact field representations before the single-pass validation.
     pczt.resolve_fields().map_err(|e| {
@@ -390,7 +396,7 @@ fn check_and_parse_batch_pczt_internal<P: consensus::Parameters>(
         checked_orchard,
         checked_ironwood,
     )?;
-    Ok((pczt, parsed, signable_actions))
+    Ok((pczt, parsed, signable_actions, account_index))
 }
 
 /// Checks one batch PCZT and returns normalized bytes, display rows, an optional
@@ -411,7 +417,7 @@ pub fn check_batch_pczt_with_display<P: consensus::Parameters>(
     Option<BatchMigrationTransferSummary>,
     CheckedBatchPcztSignability,
 )> {
-    let (pczt, parsed, actions) = check_and_parse_batch_pczt_internal(
+    let (pczt, parsed, actions, account_index) = check_and_parse_batch_pczt_internal(
         params,
         pczt_bytes,
         ctx,
@@ -424,7 +430,7 @@ pub fn check_batch_pczt_with_display<P: consensus::Parameters>(
     let normalized = pczt
         .serialize()
         .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))?;
-    let signability = CheckedBatchPcztSignability::new(&normalized, actions);
+    let signability = CheckedBatchPcztSignability::new(&normalized, account_index, actions);
     Ok((normalized, parsed, migration_summary, signability))
 }
 
@@ -861,24 +867,33 @@ struct SignableShieldedAction {
 }
 
 /// Opaque signability result produced by the full batch check and bound to the
-/// exact normalized PCZT bytes that produced it.
+/// exact normalized PCZT bytes and selected account that produced it.
 #[cfg(feature = "cypherpunk")]
 #[derive(Debug)]
 pub struct CheckedBatchPcztSignability {
     pczt_digest: [u8; 32],
+    selected_account: zip32::AccountId,
     required_actions: Vec<SignableShieldedAction>,
 }
 
 #[cfg(feature = "cypherpunk")]
 impl CheckedBatchPcztSignability {
-    fn new(checked_pczt: &[u8], required_actions: Vec<SignableShieldedAction>) -> Self {
+    fn new(
+        checked_pczt: &[u8],
+        selected_account: zip32::AccountId,
+        required_actions: Vec<SignableShieldedAction>,
+    ) -> Self {
         Self {
             pczt_digest: Sha256::digest(checked_pczt).into(),
+            selected_account,
             required_actions,
         }
     }
 
-    fn required_actions(&self, checked_pczt: &[u8]) -> Result<&[SignableShieldedAction]> {
+    fn signing_context(
+        &self,
+        checked_pczt: &[u8],
+    ) -> Result<(zip32::AccountId, &[SignableShieldedAction])> {
         let pczt_digest: [u8; 32] = Sha256::digest(checked_pczt).into();
         if self.pczt_digest != pczt_digest {
             return Err(ZcashError::InvalidDataError(
@@ -888,7 +903,7 @@ impl CheckedBatchPcztSignability {
         if self.required_actions.is_empty() {
             return Err(ZcashError::PcztNoMyInputs);
         }
-        Ok(&self.required_actions)
+        Ok((self.selected_account, &self.required_actions))
     }
 }
 
@@ -955,11 +970,13 @@ fn signable_action_decision<P: consensus::Parameters>(
         params.network_type().coin_type(),
         pool.shielded_pool(),
     )?;
-    if matched_account != Some(account_index) {
-        if policy == ShieldedActionPolicy::Batch {
+    match matched_account {
+        Some(matched_account) if matched_account == account_index => {}
+        Some(_) => return Err(ZcashError::PcztNoMyInputs),
+        None if policy == ShieldedActionPolicy::Batch => {
             return Err(ZcashError::PcztNoMyInputs);
         }
-        return Ok(None);
+        None => return Ok(None),
     }
 
     Ok(Some(SignableShieldedAction { pool, index }))
@@ -1230,8 +1247,9 @@ pub fn sign_checked_batch_pczt_with_cache<P: consensus::Parameters>(
 
 /// Signs one firmware-owned checked batch PCZT using the signability decision
 /// retained by [`check_batch_pczt_with_display`]. The decision is accepted only
-/// for those exact normalized bytes. The low-level signer still independently
-/// matches each action's derivation and `rk` to the seed-derived signing key.
+/// for those exact normalized bytes and carries the selected account into the
+/// low-level signer. The signer still independently matches each action's
+/// derivation and `rk` to the seed-derived signing key.
 #[cfg(feature = "cypherpunk")]
 pub fn sign_checked_batch_pczt_with_cached_signability(
     checked_pczt: &[u8],
@@ -1239,10 +1257,10 @@ pub fn sign_checked_batch_pczt_with_cached_signability(
     seed: &[u8],
     ask_cache: &SpendAuthCache,
 ) -> Result<Vec<u8>> {
-    let required_actions = checked_signability.required_actions(checked_pczt)?;
+    let (selected_account, required_actions) = checked_signability.signing_context(checked_pczt)?;
     let pczt = pczt::parse_pczt(checked_pczt)?;
     reject_unsupported_batch_pczt(&pczt)?;
-    sign_pczt_with_required_actions(pczt, seed, required_actions, ask_cache)
+    sign_pczt_with_required_actions(pczt, seed, selected_account, required_actions, ask_cache)
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -1264,17 +1282,19 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
     if policy == ShieldedActionPolicy::Batch && signable_actions.is_empty() {
         return Err(ZcashError::PcztNoMyInputs);
     }
-    sign_pczt_with_required_actions(pczt, seed, &signable_actions, ask_cache)
+    sign_pczt_with_required_actions(pczt, seed, account_index, &signable_actions, ask_cache)
 }
 
 #[cfg(feature = "cypherpunk")]
 fn sign_pczt_with_required_actions(
     pczt: Pczt,
     seed: &[u8],
+    selected_account: zip32::AccountId,
     required_actions: &[SignableShieldedAction],
     ask_cache: &SpendAuthCache,
 ) -> Result<Vec<u8>> {
-    let signed = pczt::sign::sign_and_redact_pczt_with_cache(pczt, seed, ask_cache)?;
+    let signed =
+        pczt::sign::sign_and_redact_pczt_with_cache(pczt, seed, Some(selected_account), ask_cache)?;
     let signed = if required_actions.is_empty() {
         signed
     } else {
@@ -1831,7 +1851,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_and_check_ignore_unsupported_ironwood_spend_zip32_path() {
+    fn test_parse_ignores_and_check_rejects_unsupported_ironwood_spend_zip32_path() {
         let sample = pczt::test_support::sample_ironwood_pczt();
         let parsed_pczt = parse_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
@@ -1862,14 +1882,16 @@ mod tests {
                 &sample.seed_fingerprint,
             )
             .expect("parse uses seed fingerprint ownership only");
-            check_pczt_cypherpunk(
-                &pczt::test_support::Nu6_3Network,
-                &pczt,
-                &sample.ufvk_text,
-                &sample.seed_fingerprint,
-                0,
-            )
-            .expect("check ignores non-selected shielded spend paths");
+            assert_invalid_pczt_message(
+                check_pczt_cypherpunk(
+                    &pczt::test_support::Nu6_3Network,
+                    &pczt,
+                    &sample.ufvk_text,
+                    &sample.seed_fingerprint,
+                    0,
+                ),
+                "unsupported Ironwood spend ZIP 32 derivation path",
+            );
         }
     }
 
@@ -2121,9 +2143,9 @@ mod tests {
     }
 
     #[test]
-    fn test_cached_batch_signability_signs_canonical_checked_pczt() {
+    fn test_cached_batch_signability_binds_pczt_and_account() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
-        let (normalized, _, _, signability) = check_batch_pczt_with_display(
+        let (normalized, _, _, mut signability) = check_batch_pczt_with_display(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
             &BatchCheckContext::new(&sample.ufvk_text),
@@ -2149,7 +2171,7 @@ mod tests {
             "the signer must still sign the wallet-controlled zero-value action"
         );
 
-        let mut different_pczt = canonical;
+        let mut different_pczt = canonical.clone();
         different_pczt[0] ^= 1;
         assert!(matches!(
             sign_checked_batch_pczt_with_cached_signability(
@@ -2159,6 +2181,17 @@ mod tests {
                 &SpendAuthCache::new(),
             ),
             Err(ZcashError::InvalidDataError(_))
+        ));
+
+        signability.selected_account = zip32::AccountId::try_from(1).unwrap();
+        assert!(matches!(
+            sign_checked_batch_pczt_with_cached_signability(
+                &canonical,
+                &signability,
+                &sample.seed,
+                &SpendAuthCache::new(),
+            ),
+            Err(ZcashError::PcztNoMyInputs)
         ));
     }
 
@@ -2191,6 +2224,28 @@ mod tests {
             .filter(|action| action.spend().spend_auth_sig().is_some())
             .count();
         assert_eq!(signed_actions, 2);
+    }
+
+    #[test]
+    fn test_check_and_sign_reject_unselected_account_spend() {
+        let sample = pczt::test_support::sample_migration_pczt_from_account(1);
+        let check_result = check_pczt_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+            0,
+        );
+        assert!(matches!(check_result, Err(ZcashError::PcztNoMyInputs)));
+
+        let sign_result = sign_checked_pczt(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &sample.seed,
+            &sample.seed_fingerprint,
+            0,
+        );
+        assert!(matches!(sign_result, Err(ZcashError::PcztNoMyInputs)));
     }
 
     #[test]
@@ -2648,7 +2703,7 @@ mod tests {
         let ordinary = pczt::test_support::sample_orchard_change_pczt();
         let migration = pczt::test_support::sample_migration_pczt();
         let context = BatchCheckContext::new(&ordinary.ufvk_text);
-        let (_, ordinary, ordinary_migration) = check_batch_pczt_with_display(
+        let (_, ordinary, ordinary_migration, _) = check_batch_pczt_with_display(
             &pczt::test_support::Nu6_3Network,
             &ordinary.bytes,
             &context,
@@ -2656,7 +2711,7 @@ mod tests {
             0,
         )
         .unwrap();
-        let (_, migration, migration_summary) = check_batch_pczt_with_display(
+        let (_, migration, migration_summary, _) = check_batch_pczt_with_display(
             &pczt::test_support::Nu6_3Network,
             &migration.bytes,
             &context,

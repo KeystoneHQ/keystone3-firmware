@@ -100,7 +100,6 @@ static void GetAttentionText(char* text);
 
 static void CloseAttentionHandler(lv_event_t *e);
 static void MoreHandler(lv_event_t *e);
-static void TutorialHandler(lv_event_t *e);
 #ifdef CYPHERPUNK_VERSION
 static void SwitchZcashTestnetHandler(lv_event_t *e);
 #endif
@@ -492,19 +491,14 @@ void GuiStandardReceivePrevTile(void)
 
 static void GuiCreateMoreWidgets(lv_obj_t *parent)
 {
-    lv_obj_t *cont, *btn, *img, *label;
-
-#ifdef CYPHERPUNK_VERSION
-    uint16_t hintboxHeight = g_chainCard == HOME_WALLET_CARD_ZEC ? 228 : 132;
-#else
-    uint16_t hintboxHeight = 132;
-#endif
-    g_standardReceiveWidgets.moreCont = GuiCreateHintBox(hintboxHeight);
+    // Only reachable for the Zcash card (see HasMoreBtn), so the menu holds
+    // just the testnet switch.
+    g_standardReceiveWidgets.moreCont = GuiCreateHintBox(132);
     lv_obj_add_event_cb(lv_obj_get_child(g_standardReceiveWidgets.moreCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_standardReceiveWidgets.moreCont);
-    cont = g_standardReceiveWidgets.moreCont;
 
 #ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_ZEC) {
+        lv_obj_t *cont = g_standardReceiveWidgets.moreCont;
         lv_obj_t *networkSwitch = GuiCreateSwitch(cont);
         if (g_standardReceiveWidgets.zcashTestnet) {
             lv_obj_add_state(networkSwitch, LV_STATE_CHECKED);
@@ -517,24 +511,11 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
             {.obj = GuiCreateTextLabel(cont, _("wallet_profile_network_test")), .align = LV_ALIGN_LEFT_MID, .position = {76, 0}},
             {.obj = networkSwitch, .align = LV_ALIGN_LEFT_MID, .position = {376, 0}},
         };
-        btn = GuiCreateButton(cont, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                              SwitchZcashTestnetHandler, NULL);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
+        lv_obj_t *btn = GuiCreateButton(cont, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                                        SwitchZcashTestnetHandler, NULL);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     }
 #endif
-
-    btn = lv_btn_create(cont);
-    lv_obj_set_size(btn, 456, 84);
-    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 572);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_PART_MAIN);
-    lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
-    lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
-    lv_obj_add_event_cb(btn, TutorialHandler, LV_EVENT_CLICKED, NULL);
-    img = GuiCreateImg(btn, &imgTutorial);
-    lv_obj_align(img, LV_ALIGN_CENTER, -186, 0);
-    label = GuiCreateTextLabel(btn, _("Tutorial"));
-    lv_obj_align(label, LV_ALIGN_LEFT_MID, 60, 4);
 }
 
 static void GuiStandardReceiveGotoTile(StandardReceiveTile tile)
@@ -845,14 +826,6 @@ static void MoreHandler(lv_event_t *e)
         lv_obj_del(g_standardReceiveWidgets.moreCont);
         g_standardReceiveWidgets.moreCont = NULL;
     }
-}
-
-static void TutorialHandler(lv_event_t *e)
-{
-    GUI_DEL_OBJ(g_standardReceiveWidgets.moreCont);
-
-    TUTORIAL_LIST_INDEX_ENUM index = TUTORIAL_ETH_RECEIVE;
-    GuiFrameOpenViewWithParam(&g_tutorialView, &index, sizeof(index));
 }
 
 static void LeftBtnHandler(lv_event_t *e)

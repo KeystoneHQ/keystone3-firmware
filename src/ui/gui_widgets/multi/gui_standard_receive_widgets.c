@@ -525,7 +525,7 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
 
     btn = lv_btn_create(cont);
     lv_obj_set_size(btn, 456, 84);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 572);
     lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);

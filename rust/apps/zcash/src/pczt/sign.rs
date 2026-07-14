@@ -729,7 +729,7 @@ mod tests {
             sign_and_redact_pczt_with_cache(
                 Pczt::parse(&sample.bytes).unwrap(),
                 &sample.seed,
-                crate::PcztNetwork::Mainnet,
+                crate::pczt::PcztNetwork::Mainnet,
                 None,
                 &cache,
             )
@@ -753,7 +753,7 @@ mod tests {
         let signed = sign_and_redact_pczt_with_cache(
             pczt,
             &sample.seed,
-            crate::PcztNetwork::Mainnet,
+            crate::pczt::PcztNetwork::Mainnet,
             Some(account_one),
             &SpendAuthCache::new(),
         )
@@ -777,7 +777,7 @@ mod tests {
         let result = sign_and_redact_pczt_with_cache(
             Pczt::parse(&sample.bytes).unwrap(),
             &sample.seed,
-            crate::PcztNetwork::Mainnet,
+            crate::pczt::PcztNetwork::Mainnet,
             Some(zip32::AccountId::ZERO),
             &SpendAuthCache::new(),
         );
@@ -791,7 +791,7 @@ mod tests {
         let result = sign_and_redact_pczt_with_cache(
             Pczt::parse(&sample.bytes).unwrap(),
             &sample.seed,
-            crate::PcztNetwork::Mainnet,
+            crate::pczt::PcztNetwork::Mainnet,
             Some(zip32::AccountId::try_from(1).unwrap()),
             &SpendAuthCache::new(),
         );

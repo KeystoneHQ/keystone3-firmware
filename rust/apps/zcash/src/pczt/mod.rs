@@ -34,7 +34,7 @@ impl PcztNetwork {
     }
 
     /// Reads the request network from an already parsed PCZT.
-    pub fn from_pczt(pczt: &Pczt) -> Result<Self, ZcashError> {
+    pub(crate) fn from_pczt(pczt: &Pczt) -> Result<Self, ZcashError> {
         let bytes = pczt
             .clone()
             .serialize()
@@ -62,7 +62,7 @@ impl PcztNetwork {
     }
 
     /// Returns the request's SLIP 44 coin type.
-    pub fn coin_type(self) -> u32 {
+    pub(crate) fn coin_type(self) -> u32 {
         match self {
             Self::Mainnet => 133,
             Self::Testnet => 1,

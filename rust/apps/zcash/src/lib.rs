@@ -5,7 +5,8 @@ pub mod errors;
 pub mod pczt;
 pub mod version;
 
-pub use pczt::PcztNetwork;
+#[cfg(feature = "cypherpunk")]
+use pczt::PcztNetwork;
 
 use errors::{Result, ZcashError};
 
@@ -655,27 +656,22 @@ pub fn parse_batch_with_migration_summary_cypherpunk<'a, P: consensus::Parameter
     ufvk_text: &str,
     seed_fingerprint: &[u8; 32],
 ) -> Result<Vec<ParsedPczt>> {
-    let mut parsed_pczts = Vec::new();
-    for pczt_bytes in pczts {
-        let pczt = pczt::parse_pczt(pczt_bytes)?;
-        pczt::validate_parsed_pczt_network(params, pczt_bytes)?;
-        parsed_pczts.push(pczt);
-    }
-    if parsed_pczts.is_empty() {
-        return Err(ZcashError::InvalidPczt(
-            "batch review has no transactions".to_string(),
-        ));
-    }
-
     let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
         .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
     let mut items = Vec::new();
-    for pczt in parsed_pczts {
+    for pczt_bytes in pczts {
+        let pczt = pczt::parse_pczt(pczt_bytes)?;
+        pczt::validate_parsed_pczt_network(params, pczt_bytes)?;
         // Parse once. The same complete display model determines whether a
         // transaction can be represented by a compact migration row.
         let parsed = pczt::parse::parse_pczt_cypherpunk(params, seed_fingerprint, &ufvk, &pczt)?;
         let migration = migration_transfer_summary(&parsed);
         items.push(ParsedBatchItem { parsed, migration });
+    }
+    if items.is_empty() {
+        return Err(ZcashError::InvalidPczt(
+            "batch review has no transactions".to_string(),
+        ));
     }
     Ok(compact_batch_migration_review(items))
 }

@@ -4,12 +4,14 @@
 
 ### What's new
 
-1. Added support for Zcash batch PCZT signing
+1. Added support for Zcash batch PCZT signing with compact signature results
+   that report the signing firmware version
 
 ### Bug Fixes
 
 1. Fixed stalled Zcash signing when response QR generation fails
-2. Restricted Zcash shielded signing to the selected account
+2. Rejected Zcash PCZTs that reuse an Orchard or Ironwood randomized validating key across actions
+3. Restricted Zcash shielded signing to the selected account
 
 
 ## 2.5.0(2026-6-29)

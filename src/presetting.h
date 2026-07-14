@@ -18,6 +18,7 @@ int32_t GetUpdatePubKey(uint8_t *pubKey);
 int32_t SetUpdatePubKey(const uint8_t *pubKey);
 
 bool GetFactoryResult(void);
+int SetFactoryResult(void);
 
 void PresettingTest(int argc, char *argv[]);
 

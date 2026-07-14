@@ -1,6 +1,10 @@
 #ifndef _GUI_ABOUT_INFO_WIDGETS_H
 #define _GUI_ABOUT_INFO_WIDGETS_H
 
+#include "lvgl.h"
+#include "stdint.h"
+#include "stdbool.h"
+
 void GuiAboutInfoWidgetsInit();
 void GuiAboutInfoWidgetsDeInit();
 void GuiAboutInfoWidgetsRefresh();

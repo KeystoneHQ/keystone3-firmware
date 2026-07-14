@@ -11,11 +11,11 @@ use crate::common::{
 use crate::{extract_array, extract_array_mut};
 use crate::{extract_ptr_with_type, make_free_method};
 use alloc::{boxed::Box, format, string::String, string::ToString, vec::Vec};
-use app_zcash::get_address;
 #[cfg(feature = "cypherpunk")]
 use app_zcash::pczt::{sign::SpendAuthCache, structs::ParsedPczt, PcztNetwork};
 #[cfg(feature = "cypherpunk")]
 use app_zcash::version::KEYSTONE_FW_VERSION;
+use app_zcash::{errors::ZcashError, get_address};
 use core::slice;
 use cryptoxide::hashing::sha256;
 use cty::c_char;
@@ -438,6 +438,22 @@ fn encode_zcash_batch_sig_result(
 }
 
 #[cfg(feature = "cypherpunk")]
+fn zcash_batch_network(payloads: &[Vec<u8>]) -> Result<PcztNetwork, ZcashError> {
+    let (first, rest) = payloads
+        .split_first()
+        .ok_or_else(|| ZcashError::InvalidPczt("Zcash batch has no transactions".to_string()))?;
+    let network = PcztNetwork::from_pczt_bytes(first)?;
+    for payload in rest {
+        if PcztNetwork::from_pczt_bytes(payload)? != network {
+            return Err(ZcashError::NetworkMismatch(
+                "Zcash batch contains transactions from different networks".to_string(),
+            ));
+        }
+    }
+    Ok(network)
+}
+
+#[cfg(feature = "cypherpunk")]
 #[no_mangle]
 pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
     tx: PtrUR,
@@ -468,24 +484,10 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
         Ok(payloads) => payloads,
         Err(e) => return TransactionCheckResult::from(e).c_ptr(),
     };
-    let network = match PcztNetwork::from_pczt_bytes(&payloads[0]) {
+    let network = match zcash_batch_network(&payloads) {
         Ok(network) => network,
         Err(e) => return TransactionCheckResult::from(e).c_ptr(),
     };
-    for payload in &payloads[1..] {
-        match PcztNetwork::from_pczt_bytes(payload) {
-            Ok(payload_network) if payload_network == network => {}
-            Ok(_) => {
-                return TransactionCheckResult::from(
-                    app_zcash::errors::ZcashError::NetworkMismatch(
-                        "Zcash batch contains transactions from different networks".to_string(),
-                    ),
-                )
-                .c_ptr();
-            }
-            Err(e) => return TransactionCheckResult::from(e).c_ptr(),
-        }
-    }
     let params = network.parameters();
     let ufvk_text = unsafe { recover_zcash_ufvk(network, mainnet_ufvk, testnet_ufvk) };
 
@@ -1045,6 +1047,35 @@ mod tests {
         (0..count)
             .map(|index| format!("pczt-{index}").into_bytes())
             .collect()
+    }
+
+    #[cfg(feature = "cypherpunk")]
+    fn empty_pczt(coin_type: u32) -> Vec<u8> {
+        use zcash_vendor::{pczt::roles::creator::Creator, zcash_protocol::consensus::BranchId};
+
+        Creator::new(
+            BranchId::Nu6.into(),
+            10,
+            coin_type,
+            Some([0; 32]),
+            Some([0; 32]),
+        )
+        .unwrap()
+        .build()
+        .unwrap()
+        .serialize()
+        .unwrap()
+    }
+
+    #[cfg(feature = "cypherpunk")]
+    #[test]
+    fn test_zcash_batch_rejects_mixed_networks() {
+        assert_eq!(
+            zcash_batch_network(&[empty_pczt(133), empty_pczt(1)]),
+            Err(ZcashError::NetworkMismatch(
+                "Zcash batch contains transactions from different networks".to_string()
+            ))
+        );
     }
 
     #[cfg(feature = "cypherpunk")]

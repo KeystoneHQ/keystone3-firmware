@@ -928,6 +928,21 @@ fn reject_unsupported_batch_pczt(pczt: &Pczt) -> Result<()> {
         ));
     }
 
+    // A batch response contains signatures produced by this device for the
+    // reviewed request. Reject incoming signatures instead of carrying
+    // bytes supplied by the host into that response.
+    for (pool, bundle) in [("Orchard", pczt.orchard()), ("Ironwood", pczt.ironwood())] {
+        if bundle
+            .actions()
+            .iter()
+            .any(|action| action.spend().spend_auth_sig().is_some())
+        {
+            return Err(ZcashError::InvalidPczt(alloc::format!(
+                "Zcash batch request must not contain {pool} spend authorization signatures"
+            )));
+        }
+    }
+
     Ok(())
 }
 
@@ -1197,7 +1212,8 @@ pub fn sign_checked_pczt<P: consensus::Parameters>(
 /// Signs a checked, normalized PCZT and confirms in memory that every
 /// supported shielded action owned by (`seed_fingerprint`, `account_index`)
 /// received a spend authorization signature. Batch policy: additionally rejects
-/// PCZT shapes the batch flow does not support and requires at least one owned
+/// PCZT shapes the batch flow does not support, including Orchard or Ironwood
+/// spend authorization signatures, and requires at least one owned
 /// signable shielded action. Parses `checked_pczt` exactly once and returns the
 /// redacted, version-stamped response bytes. Derives keys into a fresh
 /// [`SpendAuthCache`]; batch loops should use
@@ -2107,6 +2123,113 @@ mod tests {
             result.unwrap_err(),
             ZcashError::InvalidPczt(BATCH_UNSUPPORTED_SAPLING_ERROR.to_string())
         );
+    }
+
+    fn assert_existing_batch_signature_error<T: core::fmt::Debug>(result: Result<T>, pool: &str) {
+        assert_eq!(
+            result.unwrap_err(),
+            ZcashError::InvalidPczt(alloc::format!(
+                "Zcash batch request must not contain {pool} spend authorization signatures"
+            ))
+        );
+    }
+
+    fn pczt_with_existing_funded_signature(
+        mut sample: pczt::test_support::SamplePczt,
+        pool: SignableShieldedPool,
+    ) -> pczt::test_support::SamplePczt {
+        use zcash_vendor::{
+            orchard::keys::{SpendAuthorizingKey, SpendingKey},
+            pczt::roles::signer::Signer,
+            zip32,
+        };
+
+        let original = Pczt::parse(&sample.bytes).expect("sample PCZT should parse");
+        let account = zip32::AccountId::ZERO;
+        let (required_actions, original) = match pool {
+            SignableShieldedPool::Orchard => signable_shielded_actions(
+                &MainNetwork,
+                original,
+                &sample.seed_fingerprint,
+                account,
+                ShieldedActionPolicy::Single,
+            ),
+            SignableShieldedPool::Ironwood => signable_shielded_actions(
+                &pczt::test_support::Nu6_3Network,
+                original,
+                &sample.seed_fingerprint,
+                account,
+                ShieldedActionPolicy::Single,
+            ),
+        }
+        .expect("sample PCZT should have a signable funded action");
+        assert_eq!(required_actions.len(), 1);
+
+        let spending_key = SpendingKey::from_zip32_seed(&sample.seed, 133, account).unwrap();
+        let ask = SpendAuthorizingKey::from(&spending_key);
+        let mut signer = Signer::new(original).expect("sample PCZT should be signable");
+        let action_index = required_actions[0].index;
+        let signing_result = match pool {
+            SignableShieldedPool::Orchard => signer.sign_orchard(action_index, &ask),
+            SignableShieldedPool::Ironwood => signer.sign_ironwood(action_index, &ask),
+        };
+        signing_result.expect("funded action should sign");
+        let pczt = signer.finish();
+        let actions = match pool {
+            SignableShieldedPool::Orchard => pczt.orchard().actions(),
+            SignableShieldedPool::Ironwood => pczt.ironwood().actions(),
+        };
+        assert_eq!(
+            actions
+                .iter()
+                .filter(|action| action.spend().spend_auth_sig().is_some())
+                .count(),
+            1,
+        );
+        assert!(actions
+            .iter()
+            .any(|action| action.spend().spend_auth_sig().is_none()));
+        sample.bytes = pczt
+            .serialize()
+            .expect("partially signed PCZT should serialize");
+        sample
+    }
+
+    #[test]
+    fn test_batch_rejects_existing_funded_spend_auth_signature() {
+        for (sample, pool) in [
+            (
+                pczt::test_support::sample_orchard_change_pczt(),
+                SignableShieldedPool::Orchard,
+            ),
+            (
+                pczt::test_support::sample_ironwood_pczt(),
+                SignableShieldedPool::Ironwood,
+            ),
+        ] {
+            let sample = pczt_with_existing_funded_signature(sample, pool);
+
+            assert_existing_batch_signature_error(
+                check_batch_pczt_with_display(
+                    &pczt::test_support::Nu6_3Network,
+                    &sample.bytes,
+                    &BatchCheckContext::new(&sample.ufvk_text),
+                    &sample.seed_fingerprint,
+                    0,
+                ),
+                pool.label(),
+            );
+            assert_existing_batch_signature_error(
+                sign_checked_batch_pczt(
+                    &pczt::test_support::Nu6_3Network,
+                    &sample.bytes,
+                    &sample.seed,
+                    &sample.seed_fingerprint,
+                    0,
+                ),
+                pool.label(),
+            );
+        }
     }
 
     #[test]

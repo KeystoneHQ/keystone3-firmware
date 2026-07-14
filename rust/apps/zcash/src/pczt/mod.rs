@@ -3,7 +3,7 @@ pub mod parse;
 pub mod sign;
 pub mod structs;
 
-use alloc::{format, string::ToString};
+use alloc::{format, string::ToString, vec::Vec};
 use zcash_vendor::{
     pczt::Pczt,
     transparent,
@@ -50,26 +50,25 @@ pub(crate) fn validate_supported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
 
 /// Ensures every Orchard protocol action has a distinct randomized validating key.
 ///
-/// Orchard and Ironwood spend authorization signatures cover the same transaction-wide
-/// shielded sighash. If two actions share an `rk`, a signature for either action can be
-/// copied to the other.
+/// Within each pool, spend authorization signatures cover the same transaction-wide
+/// shielded sighash. Orchard and Ironwood use different sighashes, but honest construction
+/// should not reuse an `rk` across either pool, so validate their union defensively.
 #[cfg(feature = "cypherpunk")]
 fn validate_distinct_orchard_protocol_rks(pczt: &Pczt) -> Result<(), ZcashError> {
     let actions = pczt
         .orchard()
         .actions()
         .iter()
-        .chain(pczt.ironwood().actions().iter());
+        .chain(pczt.ironwood().actions().iter())
+        .collect::<Vec<_>>();
 
-    for (index, action) in actions.clone().enumerate() {
-        if actions
-            .clone()
-            .skip(index + 1)
-            .any(|other| other.spend().rk() == action.spend().rk())
-        {
-            return Err(ZcashError::InvalidPczt(
-                "duplicate Orchard or Ironwood action rk".to_string(),
-            ));
+    for i in 0..actions.len() {
+        for j in (i + 1)..actions.len() {
+            if actions[i].spend().rk() == actions[j].spend().rk() {
+                return Err(ZcashError::InvalidPczt(
+                    "duplicate Orchard or Ironwood action rk".to_string(),
+                ));
+            }
         }
     }
 

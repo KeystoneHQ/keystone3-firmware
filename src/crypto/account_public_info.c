@@ -58,7 +58,7 @@ static uint32_t GetTemplateWalletValue(const char* walletName, const char* key);
 static void SetTemplateWalletValue(const char* walletName, const char* key, uint32_t value);
 static void CleanupJson(cJSON* json);
 static void FreePublicKeyRam(void);
-static bool IsHexString(const char *value);
+static int32_t GetChainTableIndex(ChainType chain);
 static void PrintInfo(void);
 static void SetIsTempAccount(bool isTemp);
 
@@ -559,12 +559,22 @@ static const ChainItem_t g_chainTable[] = {
 #endif
 };
 
+static int32_t GetChainTableIndex(ChainType chain)
+{
+    for (uint32_t i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
+        if (g_chainTable[i].chain == chain) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 #ifdef WEB3_VERSION
 ChainType CheckSolPathSupport(char *path)
 {
     int startIndex = -1;
     int endIndex = -1;
-    for (int i = 0; i < XPUB_TYPE_NUM; i++) {
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
         if (XPUB_TYPE_SOL_BIP44_0 == g_chainTable[i].chain) {
             startIndex = i;
         }
@@ -627,9 +637,12 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
     }
 }
 
-char *GetXPubPath(uint8_t index)
+char *GetXPubPath(uint8_t chain)
 {
-    ASSERT(index < XPUB_TYPE_NUM);
+    int32_t index = GetChainTableIndex(chain);
+    if (index < 0) {
+        return NULL;
+    }
     return g_chainTable[index].path;
 }
 
@@ -982,7 +995,7 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
 #ifdef CYPHERPUNK_VERSION
         if (!regeneratePubKey && IsZcashSupportedForCurrentMnemonic()) {
             char *zcashEncrypted = GetCurrentAccountPublicKey(ZCASH_UFVK_ENCRYPTED_0);
-            if (!IsHexString(zcashEncrypted)) {
+            if (!IsHexStringWithLen(zcashEncrypted, 0)) {
                 regeneratePubKey = true;
             }
         }
@@ -1002,26 +1015,6 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
     printf("acount public key info sitch over\r\n");
     //PrintInfo();
     return ret;
-}
-
-static bool IsHexString(const char *value)
-{
-    if (value == NULL) {
-        return false;
-    }
-    size_t len = strnlen_s(value, PUB_KEY_MAX_LENGTH);
-    if (len == 0 || (len % 2) != 0) {
-        return false;
-    }
-    for (size_t i = 0; i < len; i++) {
-        char c = value[i];
-        if (!((c >= '0' && c <= '9') ||
-                (c >= 'a' && c <= 'f') ||
-                (c >= 'A' && c <= 'F'))) {
-            return false;
-        }
-    }
-    return true;
 }
 
 static void SetIsTempAccount(bool isTemp)
@@ -1176,24 +1169,37 @@ void DeleteAccountPublicInfo(uint8_t accountIndex)
     for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_MULTI_SIG_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
         Gd25FlashSectorErase(eraseAddr);
     }
+#ifdef WEB3_VERSION
+    addr = SPI_FLASH_RSA_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
+    for (eraseAddr = addr; eraseAddr < addr + SPI_FLASH_RSA_SIZE_USER1_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
+        Gd25FlashSectorErase(eraseAddr);
+    }
+    uint8_t rsaHash[32] = {0};
+    SetRsaPrimesHash(accountIndex, rsaHash);
+#endif
     //remove current publickey info to avoid accident reading.
     FreePublicKeyRam();
 }
 
 char *GetCurrentAccountPath(ChainType chain)
 {
-    return g_chainTable[chain].path;
+    int32_t index = GetChainTableIndex(chain);
+    if (index < 0) {
+        return NULL;
+    }
+    return g_chainTable[index].path;
 }
 
 char *GetCurrentAccountPublicKey(ChainType chain)
 {
     uint8_t accountIndex;
+    int32_t index = GetChainTableIndex(chain);
 
     accountIndex = GetCurrentAccountIndex();
-    if (accountIndex > 2) {
+    if (accountIndex > 2 || index < 0) {
         return NULL;
     }
-    return g_accountPublicInfo[chain].value;
+    return g_accountPublicInfo[index].value;
 }
 
 /// @brief Get if the xPub already Exists.
@@ -1386,8 +1392,8 @@ static void FreePublicKeyRam(void)
 static void PrintInfo(void)
 {
     char *value;
-    for (uint32_t i = 0; i < XPUB_TYPE_NUM; i++) {
-        value = GetCurrentAccountPublicKey(i);
+    for (uint32_t i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
+        value = GetCurrentAccountPublicKey(g_chainTable[i].chain);
         if (value != NULL) {
             printf("%s pub key=%s\r\n", g_chainTable[i].name, value);
         }

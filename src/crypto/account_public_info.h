@@ -280,7 +280,7 @@ void AccountPublicInfoTest(int argc, char *argv[]);
 bool GetFirstReceive(const char* chainName);
 void SetFirstReceive(const char* chainName, bool isFirst);
 void AccountPublicHomeCoinGet(WalletState_t *walletList, uint8_t count);
-char *GetXPubPath(uint8_t index);
+char *GetXPubPath(uint8_t chain);
 uint32_t GetAccountReceiveIndex(const char* chainName);
 void SetAccountReceiveIndex(const char* chainName, uint32_t index);
 uint32_t GetAccountReceivePath(const char* chainName);

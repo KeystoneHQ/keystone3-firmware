@@ -14,6 +14,7 @@
 #include "power_manager.h"
 #include "gui_lock_widgets.h"
 #include "account_manager.h"
+#include "se_manager.h"
 #include "fingerprint_process.h"
 
 #define LOCK_SCREEN_TICK                                    1000
@@ -111,6 +112,10 @@ static void LockScreen(void)
         printf("lock screen is disabled\n");
         return;
     }
+
+    // Session boundary: the device is locking (inactivity timer or power button both reach here).
+    // Disarm any pending provision recovery before locking.
+    SE_DisarmProvisionRecovery();
 
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
     uint8_t accountNum = 1;

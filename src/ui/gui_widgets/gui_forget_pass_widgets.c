@@ -20,6 +20,9 @@
 #include "gui_page.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_lock_device_widgets.h"
+#include "account_manager.h"   // GetExistAccountNum
+#include "se_manager.h"        // GetSeGen, SE_DisarmProvisionRecovery
+#include "screen_manager.h"    // SetPageLockScreen
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #endif
@@ -58,8 +61,20 @@ static ForgetPassWidget_t g_forgetPassTileView;
 static lv_obj_t *g_waitAnimCont;
 static GUI_VIEW *g_prevView;
 static bool g_isForgetPass = false;
+static KeyboardWidget_t *g_proveOwnershipKb = NULL;          // gen-2 prove-ownership verify modal (same widget as add-wallet)
+static uint16_t g_proveOwnershipSig = SIG_FORGET_PASSWORD_PROVE_OWNERSHIP;
+static bool g_proveOwnershipDone = false;                     // ownership already proven this flow (don't re-pop)
 
 static void CloseCurrentParentAndCloseViewHandler(lv_event_t *e);
+
+// gen-2 with multiple wallets must prove ownership of another wallet before re-provisioning the forgotten one.
+// gen-1 and single-wallet gen-2 skip the prove-ownership step.
+static bool ForgetPassNeedsProveOwnership(void)
+{
+    uint8_t accountNum = 0;
+    GetExistAccountNum(&accountNum);
+    return (GetSeGen() == SE_GEN_2 && accountNum >= 2);
+}
 
 bool GuiIsForgetPass(void)
 {
@@ -83,6 +98,12 @@ static void ContinueStopCreateHandler(lv_event_t *e)
 {
     g_forgetMkb->currentSlice = 0;
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+    // Cancel rewinds to the method-select tile WITHOUT tearing the view down, so GuiForgetPassDeInit's reset
+    // never runs. Explicitly drop the provision-recovery arm and clear the proven flag here — otherwise the redo
+    // skips prove-ownership (the !g_proveOwnershipDone gate) and reuses a stale arm.
+    g_proveOwnershipDone = false;
+    AbandonProvisionRecovery();
+    SetPageLockScreen(true);
     CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
     GUI_DEL_OBJ(g_noticeWindow)
 }
@@ -341,9 +362,73 @@ void GuiForgetPassEnterMnemonic(void *parent)
     g_enterMnemonicCont = parent;
 }
 
+static void ProveOwnershipCloseModal(void)
+{
+    if (g_proveOwnershipKb != NULL) {
+        GuiDeleteKeyboardWidget(g_proveOwnershipKb);
+        g_proveOwnershipKb = NULL;
+    }
+}
+
+static void ProveOwnershipBackHandler(lv_event_t *e)
+{
+    // back out of the modal -> drop the provision-recovery arm, restore the auto-lock, stay on the mnemonic tile.
+    ProveOwnershipCloseModal();
+    AbandonProvisionRecovery();
+    SetPageLockScreen(true);
+}
+
+// gen-2 multi-wallet "Prove Device Ownership": pop the SAME KeyboardWidget modal as the add-wallet / change-PIN
+// verify (title + desc + PIN/password toggle + GuiShowErrorNumber "N attempts left"), over the forget-pass
+// content, with its "Forgot?" shortcut suppressed for this sig. The verify is wired to
+// SIG_FORGET_PASSWORD_PROVE_OWNERSHIP (see ModelVerifyAccountPass), which arms provision-recovery on the matched
+// wallet; on PASS the flow advances to set the new PIN.
+static void ForgetPassPopProveOwnership(void)
+{
+    // Parent to the page root (parent of the tileview content), NOT the content zone, so the modal covers the
+    // nav bar too — otherwise the underlying forget-pass nav bar's close button shows above the modal's own back
+    // button (two stacked buttons). Mirrors add-wallet's GuiSettingGetCurrentCont() == parent of the content.
+    // Parent to the TOP LAYER, not the forget-pass page root. It still covers the nav bar (single back button),
+    // but its lifecycle is now independent of the page widget — so if the view is torn down with the modal still
+    // open (a FAIL/abort path that never reaches the create view), GuiDeleteKeyboardWidget fully owns its objects
+    // and can't race DestroyPageWidget freeing the same page-root subtree (double-free / heap corruption).
+    g_proveOwnershipKb = GuiCreateKeyboardWidgetView(lv_layer_top(), ProveOwnershipBackHandler, &g_proveOwnershipSig);
+    SetKeyboardWidgetSelf(g_proveOwnershipKb, &g_proveOwnershipKb);
+    SetKeyboardWidgetSig(g_proveOwnershipKb, &g_proveOwnershipSig);
+    SetKeyboardWidgetTitle(g_proveOwnershipKb, _("prove_ownership_title"), _("prove_ownership_desc"));
+}
+
+// Prove-ownership verify result (from the forget-pass view). PASS: ownership proven, provision-recovery already
+// armed in ModelVerifyAccountPass -> advance to set the new PIN. FAIL: mark the entry wrong (red LEDs +
+// "incorrect"), matching the add-wallet pure-check behavior.
+void GuiForgetProveOwnershipResult(bool pass, void *param)
+{
+    if (pass) {
+        // ownership proven (provision-recovery armed): close the modal, then advance the flow to set the new PIN.
+        // The 'done' flag stops ENTER_MNEMONIC's next from re-popping the modal.
+        g_proveOwnershipDone = true;
+        ProveOwnershipCloseModal();
+        GuiForgetPassNextTile(0);
+        return;
+    }
+    if (g_proveOwnershipKb != NULL && param != NULL) {
+        // GuiShowErrorNumber detects the prove-ownership signal and shows "N attempts left" (login-count); at
+        // MAX_LOGIN it opens the recoverable wipe / restore-from-seed view. The modal's self-pointer NULLs
+        // g_proveOwnershipKb on delete.
+        GuiShowErrorNumber(g_proveOwnershipKb, (PasswordVerifyResult_t *)param);
+    }
+}
+
 void GuiForgetPassInit(void *param)
 {
     g_prevView = param;
+    // Fresh flow: never inherit a prior run's "ownership already proven" state. The flag is otherwise only
+    // cleared in GuiForgetPassDeInit / GuiForgetPassPrevTile(SETPIN); resetting it at entry makes each forget-
+    // pass run start from a known state regardless of how the previous one ended, so a multi-wallet run can't
+    // skip the Prove-Ownership gate on a stale true. No-op for single-wallet/gen-1 (ForgetPassNeedsProveOwnership
+    // gates the flag out there).
+    g_proveOwnershipDone = false;
+    GuiResetCheckPasswordCounter();     // fresh per-flow CheckPasswordExisted budget
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
@@ -387,6 +472,15 @@ void GuiForgetPassDeInit(void)
         GuiDelEnterPasscode(g_repeatPassCode, NULL);
         g_repeatPassCode = NULL;
     }
+    if (g_proveOwnershipKb != NULL) {
+        GuiDeleteKeyboardWidget(g_proveOwnershipKb);
+        g_proveOwnershipKb = NULL;
+    }
+    // forget-pass torn down: drop any gen-2 provision-recovery arm not yet consumed by the re-save, and restore
+    // the auto-lock that the prove-ownership step may have disabled.
+    AbandonProvisionRecovery();
+    SetPageLockScreen(true);
+    g_proveOwnershipDone = false;
 
     GUI_DEL_OBJ(g_forgetPassTileView.cont)
     GuiSettingCloseSelectAmountHintBox();
@@ -437,7 +531,16 @@ int8_t GuiForgetPassNextTile(uint8_t tileIndex)
     case FORGET_PASSWORD_ENTER_MNEMONIC:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);
         lv_obj_add_flag(g_nextCont, LV_OBJ_FLAG_HIDDEN);
-        break;
+        if (ForgetPassNeedsProveOwnership() && !g_proveOwnershipDone) {
+            // multi-wallet gen-2: pop the Prove-Ownership modal (same KeyboardWidget as change-PIN's verify) over
+            // this tile instead of advancing. Hold the auto-lock off through the re-save so the provision-recovery
+            // arm survives until provision consumes it. On PASS the modal advances the flow; on back it disarms
+            // and stays here.
+            SetPageLockScreen(false);
+            ForgetPassPopProveOwnership();
+            return SUCCESS_CODE;   // stay on ENTER_MNEMONIC behind the modal
+        }
+        break;   // single-wallet / gen-1, or ownership already proven -> advance to SETPIN
     case FORGET_PASSWORD_SETPIN:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         if (g_repeatPassCode == NULL) {
@@ -467,6 +570,13 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("import_wallet_phrase_clear_btn"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetClearImportHandler, NULL);
+        if (g_proveOwnershipDone) {
+            // backing past the proven step -> drop the provision-recovery arm + restore the auto-lock; the
+            // mnemonic re-entry would re-pop the prove-ownership modal.
+            AbandonProvisionRecovery();
+            SetPageLockScreen(true);
+            g_proveOwnershipDone = false;
+        }
         break;
     case FORGET_PASSWORD_REPEATPIN:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, StopCreateViewHandler, NULL);

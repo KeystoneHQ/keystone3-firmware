@@ -1,5 +1,11 @@
 ## Unreleased
 
+**All variants:**
+
+### What's new
+
+1. Added generation 2 secure element support and hardened account cleanup around interrupted operations
+
 **Cypherpunk:**
 
 ### What's new

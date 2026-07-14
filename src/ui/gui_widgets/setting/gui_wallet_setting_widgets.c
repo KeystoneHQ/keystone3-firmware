@@ -20,6 +20,7 @@
 #include "account_manager.h"
 #include "gui_lock_widgets.h"
 #include "screen_manager.h"
+#include "se_manager.h"   // SE_DisarmProvisionRecovery for gen-2 add-wallet
 #include "fingerprint_process.h"
 #include "keystore.h"
 #include "gui_home_widgets.h"
@@ -173,6 +174,11 @@ void GuiWalletAddWalletNotice(lv_obj_t *parent)
 {
     uint16_t height;
     static uint32_t walletSetting = DEVICE_SETTING_ADD_WALLET_CREATE_OR_IMPORT;
+    // Notice is the add-wallet operation entry (PIN already verified at the button). Hold the auto-lock off for
+    // the rest of the flow; the notice tile's destruct (GuiSettingCountDownDestruct) re-enables it and disarms
+    // the gen-2 provision recovery if the user backs out.
+    SetPageLockScreen(false);
+    GuiResetCheckPasswordCounter();     // reset per-flow CheckPasswordExisted counter
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     lv_obj_t *label = GuiCreateTitleLabel(parent, _("wallet_settings_add_info_title"));
@@ -226,6 +232,12 @@ void GuiSettingCountDownDestruct(void *obj, void *param)
         lv_timer_del(g_countDownTimer);
         g_countDownTimer = NULL;
     }
+    // Notice tile teardown = add-wallet operation boundary. This fires on nav-back (notice tile removed) and on
+    // any deeper teardown, but NOT when navigating forward into create/import (those tiles stack on top, the
+    // notice tile stays). So: drop the gen-2 provision-recovery arm if the user backed out before provisioning
+    // (a no-op once provision has consumed it), and re-enable the auto-lock disabled in GuiWalletAddWalletNotice.
+    AbandonProvisionRecovery();
+    SetPageLockScreen(true);
 }
 
 void GuiWalletSetPinWidget(lv_obj_t *parent, uint8_t tile)
@@ -384,6 +396,21 @@ void GuiShowKeyboardHandler(lv_event_t *e)
     SetKeyboardWidgetSig(g_keyboardWidget, walletSetIndex);
 }
 
+// Add-wallet entry: gate the wallet-count limit BEFORE the PIN verify. 3 wallets -> limit screen (no verify, so
+// the gen-2 provision-recovery arm never fires on a dead-end); otherwise pop the PIN keyboard. On verify success
+// the flow lands on the notice (the operation entry point), which disables the auto-lock and disarms on back.
+void GuiAddWalletEntryHandler(lv_event_t *e)
+{
+    uint8_t accountNum = 0;
+    GetExistAccountNum(&accountNum);
+    if (accountNum >= 3) {
+        static uint8_t walletIndex = DEVICE_SETTING_ADD_WALLET_LIMIT;
+        GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, &walletIndex, sizeof(walletIndex));
+    } else {
+        GuiShowKeyboardHandler(e);   // user_data = DEVICE_SETTING_ADD_WALLET -> verify keyboard
+    }
+}
+
 void GuiVerifyCurrentPasswordErrorCount(void *param)
 {
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
@@ -512,7 +539,9 @@ void GuiWalletSetWidget(lv_obj_t *parent)
     label = GuiCreateTextLabel(parent, _("wallet_setting_add_wallet"));
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
     table[0].obj = label;
-    button = GuiCreateButton(parent, 456, 84, table, 1, GuiShowKeyboardHandler, &walletSetting[4]);
+    // Pre-verify limit gate (see GuiAddWalletEntryHandler): no PIN keyboard here anymore; verify is deferred to
+    // the notice's "next" button so the gen-2 provision-recovery arm is bound to the create flow.
+    button = GuiCreateButton(parent, 456, 84, table, 1, GuiAddWalletEntryHandler, &walletSetting[4]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, nextY);
 }
 

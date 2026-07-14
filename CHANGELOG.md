@@ -11,6 +11,7 @@
 
 1. Fixed stalled Zcash signing when response QR generation fails
 2. Rejected Zcash PCZTs that reuse an Orchard or Ironwood randomized validating key across actions
+3. Restricted Zcash shielded signing to the selected account
 
 
 ## 2.5.0(2026-6-29)

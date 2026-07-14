@@ -81,11 +81,13 @@ impl PcztSigner for SeedSigner<'_> {
     }
 }
 
+/// Signs the PCZT's transparent inputs with keys derived for `network`, which
+/// the caller must decode from the same PCZT's bytes (see
+/// [`super::PcztNetwork::from_pczt_bytes`]).
 #[cfg(not(feature = "cypherpunk"))]
-pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
+pub fn sign_pczt(pczt: Pczt, seed: &[u8], network: super::PcztNetwork) -> crate::Result<Vec<u8>> {
     super::validate_supported_pczt(&pczt)?;
     reject_legacy_unsupported_pczt(&pczt)?;
-    let network = super::PcztNetwork::from_pczt(&pczt)?;
 
     let signer = low_level_signer::Signer::new(pczt);
 
@@ -402,20 +404,25 @@ impl PcztSigner for SeedSigner<'_> {
 ///
 /// Thin wrapper over `sign_and_redact_pczt`; see it for the full contract.
 #[cfg(feature = "cypherpunk")]
-pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
-    sign_and_redact_pczt(pczt, seed)?
+pub fn sign_pczt(pczt: Pczt, seed: &[u8], network: super::PcztNetwork) -> crate::Result<Vec<u8>> {
+    sign_and_redact_pczt(pczt, seed, network)?
         .serialize()
         .map_err(|e| ZcashError::SigningError(format!("serialize signed PCZT: {e:?}")))
 }
 
 /// `sign_pczt`, but returns the stamped, redacted PCZT without serializing it,
 /// so callers that still need the parsed value (in-memory post-sign
-/// verification) avoid a byte round trip. Derives keys into a fresh
+/// verification) avoid a byte round trip. `network` selects the key-derivation
+/// coin type and must be decoded from the same PCZT's bytes (see
+/// [`super::PcztNetwork::from_pczt_bytes`]). Derives keys into a fresh
 /// [`SpendAuthCache`]; the batch signing path instead reuses a request-scoped
 /// cache so PCZTs for the selected account share one derivation.
 #[cfg(feature = "cypherpunk")]
-pub fn sign_and_redact_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Pczt> {
-    let network = super::PcztNetwork::from_pczt(&pczt)?;
+pub fn sign_and_redact_pczt(
+    pczt: Pczt,
+    seed: &[u8],
+    network: super::PcztNetwork,
+) -> crate::Result<Pczt> {
     sign_and_redact_pczt_with_cache(pczt, seed, network, None, &SpendAuthCache::new())
 }
 
@@ -809,7 +816,7 @@ mod tests {
         let pczt = Pczt::parse(&sample.bytes).unwrap();
         let mismatched_seed = [9u8; 32];
 
-        let result = sign_pczt(pczt, &mismatched_seed);
+        let result = sign_pczt(pczt, &mismatched_seed, crate::pczt::PcztNetwork::Mainnet);
         assert!(matches!(result, Err(ZcashError::PcztNoMyInputs)));
     }
 
@@ -869,8 +876,12 @@ mod tests {
     #[test]
     fn test_sign_pczt_migration_signs_orchard_only() {
         let sample = crate::pczt::test_support::sample_migration_pczt();
-        let signed = sign_pczt(Pczt::parse(&sample.bytes).unwrap(), &sample.seed)
-            .expect("migration PCZT should sign");
+        let signed = sign_pczt(
+            Pczt::parse(&sample.bytes).unwrap(),
+            &sample.seed,
+            crate::pczt::PcztNetwork::Mainnet,
+        )
+        .expect("migration PCZT should sign");
         let parsed = Pczt::parse(&signed).expect("signed migration PCZT must parse");
         assert!(
             parsed
@@ -918,7 +929,8 @@ mod tests {
             "v6 Ironwood spend signatures must not commit to the anchor"
         );
 
-        let signed_pczt_bytes = sign_pczt(pczt, &sample.seed).expect("Ironwood PCZT should sign");
+        let signed_pczt_bytes = sign_pczt(pczt, &sample.seed, crate::pczt::PcztNetwork::Mainnet)
+            .expect("Ironwood PCZT should sign");
         let parsed = Pczt::parse(&signed_pczt_bytes).expect("signed PCZT must parse");
 
         let stamp = parsed
@@ -966,7 +978,11 @@ mod tests {
             );
 
             assert_invalid_pczt_message(
-                sign_pczt(Pczt::parse(&pczt).unwrap(), &sample.seed),
+                sign_pczt(
+                    Pczt::parse(&pczt).unwrap(),
+                    &sample.seed,
+                    crate::pczt::PcztNetwork::Mainnet,
+                ),
                 "unsupported Ironwood spend ZIP 32 derivation path",
             );
         }
@@ -981,8 +997,12 @@ mod tests {
             crate::pczt::test_support::orchard_spend_path_for_account(1),
         );
 
-        let signed = sign_pczt(Pczt::parse(&pczt).unwrap(), &sample.seed)
-            .expect("dummy spend ZIP 32 metadata must not block signing real spends");
+        let signed = sign_pczt(
+            Pczt::parse(&pczt).unwrap(),
+            &sample.seed,
+            crate::pczt::PcztNetwork::Mainnet,
+        )
+        .expect("dummy spend ZIP 32 metadata must not block signing real spends");
         let parsed = Pczt::parse(&signed).expect("signed PCZT must parse");
         assert!(
             parsed
@@ -1051,7 +1071,7 @@ mod tests {
             })
             .finish();
 
-        let signed = sign_pczt(pczt, &sample.seed)
+        let signed = sign_pczt(pczt, &sample.seed, crate::pczt::PcztNetwork::Mainnet)
             .expect("finalized redacted dummy spend must not block the real signature");
         let signed_count = Pczt::parse(&signed)
             .unwrap()
@@ -1068,8 +1088,8 @@ mod tests {
         let sample = crate::pczt::test_support::sample_orchard_change_pczt();
         let pczt = Pczt::parse(&sample.bytes).unwrap();
 
-        let signed =
-            sign_pczt(pczt, &sample.seed).expect("Orchard change output spend should sign");
+        let signed = sign_pczt(pczt, &sample.seed, crate::pczt::PcztNetwork::Mainnet)
+            .expect("Orchard change output spend should sign");
         let parsed = Pczt::parse(&signed).expect("signed PCZT must parse");
         let signed_actions = parsed
             .orchard()
@@ -1101,7 +1121,8 @@ mod tests {
     #[test]
     fn firmware_equal_version_stamps_response() {
         let pczt = pczt_with_min_version(&KEYSTONE_FW_VERSION.encode());
-        let signed = sign_pczt(pczt, &test_seed()).expect("equal-version PCZT should sign");
+        let signed = sign_pczt(pczt, &test_seed(), crate::pczt::PcztNetwork::Mainnet)
+            .expect("equal-version PCZT should sign");
         let parsed = Pczt::parse(&signed).expect("signed PCZT must parse");
 
         let stamp = parsed
@@ -1122,7 +1143,8 @@ mod tests {
     #[test]
     fn firmware_older_min_version_still_stamps_response() {
         let pczt = pczt_with_min_version(&[1, 0, 0]);
-        let signed = sign_pczt(pczt, &test_seed()).expect("older-min PCZT should sign");
+        let signed = sign_pczt(pczt, &test_seed(), crate::pczt::PcztNetwork::Mainnet)
+            .expect("older-min PCZT should sign");
         let parsed = Pczt::parse(&signed).expect("signed PCZT must parse");
 
         let stamp = parsed
@@ -1136,8 +1158,8 @@ mod tests {
     #[test]
     fn malformed_min_version_round_trips_and_stamps() {
         let pczt = pczt_with_min_version(&[1, 2]);
-        let signed =
-            sign_pczt(pczt, &test_seed()).expect("malformed min bytes must not block signing");
+        let signed = sign_pczt(pczt, &test_seed(), crate::pczt::PcztNetwork::Mainnet)
+            .expect("malformed min bytes must not block signing");
         let parsed = Pczt::parse(&signed).expect("signed PCZT must parse");
 
         let stamp = parsed
@@ -1177,7 +1199,7 @@ mod legacy_tests {
         .build()
         .unwrap();
 
-        let result = sign_pczt(pczt, &[7u8; 32]);
+        let result = sign_pczt(pczt, &[7u8; 32], crate::pczt::PcztNetwork::Mainnet);
 
         assert!(matches!(
             result,

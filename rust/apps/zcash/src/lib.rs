@@ -727,10 +727,12 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
 ///
 /// # Errors
 /// * `ZcashError::InvalidPczt` - If the PCZT data is malformed or cannot be parsed
+/// * `ZcashError::NetworkMismatch` - If the PCZT does not commit to a supported network
 /// * Other errors from the underlying signing process
 pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
-    let pczt = pczt::parse_pczt(pczt)?;
-    pczt::sign::sign_pczt(pczt, seed)
+    let parsed = pczt::parse_pczt(pczt)?;
+    let network = pczt::PcztNetwork::from_validated_pczt_bytes(pczt)?;
+    pczt::sign::sign_pczt(parsed, seed, network)
 }
 
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]

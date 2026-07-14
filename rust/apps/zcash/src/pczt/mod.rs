@@ -33,16 +33,9 @@ impl PcztNetwork {
         Self::from_validated_pczt_bytes(bytes)
     }
 
-    /// Reads the request network from an already parsed PCZT.
-    pub(crate) fn from_pczt(pczt: &Pczt) -> Result<Self, ZcashError> {
-        let bytes = pczt
-            .clone()
-            .serialize()
-            .map_err(|e| ZcashError::InvalidPczt(format!("serialize PCZT network: {e:?}")))?;
-        Self::from_validated_pczt_bytes(&bytes)
-    }
-
-    fn from_validated_pczt_bytes(bytes: &[u8]) -> Result<Self, ZcashError> {
+    /// [`Self::from_pczt_bytes`] for bytes already validated by
+    /// [`parse_pczt`], skipping the envelope re-parse.
+    pub(crate) fn from_validated_pczt_bytes(bytes: &[u8]) -> Result<Self, ZcashError> {
         let coin_type = decode_global_coin_type(bytes)?;
         match coin_type {
             133 => Ok(Self::Mainnet),
@@ -139,10 +132,6 @@ mod network_tests {
         let mainnet = empty_pczt(133);
         assert_eq!(
             PcztNetwork::from_pczt_bytes(&mainnet),
-            Ok(PcztNetwork::Mainnet)
-        );
-        assert_eq!(
-            PcztNetwork::from_pczt(&Pczt::parse(&mainnet).unwrap()),
             Ok(PcztNetwork::Mainnet)
         );
         assert_eq!(

@@ -54,9 +54,11 @@ void *GuiGetZcashGUIData(void)
         parseResult = parse_zcash_tx_multi_coins(g_checkedPczt, sfp);
 #endif
 #ifdef CYPHERPUNK_VERSION
-        char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
-        GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-        parseResult = parse_zcash_tx_cypherpunk(g_checkedPczt, ufvk, sfp);
+        char mainnetUfvk[ZCASH_UFVK_MAX_LEN + 1] = {'\0'};
+        char testnetUfvk[ZCASH_UFVK_MAX_LEN + 1] = {'\0'};
+        GetZcashUFVK(GetCurrentAccountIndex(), mainnetUfvk);
+        GetZcashTestnetUFVK(GetCurrentAccountIndex(), testnetUfvk);
+        parseResult = parse_zcash_tx_cypherpunk(g_checkedPczt, mainnetUfvk, testnetUfvk, sfp);
 #endif
         CHECK_CHAIN_BREAK(parseResult);
         g_zcashData = parseResult->data;
@@ -90,6 +92,10 @@ void GuiZcashOverviewWithDataAndHeight(lv_obj_t *parent, DisplayPczt *data, lv_c
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t* last_view = NULL;
+
+    if (data->is_testnet) {
+        last_view = CreateTransactionItemView(container, _("wallet_profile_network_title"), _("wallet_profile_network_test"), last_view);
+    }
 
     if (data->has_sapling) {
         last_view = CreateTransactionItemView(container, _("Warning"), _("This transaction contains Sapling spends or outputs. Keystone does not support Sapling spend signing and output checking. Please take care of the potential risks."), last_view);
@@ -344,9 +350,18 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
     return check_zcash_tx_multi_coins(data, xpub, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39, &g_checkedPczt);
 #endif
 #ifdef CYPHERPUNK_VERSION
-    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-    return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, !IsZcashSupportedForCurrentMnemonic(), &g_checkedPczt);
+    char mainnetUfvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    char testnetUfvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    GetZcashUFVK(GetCurrentAccountIndex(), mainnetUfvk);
+    GetZcashTestnetUFVK(GetCurrentAccountIndex(), testnetUfvk);
+    return check_zcash_tx_cypherpunk(
+               data,
+               mainnetUfvk,
+               testnetUfvk,
+               sfp,
+               zcash_account_index,
+               !IsZcashSupportedForCurrentMnemonic(),
+               &g_checkedPczt);
 #endif
 }
 

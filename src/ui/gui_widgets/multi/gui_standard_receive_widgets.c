@@ -60,6 +60,7 @@ typedef struct {
     lv_obj_t *addressLabel;
     lv_obj_t *addressCountLabel;
     lv_obj_t *moreCont;
+    bool zcashTestnet;
     lv_obj_t *addressButton;
     lv_obj_t *leftBtnImg;
     lv_obj_t *rightBtnImg;
@@ -100,6 +101,9 @@ static void GetAttentionText(char* text);
 static void CloseAttentionHandler(lv_event_t *e);
 static void MoreHandler(lv_event_t *e);
 static void TutorialHandler(lv_event_t *e);
+#ifdef CYPHERPUNK_VERSION
+static void SwitchZcashTestnetHandler(lv_event_t *e);
+#endif
 static void LeftBtnHandler(lv_event_t *e);
 static void RightBtnHandler(lv_event_t *e);
 static bool IsAccountSwitchable();
@@ -405,6 +409,7 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
 void GuiStandardReceiveInit(uint8_t chain)
 {
     g_chainCard = chain;
+    g_standardReceiveWidgets.zcashTestnet = false;
     g_showIndex = GetCurrentSelectIndex() / 5 * 5;
     g_pageWidget = CreatePageWidget();
     g_standardReceiveWidgets.cont = g_pageWidget->contentZone;
@@ -489,13 +494,38 @@ static void GuiCreateMoreWidgets(lv_obj_t *parent)
 {
     lv_obj_t *cont, *btn, *img, *label;
 
-    g_standardReceiveWidgets.moreCont = GuiCreateHintBox(132);
+#ifdef CYPHERPUNK_VERSION
+    uint16_t hintboxHeight = g_chainCard == HOME_WALLET_CARD_ZEC ? 228 : 132;
+#else
+    uint16_t hintboxHeight = 132;
+#endif
+    g_standardReceiveWidgets.moreCont = GuiCreateHintBox(hintboxHeight);
     lv_obj_add_event_cb(lv_obj_get_child(g_standardReceiveWidgets.moreCont, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_standardReceiveWidgets.moreCont);
     cont = g_standardReceiveWidgets.moreCont;
 
+#ifdef CYPHERPUNK_VERSION
+    if (g_chainCard == HOME_WALLET_CARD_ZEC) {
+        lv_obj_t *networkSwitch = GuiCreateSwitch(cont);
+        if (g_standardReceiveWidgets.zcashTestnet) {
+            lv_obj_add_state(networkSwitch, LV_STATE_CHECKED);
+        } else {
+            lv_obj_clear_state(networkSwitch, LV_STATE_CHECKED);
+        }
+        lv_obj_clear_flag(networkSwitch, LV_OBJ_FLAG_CLICKABLE);
+        GuiButton_t table[] = {
+            {.obj = GuiCreateImg(cont, &imgNetwork), .align = LV_ALIGN_LEFT_MID, .position = {24, 0}},
+            {.obj = GuiCreateTextLabel(cont, _("wallet_profile_network_test")), .align = LV_ALIGN_LEFT_MID, .position = {76, 0}},
+            {.obj = networkSwitch, .align = LV_ALIGN_LEFT_MID, .position = {376, 0}},
+        };
+        btn = GuiCreateButton(cont, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                              SwitchZcashTestnetHandler, NULL);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
+    }
+#endif
+
     btn = lv_btn_create(cont);
     lv_obj_set_size(btn, 456, 84);
-    lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 120 + 572);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_width(btn, 0, LV_PART_MAIN);
@@ -883,8 +913,22 @@ static bool IsAccountSwitchable()
 
 static bool HasMoreBtn()
 {
+#ifdef CYPHERPUNK_VERSION
+    if (g_chainCard == HOME_WALLET_CARD_ZEC) {
+        return true;
+    }
+#endif
     return false;
 }
+
+#ifdef CYPHERPUNK_VERSION
+static void SwitchZcashTestnetHandler(lv_event_t *e)
+{
+    g_standardReceiveWidgets.zcashTestnet = !g_standardReceiveWidgets.zcashTestnet;
+    GUI_DEL_OBJ(g_standardReceiveWidgets.moreCont)
+    RefreshQrCode();
+}
+#endif
 
 static void SwitchAddressHandler(lv_event_t *e)
 {
@@ -918,9 +962,13 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 #ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_ZEC) {
         char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
-        GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-
-        result = generate_zcash_default_address(ufvk);
+        if (g_standardReceiveWidgets.zcashTestnet) {
+            GetZcashTestnetUFVK(GetCurrentAccountIndex(), ufvk);
+            result = generate_zcash_testnet_default_address(ufvk);
+        } else {
+            GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+            result = generate_zcash_default_address(ufvk);
+        }
     }
 #endif
 

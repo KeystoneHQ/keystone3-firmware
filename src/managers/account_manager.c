@@ -652,7 +652,14 @@ static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk)
 {
     ASSERT(accountIndex <= 2);
     g_zcashUFVKcache.accountIndex = accountIndex;
-    strcpy_s(g_zcashUFVKcache.ufvkCache, ZCASH_UFVK_MAX_LEN, ufvk);
+    strcpy_s(g_zcashUFVKcache.mainnetUfvkCache, ZCASH_UFVK_MAX_LEN, ufvk);
+}
+
+static void SetZcashTestnetUFVK(uint8_t accountIndex, const char* ufvk)
+{
+    ASSERT(accountIndex <= 2);
+    g_zcashUFVKcache.accountIndex = accountIndex;
+    strcpy_s(g_zcashUFVKcache.testnetUfvkCache, ZCASH_UFVK_MAX_LEN, ufvk);
 }
 
 static void SetZcashSFP(uint8_t accountIndex, const uint8_t* seedFingerprint)
@@ -665,7 +672,8 @@ static void SetZcashSFP(uint8_t accountIndex, const uint8_t* seedFingerprint)
 
 static void ClearZcashUFVK()
 {
-    memset_s(g_zcashUFVKcache.ufvkCache, ZCASH_UFVK_MAX_LEN, '\0', ZCASH_UFVK_MAX_LEN);
+    memset_s(g_zcashUFVKcache.mainnetUfvkCache, ZCASH_UFVK_MAX_LEN, '\0', ZCASH_UFVK_MAX_LEN);
+    memset_s(g_zcashUFVKcache.testnetUfvkCache, ZCASH_UFVK_MAX_LEN, '\0', ZCASH_UFVK_MAX_LEN);
     memset_s(g_zcashUFVKcache.seedFingerprint, 32, 0, 32);
 }
 
@@ -673,10 +681,23 @@ int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK)
 {
     ASSERT(accountIndex <= 2);
     if (g_zcashUFVKcache.accountIndex == accountIndex) {
-        strcpy_s(outUFVK, ZCASH_UFVK_MAX_LEN, g_zcashUFVKcache.ufvkCache);
+        strcpy_s(outUFVK, ZCASH_UFVK_MAX_LEN, g_zcashUFVKcache.mainnetUfvkCache);
         return SUCCESS_CODE;
     }
     return ERR_ZCASH_INVALID_ACCOUNT_INDEX;
+}
+
+int32_t GetZcashTestnetUFVK(uint8_t accountIndex, char* outUFVK)
+{
+    ASSERT(accountIndex <= 2);
+    if (g_zcashUFVKcache.accountIndex != accountIndex) {
+        return ERR_ZCASH_INVALID_ACCOUNT_INDEX;
+    }
+    if (g_zcashUFVKcache.testnetUfvkCache[0] == '\0') {
+        return ERR_GENERAL_FAIL;
+    }
+    strcpy_s(outUFVK, ZCASH_UFVK_MAX_LEN, g_zcashUFVKcache.testnetUfvkCache);
+    return SUCCESS_CODE;
 }
 
 int32_t GetZcashSFP(uint8_t accountIndex, uint8_t* outSFP)
@@ -776,6 +797,18 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
     free_simple_response_c_char(response);
     SetZcashUFVK(accountIndex, ufvk);
     CLEAR_ARRAY(ufvk);
+
+    SimpleResponse_c_char *testnetResponse = derive_zcash_testnet_ufvk(seed, len, "m/32'/1'/0'");
+    if (testnetResponse->error_code != 0) {
+        ret = testnetResponse->error_code;
+        CLEAR_ARRAY(seed);
+        ClearZcashUFVK();
+        printf("error: %s\r\n", testnetResponse->error_message);
+        free_simple_response_c_char(testnetResponse);
+        return ret;
+    }
+    SetZcashTestnetUFVK(accountIndex, testnetResponse->data);
+    free_simple_response_c_char(testnetResponse);
 
     SimpleResponse_u8 *responseSFP = calculate_zcash_seed_fingerprint(seed, len);
     CLEAR_ARRAY(seed);

@@ -6,6 +6,8 @@
 
 1. Added support for Zcash batch PCZT signing with compact signature results
    that report the signing firmware version
+2. Added support for Zcash testnet addresses, wallet connections, and PCZT
+   signing
 
 ### Bug Fixes
 

@@ -47,6 +47,7 @@ typedef struct ConnectWalletWidget {
     lv_obj_t *cont;
     lv_obj_t *tileView;
     WALLET_LIST_INDEX_ENUM walletIndex;
+    bool zcashTestnet;
     lv_obj_t *qrCode;
     lv_obj_t *privateModeQrCode;
     lv_obj_t *privateModeQrCodeMask;
@@ -127,6 +128,7 @@ static void OpenQRCodeHandler(lv_event_t *e);
 static void JumpSelectCoinPageHandler(lv_event_t *e);
 void ConnectWalletReturnHandler(lv_event_t *e);
 static void OpenMoreHandler(lv_event_t *e);
+static void SwitchZcashTestnetHandler(lv_event_t *e);
 static uint32_t GetCurrentSelectedIndex();
 static bool HasSelectAddressWidget();
 static void ShowEgAddressCont(lv_obj_t *egCont);
@@ -176,6 +178,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
 {
     WalletListItem_t *wallet = lv_event_get_user_data(e);
     g_connectWalletTileView.walletIndex = wallet->index;
+    g_connectWalletTileView.zcashTestnet = false;
     g_isCoinReselected = false;
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
 }
@@ -326,6 +329,7 @@ static void AddCakeCoins(void)
 void GuiConnectWalletInit(void)
 {
     GuiInitWalletListArray();
+    g_connectWalletTileView.zcashTestnet = false;
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
@@ -356,7 +360,11 @@ UREncodeResult *GuiGetZecData(void)
     keys->size = 1;
     char ufvk[384] = {'\0'};
     uint8_t sfp[32];
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+    if (g_connectWalletTileView.zcashTestnet) {
+        GetZcashTestnetUFVK(GetCurrentAccountIndex(), ufvk);
+    } else {
+        GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+    }
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
     data[0].key_text = ufvk;
     data[0].key_name = GetWalletName();
@@ -760,9 +768,13 @@ static void OpenMoreHandler(lv_event_t *e)
     int hintboxHeight = 132;
     lv_obj_t *btn = NULL;
     WALLET_LIST_INDEX_ENUM *wallet = lv_event_get_user_data(e);
+    bool showZcashNetwork = *wallet == WALLET_LIST_ZODL || *wallet == WALLET_LIST_VIZOR;
 
     if (IsSupportEncryption()) {
-        hintboxHeight = 228;
+        hintboxHeight += 96;
+    }
+    if (showZcashNetwork) {
+        hintboxHeight += 96;
     }
 
     g_openMoreHintBox = GuiCreateHintBox(hintboxHeight);
@@ -771,13 +783,40 @@ static void OpenMoreHandler(lv_event_t *e)
                         &g_openMoreHintBox);
     btn = GuiCreateSelectButton(g_openMoreHintBox, _("Tutorial"), &imgTutorial,
                                 OpenTutorialHandler, wallet, true);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_coord_t yOffset = -24;
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, yOffset);
+    yOffset -= 96;
 
     if (IsSupportEncryption()) {
-        hintboxHeight = 228;
         btn = GuiCreateSelectButton(g_openMoreHintBox, _("private_mode_qr"), &imgQrcode36px, PrivateModeQRSharingHandler, wallet, true);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -120);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, yOffset);
+        yOffset -= 96;
     }
+
+    if (showZcashNetwork) {
+        lv_obj_t *networkSwitch = GuiCreateSwitch(g_openMoreHintBox);
+        if (g_connectWalletTileView.zcashTestnet) {
+            lv_obj_add_state(networkSwitch, LV_STATE_CHECKED);
+        } else {
+            lv_obj_clear_state(networkSwitch, LV_STATE_CHECKED);
+        }
+        lv_obj_clear_flag(networkSwitch, LV_OBJ_FLAG_CLICKABLE);
+        GuiButton_t table[] = {
+            {.obj = GuiCreateImg(g_openMoreHintBox, &imgNetwork), .align = LV_ALIGN_LEFT_MID, .position = {24, 0}},
+            {.obj = GuiCreateTextLabel(g_openMoreHintBox, _("wallet_profile_network_test")), .align = LV_ALIGN_LEFT_MID, .position = {76, 0}},
+            {.obj = networkSwitch, .align = LV_ALIGN_LEFT_MID, .position = {376, 0}},
+        };
+        btn = GuiCreateButton(g_openMoreHintBox, 456, 84, table, NUMBER_OF_ARRAYS(table),
+                              SwitchZcashTestnetHandler, NULL);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, yOffset);
+    }
+}
+
+static void SwitchZcashTestnetHandler(lv_event_t *e)
+{
+    g_connectWalletTileView.zcashTestnet = !g_connectWalletTileView.zcashTestnet;
+    GUI_DEL_OBJ(g_openMoreHintBox)
+    GuiConnectWalletSetQrdata(g_connectWalletTileView.walletIndex);
 }
 
 int8_t GuiConnectWalletNextTile(void)

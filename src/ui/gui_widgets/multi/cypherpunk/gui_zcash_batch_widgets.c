@@ -148,20 +148,23 @@ PtrT_TransactionCheckResult GuiGetZcashBatchCheckResult(void)
     uint8_t sfp[32] = {0};
     uint32_t zcashAccountIndex = 0;
     uint8_t accountNum = 0;
-    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    char mainnetUfvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    char testnetUfvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
 
     FreeCheckedBatch();
 
     GetExistAccountNum(&accountNum);
     if (accountNum <= 0) {
-        return check_zcash_batch_tx_cypherpunk(data, ufvk, sfp, zcashAccountIndex, true, &g_checkedBatch);
+        return check_zcash_batch_tx_cypherpunk(data, mainnetUfvk, testnetUfvk, sfp, zcashAccountIndex, true, &g_checkedBatch);
     }
 
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+    GetZcashUFVK(GetCurrentAccountIndex(), mainnetUfvk);
+    GetZcashTestnetUFVK(GetCurrentAccountIndex(), testnetUfvk);
     return check_zcash_batch_tx_cypherpunk(
                data,
-               ufvk,
+               mainnetUfvk,
+               testnetUfvk,
                sfp,
                zcashAccountIndex,
                !IsZcashSupportedForCurrentMnemonic(),

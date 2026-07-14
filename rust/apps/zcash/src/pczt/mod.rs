@@ -4,14 +4,190 @@ pub mod sign;
 pub mod structs;
 
 use alloc::{format, string::ToString, vec::Vec};
+use serde::Deserialize;
 use zcash_vendor::{
     pczt::Pczt,
     transparent,
-    zcash_protocol::{constants, value::ZatBalance},
+    zcash_protocol::{
+        consensus::{self, NetworkConstants},
+        constants,
+        value::ZatBalance,
+    },
     zip32,
 };
 
 use crate::errors::ZcashError;
+
+/// A Zcash network selected from the PCZT's committed SLIP 44 coin type.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum PcztNetwork {
+    Mainnet,
+    Testnet,
+}
+
+impl PcztNetwork {
+    /// Reads the request network from a complete serialized PCZT.
+    pub fn from_pczt_bytes(bytes: &[u8]) -> Result<Self, ZcashError> {
+        // Validate the complete envelope before relying on its prefix.
+        parse_pczt(bytes)?;
+        Self::from_validated_pczt_bytes(bytes)
+    }
+
+    /// Reads the request network from an already parsed PCZT.
+    pub fn from_pczt(pczt: &Pczt) -> Result<Self, ZcashError> {
+        let bytes = pczt
+            .clone()
+            .serialize()
+            .map_err(|e| ZcashError::InvalidPczt(format!("serialize PCZT network: {e:?}")))?;
+        Self::from_validated_pczt_bytes(&bytes)
+    }
+
+    fn from_validated_pczt_bytes(bytes: &[u8]) -> Result<Self, ZcashError> {
+        let coin_type = decode_global_coin_type(bytes)?;
+        match coin_type {
+            133 => Ok(Self::Mainnet),
+            1 => Ok(Self::Testnet),
+            _ => Err(ZcashError::NetworkMismatch(format!(
+                "unsupported transaction network coin type {coin_type}"
+            ))),
+        }
+    }
+
+    /// Returns the consensus parameters for the request network.
+    pub fn parameters(self) -> consensus::Network {
+        match self {
+            Self::Mainnet => consensus::Network::MainNetwork,
+            Self::Testnet => consensus::Network::TestNetwork,
+        }
+    }
+
+    /// Returns the request's SLIP 44 coin type.
+    pub fn coin_type(self) -> u32 {
+        match self {
+            Self::Mainnet => 133,
+            Self::Testnet => 1,
+        }
+    }
+
+    /// Returns whether this request is for Zcash testnet.
+    pub fn is_testnet(self) -> bool {
+        self == Self::Testnet
+    }
+}
+
+pub(crate) fn validate_parsed_pczt_network<P: consensus::Parameters>(
+    params: &P,
+    pczt_bytes: &[u8],
+) -> Result<PcztNetwork, ZcashError> {
+    let network = PcztNetwork::from_validated_pczt_bytes(pczt_bytes)?;
+    if network.coin_type() != params.network_type().coin_type() {
+        return Err(ZcashError::NetworkMismatch(
+            "transaction and wallet networks do not match".to_string(),
+        ));
+    }
+    Ok(network)
+}
+
+// The pinned PCZT Postcard encoding begins with an eight-byte PCZT header,
+// followed by the fields of `Global` in declaration order. Decoding only this
+// six-field prefix keeps the network decision local without mirroring private
+// bundle wire types. Compatibility tests pin this assumption against PCZTs
+// produced by the dependency.
+#[derive(Deserialize)]
+struct GlobalNetworkPrefix {
+    _tx_version: u32,
+    _version_group_id: u32,
+    _consensus_branch_id: u32,
+    _fallback_lock_time: Option<u32>,
+    _expiry_height: u32,
+    coin_type: u32,
+}
+
+fn decode_global_coin_type(bytes: &[u8]) -> Result<u32, ZcashError> {
+    const PCZT_HEADER_LEN: usize = 8;
+    let payload = bytes.get(PCZT_HEADER_LEN..).ok_or_else(|| {
+        ZcashError::InvalidPczt("PCZT is missing its serialized global fields".to_string())
+    })?;
+    let (prefix, _remaining) = postcard::take_from_bytes::<GlobalNetworkPrefix>(payload)
+        .map_err(|e| ZcashError::InvalidPczt(format!("decode PCZT global network: {e:?}")))?;
+    Ok(prefix.coin_type)
+}
+
+#[cfg(test)]
+mod network_tests {
+    use super::*;
+    use ::pczt::roles::creator::Creator;
+    use zcash_vendor::zcash_protocol::consensus::{BranchId, MainNetwork, Parameters, TestNetwork};
+
+    fn empty_pczt(coin_type: u32) -> alloc::vec::Vec<u8> {
+        Creator::new(
+            BranchId::Nu6.into(),
+            10,
+            coin_type,
+            Some([0; 32]),
+            Some([0; 32]),
+        )
+        .unwrap()
+        .build()
+        .unwrap()
+        .serialize()
+        .unwrap()
+    }
+
+    #[test]
+    fn global_network_prefix_matches_dependency_encoding() {
+        let mainnet = empty_pczt(133);
+        assert_eq!(
+            PcztNetwork::from_pczt_bytes(&mainnet),
+            Ok(PcztNetwork::Mainnet)
+        );
+        assert_eq!(
+            PcztNetwork::from_pczt(&Pczt::parse(&mainnet).unwrap()),
+            Ok(PcztNetwork::Mainnet)
+        );
+        assert_eq!(
+            PcztNetwork::Mainnet.parameters().network_type().coin_type(),
+            133
+        );
+
+        let testnet = empty_pczt(1);
+        assert_eq!(
+            PcztNetwork::from_pczt_bytes(&testnet),
+            Ok(PcztNetwork::Testnet)
+        );
+        assert!(PcztNetwork::from_pczt_bytes(&testnet).unwrap().is_testnet());
+        assert_eq!(
+            PcztNetwork::Testnet.parameters().network_type().coin_type(),
+            1
+        );
+    }
+
+    #[test]
+    fn rejects_unknown_pczt_coin_type() {
+        assert_eq!(
+            PcztNetwork::from_pczt_bytes(&empty_pczt(42)),
+            Err(ZcashError::NetworkMismatch(
+                "unsupported transaction network coin type 42".to_string()
+            ))
+        );
+    }
+
+    #[test]
+    fn rejects_wallet_network_mismatch() {
+        assert_eq!(
+            validate_parsed_pczt_network(&MainNetwork, &empty_pczt(1)),
+            Err(ZcashError::NetworkMismatch(
+                "transaction and wallet networks do not match".to_string()
+            ))
+        );
+        assert_eq!(
+            validate_parsed_pczt_network(&TestNetwork, &empty_pczt(133)),
+            Err(ZcashError::NetworkMismatch(
+                "transaction and wallet networks do not match".to_string()
+            ))
+        );
+    }
+}
 
 pub(crate) fn parse_pczt(bytes: &[u8]) -> Result<Pczt, ZcashError> {
     Pczt::parse(bytes).map_err(|_| ZcashError::InvalidPczt("invalid pczt data".to_string()))
@@ -249,13 +425,15 @@ pub(crate) mod test_support {
         fees::zip317,
         TxVersion,
     };
-    use zcash_vendor::zcash_protocol::consensus::{BlockHeight, NetworkType, NetworkUpgrade};
+    use zcash_vendor::zcash_protocol::consensus::{
+        BlockHeight, NetworkConstants, NetworkType, NetworkUpgrade,
+    };
     use zcash_vendor::{
         orchard,
         pczt::Pczt,
         zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
         zcash_protocol::{
-            consensus::{BranchId, MainNetwork, Parameters},
+            consensus::{BranchId, MainNetwork, Parameters, TestNetwork},
             memo::{Memo, MemoBytes},
             value::Zatoshis,
         },
@@ -683,17 +861,25 @@ pub(crate) mod test_support {
     }
 
     pub(crate) fn sample_orchard_change_pczt() -> SamplePczt {
-        sample_orchard_change_pczt_for_account(0)
+        sample_orchard_change_pczt_for_account(MainNetwork, 0)
+    }
+
+    pub(crate) fn sample_testnet_orchard_change_pczt() -> SamplePczt {
+        sample_orchard_change_pczt_for_account(TestNetwork, 0)
     }
 
     pub(crate) fn sample_orchard_foreign_change_pczt() -> SamplePczt {
-        sample_orchard_change_pczt_for_account(1)
+        sample_orchard_change_pczt_for_account(MainNetwork, 1)
     }
 
-    fn sample_orchard_change_pczt_for_account(output_account: u32) -> SamplePczt {
-        let params = MainNetwork;
+    fn sample_orchard_change_pczt_for_account<P: Parameters>(
+        params: P,
+        output_account: u32,
+    ) -> SamplePczt {
         let seed = [7u8; 32];
-        let ufvk_text = derive_ufvk(&params, &seed, "m/32'/133'/0'").unwrap();
+        let coin_type = params.network_type().coin_type();
+        let ufvk_text =
+            derive_ufvk(&params, &seed, &alloc::format!("m/32'/{coin_type}'/0'")).unwrap();
         let ufvk = UnifiedFullViewingKey::decode(&params, &ufvk_text).unwrap();
         let orchard_fvk = ufvk.orchard().unwrap().clone();
         let orchard_ivk = orchard_fvk.to_ivk(orchard::keys::Scope::External);
@@ -701,7 +887,7 @@ pub(crate) mod test_support {
         let output_ufvk_text = derive_ufvk(
             &params,
             &seed,
-            &alloc::format!("m/32'/133'/{output_account}'"),
+            &alloc::format!("m/32'/{coin_type}'/{output_account}'"),
         )
         .unwrap();
         let output_ufvk = UnifiedFullViewingKey::decode(&params, &output_ufvk_text).unwrap();
@@ -778,7 +964,7 @@ pub(crate) mod test_support {
         let (orchard_bundle, _) = builder.build_for_pczt(&mut OsRng).unwrap();
         let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();
         let pczt = Creator::build_from_parts(PcztParts {
-            params,
+            params: params.clone(),
             version: TxVersion::V6,
             consensus_branch_id: BranchId::Nu6_3,
             lock_time: 0,
@@ -812,7 +998,11 @@ pub(crate) mod test_support {
                 for (action_index, account) in signing_action_accounts {
                     let derivation = orchard::pczt::Zip32Derivation::parse(
                         seed_fingerprint,
-                        orchard_spend_path_for_account(account),
+                        vec![
+                            zip32::ChildIndex::hardened(32).index(),
+                            zip32::ChildIndex::hardened(coin_type).index(),
+                            zip32::ChildIndex::hardened(account).index(),
+                        ],
                     )
                     .unwrap();
                     bundle.update_action_with(action_index, |mut action| {

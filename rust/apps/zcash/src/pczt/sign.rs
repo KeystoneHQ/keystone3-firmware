@@ -51,6 +51,7 @@ const PROP_KEY_FW_VERSION: &str = "keystone:fw_version";
 #[cfg(all(feature = "multi_coins", not(feature = "cypherpunk")))]
 struct SeedSigner<'a> {
     seed: &'a [u8],
+    coin_type: u32,
 }
 
 #[cfg(all(feature = "multi_coins", not(feature = "cypherpunk")))]
@@ -66,7 +67,7 @@ impl PcztSigner for SeedSigner<'_> {
     where
         F: FnOnce(SignableInput) -> [u8; 32],
     {
-        if let Some(path) = transparent_key_path_for_input(self.seed, input)? {
+        if let Some(path) = transparent_key_path_for_input(self.seed, input, self.coin_type)? {
             let sk = get_private_key_by_seed(self.seed, &path).map_err(|e| {
                 ZcashError::SigningError(format!("failed to get private key: {e:?}"))
             })?;
@@ -84,12 +85,22 @@ impl PcztSigner for SeedSigner<'_> {
 pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
     super::validate_supported_pczt(&pczt)?;
     reject_legacy_unsupported_pczt(&pczt)?;
+    let network = super::PcztNetwork::from_pczt(&pczt)?;
 
     let signer = low_level_signer::Signer::new(pczt);
 
     #[cfg(feature = "multi_coins")]
-    let signer = pczt_ext::sign_transparent(signer, &SeedSigner { seed })
-        .map_err(|e| ZcashError::SigningError(e.to_string()))?;
+    let signer = pczt_ext::sign_transparent(
+        signer,
+        &SeedSigner {
+            seed,
+            coin_type: network.coin_type(),
+        },
+    )
+    .map_err(|e| ZcashError::SigningError(e.to_string()))?;
+
+    #[cfg(not(feature = "multi_coins"))]
+    let _ = network;
 
     stamp_and_redact(signer.finish())
         .serialize()
@@ -117,10 +128,10 @@ fn reject_legacy_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
 /// plainly-dropped cache would leave the scalar bytes behind in memory.
 #[cfg(feature = "cypherpunk")]
 struct AskCacheSlot {
-    account: Option<zcash_vendor::zip32::AccountId>,
+    identity: Option<(u32, zcash_vendor::zip32::AccountId)>,
     // `MaybeUninit` makes every post-scrub bit pattern valid without depending
     // on private Orchard/reddsa layout invariants. The slot invariant is that
-    // this field is initialized exactly when `account` is `Some`.
+    // this field is initialized exactly when `identity` is `Some`.
     ask: MaybeUninit<orchard::keys::SpendAuthorizingKey>,
 }
 
@@ -137,17 +148,18 @@ const _: () = assert!(!core::mem::needs_drop::<orchard::keys::SpendingKey>());
 impl AskCacheSlot {
     fn empty() -> Self {
         Self {
-            account: None,
+            identity: None,
             ask: MaybeUninit::uninit(),
         }
     }
 
     fn get(
         &self,
+        coin_type: u32,
         account: zcash_vendor::zip32::AccountId,
     ) -> Option<&orchard::keys::SpendAuthorizingKey> {
-        if self.account == Some(account) {
-            // SAFETY: `account` is only set to `Some` after `ask` is written.
+        if self.identity == Some((coin_type, account)) {
+            // SAFETY: `identity` is only set to `Some` after `ask` is written.
             Some(unsafe { self.ask.assume_init_ref() })
         } else {
             None
@@ -156,15 +168,16 @@ impl AskCacheSlot {
 
     fn replace(
         &mut self,
+        coin_type: u32,
         account: zcash_vendor::zip32::AccountId,
         ask: orchard::keys::SpendAuthorizingKey,
     ) -> &orchard::keys::SpendAuthorizingKey {
-        self.account = None;
+        self.identity = None;
         self.ask.zeroize();
         self.ask.write(ask);
-        self.account = Some(account);
+        self.identity = Some((coin_type, account));
 
-        // SAFETY: the value was written immediately above, before `account`
+        // SAFETY: the value was written immediately above, before `identity`
         // was set to `Some`.
         unsafe { self.ask.assume_init_ref() }
     }
@@ -173,7 +186,7 @@ impl AskCacheSlot {
 #[cfg(feature = "cypherpunk")]
 impl Drop for AskCacheSlot {
     fn drop(&mut self) {
-        self.account = None;
+        self.identity = None;
         self.ask.zeroize();
     }
 }
@@ -184,8 +197,8 @@ impl Drop for AskCacheSlot {
 /// Create one cache per request, pass it to each PCZT signed with the same seed,
 /// never reuse it with another seed, and let it drop before the seed leaves
 /// request scope. A hit reuses the cached key without another ZIP 32 derivation.
-/// Changing account scrubs the old key before replacement; dropping the cache
-/// scrubs the final key.
+/// Changing network or account scrubs the old key before replacement; dropping
+/// the cache scrubs the final key.
 #[cfg(feature = "cypherpunk")]
 pub struct SpendAuthCache(RefCell<AskCacheSlot>);
 
@@ -214,6 +227,7 @@ impl Default for SpendAuthCache {
 struct SeedSigner<'a> {
     seed: &'a [u8],
     seed_fingerprint: [u8; 32],
+    coin_type: u32,
     /// Restricts checked production signing to the account the user reviewed.
     /// The raw `sign_pczt` helper passes `None` to preserve its unscoped API.
     selected_account: Option<zcash_vendor::zip32::AccountId>,
@@ -231,6 +245,7 @@ impl<'a> SeedSigner<'a> {
     fn new(
         seed: &'a [u8],
         seed_fingerprint: [u8; 32],
+        coin_type: u32,
         selected_account: Option<zcash_vendor::zip32::AccountId>,
         pool: ShieldedPool,
         ask_cache: &'a SpendAuthCache,
@@ -238,6 +253,7 @@ impl<'a> SeedSigner<'a> {
         Self {
             seed,
             seed_fingerprint,
+            coin_type,
             selected_account,
             pool,
             ask_cache,
@@ -252,14 +268,13 @@ impl<'a> SeedSigner<'a> {
         account_index: zcash_vendor::zip32::AccountId,
     ) -> Result<orchard::keys::SpendAuthorizingKey, ZcashError> {
         let mut osk = MaybeUninit::new(
-            orchard::keys::SpendingKey::from_zip32_seed(self.seed, 133, account_index).map_err(
-                |e| {
-                    ZcashError::SigningError(format!(
-                        "failed to derive {} spending key: {e:?}",
-                        self.pool.label()
-                    ))
-                },
-            )?,
+            orchard::keys::SpendingKey::from_zip32_seed(self.seed, self.coin_type, account_index)
+                .map_err(|e| {
+                ZcashError::SigningError(format!(
+                    "failed to derive {} spending key: {e:?}",
+                    self.pool.label()
+                ))
+            })?,
         );
         // SAFETY: `osk` was initialized immediately above and is only scrubbed
         // after this borrow ends.
@@ -270,8 +285,8 @@ impl<'a> SeedSigner<'a> {
 
     /// Looks up (or derives and caches) the spend authorizing key for
     /// `account_index` and runs `f` against it in place, so no unscrubbed
-    /// copies of the key are handed out. On an account change, the slot scrubs
-    /// the old key in place before storing the replacement.
+    /// copies of the key are handed out. On a network or account change, the
+    /// slot scrubs the old key in place before storing the replacement.
     fn with_spend_authorizing_key<R>(
         &self,
         account_index: zcash_vendor::zip32::AccountId,
@@ -280,12 +295,12 @@ impl<'a> SeedSigner<'a> {
         // Mutably borrowed across `f`, which is fine: `f` only signs and never
         // re-enters the cache.
         let mut cache = self.ask_cache.0.borrow_mut();
-        if cache.get(account_index).is_none() {
+        if cache.get(self.coin_type, account_index).is_none() {
             let ask = self.derive_spend_authorizing_key(account_index)?;
-            cache.replace(account_index, ask);
+            cache.replace(self.coin_type, account_index, ask);
         }
         f(cache
-            .get(account_index)
+            .get(self.coin_type, account_index)
             .expect("cache contains the requested account"))
     }
 }
@@ -303,7 +318,7 @@ impl PcztSigner for SeedSigner<'_> {
     where
         F: FnOnce(SignableInput) -> [u8; 32],
     {
-        if let Some(path) = transparent_key_path_for_input(self.seed, input)? {
+        if let Some(path) = transparent_key_path_for_input(self.seed, input, self.coin_type)? {
             let sk = get_private_key_by_seed(self.seed, &path).map_err(|e| {
                 ZcashError::SigningError(format!("failed to get private key: {e:?}"))
             })?;
@@ -353,7 +368,7 @@ impl PcztSigner for SeedSigner<'_> {
         let Some(account_index) = super::matching_seed_supported_orchard_account(
             &self.seed_fingerprint,
             action.spend().zip32_derivation().as_ref(),
-            133,
+            self.coin_type,
             self.pool,
         )?
         else {
@@ -400,7 +415,8 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
 /// cache so PCZTs for the selected account share one derivation.
 #[cfg(feature = "cypherpunk")]
 pub fn sign_and_redact_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Pczt> {
-    sign_and_redact_pczt_with_cache(pczt, seed, None, &SpendAuthCache::new())
+    let network = super::PcztNetwork::from_pczt(&pczt)?;
+    sign_and_redact_pczt_with_cache(pczt, seed, network, None, &SpendAuthCache::new())
 }
 
 /// [`sign_and_redact_pczt`] with a caller-provided [`SpendAuthCache`]. When
@@ -413,6 +429,7 @@ pub fn sign_and_redact_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Pczt> {
 pub(crate) fn sign_and_redact_pczt_with_cache(
     pczt: Pczt,
     seed: &[u8],
+    network: super::PcztNetwork,
     selected_account: Option<zcash_vendor::zip32::AccountId>,
     ask_cache: &SpendAuthCache,
 ) -> crate::Result<Pczt> {
@@ -428,6 +445,7 @@ pub(crate) fn sign_and_redact_pczt_with_cache(
     let orchard_signer = SeedSigner::new(
         seed,
         seed_fingerprint,
+        network.coin_type(),
         selected_account,
         ShieldedPool::Orchard,
         ask_cache,
@@ -442,6 +460,7 @@ pub(crate) fn sign_and_redact_pczt_with_cache(
     let ironwood_signer = SeedSigner::new(
         seed,
         seed_fingerprint,
+        network.coin_type(),
         selected_account,
         ShieldedPool::Ironwood,
         ask_cache,
@@ -554,6 +573,7 @@ fn redact_orchard_bundle(mut r: OrchardRedactor<'_>) {
 fn transparent_key_path_for_input(
     seed: &[u8],
     input: &transparent::pczt::Input,
+    expected_coin_type: u32,
 ) -> Result<Option<String>, ZcashError> {
     let fingerprint =
         calculate_seed_fingerprint(seed).map_err(|e| ZcashError::SigningError(e.to_string()))?;
@@ -562,6 +582,14 @@ fn transparent_key_path_for_input(
         let path_fingerprint = *path.seed_fingerprint();
         if fingerprint != path_fingerprint {
             continue;
+        }
+
+        if let Some(path_coin_type) = path.derivation_path().get(1) {
+            if !path_coin_type.is_hardened() || path_coin_type.index() != expected_coin_type {
+                return Err(ZcashError::NetworkMismatch(
+                    "transaction network does not match its transparent input key path".to_string(),
+                ));
+            }
         }
 
         let path = {
@@ -623,11 +651,12 @@ mod tests {
         let mut storage = MaybeUninit::<AskCacheSlot>::uninit();
         let slot = storage.write(AskCacheSlot::empty());
         slot.replace(
+            133,
             zip32::AccountId::ZERO,
             orchard::keys::SpendAuthorizingKey::from(&osk),
         );
         assert_ne!(
-            ask_scalar_bytes(slot.get(zip32::AccountId::ZERO).unwrap()),
+            ask_scalar_bytes(slot.get(133, zip32::AccountId::ZERO).unwrap()),
             [0u8; 32],
             "a real ask must not start out zero"
         );
@@ -658,30 +687,37 @@ mod tests {
         let fingerprint = calculate_seed_fingerprint(&seed).unwrap();
         let cache = SpendAuthCache::new();
         let account = |i: u32| zip32::AccountId::try_from(i).unwrap();
-        let fresh = |i: u32| {
-            let osk = orchard::keys::SpendingKey::from_zip32_seed(&seed, 133, account(i)).unwrap();
+        let fresh = |coin_type: u32, i: u32| {
+            let osk =
+                orchard::keys::SpendingKey::from_zip32_seed(&seed, coin_type, account(i)).unwrap();
             ask_scalar_bytes(&orchard::keys::SpendAuthorizingKey::from(&osk))
         };
 
         // Separate signers model PCZT and pool passes sharing one request-scoped
         // slot. Every lookup must return the requested account's key, including
         // after replacing the cached account.
-        for (pool, i) in [
-            (ShieldedPool::Orchard, 0u32),
-            (ShieldedPool::Ironwood, 0),
-            (ShieldedPool::Ironwood, 1),
-            (ShieldedPool::Orchard, 1),
-            (ShieldedPool::Orchard, 0),
+        for (pool, coin_type, i) in [
+            (ShieldedPool::Orchard, 133, 0u32),
+            (ShieldedPool::Ironwood, 133, 0),
+            (ShieldedPool::Ironwood, 133, 1),
+            (ShieldedPool::Orchard, 1, 1),
+            (ShieldedPool::Orchard, 1, 0),
+            (ShieldedPool::Orchard, 133, 0),
         ] {
-            let signer = SeedSigner::new(&seed, fingerprint, None, pool, &cache);
+            let signer = SeedSigner::new(&seed, fingerprint, coin_type, None, pool, &cache);
             let bytes = signer
                 .with_spend_authorizing_key(account(i), |ask| Ok(ask_scalar_bytes(ask)))
                 .unwrap();
-            assert_eq!(bytes, fresh(i), "account {i} must match a fresh derivation");
+            assert_eq!(
+                bytes,
+                fresh(coin_type, i),
+                "coin type {coin_type}, account {i} must match a fresh derivation"
+            );
         }
 
-        // The slot holds exactly the most recently used account's key.
-        assert_eq!(cache.0.borrow().account, Some(account(0)));
+        // The slot identity includes both network and account, and holds the
+        // most recently used pair.
+        assert_eq!(cache.0.borrow().identity, Some((133, account(0))));
     }
 
     #[test]
@@ -693,13 +729,17 @@ mod tests {
             sign_and_redact_pczt_with_cache(
                 Pczt::parse(&sample.bytes).unwrap(),
                 &sample.seed,
+                crate::PcztNetwork::Mainnet,
                 None,
                 &cache,
             )
             .expect("shared-cache PCZT should sign");
         }
 
-        assert_eq!(cache.0.borrow().account, Some(zip32::AccountId::ZERO));
+        assert_eq!(
+            cache.0.borrow().identity,
+            Some((133, zip32::AccountId::ZERO))
+        );
     }
 
     #[test]
@@ -713,6 +753,7 @@ mod tests {
         let signed = sign_and_redact_pczt_with_cache(
             pczt,
             &sample.seed,
+            crate::PcztNetwork::Mainnet,
             Some(account_one),
             &SpendAuthCache::new(),
         )
@@ -736,6 +777,7 @@ mod tests {
         let result = sign_and_redact_pczt_with_cache(
             Pczt::parse(&sample.bytes).unwrap(),
             &sample.seed,
+            crate::PcztNetwork::Mainnet,
             Some(zip32::AccountId::ZERO),
             &SpendAuthCache::new(),
         );
@@ -749,6 +791,7 @@ mod tests {
         let result = sign_and_redact_pczt_with_cache(
             Pczt::parse(&sample.bytes).unwrap(),
             &sample.seed,
+            crate::PcztNetwork::Mainnet,
             Some(zip32::AccountId::try_from(1).unwrap()),
             &SpendAuthCache::new(),
         );

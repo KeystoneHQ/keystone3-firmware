@@ -1405,6 +1405,146 @@ mod tests {
         );
     }
 
+    fn replace_unique_serialized_field(encoded: &mut [u8], original: &[u8], replacement: &[u8]) {
+        assert_eq!(original.len(), replacement.len());
+        let mut matches = encoded
+            .windows(original.len())
+            .enumerate()
+            .filter_map(|(index, window)| (window == original).then_some(index));
+        let index = matches
+            .next()
+            .expect("the original field must occur in the serialized PCZT");
+        assert!(
+            matches.next().is_none(),
+            "the original field must occur exactly once"
+        );
+        encoded[index..index + original.len()].copy_from_slice(replacement);
+    }
+
+    fn assert_duplicate_rk_rejected(
+        sample: &pczt::test_support::SamplePczt,
+        malformed_pczt: &[u8],
+    ) {
+        let expected = "duplicate Orchard or Ironwood action rk";
+        let ctx = BatchCheckContext::new(&sample.ufvk_text);
+
+        for result in [
+            parse_pczt_cypherpunk(
+                &pczt::test_support::Nu6_3Network,
+                malformed_pczt,
+                &sample.ufvk_text,
+                &sample.seed_fingerprint,
+            )
+            .map(|_| ()),
+            check_pczt_cypherpunk(
+                &pczt::test_support::Nu6_3Network,
+                malformed_pczt,
+                &sample.ufvk_text,
+                &sample.seed_fingerprint,
+                0,
+            )
+            .map(|_| ()),
+            check_batch_pczt_with_display(
+                &pczt::test_support::Nu6_3Network,
+                malformed_pczt,
+                &ctx,
+                &sample.seed_fingerprint,
+                0,
+            )
+            .map(|_| ()),
+            sign_pczt(malformed_pczt, &sample.seed).map(|_| ()),
+            sign_checked_pczt(
+                &pczt::test_support::Nu6_3Network,
+                malformed_pczt,
+                &sample.seed,
+                &sample.seed_fingerprint,
+                0,
+            )
+            .map(|_| ()),
+            sign_checked_batch_pczt(
+                &pczt::test_support::Nu6_3Network,
+                malformed_pczt,
+                &sample.seed,
+                &sample.seed_fingerprint,
+                0,
+            )
+            .map(|_| ()),
+        ] {
+            assert_invalid_pczt_message(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_all_paths_reject_duplicate_orchard_rk() {
+        use zcash_vendor::{pasta_curves::group::ff::PrimeField, pczt::roles::verifier::Verifier};
+
+        let sample = pczt::test_support::sample_orchard_change_pczt();
+        let parsed = Pczt::parse(&sample.bytes).expect("sample PCZT should parse");
+        let actions = parsed.orchard().actions();
+        assert_eq!(actions.len(), 2, "sample must contain two Orchard actions");
+        let retained_rk = *actions[0].spend().rk();
+        let replaced_rk = *actions[1].spend().rk();
+        assert_ne!(retained_rk, replaced_rk);
+
+        let mut alphas = Vec::new();
+        Verifier::new(parsed)
+            .with_orchard::<ZcashError, _>(|bundle| {
+                for action in bundle.actions() {
+                    action.spend().verify_rk(None)?;
+                    alphas.push(
+                        action
+                            .spend()
+                            .alpha()
+                            .as_ref()
+                            .expect("sample spend must contain alpha")
+                            .to_repr(),
+                    );
+                }
+                Ok(())
+            })
+            .expect("sample Orchard bundle should verify");
+        assert_eq!(alphas.len(), 2);
+        assert_ne!(alphas[0], alphas[1]);
+
+        let mut malformed_pczt = sample.bytes.clone();
+        replace_unique_serialized_field(&mut malformed_pczt, &alphas[1], &alphas[0]);
+        replace_unique_serialized_field(&mut malformed_pczt, &replaced_rk, &retained_rk);
+        let reparsed = Pczt::parse(&malformed_pczt).expect("modified PCZT should still parse");
+        assert_eq!(
+            reparsed.orchard().actions()[0].spend().rk(),
+            reparsed.orchard().actions()[1].spend().rk(),
+        );
+        Verifier::new(reparsed)
+            .with_orchard::<ZcashError, _>(|bundle| {
+                for action in bundle.actions() {
+                    action.spend().verify_rk(None)?;
+                }
+                Ok(())
+            })
+            .expect("both duplicate rk values should match their copied alpha");
+
+        assert_duplicate_rk_rejected(&sample, &malformed_pczt);
+    }
+
+    #[test]
+    fn test_all_paths_reject_duplicate_rk_across_orchard_and_ironwood() {
+        let sample = pczt::test_support::sample_migration_pczt();
+        let parsed = Pczt::parse(&sample.bytes).expect("sample PCZT should parse");
+        let orchard_rk = *parsed.orchard().actions()[0].spend().rk();
+        let ironwood_rk = *parsed.ironwood().actions()[0].spend().rk();
+        assert_ne!(orchard_rk, ironwood_rk);
+
+        let mut malformed_pczt = sample.bytes.clone();
+        replace_unique_serialized_field(&mut malformed_pczt, &ironwood_rk, &orchard_rk);
+        let reparsed = Pczt::parse(&malformed_pczt).expect("modified PCZT should still parse");
+        assert_eq!(
+            reparsed.orchard().actions()[0].spend().rk(),
+            reparsed.ironwood().actions()[0].spend().rk(),
+        );
+
+        assert_duplicate_rk_rejected(&sample, &malformed_pczt);
+    }
+
     fn malformed_pczt_with_empty_sapling_bundle_and_nonzero_value_sum() -> Vec<u8> {
         use ::pczt::roles::creator::Creator;
         use zcash_vendor::zcash_protocol::consensus::{BranchId, NetworkConstants};

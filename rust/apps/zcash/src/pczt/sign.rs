@@ -591,12 +591,13 @@ fn transparent_key_path_for_input(
             continue;
         }
 
-        if let Some(path_coin_type) = path.derivation_path().get(1) {
-            if !path_coin_type.is_hardened() || path_coin_type.index() != expected_coin_type {
-                return Err(ZcashError::NetworkMismatch(
-                    "transaction network does not match its transparent input key path".to_string(),
-                ));
-            }
+        let names_expected_network = path.derivation_path().get(1).is_some_and(|path_coin_type| {
+            path_coin_type.is_hardened() && path_coin_type.index() == expected_coin_type
+        });
+        if !names_expected_network {
+            return Err(ZcashError::NetworkMismatch(
+                "transaction network does not match its transparent input key path".to_string(),
+            ));
         }
 
         let path = {

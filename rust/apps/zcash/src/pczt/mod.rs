@@ -86,6 +86,8 @@ pub(crate) fn validate_parsed_pczt_network<P: consensus::Parameters>(
 // six-field prefix keeps the network decision local without mirroring private
 // bundle wire types. Compatibility tests pin this assumption against PCZTs
 // produced by the dependency.
+// FUTURE(pczt-coin-type-getter): delete this mirror once the pczt crate
+// exposes Global's coin_type.
 #[derive(Deserialize)]
 struct GlobalNetworkPrefix {
     _tx_version: u32,
@@ -97,10 +99,23 @@ struct GlobalNetworkPrefix {
 }
 
 fn decode_global_coin_type(bytes: &[u8]) -> Result<u32, ZcashError> {
-    const PCZT_HEADER_LEN: usize = 8;
-    let payload = bytes.get(PCZT_HEADER_LEN..).ok_or_else(|| {
-        ZcashError::InvalidPczt("PCZT is missing its serialized global fields".to_string())
-    })?;
+    // Both envelope versions serialize `Global` first, so the prefix decode
+    // below is version-agnostic; verify the header here instead of assuming
+    // every caller parsed the PCZT first.
+    const PCZT_MAGIC: &[u8] = b"PCZT";
+    const PCZT_VERSIONS: [u32; 2] = [1, 2];
+    let payload = bytes
+        .strip_prefix(PCZT_MAGIC)
+        .and_then(|rest| {
+            PCZT_VERSIONS
+                .iter()
+                .find_map(|version| rest.strip_prefix(&version.to_le_bytes()))
+        })
+        .ok_or_else(|| {
+            ZcashError::InvalidPczt(
+                "PCZT header is missing or has an unsupported version".to_string(),
+            )
+        })?;
     let (prefix, _remaining) = postcard::take_from_bytes::<GlobalNetworkPrefix>(payload)
         .map_err(|e| ZcashError::InvalidPczt(format!("decode PCZT global network: {e:?}")))?;
     Ok(prefix.coin_type)
@@ -112,7 +127,7 @@ mod network_tests {
     use ::pczt::roles::creator::Creator;
     use zcash_vendor::zcash_protocol::consensus::{BranchId, MainNetwork, Parameters, TestNetwork};
 
-    fn empty_pczt(coin_type: u32) -> alloc::vec::Vec<u8> {
+    fn empty_creator_pczt(coin_type: u32) -> Pczt {
         Creator::new(
             BranchId::Nu6.into(),
             10,
@@ -123,8 +138,10 @@ mod network_tests {
         .unwrap()
         .build()
         .unwrap()
-        .serialize()
-        .unwrap()
+    }
+
+    fn empty_pczt(coin_type: u32) -> alloc::vec::Vec<u8> {
+        empty_creator_pczt(coin_type).serialize().unwrap()
     }
 
     #[test]
@@ -148,6 +165,29 @@ mod network_tests {
         assert_eq!(
             PcztNetwork::Testnet.parameters().network_type().coin_type(),
             1
+        );
+
+        // Wallets on released librustzcash still send v1 envelopes, while
+        // `Pczt::serialize` (used above) emits v2; the prefix decode must
+        // agree across both.
+        let mainnet_v1 = ::pczt::v1::Pczt::try_from(empty_creator_pczt(133))
+            .unwrap()
+            .serialize();
+        assert_eq!(
+            PcztNetwork::from_pczt_bytes(&mainnet_v1),
+            Ok(PcztNetwork::Mainnet)
+        );
+    }
+
+    #[test]
+    fn rejects_bytes_without_a_known_pczt_header() {
+        let mut mangled = empty_pczt(133);
+        mangled[0] ^= 1;
+        assert_eq!(
+            validate_parsed_pczt_network(&MainNetwork, &mangled),
+            Err(ZcashError::InvalidPczt(
+                "PCZT header is missing or has an unsupported version".to_string()
+            ))
         );
     }
 

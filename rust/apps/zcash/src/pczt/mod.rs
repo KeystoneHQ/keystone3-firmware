@@ -50,9 +50,9 @@ pub(crate) fn validate_supported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
 
 /// Ensures every Orchard protocol action has a distinct randomized validating key.
 ///
-/// Orchard and Ironwood spend authorization signatures cover the same transaction-wide
-/// shielded sighash. If two actions share an `rk`, a signature for either action can be
-/// copied to the other.
+/// Within each pool, spend authorization signatures cover the same transaction-wide
+/// shielded sighash. Orchard and Ironwood use different sighashes, but honest construction
+/// should not reuse an `rk` across either pool, so validate their union defensively.
 #[cfg(feature = "cypherpunk")]
 fn validate_distinct_orchard_protocol_rks(pczt: &Pczt) -> Result<(), ZcashError> {
     let actions = pczt

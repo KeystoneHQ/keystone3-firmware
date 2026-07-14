@@ -14,6 +14,8 @@ use alloc::{boxed::Box, format, string::String, string::ToString, vec::Vec};
 use app_zcash::get_address;
 #[cfg(feature = "cypherpunk")]
 use app_zcash::pczt::{sign::SpendAuthCache, structs::ParsedPczt};
+#[cfg(feature = "cypherpunk")]
+use app_zcash::version::KEYSTONE_FW_VERSION;
 use core::slice;
 use cryptoxide::hashing::sha256;
 use cty::c_char;
@@ -350,13 +352,14 @@ fn encode_checked_zcash_batch(request_id: &[u8], data: Vec<u8>) -> Result<Vec<u8
         })
 }
 
-/// Wraps the PCZT crate's signature response with its echoed request id.
+/// Wraps the PCZT crate's signature response with its echoed request id and
+/// the firmware version that produced the signatures.
 #[cfg(feature = "cypherpunk")]
 fn encode_zcash_batch_sig_result(
     request_id: Vec<u8>,
     data: Vec<u8>,
 ) -> Result<Vec<u8>, RustCError> {
-    ZcashBatchSigResult::new(request_id, data)
+    ZcashBatchSigResult::new(request_id, data, KEYSTONE_FW_VERSION.encode())
         .try_into()
         .map_err(|e| RustCError::InvalidData(format!("encode Zcash batch result envelope: {e:?}")))
 }
@@ -1047,7 +1050,7 @@ mod tests {
 
     #[cfg(feature = "cypherpunk")]
     #[test]
-    fn test_encode_zcash_batch_sig_result_wraps_pczt_response() {
+    fn test_encode_zcash_batch_sig_result_wraps_response_with_firmware_version() {
         use zcash_vendor::{orchard::ValuePool, pczt::roles::signer::SpendAuthSignature};
 
         let request_id = vec![0xaa, 0xbb];
@@ -1071,6 +1074,10 @@ mod tests {
 
         assert_eq!(decoded.get_request_id(), request_id);
         assert_eq!(decoded.get_data(), response_bytes);
+        assert_eq!(
+            decoded.get_firmware_version(),
+            &KEYSTONE_FW_VERSION.encode()
+        );
         assert_eq!(
             BatchSignResponse::parse(decoded.get_data()).unwrap(),
             response

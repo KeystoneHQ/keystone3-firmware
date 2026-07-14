@@ -90,6 +90,71 @@ pub(crate) fn format_zec_value(value: f64) -> String {
     format!("{zec_value} ZEC")
 }
 
+#[derive(Default)]
+struct DisplayTotals {
+    input: u64,
+    output: u64,
+    change: u64,
+}
+
+impl DisplayTotals {
+    fn add_pool(
+        &mut self,
+        from: impl IntoIterator<Item = ParsedFrom>,
+        to: impl IntoIterator<Item = ParsedTo>,
+    ) -> Result<(), ZcashError> {
+        for from in from {
+            Self::checked_add(&mut self.input, from.get_amount(), "input")?;
+        }
+        for to in to {
+            Self::checked_add(&mut self.output, to.get_amount(), "output")?;
+            if to.get_is_change() {
+                Self::checked_add(&mut self.change, to.get_amount(), "change")?;
+            }
+        }
+        Ok(())
+    }
+
+    fn add_sapling_value_sum(&mut self, value_sum: i64) -> Result<(), ZcashError> {
+        if value_sum < 0 {
+            Self::checked_add(&mut self.output, value_sum.unsigned_abs(), "output")
+        } else {
+            Self::checked_add(&mut self.input, value_sum as u64, "input")
+        }
+    }
+
+    fn formatted_values(self) -> Result<(String, String), ZcashError> {
+        let transfer = self.output.checked_sub(self.change).ok_or_else(|| {
+            ZcashError::InvalidPczt("display change total exceeds output total".to_string())
+        })?;
+        let fee = self.input.checked_sub(self.output).ok_or_else(|| {
+            ZcashError::InvalidPczt("display output total exceeds input total".to_string())
+        })?;
+
+        Ok((
+            format_zec_value(transfer as f64),
+            format_zec_value(fee as f64),
+        ))
+    }
+
+    fn checked_add(total: &mut u64, amount: u64, label: &str) -> Result<(), ZcashError> {
+        *total = total
+            .checked_add(amount)
+            .ok_or_else(|| ZcashError::InvalidPczt(format!("display {label} total overflow")))?;
+        Ok(())
+    }
+}
+
+fn sapling_value_sum(pczt: &Pczt) -> Result<i64, ZcashError> {
+    let value_balance = (*pczt.sapling().value_sum())
+        .try_into()
+        .ok()
+        .and_then(|value| ZatBalance::from_i64(value).ok())
+        .ok_or_else(|| ZcashError::InvalidPczt("sapling value_sum is invalid".to_string()))?;
+
+    Ok(value_balance.into())
+}
+
 /// Attempts to decrypt the output with the given `ovk`, or (if `None`) directly via the
 /// PCZT's fields.
 ///
@@ -293,83 +358,24 @@ fn assemble_parsed_pczt(
     parsed_orchard: Option<ParsedOrchard>,
     parsed_ironwood: Option<ParsedOrchard>,
 ) -> Result<ParsedPczt, ZcashError> {
-    let mut total_input_value = 0;
-    let mut total_output_value = 0;
-    let mut total_change_value = 0;
-    //total_input_value = total_output_value + fee_value
-    //total_output_value = total_transfer_value + total_change_value
+    let mut totals = DisplayTotals::default();
 
     // Fold each decoded pool into the display totals.
     if let Some(orchard) = &parsed_orchard {
-        total_change_value += orchard
-            .get_to()
-            .iter()
-            .filter(|v| v.get_is_change())
-            .fold(0, |acc, to| acc + to.get_amount());
-        total_input_value += orchard
-            .get_from()
-            .iter()
-            .fold(0, |acc, from| acc + from.get_amount());
-        total_output_value += orchard
-            .get_to()
-            .iter()
-            .fold(0, |acc, to| acc + to.get_amount());
+        totals.add_pool(orchard.get_from(), orchard.get_to())?;
     }
     if let Some(ironwood) = &parsed_ironwood {
-        total_change_value += ironwood
-            .get_to()
-            .iter()
-            .filter(|v| v.get_is_change())
-            .fold(0, |acc, to| acc + to.get_amount());
-        total_input_value += ironwood
-            .get_from()
-            .iter()
-            .fold(0, |acc, from| acc + from.get_amount());
-        total_output_value += ironwood
-            .get_to()
-            .iter()
-            .fold(0, |acc, to| acc + to.get_amount());
+        totals.add_pool(ironwood.get_from(), ironwood.get_to())?;
     }
 
     if let Some(transparent) = &parsed_transparent {
-        total_change_value += transparent
-            .get_to()
-            .iter()
-            .filter(|v| v.get_is_change())
-            .fold(0, |acc, to| acc + to.get_amount());
-        total_input_value += transparent
-            .get_from()
-            .iter()
-            .fold(0, |acc, from| acc + from.get_amount());
-        total_output_value += transparent
-            .get_to()
-            .iter()
-            .fold(0, |acc, to| acc + to.get_amount());
+        totals.add_pool(transparent.get_from(), transparent.get_to())?;
     }
 
-    //treat all sapling output as output value since we don't support sapling decoding yet
-    //sapling value_sum can be trusted
+    // Apply the Sapling net value balance because Sapling rows are not decoded.
+    totals.add_sapling_value_sum(sapling_value_sum(pczt)?)?;
 
-    let value_balance = (*pczt.sapling().value_sum())
-        .try_into()
-        .ok()
-        .and_then(|v| ZatBalance::from_i64(v).ok())
-        .ok_or(ZcashError::InvalidPczt(
-            "sapling value_sum is invalid".to_string(),
-        ))?;
-    let sapling_value_sum: i64 = value_balance.into();
-    if sapling_value_sum < 0 {
-        //value transfered to sapling pool
-        total_output_value = total_output_value.saturating_add(sapling_value_sum.unsigned_abs())
-    } else {
-        //value transfered from sapling pool
-        //this should not happen with Zashi.
-        total_input_value = total_input_value.saturating_add(sapling_value_sum as u64)
-    };
-
-    // Derive the transfer and fee values shown during confirmation.
-    let total_transfer_value = format_zec_value((total_output_value - total_change_value) as f64);
-    let fee_value = format_zec_value((total_input_value - total_output_value) as f64);
+    let (total_transfer_value, fee_value) = totals.formatted_values()?;
 
     let has_sapling = !pczt.sapling().spends().is_empty() || !pczt.sapling().outputs().is_empty();
 
@@ -401,50 +407,15 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
         })
         .map_err(map_transparent_verifier_error)?;
 
-    let mut total_input_value = 0;
-    let mut total_output_value = 0;
-    let mut total_change_value = 0;
-    //total_input_value = total_output_value + fee_value
-    //total_output_value = total_transfer_value + total_change_value
+    let mut totals = DisplayTotals::default();
 
     if let Some(transparent) = &parsed_transparent {
-        total_change_value += transparent
-            .get_to()
-            .iter()
-            .filter(|v| v.get_is_change())
-            .fold(0, |acc, to| acc + to.get_amount());
-        total_input_value += transparent
-            .get_from()
-            .iter()
-            .fold(0, |acc, from| acc + from.get_amount());
-        total_output_value += transparent
-            .get_to()
-            .iter()
-            .fold(0, |acc, to| acc + to.get_amount());
+        totals.add_pool(transparent.get_from(), transparent.get_to())?;
     }
 
-    //treat all sapling output as output value since we don't support sapling decoding yet
-    //sapling value_sum can be trusted
+    totals.add_sapling_value_sum(sapling_value_sum(pczt)?)?;
 
-    let value_balance = (*pczt.sapling().value_sum())
-        .try_into()
-        .ok()
-        .and_then(|v| ZatBalance::from_i64(v).ok())
-        .ok_or(ZcashError::InvalidPczt(
-            "sapling value_sum is invalid".to_string(),
-        ))?;
-    let sapling_value_sum: i64 = value_balance.into();
-    if sapling_value_sum < 0 {
-        //value transfered to sapling pool
-        total_output_value = total_output_value.saturating_add(sapling_value_sum.unsigned_abs())
-    } else {
-        //value transfered from sapling pool
-        //this should not happen with Zashi.
-        total_input_value = total_input_value.saturating_add(sapling_value_sum as u64)
-    };
-
-    let total_transfer_value = format_zec_value((total_output_value - total_change_value) as f64);
-    let fee_value = format_zec_value((total_input_value - total_output_value) as f64);
+    let (total_transfer_value, fee_value) = totals.formatted_values()?;
 
     let has_sapling = !pczt.sapling().spends().is_empty() || !pczt.sapling().outputs().is_empty();
 
@@ -871,6 +842,130 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
             ))
         }
         Some(x) => Ok(x),
+    }
+}
+
+#[cfg(test)]
+mod display_accounting_tests {
+    use super::*;
+    use alloc::{string::String, vec};
+
+    extern crate std;
+
+    fn from(amount: u64) -> ParsedFrom {
+        ParsedFrom::new(None, String::new(), amount, false)
+    }
+
+    fn to(amount: u64, is_change: bool) -> ParsedTo {
+        ParsedTo::new(String::new(), String::new(), amount, is_change, false, None)
+    }
+
+    fn assert_invalid_pczt_message<T: core::fmt::Debug>(
+        result: Result<T, ZcashError>,
+        expected: &str,
+    ) {
+        match result {
+            Err(ZcashError::InvalidPczt(message)) if message == expected => {}
+            other => panic!("unexpected result: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn display_totals_format_balanced_amounts() {
+        let mut totals = DisplayTotals::default();
+        totals
+            .add_pool(
+                vec![from(1_000_000)],
+                vec![to(100_000, true), to(890_000, false)],
+            )
+            .unwrap();
+
+        assert_eq!(
+            totals.formatted_values().unwrap(),
+            ("0.0089 ZEC".to_string(), "0.0001 ZEC".to_string())
+        );
+    }
+
+    #[test]
+    fn display_totals_reject_input_overflow() {
+        let mut totals = DisplayTotals::default();
+
+        assert_invalid_pczt_message(
+            totals.add_pool(vec![from(u64::MAX), from(1)], vec![]),
+            "display input total overflow",
+        );
+    }
+
+    #[test]
+    fn display_totals_reject_output_overflow() {
+        let mut totals = DisplayTotals::default();
+
+        assert_invalid_pczt_message(
+            totals.add_pool(vec![], vec![to(u64::MAX, false), to(1, false)]),
+            "display output total overflow",
+        );
+    }
+
+    #[test]
+    fn display_totals_reject_change_overflow() {
+        let mut change = u64::MAX;
+
+        assert_invalid_pczt_message(
+            DisplayTotals::checked_add(&mut change, 1, "change"),
+            "display change total overflow",
+        );
+    }
+
+    #[test]
+    fn display_totals_reject_positive_sapling_overflow() {
+        let mut totals = DisplayTotals {
+            input: u64::MAX,
+            ..Default::default()
+        };
+
+        assert_invalid_pczt_message(
+            totals.add_sapling_value_sum(1),
+            "display input total overflow",
+        );
+    }
+
+    #[test]
+    fn display_totals_reject_sapling_overflow() {
+        let mut totals = DisplayTotals {
+            output: u64::MAX,
+            ..Default::default()
+        };
+
+        assert_invalid_pczt_message(
+            totals.add_sapling_value_sum(-1),
+            "display output total overflow",
+        );
+    }
+
+    #[test]
+    fn display_totals_reject_change_greater_than_output() {
+        assert_invalid_pczt_message(
+            DisplayTotals {
+                input: 10,
+                output: 5,
+                change: 6,
+            }
+            .formatted_values(),
+            "display change total exceeds output total",
+        );
+    }
+
+    #[test]
+    fn display_totals_reject_outputs_greater_than_inputs() {
+        assert_invalid_pczt_message(
+            DisplayTotals {
+                input: 5,
+                output: 6,
+                change: 0,
+            }
+            .formatted_values(),
+            "display output total exceeds input total",
+        );
     }
 }
 

@@ -150,6 +150,8 @@ static void RecalcCurrentWalletIndex(char *origin)
         g_walletIndex = WALLET_LIST_TYPHON;
     } else if (strcmp("Begin", origin) == 0) {
         g_walletIndex = WALLET_LIST_BEGIN;
+    } else if (strcmp("lace", origin) == 0 || strcmp("Lace", origin) == 0) {
+        g_walletIndex = WALLET_LIST_LACE;
     } else if (strcmp("Medusa", origin) == 0) {
         g_walletIndex = WALLET_LIST_MEDUSA;
     } else if (strcmp("gerowallet", origin) == 0) {
@@ -1287,6 +1289,6 @@ static uint8_t GetXPubIndexByPath(char *path)
 
 static bool IsCardano()
 {
-    return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON || g_walletIndex == WALLET_LIST_BEGIN || g_walletIndex == WALLET_LIST_MEDUSA;
+    return g_walletIndex == WALLET_LIST_ETERNL || g_walletIndex == WALLET_LIST_TYPHON || g_walletIndex == WALLET_LIST_BEGIN || g_walletIndex == WALLET_LIST_LACE || g_walletIndex == WALLET_LIST_MEDUSA;
 }
 #endif

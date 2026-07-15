@@ -36,7 +36,9 @@ void GuiCreateConnectADAWalletWidget(uint8_t index)
     g_cont = cont;
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CleanHandler, NULL);
     SetWallet(g_pageWidget->navBarWidget, index, NULL);
-    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
+    if (index != WALLET_LIST_LACE) {
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, OpenMoreHandler, NULL);
+    }
     GuiCreatePageContent(g_cont);
 }
 
@@ -129,4 +131,3 @@ static void OpenMoreHandler(lv_event_t *e)
                                     OpenTutorialHandler, &g_walletIndex);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
 }
-

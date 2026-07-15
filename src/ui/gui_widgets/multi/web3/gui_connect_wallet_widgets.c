@@ -198,6 +198,11 @@ static const lv_img_dsc_t *g_adaCoinArray[1] = {
     &coinAda,
 };
 
+static const lv_img_dsc_t *g_laceCoinArray[] = {
+    &coinAda,
+    &coinBtc,
+};
+
 static const lv_img_dsc_t *g_xrpCoinArray[1] = {
     &coinXrp,
 };
@@ -225,6 +230,7 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_ETERNL, &walletEternl, "Eternl", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
     {WALLET_LIST_VESPR, &walletVespr, "Vespr", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
     {WALLET_LIST_BEGIN, &walletBegin, "Begin", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
+    {WALLET_LIST_LACE, &walletLace, "Lace", g_laceCoinArray, 2, true, WALLET_FILTER_BTC | WALLET_FILTER_ADA},
     {WALLET_LIST_UNISAT, &walletUniSat, "UniSat", g_UniSatCoinArray, 5, true, WALLET_FILTER_BTC},
     {WALLET_LIST_SUIET, &walletSuiet, "Suiet", g_suiWalletCoinArray, 1, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_IOTA, &walletIota, "IOTA Wallet", g_iotaCoinArray, 1, true, WALLET_FILTER_OTHER},
@@ -403,6 +409,7 @@ static bool IsAda(int walletIndex)
     case WALLET_LIST_GERO:
     case WALLET_LIST_TYPHON:
     case WALLET_LIST_BEGIN:
+    case WALLET_LIST_LACE:
         return true;
     default:
         return false;
@@ -465,6 +472,7 @@ static void OpenQRCodeHandler(lv_event_t *e)
     if (g_connectWalletTileView.walletIndex == WALLET_LIST_ETERNL ||
             g_connectWalletTileView.walletIndex == WALLET_LIST_TYPHON ||
             g_connectWalletTileView.walletIndex == WALLET_LIST_BEGIN ||
+            g_connectWalletTileView.walletIndex == WALLET_LIST_LACE ||
             g_connectWalletTileView.walletIndex == WALLET_LIST_MEDUSA ||
             g_connectWalletTileView.walletIndex == WALLET_LIST_GERO
        ) {

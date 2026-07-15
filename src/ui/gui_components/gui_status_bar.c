@@ -171,6 +171,7 @@ const static WalletInfo_t g_walletBtn[] = {
     {WALLET_LIST_THORWALLET, "THORWallet", &walletThorWallet},
     {WALLET_LIST_TONKEEPER, "Tonkeeper", &walletTonkeeper},
     {WALLET_LIST_BEGIN, "Begin", &walletBegin},
+    {WALLET_LIST_LACE, "Lace", &walletLace},
     {WALLET_LIST_NIGHTLY, "Nightly", &walletNightly},
     {WALLET_LIST_SUIET, "Suiet", &walletSuiet},
     // {WALLET_LIST_CAKE, "Cake Wallet", &walletCake},
@@ -391,6 +392,8 @@ const char *GetWalletNameByIndex(WALLET_LIST_INDEX_ENUM index)
         return "Typhon";
     } else if (index == WALLET_LIST_BEGIN) {
         return "Begin";
+    } else if (index == WALLET_LIST_LACE) {
+        return "Lace";
     } else if (index == WALLET_LIST_HELIUM) {
         return "Helium";
     } else if (index == WALLET_LIST_MEDUSA) {

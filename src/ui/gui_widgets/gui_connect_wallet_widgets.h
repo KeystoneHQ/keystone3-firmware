@@ -60,6 +60,7 @@ typedef enum {
     WALLET_LIST_FEATHER,
     WALLET_LIST_VIZOR,
     WALLET_LIST_BTC_WALLET,
+    WALLET_LIST_LACE,
 #else
     WALLET_LIST_BLUE,
     WALLET_LIST_SPECTER,
@@ -151,4 +152,3 @@ void GuiConnectShowRsaSetupasswordHintbox(void);
 UREncodeResult *GuiGetNaboxData(void);
 #endif
 #endif /* _GUI_CONNECT_WALLET_WIDGETS_H */
-

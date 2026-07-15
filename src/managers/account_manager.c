@@ -627,22 +627,26 @@ int32_t DestroyAccount(uint8_t accountIndex)
     // resume guarantee and could resurrect a half-erased account via the coarse 2-sentinel boot check.
     if (ret == SUCCESS_CODE) {
         // gen-2: erase this account's SE-side key material, not just the pages zeroed above (gen-1/simulator
-        // no-op). Only clear DELETING after this succeeds; otherwise boot retries cleanup.
+        // no-op). Keep DELETING until all per-account cleanup succeeds so boot can resume after power loss.
         ret = SE_EraseAccount(accountIndex);
         if (ret != SUCCESS_CODE) {
             printf("destroy account:erase se account err,0x%X\n", ret);
         } else {
-            ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_UNKNOWN);  // deletion complete -> blank
+            DeleteAccountPublicInfo(accountIndex);
+            ClearAccountPassphrase(accountIndex);
+            ret = SetWalletDataHash(accountIndex, data);
             if (ret != SUCCESS_CODE) {
-                printf("destroy account:clear deleting status err,0x%X\n", ret);
+                printf("destroy account:clear wallet data hash err,0x%X\n", ret);
             } else {
-                printf("destroy account:clear se done %d\n", accountIndex);
+                ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_UNKNOWN);  // deletion complete -> blank
+                if (ret != SUCCESS_CODE) {
+                    printf("destroy account:clear deleting status err,0x%X\n", ret);
+                } else {
+                    printf("destroy account:clear se done %d\n", accountIndex);
+                }
             }
         }
     }
-    DeleteAccountPublicInfo(accountIndex);
-    ClearAccountPassphrase(accountIndex);
-    SetWalletDataHash(accountIndex, data);
     LogoutCurrentAccount();
 
     CLEAR_OBJECT(g_currentAccountInfo);
@@ -659,7 +663,7 @@ int32_t DestroyAccount(uint8_t accountIndex)
 void AccountsDataCheck(void)
 {
     int32_t ret;
-    uint8_t data[32], accountIndex, validCount, i;
+    uint8_t data[32], accountIndex, validCount;
 
     for (accountIndex = 0; accountIndex < 3; accountIndex++) {
         // gen-2 lifecycle status (external page): an account caught mid-create / mid-change-PIN / mid-delete is
@@ -670,29 +674,7 @@ void AccountsDataCheck(void)
             if (status == ACCOUNT_STATUS_CREATING || status == ACCOUNT_STATUS_CHANGING_PIN ||
                     status == ACCOUNT_STATUS_DELETING) {
                 printf("incomplete op on account %d (status=%d) -> erase\n", accountIndex, status);
-                memset_s(data, sizeof(data), 0, sizeof(data));
-                ret = SUCCESS_CODE;
-                for (i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
-                    ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
-                    if (ret != SUCCESS_CODE) {
-                        printf("incomplete op erase page err,account=%d,page=%d,err=0x%X\n", accountIndex, i, ret);
-                        break;
-                    }
-                }
-                if (ret == SUCCESS_CODE) {
-                    // gen-2: erase this account's SE-side key material, mirroring DestroyAccount's cleanup (the
-                    // page-zeroing above only clears the blob). Gen-1/simulator no-op; clear status only after
-                    // it succeeds.
-                    ret = SE_EraseAccount(accountIndex);
-                    if (ret != SUCCESS_CODE) {
-                        printf("incomplete op erase se account err,account=%d,err=0x%X\n", accountIndex, ret);
-                    } else {
-                        ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_UNKNOWN);   // account now blank
-                        if (ret != SUCCESS_CODE) {
-                            printf("incomplete op clear status err,account=%d,err=0x%X\n", accountIndex, ret);
-                        }
-                    }
-                }
+                DestroyAccount(accountIndex);
                 continue;
             }
             if (status == ACCOUNT_STATUS_CREATED) {
@@ -716,12 +698,7 @@ void AccountsDataCheck(void)
         // if start disconsistent with keypieces, consider the account data is illegal, erase the account data.
         if (validCount == 1) {
             printf("illegal data:%d\n", accountIndex);
-            memset_s(data, sizeof(data), 0, sizeof(data));
-            for (i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
-                printf("erase index=%d\n", i);
-                ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
-                CHECK_ERRCODE_BREAK("ds28s60 write", ret);
-            }
+            DestroyAccount(accountIndex);
         }
     }
     CLEAR_ARRAY(data);

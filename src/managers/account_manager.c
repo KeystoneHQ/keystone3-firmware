@@ -835,17 +835,24 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
 
     SimpleResponse_c_char *response = rust_aes256_cbc_decrypt(zcashEncrypted, password, iv_bytes, 16);
     CLEAR_ARRAY(iv_bytes);
-    if (response->error_code != 0) {
-        ret = response->error_code;
-        CLEAR_ARRAY(seed);
-        printf("error: %s\r\n", response->error_message);
-        free_simple_response_c_char(response);
-        return ret;
-    }
-
     char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
-    strcpy_s(ufvk, ZCASH_UFVK_MAX_LEN, response->data);
-    free_simple_response_c_char(response);
+    if (response->error_code != 0) {
+        // The stored ciphertext is keyed by an older password (e.g. the password was
+        // changed without re-encrypting it). The entered password already passed SE
+        // verification, so regenerate the UFVK from the seed instead of failing the
+        // login and locking the user out.
+        printf("zcash ufvk decrypt failed, regenerating from seed. error: %s\r\n", response->error_message);
+        free_simple_response_c_char(response);
+        ret = RegenerateZcashUFVK(accountIndex, seed, len, password, ufvk, sizeof(ufvk));
+        if (ret != SUCCESS_CODE) {
+            CLEAR_ARRAY(ufvk);
+            CLEAR_ARRAY(seed);
+            return ret;
+        }
+    } else {
+        strcpy_s(ufvk, ZCASH_UFVK_MAX_LEN, response->data);
+        free_simple_response_c_char(response);
+    }
     SetZcashUFVK(accountIndex, ufvk);
     CLEAR_ARRAY(ufvk);
 

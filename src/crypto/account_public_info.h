@@ -270,6 +270,9 @@ typedef enum {
 } ChainType;
 
 bool GetIsTempAccount(void);
+#ifdef CYPHERPUNK_VERSION
+int32_t RegenerateZcashUFVK(uint8_t accountIndex, const uint8_t *seed, int seedLen, const char *password, char *ufvkOut, uint32_t ufvkOutLen);
+#endif
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey);
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set);
 void DeleteAccountPublicInfo(uint8_t accountIndex);

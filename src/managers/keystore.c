@@ -293,6 +293,20 @@ int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char
         CHECK_ERRCODE_BREAK("save account secret", ret);   // on failure: status stays CHANGING_PIN -> boot erases
         ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATED);   // re-wrap committed
         CHECK_ERRCODE_BREAK("set created status", ret);
+#ifdef CYPHERPUNK_VERSION
+        // The stored Zcash UFVK ciphertext is keyed by the login password, so keep it in sync here.
+        // Best effort after the PIN re-wrap is committed: a failure must not fail the password change,
+        // and a stale ciphertext is repaired by SetupZcashCache at the next login (which also migrates
+        // wallets whose password was changed before this sync existed). Temp (passphrase) accounts are
+        // skipped for the same reason.
+        if (accountIndex == GetCurrentAccountIndex() && !GetIsTempAccount() && IsZcashSupportedForCurrentMnemonic()) {
+            int seedLen = GetMnemonicType() == MNEMONIC_TYPE_SLIP39 ? accountSecret.entropyLen : sizeof(accountSecret.seed);
+            int32_t zcashRet = RegenerateZcashUFVK(accountIndex, accountSecret.seed, seedLen, newPassword, NULL, 0);
+            if (zcashRet != SUCCESS_CODE) {
+                printf("regenerate zcash ufvk err=%d\r\n", zcashRet);
+            }
+        }
+#endif
     } while (0);
     // SetNewKeyPieceToSE consumes the arm on the normal path; disarm here too so a change-PIN never
     // leaves it armed (e.g. if SaveAccountSecret returned before SetNewKeyPieceToSE).

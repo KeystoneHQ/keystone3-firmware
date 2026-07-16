@@ -61,6 +61,10 @@ static void FreePublicKeyRam(void);
 static int32_t GetChainTableIndex(ChainType chain);
 static void PrintInfo(void);
 static void SetIsTempAccount(bool isTemp);
+static void SaveCurrentPublicInfoToFlash(uint8_t accountIndex, uint32_t addr);
+#ifdef CYPHERPUNK_VERSION
+static SimpleResponse_c_char *DeriveEncryptedZcashUFVK(const uint8_t *seed, int seedLen, const char *password, char *ufvkOut, uint32_t ufvkOutLen);
+#endif
 
 #ifdef BTC_ONLY
 static void LoadCurrentAccountMultiReceiveIndex(void);
@@ -861,8 +865,7 @@ int32_t AccountPublicInfoReadFromFlash(uint8_t accountIndex, uint32_t addr)
 int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, uint32_t addr)
 {
     uint8_t entropyLen = 0;
-    uint8_t seed[64], entropy[64], hash[32];
-    char *jsonString;
+    uint8_t seed[64], entropy[64];
     int32_t ret = SUCCESS_CODE;
     SimpleResponse_c_char *xPubResult = NULL;
     MnemonicType mnemonicType = GetMnemonicType();
@@ -909,17 +912,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
 #ifdef CYPHERPUNK_VERSION
             //encrypt zcash ufvk
             if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
-                char* zcashUfvk = NULL;
-                SimpleResponse_c_char *zcash_ufvk_response = NULL;
-                zcash_ufvk_response = derive_zcash_ufvk(seed, seedLen, g_chainTable[i].path);
-                CHECK_AND_FREE_XPUB(zcash_ufvk_response)
-                zcashUfvk = zcash_ufvk_response->data;
-                SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, seedLen);
-                //iv_response won't fail
-                uint8_t iv_bytes[16];
-                memcpy_s(iv_bytes, 16, iv_response->data, 16);
-                free_simple_response_u8(iv_response);
-                xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
+                xPubResult = DeriveEncryptedZcashUFVK(seed, seedLen, password, NULL, 0);
             } else {
                 xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
             }
@@ -945,25 +938,12 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             // printf("xPubResult=%s\r\n", xPubResult->data);
             free_simple_response_c_char(xPubResult);
         }
-        for (uint32_t eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
-            Gd25FlashSectorErase(eraseAddr);
-        }
-        jsonString = GetJsonStringFromPublicKey();
-
-        sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
-        SetWalletDataHash(accountIndex, hash);
-        CLEAR_ARRAY(hash);
-        uint32_t size = strlen(jsonString);
-        int32_t len = Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
-        ASSERT(len == 4);
-        len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
-        ASSERT(len == size);
+        SaveCurrentPublicInfoToFlash(accountIndex, addr);
         if (!isSlip39) {
             free_simple_response_c_char(cip3_response);
             free_simple_response_c_char(ledger_bitbox02_response);
         }
         GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
-        EXT_FREE(jsonString);
     } while (0);
 
     CLEAR_ARRAY(seed);
@@ -1027,6 +1007,103 @@ bool GetIsTempAccount(void)
     return g_isTempAccount;
 }
 
+static void SaveCurrentPublicInfoToFlash(uint8_t accountIndex, uint32_t addr)
+{
+    uint8_t hash[32];
+    char *jsonString;
+
+    for (uint32_t eraseAddr = addr; eraseAddr < addr + SPI_FLASH_SIZE_USER1_DATA; eraseAddr += GD25QXX_SECTOR_SIZE) {
+        Gd25FlashSectorErase(eraseAddr);
+    }
+    jsonString = GetJsonStringFromPublicKey();
+
+    sha256((struct sha256 *)hash, jsonString, strlen(jsonString));
+    SetWalletDataHash(accountIndex, hash);
+    CLEAR_ARRAY(hash);
+    uint32_t size = strlen(jsonString);
+    int32_t len = Gd25FlashWriteBuffer(addr, (uint8_t *)&size, 4);
+    ASSERT(len == 4);
+    len = Gd25FlashWriteBuffer(addr + 4, (uint8_t *)jsonString, size);
+    ASSERT(len == size);
+    EXT_FREE(jsonString);
+}
+
+#ifdef CYPHERPUNK_VERSION
+/// @brief Derive the Zcash UFVK from seed and AES-256-CBC encrypt it with the login password,
+///        using the seed-derived IV. Single source of the UFVK encryption scheme.
+/// @param[in] seed Wallet seed.
+/// @param[in] seedLen Seed length.
+/// @param[in] password Password to encrypt the UFVK with.
+/// @param[out] ufvkOut Optional, receives the plaintext UFVK. Can be NULL if not needed.
+/// @param[in] ufvkOutLen Size of ufvkOut.
+/// @return Encrypted UFVK hex response, or a response carrying the derivation/encryption error. Caller frees.
+static SimpleResponse_c_char *DeriveEncryptedZcashUFVK(const uint8_t *seed, int seedLen, const char *password, char *ufvkOut, uint32_t ufvkOutLen)
+{
+    SimpleResponse_c_char *ufvkResponse = derive_zcash_ufvk((uint8_t *)seed, seedLen, g_chainTable[ZCASH_UFVK_ENCRYPTED_0].path);
+    if (ufvkResponse == NULL || ufvkResponse->error_code != 0) {
+        return ufvkResponse;
+    }
+    SimpleResponse_u8 *ivResponse = rust_derive_iv_from_seed((uint8_t *)seed, seedLen);
+    //iv_response won't fail
+    uint8_t ivBytes[16];
+    memcpy_s(ivBytes, sizeof(ivBytes), ivResponse->data, sizeof(ivBytes));
+    free_simple_response_u8(ivResponse);
+    SimpleResponse_c_char *encryptResult = rust_aes256_cbc_encrypt(ufvkResponse->data, password, ivBytes, 16);
+    CLEAR_ARRAY(ivBytes);
+    if (ufvkOut != NULL && encryptResult != NULL && encryptResult->error_code == 0) {
+        strcpy_s(ufvkOut, ufvkOutLen, ufvkResponse->data);
+    }
+    free_simple_response_c_char(ufvkResponse);
+    return encryptResult;
+}
+
+/// @brief Re-derive the Zcash UFVK from seed, encrypt it with password and replace the stored ciphertext.
+///        The UFVK ciphertext is keyed by the login password: ChangePassword calls this to keep it in
+///        sync, and SetupZcashCache calls it on decrypt failure to migrate wallets whose ciphertext
+///        went stale before the sync existed (or whose sync was interrupted).
+/// @param[in] accountIndex Account index, 0~2.
+/// @param[in] seed Wallet seed, already fetched with a verified password.
+/// @param[in] seedLen Seed length.
+/// @param[in] password Password to encrypt the UFVK with.
+/// @param[out] ufvkOut Optional, receives the plaintext UFVK. Can be NULL if not needed.
+/// @param[in] ufvkOutLen Size of ufvkOut.
+/// @return err code.
+int32_t RegenerateZcashUFVK(uint8_t accountIndex, const uint8_t *seed, int seedLen, const char *password, char *ufvkOut, uint32_t ufvkOutLen)
+{
+    int32_t ret = SUCCESS_CODE;
+    SimpleResponse_c_char *encryptResult = NULL;
+
+    ASSERT(accountIndex <= 2);
+    do {
+        encryptResult = DeriveEncryptedZcashUFVK(seed, seedLen, password, ufvkOut, ufvkOutLen);
+        if (encryptResult == NULL) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
+        if (encryptResult->error_code != 0) {
+            printf("derive/encrypt zcash ufvk error: %s\r\n", encryptResult->error_message);
+            ret = encryptResult->error_code;
+            break;
+        }
+        uint32_t valueLen = strnlen_s(encryptResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1;
+        if (g_accountPublicInfo[ZCASH_UFVK_ENCRYPTED_0].value != NULL) {
+            SRAM_FREE(g_accountPublicInfo[ZCASH_UFVK_ENCRYPTED_0].value);
+        }
+        g_accountPublicInfo[ZCASH_UFVK_ENCRYPTED_0].value = SRAM_MALLOC(valueLen);
+        strcpy_s(g_accountPublicInfo[ZCASH_UFVK_ENCRYPTED_0].value, valueLen, encryptResult->data);
+        if (!GetIsTempAccount()) {
+            uint32_t addr = SPI_FLASH_ADDR_USER1_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
+            SaveCurrentPublicInfoToFlash(accountIndex, addr);
+        }
+    } while (0);
+
+    if (encryptResult != NULL) {
+        free_simple_response_c_char(encryptResult);
+    }
+    return ret;
+}
+#endif
+
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set)
 {
     uint32_t i;
@@ -1084,17 +1161,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
 #ifdef CYPHERPUNK_VERSION
             //encrypt zcash ufvk
             if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
-                char* zcashUfvk = NULL;
-                SimpleResponse_c_char *zcash_ufvk_response = NULL;
-                zcash_ufvk_response = derive_zcash_ufvk(seed, seedLen, g_chainTable[i].path);
-                CHECK_AND_FREE_XPUB(zcash_ufvk_response)
-                zcashUfvk = zcash_ufvk_response->data;
-                SimpleResponse_u8 *iv_response = rust_derive_iv_from_seed(seed, seedLen);
-                //iv_response won't fail
-                uint8_t iv_bytes[16];
-                memcpy_s(iv_bytes, 16, iv_response->data, 16);
-                free_simple_response_u8(iv_response);
-                xPubResult = rust_aes256_cbc_encrypt(zcashUfvk, password, iv_bytes, 16);
+                xPubResult = DeriveEncryptedZcashUFVK(seed, seedLen, password, NULL, 0);
             } else {
                 xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[i].cryptoKey, g_chainTable[i].path, icarusMasterKey, ledgerBitbox02Key);
             }

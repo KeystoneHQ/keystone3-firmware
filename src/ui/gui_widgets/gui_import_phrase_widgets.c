@@ -161,16 +161,16 @@ int8_t GuiImportPhraseNextTile(const char *passphrase)
         } else {
             SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
             g_importSinglePhraseTileView.currentTile++;
-            GuiModelBip39CalWriteSe(bip39);
             GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+            GuiModelBip39CalWriteSe(bip39);
         }
         break;
     case SINGLE_PHRASE_PASSPHRASE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
-        GuiModelBip39CalWriteSe(bip39);
         GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
+        GuiModelBip39CalWriteSe(bip39);
         break;
     }
 

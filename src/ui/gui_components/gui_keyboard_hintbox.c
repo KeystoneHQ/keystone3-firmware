@@ -241,7 +241,15 @@ static void CloseKeyboardWidgetViewHandler(lv_event_t *e)
 KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t buttonCb, uint16_t *signal)
 {
     KeyboardWidget_t *keyboardWidget = CreateKeyboardWidget();
-    lv_obj_t *keyboardHintBox = GuiCreateContainerWithParent(parent, 480, 800 - GUI_STATUS_BAR_HEIGHT);
+    // This is a modal over a live page: it must cover the parent COMPLETELY and absorb touches.
+    // Size to the parent, not a fixed 800-48 — parents differ per caller (page content zone vs
+    // lv_layer_top spanning the full screen), and a fixed height leaves the bottom strip of
+    // lv_layer_top uncovered, exposing the underlying page's buttons. CLICKABLE must be re-added
+    // because GuiCreateContainerWithParent clears it, which lets taps on blank modal areas fall
+    // through to the widgets beneath.
+    lv_obj_update_layout(parent);
+    lv_obj_t *keyboardHintBox = GuiCreateContainerWithParent(parent, lv_obj_get_width(parent), lv_obj_get_height(parent));
+    lv_obj_add_flag(keyboardHintBox, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(keyboardHintBox, LV_ALIGN_DEFAULT, 0, 0);
 
     lv_obj_t *img = GuiCreateImg(keyboardHintBox, &imgArrowLeft);

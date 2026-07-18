@@ -63,7 +63,7 @@ carries the PCZT-owned response in its own opaque `data` field. It also reports
 the signing firmware version once for the entire response.
 
 Batch version 1 is supported by cypherpunk firmware and currently accepts up to
-40 PCZTs. The encoded batch data and request id together, and the canonical PCZT
+35 PCZTs. The encoded batch data and request id together, and the canonical PCZT
 payloads after decoding, must each fit within 512 KiB. The operation is atomic.
 If any PCZT is invalid or cannot be signed, Keystone returns an error instead of
 a partial result. PCZT entries with identical canonical encodings are rejected.

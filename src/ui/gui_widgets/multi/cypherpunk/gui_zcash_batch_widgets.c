@@ -148,7 +148,7 @@ PtrT_TransactionCheckResult GuiGetZcashBatchCheckResult(void)
     uint8_t sfp[32] = {0};
     uint32_t zcashAccountIndex = 0;
     uint8_t accountNum = 0;
-    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
 
     FreeCheckedBatch();
 
@@ -409,7 +409,7 @@ static void *GuiParseZcashBatchData(void)
     uint8_t sfp[32];
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
 
-    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
     g_parseResult = parse_zcash_batch_tx_cypherpunk(
         g_checkedBatch,

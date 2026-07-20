@@ -354,7 +354,7 @@ UREncodeResult *GuiGetZecData(void)
     ZcashKey data[1];
     keys->data = data;
     keys->size = 1;
-    char ufvk[384] = {'\0'};
+    char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
     uint8_t sfp[32];
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
     GetZcashSFP(GetCurrentAccountIndex(), sfp);

@@ -54,7 +54,7 @@ void *GuiGetZcashGUIData(void)
         parseResult = parse_zcash_tx_multi_coins(g_checkedPczt, sfp);
 #endif
 #ifdef CYPHERPUNK_VERSION
-        char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
+        char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
         GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
         parseResult = parse_zcash_tx_cypherpunk(g_checkedPczt, ufvk, sfp);
 #endif
@@ -344,7 +344,7 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
     return check_zcash_tx_multi_coins(data, xpub, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39, &g_checkedPczt);
 #endif
 #ifdef CYPHERPUNK_VERSION
-    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
     return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, !IsZcashSupportedForCurrentMnemonic(), &g_checkedPczt);
 #endif

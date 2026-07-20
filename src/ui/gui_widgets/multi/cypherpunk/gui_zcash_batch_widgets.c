@@ -195,6 +195,10 @@ void GuiZcashBatchWidgetsVerifyPasswordSuccess(void)
         return;
     }
     uint8_t viewType = ZcashBatchTx;
+    // Free the review widgets before allocating the signature view.
+    GUI_DEL_OBJ(g_txContainer)
+    GUI_DEL_OBJ(g_bottomBtnContainer)
+    GUI_DEL_OBJ(g_signSlider)
     GuiFrameOpenViewWithParam(&g_transactionSignatureView, &viewType, sizeof(viewType));
 }
 

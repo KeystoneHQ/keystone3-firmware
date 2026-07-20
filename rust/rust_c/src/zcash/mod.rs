@@ -43,7 +43,7 @@ use zeroize::Zeroize;
 // Cap both per-PCZT overhead and variable-size payload data to leave headroom
 // in shared device memory while processing a batch.
 #[cfg(feature = "cypherpunk")]
-const ZCASH_BATCH_MAX_PCZTS: usize = 50;
+const ZCASH_BATCH_MAX_PCZTS: usize = 40;
 #[cfg(feature = "cypherpunk")]
 const ZCASH_BATCH_MAX_TOTAL_BYTES: usize = 512 * 1024;
 #[cfg(feature = "cypherpunk")]
@@ -1193,7 +1193,7 @@ mod tests {
         overlong_small_count.push(0);
         validate_zcash_batch_request_count(&overlong_small_count).unwrap();
 
-        // The body declares 51 PCZTs but omits them. Reaching the count error
+        // The body declares 41 PCZTs but omits them. Reaching the count error
         // proves the limit is enforced before the full request is parsed.
         request[ZCASH_BATCH_REQUEST_HEADER_LEN] += 1;
         let registry = ZcashSignBatch::new(vec![0xaa], request);

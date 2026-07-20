@@ -372,7 +372,7 @@ static void GuiRenderCurrentTransaction(bool showSignSlider)
 
 void GuiZcashBatchWidgetsRefresh(void)
 {
-    if (g_parseResult == NULL || g_parseResult->error_code != 0) {
+    if (g_parseResult == NULL || g_parseResult->error_code != 0 || g_displayZcashBatch == NULL) {
         return;
     }
 

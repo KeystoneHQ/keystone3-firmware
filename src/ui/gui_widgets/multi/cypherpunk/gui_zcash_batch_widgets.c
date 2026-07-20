@@ -12,6 +12,7 @@
 #include "gui_zcash.h"
 #include "keystore.h"
 #include "screen_manager.h"
+#include "fetch_sensitive_data_task.h"
 #include "general/eapdu_services/service_resolve_ur.h"
 #include "user_memory.h"
 
@@ -46,6 +47,10 @@ static lv_obj_t *g_signSlider = NULL;
 static lv_obj_t *g_parseErrorHintBox = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 
+typedef struct {
+    ZcashCheckedPczt *checkedBatch;
+} ZcashCheckedBatchCleanup_t;
+
 static void *GuiParseZcashBatchData(void);
 static void CheckSliderProcessHandler(lv_event_t *e);
 static void GuiRenderCurrentTransaction(bool showSignSlider);
@@ -67,6 +72,32 @@ static void FreeCheckedBatch(void)
     }
 }
 
+static int32_t FreeCheckedBatchAsync(const void *data, uint32_t dataLen)
+{
+    if (data == NULL || dataLen != sizeof(ZcashCheckedBatchCleanup_t)) {
+        return ERR_GENERAL_FAIL;
+    }
+
+    const ZcashCheckedBatchCleanup_t *cleanup = data;
+    free_zcash_checked_pczt(cleanup->checkedBatch);
+    return SUCCESS_CODE;
+}
+
+static void DeferFreeCheckedBatch(void)
+{
+    if (g_checkedBatch == NULL) {
+        return;
+    }
+
+    ZcashCheckedBatchCleanup_t cleanup = {
+        .checkedBatch = g_checkedBatch,
+    };
+    g_checkedBatch = NULL;
+
+    // Signing uses this pointer on the same FIFO task, so its destructor cannot overtake it.
+    AsyncExecute(FreeCheckedBatchAsync, &cleanup, sizeof(cleanup));
+}
+
 static void ClearPageData(void)
 {
     g_currentTxIndex = 0;
@@ -74,7 +105,7 @@ static void ClearPageData(void)
     g_currentTransaction = NULL;
     g_displayZcashBatch = NULL;
 
-    FreeCheckedBatch();
+    DeferFreeCheckedBatch();
 
     if (g_parseResult != NULL) {
         free_TransactionParseResult_DisplayZcashBatch(g_parseResult);

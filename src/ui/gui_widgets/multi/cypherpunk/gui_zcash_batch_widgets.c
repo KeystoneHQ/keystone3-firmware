@@ -406,7 +406,7 @@ static void *GuiParseZcashBatchData(void)
         free_TransactionCheckResult(checkResult);
     }
 
-    uint8_t sfp[32];
+    uint8_t sfp[32] = {0};
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
 
     char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {0};

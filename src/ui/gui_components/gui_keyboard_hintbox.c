@@ -26,6 +26,7 @@
 #endif
 
 #define DEFAULT_TIMER_COUNTER 5
+#define KEYBOARD_WIDGET_TEXT_WIDTH 408
 
 static KeyboardWidget_t *CreateKeyboardWidget();
 static void KeyboardConfirmHandler(lv_event_t *e);
@@ -113,6 +114,16 @@ void SetKeyboardWidgetSelf(KeyboardWidget_t *keyboardWidget, KeyboardWidget_t **
     keyboardWidget->self = self;
 }
 
+static void SetKeyboardWidgetBoundedLabelText(lv_obj_t *label, const char *text,
+        lv_label_long_mode_t longMode)
+{
+    lv_label_set_text(label, text);
+    if (lv_obj_get_self_width(label) > KEYBOARD_WIDGET_TEXT_WIDTH) {
+        lv_label_set_long_mode(label, longMode);
+        lv_obj_set_width(label, KEYBOARD_WIDGET_TEXT_WIDTH);
+    }
+}
+
 // Override the default title/desc (used e.g. by the forget-pass "Prove Device Ownership" step). Pass NULL to
 // leave a field unchanged.
 void SetKeyboardWidgetTitle(KeyboardWidget_t *keyboardWidget, const char *title, const char *desc)
@@ -121,10 +132,12 @@ void SetKeyboardWidgetTitle(KeyboardWidget_t *keyboardWidget, const char *title,
         return;
     }
     if (title != NULL && keyboardWidget->titleLabel != NULL) {
-        lv_label_set_text(keyboardWidget->titleLabel, title);
+        SetKeyboardWidgetBoundedLabelText(keyboardWidget->titleLabel, title,
+                                          LV_LABEL_LONG_SCROLL_CIRCULAR);
     }
     if (desc != NULL && keyboardWidget->noticeLabel != NULL) {
-        lv_label_set_text(keyboardWidget->noticeLabel, desc);
+        SetKeyboardWidgetBoundedLabelText(keyboardWidget->noticeLabel, desc,
+                                          LV_LABEL_LONG_WRAP);
     }
 }
 

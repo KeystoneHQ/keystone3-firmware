@@ -15,6 +15,7 @@ use core::{fmt, str};
 
 // Prefixes
 const DASH_PREFIX: &str = "bitcoincash";
+const BCH2_PREFIX: &str = "bitcoincashii";
 
 const CHARSET: &[u8; 32] = b"qpzry9x8gf2tvdw0s3jn54khce6mua7l";
 const BASE58_CHARS: &[u8] = b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -210,12 +211,12 @@ impl Base58Codec {
 }
 
 impl CashAddrCodec {
-    pub fn encode_to_fmt(fmt: &mut fmt::Formatter, raw: Vec<u8>) -> fmt::Result {
-        let encoded = CashAddrCodec::encode(raw).map_err(|_| fmt::Error)?;
+    pub fn encode_to_fmt(fmt: &mut fmt::Formatter, raw: Vec<u8>, prefix: &str) -> fmt::Result {
+        let encoded = CashAddrCodec::encode(raw, prefix).map_err(|_| fmt::Error)?;
         write!(fmt, "{encoded}")
     }
 
-    pub fn encode(raw: Vec<u8>) -> Result<String> {
+    pub fn encode(raw: Vec<u8>, prefix: &str) -> Result<String> {
         // Calculate version byte
         let hash_flag = version_byte_flags::TYPE_P2PKH;
         let length = raw.len();
@@ -234,9 +235,6 @@ impl CashAddrCodec {
                 ))
             }
         } | hash_flag;
-
-        // Get prefix
-        let prefix = DASH_PREFIX;
 
         // Convert payload to 5 bit array
         let mut payload = Vec::with_capacity(1 + raw.len());
@@ -266,7 +264,6 @@ impl CashAddrCodec {
     }
     pub fn decode(addr_str: &str) -> Result<Address> {
         // Do some sanity checks on the string
-        let prefix = DASH_PREFIX;
         let mut payload_chars = addr_str.chars();
         if let Some(first_char) = payload_chars.next() {
             if first_char.is_lowercase() {
@@ -294,11 +291,15 @@ impl CashAddrCodec {
             .collect();
         let payload_5_bits = payload_5_bits?;
 
-        // Verify the checksum
-        let checksum = polymod(&[&expand_prefix(prefix), &payload_5_bits[..]].concat());
-        if checksum != 0 {
+        // Verify the checksum against known CashAddr prefixes and pick the network.
+        // BCH and BCH2 share the CashAddr algorithm and differ only by prefix.
+        let network = if polymod(&[&expand_prefix(DASH_PREFIX), &payload_5_bits[..]].concat()) == 0 {
+            Network::BitcoinCash
+        } else if polymod(&[&expand_prefix(BCH2_PREFIX), &payload_5_bits[..]].concat()) == 0 {
+            Network::BitcoinCashII
+        } else {
             return Err(BitcoinError::AddressError("invalid checksum".to_string()));
-        }
+        };
 
         // Convert from 5 bit array to byte array
         let len_5_bit = payload_5_bits.len();
@@ -338,7 +339,7 @@ impl CashAddrCodec {
             payload: Payload::P2pkh {
                 pubkey_hash: publickey_hash,
             },
-            network: Network::BitcoinCash,
+            network,
         })
     }
 }
@@ -365,13 +366,27 @@ mod tests {
     }
 
     #[test]
+    fn test_decode_bch2_cash_addr() {
+        // A BCH2 (bitcoincashii) address must decode to the BitcoinCashII network,
+        // never to BitcoinCash — the checksum encodes which prefix was used.
+        let addr_str = "qp3wjpa3tjlj042z2wv7hahsldgwhwy0rqheal7lr2";
+        let address = CashAddrCodec::decode(addr_str).unwrap();
+        assert!(matches!(address.network, Network::BitcoinCashII));
+        let script = address.script_pubkey();
+        assert_eq!(
+            script.encode_hex::<String>(),
+            "76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac"
+        );
+    }
+
+    #[test]
     fn test_cashaddr_encode_roundtrip() {
         let address = CashAddrCodec::decode(sample_cashaddr()).unwrap();
         let pubkey_hash = match address.payload {
             Payload::P2pkh { pubkey_hash } => pubkey_hash,
             _ => panic!("expected p2pkh payload"),
         };
-        let encoded = CashAddrCodec::encode(pubkey_hash.to_byte_array().to_vec()).unwrap();
+        let encoded = CashAddrCodec::encode(pubkey_hash.to_byte_array().to_vec(), "bitcoincash").unwrap();
         assert_eq!(encoded, sample_cashaddr());
     }
 

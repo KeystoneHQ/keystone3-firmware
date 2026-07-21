@@ -50,6 +50,7 @@ static UtxoViewToChain_t g_UtxoViewToChainMap[] = {
     {LtcTx, XPUB_TYPE_LTC, "m/49'/2'/0'"},
     {DashTx, XPUB_TYPE_DASH, "m/44'/5'/0'"},
     {BchTx, XPUB_TYPE_BCH, "m/44'/145'/0'"},
+    {Bch2Tx, XPUB_TYPE_BCH2, "m/44'/20145'/0'"},
     {DogeTx, XPUB_TYPE_DOGE, "m/44'/3'/0'"},
 #endif
 };
@@ -358,7 +359,7 @@ static void PreparePublicKeys(PtrT_CSliceFFI_ExtendedPublicKey public_keys, Exte
     keys[3].path = "m/86'/0'/0'";
     keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
 #ifdef WEB3_VERSION
-    public_keys->size = 9;
+    public_keys->size = 10;
     keys[4].path = "m/44'/60'/0'";
     keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
     keys[5].path = "m/44'/3'/0'";
@@ -372,6 +373,8 @@ static void PreparePublicKeys(PtrT_CSliceFFI_ExtendedPublicKey public_keys, Exte
     keys[8].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_DASH);
     keys[9].path = "m/44'/145'/0'";
     keys[9].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH);
+    keys[10].path = "m/44'/20145'/0'";
+    keys[10].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BCH2);
 #endif
 #endif
 }

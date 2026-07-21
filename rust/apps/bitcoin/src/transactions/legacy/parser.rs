@@ -54,11 +54,17 @@ impl TxData {
     fn parse_raw_tx_output(&self, output: &TxOut) -> Result<ParsedOutput> {
         let mut address = output.address.to_string();
         if output.is_change
-            && self.network == Network::BitcoinCash.get_unit()
+            && (self.network == Network::BitcoinCash.get_unit()
+                || self.network == Network::BitcoinCashII.get_unit())
             && output.address.starts_with("1")
         {
             let decoded = Base58Codec::decode(address.as_str())?;
-            address = CashAddrCodec::encode(decoded)?;
+            let prefix = if self.network == Network::BitcoinCashII.get_unit() {
+                "bitcoincashii"
+            } else {
+                "bitcoincash"
+            };
+            address = CashAddrCodec::encode(decoded, prefix)?;
         }
         // external == receive address
         let is_external = !output.is_change;

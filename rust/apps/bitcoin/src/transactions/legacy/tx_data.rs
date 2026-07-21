@@ -150,10 +150,18 @@ impl TxData {
     pub fn judge_then_check_my_output(&self, output: &TxOut) -> Result<()> {
         if output.is_change {
             let mut raw_addr = output.address.to_string();
-            if self.network == Network::BitcoinCash.get_unit() && raw_addr.starts_with("1") {
-                // convert bitcoin cash legacy address to cash address
+            if (self.network == Network::BitcoinCash.get_unit()
+                || self.network == Network::BitcoinCashII.get_unit())
+                && raw_addr.starts_with("1")
+            {
+                // convert bitcoin cash / bitcoin cash II legacy address to cash address
                 let decoded = Base58Codec::decode(raw_addr.as_str())?;
-                raw_addr = CashAddrCodec::encode(decoded)?;
+                let prefix = if self.network == Network::BitcoinCashII.get_unit() {
+                    "bitcoincashii"
+                } else {
+                    "bitcoincash"
+                };
+                raw_addr = CashAddrCodec::encode(decoded, prefix)?;
             }
             let change_address_path = output.change_address_path.to_string();
             let output_addr = get_address(change_address_path, &self.extended_pubkey)?;

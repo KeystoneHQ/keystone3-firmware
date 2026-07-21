@@ -81,6 +81,7 @@ const static CoinWalletInfo_t g_coinWalletBtn[] = {
     {CHAIN_DOGE, "", &coinDoge},
     {CHAIN_AVAX, "", &coinAva},
     {CHAIN_BCH, "", &coinBch},
+    {CHAIN_BCH2, "", &coinBch2},
     {CHAIN_APT, "", &coinApt},
     {CHAIN_SUI, "", &coinSui},
     {CHAIN_IOTA, "", &coinIota},

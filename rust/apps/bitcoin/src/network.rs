@@ -15,6 +15,7 @@ pub enum Network {
     Dogecoin,
     Dash,
     BitcoinCash,
+    BitcoinCashII,
     AvaxBtcBridge,
     Zcash,
 }
@@ -28,6 +29,7 @@ impl NetworkT for Network {
             Network::Dogecoin => "DOGE",
             Network::Dash => "DASH",
             Network::BitcoinCash => "BCH",
+            Network::BitcoinCashII => "BCH2",
             Network::Zcash => "ZEC",
         }
         .to_string()
@@ -41,6 +43,7 @@ impl NetworkT for Network {
             Network::Dogecoin => "Dogecoin",
             Network::Dash => "Dash",
             Network::BitcoinCash => "Bitcoin Cash",
+            Network::BitcoinCashII => "Bitcoin Cash II",
             Network::AvaxBtcBridge => "Avalanche BTC",
             Network::Zcash => "Zcash",
         }
@@ -57,6 +60,7 @@ impl Network {
             Network::Dogecoin => 3,
             Network::Dash => 5,
             Network::BitcoinCash => 145,
+            Network::BitcoinCashII => 20145,
             Network::AvaxBtcBridge => 60,
             Network::Zcash => 133,
         }
@@ -74,6 +78,7 @@ impl FromStr for Network {
             "DOGE" => Ok(Self::Dogecoin),
             "DASH" => Ok(Self::Dash),
             "BCH" => Ok(Self::BitcoinCash),
+            "BCH2" => Ok(Self::BitcoinCashII),
             "BTC_NATIVE_SEGWIT" => Ok(Self::Bitcoin),
             "BTC_SEGWIT" => Ok(Self::Bitcoin),
             "BTC_LEGACY" => Ok(Self::Bitcoin),

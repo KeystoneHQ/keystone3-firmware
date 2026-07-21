@@ -16,6 +16,7 @@
                                        HOME_WALLET_CARD_DOGE,    \
                                        HOME_WALLET_CARD_AVAX,    \
                                        HOME_WALLET_CARD_BCH,     \
+                                       HOME_WALLET_CARD_BCH2,    \
                                        HOME_WALLET_CARD_APT,     \
                                        HOME_WALLET_CARD_SUI,     \
                                        HOME_WALLET_CARD_IOTA,    \
@@ -74,6 +75,7 @@
         {HOME_WALLET_CARD_DOGE, false, "DOGE", true},     \
         {HOME_WALLET_CARD_AVAX, false, "AVAX", true},     \
         {HOME_WALLET_CARD_BCH, false, "BCH", true},       \
+        {HOME_WALLET_CARD_BCH2, false, "BCH2", true},     \
         {HOME_WALLET_CARD_APT, false, "APT", true},       \
         {HOME_WALLET_CARD_SUI, false, "SUI", true},       \
         {HOME_WALLET_CARD_IOTA, false, "IOTA", true},     \
@@ -192,6 +194,12 @@
             .coin = "BCH",                     \
             .chain = "Bitcoin Cash",           \
             .icon = &coinBch,                  \
+        },                                     \
+        {                                      \
+            .index = HOME_WALLET_CARD_BCH2,    \
+            .coin = "BCH2",                    \
+            .chain = "Bitcoin Cash II",        \
+            .icon = &coinBch2,                 \
         },                                     \
         {                                      \
             .index = HOME_WALLET_CARD_DOGE,    \

@@ -28,6 +28,7 @@ pub struct DASHAddressEncoding<'a> {
 pub struct BCHAddressEncoding<'a> {
     pub payload: &'a Payload,
     pub p2pkh_prefix: u8,
+    pub cash_prefix: &'a str,
 }
 
 pub struct ZECAddressEncoding<'a> {
@@ -97,7 +98,7 @@ impl<'a> fmt::Display for BCHAddressEncoding<'a> {
                 let base58_addr = base58::encode_check(&prefixed[..]);
                 let decoded = Base58Codec::decode(base58_addr.as_str());
                 match decoded {
-                    Ok(address) => CashAddrCodec::encode_to_fmt(fmt, address),
+                    Ok(address) => CashAddrCodec::encode_to_fmt(fmt, address, self.cash_prefix),
                     Err(_) => write!(fmt, "invalid addresses"),
                 }
             }
@@ -333,10 +334,27 @@ mod tests {
         let bch_encoding = BCHAddressEncoding {
             payload: &p2pkh,
             p2pkh_prefix: 0x00,
+            cash_prefix: "bitcoincash",
         };
         assert_eq!(
             bch_encoding.to_string(),
             "qp3wjpa3tjlj042z2wv7hahsldgwhwy0rq9sywjpyy"
         );
+    }
+
+    #[test]
+    fn test_bch2_encoding() {
+        // Same pubkey hash as the BCH test: only the CashAddr prefix
+        // ("bitcoincashii") differs, which changes the checksum. This proves BCH
+        // and BCH2 encode to distinct addresses (no cross-chain collision).
+        let p2pkh = p2pkh_payload("62e907b15cbf27d5425399ebf6f0fb50ebb88f18");
+        let bch2_encoding = BCHAddressEncoding {
+            payload: &p2pkh,
+            p2pkh_prefix: 0x00,
+            cash_prefix: "bitcoincashii",
+        };
+        let encoded = bch2_encoding.to_string();
+        assert_eq!(encoded, "qp3wjpa3tjlj042z2wv7hahsldgwhwy0rqheal7lr2");
+        assert_ne!(encoded, "qp3wjpa3tjlj042z2wv7hahsldgwhwy0rq9sywjpyy");
     }
 }

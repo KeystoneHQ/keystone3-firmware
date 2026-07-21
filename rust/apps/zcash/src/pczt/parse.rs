@@ -395,7 +395,7 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
     pczt: &Pczt,
 ) -> Result<ParsedPczt, ZcashError> {
     super::validate_supported_pczt(pczt)?;
-    reject_legacy_parse_unsupported_pczt(pczt)?;
+    reject_unsupported_pczt(pczt)?;
 
     let mut parsed_transparent = None;
 
@@ -430,7 +430,7 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
 }
 
 #[cfg(feature = "multi_coins")]
-fn reject_legacy_parse_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
+fn reject_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     {
         // The legacy multi-coins parser only displays transparent data. Reject any
         // shielded (Sapling/Orchard/Ironwood) or V6 PCZT instead of showing an

@@ -188,7 +188,7 @@ pub fn check_pczt_multi_coins<P: consensus::Parameters>(
     // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
     // mutating `pczt` so the normalized bytes carry the verified values forward.
     // transparent-only build: pczt's orchard feature (and resolve_fields) is not compiled here.
-    reject_legacy_check_unsupported_pczt(&pczt)?;
+    reject_unsupported_pczt(&pczt)?;
     let account_pubkey = transparent_account_pubkey_from_xpub(xpub)?;
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
@@ -230,7 +230,7 @@ fn transparent_account_pubkey_from_xpub(
 }
 
 #[cfg(feature = "multi_coins")]
-fn reject_legacy_check_unsupported_pczt(pczt: &Pczt) -> Result<()> {
+fn reject_unsupported_pczt(pczt: &Pczt) -> Result<()> {
     {
         // The legacy multi-coins check path only verifies transparent data. Reject any
         // shielded (Sapling/Orchard/Ironwood) or V6 PCZT so check, parse, and sign

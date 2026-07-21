@@ -83,7 +83,7 @@ impl PcztSigner for SeedSigner<'_> {
 #[cfg(not(feature = "cypherpunk"))]
 pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
     super::validate_supported_pczt(&pczt)?;
-    reject_legacy_unsupported_pczt(&pczt)?;
+    reject_unsupported_pczt(&pczt)?;
 
     let signer = low_level_signer::Signer::new(pczt);
 
@@ -97,7 +97,7 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
 }
 
 #[cfg(not(feature = "cypherpunk"))]
-fn reject_legacy_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
+fn reject_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     {
         // The legacy helper below carries the pre-NU6.3 transparent sighash implementation.
         // It must not be used for shielded (Sapling/Orchard/Ironwood) or V6 PCZTs.

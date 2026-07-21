@@ -19,6 +19,7 @@ pub(crate) fn parse_pczt(bytes: &[u8]) -> Result<Pczt, ZcashError> {
 
 pub(crate) fn validate_supported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     validate_sapling_bundle_consistency(pczt)?;
+    validate_empty_orchard_protocol_bundle_balances(pczt)?;
 
     {
         if pczt_has_ironwood_actions(pczt) && !pczt_is_v6(pczt) {
@@ -44,6 +45,18 @@ pub(crate) fn validate_supported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
 
     #[cfg(feature = "cypherpunk")]
     validate_distinct_orchard_protocol_rks(pczt)?;
+
+    Ok(())
+}
+
+fn validate_empty_orchard_protocol_bundle_balances(pczt: &Pczt) -> Result<(), ZcashError> {
+    for (pool, bundle) in [("Orchard", pczt.orchard()), ("Ironwood", pczt.ironwood())] {
+        if bundle.actions().is_empty() && bundle.value_sum().0 != 0 {
+            return Err(ZcashError::InvalidPczt(format!(
+                "{pool} value_sum must be zero when {pool} bundle is empty"
+            )));
+        }
+    }
 
     Ok(())
 }
@@ -232,6 +245,92 @@ pub(crate) fn pczt_requires_cypherpunk_support(pczt: &zcash_vendor::pczt::Pczt) 
         || !pczt.sapling().outputs().is_empty()
         || !pczt.orchard().actions().is_empty()
         || !pczt.ironwood().actions().is_empty()
+}
+
+#[cfg(all(test, feature = "cypherpunk"))]
+mod consistency_tests {
+    use alloc::{format, vec::Vec};
+
+    use ::pczt::roles::creator::Creator;
+    use serde::{Deserialize, Serialize};
+    use zcash_vendor::zcash_protocol::consensus::{BranchId, MainNetwork, NetworkConstants};
+
+    use super::*;
+
+    #[derive(Serialize, Deserialize)]
+    struct EmptyPcztWire {
+        global: ::pczt::common::Global,
+        transparent: Option<::pczt::transparent::Bundle>,
+        sapling: Option<::pczt::sapling::Bundle>,
+        orchard: Option<EmptyShieldedBundleWire>,
+        ironwood: Option<EmptyShieldedBundleWire>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct EmptyShieldedBundleWire {
+        actions: Vec<()>,
+        flags: u8,
+        value_sum: (u64, bool),
+        anchor: Option<[u8; 32]>,
+        note_version: NoteVersionWire,
+        zkproof: Option<Vec<u8>>,
+        bsk: Option<[u8; 32]>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    enum NoteVersionWire {
+        V2,
+        V3,
+    }
+
+    fn empty_bundle_with_nonzero_value_sum(pool: ShieldedPool) -> Vec<u8> {
+        let branch_id = match pool {
+            ShieldedPool::Orchard => BranchId::Nu6,
+            ShieldedPool::Ironwood => BranchId::Nu6_3,
+        };
+        let bytes = Creator::new(branch_id.into(), 10, MainNetwork.coin_type(), None, None)
+            .unwrap()
+            .build()
+            .unwrap()
+            .serialize()
+            .unwrap();
+        let mut wire: EmptyPcztWire = postcard::from_bytes(&bytes[8..]).unwrap();
+        let bundle = EmptyShieldedBundleWire {
+            actions: Vec::new(),
+            flags: match pool {
+                ShieldedPool::Orchard => 0b0000_0011,
+                ShieldedPool::Ironwood => 0b0000_0111,
+            },
+            value_sum: (1, false),
+            anchor: None,
+            note_version: match pool {
+                ShieldedPool::Orchard => NoteVersionWire::V2,
+                ShieldedPool::Ironwood => NoteVersionWire::V3,
+            },
+            zkproof: None,
+            bsk: None,
+        };
+        match pool {
+            ShieldedPool::Orchard => wire.orchard = Some(bundle),
+            ShieldedPool::Ironwood => wire.ironwood = Some(bundle),
+        }
+
+        postcard::to_extend(&wire, bytes[..8].to_vec()).unwrap()
+    }
+
+    #[test]
+    fn rejects_nonzero_value_sum_on_empty_orchard_protocol_bundles() {
+        for pool in [ShieldedPool::Orchard, ShieldedPool::Ironwood] {
+            let pczt = parse_pczt(&empty_bundle_with_nonzero_value_sum(pool)).unwrap();
+
+            assert_eq!(
+                validate_supported_pczt(&pczt),
+                Err(ZcashError::InvalidPczt(format!(
+                    "{pool} value_sum must be zero when {pool} bundle is empty"
+                )))
+            );
+        }
+    }
 }
 
 #[cfg(all(test, feature = "cypherpunk"))]

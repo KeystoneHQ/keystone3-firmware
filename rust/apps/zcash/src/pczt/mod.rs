@@ -782,14 +782,22 @@ pub(crate) mod test_support {
     }
 
     pub(crate) fn sample_orchard_change_pczt() -> SamplePczt {
-        sample_orchard_change_pczt_for_account(0)
+        sample_orchard_change_pczt_for_account(0, TxVersion::V6)
+    }
+
+    pub(crate) fn sample_legacy_orchard_change_pczt() -> SamplePczt {
+        sample_orchard_change_pczt_for_account(0, TxVersion::V5)
     }
 
     pub(crate) fn sample_orchard_foreign_change_pczt() -> SamplePczt {
-        sample_orchard_change_pczt_for_account(1)
+        sample_orchard_change_pczt_for_account(1, TxVersion::V6)
     }
 
-    fn sample_orchard_change_pczt_for_account(output_account: u32) -> SamplePczt {
+    fn sample_orchard_change_pczt_for_account(
+        output_account: u32,
+        tx_version: TxVersion,
+    ) -> SamplePczt {
+        let v6 = tx_version == TxVersion::V6;
         let params = MainNetwork;
         let seed = [7u8; 32];
         let ufvk_text = derive_ufvk(&params, &seed, "m/32'/133'/0'").unwrap();
@@ -857,8 +865,16 @@ pub(crate) mod test_support {
 
         let mut builder = orchard::builder::Builder::new(
             orchard::builder::BundleType::DEFAULT,
-            orchard::bundle::BundleVersion::orchard_v3(),
-            orchard::bundle::BundleVersion::orchard_v3().default_flags(),
+            if v6 {
+                orchard::bundle::BundleVersion::orchard_v3()
+            } else {
+                orchard::bundle::BundleVersion::orchard_v2()
+            },
+            if v6 {
+                orchard::bundle::BundleVersion::orchard_v3().default_flags()
+            } else {
+                orchard::bundle::BundleVersion::orchard_v2().default_flags()
+            },
             anchor,
         )
         .expect("default flags are representable under the bundle version");
@@ -878,8 +894,8 @@ pub(crate) mod test_support {
         let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();
         let pczt = Creator::build_from_parts(PcztParts {
             params,
-            version: TxVersion::V6,
-            consensus_branch_id: BranchId::Nu6_3,
+            version: tx_version,
+            consensus_branch_id: if v6 { BranchId::Nu6_3 } else { BranchId::Nu6 },
             lock_time: 0,
             expiry_height: BlockHeight::from_u32(10_000_000),
             transparent: None,
@@ -906,7 +922,7 @@ pub(crate) mod test_support {
                         })
                     })
                     .collect::<Vec<_>>();
-                assert_eq!(signing_action_accounts.len(), 2);
+                assert_eq!(signing_action_accounts.len(), if v6 { 2 } else { 1 });
 
                 for (action_index, account) in signing_action_accounts {
                     let derivation = orchard::pczt::Zip32Derivation::parse(

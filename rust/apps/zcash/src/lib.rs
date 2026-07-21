@@ -1844,6 +1844,56 @@ mod tests {
     }
 
     #[test]
+    fn test_v1_pczt_orchard_check_parse_and_sign() {
+        let sample = pczt::test_support::sample_legacy_orchard_change_pczt();
+        let v1_pczt = ::pczt::v1::Pczt::try_from(Pczt::parse(&sample.bytes).unwrap())
+            .unwrap()
+            .serialize();
+        assert_eq!(&v1_pczt[..8], b"PCZT\x01\0\0\0");
+
+        let parsed = parse_pczt_cypherpunk(
+            &MainNetwork,
+            &v1_pczt,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+        )
+        .unwrap();
+        assert!(parsed.get_ironwood().is_none());
+        let orchard = parsed
+            .get_orchard()
+            .expect("v1 Orchard bundle should decode");
+        assert_eq!(orchard.get_from().len(), 1);
+        assert!(orchard.get_from()[0].get_is_mine());
+        assert_eq!(orchard.get_from()[0].get_value(), "0.01 ZEC");
+        assert_eq!(orchard.get_to().len(), 1);
+        assert_eq!(orchard.get_to()[0].get_value(), "0.0099 ZEC");
+        assert_eq!(parsed.get_fee_value(), "0.0001 ZEC");
+
+        let normalized = check_pczt_cypherpunk(
+            &MainNetwork,
+            &v1_pczt,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .unwrap();
+        let signed = sign_checked_pczt(
+            &MainNetwork,
+            &normalized,
+            &sample.seed,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .unwrap();
+        assert!(Pczt::parse(&signed)
+            .unwrap()
+            .orchard()
+            .actions()
+            .iter()
+            .any(|action| action.spend().spend_auth_sig().is_some()));
+    }
+
+    #[test]
     fn test_parse_ignores_and_check_rejects_unsupported_ironwood_spend_zip32_path() {
         let sample = pczt::test_support::sample_ironwood_pczt();
         let parsed_pczt = parse_pczt_cypherpunk(

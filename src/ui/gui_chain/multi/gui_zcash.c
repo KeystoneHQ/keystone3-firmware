@@ -328,6 +328,12 @@ UREncodeResult *GuiGetZcashSignQrCodeData(void)
     return SignInternal(sign_zcash_tx, data);
 }
 
+UREncodeResult *GuiGetZcashSignUrDataUnlimited(void)
+{
+    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    return SignInternal(sign_zcash_tx_unlimited, data);
+}
+
 void FreeZcashMemory(void)
 {
     CHECK_FREE_UR_RESULT(g_urResult, false);

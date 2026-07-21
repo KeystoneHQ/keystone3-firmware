@@ -55,9 +55,16 @@ int32_t GuiForgetViewEventProcess(void *self, uint16_t usEvent, void *param, uin
         } else {
             return ERR_GUI_ERROR;
         }
+        if (tileIndex == SIG_FORGET_PASSWORD_PROVE_OWNERSHIP) {
+            GuiForgetProveOwnershipResult(false, param);   // show attempts on the prove-ownership tile
+            break;
+        }
         // GuiForgetPassCode(false, tileIndex);
         GuiLockScreenPassCode(false);
         GuiLockScreenErrorCount(param);
+        break;
+    case SIG_FORGET_PASSWORD_PROVE_OWNERSHIP_PASS:
+        GuiForgetProveOwnershipResult(true, NULL);   // ownership proven -> advance to set new PIN
         break;
     case SIG_SETTING_SET_PIN:
         GuiForgetPassSetPinPass((const char *)param);

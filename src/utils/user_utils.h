@@ -19,6 +19,7 @@ void ByteArrayToHexStr(uint8_t *array, uint32_t len, char *hex);
 bool CheckEntropy(const uint8_t *array, uint32_t len);
 bool CheckAllFF(const uint8_t *array, uint32_t len);
 bool CheckAllZero(const uint8_t *array, uint32_t len);
+bool IsHexStringWithLen(const char *value, size_t expectedLen);
 void RemoveFormatChar(char *str);
 void ArrayRandom(char *words, char *out, int count);
 int WordsListSlice(char *words, char wordsList[][10], uint8_t wordsCount);

@@ -17,6 +17,7 @@
 #include "fingerprint_process.h"
 #include "gui_model.h"
 #include "usb_task.h"
+#include "gui_wipe_device_widgets.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "usb_task.h"
@@ -25,6 +26,7 @@
 #endif
 
 #define DEFAULT_TIMER_COUNTER 5
+#define KEYBOARD_WIDGET_TEXT_WIDTH 408
 
 static KeyboardWidget_t *CreateKeyboardWidget();
 static void KeyboardConfirmHandler(lv_event_t *e);
@@ -89,6 +91,8 @@ static KeyboardWidget_t *CreateKeyboardWidget()
     }
     keyboardWidget->kb = NULL;
     keyboardWidget->errLabel = NULL;
+    keyboardWidget->titleLabel = NULL;
+    keyboardWidget->noticeLabel = NULL;
     static uint16_t sig = ENTER_PASSCODE_VERIFY_PASSWORD;
     keyboardWidget->sig = &sig;
     keyboardWidget->countDownTimer = NULL;
@@ -108,6 +112,33 @@ void SetKeyboardWidgetSig(KeyboardWidget_t *keyboardWidget, uint16_t *sig)
 void SetKeyboardWidgetSelf(KeyboardWidget_t *keyboardWidget, KeyboardWidget_t **self)
 {
     keyboardWidget->self = self;
+}
+
+static void SetKeyboardWidgetBoundedLabelText(lv_obj_t *label, const char *text,
+        lv_label_long_mode_t longMode)
+{
+    lv_label_set_text(label, text);
+    if (lv_obj_get_self_width(label) > KEYBOARD_WIDGET_TEXT_WIDTH) {
+        lv_label_set_long_mode(label, longMode);
+        lv_obj_set_width(label, KEYBOARD_WIDGET_TEXT_WIDTH);
+    }
+}
+
+// Override the default title/desc (used e.g. by the forget-pass "Prove Device Ownership" step). Pass NULL to
+// leave a field unchanged.
+void SetKeyboardWidgetTitle(KeyboardWidget_t *keyboardWidget, const char *title, const char *desc)
+{
+    if (keyboardWidget == NULL) {
+        return;
+    }
+    if (title != NULL && keyboardWidget->titleLabel != NULL) {
+        SetKeyboardWidgetBoundedLabelText(keyboardWidget->titleLabel, title,
+                                          LV_LABEL_LONG_SCROLL_CIRCULAR);
+    }
+    if (desc != NULL && keyboardWidget->noticeLabel != NULL) {
+        SetKeyboardWidgetBoundedLabelText(keyboardWidget->noticeLabel, desc,
+                                          LV_LABEL_LONG_WRAP);
+    }
 }
 
 static void ClearKeyboardWidgetCache(KeyboardWidget_t *keyboardWidget)
@@ -223,7 +254,15 @@ static void CloseKeyboardWidgetViewHandler(lv_event_t *e)
 KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t buttonCb, uint16_t *signal)
 {
     KeyboardWidget_t *keyboardWidget = CreateKeyboardWidget();
-    lv_obj_t *keyboardHintBox = GuiCreateContainerWithParent(parent, 480, 800 - GUI_STATUS_BAR_HEIGHT);
+    // This is a modal over a live page: it must cover the parent COMPLETELY and absorb touches.
+    // Size to the parent, not a fixed 800-48 — parents differ per caller (page content zone vs
+    // lv_layer_top spanning the full screen), and a fixed height leaves the bottom strip of
+    // lv_layer_top uncovered, exposing the underlying page's buttons. CLICKABLE must be re-added
+    // because GuiCreateContainerWithParent clears it, which lets taps on blank modal areas fall
+    // through to the widgets beneath.
+    lv_obj_update_layout(parent);
+    lv_obj_t *keyboardHintBox = GuiCreateContainerWithParent(parent, lv_obj_get_width(parent), lv_obj_get_height(parent));
+    lv_obj_add_flag(keyboardHintBox, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(keyboardHintBox, LV_ALIGN_DEFAULT, 0, 0);
 
     lv_obj_t *img = GuiCreateImg(keyboardHintBox, &imgArrowLeft);
@@ -238,11 +277,13 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
 
     lv_obj_t *label = GuiCreateScrollTitleLabel(keyboardHintBox, _("change_passcode_mid_btn"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 12 + GUI_NAV_BAR_HEIGHT);
+    keyboardWidget->titleLabel = label;
     label = GuiCreateNoticeLabel(keyboardHintBox, _("passphrase_add_password"));
     if (*signal == SIG_FINGER_REGISTER_ADD_SUCCESS) {
         lv_label_set_text(label, _("fingerprint_add_password"));
     }
     lv_obj_align_to(label, lv_obj_get_child(keyboardHintBox, lv_obj_get_child_cnt(keyboardHintBox) - 2), LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    keyboardWidget->noticeLabel = label;
     keyboardWidget->keyboardHintBox = keyboardHintBox;
 
     KeyBoard_t *kb = GuiCreateFullKeyBoard(keyboardHintBox, KeyboardConfirmHandler, KEY_STONE_FULL_L, keyboardWidget);
@@ -264,7 +305,7 @@ KeyboardWidget_t *GuiCreateKeyboardWidgetView(lv_obj_t *parent, lv_event_cb_t bu
     lv_obj_add_event_cb(img, SwitchPasswordModeHandler, LV_EVENT_CLICKED, ta);
     keyboardWidget->eyeImg = img;
 
-    if (*signal != SIG_FINGER_REGISTER_ADD_SUCCESS) {
+    if (*signal != SIG_FINGER_REGISTER_ADD_SUCCESS && *signal != SIG_FORGET_PASSWORD_PROVE_OWNERSHIP) {
         button = GuiCreateImgLabelAdaptButton(keyboardHintBox, _("FORGET"), &imgLock, ForgetHandler, NULL);
         lv_obj_align(button, LV_ALIGN_TOP_RIGHT, -24, 439 - GUI_STATUS_BAR_HEIGHT);
     }
@@ -429,9 +470,21 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
     memset_s(g_pinBuf, sizeof(g_pinBuf), 0, sizeof(g_pinBuf));
     keyboardWidget->currentNum = 0;
     printf("GuiShowErrorNumber error count is %d\n", passwordVerifyResult->errorCount);
+
+    // Forget-pass prove-ownership counts toward loginPasswordErrorCount (cap MAX_LOGIN) and, at the
+    // cap, opens the existing wipe-device view. Every other caller uses the settings device-lock cap
+    // (MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) and the in-modal device-lock hintbox.
+    uint16_t signal = passwordVerifyResult->signal != NULL ? *(uint16_t *)passwordVerifyResult->signal : 0;
+    bool proveOwnership = (signal == SIG_FORGET_PASSWORD_PROVE_OWNERSHIP);
+    uint8_t maxCount = proveOwnership ? MAX_LOGIN_PASSWORD_ERROR_COUNT
+                                      : MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX;
+    printf("GuiShowErrorNumber signal=%u proveOwnership=%d maxCount=%u lock=%d forget=%d wipe=%d\r\n",
+           (unsigned int)signal, proveOwnership, (unsigned int)maxCount, g_lockView.isActive, g_forgetPassView.isActive,
+           g_wipeDeviceView.isActive);
+
     char hint[BUFFER_SIZE_128];
     char tempBuf[BUFFER_SIZE_128];
-    uint8_t cnt = MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX - passwordVerifyResult->errorCount;
+    uint8_t cnt = maxCount - passwordVerifyResult->errorCount;
     if (cnt > 1) {
         snprintf_s(hint, BUFFER_SIZE_128, _("unlock_device_attempts_left_plural_times_fmt"), cnt);
     } else {
@@ -439,9 +492,30 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
     }
     snprintf_s(tempBuf, BUFFER_SIZE_128, "#F55831 %s#", hint);
     GuiSetErrorLabel(keyboardWidget, tempBuf);
-    if (passwordVerifyResult->errorCount == MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) {
+    if (passwordVerifyResult->errorCount == maxCount) {
         CloseUsb();
-        GuiShowPasswordErrorHintBox(keyboardWidget);
+        printf("GuiShowErrorNumber max reached signal=%u proveOwnership=%d errorCount=%u\r\n",
+               (unsigned int)signal, proveOwnership, (unsigned int)passwordVerifyResult->errorCount);
+        if (proveOwnership) {
+            // Tear down the modal first (self-pointer NULLs the caller's handle), then unwind the
+            // forget-pass flow and open the existing wipe-device page on top of the lock screen.
+            printf("prove-ownership wipe transition: delete keyboard lock=%d forget=%d wipe=%d\r\n",
+                   g_lockView.isActive, g_forgetPassView.isActive, g_wipeDeviceView.isActive);
+            GuiDeleteKeyboardWidget(keyboardWidget);
+            if (GuiCheckIfViewOpened(&g_lockView)) {
+                int32_t closeRet = GuiCloseToTargetView(&g_lockView);
+                printf("prove-ownership wipe transition: closeToLock ret=%d lock=%d forget=%d wipe=%d\r\n",
+                       closeRet, g_lockView.isActive, g_forgetPassView.isActive, g_wipeDeviceView.isActive);
+            } else {
+                printf("prove-ownership wipe transition: lock view not opened, skip closeToLock\r\n");
+            }
+            GuiWipeDeviceSetForced(true);
+            int32_t openRet = GuiFrameOpenView(&g_wipeDeviceView);
+            printf("prove-ownership wipe transition: openWipe ret=%d lock=%d forget=%d wipe=%d\r\n",
+                   openRet, g_lockView.isActive, g_forgetPassView.isActive, g_wipeDeviceView.isActive);
+        } else {
+            GuiShowPasswordErrorHintBox(keyboardWidget);
+        }
     }
 }
 
@@ -450,6 +524,11 @@ static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget)
     lv_obj_t *errHintBox = GuiCreateResultHintbox(386, &imgFailed,
                            _("unlock_device_error_attempts_exceed"), _("unlock_device_error_attempts_exceed_desc"),
                            NULL, DARK_GRAY_COLOR, _("unlock_device_error_btn_start_text"), DARK_GRAY_COLOR);
+    if (keyboardWidget->keyboardHintBox != NULL &&
+            lv_obj_get_parent(keyboardWidget->keyboardHintBox) == lv_layer_top()) {
+        lv_obj_set_parent(errHintBox, lv_layer_top());
+        lv_obj_move_foreground(errHintBox);
+    }
 
     lv_obj_t *btn = GuiGetHintBoxRightBtn(errHintBox);
     lv_label_set_text(lv_obj_get_child(btn, 0), _("unlock_device_error_btn_start_text"));
@@ -464,8 +543,8 @@ static void GuiShowPasswordErrorHintBox(KeyboardWidget_t *keyboardWidget)
 static void LockDeviceHandler(lv_event_t *e)
 {
     KeyboardWidget_t *keyboardWidget = (KeyboardWidget_t *)lv_event_get_user_data(e);
-    GuiHintBoxToLockSreen();
     GuiDeleteKeyboardWidget(keyboardWidget);
+    GuiHintBoxToLockSreen();
 }
 
 static void GuiHintBoxToLockSreen(void)
@@ -477,6 +556,7 @@ static void GuiHintBoxToLockSreen(void)
         FpRecognize(RECOGNIZE_UNLOCK);
     }
 }
+
 
 static void CountDownHandler(lv_timer_t *timer)
 {
@@ -491,8 +571,8 @@ static void CountDownHandler(lv_timer_t *timer)
     }
 
     if (*keyboardWidget->timerCounter <= 0) {
-        GuiHintBoxToLockSreen();
         GuiDeleteKeyboardWidget(keyboardWidget);
+        GuiHintBoxToLockSreen();
     }
 }
 

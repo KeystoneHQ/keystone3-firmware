@@ -11,6 +11,7 @@
 #include "keystore.h"
 #include "draw_on_lcd.h"
 #include "account_manager.h"
+#include "se_manager.h"
 #include "drv_mpu.h"
 
 #define GD25_FLASH_ID               (0xC84018)
@@ -55,7 +56,7 @@ void PowerOnSelfCheck(void)
         uint32_t c = 0x666666;
         DrawStringOnLcd(170, 456, "About 1 minute", (uint16_t)(((c & 0xF80000) >> 16) | ((c & 0xFC00) >> 13) | ((c & 0x1C00) << 3) | ((c & 0xF8) << 5)), &openSans_20);
         FpWipeManageInfo();
-        ErasePublicInfo();
+        SE_WipeAll();
         DestroyAccount(0);
         DestroyAccount(1);
         DestroyAccount(2);
@@ -63,6 +64,7 @@ void PowerOnSelfCheck(void)
             Gd25FlashBlockErase(addr);
             printf("flash erase address: %#x\n", addr);
         }
+        ErasePublicInfo();
         NVIC_SystemReset();
     }
 }

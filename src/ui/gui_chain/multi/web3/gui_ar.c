@@ -1,6 +1,7 @@
 #include "gui_ar.h"
 #include "gui_chain_components.h"
 #include "rsa.h"
+#include "user_utils.h"
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
@@ -8,6 +9,8 @@ static URParseMultiResult *g_urMultiResult = NULL;
 static ArweaveRequestType g_requestType = ArweaveRequestTypeTransaction;
 static void *g_parseResult = NULL;
 static bool g_isAoTransfer = false;
+
+#define ARWEAVE_XPUB_HEX_LEN 1024
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                                                           \
     if (result != NULL)                                                                                                           \
@@ -85,7 +88,7 @@ static void TagsRender(cJSON *root, int size, lv_obj_t *parent)
 bool IsArweaveSetupComplete(void)
 {
     char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
-    return xPub != NULL && strlen(xPub) == 1024;
+    return IsHexStringWithLen(xPub, ARWEAVE_XPUB_HEX_LEN);
 }
 
 PtrT_TransactionCheckResult GuiGetArCheckResult(void)

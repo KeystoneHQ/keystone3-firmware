@@ -27,7 +27,7 @@ zeroize = { workspace = true }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }
-pczt = { version = "0.8.0-rc.1", default-features = false, features = ["io-finalizer", "orchard", "sapling", "transparent", "zcp-builder"] }
+pczt = { version = "0.8.0-rc.1", default-features = false, features = ["io-finalizer", "orchard", "sapling", "spend-finalizer", "transparent", "zcp-builder"] }
 zcash_primitives = { version = "0.29.0", default-features = false, features = ["circuits", "test-dependencies", "transparent-inputs"] }
 incrementalmerkletree = { version = "0.8.2", default-features = false }
 shardtree = "0.6.2"

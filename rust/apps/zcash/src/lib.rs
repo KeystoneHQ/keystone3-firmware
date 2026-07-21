@@ -1904,21 +1904,41 @@ mod tests {
     }
 
     #[test]
-    fn test_v1_pczt_orchard_check_parse_and_sign() {
-        let sample = pczt::test_support::sample_legacy_orchard_change_pczt();
-        let v1_pczt = ::pczt::v1::Pczt::try_from(Pczt::parse(&sample.bytes).unwrap())
-            .unwrap()
-            .serialize();
-        assert_eq!(&v1_pczt[..8], b"PCZT\x01\0\0\0");
+    fn test_v1_pczt_transparent_orchard_check_parse_and_sign() {
+        let sample = pczt::test_support::sample_legacy_transparent_orchard_pczt();
+        assert_eq!(&sample.bytes[..8], b"PCZT\x01\0\0\0");
+
+        let fixture = Pczt::parse(&sample.bytes).unwrap();
+        assert_eq!(*fixture.global().tx_version(), constants::V5_TX_VERSION);
+        assert_eq!(fixture.transparent().inputs().len(), 1);
+        assert_eq!(fixture.transparent().outputs().len(), 1);
+        assert_eq!(fixture.orchard().actions().len(), 2);
+        assert!(fixture
+            .orchard()
+            .actions()
+            .iter()
+            .all(|action| action.spend().spend_auth_sig().is_none()));
+        assert!(fixture.ironwood().actions().is_empty());
 
         let parsed = parse_pczt_cypherpunk(
             &MainNetwork,
-            &v1_pczt,
+            &sample.bytes,
             &sample.ufvk_text,
             &sample.seed_fingerprint,
         )
         .unwrap();
         assert!(parsed.get_ironwood().is_none());
+
+        let transparent = parsed
+            .get_transparent()
+            .expect("v1 transparent bundle should decode");
+        assert_eq!(transparent.get_from().len(), 1);
+        assert!(transparent.get_from()[0].get_is_mine());
+        assert_eq!(transparent.get_from()[0].get_value(), "0.01 ZEC");
+        assert_eq!(transparent.get_to().len(), 1);
+        assert_eq!(transparent.get_to()[0].get_value(), "0.0099 ZEC");
+        assert!(!transparent.get_to()[0].get_is_change());
+
         let orchard = parsed
             .get_orchard()
             .expect("v1 Orchard bundle should decode");
@@ -1926,17 +1946,27 @@ mod tests {
         assert!(orchard.get_from()[0].get_is_mine());
         assert_eq!(orchard.get_from()[0].get_value(), "0.01 ZEC");
         assert_eq!(orchard.get_to().len(), 1);
-        assert_eq!(orchard.get_to()[0].get_value(), "0.0099 ZEC");
-        assert_eq!(parsed.get_fee_value(), "0.0001 ZEC");
+        assert_eq!(orchard.get_to()[0].get_value(), "0.00995 ZEC");
+        assert!(orchard.get_to()[0].get_is_change());
+        assert_eq!(parsed.get_fee_value(), "0.00015 ZEC");
 
         let normalized = check_pczt_cypherpunk(
             &MainNetwork,
-            &v1_pczt,
+            &sample.bytes,
             &sample.ufvk_text,
             &sample.seed_fingerprint,
             0,
         )
         .unwrap();
+        assert!(matches!(
+            ::pczt::roles::spend_finalizer::SpendFinalizer::new(Pczt::parse(&normalized).unwrap())
+                .finalize_spends()
+                .unwrap_err(),
+            ::pczt::roles::spend_finalizer::Error::TransparentFinalize(
+                zcash_vendor::transparent::pczt::SpendFinalizerError::MissingSignature
+            )
+        ));
+
         let signed = sign_checked_pczt(
             &MainNetwork,
             &normalized,
@@ -1945,12 +1975,23 @@ mod tests {
             0,
         )
         .unwrap();
-        assert!(Pczt::parse(&signed)
-            .unwrap()
+        let signed = Pczt::parse(&signed).unwrap();
+
+        ::pczt::roles::spend_finalizer::SpendFinalizer::new(signed.clone())
+            .finalize_spends()
+            .expect("the one transparent input should be signed");
+
+        let signed_orchard_actions = signed
             .orchard()
             .actions()
             .iter()
-            .any(|action| action.spend().spend_auth_sig().is_some()));
+            .enumerate()
+            .filter_map(|(index, action)| {
+                action.spend().spend_auth_sig().is_some().then_some(index)
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(signed_orchard_actions, vec![0]);
+        assert!(signed.ironwood().actions().is_empty());
     }
 
     #[test]

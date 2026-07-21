@@ -834,26 +834,25 @@ pub(crate) mod test_support {
     }
 }
 
-#[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]
+#[cfg(all(test, any(feature = "multi_coins", feature = "cypherpunk")))]
 pub(crate) mod legacy_test_support {
-    use alloc::{
-        string::{String, ToString},
-        vec,
-        vec::Vec,
-    };
+    #[cfg(feature = "multi_coins")]
+    use alloc::string::{String, ToString};
+    use alloc::{vec, vec::Vec};
 
     use ::pczt::roles::{creator::Creator, updater::Updater};
     use bitcoin::secp256k1::Secp256k1;
-    use keystore::algorithms::{
-        secp256k1::get_extended_public_key_by_seed, zcash::calculate_seed_fingerprint,
-    };
+    #[cfg(feature = "multi_coins")]
+    use keystore::algorithms::secp256k1::get_extended_public_key_by_seed;
+    use keystore::algorithms::zcash::calculate_seed_fingerprint;
     use rand_core::OsRng;
     use zcash_primitives::transaction::{
         builder::{BuildConfig, Builder, PcztResult},
         fees::zip317,
     };
+    #[cfg(feature = "multi_coins")]
+    use zcash_vendor::pczt::Pczt;
     use zcash_vendor::{
-        pczt::Pczt,
         transparent::{
             bundle as transparent,
             keys::{AccountPrivKey, IncomingViewingKey},
@@ -869,7 +868,9 @@ pub(crate) mod legacy_test_support {
         pub(crate) bytes: Vec<u8>,
         pub(crate) seed: Vec<u8>,
         pub(crate) seed_fingerprint: [u8; 32],
+        #[cfg(feature = "multi_coins")]
         pub(crate) xpub: String,
+        #[cfg(feature = "multi_coins")]
         pub(crate) input_pubkey: [u8; 33],
     }
 
@@ -883,6 +884,7 @@ pub(crate) mod legacy_test_support {
         ]
     }
 
+    #[cfg(feature = "multi_coins")]
     pub(crate) fn legacy_transparent_pczt_with_input_derivation(
         bytes: &[u8],
         seed_fingerprint: [u8; 32],
@@ -978,6 +980,7 @@ pub(crate) mod legacy_test_support {
             .unwrap()
             .finish();
 
+        #[cfg(feature = "multi_coins")]
         let xpub = get_extended_public_key_by_seed(&seed, &"M/44'/133'/0'".into())
             .unwrap()
             .to_string();
@@ -986,7 +989,9 @@ pub(crate) mod legacy_test_support {
             bytes: pczt.serialize().unwrap(),
             seed: seed.to_vec(),
             seed_fingerprint,
+            #[cfg(feature = "multi_coins")]
             xpub,
+            #[cfg(feature = "multi_coins")]
             input_pubkey,
         }
     }

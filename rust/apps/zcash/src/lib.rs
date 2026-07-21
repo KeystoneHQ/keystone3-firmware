@@ -145,7 +145,7 @@ fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
         "transparent xpub is not present".to_string(),
     ))?;
     pczt::check::check_pczt_orchard(params, seed_fingerprint, account_index, &ufvk, &pczt)?;
-    pczt::check::check_pczt_transparent(
+    let has_my_transparent_input = pczt::check::check_pczt_transparent(
         params,
         seed_fingerprint,
         account_index,
@@ -153,18 +153,11 @@ fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
         &pczt,
         false,
     )?;
-
-    let pczt = match policy {
-        ShieldedActionPolicy::Single => pczt,
-        ShieldedActionPolicy::Batch => {
-            let (actions, pczt) =
-                signable_shielded_actions(params, pczt, seed_fingerprint, account_index, policy)?;
-            if actions.is_empty() {
-                return Err(ZcashError::PcztNoMyInputs);
-            }
-            pczt
-        }
-    };
+    let (signable_actions, pczt) =
+        signable_shielded_actions(params, pczt, seed_fingerprint, account_index, policy)?;
+    if signable_actions.is_empty() && !has_my_transparent_input {
+        return Err(ZcashError::PcztNoMyInputs);
+    }
 
     pczt.serialize()
         .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
@@ -2372,8 +2365,20 @@ mod tests {
     }
 
     #[test]
-    fn test_sign_checked_pczt_rejects_foreign_seed() {
+    fn test_check_and_sign_pczt_reject_foreign_seed() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
+        let foreign_seed = [9u8; 32];
+        let foreign_fingerprint = calculate_seed_fingerprint(&foreign_seed).unwrap();
+
+        let check_result = check_pczt_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &foreign_fingerprint,
+            0,
+        );
+        assert!(matches!(check_result, Err(ZcashError::PcztNoMyInputs)));
+
         let normalized = check_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
@@ -2382,8 +2387,6 @@ mod tests {
             0,
         )
         .unwrap();
-        let foreign_seed = [9u8; 32];
-        let foreign_fingerprint = calculate_seed_fingerprint(&foreign_seed).unwrap();
 
         let result = sign_checked_pczt(
             &pczt::test_support::Nu6_3Network,
@@ -2393,6 +2396,21 @@ mod tests {
             0,
         );
         assert!(matches!(result, Err(ZcashError::PcztNoMyInputs)));
+    }
+
+    #[test]
+    fn test_check_pczt_accepts_owned_transparent_input() {
+        let sample = pczt::legacy_test_support::legacy_transparent_sample();
+        let ufvk = derive_ufvk(&MainNetwork, &sample.seed, "m/32'/133'/0'").unwrap();
+
+        check_pczt_cypherpunk(
+            &MainNetwork,
+            &sample.bytes,
+            &ufvk,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .expect("an owned transparent input satisfies singleton ownership");
     }
 
     #[test]

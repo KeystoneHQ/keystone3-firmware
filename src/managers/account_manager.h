@@ -8,6 +8,7 @@
 
 #define WALLET_NAME_MAX_LEN                 16
 #define ZCASH_UFVK_MAX_LEN                  384
+#define ZCASH_UFVK_BUFFER_SIZE              (ZCASH_UFVK_MAX_LEN + 1)
 
 typedef enum {
     PASSCODE_TYPE_PIN,
@@ -48,8 +49,8 @@ typedef struct {
 
 typedef struct {
     uint8_t accountIndex;
-    char mainnetUfvkCache[ZCASH_UFVK_MAX_LEN + 1];
-    char testnetUfvkCache[ZCASH_UFVK_MAX_LEN + 1];
+    char mainnetUfvkCache[ZCASH_UFVK_BUFFER_SIZE];
+    char testnetUfvkCache[ZCASH_UFVK_BUFFER_SIZE];
     uint8_t seedFingerprint[32];
 } ZcashUFVKCache_t;
 

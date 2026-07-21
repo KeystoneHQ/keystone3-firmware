@@ -54,8 +54,8 @@ void *GuiGetZcashGUIData(void)
         parseResult = parse_zcash_tx_multi_coins(g_checkedPczt, sfp);
 #endif
 #ifdef CYPHERPUNK_VERSION
-        char mainnetUfvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
-        char testnetUfvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
+        char mainnetUfvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
+        char testnetUfvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
         GetZcashUFVK(GetCurrentAccountIndex(), mainnetUfvk);
         GetZcashTestnetUFVK(GetCurrentAccountIndex(), testnetUfvk);
         parseResult = parse_zcash_tx_cypherpunk(g_checkedPczt, mainnetUfvk, testnetUfvk, sfp);
@@ -350,8 +350,8 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
     return check_zcash_tx_multi_coins(data, xpub, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39, &g_checkedPczt);
 #endif
 #ifdef CYPHERPUNK_VERSION
-    char mainnetUfvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
-    char testnetUfvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    char mainnetUfvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
+    char testnetUfvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
     GetZcashUFVK(GetCurrentAccountIndex(), mainnetUfvk);
     GetZcashTestnetUFVK(GetCurrentAccountIndex(), testnetUfvk);
     return check_zcash_tx_cypherpunk(

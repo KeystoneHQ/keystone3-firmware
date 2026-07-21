@@ -12,6 +12,7 @@
 #include "gui_zcash.h"
 #include "keystore.h"
 #include "screen_manager.h"
+#include "fetch_sensitive_data_task.h"
 #include "general/eapdu_services/service_resolve_ur.h"
 #include "user_memory.h"
 
@@ -47,6 +48,10 @@ static lv_obj_t *g_signSlider = NULL;
 static lv_obj_t *g_parseErrorHintBox = NULL;
 static KeyboardWidget_t *g_keyboardWidget = NULL;
 
+typedef struct {
+    ZcashCheckedPczt *checkedBatch;
+} ZcashCheckedBatchCleanup_t;
+
 static void *GuiParseZcashBatchData(void);
 static void CheckSliderProcessHandler(lv_event_t *e);
 static void GuiRenderCurrentTransaction(bool showSignSlider);
@@ -68,6 +73,32 @@ static void FreeCheckedBatch(void)
     }
 }
 
+static int32_t FreeCheckedBatchAsync(const void *data, uint32_t dataLen)
+{
+    if (data == NULL || dataLen != sizeof(ZcashCheckedBatchCleanup_t)) {
+        return ERR_GENERAL_FAIL;
+    }
+
+    const ZcashCheckedBatchCleanup_t *cleanup = data;
+    free_zcash_checked_pczt(cleanup->checkedBatch);
+    return SUCCESS_CODE;
+}
+
+static void DeferFreeCheckedBatch(void)
+{
+    if (g_checkedBatch == NULL) {
+        return;
+    }
+
+    ZcashCheckedBatchCleanup_t cleanup = {
+        .checkedBatch = g_checkedBatch,
+    };
+    g_checkedBatch = NULL;
+
+    // Signing uses this pointer on the same FIFO task, so its destructor cannot overtake it.
+    AsyncExecute(FreeCheckedBatchAsync, &cleanup, sizeof(cleanup));
+}
+
 static void ClearPageData(void)
 {
     g_currentTxIndex = 0;
@@ -75,7 +106,7 @@ static void ClearPageData(void)
     g_currentTransaction = NULL;
     g_displayZcashBatch = NULL;
 
-    FreeCheckedBatch();
+    DeferFreeCheckedBatch();
 
     if (g_parseResult != NULL) {
         free_TransactionParseResult_DisplayZcashBatch(g_parseResult);
@@ -149,8 +180,8 @@ PtrT_TransactionCheckResult GuiGetZcashBatchCheckResult(void)
     uint8_t sfp[32] = {0};
     uint32_t zcashAccountIndex = 0;
     uint8_t accountNum = 0;
-    char mainnetUfvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
-    char testnetUfvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    char mainnetUfvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
+    char testnetUfvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
 
     FreeCheckedBatch();
 
@@ -376,7 +407,7 @@ static void GuiRenderCurrentTransaction(bool showSignSlider)
 
 void GuiZcashBatchWidgetsRefresh(void)
 {
-    if (g_parseResult == NULL || g_parseResult->error_code != 0) {
+    if (g_parseResult == NULL || g_parseResult->error_code != 0 || g_displayZcashBatch == NULL) {
         return;
     }
 
@@ -412,10 +443,10 @@ static void *GuiParseZcashBatchData(void)
         free_TransactionCheckResult(checkResult);
     }
 
-    uint8_t sfp[32];
+    uint8_t sfp[32] = {0};
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
 
-    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
     g_parseResult = parse_zcash_batch_tx_cypherpunk(
         g_checkedBatch,

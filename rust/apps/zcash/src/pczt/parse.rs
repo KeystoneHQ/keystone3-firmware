@@ -432,12 +432,12 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
 #[cfg(feature = "multi_coins")]
 fn reject_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     {
-        // The legacy multi-coins parser only displays transparent data. Reject any
-        // shielded (Sapling/Orchard/Ironwood) or V6 PCZT instead of showing an
-        // incomplete transaction review.
-        if super::pczt_requires_cypherpunk_support(pczt) {
+        // The multi-coins parser only displays transparent data. Reject shielded
+        // content and unknown transaction formats instead of showing an incomplete
+        // transaction review.
+        if super::pczt_is_unsupported_by_transparent_only(pczt) {
             return Err(ZcashError::InvalidPczt(
-                "Shielded or V6 PCZTs require cypherpunk parsing support".to_string(),
+                "PCZT is not supported by transparent-only parsing".to_string(),
             ));
         }
     }
@@ -972,31 +972,23 @@ mod display_accounting_tests {
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]
 mod legacy_tests {
     use super::*;
-    use zcash_vendor::{
-        pczt::roles::creator::Creator,
-        zcash_protocol::consensus::{BranchId, MainNetwork, NetworkConstants},
-    };
+    use zcash_vendor::zcash_protocol::consensus::MainNetwork;
 
     #[test]
-    fn legacy_parse_rejects_v6_pczt() {
-        let pczt = Creator::new(
-            BranchId::Nu6_3.into(),
-            10,
-            MainNetwork.coin_type(),
-            None,
-            None,
-        )
-        .unwrap()
-        .build()
-        .unwrap();
+    fn legacy_parse_accepts_transparent_only_v6_pczt() {
+        let sample = super::super::legacy_test_support::legacy_transparent_v6_sample();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
 
-        let result = parse_pczt_multi_coins(&MainNetwork, &[7u8; 32], &pczt);
+        let parsed = parse_pczt_multi_coins(&MainNetwork, &sample.seed_fingerprint, &pczt)
+            .expect("transparent-only v6 PCZT should parse");
 
-        assert!(matches!(
-            result,
-            Err(ZcashError::InvalidPczt(msg))
-                if msg == "Shielded or V6 PCZTs require cypherpunk parsing support"
-        ));
+        assert!(parsed
+            .get_transparent()
+            .unwrap()
+            .get_from()
+            .first()
+            .unwrap()
+            .get_is_mine());
     }
 }
 

@@ -225,12 +225,12 @@ fn transparent_account_pubkey_from_xpub(
 #[cfg(feature = "multi_coins")]
 fn reject_unsupported_pczt(pczt: &Pczt) -> Result<()> {
     {
-        // The legacy multi-coins check path only verifies transparent data. Reject any
-        // shielded (Sapling/Orchard/Ironwood) or V6 PCZT so check, parse, and sign
-        // enforce the same transparent-only boundary.
-        if pczt::pczt_requires_cypherpunk_support(pczt) {
+        // The multi-coins check path only verifies transparent data. Reject shielded
+        // content and unknown transaction formats so check, parse, and sign enforce
+        // the same transparent-only boundary.
+        if pczt::pczt_is_unsupported_by_transparent_only(pczt) {
             return Err(ZcashError::InvalidPczt(
-                "Shielded or V6 PCZTs require cypherpunk checking support".to_string(),
+                "PCZT is not supported by transparent-only checking".to_string(),
             ));
         }
     }
@@ -719,10 +719,7 @@ pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]
 mod legacy_tests {
     use super::*;
-    use zcash_vendor::{
-        pczt::roles::creator::Creator,
-        zcash_protocol::consensus::{BranchId, MainNetwork, NetworkConstants},
-    };
+    use zcash_vendor::zcash_protocol::consensus::MainNetwork;
 
     fn assert_invalid_pczt_message<T: core::fmt::Debug>(result: Result<T>, expected: &str) {
         match result {
@@ -788,31 +785,18 @@ mod legacy_tests {
     }
 
     #[test]
-    fn legacy_check_rejects_v6_pczt() {
-        let pczt = Creator::new(
-            BranchId::Nu6_3.into(),
-            10,
-            MainNetwork.coin_type(),
-            None,
-            None,
-        )
-        .unwrap()
-        .build()
-        .unwrap();
+    fn legacy_check_accepts_transparent_only_v6_pczt() {
+        let sample = pczt::legacy_test_support::legacy_transparent_v6_sample();
+        assert!(pczt::pczt_is_v6(&Pczt::parse(&sample.bytes).unwrap()));
 
-        let result = check_pczt_multi_coins(
+        check_pczt_multi_coins(
             &MainNetwork,
-            &pczt.serialize().unwrap(),
-            "not-an-xpub",
-            &[7u8; 32],
+            &sample.bytes,
+            &sample.xpub,
+            &sample.seed_fingerprint,
             0,
-        );
-
-        assert!(matches!(
-            result,
-            Err(ZcashError::InvalidPczt(msg))
-                if msg == "Shielded or V6 PCZTs require cypherpunk checking support"
-        ));
+        )
+        .expect("transparent-only v6 PCZT should pass checking");
     }
 }
 

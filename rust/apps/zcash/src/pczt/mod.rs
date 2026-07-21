@@ -235,12 +235,12 @@ pub(crate) fn matching_seed_supported_orchard_account_parts(
         .map_err(|_| unsupported_path())
 }
 
-/// Returns whether a PCZT carries anything the transparent-only legacy path
-/// cannot handle: a v6+ transaction, or any shielded (Sapling/Orchard/Ironwood)
-/// content. These must be checked, parsed, and signed by the cypherpunk build.
+/// Returns whether a PCZT carries anything the transparent-only path cannot
+/// handle: shielded content or an unknown transaction format. Transparent-only
+/// v6 is supported by the shared ZIP 244 sighash implementation.
 #[cfg(any(feature = "multi_coins", not(feature = "cypherpunk")))]
-pub(crate) fn pczt_requires_cypherpunk_support(pczt: &zcash_vendor::pczt::Pczt) -> bool {
-    *pczt.global().tx_version() >= 6
+pub(crate) fn pczt_is_unsupported_by_transparent_only(pczt: &zcash_vendor::pczt::Pczt) -> bool {
+    (*pczt.global().tx_version() >= 6 && !pczt_is_v6(pczt))
         || !pczt.sapling().spends().is_empty()
         || !pczt.sapling().outputs().is_empty()
         || !pczt.orchard().actions().is_empty()
@@ -957,7 +957,7 @@ pub(crate) mod legacy_test_support {
             keys::{AccountPrivKey, IncomingViewingKey},
         },
         zcash_protocol::{
-            consensus::{MainNetwork, NetworkUpgrade, Parameters},
+            consensus::{BlockHeight, MainNetwork, NetworkType, NetworkUpgrade, Parameters},
             value::Zatoshis,
         },
         zip32,
@@ -971,6 +971,22 @@ pub(crate) mod legacy_test_support {
         pub(crate) xpub: String,
         #[cfg(feature = "multi_coins")]
         pub(crate) input_pubkey: [u8; 33],
+    }
+
+    #[derive(Clone, Copy)]
+    struct Nu6_3Network;
+
+    impl Parameters for Nu6_3Network {
+        fn network_type(&self) -> NetworkType {
+            NetworkType::Main
+        }
+
+        fn activation_height(&self, nu: NetworkUpgrade) -> Option<BlockHeight> {
+            match nu {
+                NetworkUpgrade::Nu6_3 => Some(BlockHeight::from_u32(10)),
+                _ => MainNetwork.activation_height(nu),
+            }
+        }
     }
 
     pub(crate) fn legacy_transparent_path_for_account(account_index: u32) -> Vec<u32> {
@@ -1008,6 +1024,18 @@ pub(crate) mod legacy_test_support {
 
     pub(crate) fn legacy_transparent_sample() -> LegacyTransparentSample {
         let params = MainNetwork;
+        let target_height = params.activation_height(NetworkUpgrade::Nu5).unwrap();
+        transparent_sample(params, target_height)
+    }
+
+    pub(crate) fn legacy_transparent_v6_sample() -> LegacyTransparentSample {
+        transparent_sample(Nu6_3Network, BlockHeight::from_u32(10))
+    }
+
+    fn transparent_sample<P: Parameters>(
+        params: P,
+        target_height: BlockHeight,
+    ) -> LegacyTransparentSample {
         let seed = [7u8; 32];
         let account = AccountPrivKey::from_seed(&params, &seed, zip32::AccountId::ZERO).unwrap();
         let (input_addr, address_index) = account
@@ -1026,9 +1054,7 @@ pub(crate) mod legacy_test_support {
             .derive_external_ivk()
             .unwrap()
             .default_address();
-        let transparent_recipient = recipient
-            .to_zcash_address(MainNetwork.network_type())
-            .encode();
+        let transparent_recipient = recipient.to_zcash_address(params.network_type()).encode();
 
         let coin = transparent::TxOut::new(
             Zatoshis::const_from_u64(1_000_000),
@@ -1036,7 +1062,7 @@ pub(crate) mod legacy_test_support {
         );
         let mut builder = Builder::new(
             &params,
-            params.activation_height(NetworkUpgrade::Nu5).unwrap(),
+            target_height,
             BuildConfig::Standard {
                 sapling_anchor: None,
                 orchard_anchor: None,

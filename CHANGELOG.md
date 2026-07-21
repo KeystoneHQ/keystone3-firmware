@@ -1,3 +1,29 @@
+## 3.0.0 (2026-07-20)
+
+**Web3:**
+
+### Improvements
+
+1. Improved the "Forgot Passcode" flow and passcode strength validation
+2. Enhanced security policies
+3. Optimized AR-related calculation logic
+
+**Cypherpunk:**
+
+### Improvements
+
+1. Improved the "Forgot Passcode" flow and passcode strength validation
+2. Enhanced security policies
+
+**BTC Only:**
+
+### Improvements
+
+1. Improved the "Forgot Passcode" flow and passcode strength validation
+2. Enhanced security policies
+
+
+
 ## 2.5.0(2026-6-29)
 
 **Web3:**

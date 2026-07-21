@@ -662,3 +662,47 @@ fn check_restricted_zero_value_output(
 
     Ok(())
 }
+
+#[cfg(all(test, feature = "cypherpunk"))]
+mod tests {
+    use serde::{Deserialize, Serialize};
+
+    use super::*;
+
+    #[derive(Serialize, Deserialize)]
+    struct PcztWirePrefix {
+        global: ::pczt::common::Global,
+        transparent: Option<::pczt::transparent::Bundle>,
+        sapling: Option<::pczt::sapling::Bundle>,
+    }
+
+    #[test]
+    fn check_orchard_accepts_pczt_with_transparent_output() {
+        let orchard_sample = crate::pczt::test_support::sample_orchard_change_pczt();
+        let transparent_sample = crate::pczt::legacy_test_support::legacy_transparent_v6_sample();
+        let (mut prefix, orchard_bundles) =
+            postcard::take_from_bytes::<PcztWirePrefix>(&orchard_sample.bytes[8..]).unwrap();
+        let (transparent_prefix, _) =
+            postcard::take_from_bytes::<PcztWirePrefix>(&transparent_sample.bytes[8..]).unwrap();
+        prefix.transparent = transparent_prefix.transparent;
+
+        let mut bytes = orchard_sample.bytes[..8].to_vec();
+        bytes = postcard::to_extend(&prefix, bytes).unwrap();
+        bytes.extend_from_slice(orchard_bundles);
+        let pczt = Pczt::parse(&bytes).unwrap();
+        let ufvk = UnifiedFullViewingKey::decode(
+            &crate::pczt::test_support::Nu6_3Network,
+            &orchard_sample.ufvk_text,
+        )
+        .unwrap();
+
+        check_pczt_orchard(
+            &crate::pczt::test_support::Nu6_3Network,
+            &orchard_sample.seed_fingerprint,
+            zip32::AccountId::ZERO,
+            &ufvk,
+            &pczt,
+        )
+        .expect("valid Orchard spend with a transparent output should pass checking");
+    }
+}

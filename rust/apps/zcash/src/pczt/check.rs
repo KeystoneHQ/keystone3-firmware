@@ -396,7 +396,6 @@ fn check_shielded_bundle<P: consensus::Parameters>(
     bundle: &orchard::pczt::Bundle,
     pool: ShieldedPool,
 ) -> Result<(), ZcashError> {
-    let pool_label = pool;
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
     ))?;
@@ -427,7 +426,7 @@ fn check_shielded_bundle<P: consensus::Parameters>(
     match calculated_value_balance {
         Ok(value_balance) if &value_balance == bundle.value_sum() => Ok(()),
         _ => Err(ZcashError::InvalidPczt(format!(
-            "invalid {pool_label} bundle value balance"
+            "invalid {pool} bundle value balance"
         ))),
     }
 }
@@ -446,7 +445,6 @@ fn check_and_parse_shielded_bundle<P: consensus::Parameters>(
     pool: ShieldedPool,
     checked_actions: &mut alloc::vec::Vec<ShieldedAction>,
 ) -> Result<Option<ParsedOrchard>, ZcashError> {
-    let pool_label = pool;
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
     ))?;
@@ -520,7 +518,7 @@ fn check_and_parse_shielded_bundle<P: consensus::Parameters>(
             }
         }
         _ => Err(ZcashError::InvalidPczt(format!(
-            "invalid {pool_label} bundle value balance"
+            "invalid {pool} bundle value balance"
         ))),
     }
 }
@@ -537,12 +535,11 @@ fn check_action<P: consensus::Parameters>(
     flags: &orchard::bundle::Flags,
     pool: ShieldedPool,
 ) -> Result<ParsedTo, ZcashError> {
-    let pool_label = pool;
     // Check `cv_net` first so we know that the `value` fields for both the spend and the
     // output are present and correct.
-    action.verify_cv_net().map_err(|e| {
-        ZcashError::InvalidPczt(format!("invalid cv_net in {pool_label} action: {e:?}"))
-    })?;
+    action
+        .verify_cv_net()
+        .map_err(|e| ZcashError::InvalidPczt(format!("invalid cv_net in {pool} action: {e:?}")))?;
 
     check_action_spend(
         params,
@@ -565,7 +562,6 @@ fn check_action_spend<P: consensus::Parameters>(
     spend: &orchard::pczt::Spend,
     pool: ShieldedPool,
 ) -> Result<(), ZcashError> {
-    let pool_label = pool;
     if let (Some(value), Some(zip32_derivation)) = (spend.value(), spend.zip32_derivation()) {
         if value.inner() != 0 && zip32_derivation.seed_fingerprint() == seed_fingerprint {
             let matched_account = super::matching_seed_supported_orchard_account(
@@ -604,11 +600,11 @@ fn check_action_spend<P: consensus::Parameters>(
 
     if let Some(expected_fvk) = can_verify_nf_rk {
         spend.verify_nullifier(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(format!("invalid {pool_label} action nullifier: {e:?}"))
+            ZcashError::InvalidPczt(format!("invalid {pool} action nullifier: {e:?}"))
         })?;
-        spend.verify_rk(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(format!("invalid {pool_label} action rk: {e:?}"))
-        })?;
+        spend
+            .verify_rk(expected_fvk)
+            .map_err(|e| ZcashError::InvalidPczt(format!("invalid {pool} action rk: {e:?}")))?;
     }
 
     Ok(())
@@ -622,11 +618,10 @@ fn check_action_output<P: consensus::Parameters>(
     flags: &orchard::bundle::Flags,
     pool: ShieldedPool,
 ) -> Result<ParsedTo, ZcashError> {
-    let pool_label = pool;
     action
         .output()
         .verify_note_commitment(action.spend())
-        .map_err(|e| ZcashError::InvalidPczt(format!("invalid {pool_label} action cmx: {e:?}")))?;
+        .map_err(|e| ZcashError::InvalidPczt(format!("invalid {pool} action cmx: {e:?}")))?;
 
     // Decode and validate the recipient, rejecting non-zero outputs the device cannot review.
     let parsed_to = super::parse::parse_orchard_output(params, keys, action, pool)?;

@@ -191,21 +191,19 @@ pub(crate) fn decode_output_enc_ciphertext(
         })
     } else {
         // If we reached here, none of our OVKs matched; recover directly as the fallback.
-        let pool_label = pool;
-
         let recipient = action.output().recipient().ok_or_else(|| {
-            ZcashError::InvalidPczt(format!("Missing recipient field for {pool_label} action"))
+            ZcashError::InvalidPczt(format!("Missing recipient field for {pool} action"))
         })?;
         let value = action.output().value().ok_or_else(|| {
-            ZcashError::InvalidPczt(format!("Missing value field for {pool_label} action"))
+            ZcashError::InvalidPczt(format!("Missing value field for {pool} action"))
         })?;
         let rho = orchard::note::Rho::from_bytes(&action.spend().nullifier().to_bytes())
             .into_option()
             .ok_or_else(|| {
-                ZcashError::InvalidPczt(format!("Missing rho field for {pool_label} action"))
+                ZcashError::InvalidPczt(format!("Missing rho field for {pool} action"))
             })?;
         let rseed = action.output().rseed().ok_or_else(|| {
-            ZcashError::InvalidPczt(format!("Missing rseed field for {pool_label} action"))
+            ZcashError::InvalidPczt(format!("Missing rseed field for {pool} action"))
         })?;
 
         let note = orchard::Note::from_parts(
@@ -216,9 +214,7 @@ pub(crate) fn decode_output_enc_ciphertext(
             (*action.output().note_version()).into(),
         )
         .into_option()
-        .ok_or_else(|| {
-            ZcashError::InvalidPczt(format!("{pool_label} action contains invalid note"))
-        })?;
+        .ok_or_else(|| ZcashError::InvalidPczt(format!("{pool} action contains invalid note")))?;
 
         Ok(match pool {
             ShieldedPool::Orchard => {
@@ -705,7 +701,6 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
     action: &orchard::pczt::Action,
     pool: ShieldedPool,
 ) -> Result<ParsedTo, ZcashError> {
-    let pool_label = pool;
     let output = action.output();
 
     // we should verify the cv_net in checking phrase, the transaction checking should failed if the net value is not correct
@@ -745,7 +740,7 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
                 let belongs_to_wallet = is_external || is_internal;
                 if is_internal_ovk && !belongs_to_wallet {
                     return Err(ZcashError::InvalidPczt(alloc::format!(
-                        "{pool_label} output was recoverable with an internal OVK but does not belong to this wallet"
+                        "{pool} output was recoverable with an internal OVK but does not belong to this wallet"
                     )));
                 }
                 let is_dummy = match vk {
@@ -774,7 +769,7 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
                 // `vk.is_none()` as a fallback. We require that non-trivial outputs are
                 // visible to the Keystone device.
                 (None, Some(value)) if value.inner() != 0 => Err(ZcashError::InvalidPczt(
-                    alloc::format!("enc_ciphertext field for {pool_label} action is undecryptable"),
+                    alloc::format!("enc_ciphertext field for {pool} action is undecryptable"),
                 )),
                 // We couldn't directly decrypt a zero-valued note. This is okay because
                 // it is checked elsewhere that the direct details in the PCZT are valid,
@@ -829,7 +824,7 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
                 }
                 (None, 0) => Ok(("Dummy output".into(), true)),
                 (None, _) => Err(ZcashError::InvalidPczt(alloc::format!(
-                    "missing user address for {pool_label} output"
+                    "missing user address for {pool} output"
                 ))),
             }?;
             Ok(ParsedTo::new(

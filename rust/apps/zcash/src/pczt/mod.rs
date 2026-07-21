@@ -202,7 +202,6 @@ pub(crate) fn matching_seed_supported_orchard_account_parts(
     coin_type: u32,
     pool: ShieldedPool,
 ) -> Result<Option<zcash_vendor::zip32::AccountId>, crate::errors::ZcashError> {
-    let pool_label = pool;
     let Some((derivation_seed_fingerprint, derivation_path)) = derivation else {
         return Ok(None);
     };
@@ -212,7 +211,7 @@ pub(crate) fn matching_seed_supported_orchard_account_parts(
 
     let unsupported_path = || {
         crate::errors::ZcashError::InvalidPczt(alloc::format!(
-            "unsupported {pool_label} spend ZIP 32 derivation path"
+            "unsupported {pool} spend ZIP 32 derivation path"
         ))
     };
 

@@ -324,7 +324,6 @@ impl PcztSigner for SeedSigner<'_> {
         // Strict per-action validation, ported verbatim from the previous
         // collect_orchard_bundle_signing_keys so the lean signer keeps identical
         // skip/reject semantics to the RoleSigner path.
-        let pool_label = self.pool;
         if action.spend().spend_auth_sig().is_some() {
             return Ok(());
         }
@@ -333,7 +332,8 @@ impl PcztSigner for SeedSigner<'_> {
                 Some(0) | None => return Ok(()),
                 Some(_) => {
                     return Err(ZcashError::InvalidPczt(format!(
-                        "{pool_label} spend dummy_sk is only valid for dummy spends"
+                        "{} spend dummy_sk is only valid for dummy spends",
+                        self.pool
                     )));
                 }
             }
@@ -375,7 +375,7 @@ impl PcztSigner for SeedSigner<'_> {
                     OsRng,
                 )
                 .map_err(|e| {
-                    ZcashError::SigningError(format!("failed to sign {pool_label} action: {e:?}"))
+                    ZcashError::SigningError(format!("failed to sign {} action: {e:?}", self.pool))
                 })
         })?;
         self.signed.set(self.signed.get() + 1);

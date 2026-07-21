@@ -191,7 +191,7 @@ pub(crate) fn decode_output_enc_ciphertext(
         })
     } else {
         // If we reached here, none of our OVKs matched; recover directly as the fallback.
-        let pool_label = pool.label();
+        let pool_label = pool;
 
         let recipient = action.output().recipient().ok_or_else(|| {
             ZcashError::InvalidPczt(format!("Missing recipient field for {pool_label} action"))
@@ -705,7 +705,7 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
     action: &orchard::pczt::Action,
     pool: ShieldedPool,
 ) -> Result<ParsedTo, ZcashError> {
-    let pool_label = pool.label();
+    let pool_label = pool;
     let output = action.output();
 
     // we should verify the cv_net in checking phrase, the transaction checking should failed if the net value is not correct

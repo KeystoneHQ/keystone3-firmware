@@ -146,11 +146,11 @@ pub(crate) enum ShieldedPool {
 }
 
 #[cfg(feature = "cypherpunk")]
-impl ShieldedPool {
-    pub(crate) fn label(self) -> &'static str {
+impl core::fmt::Display for ShieldedPool {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            ShieldedPool::Orchard => "Orchard",
-            ShieldedPool::Ironwood => "Ironwood",
+            ShieldedPool::Orchard => f.write_str("Orchard"),
+            ShieldedPool::Ironwood => f.write_str("Ironwood"),
         }
     }
 }
@@ -189,7 +189,7 @@ pub(crate) fn matching_seed_supported_orchard_account_parts(
     coin_type: u32,
     pool: ShieldedPool,
 ) -> Result<Option<zcash_vendor::zip32::AccountId>, crate::errors::ZcashError> {
-    let pool_label = pool.label();
+    let pool_label = pool;
     let Some((derivation_seed_fingerprint, derivation_path)) = derivation else {
         return Ok(None);
     };

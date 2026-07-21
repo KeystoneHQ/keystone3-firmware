@@ -396,7 +396,7 @@ fn check_shielded_bundle<P: consensus::Parameters>(
     bundle: &orchard::pczt::Bundle,
     pool: ShieldedPool,
 ) -> Result<(), ZcashError> {
-    let pool_label = pool.label();
+    let pool_label = pool;
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
     ))?;
@@ -446,7 +446,7 @@ fn check_and_parse_shielded_bundle<P: consensus::Parameters>(
     pool: ShieldedPool,
     checked_actions: &mut alloc::vec::Vec<ShieldedAction>,
 ) -> Result<Option<ParsedOrchard>, ZcashError> {
-    let pool_label = pool.label();
+    let pool_label = pool;
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
     ))?;
@@ -537,7 +537,7 @@ fn check_action<P: consensus::Parameters>(
     flags: &orchard::bundle::Flags,
     pool: ShieldedPool,
 ) -> Result<ParsedTo, ZcashError> {
-    let pool_label = pool.label();
+    let pool_label = pool;
     // Check `cv_net` first so we know that the `value` fields for both the spend and the
     // output are present and correct.
     action.verify_cv_net().map_err(|e| {
@@ -565,7 +565,7 @@ fn check_action_spend<P: consensus::Parameters>(
     spend: &orchard::pczt::Spend,
     pool: ShieldedPool,
 ) -> Result<(), ZcashError> {
-    let pool_label = pool.label();
+    let pool_label = pool;
     if let (Some(value), Some(zip32_derivation)) = (spend.value(), spend.zip32_derivation()) {
         if value.inner() != 0 && zip32_derivation.seed_fingerprint() == seed_fingerprint {
             let matched_account = super::matching_seed_supported_orchard_account(
@@ -622,7 +622,7 @@ fn check_action_output<P: consensus::Parameters>(
     flags: &orchard::bundle::Flags,
     pool: ShieldedPool,
 ) -> Result<ParsedTo, ZcashError> {
-    let pool_label = pool.label();
+    let pool_label = pool;
     action
         .output()
         .verify_note_commitment(action.spend())
@@ -651,15 +651,12 @@ fn check_restricted_zero_value_output(
     }
 
     let recipient = action.output().recipient().ok_or_else(|| {
-        ZcashError::InvalidPczt(format!(
-            "missing recipient for funded {} output",
-            pool.label()
-        ))
+        ZcashError::InvalidPczt(format!("missing recipient for funded {} output", pool))
     })?;
     if !super::parse::is_wallet_orchard_address(keys, &recipient)? {
         return Err(ZcashError::InvalidPczt(format!(
             "funded {} output paired with a zero-value spend does not belong to the selected account",
-            pool.label()
+            pool
         )));
     }
 

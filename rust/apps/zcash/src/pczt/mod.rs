@@ -240,7 +240,25 @@ pub(crate) fn matching_seed_supported_orchard_account_parts(
 /// v6 is supported by the shared ZIP 244 sighash implementation.
 #[cfg(any(feature = "multi_coins", not(feature = "cypherpunk")))]
 pub(crate) fn pczt_is_unsupported_by_transparent_only(pczt: &zcash_vendor::pczt::Pczt) -> bool {
-    (*pczt.global().tx_version() >= 6 && !pczt_is_v6(pczt))
+    use zcash_vendor::zcash_protocol::{
+        consensus::{BranchId, OrchardProtocolRevision},
+        constants::{V5_TX_VERSION, V5_VERSION_GROUP_ID, V6_TX_VERSION, V6_VERSION_GROUP_ID},
+    };
+
+    let orchard_revision = BranchId::try_from(*pczt.global().consensus_branch_id())
+        .ok()
+        .and_then(|branch_id| branch_id.orchard_protocol_revision());
+    let supported_transaction_format = match (
+        *pczt.global().tx_version(),
+        *pczt.global().version_group_id(),
+        orchard_revision,
+    ) {
+        (V5_TX_VERSION, V5_VERSION_GROUP_ID, Some(_)) => true,
+        (V6_TX_VERSION, V6_VERSION_GROUP_ID, Some(OrchardProtocolRevision::V3)) => true,
+        _ => false,
+    };
+
+    !supported_transaction_format
         || !pczt.sapling().spends().is_empty()
         || !pczt.sapling().outputs().is_empty()
         || !pczt.orchard().actions().is_empty()

@@ -718,8 +718,39 @@ pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
 
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]
 mod legacy_tests {
+    use alloc::{collections::BTreeMap, string::String, vec::Vec};
+
     use super::*;
-    use zcash_vendor::zcash_protocol::consensus::MainNetwork;
+    use serde::{Deserialize, Serialize};
+    use zcash_vendor::zcash_protocol::consensus::{BranchId, MainNetwork};
+
+    #[derive(Serialize, Deserialize)]
+    struct PcztGlobalPrefix {
+        global: GlobalMirror,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct GlobalMirror {
+        tx_version: u32,
+        version_group_id: u32,
+        consensus_branch_id: u32,
+        fallback_lock_time: Option<u32>,
+        expiry_height: u32,
+        coin_type: u32,
+        tx_modifiable: u8,
+        proprietary: BTreeMap<String, Vec<u8>>,
+    }
+
+    fn pczt_with_consensus_branch_id(bytes: &[u8], branch_id: BranchId) -> Vec<u8> {
+        let (mut prefix, rest) =
+            postcard::take_from_bytes::<PcztGlobalPrefix>(&bytes[8..]).unwrap();
+        prefix.global.consensus_branch_id = branch_id.into();
+
+        let mut encoded = bytes[..8].to_vec();
+        encoded = postcard::to_extend(&prefix, encoded).unwrap();
+        encoded.extend_from_slice(rest);
+        encoded
+    }
 
     fn assert_invalid_pczt_message<T: core::fmt::Debug>(result: Result<T>, expected: &str) {
         match result {
@@ -797,6 +828,35 @@ mod legacy_tests {
             0,
         )
         .expect("transparent-only v6 PCZT should pass checking");
+    }
+
+    #[test]
+    fn legacy_rejects_v6_before_nu6_3() {
+        let sample = pczt::legacy_test_support::legacy_transparent_v6_sample();
+        let bytes = pczt_with_consensus_branch_id(&sample.bytes, BranchId::Nu6);
+        let pczt = Pczt::parse(&bytes).unwrap();
+        assert!(pczt::pczt_is_v6(&pczt));
+
+        assert_invalid_pczt_message(
+            check_pczt_multi_coins(
+                &MainNetwork,
+                &bytes,
+                &sample.xpub,
+                &sample.seed_fingerprint,
+                0,
+            ),
+            "PCZT is not supported by transparent-only checking",
+        );
+        assert_invalid_pczt_message(
+            parse_pczt_multi_coins(&MainNetwork, &bytes, &sample.seed_fingerprint),
+            "PCZT is not supported by transparent-only parsing",
+        );
+        assert_eq!(
+            sign_pczt(&bytes, &sample.seed),
+            Err(ZcashError::SigningError(
+                "PCZT is not supported by transparent-only signing".to_string()
+            ))
+        );
     }
 }
 

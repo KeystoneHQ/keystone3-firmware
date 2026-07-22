@@ -39,26 +39,8 @@ static ZcashUFVKCache_t g_zcashUFVKcache = {0};
 static void ClearZcashUFVK();
 #endif
 
-static int32_t WipeLegacyPasswordHashPages(void)
-{
-    uint8_t data[32] = {0};
-    int32_t ret = SUCCESS_CODE;
-
-    if (IsPinHashWiped()) {
-        return SUCCESS_CODE;
-    }
-
-    // Erase old PIN verifiers. Do not add normal read/write users for this page.
-    for (uint8_t accountIndex = 0; accountIndex < 3; accountIndex++) {
-        ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_LEGACY_PASSWORD_HASH);
-        CHECK_ERRCODE_BREAK("wipe legacy password hash", ret);
-    }
-    if (ret == SUCCESS_CODE) {
-        ret = SetPinHashWiped(true);
-    }
-    CLEAR_ARRAY(data);
-    return ret;
-}
+// The legacy page-8 PIN-hash wipe (gen-1 only) lives in se_backend_gen1.c's boot_migrate, dispatched
+// below via SE_BootMigrate(). The gen-2 backend has no such wipe.
 
 /// @brief Get current account info from SE, and copy info to g_currentAccountInfo.
 /// @return err code.
@@ -86,7 +68,9 @@ int32_t AccountManagerInit(void)
     ASSERT(sizeof(PublicInfo_t) == 32);
     ret = SE_HmacEncryptRead((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
     CHECK_ERRCODE_RETURN_INT(ret);
-    ret = WipeLegacyPasswordHashPages();
+    // One-time boot migration, dispatched to the generation backend: gen-1 wipes the legacy page-8 PIN
+    // hash; gen-2 and UNPROVISIONED/INVALID are no-ops. The wipe lives only in se_backend_gen1.c.
+    ret = SE_BootMigrate();
     return ret;
 }
 
@@ -236,6 +220,46 @@ int32_t VerifyCurrentAccountPassword(const char *password)
         SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
     } while (0);
 
+    return ret;
+}
+
+uint8_t RecordCurrentPasswordError(uint8_t maxCount)
+{
+    if (g_publicInfo.currentPasswordErrorCount < maxCount) {
+        g_publicInfo.currentPasswordErrorCount++;
+    } else {
+        g_publicInfo.currentPasswordErrorCount = maxCount;
+    }
+    printf("current password error count=%d\r\n", g_publicInfo.currentPasswordErrorCount);
+    SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
+    return g_publicInfo.currentPasswordErrorCount;
+}
+
+/// @brief Verify ownership against any wallet and tick the LOGIN error counter WITHOUT logging in.
+/// Used by forget-pass "Prove Device Ownership" so wrong attempts count toward the device wipe
+/// (loginPasswordErrorCount). The count is clamped at maxCount (= MAX_LOGIN_PASSWORD_ERROR_COUNT)
+/// because the modal is escapable and the count persists.
+/// @param[out] accountIndex matched account index on success (may be NULL).
+/// @param[in] password Password string.
+/// @param[in] maxCount clamp ceiling for the login error counter (= MAX_LOGIN_PASSWORD_ERROR_COUNT).
+/// @return err code.
+int32_t VerifyOwnershipPasswordTryAll(uint8_t *accountIndex, const char *password, uint8_t maxCount)
+{
+    int32_t ret = FindAccountByPassword(accountIndex, password);
+    if (ret == SUCCESS_CODE) {
+        g_publicInfo.loginPasswordErrorCount = 0;
+    } else if (ret == ERR_KEYSTORE_PASSWORD_ERR) {
+        if (g_publicInfo.loginPasswordErrorCount < maxCount) {
+            g_publicInfo.loginPasswordErrorCount++;
+        } else {
+            // pin at the wipe threshold (heals a stale over-cap value too).
+            g_publicInfo.loginPasswordErrorCount = maxCount;
+        }
+        printf("prove-ownership login error count=%d\r\n", g_publicInfo.loginPasswordErrorCount);
+    } else {
+        return ret;   // transient SE error: don't touch the counter
+    }
+    SE_HmacEncryptWrite((uint8_t *)&g_publicInfo, PAGE_PUBLIC_INFO);
     return ret;
 }
 
@@ -582,19 +606,56 @@ int32_t DestroyAccount(uint8_t accountIndex)
     uint8_t data[32] = {0};
 
     ASSERT(accountIndex <= 2);
+    // Mark the account DELETING (external status page, survives the zero-loop below). If power dies mid-erase,
+    // the boot check sees DELETING and finishes the deletion. Cleared to UNKNOWN once the data is gone.
+    printf("destroy account %d\n", accountIndex);
+    ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_DELETING);
+    if (ret != SUCCESS_CODE) {
+        printf("destroy account:set deleting status err,0x%X\n", ret);
+        CLEAR_ARRAY(data);
+        return ret;
+    }
+    printf("destroy account:set account flag in se %d\n", accountIndex);
     for (uint8_t i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
         printf("erase index=%d\n", i);
         ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
         CHECK_ERRCODE_BREAK("ds28s60 write", ret);
     }
-    DeleteAccountPublicInfo(accountIndex);
-    ClearAccountPassphrase(accountIndex);
-    SetWalletDataHash(accountIndex, data);
+    // Only declare the deletion complete if the page-erase loop actually finished. If a write failed partway,
+    // leave the status at DELETING (do NOT roll to UNKNOWN) so the next boot's AccountsDataCheck finishes the
+    // deletion — exactly as it would after a power-loss. Clearing the marker on a write error would lose that
+    // resume guarantee and could resurrect a half-erased account via the coarse 2-sentinel boot check.
+    if (ret == SUCCESS_CODE) {
+        // gen-2: erase this account's SE-side key material, not just the pages zeroed above (gen-1/simulator
+        // no-op). Keep DELETING until all per-account cleanup succeeds so boot can resume after power loss.
+        ret = SE_EraseAccount(accountIndex);
+        if (ret != SUCCESS_CODE) {
+            printf("destroy account:erase se account err,0x%X\n", ret);
+        } else {
+            DeleteAccountPublicInfo(accountIndex);
+            ClearAccountPassphrase(accountIndex);
+            ret = SetWalletDataHash(accountIndex, data);
+            if (ret != SUCCESS_CODE) {
+                printf("destroy account:clear wallet data hash err,0x%X\n", ret);
+            } else {
+                ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_UNKNOWN);  // deletion complete -> blank
+                if (ret != SUCCESS_CODE) {
+                    printf("destroy account:clear deleting status err,0x%X\n", ret);
+                } else {
+                    printf("destroy account:clear se done %d\n", accountIndex);
+                }
+            }
+        }
+    }
     LogoutCurrentAccount();
 
     CLEAR_OBJECT(g_currentAccountInfo);
     CLEAR_ARRAY(data);
-
+    if (ret == SUCCESS_CODE) {
+        printf("destroy account %d all set\n", accountIndex);
+    } else {
+        printf("destroy account %d finished with err,0x%X\n", accountIndex, ret);
+    }
     return ret;
 }
 // wipe device may power lose, check the account status.
@@ -602,9 +663,25 @@ int32_t DestroyAccount(uint8_t accountIndex)
 void AccountsDataCheck(void)
 {
     int32_t ret;
-    uint8_t data[32], accountIndex, validCount, i;
+    uint8_t data[32], accountIndex, validCount;
 
     for (accountIndex = 0; accountIndex < 3; accountIndex++) {
+        // gen-2 lifecycle status (external page): an account caught mid-create / mid-change-PIN / mid-delete is
+        // inconsistent -> erase it. delete -> finishes the deletion; change-PIN -> user restores from seed;
+        // create -> drops the partial wallet. A valid CREATED account skips the coarse heuristic below.
+        AccountStatus_t status = ACCOUNT_STATUS_UNKNOWN;
+        if (SE_GetAccountStatus(accountIndex, &status) == SUCCESS_CODE) {
+            if (status == ACCOUNT_STATUS_CREATING || status == ACCOUNT_STATUS_CHANGING_PIN ||
+                    status == ACCOUNT_STATUS_DELETING) {
+                printf("incomplete op on account %d (status=%d) -> erase\n", accountIndex, status);
+                DestroyAccount(accountIndex);
+                continue;
+            }
+            if (status == ACCOUNT_STATUS_CREATED) {
+                continue;   // explicitly valid
+            }
+        }
+        // status UNKNOWN (legacy / pre-status accounts) -> original coarse 2-sentinel check.
         validCount = 0;
         // for se gen1, check each account start
         ret = SE_HmacEncryptRead(data, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
@@ -621,12 +698,7 @@ void AccountsDataCheck(void)
         // if start disconsistent with keypieces, consider the account data is illegal, erase the account data.
         if (validCount == 1) {
             printf("illegal data:%d\n", accountIndex);
-            memset_s(data, sizeof(data), 0, sizeof(data));
-            for (i = 0; i < PAGE_NUM_PER_ACCOUNT; i++) {
-                printf("erase index=%d\n", i);
-                ret = SE_HmacEncryptWrite(data, accountIndex * PAGE_NUM_PER_ACCOUNT + i);
-                CHECK_ERRCODE_BREAK("ds28s60 write", ret);
-            }
+            DestroyAccount(accountIndex);
         }
     }
     CLEAR_ARRAY(data);
@@ -763,17 +835,24 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
 
     SimpleResponse_c_char *response = rust_aes256_cbc_decrypt(zcashEncrypted, password, iv_bytes, 16);
     CLEAR_ARRAY(iv_bytes);
-    if (response->error_code != 0) {
-        ret = response->error_code;
-        CLEAR_ARRAY(seed);
-        printf("error: %s\r\n", response->error_message);
-        free_simple_response_c_char(response);
-        return ret;
-    }
-
     char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
-    strcpy_s(ufvk, sizeof(ufvk), response->data);
-    free_simple_response_c_char(response);
+    if (response->error_code != 0) {
+        // The stored ciphertext is keyed by an older password (e.g. the password was
+        // changed without re-encrypting it). The entered password already passed SE
+        // verification, so regenerate the UFVK from the seed instead of failing the
+        // login and locking the user out.
+        printf("zcash ufvk decrypt failed, regenerating from seed. error: %s\r\n", response->error_message);
+        free_simple_response_c_char(response);
+        ret = RegenerateZcashUFVK(accountIndex, seed, len, password, ufvk, sizeof(ufvk));
+        if (ret != SUCCESS_CODE) {
+            CLEAR_ARRAY(ufvk);
+            CLEAR_ARRAY(seed);
+            return ret;
+        }
+    } else {
+        strcpy_s(ufvk, sizeof(ufvk), response->data);
+        free_simple_response_c_char(response);
+    }
     SetZcashUFVK(accountIndex, ufvk);
     CLEAR_ARRAY(ufvk);
 

@@ -3,6 +3,8 @@
 #include "lvgl.h"
 #include "user_memory.h"
 
+#define HEX_STRING_MAX_LENGTH 4096
+
 uint32_t StrToHex(uint8_t *pbDest, const char *pbSrc)
 {
     char h1, h2;
@@ -72,6 +74,33 @@ bool CheckAllZero(const uint8_t *array, uint32_t len)
 {
     for (uint32_t i = 0; i < len; i++) {
         if (array[i] != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool IsHexStringWithLen(const char *value, size_t expectedLen)
+{
+    if (value == NULL) {
+        return false;
+    }
+    size_t maxLen = expectedLen == 0 ? HEX_STRING_MAX_LENGTH : expectedLen;
+    size_t len = strnlen_s(value, maxLen + 1);
+    if (len == 0 || (len % 2) != 0) {
+        return false;
+    }
+    if (len > maxLen) {
+        return false;
+    }
+    if (expectedLen != 0 && len != expectedLen) {
+        return false;
+    }
+    for (size_t i = 0; i < len; i++) {
+        char c = value[i];
+        if (!((c >= '0' && c <= '9') ||
+                (c >= 'a' && c <= 'f') ||
+                (c >= 'A' && c <= 'F'))) {
             return false;
         }
     }

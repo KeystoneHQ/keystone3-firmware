@@ -102,4 +102,3 @@ void GuiModelTransactionParseRawDataDelay(void);
 
 
 #endif /* _GUI_MODEL_H */
-

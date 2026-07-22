@@ -225,6 +225,67 @@ int32_t Atecc608bDeriveKey(uint8_t slot, const uint8_t *authKey)
     return ret;
 }
 
+/// @brief No-auth KDF — no Authorize/CheckMac. For gen-2 slots configured without ReqAuth, where the
+///        standard Atecc608bKdf would fail at GetAuthSlot()==255. Same as Atecc608bKdf without the
+///        GetAuthSlot/Atecc608bAuthorize gate.
+/// @param[in] slot source key slot.
+/// @param[in] inData KDF message (transient), inLen bytes.
+/// @param[out] outData 32-byte derived output (decrypted).
+/// @return err code.
+int32_t Atecc608bKdfNoAuth(uint8_t slot, const uint8_t *inData, uint32_t inLen, uint8_t *outData)
+{
+    int32_t ret = ERR_ATECC608B_SLOT_NUM_ERR;
+    uint8_t nonce[32];
+    uint8_t ioProtectKey[32];
+    uint32_t retry;
+
+    do {
+        for (retry = 0; retry < 3; retry++) {
+            ret = atcab_kdf(KDF_MODE_SOURCE_SLOT | KDF_MODE_TARGET_OUTPUT_ENC | KDF_MODE_ALG_HKDF,
+                            slot, KDF_DETAILS_HKDF_MSG_LOC_INPUT | (inLen << 24), inData, outData, nonce);
+            if (ret != ATCA_SUCCESS) {
+                continue;
+            }
+            GetIoProtectKey(ioProtectKey);
+            atca_io_decrypt_in_out_t io_dec_params = {
+                .io_key = ioProtectKey,
+                .out_nonce = nonce,
+                .data = outData,
+                .data_size = 32,
+            };
+            ret = atcah_io_decrypt(&io_dec_params);
+            if (ret == ATCA_SUCCESS) {
+                break;
+            }
+        }
+        CHECK_ATECC608B_RET("kdf gen2", ret);
+    } while (0);
+    CLEAR_ARRAY(nonce);
+    CLEAR_ARRAY(ioProtectKey);
+
+    return ret;
+}
+
+/// @brief No-auth DeriveKey — no Authorize. For gen-2 slots configured without ReqAuth.
+/// @param[in] slot Specified slot.
+/// @return err code.
+int32_t Atecc608bDeriveKeyNoAuth(uint8_t slot)
+{
+    int32_t ret;
+    uint8_t nonce[NONCE_NUMIN_SIZE];
+
+    do {
+        TrngGet(nonce, NONCE_NUMIN_SIZE);
+        ret = atcab_nonce_rand(nonce, NULL);
+        CHECK_ATECC608B_RET("nonce rand", ret);
+        ret = atcab_derivekey(0, slot, NULL);
+        CHECK_ATECC608B_RET("derivekey gen2", ret);
+    } while (0);
+    CLEAR_ARRAY(nonce);
+
+    return ret;
+}
+
 /// @brief Try to bind SE chip, return a err code if SE chip already binded.
 /// @return err code.
 static int32_t Atecc608bBinding(void)
@@ -262,7 +323,7 @@ static int32_t Atecc608bBinding(void)
                 TrngGet(keys, sizeof(keys));
                 WriteOtpData(OTP_ADDR_ATECC608B, keys, sizeof(keys));
                 //  return 0 for writing config successfully
-                ret = Atecc608bWriteConfig();
+                ret = Atecc608bWriteConfigGen2();
             } else {
                 printf("err,OTP key doesn't exist,SE lock\r\n");
                 ret = ERR_ATECC608B_BIND;
@@ -364,7 +425,8 @@ static void Atecc608bPrintConfig(const Atecc608bConfig_t *config)
     PrintU16Array("keyConfig", config->keyConfig, sizeof(config->keyConfig) / 2);
 }
 
-static int32_t Atecc608bWriteConfig(void)
+static int32_t Atecc608bWriteConfig
+(void)
 {
     //shared keys
     //slot 0        ioprotect key,                  slot config=0x8080, key config=0x007C, lockable=1.
@@ -442,6 +504,85 @@ static int32_t Atecc608bWriteConfig(void)
     } while (0);
 
     CLEAR_ARRAY(tempKey);
+    return ret;
+}
+
+// Canonical gen-2 config manifest -- single source of truth shared by Atecc608bWriteConfigGen2
+// (writer) and Atecc608bVerifyConfigGen2 (factory gate) so the two can never drift. Index = slot 0..15.
+static const uint16_t g_gen2SlotConfig[16] = {
+    0x8080, 0x8080, 0x8080, 0x42A0, 0x20A0, 0x42A0, 0x42A0, 0x20A0,
+    0x4D00, 0x42A0, 0x42A0, 0x20A0, 0x42A0, 0x42A0, 0x0083, 0x42C2,
+};
+static const uint16_t g_gen2KeyConfig[16] = {
+    0x007C, 0x007C, 0x01FC, 0x005C, 0x005C, 0x005C, 0x005C, 0x005C,
+    0x001C, 0x005C, 0x005C, 0x005C, 0x005C, 0x005C, 0x0013, 0x005C,
+};
+
+/// @brief Write the gen-2 config manifest + blank-chip bootstrap on a BLANK 608B. Mirrors the
+///        firmware's Atecc608bWriteConfigGen2 — the manifest MUST match what firmware GetSeGen()
+///        checks for SE_GEN_2.
+///        Sequence: config + lock_config -> write match_count to slot 8 (MUST be before lock_data
+///        and before any limited-use op, else the affected keys become unusable) -> shared keys
+///        0/1/2 + genkey 14 -> lock_data.
+/// @return err code.
+int32_t Atecc608bWriteConfigGen2(void)
+{
+    int32_t ret;
+    Atecc608bConfig_t config;
+    bool isLock;
+    uint8_t tempKey[32];
+    uint8_t matchCount[32];
+
+    do {
+        ret = atcab_is_config_locked(&isLock);
+        CHECK_ATECC608B_RET("get lock", ret);
+        if (isLock == true) {
+            printf("already locked\r\n");
+            ret = ERR_ATECC608B_UNEXPECT_LOCK;
+            break;
+        }
+        ret = atcab_read_config_zone((uint8_t *)&config);
+        CHECK_ATECC608B_RET("read config zone", ret);
+        memcpy(config.slotConfig, g_gen2SlotConfig, sizeof(g_gen2SlotConfig));
+        memcpy(config.keyConfig, g_gen2KeyConfig, sizeof(g_gen2KeyConfig));
+        config.countMatch = 0x81;      // enable CountMatch, CounterMatchKey = slot 8
+        config.chipOptions = 0x0402;   // IO-protection enable — required for TARGET_OUTPUT_ENC
+        ret = atcab_write_config_zone((uint8_t *)&config);
+        CHECK_ATECC608B_RET("write config zone", ret);
+        ret = atcab_lock_config_zone();
+        CHECK_ATECC608B_RET("lock config zone", ret);   // CountMatch is now LIVE
+        printf("lock config zone ok\r\n");
+
+        // Write match_count to slot 8 BEFORE lock_data and any limited-use op. The value is written
+        // into two positions of the block (device count-match format). Skipping this leaves the
+        // limited-use keys unusable.
+        memset(matchCount, 0, sizeof(matchCount));
+        matchCount[0] = (uint8_t)SE_GEN2_MATCH_COUNT_INIT;
+        matchCount[4] = (uint8_t)SE_GEN2_MATCH_COUNT_INIT;     // count-match format duplicate
+        ret = atcab_write_zone(ATCA_ZONE_DATA, SLOT_MATCH_COUNT, 0, 0, matchCount, 32);
+        CHECK_ATECC608B_RET("bootstrap match_count", ret);
+        printf("bootstrap match_count=%d ok\r\n", SE_GEN2_MATCH_COUNT_INIT);
+
+        GetIoProtectKey(tempKey);
+        ret = atcab_write_zone(ATCA_ZONE_DATA, SLOT_IO_PROTECT_KEY, 0, 0, tempKey, 32);
+        CHECK_ATECC608B_RET("write io protect key", ret);
+        GetAuthKey(tempKey);
+        ret = atcab_write_zone(ATCA_ZONE_DATA, SLOT_AUTH_KEY, 0, 0, tempKey, 32);
+        CHECK_ATECC608B_RET("write auth key", ret);
+        GetEncryptKey(tempKey);
+        ret = atcab_write_zone(ATCA_ZONE_DATA, SLOT_ENCRYPT_KEY, 0, 0, tempKey, 32);
+        CHECK_ATECC608B_RET("write encrypt key", ret);
+        printf("write key ok\r\n");
+        ret = atcab_genkey(SLOT_DEVICE_KEY, NULL);
+        CHECK_ATECC608B_RET("generate unique key", ret);
+        printf("generate device unique key ok\r\n");
+        ret = atcab_lock_data_zone();
+        CHECK_ATECC608B_RET("lock data zone", ret);
+        printf("gen-2 config + bootstrap done\r\n");
+    } while (0);
+
+    CLEAR_ARRAY(tempKey);
+    CLEAR_ARRAY(matchCount);
     return ret;
 }
 

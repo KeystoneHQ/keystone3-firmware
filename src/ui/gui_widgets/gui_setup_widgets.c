@@ -4,6 +4,7 @@
 #include "gui_setup_widgets.h"
 #include "gui_obj.h"
 #include "version.h"
+#include "se_manager.h"
 #include "gui_web_auth_widgets.h"
 #include "gui_web_auth_result_widgets.h"
 #include "device_setting.h"
@@ -71,7 +72,9 @@ static void GuiWelcomeWidget(lv_obj_t *parent)
     lv_obj_t *label = GuiCreateTitleLabel(parent, "Keystone");
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 268 - GUI_NAV_BAR_HEIGHT);
 
-    label = GuiCreateNoticeLabel(parent, GetSoftwareVersionString());
+    char version[SOFTWARE_VERSION_MAX_LEN + 4] = {0};
+    snprintf_s(version, sizeof(version), "%s(%d)", GetSoftwareVersionString(), (int)GetSeGen());
+    label = GuiCreateNoticeLabel(parent, version);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 328 - GUI_NAV_BAR_HEIGHT);
 
     lv_obj_t *btn = GuiCreateBtn(parent, USR_SYMBOL_ARROW_NEXT);

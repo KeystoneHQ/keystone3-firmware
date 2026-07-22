@@ -145,7 +145,7 @@ fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
         "transparent xpub is not present".to_string(),
     ))?;
     pczt::check::check_pczt_orchard(params, seed_fingerprint, account_index, &ufvk, &pczt)?;
-    pczt::check::check_pczt_transparent(
+    let has_my_transparent_input = pczt::check::check_pczt_transparent(
         params,
         seed_fingerprint,
         account_index,
@@ -153,18 +153,11 @@ fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
         &pczt,
         false,
     )?;
-
-    let pczt = match policy {
-        ShieldedActionPolicy::Single => pczt,
-        ShieldedActionPolicy::Batch => {
-            let (actions, pczt) =
-                signable_shielded_actions(params, pczt, seed_fingerprint, account_index, policy)?;
-            if actions.is_empty() {
-                return Err(ZcashError::PcztNoMyInputs);
-            }
-            pczt
-        }
-    };
+    let (signable_actions, pczt) =
+        signable_shielded_actions(params, pczt, seed_fingerprint, account_index, policy)?;
+    if signable_actions.is_empty() && !has_my_transparent_input {
+        return Err(ZcashError::PcztNoMyInputs);
+    }
 
     pczt.serialize()
         .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
@@ -188,7 +181,7 @@ pub fn check_pczt_multi_coins<P: consensus::Parameters>(
     // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
     // mutating `pczt` so the normalized bytes carry the verified values forward.
     // transparent-only build: pczt's orchard feature (and resolve_fields) is not compiled here.
-    reject_legacy_check_unsupported_pczt(&pczt)?;
+    reject_unsupported_pczt(&pczt)?;
     let account_pubkey = transparent_account_pubkey_from_xpub(xpub)?;
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
@@ -230,14 +223,14 @@ fn transparent_account_pubkey_from_xpub(
 }
 
 #[cfg(feature = "multi_coins")]
-fn reject_legacy_check_unsupported_pczt(pczt: &Pczt) -> Result<()> {
+fn reject_unsupported_pczt(pczt: &Pczt) -> Result<()> {
     {
-        // The legacy multi-coins check path only verifies transparent data. Reject any
-        // shielded (Sapling/Orchard/Ironwood) or V6 PCZT so check, parse, and sign
-        // enforce the same transparent-only boundary.
-        if pczt::pczt_requires_cypherpunk_support(pczt) {
+        // The multi-coins check path only verifies transparent data. Reject shielded
+        // content and unknown transaction formats so check, parse, and sign enforce
+        // the same transparent-only boundary.
+        if pczt::pczt_is_unsupported_by_transparent_only(pczt) {
             return Err(ZcashError::InvalidPczt(
-                "Shielded or V6 PCZTs require cypherpunk checking support".to_string(),
+                "PCZT is not supported by transparent-only checking".to_string(),
             ));
         }
     }
@@ -725,11 +718,39 @@ pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
 
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]
 mod legacy_tests {
+    use alloc::{collections::BTreeMap, string::String, vec::Vec};
+
     use super::*;
-    use zcash_vendor::{
-        pczt::roles::creator::Creator,
-        zcash_protocol::consensus::{BranchId, MainNetwork, NetworkConstants},
-    };
+    use serde::{Deserialize, Serialize};
+    use zcash_vendor::zcash_protocol::consensus::{BranchId, MainNetwork};
+
+    #[derive(Serialize, Deserialize)]
+    struct PcztGlobalPrefix {
+        global: GlobalMirror,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct GlobalMirror {
+        tx_version: u32,
+        version_group_id: u32,
+        consensus_branch_id: u32,
+        fallback_lock_time: Option<u32>,
+        expiry_height: u32,
+        coin_type: u32,
+        tx_modifiable: u8,
+        proprietary: BTreeMap<String, Vec<u8>>,
+    }
+
+    fn pczt_with_consensus_branch_id(bytes: &[u8], branch_id: BranchId) -> Vec<u8> {
+        let (mut prefix, rest) =
+            postcard::take_from_bytes::<PcztGlobalPrefix>(&bytes[8..]).unwrap();
+        prefix.global.consensus_branch_id = branch_id.into();
+
+        let mut encoded = bytes[..8].to_vec();
+        encoded = postcard::to_extend(&prefix, encoded).unwrap();
+        encoded.extend_from_slice(rest);
+        encoded
+    }
 
     fn assert_invalid_pczt_message<T: core::fmt::Debug>(result: Result<T>, expected: &str) {
         match result {
@@ -795,31 +816,47 @@ mod legacy_tests {
     }
 
     #[test]
-    fn legacy_check_rejects_v6_pczt() {
-        let pczt = Creator::new(
-            BranchId::Nu6_3.into(),
-            10,
-            MainNetwork.coin_type(),
-            None,
-            None,
-        )
-        .unwrap()
-        .build()
-        .unwrap();
+    fn legacy_check_accepts_transparent_only_v6_pczt() {
+        let sample = pczt::legacy_test_support::legacy_transparent_v6_sample();
+        assert!(pczt::pczt_is_v6(&Pczt::parse(&sample.bytes).unwrap()));
 
-        let result = check_pczt_multi_coins(
+        check_pczt_multi_coins(
             &MainNetwork,
-            &pczt.serialize().unwrap(),
-            "not-an-xpub",
-            &[7u8; 32],
+            &sample.bytes,
+            &sample.xpub,
+            &sample.seed_fingerprint,
             0,
-        );
+        )
+        .expect("transparent-only v6 PCZT should pass checking");
+    }
 
-        assert!(matches!(
-            result,
-            Err(ZcashError::InvalidPczt(msg))
-                if msg == "Shielded or V6 PCZTs require cypherpunk checking support"
-        ));
+    #[test]
+    fn legacy_rejects_v6_before_nu6_3() {
+        let sample = pczt::legacy_test_support::legacy_transparent_v6_sample();
+        let bytes = pczt_with_consensus_branch_id(&sample.bytes, BranchId::Nu6);
+        let pczt = Pczt::parse(&bytes).unwrap();
+        assert!(pczt::pczt_is_v6(&pczt));
+
+        assert_invalid_pczt_message(
+            check_pczt_multi_coins(
+                &MainNetwork,
+                &bytes,
+                &sample.xpub,
+                &sample.seed_fingerprint,
+                0,
+            ),
+            "PCZT is not supported by transparent-only checking",
+        );
+        assert_invalid_pczt_message(
+            parse_pczt_multi_coins(&MainNetwork, &bytes, &sample.seed_fingerprint),
+            "PCZT is not supported by transparent-only parsing",
+        );
+        assert_eq!(
+            sign_pczt(&bytes, &sample.seed),
+            Err(ZcashError::SigningError(
+                "PCZT is not supported by transparent-only signing".to_string()
+            ))
+        );
     }
 }
 
@@ -1867,6 +1904,97 @@ mod tests {
     }
 
     #[test]
+    fn test_v1_pczt_transparent_orchard_check_parse_and_sign() {
+        let sample = pczt::test_support::sample_legacy_transparent_orchard_pczt();
+        assert_eq!(&sample.bytes[..8], b"PCZT\x01\0\0\0");
+
+        let fixture = Pczt::parse(&sample.bytes).unwrap();
+        assert_eq!(*fixture.global().tx_version(), constants::V5_TX_VERSION);
+        assert_eq!(fixture.transparent().inputs().len(), 1);
+        assert_eq!(fixture.transparent().outputs().len(), 1);
+        assert_eq!(fixture.orchard().actions().len(), 2);
+        assert!(fixture
+            .orchard()
+            .actions()
+            .iter()
+            .all(|action| action.spend().spend_auth_sig().is_none()));
+        assert!(fixture.ironwood().actions().is_empty());
+
+        let parsed = parse_pczt_cypherpunk(
+            &MainNetwork,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+        )
+        .unwrap();
+        assert!(parsed.get_ironwood().is_none());
+
+        let transparent = parsed
+            .get_transparent()
+            .expect("v1 transparent bundle should decode");
+        assert_eq!(transparent.get_from().len(), 1);
+        assert!(transparent.get_from()[0].get_is_mine());
+        assert_eq!(transparent.get_from()[0].get_value(), "0.01 ZEC");
+        assert_eq!(transparent.get_to().len(), 1);
+        assert_eq!(transparent.get_to()[0].get_value(), "0.0099 ZEC");
+        assert!(!transparent.get_to()[0].get_is_change());
+
+        let orchard = parsed
+            .get_orchard()
+            .expect("v1 Orchard bundle should decode");
+        assert_eq!(orchard.get_from().len(), 1);
+        assert!(orchard.get_from()[0].get_is_mine());
+        assert_eq!(orchard.get_from()[0].get_value(), "0.01 ZEC");
+        assert_eq!(orchard.get_to().len(), 1);
+        assert_eq!(orchard.get_to()[0].get_value(), "0.00995 ZEC");
+        assert!(orchard.get_to()[0].get_is_change());
+        assert_eq!(parsed.get_fee_value(), "0.00015 ZEC");
+
+        let normalized = check_pczt_cypherpunk(
+            &MainNetwork,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .unwrap();
+        assert!(matches!(
+            ::pczt::roles::spend_finalizer::SpendFinalizer::new(Pczt::parse(&normalized).unwrap())
+                .finalize_spends()
+                .unwrap_err(),
+            ::pczt::roles::spend_finalizer::Error::TransparentFinalize(
+                zcash_vendor::transparent::pczt::SpendFinalizerError::MissingSignature
+            )
+        ));
+
+        let signed = sign_checked_pczt(
+            &MainNetwork,
+            &normalized,
+            &sample.seed,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .unwrap();
+        let signed = Pczt::parse(&signed).unwrap();
+
+        ::pczt::roles::spend_finalizer::SpendFinalizer::new(signed.clone())
+            .finalize_spends()
+            .expect("the one transparent input should be signed");
+
+        let signed_orchard_actions = signed
+            .orchard()
+            .actions()
+            .iter()
+            .enumerate()
+            .filter_map(|(index, action)| {
+                action.spend().spend_auth_sig().is_some().then_some(index)
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(signed_orchard_actions, vec![0]);
+        assert!(signed.ironwood().actions().is_empty());
+    }
+
+    #[test]
     fn test_parse_ignores_and_check_rejects_unsupported_ironwood_spend_zip32_path() {
         let sample = pczt::test_support::sample_ironwood_pczt();
         let parsed_pczt = parse_pczt_cypherpunk(
@@ -2372,8 +2500,20 @@ mod tests {
     }
 
     #[test]
-    fn test_sign_checked_pczt_rejects_foreign_seed() {
+    fn test_check_and_sign_pczt_reject_foreign_seed() {
         let sample = pczt::test_support::sample_orchard_change_pczt();
+        let foreign_seed = [9u8; 32];
+        let foreign_fingerprint = calculate_seed_fingerprint(&foreign_seed).unwrap();
+
+        let check_result = check_pczt_cypherpunk(
+            &pczt::test_support::Nu6_3Network,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &foreign_fingerprint,
+            0,
+        );
+        assert!(matches!(check_result, Err(ZcashError::PcztNoMyInputs)));
+
         let normalized = check_pczt_cypherpunk(
             &pczt::test_support::Nu6_3Network,
             &sample.bytes,
@@ -2382,8 +2522,6 @@ mod tests {
             0,
         )
         .unwrap();
-        let foreign_seed = [9u8; 32];
-        let foreign_fingerprint = calculate_seed_fingerprint(&foreign_seed).unwrap();
 
         let result = sign_checked_pczt(
             &pczt::test_support::Nu6_3Network,
@@ -2393,6 +2531,21 @@ mod tests {
             0,
         );
         assert!(matches!(result, Err(ZcashError::PcztNoMyInputs)));
+    }
+
+    #[test]
+    fn test_check_pczt_accepts_owned_transparent_input() {
+        let sample = pczt::legacy_test_support::legacy_transparent_sample();
+        let ufvk = derive_ufvk(&MainNetwork, &sample.seed, "m/32'/133'/0'").unwrap();
+
+        check_pczt_cypherpunk(
+            &MainNetwork,
+            &sample.bytes,
+            &ufvk,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .expect("an owned transparent input satisfies singleton ownership");
     }
 
     #[test]

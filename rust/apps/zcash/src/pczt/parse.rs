@@ -191,21 +191,19 @@ pub(crate) fn decode_output_enc_ciphertext(
         })
     } else {
         // If we reached here, none of our OVKs matched; recover directly as the fallback.
-        let pool_label = pool.label();
-
         let recipient = action.output().recipient().ok_or_else(|| {
-            ZcashError::InvalidPczt(format!("Missing recipient field for {pool_label} action"))
+            ZcashError::InvalidPczt(format!("Missing recipient field for {pool} action"))
         })?;
         let value = action.output().value().ok_or_else(|| {
-            ZcashError::InvalidPczt(format!("Missing value field for {pool_label} action"))
+            ZcashError::InvalidPczt(format!("Missing value field for {pool} action"))
         })?;
         let rho = orchard::note::Rho::from_bytes(&action.spend().nullifier().to_bytes())
             .into_option()
             .ok_or_else(|| {
-                ZcashError::InvalidPczt(format!("Missing rho field for {pool_label} action"))
+                ZcashError::InvalidPczt(format!("Missing rho field for {pool} action"))
             })?;
         let rseed = action.output().rseed().ok_or_else(|| {
-            ZcashError::InvalidPczt(format!("Missing rseed field for {pool_label} action"))
+            ZcashError::InvalidPczt(format!("Missing rseed field for {pool} action"))
         })?;
 
         let note = orchard::Note::from_parts(
@@ -216,9 +214,7 @@ pub(crate) fn decode_output_enc_ciphertext(
             (*action.output().note_version()).into(),
         )
         .into_option()
-        .ok_or_else(|| {
-            ZcashError::InvalidPczt(format!("{pool_label} action contains invalid note"))
-        })?;
+        .ok_or_else(|| ZcashError::InvalidPczt(format!("{pool} action contains invalid note")))?;
 
         Ok(match pool {
             ShieldedPool::Orchard => {
@@ -395,7 +391,7 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
     pczt: &Pczt,
 ) -> Result<ParsedPczt, ZcashError> {
     super::validate_supported_pczt(pczt)?;
-    reject_legacy_parse_unsupported_pczt(pczt)?;
+    reject_unsupported_pczt(pczt)?;
 
     let mut parsed_transparent = None;
 
@@ -430,14 +426,14 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
 }
 
 #[cfg(feature = "multi_coins")]
-fn reject_legacy_parse_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
+fn reject_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     {
-        // The legacy multi-coins parser only displays transparent data. Reject any
-        // shielded (Sapling/Orchard/Ironwood) or V6 PCZT instead of showing an
-        // incomplete transaction review.
-        if super::pczt_requires_cypherpunk_support(pczt) {
+        // The multi-coins parser only displays transparent data. Reject shielded
+        // content and unknown transaction formats instead of showing an incomplete
+        // transaction review.
+        if super::pczt_is_unsupported_by_transparent_only(pczt) {
             return Err(ZcashError::InvalidPczt(
-                "Shielded or V6 PCZTs require cypherpunk parsing support".to_string(),
+                "PCZT is not supported by transparent-only parsing".to_string(),
             ));
         }
     }
@@ -705,7 +701,6 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
     action: &orchard::pczt::Action,
     pool: ShieldedPool,
 ) -> Result<ParsedTo, ZcashError> {
-    let pool_label = pool.label();
     let output = action.output();
 
     // we should verify the cv_net in checking phrase, the transaction checking should failed if the net value is not correct
@@ -745,7 +740,7 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
                 let belongs_to_wallet = is_external || is_internal;
                 if is_internal_ovk && !belongs_to_wallet {
                     return Err(ZcashError::InvalidPczt(alloc::format!(
-                        "{pool_label} output was recoverable with an internal OVK but does not belong to this wallet"
+                        "{pool} output was recoverable with an internal OVK but does not belong to this wallet"
                     )));
                 }
                 let is_dummy = match vk {
@@ -774,7 +769,7 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
                 // `vk.is_none()` as a fallback. We require that non-trivial outputs are
                 // visible to the Keystone device.
                 (None, Some(value)) if value.inner() != 0 => Err(ZcashError::InvalidPczt(
-                    alloc::format!("enc_ciphertext field for {pool_label} action is undecryptable"),
+                    alloc::format!("enc_ciphertext field for {pool} action is undecryptable"),
                 )),
                 // We couldn't directly decrypt a zero-valued note. This is okay because
                 // it is checked elsewhere that the direct details in the PCZT are valid,
@@ -829,7 +824,7 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
                 }
                 (None, 0) => Ok(("Dummy output".into(), true)),
                 (None, _) => Err(ZcashError::InvalidPczt(alloc::format!(
-                    "missing user address for {pool_label} output"
+                    "missing user address for {pool} output"
                 ))),
             }?;
             Ok(ParsedTo::new(
@@ -972,31 +967,23 @@ mod display_accounting_tests {
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]
 mod legacy_tests {
     use super::*;
-    use zcash_vendor::{
-        pczt::roles::creator::Creator,
-        zcash_protocol::consensus::{BranchId, MainNetwork, NetworkConstants},
-    };
+    use zcash_vendor::zcash_protocol::consensus::MainNetwork;
 
     #[test]
-    fn legacy_parse_rejects_v6_pczt() {
-        let pczt = Creator::new(
-            BranchId::Nu6_3.into(),
-            10,
-            MainNetwork.coin_type(),
-            None,
-            None,
-        )
-        .unwrap()
-        .build()
-        .unwrap();
+    fn legacy_parse_accepts_transparent_only_v6_pczt() {
+        let sample = super::super::legacy_test_support::legacy_transparent_v6_sample();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
 
-        let result = parse_pczt_multi_coins(&MainNetwork, &[7u8; 32], &pczt);
+        let parsed = parse_pczt_multi_coins(&MainNetwork, &sample.seed_fingerprint, &pczt)
+            .expect("transparent-only v6 PCZT should parse");
 
-        assert!(matches!(
-            result,
-            Err(ZcashError::InvalidPczt(msg))
-                if msg == "Shielded or V6 PCZTs require cypherpunk parsing support"
-        ));
+        assert!(parsed
+            .get_transparent()
+            .unwrap()
+            .get_from()
+            .first()
+            .unwrap()
+            .get_is_mine());
     }
 }
 

@@ -396,7 +396,6 @@ fn check_shielded_bundle<P: consensus::Parameters>(
     bundle: &orchard::pczt::Bundle,
     pool: ShieldedPool,
 ) -> Result<(), ZcashError> {
-    let pool_label = pool.label();
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
     ))?;
@@ -427,7 +426,7 @@ fn check_shielded_bundle<P: consensus::Parameters>(
     match calculated_value_balance {
         Ok(value_balance) if &value_balance == bundle.value_sum() => Ok(()),
         _ => Err(ZcashError::InvalidPczt(format!(
-            "invalid {pool_label} bundle value balance"
+            "invalid {pool} bundle value balance"
         ))),
     }
 }
@@ -446,7 +445,6 @@ fn check_and_parse_shielded_bundle<P: consensus::Parameters>(
     pool: ShieldedPool,
     checked_actions: &mut alloc::vec::Vec<ShieldedAction>,
 ) -> Result<Option<ParsedOrchard>, ZcashError> {
-    let pool_label = pool.label();
     let fvk = ufvk.orchard().ok_or(ZcashError::InvalidDataError(
         "orchard fvk is not present".to_string(),
     ))?;
@@ -520,7 +518,7 @@ fn check_and_parse_shielded_bundle<P: consensus::Parameters>(
             }
         }
         _ => Err(ZcashError::InvalidPczt(format!(
-            "invalid {pool_label} bundle value balance"
+            "invalid {pool} bundle value balance"
         ))),
     }
 }
@@ -537,12 +535,11 @@ fn check_action<P: consensus::Parameters>(
     flags: &orchard::bundle::Flags,
     pool: ShieldedPool,
 ) -> Result<ParsedTo, ZcashError> {
-    let pool_label = pool.label();
     // Check `cv_net` first so we know that the `value` fields for both the spend and the
     // output are present and correct.
-    action.verify_cv_net().map_err(|e| {
-        ZcashError::InvalidPczt(format!("invalid cv_net in {pool_label} action: {e:?}"))
-    })?;
+    action
+        .verify_cv_net()
+        .map_err(|e| ZcashError::InvalidPczt(format!("invalid cv_net in {pool} action: {e:?}")))?;
 
     check_action_spend(
         params,
@@ -565,7 +562,6 @@ fn check_action_spend<P: consensus::Parameters>(
     spend: &orchard::pczt::Spend,
     pool: ShieldedPool,
 ) -> Result<(), ZcashError> {
-    let pool_label = pool.label();
     if let (Some(value), Some(zip32_derivation)) = (spend.value(), spend.zip32_derivation()) {
         if value.inner() != 0 && zip32_derivation.seed_fingerprint() == seed_fingerprint {
             let matched_account = super::matching_seed_supported_orchard_account(
@@ -604,11 +600,11 @@ fn check_action_spend<P: consensus::Parameters>(
 
     if let Some(expected_fvk) = can_verify_nf_rk {
         spend.verify_nullifier(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(format!("invalid {pool_label} action nullifier: {e:?}"))
+            ZcashError::InvalidPczt(format!("invalid {pool} action nullifier: {e:?}"))
         })?;
-        spend.verify_rk(expected_fvk).map_err(|e| {
-            ZcashError::InvalidPczt(format!("invalid {pool_label} action rk: {e:?}"))
-        })?;
+        spend
+            .verify_rk(expected_fvk)
+            .map_err(|e| ZcashError::InvalidPczt(format!("invalid {pool} action rk: {e:?}")))?;
     }
 
     Ok(())
@@ -622,11 +618,10 @@ fn check_action_output<P: consensus::Parameters>(
     flags: &orchard::bundle::Flags,
     pool: ShieldedPool,
 ) -> Result<ParsedTo, ZcashError> {
-    let pool_label = pool.label();
     action
         .output()
         .verify_note_commitment(action.spend())
-        .map_err(|e| ZcashError::InvalidPczt(format!("invalid {pool_label} action cmx: {e:?}")))?;
+        .map_err(|e| ZcashError::InvalidPczt(format!("invalid {pool} action cmx: {e:?}")))?;
 
     // Decode and validate the recipient, rejecting non-zero outputs the device cannot review.
     let parsed_to = super::parse::parse_orchard_output(params, keys, action, pool)?;
@@ -651,17 +646,58 @@ fn check_restricted_zero_value_output(
     }
 
     let recipient = action.output().recipient().ok_or_else(|| {
-        ZcashError::InvalidPczt(format!(
-            "missing recipient for funded {} output",
-            pool.label()
-        ))
+        ZcashError::InvalidPczt(format!("missing recipient for funded {} output", pool))
     })?;
     if !super::parse::is_wallet_orchard_address(keys, &recipient)? {
         return Err(ZcashError::InvalidPczt(format!(
             "funded {} output paired with a zero-value spend does not belong to the selected account",
-            pool.label()
+            pool
         )));
     }
 
     Ok(())
+}
+
+#[cfg(all(test, feature = "cypherpunk"))]
+mod tests {
+    use serde::{Deserialize, Serialize};
+
+    use super::*;
+
+    #[derive(Serialize, Deserialize)]
+    struct PcztWirePrefix {
+        global: ::pczt::common::Global,
+        transparent: Option<::pczt::transparent::Bundle>,
+        sapling: Option<::pczt::sapling::Bundle>,
+    }
+
+    #[test]
+    fn check_orchard_accepts_pczt_with_transparent_output() {
+        let orchard_sample = crate::pczt::test_support::sample_orchard_change_pczt();
+        let transparent_sample = crate::pczt::legacy_test_support::legacy_transparent_v6_sample();
+        let (mut prefix, orchard_bundles) =
+            postcard::take_from_bytes::<PcztWirePrefix>(&orchard_sample.bytes[8..]).unwrap();
+        let (transparent_prefix, _) =
+            postcard::take_from_bytes::<PcztWirePrefix>(&transparent_sample.bytes[8..]).unwrap();
+        prefix.transparent = transparent_prefix.transparent;
+
+        let mut bytes = orchard_sample.bytes[..8].to_vec();
+        bytes = postcard::to_extend(&prefix, bytes).unwrap();
+        bytes.extend_from_slice(orchard_bundles);
+        let pczt = Pczt::parse(&bytes).unwrap();
+        let ufvk = UnifiedFullViewingKey::decode(
+            &crate::pczt::test_support::Nu6_3Network,
+            &orchard_sample.ufvk_text,
+        )
+        .unwrap();
+
+        check_pczt_orchard(
+            &crate::pczt::test_support::Nu6_3Network,
+            &orchard_sample.seed_fingerprint,
+            zip32::AccountId::ZERO,
+            &ufvk,
+            &pczt,
+        )
+        .expect("valid Orchard spend with a transparent output should pass checking");
+    }
 }

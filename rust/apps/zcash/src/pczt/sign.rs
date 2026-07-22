@@ -83,7 +83,7 @@ impl PcztSigner for SeedSigner<'_> {
 #[cfg(not(feature = "cypherpunk"))]
 pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
     super::validate_supported_pczt(&pczt)?;
-    reject_legacy_unsupported_pczt(&pczt)?;
+    reject_unsupported_pczt(&pczt)?;
 
     let signer = low_level_signer::Signer::new(pczt);
 
@@ -97,13 +97,13 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
 }
 
 #[cfg(not(feature = "cypherpunk"))]
-fn reject_legacy_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
+fn reject_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     {
-        // The legacy helper below carries the pre-NU6.3 transparent sighash implementation.
-        // It must not be used for shielded (Sapling/Orchard/Ironwood) or V6 PCZTs.
-        if super::pczt_requires_cypherpunk_support(pczt) {
+        // This path only signs transparent data. Reject shielded content and unknown
+        // transaction formats; the shared sighash helper handles transparent-only v6.
+        if super::pczt_is_unsupported_by_transparent_only(pczt) {
             return Err(ZcashError::SigningError(
-                "Shielded or V6 PCZTs require cypherpunk signing support".to_string(),
+                "PCZT is not supported by transparent-only signing".to_string(),
             ));
         }
     }
@@ -256,7 +256,7 @@ impl<'a> SeedSigner<'a> {
                 |e| {
                     ZcashError::SigningError(format!(
                         "failed to derive {} spending key: {e:?}",
-                        self.pool.label()
+                        self.pool
                     ))
                 },
             )?,
@@ -324,7 +324,6 @@ impl PcztSigner for SeedSigner<'_> {
         // Strict per-action validation, ported verbatim from the previous
         // collect_orchard_bundle_signing_keys so the lean signer keeps identical
         // skip/reject semantics to the RoleSigner path.
-        let pool_label = self.pool.label();
         if action.spend().spend_auth_sig().is_some() {
             return Ok(());
         }
@@ -333,7 +332,8 @@ impl PcztSigner for SeedSigner<'_> {
                 Some(0) | None => return Ok(()),
                 Some(_) => {
                     return Err(ZcashError::InvalidPczt(format!(
-                        "{pool_label} spend dummy_sk is only valid for dummy spends"
+                        "{} spend dummy_sk is only valid for dummy spends",
+                        self.pool
                     )));
                 }
             }
@@ -375,7 +375,7 @@ impl PcztSigner for SeedSigner<'_> {
                     OsRng,
                 )
                 .map_err(|e| {
-                    ZcashError::SigningError(format!("failed to sign {pool_label} action: {e:?}"))
+                    ZcashError::SigningError(format!("failed to sign {} action: {e:?}", self.pool))
                 })
         })?;
         self.signed.set(self.signed.get() + 1);
@@ -776,6 +776,48 @@ mod tests {
     // Ironwood spend, so any upstream sighash change turns CI red instead of silently
     // producing wrong signatures on-device.
     #[test]
+    fn test_lean_sighash_transparent_only_v6() {
+        struct SighashCapture(Cell<Option<[u8; 32]>>);
+
+        impl PcztSigner for SighashCapture {
+            type Error = ZcashError;
+
+            fn sign_transparent<F>(
+                &self,
+                index: usize,
+                input: &mut transparent::pczt::Input,
+                hash: F,
+            ) -> Result<(), Self::Error>
+            where
+                F: FnOnce(SignableInput) -> [u8; 32],
+            {
+                self.0.set(Some(input.with_signable_input(index, hash)));
+                Ok(())
+            }
+
+            fn sign_orchard(
+                &self,
+                _action: &mut orchard::pczt::Action,
+                _hash: Hash,
+            ) -> Result<(), Self::Error> {
+                Ok(())
+            }
+        }
+
+        let sample = crate::pczt::legacy_test_support::legacy_transparent_v6_sample();
+        let pczt = Pczt::parse(&sample.bytes).unwrap();
+        let oracle = RoleSigner::new(pczt.clone())
+            .unwrap()
+            .transparent_sighash(0)
+            .unwrap();
+        let capture = SighashCapture(Cell::new(None));
+
+        pczt_ext::sign_transparent(low_level_signer::Signer::new(pczt), &capture).unwrap();
+
+        assert_eq!(capture.0.get(), Some(oracle));
+    }
+
+    #[test]
     fn test_lean_sighash_control_orchard_only() {
         let sample = crate::pczt::test_support::sample_orchard_change_pczt();
         let pczt = Pczt::parse(&sample.bytes).unwrap();
@@ -1116,30 +1158,18 @@ mod tests {
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]
 mod legacy_tests {
     use super::*;
-    use zcash_vendor::{
-        pczt::roles::creator::Creator,
-        zcash_protocol::consensus::{BranchId, MainNetwork, NetworkConstants},
-    };
 
     #[test]
-    fn legacy_signing_rejects_v6_pczt() {
-        let pczt = Creator::new(
-            BranchId::Nu6_3.into(),
-            10,
-            MainNetwork.coin_type(),
-            None,
-            None,
-        )
-        .unwrap()
-        .build()
-        .unwrap();
+    fn legacy_signing_accepts_transparent_only_v6_pczt() {
+        let sample = super::super::legacy_test_support::legacy_transparent_v6_sample();
+        let signed = sign_pczt(Pczt::parse(&sample.bytes).unwrap(), &sample.seed)
+            .expect("transparent-only v6 PCZT should sign");
+        let signed = Pczt::parse(&signed).unwrap();
 
-        let result = sign_pczt(pczt, &[7u8; 32]);
-
-        assert!(matches!(
-            result,
-            Err(ZcashError::SigningError(msg))
-                if msg == "Shielded or V6 PCZTs require cypherpunk signing support"
-        ));
+        assert!(super::super::pczt_is_v6(&signed));
+        assert_eq!(
+            signed.global().proprietary().get(PROP_KEY_FW_VERSION),
+            Some(&KEYSTONE_FW_VERSION.encode().to_vec())
+        );
     }
 }

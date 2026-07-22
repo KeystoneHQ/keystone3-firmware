@@ -9,6 +9,7 @@
 #include "presetting.h"
 #include "gui_display_widgets.h"
 #include "device_setting.h"
+#include "drv_aw32001.h"
 #include "gui_page.h"
 #include "gui_api.h"
 
@@ -69,6 +70,7 @@ static const char *GetAutoShutdownTimeDescByLockTime(void);
 static void NftScreenSaverSwitchHandler(lv_event_t * e);
 static void OpenNftTutorialHandler(lv_event_t *e);
 #endif
+static void BatteryPercentageSwitchHandler(lv_event_t *e);
 
 void GuiDisplayWidgetsInit()
 {
@@ -211,6 +213,24 @@ void GuiDisplayEntranceWidget(lv_obj_t *parent)
                              NftScreenSaverSwitchHandler, nftSwitch);
     GuiAlignToPrevObj(button, LV_ALIGN_OUT_BOTTOM_MID, 0, 25);
 #endif
+
+    // Battery Percentage Toggle
+    label = GuiCreateTextLabel(parent, _("battery_percentage"));
+    lv_obj_t *batteryPercentSwitch = GuiCreateSwitch(parent);
+    if (GetShowBatteryPercentage()) {
+        lv_obj_add_state(batteryPercentSwitch, LV_STATE_CHECKED);
+    } else {
+        lv_obj_clear_state(batteryPercentSwitch, LV_STATE_CHECKED);
+    }
+    lv_obj_clear_flag(batteryPercentSwitch, LV_OBJ_FLAG_CLICKABLE);
+    GuiButton_t batteryTable[] = {
+        {.obj = label, .align = LV_ALIGN_LEFT_MID, .position = {24, 0}},
+        {.obj = batteryPercentSwitch, .align = LV_ALIGN_RIGHT_MID, .position = {-24, 0}},
+    };
+    button = GuiCreateButton(parent, 456, 84, batteryTable, NUMBER_OF_ARRAYS(batteryTable),
+                             BatteryPercentageSwitchHandler, batteryPercentSwitch);
+    GuiAlignToPrevObj(button, LV_ALIGN_OUT_BOTTOM_MID, 0, 25);
+
     label = GuiCreateTextLabel(parent, _("system_settings_screen_lock_auto_lock"));
     lv_obj_t *imgArrow = GuiCreateImg(parent, &imgArrowRight);
     const char *currentLockTime = GetAutoLockTimeDescByLockTime();
@@ -627,3 +647,30 @@ static void OpenNftTutorialHandler(lv_event_t *e)
     lv_obj_add_event_cb(button, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
 #endif
+
+static void BatteryPercentageSwitchHandler(lv_event_t *e)
+{
+    lv_obj_t *obj = lv_event_get_user_data(e);
+
+    if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
+        lv_obj_clear_state(obj, LV_STATE_CHECKED);
+        SetShowBatteryPercentage(false);
+    } else {
+        lv_obj_add_state(obj, LV_STATE_CHECKED);
+        SetShowBatteryPercentage(true);
+    }
+    SaveDeviceSettings();
+    // Trigger battery update: send current battery state so status bar updates percentage visibility
+    uint16_t battState = 0;
+    battState |= (uint16_t)(GetCurrentDisplayPercent() & 0xFF);
+#ifdef COMPILE_SIMULATOR
+    if (UsbInitState()) {
+        battState |= 0x8000;
+    }
+#else
+    if (GetUsbPowerState() == USB_POWER_STATE_CONNECT) {
+        battState |= 0x8000;
+    }
+#endif
+    GuiApiEmitSignal(SIG_INIT_BATTERY, &battState, sizeof(battState));
+}

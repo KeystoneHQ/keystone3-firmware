@@ -57,6 +57,9 @@ void SetEnableBlindSigning(bool enable);
 void SetBootSecureCheckFlag(bool isSet);
 bool GetBootSecureCheckFlag(void);
 
+bool GetShowBatteryPercentage(void);
+void SetShowBatteryPercentage(bool enable);
+
 void SetRecoveryModeSwitch(bool isSet);
 bool GetRecoveryModeSwitch(void);
 void ResetBootParam(void);

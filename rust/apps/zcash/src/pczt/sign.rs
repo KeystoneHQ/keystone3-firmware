@@ -82,6 +82,15 @@ impl PcztSigner for SeedSigner<'_> {
 
 #[cfg(not(feature = "cypherpunk"))]
 pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
+    sign_pczt_with_encoding(pczt, seed, super::PcztEncoding::V2)
+}
+
+#[cfg(not(feature = "cypherpunk"))]
+pub(crate) fn sign_pczt_with_encoding(
+    pczt: Pczt,
+    seed: &[u8],
+    encoding: super::PcztEncoding,
+) -> crate::Result<Vec<u8>> {
     super::validate_supported_pczt(&pczt)?;
     reject_unsupported_pczt(&pczt)?;
 
@@ -91,8 +100,8 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
     let signer = pczt_ext::sign_transparent(signer, &SeedSigner { seed })
         .map_err(|e| ZcashError::SigningError(e.to_string()))?;
 
-    stamp_and_redact(signer.finish())
-        .serialize()
+    encoding
+        .serialize(stamp_and_redact(signer.finish()))
         .map_err(|e| ZcashError::SigningError(format!("serialize signed PCZT: {e:?}")))
 }
 
@@ -388,8 +397,17 @@ impl PcztSigner for SeedSigner<'_> {
 /// Thin wrapper over `sign_and_redact_pczt`; see it for the full contract.
 #[cfg(feature = "cypherpunk")]
 pub fn sign_pczt(pczt: Pczt, seed: &[u8]) -> crate::Result<Vec<u8>> {
-    sign_and_redact_pczt(pczt, seed)?
-        .serialize()
+    sign_pczt_with_encoding(pczt, seed, super::PcztEncoding::V2)
+}
+
+#[cfg(feature = "cypherpunk")]
+pub(crate) fn sign_pczt_with_encoding(
+    pczt: Pczt,
+    seed: &[u8],
+    encoding: super::PcztEncoding,
+) -> crate::Result<Vec<u8>> {
+    encoding
+        .serialize(sign_and_redact_pczt(pczt, seed)?)
         .map_err(|e| ZcashError::SigningError(format!("serialize signed PCZT: {e:?}")))
 }
 

@@ -18,6 +18,8 @@ pub enum ZcashError {
     SigningError(String),
     #[error("invalid pczt, {0}")]
     InvalidPczt(String),
+    #[error("zcash network error: {0}")]
+    NetworkMismatch(String),
     #[error("None of inputs belong to the provided account")]
     PcztNoMyInputs,
 }
@@ -67,6 +69,13 @@ mod tests {
 
         let error = ZcashError::InvalidPczt("invalid pczt".to_string());
         assert_eq!(error.to_string(), "invalid pczt, invalid pczt");
+
+        let error =
+            ZcashError::NetworkMismatch("transaction and wallet networks do not match".to_string());
+        assert_eq!(
+            error.to_string(),
+            "zcash network error: transaction and wallet networks do not match"
+        );
     }
 
     #[test]

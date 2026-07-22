@@ -331,6 +331,12 @@ void *GuiCreateRustErrorWindow(int32_t errCode, const char* errMessage, lv_obj_t
         titleText = _("rust_error_not_my_transaction");
         descText = _("rust_error_not_my_transaction_desc");
         break;
+    case ZcashNetworkMismatch:
+        titleText = _("wallet_profile_network_title");
+        if (errMessage != NULL) {
+            descText = errMessage;
+        }
+        break;
     case BitcoinMultiSigWalletNotMyWallet:
         titleText = _("rust_error_bitcoin_not_my_multisig_wallet");
         descText = _("rust_error_bitcoin_not_my_multisig_wallet_desc");

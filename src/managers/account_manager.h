@@ -49,7 +49,8 @@ typedef struct {
 
 typedef struct {
     uint8_t accountIndex;
-    char ufvkCache[ZCASH_UFVK_BUFFER_SIZE];
+    char mainnetUfvkCache[ZCASH_UFVK_BUFFER_SIZE];
+    char testnetUfvkCache[ZCASH_UFVK_BUFFER_SIZE];
     uint8_t seedFingerprint[32];
 } ZcashUFVKCache_t;
 
@@ -110,6 +111,7 @@ void AccountsDataCheck(void);
 bool IsZcashSupportedForCurrentMnemonic(void);
 bool IsMoneroSupportedForCurrentMnemonic(void);
 int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK);
+int32_t GetZcashTestnetUFVK(uint8_t accountIndex, char* outUFVK);
 int32_t GetZcashSFP(uint8_t accountIndex, uint8_t* outSFP);
 int32_t SetupZcashSFP(uint8_t accountIndex, const char* password);
 #ifdef CYPHERPUNK_VERSION

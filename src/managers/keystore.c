@@ -280,11 +280,37 @@ int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char
     do {
         ret = CheckPasswordExisted(newPassword, accountIndex);
         CHECK_ERRCODE_BREAK("check repeat password", ret);
-        ret = LoadAccountSecret(accountIndex, &accountSecret, password);
+        ret = LoadAccountSecret(accountIndex, &accountSecret, password);   // decrypt seed under PIN_old (reads only)
         CHECK_ERRCODE_BREAK("load account secret", ret);
+        // Change-PIN re-provisions the SAME index under PIN_new. Bracket the re-wrap with CHANGING_PIN so an
+        // interrupted change (power loss / failure) is erased and restored at boot. The backend hook
+        // handles generation-specific prep (gen-1 no-op).
+        ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CHANGING_PIN);
+        CHECK_ERRCODE_BREAK("set changing pin status", ret);
+        ret = SE_PrepareChangePin(accountIndex, password);   // password = PIN_old
+        CHECK_ERRCODE_BREAK("prepare change pin", ret);
         ret = SaveAccountSecret(accountIndex, &accountSecret, newPassword, false);
-        CHECK_ERRCODE_BREAK("save account secret", ret);
+        CHECK_ERRCODE_BREAK("save account secret", ret);   // on failure: status stays CHANGING_PIN -> boot erases
+        ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATED);   // re-wrap committed
+        CHECK_ERRCODE_BREAK("set created status", ret);
+#ifdef CYPHERPUNK_VERSION
+        // The stored Zcash UFVK ciphertext is keyed by the login password, so keep it in sync here.
+        // Best effort after the PIN re-wrap is committed: a failure must not fail the password change,
+        // and a stale ciphertext is repaired by SetupZcashCache at the next login (which also migrates
+        // wallets whose password was changed before this sync existed). Temp (passphrase) accounts are
+        // skipped for the same reason.
+        if (accountIndex == GetCurrentAccountIndex() && !GetIsTempAccount() && IsZcashSupportedForCurrentMnemonic()) {
+            int seedLen = GetMnemonicType() == MNEMONIC_TYPE_SLIP39 ? accountSecret.entropyLen : sizeof(accountSecret.seed);
+            int32_t zcashRet = RegenerateZcashUFVK(accountIndex, accountSecret.seed, seedLen, newPassword, NULL, 0);
+            if (zcashRet != SUCCESS_CODE) {
+                printf("regenerate zcash ufvk err=%d\r\n", zcashRet);
+            }
+        }
+#endif
     } while (0);
+    // SetNewKeyPieceToSE consumes the arm on the normal path; disarm here too so a change-PIN never
+    // leaves it armed (e.g. if SaveAccountSecret returned before SetNewKeyPieceToSE).
+    SE_DisarmProvisionRecovery();
     CLEAR_OBJECT(accountSecret);
     return ret;
 }
@@ -523,6 +549,15 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
 #ifdef COMPILE_SIMULATOR
         ret = SimulatorSaveAccountSecret(accountIndex, accountSecret, password);
 #else
+        if (newAccount) {
+            // Account-create bracket: mark CREATING before any SE write, so an
+            // interrupted create (power loss / auto-lock mid-provision) is caught at the next boot
+            // (AccountsDataCheck erases the partial account) instead of leaving a half-written, HMAC-failing
+            // slot. Flipped to CREATED only after the full blob + account info commit below. (Change-PIN's
+            // CHANGING_PIN bracket lives in ChangePassword; it calls here with newAccount == false.)
+            ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATING);
+            CHECK_ERRCODE_BREAK("set creating status", ret);
+        }
         ret = SetNewKeyPieceToSE(accountIndex, pieces, password);
         CHECK_ERRCODE_BREAK("set key to se", ret);
         HashWithSalt(hash, pieces, sizeof(pieces), "combine two pieces");
@@ -571,6 +606,7 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
                 SimpleResponse_u8 *simpleResponse = get_master_fingerprint((PtrBytes)accountSecret->seed, seedLen);
                 if (simpleResponse == NULL) {
                     printf("get_master_fingerprint return NULL\r\n");
+                    ret = ERR_GENERAL_FAIL;   // a bare break only exits the switch -> set ret, propagated below
                     break;
                 }
                 if (simpleResponse->error_code != 0) {
@@ -578,8 +614,10 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
                     if (simpleResponse->error_message != NULL) {
                         printf("error code = %d\r\nerror msg is: %s\r\n", simpleResponse->error_code, simpleResponse->error_message);
                     }
+                    ret = simpleResponse->error_code;
+                    free_simple_response_u8(simpleResponse);   // was leaked on the error path
+                    break;
                 }
-                CHECK_ERRCODE_BREAK("get_master_fingerprint", simpleResponse->error_code);
                 uint8_t *masterFingerprint = simpleResponse->data;
                 PrintArray("masterFingerprint", masterFingerprint, 4);
                 SetCurrentAccountMfp(masterFingerprint);
@@ -590,8 +628,14 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
                 // mfp is 0x00000000;
                 break;
             }
-            SaveCurrentAccountInfo();
+            // The breaks inside the switch above terminate the switch, NOT this do/while, so a fingerprint
+            // failure (NULL response or non-zero error_code) must be propagated here before the account is
+            // committed — otherwise execution falls through and marks a bad account CREATED.
+            CHECK_ERRCODE_BREAK("get_master_fingerprint", ret);
+            ret = SaveCurrentAccountInfo();   // capture the param-page write result (was discarded)
             CHECK_ERRCODE_BREAK("write param", ret);
+            ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATED);   // create fully committed
+            CHECK_ERRCODE_BREAK("set created status", ret);
         }
     } while (0);
 
@@ -657,6 +701,9 @@ static int32_t LoadAccountSecretFromSE(uint8_t accountIndex, AccountSecret_t *ac
         KEYSTORE_PRINT_ARRAY("authKey", authKey, AUTH_KEY_LEN);
         ret = ((memcmp(hmacCalc, hmac, HMAC_LEN) == 0) ? SUCCESS_CODE : ERR_KEYSTORE_AUTH);
         CHECK_ERRCODE_BREAK("check hmac", ret);
+        // PIN proven correct here -> notify the SE backend of a successful unlock (gen-1: no-op).
+        ret = SE_OnUnlockSuccess(accountIndex);
+        CHECK_ERRCODE_BREAK("on unlock success", ret);
         accountSecret->entropyLen = (pAccountInfo->entropyLen == 0) ? 32 : pAccountInfo->entropyLen; // 32 bytes as default.
         CombineInnerAesKey(enKey);
         AES256_CBC_init(&ctx, enKey, iv);

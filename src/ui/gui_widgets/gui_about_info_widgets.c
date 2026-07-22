@@ -14,6 +14,7 @@
 #include "err_code.h"
 #include "secret_cache.h"
 #include "fingerprint_process.h"
+#include "se_manager.h"
 #include "log.h"
 #ifndef COMPILE_SIMULATOR
 #include "drv_battery.h"
@@ -126,17 +127,19 @@ static void GuiAboutNVSBarInit()
 
 void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 {
-    char version[BUFFER_SIZE_32] = {0};
+    char version[SOFTWARE_VERSION_MAX_LEN] = {0};
     GetSoftWareVersion(version);
     const char *versionPrefix = "Firmware ";
     char *startPointer = strstr(version, versionPrefix);
-    char versionStr[BUFFER_SIZE_32] = {0};
+    char versionStr[SOFTWARE_VERSION_MAX_LEN + 4] = {0};
     char fpVersion[BUFFER_SIZE_32] = "v";
     if (startPointer) {
-        strncpy(versionStr, version + strlen(versionPrefix), strnlen_s(version, BUFFER_SIZE_32));
+        strncpy(versionStr, version + strlen(versionPrefix), strnlen_s(version, sizeof(version)));
     } else {
-        strncpy(versionStr, version, strnlen_s(version, BUFFER_SIZE_32));
+        strncpy(versionStr, version, strnlen_s(version, sizeof(version)));
     }
+    uint32_t versionStrLen = strnlen_s(versionStr, sizeof(versionStr));
+    snprintf_s(versionStr + versionStrLen, sizeof(versionStr) - versionStrLen, "(%d)", (int)GetSeGen());
 
     char serialNumber[64] = {0};
     GetSerialNumber(serialNumber);
@@ -146,6 +149,9 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
     titleLabel = GuiCreateTextLabel(parent, _("about_info_firmware_version"));
     contentLabel = GuiCreateNoticeLabel(parent, versionStr);
     GuiGetFpVersion(&fpVersion[1], sizeof(fpVersion) - 1);
+    // Append the SE generation so the row shows FP firmware + SE version together (e.g. "v1.0.0.0&V2.0").
+    strncat(fpVersion, (GetSeGen() == SE_GEN_2) ? "&v2.0" : "&v1.0",
+            sizeof(fpVersion) - strlen(fpVersion) - 1);
 
     GuiButton_t table[] = {
         {.obj = titleLabel, .align = LV_ALIGN_DEFAULT, .position = {24, 24}},

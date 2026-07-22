@@ -17,6 +17,7 @@
 #include "gui_lock_widgets.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
+#include "gui_wipe_device_widgets.h"
 
 static lv_obj_t *g_container;
 static lv_obj_t *g_vibrationSw;
@@ -278,6 +279,7 @@ void GuiSystemSettingVerifyPasswordSuccess(void)
 {
     printf("password is right\n");
     GuiDeleteKeyboardWidget(g_keyboardWidget);
+    GuiWipeDeviceSetForced(false);
     GuiFrameOpenView(&g_wipeDeviceView);
 }
 

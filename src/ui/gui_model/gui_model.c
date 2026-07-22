@@ -25,6 +25,7 @@
 #include "screen_manager.h"
 #include "keystore.h"
 #include "account_manager.h"
+#include "se_manager.h"
 #include "qrdecode_task.h"
 #include "gui_views.h"
 #include "assert.h"
@@ -114,6 +115,11 @@ static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen);
 
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
+// Forget-pass: the account index the entered mnemonic matches (the wallet being reset), captured at the
+// mnemonic-verify step (ModelBip39/Slip39ForgetPass). Read at prove-ownership to refuse a proof made with THAT
+// wallet's own password — ownership must be proven via a DIFFERENT wallet. 0xFF = unset (re-set on every
+// mnemonic verify before prove).
+static uint8_t g_forgetResetIndex = 0xFF;
 
 #ifdef COMPILE_SIMULATOR
 // On the real device, AsyncExecute posts to a FreeRTOS background task
@@ -679,7 +685,10 @@ static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen)
     do {
         ret = CHECK_BATTERY_LOW_POWER();
         CHECK_ERRCODE_BREAK("save low power", ret);
-        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
+        // Capture the matched (reset) wallet index for the prove-ownership guard. ModelComparePubkey returns
+        // ERR_KEYSTORE_MNEMONIC_REPEAT (!= SUCCESS) exactly when the mnemonic matches an existing wallet — the
+        // forget-pass SUCCESS path — and sets *index to that wallet.
+        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, &g_forgetResetIndex);
         if (ret != SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
             SetLockScreen(enable);
@@ -1050,7 +1059,8 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
             printf("get master secret error\n");
             break;
         }
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, NULL);
+        // Capture the matched (reset) wallet index for the prove-ownership guard (see ModelBip39ForgetPass).
+        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, &g_forgetResetIndex);
         if (ret != SUCCESS_CODE) {
             GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
             SetLockScreen(enable);
@@ -1091,7 +1101,7 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
     uint8_t accountIndex = GetCurrentAccountIndex();
     UpdateFingerSignFlag(accountIndex, false);
     CloseUsb();
-    ret = DestroyAccount(accountIndex);
+    ret = DestroyAccount(accountIndex);   // gen-2 SE key rotation now happens inside DestroyAccount
     if (ret == SUCCESS_CODE) {
         // reset address index in receive page
         {
@@ -1171,10 +1181,22 @@ static int32_t ModelChangeAccountPass(const void *inData, uint32_t inDataLen)
 #ifndef COMPILE_SIMULATOR
     int32_t ret;
 
+    // Gate change-PIN on low battery like wallet creation (MODEL_WRITE_SE_HEAD) so it can't start on a dying
+    // battery and be interrupted mid-flight.
+    ret = CHECK_BATTERY_LOW_POWER();
+    if (ret != SUCCESS_CODE) {
+        GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, NULL, 0);
+        ClearSecretCache();
+        SetLockScreen(enable);
+        return SUCCESS_CODE;
+    }
+
     ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
-    ret = ChangePassword(GetCurrentAccountIndex(), SecretCacheGetNewPassword(), SecretCacheGetPassword());
-    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
     if (ret == SUCCESS_CODE) {
+        ret = ChangePassword(GetCurrentAccountIndex(), SecretCacheGetNewPassword(), SecretCacheGetPassword());
+    }
+    if (ret == SUCCESS_CODE) {
+        UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
         GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, NULL, 0);
     } else {
         GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, NULL, 0);
@@ -1286,6 +1308,10 @@ static void ModelVerifyPassSuccess(uint16_t *param)
     case SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD:
         GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_RSA_VERIFY_PASSWORD_PASS, param, sizeof(*param));
         break;
+    case SIG_FORGET_PASSWORD_PROVE_OWNERSHIP:
+        // advance the forget-pass flow to set the new PIN.
+        GuiApiEmitSignal(SIG_FORGET_PASSWORD_PROVE_OWNERSHIP_PASS, param, sizeof(*param));
+        break;
     default:
         GuiApiEmitSignal(SIG_VERIFY_PASSWORD_PASS, param, sizeof(*param));
         break;
@@ -1298,6 +1324,7 @@ static void ModelVerifyPassFailed(uint16_t *param)
     switch (*param) {
     case SIG_LOCK_VIEW_VERIFY_PIN:
     case SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS:
+    case SIG_FORGET_PASSWORD_PROVE_OWNERSHIP:   // prove-ownership uses the login error counter
         g_passwordVerifyResult.errorCount = GetLoginPasswordErrorCount();
         printf("gui model get login error count %d \n", g_passwordVerifyResult.errorCount);
         assert(g_passwordVerifyResult.errorCount <= MAX_LOGIN_PASSWORD_ERROR_COUNT);
@@ -1354,8 +1381,35 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
         } else if (ret == SUCCESS_CODE) {
             ModeGetWalletDesc(NULL, 0);
         }
+    } else if (SIG_FORGET_PASSWORD_PROVE_OWNERSHIP == *param) {
+        // Forget-pass (gen-2 multi-wallet): prove device ownership by authenticating ANY existing wallet.
+        // Try-all check (no login), ticking the login error counter, clamped at MAX_LOGIN so it stops at the
+        // wipe threshold instead of running past it.
+        ret = VerifyOwnershipPasswordTryAll(&accountIndex, SecretCacheGetPassword(),
+                                            MAX_LOGIN_PASSWORD_ERROR_COUNT);
+        // Ownership must be proven via a DIFFERENT wallet than the one being reset. If the entered password
+        // matches the reset wallet ITSELF (g_forgetResetIndex, resolved at the mnemonic-verify step), reject the
+        // proof. Unreachable in normal use (unique passwords mean only its own password maps to its index) —
+        // deliberate belt-and-suspenders.
+        if (ret == SUCCESS_CODE && accountIndex == g_forgetResetIndex) {
+            ret = ERR_KEYSTORE_PASSWORD_ERR;
+        }
     } else {
         ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
+    }
+
+    // gen-2 forget-pass ONLY: ownership proven via another wallet -> arm provision-recovery on THAT matched
+    // wallet for the upcoming re-provision (CreateNewAccount of the forgotten wallet).
+    if (ret == SUCCESS_CODE && *param == SIG_FORGET_PASSWORD_PROVE_OWNERSHIP && GetSeGen() == SE_GEN_2) {
+        SE_ArmProvisionRecovery(accountIndex, SecretCacheGetPassword());
+    }
+
+    // gen-2 add-wallet ONLY: the existing wallet is authenticated here. Capture its index + passcode into the
+    // dedicated provision-recovery holder while both are valid (the secret cache is wiped right after this by
+    // the add-wallet navigation), for the upcoming SetNewKeyPieceToSE. gen-1 has nothing to recover and no
+    // reason to retain the passcode.
+    if (ret == SUCCESS_CODE && *param == DEVICE_SETTING_ADD_WALLET && GetSeGen() == SE_GEN_2) {
+        SE_ArmProvisionRecovery(GetCurrentAccountIndex(), SecretCacheGetPassword());
     }
 
     if (SIG_LOCK_VIEW_VERIFY_PIN == *param && firstVerify && ModelGetPassphraseQuickAccess()) {
@@ -1375,6 +1429,11 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
             *param != SIG_MULTISIG_WALLET_DELETE_VERIFY_PASSWORD &&
             *param != SIG_HARDWARE_CALL_DERIVE_PUBKEY &&
             *param != SIG_INIT_CONNECT_USB &&
+            // forget-pass prove-ownership: the user already entered the seed; clearing it here would blank the
+            // mnemonic before the upcoming re-save (it would fail with "mnemonic error"). The other wallet's PIN
+            // we just verified is already captured in the dedicated provision-recovery holder; the forget-pass
+            // DeInit clears the cache.
+            *param != SIG_FORGET_PASSWORD_PROVE_OWNERSHIP &&
             !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
             !GuiCheckIfViewOpened(&g_createWalletView) &&
             !ModelGetPassphraseQuickAccess()) {

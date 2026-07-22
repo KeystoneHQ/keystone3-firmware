@@ -1418,6 +1418,7 @@ pub fn extract_compact_sigs_from_signed_pczt(
 mod tests {
     use alloc::{collections::BTreeMap, string::String, vec, vec::Vec};
 
+    use ::pczt::roles::creator::Creator;
     use consensus::{MainNetwork, TestNetwork};
     use keystore::algorithms::zcash::{calculate_seed_fingerprint, derive_ufvk};
     use serde::{Deserialize, Serialize};

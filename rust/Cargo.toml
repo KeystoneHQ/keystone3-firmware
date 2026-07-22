@@ -120,3 +120,7 @@ getrandom = "0.2"
 minicbor = { version = "0.19", features = ["alloc"] }
 zeroize = { version = "1.8.2", default-features = false }
 # third party dependencies end
+
+[patch.crates-io]
+ur-registry = { git = "https://github.com/valargroup/keystone-sdk-rust.git", rev = "abc72f085f4c42e0ad048c60c1102f24a16e1f68" }
+ur-parse-lib = { git = "https://github.com/valargroup/keystone-sdk-rust.git", rev = "abc72f085f4c42e0ad048c60c1102f24a16e1f68" }

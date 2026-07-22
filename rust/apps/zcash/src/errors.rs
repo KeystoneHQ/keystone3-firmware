@@ -29,6 +29,13 @@ impl From<orchard::pczt::ParseError> for ZcashError {
     }
 }
 
+#[cfg(feature = "cypherpunk")]
+impl From<zcash_vendor::pczt::roles::low_level_signer::OrchardParseError> for ZcashError {
+    fn from(e: zcash_vendor::pczt::roles::low_level_signer::OrchardParseError) -> Self {
+        Self::InvalidPczt(alloc::format!("Invalid Orchard bundle: {e:?}"))
+    }
+}
+
 impl From<transparent::pczt::ParseError> for ZcashError {
     fn from(e: transparent::pczt::ParseError) -> Self {
         Self::InvalidPczt(alloc::format!("Invalid transparent bundle: {e:?}"))

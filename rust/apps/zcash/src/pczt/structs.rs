@@ -4,6 +4,7 @@ use app_utils::impl_public_struct;
 impl_public_struct!(ParsedPczt {
     transparent: Option<ParsedTransparent>,
     orchard: Option<ParsedOrchard>,
+    ironwood: Option<ParsedOrchard>,
     total_transfer_value: String,
     fee_value: String,
     has_sapling: bool
@@ -64,6 +65,7 @@ mod tests {
     #[test]
     fn test_parsed_pczt_creation() {
         let pczt = ParsedPczt::new(
+            None,
             None,
             None,
             "1.0 ZEC".to_string(),
@@ -214,6 +216,7 @@ mod tests {
         let pczt = ParsedPczt::new(
             Some(transparent),
             Some(orchard),
+            None,
             "0.5 ZEC".to_string(),
             "0.1 ZEC".to_string(),
             false,
@@ -227,6 +230,7 @@ mod tests {
     #[test]
     fn test_parsed_pczt_with_sapling() {
         let pczt = ParsedPczt::new(
+            None,
             None,
             None,
             "5.0 ZEC".to_string(),
@@ -402,7 +406,7 @@ mod tests {
 
     #[test]
     fn test_parsed_pczt_empty_values() {
-        let pczt = ParsedPczt::new(None, None, "".to_string(), "".to_string(), false);
+        let pczt = ParsedPczt::new(None, None, None, "".to_string(), "".to_string(), false);
         assert_eq!(pczt.get_total_transfer_value(), "");
         assert_eq!(pczt.get_fee_value(), "");
     }
@@ -507,6 +511,7 @@ mod tests {
         let pczt = ParsedPczt::new(
             Some(transparent),
             Some(orchard),
+            None,
             "6.0 ZEC".to_string(),
             "0.1 ZEC".to_string(),
             true,
@@ -540,6 +545,7 @@ mod tests {
         let pczt = ParsedPczt::new(
             Some(transparent),
             None,
+            None,
             "1.0 ZEC".to_string(),
             "0.0001 ZEC".to_string(),
             false,
@@ -563,6 +569,7 @@ mod tests {
         let pczt = ParsedPczt::new(
             None,
             Some(orchard),
+            None,
             "2.0 ZEC".to_string(),
             "0.0001 ZEC".to_string(),
             false,

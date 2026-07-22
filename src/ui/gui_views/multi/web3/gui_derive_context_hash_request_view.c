@@ -28,7 +28,7 @@ int32_t GuiDeriveContextHashRequestViewEventProcess(void *self, uint16_t usEvent
         GuiDeriveContextHashWidgetHandleURUpdate((char *)param, usLen);
         break;
     case SIG_BACKGROUND_UR_GENERATE_FAIL:
-        GuiDeriveContextHashWidgetHandleURGenerateFail((char *)param);
+        GuiDeriveContextHashWidgetHandleURGenerateFail(param);
         break;
     case SIG_VERIFY_PASSWORD_PASS:
         if (param != NULL) {

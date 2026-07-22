@@ -707,13 +707,18 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, Bac
 {
     GenerateUR func = (GenerateUR)getUR;
     g_urResult = func();
+    if (g_urResult == NULL) {
+        printf("error message: failed to generate UR\r\n");
+        GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_FAIL, NULL, 0);
+        return SUCCESS_CODE;
+    }
     if (g_urResult->error_code == 0) {
         // printf("%s\r\n", g_urResult->data);
         GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_SUCCESS, g_urResult->data, strnlen_s(g_urResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
     } else {
         char *message = g_urResult->error_message != NULL ? g_urResult->error_message : "";
         printf("error message: %s\r\n", message);
-        GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_FAIL, message, strnlen_s(message, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
+        GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_FAIL, &g_urResult, sizeof(g_urResult));
     }
     return SUCCESS_CODE;
 }
@@ -1605,6 +1610,8 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
         GuiApiEmitSignal(SIG_TRANSACTION_PARSE_FAIL, parsedResult, sizeof(parsedResult));
     }
     GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
+    // Parsing can exceed the lock timeout, so restart it before re-enabling auto-lock.
+    ClearLockScreenTime();
     SetPageLockScreen(true);
     return SUCCESS_CODE;
 }

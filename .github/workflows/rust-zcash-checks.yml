@@ -2,6 +2,10 @@ on:
   pull_request:
     paths:
       - rust/apps/zcash/**
+      - rust/zcash_vendor/**
+      - rust/rust_c/src/zcash/**
+      - rust/rust_c/src/common/ur.rs
+      - rust/rust_c/src/common/ur_ext.rs
 
 name: Zcash Checks
 
@@ -28,3 +32,25 @@ jobs:
 
       - name: Run rust/apps/zcash
         run: cd rust/apps/zcash && cargo +$RUST_TOOLCHAIN llvm-cov  --fail-under-regions 69 --fail-under-functions 71 --fail-under-lines 76 --ignore-filename-regex 'keystore/*|utils/*|zcash_vendor/*'
+
+  # The rust_c Zcash FFI tests (batch validation, compact signatures-only
+  # response) only build under the simulator feature set (the device feature
+  # set has no host panic handler), and the simulator's screen-capture
+  # dependency needs macOS on CI.
+  RustCZcashTest:
+    name: rust_c Zcash FFI tests
+    runs-on: macos-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Read Rust toolchain
+        run: echo "RUST_TOOLCHAIN=$(cat rust-toolchain)" >> $GITHUB_ENV
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          override: true
+
+      - name: Run rust_c zcash tests
+        run: cd rust && cargo +$RUST_TOOLCHAIN test -p rust_c --no-default-features --features simulator-cypherpunk --lib -- zcash common::ur

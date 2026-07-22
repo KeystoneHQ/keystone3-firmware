@@ -167,6 +167,12 @@ static void UiDisplayTask(void *argument)
             break;
 #endif
             case UI_MSG_PREPARE_RECEIVE_UR_USB: {
+#ifdef CYPHERPUNK_VERSION
+                if (rcvMsg.value == ZcashBatchTx) {
+                    GuiFrameOpenView(&g_zcashBatchView);
+                    break;
+                }
+#endif
                 GuiFrameOpenViewWithParam(&g_transactionDetailView, &rcvMsg.value, sizeof(rcvMsg.value));
             }
             break;

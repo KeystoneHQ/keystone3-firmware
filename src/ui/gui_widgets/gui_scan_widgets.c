@@ -171,6 +171,15 @@ void GuiScanResult(bool result, void *param)
             ThrowError(ERR_INVALID_QRCODE);
             return;
         }
+#ifdef CYPHERPUNK_VERSION
+        if (g_qrcodeViewType == ZcashBatchTx) {
+            if (!GuiCheckIfTopView(&g_homeView)) {
+                GuiCloseCurrentWorkingView();
+            }
+            GuiFrameOpenView(&g_zcashBatchView);
+            return;
+        }
+#endif
         GuiModelCheckTransaction(g_qrcodeViewType);
     } else {
         UrViewType_t *urViewType = (UrViewType_t *)param;

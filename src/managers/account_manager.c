@@ -724,7 +724,7 @@ static void SetZcashUFVK(uint8_t accountIndex, const char* ufvk)
 {
     ASSERT(accountIndex <= 2);
     g_zcashUFVKcache.accountIndex = accountIndex;
-    strcpy_s(g_zcashUFVKcache.ufvkCache, ZCASH_UFVK_MAX_LEN, ufvk);
+    strcpy_s(g_zcashUFVKcache.ufvkCache, sizeof(g_zcashUFVKcache.ufvkCache), ufvk);
 }
 
 static void SetZcashSFP(uint8_t accountIndex, const uint8_t* seedFingerprint)
@@ -737,7 +737,7 @@ static void SetZcashSFP(uint8_t accountIndex, const uint8_t* seedFingerprint)
 
 static void ClearZcashUFVK()
 {
-    memset_s(g_zcashUFVKcache.ufvkCache, ZCASH_UFVK_MAX_LEN, '\0', ZCASH_UFVK_MAX_LEN);
+    memset_s(g_zcashUFVKcache.ufvkCache, sizeof(g_zcashUFVKcache.ufvkCache), '\0', sizeof(g_zcashUFVKcache.ufvkCache));
     memset_s(g_zcashUFVKcache.seedFingerprint, 32, 0, 32);
 }
 
@@ -745,7 +745,7 @@ int32_t GetZcashUFVK(uint8_t accountIndex, char* outUFVK)
 {
     ASSERT(accountIndex <= 2);
     if (g_zcashUFVKcache.accountIndex == accountIndex) {
-        strcpy_s(outUFVK, ZCASH_UFVK_MAX_LEN, g_zcashUFVKcache.ufvkCache);
+        strcpy_s(outUFVK, ZCASH_UFVK_BUFFER_SIZE, g_zcashUFVKcache.ufvkCache);
         return SUCCESS_CODE;
     }
     return ERR_ZCASH_INVALID_ACCOUNT_INDEX;
@@ -835,7 +835,7 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
 
     SimpleResponse_c_char *response = rust_aes256_cbc_decrypt(zcashEncrypted, password, iv_bytes, 16);
     CLEAR_ARRAY(iv_bytes);
-    char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
+    char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
     if (response->error_code != 0) {
         // The stored ciphertext is keyed by an older password (e.g. the password was
         // changed without re-encrypting it). The entered password already passed SE
@@ -850,7 +850,7 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password)
             return ret;
         }
     } else {
-        strcpy_s(ufvk, ZCASH_UFVK_MAX_LEN, response->data);
+        strcpy_s(ufvk, sizeof(ufvk), response->data);
         free_simple_response_c_char(response);
     }
     SetZcashUFVK(accountIndex, ufvk);

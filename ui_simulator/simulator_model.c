@@ -554,6 +554,7 @@ int32_t prepare_qrcode()
 }
 
 #ifdef GET_QR_DATA_FROM_SCREEN
+#define SCREEN_QR_MAX_LOOP_COUNT 512
 static struct URParseResult *urResult;
 static UrViewType_t viewType;
 static bool firstQrFlag = true;
@@ -561,6 +562,10 @@ static PtrDecoder decoder = NULL;
 
 static void reset_qr_state()
 {
+    if (urResult != NULL) {
+        free_ur_parse_result(urResult);
+        urResult = NULL;
+    }
     firstQrFlag = true;
     decoder = NULL;
 }
@@ -585,6 +590,7 @@ static bool on_qr_detected(const char *qrString)
                 viewType.viewType = urResult->t;
                 viewType.urType = urResult->ur_type;
                 handleURResult(urResult, NULL, viewType, false);
+                urResult = NULL;
                 return true;
             } else {
                 // first qr code
@@ -600,12 +606,16 @@ static bool on_qr_detected(const char *qrString)
                 viewType.viewType = MultiurResult->t;
                 viewType.urType = MultiurResult->ur_type;
                 printf("MultiurResult->t: %u\n", MultiurResult->t);
+                free_ur_parse_result(urResult);
+                urResult = NULL;
+                decoder = NULL;
                 handleURResult(NULL, MultiurResult, viewType, true);
                 return true;
             }
         } else {
             printf("error code: %d\r\n", MultiurResult->error_code);
             printf("error message: %s\r\n", MultiurResult->error_message);
+            free_ur_parse_multi_result(MultiurResult);
             return true;
         }
         if (!(MultiurResult->is_complete)) {
@@ -618,7 +628,9 @@ static bool on_qr_detected(const char *qrString)
 
 int32_t read_qrcode()
 {
-    read_qr_code_from_screen(on_qr_detected, 64);
+    reset_qr_state();
+    read_qr_code_from_screen(on_qr_detected, SCREEN_QR_MAX_LOOP_COUNT);
+    reset_qr_state();
     return 0;
 }
 #else

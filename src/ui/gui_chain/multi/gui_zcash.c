@@ -8,12 +8,22 @@
 #include "gui_chain.h"
 
 #define MAX_MEMO_LENGTH 1024
+#define ZCASH_OVERVIEW_DEFAULT_HEIGHT 480
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static DisplayPczt *g_zcashData;
+static ZcashCheckedPczt *g_checkedPczt = NULL;
+
+static void FreeCheckedPczt(void)
+{
+    if (g_checkedPczt != NULL) {
+        free_zcash_checked_pczt(g_checkedPczt);
+        g_checkedPczt = NULL;
+    }
+}
 
 #define CHECK_FREE_PARSE_RESULT(result)                                                             \
     if (result != NULL)                                                                             \
@@ -32,19 +42,21 @@ void GuiSetZcashUrData(URParseResult *urResult, URParseMultiResult *urMultiResul
 void *GuiGetZcashGUIData(void)
 {
     CHECK_FREE_PARSE_RESULT(g_parseResult);
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    if (g_checkedPczt == NULL) {
+        return NULL;
+    }
     uint8_t sfp[32];
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
 
     PtrT_TransactionParseResult_DisplayPczt parseResult = NULL;
     do {
 #ifdef WEB3_VERSION
-        parseResult = parse_zcash_tx_multi_coins(data, sfp);
+        parseResult = parse_zcash_tx_multi_coins(g_checkedPczt, sfp);
 #endif
 #ifdef CYPHERPUNK_VERSION
-        char ufvk[ZCASH_UFVK_MAX_LEN] = {'\0'};
+        char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
         GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-        parseResult = parse_zcash_tx_cypherpunk(data, ufvk, sfp);
+        parseResult = parse_zcash_tx_cypherpunk(g_checkedPczt, ufvk, sfp);
 #endif
         CHECK_CHAIN_BREAK(parseResult);
         g_zcashData = parseResult->data;
@@ -54,40 +66,52 @@ void *GuiGetZcashGUIData(void)
     return g_parseResult;
 }
 
-static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_view);
-static lv_obj_t* GuiZcashOverviewOrchard(lv_obj_t *parent, lv_obj_t *last_view);
+static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_view, DisplayTransparent *transparent);
+static lv_obj_t* GuiZcashOverviewShielded(lv_obj_t *parent, lv_obj_t *last_view, DisplayOrchard *pool, const char *labelText);
 static lv_obj_t* GuiZcashOverviewFrom(lv_obj_t *parent, VecFFI_DisplayFrom *from, lv_obj_t *last_view);
 static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_obj_t *last_view);
 
 void GuiZcashOverview(lv_obj_t *parent, void *totalData)
 {
-    lv_obj_set_size(parent, 408, 480);
+    GuiZcashOverviewWithDataAndHeight(parent, g_zcashData, ZCASH_OVERVIEW_DEFAULT_HEIGHT);
+}
+
+void GuiZcashOverviewWithDataAndHeight(lv_obj_t *parent, DisplayPczt *data, lv_coord_t height)
+{
+    if (height <= 0) {
+        height = ZCASH_OVERVIEW_DEFAULT_HEIGHT;
+    }
+    lv_obj_set_size(parent, 408, height);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(parent, LV_OBJ_FLAG_CLICKABLE);
 
-    lv_obj_t* container = GuiCreateContainerWithParent(parent, 408, 480);
+    lv_obj_t* container = GuiCreateContainerWithParent(parent, 408, height);
     lv_obj_add_flag(container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t* last_view = NULL;
 
-    if (g_zcashData->has_sapling) {
+    if (data->has_sapling) {
         last_view = CreateTransactionItemView(container, _("Warning"), _("This transaction contains Sapling spends or outputs. Keystone does not support Sapling spend signing and output checking. Please take care of the potential risks."), last_view);
     }
 
-    last_view = CreateTransactionItemView(container, _("Amount"), g_zcashData->total_transfer_value, last_view);
-    last_view = CreateTransactionItemView(container, _("Fee"), g_zcashData->fee_value, last_view);
+    last_view = CreateTransactionItemView(container, _("Amount"), data->total_transfer_value, last_view);
+    last_view = CreateTransactionItemView(container, _("Fee"), data->fee_value, last_view);
 
-    if (g_zcashData->transparent != NULL) {
-        last_view = GuiZcashOverviewTransparent(container, last_view);
+    if (data->transparent != NULL) {
+        last_view = GuiZcashOverviewTransparent(container, last_view, data->transparent);
     }
 
-    if (g_zcashData->orchard != NULL) {
-        last_view = GuiZcashOverviewOrchard(container, last_view);
+    if (data->orchard != NULL) {
+        last_view = GuiZcashOverviewShielded(container, last_view, data->orchard, _("Orchard"));
+    }
+
+    if (data->ironwood != NULL) {
+        last_view = GuiZcashOverviewShielded(container, last_view, data->ironwood, _("Ironwood"));
     }
 }
 
-static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_view)
+static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_view, DisplayTransparent *transparent)
 {
     lv_obj_t* inner_last_view;
     lv_obj_t* label = GuiCreateIllustrateLabel(parent, _("Transparent"));
@@ -95,34 +119,34 @@ static lv_obj_t* GuiZcashOverviewTransparent(lv_obj_t *parent, lv_obj_t *last_vi
 
     inner_last_view = label;
 
-    if (g_zcashData->transparent->from->size > 0) {
-        lv_obj_t* from_view = GuiZcashOverviewFrom(parent, g_zcashData->transparent->from, inner_last_view);
+    if (transparent->from->size > 0) {
+        lv_obj_t* from_view = GuiZcashOverviewFrom(parent, transparent->from, inner_last_view);
         inner_last_view = from_view;
     }
 
-    if (g_zcashData->transparent->to->size > 0) {
-        lv_obj_t* to_view = GuiZcashOverviewTo(parent, g_zcashData->transparent->to, inner_last_view);
+    if (transparent->to->size > 0) {
+        lv_obj_t* to_view = GuiZcashOverviewTo(parent, transparent->to, inner_last_view);
         inner_last_view = to_view;
     }
 
     return inner_last_view;
 }
 
-static lv_obj_t* GuiZcashOverviewOrchard(lv_obj_t* parent, lv_obj_t *last_view)
+static lv_obj_t* GuiZcashOverviewShielded(lv_obj_t* parent, lv_obj_t *last_view, DisplayOrchard *pool, const char *labelText)
 {
     lv_obj_t* inner_last_view;
-    lv_obj_t* label = GuiCreateIllustrateLabel(parent, _("Orchard"));
+    lv_obj_t* label = GuiCreateIllustrateLabel(parent, labelText);
     lv_obj_align_to(label, last_view, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
 
     inner_last_view = label;
 
-    if (g_zcashData->orchard->from->size > 0) {
-        lv_obj_t* from_view = GuiZcashOverviewFrom(parent, g_zcashData->orchard->from, inner_last_view);
+    if (pool->from->size > 0) {
+        lv_obj_t* from_view = GuiZcashOverviewFrom(parent, pool->from, inner_last_view);
         inner_last_view = from_view;
     }
 
-    if (g_zcashData->orchard->to->size > 0) {
-        lv_obj_t* to_view = GuiZcashOverviewTo(parent, g_zcashData->orchard->to, inner_last_view);
+    if (pool->to->size > 0) {
+        lv_obj_t* to_view = GuiZcashOverviewTo(parent, pool->to, inner_last_view);
         inner_last_view = to_view;
     }
 
@@ -163,6 +187,7 @@ static lv_obj_t* GuiZcashOverviewFrom(lv_obj_t *parent, VecFFI_DisplayFrom *from
         char *order = (char *)SRAM_MALLOC(5);
         snprintf_s(order, 5, "#%d", i + 1);
         indexLabel = GuiCreateIllustrateLabel(innerContainer, order);
+        SRAM_FREE(order);
         lv_obj_align(indexLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);
 
         valueLabel = GuiCreateIllustrateLabel(innerContainer, from->data[i].value);
@@ -245,6 +270,7 @@ static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_o
         char *order = (char *)SRAM_MALLOC(5);
         snprintf_s(order, 5, "#%d", i + 1);
         indexLabel = GuiCreateIllustrateLabel(innerContainer, order);
+        SRAM_FREE(order);
         lv_obj_align(indexLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);
 
         valueLabel = GuiCreateIllustrateLabel(innerContainer, to->data[i].value);
@@ -279,6 +305,7 @@ static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_o
             char *memo = (char *)SRAM_MALLOC(MAX_MEMO_LENGTH);
             snprintf_s(memo, MAX_MEMO_LENGTH, "Memo: %s", to->data[i].memo);
             lv_obj_t *memoLabel = GuiCreateIllustrateLabel(innerContainer, memo);
+            SRAM_FREE(memo);
             lv_obj_align(memoLabel, LV_ALIGN_TOP_LEFT, 0, innerHeight);
             lv_obj_set_style_text_color(memoLabel, WHITE_COLOR, LV_PART_MAIN);
             lv_obj_set_style_text_opa(memoLabel, LV_OPA_56, LV_PART_MAIN);
@@ -311,21 +338,89 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
     MnemonicType mnemonicType = GetMnemonicType();
     printf("mnemonicType: %d\n", mnemonicType);
 
+    FreeCheckedPczt();
 #ifdef WEB3_VERSION
     char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ZEC_TRANSPARENT_LEGACY);
-    return check_zcash_tx_multi_coins(data, xpub, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39);
+    return check_zcash_tx_multi_coins(data, xpub, sfp, zcash_account_index, mnemonicType == MNEMONIC_TYPE_SLIP39, &g_checkedPczt);
 #endif
 #ifdef CYPHERPUNK_VERSION
-    char ufvk[ZCASH_UFVK_MAX_LEN + 1] = {0};
+    char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-    return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, !IsZcashSupportedForCurrentMnemonic());
+    return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, !IsZcashSupportedForCurrentMnemonic(), &g_checkedPczt);
 #endif
 }
 
+#ifdef CYPHERPUNK_VERSION
+UREncodeResult *GuiSignZcashCypherpunkWithSeed(void *data,
+        bool unlimited,
+        ZcashCypherpunkSignFunc signFunc,
+        ZcashCypherpunkSignFunc unlimitedSignFunc)
+{
+    bool enable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    UREncodeResult *encodeResult = NULL;
+    uint8_t seed[SEED_LEN] = {0};
+    uint8_t sfp[32] = {0};
+    uint32_t zcashAccountIndex = 0;
+    bool disabled = !IsZcashSupportedForCurrentMnemonic();
+    int ret = 0;
+
+    do {
+        ZcashCypherpunkSignFunc selectedSignFunc = unlimited ? unlimitedSignFunc : signFunc;
+        if (disabled) {
+            encodeResult = selectedSignFunc(data, sfp, zcashAccountIndex, true, seed, 0);
+            CHECK_CHAIN_BREAK(encodeResult);
+            break;
+        }
+
+        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        if (ret != 0) {
+            break;
+        }
+        ret = GetZcashSFP(GetCurrentAccountIndex(), sfp);
+        if (ret != 0) {
+            break;
+        }
+
+        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        encodeResult = selectedSignFunc(data, sfp, zcashAccountIndex, false, seed, len);
+        CHECK_CHAIN_BREAK(encodeResult);
+    } while (0);
+
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
+    // Signing can exceed the lock timeout; restart it before restoring auto-lock.
+    ClearLockScreenTime();
+    SetLockScreen(enable);
+    return encodeResult;
+}
+
+static UREncodeResult *SignZcashCypherpunkInternal(void *data, bool unlimited)
+{
+    return GuiSignZcashCypherpunkWithSeed(
+               data,
+               unlimited,
+               (ZcashCypherpunkSignFunc)sign_zcash_tx_cypherpunk,
+               (ZcashCypherpunkSignFunc)sign_zcash_tx_cypherpunk_unlimited);
+}
+#endif
+
 UREncodeResult *GuiGetZcashSignQrCodeData(void)
 {
-    void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    return SignInternal(sign_zcash_tx, data);
+#ifdef CYPHERPUNK_VERSION
+    return SignZcashCypherpunkInternal(g_checkedPczt, false);
+#else
+    return SignInternal((SignFn)sign_zcash_tx, g_checkedPczt);
+#endif
+}
+
+UREncodeResult *GuiGetZcashSignUrDataUnlimited(void)
+{
+#ifdef CYPHERPUNK_VERSION
+    return SignZcashCypherpunkInternal(g_checkedPczt, true);
+#else
+    return SignInternal((SignFn)sign_zcash_tx_unlimited, g_checkedPczt);
+#endif
 }
 
 void FreeZcashMemory(void)
@@ -333,4 +428,5 @@ void FreeZcashMemory(void)
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
+    FreeCheckedPczt();
 }

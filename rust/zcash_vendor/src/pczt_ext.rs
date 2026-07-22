@@ -188,23 +188,70 @@ fn hash_transparent_tx_id(t_digests: Option<TransparentDigests>) -> Hash {
     h.finalize()
 }
 
+/// Orchard/Ironwood note ciphertext length; the ZIP-244 action digests slice it as
+/// 52 (compact) | 512 (memo) | 16 (non-compact).
+const ORCHARD_ENC_CIPHERTEXT_SIZE: usize = 580;
+
+/// Byte layout of Sapling, Orchard, and Ironwood `enc_ciphertext` fields used by
+/// the transaction digests:
+/// the first [`ENC_CIPHERTEXT_COMPACT_LEN`] bytes are the compact note ciphertext (the
+/// `*CHash` digests), bytes up to [`ENC_CIPHERTEXT_MEMO_END`] are the encrypted memo (the
+/// `*MHash` digests), and the remainder is hashed with the non-compact fields. For
+/// Orchard/Ironwood, `action_enc_ciphertext` returns a buffer of exactly
+/// [`ORCHARD_ENC_CIPHERTEXT_SIZE`] bytes, so slicing at these boundaries never panics;
+/// `pub` so signing preconditions elsewhere can reference the same constants.
+pub const ENC_CIPHERTEXT_COMPACT_LEN: usize = 52;
+/// See [`ENC_CIPHERTEXT_COMPACT_LEN`]: 52 compact bytes + 512 memo bytes.
+pub const ENC_CIPHERTEXT_MEMO_END: usize = ENC_CIPHERTEXT_COMPACT_LEN + 512;
+
+/// The action's value-commitment bytes for the sighash. `cv_net` is `Option` in the v2
+/// PCZT wire model; the checked-PCZT preflight resolves it and `check::verify_cv_net`
+/// rejects any still-missing value before signing, so it is always present here. The zero
+/// fallback only keeps this infallible digest panic-free — a malformed PCZT then yields a
+/// non-matching sighash (an invalid signature), never a silent-but-valid one.
+fn action_cv_net(action: &pczt::orchard::Action) -> &[u8; 32] {
+    static ZERO: [u8; 32] = [0; 32];
+    action.cv_net().as_ref().unwrap_or(&ZERO)
+}
+
+/// The action's note commitment bytes for the sighash. Like `cv_net`, `cmx` is
+/// optional in the v2 PCZT wire model and is resolved and checked before signing.
+fn action_cmx(action: &pczt::orchard::Action) -> &[u8; 32] {
+    static ZERO: [u8; 32] = [0; 32];
+    action.output().cmx().as_ref().unwrap_or(&ZERO)
+}
+
+/// The output's encrypted note ciphertext for the sighash. `resolve_fields` restores the
+/// full ciphertext from a memo-plaintext-only (`EncCiphertext::MemoPlaintext`) output; see
+/// [`action_cv_net`] for why the zero fallback is unreachable in the signing path.
+fn action_enc_ciphertext(output: &pczt::orchard::Output) -> &[u8] {
+    static ZERO: [u8; ORCHARD_ENC_CIPHERTEXT_SIZE] = [0; ORCHARD_ENC_CIPHERTEXT_SIZE];
+    match output.enc_ciphertext() {
+        pczt::orchard::EncCiphertext::Encrypted(c) if c.len() == ORCHARD_ENC_CIPHERTEXT_SIZE => c,
+        _ => &ZERO,
+    }
+}
+
 fn digest_orchard(pczt: &Pczt) -> Hash {
     let mut h = hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION);
+
     let mut ch = hasher(ZCASH_ORCHARD_ACTIONS_COMPACT_HASH_PERSONALIZATION);
     let mut mh = hasher(ZCASH_ORCHARD_ACTIONS_MEMOS_HASH_PERSONALIZATION);
     let mut nh = hasher(ZCASH_ORCHARD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION);
 
     for action in pczt.orchard().actions().iter() {
+        let enc_ciphertext = action_enc_ciphertext(action.output());
+
         ch.update(action.spend().nullifier());
-        ch.update(action.output().cmx());
+        ch.update(action_cmx(action));
         ch.update(action.output().ephemeral_key());
-        ch.update(&action.output().enc_ciphertext()[..52]);
+        ch.update(&enc_ciphertext[..ENC_CIPHERTEXT_COMPACT_LEN]);
 
-        mh.update(&action.output().enc_ciphertext()[52..564]);
+        mh.update(&enc_ciphertext[ENC_CIPHERTEXT_COMPACT_LEN..ENC_CIPHERTEXT_MEMO_END]);
 
-        nh.update(action.cv_net());
+        nh.update(action_cv_net(action));
         nh.update(action.spend().rk());
-        nh.update(&action.output().enc_ciphertext()[564..]);
+        nh.update(&enc_ciphertext[ENC_CIPHERTEXT_MEMO_END..]);
         nh.update(action.output().out_ciphertext());
     }
 
@@ -220,7 +267,10 @@ fn digest_orchard(pczt: &Pczt) -> Hash {
     };
     h.update(&value_balance.to_le_bytes());
 
-    h.update(pczt.orchard().anchor());
+    // v5 commits the anchor (v6 omits it). Present for well-formed v5 bundles; the empty
+    // fallback keeps this infallible — see `action_cv_net`.
+    h.update(pczt.orchard().anchor().as_ref().unwrap_or(&[0u8; 32]));
+
     h.finalize()
 }
 
@@ -234,7 +284,9 @@ fn hash_sapling_spends(pczt: &Pczt) -> Hash {
             ch.update(s_spend.nullifier());
 
             nh.update(s_spend.cv());
-            nh.update(pczt.sapling().anchor());
+            // Checked v5 spends require an anchor. Zero only keeps digesting
+            // malformed unchecked data infallible; it cannot yield a valid transaction.
+            nh.update(pczt.sapling().anchor().as_ref().unwrap_or(&[0u8; 32]));
             nh.update(s_spend.rk());
         }
 
@@ -255,12 +307,12 @@ fn hash_sapling_outputs(pczt: &Pczt) -> Hash {
         for s_out in pczt.sapling().outputs() {
             ch.update(s_out.cmu());
             ch.update(s_out.ephemeral_key());
-            ch.update(&s_out.enc_ciphertext()[..52]);
+            ch.update(&s_out.enc_ciphertext()[..ENC_CIPHERTEXT_COMPACT_LEN]);
 
-            mh.update(&s_out.enc_ciphertext()[52..564]);
+            mh.update(&s_out.enc_ciphertext()[ENC_CIPHERTEXT_COMPACT_LEN..ENC_CIPHERTEXT_MEMO_END]);
 
             nh.update(s_out.cv());
-            nh.update(&s_out.enc_ciphertext()[564..]);
+            nh.update(&s_out.enc_ciphertext()[ENC_CIPHERTEXT_MEMO_END..]);
             nh.update(s_out.out_ciphertext());
         }
 
@@ -294,7 +346,167 @@ fn hash_orchard_txid_empty() -> Hash {
     hasher(ZCASH_ORCHARD_HASH_PERSONALIZATION).finalize()
 }
 
-fn shielded_sig_commitment(pczt: &Pczt, lock_time: u32, input_info: Option<SignableInput>) -> Hash {
+// === NU6.3 v6 (Ironwood) sighash ===
+//
+// Under NU6.3 a transaction is v6 and its txid/sighash uses the 5-node layout from
+// upstream `zcash_primitives::transaction::txid::to_hash_v6`: it appends an Ironwood
+// node, and moves the Orchard bundle to the v6 commitment domain. Relative to the v5
+// (4-node) layout, the per-bundle effects digest for BOTH Orchard and Ironwood uses a
+// distinct bundle personalization and OMITS the anchor (upstream
+// `BundleCommitmentDomain::ORCHARD_V6` / `IRONWOOD_V6` set `effects_anchor = Omit`,
+// which is what makes the spend_auth_sig anchor-independent). Action sub-hashes, the
+// flag byte, and the value balance are unchanged in structure.
+//
+// This is consensus-critical and must stay bit-exact with upstream. The
+// `shielded_sig_commitment == RoleSigner::shielded_sighash` oracle tests in
+// apps/zcash/src/pczt/sign.rs guard it (red CI on any upstream drift).
+const ZCASH_ORCHARD_V6_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdOrchardH_v6";
+const ZCASH_IRONWOOD_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdIronwd_H_v6";
+const ZCASH_IRONWOOD_ACTIONS_COMPACT_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdIrnActCH_v6";
+const ZCASH_IRONWOOD_ACTIONS_MEMOS_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdIrnActMH_v6";
+const ZCASH_IRONWOOD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION: &[u8; 16] = b"ZTxIdIrnActNH_v6";
+
+fn is_v6(pczt: &Pczt) -> bool {
+    *pczt.global().tx_version() == zcash_protocol::constants::V6_TX_VERSION
+        && *pczt.global().version_group_id() == zcash_protocol::constants::V6_VERSION_GROUP_ID
+}
+
+fn has_ironwood(pczt: &Pczt) -> bool {
+    !pczt.ironwood().actions().is_empty()
+}
+
+/// v6 effects digest for an Orchard-shaped bundle (Orchard or Ironwood), mirroring
+/// upstream `orchard::bundle::commitments::hash_bundle_txid_data_with_domain` for the
+/// `ORCHARD_V6` / `IRONWOOD_V6` domains: the three ZIP-244 action sub-hashes, the flag
+/// byte, the value balance, and — unlike v5 — NO anchor (`effects_anchor = Omit`).
+fn digest_orchard_shaped_v6(
+    bundle: &pczt::orchard::Bundle,
+    bundle_personalization: &[u8; 16],
+    compact_personalization: &[u8; 16],
+    memos_personalization: &[u8; 16],
+    noncompact_personalization: &[u8; 16],
+) -> Hash {
+    let mut h = hasher(bundle_personalization);
+
+    let mut ch = hasher(compact_personalization);
+    let mut mh = hasher(memos_personalization);
+    let mut nh = hasher(noncompact_personalization);
+
+    for action in bundle.actions().iter() {
+        let enc_ciphertext = action_enc_ciphertext(action.output());
+
+        ch.update(action.spend().nullifier());
+        ch.update(action_cmx(action));
+        ch.update(action.output().ephemeral_key());
+        ch.update(&enc_ciphertext[..ENC_CIPHERTEXT_COMPACT_LEN]);
+
+        mh.update(&enc_ciphertext[ENC_CIPHERTEXT_COMPACT_LEN..ENC_CIPHERTEXT_MEMO_END]);
+
+        nh.update(action_cv_net(action));
+        nh.update(action.spend().rk());
+        nh.update(&enc_ciphertext[ENC_CIPHERTEXT_MEMO_END..]);
+        nh.update(action.output().out_ciphertext());
+    }
+
+    h.update(ch.finalize().as_bytes());
+    h.update(mh.finalize().as_bytes());
+    h.update(nh.finalize().as_bytes());
+    h.update(&[*bundle.flags()]);
+    let (magnitude, sign) = bundle.value_sum();
+    let value_balance = if *sign {
+        -(*magnitude as i64)
+    } else {
+        *magnitude as i64
+    };
+    h.update(&value_balance.to_le_bytes());
+    // v6 OMITS the anchor here (v5's digest_orchard appends `bundle.anchor()`).
+    h.finalize()
+}
+
+fn digest_orchard_v6(pczt: &Pczt) -> Hash {
+    digest_orchard_shaped_v6(
+        pczt.orchard(),
+        ZCASH_ORCHARD_V6_HASH_PERSONALIZATION,
+        ZCASH_ORCHARD_ACTIONS_COMPACT_HASH_PERSONALIZATION,
+        ZCASH_ORCHARD_ACTIONS_MEMOS_HASH_PERSONALIZATION,
+        ZCASH_ORCHARD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION,
+    )
+}
+
+fn digest_ironwood_v6(pczt: &Pczt) -> Hash {
+    digest_orchard_shaped_v6(
+        pczt.ironwood(),
+        ZCASH_IRONWOOD_HASH_PERSONALIZATION,
+        ZCASH_IRONWOOD_ACTIONS_COMPACT_HASH_PERSONALIZATION,
+        ZCASH_IRONWOOD_ACTIONS_MEMOS_HASH_PERSONALIZATION,
+        ZCASH_IRONWOOD_ACTIONS_NONCOMPACT_HASH_PERSONALIZATION,
+    )
+}
+
+fn hash_orchard_v6_txid_empty() -> Hash {
+    hasher(ZCASH_ORCHARD_V6_HASH_PERSONALIZATION).finalize()
+}
+
+fn hash_ironwood_v6_txid_empty() -> Hash {
+    hasher(ZCASH_IRONWOOD_HASH_PERSONALIZATION).finalize()
+}
+
+fn shielded_sig_commitment_v6(
+    pczt: &Pczt,
+    lock_time: u32,
+    input_info: Option<SignableInput>,
+) -> Hash {
+    let mut personal = [0; 16];
+    personal[..12].copy_from_slice(ZCASH_TX_PERSONALIZATION_PREFIX);
+    personal[12..].copy_from_slice(&pczt.global().consensus_branch_id().to_le_bytes());
+
+    let mut h = hasher(&personal);
+    h.update(digest_header(pczt, lock_time).as_bytes());
+    h.update(transparent_sig_digest(pczt, input_info).as_bytes());
+    h.update(
+        if has_sapling(pczt) {
+            digest_sapling(pczt)
+        } else {
+            hash_sapling_txid_empty()
+        }
+        .as_bytes(),
+    );
+    h.update(
+        if has_orchard(pczt) {
+            digest_orchard_v6(pczt)
+        } else {
+            hash_orchard_v6_txid_empty()
+        }
+        .as_bytes(),
+    );
+    h.update(
+        if has_ironwood(pczt) {
+            digest_ironwood_v6(pczt)
+        } else {
+            hash_ironwood_v6_txid_empty()
+        }
+        .as_bytes(),
+    );
+    h.finalize()
+}
+
+/// Computes the ZIP-244 shielded sighash (the 32-byte message a shielded spend
+/// authorizes) directly from the PCZT's serialized fields, branching to the v6 (NU6.3)
+/// layout for Ironwood-bearing transactions. This is the byte-level equivalent of the
+/// upstream `pczt::roles::signer::Signer::shielded_sighash`, but avoids reconstructing a
+/// full `TransactionData` so it fits the hardware wallet's signing stack budget.
+///
+/// `pub` so the `app_zcash` consensus oracle tests can assert it stays bit-exact against
+/// the upstream RoleSigner sighash (any divergence turns CI red rather than producing
+/// wrong on-device signatures).
+pub fn shielded_sig_commitment(
+    pczt: &Pczt,
+    lock_time: u32,
+    input_info: Option<SignableInput>,
+) -> Hash {
+    if is_v6(pczt) {
+        return shielded_sig_commitment_v6(pczt, lock_time, input_info);
+    }
     let mut personal = [0; 16];
     personal[..12].copy_from_slice(ZCASH_TX_PERSONALIZATION_PREFIX);
     personal[12..].copy_from_slice(&pczt.global().consensus_branch_id().to_le_bytes());
@@ -371,9 +583,10 @@ fn transparent_sig_digest(pczt: &Pczt, input_info: Option<SignableInput>) -> Has
             ch.update(input.prevout_txid());
             ch.update(&input.prevout_index().to_le_bytes());
             ch.update(&signable_input.value().to_i64_le_bytes());
-            let len = signable_input.script_pubkey().0.len();
+            let script_pubkey = &signable_input.script_pubkey().0 .0;
+            let len = script_pubkey.len();
             ch.update(&[len as u8]);
-            ch.update(&signable_input.script_pubkey().0);
+            ch.update(script_pubkey);
             ch.update(&input.sequence().unwrap_or(0xffffffff).to_le_bytes());
         }
         let txin_sig_digest = ch.finalize();
@@ -433,26 +646,71 @@ where
 pub fn sign_orchard<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
 where
     T: PcztSigner,
+    T::Error: From<pczt::roles::low_level_signer::OrchardParseError>,
     T::Error: From<orchard::pczt::ParseError>,
     T::Error: From<transparent::pczt::ParseError>,
 {
     llsigner.sign_orchard_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
         let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
             .ok_or(transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
+        let shielded_hash = shielded_sig_commitment(pczt, lock_time, None);
         signable.actions_mut().iter_mut().try_for_each(|action| {
-            match action.spend().value().map(|v| v.inner()) {
-                //dummy spend maybe
-                Some(0) | None => {
-                    return Ok(());
-                }
-                Some(_) => {
-                    signer.sign_orchard(action, shielded_sig_commitment(pczt, lock_time, None))?;
-                    *tx_modifiable &= !(FLAG_TRANSPARENT_INPUTS_MODIFIABLE
-                        | FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE
-                        | FLAG_SHIELDED_MODIFIABLE);
-                }
-            }
-            Ok(())
+            sign_orchard_action(signer, action, &shielded_hash, tx_modifiable)
+        })
+    })
+}
+
+/// Shared per-action signing for the Orchard and Ironwood bundles. The sign/skip
+/// decision is delegated to the signer (it skips dummies via dummy_sk / unmatched
+/// derivation and signs wallet-controlled spends, including zero-value ones), so we
+/// must NOT pre-filter by value here — that would drop a wallet-controlled zero-value
+/// spend. `tx_modifiable` is cleared only when this call adds a new signature.
+/// The caller supplies the transaction-wide shielded sighash shared by every action in
+/// the bundle. Added signatures do not affect this hash.
+#[cfg(feature = "orchard")]
+fn sign_orchard_action<T>(
+    signer: &T,
+    action: &mut orchard::pczt::Action,
+    shielded_hash: &Hash,
+    tx_modifiable: &mut u8,
+) -> Result<(), T::Error>
+where
+    T: PcztSigner,
+{
+    // `None` carries no spend value to authorize; the signer needs a value to act on.
+    if action.spend().value().is_none() {
+        return Ok(());
+    }
+    let had_sig = action.spend().spend_auth_sig().is_some();
+    signer.sign_orchard(action, shielded_hash.clone())?;
+    if !had_sig && action.spend().spend_auth_sig().is_some() {
+        *tx_modifiable &= !(FLAG_TRANSPARENT_INPUTS_MODIFIABLE
+            | FLAG_TRANSPARENT_OUTPUTS_MODIFIABLE
+            | FLAG_SHIELDED_MODIFIABLE);
+    }
+    Ok(())
+}
+
+/// Sign the Ironwood (NU6.3) shielded bundle. Structurally identical to
+/// [`sign_orchard`] — Ironwood actions are `orchard::pczt::Action`s and reuse the same
+/// `PcztSigner::sign_orchard` — but drives `sign_ironwood_with` so the Ironwood bundle
+/// is the one parsed and mutated. Dummy/output-only actions (value 0 or absent) are
+/// skipped, so an Orchard→Ironwood migration (Ironwood output-only) produces no
+/// Ironwood signature here.
+#[cfg(feature = "orchard")]
+pub fn sign_ironwood<T>(llsigner: Signer, signer: &T) -> Result<Signer, T::Error>
+where
+    T: PcztSigner,
+    T::Error: From<pczt::roles::low_level_signer::OrchardParseError>,
+    T::Error: From<orchard::pczt::ParseError>,
+    T::Error: From<transparent::pczt::ParseError>,
+{
+    llsigner.sign_ironwood_with::<T::Error, _>(|pczt, signable, tx_modifiable| {
+        let lock_time = determine_lock_time(pczt.global(), pczt.transparent().inputs())
+            .ok_or(transparent::pczt::ParseError::InvalidRequiredHeightLocktime)?;
+        let shielded_hash = shielded_sig_commitment(pczt, lock_time, None);
+        signable.actions_mut().iter_mut().try_for_each(|action| {
+            sign_orchard_action(signer, action, &shielded_hash, tx_modifiable)
         })
     })
 }
@@ -460,11 +718,42 @@ where
 #[cfg(feature = "cypherpunk")]
 #[cfg(test)]
 mod tests {
+    use alloc::vec;
+
     use pczt::Pczt;
-    use transparent::{address::Script, sighash::SighashType};
+    use transparent::{
+        address::Script,
+        bundle::{Authorized, Bundle, OutPoint, TxIn},
+        sighash::SighashType,
+    };
     use zcash_protocol::value::Zatoshis;
 
     use super::*;
+
+    fn script_from_bytes(script_pubkey: &[u8]) -> Script {
+        let mut encoded = vec![script_pubkey.len() as u8];
+        encoded.extend_from_slice(script_pubkey);
+        Script::read(&encoded[..]).unwrap()
+    }
+
+    fn transparent_bundle_for_signable_inputs(pczt: &Pczt) -> Bundle<Authorized> {
+        Bundle {
+            vin: pczt
+                .transparent()
+                .inputs()
+                .iter()
+                .map(|input| {
+                    TxIn::from_parts(
+                        OutPoint::new(*input.prevout_txid(), *input.prevout_index()),
+                        Script::default(),
+                        input.sequence().unwrap_or(0xffffffff),
+                    )
+                })
+                .collect(),
+            vout: vec![],
+            authorization: Authorized,
+        }
+    }
 
     #[test]
     fn test_basic_functions_orchard2orchard() {
@@ -542,27 +831,32 @@ mod tests {
             "fea284c0b63a4de21c2f660587b2e04461f7089d6c9f8c2e60a3caed77c037ae"
         );
 
-        let script_code = Script(pczt.transparent().inputs()[0].script_pubkey().clone());
+        let transparent_bundle = transparent_bundle_for_signable_inputs(&pczt);
+        let script_code = script_from_bytes(pczt.transparent().inputs()[0].script_pubkey());
 
         let signable_input = SignableInput::from_parts(
+            &transparent_bundle,
             SighashType::parse(SIGHASH_ALL).unwrap(),
             0,
             &script_code,
             &script_code,
             Zatoshis::from_u64(*pczt.transparent().inputs()[0].value()).unwrap(),
-        );
+        )
+        .unwrap();
         assert_eq!(
             hex::encode(shielded_sig_commitment(&pczt, 0, Some(signable_input)).as_bytes()),
             "a2865e1c7f3de700eee25fe233da6bbdab267d524bc788998485359441ad3140"
         );
-        let script_code = Script(pczt.transparent().inputs()[1].script_pubkey().clone());
+        let script_code = script_from_bytes(pczt.transparent().inputs()[1].script_pubkey());
         let signable_input2 = SignableInput::from_parts(
+            &transparent_bundle,
             SighashType::parse(SIGHASH_ALL).unwrap(),
             1,
             &script_code,
             &script_code,
             Zatoshis::from_u64(*pczt.transparent().inputs()[1].value()).unwrap(),
-        );
+        )
+        .unwrap();
         assert_eq!(
             hex::encode(shielded_sig_commitment(&pczt, 0, Some(signable_input2)).as_bytes()),
             "9c10678495dfdb1f29beb6583d652bc66cb4e3d27d24d75fb6922f230e9953e8"

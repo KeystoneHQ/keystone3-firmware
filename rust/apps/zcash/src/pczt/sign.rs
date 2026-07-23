@@ -86,6 +86,16 @@ impl PcztSigner for SeedSigner<'_> {
 /// [`super::PcztNetwork::from_pczt_bytes`]).
 #[cfg(not(feature = "cypherpunk"))]
 pub fn sign_pczt(pczt: Pczt, seed: &[u8], network: super::PcztNetwork) -> crate::Result<Vec<u8>> {
+    sign_pczt_with_encoding(pczt, seed, network, super::PcztEncoding::V2)
+}
+
+#[cfg(not(feature = "cypherpunk"))]
+pub(crate) fn sign_pczt_with_encoding(
+    pczt: Pczt,
+    seed: &[u8],
+    network: super::PcztNetwork,
+    encoding: super::PcztEncoding,
+) -> crate::Result<Vec<u8>> {
     super::validate_supported_pczt(&pczt)?;
     reject_unsupported_pczt(&pczt)?;
 
@@ -104,8 +114,8 @@ pub fn sign_pczt(pczt: Pczt, seed: &[u8], network: super::PcztNetwork) -> crate:
     #[cfg(not(feature = "multi_coins"))]
     let _ = network;
 
-    stamp_and_redact(signer.finish())
-        .serialize()
+    encoding
+        .serialize(stamp_and_redact(signer.finish()))
         .map_err(|e| ZcashError::SigningError(format!("serialize signed PCZT: {e:?}")))
 }
 
@@ -405,8 +415,18 @@ impl PcztSigner for SeedSigner<'_> {
 /// Thin wrapper over `sign_and_redact_pczt`; see it for the full contract.
 #[cfg(feature = "cypherpunk")]
 pub fn sign_pczt(pczt: Pczt, seed: &[u8], network: super::PcztNetwork) -> crate::Result<Vec<u8>> {
-    sign_and_redact_pczt(pczt, seed, network)?
-        .serialize()
+    sign_pczt_with_encoding(pczt, seed, network, super::PcztEncoding::V2)
+}
+
+#[cfg(feature = "cypherpunk")]
+pub(crate) fn sign_pczt_with_encoding(
+    pczt: Pczt,
+    seed: &[u8],
+    network: super::PcztNetwork,
+    encoding: super::PcztEncoding,
+) -> crate::Result<Vec<u8>> {
+    encoding
+        .serialize(sign_and_redact_pczt(pczt, seed, network)?)
         .map_err(|e| ZcashError::SigningError(format!("serialize signed PCZT: {e:?}")))
 }
 

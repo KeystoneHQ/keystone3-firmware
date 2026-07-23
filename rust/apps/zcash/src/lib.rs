@@ -79,6 +79,7 @@ pub fn get_address<P: consensus::Parameters>(params: &P, ufvk_text: &str) -> Res
 ///
 /// The returned bytes are what C retains as the `checked_PCZT`, which display
 /// and signing consume without re-running these checks.
+/// The returned PCZT uses the same wire encoding version as the input.
 #[cfg(feature = "cypherpunk")]
 pub fn check_pczt_cypherpunk<P: consensus::Parameters>(
     params: &P,
@@ -98,8 +99,8 @@ pub fn check_pczt_cypherpunk<P: consensus::Parameters>(
 }
 
 /// Checks one PCZT from a batch request, enforcing the batch shielded-action
-/// policy, and returns its normalized encoding. See `check_pczt_cypherpunk`
-/// for the normalization contract.
+/// policy, and returns its normalized v2 encoding. The batch request serializer
+/// uses one shared current encoding for every PCZT.
 ///
 /// Test-only parity reference: production checks a batch PCZT through the
 /// display-producing `check_batch_pczt_with_display`, and this independent
@@ -132,7 +133,7 @@ fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
     account_index: u32,
     policy: ShieldedActionPolicy,
 ) -> Result<Vec<u8>> {
-    let mut pczt = pczt::parse_pczt(pczt_bytes)?;
+    let (mut pczt, input_encoding) = pczt::parse_pczt_with_encoding(pczt_bytes)?;
     pczt::validate_parsed_pczt_network(params, pczt_bytes)?;
     // Resolve compact field representations (memo-plaintext ciphertexts,
     // omitted cv_net) once, up front: the checks below then see complete
@@ -163,7 +164,14 @@ fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
         return Err(ZcashError::PcztNoMyInputs);
     }
 
-    pczt.serialize()
+    // BatchSignRequest::serialize emits v2. Keep batch normalization aligned
+    // with that round trip so its signability digest remains valid.
+    let output_encoding = match policy {
+        ShieldedActionPolicy::Single => input_encoding,
+        ShieldedActionPolicy::Batch => pczt::PcztEncoding::V2,
+    };
+    output_encoding
+        .serialize(pczt)
         .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
 }
 
@@ -173,6 +181,7 @@ fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
 /// Returns the normalized encoding of the checked PCZT. The returned bytes are
 /// what C retains as the `checked_PCZT`, which display and signing consume
 /// without re-running these checks.
+/// The returned PCZT uses the same wire encoding version as the input.
 #[cfg(feature = "multi_coins")]
 pub fn check_pczt_multi_coins<P: consensus::Parameters>(
     params: &P,
@@ -181,7 +190,7 @@ pub fn check_pczt_multi_coins<P: consensus::Parameters>(
     seed_fingerprint: &[u8; 32],
     account_index: u32,
 ) -> Result<Vec<u8>> {
-    let pczt = pczt::parse_pczt(pczt_bytes)?;
+    let (pczt, encoding) = pczt::parse_pczt_with_encoding(pczt_bytes)?;
     pczt::validate_parsed_pczt_network(params, pczt_bytes)?;
     // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
     // mutating `pczt` so the normalized bytes carry the verified values forward.
@@ -199,7 +208,8 @@ pub fn check_pczt_multi_coins<P: consensus::Parameters>(
         &pczt,
         true,
     )?;
-    pczt.serialize()
+    encoding
+        .serialize(pczt)
         .map_err(|e| ZcashError::InvalidPczt(alloc::format!("serialize normalized PCZT: {e:?}")))
 }
 
@@ -403,7 +413,8 @@ fn check_and_parse_batch_pczt_internal<P: consensus::Parameters>(
 /// compact migration classification, and an opaque signability decision bound
 /// to the normalized bytes and check context. Validation, display, and
 /// signability share one shielded action pass; signing reuses that decision
-/// instead of rebuilding the shielded bundles.
+/// instead of rebuilding the shielded bundles. The normalized bytes use PCZT v2
+/// to match the batch request serializer.
 #[cfg(feature = "cypherpunk")]
 pub fn check_batch_pczt_with_display<P: consensus::Parameters>(
     params: &P,
@@ -716,16 +727,17 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
 /// * `seed` - The seed to sign the PCZT with
 ///
 /// # Returns
-/// * `Result<Vec<u8>>` - The signed PCZT if successful, or an error otherwise
+/// * `Result<Vec<u8>>` - The signed PCZT in the input wire encoding if successful,
+///   or an error otherwise
 ///
 /// # Errors
 /// * `ZcashError::InvalidPczt` - If the PCZT data is malformed or cannot be parsed
 /// * `ZcashError::NetworkMismatch` - If the PCZT does not commit to a supported network
 /// * Other errors from the underlying signing process
 pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
-    let parsed = pczt::parse_pczt(pczt)?;
+    let (parsed, encoding) = pczt::parse_pczt_with_encoding(pczt)?;
     let network = pczt::PcztNetwork::from_validated_pczt_bytes(pczt)?;
-    pczt::sign::sign_pczt(parsed, seed, network)
+    pczt::sign::sign_pczt_with_encoding(parsed, seed, network, encoding)
 }
 
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]
@@ -825,6 +837,26 @@ mod legacy_tests {
             ),
             "transparent input bip32 derivation path invalid",
         );
+    }
+
+    #[test]
+    fn legacy_v1_pczt_check_and_sign_preserve_encoding() {
+        let sample = pczt::legacy_test_support::legacy_v1_transparent_sample();
+        let v1 = zcash_vendor::pczt::v1::Pczt::try_from(Pczt::parse(&sample.bytes).unwrap())
+            .unwrap()
+            .serialize();
+        assert_eq!(&v1[..8], b"PCZT\x01\0\0\0");
+
+        let normalized =
+            check_pczt_multi_coins(&MainNetwork, &v1, &sample.xpub, &sample.seed_fingerprint, 0)
+                .expect("v1 PCZT should pass the check");
+        assert_eq!(&normalized[..8], b"PCZT\x01\0\0\0");
+
+        let signed = sign_pczt(&normalized, &sample.seed).expect("v1 PCZT should sign");
+        assert_eq!(&signed[..8], b"PCZT\x01\0\0\0");
+        ::pczt::roles::spend_finalizer::SpendFinalizer::new(Pczt::parse(&signed).unwrap())
+            .finalize_spends()
+            .expect("the transparent input should be signed");
     }
 
     #[test]
@@ -1238,7 +1270,7 @@ fn ensure_shielded_actions_are_signed(
 /// received a spend authorization signature. Single-transaction policy: a PCZT
 /// with no owned shielded action still signs if any action matched the seed.
 /// Parses `checked_pczt` exactly once and returns the redacted, version-stamped
-/// response bytes.
+/// response bytes using the checked PCZT's wire encoding.
 #[cfg(feature = "cypherpunk")]
 pub fn sign_checked_pczt<P: consensus::Parameters>(
     params: &P,
@@ -1324,11 +1356,12 @@ pub fn sign_checked_batch_pczt_with_cached_signability<P: consensus::Parameters>
     ask_cache: &SpendAuthCache,
 ) -> Result<Vec<u8>> {
     let (selected_account, required_actions) = checked_signability.signing_context(checked_pczt)?;
-    let pczt = pczt::parse_pczt(checked_pczt)?;
+    let (pczt, encoding) = pczt::parse_pczt_with_encoding(checked_pczt)?;
     let network = pczt::validate_parsed_pczt_network(params, checked_pczt)?;
     reject_unsupported_batch_pczt(&pczt)?;
     sign_pczt_with_required_actions(
         pczt,
+        encoding,
         seed,
         network,
         selected_account,
@@ -1348,7 +1381,7 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
     policy: ShieldedActionPolicy,
     ask_cache: &SpendAuthCache,
 ) -> Result<Vec<u8>> {
-    let pczt = pczt::parse_pczt(checked_pczt)?;
+    let (pczt, encoding) = pczt::parse_pczt_with_encoding(checked_pczt)?;
     let network = pczt::validate_parsed_pczt_network(params, checked_pczt)?;
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
@@ -1359,6 +1392,7 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
     }
     sign_pczt_with_required_actions(
         pczt,
+        encoding,
         seed,
         network,
         account_index,
@@ -1370,6 +1404,7 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
 #[cfg(feature = "cypherpunk")]
 fn sign_pczt_with_required_actions(
     pczt: Pczt,
+    encoding: pczt::PcztEncoding,
     seed: &[u8],
     network: PcztNetwork,
     selected_account: zip32::AccountId,
@@ -1388,8 +1423,8 @@ fn sign_pczt_with_required_actions(
     } else {
         ensure_shielded_actions_are_signed(signed, required_actions)?
     };
-    signed
-        .serialize()
+    encoding
+        .serialize(signed)
         .map_err(|e| ZcashError::SigningError(alloc::format!("serialize signed PCZT: {e:?}")))
 }
 
@@ -1994,6 +2029,7 @@ mod tests {
             0,
         )
         .unwrap();
+        assert_eq!(&normalized[..8], b"PCZT\x01\0\0\0");
         assert!(matches!(
             ::pczt::roles::spend_finalizer::SpendFinalizer::new(Pczt::parse(&normalized).unwrap())
                 .finalize_spends()
@@ -2011,6 +2047,7 @@ mod tests {
             0,
         )
         .unwrap();
+        assert_eq!(&signed[..8], b"PCZT\x01\0\0\0");
         let signed = Pczt::parse(&signed).unwrap();
 
         ::pczt::roles::spend_finalizer::SpendFinalizer::new(signed.clone())
@@ -2183,6 +2220,7 @@ mod tests {
             0,
         )
         .unwrap();
+        assert_eq!(&normalized[..8], b"PCZT\x02\0\0\0");
 
         // Normalized bytes are a valid PCZT that passes the same check and
         // re-normalizes to identical bytes.

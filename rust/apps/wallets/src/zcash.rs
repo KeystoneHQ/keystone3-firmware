@@ -45,7 +45,7 @@ mod tests {
     use alloc::vec;
 
     #[test]
-    fn test_generate_sync_ur() {
+    fn test_generate_sync_ur_preserves_device_version() {
         let seed_fingerprint = [1u8; 32];
         let key_infos = vec![
             UFVKInfo {
@@ -65,6 +65,8 @@ mod tests {
 
         let accounts = result.unwrap();
         let cbor: Vec<u8> = accounts.try_into().unwrap();
-        assert!(!cbor.is_empty());
+        let decoded = ZcashAccounts::try_from(cbor).unwrap();
+
+        assert_eq!(decoded.get_device_version(), Some("1.2.3".to_string()));
     }
 }

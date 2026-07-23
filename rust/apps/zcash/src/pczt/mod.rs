@@ -222,6 +222,40 @@ pub(crate) fn parse_pczt(bytes: &[u8]) -> Result<Pczt, ZcashError> {
     Pczt::parse(bytes).map_err(|_| ZcashError::InvalidPczt("invalid pczt data".to_string()))
 }
 
+/// The wire encoding of a parsed PCZT. The logical [`Pczt`] does not retain it.
+#[derive(Clone, Copy)]
+pub(crate) enum PcztEncoding {
+    V1,
+    V2,
+}
+
+impl PcztEncoding {
+    pub(crate) fn serialize(
+        self,
+        pczt: Pczt,
+    ) -> core::result::Result<Vec<u8>, zcash_vendor::pczt::EncodingError> {
+        match self {
+            Self::V1 => Ok(zcash_vendor::pczt::v1::Pczt::try_from(pczt)?.serialize()),
+            Self::V2 => pczt.serialize(),
+        }
+    }
+}
+
+pub(crate) fn parse_pczt_with_encoding(bytes: &[u8]) -> Result<(Pczt, PcztEncoding), ZcashError> {
+    let pczt = parse_pczt(bytes)?;
+    let version = bytes
+        .get(4..8)
+        .and_then(|version| version.try_into().ok())
+        .map(u32::from_le_bytes)
+        .ok_or_else(|| ZcashError::InvalidPczt("invalid pczt data".to_string()))?;
+    let encoding = match version {
+        1 => PcztEncoding::V1,
+        2 => PcztEncoding::V2,
+        _ => return Err(ZcashError::InvalidPczt("invalid pczt data".to_string())),
+    };
+    Ok((pczt, encoding))
+}
+
 pub(crate) fn validate_supported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
     validate_sapling_bundle_consistency(pczt)?;
     validate_empty_orchard_protocol_bundle_balances(pczt)?;
@@ -1377,16 +1411,24 @@ pub(crate) mod legacy_test_support {
     pub(crate) fn legacy_transparent_sample() -> LegacyTransparentSample {
         let params = MainNetwork;
         let target_height = params.activation_height(NetworkUpgrade::Nu5).unwrap();
-        transparent_sample(params, target_height)
+        transparent_sample(params, target_height, None)
+    }
+
+    #[cfg(feature = "multi_coins")]
+    pub(crate) fn legacy_v1_transparent_sample() -> LegacyTransparentSample {
+        let params = MainNetwork;
+        let target_height = params.activation_height(NetworkUpgrade::Nu5).unwrap();
+        transparent_sample(params, target_height, Some(orchard::Anchor::empty_tree()))
     }
 
     pub(crate) fn legacy_transparent_v6_sample() -> LegacyTransparentSample {
-        transparent_sample(Nu6_3Network, BlockHeight::from_u32(10))
+        transparent_sample(Nu6_3Network, BlockHeight::from_u32(10), None)
     }
 
     fn transparent_sample<P: Parameters>(
         params: P,
         target_height: BlockHeight,
+        orchard_anchor: Option<orchard::Anchor>,
     ) -> LegacyTransparentSample {
         let seed = [7u8; 32];
         let account = AccountPrivKey::from_seed(&params, &seed, zip32::AccountId::ZERO).unwrap();
@@ -1417,7 +1459,7 @@ pub(crate) mod legacy_test_support {
             target_height,
             BuildConfig::Standard {
                 sapling_anchor: None,
-                orchard_anchor: None,
+                orchard_anchor,
                 ironwood_anchor: None,
                 orchard_pool_bundle_type: orchard::builder::BundleType::DEFAULT,
             },

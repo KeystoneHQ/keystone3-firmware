@@ -4,7 +4,7 @@ use alloc::string::{String, ToString};
 use bitcoin::bip32::{ChildNumber, DerivationPath};
 use zcash_vendor::{
     zcash_keys::keys::UnifiedSpendingKey,
-    zcash_protocol::consensus,
+    zcash_protocol::consensus::{self, NetworkConstants},
     zip32::{self, fingerprint::SeedFingerprint},
 };
 
@@ -25,16 +25,17 @@ pub fn derive_ufvk<P: consensus::Parameters>(
             "invalid account path: {account_path}"
         )));
     }
-    //should be hardened(32) hardened(133) hardened(account_id)
+    // Should be hardened(32), hardened(network coin type), hardened(account_id).
     let purpose = account_path[0];
     let coin_type = account_path[1];
     let account_id = account_path[2];
+    let expected_coin_type = params.network_type().coin_type();
     match (purpose, coin_type, account_id) {
         (
             ChildNumber::Hardened { index: 32 },
-            ChildNumber::Hardened { index: 133 },
+            ChildNumber::Hardened { index: coin_type },
             ChildNumber::Hardened { index: account_id },
-        ) => {
+        ) if coin_type == expected_coin_type => {
             let account_index = zip32::AccountId::try_from(account_id)
                 .map_err(|_e| KeystoreError::DerivationError("invalid account index".into()))?;
             let usk = UnifiedSpendingKey::from_seed(params, seed, account_index)
@@ -70,7 +71,7 @@ mod orchard_tests {
     use zcash_vendor::{
         pasta_curves::Fq,
         zcash_keys::keys::{UnifiedAddressRequest, UnifiedSpendingKey},
-        zcash_protocol::consensus::MAIN_NETWORK,
+        zcash_protocol::consensus::{MAIN_NETWORK, TEST_NETWORK},
         zip32::AccountId,
     };
 
@@ -83,11 +84,33 @@ mod orchard_tests {
 
     extern crate std;
 
+    fn test_seed() -> std::vec::Vec<u8> {
+        hex::decode("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f").unwrap()
+    }
+
+    #[test]
+    fn derive_ufvk_accepts_the_network_coin_type() {
+        let seed = test_seed();
+
+        let mainnet_ufvk = derive_ufvk(&MAIN_NETWORK, &seed, "m/32'/133'/0'").unwrap();
+        assert!(mainnet_ufvk.starts_with("uview"));
+
+        let testnet_ufvk = derive_ufvk(&TEST_NETWORK, &seed, "m/32'/1'/0'").unwrap();
+        assert!(testnet_ufvk.starts_with("uviewtest"));
+    }
+
+    #[test]
+    fn derive_ufvk_rejects_a_coin_type_for_the_other_network() {
+        let seed = test_seed();
+
+        assert!(derive_ufvk(&MAIN_NETWORK, &seed, "m/32'/1'/0'").is_err());
+        assert!(derive_ufvk(&TEST_NETWORK, &seed, "m/32'/133'/0'").is_err());
+    }
+
     #[test]
     fn test_ufvk_generation_and_encoding() {
         // Test seed from which we'll derive keys
-        let seed = hex::decode("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
-            .unwrap();
+        let seed = test_seed();
 
         // Generate the Unified Spending Key from seed
         let usk = UnifiedSpendingKey::from_seed(&MAIN_NETWORK, &seed, AccountId::ZERO).unwrap();

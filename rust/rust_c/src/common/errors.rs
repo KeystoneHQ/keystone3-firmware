@@ -213,6 +213,7 @@ pub enum ErrorCodes {
     ZcashGenerateAddressError = 1500,
     ZcashSigningError,
     ZcashInvalidPczt,
+    ZcashNetworkMismatch,
 
     // Monero
     MoneroUnknownError = 1600,
@@ -583,6 +584,7 @@ impl From<&ZcashError> for ErrorCodes {
             ZcashError::InvalidDataError(_) => Self::InvalidData,
             ZcashError::SigningError(_) => Self::ZcashSigningError,
             ZcashError::InvalidPczt(_) => Self::ZcashInvalidPczt,
+            ZcashError::NetworkMismatch(_) => Self::ZcashNetworkMismatch,
             ZcashError::PcztNoMyInputs => Self::MasterFingerprintMismatch,
         }
     }

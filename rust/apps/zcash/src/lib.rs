@@ -5,6 +5,9 @@ pub mod errors;
 pub mod pczt;
 pub mod version;
 
+#[cfg(feature = "cypherpunk")]
+use pczt::PcztNetwork;
+
 use errors::{Result, ZcashError};
 
 use alloc::{
@@ -131,6 +134,7 @@ fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
     policy: ShieldedActionPolicy,
 ) -> Result<Vec<u8>> {
     let (mut pczt, input_encoding) = pczt::parse_pczt_with_encoding(pczt_bytes)?;
+    pczt::validate_parsed_pczt_network(params, pczt_bytes)?;
     // Resolve compact field representations (memo-plaintext ciphertexts,
     // omitted cv_net) once, up front: the checks below then see complete
     // actions, and `serialize()` bakes the resolved values into the
@@ -187,6 +191,7 @@ pub fn check_pczt_multi_coins<P: consensus::Parameters>(
     account_index: u32,
 ) -> Result<Vec<u8>> {
     let (pczt, encoding) = pczt::parse_pczt_with_encoding(pczt_bytes)?;
+    pczt::validate_parsed_pczt_network(params, pczt_bytes)?;
     // FUTURE(omitted-field-recompute): recompute-or-check omitted fields here,
     // mutating `pczt` so the normalized bytes carry the verified values forward.
     // transparent-only build: pczt's orchard feature (and resolve_fields) is not compiled here.
@@ -271,10 +276,11 @@ pub fn parse_pczt_cypherpunk<P: consensus::Parameters>(
     ufvk_text: &str,
     seed_fingerprint: &[u8; 32],
 ) -> Result<ParsedPczt> {
+    let parsed_pczt = pczt::parse_pczt(pczt)?;
+    pczt::validate_parsed_pczt_network(params, pczt)?;
     let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
         .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
-    let pczt = pczt::parse_pczt(pczt)?;
-    pczt::parse::parse_pczt_cypherpunk(params, seed_fingerprint, &ufvk, &pczt)
+    pczt::parse::parse_pczt_cypherpunk(params, seed_fingerprint, &ufvk, &parsed_pczt)
 }
 
 /// Caches the decoded UFVK and wallet viewing keys shared by every PCZT in a
@@ -335,6 +341,7 @@ fn check_and_parse_batch_pczt_internal<P: consensus::Parameters>(
     zip32::AccountId,
 )> {
     let mut pczt = pczt::parse_pczt(pczt_bytes)?;
+    pczt::validate_parsed_pczt_network(params, pczt_bytes)?;
     // Resolve compact field representations before the single-pass validation.
     pczt.resolve_fields().map_err(|e| {
         ZcashError::InvalidPczt(alloc::format!("resolve compact PCZT fields: {e:?}"))
@@ -658,6 +665,7 @@ pub fn parse_batch_with_migration_summary_cypherpunk<'a, P: consensus::Parameter
     let mut items = Vec::new();
     for pczt_bytes in pczts {
         let pczt = pczt::parse_pczt(pczt_bytes)?;
+        pczt::validate_parsed_pczt_network(params, pczt_bytes)?;
         // Parse once. The same complete display model determines whether a
         // transaction can be represented by a compact migration row.
         let parsed = pczt::parse::parse_pczt_cypherpunk(params, seed_fingerprint, &ufvk, &pczt)?;
@@ -702,7 +710,9 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
     pczt: &[u8],
     seed_fingerprint: &[u8; 32],
 ) -> Result<ParsedPczt> {
-    let pczt = pczt::parse_pczt(pczt)?;
+    let pczt_bytes = pczt;
+    let pczt = pczt::parse_pczt(pczt_bytes)?;
+    pczt::validate_parsed_pczt_network(params, pczt_bytes)?;
 
     pczt::parse::parse_pczt_multi_coins(params, seed_fingerprint, &pczt)
 }
@@ -722,10 +732,12 @@ pub fn parse_pczt_multi_coins<P: consensus::Parameters>(
 ///
 /// # Errors
 /// * `ZcashError::InvalidPczt` - If the PCZT data is malformed or cannot be parsed
+/// * `ZcashError::NetworkMismatch` - If the PCZT does not commit to a supported network
 /// * Other errors from the underlying signing process
 pub fn sign_pczt(pczt: &[u8], seed: &[u8]) -> Result<Vec<u8>> {
-    let (pczt, encoding) = pczt::parse_pczt_with_encoding(pczt)?;
-    pczt::sign::sign_pczt_with_encoding(pczt, seed, encoding)
+    let (parsed, encoding) = pczt::parse_pczt_with_encoding(pczt)?;
+    let network = pczt::PcztNetwork::from_validated_pczt_bytes(pczt)?;
+    pczt::sign::sign_pczt_with_encoding(parsed, seed, network, encoding)
 }
 
 #[cfg(all(test, feature = "multi_coins", not(feature = "cypherpunk")))]
@@ -1336,7 +1348,8 @@ pub fn sign_checked_batch_pczt_with_cache<P: consensus::Parameters>(
 /// low-level signer. The signer still independently matches each action's
 /// derivation and `rk` to the seed-derived signing key.
 #[cfg(feature = "cypherpunk")]
-pub fn sign_checked_batch_pczt_with_cached_signability(
+pub fn sign_checked_batch_pczt_with_cached_signability<P: consensus::Parameters>(
+    params: &P,
     checked_pczt: &[u8],
     checked_signability: &CheckedBatchPcztSignability,
     seed: &[u8],
@@ -1344,11 +1357,13 @@ pub fn sign_checked_batch_pczt_with_cached_signability(
 ) -> Result<Vec<u8>> {
     let (selected_account, required_actions) = checked_signability.signing_context(checked_pczt)?;
     let (pczt, encoding) = pczt::parse_pczt_with_encoding(checked_pczt)?;
+    let network = pczt::validate_parsed_pczt_network(params, checked_pczt)?;
     reject_unsupported_batch_pczt(&pczt)?;
     sign_pczt_with_required_actions(
         pczt,
         encoding,
         seed,
+        network,
         selected_account,
         required_actions,
         ask_cache,
@@ -1367,6 +1382,7 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
     ask_cache: &SpendAuthCache,
 ) -> Result<Vec<u8>> {
     let (pczt, encoding) = pczt::parse_pczt_with_encoding(checked_pczt)?;
+    let network = pczt::validate_parsed_pczt_network(params, checked_pczt)?;
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
     let (signable_actions, pczt) =
@@ -1378,6 +1394,7 @@ fn sign_checked_pczt_with_policy<P: consensus::Parameters>(
         pczt,
         encoding,
         seed,
+        network,
         account_index,
         &signable_actions,
         ask_cache,
@@ -1389,12 +1406,18 @@ fn sign_pczt_with_required_actions(
     pczt: Pczt,
     encoding: pczt::PcztEncoding,
     seed: &[u8],
+    network: PcztNetwork,
     selected_account: zip32::AccountId,
     required_actions: &[SignableShieldedAction],
     ask_cache: &SpendAuthCache,
 ) -> Result<Vec<u8>> {
-    let signed =
-        pczt::sign::sign_and_redact_pczt_with_cache(pczt, seed, Some(selected_account), ask_cache)?;
+    let signed = pczt::sign::sign_and_redact_pczt_with_cache(
+        pczt,
+        seed,
+        network,
+        Some(selected_account),
+        ask_cache,
+    )?;
     let signed = if required_actions.is_empty() {
         signed
     } else {
@@ -1431,7 +1454,7 @@ mod tests {
     use alloc::{collections::BTreeMap, string::String, vec, vec::Vec};
 
     use ::pczt::roles::creator::Creator;
-    use consensus::MainNetwork;
+    use consensus::{MainNetwork, TestNetwork};
     use keystore::algorithms::zcash::{calculate_seed_fingerprint, derive_ufvk};
     use serde::{Deserialize, Serialize};
     use zcash_vendor::zcash_protocol::constants;
@@ -2459,6 +2482,7 @@ mod tests {
         // checked batch envelope.
         let canonical = Pczt::parse(&normalized).unwrap().serialize().unwrap();
         let signed = sign_checked_batch_pczt_with_cached_signability(
+            &pczt::test_support::Nu6_3Network,
             &canonical,
             &signability,
             &sample.seed,
@@ -2477,6 +2501,7 @@ mod tests {
         different_pczt[0] ^= 1;
         assert!(matches!(
             sign_checked_batch_pczt_with_cached_signability(
+                &pczt::test_support::Nu6_3Network,
                 &different_pczt,
                 &signability,
                 &sample.seed,
@@ -2488,6 +2513,7 @@ mod tests {
         signability.selected_account = zip32::AccountId::try_from(1).unwrap();
         assert!(matches!(
             sign_checked_batch_pczt_with_cached_signability(
+                &pczt::test_support::Nu6_3Network,
                 &canonical,
                 &signability,
                 &sample.seed,
@@ -2526,6 +2552,83 @@ mod tests {
             .filter(|action| action.spend().spend_auth_sig().is_some())
             .count();
         assert_eq!(signed_actions, 2);
+    }
+
+    #[test]
+    fn test_testnet_orchard_pczt_check_parse_and_sign() {
+        let sample = pczt::test_support::sample_testnet_orchard_change_pczt();
+        assert_eq!(
+            PcztNetwork::from_pczt_bytes(&sample.bytes),
+            Ok(PcztNetwork::Testnet)
+        );
+
+        let normalized = check_pczt_cypherpunk(
+            &TestNetwork,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .expect("testnet PCZT should check");
+        let display = parse_pczt_cypherpunk(
+            &TestNetwork,
+            &normalized,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+        )
+        .expect("checked testnet PCZT should parse");
+        assert!(display.get_orchard().is_some());
+
+        let signed = sign_checked_pczt(
+            &TestNetwork,
+            &normalized,
+            &sample.seed,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .expect("testnet PCZT should sign");
+        assert_eq!(
+            PcztNetwork::from_pczt_bytes(&signed),
+            Ok(PcztNetwork::Testnet)
+        );
+        assert_eq!(
+            Pczt::parse(&signed)
+                .unwrap()
+                .orchard()
+                .actions()
+                .iter()
+                .filter(|action| action.spend().spend_auth_sig().is_some())
+                .count(),
+            2
+        );
+    }
+
+    #[test]
+    fn test_testnet_orchard_pczt_batch_check_and_sign() {
+        let sample = pczt::test_support::sample_testnet_orchard_change_pczt();
+        let normalized = check_batch_pczt_cypherpunk(
+            &TestNetwork,
+            &sample.bytes,
+            &sample.ufvk_text,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .expect("testnet batch PCZT should check");
+        let signed = sign_checked_batch_pczt(
+            &TestNetwork,
+            &normalized,
+            &sample.seed,
+            &sample.seed_fingerprint,
+            0,
+        )
+        .expect("testnet batch PCZT should sign");
+        assert_eq!(
+            PcztNetwork::from_pczt_bytes(&signed),
+            Ok(PcztNetwork::Testnet)
+        );
+        assert!(!extract_compact_sigs_from_signed_pczt(&signed)
+            .expect("testnet batch signatures should extract")
+            .is_empty());
     }
 
     #[test]

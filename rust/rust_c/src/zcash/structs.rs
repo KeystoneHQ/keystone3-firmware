@@ -24,10 +24,18 @@ pub struct DisplayPczt {
     pub total_transfer_value: PtrString,
     pub fee_value: PtrString,
     pub has_sapling: bool,
+    pub is_testnet: bool,
 }
 
 impl From<&ParsedPczt> for DisplayPczt {
     fn from(pczt: &ParsedPczt) -> Self {
+        Self::new(pczt, false)
+    }
+}
+
+impl DisplayPczt {
+    /// Converts a checked review row for display on its request-derived network.
+    pub fn new(pczt: &ParsedPczt, is_testnet: bool) -> Self {
         Self {
             transparent: pczt
                 .get_transparent()
@@ -44,6 +52,7 @@ impl From<&ParsedPczt> for DisplayPczt {
             total_transfer_value: convert_c_char(pczt.get_total_transfer_value()),
             fee_value: convert_c_char(pczt.get_fee_value()),
             has_sapling: pczt.get_has_sapling(),
+            is_testnet,
         }
     }
 }
@@ -280,6 +289,8 @@ impl BatchDisplayCache {
 #[repr(C)]
 pub struct ZcashCheckedPczt {
     pub data: Ptr<VecFFI<u8>>,
+    /// The network derived from the checked PCZT, never from mutable UI state.
+    pub is_testnet: bool,
     /// Opaque batch display cache (null for the single-tx / multi-coins flows).
     /// C never dereferences this.
     #[cfg(feature = "cypherpunk")]
@@ -289,9 +300,10 @@ pub struct ZcashCheckedPczt {
 impl ZcashCheckedPczt {
     /// Wraps bytes verified during check. The display cache is null; the batch
     /// flow uses [`Self::new_with_display`] instead.
-    pub fn new(data: Vec<u8>) -> Self {
+    pub fn new(data: Vec<u8>, is_testnet: bool) -> Self {
         Self {
             data: VecFFI::from(data).c_ptr(),
+            is_testnet,
             #[cfg(feature = "cypherpunk")]
             display: null_mut(),
         }
@@ -302,8 +314,8 @@ impl ZcashCheckedPczt {
     /// re-decrypting every output. The cache is freed with the container in
     /// [`Free::free`].
     #[cfg(feature = "cypherpunk")]
-    pub fn new_with_display(data: Vec<u8>, display: BatchDisplayCache) -> Self {
-        let mut checked = Self::new(data);
+    pub fn new_with_display(data: Vec<u8>, display: BatchDisplayCache, is_testnet: bool) -> Self {
+        let mut checked = Self::new(data, is_testnet);
         checked.display = alloc::boxed::Box::into_raw(alloc::boxed::Box::new(display));
         checked
     }
@@ -344,9 +356,10 @@ mod tests {
 
     #[test]
     fn test_checked_pczt_bytes_round_trip() {
-        let checked = ZcashCheckedPczt::new(b"normalized-bytes".to_vec());
+        let checked = ZcashCheckedPczt::new(b"normalized-bytes".to_vec(), true);
         let bytes = unsafe { checked.checked_bytes() }.unwrap();
         assert_eq!(bytes, b"normalized-bytes");
+        assert!(checked.is_testnet);
         unsafe { checked.free() };
     }
 

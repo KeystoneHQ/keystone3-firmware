@@ -85,12 +85,12 @@ bool IsHexStringWithLen(const char *value, size_t expectedLen)
     if (value == NULL) {
         return false;
     }
-    size_t maxLen = expectedLen == 0 ? HEX_STRING_MAX_LENGTH : expectedLen;
-    size_t len = strnlen_s(value, maxLen + 1);
-    if (len == 0 || (len % 2) != 0) {
+    if (expectedLen >= HEX_STRING_MAX_LENGTH) {
         return false;
     }
-    if (len > maxLen) {
+    size_t scanLen = expectedLen == 0 ? HEX_STRING_MAX_LENGTH : expectedLen + 1;
+    size_t len = strnlen_s(value, scanLen);
+    if (len == 0 || len == scanLen || (len % 2) != 0) {
         return false;
     }
     if (expectedLen != 0 && len != expectedLen) {

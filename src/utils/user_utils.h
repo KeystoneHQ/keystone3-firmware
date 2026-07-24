@@ -19,6 +19,8 @@ void ByteArrayToHexStr(uint8_t *array, uint32_t len, char *hex);
 bool CheckEntropy(const uint8_t *array, uint32_t len);
 bool CheckAllFF(const uint8_t *array, uint32_t len);
 bool CheckAllZero(const uint8_t *array, uint32_t len);
+/// @brief Check whether value is an even-length hexadecimal string.
+/// @param expectedLen Required length, or zero to accept any supported length.
 bool IsHexStringWithLen(const char *value, size_t expectedLen);
 void RemoveFormatChar(char *str);
 void ArrayRandom(char *words, char *out, int count);

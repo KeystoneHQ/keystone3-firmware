@@ -38,6 +38,7 @@ static ZcashCheckedPczt *g_checkedBatch = NULL;
 // check itself (see GuiParseZcashBatchData), so the parse-fail handler can
 // surface it instead of a generic "invalid QR" window.
 static char g_batchCheckError[128] = {0};
+static int32_t g_batchCheckErrorCode = 0;
 
 static PageWidget_t *g_pageWidget = NULL;
 static lv_obj_t *g_cont = NULL;
@@ -179,20 +180,23 @@ PtrT_TransactionCheckResult GuiGetZcashBatchCheckResult(void)
     uint8_t sfp[32] = {0};
     uint32_t zcashAccountIndex = 0;
     uint8_t accountNum = 0;
-    char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
+    char mainnetUfvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
+    char testnetUfvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
 
     FreeCheckedBatch();
 
     GetExistAccountNum(&accountNum);
     if (accountNum <= 0) {
-        return check_zcash_batch_tx_cypherpunk(data, ufvk, sfp, zcashAccountIndex, true, &g_checkedBatch);
+        return check_zcash_batch_tx_cypherpunk(data, mainnetUfvk, testnetUfvk, sfp, zcashAccountIndex, true, &g_checkedBatch);
     }
 
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+    GetZcashUFVK(GetCurrentAccountIndex(), mainnetUfvk);
+    GetZcashTestnetUFVK(GetCurrentAccountIndex(), testnetUfvk);
     return check_zcash_batch_tx_cypherpunk(
                data,
-               ufvk,
+               mainnetUfvk,
+               testnetUfvk,
                sfp,
                zcashAccountIndex,
                !IsZcashSupportedForCurrentMnemonic(),
@@ -415,6 +419,7 @@ void GuiZcashBatchWidgetsRefresh(void)
 static void *GuiParseZcashBatchData(void)
 {
     g_batchCheckError[0] = '\0';
+    g_batchCheckErrorCode = 0;
 
     // The QR scan path opens this view directly (gui_scan_widgets.c), bypassing
     // the model check step that the USB path runs, so the check that
@@ -426,6 +431,7 @@ static void *GuiParseZcashBatchData(void)
         PtrT_TransactionCheckResult checkResult = GuiGetZcashBatchCheckResult();
         if (checkResult == NULL || checkResult->error_code != 0) {
             if (checkResult != NULL) {
+                g_batchCheckErrorCode = checkResult->error_code;
                 if (checkResult->error_message != NULL) {
                     snprintf_s(g_batchCheckError, sizeof(g_batchCheckError), "%s",
                                checkResult->error_message);
@@ -467,10 +473,21 @@ void GuiZcashBatchWidgetsTransactionParseFail(void)
     const char *errorMessage = (g_parseResult != NULL)
                                ? g_parseResult->error_message
                                : (g_batchCheckError[0] != '\0' ? g_batchCheckError : NULL);
+    int32_t errorCode = g_parseResult != NULL
+                        ? g_parseResult->error_code
+                        : g_batchCheckErrorCode;
     if (errorMessage != NULL) {
         printf("error: %s\n", errorMessage);
         if (IsZcashBatchUsbMode()) {
             RespondZcashBatchUsbParseError(errorMessage);
+            return;
+        }
+        if (errorCode == ZcashNetworkMismatch) {
+            g_parseErrorHintBox = GuiCreateRustErrorWindow(
+                                      errorCode,
+                                      errorMessage,
+                                      &g_parseErrorHintBox,
+                                      GuiReturnHome);
             return;
         }
         g_parseErrorHintBox = GuiCreateZcashBatchParseErrorWindow(errorMessage);

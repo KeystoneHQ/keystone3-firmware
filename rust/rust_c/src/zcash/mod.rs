@@ -11,11 +11,11 @@ use crate::common::{
 use crate::{extract_array, extract_array_mut};
 use crate::{extract_ptr_with_type, make_free_method};
 use alloc::{boxed::Box, format, string::String, string::ToString, vec::Vec};
-use app_zcash::get_address;
 #[cfg(feature = "cypherpunk")]
-use app_zcash::pczt::{sign::SpendAuthCache, structs::ParsedPczt};
+use app_zcash::pczt::{sign::SpendAuthCache, structs::ParsedPczt, PcztNetwork};
 #[cfg(feature = "cypherpunk")]
 use app_zcash::version::KEYSTONE_FW_VERSION;
+use app_zcash::{errors::ZcashError, get_address};
 use core::slice;
 use cryptoxide::hashing::sha256;
 use cty::c_char;
@@ -34,7 +34,10 @@ use ur_registry::zcash::zcash_pczt::ZcashPczt;
 use ur_registry::zcash::zcash_sign_batch::ZcashSignBatch;
 #[cfg(feature = "cypherpunk")]
 use zcash_vendor::pczt::roles::signer::batch::{BatchSignRequest, BatchSignResponse};
-use zcash_vendor::{pczt::Pczt, zcash_protocol::consensus::MainNetwork};
+use zcash_vendor::{
+    pczt::Pczt,
+    zcash_protocol::consensus::{MainNetwork, Parameters, TestNetwork},
+};
 use zeroize::Zeroize;
 
 // Cap both per-PCZT overhead and variable-size payload data to leave headroom
@@ -46,15 +49,57 @@ const ZCASH_BATCH_MAX_TOTAL_BYTES: usize = 512 * 1024;
 #[cfg(feature = "cypherpunk")]
 const ZCASH_BATCH_REQUEST_HEADER_LEN: usize = 12;
 
+#[cfg(feature = "cypherpunk")]
+unsafe fn recover_zcash_ufvk(
+    network: PcztNetwork,
+    mainnet_ufvk: PtrString,
+    testnet_ufvk: PtrString,
+) -> String {
+    let selected = if network.is_testnet() {
+        testnet_ufvk
+    } else {
+        mainnet_ufvk
+    };
+    unsafe { recover_c_char(selected) }
+}
+
+#[cfg(feature = "cypherpunk")]
+fn checked_pczt_network(checked: &ZcashCheckedPczt) -> PcztNetwork {
+    if checked.is_testnet {
+        PcztNetwork::Testnet
+    } else {
+        PcztNetwork::Mainnet
+    }
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn derive_zcash_ufvk(
     seed: PtrBytes,
     seed_len: u32,
     account_path: PtrString,
 ) -> *mut SimpleResponse<c_char> {
+    derive_zcash_ufvk_for_network(&MainNetwork, seed, seed_len, account_path)
+}
+
+/// Derives a testnet UFVK for the provided account path.
+#[no_mangle]
+pub unsafe extern "C" fn derive_zcash_testnet_ufvk(
+    seed: PtrBytes,
+    seed_len: u32,
+    account_path: PtrString,
+) -> *mut SimpleResponse<c_char> {
+    derive_zcash_ufvk_for_network(&TestNetwork, seed, seed_len, account_path)
+}
+
+unsafe fn derive_zcash_ufvk_for_network<P: Parameters>(
+    params: &P,
+    seed: PtrBytes,
+    seed_len: u32,
+    account_path: PtrString,
+) -> *mut SimpleResponse<c_char> {
     let seed = extract_array!(seed, u8, seed_len as usize);
     let account_path = unsafe { recover_c_char(account_path) };
-    let ufvk_text = derive_ufvk(&MainNetwork, seed, &account_path);
+    let ufvk_text = derive_ufvk(params, seed, &account_path);
     let result = match ufvk_text {
         Ok(text) => SimpleResponse::success(convert_c_char(text)).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
@@ -83,8 +128,23 @@ pub unsafe extern "C" fn calculate_zcash_seed_fingerprint(
 pub unsafe extern "C" fn generate_zcash_default_address(
     ufvk_text: PtrString,
 ) -> *mut SimpleResponse<c_char> {
+    generate_zcash_default_address_for_network(&MainNetwork, ufvk_text)
+}
+
+/// Generates the default testnet address for a testnet UFVK.
+#[no_mangle]
+pub unsafe extern "C" fn generate_zcash_testnet_default_address(
+    ufvk_text: PtrString,
+) -> *mut SimpleResponse<c_char> {
+    generate_zcash_default_address_for_network(&TestNetwork, ufvk_text)
+}
+
+unsafe fn generate_zcash_default_address_for_network<P: Parameters>(
+    params: &P,
+    ufvk_text: PtrString,
+) -> *mut SimpleResponse<c_char> {
     let ufvk_text = unsafe { recover_c_char(ufvk_text) };
-    let address = get_address(&MainNetwork, &ufvk_text);
+    let address = get_address(params, &ufvk_text);
     match address {
         Ok(text) => SimpleResponse::success(convert_c_char(text)).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
@@ -95,7 +155,8 @@ pub unsafe extern "C" fn generate_zcash_default_address(
 #[cfg(feature = "cypherpunk")]
 pub unsafe extern "C" fn check_zcash_tx_cypherpunk(
     tx: PtrUR,
-    ufvk: PtrString,
+    mainnet_ufvk: PtrString,
+    testnet_ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
@@ -109,18 +170,24 @@ pub unsafe extern "C" fn check_zcash_tx_cypherpunk(
         .c_ptr();
     }
     let pczt = extract_ptr_with_type!(tx, ZcashPczt);
-    let ufvk_text = unsafe { recover_c_char(ufvk) };
+    let pczt_data = pczt.get_data();
+    let network = match PcztNetwork::from_pczt_bytes(&pczt_data) {
+        Ok(network) => network,
+        Err(e) => return TransactionCheckResult::from(e).c_ptr(),
+    };
+    let params = network.parameters();
+    let ufvk_text = unsafe { recover_zcash_ufvk(network, mainnet_ufvk, testnet_ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
     match app_zcash::check_pczt_cypherpunk(
-        &MainNetwork,
-        &pczt.get_data(),
+        &params,
+        &pczt_data,
         &ufvk_text,
         seed_fingerprint,
         account_index,
     ) {
         Ok(normalized) => {
-            *checked_pczt = ZcashCheckedPczt::new(normalized).c_ptr();
+            *checked_pczt = ZcashCheckedPczt::new(normalized, network.is_testnet()).c_ptr();
             TransactionCheckResult::new().c_ptr()
         }
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
@@ -156,7 +223,7 @@ pub unsafe extern "C" fn check_zcash_tx_multi_coins(
         account_index,
     ) {
         Ok(normalized) => {
-            *checked_pczt = ZcashCheckedPczt::new(normalized).c_ptr();
+            *checked_pczt = ZcashCheckedPczt::new(normalized, false).c_ptr();
             TransactionCheckResult::new().c_ptr()
         }
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
@@ -167,7 +234,8 @@ pub unsafe extern "C" fn check_zcash_tx_multi_coins(
 #[no_mangle]
 pub unsafe extern "C" fn parse_zcash_tx_cypherpunk(
     checked_pczt: Ptr<ZcashCheckedPczt>,
-    ufvk: PtrString,
+    mainnet_ufvk: PtrString,
+    testnet_ufvk: PtrString,
     seed_fingerprint: PtrBytes,
 ) -> Ptr<TransactionParseResult<DisplayPczt>> {
     if checked_pczt.is_null() {
@@ -181,11 +249,16 @@ pub unsafe extern "C" fn parse_zcash_tx_cypherpunk(
         Ok(bytes) => bytes,
         Err(e) => return TransactionParseResult::from(e).c_ptr(),
     };
-    let ufvk_text = unsafe { recover_c_char(ufvk) };
+    let network = checked_pczt_network(checked);
+    let params = network.parameters();
+    let ufvk_text = unsafe { recover_zcash_ufvk(network, mainnet_ufvk, testnet_ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::parse_pczt_cypherpunk(&MainNetwork, bytes, &ufvk_text, seed_fingerprint) {
-        Ok(pczt) => TransactionParseResult::success(DisplayPczt::from(&pczt).c_ptr()).c_ptr(),
+    match app_zcash::parse_pczt_cypherpunk(&params, bytes, &ufvk_text, seed_fingerprint) {
+        Ok(pczt) => {
+            TransactionParseResult::success(DisplayPczt::new(&pczt, network.is_testnet()).c_ptr())
+                .c_ptr()
+        }
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
 }
@@ -365,10 +438,27 @@ fn encode_zcash_batch_sig_result(
 }
 
 #[cfg(feature = "cypherpunk")]
+fn zcash_batch_network(payloads: &[Vec<u8>]) -> Result<PcztNetwork, ZcashError> {
+    let (first, rest) = payloads
+        .split_first()
+        .ok_or_else(|| ZcashError::InvalidPczt("Zcash batch has no transactions".to_string()))?;
+    let network = PcztNetwork::from_pczt_bytes(first)?;
+    for payload in rest {
+        if PcztNetwork::from_pczt_bytes(payload)? != network {
+            return Err(ZcashError::NetworkMismatch(
+                "Zcash batch contains transactions from different networks".to_string(),
+            ));
+        }
+    }
+    Ok(network)
+}
+
+#[cfg(feature = "cypherpunk")]
 #[no_mangle]
 pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
     tx: PtrUR,
-    ufvk: PtrString,
+    mainnet_ufvk: PtrString,
+    testnet_ufvk: PtrString,
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
@@ -387,7 +477,6 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
         Err(e) => return TransactionCheckResult::from(e).c_ptr(),
     };
     let request_id = registry.get_request_id().to_vec();
-    let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
 
@@ -395,6 +484,12 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
         Ok(payloads) => payloads,
         Err(e) => return TransactionCheckResult::from(e).c_ptr(),
     };
+    let network = match zcash_batch_network(&payloads) {
+        Ok(network) => network,
+        Err(e) => return TransactionCheckResult::from(e).c_ptr(),
+    };
+    let params = network.parameters();
+    let ufvk_text = unsafe { recover_zcash_ufvk(network, mainnet_ufvk, testnet_ufvk) };
 
     // Each check returns normalized bytes, display rows, an optional compact
     // migration classification, and the bound signability decision from the
@@ -409,7 +504,7 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
     let check_ctx = app_zcash::BatchCheckContext::new(&ufvk_text);
     for payload in payloads {
         match app_zcash::check_batch_pczt_with_display(
-            &MainNetwork,
+            &params,
             &payload,
             &check_ctx,
             seed_fingerprint,
@@ -458,7 +553,8 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
         Ok(bytes) => bytes,
         Err(e) => return TransactionCheckResult::from(e).c_ptr(),
     };
-    *checked_batch = ZcashCheckedPczt::new_with_display(normalized_batch, display).c_ptr();
+    *checked_batch =
+        ZcashCheckedPczt::new_with_display(normalized_batch, display, network.is_testnet()).c_ptr();
     TransactionCheckResult::new().c_ptr()
 }
 
@@ -501,7 +597,7 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
     // Convert the cached rows into fresh owned FFI structs. There is no fallible
     // step after the first `DisplayPczt` is built, so the "materialize only after
     // all fallible steps" leak-safety is trivially preserved.
-    let display_items = batch_display_items(&*checked.display);
+    let display_items = batch_display_items(&*checked.display, checked.is_testnet);
 
     TransactionParseResult::success(DisplayZcashBatch::from(display_items).c_ptr()).c_ptr()
 }
@@ -509,8 +605,12 @@ pub unsafe extern "C" fn parse_zcash_batch_tx_cypherpunk(
 /// Converts the cached review rows into fresh FFI display structs. The cache
 /// already contains either the compacted review or all ordinary PCZT rows.
 #[cfg(feature = "cypherpunk")]
-fn batch_display_items(cache: &BatchDisplayCache) -> Vec<DisplayPczt> {
-    cache.rows().iter().map(DisplayPczt::from).collect()
+fn batch_display_items(cache: &BatchDisplayCache, is_testnet: bool) -> Vec<DisplayPczt> {
+    cache
+        .rows()
+        .iter()
+        .map(|row| DisplayPczt::new(row, is_testnet))
+        .collect()
 }
 
 #[cfg(feature = "cypherpunk")]
@@ -537,6 +637,7 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
         .c_ptr();
     }
     let checked = extract_ptr_with_type!(checked_batch, ZcashCheckedPczt);
+    let params = checked_pczt_network(checked).parameters();
     if checked.display.is_null() {
         return UREncodeResult::from(RustCError::InvalidData(
             "no checked Zcash batch signability available".to_string(),
@@ -589,6 +690,7 @@ unsafe fn sign_zcash_batch_tx_cypherpunk_dynamic(
                             }
                         };
                         match app_zcash::sign_checked_batch_pczt_with_cached_signability(
+                            &params,
                             &payload,
                             checked_signability,
                             seed,
@@ -778,6 +880,7 @@ unsafe fn sign_zcash_tx_cypherpunk_dynamic(
         .c_ptr();
     }
     let checked = extract_ptr_with_type!(checked_pczt, ZcashCheckedPczt);
+    let params = checked_pczt_network(checked).parameters();
     let expected_seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let expected_seed_fingerprint: &[u8; 32] = expected_seed_fingerprint.try_into().unwrap();
     let mut seed = extract_array_mut!(seed, u8, seed_len as usize);
@@ -790,7 +893,7 @@ unsafe fn sign_zcash_tx_cypherpunk_dynamic(
                     return UREncodeResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
                 }
                 match app_zcash::sign_checked_pczt(
-                    &MainNetwork,
+                    &params,
                     pczt_bytes,
                     seed,
                     &seed_fingerprint,
@@ -944,6 +1047,35 @@ mod tests {
         (0..count)
             .map(|index| format!("pczt-{index}").into_bytes())
             .collect()
+    }
+
+    #[cfg(feature = "cypherpunk")]
+    fn empty_pczt(coin_type: u32) -> Vec<u8> {
+        use zcash_vendor::{pczt::roles::creator::Creator, zcash_protocol::consensus::BranchId};
+
+        Creator::new(
+            BranchId::Nu6.into(),
+            10,
+            coin_type,
+            Some([0; 32]),
+            Some([0; 32]),
+        )
+        .unwrap()
+        .build()
+        .unwrap()
+        .serialize()
+        .unwrap()
+    }
+
+    #[cfg(feature = "cypherpunk")]
+    #[test]
+    fn test_zcash_batch_rejects_mixed_networks() {
+        assert_eq!(
+            zcash_batch_network(&[empty_pczt(133), empty_pczt(1)]),
+            Err(ZcashError::NetworkMismatch(
+                "Zcash batch contains transactions from different networks".to_string()
+            ))
+        );
     }
 
     #[cfg(feature = "cypherpunk")]
@@ -1231,22 +1363,26 @@ mod tests {
     #[cfg(feature = "cypherpunk")]
     #[test]
     fn test_parse_zcash_batch_reads_display_cache() {
-        let items = batch_display_items(&BatchDisplayCache::new(
-            vec![
-                sample_parsed_pczt(),
-                sample_parsed_pczt(),
-                sample_parsed_pczt(),
-            ],
-            Vec::new(),
-            [0; 32],
-            0,
-        ));
+        let items = batch_display_items(
+            &BatchDisplayCache::new(
+                vec![
+                    sample_parsed_pczt(),
+                    sample_parsed_pczt(),
+                    sample_parsed_pczt(),
+                ],
+                Vec::new(),
+                [0; 32],
+                0,
+            ),
+            true,
+        );
         assert_eq!(
             items.len(),
             3,
             "the cache must yield one display per review row"
         );
         for item in &items {
+            assert!(item.is_testnet);
             unsafe { item.free() };
         }
 
@@ -1257,7 +1393,8 @@ mod tests {
             0,
         );
         let checked_ptr =
-            ZcashCheckedPczt::new_with_display(b"normalized-batch-bytes".to_vec(), cache).c_ptr();
+            ZcashCheckedPczt::new_with_display(b"normalized-batch-bytes".to_vec(), cache, true)
+                .c_ptr();
         let result = unsafe {
             parse_zcash_batch_tx_cypherpunk(
                 checked_ptr,
@@ -1289,7 +1426,8 @@ mod tests {
             0,
         );
         let checked_ptr =
-            ZcashCheckedPczt::new_with_display(b"normalized-batch-bytes".to_vec(), cache).c_ptr();
+            ZcashCheckedPczt::new_with_display(b"normalized-batch-bytes".to_vec(), cache, false)
+                .c_ptr();
         unsafe { free_zcash_checked_pczt(checked_ptr) };
     }
 }

@@ -14,6 +14,7 @@
 3. Restricted Zcash shielded signing to the selected account
 4. Rejected Zcash PCZTs whose display amount totals overflow or do not balance
 5. Preserved PCZT v1 signing responses for wallets that do not support PCZT v2
+6. Prevented Zcash public information from being regenerated on every unlock
 
 
 ## 3.0.0 (2026-07-20)

@@ -2,11 +2,12 @@
 use alloc::boxed::Box;
 
 use super::util::{calculate_max_txn_fee, convert_wei_to_eth};
+use crate::common::errors::RustCError;
 use crate::common::ffi::VecFFI;
 use crate::common::free::Free;
 use crate::common::structs::{Response, TransactionParseResult};
 use crate::common::types::{Ptr, PtrString, PtrT};
-use crate::common::utils::convert_c_char;
+use crate::common::utils::{convert_c_char, try_convert_c_char, validate_c_char};
 use crate::{free_str_ptr, free_vec, impl_c_ptr, make_free_method};
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -309,29 +310,48 @@ pub struct DisplayETHTypedData {
     safe_tx_hash: PtrString,
 }
 
-impl From<TypedData> for DisplayETHTypedData {
-    fn from(message: TypedData) -> Self {
-        fn to_ptr_string(string: String) -> PtrString {
+impl TryFrom<TypedData> for DisplayETHTypedData {
+    type Error = RustCError;
+
+    fn try_from(message: TypedData) -> Result<Self, Self::Error> {
+        fn to_ptr_string(string: String) -> Result<PtrString, RustCError> {
             if string.is_empty() {
-                null_mut()
+                Ok(null_mut())
             } else {
-                convert_c_char(string)
+                try_convert_c_char(string)
             }
         }
 
-        Self {
-            name: to_ptr_string(message.name),
-            version: to_ptr_string(message.version),
-            chain_id: to_ptr_string(message.chain_id),
-            verifying_contract: to_ptr_string(message.verifying_contract),
-            salt: to_ptr_string(message.salt),
-            primary_type: to_ptr_string(message.primary_type),
-            message: to_ptr_string(message.message),
-            from: message.from.map(to_ptr_string).unwrap_or(null_mut()),
-            domain_hash: to_ptr_string(message.domain_separator),
-            message_hash: to_ptr_string(message.message_hash),
-            safe_tx_hash: to_ptr_string(message.safe_tx_hash),
+        validate_c_char(&message.name)?;
+        validate_c_char(&message.version)?;
+        validate_c_char(&message.chain_id)?;
+        validate_c_char(&message.verifying_contract)?;
+        validate_c_char(&message.salt)?;
+        validate_c_char(&message.primary_type)?;
+        validate_c_char(&message.message)?;
+        if let Some(from) = message.from.as_deref() {
+            validate_c_char(from)?;
         }
+        validate_c_char(&message.domain_separator)?;
+        validate_c_char(&message.message_hash)?;
+        validate_c_char(&message.safe_tx_hash)?;
+
+        Ok(Self {
+            name: to_ptr_string(message.name)?,
+            version: to_ptr_string(message.version)?,
+            chain_id: to_ptr_string(message.chain_id)?,
+            verifying_contract: to_ptr_string(message.verifying_contract)?,
+            salt: to_ptr_string(message.salt)?,
+            primary_type: to_ptr_string(message.primary_type)?,
+            message: to_ptr_string(message.message)?,
+            from: match message.from {
+                Some(from) => to_ptr_string(from)?,
+                None => null_mut(),
+            },
+            domain_hash: to_ptr_string(message.domain_separator)?,
+            message_hash: to_ptr_string(message.message_hash)?,
+            safe_tx_hash: to_ptr_string(message.safe_tx_hash)?,
+        })
     }
 }
 

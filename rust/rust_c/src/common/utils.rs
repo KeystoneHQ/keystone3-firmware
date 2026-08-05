@@ -7,10 +7,28 @@ use crate::{extract_array, extract_ptr_with_type};
 use cstr_core::{CStr, CString};
 use cty::c_char;
 
+use crate::common::errors::{RustCError, R};
 use crate::common::types::{PtrString, PtrT};
 
+pub fn validate_c_char(s: &str) -> R<()> {
+    CString::new(s)
+        .map(|_| ())
+        .map_err(|_| RustCError::InvalidData("NUL characters are not supported".to_string()))
+}
+
+pub fn try_convert_c_char(s: String) -> R<PtrString> {
+    CString::new(s)
+        .map(CString::into_raw)
+        .map_err(|_| RustCError::InvalidData("NUL characters are not supported".to_string()))
+}
+
 pub fn convert_c_char(s: String) -> PtrString {
-    CString::new(s).unwrap().into_raw()
+    let mut bytes = s.into_bytes();
+    bytes.retain(|byte| *byte != 0);
+    match CString::new(bytes) {
+        Ok(value) => value.into_raw(),
+        Err(_) => core::ptr::null_mut(),
+    }
 }
 
 pub unsafe fn recover_c_char(s: *mut c_char) -> String {

@@ -522,18 +522,26 @@ static lv_obj_t *CreateCosmosVoteDetails(lv_obj_t *parent, const cJSON *message,
 
 static lv_obj_t *CreateCosmosFeeDetails(lv_obj_t *parent, const cJSON *common, lv_obj_t *lastView)
 {
+    const char *maxFee = GetCosmosJsonString(common, "Max Fee");
     const char *fee = GetCosmosJsonString(common, "Fee");
     const char *gasLimit = GetCosmosJsonString(common, "Gas Limit");
-    if (fee == NULL && gasLimit == NULL) {
+    if (maxFee == NULL && fee == NULL && gasLimit == NULL) {
         return lastView;
     }
 
-    lv_obj_t *container = CreateContentContainer(parent, 408, 100);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 170);
     if (lastView != NULL) {
         lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
-    CreateCosmosDetailInlineValue(container, "Fee", fee, 16, false);
-    CreateCosmosDetailInlineValue(container, "Gas Limit", gasLimit, 54, false);
+    CreateCosmosDetailInlineValue(container, "Max Fee", maxFee, 16, false);
+
+    lv_obj_t *description = GuiCreateLabelWithFont(
+        container, "  \xE2\x80\xA2  Max Fee Price * Gas Limit", &openSansDesc);
+    lv_obj_set_style_text_opa(description, LV_OPA_64, LV_PART_MAIN);
+    lv_obj_align(description, LV_ALIGN_TOP_LEFT, 24, 54);
+
+    CreateCosmosDetailInlineValue(container, "Fee", fee, 86, false);
+    CreateCosmosDetailInlineValue(container, "Gas Limit", gasLimit, 124, false);
     return container;
 }
 

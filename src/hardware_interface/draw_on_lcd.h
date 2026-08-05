@@ -7,7 +7,10 @@
 #include "lv_font.h"
 #include "lv_img_buf.h"
 
-void PrintOnLcd(const lv_font_t *font, uint16_t color, const char *format, ...);
+// Draws a plain, already-formatted string. Deliberately NOT variadic: callers must
+// snprintf into their own buffer first, so no caller-supplied text is ever parsed
+// as a printf format string.
+void PrintOnLcd(const lv_font_t *font, uint16_t color, const char *text);
 int16_t DrawStringOnLcd(uint16_t x, uint16_t y, const char *string, uint16_t color, const lv_font_t *font);
 void DrawProgressBarOnLcd(uint16_t x, uint16_t y, uint16_t length, uint16_t width, uint8_t progress, uint16_t color);
 void DrawImageOnLcd(uint16_t x, uint16_t y, const lv_img_dsc_t *imgDsc);

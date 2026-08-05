@@ -9,13 +9,11 @@
 #include "math.h"
 #include "stdlib.h"
 #include "ui_display_task.h"
-#include "stdarg.h"
 #include "cmsis_os.h"
 #include "user_memory.h"
 #include "drv_lcd_bright.h"
 
 #define TEXT_LINE_GAP               3
-#define DRAW_MAX_STRING_LEN         256
 #define PAGE_MARGINS                15
 
 typedef struct {
@@ -30,16 +28,16 @@ static void GetTrueColors(uint16_t *trueColors, const uint8_t *colorData, uint32
 
 static LcdDrawColor_t g_bgColor = {0};
 
-void PrintOnLcd(const lv_font_t *font, uint16_t color, const char *format, ...)
+void PrintOnLcd(const lv_font_t *font, uint16_t color, const char *text)
 {
     static bool backInit = false;
     static uint16_t yCursor = PAGE_MARGINS;
     uint8_t *gram = GetLvglGramAddr();
-    char str[DRAW_MAX_STRING_LEN];
 
     LcdDrawColor_t *pColor;
-    va_list argList;
-    va_start(argList, format);
+    if (text == NULL) {
+        return;
+    }
     if (backInit == false) {
         backInit = true;
         osKernelLock();
@@ -54,10 +52,7 @@ void PrintOnLcd(const lv_font_t *font, uint16_t color, const char *format, ...)
         LcdDraw(0, 400, LCD_DISPLAY_WIDTH, 800 - 1, (uint16_t *)gram);
         while (LcdBusy());
     }
-    vsprintf(str, format, argList);
-    printf(str);
-    yCursor = DrawStringOnLcd(PAGE_MARGINS, yCursor, str, color, font);
-    va_end(argList);
+    yCursor = DrawStringOnLcd(PAGE_MARGINS, yCursor, text, color, font);
 }
 
 /// @brief Draw string on lcd.

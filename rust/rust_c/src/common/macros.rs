@@ -74,7 +74,7 @@ macro_rules! impl_new_error {
                 let result = Self::new();
                 Self {
                     error_code: error_code as u32,
-                    error_message: CString::new(error_message).unwrap().into_raw(),
+                    error_message: $crate::common::utils::convert_c_char(error_message),
                     ..result
                 }
             }
@@ -211,7 +211,7 @@ macro_rules! impl_new_error {
                 let result = Self::new();
                 Self {
                     error_code: error_code as u32,
-                    error_message: CString::new(error_message).unwrap().into_raw(),
+                    error_message: $crate::common::utils::convert_c_char(error_message),
                     ..result
                 }
             }
@@ -347,7 +347,7 @@ macro_rules! impl_simple_new_error {
                 let result = Self::new();
                 Self {
                     error_code: error_code as u32,
-                    error_message: CString::new(error_message).unwrap().into_raw(),
+                    error_message: $crate::common::utils::convert_c_char(error_message),
                     ..result
                 }
             }

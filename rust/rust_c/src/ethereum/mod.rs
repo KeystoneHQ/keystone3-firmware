@@ -413,9 +413,10 @@ pub unsafe extern "C" fn eth_parse_typed_data(
         TransactionType::TypedData => {
             let tx = parse_typed_data_message(&crypto_eth.get_sign_data(), pubkey);
             match tx {
-                Ok(t) => {
-                    TransactionParseResult::success(DisplayETHTypedData::from(t).c_ptr()).c_ptr()
-                }
+                Ok(t) => match DisplayETHTypedData::try_from(t) {
+                    Ok(display) => TransactionParseResult::success(display.c_ptr()).c_ptr(),
+                    Err(error) => TransactionParseResult::from(error).c_ptr(),
+                },
                 Err(e) => TransactionParseResult::from(e).c_ptr(),
             }
         }

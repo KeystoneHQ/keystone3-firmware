@@ -96,7 +96,7 @@ void WriteLogFormat(uint32_t event, const char *format, ...)
     va_list argList;
     va_start(argList, format);
     //printf("WriteLogFormat,event=%d\r\n", event);
-    vsprintf(str, format, argList);
+    vsnprintf(str, LOG_MAX_STRING_LEN, format, argList);
     LogData_t logData = {0};
     logData.event = event;
     logData.dataType = 1;

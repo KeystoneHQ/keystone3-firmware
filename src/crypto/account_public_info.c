@@ -87,7 +87,7 @@ static void LoadCurrentAccountMultiReceiveIndex(void)
         if (GetCurrenMultisigWalletByIndex(i) == NULL) {
             continue;
         }
-        strcpy(g_multiSigReceiveIndex[i].verifyCode, GetCurrenMultisigWalletByIndex(i)->verifyCode);
+        strcpy_s(g_multiSigReceiveIndex[i].verifyCode, BUFFER_SIZE_16, GetCurrenMultisigWalletByIndex(i)->verifyCode);
     }
 }
 
@@ -242,7 +242,7 @@ void SetAccountMultiReceiveIndex(uint32_t index, char *verifyCode)
     for (int i = 0; i < MAX_MULTI_SIG_WALLET_NUMBER; i++) {
         if (strlen(g_multiSigReceiveIndex[i].verifyCode) == 0) {
             g_multiSigReceiveIndex[i].index = index;
-            strcpy(g_multiSigReceiveIndex[i].verifyCode, verifyCode);
+            strcpy_s(g_multiSigReceiveIndex[i].verifyCode, BUFFER_SIZE_16, verifyCode);
             break;
         } else if (strcmp(g_multiSigReceiveIndex[i].verifyCode, verifyCode) == 0) {
             g_multiSigReceiveIndex[i].index = index;

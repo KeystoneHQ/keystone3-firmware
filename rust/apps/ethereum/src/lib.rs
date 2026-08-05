@@ -72,9 +72,62 @@ pub fn parse_personal_message(
 pub fn parse_typed_data_message(tx_hex: &[u8], from_key: Option<PublicKey>) -> Result<TypedData> {
     let utf8_message = String::from_utf8(tx_hex.to_vec())
         .map_err(|e| EthereumError::InvalidUtf8Error(e.to_string()))?;
-    let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message)
-        .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), utf8_message))?;
+    let typed_data = parse_typed_data_json(utf8_message)?;
     TypedData::from_raw(typed_data, from_key)
+}
+
+fn parse_typed_data_json(utf8_message: String) -> Result<Eip712TypedData> {
+    let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message)
+        .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), utf8_message.clone()))?;
+
+    if typed_data_contains_nul(&typed_data) {
+        return Err(EthereumError::InvalidTypedData(
+            "NUL characters are not supported".to_string(),
+            String::new(),
+        ));
+    }
+
+    Ok(typed_data)
+}
+
+fn typed_data_contains_nul(typed_data: &Eip712TypedData) -> bool {
+    typed_data.primary_type.contains('\0')
+        || typed_data
+            .domain
+            .name
+            .as_deref()
+            .is_some_and(|value| value.contains('\0'))
+        || typed_data
+            .domain
+            .version
+            .as_deref()
+            .is_some_and(|value| value.contains('\0'))
+        || typed_data
+            .domain
+            .verifying_contract
+            .as_deref()
+            .is_some_and(|value| value.contains('\0'))
+        || typed_data.types.iter().any(|(name, fields)| {
+            name.contains('\0')
+                || fields
+                    .iter()
+                    .any(|field| field.name.contains('\0') || field.r#type.contains('\0'))
+        })
+        || typed_data
+            .message
+            .iter()
+            .any(|(key, value)| key.contains('\0') || json_value_contains_nul(value))
+}
+
+fn json_value_contains_nul(value: &serde_json::Value) -> bool {
+    match value {
+        serde_json::Value::String(value) => value.contains('\0'),
+        serde_json::Value::Array(values) => values.iter().any(json_value_contains_nul),
+        serde_json::Value::Object(values) => values
+            .iter()
+            .any(|(key, value)| key.contains('\0') || json_value_contains_nul(value)),
+        _ => false,
+    }
 }
 
 pub fn sign_legacy_tx(sign_data: &[u8], seed: &[u8], path: &String) -> Result<EthereumSignature> {
@@ -158,8 +211,7 @@ pub fn sign_typed_data_message(
 ) -> Result<EthereumSignature> {
     let utf8_message = String::from_utf8(sign_data.to_vec())
         .map_err(|e| EthereumError::InvalidUtf8Error(e.to_string()))?;
-    let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message)
-        .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), utf8_message))?;
+    let typed_data = parse_typed_data_json(utf8_message)?;
 
     let hash = typed_data
         .encode_eip712()
@@ -294,6 +346,26 @@ mod tests {
         let sign_data =
             br#"{"types":{"EIP712Domain":[]},"primaryType":"Missing","domain":{},"message":{}}"#;
         assert!(parse_typed_data_message(sign_data, None).is_err());
+    }
+
+    #[test]
+    fn test_typed_data_rejects_nul() {
+        let sign_data = br#"{"types":{"EIP712Domain":[],"Message":[{"name":"text","type":"string"}]},"primaryType":"Message","domain":{},"message":{"text":{"nested":["USDT\u0000FAKE"]}}}"#;
+
+        let parse_error = parse_typed_data_message(sign_data, None).unwrap_err();
+        assert!(parse_error
+            .to_string()
+            .contains("NUL characters are not supported"));
+
+        let seed = [0u8; 64];
+        let path = "m/44'/60'/0'/0/0".to_string();
+        let sign_error = match sign_typed_data_message(sign_data, &seed, &path) {
+            Ok(_) => panic!(),
+            Err(error) => error,
+        };
+        assert!(sign_error
+            .to_string()
+            .contains("NUL characters are not supported"));
     }
 
     #[test]

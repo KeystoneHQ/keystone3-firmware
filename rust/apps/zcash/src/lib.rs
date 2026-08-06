@@ -138,6 +138,12 @@ fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
     pczt.resolve_fields().map_err(|e| {
         ZcashError::InvalidPczt(alloc::format!("resolve compact PCZT fields: {e:?}"))
     })?;
+    // Batch requests tolerate signatures the client failed to redact by
+    // stripping them here, before validation and normalization.
+    let pczt = match policy {
+        ShieldedActionPolicy::Batch => redact_incoming_batch_signatures(pczt),
+        ShieldedActionPolicy::Single => pczt,
+    };
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
     let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
@@ -339,6 +345,10 @@ fn check_and_parse_batch_pczt_internal<P: consensus::Parameters>(
     pczt.resolve_fields().map_err(|e| {
         ZcashError::InvalidPczt(alloc::format!("resolve compact PCZT fields: {e:?}"))
     })?;
+    // Batch requests tolerate signatures the client failed to redact by
+    // stripping them here, before validation and normalization. Matches the
+    // check-only reference composition stage for stage.
+    let pczt = redact_incoming_batch_signatures(pczt);
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
     let ufvk = ctx.ufvk(params)?;
@@ -407,7 +417,9 @@ fn check_and_parse_batch_pczt_internal<P: consensus::Parameters>(
 /// to the normalized bytes and check context. Validation, display, and
 /// signability share one shielded action pass; signing reuses that decision
 /// instead of rebuilding the shielded bundles. The normalized bytes use PCZT v2
-/// to match the batch request serializer.
+/// to match the batch request serializer. Spend authorization signatures the
+/// client left in the request are stripped rather than rejected, so the
+/// normalized bytes carry only what this device later signs.
 #[cfg(feature = "cypherpunk")]
 pub fn check_batch_pczt_with_display<P: consensus::Parameters>(
     params: &P,
@@ -984,6 +996,24 @@ enum ShieldedActionPolicy {
     Single,
 }
 
+/// Strips spend authorization signatures a client left in a batch request.
+///
+/// Clients should redact signatures before transmitting a batch, but a
+/// not-fully-redacted batch is still acceptable input: the check performs the
+/// redaction the client skipped instead of rejecting the request. The
+/// normalized checked bytes therefore never carry host-supplied signature
+/// bytes, the signer re-signs every owned action, and the batch response's
+/// extracted signatures are always produced by this device.
+#[cfg(feature = "cypherpunk")]
+fn redact_incoming_batch_signatures(pczt: Pczt) -> Pczt {
+    use zcash_vendor::pczt::roles::redactor::Redactor;
+
+    Redactor::new(pczt)
+        .redact_orchard_with(|mut r| r.redact_actions(|mut ar| ar.clear_spend_auth_sig()))
+        .redact_ironwood_with(|mut r| r.redact_actions(|mut ar| ar.clear_spend_auth_sig()))
+        .finish()
+}
+
 #[cfg(feature = "cypherpunk")]
 fn reject_unsupported_batch_pczt(pczt: &Pczt) -> Result<()> {
     if !pczt.sapling().spends().is_empty() || !pczt.sapling().outputs().is_empty() {
@@ -999,8 +1029,10 @@ fn reject_unsupported_batch_pczt(pczt: &Pczt) -> Result<()> {
     }
 
     // A batch response contains signatures produced by this device for the
-    // reviewed request. Reject incoming signatures instead of carrying
-    // bytes supplied by the host into that response.
+    // reviewed request. The batch check strips signatures a client left in
+    // its request (`redact_incoming_batch_signatures`), so firmware-owned
+    // checked bytes never contain one; rejecting here keeps the signing
+    // paths from attributing host-supplied signature bytes to this device.
     for (pool, bundle) in [("Orchard", pczt.orchard()), ("Ironwood", pczt.ironwood())] {
         if bundle
             .actions()
@@ -2386,7 +2418,69 @@ mod tests {
     }
 
     #[test]
-    fn test_batch_rejects_existing_funded_spend_auth_signature() {
+    fn test_batch_check_strips_existing_funded_spend_auth_signature() {
+        for (unsigned, pool) in [
+            (
+                pczt::test_support::sample_orchard_change_pczt(),
+                SignableShieldedPool::Orchard,
+            ),
+            (
+                pczt::test_support::sample_ironwood_pczt(),
+                SignableShieldedPool::Ironwood,
+            ),
+        ] {
+            let reference = check_batch_pczt_cypherpunk(
+                &pczt::test_support::Nu6_3Network,
+                &unsigned.bytes,
+                &unsigned.ufvk_text,
+                &unsigned.seed_fingerprint,
+                0,
+            )
+            .unwrap();
+
+            // A batch the client did not fully redact still checks; the check
+            // performs the redaction the client skipped.
+            let sample = pczt_with_existing_funded_signature(unsigned, pool);
+            let host_sigs = extract_compact_sigs_from_signed_pczt(&sample.bytes)
+                .expect("the partially signed request carries the host's signature");
+            let (normalized, _, _, signability) = check_batch_pczt_with_display(
+                &pczt::test_support::Nu6_3Network,
+                &sample.bytes,
+                &BatchCheckContext::new(&sample.ufvk_text),
+                &sample.seed_fingerprint,
+                0,
+            )
+            .expect("a not-fully-redacted batch request must check");
+            assert_eq!(
+                normalized, reference,
+                "stripping the request's signature must restore the canonical normalized bytes"
+            );
+
+            // The device re-signs the previously signed action, so the response
+            // contains only signatures produced here.
+            let signed = sign_checked_batch_pczt_with_cached_signability(
+                &normalized,
+                &signability,
+                &sample.seed,
+                &SpendAuthCache::new(),
+            )
+            .expect("the stripped batch PCZT must sign");
+            let device_sigs = extract_compact_sigs_from_signed_pczt(&signed).unwrap();
+            for host_sig in &host_sigs {
+                assert!(
+                    device_sigs.iter().any(|sig| {
+                        sig.value_pool() == host_sig.value_pool()
+                            && sig.action_index() == host_sig.action_index()
+                            && sig.signature() != host_sig.signature()
+                    }),
+                    "the host-signed action must carry a fresh device signature"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_sign_checked_batch_pczt_rejects_existing_spend_auth_signature() {
         for (sample, pool) in [
             (
                 pczt::test_support::sample_orchard_change_pczt(),
@@ -2398,17 +2492,9 @@ mod tests {
             ),
         ] {
             let sample = pczt_with_existing_funded_signature(sample, pool);
-
-            assert_existing_batch_signature_error(
-                check_batch_pczt_with_display(
-                    &pczt::test_support::Nu6_3Network,
-                    &sample.bytes,
-                    &BatchCheckContext::new(&sample.ufvk_text),
-                    &sample.seed_fingerprint,
-                    0,
-                ),
-                pool.label(),
-            );
+            // The batch signer only accepts firmware-normalized checked bytes,
+            // which never contain a signature after the check's redaction; one
+            // here means the bytes did not come from the batch check.
             assert_existing_batch_signature_error(
                 sign_checked_batch_pczt(
                     &pczt::test_support::Nu6_3Network,

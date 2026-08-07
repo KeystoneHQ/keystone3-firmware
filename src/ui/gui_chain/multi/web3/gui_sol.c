@@ -9,7 +9,6 @@
 #include "screen_manager.h"
 #include "account_manager.h"
 #include "assert.h"
-#include "cjson/cJSON.h"
 #include "gui_qr_hintbox.h"
 
 #define SQUADS_V4_CREATE_MULTISIG_CONTRACT_ADDRESS "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b"
@@ -1526,11 +1525,10 @@ void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)
 static void GuiShowSolTxRawDetailCard(
     lv_obj_t *parent,
     PtrString txDetail,
-    lv_obj_t *lastView,
-    bool useParentScroll)
+    lv_obj_t *lastView)
 {
     lv_obj_t *cont = lv_obj_create(parent);
-    lv_obj_set_size(cont, SOL_COMPONENT_WIDTH, 444);
+    lv_obj_set_size(cont, SOL_COMPONENT_WIDTH, LV_SIZE_CONTENT);
     lv_obj_set_style_border_width(cont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_clip_corner(cont, 0, 0);
     lv_obj_set_style_radius(cont, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1542,30 +1540,19 @@ static void GuiShowSolTxRawDetailCard(
     lv_obj_set_style_pad_left(cont, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_right(cont, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 0);
-    if (useParentScroll) {
-        lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
-        lv_obj_clear_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-    } else {
-        lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
-        lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-    }
+    lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_clear_flag(cont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
 
     lv_obj_t *label = lv_label_create(cont);
     const char *rawDetail = txDetail == NULL ? "" : txDetail;
-    cJSON *root = useParentScroll ? NULL : cJSON_Parse(rawDetail);
-    char *retStr = root == NULL ? NULL : cJSON_PrintBuffered(root, BUFFER_SIZE_1024, false);
-    lv_label_set_text(label, retStr == NULL ? rawDetail : retStr);
-    EXT_FREE(retStr);
-    cJSON_Delete(root);
+    lv_label_set_text(label, rawDetail);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(label, SOL_COMPONENT_CONTENT_WIDTH);
     SetTitleLabelStyle(label);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
-    if (useParentScroll) {
-        lv_obj_update_layout(label);
-        lv_obj_set_height(cont, lv_obj_get_height(label) + 32);
-    }
+    lv_obj_update_layout(label);
+    lv_obj_set_height(cont, lv_obj_get_height(label) + 32);
     if (lastView == NULL) {
         lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 0);
     } else {
@@ -1581,18 +1568,12 @@ void GuiShowSolTxDetail(lv_obj_t *parent, void *totalData)
     DisplaySolanaTx *txData = (DisplaySolanaTx*)totalData;
     PtrT_DisplaySolanaTxOverview overviewData = txData->overview;
     if (0 == strcmp(overviewData->display_type, "squads_multisig_create")) {
-        // The specialized page contains multiple cards and a raw-detail card;
-        // keep a fixed viewport so the complete page can be scrolled.
-        lv_obj_set_height(parent, 444);
-        lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
-        lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
         GuiShowSolTxMultiSigCreateDetail(parent, overviewData);
         lv_obj_update_layout(parent);
         GuiShowSolTxRawDetailCard(
-            parent, txData->detail, GuiGetSolTxBottomView(parent), true);
+            parent, txData->detail, GuiGetSolTxBottomView(parent));
         lv_obj_update_layout(parent);
-        lv_obj_scroll_to_y(parent, 0, LV_ANIM_OFF);
         return;
     }
-    GuiShowSolTxRawDetailCard(parent, txData->detail, NULL, false);
+    GuiShowSolTxRawDetailCard(parent, txData->detail, NULL);
 }

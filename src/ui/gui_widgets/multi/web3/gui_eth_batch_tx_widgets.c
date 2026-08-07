@@ -92,7 +92,6 @@ static void GuiEthBatchTxNavBarRefresh();
 static void GuiRenderCurrentTransaction(bool showSwapHint, bool showSignSlider);
 static void GuiRenderTransactionFrame(lv_obj_t *parent);
 static void GuiRenderBottomBtn(lv_obj_t *parent, bool showSignSlider);
-static const lv_font_t *GetEthBatchAmountFont(const char *value);
 
 static bool HandleCurrentTransaction(uint32_t index);
 static void HandleCurrentTransactionParseFail(uint32_t errorCode, const char *errorMessage);
@@ -555,18 +554,6 @@ static bool FormatAssetAmount(char *output, size_t outputSize, const char *amoun
     return true;
 }
 
-static const lv_font_t *GetEthBatchAmountFont(const char *value)
-{
-    size_t length = strlen(value);
-    if (length <= 24) {
-        return g_defLittleTitleFont;
-    }
-    if (length <= 40) {
-        return g_defTextFont;
-    }
-    return g_defIllustrateFont;
-}
-
 // GUI Impelementation Part
 static lv_obj_t* GuiRenderSwapSummary(lv_obj_t *parent, const char* from_asset, const char* from_amount, const char* to_asset)
 {
@@ -850,7 +837,9 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
     char value[ETH_BATCH_ASSET_AMOUNT_BUFFER_SIZE] = {0};
     bool formatted = FormatAssetAmount(value, sizeof(value), g_currentTransaction->detail->value, g_currentNetwork.symbol);
     const char *displayValue = formatted ? value : _("Invalid Amount");
-    valueLabel = GuiCreateLabelWithFont(container, displayValue, GetEthBatchAmountFont(displayValue));
+    // Details values use the regular illustrate font.  The larger adaptive
+    // amount fonts are reserved for overview emphasis cards.
+    valueLabel = GuiCreateIllustrateLabel(container, displayValue);
     lv_obj_set_style_text_color(valueLabel, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_update_layout(titleLabel);
     lv_obj_update_layout(valueLabel);

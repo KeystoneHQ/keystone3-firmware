@@ -805,7 +805,8 @@ static void GuiShowSolTxSquadsProposalOverview(lv_obj_t *parent, PtrT_DisplaySol
         if (strcmp(method, "Transfer") != 0) {
             continue;
         }
-        lv_obj_t *feeContainer =  GuiCreateAutoHeightContainer(parent, 408, 16);
+        lv_obj_t *feeContainer = GuiCreateAutoHeightContainer(
+            parent, SOL_COMPONENT_WIDTH, 16);
         lv_obj_t *feeLabel = lv_label_create(feeContainer);
         lv_label_set_text(feeLabel, "Fee");
         lv_obj_set_style_text_color(feeLabel, WHITE_COLOR, LV_PART_MAIN);

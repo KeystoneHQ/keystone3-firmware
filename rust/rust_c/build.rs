@@ -84,14 +84,10 @@ fn main() {
 
     let builder = cbindgen::Builder::new();
 
-    builder
+    let bindings = builder
         .with_crate(".")
         .with_config(config)
         .generate()
-        .map_or_else(
-            |_| {},
-            |bindings| {
-                bindings.write_to_file(output_target);
-            },
-        )
+        .expect("Failed to generate librust_c.h");
+    bindings.write_to_file(output_target);
 }

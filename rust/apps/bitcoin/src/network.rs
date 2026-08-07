@@ -189,6 +189,7 @@ impl NetworkT for CustomNewNetwork {
 #[cfg(test)]
 mod tests {
     use super::{is_legacy_utxo_transaction, is_supported_legacy_utxo_transaction};
+    use alloc::string::ToString;
     use ur_registry::pb::protoc::sign_transaction::Transaction;
     use ur_registry::pb::protoc::{BchTx, BtcTx, DashTx, DogeTx, LtcTx, SignTransaction};
 

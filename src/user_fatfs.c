@@ -277,27 +277,31 @@ void FatfsDirectoryListing(char *ptr)
 }
 #endif
 
-void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain)
+void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain, uint32_t maxCount)
 {
     FRESULT res;
     DIR dir;
     FILINFO fno;
     uint32_t count = 0;
 
-    res = f_opendir(&dir, path);
-    if (res != FR_OK) {
-        *number = 0;
+    *number = 0;
+    if (fileName == NULL || maxCount == 0) {
         return;
     }
 
-    while (1) {
+    res = f_opendir(&dir, path);
+    if (res != FR_OK) {
+        return;
+    }
+
+    while (count < maxCount) {
         res = f_readdir(&dir, &fno);
         if (res != FR_OK || fno.fname[0] == 0) {
             break;
         }
 
         if (!(fno.fattrib & AM_DIR)) {
-            if (!strstr(fno.fname, contain) || (fno.fname[0] == '.') ||
+            if ((contain != NULL && !strstr(fno.fname, contain)) || (fno.fname[0] == '.') ||
                     (FatfsFileGetSize(fno.fname) > MAX_FILE_SIZE_LIST) ||
                     (strnlen_s(fno.fname, maxLen) >= maxLen)) {
                 continue;

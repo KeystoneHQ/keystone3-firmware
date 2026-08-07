@@ -45,7 +45,7 @@ void FatfsError(FRESULT errNum);
 uint32_t FatfsGetSize(const char *path);
 bool FatfsFileExist(const char *path);
 char *FatfsFileRead(const TCHAR* path);
-void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain);
+void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain, uint32_t maxCount);
 uint8_t *FatfsFileReadBytes(const TCHAR* path, uint32_t* readBytes);
 #endif /* _USER_FATFS_H */
 

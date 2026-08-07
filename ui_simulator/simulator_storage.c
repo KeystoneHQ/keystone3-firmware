@@ -556,26 +556,39 @@ int32_t SE_DeriveKey(uint8_t slot, const uint8_t *authKey)
     return 0;
 }
 
-void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain)
+void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint32_t *number, const char *contain, uint32_t maxCount)
 {
     lv_fs_dir_t dir;
     char fname[256];
     uint32_t count = 0;
+
+    if (number == NULL) {
+        return;
+    }
+    *number = 0;
+    if (path == NULL || fileName == NULL || maxLen == 0 || maxCount == 0) {
+        return;
+    }
+
     lv_fs_res_t res = lv_fs_dir_open(&dir, path);
     if (res != LV_FS_RES_OK) {
         return;
     }
 
-    while (lv_fs_dir_read(&dir, fname) == LV_FS_RES_OK) {
+    while (count < maxCount && lv_fs_dir_read(&dir, fname) == LV_FS_RES_OK) {
         if (strlen(fname) == 0) {
             break;
         }
-        if (contain != NULL && !strstr(fname, contain)) {
+        if ((contain != NULL && !strstr(fname, contain)) || strlen(fname) >= maxLen) {
             continue;
         }
 
+        if (fileName[count] == NULL) {
+            break;
+        }
+
         printf("fname = %s\n", fname);
-        strcpy(fileName[count], fname);
+        snprintf(fileName[count], maxLen, "%s", fname);
         count++;
     }
     lv_fs_dir_close(&dir);

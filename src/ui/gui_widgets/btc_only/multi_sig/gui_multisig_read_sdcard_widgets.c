@@ -124,9 +124,9 @@ void ListMicroCardMultisigConfigFile(void)
     }
     printf("suffix is %s\r\n", suffix);
 #ifdef COMPILE_SIMULATOR
-    FatfsGetFileName("C:/assets/sd", g_fileList, BUFFER_SIZE_128, &number, suffix);
+    FatfsGetFileName("C:/assets/sd", g_fileList, BUFFER_SIZE_128, &number, suffix, FATFS_MAX_FILE_NUMBER);
 #else
-    FatfsGetFileName("0:", g_fileList, BUFFER_SIZE_128, &number, suffix);
+    FatfsGetFileName("0:", g_fileList, BUFFER_SIZE_128, &number, suffix, FATFS_MAX_FILE_NUMBER);
 #endif
     if (number == 0) {
         lv_obj_t *img = GuiCreateImg(parent, &imgFile);

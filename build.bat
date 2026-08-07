@@ -51,7 +51,7 @@ IF "%build_language%"=="true" (
     popd  
 )
 
-SET cmake_parm=
+SET "cmake_parm=-DBUILD_PRODUCTION=false -DBTC_ONLY=false -DCYPHERPUNK=false -DENABLE_SCREEN_SHOT=false -DDEBUG_MEMORY=false"
 IF "%build_production%"=="true" SET "cmake_parm=%cmake_parm% -DBUILD_PRODUCTION=true"
 IF "%build_btc_only%"=="true" SET "cmake_parm=%cmake_parm% -DBTC_ONLY=true"
 IF "%build_cypherpunk%"=="true" SET "cmake_parm=%cmake_parm% -DCYPHERPUNK=true"

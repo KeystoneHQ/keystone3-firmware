@@ -2,9 +2,11 @@
 # !/usr/bin/python
 
 import argparse
-import pandas as pd
+import csv
 import re
 import os
+import shutil
+import subprocess
 
 from pathlib import Path
 
@@ -36,24 +38,46 @@ def update_font_properties(file_path, font_size):
         file.write(content)
     print(f"Updated {file_path} for font_size {font_size} with line_height {line_height} and base_line {base_line}.")
 
-def build_lv_font_conv_command(bpp, size, font, symbols, output_file):
-    command = "lv_font_conv"
-    command += f" --bpp {bpp}"
-    command += f" --size {size}"
-    command += " --no-compress"
-    command += f" --font {font}"
-    command += f" --symbols {symbols}"
-    command += " --format lvgl"
-    command += f" -o {output_file}"
+def find_lv_font_conv():
+    configured = os.environ.get("LV_FONT_CONV")
+    if configured:
+        return configured
 
-    return command
+    executable = shutil.which("lv_font_conv")
+    if executable:
+        return executable
+
+    nvm_root = Path.home() / ".nvm" / "versions" / "node"
+    candidates = sorted(nvm_root.glob("*/bin/lv_font_conv"), reverse=True)
+    if candidates:
+        return str(candidates[0])
+
+    raise FileNotFoundError(
+        "lv_font_conv was not found; install it or set LV_FONT_CONV"
+    )
+
+
+def build_lv_font_conv_command(bpp, size, font, symbols, output_file):
+    return [
+        find_lv_font_conv(),
+        "--bpp", str(bpp),
+        "--size", str(size),
+        "--no-compress",
+        "--font", font,
+        "--symbols", symbols,
+        "--format", "lvgl",
+        "-o", output_file,
+    ]
 
 def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf --symbols ABCD --format xyz", font_size=None, language=None, unique_characters=None, label=None):
+    symbols = re.search(r"--symbols (.+?) --format", command_line).group(1)
     options = {
         'bpp': re.search(r"--bpp (\d+)", command_line).group(1),
         'size': int(re.search(r"--size (\d+)", command_line).group(1)),
         'font': re.search(r"--font ([\w-]+\.ttf)", command_line).group(1),
-        'symbols': re.search(r"--symbols (.+?) --format", command_line).group(1)
+        # Older generated files contain an unmatched quote plus padding spaces
+        # because the command used to be assembled through zsh.
+        'symbols': symbols.strip().strip('"')
     }
     
     if font_size in [20, 24]:
@@ -61,7 +85,14 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
     elif font_size in [28, 36]:
         bpp = 1
 
-    if options['symbols'] != unique_characters:
+    output_file = "../gui_assets/font/" + language + "/" + label
+    try:
+        with open(output_file, 'r', encoding='utf-8') as generated_font:
+            has_space_glyph = '/* U+0020 " " */' in generated_font.read()
+    except FileNotFoundError:
+        has_space_glyph = False
+
+    if options['symbols'] != unique_characters or not has_space_glyph:
         font_mapping = {
             'cn': 'NotoSansSC-Regular.ttf',
             'ko': 'NotoSansKR-Regular.ttf',
@@ -70,16 +101,25 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
             'de': 'NotoSans-Regular.ttf',
             'ja': 'NotoSansJP-Regular.ttf',
         }
-        if os.environ.get('SHELL') == '/bin/zsh':
-            unique_characters = '\"' + '\\\"' + unique_characters + " " + "\""
-            unique_characters = unique_characters.replace("`","\\`")
-        else:
-            unique_characters = '\"\"\"' + unique_characters + " " +'\"'
-        build_command = build_lv_font_conv_command(bpp, font_size, font_mapping[language], unique_characters, "../gui_assets/font/" + language + "/" + label)
-        cmd_result = os.system(build_command)
-        if cmd_result != 0:
-            exit(cmd_result)
-        update_font_properties("../gui_assets/font/" + language + "/" + label, font_size)
+        # Space is intentionally removed from unique_characters below so it does
+        # not affect the symbols comparison. It still needs to be included in
+        # every generated font: LVGL does not automatically fall back to another
+        # font for U+0020, and a missing space is rendered as the missing-glyph
+        # box between translated words.
+        symbols_for_generation = unique_characters + " "
+        build_command = build_lv_font_conv_command(
+            bpp,
+            font_size,
+            font_mapping[language],
+            symbols_for_generation,
+            output_file,
+        )
+        cmd_result = subprocess.run(build_command, check=False)
+        if cmd_result.returncode != 0:
+            raise RuntimeError(
+                f"lv_font_conv failed with exit code {cmd_result.returncode}"
+            )
+        update_font_properties(output_file, font_size)
         # raise ValueError("Unique characters do not match the symbols provided in the command line.")
 
     return options, language
@@ -92,8 +132,14 @@ def extract_unique_characters(df, font_size, column):
         36: "·QWERTYUIOPASDFGHJKLZXCVBNM,/:\";'[]<>~!@#$%^&*()_+=0987654321·qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM[]{}#%^*+=_\\|~<>€£¥·-/:;()$&`.?!'@",
     }
     unique_chars = set(additional_chars.get(font_size, additional_chars[28]))
-    subset = df[df['font'] == font_size][column].dropna()
-    subset.apply(lambda x: unique_chars.update(set(x)))
+    for row in df:
+        try:
+            row_font_size = int(row['font'])
+        except (KeyError, TypeError, ValueError):
+            continue
+        value = row.get(column)
+        if row_font_size == font_size and value:
+            unique_chars.update(set(value))
     text = ''.join(sorted(unique_chars))
     text = text.replace('\"', '')
     text = text.replace('\n', '')
@@ -103,7 +149,8 @@ def extract_unique_characters(df, font_size, column):
 def main():
     for language in ['cn', 'ko', 'ru', 'es', 'de', 'ja']:
         try:
-            df = pd.read_csv('data.csv')
+            with open('data.csv', newline='', encoding='utf-8') as csv_file:
+                df = list(csv.DictReader(csv_file))
             font_labels = {
                 20: f"{language}Illustrate",
                 24: f"{language}Text",

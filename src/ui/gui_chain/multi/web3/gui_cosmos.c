@@ -477,22 +477,35 @@ void GuiCosmosTxDetails(lv_obj_t *parent, void *totalData)
     lv_obj_update_layout(parent);
 }
 
-static lv_obj_t *CreateCosmosDetailInlineValue(lv_obj_t *container, const char *titleText,
-                                                const char *valueText, uint16_t y, bool highlight)
+static uint16_t CreateCosmosDetailInlineValue(lv_obj_t *container, const char *titleText,
+                                              const char *valueText, uint16_t y, bool highlight)
 {
     if (valueText == NULL) {
-        return NULL;
+        return y;
     }
     lv_obj_t *title = GuiCreateIllustrateLabel(container, _(titleText));
     lv_obj_align(title, LV_ALIGN_TOP_LEFT, 24, y);
     lv_obj_set_style_text_opa(title, LV_OPA_64, LV_PART_MAIN);
+    lv_obj_update_layout(title);
 
     lv_obj_t *value = GuiCreateIllustrateLabel(container, valueText);
     if (highlight) {
         lv_obj_set_style_text_color(value, ORANGE_COLOR, LV_PART_MAIN);
     }
-    lv_obj_align_to(value, title, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
-    return value;
+    int32_t valueWidth = 360 - lv_obj_get_width(title) - 16;
+    if (valueWidth < 1) {
+        valueWidth = 1;
+    }
+    lv_obj_set_width(value, valueWidth);
+    lv_label_set_long_mode(value, LV_LABEL_LONG_WRAP);
+    lv_obj_align_to(value, title, LV_ALIGN_OUT_RIGHT_TOP, 16, 0);
+    lv_obj_update_layout(value);
+
+    int32_t rowHeight = lv_obj_get_height(title);
+    if (lv_obj_get_height(value) > rowHeight) {
+        rowHeight = lv_obj_get_height(value);
+    }
+    return y + rowHeight + 8;
 }
 
 static lv_obj_t *CreateCosmosVoteDetails(lv_obj_t *parent, const cJSON *message, lv_obj_t *lastView)
@@ -502,21 +515,25 @@ static lv_obj_t *CreateCosmosVoteDetails(lv_obj_t *parent, const cJSON *message,
         lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
 
-    CreateCosmosDetailInlineValue(container, "Proposal", GetCosmosJsonString(message, "Proposal"), 16, true);
-    CreateCosmosDetailInlineValue(container, "Voted", GetCosmosJsonString(message, "Voted"), 54, true);
-    CreateCosmosDetailInlineValue(container, "Method", GetCosmosJsonString(message, "Method"), 92, false);
+    uint16_t y = 16;
+    y = CreateCosmosDetailInlineValue(
+        container, "Proposal", GetCosmosJsonString(message, "Proposal"), y, true);
+    y = CreateCosmosDetailInlineValue(
+        container, "Voted", GetCosmosJsonString(message, "Voted"), y, true);
+    y = CreateCosmosDetailInlineValue(
+        container, "Method", GetCosmosJsonString(message, "Method"), y, false);
 
     lv_obj_t *voterTitle = GuiCreateIllustrateLabel(container, _("Voter"));
-    lv_obj_align(voterTitle, LV_ALIGN_TOP_LEFT, 24, 130);
+    lv_obj_align(voterTitle, LV_ALIGN_TOP_LEFT, 24, y);
     lv_obj_set_style_text_opa(voterTitle, LV_OPA_64, LV_PART_MAIN);
 
     const char *voter = GetCosmosJsonString(message, "Voter");
     lv_obj_t *voterValue = GuiCreateIllustrateLabel(container, voter == NULL ? "" : voter);
     lv_obj_set_width(voterValue, 360);
     lv_label_set_long_mode(voterValue, LV_LABEL_LONG_WRAP);
-    lv_obj_align(voterValue, LV_ALIGN_TOP_LEFT, 24, 168);
+    lv_obj_align(voterValue, LV_ALIGN_TOP_LEFT, 24, y + 38);
     lv_obj_update_layout(voterValue);
-    lv_obj_set_height(container, 168 + lv_obj_get_height(voterValue) + 16);
+    lv_obj_set_height(container, y + 38 + lv_obj_get_height(voterValue) + 16);
     return container;
 }
 
@@ -529,19 +546,23 @@ static lv_obj_t *CreateCosmosFeeDetails(lv_obj_t *parent, const cJSON *common, l
         return lastView;
     }
 
-    lv_obj_t *container = CreateContentContainer(parent, 408, 170);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 0);
     if (lastView != NULL) {
         lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
-    CreateCosmosDetailInlineValue(container, "Max Fee", maxFee, 16, false);
-
-    lv_obj_t *description = GuiCreateLabelWithFont(
-        container, "  \xE2\x80\xA2  Max Fee Price * Gas Limit", &openSansDesc);
-    lv_obj_set_style_text_opa(description, LV_OPA_64, LV_PART_MAIN);
-    lv_obj_align(description, LV_ALIGN_TOP_LEFT, 24, 54);
-
-    CreateCosmosDetailInlineValue(container, "Fee", fee, 86, false);
-    CreateCosmosDetailInlineValue(container, "Gas Limit", gasLimit, 124, false);
+    uint16_t y = 16;
+    y = CreateCosmosDetailInlineValue(container, "Max Fee", maxFee, y, false);
+    if (maxFee != NULL) {
+        lv_obj_t *description = GuiCreateLabelWithFont(
+            container, "  \xE2\x80\xA2  Max Fee Price * Gas Limit", &openSansDesc);
+        lv_obj_set_style_text_opa(description, LV_OPA_64, LV_PART_MAIN);
+        lv_obj_align(description, LV_ALIGN_TOP_LEFT, 24, y);
+        lv_obj_update_layout(description);
+        y += lv_obj_get_height(description) + 8;
+    }
+    y = CreateCosmosDetailInlineValue(container, "Fee", fee, y, false);
+    y = CreateCosmosDetailInlineValue(container, "Gas Limit", gasLimit, y, false);
+    lv_obj_set_height(container, y + 8);
     return container;
 }
 
@@ -553,12 +574,14 @@ static lv_obj_t *CreateCosmosNetworkDetails(lv_obj_t *parent, const cJSON *commo
         return lastView;
     }
 
-    lv_obj_t *container = CreateContentContainer(parent, 408, 100);
+    lv_obj_t *container = CreateContentContainer(parent, 408, 0);
     if (lastView != NULL) {
         lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
-    CreateCosmosDetailInlineValue(container, "Network", network, 16, false);
-    CreateCosmosDetailInlineValue(container, "Chain ID", chainId, 54, false);
+    uint16_t y = 16;
+    y = CreateCosmosDetailInlineValue(container, "Network", network, y, false);
+    y = CreateCosmosDetailInlineValue(container, "Chain ID", chainId, y, false);
+    lv_obj_set_height(container, y + 8);
     return container;
 }
 

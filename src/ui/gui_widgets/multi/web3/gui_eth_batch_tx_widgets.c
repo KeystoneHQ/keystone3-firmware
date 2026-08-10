@@ -793,7 +793,19 @@ static void GuiRenderGeneralOverview(lv_obj_t *parent)
     lv_obj_t *last_view = NULL;
 
     const char *valueTitle = strlen(g_currentTransaction->detail->input) > 0 ? _("Native Transfer") : _("Value");
-    last_view = CreateTransactionOvewviewCard(parent, valueTitle, g_currentTransaction->overview->value, _("Max Txn Fee"), g_currentTransaction->overview->max_txn_fee);
+    char nativeValue[ETH_BATCH_ASSET_AMOUNT_BUFFER_SIZE] = {0};
+    char maxTxnFee[ETH_BATCH_ASSET_AMOUNT_BUFFER_SIZE] = {0};
+    bool nativeValueFormatted = FormatAssetAmount(
+        nativeValue, sizeof(nativeValue),
+        g_currentTransaction->overview->value, g_currentNetwork.symbol);
+    bool maxTxnFeeFormatted = FormatAssetAmount(
+        maxTxnFee, sizeof(maxTxnFee),
+        g_currentTransaction->overview->max_txn_fee, g_currentNetwork.symbol);
+    last_view = CreateTransactionOvewviewCard(
+        parent, valueTitle,
+        nativeValueFormatted ? nativeValue : _("Invalid Amount"),
+        _("Max Txn Fee"),
+        maxTxnFeeFormatted ? maxTxnFee : _("Invalid Amount"));
 
     last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
 
@@ -861,7 +873,12 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
     lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
     lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
 
-    valueLabel = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->max_txn_fee);
+    char maxTxnFee[ETH_BATCH_ASSET_AMOUNT_BUFFER_SIZE] = {0};
+    bool maxTxnFeeFormatted = FormatAssetAmount(
+        maxTxnFee, sizeof(maxTxnFee),
+        g_currentTransaction->detail->max_txn_fee, g_currentNetwork.symbol);
+    valueLabel = GuiCreateIllustrateLabel(
+        container, maxTxnFeeFormatted ? maxTxnFee : _("Invalid Amount"));
     lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
 
     height += 30 + 8;
@@ -872,11 +889,17 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
     height += 30 + 8;
 
     if (g_currentTransaction->detail->max_priority != NULL) {
-        titleLabel = GuiCreateIllustrateLabel(container, _("Max Priority"));
+        titleLabel = GuiCreateIllustrateLabel(container, _("Max Priority Fee"));
         lv_obj_set_style_text_opa(titleLabel, LV_OPA_64, LV_PART_MAIN);
         lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
 
-        valueLabel = GuiCreateIllustrateLabel(container, g_currentTransaction->detail->max_priority);
+        char maxPriorityFee[ETH_BATCH_ASSET_AMOUNT_BUFFER_SIZE] = {0};
+        bool maxPriorityFeeFormatted = FormatAssetAmount(
+            maxPriorityFee, sizeof(maxPriorityFee),
+            g_currentTransaction->detail->max_priority, g_currentNetwork.symbol);
+        valueLabel = GuiCreateIllustrateLabel(
+            container,
+            maxPriorityFeeFormatted ? maxPriorityFee : _("Invalid Amount"));
         lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
 
         height += 30 + 8;

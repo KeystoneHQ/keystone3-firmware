@@ -17,6 +17,10 @@ pub struct LargeFeePolicy {
     /// Fee-rate threshold in the network's smallest unit per virtual byte.
     /// Some networks use a fee policy that is not meaningfully byte based.
     pub rate_threshold_per_vbyte: Option<u64>,
+    /// Whether a fee larger than the transferred amount should be highlighted.
+    /// This is not useful for networks such as Dogecoin where small transfers
+    /// can legitimately cost more than the transferred amount.
+    pub warn_fee_larger_than_amount: bool,
 }
 
 pub const UNSUPPORTED_LEGACY_UTXO_MESSAGE: &str =
@@ -90,31 +94,38 @@ impl NetworkT for Network {
             Network::Bitcoin | Network::BitcoinTestnet | Network::AvaxBtcBridge => LargeFeePolicy {
                 absolute_threshold: 5_000_000,
                 rate_threshold_per_vbyte: Some(100),
+                warn_fee_larger_than_amount: true,
             },
             // Litecoin's normal relay/wallet fee scale is higher in litoshi/vB.
             Network::Litecoin => LargeFeePolicy {
                 absolute_threshold: 10_000_000,
                 rate_threshold_per_vbyte: Some(1_000),
+                warn_fee_larger_than_amount: true,
             },
-            // Dogecoin Core recommends 0.01 DOGE/kB. Small transactions can
-            // therefore legitimately be several thousand koinu/vB.
+            // Dogecoin Core recommends a minimum of 0.01 DOGE/kB. Wallet and
+            // swap transactions can legitimately pay substantially more, so
+            // warn at 1 DOGE/kB or an absolute fee above 1 DOGE.
             Network::Dogecoin => LargeFeePolicy {
                 absolute_threshold: 100_000_000,
-                rate_threshold_per_vbyte: Some(10_000),
+                rate_threshold_per_vbyte: Some(100_000),
+                warn_fee_larger_than_amount: false,
             },
             Network::Dash => LargeFeePolicy {
                 absolute_threshold: 10_000_000,
                 rate_threshold_per_vbyte: Some(100),
+                warn_fee_larger_than_amount: true,
             },
             Network::BitcoinCash => LargeFeePolicy {
                 absolute_threshold: 10_000_000,
                 rate_threshold_per_vbyte: Some(100),
+                warn_fee_larger_than_amount: true,
             },
             // Zcash conventional fees are action based rather than a simple
             // sat/vB-style market, so only use the absolute safety threshold.
             Network::Zcash => LargeFeePolicy {
                 absolute_threshold: 10_000_000,
                 rate_threshold_per_vbyte: None,
+                warn_fee_larger_than_amount: true,
             },
         }
     }
@@ -182,6 +193,7 @@ impl NetworkT for CustomNewNetwork {
         LargeFeePolicy {
             absolute_threshold: 5_000_000,
             rate_threshold_per_vbyte: Some(100),
+            warn_fee_larger_than_amount: true,
         }
     }
 }
